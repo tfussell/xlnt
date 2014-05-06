@@ -1,0 +1,11 @@
+Debug/
+Release/
+*.obj
+*.sdf
+*.suo
+*.opensdf
+*.vcxproj.user
+*.o
+#*#
+*~
+.DS_Store
