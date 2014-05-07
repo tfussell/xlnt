@@ -34,7 +34,7 @@ class cell
 public:
     cell();
 
-    variant value();
+    variant &value();
 
 private:
     std::shared_ptr<cell_impl> impl_;

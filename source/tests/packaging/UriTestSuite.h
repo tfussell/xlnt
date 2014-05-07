@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cxxtest/TestSuite.h>
-#include "../../source/Packaging/uri.h"
+#include <xlnt/uri.h>
 
 class uriTestSuite : public CxxTest::TestSuite
 {

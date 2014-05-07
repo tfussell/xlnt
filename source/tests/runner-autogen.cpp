@@ -20,7 +20,20 @@ int main( int argc, char *argv[] ) {
     status = CxxTest::Main< CxxTest::ParenPrinter >( tmp, argc, argv );
     return status;
 }
-bool suite_NullableTestSuite_init = false;
+bool suite_IntegrationTestSuite_init = false;
+#include "C:\Users\taf656\Development\xlnt\source\tests\integration\IntegrationTestSuite.h"
+
+static IntegrationTestSuite suite_IntegrationTestSuite;
+
+static CxxTest::List Tests_IntegrationTestSuite = { 0, 0 };
+CxxTest::StaticSuiteDescription suiteDescription_IntegrationTestSuite( "../../source/tests/integration/IntegrationTestSuite.h", 9, "IntegrationTestSuite", suite_IntegrationTestSuite, Tests_IntegrationTestSuite );
+
+static class TestDescription_suite_IntegrationTestSuite_test_1 : public CxxTest::RealTestDescription {
+public:
+ TestDescription_suite_IntegrationTestSuite_test_1() : CxxTest::RealTestDescription( Tests_IntegrationTestSuite, suiteDescription_IntegrationTestSuite, 17, "test_1" ) {}
+ void runTest() { suite_IntegrationTestSuite.test_1(); }
+} testDescription_suite_IntegrationTestSuite_test_1;
+
 #include "C:\Users\taf656\Development\xlnt\source\tests\packaging\NullableTestSuite.h"
 
 static NullableTestSuite suite_NullableTestSuite;

@@ -8,18 +8,13 @@ public:
     variant value;
 };
 
-cell::cell() : impl_(nullptr)
+cell::cell() : impl_(std::make_shared<cell_impl>())
 {
 
 }
 
-variant cell::value()
+variant &cell::value()
 {
-    if(impl_ == nullptr)
-    {
-        return variant();
-    }
-
     return impl_->value;
 }
 

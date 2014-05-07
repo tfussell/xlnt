@@ -2,9 +2,9 @@
 
 #include <cxxtest/TestSuite.h>
 
-#include "../../packaging/File.h"
+#include <xlnt/file.h>
+#include <xlnt/package.h>
 #include "../../misc/pugixml.hpp"
-#include "../../packaging/package.h"
 
 class ZipPackageTestSuite : public CxxTest::TestSuite
 {

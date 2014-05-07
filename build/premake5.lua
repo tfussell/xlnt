@@ -22,7 +22,8 @@ project "xlnt.test"
        "$(opc_prefix)/config",
        "$(opc_prefix)/plib/config/msvc/plib/include",
        "$(opc_prefix)/third_party/libxml2-2.7.7/include",
-       "$(cxxtest_prefix)"
+       "$(cxxtest_prefix)",
+       "../include"
     }
     defines { "WIN32" }
     files { 

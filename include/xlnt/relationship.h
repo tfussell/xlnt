@@ -17,20 +17,25 @@ class package;
 class relationship
 {
 public:
+    enum class type
+    {
+        hyperlink,
+        drawing,
+        worksheet,
+        sharedStrings,
+        styles,
+        theme
+    };
+
+    relationship(type type) : source_uri_(""), target_uri_(""), type_(type)
+    {
+
+    }
+
 	/// <summary>
 	/// gets a string that identifies the relationship.
 	/// </summary>
 	std::string get_id() const { return id_; }
-
-	/// <summary>
-	/// gets the Package that contains this relationship.
-	/// </summary>
-	package &get_package() { return package_; }
-
-	/// <summary>
-	/// gets the qualified type name of the relationship.
-	/// </summary>
-	std::string get_relationship_type() const { return relationship_type_; }
 
 	/// <summary>
 	/// gets the URI of the package or part that owns the relationship.
@@ -54,8 +59,7 @@ private:
     relationship &operator=(const relationship &rhs) = delete;
 
 	std::string id_;
-	package &package_;
-	std::string relationship_type_;
+	type type_;
 	uri source_uri_;
 	target_mode target_mode_;
 	uri target_uri_;

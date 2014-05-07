@@ -21,20 +21,28 @@ THE SOFTWARE.
 */
 #pragma once
 
+#include <memory>
 #include <string>
-
-#include "worksheet.h"
 
 namespace xlnt {
 
 class workbook_impl;
+class worksheet;
 
 class workbook
 {
 public:
     workbook();
 
-    worksheet get_sheet_by_name(const std::string &sheet_name);
+    worksheet &get_sheet_by_name(const std::string &sheet_name);
+    worksheet &get_active();
+    worksheet &create_sheet();
+    worksheet &create_sheet(std::size_t index);
+    std::vector<std::string> get_sheet_names() const;
+    std::vector<worksheet>::iterator begin();
+    std::vector<worksheet>::iterator end();
+    worksheet &operator[](const std::string &name);
+    void save(const std::string &filename);
 
 private:
     std::shared_ptr<workbook_impl> impl_;

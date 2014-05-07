@@ -21,18 +21,89 @@ THE SOFTWARE.
 */
 #pragma once
 
+#include <memory>
+#include <set>
 #include <string>
+#include <vector>
 
-#include "range.h"
+#include "cell.h"
+#include "relationship.h"
+#include "workbook.h"
 
 namespace xlnt {
 
 class worksheet_impl;
+typedef std::vector<std::vector<cell>> range;
 
-class worksheet : public range
+class worksheet
 {
 public:
-    worksheet();
+    enum class Break
+    {
+        None = 0,
+        Row = 1,
+        Column = 2
+    };
+
+    enum class SheetState
+    {
+        Visible,
+        Hidden,
+        VeryHidden
+    };
+
+    enum class PaperSize
+    {
+        Letter = 1,
+        LetterSmall = 2,
+        Tabloid = 3,
+        Ledger = 4,
+        Legal = 5,
+        Statement = 6,
+        Executive = 7,
+        A3 = 8,
+        A4 = 9,
+        A4Small = 10,
+        A5 = 11
+    };
+
+    enum class Orientation
+    {
+        Portrait,
+        Landscape
+    };
+
+    worksheet(workbook &parent_workbook, const std::string &title = "");
+    void operator=(const worksheet &other);
+    cell operator[](const std::string &address);
+    std::string to_string() const;
+    workbook get_parent() const;
+    void garbage_collect();
+    std::set<cell> get_cell_collection();
+    std::string get_title() const;
+    void set_title(const std::string &title);
+    cell get_freeze_panes() const;
+    void set_freeze_panes(cell top_left_cell);
+    void set_freeze_panes(const std::string &top_left_coordinate);
+    void unfreeze_panes();
+    xlnt::cell cell(const std::string &coordinate);
+    xlnt::cell cell(int row, int column);
+    int get_highest_row() const;
+    int get_highest_column() const;
+    std::string calculate_dimension() const;
+    range range(const std::string &range_string, int row_offset, int column_offset);
+    relationship create_relationship(relationship::type relationship_type);
+    //void add_chart(chart chart);
+    void merge_cells(const std::string &range_string);
+    void merge_cells(int start_row, int start_column, int end_row, int end_column);
+    void unmerge_cells(const std::string &range_string);
+    void unmerge_cells(int start_row, int start_column, int end_row, int end_column);
+    void append(const std::vector<xlnt::cell> &cells);
+    void append(const std::unordered_map<std::string, xlnt::cell> &cells);
+    void append(const std::unordered_map<int, xlnt::cell> &cells);
+    xlnt::range rows() const;
+    xlnt::range columns() const;
+    bool operator==(const worksheet &other);
 
 private:
     std::shared_ptr<worksheet_impl> impl_;

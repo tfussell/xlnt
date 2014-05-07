@@ -11,6 +11,7 @@ namespace xlnt {
 class package_impl
 {
 public:
+    package *parent_;
     opcContainer *opc_container_;
     std::iostream &stream_;
     std::fstream file_stream_;
@@ -41,14 +42,14 @@ public:
         return package_properties_;
     }
 
-    package_impl(std::iostream &stream, file_mode package_mode, file_access package_access) 
-        : stream_(stream), container_buffer_(4096), package_mode_(package_mode), package_access_(package_access)
+    package_impl(package *parent, std::iostream &stream, file_mode package_mode, file_access package_access) 
+        : parent_(parent), stream_(stream), container_buffer_(4096), package_mode_(package_mode), package_access_(package_access)
     {
         open_container();
     }
 
-    package_impl(const std::string &path, file_mode package_mode, file_access package_access) 
-        : stream_(file_stream_), container_buffer_(4096), package_mode_(package_mode), package_access_(package_access)
+    package_impl(package *parent, const std::string &path, file_mode package_mode, file_access package_access) 
+        : parent_(parent), stream_(file_stream_), container_buffer_(4096), package_mode_(package_mode), package_access_(package_access)
     {
         switch(package_mode)
         {
@@ -204,9 +205,9 @@ public:
         stream_.flush();
     }
 
-    part get_part(const uri &/*part_uri*/)
+    part get_part(const uri &part_uri)
     {
-        return part();// *this, part_uri, opc_container_);
+        return part(*parent_, part_uri, opc_container_);
     }
 
     part_collection get_parts()
@@ -314,13 +315,13 @@ package package::open(const std::string &path, file_mode package_mode, file_acce
 }
 
 package::package(std::iostream &stream, file_mode package_mode, file_access package_access)
-    : impl_(new package_impl(stream, package_mode, package_access))
+    : impl_(new package_impl(this, stream, package_mode, package_access))
 {
     open_container();
 }
 
 package::package(const std::string &path, file_mode package_mode, file_access package_access) 
-    : impl_(new package_impl(path, package_mode, package_access))
+    : impl_(new package_impl(this, path, package_mode, package_access))
 {
     
 }
