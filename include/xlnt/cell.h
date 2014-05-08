@@ -21,23 +21,69 @@ THE SOFTWARE.
 */
 #pragma once
 
-#include <memory>
+#include <ostream>
+#include <string>
 
-#include "variant.h"
+struct tm;
 
 namespace xlnt {
 
-class cell_impl;
+class style;
+class worksheet;
+struct cell_struct;
+
+struct coordinate
+{
+    std::string column;
+    int row;
+};
 
 class cell
 {
 public:
-    cell();
+    enum class type
+    {
+        null,
+        numeric,
+        string,
+        date,
+        formula,
+        boolean,
+        error
+    };
 
-    variant &value();
+    static coordinate coordinate_from_string(const std::string &address);
+    static int column_index_from_string(const std::string &column_string);
+    static std::string get_column_letter(int column_index);
+    static std::string absolute_coordinate(const std::string &absolute_address);
+
+    cell(const cell &copy);
+    cell(worksheet &ws, const std::string &column, int row);
+    cell(worksheet &ws, const std::string &column, int row, const std::string &value);
+    ~cell();
+
+    cell &operator=(int value);
+    cell &operator=(double value);
+    cell &operator=(const std::string &value);
+    cell &operator=(const char *value);
+    cell &operator=(const tm &value);
+
+    friend bool operator==(const std::string &comparand, const cell &cell);
+    friend bool operator==(const char *comparand, const cell &cell);
+    friend bool operator==(const tm &comparand, const cell &cell);
+
+    std::string to_string() const;
+    bool is_date() const;
+    style &get_style();
+    type get_data_type();
 
 private:
-    std::shared_ptr<cell_impl> impl_;
+    cell_struct *root_;
 };
+
+inline std::ostream &operator<<(std::ostream &stream, const cell &cell)
+{
+    return stream << cell.to_string();
+}
 
 } // namespace xlnt

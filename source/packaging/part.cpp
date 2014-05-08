@@ -2,20 +2,19 @@
 
 namespace xlnt {
 
-class part_impl
+struct part_struct
 {
-public:
     /// <summary>
     /// Initializes a new instance of the part class with a specified parent Package, part URI, MIME content type, and compression_option.
     /// </summary>
-    part_impl(package &package, const uri &uri_part, const std::string &mime_type = "", compression_option compression = compression_option::NotCompressed)
+    part_struct(package &package, const uri &uri_part, const std::string &mime_type = "", compression_option compression = compression_option::NotCompressed)
         : package_(package),
         uri_(uri_part),
         content_type_(mime_type),
         compression_option_(compression)
     {}
 
-    part_impl(package &package, const uri &uri, opcContainer *container)
+    part_struct(package &package, const uri &uri, opcContainer *container)
         : package_(package),
         uri_(uri),
         container_(container)
@@ -117,7 +116,7 @@ public:
     /// </summary>
     bool is_valid_xml_id(const std::string &id);
 
-    void operator=(const part_impl &other);
+    void operator=(const part_struct &other);
 
     compression_option compression_option_;
     std::string content_type_;
@@ -126,12 +125,12 @@ public:
     opcContainer *container_;
 };
 
-part::part() : impl_(nullptr)
+part::part() : root_(nullptr)
 {
 
 }
 
-part::part(package &package, const uri &uri, opcContainer *container) : impl_(std::make_shared<part_impl>(package, uri, container))
+part::part(package &package, const uri &uri, opcContainer *container) : root_(new part_struct(package, uri, container))
 {
 
 }
@@ -143,32 +142,32 @@ std::string part::get_content_type() const
 
 std::string part::read()
 {
-    if(impl_.get() == nullptr)
+    if(root_ == nullptr)
     {
         return "";
     }
 
-    return impl_->read();
+    return root_->read();
 }
 
 void part::write(const std::string &data)
 {
-    if(impl_.get() == nullptr)
+    if(root_ == nullptr)
     {
         return;
     }
 
-    return impl_->write(data);
+    return root_->write(data);
 }
 
 bool part::operator==(const part &comparand) const
 {
-    return impl_.get() == comparand.impl_.get();
+    return root_ == comparand.root_;
 }
 
 bool part::operator==(const nullptr_t &) const
 {
-    return impl_.get() == nullptr;
+    return root_ == nullptr;
 }
 
 } // namespace xlnt

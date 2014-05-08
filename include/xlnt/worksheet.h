@@ -21,18 +21,18 @@ THE SOFTWARE.
 */
 #pragma once
 
-#include <memory>
 #include <set>
 #include <string>
 #include <vector>
-
-#include "cell.h"
-#include "relationship.h"
-#include "workbook.h"
+#include <unordered_map>
 
 namespace xlnt {
 
-class worksheet_impl;
+class cell;
+class relationship;
+class workbook;
+struct worksheet_struct;
+
 typedef std::vector<std::vector<cell>> range;
 
 class worksheet
@@ -77,7 +77,7 @@ public:
     void operator=(const worksheet &other);
     cell operator[](const std::string &address);
     std::string to_string() const;
-    workbook get_parent() const;
+    workbook &get_parent() const;
     void garbage_collect();
     std::set<cell> get_cell_collection();
     std::string get_title() const;
@@ -92,7 +92,7 @@ public:
     int get_highest_column() const;
     std::string calculate_dimension() const;
     range range(const std::string &range_string, int row_offset, int column_offset);
-    relationship create_relationship(relationship::type relationship_type);
+    relationship create_relationship(const std::string &relationship_type);
     //void add_chart(chart chart);
     void merge_cells(const std::string &range_string);
     void merge_cells(int start_row, int start_column, int end_row, int end_column);
@@ -106,7 +106,7 @@ public:
     bool operator==(const worksheet &other);
 
 private:
-    std::shared_ptr<worksheet_impl> impl_;
+    worksheet_struct *root_;
 };
 
 } // namespace xlnt

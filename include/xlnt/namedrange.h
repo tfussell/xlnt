@@ -21,34 +21,10 @@ THE SOFTWARE.
 */
 #pragma once
 
-#include <memory>
-#include <string>
-#include <vector>
-
 namespace xlnt {
 
-struct workbook_struct;
-class worksheet;
-
-class workbook
+class style
 {
-public:
-    workbook();
-    workbook(const workbook &) = delete;
-    const workbook &operator=(const workbook &) = delete;
-
-    worksheet get_sheet_by_name(const std::string &sheet_name);
-    worksheet get_active();
-    worksheet create_sheet();
-    worksheet create_sheet(std::size_t index);
-    std::vector<std::string> get_sheet_names() const;
-    std::vector<worksheet>::iterator begin();
-    std::vector<worksheet>::iterator end();
-    worksheet operator[](const std::string &name);
-    void save(const std::string &filename);
-
-private:
-    workbook_struct *root_;
 };
 
 } // namespace xlnt

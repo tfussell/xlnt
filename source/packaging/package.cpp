@@ -8,9 +8,8 @@
 
 namespace xlnt {
 
-class package_impl
+struct package_struct
 {
-public:
     package *parent_;
     opcContainer *opc_container_;
     std::iostream &stream_;
@@ -42,13 +41,13 @@ public:
         return package_properties_;
     }
 
-    package_impl(package *parent, std::iostream &stream, file_mode package_mode, file_access package_access) 
+    package_struct(package *parent, std::iostream &stream, file_mode package_mode, file_access package_access) 
         : parent_(parent), stream_(stream), container_buffer_(4096), package_mode_(package_mode), package_access_(package_access)
     {
         open_container();
     }
 
-    package_impl(package *parent, const std::string &path, file_mode package_mode, file_access package_access) 
+    package_struct(package *parent, const std::string &path, file_mode package_mode, file_access package_access) 
         : parent_(parent), stream_(file_stream_), container_buffer_(4096), package_mode_(package_mode), package_access_(package_access)
     {
         switch(package_mode)
@@ -175,7 +174,7 @@ public:
         open_ = true;
     }
 
-    ~package_impl()
+    ~package_struct()
     {
         close();
     }
@@ -257,38 +256,38 @@ public:
 
     static int read_callback(void *context, char *buffer, int length)
     {
-        auto object = static_cast<package_impl *>(context);
+        auto object = static_cast<package_struct *>(context);
         return object->write(buffer, length);
     }
 
     static int write_callback(void *context, const char *buffer, int length)
     {
-        auto object = static_cast<package_impl *>(context);
+        auto object = static_cast<package_struct *>(context);
         return object->read(buffer, length);
     }
 
     static int close_callback(void *context)
     {
-        auto object = static_cast<package_impl *>(context);
+        auto object = static_cast<package_struct *>(context);
         object->close();
         return 0;
     }
 
     static opc_ofs_t seek_callback(void *context, opc_ofs_t ofs)
     {
-        auto object = static_cast<package_impl *>(context);
+        auto object = static_cast<package_struct *>(context);
         return static_cast<opc_ofs_t>(object->seek(ofs));
     }
 
     static int trim_callback(void *context, opc_ofs_t new_size)
     {
-        auto object = static_cast<package_impl *>(context);
+        auto object = static_cast<package_struct *>(context);
         return object->trim(new_size);
     }
 
     static int flush_callback(void *context)
     {
-        auto object = static_cast<package_impl *>(context);
+        auto object = static_cast<package_struct *>(context);
         object->flush();
         return 0;
     }
@@ -296,12 +295,12 @@ public:
 
 file_access package::get_file_open_access() const
 {
-    return impl_->get_file_open_access();
+    return root_->get_file_open_access();
 }
 
 package_properties package::get_package_properties() const
 {
-    return impl_->get_package_properties();
+    return root_->get_package_properties();
 }
 
 package package::open(std::iostream &stream, file_mode package_mode, file_access package_access)
@@ -315,80 +314,80 @@ package package::open(const std::string &path, file_mode package_mode, file_acce
 }
 
 package::package(std::iostream &stream, file_mode package_mode, file_access package_access)
-    : impl_(new package_impl(this, stream, package_mode, package_access))
+: root_(new package_struct(this, stream, package_mode, package_access))
 {
     open_container();
 }
 
 package::package(const std::string &path, file_mode package_mode, file_access package_access) 
-    : impl_(new package_impl(this, path, package_mode, package_access))
+: root_(new package_struct(this, path, package_mode, package_access))
 {
     
 }
 
 void package::open_container()
 {
-    impl_->open_container();
+    root_->open_container();
 }
 
 void package::close()
 {
-    impl_->close();
+    root_->close();
 }
 
 part package::create_part(const uri &part_uri, const std::string &content_type, compression_option compression)
 {
-    return impl_->create_part(part_uri, content_type, compression);
+    return root_->create_part(part_uri, content_type, compression);
 }
 
 void package::delete_part(const uri &part_uri)
 {
-    impl_->delete_part(part_uri);
+    root_->delete_part(part_uri);
 }
 
 void package::flush()
 {
-    impl_->flush();
+    root_->flush();
 }
 
 part package::get_part(const uri &part_uri)
 {
-    return impl_->get_part(part_uri);
+    return root_->get_part(part_uri);
 }
 
 part_collection package::get_parts()
 {
-    return impl_->get_parts();
+    return root_->get_parts();
 }
 
 int package::write(char *buffer, int length)
 {
-    return impl_->write(buffer, length);
+    return root_->write(buffer, length);
 }
 
 int package::read(const char *buffer, int length)
 {
-    return impl_->read(buffer, length);
+    return root_->read(buffer, length);
 }
 
 std::ios::pos_type package::seek(std::ios::pos_type offset)
 {
-    return impl_->seek(offset);
+    return root_->seek(offset);
 }
 
 int package::trim(std::ios::pos_type new_size)
 {
-    return impl_->trim(new_size);
+    return root_->trim(new_size);
 }
 
 bool package::operator==(const package &comparand) const
 {
-    return impl_.get() == comparand.impl_.get();
+    return root_ == comparand.root_;
 }
 
 bool package::operator==(const nullptr_t &) const
 {
-    return impl_.get() == nullptr;
+    return root_ == nullptr;
 }
 
 } // namespace xlnt

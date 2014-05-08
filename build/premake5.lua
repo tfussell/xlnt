@@ -23,7 +23,8 @@ project "xlnt.test"
        "$(opc_prefix)/plib/config/msvc/plib/include",
        "$(opc_prefix)/third_party/libxml2-2.7.7/include",
        "$(cxxtest_prefix)",
-       "../include"
+       "../include",
+       "../third-party/pugixml/src"
     }
     defines { "WIN32" }
     files { 
@@ -39,7 +40,7 @@ project "xlnt.test"
 	"xml",
 	"zlib"
     }
-    prebuildcommands { "cxxtestgen --runner=ParenPrinter -o ../../source/tests/runner-autogen.cpp ../../source/tests/packaging/*.h" }
+    prebuildcommands { "cxxtestgen --runner=ParenPrinter -o ../../source/tests/runner-autogen.cpp ../../source/tests/*.h" }
     libdirs { "$(opc_prefix)/win32/x64/Debug" }
     flags { 
        "Unicode",
@@ -63,13 +64,16 @@ project "xlnt"
        "$(opc_prefix)/config",
        "$(opc_prefix)/plib/config/msvc/plib/include",
        "$(opc_prefix)/third_party/libxml2-2.7.7/include",
-       "../include/xlnt"
+       "../include/xlnt",
+       "../third-party/pugixml/src",
+       "../source/"
     }
     defines { "WIN32" }
     files {
        "../source/**.cpp",
        "../source/**.h",
-       "../include/**.h"
+       "../include/**.h",
+       "../third-party/pugixml/src/pugixml.cpp"
     }
     excludes {
        "../source/tests/**.cpp",
