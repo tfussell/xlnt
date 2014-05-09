@@ -4,10 +4,7 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/cell.h>
-#include <xlnt/style.h>
-#include <xlnt/workbook.h>
-#include <xlnt/worksheet.h>
+#include "../xlnt.h"
 
 class CellTestSuite : public CxxTest::TestSuite
 {
@@ -86,8 +83,8 @@ public:
     void test_initial_value()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
-        xlnt::cell cell(ws, "A", 1, "17.5");
+        auto ws = wb.get_active();
+        xlnt::cell cell(ws);
 
         TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
     }

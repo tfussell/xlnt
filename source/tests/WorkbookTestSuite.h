@@ -3,8 +3,7 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/workbook.h>
-#include <xlnt/worksheet.h>
+#include "../xlnt.h"
 
 class WorkbookTestSuite : public CxxTest::TestSuite
 {

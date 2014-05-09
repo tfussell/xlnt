@@ -2,8 +2,7 @@
 
 #include <cxxtest/TestSuite.h>
 
-#include "../packaging/file.h"
-#include "../packaging/package.h"
+#include "../xlnt.h"
 #include "pugixml.hpp"
 
 class PackageTestSuite : public CxxTest::TestSuite

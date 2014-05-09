@@ -3,7 +3,7 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include "../misc/nullable.h"
+#include "../xlnt.h"
 
 class NullableTestSuite : public CxxTest::TestSuite
 {

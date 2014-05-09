@@ -3,9 +3,7 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/cell.h>
-#include <xlnt/workbook.h>
-#include <xlnt/worksheet.h>
+#include "../xlnt.h"
 
 class IntegrationTestSuite : public CxxTest::TestSuite
 {
