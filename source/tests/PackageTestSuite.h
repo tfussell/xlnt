@@ -28,7 +28,7 @@ public:
     void test_write_text()
     {
         {
-            auto package = xlnt::package::open("../../source/test_data/tests/packaging/a.zip", xlnt::file_mode::Open, xlnt::file_access::ReadWrite);
+            auto package = xlnt::package::open("../../source/tests/test_data/packaging/a.zip", xlnt::file_mode::Open, xlnt::file_access::ReadWrite);
             TS_ASSERT_DIFFERS(package, nullptr);
 
             auto part_1 = package.get_part("a.txt");

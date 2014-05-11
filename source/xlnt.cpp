@@ -606,16 +606,7 @@ struct cell_struct
 
     }
 
-    std::string to_string() const
-    {
-        switch(type)
-        {
-        case cell::type::numeric: return std::to_string(numeric_value);
-        case cell::type::boolean: return bool_value ? "true" : "false";
-        case cell::type::string: return string_value;
-        default: throw std::runtime_error("bad enum");
-        }
-    }
+    std::string to_string() const;
 
     cell::type type;
 
@@ -654,19 +645,80 @@ cell::cell(cell_struct *root) : root_(root)
 {
 }
 
-coordinate cell::coordinate_from_string(const std::string &address)
+coordinate cell::coordinate_from_string(const std::string &coord_string)
 {
-    if(address == "A1")
+    // Convert a coordinate string like 'B12' to a tuple ('B', 12)
+    bool column_part = true;
+    coordinate result;
+
+    for(auto character : coord_string)
     {
-        return{"A", 1};
+	char upper = std::toupper(character);
+
+	if(std::isalpha(character))
+	{
+	    if(column_part)
+	    {
+		result.column.append(1, upper);
+	    }
+	    else
+	    {
+		std::string msg = "Invalid cell coordinates (" + coord_string + ")";
+		throw std::runtime_error(msg);
+	    }
+	}
+	else
+	{
+	    if(column_part)
+	    {
+		column_part = false;
+	    }
+	    else if(!(std::isdigit(character) || character == '$'))
+	    {
+		std::string msg = "Invalid cell coordinates (" + coord_string + ")";
+		throw std::runtime_error(msg);
+	    }
+	}
     }
 
-    return{"A", 1};
+    std::string row_string = coord_string.substr(result.column.length());
+    if(row_string[0] == '$')
+    {
+	row_string = row_string.substr(1);
+    }
+    result.row = std::stoi(row_string);
+
+    if(result.row < 1)
+    {
+	std::string msg = "Invalid cell coordinates (" + coord_string + ")";
+	throw std::runtime_error(msg);
+    }
+
+    return result;
 }
 
 int cell::column_index_from_string(const std::string &column_string)
 {
-    return column_string[0] - 'A';
+    if(column_string.length() > 3 || column_string.empty())
+    {
+	throw std::runtime_error("column must be one to three characters");
+    }
+
+    int column_index = 0;
+    int place = std::pow(26, column_string.length() - 1);
+
+    for(int i = column_string.length() - 1; i >= 0; i--)
+    {
+	if(!std::isalpha(column_string[i]))
+	{
+	    throw std::runtime_error("column must contain only letters in the range A-Z");
+	}
+
+	column_index += (std::toupper(column_string[i]) - 'A' + 1) * place;
+	place /= 26;
+    }
+
+    return column_index;
 }
 
 // Convert a column number into a column letter (3 -> 'C')
@@ -726,7 +778,18 @@ bool operator==(const tm &comparand, const cell &cell)
 
 std::string cell::absolute_coordinate(const std::string &absolute_address)
 {
-    return absolute_address;
+    // Convert a coordinate to an absolute coordinate string (B12 -> $B$12)
+    auto colon_index = absolute_address.find(':');
+    if(colon_index != std::string::npos)
+    {
+	return absolute_coordinate(absolute_address.substr(0, colon_index)) + ":" 
+	    + absolute_coordinate(absolute_address.substr(colon_index + 1));
+    }
+    else
+    {
+	auto coord = coordinate_from_string(absolute_address);
+	return std::string("$") + coord.column + "$" + std::to_string(coord.row);
+    }
 }
 
 cell::type cell::get_data_type()
@@ -1180,6 +1243,11 @@ void workbook::save(const std::string &filename)
 {
     auto package = package::open(filename);
     package.close();
+}
+
+std::string cell_struct::to_string() const
+{
+    return "<Cell " + parent_worksheet->title_ + "." + xlnt::cell::get_column_letter(column + 1) + std::to_string(row) + ">";
 }
 
 }

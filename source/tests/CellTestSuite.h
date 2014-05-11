@@ -46,20 +46,27 @@ public:
         TS_ASSERT_EQUALS(10, xlnt::cell::column_index_from_string("J"));
         TS_ASSERT_EQUALS(270, xlnt::cell::column_index_from_string("jJ"));
         TS_ASSERT_EQUALS(7030, xlnt::cell::column_index_from_string("jjj"));
+        TS_ASSERT_EQUALS(1, xlnt::cell::column_index_from_string("A"));
+        TS_ASSERT_EQUALS(26, xlnt::cell::column_index_from_string("Z"));
+        TS_ASSERT_EQUALS(27, xlnt::cell::column_index_from_string("AA"));
+        TS_ASSERT_EQUALS(52, xlnt::cell::column_index_from_string("AZ"));
+        TS_ASSERT_EQUALS(53, xlnt::cell::column_index_from_string("BA"));
+        TS_ASSERT_EQUALS(78, xlnt::cell::column_index_from_string("BZ"));
+        TS_ASSERT_EQUALS(677, xlnt::cell::column_index_from_string("ZA"));
+        TS_ASSERT_EQUALS(702, xlnt::cell::column_index_from_string("ZZ"));
+        TS_ASSERT_EQUALS(703, xlnt::cell::column_index_from_string("AAA"));
+        TS_ASSERT_EQUALS(728, xlnt::cell::column_index_from_string("AAZ"));
+        TS_ASSERT_EQUALS(731, xlnt::cell::column_index_from_string("ABC"));
+        TS_ASSERT_EQUALS(1353, xlnt::cell::column_index_from_string("AZA"));
+        TS_ASSERT_EQUALS(18253, xlnt::cell::column_index_from_string("ZZA"));
+        TS_ASSERT_EQUALS(18278, xlnt::cell::column_index_from_string("ZZZ"));
     }
-
 
     void test_bad_column_index()
     {
-        auto _check = [](const std::string &bad_string)
+	for(auto bad_string : {"JJJJ", "", "$", "1"})
         {
-            xlnt::cell::column_index_from_string(bad_string);
-        };
-
-        auto bad_strings = {"JJJJ", "", "$", "1"};
-        for(auto bad_string : bad_strings)
-        {
-            TS_ASSERT_THROWS_ANYTHING(_check(bad_string));
+            TS_ASSERT_THROWS_ANYTHING(xlnt::cell::column_index_from_string(bad_string));
         }
     }
 
@@ -282,7 +289,7 @@ public:
     void test_repr()
     {
         xlnt::workbook wb;
-	xlnt::worksheet ws = wb.create_sheet();
+	xlnt::worksheet ws = wb.get_active();
         xlnt::cell cell(ws, "A", 1);
 
         TS_ASSERT_EQUALS(cell.to_string(), "<Cell Sheet1.A1>");

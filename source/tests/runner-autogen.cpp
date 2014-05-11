@@ -66,115 +66,115 @@ public:
 
 static class TestDescription_suite_CellTestSuite_test_bad_column_index : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_CellTestSuite_test_bad_column_index() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 52, "test_bad_column_index" ) {}
+ TestDescription_suite_CellTestSuite_test_bad_column_index() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 65, "test_bad_column_index" ) {}
  void runTest() { suite_CellTestSuite.test_bad_column_index(); }
 } testDescription_suite_CellTestSuite_test_bad_column_index;
 
 static class TestDescription_suite_CellTestSuite_test_column_letter_boundries : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_CellTestSuite_test_column_letter_boundries() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 66, "test_column_letter_boundries" ) {}
+ TestDescription_suite_CellTestSuite_test_column_letter_boundries() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 73, "test_column_letter_boundries" ) {}
  void runTest() { suite_CellTestSuite.test_column_letter_boundries(); }
 } testDescription_suite_CellTestSuite_test_column_letter_boundries;
 
 static class TestDescription_suite_CellTestSuite_test_column_letter : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_CellTestSuite_test_column_letter() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 73, "test_column_letter" ) {}
+ TestDescription_suite_CellTestSuite_test_column_letter() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 80, "test_column_letter" ) {}
  void runTest() { suite_CellTestSuite.test_column_letter(); }
 } testDescription_suite_CellTestSuite_test_column_letter;
 
 static class TestDescription_suite_CellTestSuite_test_initial_value : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_CellTestSuite_test_initial_value() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 83, "test_initial_value" ) {}
+ TestDescription_suite_CellTestSuite_test_initial_value() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 90, "test_initial_value" ) {}
  void runTest() { suite_CellTestSuite.test_initial_value(); }
 } testDescription_suite_CellTestSuite_test_initial_value;
 
 static class TestDescription_suite_CellTestSuite_test_null : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_CellTestSuite_test_null() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 92, "test_null" ) {}
+ TestDescription_suite_CellTestSuite_test_null() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 99, "test_null" ) {}
  void runTest() { suite_CellTestSuite.test_null(); }
 } testDescription_suite_CellTestSuite_test_null;
 
 static class TestDescription_suite_CellTestSuite_test_numeric : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_CellTestSuite_test_numeric() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 101, "test_numeric" ) {}
+ TestDescription_suite_CellTestSuite_test_numeric() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 108, "test_numeric" ) {}
  void runTest() { suite_CellTestSuite.test_numeric(); }
 } testDescription_suite_CellTestSuite_test_numeric;
 
 static class TestDescription_suite_CellTestSuite_test_string : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_CellTestSuite_test_string() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 133, "test_string" ) {}
+ TestDescription_suite_CellTestSuite_test_string() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 140, "test_string" ) {}
  void runTest() { suite_CellTestSuite.test_string(); }
 } testDescription_suite_CellTestSuite_test_string;
 
 static class TestDescription_suite_CellTestSuite_test_single_dot : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_CellTestSuite_test_single_dot() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 143, "test_single_dot" ) {}
+ TestDescription_suite_CellTestSuite_test_single_dot() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 150, "test_single_dot" ) {}
  void runTest() { suite_CellTestSuite.test_single_dot(); }
 } testDescription_suite_CellTestSuite_test_single_dot;
 
 static class TestDescription_suite_CellTestSuite_test_formula : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_CellTestSuite_test_formula() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 152, "test_formula" ) {}
+ TestDescription_suite_CellTestSuite_test_formula() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 159, "test_formula" ) {}
  void runTest() { suite_CellTestSuite.test_formula(); }
 } testDescription_suite_CellTestSuite_test_formula;
 
 static class TestDescription_suite_CellTestSuite_test_boolean : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_CellTestSuite_test_boolean() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 161, "test_boolean" ) {}
+ TestDescription_suite_CellTestSuite_test_boolean() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 168, "test_boolean" ) {}
  void runTest() { suite_CellTestSuite.test_boolean(); }
 } testDescription_suite_CellTestSuite_test_boolean;
 
 static class TestDescription_suite_CellTestSuite_test_leading_zero : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_CellTestSuite_test_leading_zero() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 172, "test_leading_zero" ) {}
+ TestDescription_suite_CellTestSuite_test_leading_zero() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 179, "test_leading_zero" ) {}
  void runTest() { suite_CellTestSuite.test_leading_zero(); }
 } testDescription_suite_CellTestSuite_test_leading_zero;
 
 static class TestDescription_suite_CellTestSuite_test_data_type_check : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_CellTestSuite_test_data_type_check() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 193, "test_data_type_check" ) {}
+ TestDescription_suite_CellTestSuite_test_data_type_check() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 200, "test_data_type_check" ) {}
  void runTest() { suite_CellTestSuite.test_data_type_check(); }
 } testDescription_suite_CellTestSuite_test_data_type_check;
 
 static class TestDescription_suite_CellTestSuite_test_set_bad_type : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_CellTestSuite_test_set_bad_type() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 212, "test_set_bad_type" ) {}
+ TestDescription_suite_CellTestSuite_test_set_bad_type() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 219, "test_set_bad_type" ) {}
  void runTest() { suite_CellTestSuite.test_set_bad_type(); }
 } testDescription_suite_CellTestSuite_test_set_bad_type;
 
 static class TestDescription_suite_CellTestSuite_test_time : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_CellTestSuite_test_time() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 222, "test_time" ) {}
+ TestDescription_suite_CellTestSuite_test_time() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 229, "test_time" ) {}
  void runTest() { suite_CellTestSuite.test_time(); }
 } testDescription_suite_CellTestSuite_test_time;
 
 static class TestDescription_suite_CellTestSuite_test_date_format_on_non_date : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_CellTestSuite_test_date_format_on_non_date() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 251, "test_date_format_on_non_date" ) {}
+ TestDescription_suite_CellTestSuite_test_date_format_on_non_date() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 258, "test_date_format_on_non_date" ) {}
  void runTest() { suite_CellTestSuite.test_date_format_on_non_date(); }
 } testDescription_suite_CellTestSuite_test_date_format_on_non_date;
 
 static class TestDescription_suite_CellTestSuite_test_set_get_date : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_CellTestSuite_test_set_get_date() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 264, "test_set_get_date" ) {}
+ TestDescription_suite_CellTestSuite_test_set_get_date() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 271, "test_set_get_date" ) {}
  void runTest() { suite_CellTestSuite.test_set_get_date(); }
 } testDescription_suite_CellTestSuite_test_set_get_date;
 
 static class TestDescription_suite_CellTestSuite_test_repr : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_CellTestSuite_test_repr() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 282, "test_repr" ) {}
+ TestDescription_suite_CellTestSuite_test_repr() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 289, "test_repr" ) {}
  void runTest() { suite_CellTestSuite.test_repr(); }
 } testDescription_suite_CellTestSuite_test_repr;
 
 static class TestDescription_suite_CellTestSuite_test_is_date : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_CellTestSuite_test_is_date() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 291, "test_is_date" ) {}
+ TestDescription_suite_CellTestSuite_test_is_date() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 298, "test_is_date" ) {}
  void runTest() { suite_CellTestSuite.test_is_date(); }
 } testDescription_suite_CellTestSuite_test_is_date;
 
 static class TestDescription_suite_CellTestSuite_test_is_not_date_color_format : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_CellTestSuite_test_is_not_date_color_format() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 308, "test_is_not_date_color_format" ) {}
+ TestDescription_suite_CellTestSuite_test_is_not_date_color_format() : CxxTest::RealTestDescription( Tests_CellTestSuite, suiteDescription_CellTestSuite, 315, "test_is_not_date_color_format" ) {}
  void runTest() { suite_CellTestSuite.test_is_not_date_color_format(); }
 } testDescription_suite_CellTestSuite_test_is_not_date_color_format;
 
