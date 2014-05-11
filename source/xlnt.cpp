@@ -8,13 +8,92 @@
 
 namespace xlnt {
 
+namespace {
+
+class not_implemented : public std::runtime_error
+{
+public:
+    not_implemented() : std::runtime_error("error: not implemented")
+    {
+	
+    }
+};
+
+} // namespace
+
+#ifdef _WIN32
+#include <Windows.h>
+void file::copy(const std::string &source, const std::string &destination, bool overwrite)
+{
+    assert(source.size() + 1 < MAX_PATH);
+    assert(destination.size() + 1 < MAX_PATH);
+    
+    std::wstring source_wide(source.begin(), source.end());
+    std::wstring destination_wide(destination.begin(), destination.end());
+    
+    BOOL result = CopyFile(source_wide.c_str(), destination_wide.c_str(), !overwrite);
+    
+    if(result == 0)
+    {
+	DWORD error = GetLastError();
+	switch(GetLastError())
+	{
+	case ERROR_ACCESS_DENIED: throw std::runtime_error("Access is denied");
+	case ERROR_ENCRYPTION_FAILED: throw std::runtime_error("The specified file could not be encrypted");
+	case ERROR_FILE_NOT_FOUND: throw std::runtime_error("The source file wasn't found");
+	default:
+	    if(!overwrite)
+	    {
+		throw std::runtime_error("The destination file already exists");
+	    }
+	    throw std::runtime_error("Unknown error");
+	}
+    }
+}
+
+bool file::exists(const std::string &path)
+{
+    std::wstring path_wide(path.begin(), path.end());
+    return PathFileExists(path_wide.c_str()) && !PathIsDirectory(path_wide.c_str());
+}
+
+#else
+
+#include <sys/stat.h>
+void file::copy(const std::string &source, const std::string &destination, bool overwrite)
+{
+    if(!overwrite && exists(destination))
+    {
+	throw std::runtime_error("destination file already exists and overwrite==false");
+    }
+
+    std::ifstream src(source, std::ios::binary);
+    std::ofstream dst(destination, std::ios::binary);
+    
+    dst << src.rdbuf();
+}
+
+bool file::exists(const std::string &path)
+{
+    struct stat fileAtt;
+    
+    if (stat(path.c_str(), &fileAtt) != 0)
+    {
+	throw std::runtime_error("stat failed");
+    }
+    
+    return S_ISREG(fileAtt.st_mode);
+}
+
+#endif //_WIN32
+
 struct part_struct
 {
     part_struct(package_impl &package, const std::string &uri_part, const std::string &mime_type = "", compression_option compression = compression_option::NotCompressed)
-        : package_(package),
-        uri_(uri_part),
-        content_type_(mime_type),
-        compression_option_(compression)
+        : compression_option_(compression),
+	  content_type_(mime_type),
+	  package_(package),
+	  uri_(uri_part)
     {}
 
     part_struct(package_impl &package, const std::string &uri, opcContainer *container)
@@ -99,6 +178,11 @@ part::part(package_impl &package, const std::string &uri, opcContainer *containe
 
 }
 
+part::part(part_struct *root) : root_(root)
+{
+
+}
+
 std::string part::get_content_type() const
 {
     return "";
@@ -129,7 +213,7 @@ bool part::operator==(const part &comparand) const
     return root_ == comparand.root_;
 }
 
-bool part::operator==(const nullptr_t &) const
+bool part::operator==(const std::nullptr_t &) const
 {
     return root_ == nullptr;
 }
@@ -157,13 +241,19 @@ struct package_impl
     }
 
     package_impl(std::iostream &stream, file_mode package_mode, file_access package_access)
-        : stream_(stream), container_buffer_(4096), package_mode_(package_mode), package_access_(package_access)
+        : stream_(stream), 
+	  package_mode_(package_mode), 
+	  package_access_(package_access),
+	  container_buffer_(4096)
     {
         open_container();
     }
 
     package_impl(const std::string &path, file_mode package_mode, file_access package_access)
-        : stream_(file_stream_), container_buffer_(4096), package_mode_(package_mode), package_access_(package_access)
+        : stream_(file_stream_),
+	  package_mode_(package_mode),
+	  package_access_(package_access),
+	  container_buffer_(4096)
     {
         switch(package_mode)
         {
@@ -175,6 +265,7 @@ struct package_impl
             case file_access::Write:
                 file_stream_.open(path, std::ios::binary | std::ios::app | std::ios::out);
                 break;
+	    default: throw std::runtime_error("invalid access");
             }
             break;
         case file_mode::Create:
@@ -189,6 +280,7 @@ struct package_impl
             case file_access::Write:
                 file_stream_.open(path, std::ios::binary | std::ios::out);
                 break;
+	    default: throw std::runtime_error("invalid access");
             }
             break;
         case file_mode::CreateNew:
@@ -207,6 +299,7 @@ struct package_impl
             case file_access::Write:
                 file_stream_.open(path, std::ios::binary | std::ios::out);
                 break;
+	    default: throw std::runtime_error("invalid access");
             }
             break;
         case file_mode::Open:
@@ -225,6 +318,7 @@ struct package_impl
             case file_access::Write:
                 file_stream_.open(path, std::ios::binary | std::ios::out);
                 break;
+	    default: throw std::runtime_error("invalid access");
             }
             break;
         case file_mode::OpenOrCreate:
@@ -239,6 +333,7 @@ struct package_impl
             case file_access::Write:
                 file_stream_.open(path, std::ios::binary | std::ios::out);
                 break;
+	    default: throw std::runtime_error("invalid access");
             }
             break;
         case file_mode::Truncate:
@@ -257,6 +352,7 @@ struct package_impl
             case file_access::Write:
                 file_stream_.open(path, std::ios::binary | std::ios::trunc | std::ios::out);
                 break;
+	    default: throw std::runtime_error("invalid access");
             }
             break;
         }
@@ -495,7 +591,7 @@ bool package::operator==(const package &comparand) const
     return impl_ == comparand.impl_;
 }
 
-bool package::operator==(const nullptr_t &) const
+bool package::operator==(const std::nullptr_t &) const
 {
     return impl_ == nullptr;
 }
@@ -540,6 +636,20 @@ cell::cell() : root_(nullptr)
 {
 }
 
+cell::cell(worksheet &worksheet, const std::string &column, int row) : root_(nullptr)
+{
+    cell self = worksheet.cell(column + std::to_string(row));
+    root_ = self.root_;
+}
+
+
+cell::cell(worksheet &worksheet, const std::string &column, int row, const std::string &initial_value) : root_(nullptr)
+{
+    cell self = worksheet.cell(column + std::to_string(row));
+    root_ = self.root_;
+    *this = initial_value;
+}
+
 cell::cell(cell_struct *root) : root_(root)
 {
 }
@@ -559,9 +669,39 @@ int cell::column_index_from_string(const std::string &column_string)
     return column_string[0] - 'A';
 }
 
+// Convert a column number into a column letter (3 -> 'C')
+// Right shift the column col_idx by 26 to find column letters in reverse
+// order.These numbers are 1 - based, and can be converted to ASCII
+// ordinals by adding 64.
 std::string cell::get_column_letter(int column_index)
 {
-    return std::string(1, (char)('A' + column_index - 1));
+    // these indicies corrospond to A->ZZZ and include all allowed
+    // columns
+    if(column_index < 1 || column_index > 18278)
+    {
+	auto msg = "Column index out of bounds: " + std::to_string(column_index);
+	throw std::runtime_error(msg);
+    }
+    
+    auto temp = column_index;
+    std::string column_letter = "";
+    
+    while(temp > 0)
+    {
+	int quotient = temp / 26, remainder = temp % 26;
+	
+	// check for exact division and borrow if needed
+	if(remainder == 0)
+	{
+	    quotient -= 1;
+	    remainder = 26;
+	}
+	
+	column_letter = std::string(1, char(remainder + 64)) + column_letter;
+	temp = quotient;
+    }
+    
+    return column_letter;
 }
 
 bool cell::is_date() const
@@ -627,63 +767,9 @@ cell &cell::operator=(const tm &value)
     return *this;
 }
 
-cell::~cell()
-{
-    delete root_;
-}
-
 std::string cell::to_string() const
 {
     return root_->to_string();
-}
-
-
-namespace {
-
-    class not_implemented : public std::runtime_error
-    {
-    public:
-        not_implemented() : std::runtime_error("error: not implemented")
-        {
-
-        }
-    };
-
-    // Convert a column number into a column letter (3 -> 'C')
-    // Right shift the column col_idx by 26 to find column letters in reverse
-    // order.These numbers are 1 - based, and can be converted to ASCII
-    // ordinals by adding 64.
-    std::string get_column_letter(int column_index)
-    {
-        // these indicies corrospond to A->ZZZ and include all allowed
-        // columns
-        if(column_index < 1 || column_index > 18278)
-        {
-            auto msg = "Column index out of bounds: " + column_index;
-            throw std::runtime_error(msg);
-        }
-
-        auto temp = column_index;
-        std::string column_letter = "";
-
-        while(temp > 0)
-        {
-            int quotient = temp / 26, remainder = temp % 26;
-
-            // check for exact division and borrow if needed
-            if(remainder == 0)
-            {
-                quotient -= 1;
-                remainder = 26;
-            }
-
-            column_letter = std::string(1, char(remainder + 64)) + column_letter;
-            temp = quotient;
-        }
-
-        return column_letter;
-    }
-
 }
 
 struct worksheet_struct
@@ -716,12 +802,12 @@ struct worksheet_struct
 
     cell get_freeze_panes() const
     {
-        throw not_implemented();
+	return freeze_panes_;
     }
 
     void set_freeze_panes(cell top_left_cell)
     {
-        throw not_implemented();
+	freeze_panes_ = top_left_cell;
     }
 
     void set_freeze_panes(const std::string &top_left_coordinate)
@@ -731,7 +817,7 @@ struct worksheet_struct
 
     void unfreeze_panes()
     {
-        throw not_implemented();
+        freeze_panes_ = xlnt::cell(nullptr);
     }
 
     xlnt::cell cell(const std::string &coordinate)
@@ -748,7 +834,7 @@ struct worksheet_struct
 
     xlnt::cell cell(int row, int column)
     {
-        return cell(get_column_letter(column + 1) + std::to_string(row + 1));
+        return cell(xlnt::cell::get_column_letter(column + 1) + std::to_string(row + 1));
     }
 
     int get_highest_row() const
@@ -830,7 +916,7 @@ struct worksheet_struct
     {
         for(auto cell : cells)
         {
-            cell_map_[get_column_letter(cell.first + 1)] = cell.second;
+            cell_map_[xlnt::cell::get_column_letter(cell.first + 1)] = cell.second;
         }
     }
 
@@ -999,12 +1085,12 @@ bool worksheet::operator!=(const worksheet &other) const
     return root_ != other.root_;
 }
 
-bool worksheet::operator==(nullptr_t) const
+bool worksheet::operator==(std::nullptr_t) const
 {
     return root_ == nullptr;
 }
 
-bool worksheet::operator!=(nullptr_t) const
+bool worksheet::operator!=(std::nullptr_t) const
 {
     return root_ != nullptr;
 }
@@ -1046,7 +1132,6 @@ worksheet workbook::create_sheet()
 {
     std::string title = "Sheet1";
     int index = 1;
-    worksheet current = get_sheet_by_name(title);
     while(get_sheet_by_name(title) != nullptr)
     {
         title = "Sheet" + std::to_string(++index);

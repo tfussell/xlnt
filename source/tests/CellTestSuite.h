@@ -83,8 +83,8 @@ public:
     void test_initial_value()
     {
         xlnt::workbook wb;
-        auto ws = wb.get_active();
-        xlnt::cell cell(ws);
+	xlnt::worksheet ws = wb.get_active();
+        xlnt::cell cell(ws, "A", 1, "17.5");
 
         TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
     }
@@ -92,7 +92,7 @@ public:
     void test_null()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws = wb.get_active();
         xlnt::cell cell(ws, "A", 1);
 
         TS_ASSERT_EQUALS(xlnt::cell::type::null, cell.get_data_type());
@@ -101,7 +101,7 @@ public:
     void test_numeric()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws = wb.get_active();
         xlnt::cell cell(ws, "A", 1, "17.5");
 
         cell = 42;
@@ -133,8 +133,9 @@ public:
     void test_string()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws = wb.get_active();
         xlnt::cell cell(ws, "A", 1);
+
         cell = "hello";
         TS_ASSERT_EQUALS(xlnt::cell::type::string, cell.get_data_type());
     }
@@ -142,7 +143,7 @@ public:
     void test_single_dot()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws = wb.get_active();
         xlnt::cell cell(ws, "A", 1);
         cell = ".";
         TS_ASSERT_EQUALS(xlnt::cell::type::string, cell.get_data_type());
@@ -151,7 +152,7 @@ public:
     void test_formula()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws = wb.get_active();
         xlnt::cell cell(ws, "A", 1);
         cell = "=42";
         TS_ASSERT_EQUALS(xlnt::cell::type::formula, cell.get_data_type());
@@ -160,7 +161,7 @@ public:
     void test_boolean()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws = wb.get_active();
         xlnt::cell cell(ws, "A", 1);
         cell = true;
         TS_ASSERT_EQUALS(xlnt::cell::type::boolean, cell.get_data_type());
@@ -171,7 +172,7 @@ public:
     void test_leading_zero()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws = wb.get_active();
         xlnt::cell cell(ws, "A", 1);
         cell = "0800";
         TS_ASSERT_EQUALS(xlnt::cell::type::string, cell.get_data_type());
@@ -250,8 +251,9 @@ public:
     void test_date_format_on_non_date()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws = wb.get_active();
         xlnt::cell cell(ws, "A", 1);
+
         time_t t = time(0);
         tm now = *localtime(&t);
         cell = now;
@@ -268,9 +270,11 @@ public:
         today.tm_hour = 14;
         today.tm_min = 15;
         today.tm_sec = 20;
+
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws = wb.get_active();
         xlnt::cell cell(ws, "A", 1);
+
         cell = today;
         TS_ASSERT(today == cell);
     }
@@ -278,15 +282,16 @@ public:
     void test_repr()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+	xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A", 1);
+
         TS_ASSERT_EQUALS(cell.to_string(), "<Cell Sheet1.A1>");
     }
 
     void test_is_date()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws = wb.get_active();
         xlnt::cell cell(ws, "A", 1);
 
         time_t t = time(0);
@@ -295,7 +300,7 @@ public:
         TS_ASSERT_EQUALS(cell.is_date(), true);
 
         cell = "testme";
-        TS_ASSERT("testme", cell);
+        TS_ASSERT_EQUALS("testme", cell);
         TS_ASSERT_EQUALS(cell.is_date(), false);
     }
 

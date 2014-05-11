@@ -48,7 +48,7 @@ const std::string ARC_STYLE = PACKAGE_XL + "/styles.xml";
 const std::string ARC_THEME = PACKAGE_THEME + "/theme1.xml";
 const std::string ARC_SHARED_STRINGS = PACKAGE_XL + "/sharedStrings.xml";
 
-std::unordered_map<std::string, std::string> NAMESPACES = {
+const std::unordered_map<std::string, std::string> NAMESPACES = {
     {"cp", "http://schemas.openxmlformats.org/package/2006/metadata/core-properties"},
     {"dc", "http://purl.org/dc/elements/1.1/"},
     {"dcterms", "http://purl.org/dc/terms/"},
@@ -282,7 +282,7 @@ public:
     /// <summary>
     /// Indicates whether the current nullable&lt;T&gt; object is equal to a specified object.
     /// </summary>
-    bool operator==(nullptr_t) const
+    bool operator==(std::nullptr_t) const
     {
         return !has_value_;
     }
@@ -290,7 +290,7 @@ public:
     /// <summary>
     /// Indicates whether the current nullable&lt;T&gt; object is not equal to a specified object.
     /// </summary>
-    bool operator!=(nullptr_t) const
+    bool operator!=(std::nullptr_t) const
     {
         return has_value_;
     }
@@ -500,7 +500,7 @@ public:
     bool relationship_exists(const std::string &id) const;
 
     bool operator==(const part &comparand) const;
-    bool operator==(const nullptr_t &) const;
+    bool operator==(const std::nullptr_t &) const;
 
 private:
     friend struct package_impl;
@@ -602,7 +602,7 @@ public:
     file_access get_file_open_access() const;
 
     bool operator==(const package &comparand) const;
-    bool operator==(const nullptr_t &) const;
+    bool operator==(const std::nullptr_t &) const;
 
     /// <summary>
     /// gets the category of the Package.
@@ -809,7 +809,8 @@ public:
     static std::string absolute_coordinate(const std::string &absolute_address);
 
     cell();
-    ~cell();
+    cell(worksheet &ws, const std::string &column, int row);
+    cell(worksheet &ws, const std::string &column, int row, const std::string &initial_value);
 
     cell &operator=(int value);
     cell &operator=(double value);
@@ -910,8 +911,8 @@ public:
     xlnt::range columns() const;
     bool operator==(const worksheet &other) const;
     bool operator!=(const worksheet &other) const;
-    bool operator==(nullptr_t) const;
-    bool operator!=(nullptr_t) const;
+    bool operator==(std::nullptr_t) const;
+    bool operator!=(std::nullptr_t) const;
 
 private:
     friend class workbook;

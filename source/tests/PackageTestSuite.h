@@ -18,7 +18,7 @@ public:
         auto package = xlnt::package::open("../../source/tests/test_data/packaging/a.zip", xlnt::file_mode::Open, xlnt::file_access::ReadWrite);
         TS_ASSERT_DIFFERS(package, nullptr);
 
-        auto part_1 = package.get_part(xlnt::uri("a.txt", xlnt::uri_kind::Relative));
+        auto part_1 = package.get_part("a.txt");
         TS_ASSERT_DIFFERS(part_1, nullptr);
 
         auto part_1_data = part_1.read();
@@ -31,7 +31,7 @@ public:
             auto package = xlnt::package::open("../../source/test_data/tests/packaging/a.zip", xlnt::file_mode::Open, xlnt::file_access::ReadWrite);
             TS_ASSERT_DIFFERS(package, nullptr);
 
-            auto part_1 = package.get_part(xlnt::uri("a.txt", xlnt::uri_kind::Relative));
+            auto part_1 = package.get_part("a.txt");
             TS_ASSERT_DIFFERS(part_1, nullptr);
 
             part_1.write("something else");
@@ -41,7 +41,7 @@ public:
             auto package = xlnt::package::open("../../source/tests/test_data/packaging/a.zip", xlnt::file_mode::Open, xlnt::file_access::ReadWrite);
             TS_ASSERT_DIFFERS(package, nullptr);
 
-            auto part_1 = package.get_part(xlnt::uri("a.txt", xlnt::uri_kind::Relative));
+            auto part_1 = package.get_part("a.txt");
             TS_ASSERT_DIFFERS(part_1, nullptr);
 
             auto part_1_data = part_1.read();
@@ -55,7 +55,7 @@ public:
         auto package = xlnt::package::open("../../source/tests/test_data/packaging/a.zip", xlnt::file_mode::Open, xlnt::file_access::ReadWrite);
         TS_ASSERT_DIFFERS(package, nullptr);
 
-        auto part_2 = package.get_part(xlnt::uri("a.xml", xlnt::uri_kind::Relative));
+        auto part_2 = package.get_part("a.xml");
         TS_ASSERT_DIFFERS(part_2, nullptr);
 
         auto part_2_data = part_2.read();

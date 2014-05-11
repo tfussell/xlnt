@@ -20,7 +20,6 @@ project "xlnt.test"
     includedirs { 
        "$(opc_prefix)",
        "$(opc_prefix)/config",
-       "$(opc_prefix)/plib/config/msvc/plib/include",
        "$(opc_prefix)/third_party/libxml2-2.7.7/include",
        "$(cxxtest_prefix)",
        "../include",
@@ -33,15 +32,13 @@ project "xlnt.test"
     }
     links { 
         "xlnt",
-	"Shlwapi",
 	"mce",
 	"opc",
 	"plib",
 	"xml",
 	"zlib"
     }
-    prebuildcommands { "cxxtestgen --runner=ParenPrinter -o ../../source/tests/runner-autogen.cpp ../../source/tests/*.h" }
-    libdirs { "$(opc_prefix)/win32/x64/Debug" }
+    prebuildcommands { "cxxtestgen --runner=ErrorPrinter -o ../../source/tests/runner-autogen.cpp ../../source/tests/*.h" }
     flags { 
        "Unicode",
        "NoEditAndContinue",
@@ -53,6 +50,14 @@ project "xlnt.test"
     configuration "Release"
         flags { "LinkTimeOptimization" }
 	targetdir "../bin/release"
+    configuration "windows"
+        includedirs { "$(opc_prefix)/plib/config/msvc/plib/include" }
+        defines { "WIN32" }
+	links { "Shlwapi" }
+        libdirs { "$(opc_prefix)/win32/x64/Debug" }
+    configuration "not windows"
+        includedirs { "$(opc_prefix)/build/plib/config/darwin-debug-gcc-i386/plib/include" }
+        libdirs { "$(opc_prefix)/build/darwin-debug-gcc-i386/static" }
 
 project "xlnt"
     kind "StaticLib"
@@ -62,13 +67,11 @@ project "xlnt"
     includedirs { 
        "$(opc_prefix)",
        "$(opc_prefix)/config",
-       "$(opc_prefix)/plib/config/msvc/plib/include",
        "$(opc_prefix)/third_party/libxml2-2.7.7/include",
        "../include/xlnt",
        "../third-party/pugixml/src",
        "../source/"
     }
-    defines { "WIN32" }
     files {
        "../source/**.cpp",
        "../source/**.h",
@@ -87,3 +90,8 @@ project "xlnt"
     }
     configuration "Debug"
         flags { "FatalWarnings" }
+    configuration "windows"
+        includedirs { "$(opc_prefix)/plib/config/msvc/plib/include" }
+        defines { "WIN32" }
+    configuration "not windows"
+        includedirs { "$(opc_prefix)/build/plib/config/darwin-debug-gcc-i386/plib/include" }
