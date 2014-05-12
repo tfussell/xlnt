@@ -34,7 +34,9 @@ public:
 
     void test_set_bad_title()
     {
-        Worksheet(wb, "X" * 50);
+        std::string title(50, 'X');
+        xlnt::workbook wb;
+        wb.create_sheet(title);
     }
 
     void test_set_bad_title_character()

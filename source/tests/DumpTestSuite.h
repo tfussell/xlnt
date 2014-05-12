@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
+#include "TemporaryFile.h"
 #include "../xlnt.h"
 
 class DumpTestSuite : public CxxTest::TestSuite
@@ -10,37 +11,41 @@ class DumpTestSuite : public CxxTest::TestSuite
 public:
     DumpTestSuite()
     {
-
+        
     }
 
-    void _get_test_filename()
-    {
-        NamedTemporaryFile test_file("w", "xlnt.", ".xlsx", false);
-        test_file.close();
-        return test_file.name;
-    }
-
-    _COL_CONVERSION_CACHE = dict((get_column_letter(i), i) for i in range(1, 18279));
+    //_COL_CONVERSION_CACHE = dict((get_column_letter(i), i) for i in range(1, 18279));
 
     void test_dump_sheet_title()
     {
-        test_filename = _get_test_filename();
-        wb = Workbook(optimized_write = True);
-        ws = wb.create_sheet(title = "Test1");
-        wb.save(test_filename);
-        wb2 = load_workbook(test_filename, True);
+        xlnt::workbook wb;
+        wb.optimized_write(true);
+        auto ws = wb.create_sheet("Test1");
+        wb.save(temp_file.GetFilename());
+        xlnt::workbook wb2;
+        wb2.load(temp_file.GetFilename());
         ws = wb2.get_sheet_by_name("Test1");
-        TS_ASSERT_EQUALS("Test1", ws.title);
+        TS_ASSERT_EQUALS("Test1", ws.get_title());
     }
 
     void test_dump_sheet()
     {
-        test_filename = _get_test_filename();
-        wb = Workbook(optimized_write = True);
-        ws = wb.create_sheet();
-        letters = [get_column_letter(x + 1) for x in range(20)];
-        expected_rows = [];
-        for(auto row : range(20))
+        auto test_filename = temp_file.GetFilename();
+
+        xlnt::workbook wb;
+        wb.optimized_write(true);
+        auto ws = wb.create_sheet();
+
+        std::vector<std::string> letters;
+
+        for(int i = 0; i < 20; i++)
+        {
+            letters.push_back(xlnt::cell::get_column_letter(i + 1));
+        }
+
+        std::vector<xlnt::cell> expected_rows;
+
+        for(int row = 0; row < 20; row++)
         {
             expected_rows.append(["%s%d" % (letter, row + 1) for letter in letters]);
             for(auto row in range(20))
@@ -80,41 +85,43 @@ public:
 
     void test_table_builder()
     {
-        sb = StringTableBuilder();
+        StringTableBuilder sb;
 
-        result = {"a":0, "b" : 1, "c" : 2, "d" : 3};
+        std::unordered_map<std::string, int> result = {{"a", 0}, {"b", 1}, {"c", 2}, {"d", 3}};
 
-            for(auto letter in sorted(result.keys()))
+        for(auto pair : result)
+        {
+            for(int i = 0; i < 5; i++)
             {
-                for x in range(5)
+                sb.add(pair.first);
+
+                auto table = sb.get_table();
+
+                try
                 {
-                    sb.add(letter)
+                    result_items = result.items();
+                }
 
-                        table = dict(sb.get_table())
-
-                        try
-                    {
-                        result_items = result.items()
-                    }
-
-                    for key, idx in result_items
-                    {
-                        TS_ASSERT_EQUALS(idx, table[key])
-                    }
+                for key, idx in result_items
+                {
+                    TS_ASSERT_EQUALS(idx, table[key])
                 }
             }
+        }
     }
 
     void test_open_too_many_files()
     {
-        test_filename = _get_test_filename();
-        wb = Workbook(optimized_write = True);
+        auto test_filename = temp_file.GetFilename();
 
-        for i in range(200)  over 200 worksheets should raise an OSError("too many open files")
+        xlnt::workbook wb;
+        wb.optimized_write(true);
+
+        for(int i = 0; i < 200; i++) // over 200 worksheets should raise an OSError("too many open files")
         {
             wb.create_sheet();
             wb.save(test_filename);
-            os.remove(test_filename);
+            unlink(test_filename.c_str());
         }
     }
 
@@ -130,29 +137,37 @@ public:
 
     void test_dump_twice()
     {
-        test_filename = _get_test_filename();
+        auto test_filename = temp_file.GetFilename();
 
-        wb = Workbook(optimized_write = True);
-        ws = wb.create_sheet();
-        ws.append(["hello"]);
+        xlnt::workbook wb;
+        wb.optimized_write(true);
+        auto ws = wb.create_sheet();
+
+        std::vector<std::string> to_append = {"hello"};
+        ws.append(to_append);
 
         wb.save(test_filename);
-        os.remove(test_filename);
-
+        unlink(test_filename.c_str());
         wb.save(test_filename);
     }
                 
     void test_append_after_save()
     {
-        test_filename = _get_test_filename();
+        xlnt::workbook wb;
+        wb.optimized_write(true);
+        auto ws = wb.create_sheet();
 
-        wb = Workbook(optimized_write = True);
-        ws = wb.create_sheet();
-        ws.append(["hello"]);
+        std::vector<std::string> to_append = {"hello"};
+        ws.append(to_append);
 
-        wb.save(test_filename);
-        os.remove(test_filename);
+        {
+            TemporaryFile temp2;
+            wb.save(temp2.GetFilename());
+        }
 
-        ws.append(["hello"]);
+        ws.append(to_append);
     }
+
+private:
+    TemporaryFile temp_file;
 };

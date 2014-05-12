@@ -4,6 +4,7 @@
 #include <cxxtest/TestSuite.h>
 
 #include "../xlnt.h"
+#include "TemporaryDirectory.h"
 
 class WriteTestSuite : public CxxTest::TestSuite
 {
@@ -15,12 +16,11 @@ public:
 
     void test_write_empty_workbook()
     {
-        make_tmpdir();
+        TemporaryDirectory temp_dir;
         wb = Workbook();
         dest_filename = os.path.join(TMPDIR, "empty_book.xlsx");
         save_workbook(wb, dest_filename);
         assert os.path.isfile(dest_filename);
-        clean_tmpdir();
     }
 
     void test_write_virtual_workbook()

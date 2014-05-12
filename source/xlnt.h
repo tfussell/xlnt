@@ -12,17 +12,21 @@ struct tm;
 
 namespace xlnt {
 
-struct cell_struct;
-struct worksheet_struct;
-struct package_impl;
-
-class style;
-class worksheet;
-class worksheet;
 class cell;
-class relationship;
-class workbook;
+class comment;
+class drawing;
+class named_range;
 class package;
+class relationship;
+class style;
+class workbook;
+class worksheet;
+
+struct cell_struct;
+struct drawing_struct;
+struct named_range_struct;
+struct package_impl;
+struct worksheet_struct;
 
 const int MIN_ROW = 0;
 const int MIN_COLUMN = 0;
@@ -190,6 +194,12 @@ enum class target_mode
     /// The relationship references a resource that is external to the package.
     /// </summary>
     Internal
+};
+
+enum class encoding_type
+{
+    utf8,
+    latin1
 };
 
 /// <summary>
@@ -798,25 +808,278 @@ struct coordinate
     int row;
 };
 
+/// <summary>
+/// Alignment options for use in styles.
+/// </summary>
+struct alignment
+{
+    enum class horizontal_alignment
+    {
+        general,
+        left,
+        right,
+        center,
+        center_continuous,
+        justify
+    };
+
+    enum class vertical_alignment
+    {
+        bottom,
+        top,
+        center,
+        justify
+    };
+
+    horizontal_alignment horizontal = horizontal_alignment::general;
+    vertical_alignment vertical = vertical_alignment::bottom;
+    int text_rotation = 0;
+    bool wrap_text = false;
+    bool shrink_to_fit = false;
+    int indent = 0;
+};
+
 class number_format
 {
 public:
-    void set_format_code(const std::string &format_code) { format_code_ = format_code; }
+    enum class format
+    {
+        general,
+        text,
+        number,
+        number00,
+        number_comma_separated1,
+        number_comma_separated2,
+        percentage,
+        percentage00,
+        date_yyyymmdd2,
+        date_yyyymmdd,
+        date_ddmmyyyy,
+        date_dmyslash,
+        date_dmyminus,
+        date_dmminus,
+        date_myminus,
+        date_xlsx14,
+        date_xlsx15,
+        date_xlsx16,
+        date_xlsx17,
+        date_xlsx22,
+        date_datetime,
+        date_time1,
+        date_time2,
+        date_time3,
+        date_time4,
+        date_time5,
+        date_time6,
+        date_time7,
+        date_time8,
+        date_timedelta,
+        date_yyyymmddslash,
+        currency_usd_simple,
+        currency_usd,
+        currency_eur_simple
+    };
+
+    static const std::unordered_map<int, std::string> builtin_formats;
+
+    static std::string builtin_format_code(int index);
+
+    static bool is_date_format(const std::string &format);
+    static bool is_builtin(const std::string &format);
+
+    format get_format_code() const { return format_code_; }
+    void set_format_code(format format_code) { format_code_ = format_code; }
 
 private:
-    std::string format_code_;
+    format format_code_ = format::general;
+    int format_index_ = 0;
+};
+
+struct color
+{
+    static const color black;
+    static const color white;
+    static const color red;
+    static const color darkred;
+    static const color blue;
+    static const color darkblue;
+    static const color green;
+    static const color darkgreen;
+    static const color yellow;
+    static const color darkyellow;
+
+    color(int index)
+    {
+        this->index = index;
+    }
+
+    int index;
+};
+
+class font
+{
+    enum class underline
+    {
+        none,
+        double_,
+        double_accounting,
+        single,
+        single_accounting
+    };
+
+    std::string name = "Calibri";
+    int size = 11;
+    bool bold = false;
+    bool italic = false;
+    bool superscript = false;
+    bool subscript = false;
+    underline underline = underline::none;
+    bool strikethrough = false;
+    color color = color::black;
+};
+
+class fill
+{
+public:
+    enum class type
+    {
+        none,
+        solid,
+        gradient_linear,
+        gradient_path,
+        pattern_darkdown,
+        pattern_darkgray,
+        pattern_darkgrid,
+        pattern_darkhorizontal,
+        pattern_darktrellis,
+        pattern_darkup,
+        pattern_darkvertical,
+        pattern_gray0625,
+        pattern_gray125,
+        pattern_lightdown,
+        pattern_lightgray,
+        pattern_lightgrid,
+        pattern_lighthorizontal,
+        pattern_lighttrellis,
+        pattern_lightup,
+        pattern_lightvertical,
+        pattern_mediumgray,
+    };
+
+    type type = type::none;
+    int rotation = 0;
+    color start_color = color::white;
+    color end_color = color::black;
+};
+
+class borders
+{
+    struct border
+    {
+        enum class style
+        {
+            none,
+            dashdot,
+            dashdotdot,
+            dashed,
+            dotted,
+            double_,
+            hair,
+            medium,
+            mediumdashdot,
+            mediumdashdotdot,
+            mediumdashed,
+            slantdashdot,
+            thick,
+            thin
+        };
+
+        style style = style::none;
+        color color = color::black;
+    };
+
+    enum class diagonal_direction
+    {
+        none,
+        up,
+        down,
+        both
+    };
+
+    border left;
+    border right;
+    border top;
+    border bottom;
+    border diagonal;
+    diagonal_direction diagonal_direction = diagonal_direction::none;
+    border all_borders;
+    border outline;
+    border inside;
+    border vertical;
+    border horizontal;
+};
+
+class protection
+{
+public:
+    enum class type
+    {
+        inherit,
+        protected_,
+        unprotected
+    };
+
+    type locked;
+    type hidden;
 };
 
 class style
 {
 public:
+    style(bool static_ = false) : static_(static_) {}
+
+    style copy() const;
+
+    font get_font() const;
+    void set_font(font font);
+
+    fill get_fill() const;
+    void set_fill(fill fill);
+
+    borders get_borders() const;
+    void set_borders(borders borders);
+
+    alignment get_alignment() const;
+    void set_alignment(alignment alignment);
+
     number_format &get_number_format() { return number_format_; }
     const number_format &get_number_format() const { return number_format_; }
+    void set_number_format(number_format number_format);
+
+    protection get_protection() const;
+    void set_protection(protection protection);
 
 private:
+    style(const style &rhs);
+
+    bool static_ = false;
+    font font_;
+    fill fill_;
+    borders borders_;
+    alignment alignment_;
     number_format number_format_;
+    protection protection_;
 };
 
+/// <summary>
+/// Describes cell associated properties.
+/// </summary>
+/// <remarks>
+/// Properties of interest include style, type, value, and address.
+/// The Cell class is required to know its value and type, display options,
+/// and any other features of an Excel cell.Utilities for referencing
+/// cells using Excel's 'A1' column/row nomenclature are also provided.
+/// </remarks>
 class cell
 {
 public:
@@ -833,14 +1096,45 @@ public:
 
     static const std::unordered_map<std::string, int> ErrorCodes;
 
+    /// <summary>
+    /// Convert a coordinate string like 'B12' to a tuple ('B', 12)
+    /// </summary>
     static coordinate coordinate_from_string(const std::string &address);
-    static int column_index_from_string(const std::string &column_string);
-    static std::string get_column_letter(int column_index);
+
+    /// <summary>
+    /// Convert a coordinate to an absolute coordinate string (B12 -> $B$12)
+    /// </summary>
     static std::string absolute_coordinate(const std::string &absolute_address);
+
+    /// <summary>
+    /// Convert a column letter into a column number (e.g. B -> 2)
+    /// </summary>
+    /// <remarks>
+    /// Excel only supports 1 - 3 letter column names from A->ZZZ, so we
+    /// restrict our column names to 1 - 3 characters, each in the range A - Z.
+    /// </remarks>
+    static int column_index_from_string(const std::string &column_string);
+
+    /// <summary>
+    /// Convert a column number into a column letter (3 -> 'C')
+    /// </summary>
+    /// <remarks>
+    /// Right shift the column col_idx by 26 to find column letters in reverse
+    /// order.These numbers are 1 - based, and can be converted to ASCII
+    /// ordinals by adding 64.
+    /// </remarks>
+    static std::string get_column_letter(int column_index);
+
+    static std::string check_string(const std::string &value);
+    static std::string check_numeric(const std::string &value);
+    static std::string check_error(const std::string &value);
 
     cell();
     cell(worksheet &ws, const std::string &column, int row);
     cell(worksheet &ws, const std::string &column, int row, const std::string &initial_value);
+
+    encoding_type get_encoding() const;
+    std::string to_string() const;
 
     void set_explicit_value(const std::string &value, type data_type);
     type data_type_for_value(const std::string &value);
@@ -853,32 +1147,59 @@ public:
     bool bind_value(bool value);
     bool bind_value(const tm &value);
 
+    std::string get_hyperlink() const;
+    void set_hyperlink(const std::string &value);
+
+    std::string get_hyperlink_rel_id() const;
+
+    void set_number_format(const std::string &format_code);
+
+    bool has_style() const;
+
+    style &get_style();
+    const style &get_style() const;
+
+    type get_data_type() const;
+
+    std::string get_coordinate() const;
+    std::string get_address() const;
+
+    cell get_offset(int row, int column);
+
+    bool is_date() const;
+
+    std::pair<int, int> get_anchor() const;
+
+    comment get_comment() const;
+    void set_comment(comment comment);
+
+    cell &operator=(const cell &rhs);
+    cell &operator=(bool value);
     cell &operator=(int value);
     cell &operator=(double value);
     cell &operator=(const std::string &value);
     cell &operator=(const char *value);
-    cell &operator=(bool value);
     cell &operator=(const tm &value);
 
+    bool operator==(std::nullptr_t) const;
+    bool operator==(bool comparand) const;
+    bool operator==(int comparand) const;
+    bool operator==(double comparand) const;
     bool operator==(const std::string &comparand) const;
     bool operator==(const char *comparand) const;
     bool operator==(const tm &comparand) const;
 
+    friend bool operator==(std::nullptr_t, const cell &cell);
+    friend bool operator==(bool comparand, const cell &cell);
+    friend bool operator==(int comparand, const cell &cell);
+    friend bool operator==(double comparand, const cell &cell);
     friend bool operator==(const std::string &comparand, const cell &cell);
     friend bool operator==(const char *comparand, const cell &cell);
     friend bool operator==(const tm &comparand, const cell &cell);
 
-    std::string to_string() const;
-    bool is_date() const;
-    style &get_style();
-    const style &get_style() const;
-    type get_data_type() const;
-
 private:
     friend struct worksheet_struct;
-
     cell(cell_struct *root);
-
     cell_struct *root_;
 };
 
@@ -951,9 +1272,9 @@ public:
     void merge_cells(int start_row, int start_column, int end_row, int end_column);
     void unmerge_cells(const std::string &range_string);
     void unmerge_cells(int start_row, int start_column, int end_row, int end_column);
-    void append(const std::vector<xlnt::cell> &cells);
-    void append(const std::unordered_map<std::string, xlnt::cell> &cells);
-    void append(const std::unordered_map<int, xlnt::cell> &cells);
+    void append(const std::vector<std::string> &cells);
+    void append(const std::unordered_map<std::string, std::string> &cells);
+    void append(const std::unordered_map<int, std::string> &cells);
     xlnt::range rows() const;
     xlnt::range columns() const;
     bool operator==(const worksheet &other) const;
@@ -967,26 +1288,111 @@ private:
     worksheet_struct *root_;
 };
 
+class named_range
+{
+public:
+    named_range(const std::string &name);
+
+private:
+    friend class worksheet;
+    named_range(named_range_struct *root);
+    named_range_struct *root_;
+};
+
+class drawing
+{
+public:
+    drawing();
+
+private:
+    friend class worksheet;
+    drawing(drawing_struct *root);
+    drawing_struct *root_;
+};
+
 class workbook
 {
 public:
+    static std::string write_content_types(workbook &wb);
+    static std::string write_root_rels(workbook &wb);
+
+    //constructors
     workbook();
+
+    //prevent copy and assignment
     workbook(const workbook &) = delete;
     const workbook &operator=(const workbook &) = delete;
 
-    worksheet get_sheet_by_name(const std::string &sheet_name);
+    //named parameters
+    workbook &optimized_write(bool value);
+    workbook &encoding(encoding_type value);
+    workbook &guess_types(bool value);
+    workbook &data_only(bool value);
+
+    void read_workbook_settings(const std::string &xml_source);
+
+    //getters
     worksheet get_active_sheet();
+    bool get_optimized_write() const { return optimized_write_; }
+    encoding_type get_encoding() const { return encoding_; }
+    bool get_guess_types() const { return guess_types_; }
+    bool get_data_only() const { return data_only_; }
+
+    //create
     worksheet create_sheet();
     worksheet create_sheet(std::size_t index);
-    std::vector<std::string> get_sheet_names() const;
+    worksheet create_sheet(const std::string &title);
+    worksheet create_sheet(std::size_t index, const std::string &title);
+
+    //add
+    void add_sheet(worksheet worksheet);
+    void add_sheet(worksheet worksheet, std::size_t index);
+
+    //remove
+    void remove_sheet(worksheet worksheet);
+
+    //container operations
+    worksheet get_sheet_by_name(const std::string &sheet_name);
+
+    bool contains(const std::string &key) const;
+
+    int get_index(worksheet worksheet);
+
+    worksheet operator[](const std::string &name);
+
     std::vector<worksheet>::iterator begin();
     std::vector<worksheet>::iterator end();
-    worksheet operator[](const std::string &name);
+
+    std::vector<worksheet>::const_iterator begin() const;
+    std::vector<worksheet>::const_iterator end() const;
+
+    std::vector<worksheet>::const_iterator cbegin() const;
+    std::vector<worksheet>::const_iterator cend() const;
+
+    std::vector<std::string> get_sheet_names() const;
+
+    //named ranges
+    void create_named_range(const std::string &name, worksheet worksheet, const std::string &range_string);
+    std::vector<named_range> get_named_ranges();
+    void add_named_range(named_range named_range);
+    void get_named_range(const std::string &name);
+    void remove_named_range(named_range named_range);
+    
+    //serialization
     void save(const std::string &filename);
+    void load(const std::string &filename);
 
 private:
-    worksheet active_worksheet_;
+    bool optimized_write_;
+    bool optimized_read_;
+    bool guess_types_;
+    bool data_only_;
+    int active_sheet_index_;
+    encoding_type encoding_;
     std::vector<worksheet> worksheets_;
+    std::vector<named_range> named_ranges_;
+    std::vector<relationship> relationships_;
+    std::vector<drawing> drawings_;
 };
 
 } // namespace xlnt

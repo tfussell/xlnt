@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include "xlnt.h"
+#include "../third-party/pugixml/src/pugixml.hpp"
 
 namespace xlnt {
 
@@ -971,6 +972,8 @@ struct cell_struct
         bool bool_value;
     };
 
+    
+    std::string error_value; 
     tm date_value;
     std::string string_value;
     std::string formula_value;
@@ -1015,12 +1018,27 @@ cell::cell(cell_struct *root) : root_(root)
 
 cell::type cell::data_type_for_value(const std::string &value)
 {
+    if(value[0] == '=')
+    {
+        return type::formula;
+    }
+
     return type::null;
 }
 
 void cell::set_explicit_value(const std::string &value, type data_type)
 {
-
+    root_->type = data_type;
+    switch(data_type)
+    {
+    case type::formula: root_->formula_value = value; return;
+    case type::date: root_->date_value.tm_hour = std::stoi(value); return;
+    case type::error: root_->error_value = value; return;
+    case type::boolean: root_->bool_value = value == "true"; return;
+    case type::null: return;
+    case type::numeric: root_->numeric_value = std::stod(value); return;
+    case type::string: root_->string_value = value; return;
+    }
 }
 
 bool cell::bind_value()
@@ -1620,17 +1638,17 @@ void worksheet::unmerge_cells(int start_row, int start_column, int end_row, int 
     root_->unmerge_cells(start_row, start_column, end_row, end_column);
 }
 
-void worksheet::append(const std::vector<xlnt::cell> &cells)
+void worksheet::append(const std::vector<std::string> &cells)
 {
     root_->append(cells);
 }
 
-void worksheet::append(const std::unordered_map<std::string, xlnt::cell> &cells)
+void worksheet::append(const std::unordered_map<std::string, std::string> &cells)
 {
     root_->append(cells);
 }
 
-void worksheet::append(const std::unordered_map<int, xlnt::cell> &cells)
+void worksheet::append(const std::unordered_map<int, std::string> &cells)
 {
     root_->append(cells);
 }
@@ -1676,11 +1694,146 @@ cell worksheet::operator[](const std::string &address)
     return cell(address);
 }
 
-workbook::workbook() : active_worksheet_(nullptr)
+std::string workbook::write_content_types(workbook &wb)
+{
+    std::set<std::string> seen;
+
+    pugi::xml_node root;
+
+    if(wb.has_vba_archive())
+    {
+        root = fromstring(wb.get_vba_archive().read(ARC_CONTENT_TYPES));
+
+        for(auto elem : root.findall("{" + CONTYPES_NS + "}Override"))
+        {
+            seen.insert(elem.attrib["PartName"]);
+        }
+    }
+    else
+    {
+        root = Element("{" + CONTYPES_NS + "}Types");
+
+        for(auto content_type : static_content_types_config)
+        {
+            if(setting_type == "Override")
+            {
+                tag = "{" + CONTYPES_NS + "}Override";
+                attrib = {"PartName": "/" + name};
+            }
+            else
+            {
+                tag = "{" + CONTYPES_NS + "}Default";
+                attrib = {"Extension": name};
+            }
+
+            attrib["ContentType"] = content_type;
+            SubElement(root, tag, attrib);
+        }
+    }
+
+    int drawing_id = 1;
+    int chart_id = 1;
+    int comments_id = 1;
+    int sheet_id = 0;
+
+    for(auto sheet : wb)
+    {
+        std::string name = "/xl/worksheets/sheet" + std::to_string(sheet_id) + ".xml";
+
+        if(seen.find(name) == seen.end())
+        {
+            SubElement(root, "{" + CONTYPES_NS + "}Override", {{"PartName", name},
+            {"ContentType", "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"}});
+        }
+
+        if(sheet._charts || sheet._images)
+        {
+            name = "/xl/drawings/drawing" + drawing_id + ".xml";
+
+            if(seen.find(name) == seen.end())
+            {
+                SubElement(root, "{%s}Override" % CONTYPES_NS, {"PartName" : name,
+                    "ContentType" : "application/vnd.openxmlformats-officedocument.drawing+xml"});
+            }
+
+            drawing_id += 1;
+
+            for(auto chart : sheet._charts)
+            {
+                name = "/xl/charts/chart%d.xml" % chart_id;
+
+                if(seen.find(name) == seen.end())
+                {
+                    SubElement(root, "{%s}Override" % CONTYPES_NS, {"PartName" : name,
+                        "ContentType" : "application/vnd.openxmlformats-officedocument.drawingml.chart+xml"});
+                }
+
+                chart_id += 1;
+
+                if(chart._shapes)
+                {
+                    name = "/xl/drawings/drawing%d.xml" % drawing_id;
+
+                    if(seen.find(name) == seen.end())
+                    {
+                        SubElement(root, "{%s}Override" % CONTYPES_NS, {"PartName" : name,
+                            "ContentType" : "application/vnd.openxmlformats-officedocument.drawingml.chartshapes+xml"});
+                    }
+
+                    drawing_id += 1;
+                }
+            }
+        }
+        if(sheet.get_comment_count() > 0)
+        {
+            SubElement(root, "{%s}Override" % CONTYPES_NS,
+            {"PartName": "/xl/comments%d.xml" % comments_id,
+            "ContentType" : "application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml"});
+            comments_id += 1;
+        }
+    }
+
+    return get_document_content(root);
+}
+
+std::string workbook::write_root_rels(workbook wb)
+{
+    root = Element("{%s}Relationships" % PKG_REL_NS);
+    relation_tag = "{%s}Relationship" % PKG_REL_NS;
+    SubElement(root, relation_tag, {"Id": "rId1", "Target" : ARC_WORKBOOK,
+        "Type" : "%s/officeDocument" % REL_NS});
+    SubElement(root, relation_tag, {"Id": "rId2", "Target" : ARC_CORE,
+        "Type" : "%s/metadata/core-properties" % PKG_REL_NS});
+    SubElement(root, relation_tag, {"Id": "rId3", "Target" : ARC_APP,
+        "Type" : "%s/extended-properties" % REL_NS});
+    if(wb.has_vba_archive())
+    {
+        // See if there was a customUI relation and reuse its id
+        arc = fromstring(workbook.vba_archive.read(ARC_ROOT_RELS));
+        rels = arc.findall(relation_tag);
+        rId = None;
+        for(rel in rels)
+        {
+            if(rel.get("Target") == ARC_CUSTOM_UI)
+            {
+                rId = rel.get("Id");
+                break;
+            }
+        }
+        if(rId is not None)
+        {
+            SubElement(root, relation_tag, {"Id": rId, "Target" : ARC_CUSTOM_UI,
+                "Type" : "%s" % CUSTOMUI_NS});
+        }
+    }
+
+    return get_document_content(root);
+}
+
+workbook::workbook() : active_sheet_index_(0)
 {
     auto ws = create_sheet();
     ws.set_title("Sheet1");
-    active_worksheet_ = ws;
 }
 
 worksheet workbook::get_sheet_by_name(const std::string &name)
@@ -1695,7 +1848,7 @@ worksheet workbook::get_sheet_by_name(const std::string &name)
 
 worksheet workbook::get_active_sheet()
 {
-    return active_worksheet_;
+    return worksheets_[active_sheet_index_];
 }
 
 worksheet workbook::create_sheet()
