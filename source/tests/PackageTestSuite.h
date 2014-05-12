@@ -10,13 +10,35 @@ class PackageTestSuite : public CxxTest::TestSuite
 public:
     PackageTestSuite()
     {
-        xlnt::file::copy("source/tests/test_data/packaging/test.zip", "source/tests/test_data/packaging/a.zip", true);
+        template_zip = "../../source/tests/test_data/packaging/test.zip";
+        test_zip = "../../source/tests/test_data/packaging/a.zip";
+        existing_xlsx = "../../source/tests/test_data/packaging/existing.xlsx";
+        new_xlsx = "../../source/tests/test_data/packaging/new.xlsx";
+
+        xlnt::file::copy(template_zip, test_zip, true);
+    }
+
+    void test_existing_package()
+    {
+        //xlnt::package package;
+        //package.open(existing_xlsx, xlnt::file_mode::Open, xlnt::file_access::Read);
+    }
+
+    void test_new_package()
+    {
+        xlnt::package package;
+        package.open(new_xlsx, xlnt::file_mode::Create, xlnt::file_access::ReadWrite);
+
+        //auto part_1 = package.create_part("workbook.xml", "type");
+        //TS_ASSERT_DIFFERS(part_1, nullptr);
+
+        //part_1.write("test");
     }
 
     void test_read_text()
     {
-        auto package = xlnt::package::open("source/tests/test_data/packaging/a.zip", xlnt::file_mode::Open, xlnt::file_access::ReadWrite);
-        TS_ASSERT_DIFFERS(package, nullptr);
+        xlnt::package package;
+        package.open(test_zip, xlnt::file_mode::Open, xlnt::file_access::ReadWrite);
 
         auto part_1 = package.get_part("a.txt");
         TS_ASSERT_DIFFERS(part_1, nullptr);
@@ -28,8 +50,8 @@ public:
     void test_write_text()
     {
         {
-            auto package = xlnt::package::open("source/tests/test_data/packaging/a.zip", xlnt::file_mode::Open, xlnt::file_access::ReadWrite);
-            TS_ASSERT_DIFFERS(package, nullptr);
+            xlnt::package package;
+            package.open(test_zip, xlnt::file_mode::Open, xlnt::file_access::ReadWrite);
 
             auto part_1 = package.get_part("a.txt");
             TS_ASSERT_DIFFERS(part_1, nullptr);
@@ -38,8 +60,8 @@ public:
         }
 
         {
-            auto package = xlnt::package::open("source/tests/test_data/packaging/a.zip", xlnt::file_mode::Open, xlnt::file_access::ReadWrite);
-            TS_ASSERT_DIFFERS(package, nullptr);
+            xlnt::package package;
+            package.open(test_zip, xlnt::file_mode::Open, xlnt::file_access::ReadWrite);
 
             auto part_1 = package.get_part("a.txt");
             TS_ASSERT_DIFFERS(part_1, nullptr);
@@ -52,8 +74,8 @@ public:
 
     void test_read_xml()
     {
-        auto package = xlnt::package::open("source/tests/test_data/packaging/a.zip", xlnt::file_mode::Open, xlnt::file_access::ReadWrite);
-        TS_ASSERT_DIFFERS(package, nullptr);
+        xlnt::package package;
+        package.open(test_zip, xlnt::file_mode::Open, xlnt::file_access::ReadWrite);
 
         auto part_2 = package.get_part("a.xml");
         TS_ASSERT_DIFFERS(part_2, nullptr);
@@ -77,4 +99,10 @@ public:
 
         TS_ASSERT_EQUALS(std::string(element_element.text().as_string()), "Text")
     }
+
+private:
+    std::string template_zip;
+    std::string test_zip;
+    std::string existing_xlsx;
+    std::string new_xlsx;
 };

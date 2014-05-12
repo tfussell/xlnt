@@ -506,7 +506,6 @@ private:
     friend struct package_impl;
 
     part(part_struct *root);
-    part(package_impl &package, const std::string &uri, opcContainer *container);
 
     part_struct *root_;
 };
@@ -520,15 +519,28 @@ typedef std::vector<part> part_collection;
 class package
 {
 public:
+    enum class type
+    {
+        Excel,
+        Word,
+        Powerpoint,
+        Zip
+    };
+
+    package();
+    ~package();
+
+    type get_type() const;
+
     /// <summary>
     /// Opens a package with a given IO stream, file mode, and file access setting.
     /// </summary>
-    static package open(std::iostream &stream, file_mode package_mode, file_access package_access);
+    void open(std::iostream &stream, file_mode package_mode, file_access package_access);
 
     /// <summary>
     /// Opens a package at a given path using a given file mode, file access, and file share setting.
     /// </summary>
-    static package open(const std::string &path, file_mode package_mode = file_mode::OpenOrCreate,
+    void open(const std::string &path, file_mode package_mode = file_mode::OpenOrCreate,
         file_access package_access = file_access::ReadWrite, file_share package_share = file_share::None);
 
     /// <summary>
@@ -767,9 +779,6 @@ public:
 private:
     friend opc_callback_handler;
 
-    package(std::iostream &stream, file_mode package_mode, file_access package_access);
-    package(const std::string &path, file_mode package_mode, file_access package_access);
-
     void open_container();
 
     int write(char *buffer, int length);
@@ -789,6 +798,25 @@ struct coordinate
     int row;
 };
 
+class number_format
+{
+public:
+    void set_format_code(const std::string &format_code) { format_code_ = format_code; }
+
+private:
+    std::string format_code_;
+};
+
+class style
+{
+public:
+    number_format &get_number_format() { return number_format_; }
+    const number_format &get_number_format() const { return number_format_; }
+
+private:
+    number_format number_format_;
+};
+
 class cell
 {
 public:
@@ -803,6 +831,8 @@ public:
         error
     };
 
+    static const std::unordered_map<std::string, int> ErrorCodes;
+
     static coordinate coordinate_from_string(const std::string &address);
     static int column_index_from_string(const std::string &column_string);
     static std::string get_column_letter(int column_index);
@@ -812,12 +842,27 @@ public:
     cell(worksheet &ws, const std::string &column, int row);
     cell(worksheet &ws, const std::string &column, int row, const std::string &initial_value);
 
+    void set_explicit_value(const std::string &value, type data_type);
+    type data_type_for_value(const std::string &value);
+
+    bool bind_value();
+    bool bind_value(int value);
+    bool bind_value(double value);
+    bool bind_value(const std::string &value);
+    bool bind_value(const char *value);
+    bool bind_value(bool value);
+    bool bind_value(const tm &value);
+
     cell &operator=(int value);
     cell &operator=(double value);
     cell &operator=(const std::string &value);
     cell &operator=(const char *value);
     cell &operator=(bool value);
     cell &operator=(const tm &value);
+
+    bool operator==(const std::string &comparand) const;
+    bool operator==(const char *comparand) const;
+    bool operator==(const tm &comparand) const;
 
     friend bool operator==(const std::string &comparand, const cell &cell);
     friend bool operator==(const char *comparand, const cell &cell);
@@ -826,7 +871,8 @@ public:
     std::string to_string() const;
     bool is_date() const;
     style &get_style();
-    type get_data_type();
+    const style &get_style() const;
+    type get_data_type() const;
 
 private:
     friend struct worksheet_struct;
@@ -929,7 +975,7 @@ public:
     const workbook &operator=(const workbook &) = delete;
 
     worksheet get_sheet_by_name(const std::string &sheet_name);
-    worksheet get_active();
+    worksheet get_active_sheet();
     worksheet create_sheet();
     worksheet create_sheet(std::size_t index);
     std::vector<std::string> get_sheet_names() const;
