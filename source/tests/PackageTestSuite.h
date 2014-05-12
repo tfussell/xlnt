@@ -10,12 +10,12 @@ class PackageTestSuite : public CxxTest::TestSuite
 public:
     PackageTestSuite()
     {
-        xlnt::file::copy("../../source/tests/test_data/packaging/test.zip", "../../source/tests/test_data/packaging/a.zip", true);
+        xlnt::file::copy("source/tests/test_data/packaging/test.zip", "source/tests/test_data/packaging/a.zip", true);
     }
 
     void test_read_text()
     {
-        auto package = xlnt::package::open("../../source/tests/test_data/packaging/a.zip", xlnt::file_mode::Open, xlnt::file_access::ReadWrite);
+        auto package = xlnt::package::open("source/tests/test_data/packaging/a.zip", xlnt::file_mode::Open, xlnt::file_access::ReadWrite);
         TS_ASSERT_DIFFERS(package, nullptr);
 
         auto part_1 = package.get_part("a.txt");
@@ -28,7 +28,7 @@ public:
     void test_write_text()
     {
         {
-            auto package = xlnt::package::open("../../source/tests/test_data/packaging/a.zip", xlnt::file_mode::Open, xlnt::file_access::ReadWrite);
+            auto package = xlnt::package::open("source/tests/test_data/packaging/a.zip", xlnt::file_mode::Open, xlnt::file_access::ReadWrite);
             TS_ASSERT_DIFFERS(package, nullptr);
 
             auto part_1 = package.get_part("a.txt");
@@ -38,7 +38,7 @@ public:
         }
 
         {
-            auto package = xlnt::package::open("../../source/tests/test_data/packaging/a.zip", xlnt::file_mode::Open, xlnt::file_access::ReadWrite);
+            auto package = xlnt::package::open("source/tests/test_data/packaging/a.zip", xlnt::file_mode::Open, xlnt::file_access::ReadWrite);
             TS_ASSERT_DIFFERS(package, nullptr);
 
             auto part_1 = package.get_part("a.txt");
@@ -52,7 +52,7 @@ public:
 
     void test_read_xml()
     {
-        auto package = xlnt::package::open("../../source/tests/test_data/packaging/a.zip", xlnt::file_mode::Open, xlnt::file_access::ReadWrite);
+        auto package = xlnt::package::open("source/tests/test_data/packaging/a.zip", xlnt::file_mode::Open, xlnt::file_access::ReadWrite);
         TS_ASSERT_DIFFERS(package, nullptr);
 
         auto part_2 = package.get_part("a.xml");

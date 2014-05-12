@@ -618,6 +618,7 @@ struct cell_struct
 
     tm date_value;
     std::string string_value;
+    std::string formula_value;
     worksheet_struct *parent_worksheet;
     int column;
     int row;
@@ -705,7 +706,7 @@ int cell::column_index_from_string(const std::string &column_string)
     }
 
     int column_index = 0;
-    int place = std::pow(26, column_string.length() - 1);
+    int place = 1;
 
     for(int i = column_string.length() - 1; i >= 0; i--)
     {
@@ -715,7 +716,7 @@ int cell::column_index_from_string(const std::string &column_string)
 	}
 
 	column_index += (std::toupper(column_string[i]) - 'A' + 1) * place;
-	place /= 26;
+	place *= 26;
     }
 
     return column_index;
@@ -811,10 +812,68 @@ cell &cell::operator=(double value)
     return *this;
 }
 
+cell &cell::operator=(bool value)
+{
+    root_->type = type::boolean;
+    root_->bool_value = value;
+    return *this;
+}
+
 cell &cell::operator=(const std::string &value)
 {
-    root_->type = type::string;
-    root_->string_value = value;
+    if(value == "")
+    {
+	root_->type = type::null;
+	return *this;
+    }
+
+    if(value[0] == '=')
+    {
+	root_->type = type::formula;
+	root_->formula_value = value;
+	return *this;
+    }
+
+    if(value[0] == '0')
+    {
+	if(value.length() > 1)
+	{
+	    if(value[1] == '.')
+	    {
+		try
+		{
+		    double double_value = std::stod(value);
+		    *this = double_value;
+		    return *this;
+		}
+		catch(std::invalid_argument)
+		{
+		}
+	    }
+	}
+	else
+	{
+	    root_->type = type::numeric;
+	    root_->numeric_value = 0;
+	    return *this;
+	}
+
+	root_->type = type::string;
+	root_->string_value = value;
+	return *this;
+    }
+
+    try
+    {
+	double double_value = std::stod(value);
+	*this = double_value;
+    }
+    catch(std::invalid_argument)
+    {
+	root_->type = type::string;
+	root_->string_value = value;
+    }
+
     return *this;
 }
 

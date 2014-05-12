@@ -816,6 +816,7 @@ public:
     cell &operator=(double value);
     cell &operator=(const std::string &value);
     cell &operator=(const char *value);
+    cell &operator=(bool value);
     cell &operator=(const tm &value);
 
     friend bool operator==(const std::string &comparand, const cell &cell);
