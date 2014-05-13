@@ -202,6 +202,26 @@ enum class encoding_type
     latin1
 };
 
+class bad_sheet_title : public std::runtime_error
+{
+public:
+    bad_sheet_title(const std::string &title) 
+        : std::runtime_error(std::string("bad worksheet title: ") + title)
+    {
+
+    }
+};
+
+class bad_cell_coordinates : public std::runtime_error
+{
+public:
+    bad_cell_coordinates(int row, int column)
+        : std::runtime_error(std::string("bad cell coordinates: (") + std::to_string(row) + "," + std::to_string(column) + ")")
+    {
+
+    }
+};
+
 /// <summary>
 /// Represents a value type that may or may not have an assigned value.
 /// </summary>
@@ -1133,6 +1153,9 @@ public:
     cell(worksheet &ws, const std::string &column, int row);
     cell(worksheet &ws, const std::string &column, int row, const std::string &initial_value);
 
+    int get_row() const;
+    std::string get_column() const;
+
     encoding_type get_encoding() const;
     std::string to_string() const;
 
@@ -1146,6 +1169,9 @@ public:
     bool bind_value(const char *value);
     bool bind_value(bool value);
     bool bind_value(const tm &value);
+
+    bool get_merged() const;
+    void set_merged(bool);
 
     std::string get_hyperlink() const;
     void set_hyperlink(const std::string &value);
@@ -1210,9 +1236,8 @@ inline std::ostream &operator<<(std::ostream &stream, const cell &cell)
 
 typedef std::vector<std::vector<cell>> range;
 
-class worksheet
+struct page_setup
 {
-public:
     enum class Break
     {
         None = 0,
@@ -1248,15 +1273,29 @@ public:
         Landscape
     };
 
+    Break break_;
+    SheetState sheet_state;
+    PaperSize paper_size;
+    Orientation orientation;
+    bool fit_to_page;
+    bool fit_to_height;
+    bool fit_to_width;
+};
+
+class worksheet
+{
+public:
+    worksheet(workbook &parent);
+
     void operator=(const worksheet &other);
-    cell operator[](const std::string &address);
+    xlnt::cell operator[](const std::string &address);
     std::string to_string() const;
     workbook &get_parent() const;
     void garbage_collect();
-    std::set<cell> get_cell_collection();
+    std::list<cell> get_cell_collection();
     std::string get_title() const;
     void set_title(const std::string &title);
-    cell get_freeze_panes() const;
+    xlnt::cell get_freeze_panes() const;
     void set_freeze_panes(cell top_left_cell);
     void set_freeze_panes(const std::string &top_left_coordinate);
     void unfreeze_panes();
@@ -1265,7 +1304,8 @@ public:
     int get_highest_row() const;
     int get_highest_column() const;
     std::string calculate_dimension() const;
-    range range(const std::string &range_string, int row_offset, int column_offset);
+    xlnt::range range(const std::string &range_string);
+    xlnt::range range(const std::string &range_string, int row_offset, int column_offset);
     relationship create_relationship(const std::string &relationship_type);
     //void add_chart(chart chart);
     void merge_cells(const std::string &range_string);
@@ -1281,6 +1321,8 @@ public:
     bool operator!=(const worksheet &other) const;
     bool operator==(std::nullptr_t) const;
     bool operator!=(std::nullptr_t) const;
+    std::vector<relationship> get_relationships();
+    page_setup &get_page_setup();
 
 private:
     friend class workbook;
@@ -1310,12 +1352,18 @@ private:
     drawing_struct *root_;
 };
 
-class workbook
+class writer
 {
 public:
     static std::string write_content_types(workbook &wb);
     static std::string write_root_rels(workbook &wb);
+    static std::string write_worksheet(worksheet &ws);
+    static std::string get_document_content(const std::string &filename);
+};
 
+class workbook
+{
+public:
     //constructors
     workbook();
 
@@ -1381,6 +1429,8 @@ public:
     //serialization
     void save(const std::string &filename);
     void load(const std::string &filename);
+
+    bool operator==(const workbook &rhs) const;
 
 private:
     bool optimized_write_;

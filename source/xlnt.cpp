@@ -12,15 +12,6 @@ namespace xlnt {
 
 namespace {
 
-class not_implemented : public std::runtime_error
-{
-public:
-    not_implemented() : std::runtime_error("error: not implemented")
-    {
-	
-    }
-};
-
 const std::array<unsigned char, 3086> existing_xlsx = {
     0x50, 0x4b, 0x03, 0x04, 0x14, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00,
     0x21, 0x00, 0xf8, 0x17, 0x86, 0x86, 0x7a, 0x01, 0x00, 0x00, 0x10, 0x03,
@@ -1370,17 +1361,28 @@ struct worksheet_struct
 
     void garbage_collect()
     {
-        throw not_implemented();
+        for(auto map_iter = cell_map_.begin(); map_iter != cell_map_.end(); map_iter++)
+        {
+            if(map_iter->second.get_data_type() == cell::type::null)
+            {
+                map_iter = cell_map_.erase(map_iter);
+            }
+        }
     }
 
-    std::set<cell> get_cell_collection()
+    std::list<cell> get_cell_collection()
     {
-        throw not_implemented();
+        std::list<xlnt::cell> cells;
+        for(auto cell : cell_map_)
+        {
+            cells.push_front(xlnt::cell(cell.second));
+        }
+        return cells;
     }
 
     std::string get_title() const
     {
-        throw not_implemented();
+        return title_;
     }
 
     void set_title(const std::string &title)
@@ -1427,33 +1429,76 @@ struct worksheet_struct
 
     int get_highest_row() const
     {
-        throw not_implemented();
+        int highest = 0;
+        for(auto cell : cell_map_)
+        {
+            highest = (std::max)(highest, cell.second.get_row());
+        }
+        return highest;
     }
 
     int get_highest_column() const
     {
-        throw not_implemented();
+        int highest = 0;
+        for(auto cell : cell_map_)
+        {
+            highest = (std::max)(highest, xlnt::cell::column_index_from_string(cell.second.get_column()));
+        }
+        return highest;
     }
 
     std::string calculate_dimension() const
     {
-        throw not_implemented();
+        int width = get_highest_column();
+        std::string width_letter = xlnt::cell::get_column_letter(width);
+        int height = get_highest_row();
+        return "A1:" + width_letter + std::to_string(height);
     }
 
-    range range(const std::string &range_string, int /*row_offset*/, int /*column_offset*/)
+    xlnt::range range(const std::string &range_string, int row_offset, int column_offset)
     {
+        xlnt::range r;
+
         auto colon_index = range_string.find(':');
+
         if(colon_index != std::string::npos)
         {
             auto min_range = range_string.substr(0, colon_index);
             auto max_range = range_string.substr(colon_index + 1);
-            xlnt::range r;
-            r.push_back(std::vector<xlnt::cell>());
-            r[0].push_back(cell(min_range));
-            r[0].push_back(cell(max_range));
-            return r;
+            auto min_coord = xlnt::cell::coordinate_from_string(min_range);
+            auto max_coord = xlnt::cell::coordinate_from_string(max_range);
+
+            if(column_offset != 0)
+            {
+                min_coord.column = xlnt::cell::get_column_letter(xlnt::cell::column_index_from_string(min_coord.column) + column_offset);
+                max_coord.column = xlnt::cell::get_column_letter(xlnt::cell::column_index_from_string(max_coord.column) + column_offset);
+            }
+
+            std::unordered_map<int, std::string> column_cache;
+
+            for(int i = xlnt::cell::column_index_from_string(min_coord.column); 
+                i <= xlnt::cell::column_index_from_string(max_coord.column); i++)
+            {
+                column_cache[i] = xlnt::cell::get_column_letter(i);
+            }
+            for(int row = min_coord.row + row_offset; row <= max_coord.row + row_offset; row++)
+            {
+                r.push_back(std::vector<xlnt::cell>());
+                for(int column = xlnt::cell::column_index_from_string(min_coord.column) + column_offset; 
+                    column <= xlnt::cell::column_index_from_string(max_coord.column) + column_offset; column++)
+                {
+                    std::string coordinate = column_cache[column] + std::to_string(row);
+                    r.back().push_back(cell(coordinate));
+                }
+            }
         }
-        throw not_implemented();
+        else
+        {
+            r.push_back(std::vector<xlnt::cell>());
+            r.back().push_back(cell(range_string));
+        }
+
+        return r;
     }
 
     relationship create_relationship(const std::string &relationship_type)
@@ -1464,27 +1509,55 @@ struct worksheet_struct
 
     //void add_chart(chart chart);
 
-    void merge_cells(const std::string &/*range_string*/)
+    void merge_cells(const std::string &range_string)
     {
-        throw not_implemented();
+        bool first = true;
+        for(auto row : range(range_string, 0, 0))
+        {
+            for(auto cell : row)
+            {
+                cell.set_merged(true);
+                if(!first)
+                {
+                    cell.bind_value();
+                }
+                first = false;
+            }
+        }
     }
 
-    void merge_cells(int /*start_row*/, int /*start_column*/, int /*end_row*/, int /*end_column*/)
+    void merge_cells(int start_row, int start_column, int end_row, int end_column)
     {
-        throw not_implemented();
+        auto range_string = xlnt::cell::get_column_letter(start_column + 1) + std::to_string(start_row + 1) + ":"
+            + xlnt::cell::get_column_letter(end_column + 1) + std::to_string(end_row + 1);
+        merge_cells(range_string);
     }
 
-    void unmerge_cells(const std::string &/*range_string*/)
+    void unmerge_cells(const std::string &range_string)
     {
-        throw not_implemented();
+        bool first = true;
+        for(auto row : range(range_string, 0, 0))
+        {
+            for(auto cell : row)
+            {
+                cell.set_merged(false);
+                if(!first)
+                {
+                    cell.bind_value();
+                }
+                first = false;
+            }
+        }
     }
 
-    void unmerge_cells(int /*start_row*/, int /*start_column*/, int /*end_row*/, int /*end_column*/)
+    void unmerge_cells(int start_row, int start_column, int end_row, int end_column)
     {
-        throw not_implemented();
+        auto range_string = xlnt::cell::get_column_letter(start_column + 1) + std::to_string(start_row + 1) + ":"
+            + xlnt::cell::get_column_letter(end_column + 1) + std::to_string(end_row + 1);
+        merge_cells(range_string);
     }
 
-    void append(const std::vector<xlnt::cell> &cells)
+    void append(const std::vector<std::string> &cells)
     {
         for(auto cell : cells)
         {
@@ -1492,7 +1565,7 @@ struct worksheet_struct
         }
     }
 
-    void append(const std::unordered_map<std::string, xlnt::cell> &cells)
+    void append(const std::unordered_map<std::string, std::string> &cells)
     {
         for(auto cell : cells)
         {
@@ -1500,7 +1573,7 @@ struct worksheet_struct
         }
     }
 
-    void append(const std::unordered_map<int, xlnt::cell> &cells)
+    void append(const std::unordered_map<int, std::string> &cells)
     {
         for(auto cell : cells)
         {
@@ -1508,14 +1581,14 @@ struct worksheet_struct
         }
     }
 
-    xlnt::range rows() const
+    xlnt::range rows()
     {
-        throw not_implemented();
+        return range(calculate_dimension(), 0, 0);
     }
 
-    xlnt::range columns() const
+    xlnt::range columns()
     {
-        throw not_implemented();
+        throw std::runtime_error("not implemented");
     }
 
     void operator=(const worksheet_struct &other) = delete;
@@ -1546,7 +1619,7 @@ void worksheet::garbage_collect()
     root_->garbage_collect();
 }
 
-std::set<cell> worksheet::get_cell_collection()
+std::list<cell> worksheet::get_cell_collection()
 {
     return root_->get_cell_collection();
 }
@@ -1694,9 +1767,9 @@ cell worksheet::operator[](const std::string &address)
     return cell(address);
 }
 
-std::string workbook::write_content_types(workbook &wb)
+std::string writer::write_content_types(workbook &wb)
 {
-    std::set<std::string> seen;
+    /*std::set<std::string> seen;
 
     pugi::xml_node root;
 
@@ -1793,12 +1866,13 @@ std::string workbook::write_content_types(workbook &wb)
         }
     }
 
-    return get_document_content(root);
+    return get_document_content(root);*/
+    return "";
 }
 
-std::string workbook::write_root_rels(workbook wb)
+std::string writer::write_root_rels(workbook &wb)
 {
-    root = Element("{%s}Relationships" % PKG_REL_NS);
+    /*root = Element("{%s}Relationships" % PKG_REL_NS);
     relation_tag = "{%s}Relationship" % PKG_REL_NS;
     SubElement(root, relation_tag, {"Id": "rId1", "Target" : ARC_WORKBOOK,
         "Type" : "%s/officeDocument" % REL_NS});
@@ -1827,7 +1901,8 @@ std::string workbook::write_root_rels(workbook wb)
         }
     }
 
-    return get_document_content(root);
+    return get_document_content(root);*/
+    return "";
 }
 
 workbook::workbook() : active_sheet_index_(0)
@@ -1908,6 +1983,74 @@ void workbook::save(const std::string &filename)
 std::string cell_struct::to_string() const
 {
     return "<Cell " + parent_worksheet->title_ + "." + xlnt::cell::get_column_letter(column + 1) + std::to_string(row) + ">";
+}
+
+bool workbook::operator==(const workbook &rhs) const
+{
+    if(optimized_write_ == rhs.optimized_write_
+        && optimized_read_ == rhs.optimized_read_
+        && guess_types_ == rhs.guess_types_
+        && data_only_ == rhs.data_only_
+        && active_sheet_index_ == rhs.active_sheet_index_
+        && encoding_ == rhs.encoding_)
+    {
+        if(worksheets_.size() != rhs.worksheets_.size())
+        {
+            return false;
+        }
+
+        for(int i = 0; i < worksheets_.size(); i++)
+        {
+            if(worksheets_[i] != rhs.worksheets_[i])
+            {
+                return false;
+            }
+        }
+
+        /*
+        if(named_ranges_.size() != rhs.named_ranges_.size())
+        {
+            return false;
+        }
+
+        for(int i = 0; i < named_ranges_.size(); i++)
+        {
+            if(named_ranges_[i] != rhs.named_ranges_[i])
+            {
+                return false;
+            }
+        }
+
+        if(relationships_.size() != rhs.relationships_.size())
+        {
+            return false;
+        }
+
+        for(int i = 0; i < relationships_.size(); i++)
+        {
+            if(relationships_[i] != rhs.relationships_[i])
+            {
+                return false;
+            }
+        }
+
+        if(drawings_.size() != rhs.drawings_.size())
+        {
+            return false;
+        }
+
+        for(int i = 0; i < drawings_.size(); i++)
+        {
+            if(drawings_[i] != rhs.drawings_[i])
+            {
+                return false;
+            }
+        }
+        */
+
+        return true;
+    }
+    return false;
 }
 
 }
