@@ -859,6 +859,22 @@ struct alignment
     int indent = 0;
 };
 
+class string_table
+{
+public:
+    int operator[](const std::string &key) const;
+};
+
+class string_table_builder
+{
+public:
+    void add(const std::string &string);
+    string_table &get_table() { return table_; }
+    const string_table &get_table() const { return table_; }
+private:
+    string_table table_;
+};
+
 class number_format
 {
 public:
@@ -909,8 +925,10 @@ public:
 
     format get_format_code() const { return format_code_; }
     void set_format_code(format format_code) { format_code_ = format_code; }
+    void set_format_code(const std::string &format_code) { custom_format_code_ = format_code; }
 
 private:
+    std::string custom_format_code_ = "";
     format format_code_ = format::general;
     int format_index_ = 0;
 };
@@ -1051,6 +1069,15 @@ public:
 
     type locked;
     type hidden;
+};
+
+class sheet_protection
+{
+public:
+    static std::string hash_password(const std::string &password);
+
+    void set_password(const std::string &password);
+    std::string get_hashed_password() const;
 };
 
 class style
@@ -1214,6 +1241,7 @@ public:
     bool operator==(const std::string &comparand) const;
     bool operator==(const char *comparand) const;
     bool operator==(const tm &comparand) const;
+    bool operator==(const cell &comparand) const { return root_ == comparand.root_; }
 
     friend bool operator==(std::nullptr_t, const cell &cell);
     friend bool operator==(bool comparand, const cell &cell);
@@ -1359,6 +1387,8 @@ public:
     static std::string write_root_rels(workbook &wb);
     static std::string write_worksheet(worksheet &ws);
     static std::string get_document_content(const std::string &filename);
+    static std::string create_temporary_file();
+    static std::string delete_temporary_file(const std::string &filename);
 };
 
 class workbook

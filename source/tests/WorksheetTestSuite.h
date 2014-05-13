@@ -122,7 +122,7 @@ public:
         auto c_range_coord = ws.range("B12");
         auto c_cell = ws.cell("B12");
         TS_ASSERT_EQUALS(c_range_coord, c_range_name);
-        TS_ASSERT_EQUALS(c_range_coord, c_cell);
+        TS_ASSERT(c_range_coord[0][0] == c_cell);
     }
 
     void test_garbage_collect()
@@ -135,7 +135,7 @@ public:
 
         ws.garbage_collect();
 
-        std::set<xlnt::cell> comparison_cells = {ws.cell("B2"), ws.cell("C4")};
+        std::list<xlnt::cell> comparison_cells = {ws.cell("B2"), ws.cell("C4")};
 
         for(auto cell : ws.get_cell_collection())
         {
@@ -156,14 +156,14 @@ public:
         TS_ASSERT_EQUALS("rId1", ws.cell("A1").get_hyperlink_rel_id());
         TS_ASSERT_EQUALS("rId1", ws.get_relationships()[0].get_id());
         TS_ASSERT_EQUALS("http:test.com", ws.get_relationships()[0].get_target_uri());
-        TS_ASSERT_EQUALS("External", ws.get_relationships()[0].get_target_mode());
+        TS_ASSERT_EQUALS(xlnt::target_mode::External, ws.get_relationships()[0].get_target_mode());
 
         ws.cell("A2").set_hyperlink("http:test2.com");
         TS_ASSERT_EQUALS(ws.get_relationships().size(), 2);
         TS_ASSERT_EQUALS("rId2", ws.cell("A2").get_hyperlink_rel_id());
         TS_ASSERT_EQUALS("rId2", ws.get_relationships()[1].get_id());
         TS_ASSERT_EQUALS("http:test2.com", ws.get_relationships()[1].get_target_uri());
-        TS_ASSERT_EQUALS("External", ws.get_relationships()[1].get_target_mode());
+        TS_ASSERT_EQUALS(xlnt::target_mode::External, ws.get_relationships()[1].get_target_mode());
     }
 
     void test_bad_relationship_type()

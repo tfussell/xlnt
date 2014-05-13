@@ -15,13 +15,13 @@ public:
 
     void test_hasher()
     {
-        TS_ASSERT_EQUALS("CBEB", hash_password("test"));
+        TS_ASSERT_EQUALS("CBEB", xlnt::sheet_protection::hash_password("test"));
     }
 
     void test_sheet_protection()
     {
-        protection = SheetProtection();
-        protection.password = "test";
-        TS_ASSERT_EQUALS("CBEB", protection.password);
+        xlnt::sheet_protection protection;
+        protection.set_password("test");
+        TS_ASSERT_EQUALS("CBEB", protection.get_hashed_password());
     }
 };

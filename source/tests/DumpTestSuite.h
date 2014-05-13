@@ -43,49 +43,62 @@ public:
             letters.push_back(xlnt::cell::get_column_letter(i + 1));
         }
 
-        std::vector<xlnt::cell> expected_rows;
+        std::vector<std::vector<std::string>> expected_rows;
 
         for(int row = 0; row < 20; row++)
         {
-            expected_rows.append(["%s%d" % (letter, row + 1) for letter in letters]);
-            for(auto row in range(20))
+            expected_rows.push_back(std::vector<std::string>());
+            for(auto letter : letters)
             {
-                expected_rows.append([(row + 1) for letter in letters]);
-                for(auto row in range(10))
-                {
-                    expected_rows.append([datetime(2010, ((x % 12) + 1), row + 1) for x in range(len(letters))]);
-                    for(auto row in range(20))
-                    {
-                        expected_rows.append(["=%s%d" % (letter, row + 1) for letter in letters]);
-                        for(auto row in expected_rows)
-                        {
-                            ws.append(row);
-                        }
-
-                        wb.save(test_filename);
-                        wb2 = load_workbook(test_filename, True);
-                    }
-
-                    ws = wb2.worksheets[0];
-                }
+                expected_rows.back().push_back(letter + std::to_string(row + 1));
             }
         }
 
-
-        for(auto ex_row, ws_row : zip(expected_rows[:-20], ws.iter_rows()))
+        for(int row = 0; row < 20; row++)
         {
-            for(auto ex_cell, ws_cell : zip(ex_row, ws_row))
+            expected_rows.push_back(std::vector<std::string>());
+            for(auto letter : letters)
             {
-                TS_ASSERT_EQUALS(ex_cell, ws_cell.internal_value);
-
-                os.remove(test_filename);
+                expected_rows.back().push_back(letter + std::to_string(row + 1));
             }
+        }
+
+        for(int row = 0; row < 10; row++)
+        {
+            expected_rows.push_back(std::vector<std::string>());
+            for(auto letter : letters)
+            {
+                expected_rows.back().push_back(letter + std::to_string(row + 1));
+            }
+        }
+
+        for(auto row : expected_rows)
+        {
+            ws.append(row);
+        }
+
+        wb.save(test_filename);
+
+        xlnt::workbook wb2;
+        wb2.load(test_filename);
+        ws = wb2[0];
+
+        auto expected_row = expected_rows.begin();
+        for(auto row : ws.rows())
+        {
+            auto expected_cell = expected_row->begin();
+            for(auto cell : row)
+            {
+                TS_ASSERT_EQUALS(cell, *expected_cell);
+                expected_cell++;
+            }
+            expected_row++;
         }
     }
 
     void test_table_builder()
     {
-        StringTableBuilder sb;
+        xlnt::string_table_builder sb;
 
         std::unordered_map<std::string, int> result = {{"a", 0}, {"b", 1}, {"c", 2}, {"d", 3}};
 
@@ -94,19 +107,14 @@ public:
             for(int i = 0; i < 5; i++)
             {
                 sb.add(pair.first);
-
-                auto table = sb.get_table();
-
-                try
-                {
-                    result_items = result.items();
-                }
-
-                for key, idx in result_items
-                {
-                    TS_ASSERT_EQUALS(idx, table[key])
-                }
             }
+        }
+
+        auto table = sb.get_table();
+
+        for(auto pair : result)
+        {
+            TS_ASSERT_EQUALS(pair.second, table[pair.first]);
         }
     }
 
@@ -127,12 +135,9 @@ public:
 
     void test_create_temp_file()
     {
-        f = dump_worksheet.create_temporary_file();
-
-        if(!osp.isfile(f))
-        {
-            raise Exception("The file %s does not exist" % f)
-        }
+        auto f = xlnt::writer::create_temporary_file();
+        TS_ASSERT(xlnt::file::exists(f));
+        xlnt::writer::delete_temporary_file(f);
     }
 
     void test_dump_twice()
