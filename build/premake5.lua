@@ -18,26 +18,18 @@ project "xlnt.test"
     language "C++"
     targetname "xlnt.test"
     includedirs { 
-       "$(opc_prefix)",
-       "$(opc_prefix)/config",
-       "$(opc_prefix)/third_party/libxml2-2.7.7/include",
        "$(cxxtest_prefix)",
        "../include",
-       "../third-party/pugixml/src"
+       "../third-party/pugixml/src",
+       "../third-party/zlib",
+       "../third-party/zlib/contrib/minizip"
     }
     defines { "WIN32" }
     files { 
        "../source/tests/**.h",
        "../source/tests/runner-autogen.cpp"
     }
-    links { 
-        "xlnt",
-	"mce",
-	"opc",
-	"plib",
-	"xml",
-	"zlib"
-    }
+    links { "xlnt" }
     prebuildcommands { "cxxtestgen --runner=ErrorPrinter -o ../../source/tests/runner-autogen.cpp ../../source/tests/*.h" }
     flags { 
        "Unicode",
@@ -46,18 +38,13 @@ project "xlnt.test"
        "NoPCH"
     }
     configuration "Debug"
-	targetdir "../bin/debug"
+	targetdir "../bin"
     configuration "Release"
         flags { "LinkTimeOptimization" }
-	targetdir "../bin/release"
+	targetdir "../bin"
     configuration "windows"
-        includedirs { "$(opc_prefix)/plib/config/msvc/plib/include" }
         defines { "WIN32" }
 	links { "Shlwapi" }
-        libdirs { "$(opc_prefix)/win32/x64/Debug" }
-    configuration "not windows"
-        includedirs { "$(opc_prefix)/build/plib/config/darwin-debug-gcc-i386/plib/include" }
-        libdirs { "$(opc_prefix)/build/darwin-debug-gcc-i386/static" }
 
 project "xlnt"
     kind "StaticLib"
@@ -65,9 +52,6 @@ project "xlnt"
     warnings "Extra"
     targetdir "../lib/"
     includedirs { 
-       "$(opc_prefix)",
-       "$(opc_prefix)/config",
-       "$(opc_prefix)/third_party/libxml2-2.7.7/include",
        "../include/xlnt",
        "../third-party/pugixml/src",
        "../source/",
@@ -97,9 +81,6 @@ project "xlnt"
     configuration "Debug"
         flags { "FatalWarnings" }
     configuration "windows"
-        includedirs { "$(opc_prefix)/plib/config/msvc/plib/include" }
         defines { "WIN32" }
-    configuration "not windows"
-        includedirs { "$(opc_prefix)/build/plib/config/darwin-debug-gcc-i386/plib/include" }
-    configuration "**.c"
-        flags { "NoWarnings" }
+    configuration "../third-party/zlib/*.c"
+        warnings "Off"

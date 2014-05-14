@@ -10,12 +10,13 @@ class ZipFileTestSuite : public CxxTest::TestSuite
 public:
     ZipFileTestSuite()
     {
+        /*
         template_zip = "../../source/tests/test_data/packaging/test.zip";
         test_zip = "../../source/tests/test_data/packaging/a.zip";
         existing_xlsx = "../../source/tests/test_data/packaging/existing.xlsx";
         new_xlsx = "../../source/tests/test_data/packaging/new.xlsx";
 
-        xlnt::file::copy(template_zip, test_zip, true);
+        xlnt::file::copy(template_zip, test_zip, true);*/
     }
 
     void test_existing_package()

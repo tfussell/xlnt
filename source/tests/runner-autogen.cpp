@@ -1524,31 +1524,31 @@ CxxTest::StaticSuiteDescription suiteDescription_ZipFileTestSuite( "../../source
 
 static class TestDescription_suite_ZipFileTestSuite_test_existing_package : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_ZipFileTestSuite_test_existing_package() : CxxTest::RealTestDescription( Tests_ZipFileTestSuite, suiteDescription_ZipFileTestSuite, 21, "test_existing_package" ) {}
+ TestDescription_suite_ZipFileTestSuite_test_existing_package() : CxxTest::RealTestDescription( Tests_ZipFileTestSuite, suiteDescription_ZipFileTestSuite, 22, "test_existing_package" ) {}
  void runTest() { suite_ZipFileTestSuite.test_existing_package(); }
 } testDescription_suite_ZipFileTestSuite_test_existing_package;
 
 static class TestDescription_suite_ZipFileTestSuite_test_new_package : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_ZipFileTestSuite_test_new_package() : CxxTest::RealTestDescription( Tests_ZipFileTestSuite, suiteDescription_ZipFileTestSuite, 27, "test_new_package" ) {}
+ TestDescription_suite_ZipFileTestSuite_test_new_package() : CxxTest::RealTestDescription( Tests_ZipFileTestSuite, suiteDescription_ZipFileTestSuite, 28, "test_new_package" ) {}
  void runTest() { suite_ZipFileTestSuite.test_new_package(); }
 } testDescription_suite_ZipFileTestSuite_test_new_package;
 
 static class TestDescription_suite_ZipFileTestSuite_test_read_text : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_ZipFileTestSuite_test_read_text() : CxxTest::RealTestDescription( Tests_ZipFileTestSuite, suiteDescription_ZipFileTestSuite, 37, "test_read_text" ) {}
+ TestDescription_suite_ZipFileTestSuite_test_read_text() : CxxTest::RealTestDescription( Tests_ZipFileTestSuite, suiteDescription_ZipFileTestSuite, 38, "test_read_text" ) {}
  void runTest() { suite_ZipFileTestSuite.test_read_text(); }
 } testDescription_suite_ZipFileTestSuite_test_read_text;
 
 static class TestDescription_suite_ZipFileTestSuite_test_write_text : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_ZipFileTestSuite_test_write_text() : CxxTest::RealTestDescription( Tests_ZipFileTestSuite, suiteDescription_ZipFileTestSuite, 44, "test_write_text" ) {}
+ TestDescription_suite_ZipFileTestSuite_test_write_text() : CxxTest::RealTestDescription( Tests_ZipFileTestSuite, suiteDescription_ZipFileTestSuite, 45, "test_write_text" ) {}
  void runTest() { suite_ZipFileTestSuite.test_write_text(); }
 } testDescription_suite_ZipFileTestSuite_test_write_text;
 
 static class TestDescription_suite_ZipFileTestSuite_test_read_xml : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_ZipFileTestSuite_test_read_xml() : CxxTest::RealTestDescription( Tests_ZipFileTestSuite, suiteDescription_ZipFileTestSuite, 58, "test_read_xml" ) {}
+ TestDescription_suite_ZipFileTestSuite_test_read_xml() : CxxTest::RealTestDescription( Tests_ZipFileTestSuite, suiteDescription_ZipFileTestSuite, 59, "test_read_xml" ) {}
  void runTest() { suite_ZipFileTestSuite.test_read_xml(); }
 } testDescription_suite_ZipFileTestSuite_test_read_xml;
 
