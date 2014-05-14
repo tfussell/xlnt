@@ -1,12 +1,13 @@
 #pragma once
 
+#include <list>
 #include <ostream>
-#include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <opc/opc.h>
-#include <opc/container.h>
+
+#include "zip.h"
+#include "unzip.h"
 
 struct tm;
 
@@ -16,7 +17,6 @@ class cell;
 class comment;
 class drawing;
 class named_range;
-class package;
 class relationship;
 class style;
 class workbook;
@@ -25,7 +25,6 @@ class worksheet;
 struct cell_struct;
 struct drawing_struct;
 struct named_range_struct;
-struct package_impl;
 struct worksheet_struct;
 
 const int MIN_ROW = 0;
@@ -97,19 +96,15 @@ enum class file_access
     /// <summary>
     /// Read access to the file. Data can be read from the file. Combine with Write for read/write access.
     /// </summary>
-    Read = 0x01,
+    read = 0x01,
     /// <summary>
     /// Read and write access to the file. Data can be written to and read from the file.
     /// </summary>
-    ReadWrite = 0x02,
+    read_write = 0x02,
     /// <summary>
     /// Write access to the file. Data can be written to the file. Combine with Read for read/write access.
     /// </summary>
-    Write = 0x04,
-    /// <summary>
-    /// Inherit access for part from enclosing package.
-    /// </summary>
-    FromPackage = 0x08
+    write = 0x04
 };
 
 /// <summary>
@@ -120,65 +115,27 @@ enum class file_mode
     /// <summary>
     /// Opens the file if it exists and seeks to the end of the file, or creates a new file.This requires FileIOPermissionAccess.Append permission.file_mode.Append can be used only in conjunction with file_access.Write.Trying to seek to a position before the end of the file throws an IOException exception, and any attempt to read fails and throws a NotSupportedException exception.
     /// </summary>
-    Append,
+    append,
     /// <summary>
     /// Specifies that the operating system should create a new file. If the file already exists, it will be overwritten. This requires FileIOPermissionAccess.Write permission. file_mode.Create is equivalent to requesting that if the file does not exist, use CreateNew; otherwise, use Truncate. If the file already exists but is a hidden file, an UnauthorizedAccessException exception is thrown.
     /// </summary>
-    Create,
+    create,
     /// <summary>
     /// Specifies that the operating system should create a new file. This requires FileIOPermissionAccess.Write permission. If the file already exists, an IOException exception is thrown.
     /// </summary>
-    CreateNew,
+    create_new,
     /// <summary>
     /// Specifies that the operating system should open an existing file. The ability to open the file is dependent on the value specified by the file_access enumeration. A System.IO.FileNotFoundException exception is thrown if the file does not exist.
     /// </summary>
-    Open,
+    open,
     /// <summary>
     /// Specifies that the operating system should open a file if it exists; otherwise, a new file should be created. If the file is opened with file_access.Read, FileIOPermissionAccess.Read permission is required. If the file access is file_access.Write, FileIOPermissionAccess.Write permission is required. If the file is opened with file_access.ReadWrite, both FileIOPermissionAccess.Read and FileIOPermissionAccess.Write permissions are required.
     /// </summary>
-    OpenOrCreate,
+    open_or_create,
     /// <summary>
     /// Specifies that the operating system should open an existing file. When the file is opened, it should be truncated so that its size is zero bytes. This requires FileIOPermissionAccess.Write permission. Attempts to read from a file opened with file_mode.Truncate cause an ArgumentException exception.
     /// </summary>
-    Truncate
-};
-
-/// <summary>
-/// Contains constants for controlling the kind of access other FileStream objects can have to the same file.
-/// </summary>
-enum class file_share
-{
-    /// <summary>
-    /// Allows subsequent deleting of a file.
-    /// </summary>
-    Delete,
-    /// <summary>
-    /// Makes the file handle inheritable by child processes. This is not directly supported by Win32.
-    /// </summary>
-    Inheritable,
-    /// <summary>
-    /// Declines sharing of the current file. Any request to open the file (by this process or another process) will 
-    /// fail until the file is closed.
-    /// </summary>
-    None,
-    /// <summary>
-    /// Allows subsequent opening of the file for reading. If this flag is not specified, any request to open the file 
-    /// for reading (by this process or another process) will fail until the file is closed. However, even if this flag
-    /// is specified, additional permissions might still be needed to access the file.
-    /// </summary>
-    Read,
-    /// <summary>
-    /// Allows subsequent opening of the file for reading or writing. If this flag is not specified, any request to 
-    /// open the file for reading or writing (by this process or another process) will fail until the file is closed. 
-    /// However, even if this flag is specified, additional permissions might still be needed to access the file.
-    /// </summary>
-    ReadWrite,
-    /// <summary>
-    /// Allows subsequent opening of the file for writing. If this flag is not specified, any request to open the file
-    /// for writing (by this process or another process) will fail until the file is closed. However, even if this flag
-    /// is specified, additional permissions might still be needed to access the file.
-    /// </summary>
-    Write
+    truncate
 };
 
 /// <summary>
@@ -189,11 +146,11 @@ enum class target_mode
     /// <summary>
     /// The relationship references a part that is inside the package.
     /// </summary>
-    External,
+    external,
     /// <summary>
     /// The relationship references a resource that is external to the package.
     /// </summary>
-    Internal
+    internal
 };
 
 enum class encoding_type
@@ -220,6 +177,53 @@ public:
     {
 
     }
+};
+
+class zip_file
+{
+    enum class state
+    {
+        read,
+        write,
+        closed
+    };
+
+public:
+    zip_file(const std::string &filename, file_mode mode, file_access access = file_access::read);
+
+    ~zip_file();
+
+    std::string get_file_contents(const std::string &filename);
+
+    void set_file_contents(const std::string &filename, const std::string &contents);
+
+    void delete_file(const std::string &filename);
+
+    bool has_file(const std::string &filename);
+
+    void flush(bool force_write = false);
+
+private:
+    void read_all();
+    void write_all();
+    std::string read_from_zip(const std::string &filename);
+    void write_to_zip(const std::string &filename, const std::string &content, bool append = true);
+    void change_state(state new_state, bool append = true);
+    static bool file_exists(const std::string& name);
+    void start_read();
+    void stop_read();
+    void start_write(bool append);
+    void stop_write();
+
+    zipFile zip_file_;
+    unzFile unzip_file_;
+    state current_state_;
+    std::string filename_;
+    std::unordered_map<std::string, std::string> files_;
+    bool modified_;
+    file_mode mode_;
+    file_access access_;
+    std::vector<std::string> directories_;
 };
 
 /// <summary>
@@ -424,10 +428,8 @@ public:
     std::string get_target_uri() const { return target_uri_; }
 
 private:
-    friend class package;
-
-    relationship(const std::string &id, package &package, const std::string &relationship_type_, const std::string &source_uri, target_mode target_mode, const std::string &target_uri);
-    relationship &operator=(const relationship &rhs) = delete;
+    relationship(const std::string &id, const std::string &relationship_type_, const std::string &source_uri, target_mode target_mode, const std::string &target_uri);
+    //relationship &operator=(const relationship &rhs) = delete;
 
     type type_;
     std::string id_;
@@ -437,390 +439,6 @@ private:
 };
 
 typedef std::vector<relationship> relationship_collection;
-
-class opc_callback_handler
-{
-public:
-    static int read(void *context, char *buffer, int length);
-
-    static int write(void *context, const char *buffer, int length);
-
-    static int close(void *context);
-
-    static opc_ofs_t seek(void *context, opc_ofs_t ofs);
-
-    static int trim(void *context, opc_ofs_t new_size);
-
-    static int flush(void *context);
-};
-
-struct part_struct;
-
-/// <summary>
-/// Represents a part that is stored in a ZipPackage.
-/// </summary>
-class part
-{
-public:
-    /// <summary>
-    /// Initializes a new instance of the part class with a specified parent Package, part URI, MIME content type, and compression_option.
-    /// </summary>
-    part(package_impl &package, const std::string &uri_part, const std::string &mime_type = "", compression_option compression = compression_option::NotCompressed);
-
-    part &operator=(const part &) = delete;
-
-    /// <summary>
-    /// gets the compression option of the part content stream.
-    /// </summary>
-    compression_option get_compression_option() const;
-
-    /// <summary>
-    /// gets the MIME type of the content stream.
-    /// </summary>
-    std::string get_content_type() const;
-
-    /// <summary>
-    /// gets the parent Package of the part.
-    /// </summary>
-    package &get_package() const;
-
-    /// <summary>
-    /// gets the URI of the part.
-    /// </summary>
-    std::string get_uri() const;
-
-    /// <summary>
-    /// Creates a part-level relationship between this part to a specified target part or external resource.
-    /// </summary>
-    relationship create_relationship(const std::string &target_uri, target_mode target_mode, const std::string &relationship_type);
-
-    /// <summary>
-    /// Deletes a specified part-level relationship.
-    /// </summary>
-    void delete_relationship(const std::string &id);
-
-    /// <summary>
-    /// Returns the relationship that has a specified Id.
-    /// </summary>
-    relationship get_relationship(const std::string &id);
-
-    /// <summary>
-    /// Returns a collection of all the relationships that are owned by this part.
-    /// </summary>
-    relationship_collection get_relationships();
-
-    /// <summary>
-    /// Returns a collection of the relationships that match a specified RelationshipType.
-    /// </summary>
-    relationship_collection get_relationship_by_type(const std::string &relationship_type);
-
-    /// <summary>
-    /// Returns all the content of this part.
-    /// </summary>
-    std::string read();
-
-    /// <summary>
-    /// Writes the given data to the part stream.
-    /// </summary>
-    void write(const std::string &data);
-
-    /// <summary>
-    /// Returns a value that indicates whether this part owns a relationship with a specified Id.
-    /// </summary>
-    bool relationship_exists(const std::string &id) const;
-
-    bool operator==(const part &comparand) const;
-    bool operator==(const std::nullptr_t &) const;
-
-private:
-    friend struct package_impl;
-
-    part(part_struct *root);
-
-    part_struct *root_;
-};
-
-typedef std::vector<part> part_collection;
-
-/// <summary>
-/// Implements a derived subclass of the abstract Package base class—the ZipPackage class uses a 
-/// ZIP archive as the container store. This class should not be inherited.
-/// </summary>
-class package
-{
-public:
-    enum class type
-    {
-        Excel,
-        Word,
-        Powerpoint,
-        Zip
-    };
-
-    package();
-    ~package();
-
-    type get_type() const;
-
-    /// <summary>
-    /// Opens a package with a given IO stream, file mode, and file access setting.
-    /// </summary>
-    void open(std::iostream &stream, file_mode package_mode, file_access package_access);
-
-    /// <summary>
-    /// Opens a package at a given path using a given file mode, file access, and file share setting.
-    /// </summary>
-    void open(const std::string &path, file_mode package_mode = file_mode::OpenOrCreate,
-        file_access package_access = file_access::ReadWrite, file_share package_share = file_share::None);
-
-    /// <summary>
-    /// Saves and closes the package plus all underlying part streams.
-    /// </summary>
-    void close();
-
-    /// <summary>
-    /// Creates a new part with a given URI, content type, and compression option.
-    /// </summary>
-    part create_part(const std::string &part_uri, const std::string &content_type, compression_option compression = compression_option::Normal);
-
-    /// <summary>
-    /// Creates a package-level relationship to a part with a given URI, target mode, relationship type, and identifier (ID).
-    /// </summary>
-    relationship create_relationship(const std::string &part_uri, target_mode target_mode, const std::string &relationship_type, const std::string &id);
-
-    /// <summary>
-    /// Deletes a part with a given URI from the package.
-    /// </summary>
-    void delete_part(const std::string &part_uri);
-
-    /// <summary>
-    /// Deletes a package-level relationship.
-    /// </summary>
-    void delete_relationship(const std::string &id);
-
-    /// <summary>
-    /// Saves the contents of all parts and relationships that are contained in the package.
-    /// </summary>
-    void flush();
-
-    /// <summary>
-    /// Returns the part with a given URI.
-    /// </summary>
-    part get_part(const std::string &part_uri);
-
-    /// <summary>
-    /// Returns a collection of all the parts in the package.
-    /// </summary>
-    part_collection get_parts();
-
-    /// <summary>
-    /// 
-    /// </summary>
-    relationship get_relationship(const std::string &id);
-
-    /// <summary>
-    /// Returns the package-level relationship with a given identifier.
-    /// </summary>
-    relationship_collection get_relationships();
-
-    /// <summary>
-    /// Returns a collection of all the package-level relationships that match a given RelationshipType.
-    /// </summary>
-    relationship_collection get_relationships(const std::string &relationship_type);
-
-    /// <summary>
-    /// Indicates whether a part with a given URI is in the package.
-    /// </summary>
-    bool part_exists(const std::string &part_uri);
-
-    /// <summary>
-    /// Indicates whether a package-level relationship with a given ID is contained in the package.
-    /// </summary>
-    bool relationship_exists(const std::string &id);
-
-    /// <summary>
-    /// gets the file access setting for the package.
-    /// </summary>
-    file_access get_file_open_access() const;
-
-    bool operator==(const package &comparand) const;
-    bool operator==(const std::nullptr_t &) const;
-
-    /// <summary>
-    /// gets the category of the Package.
-    /// </summary>
-    std::string get_category() const;
-
-    /// <summary>
-    /// sets the category of the Package.
-    /// </summary>
-    void set_category(const std::string &category);
-
-    /// <summary>
-    /// gets the category of the Package.
-    /// </summary>
-    std::string get_content_status() const;
-
-    /// <summary>
-    /// sets the category of the Package.
-    /// </summary>
-    void set_content_status(const std::string &category);
-
-    /// <summary>
-    /// gets the category of the Package.
-    /// </summary>
-    std::string get_content_type() const;
-
-    /// <summary>
-    /// sets the category of the Package.
-    /// </summary>
-    void set_content_type(const std::string &category);
-
-    /// <summary>
-    /// gets the category of the Package.
-    /// </summary>
-    nullable<tm> get_created() const;
-
-    /// <summary>
-    /// sets the category of the Package.
-    /// </summary>
-    void set_created(const nullable<tm> &created);
-
-    /// <summary>
-    /// gets the category of the Package.
-    /// </summary>
-    std::string get_creator() const;
-
-    /// <summary>
-    /// sets the category of the Package.
-    /// </summary>
-    void set_creator(const std::string &category);
-
-    /// <summary>
-    /// gets the category of the Package.
-    /// </summary>
-    std::string get_description() const;
-
-    /// <summary>
-    /// sets the category of the Package.
-    /// </summary>
-    void set_description(const std::string &category);
-
-    /// <summary>
-    /// gets the category of the Package.
-    /// </summary>
-    std::string get_identifier() const;
-
-    /// <summary>
-    /// sets the category of the Package.
-    /// </summary>
-    void set_identifier(const std::string &category);
-
-    /// <summary>
-    /// gets the category of the Package.
-    /// </summary>
-    std::string get_keywords() const;
-
-    /// <summary>
-    /// sets the category of the Package.
-    /// </summary>
-    void set_keywords(const std::string &category);
-
-    /// <summary>
-    /// gets the category of the Package.
-    /// </summary>
-    std::string get_language() const;
-
-    /// <summary>
-    /// sets the category of the Package.
-    /// </summary>
-    void set_language(const std::string &category);
-
-    /// <summary>
-    /// gets the category of the Package.
-    /// </summary>
-    std::string get_last_modified_by() const;
-
-    /// <summary>
-    /// sets the category of the Package.
-    /// </summary>
-    void set_last_modified_by(const std::string &category);
-
-    /// <summary>
-    /// gets the category of the Package.
-    /// </summary>
-    nullable<tm> get_last_printed() const;
-
-    /// <summary>
-    /// sets the category of the Package.
-    /// </summary>
-    void set_last_printed(const nullable<tm> &created);
-
-    /// <summary>
-    /// gets the category of the Package.
-    /// </summary>
-    nullable<tm> get_modified() const;
-
-    /// <summary>
-    /// sets the category of the Package.
-    /// </summary>
-    void set_modified(const nullable<tm> &created);
-
-    /// <summary>
-    /// gets the category of the Package.
-    /// </summary>
-    std::string get_revision() const;
-
-    /// <summary>
-    /// sets the category of the Package.
-    /// </summary>
-    void set_revision(const std::string &category);
-
-    /// <summary>
-    /// gets the category of the Package.
-    /// </summary>
-    std::string getsubject() const;
-
-    /// <summary>
-    /// sets the category of the Package.
-    /// </summary>
-    void setsubject(const std::string &category);
-
-    /// <summary>
-    /// gets the category of the Package.
-    /// </summary>
-    std::string get_title() const;
-
-    /// Ssummary>
-    /// gets the category of the Package.
-    /// </summary>
-    void set_title(const std::string &category);
-
-    /// <summary>
-    /// gets the category of the Package.
-    /// </summary>
-    std::string get_version() const;
-
-    /// <summary>
-    /// sets the category of the Package.
-    /// </summary>
-    void set_version(const std::string &category);
-
-private:
-    friend opc_callback_handler;
-
-    void open_container();
-
-    int write(char *buffer, int length);
-
-    int read(const char *buffer, int length);
-
-    std::ios::pos_type seek(std::ios::pos_type ofs);
-
-    int trim(std::ios::pos_type new_size);
-
-    package_impl *impl_;
-};
 
 struct coordinate
 {
@@ -1077,7 +695,10 @@ public:
     static std::string hash_password(const std::string &password);
 
     void set_password(const std::string &password);
-    std::string get_hashed_password() const;
+    std::string get_hashed_password() const { return hashed_password_; }
+
+private:
+    std::string hashed_password_;
 };
 
 class style
@@ -1116,6 +737,13 @@ private:
     alignment alignment_;
     number_format number_format_;
     protection protection_;
+};
+
+enum class optimized
+{
+    write,
+    read,
+    none
 };
 
 /// <summary>
@@ -1176,9 +804,9 @@ public:
     static std::string check_numeric(const std::string &value);
     static std::string check_error(const std::string &value);
 
-    cell();
-    cell(worksheet &ws, const std::string &column, int row);
-    cell(worksheet &ws, const std::string &column, int row, const std::string &initial_value);
+    xlnt::cell();
+    xlnt::cell(worksheet &ws, const std::string &column, int row);
+    xlnt::cell(worksheet &ws, const std::string &column, int row, const std::string &initial_value);
 
     int get_row() const;
     std::string get_column() const;
@@ -1257,12 +885,12 @@ private:
     cell_struct *root_;
 };
 
-inline std::ostream &operator<<(std::ostream &stream, const cell &cell)
+inline std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)
 {
     return stream << cell.to_string();
 }
 
-typedef std::vector<std::vector<cell>> range;
+typedef std::vector<std::vector<xlnt::cell>> range;
 
 struct page_setup
 {
@@ -1354,6 +982,7 @@ public:
 
 private:
     friend class workbook;
+    friend class cell;
     worksheet(worksheet_struct *root);
     worksheet_struct *root_;
 };
@@ -1385,17 +1014,27 @@ class writer
 public:
     static std::string write_content_types(workbook &wb);
     static std::string write_root_rels(workbook &wb);
-    static std::string write_worksheet(worksheet &ws);
+    static std::string write_workbook(workbook &ws);
+    static std::string write_worksheet(worksheet ws);
     static std::string get_document_content(const std::string &filename);
     static std::string create_temporary_file();
-    static std::string delete_temporary_file(const std::string &filename);
+    static void delete_temporary_file(const std::string &filename);
+};
+
+class reader
+{
+public:
+    static std::pair<std::unordered_map<std::string, std::string>, std::unordered_map<std::string, std::string>> read_content_types(const std::string &content);
+    static std::unordered_map<std::string, std::pair<std::string, std::string>> read_relationships(const std::string &content);
+    static void read_workbook(workbook &ws, zip_file &file);
+    static void read_worksheet(worksheet ws, const std::string &content);
 };
 
 class workbook
 {
 public:
     //constructors
-    workbook();
+    workbook(optimized optimized = optimized::none);
 
     //prevent copy and assignment
     workbook(const workbook &) = delete;
@@ -1437,6 +1076,7 @@ public:
     int get_index(worksheet worksheet);
 
     worksheet operator[](const std::string &name);
+    worksheet operator[](int index);
 
     std::vector<worksheet>::iterator begin();
     std::vector<worksheet>::iterator end();

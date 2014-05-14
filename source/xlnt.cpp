@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <array>
+#include <cassert>
 #include <fstream>
 #include <iostream>
 #include <locale>
@@ -341,614 +342,409 @@ bool file::exists(const std::string &path)
 
 #endif //_WIN32
 
-struct part_struct
+
+zip_file::zip_file(const std::string &filename, file_mode mode, file_access access)
+: filename_(filename),
+mode_(mode),
+access_(access),
+zip_file_(nullptr),
+unzip_file_(nullptr),
+modified_(false),
+current_state_(state::closed)
 {
-    part_struct(package_impl &package, const std::string &uri_part, const std::string &mime_type = "", compression_option compression = compression_option::NotCompressed)
-        : compression_option_(compression),
-	  content_type_(mime_type),
-	  package_(package),
-	  uri_(uri_part)
-    {}
-
-    part_struct(package_impl &package, const std::string &uri, opcContainer *container)
-        : package_(package),
-        uri_(uri),
-        container_(container)
+    switch(mode)
     {
-    }
-
-    relationship create_relationship(const std::string &target_uri, target_mode target_mode, const std::string &relationship_type);
-
-    void delete_relationship(const std::string &id);
-
-    relationship get_relationship(const std::string &id);
-
-    relationship_collection get_relationships();
-
-    relationship_collection get_relationship_by_type(const std::string &relationship_type);
-
-    std::string read()
-    {
-        std::string ss;
-        auto part_stream = opcContainerOpenInputStream(container_, (xmlChar*)uri_.c_str());
-        std::array<xmlChar, 1024> buffer;
-        auto bytes_read = opcContainerReadInputStream(part_stream, buffer.data(), static_cast<opc_uint32_t>(buffer.size()));
-        if(bytes_read > 0)
+    case file_mode::open:
+        read_all();
+        break;
+    case file_mode::open_or_create:
+        if(file_exists(filename))
         {
-            ss.append(std::string(buffer.begin(), buffer.begin() + bytes_read));
-            while(bytes_read == buffer.size())
-            {
-                auto bytes_read = opcContainerReadInputStream(part_stream, buffer.data(), static_cast<opc_uint32_t>(buffer.size()));
-                ss.append(std::string(buffer.begin(), buffer.begin() + bytes_read));
-            }
+            read_all();
         }
-        opcContainerCloseInputStream(part_stream);
-        return ss;
-    }
-
-    void write(const std::string &data)
-    {
-        auto name = uri_;
-        auto name_pointer = name.c_str();
-
-        auto match = opcPartFind(container_, (xmlChar*)name_pointer, nullptr, 0);
-        if(match == nullptr)
+        else
         {
-            match = opcPartCreate(container_, (xmlChar*)name_pointer, nullptr, 0);
+            flush(true);
         }
-
-        auto part_stream = opcContainerCreateOutputStream(container_, (xmlChar*)name_pointer, opcCompressionOption_t::OPC_COMPRESSIONOPTION_NORMAL);
-
-        std::stringstream ss(data);
-        std::array<xmlChar, 1024> buffer;
-
-        while(ss)
+        break;
+    case file_mode::create:
+        flush(true);
+        break;
+    case file_mode::create_new:
+        if(file_exists(filename))
         {
-            ss.get((char*)buffer.data(), 1024);
-            auto count = ss.gcount();
-            if(count > 0)
-            {
-                opcContainerWriteOutputStream(part_stream, buffer.data(), static_cast<opc_uint32_t>(count));
-            }
+            throw std::runtime_error("file exists");
         }
-        opcContainerCloseOutputStream(part_stream);
+        flush(true);
+        break;
+    case file_mode::truncate:
+        if((int)access & (int)file_access::read)
+        {
+            throw std::runtime_error("cannot read from file opened with file_mode truncate");
+        }
+        flush(true);
+        break;
+    case file_mode::append:
+        read_all();
+        break;
     }
-
-    /// <summary>
-    /// Returns a value that indicates whether this part owns a relationship with a specified Id.
-    /// </summary>
-    bool relationship_exists(const std::string &id) const;
-
-    /// <summary>
-    /// Returns true if the given Id string is a valid relationship identifier.
-    /// </summary>
-    bool is_valid_xml_id(const std::string &id);
-
-    void operator=(const part_struct &other);
-
-    compression_option compression_option_;
-    std::string content_type_;
-    package_impl &package_;
-    std::string uri_;
-    opcContainer *container_;
-};
-
-part::part(part_struct *root) : root_(root)
-{
-
 }
 
-std::string part::get_content_type() const
+zip_file::~zip_file()
 {
-    return "";
+    change_state(state::closed);
 }
 
-std::string part::read()
+std::string zip_file::get_file_contents(const std::string &filename)
 {
-    if(root_ == nullptr)
+    return files_[filename];
+}
+
+void zip_file::set_file_contents(const std::string &filename, const std::string &contents)
+{
+    if(!has_file(filename) || files_[filename] != contents)
     {
-        return "";
+        modified_ = true;
     }
 
-    return root_->read();
+    files_[filename] = contents;
 }
 
-void part::write(const std::string &data)
+void zip_file::delete_file(const std::string &filename)
 {
-    if(root_ == nullptr)
+    files_.erase(filename);
+}
+
+bool zip_file::has_file(const std::string &filename)
+{
+    return files_.find(filename) != files_.end();
+}
+
+void zip_file::flush(bool force_write)
+{
+    if(modified_ || force_write)
+    {
+        write_all();
+    }
+}
+
+void zip_file::read_all()
+{
+    if(!((int)access_ & (int)file_access::read))
+    {
+        throw std::runtime_error("don't have read access");
+    }
+
+    change_state(state::read);
+
+    int result = unzGoToFirstFile(unzip_file_);
+
+    std::array<char, 1000> file_name_buffer = {'\0'};
+    std::vector<char> file_buffer;
+
+    while(result == UNZ_OK)
+    {
+        unz_file_info file_info;
+        file_name_buffer.fill('\0');
+
+        result = unzGetCurrentFileInfo(unzip_file_, &file_info, file_name_buffer.data(), 
+            static_cast<uLong>(file_name_buffer.size()), nullptr, 0, nullptr, 0);
+
+        if(result != UNZ_OK)
+        {
+            throw result;
+        }
+
+        result = unzOpenCurrentFile(unzip_file_);
+
+        if(result != UNZ_OK)
+        {
+            throw result;
+        }
+
+        if(file_buffer.size() < file_info.uncompressed_size + 1)
+        {
+            file_buffer.resize(file_info.uncompressed_size + 1);
+        }
+        file_buffer[file_info.uncompressed_size] = '\0';
+
+        result = unzReadCurrentFile(unzip_file_, file_buffer.data(), file_info.uncompressed_size);
+
+        if(result != static_cast<int>(file_info.uncompressed_size))
+        {
+            throw result;
+        }
+
+        std::string current_filename(file_name_buffer.begin(), file_name_buffer.begin() + file_info.size_filename);
+        std::string contents(file_buffer.begin(), file_buffer.begin() + file_info.uncompressed_size);
+
+        if(current_filename.back() != '/')
+        {
+            files_[current_filename] = contents;
+        }
+        else
+        {
+            directories_.push_back(current_filename);
+        }
+
+        result = unzCloseCurrentFile(unzip_file_);
+
+        if(result != UNZ_OK)
+        {
+            throw result;
+        }
+
+        result = unzGoToNextFile(unzip_file_);
+    }
+}
+
+void zip_file::write_all()
+{
+    if(!((int)access_ & (int)file_access::write))
+    {
+        throw std::runtime_error("don't have write access");
+    }
+
+    change_state(state::write, false);
+
+    for(auto file : files_)
+    {
+        write_to_zip(file.first, file.second, true);
+    }
+
+    modified_ = false;
+}
+
+std::string zip_file::read_from_zip(const std::string &filename)
+{
+    if(!((int)access_ & (int)file_access::read))
+    {
+        throw std::runtime_error("don't have read access");
+    }
+
+    change_state(state::read);
+
+    auto result = unzLocateFile(unzip_file_, filename.c_str(), 1);
+
+    if(result != UNZ_OK)
+    {
+        throw result;
+    }
+
+    result = unzOpenCurrentFile(unzip_file_);
+
+    if(result != UNZ_OK)
+    {
+        throw result;
+    }
+
+    unz_file_info file_info;
+    std::array<char, 1000> file_name_buffer;
+    std::array<char, 1000> extra_field_buffer;
+    std::array<char, 1000> comment_buffer;
+
+    unzGetCurrentFileInfo(unzip_file_, &file_info,
+        file_name_buffer.data(), static_cast<uLong>(file_name_buffer.size()),
+        extra_field_buffer.data(), static_cast<uLong>(extra_field_buffer.size()),
+        comment_buffer.data(), static_cast<uLong>(comment_buffer.size()));
+
+    std::vector<char> file_buffer(file_info.uncompressed_size + 1, '\0');
+    result = unzReadCurrentFile(unzip_file_, file_buffer.data(), file_info.uncompressed_size);
+
+    if(result != static_cast<int>(file_info.uncompressed_size))
+    {
+        throw result;
+    }
+
+    result = unzCloseCurrentFile(unzip_file_);
+
+    if(result != UNZ_OK)
+    {
+        throw result;
+    }
+
+    return std::string(file_buffer.begin(), file_buffer.end());
+}
+
+void zip_file::write_to_zip(const std::string &filename, const std::string &content, bool append)
+{
+    if(!((int)access_ & (int)file_access::write))
+    {
+        throw std::runtime_error("don't have write access");
+    }
+
+    change_state(state::write, append);
+
+    zip_fileinfo file_info = {0};
+
+    int result = zipOpenNewFileInZip(zip_file_, filename.c_str(), &file_info, nullptr, 0, nullptr, 0, nullptr, Z_DEFLATED, Z_DEFAULT_COMPRESSION);
+
+    if(result != UNZ_OK)
+    {
+        throw result;
+    }
+
+    result = zipWriteInFileInZip(zip_file_, content.data(), static_cast<int>(content.size()));
+
+    if(result != UNZ_OK)
+    {
+        throw result;
+    }
+
+    result = zipCloseFileInZip(zip_file_);
+
+    if(result != UNZ_OK)
+    {
+        throw result;
+    }
+}
+
+void zip_file::change_state(state new_state, bool append)
+{
+    if(new_state == current_state_ && append)
     {
         return;
     }
 
-    return root_->write(data);
-}
-
-bool part::operator==(const part &comparand) const
-{
-    return root_ == comparand.root_;
-}
-
-bool part::operator==(const std::nullptr_t &) const
-{
-    return root_ == nullptr;
-}
-
-struct package_impl
-{
-    static const int BufferSize = 4096 * 4;
-
-    package *parent_;
-    opcContainer *opc_container_;
-    std::iostream &stream_;
-    std::fstream file_stream_;
-    file_mode package_mode_;
-    file_access package_access_;
-    std::vector<xmlChar> container_buffer_;
-    bool open_;
-    bool streaming_;
-
-    file_access get_file_open_access() const
+    switch(new_state)
     {
-        if(!open_)
+    case state::closed:
+        if(current_state_ == state::write)
         {
-            throw std::runtime_error("The package is not open");
+            stop_write();
         }
-
-        return package_access_;
+        else if(current_state_ == state::read)
+        {
+            stop_read();
+        }
+        break;
+    case state::read:
+        if(current_state_ == state::write)
+        {
+            stop_write();
+        }
+        start_read();
+        break;
+    case state::write:
+        if(current_state_ == state::read)
+        {
+            stop_read();
+        }
+        if(current_state_ != state::write)
+        {
+            start_write(append);
+        }
+        break;
+    default:
+        throw std::runtime_error("bad enum");
     }
 
-    package_impl(std::iostream &stream, file_mode package_mode, file_access package_access)
-        : stream_(stream), 
-	  package_mode_(package_mode), 
-	  package_access_(package_access),
-	  container_buffer_(BufferSize)
+    current_state_ = new_state;
+}
+
+bool zip_file::file_exists(const std::string& name)
+{
+    std::ifstream f(name.c_str());
+    return f.good();
+}
+
+void zip_file::start_read()
+{
+    if(unzip_file_ != nullptr || zip_file_ != nullptr)
     {
+        throw std::runtime_error("bad state");
     }
 
-    package_impl(const std::string &path, file_mode package_mode, file_access package_access)
-        : stream_(file_stream_),
-        package_mode_(package_mode),
-        package_access_(package_access),
-        container_buffer_(BufferSize),
-        filename_(path)
-    {
-        switch(package_mode)
-        {
-        case file_mode::Append:
-            switch(package_access)
-            {
-            case file_access::Read: throw std::runtime_error("Append can only be used with file_access.Write");
-            case file_access::ReadWrite: throw std::runtime_error("Append can only be used with file_access.Write");
-            case file_access::Write:
-                file_stream_.open(path, std::ios::binary | std::ios::app | std::ios::out);
-                break;
-            default: throw std::runtime_error("invalid access");
-            }
-            break;
-        case file_mode::Create:
-            switch(package_access)
-            {
-            case file_access::Read:
-                file_stream_.open(path, std::ios::binary | std::ios::in | std::ios::trunc);
-                break;
-            case file_access::ReadWrite:
-                file_stream_.open(path, std::ios::binary | std::ios::in | std::ios::out | std::ios::trunc);
-                break;
-            case file_access::Write:
-                file_stream_.open(path, std::ios::binary | std::ios::out);
-                break;
-            default: throw std::runtime_error("invalid access");
-            }
-            break;
-        case file_mode::CreateNew:
-            if(!file::exists(path))
-            {
-                throw std::runtime_error("File already exists");
-            }
-            switch(package_access)
-            {
-            case file_access::Read:
-                file_stream_.open(path, std::ios::binary | std::ios::in);
-                break;
-            case file_access::ReadWrite:
-                file_stream_.open(path, std::ios::binary | std::ios::in | std::ios::out);
-                break;
-            case file_access::Write:
-                file_stream_.open(path, std::ios::binary | std::ios::out);
-                break;
-            default: throw std::runtime_error("invalid access");
-            }
-            break;
-        case file_mode::Open:
-            if(!file::exists(path))
-            {
-                throw std::runtime_error("Can't open non-existent file");
-            }
-            switch(package_access)
-            {
-            case file_access::Read:
-                file_stream_.open(path, std::ios::binary | std::ios::in);
-                break;
-            case file_access::ReadWrite:
-                file_stream_.open(path, std::ios::binary | std::ios::in | std::ios::out);
-                break;
-            case file_access::Write:
-                file_stream_.open(path, std::ios::binary | std::ios::out);
-                break;
-            default: throw std::runtime_error("invalid access");
-            }
-            break;
-        case file_mode::OpenOrCreate:
-            switch(package_access)
-            {
-            case file_access::Read:
-                file_stream_.open(path, std::ios::binary | std::ios::in);
-                break;
-            case file_access::ReadWrite:
-                file_stream_.open(path, std::ios::binary | std::ios::in | std::ios::out);
-                break;
-            case file_access::Write:
-                file_stream_.open(path, std::ios::binary | std::ios::out);
-                break;
-            default: throw std::runtime_error("invalid access");
-            }
-            break;
-        case file_mode::Truncate:
-            if(!file::exists(path))
-            {
-                throw std::runtime_error("Can't truncate non-existent file");
-            }
-            switch(package_access)
-            {
-            case file_access::Read:
-                file_stream_.open(path, std::ios::binary | std::ios::trunc | std::ios::in);
-                break;
-            case file_access::ReadWrite:
-                file_stream_.open(path, std::ios::binary | std::ios::trunc | std::ios::in | std::ios::out);
-                break;
-            case file_access::Write:
-                file_stream_.open(path, std::ios::binary | std::ios::trunc | std::ios::out);
-                break;
-            default: throw std::runtime_error("invalid access");
-            }
-            break;
-        }
+    unzip_file_ = unzOpen(filename_.c_str());
 
-        if(!file_stream_)
+    if(unzip_file_ == nullptr)
+    {
+        throw std::runtime_error("bad or non-existant file");
+    }
+}
+
+void zip_file::stop_read()
+{
+    if(unzip_file_ == nullptr)
+    {
+        throw std::runtime_error("bad state");
+    }
+
+    int result = unzClose(unzip_file_);
+
+    if(result != UNZ_OK)
+    {
+        throw result;
+    }
+
+    unzip_file_ = nullptr;
+}
+
+void zip_file::start_write(bool append)
+{
+    if(unzip_file_ != nullptr || zip_file_ != nullptr)
+    {
+        throw std::runtime_error("bad state");
+    }
+
+    int append_status;
+
+    if(append)
+    {
+        if(!file_exists(filename_))
         {
-            throw std::runtime_error("something");
+            throw std::runtime_error("can't append to non-existent file");
+        }
+        append_status = APPEND_STATUS_ADDINZIP;
+    }
+    else
+    {
+        append_status = APPEND_STATUS_CREATE;
+    }
+
+    zip_file_ = zipOpen(filename_.c_str(), append_status);
+
+    if(zip_file_ == nullptr)
+    {
+        if(append)
+        {
+            throw std::runtime_error("couldn't append to zip file");
+        }
+        else
+        {
+            throw std::runtime_error("couldn't create zip file");
         }
     }
-
-    void open_container()
-    {
-        if(package_mode_ != file_mode::Open)
-        {
-            stream_.write((const char *)existing_xlsx.data(), existing_xlsx.size());
-            stream_.seekg(std::ios::beg);
-            stream_.seekp(std::ios::beg);
-            stream_.flush();
-        }
-
-        opcContainerOpenMode m;
-
-        switch(package_access_)
-        {
-        case file_access::Read:
-            m = opcContainerOpenMode::OPC_OPEN_READ_ONLY;
-            break;
-        case file_access::ReadWrite:
-            m = opcContainerOpenMode::OPC_OPEN_READ_WRITE;
-            break;
-        case file_access::Write:
-            m = opcContainerOpenMode::OPC_OPEN_WRITE_ONLY;
-            break;
-        default:
-            throw std::runtime_error("unknown file access");
-        }
-
-        opc_container_ = opcContainerOpenIO(&read_callback, &write_callback,
-            &close_callback, &seek_callback,
-            &trim_callback, &flush_callback, this, BufferSize, m, this);
-        open_ = true;
-
-        type_ = determine_type();
-
-        if(type_ != package::type::Excel)
-        {
-            throw std::runtime_error("only excel spreadsheets are supported for now");
-        }
-    }
-
-    ~package_impl()
-    {
-        close();
-    }
-
-    package::type determine_type()
-    {
-        opcRelation rel = opcRelationFind(opc_container_, OPC_PART_INVALID, NULL, _X("http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"));
-
-        if(OPC_RELATION_INVALID != rel)
-        {
-            opcPart main = opcRelationGetInternalTarget(opc_container_, OPC_PART_INVALID, rel);
-
-            if(OPC_PART_INVALID != main)
-            {
-                const xmlChar *type = opcPartGetType(opc_container_, main);
-
-                if(0 == xmlStrcmp(type, _X("application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml")))
-                {
-                    return package::type::Word;
-                }
-                else if(0 == xmlStrcmp(type, _X("application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml")))
-                {
-                    return package::type::Powerpoint;
-                }
-                else if(0 == xmlStrcmp(type, _X("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml")))
-                {
-                    return package::type::Excel;
-                }
-            }
-        }
-
-        return package::type::Zip;
-    }
-
-    void close()
-    {
-        if(open_)
-        {
-            open_ = false;
-            for(auto part : parts_)
-            {
-                delete part.second;
-            }
-            opcContainerClose(opc_container_, opcContainerCloseMode::OPC_CLOSE_NOW);
-            opc_container_ = nullptr;
-        }
-    }
-
-    part create_part(const std::string &part_uri, const std::string &/*content_type*/, compression_option /*compression*/)
-    {
-        if(parts_.find(part_uri) == parts_.end())
-        {
-            parts_[part_uri] = new part_struct(*this, part_uri, opc_container_);
-        }
-        return part(parts_[part_uri]);
-    }
-
-    void delete_part(const std::string &/*part_uri*/)
-    {
-
-    }
-
-    void flush()
-    {
-        stream_.flush();
-    }
-
-    part get_part(const std::string &part_uri)
-    {
-        if(parts_.find(part_uri) == parts_.end())
-        {
-            parts_[part_uri] = new part_struct(*this, part_uri, opc_container_);
-        }
-        return part(parts_[part_uri]);
-    }
-
-    part_collection get_parts()
-    {
-        return part_collection();
-    }
-
-    int write(char *buffer, int length)
-    {
-        stream_.read(buffer, length);
-        auto bytes_read = stream_.gcount();
-        return static_cast<int>(bytes_read);
-    }
-
-    int read(const char *buffer, int length)
-    {
-        auto before = stream_.tellp();
-        stream_.write(buffer, length);
-        auto bytes_written = stream_.tellp() - before;
-        return static_cast<int>(bytes_written);
-    }
-
-    std::ios::pos_type seek(std::ios::pos_type offset)
-    {
-        stream_.clear();
-        stream_.seekg(offset);
-        auto current_position = stream_.tellg();
-        if(stream_.eof())
-        {
-            std::cout << "eof" << std::endl;
-        }
-        if(stream_.fail())
-        {
-            std::cout << "fail" << std::endl;
-        }
-        if(stream_.bad())
-        {
-            std::cout << "bad" << std::endl;
-        }
-        return current_position;
-    }
-
-    int trim(std::ios::pos_type new_size)
-    {
-        file_stream_.flush();
-        std::vector<char> buffer(new_size);
-        auto current_position = stream_.tellg();
-        seek(std::ios::beg);
-        write(buffer.data(), (int)new_size);
-        file_stream_.close();
-        file_stream_.open(filename_, std::ios::trunc | std::ios::out | std::ios::binary | std::ios::in);
-        file_stream_.write(buffer.data(), new_size);
-        seek(current_position);
-
-        return 0;
-    }
-
-    static int read_callback(void *context, char *buffer, int length)
-    {
-        auto object = static_cast<package_impl *>(context);
-        return object->write(buffer, length);
-    }
-
-    static int write_callback(void *context, const char *buffer, int length)
-    {
-        auto object = static_cast<package_impl *>(context);
-        return object->read(buffer, length);
-    }
-
-    static int close_callback(void *context)
-    {
-        auto object = static_cast<package_impl *>(context);
-        object->close();
-        return 0;
-    }
-
-    static opc_ofs_t seek_callback(void *context, opc_ofs_t ofs)
-    {
-        auto object = static_cast<package_impl *>(context);
-        return static_cast<opc_ofs_t>(object->seek(ofs));
-    }
-
-    static int trim_callback(void *context, opc_ofs_t new_size)
-    {
-        auto object = static_cast<package_impl *>(context);
-        return object->trim(new_size);
-    }
-
-    static int flush_callback(void *context)
-    {
-        auto object = static_cast<package_impl *>(context);
-        object->flush();
-        return 0;
-    }
-
-    std::unordered_map<std::string, part_struct *> parts_;
-    package::type type_;
-    std::string filename_;
-};
-
-file_access package::get_file_open_access() const
-{
-    return impl_->get_file_open_access();
 }
 
-package::~package()
+void zip_file::stop_write()
 {
-    close();
-    delete impl_;
-}
-
-void package::open(std::iostream &stream, file_mode package_mode, file_access package_access)
-{
-    if(impl_ != nullptr)
+    if(zip_file_ == nullptr)
     {
-        close();
-        delete impl_;
-        impl_ = nullptr;
+        throw std::runtime_error("bad state");
     }
 
-    impl_ = new package_impl(stream, package_mode, package_access);
-    impl_->parent_ = this;
-    open_container();
-}
+    flush();
 
-void package::open(const std::string &path, file_mode package_mode, file_access package_access, file_share /*package_share*/)
-{
-    if(impl_ != nullptr)
+    int result = zipClose(zip_file_, nullptr);
+
+    if(result != UNZ_OK)
     {
-        close();
-        delete impl_;
-        impl_ = nullptr;
+        throw result;
     }
 
-    impl_ = new package_impl(path, package_mode, package_access);
-    impl_->parent_ = this;
-    open_container();
+    zip_file_ = nullptr;
 }
 
-package::package() : impl_(nullptr)
-{
-}
-
-void package::open_container()
-{
-    impl_->open_container();
-}
-
-void package::close()
-{
-    impl_->close();
-}
-
-part package::create_part(const std::string &part_uri, const std::string &content_type, compression_option compression)
-{
-    return impl_->create_part(part_uri, content_type, compression);
-}
-
-void package::delete_part(const std::string &part_uri)
-{
-    impl_->delete_part(part_uri);
-}
-
-void package::flush()
-{
-    impl_->flush();
-}
-
-part package::get_part(const std::string &part_uri)
-{
-    return impl_->get_part(part_uri);
-}
-
-part_collection package::get_parts()
-{
-    return impl_->get_parts();
-}
-
-int package::write(char *buffer, int length)
-{
-    return impl_->write(buffer, length);
-}
-
-int package::read(const char *buffer, int length)
-{
-    return impl_->read(buffer, length);
-}
-
-std::ios::pos_type package::seek(std::ios::pos_type offset)
-{
-    return impl_->seek(offset);
-}
-
-int package::trim(std::ios::pos_type new_size)
-{
-    return impl_->trim(new_size);
-}
-
-bool package::operator==(const package &comparand) const
-{
-    return impl_ == comparand.impl_;
-}
-
-bool package::operator==(const std::nullptr_t &) const
-{
-    return impl_ == nullptr;
-}
-
+const xlnt::color xlnt::color::black(0);
+const xlnt::color xlnt::color::white(1);
 
 struct cell_struct
 {
     cell_struct(worksheet_struct *ws, const std::string &column, int row)
         : type(cell::type::null), parent_worksheet(ws),
-        column(xlnt::cell::column_index_from_string(column) - 1), row(row)
+        column(xlnt::cell::column_index_from_string(column) - 1), row(row),
+        hyperlink_rel("hyperlink")
     {
 
     }
@@ -972,6 +768,8 @@ struct cell_struct
     int column;
     int row;
     style style;
+    relationship hyperlink_rel;
+    bool merged;
 };
 
 const std::unordered_map<std::string, int> cell::ErrorCodes =
@@ -1007,14 +805,66 @@ cell::cell(cell_struct *root) : root_(root)
 {
 }
 
+int cell::get_row() const
+{
+    return root_->row;
+}
+
+std::string cell::get_column() const
+{
+    return get_column_letter(root_->column);
+}
+
 cell::type cell::data_type_for_value(const std::string &value)
 {
+    if(value.empty())
+    {
+        return type::null;
+    }
+
     if(value[0] == '=')
     {
         return type::formula;
     }
-
-    return type::null;
+    else if(value[0] == '0')
+    {
+        if(value.length() > 1)
+        {
+            if(value[1] == '.' || (value.length() > 2 && (value[1] == 'e' || value[1] == 'E')))
+            {
+                auto first_non_number = std::find_if(value.begin() + 2, value.end(),
+                    [](char c) { return !std::isdigit(c, std::locale::classic()); });
+                if(first_non_number == value.end())
+                {
+                    return type::numeric;
+                }
+            }
+            return type::string;
+        }
+        return type::numeric;
+    }
+    else if(value[0] == '#')
+    {
+        return type::error;
+    }
+    else
+    {
+        char *p;
+        strtod(value.c_str(), &p);
+        if(*p != 0)
+        {
+            static const std::vector<std::string> possible_booleans = {"TRUE", "true", "FALSE", "false"};
+            if(std::find(possible_booleans.begin(), possible_booleans.end(), value) != possible_booleans.end())
+            {
+                return type::boolean;
+            }
+            return type::string;
+        }
+        else
+        {
+            return type::numeric;
+        }
+    }
 }
 
 void cell::set_explicit_value(const std::string &value, type data_type)
@@ -1030,6 +880,16 @@ void cell::set_explicit_value(const std::string &value, type data_type)
     case type::numeric: root_->numeric_value = std::stod(value); return;
     case type::string: root_->string_value = value; return;
     }
+}
+
+void cell::set_hyperlink(const std::string &hyperlink)
+{
+    root_->hyperlink_rel = worksheet(root_->parent_worksheet).create_relationship(hyperlink);
+}
+
+void cell::set_merged(bool merged)
+{
+    root_->merged = merged;
 }
 
 bool cell::bind_value()
@@ -1194,6 +1054,26 @@ bool cell::is_date() const
     return root_->type == type::date;
 }
 
+std::string cell::get_address() const
+{
+    return get_column_letter(root_->column) + std::to_string(root_->row);
+}
+
+std::string cell::get_coordinate() const
+{
+    return get_address();
+}
+
+std::string cell::get_hyperlink_rel_id() const
+{
+    return root_->hyperlink_rel.get_id();
+}
+
+bool cell::operator==(std::nullptr_t) const
+{
+    return root_ == nullptr;
+}
+
 bool cell::operator==(const std::string &comparand) const
 {
     return root_->type == cell::type::string && root_->string_value == comparand;
@@ -1209,17 +1089,17 @@ bool cell::operator==(const tm &comparand) const
     return root_->type == cell::type::date && root_->date_value.tm_hour == comparand.tm_hour;
 }
 
-bool operator==(const char *comparand, const cell &cell)
+bool operator==(const char *comparand, const xlnt::cell &cell)
 {
     return cell == comparand;
 }
 
-bool operator==(const std::string &comparand, const cell &cell)
+bool operator==(const std::string &comparand, const xlnt::cell &cell)
 {
     return cell == comparand;
 }
 
-bool operator==(const tm &comparand, const cell &cell)
+bool operator==(const tm &comparand, const xlnt::cell &cell)
 {
     return cell == comparand;
 }
@@ -1250,9 +1130,20 @@ std::string cell::absolute_coordinate(const std::string &absolute_address)
     }
 }
 
-cell::type cell::get_data_type() const
+xlnt::cell::type cell::get_data_type() const
 {
     return root_->type;
+}
+
+xlnt::cell cell::get_offset(int column_offset, int row_offset)
+{
+    return worksheet(root_->parent_worksheet).cell(root_->column + column_offset, root_->row + row_offset);
+}
+
+cell &cell::operator=(const cell &rhs)
+{
+    root_ = rhs.root_;
+    return *this;
 }
 
 cell &cell::operator=(int value)
@@ -1278,57 +1169,29 @@ cell &cell::operator=(bool value)
 
 cell &cell::operator=(const std::string &value)
 {
-    if(value == "")
-    {
-	root_->type = type::null;
-	return *this;
-    }
+    root_->type = data_type_for_value(value);
 
-    if(value[0] == '=')
+    switch(root_->type)
     {
-	root_->type = type::formula;
-	root_->formula_value = value;
-	return *this;
-    }
-
-    if(value[0] == '0')
-    {
-	if(value.length() > 1)
-	{
-	    if(value[1] == '.')
-	    {
-		try
-		{
-		    double double_value = std::stod(value);
-		    *this = double_value;
-		    return *this;
-		}
-		catch(std::invalid_argument)
-		{
-		}
-	    }
-	}
-	else
-	{
-	    root_->type = type::numeric;
-	    root_->numeric_value = 0;
-	    return *this;
-	}
-
-	root_->type = type::string;
-	root_->string_value = value;
-	return *this;
-    }
-
-    try
-    {
-	double double_value = std::stod(value);
-	*this = double_value;
-    }
-    catch(std::invalid_argument)
-    {
-	root_->type = type::string;
-	root_->string_value = value;
+    case type::formula:
+        root_->formula_value = value;
+        break;
+    case type::numeric:
+        root_->numeric_value = std::stod(value);
+        break;
+    case type::boolean:
+        root_->bool_value = value == "TRUE" || value == "true";
+        break;
+    case type::error:
+        root_->error_value = value;
+        break;
+    case type::string:
+        root_->string_value = value;
+        break;
+    case type::null:
+        break;
+    default:
+        throw std::runtime_error("bad enum");
     }
 
     return *this;
@@ -1392,12 +1255,12 @@ struct worksheet_struct
 
     cell get_freeze_panes() const
     {
-	return freeze_panes_;
+        return freeze_panes_;
     }
 
     void set_freeze_panes(cell top_left_cell)
     {
-	freeze_panes_ = top_left_cell;
+        freeze_panes_ = top_left_cell;
     }
 
     void set_freeze_panes(const std::string &top_left_coordinate)
@@ -1476,7 +1339,7 @@ struct worksheet_struct
 
             std::unordered_map<int, std::string> column_cache;
 
-            for(int i = xlnt::cell::column_index_from_string(min_coord.column); 
+            for(int i = xlnt::cell::column_index_from_string(min_coord.column);
                 i <= xlnt::cell::column_index_from_string(max_coord.column); i++)
             {
                 column_cache[i] = xlnt::cell::get_column_letter(i);
@@ -1484,7 +1347,7 @@ struct worksheet_struct
             for(int row = min_coord.row + row_offset; row <= max_coord.row + row_offset; row++)
             {
                 r.push_back(std::vector<xlnt::cell>());
-                for(int column = xlnt::cell::column_index_from_string(min_coord.column) + column_offset; 
+                for(int column = xlnt::cell::column_index_from_string(min_coord.column) + column_offset;
                     column <= xlnt::cell::column_index_from_string(max_coord.column) + column_offset; column++)
                 {
                     std::string coordinate = column_cache[column] + std::to_string(row);
@@ -1559,25 +1422,30 @@ struct worksheet_struct
 
     void append(const std::vector<std::string> &cells)
     {
+        int row = get_highest_row();
+        int column = 0;
         for(auto cell : cells)
         {
-            cell_map_["a"] = cell;
+            this->cell(row, column++) = cell;
         }
     }
 
     void append(const std::unordered_map<std::string, std::string> &cells)
     {
+        int row = get_highest_row();
         for(auto cell : cells)
         {
-            cell_map_[cell.first] = cell.second;
+            int column = xlnt::cell::column_index_from_string(cell.second);
+            this->cell(row, column) = cell.second;
         }
     }
 
     void append(const std::unordered_map<int, std::string> &cells)
     {
+        int row = get_highest_row();
         for(auto cell : cells)
         {
-            cell_map_[xlnt::cell::get_column_letter(cell.first + 1)] = cell.second;
+            this->cell(row, cell.first) = cell.second;
         }
     }
 
@@ -1598,10 +1466,21 @@ struct worksheet_struct
     xlnt::cell freeze_panes_;
     std::unordered_map<std::string, xlnt::cell> cell_map_;
     std::vector<relationship> relationships_;
+    page_setup page_setup_;
 };
 
 worksheet::worksheet(worksheet_struct *root) : root_(root)
 {
+}
+
+worksheet::worksheet(workbook &parent)
+{
+    *this = parent.create_sheet();
+}
+
+page_setup &worksheet::get_page_setup()
+{
+    return root_->page_setup_;
 }
 
 std::string worksheet::to_string() const
@@ -1626,6 +1505,10 @@ std::list<cell> worksheet::get_cell_collection()
 
 std::string worksheet::get_title() const
 {
+    if(root_ == nullptr)
+    {
+        throw std::runtime_error("null worksheet");
+    }
     return root_->title_;
 }
 
@@ -1682,6 +1565,16 @@ std::string worksheet::calculate_dimension() const
 range worksheet::range(const std::string &range_string, int row_offset, int column_offset)
 {
     return root_->range(range_string, row_offset, column_offset);
+}
+
+range worksheet::range(const std::string &range_string)
+{
+    return root_->range(range_string, 0, 0);
+}
+
+std::vector<relationship> worksheet::get_relationships()
+{
+    return root_->relationships_;
 }
 
 relationship worksheet::create_relationship(const std::string &relationship_type)
@@ -1767,7 +1660,7 @@ cell worksheet::operator[](const std::string &address)
     return cell(address);
 }
 
-std::string writer::write_content_types(workbook &wb)
+std::string writer::write_content_types(workbook &/*wb*/)
 {
     /*std::set<std::string> seen;
 
@@ -1864,22 +1757,71 @@ std::string writer::write_content_types(workbook &wb)
             "ContentType" : "application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml"});
             comments_id += 1;
         }
-    }
+    }*/
 
-    return get_document_content(root);*/
-    return "";
+    pugi::xml_document doc;
+    auto root_node = doc.append_child("Types");
+    root_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/package/2006/content-types");
+
+    auto theme_node = root_node.append_child("Override");
+    theme_node.append_attribute("PartName").set_value("/xl/theme1.xml");
+    theme_node.append_attribute("ContentType").set_value("application/vnd.openxmlformats-officedocument.theme+xml");
+
+    auto styles_node = root_node.append_child("Override");
+    styles_node.append_attribute("PartName").set_value("/xl/styles.xml");
+    styles_node.append_attribute("ContentType").set_value("application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml");
+
+    auto rels_node = root_node.append_child("Default");
+    rels_node.append_attribute("Extension").set_value("rels");
+    rels_node.append_attribute("ContentType").set_value("application/vnd.openxmlformats-package.relationships+xml");
+
+    auto xml_node = root_node.append_child("Default");
+    xml_node.append_attribute("Extension").set_value("xml");
+    xml_node.append_attribute("ContentType").set_value("application/xml");
+
+    auto workbook_node = root_node.append_child("Override");
+    workbook_node.append_attribute("PartName").set_value("/xl/workbook.xml");
+    workbook_node.append_attribute("ContentType").set_value("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml");
+
+    auto app_props_node = root_node.append_child("Override");
+    app_props_node.append_attribute("PartName").set_value("/docProps/app.xml");
+    app_props_node.append_attribute("ContentType").set_value("application/vnd.openxmlformats-officedocument.extended-properties+xml");
+
+    auto sheet_node = root_node.append_child("Override");
+    sheet_node.append_attribute("PartName").set_value("/xl/worksheets/sheet1.xml");
+    sheet_node.append_attribute("ContentType").set_value("application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
+
+    auto core_props_node = root_node.append_child("Override");
+    core_props_node.append_attribute("PartName").set_value("/docProps/core.xml");
+    core_props_node.append_attribute("ContentType").set_value("application/vnd.openxmlformats-package.core-properties+xml");
+
+    std::stringstream ss;
+    doc.save(ss);
+    return ss.str();
 }
 
-std::string writer::write_root_rels(workbook &wb)
+std::string writer::write_workbook(workbook &wb)
 {
-    /*root = Element("{%s}Relationships" % PKG_REL_NS);
-    relation_tag = "{%s}Relationship" % PKG_REL_NS;
-    SubElement(root, relation_tag, {"Id": "rId1", "Target" : ARC_WORKBOOK,
-        "Type" : "%s/officeDocument" % REL_NS});
-    SubElement(root, relation_tag, {"Id": "rId2", "Target" : ARC_CORE,
-        "Type" : "%s/metadata/core-properties" % PKG_REL_NS});
-    SubElement(root, relation_tag, {"Id": "rId3", "Target" : ARC_APP,
-        "Type" : "%s/extended-properties" % REL_NS});
+    pugi::xml_document doc;
+    auto root_node = doc.append_child("workbook");
+    root_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
+    root_node.append_attribute("xmlns:r").set_value("http://schemas.openxmlformats.org/officeDocument/2006/relationships");
+    auto sheets_node = root_node.append_child("sheets");
+    for(auto ws : wb)
+    {
+        auto sheet_node = sheets_node.append_child("sheet");
+        sheet_node.append_attribute("name").set_value("Sheet1");
+        sheet_node.append_attribute("sheetId").set_value("1");
+        sheet_node.append_attribute("r:id").set_value("rId1");
+    }
+    std::stringstream ss;
+    doc.save(ss);
+    return ss.str();
+}
+
+std::string writer::write_root_rels(workbook &/*wb*/)
+{
+    /*
     if(wb.has_vba_archive())
     {
         // See if there was a customUI relation and reuse its id
@@ -1899,16 +1841,140 @@ std::string writer::write_root_rels(workbook &wb)
             SubElement(root, relation_tag, {"Id": rId, "Target" : ARC_CUSTOM_UI,
                 "Type" : "%s" % CUSTOMUI_NS});
         }
-    }
+    }*/
 
-    return get_document_content(root);*/
-    return "";
+    pugi::xml_document doc;
+    auto root_node = doc.append_child("Relationships");
+    root_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/package/2006/relationships");
+    auto app_props_node = root_node.append_child("Relationship");
+    app_props_node.append_attribute("Id").set_value("rId3");
+    app_props_node.append_attribute("Type").set_value("http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties");
+    app_props_node.append_attribute("Target").set_value("docProps/app.xml");
+    auto core_props_node = root_node.append_child("Relationship");
+    core_props_node.append_attribute("Id").set_value("rId3");
+    core_props_node.append_attribute("Type").set_value("http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties");
+    core_props_node.append_attribute("Target").set_value("docProps/core.xml");
+    auto workbook_node = root_node.append_child("Relationship");
+    workbook_node.append_attribute("Id").set_value("rId3");
+    workbook_node.append_attribute("Type").set_value("http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument");
+    workbook_node.append_attribute("Target").set_value("xl/workbook.xml");
+    std::stringstream ss;
+    doc.save(ss);
+    return ss.str();
 }
 
-workbook::workbook() : active_sheet_index_(0)
+std::string writer::write_worksheet(worksheet ws)
 {
-    auto ws = create_sheet();
-    ws.set_title("Sheet1");
+    pugi::xml_document doc;
+    auto root_node = doc.append_child("worksheet");
+    auto title_node = root_node.append_child("title");
+    title_node.text().set(ws.get_title().c_str());
+    std::stringstream ss;
+    doc.save(ss);
+    return ss.str();
+}
+
+std::string writer::create_temporary_file()
+{
+    return "a.temp";
+}
+
+void writer::delete_temporary_file(const std::string &filename)
+{
+    std::remove(filename.c_str());
+}
+
+void reader::read_workbook(workbook &wb, zip_file &zip)
+{
+    auto content_types = read_content_types(zip.get_file_contents("[Content_Types].xml"));
+    auto root_relationships = read_relationships(zip.get_file_contents("_rels/.rels"));
+    auto workbook_relationships = read_relationships(zip.get_file_contents("xl/_rels/workbook.xml.rels"));
+
+    pugi::xml_document doc;
+    doc.load(zip.get_file_contents("xl/workbook.xml").c_str());
+
+    auto root_node = doc.child("workbook");
+    auto sheets_node = root_node.child("sheets");
+
+    while(!wb.get_sheet_names().empty())
+    {
+        wb.remove_sheet(wb.get_sheet_by_name(wb.get_sheet_names().front()));
+    }
+
+    for(auto sheet_node : sheets_node.children("sheet"))
+    {
+        auto relation_id = sheet_node.attribute("r:id").as_string();
+        auto ws = wb.create_sheet(sheet_node.attribute("name").as_string());
+        std::string sheet_filename("xl/");
+        sheet_filename += workbook_relationships[relation_id].second;
+        read_worksheet(ws, zip.get_file_contents(sheet_filename));
+    }
+}
+
+void reader::read_worksheet(worksheet ws, const std::string &content)
+{
+    pugi::xml_document doc;
+    doc.load(content.c_str());
+
+    auto root_node = doc.child("worksheet");
+
+    ws.get_page_setup().orientation = xlnt::page_setup::Orientation::Landscape;
+}
+
+std::unordered_map<std::string, std::pair<std::string, std::string>> reader::read_relationships(const std::string &content)
+{
+    pugi::xml_document doc;
+    doc.load(content.c_str());
+
+    auto root_node = doc.child("Relationships");
+
+    std::unordered_map<std::string, std::pair<std::string, std::string>> relationships;
+
+    for(auto relationship : root_node.children("Relationship"))
+    {
+        std::string id = relationship.attribute("Id").as_string();
+        std::string type = relationship.attribute("Type").as_string();
+        std::string target = relationship.attribute("Target").as_string();
+        relationships[id] = std::make_pair(type, target);
+    }
+
+    return relationships;
+}
+
+std::pair<std::unordered_map<std::string, std::string>, std::unordered_map<std::string, std::string>> reader::read_content_types(const std::string &content)
+{
+    pugi::xml_document doc;
+    doc.load(content.c_str());
+
+    auto root_node = doc.child("Types");
+
+    std::unordered_map<std::string, std::string> default_types;
+
+    for(auto child : root_node.children("Default"))
+    {
+        default_types[child.attribute("Extension").as_string()] = child.attribute("ContentType").as_string();
+    }
+
+    std::unordered_map<std::string, std::string> override_types;
+
+    for(auto child : root_node.children("Override"))
+    {
+        override_types[child.attribute("PartName").as_string()] = child.attribute("ContentType").as_string();
+    }
+
+    return std::make_pair(default_types, override_types);
+}
+
+workbook::workbook(optimized optimized) 
+: active_sheet_index_(0), 
+optimized_read_(optimized==optimized::read), 
+optimized_write_(optimized==optimized::write)
+{
+    if(!optimized_write_)
+    {
+        auto ws = create_sheet();
+        ws.set_title("Sheet1");
+    }
 }
 
 worksheet workbook::get_sheet_by_name(const std::string &name)
@@ -1939,6 +2005,28 @@ worksheet workbook::create_sheet()
     return get_sheet_by_name(title);
 }
 
+void workbook::create_named_range(const std::string &/*range_string*/, worksheet /*ws*/, const std::string &/*name*/)
+{
+
+}
+
+void workbook::load(const std::string &filename)
+{
+    zip_file f(filename, file_mode::open);
+    reader::read_workbook(*this, f);
+}
+
+void workbook::remove_sheet(worksheet ws)
+{
+    auto match_iter = std::find(worksheets_.begin(), worksheets_.end(), ws);
+    if(match_iter == worksheets_.end())
+    {
+        throw std::runtime_error("worksheet not owned by this workbook");
+    }
+    delete match_iter->root_;
+    worksheets_.erase(match_iter);
+}
+
 worksheet workbook::create_sheet(std::size_t index)
 {
     auto ws = create_sheet();
@@ -1947,6 +2035,35 @@ worksheet workbook::create_sheet(std::size_t index)
         std::swap(worksheets_[index], worksheets_.back());
     }
     return ws;
+}
+
+worksheet workbook::create_sheet(const std::string &title)
+{
+    if(title.length() > 31)
+    {
+        throw bad_sheet_title(title);
+    }
+
+    if(std::find_if(title.begin(), title.end(), 
+        [](char c) { return !(std::isalpha(c, std::locale::classic()) 
+        || std::isdigit(c, std::locale::classic())); }) != title.end())
+    {
+        throw bad_sheet_title(title);
+    }
+
+    if(get_sheet_by_name(title) != nullptr)
+    {
+        throw std::runtime_error("sheet exists");
+    }
+    auto *worksheet = new worksheet_struct(*this, title);
+    worksheets_.push_back(worksheet);
+    return get_sheet_by_name(title);
+}
+
+workbook &workbook::optimized_write(bool optimized_write)
+{
+    optimized_write_ = optimized_write;
+    return *this;
 }
 
 std::vector<worksheet>::iterator workbook::begin()
@@ -1974,10 +2091,22 @@ worksheet workbook::operator[](const std::string &name)
     return get_sheet_by_name(name);
 }
 
+worksheet workbook::operator[](int index)
+{
+    return worksheets_[index];
+}
+
+
 void workbook::save(const std::string &filename)
 {
-    package p;
-    p.open(filename);
+    zip_file f(filename, file_mode::create, file_access::write);
+    f.set_file_contents("[Content_Types].xml", writer::write_content_types(*this));
+    f.set_file_contents("rels/.rels", writer::write_root_rels(*this));
+    f.set_file_contents("xl/workbook.xml", writer::write_workbook(*this));
+    for(worksheet ws : *this)
+    {
+        f.set_file_contents("xl/worksheets/sheet.xml", writer::write_worksheet(ws));
+    }
 }
 
 std::string cell_struct::to_string() const
@@ -2051,6 +2180,26 @@ bool workbook::operator==(const workbook &rhs) const
         return true;
     }
     return false;
+}
+
+void sheet_protection::set_password(const std::string &password)
+{
+    hashed_password_ = hash_password(password);
+}
+
+std::string sheet_protection::hash_password(const std::string &password)
+{
+    return password;
+}
+
+int string_table::operator[](const std::string &/*key*/) const
+{
+    return 0;
+}
+
+void string_table_builder::add(const std::string &/*string*/)
+{
+
 }
 
 }

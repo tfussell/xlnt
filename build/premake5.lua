@@ -70,17 +70,23 @@ project "xlnt"
        "$(opc_prefix)/third_party/libxml2-2.7.7/include",
        "../include/xlnt",
        "../third-party/pugixml/src",
-       "../source/"
+       "../source/",
+       "../third-party/zlib/",
+       "../third-party/zlib/contrib/minizip"
     }
     files {
        "../source/**.cpp",
        "../source/**.h",
        "../include/**.h",
-       "../third-party/pugixml/src/pugixml.cpp"
+       "../third-party/pugixml/src/pugixml.cpp",
+       "../third-party/zlib/*.c",
+       "../third-party/zlib/contrib/minizip/*.c"
     }
     excludes {
        "../source/tests/**.cpp",
-       "../source/tests/**.h"
+       "../source/tests/**.h",
+       "../third-party/zlib/contrib/minizip/miniunz.c",
+       "../third-party/zlib/contrib/minizip/minizip.c"
     }
     flags { 
        "Unicode",
@@ -95,3 +101,5 @@ project "xlnt"
         defines { "WIN32" }
     configuration "not windows"
         includedirs { "$(opc_prefix)/build/plib/config/darwin-debug-gcc-i386/plib/include" }
+    configuration "**.c"
+        flags { "NoWarnings" }

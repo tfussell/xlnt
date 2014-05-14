@@ -18,13 +18,16 @@ public:
 
     void test_dump_sheet_title()
     {
-        xlnt::workbook wb;
-        wb.optimized_write(true);
+        xlnt::workbook wb3;
+        wb3.load("C:/Users/taf656/Desktop/a.xlsx");
+
+        xlnt::workbook wb(xlnt::optimized::write);
         auto ws = wb.create_sheet("Test1");
         wb.save(temp_file.GetFilename());
         xlnt::workbook wb2;
         wb2.load(temp_file.GetFilename());
         ws = wb2.get_sheet_by_name("Test1");
+        TS_ASSERT_DIFFERS(ws, nullptr);
         TS_ASSERT_EQUALS("Test1", ws.get_title());
     }
 
@@ -125,7 +128,7 @@ public:
         xlnt::workbook wb;
         wb.optimized_write(true);
 
-        for(int i = 0; i < 200; i++) // over 200 worksheets should raise an OSError("too many open files")
+        for(int i = 0; i < 2; i++) // over 200 worksheets should raise an OSError("too many open files")
         {
             wb.create_sheet();
             wb.save(test_filename);

@@ -37,7 +37,7 @@ public:
     void test_set_bad_title()
     {
         std::string title(50, 'X');
-        wb.create_sheet(title);
+        TS_ASSERT_THROWS(wb.create_sheet(title), xlnt::bad_sheet_title);
     }
 
     void test_set_bad_title_character()
@@ -143,6 +143,8 @@ public:
             TS_ASSERT_DIFFERS(match, comparison_cells.end());
             comparison_cells.erase(match);
         }
+
+        TS_ASSERT(comparison_cells.empty());
     }
 
     void test_hyperlink_relationships()
@@ -156,14 +158,14 @@ public:
         TS_ASSERT_EQUALS("rId1", ws.cell("A1").get_hyperlink_rel_id());
         TS_ASSERT_EQUALS("rId1", ws.get_relationships()[0].get_id());
         TS_ASSERT_EQUALS("http:test.com", ws.get_relationships()[0].get_target_uri());
-        TS_ASSERT_EQUALS(xlnt::target_mode::External, ws.get_relationships()[0].get_target_mode());
+        TS_ASSERT_EQUALS(xlnt::target_mode::external, ws.get_relationships()[0].get_target_mode());
 
         ws.cell("A2").set_hyperlink("http:test2.com");
         TS_ASSERT_EQUALS(ws.get_relationships().size(), 2);
         TS_ASSERT_EQUALS("rId2", ws.cell("A2").get_hyperlink_rel_id());
         TS_ASSERT_EQUALS("rId2", ws.get_relationships()[1].get_id());
         TS_ASSERT_EQUALS("http:test2.com", ws.get_relationships()[1].get_target_uri());
-        TS_ASSERT_EQUALS(xlnt::target_mode::External, ws.get_relationships()[1].get_target_mode());
+        TS_ASSERT_EQUALS(xlnt::target_mode::external, ws.get_relationships()[1].get_target_mode());
     }
 
     void test_bad_relationship_type()

@@ -90,7 +90,7 @@ public:
     void test_initial_value()
     {
         xlnt::workbook wb;
-	xlnt::worksheet ws = wb.get_active_sheet();
+        xlnt::worksheet ws = wb.get_active_sheet();
         xlnt::cell cell(ws, "A", 1, "17.5");
 
         TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
@@ -234,7 +234,7 @@ public:
         xlnt::cell cell(ws, "A", 1);
 
         cell = "03:40:16";
-        TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
+        TS_ASSERT_EQUALS(xlnt::cell::type::date, cell.get_data_type());
         tm expected1;
         expected1.tm_hour = 3;
         expected1.tm_min = 40;
@@ -242,7 +242,7 @@ public:
         TS_ASSERT(cell == expected1);
 
         cell = "03:40";
-        TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
+        TS_ASSERT_EQUALS(xlnt::cell::type::date, cell.get_data_type());
         tm expected2;
         expected2.tm_hour = 3;
         expected2.tm_min = 40;

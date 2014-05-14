@@ -9,9 +9,7 @@ class TemporaryFile
 public:
     static std::string CreateTemporaryFilename()
     {
-        std::array<char, L_tmpnam> buffer;
-        tmpnam(buffer.data());
-        return std::string(buffer.begin(), buffer.end());
+        return "C:/Users/taf656/Desktop/xlnt.xlsx";
     }
 
     TemporaryFile() : filename_(CreateTemporaryFilename())
