@@ -4,6 +4,10 @@
 #include <cstdio>
 #include <string>
 
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+
 class TemporaryFile
 {
 public:
@@ -16,12 +20,12 @@ public:
 	{
 	    throw std::runtime_error("buffer is too small");
 	}
-	if(resule == 0)
+	if(result == 0)
 	{
 	    throw std::runtime_error("GetTempPath failed");
 	}
 	std::string directory(buffer.begin(), buffer.begin() + result);
-        return directory + "/xlnt.xlsx";
+        return directory + "xlnt.xlsx";
 #else
 	return "/tmp/xlsx.xlnt";
 #endif

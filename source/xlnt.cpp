@@ -476,9 +476,9 @@ const xlnt::color xlnt::color::white(1);
 
 struct cell_struct
 {
-    cell_struct(worksheet_struct *ws, const std::string &column, int row)
+    cell_struct(worksheet_struct *ws, int column, int row)
         : type(cell::type::null), parent_worksheet(ws),
-        column(xlnt::cell::column_index_from_string(column) - 1), row(row),
+        column(column), row(row),
         hyperlink_rel("hyperlink")
     {
 
@@ -540,6 +540,29 @@ cell::cell(cell_struct *root) : root_(root)
 {
 }
 
+std::string cell::get_value() const
+{
+    switch(root_->type)
+    {
+    case type::string:
+        return root_->string_value;
+    case type::numeric:
+        return std::to_string(root_->numeric_value);
+    case type::formula:
+        return root_->formula_value;
+    case type::error:
+        return root_->error_value;
+    case type::null:
+        return "";
+    case type::date:
+        return "00:00:00";
+    case type::boolean:
+        return root_->bool_value ? "TRUE" : "FALSE";
+    default:
+        throw std::runtime_error("bad enum");
+    }
+}
+
 int cell::get_row() const
 {
     return root_->row;
@@ -547,7 +570,19 @@ int cell::get_row() const
 
 std::string cell::get_column() const
 {
-    return get_column_letter(root_->column);
+    return get_column_letter(root_->column + 1);
+}
+
+std::vector<std::string> split_string(const std::string &string, char delim = ' ')
+{
+    std::stringstream ss(string);
+    std::string part;
+    std::vector<std::string> parts;
+    while(std::getline(ss, part, delim))
+    {
+        parts.push_back(part);
+    }
+    return parts;
 }
 
 cell::type cell::data_type_for_value(const std::string &value)
@@ -574,7 +609,26 @@ cell::type cell::data_type_for_value(const std::string &value)
                     return type::numeric;
                 }
             }
-            return type::string;
+            auto split = split_string(value, ':');
+            if(split.size() == 2 || split.size() == 3)
+            {
+                for(auto part : split)
+                {
+                    try
+                    {
+                        std::stoi(part);
+                    }
+                    catch(std::invalid_argument)
+                    {
+                        return type::string;
+                    }
+                }
+                return type::date;
+            }
+            else
+            {
+                return type::string;
+            }
         }
         return type::numeric;
     }
@@ -791,7 +845,7 @@ bool cell::is_date() const
 
 std::string cell::get_address() const
 {
-    return get_column_letter(root_->column) + std::to_string(root_->row);
+    return get_column_letter(root_->column + 1) + std::to_string(root_->row + 1);
 }
 
 std::string cell::get_coordinate() const
@@ -908,6 +962,9 @@ cell &cell::operator=(const std::string &value)
 
     switch(root_->type)
     {
+    case type::date:
+        root_->date_value = std::tm();
+        break;
     case type::formula:
         root_->formula_value = value;
         break;
@@ -1021,7 +1078,7 @@ struct worksheet_struct
         if(cell_map_.find(coordinate) == cell_map_.end())
         {
             auto coord = xlnt::cell::coordinate_from_string(coordinate);
-            cell_struct *cell = new xlnt::cell_struct(this, coord.column, coord.row);
+            cell_struct *cell = new xlnt::cell_struct(this, xlnt::cell::column_index_from_string(coord.column) - 1, coord.row - 1);
             cell_map_[coordinate] = xlnt::cell(cell);
         }
 
@@ -1055,9 +1112,9 @@ struct worksheet_struct
 
     std::string calculate_dimension() const
     {
-        int width = get_highest_column();
+        int width = (std::max)(1, get_highest_column());
         std::string width_letter = xlnt::cell::get_column_letter(width);
-        int height = get_highest_row();
+        int height = get_highest_row() + 1;
         return "A1:" + width_letter + std::to_string(height);
     }
 
@@ -1166,6 +1223,10 @@ struct worksheet_struct
     void append(const std::vector<std::string> &cells)
     {
         int row = get_highest_row();
+        if(!cell_map_.empty())
+        {
+            row += 1;
+        }
         int column = 0;
         for(auto cell : cells)
         {
@@ -1403,7 +1464,7 @@ cell worksheet::operator[](const std::string &address)
     return cell(address);
 }
 
-std::string writer::write_content_types(workbook &/*wb*/)
+std::string write_content_types(const std::pair<std::unordered_map<std::string, std::string>, std::unordered_map<std::string, std::string>> &content_types)
 {
     /*std::set<std::string> seen;
 
@@ -1506,156 +1567,139 @@ std::string writer::write_content_types(workbook &/*wb*/)
     auto root_node = doc.append_child("Types");
     root_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/package/2006/content-types");
 
-    auto theme_node = root_node.append_child("Override");
-    theme_node.append_attribute("PartName").set_value("/xl/theme1.xml");
-    theme_node.append_attribute("ContentType").set_value("application/vnd.openxmlformats-officedocument.theme+xml");
-
-    auto styles_node = root_node.append_child("Override");
-    styles_node.append_attribute("PartName").set_value("/xl/styles.xml");
-    styles_node.append_attribute("ContentType").set_value("application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml");
-
-    auto rels_node = root_node.append_child("Default");
-    rels_node.append_attribute("Extension").set_value("rels");
-    rels_node.append_attribute("ContentType").set_value("application/vnd.openxmlformats-package.relationships+xml");
-
-    auto xml_node = root_node.append_child("Default");
-    xml_node.append_attribute("Extension").set_value("xml");
-    xml_node.append_attribute("ContentType").set_value("application/xml");
-
-    auto workbook_node = root_node.append_child("Override");
-    workbook_node.append_attribute("PartName").set_value("/xl/workbook.xml");
-    workbook_node.append_attribute("ContentType").set_value("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml");
-
-    auto app_props_node = root_node.append_child("Override");
-    app_props_node.append_attribute("PartName").set_value("/docProps/app.xml");
-    app_props_node.append_attribute("ContentType").set_value("application/vnd.openxmlformats-officedocument.extended-properties+xml");
-
-    auto sheet_node = root_node.append_child("Override");
-    sheet_node.append_attribute("PartName").set_value("/xl/worksheets/sheet1.xml");
-    sheet_node.append_attribute("ContentType").set_value("application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
-
-    auto core_props_node = root_node.append_child("Override");
-    core_props_node.append_attribute("PartName").set_value("/docProps/core.xml");
-    core_props_node.append_attribute("ContentType").set_value("application/vnd.openxmlformats-package.core-properties+xml");
-
-    std::stringstream ss;
-    doc.save(ss);
-    return ss.str();
-}
-
-std::string writer::write_workbook(workbook &wb)
-{
-    pugi::xml_document doc;
-    auto root_node = doc.append_child("workbook");
-    root_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
-    root_node.append_attribute("xmlns:r").set_value("http://schemas.openxmlformats.org/officeDocument/2006/relationships");
-    auto sheets_node = root_node.append_child("sheets");
-    int i = 0;
-    for(auto ws : wb)
+    for(auto default_type : content_types.first)
     {
-        auto sheet_node = sheets_node.append_child("sheet");
-        sheet_node.append_attribute("name").set_value(ws.get_title().c_str());
-        sheet_node.append_attribute("sheetId").set_value(std::to_string(i + 1).c_str());
-        sheet_node.append_attribute("r:id").set_value((std::string("rId") + std::to_string(i + 1)).c_str());
+        auto xml_node = root_node.append_child("Default");
+        xml_node.append_attribute("Extension").set_value(default_type.first.c_str());
+        xml_node.append_attribute("ContentType").set_value(default_type.second.c_str());
     }
+    
+    for(auto override_type : content_types.second)
+    {
+        auto theme_node = root_node.append_child("Override");
+        theme_node.append_attribute("PartName").set_value(override_type.first.c_str());
+        theme_node.append_attribute("ContentType").set_value(override_type.second.c_str());
+    }
+
     std::stringstream ss;
     doc.save(ss);
     return ss.str();
 }
 
-std::string writer::write_root_rels(workbook &/*wb*/)
+std::string write_relationships(const std::unordered_map<std::string, std::pair<std::string, std::string>> &relationships)
 {
-    /*
-    if(wb.has_vba_archive())
-    {
-        // See if there was a customUI relation and reuse its id
-        arc = fromstring(workbook.vba_archive.read(ARC_ROOT_RELS));
-        rels = arc.findall(relation_tag);
-        rId = None;
-        for(rel in rels)
-        {
-            if(rel.get("Target") == ARC_CUSTOM_UI)
-            {
-                rId = rel.get("Id");
-                break;
-            }
-        }
-        if(rId is not None)
-        {
-            SubElement(root, relation_tag, {"Id": rId, "Target" : ARC_CUSTOM_UI,
-                "Type" : "%s" % CUSTOMUI_NS});
-        }
-    }*/
-
     pugi::xml_document doc;
     auto root_node = doc.append_child("Relationships");
     root_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/package/2006/relationships");
-    auto app_props_node = root_node.append_child("Relationship");
-    app_props_node.append_attribute("Id").set_value("rId3");
-    app_props_node.append_attribute("Type").set_value("http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties");
-    app_props_node.append_attribute("Target").set_value("docProps/app.xml");
-    auto core_props_node = root_node.append_child("Relationship");
-    core_props_node.append_attribute("Id").set_value("rId3");
-    core_props_node.append_attribute("Type").set_value("http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties");
-    core_props_node.append_attribute("Target").set_value("docProps/core.xml");
-    auto workbook_node = root_node.append_child("Relationship");
-    workbook_node.append_attribute("Id").set_value("rId3");
-    workbook_node.append_attribute("Type").set_value("http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument");
-    workbook_node.append_attribute("Target").set_value("xl/workbook.xml");
+
+    for(auto relationship : relationships)
+    {
+        auto app_props_node = root_node.append_child("Relationship");
+        app_props_node.append_attribute("Id").set_value(relationship.first.c_str());
+        app_props_node.append_attribute("Type").set_value(relationship.second.first.c_str());
+        app_props_node.append_attribute("Target").set_value(relationship.second.second.c_str());
+    }
+
     std::stringstream ss;
     doc.save(ss);
     return ss.str();
 }
 
-std::string writer::write_worksheet(worksheet ws)
+std::string write_worksheet(worksheet ws)
 {
     pugi::xml_document doc;
     auto root_node = doc.append_child("worksheet");
-    auto title_node = root_node.append_child("title");
-    title_node.text().set(ws.get_title().c_str());
+    root_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
+    root_node.append_attribute("xmlns:r").set_value("http://schemas.openxmlformats.org/officeDocument/2006/relationships");
+    auto dimension_node = root_node.append_child("dimension");
+    int width = (std::max)(1, ws.get_highest_column());
+    std::string width_letter = xlnt::cell::get_column_letter(width);
+    int height = (std::max)(1, ws.get_highest_row());
+    auto dimension = width_letter + std::to_string(height);
+    dimension_node.append_attribute("ref").set_value(dimension.c_str());
+    auto sheet_views_node = root_node.append_child("sheetViews");
+    auto sheet_view_node = sheet_views_node.append_child("sheetView");
+    sheet_view_node.append_attribute("tabSelected").set_value(1);
+    sheet_view_node.append_attribute("workbookViewId").set_value(0);
+
+    auto selection_node = sheet_view_node.append_child("selection");
+
+    std::string active_cell = "B2";
+    selection_node.append_attribute("activeCell").set_value(active_cell.c_str());
+    selection_node.append_attribute("sqref").set_value(active_cell.c_str());
+
+    auto sheet_format_pr_node = root_node.append_child("sheetFormatPr");
+    sheet_format_pr_node.append_attribute("defaultRowHeight").set_value(15);
+
+    auto sheet_data_node = root_node.append_child("sheetData");
+    for(auto row : ws.rows())
+    {
+        if(row.empty())
+        {
+            continue;
+        }
+
+        int min = (int)row.size();
+        int max = 0;
+        bool any_non_null = false;
+
+        for(auto cell : row)
+        {
+            min = (std::min)(min, cell::column_index_from_string(cell.get_column()));
+            max = (std::max)(max, cell::column_index_from_string(cell.get_column()));
+
+            if(cell.get_data_type() != cell::type::null)
+            {
+                any_non_null = true;
+            }
+        }
+
+        if(!any_non_null)
+        {
+            continue;
+        }
+
+        auto row_node = sheet_data_node.append_child("row");
+        row_node.append_attribute("r").set_value(row.front().get_row() + 1);
+
+        row_node.append_attribute("spans").set_value((std::to_string(min) + ":" + std::to_string(max)).c_str());
+        row_node.append_attribute("x14ac:dyDescent").set_value(0.25);
+
+        for(auto cell : row)
+        {
+            if(cell.get_data_type() != cell::type::null)
+            {
+                auto cell_node = row_node.append_child("c");
+                cell_node.append_attribute("r").set_value(cell.get_address().c_str());
+                auto value_node = cell_node.append_child("v");
+                value_node.text().set(cell.get_value().c_str());
+            }
+        }
+    }
+
+    auto page_margins_node = root_node.append_child("pageMargins");
+    page_margins_node.append_attribute("left").set_value(0.7);
+    page_margins_node.append_attribute("right").set_value(0.7);
+    page_margins_node.append_attribute("top").set_value(0.75);
+    page_margins_node.append_attribute("bottom").set_value(0.75);
+    page_margins_node.append_attribute("header").set_value(0.3);
+    page_margins_node.append_attribute("footer").set_value(0.3);
     std::stringstream ss;
     doc.save(ss);
     return ss.str();
 }
 
-std::string writer::create_temporary_file()
+std::string create_temporary_file()
 {
     return "a.temp";
 }
 
-void writer::delete_temporary_file(const std::string &filename)
+void delete_temporary_file(const std::string &filename)
 {
     std::remove(filename.c_str());
 }
 
-void reader::read_workbook(workbook &wb, zip_file &zip)
-{
-    auto content_types = read_content_types(zip.get_file_contents("[Content_Types].xml"));
-    auto root_relationships = read_relationships(zip.get_file_contents("_rels/.rels"));
-    auto workbook_relationships = read_relationships(zip.get_file_contents("xl/_rels/workbook.xml.rels"));
-
-    pugi::xml_document doc;
-    doc.load(zip.get_file_contents("xl/workbook.xml").c_str());
-
-    auto root_node = doc.child("workbook");
-    auto sheets_node = root_node.child("sheets");
-
-    while(!wb.get_sheet_names().empty())
-    {
-        wb.remove_sheet(wb.get_sheet_by_name(wb.get_sheet_names().front()));
-    }
-
-    for(auto sheet_node : sheets_node.children("sheet"))
-    {
-        auto relation_id = sheet_node.attribute("r:id").as_string();
-        auto ws = wb.create_sheet(sheet_node.attribute("name").as_string());
-        std::string sheet_filename("xl/");
-        sheet_filename += workbook_relationships[relation_id].second;
-        read_worksheet(ws, zip.get_file_contents(sheet_filename));
-    }
-}
-
-void reader::read_worksheet(worksheet ws, const std::string &content)
+void read_worksheet(worksheet ws, const std::string &content)
 {
     pugi::xml_document doc;
     doc.load(content.c_str());
@@ -1666,7 +1710,7 @@ void reader::read_worksheet(worksheet ws, const std::string &content)
     ws.range(dimension);
 }
 
-std::unordered_map<std::string, std::pair<std::string, std::string>> reader::read_relationships(const std::string &content)
+std::unordered_map<std::string, std::pair<std::string, std::string>> read_relationships(const std::string &content)
 {
     pugi::xml_document doc;
     doc.load(content.c_str());
@@ -1686,7 +1730,7 @@ std::unordered_map<std::string, std::pair<std::string, std::string>> reader::rea
     return relationships;
 }
 
-std::pair<std::unordered_map<std::string, std::string>, std::unordered_map<std::string, std::string>> reader::read_content_types(const std::string &content)
+std::pair<std::unordered_map<std::string, std::string>, std::unordered_map<std::string, std::string>> read_content_types(const std::string &content)
 {
     pugi::xml_document doc;
     doc.load(content.c_str());
@@ -1758,7 +1802,31 @@ void workbook::create_named_range(const std::string &/*range_string*/, worksheet
 void workbook::load(const std::string &filename)
 {
     zip_file f(filename, file_mode::open);
-    reader::read_workbook(*this, f);
+    //auto core_properties = read_core_properties();
+    //auto app_properties = read_app_properties();
+    auto root_relationships = read_relationships(f.get_file_contents("_rels/.rels"));
+    auto workbook_relationships = read_relationships(f.get_file_contents("xl/_rels/workbook.xml.rels"));
+    auto content_types = read_content_types(f.get_file_contents("[Content_Types].xml"));
+
+    pugi::xml_document doc;
+    doc.load(f.get_file_contents("xl/workbook.xml").c_str());
+
+    auto root_node = doc.child("workbook");
+    auto sheets_node = root_node.child("sheets");
+
+    while(!worksheets_.empty())
+    {
+        remove_sheet(worksheets_.front());
+    }
+
+    for(auto sheet_node : sheets_node.children("sheet"))
+    {
+        auto relation_id = sheet_node.attribute("r:id").as_string();
+        auto ws = create_sheet(sheet_node.attribute("name").as_string());
+        std::string sheet_filename("xl/");
+        sheet_filename += workbook_relationships[relation_id].second;
+        read_worksheet(ws, f.get_file_contents(sheet_filename));
+    }
 }
 
 void workbook::remove_sheet(worksheet ws)
@@ -1805,12 +1873,6 @@ worksheet workbook::create_sheet(const std::string &title)
     return get_sheet_by_name(title);
 }
 
-workbook &workbook::optimized_write(bool optimized_write)
-{
-    optimized_write_ = optimized_write;
-    return *this;
-}
-
 std::vector<worksheet>::iterator workbook::begin()
 {
     return worksheets_.begin();
@@ -1845,18 +1907,68 @@ worksheet workbook::operator[](int index)
 void workbook::save(const std::string &filename)
 {
     zip_file f(filename, file_mode::create, file_access::write);
-    f.set_file_contents("[Content_Types].xml", writer::write_content_types(*this));
-    f.set_file_contents("rels/.rels", writer::write_root_rels(*this));
-    f.set_file_contents("xl/workbook.xml", writer::write_workbook(*this));
-    for(worksheet ws : *this)
+
+    std::pair<std::unordered_map<std::string, std::string>, std::unordered_map<std::string, std::string>> content_types = 
     {
-        f.set_file_contents("xl/worksheets/sheet.xml", writer::write_worksheet(ws));
+        {
+            {"rels", "application/vnd.openxmlformats-package.relationships+xml"},
+            {"xml", "application/xml"}
+        },
+        {
+            {"/xl/styles.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"},
+            {"/xl/workbook.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"},
+            {"/docProps/app.xml", "application/vnd.openxmlformats-officedocument.extended-properties+xml"},
+            {"/xl/worksheets/sheet1.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"},
+            {"/docProps/core.xml", "application/vnd.openxmlformats-package.core-properties+xml"},
+            {"/xl/theme/theme1.xml", "application/vnd.openxmlformats-officedocument.theme+xml"}
+        }
+    };
+
+    f.set_file_contents("[Content_Types].xml", write_content_types(content_types));
+
+    std::unordered_map<std::string, std::pair<std::string, std::string>> root_rels = 
+    {
+        {"rId3", {"http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties", "docProps/app.xml"}},
+        {"rId2", {"http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties", "docProps/core.xml"}},
+        {"rId1", {"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument", "xl/workbook.xml"}}
+    };
+    f.set_file_contents("_rels/.rels", write_relationships(root_rels));
+
+    std::unordered_map<std::string, std::pair<std::string, std::string>> workbook_rels =
+    {
+        {"rId1", {"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet", "worksheets/sheet1.xml"}},
+        {"rId2", {"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles", "styles.xml"}},
+        {"rId3", {"http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme", "theme/theme1.xml"}}
+    };
+    f.set_file_contents("xl/_rels/workbook.xml.rels", write_relationships(workbook_rels));
+
+    pugi::xml_document doc;
+    auto root_node = doc.append_child("workbook");
+    root_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
+    root_node.append_attribute("xmlns:r").set_value("http://schemas.openxmlformats.org/officeDocument/2006/relationships");
+    auto sheets_node = root_node.append_child("sheets");
+
+    int i = 0;
+    for(auto ws : *this)
+    {
+        auto sheet_node = sheets_node.append_child("sheet");
+        sheet_node.append_attribute("name").set_value(ws.get_title().c_str());
+        sheet_node.append_attribute("sheetId").set_value(std::to_string(i + 1).c_str());
+        sheet_node.append_attribute("r:id").set_value((std::string("rId") + std::to_string(i + 1)).c_str());
+        std::string filename = "xl/worksheets/sheet";
+        f.set_file_contents(filename + std::to_string(i + 1) + ".xml", write_worksheet(ws));
+        i++;
     }
+
+    std::stringstream ss;
+    doc.save(ss);
+
+    f.set_file_contents("xl/workbook.xml", ss.str());
 }
 
 std::string cell_struct::to_string() const
 {
-    return "<Cell " + parent_worksheet->title_ + "." + xlnt::cell::get_column_letter(column + 1) + std::to_string(row) + ">";
+    return "<Cell " + parent_worksheet->title_ + "." + xlnt::cell::get_column_letter(column + 1) + std::to_string(row + 1) + ">";
 }
 
 bool workbook::operator==(const workbook &rhs) const

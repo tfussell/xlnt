@@ -273,12 +273,12 @@ public:
         ws.get_page_margins().set_header(1.5);
         ws.get_page_margins().set_footer(1.5);*/
 
-        auto xml_string = xlnt::writer::write_worksheet(ws);
+        //auto xml_string = xlnt::writer::write_worksheet(ws);
 
         //assert "<pageMargins left="2.00" right="2.00" top="2.00" bottom="2.00" header="1.50" footer="1.50"></pageMargins>" in xml_string;
 
         xlnt::worksheet ws2(wb);
-        xml_string = xlnt::writer::write_worksheet(ws2);
+        //xml_string = xlnt::writer::write_worksheet(ws2);
         //assert "<pageMargins" not in xml_string;
     }
 
@@ -290,7 +290,7 @@ public:
 
         ws.cell("A1") = "Cell A1";
         ws.cell("B1") = "Cell B1";
-        auto xml_string = xlnt::writer::write_worksheet(ws);// , string_table);
+        //auto xml_string = xlnt::writer::write_worksheet(ws);// , string_table);
         /*assert "<c r="B1" t="s"><v>Cell B1</v></c>" in xml_string;
 
         ws.merge_cells("A1:B1");
@@ -329,13 +329,13 @@ public:
         ws.get_page_setup().fit_to_page = true;
         ws.get_page_setup().fit_to_height = false;
         ws.get_page_setup().fit_to_width = true;
-        auto xml_string = xlnt::writer::write_worksheet(ws);
+        //auto xml_string = xlnt::writer::write_worksheet(ws);
         //pugi::xml_document doc;
         //TS_ASSERT("<pageSetup orientation=\"landscape\" paperSize=\"3\" fitToHeight=\"0\" fitToWidth=\"1\"></pageSetup>" in xml_string);
         //TS_ASSERT("<pageSetUpPr fitToPage=\"1\"></pageSetUpPr>" in xml_string);
 
         xlnt::worksheet ws2(wb);
-        xml_string = xlnt::writer::write_worksheet(ws2);
+        //xml_string = xlnt::writer::write_worksheet(ws2);
         //TS_ASSERT("<pageSetup" not in xml_string);
         //TS_ASSERT("<pageSetUpPr" not in xml_string);
     }

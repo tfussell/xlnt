@@ -808,6 +808,8 @@ public:
     cell(worksheet &ws, const std::string &column, int row);
     cell(worksheet &ws, const std::string &column, int row, const std::string &initial_value);
 
+    std::string get_value() const;
+
     int get_row() const;
     std::string get_column() const;
 
@@ -1009,27 +1011,6 @@ private:
     drawing_struct *root_;
 };
 
-class writer
-{
-public:
-    static std::string write_content_types(workbook &wb);
-    static std::string write_root_rels(workbook &wb);
-    static std::string write_workbook(workbook &ws);
-    static std::string write_worksheet(worksheet ws);
-    static std::string get_document_content(const std::string &filename);
-    static std::string create_temporary_file();
-    static void delete_temporary_file(const std::string &filename);
-};
-
-class reader
-{
-public:
-    static std::pair<std::unordered_map<std::string, std::string>, std::unordered_map<std::string, std::string>> read_content_types(const std::string &content);
-    static std::unordered_map<std::string, std::pair<std::string, std::string>> read_relationships(const std::string &content);
-    static void read_workbook(workbook &ws, zip_file &file);
-    static void read_worksheet(worksheet ws, const std::string &content);
-};
-
 class workbook
 {
 public:
@@ -1039,12 +1020,6 @@ public:
     //prevent copy and assignment
     workbook(const workbook &) = delete;
     const workbook &operator=(const workbook &) = delete;
-
-    //named parameters
-    workbook &optimized_write(bool value);
-    workbook &encoding(encoding_type value);
-    workbook &guess_types(bool value);
-    workbook &data_only(bool value);
 
     void read_workbook_settings(const std::string &xml_source);
 
@@ -1101,6 +1076,9 @@ public:
     void load(const std::string &filename);
 
     bool operator==(const workbook &rhs) const;
+
+    std::unordered_map<std::string, std::pair<std::string, std::string>> get_root_relationships() const;
+    std::unordered_map<std::string, std::pair<std::string, std::string>> get_relationships() const;
 
 private:
     bool optimized_write_;
