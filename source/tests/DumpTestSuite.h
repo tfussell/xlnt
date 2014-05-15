@@ -132,7 +132,7 @@ public:
         {
             wb.create_sheet();
             wb.save(test_filename);
-            unlink(test_filename.c_str());
+	    std::remove(test_filename.c_str());
         }
     }
 
@@ -155,7 +155,7 @@ public:
         ws.append(to_append);
 
         wb.save(test_filename);
-        unlink(test_filename.c_str());
+	std::remove(test_filename.c_str());
         wb.save(test_filename);
     }
                 

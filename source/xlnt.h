@@ -221,7 +221,7 @@ private:
     std::string filename_;
     std::unordered_map<std::string, std::string> files_;
     bool modified_;
-    file_mode mode_;
+//    file_mode mode_;
     file_access access_;
     std::vector<std::string> directories_;
 };
@@ -583,7 +583,7 @@ class font
         single_accounting
     };
 
-    std::string name = "Calibri";
+/*    std::string name = "Calibri";
     int size = 11;
     bool bold = false;
     bool italic = false;
@@ -591,7 +591,7 @@ class font
     bool subscript = false;
     underline underline = underline::none;
     bool strikethrough = false;
-    color color = color::black;
+    color color = color::black;*/
 };
 
 class fill
@@ -667,7 +667,7 @@ class borders
     border top;
     border bottom;
     border diagonal;
-    diagonal_direction diagonal_direction = diagonal_direction::none;
+//    diagonal_direction diagonal_direction = diagonal_direction::none;
     border all_borders;
     border outline;
     border inside;
@@ -804,9 +804,9 @@ public:
     static std::string check_numeric(const std::string &value);
     static std::string check_error(const std::string &value);
 
-    xlnt::cell();
-    xlnt::cell(worksheet &ws, const std::string &column, int row);
-    xlnt::cell(worksheet &ws, const std::string &column, int row, const std::string &initial_value);
+    cell();
+    cell(worksheet &ws, const std::string &column, int row);
+    cell(worksheet &ws, const std::string &column, int row, const std::string &initial_value);
 
     int get_row() const;
     std::string get_column() const;

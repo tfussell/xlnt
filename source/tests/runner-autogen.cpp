@@ -21,7 +21,7 @@ int main( int argc, char *argv[] ) {
     return status;
 }
 bool suite_CellTestSuite_init = false;
-#include "C:\Users\taf656\Development\xlnt\source\tests\CellTestSuite.h"
+#include "/Users/thomas/Development/xlnt/source/tests/CellTestSuite.h"
 
 static CellTestSuite suite_CellTestSuite;
 
@@ -184,7 +184,7 @@ public:
  void runTest() { suite_CellTestSuite.test_is_not_date_color_format(); }
 } testDescription_suite_CellTestSuite_test_is_not_date_color_format;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\ChartTestSuite.h"
+#include "/Users/thomas/Development/xlnt/source/tests/ChartTestSuite.h"
 
 static ChartTestSuite suite_ChartTestSuite;
 
@@ -275,7 +275,7 @@ public:
  void runTest() { suite_ChartTestSuite.test_write_chart_scatter(); }
 } testDescription_suite_ChartTestSuite_test_write_chart_scatter;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\DumpTestSuite.h"
+#include "/Users/thomas/Development/xlnt/source/tests/DumpTestSuite.h"
 
 static DumpTestSuite suite_DumpTestSuite;
 
@@ -324,7 +324,7 @@ public:
  void runTest() { suite_DumpTestSuite.test_append_after_save(); }
 } testDescription_suite_DumpTestSuite_test_append_after_save;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\IterTestSuite.h"
+#include "/Users/thomas/Development/xlnt/source/tests/IterTestSuite.h"
 
 static IterTestSuite suite_IterTestSuite;
 
@@ -373,7 +373,7 @@ public:
  void runTest() { suite_IterTestSuite.test_read_single_cell_date(); }
 } testDescription_suite_IterTestSuite_test_read_single_cell_date;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\MetaTestSuite.h"
+#include "/Users/thomas/Development/xlnt/source/tests/MetaTestSuite.h"
 
 static MetaTestSuite suite_MetaTestSuite;
 
@@ -392,7 +392,7 @@ public:
  void runTest() { suite_MetaTestSuite.test_write_root_rels(); }
 } testDescription_suite_MetaTestSuite_test_write_root_rels;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\NamedRangeTestSuite.h"
+#include "/Users/thomas/Development/xlnt/source/tests/NamedRangeTestSuite.h"
 
 static NamedRangeTestSuite suite_NamedRangeTestSuite;
 
@@ -483,7 +483,7 @@ public:
  void runTest() { suite_NamedRangeTestSuite.test_can_be_saved(); }
 } testDescription_suite_NamedRangeTestSuite_test_can_be_saved;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\NullableTestSuite.h"
+#include "/Users/thomas/Development/xlnt/source/tests/NullableTestSuite.h"
 
 static NullableTestSuite suite_NullableTestSuite;
 
@@ -520,7 +520,7 @@ public:
  void runTest() { suite_NullableTestSuite.test_copy_constructor(); }
 } testDescription_suite_NullableTestSuite_test_copy_constructor;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\NumberFormatTestSuite.h"
+#include "/Users/thomas/Development/xlnt/source/tests/NumberFormatTestSuite.h"
 
 static NumberFormatTestSuite suite_NumberFormatTestSuite;
 
@@ -623,7 +623,7 @@ public:
  void runTest() { suite_NumberFormatTestSuite.test_mac_date(); }
 } testDescription_suite_NumberFormatTestSuite_test_mac_date;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\PasswordHashTestSuite.h"
+#include "/Users/thomas/Development/xlnt/source/tests/PasswordHashTestSuite.h"
 
 static PasswordHashTestSuite suite_PasswordHashTestSuite;
 
@@ -642,7 +642,7 @@ public:
  void runTest() { suite_PasswordHashTestSuite.test_sheet_protection(); }
 } testDescription_suite_PasswordHashTestSuite_test_sheet_protection;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\PropsTestSuite.h"
+#include "/Users/thomas/Development/xlnt/source/tests/PropsTestSuite.h"
 
 static PropsTestSuite suite_PropsTestSuite;
 
@@ -691,7 +691,7 @@ public:
  void runTest() { suite_PropsTestSuite.test_write_properties_app(); }
 } testDescription_suite_PropsTestSuite_test_write_properties_app;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\ReadTestSuite.h"
+#include "/Users/thomas/Development/xlnt/source/tests/ReadTestSuite.h"
 
 static ReadTestSuite suite_ReadTestSuite;
 
@@ -824,7 +824,7 @@ public:
  void runTest() { suite_ReadTestSuite.test_read_date_value(); }
 } testDescription_suite_ReadTestSuite_test_read_date_value;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\StringsTestSuite.h"
+#include "/Users/thomas/Development/xlnt/source/tests/StringsTestSuite.h"
 
 static StringsTestSuite suite_StringsTestSuite;
 
@@ -855,7 +855,7 @@ public:
  void runTest() { suite_StringsTestSuite.test_formatted_string_table(); }
 } testDescription_suite_StringsTestSuite_test_formatted_string_table;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\StyleTestSuite.h"
+#include "/Users/thomas/Development/xlnt/source/tests/StyleTestSuite.h"
 
 static StyleTestSuite suite_StyleTestSuite;
 
@@ -952,7 +952,7 @@ public:
  void runTest() { suite_StyleTestSuite.test_read_cell_style(); }
 } testDescription_suite_StyleTestSuite_test_read_cell_style;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\ThemeTestSuite.h"
+#include "/Users/thomas/Development/xlnt/source/tests/ThemeTestSuite.h"
 
 static ThemeTestSuite suite_ThemeTestSuite;
 
@@ -965,7 +965,7 @@ public:
  void runTest() { suite_ThemeTestSuite.test_write_theme(); }
 } testDescription_suite_ThemeTestSuite_test_write_theme;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\UnicodeTestSuite.h"
+#include "/Users/thomas/Development/xlnt/source/tests/UnicodeTestSuite.h"
 
 static UnicodeTestSuite suite_UnicodeTestSuite;
 
@@ -978,7 +978,7 @@ public:
  void runTest() { suite_UnicodeTestSuite.test_read_workbook_with_unicode_character(); }
 } testDescription_suite_UnicodeTestSuite_test_read_workbook_with_unicode_character;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\WorkbookTestSuite.h"
+#include "/Users/thomas/Development/xlnt/source/tests/WorkbookTestSuite.h"
 
 static WorkbookTestSuite suite_WorkbookTestSuite;
 
@@ -1207,7 +1207,7 @@ public:
  void runTest() { suite_WorkbookTestSuite.test_good_encoding(); }
 } testDescription_suite_WorkbookTestSuite_test_good_encoding;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\WorksheetTestSuite.h"
+#include "/Users/thomas/Development/xlnt/source/tests/WorksheetTestSuite.h"
 
 static WorksheetTestSuite suite_WorksheetTestSuite;
 
@@ -1382,7 +1382,7 @@ public:
  void runTest() { suite_WorksheetTestSuite.test_printer_settings(); }
 } testDescription_suite_WorksheetTestSuite_test_printer_settings;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\WriteTestSuite.h"
+#include "/Users/thomas/Development/xlnt/source/tests/WriteTestSuite.h"
 
 static WriteTestSuite suite_WriteTestSuite;
 
@@ -1515,7 +1515,7 @@ public:
  void runTest() { suite_WriteTestSuite.test_short_number(); }
 } testDescription_suite_WriteTestSuite_test_short_number;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\ZipFileTestSuite.h"
+#include "/Users/thomas/Development/xlnt/source/tests/ZipFileTestSuite.h"
 
 static ZipFileTestSuite suite_ZipFileTestSuite;
 

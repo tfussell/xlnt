@@ -313,7 +313,7 @@ public:
         xlnt::cell cell(ws, "A", 1);
 
         cell = -13.5;
-        cell.get_style().get_number_format().set_format_code("0.00_);[Red]\(0.00\)");
+        cell.get_style().get_number_format().set_format_code("0.00_);[Red]\\(0.00\\)");
 
         TS_ASSERT_EQUALS(cell.is_date(), false);
     }
