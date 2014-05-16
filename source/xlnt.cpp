@@ -746,8 +746,7 @@ coordinate cell::coordinate_from_string(const std::string &coord_string)
             }
             else
             {
-                std::string msg = "Invalid cell coordinates (" + coord_string + ")";
-                throw std::runtime_error(msg);
+                throw bad_cell_coordinates(coord_string);
             }
         }
         else
@@ -758,8 +757,7 @@ coordinate cell::coordinate_from_string(const std::string &coord_string)
             }
             else if(!(std::isdigit(character, std::locale::classic()) || character == '$'))
             {
-                std::string msg = "Invalid cell coordinates (" + coord_string + ")";
-                throw std::runtime_error(msg);
+                throw bad_cell_coordinates(coord_string);
             }
         }
     }
@@ -773,8 +771,7 @@ coordinate cell::coordinate_from_string(const std::string &coord_string)
 
     if(result.row < 1)
     {
-        std::string msg = "Invalid cell coordinates (" + coord_string + ")";
-        throw std::runtime_error(msg);
+        throw bad_cell_coordinates(result.row, cell::column_index_from_string(result.column));
     }
 
     return result;
@@ -925,9 +922,9 @@ xlnt::cell::type cell::get_data_type() const
     return root_->type;
 }
 
-xlnt::cell cell::get_offset(int column_offset, int row_offset)
+xlnt::cell cell::get_offset(int row_offset, int column_offset)
 {
-    return worksheet(root_->parent_worksheet).cell(root_->row + row_offset, root_->column + column_offset);
+    return worksheet(root_->parent_worksheet).cell(root_->column + column_offset, root_->row + row_offset);
 }
 
 cell &cell::operator=(const cell &rhs)
@@ -1061,7 +1058,14 @@ struct worksheet_struct
 
     void set_freeze_panes(cell top_left_cell)
     {
-        freeze_panes_ = top_left_cell;
+        if(top_left_cell.get_address() == "A1")
+        {
+            unfreeze_panes();
+        }
+        else
+        {
+            freeze_panes_ = top_left_cell;
+        }
     }
 
     void set_freeze_panes(const std::string &top_left_coordinate)
@@ -1086,7 +1090,7 @@ struct worksheet_struct
         return cell_map_[coordinate];
     }
 
-    xlnt::cell cell(int row, int column)
+    xlnt::cell cell(int column, int row)
     {
         return cell(xlnt::cell::get_column_letter(column + 1) + std::to_string(row + 1));
     }
@@ -1122,6 +1126,11 @@ struct worksheet_struct
     xlnt::range range(const std::string &range_string, int row_offset, int column_offset)
     {
         xlnt::range r;
+        
+        if(parent_.has_named_range(range_string, worksheet(this)))
+        {
+            return range(parent_.get_named_range(range_string, worksheet(this)).get_range_string(), row_offset, column_offset);
+        }
 
         auto colon_index = range_string.find(':');
 
@@ -1137,6 +1146,12 @@ struct worksheet_struct
                 min_coord.column = xlnt::cell::get_column_letter(xlnt::cell::column_index_from_string(min_coord.column) + column_offset);
                 max_coord.column = xlnt::cell::get_column_letter(xlnt::cell::column_index_from_string(max_coord.column) + column_offset);
             }
+            
+            if(row_offset != 0)
+            {
+                min_coord.row = min_coord.row + row_offset;
+                max_coord.row = max_coord.row + row_offset;
+            }
 
             std::unordered_map<int, std::string> column_cache;
 
@@ -1145,11 +1160,11 @@ struct worksheet_struct
             {
                 column_cache[i] = xlnt::cell::get_column_letter(i);
             }
-            for(int row = min_coord.row + row_offset; row <= max_coord.row + row_offset; row++)
+            for(int row = min_coord.row; row <= max_coord.row; row++)
             {
                 r.push_back(std::vector<xlnt::cell>());
-                for(int column = xlnt::cell::column_index_from_string(min_coord.column) + column_offset;
-                    column <= xlnt::cell::column_index_from_string(max_coord.column) + column_offset; column++)
+                for(int column = xlnt::cell::column_index_from_string(min_coord.column);
+                    column <= xlnt::cell::column_index_from_string(max_coord.column); column++)
                 {
                     std::string coordinate = column_cache[column] + std::to_string(row);
                     r.back().push_back(cell(coordinate));
@@ -1224,33 +1239,41 @@ struct worksheet_struct
     void append(const std::vector<std::string> &cells)
     {
         int row = get_highest_row();
-        if(!cell_map_.empty())
+        if(cell_map_.size() != 0)
         {
-            row += 1;
+            row++;
         }
         int column = 0;
         for(auto cell : cells)
         {
-            this->cell(row, column++) = cell;
+            this->cell(column++, row) = cell;
         }
     }
 
     void append(const std::unordered_map<std::string, std::string> &cells)
     {
         int row = get_highest_row();
+        if(cell_map_.size() != 0)
+        {
+            row++;
+        }
         for(auto cell : cells)
         {
-            int column = xlnt::cell::column_index_from_string(cell.second);
-            this->cell(row, column) = cell.second;
+            int column = xlnt::cell::column_index_from_string(cell.first) - 1;
+            this->cell(column, row) = cell.second;
         }
     }
 
     void append(const std::unordered_map<int, std::string> &cells)
     {
         int row = get_highest_row();
+        if(cell_map_.size() != 0)
+        {
+            row++;
+        }
         for(auto cell : cells)
         {
-            this->cell(row, cell.first) = cell.second;
+            this->cell(cell.first, row) = cell.second;
         }
     }
 
@@ -1781,6 +1804,18 @@ worksheet workbook::get_active_sheet()
 {
     return worksheets_[active_sheet_index_];
 }
+    
+bool workbook::has_named_range(const std::string &name, xlnt::worksheet ws) const
+{
+    for(auto named_range : named_ranges_)
+    {
+        if(named_range.first == name && named_range.second.get_parent_worksheet() == ws)
+        {
+            return true;
+        }
+    }
+    return false;
+}
 
 worksheet workbook::create_sheet()
 {
@@ -1795,9 +1830,30 @@ worksheet workbook::create_sheet()
     return get_sheet_by_name(title);
 }
 
-void workbook::create_named_range(const std::string &/*range_string*/, worksheet /*ws*/, const std::string &/*name*/)
+void workbook::create_named_range(const std::string &name, worksheet range_owner, const std::string &range_string)
 {
-
+    for(auto ws : worksheets_)
+    {
+        if(ws == range_owner)
+        {
+            named_ranges_[name] = named_range(range_owner, range_string);
+            return;
+        }
+    }
+    
+    throw std::runtime_error("worksheet isn't owned by this workbook");
+}
+    
+named_range workbook::get_named_range(const std::string &name, worksheet ws)
+{
+    for(auto named_range : named_ranges_)
+    {
+        if(named_range.first == name && named_range.second.get_parent_worksheet() == ws)
+        {
+            return named_range.second;
+        }
+    }
+    throw std::runtime_error("doesn't exist");
 }
 
 void workbook::load(const std::string &filename)
@@ -2075,14 +2131,28 @@ std::string sheet_protection::hash_password(const std::string &plaintext_passwor
     return hashed;
 }
 
-int string_table::operator[](const std::string &/*key*/) const
+int string_table::operator[](const std::string &key) const
 {
-    return 0;
+    for(std::size_t i = 0; i < strings_.size(); i++)
+    {
+        if(key == strings_[i])
+        {
+            return (int)i;
+        }
+    }
+    throw std::runtime_error("bad string");
 }
 
-void string_table_builder::add(const std::string &/*string*/)
+void string_table_builder::add(const std::string &string)
 {
-
+    for(std::size_t i = 0; i < table_.strings_.size(); i++)
+    {
+        if(string == table_.strings_[i])
+        {
+            return;
+        }
+    }
+    table_.strings_.push_back(string);
 }
 
 }

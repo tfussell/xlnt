@@ -109,7 +109,7 @@ public:
     void test_cell_alternate_coordinates()
     {
         xlnt::worksheet ws(wb);
-        auto cell = ws.cell(8, 4);
+        auto cell = ws.cell(4, 8);
         TS_ASSERT_EQUALS("E9", cell.get_coordinate());
     }
 
@@ -215,7 +215,7 @@ public:
         TS_ASSERT_EQUALS(vals[0][0], "This is A1");
         TS_ASSERT_EQUALS(vals[0][1], "This is B1");
         TS_ASSERT_EQUALS(vals[1][0], "This is A2");
-        TS_ASSERT_EQUALS(vals[1][1], "This is A2");
+        TS_ASSERT_EQUALS(vals[1][1], "This is B2");
     }
 
     void test_rows()

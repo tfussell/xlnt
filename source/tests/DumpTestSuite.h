@@ -19,7 +19,7 @@ public:
     void test_dump_sheet_title()
     {
         xlnt::workbook wb3;
-        wb3.load("C:/Users/taf656/Desktop/a.xlsx");
+        wb3.load("/Users/thomas/Desktop/a.xlsx");
 
         xlnt::workbook wb(xlnt::optimized::write);
         auto ws = wb.create_sheet("Test1");
@@ -102,7 +102,7 @@ public:
     {
         xlnt::string_table_builder sb;
 
-        std::unordered_map<std::string, int> result = {{"a", 0}, {"b", 1}, {"c", 2}, {"d", 3}};
+        std::vector<std::pair<std::string, int>> result = {{"a", 0}, {"b", 1}, {"c", 2}, {"d", 3}};
 
         for(auto pair : result)
         {

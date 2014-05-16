@@ -177,6 +177,12 @@ public:
     {
 
     }
+    
+    bad_cell_coordinates(const std::string &coord_string)
+    : std::runtime_error(std::string("bad cell coordinates: (") + coord_string + ")")
+    {
+        
+    }
 };
 
 class zip_file
@@ -481,6 +487,9 @@ class string_table
 {
 public:
     int operator[](const std::string &key) const;
+private:
+    friend class string_table_builder;
+    std::vector<std::string> strings_;
 };
 
 class string_table_builder
@@ -944,6 +953,7 @@ class worksheet
 {
 public:
     worksheet(workbook &parent);
+    worksheet(worksheet_struct *root);
 
     void operator=(const worksheet &other);
     xlnt::cell operator[](const std::string &address);
@@ -985,19 +995,20 @@ public:
 private:
     friend class workbook;
     friend class cell;
-    worksheet(worksheet_struct *root);
     worksheet_struct *root_;
 };
 
 class named_range
 {
 public:
-    named_range(const std::string &name);
+    named_range() : parent_worksheet_(nullptr), range_string_("") {}
+    named_range(worksheet ws, const std::string &range_string) : parent_worksheet_(ws), range_string_(range_string) {}
+    std::string get_range_string() const { return range_string_; }
+    worksheet get_parent_worksheet() { return parent_worksheet_; }
 
 private:
-    friend class worksheet;
-    named_range(named_range_struct *root);
-    named_range_struct *root_;
+    worksheet parent_worksheet_;
+    std::string range_string_;
 };
 
 class drawing
@@ -1068,7 +1079,8 @@ public:
     void create_named_range(const std::string &name, worksheet worksheet, const std::string &range_string);
     std::vector<named_range> get_named_ranges();
     void add_named_range(named_range named_range);
-    void get_named_range(const std::string &name);
+    bool has_named_range(const std::string &name, worksheet ws) const;
+    named_range get_named_range(const std::string &name, worksheet ws);
     void remove_named_range(named_range named_range);
     
     //serialization
@@ -1088,7 +1100,7 @@ private:
     int active_sheet_index_;
     encoding_type encoding_;
     std::vector<worksheet> worksheets_;
-    std::vector<named_range> named_ranges_;
+    std::unordered_map<std::string, named_range> named_ranges_;
     std::vector<relationship> relationships_;
     std::vector<drawing> drawings_;
 };
