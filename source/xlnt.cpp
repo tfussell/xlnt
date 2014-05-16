@@ -480,7 +480,7 @@ struct cell_struct
     cell_struct(worksheet_struct *ws, int column, int row)
         : type(cell::type::null), parent_worksheet(ws),
         column(column), row(row),
-        hyperlink_rel("hyperlink")
+        hyperlink_rel("invalid", "")
     {
 
     }
@@ -566,7 +566,7 @@ std::string cell::get_value() const
 
 int cell::get_row() const
 {
-    return root_->row;
+    return root_->row + 1;
 }
 
 std::string cell::get_column() const
@@ -669,12 +669,14 @@ void cell::set_explicit_value(const std::string &value, type data_type)
     case type::null: return;
     case type::numeric: root_->numeric_value = std::stod(value); return;
     case type::string: root_->string_value = value; return;
+    default: throw std::runtime_error("bad enum");
     }
 }
 
-void cell::set_hyperlink(const std::string &hyperlink)
+void cell::set_hyperlink(const std::string &url)
 {
-    root_->hyperlink_rel = worksheet(root_->parent_worksheet).create_relationship(hyperlink);
+    root_->type = type::hyperlink;
+    root_->hyperlink_rel = worksheet(root_->parent_worksheet).create_relationship("hyperlink", url);
 }
 
 void cell::set_merged(bool merged)
@@ -863,7 +865,15 @@ bool cell::operator==(std::nullptr_t) const
 
 bool cell::operator==(const std::string &comparand) const
 {
-    return root_->type == cell::type::string && root_->string_value == comparand;
+    if(root_->type == type::hyperlink)
+    {
+        return root_->hyperlink_rel.get_target_uri() == comparand;
+    }
+    if(root_->type == type::string)
+    {
+        return root_->string_value == comparand;
+    }
+    return false;
 }
 
 bool cell::operator==(const char *comparand) const
@@ -1100,7 +1110,7 @@ struct worksheet_struct
         int highest = 0;
         for(auto cell : cell_map_)
         {
-            highest = (std::max)(highest, cell.second.get_row());
+            highest = (std::max)(highest, cell.second.get_row() - 1);
         }
         return highest;
     }
@@ -1180,9 +1190,10 @@ struct worksheet_struct
         return r;
     }
 
-    relationship create_relationship(const std::string &relationship_type)
+    relationship create_relationship(const std::string &relationship_type, const std::string &target_uri)
     {
-        relationships_.push_back(relationship(relationship_type));
+        std::string r_id = "rId" + std::to_string(relationships_.size() + 1);
+        relationships_.push_back(relationship(relationship_type, r_id, target_uri));
         return relationships_.back();
     }
 
@@ -1284,7 +1295,19 @@ struct worksheet_struct
 
     xlnt::range columns()
     {
-        throw std::runtime_error("not implemented");
+        int max_row = get_highest_row();
+        xlnt::range cols;
+        for(int col_idx = 0; col_idx < get_highest_column(); col_idx++)
+        {
+            cols.push_back(std::vector<xlnt::cell>());
+            std::string col = xlnt::cell::get_column_letter(col_idx + 1);
+            std::string range_string = col + "1:" + col + std::to_string(max_row + 1);
+            for(auto row : range(range_string, 0, 0))
+            {
+                cols.back().push_back(row[0]);
+            }
+        }
+        return cols;
     }
 
     void operator=(const worksheet_struct &other) = delete;
@@ -1405,9 +1428,9 @@ std::vector<relationship> worksheet::get_relationships()
     return root_->relationships_;
 }
 
-relationship worksheet::create_relationship(const std::string &relationship_type)
+relationship worksheet::create_relationship(const std::string &relationship_type, const std::string &target_uri)
 {
-    return root_->create_relationship(relationship_type);
+    return root_->create_relationship(relationship_type, target_uri);
 }
 
 //void worksheet::add_chart(chart chart);

@@ -80,7 +80,7 @@ public:
     void test_bad_named_range()
     {
         xlnt::worksheet ws(wb);
-        ws.range("bad_range");
+        TS_ASSERT_THROWS_ANYTHING(ws.range("bad_range"));
     }
 
     void test_named_range_wrong_sheet()
@@ -88,7 +88,7 @@ public:
         xlnt::worksheet ws1(wb);
         xlnt::worksheet ws2(wb);
         wb.create_named_range("wrong_sheet_range", ws1, "C5");
-        ws2.range("wrong_sheet_range");
+        TS_ASSERT_THROWS_ANYTHING(ws2.range("wrong_sheet_range"));
     }
 
     void test_cell_offset()
@@ -245,7 +245,7 @@ public:
         TS_ASSERT_EQUALS(cols.size(), 3);
 
         TS_ASSERT_EQUALS(cols[0][0], "first");
-        TS_ASSERT_EQUALS(cols[8][2], "last");
+        TS_ASSERT_EQUALS(cols[2][8], "last");
     }
 
     void test_auto_filter()

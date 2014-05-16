@@ -26,7 +26,7 @@ bool suite_CellTestSuite_init = false;
 static CellTestSuite suite_CellTestSuite;
 
 static CxxTest::List Tests_CellTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_CellTestSuite( "../../source/tests/CellTestSuite.h", 9, "CellTestSuite", suite_CellTestSuite, Tests_CellTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_CellTestSuite( "CellTestSuite.h", 9, "CellTestSuite", suite_CellTestSuite, Tests_CellTestSuite );
 
 static class TestDescription_suite_CellTestSuite_test_coordinates : public CxxTest::RealTestDescription {
 public:
@@ -189,7 +189,7 @@ public:
 static ChartTestSuite suite_ChartTestSuite;
 
 static CxxTest::List Tests_ChartTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_ChartTestSuite( "../../source/tests/ChartTestSuite.h", 8, "ChartTestSuite", suite_ChartTestSuite, Tests_ChartTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_ChartTestSuite( "ChartTestSuite.h", 8, "ChartTestSuite", suite_ChartTestSuite, Tests_ChartTestSuite );
 
 static class TestDescription_suite_ChartTestSuite_test_write_title : public CxxTest::RealTestDescription {
 public:
@@ -280,7 +280,7 @@ public:
 static DumpTestSuite suite_DumpTestSuite;
 
 static CxxTest::List Tests_DumpTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_DumpTestSuite( "../../source/tests/DumpTestSuite.h", 9, "DumpTestSuite", suite_DumpTestSuite, Tests_DumpTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_DumpTestSuite( "DumpTestSuite.h", 9, "DumpTestSuite", suite_DumpTestSuite, Tests_DumpTestSuite );
 
 static class TestDescription_suite_DumpTestSuite_test_dump_sheet_title : public CxxTest::RealTestDescription {
 public:
@@ -323,7 +323,7 @@ public:
 static IterTestSuite suite_IterTestSuite;
 
 static CxxTest::List Tests_IterTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_IterTestSuite( "../../source/tests/IterTestSuite.h", 8, "IterTestSuite", suite_IterTestSuite, Tests_IterTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_IterTestSuite( "IterTestSuite.h", 8, "IterTestSuite", suite_IterTestSuite, Tests_IterTestSuite );
 
 static class TestDescription_suite_IterTestSuite_test_get_dimensions : public CxxTest::RealTestDescription {
 public:
@@ -372,7 +372,7 @@ public:
 static NamedRangeTestSuite suite_NamedRangeTestSuite;
 
 static CxxTest::List Tests_NamedRangeTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_NamedRangeTestSuite( "../../source/tests/NamedRangeTestSuite.h", 8, "NamedRangeTestSuite", suite_NamedRangeTestSuite, Tests_NamedRangeTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_NamedRangeTestSuite( "NamedRangeTestSuite.h", 8, "NamedRangeTestSuite", suite_NamedRangeTestSuite, Tests_NamedRangeTestSuite );
 
 static class TestDescription_suite_NamedRangeTestSuite_test_split : public CxxTest::RealTestDescription {
 public:
@@ -463,7 +463,7 @@ public:
 static NullableTestSuite suite_NullableTestSuite;
 
 static CxxTest::List Tests_NullableTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_NullableTestSuite( "../../source/tests/NullableTestSuite.h", 8, "NullableTestSuite", suite_NullableTestSuite, Tests_NullableTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_NullableTestSuite( "NullableTestSuite.h", 8, "NullableTestSuite", suite_NullableTestSuite, Tests_NullableTestSuite );
 
 static class TestDescription_suite_NullableTestSuite_test_has_value : public CxxTest::RealTestDescription {
 public:
@@ -500,7 +500,7 @@ public:
 static NumberFormatTestSuite suite_NumberFormatTestSuite;
 
 static CxxTest::List Tests_NumberFormatTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_NumberFormatTestSuite( "../../source/tests/NumberFormatTestSuite.h", 8, "NumberFormatTestSuite", suite_NumberFormatTestSuite, Tests_NumberFormatTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_NumberFormatTestSuite( "NumberFormatTestSuite.h", 8, "NumberFormatTestSuite", suite_NumberFormatTestSuite, Tests_NumberFormatTestSuite );
 
 static class TestDescription_suite_NumberFormatTestSuite_test_convert_date_to_julian : public CxxTest::RealTestDescription {
 public:
@@ -603,7 +603,7 @@ public:
 static PasswordHashTestSuite suite_PasswordHashTestSuite;
 
 static CxxTest::List Tests_PasswordHashTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_PasswordHashTestSuite( "../../source/tests/PasswordHashTestSuite.h", 8, "PasswordHashTestSuite", suite_PasswordHashTestSuite, Tests_PasswordHashTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_PasswordHashTestSuite( "PasswordHashTestSuite.h", 8, "PasswordHashTestSuite", suite_PasswordHashTestSuite, Tests_PasswordHashTestSuite );
 
 static class TestDescription_suite_PasswordHashTestSuite_test_hasher : public CxxTest::RealTestDescription {
 public:
@@ -622,7 +622,7 @@ public:
 static PropsTestSuite suite_PropsTestSuite;
 
 static CxxTest::List Tests_PropsTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_PropsTestSuite( "../../source/tests/PropsTestSuite.h", 8, "PropsTestSuite", suite_PropsTestSuite, Tests_PropsTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_PropsTestSuite( "PropsTestSuite.h", 8, "PropsTestSuite", suite_PropsTestSuite, Tests_PropsTestSuite );
 
 static class TestDescription_suite_PropsTestSuite_test_1 : public CxxTest::RealTestDescription {
 public:
@@ -671,7 +671,7 @@ public:
 static ReadTestSuite suite_ReadTestSuite;
 
 static CxxTest::List Tests_ReadTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_ReadTestSuite( "../../source/tests/ReadTestSuite.h", 8, "ReadTestSuite", suite_ReadTestSuite, Tests_ReadTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_ReadTestSuite( "ReadTestSuite.h", 8, "ReadTestSuite", suite_ReadTestSuite, Tests_ReadTestSuite );
 
 static class TestDescription_suite_ReadTestSuite_test_read_standalone_worksheet : public CxxTest::RealTestDescription {
 public:
@@ -804,7 +804,7 @@ public:
 static StringsTestSuite suite_StringsTestSuite;
 
 static CxxTest::List Tests_StringsTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_StringsTestSuite( "../../source/tests/StringsTestSuite.h", 8, "StringsTestSuite", suite_StringsTestSuite, Tests_StringsTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_StringsTestSuite( "StringsTestSuite.h", 8, "StringsTestSuite", suite_StringsTestSuite, Tests_StringsTestSuite );
 
 static class TestDescription_suite_StringsTestSuite_test_create_string_table : public CxxTest::RealTestDescription {
 public:
@@ -835,7 +835,7 @@ public:
 static StyleTestSuite suite_StyleTestSuite;
 
 static CxxTest::List Tests_StyleTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_StyleTestSuite( "../../source/tests/StyleTestSuite.h", 8, "StyleTestSuite", suite_StyleTestSuite, Tests_StyleTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_StyleTestSuite( "StyleTestSuite.h", 8, "StyleTestSuite", suite_StyleTestSuite, Tests_StyleTestSuite );
 
 static class TestDescription_suite_StyleTestSuite_test_create_style_table : public CxxTest::RealTestDescription {
 public:
@@ -932,7 +932,7 @@ public:
 static ThemeTestSuite suite_ThemeTestSuite;
 
 static CxxTest::List Tests_ThemeTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_ThemeTestSuite( "../../source/tests/ThemeTestSuite.h", 8, "ThemeTestSuite", suite_ThemeTestSuite, Tests_ThemeTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_ThemeTestSuite( "ThemeTestSuite.h", 8, "ThemeTestSuite", suite_ThemeTestSuite, Tests_ThemeTestSuite );
 
 static class TestDescription_suite_ThemeTestSuite_test_write_theme : public CxxTest::RealTestDescription {
 public:
@@ -945,7 +945,7 @@ public:
 static UnicodeTestSuite suite_UnicodeTestSuite;
 
 static CxxTest::List Tests_UnicodeTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_UnicodeTestSuite( "../../source/tests/UnicodeTestSuite.h", 8, "UnicodeTestSuite", suite_UnicodeTestSuite, Tests_UnicodeTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_UnicodeTestSuite( "UnicodeTestSuite.h", 8, "UnicodeTestSuite", suite_UnicodeTestSuite, Tests_UnicodeTestSuite );
 
 static class TestDescription_suite_UnicodeTestSuite_test_read_workbook_with_unicode_character : public CxxTest::RealTestDescription {
 public:
@@ -958,7 +958,7 @@ public:
 static WorkbookTestSuite suite_WorkbookTestSuite;
 
 static CxxTest::List Tests_WorkbookTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_WorkbookTestSuite( "../../source/tests/WorkbookTestSuite.h", 8, "WorkbookTestSuite", suite_WorkbookTestSuite, Tests_WorkbookTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_WorkbookTestSuite( "WorkbookTestSuite.h", 8, "WorkbookTestSuite", suite_WorkbookTestSuite, Tests_WorkbookTestSuite );
 
 static class TestDescription_suite_WorkbookTestSuite_test_get_active_sheet : public CxxTest::RealTestDescription {
 public:
@@ -1187,7 +1187,7 @@ public:
 static WorksheetTestSuite suite_WorksheetTestSuite;
 
 static CxxTest::List Tests_WorksheetTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_WorksheetTestSuite( "../../source/tests/WorksheetTestSuite.h", 9, "WorksheetTestSuite", suite_WorksheetTestSuite, Tests_WorksheetTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_WorksheetTestSuite( "WorksheetTestSuite.h", 9, "WorksheetTestSuite", suite_WorksheetTestSuite, Tests_WorksheetTestSuite );
 
 static class TestDescription_suite_WorksheetTestSuite_test_new_worksheet : public CxxTest::RealTestDescription {
 public:
@@ -1362,7 +1362,7 @@ public:
 static WriteTestSuite suite_WriteTestSuite;
 
 static CxxTest::List Tests_WriteTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_WriteTestSuite( "../../source/tests/WriteTestSuite.h", 9, "WriteTestSuite", suite_WriteTestSuite, Tests_WriteTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_WriteTestSuite( "WriteTestSuite.h", 9, "WriteTestSuite", suite_WriteTestSuite, Tests_WriteTestSuite );
 
 static class TestDescription_suite_WriteTestSuite_test_write_empty_workbook : public CxxTest::RealTestDescription {
 public:
@@ -1495,7 +1495,7 @@ public:
 static ZipFileTestSuite suite_ZipFileTestSuite;
 
 static CxxTest::List Tests_ZipFileTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_ZipFileTestSuite( "../../source/tests/ZipFileTestSuite.h", 8, "ZipFileTestSuite", suite_ZipFileTestSuite, Tests_ZipFileTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_ZipFileTestSuite( "ZipFileTestSuite.h", 8, "ZipFileTestSuite", suite_ZipFileTestSuite, Tests_ZipFileTestSuite );
 
 static class TestDescription_suite_ZipFileTestSuite_test_existing_package : public CxxTest::RealTestDescription {
 public:

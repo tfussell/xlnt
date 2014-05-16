@@ -405,11 +405,12 @@ public:
         theme
     };
 
-    relationship(const std::string &type) : source_uri_(""), target_uri_("")
+    relationship(const std::string &type, const std::string &r_id = "", const std::string &target_uri = "") : id_(r_id), source_uri_(""), target_uri_(target_uri)
     {
         if(type == "hyperlink")
         {
             type_ = type::hyperlink;
+            target_mode_ = target_mode::external;
         }
     }
 
@@ -775,7 +776,8 @@ public:
         date,
         formula,
         boolean,
-        error
+        error,
+        hyperlink
     };
 
     static const std::unordered_map<std::string, int> ErrorCodes;
@@ -974,7 +976,7 @@ public:
     std::string calculate_dimension() const;
     xlnt::range range(const std::string &range_string);
     xlnt::range range(const std::string &range_string, int row_offset, int column_offset);
-    relationship create_relationship(const std::string &relationship_type);
+    relationship create_relationship(const std::string &relationship_type, const std::string &target_uri);
     //void add_chart(chart chart);
     void merge_cells(const std::string &range_string);
     void merge_cells(int start_row, int start_column, int end_row, int end_column);
