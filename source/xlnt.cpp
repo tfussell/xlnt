@@ -2,6 +2,7 @@
 #include <array>
 #include <cassert>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <locale>
 #include <sstream>
@@ -926,7 +927,7 @@ xlnt::cell::type cell::get_data_type() const
 
 xlnt::cell cell::get_offset(int column_offset, int row_offset)
 {
-    return worksheet(root_->parent_worksheet).cell(root_->column + column_offset, root_->row + row_offset);
+    return worksheet(root_->parent_worksheet).cell(root_->row + row_offset, root_->column + column_offset);
 }
 
 cell &cell::operator=(const cell &rhs)
@@ -2044,9 +2045,34 @@ void sheet_protection::set_password(const std::string &password)
     hashed_password_ = hash_password(password);
 }
 
-std::string sheet_protection::hash_password(const std::string &password)
+template< typename T >
+std::string int_to_hex(T i)
 {
-    return password;
+    std::stringstream stream;
+    stream << std::hex << i;
+    return stream.str();
+}
+
+std::string sheet_protection::hash_password(const std::string &plaintext_password)
+{
+    int password = 0x0000;
+    int i = 1;
+
+    for(auto character : plaintext_password)
+    {
+        int value = character << i;
+        int rotated_bits = value >> 15;
+        value &= 0x7fff;
+        password ^= (value | rotated_bits);
+        i++;
+    }
+
+    password ^= plaintext_password.size();
+    password ^= 0xCE4B;
+
+    std::string hashed = int_to_hex(password);
+    std::transform(hashed.begin(), hashed.end(), hashed.begin(), [](char c){ return std::toupper(c, std::locale::classic()); });
+    return hashed;
 }
 
 int string_table::operator[](const std::string &/*key*/) const
