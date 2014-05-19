@@ -7,6 +7,7 @@ xlnt is a c++ library that reads and write XLSX files. The API is roughly based 
 
 Usage
 ----
+Create a new spreadsheet
 ```c++
 xlnt::workbook wb;
 xlnt::worksheet ws = wb.get_active_sheet();
@@ -16,7 +17,10 @@ ws.cell("C3") = "=RAND()";
 ws.merge_cells("C3:C4");
 ws.freeze_panes("B2");
 wb.save("book1.xlsx");
+```
 
+Open an existing spreadsheet
+```c++
 xlnt::workbook wb2;
 wb2.load("book2.xlsx");
 wb2["sheet1"].get_dimensions();
