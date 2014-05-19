@@ -862,7 +862,17 @@ bool cell::operator==(std::nullptr_t) const
 {
     return root_ == nullptr;
 }
+    
+bool cell::operator==(int comparand) const
+{
+    return root_->type == type::numeric && root_->numeric_value == comparand;
+}
 
+bool cell::operator==(double comparand) const
+{
+    return root_->type == type::numeric && root_->numeric_value == comparand;
+}
+    
 bool cell::operator==(const std::string &comparand) const
 {
     if(root_->type == type::hyperlink)
@@ -884,6 +894,11 @@ bool cell::operator==(const char *comparand) const
 bool cell::operator==(const tm &comparand) const
 {
     return root_->type == cell::type::date && root_->date_value.tm_hour == comparand.tm_hour;
+}
+
+bool operator==(int comparand, const xlnt::cell &cell)
+{
+    return cell == comparand;
 }
 
 bool operator==(const char *comparand, const xlnt::cell &cell)
@@ -964,6 +979,7 @@ cell &cell::operator=(bool value)
     return *this;
 }
 
+
 cell &cell::operator=(const std::string &value)
 {
     root_->type = data_type_for_value(value);
@@ -971,8 +987,17 @@ cell &cell::operator=(const std::string &value)
     switch(root_->type)
     {
     case type::date:
+        {
         root_->date_value = std::tm();
+        auto split = split_string(value, ':');
+        root_->date_value.tm_hour = std::stoi(split[0]);
+        root_->date_value.tm_min = std::stoi(split[1]);
+        if(split.size() > 2)
+        {
+            root_->date_value.tm_sec = std::stoi(split[2]);
+        }
         break;
+        }
     case type::formula:
         root_->formula_value = value;
         break;
@@ -1318,7 +1343,14 @@ struct worksheet_struct
     std::unordered_map<std::string, xlnt::cell> cell_map_;
     std::vector<relationship> relationships_;
     page_setup page_setup_;
+    std::string auto_filter_;
+    margins page_margins_;
 };
+    
+worksheet::worksheet() : root_(nullptr)
+{
+    
+}
 
 worksheet::worksheet(worksheet_struct *root) : root_(root)
 {
@@ -1328,7 +1360,32 @@ worksheet::worksheet(workbook &parent)
 {
     *this = parent.create_sheet();
 }
+    
+margins &worksheet::get_page_margins()
+{
+    return root_->page_margins_;
+}
 
+void worksheet::set_auto_filter(const std::string &range_string)
+{
+    root_->auto_filter_ = range_string;
+}
+
+std::string worksheet::get_auto_filter() const
+{
+    return root_->auto_filter_;
+}
+
+bool worksheet::has_auto_filter() const
+{
+    return root_->auto_filter_ == "";
+}
+
+void worksheet::unset_auto_filter()
+{
+    root_->auto_filter_ = "";
+}
+    
 page_setup &worksheet::get_page_setup()
 {
     return root_->page_setup_;
@@ -1746,12 +1803,8 @@ void delete_temporary_file(const std::string &filename)
     std::remove(filename.c_str());
 }
 
-void read_worksheet(worksheet ws, const std::string &content)
+void read_worksheet(worksheet ws, const pugi::xml_node root_node)
 {
-    pugi::xml_document doc;
-    doc.load(content.c_str());
-
-    auto root_node = doc.child("worksheet");
     auto dimension_node = root_node.child("dimension");
     std::string dimension = dimension_node.attribute("ref").as_string();
     ws.range(dimension);
@@ -1808,8 +1861,8 @@ workbook::workbook(optimized optimized)
 {
     if(!optimized_write_)
     {
-        auto ws = create_sheet();
-        ws.set_title("Sheet1");
+        auto *worksheet = new worksheet_struct(*this, "Sheet1");
+        worksheets_.push_back(worksheet);
     }
 }
 
@@ -1832,7 +1885,7 @@ bool workbook::has_named_range(const std::string &name, xlnt::worksheet ws) cons
 {
     for(auto named_range : named_ranges_)
     {
-        if(named_range.first == name && named_range.second.get_parent_worksheet() == ws)
+        if(named_range.first == name && named_range.second.get_scope() == ws)
         {
             return true;
         }
@@ -1842,6 +1895,11 @@ bool workbook::has_named_range(const std::string &name, xlnt::worksheet ws) cons
 
 worksheet workbook::create_sheet()
 {
+    if(optimized_read_)
+    {
+        throw std::runtime_error("this is a read-only workbook");
+    }
+    
     std::string title = "Sheet1";
     int index = 1;
     while(get_sheet_by_name(title) != nullptr)
@@ -1851,6 +1909,55 @@ worksheet workbook::create_sheet()
     auto *worksheet = new worksheet_struct(*this, title);
     worksheets_.push_back(worksheet);
     return get_sheet_by_name(title);
+}
+    
+void workbook::add_sheet(xlnt::worksheet worksheet)
+{
+    if(optimized_read_)
+    {
+        throw std::runtime_error("this is a read-only workbook");
+    }
+    
+    for(auto ws : *this)
+    {
+        if(worksheet == ws)
+        {
+            throw std::runtime_error("worksheet already in workbook");
+        }
+    }
+    worksheets_.push_back(worksheet);
+}
+    
+void workbook::add_sheet(xlnt::worksheet worksheet, std::size_t index)
+{
+    if(optimized_read_)
+    {
+        throw std::runtime_error("this is a read-only workbook");
+    }
+    
+    for(auto ws : *this)
+    {
+        if(worksheet == ws)
+        {
+            throw std::runtime_error("worksheet already in workbook");
+        }
+    }
+    worksheets_.push_back(worksheet);
+    std::swap(worksheets_[index], worksheets_.back());
+}
+    
+int workbook::get_index(xlnt::worksheet worksheet)
+{
+    int i = 0;
+    for(auto ws : *this)
+    {
+        if(worksheet == ws)
+        {
+            return i;
+        }
+        i++;
+    }
+    throw std::runtime_error("worksheet isn't owned by this workbook");
 }
 
 void workbook::create_named_range(const std::string &name, worksheet range_owner, const std::string &range_string)
@@ -1867,16 +1974,93 @@ void workbook::create_named_range(const std::string &name, worksheet range_owner
     throw std::runtime_error("worksheet isn't owned by this workbook");
 }
     
+void workbook::add_named_range(const std::string &name, named_range named_range)
+{
+    for(auto ws : worksheets_)
+    {
+        if(ws == named_range.get_scope())
+        {
+            named_ranges_[name] = named_range;
+            return;
+        }
+    }
+    
+    throw std::runtime_error("worksheet isn't owned by this workbook");
+}
+    
+std::vector<named_range> workbook::get_named_ranges()
+{
+    std::vector<named_range> named_ranges;
+    for(auto named_range : named_ranges_)
+    {
+        named_ranges.push_back(named_range.second);
+    }
+    return named_ranges;
+}
+    
+void workbook::remove_named_range(named_range named_range)
+{
+    std::string key_match = "";
+    for(auto r : named_ranges_)
+    {
+        if(r.second == named_range)
+        {
+            key_match = r.first;
+        }
+    }
+    if(key_match == "")
+    {
+        throw std::runtime_error("range not found in worksheet");
+    }
+    named_ranges_.erase(key_match);
+}
+    
 named_range workbook::get_named_range(const std::string &name, worksheet ws)
 {
     for(auto named_range : named_ranges_)
     {
-        if(named_range.first == name && named_range.second.get_parent_worksheet() == ws)
+        if(named_range.first == name && named_range.second.get_scope() == ws)
         {
             return named_range.second;
         }
     }
     throw std::runtime_error("doesn't exist");
+}
+    
+std::string determine_document_type(const std::unordered_map<std::string, std::pair<std::string, std::string>> &root_relationships,
+                                    const std::unordered_map<std::string, std::string> &override_types)
+{
+    auto relationship_match = std::find_if(root_relationships.begin(), root_relationships.end(),
+                                           [](const std::pair<std::string, std::pair<std::string, std::string>> &v)
+                                           { return v.second.first == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"; });
+    std::string type;
+    
+    if(relationship_match != root_relationships.end())
+    {
+        std::string office_document_relationship = relationship_match->second.second;
+        
+        if(office_document_relationship[0] != '/')
+        {
+            office_document_relationship = std::string("/") + office_document_relationship;
+        }
+        
+        type = override_types.at(office_document_relationship);
+    }
+    
+    if(type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml")
+    {
+        return "excel";
+    }
+    else if(type == "application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml")
+    {
+        return "powerpoint";
+    }
+    else if(type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml")
+    {
+        return "word";
+    }
+    
+    return "unsupported";
 }
 
 void workbook::load(const std::string &filename)
@@ -1885,8 +2069,16 @@ void workbook::load(const std::string &filename)
     //auto core_properties = read_core_properties();
     //auto app_properties = read_app_properties();
     auto root_relationships = read_relationships(f.get_file_contents("_rels/.rels"));
-    auto workbook_relationships = read_relationships(f.get_file_contents("xl/_rels/workbook.xml.rels"));
     auto content_types = read_content_types(f.get_file_contents("[Content_Types].xml"));
+    
+    auto type = determine_document_type(root_relationships, content_types.second);
+    
+    if(type != "excel")
+    {
+        throw std::runtime_error("unsupported document type: " + filename);
+    }
+    
+    auto workbook_relationships = read_relationships(f.get_file_contents("xl/_rels/workbook.xml.rels"));
 
     pugi::xml_document doc;
     doc.load(f.get_file_contents("xl/workbook.xml").c_str());
@@ -1905,7 +2097,9 @@ void workbook::load(const std::string &filename)
         auto ws = create_sheet(sheet_node.attribute("name").as_string());
         std::string sheet_filename("xl/");
         sheet_filename += workbook_relationships[relation_id].second;
-        read_worksheet(ws, f.get_file_contents(sheet_filename));
+        pugi::xml_document doc;
+        doc.load(f.get_file_contents(sheet_filename).c_str());
+        read_worksheet(ws, doc.child("worksheet"));
     }
 }
 
@@ -1929,6 +2123,13 @@ worksheet workbook::create_sheet(std::size_t index)
     }
     return ws;
 }
+    
+worksheet workbook::create_sheet(std::size_t index, const std::string &title)
+{
+    auto ws = create_sheet(index);
+    ws.set_title(title);
+    return ws;
+}
 
 worksheet workbook::create_sheet(const std::string &title)
 {
@@ -1938,19 +2139,19 @@ worksheet workbook::create_sheet(const std::string &title)
     }
 
     if(std::find_if(title.begin(), title.end(), 
-        [](char c) { return !(std::isalpha(c, std::locale::classic()) 
-        || std::isdigit(c, std::locale::classic())); }) != title.end())
+        [](char c) { return c == '*' || c == ':' || c == '/' || c == '\\' || c == '?' || c == '[' || c == ']'; }) != title.end())
     {
         throw bad_sheet_title(title);
     }
-
+    
     if(get_sheet_by_name(title) != nullptr)
     {
         throw std::runtime_error("sheet exists");
     }
+
     auto *worksheet = new worksheet_struct(*this, title);
     worksheets_.push_back(worksheet);
-    return get_sheet_by_name(title);
+    return xlnt::worksheet(worksheet);
 }
 
 std::vector<worksheet>::iterator workbook::begin()
@@ -2177,5 +2378,63 @@ void string_table_builder::add(const std::string &string)
     }
     table_.strings_.push_back(string);
 }
+    
+worksheet xlnt::reader::read_worksheet(std::istream &handle, xlnt::workbook &wb, const std::string &title, const std::unordered_map<int, std::string> &)
+{
+    auto ws = wb.create_sheet();
+    ws.set_title(title);
+    pugi::xml_document doc;
+    doc.load(handle);
+    xlnt::read_worksheet(ws, doc.child("worksheet"));
+    return ws;
+}
+    
+std::string xlnt::writer::write_worksheet(xlnt::worksheet ws, const std::unordered_map<std::string, std::string> &string_table)
+{
+    return "";
+}
+    
+std::string xlnt::writer::write_worksheet(xlnt::worksheet ws)
+{
+    return write_worksheet(ws, std::unordered_map<std::string, std::string>());
+}
+    
+bool named_range::operator==(const xlnt::named_range &comparand) const
+{
+    return comparand.parent_worksheet_ == parent_worksheet_ && comparand.range_string_ == range_string_;
+}
+    
+    std::string xlnt::writer::write_theme()
+    {
+        pugi::xml_document doc;
+        auto theme_node = doc.append_child("a:theme");
+        theme_node.append_attribute("xmlns:a").set_value("http://schemas.openxmlformats.org/drawingml/2006/main");
+        theme_node.append_attribute("name").set_value("Office Theme");
+        auto theme_elements_node = theme_node.append_child("a:themeElements");
+        auto clr_scheme_node = theme_elements_node.append_child("a:clrScheme");
+        clr_scheme_node.append_attribute("name").set_value("Office");
+        
+        struct scheme_element
+        {
+            std::string name;
+            std::string sub_element_name;
+            std::string val;
+        };
+        
+        std::vector<scheme_element> scheme_elements =
+        {
+            {"a:dk1", "a:sysClr", "windowText"}
+        };
+        
+        for(auto element : scheme_elements)
+        {
+            auto element_node = clr_scheme_node.append_child("a:dk1");
+            element_node.append_child(element.sub_element_name.c_str()).append_attribute("val").set_value(element.val.c_str());
+        }
+        
+        std::stringstream ss;
+        doc.print(ss);
+        return ss.str();
+    }
 
 }

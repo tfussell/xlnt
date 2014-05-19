@@ -252,34 +252,49 @@ public:
     {
         xlnt::worksheet ws(wb);
 
-        /*ws.set_auto_filter(ws.range("a1:f1"));
-        TS_ASSERT_EQUALS(ws.get_auto_filter(), "A1:F1");
+        //ws.set_auto_filter(ws.range("a1:f1"));
+        //TS_ASSERT_EQUALS(ws.get_auto_filter(), "A1:F1");
 
-        ws.set_auto_filter("");
-        assert ws.auto_filter is None;
+        ws.unset_auto_filter();
+        TS_ASSERT_EQUALS(ws.has_auto_filter(), false);
 
-        ws.auto_filter = "c1:g9";
-        assert ws.auto_filter == "C1:G9";*/
+        ws.set_auto_filter("c1:g9");
+        TS_ASSERT_EQUALS(ws.get_auto_filter(), "C1:G9");
     }
 
     void test_page_margins()
     {
         xlnt::worksheet ws(wb);
 
-        /*ws.get_page_margins().set_left(2.0);
+        ws.get_page_margins().set_left(2.0);
         ws.get_page_margins().set_right(2.0);
         ws.get_page_margins().set_top(2.0);
         ws.get_page_margins().set_bottom(2.0);
         ws.get_page_margins().set_header(1.5);
-        ws.get_page_margins().set_footer(1.5);*/
+        ws.get_page_margins().set_footer(1.5);
 
-        //auto xml_string = xlnt::writer::write_worksheet(ws);
-
-        //assert "<pageMargins left="2.00" right="2.00" top="2.00" bottom="2.00" header="1.50" footer="1.50"></pageMargins>" in xml_string;
+        auto xml_string = xlnt::writer::write_worksheet(ws);
+        pugi::xml_document doc;
+        doc.load(xml_string.c_str());
+        
+        auto page_margins_node = doc.child("worksheet").child("pageMargins");
+        TS_ASSERT_DIFFERS(page_margins_node.attribute("left"), nullptr);
+        TS_ASSERT_EQUALS(page_margins_node.attribute("left").as_double(), 2.0);
+        TS_ASSERT_DIFFERS(page_margins_node.attribute("right"), nullptr);
+        TS_ASSERT_EQUALS(page_margins_node.attribute("right").as_double(), 2.0);
+        TS_ASSERT_DIFFERS(page_margins_node.attribute("top"), nullptr);
+        TS_ASSERT_EQUALS(page_margins_node.attribute("top").as_double(), 2.0);
+        TS_ASSERT_DIFFERS(page_margins_node.attribute("bottom"), nullptr);
+        TS_ASSERT_EQUALS(page_margins_node.attribute("bottom").as_double(), 2.0);
+        TS_ASSERT_DIFFERS(page_margins_node.attribute("header"), nullptr);
+        TS_ASSERT_EQUALS(page_margins_node.attribute("header").as_double(), 1.5);
+        TS_ASSERT_DIFFERS(page_margins_node.attribute("footer"), nullptr);
+        TS_ASSERT_EQUALS(page_margins_node.attribute("footer").as_double(), 1.5);
 
         xlnt::worksheet ws2(wb);
-        //xml_string = xlnt::writer::write_worksheet(ws2);
-        //assert "<pageMargins" not in xml_string;
+        xml_string = xlnt::writer::write_worksheet(ws2);
+        doc.load(xml_string.c_str());
+        TS_ASSERT_EQUALS(doc.child("worksheet").child("pageMargins"), nullptr);
     }
 
     void test_merge()
@@ -290,17 +305,31 @@ public:
 
         ws.cell("A1") = "Cell A1";
         ws.cell("B1") = "Cell B1";
-        //auto xml_string = xlnt::writer::write_worksheet(ws);// , string_table);
-        /*assert "<c r="B1" t="s"><v>Cell B1</v></c>" in xml_string;
+        auto xml_string = xlnt::writer::write_worksheet(ws, string_table);
+        pugi::xml_document doc;
+        doc.load(xml_string.c_str());
+        auto cell_node = doc.child("worksheet").child("c");
+        TS_ASSERT_DIFFERS(cell_node, nullptr);
+        TS_ASSERT_DIFFERS(cell_node.attribute("r"), nullptr);
+        TS_ASSERT_DIFFERS(std::string(cell_node.attribute("r").as_string()), "B1");
+        TS_ASSERT_DIFFERS(cell_node.attribute("t"), nullptr);
+        TS_ASSERT_DIFFERS(std::string(cell_node.attribute("t").as_string()), "s");
+        TS_ASSERT_DIFFERS(cell_node.child("v"), nullptr);
+        TS_ASSERT_DIFFERS(std::string(cell_node.child("v").text().as_string()), "B1");
 
         ws.merge_cells("A1:B1");
-        xml_string = xlnt::writer::write_worksheet(ws, string_table, None);
-        assert "<c r="B1" t="s"><v>Cell B1</v></c>" not in xml_string;
-        assert "<mergeCells><mergeCell ref="A1:B1"></mergeCell></mergeCells>" in xml_string;
+        xml_string = xlnt::writer::write_worksheet(ws, string_table);
+        doc.load(xml_string.c_str());
+        cell_node = doc.child("worksheet").child("c");
+        TS_ASSERT_EQUALS(cell_node, nullptr);
+        auto merge_node = doc.child("worksheet").child("mergeCells").child("mergeCell");
+        TS_ASSERT_EQUALS(std::string(merge_node.attribute("ref").as_string()), "A1:B1");
 
         ws.unmerge_cells("A1:B1");
-        xml_string = xlnt::writer::write_worksheet(ws, string_table, None);
-        assert "<mergeCell ref="A1:B1"></mergeCell>" not in xml_string;*/
+        xml_string = xlnt::writer::write_worksheet(ws, string_table);
+        doc.load(xml_string.c_str());
+        merge_node = doc.child("worksheet").child("mergeCells").child("mergeCell");
+        TS_ASSERT_EQUALS(merge_node, nullptr);
     }
 
     void test_freeze()
@@ -329,15 +358,27 @@ public:
         ws.get_page_setup().fit_to_page = true;
         ws.get_page_setup().fit_to_height = false;
         ws.get_page_setup().fit_to_width = true;
-        //auto xml_string = xlnt::writer::write_worksheet(ws);
-        //pugi::xml_document doc;
-        //TS_ASSERT("<pageSetup orientation=\"landscape\" paperSize=\"3\" fitToHeight=\"0\" fitToWidth=\"1\"></pageSetup>" in xml_string);
-        //TS_ASSERT("<pageSetUpPr fitToPage=\"1\"></pageSetUpPr>" in xml_string);
+        auto xml_string = xlnt::writer::write_worksheet(ws);
+        pugi::xml_document doc;
+        doc.load(xml_string.c_str());
+        auto page_setup_node = doc.child("worksheet").child("pageSetup");
+        TS_ASSERT_DIFFERS(page_setup_node, nullptr);
+        TS_ASSERT_DIFFERS(page_setup_node.attribute("orientation"), nullptr);
+        TS_ASSERT_DIFFERS(std::string(page_setup_node.attribute("orientation").as_string()), "landscape");
+        TS_ASSERT_DIFFERS(page_setup_node.attribute("paperSize"), nullptr);
+        TS_ASSERT_DIFFERS(page_setup_node.attribute("paperSize").as_int(), 3);
+        TS_ASSERT_DIFFERS(page_setup_node.attribute("fitToHeight"), nullptr);
+        TS_ASSERT_DIFFERS(page_setup_node.attribute("fitToHeight").as_int(), 0);
+        TS_ASSERT_DIFFERS(page_setup_node.attribute("fitToWidth"), nullptr);
+        TS_ASSERT_DIFFERS(page_setup_node.attribute("fitToWidth").as_int(), 1);
+        TS_ASSERT_DIFFERS(doc.child("worksheet").child("pageSetUpPr").attribute("fitToPage"), nullptr);
+        TS_ASSERT_DIFFERS(doc.child("worksheet").child("pageSetUpPr").attribute("fitToPage").as_int(), 1);
 
         xlnt::worksheet ws2(wb);
-        //xml_string = xlnt::writer::write_worksheet(ws2);
-        //TS_ASSERT("<pageSetup" not in xml_string);
-        //TS_ASSERT("<pageSetUpPr" not in xml_string);
+        xml_string = xlnt::writer::write_worksheet(ws2);
+        doc.load(xml_string.c_str());
+        TS_ASSERT_EQUALS(doc.child("worksheet").child("pageSetup"), nullptr);
+        TS_ASSERT_EQUALS(doc.child("worksheet").child("pageSetUpPr"), nullptr);
     }
 
 private:

@@ -13,11 +13,6 @@ public:
 
     }
 
-    void test_1()
-    {
-
-    }
-
     class TestReaderProps
     {
         void setup_class(int cls)

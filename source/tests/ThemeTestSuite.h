@@ -4,6 +4,7 @@
 #include <cxxtest/TestSuite.h>
 
 #include "../xlnt.h"
+#include "PathHelper.h"
 
 class ThemeTestSuite : public CxxTest::TestSuite
 {
@@ -15,8 +16,13 @@ public:
 
     void test_write_theme()
     {
-        //content = write_theme();
-        //assert_equals_file_content(
-        //    os.path.join(DATADIR, "writer", "expected", "theme1.xml"), content);
+        auto content = xlnt::writer::write_theme();
+        
+        std::string comparison_file = PathHelper::GetDataDirectory() + "/writer/expected/theme1.xml";
+        std::ifstream t(comparison_file);
+        std::stringstream buffer;
+        buffer << t.rdbuf();
+        
+        TS_ASSERT_EQUALS(buffer.str(), content);
     }
 };

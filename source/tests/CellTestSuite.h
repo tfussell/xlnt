@@ -283,7 +283,7 @@ public:
     void test_repr()
     {
         xlnt::workbook wb;
-	xlnt::worksheet ws = wb.get_active_sheet();
+        xlnt::worksheet ws = wb.get_active_sheet();
         xlnt::cell cell(ws, "A", 1);
 
         TS_ASSERT_EQUALS(cell.to_string(), "<Cell Sheet1.A1>");

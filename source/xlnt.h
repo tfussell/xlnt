@@ -388,6 +388,20 @@ public:
     /// </summary>
     static bool exists(const std::string &path);
 };
+    
+class reader
+{
+public:
+    static worksheet read_worksheet(std::istream &handle, workbook &wb, const std::string &title, const std::unordered_map<int, std::string> &);
+};
+    
+class writer
+{
+public:
+    static std::string write_worksheet(worksheet ws);
+    static std::string write_worksheet(worksheet ws, const std::unordered_map<std::string, std::string> &string_table);
+    static std::string write_theme();
+};
 
 /// <summary>
 /// Represents an association between a source Package or part, and a target object which can be a part or external resource.
@@ -950,10 +964,36 @@ struct page_setup
     bool fit_to_height;
     bool fit_to_width;
 };
+    
+struct margins
+{
+public:
+    double get_top() const { return top_; }
+    void set_top(double top) { top_ = top; }
+    double get_left() const { return left_; }
+    void set_left(double left) { left_ = left; }
+    double get_bottom() const { return bottom_; }
+    void set_bottom(double bottom) { bottom_ = bottom; }
+    double get_right() const { return right_; }
+    void set_right(double right) { right_ = right; }
+    double get_header() const { return header_; }
+    void set_header(double header) { header_ = header; }
+    double get_footer() const { return footer_; }
+    void set_footer(double footer) { footer_ = footer; }
+    
+private:
+    double top_;
+    double left_;
+    double bottom_;
+    double right_;
+    double header_;
+    double footer_;
+};
 
 class worksheet
 {
 public:
+    worksheet();
     worksheet(workbook &parent);
     worksheet(worksheet_struct *root);
 
@@ -993,6 +1033,11 @@ public:
     bool operator!=(std::nullptr_t) const;
     std::vector<relationship> get_relationships();
     page_setup &get_page_setup();
+    margins &get_page_margins();
+    std::string get_auto_filter() const;
+    void set_auto_filter(const std::string &range_string);
+    void unset_auto_filter();
+    bool has_auto_filter() const;
 
 private:
     friend class workbook;
@@ -1006,7 +1051,9 @@ public:
     named_range() : parent_worksheet_(nullptr), range_string_("") {}
     named_range(worksheet ws, const std::string &range_string) : parent_worksheet_(ws), range_string_(range_string) {}
     std::string get_range_string() const { return range_string_; }
-    worksheet get_parent_worksheet() { return parent_worksheet_; }
+    worksheet get_scope() const { return parent_worksheet_; }
+    void set_scope(worksheet scope) { parent_worksheet_ = scope; }
+    bool operator==(const named_range &comparand) const;
 
 private:
     worksheet parent_worksheet_;
@@ -1080,7 +1127,7 @@ public:
     //named ranges
     void create_named_range(const std::string &name, worksheet worksheet, const std::string &range_string);
     std::vector<named_range> get_named_ranges();
-    void add_named_range(named_range named_range);
+    void add_named_range(const std::string &name, named_range named_range);
     bool has_named_range(const std::string &name, worksheet ws) const;
     named_range get_named_range(const std::string &name, worksheet ws);
     void remove_named_range(named_range named_range);
