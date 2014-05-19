@@ -7,6 +7,11 @@ xlnt is a c++ library that reads and write XLSX files. The API is roughly based 
 
 Usage
 ----
+Using xlnt in your project
+```c++
+#include <xlnt.h>
+```
+
 Create a new spreadsheet
 ```c++
 xlnt::workbook wb;
