@@ -100,11 +100,11 @@ enum class file_access
     /// <summary>
     /// Read and write access to the file. Data can be written to and read from the file.
     /// </summary>
-    read_write = 0x02,
+    read_write = 0x03,
     /// <summary>
     /// Write access to the file. Data can be written to the file. Combine with Read for read/write access.
     /// </summary>
-    write = 0x04
+    write = 0x02
 };
 
 /// <summary>
@@ -392,14 +392,16 @@ public:
 class reader
 {
 public:
-    static worksheet read_worksheet(std::istream &handle, workbook &wb, const std::string &title, const std::unordered_map<int, std::string> &);
+    static worksheet read_worksheet(std::istream &handle, workbook &wb, const std::string &title, const std::vector<std::string> &string_table);
+    static void read_worksheet(worksheet ws, const std::string &xml_string, const std::vector<std::string> &string_table);
+    static std::vector<std::string> read_shared_string(const std::string &xml_string);
 };
     
 class writer
 {
 public:
     static std::string write_worksheet(worksheet ws);
-    static std::string write_worksheet(worksheet ws, const std::unordered_map<std::string, std::string> &string_table);
+    static std::string write_worksheet(worksheet ws, const std::vector<std::string> &string_table);
     static std::string write_theme();
 };
 
@@ -921,21 +923,21 @@ typedef std::vector<std::vector<xlnt::cell>> range;
 
 struct page_setup
 {
-    enum class Break
+    enum class page_break
     {
         None = 0,
         Row = 1,
         Column = 2
     };
 
-    enum class SheetState
+    enum class sheet_state
     {
         Visible,
         Hidden,
         VeryHidden
     };
 
-    enum class PaperSize
+    enum class paper_size
     {
         Letter = 1,
         LetterSmall = 2,
@@ -950,38 +952,63 @@ struct page_setup
         A5 = 11
     };
 
-    enum class Orientation
+    enum class orientation
     {
-        Portrait,
-        Landscape
+        portrait,
+        landscape
     };
 
-    Break break_;
-    SheetState sheet_state;
-    PaperSize paper_size;
-    Orientation orientation;
-    bool fit_to_page;
-    bool fit_to_height;
-    bool fit_to_width;
+public:
+    page_setup() : default_(true), break_(page_break::None), sheet_state_(sheet_state::Visible), paper_size_(paper_size::Letter),
+        orientation_(orientation::portrait), fit_to_page_(false), fit_to_height_(false), fit_to_width_(false) {}
+    bool is_default() const { return default_; }
+    page_break get_break() const { return break_; }
+    void set_break(page_break b) { default_ = false; break_ = b; }
+    sheet_state get_sheet_state() const { return sheet_state_; }
+    void set_sheet_state(sheet_state sheet_state) { default_ = false; sheet_state_ = sheet_state; }
+    paper_size get_paper_size() const { return paper_size_; }
+    void set_paper_size(paper_size paper_size) { default_ = false; paper_size_ = paper_size; }
+    orientation get_orientation() const { return orientation_; }
+    void set_orientation(orientation orientation) { default_ = false; orientation_ = orientation; }
+    bool fit_to_page() const { return fit_to_page_; }
+    void set_fit_to_page(bool fit_to_page) { default_ = false; fit_to_page_ = fit_to_page; }
+    bool fit_to_height() const { return fit_to_height_; }
+    void set_fit_to_height(bool fit_to_height) { default_ = false; fit_to_height_ = fit_to_height; }
+    bool fit_to_width() const { return fit_to_width_; }
+    void set_fit_to_width(bool fit_to_width) { default_ = false; fit_to_width_ = fit_to_width; }
+
+private:
+    bool default_;
+    page_break break_;
+    sheet_state sheet_state_;
+    paper_size paper_size_;
+    orientation orientation_;
+    bool fit_to_page_;
+    bool fit_to_height_;
+    bool fit_to_width_;
 };
     
 struct margins
 {
 public:
+    margins() : default_(true), top_(0), left_(0), bottom_(0), right_(0), header_(0), footer_(0) {}
+
+    bool is_default() const { return default_; }
     double get_top() const { return top_; }
-    void set_top(double top) { top_ = top; }
+    void set_top(double top) { default_ = false; top_ = top; }
     double get_left() const { return left_; }
-    void set_left(double left) { left_ = left; }
+    void set_left(double left) { default_ = false; left_ = left; }
     double get_bottom() const { return bottom_; }
-    void set_bottom(double bottom) { bottom_ = bottom; }
+    void set_bottom(double bottom) { default_ = false; bottom_ = bottom; }
     double get_right() const { return right_; }
-    void set_right(double right) { right_ = right; }
+    void set_right(double right) { default_ = false; right_ = right; }
     double get_header() const { return header_; }
-    void set_header(double header) { header_ = header; }
+    void set_header(double header) { default_ = false; header_ = header; }
     double get_footer() const { return footer_; }
-    void set_footer(double footer) { footer_ = footer; }
+    void set_footer(double footer) { default_ = false; footer_ = footer; }
     
 private:
+    bool default_;
     double top_;
     double left_;
     double bottom_;
@@ -1035,9 +1062,11 @@ public:
     page_setup &get_page_setup();
     margins &get_page_margins();
     std::string get_auto_filter() const;
+    void set_auto_filter(const xlnt::range &range);
     void set_auto_filter(const std::string &range_string);
     void unset_auto_filter();
     bool has_auto_filter() const;
+    std::vector<std::string> get_merged_ranges() const;
 
 private:
     friend class workbook;
@@ -1076,6 +1105,7 @@ class workbook
 public:
     //constructors
     workbook(optimized optimized = optimized::none);
+    ~workbook();
 
     //prevent copy and assignment
     workbook(const workbook &) = delete;
@@ -1102,6 +1132,7 @@ public:
 
     //remove
     void remove_sheet(worksheet worksheet);
+    void clear();
 
     //container operations
     worksheet get_sheet_by_name(const std::string &sheet_name);

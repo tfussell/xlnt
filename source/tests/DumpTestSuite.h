@@ -18,9 +18,6 @@ public:
 
     void test_dump_sheet_title()
     {
-        xlnt::workbook wb3;
-        wb3.load("/Users/thomas/Desktop/a.xlsx");
-
         xlnt::workbook wb(xlnt::optimized::write);
         auto ws = wb.create_sheet("Test1");
         wb.save(temp_file.GetFilename());

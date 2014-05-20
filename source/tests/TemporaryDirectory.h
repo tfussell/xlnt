@@ -8,6 +8,8 @@
 #include <Windows.h>
 #endif
 
+#include "PathHelper.h"
+
 class TemporaryDirectory
 {
 public:
@@ -25,7 +27,7 @@ public:
 	    throw std::runtime_error("GetTempPath failed");
 	}
 	std::string directory(buffer.begin(), buffer.begin() + result);
-        return directory + "xlnt";
+    return PathHelper::WindowsToUniversalPath(directory + "xlnt");
 #else
 	return "/tmp/xlsx";
 #endif

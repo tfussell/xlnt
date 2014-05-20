@@ -22,6 +22,7 @@ public:
         std::ifstream t(comparison_file);
         std::stringstream buffer;
         buffer << t.rdbuf();
+        std::string expected = buffer.str();
         
         TS_ASSERT_EQUALS(buffer.str(), content);
     }

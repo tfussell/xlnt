@@ -4,13 +4,11 @@
 #include <cxxtest/TestSuite.h>
 
 #include "../xlnt.h"
-#include "TemporaryDirectory.h"
+#include "TemporaryFile.h"
 
 class WriteTestSuite : public CxxTest::TestSuite
 {
 public:
-    std::string TMPDIR;
-
     WriteTestSuite()
     {
 
@@ -18,9 +16,9 @@ public:
 
     void test_write_empty_workbook()
     {
-        TemporaryDirectory temp_dir;
+        TemporaryFile temp_file;
         xlnt::workbook wb;
-        auto dest_filename = TMPDIR + "/empty_book.xlsx";
+        auto dest_filename = temp_file.GetFilename();
         wb.save(dest_filename);
         TS_ASSERT(xlnt::file::exists(dest_filename));
     }

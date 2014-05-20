@@ -12,7 +12,6 @@ class ReadTestSuite : public CxxTest::TestSuite
 public:
     ReadTestSuite()
     {
-        xlnt::workbook wb_with_styles;
         auto path = PathHelper::GetDataDirectory() + "/genuine/empty-with-styles.xlsx";
         wb_with_styles.load(path);
         worksheet_with_styles = wb_with_styles.get_sheet_by_name("Sheet1");
@@ -33,7 +32,7 @@ public:
         xlnt::worksheet ws(wb);
         {
             std::ifstream handle(path);
-            ws = xlnt::reader::read_worksheet(handle, wb, "Sheet 2", {{1, "hello"}});
+            ws = xlnt::reader::read_worksheet(handle, wb, "Sheet 2", {"", "hello"});
         }
         TS_ASSERT_DIFFERS(ws, nullptr);
         if(!(ws == nullptr))
@@ -188,6 +187,7 @@ public:
     }
     
 private:
+    xlnt::workbook wb_with_styles;
     xlnt::worksheet worksheet_with_styles;
     xlnt::workbook mac_wb;
     xlnt::worksheet mac_ws;

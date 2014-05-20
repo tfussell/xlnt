@@ -54,6 +54,7 @@ public:
     void test_worksheet_dimension()
     {
         xlnt::worksheet ws(wb);
+        ws.cell("A1") = "AAA";
         TS_ASSERT_EQUALS("A1:A1", ws.calculate_dimension());
         ws.cell("B12") = "AAA";
         TS_ASSERT_EQUALS("A1:B12", ws.calculate_dimension());
@@ -252,8 +253,8 @@ public:
     {
         xlnt::worksheet ws(wb);
 
-        //ws.set_auto_filter(ws.range("a1:f1"));
-        //TS_ASSERT_EQUALS(ws.get_auto_filter(), "A1:F1");
+        ws.set_auto_filter(ws.range("a1:f1"));
+        TS_ASSERT_EQUALS(ws.get_auto_filter(), "A1:F1");
 
         ws.unset_auto_filter();
         TS_ASSERT_EQUALS(ws.has_auto_filter(), false);
@@ -301,33 +302,67 @@ public:
     {
         xlnt::worksheet ws(wb);
 
-        std::unordered_map<std::string, std::string> string_table = {{"", ""}, {"Cell A1", "Cell A1"}, {"Cell B1", "Cell B1"}};
+        std::vector<std::string> string_table = {"Cell A1", "Cell B1"};
 
         ws.cell("A1") = "Cell A1";
         ws.cell("B1") = "Cell B1";
         auto xml_string = xlnt::writer::write_worksheet(ws, string_table);
         pugi::xml_document doc;
         doc.load(xml_string.c_str());
-        auto cell_node = doc.child("worksheet").child("c");
+        auto sheet_data_node = doc.child("worksheet").child("sheetData");
+        auto row_node = sheet_data_node.find_child_by_attribute("row", "r", "1");
+        auto cell_node = row_node.find_child_by_attribute("c", "r", "A1");
         TS_ASSERT_DIFFERS(cell_node, nullptr);
         TS_ASSERT_DIFFERS(cell_node.attribute("r"), nullptr);
-        TS_ASSERT_DIFFERS(std::string(cell_node.attribute("r").as_string()), "B1");
+        TS_ASSERT_EQUALS(std::string(cell_node.attribute("r").as_string()), "A1");
         TS_ASSERT_DIFFERS(cell_node.attribute("t"), nullptr);
-        TS_ASSERT_DIFFERS(std::string(cell_node.attribute("t").as_string()), "s");
+        TS_ASSERT_EQUALS(std::string(cell_node.attribute("t").as_string()), "s");
         TS_ASSERT_DIFFERS(cell_node.child("v"), nullptr);
-        TS_ASSERT_DIFFERS(std::string(cell_node.child("v").text().as_string()), "B1");
+        TS_ASSERT_EQUALS(std::string(cell_node.child("v").text().as_string()), "0");
+        cell_node = row_node.find_child_by_attribute("c", "r", "B1");
+        TS_ASSERT_DIFFERS(cell_node, nullptr);
+        TS_ASSERT_DIFFERS(cell_node.attribute("r"), nullptr);
+        TS_ASSERT_EQUALS(std::string(cell_node.attribute("r").as_string()), "B1");
+        TS_ASSERT_DIFFERS(cell_node.attribute("t"), nullptr);
+        TS_ASSERT_EQUALS(std::string(cell_node.attribute("t").as_string()), "s");
+        TS_ASSERT_DIFFERS(cell_node.child("v"), nullptr);
+        TS_ASSERT_EQUALS(std::string(cell_node.child("v").text().as_string()), "1");
 
         ws.merge_cells("A1:B1");
         xml_string = xlnt::writer::write_worksheet(ws, string_table);
         doc.load(xml_string.c_str());
-        cell_node = doc.child("worksheet").child("c");
-        TS_ASSERT_EQUALS(cell_node, nullptr);
+        sheet_data_node = doc.child("worksheet").child("sheetData");
+        row_node = sheet_data_node.find_child_by_attribute("row", "r", "1");
+        cell_node = row_node.find_child_by_attribute("c", "r", "A1");
+        TS_ASSERT_DIFFERS(cell_node, nullptr);
+        TS_ASSERT_DIFFERS(cell_node.attribute("r"), nullptr);
+        TS_ASSERT_EQUALS(std::string(cell_node.attribute("r").as_string()), "A1");
+        TS_ASSERT_DIFFERS(cell_node.attribute("t"), nullptr);
+        TS_ASSERT_EQUALS(std::string(cell_node.attribute("t").as_string()), "s");
+        TS_ASSERT_DIFFERS(cell_node.child("v"), nullptr);
+        TS_ASSERT_EQUALS(std::string(cell_node.child("v").text().as_string()), "0");
+        cell_node = row_node.find_child_by_attribute("c", "r", "B1");
+        TS_ASSERT_DIFFERS(cell_node, nullptr);
+        TS_ASSERT_EQUALS(cell_node.child("v"), nullptr);
         auto merge_node = doc.child("worksheet").child("mergeCells").child("mergeCell");
+        TS_ASSERT_DIFFERS(merge_node, nullptr);
         TS_ASSERT_EQUALS(std::string(merge_node.attribute("ref").as_string()), "A1:B1");
 
         ws.unmerge_cells("A1:B1");
         xml_string = xlnt::writer::write_worksheet(ws, string_table);
         doc.load(xml_string.c_str());
+        sheet_data_node = doc.child("worksheet").child("sheetData");
+        row_node = sheet_data_node.find_child_by_attribute("row", "r", "1");
+        cell_node = row_node.find_child_by_attribute("c", "r", "A1");
+        TS_ASSERT_DIFFERS(cell_node, nullptr);
+        TS_ASSERT_DIFFERS(cell_node.attribute("r"), nullptr);
+        TS_ASSERT_EQUALS(std::string(cell_node.attribute("r").as_string()), "A1");
+        TS_ASSERT_DIFFERS(cell_node.attribute("t"), nullptr);
+        TS_ASSERT_EQUALS(std::string(cell_node.attribute("t").as_string()), "s");
+        TS_ASSERT_DIFFERS(cell_node.child("v"), nullptr);
+        TS_ASSERT_EQUALS(std::string(cell_node.child("v").text().as_string()), "0");
+        cell_node = row_node.find_child_by_attribute("c", "r", "B1");
+        TS_ASSERT_EQUALS(cell_node, nullptr);
         merge_node = doc.child("worksheet").child("mergeCells").child("mergeCell");
         TS_ASSERT_EQUALS(merge_node, nullptr);
     }
@@ -353,26 +388,29 @@ public:
     {
         xlnt::worksheet ws(wb);
 
-        ws.get_page_setup().orientation = xlnt::page_setup::Orientation::Landscape;
-        ws.get_page_setup().paper_size = xlnt::page_setup::PaperSize::Tabloid;
-        ws.get_page_setup().fit_to_page = true;
-        ws.get_page_setup().fit_to_height = false;
-        ws.get_page_setup().fit_to_width = true;
+        ws.get_page_setup().set_orientation(xlnt::page_setup::orientation::landscape);
+        ws.get_page_setup().set_paper_size(xlnt::page_setup::paper_size::Tabloid);
+        ws.get_page_setup().set_fit_to_page(true);
+        ws.get_page_setup().set_fit_to_height(false);
+        ws.get_page_setup().set_fit_to_width(true);
+
         auto xml_string = xlnt::writer::write_worksheet(ws);
+
         pugi::xml_document doc;
         doc.load(xml_string.c_str());
+
         auto page_setup_node = doc.child("worksheet").child("pageSetup");
         TS_ASSERT_DIFFERS(page_setup_node, nullptr);
         TS_ASSERT_DIFFERS(page_setup_node.attribute("orientation"), nullptr);
-        TS_ASSERT_DIFFERS(std::string(page_setup_node.attribute("orientation").as_string()), "landscape");
+        TS_ASSERT_EQUALS(std::string(page_setup_node.attribute("orientation").as_string()), "landscape");
         TS_ASSERT_DIFFERS(page_setup_node.attribute("paperSize"), nullptr);
-        TS_ASSERT_DIFFERS(page_setup_node.attribute("paperSize").as_int(), 3);
+        TS_ASSERT_EQUALS(page_setup_node.attribute("paperSize").as_int(), 3);
         TS_ASSERT_DIFFERS(page_setup_node.attribute("fitToHeight"), nullptr);
-        TS_ASSERT_DIFFERS(page_setup_node.attribute("fitToHeight").as_int(), 0);
+        TS_ASSERT_EQUALS(page_setup_node.attribute("fitToHeight").as_int(), 0);
         TS_ASSERT_DIFFERS(page_setup_node.attribute("fitToWidth"), nullptr);
-        TS_ASSERT_DIFFERS(page_setup_node.attribute("fitToWidth").as_int(), 1);
+        TS_ASSERT_EQUALS(page_setup_node.attribute("fitToWidth").as_int(), 1);
         TS_ASSERT_DIFFERS(doc.child("worksheet").child("pageSetUpPr").attribute("fitToPage"), nullptr);
-        TS_ASSERT_DIFFERS(doc.child("worksheet").child("pageSetUpPr").attribute("fitToPage").as_int(), 1);
+        TS_ASSERT_EQUALS(doc.child("worksheet").child("pageSetUpPr").attribute("fitToPage").as_int(), 1);
 
         xlnt::worksheet ws2(wb);
         xml_string = xlnt::writer::write_worksheet(ws2);

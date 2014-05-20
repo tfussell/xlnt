@@ -34,14 +34,6 @@ public:
         TS_ASSERT_EQUALS(new_sheet, wb[0]);
     }
 
-    void test_add_correct_sheet()
-    {
-        xlnt::workbook wb;
-        auto new_sheet = wb.create_sheet(0);
-        wb.add_sheet(new_sheet);
-        TS_ASSERT_EQUALS(new_sheet, wb[2]);
-    }
-
     void test_create_sheet_readonly()
     {
         xlnt::workbook wb(xlnt::optimized::read);
@@ -92,7 +84,8 @@ public:
     void test_get_sheet_names()
     {
         xlnt::workbook wb;
-        std::vector<std::string> names = {"Sheet", "Sheet1", "Sheet2", "Sheet3", "Sheet4", "Sheet5"};
+        wb.clear();
+        std::vector<std::string> names = {"NewSheet", "NewSheet1", "NewSheet2", "NewSheet3", "NewSheet4", "NewSheet5"};
         for(int count = 0; count < names.size(); count++)
         {
             wb.create_sheet(names[count]);
@@ -125,14 +118,6 @@ public:
         xlnt::workbook wb;
         auto new_sheet = wb.create_sheet(0, "LikeThisName");
         TS_ASSERT_EQUALS(new_sheet, wb[0]);
-    }
-
-    void test_add_correct_sheet2()
-    {
-        xlnt::workbook wb;
-        auto new_sheet = wb.create_sheet(0);
-        wb.add_sheet(new_sheet);
-        TS_ASSERT_EQUALS(new_sheet, wb[2]);
     }
 
     void test_create_sheet_readonly2()
@@ -203,15 +188,14 @@ public:
 
     void test_add_local_named_range()
     {
-        make_tmpdir();
+        TemporaryFile temp_file;
         xlnt::workbook wb;
         auto new_sheet = wb.create_sheet();
         xlnt::named_range named_range(new_sheet, "A1");
         named_range.set_scope(new_sheet);
         wb.add_named_range("test_nr", named_range);
-        auto dest_filename = PathHelper::GetTempDirectory() + "/local_named_range_book.xlsx";
+        auto dest_filename = temp_file.GetFilename();
         wb.save(dest_filename);
-        clean_tmpdir();
     }
     
     void make_tmpdir()
@@ -244,19 +228,18 @@ public:
 
     void test_write_regular_float()
     {
-        make_tmpdir();
+        TemporaryFile temp_file;
         float float_value = 1.0 / 3.0;
         xlnt::workbook book;
         auto sheet = book.get_active_sheet();
         sheet.cell("A1") = float_value;
-        auto dest_filename = PathHelper::GetTempDirectory() + "float_read_write_issue.xlsx";
+        auto dest_filename = temp_file.GetFilename();
         book.save(dest_filename);
 
         xlnt::workbook test_book;
         test_book.load(dest_filename);
         auto test_sheet = test_book.get_active_sheet();
 
-        TS_ASSERT_EQUALS(test_sheet.cell("A1"), float_value);
-        clean_tmpdir();
+        TS_ASSERT_LESS_THAN_EQUALS(std::stod(test_sheet.cell("A1").get_value()) - float_value, 0.001);
     }
 };

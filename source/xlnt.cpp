@@ -1,4 +1,4 @@
-#include <algorithm>
+﻿#include <algorithm>
 #include <array>
 #include <cassert>
 #include <fstream>
@@ -684,6 +684,11 @@ void cell::set_merged(bool merged)
     root_->merged = merged;
 }
 
+bool cell::get_merged() const
+{
+    return root_->merged;
+}
+
 bool cell::bind_value()
 {
     root_->type = type::null;
@@ -1047,23 +1052,37 @@ struct worksheet_struct
 
     }
 
+    ~worksheet_struct()
+    {
+        clear();
+    }
+
+    void clear()
+    {
+        while(!cell_map_.empty())
+        {
+            delete cell_map_.begin()->second.root_;
+            cell_map_.erase(cell_map_.begin()->first);
+        }
+    }
+
     void garbage_collect()
     {
-	std::vector<std::string> null_cell_keys;
+        std::vector<std::string> null_cell_keys;
 
-	for(auto key_cell_pair : cell_map_)
-	{
-	    if(key_cell_pair.second.get_data_type() == cell::type::null)
-	    {
-		null_cell_keys.push_back(key_cell_pair.first);
-	    }
-	}
+        for(auto key_cell_pair : cell_map_)
+        {
+            if(key_cell_pair.second.get_data_type() == cell::type::null)
+            {
+                null_cell_keys.push_back(key_cell_pair.first);
+            }
+        }
 
-	while(!null_cell_keys.empty())
-	{
-	    cell_map_.erase(null_cell_keys.back());
-	    null_cell_keys.pop_back();
-	}
+        while(!null_cell_keys.empty())
+        {
+            cell_map_.erase(null_cell_keys.back());
+            null_cell_keys.pop_back();
+        }
     }
 
     std::list<cell> get_cell_collection()
@@ -1132,17 +1151,17 @@ struct worksheet_struct
 
     int get_highest_row() const
     {
-        int highest = 0;
+        int highest = 1;
         for(auto cell : cell_map_)
         {
-            highest = (std::max)(highest, cell.second.get_row() - 1);
+            highest = (std::max)(highest, cell.second.get_row());
         }
         return highest;
     }
 
     int get_highest_column() const
     {
-        int highest = 0;
+        int highest = 1;
         for(auto cell : cell_map_)
         {
             highest = (std::max)(highest, xlnt::cell::column_index_from_string(cell.second.get_column()));
@@ -1150,12 +1169,51 @@ struct worksheet_struct
         return highest;
     }
 
+    int get_lowest_row() const
+    {
+        if(cell_map_.empty())
+        {
+            return 1;
+        }
+
+        int lowest = cell_map_.begin()->second.get_row();
+
+        for(auto cell : cell_map_)
+        {
+            lowest = (std::min)(lowest, cell.second.get_row());
+        }
+
+        return lowest;
+    }
+
+    int get_lowest_column() const
+    {
+        if(cell_map_.empty())
+        {
+            return 1;
+        }
+
+        int lowest = xlnt::cell::column_index_from_string(cell_map_.begin()->second.get_column());
+
+        for(auto cell : cell_map_)
+        {
+            lowest = (std::min)(lowest, xlnt::cell::column_index_from_string(cell.second.get_column()));
+        }
+
+        return lowest;
+    }
+
     std::string calculate_dimension() const
     {
-        int width = (std::max)(1, get_highest_column());
-        std::string width_letter = xlnt::cell::get_column_letter(width);
-        int height = get_highest_row() + 1;
-        return "A1:" + width_letter + std::to_string(height);
+        int lowest_column = get_lowest_column();
+        std::string lowest_column_letter = xlnt::cell::get_column_letter(lowest_column);
+        int lowest_row = get_lowest_row();
+
+        int highest_column = get_highest_column();
+        std::string highest_column_letter = xlnt::cell::get_column_letter(highest_column);
+        int highest_row = get_highest_row();
+
+        return lowest_column_letter + std::to_string(lowest_row) + ":" + highest_column_letter + std::to_string(highest_row);
     }
 
     xlnt::range range(const std::string &range_string, int row_offset, int column_offset)
@@ -1226,6 +1284,7 @@ struct worksheet_struct
 
     void merge_cells(const std::string &range_string)
     {
+        merged_cells_.push_back(range_string);
         bool first = true;
         for(auto row : range(range_string, 0, 0))
         {
@@ -1250,17 +1309,17 @@ struct worksheet_struct
 
     void unmerge_cells(const std::string &range_string)
     {
-        bool first = true;
+        auto match = std::find(merged_cells_.begin(), merged_cells_.end(), range_string);
+        if(match == merged_cells_.end())
+        {
+            throw std::runtime_error("cells not merged");
+        }
+        merged_cells_.erase(match);
         for(auto row : range(range_string, 0, 0))
         {
             for(auto cell : row)
             {
                 cell.set_merged(false);
-                if(!first)
-                {
-                    cell.bind_value();
-                }
-                first = false;
             }
         }
     }
@@ -1274,7 +1333,7 @@ struct worksheet_struct
 
     void append(const std::vector<std::string> &cells)
     {
-        int row = get_highest_row();
+        int row = get_highest_row() - 1;
         if(cell_map_.size() != 0)
         {
             row++;
@@ -1288,7 +1347,7 @@ struct worksheet_struct
 
     void append(const std::unordered_map<std::string, std::string> &cells)
     {
-        int row = get_highest_row();
+        int row = get_highest_row() - 1;
         if(cell_map_.size() != 0)
         {
             row++;
@@ -1302,7 +1361,7 @@ struct worksheet_struct
 
     void append(const std::unordered_map<int, std::string> &cells)
     {
-        int row = get_highest_row();
+        int row = get_highest_row() - 1;
         if(cell_map_.size() != 0)
         {
             row++;
@@ -1345,6 +1404,7 @@ struct worksheet_struct
     page_setup page_setup_;
     std::string auto_filter_;
     margins page_margins_;
+    std::vector<std::string> merged_cells_;
 };
     
 worksheet::worksheet() : root_(nullptr)
@@ -1360,6 +1420,11 @@ worksheet::worksheet(workbook &parent)
 {
     *this = parent.create_sheet();
 }
+
+std::vector<std::string> worksheet::get_merged_ranges() const
+{
+    return root_->merged_cells_;
+}
     
 margins &worksheet::get_page_margins()
 {
@@ -1368,7 +1433,24 @@ margins &worksheet::get_page_margins()
 
 void worksheet::set_auto_filter(const std::string &range_string)
 {
-    root_->auto_filter_ = range_string;
+    std::string upper;
+    std::transform(range_string.begin(), range_string.end(), std::back_inserter(upper), 
+        [](char c) { return std::toupper(c, std::locale::classic()); });
+    root_->auto_filter_ = upper;
+}
+
+void worksheet::set_auto_filter(const xlnt::range &range)
+{
+    auto first = range[0][0].get_address();
+    auto last = range.back().back().get_address();
+    if(first == last)
+    {
+        set_auto_filter(first);
+    }
+    else
+    {
+        set_auto_filter(first + ":" + last);
+    }
 }
 
 std::string worksheet::get_auto_filter() const
@@ -1378,7 +1460,7 @@ std::string worksheet::get_auto_filter() const
 
 bool worksheet::has_auto_filter() const
 {
-    return root_->auto_filter_ == "";
+    return root_->auto_filter_ != "";
 }
 
 void worksheet::unset_auto_filter()
@@ -1709,107 +1791,6 @@ std::string write_relationships(const std::unordered_map<std::string, std::pair<
     return ss.str();
 }
 
-std::string write_worksheet(worksheet ws)
-{
-    pugi::xml_document doc;
-    auto root_node = doc.append_child("worksheet");
-    root_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
-    root_node.append_attribute("xmlns:r").set_value("http://schemas.openxmlformats.org/officeDocument/2006/relationships");
-    auto dimension_node = root_node.append_child("dimension");
-    int width = (std::max)(1, ws.get_highest_column());
-    std::string width_letter = xlnt::cell::get_column_letter(width);
-    int height = (std::max)(1, ws.get_highest_row());
-    auto dimension = width_letter + std::to_string(height);
-    dimension_node.append_attribute("ref").set_value(dimension.c_str());
-    auto sheet_views_node = root_node.append_child("sheetViews");
-    auto sheet_view_node = sheet_views_node.append_child("sheetView");
-    sheet_view_node.append_attribute("tabSelected").set_value(1);
-    sheet_view_node.append_attribute("workbookViewId").set_value(0);
-
-    auto selection_node = sheet_view_node.append_child("selection");
-
-    std::string active_cell = "B2";
-    selection_node.append_attribute("activeCell").set_value(active_cell.c_str());
-    selection_node.append_attribute("sqref").set_value(active_cell.c_str());
-
-    auto sheet_format_pr_node = root_node.append_child("sheetFormatPr");
-    sheet_format_pr_node.append_attribute("defaultRowHeight").set_value(15);
-
-    auto sheet_data_node = root_node.append_child("sheetData");
-    for(auto row : ws.rows())
-    {
-        if(row.empty())
-        {
-            continue;
-        }
-
-        int min = (int)row.size();
-        int max = 0;
-        bool any_non_null = false;
-
-        for(auto cell : row)
-        {
-            min = (std::min)(min, cell::column_index_from_string(cell.get_column()));
-            max = (std::max)(max, cell::column_index_from_string(cell.get_column()));
-
-            if(cell.get_data_type() != cell::type::null)
-            {
-                any_non_null = true;
-            }
-        }
-
-        if(!any_non_null)
-        {
-            continue;
-        }
-
-        auto row_node = sheet_data_node.append_child("row");
-        row_node.append_attribute("r").set_value(row.front().get_row() + 1);
-
-        row_node.append_attribute("spans").set_value((std::to_string(min) + ":" + std::to_string(max)).c_str());
-        row_node.append_attribute("x14ac:dyDescent").set_value(0.25);
-
-        for(auto cell : row)
-        {
-            if(cell.get_data_type() != cell::type::null)
-            {
-                auto cell_node = row_node.append_child("c");
-                cell_node.append_attribute("r").set_value(cell.get_address().c_str());
-                auto value_node = cell_node.append_child("v");
-                value_node.text().set(cell.get_value().c_str());
-            }
-        }
-    }
-
-    auto page_margins_node = root_node.append_child("pageMargins");
-    page_margins_node.append_attribute("left").set_value(0.7);
-    page_margins_node.append_attribute("right").set_value(0.7);
-    page_margins_node.append_attribute("top").set_value(0.75);
-    page_margins_node.append_attribute("bottom").set_value(0.75);
-    page_margins_node.append_attribute("header").set_value(0.3);
-    page_margins_node.append_attribute("footer").set_value(0.3);
-    std::stringstream ss;
-    doc.save(ss);
-    return ss.str();
-}
-
-std::string create_temporary_file()
-{
-    return "a.temp";
-}
-
-void delete_temporary_file(const std::string &filename)
-{
-    std::remove(filename.c_str());
-}
-
-void read_worksheet(worksheet ws, const pugi::xml_node root_node)
-{
-    auto dimension_node = root_node.child("dimension");
-    std::string dimension = dimension_node.attribute("ref").as_string();
-    ws.range(dimension);
-}
-
 std::unordered_map<std::string, std::pair<std::string, std::string>> read_relationships(const std::string &content)
 {
     pugi::xml_document doc;
@@ -1864,6 +1845,11 @@ workbook::workbook(optimized optimized)
         auto *worksheet = new worksheet_struct(*this, "Sheet1");
         worksheets_.push_back(worksheet);
     }
+}
+
+workbook::~workbook()
+{
+    clear();
 }
 
 worksheet workbook::get_sheet_by_name(const std::string &name)
@@ -2091,15 +2077,19 @@ void workbook::load(const std::string &filename)
         remove_sheet(worksheets_.front());
     }
 
+    std::vector<std::string> shared_strings;
+    if(f.has_file("xl/sharedStrings.xml"))
+    {
+        shared_strings = xlnt::reader::read_shared_string(f.get_file_contents("xl/sharedStrings.xml"));
+    }
+
     for(auto sheet_node : sheets_node.children("sheet"))
     {
         auto relation_id = sheet_node.attribute("r:id").as_string();
         auto ws = create_sheet(sheet_node.attribute("name").as_string());
         std::string sheet_filename("xl/");
         sheet_filename += workbook_relationships[relation_id].second;
-        pugi::xml_document doc;
-        doc.load(f.get_file_contents(sheet_filename).c_str());
-        read_worksheet(ws, doc.child("worksheet"));
+        xlnt::reader::read_worksheet(ws, f.get_file_contents(sheet_filename).c_str(), shared_strings);
     }
 }
 
@@ -2176,7 +2166,14 @@ std::vector<std::string> workbook::get_sheet_names() const
 
 worksheet workbook::operator[](const std::string &name)
 {
-    return get_sheet_by_name(name);
+    for(auto sheet : worksheets_)
+    {
+        if(sheet.get_title() == name)
+        {
+            return sheet;
+        }
+    }
+    throw std::runtime_error("sheet not found");
 }
 
 worksheet workbook::operator[](int index)
@@ -2184,6 +2181,14 @@ worksheet workbook::operator[](int index)
     return worksheets_[index];
 }
 
+void workbook::clear()
+{
+    while(!worksheets_.empty())
+    {
+        delete worksheets_.back().root_;
+        worksheets_.pop_back();
+    }
+}
 
 void workbook::save(const std::string &filename)
 {
@@ -2237,7 +2242,7 @@ void workbook::save(const std::string &filename)
         sheet_node.append_attribute("sheetId").set_value(std::to_string(i + 1).c_str());
         sheet_node.append_attribute("r:id").set_value((std::string("rId") + std::to_string(i + 1)).c_str());
         std::string filename = "xl/worksheets/sheet";
-        f.set_file_contents(filename + std::to_string(i + 1) + ".xml", write_worksheet(ws));
+        f.set_file_contents(filename + std::to_string(i + 1) + ".xml", xlnt::writer::write_worksheet(ws));
         i++;
     }
 
@@ -2379,24 +2384,306 @@ void string_table_builder::add(const std::string &string)
     table_.strings_.push_back(string);
 }
     
-worksheet xlnt::reader::read_worksheet(std::istream &handle, xlnt::workbook &wb, const std::string &title, const std::unordered_map<int, std::string> &)
+void read_worksheet(worksheet ws, const pugi::xml_node &root_node, const std::vector<std::string> &string_table)
+{
+    auto dimension_node = root_node.child("dimension");
+    std::string dimension = dimension_node.attribute("ref").as_string();
+    auto sheet_data_node = root_node.child("sheetData");
+    auto merge_cells_node = root_node.child("mergeCells");
+
+    if(merge_cells_node != nullptr)
+    {
+        int count = merge_cells_node.attribute("count").as_int();
+
+        for(auto merge_cell_node : merge_cells_node.children("mergeCell"))
+        {
+            ws.merge_cells(merge_cell_node.attribute("ref").as_string());
+            count--;
+        }
+
+        if(count != 0)
+        {
+            throw std::runtime_error("mismatch between count and actual number of merged cells");
+        }
+    }
+
+    for(auto row_node : sheet_data_node.children("row"))
+    {
+        int row_index = row_node.attribute("r").as_int();
+        std::string span_string = row_node.attribute("spans").as_string();
+        auto colon_index = span_string.find(':');
+        int min_column = std::stoi(span_string.substr(0, colon_index));
+        int max_column = std::stoi(span_string.substr(colon_index + 1));
+
+        for(int i = min_column; i < max_column + 1; i++)
+        {
+            std::string address = xlnt::cell::get_column_letter(i) + std::to_string(row_index);
+            auto cell_node = row_node.find_child_by_attribute("c", "r", address.c_str());
+
+            if(cell_node != nullptr)
+            {
+                if(cell_node.attribute("t") != nullptr && std::string(cell_node.attribute("t").as_string()) == "inlineStr") // inline string
+                {
+                    ws.cell(address) = cell_node.child("is").child("t").text().as_string();
+                }
+                else if(cell_node.attribute("t") != nullptr && std::string(cell_node.attribute("t").as_string()) == "s") // shared string
+                {
+                    ws.cell(address) = string_table.at(cell_node.child("v").text().as_int());
+                }
+                else if(cell_node.attribute("s") != nullptr && std::string(cell_node.attribute("s").as_string()) == "2") // date
+                {
+                    tm date = {0};
+                    date.tm_year = 1900;
+                    int days = cell_node.child("v").text().as_int();
+                    while(days > 365)
+                    {
+                        date.tm_year += 1;
+                        days -= 365;
+                    }
+                    date.tm_yday = days;
+                    while(days > 30)
+                    {
+                        date.tm_mon += 1;
+                        days -= 30;
+                    }
+                    date.tm_mday = days;
+                    ws.cell(address) = date;
+                }
+                else if(cell_node.attribute("s") != nullptr && std::string(cell_node.attribute("s").as_string()) == "3") // time
+                {
+                    tm date = {0};
+                    double remaining = cell_node.child("v").text().as_double() * 24;
+                    date.tm_hour = (int)(remaining);
+                    remaining -= date.tm_hour;
+                    remaining *= 60;
+                    date.tm_min = (int)(remaining);
+                    remaining -= date.tm_min;
+                    remaining *= 60;
+                    date.tm_sec = (int)(remaining);
+                    remaining -= date.tm_sec;
+                    if(remaining > 0.5)
+                    {
+                        date.tm_sec++;
+                        if(date.tm_sec > 59)
+                        {
+                            date.tm_sec = 0;
+                            date.tm_min++;
+                            if(date.tm_min > 59)
+                            {
+                                date.tm_min = 0;
+                                date.tm_hour++;
+                            }
+                        }
+                    }
+                    ws.cell(address) = date;
+                }
+                else if(cell_node.attribute("s") != nullptr && std::string(cell_node.attribute("s").as_string()) == "4") // decimal
+                {
+                    ws.cell(address) = cell_node.child("v").text().as_double();
+                }
+                else if(cell_node.attribute("s") != nullptr && std::string(cell_node.attribute("s").as_string()) == "1") // percent
+                {
+                    ws.cell(address) = cell_node.child("v").text().as_double();
+                }
+                else if(cell_node.child("v") != nullptr)
+                {
+                    ws.cell(address) = cell_node.child("v").text().as_string();
+                }
+            }
+        }
+    }
+}
+
+void xlnt::reader::read_worksheet(worksheet ws, const std::string &xml_string, const std::vector<std::string> &string_table)
+{
+    pugi::xml_document doc;
+    doc.load(xml_string.c_str());
+    xlnt::read_worksheet(ws, doc.child("worksheet"), string_table);
+}
+
+worksheet xlnt::reader::read_worksheet(std::istream &handle, xlnt::workbook &wb, const std::string &title, const std::vector<std::string> &string_table)
 {
     auto ws = wb.create_sheet();
     ws.set_title(title);
     pugi::xml_document doc;
     doc.load(handle);
-    xlnt::read_worksheet(ws, doc.child("worksheet"));
+    xlnt::read_worksheet(ws, doc.child("worksheet"), string_table);
     return ws;
 }
-    
-std::string xlnt::writer::write_worksheet(xlnt::worksheet ws, const std::unordered_map<std::string, std::string> &string_table)
+
+std::vector<std::string> reader::read_shared_string(const std::string &xml_string)
 {
-    return "";
+    std::vector<std::string> shared_strings;
+    pugi::xml_document doc;
+    doc.load(xml_string.c_str());
+    auto root_node = doc.child("sst");
+    //int count = root_node.attribute("count").as_int();
+    int unique_count = root_node.attribute("uniqueCount").as_int();
+
+    for(auto si_node : root_node)
+    {
+        shared_strings.push_back(si_node.child("t").text().as_string());
+    }
+
+    if(unique_count != shared_strings.size())
+    {
+        throw std::runtime_error("counts don't match");
+    }
+
+    return shared_strings;
+}
+    
+std::string xlnt::writer::write_worksheet(xlnt::worksheet ws, const std::vector<std::string> &string_table)
+{
+    pugi::xml_document doc;
+    auto root_node = doc.append_child("worksheet");
+    root_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
+    root_node.append_attribute("xmlns:r").set_value("http://schemas.openxmlformats.org/officeDocument/2006/relationships");
+    auto dimension_node = root_node.append_child("dimension");
+    int width = (std::max)(1, ws.get_highest_column());
+    std::string width_letter = xlnt::cell::get_column_letter(width);
+    int height = (std::max)(1, ws.get_highest_row());
+    auto dimension = width_letter + std::to_string(height);
+    dimension_node.append_attribute("ref").set_value(dimension.c_str());
+    auto sheet_views_node = root_node.append_child("sheetViews");
+    auto sheet_view_node = sheet_views_node.append_child("sheetView");
+    sheet_view_node.append_attribute("tabSelected").set_value(1);
+    sheet_view_node.append_attribute("workbookViewId").set_value(0);
+
+    auto selection_node = sheet_view_node.append_child("selection");
+
+    std::string active_cell = "B2";
+    selection_node.append_attribute("activeCell").set_value(active_cell.c_str());
+    selection_node.append_attribute("sqref").set_value(active_cell.c_str());
+
+    auto sheet_format_pr_node = root_node.append_child("sheetFormatPr");
+    sheet_format_pr_node.append_attribute("defaultRowHeight").set_value(15);
+
+    auto sheet_data_node = root_node.append_child("sheetData");
+    for(auto row : ws.rows())
+    {
+        if(row.empty())
+        {
+            continue;
+        }
+
+        int min = (int)row.size();
+        int max = 0;
+        bool any_non_null = false;
+
+        for(auto cell : row)
+        {
+            min = (std::min)(min, cell::column_index_from_string(cell.get_column()));
+            max = (std::max)(max, cell::column_index_from_string(cell.get_column()));
+
+            if(cell.get_data_type() != cell::type::null)
+            {
+                any_non_null = true;
+            }
+        }
+
+        if(!any_non_null)
+        {
+            continue;
+        }
+
+        auto row_node = sheet_data_node.append_child("row");
+        row_node.append_attribute("r").set_value(row.front().get_row());
+
+        row_node.append_attribute("spans").set_value((std::to_string(min) + ":" + std::to_string(max)).c_str());
+        row_node.append_attribute("x14ac:dyDescent").set_value(0.25);
+
+        for(auto cell : row)
+        {
+            if(cell.get_data_type() != cell::type::null || cell.get_merged())
+            {
+                auto cell_node = row_node.append_child("c");
+                cell_node.append_attribute("r").set_value(cell.get_address().c_str());
+
+                if(cell.get_data_type() == cell::type::string)
+                {
+                    int match_index = -1;
+                    for(int i = 0; i < string_table.size(); i++)
+                    {
+                        if(string_table[i] == cell.get_value())
+                        {
+                            match_index = i;
+                            break;
+                        }
+                    }
+
+                    if(match_index == -1)
+                    {
+                        cell_node.append_attribute("t").set_value("inlineStr");
+                        auto inline_string_node = cell_node.append_child("is");
+                        inline_string_node.append_child("t").set_value(cell.get_value().c_str());
+                    }
+                    else
+                    {
+                        cell_node.append_attribute("t").set_value("s");
+                        auto value_node = cell_node.append_child("v");
+                        value_node.text().set(match_index);
+                    }
+                }
+                else
+                {
+                    if(cell.get_data_type() != cell::type::null)
+                    {
+                        auto value_node = cell_node.append_child("v");
+                        value_node.text().set(cell.get_value().c_str());
+                    }
+                }
+            }
+        }
+    }
+
+    if(!ws.get_merged_ranges().empty())
+    {
+        auto merge_cells_node = root_node.append_child("mergeCells");
+        merge_cells_node.append_attribute("count").set_value(ws.get_merged_ranges().size());
+
+        for(auto merged_range : ws.get_merged_ranges())
+        {
+            auto merge_cell_node = merge_cells_node.append_child("mergeCell");
+            merge_cell_node.append_attribute("ref").set_value(merged_range.c_str());
+        }
+    }
+
+    if(!ws.get_page_margins().is_default())
+    {
+        auto page_margins_node = root_node.append_child("pageMargins");
+
+        page_margins_node.append_attribute("left").set_value(ws.get_page_margins().get_left());
+        page_margins_node.append_attribute("right").set_value(ws.get_page_margins().get_right());
+        page_margins_node.append_attribute("top").set_value(ws.get_page_margins().get_top());
+        page_margins_node.append_attribute("bottom").set_value(ws.get_page_margins().get_bottom());
+        page_margins_node.append_attribute("header").set_value(ws.get_page_margins().get_header());
+        page_margins_node.append_attribute("footer").set_value(ws.get_page_margins().get_footer());
+    }
+
+    if(!ws.get_page_setup().is_default())
+    {
+        auto page_setup_node = root_node.append_child("pageSetup");
+
+        std::string orientation_string = ws.get_page_setup().get_orientation() == xlnt::page_setup::orientation::landscape ? "landscape" : "portrait";
+        page_setup_node.append_attribute("orientation").set_value(orientation_string.c_str());
+        page_setup_node.append_attribute("paperSize").set_value((int)ws.get_page_setup().get_paper_size());
+        page_setup_node.append_attribute("fitToHeight").set_value(ws.get_page_setup().fit_to_height() ? 1 : 0);
+        page_setup_node.append_attribute("fitToWidth").set_value(ws.get_page_setup().fit_to_width() ? 1 : 0);
+
+        auto page_set_up_pr_node = root_node.append_child("pageSetUpPr");
+        page_set_up_pr_node.append_attribute("fitToPage").set_value(ws.get_page_setup().fit_to_page() ? 1 : 0);
+    }
+
+    std::stringstream ss;
+    doc.save(ss);
+
+    return ss.str();
 }
     
 std::string xlnt::writer::write_worksheet(xlnt::worksheet ws)
 {
-    return write_worksheet(ws, std::unordered_map<std::string, std::string>());
+    return write_worksheet(ws, std::vector<std::string>());
 }
     
 bool named_range::operator==(const xlnt::named_range &comparand) const
@@ -2406,6 +2693,7 @@ bool named_range::operator==(const xlnt::named_range &comparand) const
     
     std::string xlnt::writer::write_theme()
     {
+        /*
         pugi::xml_document doc;
         auto theme_node = doc.append_child("a:theme");
         theme_node.append_attribute("xmlns:a").set_value("http://schemas.openxmlformats.org/drawingml/2006/main");
@@ -2435,6 +2723,712 @@ bool named_range::operator==(const xlnt::named_range &comparand) const
         std::stringstream ss;
         doc.print(ss);
         return ss.str();
+        */
+        std::array<unsigned char, 6994> data =
+        {
+            60, 63, 120, 109, 108, 32, 118, 101, 114, 115,
+            105, 111, 110, 61, 34, 49, 46, 48, 34, 32,
+            101, 110, 99, 111, 100, 105, 110, 103, 61, 34,
+            85, 84, 70, 45, 56, 34, 32, 115, 116, 97,
+            110, 100, 97, 108, 111, 110, 101, 61, 34, 121,
+            101, 115, 34, 63, 62, 10, 60, 97, 58, 116,
+            104, 101, 109, 101, 32, 120, 109, 108, 110, 115,
+            58, 97, 61, 34, 104, 116, 116, 112, 58, 47,
+            47, 115, 99, 104, 101, 109, 97, 115, 46, 111,
+            112, 101, 110, 120, 109, 108, 102, 111, 114, 109,
+            97, 116, 115, 46, 111, 114, 103, 47, 100, 114,
+            97, 119, 105, 110, 103, 109, 108, 47, 50, 48,
+            48, 54, 47, 109, 97, 105, 110, 34, 32, 110,
+            97, 109, 101, 61, 34, 79, 102, 102, 105, 99,
+            101, 32, 84, 104, 101, 109, 101, 34, 62, 60,
+            97, 58, 116, 104, 101, 109, 101, 69, 108, 101,
+            109, 101, 110, 116, 115, 62, 60, 97, 58, 99,
+            108, 114, 83, 99, 104, 101, 109, 101, 32, 110,
+            97, 109, 101, 61, 34, 79, 102, 102, 105, 99,
+            101, 34, 62, 60, 97, 58, 100, 107, 49, 62,
+            60, 97, 58, 115, 121, 115, 67, 108, 114, 32,
+            118, 97, 108, 61, 34, 119, 105, 110, 100, 111,
+            119, 84, 101, 120, 116, 34, 32, 108, 97, 115,
+            116, 67, 108, 114, 61, 34, 48, 48, 48, 48,
+            48, 48, 34, 47, 62, 60, 47, 97, 58, 100,
+            107, 49, 62, 60, 97, 58, 108, 116, 49, 62,
+            60, 97, 58, 115, 121, 115, 67, 108, 114, 32,
+            118, 97, 108, 61, 34, 119, 105, 110, 100, 111,
+            119, 34, 32, 108, 97, 115, 116, 67, 108, 114,
+            61, 34, 70, 70, 70, 70, 70, 70, 34, 47,
+            62, 60, 47, 97, 58, 108, 116, 49, 62, 60,
+            97, 58, 100, 107, 50, 62, 60, 97, 58, 115,
+            114, 103, 98, 67, 108, 114, 32, 118, 97, 108,
+            61, 34, 49, 70, 52, 57, 55, 68, 34, 47,
+            62, 60, 47, 97, 58, 100, 107, 50, 62, 60,
+            97, 58, 108, 116, 50, 62, 60, 97, 58, 115,
+            114, 103, 98, 67, 108, 114, 32, 118, 97, 108,
+            61, 34, 69, 69, 69, 67, 69, 49, 34, 47,
+            62, 60, 47, 97, 58, 108, 116, 50, 62, 60,
+            97, 58, 97, 99, 99, 101, 110, 116, 49, 62,
+            60, 97, 58, 115, 114, 103, 98, 67, 108, 114,
+            32, 118, 97, 108, 61, 34, 52, 70, 56, 49,
+            66, 68, 34, 47, 62, 60, 47, 97, 58, 97,
+            99, 99, 101, 110, 116, 49, 62, 60, 97, 58,
+            97, 99, 99, 101, 110, 116, 50, 62, 60, 97,
+            58, 115, 114, 103, 98, 67, 108, 114, 32, 118,
+            97, 108, 61, 34, 67, 48, 53, 48, 52, 68,
+            34, 47, 62, 60, 47, 97, 58, 97, 99, 99,
+            101, 110, 116, 50, 62, 60, 97, 58, 97, 99,
+            99, 101, 110, 116, 51, 62, 60, 97, 58, 115,
+            114, 103, 98, 67, 108, 114, 32, 118, 97, 108,
+            61, 34, 57, 66, 66, 66, 53, 57, 34, 47,
+            62, 60, 47, 97, 58, 97, 99, 99, 101, 110,
+            116, 51, 62, 60, 97, 58, 97, 99, 99, 101,
+            110, 116, 52, 62, 60, 97, 58, 115, 114, 103,
+            98, 67, 108, 114, 32, 118, 97, 108, 61, 34,
+            56, 48, 54, 52, 65, 50, 34, 47, 62, 60,
+            47, 97, 58, 97, 99, 99, 101, 110, 116, 52,
+            62, 60, 97, 58, 97, 99, 99, 101, 110, 116,
+            53, 62, 60, 97, 58, 115, 114, 103, 98, 67,
+            108, 114, 32, 118, 97, 108, 61, 34, 52, 66,
+            65, 67, 67, 54, 34, 47, 62, 60, 47, 97,
+            58, 97, 99, 99, 101, 110, 116, 53, 62, 60,
+            97, 58, 97, 99, 99, 101, 110, 116, 54, 62,
+            60, 97, 58, 115, 114, 103, 98, 67, 108, 114,
+            32, 118, 97, 108, 61, 34, 70, 55, 57, 54,
+            52, 54, 34, 47, 62, 60, 47, 97, 58, 97,
+            99, 99, 101, 110, 116, 54, 62, 60, 97, 58,
+            104, 108, 105, 110, 107, 62, 60, 97, 58, 115,
+            114, 103, 98, 67, 108, 114, 32, 118, 97, 108,
+            61, 34, 48, 48, 48, 48, 70, 70, 34, 47,
+            62, 60, 47, 97, 58, 104, 108, 105, 110, 107,
+            62, 60, 97, 58, 102, 111, 108, 72, 108, 105,
+            110, 107, 62, 60, 97, 58, 115, 114, 103, 98,
+            67, 108, 114, 32, 118, 97, 108, 61, 34, 56,
+            48, 48, 48, 56, 48, 34, 47, 62, 60, 47,
+            97, 58, 102, 111, 108, 72, 108, 105, 110, 107,
+            62, 60, 47, 97, 58, 99, 108, 114, 83, 99,
+            104, 101, 109, 101, 62, 60, 97, 58, 102, 111,
+            110, 116, 83, 99, 104, 101, 109, 101, 32, 110,
+            97, 109, 101, 61, 34, 79, 102, 102, 105, 99,
+            101, 34, 62, 60, 97, 58, 109, 97, 106, 111,
+            114, 70, 111, 110, 116, 62, 60, 97, 58, 108,
+            97, 116, 105, 110, 32, 116, 121, 112, 101, 102,
+            97, 99, 101, 61, 34, 67, 97, 109, 98, 114,
+            105, 97, 34, 47, 62, 60, 97, 58, 101, 97,
+            32, 116, 121, 112, 101, 102, 97, 99, 101, 61,
+            34, 34, 47, 62, 60, 97, 58, 99, 115, 32,
+            116, 121, 112, 101, 102, 97, 99, 101, 61, 34,
+            34, 47, 62, 60, 97, 58, 102, 111, 110, 116,
+            32, 115, 99, 114, 105, 112, 116, 61, 34, 74,
+            112, 97, 110, 34, 32, 116, 121, 112, 101, 102,
+            97, 99, 101, 61, 34, 239, 188, 173, 239, 188,
+            179, 32, 239, 188, 176, 227, 130, 180, 227, 130,
+            183, 227, 131, 131, 227, 130, 175, 34, 47, 62,
+            60, 97, 58, 102, 111, 110, 116, 32, 115, 99,
+            114, 105, 112, 116, 61, 34, 72, 97, 110, 103,
+            34, 32, 116, 121, 112, 101, 102, 97, 99, 101,
+            61, 34, 235, 167, 145, 236, 157, 128, 32, 234,
+            179, 160, 235, 148, 149, 34, 47, 62, 60, 97,
+            58, 102, 111, 110, 116, 32, 115, 99, 114, 105,
+            112, 116, 61, 34, 72, 97, 110, 115, 34, 32,
+            116, 121, 112, 101, 102, 97, 99, 101, 61, 34,
+            229, 174, 139, 228, 189, 147, 34, 47, 62, 60,
+            97, 58, 102, 111, 110, 116, 32, 115, 99, 114,
+            105, 112, 116, 61, 34, 72, 97, 110, 116, 34,
+            32, 116, 121, 112, 101, 102, 97, 99, 101, 61,
+            34, 230, 150, 176, 231, 180, 176, 230, 152, 142,
+            233, 171, 148, 34, 47, 62, 60, 97, 58, 102,
+            111, 110, 116, 32, 115, 99, 114, 105, 112, 116,
+            61, 34, 65, 114, 97, 98, 34, 32, 116, 121,
+            112, 101, 102, 97, 99, 101, 61, 34, 84, 105,
+            109, 101, 115, 32, 78, 101, 119, 32, 82, 111,
+            109, 97, 110, 34, 47, 62, 60, 97, 58, 102,
+            111, 110, 116, 32, 115, 99, 114, 105, 112, 116,
+            61, 34, 72, 101, 98, 114, 34, 32, 116, 121,
+            112, 101, 102, 97, 99, 101, 61, 34, 84, 105,
+            109, 101, 115, 32, 78, 101, 119, 32, 82, 111,
+            109, 97, 110, 34, 47, 62, 60, 97, 58, 102,
+            111, 110, 116, 32, 115, 99, 114, 105, 112, 116,
+            61, 34, 84, 104, 97, 105, 34, 32, 116, 121,
+            112, 101, 102, 97, 99, 101, 61, 34, 84, 97,
+            104, 111, 109, 97, 34, 47, 62, 60, 97, 58,
+            102, 111, 110, 116, 32, 115, 99, 114, 105, 112,
+            116, 61, 34, 69, 116, 104, 105, 34, 32, 116,
+            121, 112, 101, 102, 97, 99, 101, 61, 34, 78,
+            121, 97, 108, 97, 34, 47, 62, 60, 97, 58,
+            102, 111, 110, 116, 32, 115, 99, 114, 105, 112,
+            116, 61, 34, 66, 101, 110, 103, 34, 32, 116,
+            121, 112, 101, 102, 97, 99, 101, 61, 34, 86,
+            114, 105, 110, 100, 97, 34, 47, 62, 60, 97,
+            58, 102, 111, 110, 116, 32, 115, 99, 114, 105,
+            112, 116, 61, 34, 71, 117, 106, 114, 34, 32,
+            116, 121, 112, 101, 102, 97, 99, 101, 61, 34,
+            83, 104, 114, 117, 116, 105, 34, 47, 62, 60,
+            97, 58, 102, 111, 110, 116, 32, 115, 99, 114,
+            105, 112, 116, 61, 34, 75, 104, 109, 114, 34,
+            32, 116, 121, 112, 101, 102, 97, 99, 101, 61,
+            34, 77, 111, 111, 108, 66, 111, 114, 97, 110,
+            34, 47, 62, 60, 97, 58, 102, 111, 110, 116,
+            32, 115, 99, 114, 105, 112, 116, 61, 34, 75,
+            110, 100, 97, 34, 32, 116, 121, 112, 101, 102,
+            97, 99, 101, 61, 34, 84, 117, 110, 103, 97,
+            34, 47, 62, 60, 97, 58, 102, 111, 110, 116,
+            32, 115, 99, 114, 105, 112, 116, 61, 34, 71,
+            117, 114, 117, 34, 32, 116, 121, 112, 101, 102,
+            97, 99, 101, 61, 34, 82, 97, 97, 118, 105,
+            34, 47, 62, 60, 97, 58, 102, 111, 110, 116,
+            32, 115, 99, 114, 105, 112, 116, 61, 34, 67,
+            97, 110, 115, 34, 32, 116, 121, 112, 101, 102,
+            97, 99, 101, 61, 34, 69, 117, 112, 104, 101,
+            109, 105, 97, 34, 47, 62, 60, 97, 58, 102,
+            111, 110, 116, 32, 115, 99, 114, 105, 112, 116,
+            61, 34, 67, 104, 101, 114, 34, 32, 116, 121,
+            112, 101, 102, 97, 99, 101, 61, 34, 80, 108,
+            97, 110, 116, 97, 103, 101, 110, 101, 116, 32,
+            67, 104, 101, 114, 111, 107, 101, 101, 34, 47,
+            62, 60, 97, 58, 102, 111, 110, 116, 32, 115,
+            99, 114, 105, 112, 116, 61, 34, 89, 105, 105,
+            105, 34, 32, 116, 121, 112, 101, 102, 97, 99,
+            101, 61, 34, 77, 105, 99, 114, 111, 115, 111,
+            102, 116, 32, 89, 105, 32, 66, 97, 105, 116,
+            105, 34, 47, 62, 60, 97, 58, 102, 111, 110,
+            116, 32, 115, 99, 114, 105, 112, 116, 61, 34,
+            84, 105, 98, 116, 34, 32, 116, 121, 112, 101,
+            102, 97, 99, 101, 61, 34, 77, 105, 99, 114,
+            111, 115, 111, 102, 116, 32, 72, 105, 109, 97,
+            108, 97, 121, 97, 34, 47, 62, 60, 97, 58,
+            102, 111, 110, 116, 32, 115, 99, 114, 105, 112,
+            116, 61, 34, 84, 104, 97, 97, 34, 32, 116,
+            121, 112, 101, 102, 97, 99, 101, 61, 34, 77,
+            86, 32, 66, 111, 108, 105, 34, 47, 62, 60,
+            97, 58, 102, 111, 110, 116, 32, 115, 99, 114,
+            105, 112, 116, 61, 34, 68, 101, 118, 97, 34,
+            32, 116, 121, 112, 101, 102, 97, 99, 101, 61,
+            34, 77, 97, 110, 103, 97, 108, 34, 47, 62,
+            60, 97, 58, 102, 111, 110, 116, 32, 115, 99,
+            114, 105, 112, 116, 61, 34, 84, 101, 108, 117,
+            34, 32, 116, 121, 112, 101, 102, 97, 99, 101,
+            61, 34, 71, 97, 117, 116, 97, 109, 105, 34,
+            47, 62, 60, 97, 58, 102, 111, 110, 116, 32,
+            115, 99, 114, 105, 112, 116, 61, 34, 84, 97,
+            109, 108, 34, 32, 116, 121, 112, 101, 102, 97,
+            99, 101, 61, 34, 76, 97, 116, 104, 97, 34,
+            47, 62, 60, 97, 58, 102, 111, 110, 116, 32,
+            115, 99, 114, 105, 112, 116, 61, 34, 83, 121,
+            114, 99, 34, 32, 116, 121, 112, 101, 102, 97,
+            99, 101, 61, 34, 69, 115, 116, 114, 97, 110,
+            103, 101, 108, 111, 32, 69, 100, 101, 115, 115,
+            97, 34, 47, 62, 60, 97, 58, 102, 111, 110,
+            116, 32, 115, 99, 114, 105, 112, 116, 61, 34,
+            79, 114, 121, 97, 34, 32, 116, 121, 112, 101,
+            102, 97, 99, 101, 61, 34, 75, 97, 108, 105,
+            110, 103, 97, 34, 47, 62, 60, 97, 58, 102,
+            111, 110, 116, 32, 115, 99, 114, 105, 112, 116,
+            61, 34, 77, 108, 121, 109, 34, 32, 116, 121,
+            112, 101, 102, 97, 99, 101, 61, 34, 75, 97,
+            114, 116, 105, 107, 97, 34, 47, 62, 60, 97,
+            58, 102, 111, 110, 116, 32, 115, 99, 114, 105,
+            112, 116, 61, 34, 76, 97, 111, 111, 34, 32,
+            116, 121, 112, 101, 102, 97, 99, 101, 61, 34,
+            68, 111, 107, 67, 104, 97, 109, 112, 97, 34,
+            47, 62, 60, 97, 58, 102, 111, 110, 116, 32,
+            115, 99, 114, 105, 112, 116, 61, 34, 83, 105,
+            110, 104, 34, 32, 116, 121, 112, 101, 102, 97,
+            99, 101, 61, 34, 73, 115, 107, 111, 111, 108,
+            97, 32, 80, 111, 116, 97, 34, 47, 62, 60,
+            97, 58, 102, 111, 110, 116, 32, 115, 99, 114,
+            105, 112, 116, 61, 34, 77, 111, 110, 103, 34,
+            32, 116, 121, 112, 101, 102, 97, 99, 101, 61,
+            34, 77, 111, 110, 103, 111, 108, 105, 97, 110,
+            32, 66, 97, 105, 116, 105, 34, 47, 62, 60,
+            97, 58, 102, 111, 110, 116, 32, 115, 99, 114,
+            105, 112, 116, 61, 34, 86, 105, 101, 116, 34,
+            32, 116, 121, 112, 101, 102, 97, 99, 101, 61,
+            34, 84, 105, 109, 101, 115, 32, 78, 101, 119,
+            32, 82, 111, 109, 97, 110, 34, 47, 62, 60,
+            97, 58, 102, 111, 110, 116, 32, 115, 99, 114,
+            105, 112, 116, 61, 34, 85, 105, 103, 104, 34,
+            32, 116, 121, 112, 101, 102, 97, 99, 101, 61,
+            34, 77, 105, 99, 114, 111, 115, 111, 102, 116,
+            32, 85, 105, 103, 104, 117, 114, 34, 47, 62,
+            60, 47, 97, 58, 109, 97, 106, 111, 114, 70,
+            111, 110, 116, 62, 60, 97, 58, 109, 105, 110,
+            111, 114, 70, 111, 110, 116, 62, 60, 97, 58,
+            108, 97, 116, 105, 110, 32, 116, 121, 112, 101,
+            102, 97, 99, 101, 61, 34, 67, 97, 108, 105,
+            98, 114, 105, 34, 47, 62, 60, 97, 58, 101,
+            97, 32, 116, 121, 112, 101, 102, 97, 99, 101,
+            61, 34, 34, 47, 62, 60, 97, 58, 99, 115,
+            32, 116, 121, 112, 101, 102, 97, 99, 101, 61,
+            34, 34, 47, 62, 60, 97, 58, 102, 111, 110,
+            116, 32, 115, 99, 114, 105, 112, 116, 61, 34,
+            74, 112, 97, 110, 34, 32, 116, 121, 112, 101,
+            102, 97, 99, 101, 61, 34, 239, 188, 173, 239,
+            188, 179, 32, 239, 188, 176, 227, 130, 180, 227,
+            130, 183, 227, 131, 131, 227, 130, 175, 34, 47,
+            62, 60, 97, 58, 102, 111, 110, 116, 32, 115,
+            99, 114, 105, 112, 116, 61, 34, 72, 97, 110,
+            103, 34, 32, 116, 121, 112, 101, 102, 97, 99,
+            101, 61, 34, 235, 167, 145, 236, 157, 128, 32,
+            234, 179, 160, 235, 148, 149, 34, 47, 62, 60,
+            97, 58, 102, 111, 110, 116, 32, 115, 99, 114,
+            105, 112, 116, 61, 34, 72, 97, 110, 115, 34,
+            32, 116, 121, 112, 101, 102, 97, 99, 101, 61,
+            34, 229, 174, 139, 228, 189, 147, 34, 47, 62,
+            60, 97, 58, 102, 111, 110, 116, 32, 115, 99,
+            114, 105, 112, 116, 61, 34, 72, 97, 110, 116,
+            34, 32, 116, 121, 112, 101, 102, 97, 99, 101,
+            61, 34, 230, 150, 176, 231, 180, 176, 230, 152,
+            142, 233, 171, 148, 34, 47, 62, 60, 97, 58,
+            102, 111, 110, 116, 32, 115, 99, 114, 105, 112,
+            116, 61, 34, 65, 114, 97, 98, 34, 32, 116,
+            121, 112, 101, 102, 97, 99, 101, 61, 34, 65,
+            114, 105, 97, 108, 34, 47, 62, 60, 97, 58,
+            102, 111, 110, 116, 32, 115, 99, 114, 105, 112,
+            116, 61, 34, 72, 101, 98, 114, 34, 32, 116,
+            121, 112, 101, 102, 97, 99, 101, 61, 34, 65,
+            114, 105, 97, 108, 34, 47, 62, 60, 97, 58,
+            102, 111, 110, 116, 32, 115, 99, 114, 105, 112,
+            116, 61, 34, 84, 104, 97, 105, 34, 32, 116,
+            121, 112, 101, 102, 97, 99, 101, 61, 34, 84,
+            97, 104, 111, 109, 97, 34, 47, 62, 60, 97,
+            58, 102, 111, 110, 116, 32, 115, 99, 114, 105,
+            112, 116, 61, 34, 69, 116, 104, 105, 34, 32,
+            116, 121, 112, 101, 102, 97, 99, 101, 61, 34,
+            78, 121, 97, 108, 97, 34, 47, 62, 60, 97,
+            58, 102, 111, 110, 116, 32, 115, 99, 114, 105,
+            112, 116, 61, 34, 66, 101, 110, 103, 34, 32,
+            116, 121, 112, 101, 102, 97, 99, 101, 61, 34,
+            86, 114, 105, 110, 100, 97, 34, 47, 62, 60,
+            97, 58, 102, 111, 110, 116, 32, 115, 99, 114,
+            105, 112, 116, 61, 34, 71, 117, 106, 114, 34,
+            32, 116, 121, 112, 101, 102, 97, 99, 101, 61,
+            34, 83, 104, 114, 117, 116, 105, 34, 47, 62,
+            60, 97, 58, 102, 111, 110, 116, 32, 115, 99,
+            114, 105, 112, 116, 61, 34, 75, 104, 109, 114,
+            34, 32, 116, 121, 112, 101, 102, 97, 99, 101,
+            61, 34, 68, 97, 117, 110, 80, 101, 110, 104,
+            34, 47, 62, 60, 97, 58, 102, 111, 110, 116,
+            32, 115, 99, 114, 105, 112, 116, 61, 34, 75,
+            110, 100, 97, 34, 32, 116, 121, 112, 101, 102,
+            97, 99, 101, 61, 34, 84, 117, 110, 103, 97,
+            34, 47, 62, 60, 97, 58, 102, 111, 110, 116,
+            32, 115, 99, 114, 105, 112, 116, 61, 34, 71,
+            117, 114, 117, 34, 32, 116, 121, 112, 101, 102,
+            97, 99, 101, 61, 34, 82, 97, 97, 118, 105,
+            34, 47, 62, 60, 97, 58, 102, 111, 110, 116,
+            32, 115, 99, 114, 105, 112, 116, 61, 34, 67,
+            97, 110, 115, 34, 32, 116, 121, 112, 101, 102,
+            97, 99, 101, 61, 34, 69, 117, 112, 104, 101,
+            109, 105, 97, 34, 47, 62, 60, 97, 58, 102,
+            111, 110, 116, 32, 115, 99, 114, 105, 112, 116,
+            61, 34, 67, 104, 101, 114, 34, 32, 116, 121,
+            112, 101, 102, 97, 99, 101, 61, 34, 80, 108,
+            97, 110, 116, 97, 103, 101, 110, 101, 116, 32,
+            67, 104, 101, 114, 111, 107, 101, 101, 34, 47,
+            62, 60, 97, 58, 102, 111, 110, 116, 32, 115,
+            99, 114, 105, 112, 116, 61, 34, 89, 105, 105,
+            105, 34, 32, 116, 121, 112, 101, 102, 97, 99,
+            101, 61, 34, 77, 105, 99, 114, 111, 115, 111,
+            102, 116, 32, 89, 105, 32, 66, 97, 105, 116,
+            105, 34, 47, 62, 60, 97, 58, 102, 111, 110,
+            116, 32, 115, 99, 114, 105, 112, 116, 61, 34,
+            84, 105, 98, 116, 34, 32, 116, 121, 112, 101,
+            102, 97, 99, 101, 61, 34, 77, 105, 99, 114,
+            111, 115, 111, 102, 116, 32, 72, 105, 109, 97,
+            108, 97, 121, 97, 34, 47, 62, 60, 97, 58,
+            102, 111, 110, 116, 32, 115, 99, 114, 105, 112,
+            116, 61, 34, 84, 104, 97, 97, 34, 32, 116,
+            121, 112, 101, 102, 97, 99, 101, 61, 34, 77,
+            86, 32, 66, 111, 108, 105, 34, 47, 62, 60,
+            97, 58, 102, 111, 110, 116, 32, 115, 99, 114,
+            105, 112, 116, 61, 34, 68, 101, 118, 97, 34,
+            32, 116, 121, 112, 101, 102, 97, 99, 101, 61,
+            34, 77, 97, 110, 103, 97, 108, 34, 47, 62,
+            60, 97, 58, 102, 111, 110, 116, 32, 115, 99,
+            114, 105, 112, 116, 61, 34, 84, 101, 108, 117,
+            34, 32, 116, 121, 112, 101, 102, 97, 99, 101,
+            61, 34, 71, 97, 117, 116, 97, 109, 105, 34,
+            47, 62, 60, 97, 58, 102, 111, 110, 116, 32,
+            115, 99, 114, 105, 112, 116, 61, 34, 84, 97,
+            109, 108, 34, 32, 116, 121, 112, 101, 102, 97,
+            99, 101, 61, 34, 76, 97, 116, 104, 97, 34,
+            47, 62, 60, 97, 58, 102, 111, 110, 116, 32,
+            115, 99, 114, 105, 112, 116, 61, 34, 83, 121,
+            114, 99, 34, 32, 116, 121, 112, 101, 102, 97,
+            99, 101, 61, 34, 69, 115, 116, 114, 97, 110,
+            103, 101, 108, 111, 32, 69, 100, 101, 115, 115,
+            97, 34, 47, 62, 60, 97, 58, 102, 111, 110,
+            116, 32, 115, 99, 114, 105, 112, 116, 61, 34,
+            79, 114, 121, 97, 34, 32, 116, 121, 112, 101,
+            102, 97, 99, 101, 61, 34, 75, 97, 108, 105,
+            110, 103, 97, 34, 47, 62, 60, 97, 58, 102,
+            111, 110, 116, 32, 115, 99, 114, 105, 112, 116,
+            61, 34, 77, 108, 121, 109, 34, 32, 116, 121,
+            112, 101, 102, 97, 99, 101, 61, 34, 75, 97,
+            114, 116, 105, 107, 97, 34, 47, 62, 60, 97,
+            58, 102, 111, 110, 116, 32, 115, 99, 114, 105,
+            112, 116, 61, 34, 76, 97, 111, 111, 34, 32,
+            116, 121, 112, 101, 102, 97, 99, 101, 61, 34,
+            68, 111, 107, 67, 104, 97, 109, 112, 97, 34,
+            47, 62, 60, 97, 58, 102, 111, 110, 116, 32,
+            115, 99, 114, 105, 112, 116, 61, 34, 83, 105,
+            110, 104, 34, 32, 116, 121, 112, 101, 102, 97,
+            99, 101, 61, 34, 73, 115, 107, 111, 111, 108,
+            97, 32, 80, 111, 116, 97, 34, 47, 62, 60,
+            97, 58, 102, 111, 110, 116, 32, 115, 99, 114,
+            105, 112, 116, 61, 34, 77, 111, 110, 103, 34,
+            32, 116, 121, 112, 101, 102, 97, 99, 101, 61,
+            34, 77, 111, 110, 103, 111, 108, 105, 97, 110,
+            32, 66, 97, 105, 116, 105, 34, 47, 62, 60,
+            97, 58, 102, 111, 110, 116, 32, 115, 99, 114,
+            105, 112, 116, 61, 34, 86, 105, 101, 116, 34,
+            32, 116, 121, 112, 101, 102, 97, 99, 101, 61,
+            34, 65, 114, 105, 97, 108, 34, 47, 62, 60,
+            97, 58, 102, 111, 110, 116, 32, 115, 99, 114,
+            105, 112, 116, 61, 34, 85, 105, 103, 104, 34,
+            32, 116, 121, 112, 101, 102, 97, 99, 101, 61,
+            34, 77, 105, 99, 114, 111, 115, 111, 102, 116,
+            32, 85, 105, 103, 104, 117, 114, 34, 47, 62,
+            60, 47, 97, 58, 109, 105, 110, 111, 114, 70,
+            111, 110, 116, 62, 60, 47, 97, 58, 102, 111,
+            110, 116, 83, 99, 104, 101, 109, 101, 62, 60,
+            97, 58, 102, 109, 116, 83, 99, 104, 101, 109,
+            101, 32, 110, 97, 109, 101, 61, 34, 79, 102,
+            102, 105, 99, 101, 34, 62, 60, 97, 58, 102,
+            105, 108, 108, 83, 116, 121, 108, 101, 76, 115,
+            116, 62, 60, 97, 58, 115, 111, 108, 105, 100,
+            70, 105, 108, 108, 62, 60, 97, 58, 115, 99,
+            104, 101, 109, 101, 67, 108, 114, 32, 118, 97,
+            108, 61, 34, 112, 104, 67, 108, 114, 34, 47,
+            62, 60, 47, 97, 58, 115, 111, 108, 105, 100,
+            70, 105, 108, 108, 62, 60, 97, 58, 103, 114,
+            97, 100, 70, 105, 108, 108, 32, 114, 111, 116,
+            87, 105, 116, 104, 83, 104, 97, 112, 101, 61,
+            34, 49, 34, 62, 60, 97, 58, 103, 115, 76,
+            115, 116, 62, 60, 97, 58, 103, 115, 32, 112,
+            111, 115, 61, 34, 48, 34, 62, 60, 97, 58,
+            115, 99, 104, 101, 109, 101, 67, 108, 114, 32,
+            118, 97, 108, 61, 34, 112, 104, 67, 108, 114,
+            34, 62, 60, 97, 58, 116, 105, 110, 116, 32,
+            118, 97, 108, 61, 34, 53, 48, 48, 48, 48,
+            34, 47, 62, 60, 97, 58, 115, 97, 116, 77,
+            111, 100, 32, 118, 97, 108, 61, 34, 51, 48,
+            48, 48, 48, 48, 34, 47, 62, 60, 47, 97,
+            58, 115, 99, 104, 101, 109, 101, 67, 108, 114,
+            62, 60, 47, 97, 58, 103, 115, 62, 60, 97,
+            58, 103, 115, 32, 112, 111, 115, 61, 34, 51,
+            53, 48, 48, 48, 34, 62, 60, 97, 58, 115,
+            99, 104, 101, 109, 101, 67, 108, 114, 32, 118,
+            97, 108, 61, 34, 112, 104, 67, 108, 114, 34,
+            62, 60, 97, 58, 116, 105, 110, 116, 32, 118,
+            97, 108, 61, 34, 51, 55, 48, 48, 48, 34,
+            47, 62, 60, 97, 58, 115, 97, 116, 77, 111,
+            100, 32, 118, 97, 108, 61, 34, 51, 48, 48,
+            48, 48, 48, 34, 47, 62, 60, 47, 97, 58,
+            115, 99, 104, 101, 109, 101, 67, 108, 114, 62,
+            60, 47, 97, 58, 103, 115, 62, 60, 97, 58,
+            103, 115, 32, 112, 111, 115, 61, 34, 49, 48,
+            48, 48, 48, 48, 34, 62, 60, 97, 58, 115,
+            99, 104, 101, 109, 101, 67, 108, 114, 32, 118,
+            97, 108, 61, 34, 112, 104, 67, 108, 114, 34,
+            62, 60, 97, 58, 116, 105, 110, 116, 32, 118,
+            97, 108, 61, 34, 49, 53, 48, 48, 48, 34,
+            47, 62, 60, 97, 58, 115, 97, 116, 77, 111,
+            100, 32, 118, 97, 108, 61, 34, 51, 53, 48,
+            48, 48, 48, 34, 47, 62, 60, 47, 97, 58,
+            115, 99, 104, 101, 109, 101, 67, 108, 114, 62,
+            60, 47, 97, 58, 103, 115, 62, 60, 47, 97,
+            58, 103, 115, 76, 115, 116, 62, 60, 97, 58,
+            108, 105, 110, 32, 97, 110, 103, 61, 34, 49,
+            54, 50, 48, 48, 48, 48, 48, 34, 32, 115,
+            99, 97, 108, 101, 100, 61, 34, 49, 34, 47,
+            62, 60, 47, 97, 58, 103, 114, 97, 100, 70,
+            105, 108, 108, 62, 60, 97, 58, 103, 114, 97,
+            100, 70, 105, 108, 108, 32, 114, 111, 116, 87,
+            105, 116, 104, 83, 104, 97, 112, 101, 61, 34,
+            49, 34, 62, 60, 97, 58, 103, 115, 76, 115,
+            116, 62, 60, 97, 58, 103, 115, 32, 112, 111,
+            115, 61, 34, 48, 34, 62, 60, 97, 58, 115,
+            99, 104, 101, 109, 101, 67, 108, 114, 32, 118,
+            97, 108, 61, 34, 112, 104, 67, 108, 114, 34,
+            62, 60, 97, 58, 115, 104, 97, 100, 101, 32,
+            118, 97, 108, 61, 34, 53, 49, 48, 48, 48,
+            34, 47, 62, 60, 97, 58, 115, 97, 116, 77,
+            111, 100, 32, 118, 97, 108, 61, 34, 49, 51,
+            48, 48, 48, 48, 34, 47, 62, 60, 47, 97,
+            58, 115, 99, 104, 101, 109, 101, 67, 108, 114,
+            62, 60, 47, 97, 58, 103, 115, 62, 60, 97,
+            58, 103, 115, 32, 112, 111, 115, 61, 34, 56,
+            48, 48, 48, 48, 34, 62, 60, 97, 58, 115,
+            99, 104, 101, 109, 101, 67, 108, 114, 32, 118,
+            97, 108, 61, 34, 112, 104, 67, 108, 114, 34,
+            62, 60, 97, 58, 115, 104, 97, 100, 101, 32,
+            118, 97, 108, 61, 34, 57, 51, 48, 48, 48,
+            34, 47, 62, 60, 97, 58, 115, 97, 116, 77,
+            111, 100, 32, 118, 97, 108, 61, 34, 49, 51,
+            48, 48, 48, 48, 34, 47, 62, 60, 47, 97,
+            58, 115, 99, 104, 101, 109, 101, 67, 108, 114,
+            62, 60, 47, 97, 58, 103, 115, 62, 60, 97,
+            58, 103, 115, 32, 112, 111, 115, 61, 34, 49,
+            48, 48, 48, 48, 48, 34, 62, 60, 97, 58,
+            115, 99, 104, 101, 109, 101, 67, 108, 114, 32,
+            118, 97, 108, 61, 34, 112, 104, 67, 108, 114,
+            34, 62, 60, 97, 58, 115, 104, 97, 100, 101,
+            32, 118, 97, 108, 61, 34, 57, 52, 48, 48,
+            48, 34, 47, 62, 60, 97, 58, 115, 97, 116,
+            77, 111, 100, 32, 118, 97, 108, 61, 34, 49,
+            51, 53, 48, 48, 48, 34, 47, 62, 60, 47,
+            97, 58, 115, 99, 104, 101, 109, 101, 67, 108,
+            114, 62, 60, 47, 97, 58, 103, 115, 62, 60,
+            47, 97, 58, 103, 115, 76, 115, 116, 62, 60,
+            97, 58, 108, 105, 110, 32, 97, 110, 103, 61,
+            34, 49, 54, 50, 48, 48, 48, 48, 48, 34,
+            32, 115, 99, 97, 108, 101, 100, 61, 34, 48,
+            34, 47, 62, 60, 47, 97, 58, 103, 114, 97,
+            100, 70, 105, 108, 108, 62, 60, 47, 97, 58,
+            102, 105, 108, 108, 83, 116, 121, 108, 101, 76,
+            115, 116, 62, 60, 97, 58, 108, 110, 83, 116,
+            121, 108, 101, 76, 115, 116, 62, 60, 97, 58,
+            108, 110, 32, 119, 61, 34, 57, 53, 50, 53,
+            34, 32, 99, 97, 112, 61, 34, 102, 108, 97,
+            116, 34, 32, 99, 109, 112, 100, 61, 34, 115,
+            110, 103, 34, 32, 97, 108, 103, 110, 61, 34,
+            99, 116, 114, 34, 62, 60, 97, 58, 115, 111,
+            108, 105, 100, 70, 105, 108, 108, 62, 60, 97,
+            58, 115, 99, 104, 101, 109, 101, 67, 108, 114,
+            32, 118, 97, 108, 61, 34, 112, 104, 67, 108,
+            114, 34, 62, 60, 97, 58, 115, 104, 97, 100,
+            101, 32, 118, 97, 108, 61, 34, 57, 53, 48,
+            48, 48, 34, 47, 62, 60, 97, 58, 115, 97,
+            116, 77, 111, 100, 32, 118, 97, 108, 61, 34,
+            49, 48, 53, 48, 48, 48, 34, 47, 62, 60,
+            47, 97, 58, 115, 99, 104, 101, 109, 101, 67,
+            108, 114, 62, 60, 47, 97, 58, 115, 111, 108,
+            105, 100, 70, 105, 108, 108, 62, 60, 97, 58,
+            112, 114, 115, 116, 68, 97, 115, 104, 32, 118,
+            97, 108, 61, 34, 115, 111, 108, 105, 100, 34,
+            47, 62, 60, 47, 97, 58, 108, 110, 62, 60,
+            97, 58, 108, 110, 32, 119, 61, 34, 50, 53,
+            52, 48, 48, 34, 32, 99, 97, 112, 61, 34,
+            102, 108, 97, 116, 34, 32, 99, 109, 112, 100,
+            61, 34, 115, 110, 103, 34, 32, 97, 108, 103,
+            110, 61, 34, 99, 116, 114, 34, 62, 60, 97,
+            58, 115, 111, 108, 105, 100, 70, 105, 108, 108,
+            62, 60, 97, 58, 115, 99, 104, 101, 109, 101,
+            67, 108, 114, 32, 118, 97, 108, 61, 34, 112,
+            104, 67, 108, 114, 34, 47, 62, 60, 47, 97,
+            58, 115, 111, 108, 105, 100, 70, 105, 108, 108,
+            62, 60, 97, 58, 112, 114, 115, 116, 68, 97,
+            115, 104, 32, 118, 97, 108, 61, 34, 115, 111,
+            108, 105, 100, 34, 47, 62, 60, 47, 97, 58,
+            108, 110, 62, 60, 97, 58, 108, 110, 32, 119,
+            61, 34, 51, 56, 49, 48, 48, 34, 32, 99,
+            97, 112, 61, 34, 102, 108, 97, 116, 34, 32,
+            99, 109, 112, 100, 61, 34, 115, 110, 103, 34,
+            32, 97, 108, 103, 110, 61, 34, 99, 116, 114,
+            34, 62, 60, 97, 58, 115, 111, 108, 105, 100,
+            70, 105, 108, 108, 62, 60, 97, 58, 115, 99,
+            104, 101, 109, 101, 67, 108, 114, 32, 118, 97,
+            108, 61, 34, 112, 104, 67, 108, 114, 34, 47,
+            62, 60, 47, 97, 58, 115, 111, 108, 105, 100,
+            70, 105, 108, 108, 62, 60, 97, 58, 112, 114,
+            115, 116, 68, 97, 115, 104, 32, 118, 97, 108,
+            61, 34, 115, 111, 108, 105, 100, 34, 47, 62,
+            60, 47, 97, 58, 108, 110, 62, 60, 47, 97,
+            58, 108, 110, 83, 116, 121, 108, 101, 76, 115,
+            116, 62, 60, 97, 58, 101, 102, 102, 101, 99,
+            116, 83, 116, 121, 108, 101, 76, 115, 116, 62,
+            60, 97, 58, 101, 102, 102, 101, 99, 116, 83,
+            116, 121, 108, 101, 62, 60, 97, 58, 101, 102,
+            102, 101, 99, 116, 76, 115, 116, 62, 60, 97,
+            58, 111, 117, 116, 101, 114, 83, 104, 100, 119,
+            32, 98, 108, 117, 114, 82, 97, 100, 61, 34,
+            52, 48, 48, 48, 48, 34, 32, 100, 105, 115,
+            116, 61, 34, 50, 48, 48, 48, 48, 34, 32,
+            100, 105, 114, 61, 34, 53, 52, 48, 48, 48,
+            48, 48, 34, 32, 114, 111, 116, 87, 105, 116,
+            104, 83, 104, 97, 112, 101, 61, 34, 48, 34,
+            62, 60, 97, 58, 115, 114, 103, 98, 67, 108,
+            114, 32, 118, 97, 108, 61, 34, 48, 48, 48,
+            48, 48, 48, 34, 62, 60, 97, 58, 97, 108,
+            112, 104, 97, 32, 118, 97, 108, 61, 34, 51,
+            56, 48, 48, 48, 34, 47, 62, 60, 47, 97,
+            58, 115, 114, 103, 98, 67, 108, 114, 62, 60,
+            47, 97, 58, 111, 117, 116, 101, 114, 83, 104,
+            100, 119, 62, 60, 47, 97, 58, 101, 102, 102,
+            101, 99, 116, 76, 115, 116, 62, 60, 47, 97,
+            58, 101, 102, 102, 101, 99, 116, 83, 116, 121,
+            108, 101, 62, 60, 97, 58, 101, 102, 102, 101,
+            99, 116, 83, 116, 121, 108, 101, 62, 60, 97,
+            58, 101, 102, 102, 101, 99, 116, 76, 115, 116,
+            62, 60, 97, 58, 111, 117, 116, 101, 114, 83,
+            104, 100, 119, 32, 98, 108, 117, 114, 82, 97,
+            100, 61, 34, 52, 48, 48, 48, 48, 34, 32,
+            100, 105, 115, 116, 61, 34, 50, 51, 48, 48,
+            48, 34, 32, 100, 105, 114, 61, 34, 53, 52,
+            48, 48, 48, 48, 48, 34, 32, 114, 111, 116,
+            87, 105, 116, 104, 83, 104, 97, 112, 101, 61,
+            34, 48, 34, 62, 60, 97, 58, 115, 114, 103,
+            98, 67, 108, 114, 32, 118, 97, 108, 61, 34,
+            48, 48, 48, 48, 48, 48, 34, 62, 60, 97,
+            58, 97, 108, 112, 104, 97, 32, 118, 97, 108,
+            61, 34, 51, 53, 48, 48, 48, 34, 47, 62,
+            60, 47, 97, 58, 115, 114, 103, 98, 67, 108,
+            114, 62, 60, 47, 97, 58, 111, 117, 116, 101,
+            114, 83, 104, 100, 119, 62, 60, 47, 97, 58,
+            101, 102, 102, 101, 99, 116, 76, 115, 116, 62,
+            60, 47, 97, 58, 101, 102, 102, 101, 99, 116,
+            83, 116, 121, 108, 101, 62, 60, 97, 58, 101,
+            102, 102, 101, 99, 116, 83, 116, 121, 108, 101,
+            62, 60, 97, 58, 101, 102, 102, 101, 99, 116,
+            76, 115, 116, 62, 60, 97, 58, 111, 117, 116,
+            101, 114, 83, 104, 100, 119, 32, 98, 108, 117,
+            114, 82, 97, 100, 61, 34, 52, 48, 48, 48,
+            48, 34, 32, 100, 105, 115, 116, 61, 34, 50,
+            51, 48, 48, 48, 34, 32, 100, 105, 114, 61,
+            34, 53, 52, 48, 48, 48, 48, 48, 34, 32,
+            114, 111, 116, 87, 105, 116, 104, 83, 104, 97,
+            112, 101, 61, 34, 48, 34, 62, 60, 97, 58,
+            115, 114, 103, 98, 67, 108, 114, 32, 118, 97,
+            108, 61, 34, 48, 48, 48, 48, 48, 48, 34,
+            62, 60, 97, 58, 97, 108, 112, 104, 97, 32,
+            118, 97, 108, 61, 34, 51, 53, 48, 48, 48,
+            34, 47, 62, 60, 47, 97, 58, 115, 114, 103,
+            98, 67, 108, 114, 62, 60, 47, 97, 58, 111,
+            117, 116, 101, 114, 83, 104, 100, 119, 62, 60,
+            47, 97, 58, 101, 102, 102, 101, 99, 116, 76,
+            115, 116, 62, 60, 97, 58, 115, 99, 101, 110,
+            101, 51, 100, 62, 60, 97, 58, 99, 97, 109,
+            101, 114, 97, 32, 112, 114, 115, 116, 61, 34,
+            111, 114, 116, 104, 111, 103, 114, 97, 112, 104,
+            105, 99, 70, 114, 111, 110, 116, 34, 62, 60,
+            97, 58, 114, 111, 116, 32, 108, 97, 116, 61,
+            34, 48, 34, 32, 108, 111, 110, 61, 34, 48,
+            34, 32, 114, 101, 118, 61, 34, 48, 34, 47,
+            62, 60, 47, 97, 58, 99, 97, 109, 101, 114,
+            97, 62, 60, 97, 58, 108, 105, 103, 104, 116,
+            82, 105, 103, 32, 114, 105, 103, 61, 34, 116,
+            104, 114, 101, 101, 80, 116, 34, 32, 100, 105,
+            114, 61, 34, 116, 34, 62, 60, 97, 58, 114,
+            111, 116, 32, 108, 97, 116, 61, 34, 48, 34,
+            32, 108, 111, 110, 61, 34, 48, 34, 32, 114,
+            101, 118, 61, 34, 49, 50, 48, 48, 48, 48,
+            48, 34, 47, 62, 60, 47, 97, 58, 108, 105,
+            103, 104, 116, 82, 105, 103, 62, 60, 47, 97,
+            58, 115, 99, 101, 110, 101, 51, 100, 62, 60,
+            97, 58, 115, 112, 51, 100, 62, 60, 97, 58,
+            98, 101, 118, 101, 108, 84, 32, 119, 61, 34,
+            54, 51, 53, 48, 48, 34, 32, 104, 61, 34,
+            50, 53, 52, 48, 48, 34, 47, 62, 60, 47,
+            97, 58, 115, 112, 51, 100, 62, 60, 47, 97,
+            58, 101, 102, 102, 101, 99, 116, 83, 116, 121,
+            108, 101, 62, 60, 47, 97, 58, 101, 102, 102,
+            101, 99, 116, 83, 116, 121, 108, 101, 76, 115,
+            116, 62, 60, 97, 58, 98, 103, 70, 105, 108,
+            108, 83, 116, 121, 108, 101, 76, 115, 116, 62,
+            60, 97, 58, 115, 111, 108, 105, 100, 70, 105,
+            108, 108, 62, 60, 97, 58, 115, 99, 104, 101,
+            109, 101, 67, 108, 114, 32, 118, 97, 108, 61,
+            34, 112, 104, 67, 108, 114, 34, 47, 62, 60,
+            47, 97, 58, 115, 111, 108, 105, 100, 70, 105,
+            108, 108, 62, 60, 97, 58, 103, 114, 97, 100,
+            70, 105, 108, 108, 32, 114, 111, 116, 87, 105,
+            116, 104, 83, 104, 97, 112, 101, 61, 34, 49,
+            34, 62, 60, 97, 58, 103, 115, 76, 115, 116,
+            62, 60, 97, 58, 103, 115, 32, 112, 111, 115,
+            61, 34, 48, 34, 62, 60, 97, 58, 115, 99,
+            104, 101, 109, 101, 67, 108, 114, 32, 118, 97,
+            108, 61, 34, 112, 104, 67, 108, 114, 34, 62,
+            60, 97, 58, 116, 105, 110, 116, 32, 118, 97,
+            108, 61, 34, 52, 48, 48, 48, 48, 34, 47,
+            62, 60, 97, 58, 115, 97, 116, 77, 111, 100,
+            32, 118, 97, 108, 61, 34, 51, 53, 48, 48,
+            48, 48, 34, 47, 62, 60, 47, 97, 58, 115,
+            99, 104, 101, 109, 101, 67, 108, 114, 62, 60,
+            47, 97, 58, 103, 115, 62, 60, 97, 58, 103,
+            115, 32, 112, 111, 115, 61, 34, 52, 48, 48,
+            48, 48, 34, 62, 60, 97, 58, 115, 99, 104,
+            101, 109, 101, 67, 108, 114, 32, 118, 97, 108,
+            61, 34, 112, 104, 67, 108, 114, 34, 62, 60,
+            97, 58, 116, 105, 110, 116, 32, 118, 97, 108,
+            61, 34, 52, 53, 48, 48, 48, 34, 47, 62,
+            60, 97, 58, 115, 104, 97, 100, 101, 32, 118,
+            97, 108, 61, 34, 57, 57, 48, 48, 48, 34,
+            47, 62, 60, 97, 58, 115, 97, 116, 77, 111,
+            100, 32, 118, 97, 108, 61, 34, 51, 53, 48,
+            48, 48, 48, 34, 47, 62, 60, 47, 97, 58,
+            115, 99, 104, 101, 109, 101, 67, 108, 114, 62,
+            60, 47, 97, 58, 103, 115, 62, 60, 97, 58,
+            103, 115, 32, 112, 111, 115, 61, 34, 49, 48,
+            48, 48, 48, 48, 34, 62, 60, 97, 58, 115,
+            99, 104, 101, 109, 101, 67, 108, 114, 32, 118,
+            97, 108, 61, 34, 112, 104, 67, 108, 114, 34,
+            62, 60, 97, 58, 115, 104, 97, 100, 101, 32,
+            118, 97, 108, 61, 34, 50, 48, 48, 48, 48,
+            34, 47, 62, 60, 97, 58, 115, 97, 116, 77,
+            111, 100, 32, 118, 97, 108, 61, 34, 50, 53,
+            53, 48, 48, 48, 34, 47, 62, 60, 47, 97,
+            58, 115, 99, 104, 101, 109, 101, 67, 108, 114,
+            62, 60, 47, 97, 58, 103, 115, 62, 60, 47,
+            97, 58, 103, 115, 76, 115, 116, 62, 60, 97,
+            58, 112, 97, 116, 104, 32, 112, 97, 116, 104,
+            61, 34, 99, 105, 114, 99, 108, 101, 34, 62,
+            60, 97, 58, 102, 105, 108, 108, 84, 111, 82,
+            101, 99, 116, 32, 108, 61, 34, 53, 48, 48,
+            48, 48, 34, 32, 116, 61, 34, 45, 56, 48,
+            48, 48, 48, 34, 32, 114, 61, 34, 53, 48,
+            48, 48, 48, 34, 32, 98, 61, 34, 49, 56,
+            48, 48, 48, 48, 34, 47, 62, 60, 47, 97,
+            58, 112, 97, 116, 104, 62, 60, 47, 97, 58,
+            103, 114, 97, 100, 70, 105, 108, 108, 62, 60,
+            97, 58, 103, 114, 97, 100, 70, 105, 108, 108,
+            32, 114, 111, 116, 87, 105, 116, 104, 83, 104,
+            97, 112, 101, 61, 34, 49, 34, 62, 60, 97,
+            58, 103, 115, 76, 115, 116, 62, 60, 97, 58,
+            103, 115, 32, 112, 111, 115, 61, 34, 48, 34,
+            62, 60, 97, 58, 115, 99, 104, 101, 109, 101,
+            67, 108, 114, 32, 118, 97, 108, 61, 34, 112,
+            104, 67, 108, 114, 34, 62, 60, 97, 58, 116,
+            105, 110, 116, 32, 118, 97, 108, 61, 34, 56,
+            48, 48, 48, 48, 34, 47, 62, 60, 97, 58,
+            115, 97, 116, 77, 111, 100, 32, 118, 97, 108,
+            61, 34, 51, 48, 48, 48, 48, 48, 34, 47,
+            62, 60, 47, 97, 58, 115, 99, 104, 101, 109,
+            101, 67, 108, 114, 62, 60, 47, 97, 58, 103,
+            115, 62, 60, 97, 58, 103, 115, 32, 112, 111,
+            115, 61, 34, 49, 48, 48, 48, 48, 48, 34,
+            62, 60, 97, 58, 115, 99, 104, 101, 109, 101,
+            67, 108, 114, 32, 118, 97, 108, 61, 34, 112,
+            104, 67, 108, 114, 34, 62, 60, 97, 58, 115,
+            104, 97, 100, 101, 32, 118, 97, 108, 61, 34,
+            51, 48, 48, 48, 48, 34, 47, 62, 60, 97,
+            58, 115, 97, 116, 77, 111, 100, 32, 118, 97,
+            108, 61, 34, 50, 48, 48, 48, 48, 48, 34,
+            47, 62, 60, 47, 97, 58, 115, 99, 104, 101,
+            109, 101, 67, 108, 114, 62, 60, 47, 97, 58,
+            103, 115, 62, 60, 47, 97, 58, 103, 115, 76,
+            115, 116, 62, 60, 97, 58, 112, 97, 116, 104,
+            32, 112, 97, 116, 104, 61, 34, 99, 105, 114,
+            99, 108, 101, 34, 62, 60, 97, 58, 102, 105,
+            108, 108, 84, 111, 82, 101, 99, 116, 32, 108,
+            61, 34, 53, 48, 48, 48, 48, 34, 32, 116,
+            61, 34, 53, 48, 48, 48, 48, 34, 32, 114,
+            61, 34, 53, 48, 48, 48, 48, 34, 32, 98,
+            61, 34, 53, 48, 48, 48, 48, 34, 47, 62,
+            60, 47, 97, 58, 112, 97, 116, 104, 62, 60,
+            47, 97, 58, 103, 114, 97, 100, 70, 105, 108,
+            108, 62, 60, 47, 97, 58, 98, 103, 70, 105,
+            108, 108, 83, 116, 121, 108, 101, 76, 115, 116,
+            62, 60, 47, 97, 58, 102, 109, 116, 83, 99,
+            104, 101, 109, 101, 62, 60, 47, 97, 58, 116,
+            104, 101, 109, 101, 69, 108, 101, 109, 101, 110,
+            116, 115, 62, 60, 97, 58, 111, 98, 106, 101,
+            99, 116, 68, 101, 102, 97, 117, 108, 116, 115,
+            47, 62, 60, 97, 58, 101, 120, 116, 114, 97,
+            67, 108, 114, 83, 99, 104, 101, 109, 101, 76,
+            115, 116, 47, 62, 60, 47, 97, 58, 116, 104,
+            101, 109, 101, 62
+        };
+
+        return std::string(data.begin(), data.end());;
     }
 
 }
