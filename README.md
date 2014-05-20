@@ -1,18 +1,16 @@
 xlnt
 ====
 
-Introduction
-----
+## Introduction
 xlnt is a c++ library that reads and write XLSX files. The API is roughly based on openpyxl, a python XLSX library. It is still very much a work in progress, but I expect the basic functionality to be working in the near future.
 
-Usage
-----
-Using xlnt in your project
+## Usage
+Including xlnt in your project
 ```c++
 #include <xlnt.h>
 ```
 
-Create a new spreadsheet
+Creating a new spreadsheet and saving it
 ```c++
 xlnt::workbook wb;
 xlnt::worksheet ws = wb.get_active_sheet();
@@ -24,7 +22,7 @@ ws.freeze_panes("B2");
 wb.save("book1.xlsx");
 ```
 
-Open an existing spreadsheet
+Opening an existing spreadsheet and printing all rows
 ```c++
 xlnt::workbook wb2;
 wb2.load("book2.xlsx");
@@ -38,21 +36,18 @@ for(auto &row : wb2["sheet2"])
 }
 ```
 
-Building
-----
-It compiles in all of the major compilers. Currently it is being built in GCC 4.8.2, MSVC 12, and Clang 3.3.
+## Building
+xlnt is regularly built and passes all 200+ tests in GCC 4.8.2, MSVC 12, and Clang 3.3.
 
-Workspaces for Visual Studio, XCode, and GNU Make can be created using premake and the premake5.lua file in the build directory.
+Workspaces for Visual Studio 2013, and GNU Make can be created using premake and the premake5.lua file in the build directory (requires premake5, currently available [here](https://bitbucket.org/premake/premake-dev)).
 
-Dependencies
-----
+## Dependencies
 xlnt requires the following libraries:
 - [zlib v1.2.8](http://zlib.net/) (zlib/libpng license)
 - [pugixml v1.4](http://pugixml.org/) (MIT license)
 
-License
-----
-xlnt is currently released under the terms of the MIT License:
+## License
+xlnt is currently released to the public for free under the terms of the MIT License:
 
 Copyright (c) 2014 Thomas Fussell
 
