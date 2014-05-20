@@ -2,7 +2,7 @@ xlnt
 ====
 
 ## Introduction
-xlnt is a c++ library that reads and write XLSX files. The API is roughly based on openpyxl, a python XLSX library. It is still very much a work in progress, but I expect the basic functionality to be working in the near future.
+xlnt is a c++ library for reading, writing, and modifying xlsx files. The API is roughly based on openpyxl, a python library for reading and writing xlsx/xlsm files. It is still very much a work in progress, but the core development work is complete.
 
 ## Usage
 Including xlnt in your project
