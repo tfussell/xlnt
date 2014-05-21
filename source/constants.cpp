@@ -1,11 +1,14 @@
+#include <limits>
+
 #include "constants.h"
+#include "config.h"
 
 namespace xlnt {
 
-const int constants::MinRow = 0;
-const int constants::MinColumn = 0;
-const int constants::MaxColumn = 16384;
-const int constants::MaxRow = 1048576;
+const row_t constants::MinRow = 1;
+const row_t constants::MaxRow = LimitStyle == limit_style::excel ? (1u << 20) : UINT32_MAX;
+const column_t constants::MinColumn = 1;
+const column_t constants::MaxColumn = LimitStyle == limit_style::excel ? (1u << 14) : LimitStyle == limit_style::openpyxl ? 18278 : UINT32_MAX;
 
 // constants
 const std::string constants::PackageProps = "docProps";
@@ -28,6 +31,11 @@ const std::string constants::ArcSharedString = PackageXl + "/sharedStrings.xml";
 
 const std::unordered_map<std::string, std::string> constants::Namespaces =
 {
+    {"spreadsheetml", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"},
+    {"content-types", "http://schemas.openxmlformats.org/package/2006/content-types"},
+    {"relationships", "http://schemas.openxmlformats.org/package/2006/relationships"},
+    {"drawingml", "http://schemas.openxmlformats.org/drawingml/2006/main"},
+    {"r", "http://schemas.openxmlformats.org/officeDocument/2006/relationships"},
     {"cp", "http://schemas.openxmlformats.org/package/2006/metadata/core-properties"},
     {"dc", "http://purl.org/dc/elements/1.1/"},
     {"dcterms", "http://purl.org/dc/terms/"},

@@ -1,8 +1,9 @@
+#include <algorithm>
 #include <pugixml.hpp>
 
 #include "reader.h"
 #include "cell.h"
-#include "reference.h"
+#include "range_reference.h"
 #include "workbook.h"
 #include "worksheet.h"
 
@@ -136,7 +137,7 @@ void read_worksheet_common(worksheet ws, const pugi::xml_node &root_node, const 
                 }
                 else if(cell_node.attribute("s") != nullptr && std::string(cell_node.attribute("s").as_string()) == "2") // date
                 {
-                    tm date;
+                    tm date = tm();
                     date.tm_year = 1900;
                     int days = cell_node.child("v").text().as_int();
                     while(days > 365)

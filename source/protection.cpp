@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <locale>
 #include <sstream>
 
 #include "protection.h"

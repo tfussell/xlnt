@@ -1,7 +1,11 @@
+#include <algorithm>
+
 #include "worksheet.h"
 #include "cell.h"
+#include "cell_struct.h"
 #include "named_range.h"
-#include "reference.h"
+#include "range.h"
+#include "range_reference.h"
 #include "relationship.h"
 #include "workbook.h"
 
@@ -12,7 +16,6 @@ struct worksheet_struct
     worksheet_struct(workbook &parent_workbook, const std::string &title)
     : parent_(parent_workbook), title_(title), freeze_panes_("A1")
     {
-        
     }
     
     ~worksheet_struct()
@@ -22,20 +25,16 @@ struct worksheet_struct
     
     void clear()
     {
-        while(!cell_map_.empty())
-        {
-            cell::deallocate(cell_map_.begin()->second.root_);
-            cell_map_.erase(cell_map_.begin()->first);
-        }
+        cell_map_.clear();
     }
     
     void garbage_collect()
     {
         std::vector<cell_reference> null_cell_keys;
         
-        for(auto key_cell_pair : cell_map_)
+        for(auto &key_cell_pair : cell_map_)
         {
-            if(key_cell_pair.second.get_data_type() == cell::type::null)
+            if(cell(&key_cell_pair.second).get_data_type() == cell::type::null)
             {
                 null_cell_keys.push_back(key_cell_pair.first);
             }
@@ -50,10 +49,10 @@ struct worksheet_struct
     
     std::list<cell> get_cell_collection()
     {
-        std::list<xlnt::cell> cells;
-        for(auto cell : cell_map_)
+        std::list<cell> cells;
+        for(auto &c : cell_map_)
         {
-            cells.push_front(xlnt::cell(cell.second));
+            cells.push_front(cell(&c.second));
         }
         return cells;
     }
@@ -83,33 +82,44 @@ struct worksheet_struct
         freeze_panes_ = "A1";
     }
     
-    xlnt::cell get_cell(const cell_reference &reference)
+    cell get_cell(const cell_reference &reference)
     {
         if(cell_map_.find(reference) == cell_map_.end())
         {
-            auto cell = cell::allocate(this, reference.get_column_index(), reference.get_row_index());
-            cell_map_[reference] = cell;
+            cell_map_[reference] = cell_struct(this, reference.get_column_index(), reference.get_row_index());
         }
         
-        return cell_map_[reference];
+        return &cell_map_[reference];
     }
+
+    /*
+    const xlnt::cell get_cell(const cell_reference &reference) const
+    {
+        if(cell_map_.find(reference) == cell_map_.end())
+        {
+            throw std::runtime_error("cell not found");
+        }
+
+        return &cell_map_.at(reference);
+    }
+    */
     
     int get_highest_row() const
     {
-        int highest = 0;
-        for(auto cell : cell_map_)
+        row_t highest = 0;
+        for(auto &cell : cell_map_)
         {
-            highest = (std::max)(highest, cell.first.get_row_index());
+            highest = std::max(highest, cell.first.get_row_index());
         }
         return highest + 1;
     }
     
     int get_highest_column() const
     {
-        int highest = 0;
-        for(auto cell : cell_map_)
+        column_t highest = 0;
+        for(auto &cell : cell_map_)
         {
-            highest = (std::max)(highest, cell.first.get_column_index());
+            highest = std::max(highest, cell.first.get_column_index());
         }
         return highest + 1;
     }
@@ -121,11 +131,11 @@ struct worksheet_struct
             return 1;
         }
         
-        int lowest = cell_map_.begin()->first.get_row_index();
+        row_t lowest = cell_map_.begin()->first.get_row_index();
         
-        for(auto cell : cell_map_)
+        for(auto &cell : cell_map_)
         {
-            lowest = (std::min)(lowest, cell.first.get_row_index());
+            lowest = std::min(lowest, cell.first.get_row_index());
         }
         
         return lowest + 1;
@@ -138,11 +148,11 @@ struct worksheet_struct
             return 1;
         }
         
-        int lowest = cell_map_.begin()->first.get_column_index();
+        column_t lowest = cell_map_.begin()->first.get_column_index();
         
-        for(auto cell : cell_map_)
+        for(auto &cell : cell_map_)
         {
-            lowest = (std::min)(lowest, cell.first.get_column_index());
+            lowest = std::min(lowest, cell.first.get_column_index());
         }
         
         return lowest + 1;
@@ -159,31 +169,9 @@ struct worksheet_struct
         return range_reference(lowest_column - 1, lowest_row - 1, highest_column - 1, highest_row - 1);
     }
     
-    xlnt::range get_range(const range_reference &reference)
+    range get_range(const range_reference &reference)
     {
-        xlnt::range r;
-        
-        if(!reference.is_single_cell())
-        {
-            cell_reference min_ref = reference.get_top_left();
-            cell_reference max_ref = reference.get_bottom_right();
-            
-            for(int row = min_ref.get_row_index(); row <= max_ref.get_row_index(); row++)
-            {
-                r.push_back(std::vector<xlnt::cell>());
-                for(int column = min_ref.get_column_index(); column <= max_ref.get_column_index(); column++)
-                {
-                    r.back().push_back(get_cell(cell_reference(column, row)));
-                }
-            }
-        }
-        else
-        {
-            r.push_back(std::vector<xlnt::cell>());
-            r.back().push_back(get_cell(reference.get_top_left()));
-        }
-        
-        return r;
+        return range(worksheet(this), reference);
     }
     
     relationship create_relationship(const std::string &relationship_type, const std::string &target_uri)
@@ -199,6 +187,7 @@ struct worksheet_struct
     {
         merged_cells_.push_back(reference);
         bool first = true;
+
         for(auto row : get_range(reference))
         {
             for(auto cell : row)
@@ -270,24 +259,9 @@ struct worksheet_struct
         }
     }
     
-    xlnt::range rows()
+    range rows()
     {
         return get_range(calculate_dimension());
-    }
-    
-    xlnt::range columns()
-    {
-        int max_row = get_highest_row();
-        xlnt::range cols;
-        for(int col_idx = 0; col_idx < get_highest_column(); col_idx++)
-        {
-            cols.push_back(std::vector<xlnt::cell>());
-            for(auto row : get_range(range_reference(col_idx, 0, col_idx, max_row)))
-            {
-                cols.back().push_back(row[0]);
-            }
-        }
-        return cols;
     }
     
     void operator=(const worksheet_struct &other) = delete;
@@ -295,7 +269,7 @@ struct worksheet_struct
     workbook &parent_;
     std::string title_;
     cell_reference freeze_panes_;
-    std::unordered_map<cell_reference, xlnt::cell, cell_reference_hash> cell_map_;
+    std::unordered_map<cell_reference, cell_struct, cell_reference_hash> cell_map_;
     std::vector<relationship> relationships_;
     page_setup page_setup_;
     range_reference auto_filter_;
@@ -325,8 +299,13 @@ bool worksheet::has_frozen_panes() const
 
 named_range worksheet::create_named_range(const std::string &name, const range_reference &reference)
 {
-    root_->named_ranges_[name] = named_range(named_range::allocate(name, *this, reference));
+    root_->named_ranges_[name] = named_range(name, *this, reference);
     return root_->named_ranges_[name];
+}
+
+cell worksheet::operator[](const cell_reference &ref)
+{
+    return get_cell(ref);
 }
 
 std::vector<range_reference> worksheet::get_merged_ranges() const
@@ -346,7 +325,7 @@ void worksheet::set_auto_filter(const range_reference &reference)
 
 void worksheet::set_auto_filter(const xlnt::range &range)
 {
-    set_auto_filter(range_reference(range[0][0].get_reference(), range.back().back().get_reference()));
+    set_auto_filter(range.get_reference());
 }
 
 range_reference worksheet::get_auto_filter() const
@@ -428,6 +407,11 @@ cell worksheet::get_cell(const cell_reference &reference)
     return root_->get_cell(reference);
 }
 
+const cell worksheet::get_cell(const cell_reference &reference) const
+{
+    return root_->get_cell(reference);
+}
+
 range worksheet::get_named_range(const std::string &name)
 {
     return get_range(root_->parent_.get_named_range(name, *this).get_target_range());
@@ -495,11 +479,6 @@ xlnt::range worksheet::rows() const
     return root_->rows();
 }
 
-xlnt::range worksheet::columns() const
-{
-    return root_->columns();
-}
-
 bool worksheet::operator==(const worksheet &other) const
 {
     return root_ == other.root_;
@@ -526,7 +505,7 @@ void worksheet::operator=(const worksheet &other)
     root_ = other.root_;
 }
 
-cell worksheet::operator[](const cell_reference &ref)
+const cell worksheet::operator[](const cell_reference &ref) const
 {
     return get_cell(ref);
 }
@@ -553,6 +532,11 @@ worksheet worksheet::allocate(xlnt::workbook &owner, const std::string &title)
 void worksheet::deallocate(xlnt::worksheet ws)
 {
     delete ws.root_;
+}
+
+void worksheet::reserve(std::size_t n)
+{
+    root_->cell_map_.reserve(n);
 }
     
 } // namespace xlnt

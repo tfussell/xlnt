@@ -9,3 +9,4 @@ lib/
 #*#
 *~
 .DS_Store
+tests/test_data/writer/*.xlsx

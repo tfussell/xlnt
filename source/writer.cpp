@@ -7,7 +7,9 @@
 
 #include "writer.h"
 #include "cell.h"
-#include "reference.h"
+#include "constants.h"
+#include "range.h"
+#include "range_reference.h"
 #include "worksheet.h"
 
 namespace xlnt {
@@ -16,8 +18,8 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
 {
     pugi::xml_document doc;
     auto root_node = doc.append_child("worksheet");
-    root_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
-    root_node.append_attribute("xmlns:r").set_value("http://schemas.openxmlformats.org/officeDocument/2006/relationships");
+    root_node.append_attribute("xmlns").set_value(constants::Namespaces.at("spreadsheetml").c_str());
+    root_node.append_attribute("xmlns:r").set_value(constants::Namespaces.at("r").c_str());
     auto dimension_node = root_node.append_child("dimension");
     dimension_node.append_attribute("ref").set_value(ws.calculate_dimension().to_string().c_str());
     auto sheet_views_node = root_node.append_child("sheetViews");
@@ -37,19 +39,14 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
     auto sheet_data_node = root_node.append_child("sheetData");
     for(auto row : ws.rows())
     {
-        if(row.empty())
-        {
-            continue;
-        }
-        
-        int min = (int)row.size();
-        int max = 0;
+        row_t min = (int)row.num_cells();
+        row_t max = 0;
         bool any_non_null = false;
         
         for(auto cell : row)
         {
-            min = (std::min)(min, cell_reference::column_index_from_string(cell.get_column()));
-            max = (std::max)(max, cell_reference::column_index_from_string(cell.get_column()));
+            min = std::min(min, cell_reference::column_index_from_string(cell.get_column()));
+            max = std::max(max, cell_reference::column_index_from_string(cell.get_column()));
             
             if(cell.get_data_type() != cell::type::null)
             {
@@ -70,7 +67,7 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
         
         for(auto cell : row)
         {
-            if(cell.get_data_type() != cell::type::null || cell.get_merged())
+            if(cell.get_data_type() != cell::type::null || cell.is_merged())
             {
                 auto cell_node = row_node.append_child("c");
                 cell_node.append_attribute("r").set_value(cell.get_reference().to_string().c_str());
@@ -263,7 +260,7 @@ std::string writer::write_content_types(const std::pair<std::unordered_map<std::
     
     pugi::xml_document doc;
     auto root_node = doc.append_child("Types");
-    root_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/package/2006/content-types");
+    root_node.append_attribute("xmlns").set_value(constants::Namespaces.at("content-types").c_str());
     
     for(auto default_type : content_types.first)
     {
@@ -288,7 +285,7 @@ std::string writer::write_relationships(const std::unordered_map<std::string, st
 {
     pugi::xml_document doc;
     auto root_node = doc.append_child("Relationships");
-    root_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/package/2006/relationships");
+    root_node.append_attribute("xmlns").set_value(constants::Namespaces.at("relationships").c_str());
     
     for(auto relationship : relationships)
     {
@@ -308,7 +305,7 @@ std::string writer::write_theme()
     /*
      pugi::xml_document doc;
      auto theme_node = doc.append_child("a:theme");
-     theme_node.append_attribute("xmlns:a").set_value("http://schemas.openxmlformats.org/drawingml/2006/main");
+     theme_node.append_attribute("xmlns:a").set_value(constants::Namespaces.at("drawingml").c_str());
      theme_node.append_attribute("name").set_value("Office Theme");
      auto theme_elements_node = theme_node.append_child("a:themeElements");
      auto clr_scheme_node = theme_elements_node.append_child("a:clrScheme");

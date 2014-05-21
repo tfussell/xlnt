@@ -1,8 +1,10 @@
+#include <algorithm>
+#include <locale>
 #include <sstream>
 
 #include "cell.h"
-
-#include "reference.h"
+#include "cell_reference.h"
+#include "cell_struct.h"
 #include "relationship.h"
 #include "worksheet.h"
 
@@ -12,39 +14,6 @@ struct worksheet_struct;
 
 const xlnt::color xlnt::color::black(0);
 const xlnt::color xlnt::color::white(1);
-
-struct cell_struct
-{
-    cell_struct(worksheet_struct *ws, int column, int row)
-    : type(cell::type::null), parent_worksheet(ws),
-    column(column), row(row),
-    hyperlink_rel("invalid", "")
-    {
-        
-    }
-    
-    std::string to_string() const;
-    
-    cell::type type;
-    
-    union
-    {
-        long double numeric_value;
-        bool bool_value;
-    };
-    
-    
-    std::string error_value;
-    tm date_value;
-    std::string string_value;
-    std::string formula_value;
-    worksheet_struct *parent_worksheet;
-    int column;
-    int row;
-    style style;
-    relationship hyperlink_rel;
-    bool merged;
-};
 
 const std::unordered_map<std::string, int> cell::ErrorCodes =
 {
@@ -61,14 +30,14 @@ cell::cell() : root_(nullptr)
 {
 }
 
-cell::cell(worksheet &worksheet, const std::string &column, int row) : root_(nullptr)
+cell::cell(worksheet &worksheet, const std::string &column, row_t row) : root_(nullptr)
 {
     cell self = worksheet.get_cell(column + std::to_string(row));
     root_ = self.root_;
 }
 
 
-cell::cell(worksheet &worksheet, const std::string &column, int row, const std::string &initial_value) : root_(nullptr)
+cell::cell(worksheet &worksheet, const std::string &column, row_t row, const std::string &initial_value) : root_(nullptr)
 {
     cell self = worksheet.get_cell(column + std::to_string(row));
     root_ = self.root_;
@@ -102,7 +71,7 @@ std::string cell::get_value() const
     }
 }
 
-int cell::get_row() const
+row_t cell::get_row() const
 {
     return root_->row + 1;
 }
@@ -222,7 +191,7 @@ void cell::set_merged(bool merged)
     root_->merged = merged;
 }
 
-bool cell::get_merged() const
+bool cell::is_merged() const
 {
     return root_->merged;
 }
@@ -348,12 +317,20 @@ bool operator==(const tm &comparand, const xlnt::cell &cell)
 
 style &cell::get_style()
 {
-    return root_->style;
+    if(root_->style == nullptr)
+    {
+        root_->style = new style();
+    }
+    return *root_->style;
 }
 
 const style &cell::get_style() const
 {
-    return root_->style;
+    if(root_->style == nullptr)
+    {
+        root_->style = new style();
+    }
+    return *root_->style;
 }
 
 xlnt::cell::type cell::get_data_type() const
@@ -460,7 +437,7 @@ std::string cell_struct::to_string() const
     return "<Cell " + worksheet(parent_worksheet).get_title() + "." + cell_reference(column, row).to_string() + ">";
 }
 
-cell cell::allocate(xlnt::worksheet owner, int column_index, int row_index)
+cell cell::allocate(xlnt::worksheet owner, column_t column_index, row_t row_index)
 {
     return new cell_struct(owner.root_, column_index, row_index);
 }

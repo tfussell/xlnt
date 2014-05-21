@@ -55,14 +55,14 @@ project "xlnt"
 	"pugixml"
     }
     includedirs { 
-       "../source/",
+       "../include/xlnt",
        "../third-party/pugixml/src",
        "../third-party/zlib/",
        "../third-party/zlib/contrib/minizip"
     }
     files {
        "../source/*.cpp",
-       "../source/*.h"
+       "../include/xlnt/*.h"
     }
     flags { 
        "Unicode",
