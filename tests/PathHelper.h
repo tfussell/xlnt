@@ -10,6 +10,8 @@
 #define NOMINMAX
 #include <Shlwapi.h>
 #include <Windows.h>
+#else
+#include <sys/stat.h>
 #endif
 
 class PathHelper
@@ -63,9 +65,12 @@ public:
         return WindowsToUniversalPath(std::string(buffer.begin(), buffer.begin() + result - 13)) + "/";
         
 #else
-        
-        throw std::runtime_error("not implmented");
-        
+	char arg1[20];
+	char exepath[PATH_MAX + 1] = {0};
+	
+	sprintf(arg1, "/proc/%d/exe", getpid());
+	readlink(arg1, exepath, 1024);
+	return std::string(exepath).substr(0, std::strlen(exepath) - 9);
 #endif
         
     }

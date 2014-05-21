@@ -1,3 +1,5 @@
+#include <stdexcept>
+
 #include "string_table.h"
 
 namespace xlnt {

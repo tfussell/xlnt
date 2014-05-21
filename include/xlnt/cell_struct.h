@@ -41,7 +41,7 @@ struct cell_struct
     worksheet_struct *parent_worksheet;
     column_t column;
     row_t row;
-    style *style;
+    style *style_;
     relationship hyperlink_rel;
     bool merged;
 };

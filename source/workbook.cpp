@@ -14,9 +14,9 @@
 
 namespace xlnt {
 
-workbook::workbook(optimization optimization)
-: optimized_write_(optimization==optimization::write),
-optimized_read_(optimization==optimization::read),
+workbook::workbook(optimization optimize)
+: optimized_write_(optimize==optimization::write),
+optimized_read_(optimize==optimization::read),
 active_sheet_index_(0)
 {
     if(!optimized_write_)

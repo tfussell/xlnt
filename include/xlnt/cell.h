@@ -174,7 +174,7 @@ public:
         pattern_mediumgray,
     };
     
-    type type = type::none;
+    type type_ = type::none;
     int rotation = 0;
     color start_color = color::white;
     color end_color = color::black;
@@ -202,8 +202,8 @@ class borders
             thin
         };
         
-        style style = style::none;
-        color color = color::black;
+        style style_ = style::none;
+        color color_ = color::black;
     };
     
     enum class diagonal_direction

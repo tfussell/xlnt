@@ -24,17 +24,7 @@ enum class target_mode
 /// </summary>
 class relationship
 {
-public:
-    enum class type
-    {
-        hyperlink,
-        drawing,
-        worksheet,
-        sharedStrings,
-        styles,
-        theme
-    };
-    
+public:    
     relationship(const std::string &type, const std::string &r_id = "", const std::string &target_uri = "");
     
     /// <summary>
@@ -61,6 +51,16 @@ private:
     relationship(const std::string &id, const std::string &relationship_type_, const std::string &source_uri, target_mode target_mode, const std::string &target_uri);
     //relationship &operator=(const relationship &rhs) = delete;
     
+    enum class type
+    {
+        hyperlink,
+        drawing,
+        worksheet,
+        sharedStrings,
+        styles,
+        theme
+    };
+
     type type_;
     std::string id_;
     std::string source_uri_;

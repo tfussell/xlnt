@@ -317,20 +317,20 @@ bool operator==(const tm &comparand, const xlnt::cell &cell)
 
 style &cell::get_style()
 {
-    if(root_->style == nullptr)
+    if(root_->style_ == nullptr)
     {
-        root_->style = new style();
+        root_->style_ = new style();
     }
-    return *root_->style;
+    return *root_->style_;
 }
 
 const style &cell::get_style() const
 {
-    if(root_->style == nullptr)
+    if(root_->style_ == nullptr)
     {
-        root_->style = new style();
+        root_->style_ = new style();
     }
-    return *root_->style;
+    return *root_->style_;
 }
 
 xlnt::cell::type cell::get_data_type() const

@@ -24,9 +24,9 @@ project "xlnt.test"
        "../tests/runner-autogen.cpp"
     }
     links { 
-        "zlib",
 	"pugixml",
-        "xlnt"
+        "xlnt",
+        "zlib"
     }
     prebuildcommands { "cxxtestgen --runner=ErrorPrinter -o ../../tests/runner-autogen.cpp ../../tests/*.h" }
     flags { 
@@ -120,8 +120,7 @@ project "zlib"
     excludes {
        "../third-party/zlib/contrib/minizip/miniunz.c",
        "../third-party/zlib/contrib/minizip/minizip.c",
-       "../third-party/zlib/contrib/minizip/iowin32.c",
-       "../third-party/zlib/gz*.c"
+       "../third-party/zlib/contrib/minizip/iowin32.c"
     }
     flags { 
        "Unicode",

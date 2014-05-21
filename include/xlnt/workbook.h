@@ -5,10 +5,12 @@
 #include <utility>
 #include <vector>
 
+#include "named_range.h"
+
 namespace xlnt {
 
 class drawing;
-class named_range;
+//class named_range;
 class range_reference;
 class relationship;
 class worksheet;
