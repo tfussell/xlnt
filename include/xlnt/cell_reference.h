@@ -61,7 +61,7 @@ public:
     void set_column_index(column_t column_index) { column_index_ = column_index; }
     
     row_t get_row() const { return row_index_ + 1; }
-    row_t set_row(row_t row) { row_index_ = row - 1; }
+    void set_row(row_t row) { row_index_ = row - 1; }
     
     row_t get_row_index() const { return row_index_; }
     void set_row_index(row_t row_index) { row_index_ = row_index; }

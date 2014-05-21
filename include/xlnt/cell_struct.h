@@ -5,6 +5,8 @@
 
 namespace xlnt {
 
+struct worksheet_struct;
+
 struct cell_struct
 {
     cell_struct(worksheet_struct *ws, int column, int row)

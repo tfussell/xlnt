@@ -36,7 +36,7 @@ cell_reference::cell_reference(const std::string &column, row_t row, bool absolu
 row_index_(row - 1),
 absolute_(absolute)
 {
-    if(row_index_ < 0 || column_index_ < 0 || row_index_ >= 1048576 || column_index_ >= 16384)
+    if(row == 0 || row_index_ >= constants::MaxRow || column_index_ >= constants::MaxColumn)
     {
         throw bad_cell_coordinates(column_index_, row_index_);
     }
@@ -47,7 +47,7 @@ cell_reference::cell_reference(column_t column_index, row_t row_index, bool abso
 row_index_(row_index),
 absolute_(absolute)
 {
-    if(row_index_ < 0 || column_index_ < 0 || row_index_ >= 1048576 || column_index_ >= 16384)
+    if(row_index_ >= constants::MaxRow || column_index_ >= constants::MaxColumn)
     {
         throw bad_cell_coordinates(column_index_, row_index_);
     }

@@ -23,7 +23,11 @@ project "xlnt.test"
        "../tests/*.h",
        "../tests/runner-autogen.cpp"
     }
-    links { "xlnt" }
+    links { 
+        "zlib",
+	"pugixml",
+        "xlnt"
+    }
     prebuildcommands { "cxxtestgen --runner=ErrorPrinter -o ../../tests/runner-autogen.cpp ../../tests/*.h" }
     flags { 
        "Unicode",
