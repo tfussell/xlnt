@@ -72,7 +72,7 @@ public:
     
     static std::string GetDataDirectory()
     {
-        return GetExecutableDirectory() + "../source/tests/test_data";
+        return GetExecutableDirectory() + "../tests/test_data";
     }
     
     static void CopyFile(const std::string &source, const std::string &destination, bool overwrite)

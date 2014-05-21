@@ -13,18 +13,18 @@ project "xlnt.test"
     language "C++"
     targetname "xlnt.test"
     includedirs { 
-       "$(cxxtest_prefix)",
        "../include",
        "../third-party/pugixml/src",
        "../third-party/zlib",
-       "../third-party/zlib/contrib/minizip"
+       "../third-party/zlib/contrib/minizip",
+       "$(cxxtest_prefix)"
     }
     files { 
-       "../source/tests/**.h",
-       "../source/tests/runner-autogen.cpp"
+       "../tests/*.h",
+       "../tests/runner-autogen.cpp"
     }
     links { "xlnt" }
-    prebuildcommands { "cxxtestgen --runner=ErrorPrinter -o ../../source/tests/runner-autogen.cpp ../../source/tests/*.h" }
+    prebuildcommands { "cxxtestgen --runner=ErrorPrinter -o ../../tests/runner-autogen.cpp ../../tests/*.h" }
     flags { 
        "Unicode",
        "NoEditAndContinue",

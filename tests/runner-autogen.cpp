@@ -21,12 +21,12 @@ int main( int argc, char *argv[] ) {
     return status;
 }
 bool suite_CellTestSuite_init = false;
-#include "C:\Users\taf656\Development\xlnt\source\tests\CellTestSuite.h"
+#include "C:\Users\taf656\Development\xlnt\tests\CellTestSuite.h"
 
 static CellTestSuite suite_CellTestSuite;
 
 static CxxTest::List Tests_CellTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_CellTestSuite( "../../source/tests/CellTestSuite.h", 9, "CellTestSuite", suite_CellTestSuite, Tests_CellTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_CellTestSuite( "../../tests/CellTestSuite.h", 9, "CellTestSuite", suite_CellTestSuite, Tests_CellTestSuite );
 
 static class TestDescription_suite_CellTestSuite_test_coordinates : public CxxTest::RealTestDescription {
 public:
@@ -184,12 +184,12 @@ public:
  void runTest() { suite_CellTestSuite.test_is_not_date_color_format(); }
 } testDescription_suite_CellTestSuite_test_is_not_date_color_format;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\ChartTestSuite.h"
+#include "C:\Users\taf656\Development\xlnt\tests\ChartTestSuite.h"
 
 static ChartTestSuite suite_ChartTestSuite;
 
 static CxxTest::List Tests_ChartTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_ChartTestSuite( "../../source/tests/ChartTestSuite.h", 8, "ChartTestSuite", suite_ChartTestSuite, Tests_ChartTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_ChartTestSuite( "../../tests/ChartTestSuite.h", 8, "ChartTestSuite", suite_ChartTestSuite, Tests_ChartTestSuite );
 
 static class TestDescription_suite_ChartTestSuite_test_write_title : public CxxTest::RealTestDescription {
 public:
@@ -275,12 +275,12 @@ public:
  void runTest() { suite_ChartTestSuite.test_write_chart_scatter(); }
 } testDescription_suite_ChartTestSuite_test_write_chart_scatter;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\DumpTestSuite.h"
+#include "C:\Users\taf656\Development\xlnt\tests\DumpTestSuite.h"
 
 static DumpTestSuite suite_DumpTestSuite;
 
 static CxxTest::List Tests_DumpTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_DumpTestSuite( "../../source/tests/DumpTestSuite.h", 9, "DumpTestSuite", suite_DumpTestSuite, Tests_DumpTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_DumpTestSuite( "../../tests/DumpTestSuite.h", 9, "DumpTestSuite", suite_DumpTestSuite, Tests_DumpTestSuite );
 
 static class TestDescription_suite_DumpTestSuite_test_dump_sheet_title : public CxxTest::RealTestDescription {
 public:
@@ -318,12 +318,12 @@ public:
  void runTest() { suite_DumpTestSuite.test_append_after_save(); }
 } testDescription_suite_DumpTestSuite_test_append_after_save;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\NamedRangeTestSuite.h"
+#include "C:\Users\taf656\Development\xlnt\tests\NamedRangeTestSuite.h"
 
 static NamedRangeTestSuite suite_NamedRangeTestSuite;
 
 static CxxTest::List Tests_NamedRangeTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_NamedRangeTestSuite( "../../source/tests/NamedRangeTestSuite.h", 8, "NamedRangeTestSuite", suite_NamedRangeTestSuite, Tests_NamedRangeTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_NamedRangeTestSuite( "../../tests/NamedRangeTestSuite.h", 8, "NamedRangeTestSuite", suite_NamedRangeTestSuite, Tests_NamedRangeTestSuite );
 
 static class TestDescription_suite_NamedRangeTestSuite_test_split : public CxxTest::RealTestDescription {
 public:
@@ -409,12 +409,12 @@ public:
  void runTest() { suite_NamedRangeTestSuite.test_can_be_saved(); }
 } testDescription_suite_NamedRangeTestSuite_test_can_be_saved;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\NumberFormatTestSuite.h"
+#include "C:\Users\taf656\Development\xlnt\tests\NumberFormatTestSuite.h"
 
 static NumberFormatTestSuite suite_NumberFormatTestSuite;
 
 static CxxTest::List Tests_NumberFormatTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_NumberFormatTestSuite( "../../source/tests/NumberFormatTestSuite.h", 8, "NumberFormatTestSuite", suite_NumberFormatTestSuite, Tests_NumberFormatTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_NumberFormatTestSuite( "../../tests/NumberFormatTestSuite.h", 8, "NumberFormatTestSuite", suite_NumberFormatTestSuite, Tests_NumberFormatTestSuite );
 
 static class TestDescription_suite_NumberFormatTestSuite_test_convert_date_to_julian : public CxxTest::RealTestDescription {
 public:
@@ -512,12 +512,12 @@ public:
  void runTest() { suite_NumberFormatTestSuite.test_mac_date(); }
 } testDescription_suite_NumberFormatTestSuite_test_mac_date;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\PasswordHashTestSuite.h"
+#include "C:\Users\taf656\Development\xlnt\tests\PasswordHashTestSuite.h"
 
 static PasswordHashTestSuite suite_PasswordHashTestSuite;
 
 static CxxTest::List Tests_PasswordHashTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_PasswordHashTestSuite( "../../source/tests/PasswordHashTestSuite.h", 8, "PasswordHashTestSuite", suite_PasswordHashTestSuite, Tests_PasswordHashTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_PasswordHashTestSuite( "../../tests/PasswordHashTestSuite.h", 8, "PasswordHashTestSuite", suite_PasswordHashTestSuite, Tests_PasswordHashTestSuite );
 
 static class TestDescription_suite_PasswordHashTestSuite_test_hasher : public CxxTest::RealTestDescription {
 public:
@@ -531,12 +531,12 @@ public:
  void runTest() { suite_PasswordHashTestSuite.test_sheet_protection(); }
 } testDescription_suite_PasswordHashTestSuite_test_sheet_protection;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\PropsTestSuite.h"
+#include "C:\Users\taf656\Development\xlnt\tests\PropsTestSuite.h"
 
 static PropsTestSuite suite_PropsTestSuite;
 
 static CxxTest::List Tests_PropsTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_PropsTestSuite( "../../source/tests/PropsTestSuite.h", 8, "PropsTestSuite", suite_PropsTestSuite, Tests_PropsTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_PropsTestSuite( "../../tests/PropsTestSuite.h", 8, "PropsTestSuite", suite_PropsTestSuite, Tests_PropsTestSuite );
 
 static class TestDescription_suite_PropsTestSuite_test_read_properties_core : public CxxTest::RealTestDescription {
 public:
@@ -574,12 +574,12 @@ public:
  void runTest() { suite_PropsTestSuite.test_write_properties_app(); }
 } testDescription_suite_PropsTestSuite_test_write_properties_app;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\ReadTestSuite.h"
+#include "C:\Users\taf656\Development\xlnt\tests\ReadTestSuite.h"
 
 static ReadTestSuite suite_ReadTestSuite;
 
 static CxxTest::List Tests_ReadTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_ReadTestSuite( "../../source/tests/ReadTestSuite.h", 10, "ReadTestSuite", suite_ReadTestSuite, Tests_ReadTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_ReadTestSuite( "../../tests/ReadTestSuite.h", 10, "ReadTestSuite", suite_ReadTestSuite, Tests_ReadTestSuite );
 
 static class TestDescription_suite_ReadTestSuite_test_read_standalone_worksheet : public CxxTest::RealTestDescription {
 public:
@@ -707,12 +707,12 @@ public:
  void runTest() { suite_ReadTestSuite.test_read_date_value(); }
 } testDescription_suite_ReadTestSuite_test_read_date_value;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\StringsTestSuite.h"
+#include "C:\Users\taf656\Development\xlnt\tests\StringsTestSuite.h"
 
 static StringsTestSuite suite_StringsTestSuite;
 
 static CxxTest::List Tests_StringsTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_StringsTestSuite( "../../source/tests/StringsTestSuite.h", 8, "StringsTestSuite", suite_StringsTestSuite, Tests_StringsTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_StringsTestSuite( "../../tests/StringsTestSuite.h", 8, "StringsTestSuite", suite_StringsTestSuite, Tests_StringsTestSuite );
 
 static class TestDescription_suite_StringsTestSuite_test_create_string_table : public CxxTest::RealTestDescription {
 public:
@@ -738,12 +738,12 @@ public:
  void runTest() { suite_StringsTestSuite.test_formatted_string_table(); }
 } testDescription_suite_StringsTestSuite_test_formatted_string_table;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\StyleTestSuite.h"
+#include "C:\Users\taf656\Development\xlnt\tests\StyleTestSuite.h"
 
 static StyleTestSuite suite_StyleTestSuite;
 
 static CxxTest::List Tests_StyleTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_StyleTestSuite( "../../source/tests/StyleTestSuite.h", 8, "StyleTestSuite", suite_StyleTestSuite, Tests_StyleTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_StyleTestSuite( "../../tests/StyleTestSuite.h", 8, "StyleTestSuite", suite_StyleTestSuite, Tests_StyleTestSuite );
 
 static class TestDescription_suite_StyleTestSuite_test_create_style_table : public CxxTest::RealTestDescription {
 public:
@@ -835,12 +835,12 @@ public:
  void runTest() { suite_StyleTestSuite.test_read_cell_style(); }
 } testDescription_suite_StyleTestSuite_test_read_cell_style;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\ThemeTestSuite.h"
+#include "C:\Users\taf656\Development\xlnt\tests\ThemeTestSuite.h"
 
 static ThemeTestSuite suite_ThemeTestSuite;
 
 static CxxTest::List Tests_ThemeTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_ThemeTestSuite( "../../source/tests/ThemeTestSuite.h", 9, "ThemeTestSuite", suite_ThemeTestSuite, Tests_ThemeTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_ThemeTestSuite( "../../tests/ThemeTestSuite.h", 9, "ThemeTestSuite", suite_ThemeTestSuite, Tests_ThemeTestSuite );
 
 static class TestDescription_suite_ThemeTestSuite_test_write_theme : public CxxTest::RealTestDescription {
 public:
@@ -848,12 +848,12 @@ public:
  void runTest() { suite_ThemeTestSuite.test_write_theme(); }
 } testDescription_suite_ThemeTestSuite_test_write_theme;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\WorkbookTestSuite.h"
+#include "C:\Users\taf656\Development\xlnt\tests\WorkbookTestSuite.h"
 
 static WorkbookTestSuite suite_WorkbookTestSuite;
 
 static CxxTest::List Tests_WorkbookTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_WorkbookTestSuite( "../../source/tests/WorkbookTestSuite.h", 8, "WorkbookTestSuite", suite_WorkbookTestSuite, Tests_WorkbookTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_WorkbookTestSuite( "../../tests/WorkbookTestSuite.h", 8, "WorkbookTestSuite", suite_WorkbookTestSuite, Tests_WorkbookTestSuite );
 
 static class TestDescription_suite_WorkbookTestSuite_test_get_active_sheet : public CxxTest::RealTestDescription {
 public:
@@ -987,12 +987,12 @@ public:
  void runTest() { suite_WorkbookTestSuite.test_write_regular_float(); }
 } testDescription_suite_WorkbookTestSuite_test_write_regular_float;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\WorksheetTestSuite.h"
+#include "C:\Users\taf656\Development\xlnt\tests\WorksheetTestSuite.h"
 
 static WorksheetTestSuite suite_WorksheetTestSuite;
 
 static CxxTest::List Tests_WorksheetTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_WorksheetTestSuite( "../../source/tests/WorksheetTestSuite.h", 9, "WorksheetTestSuite", suite_WorksheetTestSuite, Tests_WorksheetTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_WorksheetTestSuite( "../../tests/WorksheetTestSuite.h", 9, "WorksheetTestSuite", suite_WorksheetTestSuite, Tests_WorksheetTestSuite );
 
 static class TestDescription_suite_WorksheetTestSuite_test_new_worksheet : public CxxTest::RealTestDescription {
 public:
@@ -1156,12 +1156,12 @@ public:
  void runTest() { suite_WorksheetTestSuite.test_printer_settings(); }
 } testDescription_suite_WorksheetTestSuite_test_printer_settings;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\WriteTestSuite.h"
+#include "C:\Users\taf656\Development\xlnt\tests\WriteTestSuite.h"
 
 static WriteTestSuite suite_WriteTestSuite;
 
 static CxxTest::List Tests_WriteTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_WriteTestSuite( "../../source/tests/WriteTestSuite.h", 10, "WriteTestSuite", suite_WriteTestSuite, Tests_WriteTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_WriteTestSuite( "../../tests/WriteTestSuite.h", 10, "WriteTestSuite", suite_WriteTestSuite, Tests_WriteTestSuite );
 
 static class TestDescription_suite_WriteTestSuite_test_write_empty_workbook : public CxxTest::RealTestDescription {
 public:
@@ -1289,12 +1289,12 @@ public:
  void runTest() { suite_WriteTestSuite.test_short_number(); }
 } testDescription_suite_WriteTestSuite_test_short_number;
 
-#include "C:\Users\taf656\Development\xlnt\source\tests\ZipFileTestSuite.h"
+#include "C:\Users\taf656\Development\xlnt\tests\ZipFileTestSuite.h"
 
 static ZipFileTestSuite suite_ZipFileTestSuite;
 
 static CxxTest::List Tests_ZipFileTestSuite = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_ZipFileTestSuite( "../../source/tests/ZipFileTestSuite.h", 9, "ZipFileTestSuite", suite_ZipFileTestSuite, Tests_ZipFileTestSuite );
+CxxTest::StaticSuiteDescription suiteDescription_ZipFileTestSuite( "../../tests/ZipFileTestSuite.h", 9, "ZipFileTestSuite", suite_ZipFileTestSuite, Tests_ZipFileTestSuite );
 
 static class TestDescription_suite_ZipFileTestSuite_test_existing_package : public CxxTest::RealTestDescription {
 public:
