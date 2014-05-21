@@ -36,7 +36,7 @@ public:
 
     void test_create_sheet_readonly()
     {
-        xlnt::workbook wb(xlnt::optimized::read);
+        xlnt::workbook wb(xlnt::optimization::read);
         TS_ASSERT_THROWS_ANYTHING(wb.create_sheet());
     }
 
@@ -122,7 +122,7 @@ public:
 
     void test_create_sheet_readonly2()
     {
-        xlnt::workbook wb(xlnt::optimized::read);
+        xlnt::workbook wb(xlnt::optimization::read);
         TS_ASSERT_THROWS_ANYTHING(wb.create_sheet());
     }
 
@@ -159,8 +159,7 @@ public:
     {
         xlnt::workbook wb;
         auto new_sheet = wb.create_sheet();
-        xlnt::named_range named_range(new_sheet, "A1");
-        wb.add_named_range("test_nr", named_range);
+        auto named_range = wb.create_named_range("test_nr", new_sheet, "A1");
         auto named_ranges_list = wb.get_named_ranges();
         TS_ASSERT_DIFFERS(std::find(named_ranges_list.begin(), named_ranges_list.end(), named_range), named_ranges_list.end());
     }
@@ -169,8 +168,7 @@ public:
     {
         xlnt::workbook wb;
         auto new_sheet = wb.create_sheet();
-        xlnt::named_range named_range(new_sheet, "A1");
-        wb.add_named_range("test_nr", named_range);
+        auto named_range = wb.create_named_range("test_nr", new_sheet, "A1");
         auto found_named_range = wb.get_named_range("test_nr", new_sheet);
         TS_ASSERT_EQUALS(named_range, found_named_range);
     }
@@ -179,8 +177,7 @@ public:
     {
         xlnt::workbook wb;
         auto new_sheet = wb.create_sheet();
-        xlnt::named_range named_range(new_sheet, "A1");
-        wb.add_named_range("test_nr", named_range);
+        auto named_range = wb.create_named_range("test_nr", new_sheet, "A1");
         wb.remove_named_range(named_range);
         auto named_ranges_list = wb.get_named_ranges();
         TS_ASSERT_EQUALS(std::find(named_ranges_list.begin(), named_ranges_list.end(), named_range), named_ranges_list.end());
@@ -191,9 +188,7 @@ public:
         TemporaryFile temp_file;
         xlnt::workbook wb;
         auto new_sheet = wb.create_sheet();
-        xlnt::named_range named_range(new_sheet, "A1");
-        named_range.set_scope(new_sheet);
-        wb.add_named_range("test_nr", named_range);
+        wb.create_named_range("test_nr", new_sheet, "A1");
         auto dest_filename = temp_file.GetFilename();
         wb.save(dest_filename);
     }
@@ -232,7 +227,7 @@ public:
         float float_value = 1.0 / 3.0;
         xlnt::workbook book;
         auto sheet = book.get_active_sheet();
-        sheet.cell("A1") = float_value;
+        sheet.get_cell("A1") = float_value;
         auto dest_filename = temp_file.GetFilename();
         book.save(dest_filename);
 
@@ -240,6 +235,6 @@ public:
         test_book.load(dest_filename);
         auto test_sheet = test_book.get_active_sheet();
 
-        TS_ASSERT_LESS_THAN_EQUALS(std::stod(test_sheet.cell("A1").get_value()) - float_value, 0.001);
+        TS_ASSERT_LESS_THAN_EQUALS(std::stod(test_sheet.get_cell("A1").get_value()) - float_value, 0.001);
     }
 };

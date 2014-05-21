@@ -2,11 +2,6 @@ solution "xlnt"
     configurations { "Debug", "Release" }
     platforms { "x64" }
     location ("./" .. _ACTION)
-    configuration "not windows"
-        buildoptions { 
-            "-std=c++11",
-            "-Wno-unknown-pragmas"
-        }
     configuration "Debug"
         flags { "Symbols" }
 	optimize "Off"
@@ -24,7 +19,6 @@ project "xlnt.test"
        "../third-party/zlib",
        "../third-party/zlib/contrib/minizip"
     }
-    defines { "WIN32" }
     files { 
        "../source/tests/**.h",
        "../source/tests/runner-autogen.cpp"
@@ -45,32 +39,30 @@ project "xlnt.test"
     configuration "windows"
         defines { "WIN32" }
 	links { "Shlwapi" }
+    configuration "not windows"
+        buildoptions { 
+            "-std=c++11",
+            "-Wno-unknown-pragmas"
+        }
 
 project "xlnt"
     kind "StaticLib"
     language "C++"
     warnings "Extra"
     targetdir "../lib/"
+    links { 
+        "zlib",
+	"pugixml"
+    }
     includedirs { 
-       "../include/xlnt",
-       "../third-party/pugixml/src",
        "../source/",
+       "../third-party/pugixml/src",
        "../third-party/zlib/",
        "../third-party/zlib/contrib/minizip"
     }
     files {
-       "../source/**.cpp",
-       "../source/**.h",
-       "../include/**.h",
-       "../third-party/pugixml/src/pugixml.cpp",
-       "../third-party/zlib/*.c",
-       "../third-party/zlib/contrib/minizip/*.c"
-    }
-    excludes {
-       "../source/tests/**.cpp",
-       "../source/tests/**.h",
-       "../third-party/zlib/contrib/minizip/miniunz.c",
-       "../third-party/zlib/contrib/minizip/minizip.c"
+       "../source/*.cpp",
+       "../source/*.h"
     }
     flags { 
        "Unicode",
@@ -82,5 +74,56 @@ project "xlnt"
         flags { "FatalWarnings" }
     configuration "windows"
         defines { "WIN32" }
-    configuration "../third-party/zlib/*.c"
-        warnings "Off"
+    configuration "not windows"
+        buildoptions { 
+            "-std=c++11",
+            "-Wno-unknown-pragmas"
+        }
+
+project "pugixml"
+    kind "StaticLib"
+    language "C++"
+    warnings "Off"
+    targetdir "../lib/"
+    includedirs { 
+       "../third-party/pugixml/src"
+    }
+    files {
+       "../third-party/pugixml/src/pugixml.cpp"
+    }
+    flags { 
+       "Unicode",
+       "NoEditAndContinue",
+       "NoManifest",
+       "NoPCH"
+    }
+    configuration "windows"
+        defines { "WIN32" }
+
+project "zlib"
+    kind "StaticLib"
+    language "C"
+    warnings "Off"
+    targetdir "../lib/"
+    includedirs { 
+       "../third-party/zlib/",
+       "../third-party/zlib/contrib/minizip"
+    }
+    files {
+       "../third-party/zlib/*.c",
+       "../third-party/zlib/contrib/minizip/*.c"
+    }
+    excludes {
+       "../third-party/zlib/contrib/minizip/miniunz.c",
+       "../third-party/zlib/contrib/minizip/minizip.c",
+       "../third-party/zlib/contrib/minizip/iowin32.c",
+       "../third-party/zlib/gz*.c"
+    }
+    flags { 
+       "Unicode",
+       "NoEditAndContinue",
+       "NoManifest",
+       "NoPCH"
+    }
+    configuration "windows"
+        defines { "WIN32" }

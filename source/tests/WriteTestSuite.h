@@ -5,6 +5,7 @@
 
 #include "../xlnt.h"
 #include "TemporaryFile.h"
+#include "PathHelper.h"
 
 class WriteTestSuite : public CxxTest::TestSuite
 {
@@ -20,7 +21,7 @@ public:
         xlnt::workbook wb;
         auto dest_filename = temp_file.GetFilename();
         wb.save(dest_filename);
-        TS_ASSERT(xlnt::file::exists(dest_filename));
+        TS_ASSERT(PathHelper::FileExists(dest_filename));
     }
 
     void test_write_virtual_workbook()
@@ -153,10 +154,10 @@ public:
     {
         xlnt::workbook wb;
         auto ws = wb.create_sheet();
-        ws.cell("A1").set_hyperlink("http:test.com");
-        TS_ASSERT_EQUALS("http:test.com", ws.cell("A1"));
-        ws.cell("A1") = "test";
-        TS_ASSERT_EQUALS("test", ws.cell("A1"));
+        ws.get_cell("A1").set_hyperlink("http:test.com");
+        TS_ASSERT_EQUALS("http:test.com", ws.get_cell("A1"));
+        ws.get_cell("A1") = "test";
+        TS_ASSERT_EQUALS("test", ws.get_cell("A1"));
     }
 
     void test_write_auto_filter()

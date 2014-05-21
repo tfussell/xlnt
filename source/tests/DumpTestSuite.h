@@ -18,7 +18,7 @@ public:
 
     void test_dump_sheet_title()
     {
-        xlnt::workbook wb(xlnt::optimized::write);
+        xlnt::workbook wb(xlnt::optimization::write);
         auto ws = wb.create_sheet("Test1");
         wb.save(temp_file.GetFilename());
         xlnt::workbook wb2;
@@ -32,14 +32,14 @@ public:
     {
         auto test_filename = temp_file.GetFilename();
 
-        xlnt::workbook wb(xlnt::optimized::write);
+        xlnt::workbook wb(xlnt::optimization::write);
         auto ws = wb.create_sheet();
 
         std::vector<std::string> letters;
 
         for(int i = 0; i < 20; i++)
         {
-            letters.push_back(xlnt::cell::get_column_letter(i + 1));
+            letters.push_back(xlnt::cell_reference::column_string_from_index(i + 1));
         }
 
         std::vector<std::vector<std::string>> expected_rows;
@@ -121,7 +121,7 @@ public:
     {
         auto test_filename = temp_file.GetFilename();
 
-        xlnt::workbook wb(xlnt::optimized::write);
+        xlnt::workbook wb(xlnt::optimization::write);
 
         for(int i = 0; i < 2; i++) // over 200 worksheets should raise an OSError("too many open files")
         {
@@ -135,20 +135,20 @@ public:
     {
         auto test_filename = temp_file.GetFilename();
 
-        xlnt::workbook wb(xlnt::optimized::write);
+        xlnt::workbook wb(xlnt::optimization::write);
         auto ws = wb.create_sheet();
 
         std::vector<std::string> to_append = {"hello"};
         ws.append(to_append);
 
         wb.save(test_filename);
-	std::remove(test_filename.c_str());
+        std::remove(test_filename.c_str());
         wb.save(test_filename);
     }
                 
     void test_append_after_save()
     {
-        xlnt::workbook wb(xlnt::optimized::write);
+        xlnt::workbook wb(xlnt::optimization::write);
         auto ws = wb.create_sheet();
 
         std::vector<std::string> to_append = {"hello"};

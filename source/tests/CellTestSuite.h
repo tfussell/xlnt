@@ -16,74 +16,74 @@ public:
 
     void test_coordinates()
     {
-        auto coord = xlnt::cell::coordinate_from_string("ZF46");
-        TS_ASSERT_EQUALS("ZF", coord.column);
-        TS_ASSERT_EQUALS(46, coord.row);
+        xlnt::cell_reference coord("ZF46");
+        TS_ASSERT_EQUALS("ZF", coord.get_column());
+        TS_ASSERT_EQUALS(46, coord.get_row());
     }
 
     void test_invalid_coordinate()
     {
-        TS_ASSERT_THROWS_ANYTHING(xlnt::cell::coordinate_from_string("AAA"));
+        TS_ASSERT_THROWS_ANYTHING(xlnt::cell_reference("AAA"));
     }
 
     void test_zero_row()
     {
-        TS_ASSERT_THROWS_ANYTHING(xlnt::cell::coordinate_from_string("AQ0"));
+        TS_ASSERT_THROWS_ANYTHING(xlnt::cell_reference("AQ0"));
     }
 
     void test_absolute()
     {
-        TS_ASSERT_EQUALS("$ZF$51", xlnt::cell::absolute_coordinate("ZF51"));
+        TS_ASSERT_EQUALS("$ZF$51", xlnt::cell_reference::make_absolute("ZF51").to_string());
     }
 
     void test_absolute_multiple()
     {
-        TS_ASSERT_EQUALS("$ZF$51:$ZF$53", xlnt::cell::absolute_coordinate("ZF51:ZF$53"));
+        TS_ASSERT_EQUALS("$ZF$51:$ZF$53", xlnt::range_reference::make_absolute("ZF51:ZF$53").to_string());
     }
 
     void test_column_index()
     {
-        TS_ASSERT_EQUALS(10, xlnt::cell::column_index_from_string("J"));
-        TS_ASSERT_EQUALS(270, xlnt::cell::column_index_from_string("jJ"));
-        TS_ASSERT_EQUALS(7030, xlnt::cell::column_index_from_string("jjj"));
-        TS_ASSERT_EQUALS(1, xlnt::cell::column_index_from_string("A"));
-        TS_ASSERT_EQUALS(26, xlnt::cell::column_index_from_string("Z"));
-        TS_ASSERT_EQUALS(27, xlnt::cell::column_index_from_string("AA"));
-        TS_ASSERT_EQUALS(52, xlnt::cell::column_index_from_string("AZ"));
-        TS_ASSERT_EQUALS(53, xlnt::cell::column_index_from_string("BA"));
-        TS_ASSERT_EQUALS(78, xlnt::cell::column_index_from_string("BZ"));
-        TS_ASSERT_EQUALS(677, xlnt::cell::column_index_from_string("ZA"));
-        TS_ASSERT_EQUALS(702, xlnt::cell::column_index_from_string("ZZ"));
-        TS_ASSERT_EQUALS(703, xlnt::cell::column_index_from_string("AAA"));
-        TS_ASSERT_EQUALS(728, xlnt::cell::column_index_from_string("AAZ"));
-        TS_ASSERT_EQUALS(731, xlnt::cell::column_index_from_string("ABC"));
-        TS_ASSERT_EQUALS(1353, xlnt::cell::column_index_from_string("AZA"));
-        TS_ASSERT_EQUALS(18253, xlnt::cell::column_index_from_string("ZZA"));
-        TS_ASSERT_EQUALS(18278, xlnt::cell::column_index_from_string("ZZZ"));
+        TS_ASSERT_EQUALS(10, xlnt::cell_reference::column_index_from_string("J"));
+        TS_ASSERT_EQUALS(270, xlnt::cell_reference::column_index_from_string("jJ"));
+        TS_ASSERT_EQUALS(7030, xlnt::cell_reference::column_index_from_string("jjj"));
+        TS_ASSERT_EQUALS(1, xlnt::cell_reference::column_index_from_string("A"));
+        TS_ASSERT_EQUALS(26, xlnt::cell_reference::column_index_from_string("Z"));
+        TS_ASSERT_EQUALS(27, xlnt::cell_reference::column_index_from_string("AA"));
+        TS_ASSERT_EQUALS(52, xlnt::cell_reference::column_index_from_string("AZ"));
+        TS_ASSERT_EQUALS(53, xlnt::cell_reference::column_index_from_string("BA"));
+        TS_ASSERT_EQUALS(78, xlnt::cell_reference::column_index_from_string("BZ"));
+        TS_ASSERT_EQUALS(677, xlnt::cell_reference::column_index_from_string("ZA"));
+        TS_ASSERT_EQUALS(702, xlnt::cell_reference::column_index_from_string("ZZ"));
+        TS_ASSERT_EQUALS(703, xlnt::cell_reference::column_index_from_string("AAA"));
+        TS_ASSERT_EQUALS(728, xlnt::cell_reference::column_index_from_string("AAZ"));
+        TS_ASSERT_EQUALS(731, xlnt::cell_reference::column_index_from_string("ABC"));
+        TS_ASSERT_EQUALS(1353, xlnt::cell_reference::column_index_from_string("AZA"));
+        TS_ASSERT_EQUALS(18253, xlnt::cell_reference::column_index_from_string("ZZA"));
+        TS_ASSERT_EQUALS(18278, xlnt::cell_reference::column_index_from_string("ZZZ"));
     }
 
     void test_bad_column_index()
     {
 	for(auto bad_string : {"JJJJ", "", "$", "1"})
         {
-            TS_ASSERT_THROWS_ANYTHING(xlnt::cell::column_index_from_string(bad_string));
+            TS_ASSERT_THROWS_ANYTHING(xlnt::cell_reference::column_index_from_string(bad_string));
         }
     }
 
     void test_column_letter_boundries()
     {
-        TS_ASSERT_THROWS_ANYTHING(xlnt::cell::get_column_letter(0));
-        TS_ASSERT_THROWS_ANYTHING(xlnt::cell::get_column_letter(18279));
+        TS_ASSERT_THROWS_ANYTHING(xlnt::cell_reference::column_string_from_index(0));
+        TS_ASSERT_THROWS_ANYTHING(xlnt::cell_reference::column_string_from_index(18279));
     }
 
 
     void test_column_letter()
     {
-        TS_ASSERT_EQUALS("ZZZ", xlnt::cell::get_column_letter(18278));
-        TS_ASSERT_EQUALS("JJJ", xlnt::cell::get_column_letter(7030));
-        TS_ASSERT_EQUALS("AB", xlnt::cell::get_column_letter(28));
-        TS_ASSERT_EQUALS("AA", xlnt::cell::get_column_letter(27));
-        TS_ASSERT_EQUALS("Z", xlnt::cell::get_column_letter(26));
+        TS_ASSERT_EQUALS("ZZZ", xlnt::cell_reference::column_string_from_index(18278));
+        TS_ASSERT_EQUALS("JJJ", xlnt::cell_reference::column_string_from_index(7030));
+        TS_ASSERT_EQUALS("AB", xlnt::cell_reference::column_string_from_index(28));
+        TS_ASSERT_EQUALS("AA", xlnt::cell_reference::column_string_from_index(27));
+        TS_ASSERT_EQUALS("Z", xlnt::cell_reference::column_string_from_index(26));
     }
 
 

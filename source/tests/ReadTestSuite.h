@@ -37,9 +37,9 @@ public:
         TS_ASSERT_DIFFERS(ws, nullptr);
         if(!(ws == nullptr))
         {
-            TS_ASSERT_EQUALS(ws.cell("G5"), "hello");
-            TS_ASSERT_EQUALS(ws.cell("D30"), 30);
-            TS_ASSERT_EQUALS(ws.cell("K9"), 0.09);
+            TS_ASSERT_EQUALS(ws.get_cell("G5"), "hello");
+            TS_ASSERT_EQUALS(ws.get_cell("D30"), 30);
+            TS_ASSERT_EQUALS(ws.get_cell("K9"), 0.09);
         }
     }
 
@@ -67,8 +67,8 @@ public:
         wb.load(path);
         auto sheet2 = wb.get_sheet_by_name("Sheet2 - Numbers");
         TS_ASSERT_DIFFERS(sheet2, nullptr);
-        TS_ASSERT_EQUALS("This is cell G5", sheet2.cell("G5"));
-        TS_ASSERT_EQUALS(18, sheet2.cell("D18"));
+        TS_ASSERT_EQUALS("This is cell G5", sheet2.get_cell("G5"));
+        TS_ASSERT_EQUALS(18, sheet2.get_cell("D18"));
     }
 
     void test_read_nostring_workbook()
@@ -110,7 +110,7 @@ public:
         wb.load(path);
         auto sheet2 = wb.get_sheet_by_name("Sheet2 - Numbers");
         auto dimensions = sheet2.calculate_dimension();
-        TS_ASSERT_EQUALS("D1:K30", dimensions);
+        TS_ASSERT_EQUALS("D1:K30", dimensions.to_string());
     }
 
     void test_get_highest_row_iter()
@@ -132,27 +132,27 @@ public:
 
     void test_read_general_style()
     {
-        TS_ASSERT_EQUALS(worksheet_with_styles.cell("A1").get_style().get_number_format().get_format_code(), xlnt::number_format::format::general);
+        TS_ASSERT_EQUALS(worksheet_with_styles.get_cell("A1").get_style().get_number_format().get_format_code(), xlnt::number_format::format::general);
     }
 
     void test_read_date_style()
     {
-        TS_ASSERT_EQUALS(worksheet_with_styles.cell("A2").get_style().get_number_format().get_format_code(), xlnt::number_format::format::date_xlsx14);
+        TS_ASSERT_EQUALS(worksheet_with_styles.get_cell("A2").get_style().get_number_format().get_format_code(), xlnt::number_format::format::date_xlsx14);
     }
 
     void test_read_number_style()
     {
-        TS_ASSERT_EQUALS(worksheet_with_styles.cell("A3").get_style().get_number_format().get_format_code(), xlnt::number_format::format::number00);
+        TS_ASSERT_EQUALS(worksheet_with_styles.get_cell("A3").get_style().get_number_format().get_format_code(), xlnt::number_format::format::number00);
     }
 
     void test_read_time_style()
     {
-        TS_ASSERT_EQUALS(worksheet_with_styles.cell("A4").get_style().get_number_format().get_format_code(), xlnt::number_format::format::date_time3);
+        TS_ASSERT_EQUALS(worksheet_with_styles.get_cell("A4").get_style().get_number_format().get_format_code(), xlnt::number_format::format::date_time3);
     }
 
     void test_read_percentage_style()
     {
-        TS_ASSERT_EQUALS(worksheet_with_styles.cell("A5").get_style().get_number_format().get_format_code(), xlnt::number_format::format::percentage00)
+        TS_ASSERT_EQUALS(worksheet_with_styles.get_cell("A5").get_style().get_number_format().get_format_code(), xlnt::number_format::format::percentage00)
     }
 
     void test_read_win_base_date()
@@ -167,12 +167,12 @@ public:
 
     void test_read_date_style_mac()
     {
-        TS_ASSERT_EQUALS(mac_ws.cell("A1").get_style().get_number_format().get_format_code(), xlnt::number_format::format::date_xlsx14);
+        TS_ASSERT_EQUALS(mac_ws.get_cell("A1").get_style().get_number_format().get_format_code(), xlnt::number_format::format::date_xlsx14);
     }
 
     void test_read_date_style_win()
     {
-        TS_ASSERT_EQUALS(win_ws.cell("A1").get_style().get_number_format().get_format_code(), xlnt::number_format::format::date_xlsx14);
+        TS_ASSERT_EQUALS(win_ws.get_cell("A1").get_style().get_number_format().get_format_code(), xlnt::number_format::format::date_xlsx14);
     }
 
     void test_read_date_value()
