@@ -154,8 +154,8 @@ public:
     {
         xlnt::workbook wb;
         auto ws = wb.create_sheet();
-        ws.get_cell("A1").set_hyperlink("http:test.com");
-        TS_ASSERT_EQUALS("http:test.com", ws.get_cell("A1"));
+        ws.get_cell("A1").set_hyperlink("http://test.com");
+        TS_ASSERT_EQUALS("http://test.com", ws.get_cell("A1"));
         ws.get_cell("A1") = "test";
         TS_ASSERT_EQUALS("test", ws.get_cell("A1"));
     }

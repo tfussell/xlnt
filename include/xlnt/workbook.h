@@ -12,8 +12,10 @@ class range;
 class range_reference;
 class relationship;
 class worksheet;
-    
+
+namespace detail {    
 struct workbook_impl;
+} // namespace detail
     
 enum class optimization
 {
@@ -123,7 +125,7 @@ public:
     
 private:
     friend class worksheet;
-    workbook_impl *d_;
+    detail::workbook_impl *d_;
 };
     
 } // namespace xlnt

@@ -118,7 +118,7 @@ public:
     {
         xlnt::worksheet ws(wb);
         wb.create_named_range("test_range_single", ws, "B12");
-        TS_ASSERT_THROWS(ws.get_cell("test_range_single"), xlnt::bad_cell_coordinates);
+        TS_ASSERT_THROWS(ws.get_cell("test_range_single"), xlnt::cell_coordinates_exception);
         auto c_range_name = ws.get_named_range("test_range_single");
         auto c_range_coord = ws.get_range("B12");
         auto c_cell = ws.get_cell("B12");
@@ -156,14 +156,14 @@ public:
 
         ws.get_cell("A1").set_hyperlink("http:test.com");
         TS_ASSERT_EQUALS(ws.get_relationships().size(), 1);
-        TS_ASSERT_EQUALS("rId1", ws.get_cell("A1").get_hyperlink_rel_id());
+        TS_ASSERT_EQUALS("rId1", ws.get_cell("A1").get_hyperlink());
         TS_ASSERT_EQUALS("rId1", ws.get_relationships()[0].get_id());
         TS_ASSERT_EQUALS("http:test.com", ws.get_relationships()[0].get_target_uri());
         TS_ASSERT_EQUALS(xlnt::target_mode::external, ws.get_relationships()[0].get_target_mode());
 
         ws.get_cell("A2").set_hyperlink("http:test2.com");
         TS_ASSERT_EQUALS(ws.get_relationships().size(), 2);
-        TS_ASSERT_EQUALS("rId2", ws.get_cell("A2").get_hyperlink_rel_id());
+        TS_ASSERT_EQUALS("rId2", ws.get_cell("A2").get_hyperlink());
         TS_ASSERT_EQUALS("rId2", ws.get_relationships()[1].get_id());
         TS_ASSERT_EQUALS("http:test2.com", ws.get_relationships()[1].get_target_uri());
         TS_ASSERT_EQUALS(xlnt::target_mode::external, ws.get_relationships()[1].get_target_mode());

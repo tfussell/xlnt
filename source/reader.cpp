@@ -3,6 +3,7 @@
 
 #include "reader.h"
 #include "cell.h"
+#include "datetime.h"
 #include "range_reference.h"
 #include "workbook.h"
 #include "worksheet.h"
@@ -137,50 +138,48 @@ void read_worksheet_common(worksheet ws, const pugi::xml_node &root_node, const 
                 }
                 else if(cell_node.attribute("s") != nullptr && std::string(cell_node.attribute("s").as_string()) == "2") // date
                 {
-                    tm date = tm();
-                    date.tm_year = 1900;
+		    date date(1900, 1, 1);
                     int days = cell_node.child("v").text().as_int();
                     while(days > 365)
                     {
-                        date.tm_year += 1;
+                        date.year += 1;
                         days -= 365;
                     }
-                    date.tm_yday = days;
                     while(days > 30)
                     {
-                        date.tm_mon += 1;
+                        date.month += 1;
                         days -= 30;
                     }
-                    date.tm_mday = days;
+                    date.day = days;
                     ws.get_cell(address) = date;
                 }
                 else if(cell_node.attribute("s") != nullptr && std::string(cell_node.attribute("s").as_string()) == "3") // time
                 {
-                    tm date;
+		    time time;
                     double remaining = cell_node.child("v").text().as_double() * 24;
-                    date.tm_hour = (int)(remaining);
-                    remaining -= date.tm_hour;
+                    time.hour = (int)(remaining);
+                    remaining -= time.hour;
                     remaining *= 60;
-                    date.tm_min = (int)(remaining);
-                    remaining -= date.tm_min;
+                    time.minute = (int)(remaining);
+                    remaining -= time.minute;
                     remaining *= 60;
-                    date.tm_sec = (int)(remaining);
-                    remaining -= date.tm_sec;
+                    time.second = (int)(remaining);
+                    remaining -= time.second;
                     if(remaining > 0.5)
                     {
-                        date.tm_sec++;
-                        if(date.tm_sec > 59)
+                        time.second++;
+                        if(time.second > 59)
                         {
-                            date.tm_sec = 0;
-                            date.tm_min++;
-                            if(date.tm_min > 59)
+                            time.second = 0;
+                            time.minute++;
+                            if(time.minute > 59)
                             {
-                                date.tm_min = 0;
-                                date.tm_hour++;
+                                time.minute = 0;
+                                time.hour++;
                             }
                         }
                     }
-                    ws.get_cell(address) = date;
+                    ws.get_cell(address) = time;
                 }
                 else if(cell_node.attribute("s") != nullptr && std::string(cell_node.attribute("s").as_string()) == "4") // decimal
                 {

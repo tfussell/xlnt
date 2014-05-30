@@ -3,26 +3,27 @@
 #include <pugixml.hpp>
 
 #include "workbook.h"
-#include "cell_impl.h"
 #include "custom_exceptions.h"
 #include "drawing.h"
 #include "range.h"
 #include "reader.h"
 #include "relationship.h"
-#include "workbook_impl.h"
 #include "worksheet.h"
-#include "worksheet_impl.h"
 #include "writer.h"
 #include "zip_file.h"
+#include "detail/cell_impl.h"
+#include "detail/workbook_impl.h"
+#include "detail/worksheet_impl.h"
 
 namespace xlnt {
-
+namespace detail {
 workbook_impl::workbook_impl(optimization o) : optimized_read_(o == optimization::read), optimized_write_(o == optimization::write), active_sheet_index_(0)
 {
     
 }
+} // namespace detail
     
-workbook::workbook(optimization optimize) : d_(new workbook_impl(optimize))
+workbook::workbook(optimization optimize) : d_(new detail::workbook_impl(optimize))
 {
     if(!d_->optimized_read_)
     {
@@ -93,7 +94,7 @@ bool workbook::const_iterator::operator==(const const_iterator &comparand) const
     
 worksheet workbook::get_sheet_by_name(const std::string &name)
 {
-    auto title_equals = [&](worksheet_impl &ws) { return worksheet(&ws).get_title() == name; };
+    auto title_equals = [&](detail::worksheet_impl &ws) { return worksheet(&ws).get_title() == name; };
     auto match = std::find_if(d_->worksheets_.begin(), d_->worksheets_.end(), title_equals);
     
     if(match != d_->worksheets_.end())
@@ -171,7 +172,7 @@ void workbook::add_sheet(xlnt::worksheet worksheet)
 void workbook::add_sheet(xlnt::worksheet worksheet, std::size_t index)
 {
     add_sheet(worksheet);
-//    std::swap(d_->worksheets_[index], d_->worksheets_.back());
+    std::swap(d_->worksheets_[index], d_->worksheets_.back());
 }
 
 int workbook::get_index(xlnt::worksheet worksheet)
@@ -269,7 +270,7 @@ void workbook::load(const std::string &filename)
 
 void workbook::remove_sheet(worksheet ws)
 {
-    auto match_iter = std::find_if(d_->worksheets_.begin(), d_->worksheets_.end(), [=](worksheet_impl &comp) { return worksheet(&comp) == ws; });
+    auto match_iter = std::find_if(d_->worksheets_.begin(), d_->worksheets_.end(), [=](detail::worksheet_impl &comp) { return worksheet(&comp) == ws; });
 
     if(match_iter == d_->worksheets_.end())
     {
@@ -313,7 +314,7 @@ worksheet workbook::create_sheet(const std::string &title)
         throw bad_sheet_title(title);
     }
     
-    if(std::find_if(d_->worksheets_.begin(), d_->worksheets_.end(), [&](worksheet_impl &ws) { return worksheet(&ws).get_title() == title; }) != d_->worksheets_.end())
+    if(std::find_if(d_->worksheets_.begin(), d_->worksheets_.end(), [&](detail::worksheet_impl &ws) { return worksheet(&ws).get_title() == title; }) != d_->worksheets_.end())
     {
         throw std::runtime_error("sheet exists");
     }

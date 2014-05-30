@@ -4,9 +4,11 @@
 
 #include "cell_impl.h"
 
-namespace  xlnt {
-    
+namespace xlnt {
+
 class workbook;
+
+namespace detail {
 
 struct worksheet_impl
 {
@@ -46,4 +48,5 @@ struct worksheet_impl
     std::unordered_map<std::string, range_reference> named_ranges_;
 };
 
+} // namespace detail
 } // namespace xlnt

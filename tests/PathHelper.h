@@ -11,6 +11,9 @@
 #include <Shlwapi.h>
 #include <Windows.h>
 #else
+#include <unistd.h>
+#include <linux/limits.h>
+#include <sys/types.h>
 #include <sys/stat.h>
 #endif
 

@@ -12,12 +12,15 @@ namespace xlnt {
     
 class cell;
 class cell_reference;
+class date;
 class range;
 class range_reference;
 class relationship;
 class workbook;
-    
+
+namespace detail {    
 struct worksheet_impl;
+} // namespace detail
     
 struct page_setup
 {
@@ -173,6 +176,8 @@ public:
     
     // append
     void append(const std::vector<std::string> &cells);
+    void append(const std::vector<int> &cells);
+    void append(const std::vector<date> &cells);
     void append(const std::unordered_map<std::string, std::string> &cells);
     void append(const std::unordered_map<int, std::string> &cells);
 
@@ -205,8 +210,8 @@ public:
 private:
     friend class workbook;
     friend class cell;
-    worksheet(worksheet_impl *d);
-    worksheet_impl *d_;
+    worksheet(detail::worksheet_impl *d);
+    detail::worksheet_impl *d_;
 };
     
 } // namespace xlnt

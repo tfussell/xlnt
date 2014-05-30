@@ -8,13 +8,13 @@ bad_sheet_title::bad_sheet_title(const std::string &title)
 
 }
 
-bad_cell_coordinates::bad_cell_coordinates(int row, int column)
+cell_coordinates_exception::cell_coordinates_exception(int row, int column)
     : std::runtime_error(std::string("bad cell coordinates: (") + std::to_string(row) + "," + std::to_string(column) + ")")
 {
 
 }
 
-bad_cell_coordinates::bad_cell_coordinates(const std::string &coord_string)
+cell_coordinates_exception::cell_coordinates_exception(const std::string &coord_string)
     : std::runtime_error(std::string("bad cell coordinates: (") + coord_string + ")")
 {
 

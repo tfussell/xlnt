@@ -66,6 +66,9 @@ project "xlnt"
     }
     files {
        "../source/*.cpp",
+       "../source/*.h",
+       "../source/detail/*.cpp",
+       "../source/detail/*.h",
        "../include/xlnt/*.h"
     }
     flags { 

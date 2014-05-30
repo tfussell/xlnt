@@ -9,6 +9,7 @@
 #include "cell.h"
 #include "cell_reference.h"
 #include "custom_exceptions.h"
+#include "datetime.h"
 #include "drawing.h"
 #include "range.h"
 #include "reader.h"

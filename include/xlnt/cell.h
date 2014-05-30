@@ -9,9 +9,14 @@
 namespace xlnt {
     
 class cell_reference;
+class date;
+class datetime;
+class time;
 class worksheet;
-    
+
+namespace detail {    
 struct cell_impl;
+} // namespace detail
     
 typedef std::string comment;
     
@@ -291,19 +296,17 @@ private:
 /// </remarks>
 class cell
 {
-public:
+public:    
     enum class type
     {
         null,
-        numeric,
-        string,
-        date,
-        formula,
-        boolean,
-        error,
-        hyperlink
+	numeric,
+	string,
+	formula,
+	boolean,
+	error
     };
-    
+
     static const std::unordered_map<std::string, int> ErrorCodes;
     
     static std::string check_string(const std::string &value);
@@ -321,23 +324,18 @@ public:
     std::string to_string() const;
     
     void set_explicit_value(const std::string &value, type data_type);
+    void set_explicit_value(int value, type data_type);
+    void set_explicit_value(double value, type data_type);
+    void set_explicit_value(const date &value, type data_type);
+    void set_explicit_value(const time &value, type data_type);
+    void set_explicit_value(const datetime &value, type data_type);
     type data_type_for_value(const std::string &value);
-    
-    bool bind_value();
-    bool bind_value(int value);
-    bool bind_value(double value);
-    bool bind_value(const std::string &value);
-    bool bind_value(const char *value);
-    bool bind_value(bool value);
-    bool bind_value(const tm &value);
     
     bool is_merged() const;
     void set_merged(bool merged);
     
     std::string get_hyperlink() const;
     void set_hyperlink(const std::string &value);
-    
-    std::string get_hyperlink_rel_id() const;
     
     void set_number_format(const std::string &format_code);
     
@@ -356,6 +354,14 @@ public:
     
     comment get_comment() const;
     void set_comment(comment comment);
+
+    std::string get_formula() const;
+    void set_formula(const std::string &formula);
+
+    std::string get_error() const;
+    void set_error(const std::string &error);
+
+    void set_null();
     
     cell &operator=(const cell &rhs);
     cell &operator=(bool value);
@@ -363,29 +369,35 @@ public:
     cell &operator=(double value);
     cell &operator=(const std::string &value);
     cell &operator=(const char *value);
-    cell &operator=(const tm &value);
+    cell &operator=(const date &value);
+    cell &operator=(const time &value);
+    cell &operator=(const datetime &value);
     
+    bool operator==(const cell &comparand) const { return d_ == comparand.d_; }
     bool operator==(std::nullptr_t) const;
     bool operator==(bool comparand) const;
     bool operator==(int comparand) const;
     bool operator==(double comparand) const;
     bool operator==(const std::string &comparand) const;
     bool operator==(const char *comparand) const;
-    bool operator==(const tm &comparand) const;
-    bool operator==(const cell &comparand) const { return d_ == comparand.d_; }
-    
+    bool operator==(const date &comparand) const;
+    bool operator==(const time &comparand) const;
+    bool operator==(const datetime &comparand) const;
+
     friend bool operator==(std::nullptr_t, const cell &cell);
     friend bool operator==(bool comparand, const cell &cell);
     friend bool operator==(int comparand, const cell &cell);
     friend bool operator==(double comparand, const cell &cell);
     friend bool operator==(const std::string &comparand, const cell &cell);
     friend bool operator==(const char *comparand, const cell &cell);
-    friend bool operator==(const tm &comparand, const cell &cell);
+    friend bool operator==(const date &comparand, const cell &cell);
+    friend bool operator==(const time &comparand, const cell &cell);
+    friend bool operator==(const datetime &comparand, const cell &cell);
     
 private:
     friend class worksheet;
-    cell(cell_impl *d);
-    cell_impl *d_;
+    cell(detail::cell_impl *d);
+    detail::cell_impl *d_;
 };
 
 inline std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)
@@ -394,4 +406,3 @@ inline std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)
 }
     
 } // namespace xlnt
-

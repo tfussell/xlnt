@@ -2,11 +2,12 @@
 
 #include "worksheet.h"
 #include "cell.h"
+#include "datetime.h"
 #include "range.h"
 #include "range_reference.h"
 #include "relationship.h"
 #include "workbook.h"
-#include "worksheet_impl.h"
+#include "detail/worksheet_impl.h"
 
 namespace xlnt {
 
@@ -15,7 +16,7 @@ worksheet::worksheet() : d_(nullptr)
     
 }
     
-worksheet::worksheet(worksheet_impl *d) : d_(d)
+worksheet::worksheet(detail::worksheet_impl *d) : d_(d)
 {
     
 }
@@ -169,14 +170,14 @@ cell worksheet::get_cell(const cell_reference &reference)
 {
     if(d_->cell_map_.find(reference.get_row_index()) == d_->cell_map_.end())
     {
-        d_->cell_map_[reference.get_row_index()] = std::unordered_map<int, cell_impl>();
+        d_->cell_map_[reference.get_row_index()] = std::unordered_map<int, detail::cell_impl>();
     }
     
     auto &row = d_->cell_map_[reference.get_row_index()];
     
     if(row.find(reference.get_column_index()) == row.end())
     {
-        row[reference.get_column_index()] = cell_impl(reference.get_column_index(), reference.get_row_index());
+        row[reference.get_column_index()] = detail::cell_impl(reference.get_column_index(), reference.get_row_index());
     }
     
     return cell(&row[reference.get_column_index()]);
@@ -306,7 +307,7 @@ void worksheet::merge_cells(const range_reference &reference)
             cell.set_merged(true);
             if(!first)
             {
-                cell.bind_value();
+	        cell.set_null();
             }
             first = false;
         }
@@ -334,6 +335,40 @@ void worksheet::unmerge_cells(const range_reference &reference)
 }
 
 void worksheet::append(const std::vector<std::string> &cells)
+{
+    int row = get_highest_row();
+    
+    if(d_->cell_map_.size() == 0)
+    {
+        row--;
+    }
+    
+    int column = 0;
+    
+    for(auto cell : cells)
+    {
+        this->get_cell(cell_reference(column++, row)) = cell;
+    }
+}
+
+void worksheet::append(const std::vector<int> &cells)
+{
+    int row = get_highest_row();
+    
+    if(d_->cell_map_.size() == 0)
+    {
+        row--;
+    }
+    
+    int column = 0;
+    
+    for(auto cell : cells)
+    {
+        this->get_cell(cell_reference(column++, row)) = cell;
+    }
+}
+
+void worksheet::append(const std::vector<date> &cells)
 {
     int row = get_highest_row();
     

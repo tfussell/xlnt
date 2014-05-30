@@ -42,7 +42,7 @@ absolute_(absolute)
 {
     if(row == 0 || row_index_ >= constants::MaxRow || column_index_ >= constants::MaxColumn)
     {
-        throw bad_cell_coordinates(column_index_, row_index_);
+        throw cell_coordinates_exception(column_index_, row_index_);
     }
 }
 
@@ -53,7 +53,7 @@ absolute_(absolute)
 {
     if(row_index_ >= constants::MaxRow || column_index_ >= constants::MaxColumn)
     {
-        throw bad_cell_coordinates(column_index_, row_index_);
+        throw cell_coordinates_exception(column_index_, row_index_);
     }
 }
 
@@ -93,7 +93,7 @@ std::pair<std::string, row_t> cell_reference::split_reference(const std::string 
             }
             else
             {
-                throw bad_cell_coordinates(reference_string);
+                throw cell_coordinates_exception(reference_string);
             }
         }
         else
@@ -104,7 +104,7 @@ std::pair<std::string, row_t> cell_reference::split_reference(const std::string 
             }
             else if(!(std::isdigit(character, std::locale::classic()) || character == '$'))
             {
-                throw bad_cell_coordinates(reference_string);
+                throw cell_coordinates_exception(reference_string);
             }
         }
     }
