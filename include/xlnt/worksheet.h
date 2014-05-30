@@ -2,20 +2,22 @@
 
 #include <list>
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <vector>
+
+#include "types.h"
 
 namespace xlnt {
     
 class cell;
 class cell_reference;
-class named_range;
 class range;
 class range_reference;
 class relationship;
 class workbook;
     
-struct worksheet_struct;
+struct worksheet_impl;
     
 struct page_setup
 {
@@ -117,8 +119,8 @@ class worksheet
 {
 public:
     worksheet();
-    worksheet(workbook &parent);
-    worksheet(worksheet_struct *root);
+    worksheet(workbook &parent, const std::string &title = std::string());
+    worksheet(const worksheet &rhs);
 
     std::string to_string() const;
     workbook &get_parent() const;
@@ -139,15 +141,22 @@ public:
     cell get_cell(const cell_reference &reference);
     const cell get_cell(const cell_reference &reference) const;
     range get_range(const range_reference &reference);
-    range get_named_range(const std::string &name);
+    const range get_range(const range_reference &reference) const;
     range rows() const;
     range columns() const;
     std::list<cell> get_cell_collection();
-    named_range create_named_range(const std::string &name, const range_reference &reference);
+
+    // named range
+    void create_named_range(const std::string &name, const range_reference &reference);
+    bool has_named_range(const std::string &name);
+    range get_named_range(const std::string &name);
+    void remove_named_range(const std::string &name);
     
     // extents
-    int get_highest_row() const;
-    int get_highest_column() const;
+    row_t get_lowest_row() const;
+    row_t get_highest_row() const;
+    column_t get_lowest_column() const;
+    column_t get_highest_column() const;
     range_reference calculate_dimension() const;
     
     // relationships
@@ -196,11 +205,8 @@ public:
 private:
     friend class workbook;
     friend class cell;
-    
-    static worksheet allocate(workbook &owner, const std::string &title);
-    static void deallocate(worksheet ws);
-    
-    worksheet_struct *root_;
+    worksheet(worksheet_impl *d);
+    worksheet_impl *d_;
 };
     
 } // namespace xlnt

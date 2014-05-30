@@ -3,23 +3,28 @@
 #include <pugixml.hpp>
 
 #include "workbook.h"
+#include "cell_impl.h"
 #include "custom_exceptions.h"
 #include "drawing.h"
-#include "named_range.h"
+#include "range.h"
 #include "reader.h"
 #include "relationship.h"
+#include "workbook_impl.h"
 #include "worksheet.h"
+#include "worksheet_impl.h"
 #include "writer.h"
 #include "zip_file.h"
 
 namespace xlnt {
 
-workbook::workbook(optimization optimize)
-: optimized_write_(optimize==optimization::write),
-optimized_read_(optimize==optimization::read),
-active_sheet_index_(0)
+workbook_impl::workbook_impl(optimization o) : optimized_read_(o == optimization::read), optimized_write_(o == optimization::write), active_sheet_index_(0)
 {
-    if(!optimized_write_)
+    
+}
+    
+workbook::workbook(optimization optimize) : d_(new workbook_impl(optimize))
+{
+    if(!d_->optimized_read_)
     {
         create_sheet("Sheet1");
     }
@@ -30,26 +35,95 @@ workbook::~workbook()
     clear();
 }
 
+workbook::iterator::iterator(workbook &wb, std::size_t index) : wb_(wb), index_(index)
+{
+    
+}
+
+worksheet workbook::iterator::operator*()
+{
+    return wb_[index_];
+}
+    
+workbook::iterator &workbook::iterator::operator++()
+{
+    index_++;
+    return *this;
+}
+    
+workbook::iterator workbook::iterator::operator++(int)
+{
+    iterator old(wb_, index_);
+    ++*this;
+    return old;
+}
+    
+bool workbook::iterator::operator==(const iterator &comparand) const
+{
+    return index_ == comparand.index_ && wb_ == comparand.wb_;
+}
+    
+workbook::const_iterator::const_iterator(const workbook &wb, std::size_t index) : wb_(wb), index_(index)
+{
+    
+}
+
+const worksheet workbook::const_iterator::operator*()
+{
+    return wb_.get_sheet_by_index(index_);
+}
+
+workbook::const_iterator &workbook::const_iterator::operator++()
+{
+    index_++;
+    return *this;
+}
+
+workbook::const_iterator workbook::const_iterator::operator++(int)
+{
+    const_iterator old(wb_, index_);
+    ++*this;
+    return old;
+}
+    
+bool workbook::const_iterator::operator==(const const_iterator &comparand) const
+{
+    return index_ == comparand.index_ && wb_ == comparand.wb_;
+}
+    
 worksheet workbook::get_sheet_by_name(const std::string &name)
 {
-    auto match = std::find_if(worksheets_.begin(), worksheets_.end(), [&](const worksheet &w) { return w.get_title() == name; });
-    if(match != worksheets_.end())
+    auto title_equals = [&](worksheet_impl &ws) { return worksheet(&ws).get_title() == name; };
+    auto match = std::find_if(d_->worksheets_.begin(), d_->worksheets_.end(), title_equals);
+    
+    if(match != d_->worksheets_.end())
     {
-        return worksheet(*match);
+        return worksheet(&*match);
     }
-    return worksheet(nullptr);
+
+    return worksheet();
+}
+
+worksheet workbook::get_sheet_by_index(std::size_t index)
+{
+    return worksheet(&d_->worksheets_[index]);
+}
+    
+const worksheet workbook::get_sheet_by_index(std::size_t index) const
+{
+    return worksheet(&d_->worksheets_.at(index));
 }
 
 worksheet workbook::get_active_sheet()
 {
-    return worksheets_[active_sheet_index_];
+    return worksheet(&d_->worksheets_[d_->active_sheet_index_]);
 }
 
-bool workbook::has_named_range(const std::string &name, xlnt::worksheet ws) const
+bool workbook::has_named_range(const std::string &name) const
 {
-    for(auto named_range : named_ranges_)
+    for(auto worksheet : *this)
     {
-        if(named_range.first == name && named_range.second.get_scope() == ws)
+        if(worksheet.has_named_range(name))
         {
             return true;
         }
@@ -59,27 +133,26 @@ bool workbook::has_named_range(const std::string &name, xlnt::worksheet ws) cons
 
 worksheet workbook::create_sheet()
 {
-    if(optimized_read_)
+    if(d_->optimized_read_)
     {
         throw std::runtime_error("this is a read-only workbook");
     }
     
     std::string title = "Sheet1";
     int index = 1;
+
     while(get_sheet_by_name(title) != nullptr)
     {
         title = "Sheet" + std::to_string(++index);
     }
     
-    worksheet ws = worksheet(worksheet::allocate(*this, title));
-    worksheets_.push_back(ws);
-    
-    return get_sheet_by_name(title);
+    d_->worksheets_.emplace_back(this, title);
+    return worksheet(&d_->worksheets_.back());
 }
 
 void workbook::add_sheet(xlnt::worksheet worksheet)
 {
-    if(optimized_read_)
+    if(d_->optimized_read_)
     {
         throw std::runtime_error("this is a read-only workbook");
     }
@@ -91,25 +164,14 @@ void workbook::add_sheet(xlnt::worksheet worksheet)
             throw std::runtime_error("worksheet already in workbook");
         }
     }
-    worksheets_.push_back(worksheet);
+    
+    d_->worksheets_.emplace_back(*worksheet.d_);
 }
 
 void workbook::add_sheet(xlnt::worksheet worksheet, std::size_t index)
 {
-    if(optimized_read_)
-    {
-        throw std::runtime_error("this is a read-only workbook");
-    }
-    
-    for(auto ws : *this)
-    {
-        if(worksheet == ws)
-        {
-            throw std::runtime_error("worksheet already in workbook");
-        }
-    }
-    worksheets_.push_back(worksheet);
-    std::swap(worksheets_[index], worksheets_.back());
+    add_sheet(worksheet);
+//    std::swap(d_->worksheets_[index], d_->worksheets_.back());
 }
 
 int workbook::get_index(xlnt::worksheet worksheet)
@@ -126,71 +188,42 @@ int workbook::get_index(xlnt::worksheet worksheet)
     throw std::runtime_error("worksheet isn't owned by this workbook");
 }
 
-named_range workbook::create_named_range(const std::string &name, worksheet range_owner, const range_reference &reference)
+void workbook::create_named_range(const std::string &name, worksheet range_owner, const range_reference &reference)
 {
-    for(auto ws : worksheets_)
+    auto match = get_sheet_by_name(range_owner.get_title());
+    if(match != nullptr)
     {
-        if(ws == range_owner)
-        {
-            named_ranges_[name] = range_owner.create_named_range(name, reference);
-            return named_ranges_[name];
-        }
+        match.create_named_range(name, reference);
+        return;
     }
-    
     throw std::runtime_error("worksheet isn't owned by this workbook");
 }
 
-void workbook::add_named_range(const std::string &name, named_range named_range)
+void workbook::remove_named_range(const std::string &name)
 {
-    for(auto ws : worksheets_)
+    for(auto ws : *this)
     {
-        if(ws == named_range.get_scope())
+        if(ws.has_named_range(name))
         {
-            named_ranges_[name] = named_range;
+            ws.remove_named_range(name);
             return;
         }
     }
     
-    throw std::runtime_error("worksheet isn't owned by this workbook");
+    throw std::runtime_error("named range not found");
 }
 
-std::vector<named_range> workbook::get_named_ranges()
+range workbook::get_named_range(const std::string &name)
 {
-    std::vector<named_range> named_ranges;
-    for(auto named_range : named_ranges_)
+    for(auto ws : *this)
     {
-        named_ranges.push_back(named_range.second);
-    }
-    return named_ranges;
-}
-
-void workbook::remove_named_range(named_range named_range)
-{
-    std::string key_match = "";
-    for(auto r : named_ranges_)
-    {
-        if(r.second == named_range)
+        if(ws.has_named_range(name))
         {
-            key_match = r.first;
+            return ws.get_named_range(name);
         }
     }
-    if(key_match == "")
-    {
-        throw std::runtime_error("range not found in worksheet");
-    }
-    named_ranges_.erase(key_match);
-}
-
-named_range workbook::get_named_range(const std::string &name, worksheet ws)
-{
-    for(auto named_range : named_ranges_)
-    {
-        if(named_range.first == name && named_range.second.get_scope() == ws)
-        {
-            return named_range.second;
-        }
-    }
-    throw std::runtime_error("doesn't exist");
+    
+    throw std::runtime_error("named range not found");
 }
 
 void workbook::load(const std::string &filename)
@@ -216,10 +249,7 @@ void workbook::load(const std::string &filename)
     auto root_node = doc.child("workbook");
     auto sheets_node = root_node.child("sheets");
     
-    while(!worksheets_.empty())
-    {
-        remove_sheet(worksheets_.front());
-    }
+    clear();
     
     std::vector<std::string> shared_strings;
     if(f.has_file("xl/sharedStrings.xml"))
@@ -239,29 +269,34 @@ void workbook::load(const std::string &filename)
 
 void workbook::remove_sheet(worksheet ws)
 {
-    auto match_iter = std::find(worksheets_.begin(), worksheets_.end(), ws);
-    if(match_iter == worksheets_.end())
+    auto match_iter = std::find_if(d_->worksheets_.begin(), d_->worksheets_.end(), [=](worksheet_impl &comp) { return worksheet(&comp) == ws; });
+
+    if(match_iter == d_->worksheets_.end())
     {
         throw std::runtime_error("worksheet not owned by this workbook");
     }
-    worksheet::deallocate(*match_iter);
-    worksheets_.erase(match_iter);
+
+    
+    d_->worksheets_.erase(match_iter);
 }
 
 worksheet workbook::create_sheet(std::size_t index)
 {
-    auto ws = create_sheet();
-    if(index != worksheets_.size())
+    create_sheet();
+    
+    if(index != d_->worksheets_.size())
     {
-        std::swap(worksheets_[index], worksheets_.back());
+        std::swap(d_->worksheets_[index], d_->worksheets_.back());
     }
-    return ws;
+    
+    return worksheet(&d_->worksheets_[index]);
 }
 
 worksheet workbook::create_sheet(std::size_t index, const std::string &title)
 {
     auto ws = create_sheet(index);
     ws.set_title(title);
+    
     return ws;
 }
 
@@ -278,60 +313,62 @@ worksheet workbook::create_sheet(const std::string &title)
         throw bad_sheet_title(title);
     }
     
-    if(get_sheet_by_name(title) != nullptr)
+    if(std::find_if(d_->worksheets_.begin(), d_->worksheets_.end(), [&](worksheet_impl &ws) { return worksheet(&ws).get_title() == title; }) != d_->worksheets_.end())
     {
         throw std::runtime_error("sheet exists");
     }
     
-    auto ws = worksheet::allocate(*this, title);
-    worksheets_.push_back(ws);
-    return worksheet(ws);
+    auto ws = create_sheet();
+    ws.set_title(title);
+
+    return ws;
 }
 
-std::vector<worksheet>::iterator workbook::begin()
+workbook::iterator workbook::begin()
 {
-    return worksheets_.begin();
+    return iterator(*this, 0);
 }
 
-std::vector<worksheet>::iterator workbook::end()
+workbook::iterator workbook::end()
 {
-    return worksheets_.end();
+    return iterator(*this, d_->worksheets_.size());
+}
+
+workbook::const_iterator workbook::cbegin() const
+{
+    return const_iterator(*this, 0);
+}
+
+workbook::const_iterator workbook::cend() const
+{
+    return const_iterator(*this, d_->worksheets_.size());
 }
 
 std::vector<std::string> workbook::get_sheet_names() const
 {
     std::vector<std::string> names;
-    for(auto &ws : worksheets_)
+    
+    for(auto ws : *this)
     {
         names.push_back(ws.get_title());
     }
+    
     return names;
 }
 
 worksheet workbook::operator[](const std::string &name)
 {
-    for(auto sheet : worksheets_)
-    {
-        if(sheet.get_title() == name)
-        {
-            return sheet;
-        }
-    }
-    throw std::runtime_error("sheet not found");
+    return get_sheet_by_name(name);
 }
 
 worksheet workbook::operator[](int index)
 {
-    return worksheets_[index];
+    return worksheet(&d_->worksheets_[index]);
 }
 
 void workbook::clear()
 {
-    while(!worksheets_.empty())
-    {
-        worksheet::deallocate(worksheets_.back());
-        worksheets_.pop_back();
-    }
+    d_->worksheets_.clear();
 }
 
 void workbook::save(const std::string &filename)
@@ -398,69 +435,7 @@ void workbook::save(const std::string &filename)
     
 bool workbook::operator==(const workbook &rhs) const
 {
-    if(optimized_write_ == rhs.optimized_write_
-       && optimized_read_ == rhs.optimized_read_
-       && guess_types_ == rhs.guess_types_
-       && data_only_ == rhs.data_only_
-       && active_sheet_index_ == rhs.active_sheet_index_)
-    {
-        if(worksheets_.size() != rhs.worksheets_.size())
-        {
-            return false;
-        }
-        
-        for(std::size_t i = 0; i < worksheets_.size(); i++)
-        {
-            if(worksheets_[i] != rhs.worksheets_[i])
-            {
-                return false;
-            }
-        }
-        
-        /*
-         if(named_ranges_.size() != rhs.named_ranges_.size())
-         {
-         return false;
-         }
-         
-         for(int i = 0; i < named_ranges_.size(); i++)
-         {
-         if(named_ranges_[i] != rhs.named_ranges_[i])
-         {
-         return false;
-         }
-         }
-         
-         if(relationships_.size() != rhs.relationships_.size())
-         {
-         return false;
-         }
-         
-         for(int i = 0; i < relationships_.size(); i++)
-         {
-         if(relationships_[i] != rhs.relationships_[i])
-         {
-         return false;
-         }
-         }
-         
-         if(drawings_.size() != rhs.drawings_.size())
-         {
-         return false;
-         }
-         
-         for(int i = 0; i < drawings_.size(); i++)
-         {
-         if(drawings_[i] != rhs.drawings_[i])
-         {
-         return false;
-         }
-         }
-         */
-        
-        return true;
-    }
-    return false;
+    return d_ == rhs.d_;
 }
     
 }

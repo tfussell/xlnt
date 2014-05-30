@@ -3,7 +3,6 @@
 
 #include "reader.h"
 #include "cell.h"
-#include "named_range.h"
 #include "range_reference.h"
 #include "workbook.h"
 #include "worksheet.h"

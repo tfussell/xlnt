@@ -5,15 +5,15 @@
 #include <utility>
 #include <vector>
 
-#include "named_range.h"
-
 namespace xlnt {
 
 class drawing;
-//class named_range;
+class range;
 class range_reference;
 class relationship;
 class worksheet;
+    
+struct workbook_impl;
     
 enum class optimization
 {
@@ -29,17 +29,16 @@ public:
     workbook(optimization optimization = optimization::none);
     ~workbook();
     
-    //prevent copy and assignment
+    workbook &operator=(const workbook &) = delete;
     workbook(const workbook &) = delete;
-    const workbook &operator=(const workbook &) = delete;
     
     void read_workbook_settings(const std::string &xml_source);
     
     //getters
     worksheet get_active_sheet();
-    bool get_optimized_write() const { return optimized_write_; }
-    bool get_guess_types() const { return guess_types_; }
-    bool get_data_only() const { return data_only_; }
+    bool get_optimized_write() const;
+    bool get_guess_types() const;
+    bool get_data_only() const;
     
     //create
     worksheet create_sheet();
@@ -57,32 +56,61 @@ public:
     
     //container operations
     worksheet get_sheet_by_name(const std::string &sheet_name);
-    
+    const worksheet get_sheet_by_name(const std::string &sheet_name) const;
+    worksheet get_sheet_by_index(std::size_t index);
+    const worksheet get_sheet_by_index(std::size_t index) const;
     bool contains(const std::string &key) const;
-    
     int get_index(worksheet worksheet);
     
     worksheet operator[](const std::string &name);
     worksheet operator[](int index);
     
-    std::vector<worksheet>::iterator begin();
-    std::vector<worksheet>::iterator end();
+    class iterator
+    {
+    public:
+        iterator(workbook &wb, std::size_t index);
+        worksheet operator*();
+        bool operator==(const iterator &comparand) const;
+        bool operator!=(const iterator &comparand) const { return !(*this == comparand); }
+        iterator operator++(int);
+        iterator &operator++();
+        
+    private:
+        workbook &wb_;
+        std::size_t index_;
+    };
     
-    std::vector<worksheet>::const_iterator begin() const;
-    std::vector<worksheet>::const_iterator end() const;
+    iterator begin();
+    iterator end();
     
-    std::vector<worksheet>::const_iterator cbegin() const;
-    std::vector<worksheet>::const_iterator cend() const;
+    class const_iterator
+    {
+    public:
+        const_iterator(const workbook &wb, std::size_t index);
+        const worksheet operator*();
+        bool operator==(const const_iterator &comparand) const;
+        bool operator!=(const const_iterator &comparand) const { return !(*this == comparand); }
+        const_iterator operator++(int);
+        const_iterator &operator++();
+        
+    private:
+        const workbook &wb_;
+        std::size_t index_;
+    };
+    
+    const_iterator begin() const { return cbegin(); }
+    const_iterator end() const { return cend(); }
+    
+    const_iterator cbegin() const;
+    const_iterator cend() const;
     
     std::vector<std::string> get_sheet_names() const;
     
     //named ranges
-    named_range create_named_range(const std::string &name, worksheet worksheet, const range_reference &reference);
-    std::vector<named_range> get_named_ranges();
-    void add_named_range(const std::string &name, named_range named_range);
-    bool has_named_range(const std::string &name, worksheet ws) const;
-    named_range get_named_range(const std::string &name, worksheet ws);
-    void remove_named_range(named_range named_range);
+    void create_named_range(const std::string &name, worksheet worksheet, const range_reference &reference);
+    bool has_named_range(const std::string &name) const;
+    range get_named_range(const std::string &name);
+    void remove_named_range(const std::string &name);
     
     //serialization
     void save(const std::string &filename);
@@ -94,15 +122,8 @@ public:
     std::unordered_map<std::string, std::pair<std::string, std::string>> get_relationships() const;
     
 private:
-    bool optimized_write_;
-    bool optimized_read_;
-    bool guess_types_;
-    bool data_only_;
-    int active_sheet_index_;
-    std::vector<worksheet> worksheets_;
-    std::unordered_map<std::string, named_range> named_ranges_;
-    std::vector<relationship> relationships_;
-    std::vector<drawing> drawings_;
+    friend class worksheet;
+    workbook_impl *d_;
 };
     
 } // namespace xlnt

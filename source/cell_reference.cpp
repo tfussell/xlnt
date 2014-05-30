@@ -18,6 +18,10 @@ cell_reference cell_reference::make_absolute(const cell_reference &relative_refe
     copy.absolute_ = true;
     return copy;
 }
+    
+cell_reference::cell_reference() : cell_reference(0, 0, false)
+{
+}
 
 cell_reference::cell_reference(const std::string &string)
 {

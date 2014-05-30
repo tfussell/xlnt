@@ -46,6 +46,7 @@ public:
     static std::pair<std::string, row_t> split_reference(const std::string &reference_string,
         bool &absolute_column, bool &absolute_row);
     
+    cell_reference();
     cell_reference(const char *reference_string);
     cell_reference(const std::string &reference_string);
     cell_reference(const std::string &column, row_t row, bool absolute = false);
@@ -74,7 +75,10 @@ public:
     bool operator==(const cell_reference &comparand) const;
     bool operator==(const std::string &reference_string) const { return *this == cell_reference(reference_string); }
     bool operator==(const char *reference_string) const { return *this == std::string(reference_string); }
-    
+    bool operator!=(const cell_reference &comparand) const { return !(*this == comparand); }
+    bool operator!=(const std::string &reference_string) const { return *this != cell_reference(reference_string); }
+    bool operator!=(const char *reference_string) const { return *this != std::string(reference_string); }
+
 private:
     column_t column_index_;
     row_t row_index_;

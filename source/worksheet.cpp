@@ -2,305 +2,41 @@
 
 #include "worksheet.h"
 #include "cell.h"
-#include "cell_struct.h"
-#include "named_range.h"
 #include "range.h"
 #include "range_reference.h"
 #include "relationship.h"
 #include "workbook.h"
+#include "worksheet_impl.h"
 
 namespace xlnt {
-    
-struct worksheet_struct
+
+worksheet::worksheet() : d_(nullptr)
 {
-    worksheet_struct(workbook &parent_workbook, const std::string &title)
-    : parent_(parent_workbook), title_(title), freeze_panes_("A1")
-    {
-    }
     
-    ~worksheet_struct()
-    {
-        clear();
-    }
+}
     
-    void clear()
-    {
-        cell_map_.clear();
-    }
-    
-    void garbage_collect()
-    {
-        std::vector<cell_reference> null_cell_keys;
-        
-        for(auto &key_cell_pair : cell_map_)
-        {
-            if(cell(&key_cell_pair.second).get_data_type() == cell::type::null)
-            {
-                null_cell_keys.push_back(key_cell_pair.first);
-            }
-        }
-        
-        while(!null_cell_keys.empty())
-        {
-            cell_map_.erase(null_cell_keys.back());
-            null_cell_keys.pop_back();
-        }
-    }
-    
-    std::list<cell> get_cell_collection()
-    {
-        std::list<cell> cells;
-        for(auto &c : cell_map_)
-        {
-            cells.push_front(cell(&c.second));
-        }
-        return cells;
-    }
-    
-    std::string get_title() const
-    {
-        return title_;
-    }
-    
-    void set_title(const std::string &title)
-    {
-        title_ = title;
-    }
-    
-    cell_reference get_freeze_panes() const
-    {
-        return freeze_panes_;
-    }
-    
-    void set_freeze_panes(const cell_reference &ref)
-    {
-        freeze_panes_ = ref;
-    }
-    
-    void unfreeze_panes()
-    {
-        freeze_panes_ = "A1";
-    }
-    
-    cell get_cell(const cell_reference &reference)
-    {
-        if(cell_map_.find(reference) == cell_map_.end())
-        {
-            cell_map_[reference] = cell_struct(this, reference.get_column_index(), reference.get_row_index());
-        }
-        
-        return &cell_map_[reference];
-    }
-
-    /*
-    const xlnt::cell get_cell(const cell_reference &reference) const
-    {
-        if(cell_map_.find(reference) == cell_map_.end())
-        {
-            throw std::runtime_error("cell not found");
-        }
-
-        return &cell_map_.at(reference);
-    }
-    */
-    
-    int get_highest_row() const
-    {
-        row_t highest = 0;
-        for(auto &cell : cell_map_)
-        {
-            highest = std::max(highest, cell.first.get_row_index());
-        }
-        return highest + 1;
-    }
-    
-    int get_highest_column() const
-    {
-        column_t highest = 0;
-        for(auto &cell : cell_map_)
-        {
-            highest = std::max(highest, cell.first.get_column_index());
-        }
-        return highest + 1;
-    }
-    
-    int get_lowest_row() const
-    {
-        if(cell_map_.empty())
-        {
-            return 1;
-        }
-        
-        row_t lowest = cell_map_.begin()->first.get_row_index();
-        
-        for(auto &cell : cell_map_)
-        {
-            lowest = std::min(lowest, cell.first.get_row_index());
-        }
-        
-        return lowest + 1;
-    }
-    
-    int get_lowest_column() const
-    {
-        if(cell_map_.empty())
-        {
-            return 1;
-        }
-        
-        column_t lowest = cell_map_.begin()->first.get_column_index();
-        
-        for(auto &cell : cell_map_)
-        {
-            lowest = std::min(lowest, cell.first.get_column_index());
-        }
-        
-        return lowest + 1;
-    }
-    
-    range_reference calculate_dimension() const
-    {
-        int lowest_column = get_lowest_column();
-        int lowest_row = get_lowest_row();
-        
-        int highest_column = get_highest_column();
-        int highest_row = get_highest_row();
-        
-        return range_reference(lowest_column - 1, lowest_row - 1, highest_column - 1, highest_row - 1);
-    }
-    
-    range get_range(const range_reference &reference)
-    {
-        return range(worksheet(this), reference);
-    }
-    
-    relationship create_relationship(const std::string &relationship_type, const std::string &target_uri)
-    {
-        std::string r_id = "rId" + std::to_string(relationships_.size() + 1);
-        relationships_.push_back(relationship(relationship_type, r_id, target_uri));
-        return relationships_.back();
-    }
-    
-    //void add_chart(chart chart);
-    
-    void merge_cells(const range_reference &reference)
-    {
-        merged_cells_.push_back(reference);
-        bool first = true;
-
-        for(auto row : get_range(reference))
-        {
-            for(auto cell : row)
-            {
-                cell.set_merged(true);
-                if(!first)
-                {
-                    cell.bind_value();
-                }
-                first = false;
-            }
-        }
-    }
-    
-    void unmerge_cells(const range_reference &reference)
-    {
-        auto match = std::find(merged_cells_.begin(), merged_cells_.end(), reference);
-        if(match == merged_cells_.end())
-        {
-            throw std::runtime_error("cells not merged");
-        }
-        merged_cells_.erase(match);
-        for(auto row : get_range(reference))
-        {
-            for(auto cell : row)
-            {
-                cell.set_merged(false);
-            }
-        }
-    }
-    
-    void append(const std::vector<std::string> &cells)
-    {
-        int row = get_highest_row();
-        if(cell_map_.size() == 0)
-        {
-            row--;
-        }
-        int column = 0;
-        for(auto cell : cells)
-        {
-            this->get_cell(cell_reference(column++, row)) = cell;
-        }
-    }
-    
-    void append(const std::unordered_map<std::string, std::string> &cells)
-    {
-        int row = get_highest_row() - 1;
-        if(cell_map_.size() != 0)
-        {
-            row++;
-        }
-        for(auto cell : cells)
-        {
-            this->get_cell(cell_reference(cell.first, row + 1)) = cell.second;
-        }
-    }
-    
-    void append(const std::unordered_map<int, std::string> &cells)
-    {
-        int row = get_highest_row() - 1;
-        if(cell_map_.size() != 0)
-        {
-            row++;
-        }
-        for(auto cell : cells)
-        {
-            this->get_cell(cell_reference(cell.first, row)) = cell.second;
-        }
-    }
-    
-    range rows()
-    {
-        return get_range(calculate_dimension());
-    }
-    
-    void operator=(const worksheet_struct &other) = delete;
-    
-    workbook &parent_;
-    std::string title_;
-    cell_reference freeze_panes_;
-    std::unordered_map<cell_reference, cell_struct, cell_reference_hash> cell_map_;
-    std::vector<relationship> relationships_;
-    page_setup page_setup_;
-    range_reference auto_filter_;
-    margins page_margins_;
-    std::vector<range_reference> merged_cells_;
-    std::unordered_map<std::string, named_range> named_ranges_;
-};
-
-worksheet::worksheet() : root_(nullptr)
+worksheet::worksheet(worksheet_impl *d) : d_(d)
 {
     
 }
 
-worksheet::worksheet(worksheet_struct *root) : root_(root)
+worksheet::worksheet(const worksheet &rhs) : d_(rhs.d_)
 {
+    
 }
-
-worksheet::worksheet(workbook &parent)
+    
+worksheet::worksheet(workbook &parent, const std::string &title) : d_(title == "" ? parent.create_sheet().d_ : parent.create_sheet(title).d_)
 {
-    *this = parent.create_sheet();
 }
 
 bool worksheet::has_frozen_panes() const
 {
-    return !(get_frozen_panes() == cell_reference("A1"));
+    return get_frozen_panes() != cell_reference("A1");
 }
 
-named_range worksheet::create_named_range(const std::string &name, const range_reference &reference)
+void worksheet::create_named_range(const std::string &name, const range_reference &reference)
 {
-    root_->named_ranges_[name] = named_range(name, *this, reference);
-    return root_->named_ranges_[name];
+    d_->named_ranges_[name] = reference;
 }
 
 cell worksheet::operator[](const cell_reference &ref)
@@ -310,17 +46,17 @@ cell worksheet::operator[](const cell_reference &ref)
 
 std::vector<range_reference> worksheet::get_merged_ranges() const
 {
-    return root_->merged_cells_;
+    return d_->merged_cells_;
 }
 
 margins &worksheet::get_page_margins()
 {
-    return root_->page_margins_;
+    return d_->page_margins_;
 }
 
 void worksheet::set_auto_filter(const range_reference &reference)
 {
-    root_->auto_filter_ = reference;
+    d_->auto_filter_ = reference;
 }
 
 void worksheet::set_auto_filter(const xlnt::range &range)
@@ -330,179 +66,349 @@ void worksheet::set_auto_filter(const xlnt::range &range)
 
 range_reference worksheet::get_auto_filter() const
 {
-    return root_->auto_filter_;
+    return d_->auto_filter_;
 }
 
 bool worksheet::has_auto_filter() const
 {
-    return root_->auto_filter_.get_width() > 0;
+    return d_->auto_filter_.get_width() > 0;
 }
 
 void worksheet::unset_auto_filter()
 {
-    root_->auto_filter_ = range_reference(0, 0, 0, 0);
+    d_->auto_filter_ = range_reference(0, 0, 0, 0);
 }
 
 page_setup &worksheet::get_page_setup()
 {
-    return root_->page_setup_;
+    return d_->page_setup_;
 }
 
 std::string worksheet::to_string() const
 {
-    return "<Worksheet \"" + root_->title_ + "\">";
+    return "<Worksheet \"" + d_->title_ + "\">";
 }
 
 workbook &worksheet::get_parent() const
 {
-    return root_->parent_;
+    return *d_->parent_;
 }
 
 void worksheet::garbage_collect()
 {
-    root_->garbage_collect();
+    auto cell_map_iter = d_->cell_map_.begin();
+    while(cell_map_iter != d_->cell_map_.end())
+    {
+        auto cell_iter = cell_map_iter->second.begin();
+        while(cell_iter != cell_map_iter->second.end())
+        {
+            if(cell(&cell_iter->second).get_data_type() == cell::type::null)
+            {
+                cell_iter = cell_map_iter->second.erase(cell_iter);
+                continue;
+            }
+            cell_iter++;
+        }
+        if(cell_map_iter->second.empty())
+        {
+            cell_map_iter = d_->cell_map_.erase(cell_map_iter);
+            continue;
+        }
+        cell_map_iter++;
+    }
 }
 
 std::list<cell> worksheet::get_cell_collection()
 {
-    return root_->get_cell_collection();
+    std::list<cell> cells;
+    for(auto &c : d_->cell_map_)
+    {
+        for(auto &d : c.second)
+        {
+            cells.push_back(cell(&d.second));
+        }
+    }
+    return cells;
 }
 
 std::string worksheet::get_title() const
 {
-    if(root_ == nullptr)
+    if(d_ == nullptr)
     {
         throw std::runtime_error("null worksheet");
     }
-    return root_->title_;
+    return d_->title_;
 }
 
 void worksheet::set_title(const std::string &title)
 {
-    root_->title_ = title;
+    d_->title_ = title;
 }
 
 cell_reference worksheet::get_frozen_panes() const
 {
-    return root_->freeze_panes_;
+    return d_->freeze_panes_;
 }
 
 void worksheet::freeze_panes(xlnt::cell top_left_cell)
 {
-    root_->set_freeze_panes(top_left_cell.get_reference());
+    d_->freeze_panes_ = top_left_cell.get_reference();
 }
 
 void worksheet::freeze_panes(const std::string &top_left_coordinate)
 {
-    root_->set_freeze_panes(top_left_coordinate);
+    d_->freeze_panes_ = cell_reference(top_left_coordinate);
 }
 
 void worksheet::unfreeze_panes()
 {
-    root_->unfreeze_panes();
+    d_->freeze_panes_ = cell_reference("A1");
 }
 
 cell worksheet::get_cell(const cell_reference &reference)
 {
-    return root_->get_cell(reference);
+    if(d_->cell_map_.find(reference.get_row_index()) == d_->cell_map_.end())
+    {
+        d_->cell_map_[reference.get_row_index()] = std::unordered_map<int, cell_impl>();
+    }
+    
+    auto &row = d_->cell_map_[reference.get_row_index()];
+    
+    if(row.find(reference.get_column_index()) == row.end())
+    {
+        row[reference.get_column_index()] = cell_impl(reference.get_column_index(), reference.get_row_index());
+    }
+    
+    return cell(&row[reference.get_column_index()]);
 }
 
 const cell worksheet::get_cell(const cell_reference &reference) const
 {
-    return root_->get_cell(reference);
+    return cell(&d_->cell_map_.at(reference.get_row_index()).at(reference.get_column_index()));
 }
 
 range worksheet::get_named_range(const std::string &name)
 {
-    return get_range(root_->parent_.get_named_range(name, *this).get_target_range());
+    if(!has_named_range(name))
+    {
+        throw std::runtime_error("named range not found for this worksheet");
+    }
+    
+    return get_range(d_->named_ranges_[name]);
 }
 
-int worksheet::get_highest_row() const
+column_t worksheet::get_lowest_column() const
 {
-    return root_->get_highest_row();
+    if(d_->cell_map_.empty())
+    {
+        return 1;
+    }
+    
+    column_t lowest = std::numeric_limits<column_t>::max();
+    
+    for(auto &row : d_->cell_map_)
+    {
+        for(auto &c : row.second)
+        {
+            lowest = std::min(lowest, (column_t)c.first);
+        }
+    }
+    
+    return lowest + 1;
 }
 
-int worksheet::get_highest_column() const
+row_t worksheet::get_lowest_row() const
 {
-    return root_->get_highest_column();
+    if(d_->cell_map_.empty())
+    {
+        return 1;
+    }
+    
+    row_t lowest = std::numeric_limits<row_t>::max();
+    
+    for(auto &row : d_->cell_map_)
+    {
+        lowest = std::min(lowest, (row_t)row.first);
+    }
+    
+    return lowest + 1;
+}
+
+row_t worksheet::get_highest_row() const
+{
+    row_t highest = 0;
+    
+    for(auto &row : d_->cell_map_)
+    {
+        highest = std::max(highest, (row_t)row.first);
+    }
+    
+    return highest + 1;
+}
+
+column_t worksheet::get_highest_column() const
+{
+    column_t highest = 0;
+    
+    for(auto &row : d_->cell_map_)
+    {
+        for(auto &c : row.second)
+        {
+            highest = std::max(highest, (column_t)c.first);
+        }
+    }
+    
+    return highest + 1;
 }
 
 range_reference worksheet::calculate_dimension() const
 {
-    return root_->calculate_dimension();
+    int lowest_column = get_lowest_column();
+    int lowest_row = get_lowest_row();
+    
+    int highest_column = get_highest_column();
+    int highest_row = get_highest_row();
+    
+    return range_reference(lowest_column - 1, lowest_row - 1, highest_column - 1, highest_row - 1);
 }
 
 range worksheet::get_range(const range_reference &reference)
 {
-    return root_->get_range(reference);
+    return range(*this, reference);
+}
+
+const range worksheet::get_range(const range_reference &reference) const
+{
+    return range(*this, reference);
 }
 
 std::vector<relationship> worksheet::get_relationships()
 {
-    return root_->relationships_;
+    return d_->relationships_;
 }
 
 relationship worksheet::create_relationship(const std::string &relationship_type, const std::string &target_uri)
 {
-    return root_->create_relationship(relationship_type, target_uri);
+    std::string r_id = "rId" + std::to_string(d_->relationships_.size() + 1);
+    d_->relationships_.push_back(relationship(relationship_type, r_id, target_uri));
+    return d_->relationships_.back();
 }
-
-//void worksheet::add_chart(chart chart);
 
 void worksheet::merge_cells(const range_reference &reference)
 {
-    root_->merge_cells(reference);
+    d_->merged_cells_.push_back(reference);
+    bool first = true;
+
+    for(auto row : get_range(reference))
+    {
+        for(auto cell : row)
+        {
+            cell.set_merged(true);
+            if(!first)
+            {
+                cell.bind_value();
+            }
+            first = false;
+        }
+    }
 }
 
 void worksheet::unmerge_cells(const range_reference &reference)
 {
-    root_->unmerge_cells(reference);
+    auto match = std::find(d_->merged_cells_.begin(), d_->merged_cells_.end(), reference);
+    
+    if(match == d_->merged_cells_.end())
+    {
+        throw std::runtime_error("cells not merged");
+    }
+    
+    d_->merged_cells_.erase(match);
+    
+    for(auto row : get_range(reference))
+    {
+        for(auto cell : row)
+        {
+            cell.set_merged(false);
+        }
+    }
 }
 
 void worksheet::append(const std::vector<std::string> &cells)
 {
-    root_->append(cells);
+    int row = get_highest_row();
+    
+    if(d_->cell_map_.size() == 0)
+    {
+        row--;
+    }
+    
+    int column = 0;
+    
+    for(auto cell : cells)
+    {
+        this->get_cell(cell_reference(column++, row)) = cell;
+    }
 }
 
 void worksheet::append(const std::unordered_map<std::string, std::string> &cells)
 {
-    root_->append(cells);
+    int row = get_highest_row() - 1;
+
+    if(d_->cell_map_.size() != 0)
+    {
+        row++;
+    }
+
+    for(auto cell : cells)
+    {
+        this->get_cell(cell_reference(cell.first, row + 1)) = cell.second;
+    }
 }
 
 void worksheet::append(const std::unordered_map<int, std::string> &cells)
 {
-    root_->append(cells);
+    int row = get_highest_row() - 1;
+
+    if(d_->cell_map_.size() != 0)
+    {
+        row++;
+    }
+
+    for(auto cell : cells)
+    {
+        this->get_cell(cell_reference(cell.first, row)) = cell.second;
+    }
 }
 
 xlnt::range worksheet::rows() const
 {
-    return root_->rows();
+    return get_range(calculate_dimension());
 }
 
 bool worksheet::operator==(const worksheet &other) const
 {
-    return root_ == other.root_;
+    return d_ == other.d_;
 }
 
 bool worksheet::operator!=(const worksheet &other) const
 {
-    return root_ != other.root_;
+    return d_ != other.d_;
 }
 
 bool worksheet::operator==(std::nullptr_t) const
 {
-    return root_ == nullptr;
+    return d_ == nullptr;
 }
 
 bool worksheet::operator!=(std::nullptr_t) const
 {
-    return root_ != nullptr;
+    return d_ != nullptr;
 }
 
 
 void worksheet::operator=(const worksheet &other)
 {
-    root_ = other.root_;
+    d_ = other.d_;
 }
 
 const cell worksheet::operator[](const cell_reference &ref) const
@@ -517,26 +423,31 @@ range worksheet::operator[](const range_reference &ref)
 
 range worksheet::operator[](const std::string &name)
 {
-    if(root_->parent_.has_named_range(name, *this))
+    if(has_named_range(name))
     {
         return get_named_range(name);
     }
     return get_range(range_reference(name));
 }
 
-worksheet worksheet::allocate(xlnt::workbook &owner, const std::string &title)
+bool worksheet::has_named_range(const std::string &name)
 {
-    return new worksheet_struct(owner, title);
+    return d_->named_ranges_.find(name) != d_->named_ranges_.end();
 }
-    
-void worksheet::deallocate(xlnt::worksheet ws)
+
+void worksheet::remove_named_range(const std::string &name)
 {
-    delete ws.root_;
+    if(!has_named_range(name))
+    {
+        throw std::runtime_error("worksheet doesn't have named range");
+    }
+
+    d_->named_ranges_.erase(name);
 }
 
 void worksheet::reserve(std::size_t n)
 {
-    root_->cell_map_.reserve(n);
+    d_->cell_map_.reserve(n);
 }
     
 } // namespace xlnt

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -10,7 +11,7 @@ namespace xlnt {
 class cell_reference;
 class worksheet;
     
-struct cell_struct;
+struct cell_impl;
     
 typedef std::string comment;
     
@@ -310,8 +311,7 @@ public:
     static std::string check_error(const std::string &value);
     
     cell();
-    cell(worksheet &ws, const std::string &column, row_t row);
-    cell(worksheet &ws, const std::string &column, row_t row, const std::string &initial_value);
+    cell(worksheet ws, const cell_reference &reference, const std::string &initial_value = std::string());
     
     std::string get_value() const;
     
@@ -350,8 +350,6 @@ public:
     
     cell_reference get_reference() const;
     
-    cell get_offset(int row, int column);
-    
     bool is_date() const;
     
     //std::pair<int, int> get_anchor() const;
@@ -374,7 +372,7 @@ public:
     bool operator==(const std::string &comparand) const;
     bool operator==(const char *comparand) const;
     bool operator==(const tm &comparand) const;
-    bool operator==(const cell &comparand) const { return root_ == comparand.root_; }
+    bool operator==(const cell &comparand) const { return d_ == comparand.d_; }
     
     friend bool operator==(std::nullptr_t, const cell &cell);
     friend bool operator==(bool comparand, const cell &cell);
@@ -385,14 +383,9 @@ public:
     friend bool operator==(const tm &comparand, const cell &cell);
     
 private:
-    friend struct worksheet_struct;
-    
-    static cell allocate(worksheet owner, column_t column_index, row_t row_index);
-    static void deallocate(cell cell);
-    
-    cell(cell_struct *root);
-    
-    cell_struct *root_;
+    friend class worksheet;
+    cell(cell_impl *d);
+    cell_impl *d_;
 };
 
 inline std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)

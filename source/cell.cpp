@@ -3,15 +3,23 @@
 #include <sstream>
 
 #include "cell.h"
+#include "cell_impl.h"
 #include "cell_reference.h"
-#include "cell_struct.h"
 #include "relationship.h"
 #include "worksheet.h"
 
 namespace xlnt {
 
-struct worksheet_struct;
-
+cell_impl::cell_impl() : hyperlink_rel("hyperlink"), column(0), row(0), type_(type::null)
+{
+    
+}
+    
+cell_impl::cell_impl(int column_index, int row_index) : hyperlink_rel("hyperlink"), column(column_index), row(row_index), type_(type::null)
+{
+    
+}
+    
 const xlnt::color xlnt::color::black(0);
 const xlnt::color xlnt::color::white(1);
 
@@ -26,46 +34,44 @@ const std::unordered_map<std::string, int> cell::ErrorCodes =
     {"#N/A!", 6}
 };
 
-cell::cell() : root_(nullptr)
+cell::cell() : d_(nullptr)
 {
 }
 
-cell::cell(worksheet &worksheet, const std::string &column, row_t row) : root_(nullptr)
+cell::cell(cell_impl *d) : d_(d)
 {
-    cell self = worksheet.get_cell(column + std::to_string(row));
-    root_ = self.root_;
+    
 }
-
-
-cell::cell(worksheet &worksheet, const std::string &column, row_t row, const std::string &initial_value) : root_(nullptr)
+    
+cell::cell(worksheet worksheet, const cell_reference &reference, const std::string &initial_value) : d_(nullptr)
 {
-    cell self = worksheet.get_cell(column + std::to_string(row));
-    root_ = self.root_;
-    *this = initial_value;
-}
+    cell self = worksheet.get_cell(reference);
+    d_ = self.d_;
 
-cell::cell(cell_struct *root) : root_(root)
-{
+    if(initial_value != "")
+    {
+        *this = initial_value;
+    }
 }
 
 std::string cell::get_value() const
 {
-    switch(root_->type)
+    switch(d_->type_)
     {
-        case type::string:
-            return root_->string_value;
-        case type::numeric:
-            return std::to_string(root_->numeric_value);
-        case type::formula:
-            return root_->formula_value;
-        case type::error:
-            return root_->error_value;
-        case type::null:
+        case cell_impl::type::string:
+            return d_->string_value;
+        case cell_impl::type::numeric:
+            return std::to_string(d_->numeric_value);
+        case cell_impl::type::formula:
+            return d_->formula_value;
+        case cell_impl::type::error:
+            return d_->error_value;
+        case cell_impl::type::null:
             return "";
-        case type::date:
+        case cell_impl::type::date:
             return "00:00:00";
-        case type::boolean:
-            return root_->bool_value ? "TRUE" : "FALSE";
+        case cell_impl::type::boolean:
+            return d_->numeric_value != 0 ? "TRUE" : "FALSE";
         default:
             throw std::runtime_error("bad enum");
     }
@@ -73,12 +79,12 @@ std::string cell::get_value() const
 
 row_t cell::get_row() const
 {
-    return root_->row + 1;
+    return d_->row + 1;
 }
 
 std::string cell::get_column() const
 {
-    return cell_reference::column_string_from_index(root_->column + 1);
+    return cell_reference::column_string_from_index(d_->column + 1);
 }
 
 std::vector<std::string> split_string(const std::string &string, char delim = ' ')
@@ -166,60 +172,60 @@ cell::type cell::data_type_for_value(const std::string &value)
 
 void cell::set_explicit_value(const std::string &value, type data_type)
 {
-    root_->type = data_type;
+    d_->type_ = (cell_impl::type)data_type;
     switch(data_type)
     {
-        case type::formula: root_->formula_value = value; return;
-        case type::date: root_->date_value.tm_hour = std::stoi(value); return;
-        case type::error: root_->error_value = value; return;
-        case type::boolean: root_->bool_value = value == "true"; return;
+        case type::formula: d_->formula_value = value; return;
+        case type::date: d_->date_value.tm_hour = std::stoi(value); return;
+        case type::error: d_->error_value = value; return;
+        case type::boolean: d_->numeric_value = value == "true"; return;
         case type::null: return;
-        case type::numeric: root_->numeric_value = std::stod(value); return;
-        case type::string: root_->string_value = value; return;
+        case type::numeric: d_->numeric_value = std::stod(value); return;
+        case type::string: d_->string_value = value; return;
         default: throw std::runtime_error("bad enum");
     }
 }
 
 void cell::set_hyperlink(const std::string &url)
 {
-    root_->type = type::hyperlink;
-    root_->hyperlink_rel = worksheet(root_->parent_worksheet).create_relationship("hyperlink", url);
+    d_->type_ = cell_impl::type::hyperlink;
+    d_->string_value = url;
 }
 
 void cell::set_merged(bool merged)
 {
-    root_->merged = merged;
+    d_->merged = merged;
 }
 
 bool cell::is_merged() const
 {
-    return root_->merged;
+    return d_->merged;
 }
 
 bool cell::bind_value()
 {
-    root_->type = type::null;
+    d_->type_ = cell_impl::type::null;
     return true;
 }
 
 bool cell::bind_value(int value)
 {
-    root_->type = type::numeric;
-    root_->numeric_value = value;
+    d_->type_ = cell_impl::type::numeric;
+    d_->numeric_value = value;
     return true;
 }
 
 bool cell::bind_value(double value)
 {
-    root_->type = type::numeric;
-    root_->numeric_value = value;
+    d_->type_ = cell_impl::type::numeric;
+    d_->numeric_value = value;
     return true;
 }
 
 bool cell::bind_value(const std::string &value)
 {
     //Given a value, infer type and display options.
-    root_->type = data_type_for_value(value);
+    d_->type_ = (cell_impl::type)data_type_for_value(value);
     return true;
 }
 
@@ -230,57 +236,57 @@ bool cell::bind_value(const char *value)
 
 bool cell::bind_value(bool value)
 {
-    root_->type = type::boolean;
-    root_->bool_value = value;
+    d_->type_ = cell_impl::type::boolean;
+    d_->numeric_value = value ? 1 : 0;
     return true;
 }
 
 bool cell::bind_value(const tm &value)
 {
-    root_->type = type::date;
-    root_->date_value = value;
+    d_->type_ = cell_impl::type::date;
+    d_->date_value = value;
     return true;
 }
     
 bool cell::is_date() const
 {
-    return root_->type == type::date;
+    return d_->type_ == cell_impl::type::date;
 }
 
 cell_reference cell::get_reference() const
 {
-    return {root_->column, root_->row};
+    return {d_->column, d_->row};
 }
 
 std::string cell::get_hyperlink_rel_id() const
 {
-    return root_->hyperlink_rel.get_id();
+    return d_->hyperlink_rel.get_id();
 }
 
 bool cell::operator==(std::nullptr_t) const
 {
-    return root_ == nullptr;
+    return d_ == nullptr;
 }
 
 bool cell::operator==(int comparand) const
 {
-    return root_->type == type::numeric && root_->numeric_value == comparand;
+    return d_->type_ == cell_impl::type::numeric && d_->numeric_value == comparand;
 }
 
 bool cell::operator==(double comparand) const
 {
-    return root_->type == type::numeric && root_->numeric_value == comparand;
+    return d_->type_ == cell_impl::type::numeric && d_->numeric_value == comparand;
 }
 
 bool cell::operator==(const std::string &comparand) const
 {
-    if(root_->type == type::hyperlink)
+    if(d_->type_ == cell_impl::type::hyperlink)
     {
-        return root_->hyperlink_rel.get_target_uri() == comparand;
+        return d_->hyperlink_rel.get_target_uri() == comparand;
     }
-    if(root_->type == type::string)
+    if(d_->type_ == cell_impl::type::string)
     {
-        return root_->string_value == comparand;
+        return d_->string_value == comparand;
     }
     return false;
 }
@@ -292,7 +298,7 @@ bool cell::operator==(const char *comparand) const
 
 bool cell::operator==(const tm &comparand) const
 {
-    return root_->type == cell::type::date && root_->date_value.tm_hour == comparand.tm_hour;
+    return d_->type_ == cell_impl::type::date && d_->date_value.tm_hour == comparand.tm_hour;
 }
 
 bool operator==(int comparand, const xlnt::cell &cell)
@@ -317,94 +323,87 @@ bool operator==(const tm &comparand, const xlnt::cell &cell)
 
 style &cell::get_style()
 {
-    if(root_->style_ == nullptr)
+    if(d_->style_ == nullptr)
     {
-        root_->style_ = new style();
+        d_->style_ = new style();
     }
-    return *root_->style_;
+    return *d_->style_;
 }
 
 const style &cell::get_style() const
 {
-    if(root_->style_ == nullptr)
+    if(d_->style_ == nullptr)
     {
-        root_->style_ = new style();
+        d_->style_ = new style();
     }
-    return *root_->style_;
+    return *d_->style_;
 }
 
 xlnt::cell::type cell::get_data_type() const
 {
-    return root_->type;
-}
-
-xlnt::cell cell::get_offset(int row_offset, int column_offset)
-{
-    worksheet parent_wrapper(root_->parent_worksheet);
-    cell_reference ref(root_->column + column_offset, root_->row + row_offset);
-    return parent_wrapper[ref];
+    return (type)d_->type_;
 }
 
 cell &cell::operator=(const cell &rhs)
 {
-    root_ = rhs.root_;
+    d_ = rhs.d_;
     return *this;
 }
 
 cell &cell::operator=(int value)
 {
-    root_->type = type::numeric;
-    root_->numeric_value = value;
+    d_->type_ = cell_impl::type::numeric;
+    d_->numeric_value = value;
     return *this;
 }
 
 cell &cell::operator=(double value)
 {
-    root_->type = type::numeric;
-    root_->numeric_value = value;
+    d_->type_ = cell_impl::type::numeric;
+    d_->numeric_value = value;
     return *this;
 }
 
 cell &cell::operator=(bool value)
 {
-    root_->type = type::boolean;
-    root_->bool_value = value;
+    d_->type_ = cell_impl::type::boolean;
+    d_->numeric_value = value ? 1 : 0;
     return *this;
 }
 
 
 cell &cell::operator=(const std::string &value)
 {
-    root_->type = data_type_for_value(value);
+    d_->type_ = (cell_impl::type)data_type_for_value(value);
     
-    switch(root_->type)
+    switch((type)d_->type_)
     {
         case type::date:
         {
-            root_->date_value = std::tm();
+            d_->date_value = std::tm();
             auto split = split_string(value, ':');
-            root_->date_value.tm_hour = std::stoi(split[0]);
-            root_->date_value.tm_min = std::stoi(split[1]);
+            d_->date_value.tm_hour = std::stoi(split[0]);
+            d_->date_value.tm_min = std::stoi(split[1]);
             if(split.size() > 2)
             {
-                root_->date_value.tm_sec = std::stoi(split[2]);
+                d_->date_value.tm_sec = std::stoi(split[2]);
             }
             break;
         }
         case type::formula:
-            root_->formula_value = value;
+            d_->formula_value = value;
             break;
         case type::numeric:
-            root_->numeric_value = std::stod(value);
+            d_->numeric_value = std::stod(value);
             break;
         case type::boolean:
-            root_->bool_value = value == "TRUE" || value == "true";
+            d_->numeric_value = value == "TRUE" || value == "true";
             break;
         case type::error:
-            root_->error_value = value;
+            d_->error_value = value;
             break;
         case type::string:
-            root_->string_value = value;
+            d_->string_value = value;
             break;
         case type::null:
             break;
@@ -422,29 +421,14 @@ cell &cell::operator=(const char *value)
 
 cell &cell::operator=(const tm &value)
 {
-    root_->type = type::date;
-    root_->date_value = value;
+    d_->type_ = cell_impl::type::date;
+    d_->date_value = value;
     return *this;
 }
 
 std::string cell::to_string() const
 {
-    return root_->to_string();
-}
-    
-std::string cell_struct::to_string() const
-{
-    return "<Cell " + worksheet(parent_worksheet).get_title() + "." + cell_reference(column, row).to_string() + ">";
-}
-
-cell cell::allocate(xlnt::worksheet owner, column_t column_index, row_t row_index)
-{
-    return new cell_struct(owner.root_, column_index, row_index);
-}
-
-void cell::deallocate(xlnt::cell cell)
-{
-    delete cell.root_;
+    return "<Cell " + cell_reference(d_->column, d_->row).to_string() + ">";
 }
 
 } // namespace xlnt
