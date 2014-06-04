@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <fstream>
 #include <sstream>
 #include <pugixml.hpp>
 
@@ -227,7 +228,19 @@ range workbook::get_named_range(const std::string &name)
     throw std::runtime_error("named range not found");
 }
 
-void workbook::load(const std::string &filename)
+bool workbook::load(const std::vector<unsigned char> &data)
+{
+  std::ofstream tmp;
+  tmp.open("/tmp/xlnt.xlsx", std::ios::out);
+  for(auto c : data)
+    {
+      tmp.put(c);
+    }
+  load("/tmp/xlnt.xlsx");
+  return true;
+}
+
+bool workbook::load(const std::string &filename)
 {
     zip_file f(filename, file_mode::open);
     //auto core_properties = read_core_properties();
@@ -266,6 +279,8 @@ void workbook::load(const std::string &filename)
         sheet_filename += workbook_relationships[relation_id].second;
         xlnt::reader::read_worksheet(ws, f.get_file_contents(sheet_filename).c_str(), shared_strings);
     }
+
+    return true;
 }
 
 void workbook::remove_sheet(worksheet ws)
@@ -372,7 +387,19 @@ void workbook::clear()
     d_->worksheets_.clear();
 }
 
-void workbook::save(const std::string &filename)
+bool workbook::save(std::vector<unsigned char> &data)
+{
+  save("/tmp/xlnt.xlsx");
+  std::ifstream tmp;
+  tmp.open("/tmp/xlnt.xlsx");
+  auto char_data = std::vector<char>((std::istreambuf_iterator<char>(tmp)),
+				     std::istreambuf_iterator<char>());
+  data = std::vector<unsigned char>(char_data.begin(), char_data.end());
+  return true;
+}
+
+
+bool workbook::save(const std::string &filename)
 {
     zip_file f(filename, file_mode::create, file_access::write);
     
@@ -432,6 +459,8 @@ void workbook::save(const std::string &filename)
     doc.save(ss);
     
     f.set_file_contents("xl/workbook.xml", ss.str());
+
+    return true;
 }
     
 bool workbook::operator==(const workbook &rhs) const

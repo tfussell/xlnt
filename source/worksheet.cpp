@@ -55,14 +55,14 @@ margins &worksheet::get_page_margins()
     return d_->page_margins_;
 }
 
-void worksheet::set_auto_filter(const range_reference &reference)
+void worksheet::auto_filter(const range_reference &reference)
 {
     d_->auto_filter_ = reference;
 }
 
-void worksheet::set_auto_filter(const xlnt::range &range)
+void worksheet::auto_filter(const xlnt::range &range)
 {
-    set_auto_filter(range.get_reference());
+    auto_filter(range.get_reference());
 }
 
 range_reference worksheet::get_auto_filter() const
@@ -186,6 +186,11 @@ cell worksheet::get_cell(const cell_reference &reference)
 const cell worksheet::get_cell(const cell_reference &reference) const
 {
     return cell(&d_->cell_map_.at(reference.get_row_index()).at(reference.get_column_index()));
+}
+
+row_properties &worksheet::get_row_properties(row_t row)
+{
+    return d_->row_properties_[row];
 }
 
 range worksheet::get_named_range(const std::string &name)

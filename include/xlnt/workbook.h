@@ -115,8 +115,10 @@ public:
     void remove_named_range(const std::string &name);
     
     //serialization
-    void save(const std::string &filename);
-    void load(const std::string &filename);
+    bool save(std::vector<unsigned char> &data);
+    bool save(const std::string &filename);
+    bool load(const std::vector<unsigned char> &data);
+    bool load(const std::string &filename);
     
     bool operator==(const workbook &rhs) const;
     

@@ -95,6 +95,11 @@ public:
         
         dst << src.rdbuf();
     }
+
+    static void DeleteFile(const std::string &path)
+    {
+      std::remove(path.c_str());
+    }
     
     static bool FileExists(const std::string &path)
     {

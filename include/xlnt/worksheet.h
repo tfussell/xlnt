@@ -21,6 +21,18 @@ class workbook;
 namespace detail {    
 struct worksheet_impl;
 } // namespace detail
+
+class row_properties
+{
+ public:
+  void set_height(int height) { this->height = height; }
+  int row_index;
+  int height;
+  bool visible;
+  int outline_level;
+  bool collapsed;
+  int style_index;
+};
     
 struct page_setup
 {
@@ -145,6 +157,8 @@ public:
     const cell get_cell(const cell_reference &reference) const;
     range get_range(const range_reference &reference);
     const range get_range(const range_reference &reference) const;
+    row_properties &get_row_properties(row_t row);
+    const row_properties &get_row_properties(row_t row) const;
     range rows() const;
     range columns() const;
     std::list<cell> get_cell_collection();
@@ -200,8 +214,8 @@ public:
     
     // auto filter
     range_reference get_auto_filter() const;
-    void set_auto_filter(const xlnt::range &range);
-    void set_auto_filter(const range_reference &reference);
+    void auto_filter(const xlnt::range &range);
+    void auto_filter(const range_reference &reference);
     void unset_auto_filter();
     bool has_auto_filter() const;
 

@@ -6,6 +6,7 @@
 #include <xlnt/xlnt.h>
 #include "TemporaryFile.h"
 #include "PathHelper.h"
+#include "Helper.h"
 
 class WriteTestSuite : public CxxTest::TestSuite
 {
@@ -17,142 +18,128 @@ public:
 
     void test_write_empty_workbook()
     {
-        TemporaryFile temp_file;
-        xlnt::workbook wb;
-        auto dest_filename = temp_file.GetFilename();
-        wb.save(dest_filename);
-        TS_ASSERT(PathHelper::FileExists(dest_filename));
+        if(PathHelper::FileExists(temp_file.GetFilename()))
+	{
+	    PathHelper::DeleteFile(temp_file.GetFilename());
+	}
+
+        TS_ASSERT(!PathHelper::FileExists(temp_file.GetFilename()));
+        wb.save(temp_file.GetFilename());
+        TS_ASSERT(PathHelper::FileExists(temp_file.GetFilename()));
     }
 
     void test_write_virtual_workbook()
     {
-        /*xlnt::workbook old_wb;
-        saved_wb = save_virtual_workbook(old_wb);
-        new_wb = load_workbook(BytesIO(saved_wb));
-        assert new_wb;*/
+        xlnt::workbook old_wb;
+	std::vector<unsigned char> saved_wb;
+	TS_ASSERT(old_wb.save(saved_wb));
+	xlnt::workbook new_wb;
+	TS_ASSERT(new_wb.load(saved_wb));
     }
 
     void test_write_workbook_rels()
     {
-        /*xlnt::workbook wb;
-        content = write_workbook_rels(wb);
-        assert_equals_file_content(os.path.join(DATADIR, "writer", "expected", \
-            "workbook.xml.rels"), content);*/
+        xlnt::workbook wb;
+        auto content = xlnt::writer::write_workbook_rels(wb);
+
+	TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/workbook.xml.rels", content));
     }
 
     void test_write_workbook()
     {
-        /*xlnt::workbook wb;
-        content = write_workbook(wb);
-        assert_equals_file_content(os.path.join(DATADIR, "writer", "expected", \
-            "workbook.xml"), content);*/
+        xlnt::workbook wb;
+        auto content = xlnt::writer::write_workbook(wb);
+
+	TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/workbook.xml", content));
     }
 
 
     void test_write_string_table()
     {
-        /*table = {"hello": 1, "world" : 2, "nice" : 3};
-        content = write_string_table(table);
-        assert_equals_file_content(os.path.join(DATADIR, "writer", "expected", \
-            "sharedStrings.xml"), content);*/
+        std::unordered_map<std::string, int> table = {{"hello", 1}, {"world", 2}, {"nice", 3}};
+        auto content = xlnt::writer::write_string_table(table);
+	TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sharedStrings.xml", content));
     }
 
     void test_write_worksheet()
     {
-        /*xlnt::workbook wb;
         auto ws = wb.create_sheet();
-        ws.cell("F42") = "hello";
-        content = write_worksheet(ws, {"hello": 0}, {});
-        assert_equals_file_content(os.path.join(DATADIR, "writer", "expected", \
-            "sheet1.xml"), content);*/
+        ws.get_cell("F42") = "hello";
+        auto content = xlnt::writer::write_worksheet(ws, {{"hello", 0}}, {});
+	TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sheet1.xml", content));
     }
 
     void test_write_hidden_worksheet()
     {
-        /*xlnt::workbook wb;
         auto ws = wb.create_sheet();
-        ws.sheet_state = ws.SHEETSTATE_HIDDEN;
-        ws.cell("F42") = "hello";
-        content = write_worksheet(ws, {"hello": 0}, {});
-        assert_equals_file_content(os.path.join(DATADIR, "writer", "expected", \
-            "sheet1.xml"), content);*/
+        ws.get_page_setup().set_sheet_state(xlnt::page_setup::sheet_state::hidden);
+        ws.get_cell("F42") = "hello";
+        auto content = xlnt::writer::write_worksheet(ws, {{"hello", 0}}, {});
+	TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sheet1.xml", content));
     }
 
     void test_write_bool()
     {
-        /*xlnt::workbook wb;
         auto ws = wb.create_sheet();
-        ws.cell("F42") = False;
-        ws.cell("F43") = True;
-        content = write_worksheet(ws, {}, {});
-        assert_equals_file_content(os.path.join(DATADIR, "writer", "expected", \
-            "sheet1_bool.xml"), content);*/
+        ws.get_cell("F42") = false;
+        ws.get_cell("F43") = true;
+        auto content = xlnt::writer::write_worksheet(ws, {}, {});
+	TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_bool.xml", content));
     }
 
     void test_write_formula()
     {
-        /*xlnt::workbook wb;
         auto ws = wb.create_sheet();
-        ws.cell("F1") = 10;
-        ws.cell("F2") = 32;
-        ws.cell("F3") = "=F1+F2";
-        content = write_worksheet(ws, {}, {});
-        assert_equals_file_content(os.path.join(DATADIR, "writer", "expected", \
-            "sheet1_formula.xml"), content);*/
+        ws.get_cell("F1") = 10;
+        ws.get_cell("F2") = 32;
+        ws.get_cell("F3") = "=F1+F2";
+        auto content = xlnt::writer::write_worksheet(ws, {}, {});
+	TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_formula.xml", content));
     }
 
     void test_write_style()
     {
-        /*xlnt::workbook wb;
         auto ws = wb.create_sheet();
-        ws.cell("F1") = "13%";
-        style_id_by_hash = StyleWriter(wb).get_style_by_hash();
-        content = write_worksheet(ws, {}, style_id_by_hash);
-        assert_equals_file_content(os.path.join(DATADIR, "writer", "expected", \
-            "sheet1_style.xml"), content);*/
+        ws.get_cell("F1") = "13%";
+        auto style_id_by_hash = xlnt::style_writer(wb).get_style_by_hash();
+        auto content = xlnt::writer::write_worksheet(ws, {}, style_id_by_hash);
+	TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_style.xml", content));
     }
 
     void test_write_height()
     {
-        /*xlnt::workbook wb;
         auto ws = wb.create_sheet();
-        ws.cell("F1") = 10;
-        ws.row_dimensions[ws.cell("F1").row].height = 30;
-        content = write_worksheet(ws, {}, {});
-        assert_equals_file_content(os.path.join(DATADIR, "writer", "expected", \
-            "sheet1_height.xml"), content);*/
+        ws.get_cell("F1") = 10;
+        ws.get_row_properties(ws.get_cell("F1").get_row()).set_height(30);
+	auto content = xlnt::writer::write_worksheet(ws, {}, {});
+	TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_height.xml", content));
     }
 
     void test_write_hyperlink()
     {
-        /*xlnt::workbook wb;
         auto ws = wb.create_sheet();
-        ws.cell("A1") = "test";
-        ws.cell("A1").hyperlink = "http:test.com";
-        content = write_worksheet(ws, {"test": 0}, {});
-        assert_equals_file_content(os.path.join(DATADIR, "writer", "expected", \
-            "sheet1_hyperlink.xml"), content);*/
+        ws.get_cell("A1") = "test";
+        ws.get_cell("A1").set_hyperlink("http:test.com");
+        auto content = xlnt::writer::write_worksheet(ws, {{"test", 0}}, {});
+	TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_hyperlink.xml", content));
     }
 
     void test_write_hyperlink_rels()
     {
-        /*xlnt::workbook wb;
         auto ws = wb.create_sheet();
-        TS_ASSERT_EQUALS(0, len(ws.relationships));
-        ws.cell("A1") = "test";
-        ws.cell("A1").hyperlink = "http:test.com/";
-        TS_ASSERT_EQUALS(1, len(ws.relationships));
-        ws.cell("A2") = "test";
-        ws.cell("A2").hyperlink = "http:test2.com/";
-        TS_ASSERT_EQUALS(2, len(ws.relationships));
-        content = write_worksheet_rels(ws, 1);
-        assert_equals_file_content(os.path.join(DATADIR, "writer", "expected", \
-            "sheet1_hyperlink.xml.rels"), content);*/
+        TS_ASSERT_EQUALS(0, ws.get_relationships().size());
+        ws.get_cell("A1") = "test";
+        ws.get_cell("A1").set_hyperlink("http:test.com/");
+        TS_ASSERT_EQUALS(1, ws.get_relationships().size());
+        ws.get_cell("A2") = "test";
+        ws.get_cell("A2").set_hyperlink("http:test2.com/");
+        TS_ASSERT_EQUALS(2, ws.get_relationships().size());
+        auto content = xlnt::writer::write_worksheet_rels(ws, 1);
+	TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_hyperlink.xml.rels", content));
     }
 
     void test_hyperlink_value()
     {
-        xlnt::workbook wb;
         auto ws = wb.create_sheet();
         ws.get_cell("A1").set_hyperlink("http://test.com");
         TS_ASSERT_EQUALS("http://test.com", ws.get_cell("A1"));
@@ -162,79 +149,60 @@ public:
 
     void test_write_auto_filter()
     {
-        /*xlnt::workbook wb;
-        auto ws = wb[0];
-        ws.cell("F42") = "hello";
-        ws.auto_filter = "A1:F1";
-        content = write_worksheet(ws, {"hello": 0}, {});
-        assert_equals_file_content(os.path.join(DATADIR, "writer", "expected", \
-            "sheet1_auto_filter.xml"), content);
+        auto ws = wb.create_sheet();
+        ws.get_cell("F42") = "hello";
+        ws.auto_filter("A1:F1");
+        auto content = xlnt::writer::write_worksheet(ws, {{"hello", 0}}, {});
+	TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_auto_filter.xml", content));
 
-        content = write_workbook(wb);
-        assert_equals_file_content(os.path.join(DATADIR, "writer", "expected", \
-            "workbook_auto_filter.xml"), content);*/
+        content = xlnt::writer::write_workbook(wb);
+	TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/workbook_auto_filter.xml", content));
     }
 
     void test_freeze_panes_horiz()
     {
-        /*xlnt::workbook wb;
         auto ws = wb.create_sheet();
-        ws.cell("F42") = "hello";
-        ws.freeze_panes = "A4";
-        content = write_worksheet(ws, {"hello": 0}, {});
-        assert_equals_file_content(os.path.join(DATADIR, "writer", "expected", \
-            "sheet1_freeze_panes_horiz.xml"), content);*/
+        ws.get_cell("F42") = "hello";
+        ws.freeze_panes("A4");
+        auto content = xlnt::writer::write_worksheet(ws, {{"hello", 0}}, {});
+	TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_freeze_panes_horiz.xml", content));
     }
 
     void test_freeze_panes_vert()
     {
-        /*xlnt::workbook wb;
         auto ws = wb.create_sheet();
-        ws.cell("F42") = "hello";
-        ws.freeze_panes = "D1";
-        content = write_worksheet(ws, {"hello": 0}, {});
-        assert_equals_file_content(os.path.join(DATADIR, "writer", "expected", \
-            "sheet1_freeze_panes_vert.xml"), content);*/
+        ws.get_cell("F42") = "hello";
+        ws.freeze_panes("D1");
+        auto content = xlnt::writer::write_worksheet(ws, {{"hello", 0}}, {});
+	TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_freeze_panes_vert.xml", content));
     }
 
     void test_freeze_panes_both()
     {
-        /*xlnt::workbook wb;
         auto ws = wb.create_sheet();
-        ws.cell("F42") = "hello";
-        ws.freeze_panes = "D4";
-        content = write_worksheet(ws, {"hello": 0}, {});
-        assert_equals_file_content(os.path.join(DATADIR, "writer", "expected", \
-            "sheet1_freeze_panes_both.xml"), content);*/
+        ws.get_cell("F42") = "hello";
+        ws.freeze_panes("D4");
+        auto content = xlnt::writer::write_worksheet(ws, {{"hello", 0}}, {});
+	TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_freeze_panes_both.xml", content));
     }
 
     void test_long_number()
     {
-        /*xlnt::workbook wb;
         auto ws = wb.create_sheet();
-        ws.cell("A1") = 9781231231230;
-        content = write_worksheet(ws, {}, {});
-        assert_equals_file_content(os.path.join(DATADIR, "writer", "expected", \
-            "long_number.xml"), content);*/
-    }
-
-    void test_decimal()
-    {
-        /*xlnt::workbook wb;
-        auto ws = wb.create_sheet();
-        ws.cell("A1") = decimal.Decimal("3.14");
-        content = write_worksheet(ws, {}, {});
-        assert_equals_file_content(os.path.join(DATADIR, "writer", "expected", \
-            "decimal.xml"), content);*/
+        ws.get_cell("A1") = 9781231231230;
+        auto content = xlnt::writer::write_worksheet(ws, {}, {});
+	TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/long_number.xml", content));
     }
 
     void test_short_number()
     {
-        /*xlnt::workbook wb;
         auto ws = wb.create_sheet();
-        ws.cell("A1") = 1234567890;
-        content = write_worksheet(ws, {}, {});
-        assert_equals_file_content(os.path.join(DATADIR, "writer", "expected", \
-            "short_number.xml"), content);*/
+        ws.get_cell("A1") = 1234567890;
+        auto content = xlnt::writer::write_worksheet(ws, {}, {});
+	TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/short_number.xml", content));
     }
+
+ private:
+    TemporaryFile temp_file;
+    xlnt::workbook wb;
 };

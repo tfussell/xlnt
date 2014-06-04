@@ -37,6 +37,7 @@ struct worksheet_impl
     }
     
     workbook *parent_;
+    std::unordered_map<row_t, row_properties> row_properties_;
     std::string title_;
     cell_reference freeze_panes_;
     std::unordered_map<int, std::unordered_map<int, cell_impl>> cell_map_;

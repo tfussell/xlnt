@@ -337,6 +337,20 @@ cell &cell::operator=(double value)
     return *this;
 }
 
+cell &cell::operator=(long int value)
+{
+    d_->type_ = type::numeric;
+    d_->numeric_value = value;
+    return *this;
+}
+
+cell &cell::operator=(long double value)
+{
+    d_->type_ = type::numeric;
+    d_->numeric_value = value;
+    return *this;
+}
+
 cell &cell::operator=(bool value)
 {
     d_->type_ = type::boolean;

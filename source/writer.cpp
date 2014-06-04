@@ -14,7 +14,33 @@
 
 namespace xlnt {
 
+std::string writer::write_string_table(const std::unordered_map<std::string, int> &/*string_table*/)
+{
+  return "";
+}
+
+std::string writer::write_workbook_rels(const workbook &/*wb*/)
+{
+  return "";
+}
+
+std::string writer::write_worksheet_rels(worksheet /*ws*/, int)
+{
+  return "";
+}
+
+
+std::string writer::write_workbook(const workbook &/*wb*/)
+{
+  return "";
+}
+
 std::string writer::write_worksheet(worksheet ws, const std::vector<std::string> &string_table)
+{
+  return write_worksheet(ws, string_table, {});
+}
+
+std::string writer::write_worksheet(worksheet ws, const std::vector<std::string> &string_table, const std::unordered_map<std::size_t, std::string> &)
 {
     pugi::xml_document doc;
     auto root_node = doc.append_child("worksheet");

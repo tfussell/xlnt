@@ -16,6 +16,7 @@
 #include "range_reference.h"
 #include "relationship.h"
 #include "string_table.h"
+#include "style_writer.h"
 #include "workbook.h"
 #include "worksheet.h"
 #include "writer.h"

@@ -238,13 +238,13 @@ public:
     {
         xlnt::worksheet ws(wb);
 
-        ws.set_auto_filter(ws.get_range("a1:f1"));
+        ws.auto_filter(ws.get_range("a1:f1"));
         TS_ASSERT_EQUALS(ws.get_auto_filter(), "A1:F1");
 
         ws.unset_auto_filter();
         TS_ASSERT_EQUALS(ws.has_auto_filter(), false);
 
-        ws.set_auto_filter("c1:g9");
+        ws.auto_filter("c1:g9");
         TS_ASSERT_EQUALS(ws.get_auto_filter(), "C1:G9");
     }
 
