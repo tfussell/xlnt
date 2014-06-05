@@ -111,6 +111,11 @@ std::pair<std::string, row_t> cell_reference::split_reference(const std::string 
     
     std::string row_string = reference_string.substr(column_string.length());
     
+    if(row_string.length() == 0)
+    {
+        throw cell_coordinates_exception(reference_string);
+    }
+
     if(column_string[0] == '$')
     {
         absolute_row = true;
@@ -142,7 +147,7 @@ column_t cell_reference::column_index_from_string(const std::string &column_stri
 {
     if(column_string.length() > 3 || column_string.empty())
     {
-        throw std::runtime_error("column must be one to three characters");
+        throw column_string_index_exception();
     }
     
     column_t column_index = 0;
@@ -152,7 +157,7 @@ column_t cell_reference::column_index_from_string(const std::string &column_stri
     {
         if(!std::isalpha(column_string[i], std::locale::classic()))
         {
-            throw std::runtime_error("column must contain only letters in the range A-Z");
+	    throw column_string_index_exception();
         }
         
         column_index += (std::toupper(column_string[i], std::locale::classic()) - 'A' + 1) * place;
@@ -172,8 +177,8 @@ std::string cell_reference::column_string_from_index(column_t column_index)
     // columns
     if(column_index < 1 || column_index > constants::MaxColumn)
     {
-        auto msg = "Column index out of bounds: " + std::to_string(column_index);
-        throw std::runtime_error(msg);
+      //        auto msg = "Column index out of bounds: " + std::to_string(column_index);
+        throw column_string_index_exception();
     }
     
     auto temp = column_index;

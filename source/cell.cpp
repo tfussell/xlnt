@@ -8,6 +8,7 @@
 #include "common/relationship.hpp"
 #include "worksheet/worksheet.hpp"
 #include "detail/cell_impl.hpp"
+#include "common/exceptions.hpp"
 
 namespace xlnt {
     
@@ -164,8 +165,19 @@ void cell::set_explicit_value(const std::string &value, type data_type)
 
     switch(data_type)
     {
-        case type::null: return;
-        case type::formula: d_->string_value = value; return;
+        case type::null:
+	  if(value != "")
+	    {
+	      throw data_type_exception();
+	    }
+	  return;
+        case type::formula: 
+	  if(value.length() == 0 || value[0] != '=')
+	    {
+	      throw data_type_exception();
+	    }
+	  d_->string_value = value; 
+	  return;
         case type::error: d_->string_value = value; return;
         case type::boolean: d_->numeric_value = value == "true"; return;
         case type::numeric: d_->numeric_value = std::stod(value); return;
@@ -180,10 +192,9 @@ void cell::set_explicit_value(int value, type data_type)
 
     switch(data_type)
     {
-        case type::null: return;
         case type::numeric: d_->numeric_value = value; return;
         case type::string: d_->string_value = std::to_string(value); return;
-        default: throw std::runtime_error("bad enum");
+        default: throw data_type_exception();
     }
 }
 
@@ -193,10 +204,9 @@ void cell::set_explicit_value(double value, type data_type)
 
     switch(data_type)
     {
-        case type::null: return;
         case type::numeric: d_->numeric_value = value; return;
         case type::string: d_->string_value = std::to_string(value); return;
-        default: throw std::runtime_error("bad enum");
+        default: throw data_type_exception();
     }
 }
 
@@ -325,6 +335,7 @@ cell &cell::operator=(const cell &rhs)
 
 cell &cell::operator=(int value)
 {
+    d_->is_date_ = false;
     d_->type_ = type::numeric;
     d_->numeric_value = value;
     return *this;
@@ -332,6 +343,7 @@ cell &cell::operator=(int value)
 
 cell &cell::operator=(double value)
 {
+    d_->is_date_ = false;
     d_->type_ = type::numeric;
     d_->numeric_value = value;
     return *this;
@@ -339,6 +351,7 @@ cell &cell::operator=(double value)
 
 cell &cell::operator=(long int value)
 {
+    d_->is_date_ = false;
     d_->type_ = type::numeric;
     d_->numeric_value = value;
     return *this;
@@ -346,6 +359,7 @@ cell &cell::operator=(long int value)
 
 cell &cell::operator=(long double value)
 {
+    d_->is_date_ = false;
     d_->type_ = type::numeric;
     d_->numeric_value = value;
     return *this;
@@ -353,6 +367,7 @@ cell &cell::operator=(long double value)
 
 cell &cell::operator=(bool value)
 {
+    d_->is_date_ = false;
     d_->type_ = type::boolean;
     d_->numeric_value = value ? 1 : 0;
     return *this;
@@ -361,6 +376,7 @@ cell &cell::operator=(bool value)
 
 cell &cell::operator=(const std::string &value)
 {
+    d_->is_date_ = false;
     d_->type_ = data_type_for_value(value);
     
     switch((type)d_->type_)
@@ -369,7 +385,15 @@ cell &cell::operator=(const std::string &value)
             d_->string_value = value;
             break;
         case type::numeric:
-            d_->numeric_value = std::stod(value);
+	  if(value.find(':') != std::string::npos)
+	    {
+	      d_->is_date_ = true;
+	      d_->numeric_value = 0;
+	    }
+	  else
+	    {
+	      d_->numeric_value = std::stod(value);
+	    }
             break;
         case type::boolean:
             d_->numeric_value = value == "TRUE" || value == "true";
@@ -405,6 +429,7 @@ cell &cell::operator=(const date &value)
 {
     d_->type_ = type::numeric;
     d_->numeric_value = value.year;
+    d_->is_date_ = true;
     return *this;
 }
 
@@ -412,12 +437,13 @@ cell &cell::operator=(const datetime &value)
 {
     d_->type_ = type::numeric;
     d_->numeric_value = value.year;
+    d_->is_date_ = true;
     return *this;
 }
 
 std::string cell::to_string() const
 {
-    return "<Cell " + cell_reference(d_->column, d_->row).to_string() + ">";
+    return "<Cell " + worksheet(d_->parent_).get_title() + "." + get_reference().to_string() + ">";
 }
 
   std::string cell::get_hyperlink() const
@@ -425,9 +451,12 @@ std::string cell::to_string() const
     return "";
   }
 
-  void cell::set_hyperlink(const std::string &/*hyperlink*/)
+  void cell::set_hyperlink(const std::string &hyperlink)
   {
-    
+    if(hyperlink.length() == 0 || std::find(hyperlink.begin(), hyperlink.end(), ':') == hyperlink.end())
+      {
+	throw data_type_exception();
+      }
   }
 
   void cell::set_null()
@@ -437,12 +466,20 @@ std::string cell::to_string() const
 
   void cell::set_formula(const std::string &formula)
   {
+    if(formula.length() == 0 || formula[0] != '=')
+      {
+	throw data_type_exception();
+      }
     d_->type_ = type::formula;
     d_->string_value = formula;
   }
 
   void cell::set_error(const std::string &error)
   {
+    if(error.length() == 0 || error[0] != '#')
+      {
+	throw data_type_exception();
+      }
     d_->type_ = type::error;
     d_->string_value = error;
   }

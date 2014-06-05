@@ -18,7 +18,7 @@ public:
 
     void test_invalid_coordinate()
     {
-      TS_ASSERT_THROWS(xlnt::cell_reference("AAA"), xlnt::cell_coordinates_exception);
+        TS_ASSERT_THROWS(xlnt::cell_reference("AAA"), xlnt::cell_coordinates_exception);
     }
 
     void test_zero_row()
@@ -70,8 +70,7 @@ public:
     {
 	for(auto bad_string : {"JJJJ", "", "$", "1"})
         {
-	    TS_ASSERT_THROWS(xlnt::cell_reference::column_index_from_string(bad_string),
-	        xlnt::column_string_index_exception);
+	    TS_ASSERT_THROWS(xlnt::cell_reference::column_index_from_string(bad_string), xlnt::column_string_index_exception);
         }
     }
 
@@ -250,11 +249,11 @@ public:
 
         cell = "03:40:16";
         TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
-        TS_ASSERT(cell == xlnt::time(3, 40, 16));
+        TS_ASSERT_EQUALS(cell, xlnt::time(3, 40, 16));
 
         cell = "03:40";
         TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
-        TS_ASSERT(cell == xlnt::time(3, 40));
+        TS_ASSERT_EQUALS(cell, xlnt::time(3, 40));
     }
 
     void test_date_format_on_non_date()

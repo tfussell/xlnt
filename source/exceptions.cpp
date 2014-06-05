@@ -8,6 +8,18 @@ sheet_title_exception::sheet_title_exception(const std::string &title)
 
 }
 
+column_string_index_exception::column_string_index_exception()
+    : std::runtime_error("")
+{
+
+}
+
+data_type_exception::data_type_exception()
+    : std::runtime_error("")
+{
+
+}
+
 cell_coordinates_exception::cell_coordinates_exception(int row, int column)
     : std::runtime_error(std::string("bad cell coordinates: (") + std::to_string(row) + "," + std::to_string(column) + ")")
 {

@@ -110,16 +110,18 @@ public:
         return PathFileExists(path_wide.c_str()) && !PathIsDirectory(path_wide.c_str());
         
 #else
+        try
+	{
+	    struct stat fileAtt;
         
-        struct stat fileAtt;
-        
-        if (stat(path.c_str(), &fileAtt) != 0)
-        {
-            throw std::runtime_error("stat failed");
-        }
-        
-        return S_ISREG(fileAtt.st_mode);
-        
+	    if (stat(path.c_str(), &fileAtt) == 0)
+	    {
+	        return S_ISREG(fileAtt.st_mode);
+	    }
+	}
+	catch(...) {}
+
+	return false;
 #endif
         
     }

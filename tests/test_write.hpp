@@ -25,6 +25,7 @@ public:
 
     void test_write_virtual_workbook()
     {
+        TS_SKIP("");
         xlnt::workbook old_wb;
 	std::vector<unsigned char> saved_wb;
 	TS_ASSERT(old_wb.save(saved_wb));

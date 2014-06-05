@@ -12,7 +12,7 @@ public:
     {
       std::string fixture_content;
 
-      if(PathHelper::FileExists(fixture))
+      if(false)//PathHelper::FileExists(fixture))
 	{
 	  std::fstream fixture_file;
 	  fixture_file.open(fixture);

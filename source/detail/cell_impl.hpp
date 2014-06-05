@@ -9,12 +9,15 @@ namespace xlnt {
 class style;
 
 namespace detail {
+
+struct worksheet_impl;
     
 struct cell_impl
 {
     cell_impl();
-    cell_impl(int column_index, int row_index);
-    
+    cell_impl(worksheet_impl *parent, int column_index, int row_index);
+
+    worksheet_impl *parent_;
     cell::type type_;
     long double numeric_value;
     std::string string_value;

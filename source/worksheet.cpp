@@ -177,7 +177,7 @@ cell worksheet::get_cell(const cell_reference &reference)
     
     if(row.find(reference.get_column_index()) == row.end())
     {
-        row[reference.get_column_index()] = detail::cell_impl(reference.get_column_index(), reference.get_row_index());
+        row[reference.get_column_index()] = detail::cell_impl(d_, reference.get_column_index(), reference.get_row_index());
     }
     
     return cell(&row[reference.get_column_index()]);

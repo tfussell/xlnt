@@ -49,6 +49,8 @@ project "xlnt.test"
             "-std=c++11",
             "-Wno-unknown-pragmas"
         }
+    configuration { "not windows", "Debug" }
+        buildoptions { "-ggdb" }
 
 project "xlnt"
     kind "StaticLib"
@@ -85,6 +87,8 @@ project "xlnt"
             "-std=c++11",
             "-Wno-unknown-pragmas"
         }
+    configuration { "not windows", "Debug" }
+        buildoptions { "-ggdb" }
 
 project "pugixml"
     kind "StaticLib"
