@@ -1,6 +1,6 @@
 #include <locale>
 
-#include "range_reference.h"
+#include "worksheet/range_reference.hpp"
 
 namespace xlnt {
 

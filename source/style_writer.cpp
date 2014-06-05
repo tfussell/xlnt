@@ -1,4 +1,4 @@
-#include "style_writer.h"
+#include "writer/style_writer.hpp"
 
 namespace xlnt {
 

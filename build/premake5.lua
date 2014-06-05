@@ -28,7 +28,8 @@ project "xlnt.test"
         "xlnt",
         "zlib"
     }
-    prebuildcommands { "cxxtestgen --runner=ErrorPrinter -o ../../tests/runner-autogen.cpp ../../tests/*.h" }
+    prebuildcommands { "cxxtestgen --runner=ErrorPrinter -o ../../tests/runner-autogen.cpp ../../tests/*.hpp" }
+    postbuildcommands { "../../bin/xlnt.test" }
     flags { 
        "Unicode",
        "NoEditAndContinue",
@@ -65,11 +66,9 @@ project "xlnt"
        "../third-party/zlib/contrib/minizip"
     }
     files {
-       "../source/*.cpp",
-       "../source/*.h",
-       "../source/detail/*.cpp",
-       "../source/detail/*.h",
-       "../include/xlnt/*.h"
+       "../source/**.cpp",
+       "../source/**.h",
+       "../include/xlnt/**.h"
     }
     flags { 
        "Unicode",

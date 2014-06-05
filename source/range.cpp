@@ -1,7 +1,7 @@
-#include "range.h"
-#include "cell.h"
-#include "range_reference.h"
-#include "worksheet.h"
+#include "worksheet/range.hpp"
+#include "cell/cell.hpp"
+#include "worksheet/range_reference.hpp"
+#include "worksheet/worksheet.hpp"
 
 namespace xlnt {
 

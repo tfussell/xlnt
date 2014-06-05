@@ -1,33 +1,46 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<worksheet xml:space="preserve" xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-    <sheetPr>
-        <outlinePr summaryBelow="1" summaryRight="1" />
-    </sheetPr>
-    <dimension ref="A1:F3" />
-    <sheetViews>
-        <sheetView workbookViewId="0">
-            <selection activeCell="A1" sqref="A1" />
-        </sheetView>
-    </sheetViews>
-    <sheetFormatPr defaultRowHeight="15" />
-    <cols>
-        <col collapsed="0" max="6" min="6" width="9.10" />
-    </cols>    
-    <sheetData>
-        <row r="1" spans="1:6">
-            <c r="F1" t="n">
-                <v>10</v>
-            </c>
-        </row>
-        <row r="2" spans="1:6">
-            <c r="F2" t="n">
-                <v>32</v>
-            </c>
-        </row>
-        <row r="3" spans="1:6">
-            <c r="F3" t="f">
-                <f>F1+F2</f><v />
-            </c>
-        </row>
-    </sheetData>
+<?xml version="1.0"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheetPr>
+    <outlinePr summaryBelow="1" summaryRight="1"/>
+  </sheetPr>
+  <dimension ref="A1:F4"/>
+  <sheetViews>
+    <sheetView workbookViewId="0">
+      <selection activeCell="A1" sqref="A1"/>
+    </sheetView>
+  </sheetViews>
+  <sheetFormatPr baseColWidth="10" defaultRowHeight="15"/>
+  <sheetData>
+    <row r="1" spans="1:6">
+      <c r="F1" t="n">
+        <v>10</v>
+      </c>
+    </row>
+    <row r="2" spans="1:6">
+      <c r="F2" t="n">
+        <v>32</v>
+      </c>
+    </row>
+    <row r="3" spans="1:6">
+      <c r="F3">
+        <f>F1+F2</f>
+        <v/>
+      </c>
+    </row>
+    <row r="4" spans="1:6">
+      <c r="A4">
+        <f t="shared" ref="A4:C4" si="0">A1+A2+A3</f>
+        <v/>
+      </c>
+      <c r="B4">
+        <f t="shared" si="0"/>
+        <v/>
+      </c>
+      <c r="C4">
+        <f t="shared" si="0"/>
+        <v/>
+      </c>
+    </row>
+  </sheetData>
+  <pageMargins left="0.75" right="0.75" top="1" bottom="1" header="0.5" footer="0.5"/>
 </worksheet>

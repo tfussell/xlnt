@@ -1,7 +1,7 @@
 #include <array>
 #include <fstream>
 
-#include "zip_file.h"
+#include "common/zip_file.hpp"
 
 namespace xlnt {
 

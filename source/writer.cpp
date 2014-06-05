@@ -5,12 +5,12 @@
 
 #include <pugixml.hpp>
 
-#include "writer.h"
-#include "cell.h"
-#include "constants.h"
-#include "range.h"
-#include "range_reference.h"
-#include "worksheet.h"
+#include "writer/writer.hpp"
+#include "cell/cell.hpp"
+#include "constants.hpp"
+#include "worksheet/range.hpp"
+#include "worksheet/range_reference.hpp"
+#include "worksheet/worksheet.hpp"
 
 namespace xlnt {
 

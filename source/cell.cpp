@@ -2,12 +2,12 @@
 #include <locale>
 #include <sstream>
 
-#include "cell.h"
-#include "cell_reference.h"
-#include "datetime.h"
-#include "relationship.h"
-#include "worksheet.h"
-#include "detail/cell_impl.h"
+#include "cell/cell.hpp"
+#include "cell/cell_reference.hpp"
+#include "common/datetime.hpp"
+#include "common/relationship.hpp"
+#include "worksheet/worksheet.hpp"
+#include "detail/cell_impl.hpp"
 
 namespace xlnt {
     

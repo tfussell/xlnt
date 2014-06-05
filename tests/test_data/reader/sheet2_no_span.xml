@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheetFormatPr baseColWidth="10" defaultRowHeight="16" />
+  <sheetData>
+    <row r="1">
+      <c r="D1">
+        <v>1</v>
+      </c>
+      <c r="K1">
+        <v>0.01</v>
+      </c>
+      <c r="AA1">
+        <v>100</v>
+      </c>
+    </row>
+    <row r="2">
+      <c r="D2">
+        <v>2</v>
+      </c>
+      <c r="K2">
+        <v>0.02</v>
+      </c>
+      <c r="AA2">
+        <v>101</v>
+      </c>
+    </row>
+    <row r="3">
+      <c r="D3">
+        <v>3</v>
+      </c>
+      <c r="K3">
+        <v>0.03</v>
+      </c>
+      <c r="AA3">
+        <v>102</v>
+      </c>
+    </row>
+    <row r="4">
+      <c r="D4">
+        <v>4</v>
+      </c>
+      <c r="K4">
+        <v>0.04</v>
+      </c>
+      <c r="AA4">
+        <v>103</v>
+      </c>
+    </row>
+    <row r="5">
+      <c r="D5">
+        <v>5</v>
+      </c>
+      <c r="G5" t="s">
+        <v>1</v>
+      </c>
+      <c r="K5">
+        <v>0.05</v>
+      </c>
+      <c r="AA5">
+        <v>104</v>
+      </c>
+    </row>
+    <row r="6">
+      <c r="D6">
+        <v>6</v>
+      </c>
+      <c r="K6">
+        <v>0.06</v>
+      </c>
+      <c r="AA6">
+        <v>105</v>
+      </c>
+    </row>
+    <row r="7">
+      <c r="D7">
+        <v>7</v>
+      </c>
+      <c r="K7">
+        <v>7.0000000000000007E-2</v>
+      </c>
+      <c r="AA7">
+        <v>106</v>
+      </c>
+    </row>
+    <row r="8">
+      <c r="D8">
+        <v>8</v>
+      </c>
+      <c r="K8">
+        <v>0.08</v>
+      </c>
+      <c r="AA8">
+        <v>107</v>
+      </c>
+    </row>
+    <row r="9">
+      <c r="D9">
+        <v>9</v>
+      </c>
+      <c r="K9">
+        <v>0.09</v>
+      </c>
+      <c r="AA9">
+        <v>108</v>
+      </c>
+    </row>
+    <row r="10">
+      <c r="D10">
+        <v>10</v>
+      </c>
+      <c r="K10">
+        <v>0.1</v>
+      </c>
+      <c r="AA10">
+        <v>109</v>
+      </c>
+    </row>
+    <row r="11">
+      <c r="D11">
+        <v>11</v>
+      </c>
+      <c r="K11">
+        <v>0.11</v>
+      </c>
+      <c r="AA11">
+        <v>110</v>
+      </c>
+    </row>
+    <row r="12">
+      <c r="D12">
+        <v>12</v>
+      </c>
+      <c r="K12">
+        <v>0.12</v>
+      </c>
+      <c r="AA12">
+        <v>111</v>
+      </c>
+    </row>
+    <row r="13">
+      <c r="D13">
+        <v>13</v>
+      </c>
+      <c r="K13">
+        <v>0.13</v>
+      </c>
+      <c r="AA13">
+        <v>112</v>
+      </c>
+    </row>
+    <row r="14">
+      <c r="D14">
+        <v>14</v>
+      </c>
+      <c r="K14">
+        <v>0.14000000000000001</v>
+      </c>
+      <c r="AA14">
+        <v>113</v>
+      </c>
+    </row>
+    <row r="15">
+      <c r="D15">
+        <v>15</v>
+      </c>
+      <c r="K15">
+        <v>0.15</v>
+      </c>
+      <c r="AA15">
+        <v>114</v>
+      </c>
+    </row>
+    <row r="16">
+      <c r="D16">
+        <v>16</v>
+      </c>
+      <c r="K16">
+        <v>0.16</v>
+      </c>
+      <c r="AA16">
+        <v>115</v>
+      </c>
+    </row>
+    <row r="17">
+      <c r="D17">
+        <v>17</v>
+      </c>
+      <c r="K17">
+        <v>0.17</v>
+      </c>
+      <c r="AA17">
+        <v>116</v>
+      </c>
+    </row>
+    <row r="18">
+      <c r="D18">
+        <v>18</v>
+      </c>
+      <c r="K18">
+        <v>0.18</v>
+      </c>
+      <c r="AA18">
+        <v>117</v>
+      </c>
+    </row>
+    <row r="19">
+      <c r="D19">
+        <v>19</v>
+      </c>
+      <c r="K19">
+        <v>0.19</v>
+      </c>
+      <c r="AA19">
+        <v>118</v>
+      </c>
+    </row>
+    <row r="20">
+      <c r="D20">
+        <v>20</v>
+      </c>
+      <c r="K20">
+        <v>0.2</v>
+      </c>
+      <c r="AA20">
+        <v>119</v>
+      </c>
+    </row>
+    <row r="21">
+      <c r="D21">
+        <v>21</v>
+      </c>
+      <c r="K21">
+        <v>0.21</v>
+      </c>
+      <c r="AA21">
+        <v>120</v>
+      </c>
+    </row>
+    <row r="22">
+      <c r="D22">
+        <v>22</v>
+      </c>
+      <c r="K22">
+        <v>0.22</v>
+      </c>
+      <c r="AA22">
+        <v>121</v>
+      </c>
+    </row>
+    <row r="23">
+      <c r="D23">
+        <v>23</v>
+      </c>
+      <c r="K23">
+        <v>0.23</v>
+      </c>
+      <c r="AA23">
+        <v>122</v>
+      </c>
+    </row>
+    <row r="24">
+      <c r="D24">
+        <v>24</v>
+      </c>
+      <c r="K24">
+        <v>0.24</v>
+      </c>
+      <c r="AA24">
+        <v>123</v>
+      </c>
+    </row>
+    <row r="25">
+      <c r="D25">
+        <v>25</v>
+      </c>
+      <c r="K25">
+        <v>0.25</v>
+      </c>
+      <c r="AA25">
+        <v>124</v>
+      </c>
+    </row>
+    <row r="26">
+      <c r="D26">
+        <v>26</v>
+      </c>
+      <c r="K26">
+        <v>0.26</v>
+      </c>
+      <c r="AA26">
+        <v>125</v>
+      </c>
+    </row>
+    <row r="27">
+      <c r="D27">
+        <v>27</v>
+      </c>
+      <c r="K27">
+        <v>0.27</v>
+      </c>
+      <c r="AA27">
+        <v>126</v>
+      </c>
+    </row>
+    <row r="28">
+      <c r="D28">
+        <v>28</v>
+      </c>
+      <c r="K28">
+        <v>0.28000000000000003</v>
+      </c>
+      <c r="AA28">
+        <v>127</v>
+      </c>
+    </row>
+    <row r="29">
+      <c r="D29">
+        <v>29</v>
+      </c>
+      <c r="K29">
+        <v>0.28999999999999998</v>
+      </c>
+      <c r="AA29">
+        <v>128</v>
+      </c>
+    </row>
+    <row r="30">
+      <c r="D30">
+        <v>30</v>
+      </c>
+      <c r="K30">
+        <v>0.3</v>
+      </c>
+      <c r="AA30">
+        <v>129</v>
+      </c>
+    </row>
+  </sheetData>
+  <pageMargins left="0.75" right="0.75" top="1" bottom="1" header="0.5" footer="0.5"/>
+</worksheet>

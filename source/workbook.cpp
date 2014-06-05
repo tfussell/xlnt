@@ -3,18 +3,18 @@
 #include <sstream>
 #include <pugixml.hpp>
 
-#include "workbook.h"
-#include "custom_exceptions.h"
-#include "drawing.h"
-#include "range.h"
-#include "reader.h"
-#include "relationship.h"
-#include "worksheet.h"
-#include "writer.h"
-#include "zip_file.h"
-#include "detail/cell_impl.h"
-#include "detail/workbook_impl.h"
-#include "detail/worksheet_impl.h"
+#include "workbook/workbook.hpp"
+#include "common/exceptions.hpp"
+#include "drawing/drawing.hpp"
+#include "worksheet/range.hpp"
+#include "reader/reader.hpp"
+#include "common/relationship.hpp"
+#include "worksheet/worksheet.hpp"
+#include "writer/writer.hpp"
+#include "common/zip_file.hpp"
+#include "detail/cell_impl.hpp"
+#include "detail/workbook_impl.hpp"
+#include "detail/worksheet_impl.hpp"
 
 namespace xlnt {
 namespace detail {
@@ -320,13 +320,13 @@ worksheet workbook::create_sheet(const std::string &title)
 {
     if(title.length() > 31)
     {
-        throw bad_sheet_title(title);
+        throw sheet_title_exception(title);
     }
     
     if(std::find_if(title.begin(), title.end(),
                     [](char c) { return c == '*' || c == ':' || c == '/' || c == '\\' || c == '?' || c == '[' || c == ']'; }) != title.end())
     {
-        throw bad_sheet_title(title);
+        throw sheet_title_exception(title);
     }
     
     if(std::find_if(d_->worksheets_.begin(), d_->worksheets_.end(), [&](detail::worksheet_impl &ws) { return worksheet(&ws).get_title() == title; }) != d_->worksheets_.end())

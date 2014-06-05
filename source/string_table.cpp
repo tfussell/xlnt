@@ -1,6 +1,6 @@
 #include <stdexcept>
 
-#include "string_table.h"
+#include "common/string_table.hpp"
 
 namespace xlnt {
     

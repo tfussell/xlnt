@@ -1,12 +1,12 @@
 #include <algorithm>
 #include <pugixml.hpp>
 
-#include "reader.h"
-#include "cell.h"
-#include "datetime.h"
-#include "range_reference.h"
-#include "workbook.h"
-#include "worksheet.h"
+#include "reader/reader.hpp"
+#include "cell/cell.hpp"
+#include "common/datetime.hpp"
+#include "worksheet/range_reference.hpp"
+#include "workbook/workbook.hpp"
+#include "worksheet/worksheet.hpp"
 
 namespace xlnt {
 

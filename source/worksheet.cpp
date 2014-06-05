@@ -1,13 +1,13 @@
 #include <algorithm>
 
-#include "worksheet.h"
-#include "cell.h"
-#include "datetime.h"
-#include "range.h"
-#include "range_reference.h"
-#include "relationship.h"
-#include "workbook.h"
-#include "detail/worksheet_impl.h"
+#include "worksheet/worksheet.hpp"
+#include "cell/cell.hpp"
+#include "common/datetime.hpp"
+#include "worksheet/range.hpp"
+#include "worksheet/range_reference.hpp"
+#include "common/relationship.hpp"
+#include "workbook/workbook.hpp"
+#include "detail/worksheet_impl.hpp"
 
 namespace xlnt {
 
