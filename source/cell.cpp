@@ -388,7 +388,7 @@ cell &cell::operator=(const std::string &value)
 	  if(value.find(':') != std::string::npos)
 	    {
 	      d_->is_date_ = true;
-	      d_->numeric_value = 0;
+	      d_->numeric_value = time(value).to_number();
 	    }
 	  else
 	    {
@@ -457,6 +457,8 @@ std::string cell::to_string() const
       {
 	throw data_type_exception();
       }
+    d_->hyperlink_ = hyperlink;
+    *this = hyperlink;
   }
 
   void cell::set_null()

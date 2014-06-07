@@ -22,6 +22,8 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <string>
+
 namespace xlnt {
 
 struct date
@@ -44,6 +46,9 @@ struct time
     }
 
     explicit time(long double number);
+    explicit time(const std::string &time_string);
+
+    double to_number() const;
 
     int hour;
     int minute;

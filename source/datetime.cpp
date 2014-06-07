@@ -5,7 +5,7 @@
 
 namespace xlnt {
 
-time::time(long double raw_time)
+time::time(long double raw_time) : hour(0), minute(0), second(0), microsecond(0)
 {
     double integer_part;
     double fractional_part = std::modf(raw_time, &integer_part);
@@ -17,6 +17,35 @@ time::time(long double raw_time)
     second = (int)fractional_part;
     fractional_part = 1000000 * (fractional_part - second);
     microsecond = (int)fractional_part;
+}
+
+time::time(const std::string &time_string) : hour(0), minute(0), second(0), microsecond(0)
+{
+    std::string remaining = time_string;
+    auto colon_index = remaining.find(':');
+    hour = std::stoi(remaining.substr(0, colon_index));
+    remaining = remaining.substr(colon_index + 1);
+    colon_index = remaining.find(':');
+    minute = std::stoi(remaining.substr(0, colon_index));
+    colon_index = remaining.find(':');
+    if(colon_index != std::string::npos)
+    {
+	remaining = remaining.substr(colon_index + 1);    
+	second = std::stoi(remaining);
+    }
+}
+
+double time::to_number() const
+{
+    double number = microsecond;
+    number /= 1000000;
+    number += second;
+    number /= 60;
+    number += minute;
+    number /= 60;
+    number += hour;
+    number /= 24;
+    return number;
 }
 
 datetime datetime::now()

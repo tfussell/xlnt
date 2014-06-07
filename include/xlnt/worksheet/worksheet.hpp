@@ -35,11 +35,12 @@ namespace xlnt {
     
 class cell;
 class cell_reference;
-class date;
 class range;
 class range_reference;
 class relationship;
 class workbook;
+
+struct date;
 
 namespace detail {    
 struct worksheet_impl;

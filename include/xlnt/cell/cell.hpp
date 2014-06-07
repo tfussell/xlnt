@@ -33,10 +33,11 @@
 namespace xlnt {
     
 class cell_reference;
-class date;
-class datetime;
-class time;
 class worksheet;
+
+struct date;
+struct datetime;
+struct time;
 
 namespace detail {    
 struct cell_impl;

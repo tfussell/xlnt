@@ -32,7 +32,7 @@ public:
         xlnt::worksheet ws(wb);
         {
             std::ifstream handle(path);
-            ws = xlnt::reader::read_worksheet(handle, wb, "Sheet 2", {"", "hello"});
+            ws = xlnt::reader::read_worksheet(handle, wb, "Sheet 2", {"hello"});
         }
         TS_ASSERT_DIFFERS(ws, nullptr);
         if(!(ws == nullptr))
@@ -110,7 +110,7 @@ public:
         wb.load(path);
         auto sheet2 = wb.get_sheet_by_name("Sheet2 - Numbers");
         auto dimensions = sheet2.calculate_dimension();
-        TS_ASSERT_EQUALS("D1:K30", dimensions.to_string());
+        TS_ASSERT_EQUALS("D1:AA30", dimensions.to_string());
     }
 
     void test_get_highest_row_iter()

@@ -114,7 +114,7 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
                     {
                         cell_node.append_attribute("t").set_value("inlineStr");
                         auto inline_string_node = cell_node.append_child("is");
-                        inline_string_node.append_child("t").set_value(cell.get_value().c_str());
+                        inline_string_node.append_child("t").text().set(cell.get_value().c_str());
                     }
                     else
                     {
