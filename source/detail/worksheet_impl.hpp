@@ -15,6 +15,12 @@ struct worksheet_impl
     worksheet_impl(workbook *parent_workbook, const std::string &title)
     : parent_(parent_workbook), title_(title), freeze_panes_("A1")
     {
+        page_margins_.set_left(0.75);
+        page_margins_.set_right(0.75);
+        page_margins_.set_top(1);
+        page_margins_.set_bottom(1);
+        page_margins_.set_header(0.5);
+        page_margins_.set_footer(0.5);
     }
     
     worksheet_impl(const worksheet_impl &other)

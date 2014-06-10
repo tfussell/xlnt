@@ -28,7 +28,7 @@ workbook::workbook(optimization optimize) : d_(new detail::workbook_impl(optimiz
 {
     if(!d_->optimized_read_)
     {
-        create_sheet("Sheet1");
+        create_sheet("Sheet");
     }
 }
 
@@ -147,9 +147,12 @@ worksheet workbook::create_sheet()
     {
         title = "Sheet" + std::to_string(++index);
     }
-    
+
     d_->worksheets_.emplace_back(this, title);
-    return worksheet(&d_->worksheets_.back());
+    worksheet ws(&d_->worksheets_.back());
+    ws.get_cell("A1");
+    
+    return ws;
 }
 
 void workbook::add_sheet(xlnt::worksheet worksheet)
@@ -421,7 +424,7 @@ bool workbook::save(const std::string &filename)
     
     f.set_file_contents("[Content_Types].xml", writer::write_content_types(content_types));
     
-    std::unordered_map<std::string, std::pair<std::string, std::string>> root_rels =
+    std::vector<std::pair<std::string, std::pair<std::string, std::string>>> root_rels =
     {
         {"rId3", {"http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties", "docProps/app.xml"}},
         {"rId2", {"http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties", "docProps/core.xml"}},
@@ -429,7 +432,7 @@ bool workbook::save(const std::string &filename)
     };
     f.set_file_contents("_rels/.rels", writer::write_relationships(root_rels));
     
-    std::unordered_map<std::string, std::pair<std::string, std::string>> workbook_rels =
+    std::vector<std::pair<std::string, std::pair<std::string, std::string>>> workbook_rels =
     {
         {"rId1", {"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet", "worksheets/sheet1.xml"}},
         {"rId2", {"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles", "styles.xml"}},

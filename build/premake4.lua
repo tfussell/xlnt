@@ -17,7 +17,7 @@ project "xlnt.test"
        "$(cxxtest_prefix)"
     }
     files { 
-       "../tests/*.h",
+       "../tests/*.hpp",
        "../tests/runner-autogen.cpp"
     }
     links { 
@@ -25,7 +25,7 @@ project "xlnt.test"
         "xlnt",
         "zlib"
     }
-    prebuildcommands { "cxxtestgen --runner=ErrorPrinter -o ../../tests/runner-autogen.cpp ../../tests/*.h" }
+    prebuildcommands { "/usr/local/Cellar/cxxtest/4.3/bin/cxxtestgen --runner=ErrorPrinter -o /Users/thomas/Development/xlnt/tests/runner-autogen.cpp /Users/thomas/Development/xlnt/tests/*.hpp" }
     flags { 
        "Unicode",
        "NoEditAndContinue",
@@ -60,8 +60,9 @@ project "xlnt"
        "../third-party/zlib/contrib/minizip"
     }
     files {
-       "../source/*.cpp",
-       "../include/xlnt/*.h"
+       "../source/**.cpp",
+       "../source/**.hpp",
+       "../include/xlnt/**.hpp"
     }
     flags { 
        "Unicode",

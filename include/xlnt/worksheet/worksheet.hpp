@@ -102,7 +102,7 @@ public:
     page_break get_break() const { return break_; }
     void set_break(page_break b) { default_ = false; break_ = b; }
     sheet_state get_sheet_state() const { return sheet_state_; }
-    void set_sheet_state(sheet_state sheet_state) { default_ = false; sheet_state_ = sheet_state; }
+    void set_sheet_state(sheet_state sheet_state) { sheet_state_ = sheet_state; }
     paper_size get_paper_size() const { return paper_size_; }
     void set_paper_size(paper_size paper_size) { default_ = false; paper_size_ = paper_size; }
     orientation get_orientation() const { return orientation_; }

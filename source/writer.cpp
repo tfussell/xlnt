@@ -11,17 +11,39 @@
 #include "worksheet/range.hpp"
 #include "worksheet/range_reference.hpp"
 #include "worksheet/worksheet.hpp"
+#include "workbook/workbook.hpp"
 
 namespace xlnt {
 
-std::string writer::write_string_table(const std::unordered_map<std::string, int> &/*string_table*/)
+std::string writer::write_string_table(const std::vector<std::string> &string_table)
 {
-  return "";
+    pugi::xml_document doc;
+    auto root_node = doc.append_child("sst");
+    root_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
+    root_node.append_attribute("uniqueCount").set_value((int)string_table.size());
+    
+    for(auto string : string_table)
+    {
+        root_node.append_child("si").append_child("t").text().set(string.c_str());
+    }
+    
+    std::stringstream ss;
+    doc.save(ss);
+    
+    return ss.str();
 }
 
 std::string writer::write_workbook_rels(const workbook &/*wb*/)
 {
-  return "";
+    static const std::vector<std::pair<std::string, std::pair<std::string, std::string>>> rels =
+    {
+        {"rId1", {"worksheets/sheet1.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"}},
+        {"rId2", {"sharedStrings.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"}},
+        {"rId3", {"styles.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"}},
+        {"rId4", {"theme/theme1.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme"}}
+    };
+    
+    return write_relationships(rels);
 }
 
 std::string writer::write_worksheet_rels(worksheet /*ws*/, int)
@@ -30,9 +52,58 @@ std::string writer::write_worksheet_rels(worksheet /*ws*/, int)
 }
 
 
-std::string writer::write_workbook(const workbook &/*wb*/)
+std::string writer::write_workbook(const workbook &wb)
 {
-  return "";
+    pugi::xml_document doc;
+    auto root_node = doc.append_child("workbook");
+    root_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
+    root_node.append_attribute("xmlns:r").set_value("http://schemas.openxmlformats.org/officeDocument/2006/relationships");
+    
+    auto file_version_node = root_node.append_child("fileVersion");
+    file_version_node.append_attribute("appName").set_value("xl");
+    file_version_node.append_attribute("lastEdited").set_value("4");
+    file_version_node.append_attribute("lowestEdited").set_value("4");
+    file_version_node.append_attribute("rupBuild").set_value("4505");
+    
+    auto workbook_pr_node = root_node.append_child("workbookPr");
+    workbook_pr_node.append_attribute("codeName").set_value("ThisWorkbook");
+    workbook_pr_node.append_attribute("defaultThemeVersion").set_value("124226");
+    
+    auto book_views_node = root_node.append_child("bookViews");
+    auto workbook_view_node = book_views_node.append_child("workbookView");
+    workbook_view_node.append_attribute("activeTab").set_value("0");
+    workbook_view_node.append_attribute("autoFilterDateGrouping").set_value("1");
+    workbook_view_node.append_attribute("firstSheet").set_value("0");
+    workbook_view_node.append_attribute("minimized").set_value("0");
+    workbook_view_node.append_attribute("showHorizontalScroll").set_value("1");
+    workbook_view_node.append_attribute("showSheetTabs").set_value("1");
+    workbook_view_node.append_attribute("showVerticalScroll").set_value("1");
+    workbook_view_node.append_attribute("tabRatio").set_value("600");
+    workbook_view_node.append_attribute("visibility").set_value("visible");
+    
+    auto sheets_node = root_node.append_child("sheets");
+    
+    int i = 0;
+    for(auto ws : wb)
+    {
+        auto sheet_node = sheets_node.append_child("sheet");
+        sheet_node.append_attribute("name").set_value(ws.get_title().c_str());
+        sheet_node.append_attribute("r:id").set_value((std::string("rId") + std::to_string(i + 1)).c_str());
+        sheet_node.append_attribute("sheetId").set_value(std::to_string(i + 1).c_str());
+        i++;
+    }
+    
+    root_node.append_child("definedNames");
+    
+    auto calc_pr_node = root_node.append_child("calcPr");
+    calc_pr_node.append_attribute("calcId").set_value("124519");
+    calc_pr_node.append_attribute("calcMode").set_value("auto");
+    calc_pr_node.append_attribute("fullCalcOnLoad").set_value("1");
+    
+    std::stringstream ss;
+    doc.save(ss);
+    
+    return ss.str();
 }
 
 std::string writer::write_worksheet(worksheet ws, const std::vector<std::string> &string_table)
@@ -46,20 +117,24 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
     auto root_node = doc.append_child("worksheet");
     root_node.append_attribute("xmlns").set_value(constants::Namespaces.at("spreadsheetml").c_str());
     root_node.append_attribute("xmlns:r").set_value(constants::Namespaces.at("r").c_str());
+    auto sheet_pr_node = root_node.append_child("sheetPr");
+    auto outline_pr_node = sheet_pr_node.append_child("outlinePr");
+    outline_pr_node.append_attribute("summaryBelow").set_value(1);
+    outline_pr_node.append_attribute("summaryRight").set_value(1);
     auto dimension_node = root_node.append_child("dimension");
     dimension_node.append_attribute("ref").set_value(ws.calculate_dimension().to_string().c_str());
     auto sheet_views_node = root_node.append_child("sheetViews");
     auto sheet_view_node = sheet_views_node.append_child("sheetView");
-    sheet_view_node.append_attribute("tabSelected").set_value(1);
     sheet_view_node.append_attribute("workbookViewId").set_value(0);
     
     auto selection_node = sheet_view_node.append_child("selection");
     
-    std::string active_cell = "B2";
+    std::string active_cell = "A1";
     selection_node.append_attribute("activeCell").set_value(active_cell.c_str());
     selection_node.append_attribute("sqref").set_value(active_cell.c_str());
     
     auto sheet_format_pr_node = root_node.append_child("sheetFormatPr");
+    sheet_format_pr_node.append_attribute("baseColWidth").set_value(10);
     sheet_format_pr_node.append_attribute("defaultRowHeight").set_value(15);
     
     auto sheet_data_node = root_node.append_child("sheetData");
@@ -89,7 +164,7 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
         row_node.append_attribute("r").set_value(row.front().get_row());
         
         row_node.append_attribute("spans").set_value((std::to_string(min) + ":" + std::to_string(max)).c_str());
-        row_node.append_attribute("x14ac:dyDescent").set_value(0.25);
+        //row_node.append_attribute("x14ac:dyDescent").set_value(0.25);
         
         for(auto cell : row)
         {
@@ -127,8 +202,23 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
                 {
                     if(cell.get_data_type() != cell::type::null)
                     {
-                        auto value_node = cell_node.append_child("v");
-                        value_node.text().set(cell.get_value().c_str());
+                        if(cell.get_data_type() == cell::type::boolean)
+                        {
+                            cell_node.append_attribute("t").set_value("b");
+                            auto value_node = cell_node.append_child("v");
+                            value_node.text().set(cell.get_value().c_str());
+                        }
+                        else if(cell.get_data_type() == cell::type::numeric)
+                        {
+                            cell_node.append_attribute("t").set_value("n");
+                            auto value_node = cell_node.append_child("v");
+                            value_node.text().set(cell.get_value().c_str());
+                        }
+                        else if(cell.get_data_type() == cell::type::formula)
+                        {
+                            cell_node.append_child("f").text().set(cell.get_value().substr(1).c_str());
+                            cell_node.append_child("v");
+                        }
                     }
                 }
             }
@@ -147,17 +237,14 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
         }
     }
     
-    if(!ws.get_page_margins().is_default())
-    {
-        auto page_margins_node = root_node.append_child("pageMargins");
+    auto page_margins_node = root_node.append_child("pageMargins");
         
-        page_margins_node.append_attribute("left").set_value(ws.get_page_margins().get_left());
-        page_margins_node.append_attribute("right").set_value(ws.get_page_margins().get_right());
-        page_margins_node.append_attribute("top").set_value(ws.get_page_margins().get_top());
-        page_margins_node.append_attribute("bottom").set_value(ws.get_page_margins().get_bottom());
-        page_margins_node.append_attribute("header").set_value(ws.get_page_margins().get_header());
-        page_margins_node.append_attribute("footer").set_value(ws.get_page_margins().get_footer());
-    }
+    page_margins_node.append_attribute("left").set_value(ws.get_page_margins().get_left());
+    page_margins_node.append_attribute("right").set_value(ws.get_page_margins().get_right());
+    page_margins_node.append_attribute("top").set_value(ws.get_page_margins().get_top());
+    page_margins_node.append_attribute("bottom").set_value(ws.get_page_margins().get_bottom());
+    page_margins_node.append_attribute("header").set_value(ws.get_page_margins().get_header());
+    page_margins_node.append_attribute("footer").set_value(ws.get_page_margins().get_footer());
     
     if(!ws.get_page_setup().is_default())
     {
@@ -307,7 +394,7 @@ std::string writer::write_content_types(const std::pair<std::unordered_map<std::
     return ss.str();
 }
 
-std::string writer::write_relationships(const std::unordered_map<std::string, std::pair<std::string, std::string>> &relationships)
+std::string writer::write_relationships(const std::vector<std::pair<std::string, std::pair<std::string, std::string>>> &relationships)
 {
     pugi::xml_document doc;
     auto root_node = doc.append_child("Relationships");
@@ -317,8 +404,8 @@ std::string writer::write_relationships(const std::unordered_map<std::string, st
     {
         auto app_props_node = root_node.append_child("Relationship");
         app_props_node.append_attribute("Id").set_value(relationship.first.c_str());
-        app_props_node.append_attribute("Type").set_value(relationship.second.first.c_str());
-        app_props_node.append_attribute("Target").set_value(relationship.second.second.c_str());
+        app_props_node.append_attribute("Target").set_value(relationship.second.first.c_str());
+        app_props_node.append_attribute("Type").set_value(relationship.second.second.c_str());
     }
     
     std::stringstream ss;

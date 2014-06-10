@@ -74,10 +74,6 @@ bool range_reference::is_single_cell() const
 
 std::string range_reference::to_string() const
 {
-    if(is_single_cell())
-    {
-        return top_left_.to_string();
-    }
     return top_left_.to_string() + ":" + bottom_right_.to_string();
 }
 

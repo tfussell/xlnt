@@ -52,7 +52,7 @@ std::string cell::get_value() const
     case type::string:
         return d_->string_value;
     case type::numeric:
-        return std::to_string(d_->numeric_value);
+            return std::floor(d_->numeric_value) == d_->numeric_value ? std::to_string((int)d_->numeric_value) : std::to_string(d_->numeric_value);
     case type::formula:
         return d_->string_value;
     case type::error:
@@ -60,7 +60,7 @@ std::string cell::get_value() const
     case type::null:
         return "";
     case type::boolean:
-        return d_->numeric_value != 0 ? "TRUE" : "FALSE";
+        return d_->numeric_value != 0 ? "1" : "0";
     default:
         throw std::runtime_error("bad enum");
     }
