@@ -37,6 +37,8 @@ class style_writer
 {
  public:
   style_writer(workbook &wb);
+  style_writer(const style_writer &);
+  style_writer &operator=(const style_writer &);
   std::unordered_map<std::size_t, std::string> get_style_by_hash() const;
   std::string write_table() const;
 

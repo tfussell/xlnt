@@ -21,7 +21,8 @@ struct cell_impl
     cell::type type_;
     long double numeric_value;
     std::string string_value;
-    std::string hyperlink_;
+    bool has_hyperlink_;
+    relationship hyperlink_;
     column_t column;
     row_t row;
     bool merged;

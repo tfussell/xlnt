@@ -51,7 +51,7 @@ public:
     {
         xlnt::worksheet ws(wb);
         ws.get_cell("A1") = "AAA";
-        TS_ASSERT_EQUALS("A1", ws.calculate_dimension().to_string());
+        TS_ASSERT_EQUALS("A1:A1", ws.calculate_dimension().to_string());
         ws.get_cell("B12") = "AAA";
         TS_ASSERT_EQUALS("A1:B12", ws.calculate_dimension().to_string());
     }
@@ -147,21 +147,20 @@ public:
     void test_hyperlink_relationships()
     {
         xlnt::worksheet ws(wb);
-        TS_SKIP("test_hyperlink_relationships");
         TS_ASSERT_EQUALS(ws.get_relationships().size(), 0);
 
-        ws.get_cell("A1").set_hyperlink("http:test.com");
+        ws.get_cell("A1").set_hyperlink("http://test.com");
         TS_ASSERT_EQUALS(ws.get_relationships().size(), 1);
-        TS_ASSERT_EQUALS("rId1", ws.get_cell("A1").get_hyperlink());
+        TS_ASSERT_EQUALS("rId1", ws.get_cell("A1").get_hyperlink().get_id());
         TS_ASSERT_EQUALS("rId1", ws.get_relationships()[0].get_id());
-        TS_ASSERT_EQUALS("http:test.com", ws.get_relationships()[0].get_target_uri());
+        TS_ASSERT_EQUALS("http://test.com", ws.get_relationships()[0].get_target_uri());
         TS_ASSERT_EQUALS(xlnt::target_mode::external, ws.get_relationships()[0].get_target_mode());
 
-        ws.get_cell("A2").set_hyperlink("http:test2.com");
+        ws.get_cell("A2").set_hyperlink("http://test2.com");
         TS_ASSERT_EQUALS(ws.get_relationships().size(), 2);
-        TS_ASSERT_EQUALS("rId2", ws.get_cell("A2").get_hyperlink());
+        TS_ASSERT_EQUALS("rId2", ws.get_cell("A2").get_hyperlink().get_id());
         TS_ASSERT_EQUALS("rId2", ws.get_relationships()[1].get_id());
-        TS_ASSERT_EQUALS("http:test2.com", ws.get_relationships()[1].get_target_uri());
+        TS_ASSERT_EQUALS("http://test2.com", ws.get_relationships()[1].get_target_uri());
         TS_ASSERT_EQUALS(xlnt::target_mode::external, ws.get_relationships()[1].get_target_mode());
     }
 
@@ -276,7 +275,18 @@ public:
         xlnt::worksheet ws2(wb);
         xml_string = xlnt::writer::write_worksheet(ws2);
         doc.load(xml_string.c_str());
-        TS_ASSERT_EQUALS(doc.child("worksheet").child("pageMargins"), nullptr);
+        TS_ASSERT_DIFFERS(page_margins_node.attribute("left"), nullptr);
+        TS_ASSERT_EQUALS(page_margins_node.attribute("left").as_double(), 0.75);
+        TS_ASSERT_DIFFERS(page_margins_node.attribute("right"), nullptr);
+        TS_ASSERT_EQUALS(page_margins_node.attribute("right").as_double(), 0.75);
+        TS_ASSERT_DIFFERS(page_margins_node.attribute("top"), nullptr);
+        TS_ASSERT_EQUALS(page_margins_node.attribute("top").as_double(), 1);
+        TS_ASSERT_DIFFERS(page_margins_node.attribute("bottom"), nullptr);
+        TS_ASSERT_EQUALS(page_margins_node.attribute("bottom").as_double(), 1);
+        TS_ASSERT_DIFFERS(page_margins_node.attribute("header"), nullptr);
+        TS_ASSERT_EQUALS(page_margins_node.attribute("header").as_double(), 0.5);
+        TS_ASSERT_DIFFERS(page_margins_node.attribute("footer"), nullptr);
+        TS_ASSERT_EQUALS(page_margins_node.attribute("footer").as_double(), 0.5);
     }
 
     void test_merge()

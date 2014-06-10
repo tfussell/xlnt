@@ -33,6 +33,7 @@
 namespace xlnt {
     
 class cell_reference;
+class relationship;
 class worksheet;
 
 struct date;
@@ -56,15 +57,15 @@ typedef std::string comment;
 /// </remarks>
 class cell
 {
-public:    
+public:
     enum class type
     {
         null,
-	numeric,
-	string,
-	formula,
-	boolean,
-	error
+        numeric,
+        string,
+        formula,
+        boolean,
+        error
     };
 
     static const std::unordered_map<std::string, int> ErrorCodes;
@@ -94,8 +95,9 @@ public:
     bool is_merged() const;
     void set_merged(bool merged);
     
-    std::string get_hyperlink() const;
+    relationship get_hyperlink() const;
     void set_hyperlink(const std::string &value);
+    bool has_hyperlink() const;
     
     void set_number_format(const std::string &format_code);
     
@@ -128,6 +130,7 @@ public:
     cell &operator=(int value);
     cell &operator=(double value);
     cell &operator=(long int value);
+    cell &operator=(long long value);
     cell &operator=(long double value);
     cell &operator=(const std::string &value);
     cell &operator=(const char *value);

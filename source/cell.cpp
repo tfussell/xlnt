@@ -52,7 +52,7 @@ std::string cell::get_value() const
     case type::string:
         return d_->string_value;
     case type::numeric:
-            return std::floor(d_->numeric_value) == d_->numeric_value ? std::to_string((int)d_->numeric_value) : std::to_string(d_->numeric_value);
+            return std::floor(d_->numeric_value) == d_->numeric_value ? std::to_string((long long)d_->numeric_value) : std::to_string(d_->numeric_value);
     case type::formula:
         return d_->string_value;
     case type::error:
@@ -247,7 +247,7 @@ bool cell::operator==(double comparand) const
 
 bool cell::operator==(const std::string &comparand) const
 {
-    if(d_->type_ == type::string)
+    if(d_->type_ == type::string || d_->type_ == type::formula)
     {
         return d_->string_value == comparand;
     }
@@ -357,6 +357,14 @@ cell &cell::operator=(long int value)
     return *this;
 }
 
+cell &cell::operator=(long long value)
+{
+    d_->is_date_ = false;
+    d_->type_ = type::numeric;
+    d_->numeric_value = (long double)value;
+    return *this;
+}
+
 cell &cell::operator=(long double value)
 {
     d_->is_date_ = false;
@@ -446,44 +454,62 @@ std::string cell::to_string() const
     return "<Cell " + worksheet(d_->parent_).get_title() + "." + get_reference().to_string() + ">";
 }
 
-  std::string cell::get_hyperlink() const
-  {
-    return "";
-  }
+relationship cell::get_hyperlink() const
+{
+    if(!d_->has_hyperlink_)
+    {
+        throw std::runtime_error("no hyperlink set");
+    }
 
-  void cell::set_hyperlink(const std::string &hyperlink)
-  {
+    return d_->hyperlink_;
+}
+
+bool cell::has_hyperlink() const
+{
+    return d_->has_hyperlink_;
+}
+
+void cell::set_hyperlink(const std::string &hyperlink)
+{
     if(hyperlink.length() == 0 || std::find(hyperlink.begin(), hyperlink.end(), ':') == hyperlink.end())
-      {
-	throw data_type_exception();
-      }
-    d_->hyperlink_ = hyperlink;
-    *this = hyperlink;
-  }
+    {
+        throw data_type_exception();
+    }
 
-  void cell::set_null()
-  {
+    d_->has_hyperlink_ = true;
+    d_->hyperlink_ = worksheet(d_->parent_).create_relationship("hyperlink", hyperlink);
+
+    if(d_->type_ == type::null)
+    {
+        *this = hyperlink;
+    }
+}
+
+void cell::set_null()
+{
     d_->type_ = type::null;
-  }
+}
 
-  void cell::set_formula(const std::string &formula)
-  {
+void cell::set_formula(const std::string &formula)
+{
     if(formula.length() == 0 || formula[0] != '=')
-      {
-	throw data_type_exception();
-      }
+    {
+        throw data_type_exception();
+    }
+
     d_->type_ = type::formula;
     d_->string_value = formula;
-  }
+}
 
-  void cell::set_error(const std::string &error)
-  {
+void cell::set_error(const std::string &error)
+{
     if(error.length() == 0 || error[0] != '#')
-      {
-	throw data_type_exception();
-      }
+    {
+        throw data_type_exception();
+    }
+
     d_->type_ = type::error;
     d_->string_value = error;
-  }
+}
 
 } // namespace xlnt

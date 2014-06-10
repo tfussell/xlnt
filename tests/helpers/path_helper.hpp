@@ -59,7 +59,7 @@ public:
 #elif defined(_WIN32)
         
         std::array<TCHAR, MAX_PATH> buffer;
-        DWORD result = GetModuleFileName(nullptr, buffer.data(), buffer.size());
+        DWORD result = GetModuleFileName(nullptr, buffer.data(), (DWORD)buffer.size());
         
         if(result == 0 || result == buffer.size())
         {

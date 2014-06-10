@@ -9,13 +9,9 @@
 class test_dump : public CxxTest::TestSuite
 {
 public:
-    test_dump() : wb(xlnt::optimization::write)
-    {
-        
-    }
-
     void test_dump_sheet_title()
     {
+        xlnt::workbook wb(xlnt::optimization::write);
         auto ws = wb.create_sheet("Test1");
         wb.save(temp_file.GetFilename());
         xlnt::workbook wb2;
@@ -27,9 +23,8 @@ public:
 
     void test_dump_sheet()
     {
-	TS_SKIP("");
-        auto test_filename = temp_file.GetFilename();
-        auto ws = wb.create_sheet();
+        xlnt::workbook wb(xlnt::optimization::write);
+        auto ws = wb.create_sheet("test");
 
         std::vector<std::string> letters;
         for(int i = 0; i < 20; i++)
@@ -39,80 +34,81 @@ public:
 
         for(int row = 0; row < 20; row++)
         {
-	    std::vector<std::string> current_row;
+            std::vector<std::string> current_row;
             for(auto letter : letters)
             {
                 current_row.push_back(letter + std::to_string(row + 1));
             }
-	    ws.append(current_row);
+            ws.append(current_row);
         }
 
         for(int row = 0; row < 20; row++)
         {
-	    std::vector<int> current_row;
+            std::vector<int> current_row;
             for(auto letter : letters)
             {
- 	        current_row.push_back(row + 1);
+                current_row.push_back(row + 21);
             }
-	    ws.append(current_row);
+            ws.append(current_row);
         }
 
         for(int row = 0; row < 10; row++)
         {
-	    std::vector<xlnt::date> current_row;
+            std::vector<xlnt::date> current_row;
             for(std::size_t x = 0; x < letters.size(); x++)
             {
-	        current_row.push_back(xlnt::date(2010, (x % 12) + 1, row + 1));
+                current_row.push_back(xlnt::date(2010, (x % 12) + 1, row + 1));
             }
-	    ws.append(current_row);
+            ws.append(current_row);
         }
 
         for(int row = 0; row < 20; row++)
         {
-	    std::vector<std::string> current_row;
-	    for(auto letter : letters)
+            std::vector<std::string> current_row;
+            for(auto letter : letters)
             {
-	      current_row.push_back("=" + letter + std::to_string(row + 1));
+                current_row.push_back("=" + letter + std::to_string(row + 51));
             }
-	    ws.append(current_row);
+            ws.append(current_row);
         }
 
+        auto test_filename = temp_file.GetFilename();
         wb.save(test_filename);
 
         xlnt::workbook wb2;
         wb2.load(test_filename);
-        ws = wb[2];
+        ws = wb.get_sheet_by_name("test");
 
         for(auto row : ws.rows())
         {
             for(auto cell : row)
             {
-	        auto row = cell.get_row();
+                auto row = cell.get_row();
 
-		if(row <= 20)
-		{
-		    std::string expected = cell.get_reference().to_string();
-		    TS_ASSERT_EQUALS(cell.get_data_type(), xlnt::cell::type::string);
-		    TS_ASSERT_EQUALS(cell, expected);
-		}
-		else if(row <= 40)
-		{
-		    TS_ASSERT_EQUALS(cell.get_data_type(), xlnt::cell::type::numeric);
-		    TS_ASSERT_EQUALS(cell, (int)row);
-		}
-		else if(row <= 50)
-		{
-		    xlnt::date expected(2010, (cell.get_reference().get_column_index() % 12) + 1, row + 1);
-		    TS_ASSERT_EQUALS(cell.get_data_type(), xlnt::cell::type::numeric);
-		    TS_ASSERT(cell.is_date());
-		    TS_ASSERT_EQUALS(cell, expected);
-		}
-		else
-		{
-		    std::string expected = "=" + cell.get_reference().to_string();
-		    TS_ASSERT_EQUALS(cell.get_data_type(), xlnt::cell::type::formula);
-		    TS_ASSERT_EQUALS(cell, expected);
-		}
+                if(row <= 20)
+                {
+                    std::string expected = cell.get_reference().to_string();
+                    TS_ASSERT_EQUALS(cell.get_data_type(), xlnt::cell::type::string);
+                    TS_ASSERT_EQUALS(cell, expected);
+                }
+                else if(row <= 40)
+                {
+                    TS_ASSERT_EQUALS(cell.get_data_type(), xlnt::cell::type::numeric);
+                    TS_ASSERT_EQUALS(cell, (int)row);
+                }
+                else if(row <= 50)
+                {
+                    xlnt::date expected(2010, (cell.get_reference().get_column_index() % 12) + 1, row + 1);
+                    TS_ASSERT_EQUALS(cell.get_data_type(), xlnt::cell::type::numeric);
+                    TS_ASSERT(cell.is_date());
+                    TS_ASSERT_EQUALS(cell, expected);
+                }
+                else
+                {
+                    std::string expected = "=" + cell.get_reference().to_string();
+                    TS_ASSERT_EQUALS(cell.get_data_type(), xlnt::cell::type::formula);
+                    TS_ASSERT_EQUALS(cell, expected);
+                }
             }
         }
     }
@@ -140,6 +136,7 @@ public:
 
     void test_dump_twice()
     {
+        xlnt::workbook wb(xlnt::optimization::write);
         auto test_filename = temp_file.GetFilename();
 
         auto ws = wb.create_sheet();
@@ -155,6 +152,7 @@ public:
                 
     void test_append_after_save()
     {
+        xlnt::workbook wb(xlnt::optimization::write);
         auto ws = wb.create_sheet();
 
         std::vector<std::string> to_append = {"hello"};
@@ -167,6 +165,5 @@ public:
     }
 
 private:
-    xlnt::workbook wb;
     TemporaryFile temp_file;
 };

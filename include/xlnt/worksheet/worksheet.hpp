@@ -49,9 +49,9 @@ struct worksheet_impl;
 class row_properties
 {
  public:
-  void set_height(int height) { this->height = height; }
+  void set_height(double height) { this->height = height; }
   int row_index;
-  int height;
+  double height;
   bool visible;
   int outline_level;
   bool collapsed;
@@ -183,6 +183,7 @@ public:
     const range get_range(const range_reference &reference) const;
     row_properties &get_row_properties(row_t row);
     const row_properties &get_row_properties(row_t row) const;
+    bool has_row_properties(row_t row) const;
     range rows() const;
     range columns() const;
     std::list<cell> get_cell_collection();

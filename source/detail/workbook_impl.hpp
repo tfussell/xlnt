@@ -8,6 +8,7 @@ namespace detail {
 struct workbook_impl
 {
     workbook_impl(optimization o);
+    bool already_saved_;
     bool optimized_read_;
     bool optimized_write_;
     bool guess_types_;

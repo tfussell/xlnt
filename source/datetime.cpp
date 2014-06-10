@@ -8,7 +8,7 @@ namespace xlnt {
 time::time(long double raw_time) : hour(0), minute(0), second(0), microsecond(0)
 {
     double integer_part;
-    double fractional_part = std::modf(raw_time, &integer_part);
+    double fractional_part = std::modf((double)raw_time, &integer_part);
     fractional_part *= 24;
     hour = (int)fractional_part;
     fractional_part = 60 * (fractional_part - hour);

@@ -24,7 +24,7 @@ std::unordered_map<std::string, std::pair<std::string, std::string>> reader::rea
         std::string id = relationship.attribute("Id").as_string();
         std::string type = relationship.attribute("Type").as_string();
         std::string target = relationship.attribute("Target").as_string();
-        relationships[id] = std::make_pair(type, target);
+        relationships[id] = std::make_pair(target, type);
     }
     
     return relationships;
@@ -59,12 +59,12 @@ std::string reader::determine_document_type(const std::unordered_map<std::string
 {
     auto relationship_match = std::find_if(root_relationships.begin(), root_relationships.end(),
                                            [](const std::pair<std::string, std::pair<std::string, std::string>> &v)
-                                           { return v.second.first == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"; });
+                                           { return v.second.second == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"; });
     std::string type;
     
     if(relationship_match != root_relationships.end())
     {
-        std::string office_document_relationship = relationship_match->second.second;
+        std::string office_document_relationship = relationship_match->second.first;
         
         if(office_document_relationship[0] != '/')
         {

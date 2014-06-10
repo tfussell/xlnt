@@ -11,4 +11,8 @@ relationship::relationship(const std::string &t, const std::string &r_id, const 
     }
 }
 
+relationship::relationship() : id_(""), source_uri_(""), target_uri_("")
+{
+}
+
 } // namespace xlnt

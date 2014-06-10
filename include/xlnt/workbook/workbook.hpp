@@ -88,12 +88,14 @@ public:
     int get_index(worksheet worksheet);
     
     worksheet operator[](const std::string &name);
-    worksheet operator[](int index);
+    worksheet operator[](std::size_t index);
     
     class iterator
     {
     public:
         iterator(workbook &wb, std::size_t index);
+        iterator(const iterator &);
+        iterator &operator=(const iterator &);
         worksheet operator*();
         bool operator==(const iterator &comparand) const;
         bool operator!=(const iterator &comparand) const { return !(*this == comparand); }
@@ -112,6 +114,8 @@ public:
     {
     public:
         const_iterator(const workbook &wb, std::size_t index);
+        const_iterator(const const_iterator &);
+        const_iterator &operator=(const const_iterator &);
         const worksheet operator*();
         bool operator==(const const_iterator &comparand) const;
         bool operator!=(const const_iterator &comparand) const { return !(*this == comparand); }
@@ -150,6 +154,7 @@ public:
     
 private:
     friend class worksheet;
+    bool get_already_saved() const;
     detail::workbook_impl *d_;
 };
     

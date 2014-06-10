@@ -8,6 +8,7 @@
 #include "common/relationship.hpp"
 #include "workbook/workbook.hpp"
 #include "detail/worksheet_impl.hpp"
+#include "common/exceptions.hpp"
 
 namespace xlnt {
 
@@ -193,6 +194,11 @@ row_properties &worksheet::get_row_properties(row_t row)
     return d_->row_properties_[row];
 }
 
+bool worksheet::has_row_properties(row_t row) const
+{
+    return d_->row_properties_.find(row) != d_->row_properties_.end();
+}
+
 range worksheet::get_named_range(const std::string &name)
 {
     if(!has_named_range(name))
@@ -341,6 +347,11 @@ void worksheet::unmerge_cells(const range_reference &reference)
 
 void worksheet::append(const std::vector<std::string> &cells)
 {
+    if(d_->parent_->get_optimized_write() && d_->parent_->get_already_saved())
+    {
+        throw workbook_already_saved();
+    }
+
     int row = get_highest_row();
     
     if(d_->cell_map_.size() == 0)
@@ -358,6 +369,11 @@ void worksheet::append(const std::vector<std::string> &cells)
 
 void worksheet::append(const std::vector<int> &cells)
 {
+    if(d_->parent_->get_optimized_write() && d_->parent_->get_already_saved())
+    {
+        throw workbook_already_saved();
+    }
+
     int row = get_highest_row();
     
     if(d_->cell_map_.size() == 0)
@@ -375,6 +391,11 @@ void worksheet::append(const std::vector<int> &cells)
 
 void worksheet::append(const std::vector<date> &cells)
 {
+    if(d_->parent_->get_optimized_write() && d_->parent_->get_already_saved())
+    {
+        throw workbook_already_saved();
+    }
+
     int row = get_highest_row();
     
     if(d_->cell_map_.size() == 0)
@@ -392,6 +413,11 @@ void worksheet::append(const std::vector<date> &cells)
 
 void worksheet::append(const std::unordered_map<std::string, std::string> &cells)
 {
+    if(d_->parent_->get_optimized_write() && d_->parent_->get_already_saved())
+    {
+        throw workbook_already_saved();
+    }
+
     int row = get_highest_row() - 1;
 
     if(d_->cell_map_.size() != 0)
@@ -407,6 +433,11 @@ void worksheet::append(const std::unordered_map<std::string, std::string> &cells
 
 void worksheet::append(const std::unordered_map<int, std::string> &cells)
 {
+    if(d_->parent_->get_optimized_write() && d_->parent_->get_already_saved())
+    {
+        throw workbook_already_saved();
+    }
+
     int row = get_highest_row() - 1;
 
     if(d_->cell_map_.size() != 0)

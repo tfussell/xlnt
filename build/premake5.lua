@@ -20,7 +20,7 @@ project "xlnt.test"
        "$(cxxtest_prefix)"
     }
     files { 
-       "../tests/*.h",
+       "../tests/*.hpp",
        "../tests/runner-autogen.cpp"
     }
     links { 
@@ -29,7 +29,6 @@ project "xlnt.test"
         "zlib"
     }
     prebuildcommands { "cxxtestgen --runner=ErrorPrinter -o ../../tests/runner-autogen.cpp ../../tests/*.hpp" }
-    postbuildcommands { "../../bin/xlnt.test" }
     flags { 
        "Unicode",
        "NoEditAndContinue",
@@ -44,7 +43,9 @@ project "xlnt.test"
     configuration "windows"
         defines { "WIN32" }
 	links { "Shlwapi" }
+	postbuildcommands { "..\\..\\bin\\xlnt.test" }
     configuration "not windows"
+        postbuildcommands { "../../bin/xlnt.test" }
         buildoptions { 
             "-std=c++11",
             "-Wno-unknown-pragmas"
@@ -69,8 +70,8 @@ project "xlnt"
     }
     files {
        "../source/**.cpp",
-       "../source/**.h",
-       "../include/xlnt/**.h"
+       "../source/**.hpp",
+       "../include/xlnt/**.hpp"
     }
     flags { 
        "Unicode",
@@ -81,7 +82,10 @@ project "xlnt"
     configuration "Debug"
         flags { "FatalWarnings" }
     configuration "windows"
-        defines { "WIN32" }
+        defines { 
+	   "WIN32",
+	   "_CRT_SECURE_NO_WARNINGS"
+	}
     configuration "not windows"
         buildoptions { 
             "-std=c++11",

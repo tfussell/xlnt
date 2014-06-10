@@ -32,4 +32,10 @@ cell_coordinates_exception::cell_coordinates_exception(const std::string &coord_
 
 }
 
+workbook_already_saved::workbook_already_saved()
+: std::runtime_error("")
+{
+
+}
+
 } // namespace xlnt

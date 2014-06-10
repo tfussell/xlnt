@@ -48,6 +48,7 @@ enum class target_mode
 class relationship
 {
 public:    
+    relationship();
     relationship(const std::string &type, const std::string &r_id = "", const std::string &target_uri = "");
     
     /// <summary>

@@ -1,7 +1,10 @@
 #include <algorithm>
+#include <array>
 #include <fstream>
 #include <sstream>
 #include <pugixml.hpp>
+
+#include <Windows.h>
 
 #include "workbook/workbook.hpp"
 #include "common/exceptions.hpp"
@@ -16,9 +19,29 @@
 #include "detail/workbook_impl.hpp"
 #include "detail/worksheet_impl.hpp"
 
+static std::string CreateTemporaryFilename()
+{
+#ifdef _WIN32
+    std::array<TCHAR, MAX_PATH> buffer;
+    DWORD result = GetTempPath(static_cast<DWORD>(buffer.size()), buffer.data());
+    if(result > MAX_PATH)
+    {
+        throw std::runtime_error("buffer is too small");
+    }
+    if(result == 0)
+    {
+        throw std::runtime_error("GetTempPath failed");
+    }
+    std::string directory(buffer.begin(), buffer.begin() + result);
+    return directory + "xlnt.xlsx";
+#else
+    return "/tmp/xlsx.xlnt";
+#endif
+}
+
 namespace xlnt {
 namespace detail {
-workbook_impl::workbook_impl(optimization o) : optimized_read_(o == optimization::read), optimized_write_(o == optimization::write), active_sheet_index_(0)
+workbook_impl::workbook_impl(optimization o) : already_saved_(false), optimized_read_(o == optimization::read), optimized_write_(o == optimization::write), active_sheet_index_(0)
 {
     
 }
@@ -40,6 +63,11 @@ workbook::~workbook()
 workbook::iterator::iterator(workbook &wb, std::size_t index) : wb_(wb), index_(index)
 {
     
+}
+
+workbook::iterator::iterator(const iterator &rhs) : wb_(rhs.wb_), index_(rhs.index_)
+{
+
 }
 
 worksheet workbook::iterator::operator*()
@@ -68,6 +96,11 @@ bool workbook::iterator::operator==(const iterator &comparand) const
 workbook::const_iterator::const_iterator(const workbook &wb, std::size_t index) : wb_(wb), index_(index)
 {
     
+}
+
+workbook::const_iterator::const_iterator(const const_iterator &rhs) : wb_(rhs.wb_), index_(rhs.index_)
+{
+
 }
 
 const worksheet workbook::const_iterator::operator*()
@@ -121,6 +154,11 @@ worksheet workbook::get_active_sheet()
     return worksheet(&d_->worksheets_[d_->active_sheet_index_]);
 }
 
+bool workbook::get_already_saved() const
+{
+    return d_->already_saved_;
+}
+
 bool workbook::has_named_range(const std::string &name) const
 {
     for(auto worksheet : *this)
@@ -150,7 +188,6 @@ worksheet workbook::create_sheet()
 
     d_->worksheets_.emplace_back(this, title);
     worksheet ws(&d_->worksheets_.back());
-    ws.get_cell("A1");
     
     return ws;
 }
@@ -233,14 +270,18 @@ range workbook::get_named_range(const std::string &name)
 
 bool workbook::load(const std::vector<unsigned char> &data)
 {
-  std::ofstream tmp;
-  tmp.open("/tmp/xlnt.xlsx", std::ios::out);
-  for(auto c : data)
+    std::string temp_file = CreateTemporaryFilename();
+
+    std::ofstream tmp;
+    tmp.open(temp_file, std::ios::out | std::ios::binary);
+    for(auto c : data)
     {
-      tmp.put(c);
+        tmp.put(c);
     }
-  load("/tmp/xlnt.xlsx");
-  return true;
+    tmp.close();
+    load(temp_file);
+    std::remove(temp_file.c_str());
+    return true;
 }
 
 bool workbook::load(const std::string &filename)
@@ -279,7 +320,7 @@ bool workbook::load(const std::string &filename)
         auto relation_id = sheet_node.attribute("r:id").as_string();
         auto ws = create_sheet(sheet_node.attribute("name").as_string());
         std::string sheet_filename("xl/");
-        sheet_filename += workbook_relationships[relation_id].second;
+        sheet_filename += workbook_relationships[relation_id].first;
         xlnt::reader::read_worksheet(ws, f.get_file_contents(sheet_filename).c_str(), shared_strings);
     }
 
@@ -380,7 +421,7 @@ worksheet workbook::operator[](const std::string &name)
     return get_sheet_by_name(name);
 }
 
-worksheet workbook::operator[](int index)
+worksheet workbook::operator[](std::size_t index)
 {
     return worksheet(&d_->worksheets_[index]);
 }
@@ -390,20 +431,38 @@ void workbook::clear()
     d_->worksheets_.clear();
 }
 
+bool workbook::get_optimized_write() const
+{
+    return d_->optimized_write_;
+}
+
 bool workbook::save(std::vector<unsigned char> &data)
 {
-  save("/tmp/xlnt.xlsx");
-  std::ifstream tmp;
-  tmp.open("/tmp/xlnt.xlsx");
-  auto char_data = std::vector<char>((std::istreambuf_iterator<char>(tmp)),
-				     std::istreambuf_iterator<char>());
-  data = std::vector<unsigned char>(char_data.begin(), char_data.end());
-  return true;
+    auto temp_file = CreateTemporaryFilename();
+    save(temp_file);
+    std::ifstream tmp;
+    tmp.open(temp_file, std::ios::in | std::ios::binary);
+    auto char_data = std::vector<char>((std::istreambuf_iterator<char>(tmp)),
+        std::istreambuf_iterator<char>());
+    data = std::vector<unsigned char>(char_data.begin(), char_data.end());
+    tmp.close();
+    std::remove(temp_file.c_str());
+    return true;
 }
 
 
 bool workbook::save(const std::string &filename)
 {
+    if(d_->optimized_write_)
+    {
+        if(d_->already_saved_)
+        {
+            throw workbook_already_saved();
+        }
+
+        d_->already_saved_ = true;
+    }
+
     zip_file f(filename, file_mode::create, file_access::write);
     
     std::pair<std::unordered_map<std::string, std::string>, std::unordered_map<std::string, std::string>> content_types =
@@ -426,17 +485,17 @@ bool workbook::save(const std::string &filename)
     
     std::vector<std::pair<std::string, std::pair<std::string, std::string>>> root_rels =
     {
-        {"rId3", {"http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties", "docProps/app.xml"}},
-        {"rId2", {"http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties", "docProps/core.xml"}},
-        {"rId1", {"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument", "xl/workbook.xml"}}
+        {"rId3", {"docProps/app.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties"}},
+        {"rId2", {"docProps/core.xml", "http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties"}},
+        {"rId1", {"xl/workbook.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"}}
     };
     f.set_file_contents("_rels/.rels", writer::write_relationships(root_rels));
     
     std::vector<std::pair<std::string, std::pair<std::string, std::string>>> workbook_rels =
     {
-        {"rId1", {"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet", "worksheets/sheet1.xml"}},
-        {"rId2", {"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles", "styles.xml"}},
-        {"rId3", {"http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme", "theme/theme1.xml"}}
+        {"rId1", {"worksheets/sheet1.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"}},
+        {"rId2", {"styles.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"}},
+        {"rId3", {"theme/theme1.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme"}}
     };
     f.set_file_contents("xl/_rels/workbook.xml.rels", writer::write_relationships(workbook_rels));
     
