@@ -45,22 +45,29 @@ cell::cell(worksheet worksheet, const cell_reference &reference, const std::stri
     }
 }
 
-std::string cell::get_value() const
+std::string cell::get_internal_value_string() const
 {
     switch(d_->type_)
     {
     case type::string:
         return d_->string_value;
-    case type::numeric:
-            return std::floor(d_->numeric_value) == d_->numeric_value ? std::to_string((long long)d_->numeric_value) : std::to_string(d_->numeric_value);
     case type::formula:
         return d_->string_value;
     case type::error:
         return d_->string_value;
-    case type::null:
-        return "";
+    default:
+        throw std::runtime_error("bad enum");
+    }
+}
+
+long double cell::get_internal_value_numeric() const
+{
+    switch(d_->type_)
+    {
+    case type::numeric:
+        return d_->numeric_value;
     case type::boolean:
-        return d_->numeric_value != 0 ? "1" : "0";
+        return d_->numeric_value == 0 ? 0 : 1;
     default:
         throw std::runtime_error("bad enum");
     }
@@ -149,6 +156,14 @@ cell::type cell::data_type_for_value(const std::string &value)
             if(std::find(possible_booleans.begin(), possible_booleans.end(), value) != possible_booleans.end())
             {
                 return type::boolean;
+            }
+            if(value.back() == '%')
+            {
+                strtod(value.substr(0, value.length() - 1).c_str(), &p);
+                if(*p == 0)
+                {
+                    return type::numeric;
+                }
             }
             return type::string;
         }
@@ -398,8 +413,12 @@ cell &cell::operator=(const std::string &value)
 	      d_->is_date_ = true;
 	      d_->numeric_value = time(value).to_number();
 	    }
-	  else
+	  else if(value.back() == '%')
 	    {
+            d_->numeric_value = std::stod(value.substr(0, value.length() - 1)) / 100;
+        }
+        else
+        {
 	      d_->numeric_value = std::stod(value);
 	    }
             break;

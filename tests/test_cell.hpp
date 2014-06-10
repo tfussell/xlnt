@@ -18,12 +18,14 @@ public:
 
     void test_invalid_coordinate()
     {
-        TS_ASSERT_THROWS(xlnt::cell_reference("AAA"), xlnt::cell_coordinates_exception);
+        TS_ASSERT_THROWS(xlnt::cell_reference("AAA"), 
+            xlnt::cell_coordinates_exception);
     }
 
     void test_zero_row()
     {
-      TS_ASSERT_THROWS(xlnt::cell_reference("AQ0"), xlnt::cell_coordinates_exception);
+        TS_ASSERT_THROWS(xlnt::cell_reference("AQ0"), 
+            xlnt::cell_coordinates_exception);
     }
 
     void test_absolute()
@@ -70,7 +72,7 @@ public:
     {
 	for(auto bad_string : {"JJJJ", "", "$", "1"})
         {
-	    TS_ASSERT_THROWS(xlnt::cell_reference::column_index_from_string(bad_string), xlnt::column_string_index_exception);
+            TS_ASSERT_THROWS(xlnt::cell_reference::column_index_from_string(bad_string), xlnt::column_string_index_exception);
         }
     }
 
@@ -101,10 +103,19 @@ public:
         TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
     }
 
-    void test_null()
+    void test_1st()
     {
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
+
+        TS_ASSERT_EQUALS(xlnt::cell::type::null, cell.get_data_type());
+    }
+
+    void test_null()
+    {
+        xlnt::worksheet ws = wb.create_sheet();
+        xlnt::cell cell(ws, "A1", "17.5");
+        cell.set_null();
 
         TS_ASSERT_EQUALS(xlnt::cell::type::null, cell.get_data_type());
     }
@@ -174,6 +185,8 @@ public:
         xlnt::cell cell(ws, "A1");
         cell = "=42";
         TS_ASSERT_EQUALS(xlnt::cell::type::formula, cell.get_data_type());
+        cell = "=if(A1<4;-1;1)";
+        TS_ASSERT_EQUALS(xlnt::cell::type::formula, cell.get_data_type());
     }
 
     void test_boolean()
@@ -206,6 +219,74 @@ public:
         }
     }
 
+    void test_insert_float()
+    {
+        xlnt::worksheet ws = wb.create_sheet();
+        xlnt::cell cell(ws, "A1");
+        cell = 3.14;
+        TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
+    }
+
+    void test_insert_percentage()
+    {
+        xlnt::worksheet ws = wb.create_sheet();
+        xlnt::cell cell(ws, "A1");
+        cell = "3.14%";
+        TS_ASSERT_EQUALS(0.0314, cell.get_internal_value_numeric());
+    }
+
+    void test_insert_datetime()
+    {
+        xlnt::worksheet ws = wb.create_sheet();
+        xlnt::cell cell(ws, "A1");
+        cell = xlnt::date::today();
+        TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
+    }
+
+    void test_insert_date()
+    {
+        xlnt::worksheet ws = wb.create_sheet();
+        xlnt::cell cell(ws, "A1");
+        cell = xlnt::datetime::now();
+        TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
+    }
+
+    void test_internal_date()
+    {
+        xlnt::worksheet ws = wb.create_sheet();
+        xlnt::cell cell(ws, "A1");
+        xlnt::datetime dt(2010, 7, 13, 6, 37, 41);
+        cell = dt;
+        TS_ASSERT_EQUALS(40372.27616898148, cell.get_internal_value_numeric());
+    }
+
+    void test_datetime_interpretation()
+    {
+        xlnt::worksheet ws = wb.create_sheet();
+        xlnt::cell cell(ws, "A1");
+        xlnt::datetime dt(2010, 7, 13, 6, 37, 41);
+        cell = dt;
+        TS_ASSERT_EQUALS(cell, dt);
+        TS_ASSERT_EQUALS(cell.get_internal_value_numeric(), 40372.27616898148);
+    }
+
+    void test_date_interpretation()
+    {
+        xlnt::worksheet ws = wb.create_sheet();
+        xlnt::cell cell(ws, "A1");
+        xlnt::date dt(2010, 7, 13);
+        cell = dt;
+        TS_ASSERT_EQUALS(cell, xlnt::datetime(2010, 7, 13, 0, 0));
+        TS_ASSERT_EQUALS(cell.get_internal_value_numeric(), 40372);
+    }
+
+    void test_number_format_style()
+    {
+        xlnt::worksheet ws = wb.create_sheet();
+        xlnt::cell cell(ws, "A1");
+        cell = "12.6%";
+        TS_ASSERT_EQUALS(xlnt::number_format::format::percentage, cell.get_style().get_number_format().get_format_code());
+    }
 
     void test_data_type_check()
     {

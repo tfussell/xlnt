@@ -77,7 +77,8 @@ public:
     cell();
     cell(worksheet ws, const cell_reference &reference, const std::string &initial_value = std::string());
     
-    std::string get_value() const;
+    std::string get_internal_value_string() const;
+    long double get_internal_value_numeric() const;
     
     std::string get_column() const;
     row_t get_row() const;

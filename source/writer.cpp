@@ -273,7 +273,7 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
                     int match_index = -1;
                     for(int i = 0; i < (int)string_table.size(); i++)
                     {
-                        if(string_table[i] == cell.get_value())
+                        if(string_table[i] == cell.get_internal_value_string())
                         {
                             match_index = i;
                             break;
@@ -284,7 +284,7 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
                     {
                         cell_node.append_attribute("t").set_value("inlineStr");
                         auto inline_string_node = cell_node.append_child("is");
-                        inline_string_node.append_child("t").text().set(cell.get_value().c_str());
+                        inline_string_node.append_child("t").text().set(cell.get_internal_value_string().c_str());
                     }
                     else
                     {
@@ -301,17 +301,17 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
                         {
                             cell_node.append_attribute("t").set_value("b");
                             auto value_node = cell_node.append_child("v");
-                            value_node.text().set(cell.get_value().c_str());
+                            value_node.text().set(cell.get_internal_value_numeric() == 0 ? 0 : 1);
                         }
                         else if(cell.get_data_type() == cell::type::numeric)
                         {
                             cell_node.append_attribute("t").set_value("n");
                             auto value_node = cell_node.append_child("v");
-                            value_node.text().set(cell.get_value().c_str());
+                            value_node.text().set((double)cell.get_internal_value_numeric());
                         }
                         else if(cell.get_data_type() == cell::type::formula)
                         {
-                            cell_node.append_child("f").text().set(cell.get_value().substr(1).c_str());
+                            cell_node.append_child("f").text().set(cell.get_internal_value_string().substr(1).c_str());
                             cell_node.append_child("v");
                         }
                     }
@@ -664,7 +664,8 @@ std::string writer::write_theme()
      doc.print(ss);
      return ss.str();
      */
-    std::array<unsigned char, 10421> theme1_xml = {
+    std::array<unsigned char, 10421> theme1_xml = 
+    {{
         0x3c, 0x3f, 0x78, 0x6d, 0x6c, 0x20, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f,
         0x6e, 0x3d, 0x22, 0x31, 0x2e, 0x30, 0x22, 0x3f, 0x3e, 0x0d, 0x0a, 0x3c,
         0x61, 0x3a, 0x74, 0x68, 0x65, 0x6d, 0x65, 0x20, 0x78, 0x6d, 0x6c, 0x6e,
@@ -1534,7 +1535,7 @@ std::string writer::write_theme()
         0x61, 0x43, 0x6c, 0x72, 0x53, 0x63, 0x68, 0x65, 0x6d, 0x65, 0x4c, 0x73,
         0x74, 0x2f, 0x3e, 0x0d, 0x0a, 0x3c, 0x2f, 0x61, 0x3a, 0x74, 0x68, 0x65,
         0x6d, 0x65, 0x3e, 0x0d, 0x0a
-    };
+    }};
 
     return std::string(theme1_xml.begin(), theme1_xml.end());
 }

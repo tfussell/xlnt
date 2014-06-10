@@ -4,7 +4,9 @@
 #include <sstream>
 #include <pugixml.hpp>
 
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 
 #include "workbook/workbook.hpp"
 #include "common/exceptions.hpp"

@@ -25,8 +25,8 @@ struct cell_impl
     relationship hyperlink_;
     column_t column;
     row_t row;
-    bool merged;
     style *style_;
+    bool merged;
     bool is_date_;
 };
     

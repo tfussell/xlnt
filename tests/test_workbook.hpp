@@ -206,6 +206,6 @@ public:
         test_book.load(dest_filename);
         auto test_sheet = test_book.get_active_sheet();
 
-        TS_ASSERT_LESS_THAN_EQUALS(std::stod(test_sheet.get_cell("A1").get_value()) - float_value, 0.001);
+        TS_ASSERT_LESS_THAN_EQUALS(test_sheet.get_cell("A1").get_internal_value_numeric() - float_value, 0.00001);
     }
 };

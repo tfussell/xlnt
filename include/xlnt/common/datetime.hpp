@@ -28,6 +28,8 @@ namespace xlnt {
 
 struct date
 {
+    static date today();
+
     date(int year, int month, int day)
         : year(year), month(month), day(day)
     {
@@ -40,6 +42,8 @@ struct date
 
 struct time
 {
+    static time now();
+
     time(int hour = 0, int minute = 0, int second = 0, int microsecond = 0)
         : hour(hour), minute(minute), second(second), microsecond(microsecond)
     {

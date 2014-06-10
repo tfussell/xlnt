@@ -48,6 +48,13 @@ double time::to_number() const
     return number;
 }
 
+date date::today()
+{
+    std::time_t raw_time = std::time(0);
+    std::tm now = *std::localtime(&raw_time);
+    return date(now.tm_year, now.tm_mon + 1, now.tm_mday);
+}
+
 datetime datetime::now()
 {
     std::time_t raw_time = std::time(0);
