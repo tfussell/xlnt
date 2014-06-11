@@ -5,18 +5,75 @@
 
 namespace xlnt {
 
-time::time(long double raw_time) : hour(0), minute(0), second(0), microsecond(0)
+time time::from_number(long double raw_time)
 {
     double integer_part;
     double fractional_part = std::modf((double)raw_time, &integer_part);
     fractional_part *= 24;
-    hour = (int)fractional_part;
+    int hour = (int)fractional_part;
     fractional_part = 60 * (fractional_part - hour);
-    minute = (int)fractional_part;
+    int minute = (int)fractional_part;
     fractional_part = 60 * (fractional_part - minute);
-    second = (int)fractional_part;
+    int second = (int)fractional_part;
     fractional_part = 1000000 * (fractional_part - second);
-    microsecond = (int)fractional_part;
+    int microsecond = (int)fractional_part;
+    return time(hour, minute, second, microsecond);
+}
+
+date date::from_number(long double number)
+{
+    int year = (int)number / 365;
+    number -= year * 365;
+    int month = (int)number / 30;
+    number -= month * 30;
+    int day = (int)number;
+    return date(year, month, day + 1);
+}
+
+datetime datetime::from_number(long double raw_time)
+{
+    double integer_part;
+    double fractional_part = std::modf((double)raw_time, &integer_part);
+    fractional_part *= 24;
+    int hour = (int)fractional_part;
+    fractional_part = 60 * (fractional_part - hour);
+    int minute = (int)fractional_part;
+    fractional_part = 60 * (fractional_part - minute);
+    int second = (int)fractional_part;
+    fractional_part = 1000000 * (fractional_part - second);
+    int microsecond = (int)fractional_part;
+    int year = (int)integer_part / 365;
+    integer_part -= year * 365;
+    int month = (int)integer_part / 30;
+    integer_part -= month * 30;
+    int day = (int)integer_part;
+    return datetime(year + 1900, month, day + 1, hour, minute, second, microsecond);
+}
+
+bool date::operator==(const date &comparand) const
+{
+    return year == comparand.year
+        && month == comparand.month
+        && day == comparand.day;
+}
+
+bool time::operator==(const time &comparand) const
+{
+    return hour == comparand.hour
+        && minute == comparand.minute
+        && second == comparand.second
+        && microsecond == comparand.microsecond;
+}
+
+bool datetime::operator==(const datetime &comparand) const
+{
+    return year == comparand.year
+        && month == comparand.month
+        && day == comparand.day
+        && hour == comparand.hour
+        && minute == comparand.minute
+        && second == comparand.second
+        && microsecond == comparand.microsecond;
 }
 
 time::time(const std::string &time_string) : hour(0), minute(0), second(0), microsecond(0)
@@ -45,6 +102,26 @@ double time::to_number() const
     number /= 60;
     number += hour;
     number /= 24;
+    return number;
+}
+
+double date::to_number() const
+{
+    double number = day + month * 30 + year * 365;
+    return number;
+}
+
+double datetime::to_number() const
+{
+    double number = microsecond;
+    number /= 1000000;
+    number += second;
+    number /= 60;
+    number += minute;
+    number /= 60;
+    number += hour;
+    number /= 24;
+    number += (day - 1) + month * 30 + (year - 1900) * 365;
     return number;
 }
 

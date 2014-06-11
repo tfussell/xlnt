@@ -232,7 +232,7 @@ public:
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
         cell = "3.14%";
-        TS_ASSERT_EQUALS(0.0314, cell.get_internal_value_numeric());
+        TS_ASSERT_DELTA(0.0314, cell.get_internal_value_numeric(), 1e-7);
     }
 
     void test_insert_datetime()

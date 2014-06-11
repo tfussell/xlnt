@@ -276,17 +276,17 @@ bool cell::operator==(const char *comparand) const
 
 bool cell::operator==(const time &comparand) const
 {
-    return d_->type_ == type::numeric && time(d_->numeric_value).hour == comparand.hour;
+    return d_->type_ == type::numeric && time::from_number(d_->numeric_value) == comparand;
 }
 
 bool cell::operator==(const date &comparand) const
 {
-    return d_->type_ == type::numeric && date((int)d_->numeric_value, 0, 0).year == comparand.year;
+    return d_->type_ == type::numeric && date::from_number(d_->numeric_value) == comparand;
 }
 
 bool cell::operator==(const datetime &comparand) const
 {
-    return d_->type_ == type::numeric && datetime((int)d_->numeric_value, 0, 0).year == comparand.year;
+    return d_->type_ == type::numeric && datetime::from_number(d_->numeric_value) == comparand;
 }
 
 bool operator==(int comparand, const xlnt::cell &cell)
@@ -448,14 +448,15 @@ cell &cell::operator=(const char *value)
 cell &cell::operator=(const time &value)
 {
     d_->type_ = type::numeric;
-    d_->numeric_value = value.hour;
+    d_->numeric_value = value.to_number();
+    d_->is_date_ = true;
     return *this;
 }
 
 cell &cell::operator=(const date &value)
 {
     d_->type_ = type::numeric;
-    d_->numeric_value = value.year;
+    d_->numeric_value = value.to_number();
     d_->is_date_ = true;
     return *this;
 }
@@ -463,7 +464,7 @@ cell &cell::operator=(const date &value)
 cell &cell::operator=(const datetime &value)
 {
     d_->type_ = type::numeric;
-    d_->numeric_value = value.year;
+    d_->numeric_value = value.to_number();
     d_->is_date_ = true;
     return *this;
 }
