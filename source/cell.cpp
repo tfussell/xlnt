@@ -9,6 +9,7 @@
 #include "worksheet/worksheet.hpp"
 #include "detail/cell_impl.hpp"
 #include "common/exceptions.hpp"
+#include "workbook/workbook.hpp"
 
 namespace xlnt {
     
@@ -60,6 +61,11 @@ std::string cell::get_internal_value_string() const
     }
 }
 
+bool cell::has_style() const
+{
+    return d_->style_ != nullptr;
+}
+    
 long double cell::get_internal_value_numeric() const
 {
     switch(d_->type_)
@@ -276,17 +282,35 @@ bool cell::operator==(const char *comparand) const
 
 bool cell::operator==(const time &comparand) const
 {
-    return d_->type_ == type::numeric && time::from_number(d_->numeric_value) == comparand;
+    if(d_->type_ != type::numeric)
+    {
+        return false;
+    }
+    
+    auto base_year = worksheet(d_->parent_).get_parent().get_base_year();
+    return time::from_number(d_->numeric_value, base_year) == comparand;
 }
 
 bool cell::operator==(const date &comparand) const
 {
-    return d_->type_ == type::numeric && date::from_number(d_->numeric_value) == comparand;
+    if(d_->type_ != type::numeric)
+    {
+        return false;
+    }
+    
+    auto base_year = worksheet(d_->parent_).get_parent().get_base_year();
+    return date::from_number(d_->numeric_value, base_year) == comparand;
 }
 
 bool cell::operator==(const datetime &comparand) const
 {
-    return d_->type_ == type::numeric && datetime::from_number(d_->numeric_value) == comparand;
+    if(d_->type_ != type::numeric)
+    {
+        return false;
+    }
+    
+    auto base_year = worksheet(d_->parent_).get_parent().get_base_year();
+    return datetime::from_number(d_->numeric_value, base_year) == comparand;
 }
 
 bool operator==(int comparand, const xlnt::cell &cell)
@@ -416,6 +440,7 @@ cell &cell::operator=(const std::string &value)
 	  else if(value.back() == '%')
 	    {
             d_->numeric_value = std::stod(value.substr(0, value.length() - 1)) / 100;
+            get_style().get_number_format().set_format_code(xlnt::number_format::format::percentage);
         }
         else
         {

@@ -267,7 +267,7 @@ public:
         xlnt::datetime dt(2010, 7, 13, 6, 37, 41);
         cell = dt;
         TS_ASSERT_EQUALS(cell, dt);
-        TS_ASSERT_EQUALS(cell.get_internal_value_numeric(), 40372.27616898148);
+        TS_ASSERT_DELTA(cell.get_internal_value_numeric(), 40372.27616898148, 1e-7);
     }
 
     void test_date_interpretation()
@@ -276,7 +276,7 @@ public:
         xlnt::cell cell(ws, "A1");
         xlnt::date dt(2010, 7, 13);
         cell = dt;
-        TS_ASSERT_EQUALS(cell, xlnt::datetime(2010, 7, 13, 0, 0));
+        TS_ASSERT_EQUALS(cell, dt);
         TS_ASSERT_EQUALS(cell.get_internal_value_numeric(), 40372);
     }
 

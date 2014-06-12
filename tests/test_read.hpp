@@ -10,21 +10,6 @@
 class test_read : public CxxTest::TestSuite
 {
 public:
-    test_read()
-    {
-        auto path = PathHelper::GetDataDirectory() + "/genuine/empty-with-styles.xlsx";
-        wb_with_styles.load(path);
-        worksheet_with_styles = wb_with_styles.get_sheet_by_name("Sheet1");
-        
-        auto mac_wb_path = PathHelper::GetDataDirectory() + "/reader/date_1904.xlsx";
-        mac_wb.load(mac_wb_path);
-        mac_ws = mac_wb.get_sheet_by_name("Sheet1");
-        
-        auto win_wb_path = PathHelper::GetDataDirectory() + "/reader/date_1900.xlsx";
-        win_wb.load(win_wb_path);
-        win_ws = win_wb.get_sheet_by_name("Sheet1");
-    }
-
     void test_read_standalone_worksheet()
     {
         auto path = PathHelper::GetDataDirectory() + "/reader/sheet2.xml";
@@ -52,12 +37,10 @@ public:
 
     void test_read_standard_workbook_from_fileobj()
     {
-        /*
         auto path = PathHelper::GetDataDirectory() + "/genuine/empty.xlsx";
         std::ifstream fo(path);
         xlnt::workbook wb;
         wb.load(fo);
-         */
     }
 
     void test_read_worksheet()
@@ -95,12 +78,12 @@ public:
 
     void test_read_dimension()
     {
-        /*
         auto path = PathHelper::GetDataDirectory() + "/reader/sheet2.xml";
-        std::ifstream handle(path);
-        auto dimension = xlnt::reader::read_dimension(handle);
-        TS_ASSERT_EQUALS({{"D", 1}, {"K", 30}}, dimension);
-         */
+        std::ifstream file(path);
+        std::stringstream ss;
+        ss << file.rdbuf();
+        auto dimension = xlnt::reader::read_dimension(ss.str());
+        TS_ASSERT_EQUALS("D1:AA30", dimension);
     }
 
     void test_calculate_dimension_iter()
@@ -177,20 +160,23 @@ public:
 
     void test_read_date_value()
     {
-        /*
-        auto datetuple = (2011, 10, 31);
-        auto dt = datetime(datetuple[0], datetuple[1], datetuple[2]);
-        TS_ASSERT_EQUALS(mac_ws.cell("A1"), dt);
-        TS_ASSERT_EQUALS(win_ws.cell("A1"), dt);
-        TS_ASSERT_EQUALS(mac_ws.cell("A1"), win_ws.cell("A1"));
-         */
+        //auto path = PathHelper::GetDataDirectory() + "/genuine/empty-with-styles.xlsx";
+        //wb_with_styles.load(path);
+        //worksheet_with_styles = wb_with_styles.get_sheet_by_name("Sheet1");
+        
+        auto mac_wb_path = PathHelper::GetDataDirectory() + "/reader/date_1904.xlsx";
+        xlnt::workbook mac_wb;
+        mac_wb.load(mac_wb_path);
+        auto mac_ws = mac_wb.get_sheet_by_name("Sheet1");
+        
+        auto win_wb_path = PathHelper::GetDataDirectory() + "/reader/date_1900.xlsx";
+        xlnt::workbook win_wb;
+        win_wb.load(win_wb_path);
+        auto win_ws = win_wb.get_sheet_by_name("Sheet1");
+        
+        xlnt::datetime dt(2011, 10, 31);
+        TS_ASSERT_EQUALS(mac_ws.get_cell("A1"), dt);
+        TS_ASSERT_EQUALS(win_ws.get_cell("A1"), dt);
+        TS_ASSERT_EQUALS(mac_ws.get_cell("A1"), win_ws.get_cell("A1"));
     }
-    
-private:
-    xlnt::workbook wb_with_styles;
-    xlnt::worksheet worksheet_with_styles;
-    xlnt::workbook mac_wb;
-    xlnt::worksheet mac_ws;
-    xlnt::workbook win_wb;
-    xlnt::worksheet win_ws;
 };

@@ -43,7 +43,7 @@ static std::string CreateTemporaryFilename()
 
 namespace xlnt {
 namespace detail {
-workbook_impl::workbook_impl(optimization o) : already_saved_(false), optimized_read_(o == optimization::read), optimized_write_(o == optimization::write), active_sheet_index_(0)
+workbook_impl::workbook_impl(optimization o) : already_saved_(false), optimized_read_(o == optimization::read), optimized_write_(o == optimization::write), active_sheet_index_(0), date_1904_(false)
 {
     
 }
@@ -130,12 +130,12 @@ bool workbook::const_iterator::operator==(const const_iterator &comparand) const
     
 worksheet workbook::get_sheet_by_name(const std::string &name)
 {
-    auto title_equals = [&](detail::worksheet_impl &ws) { return worksheet(&ws).get_title() == name; };
-    auto match = std::find_if(d_->worksheets_.begin(), d_->worksheets_.end(), title_equals);
-    
-    if(match != d_->worksheets_.end())
+    for(auto &impl : d_->worksheets_)
     {
-        return worksheet(&*match);
+        if(impl.title_ == name)
+        {
+            return worksheet(&impl);
+        }
     }
 
     return worksheet();
@@ -270,6 +270,19 @@ range workbook::get_named_range(const std::string &name)
     throw std::runtime_error("named range not found");
 }
 
+bool workbook::load(const std::istream &stream)
+{
+    std::string temp_file = CreateTemporaryFilename();
+    
+    std::ofstream tmp;
+    tmp.open(temp_file, std::ios::out | std::ios::binary);
+    tmp << stream.rdbuf();
+    tmp.close();
+    load(temp_file);
+    std::remove(temp_file.c_str());
+    return true;
+}
+    
 bool workbook::load(const std::vector<unsigned char> &data)
 {
     std::string temp_file = CreateTemporaryFilename();
@@ -307,6 +320,10 @@ bool workbook::load(const std::string &filename)
     doc.load(f.get_file_contents("xl/workbook.xml").c_str());
     
     auto root_node = doc.child("workbook");
+    
+    auto workbook_pr_node = root_node.child("workbookPr");
+    d_->date_1904_ = workbook_pr_node.attribute("date1904") != nullptr && workbook_pr_node.attribute("date1904").as_int() != 0;
+    
     auto sheets_node = root_node.child("sheets");
     
     clear();
@@ -327,6 +344,11 @@ bool workbook::load(const std::string &filename)
     }
 
     return true;
+}
+    
+int workbook::get_base_year() const
+{
+    return d_->date_1904_ ? 1904 : 1900;
 }
 
 void workbook::remove_sheet(worksheet ws)

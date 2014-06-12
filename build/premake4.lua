@@ -14,7 +14,7 @@ project "xlnt.test"
        "../third-party/pugixml/src",
        "../third-party/zlib",
        "../third-party/zlib/contrib/minizip",
-       "$(cxxtest_prefix)"
+       "/usr/local/Cellar/cxxtest/4.3"
     }
     files { 
        "../tests/*.hpp",
@@ -25,7 +25,7 @@ project "xlnt.test"
         "xlnt",
         "zlib"
     }
-    prebuildcommands { "/usr/local/Cellar/cxxtest/4.3/bin/cxxtestgen --runner=ErrorPrinter -o /Users/thomas/Development/xlnt/tests/runner-autogen.cpp /Users/thomas/Development/xlnt/tests/*.hpp" }
+    prebuildcommands { "/usr/local/Cellar/cxxtest/4.3/bin/cxxtestgen --runner=ErrorPrinter -o ../../tests/runner-autogen.cpp ../../tests/*.hpp" }
     flags { 
        "Unicode",
        "NoEditAndContinue",
@@ -39,11 +39,15 @@ project "xlnt.test"
     configuration "windows"
         defines { "WIN32" }
 	links { "Shlwapi" }
+	postbuildcommands { "..\\..\\bin\\xlnt.test" }
     configuration "not windows"
+        postbuildcommands { "../../bin/xlnt.test" }
         buildoptions { 
             "-std=c++11",
             "-Wno-unknown-pragmas"
         }
+    configuration { "not windows", "Debug" }
+        buildoptions { "-ggdb" }
 
 project "xlnt"
     kind "StaticLib"
@@ -73,12 +77,17 @@ project "xlnt"
     configuration "Debug"
         flags { "FatalWarnings" }
     configuration "windows"
-        defines { "WIN32" }
+        defines { 
+	   "WIN32",
+	   "_CRT_SECURE_NO_WARNINGS"
+	}
     configuration "not windows"
         buildoptions { 
             "-std=c++11",
             "-Wno-unknown-pragmas"
         }
+    configuration { "not windows", "Debug" }
+        buildoptions { "-ggdb" }
 
 project "pugixml"
     kind "StaticLib"

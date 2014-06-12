@@ -43,6 +43,7 @@ public:
     static worksheet read_worksheet(std::istream &handle, workbook &wb, const std::string &title, const std::vector<std::string> &string_table);
     static void read_worksheet(worksheet ws, const std::string &xml_string, const std::vector<std::string> &string_table);
     static std::vector<std::string> read_shared_string(const std::string &xml_string);
+    static std::string read_dimension(const std::string &xml_string);
 };
     
 } // namespace xlnt

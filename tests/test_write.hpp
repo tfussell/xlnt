@@ -83,21 +83,16 @@ public:
 
     void test_write_formula()
     {
-        TS_SKIP("");
         auto ws = wb.create_sheet();
         ws.get_cell("F1") = 10;
         ws.get_cell("F2") = 32;
         ws.get_cell("F3") = "=F1+F2";
-        ws.get_cell("A4") = "=A1+A2+A3";
-        ws.get_cell("B4") = "=";
-        ws.get_cell("C4") = "=";
         auto content = xlnt::writer::write_worksheet(ws, {}, {});
         TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_formula.xml", content));
     }
 
     void test_write_style()
     {
-        TS_SKIP("");
         auto ws = wb.create_sheet();
         ws.get_cell("F1") = "13%";
         auto style_id_by_hash = xlnt::style_writer(wb).get_style_by_hash();

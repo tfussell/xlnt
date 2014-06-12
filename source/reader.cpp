@@ -10,6 +10,16 @@
 
 namespace xlnt {
 
+std::string reader::read_dimension(const std::string &xml_string)
+{
+    pugi::xml_document doc;
+    doc.load(xml_string.c_str());
+    auto root_node = doc.child("worksheet");
+    auto dimension_node = root_node.child("dimension");
+    std::string dimension = dimension_node.attribute("ref").as_string();
+    return dimension;
+}
+    
 std::unordered_map<std::string, std::pair<std::string, std::string>> reader::read_relationships(const std::string &content)
 {
     pugi::xml_document doc;

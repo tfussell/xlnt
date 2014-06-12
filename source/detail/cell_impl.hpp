@@ -16,6 +16,8 @@ struct cell_impl
 {
     cell_impl();
     cell_impl(worksheet_impl *parent, int column_index, int row_index);
+    cell_impl(const cell_impl &rhs);
+    cell_impl &operator=(const cell_impl &rhs);
 
     worksheet_impl *parent_;
     cell::type type_;

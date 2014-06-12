@@ -3,7 +3,7 @@
   <sheetPr>
     <outlinePr summaryBelow="1" summaryRight="1"/>
   </sheetPr>
-  <dimension ref="A1:F4"/>
+  <dimension ref="A1:F3"/>
   <sheetViews>
     <sheetView workbookViewId="0">
       <selection activeCell="A1" sqref="A1"/>
@@ -24,20 +24,6 @@
     <row r="3" spans="1:6">
       <c r="F3">
         <f>F1+F2</f>
-        <v/>
-      </c>
-    </row>
-    <row r="4" spans="1:6">
-      <c r="A4">
-        <f t="shared" ref="A4:C4" si="0">A1+A2+A3</f>
-        <v/>
-      </c>
-      <c r="B4">
-        <f t="shared" si="0"/>
-        <v/>
-      </c>
-      <c r="C4">
-        <f t="shared" si="0"/>
         <v/>
       </c>
     </row>

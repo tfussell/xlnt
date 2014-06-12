@@ -139,7 +139,7 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
   return write_worksheet(ws, string_table, {});
 }
 
-std::string writer::write_worksheet(worksheet ws, const std::vector<std::string> &string_table, const std::unordered_map<std::size_t, std::string> &)
+std::string writer::write_worksheet(worksheet ws, const std::vector<std::string> &string_table, const std::unordered_map<std::size_t, std::string> &style_id_by_hash)
 {
     ws.get_cell("A1");
 
@@ -212,6 +212,32 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
     auto sheet_format_pr_node = root_node.append_child("sheetFormatPr");
     sheet_format_pr_node.append_attribute("baseColWidth").set_value(10);
     sheet_format_pr_node.append_attribute("defaultRowHeight").set_value(15);
+    
+    std::vector<int> styled_columns;
+    
+    if(!style_id_by_hash.empty())
+    {
+        for(auto row : ws.rows())
+        {
+            for(auto cell : row)
+            {
+                if(cell.has_style())
+                {
+                    styled_columns.push_back(xlnt::cell_reference::column_index_from_string(cell.get_column()));
+                }
+            }
+        }
+        
+        auto cols_node = root_node.append_child("cols");
+        std::sort(styled_columns.begin(), styled_columns.end());
+        for(auto column : styled_columns)
+        {
+            auto col_node = cols_node.append_child("col");
+            col_node.append_attribute("min").set_value(column);
+            col_node.append_attribute("max").set_value(column);
+            col_node.append_attribute("style").set_value(1);
+        }
+    }
 
     std::unordered_map<std::string, std::string> hyperlink_references;
     
@@ -308,7 +334,14 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
                         {
                             cell_node.append_attribute("t").set_value("n");
                             auto value_node = cell_node.append_child("v");
-                            value_node.text().set((double)cell.get_internal_value_numeric());
+                            if(std::floor(cell.get_internal_value_numeric()) == cell.get_internal_value_numeric())
+                            {
+                                value_node.text().set((long long)cell.get_internal_value_numeric());
+                            }
+                            else
+                            {
+                                value_node.text().set((double)cell.get_internal_value_numeric());
+                            }
                         }
                         else if(cell.get_data_type() == cell::type::formula)
                         {
@@ -316,6 +349,11 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
                             cell_node.append_child("v");
                         }
                     }
+                }
+                
+                if(cell.has_style())
+                {
+                    cell_node.append_attribute("s").set_value(1);
                 }
             }
         }

@@ -29,14 +29,14 @@ namespace xlnt {
 struct date
 {
     static date today();
-    static date from_number(long double number);
+    static date from_number(long double number, int base_year = 1900);
 
     date(int year, int month, int day)
         : year(year), month(month), day(day)
     {
     }
 
-    double to_number() const;
+    double to_number(int base_year = 1900) const;
     bool operator==(const date &comparand) const;
 
     int year;
@@ -47,7 +47,7 @@ struct date
 struct time
 {
     static time now();
-    static time from_number(long double number);
+    static time from_number(long double number, int base_year = 1900);
 
     time(int hour = 0, int minute = 0, int second = 0, int microsecond = 0)
         : hour(hour), minute(minute), second(second), microsecond(microsecond)
@@ -55,7 +55,7 @@ struct time
     }
     explicit time(const std::string &time_string);
 
-    double to_number() const;
+    double to_number(int base_year = 1900) const;
     bool operator==(const time &comparand) const;
 
     int hour;
@@ -67,14 +67,14 @@ struct time
 struct datetime
 {
     static datetime now();
-    static datetime from_number(long double number);
+    static datetime from_number(long double number, int base_year = 1900);
 
     datetime(int year, int month, int day, int hour = 0, int minute = 0, int second = 0, int microsecond = 0)
         : year(year), month(month), day(day), hour(hour), minute(minute), second(second), microsecond(microsecond)
     {
     }
 
-    double to_number() const;
+    double to_number(int base_year = 1900) const;
     bool operator==(const datetime &comparand) const;
 
     int year;

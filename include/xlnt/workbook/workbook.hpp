@@ -135,6 +135,8 @@ public:
     
     std::vector<std::string> get_sheet_names() const;
     
+    int get_base_year() const;
+    
     //named ranges
     void create_named_range(const std::string &name, worksheet worksheet, const range_reference &reference);
     bool has_named_range(const std::string &name) const;
@@ -146,6 +148,7 @@ public:
     bool save(const std::string &filename);
     bool load(const std::vector<unsigned char> &data);
     bool load(const std::string &filename);
+    bool load(const std::istream &stream);
     
     bool operator==(const workbook &rhs) const;
     

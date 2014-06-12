@@ -57,7 +57,7 @@ public:
             std::vector<xlnt::date> current_row;
             for(std::size_t x = 0; x < letters.size(); x++)
             {
-                current_row.push_back(xlnt::date(2010, (x % 12) + 1, row + 1));
+                current_row.push_back(xlnt::date(2010 + x, 5, row + 1));
             }
             ws.append(current_row);
         }
@@ -98,7 +98,7 @@ public:
                 }
                 else if(row <= 50)
                 {
-                    xlnt::date expected(2010, (cell.get_reference().get_column_index() % 12) + 1, row + 1);
+                    xlnt::date expected(2010 + cell.get_reference().get_column_index(), 5, row - 40);
                     TS_ASSERT_EQUALS(cell.get_data_type(), xlnt::cell::type::numeric);
                     TS_ASSERT(cell.is_date());
                     TS_ASSERT_EQUALS(cell, expected);

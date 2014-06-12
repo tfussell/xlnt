@@ -5,7 +5,7 @@
 
 namespace xlnt {
 
-time time::from_number(long double raw_time)
+time time::from_number(long double raw_time, int base_year)
 {
     double integer_part;
     double fractional_part = std::modf((double)raw_time, &integer_part);
@@ -17,20 +17,35 @@ time time::from_number(long double raw_time)
     int second = (int)fractional_part;
     fractional_part = 1000000 * (fractional_part - second);
     int microsecond = (int)fractional_part;
+    if(microsecond == 999999 && fractional_part - microsecond > 0.5)
+    {
+        microsecond = 0;
+        second += 1;
+        if(second == 60)
+        {
+            second = 0;
+            minute += 1;
+            if(minute == 60)
+            {
+                minute = 0;
+                hour += 1;
+            }
+        }
+    }
     return time(hour, minute, second, microsecond);
 }
 
-date date::from_number(long double number)
+date date::from_number(long double number, int base_year)
 {
     int year = (int)number / 365;
     number -= year * 365;
     int month = (int)number / 30;
     number -= month * 30;
     int day = (int)number;
-    return date(year, month, day + 1);
+    return date(year + base_year, month, day + 1);
 }
 
-datetime datetime::from_number(long double raw_time)
+datetime datetime::from_number(long double raw_time, int base_year)
 {
     double integer_part;
     double fractional_part = std::modf((double)raw_time, &integer_part);
@@ -42,12 +57,27 @@ datetime datetime::from_number(long double raw_time)
     int second = (int)fractional_part;
     fractional_part = 1000000 * (fractional_part - second);
     int microsecond = (int)fractional_part;
+    if(microsecond == 999999 && fractional_part - microsecond > 0.5)
+    {
+        microsecond = 0;
+        second += 1;
+        if(second == 60)
+        {
+            second = 0;
+            minute += 1;
+            if(minute == 60)
+            {
+                minute = 0;
+                hour += 1;
+            }
+        }
+    }
     int year = (int)integer_part / 365;
     integer_part -= year * 365;
     int month = (int)integer_part / 30;
     integer_part -= month * 30;
     int day = (int)integer_part;
-    return datetime(year + 1900, month, day + 1, hour, minute, second, microsecond);
+    return datetime(year + base_year, month, day + 1, hour, minute, second, microsecond);
 }
 
 bool date::operator==(const date &comparand) const
@@ -92,7 +122,7 @@ time::time(const std::string &time_string) : hour(0), minute(0), second(0), micr
     }
 }
 
-double time::to_number() const
+double time::to_number(int base_year) const
 {
     double number = microsecond;
     number /= 1000000;
@@ -105,13 +135,13 @@ double time::to_number() const
     return number;
 }
 
-double date::to_number() const
+double date::to_number(int base_year) const
 {
-    double number = day + month * 30 + year * 365;
+    double number = (day - 1) + month * 30 + (year - base_year) * 365;
     return number;
 }
 
-double datetime::to_number() const
+double datetime::to_number(int base_year) const
 {
     double number = microsecond;
     number /= 1000000;
@@ -121,7 +151,7 @@ double datetime::to_number() const
     number /= 60;
     number += hour;
     number /= 24;
-    number += (day - 1) + month * 30 + (year - 1900) * 365;
+    number += (day - 1) + month * 30 + (year - base_year) * 365;
     return number;
 }
 
