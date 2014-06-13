@@ -188,10 +188,8 @@ worksheet workbook::create_sheet()
         title = "Sheet" + std::to_string(++index);
     }
 
-    d_->worksheets_.emplace_back(this, title);
-    worksheet ws(&d_->worksheets_.back());
-    
-    return ws;
+    d_->worksheets_.push_back(detail::worksheet_impl(this, title));
+    return worksheet(&d_->worksheets_.back());
 }
 
 void workbook::add_sheet(xlnt::worksheet worksheet)
@@ -551,7 +549,7 @@ bool workbook::save(const std::string &filename)
     
 bool workbook::operator==(const workbook &rhs) const
 {
-    return d_ == rhs.d_;
+    return d_.get() == rhs.d_.get();
 }
     
 }

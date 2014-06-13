@@ -160,7 +160,6 @@ public:
 
     void test_read_date_value()
     {
-        TS_SKIP("something bad is happening here...");
         //auto path = PathHelper::GetDataDirectory() + "/genuine/empty-with-styles.xlsx";
         //wb_with_styles.load(path);
         //worksheet_with_styles = wb_with_styles.get_sheet_by_name("Sheet1");

@@ -23,6 +23,7 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -161,7 +162,7 @@ public:
 private:
     friend class worksheet;
     bool get_already_saved() const;
-    detail::workbook_impl *d_;
+    std::unique_ptr<detail::workbook_impl> d_;
 };
     
 } // namespace xlnt

@@ -287,8 +287,7 @@ bool cell::operator==(const time &comparand) const
         return false;
     }
     
-    auto base_year = worksheet(d_->parent_).get_parent().get_base_year();
-    return time::from_number(d_->numeric_value, base_year) == comparand;
+    return time::from_number(d_->numeric_value) == comparand;
 }
 
 bool cell::operator==(const date &comparand) const
@@ -299,7 +298,7 @@ bool cell::operator==(const date &comparand) const
     }
     
     auto base_year = worksheet(d_->parent_).get_parent().get_base_year();
-    return date::from_number(d_->numeric_value, base_year) == comparand;
+    return date::from_number((int)d_->numeric_value, base_year) == comparand;
 }
 
 bool cell::operator==(const datetime &comparand) const
@@ -311,6 +310,43 @@ bool cell::operator==(const datetime &comparand) const
     
     auto base_year = worksheet(d_->parent_).get_parent().get_base_year();
     return datetime::from_number(d_->numeric_value, base_year) == comparand;
+}
+
+bool cell::operator==(const cell &comparand) const
+{
+    if(comparand == nullptr)
+    {
+        return d_ == nullptr;
+    }
+
+    if(comparand.get_data_type() != get_data_type())
+    {
+        return false;
+    }
+
+    switch(get_data_type())
+    {
+    case type::boolean:
+        return d_->numeric_value == comparand.d_->numeric_value;
+    case type::error:
+        return d_->string_value == comparand.d_->string_value;
+    case type::string:
+        return d_->string_value == comparand.d_->string_value;
+    case type::formula:
+        return d_->string_value == comparand.d_->string_value;
+    case type::null:
+        return true;
+    case type::numeric:
+        if(is_date() && comparand.is_date())
+        {
+            auto base_year = worksheet(d_->parent_).get_parent().get_base_year();
+            auto other_base_year = worksheet(comparand.d_->parent_).get_parent().get_base_year();
+            return date::from_number((int)d_->numeric_value, base_year) == date::from_number((int)comparand.d_->numeric_value, other_base_year);
+        }
+        return d_->numeric_value == comparand.d_->numeric_value;
+    }
+
+    return false;
 }
 
 bool operator==(int comparand, const xlnt::cell &cell)
@@ -481,7 +517,8 @@ cell &cell::operator=(const time &value)
 cell &cell::operator=(const date &value)
 {
     d_->type_ = type::numeric;
-    d_->numeric_value = value.to_number();
+    auto base_year = worksheet(d_->parent_).get_parent().get_base_year();
+    d_->numeric_value = value.to_number(base_year);
     d_->is_date_ = true;
     return *this;
 }
@@ -489,7 +526,8 @@ cell &cell::operator=(const date &value)
 cell &cell::operator=(const datetime &value)
 {
     d_->type_ = type::numeric;
-    d_->numeric_value = value.to_number();
+    auto base_year = worksheet(d_->parent_).get_parent().get_base_year();
+    d_->numeric_value = value.to_number(base_year);
     d_->is_date_ = true;
     return *this;
 }

@@ -34,6 +34,13 @@ struct worksheet_impl
         title_ = other.title_;
         freeze_panes_ = other.freeze_panes_;
         cell_map_ = other.cell_map_;
+        for(auto &row : cell_map_)
+        {
+            for(auto &cell : row.second)
+            {
+                cell.second.parent_ = this;
+            }
+        }
         relationships_ = other.relationships_;
         page_setup_ = other.page_setup_;
         auto_filter_ = other.auto_filter_;

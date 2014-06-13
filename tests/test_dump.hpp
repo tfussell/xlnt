@@ -57,7 +57,7 @@ public:
             std::vector<xlnt::date> current_row;
             for(std::size_t x = 0; x < letters.size(); x++)
             {
-                current_row.push_back(xlnt::date(2010 + x, 5, row + 1));
+                current_row.push_back(xlnt::date(2010 + (int)x, 5, row + 1));
             }
             ws.append(current_row);
         }

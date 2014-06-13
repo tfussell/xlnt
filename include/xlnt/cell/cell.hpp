@@ -139,7 +139,7 @@ public:
     cell &operator=(const time &value);
     cell &operator=(const datetime &value);
     
-    bool operator==(const cell &comparand) const { return d_ == comparand.d_; }
+    bool operator==(const cell &comparand) const;
     bool operator==(std::nullptr_t) const;
     bool operator==(bool comparand) const;
     bool operator==(int comparand) const;
