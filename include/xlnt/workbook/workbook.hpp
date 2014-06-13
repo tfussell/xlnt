@@ -47,6 +47,9 @@ enum class optimization
     none
 };
 
+/// <summary>
+/// workbook is the container for all other parts of the document.
+/// </summary>
 class workbook
 {
 public:

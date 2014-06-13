@@ -158,8 +158,8 @@ class worksheet
 {
 public:
     worksheet();
-    worksheet(workbook &parent, const std::string &title = std::string());
     worksheet(const worksheet &rhs);
+    worksheet(workbook &parent_workbook, const std::string &title = std::string());
 
     std::string to_string() const;
     workbook &get_parent() const;
@@ -168,6 +168,7 @@ public:
     // title
     std::string get_title() const;
     void set_title(const std::string &title);
+    std::string make_unique_sheet_name(const std::string &value);
     
     // freeze panes
     cell_reference get_frozen_panes() const;

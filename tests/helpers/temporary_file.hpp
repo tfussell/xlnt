@@ -30,7 +30,7 @@ public:
 	std::string directory(buffer.begin(), buffer.begin() + result);
     return PathHelper::WindowsToUniversalPath(directory + "xlnt.xlsx");
 #else
-	return "/tmp/xlsx.xlnt";
+	return "/tmp/xlnt.xlsx";
 #endif
 }
 
