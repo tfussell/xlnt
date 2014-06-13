@@ -26,6 +26,12 @@
 
 namespace xlnt {
 
+enum calendar
+{
+    windows_1900,
+    mac_1904
+};
+
 struct date
 {
     static date today();

@@ -32,7 +32,9 @@ namespace xlnt {
     
 class workbook;
 class worksheet;
-    
+class document_properties;
+class zip_file;
+
 class reader
 {
 public:
@@ -44,6 +46,8 @@ public:
     static void read_worksheet(worksheet ws, const std::string &xml_string, const std::vector<std::string> &string_table);
     static std::vector<std::string> read_shared_string(const std::string &xml_string);
     static std::string read_dimension(const std::string &xml_string);
+    static document_properties read_properties_core(const std::string &xml_string);
+    static std::vector<std::pair<std::string,std::string>> read_sheets(const zip_file &archive);
 };
     
 } // namespace xlnt

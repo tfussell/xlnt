@@ -565,41 +565,41 @@ public:
 static test_props suite_test_props;
 
 static CxxTest::List Tests_test_props = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_test_props( "../../tests/test_props.hpp", 8, "test_props", suite_test_props, Tests_test_props );
+CxxTest::StaticSuiteDescription suiteDescription_test_props( "../../tests/test_props.hpp", 10, "test_props", suite_test_props, Tests_test_props );
 
 static class TestDescription_suite_test_props_test_read_properties_core : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_test_props_test_read_properties_core() : CxxTest::RealTestDescription( Tests_test_props, suiteDescription_test_props, 25, "test_read_properties_core" ) {}
+ TestDescription_suite_test_props_test_read_properties_core() : CxxTest::RealTestDescription( Tests_test_props, suiteDescription_test_props, 13, "test_read_properties_core" ) {}
  void runTest() { suite_test_props.test_read_properties_core(); }
 } testDescription_suite_test_props_test_read_properties_core;
 
 static class TestDescription_suite_test_props_test_read_sheets_titles : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_test_props_test_read_sheets_titles() : CxxTest::RealTestDescription( Tests_test_props, suiteDescription_test_props, 36, "test_read_sheets_titles" ) {}
+ TestDescription_suite_test_props_test_read_sheets_titles() : CxxTest::RealTestDescription( Tests_test_props, suiteDescription_test_props, 30, "test_read_sheets_titles" ) {}
  void runTest() { suite_test_props.test_read_sheets_titles(); }
 } testDescription_suite_test_props_test_read_sheets_titles;
 
 static class TestDescription_suite_test_props_test_read_properties_core2 : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_test_props_test_read_properties_core2() : CxxTest::RealTestDescription( Tests_test_props, suiteDescription_test_props, 57, "test_read_properties_core2" ) {}
+ TestDescription_suite_test_props_test_read_properties_core2() : CxxTest::RealTestDescription( Tests_test_props, suiteDescription_test_props, 42, "test_read_properties_core2" ) {}
  void runTest() { suite_test_props.test_read_properties_core2(); }
 } testDescription_suite_test_props_test_read_properties_core2;
 
 static class TestDescription_suite_test_props_test_read_sheets_titles2 : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_test_props_test_read_sheets_titles2() : CxxTest::RealTestDescription( Tests_test_props, suiteDescription_test_props, 64, "test_read_sheets_titles2" ) {}
+ TestDescription_suite_test_props_test_read_sheets_titles2() : CxxTest::RealTestDescription( Tests_test_props, suiteDescription_test_props, 50, "test_read_sheets_titles2" ) {}
  void runTest() { suite_test_props.test_read_sheets_titles2(); }
 } testDescription_suite_test_props_test_read_sheets_titles2;
 
 static class TestDescription_suite_test_props_test_write_properties_core : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_test_props_test_write_properties_core() : CxxTest::RealTestDescription( Tests_test_props, suiteDescription_test_props, 72, "test_write_properties_core" ) {}
+ TestDescription_suite_test_props_test_write_properties_core() : CxxTest::RealTestDescription( Tests_test_props, suiteDescription_test_props, 62, "test_write_properties_core" ) {}
  void runTest() { suite_test_props.test_write_properties_core(); }
 } testDescription_suite_test_props_test_write_properties_core;
 
 static class TestDescription_suite_test_props_test_write_properties_app : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_test_props_test_write_properties_app() : CxxTest::RealTestDescription( Tests_test_props, suiteDescription_test_props, 84, "test_write_properties_app" ) {}
+ TestDescription_suite_test_props_test_write_properties_app() : CxxTest::RealTestDescription( Tests_test_props, suiteDescription_test_props, 73, "test_write_properties_app" ) {}
  void runTest() { suite_test_props.test_write_properties_app(); }
 } testDescription_suite_test_props_test_write_properties_app;
 

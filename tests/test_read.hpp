@@ -38,7 +38,7 @@ public:
     void test_read_standard_workbook_from_fileobj()
     {
         auto path = PathHelper::GetDataDirectory() + "/genuine/empty.xlsx";
-        std::ifstream fo(path);
+        std::ifstream fo(path, std::ios::binary);
         xlnt::workbook wb;
         wb.load(fo);
     }

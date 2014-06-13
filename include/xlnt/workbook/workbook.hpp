@@ -62,6 +62,9 @@ public:
     workbook(const workbook &) = delete;
     
     void read_workbook_settings(const std::string &xml_source);
+
+    void create_relationship(const std::string &id, const std::string &target, const std::string &type);
+    relationship get_relationship(const std::string &id) const;
     
     //getters
     worksheet get_active_sheet();

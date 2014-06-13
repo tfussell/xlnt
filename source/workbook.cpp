@@ -313,6 +313,11 @@ bool workbook::load(const std::string &filename)
     }
     
     auto workbook_relationships = reader::read_relationships(f.get_file_contents("xl/_rels/workbook.xml.rels"));
+
+    for(auto relationship : workbook_relationships)
+    {
+        create_relationship(relationship.first, relationship.second.first, relationship.second.second);
+    }
     
     pugi::xml_document doc;
     doc.load(f.get_file_contents("xl/workbook.xml").c_str());
@@ -334,14 +339,32 @@ bool workbook::load(const std::string &filename)
     
     for(auto sheet_node : sheets_node.children("sheet"))
     {
-        auto relation_id = sheet_node.attribute("r:id").as_string();
+        std::string relation_id = sheet_node.attribute("r:id").as_string();
         auto ws = create_sheet(sheet_node.attribute("name").as_string());
         std::string sheet_filename("xl/");
-        sheet_filename += workbook_relationships[relation_id].first;
+        sheet_filename += get_relationship(relation_id).get_target_uri();
         xlnt::reader::read_worksheet(ws, f.get_file_contents(sheet_filename).c_str(), shared_strings);
     }
 
     return true;
+}
+
+void workbook::create_relationship(const std::string &id, const std::string &target, const std::string &type)
+{
+    d_->relationships_.push_back(relationship(type, id, target));
+}
+
+relationship workbook::get_relationship(const std::string &id) const
+{
+    for(auto &rel : d_->relationships_)
+    {
+        if(rel.get_id() == id)
+        {
+            return rel;
+        }
+    }
+
+    throw std::runtime_error("");
 }
     
 int workbook::get_base_year() const
@@ -497,11 +520,17 @@ bool workbook::save(const std::string &filename)
             {"/xl/styles.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"},
             {"/xl/workbook.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"},
             {"/docProps/app.xml", "application/vnd.openxmlformats-officedocument.extended-properties+xml"},
-            {"/xl/worksheets/sheet1.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"},
             {"/docProps/core.xml", "application/vnd.openxmlformats-package.core-properties+xml"},
             {"/xl/theme/theme1.xml", "application/vnd.openxmlformats-officedocument.theme+xml"}
         }
     };
+
+    int ws_index = 1;
+    for(auto ws : *this)
+    {
+        auto sheet_filename = "/xl/worksheets/sheet" + std::to_string(ws_index++) + ".xml";
+        content_types.second[sheet_filename] = "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml";
+    }
     
     f.set_file_contents("[Content_Types].xml", writer::write_content_types(content_types));
     
@@ -511,38 +540,35 @@ bool workbook::save(const std::string &filename)
         {"rId2", {"docProps/core.xml", "http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties"}},
         {"rId1", {"xl/workbook.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"}}
     };
+
     f.set_file_contents("_rels/.rels", writer::write_relationships(root_rels));
     
     std::vector<std::pair<std::string, std::pair<std::string, std::string>>> workbook_rels =
     {
-        {"rId1", {"worksheets/sheet1.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"}},
+        {"rId1", {"sharedStrings.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"}},
         {"rId2", {"styles.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"}},
         {"rId3", {"theme/theme1.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme"}}
     };
-    f.set_file_contents("xl/_rels/workbook.xml.rels", writer::write_relationships(workbook_rels));
-    
-    pugi::xml_document doc;
-    auto root_node = doc.append_child("workbook");
-    root_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
-    root_node.append_attribute("xmlns:r").set_value("http://schemas.openxmlformats.org/officeDocument/2006/relationships");
-    auto sheets_node = root_node.append_child("sheets");
-    
-    int i = 0;
+
+    ws_index = 2;
     for(auto ws : *this)
     {
-        auto sheet_node = sheets_node.append_child("sheet");
-        sheet_node.append_attribute("name").set_value(ws.get_title().c_str());
-        sheet_node.append_attribute("sheetId").set_value(std::to_string(i + 1).c_str());
-        sheet_node.append_attribute("r:id").set_value((std::string("rId") + std::to_string(i + 1)).c_str());
+        auto sheet_filename = "worksheets/sheet" + std::to_string(ws_index++) + ".xml";
+        workbook_rels.push_back({"rId" + std::to_string(ws_index + 1), {sheet_filename, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"}});
+    }
+
+    f.set_file_contents("xl/_rels/workbook.xml.rels", writer::write_relationships(workbook_rels));
+    
+    int i = 0;
+
+    for(auto ws : *this)
+    {
         std::string filename = "xl/worksheets/sheet";
         f.set_file_contents(filename + std::to_string(i + 1) + ".xml", xlnt::writer::write_worksheet(ws));
         i++;
     }
-    
-    std::stringstream ss;
-    doc.save(ss);
-    
-    f.set_file_contents("xl/workbook.xml", ss.str());
+
+    f.set_file_contents("xl/workbook.xml", writer::write_workbook(*this));
 
     return true;
 }

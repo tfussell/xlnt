@@ -24,12 +24,15 @@
 #pragma once
 
 #include <string>
+#include <unordered_map>
+#include <utility>
 #include <vector>
 
 namespace xlnt {
     
 class workbook;
 class worksheet;
+class document_properties;
     
 class writer
 {
@@ -44,6 +47,8 @@ public:
     static std::string write_workbook_rels(const workbook &wb);
     static std::string write_worksheet_rels(worksheet ws, int drawing_id, int comments_id);
     static std::string write_string_table(const std::vector<std::string> &string_table);
+    static std::string write_properties_core(const document_properties &prop);
+    static std::string write_properties_app(const workbook &wb);
 };
     
 } // namespace xlnt

@@ -57,9 +57,9 @@ zip_file::~zip_file()
     change_state(state::closed);
 }
 
-std::string zip_file::get_file_contents(const std::string &filename)
+std::string zip_file::get_file_contents(const std::string &filename) const
 {
-    return files_[filename];
+    return files_.at(filename);
 }
 
 void zip_file::set_file_contents(const std::string &filename, const std::string &contents)

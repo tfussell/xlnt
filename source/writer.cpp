@@ -35,15 +35,31 @@ std::string writer::write_string_table(const std::vector<std::string> &string_ta
     return ss.str();
 }
 
-std::string writer::write_workbook_rels(const workbook &/*wb*/)
+std::string writer::write_properties_core(const document_properties &/*prop*/)
 {
-    static const std::vector<std::pair<std::string, std::pair<std::string, std::string>>> rels =
+    return "";
+}
+
+std::string writer::write_properties_app(const workbook &/*wb*/)
+{
+    return "";
+}
+
+std::string writer::write_workbook_rels(const workbook &wb)
+{
+    std::vector<std::pair<std::string, std::pair<std::string, std::string>>> rels =
     {
-        {"rId1", {"worksheets/sheet1.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"}},
-        {"rId2", {"sharedStrings.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"}},
-        {"rId3", {"styles.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"}},
-        {"rId4", {"theme/theme1.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme"}}
+        {"rId1", {"sharedStrings.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"}},
+        {"rId2", {"styles.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"}},
+        {"rId3", {"theme/theme1.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme"}}
     };
+
+    int i = 0;
+    for(auto worksheet : wb)
+    {
+        rels.push_back({"rId" + std::to_string(i + 4), {"worksheets/sheet1.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"}});
+        i++;
+    }
     
     return write_relationships(rels);
 }

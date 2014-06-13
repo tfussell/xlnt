@@ -4,91 +4,78 @@
 #include <cxxtest/TestSuite.h>
 
 #include <xlnt/xlnt.hpp>
+#include "helpers/path_helper.hpp"
+#include "helpers/helper.hpp"
 
 class test_props : public CxxTest::TestSuite
 {
 public:
-    class TestReaderProps
-    {
-        void setup_class(int cls)
-        {
-            //cls.genuine_filename = os.path.join(DATADIR, "genuine", "empty.xlsx");
-            //cls.archive = ZipFile(cls.genuine_filename, "r", ZIP_DEFLATED);
-        }
-
-        void teardown_class(int cls)
-        {
-            //cls.archive.close();
-        }
-    };
-
     void test_read_properties_core()
     {
-        //content = archive.read(ARC_CORE)
-        //    prop = read_properties_core(content)
-        //    TS_ASSERT_EQUALS(prop.creator, "*.*")
-        //    eacute = chr(233)
-        //    TS_ASSERT_EQUALS(prop.last_modified_by, "Aur" + eacute + "lien Camp" + eacute + "as")
-        //    TS_ASSERT_EQUALS(prop.created, datetime(2010, 4, 9, 20, 43, 12))
-        //    TS_ASSERT_EQUALS(prop.modified, datetime(2011, 2, 9, 13, 49, 32))
+        xlnt::zip_file archive(PathHelper::GetDataDirectory() + "/genuine/empty.xlsx", xlnt::file_mode::open);
+        auto content = archive.get_file_contents("docProps/core.xml");
+        auto prop = xlnt::reader::read_properties_core(content);
+        TS_ASSERT_EQUALS(prop.creator, "*.*");
+        unsigned char eacute = 233;
+        std::string modified_by = "Aur";
+        modified_by.append(1, eacute);
+        modified_by += "lien Camp";
+        modified_by.append(1, eacute);
+        modified_by += "as";
+        TS_ASSERT_EQUALS(prop.last_modified_by, modified_by);
+        TS_ASSERT_EQUALS(prop.created, xlnt::datetime(2010, 4, 9, 20, 43, 12));
+        TS_ASSERT_EQUALS(prop.modified, xlnt::datetime(2011, 2, 9, 13, 49, 32));
     }
 
     void test_read_sheets_titles()
     {
-        //content = archive.read(ARC_WORKBOOK);
-        //sheet_titles = read_sheets_titles(content);
-        //TS_ASSERT_EQUALS(sheet_titles, \
-        //    ["Sheet1 - Text", "Sheet2 - Numbers", "Sheet3 - Formulas", "Sheet4 - Dates"]);
+        xlnt::zip_file archive(PathHelper::GetDataDirectory() + "/genuine/empty.xlsx", xlnt::file_mode::open);
+        auto content = archive.get_file_contents("docProps/core.xml");
+        std::vector<std::string> expected_titles = {"Sheet1 - Text", "Sheet2 - Numbers", "Sheet3 - Formulas", "Sheet4 - Dates"};
+        int i = 0;
+        for(auto sheet : xlnt::reader::read_sheets(archive))
+        {
+            TS_ASSERT_EQUALS(sheet.second, expected_titles[i++]);
+        }
     }
 
-         // Just tests that the correct date / time format is returned from LibreOffice saved version
+    void test_read_properties_core2()
+    {
+        xlnt::zip_file archive(PathHelper::GetDataDirectory() + "/genuine/empty_libre.xlsx", xlnt::file_mode::open);
+        auto content = archive.get_file_contents("docProps/core.xml");
+        auto prop = xlnt::reader::read_properties_core(content);
+        TS_ASSERT_EQUALS(prop.excel_base_date, xlnt::calendar::windows_1900);
+    }
 
-        void setup_class(int cls)
+    void test_read_sheets_titles2()
+    {
+        xlnt::zip_file archive(PathHelper::GetDataDirectory() + "/genuine/empty_libre.xlsx", xlnt::file_mode::open);
+        auto content = archive.get_file_contents("docProps/core.xml");
+        std::vector<std::string> expected_titles = {"Sheet1 - Text", "Sheet2 - Numbers", "Sheet3 - Formulas", "Sheet4 - Dates"};
+        int i = 0;
+        for(auto sheet : xlnt::reader::read_sheets(archive))
         {
-            //cls.genuine_filename = os.path.join(DATADIR, "genuine", "empty_libre.xlsx")
-            //    cls.archive = ZipFile(cls.genuine_filename, "r", ZIP_DEFLATED)
+            TS_ASSERT_EQUALS(sheet.second, expected_titles[i++]);
         }
-
-        void teardown_class(int cls)
-        {
-            //cls.archive.close()
-        }
-
-        void test_read_properties_core2()
-        {
-        //    content = archive.read(ARC_CORE)
-        //        prop = read_properties_core(content)
-        //        TS_ASSERT_EQUALS(prop.excel_base_date, CALENDAR_WINDOWS_1900)
-        }
-
-        void test_read_sheets_titles2()
-        {
-            //content = archive.read(ARC_WORKBOOK)
-            //    sheet_titles = read_sheets_titles(content)
-            //    TS_ASSERT_EQUALS(sheet_titles, \
-            //    ["Sheet1 - Text", "Sheet2 - Numbers", "Sheet3 - Formulas", "Sheet4 - Dates"])
-        }
+    }
 
     void test_write_properties_core()
     {
-        //prop.creator = "TEST_USER"
-        //    prop.last_modified_by = "SOMEBODY"
-        //    prop.created = datetime(2010, 4, 1, 20, 30, 00)
-        //    prop.modified = datetime(2010, 4, 5, 14, 5, 30)
-        //    content = write_properties_core(prop)
-        //    assert_equals_file_content(
-        //    os.path.join(DATADIR, "writer", "expected", "core.xml"),
-        //    content)
+        xlnt::document_properties prop;
+        prop.creator = "TEST_USER";
+        prop.last_modified_by = "SOMEBODY";
+        prop.created = xlnt::datetime(2010, 4, 1, 20, 30, 00);
+        prop.modified = xlnt::datetime(2010, 4, 5, 14, 5, 30);
+        auto content = xlnt::writer::write_properties_core(prop);
+        TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/core.xml", content));
     }
 
     void test_write_properties_app()
     {
-        //wb = Workbook()
-        //    wb.create_sheet()
-        //    wb.create_sheet()
-        //    content = write_properties_app(wb)
-        //    assert_equals_file_content(
-        //    os.path.join(DATADIR, "writer", "expected", "app.xml"),
-        //    content)
+        xlnt::workbook wb;
+        wb.create_sheet();
+        wb.create_sheet();
+        auto content = xlnt::writer::write_properties_app(wb);
+        TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/app.xml", content));
     }
 };

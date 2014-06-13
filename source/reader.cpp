@@ -7,8 +7,35 @@
 #include "worksheet/range_reference.hpp"
 #include "workbook/workbook.hpp"
 #include "worksheet/worksheet.hpp"
+#include "workbook/document_properties.hpp"
+#include "common/zip_file.hpp"
 
 namespace xlnt {
+
+std::vector<std::pair<std::string, std::string>> reader::read_sheets(const zip_file &archive)
+{
+    auto xml_source = archive.get_file_contents("xl/workbook.xml");
+    pugi::xml_document doc;
+    doc.load(xml_source.c_str());
+    std::vector<std::pair<std::string, std::string>> sheets;
+    for(auto sheet_node : doc.child("workbook").child("sheets").children("sheet"))
+    {
+        std::string id = sheet_node.attribute("r:id").as_string();
+        std::string name = sheet_node.attribute("name").as_string();
+        sheets.push_back(std::make_pair(id, name));
+    }
+    return sheets;
+}
+
+document_properties reader::read_properties_core(const std::string &xml_string)
+{
+    document_properties props;
+    pugi::xml_document doc;
+    doc.load(xml_string.c_str());
+    auto root_node = doc.child("cp:coreProperties");
+    props.creator = root_node.child("dc:creator").text().as_string();
+    return props;
+}
 
 std::string reader::read_dimension(const std::string &xml_string)
 {

@@ -44,3 +44,5 @@ const std::string download_url = "https://github.com/tfussell/xlnt/archive/maste
 #include "common/exceptions.hpp"
 #include "reader/reader.hpp"
 #include "common/string_table.hpp"
+#include "common/zip_file.hpp"
+#include "workbook/document_properties.hpp"

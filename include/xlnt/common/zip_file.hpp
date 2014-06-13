@@ -95,8 +95,8 @@ public:
     zip_file(const std::string &filename, file_mode mode, file_access access = file_access::read);
     
     ~zip_file();
-    
-    std::string get_file_contents(const std::string &filename);
+
+    std::string get_file_contents(const std::string &filename) const;
     
     void set_file_contents(const std::string &filename, const std::string &contents);
     
