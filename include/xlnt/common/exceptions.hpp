@@ -109,15 +109,5 @@ class missing_number_format : public std::runtime_error
 public:
     missing_number_format();
 };
-
-/// <summary>
-/// Error when attempting to perform operations on a dump workbook
-/// while it has already been dumped once.
-/// </summary>
-class workbook_already_saved : public std::runtime_error
-{
-public:
-    workbook_already_saved();
-};
     
 } // namespace xlnt

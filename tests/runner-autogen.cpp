@@ -329,43 +329,6 @@ public:
  void runTest() { suite_test_chart.test_write_chart_scatter(); }
 } testDescription_suite_test_chart_test_write_chart_scatter;
 
-#include "C:\Users\Thomas\Development\xlnt\tests\test_dump.hpp"
-
-static test_dump suite_test_dump;
-
-static CxxTest::List Tests_test_dump = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_test_dump( "../../tests/test_dump.hpp", 9, "test_dump", suite_test_dump, Tests_test_dump );
-
-static class TestDescription_suite_test_dump_test_dump_sheet_title : public CxxTest::RealTestDescription {
-public:
- TestDescription_suite_test_dump_test_dump_sheet_title() : CxxTest::RealTestDescription( Tests_test_dump, suiteDescription_test_dump, 12, "test_dump_sheet_title" ) {}
- void runTest() { suite_test_dump.test_dump_sheet_title(); }
-} testDescription_suite_test_dump_test_dump_sheet_title;
-
-static class TestDescription_suite_test_dump_test_dump_sheet : public CxxTest::RealTestDescription {
-public:
- TestDescription_suite_test_dump_test_dump_sheet() : CxxTest::RealTestDescription( Tests_test_dump, suiteDescription_test_dump, 24, "test_dump_sheet" ) {}
- void runTest() { suite_test_dump.test_dump_sheet(); }
-} testDescription_suite_test_dump_test_dump_sheet;
-
-static class TestDescription_suite_test_dump_test_table_builder : public CxxTest::RealTestDescription {
-public:
- TestDescription_suite_test_dump_test_table_builder() : CxxTest::RealTestDescription( Tests_test_dump, suiteDescription_test_dump, 116, "test_table_builder" ) {}
- void runTest() { suite_test_dump.test_table_builder(); }
-} testDescription_suite_test_dump_test_table_builder;
-
-static class TestDescription_suite_test_dump_test_dump_twice : public CxxTest::RealTestDescription {
-public:
- TestDescription_suite_test_dump_test_dump_twice() : CxxTest::RealTestDescription( Tests_test_dump, suiteDescription_test_dump, 137, "test_dump_twice" ) {}
- void runTest() { suite_test_dump.test_dump_twice(); }
-} testDescription_suite_test_dump_test_dump_twice;
-
-static class TestDescription_suite_test_dump_test_append_after_save : public CxxTest::RealTestDescription {
-public:
- TestDescription_suite_test_dump_test_append_after_save() : CxxTest::RealTestDescription( Tests_test_dump, suiteDescription_test_dump, 153, "test_append_after_save" ) {}
- void runTest() { suite_test_dump.test_append_after_save(); }
-} testDescription_suite_test_dump_test_append_after_save;
-
 #include "C:\Users\Thomas\Development\xlnt\tests\test_named_range.hpp"
 
 static test_named_range suite_test_named_range;
@@ -882,125 +845,119 @@ public:
 static test_workbook suite_test_workbook;
 
 static CxxTest::List Tests_test_workbook = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_test_workbook( "../../tests/test_workbook.hpp", 9, "test_workbook", suite_test_workbook, Tests_test_workbook );
+CxxTest::StaticSuiteDescription suiteDescription_test_workbook( "../../tests/test_workbook.hpp", 10, "test_workbook", suite_test_workbook, Tests_test_workbook );
 
 static class TestDescription_suite_test_workbook_test_get_active_sheet : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_test_workbook_test_get_active_sheet() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 12, "test_get_active_sheet" ) {}
+ TestDescription_suite_test_workbook_test_get_active_sheet() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 13, "test_get_active_sheet" ) {}
  void runTest() { suite_test_workbook.test_get_active_sheet(); }
 } testDescription_suite_test_workbook_test_get_active_sheet;
 
 static class TestDescription_suite_test_workbook_test_create_sheet : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_test_workbook_test_create_sheet() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 19, "test_create_sheet" ) {}
+ TestDescription_suite_test_workbook_test_create_sheet() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 20, "test_create_sheet" ) {}
  void runTest() { suite_test_workbook.test_create_sheet(); }
 } testDescription_suite_test_workbook_test_create_sheet;
 
 static class TestDescription_suite_test_workbook_test_create_sheet_with_name : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_test_workbook_test_create_sheet_with_name() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 26, "test_create_sheet_with_name" ) {}
+ TestDescription_suite_test_workbook_test_create_sheet_with_name() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 27, "test_create_sheet_with_name" ) {}
  void runTest() { suite_test_workbook.test_create_sheet_with_name(); }
 } testDescription_suite_test_workbook_test_create_sheet_with_name;
 
-static class TestDescription_suite_test_workbook_test_create_sheet_readonly : public CxxTest::RealTestDescription {
-public:
- TestDescription_suite_test_workbook_test_create_sheet_readonly() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 33, "test_create_sheet_readonly" ) {}
- void runTest() { suite_test_workbook.test_create_sheet_readonly(); }
-} testDescription_suite_test_workbook_test_create_sheet_readonly;
-
 static class TestDescription_suite_test_workbook_test_remove_sheet : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_test_workbook_test_remove_sheet() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 39, "test_remove_sheet" ) {}
+ TestDescription_suite_test_workbook_test_remove_sheet() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 34, "test_remove_sheet" ) {}
  void runTest() { suite_test_workbook.test_remove_sheet(); }
 } testDescription_suite_test_workbook_test_remove_sheet;
 
 static class TestDescription_suite_test_workbook_test_get_sheet_by_name : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_test_workbook_test_get_sheet_by_name() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 51, "test_get_sheet_by_name" ) {}
+ TestDescription_suite_test_workbook_test_get_sheet_by_name() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 46, "test_get_sheet_by_name" ) {}
  void runTest() { suite_test_workbook.test_get_sheet_by_name(); }
 } testDescription_suite_test_workbook_test_get_sheet_by_name;
 
 static class TestDescription_suite_test_workbook_test_getitem : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_test_workbook_test_getitem() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 61, "test_getitem" ) {}
+ TestDescription_suite_test_workbook_test_getitem() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 56, "test_getitem" ) {}
  void runTest() { suite_test_workbook.test_getitem(); }
 } testDescription_suite_test_workbook_test_getitem;
 
 static class TestDescription_suite_test_workbook_test_get_index2 : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_test_workbook_test_get_index2() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 73, "test_get_index2" ) {}
+ TestDescription_suite_test_workbook_test_get_index2() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 68, "test_get_index2" ) {}
  void runTest() { suite_test_workbook.test_get_index2(); }
 } testDescription_suite_test_workbook_test_get_index2;
 
 static class TestDescription_suite_test_workbook_test_get_sheet_names : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_test_workbook_test_get_sheet_names() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 81, "test_get_sheet_names" ) {}
+ TestDescription_suite_test_workbook_test_get_sheet_names() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 76, "test_get_sheet_names" ) {}
  void runTest() { suite_test_workbook.test_get_sheet_names(); }
 } testDescription_suite_test_workbook_test_get_sheet_names;
 
 static class TestDescription_suite_test_workbook_test_get_active_sheet2 : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_test_workbook_test_get_active_sheet2() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 99, "test_get_active_sheet2" ) {}
+ TestDescription_suite_test_workbook_test_get_active_sheet2() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 94, "test_get_active_sheet2" ) {}
  void runTest() { suite_test_workbook.test_get_active_sheet2(); }
 } testDescription_suite_test_workbook_test_get_active_sheet2;
 
 static class TestDescription_suite_test_workbook_test_create_sheet2 : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_test_workbook_test_create_sheet2() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 106, "test_create_sheet2" ) {}
+ TestDescription_suite_test_workbook_test_create_sheet2() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 101, "test_create_sheet2" ) {}
  void runTest() { suite_test_workbook.test_create_sheet2(); }
 } testDescription_suite_test_workbook_test_create_sheet2;
 
 static class TestDescription_suite_test_workbook_test_create_sheet_with_name2 : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_test_workbook_test_create_sheet_with_name2() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 113, "test_create_sheet_with_name2" ) {}
+ TestDescription_suite_test_workbook_test_create_sheet_with_name2() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 108, "test_create_sheet_with_name2" ) {}
  void runTest() { suite_test_workbook.test_create_sheet_with_name2(); }
 } testDescription_suite_test_workbook_test_create_sheet_with_name2;
 
 static class TestDescription_suite_test_workbook_test_get_sheet_by_name2 : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_test_workbook_test_get_sheet_by_name2() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 120, "test_get_sheet_by_name2" ) {}
+ TestDescription_suite_test_workbook_test_get_sheet_by_name2() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 115, "test_get_sheet_by_name2" ) {}
  void runTest() { suite_test_workbook.test_get_sheet_by_name2(); }
 } testDescription_suite_test_workbook_test_get_sheet_by_name2;
 
 static class TestDescription_suite_test_workbook_test_get_index : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_test_workbook_test_get_index() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 130, "test_get_index" ) {}
+ TestDescription_suite_test_workbook_test_get_index() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 125, "test_get_index" ) {}
  void runTest() { suite_test_workbook.test_get_index(); }
 } testDescription_suite_test_workbook_test_get_index;
 
 static class TestDescription_suite_test_workbook_test_add_named_range : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_test_workbook_test_add_named_range() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 138, "test_add_named_range" ) {}
+ TestDescription_suite_test_workbook_test_add_named_range() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 133, "test_add_named_range" ) {}
  void runTest() { suite_test_workbook.test_add_named_range(); }
 } testDescription_suite_test_workbook_test_add_named_range;
 
 static class TestDescription_suite_test_workbook_test_get_named_range2 : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_test_workbook_test_get_named_range2() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 147, "test_get_named_range2" ) {}
+ TestDescription_suite_test_workbook_test_get_named_range2() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 142, "test_get_named_range2" ) {}
  void runTest() { suite_test_workbook.test_get_named_range2(); }
 } testDescription_suite_test_workbook_test_get_named_range2;
 
 static class TestDescription_suite_test_workbook_test_remove_named_range : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_test_workbook_test_remove_named_range() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 157, "test_remove_named_range" ) {}
+ TestDescription_suite_test_workbook_test_remove_named_range() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 152, "test_remove_named_range" ) {}
  void runTest() { suite_test_workbook.test_remove_named_range(); }
 } testDescription_suite_test_workbook_test_remove_named_range;
 
 static class TestDescription_suite_test_workbook_test_add_local_named_range : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_test_workbook_test_add_local_named_range() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 167, "test_add_local_named_range" ) {}
+ TestDescription_suite_test_workbook_test_add_local_named_range() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 162, "test_add_local_named_range" ) {}
  void runTest() { suite_test_workbook.test_add_local_named_range(); }
 } testDescription_suite_test_workbook_test_add_local_named_range;
 
 static class TestDescription_suite_test_workbook_test_write_regular_date : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_test_workbook_test_write_regular_date() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 177, "test_write_regular_date" ) {}
+ TestDescription_suite_test_workbook_test_write_regular_date() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 172, "test_write_regular_date" ) {}
  void runTest() { suite_test_workbook.test_write_regular_date(); }
 } testDescription_suite_test_workbook_test_write_regular_date;
 
 static class TestDescription_suite_test_workbook_test_write_regular_float : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_test_workbook_test_write_regular_float() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 195, "test_write_regular_float" ) {}
+ TestDescription_suite_test_workbook_test_write_regular_float() : CxxTest::RealTestDescription( Tests_test_workbook, suiteDescription_test_workbook, 190, "test_write_regular_float" ) {}
  void runTest() { suite_test_workbook.test_write_regular_float(); }
 } testDescription_suite_test_workbook_test_write_regular_float;
 

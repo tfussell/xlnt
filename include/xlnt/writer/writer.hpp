@@ -30,6 +30,7 @@
 
 namespace xlnt {
     
+class relationship;
 class workbook;
 class worksheet;
 class document_properties;
@@ -37,18 +38,30 @@ class document_properties;
 class writer
 {
 public:
+	static std::string write_content_types(const workbook &wb);
+
+	static std::string write_properties_core(const document_properties &prop);
+
+	static std::string write_properties_app(const workbook &wb);
+
     static std::string write_workbook(const workbook &wb);
-    static std::string write_worksheet(worksheet ws);
-    static std::string write_worksheet(worksheet ws, const std::vector<std::string> &string_table);
-    static std::string write_worksheet(worksheet ws, const std::vector<std::string> &string_table, const std::unordered_map<std::size_t, std::string> &style_table);
-    static std::string write_theme();
-    static std::string write_content_types(const std::pair<std::unordered_map<std::string, std::string>, std::unordered_map<std::string, std::string>> &content_types);
-    static std::string write_relationships(const std::vector<std::pair<std::string, std::pair<std::string, std::string>>> &relationships);
+
+	static std::string write_theme();
+
+	static std::string write_shared_strings(const std::vector<std::string> &string_table);
+
+	static std::string write_worksheet(worksheet ws, 
+		const std::vector<std::string> &string_table = {}, 
+		const std::unordered_map<std::size_t, std::string> &style_table = {});
+
+	static std::string write_root_rels();
+
     static std::string write_workbook_rels(const workbook &wb);
-    static std::string write_worksheet_rels(worksheet ws, int drawing_id, int comments_id);
-    static std::string write_string_table(const std::vector<std::string> &string_table);
-    static std::string write_properties_core(const document_properties &prop);
-    static std::string write_properties_app(const workbook &wb);
+
+    static std::string write_worksheet_rels(worksheet ws);
+
+private:
+	static std::string write_relationships(const std::vector<relationship> &relationships);
 };
     
 } // namespace xlnt

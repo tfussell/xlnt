@@ -51,7 +51,7 @@ public:
     void test_write_string_table()
     {
         std::vector<std::string> table = {"hello", "world", "nice"};
-        auto content = xlnt::writer::write_string_table(table);
+        auto content = xlnt::writer::write_shared_strings(table);
         TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sharedStrings.xml", content));
     }
 
@@ -128,7 +128,7 @@ public:
         ws.get_cell("A2") = "test";
         ws.get_cell("A2").set_hyperlink("http://test2.com/");
         TS_ASSERT_EQUALS(2, ws.get_relationships().size());
-        auto content = xlnt::writer::write_worksheet_rels(ws, 1, 1);
+        auto content = xlnt::writer::write_worksheet_rels(ws);
         TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_hyperlink.xml.rels", content));
     }
 

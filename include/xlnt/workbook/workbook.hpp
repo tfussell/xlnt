@@ -40,12 +40,13 @@ class worksheet;
 namespace detail {    
 struct workbook_impl;
 } // namespace detail
-    
-enum class optimization
+
+struct content_type
 {
-    write,
-    read,
-    none
+	bool is_default;
+	std::string extension;
+	std::string part_name;
+	std::string type;
 };
 
 /// <summary>
@@ -55,16 +56,13 @@ class workbook
 {
 public:
     //constructors
-    workbook(optimization optimization = optimization::none);
+    workbook();
     ~workbook();
     
     workbook &operator=(const workbook &) = delete;
     workbook(const workbook &) = delete;
     
-    void read_workbook_settings(const std::string &xml_source);
-
-    void create_relationship(const std::string &id, const std::string &target, const std::string &type);
-    relationship get_relationship(const std::string &id) const;
+    //void read_workbook_settings(const std::string &xml_source);
     
     //getters
     worksheet get_active_sheet();
@@ -158,13 +156,15 @@ public:
     bool load(const std::istream &stream);
     
     bool operator==(const workbook &rhs) const;
+
+	std::vector<content_type> get_content_types() const;
     
-    std::unordered_map<std::string, std::pair<std::string, std::string>> get_root_relationships() const;
-    std::unordered_map<std::string, std::pair<std::string, std::string>> get_relationships() const;
+	void create_relationship(const std::string &id, const std::string &target, const std::string &type);
+	relationship get_relationship(const std::string &id) const;
+    std::vector<relationship> get_relationships() const;
     
 private:
     friend class worksheet;
-    bool get_already_saved() const;
     std::unique_ptr<detail::workbook_impl> d_;
 };
     

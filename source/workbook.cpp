@@ -43,18 +43,15 @@ static std::string CreateTemporaryFilename()
 
 namespace xlnt {
 namespace detail {
-workbook_impl::workbook_impl(optimization o) : already_saved_(false), optimized_read_(o == optimization::read), optimized_write_(o == optimization::write), active_sheet_index_(0), date_1904_(false)
+workbook_impl::workbook_impl() : active_sheet_index_(0), date_1904_(false)
 {
     
 }
 } // namespace detail
     
-workbook::workbook(optimization optimize) : d_(new detail::workbook_impl(optimize))
+workbook::workbook() : d_(new detail::workbook_impl())
 {
-    if(!d_->optimized_read_)
-    {
-        create_sheet("Sheet");
-    }
+    create_sheet("Sheet");
 }
 
 workbook::~workbook()
@@ -156,11 +153,6 @@ worksheet workbook::get_active_sheet()
     return worksheet(&d_->worksheets_[d_->active_sheet_index_]);
 }
 
-bool workbook::get_already_saved() const
-{
-    return d_->already_saved_;
-}
-
 bool workbook::has_named_range(const std::string &name) const
 {
     for(auto worksheet : *this)
@@ -174,12 +166,7 @@ bool workbook::has_named_range(const std::string &name) const
 }
 
 worksheet workbook::create_sheet()
-{
-    if(d_->optimized_read_)
-    {
-        throw std::runtime_error("this is a read-only workbook");
-    }
-    
+{   
     std::string title = "Sheet1";
     int index = 1;
 
@@ -194,11 +181,6 @@ worksheet workbook::create_sheet()
 
 void workbook::add_sheet(xlnt::worksheet worksheet)
 {
-    if(d_->optimized_read_)
-    {
-        throw std::runtime_error("this is a read-only workbook");
-    }
-    
     for(auto ws : *this)
     {
         if(worksheet == ws)
@@ -476,11 +458,6 @@ void workbook::clear()
     d_->worksheets_.clear();
 }
 
-bool workbook::get_optimized_write() const
-{
-    return d_->optimized_write_;
-}
-
 bool workbook::save(std::vector<unsigned char> &data)
 {
     auto temp_file = CreateTemporaryFilename();
@@ -498,75 +475,12 @@ bool workbook::save(std::vector<unsigned char> &data)
 
 bool workbook::save(const std::string &filename)
 {
-    if(d_->optimized_write_)
-    {
-        if(d_->already_saved_)
-        {
-            throw workbook_already_saved();
-        }
-
-        d_->already_saved_ = true;
-    }
-
     zip_file f(filename, file_mode::create, file_access::write);
-    
-    std::pair<std::unordered_map<std::string, std::string>, std::unordered_map<std::string, std::string>> content_types =
-    {
-        {
-            {"rels", "application/vnd.openxmlformats-package.relationships+xml"},
-            {"xml", "application/xml"}
-        },
-        {
-            {"/xl/styles.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"},
-            {"/xl/workbook.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"},
-            {"/docProps/app.xml", "application/vnd.openxmlformats-officedocument.extended-properties+xml"},
-            {"/docProps/core.xml", "application/vnd.openxmlformats-package.core-properties+xml"},
-            {"/xl/theme/theme1.xml", "application/vnd.openxmlformats-officedocument.theme+xml"}
-        }
-    };
 
-    int ws_index = 1;
-    for(auto ws : *this)
-    {
-        auto sheet_filename = "/xl/worksheets/sheet" + std::to_string(ws_index++) + ".xml";
-        content_types.second[sheet_filename] = "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml";
-    }
+	f.set_file_contents("[Content_Types].xml", writer::write_content_types(*this));
     
-    f.set_file_contents("[Content_Types].xml", writer::write_content_types(content_types));
-    
-    std::vector<std::pair<std::string, std::pair<std::string, std::string>>> root_rels =
-    {
-        {"rId3", {"docProps/app.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties"}},
-        {"rId2", {"docProps/core.xml", "http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties"}},
-        {"rId1", {"xl/workbook.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"}}
-    };
-
-    f.set_file_contents("_rels/.rels", writer::write_relationships(root_rels));
-    
-    std::vector<std::pair<std::string, std::pair<std::string, std::string>>> workbook_rels =
-    {
-        {"rId1", {"sharedStrings.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"}},
-        {"rId2", {"styles.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"}},
-        {"rId3", {"theme/theme1.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme"}}
-    };
-
-    ws_index = 2;
-    for(auto ws : *this)
-    {
-        auto sheet_filename = "worksheets/sheet" + std::to_string(ws_index++) + ".xml";
-        workbook_rels.push_back({"rId" + std::to_string(ws_index + 1), {sheet_filename, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"}});
-    }
-
-    f.set_file_contents("xl/_rels/workbook.xml.rels", writer::write_relationships(workbook_rels));
-    
-    int i = 0;
-
-    for(auto ws : *this)
-    {
-        std::string sheet_filename = "xl/worksheets/sheet";
-        f.set_file_contents(sheet_filename + std::to_string(i + 1) + ".xml", xlnt::writer::write_worksheet(ws));
-        i++;
-    }
+    f.set_file_contents("_rels/.rels", writer::write_root_rels());
+    f.set_file_contents("xl/_rels/workbook.xml.rels", writer::write_workbook_rels(*this));
 
     f.set_file_contents("xl/workbook.xml", writer::write_workbook(*this));
 
@@ -577,5 +491,19 @@ bool workbook::operator==(const workbook &rhs) const
 {
     return d_.get() == rhs.d_.get();
 }
-    
+
+std::vector<relationship> xlnt::workbook::get_relationships() const
+{
+	return d_->relationships_;
+}
+ 
+std::vector<content_type> xlnt::workbook::get_content_types() const
+{
+	std::vector<content_type> content_types;
+	content_types.push_back({ true, "xml", "xml" });
+	content_types.push_back({ true, "rels", "xml" });
+	content_types.push_back({ false, "xl/workbook.xml", "xml" });
+	return content_types;
+}
+
 }

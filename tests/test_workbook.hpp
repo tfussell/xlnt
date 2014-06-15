@@ -5,6 +5,7 @@
 #include <cxxtest/TestSuite.h>
 
 #include <xlnt/xlnt.hpp>
+#include "helpers\temporary_file.hpp"
 
 class test_workbook : public CxxTest::TestSuite
 {
@@ -28,12 +29,6 @@ public:
         xlnt::workbook wb;
         auto new_sheet = wb.create_sheet(0, "LikeThisName");
         TS_ASSERT_EQUALS(new_sheet, wb[0]);
-    }
-
-    void test_create_sheet_readonly()
-    {
-        xlnt::workbook wb(xlnt::optimization::read);
-        TS_ASSERT_THROWS_ANYTHING(wb.create_sheet());
     }
 
     void test_remove_sheet()
