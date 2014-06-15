@@ -11,21 +11,19 @@ class test_worksheet : public CxxTest::TestSuite
 public:
     void test_new_worksheet()
     {
-        xlnt::worksheet ws = wb.create_sheet();
-        TS_ASSERT(wb == ws.get_parent());
+        xlnt::worksheet ws = wb_.create_sheet();
+		TS_ASSERT(wb_ == ws.get_parent());
     }
 
     void test_new_sheet_name()
     {
-        xlnt::workbook wb;
-        wb.remove_sheet(wb.get_active_sheet());
-        xlnt::worksheet ws = wb.create_sheet();
-        TS_ASSERT_EQUALS(ws.to_string(), "<Worksheet \"Sheet1\">");
+		xlnt::worksheet ws = wb_.create_sheet("TestName");
+        TS_ASSERT_EQUALS(ws.to_string(), "<Worksheet \"TestName\">");
     }
 
     void test_get_cell()
     {
-        xlnt::worksheet ws(wb);
+		xlnt::worksheet ws(wb_);
         auto cell = ws.get_cell("A1");
         TS_ASSERT_EQUALS(cell.get_reference().to_string(), "A1");
     }
@@ -33,23 +31,23 @@ public:
     void test_set_bad_title()
     {
         std::string title(50, 'X');
-        TS_ASSERT_THROWS(wb.create_sheet(title), xlnt::sheet_title_exception);
+		TS_ASSERT_THROWS(wb_.create_sheet(title), xlnt::sheet_title_exception);
     }
 
     void test_set_bad_title_character()
     {
-        TS_ASSERT_THROWS(wb.create_sheet("["), xlnt::sheet_title_exception);
-        TS_ASSERT_THROWS(wb.create_sheet("]"), xlnt::sheet_title_exception);
-        TS_ASSERT_THROWS(wb.create_sheet("*"), xlnt::sheet_title_exception);
-        TS_ASSERT_THROWS(wb.create_sheet(":"), xlnt::sheet_title_exception);
-        TS_ASSERT_THROWS(wb.create_sheet("?"), xlnt::sheet_title_exception);
-        TS_ASSERT_THROWS(wb.create_sheet("/"), xlnt::sheet_title_exception);
-        TS_ASSERT_THROWS(wb.create_sheet("\\"), xlnt::sheet_title_exception);
+        TS_ASSERT_THROWS(wb_.create_sheet("["), xlnt::sheet_title_exception);
+        TS_ASSERT_THROWS(wb_.create_sheet("]"), xlnt::sheet_title_exception);
+        TS_ASSERT_THROWS(wb_.create_sheet("*"), xlnt::sheet_title_exception);
+        TS_ASSERT_THROWS(wb_.create_sheet(":"), xlnt::sheet_title_exception);
+        TS_ASSERT_THROWS(wb_.create_sheet("?"), xlnt::sheet_title_exception);
+        TS_ASSERT_THROWS(wb_.create_sheet("/"), xlnt::sheet_title_exception);
+        TS_ASSERT_THROWS(wb_.create_sheet("\\"), xlnt::sheet_title_exception);
     }
 
     void test_worksheet_dimension()
     {
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws(wb_);
         ws.get_cell("A1") = "AAA";
         TS_ASSERT_EQUALS("A1:A1", ws.calculate_dimension().to_string());
         ws.get_cell("B12") = "AAA";
@@ -58,7 +56,7 @@ public:
 
     void test_worksheet_range()
     {
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws(wb_);
         auto xlrange = ws.get_range("A1:C4");
         TS_ASSERT_EQUALS(4, xlrange.num_rows());
         TS_ASSERT_EQUALS(3, xlrange[0].num_cells());
@@ -66,8 +64,8 @@ public:
 
     void test_worksheet_named_range()
     {
-        xlnt::worksheet ws(wb);
-        wb.create_named_range("test_range", ws, "C5");
+        xlnt::worksheet ws(wb_);
+        wb_.create_named_range("test_range", ws, "C5");
         auto xlrange = ws.get_named_range("test_range");
         TS_ASSERT_EQUALS(1, xlrange.num_rows());
         TS_ASSERT_EQUALS(1, xlrange[0].num_cells());
@@ -76,27 +74,27 @@ public:
 
     void test_bad_named_range()
     {
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws(wb_);
         TS_ASSERT_THROWS_ANYTHING(ws.get_range("bad_range"));
     }
 
     void test_named_range_wrong_sheet()
     {
-        xlnt::worksheet ws1(wb);
-        xlnt::worksheet ws2(wb);
-        wb.create_named_range("wrong_sheet_range", ws1, "C5");
+        xlnt::worksheet ws1(wb_);
+        xlnt::worksheet ws2(wb_);
+        wb_.create_named_range("wrong_sheet_range", ws1, "C5");
         TS_ASSERT_THROWS_ANYTHING(ws2.get_named_range("wrong_sheet_range"));
     }
 
     void test_cell_offset()
     {
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws(wb_);
         TS_ASSERT_EQUALS("C17", ws.get_cell(xlnt::cell_reference("B15").make_offset(1, 2)).get_reference().to_string());
     }
 
     void test_range_offset()
     {
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws(wb_);
         auto xlrange = ws.get_range(xlnt::range_reference("A1:C4").make_offset(3, 1));
         TS_ASSERT_EQUALS(4, xlrange.num_rows());
         TS_ASSERT_EQUALS(3, xlrange[0].num_cells());
@@ -105,15 +103,15 @@ public:
 
     void test_cell_alternate_coordinates()
     {
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws(wb_);
         auto cell = ws.get_cell(xlnt::cell_reference(4, 8));
         TS_ASSERT_EQUALS("E9", cell.get_reference().to_string());
     }
 
     void test_cell_range_name()
     {
-        xlnt::worksheet ws(wb);
-        wb.create_named_range("test_range_single", ws, "B12");
+        xlnt::worksheet ws(wb_);
+        wb_.create_named_range("test_range_single", ws, "B12");
         TS_ASSERT_THROWS(ws.get_cell("test_range_single"), xlnt::cell_coordinates_exception);
         auto c_range_name = ws.get_named_range("test_range_single");
         auto c_range_coord = ws.get_range("B12");
@@ -124,7 +122,7 @@ public:
 
     void test_garbage_collect()
     {
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws(wb_);
 
         ws.get_cell("A1") = "";
         ws.get_cell("B2") = "0";
@@ -146,7 +144,7 @@ public:
 
     void test_hyperlink_relationships()
     {
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws(wb_);
         TS_ASSERT_EQUALS(ws.get_relationships().size(), 0);
 
         ws.get_cell("A1").set_hyperlink("http://test.com");
@@ -171,7 +169,7 @@ public:
 
     void test_append_list()
     {
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws(wb_);
 
         ws.append(std::vector<std::string> {"This is A1", "This is B1"});
 
@@ -181,7 +179,7 @@ public:
 
     void test_append_dict_letter()
     {
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws(wb_);
 
         ws.append(std::unordered_map<std::string, std::string> {{"A", "This is A1"}, {"C", "This is C1"}});
 
@@ -191,7 +189,7 @@ public:
 
     void test_append_dict_index()
     {
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws(wb_);
 
         ws.append(std::unordered_map<int, std::string> {{0, "This is A1"}, {2, "This is C1"}});
 
@@ -201,7 +199,7 @@ public:
 
     void test_append_2d_list()
     {
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws(wb_);
 
         ws.append(std::vector<std::string> {"This is A1", "This is B1"});
         ws.append(std::vector<std::string> {"This is A2", "This is B2"});
@@ -216,7 +214,7 @@ public:
 
     void test_rows()
     {
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws(wb_);
 
         ws.get_cell("A1") = "first";
         ws.get_cell("C9") = "last";
@@ -231,7 +229,7 @@ public:
 
     void test_auto_filter()
     {
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws(wb_);
 
         ws.auto_filter(ws.get_range("a1:f1"));
         TS_ASSERT_EQUALS(ws.get_auto_filter(), "A1:F1");
@@ -245,7 +243,7 @@ public:
 
     void test_page_margins()
     {
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws(wb_);
 
         ws.get_page_margins().set_left(2.0);
         ws.get_page_margins().set_right(2.0);
@@ -272,7 +270,7 @@ public:
         TS_ASSERT_DIFFERS(page_margins_node.attribute("footer"), nullptr);
         TS_ASSERT_EQUALS(page_margins_node.attribute("footer").as_double(), 1.5);
 
-        xlnt::worksheet ws2(wb);
+        xlnt::worksheet ws2(wb_);
         xml_string = xlnt::writer::write_worksheet(ws2);
         doc.load(xml_string.c_str());
         TS_ASSERT_DIFFERS(page_margins_node.attribute("left"), nullptr);
@@ -291,7 +289,7 @@ public:
 
     void test_merge()
     {
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws(wb_);
 
         std::vector<std::string> string_table = {"Cell A1", "Cell B1"};
 
@@ -360,7 +358,7 @@ public:
 
     void test_freeze()
     {
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws(wb_);
 
         ws.freeze_panes(ws.get_cell("b2"));
         TS_ASSERT_EQUALS(ws.get_frozen_panes().to_string(), "B2");
@@ -377,7 +375,7 @@ public:
 
     void test_printer_settings()
     {
-        xlnt::worksheet ws(wb);
+        xlnt::worksheet ws(wb_);
 
         ws.get_page_setup().set_orientation(xlnt::page_setup::orientation::landscape);
         ws.get_page_setup().set_paper_size(xlnt::page_setup::paper_size::tabloid);
@@ -403,7 +401,7 @@ public:
         TS_ASSERT_DIFFERS(doc.child("worksheet").child("pageSetUpPr").attribute("fitToPage"), nullptr);
         TS_ASSERT_EQUALS(doc.child("worksheet").child("pageSetUpPr").attribute("fitToPage").as_int(), 1);
 
-        xlnt::worksheet ws2(wb);
+        xlnt::worksheet ws2(wb_);
         xml_string = xlnt::writer::write_worksheet(ws2);
         doc.load(xml_string.c_str());
         TS_ASSERT_EQUALS(doc.child("worksheet").child("pageSetup"), nullptr);
@@ -411,5 +409,5 @@ public:
     }
 
 private:
-    xlnt::workbook wb;
+    xlnt::workbook wb_;
 };

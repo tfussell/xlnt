@@ -23,7 +23,7 @@
 // @author: see AUTHORS file
 #pragma once
 
-const std::string version = "0.1.0";
+const std::string xlnt_version = "0.1.0";
 
 const std::string author = "Thomas Fussell";
 const std::string license = "MIT";

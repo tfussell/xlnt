@@ -83,22 +83,22 @@ public:
         {
             for(auto cell : row)
             {
-                auto row = cell.get_row();
+                auto row_number = cell.get_row();
 
-                if(row <= 20)
+				if (row_number <= 20)
                 {
                     std::string expected = cell.get_reference().to_string();
                     TS_ASSERT_EQUALS(cell.get_data_type(), xlnt::cell::type::string);
                     TS_ASSERT_EQUALS(cell, expected);
                 }
-                else if(row <= 40)
+				else if (row_number <= 40)
                 {
                     TS_ASSERT_EQUALS(cell.get_data_type(), xlnt::cell::type::numeric);
-                    TS_ASSERT_EQUALS(cell, (int)row);
+					TS_ASSERT_EQUALS(cell, (int)row_number);
                 }
-                else if(row <= 50)
+				else if (row_number <= 50)
                 {
-                    xlnt::date expected(2010 + cell.get_reference().get_column_index(), 5, row - 40);
+					xlnt::date expected(2010 + cell.get_reference().get_column_index(), 5, row_number - 40);
                     TS_ASSERT_EQUALS(cell.get_data_type(), xlnt::cell::type::numeric);
                     TS_ASSERT(cell.is_date());
                     TS_ASSERT_EQUALS(cell, expected);

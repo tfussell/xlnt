@@ -6,3 +6,7 @@
 	path = third-party/zlib
 	url = https://github.com/madler/zlib.git
 	branch = master
+[submodule "third-party/cxxtest"]
+	path = third-party/cxxtest
+	url = https://github.com/CxxTest/cxxtest
+	branch = master

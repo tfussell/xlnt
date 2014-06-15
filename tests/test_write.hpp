@@ -19,7 +19,7 @@ public:
         }
 
         TS_ASSERT(!PathHelper::FileExists(temp_file.GetFilename()));
-        wb.save(temp_file.GetFilename());
+        wb_.save(temp_file.GetFilename());
         TS_ASSERT(PathHelper::FileExists(temp_file.GetFilename()));
     }
 
@@ -57,7 +57,7 @@ public:
 
     void test_write_worksheet()
     {
-        auto ws = wb.create_sheet();
+		auto ws = wb_.create_sheet();
         ws.get_cell("F42") = "hello";
         auto content = xlnt::writer::write_worksheet(ws, {"hello"}, {});
         TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sheet1.xml", content));
@@ -65,7 +65,7 @@ public:
 
     void test_write_hidden_worksheet()
     {
-        auto ws = wb.create_sheet();
+		auto ws = wb_.create_sheet();
         ws.get_page_setup().set_sheet_state(xlnt::page_setup::sheet_state::hidden);
         ws.get_cell("F42") = "hello";
         auto content = xlnt::writer::write_worksheet(ws, {"hello"}, {});
@@ -74,7 +74,7 @@ public:
 
     void test_write_bool()
     {
-        auto ws = wb.create_sheet();
+		auto ws = wb_.create_sheet();
         ws.get_cell("F42") = false;
         ws.get_cell("F43") = true;
         auto content = xlnt::writer::write_worksheet(ws, {}, {});
@@ -83,7 +83,7 @@ public:
 
     void test_write_formula()
     {
-        auto ws = wb.create_sheet();
+		auto ws = wb_.create_sheet();
         ws.get_cell("F1") = 10;
         ws.get_cell("F2") = 32;
         ws.get_cell("F3") = "=F1+F2";
@@ -93,16 +93,16 @@ public:
 
     void test_write_style()
     {
-        auto ws = wb.create_sheet();
+		auto ws = wb_.create_sheet();
         ws.get_cell("F1") = "13%";
-        auto style_id_by_hash = xlnt::style_writer(wb).get_style_by_hash();
+		auto style_id_by_hash = xlnt::style_writer(wb_).get_style_by_hash();
         auto content = xlnt::writer::write_worksheet(ws, {}, style_id_by_hash);
         TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_style.xml", content));
     }
 
     void test_write_height()
     {
-        auto ws = wb.create_sheet();
+		auto ws = wb_.create_sheet();
         ws.get_cell("F1") = 10;
         ws.get_row_properties(ws.get_cell("F1").get_row()).set_height(30);
         auto content = xlnt::writer::write_worksheet(ws, {}, {});
@@ -111,7 +111,7 @@ public:
 
     void test_write_hyperlink()
     {
-        auto ws = wb.create_sheet();
+		auto ws = wb_.create_sheet();
         ws.get_cell("A1") = "test";
         ws.get_cell("A1").set_hyperlink("http://test.com");
         auto content = xlnt::writer::write_worksheet(ws, {"test"}, {});
@@ -120,7 +120,7 @@ public:
 
     void test_write_hyperlink_rels()
     {
-        auto ws = wb.create_sheet();
+		auto ws = wb_.create_sheet();
         TS_ASSERT_EQUALS(0, ws.get_relationships().size());
         ws.get_cell("A1") = "test";
         ws.get_cell("A1").set_hyperlink("http://test.com/");
@@ -134,7 +134,7 @@ public:
 
     void test_hyperlink_value()
     {
-        auto ws = wb.create_sheet();
+		auto ws = wb_.create_sheet();
         ws.get_cell("A1").set_hyperlink("http://test.com");
         TS_ASSERT_EQUALS("http://test.com", ws.get_cell("A1"));
         ws.get_cell("A1") = "test";
@@ -156,7 +156,7 @@ public:
 
     void test_freeze_panes_horiz()
     {
-        auto ws = wb.create_sheet();
+		auto ws = wb_.create_sheet();
         ws.get_cell("F42") = "hello";
         ws.freeze_panes("A4");
         auto content = xlnt::writer::write_worksheet(ws, {"hello"}, {});
@@ -165,7 +165,7 @@ public:
 
     void test_freeze_panes_vert()
     {
-        auto ws = wb.create_sheet();
+		auto ws = wb_.create_sheet();
         ws.get_cell("F42") = "hello";
         ws.freeze_panes("D1");
         auto content = xlnt::writer::write_worksheet(ws, {"hello"}, {});
@@ -174,7 +174,7 @@ public:
 
     void test_freeze_panes_both()
     {
-        auto ws = wb.create_sheet();
+		auto ws = wb_.create_sheet();
         ws.get_cell("F42") = "hello";
         ws.freeze_panes("D4");
         auto content = xlnt::writer::write_worksheet(ws, {"hello"}, {});
@@ -183,7 +183,7 @@ public:
 
     void test_long_number()
     {
-        auto ws = wb.create_sheet();
+		auto ws = wb_.create_sheet();
         ws.get_cell("A1") = 9781231231230;
         auto content = xlnt::writer::write_worksheet(ws, {}, {});
         TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/long_number.xml", content));
@@ -191,7 +191,7 @@ public:
 
     void test_short_number()
     {
-        auto ws = wb.create_sheet();
+		auto ws = wb_.create_sheet();
         ws.get_cell("A1") = 1234567890;
         auto content = xlnt::writer::write_worksheet(ws, {}, {});
         TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/short_number.xml", content));
@@ -199,5 +199,5 @@ public:
 
  private:
     TemporaryFile temp_file;
-    xlnt::workbook wb;
+    xlnt::workbook wb_;
 };

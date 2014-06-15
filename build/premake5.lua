@@ -17,7 +17,7 @@ project "xlnt.test"
        "../third-party/pugixml/src",
        "../third-party/zlib",
        "../third-party/zlib/contrib/minizip",
-       "$(cxxtest_prefix)"
+       "../third-party/cxxtest"
     }
     files { 
        "../tests/*.hpp",
@@ -28,7 +28,7 @@ project "xlnt.test"
         "xlnt",
         "zlib"
     }
-    prebuildcommands { "cxxtestgen --runner=ErrorPrinter -o ../../tests/runner-autogen.cpp ../../tests/*.hpp" }
+    prebuildcommands { "../../third-party/cxxtest/bin/cxxtestgen --runner=ErrorPrinter -o ../../tests/runner-autogen.cpp ../../tests/*.hpp" }
     flags { 
        "Unicode",
        "NoEditAndContinue",

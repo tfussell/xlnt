@@ -563,8 +563,8 @@ bool workbook::save(const std::string &filename)
 
     for(auto ws : *this)
     {
-        std::string filename = "xl/worksheets/sheet";
-        f.set_file_contents(filename + std::to_string(i + 1) + ".xml", xlnt::writer::write_worksheet(ws));
+        std::string sheet_filename = "xl/worksheets/sheet";
+        f.set_file_contents(sheet_filename + std::to_string(i + 1) + ".xml", xlnt::writer::write_worksheet(ws));
         i++;
     }
 

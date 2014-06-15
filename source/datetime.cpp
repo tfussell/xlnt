@@ -7,32 +7,35 @@ namespace xlnt {
 
 time time::from_number(long double raw_time)
 {
+	time result;
+
     double integer_part;
     double fractional_part = std::modf((double)raw_time, &integer_part);
+
     fractional_part *= 24;
-    int hour = (int)fractional_part;
-    fractional_part = 60 * (fractional_part - hour);
-    int minute = (int)fractional_part;
-    fractional_part = 60 * (fractional_part - minute);
-    int second = (int)fractional_part;
-    fractional_part = 1000000 * (fractional_part - second);
-    int microsecond = (int)fractional_part;
-    if(microsecond == 999999 && fractional_part - microsecond > 0.5)
+    result.hour = (int)fractional_part;
+	fractional_part = 60 * (fractional_part - result.hour);
+	result.minute = (int)fractional_part;
+	fractional_part = 60 * (fractional_part - result.minute);
+	result.second = (int)fractional_part;
+	fractional_part = 1000000 * (fractional_part - result.second);
+	result.microsecond = (int)fractional_part;
+	if (result.microsecond == 999999 && fractional_part - result.microsecond > 0.5)
     {
-        microsecond = 0;
-        second += 1;
-        if(second == 60)
+		result.microsecond = 0;
+		result.second += 1;
+		if (result.second == 60)
         {
-            second = 0;
-            minute += 1;
-            if(minute == 60)
+			result.second = 0;
+			result.minute += 1;
+			if (result.minute == 60)
             {
-                minute = 0;
-                hour += 1;
+				result.minute = 0;
+				result.hour += 1;
             }
         }
     }
-    return time(hour, minute, second, microsecond);
+	return result;
 }
 
 date date::from_number(int days_since_base_year, int base_year)
