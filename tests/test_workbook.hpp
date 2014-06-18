@@ -5,7 +5,7 @@
 #include <cxxtest/TestSuite.h>
 
 #include <xlnt/xlnt.hpp>
-#include "helpers\temporary_file.hpp"
+#include "helpers/temporary_file.hpp"
 
 class test_workbook : public CxxTest::TestSuite
 {

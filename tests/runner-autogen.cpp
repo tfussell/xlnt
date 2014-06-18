@@ -11,17 +11,17 @@
 #include <cxxtest/TestRunner.h>
 #include <cxxtest/RealDescriptions.h>
 #include <cxxtest/TestMain.h>
-#include <cxxtest/ParenPrinter.h>
+#include <cxxtest/ErrorPrinter.h>
 
 int main( int argc, char *argv[] ) {
  int status;
-    CxxTest::ParenPrinter tmp;
+    CxxTest::ErrorPrinter tmp;
     CxxTest::RealWorldDescription::_worldName = "cxxtest";
-    status = CxxTest::Main< CxxTest::ParenPrinter >( tmp, argc, argv );
+    status = CxxTest::Main< CxxTest::ErrorPrinter >( tmp, argc, argv );
     return status;
 }
 bool suite_test_cell_init = false;
-#include "C:\Users\Thomas\Development\xlnt\tests\test_cell.hpp"
+#include "/home/thomas/Development/xlnt/tests/test_cell.hpp"
 
 static test_cell suite_test_cell;
 
@@ -238,7 +238,7 @@ public:
  void runTest() { suite_test_cell.test_is_not_date_color_format(); }
 } testDescription_suite_test_cell_test_is_not_date_color_format;
 
-#include "C:\Users\Thomas\Development\xlnt\tests\test_chart.hpp"
+#include "/home/thomas/Development/xlnt/tests/test_chart.hpp"
 
 static test_chart suite_test_chart;
 
@@ -329,7 +329,7 @@ public:
  void runTest() { suite_test_chart.test_write_chart_scatter(); }
 } testDescription_suite_test_chart_test_write_chart_scatter;
 
-#include "C:\Users\Thomas\Development\xlnt\tests\test_named_range.hpp"
+#include "/home/thomas/Development/xlnt/tests/test_named_range.hpp"
 
 static test_named_range suite_test_named_range;
 
@@ -420,7 +420,7 @@ public:
  void runTest() { suite_test_named_range.test_can_be_saved(); }
 } testDescription_suite_test_named_range_test_can_be_saved;
 
-#include "C:\Users\Thomas\Development\xlnt\tests\test_number_format.hpp"
+#include "/home/thomas/Development/xlnt/tests/test_number_format.hpp"
 
 static test_number_format suite_test_number_format;
 
@@ -523,7 +523,7 @@ public:
  void runTest() { suite_test_number_format.test_mac_date(); }
 } testDescription_suite_test_number_format_test_mac_date;
 
-#include "C:\Users\Thomas\Development\xlnt\tests\test_props.hpp"
+#include "/home/thomas/Development/xlnt/tests/test_props.hpp"
 
 static test_props suite_test_props;
 
@@ -566,7 +566,7 @@ public:
  void runTest() { suite_test_props.test_write_properties_app(); }
 } testDescription_suite_test_props_test_write_properties_app;
 
-#include "C:\Users\Thomas\Development\xlnt\tests\test_read.hpp"
+#include "/home/thomas/Development/xlnt/tests/test_read.hpp"
 
 static test_read suite_test_read;
 
@@ -699,7 +699,7 @@ public:
  void runTest() { suite_test_read.test_read_date_value(); }
 } testDescription_suite_test_read_test_read_date_value;
 
-#include "C:\Users\Thomas\Development\xlnt\tests\test_strings.hpp"
+#include "/home/thomas/Development/xlnt/tests/test_strings.hpp"
 
 static test_strings suite_test_strings;
 
@@ -730,7 +730,7 @@ public:
  void runTest() { suite_test_strings.test_formatted_string_table(); }
 } testDescription_suite_test_strings_test_formatted_string_table;
 
-#include "C:\Users\Thomas\Development\xlnt\tests\test_style.hpp"
+#include "/home/thomas/Development/xlnt/tests/test_style.hpp"
 
 static test_style suite_test_style;
 
@@ -827,7 +827,7 @@ public:
  void runTest() { suite_test_style.test_read_cell_style(); }
 } testDescription_suite_test_style_test_read_cell_style;
 
-#include "C:\Users\Thomas\Development\xlnt\tests\test_theme.hpp"
+#include "/home/thomas/Development/xlnt/tests/test_theme.hpp"
 
 static test_theme suite_test_theme;
 
@@ -840,7 +840,7 @@ public:
  void runTest() { suite_test_theme.test_write_theme(); }
 } testDescription_suite_test_theme_test_write_theme;
 
-#include "C:\Users\Thomas\Development\xlnt\tests\test_workbook.hpp"
+#include "/home/thomas/Development/xlnt/tests/test_workbook.hpp"
 
 static test_workbook suite_test_workbook;
 
@@ -961,7 +961,7 @@ public:
  void runTest() { suite_test_workbook.test_write_regular_float(); }
 } testDescription_suite_test_workbook_test_write_regular_float;
 
-#include "C:\Users\Thomas\Development\xlnt\tests\test_worksheet.hpp"
+#include "/home/thomas/Development/xlnt/tests/test_worksheet.hpp"
 
 static test_worksheet suite_test_worksheet;
 
@@ -1130,7 +1130,7 @@ public:
  void runTest() { suite_test_worksheet.test_printer_settings(); }
 } testDescription_suite_test_worksheet_test_printer_settings;
 
-#include "C:\Users\Thomas\Development\xlnt\tests\test_write.hpp"
+#include "/home/thomas/Development/xlnt/tests/test_write.hpp"
 
 static test_write suite_test_write;
 

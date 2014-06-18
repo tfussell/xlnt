@@ -500,9 +500,9 @@ std::vector<relationship> xlnt::workbook::get_relationships() const
 std::vector<content_type> xlnt::workbook::get_content_types() const
 {
 	std::vector<content_type> content_types;
-	content_types.push_back({ true, "xml", "xml" });
-	content_types.push_back({ true, "rels", "xml" });
-	content_types.push_back({ false, "xl/workbook.xml", "xml" });
+	content_types.push_back({ true, "xml", "", "application/xml" });
+	content_types.push_back({ true, "rels", "", "application/vnd.openxmlformats-package.relationships+xml" });
+	content_types.push_back({ false, "", "xl/workbook.xml", "applications/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml" });
 	return content_types;
 }
 

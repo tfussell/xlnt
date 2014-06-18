@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <sstream>
@@ -584,9 +585,9 @@ std::string writer::write_theme()
      auto fill_style_list_node = format_scheme_node.append_child("a:fillStyleList");
      fill_style_list_node.append_child("a:solidFill").append_child("a:schemeClr").append_attribute("val").set_value("phClr");
 
-     auto line_style_list_node = format_scheme_node.append_child("a:lnStyleList");
-     auto effect_style_list_node = format_scheme_node.append_child("a:effectStyleList");
-     auto bg_fill_style_list_node = format_scheme_node.append_child("a:bgFillStyleList");
+     /*auto line_style_list_node = */format_scheme_node.append_child("a:lnStyleList");
+     /*auto effect_style_list_node = */format_scheme_node.append_child("a:effectStyleList");
+     /*auto bg_fill_style_list_node = */format_scheme_node.append_child("a:bgFillStyleList");
 
      theme_node.append_child("a:objectDefaults");
      theme_node.append_child("a:extraClrSchemeLst");
