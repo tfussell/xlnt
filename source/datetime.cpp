@@ -153,7 +153,7 @@ int date::to_number(int base_year) const
 
     if(base_year == 1904)
     {
-        return days_since_1900 - 1461;
+        return days_since_1900 - 1462;
     }
 
     return days_since_1900;

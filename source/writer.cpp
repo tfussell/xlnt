@@ -15,6 +15,7 @@
 #include "worksheet/worksheet.hpp"
 #include "workbook/workbook.hpp"
 #include "common/relationship.hpp"
+#include "workbook/document_properties.hpp"
 
 namespace xlnt {
 
@@ -36,14 +37,86 @@ std::string writer::write_shared_strings(const std::vector<std::string> &string_
     return ss.str();
 }
 
-std::string writer::write_properties_core(const document_properties &/*prop*/)
+std::string fill(const std::string &string, std::size_t length = 2)
 {
-    return "";
+    if(string.size() >= length)
+    {
+        return string;
+    }
+
+    return std::string(length - string.size(), '0') + string;
 }
 
-std::string writer::write_properties_app(const workbook &/*wb*/)
+std::string datetime_to_w3cdtf(const datetime &dt)
 {
-    return "";
+    return std::to_string(dt.year) + "-" + fill(std::to_string(dt.month)) + "-" + fill(std::to_string(dt.day)) + "T" + fill(std::to_string(dt.hour)) + ":" + fill(std::to_string(dt.minute)) + ":" + fill(std::to_string(dt.second)) + "Z";
+}
+
+std::string writer::write_properties_core(const document_properties &prop)
+{
+    pugi::xml_document doc;
+    auto root_node = doc.append_child("cp:coreProperties");
+    root_node.append_attribute("xmlns:cp").set_value("http://schemas.openxmlformats.org/package/2006/metadata/core-properties");
+    root_node.append_attribute("xmlns:dc").set_value("http://purl.org/dc/elements/1.1/");
+    root_node.append_attribute("xmlns:dcmitype").set_value("http://purl.org/dc/dcmitype/");
+    root_node.append_attribute("xmlns:dcterms").set_value("http://purl.org/dc/terms/");
+    root_node.append_attribute("xmlns:xsi").set_value("http://www.w3.org/2001/XMLSchema-instance");
+
+    root_node.append_child("dc:creator").text().set(prop.creator.c_str());
+    root_node.append_child("cp:lastModifiedBy").text().set(prop.last_modified_by.c_str());
+    root_node.append_child("dcterms:created").text().set(datetime_to_w3cdtf(prop.created).c_str());
+    root_node.child("dcterms:created").append_attribute("xsi:type").set_value("dcterms:W3CDTF");
+    root_node.append_child("dcterms:modified").text().set(datetime_to_w3cdtf(prop.modified).c_str());
+    root_node.child("dcterms:modified").append_attribute("xsi:type").set_value("dcterms:W3CDTF");
+    root_node.append_child("dc:title").text().set(prop.title.c_str());
+    root_node.append_child("dc:description");
+    root_node.append_child("dc:subject");
+    root_node.append_child("cp:keywords");
+    root_node.append_child("cp:category");
+
+    std::stringstream ss;
+    doc.save(ss);
+
+    return ss.str();
+}
+
+std::string writer::write_properties_app(const workbook &wb)
+{
+    pugi::xml_document doc;
+    auto root_node = doc.append_child("Properties");
+    root_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/officeDocument/2006/extended-properties");
+    root_node.append_attribute("xmlns:vt").set_value("http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes");
+
+    root_node.append_child("Application").text().set("Microsoft Excel");
+    root_node.append_child("DocSecurity").text().set("0");
+    root_node.append_child("ScaleCrop").text().set("false");
+    root_node.append_child("Company");
+    root_node.append_child("LinksUpToDate").text().set("false");
+    root_node.append_child("SharedDoc").text().set("false");
+    root_node.append_child("HyperlinksChanged").text().set("false");
+    root_node.append_child("AppVersion").text().set("12.0000");
+
+    auto heading_pairs_node = root_node.append_child("HeadingPairs");
+    auto heading_pairs_vector_node = heading_pairs_node.append_child("vt:vector");
+    heading_pairs_vector_node.append_attribute("baseType").set_value("variant");
+    heading_pairs_vector_node.append_attribute("size").set_value("2");
+    heading_pairs_vector_node.append_child("vt:variant").append_child("vt:lpstr").text().set("Worksheets");
+    heading_pairs_vector_node.append_child("vt:variant").append_child("vt:i4").text().set(std::to_string(wb.get_sheet_names().size()).c_str());
+
+    auto titles_of_parts_node = root_node.append_child("TitlesOfParts");
+    auto titles_of_parts_vector_node = titles_of_parts_node.append_child("vt:vector");
+    titles_of_parts_vector_node.append_attribute("baseType").set_value("lpstr");
+    titles_of_parts_vector_node.append_attribute("size").set_value(std::to_string(wb.get_sheet_names().size()).c_str());
+
+    for(auto ws : wb)
+    {
+        titles_of_parts_vector_node.append_child("vt:lpstr").text().set(ws.get_title().c_str());
+    }
+
+    std::stringstream ss;
+    doc.save(ss);
+
+    return ss.str();
 }
 
 std::string writer::write_workbook_rels(const workbook &wb)
@@ -480,7 +553,7 @@ std::string writer::write_theme()
      std::vector<scheme_element> scheme_elements =
      {
          {"a:dk1", "a:sysClr", "windowText"},
-         {"a:lt1", "a:sysClr", "windowText"},
+         {"a:lt1", "a:sysClr", "window"},
          {"a:dk2", "a:srgbClr", "1F497D"},
          {"a:lt2", "a:srgbClr", "EEECE1"},
          {"a:accent1", "a:srgbClr", "4F81BD"},
@@ -500,11 +573,11 @@ std::string writer::write_theme()
 
          if(element.name == "a:dk1")
          {
-             element_node.append_attribute("lastClr").set_value("000000");
+             element_node.child(element.sub_element_name.c_str()).append_attribute("lastClr").set_value("000000");
          }
          else if(element.name == "a:lt1")
          {
-             element_node.append_attribute("lastClr").set_value("FFFFFF");
+             element_node.child(element.sub_element_name.c_str()).append_attribute("lastClr").set_value("FFFFFF");
          }
      }
 
@@ -521,10 +594,10 @@ std::string writer::write_theme()
          {true, "a:latin", "Cambria", "Calibri"},
          {true, "a:ea", "", ""},
          {true, "a:cs", "", ""},
-         {false, "Jpan", "&#xFF2D;&#xFF33; &#xFF30;&#x30B4;&#x30B7;&#x30C3;&#x30AF;", "&#xFF2D;&#xFF33; &#xFF30;&#x30B4;&#x30B7;&#x30C3;&#x30AF;"},
-         {false, "Hang", "&#xB9D1;&#xC740; &#xACE0;&#xB515;", "&#xB9D1;&#xC740; &#xACE0;&#xB515;"},
-         {false, "Hans", "&#x5B8B;&#x4F53", "&#x5B8B;&#x4F53"},
-         {false, "Hant", "&#x65B0;&#x7D30;&#x660E;&#x9AD4;", "&#x65B0;&#x7D30;&#x660E;&#x9AD4;"},
+         {false, "Jpan", "\xef\xbc\xad\xef\xbc\xb3 \xef\xbc\xb0\xe3\x82\xb4\xe3\x82\xb7\xe3\x83\x83\xe3\x82\xaf", "\xef\xbc\xad\xef\xbc\xb3 \xef\xbc\xb0\xe3\x82\xb4\xe3\x82\xb7\xe3\x83\x83\xe3\x82\xaf"},
+         {false, "Hang", "\xeb\xa7\x91\xec\x9d\x80 \xea\xb3\xa0\xeb\x94\x95", "\xeb\xa7\x91\xec\x9d\x80 \xea\xb3\xa0\xeb\x94\x95"},
+         {false, "Hans", "\xe5\xae\x8b\xe4\xbd\x93", "\xe5\xae\x8b\xe4\xbd\x93"},
+         {false, "Hant", "\xe6\x96\xb0\xe7\xb4\xb0\xe6\x98\x8e\xe9\xab\x94", "\xe6\x96\xb0\xe7\xb4\xb0\xe6\x98\x8e\xe9\xab\x94"},
          {false, "Arab", "Times New Roman", "Arial"},
          {false, "Hebr", "Times New Roman", "Arial"},
          {false, "Thai", "Tahoma", "Tahoma"},
@@ -540,7 +613,7 @@ std::string writer::write_theme()
          {false, "Tibt", "Microsoft Himalaya", "Microsoft Himalaya"},
          {false, "Thaa", "MV Boli", "MV Boli"},
          {false, "Deva", "Mangal", "Mangal"},
-         {false, "Telu", "Guatami", "Guatami"},
+         {false, "Telu", "Gautami", "Gautami"},
          {false, "Taml", "Latha", "Latha"},
          {false, "Syrc", "Estrangelo Edessa", "Estrangelo Edessa"},
          {false, "Orya", "Kalinga", "Kalinga"},
@@ -572,7 +645,7 @@ std::string writer::write_theme()
              major_font_node = major_fonts_node.append_child("a:font");
              major_font_node.append_attribute("script").set_value(scheme.script.c_str());
              minor_font_node = minor_fonts_node.append_child("a:font");
-             minor_font_node.append_attribute("typeface").set_value(scheme.script.c_str());
+             minor_font_node.append_attribute("script").set_value(scheme.script.c_str());
          }
 
          major_font_node.append_attribute("typeface").set_value(scheme.major.c_str());
@@ -582,12 +655,219 @@ std::string writer::write_theme()
      auto format_scheme_node = theme_elements_node.append_child("a:fmtScheme");
      format_scheme_node.append_attribute("name").set_value("Office");
 
-     auto fill_style_list_node = format_scheme_node.append_child("a:fillStyleList");
+     auto fill_style_list_node = format_scheme_node.append_child("a:fillStyleLst");
      fill_style_list_node.append_child("a:solidFill").append_child("a:schemeClr").append_attribute("val").set_value("phClr");
 
-     /*auto line_style_list_node = */format_scheme_node.append_child("a:lnStyleList");
-     /*auto effect_style_list_node = */format_scheme_node.append_child("a:effectStyleList");
-     /*auto bg_fill_style_list_node = */format_scheme_node.append_child("a:bgFillStyleList");
+     auto grad_fill_node = fill_style_list_node.append_child("a:gradFill");
+     grad_fill_node.append_attribute("rotWithShape").set_value(1);
+
+     auto grad_fill_list = grad_fill_node.append_child("a:gsLst");
+     auto gs_node = grad_fill_list.append_child("a:gs");
+     gs_node.append_attribute("pos").set_value(0);
+     auto scheme_color_node = gs_node.append_child("a:schemeClr");
+     scheme_color_node.append_attribute("val").set_value("phClr");
+     scheme_color_node.append_child("a:tint").append_attribute("val").set_value(50000);
+     scheme_color_node.append_child("a:satMod").append_attribute("val").set_value(300000);
+
+     gs_node = grad_fill_list.append_child("a:gs");
+     gs_node.append_attribute("pos").set_value(35000);
+     scheme_color_node = gs_node.append_child("a:schemeClr");
+     scheme_color_node.append_attribute("val").set_value("phClr");
+     scheme_color_node.append_child("a:tint").append_attribute("val").set_value(37000);
+     scheme_color_node.append_child("a:satMod").append_attribute("val").set_value(300000);
+
+     gs_node = grad_fill_list.append_child("a:gs");
+     gs_node.append_attribute("pos").set_value(100000);
+     scheme_color_node = gs_node.append_child("a:schemeClr");
+     scheme_color_node.append_attribute("val").set_value("phClr");
+     scheme_color_node.append_child("a:tint").append_attribute("val").set_value(15000);
+     scheme_color_node.append_child("a:satMod").append_attribute("val").set_value(350000);
+
+     auto lin_node = grad_fill_node.append_child("a:lin");
+     lin_node.append_attribute("ang").set_value(16200000);
+     lin_node.append_attribute("scaled").set_value(1);
+
+     grad_fill_node = fill_style_list_node.append_child("a:gradFill");
+     grad_fill_node.append_attribute("rotWithShape").set_value(1);
+
+     grad_fill_list = grad_fill_node.append_child("a:gsLst");
+     gs_node = grad_fill_list.append_child("a:gs");
+     gs_node.append_attribute("pos").set_value(0);
+     scheme_color_node = gs_node.append_child("a:schemeClr");
+     scheme_color_node.append_attribute("val").set_value("phClr");
+     scheme_color_node.append_child("a:shade").append_attribute("val").set_value(51000);
+     scheme_color_node.append_child("a:satMod").append_attribute("val").set_value(130000);
+
+     gs_node = grad_fill_list.append_child("a:gs");
+     gs_node.append_attribute("pos").set_value(80000);
+     scheme_color_node = gs_node.append_child("a:schemeClr");
+     scheme_color_node.append_attribute("val").set_value("phClr");
+     scheme_color_node.append_child("a:shade").append_attribute("val").set_value(93000);
+     scheme_color_node.append_child("a:satMod").append_attribute("val").set_value(130000);
+
+     gs_node = grad_fill_list.append_child("a:gs");
+     gs_node.append_attribute("pos").set_value(100000);
+     scheme_color_node = gs_node.append_child("a:schemeClr");
+     scheme_color_node.append_attribute("val").set_value("phClr");
+     scheme_color_node.append_child("a:shade").append_attribute("val").set_value(94000);
+     scheme_color_node.append_child("a:satMod").append_attribute("val").set_value(135000);
+
+     lin_node = grad_fill_node.append_child("a:lin");
+     lin_node.append_attribute("ang").set_value(16200000);
+     lin_node.append_attribute("scaled").set_value(0);
+
+     auto line_style_list_node = format_scheme_node.append_child("a:lnStyleLst");
+
+     auto ln_node = line_style_list_node.append_child("a:ln");
+     ln_node.append_attribute("w").set_value(9525);
+     ln_node.append_attribute("cap").set_value("flat");
+     ln_node.append_attribute("cmpd").set_value("sng");
+     ln_node.append_attribute("algn").set_value("ctr");
+
+     auto solid_fill_node = ln_node.append_child("a:solidFill");
+     scheme_color_node = solid_fill_node.append_child("a:schemeClr");
+     scheme_color_node.append_attribute("val").set_value("phClr");
+     scheme_color_node.append_child("a:shade").append_attribute("val").set_value(95000);
+     scheme_color_node.append_child("a:satMod").append_attribute("val").set_value(105000);
+     ln_node.append_child("a:prstDash").append_attribute("val").set_value("solid");
+
+     ln_node = line_style_list_node.append_child("a:ln");
+     ln_node.append_attribute("w").set_value(25400);
+     ln_node.append_attribute("cap").set_value("flat");
+     ln_node.append_attribute("cmpd").set_value("sng");
+     ln_node.append_attribute("algn").set_value("ctr");
+
+     solid_fill_node = ln_node.append_child("a:solidFill");
+     scheme_color_node = solid_fill_node.append_child("a:schemeClr");
+     scheme_color_node.append_attribute("val").set_value("phClr");
+     ln_node.append_child("a:prstDash").append_attribute("val").set_value("solid");
+
+     ln_node = line_style_list_node.append_child("a:ln");
+     ln_node.append_attribute("w").set_value(38100);
+     ln_node.append_attribute("cap").set_value("flat");
+     ln_node.append_attribute("cmpd").set_value("sng");
+     ln_node.append_attribute("algn").set_value("ctr");
+
+     solid_fill_node = ln_node.append_child("a:solidFill");
+     scheme_color_node = solid_fill_node.append_child("a:schemeClr");
+     scheme_color_node.append_attribute("val").set_value("phClr");
+     ln_node.append_child("a:prstDash").append_attribute("val").set_value("solid");
+
+     auto effect_style_list_node = format_scheme_node.append_child("a:effectStyleLst");
+     auto effect_style_node = effect_style_list_node.append_child("a:effectStyle");
+     auto effect_list_node = effect_style_node.append_child("a:effectLst");
+     auto outer_shadow_node = effect_list_node.append_child("a:outerShdw");
+     outer_shadow_node.append_attribute("blurRad").set_value(40000);
+     outer_shadow_node.append_attribute("dist").set_value(20000);
+     outer_shadow_node.append_attribute("dir").set_value(5400000);
+     outer_shadow_node.append_attribute("rotWithShape").set_value(0);
+     auto srgb_clr_node = outer_shadow_node.append_child("a:srgbClr");
+     srgb_clr_node.append_attribute("val").set_value("000000");
+     srgb_clr_node.append_child("a:alpha").append_attribute("val").set_value(38000);
+
+     effect_style_node = effect_style_list_node.append_child("a:effectStyle");
+     effect_list_node = effect_style_node.append_child("a:effectLst");
+     outer_shadow_node = effect_list_node.append_child("a:outerShdw");
+     outer_shadow_node.append_attribute("blurRad").set_value(40000);
+     outer_shadow_node.append_attribute("dist").set_value(23000);
+     outer_shadow_node.append_attribute("dir").set_value(5400000);
+     outer_shadow_node.append_attribute("rotWithShape").set_value(0);
+     srgb_clr_node = outer_shadow_node.append_child("a:srgbClr");
+     srgb_clr_node.append_attribute("val").set_value("000000");
+     srgb_clr_node.append_child("a:alpha").append_attribute("val").set_value(35000);
+
+     effect_style_node = effect_style_list_node.append_child("a:effectStyle");
+     effect_list_node = effect_style_node.append_child("a:effectLst");
+     outer_shadow_node = effect_list_node.append_child("a:outerShdw");
+     outer_shadow_node.append_attribute("blurRad").set_value(40000);
+     outer_shadow_node.append_attribute("dist").set_value(23000);
+     outer_shadow_node.append_attribute("dir").set_value(5400000);
+     outer_shadow_node.append_attribute("rotWithShape").set_value(0);
+     srgb_clr_node = outer_shadow_node.append_child("a:srgbClr");
+     srgb_clr_node.append_attribute("val").set_value("000000");
+     srgb_clr_node.append_child("a:alpha").append_attribute("val").set_value(35000);
+     auto scene3d_node = effect_style_node.append_child("a:scene3d");
+     auto camera_node = scene3d_node.append_child("a:camera");
+     camera_node.append_attribute("prst").set_value("orthographicFront");
+     auto rot_node = camera_node.append_child("a:rot");
+     rot_node.append_attribute("lat").set_value(0);
+     rot_node.append_attribute("lon").set_value(0);
+     rot_node.append_attribute("rev").set_value(0);
+     auto light_rig_node = scene3d_node.append_child("a:lightRig");
+     light_rig_node.append_attribute("rig").set_value("threePt");
+     light_rig_node.append_attribute("dir").set_value("t");
+     rot_node = light_rig_node.append_child("a:rot");
+     rot_node.append_attribute("lat").set_value(0);
+     rot_node.append_attribute("lon").set_value(0);
+     rot_node.append_attribute("rev").set_value(1200000);
+
+     auto bevel_node = effect_style_node.append_child("a:sp3d").append_child("a:bevelT");
+     bevel_node.append_attribute("w").set_value(63500);
+     bevel_node.append_attribute("h").set_value(25400);
+
+     auto bg_fill_style_list_node = format_scheme_node.append_child("a:bgFillStyleLst");
+
+     bg_fill_style_list_node.append_child("a:solidFill").append_child("a:schemeClr").append_attribute("val").set_value("phClr");
+
+     grad_fill_node = bg_fill_style_list_node.append_child("a:gradFill");
+     grad_fill_node.append_attribute("rotWithShape").set_value(1);
+
+     grad_fill_list = grad_fill_node.append_child("a:gsLst");
+     gs_node = grad_fill_list.append_child("a:gs");
+     gs_node.append_attribute("pos").set_value(0);
+     scheme_color_node = gs_node.append_child("a:schemeClr");
+     scheme_color_node.append_attribute("val").set_value("phClr");
+     scheme_color_node.append_child("a:tint").append_attribute("val").set_value(40000);
+     scheme_color_node.append_child("a:satMod").append_attribute("val").set_value(350000);
+
+     gs_node = grad_fill_list.append_child("a:gs");
+     gs_node.append_attribute("pos").set_value(40000);
+     scheme_color_node = gs_node.append_child("a:schemeClr");
+     scheme_color_node.append_attribute("val").set_value("phClr");
+     scheme_color_node.append_child("a:tint").append_attribute("val").set_value(45000);
+     scheme_color_node.append_child("a:shade").append_attribute("val").set_value(99000);
+     scheme_color_node.append_child("a:satMod").append_attribute("val").set_value(350000);
+
+     gs_node = grad_fill_list.append_child("a:gs");
+     gs_node.append_attribute("pos").set_value(100000);
+     scheme_color_node = gs_node.append_child("a:schemeClr");
+     scheme_color_node.append_attribute("val").set_value("phClr");
+     scheme_color_node.append_child("a:shade").append_attribute("val").set_value(20000);
+     scheme_color_node.append_child("a:satMod").append_attribute("val").set_value(255000);
+
+     auto path_node = grad_fill_node.append_child("a:path");
+     path_node.append_attribute("path").set_value("circle");
+     auto fill_to_rect_node = path_node.append_child("a:fillToRect");
+     fill_to_rect_node.append_attribute("l").set_value(50000);
+     fill_to_rect_node.append_attribute("t").set_value(-80000);
+     fill_to_rect_node.append_attribute("r").set_value(50000);
+     fill_to_rect_node.append_attribute("b").set_value(180000);
+
+     grad_fill_node = bg_fill_style_list_node.append_child("a:gradFill");
+     grad_fill_node.append_attribute("rotWithShape").set_value(1);
+
+     grad_fill_list = grad_fill_node.append_child("a:gsLst");
+     gs_node = grad_fill_list.append_child("a:gs");
+     gs_node.append_attribute("pos").set_value(0);
+     scheme_color_node = gs_node.append_child("a:schemeClr");
+     scheme_color_node.append_attribute("val").set_value("phClr");
+     scheme_color_node.append_child("a:tint").append_attribute("val").set_value(80000);
+     scheme_color_node.append_child("a:satMod").append_attribute("val").set_value(300000);
+
+     gs_node = grad_fill_list.append_child("a:gs");
+     gs_node.append_attribute("pos").set_value(100000);
+     scheme_color_node = gs_node.append_child("a:schemeClr");
+     scheme_color_node.append_attribute("val").set_value("phClr");
+     scheme_color_node.append_child("a:shade").append_attribute("val").set_value(30000);
+     scheme_color_node.append_child("a:satMod").append_attribute("val").set_value(200000);
+
+     path_node = grad_fill_node.append_child("a:path");
+     path_node.append_attribute("path").set_value("circle");
+     fill_to_rect_node = path_node.append_child("a:fillToRect");
+     fill_to_rect_node.append_attribute("l").set_value(50000);
+     fill_to_rect_node.append_attribute("t").set_value(50000);
+     fill_to_rect_node.append_attribute("r").set_value(50000);
+     fill_to_rect_node.append_attribute("b").set_value(50000);
 
      theme_node.append_child("a:objectDefaults");
      theme_node.append_child("a:extraClrSchemeLst");

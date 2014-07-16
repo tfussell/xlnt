@@ -16,15 +16,9 @@ public:
         auto content = archive.get_file_contents("docProps/core.xml");
         auto prop = xlnt::reader::read_properties_core(content);
         TS_ASSERT_EQUALS(prop.creator, "*.*");
-        unsigned char eacute = 233;
-        std::string modified_by = "Aur";
-        modified_by.append(1, eacute);
-        modified_by += "lien Camp";
-        modified_by.append(1, eacute);
-        modified_by += "as";
-        TS_ASSERT_EQUALS(prop.last_modified_by, modified_by);
+        TS_ASSERT_EQUALS(prop.last_modified_by, "Charlie Clark");
         TS_ASSERT_EQUALS(prop.created, xlnt::datetime(2010, 4, 9, 20, 43, 12));
-        TS_ASSERT_EQUALS(prop.modified, xlnt::datetime(2011, 2, 9, 13, 49, 32));
+        TS_ASSERT_EQUALS(prop.modified, xlnt::datetime(2014, 1, 2, 14, 53, 6));
     }
 
     void test_read_sheets_titles()
@@ -39,7 +33,7 @@ public:
         }
     }
 
-    void test_read_properties_core2()
+    void test_read_properties_core_libre()
     {
         xlnt::zip_file archive(PathHelper::GetDataDirectory() + "/genuine/empty_libre.xlsx", xlnt::file_mode::open);
         auto content = archive.get_file_contents("docProps/core.xml");
@@ -47,7 +41,7 @@ public:
         TS_ASSERT_EQUALS(prop.excel_base_date, xlnt::calendar::windows_1900);
     }
 
-    void test_read_sheets_titles2()
+    void test_read_sheets_titles_libre()
     {
         xlnt::zip_file archive(PathHelper::GetDataDirectory() + "/genuine/empty_libre.xlsx", xlnt::file_mode::open);
         auto content = archive.get_file_contents("docProps/core.xml");

@@ -27,13 +27,51 @@ std::vector<std::pair<std::string, std::string>> reader::read_sheets(const zip_f
     return sheets;
 }
 
+datetime w3cdtf_to_datetime(const std::string &string)
+{
+    datetime result(1900, 1, 1);
+    auto separator_index = string.find('-');
+    result.year = std::stoi(string.substr(0, separator_index));
+    result.month = std::stoi(string.substr(separator_index + 1, string.find('-', separator_index + 1)));
+    separator_index = string.find('-', separator_index + 1);
+    result.day = std::stoi(string.substr(separator_index + 1, string.find('T', separator_index + 1)));
+    separator_index = string.find('T', separator_index + 1);
+    result.hour = std::stoi(string.substr(separator_index + 1, string.find(':', separator_index + 1)));
+    separator_index = string.find(':', separator_index + 1);
+    result.minute = std::stoi(string.substr(separator_index + 1, string.find(':', separator_index + 1)));
+    separator_index = string.find(':', separator_index + 1);
+    result.second = std::stoi(string.substr(separator_index + 1, string.find('Z', separator_index + 1)));
+    return result;
+}
+
 document_properties reader::read_properties_core(const std::string &xml_string)
 {
     document_properties props;
     pugi::xml_document doc;
     doc.load(xml_string.c_str());
     auto root_node = doc.child("cp:coreProperties");
-    props.creator = root_node.child("dc:creator").text().as_string();
+
+    props.excel_base_date = calendar::windows_1900;
+
+    if(root_node.child("dc:creator") != nullptr)
+    {
+        props.creator = root_node.child("dc:creator").text().as_string();
+    }
+    if(root_node.child("cp:lastModifiedBy") != nullptr)
+    {
+        props.last_modified_by = root_node.child("cp:lastModifiedBy").text().as_string();
+    }
+    if(root_node.child("dcterms:created") != nullptr)
+    {
+        std::string created_string = root_node.child("dcterms:created").text().as_string();
+        props.created = w3cdtf_to_datetime(created_string);
+    }
+    if(root_node.child("dcterms:modified") != nullptr)
+    {
+        std::string modified_string = root_node.child("dcterms:modified").text().as_string();
+        props.modified = w3cdtf_to_datetime(modified_string);
+    }
+
     return props;
 }
 
@@ -127,7 +165,7 @@ std::string reader::determine_document_type(const std::unordered_map<std::string
     return "unsupported";
 }
     
-void read_worksheet_common(worksheet ws, const pugi::xml_node &root_node, const std::vector<std::string> &string_table)
+void read_worksheet_common(worksheet ws, const pugi::xml_node &root_node, const std::vector<std::string> &string_table, const std::vector<int> &number_format_ids)
 {
     auto dimension_node = root_node.child("dimension");
     std::string dimension = dimension_node.attribute("ref").as_string();
@@ -173,58 +211,44 @@ void read_worksheet_common(worksheet ws, const pugi::xml_node &root_node, const 
                 {
                     ws.get_cell(address) = string_table.at(cell_node.child("v").text().as_int());
                 }
-                else if(cell_node.attribute("s") != nullptr && std::string(cell_node.attribute("s").as_string()) == "2") // date
+                else if(cell_node.attribute("s") != nullptr)
                 {
-		    date date(1900, 1, 1);
-                    int days = cell_node.child("v").text().as_int();
-                    while(days > 365)
+                    auto style_index = cell_node.attribute("s").as_int();
+                    auto number_format_id = number_format_ids[style_index];
+
+                    if(style_index < 0 || style_index >= number_format_ids.size())
                     {
-                        date.year += 1;
-                        days -= 365;
+                        throw std::out_of_range(std::to_string(style_index));
                     }
-                    while(days > 30)
+
+                    if(number_format_id == 0) // integer
                     {
-                        date.month += 1;
-                        days -= 30;
+                        ws.get_cell(address) = cell_node.child("v").text().as_int();
                     }
-                    date.day = days;
-                    ws.get_cell(address) = date;
-                }
-                else if(cell_node.attribute("s") != nullptr && std::string(cell_node.attribute("s").as_string()) == "3") // time
-                {
-		    time time;
-                    double remaining = cell_node.child("v").text().as_double() * 24;
-                    time.hour = (int)(remaining);
-                    remaining -= time.hour;
-                    remaining *= 60;
-                    time.minute = (int)(remaining);
-                    remaining -= time.minute;
-                    remaining *= 60;
-                    time.second = (int)(remaining);
-                    remaining -= time.second;
-                    if(remaining > 0.5)
+                    else if(number_format_id == 14) // date
                     {
-                        time.second++;
-                        if(time.second > 59)
-                        {
-                            time.second = 0;
-                            time.minute++;
-                            if(time.minute > 59)
-                            {
-                                time.minute = 0;
-                                time.hour++;
-                            }
-                        }
+                        ws.get_cell(address) = datetime::from_number(cell_node.child("v").text().as_double(), ws.get_parent().get_base_year());
                     }
-                    ws.get_cell(address) = time;
-                }
-                else if(cell_node.attribute("s") != nullptr && std::string(cell_node.attribute("s").as_string()) == "4") // decimal
-                {
-                    ws.get_cell(address) = cell_node.child("v").text().as_double();
-                }
-                else if(cell_node.attribute("s") != nullptr && std::string(cell_node.attribute("s").as_string()) == "1") // percent
-                {
-                    ws.get_cell(address) = cell_node.child("v").text().as_double();
+                    else if(number_format_id == 18) // time
+                    {
+                        ws.get_cell(address) = time::from_number(cell_node.child("v").text().as_double());
+                    }
+                    else if(number_format_id == 22) // datetime
+                    {
+                        ws.get_cell(address) = datetime::from_number(cell_node.child("v").text().as_double(), 1900);
+                    }
+                    else if(number_format_id == 14) // decimal
+                    {
+                        ws.get_cell(address) = cell_node.child("v").text().as_double();
+                    }
+                    else if(number_format_id == 9) // percent
+                    {
+                        ws.get_cell(address) = cell_node.child("v").text().as_double();
+                    }
+                    else
+                    {
+                        throw number_format_id;
+                    }
                 }
                 else if(cell_node.child("v") != nullptr)
                 {
@@ -235,11 +259,11 @@ void read_worksheet_common(worksheet ws, const pugi::xml_node &root_node, const 
     }
 }
 
-void reader::read_worksheet(worksheet ws, const std::string &xml_string, const std::vector<std::string> &string_table)
+void reader::read_worksheet(worksheet ws, const std::string &xml_string, const std::vector<std::string> &string_table, const std::vector<int> &number_format_ids)
 {
     pugi::xml_document doc;
     doc.load(xml_string.c_str());
-    read_worksheet_common(ws, doc.child("worksheet"), string_table);
+    read_worksheet_common(ws, doc.child("worksheet"), string_table, number_format_ids);
 }
 
 worksheet xlnt::reader::read_worksheet(std::istream &handle, xlnt::workbook &wb, const std::string &title, const std::vector<std::string> &string_table)
@@ -248,7 +272,7 @@ worksheet xlnt::reader::read_worksheet(std::istream &handle, xlnt::workbook &wb,
     ws.set_title(title);
     pugi::xml_document doc;
     doc.load(handle);
-    read_worksheet_common(ws, doc.child("worksheet"), string_table);
+    read_worksheet_common(ws, doc.child("worksheet"), string_table, {});
     return ws;
 }
 

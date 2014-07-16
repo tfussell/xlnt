@@ -41,7 +41,7 @@ public:
     std::string last_modified_by;
     datetime created;
     datetime modified;
-    std::string title;
+    std::string title = "Untitled";
     std::string subject;
     std::string description;
     std::string keywords;

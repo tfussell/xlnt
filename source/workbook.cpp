@@ -318,6 +318,18 @@ bool workbook::load(const std::string &filename)
     {
         shared_strings = xlnt::reader::read_shared_string(f.get_file_contents("xl/sharedStrings.xml"));
     }
+
+    pugi::xml_document styles_doc;
+    styles_doc.load(f.get_file_contents("xl/styles.xml").c_str());
+    auto stylesheet_node = styles_doc.child("styleSheet");
+    auto cell_xfs_node = stylesheet_node.child("cellXfs");
+
+    std::vector<int> number_format_ids;
+
+    for(auto xf_node : cell_xfs_node.children("xf"))
+    {
+        number_format_ids.push_back(xf_node.attribute("numFmtId").as_int());
+    }
     
     for(auto sheet_node : sheets_node.children("sheet"))
     {
@@ -325,7 +337,7 @@ bool workbook::load(const std::string &filename)
         auto ws = create_sheet(sheet_node.attribute("name").as_string());
         std::string sheet_filename("xl/");
         sheet_filename += get_relationship(relation_id).get_target_uri();
-        xlnt::reader::read_worksheet(ws, f.get_file_contents(sheet_filename).c_str(), shared_strings);
+        xlnt::reader::read_worksheet(ws, f.get_file_contents(sheet_filename).c_str(), shared_strings, number_format_ids);
     }
 
     return true;
