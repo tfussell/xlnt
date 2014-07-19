@@ -12,18 +12,18 @@ public:
     void test_new_worksheet()
     {
         xlnt::worksheet ws = wb_.create_sheet();
-		TS_ASSERT(wb_ == ws.get_parent());
+	TS_ASSERT(wb_ == ws.get_parent());
     }
 
     void test_new_sheet_name()
     {
-		xlnt::worksheet ws = wb_.create_sheet("TestName");
+	xlnt::worksheet ws = wb_.create_sheet("TestName");
         TS_ASSERT_EQUALS(ws.to_string(), "<Worksheet \"TestName\">");
     }
 
     void test_get_cell()
     {
-		xlnt::worksheet ws(wb_);
+	xlnt::worksheet ws(wb_);
         auto cell = ws.get_cell("A1");
         TS_ASSERT_EQUALS(cell.get_reference().to_string(), "A1");
     }
@@ -31,7 +31,15 @@ public:
     void test_set_bad_title()
     {
         std::string title(50, 'X');
-		TS_ASSERT_THROWS(wb_.create_sheet(title), xlnt::sheet_title_exception);
+	TS_ASSERT_THROWS(wb_.create_sheet(title), xlnt::sheet_title_exception);
+    }
+    
+    void test_increment_title()
+    {
+    	auto ws1 = wb_.create_sheet("Test");
+    	TS_ASSERT_EQUALS(ws1.get_title(), "Test");
+    	auto ws2 = wb_.create_sheet("Test");
+    	TS_ASSERT_EQUALS(ws1.get_title(), "Test1");
     }
 
     void test_set_bad_title_character()
@@ -83,7 +91,7 @@ public:
         xlnt::worksheet ws1(wb_);
         xlnt::worksheet ws2(wb_);
         wb_.create_named_range("wrong_sheet_range", ws1, "C5");
-        TS_ASSERT_THROWS_ANYTHING(ws2.get_named_range("wrong_sheet_range"));
+        TS_ASSERT_THROWS(ws2.get_named_range("wrong_sheet_range"), xlnt::named_range_exception);
     }
 
     void test_cell_offset()
@@ -221,10 +229,25 @@ public:
 
         auto rows = ws.rows();
 
-        TS_ASSERT_EQUALS(rows.num_rows(), 9);
+        TS_ASSERT_EQUALS(rows.length(), 9);
 
         TS_ASSERT_EQUALS(rows[0][0], "first");
         TS_ASSERT_EQUALS(rows[8][2], "last");
+    }
+    
+    void test_cols()
+    {
+        xlnt::worksheet ws(wb_);
+
+        ws.get_cell("A1") = "first";
+        ws.get_cell("C9") = "last";
+
+        auto cols = ws.columns();
+
+        TS_ASSERT_EQUALS(cols.length(), 3);
+
+        TS_ASSERT_EQUALS(rows[0][0], "first");
+        TS_ASSERT_EQUALS(rows[2][8], "last");
     }
 
     void test_auto_filter()
@@ -239,121 +262,6 @@ public:
 
         ws.auto_filter("c1:g9");
         TS_ASSERT_EQUALS(ws.get_auto_filter(), "C1:G9");
-    }
-
-    void test_page_margins()
-    {
-        xlnt::worksheet ws(wb_);
-
-        ws.get_page_margins().set_left(2.0);
-        ws.get_page_margins().set_right(2.0);
-        ws.get_page_margins().set_top(2.0);
-        ws.get_page_margins().set_bottom(2.0);
-        ws.get_page_margins().set_header(1.5);
-        ws.get_page_margins().set_footer(1.5);
-
-        auto xml_string = xlnt::writer::write_worksheet(ws);
-        pugi::xml_document doc;
-        doc.load(xml_string.c_str());
-        
-        auto page_margins_node = doc.child("worksheet").child("pageMargins");
-        TS_ASSERT_DIFFERS(page_margins_node.attribute("left"), nullptr);
-        TS_ASSERT_EQUALS(page_margins_node.attribute("left").as_double(), 2.0);
-        TS_ASSERT_DIFFERS(page_margins_node.attribute("right"), nullptr);
-        TS_ASSERT_EQUALS(page_margins_node.attribute("right").as_double(), 2.0);
-        TS_ASSERT_DIFFERS(page_margins_node.attribute("top"), nullptr);
-        TS_ASSERT_EQUALS(page_margins_node.attribute("top").as_double(), 2.0);
-        TS_ASSERT_DIFFERS(page_margins_node.attribute("bottom"), nullptr);
-        TS_ASSERT_EQUALS(page_margins_node.attribute("bottom").as_double(), 2.0);
-        TS_ASSERT_DIFFERS(page_margins_node.attribute("header"), nullptr);
-        TS_ASSERT_EQUALS(page_margins_node.attribute("header").as_double(), 1.5);
-        TS_ASSERT_DIFFERS(page_margins_node.attribute("footer"), nullptr);
-        TS_ASSERT_EQUALS(page_margins_node.attribute("footer").as_double(), 1.5);
-
-        xlnt::worksheet ws2(wb_);
-        xml_string = xlnt::writer::write_worksheet(ws2);
-        doc.load(xml_string.c_str());
-        TS_ASSERT_DIFFERS(page_margins_node.attribute("left"), nullptr);
-        TS_ASSERT_EQUALS(page_margins_node.attribute("left").as_double(), 0.75);
-        TS_ASSERT_DIFFERS(page_margins_node.attribute("right"), nullptr);
-        TS_ASSERT_EQUALS(page_margins_node.attribute("right").as_double(), 0.75);
-        TS_ASSERT_DIFFERS(page_margins_node.attribute("top"), nullptr);
-        TS_ASSERT_EQUALS(page_margins_node.attribute("top").as_double(), 1);
-        TS_ASSERT_DIFFERS(page_margins_node.attribute("bottom"), nullptr);
-        TS_ASSERT_EQUALS(page_margins_node.attribute("bottom").as_double(), 1);
-        TS_ASSERT_DIFFERS(page_margins_node.attribute("header"), nullptr);
-        TS_ASSERT_EQUALS(page_margins_node.attribute("header").as_double(), 0.5);
-        TS_ASSERT_DIFFERS(page_margins_node.attribute("footer"), nullptr);
-        TS_ASSERT_EQUALS(page_margins_node.attribute("footer").as_double(), 0.5);
-    }
-
-    void test_merge()
-    {
-        xlnt::worksheet ws(wb_);
-
-        std::vector<std::string> string_table = {"Cell A1", "Cell B1"};
-
-        ws.get_cell("A1") = "Cell A1";
-        ws.get_cell("B1") = "Cell B1";
-        auto xml_string = xlnt::writer::write_worksheet(ws, string_table);
-        pugi::xml_document doc;
-        doc.load(xml_string.c_str());
-        auto sheet_data_node = doc.child("worksheet").child("sheetData");
-        auto row_node = sheet_data_node.find_child_by_attribute("row", "r", "1");
-        auto cell_node = row_node.find_child_by_attribute("c", "r", "A1");
-        TS_ASSERT_DIFFERS(cell_node, nullptr);
-        TS_ASSERT_DIFFERS(cell_node.attribute("r"), nullptr);
-        TS_ASSERT_EQUALS(std::string(cell_node.attribute("r").as_string()), "A1");
-        TS_ASSERT_DIFFERS(cell_node.attribute("t"), nullptr);
-        TS_ASSERT_EQUALS(std::string(cell_node.attribute("t").as_string()), "s");
-        TS_ASSERT_DIFFERS(cell_node.child("v"), nullptr);
-        TS_ASSERT_EQUALS(std::string(cell_node.child("v").text().as_string()), "0");
-        cell_node = row_node.find_child_by_attribute("c", "r", "B1");
-        TS_ASSERT_DIFFERS(cell_node, nullptr);
-        TS_ASSERT_DIFFERS(cell_node.attribute("r"), nullptr);
-        TS_ASSERT_EQUALS(std::string(cell_node.attribute("r").as_string()), "B1");
-        TS_ASSERT_DIFFERS(cell_node.attribute("t"), nullptr);
-        TS_ASSERT_EQUALS(std::string(cell_node.attribute("t").as_string()), "s");
-        TS_ASSERT_DIFFERS(cell_node.child("v"), nullptr);
-        TS_ASSERT_EQUALS(std::string(cell_node.child("v").text().as_string()), "1");
-
-        ws.merge_cells("A1:B1");
-        xml_string = xlnt::writer::write_worksheet(ws, string_table);
-        doc.load(xml_string.c_str());
-        sheet_data_node = doc.child("worksheet").child("sheetData");
-        row_node = sheet_data_node.find_child_by_attribute("row", "r", "1");
-        cell_node = row_node.find_child_by_attribute("c", "r", "A1");
-        TS_ASSERT_DIFFERS(cell_node, nullptr);
-        TS_ASSERT_DIFFERS(cell_node.attribute("r"), nullptr);
-        TS_ASSERT_EQUALS(std::string(cell_node.attribute("r").as_string()), "A1");
-        TS_ASSERT_DIFFERS(cell_node.attribute("t"), nullptr);
-        TS_ASSERT_EQUALS(std::string(cell_node.attribute("t").as_string()), "s");
-        TS_ASSERT_DIFFERS(cell_node.child("v"), nullptr);
-        TS_ASSERT_EQUALS(std::string(cell_node.child("v").text().as_string()), "0");
-        cell_node = row_node.find_child_by_attribute("c", "r", "B1");
-        TS_ASSERT_DIFFERS(cell_node, nullptr);
-        TS_ASSERT_EQUALS(cell_node.child("v"), nullptr);
-        auto merge_node = doc.child("worksheet").child("mergeCells").child("mergeCell");
-        TS_ASSERT_DIFFERS(merge_node, nullptr);
-        TS_ASSERT_EQUALS(std::string(merge_node.attribute("ref").as_string()), "A1:B1");
-
-        ws.unmerge_cells("A1:B1");
-        xml_string = xlnt::writer::write_worksheet(ws, string_table);
-        doc.load(xml_string.c_str());
-        sheet_data_node = doc.child("worksheet").child("sheetData");
-        row_node = sheet_data_node.find_child_by_attribute("row", "r", "1");
-        cell_node = row_node.find_child_by_attribute("c", "r", "A1");
-        TS_ASSERT_DIFFERS(cell_node, nullptr);
-        TS_ASSERT_DIFFERS(cell_node.attribute("r"), nullptr);
-        TS_ASSERT_EQUALS(std::string(cell_node.attribute("r").as_string()), "A1");
-        TS_ASSERT_DIFFERS(cell_node.attribute("t"), nullptr);
-        TS_ASSERT_EQUALS(std::string(cell_node.attribute("t").as_string()), "s");
-        TS_ASSERT_DIFFERS(cell_node.child("v"), nullptr);
-        TS_ASSERT_EQUALS(std::string(cell_node.child("v").text().as_string()), "0");
-        cell_node = row_node.find_child_by_attribute("c", "r", "B1");
-        TS_ASSERT_EQUALS(cell_node, nullptr);
-        merge_node = doc.child("worksheet").child("mergeCells").child("mergeCell");
-        TS_ASSERT_EQUALS(merge_node, nullptr);
     }
 
     void test_freeze()
@@ -373,8 +281,46 @@ public:
         TS_ASSERT(!ws.has_frozen_panes());
     }
 
+    void test_write_empty()
+    {
+    	TS_ASSERT(false);
+    	
+        xlnt::worksheet ws(wb_);
+        
+        auto xml_string = xlnt::writer::write_worksheet(ws);
+
+        pugi::xml_document doc;
+        doc.load(xml_string.c_str());
+    }
+    
+    void test_page_margins()
+    {
+    	TS_ASSERT(false);
+    	
+        xlnt::worksheet ws(wb_);
+        
+        auto xml_string = xlnt::writer::write_worksheet(ws);
+
+        pugi::xml_document doc;
+        doc.load(xml_string.c_str());
+    }
+   
+    void test_merge()
+    {
+    	TS_ASSERT(false);
+    	
+        xlnt::worksheet ws(wb_);
+        
+        auto xml_string = xlnt::writer::write_worksheet(ws);
+
+        pugi::xml_document doc;
+        doc.load(xml_string.c_str());
+    }
+
     void test_printer_settings()
     {
+    	TS_ASSERT(false);
+    	
         xlnt::worksheet ws(wb_);
 
         ws.get_page_setup().set_orientation(xlnt::page_setup::orientation::landscape);
@@ -388,24 +334,116 @@ public:
         pugi::xml_document doc;
         doc.load(xml_string.c_str());
 
-        auto page_setup_node = doc.child("worksheet").child("pageSetup");
-        TS_ASSERT_DIFFERS(page_setup_node, nullptr);
-        TS_ASSERT_DIFFERS(page_setup_node.attribute("orientation"), nullptr);
-        TS_ASSERT_EQUALS(std::string(page_setup_node.attribute("orientation").as_string()), "landscape");
-        TS_ASSERT_DIFFERS(page_setup_node.attribute("paperSize"), nullptr);
-        TS_ASSERT_EQUALS(page_setup_node.attribute("paperSize").as_int(), 3);
-        TS_ASSERT_DIFFERS(page_setup_node.attribute("fitToHeight"), nullptr);
-        TS_ASSERT_EQUALS(page_setup_node.attribute("fitToHeight").as_int(), 0);
-        TS_ASSERT_DIFFERS(page_setup_node.attribute("fitToWidth"), nullptr);
-        TS_ASSERT_EQUALS(page_setup_node.attribute("fitToWidth").as_int(), 1);
-        TS_ASSERT_DIFFERS(doc.child("worksheet").child("pageSetUpPr").attribute("fitToPage"), nullptr);
-        TS_ASSERT_EQUALS(doc.child("worksheet").child("pageSetUpPr").attribute("fitToPage").as_int(), 1);
-
         xlnt::worksheet ws2(wb_);
         xml_string = xlnt::writer::write_worksheet(ws2);
         doc.load(xml_string.c_str());
-        TS_ASSERT_EQUALS(doc.child("worksheet").child("pageSetup"), nullptr);
-        TS_ASSERT_EQUALS(doc.child("worksheet").child("pageSetUpPr"), nullptr);
+    }
+    
+    void test_header_footer()
+    {
+    	auto ws = wb_.create_sheet();
+    	ws.get_header_footer().get_left_header().set_text("Left Header Text");
+        ws.get_header_footer().get_center_header().set_text("Center Header Text");
+        ws.get_header_footer().get_center_header().set_font_name("Arial,Regular");
+        ws.get_header_footer().get_center_header().set_font_size(6);
+        ws.get_header_footer().get_center_header().set_font_color("445566");
+        ws.get_header_footer().get_right_header().set_text("Right Header Text");
+        ws.get_header_footer().get_right_header().set_font_name("Arial,Bold");
+        ws.get_header_footer().get_right_header().set_font_size(8);
+        ws.get_header_footer().get_right_header().set_font_color("112233");
+        ws.get_header_footer().get_left_footer().set_text("Left Footer Text\nAnd &[Date] and &[Time]");
+        ws.get_header_footer().get_left_footer().set_font_name("Times New Roman,Regular");
+        ws.get_header_footer().get_left_footer().set_font_size(10);
+        ws.get_header_footer().get_left_footer().set_font_color("445566");
+        ws.get_header_footer().get_center_footer().set_text("Center Footer Text &[Path]&[File] on &[Tab]");
+        ws.get_header_footer().get_center_footer().set_font_name("Times New Roman,Bold");
+        ws.get_header_footer().get_center_footer().set_font_size(12);
+        ws.get_header_footer().get_center_footer().set_font_color("778899");
+        ws.get_header_footer().get_right_footer().set_text("Right Footer Text &[Page] of &[Pages]");
+        ws.get_header_footer().get_right_footer().set_font_name("Times New Roman,Italic");
+        ws.get_header_footer().get_right_footer().set_font_size(14);
+        ws.get_header_footer().get_right_footer().set_font_color("AABBCC");
+        
+        auto expected_xml_string =
+        "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
+        "  <sheetPr>"
+        "    <outlinePr summaryRight=\"1\" summaryBelow=\"1\"/>"
+        "  </sheetPr>"
+        "  <dimension ref=\"A1:A1\"/>"
+        "  <sheetViews>"
+        "    <sheetView workbookViewId=\"0\">"
+        "      <selection sqref=\"A1\" activeCell=\"A1\"/>"
+        "    </sheetView>"
+        "  </sheetViews>"
+        "  <sheetFormatPr baseColWidth=\"10\" defaultRowHeight=\"15\"/>"
+        "  <sheetData/>"
+        "  <pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\"/>"
+        "  <headerFooter>"
+        "    <oddHeader>&amp;L&amp;\"Calibri,Regular\"&amp;K000000Left Header Text&amp;C&amp;\"Arial,Regular\"&amp;6&amp;K445566Center Header Text&amp;R&amp;\"Arial,Bold\"&amp;8&amp;K112233Right Header Text</oddHeader>"
+        "    <oddFooter>&amp;L&amp;\"Times New Roman,Regular\"&amp;10&amp;K445566Left Footer Text_x000D_And &amp;D and &amp;T&amp;C&amp;\"Times New Roman,Bold\"&amp;12&amp;K778899Center Footer Text &amp;Z&amp;F on &amp;A&amp;R&amp;\"Times New Roman,Italic\"&amp;14&amp;KAABBCCRight Footer Text &amp;P of &amp;N</oddFooter>"
+        "  </headerFooter>"
+        "</worksheet>";
+        
+        pugi::xml_document doc;
+        doc.load(expected_xml_string.c_str());
+        
+        TS_ASSERT(Helper::compare_xml(doc, xlnt::worksheet_writer::write_worksheet(ws, {}, {})));
+        
+        auto ws = wb_.create_sheet();
+        
+        
+        expected_xml_string =
+        "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
+        "  <sheetPr>"
+        "    <outlinePr summaryRight="1" summaryBelow="1"/>"
+        "  </sheetPr>"
+        "  <dimension ref="A1:A1"/>"
+        "  <sheetViews>"
+        "    <sheetView workbookViewId="0">"
+        "      <selection sqref="A1" activeCell="A1"/>"
+        "    </sheetView>"
+        "  </sheetViews>"
+        "  <sheetFormatPr baseColWidth="10" defaultRowHeight="15"/>"
+        "  <sheetData/>"
+        "  <pageMargins left="0.75" right="0.75" top="1" bottom="1" header="0.5" footer="0.5"/>"
+        "</worksheet>";
+        
+        pugi::xml_document doc;
+        doc.load(expected_xml_string.c_str());
+        
+        TS_ASSERT(Helper::compare_xml(doc, xlnt::worksheet_writer::write_worksheet(ws, {}, {})));
+    }
+    
+    void test_positioning_point()
+    {
+    	auto ws = wb_.create_sheet();
+    	TS_ASSERT(false);
+    }
+    
+    void test_positioning_roundtrip()
+    {
+    	auto ws = wb_.create_sheet();
+    	TS_ASSERT_EQUALS(ws.get_point_pos(ws.get_cell("A1").get_anchor()), xlnt::cell_reference("A1"));
+    	TS_ASSERT_EQUALS(ws.get_point_pos(ws.get_cell("D52").get_anchor()), xlnt::cell_reference("D52"));
+    	TS_ASSERT_EQUALS(ws.get_point_pos(ws.get_cell("X11").get_anchor()), xlnt::cell_reference("X11"));
+    }
+    
+    void test_page_setup()
+    {
+    	xlnt::page_setup p;
+    	TS_ASSERT(p.get_setup().empty());
+    	p.set_scale(1);
+    	TS_ASSERT_EQUALS(p.get_setup().at("scale"), 1);
+    }
+    
+    void test_page_options()
+    {
+    	xlnt::page_setup p;
+    	TS_ASSERT(p.get_options().empty());
+    	p.set_horizontal_centered(true);
+    	p.set_vertical_centered(true);
+    	TS_ASSERT_EQUALS(p.get_options().at("verticalCentered"), "1");
+    	TS_ASSERT_EQUALS(p.get_options().at("horizontalCentered"), "1");
     }
 
 private:
