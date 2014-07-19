@@ -23,6 +23,8 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <string>
+
 const std::string xlnt_version = "0.1.0";
 
 const std::string author = "Thomas Fussell";

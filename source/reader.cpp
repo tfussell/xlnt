@@ -8,6 +8,7 @@
 #include "workbook/workbook.hpp"
 #include "worksheet/worksheet.hpp"
 #include "workbook/document_properties.hpp"
+#include "common/relationship.hpp"
 #include "common/zip_file.hpp"
 
 namespace xlnt {
@@ -85,21 +86,21 @@ std::string reader::read_dimension(const std::string &xml_string)
     return dimension;
 }
     
-std::unordered_map<std::string, std::pair<std::string, std::string>> reader::read_relationships(const std::string &content)
+std::vector<relationship> reader::read_relationships(const std::string &content)
 {
     pugi::xml_document doc;
     doc.load(content.c_str());
     
     auto root_node = doc.child("Relationships");
     
-    std::unordered_map<std::string, std::pair<std::string, std::string>> relationships;
+    std::vector<relationship> relationships;
     
     for(auto relationship : root_node.children("Relationship"))
     {
         std::string id = relationship.attribute("Id").as_string();
         std::string type = relationship.attribute("Type").as_string();
         std::string target = relationship.attribute("Target").as_string();
-        relationships[id] = std::make_pair(target, type);
+        relationships.push_back(xlnt::relationship(type, id, target));
     }
     
     return relationships;
@@ -129,24 +130,13 @@ std::pair<std::unordered_map<std::string, std::string>, std::unordered_map<std::
     return std::make_pair(default_types, override_types);
 }
     
-std::string reader::determine_document_type(const std::unordered_map<std::string, std::pair<std::string, std::string>> &root_relationships,
-                                    const std::unordered_map<std::string, std::string> &override_types)
+std::string reader::determine_document_type(const std::unordered_map<std::string, std::string> &override_types)
 {
-    auto relationship_match = std::find_if(root_relationships.begin(), root_relationships.end(),
-                                           [](const std::pair<std::string, std::pair<std::string, std::string>> &v)
-                                           { return v.second.second == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"; });
     std::string type;
     
-    if(relationship_match != root_relationships.end())
+    if(override_types.find("/xl/workbook.xml") != override_types.end())
     {
-        std::string office_document_relationship = relationship_match->second.first;
-        
-        if(office_document_relationship[0] != '/')
-        {
-            office_document_relationship = std::string("/") + office_document_relationship;
-        }
-        
-        type = override_types.at(office_document_relationship);
+        type = override_types.at("/xl/workbook.xml");
     }
     
     if(type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml")
@@ -214,12 +204,7 @@ void read_worksheet_common(worksheet ws, const pugi::xml_node &root_node, const 
                 else if(cell_node.attribute("s") != nullptr)
                 {
                     auto style_index = cell_node.attribute("s").as_int();
-                    auto number_format_id = number_format_ids[style_index];
-
-                    if(style_index < 0 || style_index >= number_format_ids.size())
-                    {
-                        throw std::out_of_range(std::to_string(style_index));
-                    }
+                    auto number_format_id = number_format_ids.at(style_index);
 
                     if(number_format_id == 0) // integer
                     {

@@ -29,6 +29,8 @@
 #include <utility>
 #include <vector>
 
+#include "../common/relationship.hpp"
+
 namespace xlnt {
 
 class drawing;
@@ -159,7 +161,7 @@ public:
 
 	std::vector<content_type> get_content_types() const;
     
-	void create_relationship(const std::string &id, const std::string &target, const std::string &type);
+	void create_relationship(const std::string &id, const std::string &target, relationship::type type);
 	relationship get_relationship(const std::string &id) const;
     std::vector<relationship> get_relationships() const;
     

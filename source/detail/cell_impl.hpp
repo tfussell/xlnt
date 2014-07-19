@@ -30,6 +30,7 @@ struct cell_impl
     bool merged;
     bool is_date_;
     bool has_hyperlink_;
+    comment comment_;
 };
     
 } // namespace detail

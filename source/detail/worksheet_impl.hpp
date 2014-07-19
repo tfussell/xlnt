@@ -60,6 +60,7 @@ struct worksheet_impl
     margins page_margins_;
     std::vector<range_reference> merged_cells_;
     std::unordered_map<std::string, range_reference> named_ranges_;
+    std::vector<comment> comments_;
 };
 
 } // namespace detail

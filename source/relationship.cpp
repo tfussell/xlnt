@@ -2,16 +2,15 @@
 
 namespace xlnt {
 
-relationship::relationship(const std::string &t, const std::string &r_id, const std::string &target_uri) : id_(r_id), source_uri_(""), target_uri_(target_uri)
+relationship::relationship(type t, const std::string &r_id, const std::string &target_uri) : type_(t), id_(r_id), source_uri_(""), target_uri_(target_uri)
 {
-    if(t == "hyperlink")
+    if(t == type::hyperlink)
     {
-        type_ = type::hyperlink;
         target_mode_ = target_mode::external;
     }
 }
 
-relationship::relationship() : id_(""), source_uri_(""), target_uri_("")
+relationship::relationship() : type_(type::invalid),  id_(""), source_uri_(""), target_uri_("")
 {
 }
 

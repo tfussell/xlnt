@@ -164,7 +164,7 @@ public:
 
     void test_bad_relationship_type()
     {
-        xlnt::relationship rel("bad_type");
+        xlnt::relationship rel("bad");
     }
 
     void test_append_list()

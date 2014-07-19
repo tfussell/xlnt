@@ -299,10 +299,10 @@ std::vector<relationship> worksheet::get_relationships()
     return d_->relationships_;
 }
 
-relationship worksheet::create_relationship(const std::string &relationship_type, const std::string &target_uri)
+relationship worksheet::create_relationship(relationship::type type, const std::string &target_uri)
 {
     std::string r_id = "rId" + std::to_string(d_->relationships_.size() + 1);
-    d_->relationships_.push_back(relationship(relationship_type, r_id, target_uri));
+    d_->relationships_.push_back(relationship(type, r_id, target_uri));
     return d_->relationships_.back();
 }
 
@@ -494,6 +494,21 @@ void worksheet::remove_named_range(const std::string &name)
 void worksheet::reserve(std::size_t n)
 {
     d_->cell_map_.reserve(n);
+}
+    
+void worksheet::add_comment(const xlnt::comment &c)
+{
+    d_->comments_.push_back(c);
+}
+
+void worksheet::remove_comment(const xlnt::comment &c)
+{
+    d_->comments_.pop_back();
+}
+
+std::size_t worksheet::get_comment_count() const
+{
+    return d_->comments_.size();
 }
     
 } // namespace xlnt

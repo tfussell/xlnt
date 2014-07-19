@@ -52,6 +52,9 @@ workbook_impl::workbook_impl() : active_sheet_index_(0), date_1904_(false)
 workbook::workbook() : d_(new detail::workbook_impl())
 {
     create_sheet("Sheet");
+    create_relationship("rId2", "sharedStrings.xml", relationship::type::shared_strings);
+    create_relationship("rId3", "styles.xml", relationship::type::styles);
+    create_relationship("rId4", "theme/theme1.xml", relationship::type::theme);
 }
 
 workbook::~workbook()
@@ -176,6 +179,7 @@ worksheet workbook::create_sheet()
     }
 
     d_->worksheets_.push_back(detail::worksheet_impl(this, title));
+    create_relationship("rId" + std::to_string(d_->relationships_.size() + 1), "worksheets/sheet" + std::to_string(d_->worksheets_.size()) + ".xml", relationship::type::worksheet);
     return worksheet(&d_->worksheets_.back());
 }
 
@@ -284,21 +288,22 @@ bool workbook::load(const std::string &filename)
     zip_file f(filename, file_mode::open);
     //auto core_properties = read_core_properties();
     //auto app_properties = read_app_properties();
-    auto root_relationships = reader::read_relationships(f.get_file_contents("_rels/.rels"));
     auto content_types = reader::read_content_types(f.get_file_contents("[Content_Types].xml"));
     
-    auto type = reader::determine_document_type(root_relationships, content_types.second);
+    auto type = reader::determine_document_type(content_types.second);
     
     if(type != "excel")
     {
         throw std::runtime_error("unsupported document type: " + filename);
     }
     
+    clear();
+    
     auto workbook_relationships = reader::read_relationships(f.get_file_contents("xl/_rels/workbook.xml.rels"));
 
     for(auto relationship : workbook_relationships)
     {
-        create_relationship(relationship.first, relationship.second.first, relationship.second.second);
+        create_relationship(relationship.get_id(), relationship.get_target_uri(), relationship.get_type());
     }
     
     pugi::xml_document doc;
@@ -311,24 +316,25 @@ bool workbook::load(const std::string &filename)
     
     auto sheets_node = root_node.child("sheets");
     
-    clear();
-    
     std::vector<std::string> shared_strings;
     if(f.has_file("xl/sharedStrings.xml"))
     {
         shared_strings = xlnt::reader::read_shared_string(f.get_file_contents("xl/sharedStrings.xml"));
     }
 
-    pugi::xml_document styles_doc;
-    styles_doc.load(f.get_file_contents("xl/styles.xml").c_str());
-    auto stylesheet_node = styles_doc.child("styleSheet");
-    auto cell_xfs_node = stylesheet_node.child("cellXfs");
-
     std::vector<int> number_format_ids;
-
-    for(auto xf_node : cell_xfs_node.children("xf"))
+    
+    if(f.has_file("xl/styles.xml"))
     {
-        number_format_ids.push_back(xf_node.attribute("numFmtId").as_int());
+        pugi::xml_document styles_doc;
+        styles_doc.load(f.get_file_contents("xl/styles.xml").c_str());
+        auto stylesheet_node = styles_doc.child("styleSheet");
+        auto cell_xfs_node = stylesheet_node.child("cellXfs");
+
+        for(auto xf_node : cell_xfs_node.children("xf"))
+        {
+            number_format_ids.push_back(xf_node.attribute("numFmtId").as_int());
+        }
     }
     
     for(auto sheet_node : sheets_node.children("sheet"))
@@ -343,7 +349,7 @@ bool workbook::load(const std::string &filename)
     return true;
 }
 
-void workbook::create_relationship(const std::string &id, const std::string &target, const std::string &type)
+void workbook::create_relationship(const std::string &id, const std::string &target, relationship::type type)
 {
     d_->relationships_.push_back(relationship(type, id, target));
 }
@@ -468,6 +474,10 @@ worksheet workbook::operator[](std::size_t index)
 void workbook::clear()
 {
     d_->worksheets_.clear();
+    d_->relationships_.clear();
+    d_->active_sheet_index_ = 0;
+    d_->date_1904_ = false;
+    d_->drawings_.clear();
 }
 
 bool workbook::save(std::vector<unsigned char> &data)
@@ -495,6 +505,16 @@ bool workbook::save(const std::string &filename)
     f.set_file_contents("xl/_rels/workbook.xml.rels", writer::write_workbook_rels(*this));
 
     f.set_file_contents("xl/workbook.xml", writer::write_workbook(*this));
+    
+    for(auto relationship : d_->relationships_)
+    {
+        if(relationship.get_type() == relationship::type::worksheet)
+        {
+            std::string sheet_index_string = relationship.get_target_uri().substr(16);
+            std::size_t sheet_index = std::stoi(sheet_index_string.substr(0, sheet_index_string.find('.'))) - 1;
+            f.set_file_contents("xl/" + relationship.get_target_uri(), writer::write_worksheet(get_sheet_by_index(sheet_index)));
+        }
+    }
 
     return true;
 }
@@ -514,7 +534,7 @@ std::vector<content_type> xlnt::workbook::get_content_types() const
 	std::vector<content_type> content_types;
 	content_types.push_back({ true, "xml", "", "application/xml" });
 	content_types.push_back({ true, "rels", "", "application/vnd.openxmlformats-package.relationships+xml" });
-	content_types.push_back({ false, "", "xl/workbook.xml", "applications/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml" });
+	content_types.push_back({ false, "", "/xl/workbook.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml" });
 	return content_types;
 }
 

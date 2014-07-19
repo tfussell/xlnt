@@ -44,8 +44,17 @@ namespace detail {
 struct cell_impl;
 } // namespace detail
     
-typedef std::string comment;
-    
+class comment
+{
+public:
+    comment(const std::string &type, const std::string &value) : type_(type), value_(value) {}
+    std::string get_type() const { return type_; }
+    std::string get_value() const { return value_; }
+private:
+    std::string type_;
+    std::string value_;
+};
+
 /// <summary>
 /// Describes cell associated properties.
 /// </summary>
@@ -116,7 +125,8 @@ public:
     //std::pair<int, int> get_anchor() const;
     
     comment get_comment() const;
-    void set_comment(comment comment);
+    void set_comment(const comment &comment);
+    void clear_comment();
 
     std::string get_formula() const;
     void set_formula(const std::string &formula);
@@ -125,6 +135,10 @@ public:
     void set_error(const std::string &error);
 
     void set_null();
+    
+    cell offset(row_t row, column_t column);
+    
+    worksheet get_parent();
     
     cell &operator=(const cell &rhs);
     cell &operator=(bool value);

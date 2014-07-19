@@ -30,11 +30,13 @@
 #include <vector>
 
 #include "../common/types.hpp"
+#include "../common/relationship.hpp"
 
 namespace xlnt {
     
 class cell;
 class cell_reference;
+class comment;
 class range;
 class range_reference;
 class relationship;
@@ -203,7 +205,7 @@ public:
     range_reference calculate_dimension() const;
     
     // relationships
-    relationship create_relationship(const std::string &relationship_type, const std::string &target_uri);
+    relationship create_relationship(relationship::type type, const std::string &target_uri);
     std::vector<relationship> get_relationships();
     
     // charts
@@ -244,6 +246,11 @@ public:
     void auto_filter(const range_reference &reference);
     void unset_auto_filter();
     bool has_auto_filter() const;
+    
+    // comments
+    void add_comment(const comment &c);
+    void remove_comment(const comment &c);
+    std::size_t get_comment_count() const;
 
     void reserve(std::size_t n);
     

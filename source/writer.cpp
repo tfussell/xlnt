@@ -162,25 +162,30 @@ std::string writer::write_workbook(const workbook &wb)
     auto sheets_node = root_node.append_child("sheets");
     auto defined_names_node = root_node.append_child("definedNames");
 
-    int i = 0;
-    for(auto ws : wb)
+    for(auto relationship : wb.get_relationships())
     {
-        auto sheet_node = sheets_node.append_child("sheet");
-        sheet_node.append_attribute("name").set_value(ws.get_title().c_str());
-        sheet_node.append_attribute("r:id").set_value((std::string("rId") + std::to_string(i + 1)).c_str());
-        sheet_node.append_attribute("sheetId").set_value(std::to_string(i + 1).c_str());
-
-        if(ws.has_auto_filter())
+        if(relationship.get_type() == relationship::type::worksheet)
         {
-            auto defined_name_node = defined_names_node.append_child("definedName");
-            defined_name_node.append_attribute("name").set_value("_xlnm._FilterDatabase");
-            defined_name_node.append_attribute("hidden").set_value(1);
-            defined_name_node.append_attribute("localSheetId").set_value(0);
-            std::string name = "'" + ws.get_title() + "'!" + range_reference::make_absolute(ws.get_auto_filter()).to_string();
-            defined_name_node.text().set(name.c_str());
-        }
+            std::string sheet_index_string = relationship.get_target_uri().substr(16);
+            std::size_t sheet_index = std::stoi(sheet_index_string.substr(0, sheet_index_string.find('.'))) - 1;
+            
+            auto ws = wb.get_sheet_by_index(sheet_index);
+            
+            auto sheet_node = sheets_node.append_child("sheet");
+            sheet_node.append_attribute("name").set_value(ws.get_title().c_str());
+            sheet_node.append_attribute("r:id").set_value(relationship.get_id().c_str());
+            sheet_node.append_attribute("sheetId").set_value(std::to_string(sheet_index + 1).c_str());
 
-        i++;
+            if(ws.has_auto_filter())
+            {
+                auto defined_name_node = defined_names_node.append_child("definedName");
+                defined_name_node.append_attribute("name").set_value("_xlnm._FilterDatabase");
+                defined_name_node.append_attribute("hidden").set_value(1);
+                defined_name_node.append_attribute("localSheetId").set_value(0);
+                std::string name = "'" + ws.get_title() + "'!" + range_reference::make_absolute(ws.get_auto_filter()).to_string();
+                defined_name_node.text().set(name.c_str());
+            }
+        }
     }
     
     auto calc_pr_node = root_node.append_child("calcPr");
@@ -507,9 +512,9 @@ std::string xlnt::writer::write_root_rels()
 {
 	std::vector<relationship> relationships;
 
-	relationships.push_back(relationship("a"));
-	relationships.push_back(relationship("b"));
-	relationships.push_back(relationship("c"));
+	relationships.push_back(relationship(relationship::type::extended_properties, "rId3", "docProps/app.xml"));
+	relationships.push_back(relationship(relationship::type::core_properties, "rId2", "docProps/core.xml"));
+	relationships.push_back(relationship(relationship::type::office_document, "rId1", "xl/workbook.xml"));
 
 	return write_relationships(relationships);
 }
@@ -525,7 +530,11 @@ std::string writer::write_relationships(const std::vector<relationship> &relatio
         auto app_props_node = root_node.append_child("Relationship");
         app_props_node.append_attribute("Id").set_value(relationship.get_id().c_str());
         app_props_node.append_attribute("Target").set_value(relationship.get_target_uri().c_str());
-        app_props_node.append_attribute("Type").set_value(relationship.get_target_uri().c_str());
+        app_props_node.append_attribute("Type").set_value(relationship.get_type_string().c_str());
+        if(relationship.get_target_mode() == target_mode::external)
+        {
+            app_props_node.append_attribute("TargetMode").set_value("External");
+        }
     }
     
     std::stringstream ss;

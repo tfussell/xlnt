@@ -560,7 +560,7 @@ void cell::set_hyperlink(const std::string &hyperlink)
     }
 
     d_->has_hyperlink_ = true;
-    d_->hyperlink_ = worksheet(d_->parent_).create_relationship("hyperlink", hyperlink);
+    d_->hyperlink_ = worksheet(d_->parent_).create_relationship(relationship::type::hyperlink, hyperlink);
 
     if(d_->type_ == type::null)
     {
@@ -584,6 +584,26 @@ void cell::set_formula(const std::string &formula)
     d_->string_value = formula;
 }
 
+void cell::set_comment(const xlnt::comment &comment)
+{
+    if(d_->comment_.get_value() == "")
+    {
+        get_parent().add_comment(comment);
+    }
+        
+    d_->comment_ = comment;
+}
+
+void cell::clear_comment()
+{
+    if(d_->comment_.get_value() != "")
+    {
+        get_parent().remove_comment(d_->comment_);
+    }
+    
+    d_->comment_ = comment("", "");
+}
+
 void cell::set_error(const std::string &error)
 {
     if(error.length() == 0 || error[0] != '#')
@@ -593,6 +613,21 @@ void cell::set_error(const std::string &error)
 
     d_->type_ = type::error;
     d_->string_value = error;
+}
+
+cell cell::offset(column_t column, row_t row)
+{
+    return get_parent().get_cell(cell_reference(d_->column + column, d_->row + row));
+}
+    
+worksheet cell::get_parent()
+{
+    return worksheet(d_->parent_);
+}
+
+comment cell::get_comment() const
+{
+    return d_->comment_;
 }
 
 } // namespace xlnt

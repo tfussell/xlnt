@@ -70,13 +70,13 @@ public:
 
     void test_bad_column_index()
     {
-	for(auto bad_string : {"JJJJ", "", "$", "1"})
+        for(auto bad_string : {"JJJJ", "", "$", "1"})
         {
             TS_ASSERT_THROWS(xlnt::cell_reference::column_index_from_string(bad_string), xlnt::column_string_index_exception);
         }
     }
 
-    void test_column_letter_boundries()
+    void test_column_letter_boundaries()
     {
         TS_ASSERT_THROWS(xlnt::cell_reference::column_string_from_index(0),
 	    xlnt::column_string_index_exception);
@@ -336,6 +336,16 @@ public:
         TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
         TS_ASSERT_EQUALS(cell, xlnt::time(3, 40));
     }
+    
+    void test_timedelta()
+    {
+        xlnt::worksheet ws = wb.create_sheet();
+        xlnt::cell cell(ws, "A1");
+        
+        cell = xlnt::timedelta().days(1).hours(3);
+        TS_ASSERT_EQUALS(cell, 1.125);
+        TS_ASSERT_EQUALS(cell.get_data_type(), xlnt::cell::type::numeric);
+    }
 
     void test_date_format_on_non_date()
     {
@@ -389,6 +399,42 @@ public:
         cell.get_style().get_number_format().set_format_code("0.00_);[Red]\\(0.00\\)");
 
         TS_ASSERT(!cell.is_date());
+    }
+    
+    void test_comment_count()
+    {
+        xlnt::worksheet ws = wb.create_sheet();
+        xlnt::cell cell(ws, "A1");
+        
+        TS_ASSERT(ws.get_comment_count() == 0);
+        cell.set_comment(xlnt::comment("text", "author"));
+        TS_ASSERT(ws.get_comment_count() == 1);
+        cell.set_comment(xlnt::comment("text", "author"));
+        TS_ASSERT(ws.get_comment_count() == 1);
+        cell.clear_comment();
+        TS_ASSERT(ws.get_comment_count() == 0);
+        cell.clear_comment();
+        TS_ASSERT(ws.get_comment_count() == 0);
+    }
+    
+    void test_comment_assignment()
+    {
+        xlnt::worksheet ws = wb.create_sheet();
+        xlnt::cell cell(ws, "A1");
+        
+        xlnt::comment c("text", "author");
+        cell.set_comment(c);
+        TS_ASSERT_THROWS_ANYTHING(ws.get_cell("A2").set_comment(c));
+        ws.get_cell("A2").set_comment(xlnt::comment("text2", "author2"));
+        TS_ASSERT_THROWS_ANYTHING(ws.get_cell("A1").set_comment(ws.get_cell("A2").get_comment()));
+        ws.get_cell("A1").clear_comment();
+        TS_ASSERT_THROWS_NOTHING(ws.get_cell("A2").set_comment(c));
+    }
+    
+    void test_cell_offset()
+    {
+        xlnt::worksheet ws = wb.create_sheet();
+        TS_ASSERT(ws.get_cell("B15").offset(1, 2).get_reference() == "C17");
     }
 
 private:
