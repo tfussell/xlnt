@@ -31,10 +31,16 @@
 
 namespace xlnt {
     
+enum class major_order
+{
+    column,
+    row
+};
+
 class cell_vector
 {
 public:
-    cell_vector(worksheet ws, const range_reference &ref);
+    cell_vector(worksheet ws, const range_reference &ref, major_order order = major_order::row);
 
     std::size_t num_cells() const;
 
@@ -57,7 +63,7 @@ public:
     class iterator
     {
     public:
-        iterator(worksheet ws, const cell_reference &start_cell);
+        iterator(worksheet ws, const cell_reference &start_cell, major_order order);
         ~iterator();
 
         bool operator==(const iterator &rhs);
@@ -72,6 +78,7 @@ public:
         worksheet ws_;
         cell_reference current_cell_;
         range_reference range_;
+        major_order order_;
     };
 
     iterator begin();
@@ -80,7 +87,7 @@ public:
     class const_iterator
     {
     public:
-        const_iterator(worksheet ws, const cell_reference &start_cell);
+        const_iterator(worksheet ws, const cell_reference &start_cell, major_order order);
         ~const_iterator();
 
         bool operator==(const const_iterator &rhs);
@@ -95,6 +102,7 @@ public:
         worksheet ws_;
         cell_reference current_cell_;
         range_reference range_;
+        major_order order_;
     };
 
     const_iterator begin() const { return cbegin(); }
@@ -106,12 +114,13 @@ public:
 private:
     worksheet ws_;
     range_reference ref_;
+    major_order order_;
 };
 
 class range
 {
 public:
-    range(worksheet ws, const range_reference &reference);
+    range(worksheet ws, const range_reference &reference, major_order order = major_order::row);
 
     ~range();
 
@@ -138,7 +147,7 @@ public:
     class iterator
     {
     public:
-        iterator(worksheet ws, const range_reference &start_cell);
+        iterator(worksheet ws, const range_reference &start_cell, major_order order);
         ~iterator();
 
         bool operator==(const iterator &rhs);
@@ -153,6 +162,7 @@ public:
         worksheet ws_;
         cell_reference current_cell_;
         range_reference range_;
+        major_order order_;
     };
 
     iterator begin();
@@ -161,7 +171,7 @@ public:
     class const_iterator
     {
     public:
-        const_iterator(worksheet ws, const range_reference &start_cell);
+        const_iterator(worksheet ws, const range_reference &start_cell, major_order order);
         ~const_iterator();
 
         bool operator==(const const_iterator &rhs);
@@ -176,6 +186,7 @@ public:
         worksheet ws_;
         cell_reference current_cell_;
         range_reference range_;
+        major_order order_;
     };
 
     const_iterator begin() const { return cbegin(); }
@@ -187,6 +198,7 @@ public:
 private:
     worksheet ws_;
     range_reference ref_;
+    major_order order_;
 };
 
 } // namespace xlnt

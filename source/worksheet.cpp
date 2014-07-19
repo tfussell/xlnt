@@ -433,7 +433,7 @@ xlnt::range worksheet::rows() const
 
 xlnt::range worksheet::columns() const
 {
-    return get_range(calculate_dimension());
+    return range(*this, calculate_dimension(), major_order::column);
 }
 
 bool worksheet::operator==(const worksheet &other) const

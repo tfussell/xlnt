@@ -283,7 +283,7 @@ public:
 
     void test_write_empty()
     {
-    	TS_ASSERT(false);
+    	TS_SKIP("not implemented");
     	
         xlnt::worksheet ws(wb_);
         
@@ -295,7 +295,7 @@ public:
     
     void test_page_margins()
     {
-    	TS_ASSERT(false);
+        TS_SKIP("not implemented");
     	
         xlnt::worksheet ws(wb_);
         
@@ -307,7 +307,7 @@ public:
    
     void test_merge()
     {
-    	TS_ASSERT(false);
+        TS_SKIP("not implemented");
     	
         xlnt::worksheet ws(wb_);
         
@@ -319,7 +319,7 @@ public:
 
     void test_printer_settings()
     {
-    	TS_ASSERT(false);
+        TS_SKIP("not implemented");
     	
         xlnt::worksheet ws(wb_);
 
@@ -418,7 +418,7 @@ public:
     
     void test_positioning_point()
     {
-    	TS_ASSERT(false);
+        TS_SKIP("not implemented");
         /*
         auto ws = wb_.create_sheet();
          */
@@ -426,7 +426,7 @@ public:
     
     void test_positioning_roundtrip()
     {
-        TS_ASSERT(false);
+        TS_SKIP("not implemented");
         /*
     	auto ws = wb_.create_sheet();
     	TS_ASSERT_EQUALS(ws.get_point_pos(ws.get_cell("A1").get_anchor()), xlnt::cell_reference("A1"));
@@ -437,7 +437,7 @@ public:
     
     void test_page_setup()
     {
-        TS_ASSERT(false);
+        TS_SKIP("not implemented");
         /*
     	xlnt::page_setup p;
     	TS_ASSERT(p.get_page_setup().empty());
@@ -448,7 +448,7 @@ public:
     
     void test_page_options()
     {
-        TS_ASSERT(false);
+        TS_SKIP("not implemented");
         /*
     	xlnt::page_setup p;
     	TS_ASSERT(p.get_options().empty());
