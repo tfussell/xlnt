@@ -5,128 +5,128 @@
 
 namespace xlnt {
 
-row::iterator::iterator(worksheet ws, const cell_reference &start_cell)
+cell_vector::iterator::iterator(worksheet ws, const cell_reference &start_cell)
     : ws_(ws),
     current_cell_(start_cell),
     range_(start_cell.to_range())
 {
 }
 
-row::iterator::~iterator()
+cell_vector::iterator::~iterator()
 {
 }
 
-bool row::iterator::operator==(const iterator &rhs)
+bool cell_vector::iterator::operator==(const iterator &rhs)
 {
     return ws_ == rhs.ws_ 
         && current_cell_ == rhs.current_cell_;
 }
 
-row::iterator row::iterator::operator++(int)
+cell_vector::iterator cell_vector::iterator::operator++(int)
 {
     iterator old = *this;
     ++*this;
     return old;
 }
 
-row::iterator &row::iterator::operator++()
+cell_vector::iterator &cell_vector::iterator::operator++()
 {
     current_cell_.set_column_index(current_cell_.get_column_index() + 1);
     return *this;
 }
 
-cell row::iterator::operator*()
+cell cell_vector::iterator::operator*()
 {
     return ws_[current_cell_];
 }
 
-row::const_iterator::const_iterator(worksheet ws, const cell_reference &start_cell)
+cell_vector::const_iterator::const_iterator(worksheet ws, const cell_reference &start_cell)
     : ws_(ws),
     current_cell_(start_cell),
     range_(start_cell.to_range())
 {
 }
 
-row::const_iterator::~const_iterator()
+cell_vector::const_iterator::~const_iterator()
 {
 }
 
-bool row::const_iterator::operator==(const const_iterator &rhs)
+bool cell_vector::const_iterator::operator==(const const_iterator &rhs)
 {
     return ws_ == rhs.ws_ 
         && rhs.current_cell_ == current_cell_;
 }
 
-row::const_iterator row::const_iterator::operator++(int)
+cell_vector::const_iterator cell_vector::const_iterator::operator++(int)
 {
     const_iterator old = *this;
     ++*this;
     return old;
 }
 
-row::const_iterator &row::const_iterator::operator++()
+cell_vector::const_iterator &cell_vector::const_iterator::operator++()
 {
     current_cell_.set_column_index(current_cell_.get_column_index() + 1);
     return *this;
 }
 
-const cell row::const_iterator::operator*()
+const cell cell_vector::const_iterator::operator*()
 {
     const worksheet ws_const = ws_;
     return ws_const[current_cell_];
 }
 
-row::iterator row::begin()
+cell_vector::iterator cell_vector::begin()
 {
     return iterator(ws_, ref_.get_top_left());
 }
 
-row::iterator row::end()
+cell_vector::iterator cell_vector::end()
 {
     auto past_end = ref_.get_bottom_right();
     past_end.set_column_index(past_end.get_column_index() + 1);
     return iterator(ws_, past_end);
 }
 
-row::const_iterator row::cbegin() const
+cell_vector::const_iterator cell_vector::cbegin() const
 {
     return const_iterator(ws_, ref_.get_top_left());
 }
 
-row::const_iterator row::cend() const
+cell_vector::const_iterator cell_vector::cend() const
 {
     auto past_end = ref_.get_top_left();
     past_end.set_column_index(past_end.get_column_index() + 1);
     return const_iterator(ws_, past_end);
 }
 
-cell row::operator[](std::size_t column_index)
+cell cell_vector::operator[](std::size_t column_index)
 {
     return get_cell(column_index);
 }
 
-std::size_t row::num_cells() const
+std::size_t cell_vector::num_cells() const
 {
     return ref_.get_width() + 1;
 }
 
-row::row(worksheet ws, const range_reference &reference)
+cell_vector::cell_vector(worksheet ws, const range_reference &reference)
     : ws_(ws),
     ref_(reference)
 {
 }
 
-cell row::front()
+cell cell_vector::front()
 {
     return get_cell(ref_.get_top_left().get_column_index());
 }
 
-cell row::back()
+cell cell_vector::back()
 {
     return get_cell(ref_.get_bottom_right().get_column_index());
 }
 
-cell row::get_cell(std::size_t column_index)
+cell cell_vector::get_cell(std::size_t column_index)
 {
     return ws_.get_cell(ref_.get_top_left().make_offset((int)column_index, 0));
 }
@@ -142,9 +142,9 @@ range::~range()
 {
 }
 
-row range::operator[](std::size_t row)
+cell_vector range::operator[](std::size_t index)
 {
-    return get_row(row);
+    return get_vector(index);
 }
 
 range_reference range::get_reference() const
@@ -152,7 +152,7 @@ range_reference range::get_reference() const
     return ref_;
 }
 
-std::size_t range::num_rows() const
+std::size_t range::length() const
 {
     return ref_.get_bottom_right().get_row_index() - ref_.get_top_left().get_row_index() + 1;
 }
@@ -163,11 +163,11 @@ bool range::operator==(const range &comparand) const
         && ws_ == comparand.ws_;
 }
 
-row range::get_row(std::size_t row_)
+cell_vector range::get_vector(std::size_t vector_index)
 {
-    range_reference row_reference(ref_.get_top_left().get_column_index(), ref_.get_top_left().get_row_index() + (int)row_,
-        ref_.get_bottom_right().get_column_index(), ref_.get_top_left().get_row_index() + (int)row_);
-    return row(ws_, row_reference);
+    range_reference reference(ref_.get_top_left().get_column_index(), ref_.get_top_left().get_row_index() + (int)vector_index,
+        ref_.get_bottom_right().get_column_index(), ref_.get_top_left().get_row_index() + (int)vector_index);
+    return cell_vector(ws_, reference);
 }
 
 cell range::get_cell(const cell_reference &ref)
@@ -237,13 +237,13 @@ range::iterator &range::iterator::operator++()
     return *this;
 }
 
-row range::iterator::operator*()
+cell_vector range::iterator::operator*()
 {
-    range_reference row_range(range_.get_top_left().get_column_index(),
+    range_reference reference(range_.get_top_left().get_column_index(),
         current_cell_.get_row_index(),
         range_.get_bottom_right().get_column_index(),
         current_cell_.get_row_index());
-    return row(ws_, row_range);
+    return cell_vector(ws_, reference);
 }
 
 range::const_iterator::const_iterator(worksheet ws, const range_reference &start_cell)
@@ -276,13 +276,13 @@ range::const_iterator &range::const_iterator::operator++()
     return *this;
 }
 
-const row range::const_iterator::operator*()
+const cell_vector range::const_iterator::operator*()
 {
-    range_reference row_range(range_.get_top_left().get_column_index(),
+    range_reference reference(range_.get_top_left().get_column_index(),
         current_cell_.get_row_index(),
         range_.get_bottom_right().get_column_index(),
         current_cell_.get_row_index());
-    return row(ws_, row_range);
+    return cell_vector(ws_, reference);
 }
 
 } // namespace xlnt

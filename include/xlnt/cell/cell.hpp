@@ -39,6 +39,7 @@ class worksheet;
 struct date;
 struct datetime;
 struct time;
+struct timedelta;
 
 namespace detail {    
 struct cell_impl;
@@ -152,6 +153,7 @@ public:
     cell &operator=(const date &value);
     cell &operator=(const time &value);
     cell &operator=(const datetime &value);
+    cell &operator=(const timedelta &value);
     
     bool operator==(const cell &comparand) const;
     bool operator==(std::nullptr_t) const;
@@ -163,6 +165,7 @@ public:
     bool operator==(const date &comparand) const;
     bool operator==(const time &comparand) const;
     bool operator==(const datetime &comparand) const;
+    bool operator==(const timedelta &comparand) const;
 
     friend bool operator==(std::nullptr_t, const cell &cell);
     friend bool operator==(bool comparand, const cell &cell);

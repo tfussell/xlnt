@@ -78,9 +78,9 @@ public:
         
     }
     
-    static std::string GetDataDirectory()
+    static std::string GetDataDirectory(const std::string &append = "")
     {
-        return GetExecutableDirectory() + "../tests/test_data";
+        return GetExecutableDirectory() + "../tests/test_data" + append;
     }
     
     static void CopyFile(const std::string &source, const std::string &destination, bool overwrite)

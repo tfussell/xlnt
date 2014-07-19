@@ -61,6 +61,7 @@ struct worksheet_impl
     std::vector<range_reference> merged_cells_;
     std::unordered_map<std::string, range_reference> named_ranges_;
     std::vector<comment> comments_;
+    header_footer header_footer_;
 };
 
 } // namespace detail

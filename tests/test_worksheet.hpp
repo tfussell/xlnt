@@ -39,7 +39,7 @@ public:
     	auto ws1 = wb_.create_sheet("Test");
     	TS_ASSERT_EQUALS(ws1.get_title(), "Test");
     	auto ws2 = wb_.create_sheet("Test");
-    	TS_ASSERT_EQUALS(ws1.get_title(), "Test1");
+    	TS_ASSERT_EQUALS(ws2.get_title(), "Test1");
     }
 
     void test_set_bad_title_character()
@@ -66,7 +66,7 @@ public:
     {
         xlnt::worksheet ws(wb_);
         auto xlrange = ws.get_range("A1:C4");
-        TS_ASSERT_EQUALS(4, xlrange.num_rows());
+        TS_ASSERT_EQUALS(4, xlrange.length());
         TS_ASSERT_EQUALS(3, xlrange[0].num_cells());
     }
 
@@ -75,7 +75,7 @@ public:
         xlnt::worksheet ws(wb_);
         wb_.create_named_range("test_range", ws, "C5");
         auto xlrange = ws.get_named_range("test_range");
-        TS_ASSERT_EQUALS(1, xlrange.num_rows());
+        TS_ASSERT_EQUALS(1, xlrange.length());
         TS_ASSERT_EQUALS(1, xlrange[0].num_cells());
         TS_ASSERT_EQUALS(5, xlrange[0][0].get_row());
     }
@@ -104,7 +104,7 @@ public:
     {
         xlnt::worksheet ws(wb_);
         auto xlrange = ws.get_range(xlnt::range_reference("A1:C4").make_offset(3, 1));
-        TS_ASSERT_EQUALS(4, xlrange.num_rows());
+        TS_ASSERT_EQUALS(4, xlrange.length());
         TS_ASSERT_EQUALS(3, xlrange[0].num_cells());
         TS_ASSERT_EQUALS("D2", xlrange[0][0].get_reference().to_string());
     }
@@ -246,8 +246,8 @@ public:
 
         TS_ASSERT_EQUALS(cols.length(), 3);
 
-        TS_ASSERT_EQUALS(rows[0][0], "first");
-        TS_ASSERT_EQUALS(rows[2][8], "last");
+        TS_ASSERT_EQUALS(cols[0][0], "first");
+        TS_ASSERT_EQUALS(cols[2][8], "last");
     }
 
     void test_auto_filter()
@@ -364,7 +364,7 @@ public:
         ws.get_header_footer().get_right_footer().set_font_size(14);
         ws.get_header_footer().get_right_footer().set_font_color("AABBCC");
         
-        auto expected_xml_string =
+        std::string expected_xml_string =
         "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
         "  <sheetPr>"
         "    <outlinePr summaryRight=\"1\" summaryBelow=\"1\"/>"
@@ -384,66 +384,79 @@ public:
         "  </headerFooter>"
         "</worksheet>";
         
-        pugi::xml_document doc;
-        doc.load(expected_xml_string.c_str());
+        pugi::xml_document expected_doc;
+        pugi::xml_document observed_doc;
         
-        TS_ASSERT(Helper::compare_xml(doc, xlnt::worksheet_writer::write_worksheet(ws, {}, {})));
+        expected_doc.load(expected_xml_string.c_str());
+        observed_doc.load(xlnt::writer::write_worksheet(ws, {}, {}).c_str());
         
-        auto ws = wb_.create_sheet();
+        TS_ASSERT(Helper::compare_xml(expected_doc, observed_doc));
         
+        ws = wb_.create_sheet();
         
         expected_xml_string =
         "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
         "  <sheetPr>"
-        "    <outlinePr summaryRight="1" summaryBelow="1"/>"
+        "    <outlinePr summaryRight=\"1\" summaryBelow=\"1\"/>"
         "  </sheetPr>"
-        "  <dimension ref="A1:A1"/>"
+        "  <dimension ref=\"A1:A1\"/>"
         "  <sheetViews>"
-        "    <sheetView workbookViewId="0">"
-        "      <selection sqref="A1" activeCell="A1"/>"
+        "    <sheetView workbookViewId=\"0\">"
+        "      <selection sqref=\"A1\" activeCell=\"A1\"/>"
         "    </sheetView>"
         "  </sheetViews>"
-        "  <sheetFormatPr baseColWidth="10" defaultRowHeight="15"/>"
+        "  <sheetFormatPr baseColWidth=\"10\" defaultRowHeight=\"15\"/>"
         "  <sheetData/>"
-        "  <pageMargins left="0.75" right="0.75" top="1" bottom="1" header="0.5" footer="0.5"/>"
+        "  <pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\"/>"
         "</worksheet>";
         
-        pugi::xml_document doc;
-        doc.load(expected_xml_string.c_str());
+        expected_doc.load(expected_xml_string.c_str());
+        observed_doc.load(xlnt::writer::write_worksheet(ws, {}, {}).c_str());
         
-        TS_ASSERT(Helper::compare_xml(doc, xlnt::worksheet_writer::write_worksheet(ws, {}, {})));
+        TS_ASSERT(Helper::compare_xml(expected_doc, observed_doc));
     }
     
     void test_positioning_point()
     {
-    	auto ws = wb_.create_sheet();
     	TS_ASSERT(false);
+        /*
+        auto ws = wb_.create_sheet();
+         */
     }
     
     void test_positioning_roundtrip()
     {
+        TS_ASSERT(false);
+        /*
     	auto ws = wb_.create_sheet();
     	TS_ASSERT_EQUALS(ws.get_point_pos(ws.get_cell("A1").get_anchor()), xlnt::cell_reference("A1"));
     	TS_ASSERT_EQUALS(ws.get_point_pos(ws.get_cell("D52").get_anchor()), xlnt::cell_reference("D52"));
     	TS_ASSERT_EQUALS(ws.get_point_pos(ws.get_cell("X11").get_anchor()), xlnt::cell_reference("X11"));
+         */
     }
     
     void test_page_setup()
     {
+        TS_ASSERT(false);
+        /*
     	xlnt::page_setup p;
-    	TS_ASSERT(p.get_setup().empty());
+    	TS_ASSERT(p.get_page_setup().empty());
     	p.set_scale(1);
-    	TS_ASSERT_EQUALS(p.get_setup().at("scale"), 1);
+    	TS_ASSERT_EQUALS(p.get_page_setup().at("scale"), 1);
+         */
     }
     
     void test_page_options()
     {
+        TS_ASSERT(false);
+        /*
     	xlnt::page_setup p;
     	TS_ASSERT(p.get_options().empty());
     	p.set_horizontal_centered(true);
     	p.set_vertical_centered(true);
     	TS_ASSERT_EQUALS(p.get_options().at("verticalCentered"), "1");
     	TS_ASSERT_EQUALS(p.get_options().at("horizontalCentered"), "1");
+         */
     }
 
 private:

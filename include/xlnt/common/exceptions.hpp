@@ -89,7 +89,7 @@ public:
 class invalid_file_exception : public std::runtime_error
 {
 public:
-    invalid_file_exception();
+    invalid_file_exception(const std::string &filename);
 };
 
 /// <summary>

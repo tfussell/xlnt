@@ -10,6 +10,7 @@
 #include "workbook/document_properties.hpp"
 #include "common/relationship.hpp"
 #include "common/zip_file.hpp"
+#include "common/exceptions.hpp"
 
 namespace xlnt {
 
@@ -106,38 +107,43 @@ std::vector<relationship> reader::read_relationships(const std::string &content)
     return relationships;
 }
 
-std::pair<std::unordered_map<std::string, std::string>, std::unordered_map<std::string, std::string>> reader::read_content_types(const std::string &content)
+std::vector<std::pair<std::string, std::string>> reader::read_content_types(const zip_file &archive)
 {
     pugi::xml_document doc;
-    doc.load(content.c_str());
+    
+    try
+    {
+        doc.load(archive.get_file_contents("[Content_Types].xml").c_str());
+    }
+    catch(std::out_of_range)
+    {
+        throw invalid_file_exception(archive.get_filename());
+    }
     
     auto root_node = doc.child("Types");
     
-    std::unordered_map<std::string, std::string> default_types;
-    
-    for(auto child : root_node.children("Default"))
-    {
-        default_types[child.attribute("Extension").as_string()] = child.attribute("ContentType").as_string();
-    }
-    
-    std::unordered_map<std::string, std::string> override_types;
+    std::vector<std::pair<std::string, std::string>> override_types;
     
     for(auto child : root_node.children("Override"))
     {
-        override_types[child.attribute("PartName").as_string()] = child.attribute("ContentType").as_string();
+        std::string part_name = child.attribute("PartName").as_string();
+        std::string content_type = child.attribute("ContentType").as_string();
+        override_types.push_back({part_name, content_type});
     }
     
-    return std::make_pair(default_types, override_types);
+    return override_types;
 }
     
-std::string reader::determine_document_type(const std::unordered_map<std::string, std::string> &override_types)
+std::string reader::determine_document_type(const std::vector<std::pair<std::string, std::string>> &override_types)
 {
-    std::string type;
+    auto match = std::find_if(override_types.begin(), override_types.end(), [](const std::pair<std::string, std::string> &p) { return p.first == "/xl/workbook.xml"; });
     
-    if(override_types.find("/xl/workbook.xml") != override_types.end())
+    if(match == override_types.end())
     {
-        type = override_types.at("/xl/workbook.xml");
+        return "unsupported";
     }
+    
+    std::string type = match->second;
     
     if(type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml")
     {
@@ -212,7 +218,7 @@ void read_worksheet_common(worksheet ws, const pugi::xml_node &root_node, const 
                     }
                     else if(number_format_id == 14) // date
                     {
-                        ws.get_cell(address) = datetime::from_number(cell_node.child("v").text().as_double(), ws.get_parent().get_base_year());
+                        ws.get_cell(address) = datetime::from_number(cell_node.child("v").text().as_double(), ws.get_parent().get_properties().excel_base_date);
                     }
                     else if(number_format_id == 18) // time
                     {
@@ -220,7 +226,7 @@ void read_worksheet_common(worksheet ws, const pugi::xml_node &root_node, const 
                     }
                     else if(number_format_id == 22) // datetime
                     {
-                        ws.get_cell(address) = datetime::from_number(cell_node.child("v").text().as_double(), 1900);
+                        ws.get_cell(address) = datetime::from_number(cell_node.child("v").text().as_double(), ws.get_parent().get_properties().excel_base_date);
                     }
                     else if(number_format_id == 14) // decimal
                     {
@@ -282,5 +288,12 @@ std::vector<std::string> reader::read_shared_string(const std::string &xml_strin
     
     return shared_strings;
 }
-    
+
+workbook reader::load_workbook(const std::string &filename, bool guess_types)
+{
+    workbook wb;
+    wb.load(filename);
+    return wb;
+}
+
 } // namespace xlnt

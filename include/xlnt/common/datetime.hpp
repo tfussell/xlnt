@@ -26,7 +26,7 @@
 
 namespace xlnt {
 
-enum calendar
+enum class calendar
 {
     windows_1900,
     mac_1904
@@ -35,14 +35,14 @@ enum calendar
 struct date
 {
     static date today();
-    static date from_number(int days_since_base_year, int base_year = 1900);
+    static date from_number(int days_since_base_year, calendar base_date);
 
     date(int year, int month, int day)
         : year(year), month(month), day(day)
     {
     }
 
-    int to_number(int base_year = 1900) const;
+    int to_number(calendar base_date) const;
     bool operator==(const date &comparand) const;
 
     int year;
@@ -73,14 +73,14 @@ struct time
 struct datetime
 {
     static datetime now();
-    static datetime from_number(long double number, int base_year = 1900);
+    static datetime from_number(long double number, calendar base_date);
 
     datetime(int year, int month, int day, int hour = 0, int minute = 0, int second = 0, int microsecond = 0)
         : year(year), month(month), day(day), hour(hour), minute(minute), second(second), microsecond(microsecond)
     {
     }
 
-    double to_number(int base_year = 1900) const;
+    double to_number(calendar base_date) const;
     bool operator==(const datetime &comparand) const;
 
     int year;
@@ -90,6 +90,21 @@ struct datetime
     int minute;
     int second;
     int microsecond;
+};
+    
+struct timedelta
+{
+    timedelta(int days, int hours, int minutes, int seconds, int microseconds) : days(days), hours(hours), minutes(minutes), seconds(seconds), microseconds(microseconds)
+    {
+    }
+    
+    double to_number() const;
+    
+    int days;
+    int hours;
+    int minutes;
+    int seconds;
+    int microseconds;
 };
 
 } // namespace xlnt

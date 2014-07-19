@@ -31,10 +31,10 @@
 
 namespace xlnt {
     
-class row
+class cell_vector
 {
 public:
-    row(worksheet ws, const range_reference &ref);
+    cell_vector(worksheet ws, const range_reference &ref);
 
     std::size_t num_cells() const;
 
@@ -115,17 +115,17 @@ public:
 
     ~range();
 
-    row operator[](std::size_t row_index);
+    cell_vector operator[](std::size_t vector_index);
 
-    const row operator[](std::size_t row_index) const;
+    const cell_vector operator[](std::size_t vector_index) const;
 
     bool operator==(const range &comparand) const;
 
     bool operator!=(const range &comparand) const { return !(*this == comparand); }
 
-    row get_row(std::size_t row_index);
+    cell_vector get_vector(std::size_t vector_index);
 
-    const row get_row(std::size_t row_index) const;
+    const cell_vector get_vector(std::size_t vector_index) const;
 
     cell get_cell(const cell_reference &ref);
 
@@ -133,7 +133,7 @@ public:
 
     range_reference get_reference() const;
 
-    std::size_t num_rows() const;
+    std::size_t length() const;
 
     class iterator
     {
@@ -147,7 +147,7 @@ public:
         iterator operator++(int);
         iterator &operator++();
 
-        row operator*();
+        cell_vector operator*();
 
     private:
         worksheet ws_;
@@ -170,7 +170,7 @@ public:
         const_iterator operator++(int);
         const_iterator &operator++();
 
-        const row operator*();
+        const cell_vector operator*();
 
     private:
         worksheet ws_;

@@ -10,6 +10,7 @@
 #include "detail/cell_impl.hpp"
 #include "common/exceptions.hpp"
 #include "workbook/workbook.hpp"
+#include "workbook/document_properties.hpp"
 
 namespace xlnt {
     
@@ -256,6 +257,11 @@ bool cell::operator==(std::nullptr_t) const
     return d_ == nullptr;
 }
 
+bool cell::operator==(bool value) const
+{
+    return d_->type_ == type::boolean && (bool)d_->numeric_value == value;
+}
+
 bool cell::operator==(int comparand) const
 {
     return d_->type_ == type::numeric && d_->numeric_value == comparand;
@@ -297,7 +303,7 @@ bool cell::operator==(const date &comparand) const
         return false;
     }
     
-    auto base_year = worksheet(d_->parent_).get_parent().get_base_year();
+    auto base_year = worksheet(d_->parent_).get_parent().get_properties().excel_base_date;
     return date::from_number((int)d_->numeric_value, base_year) == comparand;
 }
 
@@ -308,7 +314,7 @@ bool cell::operator==(const datetime &comparand) const
         return false;
     }
     
-    auto base_year = worksheet(d_->parent_).get_parent().get_base_year();
+    auto base_year = worksheet(d_->parent_).get_parent().get_properties().excel_base_date;
     return datetime::from_number(d_->numeric_value, base_year) == comparand;
 }
 
@@ -339,8 +345,8 @@ bool cell::operator==(const cell &comparand) const
     case type::numeric:
         if(is_date() && comparand.is_date())
         {
-            auto base_year = worksheet(d_->parent_).get_parent().get_base_year();
-            auto other_base_year = worksheet(comparand.d_->parent_).get_parent().get_base_year();
+            auto base_year = worksheet(d_->parent_).get_parent().get_properties().excel_base_date;
+            auto other_base_year = worksheet(comparand.d_->parent_).get_parent().get_properties().excel_base_date;
             return date::from_number((int)d_->numeric_value, base_year) == date::from_number((int)comparand.d_->numeric_value, other_base_year);
         }
         return d_->numeric_value == comparand.d_->numeric_value;
@@ -349,6 +355,11 @@ bool cell::operator==(const cell &comparand) const
     return false;
 }
 
+bool operator==(bool comparand, const xlnt::cell &cell)
+{
+    return cell == comparand;
+}
+    
 bool operator==(int comparand, const xlnt::cell &cell)
 {
     return cell == comparand;
@@ -517,7 +528,7 @@ cell &cell::operator=(const time &value)
 cell &cell::operator=(const date &value)
 {
     d_->type_ = type::numeric;
-    auto base_year = worksheet(d_->parent_).get_parent().get_base_year();
+    auto base_year = worksheet(d_->parent_).get_parent().get_properties().excel_base_date;
     d_->numeric_value = value.to_number(base_year);
     d_->is_date_ = true;
     return *this;
@@ -526,8 +537,16 @@ cell &cell::operator=(const date &value)
 cell &cell::operator=(const datetime &value)
 {
     d_->type_ = type::numeric;
-    auto base_year = worksheet(d_->parent_).get_parent().get_base_year();
+    auto base_year = worksheet(d_->parent_).get_parent().get_properties().excel_base_date;
     d_->numeric_value = value.to_number(base_year);
+    d_->is_date_ = true;
+    return *this;
+}
+
+cell &cell::operator=(const timedelta &value)
+{
+    d_->type_ = type::numeric;
+    d_->numeric_value = value.to_number();
     d_->is_date_ = true;
     return *this;
 }

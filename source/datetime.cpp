@@ -38,11 +38,11 @@ time time::from_number(long double raw_time)
 	return result;
 }
 
-date date::from_number(int days_since_base_year, int base_year)
+date date::from_number(int days_since_base_year, calendar base_date)
 {
     date result(0, 0, 0);
 
-    if(base_year == 1904)
+    if(base_date == calendar::mac_1904)
     {
         days_since_base_year += 1462;
     }
@@ -72,9 +72,9 @@ date date::from_number(int days_since_base_year, int base_year)
     return result;
 }
 
-datetime datetime::from_number(long double raw_time, int base_year)
+datetime datetime::from_number(long double raw_time, calendar base_date)
 {
-    auto date_part = date::from_number((int)raw_time, base_year);
+    auto date_part = date::from_number((int)raw_time, base_date);
     auto time_part = time::from_number(raw_time);
     return datetime(date_part.year, date_part.month, date_part.day, time_part.hour, time_part.minute, time_part.second, time_part.microsecond);
 }
@@ -134,7 +134,7 @@ double time::to_number() const
     return number;
 }
 
-int date::to_number(int base_year) const
+int date::to_number(calendar base_date) const
 {
     if(day == 29 && month == 2 && year == 1900)
     {
@@ -151,7 +151,7 @@ int date::to_number(int base_year) const
         days_since_1900--;
     }
 
-    if(base_year == 1904)
+    if(base_date == calendar::mac_1904)
     {
         return days_since_1900 - 1462;
     }
@@ -159,9 +159,9 @@ int date::to_number(int base_year) const
     return days_since_1900;
 }
 
-double datetime::to_number(int base_year) const
+double datetime::to_number(calendar base_date) const
 {
-    return date(year, month, day).to_number(base_year) 
+    return date(year, month, day).to_number(base_date)
         + time(hour, minute, second, microsecond).to_number();
 }
 
@@ -178,5 +178,10 @@ datetime datetime::now()
     std::tm now = *std::localtime(&raw_time);
     return datetime(1900 + now.tm_year, now.tm_mon + 1, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec);
 }
-
+    
+double timedelta::to_number() const
+{
+    return days + hours / 24.0;
+}
+    
 } // namespace xlnt

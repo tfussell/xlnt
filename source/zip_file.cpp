@@ -2,6 +2,7 @@
 #include <fstream>
 
 #include "common/zip_file.hpp"
+#include "common/exceptions.hpp"
 
 namespace xlnt {
 
@@ -321,7 +322,7 @@ void zip_file::start_read()
     
     if(unzip_file_ == nullptr)
     {
-        throw std::runtime_error("bad or non-existant file");
+        throw invalid_file_exception(filename_);
     }
 }
 

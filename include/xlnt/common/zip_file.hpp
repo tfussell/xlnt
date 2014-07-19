@@ -106,6 +106,8 @@ public:
     
     void flush(bool force_write = false);
     
+    std::string get_filename() const { return filename_; }
+    
 private:
     void read_all();
     void write_all();

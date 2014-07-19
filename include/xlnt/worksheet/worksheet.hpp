@@ -60,6 +60,54 @@ class row_properties
   int style_index;
 };
     
+class header
+{
+public:
+    header();
+    void set_text(const std::string &text) { text_ = text; }
+    void set_font_name(const std::string &font_name) { font_name_ = font_name; }
+    void set_font_size(std::size_t font_size) { font_size_ = font_size; }
+    void set_font_color(const std::string &font_color) { font_color_ = font_color; }
+    
+private:
+    std::string text_;
+    std::string font_name_;
+    std::size_t font_size_;
+    std::string font_color_;
+};
+
+class footer
+{
+public:
+    footer();
+    void set_text(const std::string &text) { text_ = text; }
+    void set_font_name(const std::string &font_name) { font_name_ = font_name; }
+    void set_font_size(std::size_t font_size) { font_size_ = font_size; }
+    void set_font_color(const std::string &font_color) { font_color_ = font_color; }
+    
+private:
+    std::string text_;
+    std::string font_name_;
+    std::size_t font_size_;
+    std::string font_color_;
+};
+    
+class header_footer
+{
+public:
+    header_footer();
+    header &get_left_header() { return left_header_; }
+    header &get_center_header() { return center_header_; }
+    header &get_right_header() { return right_header_; }
+    footer &get_left_footer() { return left_footer_; }
+    footer &get_center_footer() { return center_footer_; }
+    footer &get_right_footer() { return right_footer_; }
+    
+private:
+    header left_header_, right_header_, center_header_;
+    footer left_footer_, right_footer_, center_footer_;
+};
+    
 struct page_setup
 {
     enum class page_break
@@ -253,6 +301,9 @@ public:
     std::size_t get_comment_count() const;
 
     void reserve(std::size_t n);
+    
+    header_footer &get_header_footer();
+    const header_footer &get_header_footer() const;
     
 private:
     friend class workbook;

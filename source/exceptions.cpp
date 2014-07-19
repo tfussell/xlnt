@@ -20,6 +20,12 @@ data_type_exception::data_type_exception()
 
 }
 
+invalid_file_exception::invalid_file_exception(const std::string &filename)
+    : std::runtime_error(std::string("couldn't open file: (") + filename + ")")
+{
+    
+}
+
 cell_coordinates_exception::cell_coordinates_exception(int row, int column)
     : std::runtime_error(std::string("bad cell coordinates: (") + std::to_string(row) + "," + std::to_string(column) + ")")
 {

@@ -17,6 +17,7 @@
 #include "worksheet/worksheet.hpp"
 #include "writer/writer.hpp"
 #include "common/zip_file.hpp"
+#include "workbook/document_properties.hpp"
 #include "detail/cell_impl.hpp"
 #include "detail/workbook_impl.hpp"
 #include "detail/worksheet_impl.hpp"
@@ -43,7 +44,7 @@ static std::string CreateTemporaryFilename()
 
 namespace xlnt {
 namespace detail {
-workbook_impl::workbook_impl() : active_sheet_index_(0), date_1904_(false)
+workbook_impl::workbook_impl() : active_sheet_index_(0)
 {
     
 }
@@ -288,9 +289,9 @@ bool workbook::load(const std::string &filename)
     zip_file f(filename, file_mode::open);
     //auto core_properties = read_core_properties();
     //auto app_properties = read_app_properties();
-    auto content_types = reader::read_content_types(f.get_file_contents("[Content_Types].xml"));
+    auto content_types = reader::read_content_types(f);
     
-    auto type = reader::determine_document_type(content_types.second);
+    auto type = reader::determine_document_type(content_types);
     
     if(type != "excel")
     {
@@ -312,7 +313,7 @@ bool workbook::load(const std::string &filename)
     auto root_node = doc.child("workbook");
     
     auto workbook_pr_node = root_node.child("workbookPr");
-    d_->date_1904_ = workbook_pr_node.attribute("date1904") != nullptr && workbook_pr_node.attribute("date1904").as_int() != 0;
+    get_properties().excel_base_date = (workbook_pr_node.attribute("date1904") != nullptr && workbook_pr_node.attribute("date1904").as_int() != 0) ? calendar::mac_1904 : calendar::windows_1900;
     
     auto sheets_node = root_node.child("sheets");
     
@@ -367,11 +368,6 @@ relationship workbook::get_relationship(const std::string &id) const
     throw std::runtime_error("");
 }
     
-int workbook::get_base_year() const
-{
-    return d_->date_1904_ ? 1904 : 1900;
-}
-
 void workbook::remove_sheet(worksheet ws)
 {
     auto match_iter = std::find_if(d_->worksheets_.begin(), d_->worksheets_.end(), [=](detail::worksheet_impl &comp) { return worksheet(&comp) == ws; });
@@ -418,13 +414,21 @@ worksheet workbook::create_sheet(const std::string &title)
         throw sheet_title_exception(title);
     }
     
-    if(std::find_if(d_->worksheets_.begin(), d_->worksheets_.end(), [&](detail::worksheet_impl &ws) { return worksheet(&ws).get_title() == title; }) != d_->worksheets_.end())
+    std::string unique_title = title;
+    
+    if(std::find_if(d_->worksheets_.begin(), d_->worksheets_.end(), [&](detail::worksheet_impl &ws) { return worksheet(&ws).get_title() == unique_title; }) != d_->worksheets_.end())
     {
-        throw std::runtime_error("sheet exists");
+        std::size_t suffix = 1;
+        
+        while(std::find_if(d_->worksheets_.begin(), d_->worksheets_.end(), [&](detail::worksheet_impl &ws) { return worksheet(&ws).get_title() == unique_title; }) != d_->worksheets_.end())
+        {
+            unique_title = title + std::to_string(suffix);
+            suffix++;
+        }
     }
     
     auto ws = create_sheet();
-    ws.set_title(title);
+    ws.set_title(unique_title);
 
     return ws;
 }
@@ -476,8 +480,8 @@ void workbook::clear()
     d_->worksheets_.clear();
     d_->relationships_.clear();
     d_->active_sheet_index_ = 0;
-    d_->date_1904_ = false;
     d_->drawings_.clear();
+    d_->properties_ = document_properties();
 }
 
 bool workbook::save(std::vector<unsigned char> &data)
@@ -518,7 +522,12 @@ bool workbook::save(const std::string &filename)
 
     return true;
 }
-    
+
+bool workbook::operator==(std::nullptr_t) const
+{
+    return d_.get() == nullptr;
+}
+
 bool workbook::operator==(const workbook &rhs) const
 {
     return d_.get() == rhs.d_.get();
@@ -536,6 +545,21 @@ std::vector<content_type> xlnt::workbook::get_content_types() const
 	content_types.push_back({ true, "rels", "", "application/vnd.openxmlformats-package.relationships+xml" });
 	content_types.push_back({ false, "", "/xl/workbook.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml" });
 	return content_types;
+}
+
+document_properties &workbook::get_properties()
+{
+    return d_->properties_;
+}
+
+const document_properties &workbook::get_properties() const
+{
+    return d_->properties_;
+}
+
+workbook::workbook(const workbook &other) : d_(other.d_)
+{
+    
 }
 
 }

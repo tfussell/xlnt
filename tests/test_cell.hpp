@@ -342,7 +342,7 @@ public:
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
         
-        cell = xlnt::timedelta().days(1).hours(3);
+        cell = xlnt::timedelta(1, 3, 0, 0, 0);
         TS_ASSERT_EQUALS(cell, 1.125);
         TS_ASSERT_EQUALS(cell.get_data_type(), xlnt::cell::type::numeric);
     }

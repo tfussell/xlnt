@@ -431,6 +431,11 @@ xlnt::range worksheet::rows() const
     return get_range(calculate_dimension());
 }
 
+xlnt::range worksheet::columns() const
+{
+    return get_range(calculate_dimension());
+}
+
 bool worksheet::operator==(const worksheet &other) const
 {
     return d_ == other.d_;
@@ -510,5 +515,30 @@ std::size_t worksheet::get_comment_count() const
 {
     return d_->comments_.size();
 }
+
+header_footer &worksheet::get_header_footer()
+{
+    return d_->header_footer_;
+}
+
+const header_footer &worksheet::get_header_footer() const
+{
+    return d_->header_footer_;
+}
+
+header_footer::header_footer()
+{
     
+}
+
+header::header() : font_size_(12)
+{
+    
+}
+
+footer::footer() : font_size_(12)
+{
+    
+}
+
 } // namespace xlnt

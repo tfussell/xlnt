@@ -33,6 +33,7 @@
 
 namespace xlnt {
 
+class document_properties;
 class drawing;
 class range;
 class range_reference;
@@ -40,7 +41,7 @@ class relationship;
 class worksheet;
 
 namespace detail {    
-struct workbook_impl;
+    struct workbook_impl;
 } // namespace detail
 
 struct content_type
@@ -61,8 +62,8 @@ public:
     workbook();
     ~workbook();
     
-    workbook &operator=(const workbook &) = delete;
-    workbook(const workbook &) = delete;
+    workbook &operator=(const workbook &);
+    workbook(const workbook &);
     
     //void read_workbook_settings(const std::string &xml_source);
     
@@ -142,7 +143,8 @@ public:
     
     std::vector<std::string> get_sheet_names() const;
     
-    int get_base_year() const;
+    document_properties &get_properties();
+    const document_properties &get_properties() const;
     
     //named ranges
     void create_named_range(const std::string &name, worksheet worksheet, const range_reference &reference);
@@ -158,6 +160,7 @@ public:
     bool load(const std::istream &stream);
     
     bool operator==(const workbook &rhs) const;
+    bool operator==(std::nullptr_t) const;
 
 	std::vector<content_type> get_content_types() const;
     
@@ -167,7 +170,7 @@ public:
     
 private:
     friend class worksheet;
-    std::unique_ptr<detail::workbook_impl> d_;
+    std::shared_ptr<detail::workbook_impl> d_;
 };
     
 } // namespace xlnt
