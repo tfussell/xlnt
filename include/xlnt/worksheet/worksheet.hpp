@@ -296,8 +296,8 @@ public:
     bool has_auto_filter() const;
     
     // comments
-    void add_comment(const comment &c);
-    void remove_comment(const comment &c);
+    void increment_comments();
+    void decrement_comments();
     std::size_t get_comment_count() const;
 
     void reserve(std::size_t n);

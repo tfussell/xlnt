@@ -171,7 +171,7 @@ cell worksheet::get_cell(const cell_reference &reference)
 {
     if(d_->cell_map_.find(reference.get_row_index()) == d_->cell_map_.end())
     {
-        d_->cell_map_[reference.get_row_index()] = std::unordered_map<int, detail::cell_impl>();
+        d_->cell_map_[reference.get_row_index()] = std::unordered_map<column_t, detail::cell_impl>();
     }
     
     auto &row = d_->cell_map_[reference.get_row_index()];
@@ -501,19 +501,19 @@ void worksheet::reserve(std::size_t n)
     d_->cell_map_.reserve(n);
 }
     
-void worksheet::add_comment(const xlnt::comment &c)
+void worksheet::increment_comments()
 {
-    d_->comments_.push_back(c);
+    d_->comment_count_++;
 }
 
-void worksheet::remove_comment(const xlnt::comment &c)
+void worksheet::decrement_comments()
 {
-    d_->comments_.pop_back();
+    d_->comment_count_--;
 }
 
 std::size_t worksheet::get_comment_count() const
 {
-    return d_->comments_.size();
+    return d_->comment_count_;
 }
 
 header_footer &worksheet::get_header_footer()

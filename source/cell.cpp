@@ -17,6 +17,44 @@ namespace xlnt {
 const xlnt::color xlnt::color::black(0);
 const xlnt::color xlnt::color::white(1);
 
+detail::comment_impl::comment_impl() : parent_worksheet_(nullptr)
+{
+}
+    
+detail::comment_impl::comment_impl(detail::worksheet_impl *ws, const cell_reference &ref, const std::string &text, const std::string &author) : parent_worksheet_(ws), parent_cell_(ref), text_(text), author_(author)
+{
+    
+}
+    
+comment::comment(const std::string &text, const std::string &author) : d_(new detail::comment_impl())
+{
+    d_->text_ = text;
+    d_->author_ = author;
+}
+
+comment::comment(detail::comment_impl *d) : d_(d)
+{
+}
+
+comment::~comment()
+{
+    if(d_->parent_worksheet_ == nullptr)
+    {
+        delete d_;
+        d_ = nullptr;
+    }
+}
+
+std::string comment::get_author() const
+{
+    return d_->author_;
+}
+
+std::string comment::get_text() const
+{
+    return d_->text_;
+}
+    
 const std::unordered_map<std::string, int> cell::ErrorCodes =
 {
     {"#NULL!", 0},
@@ -603,24 +641,62 @@ void cell::set_formula(const std::string &formula)
     d_->string_value = formula;
 }
 
-void cell::set_comment(const xlnt::comment &comment)
+void cell::set_comment(xlnt::comment &c)
 {
-    if(d_->comment_.get_value() == "")
+    if(c.d_->parent_worksheet_ != nullptr)
     {
-        get_parent().add_comment(comment);
+        if(c.d_->parent_cell_ != get_reference())
+        {
+            throw std::runtime_error("");
+        }
     }
-        
-    d_->comment_ = comment;
+    else
+    {
+        delete c.d_;
+    }
+    
+    if(d_->comment_.parent_worksheet_ == nullptr)
+    {
+        get_parent().increment_comments();
+    }
+    
+    d_->comment_.text_ = c.get_text();
+    d_->comment_.author_ = c.get_author();
+    d_->comment_.parent_worksheet_ = d_->parent_;
+    d_->comment_.parent_cell_ = get_reference();
+    
+    c.d_ = &d_->comment_;
+}
+
+void cell::set_comment(xlnt::comment &&c)
+{
+    if(c.d_->parent_worksheet_ != nullptr && c.d_->parent_cell_ != get_reference())
+    {
+        throw std::runtime_error("");
+    }
+    
+    if(d_->comment_.parent_worksheet_ == nullptr)
+    {
+        get_parent().increment_comments();
+    }
+    
+    d_->comment_.text_ = c.get_text();
+    d_->comment_.author_ = c.get_author();
+    d_->comment_.parent_worksheet_ = d_->parent_;
+    d_->comment_.parent_cell_ = get_reference();
 }
 
 void cell::clear_comment()
 {
-    if(d_->comment_.get_value() != "")
+    if(d_->comment_.parent_worksheet_ != nullptr)
     {
-        get_parent().remove_comment(d_->comment_);
+        get_parent().decrement_comments();
     }
     
-    d_->comment_ = comment("", "");
+    d_->comment_.parent_worksheet_ = nullptr;
+    d_->comment_.parent_cell_ = "A1";
+    d_->comment_.text_.clear();
+    d_->comment_.author_.clear();
 }
 
 void cell::set_error(const std::string &error)
@@ -646,7 +722,7 @@ worksheet cell::get_parent()
 
 comment cell::get_comment() const
 {
-    return d_->comment_;
+    return comment(&d_->comment_);
 }
 
 } // namespace xlnt

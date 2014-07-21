@@ -43,17 +43,21 @@ struct timedelta;
 
 namespace detail {    
 struct cell_impl;
+struct comment_impl;
 } // namespace detail
     
 class comment
 {
 public:
-    comment(const std::string &type, const std::string &value) : type_(type), value_(value) {}
-    std::string get_type() const { return type_; }
-    std::string get_value() const { return value_; }
+    comment(const std::string &text, const std::string &author);
+    ~comment();
+    std::string get_text() const;
+    std::string get_author() const;
+    
 private:
-    std::string type_;
-    std::string value_;
+    friend class cell;
+    comment(detail::comment_impl *d);
+    detail::comment_impl *d_;
 };
 
 /// <summary>
@@ -123,10 +127,9 @@ public:
     
     bool is_date() const;
     
-    //std::pair<int, int> get_anchor() const;
-    
     comment get_comment() const;
-    void set_comment(const comment &comment);
+    void set_comment(comment &comment);
+    void set_comment(comment &&comment);
     void clear_comment();
 
     std::string get_formula() const;

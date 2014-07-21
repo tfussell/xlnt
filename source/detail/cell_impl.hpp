@@ -3,6 +3,7 @@
 #include "cell/cell.hpp"
 #include "common/types.hpp"
 #include "common/relationship.hpp"
+#include "comment_impl.hpp"
 
 namespace xlnt {
 
@@ -30,7 +31,7 @@ struct cell_impl
     bool merged;
     bool is_date_;
     bool has_hyperlink_;
-    comment comment_;
+    comment_impl comment_;
 };
     
 } // namespace detail

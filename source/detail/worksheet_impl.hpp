@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "cell_impl.hpp"
+#include "comment_impl.hpp"
 
 namespace xlnt {
 
@@ -13,7 +14,7 @@ namespace detail {
 struct worksheet_impl
 {
     worksheet_impl(workbook *parent_workbook, const std::string &title)
-    : parent_(parent_workbook), title_(title), freeze_panes_("A1")
+    : parent_(parent_workbook), title_(title), freeze_panes_("A1"), comment_count_(0)
     {
         page_margins_.set_left(0.75);
         page_margins_.set_right(0.75);
@@ -47,20 +48,22 @@ struct worksheet_impl
         page_margins_ = other.page_margins_;
         merged_cells_ = other.merged_cells_;
         named_ranges_ = other.named_ranges_;
+        comment_count_ = other.comment_count_;
+        header_footer_ = other.header_footer_;
     }
     
     workbook *parent_;
     std::unordered_map<row_t, row_properties> row_properties_;
     std::string title_;
     cell_reference freeze_panes_;
-    std::unordered_map<int, std::unordered_map<int, cell_impl>> cell_map_;
+    std::unordered_map<row_t, std::unordered_map<column_t, cell_impl>> cell_map_;
     std::vector<relationship> relationships_;
     page_setup page_setup_;
     range_reference auto_filter_;
     margins page_margins_;
     std::vector<range_reference> merged_cells_;
     std::unordered_map<std::string, range_reference> named_ranges_;
-    std::vector<comment> comments_;
+    std::size_t comment_count_;
     header_footer header_footer_;
 };
 
