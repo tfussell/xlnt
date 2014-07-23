@@ -66,7 +66,129 @@ public:
         currency_eur_simple
     };
     
-    static const std::unordered_map<int, std::string> builtin_formats;
+    std::unordered_map<format, std::string> format_strings =
+    {
+        {format::general, "General"},
+        {format::text, "@"},
+    {format::number, "0"},
+    {format::number_00, "0.00"},
+    {format::NUMBER_COMMA_SEPARATED1, "#,##0.00"},
+    {format::NUMBER_COMMA_SEPARATED2, "#,##0.00_-"},
+    {format::PERCENTAGE, "0%"},
+    {format::PERCENTAGE_00, "0.00%"},
+    {format::DATE_YYYYMMDD2, "yyyy-mm-dd"},
+    {format::DATE_YYYYMMDD, "yy-mm-dd"},
+    {format::DATE_DDMMYYYY, "dd/mm/yy"},
+    {format::DATE_DMYSLASH, "d/m/y"},
+    {format::DATE_DMYMINUS, "d-m-y"},
+    {format::DATE_DMMINUS, "d-m"},
+    {format::DATE_MYMINUS, "m-y"},
+    {format::DATE_XLSX14, "mm-dd-yy"},
+    {format::DATE_XLSX15, "d-mmm-yy"},
+    {format::DATE_XLSX16, "d-mmm"},
+    {format::DATE_XLSX17, "mmm-yy"},
+    {format::DATE_XLSX22, "m/d/yy h:mm"},
+    {format::DATE_DATETIME, "d/m/y h:mm"},
+    {format::DATE_TIME1, "h:mm AM/PM"},
+    {format::DATE_TIME2, "h:mm:ss AM/PM"},
+    {format::DATE_TIME3, "h:mm"},
+    {format::DATE_TIME4, "h:mm:ss"},
+    {format::DATE_TIME5, "mm:ss"},
+    {format::DATE_TIME6, "h:mm:ss"},
+    {format::DATE_TIME7, "i:s.S"},
+    {format::DATE_TIME8, "h:mm:ss@"},
+    {format::DATE_TIMEDELTA, "[hh]:mm:ss"},
+    {format::DATE_YYYYMMDDSLASH, "yy/mm/dd@"},
+    {format::CURRENCY_USD_SIMPLE, "\"$\"#,##0.00_-"},
+    {format::CURRENCY_USD, "$#,##0_-"},
+        {format::CURRENCY_EUR_SIMPLE, "[$EUR ]#,##0.00_-"}
+    };
+    
+    static const std::unordered_map<int, std::string> builtin_formats =
+    {
+        {0, "General"},
+        {1, "0"},
+        {2, "0.00"},
+        {3, "#,##0"},
+        {4, "#,##0.00"},
+        {5, "\"$\"#,##0_);(\"$\"#,##0)"},
+        {6, "\"$\"#,##0_);[Red](\"$\"#,##0)"},
+        {7, "\"$\"#,##0.00_);(\"$\"#,##0.00)"},
+        {8, "\"$\"#,##0.00_);[Red](\"$\"#,##0.00)"},
+        {9, "0%"},
+        {10, "0.00%"},
+        {11, "0.00E+00"},
+        {12, "# ?/?"},
+        {13, "# ??/??"},
+        {14, "mm-dd-yy"},
+        {15, "d-mmm-yy"},
+        {16, "d-mmm"},
+        {17, "mmm-yy"},
+        {18, "h:mm AM/PM"},
+        {19, "h:mm:ss AM/PM"},
+        {20, "h:mm"},
+        {21, "h:mm:ss"},
+        {22, "m/d/yy h:mm"},
+
+        {37, "#,##0_);(#,##0)"},
+        {38, "#,##0_);[Red](#,##0)"},
+        {39, "#,##0.00_);(#,##0.00)"},
+        {40, "#,##0.00_);[Red](#,##0.00)"},
+        
+        {41, "_(* #,##0_);_(* \(#,##0\\);_(* \"-\"_);_(@_)"},
+        {42, "_(\"$\"* #,##0_);_(\"$\"* \\(#,##0\\);_(\"$\"* \"-\"_);_(@_)"},
+        {43, "_(* #,##0.00_);_(* \(#,##0.00\\);_(* \"-\"??_);_(@_)"},
+        
+        {44, "_(\"$\"* #,##0.00_)_(\"$\"* \(#,##0.00\\)_(\"$\"* \"-\"??_)_(@_)"},
+        {45, "mm:ss"},
+        {46, "[h]:mm:ss"},
+        {47, "mmss.0"},
+        {48, "##0.0E+0"},
+        {49, "@"}
+        };
+
+    static const std::unordered_map<std::string, int> reversed_builtin_formats =
+    {
+        {"General", 0},
+        {"0", 1},
+        {"0.00", 2},
+        {"#,##0", 3},
+        {"#,##0.00", 4},
+        {"\"$\"#,##0_);(\"$\"#,##0)", 5},
+        {"\"$\"#,##0_);[Red](\"$\"#,##0)", 6},
+        {"\"$\"#,##0.00_);(\"$\"#,##0.00)", 7},
+        {"\"$\"#,##0.00_);[Red](\"$\"#,##0.00)", 8},
+        {"0%", 9},
+        {"0.00%", 10},
+        {"0.00E+00", 11},
+        {"# ?/?", 12},
+        {"# ??/??", 13},
+        {"mm-dd-yy", 14},
+        {"d-mmm-yy", 15},
+        {"d-mmm", 16},
+        {"mmm-yy", 17},
+        {"h:mm AM/PM", 18},
+        {"h:mm:ss AM/PM", 19},
+        {"h:mm", 20},
+        {"h:mm:ss", 21},
+        {"m/d/yy h:mm", 22},
+        
+        {"#,##0_);(#,##0)", 37},
+        {"#,##0_);[Red](#,##0)", 38},
+        {"#,##0.00_);(#,##0.00)", 39},
+        {"#,##0.00_);[Red](#,##0.00)", 40},
+        
+        {"_(* #,##0_);_(* \(#,##0\\);_(* \"-\"_);_(@_)", 41},
+        {"_(\"$\"* #,##0_);_(\"$\"* \\(#,##0\\);_(\"$\"* \"-\"_);_(@_)", 42},
+        {"_(* #,##0.00_);_(* \(#,##0.00\\);_(* \"-\"??_);_(@_)", 43},
+        
+        {"_(\"$\"* #,##0.00_)_(\"$\"* \(#,##0.00\\)_(\"$\"* \"-\"??_)_(@_)", 44},
+        {"mm:ss", 45},
+        {"[h]:mm:ss", 46},
+        {"mmss.0", 47},
+        {"##0.0E+0", 48},
+        {"@", 49}
+    };
     
     static std::string builtin_format_code(int index);
     

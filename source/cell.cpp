@@ -650,10 +650,6 @@ void cell::set_comment(xlnt::comment &c)
             throw std::runtime_error("");
         }
     }
-    else
-    {
-        delete c.d_;
-    }
     
     if(d_->comment_.parent_worksheet_ == nullptr)
     {
@@ -665,6 +661,7 @@ void cell::set_comment(xlnt::comment &c)
     d_->comment_.parent_worksheet_ = d_->parent_;
     d_->comment_.parent_cell_ = get_reference();
     
+    //XXX: there's a memory leak here, not sure how to go about fixing it yet
     c.d_ = &d_->comment_;
 }
 
