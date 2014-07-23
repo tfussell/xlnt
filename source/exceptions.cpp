@@ -20,6 +20,12 @@ data_type_exception::data_type_exception()
 
 }
 
+named_range_exception::named_range_exception()
+    : std::runtime_error("named range not found or not owned by this worksheet")
+{
+
+}
+
 invalid_file_exception::invalid_file_exception(const std::string &filename)
     : std::runtime_error(std::string("couldn't open file: (") + filename + ")")
 {

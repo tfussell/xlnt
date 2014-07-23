@@ -78,7 +78,15 @@ cell_vector::const_iterator cell_vector::const_iterator::operator++(int)
 
 cell_vector::const_iterator &cell_vector::const_iterator::operator++()
 {
-    current_cell_.set_column_index(current_cell_.get_column_index() + 1);
+    if(order_ == major_order::row)
+    {
+        current_cell_.set_column_index(current_cell_.get_column_index() + 1);
+    }
+    else
+    {
+        current_cell_.set_row_index(current_cell_.get_row_index() + 1);
+    }
+
     return *this;
 }
 
@@ -90,36 +98,55 @@ const cell cell_vector::const_iterator::operator*()
 
 cell_vector::iterator cell_vector::begin()
 {
-    return iterator(ws_, ref_.get_top_left());
+  return iterator(ws_, ref_.get_top_left(), order_);
 }
 
 cell_vector::iterator cell_vector::end()
 {
+    if(order_ == major_order::row)
+    {
+        auto past_end = ref_.get_bottom_right();
+	past_end.set_column_index(past_end.get_column_index() + 1);
+	return iterator(ws_, past_end, order_);
+    }
+
     auto past_end = ref_.get_bottom_right();
-    past_end.set_column_index(past_end.get_column_index() + 1);
-    return iterator(ws_, past_end);
+    past_end.set_row_index(past_end.get_row_index() + 1);
+    return iterator(ws_, past_end, order_);
 }
 
 cell_vector::const_iterator cell_vector::cbegin() const
 {
-    return const_iterator(ws_, ref_.get_top_left());
+  return const_iterator(ws_, ref_.get_top_left(), order_);
 }
 
 cell_vector::const_iterator cell_vector::cend() const
 {
-    auto past_end = ref_.get_top_left();
-    past_end.set_column_index(past_end.get_column_index() + 1);
-    return const_iterator(ws_, past_end);
+    if(order_ == major_order::row)
+    {
+        auto past_end = ref_.get_bottom_right();
+	past_end.set_column_index(past_end.get_column_index() + 1);
+	return const_iterator(ws_, past_end, order_);
+    }
+
+    auto past_end = ref_.get_bottom_right();
+    past_end.set_row_index(past_end.get_row_index() + 1);
+    return const_iterator(ws_, past_end, order_);
 }
 
-cell cell_vector::operator[](std::size_t column_index)
+cell cell_vector::operator[](std::size_t cell_index)
 {
-    return get_cell(column_index);
+    return get_cell(cell_index);
 }
 
 std::size_t cell_vector::num_cells() const
 {
-    return ref_.get_width() + 1;
+    if(order_ == major_order::row)
+    {
+        return ref_.get_width() + 1;
+    }
+
+    return ref_.get_height() + 1;
 }
 
 cell_vector::cell_vector(worksheet ws, const range_reference &reference, major_order order)
@@ -131,18 +158,33 @@ cell_vector::cell_vector(worksheet ws, const range_reference &reference, major_o
 
 cell cell_vector::front()
 {
-    return get_cell(ref_.get_top_left().get_column_index());
+    if(order_ == major_order::row)
+    {
+        return get_cell(ref_.get_top_left().get_column_index());
+    }
+
+    return get_cell(ref_.get_top_left().get_row_index());
 }
 
 cell cell_vector::back()
 {
-    return get_cell(ref_.get_bottom_right().get_column_index());
+    if(order_ == major_order::row)
+    {
+        return get_cell(ref_.get_bottom_right().get_column_index());
+    }
+
+    return get_cell(ref_.get_top_left().get_row_index());
 }
 
-cell cell_vector::get_cell(std::size_t column_index)
+cell cell_vector::get_cell(std::size_t index)
 {
-    return ws_.get_cell(ref_.get_top_left().make_offset((int)column_index, 0));
-}
+    if(order_ == major_order::row)
+    {
+        return ws_.get_cell(ref_.get_top_left().make_offset((int)index, 0));
+    }
+ 
+    return ws_.get_cell(ref_.get_top_left().make_offset(0, index));
+  }
 
 range::range(worksheet ws, const range_reference &reference, major_order order)
     : ws_(ws),
@@ -179,14 +221,26 @@ std::size_t range::length() const
 bool range::operator==(const range &comparand) const
 {
     return ref_ == comparand.ref_
-        && ws_ == comparand.ws_;
+      && ws_ == comparand.ws_
+      && order_ == comparand.order_;
 }
 
 cell_vector range::get_vector(std::size_t vector_index)
 {
-    range_reference reference(ref_.get_top_left().get_column_index(), ref_.get_top_left().get_row_index() + (int)vector_index,
-        ref_.get_bottom_right().get_column_index(), ref_.get_top_left().get_row_index() + (int)vector_index);
-    return cell_vector(ws_, reference);
+    if(order_ == major_order::row)
+    {
+        range_reference reference(ref_.get_top_left().get_column_index(), 
+				  ref_.get_top_left().get_row_index() + (int)vector_index,
+				  ref_.get_bottom_right().get_column_index(), 
+				  ref_.get_top_left().get_row_index() + (int)vector_index);
+	return cell_vector(ws_, reference, order_);
+    }
+
+    range_reference reference(ref_.get_top_left().get_column_index() + (int)vector_index, 
+			      ref_.get_top_left().get_row_index(),
+			      ref_.get_top_left().get_column_index() + (int)vector_index, 
+			      ref_.get_bottom_right().get_row_index());
+    return cell_vector(ws_, reference, order_);
 }
 
 cell range::get_cell(const cell_reference &ref)
@@ -196,34 +250,66 @@ cell range::get_cell(const cell_reference &ref)
 
 range::iterator range::begin()
 {
-    cell_reference top_right(ref_.get_bottom_right().get_column_index(), 
-        ref_.get_top_left().get_row_index());
-    range_reference row_range(ref_.get_top_left(), top_right);
+    if(order_ == major_order::row)
+    {
+        cell_reference top_right(ref_.get_bottom_right().get_column_index(), 
+				 ref_.get_top_left().get_row_index());
+	range_reference row_range(ref_.get_top_left(), top_right);
+	return iterator(ws_, row_range, order_);
+    }
+    
+    cell_reference bottom_left(ref_.get_top_left().get_column_index(), 
+			     ref_.get_bottom_right().get_row_index());
+    range_reference row_range(ref_.get_top_left(), bottom_left);
     return iterator(ws_, row_range, order_);
 }
 
 range::iterator range::end()
 {
-    auto past_end_row_index = ref_.get_bottom_right().get_row_index() + 1;
-    cell_reference bottom_left(ref_.get_top_left().get_column_index(), past_end_row_index);
-    cell_reference bottom_right(ref_.get_bottom_right().get_column_index(), past_end_row_index);
-    return iterator(ws_, range_reference(bottom_left, bottom_right), order_);
+    if(order_ == major_order::row)
+    {
+        auto past_end_row_index = ref_.get_bottom_right().get_row_index() + 1;
+	cell_reference bottom_left(ref_.get_top_left().get_column_index(), past_end_row_index);
+	cell_reference bottom_right(ref_.get_bottom_right().get_column_index(), past_end_row_index);
+	return iterator(ws_, range_reference(bottom_left, bottom_right), order_);
+    }
+
+    auto past_end_column_index = ref_.get_bottom_right().get_column_index() + 1;
+    cell_reference top_right(past_end_column_index, ref_.get_top_left().get_row_index());
+    cell_reference bottom_right(past_end_column_index, ref_.get_bottom_right().get_row_index());
+    return iterator(ws_, range_reference(top_right, bottom_right), order_);
 }
 
 range::const_iterator range::cbegin() const
 {
-    cell_reference top_right(ref_.get_bottom_right().get_column_index(),
-        ref_.get_top_left().get_row_index());
-    range_reference row_range(ref_.get_top_left(), top_right);
+    if(order_ == major_order::row)
+    {
+        cell_reference top_right(ref_.get_bottom_right().get_column_index(), 
+				 ref_.get_top_left().get_row_index());
+	range_reference row_range(ref_.get_top_left(), top_right);
+	return const_iterator(ws_, row_range, order_);
+    }
+    
+    cell_reference bottom_left(ref_.get_top_left().get_column_index(), 
+			     ref_.get_bottom_right().get_row_index());
+    range_reference row_range(ref_.get_top_left(), bottom_left);
     return const_iterator(ws_, row_range, order_);
 }
 
 range::const_iterator range::cend() const
 {
-    auto past_end_row_index = ref_.get_bottom_right().get_row_index() + 1;
-    cell_reference bottom_left(ref_.get_top_left().get_column_index(), past_end_row_index);
-    cell_reference bottom_right(ref_.get_bottom_right().get_column_index(), past_end_row_index);
-    return const_iterator(ws_, range_reference(bottom_left, bottom_right), order_);
+    if(order_ == major_order::row)
+    {
+        auto past_end_row_index = ref_.get_bottom_right().get_row_index() + 1;
+	cell_reference bottom_left(ref_.get_top_left().get_column_index(), past_end_row_index);
+	cell_reference bottom_right(ref_.get_bottom_right().get_column_index(), past_end_row_index);
+	return const_iterator(ws_, range_reference(bottom_left, bottom_right), order_);
+    }
+
+    auto past_end_column_index = ref_.get_bottom_right().get_column_index() + 1;
+    cell_reference top_right(past_end_column_index, ref_.get_top_left().get_row_index());
+    cell_reference bottom_right(past_end_column_index, ref_.get_bottom_right().get_row_index());
+    return const_iterator(ws_, range_reference(top_right, bottom_right), order_);
 }
 
 range::iterator::iterator(worksheet ws, const range_reference &start_cell, major_order order = major_order::row)
@@ -241,7 +327,8 @@ range::iterator::~iterator()
 bool range::iterator::operator==(const iterator &rhs)
 {
     return ws_ == rhs.ws_
-        && current_cell_ == rhs.current_cell_;
+      && current_cell_ == rhs.current_cell_
+      && order_ == rhs.order_;
 }
 
 range::iterator range::iterator::operator++(int)
@@ -253,17 +340,34 @@ range::iterator range::iterator::operator++(int)
 
 range::iterator &range::iterator::operator++()
 {
-    current_cell_.set_row_index(current_cell_.get_row_index() + 1);
+    if(order_ == major_order::row)
+    {
+        current_cell_.set_row_index(current_cell_.get_row_index() + 1);
+    }
+    else
+    {
+        current_cell_.set_column_index(current_cell_.get_column_index() + 1);
+    }
+    
     return *this;
 }
 
 cell_vector range::iterator::operator*()
 {
-    range_reference reference(range_.get_top_left().get_column_index(),
-        current_cell_.get_row_index(),
-        range_.get_bottom_right().get_column_index(),
-        current_cell_.get_row_index());
-    return cell_vector(ws_, reference);
+    if(order_ == major_order::row)
+    {
+        range_reference reference(range_.get_top_left().get_column_index(),
+				  current_cell_.get_row_index(),
+				  range_.get_bottom_right().get_column_index(),
+				  current_cell_.get_row_index());
+	return cell_vector(ws_, reference, order_);
+    }
+
+    range_reference reference(current_cell_.get_column_index(),
+			      range_.get_top_left().get_row_index(),
+			      current_cell_.get_column_index(),
+			      range_.get_bottom_right().get_row_index());
+    return cell_vector(ws_, reference, order_);
 }
 
 range::const_iterator::const_iterator(worksheet ws, const range_reference &start_cell, major_order order = major_order::row)
@@ -281,7 +385,8 @@ range::const_iterator::~const_iterator()
 bool range::const_iterator::operator==(const const_iterator &rhs)
 {
     return ws_ == rhs.ws_
-        && rhs.current_cell_ == current_cell_;
+      && rhs.current_cell_ == current_cell_
+      && order_ == rhs.order_;
 }
 
 range::const_iterator range::const_iterator::operator++(int)
@@ -293,17 +398,34 @@ range::const_iterator range::const_iterator::operator++(int)
 
 range::const_iterator &range::const_iterator::operator++()
 {
-    current_cell_.set_column_index(current_cell_.get_column_index() + 1);
+    if(order_ == major_order::row)
+    {
+        current_cell_.set_row_index(current_cell_.get_row_index() + 1);
+    }
+    else
+    {
+        current_cell_.set_column_index(current_cell_.get_column_index() + 1);
+    }
+
     return *this;
 }
 
 const cell_vector range::const_iterator::operator*()
 {
-    range_reference reference(range_.get_top_left().get_column_index(),
-        current_cell_.get_row_index(),
-        range_.get_bottom_right().get_column_index(),
-        current_cell_.get_row_index());
-    return cell_vector(ws_, reference);
+    if(order_ == major_order::row)
+    {
+        range_reference reference(range_.get_top_left().get_column_index(),
+				  current_cell_.get_row_index(),
+				  range_.get_bottom_right().get_column_index(),
+				  current_cell_.get_row_index());
+	return cell_vector(ws_, reference, order_);
+    }
+
+    range_reference reference(current_cell_.get_column_index(),
+			      range_.get_top_left().get_row_index(),
+			      current_cell_.get_column_index(),
+			      range_.get_bottom_right().get_row_index());
+    return cell_vector(ws_, reference, order_);
 }
 
 } // namespace xlnt

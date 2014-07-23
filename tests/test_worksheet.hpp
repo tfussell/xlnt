@@ -83,7 +83,7 @@ public:
     void test_bad_named_range()
     {
         xlnt::worksheet ws(wb_);
-        TS_ASSERT_THROWS_ANYTHING(ws.get_range("bad_range"));
+        TS_ASSERT_THROWS(ws.get_named_range("bad_range"), xlnt::named_range_exception);
     }
 
     void test_named_range_wrong_sheet()

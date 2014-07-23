@@ -183,7 +183,7 @@ void read_worksheet_common(worksheet ws, const pugi::xml_node &root_node, const 
             throw std::runtime_error("mismatch between count and actual number of merged cells");
         }
     }
-    
+
     for(auto row_node : sheet_data_node.children("row"))
     {
         int row_index = row_node.attribute("r").as_int();
@@ -199,54 +199,77 @@ void read_worksheet_common(worksheet ws, const pugi::xml_node &root_node, const 
             
             if(cell_node != nullptr)
             {
-                if(cell_node.attribute("t") != nullptr && std::string(cell_node.attribute("t").as_string()) == "inlineStr") // inline string
+	        bool has_value = cell_node.child("v").text() != nullptr;
+	        std::string value = cell_node.child("v").text().as_string();
+
+	        bool has_type = cell_node.attribute("t") != nullptr;
+	        std::string type = cell_node.attribute("t").as_string();
+
+	        bool has_style = cell_node.attribute("s") != nullptr;
+	        std::string style = cell_node.attribute("s").as_string();
+
+                if(has_type && type == "inlineStr") // inline string
                 {
                     ws.get_cell(address) = cell_node.child("is").child("t").text().as_string();
                 }
-                else if(cell_node.attribute("t") != nullptr && std::string(cell_node.attribute("t").as_string()) == "s") // shared string
+                else if(has_type && type == "s") // shared string
                 {
                     ws.get_cell(address) = string_table.at(cell_node.child("v").text().as_int());
                 }
-                else if(cell_node.attribute("s") != nullptr)
+                else if(has_type && type == "b") // boolean
                 {
-                    auto style_index = cell_node.attribute("s").as_int();
-                    auto number_format_id = number_format_ids.at(style_index);
+		    ws.get_cell(address) = value != "0";
+                }
+                else if(has_style)
+                {
+                    auto number_format_id = number_format_ids.at(std::stoi(style));
 
                     if(number_format_id == 0) // integer
                     {
-                        ws.get_cell(address) = cell_node.child("v").text().as_int();
+		        ws.get_cell(address) = std::stoi(value);
                     }
                     else if(number_format_id == 14) // date
                     {
-                        ws.get_cell(address) = datetime::from_number(cell_node.child("v").text().as_double(), ws.get_parent().get_properties().excel_base_date);
+		        auto base_date = ws.get_parent().get_properties().excel_base_date;
+		        ws.get_cell(address) = datetime::from_number(std::stod(value), base_date);
+			ws.get_cell(address).get_style().get_number_format().set_format_code(number_format::format::date_xlsx14);
                     }
                     else if(number_format_id == 18) // time
                     {
-                        ws.get_cell(address) = time::from_number(cell_node.child("v").text().as_double());
+		        ws.get_cell(address) = time::from_number(std::stod(value));
                     }
                     else if(number_format_id == 22) // datetime
                     {
-                        ws.get_cell(address) = datetime::from_number(cell_node.child("v").text().as_double(), ws.get_parent().get_properties().excel_base_date);
+		        auto base_date = ws.get_parent().get_properties().excel_base_date;
+                        ws.get_cell(address) = datetime::from_number(std::stod(value), base_date);
                     }
                     else if(number_format_id == 14) // decimal
                     {
-                        ws.get_cell(address) = cell_node.child("v").text().as_double();
+		        ws.get_cell(address) = std::stod(value);
                     }
                     else if(number_format_id == 9) // percent
                     {
-                        ws.get_cell(address) = cell_node.child("v").text().as_double();
+		        ws.get_cell(address) = std::stod(value);
                     }
                     else
                     {
                         throw number_format_id;
                     }
                 }
-                else if(cell_node.child("v") != nullptr)
+                else if(has_value)
                 {
-                    ws.get_cell(address) = cell_node.child("v").text().as_string();
+		    ws.get_cell(address) = value;
                 }
             }
         }
+    }
+
+    auto auto_filter_node = root_node.child("autoFilter");
+
+    if(auto_filter_node != nullptr)
+    {
+        range_reference ref(auto_filter_node.attribute("ref").as_string());
+	ws.auto_filter(ref);
     }
 }
 
@@ -289,7 +312,7 @@ std::vector<std::string> reader::read_shared_string(const std::string &xml_strin
     return shared_strings;
 }
 
-workbook reader::load_workbook(const std::string &filename, bool guess_types)
+workbook reader::load_workbook(const std::string &filename, bool /*guess_types*/)
 {
     workbook wb;
     wb.load(filename);

@@ -203,7 +203,7 @@ range worksheet::get_named_range(const std::string &name)
 {
     if(!has_named_range(name))
     {
-        throw std::runtime_error("named range not found for this worksheet");
+        throw named_range_exception();
     }
     
     return get_range(d_->named_ranges_[name]);
@@ -413,7 +413,7 @@ void worksheet::append(const std::unordered_map<std::string, std::string> &cells
 
 void worksheet::append(const std::unordered_map<int, std::string> &cells)
 {
-	int row = get_highest_row() - 1;
+    int row = get_highest_row() - 1;
 
     if(d_->cell_map_.size() != 0)
     {
