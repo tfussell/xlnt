@@ -58,6 +58,41 @@ struct content_type
 class workbook
 {
 public:
+
+    class iterator
+    {
+    public:
+        iterator(workbook &wb, std::size_t index);
+        iterator(const iterator &);
+        iterator &operator=(const iterator &);
+        worksheet operator*();
+        bool operator==(const iterator &comparand) const;
+        bool operator!=(const iterator &comparand) const { return !(*this == comparand); }
+        iterator operator++(int);
+        iterator &operator++();
+
+    private:
+        workbook &wb_;
+        std::size_t index_;
+    };
+
+    class const_iterator
+    {
+    public:
+        const_iterator(const workbook &wb, std::size_t index);
+        const_iterator(const const_iterator &);
+        const_iterator &operator=(const const_iterator &);
+        const worksheet operator*();
+        bool operator==(const const_iterator &comparand) const;
+        bool operator!=(const const_iterator &comparand) const { return !(*this == comparand); }
+        const_iterator operator++(int);
+        const_iterator &operator++();
+
+    private:
+        const workbook &wb_;
+        std::size_t index_;
+    };
+
     //constructors
     workbook();
     
@@ -67,11 +102,13 @@ public:
     
     friend void swap(workbook &left, workbook &right);
 
-    //getters
     worksheet get_active_sheet();
-    bool get_optimized_write() const;
+
     bool get_guess_types() const;
+    void set_guess_types(bool guess);
+
     bool get_data_only() const;
+    void set_data_only(bool data_only);
     
     //create
     worksheet create_sheet();
@@ -98,42 +135,8 @@ public:
     worksheet operator[](const std::string &name);
     worksheet operator[](std::size_t index);
     
-    class iterator
-    {
-    public:
-        iterator(workbook &wb, std::size_t index);
-        iterator(const iterator &);
-        iterator &operator=(const iterator &);
-        worksheet operator*();
-        bool operator==(const iterator &comparand) const;
-        bool operator!=(const iterator &comparand) const { return !(*this == comparand); }
-        iterator operator++(int);
-        iterator &operator++();
-        
-    private:
-        workbook &wb_;
-        std::size_t index_;
-    };
-    
     iterator begin();
     iterator end();
-    
-    class const_iterator
-    {
-    public:
-        const_iterator(const workbook &wb, std::size_t index);
-        const_iterator(const const_iterator &);
-        const_iterator &operator=(const const_iterator &);
-        const worksheet operator*();
-        bool operator==(const const_iterator &comparand) const;
-        bool operator!=(const const_iterator &comparand) const { return !(*this == comparand); }
-        const_iterator operator++(int);
-        const_iterator &operator++();
-        
-    private:
-        const workbook &wb_;
-        std::size_t index_;
-    };
     
     const_iterator begin() const { return cbegin(); }
     const_iterator end() const { return cend(); }

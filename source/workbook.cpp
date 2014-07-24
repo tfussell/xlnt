@@ -44,10 +44,12 @@ static std::string CreateTemporaryFilename()
 
 namespace xlnt {
 namespace detail {
-workbook_impl::workbook_impl() : active_sheet_index_(0)
+
+workbook_impl::workbook_impl() : active_sheet_index_(0), guess_types_(false), data_only_(false)
 {
     
 }
+
 } // namespace detail
     
 workbook::workbook() : d_(new detail::workbook_impl())
@@ -295,7 +297,7 @@ bool workbook::load(const std::string &filename)
     
     clear();
     
-    auto workbook_relationships = reader::read_relationships(f.get_file_contents("xl/_rels/workbook.xml.rels"));
+    auto workbook_relationships = reader::read_relationships(f, "xl/workbook.xml");
 
     for(auto relationship : workbook_relationships)
     {
@@ -337,12 +339,21 @@ bool workbook::load(const std::string &filename)
     {
         std::string relation_id = sheet_node.attribute("r:id").as_string();
         auto ws = create_sheet(sheet_node.attribute("name").as_string());
-        std::string sheet_filename("xl/");
-        sheet_filename += get_relationship(relation_id).get_target_uri();
+        auto sheet_filename = get_relationship(relation_id).get_target_uri();
         xlnt::reader::read_worksheet(ws, f.get_file_contents(sheet_filename).c_str(), shared_strings, number_format_ids);
     }
 
     return true;
+}
+
+void workbook::set_guess_types(bool guess)
+{
+    d_->guess_types_ = guess;
+}
+
+bool workbook::get_guess_types() const
+{
+    return d_->guess_types_;
 }
 
 void workbook::create_relationship(const std::string &id, const std::string &target, relationship::type type)
@@ -587,6 +598,16 @@ workbook::workbook(const workbook &other) : workbook()
     {
         ws.set_parent(*this);
     }
+}
+
+bool workbook::get_data_only() const
+{
+    return d_->data_only_;
+}
+
+void workbook::set_data_only(bool data_only)
+{
+    d_->data_only_ = data_only;
 }
 
 }

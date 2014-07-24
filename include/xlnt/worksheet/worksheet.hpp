@@ -315,6 +315,8 @@ public:
     const header_footer &get_header_footer() const;
     
     void set_parent(workbook &wb);
+
+    std::vector<std::string> get_formula_attributes() const;
     
 private:
     friend class workbook;

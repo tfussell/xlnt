@@ -132,22 +132,37 @@ public:
     {
         xlnt::worksheet ws(wb_);
 
-        ws.get_cell("A1") = "";
+        ws.get_cell("A1").set_null();
         ws.get_cell("B2") = "0";
         ws.get_cell("C4") = 0;
+        ws.get_cell("D1").set_comment(xlnt::comment("Comment", "Comment"));
 
         ws.garbage_collect();
 
-        std::list<xlnt::cell> comparison_cells = {ws.get_cell("B2"), ws.get_cell("C4")};
+        auto cell_collection = ws.get_cell_collection();
+        std::set<xlnt::cell> cells(cell_collection.begin(), cell_collection.end());
+        std::set<xlnt::cell> expected = {ws.get_cell("B2"), ws.get_cell("C4"), ws.get_cell("D1")};
 
-        for(auto cell : ws.get_cell_collection())
+        // Set difference
+        std::set<xlnt::cell> difference;
+
+        for(auto a : expected)
         {
-            auto match = std::find(comparison_cells.begin(), comparison_cells.end(), cell);
-            TS_ASSERT_DIFFERS(match, comparison_cells.end());
-            comparison_cells.erase(match);
+            if(cells.find(a) == cells.end())
+            {
+                difference.insert(a);
+            }
         }
 
-        TS_ASSERT(comparison_cells.empty());
+        for(auto a : cells)
+        {
+            if(expected.find(a) == expected.end())
+            {
+                difference.insert(a);
+            }
+        }
+
+        TS_ASSERT(difference.empty());
     }
 
     void test_hyperlink_relationships()

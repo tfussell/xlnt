@@ -99,23 +99,30 @@ workbook &worksheet::get_parent() const
 void worksheet::garbage_collect()
 {
     auto cell_map_iter = d_->cell_map_.begin();
+
     while(cell_map_iter != d_->cell_map_.end())
     {
         auto cell_iter = cell_map_iter->second.begin();
+
         while(cell_iter != cell_map_iter->second.end())
         {
-            if(cell(&cell_iter->second).get_data_type() == cell::type::null)
+            cell current_cell(&cell_iter->second);
+
+            if(current_cell.get_data_type() == cell::type::null && !current_cell.has_comment())
             {
                 cell_iter = cell_map_iter->second.erase(cell_iter);
                 continue;
             }
+
             cell_iter++;
         }
+
         if(cell_map_iter->second.empty())
         {
             cell_map_iter = d_->cell_map_.erase(cell_map_iter);
             continue;
         }
+
         cell_map_iter++;
     }
 }
@@ -544,6 +551,11 @@ footer::footer() : default_(true), font_size_(12)
 void worksheet::set_parent(xlnt::workbook &wb)
 {
     d_->parent_ = &wb;
+}
+
+std::vector<std::string> worksheet::get_formula_attributes() const
+{
+    return {};
 }
 
 } // namespace xlnt

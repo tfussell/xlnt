@@ -186,17 +186,14 @@ public:
     
     void test_repair_central_directory()
     {
-        TS_SKIP("repair not yet implemented");
-        /*
-        std::string data_a = "foobarbaz" + xlnt::CentralDirectorySignature;
+        std::string data_a = "foobarbaz" + xlnt::reader::CentralDirectorySignature;
         std::string data_b = "bazbarfoo12345678901234567890";
         
-        auto f = xlnt::repair_central_directory(data_a + data_b, true);
+        auto f = xlnt::reader::repair_central_directory(data_a + data_b);
         TS_ASSERT_EQUALS(f, data_a + data_b.substr(0, 18));
         
-        f = xlnt::repair_central_directory(data_b, true);
+        f = xlnt::reader::repair_central_directory(data_b);
         TS_ASSERT_EQUALS(f, data_b);
-        */
     }
     
     void test_read_no_theme()
@@ -208,8 +205,6 @@ public:
     
     void test_read_cell_formulae()
     {
-        TS_SKIP("fast parse not yet implemented");
-        /*
         xlnt::workbook wb;
         auto ws = wb.get_active_sheet();
         auto path = PathHelper::GetDataDirectory("/reader/worksheet_formula.xml");
@@ -217,33 +212,171 @@ public:
         xlnt::reader::fast_parse(ws, ws_stream, {"", ""}, {}, 0);
         
         auto b1 = ws.get_cell("B1");
-        TS_ASSERT_EQUALS(b1.get_data_type(), xlnt::cell::type::formula);
-        TS_ASSERT_EQUALS(b1, "=CONCATENATE(A1, A2)");
+        TS_ASSERT(b1.has_formula());
+        TS_ASSERT_EQUALS(b1.get_formula(), "CONCATENATE(A1,A2)");
         
         auto a6 = ws.get_cell("A6");
-        TS_ASSERT_EQUALS(a6.get_data_type(), xlnt::cell::type::formula);
-        TS_ASSERT_EQUALS(a6, "=SUM(A4:A5)");
-         */
+        TS_ASSERT(a6.has_formula());
+        TS_ASSERT_EQUALS(a6.get_formula(), "SUM(A4:A5)");
     }
     
     void test_read_complex_formulae()
     {
-        TS_SKIP("complex formulae not yet implemented");
+        TS_SKIP("not yet implemented");
+
+        /*
+        auto path = PathHelper::GetDataDirectory("/reader/formulae.xlsx");
+        auto wb = xlnt::reader::load_workbook(path);
+        auto ws = wb.get_active_sheet();
+
+        // Test normal forumlae
+        TS_ASSERT(!ws.get_cell("A1").has_formula());
+        TS_ASSERT(!ws.get_cell("A2").has_formula());
+        TS_ASSERT(ws.get_cell("A3").has_formula());
+        TS_ASSERT(ws.get_formula_attributes().find("A3") == ws.get_formula_attributes().end());
+        TS_ASSERT(ws.get_cell("A3").get_formula() == "12345");
+        TS_ASSERT(ws.get_cell("A4").has_formula());
+        TS_ASSERT(ws.get_formula_attributes().find("A3") == ws.get_formula_attributes().end());
+        ws.get_cell("A4").set_formula("A2+A3");
+        TS_ASSERT(ws.get_cell("A5").has_formula());
+        TS_ASSERT(ws.get_formula_attributes().find("A5") == ws.get_formula_attributes().end());
+        ws.get_cell("A5").set_formula("SUM(A2:A4)");
+
+        // Test unicode
+        std::string expected = "=IF(ISBLANK(B16), \"D\xFCsseldorf\", B16)";
+        TS_ASSERT(ws.get_cell("A16").get_formula() == expected);
+
+        // Test shared forumlae
+        TS_ASSERT(ws.get_cell("B7").get_data_type() == "f");
+        TS_ASSERT(ws.formula_attributes["B7"]["t"] == "shared");
+        TS_ASSERT(ws.formula_attributes["B7"]["si"] == "0");
+        TS_ASSERT(ws.formula_attributes["B7"]["ref"] == "B7:E7");
+        TS_ASSERT(ws.get_cell("B7").value == "=B4*2");
+        TS_ASSERT(ws.get_cell("C7").get_data_type() == "f");
+        TS_ASSERT(ws.formula_attributes["C7"]["t"] == "shared");
+        TS_ASSERT(ws.formula_attributes["C7"]["si"] == "0");
+        TS_ASSERT("ref" not in ws.formula_attributes["C7"]);
+        TS_ASSERT(ws.get_cell("C7").value == "=");
+        TS_ASSERT(ws.get_cell("D7").get_data_type() == "f");
+        TS_ASSERT(ws.formula_attributes["D7"]["t"] == "shared");
+        TS_ASSERT(ws.formula_attributes["D7"]["si"] == "0");
+        TS_ASSERT("ref" not in ws.formula_attributes["D7"]);
+        TS_ASSERT(ws.get_cell("D7").value == "=");
+        TS_ASSERT(ws.get_cell("E7").get_data_type() == "f");
+        TS_ASSERT(ws.formula_attributes["E7"]["t"] == "shared");
+        TS_ASSERT(ws.formula_attributes["E7"]["si"] == "0");
+        TS_ASSERT("ref" not in ws.formula_attributes["E7"]);
+        TS_ASSERT(ws.get_cell("E7").value == "=");
+
+        // Test array forumlae
+        TS_ASSERT(ws.get_cell("C10").get_data_type() == "f");
+        TS_ASSERT("ref" not in ws.formula_attributes["C10"]["ref"]);
+        TS_ASSERT(ws.formula_attributes["C10"]["t"] == "array");
+        TS_ASSERT("si" not in ws.formula_attributes["C10"]);
+        TS_ASSERT(ws.formula_attributes["C10"]["ref"] == "C10:C14");
+        TS_ASSERT(ws.get_cell("C10").value == "=SUM(A10:A14*B10:B14)");
+        TS_ASSERT(ws.get_cell("C11").get_data_type() != "f");
+        */
     }
     
     void test_data_only()
     {
-        TS_SKIP("data only not yet implemented");
+        auto path = PathHelper::GetDataDirectory("/reader/formulae.xlsx");
+        auto wb = xlnt::reader::load_workbook(path, false, true);
+        auto ws = wb.get_active_sheet();
+
+        TS_ASSERT(ws.get_formula_attributes().empty());
+        TS_ASSERT(ws.get_parent().get_data_only());
+        TS_ASSERT(ws.get_cell("A2").get_data_type() == xlnt::cell::type::numeric);
+        TS_ASSERT(ws.get_cell("A2") == 12345);
+        TS_ASSERT(!ws.get_cell("A2").has_formula());
+        TS_ASSERT(ws.get_cell("A3").get_data_type() == xlnt::cell::type::numeric);
+        TS_ASSERT(ws.get_cell("A3") == 12345);
+        TS_ASSERT(!ws.get_cell("A3").has_formula());
+        TS_ASSERT(ws.get_cell("A4").get_data_type() == xlnt::cell::type::numeric);
+        TS_ASSERT(ws.get_cell("A4") == 24690);
+        TS_ASSERT(!ws.get_cell("A4").has_formula());
+        TS_ASSERT(ws.get_cell("A5").get_data_type() == xlnt::cell::type::numeric);
+        TS_ASSERT(ws.get_cell("A5") == 49380);
+        TS_ASSERT(!ws.get_cell("A5").has_formula());
     }
     
     void test_detect_worksheets()
     {
-        TS_SKIP("detect worksheets not yet implemented");
+        {
+            auto path = PathHelper::GetDataDirectory("/reader/bug137.xlsx");
+            xlnt::zip_file archive(path, xlnt::file_mode::open);
+            std::vector<std::pair<std::string, std::string>> expected =
+            {
+                {"xl/worksheets/sheet1.xml", "Sheet1"}
+            };
+            TS_ASSERT_EQUALS(xlnt::reader::detect_worksheets(archive), expected);
+        }
+
+        {
+            auto path = PathHelper::GetDataDirectory("/reader/contains_chartsheets.xlsx");
+            xlnt::zip_file archive(path, xlnt::file_mode::open);
+
+            std::vector<std::pair<std::string, std::string>> expected =
+            {
+                {"xl/worksheets/sheet1.xml", "data"},
+                {"xl/worksheets/sheet2.xml", "moredata"}
+            };
+
+            TS_ASSERT_EQUALS(xlnt::reader::detect_worksheets(archive), expected);
+        }
+
+        {
+            auto path = PathHelper::GetDataDirectory("/reader/bug304.xlsx");
+            xlnt::zip_file archive(path, xlnt::file_mode::open);
+
+            std::vector<std::pair<std::string, std::string>> expected =
+            {
+                {"xl/worksheets/sheet3.xml", "Sheet1"},
+                {"xl/worksheets/sheet2.xml", "Sheet2"},
+                {"xl/worksheets/sheet.xml", "Sheet3"}
+            };
+
+            TS_ASSERT_EQUALS(xlnt::reader::detect_worksheets(archive), expected);
+        }
     }
     
     void test_read_rels()
     {
-        TS_SKIP("not yet implemented");
+        {
+            std::vector<xlnt::relationship> expected =
+            {
+                {xlnt::relationship::type::theme, "rId3", "xl/theme/theme1.xml"},
+                {xlnt::relationship::type::worksheet, "rId2", "xl/worksheets/sheet1.xml"},
+                {xlnt::relationship::type::chartsheet, "rId1", "xl/chartsheets/sheet1.xml"},
+                {xlnt::relationship::type::shared_strings, "rId5", "xl/sharedStrings.xml"},
+                {xlnt::relationship::type::styles, "rId4", "xl/styles.xml"}
+            };
+
+            auto path = PathHelper::GetDataDirectory("/reader/bug137.xlsx");
+            xlnt::zip_file archive(path, xlnt::file_mode::open);
+
+            TS_ASSERT_EQUALS(xlnt::reader::read_relationships(archive, "xl/workbook.xml"), expected);
+        }
+
+        {
+            std::vector<xlnt::relationship> expected =
+            {
+                {xlnt::relationship::type::custom_xml, "rId8", "../customXml/item3.xml"},
+                {xlnt::relationship::type::worksheet, "rId3", "xl/worksheets/sheet.xml"},
+                {xlnt::relationship::type::custom_xml, "rId7", "../customXml/item2.xml"},
+                {xlnt::relationship::type::worksheet, "rId2", "xl/worksheets/sheet2.xml"},
+                {xlnt::relationship::type::worksheet, "rId1", "xl/worksheets/sheet3.xml"},
+                {xlnt::relationship::type::custom_xml, "rId6", "../customXml/item1.xml"},
+                {xlnt::relationship::type::styles, "rId5", "xl/styles.xml"},
+                {xlnt::relationship::type::theme, "rId4", "xl/theme/theme.xml"}
+            };
+
+            auto path = PathHelper::GetDataDirectory("/reader/bug304.xlsx");
+            xlnt::zip_file archive(path, xlnt::file_mode::open);
+
+            TS_ASSERT_EQUALS(xlnt::reader::read_relationships(archive, "xl/workbook.xml"), expected);
+        }
     }
     
     void test_read_content_types()
@@ -305,7 +438,6 @@ public:
     
     void test_guess_types()
     {
-        TS_SKIP("type guessing not yet implemented");
         bool guess;
         xlnt::cell::type dtype;
         std::vector<std::pair<bool, xlnt::cell::type>> test_cases = {{true, xlnt::cell::type::numeric}, {false, xlnt::cell::type::string}};

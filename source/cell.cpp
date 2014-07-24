@@ -91,8 +91,6 @@ std::string cell::get_internal_value_string() const
     {
     case type::string:
         return d_->string_value;
-    case type::formula:
-        return d_->string_value;
     case type::error:
         return d_->string_value;
     default:
@@ -147,11 +145,7 @@ cell::type cell::data_type_for_value(const std::string &value)
         return type::null;
     }
     
-    if(value[0] == '=')
-    {
-        return type::formula;
-    }
-    else if(value[0] == '0')
+    if(value[0] == '0')
     {
         if(value.length() > 1)
         {
@@ -225,24 +219,32 @@ void cell::set_explicit_value(const std::string &value, type data_type)
 
     switch(data_type)
     {
-        case type::null:
-	  if(value != "")
-	    {
-	      throw data_type_exception();
-	    }
-	  return;
-        case type::formula: 
-	  if(value.length() == 0 || value[0] != '=')
-	    {
-	      throw data_type_exception();
-	    }
-	  d_->string_value = value; 
-	  return;
-        case type::error: d_->string_value = value; return;
-        case type::boolean: d_->numeric_value = value == "true"; return;
-        case type::numeric: d_->numeric_value = std::stod(value); return;
-        case type::string: d_->string_value = value; return;
-        default: throw std::runtime_error("bad enum");
+        /*
+    case type::null:
+        if(value != "")
+        {
+            throw data_type_exception();
+        }
+        return;
+    case type::error: d_->string_value = value; return;
+    case type::boolean:
+        d_->numeric_value = value == "true"; 
+        return;
+    case type::numeric: 
+        try
+        {
+            d_->numeric_value = std::stod(value);
+        }
+        catch(std::invalid_argument)
+        {
+            throw data_type_exception();
+        }
+        return;
+        */
+    case type::string: 
+        d_->string_value = value; 
+        return;
+    default: throw data_type_exception();
     }
 }
 
@@ -253,7 +255,7 @@ void cell::set_explicit_value(int value, type data_type)
     switch(data_type)
     {
         case type::numeric: d_->numeric_value = value; return;
-        case type::string: d_->string_value = std::to_string(value); return;
+        //case type::string: d_->string_value = std::to_string(value); return;
         default: throw data_type_exception();
     }
 }
@@ -265,7 +267,7 @@ void cell::set_explicit_value(double value, type data_type)
     switch(data_type)
     {
         case type::numeric: d_->numeric_value = value; return;
-        case type::string: d_->string_value = std::to_string(value); return;
+        //case type::string: d_->string_value = std::to_string(value); return;
         default: throw data_type_exception();
     }
 }
@@ -297,7 +299,7 @@ bool cell::operator==(std::nullptr_t) const
 
 bool cell::operator==(bool value) const
 {
-    return d_->type_ == type::boolean && (bool)d_->numeric_value == value;
+    return d_->type_ == type::boolean && (d_->numeric_value != 0) == value;
 }
 
 bool cell::operator==(int comparand) const
@@ -312,10 +314,11 @@ bool cell::operator==(double comparand) const
 
 bool cell::operator==(const std::string &comparand) const
 {
-    if(d_->type_ == type::string || d_->type_ == type::formula)
+    if(d_->type_ == type::string)
     {
         return d_->string_value == comparand;
     }
+
     return false;
 }
 
@@ -375,8 +378,6 @@ bool cell::operator==(const cell &comparand) const
     case type::error:
         return d_->string_value == comparand.d_->string_value;
     case type::string:
-        return d_->string_value == comparand.d_->string_value;
-    case type::formula:
         return d_->string_value == comparand.d_->string_value;
     case type::null:
         return true;
@@ -505,32 +506,41 @@ cell &cell::operator=(bool value)
     return *this;
 }
 
+bool operator<(cell left, cell right)
+{
+    return left.get_reference() < right.get_reference();
+}
 
 cell &cell::operator=(const std::string &value)
 {
-    d_->is_date_ = false;
-    d_->type_ = data_type_for_value(value);
-    
-    switch((type)d_->type_)
+    if(!get_parent().get_parent().get_guess_types())
     {
-        case type::formula:
-            d_->string_value = value;
-            break;
-        case type::numeric:
-	  if(value.find(':') != std::string::npos)
-	    {
-	      d_->is_date_ = true;
-	      d_->numeric_value = time(value).to_number();
-	    }
-	  else if(value.back() == '%')
-	    {
-            d_->numeric_value = std::stod(value.substr(0, value.length() - 1)) / 100;
-            get_style().get_number_format().set_format_code(xlnt::number_format::format::percentage);
-        }
-        else
+        d_->is_date_ = false;
+        d_->type_ = type::string;
+        d_->string_value = value;
+    }
+    else
+    {
+        d_->is_date_ = false;
+        d_->type_ = data_type_for_value(value);
+
+        switch(d_->type_)
         {
-	      d_->numeric_value = std::stod(value);
-	    }
+        case type::numeric:
+            if(value.find(':') != std::string::npos)
+            {
+                d_->is_date_ = true;
+                d_->numeric_value = time(value).to_number();
+            }
+            else if(value.back() == '%')
+            {
+                d_->numeric_value = std::stod(value.substr(0, value.length() - 1)) / 100;
+                get_style().get_number_format().set_format_code(xlnt::number_format::format::percentage);
+            }
+            else
+            {
+                d_->numeric_value = std::stod(value);
+            }
             break;
         case type::boolean:
             d_->numeric_value = value == "TRUE" || value == "true";
@@ -543,8 +553,8 @@ cell &cell::operator=(const std::string &value)
             break;
         case type::null:
             break;
-        default:
-            throw std::runtime_error("bad enum");
+        default: throw data_type_exception();
+        }
     }
     
     return *this;
@@ -632,13 +642,32 @@ void cell::set_null()
 
 void cell::set_formula(const std::string &formula)
 {
-    if(formula.length() == 0 || formula[0] != '=')
+    if(formula.length() == 0)
     {
         throw data_type_exception();
     }
 
-    d_->type_ = type::formula;
-    d_->string_value = formula;
+    d_->formula_value = formula;
+}
+
+bool cell::has_formula() const
+{
+    return !d_->formula_value.empty();
+}
+
+std::string cell::get_formula() const
+{
+    if(d_->formula_value.empty())
+    {
+        throw data_type_exception();
+    }
+
+    return d_->formula_value;
+}
+
+void cell::clear_formula()
+{
+    d_->formula_value.clear();
 }
 
 void cell::set_comment(xlnt::comment &c)
@@ -694,6 +723,11 @@ void cell::clear_comment()
     d_->comment_.parent_cell_ = "A1";
     d_->comment_.text_.clear();
     d_->comment_.author_.clear();
+}
+
+bool cell::has_comment() const
+{
+    return d_->comment_.parent_worksheet_ != nullptr;
 }
 
 void cell::set_error(const std::string &error)

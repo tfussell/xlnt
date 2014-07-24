@@ -183,7 +183,7 @@ cell cell_vector::get_cell(std::size_t index)
         return ws_.get_cell(ref_.get_top_left().make_offset((int)index, 0));
     }
  
-    return ws_.get_cell(ref_.get_top_left().make_offset(0, index));
+    return ws_.get_cell(ref_.get_top_left().make_offset(0, (int)index));
   }
 
 range::range(worksheet ws, const range_reference &reference, major_order order)

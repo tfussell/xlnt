@@ -77,7 +77,6 @@ public:
         null,
         numeric,
         string,
-        formula,
         boolean,
         error
     };
@@ -97,7 +96,7 @@ public:
     std::string get_column() const;
     row_t get_row() const;
     
-    std::string to_string() const;
+    std::string to_string() const;   
     
     void set_explicit_value(const std::string &value, type data_type);
     void set_explicit_value(int value, type data_type);
@@ -131,9 +130,12 @@ public:
     void set_comment(comment &comment);
     void set_comment(comment &&comment);
     void clear_comment();
+    bool has_comment() const;
 
     std::string get_formula() const;
     void set_formula(const std::string &formula);
+    void clear_formula();
+    bool has_formula() const;
 
     std::string get_error() const;
     void set_error(const std::string &error);
@@ -179,6 +181,8 @@ public:
     friend bool operator==(const date &comparand, const cell &cell);
     friend bool operator==(const time &comparand, const cell &cell);
     friend bool operator==(const datetime &comparand, const cell &cell);
+
+    friend bool operator<(cell left, cell right);
     
 private:
     friend class worksheet;

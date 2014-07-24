@@ -101,6 +101,8 @@ public:
     bool operator!=(const std::string &reference_string) const { return *this != cell_reference(reference_string); }
     bool operator!=(const char *reference_string) const { return *this != std::string(reference_string); }
 
+    friend bool operator<(const cell_reference &left, const cell_reference &right);
+
 private:
     column_t column_index_;
     row_t row_index_;

@@ -100,7 +100,7 @@ public:
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1", "17.5");
 
-        TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
+        TS_ASSERT_EQUALS(xlnt::cell::type::string, cell.get_data_type());
     }
 
     void test_1st()
@@ -122,6 +122,8 @@ public:
 
     void test_numeric()
     {
+        xlnt::workbook wb_guess_types;
+        wb.set_guess_types(true);
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
 
@@ -183,10 +185,12 @@ public:
     {
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
-        cell = "=42";
-        TS_ASSERT_EQUALS(xlnt::cell::type::formula, cell.get_data_type());
-        cell = "=if(A1<4;-1;1)";
-        TS_ASSERT_EQUALS(xlnt::cell::type::formula, cell.get_data_type());
+        cell.set_formula("42");
+        TS_ASSERT(cell.has_formula());
+        cell.clear_formula();
+        TS_ASSERT(!cell.has_formula());
+        cell.set_formula("if(A1<4;-1;1)");
+        TS_ASSERT(cell.has_formula());
     }
 
     void test_boolean()
@@ -310,16 +314,12 @@ public:
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
 
-        TS_ASSERT_THROWS(cell.set_explicit_value("1", xlnt::cell::type::formula),
-	    xlnt::data_type_exception);
-        TS_ASSERT_THROWS(cell.set_explicit_value(1, xlnt::cell::type::formula),
-	    xlnt::data_type_exception);
-        TS_ASSERT_THROWS(cell.set_explicit_value(1.0, xlnt::cell::type::formula),
-	    xlnt::data_type_exception);
-        TS_ASSERT_THROWS(cell.set_formula("1"), xlnt::data_type_exception);
+        TS_ASSERT_THROWS(cell.set_explicit_value("ABC", xlnt::cell::type::numeric), xlnt::data_type_exception);
+        TS_ASSERT_THROWS(cell.set_explicit_value(1, xlnt::cell::type::string), xlnt::data_type_exception);
+        TS_ASSERT_THROWS(cell.set_explicit_value(1.0, xlnt::cell::type::error), xlnt::data_type_exception);
+        TS_ASSERT_THROWS(cell.set_explicit_value("3", xlnt::cell::type::boolean), xlnt::data_type_exception);
         TS_ASSERT_THROWS(cell.set_error("1"), xlnt::data_type_exception);
         TS_ASSERT_THROWS(cell.set_hyperlink("1"), xlnt::data_type_exception);
-        TS_ASSERT_THROWS(cell.set_formula("#REF!"), xlnt::data_type_exception);
     }
 
 

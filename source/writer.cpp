@@ -313,7 +313,7 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
             min = std::min(min, cell_reference::column_index_from_string(cell.get_column()));
             max = std::max(max, cell_reference::column_index_from_string(cell.get_column()));
             
-            if(cell.get_data_type() != cell::type::null)
+            if(cell.get_data_type() != cell::type::null || cell.is_merged() || cell.has_comment() || cell.has_formula())
             {
                 any_non_null = true;
             }
@@ -345,7 +345,7 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
         
         for(auto cell : row)
         {
-            if(cell.get_data_type() != cell::type::null || cell.is_merged())
+            if(cell.get_data_type() != cell::type::null || cell.is_merged() || cell.has_comment() || cell.has_formula())
             {
                 if(cell.has_hyperlink())
                 {
@@ -357,6 +357,14 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
                 
                 if(cell.get_data_type() == cell::type::string)
                 {
+                    if(cell.has_formula())
+                    {
+                        cell_node.append_attribute("t").set_value("str");
+                        cell_node.append_child("f").text().set(cell.get_formula().c_str());
+                        cell_node.append_child("v").text().set(cell.get_internal_value_string().c_str());
+                        continue;
+                    }
+
                     int match_index = -1;
                     for(int i = 0; i < (int)string_table.size(); i++)
                     {
@@ -392,6 +400,13 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
                         }
                         else if(cell.get_data_type() == cell::type::numeric)
                         {
+                            if(cell.has_formula())
+                            {
+                                cell_node.append_child("f").text().set(cell.get_formula().c_str());
+                                cell_node.append_child("v").text().set(std::to_string(cell.get_internal_value_numeric()).c_str());
+                                continue;
+                            }
+
                             cell_node.append_attribute("t").set_value("n");
                             auto value_node = cell_node.append_child("v");
                             if(std::floor(cell.get_internal_value_numeric()) == cell.get_internal_value_numeric())
@@ -403,11 +418,12 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
                                 value_node.text().set((double)cell.get_internal_value_numeric());
                             }
                         }
-                        else if(cell.get_data_type() == cell::type::formula)
-                        {
-                            cell_node.append_child("f").text().set(cell.get_internal_value_string().substr(1).c_str());
-                            cell_node.append_child("v");
-                        }
+                    }
+                    else if(cell.has_formula())
+                    {
+                        cell_node.append_child("f").text().set(cell.get_formula().c_str());
+                        cell_node.append_child("v");
+                        continue;
                     }
                 }
                 

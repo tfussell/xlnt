@@ -201,5 +201,15 @@ std::string cell_reference::column_string_from_index(column_t column_index)
     
     return column_letter;
 }
+
+bool operator<(const cell_reference &left, const cell_reference &right)
+{
+    if(left.row_index_ != right.row_index_)
+    {
+        return left.row_index_ < right.row_index_;
+    }
+
+    return left.column_index_ < right.column_index_;
+}
     
 }

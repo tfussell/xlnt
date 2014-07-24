@@ -86,16 +86,18 @@ public:
 		auto ws = wb_.create_sheet();
         ws.get_cell("F1") = 10;
         ws.get_cell("F2") = 32;
-        ws.get_cell("F3") = "=F1+F2";
+        ws.get_cell("F3").set_formula("F1+F2");
         auto content = xlnt::writer::write_worksheet(ws, {}, {});
         TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_formula.xml", content));
     }
 
     void test_write_style()
     {
-		auto ws = wb_.create_sheet();
+        xlnt::workbook wb_guess_types;
+        wb_guess_types.set_guess_types(true);
+		auto ws = wb_guess_types.create_sheet();
         ws.get_cell("F1") = "13%";
-		auto style_id_by_hash = xlnt::style_writer(wb_).get_style_by_hash();
+		auto style_id_by_hash = xlnt::style_writer(wb_guess_types).get_style_by_hash();
         auto content = xlnt::writer::write_worksheet(ws, {}, style_id_by_hash);
         TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_style.xml", content));
     }

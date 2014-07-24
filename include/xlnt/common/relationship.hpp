@@ -54,12 +54,14 @@ public:
         hyperlink,
         drawing,
         worksheet,
+        chartsheet,
         shared_strings,
         styles,
         theme,
         extended_properties,
         core_properties,
-        office_document
+        office_document,
+        custom_xml
     };
     
     static type type_from_string(const std::string &type_string)
@@ -96,6 +98,14 @@ public:
         {
             return type::hyperlink;
         }
+        else if(type_string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/chartsheet")
+        {
+            return type::chartsheet;
+        }
+        else if(type_string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml")
+        {
+            return type::custom_xml;
+        }
         
         return type::invalid;
     }
@@ -112,6 +122,8 @@ public:
             case type::styles: return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles";
             case type::theme: return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme";
             case type::hyperlink: return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";
+            case type::chartsheet: return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/chartsheet";
+            case type::custom_xml: return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml";
             default: return "??";
         }
     }
@@ -142,6 +154,15 @@ public:
     
     type get_type() const { return type_; }
     std::string get_type_string() const { return type_to_string(type_); }
+
+    friend bool operator==(const relationship &left, const relationship &right)
+    {
+        return left.type_ == right.type_
+            && left.id_ == right.id_
+            && left.source_uri_ == right.source_uri_
+            && left.target_uri_ == right.target_uri_
+            && left.target_mode_ == right.target_mode_;
+    }
     
 private:
     type type_;
