@@ -58,11 +58,6 @@ workbook::workbook() : d_(new detail::workbook_impl())
     create_relationship("rId4", "theme/theme1.xml", relationship::type::theme);
 }
 
-workbook::~workbook()
-{
-    clear();
-}
-
 workbook::iterator::iterator(workbook &wb, std::size_t index) : wb_(wb), index_(index)
 {
     
@@ -557,9 +552,41 @@ const document_properties &workbook::get_properties() const
     return d_->properties_;
 }
 
-workbook::workbook(const workbook &other) : d_(other.d_)
+void swap(workbook &left, workbook &right)
 {
+    using std::swap;
+    swap(left.d_, right.d_);
     
+    for(auto ws : left)
+    {
+        ws.set_parent(left);
+    }
+    
+    for(auto ws : right)
+    {
+        ws.set_parent(right);
+    }
+}
+    
+workbook &workbook::operator=(workbook other)
+{
+    swap(*this, other);
+    return *this;
+}
+
+workbook::workbook(workbook &&other) : workbook()
+{
+    swap(*this, other);
+}
+    
+workbook::workbook(const workbook &other) : workbook()
+{
+    *d_.get() = *other.d_.get();
+    
+    for(auto ws : *this)
+    {
+        ws.set_parent(*this);
+    }
 }
 
 }

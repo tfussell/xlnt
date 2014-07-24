@@ -64,12 +64,14 @@ class header
 {
 public:
     header();
-    void set_text(const std::string &text) { text_ = text; }
-    void set_font_name(const std::string &font_name) { font_name_ = font_name; }
-    void set_font_size(std::size_t font_size) { font_size_ = font_size; }
-    void set_font_color(const std::string &font_color) { font_color_ = font_color; }
+    void set_text(const std::string &text) { default_ = false; text_ = text; }
+    void set_font_name(const std::string &font_name) { default_ = false; font_name_ = font_name; }
+    void set_font_size(std::size_t font_size) { default_ = false; font_size_ = font_size; }
+    void set_font_color(const std::string &font_color) { default_ = false; font_color_ = font_color; }
+    bool is_default() const { return default_; }
     
 private:
+    bool default_;
     std::string text_;
     std::string font_name_;
     std::size_t font_size_;
@@ -80,12 +82,14 @@ class footer
 {
 public:
     footer();
-    void set_text(const std::string &text) { text_ = text; }
-    void set_font_name(const std::string &font_name) { font_name_ = font_name; }
-    void set_font_size(std::size_t font_size) { font_size_ = font_size; }
-    void set_font_color(const std::string &font_color) { font_color_ = font_color; }
+    void set_text(const std::string &text) { default_ = false; text_ = text; }
+    void set_font_name(const std::string &font_name) { default_ = false; font_name_ = font_name; }
+    void set_font_size(std::size_t font_size) { default_ = false; font_size_ = font_size; }
+    void set_font_color(const std::string &font_color) { default_ = false; font_color_ = font_color; }
+    bool is_default() const { return default_; }
     
 private:
+    bool default_;
     std::string text_;
     std::string font_name_;
     std::size_t font_size_;
@@ -96,12 +100,17 @@ class header_footer
 {
 public:
     header_footer();
+    
     header &get_left_header() { return left_header_; }
     header &get_center_header() { return center_header_; }
     header &get_right_header() { return right_header_; }
     footer &get_left_footer() { return left_footer_; }
     footer &get_center_footer() { return center_footer_; }
     footer &get_right_footer() { return right_footer_; }
+    
+    bool is_default_header() const { return left_header_.is_default() && center_header_.is_default() && right_header_.is_default(); }
+    bool is_default_footer() const { return left_footer_.is_default() && center_footer_.is_default() && right_footer_.is_default(); }
+    bool is_default() const { return is_default_header() && is_default_footer(); }
     
 private:
     header left_header_, right_header_, center_header_;
@@ -304,6 +313,8 @@ public:
     
     header_footer &get_header_footer();
     const header_footer &get_header_footer() const;
+    
+    void set_parent(workbook &wb);
     
 private:
     friend class workbook;

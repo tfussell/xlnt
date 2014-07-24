@@ -19,8 +19,25 @@ std::vector<std::pair<std::string, std::string>> reader::read_sheets(const zip_f
     auto xml_source = archive.get_file_contents("xl/workbook.xml");
     pugi::xml_document doc;
     doc.load(xml_source.c_str());
+    
+    std::string ns;
+    
+    for(auto child : doc.children())
+    {
+        std::string name = child.name();
+        
+        if(name.find(':') != std::string::npos)
+        {
+            auto colon_index = name.find(':');
+            ns = name.substr(0, colon_index);
+            break;
+        }
+    }
+    
+    auto with_ns = [&](const std::string &base) { return ns.empty() ? base : ns + ":" + base; };
+    
     std::vector<std::pair<std::string, std::string>> sheets;
-    for(auto sheet_node : doc.child("workbook").child("sheets").children("sheet"))
+    for(auto sheet_node : doc.child(with_ns("workbook").c_str()).child(with_ns("sheets").c_str()).children(with_ns("sheet").c_str()))
     {
         std::string id = sheet_node.attribute("r:id").as_string();
         std::string name = sheet_node.attribute("name").as_string();
@@ -189,6 +206,12 @@ void read_worksheet_common(worksheet ws, const pugi::xml_node &root_node, const 
         int row_index = row_node.attribute("r").as_int();
         std::string span_string = row_node.attribute("spans").as_string();
         auto colon_index = span_string.find(':');
+        
+        if(colon_index == std::string::npos)
+        {
+            continue;
+        }
+        
         int min_column = std::stoi(span_string.substr(0, colon_index));
         int max_column = std::stoi(span_string.substr(colon_index + 1));
         
@@ -218,47 +241,18 @@ void read_worksheet_common(worksheet ws, const pugi::xml_node &root_node, const 
                 }
                 else if(has_type && type == "b") // boolean
                 {
-		    ws.get_cell(address) = value != "0";
+                    ws.get_cell(address) = value != "0";
                 }
                 else if(has_style)
                 {
                     auto number_format_id = number_format_ids.at(std::stoi(style));
-
-                    if(number_format_id == 0) // integer
-                    {
-		        ws.get_cell(address) = std::stoi(value);
-                    }
-                    else if(number_format_id == 14) // date
-                    {
-		        auto base_date = ws.get_parent().get_properties().excel_base_date;
-		        ws.get_cell(address) = datetime::from_number(std::stod(value), base_date);
-			ws.get_cell(address).get_style().get_number_format().set_format_code(number_format::format::date_xlsx14);
-                    }
-                    else if(number_format_id == 18) // time
-                    {
-		        ws.get_cell(address) = time::from_number(std::stod(value));
-                    }
-                    else if(number_format_id == 22) // datetime
-                    {
-		        auto base_date = ws.get_parent().get_properties().excel_base_date;
-                        ws.get_cell(address) = datetime::from_number(std::stod(value), base_date);
-                    }
-                    else if(number_format_id == 14) // decimal
-                    {
-		        ws.get_cell(address) = std::stod(value);
-                    }
-                    else if(number_format_id == 9) // percent
-                    {
-		        ws.get_cell(address) = std::stod(value);
-                    }
-                    else
-                    {
-                        throw number_format_id;
-                    }
+                    auto format = number_format::lookup_format(number_format_id);
+                    ws.get_cell(address).get_style().get_number_format().set_format_code(format);
+                    ws.get_cell(address) = std::stod(value);
                 }
                 else if(has_value)
                 {
-		    ws.get_cell(address) = value;
+                    ws.get_cell(address) = value;
                 }
             }
         }

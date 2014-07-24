@@ -531,14 +531,19 @@ header_footer::header_footer()
     
 }
 
-header::header() : font_size_(12)
+header::header() : default_(true), font_size_(12)
 {
     
 }
 
-footer::footer() : font_size_(12)
+footer::footer() : default_(true), font_size_(12)
 {
     
+}
+
+void worksheet::set_parent(xlnt::workbook &wb)
+{
+    d_->parent_ = &wb;
 }
 
 } // namespace xlnt

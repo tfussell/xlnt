@@ -282,7 +282,7 @@ bool cell::is_merged() const
 
 bool cell::is_date() const
 {
-    return d_->is_date_;
+    return d_->is_date_ || (d_->style_ != nullptr && get_style().get_number_format().get_format_code() == number_format::format::date_xlsx14);
 }
 
 cell_reference cell::get_reference() const

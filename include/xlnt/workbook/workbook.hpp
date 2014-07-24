@@ -60,13 +60,13 @@ class workbook
 public:
     //constructors
     workbook();
-    ~workbook();
     
-    workbook &operator=(const workbook &);
-    workbook(const workbook &);
+    workbook &operator=(workbook other);
+    workbook(workbook &&other);
+    workbook(const workbook &other);
     
-    //void read_workbook_settings(const std::string &xml_source);
-    
+    friend void swap(workbook &left, workbook &right);
+
     //getters
     worksheet get_active_sheet();
     bool get_optimized_write() const;

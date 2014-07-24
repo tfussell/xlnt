@@ -67,7 +67,8 @@ public:
         date_yyyymmddslash,
         currency_usd_simple,
         currency_usd,
-        currency_eur_simple
+        currency_eur_simple,
+        unknown
     };
 
     struct format_hash
@@ -83,6 +84,7 @@ public:
     static const std::unordered_map<std::string, int> reversed_builtin_formats;    
 
     static std::string builtin_format_code(int index);
+    static format lookup_format(int code);
     
     static bool is_date_format(const std::string &format);
     static bool is_builtin(const std::string &format);

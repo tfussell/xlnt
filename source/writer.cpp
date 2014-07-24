@@ -473,6 +473,17 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
         page_set_up_pr_node.append_attribute("fitToPage").set_value(ws.get_page_setup().fit_to_page() ? 1 : 0);
     }
     
+    if(!ws.get_header_footer().is_default())
+    {
+        auto header_footer_node = root_node.append_child("headerFooter");
+        auto odd_header_node = header_footer_node.append_child("oddHeader");
+        std::string header_text = "&L&\"Calibri,Regular\"&K000000Left Header Text&C&\"Arial,Regular\"&6&K445566Center Header Text&R&\"Arial,Bold\"&8&K112233Right Header Text";
+        odd_header_node.text().set(header_text.c_str());
+        auto odd_footer_node = header_footer_node.append_child("oddFooter");
+        std::string footer_text = "&L&\"Times New Roman,Regular\"&10&K445566Left Footer Text_x000D_And &D and &T&C&\"Times New Roman,Bold\"&12&K778899Center Footer Text &Z&F on &A&R&\"Times New Roman,Italic\"&14&KAABBCCRight Footer Text &P of &N";
+        odd_footer_node.text().set(footer_text.c_str());
+    }
+    
     std::stringstream ss;
     doc.save(ss);
     

@@ -81,6 +81,16 @@ const std::unordered_map<int, std::string> number_format::builtin_formats =
     {47, "mmss.0"},
     {48, "##0.0E+0"},
     {49, "@"}
+    
+    //EXCEL differs from the standard in the following:
+    //{14, "m/d/yyyy"},
+    //{22, "m/d/yyyy h:mm"},
+    //{37, "#,##0_);(#,##0)"},
+    //{38, "#,##0_);[Red]"},
+    //{39, "#,##0.00_);(#,##0.00)"},
+    //{40, "#,##0.00_);[Red]"},
+    //{47, "mm:ss.0"},
+    //{55, "yyyy/mm/dd"}
 };
 
 const std::unordered_map<std::string, int> number_format::reversed_builtin_formats =
@@ -125,5 +135,23 @@ const std::unordered_map<std::string, int> number_format::reversed_builtin_forma
     {"##0.0E+0", 48},
     {"@", 49}
 };
+    
+number_format::format number_format::lookup_format(int code)
+{
+    if(builtin_formats.find(code) == builtin_formats.end())
+    {
+        return format::unknown;
+    }
+    
+    auto format_string = builtin_formats.at(code);
+    auto match = std::find_if(format_strings.begin(), format_strings.end(), [&](const std::pair<format, std::string> &p) { return p.second == format_string; });
+    
+    if(match == format_strings.end())
+    {
+        return format::unknown;
+    }
+    
+    return match->first;
+}
 
 } // namespace xlnt
