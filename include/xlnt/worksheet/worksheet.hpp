@@ -156,7 +156,7 @@ struct page_setup
     
 public:
     page_setup() : default_(true), break_(page_break::none), sheet_state_(sheet_state::visible), paper_size_(paper_size::letter),
-    orientation_(orientation::portrait), fit_to_page_(false), fit_to_height_(false), fit_to_width_(false) {}
+    orientation_(orientation::portrait), fit_to_page_(false), fit_to_height_(false), fit_to_width_(false), horizontal_centered_(false), vertical_centered_(false), scale_(1) {}
     bool is_default() const { return default_; }
     page_break get_break() const { return break_; }
     void set_break(page_break b) { default_ = false; break_ = b; }
@@ -172,6 +172,12 @@ public:
     void set_fit_to_height(bool fit_to_height) { default_ = false; fit_to_height_ = fit_to_height; }
     bool fit_to_width() const { return fit_to_width_; }
     void set_fit_to_width(bool fit_to_width) { default_ = false; fit_to_width_ = fit_to_width; }
+    void set_horizontal_centered(bool horizontal_centered) { default_ = false; horizontal_centered_ = horizontal_centered; }
+    bool get_horizontal_centered() const { return horizontal_centered_; }
+    void set_vertical_centered(bool vertical_centered) { default_ = false; vertical_centered_ = vertical_centered; }
+    bool get_vertical_centered() const { return vertical_centered_; }
+    void set_scale(double scale) { default_ = false; scale_ = scale; }
+    double get_scale() const { return scale_; }
     
 private:
     bool default_;
@@ -182,6 +188,9 @@ private:
     bool fit_to_page_;
     bool fit_to_height_;
     bool fit_to_width_;
+    bool horizontal_centered_;
+    bool vertical_centered_;
+    double scale_;
 };
 
 struct margins
@@ -247,6 +256,12 @@ public:
     range rows() const;
     range columns() const;
     std::list<cell> get_cell_collection();
+
+    cell_reference get_point_pos(int left, int top) const;
+    cell_reference get_point_pos(const std::pair<int, int> &point) const;
+
+    const std::unordered_map<column_t, double> &get_column_dimensions() const;
+    const std::unordered_map<row_t, double> &get_row_dimensions() const;
 
     // named range
     void create_named_range(const std::string &name, const range_reference &reference);

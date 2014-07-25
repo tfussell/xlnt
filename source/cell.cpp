@@ -4,6 +4,8 @@
 
 #include "cell/cell.hpp"
 #include "cell/cell_reference.hpp"
+#include "cell/comment.hpp"
+#include "cell/value.hpp"
 #include "common/datetime.hpp"
 #include "common/relationship.hpp"
 #include "worksheet/worksheet.hpp"
@@ -12,48 +14,101 @@
 #include "workbook/workbook.hpp"
 #include "workbook/document_properties.hpp"
 
+namespace {
+
+std::vector<std::string> split_string(const std::string &string, char delim = ' ')
+{
+    std::stringstream ss(string);
+    std::string part;
+    std::vector<std::string> parts;
+    while(std::getline(ss, part, delim))
+    {
+        parts.push_back(part);
+    }
+    return parts;
+}
+
+xlnt::value::type data_type_for_value(const std::string &value)
+{
+    if(value.empty())
+    {
+        return xlnt::value::type::null;
+    }
+
+    if(value[0] == '0')
+    {
+        if(value.length() > 1)
+        {
+            if(value[1] == '.' || (value.length() > 2 && (value[1] == 'e' || value[1] == 'E')))
+            {
+                auto first_non_number = std::find_if(value.begin() + 2, value.end(),
+                    [](char c) { return !std::isdigit(c, std::locale::classic()); });
+                if(first_non_number == value.end())
+                {
+                    return xlnt::value::type::numeric;
+                }
+            }
+            auto split = split_string(value, ':');
+            if(split.size() == 2 || split.size() == 3)
+            {
+                for(auto part : split)
+                {
+                    try
+                    {
+                        std::stoi(part);
+                    }
+                    catch(std::invalid_argument)
+                    {
+                        return xlnt::value::type::string;
+                    }
+                }
+                return xlnt::value::type::numeric;
+            }
+            else
+            {
+                return xlnt::value::type::string;
+            }
+        }
+        return xlnt::value::type::numeric;
+    }
+    else if(value[0] == '#')
+    {
+        return xlnt::value::type::error;
+    }
+    else
+    {
+        char *p;
+        strtod(value.c_str(), &p);
+        if(*p != 0)
+        {
+            static const std::vector<std::string> possible_booleans = {"TRUE", "true", "FALSE", "false"};
+            if(std::find(possible_booleans.begin(), possible_booleans.end(), value) != possible_booleans.end())
+            {
+                return xlnt::value::type::boolean;
+            }
+            if(value.back() == '%')
+            {
+                strtod(value.substr(0, value.length() - 1).c_str(), &p);
+                if(*p == 0)
+                {
+                    return xlnt::value::type::numeric;
+                }
+            }
+            return xlnt::value::type::string;
+        }
+        else
+        {
+            return xlnt::value::type::numeric;
+        }
+    }
+}
+
+} // namespace
+
 namespace xlnt {
     
 const xlnt::color xlnt::color::black(0);
 const xlnt::color xlnt::color::white(1);
-
-detail::comment_impl::comment_impl() : parent_worksheet_(nullptr)
-{
-}
-    
-detail::comment_impl::comment_impl(detail::worksheet_impl *ws, const cell_reference &ref, const std::string &text, const std::string &author) : parent_worksheet_(ws), parent_cell_(ref), text_(text), author_(author)
-{
-    
-}
-    
-comment::comment(const std::string &text, const std::string &author) : d_(new detail::comment_impl())
-{
-    d_->text_ = text;
-    d_->author_ = author;
-}
-
-comment::comment(detail::comment_impl *d) : d_(d)
-{
-}
-
-comment::~comment()
-{
-    if(d_->parent_worksheet_ == nullptr)
-    {
-        delete d_;
-        d_ = nullptr;
-    }
-}
-
-std::string comment::get_author() const
-{
-    return d_->author_;
-}
-
-std::string comment::get_text() const
-{
-    return d_->text_;
-}
     
 const std::unordered_map<std::string, int> cell::ErrorCodes =
 {
@@ -73,203 +128,148 @@ cell::cell() : d_(nullptr)
 cell::cell(detail::cell_impl *d) : d_(d)
 {
 }
-    
-cell::cell(worksheet worksheet, const cell_reference &reference, const std::string &initial_value) : d_(nullptr)
+
+cell::cell(worksheet worksheet, const cell_reference &reference) : d_(nullptr)
 {
     cell self = worksheet.get_cell(reference);
     d_ = self.d_;
+}
+    
+cell::cell(worksheet worksheet, const cell_reference &reference, const value &initial_value) : cell(worksheet, reference)
+{
+    set_value(initial_value);
+}
 
-    if(initial_value != "")
+bool cell::garbage_collectible() const
+{
+    return !(get_value().get_type() != value::type::null || is_merged() || has_comment() || has_formula());
+}
+
+value &cell::get_value()
+{
+    return d_->value_;
+}
+
+const value &cell::get_value() const
+{
+    return d_->value_;
+}
+
+void cell::set_value(const value &v)
+{
+    d_->value_ = v;
+}
+
+void cell::set_value(const std::string &s)
+{
+    if(!get_parent().get_parent().get_guess_types())
     {
-        *this = initial_value;
+        d_->is_date_ = false;
+        d_->value_ = value(s);
+    }
+    else
+    {
+        d_->is_date_ = false;
+
+        switch(data_type_for_value(s))
+        {
+        case value::type::numeric:
+            if(s.find(':') != std::string::npos)
+            {
+                d_->is_date_ = true;
+                d_->value_ = value(time(s).to_number());
+            }
+            else if(s.back() == '%')
+            {
+                d_->value_ = value(std::stod(s.substr(0, s.length() - 1)) / 100);
+                get_style().get_number_format().set_format_code(xlnt::number_format::format::percentage);
+            }
+            else
+            {
+                d_->value_ = value(std::stod(s));
+            }
+            break;
+        case value::type::boolean:
+            d_->value_ = value(s == "TRUE" || s == "true");
+            break;
+        case value::type::error:
+            d_->value_ = value(s);
+            break;
+        case value::type::string:
+            d_->value_ = value(s);
+            break;
+        case value::type::null:
+            d_->value_ = value::null();
+            break;
+        default: throw data_type_exception();
+        }
     }
 }
 
-std::string cell::get_internal_value_string() const
+void cell::set_value(const char *s)
 {
-    switch(d_->type_)
-    {
-    case type::string:
-        return d_->string_value;
-    case type::error:
-        return d_->string_value;
-    default:
-        throw std::runtime_error("bad enum");
-    }
+    set_value(std::string(s));
+}
+
+void cell::set_value(bool b)
+{
+    d_->value_ = value(b);
+}
+
+void cell::set_value(int i)
+{
+    d_->value_ = value(i);
+}
+
+void cell::set_value(long long int i)
+{
+    d_->value_ = value(i);
+}
+
+void cell::set_value(double d)
+{
+    d_->value_ = value(d);
+}
+
+void cell::set_value(const date &d)
+{
+    d_->is_date_ = true;
+    auto base_date = get_parent().get_parent().get_properties().excel_base_date;
+    set_value(d.to_number(base_date));
+}
+
+void cell::set_value(const datetime &d)
+{
+    d_->is_date_ = true;
+    auto base_date = get_parent().get_parent().get_properties().excel_base_date;
+    set_value(d.to_number(base_date));
+}
+
+void cell::set_value(const time &t)
+{
+    d_->is_date_ = true;
+    set_value(t.to_number());
+}
+
+void cell::set_value(const timedelta &t)
+{
+    d_->is_date_ = true;
+    set_value(t.to_number());
 }
 
 bool cell::has_style() const
 {
     return d_->style_ != nullptr;
 }
-    
-long double cell::get_internal_value_numeric() const
-{
-    switch(d_->type_)
-    {
-    case type::numeric:
-        return d_->numeric_value;
-    case type::boolean:
-        return d_->numeric_value == 0 ? 0 : 1;
-    default:
-        throw std::runtime_error("bad enum");
-    }
-}
 
 row_t cell::get_row() const
 {
-    return d_->row + 1;
+    return d_->row_ + 1;
 }
 
 std::string cell::get_column() const
 {
-    return cell_reference::column_string_from_index(d_->column + 1);
-}
-
-std::vector<std::string> split_string(const std::string &string, char delim = ' ')
-{
-    std::stringstream ss(string);
-    std::string part;
-    std::vector<std::string> parts;
-    while(std::getline(ss, part, delim))
-    {
-        parts.push_back(part);
-    }
-    return parts;
-}
-
-cell::type cell::data_type_for_value(const std::string &value)
-{
-    if(value.empty())
-    {
-        return type::null;
-    }
-    
-    if(value[0] == '0')
-    {
-        if(value.length() > 1)
-        {
-            if(value[1] == '.' || (value.length() > 2 && (value[1] == 'e' || value[1] == 'E')))
-            {
-                auto first_non_number = std::find_if(value.begin() + 2, value.end(),
-                                                     [](char c) { return !std::isdigit(c, std::locale::classic()); });
-                if(first_non_number == value.end())
-                {
-                    return type::numeric;
-                }
-            }
-            auto split = split_string(value, ':');
-            if(split.size() == 2 || split.size() == 3)
-            {
-                for(auto part : split)
-                {
-                    try
-                    {
-                        std::stoi(part);
-                    }
-                    catch(std::invalid_argument)
-                    {
-                        return type::string;
-                    }
-                }
-                return type::numeric;
-            }
-            else
-            {
-                return type::string;
-            }
-        }
-        return type::numeric;
-    }
-    else if(value[0] == '#')
-    {
-        return type::error;
-    }
-    else
-    {
-        char *p;
-        strtod(value.c_str(), &p);
-        if(*p != 0)
-        {
-            static const std::vector<std::string> possible_booleans = {"TRUE", "true", "FALSE", "false"};
-            if(std::find(possible_booleans.begin(), possible_booleans.end(), value) != possible_booleans.end())
-            {
-                return type::boolean;
-            }
-            if(value.back() == '%')
-            {
-                strtod(value.substr(0, value.length() - 1).c_str(), &p);
-                if(*p == 0)
-                {
-                    return type::numeric;
-                }
-            }
-            return type::string;
-        }
-        else
-        {
-            return type::numeric;
-        }
-    }
-}
-
-void cell::set_explicit_value(const std::string &value, type data_type)
-{
-    d_->type_ = data_type;
-
-    switch(data_type)
-    {
-        /*
-    case type::null:
-        if(value != "")
-        {
-            throw data_type_exception();
-        }
-        return;
-    case type::error: d_->string_value = value; return;
-    case type::boolean:
-        d_->numeric_value = value == "true"; 
-        return;
-    case type::numeric: 
-        try
-        {
-            d_->numeric_value = std::stod(value);
-        }
-        catch(std::invalid_argument)
-        {
-            throw data_type_exception();
-        }
-        return;
-        */
-    case type::string: 
-        d_->string_value = value; 
-        return;
-    default: throw data_type_exception();
-    }
-}
-
-void cell::set_explicit_value(int value, type data_type)
-{
-    d_->type_ = data_type;
-
-    switch(data_type)
-    {
-        case type::numeric: d_->numeric_value = value; return;
-        //case type::string: d_->string_value = std::to_string(value); return;
-        default: throw data_type_exception();
-    }
-}
-
-void cell::set_explicit_value(double value, type data_type)
-{
-    d_->type_ = data_type;
-
-    switch(data_type)
-    {
-        case type::numeric: d_->numeric_value = value; return;
-        //case type::string: d_->string_value = std::to_string(value); return;
-        default: throw data_type_exception();
-    }
+    return cell_reference::column_string_from_index(d_->column_ + 1);
 }
 
 void cell::set_merged(bool merged)
@@ -289,74 +289,12 @@ bool cell::is_date() const
 
 cell_reference cell::get_reference() const
 {
-    return {d_->column, d_->row};
+    return {d_->column_, d_->row_};
 }
 
 bool cell::operator==(std::nullptr_t) const
 {
     return d_ == nullptr;
-}
-
-bool cell::operator==(bool value) const
-{
-    return d_->type_ == type::boolean && (d_->numeric_value != 0) == value;
-}
-
-bool cell::operator==(int comparand) const
-{
-    return d_->type_ == type::numeric && d_->numeric_value == comparand;
-}
-
-bool cell::operator==(double comparand) const
-{
-    return d_->type_ == type::numeric && d_->numeric_value == comparand;
-}
-
-bool cell::operator==(const std::string &comparand) const
-{
-    if(d_->type_ == type::string)
-    {
-        return d_->string_value == comparand;
-    }
-
-    return false;
-}
-
-bool cell::operator==(const char *comparand) const
-{
-    return *this == std::string(comparand);
-}
-
-bool cell::operator==(const time &comparand) const
-{
-    if(d_->type_ != type::numeric)
-    {
-        return false;
-    }
-    
-    return time::from_number(d_->numeric_value) == comparand;
-}
-
-bool cell::operator==(const date &comparand) const
-{
-    if(d_->type_ != type::numeric)
-    {
-        return false;
-    }
-    
-    auto base_year = worksheet(d_->parent_).get_parent().get_properties().excel_base_date;
-    return date::from_number((int)d_->numeric_value, base_year) == comparand;
-}
-
-bool cell::operator==(const datetime &comparand) const
-{
-    if(d_->type_ != type::numeric)
-    {
-        return false;
-    }
-    
-    auto base_year = worksheet(d_->parent_).get_parent().get_properties().excel_base_date;
-    return datetime::from_number(d_->numeric_value, base_year) == comparand;
 }
 
 bool cell::operator==(const cell &comparand) const
@@ -366,67 +304,7 @@ bool cell::operator==(const cell &comparand) const
         return d_ == nullptr;
     }
 
-    if(comparand.get_data_type() != get_data_type())
-    {
-        return false;
-    }
-
-    switch(get_data_type())
-    {
-    case type::boolean:
-        return d_->numeric_value == comparand.d_->numeric_value;
-    case type::error:
-        return d_->string_value == comparand.d_->string_value;
-    case type::string:
-        return d_->string_value == comparand.d_->string_value;
-    case type::null:
-        return true;
-    case type::numeric:
-        if(is_date() && comparand.is_date())
-        {
-            auto base_year = worksheet(d_->parent_).get_parent().get_properties().excel_base_date;
-            auto other_base_year = worksheet(comparand.d_->parent_).get_parent().get_properties().excel_base_date;
-            return date::from_number((int)d_->numeric_value, base_year) == date::from_number((int)comparand.d_->numeric_value, other_base_year);
-        }
-        return d_->numeric_value == comparand.d_->numeric_value;
-    }
-
-    return false;
-}
-
-bool operator==(bool comparand, const xlnt::cell &cell)
-{
-    return cell == comparand;
-}
-    
-bool operator==(int comparand, const xlnt::cell &cell)
-{
-    return cell == comparand;
-}
-
-bool operator==(const char *comparand, const xlnt::cell &cell)
-{
-    return cell == comparand;
-}
-
-bool operator==(const std::string &comparand, const xlnt::cell &cell)
-{
-    return cell == comparand;
-}
-
-bool operator==(const time &comparand, const xlnt::cell &cell)
-{
-    return cell == comparand;
-}
-
-bool operator==(const date &comparand, const xlnt::cell &cell)
-{
-    return cell == comparand;
-}
-
-bool operator==(const datetime &comparand, const xlnt::cell &cell)
-{
-    return cell == comparand;
+    return d_->value_ == comparand.d_->value_;
 }
 
 style &cell::get_style()
@@ -447,156 +325,15 @@ const style &cell::get_style() const
     return *d_->style_;
 }
 
-xlnt::cell::type cell::get_data_type() const
-{
-    return (type)d_->type_;
-}
-
 cell &cell::operator=(const cell &rhs)
 {
     d_ = rhs.d_;
     return *this;
 }
 
-cell &cell::operator=(int value)
-{
-    d_->is_date_ = false;
-    d_->type_ = type::numeric;
-    d_->numeric_value = value;
-    return *this;
-}
-
-cell &cell::operator=(double value)
-{
-    d_->is_date_ = false;
-    d_->type_ = type::numeric;
-    d_->numeric_value = value;
-    return *this;
-}
-
-cell &cell::operator=(long int value)
-{
-    d_->is_date_ = false;
-    d_->type_ = type::numeric;
-    d_->numeric_value = value;
-    return *this;
-}
-
-cell &cell::operator=(long long value)
-{
-    d_->is_date_ = false;
-    d_->type_ = type::numeric;
-    d_->numeric_value = (long double)value;
-    return *this;
-}
-
-cell &cell::operator=(long double value)
-{
-    d_->is_date_ = false;
-    d_->type_ = type::numeric;
-    d_->numeric_value = value;
-    return *this;
-}
-
-cell &cell::operator=(bool value)
-{
-    d_->is_date_ = false;
-    d_->type_ = type::boolean;
-    d_->numeric_value = value ? 1 : 0;
-    return *this;
-}
-
 bool operator<(cell left, cell right)
 {
     return left.get_reference() < right.get_reference();
-}
-
-cell &cell::operator=(const std::string &value)
-{
-    if(!get_parent().get_parent().get_guess_types())
-    {
-        d_->is_date_ = false;
-        d_->type_ = type::string;
-        d_->string_value = value;
-    }
-    else
-    {
-        d_->is_date_ = false;
-        d_->type_ = data_type_for_value(value);
-
-        switch(d_->type_)
-        {
-        case type::numeric:
-            if(value.find(':') != std::string::npos)
-            {
-                d_->is_date_ = true;
-                d_->numeric_value = time(value).to_number();
-            }
-            else if(value.back() == '%')
-            {
-                d_->numeric_value = std::stod(value.substr(0, value.length() - 1)) / 100;
-                get_style().get_number_format().set_format_code(xlnt::number_format::format::percentage);
-            }
-            else
-            {
-                d_->numeric_value = std::stod(value);
-            }
-            break;
-        case type::boolean:
-            d_->numeric_value = value == "TRUE" || value == "true";
-            break;
-        case type::error:
-            d_->string_value = value;
-            break;
-        case type::string:
-            d_->string_value = value;
-            break;
-        case type::null:
-            break;
-        default: throw data_type_exception();
-        }
-    }
-    
-    return *this;
-}
-
-cell &cell::operator=(const char *value)
-{
-    return *this = std::string(value);
-}
-
-cell &cell::operator=(const time &value)
-{
-    d_->type_ = type::numeric;
-    d_->numeric_value = value.to_number();
-    d_->is_date_ = true;
-    return *this;
-}
-
-cell &cell::operator=(const date &value)
-{
-    d_->type_ = type::numeric;
-    auto base_year = worksheet(d_->parent_).get_parent().get_properties().excel_base_date;
-    d_->numeric_value = value.to_number(base_year);
-    d_->is_date_ = true;
-    return *this;
-}
-
-cell &cell::operator=(const datetime &value)
-{
-    d_->type_ = type::numeric;
-    auto base_year = worksheet(d_->parent_).get_parent().get_properties().excel_base_date;
-    d_->numeric_value = value.to_number(base_year);
-    d_->is_date_ = true;
-    return *this;
-}
-
-cell &cell::operator=(const timedelta &value)
-{
-    d_->type_ = type::numeric;
-    d_->numeric_value = value.to_number();
-    d_->is_date_ = true;
-    return *this;
 }
 
 std::string cell::to_string() const
@@ -629,15 +366,10 @@ void cell::set_hyperlink(const std::string &hyperlink)
     d_->has_hyperlink_ = true;
     d_->hyperlink_ = worksheet(d_->parent_).create_relationship(relationship::type::hyperlink, hyperlink);
 
-    if(d_->type_ == type::null)
+    if(get_value().is(value::type::null))
     {
-        *this = hyperlink;
+        set_value(hyperlink);
     }
-}
-
-void cell::set_null()
-{
-    d_->type_ = type::null;
 }
 
 void cell::set_formula(const std::string &formula)
@@ -647,27 +379,27 @@ void cell::set_formula(const std::string &formula)
         throw data_type_exception();
     }
 
-    d_->formula_value = formula;
+    d_->formula_ = formula;
 }
 
 bool cell::has_formula() const
 {
-    return !d_->formula_value.empty();
+    return !d_->formula_.empty();
 }
 
 std::string cell::get_formula() const
 {
-    if(d_->formula_value.empty())
+    if(d_->formula_.empty())
     {
         throw data_type_exception();
     }
 
-    return d_->formula_value;
+    return d_->formula_;
 }
 
 void cell::clear_formula()
 {
-    d_->formula_value.clear();
+    d_->formula_.clear();
 }
 
 void cell::set_comment(xlnt::comment &c)
@@ -737,13 +469,12 @@ void cell::set_error(const std::string &error)
         throw data_type_exception();
     }
 
-    d_->type_ = type::error;
-    d_->string_value = error;
+    set_value(value::error(error));
 }
 
 cell cell::offset(column_t column, row_t row)
 {
-    return get_parent().get_cell(cell_reference(d_->column + column, d_->row + row));
+    return get_parent().get_cell(cell_reference(d_->column_ + column, d_->row_ + row));
 }
     
 worksheet cell::get_parent()
@@ -751,9 +482,66 @@ worksheet cell::get_parent()
     return worksheet(d_->parent_);
 }
 
+const worksheet cell::get_parent() const
+{
+    return worksheet(d_->parent_);
+}
+
 comment cell::get_comment() const
 {
     return comment(&d_->comment_);
+}
+
+std::pair<int, int> cell::get_anchor() const
+{
+    static const double DefaultColumnWidth = 51.85;
+    static const double DefaultRowHeight = 15.0;
+
+    auto points_to_pixels = [](double value, double dpi) { return (int)std::ceil(value * dpi / 72); };
+
+    auto left_columns = d_->column_;
+    auto &column_dimensions = get_parent().get_column_dimensions();
+    int left_anchor = 0;
+    auto default_width = points_to_pixels(DefaultColumnWidth, 96.0);
+
+    for(int column_index = 1; column_index <= (int)left_columns; column_index++)
+    {
+        if(column_dimensions.find(column_index) != column_dimensions.end())
+        {
+            auto cdw = column_dimensions.at(column_index);
+
+            if(cdw > 0)
+            {
+                left_anchor += points_to_pixels(cdw, 96.0);
+                continue;
+            }
+        }
+
+        left_anchor += default_width;
+    }
+
+    auto top_rows = d_->row_;
+    auto &row_dimensions = get_parent().get_row_dimensions();
+    int top_anchor = 0;
+    auto default_height = points_to_pixels(DefaultRowHeight, 96.0);
+
+    for(int row_index = 1; row_index <= (int)top_rows; row_index++)
+    {
+        if(row_dimensions.find(row_index) != row_dimensions.end())
+        {
+            auto rdh = row_dimensions.at(row_index);
+
+            if(rdh > 0)
+            {
+                top_anchor += points_to_pixels(rdh, 96.0);
+                continue;
+            }
+        }
+
+        top_anchor += default_height;
+    }
+
+    return {left_anchor, top_anchor};
 }
 
 } // namespace xlnt

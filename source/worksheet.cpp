@@ -2,6 +2,7 @@
 
 #include "worksheet/worksheet.hpp"
 #include "cell/cell.hpp"
+#include "cell/value.hpp"
 #include "common/datetime.hpp"
 #include "worksheet/range.hpp"
 #include "worksheet/range_reference.hpp"
@@ -108,7 +109,7 @@ void worksheet::garbage_collect()
         {
             cell current_cell(&cell_iter->second);
 
-            if(current_cell.get_data_type() == cell::type::null && !current_cell.has_comment())
+            if(current_cell.garbage_collectible())
             {
                 cell_iter = cell_map_iter->second.erase(cell_iter);
                 continue;
@@ -172,6 +173,16 @@ void worksheet::freeze_panes(const std::string &top_left_coordinate)
 void worksheet::unfreeze_panes()
 {
     d_->freeze_panes_ = cell_reference("A1");
+}
+
+const std::unordered_map<column_t, double> &worksheet::get_column_dimensions() const
+{
+    return d_->column_dimensions_;
+}
+
+const std::unordered_map<row_t, double> &worksheet::get_row_dimensions() const
+{
+    return d_->row_dimensions_;
 }
 
 cell worksheet::get_cell(const cell_reference &reference)
@@ -323,10 +334,19 @@ void worksheet::merge_cells(const range_reference &reference)
         for(auto cell : row)
         {
             cell.set_merged(true);
+
             if(!first)
             {
-	        cell.set_null();
+                if(cell.get_value().is(value::type::string))
+                {
+                    cell.set_value(value(""));
+                }
+                else
+                {
+                    cell.set_value(value::null());
+                }
             }
+
             first = false;
         }
     }
@@ -365,7 +385,7 @@ void worksheet::append(const std::vector<std::string> &cells)
     
     for(auto cell : cells)
     {
-        this->get_cell(cell_reference(column++, row)) = cell;
+        get_cell(cell_reference(column++, row)).set_value(cell);
     }
 }
 
@@ -382,7 +402,7 @@ void worksheet::append(const std::vector<int> &cells)
     
     for(auto cell : cells)
     {
-        this->get_cell(cell_reference(column++, row)) = cell;
+        get_cell(cell_reference(column++, row)).set_value(value(cell));
     }
 }
 
@@ -399,7 +419,7 @@ void worksheet::append(const std::vector<date> &cells)
     
     for(auto cell : cells)
     {
-        this->get_cell(cell_reference(column++, row)) = cell;
+        get_cell(cell_reference(column++, row)).set_value(cell);
     }
 }
 
@@ -414,7 +434,7 @@ void worksheet::append(const std::unordered_map<std::string, std::string> &cells
 
     for(auto cell : cells)
     {
-        this->get_cell(cell_reference(cell.first, row + 1)) = cell.second;
+        get_cell(cell_reference(cell.first, row + 1)).set_value(cell.second);
     }
 }
 
@@ -429,7 +449,7 @@ void worksheet::append(const std::unordered_map<int, std::string> &cells)
 
     for(auto cell : cells)
     {
-        this->get_cell(cell_reference(cell.first, row)) = cell.second;
+        get_cell(cell_reference(cell.first, row)).set_value(cell.second);
     }
 }
 
@@ -556,6 +576,66 @@ void worksheet::set_parent(xlnt::workbook &wb)
 std::vector<std::string> worksheet::get_formula_attributes() const
 {
     return {};
+}
+
+cell_reference worksheet::get_point_pos(int left, int top) const
+{
+    static const double DefaultColumnWidth = 51.85;
+    static const double DefaultRowHeight = 15.0;
+
+    auto points_to_pixels = [](double value, double dpi) { return (int)std::ceil(value * dpi / 72); };
+    
+    auto default_height = points_to_pixels(DefaultRowHeight, 96.0);
+    auto default_width = points_to_pixels(DefaultColumnWidth, 96.0);
+
+    column_t current_column = 0;
+    row_t current_row = 0;
+
+    int left_pos = 0;
+    int top_pos = 0;
+
+    while(left_pos <= left)
+    {
+        current_column++;
+
+        if(d_->column_dimensions_.find(current_column) != d_->column_dimensions_.end())
+        {
+            auto cdw = d_->column_dimensions_.at(current_column);
+
+            if(cdw >= 0)
+            {
+                left_pos += points_to_pixels(cdw, 96.0);
+                continue;
+            }
+        }
+
+        left_pos += default_width;
+    }
+
+    while(top_pos <= top)
+    {
+        current_row++;
+
+        if(d_->row_dimensions_.find(current_row) != d_->row_dimensions_.end())
+        {
+            auto cdh = d_->column_dimensions_.at(current_row);
+
+            if(cdh >= 0)
+            {
+                top_pos += points_to_pixels(cdh, 96.0);
+                continue;
+            }
+        }
+
+        top_pos += default_height;
+    }
+
+    return {current_column - 1, current_row - 1};
+}
+
+cell_reference worksheet::get_point_pos(const std::pair<int, int> &point) const
+{
+    return get_point_pos(point.first, point.second);
 }
 
 } // namespace xlnt

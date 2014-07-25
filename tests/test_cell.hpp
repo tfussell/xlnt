@@ -100,7 +100,7 @@ public:
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1", "17.5");
 
-        TS_ASSERT_EQUALS(xlnt::cell::type::string, cell.get_data_type());
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::string));
     }
 
     void test_1st()
@@ -108,16 +108,16 @@ public:
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
 
-        TS_ASSERT_EQUALS(xlnt::cell::type::null, cell.get_data_type());
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::null));
     }
 
     void test_null()
     {
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1", "17.5");
-        cell.set_null();
+        cell.set_value(xlnt::value::null());
 
-        TS_ASSERT_EQUALS(xlnt::cell::type::null, cell.get_data_type());
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::null));
     }
 
     void test_numeric()
@@ -127,41 +127,41 @@ public:
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
 
-        cell = 42;
-        TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
+        cell.set_value(42);
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
 
-        cell = "4.2";
-        TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
+        cell.set_value("4.2");
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
 
-        cell = "-42.000";
-        TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
+        cell.set_value("-42.000");
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
 
-        cell = "0";
-        TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
+        cell.set_value("0");
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
 
-        cell = 0;
-        TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
+        cell.set_value(0);
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
 
-        cell = 0.0001;
-        TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
+        cell.set_value(0.0001);
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
 
-        cell = "0.9999";
-        TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
+        cell.set_value("0.9999");
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
 
-        cell = "99E-02";
-        TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
+        cell.set_value("99E-02");
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
 
-        cell = 1e1;
-        TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
+        cell.set_value(1e1);
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
 
-        cell = "4";
-        TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
+        cell.set_value("4");
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
 
-        cell = "-1E3";
-        TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
+        cell.set_value("-1E3");
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
 
-        cell = 4;
-        TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
+        cell.set_value(4);
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
     }
 
     void test_string()
@@ -169,16 +169,16 @@ public:
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
 
-        cell = "hello";
-        TS_ASSERT_EQUALS(xlnt::cell::type::string, cell.get_data_type());
+        cell.set_value("hello");
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::string));
     }
 
     void test_single_dot()
     {
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
-        cell = ".";
-        TS_ASSERT_EQUALS(xlnt::cell::type::string, cell.get_data_type());
+        cell.set_value(".");
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::string));
     }
 
     void test_formula()
@@ -197,18 +197,18 @@ public:
     {
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
-        cell = true;
-        TS_ASSERT_EQUALS(xlnt::cell::type::boolean, cell.get_data_type());
-        cell = false;
-        TS_ASSERT_EQUALS(xlnt::cell::type::boolean, cell.get_data_type());
+        cell.set_value(true);
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::boolean));
+        cell.set_value(false);
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::boolean));
     }
 
     void test_leading_zero()
     {
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
-        cell = "0800";
-        TS_ASSERT_EQUALS(xlnt::cell::type::string, cell.get_data_type());
+        cell.set_value("0800");
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::string));
     }
 
     void test_error_codes()
@@ -218,8 +218,8 @@ public:
 
         for(auto error : xlnt::cell::ErrorCodes)
         {
-            cell = error.first;
-            TS_ASSERT_EQUALS(xlnt::cell::type::error, cell.get_data_type());
+            cell.set_error(error.first);
+            TS_ASSERT(cell.get_value().is(xlnt::value::type::error));
         }
     }
 
@@ -227,32 +227,32 @@ public:
     {
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
-        cell = 3.14;
-        TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
+        cell.set_value(3.14);
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
     }
 
     void test_insert_percentage()
     {
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
-        cell = "3.14%";
-        TS_ASSERT_DELTA(0.0314, cell.get_internal_value_numeric(), 1e-7);
+        cell.set_value("3.14%");
+        TS_ASSERT_DELTA(0.0314, cell.get_value().as<double>(), 1e-7);
     }
 
     void test_insert_datetime()
     {
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
-        cell = xlnt::date::today();
-        TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
+        cell.set_value(xlnt::date::today());
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
     }
 
     void test_insert_date()
     {
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
-        cell = xlnt::datetime::now();
-        TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
+        cell.set_value(xlnt::datetime::now());
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
     }
 
     void test_internal_date()
@@ -260,8 +260,8 @@ public:
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
         xlnt::datetime dt(2010, 7, 13, 6, 37, 41);
-        cell = dt;
-        TS_ASSERT_EQUALS(40372.27616898148, cell.get_internal_value_numeric());
+        cell.set_value(dt);
+        TS_ASSERT_EQUALS(40372.27616898148, cell.get_value().as<double>());
     }
 
     void test_datetime_interpretation()
@@ -269,9 +269,9 @@ public:
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
         xlnt::datetime dt(2010, 7, 13, 6, 37, 41);
-        cell = dt;
-        TS_ASSERT_EQUALS(cell, dt);
-        TS_ASSERT_DELTA(cell.get_internal_value_numeric(), 40372.27616898148, 1e-7);
+        cell.set_value(dt);
+        TS_ASSERT_EQUALS(cell.get_value(), dt);
+        TS_ASSERT_DELTA(cell.get_value().as<double>(), 40372.27616898148, 1e-7);
     }
 
     void test_date_interpretation()
@@ -279,16 +279,16 @@ public:
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
         xlnt::date dt(2010, 7, 13);
-        cell = dt;
-        TS_ASSERT_EQUALS(cell, dt);
-        TS_ASSERT_EQUALS(cell.get_internal_value_numeric(), 40372);
+        cell.set_value(dt);
+        TS_ASSERT_EQUALS(cell.get_value(), dt);
+        TS_ASSERT_EQUALS(cell.get_value().as<int>(), 40372);
     }
 
     void test_number_format_style()
     {
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
-        cell = "12.6%";
+        cell.set_value("12.6%");
         TS_ASSERT_EQUALS(xlnt::number_format::format::percentage, cell.get_style().get_number_format().get_format_code());
     }
 
@@ -297,27 +297,22 @@ public:
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
 
-        TS_ASSERT_EQUALS(xlnt::cell::type::null, cell.get_data_type());
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::null));
 
-        cell = ".0e000";
-        TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
+        cell.set_value(".0e000");
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
 
-        cell = "-0.e-0";
-        TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
+        cell.set_value("-0.e-0");
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
 
-        cell = "1E";
-        TS_ASSERT_EQUALS(xlnt::cell::type::string, cell.get_data_type());
+        cell.set_value("1E");
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::string));
     }
 
     void test_set_bad_type()
     {
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
-
-        TS_ASSERT_THROWS(cell.set_explicit_value("ABC", xlnt::cell::type::numeric), xlnt::data_type_exception);
-        TS_ASSERT_THROWS(cell.set_explicit_value(1, xlnt::cell::type::string), xlnt::data_type_exception);
-        TS_ASSERT_THROWS(cell.set_explicit_value(1.0, xlnt::cell::type::error), xlnt::data_type_exception);
-        TS_ASSERT_THROWS(cell.set_explicit_value("3", xlnt::cell::type::boolean), xlnt::data_type_exception);
         TS_ASSERT_THROWS(cell.set_error("1"), xlnt::data_type_exception);
         TS_ASSERT_THROWS(cell.set_hyperlink("1"), xlnt::data_type_exception);
     }
@@ -328,13 +323,13 @@ public:
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
 
-        cell = "03:40:16";
-        TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
-        TS_ASSERT_EQUALS(cell, xlnt::time(3, 40, 16));
+        cell.set_value("03:40:16");
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
+        TS_ASSERT_EQUALS(cell.get_value(), xlnt::time(3, 40, 16));
 
-        cell = "03:40";
-        TS_ASSERT_EQUALS(xlnt::cell::type::numeric, cell.get_data_type());
-        TS_ASSERT_EQUALS(cell, xlnt::time(3, 40));
+        cell.set_value("03:40");
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
+        TS_ASSERT_EQUALS(cell.get_value(), xlnt::time(3, 40));
     }
     
     void test_timedelta()
@@ -342,9 +337,9 @@ public:
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
         
-        cell = xlnt::timedelta(1, 3, 0, 0, 0);
-        TS_ASSERT_EQUALS(cell, 1.125);
-        TS_ASSERT_EQUALS(cell.get_data_type(), xlnt::cell::type::numeric);
+        cell.set_value(xlnt::timedelta(1, 3, 0, 0, 0));
+        TS_ASSERT_EQUALS(cell.get_value(), 1.125);
+        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
     }
 
     void test_date_format_on_non_date()
@@ -352,9 +347,9 @@ public:
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
 
-	cell = xlnt::datetime::now();
-        cell = "testme";
-        TS_ASSERT("testme" == cell);
+        cell.set_value(xlnt::datetime::now());
+        cell.set_value("testme");
+        TS_ASSERT("testme" == cell.get_value());
     }
 
     void test_set_get_date()
@@ -364,8 +359,8 @@ public:
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
 
-        cell = today;
-        TS_ASSERT(today == cell);
+        cell.set_value(today);
+        TS_ASSERT(today == cell.get_value());
     }
 
     void test_repr()
@@ -381,11 +376,11 @@ public:
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
 
-        cell = xlnt::datetime::now();
+        cell.set_value(xlnt::datetime::now());
         TS_ASSERT(cell.is_date());
 
-        cell = "testme";
-        TS_ASSERT_EQUALS("testme", cell);
+        cell.set_value("testme");
+        TS_ASSERT_EQUALS("testme", cell.get_value());
         TS_ASSERT(!cell.is_date());
     }
 
@@ -395,7 +390,7 @@ public:
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
 
-        cell = -13.5;
+        cell.set_value(-13.5);
         cell.get_style().get_number_format().set_format_code("0.00_);[Red]\\(0.00\\)");
 
         TS_ASSERT(!cell.is_date());

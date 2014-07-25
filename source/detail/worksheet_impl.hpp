@@ -65,6 +65,8 @@ struct worksheet_impl
     std::unordered_map<std::string, range_reference> named_ranges_;
     std::size_t comment_count_;
     header_footer header_footer_;
+    std::unordered_map<column_t, double> column_dimensions_;
+    std::unordered_map<row_t, double> row_dimensions_;
 };
 
 } // namespace detail

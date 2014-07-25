@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cell/cell.hpp"
+#include "cell/value.hpp"
 #include "common/types.hpp"
 #include "common/relationship.hpp"
 #include "comment_impl.hpp"
@@ -21,13 +22,11 @@ struct cell_impl
     cell_impl &operator=(const cell_impl &rhs);
 
     worksheet_impl *parent_;
-    cell::type type_;
-    long double numeric_value;
-    std::string string_value;
-    std::string formula_value;
+    value value_;
+    std::string formula_;
     relationship hyperlink_;
-    column_t column;
-    row_t row;
+    column_t column_;
+    row_t row_;
     style *style_;
     bool merged;
     bool is_date_;

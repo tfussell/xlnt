@@ -33,7 +33,9 @@
 namespace xlnt {
     
 class cell_reference;
+class comment;
 class relationship;
+class value;
 class worksheet;
 
 struct date;
@@ -43,22 +45,7 @@ struct timedelta;
 
 namespace detail {    
 struct cell_impl;
-struct comment_impl;
 } // namespace detail
-    
-class comment
-{
-public:
-    comment(const std::string &text, const std::string &author);
-    ~comment();
-    std::string get_text() const;
-    std::string get_author() const;
-    
-private:
-    friend class cell;
-    comment(detail::comment_impl *d);
-    detail::comment_impl *d_;
-};
 
 /// <summary>
 /// Describes cell associated properties.
@@ -72,15 +59,6 @@ private:
 class cell
 {
 public:
-    enum class type
-    {
-        null,
-        numeric,
-        string,
-        boolean,
-        error
-    };
-
     static const std::unordered_map<std::string, int> ErrorCodes;
     
     static std::string check_string(const std::string &value);
@@ -88,23 +66,13 @@ public:
     static std::string check_error(const std::string &value);
     
     cell();
-    cell(worksheet ws, const cell_reference &reference, const std::string &initial_value = std::string());
-    
-    std::string get_internal_value_string() const;
-    long double get_internal_value_numeric() const;
+    cell(worksheet ws, const cell_reference &reference);
+    cell(worksheet ws, const cell_reference &reference, const value &initial_value);
     
     std::string get_column() const;
     row_t get_row() const;
     
     std::string to_string() const;   
-    
-    void set_explicit_value(const std::string &value, type data_type);
-    void set_explicit_value(int value, type data_type);
-    void set_explicit_value(double value, type data_type);
-    void set_explicit_value(const date &value, type data_type);
-    void set_explicit_value(const time &value, type data_type);
-    void set_explicit_value(const datetime &value, type data_type);
-    type data_type_for_value(const std::string &value);
     
     bool is_merged() const;
     void set_merged(bool merged);
@@ -116,11 +84,12 @@ public:
     void set_number_format(const std::string &format_code);
     
     bool has_style() const;
-    
     style &get_style();
     const style &get_style() const;
-    
-    type get_data_type() const;
+
+    std::pair<int, int> get_anchor() const;
+
+    bool garbage_collectible() const;
     
     cell_reference get_reference() const;
     
@@ -139,49 +108,33 @@ public:
 
     std::string get_error() const;
     void set_error(const std::string &error);
-
-    void set_null();
     
     cell offset(row_t row, column_t column);
     
     worksheet get_parent();
+    const worksheet get_parent() const;
+
+    value &get_value();
+    const value &get_value() const;
+    void set_value(bool b);
+    void set_value(int i);
+    void set_value(double d);
+    void set_value(long double d);
+    void set_value(long long int i);
+    void set_value(const date &d);
+    void set_value(const datetime &d);
+    void set_value(const time &t);
+    void set_value(const timedelta &t);
+    void set_value(const char *s);
+    void set_value(const std::string &s);
+    void set_value(const value &v);
     
     cell &operator=(const cell &rhs);
-    cell &operator=(bool value);
-    cell &operator=(int value);
-    cell &operator=(double value);
-    cell &operator=(long int value);
-    cell &operator=(long long value);
-    cell &operator=(long double value);
-    cell &operator=(const std::string &value);
-    cell &operator=(const char *value);
-    cell &operator=(const date &value);
-    cell &operator=(const time &value);
-    cell &operator=(const datetime &value);
-    cell &operator=(const timedelta &value);
     
     bool operator==(const cell &comparand) const;
     bool operator==(std::nullptr_t) const;
-    bool operator==(bool comparand) const;
-    bool operator==(int comparand) const;
-    bool operator==(double comparand) const;
-    bool operator==(const std::string &comparand) const;
-    bool operator==(const char *comparand) const;
-    bool operator==(const date &comparand) const;
-    bool operator==(const time &comparand) const;
-    bool operator==(const datetime &comparand) const;
-    bool operator==(const timedelta &comparand) const;
 
     friend bool operator==(std::nullptr_t, const cell &cell);
-    friend bool operator==(bool comparand, const cell &cell);
-    friend bool operator==(int comparand, const cell &cell);
-    friend bool operator==(double comparand, const cell &cell);
-    friend bool operator==(const std::string &comparand, const cell &cell);
-    friend bool operator==(const char *comparand, const cell &cell);
-    friend bool operator==(const date &comparand, const cell &cell);
-    friend bool operator==(const time &comparand, const cell &cell);
-    friend bool operator==(const datetime &comparand, const cell &cell);
-
     friend bool operator<(cell left, cell right);
     
 private:

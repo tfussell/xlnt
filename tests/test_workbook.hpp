@@ -193,7 +193,7 @@ public:
         double float_value = 1.0 / 3.0;
         xlnt::workbook book;
         auto sheet = book.get_active_sheet();
-        sheet.get_cell("A1") = float_value;
+        sheet.get_cell("A1").set_value(float_value);
         auto dest_filename = temp_file.GetFilename();
         book.save(dest_filename);
 
@@ -201,6 +201,6 @@ public:
         test_book.load(dest_filename);
         auto test_sheet = test_book.get_active_sheet();
 
-        TS_ASSERT_LESS_THAN_EQUALS(test_sheet.get_cell("A1").get_internal_value_numeric() - float_value, 0.00001);
+        TS_ASSERT_LESS_THAN_EQUALS(test_sheet.get_cell("A1").get_value().as<double>() - float_value, 0.00001);
     }
 };

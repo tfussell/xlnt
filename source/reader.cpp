@@ -3,6 +3,7 @@
 
 #include "reader/reader.hpp"
 #include "cell/cell.hpp"
+#include "cell/value.hpp"
 #include "common/datetime.hpp"
 #include "worksheet/range_reference.hpp"
 #include "workbook/workbook.hpp"
@@ -279,7 +280,7 @@ void read_worksheet_common(worksheet ws, const pugi::xml_node &root_node, const 
             if(cell_node != nullptr)
             {
                 bool has_value = cell_node.child("v") != nullptr;
-                std::string value = cell_node.child("v").text().as_string();
+                std::string value_string = cell_node.child("v").text().as_string();
 
                 bool has_type = cell_node.attribute("t") != nullptr;
                 std::string type = cell_node.attribute("t").as_string();
@@ -299,36 +300,47 @@ void read_worksheet_common(worksheet ws, const pugi::xml_node &root_node, const 
                 if(has_type && type == "inlineStr") // inline string
                 {
                     std::string inline_string = cell_node.child("is").child("t").text().as_string();
-                    ws.get_cell(address) = inline_string;
+                    ws.get_cell(address).set_value(inline_string);
                 }
                 else if(has_type && type == "s") // shared string
                 {
-                    ws.get_cell(address) = string_table.at(cell_node.child("v").text().as_int());
+                    auto shared_string_index = std::stoi(value_string);
+                    auto shared_string = string_table.at(shared_string_index);
+                    ws.get_cell(address).set_value(shared_string);
                 }
                 else if(has_type && type == "b") // boolean
                 {
-                    ws.get_cell(address) = value != "0";
+                    ws.get_cell(address).set_value(value(value_string != "0"));
                 }
                 else if(has_type && type == "str")
                 {
-                    ws.get_cell(address) = value;
+                    ws.get_cell(address).set_value(value_string);
                 }
                 else if(has_style)
                 {
                     auto number_format_id = number_format_ids.at(std::stoi(style));
                     auto format = number_format::lookup_format(number_format_id);
                     ws.get_cell(address).get_style().get_number_format().set_format_code(format);
-                    ws.get_cell(address) = std::stod(value);
+                    if(format == number_format::format::date_xlsx14)
+                    {
+                        auto base_date = ws.get_parent().get_properties().excel_base_date;
+                        auto converted = date::from_number(std::stoi(value_string), base_date);
+                        ws.get_cell(address).set_value(converted.to_number(calendar::windows_1900));
+                    }
+                    else
+                    {
+                        ws.get_cell(address).set_value(value(std::stod(value_string)));
+                    }
                 }
                 else if(has_value)
                 {
                     try
                     {
-                        ws.get_cell(address) = std::stod(value);
+                        ws.get_cell(address).set_value(value(std::stod(value_string)));
                     }
                     catch(std::invalid_argument)
                     {
-                        ws.get_cell(address) = value;
+                        ws.get_cell(address).set_value(value_string);
                     }
                 }
             }
