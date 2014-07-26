@@ -13,6 +13,11 @@ class test_write : public CxxTest::TestSuite
 public:
     void test_write_empty_workbook()
     {
+        xlnt::workbook wbt;
+        auto ws = wbt.get_active_sheet();
+        ws.get_cell("A2").set_value("Thomas Fussell");
+        wbt.save("/Users/thomas/Desktop/a.xlsx");
+        
         if(PathHelper::FileExists(temp_file.GetFilename()))
         {
             PathHelper::DeleteFile(temp_file.GetFilename());
@@ -133,6 +138,11 @@ public:
         auto content = xlnt::writer::write_worksheet_rels(ws);
         TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_hyperlink.xml.rels", content));
     }
+    
+    void test_write_hyperlink_image_rels()
+    {
+        TS_SKIP("not implemented");
+    }
 
     void test_hyperlink_value()
     {
@@ -154,6 +164,16 @@ public:
 
         content = xlnt::writer::write_workbook(wb);
         TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/workbook_auto_filter.xml", content));
+    }
+    
+    void test_write_auto_filter_filter_column()
+    {
+        
+    }
+    
+    void test_write_auto_filter_sort_condition()
+    {
+        
     }
 
     void test_freeze_panes_horiz()
@@ -186,7 +206,7 @@ public:
     void test_long_number()
     {
 		auto ws = wb_.create_sheet();
-        ws.get_cell("A1").set_value(9781231231230);
+        ws.get_cell("A1").set_value(9781231231230LL);
         auto content = xlnt::writer::write_worksheet(ws, {}, {});
         TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/long_number.xml", content));
     }
@@ -197,6 +217,11 @@ public:
         ws.get_cell("A1").set_value(1234567890);
         auto content = xlnt::writer::write_worksheet(ws, {}, {});
         TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/short_number.xml", content));
+    }
+    
+    void test_write_images()
+    {
+        TS_SKIP("not implemented");
     }
 
  private:

@@ -19,6 +19,13 @@ value::value(value &&v)
     swap(*this, v);
 }
 
+value::value(const value &v)
+{
+    type_ = v.type_;
+    numeric_value_ = v.numeric_value_;
+    string_value_ = v.string_value_;
+}
+    
 value::value(bool b) : type_(type::boolean), numeric_value_(b ? 1 : 0)
 {
 }
@@ -49,10 +56,26 @@ value &value::operator=(value other)
     return *this;
 }
 
+value &value::operator=(int i)
+{
+    return *this = value(i);
+}
+
 bool value::is(type t) const
 {
     return type_ == t;
 }
+    
+    template<>
+    std::string value::get() const
+    {
+        if(type_ == type::string)
+        {
+            return string_value_;
+        }
+        
+        throw std::runtime_error("not a string");
+    }
 
 template<>
 double value::as() const

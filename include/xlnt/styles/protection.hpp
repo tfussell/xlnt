@@ -35,8 +35,12 @@ public:
         unprotected
     };
     
-    type locked;
-    type hidden;
+    protection();
+    protection(type locked);
+    
+private:
+    type locked_;
+    type hidden_;
 };
 
 } // namespace xlnt

@@ -30,4 +30,30 @@ std::unordered_map<std::size_t, std::string> style_writer::get_style_by_hash() c
     return styles;
 }
 
+std::vector<style> style_writer::get_styles() const
+{
+    std::vector<style> styles;
+    
+    for(auto ws : wb_)
+    {
+        for(auto row : ws.rows())
+        {
+            for(auto cell : row)
+            {
+                if(cell.has_style())
+                {
+                    styles.push_back(cell.get_style());
+                }
+            }
+        }
+    }
+    
+    return styles;
+}
+    
+std::string style_writer::write_table() const
+{
+    return "";
+}
+    
 } // namespace xlnt

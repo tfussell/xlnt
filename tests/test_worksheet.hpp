@@ -12,18 +12,18 @@ public:
     void test_new_worksheet()
     {
         xlnt::worksheet ws = wb_.create_sheet();
-	TS_ASSERT(wb_ == ws.get_parent());
+        TS_ASSERT(wb_ == ws.get_parent());
     }
 
     void test_new_sheet_name()
     {
-	xlnt::worksheet ws = wb_.create_sheet("TestName");
+        xlnt::worksheet ws = wb_.create_sheet("TestName");
         TS_ASSERT_EQUALS(ws.to_string(), "<Worksheet \"TestName\">");
     }
 
     void test_get_cell()
     {
-	xlnt::worksheet ws(wb_);
+        xlnt::worksheet ws(wb_);
         auto cell = ws.get_cell("A1");
         TS_ASSERT_EQUALS(cell.get_reference().to_string(), "A1");
     }
@@ -31,7 +31,7 @@ public:
     void test_set_bad_title()
     {
         std::string title(50, 'X');
-	TS_ASSERT_THROWS(wb_.create_sheet(title), xlnt::sheet_title_exception);
+        TS_ASSERT_THROWS(wb_.create_sheet(title), xlnt::sheet_title_exception);
     }
     
     void test_increment_title()
@@ -51,6 +51,11 @@ public:
         TS_ASSERT_THROWS(wb_.create_sheet("?"), xlnt::sheet_title_exception);
         TS_ASSERT_THROWS(wb_.create_sheet("/"), xlnt::sheet_title_exception);
         TS_ASSERT_THROWS(wb_.create_sheet("\\"), xlnt::sheet_title_exception);
+    }
+    
+    void test_unique_sheet_title()
+    {
+        TS_SKIP("not implemented");
     }
 
     void test_worksheet_dimension()
@@ -278,6 +283,30 @@ public:
         ws.auto_filter("c1:g9");
         TS_ASSERT_EQUALS(ws.get_auto_filter(), "C1:G9");
     }
+    
+    void test_getitem()
+    {
+        xlnt::worksheet ws(wb_);
+        xlnt::cell cell = ws[xlnt::cell_reference("A1")];
+        TS_ASSERT(cell.get_reference().to_string() == "A1");
+    }
+    
+    void test_setitem()
+    {
+        xlnt::worksheet ws(wb_);
+        ws[xlnt::cell_reference("A1")].get_value() = 5;
+        TS_ASSERT(ws[xlnt::cell_reference("A1")].get_value() == 5);
+    }
+    
+    void test_getslice()
+    {
+        xlnt::worksheet ws(wb_);
+        auto cell_range = ws("A1", "B2");
+        TS_ASSERT_EQUALS(cell_range[0][0], ws.get_cell("A1"));
+        TS_ASSERT_EQUALS(cell_range[1][0], ws.get_cell("A2"));
+        TS_ASSERT_EQUALS(cell_range[0][1], ws.get_cell("B1"));
+        TS_ASSERT_EQUALS(cell_range[1][1], ws.get_cell("B2"));
+    }
 
     void test_freeze()
     {
@@ -488,10 +517,31 @@ public:
 
         pugi::xml_document doc;
         doc.load(xml_string.c_str());
+        
+        auto expected_string =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+        "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
+        "   <sheetPr>"
+        "      <outlinePr summaryRight=\"1\" summaryBelow=\"1\" />"
+        "      <pageSetUpPr fitToPage=\"1\" />"
+        "   </sheetPr>"
+        "   <dimension ref=\"A1:A1\" />"
+        "   <sheetViews>"
+        "      <sheetView workbookViewId=\"0\">"
+        "         <selection sqref=\"A1\" activeCell=\"A1\" />"
+        "      </sheetView>"
+        "   </sheetViews>"
+        "   <sheetFormatPr baseColWidth=\"10\" defaultRowHeight=\"15\" />"
+        "   <sheetData />"
+        "   <printOptions horizontalCentered=\"1\" verticalCentered=\"1\" />"
+        "   <pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" />"
+        "   <pageSetup orientation=\"landscape\" paperSize=\"3\" fitToHeight=\"0\" fitToWidth=\"1\" />"
+        "</worksheet>";
+        
+        pugi::xml_document expected_doc;
+        expected_doc.load(expected_string);
 
-        xlnt::worksheet ws2(wb_);
-        xml_string = xlnt::writer::write_worksheet(ws2);
-        doc.load(xml_string.c_str());
+        TS_ASSERT(Helper::compare_xml(expected_doc, doc));
     }
     
     void test_header_footer()

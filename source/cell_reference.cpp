@@ -57,6 +57,11 @@ absolute_(absolute)
     }
 }
 
+range_reference cell_reference::operator,(const xlnt::cell_reference &other) const
+{
+    return range_reference(*this, other);
+}
+
 std::string cell_reference::to_string() const
 {
     if(absolute_)

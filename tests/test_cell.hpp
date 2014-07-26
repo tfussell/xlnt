@@ -412,20 +412,6 @@ public:
         TS_ASSERT(ws.get_comment_count() == 0);
     }
     
-    void test_comment_assignment()
-    {
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1");
-        
-        xlnt::comment c("text", "author");
-        cell.set_comment(c);
-        TS_ASSERT_THROWS_ANYTHING(ws.get_cell("A2").set_comment(c));
-        ws.get_cell("A2").set_comment(xlnt::comment("text2", "author2"));
-        TS_ASSERT_THROWS_ANYTHING(ws.get_cell("A1").set_comment(ws.get_cell("A2").get_comment()));
-        ws.get_cell("A1").clear_comment();
-        TS_ASSERT_THROWS_NOTHING(ws.get_cell("A2").set_comment(c));
-    }
-    
     void test_cell_offset()
     {
         xlnt::worksheet ws = wb.create_sheet();

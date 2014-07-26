@@ -86,6 +86,7 @@ public:
     bool has_style() const;
     style &get_style();
     const style &get_style() const;
+    void set_style(const style &s);
 
     std::pair<int, int> get_anchor() const;
 
@@ -96,8 +97,7 @@ public:
     bool is_date() const;
     
     comment get_comment() const;
-    void set_comment(comment &comment);
-    void set_comment(comment &&comment);
+    void set_comment(const comment &comment);
     void clear_comment();
     bool has_comment() const;
 

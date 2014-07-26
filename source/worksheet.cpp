@@ -42,6 +42,11 @@ void worksheet::create_named_range(const std::string &name, const range_referenc
     d_->named_ranges_[name] = reference;
 }
 
+range worksheet::operator()(const xlnt::cell_reference &top_left, const xlnt::cell_reference &bottom_right)
+{
+    return get_range({top_left, bottom_right});
+}
+
 cell worksheet::operator[](const cell_reference &ref)
 {
     return get_cell(ref);

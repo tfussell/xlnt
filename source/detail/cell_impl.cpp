@@ -4,15 +4,15 @@
 namespace xlnt {
 namespace detail {
 
-cell_impl::cell_impl() : parent_(nullptr), column_(0), row_(0), style_(nullptr), merged(false), has_hyperlink_(false), comment_(nullptr, "A1", "", ""), is_date_(false)
+cell_impl::cell_impl() : parent_(nullptr), column_(0), row_(0), style_(nullptr), merged(false), has_hyperlink_(false), is_date_(false)
 {
 }
     
-cell_impl::cell_impl(worksheet_impl *parent, int column_index, int row_index) : parent_(parent), column_(column_index), row_(row_index), style_(nullptr), merged(false), has_hyperlink_(false), comment_(nullptr, "A1", "", ""), is_date_(false)
+cell_impl::cell_impl(worksheet_impl *parent, int column_index, int row_index) : parent_(parent), column_(column_index), row_(row_index), style_(nullptr), merged(false), has_hyperlink_(false), is_date_(false)
 {
 }
     
-cell_impl::cell_impl(const cell_impl &rhs) : comment_(nullptr, "A1", "", ""), is_date_(false)
+cell_impl::cell_impl(const cell_impl &rhs) : is_date_(false)
 {
     *this = rhs;
 }

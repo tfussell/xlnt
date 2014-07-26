@@ -324,6 +324,11 @@ const style &cell::get_style() const
     }
     return *d_->style_;
 }
+    
+void cell::set_style(const xlnt::style &s)
+{
+    get_style() = s;
+}
 
 cell &cell::operator=(const cell &rhs)
 {
@@ -402,64 +407,29 @@ void cell::clear_formula()
     d_->formula_.clear();
 }
 
-void cell::set_comment(xlnt::comment &c)
+void cell::set_comment(const xlnt::comment &c)
 {
-    if(c.d_->parent_worksheet_ != nullptr)
-    {
-        if(c.d_->parent_cell_ != get_reference())
-        {
-            throw std::runtime_error("");
-        }
-    }
-    
-    if(d_->comment_.parent_worksheet_ == nullptr)
+    if(!has_comment())
     {
         get_parent().increment_comments();
     }
     
-    d_->comment_.text_ = c.get_text();
-    d_->comment_.author_ = c.get_author();
-    d_->comment_.parent_worksheet_ = d_->parent_;
-    d_->comment_.parent_cell_ = get_reference();
-    
-    //XXX: there's a memory leak here, not sure how to go about fixing it yet
-    c.d_ = &d_->comment_;
-}
-
-void cell::set_comment(xlnt::comment &&c)
-{
-    if(c.d_->parent_worksheet_ != nullptr && c.d_->parent_cell_ != get_reference())
-    {
-        throw std::runtime_error("");
-    }
-    
-    if(d_->comment_.parent_worksheet_ == nullptr)
-    {
-        get_parent().increment_comments();
-    }
-    
-    d_->comment_.text_ = c.get_text();
-    d_->comment_.author_ = c.get_author();
-    d_->comment_.parent_worksheet_ = d_->parent_;
-    d_->comment_.parent_cell_ = get_reference();
+    d_->comment_ = c;
 }
 
 void cell::clear_comment()
 {
-    if(d_->comment_.parent_worksheet_ != nullptr)
+    if(has_comment())
     {
         get_parent().decrement_comments();
     }
     
-    d_->comment_.parent_worksheet_ = nullptr;
-    d_->comment_.parent_cell_ = "A1";
-    d_->comment_.text_.clear();
-    d_->comment_.author_.clear();
+    d_->comment_ = comment();
 }
 
 bool cell::has_comment() const
 {
-    return d_->comment_.parent_worksheet_ != nullptr;
+    return d_->comment_.get_text() != "";
 }
 
 void cell::set_error(const std::string &error)
@@ -489,7 +459,7 @@ const worksheet cell::get_parent() const
 
 comment cell::get_comment() const
 {
-    return comment(&d_->comment_);
+    return d_->comment_;
 }
 
 std::pair<int, int> cell::get_anchor() const

@@ -37,6 +37,7 @@ class style
 {
 public:
     style(bool static_ = false) : static_(static_) {}
+    style(const style &rhs);
     
     style copy() const;
     
@@ -60,8 +61,6 @@ public:
     void set_protection(protection protection);
     
 private:
-    style(const style &rhs);
-    
     bool static_ = false;
     font font_;
     fill fill_;

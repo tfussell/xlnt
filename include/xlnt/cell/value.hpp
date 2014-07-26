@@ -27,6 +27,7 @@ public:
 
     value();
     value(value &&v);
+    value(const value &v);
     value(bool b);
     value(int8_t i);
     value(int16_t i);

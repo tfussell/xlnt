@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <array>
 #include <fstream>
+#include <set>
 #include <sstream>
 #include <pugixml.hpp>
 
@@ -511,6 +512,31 @@ bool workbook::save(const std::string &filename)
 
 	f.set_file_contents("[Content_Types].xml", writer::write_content_types(*this));
     
+    f.set_file_contents("docProps/app.xml", writer::write_properties_app(*this));
+    f.set_file_contents("docProps/core.xml", writer::write_properties_core(get_properties()));
+    
+    std::set<std::string> shared_strings_set;
+    
+    for(auto ws : *this)
+    {
+        for(auto row : ws.rows())
+        {
+            for(auto cell : row)
+            {
+                if(cell.get_value().is(value::type::string))
+                {
+                    shared_strings_set.insert(cell.get_value().get<std::string>());
+                }
+            }
+        }
+    }
+    
+    std::vector<std::string> shared_strings(shared_strings_set.begin(), shared_strings_set.end());
+    f.set_file_contents("xl/sharedStrings.xml", writer::write_shared_strings(shared_strings));
+    
+    f.set_file_contents("xl/theme/theme1.xml", writer::write_theme());
+    //f.set_file_contents("xl/styles.xml", writer::wri)
+    
     f.set_file_contents("_rels/.rels", writer::write_root_rels());
     f.set_file_contents("xl/_rels/workbook.xml.rels", writer::write_workbook_rels(*this));
 
@@ -522,7 +548,9 @@ bool workbook::save(const std::string &filename)
         {
             std::string sheet_index_string = relationship.get_target_uri().substr(16);
             std::size_t sheet_index = std::stoi(sheet_index_string.substr(0, sheet_index_string.find('.'))) - 1;
-            f.set_file_contents("xl/" + relationship.get_target_uri(), writer::write_worksheet(get_sheet_by_index(sheet_index)));
+            std::string sheet_uri = "xl/" + relationship.get_target_uri();
+            auto ws = get_sheet_by_index(sheet_index);
+            f.set_file_contents(sheet_uri, writer::write_worksheet(ws, shared_strings));
         }
     }
 

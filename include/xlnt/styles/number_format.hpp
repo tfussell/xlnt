@@ -89,6 +89,9 @@ public:
     static bool is_date_format(const std::string &format);
     static bool is_builtin(const std::string &format);
     
+    number_format() : format_code_(format::general), format_index_(0) {}
+    number_format(format code) : format_code_(code) {}
+    
     format get_format_code() const { return format_code_; }
     void set_format_code(format format_code) { format_code_ = format_code; }
     void set_format_code(const std::string &format_code) { custom_format_code_ = format_code; }

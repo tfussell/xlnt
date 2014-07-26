@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "cell_impl.hpp"
-#include "comment_impl.hpp"
 
 namespace xlnt {
 

@@ -94,6 +94,8 @@ public:
     std::string to_string() const;
     range_reference to_range() const;
     
+    range_reference operator,(const cell_reference &other) const;
+    
     bool operator==(const cell_reference &comparand) const;
     bool operator==(const std::string &reference_string) const { return *this == cell_reference(reference_string); }
     bool operator==(const char *reference_string) const { return *this == std::string(reference_string); }
