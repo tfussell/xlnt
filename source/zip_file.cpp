@@ -63,13 +63,39 @@ std::string zip_file::get_file_contents(const std::string &filename) const
     return files_.at(filename);
 }
 
+std::string dirname(const std::string &filename)
+{
+    auto last_sep_index = filename.find_last_of('/');
+
+    if(last_sep_index != std::string::npos)
+    {
+        return filename.substr(0, last_sep_index + 1);
+    }
+
+    return "";
+}
+
 void zip_file::set_file_contents(const std::string &filename, const std::string &contents)
 {
     if(!has_file(filename) || files_[filename] != contents)
     {
         modified_ = true;
     }
-    
+
+    auto dir = dirname(filename);
+
+    while(dir != "")
+    {
+        auto matching_directory = std::find(directories_.begin(), directories_.end(), dir);
+
+        if(matching_directory == directories_.end())
+        {
+            directories_.push_back(dir);
+        }
+
+        dir = dirname(dir.substr(0, dir.length() - 1));
+    }
+
     files_[filename] = contents;
 }
 
@@ -170,6 +196,11 @@ void zip_file::write_all()
     
     change_state(state::write, false);
     
+    for(auto directory : directories_)
+    {
+        write_directory_to_zip(directory, true);
+    }
+
     for(auto file : files_)
     {
         write_to_zip(file.first, file.second, true);
@@ -229,6 +260,32 @@ std::string zip_file::read_from_zip(const std::string &filename)
     return std::string(file_buffer.begin(), file_buffer.end());
 }
 
+void zip_file::write_directory_to_zip(const std::string &name, bool append)
+{
+    if(!((int)access_ & (int)file_access::write))
+    {
+        throw std::runtime_error("don't have write access");
+    }
+
+    change_state(state::write, append);
+
+    zip_fileinfo file_info = {0};
+
+    int result = zipOpenNewFileInZip(zip_file_, name.c_str(), &file_info, nullptr, 0, nullptr, 0, nullptr, Z_DEFLATED, Z_DEFAULT_COMPRESSION);
+
+    if(result != UNZ_OK)
+    {
+        throw result;
+    }
+
+    result = zipCloseFileInZip(zip_file_);
+
+    if(result != UNZ_OK)
+    {
+        throw result;
+    }
+}
+
 void zip_file::write_to_zip(const std::string &filename, const std::string &content, bool append)
 {
     if(!((int)access_ & (int)file_access::write))
@@ -238,7 +295,7 @@ void zip_file::write_to_zip(const std::string &filename, const std::string &cont
     
     change_state(state::write, append);
     
-    zip_fileinfo file_info;
+    zip_fileinfo file_info = {0};
     
     int result = zipOpenNewFileInZip(zip_file_, filename.c_str(), &file_info, nullptr, 0, nullptr, 0, nullptr, Z_DEFLATED, Z_DEFAULT_COMPRESSION);
     

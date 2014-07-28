@@ -22,6 +22,7 @@
 #include "detail/cell_impl.hpp"
 #include "detail/workbook_impl.hpp"
 #include "detail/worksheet_impl.hpp"
+#include "writer/style_writer.hpp"
 
 static std::string CreateTemporaryFilename()
 {
@@ -535,7 +536,7 @@ bool workbook::save(const std::string &filename)
     f.set_file_contents("xl/sharedStrings.xml", writer::write_shared_strings(shared_strings));
     
     f.set_file_contents("xl/theme/theme1.xml", writer::write_theme());
-    //f.set_file_contents("xl/styles.xml", writer::wri)
+    f.set_file_contents("xl/styles.xml", style_writer(*this).write_table());
     
     f.set_file_contents("_rels/.rels", writer::write_root_rels());
     f.set_file_contents("xl/_rels/workbook.xml.rels", writer::write_workbook_rels(*this));
@@ -578,6 +579,15 @@ std::vector<content_type> xlnt::workbook::get_content_types() const
 	content_types.push_back({ true, "xml", "", "application/xml" });
 	content_types.push_back({ true, "rels", "", "application/vnd.openxmlformats-package.relationships+xml" });
 	content_types.push_back({ false, "", "/xl/workbook.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml" });
+    for(int i = 0; i < get_sheet_names().size(); i++)
+    {
+        content_types.push_back({false, "", "/xl/worksheets/sheet" + std::to_string(i + 1) + ".xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"});
+    }
+    content_types.push_back({false, "", "/xl/theme/theme1.xml", "application/vnd.openxmlformats-officedocument.theme+xml"});
+    content_types.push_back({false, "", "/xl/styles.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"});
+    content_types.push_back({false, "", "/xl/sharedStrings.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"});
+    content_types.push_back({false, "", "/docProps/core.xml", "application/vnd.openxmlformats-package.core-properties+xml"});
+    content_types.push_back({false, "", "/docProps/app.xml", "application/vnd.openxmlformats-officedocument.extended-properties+xml"});
 	return content_types;
 }
 

@@ -113,6 +113,7 @@ private:
     void write_all();
     std::string read_from_zip(const std::string &filename);
     void write_to_zip(const std::string &filename, const std::string &content, bool append = true);
+    void write_directory_to_zip(const std::string &name, bool append = true);
     void change_state(state new_state, bool append = true);
     static bool file_exists(const std::string& name);
     void start_read();

@@ -13,11 +13,6 @@ class test_write : public CxxTest::TestSuite
 public:
     void test_write_empty_workbook()
     {
-        xlnt::workbook wbt;
-        auto ws = wbt.get_active_sheet();
-        ws.get_cell("A2").set_value("Thomas Fussell");
-        wbt.save("/Users/thomas/Desktop/a.xlsx");
-        
         if(PathHelper::FileExists(temp_file.GetFilename()))
         {
             PathHelper::DeleteFile(temp_file.GetFilename());
