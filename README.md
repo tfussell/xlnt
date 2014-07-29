@@ -41,7 +41,7 @@ for(auto row : wb2["sheet2"].rows())
 ## Building
 xlnt is regularly built and passes all 200+ tests in GCC 4.8.2, MSVC 12, and Clang 3.4.
 
-Workspaces for Visual Studio 2013, and GNU Make can be created using premake and the premake5.lua file in the build directory (requires premake5, currently available [here](https://bitbucket.org/premake/premake-dev)). XCode workspaces can be generated using premake4.lua and premake4.
+Workspaces for Visual Studio 2013, and GNU Make can be created using the development version of premake (currently available [here](https://bitbucket.org/premake/premake-dev), binaries [here](http://sourceforge.net/projects/premake/files/Premake/nightlies/)) and the premake5.lua script in the build directory. XCode workspaces can be generated using premake4.lua and premake4 (binaries [here](http://sourceforge.net/projects/premake/files/Premake/4.3/)).
 
 In Windows, with Visual Studio 2013:
 ```batch
@@ -66,7 +66,7 @@ open xcode4/xlnt.xcworkspace
 ```
 
 ## Dependencies
-xlnt uses the following libraries, which are included in the source tree:
+xlnt uses the following libraries, which are included in the source tree for convenience:
 - [miniz v1.15_r4](https://code.google.com/p/miniz/) (public domain/unlicense)
 - [pugixml v1.4](http://pugixml.org/) (MIT license)
 
