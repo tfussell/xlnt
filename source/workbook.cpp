@@ -579,15 +579,15 @@ std::vector<content_type> xlnt::workbook::get_content_types() const
 	content_types.push_back({ true, "xml", "", "application/xml" });
 	content_types.push_back({ true, "rels", "", "application/vnd.openxmlformats-package.relationships+xml" });
 	content_types.push_back({ false, "", "/xl/workbook.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml" });
-    for(int i = 0; i < get_sheet_names().size(); i++)
-    {
-        content_types.push_back({false, "", "/xl/worksheets/sheet" + std::to_string(i + 1) + ".xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"});
-    }
-    content_types.push_back({false, "", "/xl/theme/theme1.xml", "application/vnd.openxmlformats-officedocument.theme+xml"});
-    content_types.push_back({false, "", "/xl/styles.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"});
-    content_types.push_back({false, "", "/xl/sharedStrings.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"});
-    content_types.push_back({false, "", "/docProps/core.xml", "application/vnd.openxmlformats-package.core-properties+xml"});
-    content_types.push_back({false, "", "/docProps/app.xml", "application/vnd.openxmlformats-officedocument.extended-properties+xml"});
+	for(std::size_t i = 0; i < get_sheet_names().size(); i++)
+	{
+	    content_types.push_back({false, "", "/xl/worksheets/sheet" + std::to_string(i + 1) + ".xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"});
+	}
+	content_types.push_back({false, "", "/xl/theme/theme1.xml", "application/vnd.openxmlformats-officedocument.theme+xml"});
+	content_types.push_back({false, "", "/xl/styles.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"});
+	content_types.push_back({false, "", "/xl/sharedStrings.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"});
+	content_types.push_back({false, "", "/docProps/core.xml", "application/vnd.openxmlformats-package.core-properties+xml"});
+	content_types.push_back({false, "", "/docProps/app.xml", "application/vnd.openxmlformats-officedocument.extended-properties+xml"});
 	return content_types;
 }
 

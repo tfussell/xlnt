@@ -2,7 +2,7 @@
 
 namespace xlnt {
 
-style::style(const style &rhs) : protection_(rhs.protection_), number_format_(rhs.number_format_)
+style::style(const style &rhs) : number_format_(rhs.number_format_), protection_(rhs.protection_)
 {
 }
 

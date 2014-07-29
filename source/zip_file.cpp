@@ -7,8 +7,7 @@
 namespace xlnt {
 
 zip_file::zip_file(const std::string &filename, file_mode mode, file_access access)
-    : zip_file_({0}),
-    current_state_(state::closed),
+  : current_state_(state::closed),
 filename_(filename),
 modified_(false),
 //    mode_(mode),
@@ -130,7 +129,7 @@ void zip_file::read_all()
     
     for(;i < num_files; i++)
     {
-        mz_zip_archive_file_stat file_info = {0};
+        mz_zip_archive_file_stat file_info;
         
         if(!mz_zip_reader_file_stat(&zip_file_, i, &file_info))
         {
@@ -185,7 +184,7 @@ std::string zip_file::read_from_zip(const std::string &filename)
     
     for(;i < num_files; i++)
     {
-        mz_zip_archive_file_stat file_info = {0};
+        mz_zip_archive_file_stat file_info;
     
         if(!mz_zip_reader_file_stat(&zip_file_, i, &file_info))
         {
@@ -311,8 +310,6 @@ bool zip_file::file_exists(const std::string& name)
 
 void zip_file::start_read()
 {
-    zip_file_ = mz_zip_archive{0};
-
     if(!mz_zip_reader_init_file(&zip_file_, filename_.c_str(), 0))
     {
         throw invalid_file_exception(filename_);

@@ -39,8 +39,8 @@ public:
     protection(type locked);
     
 private:
-    type locked_;
-    type hidden_;
+//    type locked_;
+//    type hidden_;
 };
 
 } // namespace xlnt
