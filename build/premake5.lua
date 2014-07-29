@@ -15,8 +15,6 @@ project "xlnt.test"
     includedirs { 
        "../include",
        "../third-party/pugixml/src",
-       "../third-party/zlib",
-       "../third-party/zlib/contrib/minizip",
        "../third-party/cxxtest"
     }
     files { 
@@ -25,8 +23,7 @@ project "xlnt.test"
     }
     links { 
 	"pugixml",
-        "xlnt",
-        "zlib"
+        "xlnt"
     }
     prebuildcommands { "../../third-party/cxxtest/bin/cxxtestgen --runner=ErrorPrinter -o ../../tests/runner-autogen.cpp ../../tests/*.hpp" }
     flags { 
@@ -59,14 +56,11 @@ project "xlnt"
     warnings "Extra"
     targetdir "../lib/"
     links { 
-        "zlib",
 	"pugixml"
     }
     includedirs { 
        "../include/xlnt",
-       "../third-party/pugixml/src",
-       "../third-party/zlib/",
-       "../third-party/zlib/contrib/minizip"
+       "../third-party/pugixml/src"
     }
     files {
        "../source/**.cpp",
@@ -104,33 +98,6 @@ project "pugixml"
     }
     files {
        "../third-party/pugixml/src/pugixml.cpp"
-    }
-    flags { 
-       "Unicode",
-       "NoEditAndContinue",
-       "NoManifest",
-       "NoPCH"
-    }
-    configuration "windows"
-        defines { "WIN32" }
-
-project "zlib"
-    kind "StaticLib"
-    language "C"
-    warnings "Off"
-    targetdir "../lib/"
-    includedirs { 
-       "../third-party/zlib/",
-       "../third-party/zlib/contrib/minizip"
-    }
-    files {
-       "../third-party/zlib/*.c",
-       "../third-party/zlib/contrib/minizip/*.c"
-    }
-    excludes {
-       "../third-party/zlib/contrib/minizip/miniunz.c",
-       "../third-party/zlib/contrib/minizip/minizip.c",
-       "../third-party/zlib/contrib/minizip/iowin32.c"
     }
     flags { 
        "Unicode",

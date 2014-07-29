@@ -13,6 +13,12 @@ class test_write : public CxxTest::TestSuite
 public:
     void test_write_empty_workbook()
     {
+        xlnt::workbook wbk;
+        wbk.get_active_sheet().get_cell("A2").set_value("Thomas Fussell");
+        wbk.get_active_sheet().get_cell("B5").set_value(88);
+        wbk.get_active_sheet().get_cell("B5").get_style().set_number_format(xlnt::number_format(xlnt::number_format::format::percentage_00));
+        wbk.save("/Users/thomas/Desktop/ab.xlsx");
+        
         if(PathHelper::FileExists(temp_file.GetFilename()))
         {
             PathHelper::DeleteFile(temp_file.GetFilename());

@@ -2,21 +2,22 @@ xlnt
 ====
 
 ## Introduction
-xlnt is a c++ library for reading, writing, and modifying xlsx files. The API is roughly based on openpyxl, a python library for reading and writing xlsx/xlsm files. It is still very much a work in progress, but the core development work is complete.
+xlnt is a C++11 library for reading, writing, and modifying xlsx files. The API is generally based on [openpyxl](https://bitbucket.org/openpyxl/openpyxl), a python library for reading and writing xlsx/xlsm files. It is still very much a work in progress, but the core development work is complete.
 
 ## Usage
 Including xlnt in your project
 ```c++
-#include <xlnt.h>
+// with -Ixlnt/include
+#include <xlnt/xlnt.hpp>
 ```
 
 Creating a new spreadsheet and saving it
 ```c++
 xlnt::workbook wb;
 xlnt::worksheet ws = wb.get_active_sheet();
-ws.cell("A1") = 5;
-ws.cell("B2") = "string data";
-ws.cell("C3") = "=RAND()";
+ws.cell("A1").set_value(5);
+ws.cell("B2").set_value("string data");
+ws.cell("C3").set_formula("=RAND()");
 ws.merge_cells("C3:C4");
 ws.freeze_panes("B2");
 wb.save("book1.xlsx");
@@ -26,24 +27,47 @@ Opening an existing spreadsheet and printing all rows
 ```c++
 xlnt::workbook wb2;
 wb2.load("book2.xlsx");
-wb2["sheet1"].get_dimensions();
-for(auto &row : wb2["sheet2"])
+
+// no need to use references, iterators are only wrappers around pointers to memory in the workbook
+for(auto row : wb2["sheet2"].rows())
 {
     for(auto cell : row)
     {
-        std::cout << cell.to_string() << std::endl;
+        std::cout << cell.get_value().to_string() << std::endl;
     }
 }
 ```
 
 ## Building
-xlnt is regularly built and passes all 200+ tests in GCC 4.8.2, MSVC 12, and Clang 3.3.
+xlnt is regularly built and passes all 200+ tests in GCC 4.8.2, MSVC 12, and Clang 3.4.
 
-Workspaces for Visual Studio 2013, and GNU Make can be created using premake and the premake5.lua file in the build directory (requires premake5, currently available [here](https://bitbucket.org/premake/premake-dev)).
+Workspaces for Visual Studio 2013, and GNU Make can be created using premake and the premake5.lua file in the build directory (requires premake5, currently available [here](https://bitbucket.org/premake/premake-dev)). XCode workspaces can be generated using premake4.lua and premake4.
+
+In Windows, with Visual Studio 2013:
+```batch
+cd build
+premake5 vs2013
+start vs2013/xlnt.sln
+```
+
+In Linux, with GCC 4.8:
+```bash
+cd build
+premake5 gmake
+cd gmake
+make
+```
+
+In OSX, with Clang 3.4 (can also use gmake as described above):
+```bash
+cd build
+premake4 xcode4
+open xcode4/xlnt.xcworkspace
+```
 
 ## Dependencies
-xlnt requires the following libraries:
-- [zlib v1.2.8](http://zlib.net/) (zlib/libpng license)
+xlnt uses the following libraries, which are included in the source tree:
+- [miniz v1.15_r4](https://code.google.com/p/miniz/) (public domain/unlicense)
 - [pugixml v1.4](http://pugixml.org/) (MIT license)
 
 ## License

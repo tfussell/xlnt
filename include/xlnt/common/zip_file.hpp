@@ -26,8 +26,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include <zip.h>
-#include <unzip.h>
+#define MINIZ_HEADER_FILE_ONLY
+#include <miniz.c>
 
 namespace xlnt {
 
@@ -121,8 +121,7 @@ private:
     void start_write(bool append);
     void stop_write();
     
-    zipFile zip_file_;
-    unzFile unzip_file_;
+    mz_zip_archive zip_file_;
     state current_state_;
     std::string filename_;
     std::unordered_map<std::string, std::string> files_;

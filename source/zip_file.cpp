@@ -7,9 +7,8 @@
 namespace xlnt {
 
 zip_file::zip_file(const std::string &filename, file_mode mode, file_access access)
-: zip_file_(nullptr),
-unzip_file_(nullptr),
-current_state_(state::closed),
+    : zip_file_({0}),
+    current_state_(state::closed),
 filename_(filename),
 modified_(false),
 //    mode_(mode),
@@ -126,64 +125,27 @@ void zip_file::read_all()
     
     change_state(state::read);
     
-    int result = unzGoToFirstFile(unzip_file_);
+    auto num_files = zip_file_.m_total_files;
+    std::size_t i = 0;
     
-    std::array<char, 1000> file_name_buffer = {{'\0'}};
-    std::vector<char> file_buffer;
-    
-    while(result == UNZ_OK)
+    for(;i < num_files; i++)
     {
-        unz_file_info file_info;
-        file_name_buffer.fill('\0');
+        mz_zip_archive_file_stat file_info = {0};
         
-        result = unzGetCurrentFileInfo(unzip_file_, &file_info, file_name_buffer.data(),
-                                       static_cast<uLong>(file_name_buffer.size()), nullptr, 0, nullptr, 0);
-        
-        if(result != UNZ_OK)
+        if(!mz_zip_reader_file_stat(&zip_file_, i, &file_info))
         {
-            throw result;
+            throw std::runtime_error("stat failed");
         }
         
-        result = unzOpenCurrentFile(unzip_file_);
+        std::string current_filename(file_info.m_filename, file_info.m_filename + strlen(file_info.m_filename));
         
-        if(result != UNZ_OK)
-        {
-            throw result;
-        }
-        
-        if(file_buffer.size() < file_info.uncompressed_size + 1)
-        {
-            file_buffer.resize(file_info.uncompressed_size + 1);
-        }
-        file_buffer[file_info.uncompressed_size] = '\0';
-        
-        result = unzReadCurrentFile(unzip_file_, file_buffer.data(), file_info.uncompressed_size);
-        
-        if(result != static_cast<int>(file_info.uncompressed_size))
-        {
-            throw result;
-        }
-        
-        std::string current_filename(file_name_buffer.begin(), file_name_buffer.begin() + file_info.size_filename);
-        std::string contents(file_buffer.begin(), file_buffer.begin() + file_info.uncompressed_size);
-        
-        if(current_filename.back() != '/')
-        {
-            files_[current_filename] = contents;
-        }
-        else
+        if(mz_zip_reader_is_file_a_directory(&zip_file_, i))
         {
             directories_.push_back(current_filename);
+            continue;
         }
         
-        result = unzCloseCurrentFile(unzip_file_);
-        
-        if(result != UNZ_OK)
-        {
-            throw result;
-        }
-        
-        result = unzGoToNextFile(unzip_file_);
+        files_[current_filename] = read_from_zip(current_filename);
     }
 }
 
@@ -218,46 +180,52 @@ std::string zip_file::read_from_zip(const std::string &filename)
     
     change_state(state::read);
     
-    auto result = unzLocateFile(unzip_file_, filename.c_str(), 1);
+    auto num_files = (std::size_t)mz_zip_reader_get_num_files(&zip_file_);
+    std::size_t i = 0;
     
-    if(result != UNZ_OK)
+    for(;i < num_files; i++)
     {
-        throw result;
+        mz_zip_archive_file_stat file_info = {0};
+    
+        if(!mz_zip_reader_file_stat(&zip_file_, i, &file_info))
+        {
+            throw std::runtime_error("stat failed");
+        }
+    
+        std::string current_filename(file_info.m_filename, file_info.m_filename + strlen(file_info.m_filename));
+        
+        if(filename == current_filename)
+        {
+            break;
+        }
     }
     
-    result = unzOpenCurrentFile(unzip_file_);
-    
-    if(result != UNZ_OK)
+    if(i == num_files)
     {
-        throw result;
+        throw std::runtime_error("not found");
     }
     
-    unz_file_info file_info;
-    std::array<char, 1000> file_name_buffer;
-    std::array<char, 1000> extra_field_buffer;
-    std::array<char, 1000> comment_buffer;
-    
-    unzGetCurrentFileInfo(unzip_file_, &file_info,
-                          file_name_buffer.data(), static_cast<uLong>(file_name_buffer.size()),
-                          extra_field_buffer.data(), static_cast<uLong>(extra_field_buffer.size()),
-                          comment_buffer.data(), static_cast<uLong>(comment_buffer.size()));
-    
-    std::vector<char> file_buffer(file_info.uncompressed_size + 1, '\0');
-    result = unzReadCurrentFile(unzip_file_, file_buffer.data(), file_info.uncompressed_size);
-    
-    if(result != static_cast<int>(file_info.uncompressed_size))
+    if(mz_zip_reader_is_file_a_directory(&zip_file_, i))
     {
-        throw result;
+        directories_.push_back(filename);
+        return "";
     }
     
-    result = unzCloseCurrentFile(unzip_file_);
+    std::size_t uncomp_size = 0;
+    char archive_filename[260];
+    std::fill(archive_filename, archive_filename + 260, '\0');
+    std::copy(filename.begin(), filename.begin() + filename.length(), archive_filename);
+    char *data = (char *)mz_zip_reader_extract_file_to_heap(&zip_file_, archive_filename, &uncomp_size, 0);
     
-    if(result != UNZ_OK)
+    if(data == nullptr)
     {
-        throw result;
+        throw std::runtime_error("extract failed");
     }
     
-    return std::string(file_buffer.begin(), file_buffer.end());
+    std::string content(data, data + uncomp_size);
+    mz_free(data);
+    
+    return content;
 }
 
 void zip_file::write_directory_to_zip(const std::string &name, bool append)
@@ -268,21 +236,10 @@ void zip_file::write_directory_to_zip(const std::string &name, bool append)
     }
 
     change_state(state::write, append);
-
-    zip_fileinfo file_info = {0};
-
-    int result = zipOpenNewFileInZip(zip_file_, name.c_str(), &file_info, nullptr, 0, nullptr, 0, nullptr, Z_DEFLATED, Z_DEFAULT_COMPRESSION);
-
-    if(result != UNZ_OK)
+    
+    if(!mz_zip_writer_add_mem(&zip_file_, name.c_str(), nullptr, 0, MZ_BEST_COMPRESSION))
     {
-        throw result;
-    }
-
-    result = zipCloseFileInZip(zip_file_);
-
-    if(result != UNZ_OK)
-    {
-        throw result;
+        throw std::runtime_error("write directory failed");
     }
 }
 
@@ -295,27 +252,11 @@ void zip_file::write_to_zip(const std::string &filename, const std::string &cont
     
     change_state(state::write, append);
     
-    zip_fileinfo file_info = {0};
+    auto status = mz_zip_writer_add_mem(&zip_file_, filename.c_str(), content.c_str(), content.length(), MZ_BEST_COMPRESSION);
     
-    int result = zipOpenNewFileInZip(zip_file_, filename.c_str(), &file_info, nullptr, 0, nullptr, 0, nullptr, Z_DEFLATED, Z_DEFAULT_COMPRESSION);
-    
-    if(result != UNZ_OK)
+    if(!status)
     {
-        throw result;
-    }
-    
-    result = zipWriteInFileInZip(zip_file_, content.data(), static_cast<int>(content.size()));
-    
-    if(result != UNZ_OK)
-    {
-        throw result;
-    }
-    
-    result = zipCloseFileInZip(zip_file_);
-    
-    if(result != UNZ_OK)
-    {
-        throw result;
+        throw std::runtime_error("write failed");
     }
 }
 
@@ -370,14 +311,9 @@ bool zip_file::file_exists(const std::string& name)
 
 void zip_file::start_read()
 {
-    if(unzip_file_ != nullptr || zip_file_ != nullptr)
-    {
-        throw std::runtime_error("bad state");
-    }
-    
-    unzip_file_ = unzOpen(filename_.c_str());
-    
-    if(unzip_file_ == nullptr)
+    zip_file_ = mz_zip_archive{0};
+
+    if(!mz_zip_reader_init_file(&zip_file_, filename_.c_str(), 0))
     {
         throw invalid_file_exception(filename_);
     }
@@ -385,46 +321,20 @@ void zip_file::start_read()
 
 void zip_file::stop_read()
 {
-    if(unzip_file_ == nullptr)
+    if(!mz_zip_reader_end(&zip_file_))
     {
-        throw std::runtime_error("bad state");
+        throw std::runtime_error("");
     }
-    
-    int result = unzClose(unzip_file_);
-    
-    if(result != UNZ_OK)
-    {
-        throw result;
-    }
-    
-    unzip_file_ = nullptr;
 }
 
 void zip_file::start_write(bool append)
 {
-    if(unzip_file_ != nullptr || zip_file_ != nullptr)
+    if(append && !file_exists(filename_))
     {
-        throw std::runtime_error("bad state");
+        throw std::runtime_error("can't append to non-existent file");
     }
     
-    int append_status;
-    
-    if(append)
-    {
-        if(!file_exists(filename_))
-        {
-            throw std::runtime_error("can't append to non-existent file");
-        }
-        append_status = APPEND_STATUS_ADDINZIP;
-    }
-    else
-    {
-        append_status = APPEND_STATUS_CREATE;
-    }
-    
-    zip_file_ = zipOpen(filename_.c_str(), append_status);
-    
-    if(zip_file_ == nullptr)
+    if(!mz_zip_writer_init_file(&zip_file_, filename_.c_str(), 0))
     {
         if(append)
         {
@@ -439,21 +349,17 @@ void zip_file::start_write(bool append)
 
 void zip_file::stop_write()
 {
-    if(zip_file_ == nullptr)
-    {
-        throw std::runtime_error("bad state");
-    }
-    
     flush();
     
-    int result = zipClose(zip_file_, nullptr);
-    
-    if(result != UNZ_OK)
+    if(!mz_zip_writer_finalize_archive(&zip_file_))
     {
-        throw result;
+        throw std::runtime_error("");
     }
     
-    zip_file_ = nullptr;
+    if(!mz_zip_writer_end(&zip_file_))
+    {
+        throw std::runtime_error("");
+    }
 }
     
 }
