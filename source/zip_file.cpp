@@ -125,7 +125,7 @@ void zip_file::read_all()
     change_state(state::read);
     
     auto num_files = zip_file_.m_total_files;
-    std::size_t i = 0;
+    mz_uint i = 0;
     
     for(;i < num_files; i++)
     {
@@ -180,7 +180,7 @@ std::string zip_file::read_from_zip(const std::string &filename)
     change_state(state::read);
     
     auto num_files = (std::size_t)mz_zip_reader_get_num_files(&zip_file_);
-    std::size_t i = 0;
+    mz_uint i = 0;
     
     for(;i < num_files; i++)
     {
