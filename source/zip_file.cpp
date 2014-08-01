@@ -190,20 +190,11 @@ void zip_file::save(std::ostream &stream)
         mz_zip_writer_finalize_archive(archive_.get());
     }
     
-<<<<<<< HEAD
     if(archive_->m_zip_mode == MZ_ZIP_MODE_WRITING_HAS_BEEN_FINALIZED)
-=======
-    change_state(state::read);
-    
-    auto num_files = zip_file_.m_total_files;
-    mz_uint i = 0;
-    
-    for(;i < num_files; i++)
->>>>>>> 71e50ed70af59c234648b8bf5e2ab7b1e432ecf8
     {
         mz_zip_writer_end(archive_.get());
     }
-
+    
     if(archive_->m_zip_mode == MZ_ZIP_MODE_INVALID)
     {
         start_read();
@@ -251,14 +242,7 @@ void zip_file::remove_comment()
     
     std::size_t position = buffer_.size() - 1;
     
-<<<<<<< HEAD
     for(; position >= 3; position--)
-=======
-    auto num_files = (std::size_t)mz_zip_reader_get_num_files(&zip_file_);
-    mz_uint i = 0;
-    
-    for(;i < num_files; i++)
->>>>>>> 71e50ed70af59c234648b8bf5e2ab7b1e432ecf8
     {
         if(buffer_[position - 3] == 'P'
            && buffer_[position - 2] == 'K'
