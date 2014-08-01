@@ -285,16 +285,23 @@ bool workbook::load(const std::vector<unsigned char> &data)
 
 bool workbook::load(const std::string &filename)
 {
-    zip_file f(filename);
-    //auto core_properties = read_core_properties();
-    //auto app_properties = read_app_properties();
+    zip_file f;
+
+    try
+    {
+        f.load(filename);
+    }
+    catch(std::exception e)
+    {
+        throw invalid_file_exception(filename);
+    }
+
     auto content_types = reader::read_content_types(f);
-    
     auto type = reader::determine_document_type(content_types);
-    
+
     if(type != "excel")
     {
-        throw std::runtime_error("unsupported document type: " + filename);
+        throw invalid_file_exception(filename);
     }
     
     clear();
@@ -317,20 +324,16 @@ bool workbook::load(const std::string &filename)
     auto sheets_node = root_node.child("sheets");
     
     std::vector<std::string> shared_strings;
-    auto infolist = f.infolist();
-    auto shared_strings_info = std::find_if(infolist.begin(),  infolist.end(), [](const zip_info &info) { return info.filename == "xl/sharedStrings.xml"; });
-    if(shared_strings_info != infolist.end())
+    if(f.has_file("xl/sharedStrings.xml"))
     {
-        shared_strings = xlnt::reader::read_shared_string(f.read(*shared_strings_info));
+        shared_strings = xlnt::reader::read_shared_string(f.read("xl/sharedStrings.xml"));
     }
 
     std::vector<int> number_format_ids;
-    
-    auto styles_info = std::find_if(infolist.begin(),  infolist.end(), [](const zip_info &info) { return info.filename == "xl/styles.xml"; });
-    if(shared_strings_info != infolist.end())
+    if(f.has_file("xl/styles.xml"))
     {
         pugi::xml_document styles_doc;
-        styles_doc.load(f.read(*styles_info).c_str());
+        styles_doc.load(f.read("xl/styles.xml").c_str());
         auto stylesheet_node = styles_doc.child("styleSheet");
         auto cell_xfs_node = stylesheet_node.child("cellXfs");
 
@@ -557,6 +560,8 @@ bool workbook::save(const std::string &filename)
             f.writestr(sheet_uri, writer::write_worksheet(ws, shared_strings));
         }
     }
+
+    f.save(filename);
 
     return true;
 }

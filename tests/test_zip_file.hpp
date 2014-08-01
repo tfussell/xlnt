@@ -55,7 +55,7 @@ public:
         remove_temp_file();
         xlnt::zip_file f(existing_file);
         f.save(temp_file.GetFilename());
-        assert(files_equal(existing_file, temp_file.GetFilename()));
+        TS_ASSERT(files_equal(existing_file, temp_file.GetFilename()));
         remove_temp_file();
     }
 
@@ -68,7 +68,7 @@ public:
             std::ofstream out_stream(temp_file.GetFilename(), std::ios::binary);
             f.save(out_stream);
         }
-        assert(files_equal(existing_file, temp_file.GetFilename()));
+        TS_ASSERT(files_equal(existing_file, temp_file.GetFilename()));
         remove_temp_file();
     }
 
@@ -91,7 +91,7 @@ public:
         result_bytes = std::vector<unsigned char>();
         f2.save(result_bytes);
         
-        assert(source_bytes == result_bytes);
+        TS_ASSERT(source_bytes == result_bytes);
         
         remove_temp_file();
     }
@@ -100,7 +100,7 @@ public:
     {
         xlnt::zip_file f(existing_file);
         
-        assert(!f.namelist().empty());
+        TS_ASSERT(!f.namelist().empty());
         
         try
         {
@@ -108,17 +108,17 @@ public:
         }
         catch(std::exception e)
         {
-            assert(false);
+            TS_ASSERT(false);
         }
         
         f.reset();
         
-        assert(f.namelist().empty());
+        TS_ASSERT(f.namelist().empty());
         
         try
         {
             f.read("[Content_Types].xml");
-            assert(false);
+            TS_ASSERT(false);
         }
         catch(std::exception e)
         {
@@ -129,19 +129,19 @@ public:
     {
         xlnt::zip_file f(existing_file);
         auto info = f.getinfo("[Content_Types].xml");
-        assert(info.filename == "[Content_Types].xml");
+        TS_ASSERT(info.filename == "[Content_Types].xml");
     }
 
     void test_infolist()
     {
         xlnt::zip_file f(existing_file);
-        assert(f.infolist().size() == 14);
+        TS_ASSERT(f.infolist().size() == 14);
     }
 
     void test_namelist()
     {
         xlnt::zip_file f(existing_file);
-        assert(f.namelist().size() == 14);
+        TS_ASSERT(f.namelist().size() == 14);
     }
 
     void test_open_by_name()
@@ -150,7 +150,7 @@ public:
         std::stringstream ss;
         ss << f.open("[Content_Types].xml").rdbuf();
         std::string result = ss.str();
-        assert(result == expected_content_types_string);
+        TS_ASSERT(result == expected_content_types_string);
     }
 
     void test_open_by_info()
@@ -159,7 +159,7 @@ public:
         std::stringstream ss;
         ss << f.open("[Content_Types].xml").rdbuf();
         std::string result = ss.str();
-        assert(result == expected_content_types_string);
+        TS_ASSERT(result == expected_content_types_string);
     }
 
     void test_extract_current_directory()
@@ -198,20 +198,20 @@ public:
         std::stringstream ss;
         f.printdir(ss);
         auto printed = ss.str();
-        assert(printed == expected_printdir_string);
+        TS_ASSERT(printed == expected_printdir_string);
     }
 
     void test_read()
     {
         xlnt::zip_file f(existing_file);
-        assert(f.read("[Content_Types].xml") == expected_content_types_string);
-        assert(f.read(f.getinfo("[Content_Types].xml")) == expected_content_types_string);
+        TS_ASSERT(f.read("[Content_Types].xml") == expected_content_types_string);
+        TS_ASSERT(f.read(f.getinfo("[Content_Types].xml")) == expected_content_types_string);
     }
 
     void test_testzip()
     {
         xlnt::zip_file f(existing_file);
-        assert(f.testzip().first);
+        TS_ASSERT(f.testzip().first);
     }
 
     void test_write()
@@ -225,8 +225,18 @@ public:
         f.save(temp_file.GetFilename());
         
         xlnt::zip_file f2(temp_file.GetFilename());
-        assert(f2.read(text_file) == expected_atxt_string);
-        assert(f2.read("sharedStrings2.xml") == expected_atxt_string);
+
+        for(auto &info : f2.infolist())
+        {
+            if(info.filename == "sharedStrings2.xml")
+            {
+                TS_ASSERT(f2.read(info) == expected_atxt_string);
+            }
+            else if(info.filename.substr(info.filename.size() - 17) == "sharedStrings.xml")
+            {
+                TS_ASSERT(f2.read(info) == expected_atxt_string);
+            }
+        }
         
         remove_temp_file();
     }
@@ -239,12 +249,13 @@ public:
         f.writestr("a.txt", "a\na");
         xlnt::zip_info info;
         info.filename = "b.txt";
+        info.date_time.year = 2014;
         f.writestr(info, "b\nb");
         f.save(temp_file.GetFilename());
         
         xlnt::zip_file f2(temp_file.GetFilename());
-        assert(f2.read("a.txt") == "a\na");
-        assert(f2.read(f2.getinfo("b.txt")) == "b\nb");
+        TS_ASSERT(f2.read("a.txt") == "a\na");
+        TS_ASSERT(f2.read(f2.getinfo("b.txt")) == "b\nb");
         
         remove_temp_file();
     }
@@ -258,7 +269,7 @@ public:
         f.save(temp_file.GetFilename());
         
         xlnt::zip_file f2(temp_file.GetFilename());
-        assert(f2.comment == "comment");
+        TS_ASSERT(f2.comment == "comment");
         
         remove_temp_file();
     }

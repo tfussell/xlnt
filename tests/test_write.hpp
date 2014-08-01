@@ -140,7 +140,7 @@ public:
         TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_hyperlink.xml.rels", content));
     }
     
-    void test_write_hyperlink_image_rels()
+    void _test_write_hyperlink_image_rels()
     {
         TS_SKIP("not implemented");
     }
@@ -220,7 +220,7 @@ public:
         TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/short_number.xml", content));
     }
     
-    void test_write_images()
+    void _test_write_images()
     {
         TS_SKIP("not implemented");
     }

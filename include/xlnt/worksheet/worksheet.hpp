@@ -263,6 +263,8 @@ public:
     const std::unordered_map<column_t, double> &get_column_dimensions() const;
     const std::unordered_map<row_t, double> &get_row_dimensions() const;
 
+    std::string unique_sheet_name(const std::string &value) const;
+
     // named range
     void create_named_range(const std::string &name, const range_reference &reference);
     bool has_named_range(const std::string &name);

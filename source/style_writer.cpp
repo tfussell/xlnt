@@ -63,6 +63,14 @@ std::string style_writer::write_table() const
     style_sheet_node.append_attribute("mc:Ignorable").set_value("x14ac");
     style_sheet_node.append_attribute("xmlns:x14ac").set_value("http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac");
 
+    for(auto style : get_styles())
+    {
+        if((int)style.get_number_format().get_format_code() > 163)
+        {
+
+        }
+    }
+
     auto fonts_node = style_sheet_node.append_child("fonts");
     fonts_node.append_attribute("count").set_value(1);
     fonts_node.append_attribute("x14ac:knownFonts").set_value(1);

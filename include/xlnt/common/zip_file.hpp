@@ -60,6 +60,9 @@ public:
     void save(std::ostream &stream);
     
     void reset();
+
+    bool has_file(const std::string &name);
+    bool has_file(const zip_info &name);
     
     zip_info getinfo(const std::string &name);
     

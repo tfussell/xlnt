@@ -37,6 +37,19 @@ bool worksheet::has_frozen_panes() const
     return get_frozen_panes() != cell_reference("A1");
 }
 
+std::string worksheet::unique_sheet_name(const std::string &value) const
+{
+    auto names = get_parent().get_sheet_names();
+    auto match = std::find(names.begin(), names.end(), value);
+    std::size_t append = 0;
+    while(match != names.end())
+    {
+        append++;
+        match = std::find(names.begin(), names.end(), value + std::to_string(append));
+    }
+    return append == 0 ? value : value + std::to_string(append);
+}
+
 void worksheet::create_named_range(const std::string &name, const range_reference &reference)
 {
     d_->named_ranges_[name] = reference;

@@ -79,9 +79,9 @@ public:
 	}
     };
     
-    static const std::unordered_map<format, std::string, format_hash> format_strings;    
-    static const std::unordered_map<int, std::string> builtin_formats;
-    static const std::unordered_map<std::string, int> reversed_builtin_formats;    
+    static const std::unordered_map<format, std::string, format_hash> &format_strings();    
+    static const std::unordered_map<int, std::string> &builtin_formats();
+    static const std::unordered_map<std::string, int> &reversed_builtin_formats();    
 
     static std::string builtin_format_code(int index);
     static format lookup_format(int code);

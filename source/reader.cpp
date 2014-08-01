@@ -187,9 +187,10 @@ std::vector<std::pair<std::string, std::string>> reader::read_content_types(zip_
 
     try
     {
-        doc.load(archive.read("[Content_Types].xml").c_str());
+        auto content_types_string = archive.read("[Content_Types].xml");
+        doc.load(content_types_string.c_str());
     }
-    catch(std::out_of_range)
+    catch(std::exception e)
     {
         throw invalid_file_exception(archive.get_filename());
     }

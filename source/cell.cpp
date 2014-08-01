@@ -234,6 +234,9 @@ void cell::set_value(double d)
 void cell::set_value(const date &d)
 {
     d_->is_date_ = true;
+    auto date_format_code = xlnt::number_format::lookup_format(14);
+    auto number_format = xlnt::number_format(date_format_code);
+    get_style().set_number_format(number_format);
     auto base_date = get_parent().get_parent().get_properties().excel_base_date;
     set_value(d.to_number(base_date));
 }
@@ -241,6 +244,9 @@ void cell::set_value(const date &d)
 void cell::set_value(const datetime &d)
 {
     d_->is_date_ = true;
+    auto date_format_code = xlnt::number_format::lookup_format(22);
+    auto number_format = xlnt::number_format(date_format_code);
+    get_style().set_number_format(number_format);
     auto base_date = get_parent().get_parent().get_properties().excel_base_date;
     set_value(d.to_number(base_date));
 }

@@ -55,7 +55,8 @@ public:
     
     void test_unique_sheet_title()
     {
-        TS_SKIP("not implemented");
+        auto ws = wb_.create_sheet("AGE");
+        TS_ASSERT_EQUALS(ws.unique_sheet_name("GE"), "GE");
     }
 
     void test_worksheet_dimension()
@@ -512,6 +513,8 @@ public:
         ws.get_page_setup().set_fit_to_page(true);
         ws.get_page_setup().set_fit_to_height(false);
         ws.get_page_setup().set_fit_to_width(true);
+        ws.get_page_setup().set_horizontal_centered(true);
+        ws.get_page_setup().set_vertical_centered(true);
 
         auto xml_string = xlnt::writer::write_worksheet(ws);
 

@@ -14,17 +14,17 @@ public:
         auto now = xlnt::datetime::now();
         auto ws = workbook_.get_active_sheet();
         ws.get_cell("A1").set_value("12.34%"); // 2
-        ws.get_cell("B4").set_value(now); // 3
-        ws.get_cell("B5").set_value(now);
-        ws.get_cell("C14").set_value("This is a test"); // 1
-        ws.get_cell("D9").set_value("31.31415"); // 3
-        xlnt::style st;
+        ws.get_cell("B1").set_value(now); // 3
+        ws.get_cell("C1").set_value(now);
+        ws.get_cell("D1").set_value("This is a test"); // 1
+        ws.get_cell("E1").set_value("31.31415"); // 3
+        xlnt::style st; // 4
         st.set_number_format(xlnt::number_format(xlnt::number_format::format::number_00));
         st.set_protection(xlnt::protection(xlnt::protection::type::unprotected));
-        ws.get_cell("D9").set_style(st);
-        xlnt::style st2;
+        ws.get_cell("F1").set_style(st);
+        xlnt::style st2; // 5
         st.set_protection(xlnt::protection(xlnt::protection::type::unprotected));
-        ws.get_cell("E1").set_style(st2);
+        ws.get_cell("G1").set_style(st2);
         
     }
     
@@ -35,9 +35,9 @@ public:
 
     void test_write_style_table()
     {
-        auto path = PathHelper::GetDataDirectory("/expected/simple-styles.xml");
+        auto path = PathHelper::GetDataDirectory("/writer/expected/simple-styles.xml");
         pugi::xml_document expected;
-        expected.load(path.c_str());
+        expected.load_file(path.c_str());
         
         auto content = writer_.write_table();
         pugi::xml_document observed;

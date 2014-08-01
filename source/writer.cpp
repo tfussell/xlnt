@@ -210,6 +210,11 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
     root_node.append_attribute("xmlns:r").set_value(constants::Namespaces.at("r").c_str());
     auto sheet_pr_node = root_node.append_child("sheetPr");
     auto outline_pr_node = sheet_pr_node.append_child("outlinePr");
+    if(!ws.get_page_setup().is_default())
+    {
+        auto page_set_up_pr_node = sheet_pr_node.append_child("pageSetUpPr");
+        page_set_up_pr_node.append_attribute("fitToPage").set_value(ws.get_page_setup().fit_to_page() ? 1 : 0);
+    }
     outline_pr_node.append_attribute("summaryBelow").set_value(1);
     outline_pr_node.append_attribute("summaryRight").set_value(1);
     auto dimension_node = root_node.append_child("dimension");
@@ -474,6 +479,13 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
         }
     }
     
+    if(!ws.get_page_setup().is_default())
+    {
+        auto print_options_node = root_node.append_child("printOptions");
+        print_options_node.append_attribute("horizontalCentered").set_value(ws.get_page_setup().get_horizontal_centered() ? 1 : 0);
+        print_options_node.append_attribute("verticalCentered").set_value(ws.get_page_setup().get_vertical_centered() ? 1 : 0);
+    }
+
     auto page_margins_node = root_node.append_child("pageMargins");
         
     page_margins_node.append_attribute("left").set_value(ws.get_page_margins().get_left());
@@ -492,9 +504,6 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
         page_setup_node.append_attribute("paperSize").set_value((int)ws.get_page_setup().get_paper_size());
         page_setup_node.append_attribute("fitToHeight").set_value(ws.get_page_setup().fit_to_height() ? 1 : 0);
         page_setup_node.append_attribute("fitToWidth").set_value(ws.get_page_setup().fit_to_width() ? 1 : 0);
-        
-        auto page_set_up_pr_node = root_node.append_child("pageSetUpPr");
-        page_set_up_pr_node.append_attribute("fitToPage").set_value(ws.get_page_setup().fit_to_page() ? 1 : 0);
     }
     
     if(!ws.get_header_footer().is_default())
