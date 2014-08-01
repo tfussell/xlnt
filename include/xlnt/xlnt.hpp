@@ -51,6 +51,4 @@ const std::string download_url = "https://github.com/tfussell/xlnt/archive/maste
 #include "cell/value.hpp"
 #include "cell/comment.hpp"
 
-#pragma comment(lib, "pugixml.lib")
-#pragma comment(lib, "zlib.lib")
 #pragma comment(lib, "xlnt.lib")

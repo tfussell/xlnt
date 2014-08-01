@@ -8,7 +8,7 @@ class comment
 {
 public:
     comment();
-    comment(const std::string &text, const std::string &author);
+    comment(const std::string &text, const std::string &auth);
     ~comment();
     
     std::string get_text() const;
