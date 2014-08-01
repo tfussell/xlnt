@@ -46,9 +46,9 @@ std::string reader::repair_central_directory(const std::string &original)
     return original;
 }
 
-std::vector<std::pair<std::string, std::string>> reader::read_sheets(const zip_file &archive)
+std::vector<std::pair<std::string, std::string>> reader::read_sheets(zip_file &archive)
 {
-    auto xml_source = archive.get_file_contents("xl/workbook.xml");
+    auto xml_source = archive.read("xl/workbook.xml");
     pugi::xml_document doc;
     doc.load(xml_source.c_str());
 
@@ -144,7 +144,7 @@ std::string reader::read_dimension(const std::string &xml_string)
     return dimension;
 }
 
-std::vector<relationship> reader::read_relationships(const zip_file &archive, const std::string &filename)
+std::vector<relationship> reader::read_relationships(zip_file &archive, const std::string &filename)
 {
     auto filename_separator_index = filename.find_last_of('/');
     auto basename = filename.substr(filename_separator_index + 1);
@@ -152,7 +152,7 @@ std::vector<relationship> reader::read_relationships(const zip_file &archive, co
     auto rels_filename = dirname + "/_rels/" + basename + ".rels";
 
     pugi::xml_document doc;
-    auto content = archive.get_file_contents(rels_filename);
+    auto content = archive.read(rels_filename);
     doc.load(content.c_str());
 
     auto root_node = doc.child("Relationships");
@@ -181,13 +181,13 @@ std::vector<relationship> reader::read_relationships(const zip_file &archive, co
     return relationships;
 }
 
-std::vector<std::pair<std::string, std::string>> reader::read_content_types(const zip_file &archive)
+std::vector<std::pair<std::string, std::string>> reader::read_content_types(zip_file &archive)
 {
     pugi::xml_document doc;
 
     try
     {
-        doc.load(archive.get_file_contents("[Content_Types].xml").c_str());
+        doc.load(archive.read("[Content_Types].xml").c_str());
     }
     catch(std::out_of_range)
     {
@@ -411,7 +411,7 @@ workbook reader::load_workbook(const std::string &filename, bool guess_types, bo
     return wb;
 }
 
-std::vector<std::pair<std::string, std::string>> reader::detect_worksheets(const zip_file &archive)
+std::vector<std::pair<std::string, std::string>> reader::detect_worksheets(zip_file &archive)
 {
     static const std::string ValidWorksheet = "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml";
 

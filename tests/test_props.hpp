@@ -12,8 +12,8 @@ class test_props : public CxxTest::TestSuite
 public:
     void test_read_properties_core()
     {
-        xlnt::zip_file archive(PathHelper::GetDataDirectory() + "/genuine/empty.xlsx", xlnt::file_mode::open);
-        auto content = archive.get_file_contents("docProps/core.xml");
+        xlnt::zip_file archive(PathHelper::GetDataDirectory() + "/genuine/empty.xlsx");
+        auto content = archive.read("docProps/core.xml");
         auto prop = xlnt::reader::read_properties_core(content);
         TS_ASSERT_EQUALS(prop.creator, "*.*");
         TS_ASSERT_EQUALS(prop.last_modified_by, "Charlie Clark");
@@ -23,8 +23,8 @@ public:
 
     void test_read_sheets_titles()
     {
-        xlnt::zip_file archive(PathHelper::GetDataDirectory() + "/genuine/empty.xlsx", xlnt::file_mode::open);
-        auto content = archive.get_file_contents("docProps/core.xml");
+        xlnt::zip_file archive(PathHelper::GetDataDirectory() + "/genuine/empty.xlsx");
+        auto content = archive.read("docProps/core.xml");
         std::vector<std::string> expected_titles = {"Sheet1 - Text", "Sheet2 - Numbers", "Sheet3 - Formulas", "Sheet4 - Dates"};
         int i = 0;
         for(auto sheet : xlnt::reader::read_sheets(archive))
@@ -35,16 +35,16 @@ public:
 
     void test_read_properties_core_libre()
     {
-        xlnt::zip_file archive(PathHelper::GetDataDirectory() + "/genuine/empty_libre.xlsx", xlnt::file_mode::open);
-        auto content = archive.get_file_contents("docProps/core.xml");
+        xlnt::zip_file archive(PathHelper::GetDataDirectory() + "/genuine/empty_libre.xlsx");
+        auto content = archive.read("docProps/core.xml");
         auto prop = xlnt::reader::read_properties_core(content);
         TS_ASSERT_EQUALS(prop.excel_base_date, xlnt::calendar::windows_1900);
     }
 
     void test_read_sheets_titles_libre()
     {
-        xlnt::zip_file archive(PathHelper::GetDataDirectory() + "/genuine/empty_libre.xlsx", xlnt::file_mode::open);
-        auto content = archive.get_file_contents("docProps/core.xml");
+        xlnt::zip_file archive(PathHelper::GetDataDirectory() + "/genuine/empty_libre.xlsx");
+        auto content = archive.read("docProps/core.xml");
         std::vector<std::string> expected_titles = {"Sheet1 - Text", "Sheet2 - Numbers", "Sheet3 - Formulas", "Sheet4 - Dates"};
         int i = 0;
         for(auto sheet : xlnt::reader::read_sheets(archive))

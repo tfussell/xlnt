@@ -43,17 +43,17 @@ public:
     static const std::string CentralDirectorySignature;
     static std::string repair_central_directory(const std::string &original);
     static void fast_parse(worksheet ws, std::istream &xml_source, const std::vector<std::string> &shared_string, const std::vector<style> &style_table, std::size_t color_index);
-    static std::vector<relationship> read_relationships(const zip_file &content, const std::string &filename);
-    static std::vector<std::pair<std::string, std::string>> read_content_types(const zip_file &archive);
+    static std::vector<relationship> read_relationships(zip_file &content, const std::string &filename);
+    static std::vector<std::pair<std::string, std::string>> read_content_types(zip_file &archive);
     static std::string determine_document_type(const std::vector<std::pair<std::string, std::string>> &override_types);
     static worksheet read_worksheet(std::istream &handle, workbook &wb, const std::string &title, const std::vector<std::string> &string_table);
     static void read_worksheet(worksheet ws, const std::string &xml_string, const std::vector<std::string> &string_table, const std::vector<int> &number_format_ids);
     static std::vector<std::string> read_shared_string(const std::string &xml_string);
     static std::string read_dimension(const std::string &xml_string);
     static document_properties read_properties_core(const std::string &xml_string);
-    static std::vector<std::pair<std::string,std::string>> read_sheets(const zip_file &archive);
+    static std::vector<std::pair<std::string,std::string>> read_sheets(zip_file &archive);
     static workbook load_workbook(const std::string &filename, bool guess_types = false, bool data_only = false);
-    static std::vector<std::pair<std::string, std::string>> detect_worksheets(const zip_file &archive);
+    static std::vector<std::pair<std::string, std::string>> detect_worksheets(zip_file &archive);
 };
     
 } // namespace xlnt

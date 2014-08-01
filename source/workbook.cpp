@@ -285,7 +285,7 @@ bool workbook::load(const std::vector<unsigned char> &data)
 
 bool workbook::load(const std::string &filename)
 {
-    zip_file f(filename, file_mode::open);
+    zip_file f(filename);
     //auto core_properties = read_core_properties();
     //auto app_properties = read_app_properties();
     auto content_types = reader::read_content_types(f);
@@ -307,7 +307,7 @@ bool workbook::load(const std::string &filename)
     }
     
     pugi::xml_document doc;
-    doc.load(f.get_file_contents("xl/workbook.xml").c_str());
+    doc.load(f.read("xl/workbook.xml").c_str());
     
     auto root_node = doc.child("workbook");
     
@@ -317,17 +317,20 @@ bool workbook::load(const std::string &filename)
     auto sheets_node = root_node.child("sheets");
     
     std::vector<std::string> shared_strings;
-    if(f.has_file("xl/sharedStrings.xml"))
+    auto infolist = f.infolist();
+    auto shared_strings_info = std::find_if(infolist.begin(),  infolist.end(), [](const zip_info &info) { return info.filename == "xl/sharedStrings.xml"; });
+    if(shared_strings_info != infolist.end())
     {
-        shared_strings = xlnt::reader::read_shared_string(f.get_file_contents("xl/sharedStrings.xml"));
+        shared_strings = xlnt::reader::read_shared_string(f.read(*shared_strings_info));
     }
 
     std::vector<int> number_format_ids;
     
-    if(f.has_file("xl/styles.xml"))
+    auto styles_info = std::find_if(infolist.begin(),  infolist.end(), [](const zip_info &info) { return info.filename == "xl/styles.xml"; });
+    if(shared_strings_info != infolist.end())
     {
         pugi::xml_document styles_doc;
-        styles_doc.load(f.get_file_contents("xl/styles.xml").c_str());
+        styles_doc.load(f.read(*styles_info).c_str());
         auto stylesheet_node = styles_doc.child("styleSheet");
         auto cell_xfs_node = stylesheet_node.child("cellXfs");
 
@@ -342,7 +345,7 @@ bool workbook::load(const std::string &filename)
         std::string relation_id = sheet_node.attribute("r:id").as_string();
         auto ws = create_sheet(sheet_node.attribute("name").as_string());
         auto sheet_filename = get_relationship(relation_id).get_target_uri();
-        xlnt::reader::read_worksheet(ws, f.get_file_contents(sheet_filename).c_str(), shared_strings, number_format_ids);
+        xlnt::reader::read_worksheet(ws, f.read(sheet_filename).c_str(), shared_strings, number_format_ids);
     }
 
     return true;
@@ -509,12 +512,12 @@ bool workbook::save(std::vector<unsigned char> &data)
 
 bool workbook::save(const std::string &filename)
 {
-    zip_file f(filename, file_mode::create, file_access::write);
+    zip_file f;
 
-	f.set_file_contents("[Content_Types].xml", writer::write_content_types(*this));
+	f.writestr("[Content_Types].xml", writer::write_content_types(*this));
     
-    f.set_file_contents("docProps/app.xml", writer::write_properties_app(*this));
-    f.set_file_contents("docProps/core.xml", writer::write_properties_core(get_properties()));
+    f.writestr("docProps/app.xml", writer::write_properties_app(*this));
+    f.writestr("docProps/core.xml", writer::write_properties_core(get_properties()));
     
     std::set<std::string> shared_strings_set;
     
@@ -533,15 +536,15 @@ bool workbook::save(const std::string &filename)
     }
     
     std::vector<std::string> shared_strings(shared_strings_set.begin(), shared_strings_set.end());
-    f.set_file_contents("xl/sharedStrings.xml", writer::write_shared_strings(shared_strings));
+    f.writestr("xl/sharedStrings.xml", writer::write_shared_strings(shared_strings));
     
-    f.set_file_contents("xl/theme/theme1.xml", writer::write_theme());
-    f.set_file_contents("xl/styles.xml", style_writer(*this).write_table());
+    f.writestr("xl/theme/theme1.xml", writer::write_theme());
+    f.writestr("xl/styles.xml", style_writer(*this).write_table());
     
-    f.set_file_contents("_rels/.rels", writer::write_root_rels());
-    f.set_file_contents("xl/_rels/workbook.xml.rels", writer::write_workbook_rels(*this));
+    f.writestr("_rels/.rels", writer::write_root_rels());
+    f.writestr("xl/_rels/workbook.xml.rels", writer::write_workbook_rels(*this));
 
-    f.set_file_contents("xl/workbook.xml", writer::write_workbook(*this));
+    f.writestr("xl/workbook.xml", writer::write_workbook(*this));
     
     for(auto relationship : d_->relationships_)
     {
@@ -551,7 +554,7 @@ bool workbook::save(const std::string &filename)
             std::size_t sheet_index = std::stoi(sheet_index_string.substr(0, sheet_index_string.find('.'))) - 1;
             std::string sheet_uri = "xl/" + relationship.get_target_uri();
             auto ws = get_sheet_by_index(sheet_index);
-            f.set_file_contents(sheet_uri, writer::write_worksheet(ws, shared_strings));
+            f.writestr(sheet_uri, writer::write_worksheet(ws, shared_strings));
         }
     }
 

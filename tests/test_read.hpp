@@ -303,7 +303,7 @@ public:
     {
         {
             auto path = PathHelper::GetDataDirectory("/reader/bug137.xlsx");
-            xlnt::zip_file archive(path, xlnt::file_mode::open);
+            xlnt::zip_file archive(path);
             std::vector<std::pair<std::string, std::string>> expected =
             {
                 {"xl/worksheets/sheet1.xml", "Sheet1"}
@@ -313,7 +313,7 @@ public:
 
         {
             auto path = PathHelper::GetDataDirectory("/reader/contains_chartsheets.xlsx");
-            xlnt::zip_file archive(path, xlnt::file_mode::open);
+            xlnt::zip_file archive(path);
 
             std::vector<std::pair<std::string, std::string>> expected =
             {
@@ -326,7 +326,7 @@ public:
 
         {
             auto path = PathHelper::GetDataDirectory("/reader/bug304.xlsx");
-            xlnt::zip_file archive(path, xlnt::file_mode::open);
+            xlnt::zip_file archive(path);
 
             std::vector<std::pair<std::string, std::string>> expected =
             {
@@ -352,7 +352,7 @@ public:
             };
 
             auto path = PathHelper::GetDataDirectory("/reader/bug137.xlsx");
-            xlnt::zip_file archive(path, xlnt::file_mode::open);
+            xlnt::zip_file archive(path);
 
             TS_ASSERT_EQUALS(xlnt::reader::read_relationships(archive, "xl/workbook.xml"), expected);
         }
@@ -371,7 +371,7 @@ public:
             };
 
             auto path = PathHelper::GetDataDirectory("/reader/bug304.xlsx");
-            xlnt::zip_file archive(path, xlnt::file_mode::open);
+            xlnt::zip_file archive(path);
 
             TS_ASSERT_EQUALS(xlnt::reader::read_relationships(archive, "xl/workbook.xml"), expected);
         }
@@ -398,7 +398,7 @@ public:
         };
         
         auto path = PathHelper::GetDataDirectory("/reader/contains_chartsheets.xlsx");
-        xlnt::zip_file f(path, xlnt::file_mode::open);
+        xlnt::zip_file f(path);
         auto result = xlnt::reader::read_content_types(f);
 
 	if(result.size() != expected.size())
@@ -417,7 +417,7 @@ public:
     {
         {
             auto path = PathHelper::GetDataDirectory("/reader/bug137.xlsx");
-            xlnt::zip_file f(path, xlnt::file_mode::open);
+            xlnt::zip_file f(path);
             auto sheets = xlnt::reader::read_sheets(f);
             std::vector<std::pair<std::string, std::string>> expected =
             {{"rId1", "Chart1"}, {"rId2", "Sheet1"}};
@@ -426,7 +426,7 @@ public:
         
         {
             auto path = PathHelper::GetDataDirectory("/reader/bug304.xlsx");
-            xlnt::zip_file f(path, xlnt::file_mode::open);
+            xlnt::zip_file f(path);
             auto sheets = xlnt::reader::read_sheets(f);
             std::vector<std::pair<std::string, std::string>> expected =
             {{"rId1", "Sheet1"}, {"rId2", "Sheet2"}, {"rId3", "Sheet3"}};

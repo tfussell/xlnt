@@ -1,362 +1,680 @@
-#include <array>
 #include <fstream>
 
+#define MINIZ_HEADER_FILE_ONLY
+#include "miniz.c"
+
+#ifdef _WIN32
+#include <Windows.h>
+#else
+
+#endif
+
 #include "common/zip_file.hpp"
-#include "common/exceptions.hpp"
 
-namespace xlnt {
+namespace {
 
-zip_file::zip_file(const std::string &filename, file_mode mode, file_access access)
-  : current_state_(state::closed),
-filename_(filename),
-modified_(false),
-//    mode_(mode),
-access_(access)
+std::string get_working_directory()
 {
-    switch(mode)
+#ifdef _WIN32
+    TCHAR buffer[MAX_PATH];
+    GetCurrentDirectory(MAX_PATH, buffer);
+    return buffer;
+#endif
+    return "";
+}
+    
+#ifdef _WIN32
+char directory_separator = '\\';
+#else
+char directory_separator = '/';
+#endif
+    
+std::string join_path(const std::vector<std::string> &parts)
+{
+    std::string joined;
+    std::size_t i = 0;
+    for(auto part : parts)
     {
-        case file_mode::open:
-            read_all();
-            break;
-        case file_mode::open_or_create:
-            if(file_exists(filename))
-            {
-                read_all();
-            }
-            else
-            {
-                flush(true);
-            }
-            break;
-        case file_mode::create:
-            flush(true);
-            break;
-        case file_mode::create_new:
-            if(file_exists(filename))
-            {
-                throw std::runtime_error("file exists");
-            }
-            flush(true);
-            break;
-        case file_mode::truncate:
-            if((int)access & (int)file_access::read)
-            {
-                throw std::runtime_error("cannot read from file opened with file_mode truncate");
-            }
-            flush(true);
-            break;
-        case file_mode::append:
-            read_all();
-            break;
+        joined.append(part);
+        
+        if(i++ != parts.size() - 1)
+        {
+            joined.append(1, directory_separator);
+        }
     }
+    return joined;
+}
+    
+std::vector<std::string> split_path(const std::string &path)
+{
+    std::vector<std::string> split;
+    std::string::size_type previous_index = 0;
+    auto separator_index = path.find(directory_separator);
+    
+    while(separator_index != std::string::npos)
+    {
+        split.push_back(path.substr(previous_index, separator_index));
+        previous_index = separator_index + 1;
+        separator_index = path.find(previous_index, directory_separator);
+    }
+    
+    split.push_back(path.substr(previous_index));
+    
+    return split;
+}
+    
+uint32_t crc32buf(const char *buf, std::size_t len)
+{
+    uint32_t oldcrc32 = 0xFFFFFFFF;
+    
+    uint32_t crc_32_tab[] = { /* CRC polynomial 0xedb88320 */
+        0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
+        0xe963a535, 0x9e6495a3, 0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
+        0x09b64c2b, 0x7eb17cbd, 0xe7b82d07, 0x90bf1d91, 0x1db71064, 0x6ab020f2,
+        0xf3b97148, 0x84be41de, 0x1adad47d, 0x6ddde4eb, 0xf4d4b551, 0x83d385c7,
+        0x136c9856, 0x646ba8c0, 0xfd62f97a, 0x8a65c9ec, 0x14015c4f, 0x63066cd9,
+        0xfa0f3d63, 0x8d080df5, 0x3b6e20c8, 0x4c69105e, 0xd56041e4, 0xa2677172,
+        0x3c03e4d1, 0x4b04d447, 0xd20d85fd, 0xa50ab56b, 0x35b5a8fa, 0x42b2986c,
+        0xdbbbc9d6, 0xacbcf940, 0x32d86ce3, 0x45df5c75, 0xdcd60dcf, 0xabd13d59,
+        0x26d930ac, 0x51de003a, 0xc8d75180, 0xbfd06116, 0x21b4f4b5, 0x56b3c423,
+        0xcfba9599, 0xb8bda50f, 0x2802b89e, 0x5f058808, 0xc60cd9b2, 0xb10be924,
+        0x2f6f7c87, 0x58684c11, 0xc1611dab, 0xb6662d3d, 0x76dc4190, 0x01db7106,
+        0x98d220bc, 0xefd5102a, 0x71b18589, 0x06b6b51f, 0x9fbfe4a5, 0xe8b8d433,
+        0x7807c9a2, 0x0f00f934, 0x9609a88e, 0xe10e9818, 0x7f6a0dbb, 0x086d3d2d,
+        0x91646c97, 0xe6635c01, 0x6b6b51f4, 0x1c6c6162, 0x856530d8, 0xf262004e,
+        0x6c0695ed, 0x1b01a57b, 0x8208f4c1, 0xf50fc457, 0x65b0d9c6, 0x12b7e950,
+        0x8bbeb8ea, 0xfcb9887c, 0x62dd1ddf, 0x15da2d49, 0x8cd37cf3, 0xfbd44c65,
+        0x4db26158, 0x3ab551ce, 0xa3bc0074, 0xd4bb30e2, 0x4adfa541, 0x3dd895d7,
+        0xa4d1c46d, 0xd3d6f4fb, 0x4369e96a, 0x346ed9fc, 0xad678846, 0xda60b8d0,
+        0x44042d73, 0x33031de5, 0xaa0a4c5f, 0xdd0d7cc9, 0x5005713c, 0x270241aa,
+        0xbe0b1010, 0xc90c2086, 0x5768b525, 0x206f85b3, 0xb966d409, 0xce61e49f,
+        0x5edef90e, 0x29d9c998, 0xb0d09822, 0xc7d7a8b4, 0x59b33d17, 0x2eb40d81,
+        0xb7bd5c3b, 0xc0ba6cad, 0xedb88320, 0x9abfb3b6, 0x03b6e20c, 0x74b1d29a,
+        0xead54739, 0x9dd277af, 0x04db2615, 0x73dc1683, 0xe3630b12, 0x94643b84,
+        0x0d6d6a3e, 0x7a6a5aa8, 0xe40ecf0b, 0x9309ff9d, 0x0a00ae27, 0x7d079eb1,
+        0xf00f9344, 0x8708a3d2, 0x1e01f268, 0x6906c2fe, 0xf762575d, 0x806567cb,
+        0x196c3671, 0x6e6b06e7, 0xfed41b76, 0x89d32be0, 0x10da7a5a, 0x67dd4acc,
+        0xf9b9df6f, 0x8ebeeff9, 0x17b7be43, 0x60b08ed5, 0xd6d6a3e8, 0xa1d1937e,
+        0x38d8c2c4, 0x4fdff252, 0xd1bb67f1, 0xa6bc5767, 0x3fb506dd, 0x48b2364b,
+        0xd80d2bda, 0xaf0a1b4c, 0x36034af6, 0x41047a60, 0xdf60efc3, 0xa867df55,
+        0x316e8eef, 0x4669be79, 0xcb61b38c, 0xbc66831a, 0x256fd2a0, 0x5268e236,
+        0xcc0c7795, 0xbb0b4703, 0x220216b9, 0x5505262f, 0xc5ba3bbe, 0xb2bd0b28,
+        0x2bb45a92, 0x5cb36a04, 0xc2d7ffa7, 0xb5d0cf31, 0x2cd99e8b, 0x5bdeae1d,
+        0x9b64c2b0, 0xec63f226, 0x756aa39c, 0x026d930a, 0x9c0906a9, 0xeb0e363f,
+        0x72076785, 0x05005713, 0x95bf4a82, 0xe2b87a14, 0x7bb12bae, 0x0cb61b38,
+        0x92d28e9b, 0xe5d5be0d, 0x7cdcefb7, 0x0bdbdf21, 0x86d3d2d4, 0xf1d4e242,
+        0x68ddb3f8, 0x1fda836e, 0x81be16cd, 0xf6b9265b, 0x6fb077e1, 0x18b74777,
+        0x88085ae6, 0xff0f6a70, 0x66063bca, 0x11010b5c, 0x8f659eff, 0xf862ae69,
+        0x616bffd3, 0x166ccf45, 0xa00ae278, 0xd70dd2ee, 0x4e048354, 0x3903b3c2,
+        0xa7672661, 0xd06016f7, 0x4969474d, 0x3e6e77db, 0xaed16a4a, 0xd9d65adc,
+        0x40df0b66, 0x37d83bf0, 0xa9bcae53, 0xdebb9ec5, 0x47b2cf7f, 0x30b5ffe9,
+        0xbdbdf21c, 0xcabac28a, 0x53b39330, 0x24b4a3a6, 0xbad03605, 0xcdd70693,
+        0x54de5729, 0x23d967bf, 0xb3667a2e, 0xc4614ab8, 0x5d681b02, 0x2a6f2b94,
+        0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
+    };
+    
+#define UPDC32(octet,crc) (crc_32_tab[((crc)\
+^ ((uint8_t)octet)) & 0xff] ^ ((crc) >> 8))
+    
+    for ( ; len; --len, ++buf)
+    {
+        oldcrc32 = UPDC32(*buf, oldcrc32);
+    }
+    
+    return ~oldcrc32;
+}
+
+} // namespace
+
+namespace  xlnt {
+
+zip_file::zip_file() : archive_(new mz_zip_archive())
+{
+    reset();
+}
+
+zip_file::zip_file(const std::string &filename) : zip_file()
+{
+    load(filename);
+}
+
+zip_file::zip_file(std::istream &stream) : zip_file()
+{
+    load(stream);
+}
+
+zip_file::zip_file(const std::vector<unsigned char> &bytes) : zip_file()
+{
+    load(bytes);
 }
 
 zip_file::~zip_file()
 {
-    change_state(state::closed);
+    reset();
 }
 
-std::string zip_file::get_file_contents(const std::string &filename) const
+void zip_file::load(std::istream &stream)
 {
-    return files_.at(filename);
+    reset();
+    buffer_.assign(std::istreambuf_iterator<char>(stream), {});
+    remove_comment();
+    start_read();
 }
 
-std::string dirname(const std::string &filename)
+void zip_file::load(const std::string &filename)
 {
-    auto last_sep_index = filename.find_last_of('/');
+    filename_ = filename;
+    std::ifstream stream(filename, std::ios::binary);
+    load(stream);
+}
 
-    if(last_sep_index != std::string::npos)
+void zip_file::load(const std::vector<unsigned char> &bytes)
+{
+    reset();
+    buffer_.assign(bytes.begin(), bytes.end());
+    remove_comment();
+    start_read();
+}
+
+void zip_file::save(const std::string &filename)
+{
+    filename_ = filename;
+    std::ofstream stream(filename, std::ios::binary);
+    save(stream);
+}
+
+void zip_file::save(std::ostream &stream)
+{
+    if(archive_->m_zip_mode == MZ_ZIP_MODE_WRITING)
     {
-        return filename.substr(0, last_sep_index + 1);
+        mz_zip_writer_finalize_archive(archive_.get());
+    }
+    
+    if(archive_->m_zip_mode == MZ_ZIP_MODE_WRITING_HAS_BEEN_FINALIZED)
+    {
+        mz_zip_writer_end(archive_.get());
     }
 
-    return "";
+    if(archive_->m_zip_mode == MZ_ZIP_MODE_INVALID)
+    {
+        start_read();
+    }
+    
+    append_comment();
+    stream.write(buffer_.data(), buffer_.size());
 }
 
-void zip_file::set_file_contents(const std::string &filename, const std::string &contents)
+void zip_file::save(std::vector<unsigned char> &bytes)
 {
-    if(!has_file(filename) || files_[filename] != contents)
+    if(archive_->m_zip_mode == MZ_ZIP_MODE_WRITING)
     {
-        modified_ = true;
+        mz_zip_writer_finalize_archive(archive_.get());
     }
-
-    auto dir = dirname(filename);
-
-    while(dir != "")
+    
+    if(archive_->m_zip_mode == MZ_ZIP_MODE_WRITING_HAS_BEEN_FINALIZED)
     {
-        auto matching_directory = std::find(directories_.begin(), directories_.end(), dir);
+        mz_zip_writer_end(archive_.get());
+    }
+    
+    if(archive_->m_zip_mode == MZ_ZIP_MODE_INVALID)
+    {
+        start_read();
+    }
+    
+    append_comment();
+    bytes.assign(buffer_.begin(), buffer_.end());
+}
 
-        if(matching_directory == directories_.end())
+void zip_file::append_comment()
+{
+    if(!comment.empty())
+    {
+        uint16_t comment_length = comment.length();
+        buffer_[buffer_.size() - 2] = comment_length & 0xFF;
+        buffer_[buffer_.size() - 1] = comment_length >> 8 & 0xFF;
+        std::copy(comment.begin(), comment.end(), std::back_inserter(buffer_));
+    }
+}
+
+void zip_file::remove_comment()
+{
+    if(buffer_.empty()) return;
+    
+    std::size_t position = buffer_.size() - 1;
+    
+    for(; position >= 3; position--)
+    {
+        if(buffer_[position - 3] == 'P'
+           && buffer_[position - 2] == 'K'
+           && buffer_[position - 1] == '\x05'
+           && buffer_[position] == '\x06')
         {
-            directories_.push_back(dir);
-        }
-
-        dir = dirname(dir.substr(0, dir.length() - 1));
-    }
-
-    files_[filename] = contents;
-}
-
-void zip_file::delete_file(const std::string &filename)
-{
-    files_.erase(filename);
-}
-
-bool zip_file::has_file(const std::string &filename)
-{
-    return files_.find(filename) != files_.end();
-}
-
-void zip_file::flush(bool force_write)
-{
-    if(modified_ || force_write)
-    {
-        write_all();
-    }
-}
-
-void zip_file::read_all()
-{
-    if(!((int)access_ & (int)file_access::read))
-    {
-        throw std::runtime_error("don't have read access");
-    }
-    
-    change_state(state::read);
-    
-    auto num_files = zip_file_.m_total_files;
-    std::size_t i = 0;
-    
-    for(;i < num_files; i++)
-    {
-        mz_zip_archive_file_stat file_info;
-        
-        if(!mz_zip_reader_file_stat(&zip_file_, i, &file_info))
-        {
-            throw std::runtime_error("stat failed");
-        }
-        
-        std::string current_filename(file_info.m_filename, file_info.m_filename + strlen(file_info.m_filename));
-        
-        if(mz_zip_reader_is_file_a_directory(&zip_file_, i))
-        {
-            directories_.push_back(current_filename);
-            continue;
-        }
-        
-        files_[current_filename] = read_from_zip(current_filename);
-    }
-}
-
-void zip_file::write_all()
-{
-    if(!((int)access_ & (int)file_access::write))
-    {
-        throw std::runtime_error("don't have write access");
-    }
-    
-    change_state(state::write, false);
-    
-    for(auto directory : directories_)
-    {
-        write_directory_to_zip(directory, true);
-    }
-
-    for(auto file : files_)
-    {
-        write_to_zip(file.first, file.second, true);
-    }
-    
-    modified_ = false;
-}
-
-std::string zip_file::read_from_zip(const std::string &filename)
-{
-    if(!((int)access_ & (int)file_access::read))
-    {
-        throw std::runtime_error("don't have read access");
-    }
-    
-    change_state(state::read);
-    
-    auto num_files = (std::size_t)mz_zip_reader_get_num_files(&zip_file_);
-    std::size_t i = 0;
-    
-    for(;i < num_files; i++)
-    {
-        mz_zip_archive_file_stat file_info;
-    
-        if(!mz_zip_reader_file_stat(&zip_file_, i, &file_info))
-        {
-            throw std::runtime_error("stat failed");
-        }
-    
-        std::string current_filename(file_info.m_filename, file_info.m_filename + strlen(file_info.m_filename));
-        
-        if(filename == current_filename)
-        {
+            position = position + 17;
             break;
         }
     }
     
-    if(i == num_files)
+    if(position == 3)
+    {
+        throw std::runtime_error("didn't find end of central directory signature");
+    }
+    
+    uint16_t length = buffer_[position + 1];
+    length = (length << 8) + buffer_[position];
+    position += 2;
+    
+    if(length != 0)
+    {
+        comment = std::string(buffer_.data() + position, buffer_.data() + position + length);
+        buffer_.resize(buffer_.size() - length);
+        buffer_[buffer_.size() - 1] = 0;
+        buffer_[buffer_.size() - 2] = 0;
+    }
+}
+
+void zip_file::reset()
+{
+    switch(archive_->m_zip_mode)
+    {
+    case MZ_ZIP_MODE_READING:
+        mz_zip_reader_end(archive_.get());
+        break;
+    case MZ_ZIP_MODE_WRITING:
+        mz_zip_writer_finalize_archive(archive_.get());
+        mz_zip_writer_end(archive_.get());
+        break;
+    case MZ_ZIP_MODE_WRITING_HAS_BEEN_FINALIZED:
+        mz_zip_writer_end(archive_.get());
+        break;
+    case MZ_ZIP_MODE_INVALID:
+        break;
+    }
+    
+    if(archive_->m_zip_mode != MZ_ZIP_MODE_INVALID)
+    {
+        throw std::runtime_error("");
+    }
+
+    buffer_.clear();
+    comment.clear();
+    
+    start_write();
+    mz_zip_writer_finalize_archive(archive_.get());
+    mz_zip_writer_end(archive_.get());
+}
+
+zip_info zip_file::getinfo(const std::string &name)
+{
+    if(archive_->m_zip_mode != MZ_ZIP_MODE_READING)
+    {
+        start_read();
+    }
+
+    int index = mz_zip_reader_locate_file(archive_.get(), name.c_str(), nullptr, 0);
+
+    if(index == -1)
     {
         throw std::runtime_error("not found");
     }
-    
-    if(mz_zip_reader_is_file_a_directory(&zip_file_, i))
-    {
-        directories_.push_back(filename);
-        return "";
-    }
-    
-    std::size_t uncomp_size = 0;
-    char archive_filename[260];
-    std::fill(archive_filename, archive_filename + 260, '\0');
-    std::copy(filename.begin(), filename.begin() + filename.length(), archive_filename);
-    char *data = (char *)mz_zip_reader_extract_file_to_heap(&zip_file_, archive_filename, &uncomp_size, 0);
-    
-    if(data == nullptr)
-    {
-        throw std::runtime_error("extract failed");
-    }
-    
-    std::string content(data, data + uncomp_size);
-    mz_free(data);
-    
-    return content;
+
+    return getinfo(index);
 }
 
-void zip_file::write_directory_to_zip(const std::string &name, bool append)
+zip_info zip_file::getinfo(int index)
 {
-    if(!((int)access_ & (int)file_access::write))
+    if(archive_->m_zip_mode != MZ_ZIP_MODE_READING)
     {
-        throw std::runtime_error("don't have write access");
+        start_read();
     }
 
-    change_state(state::write, append);
-    
-    if(!mz_zip_writer_add_mem(&zip_file_, name.c_str(), nullptr, 0, MZ_BEST_COMPRESSION))
-    {
-        throw std::runtime_error("write directory failed");
-    }
-}
+    mz_zip_archive_file_stat stat;
+    mz_zip_reader_file_stat(archive_.get(), index, &stat);
 
-void zip_file::write_to_zip(const std::string &filename, const std::string &content, bool append)
-{
-    if(!((int)access_ & (int)file_access::write))
-    {
-        throw std::runtime_error("don't have write access");
-    }
-    
-    change_state(state::write, append);
-    
-    auto status = mz_zip_writer_add_mem(&zip_file_, filename.c_str(), content.c_str(), content.length(), MZ_BEST_COMPRESSION);
-    
-    if(!status)
-    {
-        throw std::runtime_error("write failed");
-    }
-}
+    zip_info result;
 
-void zip_file::change_state(state new_state, bool append)
-{
-    if(new_state == current_state_ && append)
-    {
-        return;
-    }
+    result.filename = std::string(stat.m_filename, stat.m_filename + std::strlen(stat.m_filename));
+    result.comment = std::string(stat.m_comment, stat.m_comment + stat.m_comment_size);
+    result.compress_size = (std::size_t)stat.m_comp_size;
+    result.file_size = (std::size_t)stat.m_uncomp_size;
+    result.header_offset = (std::size_t)stat.m_local_header_ofs;
+    result.crc = stat.m_crc32;
+    tm *time = localtime(&stat.m_time);
+    result.date_time.year = 1900 + time->tm_year;
+    result.date_time.month = 1 + time->tm_mon;
+    result.date_time.day = time->tm_mday;
+    result.date_time.hours = time->tm_hour;
+    result.date_time.minutes = time->tm_min;
+    result.date_time.seconds = time->tm_sec;
+    result.flag_bits = stat.m_bit_flag;
+    result.internal_attr = stat.m_internal_attr;
+    result.external_attr = stat.m_external_attr;
+    result.extract_version = stat.m_version_needed;
+    result.create_version = stat.m_version_made_by;
+    result.volume = stat.m_file_index;
+    result.create_system = stat.m_method;
     
-    switch(new_state)
-    {
-        case state::closed:
-            if(current_state_ == state::write)
-            {
-                stop_write();
-            }
-            else if(current_state_ == state::read)
-            {
-                stop_read();
-            }
-            break;
-        case state::read:
-            if(current_state_ == state::write)
-            {
-                stop_write();
-            }
-            start_read();
-            break;
-        case state::write:
-            if(current_state_ == state::read)
-            {
-                stop_read();
-            }
-            if(current_state_ != state::write)
-            {
-                start_write(append);
-            }
-            break;
-        default:
-            throw std::runtime_error("bad enum");
-    }
-    
-    current_state_ = new_state;
-}
-
-bool zip_file::file_exists(const std::string& name)
-{
-    std::ifstream f(name.c_str());
-    return f.good();
+    return result;
 }
 
 void zip_file::start_read()
 {
-    if(!mz_zip_reader_init_file(&zip_file_, filename_.c_str(), 0))
+    if(archive_->m_zip_mode == MZ_ZIP_MODE_READING) return;
+    
+    if(archive_->m_zip_mode == MZ_ZIP_MODE_WRITING)
     {
-        throw invalid_file_exception(filename_);
-    }
-}
-
-void zip_file::stop_read()
-{
-    if(!mz_zip_reader_end(&zip_file_))
-    {
-        throw std::runtime_error("");
-    }
-}
-
-void zip_file::start_write(bool append)
-{
-    if(append && !file_exists(filename_))
-    {
-        throw std::runtime_error("can't append to non-existent file");
+        mz_zip_writer_finalize_archive(archive_.get());
     }
     
-    if(!mz_zip_writer_init_file(&zip_file_, filename_.c_str(), 0))
+    if(archive_->m_zip_mode == MZ_ZIP_MODE_WRITING_HAS_BEEN_FINALIZED)
     {
-        if(append)
+        mz_zip_writer_end(archive_.get());
+    }
+        
+    if(!mz_zip_reader_init_mem(archive_.get(), buffer_.data(), buffer_.size(), 0))
+    {
+        throw std::runtime_error("bad zip");
+    }
+}
+
+std::size_t write_callback(void *opaque, mz_uint64 file_ofs, const void *pBuf, std::size_t n)
+{
+    auto buffer = (std::vector<char> *)opaque;
+    
+    if(file_ofs + n > buffer->size())
+    {
+        buffer->resize(file_ofs + n);
+    }
+
+    for(std::size_t i = 0; i < n; i++)
+    {
+        (*buffer)[(std::size_t)file_ofs + i] = ((const char *)pBuf)[i];
+    }
+
+    return n;
+}
+
+void zip_file::start_write()
+{
+    if(archive_->m_zip_mode == MZ_ZIP_MODE_WRITING) return;
+    
+    switch(archive_->m_zip_mode)
+    {
+        case MZ_ZIP_MODE_READING:
         {
-            throw std::runtime_error("couldn't append to zip file");
+            mz_zip_archive archive_copy;
+	    std::memset(&archive_copy, 0, sizeof(mz_zip_archive));
+            std::vector<char> buffer_copy(buffer_.begin(), buffer_.end());
+            
+            if(!mz_zip_reader_init_mem(&archive_copy, buffer_copy.data(), buffer_copy.size(), 0))
+            {
+                throw std::runtime_error("bad zip");
+            }
+            
+            mz_zip_reader_end(archive_.get());
+            
+            archive_->m_pWrite = &write_callback;
+            archive_->m_pIO_opaque = &buffer_;
+            buffer_ = std::vector<char>();
+            
+            if(!mz_zip_writer_init(archive_.get(), 0))
+            {
+                throw std::runtime_error("bad zip");
+            }
+            
+            for(int i = 0; i < (int)archive_copy.m_total_files; i++)
+            {
+                if(!mz_zip_writer_add_from_zip_reader(archive_.get(), &archive_copy, i))
+                {
+                    throw std::runtime_error("fail");
+                }
+            }
+            
+            mz_zip_reader_end(&archive_copy);
+            return;
         }
-        else
-        {
-            throw std::runtime_error("couldn't create zip file");
-        }
+        case MZ_ZIP_MODE_WRITING_HAS_BEEN_FINALIZED:
+            mz_zip_writer_end(archive_.get());
+            break;
+        default:
+            break;
+    }
+
+    archive_->m_pWrite = &write_callback;
+    archive_->m_pIO_opaque = &buffer_;
+
+    if(!mz_zip_writer_init(archive_.get(), 0))
+    {
+        throw std::runtime_error("bad zip");
     }
 }
 
-void zip_file::stop_write()
+void zip_file::write(const std::string &filename)
 {
-    flush();
-    
-    if(!mz_zip_writer_finalize_archive(&zip_file_))
+    auto split = split_path(filename);
+    if(split.size() > 1)
     {
-        throw std::runtime_error("");
+        split.erase(split.begin());
     }
-    
-    if(!mz_zip_writer_end(&zip_file_))
+    auto arcname = join_path(split);
+    write(filename, arcname);
+}
+
+void zip_file::write(const std::string &filename, const std::string &arcname)
+{
+    std::fstream file(filename, std::ios::binary | std::ios::in);
+    std::stringstream ss;
+    ss << file.rdbuf();
+    std::string bytes = ss.str();
+
+    writestr(arcname, bytes);
+}
+
+void zip_file::writestr(const std::string &arcname, const std::string &bytes)
+{
+    if(archive_->m_zip_mode != MZ_ZIP_MODE_WRITING)
     {
-        throw std::runtime_error("");
+        start_write();
+    }
+
+    if(!mz_zip_writer_add_mem(archive_.get(), arcname.c_str(), bytes.data(), bytes.size(), MZ_DEFAULT_COMPRESSION))
+    {
+        throw std::runtime_error("write error");
     }
 }
+
+void zip_file::writestr(const zip_info &info, const std::string &bytes)
+{
+    if(info.filename.empty() || info.date_time.year < 1980)
+    {
+        throw std::runtime_error("must specify a filename and valid date (year >= 1980");
+    }
     
+    if(archive_->m_zip_mode != MZ_ZIP_MODE_WRITING)
+    {
+        start_write();
+    }
+    
+    auto crc = crc32buf(bytes.c_str(), bytes.size());
+    
+    if(!mz_zip_writer_add_mem_ex(archive_.get(), info.filename.c_str(), bytes.data(), bytes.size(), info.comment.c_str(), (mz_uint16)info.comment.size(), MZ_DEFAULT_COMPRESSION, 0, crc))
+    {
+        throw std::runtime_error("write error");
+    }
 }
+
+std::string zip_file::read(const zip_info &info)
+{
+    std::size_t size;
+    char *data = (char *)mz_zip_reader_extract_file_to_heap(archive_.get(), info.filename.c_str(), &size, 0);
+    if(data == nullptr)
+    {
+	throw std::runtime_error("file couldn't be read");
+    }
+    std::string extracted(data, data + size);
+    mz_free(data);
+    return extracted;
+}
+
+std::string zip_file::read(const std::string &name)
+{
+    return read(getinfo(name));
+}
+
+std::vector<zip_info> zip_file::infolist()
+{
+    if(archive_->m_zip_mode != MZ_ZIP_MODE_READING)
+    {
+        start_read();
+    }
+
+    std::vector<zip_info> info;
+
+    for(std::size_t i = 0; i < mz_zip_reader_get_num_files(archive_.get()); i++)
+    {
+        info.push_back(getinfo((int)i));
+    }
+
+    return info;
+}
+
+std::vector<std::string> zip_file::namelist()
+{
+    std::vector<std::string> names;
+
+    for(auto &info : infolist())
+    {
+        names.push_back(info.filename);
+    }
+
+    return names;
+}
+
+std::ostream &zip_file::open(const std::string &name)
+{
+    return open(getinfo(name));
+}
+
+std::ostream &zip_file::open(const zip_info &name)
+{
+    auto data = read(name);
+    std::string data_string(data.begin(), data.end());
+    open_stream_ << data_string;
+    return open_stream_;
+}
+
+void zip_file::extract(const std::string &member)
+{
+    extract(member, get_working_directory());
+}
+
+void zip_file::extract(const std::string &member, const std::string &path)
+{
+    std::fstream stream(join_path({path, member}), std::ios::binary | std::ios::out);
+    stream << open(member).rdbuf();
+}
+
+void zip_file::extract(const zip_info &member)
+{
+    extract(member, get_working_directory());
+}
+
+void zip_file::extract(const zip_info &member, const std::string &path)
+{
+    std::fstream stream(join_path({path, member.filename}), std::ios::binary | std::ios::out);
+    stream << open(member).rdbuf();
+}
+
+void zip_file::extractall(const std::string &path)
+{
+    extractall(path, infolist());
+}
+
+void zip_file::extractall(const std::string &path, const std::vector<std::string> &members)
+{
+    for(auto &member : members)
+    {
+        extract(member, path);
+    }
+}
+
+void zip_file::extractall(const std::string &path, const std::vector<zip_info> &members)
+{
+    for(auto &member : members)
+    {
+        extract(member, path);
+    }
+}
+
+void zip_file::printdir()
+{
+    printdir(std::cout);
+}
+
+void zip_file::printdir(std::ostream &stream)
+{
+    stream << "  Length " << "  " << "   " << "Date" << "   " << " " << "Time " << "   " << "Name" << std::endl;
+    stream << "---------  ---------- -----   ----" << std::endl;
+    
+    std::size_t sum_length = 0;
+    std::size_t file_count = 0;
+
+    for(auto &member : infolist())
+    {
+        sum_length += member.file_size;
+        file_count++;
+
+        std::string length_string = std::to_string(member.file_size);
+        while(length_string.length() < 9)
+        {
+            length_string = " " + length_string;
+        }
+        stream << length_string;
+
+        stream << "  ";
+        stream << (member.date_time.month < 10 ? "0" : "") << member.date_time.month;
+        stream << "/";
+        stream << (member.date_time.day < 10 ? "0" : "") << member.date_time.day;
+        stream << "/";
+        stream << member.date_time.year;
+        stream << " ";
+        stream << (member.date_time.hours < 10 ? "0" : "") << member.date_time.hours;
+        stream << ":";
+        stream << (member.date_time.minutes < 10 ? "0" : "") << member.date_time.minutes;
+        stream << "   ";
+        stream << member.filename;
+        stream << std::endl;
+    }
+
+    stream << "---------                     -------" << std::endl;
+
+    std::string length_string = std::to_string(sum_length);
+    while(length_string.length() < 9)
+    {
+        length_string = " " + length_string;
+    }
+    stream << length_string << "                     " << file_count << " " << (file_count == 1 ? "file" : "files");
+    stream << std::endl;
+}
+
+std::pair<bool, std::string> zip_file::testzip()
+{
+    if(archive_->m_zip_mode == MZ_ZIP_MODE_INVALID)
+    {
+        throw std::runtime_error("not open");
+    }
+
+    for(auto &file : infolist())
+    {
+        auto content = read(file);
+        auto crc = crc32buf(content.c_str(), content.size());
+        
+        if(crc != file.crc)
+        {
+            return {false, file.filename};
+        }
+    }
+
+    return {true, ""};
+}
+
+} // namespace xlnt
