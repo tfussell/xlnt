@@ -1,4 +1,4 @@
-#include "drawing/drawing.hpp"
+#include <xlnt/drawing/drawing.hpp>
 
 namespace xlnt {
 

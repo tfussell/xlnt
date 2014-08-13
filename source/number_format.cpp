@@ -1,6 +1,6 @@
 #include <algorithm>
 
-#include "styles/number_format.hpp"
+#include <xlnt/styles/number_format.hpp>
 
 namespace xlnt {
 

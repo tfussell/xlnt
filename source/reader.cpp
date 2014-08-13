@@ -1,17 +1,17 @@
 #include <algorithm>
 #include <pugixml.hpp>
 
-#include "reader/reader.hpp"
-#include "cell/cell.hpp"
-#include "cell/value.hpp"
-#include "common/datetime.hpp"
-#include "worksheet/range_reference.hpp"
-#include "workbook/workbook.hpp"
-#include "worksheet/worksheet.hpp"
-#include "workbook/document_properties.hpp"
-#include "common/relationship.hpp"
-#include "common/zip_file.hpp"
-#include "common/exceptions.hpp"
+#include <xlnt/reader/reader.hpp>
+#include <xlnt/cell/cell.hpp>
+#include <xlnt/cell/value.hpp>
+#include <xlnt/common/datetime.hpp>
+#include <xlnt/worksheet/range_reference.hpp>
+#include <xlnt/workbook/workbook.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
+#include <xlnt/workbook/document_properties.hpp>
+#include <xlnt/common/relationship.hpp>
+#include <xlnt/common/zip_file.hpp>
+#include <xlnt/common/exceptions.hpp>
 
 namespace xlnt {
 

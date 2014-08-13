@@ -1,11 +1,11 @@
 #include <sstream>
 #include <pugixml.hpp>
 
-#include "writer/style_writer.hpp"
-#include "workbook/workbook.hpp"
-#include "worksheet/worksheet.hpp"
-#include "worksheet/range.hpp"
-#include "cell/cell.hpp"
+#include <xlnt/writer/style_writer.hpp>
+#include <xlnt/workbook/workbook.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
+#include <xlnt/worksheet/range.hpp>
+#include <xlnt/cell/cell.hpp>
 
 namespace xlnt {
 
@@ -63,12 +63,18 @@ std::string style_writer::write_table() const
     style_sheet_node.append_attribute("mc:Ignorable").set_value("x14ac");
     style_sheet_node.append_attribute("xmlns:x14ac").set_value("http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac");
 
+    std::vector<style> custom_styles;
     for(auto style : get_styles())
     {
         if((int)style.get_number_format().get_format_code() > 163)
         {
-
+            custom_styles.push_back(style);
         }
+    }
+
+    if(!custom_styles.empty())
+    {
+
     }
 
     auto fonts_node = style_sheet_node.append_child("fonts");

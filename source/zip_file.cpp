@@ -1,9 +1,6 @@
 #include <algorithm>
 #include <fstream>
 
-#define MINIZ_HEADER_FILE_ONLY
-#include "miniz.c"
-
 #ifdef _WIN32
 #define NOMINMAX
 #include <Windows.h>
@@ -11,7 +8,8 @@
 
 #endif
 
-#include "common/zip_file.hpp"
+#include <xlnt/common/zip_file.hpp>
+#include <xlnt/common/miniz.h>
 
 namespace {
 

@@ -3,7 +3,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "common/types.hpp"
+#include <xlnt/common/types.hpp>
 
 namespace xlnt {
 

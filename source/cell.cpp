@@ -2,17 +2,18 @@
 #include <locale>
 #include <sstream>
 
-#include "cell/cell.hpp"
-#include "cell/cell_reference.hpp"
-#include "cell/comment.hpp"
-#include "cell/value.hpp"
-#include "common/datetime.hpp"
-#include "common/relationship.hpp"
-#include "worksheet/worksheet.hpp"
+#include <xlnt/cell/cell.hpp>
+#include <xlnt/cell/cell_reference.hpp>
+#include <xlnt/cell/comment.hpp>
+#include <xlnt/cell/value.hpp>
+#include <xlnt/common/datetime.hpp>
+#include <xlnt/common/relationship.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
+#include <xlnt/common/exceptions.hpp>
+#include <xlnt/workbook/workbook.hpp>
+#include <xlnt/workbook/document_properties.hpp>
+
 #include "detail/cell_impl.hpp"
-#include "common/exceptions.hpp"
-#include "workbook/workbook.hpp"
-#include "workbook/document_properties.hpp"
 
 namespace {
 

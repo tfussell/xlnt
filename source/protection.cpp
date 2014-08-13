@@ -1,4 +1,4 @@
-#include "styles/protection.hpp"
+#include <xlnt/styles/protection.hpp>
 
 namespace xlnt {
 

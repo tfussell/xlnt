@@ -1,5 +1,5 @@
 #include "cell_impl.hpp"
-#include "worksheet/worksheet.hpp"
+#include <xlnt/worksheet/worksheet.hpp>
 
 namespace xlnt {
 namespace detail {

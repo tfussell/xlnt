@@ -1,10 +1,10 @@
 #pragma once
 
-#include "cell/cell.hpp"
-#include "cell/comment.hpp"
-#include "cell/value.hpp"
-#include "common/types.hpp"
-#include "common/relationship.hpp"
+#include <xlnt/cell/cell.hpp>
+#include <xlnt/cell/comment.hpp>
+#include <xlnt/cell/value.hpp>
+#include <xlnt/common/types.hpp>
+#include <xlnt/common/relationship.hpp>
 
 namespace xlnt {
 

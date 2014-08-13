@@ -1,4 +1,4 @@
-#include "styles/style.hpp"
+#include <xlnt/styles/style.hpp>
 
 namespace xlnt {
 

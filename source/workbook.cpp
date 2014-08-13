@@ -9,20 +9,21 @@
 #include <Windows.h>
 #endif
 
-#include "workbook/workbook.hpp"
-#include "common/exceptions.hpp"
-#include "drawing/drawing.hpp"
-#include "worksheet/range.hpp"
-#include "reader/reader.hpp"
-#include "common/relationship.hpp"
-#include "worksheet/worksheet.hpp"
-#include "writer/writer.hpp"
-#include "common/zip_file.hpp"
-#include "workbook/document_properties.hpp"
+#include <xlnt/workbook/workbook.hpp>
+#include <xlnt/common/exceptions.hpp>
+#include <xlnt/drawing/drawing.hpp>
+#include <xlnt/worksheet/range.hpp>
+#include <xlnt/reader/reader.hpp>
+#include <xlnt/common/relationship.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
+#include <xlnt/writer/writer.hpp>
+#include <xlnt/common/zip_file.hpp>
+#include <xlnt/workbook/document_properties.hpp>
+#include <xlnt/writer/style_writer.hpp>
+
 #include "detail/cell_impl.hpp"
 #include "detail/workbook_impl.hpp"
 #include "detail/worksheet_impl.hpp"
-#include "writer/style_writer.hpp"
 
 static std::string CreateTemporaryFilename()
 {

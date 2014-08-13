@@ -2,7 +2,7 @@
 #include <locale>
 #include <sstream>
 
-#include "worksheet/sheet_protection.hpp"
+#include <xlnt/worksheet/sheet_protection.hpp>
 
 namespace xlnt {
 

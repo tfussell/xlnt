@@ -7,16 +7,17 @@
 
 #include <pugixml.hpp>
 
-#include "writer/writer.hpp"
-#include "cell/cell.hpp"
-#include "cell/value.hpp"
+#include <xlnt/writer/writer.hpp>
+#include <xlnt/cell/cell.hpp>
+#include <xlnt/cell/value.hpp>
+#include <xlnt/worksheet/range.hpp>
+#include <xlnt/worksheet/range_reference.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
+#include <xlnt/workbook/workbook.hpp>
+#include <xlnt/common/relationship.hpp>
+#include <xlnt/workbook/document_properties.hpp>
+
 #include "constants.hpp"
-#include "worksheet/range.hpp"
-#include "worksheet/range_reference.hpp"
-#include "worksheet/worksheet.hpp"
-#include "workbook/workbook.hpp"
-#include "common/relationship.hpp"
-#include "workbook/document_properties.hpp"
 
 namespace xlnt {
 
