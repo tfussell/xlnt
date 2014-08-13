@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cstring>
 #include <fstream>
 
 #ifdef _WIN32

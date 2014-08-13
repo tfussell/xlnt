@@ -1,3 +1,5 @@
+#include <stdexcept>
+
 #include <xlnt/cell/value.hpp>
 #include <xlnt/common/datetime.hpp>
 
