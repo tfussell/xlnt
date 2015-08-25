@@ -32,7 +32,7 @@ project "xlnt"
     language "C++"
     targetdir "../lib/"
     includedirs { 
-       "../include/xlnt",
+       "../include",
        "../third-party/pugixml/src",
        "../third-party/miniz"
     }
