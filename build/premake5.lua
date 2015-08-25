@@ -38,7 +38,7 @@ project "xlnt"
     warnings "Extra"
     targetdir "../lib/"
     includedirs { 
-       "../include/xlnt",
+       "../include",
        "../third-party/miniz",
        "../third-party/pugixml/src"
     }
