@@ -32,7 +32,6 @@ public:
     value(int8_t i);
     value(int16_t i);
     value(int32_t i);
-    value(int64_t i);
     value(uint8_t i);
     value(uint16_t i);
     value(uint32_t i);
