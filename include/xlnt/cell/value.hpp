@@ -37,7 +37,9 @@ public:
     value(uint16_t i);
     value(uint32_t i);
     value(uint64_t i);
+#ifdef _WIN32
     value(long long int i);
+#endif
     value(float f);
     value(double d);
     value(long double d);
