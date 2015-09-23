@@ -21,12 +21,12 @@ int main( int argc, char *argv[] ) {
     return status;
 }
 bool suite_test_cell_init = false;
-#include "/n/home08/tfussell/build/xlnt/tests/test_cell.hpp"
+#include "/Users/thomas/Development/xlnt/tests/test_cell.hpp"
 
 static test_cell suite_test_cell;
 
 static CxxTest::List Tests_test_cell = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_test_cell( "../../tests/test_cell.hpp", 9, "test_cell", suite_test_cell, Tests_test_cell );
+CxxTest::StaticSuiteDescription suiteDescription_test_cell( "../../../tests/test_cell.hpp", 9, "test_cell", suite_test_cell, Tests_test_cell );
 
 static class TestDescription_suite_test_cell_test_coordinates : public CxxTest::RealTestDescription {
 public:
@@ -256,12 +256,12 @@ public:
  void runTest() { suite_test_cell.test_cell_offset(); }
 } testDescription_suite_test_cell_test_cell_offset;
 
-#include "/n/home08/tfussell/build/xlnt/tests/test_chart.hpp"
+#include "/Users/thomas/Development/xlnt/tests/test_chart.hpp"
 
 static test_chart suite_test_chart;
 
 static CxxTest::List Tests_test_chart = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_test_chart( "../../tests/test_chart.hpp", 8, "test_chart", suite_test_chart, Tests_test_chart );
+CxxTest::StaticSuiteDescription suiteDescription_test_chart( "../../../tests/test_chart.hpp", 8, "test_chart", suite_test_chart, Tests_test_chart );
 
 static class TestDescription_suite_test_chart_test_write_title : public CxxTest::RealTestDescription {
 public:
@@ -347,12 +347,12 @@ public:
  void runTest() { suite_test_chart.test_write_chart_scatter(); }
 } testDescription_suite_test_chart_test_write_chart_scatter;
 
-#include "/n/home08/tfussell/build/xlnt/tests/test_named_range.hpp"
+#include "/Users/thomas/Development/xlnt/tests/test_named_range.hpp"
 
 static test_named_range suite_test_named_range;
 
 static CxxTest::List Tests_test_named_range = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_test_named_range( "../../tests/test_named_range.hpp", 8, "test_named_range", suite_test_named_range, Tests_test_named_range );
+CxxTest::StaticSuiteDescription suiteDescription_test_named_range( "../../../tests/test_named_range.hpp", 8, "test_named_range", suite_test_named_range, Tests_test_named_range );
 
 static class TestDescription_suite_test_named_range_test_split : public CxxTest::RealTestDescription {
 public:
@@ -438,12 +438,12 @@ public:
  void runTest() { suite_test_named_range.test_can_be_saved(); }
 } testDescription_suite_test_named_range_test_can_be_saved;
 
-#include "/n/home08/tfussell/build/xlnt/tests/test_number_format.hpp"
+#include "/Users/thomas/Development/xlnt/tests/test_number_format.hpp"
 
 static test_number_format suite_test_number_format;
 
 static CxxTest::List Tests_test_number_format = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_test_number_format( "../../tests/test_number_format.hpp", 8, "test_number_format", suite_test_number_format, Tests_test_number_format );
+CxxTest::StaticSuiteDescription suiteDescription_test_number_format( "../../../tests/test_number_format.hpp", 8, "test_number_format", suite_test_number_format, Tests_test_number_format );
 
 static class TestDescription_suite_test_number_format_test_convert_date_to_julian : public CxxTest::RealTestDescription {
 public:
@@ -541,12 +541,12 @@ public:
  void runTest() { suite_test_number_format.test_mac_date(); }
 } testDescription_suite_test_number_format_test_mac_date;
 
-#include "/n/home08/tfussell/build/xlnt/tests/test_props.hpp"
+#include "/Users/thomas/Development/xlnt/tests/test_props.hpp"
 
 static test_props suite_test_props;
 
 static CxxTest::List Tests_test_props = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_test_props( "../../tests/test_props.hpp", 10, "test_props", suite_test_props, Tests_test_props );
+CxxTest::StaticSuiteDescription suiteDescription_test_props( "../../../tests/test_props.hpp", 10, "test_props", suite_test_props, Tests_test_props );
 
 static class TestDescription_suite_test_props_test_read_properties_core : public CxxTest::RealTestDescription {
 public:
@@ -584,12 +584,12 @@ public:
  void runTest() { suite_test_props.test_write_properties_app(); }
 } testDescription_suite_test_props_test_write_properties_app;
 
-#include "/n/home08/tfussell/build/xlnt/tests/test_read.hpp"
+#include "/Users/thomas/Development/xlnt/tests/test_read.hpp"
 
 static test_read suite_test_read;
 
 static CxxTest::List Tests_test_read = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_test_read( "../../tests/test_read.hpp", 10, "test_read", suite_test_read, Tests_test_read );
+CxxTest::StaticSuiteDescription suiteDescription_test_read( "../../../tests/test_read.hpp", 10, "test_read", suite_test_read, Tests_test_read );
 
 static class TestDescription_suite_test_read_test_read_standalone_worksheet : public CxxTest::RealTestDescription {
 public:
@@ -777,12 +777,12 @@ public:
  void runTest() { suite_test_read.test_bad_formats_no(); }
 } testDescription_suite_test_read_test_bad_formats_no;
 
-#include "/n/home08/tfussell/build/xlnt/tests/test_strings.hpp"
+#include "/Users/thomas/Development/xlnt/tests/test_strings.hpp"
 
 static test_strings suite_test_strings;
 
 static CxxTest::List Tests_test_strings = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_test_strings( "../../tests/test_strings.hpp", 8, "test_strings", suite_test_strings, Tests_test_strings );
+CxxTest::StaticSuiteDescription suiteDescription_test_strings( "../../../tests/test_strings.hpp", 8, "test_strings", suite_test_strings, Tests_test_strings );
 
 static class TestDescription_suite_test_strings_test_create_string_table : public CxxTest::RealTestDescription {
 public:
@@ -808,12 +808,12 @@ public:
  void runTest() { suite_test_strings.test_formatted_string_table(); }
 } testDescription_suite_test_strings_test_formatted_string_table;
 
-#include "/n/home08/tfussell/build/xlnt/tests/test_style.hpp"
+#include "/Users/thomas/Development/xlnt/tests/test_style.hpp"
 
 static test_style suite_test_style;
 
 static CxxTest::List Tests_test_style = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_test_style( "../../tests/test_style.hpp", 8, "test_style", suite_test_style, Tests_test_style );
+CxxTest::StaticSuiteDescription suiteDescription_test_style( "../../../tests/test_style.hpp", 8, "test_style", suite_test_style, Tests_test_style );
 
 static class TestDescription_suite_test_style_test_create_style_table : public CxxTest::RealTestDescription {
 public:
@@ -917,12 +917,12 @@ public:
  void runTest() { suite_test_style.test_protection(); }
 } testDescription_suite_test_style_test_protection;
 
-#include "/n/home08/tfussell/build/xlnt/tests/test_theme.hpp"
+#include "/Users/thomas/Development/xlnt/tests/test_theme.hpp"
 
 static test_theme suite_test_theme;
 
 static CxxTest::List Tests_test_theme = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_test_theme( "../../tests/test_theme.hpp", 10, "test_theme", suite_test_theme, Tests_test_theme );
+CxxTest::StaticSuiteDescription suiteDescription_test_theme( "../../../tests/test_theme.hpp", 10, "test_theme", suite_test_theme, Tests_test_theme );
 
 static class TestDescription_suite_test_theme_test_write_theme : public CxxTest::RealTestDescription {
 public:
@@ -930,12 +930,12 @@ public:
  void runTest() { suite_test_theme.test_write_theme(); }
 } testDescription_suite_test_theme_test_write_theme;
 
-#include "/n/home08/tfussell/build/xlnt/tests/test_workbook.hpp"
+#include "/Users/thomas/Development/xlnt/tests/test_workbook.hpp"
 
 static test_workbook suite_test_workbook;
 
 static CxxTest::List Tests_test_workbook = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_test_workbook( "../../tests/test_workbook.hpp", 10, "test_workbook", suite_test_workbook, Tests_test_workbook );
+CxxTest::StaticSuiteDescription suiteDescription_test_workbook( "../../../tests/test_workbook.hpp", 10, "test_workbook", suite_test_workbook, Tests_test_workbook );
 
 static class TestDescription_suite_test_workbook_test_get_active_sheet : public CxxTest::RealTestDescription {
 public:
@@ -1051,12 +1051,12 @@ public:
  void runTest() { suite_test_workbook.test_write_regular_float(); }
 } testDescription_suite_test_workbook_test_write_regular_float;
 
-#include "/n/home08/tfussell/build/xlnt/tests/test_worksheet.hpp"
+#include "/Users/thomas/Development/xlnt/tests/test_worksheet.hpp"
 
 static test_worksheet suite_test_worksheet;
 
 static CxxTest::List Tests_test_worksheet = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_test_worksheet( "../../tests/test_worksheet.hpp", 9, "test_worksheet", suite_test_worksheet, Tests_test_worksheet );
+CxxTest::StaticSuiteDescription suiteDescription_test_worksheet( "../../../tests/test_worksheet.hpp", 9, "test_worksheet", suite_test_worksheet, Tests_test_worksheet );
 
 static class TestDescription_suite_test_worksheet_test_new_worksheet : public CxxTest::RealTestDescription {
 public:
@@ -1292,12 +1292,12 @@ public:
  void runTest() { suite_test_worksheet.test_page_options(); }
 } testDescription_suite_test_worksheet_test_page_options;
 
-#include "/n/home08/tfussell/build/xlnt/tests/test_write.hpp"
+#include "/Users/thomas/Development/xlnt/tests/test_write.hpp"
 
 static test_write suite_test_write;
 
 static CxxTest::List Tests_test_write = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_test_write( "../../tests/test_write.hpp", 11, "test_write", suite_test_write, Tests_test_write );
+CxxTest::StaticSuiteDescription suiteDescription_test_write( "../../../tests/test_write.hpp", 11, "test_write", suite_test_write, Tests_test_write );
 
 static class TestDescription_suite_test_write_test_write_empty_workbook : public CxxTest::RealTestDescription {
 public:
@@ -1431,12 +1431,12 @@ public:
  void runTest() { suite_test_write.test_short_number(); }
 } testDescription_suite_test_write_test_short_number;
 
-#include "/n/home08/tfussell/build/xlnt/tests/test_zip_file.hpp"
+#include "/Users/thomas/Development/xlnt/tests/test_zip_file.hpp"
 
 static test_zip_file suite_test_zip_file;
 
 static CxxTest::List Tests_test_zip_file = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_test_zip_file( "../../tests/test_zip_file.hpp", 9, "test_zip_file", suite_test_zip_file, Tests_test_zip_file );
+CxxTest::StaticSuiteDescription suiteDescription_test_zip_file( "../../../tests/test_zip_file.hpp", 9, "test_zip_file", suite_test_zip_file, Tests_test_zip_file );
 
 static class TestDescription_suite_test_zip_file_test_load_file : public CxxTest::RealTestDescription {
 public:

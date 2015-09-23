@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 2.8.9)
+project(xlnt.test)
+include_directories(../../../include)
+include_directories(../../../third-party/pugixml/src)
+include_directories(../../../third-party/cxxtest)
+add_executable(xlnt.test ../../../tests/runner-autogen.cpp)
+target_link_libraries(xlnt.test xlnt)

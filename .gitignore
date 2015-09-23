@@ -1,6 +1,6 @@
 bin/
 lib/
-build/*/
+build/premake/*/
 *.obj
 *.sdf
 *.suo

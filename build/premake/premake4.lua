@@ -9,19 +9,19 @@ project "xlnt.test"
     kind "ConsoleApp"
     language "C++"
     targetname "xlnt.test"
-    targetdir "../bin"
+    targetdir "../../bin"
     includedirs { 
-       "../include",
-       "../third-party/pugixml/src",
-       "../third-party/miniz",
-       "/usr/local/Cellar/cxxtest/4.3"
+       "../../include",
+       "../../third-party/pugixml/src",
+       "../../third-party/miniz",
+       "../../third-party/cxxtest"
     }
     files { 
-       "../tests/*.hpp",
-       "../tests/runner-autogen.cpp"
+       "../../tests/*.hpp",
+       "../../tests/runner-autogen.cpp"
     }
     links { "xlnt" }
-    prebuildcommands { "/usr/local/Cellar/cxxtest/4.3/bin/cxxtestgen --runner=ErrorPrinter -o ../../tests/runner-autogen.cpp ../../tests/*.hpp" }
+    prebuildcommands { "../../../third-party/cxxtest/bin/cxxtestgen --runner=ErrorPrinter -o ../../../tests/runner-autogen.cpp ../../../tests/*.hpp" }
     flags { "Unicode" }
     configuration "windows"
         defines { "WIN32" }
@@ -30,18 +30,18 @@ project "xlnt.test"
 project "xlnt"
     kind "StaticLib"
     language "C++"
-    targetdir "../lib/"
+    targetdir "../../lib/"
     includedirs { 
-       "../include",
-       "../third-party/pugixml/src",
-       "../third-party/miniz"
+       "../../include",
+       "../../third-party/pugixml/src",
+       "../../third-party/miniz"
     }
     files {
-       "../source/**.cpp",
-       "../source/**.hpp",
-       "../include/xlnt/**.hpp",
-       "../third-party/pugixml/src/pugixml.cpp",
-       "../third-party/miniz/miniz.c"
+       "../../source/**.cpp",
+       "../../source/**.hpp",
+       "../../include/xlnt/**.hpp",
+       "../../third-party/pugixml/src/pugixml.cpp",
+       "../../third-party/miniz/miniz.c"
     }
     flags { "Unicode" }
     configuration "Debug"
