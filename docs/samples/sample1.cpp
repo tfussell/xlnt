@@ -1,15 +1,17 @@
+#include <iostream>
+#include <xlnt/xlnt.hpp>
 
 int main()
 {
-	for(auto sheet : xlnt::load_workbook("book.xlsx"))
+	for(auto sheet : xlnt::reader::load_workbook("book.xlsx"))
 	{
 		std::cout << sheet.get_title() << ": " << std::endl;
 
-		for(auto row : sheet)
+		for(auto row : sheet.rows())
 		{
 			for(auto cell : row)
 			{
-				std::cout << cell << ", ";
+				std::cout << cell.get_value().as<std::string>() << ", ";
 			}
 
 			std::cout << std::endl;
@@ -26,7 +28,7 @@ int main()
 		{
 			for(int column = 0; column < 1000; column++)
 			{
-				sheet[xlnt::cell_reference(column, row)] = row * 1000 + column;
+				sheet[xlnt::cell_reference(column, row)].set_value(row * 1000 + column);
 			}
 		}
 	}
