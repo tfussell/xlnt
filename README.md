@@ -66,9 +66,10 @@ open xcode4/xlnt.xcworkspace
 ```
 
 ## Dependencies
-xlnt uses the following libraries, which are included in the source tree for convenience:
+xlnt uses the following libraries, which are included in the source tree (pugixml and cxxtest as [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules#Cloning-a-Project-with-Submodules)) for convenience:
 - [miniz v1.15_r4](https://code.google.com/p/miniz/) (public domain/unlicense)
 - [pugixml v1.4](http://pugixml.org/) (MIT license)
+- [cxxtest v4.4](http://cxxtest.com/) (LGPLv3 license [only used for testing, separate from main library assembly])
 
 ## License
 xlnt is currently released to the public for free under the terms of the MIT License:
