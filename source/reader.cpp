@@ -240,6 +240,7 @@ void read_worksheet_common(worksheet ws, const pugi::xml_node &root_node, const 
 {
     auto dimension_node = root_node.child("dimension");
     std::string dimension = dimension_node.attribute("ref").as_string();
+    auto full_range = xlnt::range_reference(dimension);
     auto sheet_data_node = root_node.child("sheetData");
     auto merge_cells_node = root_node.child("mergeCells");
 
@@ -265,13 +266,19 @@ void read_worksheet_common(worksheet ws, const pugi::xml_node &root_node, const 
         std::string span_string = row_node.attribute("spans").as_string();
         auto colon_index = span_string.find(':');
 
-        if(colon_index == std::string::npos)
+        int min_column = 0;
+        int max_column = 0;
+        
+        if(colon_index != std::string::npos)
         {
-            continue;
+            min_column = std::stoi(span_string.substr(0, colon_index));
+            max_column = std::stoi(span_string.substr(colon_index + 1));
         }
-
-        int min_column = std::stoi(span_string.substr(0, colon_index));
-        int max_column = std::stoi(span_string.substr(colon_index + 1));
+        else
+        {
+            min_column = full_range.get_top_left().get_column_index() + 1;
+            max_column = full_range.get_bottom_right().get_column_index() + 1;
+        }
 
         for(int i = min_column; i < max_column + 1; i++)
         {
@@ -303,7 +310,7 @@ void read_worksheet_common(worksheet ws, const pugi::xml_node &root_node, const 
                     std::string inline_string = cell_node.child("is").child("t").text().as_string();
                     ws.get_cell(address).set_value(inline_string);
                 }
-                else if(has_type && type == "s") // shared string
+                else if(has_type && type == "s" && !has_formula) // shared string
                 {
                     auto shared_string_index = std::stoi(value_string);
                     auto shared_string = string_table.at(shared_string_index);
@@ -317,22 +324,6 @@ void read_worksheet_common(worksheet ws, const pugi::xml_node &root_node, const 
                 {
                     ws.get_cell(address).set_value(value_string);
                 }
-                else if(has_style)
-                {
-                    auto number_format_id = number_format_ids.at(std::stoi(style));
-                    auto format = number_format::lookup_format(number_format_id);
-                    ws.get_cell(address).get_style().get_number_format().set_format_code(format);
-                    if(format == number_format::format::date_xlsx14)
-                    {
-                        auto base_date = ws.get_parent().get_properties().excel_base_date;
-                        auto converted = date::from_number(std::stoi(value_string), base_date);
-                        ws.get_cell(address).set_value(converted.to_number(calendar::windows_1900));
-                    }
-                    else
-                    {
-                        ws.get_cell(address).set_value(value(std::stod(value_string)));
-                    }
-                }
                 else if(has_value)
                 {
                     try
@@ -342,6 +333,21 @@ void read_worksheet_common(worksheet ws, const pugi::xml_node &root_node, const 
                     catch(std::invalid_argument)
                     {
                         ws.get_cell(address).set_value(value_string);
+                    }
+                }
+                
+                if(has_style)
+                {
+                    auto number_format_id = number_format_ids.at(std::stoi(style));
+                    auto format = number_format::lookup_format(number_format_id);
+                    
+                    ws.get_cell(address).get_style().get_number_format().set_format_code(format);
+                    
+                    if(format == number_format::format::date_xlsx14)
+                    {
+                        auto base_date = ws.get_parent().get_properties().excel_base_date;
+                        auto converted = date::from_number(std::stoi(value_string), base_date);
+                        ws.get_cell(address).set_value(converted.to_number(calendar::windows_1900));
                     }
                 }
             }
