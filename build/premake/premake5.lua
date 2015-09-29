@@ -15,9 +15,9 @@ project "xlnt.test"
     targetdir "../../bin"
     includedirs { 
        "../../include",
-       "../../third-party/pugixml/src",
+       "../../third-party/cxxtest",
        "../../third-party/miniz",
-       "../../third-party/cxxtest"
+       "../../third-party/pugixml/src"
     }
     files { 
        "../../tests/*.hpp",

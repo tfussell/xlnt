@@ -2,6 +2,8 @@
 #include <cstring>
 #include <fstream>
 
+#include <miniz.h>
+
 #ifdef _WIN32
 #define NOMINMAX
 #include <Windows.h>
@@ -10,7 +12,6 @@
 #endif
 
 #include <xlnt/common/zip_file.hpp>
-#include <xlnt/common/miniz.h>
 
 namespace {
 

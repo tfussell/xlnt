@@ -4,4 +4,4 @@
 #define MINIZ_LITTLE_ENDIAN 1
 #define MINIZ_HAS_64BIT_REGISTERS 1
 
-#include "../../../third-party/miniz/miniz.c"
+#include "miniz.c"
