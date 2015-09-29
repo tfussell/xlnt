@@ -24,11 +24,11 @@ int main()
 	{
 		auto sheet = workbook.create_sheet("Sheet" + std::to_string(i));
 
-		for(int row = 0; row < 1000; row++)
+		for(int row = 0; row < 100; row++)
 		{
-			for(int column = 0; column < 1000; column++)
+			for(int column = 0; column < 100; column++)
 			{
-				sheet[xlnt::cell_reference(column, row)].set_value(row * 1000 + column);
+				sheet[xlnt::cell_reference(column, row)].set_value(row * 100 + column);
 			}
 		}
 	}
