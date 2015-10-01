@@ -15,9 +15,9 @@ Creating a new spreadsheet and saving it
 ```c++
 xlnt::workbook wb;
 xlnt::worksheet ws = wb.get_active_sheet();
-ws.cell("A1").set_value(5);
-ws.cell("B2").set_value("string data");
-ws.cell("C3").set_formula("=RAND()");
+ws.get_cell("A1").set_value(5);
+ws.get_cell("B2").set_value("string data");
+ws.get_cell("C3").set_formula("=RAND()");
 ws.merge_cells("C3:C4");
 ws.freeze_panes("B2");
 wb.save("book1.xlsx");
