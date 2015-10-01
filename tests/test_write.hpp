@@ -14,10 +14,10 @@ public:
     void test_write_empty_workbook()
     {
         xlnt::workbook wbk;
-        wbk.get_active_sheet().get_cell("A2").set_value("Thomas Fussell");
+        wbk.get_active_sheet().get_cell("A2").set_value("xlnt");
         wbk.get_active_sheet().get_cell("B5").set_value(88);
         wbk.get_active_sheet().get_cell("B5").get_style().set_number_format(xlnt::number_format(xlnt::number_format::format::percentage_00));
-        wbk.save("/Users/thomas/Desktop/ab.xlsx");
+        wbk.save(temp_file.GetFilename());
         
         if(PathHelper::FileExists(temp_file.GetFilename()))
         {
@@ -112,7 +112,7 @@ public:
     {
 		auto ws = wb_.create_sheet();
         ws.get_cell("F1").set_value(10);
-        ws.get_row_properties(ws.get_cell("F1").get_row()).set_height(30);
+        ws.get_row_properties(ws.get_cell("F1").get_row()).height = 30;
         auto content = xlnt::writer::write_worksheet(ws, {}, {});
         TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_height.xml", content));
     }

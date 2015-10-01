@@ -32,7 +32,45 @@ value::value(bool b) : type_(type::boolean), numeric_value_(b ? 1 : 0)
 {
 }
 
-value::value(int i) : type_(type::numeric), numeric_value_(i)
+value::value(std::int8_t i) : type_(type::numeric), numeric_value_(i)
+{
+}
+
+value::value(std::int16_t i) : type_(type::numeric), numeric_value_(i)
+{
+}
+
+value::value(std::int32_t i) : type_(type::numeric), numeric_value_(i)
+{
+}
+
+value::value(std::int64_t i) : type_(type::numeric), numeric_value_(static_cast<long double>(i))
+{
+}
+
+value::value(std::uint8_t i) : type_(type::numeric), numeric_value_(i)
+{
+}
+
+value::value(std::uint16_t i) : type_(type::numeric), numeric_value_(i)
+{
+}
+
+value::value(std::uint32_t i) : type_(type::numeric), numeric_value_(i)
+{
+}
+
+value::value(std::uint64_t i) : type_(type::numeric), numeric_value_(static_cast<long double>(i))
+{
+}
+
+#ifdef _WIN32
+value::value(unsigned long i) : type_(type::numeric), numeric_value_(i)
+{
+}
+#endif
+
+value::value(float f) : type_(type::numeric), numeric_value_(f)
 {
 }
 
@@ -40,7 +78,7 @@ value::value(double d) : type_(type::numeric), numeric_value_(d)
 {
 }
 
-value::value(int64_t i) : type_(type::numeric), numeric_value_((long double)i)
+value::value(long double d) : type_(type::numeric), numeric_value_(d)
 {
 }
 
@@ -58,26 +96,21 @@ value &value::operator=(value other)
     return *this;
 }
 
-value &value::operator=(int i)
-{
-    return *this = value(i);
-}
-
 bool value::is(type t) const
 {
     return type_ == t;
 }
     
-    template<>
-    std::string value::get() const
+template<>
+std::string value::get() const
+{
+    if(type_ == type::string)
     {
-        if(type_ == type::string)
-        {
-            return string_value_;
-        }
-        
-        throw std::runtime_error("not a string");
+        return string_value_;
     }
+        
+    throw std::runtime_error("not a string");
+}
 
 template<>
 double value::as() const
@@ -89,44 +122,6 @@ double value::as() const
         return (double)numeric_value_;
     case type::string:
         return std::stod(string_value_);
-    case type::error:
-        throw std::runtime_error("invalid");
-    case type::null:
-        return 0;
-    }
-
-    return 0;
-}
-
-template<>
-int value::as() const
-{
-    switch(type_)
-    {
-    case type::boolean:
-    case type::numeric:
-        return (int)numeric_value_;
-    case type::string:
-        return std::stoi(string_value_);
-    case type::error:
-        throw std::runtime_error("invalid");
-    case type::null:
-        return 0;
-    }
-
-    return 0;
-}
-
-template<>
-int64_t value::as() const
-{
-    switch(type_)
-    {
-    case type::boolean:
-    case type::numeric:
-        return (int64_t)numeric_value_;
-    case type::string:
-        return std::stoi(string_value_);
     case type::error:
         throw std::runtime_error("invalid");
     case type::null:
@@ -155,15 +150,188 @@ bool value::as() const
     return false;
 }
 
-bool value::is_integral() const
+template<>
+std::int8_t value::as() const
 {
-    return type_ == type::numeric && (int64_t)numeric_value_ == numeric_value_;
+	switch (type_)
+	{
+	case type::boolean:
+	case type::numeric:
+		return static_cast<std::int8_t>(numeric_value_);
+	case type::string:
+		return static_cast<std::int8_t>(std::stoi(string_value_));
+	case type::error:
+		throw std::runtime_error("invalid");
+	case type::null:
+		return 0;
+	}
+
+	return 0;
 }
+
+template<>
+std::int16_t value::as() const
+{
+	switch (type_)
+	{
+	case type::boolean:
+	case type::numeric:
+		return static_cast<std::int16_t>(numeric_value_);
+	case type::string:
+		return static_cast<std::int16_t>(std::stoi(string_value_));
+	case type::error:
+		throw std::runtime_error("invalid");
+	case type::null:
+		return 0;
+	}
+
+	return 0;
+}
+
+template<>
+std::int32_t value::as() const
+{
+	switch (type_)
+	{
+	case type::boolean:
+	case type::numeric:
+		return static_cast<std::int32_t>(numeric_value_);
+	case type::string:
+		return std::stoi(string_value_);
+	case type::error:
+		throw std::runtime_error("invalid");
+	case type::null:
+		return 0;
+	}
+
+	return 0;
+}
+
+template<>
+std::int64_t value::as() const
+{
+	switch (type_)
+	{
+	case type::boolean:
+	case type::numeric:
+		return static_cast<std::int64_t>(numeric_value_);
+	case type::string:
+		return std::stoi(string_value_);
+	case type::error:
+		throw std::runtime_error("invalid");
+	case type::null:
+		return 0;
+	}
+
+	return 0;
+}
+
+template<>
+std::uint8_t value::as() const
+{
+	switch (type_)
+	{
+	case type::boolean:
+	case type::numeric:
+		return static_cast<std::uint8_t>(numeric_value_);
+	case type::string:
+		return static_cast<std::uint8_t>(std::stoi(string_value_));
+	case type::error:
+		throw std::runtime_error("invalid");
+	case type::null:
+		return 0;
+	}
+
+	return 0;
+}
+
+template<>
+std::uint16_t value::as() const
+{
+	switch (type_)
+	{
+	case type::boolean:
+	case type::numeric:
+		return static_cast<std::uint16_t>(numeric_value_);
+	case type::string:
+		return static_cast<std::uint16_t>(std::stoi(string_value_));
+	case type::error:
+		throw std::runtime_error("invalid");
+	case type::null:
+		return 0;
+	}
+
+	return 0;
+}
+
+template<>
+std::uint32_t value::as() const
+{
+	switch (type_)
+	{
+	case type::boolean:
+	case type::numeric:
+		return static_cast<std::uint32_t>(numeric_value_);
+	case type::string:
+		return std::stoi(string_value_);
+	case type::error:
+		throw std::runtime_error("invalid");
+	case type::null:
+		return 0;
+	}
+
+	return 0;
+}
+
+template<>
+std::uint64_t value::as() const
+{
+	switch (type_)
+	{
+	case type::boolean:
+	case type::numeric:
+		return static_cast<std::uint64_t>(numeric_value_);
+	case type::string:
+		return std::stoi(string_value_);
+	case type::error:
+		throw std::runtime_error("invalid");
+	case type::null:
+		return 0;
+	}
+
+	return 0;
+}
+
+#ifdef _WIN32
+template<>
+unsigned long value::as() const
+{
+	switch (type_)
+	{
+	case type::boolean:
+	case type::numeric:
+		return static_cast<unsigned long>(numeric_value_);
+	case type::string:
+		return std::stoi(string_value_);
+	case type::error:
+		throw std::runtime_error("invalid");
+	case type::null:
+		return 0;
+	}
+
+	return 0;
+}
+#endif
 
 template<>
 std::string value::as() const
 {
-    return to_string();
+	return to_string();
+}
+
+bool value::is_integral() const
+{
+    return type_ == type::numeric && (std::int64_t)numeric_value_ == numeric_value_;
 }
 
 value value::null()
@@ -199,14 +367,66 @@ bool value::operator==(bool value) const
     return type_ == type::boolean && (numeric_value_ != 0) == value;
 }
 
-bool value::operator==(int comparand) const
+bool value::operator==(std::int8_t comparand) const
 {
     return type_ == type::numeric && numeric_value_ == comparand;
+}
+
+bool value::operator==(std::int16_t comparand) const
+{
+	return type_ == type::numeric && numeric_value_ == comparand;
+}
+
+bool value::operator==(std::int32_t comparand) const
+{
+	return type_ == type::numeric && numeric_value_ == comparand;
+}
+
+bool value::operator==(std::int64_t comparand) const
+{
+	return type_ == type::numeric && numeric_value_ == comparand;
+}
+
+bool value::operator==(std::uint8_t comparand) const
+{
+	return type_ == type::numeric && numeric_value_ == comparand;
+}
+
+bool value::operator==(std::uint16_t comparand) const
+{
+	return type_ == type::numeric && numeric_value_ == comparand;
+}
+
+bool value::operator==(std::uint32_t comparand) const
+{
+	return type_ == type::numeric && numeric_value_ == comparand;
+}
+
+bool value::operator==(std::uint64_t comparand) const
+{
+	return type_ == type::numeric && numeric_value_ == comparand;
+}
+
+#ifdef _WIN32
+bool value::operator==(unsigned long comparand) const
+{
+	return type_ == type::numeric && numeric_value_ == comparand;
+}
+#endif
+
+bool value::operator==(float comparand) const
+{
+	return type_ == type::numeric && numeric_value_ == comparand;
 }
 
 bool value::operator==(double comparand) const
 {
     return type_ == type::numeric && numeric_value_ == comparand;
+}
+
+bool value::operator==(long double comparand) const
+{
+	return type_ == type::numeric && numeric_value_ == comparand;
 }
 
 bool value::operator==(const std::string &comparand) const
@@ -257,56 +477,62 @@ bool value::operator==(const value &v) const
     return true;
 }
 
-/*
-value &value::operator=(const time &value)
-{
-    d_->type_ = type::numeric;
-    d_->numeric_value = value.to_number();
-    d_->is_date_ = true;
-    return *this;
-}
-
-value &value::operator=(const date &value)
-{
-    d_->type_ = type::numeric;
-    auto base_year = worksheet(d_->parent_).get_parent().get_properties().excel_base_date;
-    d_->numeric_value = value.to_number(base_year);
-    d_->is_date_ = true;
-    return *this;
-}
-
-value &value::operator=(const datetime &value)
-{
-    d_->type_ = type::numeric;
-    auto base_year = worksheet(d_->parent_).get_parent().get_properties().excel_base_date;
-    d_->numeric_value = value.to_number(base_year);
-    d_->is_date_ = true;
-    return *this;
-}
-
-value &value::operator=(const timedelta &value)
-{
-    d_->type_ = type::numeric;
-    d_->numeric_value = value.to_number();
-    d_->is_date_ = true;
-    return *this;
-}
-*/
-
 bool operator==(bool comparand, const xlnt::value &value)
 {
     return value == comparand;
 }
 
-bool operator==(int comparand, const xlnt::value &value)
+bool operator==(std::int8_t comparand, const xlnt::value &value)
 {
     return value == comparand;
+}
+
+bool operator==(std::int16_t comparand, const xlnt::value &value)
+{
+	return value == comparand;
+}
+
+bool operator==(std::int32_t comparand, const xlnt::value &value)
+{
+	return value == comparand;
+}
+
+bool operator==(std::int64_t comparand, const xlnt::value &value)
+{
+	return value == comparand;
+}
+
+bool operator==(std::uint8_t comparand, const xlnt::value &value)
+{
+	return value == comparand;
+}
+
+bool operator==(std::uint16_t comparand, const xlnt::value &value)
+{
+	return value == comparand;
+}
+
+bool operator==(std::uint32_t comparand, const xlnt::value &value)
+{
+	return value == comparand;
+}
+
+bool operator==(std::uint64_t comparand, const xlnt::value &value)
+{
+	return value == comparand;
 }
 
 bool operator==(const char *comparand, const xlnt::value &value)
 {
     return value == comparand;
 }
+
+#ifdef _WIN32
+bool operator==(unsigned long comparand, const xlnt::value &value)
+{
+	return value == comparand;
+}
+#endif
 
 bool operator==(const std::string &comparand, const xlnt::value &value)
 {
@@ -337,3 +563,4 @@ void swap(value &left, value &right)
 }
 
 } // namespace xlnt
+

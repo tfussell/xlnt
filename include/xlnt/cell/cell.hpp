@@ -1,5 +1,5 @@
-// Copyright (c) 2014 Thomas Fussell
-// Copyright (c) 2010-2014 openpyxl
+// Copyright (c) 2015 Thomas Fussell
+// Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -116,18 +116,29 @@ public:
 
     value &get_value();
     const value &get_value() const;
-    void set_value(bool b);
-    void set_value(int i);
-    void set_value(double d);
-    void set_value(long double d);
-    void set_value(long long int i);
-    void set_value(const date &d);
-    void set_value(const datetime &d);
-    void set_value(const time &t);
-    void set_value(const timedelta &t);
-    void set_value(const char *s);
-    void set_value(const std::string &s);
-    void set_value(const value &v);
+
+	void set_value(bool b);
+	void set_value(std::int8_t i);
+	void set_value(std::int16_t i);
+	void set_value(std::int32_t i);
+	void set_value(std::int64_t i);
+	void set_value(std::uint8_t i);
+	void set_value(std::uint16_t i);
+	void set_value(std::uint32_t i);
+	void set_value(std::uint64_t i);
+#ifdef _WIN32
+	void set_value(unsigned long i);
+#endif
+	void set_value(float f);
+	void set_value(double d);
+	void set_value(long double d);
+	void set_value(const char *s);
+	void set_value(const std::string &s);
+	void set_value(const date &d);
+	void set_value(const datetime &d);
+	void set_value(const time &t);
+	void set_value(const timedelta &t);
+	void set_value(const value &v);
     
     cell &operator=(const cell &rhs);
     

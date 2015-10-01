@@ -295,7 +295,7 @@ public:
     void test_setitem()
     {
         xlnt::worksheet ws(wb_);
-        ws[xlnt::cell_reference("A1")].get_value() = 5;
+        ws[xlnt::cell_reference("A1")].set_value(5);
         TS_ASSERT(ws[xlnt::cell_reference("A1")].get_value() == 5);
     }
     

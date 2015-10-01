@@ -28,27 +28,27 @@ public:
     value();
     value(value &&v);
     value(const value &v);
-    value(bool b);
-    value(int8_t i);
-    value(int16_t i);
-    value(int32_t i);
-    value(int64_t i);
-    value(uint8_t i);
-    value(uint16_t i);
-    value(uint32_t i);
-    value(uint64_t i);
+    explicit value(bool b);
+	explicit value(std::int8_t i);
+	explicit value(std::int16_t i);
+	explicit value(std::int32_t i);
+	explicit value(std::int64_t i);
+	explicit value(std::uint8_t i);
+	explicit value(std::uint16_t i);
+	explicit value(std::uint32_t i);
+	explicit value(std::uint64_t i);
 #ifdef _WIN32
-    value(long long int i);
+	explicit value(unsigned long i);
 #endif
-    value(float f);
-    value(double d);
-    value(long double d);
-    value(const char *s);
-    value(const std::string &s);
-    value(const date &d);
-    value(const datetime &d);
-    value(const time &t);
-    value(const timedelta &t);
+	explicit value(float f);
+	explicit value(double d);
+	explicit value(long double d);
+	explicit value(const char *s);
+	explicit value(const std::string &s);
+	explicit value(const date &d);
+	explicit value(const datetime &d);
+	explicit value(const time &t);
+	explicit value(const timedelta &t);
 
     template<typename T>
     T get() const;
@@ -65,26 +65,22 @@ public:
 
     value &operator=(value other);
 
-    value &operator=(bool b);
-    value &operator=(int8_t i);
-    value &operator=(int16_t i);
-    value &operator=(int32_t i);
-    value &operator=(int64_t i);
-    value &operator=(uint8_t i);
-    value &operator=(uint16_t i);
-    value &operator=(uint32_t i);
-    value &operator=(uint64_t i);
-    value &operator=(const char *s);
-    value &operator=(const std::string &s);
-    value &operator=(const date &d);
-    value &operator=(const datetime &d);
-    value &operator=(const time &t);
-    value &operator=(const timedelta &t);
-
     bool operator==(const value &comparand) const;
     bool operator==(bool comparand) const;
-    bool operator==(int comparand) const;
+	bool operator==(std::int8_t comparand) const;
+	bool operator==(std::int16_t comparand) const;
+	bool operator==(std::int32_t comparand) const;
+	bool operator==(std::int64_t comparand) const;
+	bool operator==(std::uint8_t comparand) const;
+	bool operator==(std::uint16_t comparand) const;
+	bool operator==(std::uint32_t comparand) const;
+	bool operator==(std::uint64_t comparand) const;
+#ifdef _WIN32
+	bool operator==(unsigned long comparand) const;
+#endif
+	bool operator==(float comparand) const;
     bool operator==(double comparand) const;
+	bool operator==(long double comparand) const;
     bool operator==(const std::string &comparand) const;
     bool operator==(const char *comparand) const;
     bool operator==(const date &comparand) const;
@@ -93,8 +89,20 @@ public:
     bool operator==(const timedelta &comparand) const;
 
     friend bool operator==(bool comparand, const value &v);
-    friend bool operator==(int comparand, const value &v);
+	friend bool operator==(std::int8_t comparand, const value &v);
+	friend bool operator==(std::int16_t comparand, const value &v);
+	friend bool operator==(std::int32_t comparand, const value &v);
+	friend bool operator==(std::int64_t comparand, const value &v);
+	friend bool operator==(std::uint8_t comparand, const value &v);
+	friend bool operator==(std::uint16_t comparand, const value &v);
+	friend bool operator==(std::uint32_t comparand, const value &v);
+	friend bool operator==(std::uint64_t comparand, const value &v);
+#ifdef _WIN32
+	friend bool operator==(unsigned long comparand, const value &v);
+#endif
+	friend bool operator==(float comparand, const value &v);
     friend bool operator==(double comparand, const value &v);
+	friend bool operator==(long double comparand, const value &v);
     friend bool operator==(const std::string &comparand, const value &v);
     friend bool operator==(const char *comparand, const value &v);
     friend bool operator==(const date &comparand, const value &v);

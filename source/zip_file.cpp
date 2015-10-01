@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cstring>
+#include <iterator>
 #include <fstream>
 
 #include <miniz.h>

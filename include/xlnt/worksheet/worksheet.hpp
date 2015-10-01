@@ -1,5 +1,5 @@
-// Copyright (c) 2014 Thomas Fussell
-// Copyright (c) 2010-2014 openpyxl
+// Copyright (c) 2015 Thomas Fussell
+// Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -45,19 +45,18 @@ class workbook;
 struct date;
 
 namespace detail {    
-struct worksheet_impl;
+	struct worksheet_impl;
 } // namespace detail
 
 class row_properties
 {
- public:
-  void set_height(double height) { this->height = height; }
-  int row_index;
-  double height;
-  bool visible;
-  int outline_level;
-  bool collapsed;
-  int style_index;
+public:
+	int row_index;
+	double height;
+	bool visible;
+	int outline_level;
+	bool collapsed;
+	int style_index;
 };
     
 class header

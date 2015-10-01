@@ -217,15 +217,52 @@ void cell::set_value(bool b)
     d_->value_ = value(b);
 }
 
-void cell::set_value(int i)
+void cell::set_value(std::int8_t i)
 {
-    d_->value_ = value(i);
+	d_->value_ = value(i);
 }
 
-void cell::set_value(long long int i)
+void cell::set_value(std::int16_t i)
 {
-    d_->value_ = value(i);
+	d_->value_ = value(i);
 }
+
+void cell::set_value(std::int32_t i)
+{
+	d_->value_ = value(i);
+}
+
+void cell::set_value(std::int64_t i)
+{
+	d_->value_ = value(i);
+}
+
+void cell::set_value(std::uint8_t i)
+{
+	d_->value_ = value(i);
+}
+
+void cell::set_value(std::uint16_t i)
+{
+	d_->value_ = value(i);
+}
+
+void cell::set_value(std::uint32_t i)
+{
+	d_->value_ = value(i);
+}
+
+void cell::set_value(std::uint64_t i)
+{
+	d_->value_ = value(i);
+}
+
+#ifdef _WIN32
+void cell::set_value(unsigned long i)
+{
+	d_->value_ = value(i);
+}
+#endif
 
 void cell::set_value(double d)
 {

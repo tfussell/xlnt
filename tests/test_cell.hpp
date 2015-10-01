@@ -98,7 +98,7 @@ public:
     void test_initial_value()
     {
         xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1", "17.5");
+        xlnt::cell cell(ws, "A1", xlnt::value("17.5"));
 
         TS_ASSERT(cell.get_value().is(xlnt::value::type::string));
     }
@@ -114,7 +114,7 @@ public:
     void test_null()
     {
         xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1", "17.5");
+        xlnt::cell cell(ws, "A1", xlnt::value("17.5"));
         cell.set_value(xlnt::value::null());
 
         TS_ASSERT(cell.get_value().is(xlnt::value::type::null));
