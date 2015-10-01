@@ -11,3 +11,4 @@ build/premake/*/
 *~
 .DS_Store
 tests/test_data/writer/*.xlsx
+tests/runner-autogen.cpp
