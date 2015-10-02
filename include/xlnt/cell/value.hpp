@@ -40,6 +40,10 @@ public:
 #ifdef _WIN32
 	explicit value(unsigned long i);
 #endif
+#ifdef __linux__
+	explicit value(long long i);
+	explicit value(unsigned long long i);
+#endif
 	explicit value(float f);
 	explicit value(double d);
 	explicit value(long double d);
