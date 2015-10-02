@@ -16,7 +16,7 @@ public:
 		xlnt::cell cell(ws, "A1");
 
 		cell.set_value("4.2");
-		TS_ASSERT(cell.get_value() == 4.2);
+		TS_ASSERT(cell.get_value() == 4.2L);
 
 		cell.set_value("-42.000");
 		TS_ASSERT(cell.get_value() == -42);
@@ -25,10 +25,10 @@ public:
 		TS_ASSERT(cell.get_value() == 0);
 
 		cell.set_value("0.9999");
-		TS_ASSERT(cell.get_value() == 0.9999);
+		TS_ASSERT(cell.get_value() == 0.9999L);
 
 		cell.set_value("99E-02");
-		TS_ASSERT(cell.get_value() == 0.99);
+		TS_ASSERT(cell.get_value() == 0.99L);
 
 		cell.set_value("4");
 		TS_ASSERT(cell.get_value() == 4);
@@ -40,7 +40,7 @@ public:
 		TS_ASSERT(cell.get_value() == 200);
 
 		cell.set_value("3.1%");
-		TS_ASSERT(cell.get_value() == 0.031);
+		TS_ASSERT(cell.get_value() == 0.031L);
 
 		cell.set_value("03:40:16");
 		TS_ASSERT(cell.get_value() == xlnt::time(3, 40, 16));

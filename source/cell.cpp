@@ -17,91 +17,96 @@
 
 namespace {
 
-std::vector<std::string> split_string(const std::string &string, char delim = ' ')
+// return s after checking encoding, size, and illegal characters
+std::string check_string(std::string s)
 {
-    std::stringstream ss(string);
-    std::string part;
-    std::vector<std::string> parts;
-    while(std::getline(ss, part, delim))
+    if (s.size() == 0)
     {
-        parts.push_back(part);
+        return s;
     }
-    return parts;
+
+    // check encoding?
+
+    if (s.size() > 32767)
+    {
+        s = s.substr(0, 32767); // max string length in Excel
+    }
+
+    for (unsigned char c : s)
+    {
+        if (c <= 8 || c == 11 || c == 12 || (c >= 14 && c <= 31))
+        {
+            throw "illegal characters";
+        }
+    }
+
+    return s;
 }
 
-xlnt::value::type data_type_for_value(const std::string &value)
+std::pair<bool, long double> cast_numeric(const std::string &s)
 {
-    if(value.empty())
+    const char *str = s.c_str();
+    char *str_end = nullptr;
+    auto result = std::strtold(str, &str_end);
+    if (str_end != str + s.size()) return{ false, 0 };
+    return{ true, result };
+}
+
+std::pair<bool, long double> cast_percentage(const std::string &s)
+{
+    if (s.back() == '%')
     {
-        return xlnt::value::type::null;
+        auto number = cast_numeric(s.substr(0, s.size() - 1));
+
+        if (number.first)
+        {
+            return{ true, number.second / 100 };
+        }
     }
 
-    if(value[0] == '0')
+    return { false, 0 };
+}
+
+std::pair<bool, xlnt::time> cast_time(const std::string &s)
+{
+    xlnt::time result;
+
+    try
     {
-        if(value.length() > 1)
+        auto last_colon = s.find_last_of(':');
+        if (last_colon == std::string::npos) return { false, result };
+        double seconds = std::stod(s.substr(last_colon + 1));
+        result.second = static_cast<int>(seconds);
+        result.microsecond = static_cast<int>((seconds - static_cast<double>(result.second)) * 1e6);
+
+        auto first_colon = s.find_first_of(':');
+
+        if (first_colon == last_colon)
         {
-            if(value[1] == '.' || (value.length() > 2 && (value[1] == 'e' || value[1] == 'E')))
+            auto decimal_pos = s.find('.');
+            if (decimal_pos != std::string::npos)
             {
-                auto first_non_number = std::find_if(value.begin() + 2, value.end(),
-                    [](char c) { return !std::isdigit(c, std::locale::classic()); });
-                if(first_non_number == value.end())
-                {
-                    return xlnt::value::type::numeric;
-                }
-            }
-            auto split = split_string(value, ':');
-            if(split.size() == 2 || split.size() == 3)
-            {
-                for(auto part : split)
-                {
-                    try
-                    {
-                        std::stoi(part);
-                    }
-                    catch(std::invalid_argument)
-                    {
-                        return xlnt::value::type::string;
-                    }
-                }
-                return xlnt::value::type::numeric;
+                result.minute = std::stoi(s.substr(0, first_colon));
             }
             else
             {
-                return xlnt::value::type::string;
+                result.hour = std::stoi(s.substr(0, first_colon));
+                result.minute = result.second;
+                result.second = 0;
             }
-        }
-        return xlnt::value::type::numeric;
-    }
-    else if(value[0] == '#')
-    {
-        return xlnt::value::type::error;
-    }
-    else
-    {
-        char *p;
-        strtod(value.c_str(), &p);
-        if(*p != 0)
-        {
-            static const std::vector<std::string> possible_booleans = {"TRUE", "true", "FALSE", "false"};
-            if(std::find(possible_booleans.begin(), possible_booleans.end(), value) != possible_booleans.end())
-            {
-                return xlnt::value::type::boolean;
-            }
-            if(value.back() == '%')
-            {
-                strtod(value.substr(0, value.length() - 1).c_str(), &p);
-                if(*p == 0)
-                {
-                    return xlnt::value::type::numeric;
-                }
-            }
-            return xlnt::value::type::string;
         }
         else
         {
-            return xlnt::value::type::numeric;
+            result.hour = std::stoi(s.substr(0, first_colon));
+            result.minute = std::stoi(s.substr(first_colon + 1, last_colon - first_colon - 1));
         }
     }
+    catch (std::invalid_argument)
+    {
+        return{ false, result };
+    }
+
+    return { true, result };
 }
 
 } // namespace
@@ -159,98 +164,6 @@ const value &cell::get_value() const
 void cell::set_value(const value &v)
 {
     d_->value_ = v;
-}
-
-// return s after checking encoding, size, and illegal characters
-std::string check_string(std::string s)
-{
-	if (s.size() == 0)
-	{
-		return s;
-	}
-
-	// check encoding?
-
-	if (s.size() > 32767)
-	{
-		s = s.substr(0, 32767); // max string length in Excel
-	}
-
-	for (unsigned char c : s)
-	{
-		if (c <= 8 || c == 11 || c == 12 || (c >= 14 && c <= 31))
-		{
-			throw "illegal characters";
-		}
-	}
-
-	return s;
-}
-
-std::pair<bool, long double> cast_numeric(const std::string &s)
-{
-	const char *str = s.c_str();
-	char *str_end = nullptr;
-	auto result = std::strtold(str, &str_end);
-	if (str_end != str + s.size()) return{ false, 0 };
-	return{ true, result };
-}
-
-std::pair<bool, long double> cast_percentage(const std::string &s)
-{
-	if (s.back() == '%')
-	{
-		auto number = cast_numeric(s.substr(0, s.size() - 1));
-
-		if (number.first)
-		{
-			return{ true, number.second / 100 };
-		}
-	}
-
-	return { false, 0 };
-}
-
-std::pair<bool, time> cast_time(const std::string &s)
-{
-	time result;
-
-	try
-	{
-		auto last_colon = s.find_last_of(':');
-		if (last_colon == std::string::npos) return { false, result };
-		double seconds = std::stod(s.substr(last_colon + 1));
-		result.second = static_cast<int>(seconds);
-		result.microsecond = static_cast<int>((seconds - static_cast<double>(result.second)) * 1e6);
-
-		auto first_colon = s.find_first_of(':');
-
-		if (first_colon == last_colon)
-		{
-			auto decimal_pos = s.find('.');
-			if (decimal_pos != std::string::npos)
-			{
-				result.minute = std::stoi(s.substr(0, first_colon));
-			}
-			else
-			{
-				result.hour = std::stoi(s.substr(0, first_colon));
-				result.minute = result.second;
-				result.second = 0;
-			}
-		}
-		else
-		{
-			result.hour = std::stoi(s.substr(0, first_colon));
-			result.minute = std::stoi(s.substr(first_colon + 1, last_colon - first_colon - 1));
-		}
-	}
-	catch (std::invalid_argument)
-	{
-		return{ false, result };
-	}
-
-	return { true, result };
 }
 
 void cell::set_value(const std::string &s)
