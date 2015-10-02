@@ -9,6 +9,49 @@
 class test_cell : public CxxTest::TestSuite
 {
 public:
+	void test_infer_numeric()
+	{
+		wb.set_guess_types(true);
+		xlnt::worksheet ws = wb.create_sheet();
+		xlnt::cell cell(ws, "A1");
+
+		cell.set_value("4.2");
+		TS_ASSERT(cell.get_value() == 4.2);
+
+		cell.set_value("-42.000");
+		TS_ASSERT(cell.get_value() == -42);
+
+		cell.set_value("0");
+		TS_ASSERT(cell.get_value() == 0);
+
+		cell.set_value("0.9999");
+		TS_ASSERT(cell.get_value() == 0.9999);
+
+		cell.set_value("99E-02");
+		TS_ASSERT(cell.get_value() == 0.99);
+
+		cell.set_value("4");
+		TS_ASSERT(cell.get_value() == 4);
+
+		cell.set_value("-1E3");
+		TS_ASSERT(cell.get_value() == -1000);
+
+		cell.set_value("2e+2");
+		TS_ASSERT(cell.get_value() == 200);
+
+		cell.set_value("3.1%");
+		TS_ASSERT(cell.get_value() == 0.031);
+
+		cell.set_value("03:40:16");
+		TS_ASSERT(cell.get_value() == xlnt::time(3, 40, 16));
+
+		cell.set_value("03:40");
+		TS_ASSERT(cell.get_value() == xlnt::time(3, 40));
+
+		cell.set_value("30:33.865633336");
+		TS_ASSERT(cell.get_value() == xlnt::time(0, 30, 33, 865633));
+	}
+
     void test_coordinates()
     {
         xlnt::cell_reference coord("ZF46");
@@ -120,50 +163,6 @@ public:
         TS_ASSERT(cell.get_value().is(xlnt::value::type::null));
     }
 
-    void test_numeric()
-    {
-        xlnt::workbook wb_guess_types;
-        wb.set_guess_types(true);
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1");
-
-        cell.set_value(42);
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
-
-        cell.set_value("4.2");
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
-
-        cell.set_value("-42.000");
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
-
-        cell.set_value("0");
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
-
-        cell.set_value(0);
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
-
-        cell.set_value(0.0001);
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
-
-        cell.set_value("0.9999");
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
-
-        cell.set_value("99E-02");
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
-
-        cell.set_value(1e1);
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
-
-        cell.set_value("4");
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
-
-        cell.set_value("-1E3");
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
-
-        cell.set_value(4);
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
-    }
-
     void test_string()
     {
         xlnt::worksheet ws = wb.create_sheet();
@@ -201,14 +200,6 @@ public:
         TS_ASSERT(cell.get_value().is(xlnt::value::type::boolean));
         cell.set_value(false);
         TS_ASSERT(cell.get_value().is(xlnt::value::type::boolean));
-    }
-
-    void test_leading_zero()
-    {
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1");
-        cell.set_value("0800");
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::string));
     }
 
     void test_error_codes()

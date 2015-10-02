@@ -161,49 +161,134 @@ void cell::set_value(const value &v)
     d_->value_ = v;
 }
 
+// return s after checking encoding, size, and illegal characters
+std::string check_string(std::string s)
+{
+	if (s.size() == 0)
+	{
+		return s;
+	}
+
+	// check encoding?
+
+	if (s.size() > 32767)
+	{
+		s = s.substr(0, 32767); // max string length in Excel
+	}
+
+	for (unsigned char c : s)
+	{
+		if (c <= 8 || c == 11 || c == 12 || (c >= 14 && c <= 31))
+		{
+			throw "illegal characters";
+		}
+	}
+
+	return s;
+}
+
+std::pair<bool, long double> cast_numeric(const std::string &s)
+{
+	const char *str = s.c_str();
+	char *str_end = nullptr;
+	auto result = std::strtold(str, &str_end);
+	if (str_end != str + s.size()) return{ false, 0 };
+	return{ true, result };
+}
+
+std::pair<bool, long double> cast_percentage(const std::string &s)
+{
+	if (s.back() == '%')
+	{
+		auto number = cast_numeric(s.substr(0, s.size() - 1));
+
+		if (number.first)
+		{
+			return{ true, number.second / 100 };
+		}
+	}
+
+	return { false, 0 };
+}
+
+std::pair<bool, time> cast_time(const std::string &s)
+{
+	time result;
+
+	try
+	{
+		auto last_colon = s.find_last_of(':');
+		if (last_colon == std::string::npos) return { false, result };
+		double seconds = std::stod(s.substr(last_colon + 1));
+		result.second = static_cast<int>(seconds);
+		result.microsecond = static_cast<int>((seconds - static_cast<double>(result.second)) * 1e6);
+
+		auto first_colon = s.find_first_of(':');
+
+		if (first_colon == last_colon)
+		{
+			auto decimal_pos = s.find('.');
+			if (decimal_pos != std::string::npos)
+			{
+				result.minute = std::stoi(s.substr(0, first_colon));
+			}
+			else
+			{
+				result.hour = std::stoi(s.substr(0, first_colon));
+				result.minute = result.second;
+				result.second = 0;
+			}
+		}
+		else
+		{
+			result.hour = std::stoi(s.substr(0, first_colon));
+			result.minute = std::stoi(s.substr(first_colon + 1, last_colon - first_colon - 1));
+		}
+	}
+	catch (std::invalid_argument)
+	{
+		return{ false, result };
+	}
+
+	return { true, result };
+}
+
 void cell::set_value(const std::string &s)
 {
-    if(!get_parent().get_parent().get_guess_types())
-    {
-        d_->is_date_ = false;
-        d_->value_ = value(s);
-    }
-    else
-    {
-        d_->is_date_ = false;
+	d_->is_date_ = false;
+	auto temp = check_string(s);
+	d_->value_ = value(temp);
 
-        switch(data_type_for_value(s))
-        {
-        case value::type::numeric:
-            if(s.find(':') != std::string::npos)
-            {
-                d_->is_date_ = true;
-                d_->value_ = value(time(s).to_number());
-            }
-            else if(s.back() == '%')
-            {
-                d_->value_ = value(std::stod(s.substr(0, s.length() - 1)) / 100);
-                get_style().get_number_format().set_format_code(xlnt::number_format::format::percentage);
-            }
-            else
-            {
-                d_->value_ = value(std::stod(s));
-            }
-            break;
-        case value::type::boolean:
-            d_->value_ = value(s == "TRUE" || s == "true");
-            break;
-        case value::type::error:
-            d_->value_ = value(s);
-            break;
-        case value::type::string:
-            d_->value_ = value(s);
-            break;
-        case value::type::null:
-            d_->value_ = value::null();
-            break;
-        default: throw data_type_exception();
-        }
+	if (temp.size() > 1 && temp.front() == '=')
+	{
+		d_->formula_ = temp;
+	}
+
+    if(get_parent().get_parent().get_guess_types())
+    {
+		auto percentage = cast_percentage(s);
+		if (percentage.first)
+		{
+			d_->value_ = value(percentage.second);
+			get_style().get_number_format().set_format_code(xlnt::number_format::format::percentage);
+		}
+		else
+		{
+			auto time = cast_time(s);
+			if (time.first)
+			{
+				set_value(time.second);
+			}
+
+			else
+			{
+				auto numeric = cast_numeric(s);
+				if (numeric.first)
+				{
+					d_->value_ = value(numeric.second);
+				}
+			}
+		}
     }
 }
 

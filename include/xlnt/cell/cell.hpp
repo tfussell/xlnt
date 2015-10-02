@@ -61,10 +61,6 @@ class cell
 public:
     static const std::unordered_map<std::string, int> ErrorCodes;
     
-    static std::string check_string(const std::string &value);
-    static std::string check_numeric(const std::string &value);
-    static std::string check_error(const std::string &value);
-    
     cell();
     cell(worksheet ws, const cell_reference &reference);
     cell(worksheet ws, const cell_reference &reference, const value &initial_value);
