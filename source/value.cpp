@@ -70,6 +70,16 @@ value::value(unsigned long i) : type_(type::numeric), numeric_value_(i)
 }
 #endif
 
+#ifdef __linux__
+value::value(long long i) : type_(type::numeric), numeric_value_(i)
+{
+}
+
+value::value(unsigned long long i) : type_(type::numeric), numeric_value_(i)
+{
+}
+#endif
+
 value::value(float f) : type_(type::numeric), numeric_value_(f)
 {
 }
@@ -311,6 +321,46 @@ unsigned long value::as() const
 	case type::boolean:
 	case type::numeric:
 		return static_cast<unsigned long>(numeric_value_);
+	case type::string:
+		return std::stoi(string_value_);
+	case type::error:
+		throw std::runtime_error("invalid");
+	case type::null:
+		return 0;
+	}
+
+	return 0;
+}
+#endif
+
+#ifdef __linux__
+template<>
+long long value::as() const
+{
+	switch (type_)
+	{
+	case type::boolean:
+	case type::numeric:
+		return static_cast<long long>(numeric_value_);
+	case type::string:
+		return std::stoi(string_value_);
+	case type::error:
+		throw std::runtime_error("invalid");
+	case type::null:
+		return 0;
+	}
+
+	return 0;
+}
+
+template<>
+unsigned long long value::as() const
+{
+	switch (type_)
+	{
+	case type::boolean:
+	case type::numeric:
+		return static_cast<unsigned long long>(numeric_value_);
 	case type::string:
 		return std::stoi(string_value_);
 	case type::error:

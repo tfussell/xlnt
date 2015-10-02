@@ -262,6 +262,18 @@ void cell::set_value(unsigned long i)
 }
 #endif
 
+#ifdef __linux__
+void cell::set_value(long long i)
+{
+  d_->value_ = value(i);
+}
+
+void cell::set_value(unsigned long long i)
+{
+  d_->value_ = value(i);
+}
+#endif
+
 void cell::set_value(double d)
 {
     d_->value_ = value(d);
