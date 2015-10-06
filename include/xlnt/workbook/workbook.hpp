@@ -115,6 +115,7 @@ public:
     worksheet create_sheet(std::size_t index);
     worksheet create_sheet(const std::string &title);
     worksheet create_sheet(std::size_t index, const std::string &title);
+	worksheet create_sheet(const std::string &title, const relationship &rel);
     
     //add
     void add_sheet(worksheet worksheet);
@@ -172,6 +173,8 @@ public:
     std::vector<relationship> get_relationships() const;
     
 private:
+	static std::size_t index_from_ws_filename(const std::string &ws_filename);
+
     friend class worksheet;
     std::shared_ptr<detail::workbook_impl> d_;
 };

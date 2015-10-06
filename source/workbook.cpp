@@ -180,8 +180,9 @@ worksheet workbook::create_sheet()
     }
 
     d_->worksheets_.push_back(detail::worksheet_impl(this, title));
-    create_relationship("rId" + std::to_string(d_->relationships_.size() + 1), "worksheets/sheet" + std::to_string(d_->worksheets_.size()) + ".xml", relationship::type::worksheet);
-    return worksheet(&d_->worksheets_.back());
+	create_relationship("rId" + std::to_string(d_->relationships_.size() + 1), "xl/worksheets/sheet" + std::to_string(d_->worksheets_.size()) + ".xml", relationship::type::worksheet);
+	
+	return worksheet(&d_->worksheets_.back());
 }
 
 void workbook::add_sheet(xlnt::worksheet worksheet)
@@ -311,7 +312,7 @@ bool workbook::load(const std::string &filename)
 
     for(auto relationship : workbook_relationships)
     {
-        create_relationship(relationship.get_id(), relationship.get_target_uri(), relationship.get_type());
+		create_relationship(relationship.get_id(), relationship.get_target_uri(), relationship.get_type());
     }
     
     pugi::xml_document doc;
@@ -346,9 +347,18 @@ bool workbook::load(const std::string &filename)
     
     for(auto sheet_node : sheets_node.children("sheet"))
     {
-        std::string relation_id = sheet_node.attribute("r:id").as_string();
-        auto ws = create_sheet(sheet_node.attribute("name").as_string());
-        auto sheet_filename = get_relationship(relation_id).get_target_uri();
+		std::string rel_id = sheet_node.attribute("r:id").as_string();
+		auto rel = std::find_if(d_->relationships_.begin(), d_->relationships_.end(),
+			[&](relationship &rel) { return rel.get_id() == rel_id; });
+
+		if (rel == d_->relationships_.end())
+		{
+			throw std::runtime_error("relationship not found");
+		}
+
+        auto ws = create_sheet(sheet_node.attribute("name").as_string(), *rel);
+        auto sheet_filename = rel->get_target_uri();
+
         xlnt::reader::read_worksheet(ws, f.read(sheet_filename).c_str(), shared_strings, number_format_ids);
     }
 
@@ -400,12 +410,27 @@ worksheet workbook::create_sheet(std::size_t index)
 {
     create_sheet();
     
-    if(index != d_->worksheets_.size())
-    {
-        std::swap(d_->worksheets_[index], d_->worksheets_.back());
-    }
+	if (index != d_->worksheets_.size() - 1)
+	{
+		std::swap(d_->worksheets_.back(), d_->worksheets_[index]);
+		d_->worksheets_.pop_back();
+	}
     
     return worksheet(&d_->worksheets_[index]);
+}
+
+worksheet workbook::create_sheet(const std::string &title, const relationship &rel)
+{
+	d_->worksheets_.push_back(detail::worksheet_impl(this, title));
+
+	auto index = index_from_ws_filename(rel.get_target_uri());
+	if (index != d_->worksheets_.size() - 1)
+	{
+		std::swap(d_->worksheets_.back(), d_->worksheets_[index]);
+		d_->worksheets_.pop_back();
+	}
+
+	return worksheet(&d_->worksheets_[index]);
 }
 
 worksheet workbook::create_sheet(std::size_t index, const std::string &title)
@@ -554,19 +579,9 @@ bool workbook::save(const std::string &filename)
     {
         if(relationship.get_type() == relationship::type::worksheet)
         {
-			std::string sheet_index_string = relationship.get_target_uri();
-			sheet_index_string = sheet_index_string.substr(0, sheet_index_string.find('.'));
-			sheet_index_string = sheet_index_string.substr(sheet_index_string.find_last_of('/'));
-			auto iter = sheet_index_string.end();
-			iter--;
-			while (isdigit(*iter)) iter--;
-			auto first_digit = iter - sheet_index_string.begin();
-			sheet_index_string = sheet_index_string.substr(first_digit + 1);
-			auto sheet_index = std::stoi(sheet_index_string) - 1;
-
+			auto sheet_index = index_from_ws_filename(relationship.get_target_uri());
             auto ws = get_sheet_by_index(sheet_index);
-			std::string sheet_uri = "xl/" + relationship.get_target_uri();
-            f.writestr(sheet_uri, writer::write_worksheet(ws, shared_strings));
+            f.writestr(relationship.get_target_uri(), writer::write_worksheet(ws, shared_strings));
         }
     }
 
@@ -663,6 +678,20 @@ bool workbook::get_data_only() const
 void workbook::set_data_only(bool data_only)
 {
     d_->data_only_ = data_only;
+}
+
+std::size_t workbook::index_from_ws_filename(const std::string &ws_filename)
+{
+	std::string sheet_index_string(ws_filename);
+	sheet_index_string = sheet_index_string.substr(0, sheet_index_string.find('.'));
+	sheet_index_string = sheet_index_string.substr(sheet_index_string.find_last_of('/'));
+	auto iter = sheet_index_string.end();
+	iter--;
+	while (isdigit(*iter)) iter--;
+	auto first_digit = iter - sheet_index_string.begin();
+	sheet_index_string = sheet_index_string.substr(first_digit + 1);
+	auto sheet_index = std::stoi(sheet_index_string) - 1;
+	return sheet_index;
 }
 
 }

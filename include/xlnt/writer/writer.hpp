@@ -61,7 +61,7 @@ public:
     static std::string write_worksheet_rels(worksheet ws);
 
 private:
-	static std::string write_relationships(const std::vector<relationship> &relationships);
+	static std::string write_relationships(const std::vector<relationship> &relationships, const std::string &dir = "");
 };
     
 } // namespace xlnt
