@@ -94,8 +94,9 @@ public:
     
     format get_format_code() const { return format_code_; }
     void set_format_code(format format_code) { format_code_ = format_code; }
-    void set_format_code(const std::string &format_code) { custom_format_code_ = format_code; }
-    
+    void set_format_code_string(const std::string &format_code) { custom_format_code_ = format_code; }
+    std::string get_format_code_string();
+
 private:
     std::string custom_format_code_ = "";
     format format_code_ = format::general;

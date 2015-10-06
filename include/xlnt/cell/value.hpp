@@ -82,6 +82,10 @@ public:
 #ifdef _WIN32
 	bool operator==(unsigned long comparand) const;
 #endif
+#ifdef __linux__
+    bool operator==(long long comparand) const;
+    bool operator==(unsigned long long comparand) const;
+#endif
 	bool operator==(float comparand) const;
     bool operator==(double comparand) const;
 	bool operator==(long double comparand) const;
@@ -103,6 +107,10 @@ public:
 	friend bool operator==(std::uint64_t comparand, const value &v);
 #ifdef _WIN32
 	friend bool operator==(unsigned long comparand, const value &v);
+#endif
+#ifdef __linux__
+    friend bool operator==(long long comparand, const value &v);
+    friend bool operator==(unsigned long long comparand, const value &v);
 #endif
 	friend bool operator==(float comparand, const value &v);
     friend bool operator==(double comparand, const value &v);

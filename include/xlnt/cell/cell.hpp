@@ -123,11 +123,11 @@ public:
 	void set_value(std::uint32_t i);
 	void set_value(std::uint64_t i);
 #ifdef _WIN32
-	void set_value(unsigned long i);
+    void set_value(unsigned long i);
 #endif
 #ifdef __linux__
-        void set_value(long long i);
-        void set_value(unsigned long long i);
+    void set_value(long long i);
+    void set_value(unsigned long long i);
 #endif
 	void set_value(float f);
 	void set_value(double d);

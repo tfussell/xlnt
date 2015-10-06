@@ -100,6 +100,18 @@ value::value(const std::string &s) : type_(type::string), string_value_(s)
 {
 }
 
+value::value(const date &d) : type_(type::numeric), numeric_value_(d.to_number(xlnt::calendar::windows_1900))
+{
+}
+
+value::value(const datetime &d) : type_(type::numeric), numeric_value_(d.to_number(xlnt::calendar::windows_1900))
+{
+}
+
+value::value(const time &t) : type_(type::numeric), numeric_value_(t.to_number())
+{
+}
+
 value &value::operator=(value other)
 {
     swap(*this, other);
@@ -129,7 +141,26 @@ double value::as() const
     {
     case type::boolean:
     case type::numeric:
-        return (double)numeric_value_;
+        return static_cast<double>(numeric_value_);
+    case type::string:
+        return std::stod(string_value_);
+    case type::error:
+        throw std::runtime_error("invalid");
+    case type::null:
+        return 0;
+    }
+
+    return 0;
+}
+
+template<>
+long double value::as() const
+{
+    switch(type_)
+    {
+    case type::boolean:
+    case type::numeric:
+        return numeric_value_;
     case type::string:
         return std::stod(string_value_);
     case type::error:

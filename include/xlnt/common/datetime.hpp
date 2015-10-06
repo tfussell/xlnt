@@ -61,7 +61,7 @@ struct time
     }
     explicit time(const std::string &time_string);
 
-    double to_number() const;
+    long double to_number() const;
     bool operator==(const time &comparand) const;
 
     int hour;
@@ -80,7 +80,7 @@ struct datetime
     {
     }
 
-    double to_number(calendar base_date) const;
+    long double to_number(calendar base_date) const;
     bool operator==(const datetime &comparand) const;
 
     int year;

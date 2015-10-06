@@ -11,8 +11,10 @@ class test_cell : public CxxTest::TestSuite
 public:
 	void test_infer_numeric()
 	{
-		wb.set_guess_types(true);
-		xlnt::worksheet ws = wb.create_sheet();
+        xlnt::workbook wb_guess_types;
+		wb_guess_types.set_guess_types(true);
+
+		auto ws = wb_guess_types.create_sheet();
 		xlnt::cell cell(ws, "A1");
 
 		cell.set_value("4.2");
@@ -51,6 +53,21 @@ public:
 		cell.set_value("30:33.865633336");
 		TS_ASSERT(cell.get_value() == xlnt::time(0, 30, 33, 865633));
 	}
+
+
+    void test_ctor()
+    {
+        auto ws = wb.create_sheet();
+        xlnt::cell cell(ws, "A1");
+        
+        TS_ASSERT(cell.get_value().get_type() == xlnt::value::type::null);
+        TS_ASSERT(cell.get_column() == "A");
+        TS_ASSERT(cell.get_row() == 1);
+        TS_ASSERT(cell.get_reference() == "A1");
+        TS_ASSERT(cell.get_value() == xlnt::value::null());
+        //TS_ASSERT(cell.get_xf_index() == 0);
+        TS_ASSERT(!cell.has_comment());
+    }
 
     void test_coordinates()
     {
@@ -214,70 +231,59 @@ public:
         }
     }
 
-    void test_insert_float()
-    {
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1");
-        cell.set_value(3.14);
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
-    }
-
-    void test_insert_percentage()
-    {
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1");
-        cell.set_value("3.14%");
-        TS_ASSERT_DELTA(0.0314, cell.get_value().as<double>(), 1e-7);
-    }
-
     void test_insert_datetime()
     {
+        xlnt::datetime value(2010, 7, 13, 6, 37, 41);
+        auto internal = 40372.27616898148L;
+        auto number_format = "yyyy-mm-dd h:mm:ss";
+
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
-        cell.set_value(xlnt::date::today());
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
+        cell.set_value(value);
+
+        TS_ASSERT(cell.get_value().get_type() == xlnt::value::type::numeric);
+        TS_ASSERT(cell.get_value().as<long double>() == internal);
+        TS_ASSERT(cell.is_date());
+        TS_ASSERT(cell.get_style().get_number_format().get_format_code_string() == number_format);
     }
 
     void test_insert_date()
     {
+        xlnt::date value(2010, 7, 13);
+        auto internal = 40372;
+        auto number_format = "yyyy-mm-dd";
+
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
-        cell.set_value(xlnt::datetime::now());
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
+        cell.set_value(value);
+
+        TS_ASSERT(cell.get_value().get_type() == xlnt::value::type::numeric);
+        TS_ASSERT(cell.get_value().as<long double>() == internal);
+        TS_ASSERT(cell.is_date());
+        TS_ASSERT(cell.get_style().get_number_format().get_format_code_string() == number_format);
     }
 
-    void test_internal_date()
+    void test_insert_time()
     {
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1");
-        xlnt::datetime dt(2010, 7, 13, 6, 37, 41);
-        cell.set_value(dt);
-        TS_ASSERT_EQUALS(40372.27616898148, cell.get_value().as<double>());
-    }
+        xlnt::time value(1, 3);
+        auto internal = 0.04375L;
+        auto number_format = "h:mm:ss";
 
-    void test_datetime_interpretation()
-    {
         xlnt::worksheet ws = wb.create_sheet();
         xlnt::cell cell(ws, "A1");
-        xlnt::datetime dt(2010, 7, 13, 6, 37, 41);
-        cell.set_value(dt);
-        TS_ASSERT_EQUALS(cell.get_value(), dt);
-        TS_ASSERT_DELTA(cell.get_value().as<double>(), 40372.27616898148, 1e-7);
-    }
+        cell.set_value(value);
 
-    void test_date_interpretation()
-    {
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1");
-        xlnt::date dt(2010, 7, 13);
-        cell.set_value(dt);
-        TS_ASSERT_EQUALS(cell.get_value(), dt);
-        TS_ASSERT_EQUALS(cell.get_value().as<int>(), 40372);
+        TS_ASSERT(cell.get_value().get_type() == xlnt::value::type::numeric);
+        TS_ASSERT(cell.get_value().as<long double>() == internal);
+        TS_ASSERT(cell.is_date());
+        TS_ASSERT(cell.get_style().get_number_format().get_format_code_string() == number_format);
     }
 
     void test_number_format_style()
     {
-        xlnt::worksheet ws = wb.create_sheet();
+        xlnt::workbook wb_guess_types;
+        wb_guess_types.set_guess_types(true);
+        xlnt::worksheet ws = wb_guess_types.create_sheet();
         xlnt::cell cell(ws, "A1");
         cell.set_value("12.6%");
         TS_ASSERT_EQUALS(xlnt::number_format::format::percentage, cell.get_style().get_number_format().get_format_code());
@@ -285,7 +291,10 @@ public:
 
     void test_data_type_check()
     {
-        xlnt::worksheet ws = wb.create_sheet();
+        xlnt::workbook wb_guess_types;
+        wb_guess_types.set_guess_types(true);
+        
+        xlnt::worksheet ws = wb_guess_types.create_sheet();
         xlnt::cell cell(ws, "A1");
 
         TS_ASSERT(cell.get_value().is(xlnt::value::type::null));
@@ -311,7 +320,10 @@ public:
 
     void test_time()
     {
-        xlnt::worksheet ws = wb.create_sheet();
+        xlnt::workbook wb_guess_types;
+        wb_guess_types.set_guess_types(true);
+        
+        xlnt::worksheet ws = wb_guess_types.create_sheet();
         xlnt::cell cell(ws, "A1");
 
         cell.set_value("03:40:16");
@@ -382,7 +394,7 @@ public:
         xlnt::cell cell(ws, "A1");
 
         cell.set_value(-13.5);
-        cell.get_style().get_number_format().set_format_code("0.00_);[Red]\\(0.00\\)");
+        cell.get_style().get_number_format().set_format_code_string("0.00_);[Red]\\(0.00\\)");
 
         TS_ASSERT(!cell.is_date());
     }

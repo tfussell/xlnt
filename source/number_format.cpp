@@ -3,49 +3,6 @@
 #include <xlnt/styles/number_format.hpp>
 
 namespace xlnt {
-
-const std::unordered_map<number_format::format, std::string, number_format::format_hash> &number_format::format_strings()
-{
-    static const std::unordered_map<number_format::format, std::string, number_format::format_hash> strings =
-    {
-        {format::general, "General"},
-        {format::text, "@"},
-        {format::number, "0"},
-        {format::number_00, "0.00"},
-        {format::number_comma_separated1, "#,##0.00"},
-        {format::number_comma_separated2, "#,##0.00_-"},
-        {format::percentage, "0%"},
-        {format::percentage_00, "0.00%"},
-        {format::date_yyyymmdd2, "yyyy-mm-dd"},
-        {format::date_yyyymmdd, "yy-mm-dd"},
-        {format::date_ddmmyyyy, "dd/mm/yy"},
-        {format::date_dmyslash, "d/m/y"},
-        {format::date_dmyminus, "d-m-y"},
-        {format::date_dmminus, "d-m"},
-        {format::date_myminus, "m-y"},
-        {format::date_xlsx14, "mm-dd-yy"},
-        {format::date_xlsx15, "d-mmm-yy"},
-        {format::date_xlsx16, "d-mmm"},
-        {format::date_xlsx17, "mmm-yy"},
-        {format::date_xlsx22, "m/d/yy h:mm"},
-        {format::date_datetime, "d/m/y h:mm"},
-        {format::date_time1, "h:mm AM/PM"},
-        {format::date_time2, "h:mm:ss AM/PM"},
-        {format::date_time3, "h:mm"},
-        {format::date_time4, "h:mm:ss"},
-        {format::date_time5, "mm:ss"},
-        {format::date_time6, "h:mm:ss"},
-        {format::date_time7, "i:s.S"},
-        {format::date_time8, "h:mm:ss@"},
-        {format::date_timedelta, "[hh]:mm:ss"},
-        {format::date_yyyymmddslash, "yy/mm/dd@"},
-        {format::currency_usd_simple, "\"$\"#,##0.00_-"},
-        {format::currency_usd, "$#,##0_-"},
-        {format::currency_eur_simple, "[$EUR ]#,##0.00_-"}
-    };
-
-    return strings;
-}
     
 const std::unordered_map<int, std::string> &number_format::builtin_formats()
 {
@@ -105,51 +62,58 @@ const std::unordered_map<int, std::string> &number_format::builtin_formats()
     return formats;
 }
 
-const std::unordered_map<std::string, int> &number_format::reversed_builtin_formats()
+const std::unordered_map<number_format::format, std::string, number_format::format_hash> &number_format::format_strings()
 {
-    static const std::unordered_map<std::string, int> formats =
+    static const std::unordered_map<number_format::format, std::string, number_format::format_hash> strings =
     {
-        {"General", 0},
-        {"0", 1},
-        {"0.00", 2},
-        {"#,##0", 3},
-        {"#,##0.00", 4},
-        {"\"$\"#,##0_);(\"$\"#,##0)", 5},
-        {"\"$\"#,##0_);[Red](\"$\"#,##0)", 6},
-        {"\"$\"#,##0.00_);(\"$\"#,##0.00)", 7},
-        {"\"$\"#,##0.00_);[Red](\"$\"#,##0.00)", 8},
-        {"0%", 9},
-        {"0.00%", 10},
-        {"0.00E+00", 11},
-        {"# ?/?", 12},
-        {"# \?\?/??", 13}, //escape trigraph
-        {"mm-dd-yy", 14},
-        {"d-mmm-yy", 15},
-        {"d-mmm", 16},
-        {"mmm-yy", 17},
-        {"h:mm AM/PM", 18},
-        {"h:mm:ss AM/PM", 19},
-        {"h:mm", 20},
-        {"h:mm:ss", 21},
-        {"m/d/yy h:mm", 22},
-
-        {"#,##0_);(#,##0)", 37},
-        {"#,##0_);[Red](#,##0)", 38},
-        {"#,##0.00_);(#,##0.00)", 39},
-        {"#,##0.00_);[Red](#,##0.00)", 40},
-
-        {"_(* #,##0_);_(* \\(#,##0\\);_(* \"-\"_);_(@_)", 41},
-        {"_(\"$\"* #,##0_);_(\"$\"* \\(#,##0\\);_(\"$\"* \"-\"_);_(@_)", 42},
-        {"_(* #,##0.00_);_(* \\(#,##0.00\\);_(* \"-\"??_);_(@_)", 43},
-
-        {"_(\"$\"* #,##0.00_)_(\"$\"* \\(#,##0.00\\)_(\"$\"* \"-\"??_)_(@_)", 44},
-        {"mm:ss", 45},
-        {"[h]:mm:ss", 46},
-        {"mmss.0", 47},
-        {"##0.0E+0", 48},
-        {"@", 49}
+        {format::general, builtin_formats().at(0)},
+        {format::text, builtin_formats().at(49)},
+        {format::number, builtin_formats().at(1)},
+        {format::number_00, builtin_formats().at(2)},
+        {format::number_comma_separated1, builtin_formats().at(4)},
+        {format::number_comma_separated2, "#,##0.00_-"},
+        {format::percentage, builtin_formats().at(9)},
+        {format::percentage_00, builtin_formats().at(10)},
+        {format::date_yyyymmdd2, "yyyy-mm-dd"},
+        {format::date_yyyymmdd, "yy-mm-dd"},
+        {format::date_ddmmyyyy, "dd/mm/yy"},
+        {format::date_dmyslash, "d/m/y"},
+        {format::date_dmyminus, "d-m-y"},
+        {format::date_dmminus, "d-m"},
+        {format::date_myminus, "m-y"},
+        {format::date_xlsx14, builtin_formats().at(14)},
+        {format::date_xlsx15, builtin_formats().at(15)},
+        {format::date_xlsx16, builtin_formats().at(16)},
+        {format::date_xlsx17, builtin_formats().at(17)},
+        {format::date_xlsx22, builtin_formats().at(22)},
+        {format::date_datetime, "yyyy-mm-dd h:mm:ss"},
+        {format::date_time1, builtin_formats().at(18)},
+        {format::date_time2, builtin_formats().at(19)},
+        {format::date_time3, builtin_formats().at(20)},
+        {format::date_time4, builtin_formats().at(21)},
+        {format::date_time5, builtin_formats().at(45)},
+        {format::date_time6, builtin_formats().at(21)},
+        {format::date_time7, "i:s.S"},
+        {format::date_time8, "h:mm:ss@"},
+        {format::date_timedelta, "[hh]:mm:ss"},
+        {format::date_yyyymmddslash, "yy/mm/dd@"},
+        {format::currency_usd_simple, "\"$\"#,##0.00_-"},
+        {format::currency_usd, "$#,##0_-"},
+        {format::currency_eur_simple, "[$EUR ]#,##0.00_-"}
     };
 
+    return strings;
+}
+
+const std::unordered_map<std::string, int> &number_format::reversed_builtin_formats()
+{
+    static std::unordered_map<std::string, int> formats;
+
+    for(auto format_pair : builtin_formats())
+    {
+        formats[format_pair.second] = format_pair.first;
+    }
+    
     return formats;
 }
     
@@ -169,6 +133,16 @@ number_format::format number_format::lookup_format(int code)
     }
     
     return match->first;
+}
+
+std::string number_format::get_format_code_string()
+{
+    if(format_code_ == format::unknown)
+    {
+        return custom_format_code_;
+    }
+
+    return format_strings().at(format_code_);
 }
 
 } // namespace xlnt

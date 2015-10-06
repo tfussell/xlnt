@@ -121,16 +121,14 @@ time::time(const std::string &time_string) : hour(0), minute(0), second(0), micr
     }
 }
 
-double time::to_number() const
+long double time::to_number() const
 {
-    double number = microsecond;
-    number /= 1000000;
-    number += second;
-    number /= 60;
-    number += minute;
-    number /= 60;
-    number += hour;
-    number /= 24;
+    std::size_t microseconds = microsecond;
+    microseconds += second * 1e6;
+    microseconds += minute * 1e6 * 60;
+    microseconds += hour * 1e6 * 60 * 60;
+    auto number = microseconds / (24.0L * 60 * 60 * 1e6L);
+    number = std::floor(number * 1e11L + 0.5L) / 1e11L;
     return number;
 }
 
@@ -159,7 +157,7 @@ int date::to_number(calendar base_date) const
     return days_since_1900;
 }
 
-double datetime::to_number(calendar base_date) const
+long double datetime::to_number(calendar base_date) const
 {
     return date(year, month, day).to_number(base_date)
         + time(hour, minute, second, microsecond).to_number();
