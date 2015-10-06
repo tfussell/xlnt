@@ -554,10 +554,18 @@ bool workbook::save(const std::string &filename)
     {
         if(relationship.get_type() == relationship::type::worksheet)
         {
-            std::string sheet_index_string = relationship.get_target_uri().substr(16);
-            std::size_t sheet_index = std::stoi(sheet_index_string.substr(0, sheet_index_string.find('.'))) - 1;
-            std::string sheet_uri = "xl/" + relationship.get_target_uri();
+			std::string sheet_index_string = relationship.get_target_uri();
+			sheet_index_string = sheet_index_string.substr(0, sheet_index_string.find('.'));
+			sheet_index_string = sheet_index_string.substr(sheet_index_string.find_last_of('/'));
+			auto iter = sheet_index_string.end();
+			iter--;
+			while (isdigit(*iter)) iter--;
+			auto first_digit = iter - sheet_index_string.begin();
+			sheet_index_string = sheet_index_string.substr(first_digit + 1);
+			auto sheet_index = std::stoi(sheet_index_string) - 1;
+
             auto ws = get_sheet_by_index(sheet_index);
+			std::string sheet_uri = "xl/" + relationship.get_target_uri();
             f.writestr(sheet_uri, writer::write_worksheet(ws, shared_strings));
         }
     }
