@@ -41,7 +41,9 @@ for(auto row : wb2["sheet2"].rows())
 ## Building
 xlnt is regularly built and passes all 200+ tests in GCC 4.8.2, MSVC 12, and Clang 3.4.
 
-Workspaces for Visual Studio 2013, and GNU Make can be created using the development version of premake (currently available [here](https://bitbucket.org/premake/premake-dev), binaries [here](http://sourceforge.net/projects/premake/files/Premake/nightlies/)) and the premake5.lua script in the build directory. XCode workspaces can be generated using premake4.lua and premake4 (binaries [here](http://sourceforge.net/projects/premake/files/Premake/4.3/)).
+Workspaces for Visual Studio 2013, and GNU Make can be created using the development version of premake and the premake5.lua script in the build directory. XCode workspaces can be generated using premake4.lua and premake4.
+
+Premake binaries and source are currently available [here](http://premake.github.io/download.html).
 
 In Windows, with Visual Studio 2013:
 ```batch
