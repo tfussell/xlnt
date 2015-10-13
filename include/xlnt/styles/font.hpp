@@ -23,10 +23,15 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <string>
+
+#include <xlnt/styles/color.hpp>
+
 namespace xlnt {
 
 class font
 {
+public:
     enum class underline
     {
         none,
@@ -36,15 +41,23 @@ class font
         single_accounting
     };
     
-    /*    std::string name = "Calibri";
-     int size = 11;
-     bool bold = false;
-     bool italic = false;
-     bool superscript = false;
-     bool subscript = false;
-     underline underline = underline::none;
-     bool strikethrough = false;
-     color color = color::black;*/
+    void set_bold(bool bold) { bold_ = bold; }
+    
+    bool operator==(const font &other) const
+    {
+        return name_ == other.name_;
+    }
+    
+private:
+     std::string name_ = "Calibri";
+     int size_ = 11;
+     bool bold_ = false;
+     bool italic_ = false;
+     bool superscript_ = false;
+     bool subscript_ = false;
+     underline underline_ = underline::none;
+     bool strikethrough_ = false;
+     color color_ = color::black;
 };
 
 } // namespace xlnt

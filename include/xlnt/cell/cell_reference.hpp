@@ -65,35 +65,60 @@ public:
     /// </remarks>
     static std::string column_string_from_index(column_t column_index);
     
+    /// <summary>
+    /// Split a coordinate string like "A1" into an equivalent pair like {"A", 1}.
+    /// </summary>
     static std::pair<std::string, row_t> split_reference(const std::string &reference_string,
         bool &absolute_column, bool &absolute_row);
     
+    // constructors
+    /// <summary>
+    /// Default constructor makes a reference to the top-left-most cell, "A1".
+    /// </summary>
     cell_reference();
     cell_reference(const char *reference_string);
     cell_reference(const std::string &reference_string);
     cell_reference(const std::string &column, row_t row, bool absolute = false);
     cell_reference(column_t column, row_t row, bool absolute = false);
     
+    // absoluateness
     bool is_absolute() const { return absolute_; }
     void set_absolute(bool absolute) { absolute_ = absolute; }
     
-    std::string get_column() const { return column_string_from_index(column_index_ + 1); }
-    void set_column(const std::string &column) { column_index_ = column_index_from_string(column) - 1; }
+    // getters/setters
+    std::string get_column() const { return column_string_from_index(column_); }
+    void set_column(const std::string &column_string) { column_ = column_index_from_string(column_string); }
     
-    column_t get_column_index() const { return column_index_; }
-    void set_column_index(column_t column_index) { column_index_ = column_index; }
+    column_t get_column_index() const { return column_; }
+    void set_column_index(column_t column) { column_ = column; }
     
-    row_t get_row() const { return row_index_ + 1; }
-    void set_row(row_t row) { row_index_ = row - 1; }
+    row_t get_row() const { return row_ ; }
+    void set_row(row_t row) { row_ = row; }
     
-    row_t get_row_index() const { return row_index_; }
-    void set_row_index(row_t row_index) { row_index_ = row_index; }
-    
+    /// <summary>
+    /// Return a cell_reference offset from this cell_reference by
+    /// the number of columns and rows specified by the parameters.
+    /// A negative value for column_offset or row_offset results
+    /// in a reference above or left of this cell_reference, respectively.
+    /// </summary>
     cell_reference make_offset(int column_offset, int row_offset) const;
     
+    /// <summary>
+    /// Return a string like "A1" for cell_reference(1, 1).
+    /// </summary>
     std::string to_string() const;
+    
+    /// <summary>
+    /// Return a range_reference containing only this cell_reference.
+    /// </summary>
     range_reference to_range() const;
     
+    // operators
+    /// <summary>
+    /// I've always wanted to overload the comma operator.
+    /// cell_reference("A", 1), cell_reference("B", 1) will return
+    /// range_reference(cell_reference("A", 1), cell_reference("B", 1))
+    /// </summary>
     range_reference operator,(const cell_reference &other) const;
     
     bool operator==(const cell_reference &comparand) const;
@@ -103,11 +128,27 @@ public:
     bool operator!=(const std::string &reference_string) const { return *this != cell_reference(reference_string); }
     bool operator!=(const char *reference_string) const { return *this != std::string(reference_string); }
 
-    friend bool operator<(const cell_reference &left, const cell_reference &right);
+    bool operator<(const cell_reference &other);
+    bool operator>(const cell_reference &other);
+    bool operator<=(const cell_reference &other);
+    bool operator>=(const cell_reference &other);
 
 private:
-    column_t column_index_;
-    row_t row_index_;
+    /// <summary>
+    /// Index of the column. Important: this is one-indexed to conform
+    /// with Excel. Column "A", the first column, would have an index of 1.
+    /// </summary>
+    column_t column_;
+    
+    /// <summary>
+    /// Index of the column. Important: this is one-indexed to conform
+    /// with Excel. Column "A", the first column, would have an index of 1.
+    /// </summary>
+    row_t row_;
+    
+    /// <summary>
+    /// True if the reference is absolute. This looks like "$A$1" in Excel.
+    /// </summary>
     bool absolute_;
 };
    

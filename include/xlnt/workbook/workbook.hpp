@@ -39,6 +39,15 @@ class range;
 class range_reference;
 class relationship;
 class worksheet;
+class alignment;
+class border;
+class fill;
+class pattern_fill;
+class font;
+class protection;
+class color;
+    
+enum class encoding;
 
 namespace detail {    
     struct workbook_impl;
@@ -95,6 +104,7 @@ public:
 
     //constructors
     workbook();
+    workbook(encoding e);
     
     workbook &operator=(workbook other);
     workbook(workbook &&other);
@@ -171,6 +181,14 @@ public:
 	void create_relationship(const std::string &id, const std::string &target, relationship::type type);
 	relationship get_relationship(const std::string &id) const;
     std::vector<relationship> get_relationships() const;
+    
+    void add_alignment(alignment a);
+    void add_border(border b);
+    void add_fill(fill &f);
+    void add_font(font f);
+    void add_protection(protection p);
+    void add_color(color c);
+    void add_number_format(const std::string &format);
     
 private:
 	static std::size_t index_from_ws_filename(const std::string &ws_filename);

@@ -2,7 +2,6 @@
 
 #include <xlnt/worksheet/worksheet.hpp>
 #include <xlnt/cell/cell.hpp>
-#include <xlnt/cell/value.hpp>
 #include <xlnt/common/datetime.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
@@ -206,16 +205,16 @@ const std::unordered_map<row_t, double> &worksheet::get_row_dimensions() const
 
 cell worksheet::get_cell(const cell_reference &reference)
 {
-    if(d_->cell_map_.find(reference.get_row_index()) == d_->cell_map_.end())
+    if(d_->cell_map_.find(reference.get_row()) == d_->cell_map_.end())
     {
-        d_->cell_map_[reference.get_row_index()] = std::unordered_map<column_t, detail::cell_impl>();
+        d_->cell_map_[reference.get_row()] = std::unordered_map<column_t, detail::cell_impl>();
     }
     
-    auto &row = d_->cell_map_[reference.get_row_index()];
+    auto &row = d_->cell_map_[reference.get_row()];
     
     if(row.find(reference.get_column_index()) == row.end())
     {
-        row[reference.get_column_index()] = detail::cell_impl(d_, reference.get_column_index(), reference.get_row_index());
+        row[reference.get_column_index()] = detail::cell_impl(d_, reference.get_column_index(), reference.get_row());
     }
     
     return cell(&row[reference.get_column_index()]);
@@ -223,7 +222,7 @@ cell worksheet::get_cell(const cell_reference &reference)
 
 const cell worksheet::get_cell(const cell_reference &reference) const
 {
-    return cell(&d_->cell_map_.at(reference.get_row_index()).at(reference.get_column_index()));
+    return cell(&d_->cell_map_.at(reference.get_row()).at(reference.get_column_index()));
 }
 
 row_properties &worksheet::get_row_properties(row_t row)
@@ -263,7 +262,7 @@ column_t worksheet::get_lowest_column() const
         }
     }
     
-    return lowest + 1;
+    return lowest;
 }
 
 row_t worksheet::get_lowest_row() const
@@ -280,24 +279,24 @@ row_t worksheet::get_lowest_row() const
         lowest = std::min(lowest, (row_t)row.first);
     }
     
-    return lowest + 1;
+    return lowest;
 }
 
 row_t worksheet::get_highest_row() const
 {
-    row_t highest = 0;
+    row_t highest = 1;
     
     for(auto &row : d_->cell_map_)
     {
         highest = std::max(highest, (row_t)row.first);
     }
     
-    return highest + 1;
+    return highest;
 }
 
 column_t worksheet::get_highest_column() const
 {
-    column_t highest = 0;
+    column_t highest = 1;
     
     for(auto &row : d_->cell_map_)
     {
@@ -307,7 +306,7 @@ column_t worksheet::get_highest_column() const
         }
     }
     
-    return highest + 1;
+    return highest;
 }
 
 range_reference worksheet::calculate_dimension() const
@@ -318,7 +317,7 @@ range_reference worksheet::calculate_dimension() const
     int highest_column = get_highest_column();
     int highest_row = get_highest_row();
     
-    return range_reference(lowest_column - 1, lowest_row - 1, highest_column - 1, highest_row - 1);
+    return range_reference(lowest_column, lowest_row, highest_column, highest_row);
 }
 
 range worksheet::get_range(const range_reference &reference)
@@ -329,6 +328,18 @@ range worksheet::get_range(const range_reference &reference)
 const range worksheet::get_range(const range_reference &reference) const
 {
     return range(*this, reference);
+}
+
+range worksheet::get_squared_range(column_t min_col, row_t min_row, column_t max_col, row_t max_row)
+{
+    range_reference reference(min_col, min_row, max_col, max_row);
+    return get_range(reference);
+}
+
+const range worksheet::get_squared_range(column_t min_col, row_t min_row, column_t max_col, row_t max_row) const
+{
+    range_reference reference(min_col, min_row, max_col, max_row);
+    return get_range(reference);
 }
 
 std::vector<relationship> worksheet::get_relationships()
@@ -356,19 +367,24 @@ void worksheet::merge_cells(const range_reference &reference)
 
             if(!first)
             {
-                if(cell.get_value().is(value::type::string))
+                if(cell.get_data_type() == cell::type::string)
                 {
-                    cell.set_value(value(""));
+                    cell.set_value("");
                 }
                 else
                 {
-                    cell.set_value(value::null());
+                    cell.clear_value();
                 }
             }
 
             first = false;
         }
     }
+}
+
+void worksheet::merge_cells(column_t start_column, row_t start_row, column_t end_column, row_t end_row)
+{
+    merge_cells(xlnt::range_reference(start_column, start_row, end_column, end_row));
 }
 
 void worksheet::unmerge_cells(const range_reference &reference)
@@ -390,17 +406,22 @@ void worksheet::unmerge_cells(const range_reference &reference)
         }
     }
 }
+    
+void worksheet::unmerge_cells(column_t start_column, row_t start_row, column_t end_column, row_t end_row)
+{
+    unmerge_cells(xlnt::range_reference(start_column, start_row, end_column, end_row));
+}
 
 void worksheet::append(const std::vector<std::string> &cells)
 {
-    int row = get_highest_row();
+    int row = get_highest_row() + 1;
     
-    if(d_->cell_map_.size() == 0)
+    if(row == 2 && d_->cell_map_.size() == 0)
     {
-        row--;
+        row = 1;
     }
     
-    int column = 0;
+    int column = 1;
     
     for(auto cell : cells)
     {
@@ -411,30 +432,7 @@ void worksheet::append(const std::vector<std::string> &cells)
 void worksheet::append(const std::vector<int> &cells)
 {
     int row = get_highest_row();
-    
-    if(d_->cell_map_.size() == 0)
-    {
-        row--;
-    }
-    
-    int column = 0;
-    
-    for(auto cell : cells)
-    {
-        get_cell(cell_reference(column++, row)).set_value(value(cell));
-    }
-}
-
-void worksheet::append(const std::vector<date> &cells)
-{
-    int row = get_highest_row();
-    
-    if(d_->cell_map_.size() == 0)
-    {
-        row--;
-    }
-    
-    int column = 0;
+    int column = 1;
     
     for(auto cell : cells)
     {
@@ -442,29 +440,31 @@ void worksheet::append(const std::vector<date> &cells)
     }
 }
 
-void worksheet::append(const std::unordered_map<std::string, std::string> &cells)
+void worksheet::append(const std::vector<date> &cells)
 {
-	int row = get_highest_row() - 1;
-
-    if(d_->cell_map_.size() != 0)
-    {
-        row++;
-    }
-
+    int row = get_highest_row();
+    int column = 1;
+    
     for(auto cell : cells)
     {
-        get_cell(cell_reference(cell.first, row + 1)).set_value(cell.second);
+        get_cell(cell_reference(column++, row)).set_value(cell);
     }
 }
 
-void worksheet::append(const std::unordered_map<int, std::string> &cells)
+void worksheet::append(const std::vector<cell> &cells)
 {
-    int row = get_highest_row() - 1;
-
-    if(d_->cell_map_.size() != 0)
+    int row = get_highest_row();
+    int column = 1;
+    
+    for(auto cell : cells)
     {
-        row++;
+        get_cell(cell_reference(column++, row)) = cell;
     }
+}
+    
+void worksheet::append(const std::unordered_map<std::string, std::string> &cells)
+{
+    int row = get_highest_row();
 
     for(auto cell : cells)
     {
@@ -472,9 +472,41 @@ void worksheet::append(const std::unordered_map<int, std::string> &cells)
     }
 }
 
+void worksheet::append(const std::unordered_map<int, std::string> &cells)
+{
+    int row = get_highest_row();
+
+    for(auto cell : cells)
+    {
+        get_cell(cell_reference(cell.first, row)).set_value(cell.second);
+    }
+}
+    
+void worksheet::append(const std::vector<int>::const_iterator begin, const std::vector<int>::const_iterator end)
+{
+    int row = get_highest_row();
+    int column = 1;
+
+    for(auto i = begin; i != end; i++)
+    {
+        get_cell(cell_reference(column++, row)).set_value(*i);
+    }
+}
+
 xlnt::range worksheet::rows() const
 {
     return get_range(calculate_dimension());
+}
+
+xlnt::range worksheet::rows(const std::string &range_string) const
+{
+    return get_range(range_reference(range_string));
+}
+
+xlnt::range worksheet::rows(const std::string &range_string, int row_offset, int column_offset) const
+{
+    range_reference reference(range_string);
+    return get_range(reference.make_offset(column_offset, row_offset));
 }
 
 xlnt::range worksheet::columns() const
@@ -607,8 +639,8 @@ cell_reference worksheet::get_point_pos(int left, int top) const
     auto default_height = points_to_pixels(DefaultRowHeight, 96.0);
     auto default_width = points_to_pixels(DefaultColumnWidth, 96.0);
 
-    column_t current_column = 0;
-    row_t current_row = 0;
+    column_t current_column = 1;
+    row_t current_row = 1;
 
     int left_pos = 0;
     int top_pos = 0;

@@ -2,12 +2,12 @@
 
 namespace xlnt {
 
-protection::protection()// : locked_(type::unprotected)
+protection::protection() : protection(type::unprotected)
 {
     
 }
 
-protection::protection(type /*t*/)// : locked_(t)
+protection::protection(type t) : locked_(t), hidden_(type::inherit)
 {
     
 }

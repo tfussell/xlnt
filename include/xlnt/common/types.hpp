@@ -24,5 +24,8 @@
 
 #include <cstdint>
 
-typedef uint32_t row_t;
-typedef uint32_t column_t;
+// We might want to change these types for various optimizations in the future
+// so use typedefs.
+
+using row_t = std::uint32_t;
+using column_t = std::uint32_t;

@@ -22,15 +22,27 @@
 // @author: see AUTHORS file
 #pragma once
 
+// Change these values for programs using this library.
+
 namespace xlnt {
 
+/// <summary>
+/// Enumeration of possible limit styles.
+/// Excel places limitations on the number of rows and columns,
+/// but we may wish to change those limits in some cases. Values
+/// other than excel might prevent the file from being opened in Excel.
+/// </summary>
 enum class limit_style
 {
-    openpyxl,
-    excel,
-    maximum
+    openpyxl, /// limit style using in openpyxl
+    excel, /// limits according to Excel
+    maximum /// limits based on system
 };
 
+/// <summary>
+/// The style of limits to use for reading and writing XLSX files.
+/// See limit_style for more information.
+/// </summary>
 const limit_style LimitStyle = limit_style::openpyxl;
 
 }

@@ -8,406 +8,306 @@
 
 class test_cell : public CxxTest::TestSuite
 {
+private:
+    xlnt::workbook wb, wb_guess_types;
+    
 public:
+    test_cell()
+    {
+        wb_guess_types.set_guess_types(true);
+    }
+
 	void test_infer_numeric()
 	{
-        xlnt::workbook wb_guess_types;
-		wb_guess_types.set_guess_types(true);
-
 		auto ws = wb_guess_types.create_sheet();
-		xlnt::cell cell(ws, "A1");
+        auto cell = ws.get_cell("A1");
 
 		cell.set_value("4.2");
-		TS_ASSERT(cell.get_value() == 4.2L);
+		TS_ASSERT(cell.get_value<long double>() == 4.2L);
 
 		cell.set_value("-42.000");
-		TS_ASSERT(cell.get_value() == -42);
+		TS_ASSERT(cell.get_value<int>() == -42);
 
 		cell.set_value("0");
-		TS_ASSERT(cell.get_value() == 0);
+		TS_ASSERT(cell.get_value<int>() == 0);
 
 		cell.set_value("0.9999");
-		TS_ASSERT(cell.get_value() == 0.9999L);
+		TS_ASSERT(cell.get_value<long double>() == 0.9999L);
 
 		cell.set_value("99E-02");
-		TS_ASSERT(cell.get_value() == 0.99L);
+		TS_ASSERT(cell.get_value<long double>() == 0.99L);
 
 		cell.set_value("4");
-		TS_ASSERT(cell.get_value() == 4);
+		TS_ASSERT(cell.get_value<int>() == 4);
 
 		cell.set_value("-1E3");
-		TS_ASSERT(cell.get_value() == -1000);
+		TS_ASSERT(cell.get_value<int>() == -1000);
 
 		cell.set_value("2e+2");
-		TS_ASSERT(cell.get_value() == 200);
+		TS_ASSERT(cell.get_value<int>() == 200);
 
 		cell.set_value("3.1%");
-		TS_ASSERT(cell.get_value() == 0.031L);
+		TS_ASSERT(cell.get_value<long double>() == 0.031L);
 
 		cell.set_value("03:40:16");
-		TS_ASSERT(cell.get_value() == xlnt::time(3, 40, 16));
+        TS_ASSERT(cell.get_value<xlnt::time>() == xlnt::time(3, 40, 16));
 
 		cell.set_value("03:40");
-		TS_ASSERT(cell.get_value() == xlnt::time(3, 40));
+        TS_ASSERT(cell.get_value<xlnt::time>() == xlnt::time(3, 40));
 
 		cell.set_value("30:33.865633336");
-		TS_ASSERT(cell.get_value() == xlnt::time(0, 30, 33, 865633));
+        TS_ASSERT(cell.get_value<xlnt::time>() == xlnt::time(0, 30, 33, 865633));
 	}
-
 
     void test_ctor()
     {
         auto ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1");
+        auto cell = ws.get_cell(xlnt::cell_reference("A", 1));
         
-        TS_ASSERT(cell.get_value().get_type() == xlnt::value::type::null);
+        TS_ASSERT(cell.get_data_type() == xlnt::cell::type::null);
         TS_ASSERT(cell.get_column() == "A");
         TS_ASSERT(cell.get_row() == 1);
         TS_ASSERT(cell.get_reference() == "A1");
-        TS_ASSERT(cell.get_value() == xlnt::value::null());
-        //TS_ASSERT(cell.get_xf_index() == 0);
+        TS_ASSERT(!cell.has_value());
+        TS_ASSERT(cell.get_xf_index() == 0);
         TS_ASSERT(!cell.has_comment());
     }
 
-    void test_coordinates()
-    {
-        xlnt::cell_reference coord("ZF46");
-        TS_ASSERT_EQUALS("ZF", coord.get_column());
-        TS_ASSERT_EQUALS(46, coord.get_row());
-    }
-
-    void test_invalid_coordinate()
-    {
-        TS_ASSERT_THROWS(xlnt::cell_reference("AAA"), 
-            xlnt::cell_coordinates_exception);
-    }
-
-    void test_zero_row()
-    {
-        TS_ASSERT_THROWS(xlnt::cell_reference("AQ0"), 
-            xlnt::cell_coordinates_exception);
-    }
-
-    void test_absolute()
-    {
-        TS_ASSERT_EQUALS("$ZF$51", xlnt::cell_reference::make_absolute("ZF51").to_string());
-    }
-
-    void test_absolute_multiple()
-    {
-        TS_ASSERT_EQUALS("$ZF$51:$ZF$53", xlnt::range_reference::make_absolute("ZF51:ZF$53").to_string());
-    }
-
-    void test_column_index()
-    {
-        static const std::unordered_map<int, std::string> expected = 
-        {
-            {1, "A"},
-            {10, "J"},
-            {26, "Z"},
-            {27, "AA"},
-            {52, "AZ"},
-            {53, "BA"},
-            {78, "BZ"},
-            {270, "jJ"},
-            {677, "ZA"},
-            {702, "ZZ"},
-            {703, "AAA"},
-            {728, "AAZ"},
-            {731, "ABC"},
-            {1353, "AZA"},
-            {7030, "jjj"},
-            {18253, "ZZA"},
-            {18278, "ZZZ"}
-        };
-
-        for(auto expected_pair : expected)
-        {
-            TS_ASSERT_EQUALS(expected_pair.first, 
-	        xlnt::cell_reference::column_index_from_string(expected_pair.second));
-        }
-    }
-
-    void test_bad_column_index()
-    {
-        for(auto bad_string : {"JJJJ", "", "$", "1"})
-        {
-            TS_ASSERT_THROWS(xlnt::cell_reference::column_index_from_string(bad_string), xlnt::column_string_index_exception);
-        }
-    }
-
-    void test_column_letter_boundaries()
-    {
-        TS_ASSERT_THROWS(xlnt::cell_reference::column_string_from_index(0),
-	    xlnt::column_string_index_exception);
-        TS_ASSERT_THROWS(xlnt::cell_reference::column_string_from_index(18279),
-	    xlnt::column_string_index_exception);
-    }
-
-
-    void test_column_letter()
-    {
-        TS_ASSERT_EQUALS("ZZZ", xlnt::cell_reference::column_string_from_index(18278));
-        TS_ASSERT_EQUALS("JJJ", xlnt::cell_reference::column_string_from_index(7030));
-        TS_ASSERT_EQUALS("AB", xlnt::cell_reference::column_string_from_index(28));
-        TS_ASSERT_EQUALS("AA", xlnt::cell_reference::column_string_from_index(27));
-        TS_ASSERT_EQUALS("Z", xlnt::cell_reference::column_string_from_index(26));
-    }
-
-
-    void test_initial_value()
-    {
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1", xlnt::value("17.5"));
-
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::string));
-    }
-
-    void test_1st()
-    {
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1");
-
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::null));
-    }
-
+    
     void test_null()
     {
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1", xlnt::value("17.5"));
-        cell.set_value(xlnt::value::null());
-
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::null));
+        auto datatypes =
+        {
+            xlnt::cell::type::null
+        };
+        
+        for(auto datatype : datatypes)
+        {
+            auto ws = wb.create_sheet();
+            auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
+            
+            cell.set_data_type(datatype);
+            TS_ASSERT(cell.get_data_type() == datatype);
+            cell.clear_value();
+            TS_ASSERT(cell.get_data_type() == xlnt::cell::type::null);
+        }
     }
-
+    
     void test_string()
     {
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1");
-
+        auto ws = wb.create_sheet();
+        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
+        
         cell.set_value("hello");
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::string));
-    }
-
-    void test_single_dot()
-    {
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1");
+        TS_ASSERT(cell.get_data_type() == xlnt::cell::type::string);
+        
         cell.set_value(".");
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::string));
+        TS_ASSERT(cell.get_data_type() == xlnt::cell::type::string);
+        
+        cell.set_value("0800");
+        TS_ASSERT(cell.get_data_type() == xlnt::cell::type::string);
     }
-
-    void test_formula()
+    
+    void test_formula1()
     {
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1");
-        cell.set_formula("42");
-        TS_ASSERT(cell.has_formula());
-        cell.clear_formula();
-        TS_ASSERT(!cell.has_formula());
-        cell.set_formula("if(A1<4;-1;1)");
-        TS_ASSERT(cell.has_formula());
+        auto ws = wb_guess_types.create_sheet();
+        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
+        
+        cell.set_value("=42");
+        TS_ASSERT(cell.get_data_type() == xlnt::cell::type::formula);
     }
-
+    
+    void test_formula2()
+    {
+        auto ws = wb.create_sheet();
+        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
+        
+        cell.set_value("=if(A1<4;-1;1)");
+        TS_ASSERT(cell.get_data_type() == xlnt::cell::type::formula);
+    }
+    
+    void test_not_formula()
+    {
+        auto ws = wb.create_sheet();
+        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
+        
+        cell.set_value("=");
+        TS_ASSERT(cell.get_data_type() == xlnt::cell::type::string);
+        TS_ASSERT(cell.get_value<std::string>() == "=");
+        TS_ASSERT(!cell.has_formula());
+    }
+    
     void test_boolean()
     {
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1");
-        cell.set_value(true);
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::boolean));
-        cell.set_value(false);
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::boolean));
+        auto ws = wb.create_sheet();
+        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
+        
+        for(auto value : {true, false})
+        {
+            cell.set_value(value);
+            TS_ASSERT(cell.get_data_type() == xlnt::cell::type::boolean);
+        }
     }
-
+    
     void test_error_codes()
     {
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1");
-
-        for(auto error : xlnt::cell::ErrorCodes)
+        auto ws = wb_guess_types.create_sheet();
+        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
+        
+        for(auto error_code : xlnt::cell::ErrorCodes)
         {
-            cell.set_error(error.first);
-            TS_ASSERT(cell.get_value().is(xlnt::value::type::error));
+            cell.set_value(error_code.first);
+            TS_ASSERT(cell.get_data_type() == xlnt::cell::type::error);
         }
     }
 
     void test_insert_datetime()
     {
-        xlnt::datetime value(2010, 7, 13, 6, 37, 41);
-        auto internal = 40372.27616898148L;
-        auto number_format = "yyyy-mm-dd h:mm:ss";
-
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1");
-        cell.set_value(value);
-
-        TS_ASSERT(cell.get_value().get_type() == xlnt::value::type::numeric);
-        TS_ASSERT(cell.get_value().as<long double>() == internal);
+        auto ws = wb.create_sheet();
+        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
+        
+        cell.set_value(xlnt::datetime(2010, 7, 13, 6, 37, 41));
+        TS_ASSERT(cell.get_data_type() == xlnt::cell::type::numeric);
+        TS_ASSERT(cell.get_value<long double>() == 40372.27616898148L);
         TS_ASSERT(cell.is_date());
-        TS_ASSERT(cell.get_style().get_number_format().get_format_code_string() == number_format);
+        TS_ASSERT(cell.get_number_format() == "yyyy-mm-dd h:mm:ss");
     }
-
+    
     void test_insert_date()
     {
-        xlnt::date value(2010, 7, 13);
-        auto internal = 40372;
-        auto number_format = "yyyy-mm-dd";
-
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1");
-        cell.set_value(value);
-
-        TS_ASSERT(cell.get_value().get_type() == xlnt::value::type::numeric);
-        TS_ASSERT(cell.get_value().as<long double>() == internal);
+        auto ws = wb.create_sheet();
+        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
+        
+        cell.set_value(xlnt::date(2010, 7, 13));
+        TS_ASSERT(cell.get_data_type() == xlnt::cell::type::numeric);
+        TS_ASSERT(cell.get_value<long double>() == 40372.L);
         TS_ASSERT(cell.is_date());
-        TS_ASSERT(cell.get_style().get_number_format().get_format_code_string() == number_format);
+        TS_ASSERT(cell.get_number_format() == "yyyy-mm-dd");
     }
-
+    
     void test_insert_time()
     {
-        xlnt::time value(1, 3);
-        auto internal = 0.04375L;
-        auto number_format = "h:mm:ss";
-
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1");
-        cell.set_value(value);
-
-        TS_ASSERT(cell.get_value().get_type() == xlnt::value::type::numeric);
-        TS_ASSERT(cell.get_value().as<long double>() == internal);
+        auto ws = wb.create_sheet();
+        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
+        
+        cell.set_value(xlnt::time(1, 3));
+        TS_ASSERT(cell.get_data_type() == xlnt::cell::type::numeric);
+        TS_ASSERT(cell.get_value<long double>() == 0.04375L);
         TS_ASSERT(cell.is_date());
-        TS_ASSERT(cell.get_style().get_number_format().get_format_code_string() == number_format);
+        TS_ASSERT(cell.get_number_format() == "h:mm:ss");
     }
-
-    void test_number_format_style()
+    
+    void test_cell_formatted_as_date1()
     {
-        xlnt::workbook wb_guess_types;
-        wb_guess_types.set_guess_types(true);
-        xlnt::worksheet ws = wb_guess_types.create_sheet();
-        xlnt::cell cell(ws, "A1");
-        cell.set_value("12.6%");
-        TS_ASSERT_EQUALS(xlnt::number_format::format::percentage, cell.get_style().get_number_format().get_format_code());
-    }
-
-    void test_data_type_check()
-    {
-        xlnt::workbook wb_guess_types;
-        wb_guess_types.set_guess_types(true);
+        auto ws = wb.create_sheet();
+        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
         
-        xlnt::worksheet ws = wb_guess_types.create_sheet();
-        xlnt::cell cell(ws, "A1");
-
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::null));
-
-        cell.set_value(".0e000");
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
-
-        cell.set_value("-0.e-0");
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
-
-        cell.set_value("1E");
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::string));
+        cell.set_value(xlnt::datetime::today());
+        cell.clear_value();
+        TS_ASSERT(cell.is_date());
+        TS_ASSERT(!cell.has_value());
     }
-
-    void test_set_bad_type()
+    
+    void test_cell_formatted_as_date2()
     {
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1");
-        TS_ASSERT_THROWS(cell.set_error("1"), xlnt::data_type_exception);
-        TS_ASSERT_THROWS(cell.set_hyperlink("1"), xlnt::data_type_exception);
-    }
-
-
-    void test_time()
-    {
-        xlnt::workbook wb_guess_types;
-        wb_guess_types.set_guess_types(true);
+        auto ws = wb.create_sheet();
+        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
         
-        xlnt::worksheet ws = wb_guess_types.create_sheet();
-        xlnt::cell cell(ws, "A1");
-
-        cell.set_value("03:40:16");
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
-        TS_ASSERT_EQUALS(cell.get_value(), xlnt::time(3, 40, 16));
-
-        cell.set_value("03:40");
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
-        TS_ASSERT_EQUALS(cell.get_value(), xlnt::time(3, 40));
+        cell.set_value(xlnt::datetime::today());
+        cell.set_value("testme");
+        TS_ASSERT(!cell.is_date());
+        TS_ASSERT(cell.get_value<std::string>() == "testme");
+    }
+    
+    void test_cell_formatted_as_date3()
+    {
+        auto ws = wb.create_sheet();
+        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
+        
+        cell.set_value(xlnt::datetime::today());
+        cell.set_value(true);
+        TS_ASSERT(!cell.is_date());
+        TS_ASSERT(cell.get_value<bool>() == true);
+    }
+    
+    void test_illegal_chacters()
+    {
+        auto ws = wb.create_sheet();
+        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
+    
+        // The bytes 0x00 through 0x1F inclusive must be manually escaped in values.
+        auto illegal_chrs = {0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
+        
+        for(auto i : illegal_chrs)
+        {
+            std::string str(1, i);
+            TS_ASSERT_THROWS(cell.set_value(str), xlnt::illegal_character_error);
+        }
+        
+        cell.set_value(std::string(1, 33));
+        cell.set_value(std::string(1, 9));  // Tab
+        cell.set_value(std::string(1, 10));  // Newline
+        cell.set_value(std::string(1, 13));  // Carriage return
+        cell.set_value(" Leading and trailing spaces are legal ");
+    }
+    /*
+    values = (
+              ('30:33.865633336', [('', '', '', '30', '33', '865633')]),
+              ('03:40:16', [('03', '40', '16', '', '', '')]),
+              ('03:40', [('03', '40', '',  '', '', '')]),
+              ('55:72:12', []),
+              )
+    @pytest.mark.parametrize("value, expected",
+                             values)
+     */
+    void test_time_regex()
+    {
+        /*
+        from openpyxl.cell.cell import TIME_REGEX;
+        m = TIME_REGEX.findall(value);
+        TS_ASSERT(m == expected;
+         */
     }
     
     void test_timedelta()
     {
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1");
+        auto ws = wb.create_sheet();
+        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
         
-        cell.set_value(xlnt::timedelta(1, 3, 0, 0, 0));
-        TS_ASSERT_EQUALS(cell.get_value(), 1.125);
-        TS_ASSERT(cell.get_value().is(xlnt::value::type::numeric));
+        cell.set_value(xlnt::timedelta(1, 3));
+        TS_ASSERT(cell.get_value<long double>() == 1.125);
+        TS_ASSERT(cell.get_data_type() == xlnt::cell::type::numeric);
+        TS_ASSERT(!cell.is_date());
+        TS_ASSERT(cell.get_number_format() == "[hh]:mm:ss");
     }
-
-    void test_date_format_on_non_date()
-    {
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1");
-
-        cell.set_value(xlnt::datetime::now());
-        cell.set_value("testme");
-        TS_ASSERT("testme" == cell.get_value());
-    }
-
-    void test_set_get_date()
-    {
-        xlnt::datetime today(2010, 1, 18, 14,15, 20 ,1600);
-
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1");
-
-        cell.set_value(today);
-        TS_ASSERT(today == cell.get_value());
-    }
-
+    
     void test_repr()
     {
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1");
-
-        TS_ASSERT_EQUALS(cell.to_string(), "<Cell " + ws.get_title() + ".A1>");
+        auto ws = wb[1];
+        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
+        
+        TS_ASSERT(cell.to_string() == "<Cell Sheet1.A1>");
     }
-
-    void test_is_date()
+    
+    void test_comment_assignment()
     {
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1");
-
-        cell.set_value(xlnt::datetime::now());
-        TS_ASSERT(cell.is_date());
-
-        cell.set_value("testme");
-        TS_ASSERT_EQUALS("testme", cell.get_value());
-        TS_ASSERT(!cell.is_date());
-    }
-
-
-    void test_is_not_date_color_format()
-    {
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1");
-
-        cell.set_value(-13.5);
-        cell.get_style().get_number_format().set_format_code_string("0.00_);[Red]\\(0.00\\)");
-
-        TS_ASSERT(!cell.is_date());
+        auto ws = wb.create_sheet();
+        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
+        
+        TS_ASSERT(!cell.has_comment());
+        xlnt::comment comm(cell, "text", "author");
+        TS_ASSERT(cell.get_comment() == comm);
     }
     
     void test_comment_count()
     {
-        xlnt::worksheet ws = wb.create_sheet();
-        xlnt::cell cell(ws, "A1");
-        
+        auto ws = wb.create_sheet();
+        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
+
         TS_ASSERT(ws.get_comment_count() == 0);
-        cell.set_comment(xlnt::comment("text", "author"));
+        xlnt::comment(cell, "text", "author");
         TS_ASSERT(ws.get_comment_count() == 1);
-        cell.set_comment(xlnt::comment("text", "author"));
+        xlnt::comment(cell, "text", "author");
         TS_ASSERT(ws.get_comment_count() == 1);
         cell.clear_comment();
         TS_ASSERT(ws.get_comment_count() == 0);
@@ -415,12 +315,139 @@ public:
         TS_ASSERT(ws.get_comment_count() == 0);
     }
     
+    void test_only_one_cell_per_comment()
+    {
+        auto ws = wb.create_sheet();
+        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
+        xlnt::comment comm(cell, "text", "author");
+    
+        auto c2 = ws.get_cell(xlnt::cell_reference(1, 2));
+        TS_ASSERT_THROWS(c2.set_comment(comm), xlnt::attribute_error);
+    }
+    
+    void test_remove_comment()
+    {
+        auto ws = wb.create_sheet();
+        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
+        
+        xlnt::comment comm(cell, "text", "author");
+        cell.clear_comment();
+        TS_ASSERT(!cell.has_comment());
+    }
+    
     void test_cell_offset()
     {
-        xlnt::worksheet ws = wb.create_sheet();
-        TS_ASSERT(ws.get_cell("B15").offset(1, 2).get_reference() == "C17");
+        /*
+        auto ws = wb.create_sheet();
+        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
+        TS_ASSERT(cell.offset(2, 1).get_reference() == "B3");
+         */
     }
-
-private:
-    xlnt::workbook wb;
+    
+    void test_bad_encoding()
+    {
+        /*
+        unsigned char pound = 163;
+        auto test_string = "Compount Value (" + std::string(pound) + ")";
+        auto ws = wb.create_sheet();
+        cell = ws[xlnt::cell_reference("A1")];
+        TS_ASSERT_THROWS(cell.check_string(test_string), xlnt::unicode_decode_error);
+        TS_ASSERT_THROWS(cell.set_value(test_string), xlnt::unicode_decode_error);
+         */
+    }
+    
+    void test_good_encoding()
+    {
+        /*
+        auto wb = xlnt::workbook(xlnt::encoding::latin1);
+        auto ws = wb.get_active_sheet();
+        auto cell = ws[xlnt::cell_reference("A1")];
+        cell.set_value(test_string);
+         */
+    }
+    
+    void test_font()
+    {
+        xlnt::font font;
+        font.set_bold(true);
+        auto ws = wb.create_sheet();
+        ws.get_parent().add_font(font);
+    
+        auto cell = xlnt::cell(ws, "A1");
+        TS_ASSERT(cell.get_font() == font);
+    }
+    
+    void test_fill()
+    {
+        xlnt::pattern_fill fill;
+        fill.set_pattern_type("solid");
+        fill.set_foreground_color("FF0000");
+        auto ws = wb.create_sheet();
+        ws.get_parent().add_fill(fill);
+    
+        xlnt::cell cell(ws, "A1");
+        TS_ASSERT(cell.get_fill() == fill);
+    }
+    
+    void test_border()
+    {
+        xlnt::border border;
+        auto ws = wb.create_sheet();
+        ws.get_parent().add_border(border);
+        
+        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
+        TS_ASSERT(cell.get_border() == border);
+    }
+    
+    void test_number_format()
+    {
+        auto ws = wb.create_sheet();
+        ws.get_parent().add_number_format("dd--hh--mm");
+    
+        xlnt::cell cell(ws, "A1");
+        cell.set_number_format("dd--hh--mm");
+        TS_ASSERT(cell.get_number_format() == "dd--hh--mm");
+    }
+    
+    void test_alignment()
+    {
+        xlnt::alignment align;
+        align.set_wrap_text(true);
+        
+        auto ws = wb.create_sheet();
+        ws.get_parent().add_alignment(align);
+    
+        xlnt::cell cell(ws, "A1");
+        TS_ASSERT(cell.get_alignment() == align);
+    }
+    
+    void test_protection()
+    {
+        xlnt::protection prot;
+        prot.set_locked(false);
+        
+        auto ws = wb.create_sheet();
+        ws.get_parent().add_protection(prot);
+    
+        xlnt::cell cell(ws, "A1");
+        TS_ASSERT(cell.get_protection() == prot);
+    }
+    
+    void test_pivot_button()
+    {
+        auto ws = wb.create_sheet();
+        
+        xlnt::cell cell(ws, "A1");
+        cell.get_style().set_pivot_button(true);
+        TS_ASSERT(cell.pivot_button());
+    }
+    
+    void test_quote_prefix()
+    {
+        auto ws = wb.create_sheet();
+    
+        xlnt::cell cell(ws, "A1");
+        cell.get_style().set_quote_prefix(true);
+        TS_ASSERT(cell.quote_prefix());
+    }
 };

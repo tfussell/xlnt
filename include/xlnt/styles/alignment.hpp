@@ -48,12 +48,23 @@ struct alignment
         justify
     };
     
-    horizontal_alignment horizontal = horizontal_alignment::general;
-    vertical_alignment vertical = vertical_alignment::bottom;
-    int text_rotation = 0;
-    bool wrap_text = false;
-    bool shrink_to_fit = false;
-    int indent = 0;
+    void set_wrap_text(bool wrap_text)
+    {
+        wrap_text_ = wrap_text;
+    }
+    
+    bool operator==(const alignment &other) const
+    {
+        return horizontal_ == other.horizontal_;
+    }
+    
+private:
+    horizontal_alignment horizontal_ = horizontal_alignment::general;
+    vertical_alignment vertical_ = vertical_alignment::bottom;
+    int text_rotation_ = 0;
+    bool wrap_text_ = false;
+    bool shrink_to_fit_ = false;
+    int indent_ = 0;
 };
 
 } // namespace xlnt

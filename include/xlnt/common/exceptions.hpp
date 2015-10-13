@@ -109,5 +109,14 @@ class missing_number_format : public std::runtime_error
 public:
     missing_number_format();
 };
+
+/// <summary>
+/// Error when an attribute value is invalid.
+/// </summary>
+class attribute_error : public std::runtime_error
+{
+public:
+    attribute_error();
+};
     
 } // namespace xlnt

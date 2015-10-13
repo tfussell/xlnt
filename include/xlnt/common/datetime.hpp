@@ -26,15 +26,32 @@
 
 namespace xlnt {
 
+/// <summary>
+/// An enumeration of possible base dates.
+/// Dates in Excel are stored as days since this base date.
+/// </summary>
 enum class calendar
 {
     windows_1900,
     mac_1904
 };
 
+/// <summary>
+/// A date is a specific day specified in terms of a year, month, and day.
+/// It can also be initialized as a number of days since a base date
+/// using date::from_number.
+/// </summary>
 struct date
 {
+    /// <summary>
+    /// Return the current date according to the system time.
+    /// </summary>
     static date today();
+    
+    /// <summary>
+    /// Return a date by adding days_since_base_year to base_date.
+    /// This includes leap years.
+    /// </summary>
     static date from_number(int days_since_base_year, calendar base_date);
 
     date(int year, int month, int day)
@@ -42,7 +59,14 @@ struct date
     {
     }
 
+    /// <summary>
+    /// Return the number of days between this date and base_date.
+    /// </summary>
     int to_number(calendar base_date) const;
+    
+    /// <summary>
+    /// Return true if this date is equal to comparand.
+    /// </summary>
     bool operator==(const date &comparand) const;
 
     int year;
@@ -50,9 +74,23 @@ struct date
     int day;
 };
 
+/// <summary>
+/// A time is a specific time of the day specified in terms of an hour,
+/// minute, second, and microsecond (0-999999).
+/// It can also be initialized as a fraction of a day using time::from_number.
+/// </summary>
 struct time
 {
+    /// <summary>
+    /// Return the current time according to the system time.
+    /// </summary>
     static time now();
+    
+    /// <summary>
+    /// Return a time from a number representing a fraction of a day.
+    /// The integer part of number will be ignored.
+    /// 0.5 would return time(12, 0, 0, 0) or noon, halfway through the day.
+    /// </summary>
     static time from_number(long double number);
 
     explicit time(int hour = 0, int minute = 0, int second = 0, int microsecond = 0)
@@ -72,7 +110,22 @@ struct time
 
 struct datetime
 {
+    /// <summary>
+    /// Return the current date and time according to the system time.
+    /// </summary>
     static datetime now();
+    
+    /// <summary>
+    /// Return the current date and time according to the system time.
+    /// This is equivalent to datetime::now().
+    /// </summary>
+    static datetime today() { return now(); }
+    
+    /// <summary>
+    /// Return a datetime from number by converting the integer part into
+    /// a date and the fractional part into a time according to date::from_number
+    /// and time::from_number.
+    /// </summary>
     static datetime from_number(long double number, calendar base_date);
 
     datetime(int year, int month, int day, int hour = 0, int minute = 0, int second = 0, int microsecond = 0)
@@ -92,9 +145,13 @@ struct datetime
     int microsecond;
 };
     
+/// <summary>
+/// Represents a span of time between two datetimes. This is
+/// not fully supported yet.
+/// </summary>
 struct timedelta
 {
-    timedelta(int days, int hours, int minutes, int seconds, int microseconds) : days(days), hours(hours), minutes(minutes), seconds(seconds), microseconds(microseconds)
+    timedelta(int days, int hours, int minutes = 0, int seconds = 0, int microseconds = 0) : days(days), hours(hours), minutes(minutes), seconds(seconds), microseconds(microseconds)
     {
     }
     

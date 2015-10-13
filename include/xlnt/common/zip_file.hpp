@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+// Note: this comes from https://github.com/tfussell/pyzip
+
 struct mz_zip_archive_tag;
 
 namespace xlnt {

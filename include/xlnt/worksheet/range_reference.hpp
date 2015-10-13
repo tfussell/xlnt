@@ -56,10 +56,33 @@ public:
     bool operator==(const range_reference &comparand) const;
     bool operator==(const std::string &reference_string) const { return *this == range_reference(reference_string); }
     bool operator==(const char *reference_string) const { return *this == std::string(reference_string); }
+    bool operator!=(const range_reference &comparand) const;
+    bool operator!=(const std::string &reference_string) const { return *this != range_reference(reference_string); }
+    bool operator!=(const char *reference_string) const { return *this != std::string(reference_string); }
 
 private:
     cell_reference top_left_;
     cell_reference bottom_right_;
 };
+    
+inline bool operator==(const std::string &reference_string, const range_reference &ref)
+{
+    return ref == reference_string;
+}
+
+inline bool operator==(const char *reference_string, const range_reference &ref)
+{
+    return ref == reference_string;
+}
+
+inline bool operator!=(const std::string &reference_string, const range_reference &ref)
+{
+    return ref != reference_string;
+}
+
+inline bool operator!=(const char *reference_string, const range_reference &ref)
+{
+    return ref != reference_string;
+}
 
 } // namespace xlnt

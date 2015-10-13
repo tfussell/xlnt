@@ -1,0 +1,53 @@
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+	<sheetPr>
+		<outlinePr summaryRight="1" summaryBelow="1"></outlinePr>
+	</sheetPr>
+	<dimension ref="A1:F1"></dimension>
+	<sheetViews>
+		<sheetView workbookViewId="0">
+			<selection sqref="A1" activeCell="A1"></selection>
+		</sheetView>
+	</sheetViews>
+	<sheetFormatPr defaultRowHeight="15"></sheetFormatPr>
+	<sheetData>
+		<row r="1" spans="1:5">
+			<c s="2" r="A1" t="s">
+				<v>0</v>
+			</c>
+			<c s="2" r="B1" t="s">
+				<v>0</v>
+			</c>
+			<c s="2" r="C1" t="s">
+				<v>0</v>
+			</c>
+			<c s="2" r="D1" t="s">
+				<v>0</v>
+			</c>
+			<c s="2" r="E1" t="s">
+				<v>0</v>
+			</c>
+		</row>
+		<row r="2" spans="1:6">
+			<c r="A2" t="s">
+				<v>0</v>
+			</c>
+			<c r="B2" t="s">
+				<v>0</v>
+			</c>
+			<c r="C2" t="s">
+				<v>0</v>
+			</c>
+			<c r="D2" t="s">
+				<v>0</v>
+			</c>
+			<c r="E2" t="s">
+				<v>0</v>
+			</c>
+			<c r="F2">
+				<f>HYPERLINK("#NoeudLNG!I4", "LINK")</f>
+				<v></v>
+			</c>
+		</row>
+	</sheetData>
+</worksheet>

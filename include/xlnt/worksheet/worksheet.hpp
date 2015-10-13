@@ -249,10 +249,15 @@ public:
     const cell get_cell(const cell_reference &reference) const;
     range get_range(const range_reference &reference);
     const range get_range(const range_reference &reference) const;
+    range get_squared_range(column_t min_col, row_t min_row, column_t max_col, row_t max_row);
+    const range get_squared_range(column_t min_col, row_t min_row, column_t max_col, row_t max_row) const;
     row_properties &get_row_properties(row_t row);
     const row_properties &get_row_properties(row_t row) const;
     bool has_row_properties(row_t row) const;
     range rows() const;
+    range rows(const std::string &range_string) const;
+    range rows(int row_offset, int column_offset) const;
+    range rows(const std::string &range_string, int row_offset, int column_offset) const;
     range columns() const;
     std::list<cell> get_cell_collection();
 
@@ -286,16 +291,21 @@ public:
     
     // cell merge
     void merge_cells(const range_reference &reference);
+    void merge_cells(column_t start_column, row_t start_row, column_t end_column, row_t end_row);
     void unmerge_cells(const range_reference &reference);
+    void unmerge_cells(column_t start_column, row_t start_row, column_t end_column, row_t end_row);
     std::vector<range_reference> get_merged_ranges() const;
     
     // append
     void append(const std::vector<std::string> &cells);
     void append(const std::vector<int> &cells);
     void append(const std::vector<date> &cells);
+    void append(const std::vector<cell> &cells);
     void append(const std::unordered_map<std::string, std::string> &cells);
     void append(const std::unordered_map<int, std::string> &cells);
-
+    
+    void append(const std::vector<int>::const_iterator begin, const std::vector<int>::const_iterator end);
+    
     // operators
     bool operator==(const worksheet &other) const;
     bool operator!=(const worksheet &other) const;

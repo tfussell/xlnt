@@ -23,53 +23,83 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <xlnt/styles/color.hpp>
+
 namespace xlnt {
 
-class borders
+template<typename T>
+struct optional
 {
-    struct border
-    {
-        enum class style
-        {
-            none,
-            dashdot,
-            dashdotdot,
-            dashed,
-            dotted,
-            double_,
-            hair,
-            medium,
-            mediumdashdot,
-            mediumdashdotdot,
-            mediumdashed,
-            slantdashdot,
-            thick,
-            thin
-        };
-        
-        style style_ = style::none;
-        color color_ = color::black;
-    };
+    T value;
+    bool initialized;
+};
     
-    enum class diagonal_direction
-    {
-        none,
-        up,
-        down,
-        both
-    };
+enum class border_style
+{
+    none,
+    dashdot,
+    dashdotdot,
+    dashed,
+    dotted,
+    double_,
+    hair,
+    medium,
+    mediumdashdot,
+    mediumdashdotdot,
+    mediumdashed,
+    slantdashdot,
+    thick,
+    thin
+};
+
+enum class diagonal_direction
+{
+    none,
+    up,
+    down,
+    both
+};
     
-    border left;
-    border right;
-    border top;
-    border bottom;
-    border diagonal;
-    //    diagonal_direction diagonal_direction = diagonal_direction::none;
-    border all_borders;
-    border outline;
-    border inside;
-    border vertical;
-    border horizontal;
+class side
+{
+public:
+    side(border_style style = border_style::none, color = color::black);
+    
+    bool operator==(const side &other) const
+    {
+        return other.style_ == style_;
+    }
+    
+private:
+    border_style style_;
+    color color_;
+};
+    
+class border
+{
+public:
+    static border default_border();
+    
+    optional<side> start;
+    optional<side> end;
+    optional<side> left;
+    optional<side> right;
+    optional<side> top;
+    optional<side> bottom;
+    optional<side> diagonal;
+    optional<side> vertical;
+    optional<side> horizontal;
+
+    bool outline;
+    bool diagonal_up;
+    bool diagonal_down;
+    
+    diagonal_direction diagonal_direction;
+    
+    bool operator==(const border &other) const
+    {
+        return start.value == other.start.value;
+    }
 };
 
 } // namespace xlnt

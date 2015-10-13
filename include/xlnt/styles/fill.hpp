@@ -59,6 +59,22 @@ public:
     int rotation = 0;
     color start_color = color::white;
     color end_color = color::black;
+    
+    bool operator==(const fill &other) const
+    {
+        return type_ == other.type_;
+    }
+};
+
+class pattern_fill : public fill
+{
+public:
+    void set_pattern_type(const std::string &type) { type_ = type; }
+    void set_foreground_color(const std::string &hex) { foreground_color_ = hex; }
+    
+private:
+    std::string type_;
+    std::string foreground_color_;
 };
 
 } // namespace xlnt

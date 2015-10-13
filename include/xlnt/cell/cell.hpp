@@ -35,7 +35,6 @@ namespace xlnt {
 class cell_reference;
 class comment;
 class relationship;
-class value;
 class worksheet;
 
 struct date;
@@ -59,48 +58,90 @@ struct cell_impl;
 class cell
 {
 public:
+    enum class type
+    {
+        null,
+        numeric,
+        string,
+        formula,
+        error,
+        boolean
+    };
+    
     static const std::unordered_map<std::string, int> ErrorCodes;
     
     cell();
-    cell(worksheet ws, const cell_reference &reference);
-    cell(worksheet ws, const cell_reference &reference, const value &initial_value);
+    cell(worksheet worksheet, const cell_reference &reference);
+    template<typename T>
+    cell(worksheet worksheet, const cell_reference &reference, const T &initial_value);
+
+    // value
+    bool has_value() const;
     
+    template<typename T>
+    T get_value();
+    template<typename T>
+    const T get_value() const;
+    
+    void clear_value();
+    
+    template<typename T>
+    void set_value(T value);
+    
+    type get_data_type() const;
+    void set_data_type(type t);
+    
+    // characteristics
+    bool garbage_collectible() const;
+    bool is_date() const;
+    
+    // position
+    cell_reference get_reference() const;
     std::string get_column() const;
+    column_t get_column_index() const;
     row_t get_row() const;
+    std::pair<int, int> get_anchor() const;
     
-    std::string to_string() const;   
-    
-    bool is_merged() const;
-    void set_merged(bool merged);
-    
+    // hyperlink
     relationship get_hyperlink() const;
     void set_hyperlink(const std::string &value);
     bool has_hyperlink() const;
     
-    void set_number_format(const std::string &format_code);
-    
+    // style
     bool has_style() const;
     style &get_style();
     const style &get_style() const;
     void set_style(const style &s);
-
-    std::pair<int, int> get_anchor() const;
-
-    bool garbage_collectible() const;
+    std::string get_number_format() const;
+    void set_number_format(const std::string &format_code);
+    std::size_t get_xf_index() const;
+    font get_font() const;
+    fill &get_fill();
+    const fill &get_fill() const;
+    border get_border() const;
+    alignment get_alignment() const;
+    protection get_protection() const;
+    bool pivot_button() const;
+    bool quote_prefix() const;
     
-    cell_reference get_reference() const;
-    
-    bool is_date() const;
-    
-    comment get_comment() const;
+    // comment
+    comment get_comment();
     void set_comment(const comment &comment);
     void clear_comment();
     bool has_comment() const;
-
+    
+    // formula
     std::string get_formula() const;
     void set_formula(const std::string &formula);
     void clear_formula();
     bool has_formula() const;
+
+    // printing
+    std::string to_string() const;
+    
+    // merging
+    bool is_merged() const;
+    void set_merged(bool merged);
 
     std::string get_error() const;
     void set_error(const std::string &error);
@@ -109,37 +150,8 @@ public:
     
     worksheet get_parent();
     const worksheet get_parent() const;
-
-    value &get_value();
-    const value &get_value() const;
-
-	void set_value(bool b);
-	void set_value(std::int8_t i);
-	void set_value(std::int16_t i);
-	void set_value(std::int32_t i);
-	void set_value(std::int64_t i);
-	void set_value(std::uint8_t i);
-	void set_value(std::uint16_t i);
-	void set_value(std::uint32_t i);
-	void set_value(std::uint64_t i);
-#ifdef _WIN32
-    void set_value(unsigned long i);
-#endif
-#ifdef __linux__
-    void set_value(long long i);
-    void set_value(unsigned long long i);
-#endif
-	void set_value(float f);
-	void set_value(double d);
-	void set_value(long double d);
-	void set_value(const char *s);
-	void set_value(const std::string &s);
-	void set_value(const date &d);
-	void set_value(const datetime &d);
-	void set_value(const time &t);
-	void set_value(const timedelta &t);
-	void set_value(const value &v);
     
+    // operators
     cell &operator=(const cell &rhs);
     
     bool operator==(const cell &comparand) const;
@@ -149,6 +161,7 @@ public:
     friend bool operator<(cell left, cell right);
     
 private:
+    void set_value_guess_type(const std::string &s);
     friend class worksheet;
     cell(detail::cell_impl *d);
     detail::cell_impl *d_;

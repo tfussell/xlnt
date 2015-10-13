@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:x14ac="http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac" mc:Ignorable="x14ac">
+  <dimension ref="A2:A7"/>
+  <sheetViews>
+    <sheetView tabSelected="1" workbookViewId="0">
+      <selection activeCell="A8" sqref="A8"/>
+    </sheetView>
+  </sheetViews>
+  <sheetFormatPr baseColWidth="10" defaultRowHeight="16" x14ac:dyDescent="0"/>
+  <sheetData>
+    <row r="2" spans="1:1">
+      <c r="A2">
+        <v>1</v>
+      </c>
+    </row>
+    <row r="4" spans="1:1">
+      <c r="A4">
+        <v>2</v>
+      </c>
+    </row>
+    <row r="5" spans="1:1">
+      <c r="A5">
+        <v>3</v>
+      </c>
+    </row>
+    <row r="6" spans="1:1">
+      <c r="A6">
+        <v>4</v>
+      </c>
+    </row>
+    <row r="7" spans="1:1">
+      <c r="A7">
+        <v>5</v>
+      </c>
+    </row>
+  </sheetData>
+  <pageMargins left="0.75" right="0.75" top="1" bottom="1" header="0.5" footer="0.5"/>
+  <extLst>
+    <ext xmlns:mx="http://schemas.microsoft.com/office/mac/excel/2008/main" uri="{64002731-A6B0-56B0-2670-7721B7C09600}">
+      <mx:PLV Mode="0" OnePage="0" WScale="0"/>
+    </ext>
+  </extLst>
+</worksheet>

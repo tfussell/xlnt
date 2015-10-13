@@ -80,7 +80,7 @@ public:
     
     static std::string GetDataDirectory(const std::string &append = "")
     {
-        return GetExecutableDirectory() + "../tests/test_data" + append;
+        return GetExecutableDirectory() + "../tests/data" + append;
     }
     
     static void CopyFile(const std::string &source, const std::string &destination, bool overwrite)

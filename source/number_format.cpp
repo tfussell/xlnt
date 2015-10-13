@@ -135,7 +135,7 @@ number_format::format number_format::lookup_format(int code)
     return match->first;
 }
 
-std::string number_format::get_format_code_string()
+std::string number_format::get_format_code_string() const
 {
     if(format_code_ == format::unknown)
     {

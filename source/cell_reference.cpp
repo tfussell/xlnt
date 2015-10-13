@@ -10,7 +10,7 @@ namespace xlnt {
     
 std::size_t cell_reference_hash::operator()(const cell_reference &k) const
 {
-    return k.get_row_index() * constants::MaxColumn + k.get_column_index();
+    return k.get_row() * constants::MaxColumn + k.get_column_index();
 }
     
 cell_reference cell_reference::make_absolute(const cell_reference &relative_reference)
@@ -20,7 +20,7 @@ cell_reference cell_reference::make_absolute(const cell_reference &relative_refe
     return copy;
 }
     
-cell_reference::cell_reference() : cell_reference(0, 0, false)
+cell_reference::cell_reference() : cell_reference(1, 1, false)
 {
 }
 
@@ -37,24 +37,24 @@ cell_reference::cell_reference(const char *reference_string) : cell_reference(st
 }
 
 cell_reference::cell_reference(const std::string &column, row_t row, bool absolute)
-: column_index_(column_index_from_string(column) - 1),
-row_index_(row - 1),
+: column_(column_index_from_string(column)),
+row_(row),
 absolute_(absolute)
 {
-    if(row == 0 || row_index_ >= constants::MaxRow || column_index_ >= constants::MaxColumn)
+    if(row == 0 || row_ >= constants::MaxRow || column_ >= constants::MaxColumn)
     {
-        throw cell_coordinates_exception(column_index_, row_index_);
+        throw cell_coordinates_exception(column_, row_);
     }
 }
 
 cell_reference::cell_reference(column_t column_index, row_t row_index, bool absolute)
-: column_index_(column_index),
-row_index_(row_index),
+: column_(column_index),
+row_(row_index),
 absolute_(absolute)
 {
-    if(row_index_ >= constants::MaxRow || column_index_ >= constants::MaxColumn)
+    if(row_ >= constants::MaxRow || column_ >= constants::MaxColumn)
     {
-        throw cell_coordinates_exception(column_index_, row_index_);
+        throw cell_coordinates_exception(column_, row_);
     }
 }
 
@@ -67,14 +67,14 @@ std::string cell_reference::to_string() const
 {
     if(absolute_)
     {
-        return std::string("$") + column_string_from_index(column_index_ + 1) + "$" + std::to_string(row_index_ + 1);
+        return std::string("$") + column_string_from_index(column_) + "$" + std::to_string(row_);
     }
-    return column_string_from_index(column_index_ + 1) + std::to_string(row_index_ + 1);
+    return column_string_from_index(column_) + std::to_string(row_);
 }
 
 range_reference cell_reference::to_range() const
 {
-    return range_reference(column_index_, row_index_, column_index_, row_index_);
+    return range_reference(column_, row_, column_, row_);
 }
 
 std::pair<std::string, row_t> cell_reference::split_reference(const std::string &reference_string, bool &absolute_column, bool &absolute_row)
@@ -139,13 +139,13 @@ std::pair<std::string, row_t> cell_reference::split_reference(const std::string 
 
 cell_reference cell_reference::make_offset(int column_offset, int row_offset) const
 {
-    return cell_reference(column_index_ + column_offset, row_index_ + row_offset);
+    return cell_reference(column_ + column_offset, row_ + row_offset);
 }
 
 bool cell_reference::operator==(const cell_reference &comparand) const
 {
-    return comparand.column_index_ == column_index_
-    && comparand.row_index_ == row_index_
+    return comparand.column_ == column_
+    && comparand.row_ == row_
     && absolute_ == comparand.absolute_;
 }
 
@@ -208,14 +208,44 @@ std::string cell_reference::column_string_from_index(column_t column_index)
     return column_letter;
 }
 
-bool operator<(const cell_reference &left, const cell_reference &right)
+bool cell_reference::operator<(const cell_reference &other)
 {
-    if(left.row_index_ != right.row_index_)
+    if(row_ != other.row_)
     {
-        return left.row_index_ < right.row_index_;
+        return row_ < other.row_;
     }
 
-    return left.column_index_ < right.column_index_;
+    return column_ < other.column_;
+}
+
+bool cell_reference::operator>(const cell_reference &other)
+{
+    if(row_ != other.row_)
+    {
+        return row_ > other.row_;
+    }
+    
+    return column_ > other.column_;
+}
+
+bool cell_reference::operator<=(const cell_reference &other)
+{
+    if(row_ != other.row_)
+    {
+        return row_ < other.row_;
+    }
+    
+    return column_ <= other.column_;
+}
+
+bool cell_reference::operator>=(const cell_reference &other)
+{
+    if(row_ != other.row_)
+    {
+        return row_ > other.row_;
+    }
+    
+    return column_ >= other.column_;
 }
     
-}
+} // namespace xlnt

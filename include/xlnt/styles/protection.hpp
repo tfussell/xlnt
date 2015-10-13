@@ -38,9 +38,19 @@ public:
     protection();
     protection(type locked);
     
+    void set_locked(bool locked)
+    {
+        locked_ = locked ? type::protected_ : type::unprotected;
+    }
+    
+    bool operator==(const protection &other) const
+    {
+        return locked_ == other.locked_ && hidden_ == other.hidden_;
+    }
+    
 private:
-//    type locked_;
-//    type hidden_;
+    type locked_;
+    type hidden_;
 };
 
 } // namespace xlnt

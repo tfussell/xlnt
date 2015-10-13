@@ -2,9 +2,10 @@
 
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/comment.hpp>
-#include <xlnt/cell/value.hpp>
 #include <xlnt/common/types.hpp>
 #include <xlnt/common/relationship.hpp>
+
+#include "comment_impl.hpp"
 
 namespace xlnt {
 
@@ -17,21 +18,33 @@ struct worksheet_impl;
 struct cell_impl
 {
     cell_impl();
-    cell_impl(worksheet_impl *parent, int column_index, int row_index);
+    cell_impl(column_t column, row_t row);
+    cell_impl(worksheet_impl *parent, column_t column, row_t row);
     cell_impl(const cell_impl &rhs);
     cell_impl &operator=(const cell_impl &rhs);
 
+    cell::type type_;
+    
     worksheet_impl *parent_;
-    value value_;
-    std::string formula_;
-    relationship hyperlink_;
+    
     column_t column_;
     row_t row_;
-    style *style_;
-    bool merged;
-    bool is_date_;
+    
+    std::string value_string_;
+    long double value_numeric_;
+    
+    std::string formula_;
+    
     bool has_hyperlink_;
-    comment comment_;
+    relationship hyperlink_;
+    
+    bool is_merged_;
+    bool is_date_;
+    
+    std::size_t xf_index_;
+    
+    std::unique_ptr<style> style_;
+    std::unique_ptr<comment_impl> comment_;
 };
     
 } // namespace detail

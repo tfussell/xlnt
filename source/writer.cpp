@@ -9,7 +9,6 @@
 
 #include <xlnt/writer/writer.hpp>
 #include <xlnt/cell/cell.hpp>
-#include <xlnt/cell/value.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
@@ -18,6 +17,15 @@
 #include <xlnt/workbook/document_properties.hpp>
 
 #include "constants.hpp"
+
+namespace {
+
+bool is_integral(long double d)
+    {
+        return d == static_cast<long long int>(d);
+    }
+    
+} // namespace
 
 namespace xlnt {
 
@@ -236,19 +244,19 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
     {
         auto pane_node = sheet_view_node.append_child("pane");
 
-        if(ws.get_frozen_panes().get_column_index() > 0)
+        if(ws.get_frozen_panes().get_column_index() > 1)
         {
-            pane_node.append_attribute("xSplit").set_value(ws.get_frozen_panes().get_column_index());
+            pane_node.append_attribute("xSplit").set_value(ws.get_frozen_panes().get_column_index() - 1);
             active_pane = "topRight";
         }
 
-        if(ws.get_frozen_panes().get_row_index() > 0)
+        if(ws.get_frozen_panes().get_row() > 1)
         {
-            pane_node.append_attribute("ySplit").set_value(ws.get_frozen_panes().get_row_index());
+            pane_node.append_attribute("ySplit").set_value(ws.get_frozen_panes().get_row() - 1);
             active_pane = "bottomLeft";
         }
 
-        if(ws.get_frozen_panes().get_row_index() > 0 && ws.get_frozen_panes().get_column_index() > 0)
+        if(ws.get_frozen_panes().get_row() > 1 && ws.get_frozen_panes().get_column_index() > 1)
         {
             auto top_right_node = sheet_view_node.append_child("selection");
             top_right_node.append_attribute("pane").set_value("topRight");
@@ -265,15 +273,15 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
     auto selection_node = sheet_view_node.append_child("selection");
     if(ws.has_frozen_panes())
     {
-        if(ws.get_frozen_panes().get_row_index() > 0 && ws.get_frozen_panes().get_column_index() > 0)
+        if(ws.get_frozen_panes().get_row() > 1 && ws.get_frozen_panes().get_column_index() > 1)
         {
             selection_node.append_attribute("pane").set_value("bottomRight");
         }
-        else if(ws.get_frozen_panes().get_row_index() > 0)
+        else if(ws.get_frozen_panes().get_row() > 1)
         {
             selection_node.append_attribute("pane").set_value("bottomLeft");
         }
-        else if(ws.get_frozen_panes().get_column_index() > 0)
+        else if(ws.get_frozen_panes().get_column_index() > 1)
         {
             selection_node.append_attribute("pane").set_value("topRight");
         }
@@ -368,20 +376,20 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
                 auto cell_node = row_node.append_child("c");
                 cell_node.append_attribute("r").set_value(cell.get_reference().to_string().c_str());
                 
-                if(cell.get_value().is(value::type::string))
+                if(cell.get_data_type() == cell::type::string)
                 {
                     if(cell.has_formula())
                     {
                         cell_node.append_attribute("t").set_value("str");
                         cell_node.append_child("f").text().set(cell.get_formula().c_str());
-                        cell_node.append_child("v").text().set(cell.get_value().to_string().c_str());
+                        cell_node.append_child("v").text().set(cell.to_string().c_str());
                         continue;
                     }
 
                     int match_index = -1;
                     for(int i = 0; i < (int)string_table.size(); i++)
                     {
-                        if(string_table[i] == cell.get_value().as<std::string>())
+                        if(string_table[i] == cell.get_value<std::string>())
                         {
                             match_index = i;
                             break;
@@ -390,7 +398,7 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
                     
                     if(match_index == -1)
                     {
-                        if(cell.get_value().as<std::string>().empty())
+                        if(cell.get_value<std::string>().empty())
                         {
                             cell_node.append_attribute("t").set_value("s");
                         }
@@ -398,7 +406,7 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
                         {
                             cell_node.append_attribute("t").set_value("inlineStr");
                             auto inline_string_node = cell_node.append_child("is");
-                            inline_string_node.append_child("t").text().set(cell.get_value().as<std::string>().c_str());
+                            inline_string_node.append_child("t").text().set(cell.get_value<std::string>().c_str());
                         }
                     }
                     else
@@ -410,32 +418,36 @@ std::string writer::write_worksheet(worksheet ws, const std::vector<std::string>
                 }
                 else
                 {
-                    if(!cell.get_value().is(value::type::null))
+                    if(cell.get_data_type() != cell::type::null)
                     {
-                        if(cell.get_value().is(value::type::boolean))
+                        if(cell.get_data_type() == cell::type::boolean)
                         {
                             cell_node.append_attribute("t").set_value("b");
                             auto value_node = cell_node.append_child("v");
-                            value_node.text().set(cell.get_value().as<bool>() ? 1 : 0);
+                            value_node.text().set(cell.get_value<bool>() ? 1 : 0);
                         }
-                        else if(cell.get_value().is(value::type::numeric))
+                        else if(cell.get_data_type() == cell::type::numeric)
                         {
                             if(cell.has_formula())
                             {
                                 cell_node.append_child("f").text().set(cell.get_formula().c_str());
-                                cell_node.append_child("v").text().set(cell.get_value().to_string().c_str());
+                                cell_node.append_child("v").text().set(cell.to_string().c_str());
                                 continue;
                             }
 
                             cell_node.append_attribute("t").set_value("n");
                             auto value_node = cell_node.append_child("v");
-                            if(cell.get_value().is_integral())
+                            if(is_integral(cell.get_value<long double>()))
                             {
-                                value_node.text().set(cell.get_value().as<long long>());
+                                value_node.text().set(cell.get_value<long long>());
                             }
                             else
                             {
-                                value_node.text().set(cell.get_value().as<double>());
+                                std::stringstream ss;
+                                ss.precision(20);
+                                ss << cell.get_value<long double>();
+                                ss.str();
+                                value_node.text().set(ss.str().c_str());
                             }
                         }
                     }

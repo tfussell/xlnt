@@ -59,7 +59,7 @@ range_reference range_reference::make_offset(column_t column_offset, row_t row_o
 
 row_t range_reference::get_height() const
 {
-    return bottom_right_.get_row_index() - top_left_.get_row_index();
+    return bottom_right_.get_row() - top_left_.get_row();
 }
 
 column_t range_reference::get_width() const

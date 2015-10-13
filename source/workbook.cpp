@@ -556,9 +556,9 @@ bool workbook::save(const std::string &filename)
         {
             for(auto cell : row)
             {
-                if(cell.get_value().is(value::type::string))
+                if(cell.get_data_type() == cell::type::string)
                 {
-                    shared_strings_set.insert(cell.get_value().get<std::string>());
+                    shared_strings_set.insert(cell.get_value<std::string>());
                 }
             }
         }
@@ -693,5 +693,35 @@ std::size_t workbook::index_from_ws_filename(const std::string &ws_filename)
 	auto sheet_index = std::stoi(sheet_index_string) - 1;
 	return sheet_index;
 }
+    
+    void workbook::add_border(xlnt::border b)
+    {
+        
+    }
+    
+    void workbook::add_alignment(xlnt::alignment a)
+    {
+        
+    }
+    
+    void workbook::add_protection(xlnt::protection p)
+    {
+        
+    }
+    
+    void workbook::add_number_format(const std::string &format)
+    {
+        
+    }
+    
+    void workbook::add_fill(xlnt::fill &f)
+    {
+        
+    }
+    
+    void workbook::add_font(xlnt::font f)
+    {
+        
+    }
 
 }

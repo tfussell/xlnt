@@ -30,6 +30,9 @@ namespace xlnt {
     
 class string_table_builder;
     
+/// <summary>
+/// Encapsulates a table of strings used for reading and writing sharedStrings.xml.
+/// </summary>
 class string_table
 {
 public:
@@ -39,6 +42,9 @@ private:
     std::vector<std::string> strings_;
 };
 
+/// <summary>
+/// Provides a simple interface for using string_table.
+/// </summary>
 class string_table_builder
 {
 public:

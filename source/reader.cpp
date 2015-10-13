@@ -3,7 +3,6 @@
 
 #include <xlnt/reader/reader.hpp>
 #include <xlnt/cell/cell.hpp>
-#include <xlnt/cell/value.hpp>
 #include <xlnt/common/datetime.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/workbook/workbook.hpp>
@@ -318,7 +317,7 @@ void read_worksheet_common(worksheet ws, const pugi::xml_node &root_node, const 
                 }
                 else if(has_type && type == "b") // boolean
                 {
-                    ws.get_cell(address).set_value(value(value_string != "0"));
+                    ws.get_cell(address).set_value(value_string != "0");
                 }
                 else if(has_type && type == "str")
                 {
@@ -328,7 +327,7 @@ void read_worksheet_common(worksheet ws, const pugi::xml_node &root_node, const 
                 {
                     try
                     {
-                        ws.get_cell(address).set_value(value(std::stod(value_string)));
+                        ws.get_cell(address).set_value(std::stold(value_string));
                     }
                     catch(std::invalid_argument)
                     {

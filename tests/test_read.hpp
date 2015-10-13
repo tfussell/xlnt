@@ -22,9 +22,9 @@ public:
         TS_ASSERT_DIFFERS(ws, nullptr);
         if(!(ws == nullptr))
         {
-            TS_ASSERT_EQUALS(ws.get_cell("G5").get_value(), "hello");
-            TS_ASSERT_EQUALS(ws.get_cell("D30").get_value(), 30);
-            TS_ASSERT_EQUALS(ws.get_cell("K9").get_value(), 0.09);
+            TS_ASSERT_EQUALS(ws.get_cell("G5").get_value<std::string>(), "hello");
+            TS_ASSERT_EQUALS(ws.get_cell("D30").get_value<int>(), 30);
+            TS_ASSERT_EQUALS(ws.get_cell("K9").get_value<double>(), 0.09);
         }
     }
     
@@ -52,10 +52,10 @@ public:
         auto wb = standard_workbook();
         auto sheet2 = wb.get_sheet_by_name("Sheet2 - Numbers");
         TS_ASSERT_DIFFERS(sheet2, nullptr);
-        TS_ASSERT_EQUALS("This is cell G5", sheet2.get_cell("G5").get_value());
-        TS_ASSERT_EQUALS(18, sheet2.get_cell("D18").get_value());
-        TS_ASSERT_EQUALS(true, sheet2.get_cell("G9").get_value());
-        TS_ASSERT_EQUALS(false, sheet2.get_cell("G10").get_value());
+        TS_ASSERT_EQUALS("This is cell G5", sheet2.get_cell("G5").get_value<std::string>());
+        TS_ASSERT_EQUALS(18, sheet2.get_cell("D18").get_value<int>());
+        TS_ASSERT_EQUALS(true, sheet2.get_cell("G9").get_value<bool>());
+        TS_ASSERT_EQUALS(false, sheet2.get_cell("G10").get_value<bool>());
     }
 
     void test_read_nostring_workbook()
@@ -179,9 +179,9 @@ public:
         auto wb_win = date_std_1900();
         auto ws_win = wb_win["Sheet1"];
         xlnt::datetime dt(2011, 10, 31);
-        TS_ASSERT_EQUALS(ws_mac.get_cell("A1").get_value(), dt);
-        TS_ASSERT_EQUALS(ws_win.get_cell("A1").get_value(), dt);
-        TS_ASSERT_EQUALS(ws_mac.get_cell("A1").get_value(), ws_win.get_cell("A1").get_value());
+        TS_ASSERT_EQUALS(ws_mac.get_cell("A1").get_value<xlnt::datetime>(), dt);
+        TS_ASSERT_EQUALS(ws_win.get_cell("A1").get_value<xlnt::datetime>(), dt);
+        TS_ASSERT_EQUALS(ws_mac.get_cell("A1").get_value<xlnt::datetime>(), ws_win.get_cell("A1").get_value<xlnt::datetime>());
     }
     
     void test_repair_central_directory()
@@ -285,17 +285,17 @@ public:
 
         TS_ASSERT(ws.get_formula_attributes().empty());
         TS_ASSERT(ws.get_parent().get_data_only());
-        TS_ASSERT(ws.get_cell("A2").get_value().is(xlnt::value::type::numeric));
-        TS_ASSERT(ws.get_cell("A2").get_value() == 12345);
+        TS_ASSERT(ws.get_cell("A2").get_data_type() == xlnt::cell::type::numeric);
+        TS_ASSERT(ws.get_cell("A2").get_value<int>() == 12345);
         TS_ASSERT(!ws.get_cell("A2").has_formula());
-        TS_ASSERT(ws.get_cell("A3").get_value().is(xlnt::value::type::numeric));
-        TS_ASSERT(ws.get_cell("A3").get_value() == 12345);
+        TS_ASSERT(ws.get_cell("A3").get_data_type() == xlnt::cell::type::numeric);
+        TS_ASSERT(ws.get_cell("A3").get_value<int>() == 12345);
         TS_ASSERT(!ws.get_cell("A3").has_formula());
-        TS_ASSERT(ws.get_cell("A4").get_value().is(xlnt::value::type::numeric));
-        TS_ASSERT(ws.get_cell("A4").get_value() == 24690);
+        TS_ASSERT(ws.get_cell("A4").get_data_type() == xlnt::cell::type::numeric);
+        TS_ASSERT(ws.get_cell("A4").get_value<int>() == 24690);
         TS_ASSERT(!ws.get_cell("A4").has_formula());
-        TS_ASSERT(ws.get_cell("A5").get_value().is(xlnt::value::type::numeric));
-        TS_ASSERT(ws.get_cell("A5").get_value() == 49380);
+        TS_ASSERT(ws.get_cell("A5").get_data_type() == xlnt::cell::type::numeric);
+        TS_ASSERT(ws.get_cell("A5").get_value<int>() == 49380);
         TS_ASSERT(!ws.get_cell("A5").has_formula());
     }
     
@@ -437,8 +437,8 @@ public:
     void test_guess_types()
     {
         bool guess;
-        xlnt::value::type dtype;
-        std::vector<std::pair<bool, xlnt::value::type>> test_cases = {{true, xlnt::value::type::numeric}, {false, xlnt::value::type::string}};
+        xlnt::cell::type dtype;
+        std::vector<std::pair<bool, xlnt::cell::type>> test_cases = {{true, xlnt::cell::type::numeric}, {false, xlnt::cell::type::string}};
         
         for(const auto &expected : test_cases)
         {
@@ -446,7 +446,7 @@ public:
             auto path = PathHelper::GetDataDirectory("/genuine/guess_types.xlsx");
             auto wb = xlnt::reader::load_workbook(path, guess);
             auto ws = wb.get_active_sheet();
-            TS_ASSERT(ws.get_cell("D2").get_value().is(dtype));
+            TS_ASSERT(ws.get_cell("D2").get_data_type() == dtype);
         }
     }
     

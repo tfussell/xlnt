@@ -44,11 +44,12 @@ public:
     font get_font() const;
     void set_font(font font);
     
-    fill get_fill() const;
-    void set_fill(fill fill);
+    fill &get_fill();
+    const fill &get_fill() const;
+    void set_fill(fill &fill);
     
-    borders get_borders() const;
-    void set_borders(borders borders);
+    border get_border() const;
+    void set_border(border borders);
     
     alignment get_alignment() const;
     void set_alignment(alignment alignment);
@@ -60,14 +61,22 @@ public:
     protection get_protection() const;
     void set_protection(protection protection);
     
+    bool pivot_button() const;
+    void set_pivot_button(bool pivot);
+    
+    bool quote_prefix() const;
+    void set_quote_prefix(bool quote);
+    
 private:
     bool static_ = false;
     font font_;
     fill fill_;
-    borders borders_;
+    border border_;
     alignment alignment_;
     number_format number_format_;
     protection protection_;
+    bool pivot_button_;
+    bool quote_prefix_;
 };
 
 } // namespace xlnt
