@@ -514,7 +514,7 @@ public:
     void test_positioning_point()
     {
         xlnt::worksheet ws(wb_);
-        TS_ASSERT_EQUALS(ws.get_point_pos(40, 150), "C3");
+        TS_ASSERT_EQUALS(ws.get_point_pos(150, 40), "C3");
     }
     
     void test_positioning_roundtrip()
@@ -552,6 +552,10 @@ public:
     void test_max_column()
     {
         xlnt::worksheet ws(wb_);
+        ws[xlnt::cell_reference("F1")].set_value(10);
+        ws[xlnt::cell_reference("F2")].set_value(32);
+        ws[xlnt::cell_reference("F3")].set_formula("=F1+F2");
+        ws[xlnt::cell_reference("A4")].set_formula("=A1+A2+A3");
         TS_ASSERT_EQUALS(ws.get_highest_column(), 6);
     }
 
@@ -564,6 +568,10 @@ public:
     void test_max_row()
     {
         xlnt::worksheet ws(wb_);
+        ws.append();
+        ws.append(std::vector<int> { 5 });
+        ws.append();
+        ws.append(std::vector<int> { 4 });
         TS_ASSERT_EQUALS(ws.get_highest_row(), 4);
     }
     

@@ -374,7 +374,7 @@ public:
         ws.get_parent().add_font(font);
     
         auto cell = xlnt::cell(ws, "A1");
-        TS_ASSERT(cell.get_font() == font);
+        TS_ASSERT_EQUALS(cell.get_font(), font);
     }
     
     void test_fill()

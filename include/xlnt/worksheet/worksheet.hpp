@@ -278,6 +278,7 @@ public:
     // extents
     row_t get_lowest_row() const;
     row_t get_highest_row() const;
+    row_t get_next_row() const;
     column_t get_lowest_column() const;
     column_t get_highest_column() const;
     range_reference calculate_dimension() const;
@@ -297,6 +298,7 @@ public:
     std::vector<range_reference> get_merged_ranges() const;
     
     // append
+    void append();
     void append(const std::vector<std::string> &cells);
     void append(const std::vector<int> &cells);
     void append(const std::vector<date> &cells);

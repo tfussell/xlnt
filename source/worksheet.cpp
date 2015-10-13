@@ -412,7 +412,23 @@ void worksheet::unmerge_cells(column_t start_column, row_t start_row, column_t e
     unmerge_cells(xlnt::range_reference(start_column, start_row, end_column, end_row));
 }
 
+void worksheet::append()
+{
+    get_cell(cell_reference(1, get_next_row()));
+}
+
 void worksheet::append(const std::vector<std::string> &cells)
+{
+    xlnt::cell_reference next(1, get_next_row());
+    
+    for(auto cell : cells)
+    {
+        get_cell(next).set_value(cell);
+        next.set_column_index(next.get_column_index() + 1);
+    }
+}
+    
+row_t worksheet::get_next_row() const
 {
     int row = get_highest_row() + 1;
     
@@ -421,51 +437,46 @@ void worksheet::append(const std::vector<std::string> &cells)
         row = 1;
     }
     
-    int column = 1;
-    
-    for(auto cell : cells)
-    {
-        get_cell(cell_reference(column++, row)).set_value(cell);
-    }
+    return row;
 }
 
 void worksheet::append(const std::vector<int> &cells)
 {
-    int row = get_highest_row();
-    int column = 1;
+    xlnt::cell_reference next(1, get_next_row());
     
     for(auto cell : cells)
     {
-        get_cell(cell_reference(column++, row)).set_value(cell);
+        get_cell(next).set_value(cell);
+        next.set_column_index(next.get_column_index() + 1);
     }
 }
 
 void worksheet::append(const std::vector<date> &cells)
 {
-    int row = get_highest_row();
-    int column = 1;
+    xlnt::cell_reference next(1, get_next_row());
     
     for(auto cell : cells)
     {
-        get_cell(cell_reference(column++, row)).set_value(cell);
+        get_cell(next).set_value(cell);
+        next.set_column_index(next.get_column_index() + 1);
     }
 }
 
 void worksheet::append(const std::vector<cell> &cells)
 {
-    int row = get_highest_row();
-    int column = 1;
+    xlnt::cell_reference next(1, get_next_row());
     
     for(auto cell : cells)
     {
-        get_cell(cell_reference(column++, row)) = cell;
+        get_cell(next).set_value(cell);
+        next.set_column_index(next.get_column_index() + 1);
     }
 }
     
 void worksheet::append(const std::unordered_map<std::string, std::string> &cells)
 {
-    int row = get_highest_row();
-
+    auto row = get_next_row();
+    
     for(auto cell : cells)
     {
         get_cell(cell_reference(cell.first, row)).set_value(cell.second);
@@ -474,8 +485,8 @@ void worksheet::append(const std::unordered_map<std::string, std::string> &cells
 
 void worksheet::append(const std::unordered_map<int, std::string> &cells)
 {
-    int row = get_highest_row();
-
+    auto row = get_next_row();
+    
     for(auto cell : cells)
     {
         get_cell(cell_reference(cell.first, row)).set_value(cell.second);
@@ -484,12 +495,12 @@ void worksheet::append(const std::unordered_map<int, std::string> &cells)
     
 void worksheet::append(const std::vector<int>::const_iterator begin, const std::vector<int>::const_iterator end)
 {
-    int row = get_highest_row();
-    int column = 1;
+    xlnt::cell_reference next(1, get_next_row());
 
     for(auto i = begin; i != end; i++)
     {
-        get_cell(cell_reference(column++, row)).set_value(*i);
+        get_cell(next).set_value(*i);
+        next.set_column_index(next.get_column_index() + 1);
     }
 }
 

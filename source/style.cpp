@@ -16,22 +16,22 @@ void style::set_number_format(xlnt::number_format format)
     number_format_ = format;
 }
 
-border style::get_border() const
+border &style::get_border()
 {
     return border_;
 }
 
-bool style::pivot_button() const
+bool style::pivot_button()
 {
     return pivot_button_;
 }
 
-bool style::quote_prefix() const
+bool style::quote_prefix()
 {
     return quote_prefix_;
 }
 
-alignment style::get_alignment() const
+alignment &style::get_alignment()
 {
     return alignment_;
 }
@@ -46,12 +46,12 @@ const fill &style::get_fill() const
     return fill_;
 }
 
-font style::get_font() const
+font &style::get_font()
 {
     return font_;
 }
 
-protection style::get_protection() const
+protection &style::get_protection()
 {
     return protection_;
 }

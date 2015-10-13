@@ -92,6 +92,7 @@ public:
     // characteristics
     bool garbage_collectible() const;
     bool is_date() const;
+    std::size_t get_xf_index() const;
     
     // position
     cell_reference get_reference() const;
@@ -110,16 +111,24 @@ public:
     style &get_style();
     const style &get_style() const;
     void set_style(const style &s);
+    
+    // style shortcuts
+    std::string get_number_format();
     std::string get_number_format() const;
     void set_number_format(const std::string &format_code);
-    std::size_t get_xf_index() const;
-    font get_font() const;
+    font &get_font();
+    const font &get_font() const;
     fill &get_fill();
     const fill &get_fill() const;
-    border get_border() const;
-    alignment get_alignment() const;
-    protection get_protection() const;
+    border &get_border();
+    const border &get_border() const;
+    alignment &get_alignment();
+    const alignment &get_alignment() const;
+    protection &get_protection();
+    const protection &get_protection() const;
+    bool pivot_button();
     bool pivot_button() const;
+    bool quote_prefix();
     bool quote_prefix() const;
     
     // comment

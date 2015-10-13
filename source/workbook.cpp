@@ -3,7 +3,6 @@
 #include <fstream>
 #include <set>
 #include <sstream>
-#include <pugixml.hpp>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -22,10 +21,13 @@
 #include <xlnt/writer/style_writer.hpp>
 
 #include "detail/cell_impl.hpp"
+#include "detail/include_pugixml.hpp"
 #include "detail/workbook_impl.hpp"
 #include "detail/worksheet_impl.hpp"
 
-static std::string CreateTemporaryFilename()
+namespace {
+    
+static std::string create_temporary_filename()
 {
 #ifdef _WIN32
     std::array<TCHAR, MAX_PATH> buffer;
@@ -44,6 +46,8 @@ static std::string CreateTemporaryFilename()
     return "/tmp/xlsx.xlnt";
 #endif
 }
+    
+} // namespace
 
 namespace xlnt {
 namespace detail {
@@ -258,30 +262,39 @@ range workbook::get_named_range(const std::string &name)
 
 bool workbook::load(const std::istream &stream)
 {
-    std::string temp_file = CreateTemporaryFilename();
+    std::string temp_file = create_temporary_filename();
     
     std::ofstream tmp;
+    
     tmp.open(temp_file, std::ios::out | std::ios::binary);
     tmp << stream.rdbuf();
     tmp.close();
+    
     load(temp_file);
+    
     std::remove(temp_file.c_str());
+    
     return true;
 }
     
 bool workbook::load(const std::vector<unsigned char> &data)
 {
-    std::string temp_file = CreateTemporaryFilename();
+    std::string temp_file = create_temporary_filename();
 
     std::ofstream tmp;
     tmp.open(temp_file, std::ios::out | std::ios::binary);
+    
     for(auto c : data)
     {
         tmp.put(c);
     }
+    
     tmp.close();
+    
     load(temp_file);
+    
     std::remove(temp_file.c_str());
+    
     return true;
 }
 
@@ -326,12 +339,14 @@ bool workbook::load(const std::string &filename)
     auto sheets_node = root_node.child("sheets");
     
     std::vector<std::string> shared_strings;
+    
     if(f.has_file("xl/sharedStrings.xml"))
     {
         shared_strings = xlnt::reader::read_shared_string(f.read("xl/sharedStrings.xml"));
     }
 
     std::vector<int> number_format_ids;
+    
     if(f.has_file("xl/styles.xml"))
     {
         pugi::xml_document styles_doc;
@@ -526,15 +541,19 @@ void workbook::clear()
 
 bool workbook::save(std::vector<unsigned char> &data)
 {
-    auto temp_file = CreateTemporaryFilename();
+    auto temp_file = create_temporary_filename();
     save(temp_file);
+    
     std::ifstream tmp;
     tmp.open(temp_file, std::ios::in | std::ios::binary);
+    
     auto char_data = std::vector<char>((std::istreambuf_iterator<char>(tmp)),
         std::istreambuf_iterator<char>());
     data = std::vector<unsigned char>(char_data.begin(), char_data.end());
     tmp.close();
+    
     std::remove(temp_file.c_str());
+    
     return true;
 }
 

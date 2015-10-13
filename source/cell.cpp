@@ -16,102 +16,6 @@
 #include "detail/cell_impl.hpp"
 #include "detail/comment_impl.hpp"
 
-namespace {
-
-// return s after checking encoding, size, and illegal characters
-std::string check_string(std::string s)
-{
-    if (s.size() == 0)
-    {
-        return s;
-    }
-
-    // check encoding?
-
-    if (s.size() > 32767)
-    {
-        s = s.substr(0, 32767); // max string length in Excel
-    }
-
-    for (unsigned char c : s)
-    {
-        if (c <= 8 || c == 11 || c == 12 || (c >= 14 && c <= 31))
-        {
-            throw xlnt::illegal_character_error(static_cast<char>(c));
-        }
-    }
-
-    return s;
-}
-
-std::pair<bool, long double> cast_numeric(const std::string &s)
-{
-    const char *str = s.c_str();
-    char *str_end = nullptr;
-    auto result = std::strtold(str, &str_end);
-    if (str_end != str + s.size()) return{ false, 0 };
-    return{ true, result };
-}
-
-std::pair<bool, long double> cast_percentage(const std::string &s)
-{
-    if (s.back() == '%')
-    {
-        auto number = cast_numeric(s.substr(0, s.size() - 1));
-
-        if (number.first)
-        {
-            return{ true, number.second / 100 };
-        }
-    }
-
-    return { false, 0 };
-}
-
-std::pair<bool, xlnt::time> cast_time(const std::string &s)
-{
-    xlnt::time result;
-
-    try
-    {
-        auto last_colon = s.find_last_of(':');
-        if (last_colon == std::string::npos) return { false, result };
-        double seconds = std::stod(s.substr(last_colon + 1));
-        result.second = static_cast<int>(seconds);
-        result.microsecond = static_cast<int>((seconds - static_cast<double>(result.second)) * 1e6);
-
-        auto first_colon = s.find_first_of(':');
-
-        if (first_colon == last_colon)
-        {
-            auto decimal_pos = s.find('.');
-            if (decimal_pos != std::string::npos)
-            {
-                result.minute = std::stoi(s.substr(0, first_colon));
-            }
-            else
-            {
-                result.hour = std::stoi(s.substr(0, first_colon));
-                result.minute = result.second;
-                result.second = 0;
-            }
-        }
-        else
-        {
-            result.hour = std::stoi(s.substr(0, first_colon));
-            result.minute = std::stoi(s.substr(first_colon + 1, last_colon - first_colon - 1));
-        }
-    }
-    catch (std::invalid_argument)
-    {
-        return{ false, result };
-    }
-
-    return { true, result };
-}
-
-} // namespace
-
 namespace xlnt {
     
 const xlnt::color xlnt::color::black(0);
@@ -278,7 +182,7 @@ void cell::set_value(long double d)
 template<>
 void cell::set_value(std::string s)
 {
-    set_value_guess_type(s);
+    d_->set_string(s, get_parent().get_parent().get_guess_types());
 }
 
 template<>
@@ -286,101 +190,39 @@ void cell::set_value(char const *c)
 {
     set_value(std::string(c));
 }
+
+template<>
+void cell::set_value(cell c)
+{
+}
     
 template<>
 void cell::set_value(date d)
 {
-    d_->is_date_ = true;
-    auto code = xlnt::number_format::format::date_yyyymmdd2;
-    auto number_format = xlnt::number_format(code);
-    get_style().set_number_format(number_format);
     auto base_date = get_parent().get_parent().get_properties().excel_base_date;
-    d_->value_numeric_ = d.to_number(base_date);
-    d_->type_ = type::numeric;
+    d_->set_date(d.to_number(base_date), xlnt::number_format::format::date_yyyymmdd2);
 }
 
 template<>
 void cell::set_value(datetime d)
 {
-    d_->is_date_ = true;
-    auto code = xlnt::number_format::format::date_datetime;
-    auto number_format = xlnt::number_format(code);
-    get_style().set_number_format(number_format);
     auto base_date = get_parent().get_parent().get_properties().excel_base_date;
-    d_->value_numeric_ = d.to_number(base_date);
-    d_->type_ = type::numeric;
+    d_->set_date(d.to_number(base_date), xlnt::number_format::format::date_datetime);
 }
 
 template<>
 void cell::set_value(time t)
 {
-    d_->is_date_ = true;
-    auto code = xlnt::number_format::format::date_time6;
-    auto number_format = xlnt::number_format(code);
-    get_style().set_number_format(number_format);
-    d_->value_numeric_ = t.to_number();
-    d_->type_ = type::numeric;
+    d_->set_date(t.to_number(), xlnt::number_format::format::date_time6);
 }
 
 template<>
 void cell::set_value(timedelta t)
 {
-    auto code = xlnt::number_format::format::date_timedelta;
-    auto number_format = xlnt::number_format(code);
-    get_style().set_number_format(number_format);
-    d_->value_numeric_ = t.to_number();
-    d_->type_ = type::numeric;
+    d_->set_date(t.to_number(), xlnt::number_format::format::date_timedelta);
+    d_->is_date_ = false; // a timedelta isn't actually a date, still uses mostly the same code
 }
     
-void cell::set_value_guess_type(const std::string &s)
-{
-    d_->is_date_ = false;
-    auto temp = check_string(s);
-    d_->value_string_ = temp;
-    d_->type_ = type::string;
-    
-    if (temp.size() > 1 && temp.front() == '=')
-    {
-        d_->formula_ = temp;
-        d_->type_ = type::formula;
-        d_->value_string_.clear();
-    }
-    else if(ErrorCodes.find(s) != ErrorCodes.end())
-    {
-        d_->value_string_ = s;
-        d_->type_ = type::error;
-    }
-    else if(get_parent().get_parent().get_guess_types())
-    {
-        auto percentage = cast_percentage(s);
-        
-        if (percentage.first)
-        {
-            d_->value_numeric_ = percentage.second;
-            d_->type_ = type::numeric;
-            get_style().get_number_format().set_format_code(xlnt::number_format::format::percentage);
-        }
-        else
-        {
-            auto time = cast_time(s);
-            
-            if (time.first)
-            {
-                set_value(time.second);
-            }
-            else
-            {
-                auto numeric = cast_numeric(s);
-                
-                if (numeric.first)
-                {
-                    set_value(numeric.second);
-                }
-            }
-        }
-    }
-}
-
 bool cell::has_style() const
 {
     return d_->style_ != nullptr;
@@ -428,22 +270,12 @@ bool cell::operator==(const cell &comparand) const
 
 style &cell::get_style()
 {
-    if(d_->style_ == nullptr)
-    {
-        d_->style_.reset(new style());
-    }
-    
-    return *d_->style_;
+    return d_->get_style(true);
 }
 
 const style &cell::get_style() const
 {
-    if(d_->style_ == nullptr)
-    {
-        d_->style_.reset(new style());
-    }
-    
-    return *d_->style_;
+    return d_->get_style();
 }
     
 void cell::set_style(const xlnt::style &s)
@@ -662,12 +494,17 @@ std::size_t cell::get_xf_index() const
     return d_->xf_index_;
 }
 
+std::string cell::get_number_format()
+{
+    return get_style().get_number_format().get_format_code_string();
+}
+    
 std::string cell::get_number_format() const
 {
     return get_style().get_number_format().get_format_code_string();
 }
 
-font cell::get_font() const
+font &cell::get_font()
 {
     return get_style().get_font();
 }
@@ -682,27 +519,27 @@ const fill &cell::get_fill() const
     return get_style().get_fill();
 }
 
-border cell::get_border() const
+border &cell::get_border()
 {
     return get_style().get_border();
 }
 
-alignment cell::get_alignment() const
+alignment &cell::get_alignment()
 {
     return get_style().get_alignment();
 }
 
-protection cell::get_protection() const
+protection &cell::get_protection()
 {
     return get_style().get_protection();
 }
 
-bool cell::pivot_button() const
+bool cell::pivot_button()
 {
     return get_style().pivot_button();
 }
 
-bool cell::quote_prefix() const
+bool cell::quote_prefix()
 {
     return get_style().quote_prefix();
 }

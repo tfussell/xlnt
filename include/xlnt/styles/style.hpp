@@ -41,30 +41,34 @@ public:
     
     style copy() const;
     
-    font get_font() const;
+    font &get_font();
+    const font &get_font() const;
     void set_font(font font);
     
     fill &get_fill();
     const fill &get_fill() const;
     void set_fill(fill &fill);
     
-    border get_border() const;
+    border &get_border();
+    const border &get_border() const;
     void set_border(border borders);
     
-    alignment get_alignment() const;
+    alignment &get_alignment();
+    const alignment get_alignment() const;
     void set_alignment(alignment alignment);
     
     number_format &get_number_format() { return number_format_; }
     const number_format &get_number_format() const { return number_format_; }
     void set_number_format(number_format number_format);
     
-    protection get_protection() const;
+    protection &get_protection();
+    const protection &get_protection() const;
     void set_protection(protection protection);
     
-    bool pivot_button() const;
+    bool pivot_button();
     void set_pivot_button(bool pivot);
     
-    bool quote_prefix() const;
+    bool quote_prefix();
     void set_quote_prefix(bool quote);
     
 private:
