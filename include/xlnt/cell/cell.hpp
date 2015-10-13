@@ -79,9 +79,7 @@ public:
     bool has_value() const;
     
     template<typename T>
-    T get_value();
-    template<typename T>
-    const T get_value() const;
+    T get_value() const;
     
     void clear_value();
     
@@ -154,6 +152,8 @@ public:
     // operators
     cell &operator=(const cell &rhs);
     
+    std::ostream &print(std::ostream &stream, bool convert) const;
+    
     bool operator==(const cell &comparand) const;
     bool operator==(std::nullptr_t) const;
 
@@ -169,7 +169,7 @@ private:
 
 inline std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)
 {
-    return stream << cell.to_string();
+    return cell.print(stream, true);
 }
     
 } // namespace xlnt

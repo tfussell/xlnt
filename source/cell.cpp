@@ -716,116 +716,149 @@ void cell::clear_value()
 }
 
 template<>
-bool cell::get_value()
+bool cell::get_value() const
 {
     return d_->value_numeric_ != 0;
 }
 
 template<>
-std::int8_t cell::get_value()
+std::int8_t cell::get_value() const
 {
     return static_cast<std::int8_t>(d_->value_numeric_);
 }
 
 template<>
-std::int16_t cell::get_value()
+std::int16_t cell::get_value() const
 {
     return static_cast<std::int16_t>(d_->value_numeric_);
 }
 
 template<>
-std::int32_t cell::get_value()
+std::int32_t cell::get_value() const
 {
     return static_cast<std::int32_t>(d_->value_numeric_);
 }
 
 template<>
-std::int64_t cell::get_value()
+std::int64_t cell::get_value() const
 {
     return static_cast<std::int64_t>(d_->value_numeric_);
 }
 
 template<>
-std::uint8_t cell::get_value()
+std::uint8_t cell::get_value() const
 {
     return static_cast<std::uint8_t>(d_->value_numeric_);
 }
 
 template<>
-std::uint16_t cell::get_value()
+std::uint16_t cell::get_value() const
 {
     return static_cast<std::uint16_t>(d_->value_numeric_);
 }
 
 template<>
-std::uint32_t cell::get_value()
+std::uint32_t cell::get_value() const
 {
     return static_cast<std::uint32_t>(d_->value_numeric_);
 }
 
 template<>
-std::uint64_t cell::get_value()
+std::uint64_t cell::get_value() const
 {
     return static_cast<std::uint64_t>(d_->value_numeric_);
 }
     
 template<>
-float cell::get_value()
+float cell::get_value() const
 {
     return static_cast<float>(d_->value_numeric_);
 }
 
 template<>
-double cell::get_value()
+double cell::get_value() const
 {
     return static_cast<double>(d_->value_numeric_);
 }
 
 template<>
-long double cell::get_value()
+long double cell::get_value() const
 {
     return d_->value_numeric_;
 }
     
 template<>
-time cell::get_value()
+time cell::get_value() const
 {
     return time::from_number(d_->value_numeric_);
 }
 
 template<>
-datetime cell::get_value()
+datetime cell::get_value() const
 {
     return datetime::from_number(d_->value_numeric_, xlnt::calendar::windows_1900);
 }
 
 template<>
-date cell::get_value()
+date cell::get_value() const
 {
     return date::from_number(d_->value_numeric_, xlnt::calendar::windows_1900);
 }
 
 template<>
-timedelta cell::get_value()
+timedelta cell::get_value() const
 {
     return timedelta(0, 0);
     //return timedelta::from_number(d_->value_numeric_);
 }
-    
-    void cell::set_number_format(const std::string &format_string)
+
+void cell::set_number_format(const std::string &format_string)
+{
+    get_style().get_number_format().set_format_code_string(format_string);
+}
+
+template<>
+std::string cell::get_value() const
+{
+    return d_->value_string_;
+}
+
+bool cell::has_value() const
+{
+    return d_->type_ != cell::type::null;
+}
+
+std::ostream &cell::print(std::ostream &stream, bool convert) const
+{
+    if(!convert)
     {
-        get_style().get_number_format().set_format_code_string(format_string);
+        return stream << get_value<std::string>();
     }
-    
-    template<>
-    std::string cell::get_value()
+    else
     {
-        return d_->value_string_;
+        switch(get_data_type())
+        {
+        case type::null:
+            return stream << "";
+        case type::string:
+            return stream << get_value<std::string>();
+        case type::numeric:
+            if(is_date())
+            {
+                return stream << get_value<datetime>().to_string(get_parent().get_parent().get_properties().excel_base_date);
+            }
+            else
+            {
+                return stream << get_value<long double>();
+            }
+        case type::error:
+            return stream << get_value<std::string>();
+        case type::formula:
+            return stream << d_->formula_;
+        default:
+            return stream;
+        }
     }
-    
-    bool cell::has_value() const
-    {
-        return d_->type_ != cell::type::null;
-    }
+}
 
 } // namespace xlnt

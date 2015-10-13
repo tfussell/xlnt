@@ -133,6 +133,7 @@ struct datetime
     {
     }
 
+    std::string to_string(calendar base_date) const;
     long double to_number(calendar base_date) const;
     bool operator==(const datetime &comparand) const;
 
