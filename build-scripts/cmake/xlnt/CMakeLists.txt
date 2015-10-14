@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.9)
 project(xlnt)
 
 include_directories(../../../include)
+include_directories(../../../third-party/miniz)
 include_directories(../../../third-party/pugixml/src)
 
 FILE(GLOB SOURCES ../../../source/*.cpp)

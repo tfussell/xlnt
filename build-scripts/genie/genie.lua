@@ -20,12 +20,16 @@ project "xlnt.test"
        "../../tests/*.hpp",
        "../../tests/runner-autogen.cpp"
     }
-    links { "xlnt" }
+    links { "xlnt", "miniz" }
     prebuildcommands { "../../../third-party/cxxtest/bin/cxxtestgen --runner=ErrorPrinter -o ../../../tests/runner-autogen.cpp ../../../tests/*.hpp" }
     flags { "Unicode" }
     configuration "windows"
         defines { "WIN32" }
 	links { "Shlwapi" }
+    configuration "not windows"
+        buildoptions {
+	    "-std=c++14"
+    }	
 
 project "xlnt"
     kind "StaticLib"
@@ -40,7 +44,29 @@ project "xlnt"
        "../../source/**.cpp",
        "../../source/**.hpp",
        "../../include/xlnt/**.hpp",
-       "../../third-party/pugixml/src/pugixml.cpp",
+       "../../third-party/pugixml/src/pugixml.cpp"
+    }
+    flags { "Unicode" }
+    configuration "Debug"
+        flags { "FatalWarnings" }
+    configuration "windows"
+        defines { 
+	   "WIN32",
+	   "_CRT_SECURE_NO_WARNINGS"
+	}
+    configuration "not windows"
+        buildoptions {
+	    "-std=c++14"
+    }	
+
+project "miniz"
+    kind "StaticLib"
+    language "C"
+    targetdir "../../lib/"
+    includedirs { 
+       "../../third-party/miniz",
+    }
+    files {
        "../../third-party/miniz/miniz.c"
     }
     flags { "Unicode" }

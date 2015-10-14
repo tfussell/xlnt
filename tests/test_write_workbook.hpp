@@ -82,9 +82,9 @@ public:
     void test_write_empty_workbook()
     {
         xlnt::workbook wb;
-        std::string dest_filename = "empty_book.xlsx";
-        xlnt::save_workbook(wb, dest_filename);
-        TS_ASSERT(PathHelper::FileExists(dest_filename));
+        TemporaryFile file;
+        xlnt::save_workbook(wb, file.GetFilename());
+        TS_ASSERT(PathHelper::FileExists(file.GetFilename()));
     }
     
     void test_write_virtual_workbook()

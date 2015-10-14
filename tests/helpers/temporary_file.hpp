@@ -36,12 +36,15 @@ public:
 
     TemporaryFile() : filename_(CreateTemporaryFilename())
     {
-
+        if(PathHelper::FileExists(GetFilename()))
+        {
+            std::remove(filename_.c_str());
+        }
     }
 
     ~TemporaryFile()
     {
-        remove(filename_.c_str());
+        std::remove(filename_.c_str());
     }
 
     std::string GetFilename() const { return filename_; }
