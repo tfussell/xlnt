@@ -4,8 +4,8 @@ import os
 import subprocess
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-if not os.path.isfile('bin/xlnt.test'):
-   subprocess.call('./build')
+subprocess.call('./build')
+
 if os.path.isdir('./bin') and os.path.isfile('./bin/xlnt.test'):
    os.chdir('./bin')
    subprocess.call(['./xlnt.test'])
