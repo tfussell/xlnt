@@ -9,7 +9,18 @@ namespace detail {
 struct workbook_impl
 {
     workbook_impl();
-
+    
+    workbook_impl(const workbook_impl &other) 
+        : active_sheet_index_(other.active_sheet_index_),
+        worksheets_(other.worksheets_), 
+        relationships_(other.relationships_), 
+        drawings_(other.drawings_), 
+        properties_(other.properties_), 
+        guess_types_(other.guess_types_),
+        data_only_(other.data_only_)
+    {
+    }
+    
     workbook_impl &operator=(const workbook_impl &other)
     {
         active_sheet_index_ = other.active_sheet_index_;
@@ -22,24 +33,11 @@ struct workbook_impl
         properties_ = other.properties_;
         guess_types_ = other.guess_types_;
         data_only_ = other.data_only_;
+        
         return *this;
     }
 
-    workbook_impl(const workbook_impl &other) 
-        : active_sheet_index_(other.active_sheet_index_),
-        worksheets_(other.worksheets_), 
-        relationships_(other.relationships_), 
-        drawings_(other.drawings_), 
-        properties_(other.properties_), 
-        guess_types_(other.guess_types_),
-        data_only_(other.data_only_)
-    {
-        
-    }
-
-    //bool guess_types_;
-    //bool data_only_;
-    int active_sheet_index_;
+    std::size_t active_sheet_index_;
     std::vector<worksheet_impl> worksheets_;
     std::vector<relationship> relationships_;
     std::vector<drawing> drawings_;

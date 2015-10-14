@@ -144,17 +144,19 @@ cell_vector range::get_vector(std::size_t vector_index)
 {
     if(order_ == major_order::row)
     {
-        range_reference reference(ref_.get_top_left().get_column_index(), 
-				  ref_.get_top_left().get_row() + (int)vector_index,
-				  ref_.get_bottom_right().get_column_index(), 
-				  ref_.get_top_left().get_row() + (int)vector_index);
-	return cell_vector(ws_, reference, order_);
+        range_reference reference(ref_.get_top_left().get_column_index(),
+            static_cast<row_t>(static_cast<std::size_t>(ref_.get_top_left().get_row()) + vector_index),
+            ref_.get_bottom_right().get_column_index(),
+            static_cast<row_t>(static_cast<std::size_t>(ref_.get_top_left().get_row()) + vector_index));
+        
+        return cell_vector(ws_, reference, order_);
     }
 
-    range_reference reference(ref_.get_top_left().get_column_index() + (int)vector_index, 
+    range_reference reference(static_cast<column_t>(static_cast<std::size_t>(ref_.get_top_left().get_column_index()) + vector_index),
 			      ref_.get_top_left().get_row(),
-			      ref_.get_top_left().get_column_index() + (int)vector_index, 
+			      static_cast<column_t>(static_cast<std::size_t>(ref_.get_top_left().get_column_index()) + vector_index),
 			      ref_.get_bottom_right().get_row());
+    
     return cell_vector(ws_, reference, order_);
 }
 

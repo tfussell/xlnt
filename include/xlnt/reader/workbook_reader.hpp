@@ -23,11 +23,12 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <vector>
+
 namespace xlnt {
+    
+class workbook;
 
-class workbook_reader
-{
-
-};
+xlnt::workbook load_workbook(const std::vector<std::uint8_t> &bytes);
 
 } // namespace xlnt

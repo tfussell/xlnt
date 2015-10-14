@@ -33,20 +33,21 @@
 
 namespace xlnt {
 
+class alignment;
+class border;
+class color;
 class document_properties;
 class drawing;
+class fill;
+class font;
+class named_range;
+class pattern_fill;
+class protection;
 class range;
 class range_reference;
 class relationship;
 class worksheet;
-class alignment;
-class border;
-class fill;
-class pattern_fill;
-class font;
-class protection;
-class color;
-class named_range;
+class zip_file;
     
 enum class encoding;
 
@@ -68,7 +69,6 @@ struct content_type
 class workbook
 {
 public:
-
     class iterator
     {
     public:
@@ -102,6 +102,8 @@ public:
         const workbook &wb_;
         std::size_t index_;
     };
+    
+    static std::size_t index_from_ws_filename(const std::string &filename);
 
     //constructors
     workbook();
@@ -162,6 +164,7 @@ public:
     const document_properties &get_properties() const;
     
     //named ranges
+    std::vector<named_range> get_named_ranges() const;
     void create_named_range(const std::string &name, worksheet worksheet, const range_reference &reference);
     bool has_named_range(const std::string &name) const;
     range get_named_range(const std::string &name);
@@ -173,6 +176,7 @@ public:
     bool load(const std::vector<unsigned char> &data);
     bool load(const std::string &filename);
     bool load(const std::istream &stream);
+    bool load(zip_file &archive);
     
     bool operator==(const workbook &rhs) const;
     
@@ -204,14 +208,10 @@ public:
     
     void set_code_name(const std::string &code_name);
     
-    void add_named_range(const named_range &n);
-    
     bool has_loaded_theme();
     std::string get_loaded_theme();
     
 private:
-	static std::size_t index_from_ws_filename(const std::string &ws_filename);
-
     friend class worksheet;
     std::shared_ptr<detail::workbook_impl> d_;
 };

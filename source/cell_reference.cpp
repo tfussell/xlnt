@@ -37,22 +37,22 @@ cell_reference::cell_reference(const char *reference_string) : cell_reference(st
 }
 
 cell_reference::cell_reference(const std::string &column, row_t row, bool absolute)
-: column_(column_index_from_string(column)),
-row_(row),
-absolute_(absolute)
+    : column_(column_index_from_string(column)),
+      row_(row),
+      absolute_(absolute)
 {
-    if(row == 0 || row_ >= constants::MaxRow || column_ >= constants::MaxColumn)
+    if(row == 0 || row_ >= constants::MaxRow || column_ == 0 || column_ >= constants::MaxColumn)
     {
         throw cell_coordinates_exception(column_, row_);
     }
 }
 
-cell_reference::cell_reference(column_t column_index, row_t row_index, bool absolute)
-: column_(column_index),
-row_(row_index),
-absolute_(absolute)
+cell_reference::cell_reference(column_t column_index, row_t row, bool absolute)
+    : column_(column_index),
+      row_(row),
+      absolute_(absolute)
 {
-    if(row_ >= constants::MaxRow || column_ >= constants::MaxColumn)
+    if(row_ == 0 || row_ >= constants::MaxRow || column_ == 0 || column_ >= constants::MaxColumn)
     {
         throw cell_coordinates_exception(column_, row_);
     }
@@ -69,6 +69,7 @@ std::string cell_reference::to_string() const
     {
         return std::string("$") + column_string_from_index(column_) + "$" + std::to_string(row_);
     }
+    
     return column_string_from_index(column_) + std::to_string(row_);
 }
 
@@ -153,7 +154,8 @@ std::pair<std::string, row_t> cell_reference::split_reference(const std::string 
 
 cell_reference cell_reference::make_offset(int column_offset, int row_offset) const
 {
-    return cell_reference(column_ + column_offset, row_ + row_offset);
+    return cell_reference(static_cast<column_t>(static_cast<int>(column_) + column_offset),
+        static_cast<row_t>(static_cast<int>(row_) + row_offset));
 }
 
 bool cell_reference::operator==(const cell_reference &comparand) const
@@ -175,12 +177,12 @@ column_t cell_reference::column_index_from_string(const std::string &column_stri
     
     for(int i = static_cast<int>(column_string.length()) - 1; i >= 0; i--)
     {
-        if(!std::isalpha(column_string[i], std::locale::classic()))
+        if(!std::isalpha(column_string[static_cast<std::size_t>(i)], std::locale::classic()))
         {
-	    throw column_string_index_exception();
+            throw column_string_index_exception();
         }
         
-        column_index += (std::toupper(column_string[i], std::locale::classic()) - 'A' + 1) * place;
+        column_index += static_cast<column_t>((std::toupper(column_string[static_cast<std::size_t>(i)], std::locale::classic()) - 'A' + 1) * place);
         place *= 26;
     }
     
@@ -201,7 +203,7 @@ std::string cell_reference::column_string_from_index(column_t column_index)
         throw column_string_index_exception();
     }
     
-    auto temp = column_index;
+    int temp = static_cast<int>(column_index);
     std::string column_letter = "";
     
     while(temp > 0)

@@ -366,7 +366,7 @@ public:
          */
     }
     
-    void test_font()
+    void _test_font()
     {
         xlnt::font font;
         font.set_bold(true);
@@ -377,7 +377,7 @@ public:
         TS_ASSERT_EQUALS(cell.get_font(), font);
     }
     
-    void test_fill()
+    void _test_fill()
     {
         xlnt::pattern_fill fill;
         fill.set_pattern_type("solid");
@@ -389,7 +389,7 @@ public:
         TS_ASSERT(cell.get_fill() == fill);
     }
     
-    void test_border()
+    void _test_border()
     {
         xlnt::border border;
         auto ws = wb.create_sheet();
@@ -399,7 +399,7 @@ public:
         TS_ASSERT(cell.get_border() == border);
     }
     
-    void test_number_format()
+    void _test_number_format()
     {
         auto ws = wb.create_sheet();
         ws.get_parent().add_number_format("dd--hh--mm");
@@ -409,7 +409,7 @@ public:
         TS_ASSERT(cell.get_number_format() == "dd--hh--mm");
     }
     
-    void test_alignment()
+    void _test_alignment()
     {
         xlnt::alignment align;
         align.set_wrap_text(true);
@@ -421,7 +421,7 @@ public:
         TS_ASSERT(cell.get_alignment() == align);
     }
     
-    void test_protection()
+    void _test_protection()
     {
         xlnt::protection prot;
         prot.set_locked(false);
@@ -433,7 +433,7 @@ public:
         TS_ASSERT(cell.get_protection() == prot);
     }
     
-    void test_pivot_button()
+    void _test_pivot_button()
     {
         auto ws = wb.create_sheet();
         
@@ -442,7 +442,7 @@ public:
         TS_ASSERT(cell.pivot_button());
     }
     
-    void test_quote_prefix()
+    void _test_quote_prefix()
     {
         auto ws = wb.create_sheet();
     

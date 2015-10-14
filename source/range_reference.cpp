@@ -52,7 +52,7 @@ range_reference::range_reference(column_t column_index_start, row_t row_index_st
 
 }
 
-range_reference range_reference::make_offset(column_t column_offset, row_t row_offset) const
+range_reference range_reference::make_offset(int column_offset, int row_offset) const
 {
     return range_reference(top_left_.make_offset(column_offset, row_offset), bottom_right_.make_offset(column_offset, row_offset));
 }

@@ -123,7 +123,7 @@ time::time(const std::string &time_string) : hour(0), minute(0), second(0), micr
 
 long double time::to_number() const
 {
-    std::size_t microseconds = microsecond;
+    std::size_t microseconds = static_cast<std::size_t>(microsecond);
     microseconds += second * 1e6;
     microseconds += minute * 1e6 * 60;
     microseconds += hour * 1e6 * 60 * 60;
@@ -163,7 +163,7 @@ long double datetime::to_number(calendar base_date) const
         + time(hour, minute, second, microsecond).to_number();
 }
 
-std::string datetime::to_string(xlnt::calendar base_date) const
+std::string datetime::to_string(xlnt::calendar /*base_date*/) const
 {
     return std::to_string(year) + "/" + std::to_string(month) + "/" + std::to_string(day) + " " +std::to_string(hour) + ":" + std::to_string(minute) + ":" + std::to_string(second) + ":" + std::to_string(microsecond);
 }

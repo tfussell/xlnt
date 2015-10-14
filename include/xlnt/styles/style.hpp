@@ -36,7 +36,7 @@ namespace xlnt {
 class style
 {
 public:
-    style(bool static_ = false) : static_(static_) {}
+    style(bool is_static = false) : static_(is_static) {}
     style(const style &rhs);
     
     style copy() const;

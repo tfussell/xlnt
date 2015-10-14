@@ -30,7 +30,13 @@ public:
     
     static comparison_result compare_xml(const std::string &left_contents, const std::string &right_contents)
     {
-        return {difference_type::names_differ,"",""};
+        pugi::xml_document left_doc;
+        left_doc.load(left_contents.c_str());
+        
+        pugi::xml_document right_doc;
+        right_doc.load(right_contents.c_str());
+        
+        return compare_xml(left_doc.root(), right_doc.root());
     }
     
     static comparison_result compare_xml(const pugi::xml_node &left, const pugi::xml_node &right)

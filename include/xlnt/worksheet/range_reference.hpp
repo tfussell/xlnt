@@ -49,7 +49,7 @@ public:
     cell_reference &get_top_left() { return top_left_; }
     cell_reference &get_bottom_right() { return bottom_right_; }
 
-    range_reference make_offset(column_t column_offset, row_t row_offset) const;
+    range_reference make_offset(int column_offset, int row_offset) const;
 
     std::string to_string() const;
 

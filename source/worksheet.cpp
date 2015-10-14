@@ -1,13 +1,14 @@
 #include <algorithm>
 
-#include <xlnt/worksheet/worksheet.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/common/datetime.hpp>
+#include <xlnt/common/exceptions.hpp>
+#include <xlnt/common/relationship.hpp>
+#include <xlnt/workbook/named_range.hpp>
+#include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
-#include <xlnt/common/relationship.hpp>
-#include <xlnt/workbook/workbook.hpp>
-#include <xlnt/common/exceptions.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
 
 #include "detail/worksheet_impl.hpp"
 
@@ -52,7 +53,9 @@ std::string worksheet::unique_sheet_name(const std::string &value) const
 
 void worksheet::create_named_range(const std::string &name, const range_reference &reference)
 {
-    d_->named_ranges_[name] = reference;
+    std::vector<named_range::target> targets;
+    targets.push_back({*this, reference});
+    d_->named_ranges_[name] = named_range(name, targets);
 }
 
 range worksheet::operator()(const xlnt::cell_reference &top_left, const xlnt::cell_reference &bottom_right)
@@ -97,7 +100,7 @@ bool worksheet::has_auto_filter() const
 
 void worksheet::unset_auto_filter()
 {
-    d_->auto_filter_ = range_reference(0, 0, 0, 0);
+    d_->auto_filter_ = range_reference(1, 1, 1, 1);
 }
 
 page_setup &worksheet::get_page_setup()
@@ -242,7 +245,7 @@ range worksheet::get_named_range(const std::string &name)
         throw named_range_exception();
     }
     
-    return get_range(d_->named_ranges_[name]);
+    return get_range(d_->named_ranges_[name].get_targets()[0].second);
 }
 
 column_t worksheet::get_lowest_column() const
@@ -311,11 +314,11 @@ column_t worksheet::get_highest_column() const
 
 range_reference worksheet::calculate_dimension() const
 {
-    int lowest_column = get_lowest_column();
-    int lowest_row = get_lowest_row();
+    auto lowest_column = get_lowest_column();
+    auto lowest_row = get_lowest_row();
     
-    int highest_column = get_highest_column();
-    int highest_row = get_highest_row();
+    auto highest_column = get_highest_column();
+    auto highest_row = get_highest_row();
     
     return range_reference(lowest_column, lowest_row, highest_column, highest_row);
 }
@@ -430,7 +433,7 @@ void worksheet::append(const std::vector<std::string> &cells)
     
 row_t worksheet::get_next_row() const
 {
-    int row = get_highest_row() + 1;
+    auto row = get_highest_row() + 1;
     
     if(row == 2 && d_->cell_map_.size() == 0)
     {
@@ -489,7 +492,7 @@ void worksheet::append(const std::unordered_map<int, std::string> &cells)
     
     for(auto cell : cells)
     {
-        get_cell(cell_reference(cell.first, row)).set_value(cell.second);
+        get_cell(cell_reference(static_cast<column_t>(cell.first), row)).set_value(cell.second);
     }
 }
     

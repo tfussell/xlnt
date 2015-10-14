@@ -98,7 +98,10 @@ public:
     
     bool operator==(const border &other) const
     {
-        return start.value == other.start.value;
+        return start.value == other.start.value
+        && outline == other.outline
+        && diagonal_up == other.diagonal_up
+        && diagonal_down == other.diagonal_down;
     }
 };
 

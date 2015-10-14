@@ -77,15 +77,19 @@ public:
     {
         xlnt::workbook wb;
         wb.clear();
+        
         std::vector<std::string> names = {"NewSheet", "NewSheet1", "NewSheet2", "NewSheet3", "NewSheet4", "NewSheet5"};
-        for(int count = 0; count < names.size(); count++)
+        
+        for(std::size_t count = 0; count < names.size(); count++)
         {
             wb.create_sheet(names[count]);
         }
+        
         auto actual_names = wb.get_sheet_names();
         std::sort(actual_names.begin(), actual_names.end());
         std::sort(names.begin(), names.end());
-        for(int count = 0; count < names.size(); count++)
+        
+        for(std::size_t count = 0; count < names.size(); count++)
         {
             TS_ASSERT_EQUALS(actual_names[count], names[count]);
         }

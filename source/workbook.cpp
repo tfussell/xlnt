@@ -14,10 +14,13 @@
 #include <xlnt/drawing/drawing.hpp>
 #include <xlnt/reader/reader.hpp>
 #include <xlnt/workbook/document_properties.hpp>
+#include <xlnt/workbook/named_range.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 #include <xlnt/writer/style_writer.hpp>
+#include <xlnt/writer/manifest_writer.hpp>
+#include <xlnt/writer/worksheet_writer.hpp>
 #include <xlnt/writer/workbook_writer.hpp>
 #include <xlnt/writer/writer.hpp>
 
@@ -280,23 +283,9 @@ bool workbook::load(const std::istream &stream)
     
 bool workbook::load(const std::vector<unsigned char> &data)
 {
-    std::string temp_file = create_temporary_filename();
-
-    std::ofstream tmp;
-    tmp.open(temp_file, std::ios::out | std::ios::binary);
-    
-    for(auto c : data)
-    {
-        tmp.put(c);
-    }
-    
-    tmp.close();
-    
-    load(temp_file);
-    
-    std::remove(temp_file.c_str());
-    
-    return true;
+    xlnt::zip_file archive;
+    archive.load(data);
+    return load(archive);
 }
 
 bool workbook::load(const std::string &filename)
@@ -311,18 +300,23 @@ bool workbook::load(const std::string &filename)
     {
         throw invalid_file_exception(filename);
     }
-
-    auto content_types = reader::read_content_types(f);
+    
+    return load(f);
+}
+    
+bool workbook::load(xlnt::zip_file &archive)
+{
+    auto content_types = reader::read_content_types(archive);
     auto type = reader::determine_document_type(content_types);
 
     if(type != "excel")
     {
-        throw invalid_file_exception(filename);
+        throw invalid_file_exception("");
     }
     
     clear();
     
-    auto workbook_relationships = reader::read_relationships(f, "xl/workbook.xml");
+    auto workbook_relationships = reader::read_relationships(archive, "xl/workbook.xml");
 
     for(auto relationship : workbook_relationships)
     {
@@ -330,7 +324,7 @@ bool workbook::load(const std::string &filename)
     }
     
     pugi::xml_document doc;
-    doc.load(f.read("xl/workbook.xml").c_str());
+    doc.load(archive.read("xl/workbook.xml").c_str());
     
     auto root_node = doc.child("workbook");
     
@@ -341,17 +335,17 @@ bool workbook::load(const std::string &filename)
     
     std::vector<std::string> shared_strings;
     
-    if(f.has_file("xl/sharedStrings.xml"))
+    if(archive.has_file("xl/sharedStrings.xml"))
     {
-        shared_strings = xlnt::reader::read_shared_string(f.read("xl/sharedStrings.xml"));
+        shared_strings = xlnt::reader::read_shared_string(archive.read("xl/sharedStrings.xml"));
     }
 
     std::vector<int> number_format_ids;
     
-    if(f.has_file("xl/styles.xml"))
+    if(archive.has_file("xl/styles.xml"))
     {
         pugi::xml_document styles_doc;
-        styles_doc.load(f.read("xl/styles.xml").c_str());
+        styles_doc.load(archive.read("xl/styles.xml").c_str());
         auto stylesheet_node = styles_doc.child("styleSheet");
         auto cell_xfs_node = stylesheet_node.child("cellXfs");
 
@@ -365,7 +359,7 @@ bool workbook::load(const std::string &filename)
     {
 		std::string rel_id = sheet_node.attribute("r:id").as_string();
 		auto rel = std::find_if(d_->relationships_.begin(), d_->relationships_.end(),
-			[&](relationship &rel) { return rel.get_id() == rel_id; });
+			[&](relationship &r) { return r.get_id() == rel_id; });
 
 		if (rel == d_->relationships_.end())
 		{
@@ -375,7 +369,7 @@ bool workbook::load(const std::string &filename)
         auto ws = create_sheet(sheet_node.attribute("name").as_string(), *rel);
         auto sheet_filename = rel->get_target_uri();
 
-        xlnt::reader::read_worksheet(ws, f.read(sheet_filename).c_str(), shared_strings, number_format_ids);
+        xlnt::reader::read_worksheet(ws, archive.read(sheet_filename).c_str(), shared_strings, number_format_ids);
     }
 
     return true;
@@ -435,6 +429,21 @@ worksheet workbook::create_sheet(std::size_t index)
     return worksheet(&d_->worksheets_[index]);
 }
 
+//TODO: There should be a better way to do this...
+std::size_t workbook::index_from_ws_filename(const std::string &ws_filename)
+{
+    std::string sheet_index_string(ws_filename);
+    sheet_index_string = sheet_index_string.substr(0, sheet_index_string.find('.'));
+    sheet_index_string = sheet_index_string.substr(sheet_index_string.find_last_of('/'));
+    auto iter = sheet_index_string.end();
+    iter--;
+    while (isdigit(*iter)) iter--;
+    auto first_digit = static_cast<std::size_t>(iter - sheet_index_string.begin());
+    sheet_index_string = sheet_index_string.substr(first_digit + 1);
+    auto sheet_index = static_cast<std::size_t>(std::stoll(sheet_index_string) - 1);
+    return sheet_index;
+}
+    
 worksheet workbook::create_sheet(const std::string &title, const relationship &rel)
 {
 	d_->worksheets_.push_back(detail::worksheet_impl(this, title));
@@ -542,72 +551,13 @@ void workbook::clear()
 
 bool workbook::save(std::vector<unsigned char> &data)
 {
-    auto temp_file = create_temporary_filename();
-    save(temp_file);
-    
-    std::ifstream tmp;
-    tmp.open(temp_file, std::ios::in | std::ios::binary);
-    
-    auto char_data = std::vector<char>((std::istreambuf_iterator<char>(tmp)),
-        std::istreambuf_iterator<char>());
-    data = std::vector<unsigned char>(char_data.begin(), char_data.end());
-    tmp.close();
-    
-    std::remove(temp_file.c_str());
-    
+    data = save_virtual_workbook(*this);
     return true;
 }
 
-
 bool workbook::save(const std::string &filename)
 {
-    zip_file f;
-
-	f.writestr("[Content_Types].xml", writer::write_content_types(*this));
-    
-    f.writestr("docProps/app.xml", write_properties_app(*this));
-    f.writestr("docProps/core.xml", writer::write_properties_core(get_properties()));
-    
-    std::set<std::string> shared_strings_set;
-    
-    for(auto ws : *this)
-    {
-        for(auto row : ws.rows())
-        {
-            for(auto cell : row)
-            {
-                if(cell.get_data_type() == cell::type::string)
-                {
-                    shared_strings_set.insert(cell.get_value<std::string>());
-                }
-            }
-        }
-    }
-    
-    std::vector<std::string> shared_strings(shared_strings_set.begin(), shared_strings_set.end());
-    f.writestr("xl/sharedStrings.xml", writer::write_shared_strings(shared_strings));
-    
-    f.writestr("xl/theme/theme1.xml", writer::write_theme());
-    f.writestr("xl/styles.xml", style_writer(*this).write_table());
-    
-    f.writestr("_rels/.rels", write_root_rels(*this));
-    f.writestr("xl/_rels/workbook.xml.rels", write_workbook_rels(*this));
-
-    f.writestr("xl/workbook.xml", write_workbook(*this));
-    
-    for(auto relationship : d_->relationships_)
-    {
-        if(relationship.get_type() == relationship::type::worksheet)
-        {
-			auto sheet_index = index_from_ws_filename(relationship.get_target_uri());
-            auto ws = get_sheet_by_index(sheet_index);
-            f.writestr(relationship.get_target_uri(), writer::write_worksheet(ws, shared_strings));
-        }
-    }
-
-    f.save(filename);
-
-    return true;
+    return save_workbook(*this, filename);
 }
 
 bool workbook::operator==(std::nullptr_t) const
@@ -699,57 +649,38 @@ void workbook::set_data_only(bool data_only)
 {
     d_->data_only_ = data_only;
 }
-
-std::size_t workbook::index_from_ws_filename(const std::string &ws_filename)
-{
-	std::string sheet_index_string(ws_filename);
-	sheet_index_string = sheet_index_string.substr(0, sheet_index_string.find('.'));
-	sheet_index_string = sheet_index_string.substr(sheet_index_string.find_last_of('/'));
-	auto iter = sheet_index_string.end();
-	iter--;
-	while (isdigit(*iter)) iter--;
-	auto first_digit = iter - sheet_index_string.begin();
-	sheet_index_string = sheet_index_string.substr(first_digit + 1);
-	auto sheet_index = std::stoi(sheet_index_string) - 1;
-	return sheet_index;
-}
     
-    void workbook::add_border(xlnt::border b)
+    void workbook::add_border(xlnt::border /*b*/)
     {
         
     }
     
-    void workbook::add_alignment(xlnt::alignment a)
+    void workbook::add_alignment(xlnt::alignment /*a*/)
     {
         
     }
     
-    void workbook::add_protection(xlnt::protection p)
+    void workbook::add_protection(xlnt::protection /*p*/)
     {
         
     }
     
-    void workbook::add_number_format(const std::string &format)
+    void workbook::add_number_format(const std::string &/*format*/)
     {
         
     }
     
-    void workbook::add_fill(xlnt::fill &f)
+    void workbook::add_fill(xlnt::fill &/*f*/)
     {
         
     }
     
-    void workbook::add_font(xlnt::font f)
+    void workbook::add_font(xlnt::font /*f*/)
     {
         
     }
     
-    void workbook::set_code_name(const std::string &code_name)
-    {
-        
-    }
-
-    void workbook::add_named_range(const xlnt::named_range &n)
+    void workbook::set_code_name(const std::string &/*code_name*/)
     {
         
     }
@@ -762,5 +693,20 @@ std::size_t workbook::index_from_ws_filename(const std::string &ws_filename)
     std::string workbook::get_loaded_theme()
     {
         return "";
+    }
+    
+    std::vector<named_range> workbook::get_named_ranges() const
+    {
+        std::vector<named_range> named_ranges;
+        
+        for(auto ws : *this)
+        {
+            for(auto &ws_named_range : ws.d_->named_ranges_)
+            {
+                named_ranges.push_back(ws_named_range.second);
+            }
+        }
+        
+        return named_ranges;
     }
 }

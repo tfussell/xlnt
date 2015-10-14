@@ -15,8 +15,7 @@ namespace xlnt {
 
 struct zip_info
 {
-    std::string filename;
-    struct
+    struct date_time_t
     {
         int year;
         int month;
@@ -24,7 +23,12 @@ struct zip_info
         int hours;
         int minutes;
         int seconds;
-    } date_time;
+    };
+    
+    zip_info();
+    
+    date_time_t date_time;
+    std::string filename;
     std::string comment;
     std::string extra;
     uint16_t create_system;

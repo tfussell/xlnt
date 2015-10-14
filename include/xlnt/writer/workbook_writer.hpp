@@ -50,12 +50,19 @@ public:
 private:
     workbook wb_;
     style_writer style_writer_;
+    std::vector<std::string> shared_strings_;
 };
 
+std::string write_shared_strings(const std::vector<std::string> &string_table);
+std::string write_properties_core(const document_properties &prop);
+std::string write_worksheet_rels(worksheet ws);
+std::string write_theme();
 std::string write_properties_app(const workbook &wb);
 std::string write_root_rels(const workbook &wb);
 std::string write_workbook(const workbook &wb);
 std::string write_workbook_rels(const workbook &wb);
+std::string write_defined_names(const xlnt::workbook &wb);
+    
 bool save_workbook(workbook &wb, const std::string &filename, bool as_template = false);
 std::vector<std::uint8_t> save_virtual_workbook(xlnt::workbook &wb, bool as_template = false);
 

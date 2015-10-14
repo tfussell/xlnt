@@ -25,8 +25,9 @@
 
 namespace xlnt {
 
-struct color
+class color
 {
+public:
     static const color black;
     static const color white;
     static const color red;
@@ -38,12 +39,17 @@ struct color
     static const color yellow;
     static const color darkyellow;
     
-    color(int index)
+    color(int index) : index_(index)
     {
-        this->index = index;
     }
     
-    int index;
+    bool operator==(const color &other) const
+    {
+        return index_ == other.index_;
+    }
+    
+private:
+    int index_;
 };
 
 } // namespace xlnt

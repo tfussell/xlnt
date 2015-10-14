@@ -54,8 +54,8 @@ struct date
     /// </summary>
     static date from_number(int days_since_base_year, calendar base_date);
 
-    date(int year, int month, int day)
-        : year(year), month(month), day(day)
+    date(int year_, int month_, int day_)
+        : year(year_), month(month_), day(day_)
     {
     }
 
@@ -93,8 +93,8 @@ struct time
     /// </summary>
     static time from_number(long double number);
 
-    explicit time(int hour = 0, int minute = 0, int second = 0, int microsecond = 0)
-        : hour(hour), minute(minute), second(second), microsecond(microsecond)
+    explicit time(int hour_ = 0, int minute_ = 0, int second_ = 0, int microsecond_ = 0)
+        : hour(hour_), minute(minute_), second(second_), microsecond(microsecond_)
     {
     }
     explicit time(const std::string &time_string);
@@ -128,8 +128,8 @@ struct datetime
     /// </summary>
     static datetime from_number(long double number, calendar base_date);
 
-    datetime(int year, int month, int day, int hour = 0, int minute = 0, int second = 0, int microsecond = 0)
-        : year(year), month(month), day(day), hour(hour), minute(minute), second(second), microsecond(microsecond)
+    datetime(int year_, int month_, int day_, int hour_ = 0, int minute_ = 0, int second_ = 0, int microsecond_ = 0)
+        : year(year_), month(month_), day(day_), hour(hour_), minute(minute_), second(second_), microsecond(microsecond_)
     {
     }
 
@@ -152,7 +152,12 @@ struct datetime
 /// </summary>
 struct timedelta
 {
-    timedelta(int days, int hours, int minutes = 0, int seconds = 0, int microseconds = 0) : days(days), hours(hours), minutes(minutes), seconds(seconds), microseconds(microseconds)
+    timedelta(int days_, int hours_, int minutes_ = 0, int seconds_ = 0, int microseconds_ = 0)
+    : days(days_),
+      hours(hours_),
+      minutes(minutes_),
+      seconds(seconds_),
+      microseconds(microseconds_)
     {
     }
     

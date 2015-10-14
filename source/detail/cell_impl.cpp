@@ -6,22 +6,50 @@
 namespace xlnt {
 namespace detail {
 
-cell_impl::cell_impl() : parent_(nullptr), type_(cell::type::null),
-    column_(1), row_(1), style_(nullptr), is_merged_(false),
-    is_date_(false), has_hyperlink_(false), xf_index_(0), comment_(nullptr)
+    
+    cell::type type_;
+    
+    worksheet_impl *parent_;
+    
+    column_t column_;
+    row_t row_;
+    
+    std::string value_string_;
+    long double value_numeric_;
+    
+    std::string formula_;
+    
+    bool has_hyperlink_;
+    relationship hyperlink_;
+    
+    bool is_merged_;
+    bool is_date_;
+    
+    std::size_t xf_index_;
+    
+    std::unique_ptr<style> style_;
+    std::unique_ptr<comment_impl> comment_;
+    
+cell_impl::cell_impl() : cell_impl(1, 1)
 {
 }
     
-cell_impl::cell_impl(column_t column, row_t row)
-    : parent_(nullptr), type_(cell::type::null), column_(column), row_(row),
-    style_(nullptr), is_merged_(false), is_date_(false),
-    has_hyperlink_(false), xf_index_(0), comment_(nullptr)
-    {
-    }
+cell_impl::cell_impl(column_t column, row_t row) : cell_impl(nullptr, column, row)
+{
+}
     
 cell_impl::cell_impl(worksheet_impl *parent, column_t column, row_t row)
-    : parent_(parent), type_(cell::type::null), column_(column), row_(row), style_(nullptr),
-    is_merged_(false), is_date_(false), has_hyperlink_(false), xf_index_(0), comment_(nullptr)
+    : type_(cell::type::null),
+      parent_(parent),
+      column_(column),
+      row_(row),
+      value_numeric_(0),
+      has_hyperlink_(false),
+      is_merged_(false),
+      is_date_(false),
+      xf_index_(0),
+      style_(nullptr),
+      comment_(nullptr)
 {
 }
     

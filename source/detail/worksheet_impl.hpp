@@ -61,7 +61,7 @@ struct worksheet_impl
     range_reference auto_filter_;
     margins page_margins_;
     std::vector<range_reference> merged_cells_;
-    std::unordered_map<std::string, range_reference> named_ranges_;
+    std::unordered_map<std::string, named_range> named_ranges_;
     std::size_t comment_count_;
     header_footer header_footer_;
     std::unordered_map<column_t, double> column_dimensions_;

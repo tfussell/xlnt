@@ -1,5 +1,5 @@
-#include <xlnt/cell/comment.hpp>
 #include <xlnt/cell/cell.hpp>
+#include <xlnt/cell/comment.hpp>
 
 #include "detail/comment_impl.hpp"
 
@@ -12,6 +12,8 @@ comment::comment(detail::comment_impl *d) : d_(d)
 comment::comment(cell parent, const std::string &text, const std::string &author) : d_(nullptr)
 {
     d_ = parent.get_comment().d_;
+    d_->text_ = text;
+    d_->author_ = author;
 }
 
 comment::comment() : d_(nullptr)
@@ -31,10 +33,10 @@ std::string comment::get_text() const
 {
     return d_->text_;
 }
-    
-    bool comment::operator==(const xlnt::comment &other) const
-    {
-        return d_ == other.d_;
-    }
+
+bool comment::operator==(const xlnt::comment &other) const
+{
+    return d_ == other.d_;
+}
 
 } // namespace xlnt

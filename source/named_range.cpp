@@ -65,9 +65,27 @@ std::vector<std::pair<std::string, std::string>> split_named_range(const std::st
     return final;
 }
 
-named_range::named_range(const std::string &name, const std::vector<std::pair<worksheet, std::string>> &targets)
+named_range::named_range()
 {
-    
 }
 
+named_range::named_range(const named_range &other)
+{
+    *this = other;
+}
+
+named_range::named_range(const std::string &name, const std::vector<named_range::target> &targets)
+    : name_(name),
+      targets_(targets)
+{
+}
+
+named_range &named_range::operator=(const named_range &other)
+{
+    name_ = other.name_;
+    targets_ = other.targets_;
+    
+    return *this;
+}
+    
 } // namespace xlnt

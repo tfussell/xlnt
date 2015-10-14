@@ -26,11 +26,13 @@ public:
     {
         xlnt::zip_file archive(PathHelper::GetDataDirectory() + "/genuine/empty.xlsx");
         auto content = archive.read("docProps/core.xml");
-        std::vector<std::string> expected_titles = {"Sheet1 - Text", "Sheet2 - Numbers", "Sheet3 - Formulas", "Sheet4 - Dates"};
-        int i = 0;
+        
+        const std::vector<std::string> expected_titles = {"Sheet1 - Text", "Sheet2 - Numbers", "Sheet3 - Formulas", "Sheet4 - Dates"};
+        
+        std::size_t i = 0;
         for(auto sheet : xlnt::reader::read_sheets(archive))
         {
-            TS_ASSERT_EQUALS(sheet.second, expected_titles[i++]);
+            TS_ASSERT_EQUALS(sheet.second, expected_titles.at(i++));
         }
     }
 
@@ -46,11 +48,13 @@ public:
     {
         xlnt::zip_file archive(PathHelper::GetDataDirectory() + "/genuine/empty_libre.xlsx");
         auto content = archive.read("docProps/core.xml");
-        std::vector<std::string> expected_titles = {"Sheet1 - Text", "Sheet2 - Numbers", "Sheet3 - Formulas", "Sheet4 - Dates"};
-        int i = 0;
+        
+        const std::vector<std::string> expected_titles = {"Sheet1 - Text", "Sheet2 - Numbers", "Sheet3 - Formulas", "Sheet4 - Dates"};
+        
+        std::size_t i = 0;
         for(auto sheet : xlnt::reader::read_sheets(archive))
         {
-            TS_ASSERT_EQUALS(sheet.second, expected_titles[i++]);
+            TS_ASSERT_EQUALS(sheet.second, expected_titles.at(i++));
         }
     }
 
@@ -61,7 +65,7 @@ public:
         prop.last_modified_by = "SOMEBODY";
         prop.created = xlnt::datetime(2010, 4, 1, 20, 30, 00);
         prop.modified = xlnt::datetime(2010, 4, 5, 14, 5, 30);
-        auto content = xlnt::writer::write_properties_core(prop);
+        auto content = xlnt::write_properties_core(prop);
         TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/core.xml", content));
     }
 

@@ -1,37 +1,186 @@
 #include <algorithm>
+
 #include <pugixml.hpp>
 
-#include <xlnt/reader/reader.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/common/datetime.hpp>
-#include <xlnt/worksheet/range_reference.hpp>
-#include <xlnt/workbook/workbook.hpp>
-#include <xlnt/worksheet/worksheet.hpp>
-#include <xlnt/workbook/document_properties.hpp>
+#include <xlnt/common/exceptions.hpp>
 #include <xlnt/common/relationship.hpp>
 #include <xlnt/common/zip_file.hpp>
-#include <xlnt/common/exceptions.hpp>
+#include <xlnt/reader/reader.hpp>
+#include <xlnt/workbook/document_properties.hpp>
+#include <xlnt/workbook/workbook.hpp>
+#include <xlnt/worksheet/range_reference.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
 
-namespace xlnt {
-
-const std::string reader::CentralDirectorySignature = "\x50\x4b\x05\x06";
+namespace {
 
 std::string::size_type find_string_in_string(const std::string &string, const std::string &substring)
 {
     std::string::size_type possible_match_index = string.find(substring.at(0));
-
+    
     while(possible_match_index != std::string::npos)
     {
         if(string.substr(possible_match_index, substring.size()) == substring)
         {
             return possible_match_index;
         }
-
+        
         possible_match_index = string.find(substring.at(0), possible_match_index + 1);
     }
-
+    
     return possible_match_index;
 }
+
+xlnt::datetime w3cdtf_to_datetime(const std::string &string)
+{
+    xlnt::datetime result(1900, 1, 1);
+    auto separator_index = string.find('-');
+    result.year = std::stoi(string.substr(0, separator_index));
+    result.month = std::stoi(string.substr(separator_index + 1, string.find('-', separator_index + 1)));
+    separator_index = string.find('-', separator_index + 1);
+    result.day = std::stoi(string.substr(separator_index + 1, string.find('T', separator_index + 1)));
+    separator_index = string.find('T', separator_index + 1);
+    result.hour = std::stoi(string.substr(separator_index + 1, string.find(':', separator_index + 1)));
+    separator_index = string.find(':', separator_index + 1);
+    result.minute = std::stoi(string.substr(separator_index + 1, string.find(':', separator_index + 1)));
+    separator_index = string.find(':', separator_index + 1);
+    result.second = std::stoi(string.substr(separator_index + 1, string.find('Z', separator_index + 1)));
+    return result;
+}
+    
+void read_worksheet_common(xlnt::worksheet ws, const pugi::xml_node &root_node, const std::vector<std::string> &string_table, const std::vector<int> &number_format_ids)
+{
+    auto dimension_node = root_node.child("dimension");
+    std::string dimension = dimension_node.attribute("ref").as_string();
+    auto full_range = xlnt::range_reference(dimension);
+    auto sheet_data_node = root_node.child("sheetData");
+    auto merge_cells_node = root_node.child("mergeCells");
+    
+    if(merge_cells_node != nullptr)
+    {
+        int count = merge_cells_node.attribute("count").as_int();
+        
+        for(auto merge_cell_node : merge_cells_node.children("mergeCell"))
+        {
+            ws.merge_cells(merge_cell_node.attribute("ref").as_string());
+            count--;
+        }
+        
+        if(count != 0)
+        {
+            throw std::runtime_error("mismatch between count and actual number of merged cells");
+        }
+    }
+    
+    for(auto row_node : sheet_data_node.children("row"))
+    {
+        int row_index = row_node.attribute("r").as_int();
+        std::string span_string = row_node.attribute("spans").as_string();
+        auto colon_index = span_string.find(':');
+        
+        column_t min_column = 0;
+        column_t max_column = 0;
+        
+        if(colon_index != std::string::npos)
+        {
+            min_column = static_cast<column_t>(std::stoll(span_string.substr(0, colon_index)));
+            max_column = static_cast<column_t>(std::stoll(span_string.substr(colon_index + 1)));
+        }
+        else
+        {
+            min_column = static_cast<column_t>(full_range.get_top_left().get_column_index() + 1);
+            max_column = static_cast<column_t>(full_range.get_bottom_right().get_column_index() + 1);
+        }
+        
+        for(column_t i = min_column; i < max_column + 1; i++)
+        {
+            std::string address = xlnt::cell_reference::column_string_from_index(i) + std::to_string(row_index);
+            auto cell_node = row_node.find_child_by_attribute("c", "r", address.c_str());
+            
+            if(cell_node != nullptr)
+            {
+                bool has_value = cell_node.child("v") != nullptr;
+                std::string value_string = cell_node.child("v").text().as_string();
+                
+                bool has_type = cell_node.attribute("t") != nullptr;
+                std::string type = cell_node.attribute("t").as_string();
+                
+                bool has_style = cell_node.attribute("s") != nullptr;
+                std::string style = cell_node.attribute("s").as_string();
+                
+                bool has_formula = cell_node.child("f") != nullptr;
+                bool shared_formula = has_formula && cell_node.child("f").attribute("t") != nullptr && std::string(cell_node.child("f").attribute("t").as_string()) == "shared";
+                
+                if(has_formula && !shared_formula && !ws.get_parent().get_data_only())
+                {
+                    std::string formula = cell_node.child("f").text().as_string();
+                    ws.get_cell(address).set_formula(formula);
+                }
+                
+                if(has_type && type == "inlineStr") // inline string
+                {
+                    std::string inline_string = cell_node.child("is").child("t").text().as_string();
+                    ws.get_cell(address).set_value(inline_string);
+                }
+                else if(has_type && type == "s" && !has_formula) // shared string
+                {
+                    auto shared_string_index = std::stoll(value_string);
+                    auto shared_string = string_table.at(static_cast<std::size_t>(shared_string_index));
+                    ws.get_cell(address).set_value(shared_string);
+                }
+                else if(has_type && type == "b") // boolean
+                {
+                    ws.get_cell(address).set_value(value_string != "0");
+                }
+                else if(has_type && type == "str")
+                {
+                    ws.get_cell(address).set_value(value_string);
+                }
+                else if(has_value)
+                {
+                    try
+                    {
+                        ws.get_cell(address).set_value(std::stold(value_string));
+                    }
+                    catch(std::invalid_argument)
+                    {
+                        ws.get_cell(address).set_value(value_string);
+                    }
+                }
+                
+                if(has_style)
+                {
+                    auto number_format_id = number_format_ids.at(static_cast<std::size_t>(std::stoll(style)));
+                    auto format = xlnt::number_format::lookup_format(number_format_id);
+                    
+                    ws.get_cell(address).get_style().get_number_format().set_format_code(format);
+                    
+                    if(format == xlnt::number_format::format::date_xlsx14)
+                    {
+                        auto base_date = ws.get_parent().get_properties().excel_base_date;
+                        auto converted = xlnt::date::from_number(std::stoi(value_string), base_date);
+                        ws.get_cell(address).set_value(converted.to_number(xlnt::calendar::windows_1900));
+                    }
+                }
+            }
+        }
+    }
+    
+    auto auto_filter_node = root_node.child("autoFilter");
+    
+    if(auto_filter_node != nullptr)
+    {
+        xlnt::range_reference ref(auto_filter_node.attribute("ref").as_string());
+        ws.auto_filter(ref);
+    }
+}
+    
+}
+
+namespace xlnt {
+
+const std::string reader::CentralDirectorySignature = "\x50\x4b\x05\x06";
 
 std::string reader::repair_central_directory(const std::string &original)
 {
@@ -83,23 +232,6 @@ std::vector<std::pair<std::string, std::string>> reader::read_sheets(zip_file &a
     }
 
     return sheets;
-}
-
-datetime w3cdtf_to_datetime(const std::string &string)
-{
-    datetime result(1900, 1, 1);
-    auto separator_index = string.find('-');
-    result.year = std::stoi(string.substr(0, separator_index));
-    result.month = std::stoi(string.substr(separator_index + 1, string.find('-', separator_index + 1)));
-    separator_index = string.find('-', separator_index + 1);
-    result.day = std::stoi(string.substr(separator_index + 1, string.find('T', separator_index + 1)));
-    separator_index = string.find('T', separator_index + 1);
-    result.hour = std::stoi(string.substr(separator_index + 1, string.find(':', separator_index + 1)));
-    separator_index = string.find(':', separator_index + 1);
-    result.minute = std::stoi(string.substr(separator_index + 1, string.find(':', separator_index + 1)));
-    separator_index = string.find(':', separator_index + 1);
-    result.second = std::stoi(string.substr(separator_index + 1, string.find('Z', separator_index + 1)));
-    return result;
 }
 
 document_properties reader::read_properties_core(const std::string &xml_string)
@@ -233,133 +365,6 @@ std::string reader::determine_document_type(const std::vector<std::pair<std::str
     }
 
     return "unsupported";
-}
-
-void read_worksheet_common(worksheet ws, const pugi::xml_node &root_node, const std::vector<std::string> &string_table, const std::vector<int> &number_format_ids)
-{
-    auto dimension_node = root_node.child("dimension");
-    std::string dimension = dimension_node.attribute("ref").as_string();
-    auto full_range = xlnt::range_reference(dimension);
-    auto sheet_data_node = root_node.child("sheetData");
-    auto merge_cells_node = root_node.child("mergeCells");
-
-    if(merge_cells_node != nullptr)
-    {
-        int count = merge_cells_node.attribute("count").as_int();
-
-        for(auto merge_cell_node : merge_cells_node.children("mergeCell"))
-        {
-            ws.merge_cells(merge_cell_node.attribute("ref").as_string());
-            count--;
-        }
-
-        if(count != 0)
-        {
-            throw std::runtime_error("mismatch between count and actual number of merged cells");
-        }
-    }
-
-    for(auto row_node : sheet_data_node.children("row"))
-    {
-        int row_index = row_node.attribute("r").as_int();
-        std::string span_string = row_node.attribute("spans").as_string();
-        auto colon_index = span_string.find(':');
-
-        int min_column = 0;
-        int max_column = 0;
-        
-        if(colon_index != std::string::npos)
-        {
-            min_column = std::stoi(span_string.substr(0, colon_index));
-            max_column = std::stoi(span_string.substr(colon_index + 1));
-        }
-        else
-        {
-            min_column = full_range.get_top_left().get_column_index() + 1;
-            max_column = full_range.get_bottom_right().get_column_index() + 1;
-        }
-
-        for(int i = min_column; i < max_column + 1; i++)
-        {
-            std::string address = xlnt::cell_reference::column_string_from_index(i) + std::to_string(row_index);
-            auto cell_node = row_node.find_child_by_attribute("c", "r", address.c_str());
-
-            if(cell_node != nullptr)
-            {
-                bool has_value = cell_node.child("v") != nullptr;
-                std::string value_string = cell_node.child("v").text().as_string();
-
-                bool has_type = cell_node.attribute("t") != nullptr;
-                std::string type = cell_node.attribute("t").as_string();
-
-                bool has_style = cell_node.attribute("s") != nullptr;
-                std::string style = cell_node.attribute("s").as_string();
-
-                bool has_formula = cell_node.child("f") != nullptr;
-                bool shared_formula = has_formula && cell_node.child("f").attribute("t") != nullptr && std::string(cell_node.child("f").attribute("t").as_string()) == "shared";
-
-                if(has_formula && !shared_formula && !ws.get_parent().get_data_only())
-                {
-                    std::string formula = cell_node.child("f").text().as_string();
-                    ws.get_cell(address).set_formula(formula);
-                }
-
-                if(has_type && type == "inlineStr") // inline string
-                {
-                    std::string inline_string = cell_node.child("is").child("t").text().as_string();
-                    ws.get_cell(address).set_value(inline_string);
-                }
-                else if(has_type && type == "s" && !has_formula) // shared string
-                {
-                    auto shared_string_index = std::stoi(value_string);
-                    auto shared_string = string_table.at(shared_string_index);
-                    ws.get_cell(address).set_value(shared_string);
-                }
-                else if(has_type && type == "b") // boolean
-                {
-                    ws.get_cell(address).set_value(value_string != "0");
-                }
-                else if(has_type && type == "str")
-                {
-                    ws.get_cell(address).set_value(value_string);
-                }
-                else if(has_value)
-                {
-                    try
-                    {
-                        ws.get_cell(address).set_value(std::stold(value_string));
-                    }
-                    catch(std::invalid_argument)
-                    {
-                        ws.get_cell(address).set_value(value_string);
-                    }
-                }
-                
-                if(has_style)
-                {
-                    auto number_format_id = number_format_ids.at(std::stoi(style));
-                    auto format = number_format::lookup_format(number_format_id);
-                    
-                    ws.get_cell(address).get_style().get_number_format().set_format_code(format);
-                    
-                    if(format == number_format::format::date_xlsx14)
-                    {
-                        auto base_date = ws.get_parent().get_properties().excel_base_date;
-                        auto converted = date::from_number(std::stoi(value_string), base_date);
-                        ws.get_cell(address).set_value(converted.to_number(calendar::windows_1900));
-                    }
-                }
-            }
-        }
-    }
-
-    auto auto_filter_node = root_node.child("autoFilter");
-
-    if(auto_filter_node != nullptr)
-    {
-        range_reference ref(auto_filter_node.attribute("ref").as_string());
-        ws.auto_filter(ref);
-    }
 }
 
 void reader::fast_parse(worksheet ws, std::istream &xml_source, const std::vector<std::string> &shared_string, const std::vector<style> &/*style_table*/, std::size_t /*color_index*/)

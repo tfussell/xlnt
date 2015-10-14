@@ -1,6 +1,5 @@
 #include "comment_impl.hpp"
 
-
 namespace xlnt {
 namespace detail {
 

@@ -28,8 +28,9 @@ namespace xlnt {
 /// <summary>
 /// Alignment options for use in styles.
 /// </summary>
-struct alignment
+class alignment
 {
+public:
     enum class horizontal_alignment
     {
         general,
@@ -55,7 +56,12 @@ struct alignment
     
     bool operator==(const alignment &other) const
     {
-        return horizontal_ == other.horizontal_;
+        return horizontal_ == other.horizontal_
+        && vertical_ == other.vertical_
+        && text_rotation_ == other.text_rotation_
+        && wrap_text_ == other.wrap_text_
+        && shrink_to_fit_ == other.shrink_to_fit_
+        && indent_ == other.indent_;
     }
     
 private:

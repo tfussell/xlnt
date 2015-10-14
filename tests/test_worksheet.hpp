@@ -3,8 +3,7 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include "pugixml.hpp"
-#include <xlnt/xlnt.hpp>
+#include <xlnt/writer/worksheet_writer.hpp>
 
 class test_worksheet : public CxxTest::TestSuite
 {
@@ -647,7 +646,7 @@ public:
     {
         xlnt::worksheet ws(wb_);
         
-        auto xml_string = xlnt::writer::write_worksheet(ws);
+        auto xml_string = xlnt::write_worksheet(ws);
 
         pugi::xml_document doc;
         doc.load(xml_string.c_str());
@@ -685,7 +684,7 @@ public:
         ws.get_page_margins().set_header(1.5);
         ws.get_page_margins().set_footer(1.5);
         
-        auto xml_string = xlnt::writer::write_worksheet(ws);
+        auto xml_string = xlnt::write_worksheet(ws);
 
         pugi::xml_document doc;
         doc.load(xml_string.c_str());
@@ -745,7 +744,7 @@ public:
         ws.get_cell("A1").set_value("Cell A1");
         ws.get_cell("B1").set_value("Cell B1");
 
-        auto xml_string = xlnt::writer::write_worksheet(ws, string_table);
+        auto xml_string = xlnt::write_worksheet(ws, string_table);
 
         pugi::xml_document doc;
         doc.load(xml_string.c_str());
@@ -756,7 +755,7 @@ public:
         TS_ASSERT(Helper::compare_xml(expected_doc, doc));
 
         ws.merge_cells("A1:B1");
-        xml_string = xlnt::writer::write_worksheet(ws, string_table);
+        xml_string = xlnt::write_worksheet(ws, string_table);
 
         auto expected_string2 = 
         "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
@@ -790,7 +789,7 @@ public:
         TS_ASSERT(Helper::compare_xml(expected_doc, doc));
 
         ws.unmerge_cells("A1:B1");
-        xml_string = xlnt::writer::write_worksheet(ws, string_table);
+        xml_string = xlnt::write_worksheet(ws, string_table);
 
         auto expected_string3 = 
         "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
@@ -833,7 +832,7 @@ public:
         ws.get_page_setup().set_horizontal_centered(true);
         ws.get_page_setup().set_vertical_centered(true);
 
-        auto xml_string = xlnt::writer::write_worksheet(ws);
+        auto xml_string = xlnt::write_worksheet(ws);
 
         pugi::xml_document doc;
         doc.load(xml_string.c_str());
@@ -913,7 +912,7 @@ public:
         pugi::xml_document observed_doc;
         
         expected_doc.load(expected_xml_string.c_str());
-        observed_doc.load(xlnt::writer::write_worksheet(ws, {}, {}).c_str());
+        observed_doc.load(xlnt::write_worksheet(ws, {}, {}).c_str());
         
         TS_ASSERT(Helper::compare_xml(expected_doc, observed_doc));
         
@@ -936,7 +935,7 @@ public:
         "</worksheet>";
         
         expected_doc.load(expected_xml_string.c_str());
-        observed_doc.load(xlnt::writer::write_worksheet(ws, {}, {}).c_str());
+        observed_doc.load(xlnt::write_worksheet(ws, {}, {}).c_str());
         
         TS_ASSERT(Helper::compare_xml(expected_doc, observed_doc));
     }

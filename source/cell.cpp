@@ -194,6 +194,15 @@ void cell::set_value(char const *c)
 template<>
 void cell::set_value(cell c)
 {
+    d_->type_ = c.d_->type_;
+    d_->value_numeric_ = c.d_->value_numeric_;
+    d_->value_string_ = c.d_->value_string_;
+    d_->is_date_ = c.d_->is_date_;
+    d_->hyperlink_ = c.d_->hyperlink_;
+    d_->has_hyperlink_ = c.d_->has_hyperlink_;
+    d_->formula_ = c.d_->formula_;
+    set_style(c.get_style());
+    set_comment(c.get_comment());
 }
     
 template<>
@@ -439,7 +448,7 @@ std::pair<int, int> cell::get_anchor() const
     int left_anchor = 0;
     auto default_width = points_to_pixels(DefaultColumnWidth, 96.0);
 
-    for(int column_index = 1; column_index <= (int)left_columns; column_index++)
+    for(column_t column_index = 1; column_index <= left_columns; column_index++)
     {
         if(column_dimensions.find(column_index) != column_dimensions.end())
         {
@@ -462,9 +471,9 @@ std::pair<int, int> cell::get_anchor() const
 
     for(int row_index = 1; row_index <= (int)top_rows; row_index++)
     {
-        if(row_dimensions.find(row_index) != row_dimensions.end())
+        if(row_dimensions.find(static_cast<row_t>(row_index)) != row_dimensions.end())
         {
-            auto rdh = row_dimensions.at(row_index);
+            auto rdh = row_dimensions.at(static_cast<row_t>(row_index));
 
             if(rdh > 0)
             {
@@ -639,7 +648,7 @@ datetime cell::get_value() const
 template<>
 date cell::get_value() const
 {
-    return date::from_number(d_->value_numeric_, xlnt::calendar::windows_1900);
+    return date::from_number(static_cast<int>(d_->value_numeric_), xlnt::calendar::windows_1900);
 }
 
 template<>

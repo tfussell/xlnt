@@ -28,11 +28,11 @@ std::string check_string(std::string s)
         s = s.substr(0, 32767); // max string length in Excel
     }
     
-    for (unsigned char c : s)
+    for (char c : s)
     {
-        if (c <= 8 || c == 11 || c == 12 || (c >= 14 && c <= 31))
+        if (c>= 0 && (c <= 8 || c == 11 || c == 12 || (c >= 14 && c <= 31)))
         {
-            throw xlnt::illegal_character_error(static_cast<char>(c));
+            throw xlnt::illegal_character_error(c);
         }
     }
     
@@ -200,7 +200,6 @@ struct cell_impl
         }
     }
 
-    
     cell::type type_;
     
     worksheet_impl *parent_;

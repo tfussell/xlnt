@@ -38,7 +38,7 @@ invalid_file_exception::invalid_file_exception(const std::string &filename)
     
 }
 
-cell_coordinates_exception::cell_coordinates_exception(int row, int column)
+cell_coordinates_exception::cell_coordinates_exception(row_t row, column_t column)
     : std::runtime_error(std::string("bad cell coordinates: (") + std::to_string(row) + "," + std::to_string(column) + ")")
 {
 

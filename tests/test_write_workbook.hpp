@@ -4,33 +4,10 @@
 #include <cxxtest/TestSuite.h>
 
 #include <xlnt/common/exceptions.hpp>
+#include <xlnt/reader/workbook_reader.hpp>
 #include <xlnt/writer/workbook_writer.hpp>
 
 #include "helpers/path_helper.hpp"
-
-namespace xlnt {
-
-xlnt::workbook load_workbook(const std::vector<std::uint8_t> &bytes)
-{
-    return xlnt::workbook();
-}
-
-std::string write_workbook_rels(xlnt::workbook &wb)
-{
-    return "";
-}
-
-std::string write_root_rels(xlnt::workbook &wb)
-{
-    return "";
-}
-
-std::string write_defined_names(xlnt::workbook &wb)
-{
-    return "";
-}
-    
-}
 
 class test_write_workbook : public CxxTest::TestSuite
 {
@@ -108,7 +85,7 @@ public:
     {
         xlnt::workbook wb;
         auto content = xlnt::write_workbook(wb);
-        auto filename = "workbook.xml";
+        auto filename = PathHelper::GetDataDirectory("/workbook.xml");
         auto diff = Helper::compare_xml(PathHelper::read_file(filename), content);
         TS_ASSERT(!diff);
     }
@@ -117,8 +94,7 @@ public:
     {
         xlnt::workbook wb;
         auto ws = wb.create_sheet();
-        xlnt::named_range xlrange("test_range", {{ws, "A1:B5"}});
-        wb.add_named_range(xlrange);
+        wb.create_named_range("test_range", ws, "A1:B5");
         auto xml = xlnt::write_defined_names(wb);
         std::string expected =
         "<root>"

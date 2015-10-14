@@ -6,6 +6,6 @@ namespace xlnt {
     
 class workbook;
 
-std::string write_content_types(const workbook &wb, bool as_template);
+std::string write_content_types(const workbook &wb, bool as_template = false);
     
 };

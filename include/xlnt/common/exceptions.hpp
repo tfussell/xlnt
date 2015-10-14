@@ -25,6 +25,8 @@
 #include <stdexcept>
 #include <string>
 
+#include "../common/types.hpp"
+
 namespace xlnt {
 
 /// <summary>
@@ -33,7 +35,7 @@ namespace xlnt {
 class cell_coordinates_exception : public std::runtime_error
 {
 public:
-    cell_coordinates_exception(int row, int column);
+    cell_coordinates_exception(row_t row, column_t column);
     cell_coordinates_exception(const std::string &coord_string);
 };
 
