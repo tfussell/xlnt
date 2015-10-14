@@ -28,6 +28,11 @@ public:
         operator bool() const { return difference == difference_type::equivalent; }
     };
     
+    static comparison_result compare_xml(const std::string &left_contents, const std::string &right_contents)
+    {
+        return {difference_type::names_differ,"",""};
+    }
+    
     static comparison_result compare_xml(const pugi::xml_node &left, const pugi::xml_node &right)
     {
         std::string left_temp = left.name();

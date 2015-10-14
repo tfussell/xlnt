@@ -118,5 +118,13 @@ class attribute_error : public std::runtime_error
 public:
     attribute_error();
 };
-    
+
+class value_error : public std::runtime_error
+{
+public:
+    value_error() : std::runtime_error("")
+    {
+    }
+};
+
 } // namespace xlnt

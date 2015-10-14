@@ -23,11 +23,11 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <string>
+
 namespace xlnt {
 
-class theme_writer
-{
-
-};
+std::string write_theme();
+//void write_theme(const theme &t);
 
 } // namespace xlnt

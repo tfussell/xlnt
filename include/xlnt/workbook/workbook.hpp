@@ -46,6 +46,7 @@ class pattern_fill;
 class font;
 class protection;
 class color;
+class named_range;
     
 enum class encoding;
 
@@ -174,7 +175,18 @@ public:
     bool load(const std::istream &stream);
     
     bool operator==(const workbook &rhs) const;
+    
+    bool operator!=(const workbook &rhs) const
+    {
+        return !(*this == rhs);
+    }
+    
     bool operator==(std::nullptr_t) const;
+    
+    bool operator!=(std::nullptr_t) const
+    {
+        return !(*this == std::nullptr_t{});
+    }
 
 	std::vector<content_type> get_content_types() const;
     
@@ -189,6 +201,13 @@ public:
     void add_protection(protection p);
     void add_color(color c);
     void add_number_format(const std::string &format);
+    
+    void set_code_name(const std::string &code_name);
+    
+    void add_named_range(const named_range &n);
+    
+    bool has_loaded_theme();
+    std::string get_loaded_theme();
     
 private:
 	static std::size_t index_from_ws_filename(const std::string &ws_filename);

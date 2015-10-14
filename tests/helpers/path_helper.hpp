@@ -2,6 +2,8 @@
 
 #include <array>
 #include <fstream>
+#include <string>
+#include <sstream>
 
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
@@ -20,6 +22,15 @@
 class PathHelper
 {
 public:
+    static std::string read_file(const std::string &filename)
+    {
+        std::ifstream f(filename);
+        std::ostringstream ss;
+        ss << f.rdbuf();
+        
+        return ss.str();
+    }
+    
     static std::string WindowsToUniversalPath(const std::string &windows_path)
     {
         std::string fixed;

@@ -38,13 +38,9 @@ class document_properties;
 class writer
 {
 public:
-	static std::string write_content_types(const workbook &wb);
+    static std::string write_content_types(const workbook &wb);
 
-	static std::string write_properties_core(const document_properties &prop);
-
-	static std::string write_properties_app(const workbook &wb);
-
-    static std::string write_workbook(const workbook &wb);
+    static std::string write_properties_core(const document_properties &prop);
 
 	static std::string write_theme();
 
@@ -54,14 +50,7 @@ public:
 		const std::vector<std::string> &string_table = {}, 
 		const std::unordered_map<std::size_t, std::string> &style_table = {});
 
-	static std::string write_root_rels();
-
-    static std::string write_workbook_rels(const workbook &wb);
-
     static std::string write_worksheet_rels(worksheet ws);
-
-private:
-	static std::string write_relationships(const std::vector<relationship> &relationships, const std::string &dir = "");
 };
     
 } // namespace xlnt

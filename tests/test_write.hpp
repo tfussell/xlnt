@@ -41,7 +41,7 @@ public:
     void test_write_workbook_rels()
     {
         xlnt::workbook wb;
-        auto content = xlnt::writer::write_workbook_rels(wb);
+        auto content = xlnt::write_workbook_rels(wb);
 
         TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/workbook.xml.rels", content));
     }
@@ -49,7 +49,7 @@ public:
     void test_write_workbook()
     {
         xlnt::workbook wb;
-        auto content = xlnt::writer::write_workbook(wb);
+        auto content = xlnt::write_workbook(wb);
 
         TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/workbook.xml", content));
     }
@@ -163,7 +163,7 @@ public:
         auto content = xlnt::writer::write_worksheet(ws, {"hello"}, {});
         TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_auto_filter.xml", content));
 
-        content = xlnt::writer::write_workbook(wb);
+        content = xlnt::write_workbook(wb);
         TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/workbook_auto_filter.xml", content));
     }
     

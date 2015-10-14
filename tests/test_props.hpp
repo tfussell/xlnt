@@ -3,7 +3,8 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/xlnt.hpp>
+#include <xlnt/writer/workbook_writer.hpp>
+
 #include "helpers/path_helper.hpp"
 #include "helpers/helper.hpp"
 
@@ -69,7 +70,7 @@ public:
         xlnt::workbook wb;
         wb.create_sheet();
         wb.create_sheet();
-        auto content = xlnt::writer::write_properties_app(wb);
+        auto content = xlnt::write_properties_app(wb);
         TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/app.xml", content));
     }
 };

@@ -8,17 +8,18 @@
 #include <Windows.h>
 #endif
 
-#include <xlnt/workbook/workbook.hpp>
 #include <xlnt/common/exceptions.hpp>
-#include <xlnt/drawing/drawing.hpp>
-#include <xlnt/worksheet/range.hpp>
-#include <xlnt/reader/reader.hpp>
 #include <xlnt/common/relationship.hpp>
-#include <xlnt/worksheet/worksheet.hpp>
-#include <xlnt/writer/writer.hpp>
 #include <xlnt/common/zip_file.hpp>
+#include <xlnt/drawing/drawing.hpp>
+#include <xlnt/reader/reader.hpp>
 #include <xlnt/workbook/document_properties.hpp>
+#include <xlnt/workbook/workbook.hpp>
+#include <xlnt/worksheet/range.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
 #include <xlnt/writer/style_writer.hpp>
+#include <xlnt/writer/workbook_writer.hpp>
+#include <xlnt/writer/writer.hpp>
 
 #include "detail/cell_impl.hpp"
 #include "detail/include_pugixml.hpp"
@@ -564,7 +565,7 @@ bool workbook::save(const std::string &filename)
 
 	f.writestr("[Content_Types].xml", writer::write_content_types(*this));
     
-    f.writestr("docProps/app.xml", writer::write_properties_app(*this));
+    f.writestr("docProps/app.xml", write_properties_app(*this));
     f.writestr("docProps/core.xml", writer::write_properties_core(get_properties()));
     
     std::set<std::string> shared_strings_set;
@@ -589,10 +590,10 @@ bool workbook::save(const std::string &filename)
     f.writestr("xl/theme/theme1.xml", writer::write_theme());
     f.writestr("xl/styles.xml", style_writer(*this).write_table());
     
-    f.writestr("_rels/.rels", writer::write_root_rels());
-    f.writestr("xl/_rels/workbook.xml.rels", writer::write_workbook_rels(*this));
+    f.writestr("_rels/.rels", write_root_rels(*this));
+    f.writestr("xl/_rels/workbook.xml.rels", write_workbook_rels(*this));
 
-    f.writestr("xl/workbook.xml", writer::write_workbook(*this));
+    f.writestr("xl/workbook.xml", write_workbook(*this));
     
     for(auto relationship : d_->relationships_)
     {
@@ -742,5 +743,24 @@ std::size_t workbook::index_from_ws_filename(const std::string &ws_filename)
     {
         
     }
+    
+    void workbook::set_code_name(const std::string &code_name)
+    {
+        
+    }
 
+    void workbook::add_named_range(const xlnt::named_range &n)
+    {
+        
+    }
+    
+    bool workbook::has_loaded_theme()
+    {
+        return false;
+    }
+    
+    std::string workbook::get_loaded_theme()
+    {
+        return "";
+    }
 }

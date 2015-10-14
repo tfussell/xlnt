@@ -699,5 +699,10 @@ cell_reference worksheet::get_point_pos(const std::pair<int, int> &point) const
 {
     return get_point_pos(point.first, point.second);
 }
+    
+void worksheet::set_sheet_state(page_setup::sheet_state state)
+{
+    get_page_setup().set_sheet_state(state);
+}
 
 } // namespace xlnt

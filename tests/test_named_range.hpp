@@ -3,14 +3,38 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/xlnt.hpp>
+#include <xlnt/workbook/named_range.hpp>
 
 class test_named_range : public CxxTest::TestSuite
 {
 public:
     void test_split()
     {
-        /*TS_ASSERT_EQUALS([("My Sheet", "$D$8"), ], split_named_range(""My Sheet"!$D$8"))*/
+        using string_pair = std::pair<std::string, std::string>;
+        using string_pair_vector = std::vector<string_pair>;
+        using expected_pair = std::pair<std::string, string_pair_vector>;
+        
+        std::vector<expected_pair> expected_pairs =
+        {
+            { "'My Sheet'!$D$8", {{ "My Sheet", "$D$8" }} },
+            { "Sheet1!$A$1", {{ "Sheet1", "$A$1" }} },
+            { "[1]Sheet1!$A$1", {{ "[1]Sheet1", "$A$1" }} },
+            { "[1]!B2range", {{ "[1]", "" }} },
+            { "Sheet1!$C$5:$C$7,Sheet1!$C$9:$C$11,Sheet1!$E$5:$E$7,Sheet1!$E$9:$E$11,Sheet1!$D$8",
+                {
+                    { "Sheet1", "$C$5:$C$7" },
+                    { "Sheet1", "$C$9:$C$11" },
+                    { "Sheet1", "$E$5:$E$7" },
+                    { "Sheet1", "$E$9:$E$11" },
+                    { "Sheet1", "$D$8" }
+                }
+            }
+        };
+
+        for(auto pair : expected_pairs)
+        {
+            TS_ASSERT_EQUALS(xlnt::split_named_range(pair.first), pair.second);
+        }
     }
 
     void test_split_no_quotes()

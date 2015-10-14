@@ -50,3 +50,4 @@ const std::string download_url = "https://github.com/tfussell/xlnt/archive/maste
 #include "workbook/document_properties.hpp"
 #include "cell/comment.hpp"
 #include "common/encoding.hpp"
+#include "workbook/named_range.hpp"

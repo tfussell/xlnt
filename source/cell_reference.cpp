@@ -102,13 +102,27 @@ std::pair<std::string, row_t> cell_reference::split_reference(const std::string 
                 throw cell_coordinates_exception(reference_string);
             }
         }
+        else if(character == '$')
+        {
+            if(column_part)
+            {
+                if(column_string.empty())
+                {
+                    column_string.append(1, upper);
+                }
+                else
+                {
+                    column_part = false;
+                }
+            }
+        }
         else
         {
             if(column_part)
             {
                 column_part = false;
             }
-            else if(!(std::isdigit(character, std::locale::classic()) || character == '$'))
+            else if(!std::isdigit(character, std::locale::classic()))
             {
                 throw cell_coordinates_exception(reference_string);
             }
