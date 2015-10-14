@@ -4,7 +4,7 @@ import os
 import shutil
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-dirs = ['./bin', './lib', './build-scripts/cmake/build', './build-scripts/genie/xcode4']
+dirs = ['../bin', '../lib', './cmake/build', './genie/xcode4']
 for dir in dirs:
     if os.path.isdir(dir): shutil.rmtree(dir)
 

@@ -3,5 +3,5 @@
 import os
 import subprocess
 
-os.chdir(os.path.dirname(os.path.abspath(__file__)) + '/build-scripts')
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 subprocess.call(['sh', 'build-osx.sh', 'USE_CMAKE=1'])
