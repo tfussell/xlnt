@@ -49,7 +49,7 @@ xlnt::datetime w3cdtf_to_datetime(const std::string &string)
     return result;
 }
     
-void read_worksheet_common(xlnt::worksheet ws, const pugi::xml_node &root_node, const std::vector<std::string> &string_table, const std::vector<int> &number_format_ids)
+void read_worksheet_common(xlnt::worksheet ws, const pugi::xml_node &root_node, const std::vector<std::string> &string_table, const std::vector<int> &number_format_ids, const std::unordered_map<int, std::string> &custom_number_formats)
 {
     auto dimension_node = root_node.child("dimension");
     std::string dimension = dimension_node.attribute("ref").as_string();
@@ -89,11 +89,11 @@ void read_worksheet_common(xlnt::worksheet ws, const pugi::xml_node &root_node, 
         }
         else
         {
-            min_column = static_cast<column_t>(full_range.get_top_left().get_column_index() + 1);
-            max_column = static_cast<column_t>(full_range.get_bottom_right().get_column_index() + 1);
+            min_column = static_cast<column_t>(full_range.get_top_left().get_column_index());
+            max_column = static_cast<column_t>(full_range.get_bottom_right().get_column_index());
         }
         
-        for(column_t i = min_column; i < max_column + 1; i++)
+        for(column_t i = min_column; i <= max_column; i++)
         {
             std::string address = xlnt::cell_reference::column_string_from_index(i) + std::to_string(row_index);
             auto cell_node = row_node.find_child_by_attribute("c", "r", address.c_str());
@@ -151,16 +151,32 @@ void read_worksheet_common(xlnt::worksheet ws, const pugi::xml_node &root_node, 
                 
                 if(has_style)
                 {
-                    auto number_format_id = number_format_ids.at(static_cast<std::size_t>(std::stoll(style)));
-                    auto format = xlnt::number_format::lookup_format(number_format_id);
-                    
-                    ws.get_cell(address).get_style().get_number_format().set_format_code(format);
-                    
-                    if(format == xlnt::number_format::format::date_xlsx14)
+                    if(number_format_ids.size() > std::stoll(style))
                     {
-                        auto base_date = ws.get_parent().get_properties().excel_base_date;
-                        auto converted = xlnt::date::from_number(std::stoi(value_string), base_date);
-                        ws.get_cell(address).set_value(converted.to_number(xlnt::calendar::windows_1900));
+                        auto number_format_id = number_format_ids.at(static_cast<std::size_t>(std::stoll(style)));
+                        auto format = xlnt::number_format::lookup_format(number_format_id);
+                        
+                        if(format == xlnt::number_format::format::unknown)
+                        {
+                            auto match = custom_number_formats.find(number_format_id);
+                            
+                            if(match != custom_number_formats.end())
+                            {
+                                ws.get_cell(address).get_style().get_number_format().set_format_code_string(match->second, number_format_id);
+                            }
+                        }
+                        else
+                        {
+                            ws.get_cell(address).get_style().get_number_format().set_format_code(format);
+                        }
+                        
+                        //TODO: this is bad
+                        if(ws.get_cell(address).get_style().get_number_format().get_format_code_string().find_first_of("mdyhs") != std::string::npos)
+                        {
+                            auto base_date = ws.get_parent().get_properties().excel_base_date;
+                            auto converted = xlnt::datetime::from_number(std::stold(value_string), base_date);
+                            ws.get_cell(address).set_value(converted.to_number(xlnt::calendar::windows_1900));
+                        }
                     }
                 }
             }
@@ -371,23 +387,23 @@ void reader::fast_parse(worksheet ws, std::istream &xml_source, const std::vecto
 {
     pugi::xml_document doc;
     doc.load(xml_source);
-    read_worksheet_common(ws, doc.child("worksheet"), shared_string, {});
+    read_worksheet_common(ws, doc.child("worksheet"), shared_string, {}, {});
 }
 
-void reader::read_worksheet(worksheet ws, const std::string &xml_string, const std::vector<std::string> &string_table, const std::vector<int> &number_format_ids)
+void reader::read_worksheet(worksheet ws, const std::string &xml_string, const std::vector<std::string> &string_table, const std::vector<int> &number_format_ids, const std::unordered_map<int, std::string> &custom_number_formats)
 {
     pugi::xml_document doc;
     doc.load(xml_string.c_str());
-    read_worksheet_common(ws, doc.child("worksheet"), string_table, number_format_ids);
+    read_worksheet_common(ws, doc.child("worksheet"), string_table, number_format_ids, custom_number_formats);
 }
 
-worksheet xlnt::reader::read_worksheet(std::istream &handle, xlnt::workbook &wb, const std::string &title, const std::vector<std::string> &string_table)
+worksheet xlnt::reader::read_worksheet(std::istream &handle, xlnt::workbook &wb, const std::string &title, const std::vector<std::string> &string_table, const std::unordered_map<int, std::string> &custom_number_formats)
 {
     auto ws = wb.create_sheet();
     ws.set_title(title);
     pugi::xml_document doc;
     doc.load(handle);
-    read_worksheet_common(ws, doc.child("worksheet"), string_table, {});
+    read_worksheet_common(ws, doc.child("worksheet"), string_table, {}, custom_number_formats);
     return ws;
 }
 

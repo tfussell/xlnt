@@ -5,6 +5,7 @@
 #include <cxxtest/TestSuite.h>
 
 #include <xlnt/xlnt.hpp>
+#include <xlnt/reader/reader.hpp>
 
 class test_cell : public CxxTest::TestSuite
 {
@@ -16,7 +17,7 @@ public:
     {
         wb_guess_types.set_guess_types(true);
     }
-
+    
 	void test_infer_numeric()
 	{
 		auto ws = wb_guess_types.create_sheet();
@@ -204,7 +205,7 @@ public:
         
         cell.set_value(xlnt::datetime::today());
         cell.clear_value();
-        TS_ASSERT(cell.is_date());
+        TS_ASSERT(!cell.is_date()); // disagree with openpyxl
         TS_ASSERT(!cell.has_value());
     }
     
@@ -286,7 +287,7 @@ public:
         auto ws = wb[1];
         auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
         
-        TS_ASSERT(cell.to_string() == "<Cell Sheet1.A1>");
+        TS_ASSERT(cell.to_repr() == "<Cell Sheet1.A1>");
     }
     
     void test_comment_assignment()

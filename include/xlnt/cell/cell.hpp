@@ -115,7 +115,7 @@ public:
     // style shortcuts
     std::string get_number_format();
     std::string get_number_format() const;
-    void set_number_format(const std::string &format_code);
+    void set_number_format(const std::string &format_code, int index = -1);
     font &get_font();
     const font &get_font() const;
     fill &get_fill();
@@ -144,6 +144,16 @@ public:
     bool has_formula() const;
 
     // printing
+    
+    /// <summary>
+    /// Returns a string describing this cell like <Cell Sheet.A1>.
+    /// </summary>
+    std::string to_repr() const;
+    
+    /// <summary>
+    /// Returns a string representing the value of this cell. If the data type is not a string,
+    /// it will be converted according to the number format.
+    /// </summary>
     std::string to_string() const;
     
     // merging
@@ -161,8 +171,6 @@ public:
     // operators
     cell &operator=(const cell &rhs);
     
-    std::ostream &print(std::ostream &stream, bool convert) const;
-    
     bool operator==(const cell &comparand) const;
     bool operator==(std::nullptr_t) const;
 
@@ -178,7 +186,7 @@ private:
 
 inline std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)
 {
-    return cell.print(stream, true);
+    return stream << cell.to_string();
 }
     
 } // namespace xlnt

@@ -16,6 +16,361 @@
 #include "detail/cell_impl.hpp"
 #include "detail/comment_impl.hpp"
 
+namespace {
+
+enum class condition_type
+{
+    less_than,
+    less_or_equal,
+    equal,
+    greater_than,
+    greater_or_equal,
+    invalid
+};
+    
+struct section
+{
+    bool has_value = false;
+    std::string value;
+    bool has_color = false;
+    std::string color;
+    bool has_condition = false;
+    condition_type condition = condition_type::invalid;
+    std::string condition_value;
+    
+    section &operator=(const section &other)
+    {
+        has_value = other.has_value;
+        value = other.value;
+        has_color = other.has_color;
+        color = other.color;
+        has_condition = other.has_condition;
+        condition = other.condition;
+        condition_value = other.condition_value;
+        
+        return *this;
+    }
+};
+    
+struct format_sections
+{
+    section first;
+    section second;
+    section third;
+    section fourth;
+};
+
+// copied from named_range.cpp, keep in sync
+/// <summary>
+/// Return a vector containing string split at each delim.
+/// </summary>
+/// <remark>
+/// This should maybe be in a utility header so it can be used elsewhere.
+/// </remarks>
+std::vector<std::string> split_string(const std::string &string, char delim)
+{
+    std::vector<std::string> split;
+    std::string::size_type previous_index = 0;
+    auto separator_index = string.find(delim);
+    
+    while(separator_index != std::string::npos)
+    {
+        auto part = string.substr(previous_index, separator_index - previous_index);
+        split.push_back(part);
+        
+        previous_index = separator_index + 1;
+        separator_index = string.find(delim, previous_index);
+    }
+    
+    split.push_back(string.substr(previous_index));
+    
+    return split;
+}
+
+bool is_valid_color(const std::string &color)
+{
+    static const std::vector<std::string> colors = { "Black", "Green"
+        "White", "Blue", "Magenta", "Yellow", "Cyan", "Red" };
+    return std::find(colors.begin(), colors.end(), color) != colors.end();
+}
+    
+bool parse_condition(const std::string &string, section &s)
+{
+    s.has_condition = false;
+    s.condition = condition_type::invalid;
+    s.condition_value.clear();
+    
+    if(string[0] == '<')
+    {
+        s.has_condition = true;
+        
+        if(string[1] == '=')
+        {
+            s.condition = condition_type::less_or_equal;
+            s.condition_value = string.substr(2);
+        }
+        else
+        {
+            s.condition = condition_type::less_than;
+            s.condition_value = string.substr(1);
+        }
+    }
+    if(string[0] == '>')
+    {
+        s.has_condition = true;
+        
+        if(string[1] == '=')
+        {
+            s.condition = condition_type::greater_or_equal;
+            s.condition_value = string.substr(2);
+        }
+        else
+        {
+            s.condition = condition_type::greater_than;
+            s.condition_value = string.substr(1);
+        }
+    }
+    else if(string[0] == '=')
+    {
+        s.has_condition = true;
+        s.condition = condition_type::equal;
+        s.condition_value = string.substr(1);
+    }
+    
+    return s.has_condition;
+}
+
+section parse_section(const std::string &section_string)
+{
+    std::string intermediate = section_string;
+    
+    section s;
+    std::string first_bracket_part, second_bracket_part;
+    static const std::vector<std::string> bracket_times = { "h", "hh", "m", "mm", "s", "ss" };
+    
+    if(section_string[0] == '[')
+    {
+        auto close_bracket_pos = section_string.find(']');
+        
+        if(close_bracket_pos == std::string::npos)
+        {
+            throw std::runtime_error("missing close bracket");
+        }
+        
+        first_bracket_part = intermediate.substr(1, close_bracket_pos - 1);
+        
+        if(std::find(bracket_times.begin(), bracket_times.end(), first_bracket_part) !=  bracket_times.end())
+        {
+            first_bracket_part.clear();
+        }
+        else
+        {
+            intermediate = intermediate.substr(close_bracket_pos);
+        }
+    }
+    
+    if(!first_bracket_part.empty() && intermediate[0] == '[')
+    {
+        auto close_bracket_pos = section_string.find(']');
+        
+        if(close_bracket_pos == std::string::npos)
+        {
+            throw std::runtime_error("missing close bracket");
+        }
+        
+        second_bracket_part = intermediate.substr(1, close_bracket_pos - 1);
+        
+        if(std::find(bracket_times.begin(), bracket_times.end(), second_bracket_part) !=  bracket_times.end())
+        {
+            second_bracket_part.clear();
+        }
+        else
+        {
+            intermediate = intermediate.substr(close_bracket_pos);
+        }
+    }
+    
+    if(!first_bracket_part.empty())
+    {
+        if(is_valid_color(first_bracket_part))
+        {
+            s.color = first_bracket_part;
+            s.has_color = true;
+        }
+        else if(!parse_condition(first_bracket_part, s))
+        {
+            throw std::runtime_error("invalid condition");
+        }
+    }
+    
+    if(!second_bracket_part.empty())
+    {
+        if(is_valid_color(second_bracket_part))
+        {
+            if(s.has_color)
+            {
+                throw std::runtime_error("two colors in one section");
+            }
+            
+            s.color = second_bracket_part;
+            s.has_color = true;
+        }
+        else if(s.has_condition)
+        {
+            throw std::runtime_error("two conditions in one section");
+        }
+        else if(!parse_condition(second_bracket_part, s))
+        {
+            throw std::runtime_error("invalid condition");
+        }
+    }
+    
+    s.value = intermediate;
+    s.has_value = true;
+    
+    return s;
+}
+    
+format_sections parse_format_sections(const std::string &combined)
+{
+    format_sections result = {};
+    
+    auto split = split_string(combined, ';');
+    
+    if(split.empty())
+    {
+        throw std::runtime_error("empty string");
+    }
+    
+    result.first = parse_section(split[0]);
+    
+    if(!result.first.has_condition)
+    {
+        result.second = result.first;
+        result.third = result.first;
+    }
+    
+    if(split.size() > 1)
+    {
+        result.second = parse_section(split[1]);
+    }
+    
+    if(split.size() > 2)
+    {
+        if(result.first.has_condition && !result.second.has_condition)
+        {
+            throw std::runtime_error("first two sections should have conditions");
+        }
+        
+        result.third = parse_section(split[2]);
+        
+        if(result.third.has_condition)
+        {
+            throw std::runtime_error("third section shouldn't have a condition");
+        }
+    }
+    
+    if(split.size() > 3)
+    {
+        if(result.first.has_condition)
+        {
+            throw std::runtime_error("too many parts");
+        }
+        
+        result.fourth = parse_section(split[3]);
+    }
+    
+    if(split.size() > 4)
+    {
+        throw std::runtime_error("too many parts");
+    }
+    
+    return result;
+}
+
+std::string format_section(long double number, const section &format)
+{
+    if(number == static_cast<long long int>(number))
+    {
+        return std::to_string(static_cast<long long int>(number));
+    }
+    
+    return std::to_string(number);
+}
+
+std::string format_section(const std::string &text, const section &format)
+{
+    auto arobase_index = format.value.find('@');
+    
+    std::string first_part, middle_part, last_part;
+    
+    if(arobase_index != std::string::npos)
+    {
+        first_part = format.value.substr(0, arobase_index);
+        middle_part = text;
+        last_part = format.value.substr(arobase_index + 1);
+    }
+    else
+    {
+        first_part = format.value;
+    }
+    
+    auto unquote = [](std::string &s)
+    {
+        if(!s.empty())
+        {
+            if(s.front() != '"' || s.back() != '"') return false;
+            s = s.substr(0, s.size() - 2);
+        }
+        
+        return true;
+    };
+    
+    if(!unquote(first_part) || !unquote(last_part))
+    {
+        throw std::runtime_error(std::string("additional text must be enclosed in quotes: ") + format.value);
+    }
+    
+    return first_part + middle_part + last_part;
+}
+
+std::string format_number(long double number, const std::string &format)
+{
+    auto sections = parse_format_sections(format);
+    
+    if(number > 0)
+    {
+        return format_section(number, sections.first);
+    }
+    else if(number < 0)
+    {
+        return format_section(number, sections.second);
+    }
+    
+    // number == 0
+    return format_section(number, sections.third);
+}
+
+std::string format_text(const std::string &text, const std::string &format)
+{
+    if(format == "General") return text;
+    auto sections = parse_format_sections(format);
+    return format_section(text, sections.fourth);
+}
+
+bool is_date_format(const std::string &format_string)
+{
+    auto not_in = format_string.find_first_not_of("/-:, mMyYdDhHsS");
+    return not_in == std::string::npos;
+}
+
+const std::string PercentRegex("^\\-?(?P<number>[0-9]*\\.?[0-9]*\\s?)\%$");
+const std::string TimeRegex("^(([0-1]{0,1}[0-9]{2}):([0-5][0-9]):?([0-5][0-9])?$)|"
+                            "^(([0-5][0-9]):([0-5][0-9])?\\.(\\d{1,6}))");
+const std::string NumberRegex("^-?([\\d]|[\\d]+\\.[\\d]*|\\.[\\d]+|[1-9][\\d]+\\.?[\\d]*)((E|e)[-+]?[\\d]+)?$");
+    
+}
+
 namespace xlnt {
     
 const xlnt::color xlnt::color::black(0);
@@ -259,7 +614,25 @@ bool cell::is_merged() const
 
 bool cell::is_date() const
 {
-    return d_->is_date_ || (d_->style_ != nullptr && get_style().get_number_format().get_format_code() == number_format::format::date_xlsx14);
+    if(get_data_type() == type::numeric && has_style())
+    {
+        auto number_format = get_style().get_number_format().get_format_code_string();
+        
+        if(number_format != "General")
+        {
+            try
+            {
+                auto sections = parse_format_sections(number_format);
+                return is_date_format(sections.first.value);
+            }
+            catch(std::exception)
+            {
+                return false;
+            }
+        }
+    }
+    
+    return false;
 }
 
 cell_reference cell::get_reference() const
@@ -303,7 +676,7 @@ bool operator<(cell left, cell right)
     return left.get_reference() < right.get_reference();
 }
 
-std::string cell::to_string() const
+std::string cell::to_repr() const
 {
     return "<Cell " + worksheet(d_->parent_).get_title() + "." + get_reference().to_string() + ">";
 }
@@ -658,9 +1031,9 @@ timedelta cell::get_value() const
     //return timedelta::from_number(d_->value_numeric_);
 }
 
-void cell::set_number_format(const std::string &format_string)
+void cell::set_number_format(const std::string &format_string, int index)
 {
-    get_style().get_number_format().set_format_code_string(format_string);
+    get_style().get_number_format().set_format_code_string(format_string, index);
 }
 
 template<>
@@ -674,36 +1047,27 @@ bool cell::has_value() const
     return d_->type_ != cell::type::null;
 }
 
-std::ostream &cell::print(std::ostream &stream, bool convert) const
+std::string cell::to_string() const
 {
-    if(!convert)
+    std::string number_format = "General";
+    
+    if(has_style())
     {
-        return stream << get_value<std::string>();
+        number_format = get_style().get_number_format().get_format_code_string();
     }
-    else
+    
+    switch(get_data_type())
     {
-        switch(get_data_type())
-        {
-        case type::null:
-            return stream << "";
-        case type::string:
-            return stream << get_value<std::string>();
-        case type::numeric:
-            if(is_date())
-            {
-                return stream << get_value<datetime>().to_string(get_parent().get_parent().get_properties().excel_base_date);
-            }
-            else
-            {
-                return stream << get_value<long double>();
-            }
-        case type::error:
-            return stream << get_value<std::string>();
-        case type::formula:
-            return stream << d_->formula_;
-        default:
-            return stream;
-        }
+        case cell::type::null:
+            return "";
+        case cell::type::numeric:
+            return format_number(get_value<long double>(), number_format);
+        case cell::type::string:
+        case cell::type::formula:
+        case cell::type::error:
+            return format_text(get_value<std::string>(), number_format);
+        case cell::type::boolean:
+            return get_value<long double>() == 0 ? "FALSE" : "TRUE";
     }
 }
 

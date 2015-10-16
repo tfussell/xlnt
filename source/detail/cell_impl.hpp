@@ -146,8 +146,7 @@ struct cell_impl
     void set_date(long double number, xlnt::number_format::format format_code)
     {
         is_date_ = true;
-        auto number_format = xlnt::number_format(format_code);
-        get_style(true).set_number_format(number_format);
+        get_style(true).get_number_format().set_format_code(format_code);
         value_numeric_ = number;
         type_ = cell::type::numeric;
     }

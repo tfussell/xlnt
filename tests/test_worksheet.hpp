@@ -138,13 +138,6 @@ public:
         }
     }
     
-    void test_worksheet_recwarn()
-    {
-        xlnt::worksheet ws(wb_);
-        auto rows = ws.get_range("A1:D4");
-        TS_SKIP(""); // what's recwarn?
-    }
-    
     void test_get_named_range()
     {
         xlnt::worksheet ws(wb_);

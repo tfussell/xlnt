@@ -90,11 +90,45 @@ public:
     static bool is_builtin(const std::string &format);
     
     number_format() : format_code_(format::general), format_index_(0) {}
-    number_format(format code) : format_code_(code) {}
+    number_format(format code) : format_code_(code), format_index_(reversed_builtin_formats().at(format_strings().at(code))) {}
     
     format get_format_code() const { return format_code_; }
-    void set_format_code(format format_code) { format_code_ = format_code; }
-    void set_format_code_string(const std::string &format_code) { custom_format_code_ = format_code; format_code_ = format::unknown; }
+    
+    void set_format_code(format format_code, int index = -1)
+    {
+        format_code_ = format_code;
+        
+        if(format_code_ != format::unknown)
+        {
+            set_format_code_string(format_strings().at(format_code), index);
+        }
+    }
+    
+    void set_format_code_string(const std::string &format_code, int index)
+    {
+        custom_format_code_ = format_code;
+        format_index_ = index;
+        
+        const auto &reversed = reversed_builtin_formats();
+        auto match = reversed.find(format_code);
+        
+        format_code_ = format::unknown;
+        
+        if(match != reversed.end())
+        {
+            format_index_ = match->second;
+            
+            for(const auto &p : format_strings())
+            {
+                if(p.second == format_code)
+                {
+                    format_code_ = p.first;
+                    break;
+                }
+            }
+        }
+        
+    }
     std::string get_format_code_string() const;
 
 private:

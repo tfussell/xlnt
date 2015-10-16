@@ -149,5 +149,25 @@ std::string style_writer::write_table() const
 
     return ss.str();
 }
+
+std::string style_writer::write_number_formats()
+{
+    pugi::xml_document doc;
+
+    auto root = doc.append_child("styleSheet");
+    root.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
+    
+    auto num_fmts_node = root.append_child("numFmts");
+    num_fmts_node.append_attribute("count").set_value(1);
+    
+    auto num_fmt_node = num_fmts_node.append_child("numFmt");
+    num_fmt_node.append_attribute("formatCode").set_value("YYYY");
+    num_fmt_node.append_attribute("numFmtId").set_value(164);
+    
+    std::stringstream ss;
+    doc.save(ss);
+    
+    return ss.str();
+}
     
 } // namespace xlnt

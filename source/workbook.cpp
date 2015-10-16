@@ -341,6 +341,7 @@ bool workbook::load(xlnt::zip_file &archive)
     }
 
     std::vector<int> number_format_ids;
+    std::unordered_map<int, std::string> custom_number_formats;
     
     if(archive.has_file("xl/styles.xml"))
     {
@@ -352,6 +353,13 @@ bool workbook::load(xlnt::zip_file &archive)
         for(auto xf_node : cell_xfs_node.children("xf"))
         {
             number_format_ids.push_back(xf_node.attribute("numFmtId").as_int());
+        }
+        
+        auto num_fmts_node = stylesheet_node.child("numFmts");
+        
+        for(auto num_fmt_node : num_fmts_node.children("numFmt"))
+        {
+            custom_number_formats[num_fmt_node.attribute("numFmtId").as_int()] = num_fmt_node.attribute("formatCode").as_string();
         }
     }
     
@@ -369,7 +377,7 @@ bool workbook::load(xlnt::zip_file &archive)
         auto ws = create_sheet(sheet_node.attribute("name").as_string(), *rel);
         auto sheet_filename = rel->get_target_uri();
 
-        xlnt::reader::read_worksheet(ws, archive.read(sheet_filename).c_str(), shared_strings, number_format_ids);
+        xlnt::reader::read_worksheet(ws, archive.read(sheet_filename).c_str(), shared_strings, number_format_ids, custom_number_formats);
     }
 
     return true;

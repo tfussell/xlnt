@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <regex>
 
 #include <xlnt/styles/number_format.hpp>
 
@@ -108,10 +109,16 @@ const std::unordered_map<number_format::format, std::string, number_format::form
 const std::unordered_map<std::string, int> &number_format::reversed_builtin_formats()
 {
     static std::unordered_map<std::string, int> formats;
+    static bool initialised = false;
 
-    for(auto format_pair : builtin_formats())
+    if(!initialised)
     {
-        formats[format_pair.second] = format_pair.first;
+        for(auto format_pair : builtin_formats())
+        {
+            formats[format_pair.second] = format_pair.first;
+        }
+        
+        initialised = true;
     }
     
     return formats;
@@ -137,12 +144,12 @@ number_format::format number_format::lookup_format(int code)
 
 std::string number_format::get_format_code_string() const
 {
-    if(format_code_ == format::unknown)
+    if(builtin_formats().find(format_index_) == builtin_formats().end())
     {
         return custom_format_code_;
     }
-
-    return format_strings().at(format_code_);
+    
+    return builtin_formats().at(format_index_);
 }
 
 } // namespace xlnt

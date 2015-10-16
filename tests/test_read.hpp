@@ -17,7 +17,7 @@ public:
         xlnt::worksheet ws(wb);
         {
             std::ifstream handle(path);
-            ws = xlnt::reader::read_worksheet(handle, wb, "Sheet 2", {"hello"});
+            ws = xlnt::reader::read_worksheet(handle, wb, "Sheet 2", {"hello"}, {});
         }
         TS_ASSERT_DIFFERS(ws, nullptr);
         if(!(ws == nullptr))

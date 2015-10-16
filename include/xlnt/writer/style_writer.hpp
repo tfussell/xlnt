@@ -43,6 +43,8 @@ public:
     std::string write_table() const;
     std::vector<style> get_styles() const;
     
+    std::string write_number_formats();
+    
 private:
     std::vector<style> get_style_list(const workbook &wb) const;
     std::unordered_map<int, std::string> write_fonts() const;
@@ -53,7 +55,6 @@ private:
     void write_cell_style();
     void write_dxfs();
     void write_table_styles();
-    void write_number_formats();
     
     std::vector<style> style_list_;
     workbook &wb_;

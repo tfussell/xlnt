@@ -91,9 +91,9 @@ void excel_writer::write_data(zip_file &archive, bool as_template)
     
     write_charts(archive);
     write_images(archive);
+    write_string_table(archive);
     write_worksheets(archive);
     write_chartsheets(archive);
-    write_string_table(archive);
     write_external_links(archive);
     
     archive.writestr(constants::ArcStyles, style_writer_.write_table());
