@@ -151,9 +151,11 @@ void read_worksheet_common(xlnt::worksheet ws, const pugi::xml_node &root_node, 
                 
                 if(has_style)
                 {
-                    if(number_format_ids.size() > std::stoll(style))
+					auto style_index = static_cast<std::size_t>(std::stoll(style));
+
+                    if(number_format_ids.size() > style_index)
                     {
-                        auto number_format_id = number_format_ids.at(static_cast<std::size_t>(std::stoll(style)));
+                        auto number_format_id = number_format_ids.at(style_index);
                         auto format = xlnt::number_format::lookup_format(number_format_id);
                         
                         if(format == xlnt::number_format::format::unknown)

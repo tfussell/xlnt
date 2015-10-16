@@ -364,11 +364,6 @@ bool is_date_format(const std::string &format_string)
     return not_in == std::string::npos;
 }
 
-const std::string PercentRegex("^\\-?(?P<number>[0-9]*\\.?[0-9]*\\s?)\%$");
-const std::string TimeRegex("^(([0-1]{0,1}[0-9]{2}):([0-5][0-9]):?([0-5][0-9])?$)|"
-                            "^(([0-5][0-9]):([0-5][0-9])?\\.(\\d{1,6}))");
-const std::string NumberRegex("^-?([\\d]|[\\d]+\\.[\\d]*|\\.[\\d]+|[1-9][\\d]+\\.?[\\d]*)((E|e)[-+]?[\\d]+)?$");
-    
 }
 
 namespace xlnt {
@@ -486,6 +481,7 @@ void cell::set_value(std::uint64_t i)
 }
 
 #ifdef _WIN32
+template<>
 void cell::set_value(unsigned long i)
 {
     d_->is_date_ = false;
@@ -495,6 +491,7 @@ void cell::set_value(unsigned long i)
 #endif
 
 #ifdef __linux__
+template<>
 void cell::set_value(long long i)
 {
     d_->is_date_ = false;
@@ -502,6 +499,7 @@ void cell::set_value(long long i)
     d_->type_ = type::numeric;
 }
 
+template<>
 void cell::set_value(unsigned long long i)
 {
     d_->is_date_ = false;
@@ -1068,6 +1066,8 @@ std::string cell::to_string() const
             return format_text(get_value<std::string>(), number_format);
         case cell::type::boolean:
             return get_value<long double>() == 0 ? "FALSE" : "TRUE";
+		default:
+			return "";
     }
 }
 

@@ -2,6 +2,7 @@
 #include <cassert>
 #include <cstring>
 #include <fstream>
+#include <iterator>
 
 #ifdef _WIN32
 #define NOMINMAX

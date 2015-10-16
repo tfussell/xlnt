@@ -124,9 +124,9 @@ time::time(const std::string &time_string) : hour(0), minute(0), second(0), micr
 long double time::to_number() const
 {
     std::size_t microseconds = static_cast<std::size_t>(microsecond);
-    microseconds += second * 1e6;
-    microseconds += minute * 1e6 * 60;
-    microseconds += hour * 1e6 * 60 * 60;
+    microseconds += static_cast<std::size_t>(second * 1e6);
+    microseconds += static_cast<std::size_t>(minute * 1e6 * 60);
+    microseconds += static_cast<std::size_t>(hour * 1e6 * 60 * 60);
     auto number = microseconds / (24.0L * 60 * 60 * 1e6L);
     number = std::floor(number * 1e11L + 0.5L) / 1e11L;
     return number;
