@@ -94,7 +94,7 @@ public:
     bool diagonal_up;
     bool diagonal_down;
     
-    diagonal_direction diagonal_direction;
+    diagonal_direction diagonal_direction_;
     
     bool operator==(const border &other) const
     {

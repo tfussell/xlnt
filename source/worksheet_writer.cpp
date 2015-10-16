@@ -253,7 +253,7 @@ std::string write_worksheet(worksheet ws, const std::vector<std::string> &string
                             else
                             {
                                 std::stringstream ss;
-                                ss.precision(17);
+                                ss.precision(20);
                                 ss << cell.get_value<long double>();
                                 ss.str();
                                 value_node.text().set(ss.str().c_str());

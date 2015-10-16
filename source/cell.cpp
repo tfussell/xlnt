@@ -490,7 +490,7 @@ void cell::set_value(unsigned long i)
 }
 #endif
 
-#ifdef __linux__
+#ifdef __linux
 template<>
 void cell::set_value(long long i)
 {
@@ -985,7 +985,15 @@ std::uint64_t cell::get_value() const
 {
     return static_cast<std::uint64_t>(d_->value_numeric_);
 }
-    
+
+#ifdef __linux
+template<>
+long long int cell::get_value() const
+{
+    return static_cast<long long int>(d_->value_numeric_);
+}
+#endif
+
 template<>
 float cell::get_value() const
 {
