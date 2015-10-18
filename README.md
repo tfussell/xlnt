@@ -1,13 +1,16 @@
 xlnt
 ====
 
+## Note
+I'm in the process of changing large portions of code to fully implement styles. The library should be back to working within a week. Until then I wouldn't recommend using the library. Watch this repo if you want to be notified when it's ready. Also, please star if you find the project interesting.
+
 ## Introduction
-xlnt is a C++11 library for reading, writing, and modifying xlsx files. The API is generally based on [openpyxl](https://bitbucket.org/openpyxl/openpyxl), a python library for reading and writing xlsx/xlsm files. It is still very much a work in progress, but the core development work is complete.
+xlnt is a C++14 library for reading, writing, and modifying xlsx files as described in [ECMA 376](http://www.ecma-international.org/publications/standards/Ecma-376.htm). The API is generally based on [openpyxl](https://bitbucket.org/openpyxl/openpyxl), a python library for reading and writing xlsx/xlsm files. This is still very much a work in progress, but the core development work is complete (see note above).
 
 ## Usage
 Including xlnt in your project
 ```c++
-// with -Ixlnt/include
+// with -std=c++14 -Ixlnt/include -Lxlnt/lib -lxlnt
 #include <xlnt/xlnt.hpp>
 ```
 
@@ -33,44 +36,52 @@ for(auto row : wb2["sheet2"].rows())
 {
     for(auto cell : row)
     {
-        std::cout << cell.get_value().to_string() << std::endl;
+        std::cout << cell << std::endl;
     }
 }
 ```
 
 ## Building
-xlnt is regularly built and passes all 200+ tests in GCC 4.8.2, MSVC 12, and Clang 3.4.
+xlnt is regularly built and passes all 200+ tests in GCC 4.8.2, MSVC 14, and Clang (using Apple LLVM 7.0).
 
-Workspaces for Visual Studio 2013, and GNU Make can be created using the development version of premake and the premake5.lua script in the build directory. XCode workspaces can be generated using premake4.lua and premake4.
+Workspaces for Visual Studio 2015, GNU Make, and Xcode can be created using GENie and the genie.lua script in the build/genie directory. 
 
-Premake binaries and source are currently available [here](http://premake.github.io/download.html).
+GENie binaries and source are currently available [here](https://github.com/bkaradzic/genie).
 
-In Windows, with Visual Studio 2013:
+In Windows, with Visual Studio 2015:
 ```batch
-cd build
-premake5 vs2013
-start vs2013/xlnt.sln
+cd build/genie
+genie vs2015
+start vs2015/xlnt.sln
 ```
 
-In Linux, with GCC 4.8:
+In Linux or OSX, with GNU Make:
 ```bash
-cd build
-premake5 gmake
-cd gmake
-make
+cd build/genie
+genie gmake
+cd gmake && make
 ```
 
-In OSX, with Clang 3.4 (can also use gmake as described above):
+In OSX, with Xcode (Xcode 4 projects can be opened in Xcode 7.0)
 ```bash
-cd build
-premake4 xcode4
+cd build/genie
+genie xcode4
 open xcode4/xlnt.xcworkspace
+```
+
+For users who prefer CMake, cmake scripts are provided in build/cmake. To use this system, a build might look like:
+```bash
+cd build/cmake
+mkdir build
+cd build
+cmake ..
+make
 ```
 
 ## Dependencies
 xlnt uses the following libraries, which are included in the source tree (pugixml and cxxtest as [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules#Cloning-a-Project-with-Submodules)) for convenience:
 - [miniz v1.15_r4](https://code.google.com/p/miniz/) (public domain/unlicense)
-- [pugixml v1.4](http://pugixml.org/) (MIT license)
+- [pugixml v1.6](http://pugixml.org/) (MIT license)
 - [cxxtest v4.4](http://cxxtest.com/) (LGPLv3 license [only used for testing, separate from main library assembly])
 
 ## License
