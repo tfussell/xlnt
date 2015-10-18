@@ -41,11 +41,13 @@ class drawing;
 class fill;
 class font;
 class named_range;
+class number_format;
 class pattern_fill;
 class protection;
 class range;
 class range_reference;
 class relationship;
+class style;
 class worksheet;
 class zip_file;
     
@@ -206,10 +208,35 @@ public:
     void add_color(color c);
     void add_number_format(const std::string &format);
     
+    const std::unordered_map<std::size_t, alignment> &get_alignments() const;
+    const std::unordered_map<std::size_t, border> &get_borders() const;
+    const std::unordered_map<std::size_t, fill> &get_fills() const;
+    const std::unordered_map<std::size_t, font> &get_fonts() const;
+    const std::unordered_map<std::size_t, number_format> &get_number_formats() const;
+    const std::unordered_map<std::size_t, protection> &get_protections() const;
+    
+    const number_format &get_number_format(std::size_t style_id) const;
+    std::size_t set_number_format(const number_format &format, std::size_t style_id);
+    const font &get_font(std::size_t style_id) const;
+    std::size_t set_font(const font &font_, std::size_t style_id);
+    const fill &get_fill(std::size_t style_id) const;
+    std::size_t set_fill(const fill &fill_, std::size_t style_id);
+    const border &get_border(std::size_t style_id) const;
+    std::size_t set_border(const border &border_, std::size_t style_id);
+    const alignment &get_alignment(std::size_t style_id) const;
+    std::size_t set_alignment(const alignment &alignment_, std::size_t style_id);
+    const protection &get_protection(std::size_t style_id) const;
+    std::size_t set_protection(const protection &protection_, std::size_t style_id);
+    bool get_pivot_button(std::size_t style_id) const;
+    bool get_quote_prefix(std::size_t style_id) const;
+    
     void set_code_name(const std::string &code_name);
     
     bool has_loaded_theme();
     std::string get_loaded_theme();
+    
+    style get_style(std::size_t style_id);
+    std::size_t add_style(style style_);
     
 private:
     friend class worksheet;

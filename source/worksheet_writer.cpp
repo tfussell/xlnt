@@ -104,18 +104,7 @@ std::string write_worksheet(worksheet ws, const std::vector<std::string> &string
     std::vector<column_t> styled_columns;
     
     if(!style_id_by_hash.empty())
-    {
-        for(auto row : ws.rows())
-        {
-            for(auto cell : row)
-            {
-                if(cell.has_style())
-                {
-                    styled_columns.push_back(cell_reference::column_index_from_string(cell.get_column()));
-                }
-            }
-        }
-        
+    {        
         auto cols_node = root_node.append_child("cols");
         std::sort(styled_columns.begin(), styled_columns.end());
         
@@ -268,10 +257,8 @@ std::string write_worksheet(worksheet ws, const std::vector<std::string> &string
                     }
                 }
                 
-                if(cell.has_style())
-                {
-                    cell_node.append_attribute("s").set_value(1);
-                }
+                auto style_id = cell.get_style_id();
+                cell_node.append_attribute("s").set_value((unsigned int)style_id);
             }
         }
     }

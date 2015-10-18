@@ -23,6 +23,8 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <cstddef>
+
 namespace xlnt {
 
 class protection
@@ -47,6 +49,8 @@ public:
     {
         return locked_ == other.locked_ && hidden_ == other.hidden_;
     }
+    
+    std::size_t hash() const { return 0; }
     
 private:
     type locked_;

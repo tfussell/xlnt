@@ -8,6 +8,7 @@
 #include <xlnt/common/datetime.hpp>
 #include <xlnt/common/types.hpp>
 #include <xlnt/common/relationship.hpp>
+#include <xlnt/styles/number_format.hpp>
 
 #include "comment_impl.hpp"
 
@@ -123,37 +124,13 @@ struct cell_impl
     cell_impl(const cell_impl &rhs);
     cell_impl &operator=(const cell_impl &rhs);
     
-    style &get_style(bool create_if_null)
+    cell self()
     {
-        if(style_ == nullptr && create_if_null)
-        {
-            style_.reset(new style());
-        }
-        
-        return *style_;
-    }
-    
-    const style &get_style() const
-    {
-        if(style_ == nullptr)
-        {
-            throw std::runtime_error("call has_style to check if const cell has a style before accessing it");
-        }
-        
-        return *style_;
-    }
-
-    void set_date(long double number, xlnt::number_format::format format_code)
-    {
-        is_date_ = true;
-        get_style(true).get_number_format().set_format_code(format_code);
-        value_numeric_ = number;
-        type_ = cell::type::numeric;
+        return xlnt::cell(this);
     }
     
     void set_string(const std::string &s, bool guess_types)
     {
-        is_date_ = false;
         value_string_ = check_string(s);
         type_ = cell::type::string;
         
@@ -175,7 +152,7 @@ struct cell_impl
             {
                 value_numeric_ = percentage.second;
                 type_ = cell::type::numeric;
-                get_style(true).get_number_format().set_format_code(xlnt::number_format::format::percentage);
+                self().set_number_format(xlnt::number_format(xlnt::number_format::format::percentage));
             }
             else
             {
@@ -183,7 +160,9 @@ struct cell_impl
                 
                 if (time.first)
                 {
-                    set_date(time.second.to_number(), xlnt::number_format::format::date_time6);
+                    type_ = cell::type::numeric;
+                    self().set_number_format(xlnt::number_format(number_format::format::date_time6));
+                    value_numeric_ = time.second.to_number();
                 }
                 else
                 {
@@ -215,11 +194,10 @@ struct cell_impl
     relationship hyperlink_;
     
     bool is_merged_;
-    bool is_date_;
     
     std::size_t xf_index_;
+    std::size_t style_id_;
     
-    std::unique_ptr<style> style_;
     std::unique_ptr<comment_impl> comment_;
 };
     

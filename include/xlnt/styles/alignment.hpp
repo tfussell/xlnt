@@ -64,6 +64,8 @@ public:
         && indent_ == other.indent_;
     }
     
+    std::size_t hash() const { return 0; }
+    
 private:
     horizontal_alignment horizontal_ = horizontal_alignment::general;
     vertical_alignment vertical_ = vertical_alignment::bottom;

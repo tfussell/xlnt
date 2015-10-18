@@ -152,6 +152,8 @@ struct datetime
 /// </summary>
 struct timedelta
 {
+    static timedelta from_number(long double number);
+    
     timedelta(int days_, int hours_, int minutes_ = 0, int seconds_ = 0, int microseconds_ = 0)
     : days(days_),
       hours(hours_),

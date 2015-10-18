@@ -13,6 +13,12 @@
 #include <xlnt/common/zip_file.hpp>
 #include <xlnt/drawing/drawing.hpp>
 #include <xlnt/reader/reader.hpp>
+#include <xlnt/styles/alignment.hpp>
+#include <xlnt/styles/borders.hpp>
+#include <xlnt/styles/fill.hpp>
+#include <xlnt/styles/font.hpp>
+#include <xlnt/styles/number_format.hpp>
+#include <xlnt/styles/protection.hpp>
 #include <xlnt/workbook/document_properties.hpp>
 #include <xlnt/workbook/named_range.hpp>
 #include <xlnt/workbook/workbook.hpp>
@@ -56,9 +62,8 @@ static std::string create_temporary_filename()
 namespace xlnt {
 namespace detail {
 
-workbook_impl::workbook_impl() : active_sheet_index_(0), guess_types_(false), data_only_(false)
+workbook_impl::workbook_impl() : active_sheet_index_(0), guess_types_(false), data_only_(false), next_style_id_(0)
 {
-    
 }
 
 } // namespace detail
@@ -69,6 +74,14 @@ workbook::workbook() : d_(new detail::workbook_impl())
     create_relationship("rId2", "sharedStrings.xml", relationship::type::shared_strings);
     create_relationship("rId3", "styles.xml", relationship::type::styles);
     create_relationship("rId4", "theme/theme1.xml", relationship::type::theme);
+    set_alignment(alignment(), 1);
+    set_border(border(), 1);
+    set_fill(fill(), 1);
+    set_font(font(), 1);
+    set_number_format(number_format(), 1);
+    set_protection(protection(), 1);
+    d_->style_pivot_button_[1] = false;
+    d_->style_quote_prefix_[1] = false;
 }
 
 workbook::iterator::iterator(workbook &wb, std::size_t index) : wb_(wb), index_(index)
@@ -657,64 +670,242 @@ void workbook::set_data_only(bool data_only)
 {
     d_->data_only_ = data_only;
 }
+
+void workbook::add_border(xlnt::border /*b*/)
+{
     
-    void workbook::add_border(xlnt::border /*b*/)
-    {
-        
-    }
-    
-    void workbook::add_alignment(xlnt::alignment /*a*/)
-    {
-        
-    }
-    
-    void workbook::add_protection(xlnt::protection /*p*/)
-    {
-        
-    }
-    
-    void workbook::add_number_format(const std::string &/*format*/)
-    {
-        
-    }
-    
-    void workbook::add_fill(xlnt::fill &/*f*/)
-    {
-        
-    }
-    
-    void workbook::add_font(xlnt::font /*f*/)
-    {
-        
-    }
-    
-    void workbook::set_code_name(const std::string &/*code_name*/)
-    {
-        
-    }
-    
-    bool workbook::has_loaded_theme()
-    {
-        return false;
-    }
-    
-    std::string workbook::get_loaded_theme()
-    {
-        return "";
-    }
-    
-    std::vector<named_range> workbook::get_named_ranges() const
-    {
-        std::vector<named_range> named_ranges;
-        
-        for(auto ws : *this)
-        {
-            for(auto &ws_named_range : ws.d_->named_ranges_)
-            {
-                named_ranges.push_back(ws_named_range.second);
-            }
-        }
-        
-        return named_ranges;
-    }
 }
+
+void workbook::add_alignment(xlnt::alignment /*a*/)
+{
+    
+}
+
+void workbook::add_protection(xlnt::protection /*p*/)
+{
+    
+}
+
+void workbook::add_number_format(const std::string &/*format*/)
+{
+    
+}
+
+void workbook::add_fill(xlnt::fill &/*f*/)
+{
+    
+}
+
+void workbook::add_font(xlnt::font /*f*/)
+{
+    
+}
+
+void workbook::set_code_name(const std::string &/*code_name*/)
+{
+    
+}
+
+bool workbook::has_loaded_theme()
+{
+    return false;
+}
+
+std::string workbook::get_loaded_theme()
+{
+    return "";
+}
+
+std::vector<named_range> workbook::get_named_ranges() const
+{
+    std::vector<named_range> named_ranges;
+    
+    for(auto ws : *this)
+    {
+        for(auto &ws_named_range : ws.d_->named_ranges_)
+        {
+            named_ranges.push_back(ws_named_range.second);
+        }
+    }
+    
+    return named_ranges;
+}
+
+std::size_t workbook::add_style(xlnt::style style_)
+{
+    return 1;
+}
+
+const number_format &workbook::get_number_format(std::size_t style_id) const
+{
+    return d_->number_formats_[d_->style_number_format_[style_id]];
+}
+
+const font &workbook::get_font(std::size_t style_id) const
+{
+    return d_->fonts_[d_->style_font_[style_id]];
+}
+
+std::size_t workbook::set_font(const font &font_, std::size_t style_id)
+{
+    auto hash = font_.hash();
+    
+    if(d_->number_formats_.find(hash) == d_->number_formats_.end())
+    {
+        d_->fonts_[hash] = font_;
+    }
+    
+    d_->style_font_[d_->next_style_id_] = hash;
+    
+    d_->style_alignment_[d_->next_style_id_] = d_->style_alignment_[style_id];
+    d_->style_border_[d_->next_style_id_] = d_->style_border_[style_id];
+    d_->style_fill_[d_->next_style_id_] = d_->style_fill_[style_id];
+    d_->style_number_format_[d_->next_style_id_] = d_->style_number_format_[style_id];
+    d_->style_protection_[d_->next_style_id_] = d_->style_protection_[style_id];
+    d_->style_pivot_button_[d_->next_style_id_] = d_->style_pivot_button_[style_id];
+    d_->style_quote_prefix_[d_->next_style_id_] = d_->style_quote_prefix_[style_id];
+    
+    return d_->next_style_id_++;
+}
+
+const fill &workbook::get_fill(std::size_t style_id) const
+{
+    return d_->fills_[d_->style_fill_[style_id]];
+}
+
+std::size_t workbook::set_fill(const fill &fill_, std::size_t style_id)
+{
+    auto hash = fill_.hash();
+    
+    if(d_->fills_.find(hash) == d_->fills_.end())
+    {
+        d_->fills_[hash] = fill_;
+    }
+    
+    d_->style_fill_[d_->next_style_id_] = hash;
+    
+    d_->style_alignment_[d_->next_style_id_] = d_->style_alignment_[style_id];
+    d_->style_border_[d_->next_style_id_] = d_->style_border_[style_id];
+    d_->style_font_[d_->next_style_id_] = d_->style_font_[style_id];
+    d_->style_number_format_[d_->next_style_id_] = d_->style_number_format_[style_id];
+    d_->style_protection_[d_->next_style_id_] = d_->style_protection_[style_id];
+    d_->style_pivot_button_[d_->next_style_id_] = d_->style_pivot_button_[style_id];
+    d_->style_quote_prefix_[d_->next_style_id_] = d_->style_quote_prefix_[style_id];
+    
+    return d_->next_style_id_++;
+}
+
+const border &workbook::get_border(std::size_t style_id) const
+{
+    return d_->borders_[d_->style_border_[style_id]];
+}
+
+std::size_t workbook::set_border(const border &border_, std::size_t style_id)
+{
+    auto hash = border_.hash();
+    
+    if(d_->borders_.find(hash) == d_->borders_.end())
+    {
+        d_->borders_[hash] = border_;
+    }
+    
+    d_->style_border_[d_->next_style_id_] = hash;
+    
+    d_->style_alignment_[d_->next_style_id_] = d_->style_alignment_[style_id];
+    d_->style_font_[d_->next_style_id_] = d_->style_font_[style_id];
+    d_->style_fill_[d_->next_style_id_] = d_->style_fill_[style_id];
+    d_->style_number_format_[d_->next_style_id_] = d_->style_number_format_[style_id];
+    d_->style_protection_[d_->next_style_id_] = d_->style_protection_[style_id];
+    d_->style_pivot_button_[d_->next_style_id_] = d_->style_pivot_button_[style_id];
+    d_->style_quote_prefix_[d_->next_style_id_] = d_->style_quote_prefix_[style_id];
+    
+    return d_->next_style_id_++;
+}
+
+const alignment &workbook::get_alignment(std::size_t style_id) const
+{
+    return d_->alignments_[d_->style_alignment_[style_id]];
+}
+
+std::size_t workbook::set_alignment(const alignment &alignment_, std::size_t style_id)
+{
+    auto hash = alignment_.hash();
+    
+    if(d_->alignments_.find(hash) == d_->alignments_.end())
+    {
+        d_->alignments_[hash] = alignment_;
+    }
+    
+    d_->style_alignment_[d_->next_style_id_] = hash;
+    
+    d_->style_border_[d_->next_style_id_] = d_->style_border_[style_id];
+    d_->style_font_[d_->next_style_id_] = d_->style_font_[style_id];
+    d_->style_fill_[d_->next_style_id_] = d_->style_fill_[style_id];
+    d_->style_number_format_[d_->next_style_id_] = d_->style_number_format_[style_id];
+    d_->style_protection_[d_->next_style_id_] = d_->style_protection_[style_id];
+    d_->style_pivot_button_[d_->next_style_id_] = d_->style_pivot_button_[style_id];
+    d_->style_quote_prefix_[d_->next_style_id_] = d_->style_quote_prefix_[style_id];
+    
+    return d_->next_style_id_++;
+}
+
+const protection &workbook::get_protection(std::size_t style_id) const
+{
+    return d_->protections_[d_->style_protection_[style_id]];
+}
+
+std::size_t workbook::set_protection(const protection &protection_, std::size_t style_id)
+{
+    auto hash = protection_.hash();
+    
+    if(d_->protections_.find(hash) == d_->protections_.end())
+    {
+        d_->protections_[hash] = protection_;
+    }
+    
+    d_->style_protection_[d_->next_style_id_] = hash;
+    
+    d_->style_alignment_[d_->next_style_id_] = d_->style_alignment_[style_id];
+    d_->style_border_[d_->next_style_id_] = d_->style_border_[style_id];
+    d_->style_font_[d_->next_style_id_] = d_->style_font_[style_id];
+    d_->style_fill_[d_->next_style_id_] = d_->style_fill_[style_id];
+    d_->style_number_format_[d_->next_style_id_] = d_->style_number_format_[style_id];
+    d_->style_pivot_button_[d_->next_style_id_] = d_->style_pivot_button_[style_id];
+    d_->style_quote_prefix_[d_->next_style_id_] = d_->style_quote_prefix_[style_id];
+    
+    return d_->next_style_id_++;
+}
+
+bool workbook::get_pivot_button(std::size_t style_id) const
+{
+    return d_->style_pivot_button_[style_id];
+}
+
+bool workbook::get_quote_prefix(std::size_t style_id) const
+{
+    return d_->style_quote_prefix_[style_id];
+}
+
+std::size_t workbook::set_number_format(const xlnt::number_format &format, std::size_t style_id)
+{
+    auto hash = format.hash();
+    
+    if(d_->number_formats_.find(hash) == d_->number_formats_.end())
+    {
+        d_->number_formats_[hash] = format;
+    }
+    
+    d_->style_number_format_[d_->next_style_id_] = hash;
+    
+    d_->style_alignment_[d_->next_style_id_] = d_->style_alignment_[style_id];
+    d_->style_border_[d_->next_style_id_] = d_->style_border_[style_id];
+    d_->style_font_[d_->next_style_id_] = d_->style_font_[style_id];
+    d_->style_fill_[d_->next_style_id_] = d_->style_fill_[style_id];
+    d_->style_protection_[d_->next_style_id_] = d_->style_protection_[style_id];
+    d_->style_pivot_button_[d_->next_style_id_] = d_->style_pivot_button_[style_id];
+    d_->style_quote_prefix_[d_->next_style_id_] = d_->style_quote_prefix_[style_id];
+    
+    return d_->next_style_id_++;
+}
+    
+} // namespace xlnt

@@ -31,5 +31,6 @@ namespace xlnt {
 class workbook;
 
 xlnt::workbook load_workbook(const std::vector<std::uint8_t> &bytes);
+xlnt::workbook load_workbook(const std::string &filename);
 
 } // namespace xlnt

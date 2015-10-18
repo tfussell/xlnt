@@ -5,30 +5,6 @@
 
 namespace xlnt {
 namespace detail {
-
-    
-    cell::type type_;
-    
-    worksheet_impl *parent_;
-    
-    column_t column_;
-    row_t row_;
-    
-    std::string value_string_;
-    long double value_numeric_;
-    
-    std::string formula_;
-    
-    bool has_hyperlink_;
-    relationship hyperlink_;
-    
-    bool is_merged_;
-    bool is_date_;
-    
-    std::size_t xf_index_;
-    
-    std::unique_ptr<style> style_;
-    std::unique_ptr<comment_impl> comment_;
     
 cell_impl::cell_impl() : cell_impl(1, 1)
 {
@@ -46,9 +22,8 @@ cell_impl::cell_impl(worksheet_impl *parent, column_t column, row_t row)
       value_numeric_(0),
       has_hyperlink_(false),
       is_merged_(false),
-      is_date_(false),
       xf_index_(0),
-      style_(nullptr),
+      style_id_(1),
       comment_(nullptr)
 {
 }
@@ -68,14 +43,9 @@ cell_impl &cell_impl::operator=(const cell_impl &rhs)
     column_ = rhs.column_;
     row_ = rhs.row_;
     is_merged_ = rhs.is_merged_;
-    is_date_ = rhs.is_date_;
     has_hyperlink_ = rhs.has_hyperlink_;
     type_ = rhs.type_;
-    
-    if(rhs.style_ != nullptr)
-    {
-        style_.reset(new style(*rhs.style_));
-    }
+    style_id_ = rhs.style_id_;
     
     if(rhs.comment_ != nullptr)
     {

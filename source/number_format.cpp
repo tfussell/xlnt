@@ -123,7 +123,21 @@ const std::unordered_map<std::string, int> &number_format::reversed_builtin_form
     
     return formats;
 }
-    
+
+number_format::number_format() : number_format(format::general)
+{
+}
+
+number_format::number_format(format code) : format_code_(code), format_index_(0)
+{
+    set_format_code(code);
+}
+
+number_format::number_format(const std::string &format_string) : number_format(format::general)
+{
+    set_format_string(format_string);
+}
+
 number_format::format number_format::lookup_format(int code)
 {
     if(builtin_formats().find(code) == builtin_formats().end())
@@ -142,14 +156,58 @@ number_format::format number_format::lookup_format(int code)
     return match->first;
 }
 
-std::string number_format::get_format_code_string() const
+std::string number_format::get_format_string() const
 {
-    if(builtin_formats().find(format_index_) == builtin_formats().end())
-    {
-        return custom_format_code_;
-    }
+    return format_string_;
+}
+
+number_format::format number_format::get_format_code() const
+{
+    return format_code_;
+}
+
+std::size_t number_format::hash() const
+{
+    std::hash<std::string> hasher;
+    return hasher(format_string_);
+}
     
-    return builtin_formats().at(format_index_);
+void number_format::set_format_string(const std::string &format_string)
+{
+    format_string_ = format_string;
+    format_index_ = -1;
+    format_code_ = format::unknown;
+    
+    const auto &reversed = reversed_builtin_formats();
+    
+    if(reversed.find(format_string) != reversed.end())
+    {
+        format_index_ = reversed.at(format_string);
+        
+        for(const auto &pair : format_strings())
+        {
+            if(pair.second == format_string)
+            {
+                format_code_ = pair.first;
+                break;
+            }
+        }
+    }
+}
+
+void number_format::set_format_code(xlnt::number_format::format format_code)
+{
+    format_code_ = format_code;
+    format_string_ = format_strings().at(format_code);
+    
+    try
+    {
+        format_index_ = reversed_builtin_formats().at(format_string_);
+    }
+    catch(std::out_of_range)
+    {
+        format_index_ = -1;
+    }
 }
 
 } // namespace xlnt

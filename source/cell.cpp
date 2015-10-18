@@ -6,12 +6,12 @@
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/cell/comment.hpp>
 #include <xlnt/common/datetime.hpp>
-#include <xlnt/common/relationship.hpp>
-#include <xlnt/worksheet/worksheet.hpp>
 #include <xlnt/common/exceptions.hpp>
+#include <xlnt/common/relationship.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/workbook/document_properties.hpp>
-#include <xlnt/common/exceptions.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
+#include <xlnt/styles/color.hpp>
 
 #include "detail/cell_impl.hpp"
 #include "detail/comment_impl.hpp"
@@ -85,6 +85,36 @@ std::vector<std::string> split_string(const std::string &string, char delim)
     split.push_back(string.substr(previous_index));
     
     return split;
+}
+
+std::vector<std::string> split_string_any(const std::string &string, const std::string &delims)
+{
+    std::vector<std::string> split;
+    std::string::size_type previous_index = 0;
+    auto separator_index = string.find_first_of(delims);
+    
+    while(separator_index != std::string::npos)
+    {
+        auto part = string.substr(previous_index, separator_index - previous_index);
+        
+        if(!part.empty())
+        {
+            split.push_back(part);
+        }
+        
+        previous_index = separator_index + 1;
+        separator_index = string.find_first_of(delims, previous_index);
+    }
+    
+    split.push_back(string.substr(previous_index));
+    
+    return split;
+}
+
+bool is_date_format(const std::string &format_string)
+{
+    auto not_in = format_string.find_first_not_of("/-:, mMyYdDhHsS");
+    return not_in == std::string::npos;
 }
 
 bool is_valid_color(const std::string &color)
@@ -288,14 +318,180 @@ format_sections parse_format_sections(const std::string &combined)
     return result;
 }
 
-std::string format_section(long double number, const section &format)
+const std::vector<std::string> MonthNames =
 {
-    if(number == static_cast<long long int>(number))
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+};
+
+std::string format_section(long double number, const section &format, xlnt::calendar base_date)
+{
+    const std::string unquoted = "$+(:^'{<=-/)!&~}> ";
+    std::string result;
+    
+    if(is_date_format(format.value))
     {
-        return std::to_string(static_cast<long long int>(number));
+        const std::string date_unquoted = ",-/: ";
+        
+        const std::vector<std::string> dates =
+        {
+            "m",
+            "mm",
+            "mmm",
+            "mmmmm",
+            "mmmmmm",
+            "d",
+            "dd",
+            "ddd",
+            "dddd",
+            "yy",
+            "yyyy"
+            "h",
+            "[h]",
+            "hh",
+            "m",
+            "[m]",
+            "mm",
+            "s",
+            "[s]",
+            "ss",
+            "AM/PM",
+            "am/pm",
+            "A/P",
+            "a/p"
+        };
+        
+        auto split = split_string_any(format.value, date_unquoted);
+        std::string::size_type index = 0, prev = 0;
+        auto d = xlnt::datetime::from_number(number, base_date);
+        bool processed_month = false;
+        
+        for(auto part : split)
+        {
+            while(format.value.substr(index, part.size()) != part)
+            {
+                index++;
+            }
+            
+            auto between = format.value.substr(prev, index - prev);
+            result.append(between);
+            
+            if(part == "m" && !processed_month)
+            {
+                result.append(std::to_string(d.month));
+                processed_month = true;
+            }
+            if(part == "mm" && !processed_month)
+            {
+                if(d.month < 10)
+                {
+                    result.append("0");
+                }
+                
+                result.append(std::to_string(d.month));
+                processed_month = true;
+            }
+            if(part == "mmm" && !processed_month)
+            {
+                result.append(MonthNames.at(d.month - 1).substr(0, 3));
+                processed_month = true;
+            }
+            if(part == "mmmm" && !processed_month)
+            {
+                result.append(MonthNames.at(d.month - 1));
+                processed_month = true;
+            }
+            if(part == "d")
+            {
+                result.append(std::to_string(d.day));
+            }
+            if(part == "dd")
+            {
+                if(d.day < 10)
+                {
+                    result.append("0");
+                }
+                
+                result.append(std::to_string(d.day));
+            }
+            if(part == "yyyy")
+            {
+                result.append(std::to_string(d.year));
+            }
+            
+            if(part == "h")
+            {
+                result.append(std::to_string(d.hour));
+                processed_month = true;
+            }
+            if(part == "hh")
+            {
+                if(d.hour < 10)
+                {
+                    result.append("0");
+                }
+                
+                result.append(std::to_string(d.hour));
+                processed_month = true;
+            }
+            if(part == "m")
+            {
+                result.append(std::to_string(d.minute));
+            }
+            if(part == "mm")
+            {
+                if(d.minute < 10)
+                {
+                    result.append("0");
+                }
+                
+                result.append(std::to_string(d.minute));
+            }
+            if(part == "s")
+            {
+                result.append(std::to_string(d.second));
+            }
+            if(part == "ss")
+            {
+                if(d.second < 10)
+                {
+                    result.append("0");
+                }
+                
+                result.append(std::to_string(d.second));
+            }
+            
+            
+            
+            index += part.size();
+            prev = index;
+        }
+        
+        if(index < format.value.size())
+        {
+            result.append(format.value.substr(index));
+        }
+    }
+    else if(number == static_cast<long long int>(number))
+    {
+        result = std::to_string(static_cast<long long int>(number));
+    }
+    else
+    {
+        result = std::to_string(number);
     }
     
-    return std::to_string(number);
+    return result;
 }
 
 std::string format_section(const std::string &text, const section &format)
@@ -334,21 +530,21 @@ std::string format_section(const std::string &text, const section &format)
     return first_part + middle_part + last_part;
 }
 
-std::string format_number(long double number, const std::string &format)
+std::string format_number(long double number, const std::string &format, xlnt::calendar base_date)
 {
     auto sections = parse_format_sections(format);
     
     if(number > 0)
     {
-        return format_section(number, sections.first);
+        return format_section(number, sections.first, base_date);
     }
     else if(number < 0)
     {
-        return format_section(number, sections.second);
+        return format_section(number, sections.second, base_date);
     }
     
     // number == 0
-    return format_section(number, sections.third);
+    return format_section(number, sections.third, base_date);
 }
 
 std::string format_text(const std::string &text, const std::string &format)
@@ -356,12 +552,6 @@ std::string format_text(const std::string &text, const std::string &format)
     if(format == "General") return text;
     auto sections = parse_format_sections(format);
     return format_section(text, sections.fourth);
-}
-
-bool is_date_format(const std::string &format_string)
-{
-    auto not_in = format_string.find_first_not_of("/-:, mMyYdDhHsS");
-    return not_in == std::string::npos;
 }
 
 }
@@ -411,7 +601,6 @@ bool cell::garbage_collectible() const
 template<>
 void cell::set_value(bool b)
 {
-    d_->is_date_ = false;
     d_->value_numeric_ = b ? 1 : 0;
     d_->type_ = type::boolean;
 }
@@ -419,7 +608,6 @@ void cell::set_value(bool b)
 template<>
 void cell::set_value(std::int8_t i)
 {
-    d_->is_date_ = false;
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
@@ -427,7 +615,6 @@ void cell::set_value(std::int8_t i)
 template<>
 void cell::set_value(std::int16_t i)
 {
-    d_->is_date_ = false;
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
@@ -435,7 +622,6 @@ void cell::set_value(std::int16_t i)
 template<>
 void cell::set_value(std::int32_t i)
 {
-    d_->is_date_ = false;
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
@@ -443,7 +629,6 @@ void cell::set_value(std::int32_t i)
 template<>
 void cell::set_value(std::int64_t i)
 {
-    d_->is_date_ = false;
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
@@ -451,7 +636,6 @@ void cell::set_value(std::int64_t i)
 template<>
 void cell::set_value(std::uint8_t i)
 {
-    d_->is_date_ = false;
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
@@ -459,7 +643,6 @@ void cell::set_value(std::uint8_t i)
 template<>
 void cell::set_value(std::uint16_t i)
 {
-    d_->is_date_ = false;
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
@@ -467,7 +650,6 @@ void cell::set_value(std::uint16_t i)
 template<>
 void cell::set_value(std::uint32_t i)
 {
-    d_->is_date_ = false;
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
@@ -475,7 +657,6 @@ void cell::set_value(std::uint32_t i)
 template<>
 void cell::set_value(std::uint64_t i)
 {
-    d_->is_date_ = false;
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
@@ -484,7 +665,6 @@ void cell::set_value(std::uint64_t i)
 template<>
 void cell::set_value(unsigned long i)
 {
-    d_->is_date_ = false;
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
@@ -494,7 +674,6 @@ void cell::set_value(unsigned long i)
 template<>
 void cell::set_value(long long i)
 {
-    d_->is_date_ = false;
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
@@ -502,7 +681,6 @@ void cell::set_value(long long i)
 template<>
 void cell::set_value(unsigned long long i)
 {
-    d_->is_date_ = false;
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
@@ -511,7 +689,6 @@ void cell::set_value(unsigned long long i)
 template<>
 void cell::set_value(float f)
 {
-    d_->is_date_ = false;
     d_->value_numeric_ = static_cast<long double>(f);
     d_->type_ = type::numeric;
 }
@@ -519,7 +696,6 @@ void cell::set_value(float f)
 template<>
 void cell::set_value(double d)
 {
-    d_->is_date_ = false;
     d_->value_numeric_ = static_cast<long double>(d);
     d_->type_ = type::numeric;
 }
@@ -527,7 +703,6 @@ void cell::set_value(double d)
 template<>
 void cell::set_value(long double d)
 {
-    d_->is_date_ = false;
     d_->value_numeric_ = static_cast<long double>(d);
     d_->type_ = type::numeric;
 }
@@ -550,44 +725,43 @@ void cell::set_value(cell c)
     d_->type_ = c.d_->type_;
     d_->value_numeric_ = c.d_->value_numeric_;
     d_->value_string_ = c.d_->value_string_;
-    d_->is_date_ = c.d_->is_date_;
     d_->hyperlink_ = c.d_->hyperlink_;
     d_->has_hyperlink_ = c.d_->has_hyperlink_;
     d_->formula_ = c.d_->formula_;
-    set_style(c.get_style());
+    d_->style_id_ = c.d_->style_id_;
     set_comment(c.get_comment());
 }
     
 template<>
 void cell::set_value(date d)
 {
-    auto base_date = get_parent().get_parent().get_properties().excel_base_date;
-    d_->set_date(d.to_number(base_date), xlnt::number_format::format::date_yyyymmdd2);
+    d_->type_ = type::numeric;
+    d_->value_numeric_ = d.to_number(get_base_date());
+    set_number_format(number_format(number_format::format::date_yyyymmdd2));
 }
 
 template<>
 void cell::set_value(datetime d)
 {
-    auto base_date = get_parent().get_parent().get_properties().excel_base_date;
-    d_->set_date(d.to_number(base_date), xlnt::number_format::format::date_datetime);
+    d_->type_ = type::numeric;
+    d_->value_numeric_ = d.to_number(get_base_date());
+    set_number_format(number_format(number_format::format::date_datetime));
 }
 
 template<>
 void cell::set_value(time t)
 {
-    d_->set_date(t.to_number(), xlnt::number_format::format::date_time6);
+    d_->type_ = type::numeric;
+    d_->value_numeric_ = t.to_number();
+    set_number_format(number_format(number_format::format::date_time6));
 }
 
 template<>
 void cell::set_value(timedelta t)
 {
-    d_->set_date(t.to_number(), xlnt::number_format::format::date_timedelta);
-    d_->is_date_ = false; // a timedelta isn't actually a date, still uses mostly the same code
-}
-    
-bool cell::has_style() const
-{
-    return d_->style_ != nullptr;
+    d_->type_ = type::numeric;
+    d_->value_numeric_ = t.to_number();
+    set_number_format(number_format(number_format::format::date_timedelta));
 }
 
 row_t cell::get_row() const
@@ -612,9 +786,9 @@ bool cell::is_merged() const
 
 bool cell::is_date() const
 {
-    if(get_data_type() == type::numeric && has_style())
+    if(get_data_type() == type::numeric)
     {
-        auto number_format = get_style().get_number_format().get_format_code_string();
+        auto number_format = get_number_format().get_format_string();
         
         if(number_format != "General")
         {
@@ -646,21 +820,6 @@ bool cell::operator==(std::nullptr_t) const
 bool cell::operator==(const cell &comparand) const
 {
     return d_ == comparand.d_;
-}
-
-style &cell::get_style()
-{
-    return d_->get_style(true);
-}
-
-const style &cell::get_style() const
-{
-    return d_->get_style();
-}
-    
-void cell::set_style(const xlnt::style &s)
-{
-    get_style() = s;
 }
 
 cell &cell::operator=(const cell &rhs)
@@ -874,54 +1033,44 @@ std::size_t cell::get_xf_index() const
     return d_->xf_index_;
 }
 
-std::string cell::get_number_format()
+const number_format &cell::get_number_format() const
 {
-    return get_style().get_number_format().get_format_code_string();
+    return get_parent().get_parent().get_number_format(d_->style_id_);
 }
     
-std::string cell::get_number_format() const
+const font &cell::get_font() const
 {
-    return get_style().get_number_format().get_format_code_string();
-}
-
-font &cell::get_font()
-{
-    return get_style().get_font();
+    return get_parent().get_parent().get_font(d_->style_id_);
 }
     
-fill &cell::get_fill()
-{
-    return get_style().get_fill();
-}
-
 const fill &cell::get_fill() const
 {
-    return get_style().get_fill();
+    return get_parent().get_parent().get_fill(d_->style_id_);
 }
 
-border &cell::get_border()
+const border &cell::get_border() const
 {
-    return get_style().get_border();
+    return get_parent().get_parent().get_border(d_->style_id_);
 }
 
-alignment &cell::get_alignment()
+const alignment &cell::get_alignment() const
 {
-    return get_style().get_alignment();
+    return get_parent().get_parent().get_alignment(d_->style_id_);
 }
 
-protection &cell::get_protection()
+const protection &cell::get_protection() const
 {
-    return get_style().get_protection();
+    return get_parent().get_parent().get_protection(d_->style_id_);
 }
 
-bool cell::pivot_button()
+bool cell::pivot_button() const
 {
-    return get_style().pivot_button();
+    return get_parent().get_parent().get_pivot_button(d_->style_id_);
 }
 
-bool cell::quote_prefix()
+bool cell::quote_prefix() const
 {
-    return get_style().quote_prefix();
+    return get_parent().get_parent().get_quote_prefix(d_->style_id_);
 }
     
 void cell::clear_value()
@@ -1021,25 +1170,24 @@ time cell::get_value() const
 template<>
 datetime cell::get_value() const
 {
-    return datetime::from_number(d_->value_numeric_, xlnt::calendar::windows_1900);
+    return datetime::from_number(d_->value_numeric_, get_base_date());
 }
 
 template<>
 date cell::get_value() const
 {
-    return date::from_number(static_cast<int>(d_->value_numeric_), xlnt::calendar::windows_1900);
+    return date::from_number(static_cast<int>(d_->value_numeric_), get_base_date());
 }
 
 template<>
 timedelta cell::get_value() const
 {
-    return timedelta(0, 0);
-    //return timedelta::from_number(d_->value_numeric_);
+    return timedelta::from_number(d_->value_numeric_);
 }
 
-void cell::set_number_format(const std::string &format_string, int index)
+void cell::set_number_format(const number_format &number_format_)
 {
-    get_style().get_number_format().set_format_code_string(format_string, index);
+    d_->style_id_ = get_parent().get_parent().set_number_format(number_format_, d_->style_id_);
 }
 
 template<>
@@ -1055,28 +1203,33 @@ bool cell::has_value() const
 
 std::string cell::to_string() const
 {
-    std::string number_format = "General";
-    
-    if(has_style())
-    {
-        number_format = get_style().get_number_format().get_format_code_string();
-    }
+    auto nf = get_number_format();
     
     switch(get_data_type())
     {
         case cell::type::null:
             return "";
         case cell::type::numeric:
-            return format_number(get_value<long double>(), number_format);
+            return format_number(get_value<long double>(), nf.get_format_string(), get_base_date());
         case cell::type::string:
         case cell::type::formula:
         case cell::type::error:
-            return format_text(get_value<std::string>(), number_format);
+            return format_text(get_value<std::string>(), nf.get_format_string());
         case cell::type::boolean:
             return get_value<long double>() == 0 ? "FALSE" : "TRUE";
 		default:
 			return "";
     }
+}
+    
+std::size_t cell::get_style_id() const
+{
+    return d_->style_id_;
+}
+    
+calendar cell::get_base_date() const
+{
+    return get_parent().get_parent().get_properties().excel_base_date;
 }
 
 } // namespace xlnt

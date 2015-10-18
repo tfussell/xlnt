@@ -12,6 +12,7 @@
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
+#include <xlnt/styles/number_format.hpp>
 
 namespace {
 
@@ -164,20 +165,16 @@ void read_worksheet_common(xlnt::worksheet ws, const pugi::xml_node &root_node, 
                             
                             if(match != custom_number_formats.end())
                             {
-                                ws.get_cell(address).get_style().get_number_format().set_format_code_string(match->second, number_format_id);
+                                xlnt::number_format nf(match->second);
+                                auto cell = ws.get_cell(address);
+                                cell.set_number_format(nf);
                             }
                         }
                         else
                         {
-                            ws.get_cell(address).get_style().get_number_format().set_format_code(format);
-                        }
-                        
-                        //TODO: this is bad
-                        if(ws.get_cell(address).get_style().get_number_format().get_format_code_string().find_first_of("mdyhs") != std::string::npos)
-                        {
-                            auto base_date = ws.get_parent().get_properties().excel_base_date;
-                            auto converted = xlnt::datetime::from_number(std::stold(value_string), base_date);
-                            ws.get_cell(address).set_value(converted.to_number(xlnt::calendar::windows_1900));
+                            xlnt::number_format nf(format);
+                            auto cell = ws.get_cell(address);
+                            cell.set_number_format(nf);
                         }
                     }
                 }

@@ -39,10 +39,8 @@ public:
     style_writer(workbook &wb);
     style_writer(const style_writer &);
     style_writer &operator=(const style_writer &);
-    std::unordered_map<std::size_t, std::string> get_style_by_hash() const;
-    std::string write_table() const;
-    std::vector<style> get_styles() const;
     
+    std::string write_table() const;
     std::string write_number_formats();
     
 private:
@@ -56,7 +54,6 @@ private:
     void write_dxfs();
     void write_table_styles();
     
-    std::vector<style> style_list_;
     workbook &wb_;
 };
     

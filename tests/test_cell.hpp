@@ -4,8 +4,21 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/xlnt.hpp>
-#include <xlnt/reader/reader.hpp>
+#include <xlnt/cell/cell.hpp>
+#include <xlnt/cell/cell_reference.hpp>
+#include <xlnt/cell/comment.hpp>
+#include <xlnt/common/datetime.hpp>
+#include <xlnt/common/exceptions.hpp>
+#include <xlnt/reader/workbook_reader.hpp>
+#include <xlnt/styles/alignment.hpp>
+#include <xlnt/styles/borders.hpp>
+#include <xlnt/styles/font.hpp>
+#include <xlnt/styles/fill.hpp>
+#include <xlnt/styles/number_format.hpp>
+#include <xlnt/styles/protection.hpp>
+#include <xlnt/worksheet/range.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
+#include <xlnt/workbook/workbook.hpp>
 
 class test_cell : public CxxTest::TestSuite
 {
@@ -16,6 +29,23 @@ public:
     test_cell()
     {
         wb_guess_types.set_guess_types(true);
+    }
+    
+    void test_debug()
+    {
+        xlnt::workbook wb = xlnt::load_workbook("/Users/thomas/Development/xlnt/samples/sample1.xlsx");
+        for(auto ws : wb)
+        {
+            for(auto row : ws.rows())
+            {
+                for(auto cell : row)
+                {
+                    std::cout << cell << ", ";
+                }
+                
+                std::cout << std::endl;
+            }
+        }
     }
     
 	void test_infer_numeric()
@@ -171,7 +201,7 @@ public:
         TS_ASSERT(cell.get_data_type() == xlnt::cell::type::numeric);
         TS_ASSERT(cell.get_value<long double>() == 40372.27616898148L);
         TS_ASSERT(cell.is_date());
-        TS_ASSERT(cell.get_number_format() == "yyyy-mm-dd h:mm:ss");
+        TS_ASSERT(cell.get_number_format().get_format_string() == "yyyy-mm-dd h:mm:ss");
     }
     
     void test_insert_date()
@@ -183,7 +213,7 @@ public:
         TS_ASSERT(cell.get_data_type() == xlnt::cell::type::numeric);
         TS_ASSERT(cell.get_value<long double>() == 40372.L);
         TS_ASSERT(cell.is_date());
-        TS_ASSERT(cell.get_number_format() == "yyyy-mm-dd");
+        TS_ASSERT(cell.get_number_format().get_format_string() == "yyyy-mm-dd");
     }
     
     void test_insert_time()
@@ -195,7 +225,7 @@ public:
         TS_ASSERT(cell.get_data_type() == xlnt::cell::type::numeric);
         TS_ASSERT(cell.get_value<long double>() == 0.04375L);
         TS_ASSERT(cell.is_date());
-        TS_ASSERT(cell.get_number_format() == "h:mm:ss");
+        TS_ASSERT(cell.get_number_format().get_format_string() == "h:mm:ss");
     }
     
     void test_cell_formatted_as_date1()
@@ -279,7 +309,7 @@ public:
         TS_ASSERT(cell.get_value<long double>() == 1.125);
         TS_ASSERT(cell.get_data_type() == xlnt::cell::type::numeric);
         TS_ASSERT(!cell.is_date());
-        TS_ASSERT(cell.get_number_format() == "[hh]:mm:ss");
+        TS_ASSERT(cell.get_number_format().get_format_string() == "[hh]:mm:ss");
     }
     
     void test_repr()
@@ -406,8 +436,8 @@ public:
         ws.get_parent().add_number_format("dd--hh--mm");
     
         xlnt::cell cell(ws, "A1");
-        cell.set_number_format("dd--hh--mm");
-        TS_ASSERT(cell.get_number_format() == "dd--hh--mm");
+        cell.set_number_format(xlnt::number_format("dd--hh--mm"));
+        TS_ASSERT(cell.get_number_format().get_format_string() == "dd--hh--mm");
     }
     
     void _test_alignment()
@@ -439,7 +469,7 @@ public:
         auto ws = wb.create_sheet();
         
         xlnt::cell cell(ws, "A1");
-        cell.get_style().set_pivot_button(true);
+        cell.set_pivot_button(true);
         TS_ASSERT(cell.pivot_button());
     }
     
@@ -448,7 +478,7 @@ public:
         auto ws = wb.create_sheet();
     
         xlnt::cell cell(ws, "A1");
-        cell.get_style().set_quote_prefix(true);
+        cell.set_quote_prefix(true);
         TS_ASSERT(cell.quote_prefix());
     }
 };

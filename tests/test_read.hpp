@@ -93,7 +93,7 @@ public:
     {
         auto wb = workbook_with_styles();
         auto ws = wb["Sheet1"];
-        auto code = ws.get_cell("A1").get_style().get_number_format().get_format_code();
+        auto code = ws.get_cell("A1").get_number_format().get_format_code();
         auto expected = xlnt::number_format::format::general;
         TS_ASSERT_EQUALS(code, expected);
     }
@@ -102,7 +102,7 @@ public:
     {
         auto wb = workbook_with_styles();
         auto ws = wb["Sheet1"];
-        auto code = ws.get_cell("A2").get_style().get_number_format().get_format_code();
+        auto code = ws.get_cell("A2").get_number_format().get_format_code();
         auto expected = xlnt::number_format::format::date_xlsx14;
         TS_ASSERT_EQUALS(code, expected);
     }
@@ -111,7 +111,7 @@ public:
     {
         auto wb = workbook_with_styles();
         auto ws = wb["Sheet1"];
-        auto code = ws.get_cell("A3").get_style().get_number_format().get_format_code();
+        auto code = ws.get_cell("A3").get_number_format().get_format_code();
         auto expected = xlnt::number_format::format::number_00;
         TS_ASSERT_EQUALS(code, expected);
     }
@@ -120,7 +120,7 @@ public:
     {
         auto wb = workbook_with_styles();
         auto ws = wb["Sheet1"];
-        auto code = ws.get_cell("A4").get_style().get_number_format().get_format_code();
+        auto code = ws.get_cell("A4").get_number_format().get_format_code();
         auto expected = xlnt::number_format::format::date_time3;
         TS_ASSERT_EQUALS(code, expected);
     }
@@ -129,7 +129,7 @@ public:
     {
         auto wb = workbook_with_styles();
         auto ws = wb["Sheet1"];
-        auto code = ws.get_cell("A5").get_style().get_number_format().get_format_code();
+        auto code = ws.get_cell("A5").get_number_format().get_format_code();
         auto expected = xlnt::number_format::format::percentage_00;
         TS_ASSERT_EQUALS(code, expected);
     }
@@ -162,14 +162,14 @@ public:
     {
         auto wb = date_std_1900();
         auto ws = wb["Sheet1"];
-        TS_ASSERT_EQUALS(ws.get_cell("A1").get_style().get_number_format().get_format_code(), xlnt::number_format::format::date_xlsx14);
+        TS_ASSERT_EQUALS(ws.get_cell("A1").get_number_format().get_format_code(), xlnt::number_format::format::date_xlsx14);
     }
 
     void test_read_date_style_mac()
     {
         auto wb = date_mac_1904();
         auto ws = wb["Sheet1"];
-        TS_ASSERT_EQUALS(ws.get_cell("A1").get_style().get_number_format().get_format_code(), xlnt::number_format::format::date_xlsx14);
+        TS_ASSERT_EQUALS(ws.get_cell("A1").get_number_format().get_format_code(), xlnt::number_format::format::date_xlsx14);
     }
 
     void test_read_compare_mac_win_dates()

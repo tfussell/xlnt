@@ -23,6 +23,8 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <cstddef>
+
 #include <xlnt/styles/color.hpp>
 
 namespace xlnt {
@@ -103,6 +105,8 @@ public:
         && diagonal_up == other.diagonal_up
         && diagonal_down == other.diagonal_down;
     }
+    
+    std::size_t hash() const { return 0; }
 };
 
 } // namespace xlnt

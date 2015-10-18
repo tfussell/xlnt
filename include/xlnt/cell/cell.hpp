@@ -32,6 +32,8 @@
 
 namespace xlnt {
     
+enum class calendar;
+    
 class cell_reference;
 class comment;
 class relationship;
@@ -107,28 +109,22 @@ public:
     bool has_hyperlink() const;
     
     // style
-    bool has_style() const;
-    style &get_style();
-    const style &get_style() const;
-    void set_style(const style &s);
-    
-    // style shortcuts
-    std::string get_number_format();
-    std::string get_number_format() const;
-    void set_number_format(const std::string &format_code, int index = -1);
-    font &get_font();
+    std::size_t get_style_id() const;
+    const number_format &get_number_format() const;
+    void set_number_format(const number_format &format);
     const font &get_font() const;
-    fill &get_fill();
+    void set_font(const font &font_);
     const fill &get_fill() const;
-    border &get_border();
+    void set_fill(const fill &fill_);
     const border &get_border() const;
-    alignment &get_alignment();
+    void set_border(const border &border_);
     const alignment &get_alignment() const;
-    protection &get_protection();
+    void set_alignment(const alignment &alignment_);
     const protection &get_protection() const;
-    bool pivot_button();
+    void set_protection(const protection &protection_);
+    void set_pivot_button(bool b);
     bool pivot_button() const;
-    bool quote_prefix();
+    void set_quote_prefix(bool b);
     bool quote_prefix() const;
     
     // comment
@@ -168,6 +164,8 @@ public:
     worksheet get_parent();
     const worksheet get_parent() const;
     
+    calendar get_base_date() const;
+    
     // operators
     cell &operator=(const cell &rhs);
     
@@ -178,8 +176,10 @@ public:
     friend bool operator<(cell left, cell right);
     
 private:
-    void set_value_guess_type(const std::string &s);
     friend class worksheet;
+    friend struct detail::cell_impl;
+    friend class style;
+    
     cell(detail::cell_impl *d);
     detail::cell_impl *d_;
 };

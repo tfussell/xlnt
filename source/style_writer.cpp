@@ -1,6 +1,12 @@
 #include <sstream>
 #include <pugixml.hpp>
 
+#include <xlnt/styles/alignment.hpp>
+#include <xlnt/styles/borders.hpp>
+#include <xlnt/styles/fill.hpp>
+#include <xlnt/styles/font.hpp>
+#include <xlnt/styles/number_format.hpp>
+#include <xlnt/styles/protection.hpp>
 #include <xlnt/writer/style_writer.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
@@ -14,46 +20,6 @@ style_writer::style_writer(xlnt::workbook &wb) : wb_(wb)
   
 }
 
-std::unordered_map<std::size_t, std::string> style_writer::get_style_by_hash() const
-{
-    std::unordered_map<std::size_t, std::string> styles;
-    for(auto ws : wb_)
-    {
-        for(auto row : ws.rows())
-        {
-            for(auto cell : row)
-            {
-                if(cell.has_style())
-                {
-                    styles[1] = "style";
-                }
-            }
-        }
-    }
-    return styles;
-}
-
-std::vector<style> style_writer::get_styles() const
-{
-    std::vector<style> styles;
-    
-    for(auto ws : wb_)
-    {
-        for(auto row : ws.rows())
-        {
-            for(auto cell : row)
-            {
-                if(cell.has_style())
-                {
-                    styles.push_back(cell.get_style());
-                }
-            }
-        }
-    }
-    
-    return styles;
-}
-    
 std::string style_writer::write_table() const
 {
     pugi::xml_document doc;
@@ -62,36 +28,53 @@ std::string style_writer::write_table() const
     style_sheet_node.append_attribute("xmlns:mc").set_value("http://schemas.openxmlformats.org/markup-compatibility/2006");
     style_sheet_node.append_attribute("mc:Ignorable").set_value("x14ac");
     style_sheet_node.append_attribute("xmlns:x14ac").set_value("http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac");
-
-    std::vector<style> custom_styles;
-    for(auto style : get_styles())
+    
+    auto num_fmts_node = style_sheet_node.append_child("numFmts");
+    auto &num_fmts = wb_.get_number_formats();
+    num_fmts_node.append_attribute("count").set_value(static_cast<int>(num_fmts.size()));
+    int custom_index = 164;
+    
+    for(auto &num_fmt : num_fmts)
     {
-        if((int)style.get_number_format().get_format_code() > 163)
+        auto num_fmt_node = num_fmts_node.append_child("numFmt");
+        
+        if(num_fmt.second.get_format_code() == number_format::format::unknown)
         {
-            custom_styles.push_back(style);
+            num_fmt_node.append_attribute("numFmtId").set_value(custom_index++);
         }
-    }
-
-    if(!custom_styles.empty())
-    {
-
+        else
+        {
+            num_fmt_node.append_attribute("numFmtId").set_value(num_fmt.second.get_format_index());
+        }
+                                                                
+        num_fmt_node.append_attribute("formatCode").set_value("General");
     }
 
     auto fonts_node = style_sheet_node.append_child("fonts");
-    fonts_node.append_attribute("count").set_value(1);
+    auto &fonts = wb_.get_fonts();
+    fonts_node.append_attribute("count").set_value(static_cast<int>(fonts.size()));
     fonts_node.append_attribute("x14ac:knownFonts").set_value(1);
-
-    auto font_node = fonts_node.append_child("font");
-    auto size_node = font_node.append_child("sz");
-    size_node.append_attribute("val").set_value(11);
-    auto color_node = font_node.append_child("color");
-    color_node.append_attribute("theme").set_value(1);
-    auto name_node = font_node.append_child("name");
-    name_node.append_attribute("val").set_value("Calibri");
-    auto family_node = font_node.append_child("family");
-    family_node.append_attribute("val").set_value(2);
-    auto scheme_node = font_node.append_child("scheme");
-    scheme_node.append_attribute("val").set_value("minor");
+    
+    for(auto &f : fonts)
+    {
+        auto font_node = fonts_node.append_child("font");
+        auto size_node = font_node.append_child("sz");
+        size_node.append_attribute("val").set_value(f.second.get_size());
+        auto color_node = font_node.append_child("color");
+        color_node.append_attribute("theme").set_value(1);
+        auto name_node = font_node.append_child("name");
+        name_node.append_attribute("val").set_value(f.second.get_name().c_str());
+        auto family_node = font_node.append_child("family");
+        family_node.append_attribute("val").set_value(2);
+        auto scheme_node = font_node.append_child("scheme");
+        scheme_node.append_attribute("val").set_value("minor");
+        
+        if(f.second.is_bold())
+        {
+            auto bold_node = font_node.append_child("b");
+            bold_node.append_attribute("val").set_value(1);
+        }
+    }
 
     auto fills_node = style_sheet_node.append_child("fills");
     fills_node.append_attribute("count").set_value(2);

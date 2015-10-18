@@ -16,7 +16,7 @@ public:
         xlnt::workbook wbk;
         wbk.get_active_sheet().get_cell("A2").set_value("xlnt");
         wbk.get_active_sheet().get_cell("B5").set_value(88);
-        wbk.get_active_sheet().get_cell("B5").get_style().set_number_format(xlnt::number_format(xlnt::number_format::format::percentage_00));
+        wbk.get_active_sheet().get_cell("B5").set_number_format(xlnt::number_format(xlnt::number_format::format::percentage_00));
         wbk.save(temp_file.GetFilename());
         
         if(PathHelper::FileExists(temp_file.GetFilename()))
@@ -95,17 +95,6 @@ public:
         ws.get_cell("F3").set_formula("F1+F2");
         auto content = xlnt::write_worksheet(ws, {}, {});
         TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_formula.xml", content));
-    }
-
-    void test_write_style()
-    {
-        xlnt::workbook wb_guess_types;
-        wb_guess_types.set_guess_types(true);
-		auto ws = wb_guess_types.create_sheet();
-        ws.get_cell("F1").set_value("13%");
-		auto style_id_by_hash = xlnt::style_writer(wb_guess_types).get_style_by_hash();
-        auto content = xlnt::write_worksheet(ws, {}, style_id_by_hash);
-        TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_style.xml", content));
     }
 
     void test_write_height()

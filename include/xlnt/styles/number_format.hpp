@@ -86,55 +86,27 @@ public:
     static std::string builtin_format_code(int index);
     static format lookup_format(int code);
     
-    static bool is_date_format(const std::string &format);
     static bool is_builtin(const std::string &format);
     
-    number_format() : format_code_(format::general), format_index_(0) {}
-    number_format(format code) : format_code_(code), format_index_(reversed_builtin_formats().at(format_strings().at(code))) {}
+    number_format();
+    number_format(format code);
+    number_format(const std::string &code);
     
-    format get_format_code() const { return format_code_; }
+    format get_format_code() const;
     
-    void set_format_code(format format_code, int index = -1)
-    {
-        format_code_ = format_code;
-        
-        if(format_code_ != format::unknown)
-        {
-            set_format_code_string(format_strings().at(format_code), index);
-        }
-    }
+    void set_format_code(format format_code);
     
-    void set_format_code_string(const std::string &format_code, int index)
-    {
-        custom_format_code_ = format_code;
-        format_index_ = index;
-        
-        const auto &reversed = reversed_builtin_formats();
-        auto match = reversed.find(format_code);
-        
-        format_code_ = format::unknown;
-        
-        if(match != reversed.end())
-        {
-            format_index_ = match->second;
-            
-            for(const auto &p : format_strings())
-            {
-                if(p.second == format_code)
-                {
-                    format_code_ = p.first;
-                    break;
-                }
-            }
-        }
-        
-    }
-    std::string get_format_code_string() const;
+    void set_format_string(const std::string &format_code);
+    std::string get_format_string() const;
+    
+    int get_format_index() const { return format_index_; }
+    
+    std::size_t hash() const;
 
 private:
-    std::string custom_format_code_ = "";
-    format format_code_ = format::general;
-    int format_index_ = 0;
+    format format_code_;
+    int format_index_;
+    std::string format_string_;
 };
 
 } // namespace xlnt

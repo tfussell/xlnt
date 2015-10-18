@@ -28,6 +28,8 @@
 #include <xlnt/styles/color.hpp>
 
 namespace xlnt {
+    
+class style;
 
 class font
 {
@@ -56,7 +58,15 @@ public:
         && color_ == other.color_;
     }
     
+    int get_size() const { return size_; }
+    std::string get_name() const { return name_; }
+    bool is_bold() const { return bole_; }
+    
+    std::size_t hash() const { return 0; }
+    
 private:
+    friend class style;
+    
      std::string name_ = "Calibri";
      int size_ = 11;
      bool bold_ = false;

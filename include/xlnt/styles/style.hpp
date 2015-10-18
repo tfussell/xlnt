@@ -23,64 +23,55 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include "font.hpp"
-#include "fill.hpp"
-#include "borders.hpp"
-#include "alignment.hpp"
-#include "color.hpp"
-#include "number_format.hpp"
-#include "protection.hpp"
-
 namespace xlnt {
+namespace detail {
+    
+struct cell_impl;
+    
+} // namespace detail    
+
+class alignment;
+class border;
+class font;
+class fill;
+class number_format;
+class protection;
+    
+class cell;
 
 class style
 {
 public:
-    style(bool is_static = false) : static_(is_static) {}
+    const style default_style();
+    
+    style();
     style(const style &rhs);
+    style &operator=(const style &rhs);
     
     style copy() const;
     
-    font &get_font();
+    std::size_t hash() const;
+    
     const font &get_font() const;
-    void set_font(font font);
-    
-    fill &get_fill();
     const fill &get_fill() const;
-    void set_fill(fill &fill);
-    
-    border &get_border();
     const border &get_border() const;
-    void set_border(border borders);
-    
-    alignment &get_alignment();
-    const alignment get_alignment() const;
-    void set_alignment(alignment alignment);
-    
-    number_format &get_number_format() { return number_format_; }
-    const number_format &get_number_format() const { return number_format_; }
-    void set_number_format(number_format number_format);
-    
-    protection &get_protection();
+    const alignment &get_alignment() const;
+    const number_format &get_number_format() const;
     const protection &get_protection() const;
-    void set_protection(protection protection);
-    
-    bool pivot_button();
-    void set_pivot_button(bool pivot);
-    
-    bool quote_prefix();
-    void set_quote_prefix(bool quote);
+    bool pivot_button() const;
+    bool quote_prefix() const;
     
 private:
-    bool static_ = false;
-    font font_;
-    fill fill_;
-    border border_;
-    alignment alignment_;
-    number_format number_format_;
-    protection protection_;
-    bool pivot_button_;
-    bool quote_prefix_;
+    cell get_parent();
+    const cell get_parent() const;
+    detail::cell_impl *parent_;
+    std::size_t font_id_;
+    std::size_t fill_id_;
+    std::size_t border_id_;
+    std::size_t alignment_id_;
+    std::size_t number_format_id_;
+    std::size_t protection_id_;
+    std::size_t style_id_;
 };
 
 } // namespace xlnt

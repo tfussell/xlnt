@@ -186,5 +186,10 @@ double timedelta::to_number() const
 {
     return days + hours / 24.0;
 }
-    
+
+timedelta timedelta::from_number(long double number)
+{
+    return timedelta(static_cast<long long int>(number), 0);
+}
+
 } // namespace xlnt
