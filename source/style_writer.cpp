@@ -30,28 +30,29 @@ std::string style_writer::write_table() const
     style_sheet_node.append_attribute("xmlns:x14ac").set_value("http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac");
     
     auto num_fmts_node = style_sheet_node.append_child("numFmts");
-    auto &num_fmts = wb_.get_number_formats();
+    auto num_fmts = wb_.get_number_formats();
     num_fmts_node.append_attribute("count").set_value(static_cast<int>(num_fmts.size()));
+    
     int custom_index = 164;
     
     for(auto &num_fmt : num_fmts)
     {
         auto num_fmt_node = num_fmts_node.append_child("numFmt");
         
-        if(num_fmt.second.get_format_code() == number_format::format::unknown)
+        if(num_fmt.get_format_code() == number_format::format::unknown)
         {
             num_fmt_node.append_attribute("numFmtId").set_value(custom_index++);
         }
         else
         {
-            num_fmt_node.append_attribute("numFmtId").set_value(num_fmt.second.get_format_index());
+            num_fmt_node.append_attribute("numFmtId").set_value(num_fmt.get_format_index());
         }
-                                                                
-        num_fmt_node.append_attribute("formatCode").set_value("General");
+        
+        num_fmt_node.append_attribute("formatCode").set_value(num_fmt.get_format_string().c_str());
     }
 
     auto fonts_node = style_sheet_node.append_child("fonts");
-    auto &fonts = wb_.get_fonts();
+    auto fonts = wb_.get_fonts();
     fonts_node.append_attribute("count").set_value(static_cast<int>(fonts.size()));
     fonts_node.append_attribute("x14ac:knownFonts").set_value(1);
     
@@ -59,17 +60,17 @@ std::string style_writer::write_table() const
     {
         auto font_node = fonts_node.append_child("font");
         auto size_node = font_node.append_child("sz");
-        size_node.append_attribute("val").set_value(f.second.get_size());
+        size_node.append_attribute("val").set_value(f.get_size());
         auto color_node = font_node.append_child("color");
         color_node.append_attribute("theme").set_value(1);
         auto name_node = font_node.append_child("name");
-        name_node.append_attribute("val").set_value(f.second.get_name().c_str());
+        name_node.append_attribute("val").set_value(f.get_name().c_str());
         auto family_node = font_node.append_child("family");
         family_node.append_attribute("val").set_value(2);
         auto scheme_node = font_node.append_child("scheme");
         scheme_node.append_attribute("val").set_value("minor");
         
-        if(f.second.is_bold())
+        if(f.is_bold())
         {
             auto bold_node = font_node.append_child("b");
             bold_node.append_attribute("val").set_value(1);
@@ -97,15 +98,24 @@ std::string style_writer::write_table() const
     xf_node.append_attribute("fontId").set_value(0);
     xf_node.append_attribute("fillId").set_value(0);
     xf_node.append_attribute("borderId").set_value(0);
-
+    
     auto cell_xfs_node = style_sheet_node.append_child("cellXfs");
-    cell_xfs_node.append_attribute("count").set_value(1);
-    xf_node = cell_xfs_node.append_child("xf");
-    xf_node.append_attribute("numFmtId").set_value(0);
-    xf_node.append_attribute("fontId").set_value(0);
-    xf_node.append_attribute("fillId").set_value(0);
-    xf_node.append_attribute("borderId").set_value(0);
-    xf_node.append_attribute("xfId").set_value(0);
+    const auto &styles = wb_.get_styles();
+    cell_xfs_node.append_attribute("count").set_value(static_cast<int>(styles.size()));
+    
+    for(auto &style : styles)
+    {
+        xf_node = cell_xfs_node.append_child("xf");
+        xf_node.append_attribute("numFmtId").set_value(static_cast<int>(style[3]));
+        xf_node.append_attribute("applyNumberFormat").set_value(1);
+        xf_node.append_attribute("fontId").set_value(static_cast<int>(style[2]));
+        xf_node.append_attribute("fillId").set_value(static_cast<int>(style[1]));
+        xf_node.append_attribute("borderId").set_value(static_cast<int>(style[0]));
+        
+        auto alignment_node = xf_node.append_child("alignment");
+        alignment_node.append_attribute("vertical").set_value("top");
+        alignment_node.append_attribute("wrapText").set_value(1);
+    }
 
     auto cell_styles_node = style_sheet_node.append_child("cellStyles");
     cell_styles_node.append_attribute("count").set_value(1);

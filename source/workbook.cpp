@@ -56,13 +56,20 @@ static std::string create_temporary_filename()
     return "/tmp/xlsx.xlnt";
 #endif
 }
+
+template <class T>
+void hash_combine(std::size_t& seed, const T& v)
+{
+    std::hash<T> hasher;
+    seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
+}
     
 } // namespace
 
 namespace xlnt {
 namespace detail {
 
-workbook_impl::workbook_impl() : active_sheet_index_(0), guess_types_(false), data_only_(false), next_style_id_(0)
+workbook_impl::workbook_impl() : active_sheet_index_(0), guess_types_(false), data_only_(false), next_style_id_(2)
 {
 }
 
@@ -74,12 +81,20 @@ workbook::workbook() : d_(new detail::workbook_impl())
     create_relationship("rId2", "sharedStrings.xml", relationship::type::shared_strings);
     create_relationship("rId3", "styles.xml", relationship::type::styles);
     create_relationship("rId4", "theme/theme1.xml", relationship::type::theme);
-    set_alignment(alignment(), 1);
-    set_border(border(), 1);
-    set_fill(fill(), 1);
-    set_font(font(), 1);
-    set_number_format(number_format(), 1);
-    set_protection(protection(), 1);
+
+    d_->alignments_[alignment().hash()] = alignment();
+    d_->borders_[border().hash()] = border();
+    d_->fills_[fill().hash()] = fill();
+    d_->fonts_[font().hash()] = font();
+    d_->number_formats_[number_format().hash()] = number_format();
+    d_->protections_[protection().hash()] = protection();
+    
+    d_->style_alignment_[1] = alignment().hash();
+    d_->style_border_[1] = border().hash();
+    d_->style_font_[1] = font().hash();
+    d_->style_fill_[1] = fill().hash();
+    d_->style_number_format_[1] = number_format().hash();
+    d_->style_protection_[1] = protection().hash();
     d_->style_pivot_button_[1] = false;
     d_->style_quote_prefix_[1] = false;
 }
@@ -837,7 +852,7 @@ std::size_t workbook::set_alignment(const alignment &alignment_, std::size_t sty
     }
     
     d_->style_alignment_[d_->next_style_id_] = hash;
-    
+
     d_->style_border_[d_->next_style_id_] = d_->style_border_[style_id];
     d_->style_font_[d_->next_style_id_] = d_->style_font_[style_id];
     d_->style_fill_[d_->next_style_id_] = d_->style_fill_[style_id];
@@ -906,6 +921,145 @@ std::size_t workbook::set_number_format(const xlnt::number_format &format, std::
     d_->style_quote_prefix_[d_->next_style_id_] = d_->style_quote_prefix_[style_id];
     
     return d_->next_style_id_++;
+}
+    
+std::vector<alignment> workbook::get_alignments() const
+{
+    std::vector<alignment> alignments;
+    
+    for(auto &pair : d_->alignments_)
+    {
+        alignments.push_back(pair.second);
+    }
+    
+    return alignments;
+}
+
+std::vector<border> workbook::get_borders() const
+{
+    std::vector<border> borders;
+    
+    for(auto &pair : d_->borders_)
+    {
+        borders.push_back(pair.second);
+    }
+    
+    return borders;
+}
+
+std::vector<fill> workbook::get_fills() const
+{
+    std::vector<fill> fills;
+    
+    for(auto &pair : d_->fills_)
+    {
+        fills.push_back(pair.second);
+    }
+    
+    return fills;
+}
+
+std::vector<font> workbook::get_fonts() const
+{
+    std::vector<font> fonts;
+    
+    for(auto &pair : d_->fonts_)
+    {
+        fonts.push_back(pair.second);
+    }
+    
+    return fonts;
+}
+
+std::vector<number_format> workbook::get_number_formats() const
+{
+    std::vector<number_format> number_formats;
+    
+    for(auto &pair : d_->number_formats_)
+    {
+        number_formats.push_back(pair.second);
+    }
+    
+    return number_formats;
+}
+
+std::vector<protection> workbook::get_protections() const
+{
+    std::vector<protection> protections;
+    
+    for(auto &pair : d_->protections_)
+    {
+        protections.push_back(pair.second);
+    }
+    
+    return protections;
+}
+    
+std::vector<std::array<int, 4>> workbook::get_styles() const
+{
+    auto borders = get_borders();
+    auto fills = get_fills();
+    auto fonts = get_fonts();
+    auto number_formats = get_number_formats();
+    
+    std::unordered_map<std::size_t, std::array<int, 4>> styles;
+    
+    for(std::size_t i = 1; i < d_->next_style_id_; i++)
+    {
+        std::array<std::size_t, 4> style_hashes = {d_->style_border_[i], d_->style_fill_[i], d_->style_font_[i], d_->style_number_format_[i]};
+        std::array<int, 4> style = {-1, -1, -1, -1};
+        
+        for(std::size_t i = 0; i < borders.size(); i++)
+        {
+            if(borders[i].hash() == style_hashes[0])
+            {
+                style[0] = i;
+                break;
+            }
+        }
+        
+        for(std::size_t i = 0; i < fills.size(); i++)
+        {
+            if(fills[i].hash() == style_hashes[1])
+            {
+                style[1] = i;
+                break;
+            }
+        }
+        
+        for(std::size_t i = 0; i < fonts.size(); i++)
+        {
+            if(fonts[i].hash() == style_hashes[2])
+            {
+                style[2] = i;
+                break;
+            }
+        }
+        
+        for(std::size_t i = 0; i < number_formats.size(); i++)
+        {
+            if(number_formats[i].hash() == style_hashes[3])
+            {
+                style[3] = i;
+                break;
+            }
+        }
+        
+        std::size_t seed = style[0];
+        hash_combine(seed, style[1]);
+        hash_combine(seed, style[2]);
+        hash_combine(seed, style[3]);
+        styles[seed] = style;
+    }
+    
+    std::vector<std::array<int, 4>> styles_vector;
+    
+    for(auto &pair : styles)
+    {
+        styles_vector.push_back(pair.second);
+    }
+    
+    return styles_vector;
 }
     
 } // namespace xlnt

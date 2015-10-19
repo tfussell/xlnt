@@ -60,7 +60,7 @@ public:
     
     int get_size() const { return size_; }
     std::string get_name() const { return name_; }
-    bool is_bold() const { return bole_; }
+    bool is_bold() const { return bold_; }
     
     std::size_t hash() const { return 0; }
     

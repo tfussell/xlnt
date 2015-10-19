@@ -23,6 +23,7 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <array>
 #include <string>
 #include <unordered_map>
 #include <vector>

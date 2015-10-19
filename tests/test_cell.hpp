@@ -46,6 +46,7 @@ public:
                 std::cout << std::endl;
             }
         }
+        wb.save("book.xlsx");
     }
     
 	void test_infer_numeric()

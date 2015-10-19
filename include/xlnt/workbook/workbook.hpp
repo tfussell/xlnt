@@ -208,12 +208,14 @@ public:
     void add_color(color c);
     void add_number_format(const std::string &format);
     
-    const std::unordered_map<std::size_t, alignment> &get_alignments() const;
-    const std::unordered_map<std::size_t, border> &get_borders() const;
-    const std::unordered_map<std::size_t, fill> &get_fills() const;
-    const std::unordered_map<std::size_t, font> &get_fonts() const;
-    const std::unordered_map<std::size_t, number_format> &get_number_formats() const;
-    const std::unordered_map<std::size_t, protection> &get_protections() const;
+    std::vector<std::array<int, 4>> get_styles() const;
+    
+    std::vector<alignment> get_alignments() const;
+    std::vector<border> get_borders() const;
+    std::vector<fill> get_fills() const;
+    std::vector<font> get_fonts() const;
+    std::vector<number_format> get_number_formats() const;
+    std::vector<protection> get_protections() const;
     
     const number_format &get_number_format(std::size_t style_id) const;
     std::size_t set_number_format(const number_format &format, std::size_t style_id);
