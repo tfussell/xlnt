@@ -208,7 +208,7 @@ public:
     void add_color(color c);
     void add_number_format(const std::string &format);
     
-    std::vector<std::array<int, 4>> get_styles() const;
+    std::vector<style> get_styles() const;
     
     std::vector<alignment> get_alignments() const;
     std::vector<border> get_borders() const;

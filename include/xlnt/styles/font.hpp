@@ -47,15 +47,7 @@ public:
     
     bool operator==(const font &other) const
     {
-        return name_ == other.name_
-        && size_ == other.size_
-        && bold_ == other.bold_
-        && italic_ == other.italic_
-        && superscript_ == other.superscript_
-        && subscript_ == other.subscript_
-        && underline_ == other.underline_
-        && strikethrough_ == other.strikethrough_
-        && color_ == other.color_;
+        return hash() == other.hash();
     }
     
     int get_size() const { return size_; }

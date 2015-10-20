@@ -178,6 +178,10 @@ void read_worksheet_common(xlnt::worksheet ws, const pugi::xml_node &root_node, 
                         }
                     }
                 }
+                else
+                {
+                    ws.get_cell(address).set_number_format(xlnt::number_format(xlnt::number_format::format::general));
+                }
             }
         }
     }

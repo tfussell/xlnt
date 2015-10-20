@@ -23,55 +23,68 @@
 // @author: see AUTHORS file
 #pragma once
 
-namespace xlnt {
-namespace detail {
-    
-struct cell_impl;
-    
-} // namespace detail    
+#include "alignment.hpp"
+#include "borders.hpp"
+#include "fill.hpp"
+#include "font.hpp"
+#include "number_format.hpp"
+#include "protection.hpp"
 
-class alignment;
-class border;
-class font;
-class fill;
-class number_format;
-class protection;
-    
-class cell;
+namespace xlnt {
+
+class workbook;
 
 class style
 {
 public:
-    const style default_style();
-    
     style();
-    style(const style &rhs);
-    style &operator=(const style &rhs);
-    
-    style copy() const;
     
     std::size_t hash() const;
     
-    const font &get_font() const;
-    const fill &get_fill() const;
-    const border &get_border() const;
-    const alignment &get_alignment() const;
-    const number_format &get_number_format() const;
-    const protection &get_protection() const;
+    const alignment get_alignment() const;
+    const border get_border() const;
+    const fill get_fill() const;
+    const font get_font() const;
+    const number_format get_number_format() const;
+    const protection get_protection() const;
     bool pivot_button() const;
     bool quote_prefix() const;
     
+    std::size_t get_fill_index() const { return fill_index_; }
+    std::size_t get_font_index() const { return font_index_; }
+    std::size_t get_border_index() const { return border_index_; }
+    std::size_t get_number_format_index() const { return number_format_index_; }
+    
+    bool operator==(const style &other) const
+    {
+        return hash() == other.hash();
+    }
+    
 private:
-    cell get_parent();
-    const cell get_parent() const;
-    detail::cell_impl *parent_;
-    std::size_t font_id_;
-    std::size_t fill_id_;
-    std::size_t border_id_;
-    std::size_t alignment_id_;
-    std::size_t number_format_id_;
-    std::size_t protection_id_;
-    std::size_t style_id_;
+    friend class workbook;
+    
+    std::size_t style_index_;
+    
+    std::size_t alignment_index_;
+    alignment alignment_;
+    
+    std::size_t border_index_;
+    border border_;
+    
+    std::size_t fill_index_;
+    fill fill_;
+    
+    std::size_t font_index_;
+    font font_;
+    
+    std::size_t number_format_index_;
+    number_format number_format_;
+    
+    std::size_t protection_index_;
+    protection protection_;
+    
+    bool pivot_button_;
+    bool quote_prefix_;
 };
 
 } // namespace xlnt

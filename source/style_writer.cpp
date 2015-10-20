@@ -106,11 +106,11 @@ std::string style_writer::write_table() const
     for(auto &style : styles)
     {
         xf_node = cell_xfs_node.append_child("xf");
-        xf_node.append_attribute("numFmtId").set_value(static_cast<int>(style[3]));
+        xf_node.append_attribute("numFmtId").set_value((int)style.get_number_format_index());
         xf_node.append_attribute("applyNumberFormat").set_value(1);
-        xf_node.append_attribute("fontId").set_value(static_cast<int>(style[2]));
-        xf_node.append_attribute("fillId").set_value(static_cast<int>(style[1]));
-        xf_node.append_attribute("borderId").set_value(static_cast<int>(style[0]));
+        xf_node.append_attribute("fontId").set_value((int)style.get_font_index());
+        xf_node.append_attribute("fillId").set_value((int)style.get_fill_index());
+        xf_node.append_attribute("borderId").set_value((int)style.get_border_index());
         
         auto alignment_node = xf_node.append_child("alignment");
         alignment_node.append_attribute("vertical").set_value("top");

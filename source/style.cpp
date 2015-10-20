@@ -22,17 +22,9 @@ style::style()
 {
 }
 
-style::style(const style &other)
-{
-}
-
-const cell style::get_parent() const
-{
-    return cell(parent_);
-}
-
 std::size_t style::hash() const
 {
+    /*
     std::size_t seed = 100;
     std::hash<std::string> string_hash;
     auto font_ = get_font();
@@ -45,48 +37,51 @@ std::size_t style::hash() const
     bools = bools << 1 & font_.superscript_;
     bools = bools << 1 & font_.subscript_;
     hash_combine(seed, bools);
+     */
+    std::size_t seed = 100;
+    hash_combine(seed, number_format_.hash());
     
     return seed;
 }
 
-const number_format &style::get_number_format() const
+const number_format style::get_number_format() const
 {
-    return get_parent().get_number_format();
+    return number_format_;
 }
 
-const border &style::get_border() const
+const border style::get_border() const
 {
-    return get_parent().get_border();
+    return border_;
 }
 
-const alignment &style::get_alignment() const
+const alignment style::get_alignment() const
 {
-    return get_parent().get_alignment();
+    return alignment_;
 }
     
-const fill &style::get_fill() const
+const fill style::get_fill() const
 {
-    return get_parent().get_fill();
+    return fill_;
 }
 
-const font &style::get_font() const
+const font style::get_font() const
 {
-    return get_parent().get_font();
+    return font_;
 }
 
-const protection &style::get_protection() const
+const protection style::get_protection() const
 {
-    return get_parent().get_protection();
+    return protection_;
 }
 
 bool style::pivot_button() const
 {
-    return get_parent().pivot_button();
+    return pivot_button_;
 }
 
 bool style::quote_prefix() const
 {
-    return get_parent().quote_prefix();
+    return quote_prefix_;
 }
 
 } // namespace xlnt

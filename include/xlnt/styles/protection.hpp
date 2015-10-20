@@ -47,7 +47,7 @@ public:
     
     bool operator==(const protection &other) const
     {
-        return locked_ == other.locked_ && hidden_ == other.hidden_;
+        return hash() == other.hash();
     }
     
     std::size_t hash() const { return 0; }

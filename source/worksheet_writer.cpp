@@ -126,11 +126,6 @@ std::string write_worksheet(worksheet ws, const std::vector<std::string> &string
     std::unordered_map<std::string, std::string> hyperlink_references;
     
     auto sheet_data_node = root_node.append_child("sheetData");
-    const auto &styles = ws.get_parent().get_styles();
-    auto borders = ws.get_parent().get_borders();
-    auto fills = ws.get_parent().get_fills();
-    auto fonts = ws.get_parent().get_fonts();
-    auto number_formats = ws.get_parent().get_number_formats();
     
     for(auto row : ws.rows())
     {
@@ -270,25 +265,7 @@ std::string write_worksheet(worksheet ws, const std::vector<std::string> &string
                 }
                 
                 auto style_id = cell.get_style_id();
-                auto border = ws.get_parent().get_border(style_id);
-                auto font = ws.get_parent().get_font(style_id);
-                auto fill = ws.get_parent().get_fill(style_id);
-                auto num_format = ws.get_parent().get_number_format(style_id);
-                int style_index = 0;
-                
-                for(auto &style : styles)
-                {
-                    if(borders[style.at(0)].hash() == border.hash()
-                       && fonts[style.at(1)].hash() == font.hash()
-                       && fills[style.at(2)].hash() == fill.hash()
-                       && number_formats[style.at(3)].hash() == num_format.hash())
-                    {
-                        cell_node.append_attribute("s").set_value(style_index);
-                        break;
-                    }
-                    
-                    style_index++;
-                }
+                cell_node.append_attribute("s").set_value((int)style_id);
             }
         }
     }

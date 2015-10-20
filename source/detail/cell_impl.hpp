@@ -196,6 +196,8 @@ struct cell_impl
     bool is_merged_;
     
     std::size_t xf_index_;
+    
+    bool has_style_;
     std::size_t style_id_;
     
     std::unique_ptr<comment_impl> comment_;

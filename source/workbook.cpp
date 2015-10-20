@@ -69,7 +69,7 @@ void hash_combine(std::size_t& seed, const T& v)
 namespace xlnt {
 namespace detail {
 
-workbook_impl::workbook_impl() : active_sheet_index_(0), guess_types_(false), data_only_(false), next_style_id_(2)
+workbook_impl::workbook_impl() : active_sheet_index_(0), guess_types_(false), data_only_(false)
 {
 }
 
@@ -81,22 +81,6 @@ workbook::workbook() : d_(new detail::workbook_impl())
     create_relationship("rId2", "sharedStrings.xml", relationship::type::shared_strings);
     create_relationship("rId3", "styles.xml", relationship::type::styles);
     create_relationship("rId4", "theme/theme1.xml", relationship::type::theme);
-
-    d_->alignments_[alignment().hash()] = alignment();
-    d_->borders_[border().hash()] = border();
-    d_->fills_[fill().hash()] = fill();
-    d_->fonts_[font().hash()] = font();
-    d_->number_formats_[number_format().hash()] = number_format();
-    d_->protections_[protection().hash()] = protection();
-    
-    d_->style_alignment_[1] = alignment().hash();
-    d_->style_border_[1] = border().hash();
-    d_->style_font_[1] = font().hash();
-    d_->style_fill_[1] = fill().hash();
-    d_->style_number_format_[1] = number_format().hash();
-    d_->style_protection_[1] = protection().hash();
-    d_->style_pivot_button_[1] = false;
-    d_->style_quote_prefix_[1] = false;
 }
 
 workbook::iterator::iterator(workbook &wb, std::size_t index) : wb_(wb), index_(index)
@@ -753,313 +737,168 @@ std::size_t workbook::add_style(xlnt::style style_)
 
 const number_format &workbook::get_number_format(std::size_t style_id) const
 {
-    return d_->number_formats_[d_->style_number_format_[style_id]];
+    return d_->number_formats_[d_->styles_[style_id].number_format_index_];
 }
 
 const font &workbook::get_font(std::size_t style_id) const
 {
-    return d_->fonts_[d_->style_font_[style_id]];
+    return d_->fonts_[d_->styles_[style_id].font_index_];
 }
 
 std::size_t workbook::set_font(const font &font_, std::size_t style_id)
 {
-    auto hash = font_.hash();
+    auto match = std::find(d_->fonts_.begin(), d_->fonts_.end(), font_);
+    auto font_index = 0;
     
-    if(d_->number_formats_.find(hash) == d_->number_formats_.end())
+    if(match == d_->fonts_.end())
     {
-        d_->fonts_[hash] = font_;
+        d_->fonts_.push_back(font_);
+        font_index = d_->fonts_.size() - 1;
+    }
+    else
+    {
+        font_index = match - d_->fonts_.begin();
     }
     
-    d_->style_font_[d_->next_style_id_] = hash;
+    auto existing_style = d_->styles_[style_id];
     
-    d_->style_alignment_[d_->next_style_id_] = d_->style_alignment_[style_id];
-    d_->style_border_[d_->next_style_id_] = d_->style_border_[style_id];
-    d_->style_fill_[d_->next_style_id_] = d_->style_fill_[style_id];
-    d_->style_number_format_[d_->next_style_id_] = d_->style_number_format_[style_id];
-    d_->style_protection_[d_->next_style_id_] = d_->style_protection_[style_id];
-    d_->style_pivot_button_[d_->next_style_id_] = d_->style_pivot_button_[style_id];
-    d_->style_quote_prefix_[d_->next_style_id_] = d_->style_quote_prefix_[style_id];
+    if(font_index == existing_style.font_index_)
+    {
+        // no change
+        return style_id;
+    }
     
-    return d_->next_style_id_++;
+    auto new_style = existing_style;
+    new_style.font_index_ = font_index;
+    
+    auto style_match = std::find(d_->styles_.begin(), d_->styles_.end(), new_style);
+
+    if(style_match != d_->styles_.end())
+    {
+        return style_match - d_->styles_.begin();
+    }
+    
+    d_->styles_.push_back(new_style);
+    
+    return d_->styles_.size() - 1;
 }
 
 const fill &workbook::get_fill(std::size_t style_id) const
 {
-    return d_->fills_[d_->style_fill_[style_id]];
+    return d_->fills_[d_->styles_[style_id].fill_index_];
 }
 
 std::size_t workbook::set_fill(const fill &fill_, std::size_t style_id)
 {
-    auto hash = fill_.hash();
-    
-    if(d_->fills_.find(hash) == d_->fills_.end())
-    {
-        d_->fills_[hash] = fill_;
-    }
-    
-    d_->style_fill_[d_->next_style_id_] = hash;
-    
-    d_->style_alignment_[d_->next_style_id_] = d_->style_alignment_[style_id];
-    d_->style_border_[d_->next_style_id_] = d_->style_border_[style_id];
-    d_->style_font_[d_->next_style_id_] = d_->style_font_[style_id];
-    d_->style_number_format_[d_->next_style_id_] = d_->style_number_format_[style_id];
-    d_->style_protection_[d_->next_style_id_] = d_->style_protection_[style_id];
-    d_->style_pivot_button_[d_->next_style_id_] = d_->style_pivot_button_[style_id];
-    d_->style_quote_prefix_[d_->next_style_id_] = d_->style_quote_prefix_[style_id];
-    
-    return d_->next_style_id_++;
+    return style_id;
 }
 
 const border &workbook::get_border(std::size_t style_id) const
 {
-    return d_->borders_[d_->style_border_[style_id]];
+    return d_->borders_[d_->styles_[style_id].border_index_];
 }
 
 std::size_t workbook::set_border(const border &border_, std::size_t style_id)
 {
-    auto hash = border_.hash();
-    
-    if(d_->borders_.find(hash) == d_->borders_.end())
-    {
-        d_->borders_[hash] = border_;
-    }
-    
-    d_->style_border_[d_->next_style_id_] = hash;
-    
-    d_->style_alignment_[d_->next_style_id_] = d_->style_alignment_[style_id];
-    d_->style_font_[d_->next_style_id_] = d_->style_font_[style_id];
-    d_->style_fill_[d_->next_style_id_] = d_->style_fill_[style_id];
-    d_->style_number_format_[d_->next_style_id_] = d_->style_number_format_[style_id];
-    d_->style_protection_[d_->next_style_id_] = d_->style_protection_[style_id];
-    d_->style_pivot_button_[d_->next_style_id_] = d_->style_pivot_button_[style_id];
-    d_->style_quote_prefix_[d_->next_style_id_] = d_->style_quote_prefix_[style_id];
-    
-    return d_->next_style_id_++;
+    return style_id;
 }
 
 const alignment &workbook::get_alignment(std::size_t style_id) const
 {
-    return d_->alignments_[d_->style_alignment_[style_id]];
+    return d_->alignments_[d_->styles_[style_id].alignment_index_];
 }
 
 std::size_t workbook::set_alignment(const alignment &alignment_, std::size_t style_id)
 {
-    auto hash = alignment_.hash();
-    
-    if(d_->alignments_.find(hash) == d_->alignments_.end())
-    {
-        d_->alignments_[hash] = alignment_;
-    }
-    
-    d_->style_alignment_[d_->next_style_id_] = hash;
-
-    d_->style_border_[d_->next_style_id_] = d_->style_border_[style_id];
-    d_->style_font_[d_->next_style_id_] = d_->style_font_[style_id];
-    d_->style_fill_[d_->next_style_id_] = d_->style_fill_[style_id];
-    d_->style_number_format_[d_->next_style_id_] = d_->style_number_format_[style_id];
-    d_->style_protection_[d_->next_style_id_] = d_->style_protection_[style_id];
-    d_->style_pivot_button_[d_->next_style_id_] = d_->style_pivot_button_[style_id];
-    d_->style_quote_prefix_[d_->next_style_id_] = d_->style_quote_prefix_[style_id];
-    
-    return d_->next_style_id_++;
+    return style_id;
 }
 
 const protection &workbook::get_protection(std::size_t style_id) const
 {
-    return d_->protections_[d_->style_protection_[style_id]];
+    return d_->protections_[d_->styles_[style_id].number_format_index_];
 }
 
 std::size_t workbook::set_protection(const protection &protection_, std::size_t style_id)
 {
-    auto hash = protection_.hash();
-    
-    if(d_->protections_.find(hash) == d_->protections_.end())
-    {
-        d_->protections_[hash] = protection_;
-    }
-    
-    d_->style_protection_[d_->next_style_id_] = hash;
-    
-    d_->style_alignment_[d_->next_style_id_] = d_->style_alignment_[style_id];
-    d_->style_border_[d_->next_style_id_] = d_->style_border_[style_id];
-    d_->style_font_[d_->next_style_id_] = d_->style_font_[style_id];
-    d_->style_fill_[d_->next_style_id_] = d_->style_fill_[style_id];
-    d_->style_number_format_[d_->next_style_id_] = d_->style_number_format_[style_id];
-    d_->style_pivot_button_[d_->next_style_id_] = d_->style_pivot_button_[style_id];
-    d_->style_quote_prefix_[d_->next_style_id_] = d_->style_quote_prefix_[style_id];
-    
-    return d_->next_style_id_++;
+    return style_id;
 }
 
 bool workbook::get_pivot_button(std::size_t style_id) const
 {
-    return d_->style_pivot_button_[style_id];
+    return d_->styles_[style_id].pivot_button_;
 }
 
 bool workbook::get_quote_prefix(std::size_t style_id) const
 {
-    return d_->style_quote_prefix_[style_id];
+    return d_->styles_[style_id].quote_prefix_;
 }
 
 std::size_t workbook::set_number_format(const xlnt::number_format &format, std::size_t style_id)
 {
-    auto hash = format.hash();
+    auto match = std::find(d_->number_formats_.begin(), d_->number_formats_.end(), format);
+    auto format_index = 0;
     
-    if(d_->number_formats_.find(hash) == d_->number_formats_.end())
+    if(match == d_->number_formats_.end())
     {
-        d_->number_formats_[hash] = format;
+        d_->number_formats_.push_back(format);
+        format_index = d_->number_formats_.size() - 1;
+    }
+    else
+    {
+        format_index = match - d_->number_formats_.begin();
     }
     
-    d_->style_number_format_[d_->next_style_id_] = hash;
+    if(d_->styles_.empty())
+    {
+        style new_style;
+        new_style.style_index_ = 0;
+        new_style.alignment_index_ = 0;
+        new_style.border_index_ = 0;
+        new_style.fill_index_ = 0;
+        new_style.font_index_ = 0;
+        new_style.number_format_index_ = format_index;
+        new_style.protection_index_ = 0;
+        d_->styles_.push_back(new_style);
+        return 0;
+    }
     
-    d_->style_alignment_[d_->next_style_id_] = d_->style_alignment_[style_id];
-    d_->style_border_[d_->next_style_id_] = d_->style_border_[style_id];
-    d_->style_font_[d_->next_style_id_] = d_->style_font_[style_id];
-    d_->style_fill_[d_->next_style_id_] = d_->style_fill_[style_id];
-    d_->style_protection_[d_->next_style_id_] = d_->style_protection_[style_id];
-    d_->style_pivot_button_[d_->next_style_id_] = d_->style_pivot_button_[style_id];
-    d_->style_quote_prefix_[d_->next_style_id_] = d_->style_quote_prefix_[style_id];
+    auto existing_style = d_->styles_[style_id];
     
-    return d_->next_style_id_++;
+    if(format_index == existing_style.number_format_index_)
+    {
+        // no change
+        return style_id;
+    }
+    
+    auto new_style = existing_style;
+    new_style.number_format_index_ = format_index;
+    new_style.number_format_ = format;
+    
+    auto style_match = std::find(d_->styles_.begin(), d_->styles_.end(), new_style);
+    
+    if(style_match != d_->styles_.end())
+    {
+        return style_match - d_->styles_.begin();
+    }
+    
+    d_->styles_.push_back(new_style);
+    
+    return d_->styles_.size() - 1;
 }
     
-std::vector<alignment> workbook::get_alignments() const
+std::vector<style> workbook::get_styles() const
 {
-    std::vector<alignment> alignments;
-    
-    for(auto &pair : d_->alignments_)
-    {
-        alignments.push_back(pair.second);
-    }
-    
-    return alignments;
-}
-
-std::vector<border> workbook::get_borders() const
-{
-    std::vector<border> borders;
-    
-    for(auto &pair : d_->borders_)
-    {
-        borders.push_back(pair.second);
-    }
-    
-    return borders;
-}
-
-std::vector<fill> workbook::get_fills() const
-{
-    std::vector<fill> fills;
-    
-    for(auto &pair : d_->fills_)
-    {
-        fills.push_back(pair.second);
-    }
-    
-    return fills;
-}
-
-std::vector<font> workbook::get_fonts() const
-{
-    std::vector<font> fonts;
-    
-    for(auto &pair : d_->fonts_)
-    {
-        fonts.push_back(pair.second);
-    }
-    
-    return fonts;
+    return d_->styles_;
 }
 
 std::vector<number_format> workbook::get_number_formats() const
 {
-    std::vector<number_format> number_formats;
-    
-    for(auto &pair : d_->number_formats_)
-    {
-        number_formats.push_back(pair.second);
-    }
-    
-    return number_formats;
+    return d_->number_formats_;
 }
 
-std::vector<protection> workbook::get_protections() const
+std::vector<font> workbook::get_fonts() const
 {
-    std::vector<protection> protections;
-    
-    for(auto &pair : d_->protections_)
-    {
-        protections.push_back(pair.second);
-    }
-    
-    return protections;
-}
-    
-std::vector<std::array<int, 4>> workbook::get_styles() const
-{
-    auto borders = get_borders();
-    auto fills = get_fills();
-    auto fonts = get_fonts();
-    auto number_formats = get_number_formats();
-    
-    std::unordered_map<std::size_t, std::array<int, 4>> styles;
-    
-    for(std::size_t i = 1; i < d_->next_style_id_; i++)
-    {
-        std::array<std::size_t, 4> style_hashes = {d_->style_border_[i], d_->style_fill_[i], d_->style_font_[i], d_->style_number_format_[i]};
-        std::array<int, 4> style = {-1, -1, -1, -1};
-        
-        for(std::size_t i = 0; i < borders.size(); i++)
-        {
-            if(borders[i].hash() == style_hashes[0])
-            {
-                style[0] = i;
-                break;
-            }
-        }
-        
-        for(std::size_t i = 0; i < fills.size(); i++)
-        {
-            if(fills[i].hash() == style_hashes[1])
-            {
-                style[1] = i;
-                break;
-            }
-        }
-        
-        for(std::size_t i = 0; i < fonts.size(); i++)
-        {
-            if(fonts[i].hash() == style_hashes[2])
-            {
-                style[2] = i;
-                break;
-            }
-        }
-        
-        for(std::size_t i = 0; i < number_formats.size(); i++)
-        {
-            if(number_formats[i].hash() == style_hashes[3])
-            {
-                style[3] = i;
-                break;
-            }
-        }
-        
-        std::size_t seed = style[0];
-        hash_combine(seed, style[1]);
-        hash_combine(seed, style[2]);
-        hash_combine(seed, style[3]);
-        styles[seed] = style;
-    }
-    
-    std::vector<std::array<int, 4>> styles_vector;
-    
-    for(auto &pair : styles)
-    {
-        styles_vector.push_back(pair.second);
-    }
-    
-    return styles_vector;
+    return d_->fonts_;
 }
     
 } // namespace xlnt

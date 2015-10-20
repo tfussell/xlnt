@@ -62,7 +62,7 @@ public:
     
     virtual bool operator==(const fill &other) const
     {
-        return type_ == other.type_;
+        return hash() == other.hash();
     }
     
     virtual std::size_t hash() const { return 0; }

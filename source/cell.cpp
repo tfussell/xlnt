@@ -1035,7 +1035,18 @@ std::size_t cell::get_xf_index() const
 
 const number_format &cell::get_number_format() const
 {
-    return get_parent().get_parent().get_number_format(d_->style_id_);
+    if(d_->has_style_)
+    {
+        return get_parent().get_parent().get_number_format(d_->style_id_);
+    }
+    else if(get_parent().get_parent().get_number_formats().empty())
+    {
+        return number_format::default_number_format();
+    }
+    else
+    {
+        return get_parent().get_parent().get_number_formats().front();
+    }
 }
     
 const font &cell::get_font() const
@@ -1187,6 +1198,7 @@ timedelta cell::get_value() const
 
 void cell::set_number_format(const number_format &number_format_)
 {
+    d_->has_style_ = true;
     d_->style_id_ = get_parent().get_parent().set_number_format(number_format_, d_->style_id_);
 }
 

@@ -56,12 +56,7 @@ public:
     
     bool operator==(const alignment &other) const
     {
-        return horizontal_ == other.horizontal_
-        && vertical_ == other.vertical_
-        && text_rotation_ == other.text_rotation_
-        && wrap_text_ == other.wrap_text_
-        && shrink_to_fit_ == other.shrink_to_fit_
-        && indent_ == other.indent_;
+        return hash() == other.hash();
     }
     
     std::size_t hash() const { return 0; }

@@ -88,6 +88,12 @@ public:
     
     static bool is_builtin(const std::string &format);
     
+    static const number_format &default_number_format()
+    {
+        static number_format default_;
+        return default_;
+    }
+    
     number_format();
     number_format(format code);
     number_format(const std::string &code);
@@ -102,6 +108,11 @@ public:
     int get_format_index() const { return format_index_; }
     
     std::size_t hash() const;
+    
+    bool operator==(const number_format &other) const
+    {
+        return hash() == other.hash();
+    }
 
 private:
     format format_code_;
