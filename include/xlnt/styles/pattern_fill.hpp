@@ -23,11 +23,21 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include "color.hpp"
+
 namespace xlnt {
 
-class drawing_reader
+class pattern_fill : public fill
 {
-
+public:
+    void set_pattern_type(const std::string &type) { type_ = type; }
+    void set_foreground_color(const std::string &hex) { foreground_color_ = hex; }
+    
+    std::size_t hash() const override { return 0; }
+    
+private:
+    std::string type_;
+    std::string foreground_color_;
 };
 
 } // namespace xlnt

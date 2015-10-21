@@ -23,49 +23,68 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include "color.hpp"
+#include "alignment.hpp"
+#include "borders.hpp"
+#include "fill.hpp"
+#include "font.hpp"
+#include "number_format.hpp"
+#include "protection.hpp"
 
 namespace xlnt {
 
-class fill
+class workbook;
+
+class style
 {
 public:
-    enum class type
-    {
-        none,
-        solid,
-        gradient_linear,
-        gradient_path,
-        pattern_darkdown,
-        pattern_darkgray,
-        pattern_darkgrid,
-        pattern_darkhorizontal,
-        pattern_darktrellis,
-        pattern_darkup,
-        pattern_darkvertical,
-        pattern_gray0625,
-        pattern_gray125,
-        pattern_lightdown,
-        pattern_lightgray,
-        pattern_lightgrid,
-        pattern_lighthorizontal,
-        pattern_lighttrellis,
-        pattern_lightup,
-        pattern_lightvertical,
-        pattern_mediumgray,
-    };
+    style();
     
-    type type_ = type::none;
-    int rotation = 0;
-    color start_color = color::white;
-    color end_color = color::black;
+    std::size_t hash() const;
     
-    virtual bool operator==(const fill &other) const
+    const alignment get_alignment() const;
+    const border get_border() const;
+    const fill get_fill() const;
+    const font get_font() const;
+    const number_format get_number_format() const;
+    const protection get_protection() const;
+    bool pivot_button() const;
+    bool quote_prefix() const;
+    
+    std::size_t get_fill_index() const { return fill_index_; }
+    std::size_t get_font_index() const { return font_index_; }
+    std::size_t get_border_index() const { return border_index_; }
+    std::size_t get_number_format_index() const { return number_format_index_; }
+    
+    bool operator==(const style &other) const
     {
         return hash() == other.hash();
     }
     
-    virtual std::size_t hash() const { return 0; }
+private:
+    friend class workbook;
+    
+    std::size_t style_index_;
+    
+    std::size_t alignment_index_;
+    alignment alignment_;
+    
+    std::size_t border_index_;
+    border border_;
+    
+    std::size_t fill_index_;
+    fill fill_;
+    
+    std::size_t font_index_;
+    font font_;
+    
+    std::size_t number_format_index_;
+    number_format number_format_;
+    
+    std::size_t protection_index_;
+    protection protection_;
+    
+    bool pivot_button_;
+    bool quote_prefix_;
 };
 
 } // namespace xlnt

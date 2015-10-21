@@ -23,16 +23,54 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <string>
-#include <vector>
+#include <cstddef>
+
+#include "side.hpp"
 
 namespace xlnt {
-    
-class workbook;
 
-std::string CentralDirectorySignature();
-std::string repair_central_directory(const std::string &original);
-workbook load_workbook(const std::string &filename, bool guess_types = false, bool data_only = false);
-workbook load_workbook(const std::vector<std::uint8_t> &bytes, bool guess_types = false, bool data_only = false);
+template<typename T>
+struct optional
+{
+    T value;
+    bool initialized;
+};
+    
+enum class diagonal_direction
+{
+    none,
+    up,
+    down,
+    both
+};
+    
+class border
+{
+public:
+    static border default_border();
+    
+    optional<side> start;
+    optional<side> end;
+    optional<side> left;
+    optional<side> right;
+    optional<side> top;
+    optional<side> bottom;
+    optional<side> diagonal;
+    optional<side> vertical;
+    optional<side> horizontal;
+
+    bool outline;
+    bool diagonal_up;
+    bool diagonal_down;
+    
+    diagonal_direction diagonal_direction_;
+    
+    bool operator==(const border &other) const
+    {
+        return hash() == other.hash();
+    }
+    
+    std::size_t hash() const { return 0; }
+};
 
 } // namespace xlnt

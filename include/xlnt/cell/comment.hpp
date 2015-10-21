@@ -7,7 +7,9 @@ namespace xlnt {
 class cell;
     
 namespace detail {
+    
 struct comment_impl;
+
 } // namespace detail
 
 /// <summary>

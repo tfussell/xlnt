@@ -37,6 +37,7 @@ project "xlnt"
     targetdir "../../lib/"
     includedirs { 
        "../../include",
+       "../../source",
        "../../third-party/miniz",
        "../../third-party/pugixml/src"
     }

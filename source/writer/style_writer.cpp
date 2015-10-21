@@ -2,7 +2,7 @@
 #include <pugixml.hpp>
 
 #include <xlnt/styles/alignment.hpp>
-#include <xlnt/styles/borders.hpp>
+#include <xlnt/styles/border.hpp>
 #include <xlnt/styles/fill.hpp>
 #include <xlnt/styles/font.hpp>
 #include <xlnt/styles/number_format.hpp>
@@ -53,6 +53,10 @@ std::string style_writer::write_table() const
 
     auto fonts_node = style_sheet_node.append_child("fonts");
     auto fonts = wb_.get_fonts();
+    if(fonts.empty())
+    {
+        fonts.push_back(font());
+    }
     fonts_node.append_attribute("count").set_value(static_cast<int>(fonts.size()));
     fonts_node.append_attribute("x14ac:knownFonts").set_value(1);
     
@@ -103,10 +107,19 @@ std::string style_writer::write_table() const
     const auto &styles = wb_.get_styles();
     cell_xfs_node.append_attribute("count").set_value(static_cast<int>(styles.size()));
     
+    custom_index = 164;
+    
     for(auto &style : styles)
     {
         xf_node = cell_xfs_node.append_child("xf");
-        xf_node.append_attribute("numFmtId").set_value((int)style.get_number_format_index());
+        if(style.get_number_format().get_format_code() == number_format::format::unknown)
+        {
+            xf_node.append_attribute("numFmtId").set_value(custom_index++);
+        }
+        else
+        {
+            xf_node.append_attribute("numFmtId").set_value(style.get_number_format().get_format_index());
+        }
         xf_node.append_attribute("applyNumberFormat").set_value(1);
         xf_node.append_attribute("fontId").set_value((int)style.get_font_index());
         xf_node.append_attribute("fillId").set_value((int)style.get_fill_index());

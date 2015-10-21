@@ -1,5 +1,4 @@
 // Copyright (c) 2015 Thomas Fussell
-// Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +24,9 @@
 
 namespace xlnt {
 
-class theme_reader
-{
+class selection {
+    
+};
 
 };
 

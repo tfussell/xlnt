@@ -2,9 +2,13 @@
 
 #include <fstream>
 #include <iostream>
+
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/xlnt.hpp>
+#include <xlnt/reader/excel_reader.hpp>
+#include <xlnt/reader/workbook_reader.hpp>
+#include <xlnt/reader/worksheet_reader.hpp>
+
 #include "helpers/path_helper.hpp"
 
 class test_read : public CxxTest::TestSuite
@@ -17,7 +21,7 @@ public:
         xlnt::worksheet ws(wb);
         {
             std::ifstream handle(path);
-            ws = xlnt::reader::read_worksheet(handle, wb, "Sheet 2", {"hello"}, {});
+            ws = xlnt::read_worksheet(handle, wb, "Sheet 2", {"hello"}, {});
         }
         TS_ASSERT_DIFFERS(ws, nullptr);
         if(!(ws == nullptr))
@@ -31,7 +35,7 @@ public:
     xlnt::workbook standard_workbook()
     {
         auto path = PathHelper::GetDataDirectory("/genuine/empty.xlsx");
-        return xlnt::reader::load_workbook(path);
+        return xlnt::load_workbook(path);
     }
 
     void test_read_standard_workbook()
@@ -43,7 +47,7 @@ public:
     {
         auto path = PathHelper::GetDataDirectory("/genuine/empty.xlsx");
         std::ifstream fo(path, std::ios::binary);
-        auto wb = xlnt::reader::load_workbook(path);
+        auto wb = xlnt::load_workbook(path);
         TS_ASSERT_DIFFERS(standard_workbook(), nullptr);
     }
 
@@ -61,32 +65,32 @@ public:
     void test_read_nostring_workbook()
     {
         auto path = PathHelper::GetDataDirectory("/genuine/empty-no-string.xlsx");
-        auto wb = xlnt::reader::load_workbook(path);
+        auto wb = xlnt::load_workbook(path);
         TS_ASSERT_DIFFERS(standard_workbook(), nullptr);
     }
 
     void test_read_empty_file()
     {
         auto path = PathHelper::GetDataDirectory("/reader/null_file.xlsx");
-        TS_ASSERT_THROWS(xlnt::reader::load_workbook(path), xlnt::invalid_file_exception);
+        TS_ASSERT_THROWS(xlnt::load_workbook(path), xlnt::invalid_file_exception);
     }
 
     void test_read_empty_archive()
     {
         auto path = PathHelper::GetDataDirectory("/reader/null_archive.xlsx");
-        TS_ASSERT_THROWS(xlnt::reader::load_workbook(path), xlnt::invalid_file_exception);
+        TS_ASSERT_THROWS(xlnt::load_workbook(path), xlnt::invalid_file_exception);
     }
     
     void test_read_workbook_with_no_properties()
     {
         auto path = PathHelper::GetDataDirectory("/genuine/empty_with_no_properties.xlsx");
-        xlnt::reader::load_workbook(path);
+        xlnt::load_workbook(path);
     }
 
     xlnt::workbook workbook_with_styles()
     {
         auto path = PathHelper::GetDataDirectory("/genuine/empty-with-styles.xlsx");
-        return xlnt::reader::load_workbook(path);
+        return xlnt::load_workbook(path);
     }
 
     void test_read_workbook_with_styles_general()
@@ -137,13 +141,13 @@ public:
     xlnt::workbook date_mac_1904()
     {
         auto path = PathHelper::GetDataDirectory("/reader/date_1904.xlsx");
-        return xlnt::reader::load_workbook(path);
+        return xlnt::load_workbook(path);
     }
     
     xlnt::workbook date_std_1900()
     {
         auto path = PathHelper::GetDataDirectory("/reader/date_1900.xlsx");
-        return xlnt::reader::load_workbook(path);
+        return xlnt::load_workbook(path);
     }
     
     void test_read_win_base_date()
@@ -186,20 +190,20 @@ public:
     
     void test_repair_central_directory()
     {
-        std::string data_a = "foobarbaz" + xlnt::reader::CentralDirectorySignature;
+        std::string data_a = "foobarbaz" + xlnt::CentralDirectorySignature();
         std::string data_b = "bazbarfoo12345678901234567890";
         
-        auto f = xlnt::reader::repair_central_directory(data_a + data_b);
+        auto f = xlnt::repair_central_directory(data_a + data_b);
         TS_ASSERT_EQUALS(f, data_a + data_b.substr(0, 18));
         
-        f = xlnt::reader::repair_central_directory(data_b);
+        f = xlnt::repair_central_directory(data_b);
         TS_ASSERT_EQUALS(f, data_b);
     }
     
     void test_read_no_theme()
     {
         auto path = PathHelper::GetDataDirectory("/genuine/libreoffice_nrt.xlsx");
-        auto wb = xlnt::reader::load_workbook(path);
+        auto wb = xlnt::load_workbook(path);
         TS_ASSERT_DIFFERS(wb, nullptr);
     }
     
@@ -209,7 +213,7 @@ public:
         auto ws = wb.get_active_sheet();
         auto path = PathHelper::GetDataDirectory("/reader/worksheet_formula.xml");
         std::ifstream ws_stream(path);
-        xlnt::reader::fast_parse(ws, ws_stream, {"", ""}, {}, 0);
+        xlnt::read_worksheet(ws, ws_stream, { "string", "string2" }, {}, {});
         
         auto b1 = ws.get_cell("B1");
         TS_ASSERT(b1.has_formula());
@@ -280,7 +284,7 @@ public:
     void test_data_only()
     {
         auto path = PathHelper::GetDataDirectory("/reader/formulae.xlsx");
-        auto wb = xlnt::reader::load_workbook(path, false, true);
+        auto wb = xlnt::load_workbook(path, false, true);
         auto ws = wb.get_active_sheet();
 
         TS_ASSERT(ws.get_formula_attributes().empty());
@@ -308,7 +312,7 @@ public:
             {
                 {"xl/worksheets/sheet1.xml", "Sheet1"}
             };
-            TS_ASSERT_EQUALS(xlnt::reader::detect_worksheets(archive), expected);
+            TS_ASSERT_EQUALS(xlnt::detect_worksheets(archive), expected);
         }
 
         {
@@ -321,7 +325,7 @@ public:
                 {"xl/worksheets/sheet2.xml", "moredata"}
             };
 
-            TS_ASSERT_EQUALS(xlnt::reader::detect_worksheets(archive), expected);
+            TS_ASSERT_EQUALS(xlnt::detect_worksheets(archive), expected);
         }
 
         {
@@ -335,7 +339,7 @@ public:
                 {"xl/worksheets/sheet.xml", "Sheet3"}
             };
 
-            TS_ASSERT_EQUALS(xlnt::reader::detect_worksheets(archive), expected);
+            TS_ASSERT_EQUALS(xlnt::detect_worksheets(archive), expected);
         }
     }
     
@@ -354,7 +358,7 @@ public:
             auto path = PathHelper::GetDataDirectory("/reader/bug137.xlsx");
             xlnt::zip_file archive(path);
 
-            TS_ASSERT_EQUALS(xlnt::reader::read_relationships(archive, "xl/workbook.xml"), expected);
+            TS_ASSERT_EQUALS(xlnt::read_relationships(archive, "xl/workbook.xml"), expected);
         }
 
         {
@@ -373,7 +377,7 @@ public:
             auto path = PathHelper::GetDataDirectory("/reader/bug304.xlsx");
             xlnt::zip_file archive(path);
 
-            TS_ASSERT_EQUALS(xlnt::reader::read_relationships(archive, "xl/workbook.xml"), expected);
+            TS_ASSERT_EQUALS(xlnt::read_relationships(archive, "xl/workbook.xml"), expected);
         }
     }
     
@@ -399,7 +403,7 @@ public:
         
         auto path = PathHelper::GetDataDirectory("/reader/contains_chartsheets.xlsx");
         xlnt::zip_file f(path);
-        auto result = xlnt::reader::read_content_types(f);
+        auto result = xlnt::read_content_types(f);
 
 	if(result.size() != expected.size())
 	{
@@ -418,7 +422,7 @@ public:
         {
             auto path = PathHelper::GetDataDirectory("/reader/bug137.xlsx");
             xlnt::zip_file f(path);
-            auto sheets = xlnt::reader::read_sheets(f);
+            auto sheets = xlnt::read_sheets(f);
             std::vector<std::pair<std::string, std::string>> expected =
             {{"rId1", "Chart1"}, {"rId2", "Sheet1"}};
             TS_ASSERT_EQUALS(sheets, expected);
@@ -427,7 +431,7 @@ public:
         {
             auto path = PathHelper::GetDataDirectory("/reader/bug304.xlsx");
             xlnt::zip_file f(path);
-            auto sheets = xlnt::reader::read_sheets(f);
+            auto sheets = xlnt::read_sheets(f);
             std::vector<std::pair<std::string, std::string>> expected =
             {{"rId1", "Sheet1"}, {"rId2", "Sheet2"}, {"rId3", "Sheet3"}};
             TS_ASSERT_EQUALS(sheets, expected);
@@ -444,7 +448,7 @@ public:
         {
             std::tie(guess, dtype) = expected;
             auto path = PathHelper::GetDataDirectory("/genuine/guess_types.xlsx");
-            auto wb = xlnt::reader::load_workbook(path, guess);
+            auto wb = xlnt::load_workbook(path, guess);
             auto ws = wb.get_active_sheet();
             TS_ASSERT(ws.get_cell("D2").get_data_type() == dtype);
         }
@@ -453,7 +457,7 @@ public:
     void test_read_autofilter()
     {
         auto path = PathHelper::GetDataDirectory("/reader/bug275.xlsx");
-        auto wb = xlnt::reader::load_workbook(path);
+        auto wb = xlnt::load_workbook(path);
         auto ws = wb.get_active_sheet();
         TS_ASSERT_EQUALS(ws.get_auto_filter().to_string(), "A1:B6");
     }
@@ -461,18 +465,18 @@ public:
     void test_bad_formats_xlsb()
     {
         auto path = PathHelper::GetDataDirectory("/genuine/a.xlsb");
-        TS_ASSERT_THROWS(xlnt::reader::load_workbook(path), xlnt::invalid_file_exception);
+        TS_ASSERT_THROWS(xlnt::load_workbook(path), xlnt::invalid_file_exception);
     }
     
     void test_bad_formats_xls()
     {
         auto path = PathHelper::GetDataDirectory("/genuine/a.xls");
-        TS_ASSERT_THROWS(xlnt::reader::load_workbook(path), xlnt::invalid_file_exception);
+        TS_ASSERT_THROWS(xlnt::load_workbook(path), xlnt::invalid_file_exception);
     }
     
     void test_bad_formats_no()
     {
         auto path = PathHelper::GetDataDirectory("/genuine/a.no-format");
-        TS_ASSERT_THROWS(xlnt::reader::load_workbook(path), xlnt::invalid_file_exception);
+        TS_ASSERT_THROWS(xlnt::load_workbook(path), xlnt::invalid_file_exception);
     }
 };

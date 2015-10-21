@@ -23,11 +23,17 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include "fill.hpp"
+
 namespace xlnt {
 
-class drawing_writer
+class gradient_fill : public fill
 {
-
+public:
+    std::size_t hash() const override { return 0; }
+    
+private:
+    
 };
 
 } // namespace xlnt

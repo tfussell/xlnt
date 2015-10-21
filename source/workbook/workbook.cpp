@@ -12,9 +12,11 @@
 #include <xlnt/common/relationship.hpp>
 #include <xlnt/common/zip_file.hpp>
 #include <xlnt/drawing/drawing.hpp>
-#include <xlnt/reader/reader.hpp>
+#include <xlnt/reader/shared_strings_reader.hpp>
+#include <xlnt/reader/workbook_reader.hpp>
+#include <xlnt/reader/worksheet_reader.hpp>
 #include <xlnt/styles/alignment.hpp>
-#include <xlnt/styles/borders.hpp>
+#include <xlnt/styles/border.hpp>
 #include <xlnt/styles/fill.hpp>
 #include <xlnt/styles/font.hpp>
 #include <xlnt/styles/number_format.hpp>
@@ -28,7 +30,6 @@
 #include <xlnt/writer/manifest_writer.hpp>
 #include <xlnt/writer/worksheet_writer.hpp>
 #include <xlnt/writer/workbook_writer.hpp>
-#include <xlnt/writer/writer.hpp>
 
 #include "detail/cell_impl.hpp"
 #include "detail/include_pugixml.hpp"
@@ -318,8 +319,8 @@ bool workbook::load(const std::string &filename)
     
 bool workbook::load(xlnt::zip_file &archive)
 {
-    auto content_types = reader::read_content_types(archive);
-    auto type = reader::determine_document_type(content_types);
+    auto content_types = read_content_types(archive);
+    auto type = determine_document_type(content_types);
 
     if(type != "excel")
     {
@@ -328,7 +329,7 @@ bool workbook::load(xlnt::zip_file &archive)
     
     clear();
     
-    auto workbook_relationships = reader::read_relationships(archive, "xl/workbook.xml");
+    auto workbook_relationships = read_relationships(archive, "xl/workbook.xml");
 
     for(auto relationship : workbook_relationships)
     {
@@ -349,7 +350,7 @@ bool workbook::load(xlnt::zip_file &archive)
     
     if(archive.has_file("xl/sharedStrings.xml"))
     {
-        shared_strings = xlnt::reader::read_shared_string(archive.read("xl/sharedStrings.xml"));
+        shared_strings = read_shared_strings(archive.read("xl/sharedStrings.xml"));
     }
 
     std::vector<int> number_format_ids;
@@ -389,7 +390,7 @@ bool workbook::load(xlnt::zip_file &archive)
         auto ws = create_sheet(sheet_node.attribute("name").as_string(), *rel);
         auto sheet_filename = rel->get_target_uri();
 
-        xlnt::reader::read_worksheet(ws, archive.read(sheet_filename).c_str(), shared_strings, number_format_ids, custom_number_formats);
+        read_worksheet(ws, archive.read(sheet_filename).c_str(), shared_strings, number_format_ids, custom_number_formats);
     }
 
     return true;

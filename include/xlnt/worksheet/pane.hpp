@@ -1,5 +1,4 @@
 // Copyright (c) 2015 Thomas Fussell
-// Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,16 +22,10 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <string>
-#include <vector>
-
 namespace xlnt {
-    
-class workbook;
 
-std::string CentralDirectorySignature();
-std::string repair_central_directory(const std::string &original);
-workbook load_workbook(const std::string &filename, bool guess_types = false, bool data_only = false);
-workbook load_workbook(const std::vector<std::uint8_t> &bytes, bool guess_types = false, bool data_only = false);
+class pane
+{
+};
 
 } // namespace xlnt

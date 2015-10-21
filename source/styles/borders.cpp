@@ -1,5 +1,5 @@
 
-#include <xlnt/styles/borders.hpp>
+#include <xlnt/styles/border.hpp>
 
 namespace xlnt {
 

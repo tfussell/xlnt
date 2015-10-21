@@ -23,16 +23,43 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <string>
-#include <vector>
+#include <cstddef>
+
+#include <xlnt/styles/color.hpp>
 
 namespace xlnt {
+
+enum class border_style
+{
+    none,
+    dashdot,
+    dashdotdot,
+    dashed,
+    dotted,
+    double_,
+    hair,
+    medium,
+    mediumdashdot,
+    mediumdashdotdot,
+    mediumdashed,
+    slantdashdot,
+    thick,
+    thin
+};
+
+class side
+{
+public:
+    side(border_style style = border_style::none, color = color::black);
     
-class workbook;
-
-std::string CentralDirectorySignature();
-std::string repair_central_directory(const std::string &original);
-workbook load_workbook(const std::string &filename, bool guess_types = false, bool data_only = false);
-workbook load_workbook(const std::vector<std::uint8_t> &bytes, bool guess_types = false, bool data_only = false);
-
+    bool operator==(const side &other) const
+    {
+        return other.style_ == style_;
+    }
+    
+private:
+    border_style style_;
+    color color_;
+};
+    
 } // namespace xlnt

@@ -11,9 +11,10 @@
 #include <xlnt/common/exceptions.hpp>
 #include <xlnt/reader/workbook_reader.hpp>
 #include <xlnt/styles/alignment.hpp>
-#include <xlnt/styles/borders.hpp>
+#include <xlnt/styles/border.hpp>
 #include <xlnt/styles/font.hpp>
 #include <xlnt/styles/fill.hpp>
+#include <xlnt/styles/pattern_fill.hpp>
 #include <xlnt/styles/number_format.hpp>
 #include <xlnt/styles/protection.hpp>
 #include <xlnt/worksheet/range.hpp>
@@ -29,24 +30,6 @@ public:
     test_cell()
     {
         wb_guess_types.set_guess_types(true);
-    }
-    
-    void test_debug()
-    {
-        xlnt::workbook wb = xlnt::load_workbook("/Users/thomas/Development/xlnt/samples/sample1.xlsx");
-        for(auto ws : wb)
-        {
-            for(auto row : ws.rows())
-            {
-                for(auto cell : row)
-                {
-                    std::cout << cell << ", ";
-                }
-                
-                std::cout << std::endl;
-            }
-        }
-        wb.save("book.xlsx");
     }
     
 	void test_infer_numeric()

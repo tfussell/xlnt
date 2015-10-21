@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
+#include <xlnt/reader/workbook_reader.hpp>
 #include <xlnt/writer/workbook_writer.hpp>
 
 #include "helpers/path_helper.hpp"
@@ -15,7 +16,7 @@ public:
     {
         xlnt::zip_file archive(PathHelper::GetDataDirectory() + "/genuine/empty.xlsx");
         auto content = archive.read("docProps/core.xml");
-        auto prop = xlnt::reader::read_properties_core(content);
+        auto prop = xlnt::read_properties_core(content);
         TS_ASSERT_EQUALS(prop.creator, "*.*");
         TS_ASSERT_EQUALS(prop.last_modified_by, "Charlie Clark");
         TS_ASSERT_EQUALS(prop.created, xlnt::datetime(2010, 4, 9, 20, 43, 12));
@@ -30,7 +31,7 @@ public:
         const std::vector<std::string> expected_titles = {"Sheet1 - Text", "Sheet2 - Numbers", "Sheet3 - Formulas", "Sheet4 - Dates"};
         
         std::size_t i = 0;
-        for(auto sheet : xlnt::reader::read_sheets(archive))
+        for(auto sheet : xlnt::read_sheets(archive))
         {
             TS_ASSERT_EQUALS(sheet.second, expected_titles.at(i++));
         }
@@ -40,7 +41,7 @@ public:
     {
         xlnt::zip_file archive(PathHelper::GetDataDirectory() + "/genuine/empty_libre.xlsx");
         auto content = archive.read("docProps/core.xml");
-        auto prop = xlnt::reader::read_properties_core(content);
+        auto prop = xlnt::read_properties_core(content);
         TS_ASSERT_EQUALS(prop.excel_base_date, xlnt::calendar::windows_1900);
     }
 
@@ -52,7 +53,7 @@ public:
         const std::vector<std::string> expected_titles = {"Sheet1 - Text", "Sheet2 - Numbers", "Sheet3 - Formulas", "Sheet4 - Dates"};
         
         std::size_t i = 0;
-        for(auto sheet : xlnt::reader::read_sheets(archive))
+        for(auto sheet : xlnt::read_sheets(archive))
         {
             TS_ASSERT_EQUALS(sheet.second, expected_titles.at(i++));
         }

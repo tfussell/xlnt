@@ -23,11 +23,19 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <iostream>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 namespace xlnt {
+    
+class workbook;
+class worksheet;
 
-class worksheet_reader
-{
-
-};
+worksheet read_worksheet(std::istream &handle, workbook &wb, const std::string &title, const std::vector<std::string> &string_table, const std::unordered_map<int, std::string> &custom_number_formats);
+void read_worksheet(worksheet ws, std::istream &stream, const std::vector<std::string> &string_table, const std::vector<int> &number_format_ids, const std::unordered_map<int, std::string> &custom_number_formats);
+void read_worksheet(worksheet ws, const std::string &xml_string, const std::vector<std::string> &string_table, const std::vector<int> &number_format_ids, const std::unordered_map<int, std::string> &custom_number_formats);
+std::string read_dimension(const std::string &xml_string);
 
 } // namespace xlnt

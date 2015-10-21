@@ -23,87 +23,9 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <cstddef>
-
-#include <xlnt/styles/color.hpp>
-
 namespace xlnt {
 
-template<typename T>
-struct optional
-{
-    T value;
-    bool initialized;
-};
-    
-enum class border_style
-{
-    none,
-    dashdot,
-    dashdotdot,
-    dashed,
-    dotted,
-    double_,
-    hair,
-    medium,
-    mediumdashdot,
-    mediumdashdotdot,
-    mediumdashed,
-    slantdashdot,
-    thick,
-    thin
-};
-
-enum class diagonal_direction
-{
-    none,
-    up,
-    down,
-    both
-};
-    
-class side
-{
-public:
-    side(border_style style = border_style::none, color = color::black);
-    
-    bool operator==(const side &other) const
-    {
-        return other.style_ == style_;
-    }
-    
-private:
-    border_style style_;
-    color color_;
-};
-    
-class border
-{
-public:
-    static border default_border();
-    
-    optional<side> start;
-    optional<side> end;
-    optional<side> left;
-    optional<side> right;
-    optional<side> top;
-    optional<side> bottom;
-    optional<side> diagonal;
-    optional<side> vertical;
-    optional<side> horizontal;
-
-    bool outline;
-    bool diagonal_up;
-    bool diagonal_down;
-    
-    diagonal_direction diagonal_direction_;
-    
-    bool operator==(const border &other) const
-    {
-        return hash() == other.hash();
-    }
-    
-    std::size_t hash() const { return 0; }
+class worksheet_properties {
 };
 
 } // namespace xlnt

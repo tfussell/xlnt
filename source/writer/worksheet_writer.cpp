@@ -4,7 +4,7 @@
 
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>
-#include <xlnt/styles/borders.hpp>
+#include <xlnt/styles/border.hpp>
 #include <xlnt/styles/fill.hpp>
 #include <xlnt/styles/font.hpp>
 #include <xlnt/styles/number_format.hpp>

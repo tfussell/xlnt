@@ -23,11 +23,14 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <string>
+#include <vector>
+
 namespace xlnt {
-
-class string_reader
-{
-
-};
-
+    
+std::vector<std::string> read_shared_strings(const std::string &xml_string);
+void read_string_table(const std::string &xml_source);
+std::string get_string();
+std::string get_text();
+    
 } // namespace xlnt

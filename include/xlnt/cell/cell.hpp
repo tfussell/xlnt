@@ -44,8 +44,10 @@ struct datetime;
 struct time;
 struct timedelta;
 
-namespace detail {    
+namespace detail {
+    
 struct cell_impl;
+    
 } // namespace detail
 
 /// <summary>

@@ -24,7 +24,7 @@
 #pragma once
 
 #include "alignment.hpp"
-#include "borders.hpp"
+#include "border.hpp"
 #include "fill.hpp"
 #include "font.hpp"
 #include "number_format.hpp"

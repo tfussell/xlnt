@@ -1,5 +1,4 @@
 // Copyright (c) 2015 Thomas Fussell
-// Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,43 +22,10 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <string>
-#include <unordered_map>
-#include <vector>
-
-#include "charts/chart.h"
-
 namespace xlnt {
-
-class chart_reader
+    
+class sheet_view
 {
-
-};
-
-class pie_chart_reader : public chart_reader
-{
-
-};
-
-class pie_chart_reader : public chart_reader
-{
-
-};
-
-class pie_chart_reader : public chart_reader
-{
-
-};
-
-class pie_chart_reader : public chart_reader
-{
-
-};
-
-class chart_reader_factory
-{
-public:
-    static std::unique_ptr<chart_reader> create_reader(chart c);
 };
 
 } // namespace xlnt

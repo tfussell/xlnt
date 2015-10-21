@@ -30,13 +30,18 @@
 #include "style.h"
 
 namespace xlnt {
-
-class workbook;
-
-class style_reader
-{
- public:
-  style_reader(workbook &wb);
-};
+    
+void read_styles();
+void read_custom_num_formats();
+void read_color_index();
+void read_dxfs();
+void read_fonts();
+void read_fills();
+void read_borders();
+void read_named_styles();
+void read_style_names();
+void read_cell_styles();
+void read_xfs();
+void read_style_table();
 
 } // namespace xlnt
