@@ -23,6 +23,8 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <xlnt/common/hash_combine.hpp>
+
 namespace xlnt {
 
 /// <summary>
@@ -33,6 +35,7 @@ class alignment
 public:
     enum class horizontal_alignment
     {
+        none,
         general,
         left,
         right,
@@ -43,15 +46,51 @@ public:
     
     enum class vertical_alignment
     {
+        none,
         bottom,
         top,
         center,
         justify
     };
     
+    bool get_wrap_text() const
+    {
+        return wrap_text_;
+    }
+    
     void set_wrap_text(bool wrap_text)
     {
         wrap_text_ = wrap_text;
+    }
+    
+    bool has_horizontal() const
+    {
+        return horizontal_ != horizontal_alignment::none;
+    }
+    
+    horizontal_alignment get_horizontal() const
+    {
+        return horizontal_;
+    }
+    
+    void set_horizontal(horizontal_alignment horizontal)
+    {
+        horizontal_ = horizontal;
+    }
+    
+    bool has_vertical() const
+    {
+        return vertical_ != vertical_alignment::none;
+    }
+    
+    vertical_alignment get_vertical() const
+    {
+        return vertical_;
+    }
+    
+    void set_vertical(vertical_alignment vertical)
+    {
+        vertical_ = vertical;
     }
     
     bool operator==(const alignment &other) const
@@ -59,11 +98,20 @@ public:
         return hash() == other.hash();
     }
     
-    std::size_t hash() const { return 0; }
+    std::size_t hash() const
+    {
+        std::size_t seed = wrap_text_;
+        seed = seed << 1 & shrink_to_fit_;
+        hash_combine(seed, static_cast<std::size_t>(horizontal_));
+        hash_combine(seed, static_cast<std::size_t>(vertical_));
+        hash_combine(seed, text_rotation_);
+        hash_combine(seed, indent_);
+        return seed;
+    }
     
 private:
-    horizontal_alignment horizontal_ = horizontal_alignment::general;
-    vertical_alignment vertical_ = vertical_alignment::bottom;
+    horizontal_alignment horizontal_ = horizontal_alignment::none;
+    vertical_alignment vertical_ = vertical_alignment::none;
     int text_rotation_ = 0;
     bool wrap_text_ = false;
     bool shrink_to_fit_ = false;

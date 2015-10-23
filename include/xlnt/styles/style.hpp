@@ -38,6 +38,8 @@ class style
 {
 public:
     style();
+    style(const style &other);
+    style &operator=(const style &other);
     
     std::size_t hash() const;
     
@@ -50,10 +52,19 @@ public:
     bool pivot_button() const;
     bool quote_prefix() const;
     
-    std::size_t get_fill_index() const { return fill_index_; }
-    std::size_t get_font_index() const { return font_index_; }
-    std::size_t get_border_index() const { return border_index_; }
-    std::size_t get_number_format_index() const { return number_format_index_; }
+    std::size_t get_id() const { return id_; }
+    
+    std::size_t get_fill_id() const { return fill_id_; }
+    std::size_t get_font_id() const { return font_id_; }
+    std::size_t get_border_id() const { return border_id_; }
+    std::size_t get_number_format_id() const { return number_format_id_; }
+    
+    void apply_alignment(bool apply) { alignment_apply_ = apply; }
+    void apply_border(bool apply) { border_apply_ = apply; }
+    void apply_fill(bool apply) { fill_apply_ = apply; }
+    void apply_font(bool apply) { font_apply_ = apply; }
+    void apply_number_format(bool apply) { number_format_apply_ = apply; }
+    void apply_protection(bool apply) { protection_apply_ = apply; }
     
     bool operator==(const style &other) const
     {
@@ -61,26 +72,32 @@ public:
     }
     
 private:
+    friend class style_reader;
+    friend class style_writer;
     friend class workbook;
     
-    std::size_t style_index_;
+    std::size_t id_;
     
-    std::size_t alignment_index_;
+    bool alignment_apply_;
     alignment alignment_;
     
-    std::size_t border_index_;
+    bool border_apply_;
+    std::size_t border_id_;
     border border_;
     
-    std::size_t fill_index_;
+    bool fill_apply_;
+    std::size_t fill_id_;
     fill fill_;
     
-    std::size_t font_index_;
+    bool font_apply_;
+    std::size_t font_id_;
     font font_;
     
-    std::size_t number_format_index_;
+    bool number_format_apply_;
+    std::size_t number_format_id_;
     number_format number_format_;
     
-    std::size_t protection_index_;
+    bool protection_apply_;
     protection protection_;
     
     bool pivot_button_;

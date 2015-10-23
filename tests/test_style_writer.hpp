@@ -11,7 +11,7 @@ public:
     void test_write_number_formats()
     {
         xlnt::workbook wb;
-        wb.add_number_format("YYYY");
+        wb.add_number_format(xlnt::number_format("YYYY"));
         xlnt::style_writer writer(wb);
         auto xml = writer.write_number_formats();
         std::string expected =

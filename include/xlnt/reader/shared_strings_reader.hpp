@@ -28,9 +28,15 @@
 
 namespace xlnt {
     
-std::vector<std::string> read_shared_strings(const std::string &xml_string);
-void read_string_table(const std::string &xml_source);
-std::string get_string();
-std::string get_text();
-    
+class zip_file;
+
+class shared_strings_reader
+{
+public:
+    std::vector<std::string> read_strings(zip_file &archive);
+    void read_string_table(const std::string &xml_source);
+    std::string get_string();
+    std::string get_text();
+};
+
 } // namespace xlnt

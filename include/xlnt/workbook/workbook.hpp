@@ -177,7 +177,7 @@ public:
     bool save(const std::string &filename);
     bool load(const std::vector<unsigned char> &data);
     bool load(const std::string &filename);
-    bool load(const std::istream &stream);
+    bool load(std::istream &stream);
     bool load(zip_file &archive);
     
     bool operator==(const workbook &rhs) const;
@@ -200,22 +200,20 @@ public:
 	relationship get_relationship(const std::string &id) const;
     std::vector<relationship> get_relationships() const;
     
-    void add_alignment(alignment a);
-    void add_border(border b);
-    void add_fill(fill &f);
-    void add_font(font f);
-    void add_protection(protection p);
-    void add_color(color c);
-    void add_number_format(const std::string &format);
+    void add_alignment(const alignment &a);
+    void add_border(const border &b);
+    void add_fill(const fill &f);
+    void add_font(const font &f);
+    void add_color(const color &c);
+    void add_number_format(const number_format &format);
+    void add_protection(const protection &p);
     
     std::vector<style> get_styles() const;
     
-    std::vector<alignment> get_alignments() const;
     std::vector<border> get_borders() const;
     std::vector<fill> get_fills() const;
     std::vector<font> get_fonts() const;
     std::vector<number_format> get_number_formats() const;
-    std::vector<protection> get_protections() const;
     
     const number_format &get_number_format(std::size_t style_id) const;
     std::size_t set_number_format(const number_format &format, std::size_t style_id);
@@ -237,8 +235,8 @@ public:
     bool has_loaded_theme();
     std::string get_loaded_theme();
     
-    style get_style(std::size_t style_id);
-    std::size_t add_style(style style_);
+    const style &get_style(std::size_t style_id) const;
+    std::size_t add_style(const style &style_);
     
 private:
     friend class worksheet;

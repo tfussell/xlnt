@@ -32,80 +32,52 @@ namespace xlnt {
 class number_format
 {
 public:
-    enum class format
-    {
-        general,
-        text,
-        number,
-        number_00,
-        number_comma_separated1,
-        number_comma_separated2,
-        percentage,
-        percentage_00,
-        date_yyyymmdd2,
-        date_yyyymmdd,
-        date_ddmmyyyy,
-        date_dmyslash,
-        date_dmyminus,
-        date_dmminus,
-        date_myminus,
-        date_xlsx14,
-        date_xlsx15,
-        date_xlsx16,
-        date_xlsx17,
-        date_xlsx22,
-        date_datetime,
-        date_time1,
-        date_time2,
-        date_time3,
-        date_time4,
-        date_time5,
-        date_time6,
-        date_time7,
-        date_time8,
-        date_timedelta,
-        date_yyyymmddslash,
-        currency_usd_simple,
-        currency_usd,
-        currency_eur_simple,
-        unknown
-    };
+    static const number_format general();
+    static const number_format text();
+    static const number_format number();
+    static const number_format number_00();
+    static const number_format number_comma_separated1();
+    static const number_format number_comma_separated2();
+    static const number_format percentage();
+    static const number_format percentage_00();
+    static const number_format date_yyyymmdd2();
+    static const number_format date_yyyymmdd();
+    static const number_format date_ddmmyyyy();
+    static const number_format date_dmyslash();
+    static const number_format date_dmyminus();
+    static const number_format date_dmminus();
+    static const number_format date_myminus();
+    static const number_format date_xlsx14();
+    static const number_format date_xlsx15();
+    static const number_format date_xlsx16();
+    static const number_format date_xlsx17();
+    static const number_format date_xlsx22();
+    static const number_format date_datetime();
+    static const number_format date_time1();
+    static const number_format date_time2();
+    static const number_format date_time3();
+    static const number_format date_time4();
+    static const number_format date_time5();
+    static const number_format date_time6();
+    static const number_format date_time7();
+    static const number_format date_time8();
+    static const number_format date_timedelta();
+    static const number_format date_yyyymmddslash();
+    static const number_format currency_usd_simple();
+    static const number_format currency_usd();
+    static const number_format currency_eur_simple();
 
-    struct format_hash
-    {
-        std::size_t operator()(format f) const
-        {
-	    return std::hash<int>()((int)f);
-	}
-    };
-    
-    static const std::unordered_map<format, std::string, format_hash> &format_strings();    
-    static const std::unordered_map<int, std::string> &builtin_formats();
-    static const std::unordered_map<std::string, int> &reversed_builtin_formats();    
-
-    static std::string builtin_format_code(int index);
-    static format lookup_format(int code);
-    
-    static bool is_builtin(const std::string &format);
-    
-    static const number_format &default_number_format()
-    {
-        static number_format default_;
-        return default_;
-    }
+    static number_format from_builtin_id(int builtin_id);
     
     number_format();
-    number_format(format code);
-    number_format(const std::string &code);
+    number_format(int builtin_id);
+    number_format(const std::string &code, int custom_id = -1);
     
-    format get_format_code() const;
-    
-    void set_format_code(format format_code);
-    
-    void set_format_string(const std::string &format_code);
+    void set_format_string(const std::string &format_code, int id = -1);
     std::string get_format_string() const;
-    
-    int get_format_index() const { return format_index_; }
+
+    void set_id(int id) { id_ = id; }
+    int get_id() const { return id_; }
     
     std::size_t hash() const;
     
@@ -115,8 +87,7 @@ public:
     }
 
 private:
-    format format_code_;
-    int format_index_;
+    int id_;
     std::string format_string_;
 };
 

@@ -12,9 +12,7 @@
 #include <xlnt/common/relationship.hpp>
 #include <xlnt/common/zip_file.hpp>
 #include <xlnt/drawing/drawing.hpp>
-#include <xlnt/reader/shared_strings_reader.hpp>
-#include <xlnt/reader/workbook_reader.hpp>
-#include <xlnt/reader/worksheet_reader.hpp>
+#include <xlnt/reader/excel_reader.hpp>
 #include <xlnt/styles/alignment.hpp>
 #include <xlnt/styles/border.hpp>
 #include <xlnt/styles/fill.hpp>
@@ -26,10 +24,7 @@
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
-#include <xlnt/writer/style_writer.hpp>
-#include <xlnt/writer/manifest_writer.hpp>
-#include <xlnt/writer/worksheet_writer.hpp>
-#include <xlnt/writer/workbook_writer.hpp>
+#include <xlnt/writer/excel_writer.hpp>
 
 #include "detail/cell_impl.hpp"
 #include "detail/include_pugixml.hpp"
@@ -70,7 +65,7 @@ void hash_combine(std::size_t& seed, const T& v)
 namespace xlnt {
 namespace detail {
 
-workbook_impl::workbook_impl() : active_sheet_index_(0), guess_types_(false), data_only_(false)
+workbook_impl::workbook_impl() : active_sheet_index_(0), guess_types_(false), data_only_(false), next_custom_format_id_(164)
 {
 }
 
@@ -277,122 +272,24 @@ range workbook::get_named_range(const std::string &name)
     throw std::runtime_error("named range not found");
 }
 
-bool workbook::load(const std::istream &stream)
+bool workbook::load(std::istream &stream)
 {
-    std::string temp_file = create_temporary_filename();
-    
-    std::ofstream tmp;
-    
-    tmp.open(temp_file, std::ios::out | std::ios::binary);
-    tmp << stream.rdbuf();
-    tmp.close();
-    
-    load(temp_file);
-    
-    std::remove(temp_file.c_str());
+    *this = excel_reader::load_workbook(stream);
     
     return true;
 }
     
 bool workbook::load(const std::vector<unsigned char> &data)
 {
-    xlnt::zip_file archive;
-    archive.load(data);
-    return load(archive);
+    *this = excel_reader::load_workbook(data);
+    
+    return true;
 }
 
 bool workbook::load(const std::string &filename)
 {
-    zip_file f;
-
-    try
-    {
-        f.load(filename);
-    }
-    catch(std::exception e)
-    {
-        throw invalid_file_exception(filename);
-    }
+    *this = excel_reader::load_workbook(filename);
     
-    return load(f);
-}
-    
-bool workbook::load(xlnt::zip_file &archive)
-{
-    auto content_types = read_content_types(archive);
-    auto type = determine_document_type(content_types);
-
-    if(type != "excel")
-    {
-        throw invalid_file_exception("");
-    }
-    
-    clear();
-    
-    auto workbook_relationships = read_relationships(archive, "xl/workbook.xml");
-
-    for(auto relationship : workbook_relationships)
-    {
-		create_relationship(relationship.get_id(), relationship.get_target_uri(), relationship.get_type());
-    }
-    
-    pugi::xml_document doc;
-    doc.load(archive.read("xl/workbook.xml").c_str());
-    
-    auto root_node = doc.child("workbook");
-    
-    auto workbook_pr_node = root_node.child("workbookPr");
-    get_properties().excel_base_date = (workbook_pr_node.attribute("date1904") != nullptr && workbook_pr_node.attribute("date1904").as_int() != 0) ? calendar::mac_1904 : calendar::windows_1900;
-    
-    auto sheets_node = root_node.child("sheets");
-    
-    std::vector<std::string> shared_strings;
-    
-    if(archive.has_file("xl/sharedStrings.xml"))
-    {
-        shared_strings = read_shared_strings(archive.read("xl/sharedStrings.xml"));
-    }
-
-    std::vector<int> number_format_ids;
-    std::unordered_map<int, std::string> custom_number_formats;
-    
-    if(archive.has_file("xl/styles.xml"))
-    {
-        pugi::xml_document styles_doc;
-        styles_doc.load(archive.read("xl/styles.xml").c_str());
-        auto stylesheet_node = styles_doc.child("styleSheet");
-        auto cell_xfs_node = stylesheet_node.child("cellXfs");
-
-        for(auto xf_node : cell_xfs_node.children("xf"))
-        {
-            number_format_ids.push_back(xf_node.attribute("numFmtId").as_int());
-        }
-        
-        auto num_fmts_node = stylesheet_node.child("numFmts");
-        
-        for(auto num_fmt_node : num_fmts_node.children("numFmt"))
-        {
-            custom_number_formats[num_fmt_node.attribute("numFmtId").as_int()] = num_fmt_node.attribute("formatCode").as_string();
-        }
-    }
-    
-    for(auto sheet_node : sheets_node.children("sheet"))
-    {
-		std::string rel_id = sheet_node.attribute("r:id").as_string();
-		auto rel = std::find_if(d_->relationships_.begin(), d_->relationships_.end(),
-			[&](relationship &r) { return r.get_id() == rel_id; });
-
-		if (rel == d_->relationships_.end())
-		{
-			throw std::runtime_error("relationship not found");
-		}
-
-        auto ws = create_sheet(sheet_node.attribute("name").as_string(), *rel);
-        auto sheet_filename = rel->get_target_uri();
-
-        read_worksheet(ws, archive.read(sheet_filename).c_str(), shared_strings, number_format_ids, custom_number_formats);
-    }
-
     return true;
 }
 
@@ -671,36 +568,26 @@ void workbook::set_data_only(bool data_only)
     d_->data_only_ = data_only;
 }
 
-void workbook::add_border(xlnt::border /*b*/)
+void workbook::add_border(const xlnt::border &border_)
 {
-    
+    d_->borders_.push_back(border_);
 }
 
-void workbook::add_alignment(xlnt::alignment /*a*/)
+void workbook::add_fill(const fill &fill_)
 {
-    
+    d_->fills_.push_back(fill_);
 }
 
-void workbook::add_protection(xlnt::protection /*p*/)
+void workbook::add_font(const font &font_)
 {
-    
+    d_->fonts_.push_back(font_);
 }
 
-void workbook::add_number_format(const std::string &/*format*/)
+void workbook::add_number_format(const number_format &number_format_)
 {
-    
+    d_->number_formats_.push_back(number_format_);
 }
-
-void workbook::add_fill(xlnt::fill &/*f*/)
-{
     
-}
-
-void workbook::add_font(xlnt::font /*f*/)
-{
-    
-}
-
 void workbook::set_code_name(const std::string &/*code_name*/)
 {
     
@@ -731,19 +618,42 @@ std::vector<named_range> workbook::get_named_ranges() const
     return named_ranges;
 }
 
-std::size_t workbook::add_style(xlnt::style style_)
+std::size_t workbook::add_style(const xlnt::style &style_)
 {
-    return 1;
+    for(std::size_t i = 0; i < d_->styles_.size(); i++)
+    {
+        if(d_->styles_[i] == style_)
+        {
+            return i;
+        }
+    }
+    
+    d_->styles_.push_back(style_);
+    
+    return d_->styles_.size() - 1;
 }
 
 const number_format &workbook::get_number_format(std::size_t style_id) const
 {
-    return d_->number_formats_[d_->styles_[style_id].number_format_index_];
+    auto number_format_id = d_->styles_[style_id].number_format_id_;
+    
+    for(const auto &number_format_ : d_->number_formats_)
+    {
+        if(number_format_.get_id() == number_format_id)
+        {
+            return number_format_;
+        }
+    }
+    
+    auto nf = number_format::from_builtin_id(static_cast<int>(number_format_id));
+    d_->number_formats_.push_back(nf);
+    
+    return d_->number_formats_.back();
 }
 
 const font &workbook::get_font(std::size_t style_id) const
 {
-    return d_->fonts_[d_->styles_[style_id].font_index_];
+    return d_->fonts_[d_->styles_[style_id].font_id_];
 }
 
 std::size_t workbook::set_font(const font &font_, std::size_t style_id)
@@ -763,14 +673,14 @@ std::size_t workbook::set_font(const font &font_, std::size_t style_id)
     
     auto existing_style = d_->styles_[style_id];
     
-    if(font_index == existing_style.font_index_)
+    if(font_index == existing_style.font_id_)
     {
         // no change
         return style_id;
     }
     
     auto new_style = existing_style;
-    new_style.font_index_ = font_index;
+    new_style.font_id_ = font_index;
     
     auto style_match = std::find(d_->styles_.begin(), d_->styles_.end(), new_style);
 
@@ -786,7 +696,7 @@ std::size_t workbook::set_font(const font &font_, std::size_t style_id)
 
 const fill &workbook::get_fill(std::size_t style_id) const
 {
-    return d_->fills_[d_->styles_[style_id].fill_index_];
+    return d_->fills_[d_->styles_[style_id].fill_id_];
 }
 
 std::size_t workbook::set_fill(const fill &fill_, std::size_t style_id)
@@ -796,7 +706,7 @@ std::size_t workbook::set_fill(const fill &fill_, std::size_t style_id)
 
 const border &workbook::get_border(std::size_t style_id) const
 {
-    return d_->borders_[d_->styles_[style_id].border_index_];
+    return d_->borders_[d_->styles_[style_id].border_id_];
 }
 
 std::size_t workbook::set_border(const border &border_, std::size_t style_id)
@@ -806,7 +716,7 @@ std::size_t workbook::set_border(const border &border_, std::size_t style_id)
 
 const alignment &workbook::get_alignment(std::size_t style_id) const
 {
-    return d_->alignments_[d_->styles_[style_id].alignment_index_];
+    return d_->styles_[style_id].alignment_;
 }
 
 std::size_t workbook::set_alignment(const alignment &alignment_, std::size_t style_id)
@@ -816,7 +726,7 @@ std::size_t workbook::set_alignment(const alignment &alignment_, std::size_t sty
 
 const protection &workbook::get_protection(std::size_t style_id) const
 {
-    return d_->protections_[d_->styles_[style_id].number_format_index_];
+    return d_->styles_[style_id].protection_;
 }
 
 std::size_t workbook::set_protection(const protection &protection_, std::size_t style_id)
@@ -837,54 +747,84 @@ bool workbook::get_quote_prefix(std::size_t style_id) const
 std::size_t workbook::set_number_format(const xlnt::number_format &format, std::size_t style_id)
 {
     auto match = std::find(d_->number_formats_.begin(), d_->number_formats_.end(), format);
-    auto format_index = 0;
+    std::size_t format_id = 0;
     
     if(match == d_->number_formats_.end())
     {
         d_->number_formats_.push_back(format);
-        format_index = d_->number_formats_.size() - 1;
+        
+        if(format.get_id() == -1)
+        {
+            d_->number_formats_.back().set_id(d_->next_custom_format_id_++);
+        }
+        
+        format_id = d_->number_formats_.back().get_id();
     }
     else
     {
-        format_index = match - d_->number_formats_.begin();
+        format_id = match->get_id();
     }
     
     if(d_->styles_.empty())
     {
         style new_style;
-        new_style.style_index_ = 0;
-        new_style.alignment_index_ = 0;
-        new_style.border_index_ = 0;
-        new_style.fill_index_ = 0;
-        new_style.font_index_ = 0;
-        new_style.number_format_index_ = format_index;
-        new_style.protection_index_ = 0;
+        
+        new_style.id_ = 0;
+        new_style.border_id_ = 0;
+        new_style.fill_id_ = 0;
+        new_style.font_id_ = 0;
+        new_style.number_format_id_ = format_id;
+        new_style.number_format_apply_ = true;
+        
+        if(d_->borders_.empty())
+        {
+            d_->borders_.push_back(new_style.get_border());
+        }
+        
+        if(d_->fills_.empty())
+        {
+            d_->fills_.push_back(new_style.get_fill());
+        }
+        
+        if(d_->fonts_.empty())
+        {
+            d_->fonts_.push_back(new_style.get_font());
+        }
+        
         d_->styles_.push_back(new_style);
+        
         return 0;
     }
     
+    // If the style is unchanged, just return it.
     auto existing_style = d_->styles_[style_id];
+    existing_style.number_format_apply_ = true;
     
-    if(format_index == existing_style.number_format_index_)
+    if(format_id == existing_style.number_format_id_)
     {
         // no change
         return style_id;
     }
     
+    // Make a new style with this format.
     auto new_style = existing_style;
-    new_style.number_format_index_ = format_index;
+    
+    new_style.number_format_id_ = format_id;
     new_style.number_format_ = format;
     
+    // Check if the new style is already applied to a different cell. If so, reuse it.
     auto style_match = std::find(d_->styles_.begin(), d_->styles_.end(), new_style);
     
     if(style_match != d_->styles_.end())
     {
-        return style_match - d_->styles_.begin();
+        return style_match->get_id();
     }
     
+    // No match found, so add it.
+    new_style.id_ = d_->styles_.size();
     d_->styles_.push_back(new_style);
     
-    return d_->styles_.size() - 1;
+    return new_style.id_;
 }
     
 std::vector<style> workbook::get_styles() const
@@ -900,6 +840,16 @@ std::vector<number_format> workbook::get_number_formats() const
 std::vector<font> workbook::get_fonts() const
 {
     return d_->fonts_;
+}
+
+std::vector<border> workbook::get_borders() const
+{
+    return d_->borders_;
+}
+
+std::vector<fill> workbook::get_fills() const
+{
+    return d_->fills_;
 }
     
 } // namespace xlnt

@@ -558,9 +558,6 @@ std::string format_text(const std::string &text, const std::string &format)
 
 namespace xlnt {
     
-const xlnt::color xlnt::color::black(0);
-const xlnt::color xlnt::color::white(1);
-    
 const std::unordered_map<std::string, int> cell::ErrorCodes =
 {
     {"#NULL!", 0},
@@ -594,7 +591,7 @@ cell::cell(worksheet worksheet, const cell_reference &reference, const T &initia
     
 bool cell::garbage_collectible() const
 {
-    return !(get_data_type() != type::null || is_merged() || has_comment() || has_formula());
+    return !(get_data_type() != type::null || is_merged() || has_comment() || has_formula() || has_style());
 }
 
 
@@ -737,7 +734,7 @@ void cell::set_value(date d)
 {
     d_->type_ = type::numeric;
     d_->value_numeric_ = d.to_number(get_base_date());
-    set_number_format(number_format(number_format::format::date_yyyymmdd2));
+    set_number_format(number_format::date_yyyymmdd2());
 }
 
 template<>
@@ -745,7 +742,7 @@ void cell::set_value(datetime d)
 {
     d_->type_ = type::numeric;
     d_->value_numeric_ = d.to_number(get_base_date());
-    set_number_format(number_format(number_format::format::date_datetime));
+    set_number_format(number_format::date_datetime());
 }
 
 template<>
@@ -753,7 +750,7 @@ void cell::set_value(time t)
 {
     d_->type_ = type::numeric;
     d_->value_numeric_ = t.to_number();
-    set_number_format(number_format(number_format::format::date_time6));
+    set_number_format(number_format::date_time6());
 }
 
 template<>
@@ -761,7 +758,7 @@ void cell::set_value(timedelta t)
 {
     d_->type_ = type::numeric;
     d_->value_numeric_ = t.to_number();
-    set_number_format(number_format(number_format::format::date_timedelta));
+    set_number_format(number_format::date_timedelta());
 }
 
 row_t cell::get_row() const
@@ -1035,13 +1032,15 @@ std::size_t cell::get_xf_index() const
 
 const number_format &cell::get_number_format() const
 {
+    static const number_format default_format;
+    
     if(d_->has_style_)
     {
         return get_parent().get_parent().get_number_format(d_->style_id_);
     }
     else if(get_parent().get_parent().get_number_formats().empty())
     {
-        return number_format::default_number_format();
+        return default_format;
     }
     else
     {
@@ -1237,6 +1236,17 @@ std::string cell::to_string() const
 std::size_t cell::get_style_id() const
 {
     return d_->style_id_;
+}
+
+bool cell::has_style() const
+{
+    return d_->has_style_;
+}
+
+void cell::set_style_id(std::size_t style_id)
+{
+    d_->style_id_ = style_id;
+    d_->has_style_ = true;
 }
     
 calendar cell::get_base_date() const

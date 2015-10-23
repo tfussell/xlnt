@@ -27,21 +27,60 @@
 #include <unordered_map>
 #include <vector>
 
-#include "style.h"
+#include "xlnt/workbook/workbook.hpp"
+
+namespace pugi {
+class xml_node;
+} // namespace pugi
 
 namespace xlnt {
+
+class border;
+class fill;
+class font;
+class named_style;
+class number_format;
+class style;
+class zip_file;
     
-void read_styles();
-void read_custom_num_formats();
-void read_color_index();
-void read_dxfs();
-void read_fonts();
-void read_fills();
-void read_borders();
-void read_named_styles();
-void read_style_names();
-void read_cell_styles();
-void read_xfs();
-void read_style_table();
+class style_reader
+{
+public:
+    style_reader(workbook &wb);
+    
+    void read_styles(zip_file &archive);
+    
+    const std::vector<style> &get_styles() const { return styles_; }
+    
+    const std::vector<border> &get_borders() const { return borders_; }
+    const std::vector<fill> &get_fills() const { return fills_; }
+    const std::vector<font> &get_fonts() const { return fonts_; }
+    const std::vector<number_format> &get_number_formats() const { return number_formats_; }
+    
+private:
+    style read_style(pugi::xml_node stylesheet_node, pugi::xml_node xf_node);
+    
+    void read_borders(pugi::xml_node borders_node);
+    void read_fills(pugi::xml_node fills_node);
+    void read_fonts(pugi::xml_node fonts_node);
+    void read_number_formats(pugi::xml_node num_fmt_node);
+    
+    void read_color_index();
+    void read_dxfs();
+    void read_named_styles(pugi::xml_node named_styles_node);
+    void read_style_names();
+    void read_cell_styles();
+    void read_xfs();
+    void read_style_table();
+
+    workbook wb_;
+    
+    std::vector<style> styles_;
+    
+    std::vector<border> borders_;
+    std::vector<fill> fills_;
+    std::vector<font> fonts_;
+    std::vector<number_format> number_formats_;
+};
 
 } // namespace xlnt

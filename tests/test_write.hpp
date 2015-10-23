@@ -16,7 +16,7 @@ public:
         xlnt::workbook wbk;
         wbk.get_active_sheet().get_cell("A2").set_value("xlnt");
         wbk.get_active_sheet().get_cell("B5").set_value(88);
-        wbk.get_active_sheet().get_cell("B5").set_number_format(xlnt::number_format(xlnt::number_format::format::percentage_00));
+        wbk.get_active_sheet().get_cell("B5").set_number_format(xlnt::number_format::percentage_00());
         wbk.save(temp_file.GetFilename());
         
         if(PathHelper::FileExists(temp_file.GetFilename()))

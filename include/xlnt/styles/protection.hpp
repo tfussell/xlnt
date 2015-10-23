@@ -25,6 +25,8 @@
 
 #include <cstddef>
 
+#include <xlnt/common/hash_combine.hpp>
+
 namespace xlnt {
 
 class protection
@@ -40,9 +42,14 @@ public:
     protection();
     protection(type locked);
     
-    void set_locked(bool locked)
+    void set_locked(type locked_type)
     {
-        locked_ = locked ? type::protected_ : type::unprotected;
+        locked_ = locked_type;
+    }
+    
+    void set_hidden(type hidden_type)
+    {
+        hidden_ = hidden_type;
     }
     
     bool operator==(const protection &other) const
@@ -50,7 +57,13 @@ public:
         return hash() == other.hash();
     }
     
-    std::size_t hash() const { return 0; }
+    std::size_t hash() const
+    {
+        std::size_t seed = static_cast<std::size_t>(locked_);
+        hash_combine(seed, static_cast<std::size_t>(hidden_));
+        
+        return seed;
+    }
     
 private:
     type locked_;

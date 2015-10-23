@@ -111,7 +111,9 @@ public:
     bool has_hyperlink() const;
     
     // style
+    bool has_style() const;
     std::size_t get_style_id() const;
+    void set_style_id(std::size_t style_id);
     const number_format &get_number_format() const;
     void set_number_format(const number_format &format);
     const font &get_font() const;

@@ -25,6 +25,7 @@
 
 #include <string>
 
+#include <xlnt/common/hash_combine.hpp>
 #include <xlnt/styles/color.hpp>
 
 namespace xlnt {
@@ -44,17 +45,50 @@ public:
     };
     
     void set_bold(bool bold) { bold_ = bold; }
+    bool is_bold() const { return bold_; }
+    
+    void set_size(int size) { size_ = size; }
+    int get_size() const { return size_; }
+    
+    void set_name(const std::string &name) { name_ = name; }
+    std::string get_name() const { return name_; }
+    
+    void set_color(color c) { color_ = c; }
+    void set_family(int family) { has_family_ = true; family_ = family; }
+    void set_scheme(const std::string &scheme) { has_scheme_ = true; scheme_ = scheme; }
+    
+    color get_color() const { return color_; }
+    
+    bool has_family() const { return has_family_; }
+    bool has_scheme() const { return has_scheme_; }
+    
+    std::size_t hash() const
+    {
+        std::size_t seed = bold_;
+        seed = seed << 1 & italic_;
+        seed = seed << 1 & superscript_;
+        seed = seed << 1 & subscript_;
+        seed = seed << 1 & strikethrough_;
+        hash_combine(seed, name_);
+        hash_combine(seed, size_);
+        hash_combine(seed, static_cast<std::size_t>(underline_));
+        hash_combine(seed, static_cast<std::size_t>(color_.get_type()));
+        switch(color_.get_type())
+        {
+            case color::type::indexed: hash_combine(seed, color_.get_index()); break;
+            case color::type::theme: hash_combine(seed, color_.get_theme()); break;
+            default: break;
+        }
+        hash_combine(seed, family_);
+        hash_combine(seed, scheme_);
+        
+        return seed;
+    }
     
     bool operator==(const font &other) const
     {
         return hash() == other.hash();
     }
-    
-    int get_size() const { return size_; }
-    std::string get_name() const { return name_; }
-    bool is_bold() const { return bold_; }
-    
-    std::size_t hash() const { return 0; }
     
 private:
     friend class style;
@@ -67,7 +101,11 @@ private:
      bool subscript_ = false;
      underline underline_ = underline::none;
      bool strikethrough_ = false;
-     color color_ = color::black;
+     color color_;
+     bool has_family_ = false;
+     int family_;
+     bool has_scheme_ = false;
+     std::string scheme_;
 };
 
 } // namespace xlnt

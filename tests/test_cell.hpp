@@ -9,17 +9,18 @@
 #include <xlnt/cell/comment.hpp>
 #include <xlnt/common/datetime.hpp>
 #include <xlnt/common/exceptions.hpp>
-#include <xlnt/reader/workbook_reader.hpp>
 #include <xlnt/styles/alignment.hpp>
 #include <xlnt/styles/border.hpp>
 #include <xlnt/styles/font.hpp>
 #include <xlnt/styles/fill.hpp>
-#include <xlnt/styles/pattern_fill.hpp>
 #include <xlnt/styles/number_format.hpp>
 #include <xlnt/styles/protection.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 #include <xlnt/workbook/workbook.hpp>
+
+#include <xlnt/writer/excel_writer.hpp>
+#include <xlnt/reader/excel_reader.hpp>
 
 class test_cell : public CxxTest::TestSuite
 {
@@ -30,6 +31,13 @@ public:
     test_cell()
     {
         wb_guess_types.set_guess_types(true);
+    }
+    
+    void test_debug()
+    {
+        xlnt::workbook wb;
+        wb.load("/Users/thomas/Development/xlnt/samples/sample1.xlsx");
+        wb.save("/Users/thomas/Development/xlnt/bin/sample1-out.xlsx");
     }
     
 	void test_infer_numeric()
@@ -394,14 +402,14 @@ public:
     
     void _test_fill()
     {
-        xlnt::pattern_fill fill;
-        fill.set_pattern_type("solid");
-        fill.set_foreground_color("FF0000");
+        xlnt::fill f;
+        f.set_type(xlnt::fill::type::solid);
+//        f.set_foreground_color("FF0000");
         auto ws = wb.create_sheet();
-        ws.get_parent().add_fill(fill);
+        ws.get_parent().add_fill(f);
     
         xlnt::cell cell(ws, "A1");
-        TS_ASSERT(cell.get_fill() == fill);
+        TS_ASSERT(cell.get_fill() == f);
     }
     
     void _test_border()
@@ -417,7 +425,7 @@ public:
     void _test_number_format()
     {
         auto ws = wb.create_sheet();
-        ws.get_parent().add_number_format("dd--hh--mm");
+        ws.get_parent().add_number_format(xlnt::number_format("dd--hh--mm"));
     
         xlnt::cell cell(ws, "A1");
         cell.set_number_format(xlnt::number_format("dd--hh--mm"));
@@ -439,7 +447,7 @@ public:
     void _test_protection()
     {
         xlnt::protection prot;
-        prot.set_locked(false);
+        prot.set_locked(xlnt::protection::type::protected_);
         
         auto ws = wb.create_sheet();
         ws.get_parent().add_protection(prot);

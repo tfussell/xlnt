@@ -68,7 +68,7 @@ public:
     {
         xlnt::workbook old_wb;
         auto saved_wb = xlnt::save_virtual_workbook(old_wb);
-        auto new_wb = xlnt::load_workbook(saved_wb);
+        auto new_wb = xlnt::excel_reader::load_workbook(saved_wb);
         TS_ASSERT(new_wb != nullptr);
     }
     

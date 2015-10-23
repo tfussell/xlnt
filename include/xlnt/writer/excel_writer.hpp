@@ -23,11 +23,34 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <string>
+#include <vector>
+
 namespace xlnt {
+
+class workbook;
+class zip_file;
 
 class excel_writer
 {
-
+public:
+    excel_writer(workbook &wb);
+    
+    void save(const std::string &filename, bool as_template);
+    
+    void write_data(zip_file &archive, bool as_template);
+    void write_shared_strings(zip_file &archive, const std::vector<std::string> &shared_strings);
+    void write_images(zip_file &archive);
+    void write_charts(zip_file &archive);
+    void write_chartsheets(zip_file &archive);
+    void write_worksheets(zip_file &archive, const std::vector<std::string> &shared_strings);
+    void write_external_links(zip_file &archive);
+    
+private:
+    workbook wb_;
 };
+    
+bool save_workbook(workbook &wb, const std::string &filename, bool as_template = false);
+std::vector<std::uint8_t> save_virtual_workbook(xlnt::workbook &wb, bool as_template = false);
 
 } // namespace xlnt

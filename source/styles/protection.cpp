@@ -7,7 +7,7 @@ protection::protection() : protection(type::unprotected)
     
 }
 
-protection::protection(type t) : locked_(t), hidden_(type::inherit)
+protection::protection(type t) : locked_(t), hidden_(type::unprotected)
 {
     
 }

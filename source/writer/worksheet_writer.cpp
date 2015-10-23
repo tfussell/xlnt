@@ -264,8 +264,11 @@ std::string write_worksheet(worksheet ws, const std::vector<std::string> &string
                     }
                 }
                 
-                auto style_id = cell.get_style_id();
-                cell_node.append_attribute("s").set_value((int)style_id);
+                //if(cell.has_style())
+                {
+                    auto style_id = cell.get_style_id();
+                    cell_node.append_attribute("s").set_value((int)style_id);
+                }
             }
         }
     }

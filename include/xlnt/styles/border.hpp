@@ -24,17 +24,12 @@
 #pragma once
 
 #include <cstddef>
+#include <functional>
 
 #include "side.hpp"
+#include "../common/hash_combine.hpp"
 
 namespace xlnt {
-
-template<typename T>
-struct optional
-{
-    T value;
-    bool initialized;
-};
     
 enum class diagonal_direction
 {
@@ -49,28 +44,52 @@ class border
 public:
     static border default_border();
     
-    optional<side> start;
-    optional<side> end;
-    optional<side> left;
-    optional<side> right;
-    optional<side> top;
-    optional<side> bottom;
-    optional<side> diagonal;
-    optional<side> vertical;
-    optional<side> horizontal;
+    bool start_assigned;
+    side start;
+    bool end_assigned;
+    side end;
+    bool left_assigned;
+    side left;
+    bool right_assigned;
+    side right;
+    bool top_assigned;
+    side top;
+    bool bottom_assigned;
+    side bottom;
+    bool diagonal_assigned;
+    side diagonal;
+    bool vertical_assigned;
+    side vertical;
+    bool horizontal_assigned;
+    side horizontal;
 
-    bool outline;
-    bool diagonal_up;
-    bool diagonal_down;
+    bool outline = false;
+    bool diagonal_up = false;
+    bool diagonal_down = false;
     
-    diagonal_direction diagonal_direction_;
+    diagonal_direction diagonal_direction_ = diagonal_direction::none;
     
     bool operator==(const border &other) const
     {
         return hash() == other.hash();
     }
     
-    std::size_t hash() const { return 0; }
+    std::size_t hash() const
+    {
+        std::size_t seed = 0;
+        
+        if(start_assigned) hash_combine(seed, start.hash());
+        if(end_assigned) hash_combine(seed, end.hash());
+        if(left_assigned) hash_combine(seed, left.hash());
+        if(right_assigned) hash_combine(seed, right.hash());
+        if(top_assigned) hash_combine(seed, top.hash());
+        if(bottom_assigned) hash_combine(seed, bottom.hash());
+        if(diagonal_assigned) hash_combine(seed, diagonal.hash());
+        if(vertical_assigned) hash_combine(seed, vertical.hash());
+        if(horizontal_assigned) hash_combine(seed, horizontal.hash());
+
+        return seed;
+    }
 };
 
 } // namespace xlnt

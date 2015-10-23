@@ -1,9 +1,9 @@
 
-#include <xlnt/styles/border.hpp>
+#include <xlnt/styles/side.hpp>
 
 namespace xlnt {
 
-side::side(border_style style, color c) : style_(style), color_(c)
+side::side()
 {
     
 }

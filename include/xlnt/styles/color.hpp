@@ -28,6 +28,13 @@ namespace xlnt {
 class color
 {
 public:
+    enum class type
+    {
+        indexed,
+        theme,
+        auto_
+    };
+    
     static const color black;
     static const color white;
     static const color red;
@@ -39,17 +46,74 @@ public:
     static const color yellow;
     static const color darkyellow;
     
-    color(int index) : index_(index)
+    color() {}
+    
+    color(type t, std::size_t v) : type_(t), index_(v)
     {
     }
     
     bool operator==(const color &other) const
     {
+        if(type_ != other.type_) return false;
         return index_ == other.index_;
     }
     
+    void set_auto(int auto_index)
+    {
+        type_ = type::auto_;
+        index_ = auto_index;
+    }
+    
+    void set_index(int index)
+    {
+        type_ = type::indexed;
+        index_ = index;
+    }
+    
+    void set_theme(int theme)
+    {
+        type_ = type::theme;
+        index_ = theme;
+    }
+    
+    type get_type() const
+    {
+        return type_;
+    }
+    
+    int get_auto() const
+    {
+        if(type_ != type::auto_)
+        {
+            throw std::runtime_error("not auto color");
+        }
+        
+        return index_;
+    }
+    
+    int get_index() const
+    {
+        if(type_ != type::indexed)
+        {
+            throw std::runtime_error("not indexed color");
+        }
+        
+        return index_;
+    }
+    
+    int get_theme() const
+    {
+        if(type_ != type::theme)
+        {
+            throw std::runtime_error("not theme color");
+        }
+        
+        return index_;
+    }
+    
 private:
-    int index_;
+    type type_ = type::indexed;
+    int index_ = 0;
 };
 
 } // namespace xlnt

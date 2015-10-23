@@ -23,68 +23,25 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include "alignment.hpp"
-#include "borders.hpp"
-#include "fill.hpp"
-#include "font.hpp"
-#include "number_format.hpp"
-#include "protection.hpp"
+#include "style.hpp"
 
 namespace xlnt {
 
-class workbook;
-
-class style
+class named_style
 {
 public:
-    style();
+    named_style();
     
     std::size_t hash() const;
     
-    const alignment get_alignment() const;
-    const border get_border() const;
-    const fill get_fill() const;
-    const font get_font() const;
-    const number_format get_number_format() const;
-    const protection get_protection() const;
-    bool pivot_button() const;
-    bool quote_prefix() const;
-    
-    std::size_t get_fill_index() const { return fill_index_; }
-    std::size_t get_font_index() const { return font_index_; }
-    std::size_t get_border_index() const { return border_index_; }
-    std::size_t get_number_format_index() const { return number_format_index_; }
-    
-    bool operator==(const style &other) const
+    bool operator==(const named_style &other) const
     {
-        return hash() == other.hash();
+        return style_.hash() == other.style_.hash();
     }
     
 private:
-    friend class workbook;
-    
-    std::size_t style_index_;
-    
-    std::size_t alignment_index_;
-    alignment alignment_;
-    
-    std::size_t border_index_;
-    border border_;
-    
-    std::size_t fill_index_;
-    fill fill_;
-    
-    std::size_t font_index_;
-    font font_;
-    
-    std::size_t number_format_index_;
-    number_format number_format_;
-    
-    std::size_t protection_index_;
-    protection protection_;
-    
-    bool pivot_button_;
-    bool quote_prefix_;
+    std::string name_;
+    style style_;
 };
 
 } // namespace xlnt

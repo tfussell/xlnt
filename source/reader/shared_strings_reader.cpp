@@ -1,17 +1,26 @@
+#include <xlnt/common/zip_file.hpp>
 #include <xlnt/reader/shared_strings_reader.hpp>
 
 #include "detail/include_pugixml.hpp"
 
 namespace xlnt {
 
-std::vector<std::string> read_shared_strings(const std::string &xml_string)
+std::vector<std::string> shared_strings_reader::read_strings(zip_file &archive)
 {
-    std::vector<std::string> shared_strings;
+    static const std::string shared_strings_filename = "xl/sharedStrings.xml";
+    
+    if(!archive.has_file(shared_strings_filename))
+    {
+        return { };
+    }
+    
     pugi::xml_document doc;
-    doc.load(xml_string.c_str());
+    doc.load(archive.read(shared_strings_filename).c_str());
+    
     auto root_node = doc.child("sst");
-    //int count = root_node.attribute("count").as_int();
     int unique_count = root_node.attribute("uniqueCount").as_int();
+ 
+    std::vector<std::string> shared_strings;
     
     for(auto si_node : root_node)
     {

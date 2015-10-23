@@ -19,12 +19,10 @@ struct workbook_impl
         guess_types_(other.guess_types_),
         data_only_(other.data_only_),
         styles_(other.styles_),
-        alignments_(other.alignments_),
         borders_(other.borders_),
         fills_(other.fills_),
         fonts_(other.fonts_),
-        number_formats_(other.number_formats_),
-        protections_(other.protections_)
+        number_formats_(other.number_formats_)
     {
     }
     
@@ -41,12 +39,10 @@ struct workbook_impl
         guess_types_ = other.guess_types_;
         data_only_ = other.data_only_;
         styles_ = other.styles_;
-        alignments_ = other.alignments_;
         borders_ = other.borders_;
         fills_ = other.fills_;
         fonts_ = other.fonts_;
         number_formats_ = other.number_formats_;
-        protections_ = other.protections_;
         
         return *this;
     }
@@ -63,12 +59,12 @@ struct workbook_impl
     
     std::vector<style> styles_;
     
-    std::vector<alignment> alignments_;
+    std::size_t next_custom_format_id_;
+    
     std::vector<border> borders_;
     std::vector<fill> fills_;
     std::vector<font> fonts_;
     std::vector<number_format> number_formats_;
-    std::vector<protection> protections_;
     
 };
 

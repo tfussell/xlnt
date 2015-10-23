@@ -152,7 +152,7 @@ struct cell_impl
             {
                 value_numeric_ = percentage.second;
                 type_ = cell::type::numeric;
-                self().set_number_format(xlnt::number_format(xlnt::number_format::format::percentage));
+                self().set_number_format(xlnt::number_format::percentage());
             }
             else
             {
@@ -161,7 +161,7 @@ struct cell_impl
                 if (time.first)
                 {
                     type_ = cell::type::numeric;
-                    self().set_number_format(xlnt::number_format(number_format::format::date_time6));
+                    self().set_number_format(number_format::date_time6());
                     value_numeric_ = time.second.to_number();
                 }
                 else

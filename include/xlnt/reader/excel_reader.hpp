@@ -23,6 +23,7 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -30,9 +31,15 @@ namespace xlnt {
     
 class workbook;
 
-std::string CentralDirectorySignature();
-std::string repair_central_directory(const std::string &original);
-workbook load_workbook(const std::string &filename, bool guess_types = false, bool data_only = false);
-workbook load_workbook(const std::vector<std::uint8_t> &bytes, bool guess_types = false, bool data_only = false);
+class excel_reader
+{
+public:
+    static std::string CentralDirectorySignature();
+    static std::string repair_central_directory(const std::string &original);
+
+    static workbook load_workbook(std::istream &stream, bool guess_types = false, bool data_only = false);
+    static workbook load_workbook(const std::string &filename, bool guess_types = false, bool data_only = false);
+    static workbook load_workbook(const std::vector<std::uint8_t> &bytes, bool guess_types = false, bool data_only = false);
+};
 
 } // namespace xlnt
