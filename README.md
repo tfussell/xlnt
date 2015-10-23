@@ -1,9 +1,6 @@
 xlnt
 ====
 
-## Note
-I'm in the process of changing large portions of code to fully implement styles. The library should be back to working within a week. Until then I wouldn't recommend using the library. Watch this repo if you want to be notified when it's ready. Also, please star if you find the project interesting.
-
 ## Introduction
 xlnt is a C++14 library for reading, writing, and modifying xlsx files as described in [ECMA 376](http://www.ecma-international.org/publications/standards/Ecma-376.htm). The API is generally based on [openpyxl](https://bitbucket.org/openpyxl/openpyxl), a python library for reading and writing xlsx/xlsm files. This is still very much a work in progress, but the core development work is complete (see note above).
 
