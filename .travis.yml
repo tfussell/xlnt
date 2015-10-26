@@ -1,6 +1,6 @@
 language: cpp
 script:
-  - mkdir build/cmake/build && cd build/cmake/build && cmake .. && make && cd ../../../bin && xlnt.test
+  - mkdir build/cmake/build && cd build/cmake/build && cmake .. && make
 compiler:
   - clang
   - gcc
