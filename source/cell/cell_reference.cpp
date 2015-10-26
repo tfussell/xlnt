@@ -4,7 +4,7 @@
 #include <xlnt/common/exceptions.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 
-#include "constants.hpp"
+#include "detail/constants.hpp"
 
 namespace xlnt {
     

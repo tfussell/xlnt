@@ -3,7 +3,7 @@
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/writer/manifest_writer.hpp>
 
-#include "constants.hpp"
+#include "detail/constants.hpp"
 #include "detail/include_pugixml.hpp"
 
 namespace xlnt {

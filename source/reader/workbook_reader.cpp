@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include <xlnt/common/datetime.hpp>
 #include <xlnt/common/exceptions.hpp>
 #include <xlnt/common/zip_file.hpp>

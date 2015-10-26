@@ -26,7 +26,11 @@ project "xlnt.test"
     configuration "windows"
         defines { "WIN32" }
 	links { "Shlwapi" }
-    configuration "not windows"
+    configuration "linux"
+        buildoptions {
+	    "-std=c++1y"
+    }	
+    configuration "macos"
         buildoptions {
 	    "-std=c++14"
     }	
@@ -55,7 +59,11 @@ project "xlnt"
 	   "WIN32",
 	   "_CRT_SECURE_NO_WARNINGS"
 	}
-    configuration "not windows"
+    configuration "linux"
+        buildoptions {
+	    "-std=c++1y"
+    }	
+    configuration "macos"
         buildoptions {
 	    "-std=c++14"
     }	

@@ -3,7 +3,7 @@
 #include <xlnt/common/relationship.hpp>
 #include <xlnt/writer/relationship_writer.hpp>
 
-#include "constants.hpp"
+#include "detail/constants.hpp"
 #include "detail/include_pugixml.hpp"
 
 namespace xlnt {

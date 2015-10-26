@@ -14,7 +14,7 @@
 #include <xlnt/worksheet/worksheet.hpp>
 #include <xlnt/writer/worksheet_writer.hpp>
 
-#include "constants.hpp"
+#include "detail/constants.hpp"
 #include "detail/include_pugixml.hpp"
 
 namespace {

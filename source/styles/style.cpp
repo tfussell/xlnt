@@ -1,9 +1,8 @@
 #include <xlnt/cell/cell.hpp>
+#include <xlnt/styles/font.hpp>
+#include <xlnt/styles/number_format.hpp>
+#include <xlnt/styles/protection.hpp>
 #include <xlnt/styles/style.hpp>
-
-#include "font.hpp"
-#include "number_format.hpp"
-#include "protection.hpp"
 
 namespace {
 
