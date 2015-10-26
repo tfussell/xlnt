@@ -1,7 +1,8 @@
-cmake_minimum_required(VERSION 3.3.2)
+cmake_minimum_required(VERSION 3.2.2)
 
 project(xlnt)
 
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -std=c++1y)
 set(CMAKE_OSX_DEPLOYMENT_TARGET 10.10)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../../../lib)

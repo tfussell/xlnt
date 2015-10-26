@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.9)
+cmake_minimum_required(VERSION 3.2.2)
 project(xlnt.test)
 include_directories(../../../include)
 include_directories(../../../third-party/pugixml/src)
