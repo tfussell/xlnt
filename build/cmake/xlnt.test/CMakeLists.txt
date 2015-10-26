@@ -8,16 +8,16 @@ add_executable(xlnt.test ../../../tests/runner-autogen.cpp)
 
 target_link_libraries(xlnt.test xlnt)
 
-add_custom_target (generate 
-    COMMAND ../../../generate-tests.sh
+add_custom_target (test-runner 
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../../generate-tests.sh
     COMMENT "Generating test runner tests/runner-autogen.cpp"
 )
 
-add_dependencies(xlnt.test generate)
+add_dependencies(xlnt.test test-runner)
 
 add_custom_command(
     TARGET xlnt.test
     POST_BUILD
-    COMMAND ../../../../bin/xlnt.test
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/xlnt.test
     VERBATIM
 )
