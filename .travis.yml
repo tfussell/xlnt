@@ -4,5 +4,5 @@ compiler:
 - gcc
 script:
 - mkdir build/cmake/build && cd build/cmake/build && cmake .. && make && cd ../../../bin && xlnt.test
-install: ./tfussell/xlnt/build/install-dependencies.sh
+
 
