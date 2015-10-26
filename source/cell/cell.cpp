@@ -37,6 +37,8 @@ struct section
     bool has_condition = false;
     condition_type condition = condition_type::invalid;
     std::string condition_value;
+    bool has_locale = false;
+    std::string locale;
     
     section &operator=(const section &other)
     {
@@ -47,6 +49,8 @@ struct section
         has_condition = other.has_condition;
         condition = other.condition;
         condition_value = other.condition_value;
+        has_locale = other.has_locale;
+        locale = other.locale;
         
         return *this;
     }
@@ -121,7 +125,23 @@ bool is_valid_color(const std::string &color)
 {
     static const std::vector<std::string> colors = { "Black", "Green"
         "White", "Blue", "Magenta", "Yellow", "Cyan", "Red" };
-    return std::find(colors.begin(), colors.end(), color) != colors.end();
+    
+    auto compare_color = [&](const std::string &other)
+    {
+        if(color.size() != other.size()) return false;
+        
+        for(std::size_t i = 0; i < color.size(); i++)
+        {
+            if(std::toupper(color[i]) != std::toupper(other[i]))
+            {
+                return false;
+            }
+        }
+        
+        return true;
+    };
+    
+    return std::find_if(colors.begin(), colors.end(), compare_color) != colors.end();
 }
     
 bool parse_condition(const std::string &string, section &s)
@@ -170,92 +190,270 @@ bool parse_condition(const std::string &string, section &s)
     return s.has_condition;
 }
 
+bool is_hex(char c)
+{
+    if(c >= 'A' || c <= 'F') return true;
+    if(c >= '0' || c <= '9') return true;
+    return false;
+}
+
+const std::unordered_map<int, std::string> known_locales =
+{
+    {0x401, "Arabic - Saudi Arabia"},
+    {0x402, "Bulgarian"},
+    {0x403, "Catalan"},
+    {0x404, "Chinese - Taiwan"},
+    {0x405, "Czech"},
+    {0x406, "Danish"},
+    {0x407, "German - Germany"},
+    {0x408, "Greek"},
+    {0x409, "English - United States"},
+    {0x410, "Italian - Italy"},
+    {0x411, "Japanese"},
+    {0x412, "Korean"},
+    {0x413, "Dutch - Netherlands"},
+    {0x414, "Norwegian - Bokml"},
+    {0x415, "Polish"},
+    {0x416, "Portuguese - Brazil"},
+    {0x417, "Raeto-Romance"},
+    {0x418, "Romanian - Romania"},
+    {0x419, "Russian"},
+    {0x420, "Urdu"},
+    {0x421, "Indonesian"},
+    {0x422, "Ukrainian"},
+    {0x423, "Belarusian"},
+    {0x424, "Slovenian"},
+    {0x425, "Estonian"},
+    {0x426, "Latvian"},
+    {0x427, "Lithuanian"},
+    {0x428, "Tajik"},
+    {0x429, "Farsi - Persian"},
+    {0x430, "Sesotho (Sutu)"},
+    {0x431, "Tsonga"},
+    {0x432, "Setsuana"},
+    {0x433, "Venda"},
+    {0x434, "Xhosa"},
+    {0x435, "Zulu"},
+    {0x436, "Afrikaans"},
+    {0x437, "Georgian"},
+    {0x438, "Faroese"},
+    {0x439, "Hindi"},
+    {0x440, "Kyrgyz - Cyrillic"},
+    {0x441, "Swahili"},
+    {0x442, "Turkmen"},
+    {0x443, "Uzbek - Latin"},
+    {0x444, "Tatar"},
+    {0x445, "Bengali - India"},
+    {0x446, "Punjabi"},
+    {0x447, "Gujarati"},
+    {0x448, "Oriya"},
+    {0x449, "Tamil"},
+    {0x450, "Mongolian"},
+    {0x451, "Tibetan"},
+    {0x452, "Welsh"},
+    {0x453, "Khmer"},
+    {0x454, "Lao"},
+    {0x455, "Burmese"},
+    {0x456, "Galician"},
+    {0x457, "Konkani"},
+    {0x458, "Manipuri"},
+    {0x459, "Sindhi"},
+    {0x460, "Kashmiri"},
+    {0x461, "Nepali"},
+    {0x462, "Frisian - Netherlands"},
+    {0x464, "Filipino"},
+    {0x465, "Divehi; Dhivehi; Maldivian"},
+    {0x466, "Edo"},
+    {0x470, "Igbo - Nigeria"},
+    {0x474, "Guarani - Paraguay"},
+    {0x476, "Latin"},
+    {0x477, "Somali"},
+    {0x481, "Maori"},
+    {0x801, "Arabic - Iraq"},
+    {0x804, "Chinese - China"},
+    {0x807, "German - Switzerland"},
+    {0x809, "English - Great Britain"},
+    {0x810, "Italian - Switzerland"},
+    {0x813, "Dutch - Belgium"},
+    {0x814, "Norwegian - Nynorsk"},
+    {0x816, "Portuguese - Portugal"},
+    {0x818, "Romanian - Moldova"},
+    {0x819, "Russian - Moldova"},
+    {0x843, "Uzbek - Cyrillic"},
+    {0x845, "Bengali - Bangladesh"},
+    {0x850, "Mongolian"},
+    {0x1001, "Arabic - Libya"},
+    {0x1004, "Chinese - Singapore"},
+    {0x1007, "German - Luxembourg"},
+    {0x1009, "English - Canada"},
+    {0x1401, "Arabic - Algeria"},
+    {0x1404, "Chinese - Macau SAR"},
+    {0x1407, "German - Liechtenstein"},
+    {0x1409, "English - New Zealand"},
+    {0x1801, "Arabic - Morocco"},
+    {0x1809, "English - Ireland"},
+    {0x2001, "Arabic - Oman"},
+    {0x2009, "English - Jamaica"},
+    {0x2401, "Arabic - Yemen"},
+    {0x2409, "English - Caribbean"},
+    {0x2801, "Arabic - Syria"},
+    {0x2809, "English - Belize"},
+    {0x3001, "Arabic - Lebanon"},
+    {0x3009, "English - Zimbabwe"},
+    {0x3401, "Arabic - Kuwait"},
+    {0x3409, "English - Phillippines"},
+    {0x3801, "Arabic - United Arab Emirates"},
+    {0x4001, "Arabic - Qatar"}
+};
+    
+std::string get_currency_symbol(const std::string &locale_string)
+{
+    if(locale_string.substr(1, 1) == "$")
+    {
+        return "$";
+    }
+    else if(locale_string.substr(1, 3) == "€")
+    {
+        return "€";
+    }
+    
+//    auto code_page = std::stoi(locale_string.substr(3), nullptr, 16);
+    throw std::runtime_error("locale specific characters aren't supported yet");
+}
+
+bool is_valid_locale(const std::string &locale_string)
+{
+    std::string country = locale_string.substr(locale_string.find('-') + 1);
+    
+    if(country.empty())
+    {
+        return false;
+    }
+    
+    for(auto c : country)
+    {
+        if(!is_hex(std::toupper(c)))
+        {
+            return false;
+        }
+    }
+    
+    auto index = std::stoi(country, 0, 16);
+    
+    if(known_locales.find(index) == known_locales.end())
+    {
+        return false;
+    }
+    
+    std::string beginning = locale_string.substr(0, locale_string.find('-'));
+    
+    if(beginning.empty() || beginning[0] != '$')
+    {
+        return false;
+    }
+    
+    if(beginning.size() == 1)
+    {
+        return true;
+    }
+    
+    beginning = beginning.substr(1);
+    
+    return true;
+}
+
 section parse_section(const std::string &section_string)
 {
-    std::string intermediate = section_string;
-    
     section s;
-    std::string first_bracket_part, second_bracket_part;
+    
+    std::string format_part;
+    std::string bracket_part;
+    
+    std::vector<std::string> bracket_parts;
+    
+    bool in_quotes = false;
+    bool in_brackets = false;
+    
     static const std::vector<std::string> bracket_times = { "h", "hh", "m", "mm", "s", "ss" };
     
-    if(section_string[0] == '[')
+    for(int i = 0; i < section_string.size(); i++)
     {
-        auto close_bracket_pos = section_string.find(']');
-        
-        if(close_bracket_pos == std::string::npos)
+        if(!in_quotes && section_string[i] == '"')
         {
-            throw std::runtime_error("missing close bracket");
+            format_part.push_back(section_string[i]);
+            in_quotes = true;
         }
-        
-        first_bracket_part = intermediate.substr(1, close_bracket_pos - 1);
-        
-        if(std::find(bracket_times.begin(), bracket_times.end(), first_bracket_part) !=  bracket_times.end())
+        else if(in_quotes && section_string[i] == '"')
         {
-            first_bracket_part.clear();
-        }
-        else
-        {
-            intermediate = intermediate.substr(close_bracket_pos);
-        }
-    }
-    
-    if(!first_bracket_part.empty() && intermediate[0] == '[')
-    {
-        auto close_bracket_pos = section_string.find(']');
-        
-        if(close_bracket_pos == std::string::npos)
-        {
-            throw std::runtime_error("missing close bracket");
-        }
-        
-        second_bracket_part = intermediate.substr(1, close_bracket_pos - 1);
-        
-        if(std::find(bracket_times.begin(), bracket_times.end(), second_bracket_part) !=  bracket_times.end())
-        {
-            second_bracket_part.clear();
-        }
-        else
-        {
-            intermediate = intermediate.substr(close_bracket_pos);
-        }
-    }
-    
-    if(!first_bracket_part.empty())
-    {
-        if(is_valid_color(first_bracket_part))
-        {
-            s.color = first_bracket_part;
-            s.has_color = true;
-        }
-        else if(!parse_condition(first_bracket_part, s))
-        {
-            throw std::runtime_error("invalid condition");
-        }
-    }
-    
-    if(!second_bracket_part.empty())
-    {
-        if(is_valid_color(second_bracket_part))
-        {
-            if(s.has_color)
-            {
-                throw std::runtime_error("two colors in one section");
-            }
+            format_part.push_back(section_string[i]);
             
-            s.color = second_bracket_part;
-            s.has_color = true;
+            if(i < section_string.size() - 1 && section_string[i + 1] != '"')
+            {
+                in_quotes = false;
+            }
         }
-        else if(s.has_condition)
+        else if(!in_brackets && section_string[i] == '[')
         {
-            throw std::runtime_error("two conditions in one section");
+            in_brackets = true;
+            
+            for(auto bracket_time : bracket_times)
+            {
+                if(i < section_string.size() - bracket_time.size() && section_string.substr(i + 1, bracket_time.size()) == bracket_time)
+                {
+                    in_brackets = false;
+                    break;
+                }
+            }
         }
-        else if(!parse_condition(second_bracket_part, s))
+        else if(in_brackets)
         {
-            throw std::runtime_error("invalid condition");
+            if(section_string[i] == ']')
+            {
+                in_brackets = false;
+
+                if(is_valid_color(bracket_part))
+                {
+                    if(s.color.empty())
+                    {
+                        s.color = bracket_part;
+                        s.has_color = true;
+                    }
+                    else
+                    {
+                        throw std::runtime_error("two colors");
+                    }
+                }
+                else if(is_valid_locale(bracket_part))
+                {
+                    if(s.locale.empty())
+                    {
+                        s.locale = bracket_part;
+                        s.has_locale = true;
+                    }
+                    else
+                    {
+                        throw std::runtime_error("two locales");
+                    }
+                }
+                else if(s.has_condition || !parse_condition(bracket_part, s))
+                {
+                    throw std::runtime_error("invalid bracket format");
+                }
+                
+                bracket_part.clear();
+            }
+            else
+            {
+                bracket_part.push_back(section_string[i]);
+            }
+        }
+        else
+        {
+            format_part.push_back(section_string[i]);
         }
     }
     
-    s.value = intermediate;
+    s.value = format_part;
     s.has_value = true;
     
     return s;
@@ -337,6 +535,7 @@ const std::vector<std::string> MonthNames =
 std::string format_section(long double number, const section &format, xlnt::calendar base_date)
 {
     const std::string unquoted = "$+(:^'{<=-/)!&~}> ";
+    std::string format_temp = format.value;
     std::string result;
     
     if(is_date_format(format.value))
@@ -376,6 +575,14 @@ std::string format_section(long double number, const section &format, xlnt::cale
         auto d = xlnt::datetime::from_number(number, base_date);
         bool processed_month = false;
         
+        auto lower_string = [](const std::string &s)
+        {
+            std::string lower;
+            lower.resize(s.size());
+            for(std::size_t i = 0; i < s.size(); i++) lower[i] = std::tolower(s[i]);
+            return lower;
+        };
+        
         for(auto part : split)
         {
             while(format.value.substr(index, part.size()) != part)
@@ -386,12 +593,14 @@ std::string format_section(long double number, const section &format, xlnt::cale
             auto between = format.value.substr(prev, index - prev);
             result.append(between);
             
+            part = lower_string(part);
+            
             if(part == "m" && !processed_month)
             {
                 result.append(std::to_string(d.month));
                 processed_month = true;
             }
-            if(part == "mm" && !processed_month)
+            else if(part == "mm" && !processed_month)
             {
                 if(d.month < 10)
                 {
@@ -401,21 +610,21 @@ std::string format_section(long double number, const section &format, xlnt::cale
                 result.append(std::to_string(d.month));
                 processed_month = true;
             }
-            if(part == "mmm" && !processed_month)
+            else if(part == "mmm" && !processed_month)
             {
                 result.append(MonthNames.at(d.month - 1).substr(0, 3));
                 processed_month = true;
             }
-            if(part == "mmmm" && !processed_month)
+            else if(part == "mmmm" && !processed_month)
             {
                 result.append(MonthNames.at(d.month - 1));
                 processed_month = true;
             }
-            if(part == "d")
+            else if(part == "d")
             {
                 result.append(std::to_string(d.day));
             }
-            if(part == "dd")
+            else if(part == "dd")
             {
                 if(d.day < 10)
                 {
@@ -424,17 +633,17 @@ std::string format_section(long double number, const section &format, xlnt::cale
                 
                 result.append(std::to_string(d.day));
             }
-            if(part == "yyyy")
+            else if(part == "yyyy")
             {
                 result.append(std::to_string(d.year));
             }
             
-            if(part == "h")
+            else if(part == "h")
             {
                 result.append(std::to_string(d.hour));
                 processed_month = true;
             }
-            if(part == "hh")
+            else if(part == "hh")
             {
                 if(d.hour < 10)
                 {
@@ -444,11 +653,11 @@ std::string format_section(long double number, const section &format, xlnt::cale
                 result.append(std::to_string(d.hour));
                 processed_month = true;
             }
-            if(part == "m")
+            else if(part == "m")
             {
                 result.append(std::to_string(d.minute));
             }
-            if(part == "mm")
+            else if(part == "mm")
             {
                 if(d.minute < 10)
                 {
@@ -457,11 +666,11 @@ std::string format_section(long double number, const section &format, xlnt::cale
                 
                 result.append(std::to_string(d.minute));
             }
-            if(part == "s")
+            else if(part == "s")
             {
                 result.append(std::to_string(d.second));
             }
-            if(part == "ss")
+            else if(part == "ss")
             {
                 if(d.second < 10)
                 {
@@ -470,8 +679,17 @@ std::string format_section(long double number, const section &format, xlnt::cale
                 
                 result.append(std::to_string(d.second));
             }
-            
-            
+            else if(part == "am/pm" || part == "a/p")
+            {
+                if(d.hour < 12)
+                {
+                    result.append("AM");
+                }
+                else
+                {
+                    result.append("PM");
+                }
+            }
             
             index += part.size();
             prev = index;
@@ -482,13 +700,51 @@ std::string format_section(long double number, const section &format, xlnt::cale
             result.append(format.value.substr(index));
         }
     }
-    else if(number == static_cast<long long int>(number))
+    else if(format.value == "General" || format.value == "0")
     {
-        result = std::to_string(static_cast<long long int>(number));
+        if(number == static_cast<long long int>(number))
+        {
+            result = std::to_string(static_cast<long long int>(number));
+        }
+        else
+        {
+            result = std::to_string(number);
+        }
     }
-    else
+    else if(format.value.substr(0, 8) == "#,##0.00" || format.value.substr(0, 9) == "-#,##0.00")
     {
-        result = std::to_string(number);
+        if(format.value[0] == '-')
+        {
+            result = "-";
+        }
+        
+        if(format.has_locale && format.locale == "$$-1009")
+        {
+            result += "CA$";
+        }
+        else if(format.has_locale && format.locale == "$€-407")
+        {
+            result += "€";
+        }
+        else
+        {
+            result += "$";
+        }
+        
+        result += std::to_string(number < 0 ? -number : number);
+        
+        auto decimal_pos = result.find('.');
+        
+        if(decimal_pos != std::string::npos)
+        {
+            result[decimal_pos] = ',';
+            decimal_pos += 3;
+            
+            while(decimal_pos < result.size())
+            {
+                result.pop_back();
+            }
+        }
     }
     
     return result;
@@ -872,8 +1128,15 @@ void cell::set_formula(const std::string &formula)
     {
         throw data_type_exception();
     }
-
-    d_->formula_ = formula;
+    
+    if(formula[0] == '=')
+    {
+        d_->formula_ = formula.substr(1);
+    }
+    else
+    {
+        d_->formula_ = formula;
+    }
 }
 
 bool cell::has_formula() const

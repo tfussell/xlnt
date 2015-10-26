@@ -517,6 +517,7 @@ std::string write_workbook(const workbook &wb)
     auto workbook_pr_node = root_node.append_child("workbookPr");
     workbook_pr_node.append_attribute("codeName").set_value("ThisWorkbook");
     workbook_pr_node.append_attribute("defaultThemeVersion").set_value("124226");
+    workbook_pr_node.append_attribute("date1904").set_value(wb.get_properties().excel_base_date == calendar::mac_1904 ? 1 : 0);
     
     auto book_views_node = root_node.append_child("bookViews");
     auto workbook_view_node = book_views_node.append_child("workbookView");

@@ -193,6 +193,10 @@ void style_reader::read_number_formats(pugi::xml_node num_fmts_node)
         number_format nf;
         
         nf.set_format_string(num_fmt_node.attribute("formatCode").as_string());
+        if(nf.get_format_string() == "GENERAL")
+        {
+            nf.set_format_string("General");
+        }
         nf.set_id(num_fmt_node.attribute("numFmtId").as_int());
         
         number_formats_.push_back(nf);

@@ -47,6 +47,7 @@ cell_impl &cell_impl::operator=(const cell_impl &rhs)
     has_hyperlink_ = rhs.has_hyperlink_;
     type_ = rhs.type_;
     style_id_ = rhs.style_id_;
+    has_style_ = rhs.has_style_;
     
     if(rhs.comment_ != nullptr)
     {

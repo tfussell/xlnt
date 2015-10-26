@@ -110,7 +110,7 @@ void read_worksheet(worksheet ws, zip_file &archive, const relationship &rel, co
                 {
                     cell.set_value(value_string);
                 }
-                else if(has_value)
+                else if(has_value && !value_string.empty())
                 {
                     if(!value_string.empty() && value_string[0] == '#')
                     {

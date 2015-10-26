@@ -33,13 +33,6 @@ public:
         wb_guess_types.set_guess_types(true);
     }
     
-    void test_debug()
-    {
-        xlnt::workbook wb;
-        wb.load("/Users/thomas/Development/xlnt/samples/sample1.xlsx");
-        wb.save("/Users/thomas/Development/xlnt/bin/sample1-out.xlsx");
-    }
-    
 	void test_infer_numeric()
 	{
 		auto ws = wb_guess_types.create_sheet();
