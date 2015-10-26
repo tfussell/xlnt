@@ -396,18 +396,16 @@ void style_reader::read_borders(pugi::xml_node borders_node)
     {
         border new_border;
         
-        const std::vector<std::tuple<std::string, side *, bool *>> sides =
-        {{
-            {"start", &new_border.start, &new_border.start_assigned},
-            {"end", &new_border.end, &new_border.end_assigned},
-            {"left", &new_border.left, &new_border.left_assigned},
-            {"right", &new_border.right, &new_border.right_assigned},
-            {"top", &new_border.top, &new_border.top_assigned},
-            {"bottom", &new_border.bottom, &new_border.bottom_assigned},
-            {"diagonal", &new_border.diagonal, &new_border.diagonal_assigned},
-            {"vertical", &new_border.vertical, &new_border.vertical_assigned},
-            {"horizontal", &new_border.horizontal, &new_border.horizontal_assigned}
-        }};
+        std::vector<std::tuple<std::string, side *, bool *>> sides;
+        sides.push_back({"start", &new_border.start, &new_border.start_assigned});
+        sides.push_back({"end", &new_border.end, &new_border.end_assigned});
+        sides.push_back({"left", &new_border.left, &new_border.left_assigned});
+        sides.push_back({"right", &new_border.right, &new_border.right_assigned});
+        sides.push_back({"top", &new_border.top, &new_border.top_assigned});
+        sides.push_back({"bottom", &new_border.bottom, &new_border.bottom_assigned});
+        sides.push_back({"diagonal", &new_border.diagonal, &new_border.diagonal_assigned});
+        sides.push_back({"vertical", &new_border.vertical, &new_border.vertical_assigned});
+        sides.push_back({"horizontal", &new_border.horizontal, &new_border.horizontal_assigned});
         
         for(const auto &side : sides)
         {

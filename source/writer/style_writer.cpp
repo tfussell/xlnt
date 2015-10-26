@@ -166,18 +166,16 @@ std::string style_writer::write_table() const
     {
         auto border_node = borders_node.append_child("border");
         
-        const std::vector<std::tuple<std::string, const side, bool>> sides =
-        {{
-            {"start", border_.start, border_.start_assigned},
-            {"end", border_.end, border_.end_assigned},
-            {"left", border_.left, border_.left_assigned},
-            {"right", border_.right, border_.right_assigned},
-            {"top", border_.top, border_.top_assigned},
-            {"bottom", border_.bottom, border_.bottom_assigned},
-            {"diagonal", border_.diagonal, border_.diagonal_assigned},
-            {"vertical", border_.vertical, border_.vertical_assigned},
-            {"horizontal", border_.horizontal, border_.horizontal_assigned}
-        }};
+        std::vector<std::tuple<std::string, const side, bool>> sides;
+        sides.push_back({"start", border_.start, border_.start_assigned});
+        sides.push_back({"end", border_.end, border_.end_assigned});
+        sides.push_back({"left", border_.left, border_.left_assigned});
+        sides.push_back({"right", border_.right, border_.right_assigned});
+        sides.push_back({"top", border_.top, border_.top_assigned});
+        sides.push_back({"bottom", border_.bottom, border_.bottom_assigned});
+        sides.push_back({"diagonal", border_.diagonal, border_.diagonal_assigned});
+        sides.push_back({"vertical", border_.vertical, border_.vertical_assigned});
+        sides.push_back({"horizontal", border_.horizontal, border_.horizontal_assigned});
         
         for(const auto &side_tuple : sides)
         {
