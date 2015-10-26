@@ -1,6 +1,7 @@
 bin/
 lib/
-build/premake/*/
+build/genie/*/
+build/cmake/build/
 docs/_*/
 docs/doxyxml/
 *.obj

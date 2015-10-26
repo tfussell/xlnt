@@ -39,22 +39,22 @@ style::style() :
 
 style::style(const style &other) :
     id_(other.id_),
-    alignment_(other.alignment_),
     alignment_apply_(other.alignment_apply_),
-    border_(other.border_),
+    alignment_(other.alignment_),
     border_apply_(other.border_apply_),
     border_id_(other.border_id_),
-    fill_(other.fill_),
+    border_(other.border_),
     fill_apply_(other.fill_apply_),
     fill_id_(other.fill_id_),
-    font_(other.font_),
+    fill_(other.fill_),
     font_apply_(other.font_apply_),
     font_id_(other.font_id_),
-    number_format_(other.number_format_),
+    font_(other.font_),
     number_format_apply_(other.number_format_apply_),
     number_format_id_(other.number_format_id_),
-    protection_(other.protection_),
+    number_format_(other.number_format_),
     protection_apply_(other.protection_apply_),
+    protection_(other.protection_),
     pivot_button_(other.pivot_button_),
     quote_prefix_(other.quote_prefix_)
 {

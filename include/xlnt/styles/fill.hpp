@@ -70,6 +70,7 @@ public:
     
     type get_type() const { return type_; }
     void set_type(type t) { type_ = t; }
+    
     std::string get_pattern_type_string() const
     {
         if(type_ != type::pattern)
@@ -101,12 +102,50 @@ public:
             default: throw std::runtime_error("invalid type");
         }
     }
+    
+    std::string get_gradient_type_string() const
+    {
+        if(type_ != type::gradient)
+        {
+            throw std::runtime_error("not gradient fill");
+        }
+        
+        switch(gradient_type_)
+        {
+            case gradient_type::linear: return "linear";
+            case gradient_type::path: return "path";
+            default: throw std::runtime_error("invalid type");
+        }
+    }
+    
     pattern_type get_pattern_type() const
     {
         return pattern_type_;
     }
-    void set_pattern_type(pattern_type t) { pattern_type_ = t; }
-    void set_gradient_type(gradient_type t) { gradient_type_ = t; }
+    
+    void set_pattern_type(pattern_type t)
+    {
+        type_ = type::pattern;
+        pattern_type_ = t;
+    }
+    
+    void set_gradient_type(gradient_type t)
+    {
+        type_ = type::gradient;
+        gradient_type_ = t;
+    }
+    
+    void set_start_color(const color &c)
+    {
+        start_color_ = c;
+        start_color_assigned_ = true;
+    }
+    
+    void set_end_color(const color &c)
+    {
+        end_color_ = c;
+        end_color_assigned_ = true;
+    }
     
     void set_foreground_color(const color &c)
     {
@@ -145,6 +184,16 @@ public:
         return hash() == other.hash();
     }
     
+    void set_rotation(double rotation)
+    {
+        rotation_ = rotation;
+    }
+    
+    double get_rotation() const
+    {
+        return rotation_;
+    }
+    
     std::size_t hash() const
     {
         auto seed = static_cast<std::size_t>(type_);
@@ -157,17 +206,28 @@ public:
         return seed;
     }
     
+    double get_gradient_left() const { return gradient_path_left_; }
+    double get_gradient_right() const { return gradient_path_right_; }
+    double get_gradient_top() const { return gradient_path_top_; }
+    double get_gradient_bottom() const { return gradient_path_bottom_; }
+    
 private:
     type type_ = type::none;
     pattern_type pattern_type_;
     gradient_type gradient_type_;
-    int rotation_ = 0;
+    double rotation_ = 0;
     bool foreground_color_assigned_ = false;
     color foreground_color_ = color::black;
     bool background_color_assigned_ = false;
     color background_color_ = color::white;
+    bool start_color_assigned_ = false;
     color start_color_ = color::white;
+    bool end_color_assigned_ = false;
     color end_color_ = color::black;
+    double gradient_path_left_ = 0;
+    double gradient_path_right_ = 0;
+    double gradient_path_top_ = 0;
+    double gradient_path_bottom_ = 0;
 };
 
 } // namespace xlnt

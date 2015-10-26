@@ -1,0 +1,8 @@
+language: C++
+compiler:
+- clang
+- gcc
+script:
+- mkdir build/cmake/build && cd build/cmake/build && cmake .. && make && cd ../../../bin && xlnt.test
+install: ./build/install-dependencies.sh
+

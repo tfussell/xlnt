@@ -129,6 +129,33 @@ std::string style_writer::write_table() const
                 }
             }
         }
+        else if(fill_.get_type() == fill::type::solid)
+        {
+            auto solid_fill_node = fill_node.append_child("solidFill");
+            solid_fill_node.append_child("color");
+        }
+        else if(fill_.get_type() == fill::type::gradient)
+        {
+            auto gradient_fill_node = fill_node.append_child("gradientFill");
+            
+            if(fill_.get_gradient_type_string() == "linear")
+            {
+                gradient_fill_node.append_attribute("degree").set_value(fill_.get_rotation());
+            }
+            else if(fill_.get_gradient_type_string() == "path")
+            {
+                gradient_fill_node.append_attribute("left").set_value(fill_.get_gradient_left());
+                gradient_fill_node.append_attribute("right").set_value(fill_.get_gradient_right());
+                gradient_fill_node.append_attribute("top").set_value(fill_.get_gradient_top());
+                gradient_fill_node.append_attribute("bottom").set_value(fill_.get_gradient_bottom());
+                
+                auto start_node = gradient_fill_node.append_child("stop");
+                start_node.append_attribute("position").set_value(0);
+                
+                auto end_node = gradient_fill_node.append_child("stop");
+                end_node.append_attribute("position").set_value(1);
+            }
+        }
     }
 
     auto borders_node = style_sheet_node.append_child("borders");
@@ -139,176 +166,69 @@ std::string style_writer::write_table() const
     {
         auto border_node = borders_node.append_child("border");
         
-        if(border_.left_assigned)
+        const std::vector<std::tuple<std::string, const side &, bool>> sides =
         {
-            auto left_node = border_node.append_child("left");
-            
-            if(border_.left.is_style_assigned())
-            {
-                auto style_attribute = left_node.append_attribute("style");
-                
-                switch(border_.left.get_style())
-                {
-                    case border_style::none: style_attribute.set_value("none"); break;
-                    case border_style::thin: style_attribute.set_value("thin"); break;
-                    default: throw std::runtime_error("invalid style");
-                }
-            }
-            
-            if(border_.left.is_color_assigned())
-            {
-                auto color_node = left_node.append_child("color");
-                
-                if(border_.left.get_color_type() == side::color_type::indexed)
-                {
-                    color_node.append_attribute("indexed").set_value((int)border_.left.get_color());
-                }
-                else if(border_.diagonal.get_color_type() == side::color_type::theme)
-                {
-                    color_node.append_attribute("indexed").set_value((int)border_.left.get_color());
-                }
-                else
-                {
-                    throw std::runtime_error("invalid color type");
-                }
-            }
-        }
+            {"start", border_.start, border_.start_assigned},
+            {"end", border_.end, border_.end_assigned},
+            {"left", border_.left, border_.left_assigned},
+            {"right", border_.right, border_.right_assigned},
+            {"top", border_.top, border_.top_assigned},
+            {"bottom", border_.bottom, border_.bottom_assigned},
+            {"diagonal", border_.diagonal, border_.diagonal_assigned},
+            {"vertical", border_.vertical, border_.vertical_assigned},
+            {"horizontal", border_.horizontal, border_.horizontal_assigned}
+        };
         
-        if(border_.right_assigned)
+        for(const auto &side_tuple : sides)
         {
-            auto right_node = border_node.append_child("right");
+            std::string name = std::get<0>(side_tuple);
+            const side &side_ = std::get<1>(side_tuple);
+            bool assigned = std::get<2>(side_tuple);
             
-            if(border_.right.is_style_assigned())
+            if(assigned)
             {
-                auto style_attribute = right_node.append_attribute("style");
+                auto side_node = border_node.append_child(name.c_str());
                 
-                switch(border_.right.get_style())
+                if(side_.is_style_assigned())
                 {
-                    case border_style::none: style_attribute.set_value("none"); break;
-                    case border_style::thin: style_attribute.set_value("thin"); break;
-                    default: throw std::runtime_error("invalid style");
+                    auto style_attribute = side_node.append_attribute("style");
+                    
+                    switch(side_.get_style())
+                    {
+                        case border_style::none: style_attribute.set_value("none"); break;
+                        case border_style::dashdot : style_attribute.set_value("dashdot"); break;
+                        case border_style::dashdotdot : style_attribute.set_value("dashdotdot"); break;
+                        case border_style::dashed : style_attribute.set_value("dashed"); break;
+                        case border_style::dotted : style_attribute.set_value("dotted"); break;
+                        case border_style::double_ : style_attribute.set_value("double"); break;
+                        case border_style::hair : style_attribute.set_value("hair"); break;
+                        case border_style::medium : style_attribute.set_value("thin"); break;
+                        case border_style::mediumdashdot: style_attribute.set_value("mediumdashdot"); break;
+                        case border_style::mediumdashdotdot: style_attribute.set_value("mediumdashdotdot"); break;
+                        case border_style::mediumdashed: style_attribute.set_value("mediumdashed"); break;
+                        case border_style::slantdashdot: style_attribute.set_value("slantdashdot"); break;
+                        case border_style::thick: style_attribute.set_value("thick"); break;
+                        case border_style::thin: style_attribute.set_value("thin"); break;
+                        default: throw std::runtime_error("invalid style");
+                    }
                 }
-            }
-            
-            if(border_.right.is_color_assigned())
-            {
-                auto color_node = right_node.append_child("color");
                 
-                if(border_.right.get_color_type() == side::color_type::indexed)
+                if(side_.is_color_assigned())
                 {
-                    color_node.append_attribute("indexed").set_value((int)border_.right.get_color());
-                }
-                else if(border_.diagonal.get_color_type() == side::color_type::theme)
-                {
-                    color_node.append_attribute("indexed").set_value((int)border_.right.get_color());
-                }
-                else
-                {
-                    throw std::runtime_error("invalid color type");
-                }
-            }
-        }
-        
-        if(border_.top_assigned)
-        {
-            auto top_node = border_node.append_child("top");
-            
-            if(border_.top.is_style_assigned())
-            {
-                auto style_attribute = top_node.append_attribute("style");
-                
-                switch(border_.top.get_style())
-                {
-                    case border_style::none: style_attribute.set_value("none"); break;
-                    case border_style::thin: style_attribute.set_value("thin"); break;
-                    default: throw std::runtime_error("invalid style");
-                }
-            }
-            
-            if(border_.top.is_color_assigned())
-            {
-                auto color_node = top_node.append_child("color");
-                if(border_.top.get_color_type() == side::color_type::indexed)
-                {
-                    color_node.append_attribute("indexed").set_value((int)border_.top.get_color());
-                }
-                else if(border_.diagonal.get_color_type() == side::color_type::theme)
-                {
-                    color_node.append_attribute("indexed").set_value((int)border_.top.get_color());
-                }
-                else
-                {
-                    throw std::runtime_error("invalid color type");
-                }
-            }
-        }
-        
-        if(border_.bottom_assigned)
-        {
-            auto bottom_node = border_node.append_child("bottom");
-            
-            if(border_.bottom.is_style_assigned())
-            {
-                auto style_attribute = bottom_node.append_attribute("style");
-                
-                switch(border_.bottom.get_style())
-                {
-                    case border_style::none: style_attribute.set_value("none"); break;
-                    case border_style::thin: style_attribute.set_value("thin"); break;
-                    default: throw std::runtime_error("invalid style");
-                }
-            }
-            
-            if(border_.bottom.is_color_assigned())
-            {
-                auto color_node = bottom_node.append_child("color");
-                
-                if(border_.bottom.get_color_type() == side::color_type::indexed)
-                {
-                    color_node.append_attribute("indexed").set_value((int)border_.bottom.get_color());
-                }
-                else if(border_.diagonal.get_color_type() == side::color_type::theme)
-                {
-                    color_node.append_attribute("indexed").set_value((int)border_.bottom.get_color());
-                }
-                else
-                {
-                    throw std::runtime_error("invalid color type");
-                }
-            }
-        }
-        
-        if(border_.diagonal_assigned)
-        {
-            auto diagonal_node = border_node.append_child("diagonal");
-            
-            if(border_.diagonal.is_style_assigned())
-            {
-                auto style_attribute = diagonal_node.append_attribute("style");
-                
-                switch(border_.diagonal.get_style())
-                {
-                    case border_style::none: style_attribute.set_value("none"); break;
-                    case border_style::thin: style_attribute.set_value("thin"); break;
-                    default: throw std::runtime_error("invalid style");
-                }
-            }
-            
-            if(border_.diagonal.is_color_assigned())
-            {
-                auto color_node = diagonal_node.append_child("color");
-                
-                if(border_.diagonal.get_color_type() == side::color_type::indexed)
-                {
-                    color_node.append_attribute("indexed").set_value((int)border_.diagonal.get_color());
-                }
-                else if(border_.diagonal.get_color_type() == side::color_type::theme)
-                {
-                    color_node.append_attribute("indexed").set_value((int)border_.diagonal.get_color());
-                }
-                else
-                {
-                    throw std::runtime_error("invalid color type");
+                    auto color_node = side_node.append_child("color");
+                    
+                    if(side_.get_color_type() == side::color_type::indexed)
+                    {
+                        color_node.append_attribute("indexed").set_value((int)side_.get_color());
+                    }
+                    else if(side_.get_color_type() == side::color_type::theme)
+                    {
+                        color_node.append_attribute("indexed").set_value((int)side_.get_color());
+                    }
+                    else
+                    {
+                        throw std::runtime_error("invalid color type");
+                    }
                 }
             }
         }

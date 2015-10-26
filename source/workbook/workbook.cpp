@@ -31,37 +31,6 @@
 #include "detail/workbook_impl.hpp"
 #include "detail/worksheet_impl.hpp"
 
-namespace {
-    
-static std::string create_temporary_filename()
-{
-#ifdef _WIN32
-    std::array<TCHAR, MAX_PATH> buffer;
-    DWORD result = GetTempPath(static_cast<DWORD>(buffer.size()), buffer.data());
-    if(result > MAX_PATH)
-    {
-        throw std::runtime_error("buffer is too small");
-    }
-    if(result == 0)
-    {
-        throw std::runtime_error("GetTempPath failed");
-    }
-    std::string directory(buffer.begin(), buffer.begin() + result);
-    return directory + "xlnt.xlsx";
-#else
-    return "/tmp/xlsx.xlnt";
-#endif
-}
-
-template <class T>
-void hash_combine(std::size_t& seed, const T& v)
-{
-    std::hash<T> hasher;
-    seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
-}
-    
-} // namespace
-
 namespace xlnt {
 namespace detail {
 

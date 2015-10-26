@@ -305,21 +305,6 @@ const std::unordered_map<int, std::string> known_locales =
     {0x3801, "Arabic - United Arab Emirates"},
     {0x4001, "Arabic - Qatar"}
 };
-    
-std::string get_currency_symbol(const std::string &locale_string)
-{
-    if(locale_string.substr(1, 1) == "$")
-    {
-        return "$";
-    }
-    else if(locale_string.substr(1, 3) == "€")
-    {
-        return "€";
-    }
-    
-//    auto code_page = std::stoi(locale_string.substr(3), nullptr, 16);
-    throw std::runtime_error("locale specific characters aren't supported yet");
-}
 
 bool is_valid_locale(const std::string &locale_string)
 {

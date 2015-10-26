@@ -296,6 +296,99 @@ void style_reader::read_fills(pugi::xml_node fills_node)
         fills_.push_back(new_fill);
     }
 }
+    
+void read_side(pugi::xml_node side_node, side &side, bool &assigned)
+{
+    
+    if(side_node != nullptr)
+    {
+        assigned = true;
+        
+        if(side_node.attribute("style") != nullptr)
+        {
+            std::string border_style_string = side_node.attribute("style").as_string();
+            
+            if(border_style_string == "none")
+            {
+                side.set_border_style(border_style::none);
+            }
+            else if(border_style_string == "dashdot")
+            {
+                side.set_border_style(border_style::dashdot);
+            }
+            else if(border_style_string == "dashdotdot")
+            {
+                side.set_border_style(border_style::dashdotdot);
+            }
+            else if(border_style_string == "dashed")
+            {
+                side.set_border_style(border_style::dashed);
+            }
+            else if(border_style_string == "dotted")
+            {
+                side.set_border_style(border_style::dotted);
+            }
+            else if(border_style_string == "double")
+            {
+                side.set_border_style(border_style::double_);
+            }
+            else if(border_style_string == "hair")
+            {
+                side.set_border_style(border_style::hair);
+            }
+            else if(border_style_string == "medium")
+            {
+                side.set_border_style(border_style::medium);
+            }
+            else if(border_style_string == "mediumdashdot")
+            {
+                side.set_border_style(border_style::mediumdashdot);
+            }
+            else if(border_style_string == "mediumdashdotdot")
+            {
+                side.set_border_style(border_style::mediumdashdotdot);
+            }
+            else if(border_style_string == "mediumdashed")
+            {
+                side.set_border_style(border_style::mediumdashed);
+            }
+            else if(border_style_string == "slantdashdot")
+            {
+                side.set_border_style(border_style::slantdashdot);
+            }
+            else if(border_style_string == "thick")
+            {
+                side.set_border_style(border_style::thick);
+            }
+            else if(border_style_string == "thin")
+            {
+                side.set_border_style(border_style::thin);
+            }
+            else
+            {
+                throw std::runtime_error("unknown border style");
+            }
+        }
+        
+        auto color_node = side_node.child("color");
+        
+        if(color_node != nullptr)
+        {
+            if(color_node.attribute("indexed") != nullptr)
+            {
+                side.set_color(side::color_type::indexed, color_node.attribute("indexed").as_int());
+            }
+            else if(color_node.attribute("theme") != nullptr)
+            {
+                side.set_color(side::color_type::theme, color_node.attribute("theme").as_int());
+            }
+            else
+            {
+                throw std::runtime_error("invalid color type");
+            }
+        }
+    }
+}
 
 void style_reader::read_borders(pugi::xml_node borders_node)
 {
@@ -303,180 +396,22 @@ void style_reader::read_borders(pugi::xml_node borders_node)
     {
         border new_border;
         
-        if(border_node.child("left") != nullptr)
+        const std::vector<std::tuple<std::string, side &, bool &>> sides =
         {
-            new_border.left_assigned = true;
-            auto left_node = border_node.child("left");
-            
-            if(left_node.attribute("style") != nullptr)
-            {
-                if(left_node.attribute("style").as_string() == std::string("thin"))
-                {
-                    new_border.left.set_border_style(border_style::thin);
-                }
-                else
-                {
-                    throw std::runtime_error("unknown border style");
-                }
-            }
-            
-            auto color_node = left_node.child("color");
-            
-            if(color_node != nullptr)
-            {
-                if(color_node.attribute("indexed") != nullptr)
-                {
-                    new_border.left.set_color(side::color_type::indexed, color_node.attribute("indexed").as_int());
-                }
-                else if(color_node.attribute("theme") != nullptr)
-                {
-                    new_border.left.set_color(side::color_type::theme, color_node.attribute("theme").as_int());
-                }
-                else
-                {
-                    throw std::runtime_error("invalid color type");
-                }
-            }
-        }
-        if(border_node.child("right") != nullptr)
+            {"start", new_border.start, new_border.start_assigned},
+            {"end", new_border.end, new_border.end_assigned},
+            {"left", new_border.left, new_border.left_assigned},
+            {"right", new_border.right, new_border.right_assigned},
+            {"top", new_border.top, new_border.top_assigned},
+            {"bottom", new_border.bottom, new_border.bottom_assigned},
+            {"diagonal", new_border.diagonal, new_border.diagonal_assigned},
+            {"vertical", new_border.vertical, new_border.vertical_assigned},
+            {"horizontal", new_border.horizontal, new_border.horizontal_assigned}
+        };
+        
+        for(const auto &side : sides)
         {
-            new_border.right_assigned = true;
-            auto right_node = border_node.child("right");
-            
-            if(right_node.attribute("style") != nullptr)
-            {
-                if(right_node.attribute("style").as_string() == std::string("thin"))
-                {
-                    new_border.right.set_border_style(border_style::thin);
-                }
-                else
-                {
-                    throw std::runtime_error("unknown border style");
-                }
-            }
-            
-            auto color_node = right_node.child("color");
-            
-            if(color_node != nullptr)
-            {
-                if(color_node.attribute("indexed") != nullptr)
-                {
-                    new_border.right.set_color(side::color_type::indexed, color_node.attribute("indexed").as_int());
-                }
-                else if(color_node.attribute("theme") != nullptr)
-                {
-                    new_border.right.set_color(side::color_type::theme, color_node.attribute("theme").as_int());
-                }
-                else
-                {
-                    throw std::runtime_error("invalid color type");
-                }
-            }
-        }
-        if(border_node.child("top") != nullptr)
-        {
-            new_border.top_assigned = true;
-            auto top_node = border_node.child("top");
-            
-            if(top_node.attribute("style") != nullptr)
-            {
-                if(top_node.attribute("style").as_string() == std::string("thin"))
-                {
-                    new_border.top.set_border_style(border_style::thin);
-                }
-                else
-                {
-                    throw std::runtime_error("unknown border style");
-                }
-            }
-            
-            auto color_node = top_node.child("color");
-            
-            if(color_node != nullptr)
-            {
-                if(color_node.attribute("indexed") != nullptr)
-                {
-                    new_border.top.set_color(side::color_type::indexed, color_node.attribute("indexed").as_int());
-                }
-                else if(color_node.attribute("theme") != nullptr)
-                {
-                    new_border.top.set_color(side::color_type::theme, color_node.attribute("theme").as_int());
-                }
-                else
-                {
-                    throw std::runtime_error("invalid color type");
-                }
-            }
-        }
-        if(border_node.child("bottom") != nullptr)
-        {
-            new_border.bottom_assigned = true;
-            auto bottom_node = border_node.child("bottom");
-            
-            if(bottom_node.attribute("style") != nullptr)
-            {
-                if(bottom_node.attribute("style").as_string() == std::string("thin"))
-                {
-                    new_border.bottom.set_border_style(border_style::thin);
-                }
-                else
-                {
-                    throw std::runtime_error("unknown border style");
-                }
-            }
-            
-            auto color_node = bottom_node.child("color");
-            
-            if(color_node != nullptr)
-            {
-                if(color_node.attribute("indexed") != nullptr)
-                {
-                    new_border.bottom.set_color(side::color_type::indexed, color_node.attribute("indexed").as_int());
-                }
-                else if(color_node.attribute("theme") != nullptr)
-                {
-                    new_border.bottom.set_color(side::color_type::theme, color_node.attribute("theme").as_int());
-                }
-                else
-                {
-                    throw std::runtime_error("invalid color type");
-                }
-            }
-        }
-        if(border_node.child("diagonal") != nullptr)
-        {
-            new_border.diagonal_assigned = true;
-            auto diagonal_node = border_node.child("diagonal");
-            
-            if(diagonal_node.attribute("style") != nullptr)
-            {
-                if(diagonal_node.attribute("style").as_string() == std::string("thin"))
-                {
-                    new_border.diagonal.set_border_style(border_style::thin);
-                }
-                else
-                {
-                    throw std::runtime_error("unknown border style");
-                }
-            }
-            
-            auto color_node = diagonal_node.child("color");
-            
-            if(color_node != nullptr)
-            {
-                if(color_node.attribute("indexed") != nullptr)
-                {
-                    new_border.diagonal.set_color(side::color_type::indexed, color_node.attribute("indexed").as_int());
-                }
-                else if(color_node.attribute("theme") != nullptr)
-                {
-                    new_border.diagonal.set_color(side::color_type::theme, color_node.attribute("theme").as_int());
-                }
-                else
-                {
-                    throw std::runtime_error("invalid color type");
-                }
-            }
+            read_side(border_node.child(std::get<0>(side).c_str()), std::get<1>(side), std::get<2>(side));
         }
         
         borders_.push_back(new_border);
