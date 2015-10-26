@@ -35,8 +35,6 @@ public:
     
 	void test_infer_numeric()
 	{
-	    TS_ASSERT(false);
-
 		auto ws = wb_guess_types.create_sheet();
         auto cell = ws.get_cell("A1");
 
