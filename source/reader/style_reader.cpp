@@ -397,15 +397,15 @@ void style_reader::read_borders(pugi::xml_node borders_node)
         border new_border;
         
         std::vector<std::tuple<std::string, side *, bool *>> sides;
-        sides.push_back({"start", &new_border.start, &new_border.start_assigned});
-        sides.push_back({"end", &new_border.end, &new_border.end_assigned});
-        sides.push_back({"left", &new_border.left, &new_border.left_assigned});
-        sides.push_back({"right", &new_border.right, &new_border.right_assigned});
-        sides.push_back({"top", &new_border.top, &new_border.top_assigned});
-        sides.push_back({"bottom", &new_border.bottom, &new_border.bottom_assigned});
-        sides.push_back({"diagonal", &new_border.diagonal, &new_border.diagonal_assigned});
-        sides.push_back({"vertical", &new_border.vertical, &new_border.vertical_assigned});
-        sides.push_back({"horizontal", &new_border.horizontal, &new_border.horizontal_assigned});
+        sides.push_back(std::make_tuple("start", &new_border.start, &new_border.start_assigned));
+        sides.push_back(std::make_tuple("end", &new_border.end, &new_border.end_assigned));
+        sides.push_back(std::make_tuple("left", &new_border.left, &new_border.left_assigned));
+        sides.push_back(std::make_tuple("right", &new_border.right, &new_border.right_assigned));
+        sides.push_back(std::make_tuple("top", &new_border.top, &new_border.top_assigned));
+        sides.push_back(std::make_tuple("bottom", &new_border.bottom, &new_border.bottom_assigned));
+        sides.push_back(std::make_tuple("diagonal", &new_border.diagonal, &new_border.diagonal_assigned));
+        sides.push_back(std::make_tuple("vertical", &new_border.vertical, &new_border.vertical_assigned));
+        sides.push_back(std::make_tuple("horizontal", &new_border.horizontal, &new_border.horizontal_assigned));
         
         for(const auto &side : sides)
         {
