@@ -397,7 +397,7 @@ void style_reader::read_borders(pugi::xml_node borders_node)
         border new_border;
         
         const std::vector<std::tuple<std::string, side *, bool *>> sides =
-        {
+        {{
             {"start", &new_border.start, &new_border.start_assigned},
             {"end", &new_border.end, &new_border.end_assigned},
             {"left", &new_border.left, &new_border.left_assigned},
@@ -407,7 +407,7 @@ void style_reader::read_borders(pugi::xml_node borders_node)
             {"diagonal", &new_border.diagonal, &new_border.diagonal_assigned},
             {"vertical", &new_border.vertical, &new_border.vertical_assigned},
             {"horizontal", &new_border.horizontal, &new_border.horizontal_assigned}
-        };
+        }};
         
         for(const auto &side : sides)
         {
