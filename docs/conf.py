@@ -22,6 +22,11 @@ import shlex
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
 
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+if on_rtd:
+    from subprocess import call
+    call('doxygen Doxyfile')
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -30,7 +35,16 @@ import shlex
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['breathe']
+extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.todo',
+    'sphinx.ext.viewcode',
+    'breathe'
+]
+
+# Breathe extension variables
+breathe_projects = { "xlnt" : "doxyxml/" }
+breathe_default_project = "xlnt"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
