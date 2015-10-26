@@ -166,7 +166,7 @@ std::string style_writer::write_table() const
     {
         auto border_node = borders_node.append_child("border");
         
-        const std::vector<std::tuple<std::string, const side &, bool>> sides =
+        const std::vector<std::tuple<std::string, const side, bool>> sides =
         {
             {"start", border_.start, border_.start_assigned},
             {"end", border_.end, border_.end_assigned},
@@ -182,7 +182,7 @@ std::string style_writer::write_table() const
         for(const auto &side_tuple : sides)
         {
             std::string name = std::get<0>(side_tuple);
-            const side &side_ = std::get<1>(side_tuple);
+            const side side_ = std::get<1>(side_tuple);
             bool assigned = std::get<2>(side_tuple);
             
             if(assigned)
