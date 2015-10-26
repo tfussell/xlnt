@@ -9,7 +9,7 @@
 int main()
 {
     // Create a new workbook by reading sample1.xlsx in the current directory.
-    auto wb = xlnt::reader::load_workbook("sample1.xlsx");
+    auto wb = xlnt::excel_reader::load_workbook("sample1.xlsx");
     
     // The workbook class has begin and end methods so it can be iterated upon.
     // Each item is a sheet in the workbook.
