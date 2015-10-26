@@ -2,6 +2,7 @@ bin/
 lib/
 build/premake/*/
 docs/_*/
+docs/doxyxml/
 *.obj
 *.sdf
 *.suo
