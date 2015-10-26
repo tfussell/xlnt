@@ -1,3 +1,2 @@
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd $DIR
+cd ${0%/*}
 ../third-party/cxxtest/bin/cxxtestgen --runner=ErrorPrinter -o ../tests/runner-autogen.cpp ../tests/*.hpp
