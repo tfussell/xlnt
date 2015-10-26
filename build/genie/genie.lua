@@ -21,7 +21,7 @@ project "xlnt.test"
        "../../tests/runner-autogen.cpp"
     }
     links { "xlnt", "miniz" }
-    prebuildcommands { "../../../third-party/cxxtest/bin/cxxtestgen --runner=ErrorPrinter -o ../../../tests/runner-autogen.cpp ../../../tests/*.hpp" }
+    prebuildcommands { "../generate-tests.sh" }
     flags { "Unicode" }
     configuration "windows"
         defines { "WIN32" }
