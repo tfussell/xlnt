@@ -639,7 +639,7 @@ public:
     {
         xlnt::worksheet ws(wb_);
         
-        auto xml_string = xlnt::write_worksheet(ws);
+        auto xml_string = xlnt::write_worksheet(ws, {});
 
         pugi::xml_document doc;
         doc.load(xml_string.c_str());
@@ -677,7 +677,7 @@ public:
         ws.get_page_margins().set_header(1.5);
         ws.get_page_margins().set_footer(1.5);
         
-        auto xml_string = xlnt::write_worksheet(ws);
+        auto xml_string = xlnt::write_worksheet(ws, {});
 
         pugi::xml_document doc;
         doc.load(xml_string.c_str());
@@ -825,7 +825,7 @@ public:
         ws.get_page_setup().set_horizontal_centered(true);
         ws.get_page_setup().set_vertical_centered(true);
 
-        auto xml_string = xlnt::write_worksheet(ws);
+        auto xml_string = xlnt::write_worksheet(ws, {});
 
         pugi::xml_document doc;
         doc.load(xml_string.c_str());
@@ -905,7 +905,7 @@ public:
         pugi::xml_document observed_doc;
         
         expected_doc.load(expected_xml_string.c_str());
-        observed_doc.load(xlnt::write_worksheet(ws, {}, {}).c_str());
+        observed_doc.load(xlnt::write_worksheet(ws, {}).c_str());
         
         TS_ASSERT(Helper::compare_xml(expected_doc, observed_doc));
         
@@ -928,7 +928,7 @@ public:
         "</worksheet>";
         
         expected_doc.load(expected_xml_string.c_str());
-        observed_doc.load(xlnt::write_worksheet(ws, {}, {}).c_str());
+        observed_doc.load(xlnt::write_worksheet(ws, {}).c_str());
         
         TS_ASSERT(Helper::compare_xml(expected_doc, observed_doc));
     }

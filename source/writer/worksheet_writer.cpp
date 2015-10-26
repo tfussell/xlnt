@@ -28,7 +28,7 @@ bool is_integral(long double d)
 
 namespace xlnt {
 
-std::string write_worksheet(worksheet ws, const std::vector<std::string> &string_table, const std::unordered_map<std::size_t, std::string> &style_id_by_hash)
+std::string write_worksheet(worksheet ws, const std::vector<std::string> &string_table)
 {
     ws.get_cell("A1");
     
@@ -106,22 +106,6 @@ std::string write_worksheet(worksheet ws, const std::vector<std::string> &string
     auto sheet_format_pr_node = root_node.append_child("sheetFormatPr");
     sheet_format_pr_node.append_attribute("baseColWidth").set_value(10);
     sheet_format_pr_node.append_attribute("defaultRowHeight").set_value(15);
-    
-    std::vector<column_t> styled_columns;
-    
-    if(!style_id_by_hash.empty())
-    {        
-        auto cols_node = root_node.append_child("cols");
-        std::sort(styled_columns.begin(), styled_columns.end());
-        
-        for(auto column : styled_columns)
-        {
-            auto col_node = cols_node.append_child("col");
-            col_node.append_attribute("min").set_value(column);
-            col_node.append_attribute("max").set_value(column);
-            col_node.append_attribute("style").set_value(1);
-        }
-    }
     
     std::unordered_map<std::string, std::string> hyperlink_references;
     
