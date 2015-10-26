@@ -24,6 +24,8 @@ import shlex
 
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 if on_rtd:
+    print(os.getcwd())
+    print(' '.join(os.listdir()))
     from subprocess import call
     call('doxygen Doxyfile')
 
