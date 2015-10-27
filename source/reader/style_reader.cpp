@@ -280,6 +280,14 @@ void style_reader::read_fills(pugi::xml_node fills_node)
                 {
                     new_fill.set_background_color(color(color::type::indexed, bg_color_node.attribute("indexed").as_ullong()));
                 }
+                else if(bg_color_node.attribute("auto") != nullptr)
+                {
+                    new_fill.set_background_color(color(color::type::auto_, bg_color_node.attribute("auto").as_ullong()));
+                }
+                else if(bg_color_node.attribute("theme") != nullptr)
+                {
+                    new_fill.set_background_color(color(color::type::theme, bg_color_node.attribute("theme").as_ullong()));
+                }
             }
             
             auto fg_color_node = pattern_fill_node.child("fgColor");
@@ -289,6 +297,14 @@ void style_reader::read_fills(pugi::xml_node fills_node)
                 if(fg_color_node.attribute("indexed") != nullptr)
                 {
                     new_fill.set_foreground_color(color(color::type::indexed, fg_color_node.attribute("indexed").as_ullong()));
+                }
+                else if(fg_color_node.attribute("auto") != nullptr)
+                {
+                    new_fill.set_foreground_color(color(color::type::auto_, fg_color_node.attribute("auto").as_ullong()));
+                }
+                else if(fg_color_node.attribute("theme") != nullptr)
+                {
+                    new_fill.set_foreground_color(color(color::type::theme, fg_color_node.attribute("theme").as_ullong()));
                 }
             }
         }

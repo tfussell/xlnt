@@ -356,6 +356,8 @@ std::string style_writer::write_table() const
         "ff000000",
         "ffaaaaaa",
         "ffbdc0bf",
+        "ffdbdbdb",
+        "ffbdc0bf",
         "ffdbdbdb"
     };
     

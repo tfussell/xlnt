@@ -298,8 +298,16 @@ void workbook::remove_sheet(worksheet ws)
     {
         throw std::runtime_error("worksheet not owned by this workbook");
     }
-
     
+    auto sheet_filename = "xl/worksheets/sheet" + std::to_string(d_->worksheets_.size()) + ".xml";
+    auto rel_iter = std::find_if(d_->relationships_.begin(), d_->relationships_.end(), [=](relationship &r) { return r.get_target_uri() == sheet_filename; });
+    
+    if(rel_iter == d_->relationships_.end())
+    {
+        throw std::runtime_error("no matching rel found");
+    }
+    
+    d_->relationships_.erase(rel_iter);
     d_->worksheets_.erase(match_iter);
 }
 

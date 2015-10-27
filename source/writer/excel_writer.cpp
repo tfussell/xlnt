@@ -108,14 +108,21 @@ void excel_writer::write_chartsheets(zip_file &/*archive*/)
 
 void excel_writer::write_worksheets(zip_file &archive, const std::vector<std::string> &shared_strings)
 {
-    for(auto relationship : wb_.get_relationships())
+    std::size_t index = 0;
+    
+    for(auto ws : wb_)
     {
-        if(relationship.get_type() == relationship::type::worksheet)
+        for(auto relationship : wb_.get_relationships())
         {
-            auto sheet_index = workbook::index_from_ws_filename(relationship.get_target_uri());
-            auto ws = wb_.get_sheet_by_index(sheet_index);
-            archive.writestr(relationship.get_target_uri(), write_worksheet(ws, shared_strings));
+            if(relationship.get_type() == relationship::type::worksheet &&
+               workbook::index_from_ws_filename(relationship.get_target_uri()) == index)
+            {
+                archive.writestr(relationship.get_target_uri(), write_worksheet(ws, shared_strings));
+                break;
+            }
         }
+        
+        index++;
     }
 }
 

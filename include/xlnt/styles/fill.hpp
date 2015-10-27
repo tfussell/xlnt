@@ -201,6 +201,65 @@ public:
         if(type_ == type::pattern)
         {
             hash_combine(seed, static_cast<std::size_t>(pattern_type_));
+            hash_combine(seed, foreground_color_assigned_);
+            
+            if(foreground_color_assigned_)
+            {
+                hash_combine(seed, static_cast<std::size_t>(foreground_color_.get_type()));
+                
+                switch(foreground_color_.get_type())
+                {
+                case color::type::auto_:
+                    hash_combine(seed, static_cast<std::size_t>(foreground_color_.get_auto()));
+                    break;
+                case color::type::indexed:
+                    hash_combine(seed, static_cast<std::size_t>(foreground_color_.get_index()));
+                    break;
+                case color::type::theme:
+                    hash_combine(seed, static_cast<std::size_t>(foreground_color_.get_theme()));
+                    break;
+                }
+            }
+            
+            hash_combine(seed, background_color_assigned_);
+            
+            if(background_color_assigned_)
+            {
+                hash_combine(seed, static_cast<std::size_t>(background_color_.get_type()));
+                
+                switch(foreground_color_.get_type())
+                {
+                    case color::type::auto_:
+                        hash_combine(seed, static_cast<std::size_t>(background_color_.get_auto()));
+                        break;
+                    case color::type::indexed:
+                        hash_combine(seed, static_cast<std::size_t>(background_color_.get_index()));
+                        break;
+                    case color::type::theme:
+                        hash_combine(seed, static_cast<std::size_t>(background_color_.get_theme()));
+                        break;
+                }
+            }
+        }
+        else if(type_ == type::gradient)
+        {
+            hash_combine(seed, static_cast<std::size_t>(gradient_type_));
+            
+            if(gradient_type_ == gradient_type::path)
+            {
+                hash_combine(seed, gradient_path_left_);
+                hash_combine(seed, gradient_path_right_);
+                hash_combine(seed, gradient_path_top_);
+                hash_combine(seed, gradient_path_bottom_);
+            }
+            else if(gradient_type_ == gradient_type::linear)
+            {
+                hash_combine(seed, rotation_);
+            }
+        }
+        else if(type_ == type::solid)
+        {
+//            hash_combine(seed, static_cast<std::size_t>());
         }
         
         return seed;
