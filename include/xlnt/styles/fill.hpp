@@ -218,6 +218,8 @@ public:
                 case color::type::theme:
                     hash_combine(seed, static_cast<std::size_t>(foreground_color_.get_theme()));
                     break;
+                case color::type::rgb:
+                    break;
                 }
             }
             
@@ -237,6 +239,8 @@ public:
                         break;
                     case color::type::theme:
                         hash_combine(seed, static_cast<std::size_t>(background_color_.get_theme()));
+                        break;
+                    case color::type::rgb:
                         break;
                 }
             }

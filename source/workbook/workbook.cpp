@@ -597,17 +597,10 @@ std::vector<named_range> workbook::get_named_ranges() const
 
 std::size_t workbook::add_style(const xlnt::style &style_)
 {
-    for(std::size_t i = 0; i < d_->styles_.size(); i++)
-    {
-        if(d_->styles_[i] == style_)
-        {
-            return i;
-        }
-    }
-    
     d_->styles_.push_back(style_);
+    d_->styles_.back().id_ = d_->styles_.size() - 1;
     
-    return d_->styles_.size() - 1;
+    return d_->styles_.back().id_;
 }
 
 const number_format &workbook::get_number_format(std::size_t style_id) const
@@ -827,6 +820,21 @@ std::vector<border> workbook::get_borders() const
 std::vector<fill> workbook::get_fills() const
 {
     return d_->fills_;
+}
+    
+void workbook::add_color(const color &rgb)
+{
+    d_->colors_.push_back(rgb);
+}
+
+std::string workbook::get_indexed_color(std::size_t color_index) const
+{
+    return d_->colors_.at(color_index).get_rgb_string();
+}
+
+std::vector<color> workbook::get_colors() const
+{
+    return d_->colors_;
 }
     
 } // namespace xlnt

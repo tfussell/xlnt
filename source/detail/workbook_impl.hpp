@@ -19,6 +19,7 @@ struct workbook_impl
         guess_types_(other.guess_types_),
         data_only_(other.data_only_),
         styles_(other.styles_),
+        colors_(other.colors_),
         borders_(other.borders_),
         fills_(other.fills_),
         fonts_(other.fonts_),
@@ -43,6 +44,7 @@ struct workbook_impl
         fills_ = other.fills_;
         fonts_ = other.fonts_;
         number_formats_ = other.number_formats_;
+        colors_ = other.colors_;
         
         return *this;
     }
@@ -61,6 +63,7 @@ struct workbook_impl
     
     std::size_t next_custom_format_id_;
     
+    std::vector<color> colors_;
     std::vector<border> borders_;
     std::vector<fill> fills_;
     std::vector<font> fonts_;

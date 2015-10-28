@@ -1219,15 +1219,14 @@ std::pair<int, int> cell::get_anchor() const
     auto points_to_pixels = [](double value, double dpi) { return (int)std::ceil(value * dpi / 72); };
 
     auto left_columns = d_->column_ - 1;
-    auto &column_dimensions = get_parent().get_column_dimensions();
     int left_anchor = 0;
     auto default_width = points_to_pixels(DefaultColumnWidth, 96.0);
 
     for(column_t column_index = 1; column_index <= left_columns; column_index++)
     {
-        if(column_dimensions.find(column_index) != column_dimensions.end())
+        if(get_parent().has_column_properties(column_index))
         {
-            auto cdw = column_dimensions.at(column_index);
+            auto cdw = get_parent().get_column_properties(column_index).width;
 
             if(cdw > 0)
             {
@@ -1240,15 +1239,14 @@ std::pair<int, int> cell::get_anchor() const
     }
 
     auto top_rows = d_->row_ - 1;
-    auto &row_dimensions = get_parent().get_row_dimensions();
     int top_anchor = 0;
     auto default_height = points_to_pixels(DefaultRowHeight, 96.0);
 
     for(int row_index = 1; row_index <= (int)top_rows; row_index++)
     {
-        if(row_dimensions.find(static_cast<row_t>(row_index)) != row_dimensions.end())
+        if(get_parent().has_row_properties(row_index))
         {
-            auto rdh = row_dimensions.at(static_cast<row_t>(row_index));
+            auto rdh = get_parent().get_row_properties(row_index).height;
 
             if(rdh > 0)
             {

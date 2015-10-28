@@ -30,7 +30,7 @@ alignment read_alignment(pugi::xml_node node)
 {
     alignment align;
     
-    align.set_wrap_text(node.attribute("wrapText").as_int() != 0);
+    align.set_wrap_text(node.attribute("wrapText").as_bool());
     
     bool has_vertical = node.attribute("vertical") != nullptr;
     std::string vertical = has_vertical ? node.attribute("vertical").as_string() : "";
@@ -180,7 +180,8 @@ void style_reader::read_styles(zip_file &archive)
         styles_.back().id_ = styles_.size() - 1;
     }
 
-    read_color_index();
+    read_colors(stylesheet_node.child("colors"));
+    
     read_dxfs();
     read_cell_styles();
     read_named_styles(root.child("namedStyles"));
@@ -201,11 +202,6 @@ void style_reader::read_number_formats(pugi::xml_node num_fmts_node)
         
         number_formats_.push_back(nf);
     }
-}
-
-void style_reader::read_color_index()
-{
-    
 }
     
 void style_reader::read_dxfs()
@@ -246,10 +242,40 @@ void style_reader::read_fonts(pugi::xml_node fonts_node)
             new_font.set_bold(font_node.child("b").attribute("val").as_bool());
         }
         
+        if(font_node.child("strike") != nullptr)
+        {
+            new_font.set_strikethrough(font_node.child("strike").attribute("val").as_bool());
+        }
+        
+        if(font_node.child("i") != nullptr)
+        {
+            new_font.set_italic(font_node.child("i").attribute("val").as_bool());
+        }
+        
+        if(font_node.child("u") != nullptr)
+        {
+            std::string underline_string = font_node.child("u").attribute("val").as_string();
+            
+            if(underline_string == "single")
+            {
+                new_font.set_underline(font::underline_style::single);
+            }
+        }
+        
         fonts_.push_back(new_font);
     }
 }
 
+void style_reader::read_colors(pugi::xml_node colors_node)
+{
+    auto indexed_colors_node = colors_node.child("indexedColors");
+    
+    for(auto rgb_color_node : indexed_colors_node.children("rgbColor"))
+    {
+        colors_.push_back(rgb_color_node.attribute("rgb").as_string());
+    }
+}
+    
 void style_reader::read_fills(pugi::xml_node fills_node)
 {
     auto pattern_fill_type_from_string = [](const std::string &fill_type)

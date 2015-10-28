@@ -84,6 +84,7 @@ std::string write_worksheet(worksheet ws, const std::vector<std::string> &string
     }
     
     auto selection_node = sheet_view_node.append_child("selection");
+    
     if(ws.has_frozen_panes())
     {
         if(ws.get_frozen_panes().get_row() > 1 && ws.get_frozen_panes().get_column_index() > 1)
@@ -99,6 +100,7 @@ std::string write_worksheet(worksheet ws, const std::vector<std::string> &string
             selection_node.append_attribute("pane").set_value("topRight");
         }
     }
+    
     std::string active_cell = "A1";
     selection_node.append_attribute("activeCell").set_value(active_cell.c_str());
     selection_node.append_attribute("sqref").set_value(active_cell.c_str());
@@ -106,6 +108,35 @@ std::string write_worksheet(worksheet ws, const std::vector<std::string> &string
     auto sheet_format_pr_node = root_node.append_child("sheetFormatPr");
     sheet_format_pr_node.append_attribute("baseColWidth").set_value(10);
     sheet_format_pr_node.append_attribute("defaultRowHeight").set_value(15);
+    
+    bool has_column_properties = false;
+    
+    for(auto column = ws.get_lowest_column(); column <= ws.get_highest_column(); column++)
+    {
+        if(ws.has_column_properties(column))
+        {
+            has_column_properties = true;
+            break;
+        }
+    }
+    
+    if(has_column_properties)
+    {
+        auto cols_node = root_node.append_child("cols");
+        
+        for(auto column = ws.get_lowest_column(); column <= ws.get_highest_column(); column++)
+        {
+            const auto &props = ws.get_column_properties(column);
+            
+            auto col_node = cols_node.append_child("col");
+            
+            col_node.append_attribute("min").set_value(column);
+            col_node.append_attribute("max").set_value(column);
+            col_node.append_attribute("width").set_value(props.width);
+            col_node.append_attribute("style").set_value(static_cast<unsigned long long>(props.style));
+            col_node.append_attribute("customWidth").set_value(props.custom ? 1 : 0);
+        }
+    }
     
     std::unordered_map<std::string, std::string> hyperlink_references;
     
@@ -134,13 +165,15 @@ std::string write_worksheet(worksheet ws, const std::vector<std::string> &string
         }
         
         auto row_node = sheet_data_node.append_child("row");
-        row_node.append_attribute("r").set_value(row.front().get_row());
         
+        row_node.append_attribute("r").set_value(row.front().get_row());
         row_node.append_attribute("spans").set_value((std::to_string(min) + ":" + std::to_string(max)).c_str());
+        
         if(ws.has_row_properties(row.front().get_row()))
         {
             row_node.append_attribute("customHeight").set_value(1);
             auto height = ws.get_row_properties(row.front().get_row()).height;
+            
             if(height == std::floor(height))
             {
                 row_node.append_attribute("ht").set_value((std::to_string((int)height) + ".0").c_str());
@@ -150,6 +183,7 @@ std::string write_worksheet(worksheet ws, const std::vector<std::string> &string
                 row_node.append_attribute("ht").set_value(height);
             }
         }
+        
         //row_node.append_attribute("x14ac:dyDescent").set_value(0.25);
         
         for(auto cell : row)

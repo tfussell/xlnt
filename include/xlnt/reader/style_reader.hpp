@@ -56,6 +56,7 @@ public:
     const std::vector<fill> &get_fills() const { return fills_; }
     const std::vector<font> &get_fonts() const { return fonts_; }
     const std::vector<number_format> &get_number_formats() const { return number_formats_; }
+    const std::vector<std::string> &get_colors() const { return colors_; }
     
 private:
     style read_style(pugi::xml_node stylesheet_node, pugi::xml_node xf_node);
@@ -64,8 +65,8 @@ private:
     void read_fills(pugi::xml_node fills_node);
     void read_fonts(pugi::xml_node fonts_node);
     void read_number_formats(pugi::xml_node num_fmt_node);
+    void read_colors(pugi::xml_node colors_node);
     
-    void read_color_index();
     void read_dxfs();
     void read_named_styles(pugi::xml_node named_styles_node);
     void read_style_names();
@@ -77,6 +78,7 @@ private:
     
     std::vector<style> styles_;
     
+    std::vector<std::string> colors_;
     std::vector<border> borders_;
     std::vector<fill> fills_;
     std::vector<font> fonts_;

@@ -210,10 +210,14 @@ public:
     
     std::vector<style> get_styles() const;
     
+    std::vector<color> get_colors() const;
     std::vector<border> get_borders() const;
     std::vector<fill> get_fills() const;
     std::vector<font> get_fonts() const;
     std::vector<number_format> get_number_formats() const;
+    
+    std::size_t add_indexed_color(const std::string &rgb);    
+    std::string get_indexed_color(std::size_t color_index) const;
     
     const number_format &get_number_format(std::size_t style_id) const;
     std::size_t set_number_format(const number_format &format, std::size_t style_id);

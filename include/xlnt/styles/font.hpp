@@ -35,7 +35,7 @@ class style;
 class font
 {
 public:
-    enum class underline
+    enum class underline_style
     {
         none,
         double_,
@@ -46,6 +46,16 @@ public:
     
     void set_bold(bool bold) { bold_ = bold; }
     bool is_bold() const { return bold_; }
+    
+    void set_italic(bool italic) { italic_ = italic; }
+    bool is_italic() const { return italic_; }
+    
+    void set_strikethrough(bool strikethrough) { strikethrough_ = strikethrough; }
+    bool is_strikethrough() const { return strikethrough_; }
+    
+    void set_underline(underline_style new_underline) { underline_ = new_underline; }
+    bool is_underline() const { return underline_ != underline_style::none; }
+    underline_style get_underline() const { return underline_; }
     
     void set_size(int size) { size_ = size; }
     int get_size() const { return size_; }
@@ -99,7 +109,7 @@ private:
      bool italic_ = false;
      bool superscript_ = false;
      bool subscript_ = false;
-     underline underline_ = underline::none;
+     underline_style underline_ = underline_style::none;
      bool strikethrough_ = false;
      color color_;
      bool has_family_ = false;

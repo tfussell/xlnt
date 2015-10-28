@@ -53,6 +53,38 @@ std::string style_writer::write_table() const
     {
         auto font_node = fonts_node.append_child("font");
         
+        if(f.is_bold())
+        {
+            auto bold_node = font_node.append_child("b");
+            bold_node.append_attribute("val").set_value(1);
+        }
+        
+        if(f.is_italic())
+        {
+            auto bold_node = font_node.append_child("i");
+            bold_node.append_attribute("val").set_value(1);
+        }
+        
+        if(f.is_underline())
+        {
+            auto bold_node = font_node.append_child("u");
+            
+            switch(f.get_underline())
+            {
+                case font::underline_style::single:
+                    bold_node.append_attribute("val").set_value("single");
+                    break;
+                default:
+                    break;
+            }
+        }
+        
+        if(f.is_strikethrough())
+        {
+            auto bold_node = font_node.append_child("strike");
+            bold_node.append_attribute("val").set_value(1);
+        }
+        
         auto size_node = font_node.append_child("sz");
         size_node.append_attribute("val").set_value(f.get_size());
         
@@ -80,12 +112,6 @@ std::string style_writer::write_table() const
         {
             auto scheme_node = font_node.append_child("scheme");
             scheme_node.append_attribute("val").set_value("minor");
-        }
-        
-        if(f.is_bold())
-        {
-            auto bold_node = font_node.append_child("b");
-            bold_node.append_attribute("val").set_value(1);
         }
     }
 
@@ -343,27 +369,9 @@ std::string style_writer::write_table() const
     auto colors_node = style_sheet_node.append_child("colors");
     auto indexed_colors_node = colors_node.append_child("indexedColors");
     
-    const std::vector<std::string> colors =
+    for(auto &c : wb_.get_colors())
     {
-        "ff000000",
-        "ffffffff",
-        "ffff0000",
-        "ff00ff00",
-        "ff0000ff",
-        "ffffff00",
-        "ffff00ff",
-        "ff00ffff",
-        "ff000000",
-        "ffaaaaaa",
-        "ffbdc0bf",
-        "ffdbdbdb",
-        "ffbdc0bf",
-        "ffdbdbdb"
-    };
-    
-    for(auto &color : colors)
-    {
-        indexed_colors_node.append_child("rgbColor").append_attribute("rgb").set_value(color.c_str());
+        indexed_colors_node.append_child("rgbColor").append_attribute("rgb").set_value(c.get_rgb_string().c_str());
     }
 
     auto ext_list_node = style_sheet_node.append_child("extLst");

@@ -196,16 +196,6 @@ void worksheet::unfreeze_panes()
     d_->freeze_panes_ = cell_reference("A1");
 }
 
-const std::unordered_map<column_t, double> &worksheet::get_column_dimensions() const
-{
-    return d_->column_dimensions_;
-}
-
-const std::unordered_map<row_t, double> &worksheet::get_row_dimensions() const
-{
-    return d_->row_dimensions_;
-}
-
 cell worksheet::get_cell(const cell_reference &reference)
 {
     if(d_->cell_map_.find(reference.get_row()) == d_->cell_map_.end())
@@ -226,11 +216,6 @@ cell worksheet::get_cell(const cell_reference &reference)
 const cell worksheet::get_cell(const cell_reference &reference) const
 {
     return cell(&d_->cell_map_.at(reference.get_row()).at(reference.get_column_index()));
-}
-
-row_properties &worksheet::get_row_properties(row_t row)
-{
-    return d_->row_properties_[row];
 }
 
 bool worksheet::has_row_properties(row_t row) const
@@ -663,9 +648,9 @@ cell_reference worksheet::get_point_pos(int left, int top) const
     {
         current_column++;
 
-        if(d_->column_dimensions_.find(current_column) != d_->column_dimensions_.end())
+        if(has_column_properties(current_column))
         {
-            auto cdw = d_->column_dimensions_.at(current_column);
+            auto cdw = get_column_properties(current_column).width;
 
             if(cdw >= 0)
             {
@@ -681,9 +666,9 @@ cell_reference worksheet::get_point_pos(int left, int top) const
     {
         current_row++;
 
-        if(d_->row_dimensions_.find(current_row) != d_->row_dimensions_.end())
+        if(has_row_properties(current_row))
         {
-            auto cdh = d_->column_dimensions_.at(current_row);
+            auto cdh = get_row_properties(current_row).height;
 
             if(cdh >= 0)
             {
@@ -706,6 +691,36 @@ cell_reference worksheet::get_point_pos(const std::pair<int, int> &point) const
 void worksheet::set_sheet_state(page_setup::sheet_state state)
 {
     get_page_setup().set_sheet_state(state);
+}
+
+void worksheet::add_column_properties(column_t column, const xlnt::column_properties &props)
+{
+    d_->column_properties_[column] = props;
+}
+
+bool worksheet::has_column_properties(column_t column) const
+{
+    return d_->column_properties_.find(column) != d_->column_properties_.end();
+}
+
+column_properties &worksheet::get_column_properties(column_t column)
+{
+    return d_->column_properties_[column];
+}
+
+const column_properties &worksheet::get_column_properties(column_t column) const
+{
+    return d_->column_properties_.at(column);
+}
+
+row_properties &worksheet::get_row_properties(row_t row)
+{
+    return d_->row_properties_[row];
+}
+
+const row_properties &worksheet::get_row_properties(row_t row) const
+{
+    return d_->row_properties_.at(row);
 }
 
 } // namespace xlnt

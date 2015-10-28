@@ -62,10 +62,14 @@ public:
     {
         std::size_t seed = 0;
         
+        hash_combine(seed, style_assigned_);
+        
         if(style_assigned_)
         {
             hash_combine(seed, static_cast<std::size_t>(style_));
         }
+        
+        hash_combine(seed, color_assigned_);
         
         if(color_assigned_)
         {

@@ -31,6 +31,8 @@ struct worksheet_impl
     void operator=(const worksheet_impl &other)
     {
         parent_ = other.parent_;
+        column_properties_ = other.column_properties_;
+        row_properties_ = other.row_properties_;
         title_ = other.title_;
         freeze_panes_ = other.freeze_panes_;
         cell_map_ = other.cell_map_;
@@ -52,6 +54,7 @@ struct worksheet_impl
     }
     
     workbook *parent_;
+    std::unordered_map<column_t, column_properties> column_properties_;
     std::unordered_map<row_t, row_properties> row_properties_;
     std::string title_;
     cell_reference freeze_panes_;
@@ -64,8 +67,6 @@ struct worksheet_impl
     std::unordered_map<std::string, named_range> named_ranges_;
     std::size_t comment_count_;
     header_footer header_footer_;
-    std::unordered_map<column_t, double> column_dimensions_;
-    std::unordered_map<row_t, double> row_dimensions_;
 };
 
 } // namespace detail

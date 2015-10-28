@@ -46,7 +46,13 @@ void read_worksheet(worksheet ws, zip_file &archive, const relationship &rel, co
     
     for(auto row_node : sheet_data_node.children("row"))
     {
-        int row_index = row_node.attribute("r").as_int();
+        auto row_index = static_cast<row_t>(row_node.attribute("r").as_uint());
+        
+        if(row_node.attribute("ht") != nullptr)
+        {
+            ws.get_row_properties(row_index).height = row_node.attribute("ht").as_double();
+        }
+        
         std::string span_string = row_node.attribute("spans").as_string();
         auto colon_index = span_string.find(':');
         
@@ -127,6 +133,29 @@ void read_worksheet(worksheet ws, zip_file &archive, const relationship &rel, co
                     cell.set_style_id(style_id);
                 }
             }
+        }
+    }
+    
+    auto cols_node = root_node.child("cols");
+    
+    for(auto col_node : cols_node.children("col"))
+    {
+        column_t min = col_node.attribute("min").as_uint();
+        column_t max = col_node.attribute("max").as_uint();
+        double width = col_node.attribute("width").as_double();
+        std::size_t column_style = col_node.attribute("style").as_ullong();
+        bool custom = col_node.attribute("customWidth").as_bool();
+
+        for(auto column = min; column <= max; column++)
+        {
+            if(!ws.has_column_properties(column))
+            {
+                ws.add_column_properties(column, column_properties());
+            }
+            
+            ws.get_column_properties(min).width = width;
+            ws.get_column_properties(min).style = column_style;
+            ws.get_column_properties(min).custom = custom;
         }
     }
     

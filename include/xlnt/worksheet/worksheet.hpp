@@ -52,12 +52,19 @@ namespace detail {
 class row_properties
 {
 public:
-	int row_index;
 	double height;
 	bool visible;
 	int outline_level;
 	bool collapsed;
 	int style_index;
+};
+    
+class column_properties
+{
+public:
+    double width;
+    std::size_t style;
+    bool custom;
 };
     
 class header
@@ -176,21 +183,27 @@ public:
     const range get_range(const range_reference &reference) const;
     range get_squared_range(column_t min_col, row_t min_row, column_t max_col, row_t max_row);
     const range get_squared_range(column_t min_col, row_t min_row, column_t max_col, row_t max_row) const;
-    row_properties &get_row_properties(row_t row);
-    const row_properties &get_row_properties(row_t row) const;
-    bool has_row_properties(row_t row) const;
     range rows() const;
     range rows(const std::string &range_string) const;
     range rows(int row_offset, int column_offset) const;
     range rows(const std::string &range_string, int row_offset, int column_offset) const;
     range columns() const;
     std::list<cell> get_cell_collection();
+    
+    // properties
+    column_properties &get_column_properties(column_t column);
+    const column_properties &get_column_properties(column_t column) const;
+    bool has_column_properties(column_t column) const;
+    void add_column_properties(column_t column, const column_properties &props);
+    
+    row_properties &get_row_properties(row_t row);
+    const row_properties &get_row_properties(row_t row) const;
+    bool has_row_properties(row_t row) const;
+    void add_row_properties(row_t row, const row_properties &props);
 
+    // positioning
     cell_reference get_point_pos(int left, int top) const;
     cell_reference get_point_pos(const std::pair<int, int> &point) const;
-
-    const std::unordered_map<column_t, double> &get_column_dimensions() const;
-    const std::unordered_map<row_t, double> &get_row_dimensions() const;
 
     std::string unique_sheet_name(const std::string &value) const;
 

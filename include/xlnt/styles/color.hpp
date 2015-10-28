@@ -32,7 +32,8 @@ public:
     {
         indexed,
         theme,
-        auto_
+        auto_,
+        rgb
     };
     
     static const color black;
@@ -49,6 +50,10 @@ public:
     color() {}
     
     color(type t, std::size_t v) : type_(t), index_(v)
+    {
+    }
+    
+    color(type t, const std::string &v) : type_(t), rgb_string_(v)
     {
     }
     
@@ -111,9 +116,20 @@ public:
         return index_;
     }
     
+    std::string get_rgb_string() const
+    {
+        if(type_ != type::rgb)
+        {
+            throw std::runtime_error("not theme color");
+        }
+        
+        return rgb_string_;
+    }
+    
 private:
     type type_ = type::indexed;
     int index_ = 0;
+    std::string rgb_string_;
 };
 
 } // namespace xlnt

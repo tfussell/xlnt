@@ -92,6 +92,11 @@ xlnt::workbook load_workbook(xlnt::zip_file &archive, bool guess_types, bool dat
         wb.add_number_format(number_format_);
     }
     
+    for(auto &color_rgb : style_reader_.get_colors())
+    {
+        wb.add_color(xlnt::color(xlnt::color::type::rgb, color_rgb));
+    }
+    
     for(const auto &style : style_reader_.get_styles())
     {
         wb.add_style(style);

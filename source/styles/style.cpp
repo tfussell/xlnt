@@ -88,20 +88,24 @@ style &style::operator=(const style &other)
 std::size_t style::hash() const
 {
     std::size_t seed = 0;
-    if(alignment_apply_) hash_combine(seed, alignment_apply_);
-    hash_combine(seed, alignment_.hash());
+    
+    hash_combine(seed, alignment_apply_);
+    hash_combine(seed, alignment_apply_ ? alignment_.hash() : 0);
+    
     hash_combine(seed, border_apply_);
-    hash_combine(seed, border_id_);
+    hash_combine(seed, border_apply_ ? border_id_ : 0);
+    
     hash_combine(seed, font_apply_);
-    hash_combine(seed, font_id_);
+    hash_combine(seed, font_apply_ ? font_id_ : 0);
+    
     hash_combine(seed, fill_apply_);
-    hash_combine(seed, fill_id_);
+    hash_combine(seed, fill_apply_ ? fill_id_ : 0);
+    
     hash_combine(seed, number_format_apply_);
-    hash_combine(seed, number_format_id_);
+    hash_combine(seed, number_format_apply_ ? number_format_id_ : 0);
+    
     hash_combine(seed, protection_apply_);
-    if(protection_apply_) hash_combine(seed, get_protection().hash());
-//    hash_combine(seed, pivot_button_);
-//    hash_combine(seed, quote_prefix_);
+    hash_combine(seed, protection_apply_ ? get_protection().hash() : 0);
     
     return seed;
 }

@@ -100,8 +100,9 @@ public:
     
     std::size_t hash() const
     {
-        std::size_t seed = wrap_text_;
-        seed = seed << 1 & shrink_to_fit_;
+        std::size_t seed = 0;
+        hash_combine(seed, wrap_text_);
+        hash_combine(seed, shrink_to_fit_);
         hash_combine(seed, static_cast<std::size_t>(horizontal_));
         hash_combine(seed, static_cast<std::size_t>(vertical_));
         hash_combine(seed, text_rotation_);
