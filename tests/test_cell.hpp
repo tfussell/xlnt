@@ -19,11 +19,6 @@
 #include <xlnt/worksheet/worksheet.hpp>
 #include <xlnt/workbook/workbook.hpp>
 
-#include <xlnt/writer/excel_writer.hpp>
-#include <xlnt/reader/excel_reader.hpp>
-
-#include <xlnt/common/xml_tree.hpp>
-
 class test_cell : public CxxTest::TestSuite
 {
 private:
@@ -37,7 +32,8 @@ public:
     
     void test_debug()
     {
-        auto wb = xlnt::excel_reader::load_workbook("/Users/thomas/Development/xlnt/samples/formatting.xlsx");
+        xlnt::workbook wb;
+        wb.load("/Users/thomas/Development/xlnt/samples/formatting.xlsx");
         wb.save("/Users/thomas/Development/xlnt/samples/formatting-rt.xlsx");
         wb.save("/Users/thomas/Development/xlnt/samples/formatting-rt.zip");
     }
@@ -94,7 +90,6 @@ public:
         TS_ASSERT(cell.get_row() == 1);
         TS_ASSERT(cell.get_reference() == "A1");
         TS_ASSERT(!cell.has_value());
-        TS_ASSERT(cell.get_xf_index() == 0);
         TS_ASSERT(!cell.has_comment());
     }
 
@@ -179,7 +174,7 @@ public:
         auto ws = wb_guess_types.create_sheet();
         auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
         
-        for(auto error_code : xlnt::cell::ErrorCodes)
+        for(auto error_code : xlnt::cell::error_codes())
         {
             cell.set_value(error_code.first);
             TS_ASSERT(cell.get_data_type() == xlnt::cell::type::error);

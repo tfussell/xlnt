@@ -330,7 +330,7 @@ const range worksheet::get_squared_range(column_t min_col, row_t min_row, column
     return get_range(reference);
 }
 
-std::vector<relationship> worksheet::get_relationships()
+const std::vector<relationship> &worksheet::get_relationships() const
 {
     return d_->relationships_;
 }

@@ -1,11 +1,15 @@
 #include <xlnt/s11n/workbook_serializer.hpp>
 #include <xlnt/common/datetime.hpp>
+#include <xlnt/common/exceptions.hpp>
 #include <xlnt/common/relationship.hpp>
 #include <xlnt/s11n/xml_document.hpp>
 #include <xlnt/s11n/xml_node.hpp>
 #include <xlnt/workbook/document_properties.hpp>
 #include <xlnt/workbook/manifest.hpp>
+#include <xlnt/workbook/named_range.hpp>
 #include <xlnt/workbook/workbook.hpp>
+#include <xlnt/worksheet/range_reference.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
 
 #include "detail/constants.hpp"
 
@@ -66,15 +70,15 @@ std::vector<std::pair<std::string, std::string>> workbook_serializer::read_sheet
     
     auto with_ns = [&](const std::string &base) { return ns.empty() ? base : ns + ":" + base; };
     
-    auto root_node = doc.child(with_ns("workbook").c_str());
-    auto sheets_node = root_node.child(with_ns("sheets").c_str());
+    auto root_node = doc.get_child(with_ns("workbook"));
+    auto sheets_node = root_node.get_child(with_ns("sheets"));
     
     std::vector<std::pair<std::string, std::string>> sheets;
     
     // store temp because pugixml iteration uses the internal char array multiple times
     auto sheet_element_name = with_ns("sheet");
     
-    for(auto sheet_node : sheets_node.children(sheet_element_name.c_str()))
+    for(auto sheet_node : sheets_node.children(sheet_element_name))
     {
         std::string id = sheet_node.attribute("r:id").as_string();
         std::string name = sheet_node.attribute("name").as_string();
@@ -112,53 +116,6 @@ void workbook_serializer::read_properties_core(const xml_document &xml)
     }
 }
 
-std::string workbook_serializer::read_dimension(const std::string &xml_string)
-{
-    pugi::xml_document doc;
-    doc.load(xml_string.c_str());
-    auto root_node = doc.child("worksheet");
-    auto dimension_node = root_node.child("dimension");
-    std::string dimension = dimension_node.attribute("ref").as_string();
-    return dimension;
-}
-
-std::vector<relationship> workbook_serializer::read_relationships(zip_file &archive, const std::string &filename)
-{
-    auto filename_separator_index = filename.find_last_of('/');
-    auto basename = filename.substr(filename_separator_index + 1);
-    auto dirname = filename.substr(0, filename_separator_index);
-    auto rels_filename = dirname + "/_rels/" + basename + ".rels";
-    
-    pugi::xml_document doc;
-    auto content = archive.read(rels_filename);
-    doc.load(content.c_str());
-    
-    auto root_node = doc.child("Relationships");
-    
-    std::vector<relationship> relationships;
-    
-    for(auto relationship : root_node.children("Relationship"))
-    {
-        std::string id = relationship.attribute("Id").as_string();
-        std::string type = relationship.attribute("Type").as_string();
-        std::string target = relationship.attribute("Target").as_string();
-        
-        if(target[0] != '/' && target.substr(0, 2) != "..")
-        {
-            target = dirname + "/" + target;
-        }
-        
-        if(target[0] == '/')
-        {
-            target = target.substr(1);
-        }
-        
-        relationships.push_back(xlnt::relationship(type, id, target));
-    }
-    
-    return relationships;
-}
-
 std::string workbook_serializer::determine_document_type(const manifest &manifest)
 {
     if(!manifest.has_override_type(constants::ArcWorkbook))
@@ -184,22 +141,27 @@ std::string workbook_serializer::determine_document_type(const manifest &manifes
     return "unsupported";
 }
 
+/// <summary>
+/// Return a list of worksheets.
+/// content types has a list of paths but no titles
+/// workbook has a list of titles and relIds but no paths
+/// workbook_rels has a list of relIds and paths but no titles
+/// </summary>
 std::vector<std::pair<std::string, std::string>> workbook_serializer::detect_worksheets(zip_file &archive)
 {
     static const std::string ValidWorksheet = "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml";
     
-    auto content_types = read_content_types(archive);
     std::vector<std::string> valid_sheets;
     
-    for(const auto &content_type : content_types)
+    for(const auto &content_type : wb_.get_manifest().get_override_types())
     {
-        if(content_type.second == ValidWorksheet)
+        if(content_type.get_content_type() == ValidWorksheet)
         {
-            valid_sheets.push_back(content_type.first);
+            valid_sheets.push_back(content_type.get_part_name());
         }
     }
     
-    auto workbook_relationships = read_relationships(archive, "xl/workbook.xml");
+    auto &workbook_relationships = wb_.get_relationships();
     std::vector<std::pair<std::string, std::string>> result;
     
     for(const auto &ws : read_sheets(archive))
@@ -216,456 +178,80 @@ std::vector<std::pair<std::string, std::string>> workbook_serializer::detect_wor
     return result;
 }
 
-std::string workbook_serializer::write_shared_strings(const std::vector<std::string> &string_table)
+xml_document workbook_serializer::write_properties_core() const
 {
-    pugi::xml_document doc;
-    auto root_node = doc.append_child("sst");
-    root_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
-    root_node.append_attribute("uniqueCount").set_value((int)string_table.size());
+    auto &props = wb_.get_properties();
     
-    for(auto string : string_table)
+    xml_document xml;
+    
+    xml.add_namespace("cp", "http://schemas.openxmlformats.org/package/2006/metadata/core-properties");
+    xml.add_namespace("dc", "http://purl.org/dc/elements/1.1/");
+    xml.add_namespace("dcmitype", "http://purl.org/dc/dcmitype/");
+    xml.add_namespace("dcterms", "http://purl.org/dc/terms/");
+    xml.add_namespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+    
+    auto &root_node = xml.root();
+    root_node.set_name("cp:coreProperties");
+    
+    root_node.add_child("dc:creator").set_text(props.creator);
+    root_node.add_child("cp:lastModifiedBy").set_text(props.last_modified_by);
+    root_node.add_child("dcterms:created").set_text(datetime_to_w3cdtf(props.created));
+    root_node.get_child("dcterms:created").add_attribute("xsi:type", "dcterms:W3CDTF");
+    root_node.add_child("dcterms:modified").set_text(datetime_to_w3cdtf(props.modified));
+    root_node.get_child("dcterms:modified").add_attribute("xsi:type", "dcterms:W3CDTF");
+    root_node.add_child("dc:title").set_text(props.title);
+    root_node.add_child("dc:description");
+    root_node.add_child("dc:subject");
+    root_node.add_child("cp:keywords");
+    root_node.add_child("cp:category");
+    
+    return xml;
+}
+    
+xml_document workbook_serializer::write_properties_app() const
+{
+    xml_document xml;
+    
+    xml.add_namespace("xmlns", "http://schemas.openxmlformats.org/officeDocument/2006/extended-properties");
+    xml.add_namespace("xmlns:vt", "http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes");
+    
+    auto &root_node = xml.root();
+    root_node.set_name("Properties");
+    
+    root_node.add_child("Application").set_text("Microsoft Excel");
+    root_node.add_child("DocSecurity").set_text("0");
+    root_node.add_child("ScaleCrop").set_text("false");
+    root_node.add_child("Company");
+    root_node.add_child("LinksUpToDate").set_text("false");
+    root_node.add_child("SharedDoc").set_text("false");
+    root_node.add_child("HyperlinksChanged").set_text("false");
+    root_node.add_child("AppVersion").set_text("12.0000");
+    
+    auto heading_pairs_node = root_node.add_child("HeadingPairs");
+    auto heading_pairs_vector_node = heading_pairs_node.add_child("vt:vector");
+    heading_pairs_vector_node.add_attribute("baseType", "variant");
+    heading_pairs_vector_node.add_attribute("size", "2");
+    heading_pairs_vector_node.add_child("vt:variant").add_child("vt:lpstr").set_text("Worksheets");
+    heading_pairs_vector_node.add_child("vt:variant").add_child("vt:i4").set_text(std::to_string(wb_.get_sheet_names().size()));
+    
+    auto titles_of_parts_node = root_node.add_child("TitlesOfParts");
+    auto titles_of_parts_vector_node = titles_of_parts_node.add_child("vt:vector");
+    titles_of_parts_vector_node.add_attribute("baseType", "lpstr");
+    titles_of_parts_vector_node.add_attribute("size", std::to_string(wb_.get_sheet_names().size()));
+    
+    for(auto ws : wb_)
     {
-        root_node.append_child("si").append_child("t").text().set(string.c_str());
+        titles_of_parts_vector_node.add_child("vt:lpstr").set_text(ws.get_title());
     }
-    
-    std::stringstream ss;
-    doc.save(ss);
-    
-    return ss.str();
+
+    return xml;
 }
 
-std::string workbook_serializer::write_properties_core(const document_properties &prop)
-{
-    pugi::xml_document doc;
-    auto root_node = doc.append_child("cp:coreProperties");
-    root_node.append_attribute("xmlns:cp").set_value("http://schemas.openxmlformats.org/package/2006/metadata/core-properties");
-    root_node.append_attribute("xmlns:dc").set_value("http://purl.org/dc/elements/1.1/");
-    root_node.append_attribute("xmlns:dcmitype").set_value("http://purl.org/dc/dcmitype/");
-    root_node.append_attribute("xmlns:dcterms").set_value("http://purl.org/dc/terms/");
-    root_node.append_attribute("xmlns:xsi").set_value("http://www.w3.org/2001/XMLSchema-instance");
-    
-    root_node.append_child("dc:creator").text().set(prop.creator.c_str());
-    root_node.append_child("cp:lastModifiedBy").text().set(prop.last_modified_by.c_str());
-    root_node.append_child("dcterms:created").text().set(datetime_to_w3cdtf(prop.created).c_str());
-    root_node.child("dcterms:created").append_attribute("xsi:type").set_value("dcterms:W3CDTF");
-    root_node.append_child("dcterms:modified").text().set(datetime_to_w3cdtf(prop.modified).c_str());
-    root_node.child("dcterms:modified").append_attribute("xsi:type").set_value("dcterms:W3CDTF");
-    root_node.append_child("dc:title").text().set(prop.title.c_str());
-    root_node.append_child("dc:description");
-    root_node.append_child("dc:subject");
-    root_node.append_child("cp:keywords");
-    root_node.append_child("cp:category");
-    
-    std::stringstream ss;
-    doc.save(ss);
-    
-    return ss.str();
-}
-
-std::string workbook_serializer::write_worksheet_rels(worksheet ws)
-{
-    return write_relationships(ws.get_relationships(), "");
-}
-
-std::string workbook_serializer::write_theme()
-{
-    pugi::xml_document doc;
-    auto theme_node = doc.append_child("a:theme");
-    theme_node.append_attribute("xmlns:a").set_value(constants::Namespaces.at("drawingml").c_str());
-    theme_node.append_attribute("name").set_value("Office Theme");
-    auto theme_elements_node = theme_node.append_child("a:themeElements");
-    auto clr_scheme_node = theme_elements_node.append_child("a:clrScheme");
-    clr_scheme_node.append_attribute("name").set_value("Office");
-    
-    struct scheme_element
-    {
-        std::string name;
-        std::string sub_element_name;
-        std::string val;
-    };
-    
-    std::vector<scheme_element> scheme_elements =
-    {
-        {"a:dk1", "a:sysClr", "windowText"},
-        {"a:lt1", "a:sysClr", "window"},
-        {"a:dk2", "a:srgbClr", "1F497D"},
-        {"a:lt2", "a:srgbClr", "EEECE1"},
-        {"a:accent1", "a:srgbClr", "4F81BD"},
-        {"a:accent2", "a:srgbClr", "C0504D"},
-        {"a:accent3", "a:srgbClr", "9BBB59"},
-        {"a:accent4", "a:srgbClr", "8064A2"},
-        {"a:accent5", "a:srgbClr", "4BACC6"},
-        {"a:accent6", "a:srgbClr", "F79646"},
-        {"a:hlink", "a:srgbClr", "0000FF"},
-        {"a:folHlink", "a:srgbClr", "800080"},
-    };
-    
-    for(auto element : scheme_elements)
-    {
-        auto element_node = clr_scheme_node.append_child(element.name.c_str());
-        element_node.append_child(element.sub_element_name.c_str()).append_attribute("val").set_value(element.val.c_str());
-        
-        if(element.name == "a:dk1")
-        {
-            element_node.child(element.sub_element_name.c_str()).append_attribute("lastClr").set_value("000000");
-        }
-        else if(element.name == "a:lt1")
-        {
-            element_node.child(element.sub_element_name.c_str()).append_attribute("lastClr").set_value("FFFFFF");
-        }
-    }
-    
-    struct font_scheme
-    {
-        bool typeface;
-        std::string script;
-        std::string major;
-        std::string minor;
-    };
-    
-    std::vector<font_scheme> font_schemes =
-    {
-        {true, "a:latin", "Cambria", "Calibri"},
-        {true, "a:ea", "", ""},
-        {true, "a:cs", "", ""},
-        {false, "Jpan", "\xef\xbc\xad\xef\xbc\xb3 \xef\xbc\xb0\xe3\x82\xb4\xe3\x82\xb7\xe3\x83\x83\xe3\x82\xaf", "\xef\xbc\xad\xef\xbc\xb3 \xef\xbc\xb0\xe3\x82\xb4\xe3\x82\xb7\xe3\x83\x83\xe3\x82\xaf"},
-        {false, "Hang", "\xeb\xa7\x91\xec\x9d\x80 \xea\xb3\xa0\xeb\x94\x95", "\xeb\xa7\x91\xec\x9d\x80 \xea\xb3\xa0\xeb\x94\x95"},
-        {false, "Hans", "\xe5\xae\x8b\xe4\xbd\x93", "\xe5\xae\x8b\xe4\xbd\x93"},
-        {false, "Hant", "\xe6\x96\xb0\xe7\xb4\xb0\xe6\x98\x8e\xe9\xab\x94", "\xe6\x96\xb0\xe7\xb4\xb0\xe6\x98\x8e\xe9\xab\x94"},
-        {false, "Arab", "Times New Roman", "Arial"},
-        {false, "Hebr", "Times New Roman", "Arial"},
-        {false, "Thai", "Tahoma", "Tahoma"},
-        {false, "Ethi", "Nyala", "Nyala"},
-        {false, "Beng", "Vrinda", "Vrinda"},
-        {false, "Gujr", "Shruti", "Shruti"},
-        {false, "Khmr", "MoolBoran", "DaunPenh"},
-        {false, "Knda", "Tunga", "Tunga"},
-        {false, "Guru", "Raavi", "Raavi"},
-        {false, "Cans", "Euphemia", "Euphemia"},
-        {false, "Cher", "Plantagenet Cherokee", "Plantagenet Cherokee"},
-        {false, "Yiii", "Microsoft Yi Baiti", "Microsoft Yi Baiti"},
-        {false, "Tibt", "Microsoft Himalaya", "Microsoft Himalaya"},
-        {false, "Thaa", "MV Boli", "MV Boli"},
-        {false, "Deva", "Mangal", "Mangal"},
-        {false, "Telu", "Gautami", "Gautami"},
-        {false, "Taml", "Latha", "Latha"},
-        {false, "Syrc", "Estrangelo Edessa", "Estrangelo Edessa"},
-        {false, "Orya", "Kalinga", "Kalinga"},
-        {false, "Mlym", "Kartika", "Kartika"},
-        {false, "Laoo", "DokChampa", "DokChampa"},
-        {false, "Sinh", "Iskoola Pota", "Iskoola Pota"},
-        {false, "Mong", "Mongolian Baiti", "Mongolian Baiti"},
-        {false, "Viet", "Times New Roman", "Arial"},
-        {false, "Uigh", "Microsoft Uighur", "Microsoft Uighur"}
-    };
-    
-    auto font_scheme_node = theme_elements_node.append_child("a:fontScheme");
-    font_scheme_node.append_attribute("name").set_value("Office");
-    
-    auto major_fonts_node = font_scheme_node.append_child("a:majorFont");
-    auto minor_fonts_node = font_scheme_node.append_child("a:minorFont");
-    
-    for(auto scheme : font_schemes)
-    {
-        pugi::xml_node major_font_node, minor_font_node;
-        
-        if(scheme.typeface)
-        {
-            major_font_node = major_fonts_node.append_child(scheme.script.c_str());
-            minor_font_node = minor_fonts_node.append_child(scheme.script.c_str());
-        }
-        else
-        {
-            major_font_node = major_fonts_node.append_child("a:font");
-            major_font_node.append_attribute("script").set_value(scheme.script.c_str());
-            minor_font_node = minor_fonts_node.append_child("a:font");
-            minor_font_node.append_attribute("script").set_value(scheme.script.c_str());
-        }
-        
-        major_font_node.append_attribute("typeface").set_value(scheme.major.c_str());
-        minor_font_node.append_attribute("typeface").set_value(scheme.minor.c_str());
-    }
-    
-    auto format_scheme_node = theme_elements_node.append_child("a:fmtScheme");
-    format_scheme_node.append_attribute("name").set_value("Office");
-    
-    auto fill_style_list_node = format_scheme_node.append_child("a:fillStyleLst");
-    fill_style_list_node.append_child("a:solidFill").append_child("a:schemeClr").append_attribute("val").set_value("phClr");
-    
-    auto grad_fill_node = fill_style_list_node.append_child("a:gradFill");
-    grad_fill_node.append_attribute("rotWithShape").set_value(1);
-    
-    auto grad_fill_list = grad_fill_node.append_child("a:gsLst");
-    auto gs_node = grad_fill_list.append_child("a:gs");
-    gs_node.append_attribute("pos").set_value(0);
-    auto scheme_color_node = gs_node.append_child("a:schemeClr");
-    scheme_color_node.append_attribute("val").set_value("phClr");
-    scheme_color_node.append_child("a:tint").append_attribute("val").set_value(50000);
-    scheme_color_node.append_child("a:satMod").append_attribute("val").set_value(300000);
-    
-    gs_node = grad_fill_list.append_child("a:gs");
-    gs_node.append_attribute("pos").set_value(35000);
-    scheme_color_node = gs_node.append_child("a:schemeClr");
-    scheme_color_node.append_attribute("val").set_value("phClr");
-    scheme_color_node.append_child("a:tint").append_attribute("val").set_value(37000);
-    scheme_color_node.append_child("a:satMod").append_attribute("val").set_value(300000);
-    
-    gs_node = grad_fill_list.append_child("a:gs");
-    gs_node.append_attribute("pos").set_value(100000);
-    scheme_color_node = gs_node.append_child("a:schemeClr");
-    scheme_color_node.append_attribute("val").set_value("phClr");
-    scheme_color_node.append_child("a:tint").append_attribute("val").set_value(15000);
-    scheme_color_node.append_child("a:satMod").append_attribute("val").set_value(350000);
-    
-    auto lin_node = grad_fill_node.append_child("a:lin");
-    lin_node.append_attribute("ang").set_value(16200000);
-    lin_node.append_attribute("scaled").set_value(1);
-    
-    grad_fill_node = fill_style_list_node.append_child("a:gradFill");
-    grad_fill_node.append_attribute("rotWithShape").set_value(1);
-    
-    grad_fill_list = grad_fill_node.append_child("a:gsLst");
-    gs_node = grad_fill_list.append_child("a:gs");
-    gs_node.append_attribute("pos").set_value(0);
-    scheme_color_node = gs_node.append_child("a:schemeClr");
-    scheme_color_node.append_attribute("val").set_value("phClr");
-    scheme_color_node.append_child("a:shade").append_attribute("val").set_value(51000);
-    scheme_color_node.append_child("a:satMod").append_attribute("val").set_value(130000);
-    
-    gs_node = grad_fill_list.append_child("a:gs");
-    gs_node.append_attribute("pos").set_value(80000);
-    scheme_color_node = gs_node.append_child("a:schemeClr");
-    scheme_color_node.append_attribute("val").set_value("phClr");
-    scheme_color_node.append_child("a:shade").append_attribute("val").set_value(93000);
-    scheme_color_node.append_child("a:satMod").append_attribute("val").set_value(130000);
-    
-    gs_node = grad_fill_list.append_child("a:gs");
-    gs_node.append_attribute("pos").set_value(100000);
-    scheme_color_node = gs_node.append_child("a:schemeClr");
-    scheme_color_node.append_attribute("val").set_value("phClr");
-    scheme_color_node.append_child("a:shade").append_attribute("val").set_value(94000);
-    scheme_color_node.append_child("a:satMod").append_attribute("val").set_value(135000);
-    
-    lin_node = grad_fill_node.append_child("a:lin");
-    lin_node.append_attribute("ang").set_value(16200000);
-    lin_node.append_attribute("scaled").set_value(0);
-    
-    auto line_style_list_node = format_scheme_node.append_child("a:lnStyleLst");
-    
-    auto ln_node = line_style_list_node.append_child("a:ln");
-    ln_node.append_attribute("w").set_value(9525);
-    ln_node.append_attribute("cap").set_value("flat");
-    ln_node.append_attribute("cmpd").set_value("sng");
-    ln_node.append_attribute("algn").set_value("ctr");
-    
-    auto solid_fill_node = ln_node.append_child("a:solidFill");
-    scheme_color_node = solid_fill_node.append_child("a:schemeClr");
-    scheme_color_node.append_attribute("val").set_value("phClr");
-    scheme_color_node.append_child("a:shade").append_attribute("val").set_value(95000);
-    scheme_color_node.append_child("a:satMod").append_attribute("val").set_value(105000);
-    ln_node.append_child("a:prstDash").append_attribute("val").set_value("solid");
-    
-    ln_node = line_style_list_node.append_child("a:ln");
-    ln_node.append_attribute("w").set_value(25400);
-    ln_node.append_attribute("cap").set_value("flat");
-    ln_node.append_attribute("cmpd").set_value("sng");
-    ln_node.append_attribute("algn").set_value("ctr");
-    
-    solid_fill_node = ln_node.append_child("a:solidFill");
-    scheme_color_node = solid_fill_node.append_child("a:schemeClr");
-    scheme_color_node.append_attribute("val").set_value("phClr");
-    ln_node.append_child("a:prstDash").append_attribute("val").set_value("solid");
-    
-    ln_node = line_style_list_node.append_child("a:ln");
-    ln_node.append_attribute("w").set_value(38100);
-    ln_node.append_attribute("cap").set_value("flat");
-    ln_node.append_attribute("cmpd").set_value("sng");
-    ln_node.append_attribute("algn").set_value("ctr");
-    
-    solid_fill_node = ln_node.append_child("a:solidFill");
-    scheme_color_node = solid_fill_node.append_child("a:schemeClr");
-    scheme_color_node.append_attribute("val").set_value("phClr");
-    ln_node.append_child("a:prstDash").append_attribute("val").set_value("solid");
-    
-    auto effect_style_list_node = format_scheme_node.append_child("a:effectStyleLst");
-    auto effect_style_node = effect_style_list_node.append_child("a:effectStyle");
-    auto effect_list_node = effect_style_node.append_child("a:effectLst");
-    auto outer_shadow_node = effect_list_node.append_child("a:outerShdw");
-    outer_shadow_node.append_attribute("blurRad").set_value(40000);
-    outer_shadow_node.append_attribute("dist").set_value(20000);
-    outer_shadow_node.append_attribute("dir").set_value(5400000);
-    outer_shadow_node.append_attribute("rotWithShape").set_value(0);
-    auto srgb_clr_node = outer_shadow_node.append_child("a:srgbClr");
-    srgb_clr_node.append_attribute("val").set_value("000000");
-    srgb_clr_node.append_child("a:alpha").append_attribute("val").set_value(38000);
-    
-    effect_style_node = effect_style_list_node.append_child("a:effectStyle");
-    effect_list_node = effect_style_node.append_child("a:effectLst");
-    outer_shadow_node = effect_list_node.append_child("a:outerShdw");
-    outer_shadow_node.append_attribute("blurRad").set_value(40000);
-    outer_shadow_node.append_attribute("dist").set_value(23000);
-    outer_shadow_node.append_attribute("dir").set_value(5400000);
-    outer_shadow_node.append_attribute("rotWithShape").set_value(0);
-    srgb_clr_node = outer_shadow_node.append_child("a:srgbClr");
-    srgb_clr_node.append_attribute("val").set_value("000000");
-    srgb_clr_node.append_child("a:alpha").append_attribute("val").set_value(35000);
-    
-    effect_style_node = effect_style_list_node.append_child("a:effectStyle");
-    effect_list_node = effect_style_node.append_child("a:effectLst");
-    outer_shadow_node = effect_list_node.append_child("a:outerShdw");
-    outer_shadow_node.append_attribute("blurRad").set_value(40000);
-    outer_shadow_node.append_attribute("dist").set_value(23000);
-    outer_shadow_node.append_attribute("dir").set_value(5400000);
-    outer_shadow_node.append_attribute("rotWithShape").set_value(0);
-    srgb_clr_node = outer_shadow_node.append_child("a:srgbClr");
-    srgb_clr_node.append_attribute("val").set_value("000000");
-    srgb_clr_node.append_child("a:alpha").append_attribute("val").set_value(35000);
-    auto scene3d_node = effect_style_node.append_child("a:scene3d");
-    auto camera_node = scene3d_node.append_child("a:camera");
-    camera_node.append_attribute("prst").set_value("orthographicFront");
-    auto rot_node = camera_node.append_child("a:rot");
-    rot_node.append_attribute("lat").set_value(0);
-    rot_node.append_attribute("lon").set_value(0);
-    rot_node.append_attribute("rev").set_value(0);
-    auto light_rig_node = scene3d_node.append_child("a:lightRig");
-    light_rig_node.append_attribute("rig").set_value("threePt");
-    light_rig_node.append_attribute("dir").set_value("t");
-    rot_node = light_rig_node.append_child("a:rot");
-    rot_node.append_attribute("lat").set_value(0);
-    rot_node.append_attribute("lon").set_value(0);
-    rot_node.append_attribute("rev").set_value(1200000);
-    
-    auto bevel_node = effect_style_node.append_child("a:sp3d").append_child("a:bevelT");
-    bevel_node.append_attribute("w").set_value(63500);
-    bevel_node.append_attribute("h").set_value(25400);
-    
-    auto bg_fill_style_list_node = format_scheme_node.append_child("a:bgFillStyleLst");
-    
-    bg_fill_style_list_node.append_child("a:solidFill").append_child("a:schemeClr").append_attribute("val").set_value("phClr");
-    
-    grad_fill_node = bg_fill_style_list_node.append_child("a:gradFill");
-    grad_fill_node.append_attribute("rotWithShape").set_value(1);
-    
-    grad_fill_list = grad_fill_node.append_child("a:gsLst");
-    gs_node = grad_fill_list.append_child("a:gs");
-    gs_node.append_attribute("pos").set_value(0);
-    scheme_color_node = gs_node.append_child("a:schemeClr");
-    scheme_color_node.append_attribute("val").set_value("phClr");
-    scheme_color_node.append_child("a:tint").append_attribute("val").set_value(40000);
-    scheme_color_node.append_child("a:satMod").append_attribute("val").set_value(350000);
-    
-    gs_node = grad_fill_list.append_child("a:gs");
-    gs_node.append_attribute("pos").set_value(40000);
-    scheme_color_node = gs_node.append_child("a:schemeClr");
-    scheme_color_node.append_attribute("val").set_value("phClr");
-    scheme_color_node.append_child("a:tint").append_attribute("val").set_value(45000);
-    scheme_color_node.append_child("a:shade").append_attribute("val").set_value(99000);
-    scheme_color_node.append_child("a:satMod").append_attribute("val").set_value(350000);
-    
-    gs_node = grad_fill_list.append_child("a:gs");
-    gs_node.append_attribute("pos").set_value(100000);
-    scheme_color_node = gs_node.append_child("a:schemeClr");
-    scheme_color_node.append_attribute("val").set_value("phClr");
-    scheme_color_node.append_child("a:shade").append_attribute("val").set_value(20000);
-    scheme_color_node.append_child("a:satMod").append_attribute("val").set_value(255000);
-    
-    auto path_node = grad_fill_node.append_child("a:path");
-    path_node.append_attribute("path").set_value("circle");
-    auto fill_to_rect_node = path_node.append_child("a:fillToRect");
-    fill_to_rect_node.append_attribute("l").set_value(50000);
-    fill_to_rect_node.append_attribute("t").set_value(-80000);
-    fill_to_rect_node.append_attribute("r").set_value(50000);
-    fill_to_rect_node.append_attribute("b").set_value(180000);
-    
-    grad_fill_node = bg_fill_style_list_node.append_child("a:gradFill");
-    grad_fill_node.append_attribute("rotWithShape").set_value(1);
-    
-    grad_fill_list = grad_fill_node.append_child("a:gsLst");
-    gs_node = grad_fill_list.append_child("a:gs");
-    gs_node.append_attribute("pos").set_value(0);
-    scheme_color_node = gs_node.append_child("a:schemeClr");
-    scheme_color_node.append_attribute("val").set_value("phClr");
-    scheme_color_node.append_child("a:tint").append_attribute("val").set_value(80000);
-    scheme_color_node.append_child("a:satMod").append_attribute("val").set_value(300000);
-    
-    gs_node = grad_fill_list.append_child("a:gs");
-    gs_node.append_attribute("pos").set_value(100000);
-    scheme_color_node = gs_node.append_child("a:schemeClr");
-    scheme_color_node.append_attribute("val").set_value("phClr");
-    scheme_color_node.append_child("a:shade").append_attribute("val").set_value(30000);
-    scheme_color_node.append_child("a:satMod").append_attribute("val").set_value(200000);
-    
-    path_node = grad_fill_node.append_child("a:path");
-    path_node.append_attribute("path").set_value("circle");
-    fill_to_rect_node = path_node.append_child("a:fillToRect");
-    fill_to_rect_node.append_attribute("l").set_value(50000);
-    fill_to_rect_node.append_attribute("t").set_value(50000);
-    fill_to_rect_node.append_attribute("r").set_value(50000);
-    fill_to_rect_node.append_attribute("b").set_value(50000);
-    
-    theme_node.append_child("a:objectDefaults");
-    theme_node.append_child("a:extraClrSchemeLst");
-    
-    std::stringstream ss;
-    doc.print(ss);
-    return ss.str();
-}
-
-std::string write_properties_app(const workbook &wb)
-{
-    pugi::xml_document doc;
-    auto root_node = doc.append_child("Properties");
-    root_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/officeDocument/2006/extended-properties");
-    root_node.append_attribute("xmlns:vt").set_value("http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes");
-    
-    root_node.append_child("Application").text().set("Microsoft Excel");
-    root_node.append_child("DocSecurity").text().set("0");
-    root_node.append_child("ScaleCrop").text().set("false");
-    root_node.append_child("Company");
-    root_node.append_child("LinksUpToDate").text().set("false");
-    root_node.append_child("SharedDoc").text().set("false");
-    root_node.append_child("HyperlinksChanged").text().set("false");
-    root_node.append_child("AppVersion").text().set("12.0000");
-    
-    auto heading_pairs_node = root_node.append_child("HeadingPairs");
-    auto heading_pairs_vector_node = heading_pairs_node.append_child("vt:vector");
-    heading_pairs_vector_node.append_attribute("baseType").set_value("variant");
-    heading_pairs_vector_node.append_attribute("size").set_value("2");
-    heading_pairs_vector_node.append_child("vt:variant").append_child("vt:lpstr").text().set("Worksheets");
-    heading_pairs_vector_node.append_child("vt:variant").append_child("vt:i4").text().set(std::to_string(wb.get_sheet_names().size()).c_str());
-    
-    auto titles_of_parts_node = root_node.append_child("TitlesOfParts");
-    auto titles_of_parts_vector_node = titles_of_parts_node.append_child("vt:vector");
-    titles_of_parts_vector_node.append_attribute("baseType").set_value("lpstr");
-    titles_of_parts_vector_node.append_attribute("size").set_value(std::to_string(wb.get_sheet_names().size()).c_str());
-    
-    for(auto ws : wb)
-    {
-        titles_of_parts_vector_node.append_child("vt:lpstr").text().set(ws.get_title().c_str());
-    }
-    
-    std::stringstream ss;
-    doc.save(ss);
-    
-    return ss.str();
-}
-
-std::string write_root_rels(const workbook &)
-{
-    std::vector<relationship> relationships;
-    
-    relationships.push_back(relationship(relationship::type::extended_properties, "rId3", "docProps/app.xml"));
-    relationships.push_back(relationship(relationship::type::core_properties, "rId2", "docProps/core.xml"));
-    relationships.push_back(relationship(relationship::type::office_document, "rId1", "xl/workbook.xml"));
-    
-    return write_relationships(relationships, "");
-}
-
-std::string write_workbook(const workbook &wb)
+xml_document workbook_serializer::write_workbook() const
 {
     std::size_t num_visible = 0;
     
-    for(auto ws : wb)
+    for(auto ws : wb_)
     {
         if(ws.get_page_setup().get_sheet_state() == xlnt::page_setup::sheet_state::visible)
         {
@@ -675,41 +261,44 @@ std::string write_workbook(const workbook &wb)
     
     if(num_visible == 0)
     {
-        throw value_error();
+        throw xlnt::value_error();
     }
     
-    pugi::xml_document doc;
-    auto root_node = doc.append_child("workbook");
-    root_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
-    root_node.append_attribute("xmlns:r").set_value("http://schemas.openxmlformats.org/officeDocument/2006/relationships");
+    xml_document xml;
     
-    auto file_version_node = root_node.append_child("fileVersion");
-    file_version_node.append_attribute("appName").set_value("xl");
-    file_version_node.append_attribute("lastEdited").set_value("4");
-    file_version_node.append_attribute("lowestEdited").set_value("4");
-    file_version_node.append_attribute("rupBuild").set_value("4505");
+    xml.add_namespace("xmlns", "http://schemas.openxmlformats.org/spreadsheetml/2006/main");
+    xml.add_namespace("xmlns:r", "http://schemas.openxmlformats.org/officeDocument/2006/relationships");
     
-    auto workbook_pr_node = root_node.append_child("workbookPr");
-    workbook_pr_node.append_attribute("codeName").set_value("ThisWorkbook");
-    workbook_pr_node.append_attribute("defaultThemeVersion").set_value("124226");
-    workbook_pr_node.append_attribute("date1904").set_value(wb.get_properties().excel_base_date == calendar::mac_1904 ? 1 : 0);
+    auto &root_node = xml.root();
+    root_node.set_name("workbook");
     
-    auto book_views_node = root_node.append_child("bookViews");
-    auto workbook_view_node = book_views_node.append_child("workbookView");
-    workbook_view_node.append_attribute("activeTab").set_value("0");
-    workbook_view_node.append_attribute("autoFilterDateGrouping").set_value("1");
-    workbook_view_node.append_attribute("firstSheet").set_value("0");
-    workbook_view_node.append_attribute("minimized").set_value("0");
-    workbook_view_node.append_attribute("showHorizontalScroll").set_value("1");
-    workbook_view_node.append_attribute("showSheetTabs").set_value("1");
-    workbook_view_node.append_attribute("showVerticalScroll").set_value("1");
-    workbook_view_node.append_attribute("tabRatio").set_value("600");
-    workbook_view_node.append_attribute("visibility").set_value("visible");
+    auto &file_version_node = root_node.add_child("fileVersion");
+    file_version_node.add_attribute("appName", "xl");
+    file_version_node.add_attribute("lastEdited", "4");
+    file_version_node.add_attribute("lowestEdited", "4");
+    file_version_node.add_attribute("rupBuild", "4505");
     
-    auto sheets_node = root_node.append_child("sheets");
-    auto defined_names_node = root_node.append_child("definedNames");
+    auto &workbook_pr_node = root_node.add_child("workbookPr");
+    workbook_pr_node.add_attribute("codeName", "ThisWorkbook");
+    workbook_pr_node.add_attribute("defaultThemeVersion", "124226");
+    workbook_pr_node.add_attribute("date1904", wb_.get_properties().excel_base_date == calendar::mac_1904 ? "1" : "0");
     
-    for(auto relationship : wb.get_relationships())
+    auto book_views_node = root_node.add_child("bookViews");
+    auto workbook_view_node = book_views_node.add_child("workbookView");
+    workbook_view_node.add_attribute("activeTab", "0");
+    workbook_view_node.add_attribute("autoFilterDateGrouping", "1");
+    workbook_view_node.add_attribute("firstSheet", "0");
+    workbook_view_node.add_attribute("minimized", "0");
+    workbook_view_node.add_attribute("showHorizontalScroll", "1");
+    workbook_view_node.add_attribute("showSheetTabs", "1");
+    workbook_view_node.add_attribute("showVerticalScroll", "1");
+    workbook_view_node.add_attribute("tabRatio", "600");
+    workbook_view_node.add_attribute("visibility", "visible");
+    
+    auto sheets_node = root_node.add_child("sheets");
+    auto defined_names_node = root_node.add_child("definedNames");
+    
+    for(auto relationship : wb_.get_relationships())
     {
         if(relationship.get_type() == relationship::type::worksheet)
         {
@@ -723,55 +312,41 @@ std::string write_workbook(const workbook &wb)
             sheet_index_string = sheet_index_string.substr(static_cast<std::string::size_type>(first_digit + 1));
             std::size_t sheet_index = static_cast<std::size_t>(std::stoll(sheet_index_string) - 1);
             
-            auto ws = wb.get_sheet_by_index(sheet_index);
+            auto ws = wb_.get_sheet_by_index(sheet_index);
             
-            auto sheet_node = sheets_node.append_child("sheet");
-            sheet_node.append_attribute("name").set_value(ws.get_title().c_str());
-            sheet_node.append_attribute("r:id").set_value(relationship.get_id().c_str());
-            sheet_node.append_attribute("sheetId").set_value(std::to_string(sheet_index + 1).c_str());
+            auto sheet_node = sheets_node.add_child("sheet");
+            sheet_node.add_attribute("name", ws.get_title());
+            sheet_node.add_attribute("r:id", relationship.get_id());
+            sheet_node.add_attribute("sheetId", std::to_string(sheet_index + 1));
             
             if(ws.has_auto_filter())
             {
-                auto defined_name_node = defined_names_node.append_child("definedName");
-                defined_name_node.append_attribute("name").set_value("_xlnm._FilterDatabase");
-                defined_name_node.append_attribute("hidden").set_value(1);
-                defined_name_node.append_attribute("localSheetId").set_value(0);
+                auto &defined_name_node = defined_names_node.add_child("definedName");
+                defined_name_node.add_attribute("name", "_xlnm._FilterDatabase");
+                defined_name_node.add_attribute("hidden", "1");
+                defined_name_node.add_attribute("localSheetId", "0");
                 std::string name = "'" + ws.get_title() + "'!" + range_reference::make_absolute(ws.get_auto_filter()).to_string();
-                defined_name_node.text().set(name.c_str());
+                defined_name_node.set_text(name);
             }
         }
     }
     
-    auto calc_pr_node = root_node.append_child("calcPr");
-    calc_pr_node.append_attribute("calcId").set_value("124519");
-    calc_pr_node.append_attribute("calcMode").set_value("auto");
-    calc_pr_node.append_attribute("fullCalcOnLoad").set_value("1");
+    auto calc_pr_node = root_node.add_child("calcPr");
+    calc_pr_node.add_attribute("calcId", "124519");
+    calc_pr_node.add_attribute("calcMode", "auto");
+    calc_pr_node.add_attribute("fullCalcOnLoad", "1");
     
-    std::stringstream ss;
-    doc.save(ss);
-    
-    return ss.str();
-}
-
-std::string workbook_serializer::write_workbook_rels(const workbook &wb)
-{
-    return write_relationships(wb.get_relationships(), "xl/");
+    return xml;
 }
     
-std::string workbook_serializer::write_defined_names(const xlnt::workbook &wb)
+bool workbook_serializer::write_named_ranges(xlnt::xml_node &named_ranges_node)
 {
-    pugi::xml_document doc;
-    auto names = doc.root().append_child("names");
-    
-    for(auto named_range : wb.get_named_ranges())
+    for(auto &named_range : wb_.get_named_ranges())
     {
-        names.append_child(named_range.get_name().c_str());
+        named_ranges_node.add_child(named_range.get_name());
     }
-    
-    std::ostringstream stream;
-    doc.save(stream);
-    
-    return stream.str();
+
+    return true;
 }
 
 } // namespace xlnt

@@ -7,10 +7,27 @@
 #include "detail/constants.hpp"
 
 namespace xlnt {
-
+    
 bool relationship_serializer::read_relationships(const xml_document &xml, const std::string &dir, std::vector<relationship> &relationships)
 {
-    return false;
+    auto root_node = xml.root();
+    root_node.set_name("Relationships");
+    
+    for(auto relationship_node : root_node.get_children())
+    {
+        if(relationship_node.get_name() != "Relationship")
+        {
+            continue;
+        }
+        
+        std::string id = relationship_node.get_attribute("Id");
+        std::string type = relationship_node.get_attribute("Type");
+        std::string target = relationship_node.get_attribute("Target");
+        
+        relationships.push_back(xlnt::relationship(type, id, target));
+    }
+    
+    return true;
 }
     
 bool relationship_serializer::write_relationships(const std::vector<relationship> &relationships, const std::string &dir, xml_document &xml)
@@ -29,15 +46,15 @@ bool relationship_serializer::write_relationships(const std::vector<relationship
             target = target.substr(dir.size());
         }
         
-        auto app_props_node = root_node.add_child("Relationship");
+        auto relationship_node = root_node.add_child("Relationship");
         
-        app_props_node.add_attribute("Id", relationship.get_id());
-        app_props_node.add_attribute("Target", target);
-        app_props_node.add_attribute("Type", relationship.get_type_string());
+        relationship_node.add_attribute("Id", relationship.get_id());
+        relationship_node.add_attribute("Target", target);
+        relationship_node.add_attribute("Type", relationship.get_type_string());
         
         if(relationship.get_target_mode() == target_mode::external)
         {
-            app_props_node.add_attribute("TargetMode", "External");
+            relationship_node.add_attribute("TargetMode", "External");
         }
     }
 

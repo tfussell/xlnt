@@ -70,6 +70,8 @@ public:
     color get_color() const { return color_; }
     
     bool has_family() const { return has_family_; }
+    int get_family() const { return family_; }
+    
     bool has_scheme() const { return has_scheme_; }
     
     std::size_t hash() const

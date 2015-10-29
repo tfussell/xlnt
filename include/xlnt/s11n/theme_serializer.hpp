@@ -26,11 +26,14 @@
 #include <string>
 
 namespace xlnt {
+    
+class theme;
+class xml_document;
 
 class theme_serializer
 {
 public:
-    theme read_theme(const xml_document &xml);
+    //theme read_theme(const xml_document &xml);
     xml_document write_theme(const theme &theme_);
 };
 

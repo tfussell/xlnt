@@ -49,6 +49,7 @@ class range;
 class range_reference;
 class relationship;
 class style;
+class theme;
 class worksheet;
 class zip_file;
     
@@ -199,7 +200,7 @@ public:
     
 	void create_relationship(const std::string &id, const std::string &target, relationship::type type);
 	relationship get_relationship(const std::string &id) const;
-    std::vector<relationship> get_relationships() const;
+    const std::vector<relationship> &get_relationships() const;
     
     void add_alignment(const alignment &a);
     void add_border(const border &b);
@@ -237,8 +238,8 @@ public:
     
     void set_code_name(const std::string &code_name);
     
-    bool has_loaded_theme();
-    std::string get_loaded_theme();
+    bool has_loaded_theme() const;
+    const theme &get_loaded_theme() const;
     
     const style &get_style(std::size_t style_id) const;
     std::size_t add_style(const style &style_);
@@ -246,6 +247,8 @@ public:
     manifest &get_manifest();
     const manifest &get_manifest() const;
     
+    const std::vector<relationship> &get_root_relationships() const;
+        
 private:
     friend class worksheet;
     std::shared_ptr<detail::workbook_impl> d_;

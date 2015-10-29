@@ -68,13 +68,13 @@ void xml_node::add_attribute(const std::string &name, const std::string &value)
 
 bool xml_node::has_attribute(const std::string &attribute_name) const
 {
-    return std::find(attributes_.begin(), attributes_.end(),
+    return std::find_if(attributes_.begin(), attributes_.end(),
         [&](const string_pair &p) { return p.first == attribute_name; }) != attributes_.end();
 }
 
 std::string xml_node::get_attribute(const std::string &attribute_name) const
 {
-    auto match = std::find(attributes_.begin(), attributes_.end(),
+    auto match = std::find_if(attributes_.begin(), attributes_.end(),
         [&](const string_pair &p) { return p.first == attribute_name; });
     
     if(match == attributes_.end())
@@ -87,16 +87,29 @@ std::string xml_node::get_attribute(const std::string &attribute_name) const
 
 bool xml_node::has_child(const std::string &child_name) const
 {
-    return std::find(children_.begin(), children_.end(),
+    return std::find_if(children_.begin(), children_.end(),
         [&](const xml_node &n) { return n.get_name() == child_name; }) != children_.end();
+}
+
+xml_node &xml_node::get_child(const std::string &child_name)
+{
+    auto match = std::find_if(children_.begin(), children_.end(),
+        [&](const xml_node &n) { return n.get_name() == child_name; });
+    
+    if(match == children_.end())
+    {
+        throw std::runtime_error("child doesn't exist: " + child_name);
+    }
+    
+    return *match;
 }
 
 const xml_node &xml_node::get_child(const std::string &child_name) const
 {
-    auto match = std::find(children_.begin(), children_.end(),
+    auto match = std::find_if(children_.begin(), children_.end(),
         [&](const xml_node &n) { return n.get_name() == child_name; });
     
-    if(match == attributes_.end())
+    if(match == children_.end())
     {
         throw std::runtime_error("child doesn't exist: " + child_name);
     }

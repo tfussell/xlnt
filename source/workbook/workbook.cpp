@@ -12,19 +12,21 @@
 #include <xlnt/common/relationship.hpp>
 #include <xlnt/common/zip_file.hpp>
 #include <xlnt/drawing/drawing.hpp>
-#include <xlnt/reader/excel_reader.hpp>
+#include <xlnt/s11n/excel_serializer.hpp>
 #include <xlnt/styles/alignment.hpp>
 #include <xlnt/styles/border.hpp>
 #include <xlnt/styles/fill.hpp>
 #include <xlnt/styles/font.hpp>
 #include <xlnt/styles/number_format.hpp>
 #include <xlnt/styles/protection.hpp>
+#include <xlnt/styles/style.hpp>
 #include <xlnt/workbook/document_properties.hpp>
+#include <xlnt/workbook/manifest.hpp>
 #include <xlnt/workbook/named_range.hpp>
+#include <xlnt/workbook/theme.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
-#include <xlnt/writer/excel_writer.hpp>
 
 #include "detail/cell_impl.hpp"
 #include "detail/include_pugixml.hpp"
@@ -243,22 +245,25 @@ range workbook::get_named_range(const std::string &name)
 
 bool workbook::load(std::istream &stream)
 {
-    *this = excel_reader::load_workbook(stream);
+    excel_serializer serializer_(*this);
+    serializer_.load_stream_workbook(stream);
     
     return true;
 }
     
 bool workbook::load(const std::vector<unsigned char> &data)
 {
-    *this = excel_reader::load_workbook(data);
+    excel_serializer serializer_(*this);
+    serializer_.load_virtual_workbook(data);
     
     return true;
 }
 
 bool workbook::load(const std::string &filename)
 {
-    *this = excel_reader::load_workbook(filename);
-    
+    excel_serializer serializer_(*this);
+    serializer_.load_workbook(filename);
+
     return true;
 }
 
@@ -446,13 +451,18 @@ void workbook::clear()
 
 bool workbook::save(std::vector<unsigned char> &data)
 {
-    data = save_virtual_workbook(*this);
+    excel_serializer serializer(*this);
+    serializer.save_virtual_workbook(data);
+
     return true;
 }
 
 bool workbook::save(const std::string &filename)
 {
-    return save_workbook(*this, filename);
+    excel_serializer serializer(*this);
+    serializer.save_workbook(filename);
+    
+    return true;
 }
 
 bool workbook::operator==(std::nullptr_t) const
@@ -465,7 +475,7 @@ bool workbook::operator==(const workbook &rhs) const
     return d_.get() == rhs.d_.get();
 }
 
-std::vector<relationship> xlnt::workbook::get_relationships() const
+const std::vector<relationship> &xlnt::workbook::get_relationships() const
 {
 	return d_->relationships_;
 }
@@ -570,14 +580,14 @@ void workbook::set_code_name(const std::string &/*code_name*/)
     
 }
 
-bool workbook::has_loaded_theme()
+bool workbook::has_loaded_theme() const
 {
     return false;
 }
 
-std::string workbook::get_loaded_theme()
+const theme &workbook::get_loaded_theme() const
 {
-    return "";
+    return d_->theme_;
 }
 
 std::vector<named_range> workbook::get_named_ranges() const
@@ -845,6 +855,18 @@ manifest &workbook::get_manifest()
 const manifest &workbook::get_manifest() const
 {
     return d_->manifest_;
+}
+
+const std::vector<relationship> &workbook::get_root_relationships() const
+{
+    if(d_->root_relationships_.empty())
+    {
+        d_->root_relationships_.push_back(relationship(relationship::type::extended_properties, "rId3", "docProps/app.xml"));
+        d_->root_relationships_.push_back(relationship(relationship::type::core_properties, "rId2", "docProps/core.xml"));
+        d_->root_relationships_.push_back(relationship(relationship::type::office_document, "rId1", "xl/workbook.xml"));
+    }
+    
+    return d_->root_relationships_;
 }
 
 } // namespace xlnt

@@ -50,12 +50,6 @@ enum class border_style
 class side
 {
 public:
-    enum class color_type
-    {
-        theme,
-        indexed
-    };
-    
     side();
     
     std::size_t hash() const

@@ -223,7 +223,7 @@ public:
     
     // relationships
     relationship create_relationship(relationship::type type, const std::string &target_uri);
-    std::vector<relationship> get_relationships();
+    const std::vector<relationship> &get_relationships() const;
     
     // charts
     //void add_chart(chart chart);
@@ -262,7 +262,9 @@ public:
     const range operator()(const cell_reference &top_left, const cell_reference &bottom_right) const;
     
     // page
+    page_setup &get_page_setup();
     const page_setup &get_page_setup() const;
+    margins &get_page_margins();
     const margins &get_page_margins() const;
     
     // auto filter

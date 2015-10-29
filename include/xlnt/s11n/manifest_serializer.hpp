@@ -14,7 +14,7 @@ class manifest_serializer
 public:
     manifest_serializer(manifest &m);
     
-    bool read_mainfest(const xml_document &xml);
+    bool read_manifest(const xml_document &xml);
     bool write_manifest(xml_document &xml);
     
 private:

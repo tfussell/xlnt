@@ -13,7 +13,8 @@ struct workbook_impl
     workbook_impl(const workbook_impl &other) 
         : active_sheet_index_(other.active_sheet_index_),
         worksheets_(other.worksheets_), 
-        relationships_(other.relationships_), 
+        relationships_(other.relationships_),
+        root_relationships_(other.root_relationships_),
         drawings_(other.drawings_), 
         properties_(other.properties_), 
         guess_types_(other.guess_types_),
@@ -35,6 +36,8 @@ struct workbook_impl
         std::copy(other.worksheets_.begin(), other.worksheets_.end(), back_inserter(worksheets_));
         relationships_.clear();
         std::copy(other.relationships_.begin(), other.relationships_.end(), std::back_inserter(relationships_));
+        root_relationships_.clear();
+        std::copy(other.root_relationships_.begin(), other.root_relationships_.end(), std::back_inserter(root_relationships_));
         drawings_.clear();
         std::copy(other.drawings_.begin(), other.drawings_.end(), back_inserter(drawings_));
         properties_ = other.properties_;
@@ -54,6 +57,7 @@ struct workbook_impl
     std::size_t active_sheet_index_;
     std::vector<worksheet_impl> worksheets_;
     std::vector<relationship> relationships_;
+    std::vector<relationship> root_relationships_;
     std::vector<drawing> drawings_;
     
     document_properties properties_;
@@ -72,6 +76,8 @@ struct workbook_impl
     std::vector<number_format> number_formats_;
     
     manifest manifest_;
+    
+    theme theme_;
 };
 
 } // namespace detail

@@ -5,10 +5,6 @@
 
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/reader/excel_reader.hpp>
-#include <xlnt/reader/workbook_reader.hpp>
-#include <xlnt/reader/worksheet_reader.hpp>
-
 #include "helpers/path_helper.hpp"
 
 class test_read : public CxxTest::TestSuite

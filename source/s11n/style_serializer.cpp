@@ -526,28 +526,32 @@ bool style_serializer::write_stylesheet(xlnt::xml_document &xml) const
     xml.add_namespace("mc", "http://schemas.openxmlformats.org/markup-compatibility/2006");
     xml.add_namespace("x14ac", "http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac");
     
-    auto &style_sheet_node = doc.add_child("styleSheet");
-    xml.add_attribute("mc:Ignorable", "x14ac");
+    auto &style_sheet_node = xml.root();
+    style_sheet_node.set_name("styleSheet");
+    style_sheet_node.add_attribute("mc:Ignorable", "x14ac");
     
     auto num_fmts_node = style_sheet_node.add_child("numFmts");
     auto num_fmts = wb_.get_number_formats();
-    num_fmts_node.add_attribute("count", static_cast<int>(num_fmts.size()));
+    num_fmts_node.add_attribute("count", std::to_string(num_fmts.size()));
     
     for(auto &num_fmt : num_fmts)
     {
         auto num_fmt_node = num_fmts_node.add_child("numFmt");
-        num_fmt_node.add_attribute("numFmtId", num_fmt.get_id());
+        num_fmt_node.add_attribute("numFmtId", std::to_string(num_fmt.get_id()));
         num_fmt_node.add_attribute("formatCode", num_fmt.get_format_string());
     }
 
     auto fonts_node = style_sheet_node.add_child("fonts");
     auto fonts = wb_.get_fonts();
+    
     if(fonts.empty())
     {
         fonts.push_back(font());
     }
-    fonts_node.add_attribute("count", static_cast<int>(fonts.size()));
-    fonts_node.add_attribute("x14ac:knownFonts", 1);
+    
+    fonts_node.add_attribute("count", std::to_string(fonts.size()));
+    //TODO: what does this do?
+    //fonts_node.add_attribute("x14ac:knownFonts", "1");
     
     for(auto &f : fonts)
     {
@@ -556,13 +560,13 @@ bool style_serializer::write_stylesheet(xlnt::xml_document &xml) const
         if(f.is_bold())
         {
             auto bold_node = font_node.add_child("b");
-            bold_node.add_attribute("val", 1);
+            bold_node.add_attribute("val", "1");
         }
         
         if(f.is_italic())
         {
             auto bold_node = font_node.add_child("i");
-            bold_node.add_attribute("val", 1);
+            bold_node.add_attribute("val", "1");
         }
         
         if(f.is_underline())
@@ -582,21 +586,21 @@ bool style_serializer::write_stylesheet(xlnt::xml_document &xml) const
         if(f.is_strikethrough())
         {
             auto bold_node = font_node.add_child("strike");
-            bold_node.add_attribute("val", 1);
+            bold_node.add_attribute("val", "1");
         }
         
         auto size_node = font_node.add_child("sz");
-        size_node.add_attribute("val", f.get_size());
+        size_node.add_attribute("val", std::to_string(f.get_size()));
         
         auto color_node = font_node.add_child("color");
         
         if(f.get_color().get_type() == color::type::indexed)
         {
-            color_node.add_attribute("indexed", static_cast<unsigned int>(f.get_color().get_index()));
+            color_node.add_attribute("indexed", std::to_string(f.get_color().get_index()));
         }
         else if(f.get_color().get_type() == color::type::theme)
         {
-            color_node.add_attribute("theme", static_cast<unsigned int>(f.get_color().get_theme()));
+            color_node.add_attribute("theme", std::to_string(f.get_color().get_theme()));
         }
         
         auto name_node = font_node.add_child("name");
@@ -605,7 +609,7 @@ bool style_serializer::write_stylesheet(xlnt::xml_document &xml) const
         if(f.has_family())
         {
             auto family_node = font_node.add_child("family");
-            family_node.add_attribute("val", 2);
+            family_node.add_attribute("val", std::to_string(f.get_family()));
         }
         
         if(f.has_scheme())
@@ -617,7 +621,7 @@ bool style_serializer::write_stylesheet(xlnt::xml_document &xml) const
 
     auto fills_node = style_sheet_node.add_child("fills");
     const auto &fills = wb_.get_fills();
-    fills_node.add_attribute("count", static_cast<unsigned int>(fills.size()));
+    fills_node.add_attribute("count", std::to_string(fills.size()));
     
     for(auto &fill_ : fills)
     {
@@ -631,13 +635,13 @@ bool style_serializer::write_stylesheet(xlnt::xml_document &xml) const
             
             if(fill_.has_foreground_color())
             {
-                auto fg_color_node = pattern_fill_node.add_child("fgColor");
+                auto &fg_color_node = pattern_fill_node.add_child("fgColor");
                 
                 switch(fill_.get_foreground_color().get_type())
                 {
-                    case color::type::auto_: fg_color_node.add_attribute("auto", fill_.get_foreground_color().get_auto()); break;
-                    case color::type::theme: fg_color_node.add_attribute("theme", fill_.get_foreground_color().get_theme()); break;
-                    case color::type::indexed: fg_color_node.add_attribute("indexed", fill_.get_foreground_color().get_index()); break;
+                    case color::type::auto_: fg_color_node.add_attribute("auto", std::to_string(fill_.get_foreground_color().get_auto())); break;
+                    case color::type::theme: fg_color_node.add_attribute("theme", std::to_string(fill_.get_foreground_color().get_theme())); break;
+                    case color::type::indexed: fg_color_node.add_attribute("indexed", std::to_string(fill_.get_foreground_color().get_index())); break;
                     default: throw std::runtime_error("bad type");
                 }
             }
@@ -648,9 +652,9 @@ bool style_serializer::write_stylesheet(xlnt::xml_document &xml) const
                 
                 switch(fill_.get_background_color().get_type())
                 {
-                    case color::type::auto_: bg_color_node.add_attribute("auto", fill_.get_background_color().get_auto()); break;
-                    case color::type::theme: bg_color_node.add_attribute("theme", fill_.get_background_color().get_theme()); break;
-                    case color::type::indexed: bg_color_node.add_attribute("indexed", fill_.get_background_color().get_index()); break;
+                    case color::type::auto_: bg_color_node.add_attribute("auto", std::to_string(fill_.get_background_color().get_auto())); break;
+                    case color::type::theme: bg_color_node.add_attribute("theme", std::to_string(fill_.get_background_color().get_theme())); break;
+                    case color::type::indexed: bg_color_node.add_attribute("indexed", std::to_string(fill_.get_background_color().get_index())); break;
                     default: throw std::runtime_error("bad type");
                 }
             }
@@ -666,27 +670,27 @@ bool style_serializer::write_stylesheet(xlnt::xml_document &xml) const
             
             if(fill_.get_gradient_type_string() == "linear")
             {
-                gradient_fill_node.add_attribute("degree", fill_.get_rotation());
+                gradient_fill_node.add_attribute("degree", std::to_string(fill_.get_rotation()));
             }
             else if(fill_.get_gradient_type_string() == "path")
             {
-                gradient_fill_node.add_attribute("left", fill_.get_gradient_left());
-                gradient_fill_node.add_attribute("right", fill_.get_gradient_right());
-                gradient_fill_node.add_attribute("top", fill_.get_gradient_top());
-                gradient_fill_node.add_attribute("bottom", fill_.get_gradient_bottom());
+                gradient_fill_node.add_attribute("left", std::to_string(fill_.get_gradient_left()));
+                gradient_fill_node.add_attribute("right", std::to_string(fill_.get_gradient_right()));
+                gradient_fill_node.add_attribute("top", std::to_string(fill_.get_gradient_top()));
+                gradient_fill_node.add_attribute("bottom", std::to_string(fill_.get_gradient_bottom()));
                 
                 auto start_node = gradient_fill_node.add_child("stop");
-                start_node.add_attribute("position", 0);
+                start_node.add_attribute("position", "0");
                 
                 auto end_node = gradient_fill_node.add_child("stop");
-                end_node.add_attribute("position", 1);
+                end_node.add_attribute("position", "1");
             }
         }
     }
 
     auto borders_node = style_sheet_node.add_child("borders");
     const auto &borders = wb_.get_borders();
-    borders_node.add_attribute("count", static_cast<unsigned int>(borders.size()));
+    borders_node.add_attribute("count", std::to_string(borders.size()));
     
     for(const auto &border_ : borders)
     {
@@ -715,39 +719,41 @@ bool style_serializer::write_stylesheet(xlnt::xml_document &xml) const
                 
                 if(side_.is_style_assigned())
                 {
-                    auto style_attribute = side_node.add_attribute("style");
+                    std::string style_string;
                     
                     switch(side_.get_style())
                     {
-                        case border_style::none: style_attribute.set_value("none"); break;
-                        case border_style::dashdot : style_attribute.set_value("dashdot"); break;
-                        case border_style::dashdotdot : style_attribute.set_value("dashdotdot"); break;
-                        case border_style::dashed : style_attribute.set_value("dashed"); break;
-                        case border_style::dotted : style_attribute.set_value("dotted"); break;
-                        case border_style::double_ : style_attribute.set_value("double"); break;
-                        case border_style::hair : style_attribute.set_value("hair"); break;
-                        case border_style::medium : style_attribute.set_value("thin"); break;
-                        case border_style::mediumdashdot: style_attribute.set_value("mediumdashdot"); break;
-                        case border_style::mediumdashdotdot: style_attribute.set_value("mediumdashdotdot"); break;
-                        case border_style::mediumdashed: style_attribute.set_value("mediumdashed"); break;
-                        case border_style::slantdashdot: style_attribute.set_value("slantdashdot"); break;
-                        case border_style::thick: style_attribute.set_value("thick"); break;
-                        case border_style::thin: style_attribute.set_value("thin"); break;
+                        case border_style::none: style_string = "none"; break;
+                        case border_style::dashdot: style_string = "dashdot"; break;
+                        case border_style::dashdotdot: style_string = "dashdotdot"; break;
+                        case border_style::dashed: style_string = "dashed"; break;
+                        case border_style::dotted: style_string = "dotted"; break;
+                        case border_style::double_: style_string = "double"; break;
+                        case border_style::hair: style_string = "hair"; break;
+                        case border_style::medium: style_string = "thin"; break;
+                        case border_style::mediumdashdot: style_string = "mediumdashdot"; break;
+                        case border_style::mediumdashdotdot: style_string = "mediumdashdotdot"; break;
+                        case border_style::mediumdashed: style_string = "mediumdashed"; break;
+                        case border_style::slantdashdot: style_string = "slantdashdot"; break;
+                        case border_style::thick: style_string = "thick"; break;
+                        case border_style::thin: style_string = "thin"; break;
                         default: throw std::runtime_error("invalid style");
                     }
+                    
+                    side_node.add_attribute("style", style_string);
                 }
                 
                 if(side_.is_color_assigned())
                 {
                     auto color_node = side_node.add_child("color");
                     
-                    if(side_.get_color_type() == side::color_type::indexed)
+                    if(side_.get_color().get_type() == color::type::indexed)
                     {
-                        color_node.add_attribute("indexed", (int)side_.get_color());
+                        color_node.add_attribute("indexed", std::to_string(side_.get_color().get_index()));
                     }
-                    else if(side_.get_color_type() == side::color_type::theme)
+                    else if(side_.get_color().get_type() == color::type::theme)
                     {
-                        color_node.add_attribute("indexed", (int)side_.get_color());
+                        color_node.add_attribute("theme", std::to_string(side_.get_color().get_theme()));
                     }
                     else
                     {
@@ -758,40 +764,41 @@ bool style_serializer::write_stylesheet(xlnt::xml_document &xml) const
         }
     }
 
-    auto cell_style_xfs_node = style_sheet_node.add_child("cellStyleXfs");
-    cell_style_xfs_node.add_attribute("count", 1);
-    auto style_xf_node = cell_style_xfs_node.add_child("xf");
-    style_xf_node.add_attribute("numFmtId", 0);
-    style_xf_node.add_attribute("fontId", 0);
-    style_xf_node.add_attribute("fillId", 0);
-    style_xf_node.add_attribute("borderId", 0);
+    auto &cell_style_xfs_node = style_sheet_node.add_child("cellStyleXfs");
+    cell_style_xfs_node.add_attribute("count", "1");
+    
+    auto &style_xf_node = cell_style_xfs_node.add_child("xf");
+    style_xf_node.add_attribute("numFmtId", "0");
+    style_xf_node.add_attribute("fontId", "0");
+    style_xf_node.add_attribute("fillId", "0");
+    style_xf_node.add_attribute("borderId", "0");
     
     auto cell_xfs_node = style_sheet_node.add_child("cellXfs");
     const auto &styles = wb_.get_styles();
-    cell_xfs_node.add_attribute("count", static_cast<int>(styles.size()));
+    cell_xfs_node.add_attribute("count", std::to_string(styles.size()));
     
     for(auto &style : styles)
     {
         auto xf_node = cell_xfs_node.add_child("xf");
-        xf_node.add_attribute("numFmtId", style.get_number_format().get_id());
-        xf_node.add_attribute("fontId", (int)style.get_font_id());
+        xf_node.add_attribute("numFmtId", std::to_string(style.get_number_format().get_id()));
+        xf_node.add_attribute("fontId", std::to_string(style.get_font_id()));
         
         if(style.fill_apply_)
         {
-            xf_node.add_attribute("fillId", (int)style.get_fill_id());
+            xf_node.add_attribute("fillId", std::to_string(style.get_fill_id()));
         }
         
         if(style.border_apply_)
         {
-            xf_node.add_attribute("borderId", (int)style.get_border_id());
+            xf_node.add_attribute("borderId", std::to_string(style.get_border_id()));
         }
         
-        xf_node.add_attribute("applyNumberFormat", style.number_format_apply_ ? 1 : 0);
-        xf_node.add_attribute("applyFont", style.font_apply_ ? 1 : 0);
-        xf_node.add_attribute("applyFill", style.fill_apply_ ? 1 : 0);
-        xf_node.add_attribute("applyBorder", style.border_apply_ ? 1 : 0);
-        xf_node.add_attribute("applyAlignment", style.alignment_apply_ ? 1 : 0);
-        xf_node.add_attribute("applyProtection", style.protection_apply_ ? 1 : 0);
+        xf_node.add_attribute("applyNumberFormat", style.number_format_apply_ ? "1" : "0");
+        xf_node.add_attribute("applyFont", style.font_apply_ ? "1" : "0");
+        xf_node.add_attribute("applyFill", style.fill_apply_ ? "1" : "0");
+        xf_node.add_attribute("applyBorder", style.border_apply_ ? "1" : "0");
+        xf_node.add_attribute("applyAlignment", style.alignment_apply_ ? "1" : "0");
+        xf_node.add_attribute("applyProtection", style.protection_apply_ ? "1" : "0");
         
         if(style.alignment_apply_)
         {
@@ -847,22 +854,22 @@ bool style_serializer::write_stylesheet(xlnt::xml_document &xml) const
             
             if(style.alignment_.get_wrap_text())
             {
-                alignment_node.add_attribute("wrapText", 1);
+                alignment_node.add_attribute("wrapText", "1");
             }
         }
     }
 
     auto cell_styles_node = style_sheet_node.add_child("cellStyles");
-    cell_styles_node.add_attribute("count", 1);
+    cell_styles_node.add_attribute("count", "1");
     auto cell_style_node = cell_styles_node.add_child("cellStyle");
     cell_style_node.add_attribute("name", "Normal");
-    cell_style_node.add_attribute("xfId", 0);
-    cell_style_node.add_attribute("builtinId", 0);
+    cell_style_node.add_attribute("xfId", "0");
+    cell_style_node.add_attribute("builtinId", "0");
 
-    style_sheet_node.add_child("dxfs").add_attribute("count", 0);
+    style_sheet_node.add_child("dxfs").add_attribute("count", "0");
 
     auto table_styles_node = style_sheet_node.add_child("tableStyles");
-    table_styles_node.add_attribute("count", 0);
+    table_styles_node.add_attribute("count", "0");
     table_styles_node.add_attribute("defaultTableStyle", "TableStyleMedium2");
     table_styles_node.add_attribute("defaultPivotStyle", "PivotStyleMedium9");
     

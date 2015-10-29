@@ -21,7 +21,7 @@ project "xlnt.test"
        "../../tests/runner-autogen.cpp"
     }
     links { "xlnt", "miniz" }
-    prebuildcommands { "../generate-tests.sh" }
+    prebuildcommands { "../../generate-tests.sh" }
     flags { "Unicode" }
     configuration "windows"
         defines { "WIN32" }

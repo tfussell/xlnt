@@ -41,9 +41,8 @@ class worksheet_serializer
 public:
     worksheet_serializer(worksheet sheet);
     
-    bool read_worksheet(const xml_document &xml, const std::vector<std::string> &shared_strings, const relationship &rel,  worksheet ws);
-    std::string read_dimension(const xml_node &dimension_node);
-    bool write_worksheet(const worksheet ws, const std::vector<std::string> &string_table, xml_document &xml);
+    bool read_worksheet(const xml_document &xml, const std::vector<std::string> &shared_strings, const relationship &rel);
+    bool write_worksheet(const std::vector<std::string> &string_table, xml_document &xml);
     
 private:
     worksheet sheet_;

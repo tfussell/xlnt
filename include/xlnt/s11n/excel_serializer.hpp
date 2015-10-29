@@ -37,7 +37,7 @@ class workbook;
 class excel_serializer
 {
 public:
-    static std::string central_directory_signature();
+    static const std::string central_directory_signature();
     static std::string repair_central_directory(const std::string &original);
     
     excel_serializer(workbook &wb);
@@ -46,9 +46,9 @@ public:
     bool load_stream_workbook(std::istream &stream, bool guess_types = false, bool data_only = false);
     bool load_virtual_workbook(const std::vector<std::uint8_t> &bytes, bool guess_types = false, bool data_only = false);
     
-    bool save_workbook(workbook &wb, const std::string &filename, bool as_template = false);
-    bool save_virtual_workbook(xlnt::workbook &wb, std::vector<std::uint8_t> &bytes, bool as_template = false);
-    bool save_stream_workbook(xlnt::workbook &wb, std::ostream &stream, bool as_template = false);
+    bool save_workbook(const std::string &filename, bool as_template = false);
+    bool save_virtual_workbook(std::vector<std::uint8_t> &bytes, bool as_template = false);
+    bool save_stream_workbook(std::ostream &stream, bool as_template = false);
     
 private:
     void read_data(bool guess_types, bool data_only);

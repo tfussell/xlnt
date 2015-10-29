@@ -1,7 +1,20 @@
 #include <xlnt/s11n/excel_serializer.hpp>
+#include <xlnt/common/exceptions.hpp>
 #include <xlnt/s11n/manifest_serializer.hpp>
+#include <xlnt/s11n/relationship_serializer.hpp>
+#include <xlnt/s11n/shared_strings_serializer.hpp>
+#include <xlnt/s11n/style_serializer.hpp>
+#include <xlnt/s11n/theme_serializer.hpp>
+#include <xlnt/s11n/workbook_serializer.hpp>
+#include <xlnt/s11n/worksheet_serializer.hpp>
+#include <xlnt/s11n/xml_document.hpp>
+#include <xlnt/s11n/xml_serializer.hpp>
+#include <xlnt/workbook/document_properties.hpp>
 #include <xlnt/workbook/manifest.hpp>
 #include <xlnt/workbook/workbook.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
+
+#include <detail/constants.hpp>
 
 namespace {
     
@@ -22,99 +35,69 @@ std::string::size_type find_string_in_string(const std::string &string, const st
     return possible_match_index;
 }
 
-xlnt::workbook load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only)
+bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xlnt::workbook &wb)
 {
-    xlnt::workbook wb;
-    
     wb.set_guess_types(guess_types);
     wb.set_data_only(data_only);
     
-    auto content_types = xlnt::read_content_types(archive);
-    auto type = xlnt::determine_document_type(content_types);
+    xlnt::manifest_serializer ms(wb.get_manifest());
+    ms.read_manifest(xlnt::xml_serializer::deserialize(archive.read(xlnt::constants::ArcContentTypes)));
     
-    if(type != "excel")
+    if(xlnt::workbook_serializer::determine_document_type(wb.get_manifest()) != "excel")
     {
         throw xlnt::invalid_file_exception("");
     }
     
     wb.clear();
     
-    auto workbook_relationships = read_relationships(archive, "xl/workbook.xml");
+    std::vector<xlnt::relationship> workbook_relationships;
+    xlnt::relationship_serializer::read_relationships(xlnt::xml_serializer::deserialize(archive.read("xl/_rels/workbook.xml.rels")), "", workbook_relationships);
     
     for(auto relationship : workbook_relationships)
     {
         wb.create_relationship(relationship.get_id(), relationship.get_target_uri(), relationship.get_type());
     }
     
-    pugi::xml_document doc;
-    doc.load(archive.read("xl/workbook.xml").c_str());
+    auto xml = xlnt::xml_serializer::deserialize(archive.read(xlnt::constants::ArcWorkbook));
     
-    auto root_node = doc.child("workbook");
+    auto &root_node = xml.root();
     
-    auto workbook_pr_node = root_node.child("workbookPr");
-    wb.get_properties().excel_base_date = (workbook_pr_node.attribute("date1904") != nullptr && workbook_pr_node.attribute("date1904").as_int() != 0) ? xlnt::calendar::mac_1904 : xlnt::calendar::windows_1900;
+    auto &workbook_pr_node = root_node.get_child("workbookPr");
+    wb.get_properties().excel_base_date = (workbook_pr_node.has_attribute("date1904") && workbook_pr_node.get_attribute("date1904") != "0") ? xlnt::calendar::mac_1904 : xlnt::calendar::windows_1900;
     
-    auto sheets_node = root_node.child("sheets");
+    xlnt::shared_strings_serializer shared_strings_serializer_;
+    std::vector<std::string> shared_strings;
+    shared_strings_serializer_.read_strings(xlnt::xml_serializer::deserialize(archive.read(xlnt::constants::ArcSharedString)), shared_strings);
     
-    xlnt::shared_strings_reader shared_strings_reader_;
-    auto shared_strings = shared_strings_reader_.read_strings(archive);
+    xlnt::style_serializer style_reader_(wb);
+    style_reader_.read_stylesheet(xlnt::xml_serializer::deserialize(archive.read(xlnt::constants::ArcStyles)));
     
-    xlnt::style_reader style_reader_(wb);
-    style_reader_.read_styles(archive);
+    auto &sheets_node = root_node.get_child("sheets");
     
-    for(const auto &border_ : style_reader_.get_borders())
+    for(auto sheet_node : sheets_node.get_children())
     {
-        wb.add_border(border_);
-    }
-    
-    for(const auto &fill_ : style_reader_.get_fills())
-    {
-        wb.add_fill(fill_);
-    }
-    
-    for(const auto &font_ : style_reader_.get_fonts())
-    {
-        wb.add_font(font_);
-    }
-    
-    for(const auto &number_format_ : style_reader_.get_number_formats())
-    {
-        wb.add_number_format(number_format_);
-    }
-    
-    for(auto &color_rgb : style_reader_.get_colors())
-    {
-        wb.add_color(xlnt::color(xlnt::color::type::rgb, color_rgb));
-    }
-    
-    for(const auto &style : style_reader_.get_styles())
-    {
-        wb.add_style(style);
-    }
-    
-    for(auto sheet_node : sheets_node.children("sheet"))
-    {
-        auto rel = wb.get_relationship(sheet_node.attribute("r:id").as_string());
-        auto ws = wb.create_sheet(sheet_node.attribute("name").as_string(), rel);
+        auto rel = wb.get_relationship(sheet_node.get_attribute("r:id"));
+        auto ws = wb.create_sheet(sheet_node.get_attribute("name"), rel);
         
-        xlnt::read_worksheet(ws, archive, rel, shared_strings);
+        xlnt::worksheet_serializer worksheet_serializer(ws);
+        worksheet_serializer.read_worksheet(xlnt::xml_serializer::deserialize(archive.read(rel.get_target_uri())), shared_strings, rel);
     }
     
-    return wb;
+    return true;
 }
     
 } // namespace
 
 namespace xlnt {
 
-std::string excel_reader::CentralDirectorySignature()
+const std::string excel_serializer::central_directory_signature()
 {
     return "\x50\x4b\x05\x06";
 }
 
-std::string excel_reader::repair_central_directory(const std::string &original)
+std::string excel_serializer::repair_central_directory(const std::string &original)
 {
-    auto pos = find_string_in_string(original, CentralDirectorySignature());
+    auto pos = find_string_in_string(original, central_directory_signature());
     
     if(pos != std::string::npos)
     {
@@ -124,104 +107,76 @@ std::string excel_reader::repair_central_directory(const std::string &original)
     return original;
 }
 
-workbook excel_reader::load_workbook(std::istream &stream, bool guess_types, bool data_only)
+bool excel_serializer::load_stream_workbook(std::istream &stream, bool guess_types, bool data_only)
 {
     std::vector<std::uint8_t> bytes((std::istream_iterator<char>(stream)),
                                     std::istream_iterator<char>());
-    
-    return load_workbook(bytes, guess_types, data_only);
+
+    return load_virtual_workbook(bytes, guess_types, data_only);
 }
 
-workbook excel_reader::load_workbook(const std::string &filename, bool guess_types, bool data_only)
+bool excel_serializer::load_workbook(const std::string &filename, bool guess_types, bool data_only)
 {
-    xlnt::zip_file archive;
-    
     try
     {
-        archive.load(filename);
+        archive_.load(filename);
     }
     catch(std::runtime_error)
     {
         throw invalid_file_exception(filename);
     }
     
-    return ::load_workbook(archive, guess_types, data_only);
+    return ::load_workbook(archive_, guess_types, data_only, wb_);
 }
 
-xlnt::workbook excel_reader::load_workbook(const std::vector<std::uint8_t> &bytes, bool guess_types, bool data_only)
+bool excel_serializer::load_virtual_workbook(const std::vector<std::uint8_t> &bytes, bool guess_types, bool data_only)
 {
-    xlnt::zip_file archive;
-    archive.load(bytes);
+    archive_.load(bytes);
     
-    return ::load_workbook(archive, guess_types, data_only);
+    return ::load_workbook(archive_, guess_types, data_only, wb_);
 }
     
-excel_writer::excel_writer(workbook &wb) : wb_(wb)
+excel_serializer::excel_serializer(workbook &wb) : wb_(wb)
 {
-}
-
-void excel_writer::save(const std::string &filename, bool as_template)
-{
-    zip_file archive;
-    write_data(archive, as_template);
-    archive.save(filename);
 }
 
-void excel_writer::write_data(zip_file &archive, bool as_template)
+void excel_serializer::write_data(bool as_template)
 {
-    archive.writestr(constants::ArcRootRels, write_root_rels(wb_));
-    archive.writestr(constants::ArcWorkbookRels, write_workbook_rels(wb_));
-    archive.writestr(constants::ArcApp, write_properties_app(wb_));
-    archive.writestr(constants::ArcCore, write_properties_core(wb_.get_properties()));
+    relationship_serializer relationship_serializer_;
     
-    if(wb_.has_loaded_theme())
-    {
-        archive.writestr(constants::ArcTheme, wb_.get_loaded_theme());
-    }
-    else
-    {
-        archive.writestr(constants::ArcTheme, write_theme());
-    }
+    xlnt::xml_document root_rels_xml;
+    relationship_serializer_.write_relationships(wb_.get_root_relationships(), "", root_rels_xml);
+    archive_.writestr(constants::ArcRootRels, xml_serializer::serialize(root_rels_xml));
     
-    archive.writestr(constants::ArcWorkbook, write_workbook(wb_));
+    xml_document workbook_rels_xml;
+    relationship_serializer_.write_relationships(wb_.get_relationships(), "", workbook_rels_xml);
+    archive_.writestr(constants::ArcWorkbookRels, xml_serializer::serialize(workbook_rels_xml));
     
-    auto shared_strings = extract_all_strings(wb_);
+    xml_document properties_app_xml;
+    workbook_serializer workbook_serializer_(wb_);
+    archive_.writestr(constants::ArcApp, xml_serializer::serialize(workbook_serializer_.write_properties_app()));
+    archive_.writestr(constants::ArcCore, xml_serializer::serialize(workbook_serializer_.write_properties_core()));
     
-    write_charts(archive);
-    write_images(archive);
-    write_shared_strings(archive, shared_strings);
-    write_worksheets(archive, shared_strings);
-    write_chartsheets(archive);
-    write_external_links(archive);
+    theme_serializer theme_serializer_;
+    xml_document theme_xml = theme_serializer_.write_theme(wb_.get_loaded_theme());
+    archive_.writestr(constants::ArcTheme, xml_serializer::serialize(theme_xml));
     
-    style_writer style_writer_(wb_);
-    archive.writestr(constants::ArcStyles, style_writer_.write_table());
+    archive_.writestr(constants::ArcWorkbook, xml_serializer::serialize(workbook_serializer_.write_workbook()));
     
-    auto manifest = write_content_types(wb_, as_template);
-    archive.writestr(constants::ArcContentTypes, manifest);
+    style_serializer style_serializer_(wb_);
+    xml_document style_xml;
+    style_serializer_.write_stylesheet(style_xml);
+    archive_.writestr(constants::ArcStyles, xml_serializer::serialize(style_xml));
+    
+    manifest_serializer manifest_serializer_(wb_.get_manifest());
+    xml_document manifest_xml;
+    manifest_serializer_.write_manifest(manifest_xml);
+    archive_.writestr(constants::ArcContentTypes, xml_serializer::serialize(manifest_xml));
+    
+    write_worksheets();
 }
 
-void excel_writer::write_shared_strings(xlnt::zip_file &archive, const std::vector<std::string> &shared_strings)
-{
-    archive.writestr(constants::ArcSharedString, ::xlnt::write_shared_strings(shared_strings));
-}
-
-void excel_writer::write_images(zip_file &/*archive*/)
-{
-    
-}
-
-void excel_writer::write_charts(zip_file &/*archive*/)
-{
-    
-}
-
-void excel_writer::write_chartsheets(zip_file &/*archive*/)
-{
-    
-}
-
-void excel_writer::write_worksheets(zip_file &archive, const std::vector<std::string> &shared_strings)
+void excel_serializer::write_worksheets()
 {
     std::size_t index = 0;
     
@@ -232,7 +187,10 @@ void excel_writer::write_worksheets(zip_file &archive, const std::vector<std::st
             if(relationship.get_type() == relationship::type::worksheet &&
                workbook::index_from_ws_filename(relationship.get_target_uri()) == index)
             {
-                archive.writestr(relationship.get_target_uri(), write_worksheet(ws, shared_strings));
+                worksheet_serializer serializer_(ws);
+                xml_document xml;
+                serializer_.write_worksheet(shared_strings_, xml);
+                archive_.writestr(relationship.get_target_uri(),  xml_serializer::serialize(xml));
                 break;
             }
         }
@@ -241,27 +199,33 @@ void excel_writer::write_worksheets(zip_file &archive, const std::vector<std::st
     }
 }
 
-void excel_writer::write_external_links(zip_file &/*archive*/)
+void excel_serializer::write_external_links()
 {
     
 }
-
-bool save_workbook(workbook &wb, const std::string &filename, bool as_template)
+    
+bool excel_serializer::save_stream_workbook(std::ostream &stream, bool as_template)
 {
-    excel_writer writer(wb);
-    writer.save(filename, as_template);
+    write_data(as_template);
+    archive_.save(stream);
+    
     return true;
 }
 
-std::vector<std::uint8_t> save_virtual_workbook(xlnt::workbook &wb, bool as_template)
+bool excel_serializer::save_workbook(const std::string &filename, bool as_template)
 {
-    zip_file archive;
-    excel_writer writer(wb);
-    writer.write_data(archive, as_template);
-    std::vector<std::uint8_t> buffer;
-    archive.save(buffer);
+    write_data(as_template);
+    archive_.save(filename);
+
+    return true;
+}
+
+bool excel_serializer::save_virtual_workbook(std::vector<std::uint8_t> &bytes, bool as_template)
+{
+    write_data(as_template);
+    archive_.save(bytes);
     
-    return buffer;
+    return true;
 }
     
 } // namespace xlnt

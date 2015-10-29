@@ -35,10 +35,14 @@ class worksheet;
 class workbook;
 class zip_file;
 class xml_document;
+class xml_node;
     
 class workbook_serializer
 {
 public:
+    //TODO: does this go here?
+    static std::string determine_document_type(const manifest &manifest_);
+    
     workbook_serializer(workbook &wb);
     
     void read_workbook(const xml_document &xml);
@@ -48,17 +52,14 @@ public:
     xml_document write_workbook() const;
     xml_document write_properties_app() const;
     xml_document write_properties_core() const;
-    
+
 private:
-    //workbook_view, sheets, sheet, defined_names
-    std::string determine_document_type(const manifest &manifest_);
-    
     using string_pair = std::pair<std::string, std::string>;
     
     std::vector<string_pair> read_sheets(zip_file &archive);
     std::vector<string_pair> detect_worksheets(zip_file &archive);
 
-    std::string write_defined_names(const workbook &wb);
+    bool write_named_ranges(xml_node &named_ranges_node);
     
     workbook &wb_;
 };

@@ -22,6 +22,7 @@ public:
     
     const std::vector<xml_node> &get_children() const;
     bool has_child(const std::string &child_name) const;
+    xml_node &get_child(const std::string &child_name);
     const xml_node &get_child(const std::string &child_name) const;
     xml_node &add_child(const xml_node &child);
     xml_node &add_child(const std::string &child_name);

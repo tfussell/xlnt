@@ -1,8 +1,11 @@
+#include <sstream>
+
 #include <xlnt/s11n/worksheet_serializer.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/s11n/xml_document.hpp>
 #include <xlnt/s11n/xml_node.hpp>
+#include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 
@@ -18,10 +21,193 @@ bool is_integral(long double d)
 } // namepsace
 
 namespace xlnt {
-
-bool worksheet_serializer::write_worksheet(const worksheet ws, const std::vector<std::string> &string_table, xml_document &xml)
+    
+bool worksheet_serializer::read_worksheet(const xml_document &xml, const std::vector<std::string> &string_table, const relationship &rel)
 {
-    ws.get_cell("A1");
+    auto &root_node = xml.root();
+    
+    auto &dimension_node = root_node.get_child("dimension");
+    std::string dimension = dimension_node.get_attribute("ref");
+    auto full_range = xlnt::range_reference(dimension);
+    auto sheet_data_node = root_node.get_child("sheetData");
+
+    if(root_node.has_child("mergeCells"))
+    {
+        auto merge_cells_node = root_node.get_child("mergeCells");
+        auto count = std::stoull(merge_cells_node.get_attribute("count"));
+        
+        for(auto merge_cell_node : merge_cells_node.get_children())
+        {
+            if(merge_cell_node.get_name() != "mergeCell")
+            {
+                continue;
+            }
+            
+            sheet_.merge_cells(merge_cell_node.get_attribute("ref"));
+            count--;
+        }
+        
+        if(count != 0)
+        {
+            throw std::runtime_error("mismatch between count and actual number of merged cells");
+        }
+    }
+    
+    for(auto row_node : sheet_data_node.get_children())
+    {
+        if(row_node.get_name() != "row")
+        {
+            continue;
+        }
+        
+        auto row_index = static_cast<row_t>(std::stoull(row_node.get_attribute("r")));
+        
+        if(row_node.get_attribute("ht") != nullptr)
+        {
+            sheet_.get_row_properties(row_index).height = std::stold(row_node.get_attribute("ht"));
+        }
+        
+        std::string span_string = row_node.get_attribute("spans");
+        auto colon_index = span_string.find(':');
+        
+        column_t min_column = 0;
+        column_t max_column = 0;
+        
+        if(colon_index != std::string::npos)
+        {
+            min_column = static_cast<column_t>(std::stoll(span_string.substr(0, colon_index)));
+            max_column = static_cast<column_t>(std::stoll(span_string.substr(colon_index + 1)));
+        }
+        else
+        {
+            min_column = static_cast<column_t>(full_range.get_top_left().get_column_index());
+            max_column = static_cast<column_t>(full_range.get_bottom_right().get_column_index());
+        }
+        
+        for(column_t i = min_column; i <= max_column; i++)
+        {
+            std::string address = xlnt::cell_reference::column_string_from_index(i) + std::to_string(row_index);
+            
+            xml_node cell_node;
+            bool cell_found = false;
+            
+            for(auto &check_cell_node : row_node.get_children())
+            {
+                if(check_cell_node.get_name() != "c")
+                {
+                    continue;
+                }
+                
+                if(check_cell_node.has_attribute("r") && check_cell_node.get_attribute("r") == address)
+                {
+                    cell_node = check_cell_node;
+                    cell_found = true;
+                    break;
+                }
+            }
+            
+            if(cell_found)
+            {
+                bool has_value = cell_node.has_child("v");
+                std::string value_string = has_value ? cell_node.get_child("v").get_text() : "";
+                
+                bool has_type = cell_node.get_attribute("t") != nullptr;
+                std::string type = has_type ? cell_node.get_attribute("t") : "";
+                
+                bool has_style = cell_node.get_attribute("s") != nullptr;
+                int style_id = has_style ? std::stoull(cell_node.get_attribute("s")) : 0;
+                
+                bool has_formula = cell_node.has_child("f");
+                bool has_shared_formula = has_formula && cell_node.get_child("f").has_attribute("t") && cell_node.get_child("f").get_attribute("t") == "shared";
+                
+                auto cell = sheet_.get_cell(address);
+                
+                if(has_formula && !has_shared_formula && !sheet_.get_parent().get_data_only())
+                {
+                    std::string formula = cell_node.get_child("f").get_text();
+                    cell.set_formula(formula);
+                }
+                
+                if(has_type && type == "inlineStr") // inline string
+                {
+                    std::string inline_string = cell_node.get_child("is").get_child("t").get_text();
+                    cell.set_value(inline_string);
+                }
+                else if(has_type && type == "s" && !has_formula) // shared string
+                {
+                    auto shared_string_index = std::stoull(value_string);
+                    auto shared_string = string_table.at(shared_string_index);
+                    cell.set_value(shared_string);
+                }
+                else if(has_type && type == "b") // boolean
+                {
+                    cell.set_value(value_string != "0");
+                }
+                else if(has_type && type == "str")
+                {
+                    cell.set_value(value_string);
+                }
+                else if(has_value && !value_string.empty())
+                {
+                    if(!value_string.empty() && value_string[0] == '#')
+                    {
+                        cell.set_error(value_string);
+                    }
+                    else
+                    {
+                        cell.set_value(std::stold(value_string));
+                    }
+                }
+                
+                if(has_style)
+                {
+                    cell.set_style_id(style_id);
+                }
+            }
+        }
+    }
+    
+    auto &cols_node = root_node.get_child("cols");
+    
+    for(auto col_node : cols_node.get_children())
+    {
+        if(col_node.get_name() != "col")
+        {
+            continue;
+        }
+        
+        auto min = static_cast<column_t>(std::stoull(col_node.get_attribute("min")));
+        auto max = static_cast<column_t>(std::stoull(col_node.get_attribute("max")));
+        auto width = std::stold(col_node.get_attribute("width"));
+        auto column_style = std::stoull(col_node.get_attribute("style"));
+        bool custom = col_node.get_attribute("customWidth") == "1";
+        
+        for(auto column = min; column <= max; column++)
+        {
+            if(!sheet_.has_column_properties(column))
+            {
+                sheet_.add_column_properties(column, column_properties());
+            }
+            
+            sheet_.get_column_properties(min).width = width;
+            sheet_.get_column_properties(min).style = column_style;
+            sheet_.get_column_properties(min).custom = custom;
+        }
+    }
+    
+    if(root_node.has_child("autoFilter"))
+    {
+        auto &auto_filter_node = root_node.get_child("autoFilter");
+        xlnt::range_reference ref(auto_filter_node.get_attribute("ref"));
+        sheet_.auto_filter(ref);
+    }
+    
+    return true;
+}
+
+bool worksheet_serializer::write_worksheet(const std::vector<std::string> &string_table, xml_document &xml)
+{
+    sheet_.get_cell("A1");
     
     xml.add_namespace("", constants::Namespaces.at("spreadsheetml"));
     xml.add_namespace("r", constants::Namespaces.at("r"));
@@ -31,10 +217,10 @@ bool worksheet_serializer::write_worksheet(const worksheet ws, const std::vector
     
     auto &sheet_pr_node = root_node.add_child("sheetPr");
     
-    if(!ws.get_page_setup().is_default())
+    if(!sheet_.get_page_setup().is_default())
     {
         auto &page_set_up_pr_node = sheet_pr_node.add_child("pageSetUpPr");
-        page_set_up_pr_node.add_attribute("fitToPage", ws.get_page_setup().fit_to_page() ? "1" : "0");
+        page_set_up_pr_node.add_attribute("fitToPage", sheet_.get_page_setup().fit_to_page() ? "1" : "0");
     }
     
     auto &outline_pr_node = sheet_pr_node.add_child("outlinePr");
@@ -43,7 +229,7 @@ bool worksheet_serializer::write_worksheet(const worksheet ws, const std::vector
     outline_pr_node.add_attribute("summaryRight", "1");
     
     auto &dimension_node = root_node.add_child("dimension");
-    dimension_node.add_attribute("ref", ws.calculate_dimension().to_string());
+    dimension_node.add_attribute("ref", sheet_.calculate_dimension().to_string());
     
     auto &sheet_views_node = root_node.add_child("sheetViews");
     auto &sheet_view_node = sheet_views_node.add_child("sheetView");
@@ -51,23 +237,23 @@ bool worksheet_serializer::write_worksheet(const worksheet ws, const std::vector
     
     std::string active_pane = "bottomRight";
     
-    if(ws.has_frozen_panes())
+    if(sheet_.has_frozen_panes())
     {
         auto pane_node = sheet_view_node.add_child("pane");
         
-        if(ws.get_frozen_panes().get_column_index() > 1)
+        if(sheet_.get_frozen_panes().get_column_index() > 1)
         {
-            pane_node.add_attribute("xSplit", std::to_string(ws.get_frozen_panes().get_column_index() - 1));
+            pane_node.add_attribute("xSplit", std::to_string(sheet_.get_frozen_panes().get_column_index() - 1));
             active_pane = "topRight";
         }
         
-        if(ws.get_frozen_panes().get_row() > 1)
+        if(sheet_.get_frozen_panes().get_row() > 1)
         {
-            pane_node.add_attribute("ySplit", std::to_string(ws.get_frozen_panes().get_row() - 1));
+            pane_node.add_attribute("ySplit", std::to_string(sheet_.get_frozen_panes().get_row() - 1));
             active_pane = "bottomLeft";
         }
         
-        if(ws.get_frozen_panes().get_row() > 1 && ws.get_frozen_panes().get_column_index() > 1)
+        if(sheet_.get_frozen_panes().get_row() > 1 && sheet_.get_frozen_panes().get_column_index() > 1)
         {
             auto top_right_node = sheet_view_node.add_child("selection");
             top_right_node.add_attribute("pane", "topRight");
@@ -76,24 +262,24 @@ bool worksheet_serializer::write_worksheet(const worksheet ws, const std::vector
             active_pane = "bottomRight";
         }
         
-        pane_node.add_attribute("topLeftCell", ws.get_frozen_panes().to_string());
+        pane_node.add_attribute("topLeftCell", sheet_.get_frozen_panes().to_string());
         pane_node.add_attribute("activePane", active_pane);
         pane_node.add_attribute("state", "frozen");
     }
     
     auto selection_node = sheet_view_node.add_child("selection");
     
-    if(ws.has_frozen_panes())
+    if(sheet_.has_frozen_panes())
     {
-        if(ws.get_frozen_panes().get_row() > 1 && ws.get_frozen_panes().get_column_index() > 1)
+        if(sheet_.get_frozen_panes().get_row() > 1 && sheet_.get_frozen_panes().get_column_index() > 1)
         {
             selection_node.add_attribute("pane", "bottomRight");
         }
-        else if(ws.get_frozen_panes().get_row() > 1)
+        else if(sheet_.get_frozen_panes().get_row() > 1)
         {
             selection_node.add_attribute("pane", "bottomLeft");
         }
-        else if(ws.get_frozen_panes().get_column_index() > 1)
+        else if(sheet_.get_frozen_panes().get_column_index() > 1)
         {
             selection_node.add_attribute("pane", "topRight");
         }
@@ -109,9 +295,9 @@ bool worksheet_serializer::write_worksheet(const worksheet ws, const std::vector
     
     bool has_column_properties = false;
     
-    for(auto column = ws.get_lowest_column(); column <= ws.get_highest_column(); column++)
+    for(auto column = sheet_.get_lowest_column(); column <= sheet_.get_highest_column(); column++)
     {
-        if(ws.has_column_properties(column))
+        if(sheet_.has_column_properties(column))
         {
             has_column_properties = true;
             break;
@@ -122,9 +308,9 @@ bool worksheet_serializer::write_worksheet(const worksheet ws, const std::vector
     {
         auto cols_node = root_node.add_child("cols");
         
-        for(auto column = ws.get_lowest_column(); column <= ws.get_highest_column(); column++)
+        for(auto column = sheet_.get_lowest_column(); column <= sheet_.get_highest_column(); column++)
         {
-            const auto &props = ws.get_column_properties(column);
+            const auto &props = sheet_.get_column_properties(column);
             
             auto col_node = cols_node.add_child("col");
             
@@ -140,7 +326,7 @@ bool worksheet_serializer::write_worksheet(const worksheet ws, const std::vector
     
     auto sheet_data_node = root_node.add_child("sheetData");
     
-    for(auto row : ws.rows())
+    for(auto row : sheet_.rows())
     {
         row_t min = static_cast<row_t>(row.num_cells());
         row_t max = 0;
@@ -167,10 +353,10 @@ bool worksheet_serializer::write_worksheet(const worksheet ws, const std::vector
         row_node.add_attribute("r", std::to_string(row.front().get_row()));
         row_node.add_attribute("spans", (std::to_string(min) + ":" + std::to_string(max)));
         
-        if(ws.has_row_properties(row.front().get_row()))
+        if(sheet_.has_row_properties(row.front().get_row()))
         {
             row_node.add_attribute("customHeight", "1");
-            auto height = ws.get_row_properties(row.front().get_row()).height;
+            auto height = sheet_.get_row_properties(row.front().get_row()).height;
             
             if(height == std::floor(height))
             {
@@ -228,14 +414,14 @@ bool worksheet_serializer::write_worksheet(const worksheet ws, const std::vector
                         {
                             cell_node.add_attribute("t", "inlineStr");
                             auto inline_string_node = cell_node.add_child("is");
-                            inline_string_node.add_child("t").text().set(cell.get_value<std::string>());
+                            inline_string_node.add_child("t").set_text(cell.get_value<std::string>());
                         }
                     }
                     else
                     {
                         cell_node.add_attribute("t", "s");
                         auto value_node = cell_node.add_child("v");
-                        value_node.text().set(match_index);
+                        value_node.set_text(std::to_string(match_index));
                     }
                 }
                 else
@@ -246,22 +432,23 @@ bool worksheet_serializer::write_worksheet(const worksheet ws, const std::vector
                         {
                             cell_node.add_attribute("t", "b");
                             auto value_node = cell_node.add_child("v");
-                            value_node.text().set(cell.get_value<bool>() ? 1 : 0);
+                            value_node.set_text(cell.get_value<bool>() ? "1" : "0");
                         }
                         else if(cell.get_data_type() == cell::type::numeric)
                         {
                             if(cell.has_formula())
                             {
-                                cell_node.add_child("f").text().set(cell.get_formula());
-                                cell_node.add_child("v").text().set(cell.to_string());
+                                cell_node.add_child("f").set_text(cell.get_formula());
+                                cell_node.add_child("v").set_text(cell.to_string());
                                 continue;
                             }
                             
                             cell_node.add_attribute("t", "n");
                             auto value_node = cell_node.add_child("v");
+                            
                             if(is_integral(cell.get_value<long double>()))
                             {
-                                value_node.text().set(cell.get_value<long long>());
+                                value_node.set_text(std::to_string(cell.get_value<long long>()));
                             }
                             else
                             {
@@ -269,50 +456,49 @@ bool worksheet_serializer::write_worksheet(const worksheet ws, const std::vector
                                 ss.precision(20);
                                 ss << cell.get_value<long double>();
                                 ss.str();
-                                value_node.text().set(ss.str());
+                                value_node.set_text(ss.str());
                             }
                         }
                     }
                     else if(cell.has_formula())
                     {
-                        cell_node.add_child("f").text().set(cell.get_formula());
+                        cell_node.add_child("f").set_text(cell.get_formula());
                         cell_node.add_child("v");
                         continue;
                     }
                 }
                 
-                //if(cell.has_style())
+                if(cell.has_style())
                 {
-                    auto style_id = cell.get_style_id();
-                    cell_node.add_attribute("s", (int)style_id);
+                    cell_node.add_attribute("s", std::to_string(cell.get_style_id()));
                 }
             }
         }
     }
     
-    if(ws.has_auto_filter())
+    if(sheet_.has_auto_filter())
     {
         auto auto_filter_node = root_node.add_child("autoFilter");
-        auto_filter_node.add_attribute("ref", ws.get_auto_filter().to_string());
+        auto_filter_node.add_attribute("ref", sheet_.get_auto_filter().to_string());
     }
     
-    if(!ws.get_merged_ranges().empty())
+    if(!sheet_.get_merged_ranges().empty())
     {
         auto merge_cells_node = root_node.add_child("mergeCells");
-        merge_cells_node.add_attribute("count", (unsigned int)ws.get_merged_ranges().size());
+        merge_cells_node.add_attribute("count", std::to_string(sheet_.get_merged_ranges().size()));
         
-        for(auto merged_range : ws.get_merged_ranges())
+        for(auto merged_range : sheet_.get_merged_ranges())
         {
             auto merge_cell_node = merge_cells_node.add_child("mergeCell");
             merge_cell_node.add_attribute("ref", merged_range.to_string());
         }
     }
     
-    if(!ws.get_relationships().empty())
+    if(!sheet_.get_relationships().empty())
     {
         auto hyperlinks_node = root_node.add_child("hyperlinks");
         
-        for(auto relationship : ws.get_relationships())
+        for(const auto &relationship : sheet_.get_relationships())
         {
             auto hyperlink_node = hyperlinks_node.add_child("hyperlink");
             hyperlink_node.add_attribute("display", relationship.get_target_uri());
@@ -321,48 +507,45 @@ bool worksheet_serializer::write_worksheet(const worksheet ws, const std::vector
         }
     }
     
-    if(!ws.get_page_setup().is_default())
+    if(!sheet_.get_page_setup().is_default())
     {
         auto print_options_node = root_node.add_child("printOptions");
-        print_options_node.add_attribute("horizontalCentered", ws.get_page_setup().get_horizontal_centered() ? 1 : 0);
-        print_options_node.add_attribute("verticalCentered", ws.get_page_setup().get_vertical_centered() ? 1 : 0);
+        print_options_node.add_attribute("horizontalCentered", sheet_.get_page_setup().get_horizontal_centered() ? "1" : "0");
+        print_options_node.add_attribute("verticalCentered", sheet_.get_page_setup().get_vertical_centered() ? "1" : "0");
     }
     
     auto page_margins_node = root_node.add_child("pageMargins");
     
-    page_margins_node.add_attribute("left", ws.get_page_margins().get_left());
-    page_margins_node.add_attribute("right", ws.get_page_margins().get_right());
-    page_margins_node.add_attribute("top", ws.get_page_margins().get_top());
-    page_margins_node.add_attribute("bottom", ws.get_page_margins().get_bottom());
-    page_margins_node.add_attribute("header", ws.get_page_margins().get_header());
-    page_margins_node.add_attribute("footer", ws.get_page_margins().get_footer());
+    page_margins_node.add_attribute("left", std::to_string(sheet_.get_page_margins().get_left()));
+    page_margins_node.add_attribute("right", std::to_string(sheet_.get_page_margins().get_right()));
+    page_margins_node.add_attribute("top", std::to_string(sheet_.get_page_margins().get_top()));
+    page_margins_node.add_attribute("bottom", std::to_string(sheet_.get_page_margins().get_bottom()));
+    page_margins_node.add_attribute("header", std::to_string(sheet_.get_page_margins().get_header()));
+    page_margins_node.add_attribute("footer", std::to_string(sheet_.get_page_margins().get_footer()));
     
-    if(!ws.get_page_setup().is_default())
+    if(!sheet_.get_page_setup().is_default())
     {
         auto page_setup_node = root_node.add_child("pageSetup");
         
-        std::string orientation_string = ws.get_page_setup().get_orientation() == page_setup::orientation::landscape ? "landscape" : "portrait";
+        std::string orientation_string = sheet_.get_page_setup().get_orientation() == page_setup::orientation::landscape ? "landscape" : "portrait";
         page_setup_node.add_attribute("orientation", orientation_string);
-        page_setup_node.add_attribute("paperSize", (int)ws.get_page_setup().get_paper_size());
-        page_setup_node.add_attribute("fitToHeight", ws.get_page_setup().fit_to_height() ? 1 : 0);
-        page_setup_node.add_attribute("fitToWidth", ws.get_page_setup().fit_to_width() ? 1 : 0);
+        page_setup_node.add_attribute("paperSize", std::to_string(static_cast<int>(sheet_.get_page_setup().get_paper_size())));
+        page_setup_node.add_attribute("fitToHeight", sheet_.get_page_setup().fit_to_height() ? "1" : "0");
+        page_setup_node.add_attribute("fitToWidth", sheet_.get_page_setup().fit_to_width() ? "1" : "0");
     }
     
-    if(!ws.get_header_footer().is_default())
+    if(!sheet_.get_header_footer().is_default())
     {
         auto header_footer_node = root_node.add_child("headerFooter");
         auto odd_header_node = header_footer_node.add_child("oddHeader");
         std::string header_text = "&L&\"Calibri,Regular\"&K000000Left Header Text&C&\"Arial,Regular\"&6&K445566Center Header Text&R&\"Arial,Bold\"&8&K112233Right Header Text";
-        odd_header_node.text().set(header_text);
+        odd_header_node.set_text(header_text);
         auto odd_footer_node = header_footer_node.add_child("oddFooter");
         std::string footer_text = "&L&\"Times New Roman,Regular\"&10&K445566Left Footer Text_x000D_And &D and &T&C&\"Times New Roman,Bold\"&12&K778899Center Footer Text &Z&F on &A&R&\"Times New Roman,Italic\"&14&KAABBCCRight Footer Text &P of &N";
-        odd_footer_node.text().set(footer_text);
+        odd_footer_node.set_text(footer_text);
     }
     
-    std::stringstream ss;
-    doc.save(ss);
-    
-    return ss.str();
+    return true;
 }
 
 } // namespace xlnt

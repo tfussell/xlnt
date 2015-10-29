@@ -3,8 +3,7 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/reader/workbook_reader.hpp>
-#include <xlnt/writer/workbook_writer.hpp>
+#include <xlnt/s11n/workbook_serializer.hpp>
 
 #include "helpers/path_helper.hpp"
 #include "helpers/helper.hpp"
@@ -16,7 +15,9 @@ public:
     {
         xlnt::zip_file archive(PathHelper::GetDataDirectory() + "/genuine/empty.xlsx");
         auto content = archive.read("docProps/core.xml");
-        auto prop = xlnt::read_properties_core(content);
+        xlnt::workbook wb;
+        xlnt::workbook_serializer serializer(wb);
+        auto prop = serializer.read_properties_core(content);
         TS_ASSERT_EQUALS(prop.creator, "*.*");
         TS_ASSERT_EQUALS(prop.last_modified_by, "Charlie Clark");
         TS_ASSERT_EQUALS(prop.created, xlnt::datetime(2010, 4, 9, 20, 43, 12));
