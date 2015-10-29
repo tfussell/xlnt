@@ -22,6 +22,8 @@
 #include <xlnt/writer/excel_writer.hpp>
 #include <xlnt/reader/excel_reader.hpp>
 
+#include <xlnt/common/xml_tree.hpp>
+
 class test_cell : public CxxTest::TestSuite
 {
 private:
@@ -31,6 +33,13 @@ public:
     test_cell()
     {
         wb_guess_types.set_guess_types(true);
+    }
+    
+    void test_debug()
+    {
+        auto wb = xlnt::excel_reader::load_workbook("/Users/thomas/Development/xlnt/samples/formatting.xlsx");
+        wb.save("/Users/thomas/Development/xlnt/samples/formatting-rt.xlsx");
+        wb.save("/Users/thomas/Development/xlnt/samples/formatting-rt.zip");
     }
     
 	void test_infer_numeric()

@@ -22,7 +22,6 @@ cell_impl::cell_impl(worksheet_impl *parent, column_t column, row_t row)
       value_numeric_(0),
       has_hyperlink_(false),
       is_merged_(false),
-      xf_index_(0),
       has_style_(false),
       style_id_(0),
       comment_(nullptr)

@@ -799,15 +799,20 @@ std::string format_text(const std::string &text, const std::string &format)
 
 namespace xlnt {
     
-const std::unordered_map<std::string, int> cell::ErrorCodes =
+const std::unordered_map<std::string, int> cell::error_codes()
 {
-    {"#NULL!", 0},
-    {"#DIV/0!", 1},
-    {"#VALUE!", 2},
-    {"#REF!", 3},
-    {"#NAME?", 4},
-    {"#NUM!", 5},
-    {"#N/A!", 6}
+    static const std::unordered_map<std::string, int> codes =
+    {
+        {"#NULL!", 0},
+        {"#DIV/0!", 1},
+        {"#VALUE!", 2},
+        {"#REF!", 3},
+        {"#NAME?", 4},
+        {"#NUM!", 5},
+        {"#N/A!", 6}
+    };
+    
+    return codes;
 };
 
 cell::cell() : d_(nullptr)
@@ -1271,11 +1276,6 @@ void cell::set_data_type(type t)
     d_->type_ = t;
 }
 
-std::size_t cell::get_xf_index() const
-{
-    return d_->xf_index_;
-}
-
 const number_format &cell::get_number_format() const
 {
     static const number_format default_format;
@@ -1499,5 +1499,5 @@ calendar cell::get_base_date() const
 {
     return get_parent().get_parent().get_properties().excel_base_date;
 }
-
+    
 } // namespace xlnt

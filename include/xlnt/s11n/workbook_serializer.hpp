@@ -24,42 +24,43 @@
 #pragma once
 
 #include <string>
-#include <unordered_map>
 #include <vector>
-
-#include "charts/chart.h"
 
 namespace xlnt {
 
-class chart_writer
-{
-
-};
-
-class pie_chart_writer : public chart_writer
-{
-
-};
-
-class pie_chart_writer : public chart_writer
-{
-
-};
-
-class pie_chart_writer : public chart_writer
-{
-
-};
-
-class pie_chart_writer : public chart_writer
-{
-
-};
-
-class chart_writer_factory
+class document_properties;
+class manifest;
+class relationship;
+class worksheet;
+class workbook;
+class zip_file;
+class xml_document;
+    
+class workbook_serializer
 {
 public:
-    static std::unique_ptr<chart_writer> create_writer(chart c);
+    workbook_serializer(workbook &wb);
+    
+    void read_workbook(const xml_document &xml);
+    void read_properties_app(const xml_document &xml);
+    void read_properties_core(const xml_document &xml);
+    
+    xml_document write_workbook() const;
+    xml_document write_properties_app() const;
+    xml_document write_properties_core() const;
+    
+private:
+    //workbook_view, sheets, sheet, defined_names
+    std::string determine_document_type(const manifest &manifest_);
+    
+    using string_pair = std::pair<std::string, std::string>;
+    
+    std::vector<string_pair> read_sheets(zip_file &archive);
+    std::vector<string_pair> detect_worksheets(zip_file &archive);
+
+    std::string write_defined_names(const workbook &wb);
+    
+    workbook &wb_;
 };
 
 } // namespace xlnt

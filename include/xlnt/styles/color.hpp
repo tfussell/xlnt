@@ -23,6 +23,10 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <string>
+
+#include <xlnt/common/hash_combine.hpp>
+
 namespace xlnt {
 
 class color
@@ -55,12 +59,6 @@ public:
     
     color(type t, const std::string &v) : type_(t), rgb_string_(v)
     {
-    }
-    
-    bool operator==(const color &other) const
-    {
-        if(type_ != other.type_) return false;
-        return index_ == other.index_;
     }
     
     void set_auto(int auto_index)
@@ -124,6 +122,27 @@ public:
         }
         
         return rgb_string_;
+    }
+    
+    std::size_t hash() const
+    {
+        auto seed = static_cast<std::size_t>(type_);
+        
+        if(type_ != type::rgb)
+        {
+            hash_combine(seed, index_);
+        }
+        else
+        {
+            hash_combine(seed, rgb_string_);
+        }
+        
+        return seed;
+    }
+    
+    bool operator==(const color &other) const
+    {
+        return hash() == other.hash();
     }
     
 private:

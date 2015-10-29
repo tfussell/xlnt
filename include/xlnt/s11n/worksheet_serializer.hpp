@@ -26,17 +26,27 @@
 #include <string>
 #include <vector>
 
+#include <xlnt/worksheet/worksheet.hpp>
+
 namespace xlnt {
     
-class zip_file;
+class relationship;
+class workbook;
+class worksheet;
+class xml_document;
+class xml_node;
 
-class shared_strings_reader
+class worksheet_serializer
 {
 public:
-    std::vector<std::string> read_strings(zip_file &archive);
-    void read_string_table(const std::string &xml_source);
-    std::string get_string();
-    std::string get_text();
+    worksheet_serializer(worksheet sheet);
+    
+    bool read_worksheet(const xml_document &xml, const std::vector<std::string> &shared_strings, const relationship &rel,  worksheet ws);
+    std::string read_dimension(const xml_node &dimension_node);
+    bool write_worksheet(const worksheet ws, const std::vector<std::string> &string_table, xml_document &xml);
+    
+private:
+    worksheet sheet_;
 };
 
 } // namespace xlnt

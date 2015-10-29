@@ -140,7 +140,7 @@ struct cell_impl
             type_ = cell::type::formula;
             value_string_.clear();
         }
-        else if(cell::ErrorCodes.find(s) != cell::ErrorCodes.end())
+        else if(cell::error_codes().find(s) != cell::error_codes().end())
         {
             type_ = cell::type::error;
         }
@@ -194,8 +194,6 @@ struct cell_impl
     relationship hyperlink_;
     
     bool is_merged_;
-    
-    std::size_t xf_index_;
     
     bool has_style_;
     std::size_t style_id_;

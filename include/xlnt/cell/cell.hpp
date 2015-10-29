@@ -27,15 +27,20 @@
 #include <string>
 #include <unordered_map>
 
-#include "../styles/style.hpp"
-#include "../common/types.hpp"
+#include <xlnt/common/types.hpp>
 
 namespace xlnt {
     
 enum class calendar;
-    
+
+class alignment;
+class border;
 class cell_reference;
 class comment;
+class fill;
+class font;
+class number_format;
+class protection;
 class relationship;
 class worksheet;
 
@@ -62,6 +67,9 @@ struct cell_impl;
 class cell
 {
 public:
+    /// <summary>
+    /// Enumerates the possible types a cell can be determined by it's current value.
+    /// </summary>
     enum class type
     {
         null,
@@ -72,14 +80,38 @@ public:
         boolean
     };
     
-    static const std::unordered_map<std::string, int> ErrorCodes;
+    /// <summary>
+    /// Return a map of error strings such as #DIV/0! and their associated indices.
+    /// </summary>
+    static const std::unordered_map<std::string, int> error_codes();
     
+    //TODO: Should it be possible to construct and use a cell without a parent worksheet?
+    //(cont'd) If so, it would need to be responsible for allocating and deleting its PIMPL.
+    
+    /// <summary>
+    /// Construct a null cell without a parent.
+    /// Most methods will throw an exception if this cell is not further initialized.
+    /// </summary>
     cell();
-    cell(worksheet worksheet, const cell_reference &reference);
+    
+    /// <summary>
+    /// Construct a cell in worksheet, sheet, at the given reference location (e.g. A1).
+    /// </summary>
+    cell(worksheet sheet, const cell_reference &reference);
+    
+    /// <summary>
+    /// This constructor, provided for convenience, is equivalent to calling:
+    /// cell c(sheet, reference);
+    /// c.set_value(initial_value);
+    /// </summary>
     template<typename T>
-    cell(worksheet worksheet, const cell_reference &reference, const T &initial_value);
+    cell(worksheet sheet, const cell_reference &reference, const T &initial_value);
 
     // value
+    
+    /// <summary>
+    /// Return true if value has been set and has not been cleared using cell::clear_value().
+    /// </summary>
     bool has_value() const;
     
     template<typename T>
@@ -93,10 +125,18 @@ public:
     type get_data_type() const;
     void set_data_type(type t);
     
-    // characteristics
+    // properties
+    
+    /// <summary>
+    /// There's no reason to keep a cell which has no value and is not a placeholder.
+    /// Return true if this cell has no value, style, isn't merged, etc.
+    /// </summary>
     bool garbage_collectible() const;
+    
+    /// <summary>
+    /// Return true iff this cell's number format matches a date format.
+    /// </summary>
     bool is_date() const;
-    std::size_t get_xf_index() const;
     
     // position
     cell_reference get_reference() const;
@@ -176,6 +216,7 @@ public:
     bool operator==(const cell &comparand) const;
     bool operator==(std::nullptr_t) const;
 
+    // friend operators, so we can put cell on either side of comparisons with other types
     friend bool operator==(std::nullptr_t, const cell &cell);
     friend bool operator<(cell left, cell right);
     
@@ -188,6 +229,10 @@ private:
     detail::cell_impl *d_;
 };
 
+/// <summary>
+/// Convenience function for writing cell to an ostream.
+/// Uses cell::to_string() internally.
+/// </summary>
 inline std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)
 {
     return stream << cell.to_string();

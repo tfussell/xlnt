@@ -73,7 +73,7 @@ std::vector<range_reference> worksheet::get_merged_ranges() const
     return d_->merged_cells_;
 }
 
-margins &worksheet::get_page_margins()
+const margins &worksheet::get_page_margins() const
 {
     return d_->page_margins_;
 }
@@ -103,7 +103,7 @@ void worksheet::unset_auto_filter()
     d_->auto_filter_ = range_reference(1, 1, 1, 1);
 }
 
-page_setup &worksheet::get_page_setup()
+const page_setup &worksheet::get_page_setup() const
 {
     return d_->page_setup_;
 }

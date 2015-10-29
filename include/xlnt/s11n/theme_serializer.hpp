@@ -23,11 +23,15 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <string>
+
 namespace xlnt {
 
-class string_writer
+class theme_serializer
 {
-
+public:
+    theme read_theme(const xml_document &xml);
+    xml_document write_theme(const theme &theme_);
 };
 
 } // namespace xlnt

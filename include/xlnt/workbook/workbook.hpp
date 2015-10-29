@@ -29,7 +29,7 @@
 #include <utility>
 #include <vector>
 
-#include "../common/relationship.hpp"
+#include <xlnt/common/relationship.hpp>
 
 namespace xlnt {
 
@@ -40,6 +40,7 @@ class document_properties;
 class drawing;
 class fill;
 class font;
+class manifest;
 class named_range;
 class number_format;
 class pattern_fill;
@@ -241,6 +242,9 @@ public:
     
     const style &get_style(std::size_t style_id) const;
     std::size_t add_style(const style &style_);
+    
+    manifest &get_manifest();
+    const manifest &get_manifest() const;
     
 private:
     friend class worksheet;

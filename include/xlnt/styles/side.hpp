@@ -25,7 +25,7 @@
 
 #include <cstddef>
 
-#include "../common/hash_combine.hpp"
+#include <xlnt/styles/color.hpp>
 
 namespace xlnt {
 
@@ -73,8 +73,7 @@ public:
         
         if(color_assigned_)
         {
-            hash_combine(seed, static_cast<std::size_t>(color_type_));
-            hash_combine(seed, color_);
+            hash_combine(seed, color_.hash());
         }
         
         return seed;
@@ -85,12 +84,7 @@ public:
         return style_;
     }
     
-    color_type get_color_type() const
-    {
-        return color_type_;
-    }
-    
-    std::size_t get_color() const
+    color get_color() const
     {
         return color_;
     }
@@ -107,7 +101,7 @@ public:
     
     bool operator==(const side &other) const
     {
-        return other.style_ == style_ && color_type_ == other.color_type_ && color_ == other.color_;
+        return other.style_ == style_ && color_ == other.color_;
     }
     
     void set_border_style(border_style bs)
@@ -116,19 +110,17 @@ public:
         style_ = bs;
     }
     
-    void set_color(color_type type, std::size_t color)
+    void set_color(color new_color)
     {
         color_assigned_ = true;
-        color_type_ = type;
-        color_ = color;
+        color_ = new_color;
     }
     
 private:
     bool style_assigned_ = false;
     border_style style_ = border_style::none;
     bool color_assigned_ = false;
-    color_type color_type_ = color_type::indexed;
-    std::size_t color_ = 0;
+    color color_ = color::black;
 };
     
 } // namespace xlnt

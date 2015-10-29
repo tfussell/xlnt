@@ -23,23 +23,53 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <iostream>
+#include <cstdint>
+#include <ostream>
 #include <string>
 #include <vector>
+
+#include <xlnt/common/zip_file.hpp>
 
 namespace xlnt {
     
 class workbook;
 
-class excel_reader
+class excel_serializer
 {
 public:
-    static std::string CentralDirectorySignature();
+    static std::string central_directory_signature();
     static std::string repair_central_directory(const std::string &original);
+    
+    excel_serializer(workbook &wb);
+    
+    bool load_workbook(const std::string &filename, bool guess_types = false, bool data_only = false);
+    bool load_stream_workbook(std::istream &stream, bool guess_types = false, bool data_only = false);
+    bool load_virtual_workbook(const std::vector<std::uint8_t> &bytes, bool guess_types = false, bool data_only = false);
+    
+    bool save_workbook(workbook &wb, const std::string &filename, bool as_template = false);
+    bool save_virtual_workbook(xlnt::workbook &wb, std::vector<std::uint8_t> &bytes, bool as_template = false);
+    bool save_stream_workbook(xlnt::workbook &wb, std::ostream &stream, bool as_template = false);
+    
+private:
+    void read_data(bool guess_types, bool data_only);
+    void read_shared_strings();
+    void read_images();
+    void read_charts();
+    void read_chartsheets();
+    void read_worksheets();
+    void read_external_links();
+    
+    void write_data(bool as_template);
+    void write_shared_strings();
+    void write_images();
+    void write_charts();
+    void write_chartsheets();
+    void write_worksheets();
+    void write_external_links();
 
-    static workbook load_workbook(std::istream &stream, bool guess_types = false, bool data_only = false);
-    static workbook load_workbook(const std::string &filename, bool guess_types = false, bool data_only = false);
-    static workbook load_workbook(const std::vector<std::uint8_t> &bytes, bool guess_types = false, bool data_only = false);
+    workbook &wb_;
+    std::vector<std::string> shared_strings_;
+    zip_file archive_;
 };
 
 } // namespace xlnt

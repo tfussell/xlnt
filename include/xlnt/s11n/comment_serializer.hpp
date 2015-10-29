@@ -23,11 +23,28 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <string>
+#include <vector>
+
+#include <xlnt/cell/comment.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
 
 namespace xlnt {
 
-std::string write_theme();
-//void write_theme(const theme &t);
+class xml_node;
+    
+class comment_serializer
+{
+    comment_serializer(worksheet sheet);
+    
+    void read_comments(const xml_node &xml);
+    void read_comments_vml(const xml_node &xml);
+    
+    xml_node write_comments();
+    xml_node write_comments_vml();
+    
+private:
+    worksheet sheet_;
+    std::vector<comment> comments_;
+};
 
 } // namespace xlnt

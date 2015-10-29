@@ -72,8 +72,7 @@ public:
     }
     
 private:
-    friend class style_reader;
-    friend class style_writer;
+    friend class style_serializer;
     friend class workbook;
     
     std::size_t id_;

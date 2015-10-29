@@ -23,7 +23,8 @@ struct workbook_impl
         borders_(other.borders_),
         fills_(other.fills_),
         fonts_(other.fonts_),
-        number_formats_(other.number_formats_)
+        number_formats_(other.number_formats_),
+        manifest_(other.manifest_)
     {
     }
     
@@ -45,6 +46,7 @@ struct workbook_impl
         fonts_ = other.fonts_;
         number_formats_ = other.number_formats_;
         colors_ = other.colors_;
+        manifest_ = other.manifest_;
         
         return *this;
     }
@@ -69,6 +71,7 @@ struct workbook_impl
     std::vector<font> fonts_;
     std::vector<number_format> number_formats_;
     
+    manifest manifest_;
 };
 
 } // namespace detail

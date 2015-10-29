@@ -23,23 +23,18 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <cstdint>
 #include <string>
 #include <vector>
 
 namespace xlnt {
+    
+class xml_document;
 
-class document_properties;
-class relationship;
-class workbook;
-class zip_file;
-    
-std::vector<std::pair<std::string, std::string>> read_content_types(zip_file &archive);
-std::string determine_document_type(const std::vector<std::pair<std::string, std::string>> &override_types);
-document_properties read_properties_core(const std::string &xml_string);
-    
-std::vector<std::pair<std::string,std::string>> read_sheets(zip_file &archive);
-std::vector<std::pair<std::string, std::string>> detect_worksheets(zip_file &archive);
-std::vector<relationship> read_relationships(zip_file &content, const std::string &filename);
+class shared_strings_serializer
+{
+public:
+    bool read_strings(const xml_document &xml, std::vector<std::string> &strings);
+    bool write_strings(const std::vector<std::string> &strings, xml_document &xml);
+};
 
 } // namespace xlnt

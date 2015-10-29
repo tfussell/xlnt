@@ -836,5 +836,15 @@ std::vector<color> workbook::get_colors() const
 {
     return d_->colors_;
 }
+
+manifest &workbook::get_manifest()
+{
+    return d_->manifest_;
+}
     
+const manifest &workbook::get_manifest() const
+{
+    return d_->manifest_;
+}
+
 } // namespace xlnt

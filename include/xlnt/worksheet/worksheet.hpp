@@ -262,8 +262,8 @@ public:
     const range operator()(const cell_reference &top_left, const cell_reference &bottom_right) const;
     
     // page
-    page_setup &get_page_setup();
-    margins &get_page_margins();
+    const page_setup &get_page_setup() const;
+    const margins &get_page_margins() const;
     
     // auto filter
     range_reference get_auto_filter() const;

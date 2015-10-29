@@ -1,26 +1,32 @@
-#include <set>
-#include <sstream>
-
-#include <xlnt/cell/cell.hpp>
-#include <xlnt/common/exceptions.hpp>
+#include <xlnt/s11n/workbook_serializer.hpp>
+#include <xlnt/common/datetime.hpp>
 #include <xlnt/common/relationship.hpp>
-#include <xlnt/common/zip_file.hpp>
+#include <xlnt/s11n/xml_document.hpp>
+#include <xlnt/s11n/xml_node.hpp>
 #include <xlnt/workbook/document_properties.hpp>
-#include <xlnt/workbook/named_range.hpp>
+#include <xlnt/workbook/manifest.hpp>
 #include <xlnt/workbook/workbook.hpp>
-#include <xlnt/worksheet/range.hpp>
-#include <xlnt/worksheet/range_reference.hpp>
-#include <xlnt/worksheet/worksheet.hpp>
-#include <xlnt/writer/manifest_writer.hpp>
-#include <xlnt/writer/relationship_writer.hpp>
-#include <xlnt/writer/theme_writer.hpp>
-#include <xlnt/writer/worksheet_writer.hpp>
-#include <xlnt/writer/workbook_writer.hpp>
 
 #include "detail/constants.hpp"
-#include "detail/include_pugixml.hpp"
 
 namespace {
+    
+xlnt::datetime w3cdtf_to_datetime(const std::string &string)
+{
+    xlnt::datetime result(1900, 1, 1);
+    auto separator_index = string.find('-');
+    result.year = std::stoi(string.substr(0, separator_index));
+    result.month = std::stoi(string.substr(separator_index + 1, string.find('-', separator_index + 1)));
+    separator_index = string.find('-', separator_index + 1);
+    result.day = std::stoi(string.substr(separator_index + 1, string.find('T', separator_index + 1)));
+    separator_index = string.find('T', separator_index + 1);
+    result.hour = std::stoi(string.substr(separator_index + 1, string.find(':', separator_index + 1)));
+    separator_index = string.find(':', separator_index + 1);
+    result.minute = std::stoi(string.substr(separator_index + 1, string.find(':', separator_index + 1)));
+    separator_index = string.find(':', separator_index + 1);
+    result.second = std::stoi(string.substr(separator_index + 1, string.find('Z', separator_index + 1)));
+    return result;
+}
     
 std::string fill(const std::string &string, std::size_t length = 2)
 {
@@ -40,8 +46,177 @@ std::string datetime_to_w3cdtf(const xlnt::datetime &dt)
 } // namespace
 
 namespace xlnt {
+    
+    /*
+std::vector<std::pair<std::string, std::string>> workbook_serializer::read_sheets(zip_file &archive)
+{
+    std::string ns;
+    
+    for(auto child : doc.children())
+    {
+        std::string name = child.name();
+        
+        if(name.find(':') != std::string::npos)
+        {
+            auto colon_index = name.find(':');
+            ns = name.substr(0, colon_index);
+            break;
+        }
+    }
+    
+    auto with_ns = [&](const std::string &base) { return ns.empty() ? base : ns + ":" + base; };
+    
+    auto root_node = doc.child(with_ns("workbook").c_str());
+    auto sheets_node = root_node.child(with_ns("sheets").c_str());
+    
+    std::vector<std::pair<std::string, std::string>> sheets;
+    
+    // store temp because pugixml iteration uses the internal char array multiple times
+    auto sheet_element_name = with_ns("sheet");
+    
+    for(auto sheet_node : sheets_node.children(sheet_element_name.c_str()))
+    {
+        std::string id = sheet_node.attribute("r:id").as_string();
+        std::string name = sheet_node.attribute("name").as_string();
+        sheets.push_back(std::make_pair(id, name));
+    }
+    
+    return sheets;
+}
+     */
 
-std::string write_shared_strings(const std::vector<std::string> &string_table)
+void workbook_serializer::read_properties_core(const xml_document &xml)
+{
+    auto &props = wb_.get_properties();
+    auto root_node = xml.root();
+    
+    props.excel_base_date = calendar::windows_1900;
+    
+    if(root_node.has_child("dc:creator"))
+    {
+        props.creator = root_node.get_child("dc:creator").get_text();
+    }
+    if(root_node.has_child("cp:lastModifiedBy"))
+    {
+        props.last_modified_by = root_node.get_child("cp:lastModifiedBy").get_text();
+    }
+    if(root_node.has_child("dcterms:created"))
+    {
+        std::string created_string = root_node.get_child("dcterms:created").get_text();
+        props.created = w3cdtf_to_datetime(created_string);
+    }
+    if(root_node.has_child("dcterms:modified"))
+    {
+        std::string modified_string = root_node.get_child("dcterms:modified").get_text();
+        props.modified = w3cdtf_to_datetime(modified_string);
+    }
+}
+
+std::string workbook_serializer::read_dimension(const std::string &xml_string)
+{
+    pugi::xml_document doc;
+    doc.load(xml_string.c_str());
+    auto root_node = doc.child("worksheet");
+    auto dimension_node = root_node.child("dimension");
+    std::string dimension = dimension_node.attribute("ref").as_string();
+    return dimension;
+}
+
+std::vector<relationship> workbook_serializer::read_relationships(zip_file &archive, const std::string &filename)
+{
+    auto filename_separator_index = filename.find_last_of('/');
+    auto basename = filename.substr(filename_separator_index + 1);
+    auto dirname = filename.substr(0, filename_separator_index);
+    auto rels_filename = dirname + "/_rels/" + basename + ".rels";
+    
+    pugi::xml_document doc;
+    auto content = archive.read(rels_filename);
+    doc.load(content.c_str());
+    
+    auto root_node = doc.child("Relationships");
+    
+    std::vector<relationship> relationships;
+    
+    for(auto relationship : root_node.children("Relationship"))
+    {
+        std::string id = relationship.attribute("Id").as_string();
+        std::string type = relationship.attribute("Type").as_string();
+        std::string target = relationship.attribute("Target").as_string();
+        
+        if(target[0] != '/' && target.substr(0, 2) != "..")
+        {
+            target = dirname + "/" + target;
+        }
+        
+        if(target[0] == '/')
+        {
+            target = target.substr(1);
+        }
+        
+        relationships.push_back(xlnt::relationship(type, id, target));
+    }
+    
+    return relationships;
+}
+
+std::string workbook_serializer::determine_document_type(const manifest &manifest)
+{
+    if(!manifest.has_override_type(constants::ArcWorkbook))
+    {
+        return "unsupported";
+    }
+    
+    std::string type = manifest.get_override_type(constants::ArcWorkbook);
+    
+    if(type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml")
+    {
+        return "excel";
+    }
+    else if(type == "application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml")
+    {
+        return "powerpoint";
+    }
+    else if(type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml")
+    {
+        return "word";
+    }
+    
+    return "unsupported";
+}
+
+std::vector<std::pair<std::string, std::string>> workbook_serializer::detect_worksheets(zip_file &archive)
+{
+    static const std::string ValidWorksheet = "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml";
+    
+    auto content_types = read_content_types(archive);
+    std::vector<std::string> valid_sheets;
+    
+    for(const auto &content_type : content_types)
+    {
+        if(content_type.second == ValidWorksheet)
+        {
+            valid_sheets.push_back(content_type.first);
+        }
+    }
+    
+    auto workbook_relationships = read_relationships(archive, "xl/workbook.xml");
+    std::vector<std::pair<std::string, std::string>> result;
+    
+    for(const auto &ws : read_sheets(archive))
+    {
+        auto rel = *std::find_if(workbook_relationships.begin(), workbook_relationships.end(), [&](const relationship &r) { return r.get_id() == ws.first; });
+        auto target = rel.get_target_uri();
+        
+        if(std::find(valid_sheets.begin(), valid_sheets.end(), "/" + target) != valid_sheets.end())
+        {
+            result.push_back({target, ws.second});
+        }
+    }
+    
+    return result;
+}
+
+std::string workbook_serializer::write_shared_strings(const std::vector<std::string> &string_table)
 {
     pugi::xml_document doc;
     auto root_node = doc.append_child("sst");
@@ -59,7 +234,7 @@ std::string write_shared_strings(const std::vector<std::string> &string_table)
     return ss.str();
 }
 
-std::string write_properties_core(const document_properties &prop)
+std::string workbook_serializer::write_properties_core(const document_properties &prop)
 {
     pugi::xml_document doc;
     auto root_node = doc.append_child("cp:coreProperties");
@@ -87,12 +262,12 @@ std::string write_properties_core(const document_properties &prop)
     return ss.str();
 }
 
-std::string write_worksheet_rels(worksheet ws)
+std::string workbook_serializer::write_worksheet_rels(worksheet ws)
 {
     return write_relationships(ws.get_relationships(), "");
 }
 
-std::string write_theme()
+std::string workbook_serializer::write_theme()
 {
     pugi::xml_document doc;
     auto theme_node = doc.append_child("a:theme");
@@ -578,12 +753,12 @@ std::string write_workbook(const workbook &wb)
     return ss.str();
 }
 
-std::string write_workbook_rels(const workbook &wb)
+std::string workbook_serializer::write_workbook_rels(const workbook &wb)
 {
     return write_relationships(wb.get_relationships(), "xl/");
 }
     
-std::string write_defined_names(const xlnt::workbook &wb)
+std::string workbook_serializer::write_defined_names(const xlnt::workbook &wb)
 {
     pugi::xml_document doc;
     auto names = doc.root().append_child("names");
