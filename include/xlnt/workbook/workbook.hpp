@@ -248,7 +248,11 @@ public:
     const manifest &get_manifest() const;
     
     const std::vector<relationship> &get_root_relationships() const;
-        
+    
+    void add_shared_string(const std::string &shared);
+    std::vector<std::string> &get_shared_strings();
+    const std::vector<std::string> &get_shared_strings() const;
+    
 private:
     friend class worksheet;
     std::shared_ptr<detail::workbook_impl> d_;

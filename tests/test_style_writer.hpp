@@ -13,14 +13,15 @@ public:
         xlnt::workbook wb;
         wb.add_number_format(xlnt::number_format("YYYY"));
         xlnt::style_serializer writer(wb);
-        auto xml = writer.write_number_formats();
+        xlnt::xml_document observed;
+        writer.write_number_formats(observed.add_child("numFmts"));
         std::string expected =
         "<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">"
         "    <numFmts count=\"1\">"
         "    <numFmt formatCode=\"YYYY\" numFmtId=\"164\"></numFmt>"
         "    </numFmts>"
         "</styleSheet>";
-        auto diff = Helper::compare_xml(xml, expected);
+        auto diff = Helper::compare_xml(expected, observed);
         TS_ASSERT(diff);
     }
     /*

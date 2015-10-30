@@ -83,4 +83,10 @@ bool range_reference::operator==(const range_reference &comparand) const
         && comparand.bottom_right_ == bottom_right_;
 }
 
+bool range_reference::operator!=(const range_reference &comparand) const
+{
+    return comparand.top_left_ != top_left_
+        || comparand.bottom_right_ != bottom_right_;
+}
+
 }

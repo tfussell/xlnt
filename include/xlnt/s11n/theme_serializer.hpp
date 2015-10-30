@@ -33,8 +33,10 @@ class xml_document;
 class theme_serializer
 {
 public:
-    //theme read_theme(const xml_document &xml);
-    xml_document write_theme(const theme &theme_);
+    bool read_theme(const xml_document &xml, theme &t);
+    xml_document write_theme(const theme &t) const;
+    
+private:
 };
 
 } // namespace xlnt

@@ -5,17 +5,17 @@
 namespace xlnt {
     
 class manifest;
-class workbook;
 class xml_document;
-class zip_file;
 
 class manifest_serializer
 {
 public:
     manifest_serializer(manifest &m);
     
-    bool read_manifest(const xml_document &xml);
-    bool write_manifest(xml_document &xml);
+    void read_manifest(const xml_document &xml);
+    xml_document write_manifest() const;
+    
+    std::string determine_document_type() const;
     
 private:
     manifest &manifest_;

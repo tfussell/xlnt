@@ -1,17 +1,42 @@
 #include <xlnt/s11n/relationship_serializer.hpp>
 
 #include <xlnt/common/relationship.hpp>
+#include <xlnt/common/zip_file.hpp>
 #include <xlnt/s11n/xml_document.hpp>
 #include <xlnt/s11n/xml_node.hpp>
 
 #include "detail/constants.hpp"
 
+namespace {
+
+std::string make_rels_name(const std::string &target)
+{
+    const char sep = '/';
+    
+    if(target.empty() || target.back() == sep)
+    {
+        return target + "_rels/.rels";
+    }
+    
+    auto sep_pos = target.find_last_of(sep);
+    auto first_part = target.substr(0, sep_pos + 1);
+    auto last_part = target.substr(sep_pos + 1);
+    
+    return first_part + "_rels/" + last_part + ".rels";
+}
+    
+}
+
 namespace xlnt {
     
-bool relationship_serializer::read_relationships(const xml_document &xml, const std::string &dir, std::vector<relationship> &relationships)
+std::vector<relationship> relationship_serializer::read_relationships(zip_file &archive, const std::string &target)
 {
-    auto root_node = xml.root();
-    root_node.set_name("Relationships");
+    xml_document xml;
+    xml.from_string(archive.read(make_rels_name(target)));
+    
+    auto root_node = xml.get_child("Relationships");
+    
+    std::vector<relationship> relationships;
     
     for(auto relationship_node : root_node.get_children())
     {
@@ -27,24 +52,20 @@ bool relationship_serializer::read_relationships(const xml_document &xml, const 
         relationships.push_back(xlnt::relationship(type, id, target));
     }
     
-    return true;
+    return relationships;
 }
     
-bool relationship_serializer::write_relationships(const std::vector<relationship> &relationships, const std::string &dir, xml_document &xml)
+bool relationship_serializer::write_relationships(const std::vector<relationship> &relationships, const std::string &target, zip_file &archive)
 {
-    xml.add_namespace("", constants::Namespaces.at("relationships"));
+    xml_document xml;
     
-    auto root_node = xml.root();
-    root_node.set_name("Relationships");
+    auto root_node = xml.add_child("Relationships");
+    
+    xml.add_namespace("", constants::Namespaces.at("relationships"));
     
     for(const auto &relationship : relationships)
     {
         auto target = relationship.get_target_uri();
-        
-        if (dir != "" && target.substr(0, dir.size()) == dir)
-        {
-            target = target.substr(dir.size());
-        }
         
         auto relationship_node = root_node.add_child("Relationship");
         
@@ -58,6 +79,8 @@ bool relationship_serializer::write_relationships(const std::vector<relationship
         }
     }
 
+    archive.writestr(make_rels_name(target), xml.to_string());
+    
     return true;
 }
     

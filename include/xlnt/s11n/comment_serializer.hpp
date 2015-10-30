@@ -30,21 +30,20 @@
 
 namespace xlnt {
 
-class xml_node;
+class xml_document;
     
 class comment_serializer
 {
     comment_serializer(worksheet sheet);
     
-    void read_comments(const xml_node &xml);
-    void read_comments_vml(const xml_node &xml);
+    void read_comments(const xml_document &xml);
+    void read_comments_vml(const xml_document &xml);
     
-    xml_node write_comments();
-    xml_node write_comments_vml();
+    xml_document write_comments() const;
+    xml_document write_comments_vml() const;
     
 private:
     worksheet sheet_;
-    std::vector<comment> comments_;
 };
 
 } // namespace xlnt

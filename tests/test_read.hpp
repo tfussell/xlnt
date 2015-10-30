@@ -7,6 +7,7 @@
 
 #include <xlnt/s11n/excel_serializer.hpp>
 #include <xlnt/s11n/manifest_serializer.hpp>
+#include <xlnt/s11n/relationship_serializer.hpp>
 #include <xlnt/s11n/workbook_serializer.hpp>
 #include <xlnt/s11n/xml_serializer.hpp>
 #include <xlnt/workbook/manifest.hpp>
@@ -331,11 +332,15 @@ public:
         {
             auto path = PathHelper::GetDataDirectory("/reader/bug137.xlsx");
             xlnt::zip_file archive(path);
+            
             std::vector<std::pair<std::string, std::string>> expected =
             {
                 {"xl/worksheets/sheet1.xml", "Sheet1"}
             };
-            TS_ASSERT_EQUALS(xlnt::detect_worksheets(archive), expected);
+            
+            xlnt::workbook wb;
+            xlnt::workbook_serializer serializer(wb);
+            TS_ASSERT_EQUALS(serializer.detect_worksheets(), expected);
         }
 
         {
@@ -348,7 +353,9 @@ public:
                 {"xl/worksheets/sheet2.xml", "moredata"}
             };
 
-            TS_ASSERT_EQUALS(xlnt::detect_worksheets(archive), expected);
+            xlnt::workbook wb;
+            xlnt::workbook_serializer serializer(wb);
+            TS_ASSERT_EQUALS(serializer.detect_worksheets(), expected);
         }
 
         {
@@ -362,7 +369,9 @@ public:
                 {"xl/worksheets/sheet.xml", "Sheet3"}
             };
 
-            TS_ASSERT_EQUALS(xlnt::detect_worksheets(archive), expected);
+            xlnt::workbook wb;
+            xlnt::workbook_serializer serializer(wb);
+            TS_ASSERT_EQUALS(serializer.detect_worksheets(), expected);
         }
     }
     
@@ -381,7 +390,7 @@ public:
             auto path = PathHelper::GetDataDirectory("/reader/bug137.xlsx");
             xlnt::zip_file archive(path);
 
-            TS_ASSERT_EQUALS(xlnt::read_relationships(archive, "xl/workbook.xml"), expected);
+            TS_ASSERT_EQUALS(xlnt::relationship_serializer::read_relationships(archive, "xl/workbook.xml"), expected);
         }
 
         {
@@ -400,7 +409,7 @@ public:
             auto path = PathHelper::GetDataDirectory("/reader/bug304.xlsx");
             xlnt::zip_file archive(path);
 
-            TS_ASSERT_EQUALS(xlnt::read_relationships(archive, "xl/workbook.xml"), expected);
+            TS_ASSERT_EQUALS(xlnt::relationship_serializer::read_relationships(archive, "xl/workbook.xml"), expected);
         }
     }
     

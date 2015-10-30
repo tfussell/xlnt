@@ -361,7 +361,7 @@ section parse_section(const std::string &section_string)
     
     static const std::vector<std::string> bracket_times = { "h", "hh", "m", "mm", "s", "ss" };
     
-    for(int i = 0; i < section_string.size(); i++)
+    for(std::size_t i = 0; i < section_string.size(); i++)
     {
         if(!in_quotes && section_string[i] == '"')
         {

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
+#include <xlnt/s11n/worksheet_serializer.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
 class test_worksheet : public CxxTest::TestSuite
@@ -639,10 +640,8 @@ public:
     {
         xlnt::worksheet ws(wb_);
         
-        auto xml_string = xlnt::write_worksheet(ws, {});
-
-        pugi::xml_document doc;
-        doc.load(xml_string.c_str());
+        xlnt::worksheet_serializer serializer(ws);
+        auto observed = serializer.write_worksheet();
 
         auto expected_string = 
         "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
@@ -660,10 +659,10 @@ public:
         "  <pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\"/>"
         "</worksheet>";
 
-        pugi::xml_document expected_doc;
-        expected_doc.load(expected_string);
+        xlnt::xml_document expected;
+        expected.from_string(expected_string);
 
-        TS_ASSERT(Helper::compare_xml(expected_doc, doc));
+        TS_ASSERT(Helper::compare_xml(expected, observed));
     }
     
     void test_page_margins()
@@ -677,10 +676,8 @@ public:
         ws.get_page_margins().set_header(1.5);
         ws.get_page_margins().set_footer(1.5);
         
-        auto xml_string = xlnt::write_worksheet(ws, {});
-
-        pugi::xml_document doc;
-        doc.load(xml_string.c_str());
+        xlnt::worksheet_serializer serializer(ws);
+        auto observed = serializer.write_worksheet();
 
         auto expected_string = 
         "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
@@ -698,10 +695,10 @@ public:
         "  <pageMargins left=\"2\" right=\"2\" top=\"2\" bottom=\"2\" header=\"1.5\" footer=\"1.5\"/>"
         "</worksheet>";
 
-        pugi::xml_document expected_doc;
-        expected_doc.load(expected_string);
-
-        TS_ASSERT(Helper::compare_xml(expected_doc, doc));
+        xlnt::xml_document expected;
+        expected.from_string(expected_string);
+        
+        TS_ASSERT(Helper::compare_xml(expected, observed));
     }
    
     void test_merge()
@@ -737,18 +734,17 @@ public:
         ws.get_cell("A1").set_value("Cell A1");
         ws.get_cell("B1").set_value("Cell B1");
 
-        auto xml_string = xlnt::write_worksheet(ws, string_table);
+        {
+            xlnt::worksheet_serializer serializer(ws);
+            auto observed = serializer.write_worksheet();
 
-        pugi::xml_document doc;
-        doc.load(xml_string.c_str());
-
-        pugi::xml_document expected_doc;
-        expected_doc.load(expected_string1);
-
-        TS_ASSERT(Helper::compare_xml(expected_doc, doc));
+            xlnt::xml_document expected;
+            expected.from_string(expected_string1);
+            
+            TS_ASSERT(Helper::compare_xml(expected, observed));
+        }
 
         ws.merge_cells("A1:B1");
-        xml_string = xlnt::write_worksheet(ws, string_table);
 
         auto expected_string2 = 
         "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
@@ -776,13 +772,17 @@ public:
         "  <pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\"/>"
         "</worksheet>";
 
-        doc.load(xml_string.c_str());
-        expected_doc.load(expected_string2);
-
-        TS_ASSERT(Helper::compare_xml(expected_doc, doc));
+        {
+            xlnt::worksheet_serializer serializer(ws);
+            auto observed = serializer.write_worksheet();
+            
+            xlnt::xml_document expected;
+            expected.from_string(expected_string2);
+            
+            TS_ASSERT(Helper::compare_xml(expected, observed));
+        }
 
         ws.unmerge_cells("A1:B1");
-        xml_string = xlnt::write_worksheet(ws, string_table);
 
         auto expected_string3 = 
         "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
@@ -807,10 +807,15 @@ public:
         "  <pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\"/>"
         "</worksheet>";
 
-        doc.load(xml_string.c_str());
-        expected_doc.load(expected_string3);
-
-        TS_ASSERT(Helper::compare_xml(expected_doc, doc));
+        {
+            xlnt::worksheet_serializer serializer(ws);
+            auto observed = serializer.write_worksheet();
+            
+            xlnt::xml_document expected;
+            expected.from_string(expected_string3);
+            
+            TS_ASSERT(Helper::compare_xml(expected, observed));
+        }
     }
 
     void test_printer_settings()
@@ -825,11 +830,9 @@ public:
         ws.get_page_setup().set_horizontal_centered(true);
         ws.get_page_setup().set_vertical_centered(true);
 
-        auto xml_string = xlnt::write_worksheet(ws, {});
+        xlnt::worksheet_serializer serializer(ws);
+        auto observed = serializer.write_worksheet();
 
-        pugi::xml_document doc;
-        doc.load(xml_string.c_str());
-        
         auto expected_string =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
         "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
@@ -850,10 +853,10 @@ public:
         "   <pageSetup orientation=\"landscape\" paperSize=\"3\" fitToHeight=\"0\" fitToWidth=\"1\" />"
         "</worksheet>";
         
-        pugi::xml_document expected_doc;
-        expected_doc.load(expected_string);
+        xlnt::xml_document expected;
+        expected.from_string(expected_string);
 
-        TS_ASSERT(Helper::compare_xml(expected_doc, doc));
+        TS_ASSERT(Helper::compare_xml(expected, observed));
     }
     
     void test_header_footer()
@@ -901,13 +904,15 @@ public:
         "  </headerFooter>"
         "</worksheet>";
         
-        pugi::xml_document expected_doc;
-        pugi::xml_document observed_doc;
+        xlnt::xml_document expected;
+        expected.from_string(expected_xml_string);
         
-        expected_doc.load(expected_xml_string.c_str());
-        observed_doc.load(xlnt::write_worksheet(ws, {}).c_str());
-        
-        TS_ASSERT(Helper::compare_xml(expected_doc, observed_doc));
+        {
+            xlnt::worksheet_serializer serializer(ws);
+            auto observed = serializer.write_worksheet();
+            
+            TS_ASSERT(Helper::compare_xml(expected, observed));
+        }
         
         ws = wb_.create_sheet();
         
@@ -927,10 +932,12 @@ public:
         "  <pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\"/>"
         "</worksheet>";
         
-        expected_doc.load(expected_xml_string.c_str());
-        observed_doc.load(xlnt::write_worksheet(ws, {}).c_str());
-        
-        TS_ASSERT(Helper::compare_xml(expected_doc, observed_doc));
+        {
+            xlnt::worksheet_serializer serializer(ws);
+            auto observed = serializer.write_worksheet();
+            
+            TS_ASSERT(Helper::compare_xml(expected, observed));
+        }
     }
     
     void test_page_setup()

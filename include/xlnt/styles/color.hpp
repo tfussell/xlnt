@@ -118,7 +118,7 @@ public:
     {
         if(type_ != type::rgb)
         {
-            throw std::runtime_error("not theme color");
+            throw std::runtime_error("not rgb color");
         }
         
         return rgb_string_;

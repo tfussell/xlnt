@@ -33,8 +33,8 @@ class xml_document;
 class shared_strings_serializer
 {
 public:
-    bool read_strings(const xml_document &xml, std::vector<std::string> &strings);
-    bool write_strings(const std::vector<std::string> &strings, xml_document &xml);
+    static bool read_shared_strings(const xml_document &xml, std::vector<std::string> &strings);
+    static xml_document write_shared_strings(const std::vector<std::string> &strings);
 };
 
 } // namespace xlnt

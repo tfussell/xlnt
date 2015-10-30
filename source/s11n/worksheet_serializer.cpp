@@ -21,10 +21,14 @@ bool is_integral(long double d)
 } // namepsace
 
 namespace xlnt {
-    
-bool worksheet_serializer::read_worksheet(const xml_document &xml, const std::vector<std::string> &string_table, const relationship &rel)
+
+worksheet_serializer::worksheet_serializer(worksheet sheet) : sheet_(sheet)
 {
-    auto &root_node = xml.root();
+}
+    
+bool worksheet_serializer::read_worksheet(const xml_document &xml)
+{
+    auto &root_node = xml.get_child("worksheet");
     
     auto &dimension_node = root_node.get_child("dimension");
     std::string dimension = dimension_node.get_attribute("ref");
@@ -53,6 +57,8 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml, const std::ve
         }
     }
     
+    auto &shared_strings = sheet_.get_parent().get_shared_strings();
+    
     for(auto row_node : sheet_data_node.get_children())
     {
         if(row_node.get_name() != "row")
@@ -62,7 +68,7 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml, const std::ve
         
         auto row_index = static_cast<row_t>(std::stoull(row_node.get_attribute("r")));
         
-        if(row_node.get_attribute("ht") != nullptr)
+        if(row_node.has_attribute("ht"))
         {
             sheet_.get_row_properties(row_index).height = std::stold(row_node.get_attribute("ht"));
         }
@@ -111,10 +117,10 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml, const std::ve
                 bool has_value = cell_node.has_child("v");
                 std::string value_string = has_value ? cell_node.get_child("v").get_text() : "";
                 
-                bool has_type = cell_node.get_attribute("t") != nullptr;
+                bool has_type = cell_node.has_attribute("t");
                 std::string type = has_type ? cell_node.get_attribute("t") : "";
                 
-                bool has_style = cell_node.get_attribute("s") != nullptr;
+                bool has_style = cell_node.has_attribute("s");
                 int style_id = has_style ? std::stoull(cell_node.get_attribute("s")) : 0;
                 
                 bool has_formula = cell_node.has_child("f");
@@ -136,7 +142,7 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml, const std::ve
                 else if(has_type && type == "s" && !has_formula) // shared string
                 {
                     auto shared_string_index = std::stoull(value_string);
-                    auto shared_string = string_table.at(shared_string_index);
+                    auto shared_string = shared_strings.at(shared_string_index);
                     cell.set_value(shared_string);
                 }
                 else if(has_type && type == "b") // boolean
@@ -205,34 +211,35 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml, const std::ve
     return true;
 }
 
-bool worksheet_serializer::write_worksheet(const std::vector<std::string> &string_table, xml_document &xml)
+xml_document worksheet_serializer::write_worksheet() const
 {
     sheet_.get_cell("A1");
     
+    xml_document xml;
+
+    auto root_node = xml.add_child("worksheet");
+    
     xml.add_namespace("", constants::Namespaces.at("spreadsheetml"));
     xml.add_namespace("r", constants::Namespaces.at("r"));
-
-    auto &root_node = xml.root();
-    root_node.set_name("worksheet");
     
-    auto &sheet_pr_node = root_node.add_child("sheetPr");
+    auto sheet_pr_node = root_node.add_child("sheetPr");
     
     if(!sheet_.get_page_setup().is_default())
     {
-        auto &page_set_up_pr_node = sheet_pr_node.add_child("pageSetUpPr");
+        auto page_set_up_pr_node = sheet_pr_node.add_child("pageSetUpPr");
         page_set_up_pr_node.add_attribute("fitToPage", sheet_.get_page_setup().fit_to_page() ? "1" : "0");
     }
     
-    auto &outline_pr_node = sheet_pr_node.add_child("outlinePr");
+    auto outline_pr_node = sheet_pr_node.add_child("outlinePr");
     
     outline_pr_node.add_attribute("summaryBelow", "1");
     outline_pr_node.add_attribute("summaryRight", "1");
     
-    auto &dimension_node = root_node.add_child("dimension");
+    auto dimension_node = root_node.add_child("dimension");
     dimension_node.add_attribute("ref", sheet_.calculate_dimension().to_string());
     
-    auto &sheet_views_node = root_node.add_child("sheetViews");
-    auto &sheet_view_node = sheet_views_node.add_child("sheetView");
+    auto sheet_views_node = root_node.add_child("sheetViews");
+    auto sheet_view_node = sheet_views_node.add_child("sheetView");
     sheet_view_node.add_attribute("workbookViewId", "0");
     
     std::string active_pane = "bottomRight";
@@ -325,6 +332,7 @@ bool worksheet_serializer::write_worksheet(const std::vector<std::string> &strin
     std::unordered_map<std::string, std::string> hyperlink_references;
     
     auto sheet_data_node = root_node.add_child("sheetData");
+    const auto &shared_strings = sheet_.get_parent().get_shared_strings();
     
     for(auto row : sheet_.rows())
     {
@@ -395,9 +403,9 @@ bool worksheet_serializer::write_worksheet(const std::vector<std::string> &strin
                     
                     int match_index = -1;
                     
-                    for(std::size_t i = 0; i < string_table.size(); i++)
+                    for(std::size_t i = 0; i < shared_strings.size(); i++)
                     {
-                        if(string_table[i] == cell.get_value<std::string>())
+                        if(shared_strings[i] == cell.get_value<std::string>())
                         {
                             match_index = static_cast<int>(i);
                             break;
@@ -545,7 +553,7 @@ bool worksheet_serializer::write_worksheet(const std::vector<std::string> &strin
         odd_footer_node.set_text(footer_text);
     }
     
-    return true;
+    return xml;
 }
 
 } // namespace xlnt

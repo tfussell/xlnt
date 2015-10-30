@@ -619,7 +619,7 @@ const number_format &workbook::get_number_format(std::size_t style_id) const
     
     for(const auto &number_format_ : d_->number_formats_)
     {
-        if(number_format_.get_id() == number_format_id)
+        if(static_cast<std::size_t>(number_format_.get_id()) == number_format_id)
         {
             return number_format_;
         }
@@ -631,15 +631,15 @@ const number_format &workbook::get_number_format(std::size_t style_id) const
     return d_->number_formats_.back();
 }
 
-const font &workbook::get_font(std::size_t style_id) const
+const font &workbook::get_font(std::size_t font_id) const
 {
-    return d_->fonts_[d_->styles_[style_id].font_id_];
+    return d_->fonts_[font_id];
 }
 
 std::size_t workbook::set_font(const font &font_, std::size_t style_id)
 {
     auto match = std::find(d_->fonts_.begin(), d_->fonts_.end(), font_);
-    auto font_index = 0;
+    std::size_t font_index = 0;
     
     if(match == d_->fonts_.end())
     {
@@ -674,22 +674,22 @@ std::size_t workbook::set_font(const font &font_, std::size_t style_id)
     return d_->styles_.size() - 1;
 }
 
-const fill &workbook::get_fill(std::size_t style_id) const
+const fill &workbook::get_fill(std::size_t fill_id) const
 {
-    return d_->fills_[d_->styles_[style_id].fill_id_];
+    return d_->fills_[fill_id];
 }
 
-std::size_t workbook::set_fill(const fill &fill_, std::size_t style_id)
+std::size_t workbook::set_fill(const fill &/*fill_*/, std::size_t style_id)
 {
     return style_id;
 }
 
-const border &workbook::get_border(std::size_t style_id) const
+const border &workbook::get_border(std::size_t border_id) const
 {
-    return d_->borders_[d_->styles_[style_id].border_id_];
+    return d_->borders_[border_id];
 }
 
-std::size_t workbook::set_border(const border &border_, std::size_t style_id)
+std::size_t workbook::set_border(const border &/*border_*/, std::size_t style_id)
 {
     return style_id;
 }
@@ -699,7 +699,7 @@ const alignment &workbook::get_alignment(std::size_t style_id) const
     return d_->styles_[style_id].alignment_;
 }
 
-std::size_t workbook::set_alignment(const alignment &alignment_, std::size_t style_id)
+std::size_t workbook::set_alignment(const alignment &/*alignment_*/, std::size_t style_id)
 {
     return style_id;
 }
@@ -709,7 +709,7 @@ const protection &workbook::get_protection(std::size_t style_id) const
     return d_->styles_[style_id].protection_;
 }
 
-std::size_t workbook::set_protection(const protection &protection_, std::size_t style_id)
+std::size_t workbook::set_protection(const protection &/*protection_*/, std::size_t style_id)
 {
     return style_id;
 }
@@ -861,12 +861,27 @@ const std::vector<relationship> &workbook::get_root_relationships() const
 {
     if(d_->root_relationships_.empty())
     {
-        d_->root_relationships_.push_back(relationship(relationship::type::extended_properties, "rId3", "docProps/app.xml"));
-        d_->root_relationships_.push_back(relationship(relationship::type::core_properties, "rId2", "docProps/core.xml"));
-        d_->root_relationships_.push_back(relationship(relationship::type::office_document, "rId1", "xl/workbook.xml"));
+        d_->root_relationships_.push_back(relationship(relationship::type::core_properties, "rId1", "docProps/core.xml"));
+        d_->root_relationships_.push_back(relationship(relationship::type::extended_properties, "rId2", "docProps/app.xml"));
+        d_->root_relationships_.push_back(relationship(relationship::type::office_document, "rId3", "xl/workbook.xml"));
     }
     
     return d_->root_relationships_;
+}
+
+std::vector<std::string> &workbook::get_shared_strings()
+{
+    return d_->shared_strings_;
+}
+
+const std::vector<std::string> &workbook::get_shared_strings() const
+{
+    return d_->shared_strings_;
+}
+
+void workbook::add_shared_string(const std::string &shared)
+{
+    d_->shared_strings_.push_back(shared);
 }
 
 } // namespace xlnt

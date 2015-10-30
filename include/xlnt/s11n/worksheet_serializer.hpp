@@ -34,15 +34,14 @@ class relationship;
 class workbook;
 class worksheet;
 class xml_document;
-class xml_node;
 
 class worksheet_serializer
 {
 public:
     worksheet_serializer(worksheet sheet);
     
-    bool read_worksheet(const xml_document &xml, const std::vector<std::string> &shared_strings, const relationship &rel);
-    bool write_worksheet(const std::vector<std::string> &string_table, xml_document &xml);
+    bool read_worksheet(const xml_document &xml);
+    xml_document write_worksheet() const;
     
 private:
     worksheet sheet_;

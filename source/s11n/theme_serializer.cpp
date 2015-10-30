@@ -7,17 +7,16 @@
 namespace xlnt {
     
 //I have no idea what this stuff is. I hope it was worth it.
-xml_document theme_serializer::write_theme(const theme &theme_)
+xml_document theme_serializer::write_theme(const theme &) const
 {
     xml_document xml;
     
+    auto theme_node = xml.add_child("a:theme");
     xml.add_namespace("a", constants::Namespaces.at("drawingml"));
-    
-    auto &theme_node = xml.root();
-    theme_node.set_name("a:theme");
     theme_node.add_attribute("name", "Office Theme");
-    auto &theme_elements_node = theme_node.add_child("a:themeElements");
-    auto &clr_scheme_node = theme_elements_node.add_child("a:clrScheme");
+    
+    auto theme_elements_node = theme_node.add_child("a:themeElements");
+    auto clr_scheme_node = theme_elements_node.add_child("a:clrScheme");
     clr_scheme_node.add_attribute("name", "Office");
     
     struct scheme_element
@@ -112,19 +111,19 @@ xml_document theme_serializer::write_theme(const theme &theme_)
     {
         if(scheme.typeface)
         {
-            auto &major_font_node = major_fonts_node.add_child(scheme.script);
+            auto major_font_node = major_fonts_node.add_child(scheme.script);
             major_font_node.add_attribute("typeface", scheme.major);
             
-            auto &minor_font_node = minor_fonts_node.add_child(scheme.script);
+            auto minor_font_node = minor_fonts_node.add_child(scheme.script);
             minor_font_node.add_attribute("typeface", scheme.minor);
         }
         else
         {
-            auto &major_font_node = major_fonts_node.add_child("a:font");
+            auto major_font_node = major_fonts_node.add_child("a:font");
             major_font_node.add_attribute("script", scheme.script);
             major_font_node.add_attribute("typeface", scheme.major);
             
-            auto &minor_font_node = minor_fonts_node.add_child("a:font");
+            auto minor_font_node = minor_fonts_node.add_child("a:font");
             minor_font_node.add_attribute("script", scheme.script);
             minor_font_node.add_attribute("typeface", scheme.minor);
         }
@@ -141,7 +140,7 @@ xml_document theme_serializer::write_theme(const theme &theme_)
     
     auto grad_fill_list = grad_fill_node.add_child("a:gsLst");
     auto gs_node = grad_fill_list.add_child("a:gs");
-    gs_node.add_attribute("pos", 0);
+    gs_node.add_attribute("pos", "0");
     auto scheme_color_node = gs_node.add_child("a:schemeClr");
     scheme_color_node.add_attribute("val", "phClr");
     scheme_color_node.add_child("a:tint").add_attribute("val", "50000");

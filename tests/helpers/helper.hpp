@@ -31,15 +31,27 @@ public:
         operator bool() const { return difference == difference_type::equivalent; }
     };
     
+    static comparison_result compare_xml(const xlnt::xml_document &expected, const xlnt::xml_document &observed)
+    {
+        return compare_xml(expected.get_root(), observed.get_root());
+    }
+    
     static comparison_result compare_xml(const std::string &expected, const xlnt::xml_document &observed)
     {
-        std::ifstream f(expected);
-        std::ostringstream s;
-        f >> s.rdbuf();
+        std::string expected_contents = expected;
         
-        auto expected_xml = xlnt::xml_serializer::deserialize(s.str());
+        if(PathHelper::FileExists(expected))
+        {
+            std::ifstream f(expected);
+            std::ostringstream s;
+            f >> s.rdbuf();
+            
+            expected_contents = s.str();
+        }
         
-        return compare_xml(expected_xml.root(), observed.root());
+        auto expected_xml = xlnt::xml_serializer::deserialize(expected_contents);
+        
+        return compare_xml(expected_xml.get_root(), observed.get_root());
     }
     
     static comparison_result compare_xml(const std::string &left_contents, const std::string &right_contents)
@@ -47,7 +59,7 @@ public:
         auto left_doc = xlnt::xml_serializer::deserialize(left_contents);
         auto right_doc = xlnt::xml_serializer::deserialize(right_contents);
         
-        return compare_xml(left_doc.root(), right_doc.root());
+        return compare_xml(left_doc.get_root(), right_doc.get_root());
     }
     
     static comparison_result compare_xml(const xlnt::xml_node &left, const xlnt::xml_node &right)
@@ -100,13 +112,14 @@ public:
             return {difference_type::text_values_differ, "((empty))", right_temp};
         }
         
-        auto right_child_iter = right.get_children().begin();
+        auto right_children = right.get_children();
+        auto right_child_iter = right_children.begin();
         
         for(auto left_child : left.get_children())
         {
             left_temp = left_child.get_name();
             
-            if(right_child_iter == right.get_children().end())
+            if(right_child_iter == right_children.end())
             {
                 return {difference_type::child_order_differs, left_temp, "((end))"};
             }
@@ -122,7 +135,7 @@ public:
             }
         }
         
-        if(right_child_iter != right.get_children().end())
+        if(right_child_iter != right_children.end())
         {
             right_temp = right_child_iter->get_name();
             return {difference_type::child_order_differs, "((end))", right_temp};

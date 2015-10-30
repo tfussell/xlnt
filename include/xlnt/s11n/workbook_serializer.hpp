@@ -40,8 +40,7 @@ class xml_node;
 class workbook_serializer
 {
 public:
-    //TODO: does this go here?
-    static std::string determine_document_type(const manifest &manifest_);
+    using string_pair = std::pair<std::string, std::string>;
     
     workbook_serializer(workbook &wb);
     
@@ -53,15 +52,13 @@ public:
     xml_document write_properties_app() const;
     xml_document write_properties_core() const;
     
-    using string_pair = std::pair<std::string, std::string>;
-    
     std::vector<string_pair> read_sheets();
     std::vector<string_pair> detect_worksheets();
     
-    bool write_named_ranges(xml_node &named_ranges_node);
+    xml_node write_named_ranges() const;
     
 private:
-    workbook &wb_;
+    workbook &workbook_;
 };
 
 } // namespace xlnt

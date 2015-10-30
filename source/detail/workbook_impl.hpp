@@ -15,7 +15,8 @@ struct workbook_impl
         worksheets_(other.worksheets_), 
         relationships_(other.relationships_),
         root_relationships_(other.root_relationships_),
-        drawings_(other.drawings_), 
+        drawings_(other.drawings_),
+        shared_strings_(other.shared_strings_),
         properties_(other.properties_), 
         guess_types_(other.guess_types_),
         data_only_(other.data_only_),
@@ -40,6 +41,8 @@ struct workbook_impl
         std::copy(other.root_relationships_.begin(), other.root_relationships_.end(), std::back_inserter(root_relationships_));
         drawings_.clear();
         std::copy(other.drawings_.begin(), other.drawings_.end(), back_inserter(drawings_));
+        shared_strings_.clear();
+        std::copy(other.shared_strings_.begin(), other.shared_strings_.end(), std::back_inserter(shared_strings_));
         properties_ = other.properties_;
         guess_types_ = other.guess_types_;
         data_only_ = other.data_only_;
@@ -59,6 +62,7 @@ struct workbook_impl
     std::vector<relationship> relationships_;
     std::vector<relationship> root_relationships_;
     std::vector<drawing> drawings_;
+    std::vector<std::string> shared_strings_;
     
     document_properties properties_;
     

@@ -83,6 +83,8 @@ public:
         prop.last_modified_by = "SOMEBODY";
         prop.created = xlnt::datetime(2010, 4, 1, 20, 30, 00);
         prop.modified = xlnt::datetime(2010, 4, 5, 14, 5, 30);
+        TS_FAIL("");
+        return;
         xlnt::workbook_serializer serializer(wb);
         xlnt::xml_document xml = serializer.write_properties_core();
         TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/core.xml", xml));
@@ -95,6 +97,8 @@ public:
         wb.create_sheet();
         xlnt::workbook_serializer serializer(wb);
         xlnt::xml_document xml = serializer.write_properties_app();
+        TS_FAIL("");
+        return;
         TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/app.xml", xml));
     }
 };
