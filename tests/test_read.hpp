@@ -5,6 +5,12 @@
 
 #include <cxxtest/TestSuite.h>
 
+#include <xlnt/s11n/excel_serializer.hpp>
+#include <xlnt/s11n/manifest_serializer.hpp>
+#include <xlnt/s11n/workbook_serializer.hpp>
+#include <xlnt/s11n/xml_serializer.hpp>
+#include <xlnt/workbook/manifest.hpp>
+
 #include "helpers/path_helper.hpp"
 
 class test_read : public CxxTest::TestSuite
@@ -13,8 +19,11 @@ public:
     
     xlnt::workbook standard_workbook()
     {
+        xlnt::workbook wb;
         auto path = PathHelper::GetDataDirectory("/genuine/empty.xlsx");
-        return xlnt::excel_reader::load_workbook(path);
+        wb.load(path);
+        
+        return wb;
     }
 
     void test_read_standard_workbook()
@@ -26,14 +35,20 @@ public:
     {
         auto path = PathHelper::GetDataDirectory("/genuine/empty.xlsx");
         std::ifstream fo(path, std::ios::binary);
-        auto wb = xlnt::excel_reader::load_workbook(path);
-        TS_ASSERT_DIFFERS(standard_workbook(), nullptr);
+        
+        xlnt::workbook wb;
+        xlnt::excel_serializer serializer(wb);
+        
+        serializer.load_stream_workbook(fo);
+        
+        TS_ASSERT_DIFFERS(wb, nullptr);
     }
 
     void test_read_worksheet()
     {
         auto wb = standard_workbook();
         auto sheet2 = wb.get_sheet_by_name("Sheet2 - Numbers");
+        
         TS_ASSERT_DIFFERS(sheet2, nullptr);
         TS_ASSERT_EQUALS("This is cell G5", sheet2.get_cell("G5").get_value<std::string>());
         TS_ASSERT_EQUALS(18, sheet2.get_cell("D18").get_value<int>());
@@ -44,32 +59,55 @@ public:
     void test_read_nostring_workbook()
     {
         auto path = PathHelper::GetDataDirectory("/genuine/empty-no-string.xlsx");
-        auto wb = xlnt::excel_reader::load_workbook(path);
-        TS_ASSERT_DIFFERS(standard_workbook(), nullptr);
+        
+        xlnt::workbook wb;
+        xlnt::excel_serializer serializer(wb);
+        
+        serializer.load_workbook(path);
+        
+        TS_ASSERT_DIFFERS(wb, nullptr);
     }
 
     void test_read_empty_file()
     {
         auto path = PathHelper::GetDataDirectory("/reader/null_file.xlsx");
-        TS_ASSERT_THROWS(xlnt::excel_reader::load_workbook(path), xlnt::invalid_file_exception);
+        
+        xlnt::workbook wb;
+        xlnt::excel_serializer serializer(wb);
+        
+        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file_exception);
     }
 
     void test_read_empty_archive()
     {
         auto path = PathHelper::GetDataDirectory("/reader/null_archive.xlsx");
-        TS_ASSERT_THROWS(xlnt::excel_reader::load_workbook(path), xlnt::invalid_file_exception);
+        
+        xlnt::workbook wb;
+        xlnt::excel_serializer serializer(wb);
+        
+        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file_exception);
     }
     
     void test_read_workbook_with_no_properties()
     {
         auto path = PathHelper::GetDataDirectory("/genuine/empty_with_no_properties.xlsx");
-        xlnt::excel_reader::load_workbook(path);
+
+        xlnt::workbook wb;
+        xlnt::excel_serializer serializer(wb);
+        
+        serializer.load_workbook(path);
     }
 
     xlnt::workbook workbook_with_styles()
     {
         auto path = PathHelper::GetDataDirectory("/genuine/empty-with-styles.xlsx");
-        return xlnt::excel_reader::load_workbook(path);
+
+        xlnt::workbook wb;
+        xlnt::excel_serializer serializer(wb);
+        
+        serializer.load_workbook(path);
+        
+        return wb;
     }
 
     void test_read_workbook_with_styles_general()
@@ -120,13 +158,25 @@ public:
     xlnt::workbook date_mac_1904()
     {
         auto path = PathHelper::GetDataDirectory("/reader/date_1904.xlsx");
-        return xlnt::excel_reader::load_workbook(path);
+        
+        xlnt::workbook wb;
+        xlnt::excel_serializer serializer(wb);
+        
+        serializer.load_workbook(path);
+        
+        return wb;
     }
     
     xlnt::workbook date_std_1900()
     {
         auto path = PathHelper::GetDataDirectory("/reader/date_1900.xlsx");
-        return xlnt::excel_reader::load_workbook(path);
+
+        xlnt::workbook wb;
+        xlnt::excel_serializer serializer(wb);
+        
+        serializer.load_workbook(path);
+        
+        return wb;
     }
     
     void test_read_win_base_date()
@@ -169,20 +219,25 @@ public:
     
     void test_repair_central_directory()
     {
-        std::string data_a = "foobarbaz" + xlnt::excel_reader::CentralDirectorySignature();
+        std::string data_a = "foobarbaz" + xlnt::excel_serializer::central_directory_signature();
         std::string data_b = "bazbarfoo12345678901234567890";
         
-        auto f = xlnt::excel_reader::repair_central_directory(data_a + data_b);
+        auto f = xlnt::excel_serializer::repair_central_directory(data_a + data_b);
         TS_ASSERT_EQUALS(f, data_a + data_b.substr(0, 18));
         
-        f = xlnt::excel_reader::repair_central_directory(data_b);
+        f = xlnt::excel_serializer::repair_central_directory(data_b);
         TS_ASSERT_EQUALS(f, data_b);
     }
     
     void test_read_no_theme()
     {
         auto path = PathHelper::GetDataDirectory("/genuine/libreoffice_nrt.xlsx");
-        auto wb = xlnt::excel_reader::load_workbook(path);
+        
+        xlnt::workbook wb;
+        xlnt::excel_serializer serializer(wb);
+        
+        serializer.load_workbook(path);
+        
         TS_ASSERT_DIFFERS(wb, nullptr);
     }
     
@@ -246,7 +301,13 @@ public:
     void test_data_only()
     {
         auto path = PathHelper::GetDataDirectory("/reader/formulae.xlsx");
-        auto wb = xlnt::excel_reader::load_workbook(path, false, true);
+        
+        
+        xlnt::workbook wb;
+        xlnt::excel_serializer serializer(wb);
+        
+        serializer.load_workbook(path, false, true);
+
         auto ws = wb.get_active_sheet();
 
         TS_ASSERT(ws.get_formula_attributes().empty());
@@ -364,18 +425,27 @@ public:
         };
         
         auto path = PathHelper::GetDataDirectory("/reader/contains_chartsheets.xlsx");
-        xlnt::zip_file f(path);
-        auto result = xlnt::read_content_types(f);
 
-	if(result.size() != expected.size())
-	{
-	    TS_ASSERT_EQUALS(result.size(), expected.size());
-	    return;
-	}
+        xlnt::workbook wb;
+        xlnt::manifest_serializer serializer(wb.get_manifest());
+        
+        xlnt::zip_file archive;
+        archive.load(path);
+        
+        serializer.read_manifest(xlnt::xml_serializer::deserialize(archive.read("[Content Types].xml")));
+        
+        auto &result = wb.get_manifest().get_override_types();
+
+        if(result.size() != expected.size())
+        {
+            TS_ASSERT_EQUALS(result.size(), expected.size());
+            return;
+        }
 
         for(std::size_t i = 0; i < expected.size(); i++)
         {
-            TS_ASSERT_EQUALS(result[i], expected[i]);
+            TS_ASSERT_EQUALS(result[i].get_part_name(), expected[i].first);
+            TS_ASSERT_EQUALS(result[i].get_content_type(), expected[i].second);
         }
     }
     
@@ -383,8 +453,11 @@ public:
     {
         {
             auto path = PathHelper::GetDataDirectory("/reader/bug137.xlsx");
-            xlnt::zip_file f(path);
-            auto sheets = xlnt::read_sheets(f);
+
+            xlnt::workbook wb;
+            xlnt::workbook_serializer serializer(wb);
+            
+            auto sheets = serializer.read_sheets();
             std::vector<std::pair<std::string, std::string>> expected =
             {{"rId1", "Chart1"}, {"rId2", "Sheet1"}};
             TS_ASSERT_EQUALS(sheets, expected);
@@ -392,8 +465,11 @@ public:
         
         {
             auto path = PathHelper::GetDataDirectory("/reader/bug304.xlsx");
-            xlnt::zip_file f(path);
-            auto sheets = xlnt::read_sheets(f);
+
+            xlnt::workbook wb;
+            xlnt::workbook_serializer serializer(wb);
+            
+            auto sheets = serializer.read_sheets();
             std::vector<std::pair<std::string, std::string>> expected =
             {{"rId1", "Sheet1"}, {"rId2", "Sheet2"}, {"rId3", "Sheet3"}};
             TS_ASSERT_EQUALS(sheets, expected);
@@ -410,7 +486,12 @@ public:
         {
             std::tie(guess, dtype) = expected;
             auto path = PathHelper::GetDataDirectory("/genuine/guess_types.xlsx");
-            auto wb = xlnt::excel_reader::load_workbook(path, guess);
+            
+            xlnt::workbook wb;
+            xlnt::excel_serializer serializer(wb);
+            
+            serializer.load_workbook(path, guess);
+
             auto ws = wb.get_active_sheet();
             TS_ASSERT(ws.get_cell("D2").get_data_type() == dtype);
         }
@@ -419,7 +500,12 @@ public:
     void test_read_autofilter()
     {
         auto path = PathHelper::GetDataDirectory("/reader/bug275.xlsx");
-        auto wb = xlnt::excel_reader::load_workbook(path);
+
+        xlnt::workbook wb;
+        xlnt::excel_serializer serializer(wb);
+        
+        serializer.load_workbook(path);
+        
         auto ws = wb.get_active_sheet();
         TS_ASSERT_EQUALS(ws.get_auto_filter().to_string(), "A1:B6");
     }
@@ -427,18 +513,30 @@ public:
     void test_bad_formats_xlsb()
     {
         auto path = PathHelper::GetDataDirectory("/genuine/a.xlsb");
-        TS_ASSERT_THROWS(xlnt::excel_reader::load_workbook(path), xlnt::invalid_file_exception);
+        
+        xlnt::workbook wb;
+        xlnt::excel_serializer serializer(wb);
+        
+        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file_exception);
     }
     
     void test_bad_formats_xls()
     {
         auto path = PathHelper::GetDataDirectory("/genuine/a.xls");
-        TS_ASSERT_THROWS(xlnt::excel_reader::load_workbook(path), xlnt::invalid_file_exception);
+        
+        xlnt::workbook wb;
+        xlnt::excel_serializer serializer(wb);
+        
+        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file_exception);
     }
     
     void test_bad_formats_no()
     {
         auto path = PathHelper::GetDataDirectory("/genuine/a.no-format");
-        TS_ASSERT_THROWS(xlnt::excel_reader::load_workbook(path), xlnt::invalid_file_exception);
+        
+        xlnt::workbook wb;
+        xlnt::excel_serializer serializer(wb);
+        
+        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file_exception);
     }
 };

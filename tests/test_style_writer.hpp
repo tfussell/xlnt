@@ -3,7 +3,7 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/xlnt.hpp>
+#include <xlnt/s11n/style_serializer.hpp>
 
 class test_style_writer : public CxxTest::TestSuite
 {
@@ -12,7 +12,7 @@ public:
     {
         xlnt::workbook wb;
         wb.add_number_format(xlnt::number_format("YYYY"));
-        xlnt::style_writer writer(wb);
+        xlnt::style_serializer writer(wb);
         auto xml = writer.write_number_formats();
         std::string expected =
         "<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">"

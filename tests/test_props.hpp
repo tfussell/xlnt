@@ -4,6 +4,7 @@
 #include <cxxtest/TestSuite.h>
 
 #include <xlnt/s11n/workbook_serializer.hpp>
+#include <xlnt/s11n/xml_document.hpp>
 
 #include "helpers/path_helper.hpp"
 #include "helpers/helper.hpp"
@@ -17,7 +18,9 @@ public:
         auto content = archive.read("docProps/core.xml");
         xlnt::workbook wb;
         xlnt::workbook_serializer serializer(wb);
-        auto prop = serializer.read_properties_core(content);
+        xlnt::xml_document xml;
+        serializer.read_properties_core(xml);
+        auto &prop = wb.get_properties();
         TS_ASSERT_EQUALS(prop.creator, "*.*");
         TS_ASSERT_EQUALS(prop.last_modified_by, "Charlie Clark");
         TS_ASSERT_EQUALS(prop.created, xlnt::datetime(2010, 4, 9, 20, 43, 12));
@@ -32,7 +35,11 @@ public:
         const std::vector<std::string> expected_titles = {"Sheet1 - Text", "Sheet2 - Numbers", "Sheet3 - Formulas", "Sheet4 - Dates"};
         
         std::size_t i = 0;
-        for(auto sheet : xlnt::read_sheets(archive))
+        
+        xlnt::workbook wb;
+        xlnt::workbook_serializer serializer(wb);
+        
+        for(auto sheet : serializer.read_sheets())
         {
             TS_ASSERT_EQUALS(sheet.second, expected_titles.at(i++));
         }
@@ -42,7 +49,11 @@ public:
     {
         xlnt::zip_file archive(PathHelper::GetDataDirectory() + "/genuine/empty_libre.xlsx");
         auto content = archive.read("docProps/core.xml");
-        auto prop = xlnt::read_properties_core(content);
+        xlnt::workbook wb;
+        xlnt::workbook_serializer serializer(wb);
+        xlnt::xml_document xml;
+        serializer.read_properties_core(xml);
+        auto &prop = wb.get_properties();
         TS_ASSERT_EQUALS(prop.excel_base_date, xlnt::calendar::windows_1900);
     }
 
@@ -54,7 +65,11 @@ public:
         const std::vector<std::string> expected_titles = {"Sheet1 - Text", "Sheet2 - Numbers", "Sheet3 - Formulas", "Sheet4 - Dates"};
         
         std::size_t i = 0;
-        for(auto sheet : xlnt::read_sheets(archive))
+        
+        xlnt::workbook wb;
+        xlnt::workbook_serializer serializer(wb);
+        
+        for(auto sheet : serializer.read_sheets())
         {
             TS_ASSERT_EQUALS(sheet.second, expected_titles.at(i++));
         }
@@ -62,13 +77,15 @@ public:
 
     void test_write_properties_core()
     {
-        xlnt::document_properties prop;
+        xlnt::workbook wb;
+        xlnt::document_properties &prop = wb.get_properties();
         prop.creator = "TEST_USER";
         prop.last_modified_by = "SOMEBODY";
         prop.created = xlnt::datetime(2010, 4, 1, 20, 30, 00);
         prop.modified = xlnt::datetime(2010, 4, 5, 14, 5, 30);
-        auto content = xlnt::write_properties_core(prop);
-        TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/core.xml", content));
+        xlnt::workbook_serializer serializer(wb);
+        xlnt::xml_document xml = serializer.write_properties_core();
+        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/core.xml", xml));
     }
 
     void test_write_properties_app()
@@ -76,7 +93,8 @@ public:
         xlnt::workbook wb;
         wb.create_sheet();
         wb.create_sheet();
-        auto content = xlnt::write_properties_app(wb);
-        TS_ASSERT(Helper::EqualsFileContent(PathHelper::GetDataDirectory() + "/writer/expected/app.xml", content));
+        xlnt::workbook_serializer serializer(wb);
+        xlnt::xml_document xml = serializer.write_properties_app();
+        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/app.xml", xml));
     }
 };

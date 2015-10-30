@@ -147,7 +147,7 @@ std::string workbook_serializer::determine_document_type(const manifest &manifes
 /// workbook has a list of titles and relIds but no paths
 /// workbook_rels has a list of relIds and paths but no titles
 /// </summary>
-std::vector<std::pair<std::string, std::string>> workbook_serializer::detect_worksheets(zip_file &archive)
+std::vector<string_pair> workbook_serializer::detect_worksheets()
 {
     static const std::string ValidWorksheet = "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml";
     
@@ -164,7 +164,7 @@ std::vector<std::pair<std::string, std::string>> workbook_serializer::detect_wor
     auto &workbook_relationships = wb_.get_relationships();
     std::vector<std::pair<std::string, std::string>> result;
     
-    for(const auto &ws : read_sheets(archive))
+    for(const auto &ws : read_sheets())
     {
         auto rel = *std::find_if(workbook_relationships.begin(), workbook_relationships.end(), [&](const relationship &r) { return r.get_id() == ws.first; });
         auto target = rel.get_target_uri();

@@ -52,15 +52,15 @@ public:
     xml_document write_workbook() const;
     xml_document write_properties_app() const;
     xml_document write_properties_core() const;
-
-private:
+    
     using string_pair = std::pair<std::string, std::string>;
     
-    std::vector<string_pair> read_sheets(zip_file &archive);
-    std::vector<string_pair> detect_worksheets(zip_file &archive);
-
+    std::vector<string_pair> read_sheets();
+    std::vector<string_pair> detect_worksheets();
+    
     bool write_named_ranges(xml_node &named_ranges_node);
     
+private:
     workbook &wb_;
 };
 
