@@ -59,14 +59,6 @@ namespace detail {
     struct workbook_impl;
 } // namespace detail
 
-struct content_type
-{
-	bool is_default;
-	std::string extension;
-	std::string part_name;
-	std::string type;
-};
-
 /// <summary>
 /// workbook is the container for all other parts of the document.
 /// </summary>
@@ -195,8 +187,6 @@ public:
     {
         return !(*this == std::nullptr_t{});
     }
-
-	std::vector<content_type> get_content_types() const;
     
 	void create_relationship(const std::string &id, const std::string &target, relationship::type type);
 	relationship get_relationship(const std::string &id) const;

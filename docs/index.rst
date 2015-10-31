@@ -9,15 +9,15 @@ Welcome to xlnt's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 3
-
-.. doxygenclass:: xlnt::cell
-	:members:
+   :maxdepth: 2
 
 .. doxygenstruct:: xlnt::cell_reference_hash
 	:members:
 
 .. doxygenclass:: xlnt::cell_reference
+	:members:
+
+.. doxygenclass:: xlnt::cell
 	:members:
 
 .. doxygenclass:: xlnt::comment
@@ -38,12 +38,6 @@ Contents:
 .. doxygenclass:: xlnt::relationship
 	:members:
 
-.. doxygenclass:: xlnt::string_table
-	:members:
-
-.. doxygenclass:: xlnt::string_table_builder
-	:members:
-
 .. doxygenstruct:: xlnt::zip_info
 	:members:
 
@@ -53,19 +47,10 @@ Contents:
 .. doxygenclass:: xlnt::drawing
 	:members:
 
+.. doxygenclass:: xlnt::tokenizer
+	:members:
+
 .. doxygenclass:: xlnt::translator
-	:members:
-
-.. doxygenclass:: xlnt::comment_reader
-	:members:
-
-.. doxygenclass:: xlnt::excel_reader
-	:members:
-
-.. doxygenclass:: xlnt::shared_strings_reader
-	:members:
-
-.. doxygenclass:: xlnt::style_reader
 	:members:
 
 .. doxygenclass:: xlnt::alignment
@@ -104,10 +89,13 @@ Contents:
 .. doxygenclass:: xlnt::document_security
 	:members:
 
+.. doxygenclass:: xlnt::manifest
+	:members:
+
 .. doxygenclass:: xlnt::named_range
 	:members:
 
-.. doxygenstruct:: xlnt::content_type
+.. doxygenclass:: xlnt::theme
 	:members:
 
 .. doxygenclass:: xlnt::workbook
@@ -119,6 +107,9 @@ Contents:
 .. doxygenclass:: xlnt::column_properties
 	:members:
 
+.. doxygenstruct:: xlnt::major_order
+	:members:
+
 .. doxygenclass:: xlnt::page_margins
 	:members:
 
@@ -128,19 +119,19 @@ Contents:
 .. doxygenclass:: xlnt::pane
 	:members:
 
+.. doxygenclass:: xlnt::range_reference
+	:members:
+
 .. doxygenclass:: xlnt::range
 	:members:
 
-.. doxygenclass:: xlnt::range_reference
+.. doxygenclass:: xlnt::row_properties
 	:members:
 
 .. doxygenclass:: xlnt::sheet_protection
 	:members:
 
 .. doxygenclass:: xlnt::sheet_view
-	:members:
-
-.. doxygenclass:: xlnt::row_properties
 	:members:
 
 .. doxygenclass:: xlnt::header
@@ -158,22 +149,40 @@ Contents:
 .. doxygenclass:: xlnt::worksheet
 	:members:
 
-.. doxygenclass:: xlnt::chart_writer
+.. doxygenclass:: xlnt::comment_serializer
 	:members:
 
-.. doxygenclass:: xlnt::chart_writer_factory
+.. doxygenclass:: xlnt::excel_serializer
 	:members:
 
-.. doxygenclass:: xlnt::comment_writer
+.. doxygenclass:: xlnt::manifest_serializer
 	:members:
 
-.. doxygenclass:: xlnt::excel_writer
+.. doxygenclass:: xlnt::relationship_serializer
 	:members:
 
-.. doxygenclass:: xlnt::string_writer
+.. doxygenclass:: xlnt::shared_strings_serializer
 	:members:
 
-.. doxygenclass:: xlnt::style_writer
+.. doxygenclass:: xlnt::style_serializer
+	:members:
+
+.. doxygenclass:: xlnt::theme_serializer
+	:members:
+
+.. doxygenclass:: xlnt::workbook_serializer
+	:members:
+
+.. doxygenclass:: xlnt::worksheet_serializer
+	:members:
+
+.. doxygenclass:: xlnt::xml_document
+	:members:
+
+.. doxygenclass:: xlnt::xml_node
+	:members:
+
+.. doxygenclass:: xlnt::xml_serializer
 	:members:
 
 Indices and tables
