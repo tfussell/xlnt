@@ -1,3 +1,5 @@
+#include <iterator>
+
 #include <xlnt/s11n/excel_serializer.hpp>
 #include <xlnt/common/exceptions.hpp>
 #include <xlnt/s11n/manifest_serializer.hpp>
