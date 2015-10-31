@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iterator>
 
 #include <xlnt/s11n/excel_serializer.hpp>
