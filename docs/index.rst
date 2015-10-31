@@ -1,189 +1,131 @@
-.. xlnt documentation master file, created by
-   sphinx-quickstart on Mon Oct 26 10:31:07 2015.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+:mod:`xlnt` - user-friendly xlsx library for C++14
+===========================================================================
 
-Welcome to xlnt's documentation!
-================================
+.. module:: xlnt
+.. moduleauthor:: Thomas Fussell
 
-Contents:
+:Author: Thomas Fussell
+:Source code: https://github.com/tfussell/xlnt
+:Issues: https://github.com/tfussell/xlnt/issues
+:Generated: |today|
+:License: MIT
+:Version: |release|
+
+Introduction
+------------
+
+xlnt is a C++14 library for reading, writing, and modifying xlsx files as described in ECMA 376. 
+
+The API is generally based on openpyxl, a python library for reading and writing xlsx/xlsm files. 
+
+This is still very much a work in progress, but the core development work is complete.
+
+Support
++++++++
+
+Sample code:
+++++++++++++
+
+.. literalinclude:: /samples/sample1.cpp
+
+User List
+---------
+
+
+
+How to Contribute Code
+----------------------
+
+For further information see :ref:`development`
+
+.. note:
+
+
+Other ways to help
+------------------
+
+Installation
+------------
+
+Getting the source
+------------------
+
+Usage examples
+--------------
+
+Tutorial
+++++++++
 
 .. toctree::
-   :maxdepth: 2
 
-.. doxygenstruct:: xlnt::cell_reference_hash
-	:members:
+    tutorial
 
-.. doxygenclass:: xlnt::cell_reference
-	:members:
+Cookbook
+++++++++
 
-.. doxygenclass:: xlnt::cell
-	:members:
+.. toctree::
 
-.. doxygenclass:: xlnt::comment
-	:members:
+    cookbook
 
-.. doxygenstruct:: xlnt::date
-	:members:
+Charts
+++++++
 
-.. doxygenstruct:: xlnt::time
-	:members:
+.. toctree::
 
-.. doxygenstruct:: xlnt::datetime
-	:members:
+    charts/introduction
 
-.. doxygenstruct:: xlnt::timedelta
-	:members:
+Comments
+++++++++
 
-.. doxygenclass:: xlnt::relationship
-	:members:
+.. toctree::
 
-.. doxygenstruct:: xlnt::zip_info
-	:members:
+    comments
 
-.. doxygenclass:: xlnt::zip_file
-	:members:
+Working with styles
++++++++++++++++++++
 
-.. doxygenclass:: xlnt::drawing
-	:members:
+.. toctree::
 
-.. doxygenclass:: xlnt::tokenizer
-	:members:
+    styles
 
-.. doxygenclass:: xlnt::translator
-	:members:
+Conditional Formatting
+++++++++++++++++++++++
 
-.. doxygenclass:: xlnt::alignment
-	:members:
+.. toctree::
 
-.. doxygenclass:: xlnt::border
-	:members:
+    formatting
 
-.. doxygenclass:: xlnt::color
-	:members:
+Data Validation
++++++++++++++++
 
-.. doxygenclass:: xlnt::fill
-	:members:
+.. toctree::
 
-.. doxygenclass:: xlnt::font
-	:members:
+    validation
 
-.. doxygenclass:: xlnt::named_style
-	:members:
+Parsing Formulas
+++++++++++++++++
 
-.. doxygenclass:: xlnt::number_format
-	:members:
+.. toctree::
 
-.. doxygenclass:: xlnt::protection
-	:members:
+    formula
 
-.. doxygenclass:: xlnt::side
-	:members:
 
-.. doxygenclass:: xlnt::style
-	:members:
+Information for Developers
+--------------------------
 
-.. doxygenclass:: xlnt::document_properties
-	:members:
+.. toctree::
 
-.. doxygenclass:: xlnt::document_security
-	:members:
+    development
+    windows-development
 
-.. doxygenclass:: xlnt::manifest
-	:members:
+API Documentation
+------------------
 
-.. doxygenclass:: xlnt::named_range
-	:members:
+.. toctree::
+    :maxdepth: 2
 
-.. doxygenclass:: xlnt::theme
-	:members:
+    api/xlnt
 
-.. doxygenclass:: xlnt::workbook
-	:members:
-
-.. doxygenclass:: xlnt::cell_vector
-	:members:
-
-.. doxygenclass:: xlnt::column_properties
-	:members:
-
-.. doxygenstruct:: xlnt::major_order
-	:members:
-
-.. doxygenclass:: xlnt::page_margins
-	:members:
-
-.. doxygenstruct:: xlnt::page_setup
-	:members:
-
-.. doxygenclass:: xlnt::pane
-	:members:
-
-.. doxygenclass:: xlnt::range_reference
-	:members:
-
-.. doxygenclass:: xlnt::range
-	:members:
-
-.. doxygenclass:: xlnt::row_properties
-	:members:
-
-.. doxygenclass:: xlnt::sheet_protection
-	:members:
-
-.. doxygenclass:: xlnt::sheet_view
-	:members:
-
-.. doxygenclass:: xlnt::header
-	:members:
-
-.. doxygenclass:: xlnt::footer
-	:members:
-
-.. doxygenclass:: xlnt::header_footer
-	:members:
-
-.. doxygenstruct:: xlnt::margins
-	:members:
-
-.. doxygenclass:: xlnt::worksheet
-	:members:
-
-.. doxygenclass:: xlnt::comment_serializer
-	:members:
-
-.. doxygenclass:: xlnt::excel_serializer
-	:members:
-
-.. doxygenclass:: xlnt::manifest_serializer
-	:members:
-
-.. doxygenclass:: xlnt::relationship_serializer
-	:members:
-
-.. doxygenclass:: xlnt::shared_strings_serializer
-	:members:
-
-.. doxygenclass:: xlnt::style_serializer
-	:members:
-
-.. doxygenclass:: xlnt::theme_serializer
-	:members:
-
-.. doxygenclass:: xlnt::workbook_serializer
-	:members:
-
-.. doxygenclass:: xlnt::worksheet_serializer
-	:members:
-
-.. doxygenclass:: xlnt::xml_document
-	:members:
-
-.. doxygenclass:: xlnt::xml_node
-	:members:
-
-.. doxygenclass:: xlnt::xml_serializer
-	:members:
 
 Indices and tables
 ==================
@@ -192,3 +134,11 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
+
+Release Notes
+=============
+
+.. toctree::
+    :maxdepth: 1
+
+    changes
