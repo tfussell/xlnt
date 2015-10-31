@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include <xlnt/s11n/workbook_serializer.hpp>
 #include <xlnt/common/datetime.hpp>
 #include <xlnt/common/exceptions.hpp>
