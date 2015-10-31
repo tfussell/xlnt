@@ -1,3 +1,4 @@
+#include <cmath>
 #include <sstream>
 
 #include <xlnt/s11n/worksheet_serializer.hpp>
