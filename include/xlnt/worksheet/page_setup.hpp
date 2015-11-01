@@ -33,14 +33,14 @@ struct page_setup
         row = 1,
         column = 2
     };
-    
+
     enum class sheet_state
     {
         visible,
         hidden,
         very_hidden
     };
-    
+
     enum class paper_size
     {
         letter = 1,
@@ -55,39 +55,123 @@ struct page_setup
         a4_small = 10,
         a5 = 11
     };
-    
+
     enum class orientation
     {
         portrait,
         landscape
     };
-    
-public:
-    page_setup() : default_(true), break_(page_break::none), sheet_state_(sheet_state::visible), paper_size_(paper_size::letter),
-    orientation_(orientation::portrait), fit_to_page_(false), fit_to_height_(false), fit_to_width_(false), horizontal_centered_(false), vertical_centered_(false), scale_(1) {}
-    bool is_default() const { return default_; }
-    page_break get_break() const { return break_; }
-    void set_break(page_break b) { default_ = false; break_ = b; }
-    sheet_state get_sheet_state() const { return sheet_state_; }
-    void set_sheet_state(sheet_state sheet_state) { sheet_state_ = sheet_state; }
-    paper_size get_paper_size() const { return paper_size_; }
-    void set_paper_size(paper_size paper_size) { default_ = false; paper_size_ = paper_size; }
-    orientation get_orientation() const { return orientation_; }
-    void set_orientation(orientation orientation) { default_ = false; orientation_ = orientation; }
-    bool fit_to_page() const { return fit_to_page_; }
-    void set_fit_to_page(bool fit_to_page) { default_ = false; fit_to_page_ = fit_to_page; }
-    bool fit_to_height() const { return fit_to_height_; }
-    void set_fit_to_height(bool fit_to_height) { default_ = false; fit_to_height_ = fit_to_height; }
-    bool fit_to_width() const { return fit_to_width_; }
-    void set_fit_to_width(bool fit_to_width) { default_ = false; fit_to_width_ = fit_to_width; }
-    void set_horizontal_centered(bool horizontal_centered) { default_ = false; horizontal_centered_ = horizontal_centered; }
-    bool get_horizontal_centered() const { return horizontal_centered_; }
-    void set_vertical_centered(bool vertical_centered) { default_ = false; vertical_centered_ = vertical_centered; }
-    bool get_vertical_centered() const { return vertical_centered_; }
-    void set_scale(double scale) { default_ = false; scale_ = scale; }
-    double get_scale() const { return scale_; }
-    
-private:
+
+  public:
+    page_setup()
+        : default_(true),
+          break_(page_break::none),
+          sheet_state_(sheet_state::visible),
+          paper_size_(paper_size::letter),
+          orientation_(orientation::portrait),
+          fit_to_page_(false),
+          fit_to_height_(false),
+          fit_to_width_(false),
+          horizontal_centered_(false),
+          vertical_centered_(false),
+          scale_(1)
+    {
+    }
+    bool is_default() const
+    {
+        return default_;
+    }
+    page_break get_break() const
+    {
+        return break_;
+    }
+    void set_break(page_break b)
+    {
+        default_ = false;
+        break_ = b;
+    }
+    sheet_state get_sheet_state() const
+    {
+        return sheet_state_;
+    }
+    void set_sheet_state(sheet_state sheet_state)
+    {
+        sheet_state_ = sheet_state;
+    }
+    paper_size get_paper_size() const
+    {
+        return paper_size_;
+    }
+    void set_paper_size(paper_size paper_size)
+    {
+        default_ = false;
+        paper_size_ = paper_size;
+    }
+    orientation get_orientation() const
+    {
+        return orientation_;
+    }
+    void set_orientation(orientation orientation)
+    {
+        default_ = false;
+        orientation_ = orientation;
+    }
+    bool fit_to_page() const
+    {
+        return fit_to_page_;
+    }
+    void set_fit_to_page(bool fit_to_page)
+    {
+        default_ = false;
+        fit_to_page_ = fit_to_page;
+    }
+    bool fit_to_height() const
+    {
+        return fit_to_height_;
+    }
+    void set_fit_to_height(bool fit_to_height)
+    {
+        default_ = false;
+        fit_to_height_ = fit_to_height;
+    }
+    bool fit_to_width() const
+    {
+        return fit_to_width_;
+    }
+    void set_fit_to_width(bool fit_to_width)
+    {
+        default_ = false;
+        fit_to_width_ = fit_to_width;
+    }
+    void set_horizontal_centered(bool horizontal_centered)
+    {
+        default_ = false;
+        horizontal_centered_ = horizontal_centered;
+    }
+    bool get_horizontal_centered() const
+    {
+        return horizontal_centered_;
+    }
+    void set_vertical_centered(bool vertical_centered)
+    {
+        default_ = false;
+        vertical_centered_ = vertical_centered;
+    }
+    bool get_vertical_centered() const
+    {
+        return vertical_centered_;
+    }
+    void set_scale(double scale)
+    {
+        default_ = false;
+        scale_ = scale;
+    }
+    double get_scale() const
+    {
+        return scale_;
+    }
+
+  private:
     bool default_;
     page_break break_;
     sheet_state sheet_state_;
@@ -100,5 +184,5 @@ private:
     bool vertical_centered_;
     double scale_;
 };
-    
+
 } // namespace xlnt

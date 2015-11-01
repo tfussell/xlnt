@@ -52,11 +52,11 @@ class style;
 class theme;
 class worksheet;
 class zip_file;
-    
+
 enum class encoding;
 
-namespace detail {    
-    struct workbook_impl;
+namespace detail {
+struct workbook_impl;
 } // namespace detail
 
 /// <summary>
@@ -64,51 +64,57 @@ namespace detail {
 /// </summary>
 class workbook
 {
-public:
+  public:
     class iterator
     {
-    public:
+      public:
         iterator(workbook &wb, std::size_t index);
         iterator(const iterator &);
         iterator &operator=(const iterator &);
         worksheet operator*();
         bool operator==(const iterator &comparand) const;
-        bool operator!=(const iterator &comparand) const { return !(*this == comparand); }
+        bool operator!=(const iterator &comparand) const
+        {
+            return !(*this == comparand);
+        }
         iterator operator++(int);
         iterator &operator++();
 
-    private:
+      private:
         workbook &wb_;
         std::size_t index_;
     };
 
     class const_iterator
     {
-    public:
+      public:
         const_iterator(const workbook &wb, std::size_t index);
         const_iterator(const const_iterator &);
         const_iterator &operator=(const const_iterator &);
         const worksheet operator*();
         bool operator==(const const_iterator &comparand) const;
-        bool operator!=(const const_iterator &comparand) const { return !(*this == comparand); }
+        bool operator!=(const const_iterator &comparand) const
+        {
+            return !(*this == comparand);
+        }
         const_iterator operator++(int);
         const_iterator &operator++();
 
-    private:
+      private:
         const workbook &wb_;
         std::size_t index_;
     };
-    
+
     static std::size_t index_from_ws_filename(const std::string &filename);
 
-    //constructors
+    // constructors
     workbook();
     workbook(encoding e);
-    
+
     workbook &operator=(workbook other);
     workbook(workbook &&other);
     workbook(const workbook &other);
-    
+
     friend void swap(workbook &left, workbook &right);
 
     worksheet get_active_sheet();
@@ -118,80 +124,86 @@ public:
 
     bool get_data_only() const;
     void set_data_only(bool data_only);
-    
-    //create
+
+    // create
     worksheet create_sheet();
     worksheet create_sheet(std::size_t index);
     worksheet create_sheet(const std::string &title);
     worksheet create_sheet(std::size_t index, const std::string &title);
-	worksheet create_sheet(const std::string &title, const relationship &rel);
-    
-    //add
+    worksheet create_sheet(const std::string &title, const relationship &rel);
+
+    // add
     void add_sheet(worksheet worksheet);
     void add_sheet(worksheet worksheet, std::size_t index);
-    
-    //remove
+
+    // remove
     void remove_sheet(worksheet worksheet);
     void clear();
-    
-    //container operations
+
+    // container operations
     worksheet get_sheet_by_name(const std::string &sheet_name);
     const worksheet get_sheet_by_name(const std::string &sheet_name) const;
     worksheet get_sheet_by_index(std::size_t index);
     const worksheet get_sheet_by_index(std::size_t index) const;
     bool contains(const std::string &key) const;
     int get_index(worksheet worksheet);
-    
+
     worksheet operator[](const std::string &name);
     worksheet operator[](std::size_t index);
-    
+
     iterator begin();
     iterator end();
-    
-    const_iterator begin() const { return cbegin(); }
-    const_iterator end() const { return cend(); }
-    
+
+    const_iterator begin() const
+    {
+        return cbegin();
+    }
+    const_iterator end() const
+    {
+        return cend();
+    }
+
     const_iterator cbegin() const;
     const_iterator cend() const;
-    
+
     std::vector<std::string> get_sheet_names() const;
-    
+
     document_properties &get_properties();
     const document_properties &get_properties() const;
-    
-    //named ranges
+
+    // named ranges
     std::vector<named_range> get_named_ranges() const;
     void create_named_range(const std::string &name, worksheet worksheet, const range_reference &reference);
     bool has_named_range(const std::string &name) const;
     range get_named_range(const std::string &name);
     void remove_named_range(const std::string &name);
-    
-    //serialization
+
+    // serialization
     bool save(std::vector<unsigned char> &data);
     bool save(const std::string &filename);
     bool load(const std::vector<unsigned char> &data);
     bool load(const std::string &filename);
     bool load(std::istream &stream);
     bool load(zip_file &archive);
-    
+
     bool operator==(const workbook &rhs) const;
-    
+
     bool operator!=(const workbook &rhs) const
     {
         return !(*this == rhs);
     }
-    
+
     bool operator==(std::nullptr_t) const;
-    
+
     bool operator!=(std::nullptr_t) const
     {
         return !(*this == std::nullptr_t{});
     }
-    
-	void create_relationship(const std::string &id, const std::string &target, relationship::type type);
-	relationship get_relationship(const std::string &id) const;
+
+    void create_relationship(const std::string &id, const std::string &target, relationship::type type);
+    relationship get_relationship(const std::string &id) const;
     const std::vector<relationship> &get_relationships() const;
-    
+
     void add_alignment(const alignment &a);
     void add_border(const border &b);
     void add_fill(const fill &f);
@@ -199,18 +211,18 @@ public:
     void add_color(const color &c);
     void add_number_format(const number_format &format);
     void add_protection(const protection &p);
-    
+
     std::vector<style> get_styles() const;
-    
+
     std::vector<color> get_colors() const;
     std::vector<border> get_borders() const;
     std::vector<fill> get_fills() const;
     std::vector<font> get_fonts() const;
     std::vector<number_format> get_number_formats() const;
-    
-    std::size_t add_indexed_color(const std::string &rgb);    
+
+    std::size_t add_indexed_color(const std::string &rgb);
     std::string get_indexed_color(std::size_t color_index) const;
-    
+
     const number_format &get_number_format(std::size_t style_id) const;
     std::size_t set_number_format(const number_format &format, std::size_t style_id);
     const font &get_font(std::size_t style_id) const;
@@ -225,27 +237,27 @@ public:
     std::size_t set_protection(const protection &protection_, std::size_t style_id);
     bool get_pivot_button(std::size_t style_id) const;
     bool get_quote_prefix(std::size_t style_id) const;
-    
+
     void set_code_name(const std::string &code_name);
-    
+
     bool has_loaded_theme() const;
     const theme &get_loaded_theme() const;
-    
+
     const style &get_style(std::size_t style_id) const;
     std::size_t add_style(const style &style_);
-    
+
     manifest &get_manifest();
     const manifest &get_manifest() const;
-    
+
     const std::vector<relationship> &get_root_relationships() const;
-    
+
     void add_shared_string(const std::string &shared);
     std::vector<std::string> &get_shared_strings();
     const std::vector<std::string> &get_shared_strings() const;
-    
-private:
+
+  private:
     friend class worksheet;
     std::shared_ptr<detail::workbook_impl> d_;
 };
-    
+
 } // namespace xlnt

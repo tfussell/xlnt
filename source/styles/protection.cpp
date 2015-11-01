@@ -4,12 +4,10 @@ namespace xlnt {
 
 protection::protection() : protection(type::unprotected)
 {
-    
 }
 
 protection::protection(type t) : locked_(t), hidden_(type::unprotected)
 {
-    
 }
 
 } // namespace xlnt

@@ -36,28 +36,28 @@ class workbook;
 class zip_file;
 class xml_document;
 class xml_node;
-    
+
 class workbook_serializer
 {
-public:
+  public:
     using string_pair = std::pair<std::string, std::string>;
-    
+
     workbook_serializer(workbook &wb);
-    
+
     void read_workbook(const xml_document &xml);
     void read_properties_app(const xml_document &xml);
     void read_properties_core(const xml_document &xml);
-    
+
     xml_document write_workbook() const;
     xml_document write_properties_app() const;
     xml_document write_properties_core() const;
-    
+
     std::vector<string_pair> read_sheets();
     std::vector<string_pair> detect_worksheets();
-    
+
     xml_node write_named_ranges() const;
-    
-private:
+
+  private:
     workbook &workbook_;
 };
 

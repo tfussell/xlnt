@@ -5,7 +5,6 @@ namespace xlnt {
 
 side::side()
 {
-    
 }
-    
+
 } // namespace xlnt

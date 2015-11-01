@@ -2,6 +2,9 @@
 #include <unordered_map>
 #include <vector>
 
+#include <xlnt/worksheet/column_properties.hpp>
+#include <xlnt/worksheet/row_properties.hpp>
+
 #include "cell_impl.hpp"
 
 namespace xlnt {
@@ -13,7 +16,7 @@ namespace detail {
 struct worksheet_impl
 {
     worksheet_impl(workbook *parent_workbook, const std::string &title)
-    : parent_(parent_workbook), title_(title), freeze_panes_("A1"), comment_count_(0)
+        : parent_(parent_workbook), title_(title), freeze_panes_("A1"), comment_count_(0)
     {
         page_margins_.set_left(0.75);
         page_margins_.set_right(0.75);
@@ -22,12 +25,12 @@ struct worksheet_impl
         page_margins_.set_header(0.5);
         page_margins_.set_footer(0.5);
     }
-    
+
     worksheet_impl(const worksheet_impl &other)
     {
         *this = other;
     }
-    
+
     void operator=(const worksheet_impl &other)
     {
         parent_ = other.parent_;
@@ -36,9 +39,9 @@ struct worksheet_impl
         title_ = other.title_;
         freeze_panes_ = other.freeze_panes_;
         cell_map_ = other.cell_map_;
-        for(auto &row : cell_map_)
+        for (auto &row : cell_map_)
         {
-            for(auto &cell : row.second)
+            for (auto &cell : row.second)
             {
                 cell.second.parent_ = this;
             }
@@ -52,7 +55,7 @@ struct worksheet_impl
         comment_count_ = other.comment_count_;
         header_footer_ = other.header_footer_;
     }
-    
+
     workbook *parent_;
     std::unordered_map<column_t, column_properties> column_properties_;
     std::unordered_map<row_t, row_properties> row_properties_;

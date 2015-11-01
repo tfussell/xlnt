@@ -7,53 +7,53 @@ namespace xlnt {
 
 time time::from_number(long double raw_time)
 {
-	time result;
+    time result;
 
     double integer_part;
     double fractional_part = std::modf((double)raw_time, &integer_part);
 
     fractional_part *= 24;
     result.hour = (int)fractional_part;
-	fractional_part = 60 * (fractional_part - result.hour);
-	result.minute = (int)fractional_part;
-	fractional_part = 60 * (fractional_part - result.minute);
-	result.second = (int)fractional_part;
-	fractional_part = 1000000 * (fractional_part - result.second);
-	result.microsecond = (int)fractional_part;
-	if (result.microsecond == 999999 && fractional_part - result.microsecond > 0.5)
+    fractional_part = 60 * (fractional_part - result.hour);
+    result.minute = (int)fractional_part;
+    fractional_part = 60 * (fractional_part - result.minute);
+    result.second = (int)fractional_part;
+    fractional_part = 1000000 * (fractional_part - result.second);
+    result.microsecond = (int)fractional_part;
+    if (result.microsecond == 999999 && fractional_part - result.microsecond > 0.5)
     {
-		result.microsecond = 0;
-		result.second += 1;
-		if (result.second == 60)
+        result.microsecond = 0;
+        result.second += 1;
+        if (result.second == 60)
         {
-			result.second = 0;
-			result.minute += 1;
-			if (result.minute == 60)
+            result.second = 0;
+            result.minute += 1;
+            if (result.minute == 60)
             {
-				result.minute = 0;
-				result.hour += 1;
+                result.minute = 0;
+                result.hour += 1;
             }
         }
     }
-	return result;
+    return result;
 }
 
 date date::from_number(int days_since_base_year, calendar base_date)
 {
     date result(0, 0, 0);
 
-    if(base_date == calendar::mac_1904)
+    if (base_date == calendar::mac_1904)
     {
         days_since_base_year += 1462;
     }
 
-    if(days_since_base_year == 60)
+    if (days_since_base_year == 60)
     {
         result.day = 29;
         result.month = 2;
         result.year = 1900;
     }
-    else if(days_since_base_year < 60)
+    else if (days_since_base_year < 60)
     {
         days_since_base_year++;
     }
@@ -76,33 +76,25 @@ datetime datetime::from_number(long double raw_time, calendar base_date)
 {
     auto date_part = date::from_number((int)raw_time, base_date);
     auto time_part = time::from_number(raw_time);
-    return datetime(date_part.year, date_part.month, date_part.day, time_part.hour, time_part.minute, time_part.second, time_part.microsecond);
+    return datetime(date_part.year, date_part.month, date_part.day, time_part.hour, time_part.minute, time_part.second,
+                    time_part.microsecond);
 }
 
 bool date::operator==(const date &comparand) const
 {
-    return year == comparand.year
-        && month == comparand.month
-        && day == comparand.day;
+    return year == comparand.year && month == comparand.month && day == comparand.day;
 }
 
 bool time::operator==(const time &comparand) const
 {
-    return hour == comparand.hour
-        && minute == comparand.minute
-        && second == comparand.second
-        && microsecond == comparand.microsecond;
+    return hour == comparand.hour && minute == comparand.minute && second == comparand.second &&
+           microsecond == comparand.microsecond;
 }
 
 bool datetime::operator==(const datetime &comparand) const
 {
-    return year == comparand.year
-        && month == comparand.month
-        && day == comparand.day
-        && hour == comparand.hour
-        && minute == comparand.minute
-        && second == comparand.second
-        && microsecond == comparand.microsecond;
+    return year == comparand.year && month == comparand.month && day == comparand.day && hour == comparand.hour &&
+           minute == comparand.minute && second == comparand.second && microsecond == comparand.microsecond;
 }
 
 time::time(const std::string &time_string) : hour(0), minute(0), second(0), microsecond(0)
@@ -114,10 +106,10 @@ time::time(const std::string &time_string) : hour(0), minute(0), second(0), micr
     colon_index = remaining.find(':');
     minute = std::stoi(remaining.substr(0, colon_index));
     colon_index = remaining.find(':');
-    if(colon_index != std::string::npos)
+    if (colon_index != std::string::npos)
     {
-	remaining = remaining.substr(colon_index + 1);    
-	second = std::stoi(remaining);
+        remaining = remaining.substr(colon_index + 1);
+        second = std::stoi(remaining);
     }
 }
 
@@ -134,22 +126,21 @@ long double time::to_number() const
 
 int date::to_number(calendar base_date) const
 {
-    if(day == 29 && month == 2 && year == 1900)
+    if (day == 29 && month == 2 && year == 1900)
     {
         return 60;
     }
 
-    int days_since_1900 = int((1461 * (year + 4800 + int((month - 14) / 12))) / 4)
-        + int((367 * (month - 2 - 12 * ((month - 14) / 12))) / 12)
-        - int((3 * (int((year + 4900 + int((month - 14) / 12)) / 100))) / 4)
-        + day - 2415019 - 32075;
+    int days_since_1900 = int((1461 * (year + 4800 + int((month - 14) / 12))) / 4) +
+                          int((367 * (month - 2 - 12 * ((month - 14) / 12))) / 12) -
+                          int((3 * (int((year + 4900 + int((month - 14) / 12)) / 100))) / 4) + day - 2415019 - 32075;
 
-    if(days_since_1900 <= 60)
+    if (days_since_1900 <= 60)
     {
         days_since_1900--;
     }
 
-    if(base_date == calendar::mac_1904)
+    if (base_date == calendar::mac_1904)
     {
         return days_since_1900 - 1462;
     }
@@ -159,13 +150,13 @@ int date::to_number(calendar base_date) const
 
 long double datetime::to_number(calendar base_date) const
 {
-    return date(year, month, day).to_number(base_date)
-        + time(hour, minute, second, microsecond).to_number();
+    return date(year, month, day).to_number(base_date) + time(hour, minute, second, microsecond).to_number();
 }
 
 std::string datetime::to_string(xlnt::calendar /*base_date*/) const
 {
-    return std::to_string(year) + "/" + std::to_string(month) + "/" + std::to_string(day) + " " +std::to_string(hour) + ":" + std::to_string(minute) + ":" + std::to_string(second) + ":" + std::to_string(microsecond);
+    return std::to_string(year) + "/" + std::to_string(month) + "/" + std::to_string(day) + " " + std::to_string(hour) +
+           ":" + std::to_string(minute) + ":" + std::to_string(second) + ":" + std::to_string(microsecond);
 }
 
 date date::today()
@@ -181,7 +172,7 @@ datetime datetime::now()
     std::tm now = *std::localtime(&raw_time);
     return datetime(1900 + now.tm_year, now.tm_mon + 1, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec);
 }
-    
+
 double timedelta::to_number() const
 {
     return days + hours / 24.0;

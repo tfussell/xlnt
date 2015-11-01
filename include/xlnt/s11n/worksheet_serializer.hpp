@@ -29,7 +29,7 @@
 #include <xlnt/worksheet/worksheet.hpp>
 
 namespace xlnt {
-    
+
 class relationship;
 class workbook;
 class worksheet;
@@ -37,13 +37,13 @@ class xml_document;
 
 class worksheet_serializer
 {
-public:
+  public:
     worksheet_serializer(worksheet sheet);
-    
+
     bool read_worksheet(const xml_document &xml);
     xml_document write_worksheet() const;
-    
-private:
+
+  private:
     worksheet sheet_;
 };
 

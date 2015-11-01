@@ -7,12 +7,11 @@
 namespace {
 
 template <class T>
-void hash_combine(std::size_t& seed, const T& v)
+void hash_combine(std::size_t &seed, const T &v)
 {
     std::hash<T> hasher;
-    seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
+    seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
-    
 }
 
 namespace xlnt {
@@ -20,43 +19,43 @@ namespace xlnt {
 const color color::black = color(color::type::indexed, 0);
 const color color::white = color(color::type::indexed, 0);
 
-style::style() :
-    id_(0),
-    alignment_apply_(false),
-    border_apply_(false),
-    border_id_(0),
-    fill_apply_(false),
-    fill_id_(0),
-    font_apply_(false),
-    font_id_(0),
-    number_format_apply_(false),
-    number_format_id_(0),
-    protection_apply_(false),
-    pivot_button_(false),
-    quote_prefix_(false)
+style::style()
+    : id_(0),
+      alignment_apply_(false),
+      border_apply_(false),
+      border_id_(0),
+      fill_apply_(false),
+      fill_id_(0),
+      font_apply_(false),
+      font_id_(0),
+      number_format_apply_(false),
+      number_format_id_(0),
+      protection_apply_(false),
+      pivot_button_(false),
+      quote_prefix_(false)
 {
 }
 
-style::style(const style &other) :
-    id_(other.id_),
-    alignment_apply_(other.alignment_apply_),
-    alignment_(other.alignment_),
-    border_apply_(other.border_apply_),
-    border_id_(other.border_id_),
-    border_(other.border_),
-    fill_apply_(other.fill_apply_),
-    fill_id_(other.fill_id_),
-    fill_(other.fill_),
-    font_apply_(other.font_apply_),
-    font_id_(other.font_id_),
-    font_(other.font_),
-    number_format_apply_(other.number_format_apply_),
-    number_format_id_(other.number_format_id_),
-    number_format_(other.number_format_),
-    protection_apply_(other.protection_apply_),
-    protection_(other.protection_),
-    pivot_button_(other.pivot_button_),
-    quote_prefix_(other.quote_prefix_)
+style::style(const style &other)
+    : id_(other.id_),
+      alignment_apply_(other.alignment_apply_),
+      alignment_(other.alignment_),
+      border_apply_(other.border_apply_),
+      border_id_(other.border_id_),
+      border_(other.border_),
+      fill_apply_(other.fill_apply_),
+      fill_id_(other.fill_id_),
+      fill_(other.fill_),
+      font_apply_(other.font_apply_),
+      font_id_(other.font_id_),
+      font_(other.font_),
+      number_format_apply_(other.number_format_apply_),
+      number_format_id_(other.number_format_id_),
+      number_format_(other.number_format_),
+      protection_apply_(other.protection_apply_),
+      protection_(other.protection_),
+      pivot_button_(other.pivot_button_),
+      quote_prefix_(other.quote_prefix_)
 {
 }
 
@@ -81,32 +80,32 @@ style &style::operator=(const style &other)
     protection_apply_ = other.protection_apply_;
     pivot_button_ = other.pivot_button_;
     quote_prefix_ = other.quote_prefix_;
-    
+
     return *this;
 }
 
 std::size_t style::hash() const
 {
     std::size_t seed = 0;
-    
+
     hash_combine(seed, alignment_apply_);
     hash_combine(seed, alignment_apply_ ? alignment_.hash() : 0);
-    
+
     hash_combine(seed, border_apply_);
     hash_combine(seed, border_apply_ ? border_id_ : 0);
-    
+
     hash_combine(seed, font_apply_);
     hash_combine(seed, font_apply_ ? font_id_ : 0);
-    
+
     hash_combine(seed, fill_apply_);
     hash_combine(seed, fill_apply_ ? fill_id_ : 0);
-    
+
     hash_combine(seed, number_format_apply_);
     hash_combine(seed, number_format_apply_ ? number_format_id_ : 0);
-    
+
     hash_combine(seed, protection_apply_);
     hash_combine(seed, protection_apply_ ? get_protection().hash() : 0);
-    
+
     return seed;
 }
 
@@ -124,7 +123,7 @@ const alignment style::get_alignment() const
 {
     return alignment_;
 }
-    
+
 const fill style::get_fill() const
 {
     return fill_;

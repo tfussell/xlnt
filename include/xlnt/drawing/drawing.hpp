@@ -27,13 +27,13 @@ namespace xlnt {
 
 class worksheet;
 struct drawing_struct;
-    
+
 class drawing
 {
-public:
+  public:
     drawing();
-    
-private:
+
+  private:
     friend class worksheet;
     drawing(drawing_struct *root);
     drawing_struct *root_;

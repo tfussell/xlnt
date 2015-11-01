@@ -3,11 +3,11 @@
 #include <string>
 
 namespace xlnt {
-    
+
 class cell;
-    
+
 namespace detail {
-    
+
 struct comment_impl;
 
 } // namespace detail
@@ -17,17 +17,17 @@ struct comment_impl;
 /// </summary>
 class comment
 {
-public:
+  public:
     /// <summary>
     /// The default constructor makes an invalid comment without a parent cell.
     /// </summary>
     comment();
     comment(cell parent, const std::string &text, const std::string &auth);
     ~comment();
-    
+
     std::string get_text() const;
     std::string get_author() const;
-    
+
     /// <summary>
     /// True if the comments point to the same sell.
     /// Note that a cell can only have one comment and a comment
@@ -35,7 +35,7 @@ public:
     /// </summary>
     bool operator==(const comment &other) const;
 
-private:
+  private:
     friend class cell;
     comment(detail::comment_impl *d);
     detail::comment_impl *d_;

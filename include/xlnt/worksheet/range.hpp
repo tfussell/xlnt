@@ -36,41 +36,36 @@ namespace xlnt {
 
 class range
 {
-public:
-    template<bool is_const = true>
+  public:
+    template <bool is_const = true>
     class common_iterator : public std::iterator<std::bidirectional_iterator_tag, cell>
     {
-    public:
+      public:
         common_iterator(worksheet ws, const range_reference &start_cell, major_order order = major_order::row)
-        : ws_(ws),
-        current_cell_(start_cell.get_top_left()),
-        range_(start_cell),
-        order_(order)
+            : ws_(ws), current_cell_(start_cell.get_top_left()), range_(start_cell), order_(order)
         {
         }
-        
+
         common_iterator(const common_iterator<false> &other)
         {
             *this = other;
         }
-        
+
         cell_vector operator*();
-        
-        bool operator== (const common_iterator& other) const
+
+        bool operator==(const common_iterator &other) const
         {
-            return ws_ == other.ws_
-            && current_cell_ == other.current_cell_
-            && order_ == other.order_;
+            return ws_ == other.ws_ && current_cell_ == other.current_cell_ && order_ == other.order_;
         }
-        
-        bool operator!=(const common_iterator& other) const
+
+        bool operator!=(const common_iterator &other) const
         {
             return !(*this == other);
         }
-        
+
         common_iterator &operator--()
         {
-            if(order_ == major_order::row)
+            if (order_ == major_order::row)
             {
                 current_cell_.set_row(current_cell_.get_row() - 1);
             }
@@ -78,20 +73,20 @@ public:
             {
                 current_cell_.set_column_index(current_cell_.get_column_index() - 1);
             }
-            
+
             return *this;
         }
-        
+
         common_iterator operator--(int)
         {
             iterator old = *this;
             --*this;
             return old;
         }
-        
+
         common_iterator &operator++()
         {
-            if(order_ == major_order::row)
+            if (order_ == major_order::row)
             {
                 current_cell_.set_row(current_cell_.get_row() + 1);
             }
@@ -99,29 +94,29 @@ public:
             {
                 current_cell_.set_column_index(current_cell_.get_column_index() + 1);
             }
-            
+
             return *this;
         }
-        
+
         common_iterator operator++(int)
         {
             iterator old = *this;
             ++*this;
             return old;
         }
-        
+
         friend class common_iterator<true>;
-        
-    private:
+
+      private:
         worksheet ws_;
         cell_reference current_cell_;
         range_reference range_;
         major_order order_;
     };
-    
+
     using iterator = common_iterator<false>;
     using const_iterator = common_iterator<true>;
-    
+
     range(worksheet ws, const range_reference &reference, major_order order = major_order::row);
 
     ~range();
@@ -132,7 +127,10 @@ public:
 
     bool operator==(const range &comparand) const;
 
-    bool operator!=(const range &comparand) const { return !(*this == comparand); }
+    bool operator!=(const range &comparand) const
+    {
+        return !(*this == comparand);
+    }
 
     cell_vector get_vector(std::size_t vector_index);
 
@@ -145,19 +143,25 @@ public:
     range_reference get_reference() const;
 
     std::size_t length() const;
-    
+
     bool contains(const cell_reference &ref);
 
     iterator begin();
     iterator end();
 
-    const_iterator begin() const { return cbegin(); }
-    const_iterator end() const { return cend(); }
+    const_iterator begin() const
+    {
+        return cbegin();
+    }
+    const_iterator end() const
+    {
+        return cend();
+    }
 
     const_iterator cbegin() const;
     const_iterator cend() const;
 
-private:
+  private:
     worksheet ws_;
     range_reference ref_;
     major_order order_;

@@ -8,7 +8,7 @@ namespace xlnt {
 comment::comment(detail::comment_impl *d) : d_(d)
 {
 }
-    
+
 comment::comment(cell parent, const std::string &text, const std::string &author) : d_(nullptr)
 {
     d_ = parent.get_comment().d_;

@@ -26,20 +26,20 @@
 #include <string>
 
 namespace xlnt {
-    
+
 /// <summary>
 /// Security information about the document.
 /// </summary>
 class document_security
 {
-public:
+  public:
     document_security();
-    
+
     bool lock_revision;
     bool lock_structure;
     bool lock_windows;
     std::string revision_password;
     std::string workbook_password;
 };
-    
+
 } // namespace xlnt

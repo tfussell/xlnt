@@ -31,18 +31,18 @@
 namespace xlnt {
 
 class xml_document;
-    
+
 class comment_serializer
 {
     comment_serializer(worksheet sheet);
-    
+
     void read_comments(const xml_document &xml);
     void read_comments_vml(const xml_document &xml);
-    
+
     xml_document write_comments() const;
     xml_document write_comments_vml() const;
-    
-private:
+
+  private:
     worksheet sheet_;
 };
 

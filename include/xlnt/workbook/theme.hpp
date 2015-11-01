@@ -4,7 +4,6 @@ namespace xlnt {
 
 class theme
 {
-    
 };
-    
+
 } // namespace xlnt

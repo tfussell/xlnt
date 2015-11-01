@@ -2,8 +2,7 @@
 
 namespace xlnt {
 
-class external_book {
-    
+class external_book
+{
 };
-    
 }

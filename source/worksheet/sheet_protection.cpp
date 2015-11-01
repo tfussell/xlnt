@@ -11,7 +11,7 @@ void sheet_protection::set_password(const std::string &password)
     hashed_password_ = hash_password(password);
 }
 
-template< typename T >
+template <typename T>
 std::string int_to_hex(T i)
 {
     std::stringstream stream;
@@ -23,8 +23,8 @@ std::string sheet_protection::hash_password(const std::string &plaintext_passwor
 {
     int password = 0x0000;
     int i = 1;
-    
-    for(auto character : plaintext_password)
+
+    for (auto character : plaintext_password)
     {
         int value = character << i;
         int rotated_bits = value >> 15;
@@ -32,13 +32,13 @@ std::string sheet_protection::hash_password(const std::string &plaintext_passwor
         password ^= (value | rotated_bits);
         i++;
     }
-    
+
     password ^= plaintext_password.size();
     password ^= 0xCE4B;
-    
+
     std::string hashed = int_to_hex(password);
-    std::transform(hashed.begin(), hashed.end(), hashed.begin(), [](char c){ return std::toupper(c, std::locale::classic()); });
+    std::transform(hashed.begin(), hashed.end(), hashed.begin(),
+                   [](char c) { return std::toupper(c, std::locale::classic()); });
     return hashed;
 }
-    
 }

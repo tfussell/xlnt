@@ -49,72 +49,72 @@ enum class border_style
 
 class side
 {
-public:
+  public:
     side();
-    
+
     std::size_t hash() const
     {
         std::size_t seed = 0;
-        
+
         hash_combine(seed, style_assigned_);
-        
-        if(style_assigned_)
+
+        if (style_assigned_)
         {
             hash_combine(seed, static_cast<std::size_t>(style_));
         }
-        
+
         hash_combine(seed, color_assigned_);
-        
-        if(color_assigned_)
+
+        if (color_assigned_)
         {
             hash_combine(seed, color_.hash());
         }
-        
+
         return seed;
     }
-    
+
     border_style get_style() const
     {
         return style_;
     }
-    
+
     color get_color() const
     {
         return color_;
     }
-    
+
     bool is_style_assigned() const
     {
         return style_assigned_;
     }
-    
+
     bool is_color_assigned() const
     {
         return color_assigned_;
     }
-    
+
     bool operator==(const side &other) const
     {
         return other.style_ == style_ && color_ == other.color_;
     }
-    
+
     void set_border_style(border_style bs)
     {
         style_assigned_ = true;
         style_ = bs;
     }
-    
+
     void set_color(color new_color)
     {
         color_assigned_ = true;
         color_ = new_color;
     }
-    
-private:
+
+  private:
     bool style_assigned_ = false;
     border_style style_ = border_style::none;
     bool color_assigned_ = false;
     color color_ = color::black;
 };
-    
+
 } // namespace xlnt

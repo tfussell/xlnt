@@ -9,27 +9,27 @@ namespace detail {
 struct workbook_impl
 {
     workbook_impl();
-    
-    workbook_impl(const workbook_impl &other) 
+
+    workbook_impl(const workbook_impl &other)
         : active_sheet_index_(other.active_sheet_index_),
-        worksheets_(other.worksheets_), 
-        relationships_(other.relationships_),
-        root_relationships_(other.root_relationships_),
-        drawings_(other.drawings_),
-        shared_strings_(other.shared_strings_),
-        properties_(other.properties_), 
-        guess_types_(other.guess_types_),
-        data_only_(other.data_only_),
-        styles_(other.styles_),
-        colors_(other.colors_),
-        borders_(other.borders_),
-        fills_(other.fills_),
-        fonts_(other.fonts_),
-        number_formats_(other.number_formats_),
-        manifest_(other.manifest_)
+          worksheets_(other.worksheets_),
+          relationships_(other.relationships_),
+          root_relationships_(other.root_relationships_),
+          drawings_(other.drawings_),
+          shared_strings_(other.shared_strings_),
+          properties_(other.properties_),
+          guess_types_(other.guess_types_),
+          data_only_(other.data_only_),
+          styles_(other.styles_),
+          colors_(other.colors_),
+          borders_(other.borders_),
+          fills_(other.fills_),
+          fonts_(other.fonts_),
+          number_formats_(other.number_formats_),
+          manifest_(other.manifest_)
     {
     }
-    
+
     workbook_impl &operator=(const workbook_impl &other)
     {
         active_sheet_index_ = other.active_sheet_index_;
@@ -38,7 +38,8 @@ struct workbook_impl
         relationships_.clear();
         std::copy(other.relationships_.begin(), other.relationships_.end(), std::back_inserter(relationships_));
         root_relationships_.clear();
-        std::copy(other.root_relationships_.begin(), other.root_relationships_.end(), std::back_inserter(root_relationships_));
+        std::copy(other.root_relationships_.begin(), other.root_relationships_.end(),
+                  std::back_inserter(root_relationships_));
         drawings_.clear();
         std::copy(other.drawings_.begin(), other.drawings_.end(), back_inserter(drawings_));
         shared_strings_.clear();
@@ -53,7 +54,7 @@ struct workbook_impl
         number_formats_ = other.number_formats_;
         colors_ = other.colors_;
         manifest_ = other.manifest_;
-        
+
         return *this;
     }
 
@@ -63,24 +64,24 @@ struct workbook_impl
     std::vector<relationship> root_relationships_;
     std::vector<drawing> drawings_;
     std::vector<std::string> shared_strings_;
-    
+
     document_properties properties_;
-    
+
     bool guess_types_;
     bool data_only_;
-    
+
     std::vector<style> styles_;
-    
+
     std::size_t next_custom_format_id_;
-    
+
     std::vector<color> colors_;
     std::vector<border> borders_;
     std::vector<fill> fills_;
     std::vector<font> fonts_;
     std::vector<number_format> number_formats_;
-    
+
     manifest manifest_;
-    
+
     theme theme_;
 };
 

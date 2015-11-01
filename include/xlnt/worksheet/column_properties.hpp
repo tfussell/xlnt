@@ -28,13 +28,9 @@ namespace xlnt {
 class column_properties
 {
 public:
-    void set_height(int height) { this->height = height; }
-    int row_index;
-    int height;
-    bool visible;
-    int outline_level;
-    bool collapsed;
-    int style_index;
+    double width;
+    std::size_t style;
+    bool custom;
 };
-    
+
 } // namespace xlnt

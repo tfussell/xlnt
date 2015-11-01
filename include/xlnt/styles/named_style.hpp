@@ -29,17 +29,17 @@ namespace xlnt {
 
 class named_style
 {
-public:
+  public:
     named_style();
-    
+
     std::size_t hash() const;
-    
+
     bool operator==(const named_style &other) const
     {
         return style_.hash() == other.style_.hash();
     }
-    
-private:
+
+  private:
     std::string name_;
     style style_;
 };

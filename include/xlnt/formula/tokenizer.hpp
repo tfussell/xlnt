@@ -1,7 +1,7 @@
 namespace xlnt {
 
-class tokenizer {
-
+class tokenizer
+{
 };
-    
+
 } // namespace xlnt

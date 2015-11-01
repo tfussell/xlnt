@@ -34,9 +34,9 @@ namespace xlnt {
 /// </summary>
 class document_properties
 {
-public:
+  public:
     document_properties();
-    
+
     std::string creator;
     std::string last_modified_by;
     datetime created;

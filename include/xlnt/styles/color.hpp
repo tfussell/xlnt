@@ -31,7 +31,7 @@ namespace xlnt {
 
 class color
 {
-public:
+  public:
     enum class type
     {
         indexed,
@@ -39,7 +39,7 @@ public:
         auto_,
         rgb
     };
-    
+
     static const color black;
     static const color white;
     static const color red;
@@ -50,85 +50,87 @@ public:
     static const color darkgreen;
     static const color yellow;
     static const color darkyellow;
-    
-    color() {}
-    
+
+    color()
+    {
+    }
+
     color(type t, std::size_t v) : type_(t), index_(v)
     {
     }
-    
+
     color(type t, const std::string &v) : type_(t), rgb_string_(v)
     {
     }
-    
+
     void set_auto(int auto_index)
     {
         type_ = type::auto_;
         index_ = auto_index;
     }
-    
+
     void set_index(int index)
     {
         type_ = type::indexed;
         index_ = index;
     }
-    
+
     void set_theme(int theme)
     {
         type_ = type::theme;
         index_ = theme;
     }
-    
+
     type get_type() const
     {
         return type_;
     }
-    
+
     int get_auto() const
     {
-        if(type_ != type::auto_)
+        if (type_ != type::auto_)
         {
             throw std::runtime_error("not auto color");
         }
-        
+
         return index_;
     }
-    
+
     int get_index() const
     {
-        if(type_ != type::indexed)
+        if (type_ != type::indexed)
         {
             throw std::runtime_error("not indexed color");
         }
-        
+
         return index_;
     }
-    
+
     int get_theme() const
     {
-        if(type_ != type::theme)
+        if (type_ != type::theme)
         {
             throw std::runtime_error("not theme color");
         }
-        
+
         return index_;
     }
-    
+
     std::string get_rgb_string() const
     {
-        if(type_ != type::rgb)
+        if (type_ != type::rgb)
         {
             throw std::runtime_error("not rgb color");
         }
-        
+
         return rgb_string_;
     }
-    
+
     std::size_t hash() const
     {
         auto seed = static_cast<std::size_t>(type_);
-        
-        if(type_ != type::rgb)
+
+        if (type_ != type::rgb)
         {
             hash_combine(seed, index_);
         }
@@ -136,16 +138,16 @@ public:
         {
             hash_combine(seed, rgb_string_);
         }
-        
+
         return seed;
     }
-    
+
     bool operator==(const color &other) const
     {
         return hash() == other.hash();
     }
-    
-private:
+
+  private:
     type type_ = type::indexed;
     int index_ = 0;
     std::string rgb_string_;

@@ -31,7 +31,7 @@ namespace xlnt {
 
 class number_format
 {
-public:
+  public:
     static const number_format general();
     static const number_format text();
     static const number_format number();
@@ -68,25 +68,31 @@ public:
     static const number_format currency_eur_simple();
 
     static number_format from_builtin_id(int builtin_id);
-    
+
     number_format();
     number_format(int builtin_id);
     number_format(const std::string &code, int custom_id = -1);
-    
+
     void set_format_string(const std::string &format_code, int id = -1);
     std::string get_format_string() const;
 
-    void set_id(int id) { id_ = id; }
-    int get_id() const { return id_; }
-    
+    void set_id(int id)
+    {
+        id_ = id;
+    }
+    int get_id() const
+    {
+        return id_;
+    }
+
     std::size_t hash() const;
-    
+
     bool operator==(const number_format &other) const
     {
         return hash() == other.hash();
     }
 
-private:
+  private:
     int id_;
     std::string format_string_;
 };

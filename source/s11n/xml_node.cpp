@@ -13,7 +13,7 @@ xml_node::xml_node(const detail::xml_node_impl &d) : xml_node()
 {
     d_->node = d.node;
 }
-    
+
 xml_node::~xml_node()
 {
 }
@@ -22,11 +22,11 @@ xml_node::xml_node(const xml_node &other) : xml_node()
 {
     d_->node = other.d_->node;
 }
-    
+
 xml_node &xml_node::operator=(const xlnt::xml_node &other)
 {
     d_->node = other.d_->node;
-    
+
     return *this;
 }
 
@@ -58,29 +58,29 @@ void xml_node::set_text(const std::string &text)
 const std::vector<xml_node> xml_node::get_children() const
 {
     std::vector<xml_node> children;
-    
-    for(auto child : d_->node.children())
+
+    for (auto child : d_->node.children())
     {
         children.push_back(xml_node(detail::xml_node_impl(child)));
     }
-    
+
     return children;
 }
 
 xml_node xml_node::add_child(const xml_node &child)
 {
     auto child_node = xml_node(detail::xml_node_impl(d_->node.append_child(child.get_name().c_str())));
-    
-    for(auto attr : child.get_attributes())
+
+    for (auto attr : child.get_attributes())
     {
         child_node.add_attribute(attr.first, attr.second);
     }
-    
-    for(auto child_child : child.get_children())
+
+    for (auto child_child : child.get_children())
     {
         child_node.add_child(child_child);
     }
-    
+
     return child_node;
 }
 
@@ -92,12 +92,12 @@ xml_node xml_node::add_child(const std::string &child_name)
 const std::vector<xml_node::string_pair> xml_node::get_attributes() const
 {
     std::vector<string_pair> attributes;
-    
-    for(auto attr : d_->node.attributes())
+
+    for (auto attr : d_->node.attributes())
     {
         attributes.push_back(std::make_pair<std::string, std::string>(attr.name(), attr.value()));
     }
-    
+
     return attributes;
 }
 
@@ -130,7 +130,7 @@ const xml_node xml_node::get_child(const std::string &child_name) const
 {
     return xml_node(detail::xml_node_impl(d_->node.child(child_name.c_str())));
 }
-    
+
 std::string xml_node::to_string() const
 {
     return xml_serializer::serialize_node(*this);

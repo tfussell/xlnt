@@ -6,7 +6,7 @@
 #include <detail/xml_node_impl.hpp>
 
 namespace xlnt {
-    
+
 xml_document::xml_document() : d_(new detail::xml_document_impl())
 {
 }
@@ -61,7 +61,7 @@ xml_document &xml_document::from_string(const std::string &xml_string)
 {
     auto doc = xml_serializer::deserialize(xml_string);
     std::swap(doc.d_, d_);
-    
+
     return *this;
 }
 

@@ -27,24 +27,71 @@ namespace xlnt {
 
 class page_margins
 {
-public:
-    margins() : default_(true), top_(0), left_(0), bottom_(0), right_(0), header_(0), footer_(0) {}
-    
-    bool is_default() const { return default_; }
-    double get_top() const { return top_; }
-    void set_top(double top) { default_ = false; top_ = top; }
-    double get_left() const { return left_; }
-    void set_left(double left) { default_ = false; left_ = left; }
-    double get_bottom() const { return bottom_; }
-    void set_bottom(double bottom) { default_ = false; bottom_ = bottom; }
-    double get_right() const { return right_; }
-    void set_right(double right) { default_ = false; right_ = right; }
-    double get_header() const { return header_; }
-    void set_header(double header) { default_ = false; header_ = header; }
-    double get_footer() const { return footer_; }
-    void set_footer(double footer) { default_ = false; footer_ = footer; }
-    
-private:
+  public:
+    page_margins() : default_(true), top_(0), left_(0), bottom_(0), right_(0), header_(0), footer_(0)
+    {
+    }
+
+    bool is_default() const
+    {
+        return default_;
+    }
+    double get_top() const
+    {
+        return top_;
+    }
+    void set_top(double top)
+    {
+        default_ = false;
+        top_ = top;
+    }
+    double get_left() const
+    {
+        return left_;
+    }
+    void set_left(double left)
+    {
+        default_ = false;
+        left_ = left;
+    }
+    double get_bottom() const
+    {
+        return bottom_;
+    }
+    void set_bottom(double bottom)
+    {
+        default_ = false;
+        bottom_ = bottom;
+    }
+    double get_right() const
+    {
+        return right_;
+    }
+    void set_right(double right)
+    {
+        default_ = false;
+        right_ = right;
+    }
+    double get_header() const
+    {
+        return header_;
+    }
+    void set_header(double header)
+    {
+        default_ = false;
+        header_ = header;
+    }
+    double get_footer() const
+    {
+        return footer_;
+    }
+    void set_footer(double footer)
+    {
+        default_ = false;
+        footer_ = footer;
+    }
+
+  private:
     bool default_;
     double top_;
     double left_;
@@ -53,5 +100,5 @@ private:
     double header_;
     double footer_;
 };
-    
+
 } // namespace xlnt

@@ -30,7 +30,7 @@
 #include <xlnt/common/types.hpp>
 
 namespace xlnt {
-    
+
 enum class calendar;
 
 class alignment;
@@ -50,9 +50,9 @@ struct time;
 struct timedelta;
 
 namespace detail {
-    
+
 struct cell_impl;
-    
+
 } // namespace detail
 
 /// <summary>
@@ -66,7 +66,7 @@ struct cell_impl;
 /// </remarks>
 class cell
 {
-public:
+  public:
     /// <summary>
     /// Enumerates the possible types a cell can be determined by it's current value.
     /// </summary>
@@ -79,77 +79,77 @@ public:
         error,
         boolean
     };
-    
+
     /// <summary>
     /// Return a map of error strings such as #DIV/0! and their associated indices.
     /// </summary>
     static const std::unordered_map<std::string, int> error_codes();
-    
-    //TODO: Should it be possible to construct and use a cell without a parent worksheet?
+
+    // TODO: Should it be possible to construct and use a cell without a parent worksheet?
     //(cont'd) If so, it would need to be responsible for allocating and deleting its PIMPL.
-    
+
     /// <summary>
     /// Construct a null cell without a parent.
     /// Most methods will throw an exception if this cell is not further initialized.
     /// </summary>
     cell();
-    
+
     /// <summary>
     /// Construct a cell in worksheet, sheet, at the given reference location (e.g. A1).
     /// </summary>
     cell(worksheet sheet, const cell_reference &reference);
-    
+
     /// <summary>
     /// This constructor, provided for convenience, is equivalent to calling:
     /// cell c(sheet, reference);
     /// c.set_value(initial_value);
     /// </summary>
-    template<typename T>
+    template <typename T>
     cell(worksheet sheet, const cell_reference &reference, const T &initial_value);
 
     // value
-    
+
     /// <summary>
     /// Return true if value has been set and has not been cleared using cell::clear_value().
     /// </summary>
     bool has_value() const;
-    
-    template<typename T>
+
+    template <typename T>
     T get_value() const;
-    
+
     void clear_value();
-    
-    template<typename T>
+
+    template <typename T>
     void set_value(T value);
-    
+
     type get_data_type() const;
     void set_data_type(type t);
-    
+
     // properties
-    
+
     /// <summary>
     /// There's no reason to keep a cell which has no value and is not a placeholder.
     /// Return true if this cell has no value, style, isn't merged, etc.
     /// </summary>
     bool garbage_collectible() const;
-    
+
     /// <summary>
     /// Return true iff this cell's number format matches a date format.
     /// </summary>
     bool is_date() const;
-    
+
     // position
     cell_reference get_reference() const;
     std::string get_column() const;
     column_t get_column_index() const;
     row_t get_row() const;
     std::pair<int, int> get_anchor() const;
-    
+
     // hyperlink
     relationship get_hyperlink() const;
     void set_hyperlink(const std::string &value);
     bool has_hyperlink() const;
-    
+
     // style
     bool has_style() const;
     std::size_t get_style_id() const;
@@ -170,13 +170,13 @@ public:
     bool pivot_button() const;
     void set_quote_prefix(bool b);
     bool quote_prefix() const;
-    
+
     // comment
     comment get_comment();
     void set_comment(const comment &comment);
     void clear_comment();
     bool has_comment() const;
-    
+
     // formula
     std::string get_formula() const;
     void set_formula(const std::string &formula);
@@ -184,47 +184,47 @@ public:
     bool has_formula() const;
 
     // printing
-    
+
     /// <summary>
     /// Returns a string describing this cell like <Cell Sheet.A1>.
     /// </summary>
     std::string to_repr() const;
-    
+
     /// <summary>
     /// Returns a string representing the value of this cell. If the data type is not a string,
     /// it will be converted according to the number format.
     /// </summary>
     std::string to_string() const;
-    
+
     // merging
     bool is_merged() const;
     void set_merged(bool merged);
 
     std::string get_error() const;
     void set_error(const std::string &error);
-    
+
     cell offset(row_t row, column_t column);
-    
+
     worksheet get_parent();
     const worksheet get_parent() const;
-    
+
     calendar get_base_date() const;
-    
+
     // operators
     cell &operator=(const cell &rhs);
-    
+
     bool operator==(const cell &comparand) const;
     bool operator==(std::nullptr_t) const;
 
     // friend operators, so we can put cell on either side of comparisons with other types
     friend bool operator==(std::nullptr_t, const cell &cell);
     friend bool operator<(cell left, cell right);
-    
-private:
+
+  private:
     friend class worksheet;
     friend struct detail::cell_impl;
     friend class style;
-    
+
     cell(detail::cell_impl *d);
     detail::cell_impl *d_;
 };
@@ -237,5 +237,5 @@ inline std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)
 {
     return stream << cell.to_string();
 }
-    
+
 } // namespace xlnt

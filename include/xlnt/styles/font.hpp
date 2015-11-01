@@ -29,12 +29,12 @@
 #include <xlnt/styles/color.hpp>
 
 namespace xlnt {
-    
+
 class style;
 
 class font
 {
-public:
+  public:
     enum class underline_style
     {
         none,
@@ -43,37 +43,99 @@ public:
         single,
         single_accounting
     };
-    
-    void set_bold(bool bold) { bold_ = bold; }
-    bool is_bold() const { return bold_; }
-    
-    void set_italic(bool italic) { italic_ = italic; }
-    bool is_italic() const { return italic_; }
-    
-    void set_strikethrough(bool strikethrough) { strikethrough_ = strikethrough; }
-    bool is_strikethrough() const { return strikethrough_; }
-    
-    void set_underline(underline_style new_underline) { underline_ = new_underline; }
-    bool is_underline() const { return underline_ != underline_style::none; }
-    underline_style get_underline() const { return underline_; }
-    
-    void set_size(int size) { size_ = size; }
-    int get_size() const { return size_; }
-    
-    void set_name(const std::string &name) { name_ = name; }
-    std::string get_name() const { return name_; }
-    
-    void set_color(color c) { color_ = c; }
-    void set_family(int family) { has_family_ = true; family_ = family; }
-    void set_scheme(const std::string &scheme) { has_scheme_ = true; scheme_ = scheme; }
-    
-    color get_color() const { return color_; }
-    
-    bool has_family() const { return has_family_; }
-    int get_family() const { return family_; }
-    
-    bool has_scheme() const { return has_scheme_; }
-    
+
+    void set_bold(bool bold)
+    {
+        bold_ = bold;
+    }
+    bool is_bold() const
+    {
+        return bold_;
+    }
+
+    void set_italic(bool italic)
+    {
+        italic_ = italic;
+    }
+    bool is_italic() const
+    {
+        return italic_;
+    }
+
+    void set_strikethrough(bool strikethrough)
+    {
+        strikethrough_ = strikethrough;
+    }
+    bool is_strikethrough() const
+    {
+        return strikethrough_;
+    }
+
+    void set_underline(underline_style new_underline)
+    {
+        underline_ = new_underline;
+    }
+    bool is_underline() const
+    {
+        return underline_ != underline_style::none;
+    }
+    underline_style get_underline() const
+    {
+        return underline_;
+    }
+
+    void set_size(int size)
+    {
+        size_ = size;
+    }
+    int get_size() const
+    {
+        return size_;
+    }
+
+    void set_name(const std::string &name)
+    {
+        name_ = name;
+    }
+    std::string get_name() const
+    {
+        return name_;
+    }
+
+    void set_color(color c)
+    {
+        color_ = c;
+    }
+    void set_family(int family)
+    {
+        has_family_ = true;
+        family_ = family;
+    }
+    void set_scheme(const std::string &scheme)
+    {
+        has_scheme_ = true;
+        scheme_ = scheme;
+    }
+
+    color get_color() const
+    {
+        return color_;
+    }
+
+    bool has_family() const
+    {
+        return has_family_;
+    }
+    int get_family() const
+    {
+        return family_;
+    }
+
+    bool has_scheme() const
+    {
+        return has_scheme_;
+    }
+
     std::size_t hash() const
     {
         std::size_t seed = bold_;
@@ -85,39 +147,44 @@ public:
         hash_combine(seed, size_);
         hash_combine(seed, static_cast<std::size_t>(underline_));
         hash_combine(seed, static_cast<std::size_t>(color_.get_type()));
-        switch(color_.get_type())
+        switch (color_.get_type())
         {
-            case color::type::indexed: hash_combine(seed, color_.get_index()); break;
-            case color::type::theme: hash_combine(seed, color_.get_theme()); break;
-            default: break;
+        case color::type::indexed:
+            hash_combine(seed, color_.get_index());
+            break;
+        case color::type::theme:
+            hash_combine(seed, color_.get_theme());
+            break;
+        default:
+            break;
         }
         hash_combine(seed, family_);
         hash_combine(seed, scheme_);
-        
+
         return seed;
     }
-    
+
     bool operator==(const font &other) const
     {
         return hash() == other.hash();
     }
-    
-private:
+
+  private:
     friend class style;
-    
-     std::string name_ = "Calibri";
-     int size_ = 11;
-     bool bold_ = false;
-     bool italic_ = false;
-     bool superscript_ = false;
-     bool subscript_ = false;
-     underline_style underline_ = underline_style::none;
-     bool strikethrough_ = false;
-     color color_;
-     bool has_family_ = false;
-     int family_;
-     bool has_scheme_ = false;
-     std::string scheme_;
+
+    std::string name_ = "Calibri";
+    int size_ = 11;
+    bool bold_ = false;
+    bool italic_ = false;
+    bool superscript_ = false;
+    bool subscript_ = false;
+    underline_style underline_ = underline_style::none;
+    bool strikethrough_ = false;
+    color color_;
+    bool has_family_ = false;
+    int family_;
+    bool has_scheme_ = false;
+    std::string scheme_;
 };
 
 } // namespace xlnt

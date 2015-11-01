@@ -23,7 +23,7 @@
 #pragma once
 
 namespace xlnt {
-    
+
 class sheet_view
 {
 };

@@ -32,7 +32,7 @@ namespace xlnt {
 /// </summary>
 class alignment
 {
-public:
+  public:
     enum class horizontal_alignment
     {
         none,
@@ -43,7 +43,7 @@ public:
         center_continuous,
         justify
     };
-    
+
     enum class vertical_alignment
     {
         none,
@@ -52,52 +52,52 @@ public:
         center,
         justify
     };
-    
+
     bool get_wrap_text() const
     {
         return wrap_text_;
     }
-    
+
     void set_wrap_text(bool wrap_text)
     {
         wrap_text_ = wrap_text;
     }
-    
+
     bool has_horizontal() const
     {
         return horizontal_ != horizontal_alignment::none;
     }
-    
+
     horizontal_alignment get_horizontal() const
     {
         return horizontal_;
     }
-    
+
     void set_horizontal(horizontal_alignment horizontal)
     {
         horizontal_ = horizontal;
     }
-    
+
     bool has_vertical() const
     {
         return vertical_ != vertical_alignment::none;
     }
-    
+
     vertical_alignment get_vertical() const
     {
         return vertical_;
     }
-    
+
     void set_vertical(vertical_alignment vertical)
     {
         vertical_ = vertical;
     }
-    
+
     bool operator==(const alignment &other) const
     {
         return hash() == other.hash();
     }
-    
+
     std::size_t hash() const
     {
         std::size_t seed = 0;
@@ -109,8 +109,8 @@ public:
         hash_combine(seed, indent_);
         return seed;
     }
-    
-private:
+
+  private:
     horizontal_alignment horizontal_ = horizontal_alignment::none;
     vertical_alignment vertical_ = vertical_alignment::none;
     int text_rotation_ = 0;

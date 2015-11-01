@@ -24,10 +24,8 @@
 
 namespace xlnt {
 
-class selection {
-    
-};
-
+class selection
+{
 };
 
 } // namespace xlnt

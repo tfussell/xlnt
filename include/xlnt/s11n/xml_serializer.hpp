@@ -9,7 +9,7 @@ class xml_node;
 
 class xml_serializer
 {
-public:
+  public:
     static std::string serialize(const xml_document &xml);
     static xml_document deserialize(const std::string &xml_string);
 

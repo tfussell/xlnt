@@ -25,7 +25,8 @@
 
 namespace xlnt {
 
-class worksheet_properties {
+class worksheet_properties
+{
 };
 
 } // namespace xlnt

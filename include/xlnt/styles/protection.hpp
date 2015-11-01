@@ -31,41 +31,41 @@ namespace xlnt {
 
 class protection
 {
-public:
+  public:
     enum class type
     {
         inherit,
         protected_,
         unprotected
     };
-    
+
     protection();
     protection(type locked);
-    
+
     void set_locked(type locked_type)
     {
         locked_ = locked_type;
     }
-    
+
     void set_hidden(type hidden_type)
     {
         hidden_ = hidden_type;
     }
-    
+
     bool operator==(const protection &other) const
     {
         return hash() == other.hash();
     }
-    
+
     std::size_t hash() const
     {
         std::size_t seed = static_cast<std::size_t>(locked_);
         hash_combine(seed, static_cast<std::size_t>(hidden_));
-        
+
         return seed;
     }
-    
-private:
+
+  private:
     type locked_;
     type hidden_;
 };

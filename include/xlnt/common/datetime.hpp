@@ -47,15 +47,14 @@ struct date
     /// Return the current date according to the system time.
     /// </summary>
     static date today();
-    
+
     /// <summary>
     /// Return a date by adding days_since_base_year to base_date.
     /// This includes leap years.
     /// </summary>
     static date from_number(int days_since_base_year, calendar base_date);
 
-    date(int year_, int month_, int day_)
-        : year(year_), month(month_), day(day_)
+    date(int year_, int month_, int day_) : year(year_), month(month_), day(day_)
     {
     }
 
@@ -63,7 +62,7 @@ struct date
     /// Return the number of days between this date and base_date.
     /// </summary>
     int to_number(calendar base_date) const;
-    
+
     /// <summary>
     /// Return true if this date is equal to comparand.
     /// </summary>
@@ -85,7 +84,7 @@ struct time
     /// Return the current time according to the system time.
     /// </summary>
     static time now();
-    
+
     /// <summary>
     /// Return a time from a number representing a fraction of a day.
     /// The integer part of number will be ignored.
@@ -114,13 +113,16 @@ struct datetime
     /// Return the current date and time according to the system time.
     /// </summary>
     static datetime now();
-    
+
     /// <summary>
     /// Return the current date and time according to the system time.
     /// This is equivalent to datetime::now().
     /// </summary>
-    static datetime today() { return now(); }
-    
+    static datetime today()
+    {
+        return now();
+    }
+
     /// <summary>
     /// Return a datetime from number by converting the integer part into
     /// a date and the fractional part into a time according to date::from_number
@@ -129,7 +131,13 @@ struct datetime
     static datetime from_number(long double number, calendar base_date);
 
     datetime(int year_, int month_, int day_, int hour_ = 0, int minute_ = 0, int second_ = 0, int microsecond_ = 0)
-        : year(year_), month(month_), day(day_), hour(hour_), minute(minute_), second(second_), microsecond(microsecond_)
+        : year(year_),
+          month(month_),
+          day(day_),
+          hour(hour_),
+          minute(minute_),
+          second(second_),
+          microsecond(microsecond_)
     {
     }
 
@@ -145,7 +153,7 @@ struct datetime
     int second;
     int microsecond;
 };
-    
+
 /// <summary>
 /// Represents a span of time between two datetimes. This is
 /// not fully supported yet.
@@ -153,18 +161,14 @@ struct datetime
 struct timedelta
 {
     static timedelta from_number(long double number);
-    
+
     timedelta(int days_, int hours_, int minutes_ = 0, int seconds_ = 0, int microseconds_ = 0)
-    : days(days_),
-      hours(hours_),
-      minutes(minutes_),
-      seconds(seconds_),
-      microseconds(microseconds_)
+        : days(days_), hours(hours_), minutes(minutes_), seconds(seconds_), microseconds(microseconds_)
     {
     }
-    
+
     double to_number() const;
-    
+
     int days;
     int hours;
     int minutes;

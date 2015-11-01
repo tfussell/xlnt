@@ -36,13 +36,13 @@ class workbook;
 
 class style
 {
-public:
+  public:
     style();
     style(const style &other);
     style &operator=(const style &other);
-    
+
     std::size_t hash() const;
-    
+
     const alignment get_alignment() const;
     const border get_border() const;
     const fill get_fill() const;
@@ -51,54 +51,87 @@ public:
     const protection get_protection() const;
     bool pivot_button() const;
     bool quote_prefix() const;
-    
-    std::size_t get_id() const { return id_; }
-    
-    std::size_t get_fill_id() const { return fill_id_; }
-    std::size_t get_font_id() const { return font_id_; }
-    std::size_t get_border_id() const { return border_id_; }
-    std::size_t get_number_format_id() const { return number_format_id_; }
-    
-    void apply_alignment(bool apply) { alignment_apply_ = apply; }
-    void apply_border(bool apply) { border_apply_ = apply; }
-    void apply_fill(bool apply) { fill_apply_ = apply; }
-    void apply_font(bool apply) { font_apply_ = apply; }
-    void apply_number_format(bool apply) { number_format_apply_ = apply; }
-    void apply_protection(bool apply) { protection_apply_ = apply; }
-    
+
+    std::size_t get_id() const
+    {
+        return id_;
+    }
+
+    std::size_t get_fill_id() const
+    {
+        return fill_id_;
+    }
+    std::size_t get_font_id() const
+    {
+        return font_id_;
+    }
+    std::size_t get_border_id() const
+    {
+        return border_id_;
+    }
+    std::size_t get_number_format_id() const
+    {
+        return number_format_id_;
+    }
+
+    void apply_alignment(bool apply)
+    {
+        alignment_apply_ = apply;
+    }
+    void apply_border(bool apply)
+    {
+        border_apply_ = apply;
+    }
+    void apply_fill(bool apply)
+    {
+        fill_apply_ = apply;
+    }
+    void apply_font(bool apply)
+    {
+        font_apply_ = apply;
+    }
+    void apply_number_format(bool apply)
+    {
+        number_format_apply_ = apply;
+    }
+    void apply_protection(bool apply)
+    {
+        protection_apply_ = apply;
+    }
+
     bool operator==(const style &other) const
     {
         return hash() == other.hash();
     }
-    
-private:
+
+  private:
     friend class style_serializer;
     friend class workbook;
-    
+
     std::size_t id_;
-    
+
     bool alignment_apply_;
     alignment alignment_;
-    
+
     bool border_apply_;
     std::size_t border_id_;
     border border_;
-    
+
     bool fill_apply_;
     std::size_t fill_id_;
     fill fill_;
-    
+
     bool font_apply_;
     std::size_t font_id_;
     font font_;
-    
+
     bool number_format_apply_;
     std::size_t number_format_id_;
     number_format number_format_;
-    
+
     bool protection_apply_;
     protection protection_;
-    
+
     bool pivot_button_;
     bool quote_prefix_;
 };

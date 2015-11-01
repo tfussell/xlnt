@@ -34,50 +34,53 @@
 #include "../common/relationship.hpp"
 
 namespace xlnt {
-    
+
 class cell;
 class cell_reference;
+class column_properties;
 class comment;
 class range;
 class range_reference;
 class relationship;
+class row_properties;
 class workbook;
 
 struct date;
 
-namespace detail {    
-	struct worksheet_impl;
+namespace detail {
+struct worksheet_impl;
 } // namespace detail
 
-class row_properties
-{
-public:
-	double height;
-	bool visible;
-	int outline_level;
-	bool collapsed;
-	int style_index;
-};
-    
-class column_properties
-{
-public:
-    double width;
-    std::size_t style;
-    bool custom;
-};
-    
 class header
 {
-public:
+  public:
     header();
-    void set_text(const std::string &text) { default_ = false; text_ = text; }
-    void set_font_name(const std::string &font_name) { default_ = false; font_name_ = font_name; }
-    void set_font_size(std::size_t font_size) { default_ = false; font_size_ = font_size; }
-    void set_font_color(const std::string &font_color) { default_ = false; font_color_ = font_color; }
-    bool is_default() const { return default_; }
-    
-private:
+    void set_text(const std::string &text)
+    {
+        default_ = false;
+        text_ = text;
+    }
+    void set_font_name(const std::string &font_name)
+    {
+        default_ = false;
+        font_name_ = font_name;
+    }
+    void set_font_size(std::size_t font_size)
+    {
+        default_ = false;
+        font_size_ = font_size;
+    }
+    void set_font_color(const std::string &font_color)
+    {
+        default_ = false;
+        font_color_ = font_color;
+    }
+    bool is_default() const
+    {
+        return default_;
+    }
+
+  private:
     bool default_;
     std::string text_;
     std::string font_name_;
@@ -87,63 +90,156 @@ private:
 
 class footer
 {
-public:
+  public:
     footer();
-    void set_text(const std::string &text) { default_ = false; text_ = text; }
-    void set_font_name(const std::string &font_name) { default_ = false; font_name_ = font_name; }
-    void set_font_size(std::size_t font_size) { default_ = false; font_size_ = font_size; }
-    void set_font_color(const std::string &font_color) { default_ = false; font_color_ = font_color; }
-    bool is_default() const { return default_; }
-    
-private:
+    void set_text(const std::string &text)
+    {
+        default_ = false;
+        text_ = text;
+    }
+    void set_font_name(const std::string &font_name)
+    {
+        default_ = false;
+        font_name_ = font_name;
+    }
+    void set_font_size(std::size_t font_size)
+    {
+        default_ = false;
+        font_size_ = font_size;
+    }
+    void set_font_color(const std::string &font_color)
+    {
+        default_ = false;
+        font_color_ = font_color;
+    }
+    bool is_default() const
+    {
+        return default_;
+    }
+
+  private:
     bool default_;
     std::string text_;
     std::string font_name_;
     std::size_t font_size_;
     std::string font_color_;
 };
-    
+
 class header_footer
 {
-public:
+  public:
     header_footer();
-    
-    header &get_left_header() { return left_header_; }
-    header &get_center_header() { return center_header_; }
-    header &get_right_header() { return right_header_; }
-    footer &get_left_footer() { return left_footer_; }
-    footer &get_center_footer() { return center_footer_; }
-    footer &get_right_footer() { return right_footer_; }
-    
-    bool is_default_header() const { return left_header_.is_default() && center_header_.is_default() && right_header_.is_default(); }
-    bool is_default_footer() const { return left_footer_.is_default() && center_footer_.is_default() && right_footer_.is_default(); }
-    bool is_default() const { return is_default_header() && is_default_footer(); }
-    
-private:
+
+    header &get_left_header()
+    {
+        return left_header_;
+    }
+    header &get_center_header()
+    {
+        return center_header_;
+    }
+    header &get_right_header()
+    {
+        return right_header_;
+    }
+    footer &get_left_footer()
+    {
+        return left_footer_;
+    }
+    footer &get_center_footer()
+    {
+        return center_footer_;
+    }
+    footer &get_right_footer()
+    {
+        return right_footer_;
+    }
+
+    bool is_default_header() const
+    {
+        return left_header_.is_default() && center_header_.is_default() && right_header_.is_default();
+    }
+    bool is_default_footer() const
+    {
+        return left_footer_.is_default() && center_footer_.is_default() && right_footer_.is_default();
+    }
+    bool is_default() const
+    {
+        return is_default_header() && is_default_footer();
+    }
+
+  private:
     header left_header_, right_header_, center_header_;
     footer left_footer_, right_footer_, center_footer_;
 };
-    
+
 struct margins
 {
-public:
-    margins() : default_(true), top_(0), left_(0), bottom_(0), right_(0), header_(0), footer_(0) {}
-    
-    bool is_default() const { return default_; }
-    double get_top() const { return top_; }
-    void set_top(double top) { default_ = false; top_ = top; }
-    double get_left() const { return left_; }
-    void set_left(double left) { default_ = false; left_ = left; }
-    double get_bottom() const { return bottom_; }
-    void set_bottom(double bottom) { default_ = false; bottom_ = bottom; }
-    double get_right() const { return right_; }
-    void set_right(double right) { default_ = false; right_ = right; }
-    double get_header() const { return header_; }
-    void set_header(double header) { default_ = false; header_ = header; }
-    double get_footer() const { return footer_; }
-    void set_footer(double footer) { default_ = false; footer_ = footer; }
-    
-private:
+  public:
+    margins() : default_(true), top_(0), left_(0), bottom_(0), right_(0), header_(0), footer_(0)
+    {
+    }
+
+    bool is_default() const
+    {
+        return default_;
+    }
+    double get_top() const
+    {
+        return top_;
+    }
+    void set_top(double top)
+    {
+        default_ = false;
+        top_ = top;
+    }
+    double get_left() const
+    {
+        return left_;
+    }
+    void set_left(double left)
+    {
+        default_ = false;
+        left_ = left;
+    }
+    double get_bottom() const
+    {
+        return bottom_;
+    }
+    void set_bottom(double bottom)
+    {
+        default_ = false;
+        bottom_ = bottom;
+    }
+    double get_right() const
+    {
+        return right_;
+    }
+    void set_right(double right)
+    {
+        default_ = false;
+        right_ = right;
+    }
+    double get_header() const
+    {
+        return header_;
+    }
+    void set_header(double header)
+    {
+        default_ = false;
+        header_ = header;
+    }
+    double get_footer() const
+    {
+        return footer_;
+    }
+    void set_footer(double footer)
+    {
+        default_ = false;
+        footer_ = footer;
+    }
+
+  private:
     bool default_;
     double top_;
     double left_;
@@ -155,7 +251,7 @@ private:
 
 class worksheet
 {
-public:
+  public:
     worksheet();
     worksheet(const worksheet &rhs);
     worksheet(workbook &parent_workbook, const std::string &title = std::string());
@@ -163,19 +259,19 @@ public:
     std::string to_string() const;
     workbook &get_parent() const;
     void garbage_collect();
-    
+
     // title
     std::string get_title() const;
     void set_title(const std::string &title);
     std::string make_unique_sheet_name(const std::string &value);
-    
+
     // freeze panes
     cell_reference get_frozen_panes() const;
     void freeze_panes(cell top_left_cell);
     void freeze_panes(const std::string &top_left_coordinate);
     void unfreeze_panes();
     bool has_frozen_panes() const;
-    
+
     // container
     cell get_cell(const cell_reference &reference);
     const cell get_cell(const cell_reference &reference) const;
@@ -189,13 +285,13 @@ public:
     range rows(const std::string &range_string, int row_offset, int column_offset) const;
     range columns() const;
     std::list<cell> get_cell_collection();
-    
+
     // properties
     column_properties &get_column_properties(column_t column);
     const column_properties &get_column_properties(column_t column) const;
     bool has_column_properties(column_t column) const;
     void add_column_properties(column_t column, const column_properties &props);
-    
+
     row_properties &get_row_properties(row_t row);
     const row_properties &get_row_properties(row_t row) const;
     bool has_row_properties(row_t row) const;
@@ -212,7 +308,7 @@ public:
     bool has_named_range(const std::string &name);
     range get_named_range(const std::string &name);
     void remove_named_range(const std::string &name);
-    
+
     // extents
     row_t get_lowest_row() const;
     row_t get_highest_row() const;
@@ -220,21 +316,21 @@ public:
     column_t get_lowest_column() const;
     column_t get_highest_column() const;
     range_reference calculate_dimension() const;
-    
+
     // relationships
     relationship create_relationship(relationship::type type, const std::string &target_uri);
     const std::vector<relationship> &get_relationships() const;
-    
+
     // charts
-    //void add_chart(chart chart);
-    
+    // void add_chart(chart chart);
+
     // cell merge
     void merge_cells(const range_reference &reference);
     void merge_cells(column_t start_column, row_t start_row, column_t end_column, row_t end_row);
     void unmerge_cells(const range_reference &reference);
     void unmerge_cells(column_t start_column, row_t start_row, column_t end_column, row_t end_row);
     std::vector<range_reference> get_merged_ranges() const;
-    
+
     // append
     void append();
     void append(const std::vector<std::string> &cells);
@@ -243,9 +339,9 @@ public:
     void append(const std::vector<cell> &cells);
     void append(const std::unordered_map<std::string, std::string> &cells);
     void append(const std::unordered_map<int, std::string> &cells);
-    
+
     void append(const std::vector<int>::const_iterator begin, const std::vector<int>::const_iterator end);
-    
+
     // operators
     bool operator==(const worksheet &other) const;
     bool operator!=(const worksheet &other) const;
@@ -260,41 +356,41 @@ public:
     const range operator[](const std::string &range_string) const;
     range operator()(const cell_reference &top_left, const cell_reference &bottom_right);
     const range operator()(const cell_reference &top_left, const cell_reference &bottom_right) const;
-    
+
     // page
     page_setup &get_page_setup();
     const page_setup &get_page_setup() const;
     margins &get_page_margins();
     const margins &get_page_margins() const;
-    
+
     // auto filter
     range_reference get_auto_filter() const;
     void auto_filter(const xlnt::range &range);
     void auto_filter(const range_reference &reference);
     void unset_auto_filter();
     bool has_auto_filter() const;
-    
+
     // comments
     void increment_comments();
     void decrement_comments();
     std::size_t get_comment_count() const;
 
     void reserve(std::size_t n);
-    
+
     header_footer &get_header_footer();
     const header_footer &get_header_footer() const;
-    
+
     void set_parent(workbook &wb);
 
     std::vector<std::string> get_formula_attributes() const;
-    
+
     void set_sheet_state(page_setup::sheet_state state);
-    
-private:
+
+  private:
     friend class workbook;
     friend class cell;
     worksheet(detail::worksheet_impl *d);
     detail::worksheet_impl *d_;
 };
-    
+
 } // namespace xlnt

@@ -34,7 +34,7 @@ namespace xlnt {
 /// </summary>
 class cell_coordinates_exception : public std::runtime_error
 {
-public:
+  public:
     cell_coordinates_exception(row_t row, column_t column);
     cell_coordinates_exception(const std::string &coord_string);
 };
@@ -45,7 +45,7 @@ public:
 /// </summary>
 class illegal_character_error : public std::runtime_error
 {
-public:
+  public:
     illegal_character_error(char c);
 };
 
@@ -54,7 +54,7 @@ public:
 /// </summary>
 class column_string_index_exception : public std::runtime_error
 {
-public:
+  public:
     column_string_index_exception();
 };
 
@@ -63,7 +63,7 @@ public:
 /// </summary>
 class data_type_exception : public std::runtime_error
 {
-public:
+  public:
     data_type_exception();
 };
 
@@ -72,7 +72,7 @@ public:
 /// </summary>
 class named_range_exception : public std::runtime_error
 {
-public:
+  public:
     named_range_exception();
 };
 
@@ -81,7 +81,7 @@ public:
 /// </summary>
 class sheet_title_exception : public std::runtime_error
 {
-public:
+  public:
     sheet_title_exception(const std::string &title);
 };
 
@@ -90,7 +90,7 @@ public:
 /// </summary>
 class invalid_file_exception : public std::runtime_error
 {
-public:
+  public:
     invalid_file_exception(const std::string &filename);
 };
 
@@ -99,7 +99,7 @@ public:
 /// </summary>
 class read_only_workbook_exception : public std::runtime_error
 {
-public:
+  public:
     read_only_workbook_exception();
 };
 
@@ -108,7 +108,7 @@ public:
 /// </summary>
 class missing_number_format : public std::runtime_error
 {
-public:
+  public:
     missing_number_format();
 };
 
@@ -117,13 +117,13 @@ public:
 /// </summary>
 class attribute_error : public std::runtime_error
 {
-public:
+  public:
     attribute_error();
 };
 
 class value_error : public std::runtime_error
 {
-public:
+  public:
     value_error() : std::runtime_error("")
     {
     }

@@ -20,13 +20,11 @@ range_reference::range_reference(const char *range_string) : range_reference(std
 {
 }
 
-range_reference::range_reference(const std::string &range_string)
-    : top_left_("A1"),
-    bottom_right_("A1")
+range_reference::range_reference(const std::string &range_string) : top_left_("A1"), bottom_right_("A1")
 {
     auto colon_index = range_string.find(':');
 
-    if(colon_index != std::string::npos)
+    if (colon_index != std::string::npos)
     {
         top_left_ = cell_reference(range_string.substr(0, colon_index));
         bottom_right_ = cell_reference(range_string.substr(colon_index + 1));
@@ -39,22 +37,20 @@ range_reference::range_reference(const std::string &range_string)
 }
 
 range_reference::range_reference(const cell_reference &top_left, const cell_reference &bottom_right)
-    : top_left_(top_left),
-    bottom_right_(bottom_right)
+    : top_left_(top_left), bottom_right_(bottom_right)
 {
-
 }
 
-range_reference::range_reference(column_t column_index_start, row_t row_index_start, column_t column_index_end, row_t row_index_end)
-    : top_left_(column_index_start, row_index_start),
-    bottom_right_(column_index_end, row_index_end)
+range_reference::range_reference(column_t column_index_start, row_t row_index_start, column_t column_index_end,
+                                 row_t row_index_end)
+    : top_left_(column_index_start, row_index_start), bottom_right_(column_index_end, row_index_end)
 {
-
 }
 
 range_reference range_reference::make_offset(int column_offset, int row_offset) const
 {
-    return range_reference(top_left_.make_offset(column_offset, row_offset), bottom_right_.make_offset(column_offset, row_offset));
+    return range_reference(top_left_.make_offset(column_offset, row_offset),
+                           bottom_right_.make_offset(column_offset, row_offset));
 }
 
 row_t range_reference::get_height() const
@@ -79,14 +75,11 @@ std::string range_reference::to_string() const
 
 bool range_reference::operator==(const range_reference &comparand) const
 {
-    return comparand.top_left_ == top_left_
-        && comparand.bottom_right_ == bottom_right_;
+    return comparand.top_left_ == top_left_ && comparand.bottom_right_ == bottom_right_;
 }
 
 bool range_reference::operator!=(const range_reference &comparand) const
 {
-    return comparand.top_left_ != top_left_
-        || comparand.bottom_right_ != bottom_right_;
+    return comparand.top_left_ != top_left_ || comparand.bottom_right_ != bottom_right_;
 }
-
 }

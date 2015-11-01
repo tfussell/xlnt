@@ -12,6 +12,6 @@ struct xml_document_impl
     std::string encoding;
     pugi::xml_document doc;
 };
-    
+
 } // namespace detail
 } // namespace xlnt

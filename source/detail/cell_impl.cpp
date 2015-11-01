@@ -5,15 +5,15 @@
 
 namespace xlnt {
 namespace detail {
-    
+
 cell_impl::cell_impl() : cell_impl(1, 1)
 {
 }
-    
+
 cell_impl::cell_impl(column_t column, row_t row) : cell_impl(nullptr, column, row)
 {
 }
-    
+
 cell_impl::cell_impl(worksheet_impl *parent, column_t column, row_t row)
     : type_(cell::type::null),
       parent_(parent),
@@ -27,12 +27,12 @@ cell_impl::cell_impl(worksheet_impl *parent, column_t column, row_t row)
       comment_(nullptr)
 {
 }
-    
+
 cell_impl::cell_impl(const cell_impl &rhs)
 {
     *this = rhs;
 }
-    
+
 cell_impl &cell_impl::operator=(const cell_impl &rhs)
 {
     parent_ = rhs.parent_;
@@ -47,12 +47,12 @@ cell_impl &cell_impl::operator=(const cell_impl &rhs)
     type_ = rhs.type_;
     style_id_ = rhs.style_id_;
     has_style_ = rhs.has_style_;
-    
-    if(rhs.comment_ != nullptr)
+
+    if (rhs.comment_ != nullptr)
     {
         comment_.reset(new comment_impl(*rhs.comment_));
     }
-    
+
     return *this;
 }
 

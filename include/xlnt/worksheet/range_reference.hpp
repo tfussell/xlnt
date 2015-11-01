@@ -28,7 +28,7 @@ namespace xlnt {
 
 class range_reference
 {
-public:
+  public:
     /// <summary>
     /// Convert a coordinate to an absolute coordinate string (B12 -> $B$12)
     /// </summary>
@@ -44,27 +44,51 @@ public:
     bool is_single_cell() const;
     column_t get_width() const;
     row_t get_height() const;
-    cell_reference get_top_left() const { return top_left_; }
-    cell_reference get_bottom_right() const { return bottom_right_; }
-    cell_reference &get_top_left() { return top_left_; }
-    cell_reference &get_bottom_right() { return bottom_right_; }
+    cell_reference get_top_left() const
+    {
+        return top_left_;
+    }
+    cell_reference get_bottom_right() const
+    {
+        return bottom_right_;
+    }
+    cell_reference &get_top_left()
+    {
+        return top_left_;
+    }
+    cell_reference &get_bottom_right()
+    {
+        return bottom_right_;
+    }
 
     range_reference make_offset(int column_offset, int row_offset) const;
 
     std::string to_string() const;
 
     bool operator==(const range_reference &comparand) const;
-    bool operator==(const std::string &reference_string) const { return *this == range_reference(reference_string); }
-    bool operator==(const char *reference_string) const { return *this == std::string(reference_string); }
+    bool operator==(const std::string &reference_string) const
+    {
+        return *this == range_reference(reference_string);
+    }
+    bool operator==(const char *reference_string) const
+    {
+        return *this == std::string(reference_string);
+    }
     bool operator!=(const range_reference &comparand) const;
-    bool operator!=(const std::string &reference_string) const { return *this != range_reference(reference_string); }
-    bool operator!=(const char *reference_string) const { return *this != std::string(reference_string); }
+    bool operator!=(const std::string &reference_string) const
+    {
+        return *this != range_reference(reference_string);
+    }
+    bool operator!=(const char *reference_string) const
+    {
+        return *this != std::string(reference_string);
+    }
 
-private:
+  private:
     cell_reference top_left_;
     cell_reference bottom_right_;
 };
-    
+
 inline bool operator==(const std::string &reference_string, const range_reference &ref)
 {
     return ref == reference_string;
