@@ -4,7 +4,7 @@
 #include <cxxtest/TestSuite.h>
 
 #include <xlnt/common/exceptions.hpp>
-#include <xlnt/s11n/workbook_serializer.hpp>
+#include <xlnt/serialization/workbook_serializer.hpp>
 
 #include "helpers/path_helper.hpp"
 

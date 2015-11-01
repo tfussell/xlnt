@@ -3,7 +3,7 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/s11n/theme_serializer.hpp>
+#include <xlnt/serialization/theme_serializer.hpp>
 #include <xlnt/workbook/workbook.hpp>
 
 #include "helpers/path_helper.hpp"

@@ -3,7 +3,7 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/s11n/worksheet_serializer.hpp>
+#include <xlnt/serialization/worksheet_serializer.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
 class test_worksheet : public CxxTest::TestSuite

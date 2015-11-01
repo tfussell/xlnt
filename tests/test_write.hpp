@@ -3,10 +3,10 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/s11n/relationship_serializer.hpp>
-#include <xlnt/s11n/shared_strings_serializer.hpp>
-#include <xlnt/s11n/workbook_serializer.hpp>
-#include <xlnt/s11n/worksheet_serializer.hpp>
+#include <xlnt/serialization/relationship_serializer.hpp>
+#include <xlnt/serialization/shared_strings_serializer.hpp>
+#include <xlnt/serialization/workbook_serializer.hpp>
+#include <xlnt/serialization/worksheet_serializer.hpp>
 #include <xlnt/workbook/workbook.hpp>
 
 #include "helpers/temporary_file.hpp"

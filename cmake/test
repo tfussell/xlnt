@@ -1,0 +1,11 @@
+#!/usr/bin/env python3
+
+import os
+import subprocess
+
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+subprocess.call('./build')
+
+if os.path.isdir('../bin') and os.path.isfile('../bin/xlnt.test'):
+   os.chdir('../bin')
+   subprocess.call(['./xlnt.test'])

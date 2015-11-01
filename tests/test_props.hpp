@@ -3,8 +3,8 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/s11n/workbook_serializer.hpp>
-#include <xlnt/s11n/xml_document.hpp>
+#include <xlnt/serialization/workbook_serializer.hpp>
+#include <xlnt/serialization/xml_document.hpp>
 
 #include "helpers/path_helper.hpp"
 #include "helpers/helper.hpp"

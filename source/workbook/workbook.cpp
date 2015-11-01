@@ -8,7 +8,7 @@
 #include <xlnt/common/relationship.hpp>
 #include <xlnt/common/zip_file.hpp>
 #include <xlnt/drawing/drawing.hpp>
-#include <xlnt/s11n/excel_serializer.hpp>
+#include <xlnt/serialization/excel_serializer.hpp>
 #include <xlnt/styles/alignment.hpp>
 #include <xlnt/styles/border.hpp>
 #include <xlnt/styles/fill.hpp>

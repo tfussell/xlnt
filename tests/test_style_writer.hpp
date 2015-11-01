@@ -3,7 +3,7 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/s11n/style_serializer.hpp>
+#include <xlnt/serialization/style_serializer.hpp>
 
 class test_style_writer : public CxxTest::TestSuite
 {

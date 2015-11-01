@@ -2,9 +2,9 @@
 
 #include <sstream>
 
-#include <xlnt/s11n/xml_document.hpp>
-#include <xlnt/s11n/xml_node.hpp>
-#include <xlnt/s11n/xml_serializer.hpp>
+#include <xlnt/serialization/xml_document.hpp>
+#include <xlnt/serialization/xml_node.hpp>
+#include <xlnt/serialization/xml_serializer.hpp>
 
 #include "path_helper.hpp"
 

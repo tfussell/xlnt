@@ -5,11 +5,11 @@
 
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/s11n/excel_serializer.hpp>
-#include <xlnt/s11n/manifest_serializer.hpp>
-#include <xlnt/s11n/relationship_serializer.hpp>
-#include <xlnt/s11n/workbook_serializer.hpp>
-#include <xlnt/s11n/xml_serializer.hpp>
+#include <xlnt/serialization/excel_serializer.hpp>
+#include <xlnt/serialization/manifest_serializer.hpp>
+#include <xlnt/serialization/relationship_serializer.hpp>
+#include <xlnt/serialization/workbook_serializer.hpp>
+#include <xlnt/serialization/xml_serializer.hpp>
 #include <xlnt/workbook/manifest.hpp>
 
 #include "helpers/path_helper.hpp"
