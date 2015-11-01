@@ -1,6 +1,7 @@
 project(xlnt.test)
 
 include_directories(../../../include)
+include_directories(../../../source)
 include_directories(../../../third-party/pugixml/src)
 include_directories(../../../third-party/cxxtest)
 

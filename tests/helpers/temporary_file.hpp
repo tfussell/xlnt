@@ -4,10 +4,7 @@
 #include <cstdio>
 #include <string>
 
-#ifdef _WIN32
-#define NOMINMAX
-#include <Windows.h>
-#endif
+#include <detail/include_windows.hpp>
 
 #include "path_helper.hpp"
 

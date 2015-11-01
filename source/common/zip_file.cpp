@@ -4,13 +4,10 @@
 #include <fstream>
 #include <iterator>
 
-#ifdef _WIN32
-#define NOMINMAX
-#include <Windows.h>
-#endif
-
-#include <xlnt/common/zip_file.hpp>
 #include <miniz.h>
+
+#include <detail/include_windows.hpp>
+#include <xlnt/common/zip_file.hpp>
 
 namespace {
 
