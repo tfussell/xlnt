@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include <xlnt/workbook/manifest.hpp>
 
 namespace {
