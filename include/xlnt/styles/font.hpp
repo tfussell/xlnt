@@ -147,29 +147,17 @@ class font
 
     std::size_t hash() const
     {
-        std::size_t seed = bold_;
-        seed = seed << 1 & italic_;
-        seed = seed << 1 & superscript_;
-        seed = seed << 1 & subscript_;
-        seed = seed << 1 & strikethrough_;
-        
+        std::size_t seed = 0;
+
+		hash_combine(seed, bold_);
+		hash_combine(seed, italic_);
+		hash_combine(seed, superscript_);
+		hash_combine(seed, subscript_);
+		hash_combine(seed, strikethrough_);
         hash_combine(seed, name_);
         hash_combine(seed, size_);
         hash_combine(seed, static_cast<std::size_t>(underline_));
-        hash_combine(seed, static_cast<std::size_t>(color_.get_type()));
-        
-        switch (color_.get_type())
-        {
-        case color::type::indexed:
-            hash_combine(seed, color_.get_index());
-            break;
-        case color::type::theme:
-            hash_combine(seed, color_.get_theme());
-            break;
-        default:
-            break;
-        }
-        
+		hash_combine(seed, color_.hash());
         hash_combine(seed, family_);
         hash_combine(seed, scheme_);
 

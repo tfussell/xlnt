@@ -17,6 +17,10 @@ source_group(helpers FILES ${TEST_HELPERS_HEADERS} ${TEST_HELPERS_SOURCES})
 
 target_link_libraries(xlnt.test xlnt)
 
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
+    target_link_libraries(xlnt.test Shlwapi)
+endif()
+
 add_custom_target (generate-test-runner
     COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/generate-tests
     COMMENT "Generating test runner tests/runner-autogen.cpp"
@@ -24,9 +28,11 @@ add_custom_target (generate-test-runner
 
 add_dependencies(xlnt.test generate-test-runner)
 
-add_custom_command(
-  TARGET xlnt.test
-  POST_BUILD
-  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../bin/xlnt.test
-  VERBATIM
-)
+if(${CMAKE_GENERATOR} STREQUAL "Unix Makefiles")
+  add_custom_command(
+    TARGET xlnt.test
+    POST_BUILD
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../bin/xlnt.test
+    VERBATIM
+  )
+endif()

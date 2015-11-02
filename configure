@@ -33,7 +33,7 @@ if len(sys.argv) > 1:
 elif sys.platform == 'darwin':
    generator = 'Unix Makefiles'
 elif sys.platform == 'win32':
-   generator = 'Visual Studio 14 2015'
+   generator = 'Visual Studio 14 2015 Win64'
 
 cmake = 'cmake'
 

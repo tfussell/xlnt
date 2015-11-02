@@ -212,16 +212,16 @@ class workbook
     void add_number_format(const number_format &format);
     void add_protection(const protection &p);
 
-    std::vector<style> get_styles() const;
+    const std::vector<style> &get_styles() const;
 
-    std::vector<color> get_colors() const;
-    std::vector<border> get_borders() const;
-    std::vector<fill> get_fills() const;
-    std::vector<font> get_fonts() const;
-    std::vector<number_format> get_number_formats() const;
+    const std::vector<color> &get_colors() const;
+    const std::vector<border> &get_borders() const;
+    const std::vector<fill> &get_fills() const;
+    const std::vector<font> &get_fonts() const;
+    const std::vector<number_format> &get_number_formats() const;
 
-    std::size_t add_indexed_color(const std::string &rgb);
-    std::string get_indexed_color(std::size_t color_index) const;
+    color add_indexed_color(const color &rgb_color);
+    color get_indexed_color(const color &indexed_color) const;
 
     const number_format &get_number_format(std::size_t style_id) const;
     std::size_t set_number_format(const number_format &format, std::size_t style_id);

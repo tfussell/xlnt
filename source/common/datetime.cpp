@@ -3,6 +3,22 @@
 
 #include <xlnt/common/datetime.hpp>
 
+namespace {
+
+std::tm safe_localtime(std::time_t raw_time)
+{
+#ifdef _MSC_VER
+	std::tm result;
+	localtime_s(&result, &raw_time);
+
+	return result;
+#else
+	return *localtime(&raw_time);
+#endif
+}
+
+} // namespace
+
 namespace xlnt {
 
 time time::from_number(long double raw_time)
@@ -163,15 +179,15 @@ std::string datetime::to_string(xlnt::calendar /*base_date*/) const
 
 date date::today()
 {
-    std::time_t raw_time = std::time(0);
-    std::tm now = *std::localtime(&raw_time);
+    std::tm now = safe_localtime(std::time(0));
+
     return date(1900 + now.tm_year, now.tm_mon + 1, now.tm_mday);
 }
 
 datetime datetime::now()
 {
-    std::time_t raw_time = std::time(0);
-    std::tm now = *std::localtime(&raw_time);
+	std::tm now = safe_localtime(std::time(0));
+
     return datetime(1900 + now.tm_year, now.tm_mon + 1, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec);
 }
 

@@ -90,11 +90,10 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
 
     if(archive.has_file(xlnt::constants::ArcSharedString()))
     {
-        xlnt::shared_strings_serializer shared_strings_serializer_;
         std::vector<std::string> shared_strings;
 		xlnt::xml_document shared_strings_xml;
 		shared_strings_xml.from_string(archive.read(xlnt::constants::ArcSharedString()));
-        shared_strings_serializer_.read_shared_strings(shared_strings_xml, shared_strings);
+		xlnt::shared_strings_serializer::read_shared_strings(shared_strings_xml, shared_strings);
 
         for (auto shared_string : shared_strings)
         {
@@ -194,10 +193,8 @@ excel_serializer::excel_serializer(workbook &wb) : workbook_(wb)
 
 void excel_serializer::write_data(bool /*as_template*/)
 {
-    relationship_serializer relationship_serializer_;
-
-    relationship_serializer_.write_relationships(workbook_.get_root_relationships(), "", archive_);
-    relationship_serializer_.write_relationships(workbook_.get_relationships(), constants::ArcWorkbook(), archive_);
+    relationship_serializer::write_relationships(workbook_.get_root_relationships(), "", archive_);
+    relationship_serializer::write_relationships(workbook_.get_relationships(), constants::ArcWorkbook(), archive_);
 
     xml_document properties_app_xml;
     workbook_serializer workbook_serializer_(workbook_);
@@ -207,10 +204,9 @@ void excel_serializer::write_data(bool /*as_template*/)
     theme_serializer theme_serializer_;
     archive_.writestr(constants::ArcTheme(), theme_serializer_.write_theme(workbook_.get_loaded_theme()).to_string());
 
-    xlnt::shared_strings_serializer shared_strings_serializer_;
     archive_.writestr(
         constants::ArcSharedString(),
-        xml_serializer::serialize(shared_strings_serializer_.write_shared_strings(workbook_.get_shared_strings())));
+        xml_serializer::serialize(xlnt::shared_strings_serializer::write_shared_strings(workbook_.get_shared_strings())));
 
     archive_.writestr(constants::ArcWorkbook(), xml_serializer::serialize(workbook_serializer_.write_workbook()));
 

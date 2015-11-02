@@ -626,6 +626,30 @@ std::size_t workbook::add_style(const xlnt::style &style_)
     return d_->styles_.back().id_;
 }
 
+color workbook::add_indexed_color(const color &rgb_color)
+{
+	std::size_t index = 0;
+
+	for (auto &c : d_->colors_)
+	{
+		if (c.get_rgb_string() == rgb_color.get_rgb_string())
+		{
+			return color(color::type::indexed, index);
+		}
+
+		index++;
+	}
+
+	d_->colors_.push_back(rgb_color);
+
+	return color(color::type::indexed, index);
+}
+
+color workbook::get_indexed_color(const color &indexed_color) const
+{
+	return d_->colors_.at(indexed_color.get_index());
+}
+
 const number_format &workbook::get_number_format(std::size_t style_id) const
 {
     auto number_format_id = d_->styles_[style_id].number_format_id_;
@@ -820,27 +844,27 @@ std::size_t workbook::set_number_format(const xlnt::number_format &format, std::
     return new_style.id_;
 }
 
-std::vector<style> workbook::get_styles() const
+const std::vector<style> &workbook::get_styles() const
 {
     return d_->styles_;
 }
 
-std::vector<number_format> workbook::get_number_formats() const
+const std::vector<number_format> &workbook::get_number_formats() const
 {
     return d_->number_formats_;
 }
 
-std::vector<font> workbook::get_fonts() const
+const std::vector<font> &workbook::get_fonts() const
 {
     return d_->fonts_;
 }
 
-std::vector<border> workbook::get_borders() const
+const std::vector<border> &workbook::get_borders() const
 {
     return d_->borders_;
 }
 
-std::vector<fill> workbook::get_fills() const
+const std::vector<fill> &workbook::get_fills() const
 {
     return d_->fills_;
 }
@@ -850,12 +874,7 @@ void workbook::add_color(const color &rgb)
     d_->colors_.push_back(rgb);
 }
 
-std::string workbook::get_indexed_color(std::size_t color_index) const
-{
-    return d_->colors_.at(color_index).get_rgb_string();
-}
-
-std::vector<color> workbook::get_colors() const
+const std::vector<color> &workbook::get_colors() const
 {
     return d_->colors_;
 }
