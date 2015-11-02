@@ -44,16 +44,27 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
     wb.set_guess_types(guess_types);
     wb.set_data_only(data_only);
 
+    if(!archive.has_file(xlnt::constants::ArcContentTypes))
+    {
+        throw xlnt::invalid_file_exception("missing [Content Types].xml");
+    }
+    
     xlnt::manifest_serializer ms(wb.get_manifest());
     ms.read_manifest(xlnt::xml_serializer::deserialize(archive.read(xlnt::constants::ArcContentTypes)));
 
     if (ms.determine_document_type() != "excel")
     {
-        throw xlnt::invalid_file_exception("");
+        throw xlnt::invalid_file_exception("package is not an OOXML SpreadsheetML");
     }
 
     wb.clear();
-
+    
+    if(archive.has_file(xlnt::constants::ArcCore))
+    {
+        xlnt::workbook_serializer workbook_serializer_(wb);
+        workbook_serializer_.read_properties_core(xlnt::xml_serializer::deserialize(archive.read(xlnt::constants::ArcCore)));
+    }
+        
     auto workbook_relationships =
         xlnt::relationship_serializer::read_relationships(archive, xlnt::constants::ArcWorkbook);
 
@@ -72,14 +83,17 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
             ? xlnt::calendar::mac_1904
             : xlnt::calendar::windows_1900;
 
-    xlnt::shared_strings_serializer shared_strings_serializer_;
-    std::vector<std::string> shared_strings;
-    shared_strings_serializer_.read_shared_strings(
-        xlnt::xml_serializer::deserialize(archive.read(xlnt::constants::ArcSharedString)), shared_strings);
-
-    for (auto shared_string : shared_strings)
+    if(archive.has_file(xlnt::constants::ArcSharedString))
     {
-        wb.add_shared_string(shared_string);
+        xlnt::shared_strings_serializer shared_strings_serializer_;
+        std::vector<std::string> shared_strings;
+        shared_strings_serializer_.read_shared_strings(
+            xlnt::xml_serializer::deserialize(archive.read(xlnt::constants::ArcSharedString)), shared_strings);
+
+        for (auto shared_string : shared_strings)
+        {
+            wb.add_shared_string(shared_string);
+        }
     }
 
     xlnt::style_serializer style_reader_(wb);
@@ -91,8 +105,13 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
     {
         auto rel = wb.get_relationship(sheet_node.get_attribute("r:id"));
         auto ws = wb.create_sheet(sheet_node.get_attribute("name"), rel);
-        auto ws_filename = "xl/" + rel.get_target_uri();
+        //TODO: this is really bad
+        auto ws_filename = (rel.get_target_uri().substr(0, 3) != "xl/" ? "xl/" : "") + rel.get_target_uri();
+        
+        auto sheet_type = wb.get_manifest().get_override_type(ws_filename);
 
+        if(sheet_type != "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml") continue;
+        
         xlnt::worksheet_serializer worksheet_serializer(ws);
         worksheet_serializer.read_worksheet(xlnt::xml_serializer::deserialize(archive.read(ws_filename)));
     }
@@ -123,8 +142,13 @@ std::string excel_serializer::repair_central_directory(const std::string &origin
 
 bool excel_serializer::load_stream_workbook(std::istream &stream, bool guess_types, bool data_only)
 {
-    std::vector<std::uint8_t> bytes((std::istream_iterator<char>(stream)), std::istream_iterator<char>());
-
+    std::vector<std::uint8_t> bytes;
+    
+    while (stream.good())
+    {
+        bytes.push_back(stream.get());
+    }
+    
     return load_virtual_workbook(bytes, guess_types, data_only);
 }
 
@@ -196,7 +220,7 @@ void excel_serializer::write_worksheets()
                 workbook::index_from_ws_filename(relationship.get_target_uri()) == index)
             {
                 worksheet_serializer serializer_(ws);
-                std::string ws_filename = "xl/" + relationship.get_target_uri();
+                std::string ws_filename = (relationship.get_target_uri().substr(0, 3) != "xl/" ? "xl/" : "") + relationship.get_target_uri();
                 archive_.writestr(ws_filename, serializer_.write_worksheet().to_string());
                 break;
             }

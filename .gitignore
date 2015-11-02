@@ -1,7 +1,6 @@
 bin/
 lib/
-build/genie/*/
-build/cmake/build/
+build/
 docs/_*/
 docs/doxyxml/
 *.obj

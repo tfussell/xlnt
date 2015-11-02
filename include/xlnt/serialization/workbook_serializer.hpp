@@ -52,9 +52,6 @@ class workbook_serializer
     xml_document write_properties_app() const;
     xml_document write_properties_core() const;
 
-    std::vector<string_pair> read_sheets();
-    std::vector<string_pair> detect_worksheets();
-
     xml_node write_named_ranges() const;
 
   private:

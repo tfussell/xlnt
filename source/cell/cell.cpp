@@ -910,6 +910,7 @@ template <>
 void cell::set_value(std::string s)
 {
     d_->set_string(s, get_parent().get_parent().get_guess_types());
+    if(!s.empty()) get_parent().get_parent().add_shared_string(s);
 }
 
 template <>

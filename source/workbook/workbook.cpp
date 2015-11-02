@@ -42,9 +42,20 @@ workbook_impl::workbook_impl()
 workbook::workbook() : d_(new detail::workbook_impl())
 {
     create_sheet("Sheet");
+    
     create_relationship("rId2", "sharedStrings.xml", relationship::type::shared_strings);
     create_relationship("rId3", "styles.xml", relationship::type::styles);
     create_relationship("rId4", "theme/theme1.xml", relationship::type::theme);
+    
+    d_->manifest_.add_default_type("rels", "application/vnd.openxmlformats-package.relationships+xml");
+    d_->manifest_.add_default_type("xml", "application/xml");
+    
+    d_->manifest_.add_override_type("/xl/workbook.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml");
+    d_->manifest_.add_override_type("/xl/theme/theme1.xml", "application/vnd.openxmlformats-officedocument.theme+xml");
+    d_->manifest_.add_override_type("/xl/styles.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml");
+    d_->manifest_.add_override_type("/xl/sharedStrings.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml");
+    d_->manifest_.add_override_type("/docProps/core.xml", "application/vnd.openxmlformats-package.core-properties+xml");
+    d_->manifest_.add_override_type("/docProps/app.xml", "application/vnd.openxmlformats-officedocument.extended-properties+xml");
 }
 
 workbook::iterator::iterator(workbook &wb, std::size_t index) : wb_(wb), index_(index)
@@ -158,11 +169,15 @@ worksheet workbook::create_sheet()
     {
         title = "Sheet" + std::to_string(++index);
     }
+    
+    std::string sheet_filename = "worksheets/sheet" + std::to_string(d_->worksheets_.size() + 1) + ".xml";
 
     d_->worksheets_.push_back(detail::worksheet_impl(this, title));
     create_relationship("rId" + std::to_string(d_->relationships_.size() + 1),
-                        "xl/worksheets/sheet" + std::to_string(d_->worksheets_.size()) + ".xml",
+                        sheet_filename,
                         relationship::type::worksheet);
+    
+    d_->manifest_.add_override_type("/xl/" + sheet_filename, "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
 
     return worksheet(&d_->worksheets_.back());
 }
@@ -300,7 +315,7 @@ void workbook::remove_sheet(worksheet ws)
         throw std::runtime_error("worksheet not owned by this workbook");
     }
 
-    auto sheet_filename = "xl/worksheets/sheet" + std::to_string(d_->worksheets_.size()) + ".xml";
+    auto sheet_filename = "worksheets/sheet" + std::to_string(d_->worksheets_.size()) + ".xml";
     auto rel_iter = std::find_if(d_->relationships_.begin(), d_->relationships_.end(),
                                  [=](relationship &r) { return r.get_target_uri() == sheet_filename; });
 
@@ -558,6 +573,11 @@ void workbook::add_font(const font &font_)
 void workbook::add_number_format(const number_format &number_format_)
 {
     d_->number_formats_.push_back(number_format_);
+    
+    if(number_format_.get_id() == -1)
+    {
+        d_->number_formats_.back().set_id(d_->next_custom_format_id_++);
+    }
 }
 
 void workbook::set_code_name(const std::string & /*code_name*/)
@@ -867,6 +887,12 @@ const std::vector<std::string> &workbook::get_shared_strings() const
 
 void workbook::add_shared_string(const std::string &shared)
 {
+    //TODO: inefficient, use a set or something?
+    for(auto &s : d_->shared_strings_)
+    {
+        if(s == shared) return;
+    }
+    
     d_->shared_strings_.push_back(shared);
 }
 

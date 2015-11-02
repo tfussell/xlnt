@@ -85,11 +85,13 @@ bool manifest::has_override_type(const std::string &part_name) const
 
 void manifest::add_default_type(const std::string &extension, const std::string &content_type)
 {
+    if(has_default_type(extension)) return;
     default_types_.push_back(default_type(extension, content_type));
 }
 
 void manifest::add_override_type(const std::string &part_name, const std::string &content_type)
 {
+    if(has_override_type(part_name)) return;
     override_types_.push_back(override_type(part_name, content_type));
 }
 

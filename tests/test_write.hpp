@@ -138,7 +138,9 @@ public:
 
     void test_write_hyperlink()
     {
-		auto ws = wb_.create_sheet();
+        xlnt::workbook clean_wb;
+        auto ws = clean_wb.get_active_sheet();
+        
         ws.get_cell("A1").set_value("test");
         ws.get_cell("A1").set_hyperlink("http://test.com");
 

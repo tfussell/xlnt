@@ -326,65 +326,17 @@ public:
         TS_ASSERT(ws.get_cell("A5").get_value<int>() == 49380);
         TS_ASSERT(!ws.get_cell("A5").has_formula());
     }
-    
-    void test_detect_worksheets()
-    {
-        {
-            auto path = PathHelper::GetDataDirectory("/reader/bug137.xlsx");
-            xlnt::zip_file archive(path);
-            
-            std::vector<std::pair<std::string, std::string>> expected =
-            {
-                {"xl/worksheets/sheet1.xml", "Sheet1"}
-            };
-            
-            xlnt::workbook wb;
-            xlnt::workbook_serializer serializer(wb);
-            TS_ASSERT_EQUALS(serializer.detect_worksheets(), expected);
-        }
 
-        {
-            auto path = PathHelper::GetDataDirectory("/reader/contains_chartsheets.xlsx");
-            xlnt::zip_file archive(path);
-
-            std::vector<std::pair<std::string, std::string>> expected =
-            {
-                {"xl/worksheets/sheet1.xml", "data"},
-                {"xl/worksheets/sheet2.xml", "moredata"}
-            };
-
-            xlnt::workbook wb;
-            xlnt::workbook_serializer serializer(wb);
-            TS_ASSERT_EQUALS(serializer.detect_worksheets(), expected);
-        }
-
-        {
-            auto path = PathHelper::GetDataDirectory("/reader/bug304.xlsx");
-            xlnt::zip_file archive(path);
-
-            std::vector<std::pair<std::string, std::string>> expected =
-            {
-                {"xl/worksheets/sheet3.xml", "Sheet1"},
-                {"xl/worksheets/sheet2.xml", "Sheet2"},
-                {"xl/worksheets/sheet.xml", "Sheet3"}
-            };
-
-            xlnt::workbook wb;
-            xlnt::workbook_serializer serializer(wb);
-            TS_ASSERT_EQUALS(serializer.detect_worksheets(), expected);
-        }
-    }
-    
     void test_read_rels()
     {
         {
             std::vector<xlnt::relationship> expected =
             {
-                {xlnt::relationship::type::theme, "rId3", "xl/theme/theme1.xml"},
-                {xlnt::relationship::type::worksheet, "rId2", "xl/worksheets/sheet1.xml"},
-                {xlnt::relationship::type::chartsheet, "rId1", "xl/chartsheets/sheet1.xml"},
-                {xlnt::relationship::type::shared_strings, "rId5", "xl/sharedStrings.xml"},
-                {xlnt::relationship::type::styles, "rId4", "xl/styles.xml"}
+                {xlnt::relationship::type::theme, "rId3", "theme/theme1.xml"},
+                {xlnt::relationship::type::worksheet, "rId2", "worksheets/sheet1.xml"},
+                {xlnt::relationship::type::chartsheet, "rId1", "chartsheets/sheet1.xml"},
+                {xlnt::relationship::type::shared_strings, "rId5", "sharedStrings.xml"},
+                {xlnt::relationship::type::styles, "rId4", "styles.xml"}
             };
 
             auto path = PathHelper::GetDataDirectory("/reader/bug137.xlsx");
@@ -397,13 +349,13 @@ public:
             std::vector<xlnt::relationship> expected =
             {
                 {xlnt::relationship::type::custom_xml, "rId8", "../customXml/item3.xml"},
-                {xlnt::relationship::type::worksheet, "rId3", "xl/worksheets/sheet.xml"},
+                {xlnt::relationship::type::worksheet, "rId3", "/xl/worksheets/sheet.xml"},
                 {xlnt::relationship::type::custom_xml, "rId7", "../customXml/item2.xml"},
-                {xlnt::relationship::type::worksheet, "rId2", "xl/worksheets/sheet2.xml"},
-                {xlnt::relationship::type::worksheet, "rId1", "xl/worksheets/sheet3.xml"},
+                {xlnt::relationship::type::worksheet, "rId2", "/xl/worksheets/sheet2.xml"},
+                {xlnt::relationship::type::worksheet, "rId1", "/xl/worksheets/sheet3.xml"},
                 {xlnt::relationship::type::custom_xml, "rId6", "../customXml/item1.xml"},
-                {xlnt::relationship::type::styles, "rId5", "xl/styles.xml"},
-                {xlnt::relationship::type::theme, "rId4", "xl/theme/theme.xml"}
+                {xlnt::relationship::type::styles, "rId5", "/xl/styles.xml"},
+                {xlnt::relationship::type::theme, "rId4", "/xl/theme/theme.xml"}
             };
 
             auto path = PathHelper::GetDataDirectory("/reader/bug304.xlsx");
@@ -436,12 +388,7 @@ public:
         auto path = PathHelper::GetDataDirectory("/reader/contains_chartsheets.xlsx");
 
         xlnt::workbook wb;
-        xlnt::manifest_serializer serializer(wb.get_manifest());
-        
-        xlnt::zip_file archive;
-        archive.load(path);
-        
-        serializer.read_manifest(xlnt::xml_serializer::deserialize(archive.read("[Content Types].xml")));
+        wb.load(path);
         
         auto &result = wb.get_manifest().get_override_types();
 
@@ -453,35 +400,8 @@ public:
 
         for(std::size_t i = 0; i < expected.size(); i++)
         {
-            TS_ASSERT_EQUALS(result[i].get_part_name(), expected[i].first);
-            TS_ASSERT_EQUALS(result[i].get_content_type(), expected[i].second);
-        }
-    }
-    
-    void test_read_sheets()
-    {
-        {
-            auto path = PathHelper::GetDataDirectory("/reader/bug137.xlsx");
-
-            xlnt::workbook wb;
-            xlnt::workbook_serializer serializer(wb);
-            
-            auto sheets = serializer.read_sheets();
-            std::vector<std::pair<std::string, std::string>> expected =
-            {{"rId1", "Chart1"}, {"rId2", "Sheet1"}};
-            TS_ASSERT_EQUALS(sheets, expected);
-        }
-        
-        {
-            auto path = PathHelper::GetDataDirectory("/reader/bug304.xlsx");
-
-            xlnt::workbook wb;
-            xlnt::workbook_serializer serializer(wb);
-            
-            auto sheets = serializer.read_sheets();
-            std::vector<std::pair<std::string, std::string>> expected =
-            {{"rId1", "Sheet1"}, {"rId2", "Sheet2"}, {"rId3", "Sheet3"}};
-            TS_ASSERT_EQUALS(sheets, expected);
+            TS_ASSERT(wb.get_manifest().has_override_type(expected[i].first));
+            TS_ASSERT_EQUALS(wb.get_manifest().get_override_type(expected[i].first), expected[i].second);
         }
     }
     

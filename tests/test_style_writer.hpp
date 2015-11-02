@@ -16,11 +16,9 @@ public:
         xlnt::xml_document observed;
         writer.write_number_formats(observed.add_child("numFmts"));
         std::string expected =
-        "<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">"
         "    <numFmts count=\"1\">"
         "    <numFmt formatCode=\"YYYY\" numFmtId=\"164\"></numFmt>"
-        "    </numFmts>"
-        "</styleSheet>";
+        "    </numFmts>";
         auto diff = Helper::compare_xml(expected, observed);
         TS_ASSERT(diff);
     }

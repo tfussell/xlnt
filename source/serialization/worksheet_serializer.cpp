@@ -189,8 +189,8 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml)
         auto min = static_cast<column_t>(std::stoull(col_node.get_attribute("min")));
         auto max = static_cast<column_t>(std::stoull(col_node.get_attribute("max")));
         auto width = std::stold(col_node.get_attribute("width"));
-        auto column_style = std::stoull(col_node.get_attribute("style"));
         bool custom = col_node.get_attribute("customWidth") == "1";
+        auto column_style = col_node.has_attribute("style") ? std::stoull(col_node.get_attribute("style")) : 0;
 
         for (auto column = min; column <= max; column++)
         {
@@ -217,8 +217,6 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml)
 
 xml_document worksheet_serializer::write_worksheet() const
 {
-    sheet_.get_cell("A1");
-
     xml_document xml;
 
     auto root_node = xml.add_child("worksheet");
@@ -228,16 +226,16 @@ xml_document worksheet_serializer::write_worksheet() const
 
     auto sheet_pr_node = root_node.add_child("sheetPr");
 
+    auto outline_pr_node = sheet_pr_node.add_child("outlinePr");
+
+    outline_pr_node.add_attribute("summaryBelow", "1");
+    outline_pr_node.add_attribute("summaryRight", "1");
+    
     if (!sheet_.get_page_setup().is_default())
     {
         auto page_set_up_pr_node = sheet_pr_node.add_child("pageSetUpPr");
         page_set_up_pr_node.add_attribute("fitToPage", sheet_.get_page_setup().fit_to_page() ? "1" : "0");
     }
-
-    auto outline_pr_node = sheet_pr_node.add_child("outlinePr");
-
-    outline_pr_node.add_attribute("summaryBelow", "1");
-    outline_pr_node.add_attribute("summaryRight", "1");
 
     auto dimension_node = root_node.add_child("dimension");
     dimension_node.add_attribute("ref", sheet_.calculate_dimension().to_string());
@@ -529,13 +527,35 @@ xml_document worksheet_serializer::write_worksheet() const
     }
 
     auto page_margins_node = root_node.add_child("pageMargins");
+    
+    //TODO: there must be a better way to do this
+    auto remove_trailing_zeros = [](const std::string &n)
+    {
+        auto decimal = n.find('.');
+        
+        if (decimal == std::string::npos) return n;
+        
+        auto index = n.size() - 1;
+        
+        while (index >= decimal && n[index] == '0')
+        {
+            index--;
+        }
+        
+        if(index == decimal)
+        {
+            return n.substr(0, decimal);
+        }
+        
+        return n.substr(0, index + 1);
+    };
 
-    page_margins_node.add_attribute("left", std::to_string(sheet_.get_page_margins().get_left()));
-    page_margins_node.add_attribute("right", std::to_string(sheet_.get_page_margins().get_right()));
-    page_margins_node.add_attribute("top", std::to_string(sheet_.get_page_margins().get_top()));
-    page_margins_node.add_attribute("bottom", std::to_string(sheet_.get_page_margins().get_bottom()));
-    page_margins_node.add_attribute("header", std::to_string(sheet_.get_page_margins().get_header()));
-    page_margins_node.add_attribute("footer", std::to_string(sheet_.get_page_margins().get_footer()));
+    page_margins_node.add_attribute("left", remove_trailing_zeros(std::to_string(sheet_.get_page_margins().get_left())));
+    page_margins_node.add_attribute("right", remove_trailing_zeros(std::to_string(sheet_.get_page_margins().get_right())));
+    page_margins_node.add_attribute("top", remove_trailing_zeros(std::to_string(sheet_.get_page_margins().get_top())));
+    page_margins_node.add_attribute("bottom", remove_trailing_zeros(std::to_string(sheet_.get_page_margins().get_bottom())));
+    page_margins_node.add_attribute("header", remove_trailing_zeros(std::to_string(sheet_.get_page_margins().get_header())));
+    page_margins_node.add_attribute("footer", remove_trailing_zeros(std::to_string(sheet_.get_page_margins().get_footer())));
 
     if (!sheet_.get_page_setup().is_default())
     {

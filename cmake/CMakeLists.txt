@@ -28,5 +28,5 @@ foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/../bin)
 endforeach(OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES)
 
-include(xlnt.cmake)
 include(xlnt.test.cmake)
+include(xlnt.cmake)

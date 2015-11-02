@@ -59,47 +59,10 @@ workbook_serializer::workbook_serializer(workbook &wb) : workbook_(wb)
 {
 }
 
-std::vector<workbook_serializer::string_pair> workbook_serializer::read_sheets()
-{
-    /*
-    std::string ns;
-
-    for(auto child : doc.children())
-    {
-        std::string name = child.name();
-
-        if(name.find(':') != std::string::npos)
-        {
-            auto colon_index = name.find(':');
-            ns = name.substr(0, colon_index);
-            break;
-        }
-    }
-
-    auto with_ns = [&](const std::string &base) { return ns.empty() ? base : ns + ":" + base; };
-
-    auto root_node = doc.get_child(with_ns("workbook"));
-    auto sheets_node = root_node.get_child(with_ns("sheets"));
-    */
-    std::vector<string_pair> sheets;
-    /*
-    // store temp because pugixml iteration uses the internal char array multiple times
-    auto sheet_element_name = with_ns("sheet");
-
-    for(auto sheet_node : sheets_node.children(sheet_element_name))
-    {
-        std::string id = sheet_node.attribute("r:id").as_string();
-        std::string name = sheet_node.attribute("name").as_string();
-        sheets.push_back(std::make_pair(id, name));
-    }
-    */
-    return sheets;
-}
-
 void workbook_serializer::read_properties_core(const xml_document &xml)
 {
     auto &props = workbook_.get_properties();
-    auto root_node = xml.get_child("dc:coreProperties");
+    auto root_node = xml.get_child("cp:coreProperties");
 
     props.excel_base_date = calendar::windows_1900;
 
@@ -121,45 +84,6 @@ void workbook_serializer::read_properties_core(const xml_document &xml)
         std::string modified_string = root_node.get_child("dcterms:modified").get_text();
         props.modified = w3cdtf_to_datetime(modified_string);
     }
-}
-
-/// <summary>
-/// Return a list of worksheets.
-/// content types has a list of paths but no titles
-/// workbook has a list of titles and relIds but no paths
-/// workbook_rels has a list of relIds and paths but no titles
-/// </summary>
-std::vector<workbook_serializer::string_pair> workbook_serializer::detect_worksheets()
-{
-    static const std::string ValidWorksheet =
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml";
-
-    std::vector<std::string> valid_sheets;
-
-    for (const auto &content_type : workbook_.get_manifest().get_override_types())
-    {
-        if (content_type.get_content_type() == ValidWorksheet)
-        {
-            valid_sheets.push_back(content_type.get_part_name());
-        }
-    }
-
-    auto &workbook_relationships = workbook_.get_relationships();
-    std::vector<std::pair<std::string, std::string>> result;
-
-    for (const auto &ws : read_sheets())
-    {
-        auto rel = *std::find_if(workbook_relationships.begin(), workbook_relationships.end(),
-                                 [&](const relationship &r) { return r.get_id() == ws.first; });
-        auto target = rel.get_target_uri();
-
-        if (std::find(valid_sheets.begin(), valid_sheets.end(), "/" + target) != valid_sheets.end())
-        {
-            result.push_back({ target, ws.second });
-        }
-    }
-
-    return result;
 }
 
 xml_document workbook_serializer::write_properties_core() const

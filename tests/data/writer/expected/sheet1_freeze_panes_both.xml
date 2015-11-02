@@ -3,7 +3,7 @@
   <sheetPr>
     <outlinePr summaryBelow="1" summaryRight="1"/>
   </sheetPr>
-  <dimension ref="A1:F42"/>
+  <dimension ref="F42:F42"/>
   <sheetViews>
     <sheetView workbookViewId="0">
       <pane xSplit="3" ySplit="3" topLeftCell="D4" activePane="bottomRight" state="frozen"/>

@@ -9,4 +9,3 @@ dirs = ['../bin', '../lib', '../build']
 
 for dir in dirs:
     if os.path.isdir(dir): shutil.rmtree(dir)
-

@@ -98,7 +98,7 @@ public:
         xlnt::zip_file archive;
         xlnt::relationship_serializer::write_relationships(wb.get_relationships(), "xl/workbook.xml", archive);
         xlnt::xml_document observed;
-        observed.from_string(archive.read("xl/workbook/_rels/workbook.xml.rels"));
+        observed.from_string(archive.read("xl/_rels/workbook.xml.rels"));
         auto filename = "workbook.xml.rels";
         auto diff = Helper::compare_xml(PathHelper::read_file(filename), observed);
         TS_ASSERT(!diff);

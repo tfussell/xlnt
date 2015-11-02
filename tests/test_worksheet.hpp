@@ -643,7 +643,7 @@ public:
         xlnt::worksheet_serializer serializer(ws);
         auto observed = serializer.write_worksheet();
 
-        auto expected_string = 
+        auto expected_string =
         "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
         "  <sheetPr>"
         "    <outlinePr summaryRight=\"1\" summaryBelow=\"1\"/>"
@@ -703,8 +703,8 @@ public:
    
     void test_merge()
     {
-        xlnt::worksheet ws(wb_);
-        std::vector<std::string> string_table = {"Cell A1", "Cell B1"};
+        xlnt::workbook clean_wb; // for shared strings
+        xlnt::worksheet ws(clean_wb);
         
         auto expected_string1 = 
         "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
@@ -775,7 +775,7 @@ public:
         {
             xlnt::worksheet_serializer serializer(ws);
             auto observed = serializer.write_worksheet();
-            
+
             xlnt::xml_document expected;
             expected.from_string(expected_string2);
             
@@ -855,7 +855,7 @@ public:
         
         xlnt::xml_document expected;
         expected.from_string(expected_string);
-
+        
         TS_ASSERT(Helper::compare_xml(expected, observed));
     }
     
@@ -904,12 +904,12 @@ public:
         "  </headerFooter>"
         "</worksheet>";
         
-        xlnt::xml_document expected;
-        expected.from_string(expected_xml_string);
-        
         {
             xlnt::worksheet_serializer serializer(ws);
             auto observed = serializer.write_worksheet();
+            
+            xlnt::xml_document expected;
+            expected.from_string(expected_xml_string);
             
             TS_ASSERT(Helper::compare_xml(expected, observed));
         }
@@ -935,6 +935,9 @@ public:
         {
             xlnt::worksheet_serializer serializer(ws);
             auto observed = serializer.write_worksheet();
+            
+            xlnt::xml_document expected;
+            expected.from_string(expected_xml_string);
             
             TS_ASSERT(Helper::compare_xml(expected, observed));
         }
