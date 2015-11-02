@@ -30,14 +30,6 @@ public:
         wb_guess_types.set_guess_types(true);
     }
     
-    void test_debug()
-    {
-        xlnt::workbook wb;
-        wb.load("/Users/thomas/Development/xlnt/samples/formatting.xlsx");
-        wb.save("/Users/thomas/Development/xlnt/samples/formatting-rt.xlsx");
-        wb.save("/Users/thomas/Development/xlnt/samples/formatting-rt.zip");
-    }
-    
 	void test_infer_numeric()
 	{
 		auto ws = wb_guess_types.create_sheet();
