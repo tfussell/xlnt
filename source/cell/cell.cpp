@@ -125,10 +125,18 @@ bool is_date_format(const std::string &format_string)
 
 bool is_valid_color(const std::string &color)
 {
-    static const std::vector<std::string> colors = { "Black",
-                                                     "Green"
-                                                     "White",
-                                                     "Blue", "Magenta", "Yellow", "Cyan", "Red" };
+    static const std::vector<std::string> *colors =
+        new std::vector<std::string>(
+        {
+            "Black",
+            "Green"
+            "White",
+            "Blue",
+            "Magenta",
+            "Yellow",
+            "Cyan",
+            "Red"
+        });
 
     auto compare_color = [&](const std::string &other) {
         if (color.size() != other.size()) return false;
@@ -144,7 +152,7 @@ bool is_valid_color(const std::string &color)
         return true;
     };
 
-    return std::find_if(colors.begin(), colors.end(), compare_color) != colors.end();
+    return std::find_if(colors->begin(), colors->end(), compare_color) != colors->end();
 }
 
 bool parse_condition(const std::string &string, section &s)
@@ -200,111 +208,120 @@ bool is_hex(char c)
     return false;
 }
 
-const std::unordered_map<int, std::string> known_locales = { { 0x401, "Arabic - Saudi Arabia" },
-                                                             { 0x402, "Bulgarian" },
-                                                             { 0x403, "Catalan" },
-                                                             { 0x404, "Chinese - Taiwan" },
-                                                             { 0x405, "Czech" },
-                                                             { 0x406, "Danish" },
-                                                             { 0x407, "German - Germany" },
-                                                             { 0x408, "Greek" },
-                                                             { 0x409, "English - United States" },
-                                                             { 0x410, "Italian - Italy" },
-                                                             { 0x411, "Japanese" },
-                                                             { 0x412, "Korean" },
-                                                             { 0x413, "Dutch - Netherlands" },
-                                                             { 0x414, "Norwegian - Bokml" },
-                                                             { 0x415, "Polish" },
-                                                             { 0x416, "Portuguese - Brazil" },
-                                                             { 0x417, "Raeto-Romance" },
-                                                             { 0x418, "Romanian - Romania" },
-                                                             { 0x419, "Russian" },
-                                                             { 0x420, "Urdu" },
-                                                             { 0x421, "Indonesian" },
-                                                             { 0x422, "Ukrainian" },
-                                                             { 0x423, "Belarusian" },
-                                                             { 0x424, "Slovenian" },
-                                                             { 0x425, "Estonian" },
-                                                             { 0x426, "Latvian" },
-                                                             { 0x427, "Lithuanian" },
-                                                             { 0x428, "Tajik" },
-                                                             { 0x429, "Farsi - Persian" },
-                                                             { 0x430, "Sesotho (Sutu)" },
-                                                             { 0x431, "Tsonga" },
-                                                             { 0x432, "Setsuana" },
-                                                             { 0x433, "Venda" },
-                                                             { 0x434, "Xhosa" },
-                                                             { 0x435, "Zulu" },
-                                                             { 0x436, "Afrikaans" },
-                                                             { 0x437, "Georgian" },
-                                                             { 0x438, "Faroese" },
-                                                             { 0x439, "Hindi" },
-                                                             { 0x440, "Kyrgyz - Cyrillic" },
-                                                             { 0x441, "Swahili" },
-                                                             { 0x442, "Turkmen" },
-                                                             { 0x443, "Uzbek - Latin" },
-                                                             { 0x444, "Tatar" },
-                                                             { 0x445, "Bengali - India" },
-                                                             { 0x446, "Punjabi" },
-                                                             { 0x447, "Gujarati" },
-                                                             { 0x448, "Oriya" },
-                                                             { 0x449, "Tamil" },
-                                                             { 0x450, "Mongolian" },
-                                                             { 0x451, "Tibetan" },
-                                                             { 0x452, "Welsh" },
-                                                             { 0x453, "Khmer" },
-                                                             { 0x454, "Lao" },
-                                                             { 0x455, "Burmese" },
-                                                             { 0x456, "Galician" },
-                                                             { 0x457, "Konkani" },
-                                                             { 0x458, "Manipuri" },
-                                                             { 0x459, "Sindhi" },
-                                                             { 0x460, "Kashmiri" },
-                                                             { 0x461, "Nepali" },
-                                                             { 0x462, "Frisian - Netherlands" },
-                                                             { 0x464, "Filipino" },
-                                                             { 0x465, "Divehi; Dhivehi; Maldivian" },
-                                                             { 0x466, "Edo" },
-                                                             { 0x470, "Igbo - Nigeria" },
-                                                             { 0x474, "Guarani - Paraguay" },
-                                                             { 0x476, "Latin" },
-                                                             { 0x477, "Somali" },
-                                                             { 0x481, "Maori" },
-                                                             { 0x801, "Arabic - Iraq" },
-                                                             { 0x804, "Chinese - China" },
-                                                             { 0x807, "German - Switzerland" },
-                                                             { 0x809, "English - Great Britain" },
-                                                             { 0x810, "Italian - Switzerland" },
-                                                             { 0x813, "Dutch - Belgium" },
-                                                             { 0x814, "Norwegian - Nynorsk" },
-                                                             { 0x816, "Portuguese - Portugal" },
-                                                             { 0x818, "Romanian - Moldova" },
-                                                             { 0x819, "Russian - Moldova" },
-                                                             { 0x843, "Uzbek - Cyrillic" },
-                                                             { 0x845, "Bengali - Bangladesh" },
-                                                             { 0x850, "Mongolian" },
-                                                             { 0x1001, "Arabic - Libya" },
-                                                             { 0x1004, "Chinese - Singapore" },
-                                                             { 0x1007, "German - Luxembourg" },
-                                                             { 0x1009, "English - Canada" },
-                                                             { 0x1401, "Arabic - Algeria" },
-                                                             { 0x1404, "Chinese - Macau SAR" },
-                                                             { 0x1407, "German - Liechtenstein" },
-                                                             { 0x1409, "English - New Zealand" },
-                                                             { 0x1801, "Arabic - Morocco" },
-                                                             { 0x1809, "English - Ireland" },
-                                                             { 0x2001, "Arabic - Oman" },
-                                                             { 0x2009, "English - Jamaica" },
-                                                             { 0x2401, "Arabic - Yemen" },
-                                                             { 0x2409, "English - Caribbean" },
-                                                             { 0x2801, "Arabic - Syria" },
-                                                             { 0x2809, "English - Belize" },
-                                                             { 0x3001, "Arabic - Lebanon" },
-                                                             { 0x3009, "English - Zimbabwe" },
-                                                             { 0x3401, "Arabic - Kuwait" },
-                                                             { 0x3409, "English - Phillippines" },
-                                                             { 0x3801, "Arabic - United Arab Emirates" },
-                                                             { 0x4001, "Arabic - Qatar" } };
+const std::unordered_map<int, std::string> known_locales()
+{
+    const std::unordered_map<int, std::string> *all =
+        new std::unordered_map<int, std::string>(
+            {
+                 { 0x401, "Arabic - Saudi Arabia" },
+                 { 0x402, "Bulgarian" },
+                 { 0x403, "Catalan" },
+                 { 0x404, "Chinese - Taiwan" },
+                 { 0x405, "Czech" },
+                 { 0x406, "Danish" },
+                 { 0x407, "German - Germany" },
+                 { 0x408, "Greek" },
+                 { 0x409, "English - United States" },
+                 { 0x410, "Italian - Italy" },
+                 { 0x411, "Japanese" },
+                 { 0x412, "Korean" },
+                 { 0x413, "Dutch - Netherlands" },
+                 { 0x414, "Norwegian - Bokml" },
+                 { 0x415, "Polish" },
+                 { 0x416, "Portuguese - Brazil" },
+                 { 0x417, "Raeto-Romance" },
+                 { 0x418, "Romanian - Romania" },
+                 { 0x419, "Russian" },
+                 { 0x420, "Urdu" },
+                 { 0x421, "Indonesian" },
+                 { 0x422, "Ukrainian" },
+                 { 0x423, "Belarusian" },
+                 { 0x424, "Slovenian" },
+                 { 0x425, "Estonian" },
+                 { 0x426, "Latvian" },
+                 { 0x427, "Lithuanian" },
+                 { 0x428, "Tajik" },
+                 { 0x429, "Farsi - Persian" },
+                 { 0x430, "Sesotho (Sutu)" },
+                 { 0x431, "Tsonga" },
+                 { 0x432, "Setsuana" },
+                 { 0x433, "Venda" },
+                 { 0x434, "Xhosa" },
+                 { 0x435, "Zulu" },
+                 { 0x436, "Afrikaans" },
+                 { 0x437, "Georgian" },
+                 { 0x438, "Faroese" },
+                 { 0x439, "Hindi" },
+                 { 0x440, "Kyrgyz - Cyrillic" },
+                 { 0x441, "Swahili" },
+                 { 0x442, "Turkmen" },
+                 { 0x443, "Uzbek - Latin" },
+                 { 0x444, "Tatar" },
+                 { 0x445, "Bengali - India" },
+                 { 0x446, "Punjabi" },
+                 { 0x447, "Gujarati" },
+                 { 0x448, "Oriya" },
+                 { 0x449, "Tamil" },
+                 { 0x450, "Mongolian" },
+                 { 0x451, "Tibetan" },
+                 { 0x452, "Welsh" },
+                 { 0x453, "Khmer" },
+                 { 0x454, "Lao" },
+                 { 0x455, "Burmese" },
+                 { 0x456, "Galician" },
+                 { 0x457, "Konkani" },
+                 { 0x458, "Manipuri" },
+                 { 0x459, "Sindhi" },
+                 { 0x460, "Kashmiri" },
+                 { 0x461, "Nepali" },
+                 { 0x462, "Frisian - Netherlands" },
+                 { 0x464, "Filipino" },
+                 { 0x465, "Divehi; Dhivehi; Maldivian" },
+                 { 0x466, "Edo" },
+                 { 0x470, "Igbo - Nigeria" },
+                 { 0x474, "Guarani - Paraguay" },
+                 { 0x476, "Latin" },
+                 { 0x477, "Somali" },
+                 { 0x481, "Maori" },
+                 { 0x801, "Arabic - Iraq" },
+                 { 0x804, "Chinese - China" },
+                 { 0x807, "German - Switzerland" },
+                 { 0x809, "English - Great Britain" },
+                 { 0x810, "Italian - Switzerland" },
+                 { 0x813, "Dutch - Belgium" },
+                 { 0x814, "Norwegian - Nynorsk" },
+                 { 0x816, "Portuguese - Portugal" },
+                 { 0x818, "Romanian - Moldova" },
+                 { 0x819, "Russian - Moldova" },
+                 { 0x843, "Uzbek - Cyrillic" },
+                 { 0x845, "Bengali - Bangladesh" },
+                 { 0x850, "Mongolian" },
+                 { 0x1001, "Arabic - Libya" },
+                 { 0x1004, "Chinese - Singapore" },
+                 { 0x1007, "German - Luxembourg" },
+                 { 0x1009, "English - Canada" },
+                 { 0x1401, "Arabic - Algeria" },
+                 { 0x1404, "Chinese - Macau SAR" },
+                 { 0x1407, "German - Liechtenstein" },
+                 { 0x1409, "English - New Zealand" },
+                 { 0x1801, "Arabic - Morocco" },
+                 { 0x1809, "English - Ireland" },
+                 { 0x2001, "Arabic - Oman" },
+                 { 0x2009, "English - Jamaica" },
+                 { 0x2401, "Arabic - Yemen" },
+                 { 0x2409, "English - Caribbean" },
+                 { 0x2801, "Arabic - Syria" },
+                 { 0x2809, "English - Belize" },
+                 { 0x3001, "Arabic - Lebanon" },
+                 { 0x3009, "English - Zimbabwe" },
+                 { 0x3401, "Arabic - Kuwait" },
+                 { 0x3409, "English - Phillippines" },
+                 { 0x3801, "Arabic - United Arab Emirates" },
+                 { 0x4001, "Arabic - Qatar" }
+            });
+    
+    return *all;
+}
 
 bool is_valid_locale(const std::string &locale_string)
 {
@@ -317,7 +334,7 @@ bool is_valid_locale(const std::string &locale_string)
 
     for (auto c : country)
     {
-        if (!is_hex(std::toupper(c)))
+        if (!is_hex(static_cast<char>(std::toupper(c))))
         {
             return false;
         }
@@ -325,7 +342,9 @@ bool is_valid_locale(const std::string &locale_string)
 
     auto index = std::stoi(country, 0, 16);
 
-    if (known_locales.find(index) == known_locales.end())
+    auto known_locales_ = known_locales();
+
+    if (known_locales_.find(index) == known_locales_.end())
     {
         return false;
     }
@@ -359,7 +378,7 @@ section parse_section(const std::string &section_string)
     bool in_quotes = false;
     bool in_brackets = false;
 
-    static const std::vector<std::string> bracket_times = { "h", "hh", "m", "mm", "s", "ss" };
+    const std::vector<std::string> bracket_times = { "h", "hh", "m", "mm", "s", "ss" };
 
     for (std::size_t i = 0; i < section_string.size(); i++)
     {
@@ -502,9 +521,6 @@ format_sections parse_format_sections(const std::string &combined)
     return result;
 }
 
-const std::vector<std::string> MonthNames = { "January", "February", "March",     "April",   "May",      "June",
-                                              "July",    "August",   "September", "October", "November", "December" };
-
 std::string format_section(long double number, const section &format, xlnt::calendar base_date)
 {
     const std::string unquoted = "$+(:^'{<=-/)!&~}> ";
@@ -516,10 +532,12 @@ std::string format_section(long double number, const section &format, xlnt::cale
         const std::string date_unquoted = ",-/: ";
 
         const std::vector<std::string> dates = { "m", "mm", "mmm", "mmmmm", "mmmmmm", "d", "dd", "ddd", "dddd", "yy",
-                                                 "yyyy"
-                                                 "h",
-                                                 "[h]", "hh", "m", "[m]", "mm", "s", "[s]", "ss", "AM/PM", "am/pm",
-                                                 "A/P", "a/p" };
+                                                 "yyyy", "h", "[h]", "hh", "m", "[m]", "mm", "s", "[s]", "ss", "AM/PM",
+                                                 "am/pm", "A/P", "a/p" };
+        
+        const std::vector<std::string> MonthNames = { "January", "February", "March",
+        "April", "May", "June", "July", "August", "September", "October", "November", "December" };
+
 
         auto split = split_string_any(format.value, date_unquoted);
         std::string::size_type index = 0, prev = 0;
@@ -530,7 +548,7 @@ std::string format_section(long double number, const section &format, xlnt::cale
             std::string lower;
             lower.resize(s.size());
             for (std::size_t i = 0; i < s.size(); i++)
-                lower[i] = std::tolower(s[i]);
+                lower[i] = static_cast<char>(std::tolower(s[i]));
             return lower;
         };
 
@@ -563,12 +581,12 @@ std::string format_section(long double number, const section &format, xlnt::cale
             }
             else if (part == "mmm" && !processed_month)
             {
-                result.append(MonthNames.at(d.month - 1).substr(0, 3));
+                result.append(MonthNames.at(static_cast<std::size_t>(d.month - 1)).substr(0, 3));
                 processed_month = true;
             }
             else if (part == "mmmm" && !processed_month)
             {
-                result.append(MonthNames.at(d.month - 1));
+                result.append(MonthNames.at(static_cast<std::size_t>(d.month - 1)));
                 processed_month = true;
             }
             else if (part == "d")
@@ -765,11 +783,12 @@ namespace xlnt {
 
 const std::unordered_map<std::string, int> &cell::error_codes()
 {
-    static const std::unordered_map<std::string, int> codes = { { "#NULL!", 0 }, { "#DIV/0!", 1 }, { "#VALUE!", 2 },
+    static const std::unordered_map<std::string, int> *codes =
+    new std::unordered_map<std::string, int>({ { "#NULL!", 0 }, { "#DIV/0!", 1 }, { "#VALUE!", 2 },
                                                                 { "#REF!", 3 },  { "#NAME?", 4 },  { "#NUM!", 5 },
-                                                                { "#N/A!", 6 } };
+                                                                { "#N/A!", 6 } });
 
-    return codes;
+    return *codes;
 };
 
 cell::cell() : d_(nullptr)
@@ -1177,13 +1196,17 @@ comment cell::get_comment()
     return comment(d_->comment_.get());
 }
 
+//TODO: this shares a lot of code with worksheet::get_point_pos, try to reduce repition
 std::pair<int, int> cell::get_anchor() const
 {
     static const double DefaultColumnWidth = 51.85;
     static const double DefaultRowHeight = 15.0;
 
-    auto points_to_pixels = [](double value, double dpi) { return (int)std::ceil(value * dpi / 72); };
-
+    auto points_to_pixels = [](long double value, long double dpi)
+    {
+        return static_cast<int>(std::ceil(value * dpi / 72));
+    };
+    
     auto left_columns = d_->column_ - 1;
     int left_anchor = 0;
     auto default_width = points_to_pixels(DefaultColumnWidth, 96.0);
@@ -1208,7 +1231,7 @@ std::pair<int, int> cell::get_anchor() const
     int top_anchor = 0;
     auto default_height = points_to_pixels(DefaultRowHeight, 96.0);
 
-    for (int row_index = 1; row_index <= (int)top_rows; row_index++)
+    for (row_t row_index = 1; row_index <= top_rows; row_index++)
     {
         if (get_parent().has_row_properties(row_index))
         {
@@ -1239,15 +1262,9 @@ void cell::set_data_type(type t)
 
 const number_format &cell::get_number_format() const
 {
-    static const number_format default_format;
-
     if (d_->has_style_)
     {
         return get_parent().get_parent().get_number_format(d_->style_id_);
-    }
-    else if (get_parent().get_parent().get_number_formats().empty())
-    {
-        return default_format;
     }
     else
     {

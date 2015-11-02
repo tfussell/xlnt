@@ -44,14 +44,14 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
     wb.set_guess_types(guess_types);
     wb.set_data_only(data_only);
 
-    if(!archive.has_file(xlnt::constants::ArcContentTypes))
+    if(!archive.has_file(xlnt::constants::ArcContentTypes()))
     {
         throw xlnt::invalid_file_exception("missing [Content Types].xml");
     }
     
     xlnt::manifest_serializer ms(wb.get_manifest());
 	xlnt::xml_document manifest_xml;
-	manifest_xml.from_string(archive.read(xlnt::constants::ArcContentTypes));
+	manifest_xml.from_string(archive.read(xlnt::constants::ArcContentTypes()));
     ms.read_manifest(manifest_xml);
 
     if (ms.determine_document_type() != "excel")
@@ -61,16 +61,16 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
 
     wb.clear();
     
-    if(archive.has_file(xlnt::constants::ArcCore))
+    if(archive.has_file(xlnt::constants::ArcCore()))
     {
         xlnt::workbook_serializer workbook_serializer_(wb);
 		xlnt::xml_document core_properties_xml;
-		core_properties_xml.from_string(archive.read(xlnt::constants::ArcCore));
+		core_properties_xml.from_string(archive.read(xlnt::constants::ArcCore()));
         workbook_serializer_.read_properties_core(core_properties_xml);
     }
         
     auto workbook_relationships =
-        xlnt::relationship_serializer::read_relationships(archive, xlnt::constants::ArcWorkbook);
+        xlnt::relationship_serializer::read_relationships(archive, xlnt::constants::ArcWorkbook());
 
     for (const auto &relationship : workbook_relationships)
     {
@@ -78,7 +78,7 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
     }
 
 	xlnt::xml_document xml;
-    xml.from_string(archive.read(xlnt::constants::ArcWorkbook));
+    xml.from_string(archive.read(xlnt::constants::ArcWorkbook()));
 
     auto root_node = xml.get_child("workbook");
 
@@ -88,12 +88,12 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
             ? xlnt::calendar::mac_1904
             : xlnt::calendar::windows_1900;
 
-    if(archive.has_file(xlnt::constants::ArcSharedString))
+    if(archive.has_file(xlnt::constants::ArcSharedString()))
     {
         xlnt::shared_strings_serializer shared_strings_serializer_;
         std::vector<std::string> shared_strings;
 		xlnt::xml_document shared_strings_xml;
-		shared_strings_xml.from_string(archive.read(xlnt::constants::ArcSharedString));
+		shared_strings_xml.from_string(archive.read(xlnt::constants::ArcSharedString()));
         shared_strings_serializer_.read_shared_strings(shared_strings_xml, shared_strings);
 
         for (auto shared_string : shared_strings)
@@ -104,7 +104,7 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
 
     xlnt::style_serializer style_reader_(wb);
 	xlnt::xml_document style_xml;
-	style_xml.from_string(archive.read(xlnt::constants::ArcStyles));
+	style_xml.from_string(archive.read(xlnt::constants::ArcStyles()));
     style_reader_.read_stylesheet(style_xml);
 
     auto sheets_node = root_node.get_child("sheets");
@@ -113,12 +113,16 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
     {
         auto rel = wb.get_relationship(sheet_node.get_attribute("r:id"));
         auto ws = wb.create_sheet(sheet_node.get_attribute("name"), rel);
+        
         //TODO: this is really bad
         auto ws_filename = (rel.get_target_uri().substr(0, 3) != "xl/" ? "xl/" : "") + rel.get_target_uri();
         
         auto sheet_type = wb.get_manifest().get_override_type(ws_filename);
-
-        if(sheet_type != "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml") continue;
+        
+        if(rel.get_type() != xlnt::relationship::type::worksheet)
+        {
+            continue;
+        }
         
         xlnt::worksheet_serializer worksheet_serializer(ws);
 		xlnt::xml_document worksheet_xml;
@@ -154,9 +158,10 @@ bool excel_serializer::load_stream_workbook(std::istream &stream, bool guess_typ
 {
     std::vector<std::uint8_t> bytes;
     
+    //TODO: inefficient?
     while (stream.good())
     {
-        bytes.push_back(stream.get());
+        bytes.push_back(static_cast<std::uint8_t>(stream.get()));
     }
     
     return load_virtual_workbook(bytes, guess_types, data_only);
@@ -192,28 +197,28 @@ void excel_serializer::write_data(bool /*as_template*/)
     relationship_serializer relationship_serializer_;
 
     relationship_serializer_.write_relationships(workbook_.get_root_relationships(), "", archive_);
-    relationship_serializer_.write_relationships(workbook_.get_relationships(), constants::ArcWorkbook, archive_);
+    relationship_serializer_.write_relationships(workbook_.get_relationships(), constants::ArcWorkbook(), archive_);
 
     xml_document properties_app_xml;
     workbook_serializer workbook_serializer_(workbook_);
-    archive_.writestr(constants::ArcApp, xml_serializer::serialize(workbook_serializer_.write_properties_app()));
-    archive_.writestr(constants::ArcCore, xml_serializer::serialize(workbook_serializer_.write_properties_core()));
+    archive_.writestr(constants::ArcApp(), xml_serializer::serialize(workbook_serializer_.write_properties_app()));
+    archive_.writestr(constants::ArcCore(), xml_serializer::serialize(workbook_serializer_.write_properties_core()));
 
     theme_serializer theme_serializer_;
-    archive_.writestr(constants::ArcTheme, theme_serializer_.write_theme(workbook_.get_loaded_theme()).to_string());
+    archive_.writestr(constants::ArcTheme(), theme_serializer_.write_theme(workbook_.get_loaded_theme()).to_string());
 
     xlnt::shared_strings_serializer shared_strings_serializer_;
     archive_.writestr(
-        constants::ArcSharedString,
+        constants::ArcSharedString(),
         xml_serializer::serialize(shared_strings_serializer_.write_shared_strings(workbook_.get_shared_strings())));
 
-    archive_.writestr(constants::ArcWorkbook, xml_serializer::serialize(workbook_serializer_.write_workbook()));
+    archive_.writestr(constants::ArcWorkbook(), xml_serializer::serialize(workbook_serializer_.write_workbook()));
 
     style_serializer style_serializer_(workbook_);
-    archive_.writestr(constants::ArcStyles, style_serializer_.write_stylesheet().to_string());
+    archive_.writestr(constants::ArcStyles(), style_serializer_.write_stylesheet().to_string());
 
     manifest_serializer manifest_serializer_(workbook_.get_manifest());
-    archive_.writestr(constants::ArcContentTypes, manifest_serializer_.write_manifest().to_string());
+    archive_.writestr(constants::ArcContentTypes(), manifest_serializer_.write_manifest().to_string());
 
     write_worksheets();
 }

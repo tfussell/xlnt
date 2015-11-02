@@ -28,7 +28,7 @@ namespace xlnt {
 class row_properties
 {
 public:
-    double height;
+    long double height;
     bool visible;
     int outline_level;
     bool collapsed;

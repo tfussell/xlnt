@@ -67,21 +67,36 @@ class number_format
     static const number_format currency_usd();
     static const number_format currency_eur_simple();
 
-    static number_format from_builtin_id(int builtin_id);
+    static number_format from_builtin_id(std::size_t builtin_id);
 
     number_format();
-    number_format(int builtin_id);
-    number_format(const std::string &code, int custom_id = -1);
+    number_format(std::size_t builtin_id);
+    number_format(const std::string &code);
+    number_format(const std::string &code, std::size_t custom_id);
 
-    void set_format_string(const std::string &format_code, int id = -1);
+    void set_format_string(const std::string &format_code);
+    void set_format_string(const std::string &format_code, std::size_t custom_id);
+    
     std::string get_format_string() const;
 
-    void set_id(int id)
+    bool has_id() const
+    {
+        return id_set_;
+    }
+
+    void set_id(std::size_t id)
     {
         id_ = id;
+        id_set_ = true;
     }
-    int get_id() const
+    
+    std::size_t get_id() const
     {
+        if(!id_set_)
+        {
+            throw std::runtime_error("number format doesn't have an id");
+        }
+        
         return id_;
     }
 
@@ -93,7 +108,8 @@ class number_format
     }
 
   private:
-    int id_;
+    bool id_set_;
+    std::size_t id_;
     std::string format_string_;
 };
 

@@ -48,6 +48,7 @@ class font
     {
         bold_ = bold;
     }
+    
     bool is_bold() const
     {
         return bold_;
@@ -57,6 +58,7 @@ class font
     {
         italic_ = italic;
     }
+    
     bool is_italic() const
     {
         return italic_;
@@ -66,6 +68,7 @@ class font
     {
         strikethrough_ = strikethrough;
     }
+    
     bool is_strikethrough() const
     {
         return strikethrough_;
@@ -75,20 +78,23 @@ class font
     {
         underline_ = new_underline;
     }
+    
     bool is_underline() const
     {
         return underline_ != underline_style::none;
     }
+    
     underline_style get_underline() const
     {
         return underline_;
     }
 
-    void set_size(int size)
+    void set_size(std::size_t size)
     {
         size_ = size;
     }
-    int get_size() const
+    
+    std::size_t get_size() const
     {
         return size_;
     }
@@ -106,11 +112,13 @@ class font
     {
         color_ = c;
     }
-    void set_family(int family)
+    
+    void set_family(std::size_t family)
     {
         has_family_ = true;
         family_ = family;
     }
+    
     void set_scheme(const std::string &scheme)
     {
         has_scheme_ = true;
@@ -126,7 +134,8 @@ class font
     {
         return has_family_;
     }
-    int get_family() const
+    
+    std::size_t get_family() const
     {
         return family_;
     }
@@ -143,10 +152,12 @@ class font
         seed = seed << 1 & superscript_;
         seed = seed << 1 & subscript_;
         seed = seed << 1 & strikethrough_;
+        
         hash_combine(seed, name_);
         hash_combine(seed, size_);
         hash_combine(seed, static_cast<std::size_t>(underline_));
         hash_combine(seed, static_cast<std::size_t>(color_.get_type()));
+        
         switch (color_.get_type())
         {
         case color::type::indexed:
@@ -158,6 +169,7 @@ class font
         default:
             break;
         }
+        
         hash_combine(seed, family_);
         hash_combine(seed, scheme_);
 
@@ -173,7 +185,7 @@ class font
     friend class style;
 
     std::string name_ = "Calibri";
-    int size_ = 11;
+    std::size_t size_ = 11;
     bool bold_ = false;
     bool italic_ = false;
     bool superscript_ = false;
@@ -182,7 +194,7 @@ class font
     bool strikethrough_ = false;
     color color_;
     bool has_family_ = false;
-    int family_;
+    std::size_t family_;
     bool has_scheme_ = false;
     std::string scheme_;
 };

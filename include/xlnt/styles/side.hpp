@@ -114,7 +114,7 @@ class side
     bool style_assigned_ = false;
     border_style style_ = border_style::none;
     bool color_assigned_ = false;
-    color color_ = color::black;
+    color color_ = color::black();
 };
 
 } // namespace xlnt

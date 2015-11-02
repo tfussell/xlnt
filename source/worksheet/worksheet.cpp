@@ -641,7 +641,10 @@ cell_reference worksheet::get_point_pos(int left, int top) const
     static const double DefaultColumnWidth = 51.85;
     static const double DefaultRowHeight = 15.0;
 
-    auto points_to_pixels = [](double value, double dpi) { return (int)std::ceil(value * dpi / 72); };
+    auto points_to_pixels = [](long double value, long double dpi)
+    {
+        return static_cast<int>(std::ceil(value * dpi / 72));
+    };
 
     auto default_height = points_to_pixels(DefaultRowHeight, 96.0);
     auto default_width = points_to_pixels(DefaultColumnWidth, 96.0);

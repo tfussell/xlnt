@@ -12,7 +12,7 @@ xml_document theme_serializer::write_theme(const theme &) const
     xml_document xml;
 
     auto theme_node = xml.add_child("a:theme");
-    xml.add_namespace("a", constants::Namespaces.at("drawingml"));
+    xml.add_namespace("a", constants::Namespace("drawingml"));
     theme_node.add_attribute("name", "Office Theme");
 
     auto theme_elements_node = theme_node.add_child("a:themeElements");

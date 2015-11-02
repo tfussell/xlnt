@@ -119,7 +119,7 @@ long double time::to_number() const
     microseconds += static_cast<std::uint64_t>(second * 1e6);
     microseconds += static_cast<std::uint64_t>(minute * 1e6 * 60);
 	auto microseconds_per_hour = static_cast<std::uint64_t>(1e6) * 60 * 60;
-    microseconds += static_cast<std::uint64_t>(hour * microseconds_per_hour);
+    microseconds += static_cast<std::uint64_t>(hour) * microseconds_per_hour;
     auto number = microseconds / (24.0L * microseconds_per_hour);
 	auto hundred_billion = static_cast<std::uint64_t>(1e9) * 100;
     number = std::floor(number * hundred_billion + 0.5L) / hundred_billion;
@@ -182,7 +182,21 @@ double timedelta::to_number() const
 
 timedelta timedelta::from_number(long double number)
 {
-    return timedelta(static_cast<long long int>(number), 0);
+    int days = static_cast<int>(number);
+    number -= days;
+    number *= 24;
+    int hours = static_cast<int>(number);
+    number -= hours;
+    number *= 60;
+    int minutes = static_cast<int>(number);
+    number -= minutes;
+    number *= 60;
+    int seconds = static_cast<int>(number);
+    number -= seconds;
+    number *= 1000000;
+    int microseconds = static_cast<int>(number + 0.5);
+    
+    return timedelta(days, hours, minutes, seconds, microseconds);
 }
 
 } // namespace xlnt

@@ -340,7 +340,7 @@ font style_serializer::read_font(const xlnt::xml_node &font_node)
 {
     font new_font;
 
-    new_font.set_size(std::stoi(font_node.get_child("sz").get_attribute("val")));
+    new_font.set_size(std::stoull(font_node.get_child("sz").get_attribute("val")));
     new_font.set_name(font_node.get_child("name").get_attribute("val"));
 
     if (font_node.has_child("color"))
@@ -552,7 +552,6 @@ color style_serializer::read_color(const xml_node &color_node)
     }
 
     throw std::runtime_error("bad color");
-    return color();
 }
 
 xml_document style_serializer::write_stylesheet() const

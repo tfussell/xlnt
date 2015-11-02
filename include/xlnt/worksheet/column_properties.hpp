@@ -28,7 +28,7 @@ namespace xlnt {
 class column_properties
 {
 public:
-    double width;
+    long double width;
     std::size_t style;
     bool custom;
 };

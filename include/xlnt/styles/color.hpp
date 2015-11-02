@@ -40,16 +40,16 @@ class color
         rgb
     };
 
-    static const color black;
-    static const color white;
-    static const color red;
-    static const color darkred;
-    static const color blue;
-    static const color darkblue;
-    static const color green;
-    static const color darkgreen;
-    static const color yellow;
-    static const color darkyellow;
+    static const color black();
+    static const color white();
+    static const color red();
+    static const color darkred();
+    static const color blue();
+    static const color darkblue();
+    static const color green();
+    static const color darkgreen();
+    static const color yellow();
+    static const color darkyellow();
 
     color()
     {
@@ -63,19 +63,19 @@ class color
     {
     }
 
-    void set_auto(int auto_index)
+    void set_auto(std::size_t auto_index)
     {
         type_ = type::auto_;
         index_ = auto_index;
     }
 
-    void set_index(int index)
+    void set_index(std::size_t index)
     {
         type_ = type::indexed;
         index_ = index;
     }
 
-    void set_theme(int theme)
+    void set_theme(std::size_t theme)
     {
         type_ = type::theme;
         index_ = theme;
@@ -86,7 +86,7 @@ class color
         return type_;
     }
 
-    int get_auto() const
+    std::size_t get_auto() const
     {
         if (type_ != type::auto_)
         {
@@ -96,7 +96,7 @@ class color
         return index_;
     }
 
-    int get_index() const
+    std::size_t get_index() const
     {
         if (type_ != type::indexed)
         {
@@ -106,7 +106,7 @@ class color
         return index_;
     }
 
-    int get_theme() const
+    std::size_t get_theme() const
     {
         if (type_ != type::theme)
         {
@@ -149,7 +149,7 @@ class color
 
   private:
     type type_ = type::indexed;
-    int index_ = 0;
+    std::size_t index_ = 0;
     std::string rgb_string_;
 };
 

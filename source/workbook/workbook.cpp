@@ -47,6 +47,8 @@ workbook::workbook() : d_(new detail::workbook_impl())
     create_relationship("rId3", "styles.xml", relationship::type::styles);
     create_relationship("rId4", "theme/theme1.xml", relationship::type::theme);
     
+    add_number_format(number_format::general());
+    
     d_->manifest_.add_default_type("rels", "application/vnd.openxmlformats-package.relationships+xml");
     d_->manifest_.add_default_type("xml", "application/xml");
     
@@ -572,9 +574,16 @@ void workbook::add_font(const font &font_)
 
 void workbook::add_number_format(const number_format &number_format_)
 {
-    d_->number_formats_.push_back(number_format_);
+    if (d_->number_formats_.size() == 1 && d_->number_formats_.front() == number_format::general())
+    {
+        d_->number_formats_.front() = number_format_;
+    }
+    else
+    {
+        d_->number_formats_.push_back(number_format_);
+    }
     
-    if(number_format_.get_id() == -1)
+    if(!number_format_.has_id())
     {
         d_->number_formats_.back().set_id(d_->next_custom_format_id_++);
     }
@@ -623,13 +632,13 @@ const number_format &workbook::get_number_format(std::size_t style_id) const
 
     for (const auto &number_format_ : d_->number_formats_)
     {
-        if (static_cast<std::size_t>(number_format_.get_id()) == number_format_id)
+        if (number_format_.has_id() && number_format_.get_id() == number_format_id)
         {
             return number_format_;
         }
     }
 
-    auto nf = number_format::from_builtin_id(static_cast<int>(number_format_id));
+    auto nf = number_format::from_builtin_id(number_format_id);
     d_->number_formats_.push_back(nf);
 
     return d_->number_formats_.back();
@@ -652,7 +661,7 @@ std::size_t workbook::set_font(const font &font_, std::size_t style_id)
     }
     else
     {
-        font_index = match - d_->fonts_.begin();
+        font_index = static_cast<std::size_t>(match - d_->fonts_.begin());
     }
 
     auto existing_style = d_->styles_[style_id];
@@ -670,7 +679,7 @@ std::size_t workbook::set_font(const font &font_, std::size_t style_id)
 
     if (style_match != d_->styles_.end())
     {
-        return style_match - d_->styles_.begin();
+        return static_cast<std::size_t>(style_match - d_->styles_.begin());
     }
 
     d_->styles_.push_back(new_style);
@@ -737,7 +746,7 @@ std::size_t workbook::set_number_format(const xlnt::number_format &format, std::
     {
         d_->number_formats_.push_back(format);
 
-        if (format.get_id() == -1)
+        if (!format.has_id())
         {
             d_->number_formats_.back().set_id(d_->next_custom_format_id_++);
         }

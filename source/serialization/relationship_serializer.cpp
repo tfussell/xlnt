@@ -46,9 +46,9 @@ std::vector<relationship> relationship_serializer::read_relationships(zip_file &
 
         std::string id = relationship_node.get_attribute("Id");
         std::string type = relationship_node.get_attribute("Type");
-        std::string target = relationship_node.get_attribute("Target");
+        std::string rel_target = relationship_node.get_attribute("Target");
 
-        relationships.push_back(xlnt::relationship(type, id, target));
+        relationships.push_back(xlnt::relationship(type, id, rel_target));
     }
 
     return relationships;
@@ -61,16 +61,14 @@ bool relationship_serializer::write_relationships(const std::vector<relationship
 
     auto root_node = xml.add_child("Relationships");
 
-    xml.add_namespace("", constants::Namespaces.at("relationships"));
+    xml.add_namespace("", constants::Namespace("relationships"));
 
     for (const auto &relationship : relationships)
     {
-        auto target = relationship.get_target_uri();
-
         auto relationship_node = root_node.add_child("Relationship");
 
         relationship_node.add_attribute("Id", relationship.get_id());
-        relationship_node.add_attribute("Target", target);
+        relationship_node.add_attribute("Target", relationship.get_target_uri());
         relationship_node.add_attribute("Type", relationship.get_type_string());
 
         if (relationship.get_target_mode() == target_mode::external)

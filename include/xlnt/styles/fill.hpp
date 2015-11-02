@@ -321,13 +321,13 @@ class fill
     gradient_type gradient_type_;
     double rotation_ = 0;
     bool foreground_color_assigned_ = false;
-    color foreground_color_ = color::black;
+    color foreground_color_ = color::black();
     bool background_color_assigned_ = false;
-    color background_color_ = color::white;
+    color background_color_ = color::white();
     bool start_color_assigned_ = false;
-    color start_color_ = color::white;
+    color start_color_ = color::white();
     bool end_color_assigned_ = false;
-    color end_color_ = color::black;
+    color end_color_ = color::black();
     double gradient_path_left_ = 0;
     double gradient_path_right_ = 0;
     double gradient_path_top_ = 0;

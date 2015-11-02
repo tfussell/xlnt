@@ -16,8 +16,15 @@ void hash_combine(std::size_t &seed, const T &v)
 
 namespace xlnt {
 
-const color color::black = color(color::type::indexed, 0);
-const color color::white = color(color::type::indexed, 0);
+const color color::black()
+{
+    return color(color::type::rgb, "ff000000");
+}
+
+const color color::white()
+{
+    return color(color::type::rgb, "ffffffff");
+}
 
 style::style()
     : id_(0),

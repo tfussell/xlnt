@@ -28,7 +28,9 @@ if not os.path.isdir('./build'):
 
 generator = 'Unix Makefiles'
 
-if sys.platform == 'darwin':
+if len(sys.argv) > 1:
+   generator = sys.argv[1]
+elif sys.platform == 'darwin':
    generator = 'Unix Makefiles'
 elif sys.platform == 'win32':
    generator = 'Visual Studio 14 2015'

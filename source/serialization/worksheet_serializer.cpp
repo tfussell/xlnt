@@ -222,8 +222,8 @@ xml_document worksheet_serializer::write_worksheet() const
 
     auto root_node = xml.add_child("worksheet");
 
-    xml.add_namespace("", constants::Namespaces.at("spreadsheetml"));
-    xml.add_namespace("r", constants::Namespaces.at("r"));
+    xml.add_namespace("", constants::Namespace("spreadsheetml"));
+    xml.add_namespace("r", constants::Namespace("r"));
 
     auto sheet_pr_node = root_node.add_child("sheetPr");
 

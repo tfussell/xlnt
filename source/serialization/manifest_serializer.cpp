@@ -33,7 +33,7 @@ xml_document manifest_serializer::write_manifest() const
     xml_document xml;
 
     auto root_node = xml.add_child("Types");
-    xml.add_namespace("", constants::Namespaces.at("content-types"));
+    xml.add_namespace("", constants::Namespace("content-types"));
 
     for (const auto default_type : manifest_.get_default_types())
     {
@@ -54,12 +54,12 @@ xml_document manifest_serializer::write_manifest() const
 
 std::string manifest_serializer::determine_document_type() const
 {
-    if (!manifest_.has_override_type(constants::ArcWorkbook))
+    if (!manifest_.has_override_type(constants::ArcWorkbook()))
     {
         return "unsupported";
     }
 
-    std::string type = manifest_.get_override_type(constants::ArcWorkbook);
+    std::string type = manifest_.get_override_type(constants::ArcWorkbook());
 
     if (type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml")
     {
