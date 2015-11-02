@@ -4,7 +4,7 @@ xlnt
 [![Build Status](https://travis-ci.org/tfussell/xlnt.svg)](https://travis-ci.org/tfussell/xlnt)
 
 ## Introduction
-xlnt is a C++14 library for reading, writing, and modifying xlsx files as described in [ECMA 376](http://www.ecma-international.org/publications/standards/Ecma-376.htm). The API is generally based on [openpyxl](https://bitbucket.org/openpyxl/openpyxl), a python library for reading and writing xlsx/xlsm files. This is still very much a work in progress, but the core development work is complete.
+xlnt is a C++14 library for reading, writing, and modifying XLSX files as described in [ECMA 376](http://www.ecma-international.org/publications/standards/Ecma-376.htm). The API is roughly based on [openpyxl](https://bitbucket.org/openpyxl/openpyxl), a python library for reading and writing xlsx/xlsm files. This is still very much a work in progress, but the core development work is complete.
 
 ## Usage
 Including xlnt in your project
@@ -43,37 +43,29 @@ for(auto row : wb2["sheet2"].rows())
 ## Building
 xlnt is regularly built and passes all 200+ tests in GCC 4.8.2, MSVC 14, and Clang (using Apple LLVM 7.0).
 
-Workspaces for Visual Studio 2015, GNU Make, and Xcode can be created using GENie and the genie.lua script in the build/genie directory. 
+Build configurations for Visual Studio 2015, GNU Make, and Xcode can be created using cmake and the cmake scripts in the project directory, cmake.
 
-GENie binaries and source are currently available [here](https://github.com/bkaradzic/genie).
+In OSX, with Xcode:
+```bash
+mkdir build
+cd build
+cmake -G Xcode ../cmake
+open xlnt.xcproject
+```
 
 In Windows, with Visual Studio 2015:
 ```batch
-cd build/genie
-genie vs2015
-start vs2015/xlnt.sln
+mkdir build
+cd build
+cmake -G "Visual Studio 14 2015" ../cmake
+start xlnt.sln
 ```
 
 In Linux or OSX, with GNU Make:
 ```bash
-cd build/genie
-genie gmake
-cd gmake && make
-```
-
-In OSX, with Xcode (Xcode 4 projects can be opened in Xcode 7.0)
-```bash
-cd build/genie
-genie xcode4
-open xcode4/xlnt.xcworkspace
-```
-
-For users who prefer CMake, cmake scripts are provided in build/cmake. To use this system, a build might look like:
-```bash
-cd build/cmake
 mkdir build
 cd build
-cmake ..
+cmake -G "Unix Makefiles" ../cmake
 make
 ```
 
