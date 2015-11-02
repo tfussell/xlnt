@@ -161,9 +161,7 @@ public:
         auto path = PathHelper::GetDataDirectory("/reader/date_1904.xlsx");
         
         xlnt::workbook wb;
-        xlnt::excel_serializer serializer(wb);
-        
-        serializer.load_workbook(path);
+		wb.load(path);
         
         return wb;
     }
@@ -173,9 +171,7 @@ public:
         auto path = PathHelper::GetDataDirectory("/reader/date_1900.xlsx");
 
         xlnt::workbook wb;
-        xlnt::excel_serializer serializer(wb);
-        
-        serializer.load_workbook(path);
+		wb.load(path);
         
         return wb;
     }

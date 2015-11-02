@@ -1,5 +1,5 @@
 #include <algorithm>
-#include <locale>
+#include <cctype>
 #include <sstream>
 
 #include <xlnt/cell/cell.hpp>
@@ -763,7 +763,7 @@ std::string format_text(const std::string &text, const std::string &format)
 
 namespace xlnt {
 
-const std::unordered_map<std::string, int> cell::error_codes()
+const std::unordered_map<std::string, int> &cell::error_codes()
 {
     static const std::unordered_map<std::string, int> codes = { { "#NULL!", 0 }, { "#DIV/0!", 1 }, { "#VALUE!", 2 },
                                                                 { "#REF!", 3 },  { "#NAME?", 4 },  { "#NUM!", 5 },
@@ -910,7 +910,11 @@ template <>
 void cell::set_value(std::string s)
 {
     d_->set_string(s, get_parent().get_parent().get_guess_types());
-    if(!s.empty()) get_parent().get_parent().add_shared_string(s);
+
+	if (get_data_type() == type::string && !s.empty())
+	{
+		get_parent().get_parent().add_shared_string(s);
+	}
 }
 
 template <>

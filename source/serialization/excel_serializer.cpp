@@ -50,7 +50,9 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
     }
     
     xlnt::manifest_serializer ms(wb.get_manifest());
-    ms.read_manifest(xlnt::xml_serializer::deserialize(archive.read(xlnt::constants::ArcContentTypes)));
+	xlnt::xml_document manifest_xml;
+	manifest_xml.from_string(archive.read(xlnt::constants::ArcContentTypes));
+    ms.read_manifest(manifest_xml);
 
     if (ms.determine_document_type() != "excel")
     {
@@ -62,7 +64,9 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
     if(archive.has_file(xlnt::constants::ArcCore))
     {
         xlnt::workbook_serializer workbook_serializer_(wb);
-        workbook_serializer_.read_properties_core(xlnt::xml_serializer::deserialize(archive.read(xlnt::constants::ArcCore)));
+		xlnt::xml_document core_properties_xml;
+		core_properties_xml.from_string(archive.read(xlnt::constants::ArcCore));
+        workbook_serializer_.read_properties_core(core_properties_xml);
     }
         
     auto workbook_relationships =
@@ -73,7 +77,8 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
         wb.create_relationship(relationship.get_id(), relationship.get_target_uri(), relationship.get_type());
     }
 
-    auto xml = xlnt::xml_serializer::deserialize(archive.read(xlnt::constants::ArcWorkbook));
+	xlnt::xml_document xml;
+    xml.from_string(archive.read(xlnt::constants::ArcWorkbook));
 
     auto root_node = xml.get_child("workbook");
 
@@ -87,8 +92,9 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
     {
         xlnt::shared_strings_serializer shared_strings_serializer_;
         std::vector<std::string> shared_strings;
-        shared_strings_serializer_.read_shared_strings(
-            xlnt::xml_serializer::deserialize(archive.read(xlnt::constants::ArcSharedString)), shared_strings);
+		xlnt::xml_document shared_strings_xml;
+		shared_strings_xml.from_string(archive.read(xlnt::constants::ArcSharedString));
+        shared_strings_serializer_.read_shared_strings(shared_strings_xml, shared_strings);
 
         for (auto shared_string : shared_strings)
         {
@@ -97,7 +103,9 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
     }
 
     xlnt::style_serializer style_reader_(wb);
-    style_reader_.read_stylesheet(xlnt::xml_serializer::deserialize(archive.read(xlnt::constants::ArcStyles)));
+	xlnt::xml_document style_xml;
+	style_xml.from_string(archive.read(xlnt::constants::ArcStyles));
+    style_reader_.read_stylesheet(style_xml);
 
     auto sheets_node = root_node.get_child("sheets");
 
@@ -113,7 +121,9 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
         if(sheet_type != "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml") continue;
         
         xlnt::worksheet_serializer worksheet_serializer(ws);
-        worksheet_serializer.read_worksheet(xlnt::xml_serializer::deserialize(archive.read(ws_filename)));
+		xlnt::xml_document worksheet_xml;
+		worksheet_xml.from_string(archive.read(ws_filename));
+        worksheet_serializer.read_worksheet(worksheet_xml);
     }
 
     return true;

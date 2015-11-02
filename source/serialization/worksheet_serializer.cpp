@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cmath>
 #include <sstream>
 
@@ -124,7 +125,7 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml)
                 std::string type = has_type ? cell_node.get_attribute("t") : "";
 
                 bool has_style = cell_node.has_attribute("s");
-                int style_id = has_style ? std::stoull(cell_node.get_attribute("s")) : 0;
+                auto style_id = static_cast<std::size_t>(has_style ? std::stoull(cell_node.get_attribute("s")) : 0LL);
 
                 bool has_formula = cell_node.has_child("f");
                 bool has_shared_formula = has_formula && cell_node.get_child("f").has_attribute("t") &&
@@ -145,7 +146,7 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml)
                 }
                 else if (has_type && type == "s" && !has_formula) // shared string
                 {
-                    auto shared_string_index = std::stoull(value_string);
+                    auto shared_string_index = static_cast<std::size_t>(std::stoull(value_string));
                     auto shared_string = shared_strings.at(shared_string_index);
                     cell.set_value(shared_string);
                 }
@@ -190,7 +191,7 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml)
         auto max = static_cast<column_t>(std::stoull(col_node.get_attribute("max")));
         auto width = std::stold(col_node.get_attribute("width"));
         bool custom = col_node.get_attribute("customWidth") == "1";
-        auto column_style = col_node.has_attribute("style") ? std::stoull(col_node.get_attribute("style")) : 0;
+        auto column_style = static_cast<std::size_t>(col_node.has_attribute("style") ? std::stoull(col_node.get_attribute("style")) : 0);
 
         for (auto column = min; column <= max; column++)
         {

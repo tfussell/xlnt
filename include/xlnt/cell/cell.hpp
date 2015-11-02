@@ -83,7 +83,7 @@ class cell
     /// <summary>
     /// Return a map of error strings such as #DIV/0! and their associated indices.
     /// </summary>
-    static const std::unordered_map<std::string, int> error_codes();
+    static const std::unordered_map<std::string, int> &error_codes();
 
     // TODO: Should it be possible to construct and use a cell without a parent worksheet?
     //(cont'd) If so, it would need to be responsible for allocating and deleting its PIMPL.

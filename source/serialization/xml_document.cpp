@@ -2,6 +2,7 @@
 #include <xlnt/serialization/xml_node.hpp>
 #include <xlnt/serialization/xml_serializer.hpp>
 
+#include <detail/include_pugixml.hpp>
 #include <detail/xml_document_impl.hpp>
 #include <detail/xml_node_impl.hpp>
 
@@ -14,6 +15,11 @@ xml_document::xml_document() : d_(new detail::xml_document_impl())
 xml_document::xml_document(const xml_document &other) : xml_document()
 {
     d_->doc.append_copy(other.d_->doc.root());
+}
+
+xml_document::xml_document(xml_document &&other)
+{
+	std::swap(d_, other.d_);
 }
 
 xml_document::~xml_document()
@@ -59,8 +65,7 @@ std::string xml_document::to_string() const
 
 xml_document &xml_document::from_string(const std::string &xml_string)
 {
-    auto doc = xml_serializer::deserialize(xml_string);
-    std::swap(doc.d_, d_);
+	d_->doc.load(xml_string.c_str());
 
     return *this;
 }

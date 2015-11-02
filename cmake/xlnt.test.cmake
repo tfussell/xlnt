@@ -18,7 +18,7 @@ source_group(helpers FILES ${TEST_HELPERS_HEADERS} ${TEST_HELPERS_SOURCES})
 target_link_libraries(xlnt.test xlnt)
 
 add_custom_target (generate-test-runner
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/generate-tests.sh
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/generate-tests
     COMMENT "Generating test runner tests/runner-autogen.cpp"
 )
 

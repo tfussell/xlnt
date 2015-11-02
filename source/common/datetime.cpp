@@ -115,12 +115,14 @@ time::time(const std::string &time_string) : hour(0), minute(0), second(0), micr
 
 long double time::to_number() const
 {
-    std::size_t microseconds = static_cast<std::size_t>(microsecond);
-    microseconds += static_cast<std::size_t>(second * 1e6);
-    microseconds += static_cast<std::size_t>(minute * 1e6 * 60);
-    microseconds += static_cast<std::size_t>(hour * 1e6 * 60 * 60);
-    auto number = microseconds / (24.0L * 60 * 60 * 1e6L);
-    number = std::floor(number * 1e11L + 0.5L) / 1e11L;
+    std::uint64_t microseconds = static_cast<std::uint64_t>(microsecond);
+    microseconds += static_cast<std::uint64_t>(second * 1e6);
+    microseconds += static_cast<std::uint64_t>(minute * 1e6 * 60);
+	auto microseconds_per_hour = static_cast<std::uint64_t>(1e6) * 60 * 60;
+    microseconds += static_cast<std::uint64_t>(hour * microseconds_per_hour);
+    auto number = microseconds / (24.0L * microseconds_per_hour);
+	auto hundred_billion = static_cast<std::uint64_t>(1e9) * 100;
+    number = std::floor(number * hundred_billion + 0.5L) / hundred_billion;
     return number;
 }
 

@@ -49,17 +49,21 @@ public:
             expected_contents = s.str();
         }
         
-        auto expected_xml = xlnt::xml_serializer::deserialize(expected_contents);
-        
+		xlnt::xml_document expected_xml;
+		expected_xml.from_string(expected_contents);
+
         return compare_xml(expected_xml.get_root(), observed.get_root());
     }
     
     static comparison_result compare_xml(const std::string &left_contents, const std::string &right_contents)
     {
-        auto left_doc = xlnt::xml_serializer::deserialize(left_contents);
-        auto right_doc = xlnt::xml_serializer::deserialize(right_contents);
-        
-        return compare_xml(left_doc.get_root(), right_doc.get_root());
+		xlnt::xml_document left_xml;
+		left_xml.from_string(left_contents);
+
+		xlnt::xml_document right_xml;
+		right_xml.from_string(right_contents);
+
+        return compare_xml(left_xml.get_root(), right_xml.get_root());
     }
     
     static comparison_result compare_xml(const xlnt::xml_node &left, const xlnt::xml_node &right)
