@@ -1,6 +1,6 @@
 language: cpp
 script:
-  - mkdir build/cmake/build && cd build/cmake/build && cmake .. && make
+  - mkdir build && cd build && cmake ../cmake && make
 compiler:
   - clang
   - gcc
