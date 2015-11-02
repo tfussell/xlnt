@@ -1,16 +1,20 @@
 #include <algorithm>
+#include <limits>
 
 #include <xlnt/cell/cell.hpp>
+#include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/common/datetime.hpp>
 #include <xlnt/common/exceptions.hpp>
 #include <xlnt/common/relationship.hpp>
+#include <xlnt/common/types.hpp>
 #include <xlnt/workbook/named_range.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
-#include "detail/worksheet_impl.hpp"
+#include <detail/cell_impl.hpp>
+#include <detail/worksheet_impl.hpp>
 
 namespace xlnt {
 

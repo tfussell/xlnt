@@ -25,7 +25,7 @@
 #include <stdexcept>
 #include <string>
 
-#include "../common/types.hpp"
+#include <xlnt/common/types.hpp>
 
 namespace xlnt {
 

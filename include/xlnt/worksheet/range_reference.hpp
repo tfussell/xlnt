@@ -22,7 +22,7 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include "../cell/cell_reference.hpp"
+#include <xlnt/cell/cell_reference.hpp>
 
 namespace xlnt {
 

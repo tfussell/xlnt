@@ -27,10 +27,10 @@
 #include <string>
 #include <vector>
 
-#include "cell_vector.hpp"
-#include "major_order.hpp"
-#include "range_reference.hpp"
-#include "worksheet.hpp"
+#include <xlnt/worksheet/cell_vector.hpp>
+#include <xlnt/worksheet/major_order.hpp>
+#include <xlnt/worksheet/range_reference.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
 
 namespace xlnt {
 

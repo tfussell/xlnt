@@ -26,7 +26,7 @@
 #include <string>
 #include <utility>
 
-#include "../common/types.hpp"
+#include <xlnt/common/types.hpp>
 
 namespace xlnt {
 

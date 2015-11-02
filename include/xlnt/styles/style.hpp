@@ -23,12 +23,12 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include "alignment.hpp"
-#include "border.hpp"
-#include "fill.hpp"
-#include "font.hpp"
-#include "number_format.hpp"
-#include "protection.hpp"
+#include <xlnt/styles/alignment.hpp>
+#include <xlnt/styles/border.hpp>
+#include <xlnt/styles/fill.hpp>
+#include <xlnt/styles/font.hpp>
+#include <xlnt/styles/number_format.hpp>
+#include <xlnt/styles/protection.hpp>
 
 namespace xlnt {
 
