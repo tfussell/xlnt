@@ -78,7 +78,7 @@ xlnt uses the following libraries, which are included in the source tree (pugixm
 ## License
 xlnt is currently released to the public for free under the terms of the MIT License:
 
-Copyright (c) 2014 Thomas Fussell
+Copyright (c) 2015 Thomas Fussell
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
