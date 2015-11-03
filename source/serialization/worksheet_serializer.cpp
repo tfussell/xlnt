@@ -320,6 +320,11 @@ xml_document worksheet_serializer::write_worksheet() const
 
         for (auto column = sheet_.get_lowest_column(); column <= sheet_.get_highest_column(); column++)
         {
+            if(!sheet_.has_column_properties(column))
+            {
+                continue;
+            }
+            
             const auto &props = sheet_.get_column_properties(column);
 
             auto col_node = cols_node.add_child("col");
