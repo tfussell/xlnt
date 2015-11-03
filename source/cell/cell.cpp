@@ -992,9 +992,9 @@ row_t cell::get_row() const
     return d_->row_;
 }
 
-std::string cell::get_column() const
+column_t cell::get_column() const
 {
-    return cell_reference::column_string_from_index(d_->column_);
+    return d_->column_;
 }
 
 void cell::set_merged(bool merged)
@@ -1170,7 +1170,7 @@ void cell::set_error(const std::string &error)
     d_->type_ = type::error;
 }
 
-cell cell::offset(column_t column, row_t row)
+cell cell::offset(int column, int row)
 {
     return get_parent().get_cell(cell_reference(d_->column_ + column, d_->row_ + row));
 }

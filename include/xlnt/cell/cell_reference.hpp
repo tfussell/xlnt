@@ -53,26 +53,6 @@ class cell_reference
 {
   public:
     /// <summary>
-    /// Convert a column letter into a column number (e.g. B -> 2)
-    /// </summary>
-    /// <remarks>
-    /// Excel only supports 1 - 3 letter column names from A->ZZZ, so we
-    /// restrict our column names to 1 - 3 characters, each in the range A - Z.
-    /// Strings outside this range and malformed strings will throw xlnt::column_string_index_exception.
-    /// </remarks>
-    static column_t column_index_from_string(const std::string &column_string);
-
-    /// <summary>
-    /// Convert a column number into a column letter (3 -> 'C')
-    /// </summary>
-    /// <remarks>
-    /// Right shift the column, column_index, by 26 to find column letters in reverse
-    /// order. These indices are 1-based, and can be converted to ASCII
-    /// ordinals by adding 64.
-    /// </remarks>
-    static std::string column_string_from_index(column_t column_index);
-
-    /// <summary>
     /// Split a coordinate string like "A1" into an equivalent pair like {"A", 1}.
     /// </summary>
     static std::pair<std::string, row_t> split_reference(const std::string &reference_string);
@@ -173,9 +153,9 @@ class cell_reference
     /// Return a string that identifies the column of this reference
     /// (e.g. second column from left is "B")
     /// </summary>
-    std::string get_column() const
+    column_t get_column() const
     {
-        return column_string_from_index(column_);
+        return column_;
     }
     
     /// <summary>
@@ -183,7 +163,7 @@ class cell_reference
     /// </summary>
     void set_column(const std::string &column_string)
     {
-        column_ = column_index_from_string(column_string);
+        column_ = column_t(column_string);
     }
 
     /// <summary>

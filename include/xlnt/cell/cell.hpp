@@ -140,8 +140,7 @@ class cell
 
     // position
     cell_reference get_reference() const;
-    std::string get_column() const;
-    column_t get_column_index() const;
+    column_t get_column() const;
     row_t get_row() const;
     std::pair<int, int> get_anchor() const;
 
@@ -203,7 +202,7 @@ class cell
     std::string get_error() const;
     void set_error(const std::string &error);
 
-    cell offset(row_t row, column_t column);
+    cell offset(int column, int row);
 
     worksheet get_parent();
     const worksheet get_parent() const;

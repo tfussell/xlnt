@@ -53,14 +53,14 @@ range_reference range_reference::make_offset(int column_offset, int row_offset) 
                            bottom_right_.make_offset(column_offset, row_offset));
 }
 
-row_t range_reference::get_height() const
+std::size_t range_reference::get_height() const
 {
     return bottom_right_.get_row() - top_left_.get_row();
 }
 
-column_t range_reference::get_width() const
+std::size_t range_reference::get_width() const
 {
-    return bottom_right_.get_column_index() - top_left_.get_column_index();
+    return (bottom_right_.get_column() - top_left_.get_column()).index;
 }
 
 bool range_reference::is_single_cell() const

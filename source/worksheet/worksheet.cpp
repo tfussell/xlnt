@@ -14,6 +14,7 @@
 #include <xlnt/worksheet/worksheet.hpp>
 
 #include <detail/cell_impl.hpp>
+#include <detail/constants.hpp>
 #include <detail/worksheet_impl.hpp>
 
 namespace xlnt {
@@ -249,16 +250,16 @@ column_t worksheet::get_lowest_column() const
 {
     if (d_->cell_map_.empty())
     {
-        return 1;
+        return constants::MinColumn();
     }
 
-    column_t lowest = std::numeric_limits<column_t>::max();
+    column_t lowest = constants::MaxColumn();
 
     for (auto &row : d_->cell_map_)
     {
         for (auto &c : row.second)
         {
-            lowest = std::min(lowest, (column_t)c.first);
+            lowest = std::min(lowest, c.first);
         }
     }
 
@@ -269,14 +270,14 @@ row_t worksheet::get_lowest_row() const
 {
     if (d_->cell_map_.empty())
     {
-        return 1;
+        return constants::MinRow();
     }
 
-    row_t lowest = std::numeric_limits<row_t>::max();
+    row_t lowest = constants::MaxRow();
 
     for (auto &row : d_->cell_map_)
     {
-        lowest = std::min(lowest, (row_t)row.first);
+        lowest = std::min(lowest, row.first);
     }
 
     return lowest;
@@ -284,11 +285,11 @@ row_t worksheet::get_lowest_row() const
 
 row_t worksheet::get_highest_row() const
 {
-    row_t highest = 1;
+    row_t highest = constants::MinRow();
 
     for (auto &row : d_->cell_map_)
     {
-        highest = std::max(highest, (row_t)row.first);
+        highest = std::max(highest, row.first);
     }
 
     return highest;
@@ -296,13 +297,13 @@ row_t worksheet::get_highest_row() const
 
 column_t worksheet::get_highest_column() const
 {
-    column_t highest = 1;
+    column_t highest = constants::MinColumn();
 
     for (auto &row : d_->cell_map_)
     {
         for (auto &c : row.second)
         {
-            highest = std::max(highest, (column_t)c.first);
+            highest = std::max(highest, c.first);
         }
     }
 

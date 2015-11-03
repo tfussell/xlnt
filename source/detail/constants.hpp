@@ -9,10 +9,10 @@ namespace xlnt {
 
 struct constants
 {
-    static const row_t MinRow;
-    static const row_t MaxRow;
-    static const column_t MinColumn;
-    static const column_t MaxColumn;
+    static const row_t MinRow();
+    static const row_t MaxRow();
+    static const column_t MinColumn();
+    static const column_t MaxColumn();
 
     // constants
     static const std::string PackageProps();

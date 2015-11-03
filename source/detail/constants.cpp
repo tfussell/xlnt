@@ -6,11 +6,40 @@
 
 namespace xlnt {
 
-const row_t constants::MinRow = 1;
-const row_t constants::MaxRow = LimitStyle == limit_style::excel ? (1u << 20) : UINT32_MAX;
-const column_t constants::MinColumn = 1;
-const column_t constants::MaxColumn =
-    LimitStyle == limit_style::excel ? (1u << 14) : LimitStyle == limit_style::openpyxl ? 18278 : UINT32_MAX;
+const row_t constants::MinRow()
+{
+    return 1;
+}
+    
+const row_t constants::MaxRow()
+{
+    if(LimitStyle == limit_style::excel)
+    {
+        return 1u << 20;
+    }
+    
+    return std::numeric_limits<row_t>::max();
+}
+
+const column_t constants::MinColumn()
+{
+    return column_t(1);
+}
+
+const column_t constants::MaxColumn()
+{
+    if(LimitStyle == limit_style::excel)
+    {
+        return column_t(1u << 14);
+    }
+    
+    if(LimitStyle == limit_style::openpyxl)
+    {
+        return column_t(18278);
+    }
+    
+    return column_t(std::numeric_limits<column_t::index_t>::max());
+}
 
 // constants
 const std::string constants::PackageProps() { return "docProps"; }

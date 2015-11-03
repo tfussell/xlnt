@@ -44,4 +44,5 @@ enum class limit_style
 /// See limit_style for more information.
 /// </summary>
 const limit_style LimitStyle = limit_style::openpyxl;
+
 }

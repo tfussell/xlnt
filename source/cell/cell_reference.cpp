@@ -10,7 +10,7 @@ namespace xlnt {
 
 std::size_t cell_reference_hash::operator()(const cell_reference &k) const
 {
-    return k.get_row() * constants::MaxColumn + k.get_column_index();
+    return k.get_row() * constants::MaxColumn().index + k.get_column_index().index;
 }
 
 cell_reference &cell_reference::make_absolute(bool absolute_column, bool absolute_row)
@@ -39,14 +39,14 @@ cell_reference::cell_reference(const char *reference_string)
 }
 
 cell_reference::cell_reference(const std::string &column, row_t row)
-    : cell_reference(column_index_from_string(column), row)
+    : cell_reference(column_t(column), row)
 {
 }
 
 cell_reference::cell_reference(column_t column_index, row_t row)
-    : column_(column_index), row_(row), absolute_column_(false), absolute_row_(false)
+    : column_(column_index), row_(row), absolute_row_(false), absolute_column_(false)
 {
-    if (row_ == 0 || row_ >= constants::MaxRow || column_ == 0 || column_ >= constants::MaxColumn)
+    if (row_ == 0 || !(row_ <= constants::MaxRow()) || column_ == 0 || !(column_ <= constants::MaxColumn()))
     {
         throw cell_coordinates_exception(column_, row_);
     }
@@ -66,7 +66,7 @@ std::string cell_reference::to_string() const
         string_representation.append("$");
     }
     
-    string_representation.append(column_string_from_index(column_));
+    string_representation.append(column_.column_string());
     
     if (absolute_row_)
     {
@@ -161,7 +161,7 @@ std::pair<std::string, row_t> cell_reference::split_reference(const std::string 
 cell_reference cell_reference::make_offset(int column_offset, int row_offset) const
 {
     //TODO: check for overflow/underflow
-    return cell_reference(static_cast<column_t>(static_cast<int>(column_) + column_offset),
+    return cell_reference(static_cast<column_t>(static_cast<int>(column_.index) + column_offset),
                           static_cast<row_t>(static_cast<int>(row_) + row_offset));
 }
 
@@ -171,66 +171,6 @@ bool cell_reference::operator==(const cell_reference &comparand) const
         comparand.row_ == row_ &&
         absolute_column_ == comparand.absolute_column_ &&
         absolute_row_ == comparand.absolute_row_;
-}
-
-column_t cell_reference::column_index_from_string(const std::string &column_string)
-{
-    if (column_string.length() > 3 || column_string.empty())
-    {
-        throw column_string_index_exception();
-    }
-
-    column_t column_index = 0;
-    int place = 1;
-
-    for (int i = static_cast<int>(column_string.length()) - 1; i >= 0; i--)
-    {
-        if (!std::isalpha(column_string[static_cast<std::size_t>(i)], std::locale::classic()))
-        {
-            throw column_string_index_exception();
-        }
-
-        column_index += static_cast<column_t>(
-            (std::toupper(column_string[static_cast<std::size_t>(i)], std::locale::classic()) - 'A' + 1) * place);
-        place *= 26;
-    }
-
-    return column_index;
-}
-
-// Convert a column number into a column letter (3 -> 'C')
-// Right shift the column col_idx by 26 to find column letters in reverse
-// order.These numbers are 1 - based, and can be converted to ASCII
-// ordinals by adding 64.
-std::string cell_reference::column_string_from_index(column_t column_index)
-{
-    // these indicies corrospond to A->ZZZ and include all allowed
-    // columns
-    if (column_index < 1 || column_index > constants::MaxColumn)
-    {
-        //        auto msg = "Column index out of bounds: " + std::to_string(column_index);
-        throw column_string_index_exception();
-    }
-
-    int temp = static_cast<int>(column_index);
-    std::string column_letter = "";
-
-    while (temp > 0)
-    {
-        int quotient = temp / 26, remainder = temp % 26;
-
-        // check for exact division and borrow if needed
-        if (remainder == 0)
-        {
-            quotient -= 1;
-            remainder = 26;
-        }
-
-        column_letter = std::string(1, char(remainder + 64)) + column_letter;
-        temp = quotient;
-    }
-
-    return column_letter;
 }
 
 bool cell_reference::operator<(const cell_reference &other)

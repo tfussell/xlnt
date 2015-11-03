@@ -62,8 +62,8 @@ public:
     
     void test_iter_rows_1()
     {
-        row_t row = 0;
-        column_t column = 0;
+        std::size_t row = 0;
+        std::size_t column = 0;
         std::string coordinate = "A1";
         
         xlnt::worksheet ws(wb_);

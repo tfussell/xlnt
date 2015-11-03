@@ -73,7 +73,7 @@ cell cell_vector::front()
 {
     if (order_ == major_order::row)
     {
-        return get_cell(ref_.get_top_left().get_column_index());
+        return get_cell(ref_.get_top_left().get_column().index);
     }
 
     return get_cell(ref_.get_top_left().get_row());
@@ -83,7 +83,7 @@ cell cell_vector::back()
 {
     if (order_ == major_order::row)
     {
-        return get_cell(ref_.get_bottom_right().get_column_index());
+        return get_cell(ref_.get_bottom_right().get_column().index);
     }
 
     return get_cell(ref_.get_top_left().get_row());
@@ -125,7 +125,7 @@ std::size_t range::length() const
         return ref_.get_bottom_right().get_row() - ref_.get_top_left().get_row() + 1;
     }
 
-    return ref_.get_bottom_right().get_column_index() - ref_.get_top_left().get_column_index() + 1;
+    return (ref_.get_bottom_right().get_column() - ref_.get_top_left().get_column()).index + 1;
 }
 
 bool range::operator==(const range &comparand) const
@@ -147,9 +147,9 @@ cell_vector range::get_vector(std::size_t vector_index)
     }
 
     range_reference reference(
-        static_cast<column_t>(static_cast<std::size_t>(ref_.get_top_left().get_column_index()) + vector_index),
+        static_cast<column_t>(static_cast<std::size_t>(ref_.get_top_left().get_column().index) + vector_index),
         ref_.get_top_left().get_row(),
-        static_cast<column_t>(static_cast<std::size_t>(ref_.get_top_left().get_column_index()) + vector_index),
+        static_cast<column_t>(static_cast<std::size_t>(ref_.get_top_left().get_column().index) + vector_index),
         ref_.get_bottom_right().get_row());
 
     return cell_vector(ws_, reference, order_);
@@ -164,7 +164,7 @@ bool range::contains(const cell_reference &ref)
 
 cell range::get_cell(const cell_reference &ref)
 {
-    return (*this)[ref.get_row()][ref.get_column_index()];
+    return (*this)[ref.get_row()][ref.get_column().index];
 }
 
 range::iterator range::begin()

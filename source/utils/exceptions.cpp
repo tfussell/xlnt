@@ -29,14 +29,14 @@ invalid_file_exception::invalid_file_exception(const std::string &filename)
 {
 }
 
-cell_coordinates_exception::cell_coordinates_exception(row_t row, column_t column)
-    : std::runtime_error(std::string("bad cell coordinates: (") + std::to_string(row) + "," + std::to_string(column) +
+cell_coordinates_exception::cell_coordinates_exception(column_t column, row_t row)
+    : std::runtime_error(std::string("bad cell coordinates: (") + std::to_string(column.index) + ", " + std::to_string(row) +
                          ")")
 {
 }
 
 cell_coordinates_exception::cell_coordinates_exception(const std::string &coord_string)
-    : std::runtime_error(std::string("bad cell coordinates: (") + coord_string + ")")
+    : std::runtime_error(std::string("bad cell coordinates: (") + (coord_string.empty() ? "<empty>" : coord_string) + ")")
 {
 }
 

@@ -96,7 +96,7 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml)
 
         for (column_t i = min_column; i <= max_column; i++)
         {
-            std::string address = xlnt::cell_reference::column_string_from_index(i) + std::to_string(row_index);
+            std::string address = i.column_string() + std::to_string(row_index);
 
             xml_node cell_node;
             bool cell_found = false;
@@ -253,7 +253,7 @@ xml_document worksheet_serializer::write_worksheet() const
 
         if (sheet_.get_frozen_panes().get_column_index() > 1)
         {
-            pane_node.add_attribute("xSplit", std::to_string(sheet_.get_frozen_panes().get_column_index() - 1));
+            pane_node.add_attribute("xSplit", std::to_string(sheet_.get_frozen_panes().get_column_index().index - 1));
             active_pane = "topRight";
         }
 
@@ -329,8 +329,8 @@ xml_document worksheet_serializer::write_worksheet() const
 
             auto col_node = cols_node.add_child("col");
 
-            col_node.add_attribute("min", std::to_string(column));
-            col_node.add_attribute("max", std::to_string(column));
+            col_node.add_attribute("min", std::to_string(column.index));
+            col_node.add_attribute("max", std::to_string(column.index));
             col_node.add_attribute("width", std::to_string(props.width));
             col_node.add_attribute("style", std::to_string(props.style));
             col_node.add_attribute("customWidth", props.custom ? "1" : "0");
@@ -350,8 +350,8 @@ xml_document worksheet_serializer::write_worksheet() const
 
         for (auto cell : row)
         {
-            min = std::min(min, cell_reference::column_index_from_string(cell.get_column()));
-            max = std::max(max, cell_reference::column_index_from_string(cell.get_column()));
+            min = std::min(min, cell.get_column().index);
+            max = std::max(max, cell.get_column().index);
 
             if (!cell.garbage_collectible())
             {

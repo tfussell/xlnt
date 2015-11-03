@@ -6,7 +6,7 @@
 namespace xlnt {
 namespace detail {
 
-cell_impl::cell_impl() : cell_impl(1, 1)
+cell_impl::cell_impl() : cell_impl(column_t(1), 1)
 {
 }
 

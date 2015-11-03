@@ -42,8 +42,11 @@ class range_reference
     range_reference(column_t column_index_start, row_t row_index_start, column_t column_index_end, row_t row_index_end);
 
     bool is_single_cell() const;
-    column_t get_width() const;
-    row_t get_height() const;
+    
+    std::size_t get_width() const;
+    
+    std::size_t get_height() const;
+    
     cell_reference get_top_left() const
     {
         return top_left_;
