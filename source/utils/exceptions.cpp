@@ -1,4 +1,4 @@
-#include <xlnt/common/exceptions.hpp>
+#include <xlnt/utils/exceptions.hpp>
 
 namespace xlnt {
 

@@ -5,15 +5,15 @@
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/cell/comment.hpp>
-#include <xlnt/common/datetime.hpp>
-#include <xlnt/common/exceptions.hpp>
-#include <xlnt/common/relationship.hpp>
+#include <xlnt/packaging/relationship.hpp>
+#include <xlnt/styles/color.hpp>
+#include <xlnt/utils/datetime.hpp>
+#include <xlnt/utils/exceptions.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/workbook/document_properties.hpp>
 #include <xlnt/worksheet/column_properties.hpp>
 #include <xlnt/worksheet/row_properties.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
-#include <xlnt/styles/color.hpp>
 
 #include <detail/cell_impl.hpp>
 #include <detail/comment_impl.hpp>

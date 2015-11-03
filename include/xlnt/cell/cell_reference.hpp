@@ -26,7 +26,7 @@
 #include <string>
 #include <utility>
 
-#include <xlnt/common/types.hpp>
+#include <xlnt/cell/types.hpp>
 
 namespace xlnt {
 

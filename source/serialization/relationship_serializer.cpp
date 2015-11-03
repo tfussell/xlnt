@@ -1,7 +1,7 @@
 #include <xlnt/serialization/relationship_serializer.hpp>
 
-#include <xlnt/common/relationship.hpp>
-#include <xlnt/common/zip_file.hpp>
+#include <xlnt/packaging/relationship.hpp>
+#include <xlnt/packaging/zip_file.hpp>
 #include <xlnt/serialization/xml_document.hpp>
 #include <xlnt/serialization/xml_node.hpp>
 

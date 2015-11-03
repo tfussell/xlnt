@@ -1,4 +1,4 @@
-#include <xlnt/common/relationship.hpp>
+#include <xlnt/packaging/relationship.hpp>
 
 namespace xlnt {
 

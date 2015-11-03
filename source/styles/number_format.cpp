@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <regex>
 
-#include <xlnt/common/hash_combine.hpp>
+#include <xlnt/utils/hash_combine.hpp>
 #include <xlnt/styles/number_format.hpp>
 
 namespace {

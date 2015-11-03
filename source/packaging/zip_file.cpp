@@ -7,7 +7,7 @@
 #include <miniz.h>
 
 #include <detail/include_windows.hpp>
-#include <xlnt/common/zip_file.hpp>
+#include <xlnt/packaging/zip_file.hpp>
 
 namespace {
 

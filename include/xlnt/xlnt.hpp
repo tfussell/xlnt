@@ -38,12 +38,10 @@ const std::string download_url = "https://github.com/tfussell/xlnt/archive/maste
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/cell/comment.hpp>
-#include <xlnt/common/datetime.hpp>
-#include <xlnt/common/encoding.hpp>
-#include <xlnt/common/exceptions.hpp>
-#include <xlnt/common/relationship.hpp>
-#include <xlnt/common/types.hpp>
-#include <xlnt/common/zip_file.hpp>
+#include <xlnt/cell/types.hpp>
+#include <xlnt/packaging/relationship.hpp>
+#include <xlnt/packaging/zip_file.hpp>
+#include <xlnt/serialization/encoding.hpp>
 #include <xlnt/styles/alignment.hpp>
 #include <xlnt/styles/border.hpp>
 #include <xlnt/styles/color.hpp>
@@ -54,6 +52,8 @@ const std::string download_url = "https://github.com/tfussell/xlnt/archive/maste
 #include <xlnt/styles/protection.hpp>
 #include <xlnt/styles/side.hpp>
 #include <xlnt/styles/style.hpp>
+#include <xlnt/utils/datetime.hpp>
+#include <xlnt/utils/exceptions.hpp>
 #include <xlnt/workbook/document_properties.hpp>
 #include <xlnt/workbook/document_security.hpp>
 #include <xlnt/workbook/external_book.hpp>

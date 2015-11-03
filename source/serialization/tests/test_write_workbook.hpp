@@ -3,10 +3,10 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/common/exceptions.hpp>
 #include <xlnt/serialization/workbook_serializer.hpp>
+#include <xlnt/utils/exceptions.hpp>
 
-#include "helpers/path_helper.hpp"
+#include <helpers/path_helper.hpp>
 
 class test_write_workbook : public CxxTest::TestSuite
 {

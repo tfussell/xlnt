@@ -4,10 +4,10 @@
 
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/comment.hpp>
-#include <xlnt/common/exceptions.hpp>
-#include <xlnt/common/datetime.hpp>
-#include <xlnt/common/types.hpp>
-#include <xlnt/common/relationship.hpp>
+#include <xlnt/cell/types.hpp>
+#include <xlnt/utils/exceptions.hpp>
+#include <xlnt/utils/datetime.hpp>
+#include <xlnt/packaging/relationship.hpp>
 #include <xlnt/styles/number_format.hpp>
 
 #include "comment_impl.hpp"

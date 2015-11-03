@@ -2,7 +2,6 @@
 #include <iterator>
 
 #include <xlnt/serialization/excel_serializer.hpp>
-#include <xlnt/common/exceptions.hpp>
 #include <xlnt/serialization/manifest_serializer.hpp>
 #include <xlnt/serialization/relationship_serializer.hpp>
 #include <xlnt/serialization/shared_strings_serializer.hpp>
@@ -13,6 +12,7 @@
 #include <xlnt/serialization/xml_document.hpp>
 #include <xlnt/serialization/xml_node.hpp>
 #include <xlnt/serialization/xml_serializer.hpp>
+#include <xlnt/utils/exceptions.hpp>
 #include <xlnt/workbook/document_properties.hpp>
 #include <xlnt/workbook/manifest.hpp>
 #include <xlnt/workbook/workbook.hpp>

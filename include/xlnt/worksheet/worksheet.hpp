@@ -29,8 +29,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include <xlnt/common/types.hpp>
-#include <xlnt/common/relationship.hpp>
+#include <xlnt/cell/types.hpp>
+#include <xlnt/packaging/relationship.hpp>
 #include <xlnt/worksheet/page_setup.hpp>
 
 namespace xlnt {

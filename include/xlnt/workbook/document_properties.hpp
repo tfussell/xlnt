@@ -25,7 +25,7 @@
 
 #include <string>
 
-#include <xlnt/common/datetime.hpp>
+#include <xlnt/utils/datetime.hpp>
 
 namespace xlnt {
 

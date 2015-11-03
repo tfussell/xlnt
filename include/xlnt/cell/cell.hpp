@@ -27,7 +27,7 @@
 #include <string>
 #include <unordered_map>
 
-#include <xlnt/common/types.hpp>
+#include <xlnt/cell/types.hpp>
 
 namespace xlnt {
 

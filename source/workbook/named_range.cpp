@@ -1,6 +1,6 @@
 
+#include <xlnt/utils/exceptions.hpp>
 #include <xlnt/workbook/named_range.hpp>
-#include <xlnt/common/exceptions.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 

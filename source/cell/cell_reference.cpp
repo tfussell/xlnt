@@ -1,10 +1,10 @@
 #include <locale>
 
 #include <xlnt/cell/cell_reference.hpp>
-#include <xlnt/common/exceptions.hpp>
+#include <xlnt/utils/exceptions.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 
-#include "detail/constants.hpp"
+#include <detail/constants.hpp>
 
 namespace xlnt {
 

@@ -1,11 +1,11 @@
 #include <algorithm>
 
+#include <xlnt/packaging/relationship.hpp>
 #include <xlnt/serialization/workbook_serializer.hpp>
-#include <xlnt/common/datetime.hpp>
-#include <xlnt/common/exceptions.hpp>
-#include <xlnt/common/relationship.hpp>
 #include <xlnt/serialization/xml_document.hpp>
 #include <xlnt/serialization/xml_node.hpp>
+#include <xlnt/utils/datetime.hpp>
+#include <xlnt/utils/exceptions.hpp>
 #include <xlnt/workbook/document_properties.hpp>
 #include <xlnt/workbook/manifest.hpp>
 #include <xlnt/workbook/named_range.hpp>
@@ -13,7 +13,7 @@
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
-#include "detail/constants.hpp"
+#include <detail/constants.hpp>
 
 namespace {
 

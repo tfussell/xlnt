@@ -23,8 +23,8 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include "../common/hash_combine.hpp"
-#include "../styles/color.hpp"
+#include <xlnt/styles/color.hpp>
+#include <xlnt/utils/hash_combine.hpp>
 
 namespace xlnt {
 

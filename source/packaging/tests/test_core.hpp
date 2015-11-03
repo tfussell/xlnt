@@ -6,8 +6,8 @@
 #include <xlnt/serialization/workbook_serializer.hpp>
 #include <xlnt/serialization/xml_document.hpp>
 
-#include "helpers/path_helper.hpp"
-#include "helpers/helper.hpp"
+#include <helpers/path_helper.hpp>
+#include <helpers/helper.hpp>
 
 class test_props : public CxxTest::TestSuite
 {

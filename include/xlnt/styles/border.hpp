@@ -26,8 +26,8 @@
 #include <cstddef>
 #include <functional>
 
-#include "side.hpp"
-#include "../common/hash_combine.hpp"
+#include <xlnt/utils/hash_combine.hpp>
+#include <xlnt/styles/side.hpp>
 
 namespace xlnt {
 

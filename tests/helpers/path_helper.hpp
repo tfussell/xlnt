@@ -5,14 +5,14 @@
 #include <string>
 #include <sstream>
 
+#include <detail/include_windows.hpp>
+
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
 #include <sys/stat.h>
-#elif defined(_WIN32)
-#define NOMINMAX
+#elif defined(_MSC_VER)
 #include <Shlwapi.h>
-#include <Windows.h>
-#else
+#elif defined(__linux)
 #include <unistd.h>
 #include <linux/limits.h>
 #include <sys/types.h>
@@ -67,7 +67,7 @@ public:
         
         throw std::runtime_error("buffer too small, " + std::to_string(path.size()) + ", should be: " + std::to_string(size));
         
-#elif defined(_WIN32)
+#elif defined(_MSC_VER)
         
         std::array<TCHAR, MAX_PATH> buffer;
         DWORD result = GetModuleFileName(nullptr, buffer.data(), (DWORD)buffer.size());
@@ -113,14 +113,14 @@ public:
     }
     
     static bool FileExists(const std::string &path)
-    {
-        
-#ifdef _WIN32
+    {        
+#ifdef _MSC_VER
         
         std::wstring path_wide(path.begin(), path.end());
         return PathFileExists(path_wide.c_str()) && !PathIsDirectory(path_wide.c_str());
         
 #else
+
         try
 	{
 	    struct stat fileAtt;

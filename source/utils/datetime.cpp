@@ -1,7 +1,7 @@
 #include <cmath>
 #include <ctime>
 
-#include <xlnt/common/datetime.hpp>
+#include <xlnt/utils/datetime.hpp>
 
 namespace {
 
@@ -36,14 +36,18 @@ time time::from_number(long double raw_time)
     result.second = (int)fractional_part;
     fractional_part = 1000000 * (fractional_part - result.second);
     result.microsecond = (int)fractional_part;
+    
     if (result.microsecond == 999999 && fractional_part - result.microsecond > 0.5)
     {
         result.microsecond = 0;
         result.second += 1;
+        
         if (result.second == 60)
         {
             result.second = 0;
             result.minute += 1;
+            
+            //TODO: too much nesting
             if (result.minute == 60)
             {
                 result.minute = 0;
@@ -51,6 +55,7 @@ time time::from_number(long double raw_time)
             }
         }
     }
+    
     return result;
 }
 
@@ -92,6 +97,7 @@ datetime datetime::from_number(long double raw_time, calendar base_date)
 {
     auto date_part = date::from_number((int)raw_time, base_date);
     auto time_part = time::from_number(raw_time);
+    
     return datetime(date_part.year, date_part.month, date_part.day, time_part.hour, time_part.minute, time_part.second,
                     time_part.microsecond);
 }
@@ -122,6 +128,7 @@ time::time(const std::string &time_string) : hour(0), minute(0), second(0), micr
     colon_index = remaining.find(':');
     minute = std::stoi(remaining.substr(0, colon_index));
     colon_index = remaining.find(':');
+    
     if (colon_index != std::string::npos)
     {
         remaining = remaining.substr(colon_index + 1);
@@ -139,6 +146,7 @@ long double time::to_number() const
     auto number = microseconds / (24.0L * microseconds_per_hour);
 	auto hundred_billion = static_cast<std::uint64_t>(1e9) * 100;
     number = std::floor(number * hundred_billion + 0.5L) / hundred_billion;
+    
     return number;
 }
 

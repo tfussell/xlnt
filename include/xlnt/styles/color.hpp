@@ -25,7 +25,7 @@
 
 #include <string>
 
-#include <xlnt/common/hash_combine.hpp>
+#include <xlnt/utils/hash_combine.hpp>
 
 namespace xlnt {
 
