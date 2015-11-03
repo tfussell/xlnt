@@ -1,6 +1,7 @@
 #include <algorithm>
+#include <stdexcept>
 
-#include <xlnt/workbook/manifest.hpp>
+#include <xlnt/packaging/manifest.hpp>
 
 namespace {
 

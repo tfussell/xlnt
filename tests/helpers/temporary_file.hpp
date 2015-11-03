@@ -5,26 +5,29 @@
 #include <string>
 
 #include <detail/include_windows.hpp>
-
-#include "path_helper.hpp"
+#include <helpers/path_helper.hpp>
 
 class TemporaryFile
 {
 public:
     static std::string CreateTemporaryFilename()
     {
-#ifdef _WIN32
+#ifdef _MSC_VER
 	std::array<TCHAR, MAX_PATH> buffer;
 	DWORD result = GetTempPath(static_cast<DWORD>(buffer.size()), buffer.data());
+    
 	if(result > MAX_PATH)
 	{
 	    throw std::runtime_error("buffer is too small");
 	}
+    
 	if(result == 0)
 	{
 	    throw std::runtime_error("GetTempPath failed");
 	}
+    
 	std::string directory(buffer.begin(), buffer.begin() + result);
+    
     return PathHelper::WindowsToUniversalPath(directory + "xlnt.xlsx");
 #else
 	return "/tmp/xlnt.xlsx";
