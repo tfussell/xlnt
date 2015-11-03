@@ -1,9 +1,9 @@
+#include <xlnt/packaging/manifest.hpp>
 #include <xlnt/serialization/manifest_serializer.hpp>
 #include <xlnt/serialization/xml_document.hpp>
 #include <xlnt/serialization/xml_node.hpp>
-#include <xlnt/workbook/manifest.hpp>
 
-#include "detail/constants.hpp"
+#include <detail/constants.hpp>
 
 namespace xlnt {
 

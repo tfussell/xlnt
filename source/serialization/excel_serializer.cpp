@@ -12,9 +12,9 @@
 #include <xlnt/serialization/xml_document.hpp>
 #include <xlnt/serialization/xml_node.hpp>
 #include <xlnt/serialization/xml_serializer.hpp>
+#include <xlnt/packaging/document_properties.hpp>
+#include <xlnt/packaging/manifest.hpp>
 #include <xlnt/utils/exceptions.hpp>
-#include <xlnt/workbook/document_properties.hpp>
-#include <xlnt/workbook/manifest.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 

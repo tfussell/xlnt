@@ -1,13 +1,13 @@
 #include <algorithm>
 
+#include <xlnt/packaging/document_properties.hpp>
+#include <xlnt/packaging/manifest.hpp>
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/serialization/workbook_serializer.hpp>
 #include <xlnt/serialization/xml_document.hpp>
 #include <xlnt/serialization/xml_node.hpp>
 #include <xlnt/utils/datetime.hpp>
 #include <xlnt/utils/exceptions.hpp>
-#include <xlnt/workbook/document_properties.hpp>
-#include <xlnt/workbook/manifest.hpp>
 #include <xlnt/workbook/named_range.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/range_reference.hpp>

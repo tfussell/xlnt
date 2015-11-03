@@ -5,6 +5,8 @@
 #include <sstream>
 
 #include <xlnt/drawing/drawing.hpp>
+#include <xlnt/packaging/document_properties.hpp>
+#include <xlnt/packaging/manifest.hpp>
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/packaging/zip_file.hpp>
 #include <xlnt/serialization/excel_serializer.hpp>
@@ -16,8 +18,6 @@
 #include <xlnt/styles/protection.hpp>
 #include <xlnt/styles/style.hpp>
 #include <xlnt/utils/exceptions.hpp>
-#include <xlnt/workbook/document_properties.hpp>
-#include <xlnt/workbook/manifest.hpp>
 #include <xlnt/workbook/named_range.hpp>
 #include <xlnt/workbook/theme.hpp>
 #include <xlnt/workbook/workbook.hpp>

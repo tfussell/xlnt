@@ -1,4 +1,4 @@
-#include <xlnt/workbook/document_properties.hpp>
+#include <xlnt/packaging/document_properties.hpp>
 
 namespace xlnt {
 

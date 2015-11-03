@@ -5,12 +5,12 @@
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/cell/comment.hpp>
+#include <xlnt/packaging/document_properties.hpp>
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/styles/color.hpp>
 #include <xlnt/utils/datetime.hpp>
 #include <xlnt/utils/exceptions.hpp>
 #include <xlnt/workbook/workbook.hpp>
-#include <xlnt/workbook/document_properties.hpp>
 #include <xlnt/worksheet/column_properties.hpp>
 #include <xlnt/worksheet/row_properties.hpp>
 #include <xlnt/worksheet/worksheet.hpp>

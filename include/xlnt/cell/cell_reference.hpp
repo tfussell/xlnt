@@ -33,6 +33,10 @@ namespace xlnt {
 class cell_reference;
 class range_reference;
 
+/// <summary>
+/// Functor for hashing a cell reference.
+/// Allows for use of std::unordered_set<cell_reference, cel_reference_hash> and similar.
+/// </summary>
 struct cell_reference_hash
 {
     std::size_t operator()(const cell_reference &k) const;
