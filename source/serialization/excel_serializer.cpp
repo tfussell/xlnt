@@ -68,9 +68,9 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
 		core_properties_xml.from_string(archive.read(xlnt::constants::ArcCore()));
         workbook_serializer_.read_properties_core(core_properties_xml);
     }
-        
-    auto workbook_relationships =
-        xlnt::relationship_serializer::read_relationships(archive, xlnt::constants::ArcWorkbook());
+    
+    xlnt::relationship_serializer relationship_serializer_(archive);
+    auto workbook_relationships = relationship_serializer_.read_relationships(xlnt::constants::ArcWorkbook());
 
     for (const auto &relationship : workbook_relationships)
     {
@@ -193,8 +193,9 @@ excel_serializer::excel_serializer(workbook &wb) : workbook_(wb)
 
 void excel_serializer::write_data(bool /*as_template*/)
 {
-    relationship_serializer::write_relationships(workbook_.get_root_relationships(), "", archive_);
-    relationship_serializer::write_relationships(workbook_.get_relationships(), constants::ArcWorkbook(), archive_);
+    relationship_serializer relationship_serializer_(archive_);
+    relationship_serializer_.write_relationships(workbook_.get_root_relationships(), "");
+    relationship_serializer_.write_relationships(workbook_.get_relationships(), constants::ArcWorkbook());
 
     xml_document properties_app_xml;
     workbook_serializer workbook_serializer_(workbook_);

@@ -47,7 +47,8 @@ public:
     {
         xlnt::workbook wb;
         xlnt::zip_file archive;
-        xlnt::relationship_serializer::write_relationships(wb.get_relationships(), "xl/workbook.xml", archive);
+        xlnt::relationship_serializer serializer(archive);
+        serializer.write_relationships(wb.get_relationships(), "xl/workbook.xml");
         auto content = xlnt::xml_serializer::deserialize(archive.read("xl/_rels/workbook.xml.rels"));
 
         TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/workbook.xml.rels", content));
@@ -162,7 +163,8 @@ public:
         TS_ASSERT_EQUALS(2, ws.get_relationships().size());
         
         xlnt::zip_file archive;
-        xlnt::relationship_serializer::write_relationships(ws.get_relationships(), "xl/worksheets/sheet1.xml", archive);
+        xlnt::relationship_serializer serializer(archive);
+        serializer.write_relationships(ws.get_relationships(), "xl/worksheets/sheet1.xml");
         auto content = xlnt::xml_serializer::deserialize(archive.read("xl/worksheets/_rels/sheet1.xml.rels"));
         
         TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_hyperlink.xml.rels", content));

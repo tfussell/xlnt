@@ -13,8 +13,14 @@ struct mz_zip_archive_tag;
 
 namespace xlnt {
 
+/// <summary>
+/// Information about a specific file in zip_file.
+/// </summary>
 struct zip_info
 {
+    /// <summary>
+    /// A struct representing a particular date and time.
+    /// </summary>
     struct date_time_t
     {
         int year;
@@ -25,6 +31,9 @@ struct zip_info
         int seconds;
     };
 
+    /// <summary>
+    /// Default constructor for zip_info.
+    /// </summary>
     zip_info();
 
     date_time_t date_time;
@@ -44,6 +53,10 @@ struct zip_info
     std::size_t file_size;
 };
 
+/// <summary>
+/// A compressed archive file that exists in memory which can read
+/// or write to and from the filesystem, std::iostreams, and byte vectors.
+/// </summary>
 class zip_file
 {
   public:

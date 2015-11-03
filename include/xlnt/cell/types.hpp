@@ -312,8 +312,8 @@ public:
 };
 
 /// <summary>
-/// Functor for hashing a cell reference.
-/// Allows for use of std::unordered_set<cell_reference, cel_reference_hash> and similar.
+/// Functor for hashing a column.
+/// Allows for use of std::unordered_set<column, column_hash> and similar.
 /// </summary>
 struct column_hash
 {

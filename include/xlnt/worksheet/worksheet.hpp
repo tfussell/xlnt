@@ -51,6 +51,9 @@ namespace detail {
 struct worksheet_impl;
 } // namespace detail
 
+/// <summary>
+/// Worksheet header
+/// </summary>
 class header
 {
   public:
@@ -88,6 +91,9 @@ class header
     std::string font_color_;
 };
 
+/// <summary>
+/// Worksheet footer
+/// </summary>
 class footer
 {
   public:
@@ -125,6 +131,9 @@ class footer
     std::string font_color_;
 };
 
+/// <summary>
+/// Worksheet header and footer
+/// </summary>
 class header_footer
 {
   public:
@@ -173,6 +182,9 @@ class header_footer
     footer left_footer_, right_footer_, center_footer_;
 };
 
+/// <summary>
+/// Worksheet margins
+/// </summary>
 struct margins
 {
   public:
@@ -249,6 +261,9 @@ struct margins
     double footer_;
 };
 
+/// <summary>
+/// A worksheet is a 2D array of cells.
+/// </summary>
 class worksheet
 {
   public:

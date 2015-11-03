@@ -337,8 +337,9 @@ public:
 
             auto path = PathHelper::GetDataDirectory("/reader/bug137.xlsx");
             xlnt::zip_file archive(path);
-
-            TS_ASSERT_EQUALS(xlnt::relationship_serializer::read_relationships(archive, "xl/workbook.xml"), expected);
+            xlnt::relationship_serializer serializer(archive);
+            
+            TS_ASSERT_EQUALS(serializer.read_relationships("xl/workbook.xml"), expected);
         }
 
         {
@@ -356,8 +357,9 @@ public:
 
             auto path = PathHelper::GetDataDirectory("/reader/bug304.xlsx");
             xlnt::zip_file archive(path);
+            xlnt::relationship_serializer serializer(archive);
 
-            TS_ASSERT_EQUALS(xlnt::relationship_serializer::read_relationships(archive, "xl/workbook.xml"), expected);
+            TS_ASSERT_EQUALS(serializer.read_relationships("xl/workbook.xml"), expected);
         }
     }
     

@@ -28,10 +28,14 @@ std::string make_rels_name(const std::string &target)
 
 namespace xlnt {
 
-std::vector<relationship> relationship_serializer::read_relationships(zip_file &archive, const std::string &target)
+relationship_serializer::relationship_serializer(zip_file &archive) : archive_(archive)
+{
+}
+
+std::vector<relationship> relationship_serializer::read_relationships(const std::string &target)
 {
     xml_document xml;
-    xml.from_string(archive.read(make_rels_name(target)));
+    xml.from_string(archive_.read(make_rels_name(target)));
 
     auto root_node = xml.get_child("Relationships");
 
@@ -55,7 +59,7 @@ std::vector<relationship> relationship_serializer::read_relationships(zip_file &
 }
 
 bool relationship_serializer::write_relationships(const std::vector<relationship> &relationships,
-                                                  const std::string &target, zip_file &archive)
+                                                  const std::string &target)
 {
     xml_document xml;
 
@@ -77,7 +81,7 @@ bool relationship_serializer::write_relationships(const std::vector<relationship
         }
     }
 
-    archive.writestr(make_rels_name(target), xml.to_string());
+    archive_.writestr(make_rels_name(target), xml.to_string());
 
     return true;
 }

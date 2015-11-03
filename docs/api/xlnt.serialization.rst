@@ -1,7 +1,10 @@
-serialization module
+Serialization Module
 ====================
 
 .. doxygenclass:: xlnt::comment_serializer
+	:members:
+
+.. doxygenenum:: xlnt::encoding
 	:members:
 
 .. doxygenclass:: xlnt::excel_serializer

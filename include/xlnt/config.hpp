@@ -34,9 +34,18 @@ namespace xlnt {
 /// </summary>
 enum class limit_style
 {
-    openpyxl, /// limit style using in openpyxl
-    excel,    /// limits according to Excel
-    maximum   /// limits based on system
+    /// <summary>
+    /// limits used in openpyxl
+    /// </summary>
+    openpyxl,
+    /// <summary>
+    /// limits as determined by Excel
+    /// </summary>
+    excel,
+    /// <summary>
+    /// limits as high as possible based on system (i.e. 32-bit or 64-bit)
+    /// </summary>
+    maximum
 };
 
 /// <summary>

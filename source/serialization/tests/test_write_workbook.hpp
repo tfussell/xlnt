@@ -96,7 +96,8 @@ public:
     {
         xlnt::workbook wb;
         xlnt::zip_file archive;
-        xlnt::relationship_serializer::write_relationships(wb.get_relationships(), "xl/workbook.xml", archive);
+        xlnt::relationship_serializer serializer(archive);
+        serializer.write_relationships(wb.get_relationships(), "xl/workbook.xml");
         xlnt::xml_document observed;
         observed.from_string(archive.read("xl/_rels/workbook.xml.rels"));
         auto filename = "workbook.xml.rels";
@@ -165,7 +166,8 @@ public:
     {
         xlnt::workbook wb;
         xlnt::zip_file archive;
-        xlnt::relationship_serializer::write_relationships(wb.get_root_relationships(), "", archive);
+        xlnt::relationship_serializer serializer(archive);
+        serializer.write_relationships(wb.get_root_relationships(), "");
         xlnt::xml_document observed;
         observed.from_string(archive.read("_rels/.rels"));
         

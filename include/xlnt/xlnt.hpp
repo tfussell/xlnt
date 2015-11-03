@@ -25,14 +25,6 @@
 
 #include <string>
 
-const std::string xlnt_version = "0.1.0";
-
-const std::string author = "Thomas Fussell";
-const std::string license = "MIT";
-const std::string author_email = "thomas.fussell@gmail.com";
-const std::string url = "https://github.com/tfussell/xlnt";
-const std::string download_url = "https://github.com/tfussell/xlnt/archive/master.zip";
-
 #include <xlnt/config.hpp>
 
 #include <xlnt/cell/cell.hpp>
