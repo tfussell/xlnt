@@ -42,20 +42,23 @@ struct cell_reference_hash
     std::size_t operator()(const cell_reference &k) const;
 };
 
+/// <summary>
+/// An object used to refer to a cell.
+/// References have two parts, the column and the row.
+/// In Excel, the reference string A1 refers to the top-left-most cell. A cell_reference
+/// can be initialized from a string of this form or a 1-indexed ordered pair of the form
+/// column, row.
+/// </summary>
 class cell_reference
 {
   public:
-    /// <summary>
-    /// Convert a coordinate to an absolute coordinate string (B12 -> $B$12)
-    /// </summary>
-    static cell_reference make_absolute(const cell_reference &relative_reference);
-
     /// <summary>
     /// Convert a column letter into a column number (e.g. B -> 2)
     /// </summary>
     /// <remarks>
     /// Excel only supports 1 - 3 letter column names from A->ZZZ, so we
     /// restrict our column names to 1 - 3 characters, each in the range A - Z.
+    /// Strings outside this range and malformed strings will throw xlnt::column_string_index_exception.
     /// </remarks>
     static column_t column_index_from_string(const std::string &column_string);
 
@@ -63,8 +66,8 @@ class cell_reference
     /// Convert a column number into a column letter (3 -> 'C')
     /// </summary>
     /// <remarks>
-    /// Right shift the column col_idx by 26 to find column letters in reverse
-    /// order.These numbers are 1 - based, and can be converted to ASCII
+    /// Right shift the column, column_index, by 26 to find column letters in reverse
+    /// order. These indices are 1-based, and can be converted to ASCII
     /// ordinals by adding 64.
     /// </remarks>
     static std::string column_string_from_index(column_t column_index);
@@ -72,52 +75,144 @@ class cell_reference
     /// <summary>
     /// Split a coordinate string like "A1" into an equivalent pair like {"A", 1}.
     /// </summary>
+    static std::pair<std::string, row_t> split_reference(const std::string &reference_string);
+
+    /// <summary>
+    /// Split a coordinate string like "A1" into an equivalent pair like {"A", 1}.
+    /// Reference parameters absolute_column and absolute_row will be set to true
+    /// if column part or row part are prefixed by a dollar-sign indicating they
+    /// are absolute, otherwise false.
+    /// </summary>
     static std::pair<std::string, row_t> split_reference(const std::string &reference_string, bool &absolute_column,
                                                          bool &absolute_row);
 
     // constructors
+    
     /// <summary>
     /// Default constructor makes a reference to the top-left-most cell, "A1".
     /// </summary>
     cell_reference();
+    
+    //TODO: should these be explicit? The implicit conversion is nice sometimes.
+    
+    /// <summary>
+    /// Constructs a cell_reference from a string reprenting a cell coordinate (e.g. $B14).
+    /// </summary>
     cell_reference(const char *reference_string);
+    
+    /// <summary>
+    /// Constructs a cell_reference from a string reprenting a cell coordinate (e.g. $B14).
+    /// </summary>
     cell_reference(const std::string &reference_string);
-    cell_reference(const std::string &column, row_t row, bool absolute = false);
-    cell_reference(column_t column, row_t row, bool absolute = false);
+    
+    /// <summary>
+    /// Constructs a cell_reference from a string reprenting a column (e.g. A) and
+    /// a 1-indexed row.
+    /// </summary>
+    cell_reference(const std::string &column, row_t row);
+    
+    /// <summary>
+    /// Constructs a cell_reference from a 1-indexed column index and row index.
+    /// </summary>
+    cell_reference(column_t column, row_t row);
 
     // absoluateness
-    bool is_absolute() const
+    
+    /// <summary>
+    /// Convert a coordinate to an absolute coordinate string (e.g. B12 -> $B$12)
+    /// Defaulting to true, absolute_column and absolute_row can optionally control
+    /// whether the resulting cell_reference has an absolute column (e.g. B12 -> $B12)
+    /// and absolute row (e.g. B12 -> B$12) respectively.
+    /// </summary>
+    /// <remarks>
+    /// This is functionally equivalent to:
+    /// cell_reference copy(*this);
+    /// copy.column_absolute(absolute_column);
+    /// copy.row_absolute(absolute_row);
+    /// return copy;
+    /// </remarks>
+    cell_reference &make_absolute(bool absolute_column = true, bool absolute_row = true);
+    
+    /// <summary>
+    /// Return true if the reference refers to an absolute column, otherwise false.
+    /// </summary>
+    bool column_absolute() const
     {
-        return absolute_;
+        return absolute_column_;
     }
-    void set_absolute(bool absolute)
+
+    /// <summary>
+    /// Make this reference have an absolute column if absolute_column is true,
+    /// otherwise not absolute.
+    /// </summary>
+    void column_absolute(bool absolute_column)
     {
-        absolute_ = absolute;
+        absolute_column_ = absolute_column;
+    }
+
+    /// <summary>
+    /// Return true if the reference refers to an absolute row, otherwise false.
+    /// </summary>
+    bool row_absolute() const
+    {
+        return absolute_row_;
+    }
+
+    /// <summary>
+    /// Make this reference have an absolute row if absolute_row is true,
+    /// otherwise not absolute.
+    /// </summary>
+    void row_absolute(bool absolute_row)
+    {
+        absolute_row_ = absolute_row;
     }
 
     // getters/setters
+    
+    /// <summary>
+    /// Return a string that identifies the column of this reference
+    /// (e.g. second column from left is "B")
+    /// </summary>
     std::string get_column() const
     {
         return column_string_from_index(column_);
     }
+    
+    /// <summary>
+    /// Set the column of this reference from a string that identifies a particular column.
+    /// </summary>
     void set_column(const std::string &column_string)
     {
         column_ = column_index_from_string(column_string);
     }
 
+    /// <summary>
+    /// Return a 1-indexed numeric index of the column of this reference.
+    /// </summary>
     column_t get_column_index() const
     {
         return column_;
     }
+    
+    /// <summary>
+    /// Set the column of this reference from a 1-indexed number that identifies a particular column.
+    /// </summary>
     void set_column_index(column_t column)
     {
         column_ = column;
     }
 
+    /// <summary>
+    /// Return a 1-indexed numeric index of the row of this reference.
+    /// </summary>
     row_t get_row() const
     {
         return row_;
     }
+    
+    /// <summary>
+    /// Set the row of this reference from a 1-indexed number that identifies a particular row.
+    /// </summary>
     void set_row(row_t row)
     {
         row_ = row;
@@ -137,11 +232,12 @@ class cell_reference
     std::string to_string() const;
 
     /// <summary>
-    /// Return a range_reference containing only this cell_reference.
+    /// Return a 1x1 range_reference containing only this cell_reference.
     /// </summary>
     range_reference to_range() const;
 
     // operators
+    
     /// <summary>
     /// I've always wanted to overload the comma operator.
     /// cell_reference("A", 1), cell_reference("B", 1) will return
@@ -149,28 +245,58 @@ class cell_reference
     /// </summary>
     range_reference operator, (const cell_reference &other) const;
 
+    /// <summary>
+    /// Return true if this reference is identical to comparand including
+    /// in absoluteness of column and row.
+    /// </summary>
     bool operator==(const cell_reference &comparand) const;
+    
+    /// <summary>
+    /// Construct a cell_reference from reference_string and return the result
+    /// of their comparison.
+    /// </summary>
     bool operator==(const std::string &reference_string) const
     {
         return *this == cell_reference(reference_string);
     }
+    
+    /// <summary>
+    /// Construct a cell_reference from reference_string and return the result
+    /// of their comparison.
+    /// </summary>
     bool operator==(const char *reference_string) const
     {
         return *this == std::string(reference_string);
     }
+    
+    /// <summary>
+    /// Return true if this reference is not identical to comparand including
+    /// in absoluteness of column and row.
+    /// </summary>
     bool operator!=(const cell_reference &comparand) const
     {
         return !(*this == comparand);
     }
+    
+    /// <summary>
+    /// Construct a cell_reference from reference_string and return the result
+    /// of their comparison.
+    /// </summary>
     bool operator!=(const std::string &reference_string) const
     {
         return *this != cell_reference(reference_string);
     }
+    
+    /// <summary>
+    /// Construct a cell_reference from reference_string and return the result
+    /// of their comparison.
+    /// </summary>
     bool operator!=(const char *reference_string) const
     {
         return *this != std::string(reference_string);
     }
 
+    //TODO: are these useful? maybe get rid of them
     bool operator<(const cell_reference &other);
     bool operator>(const cell_reference &other);
     bool operator<=(const cell_reference &other);
@@ -190,9 +316,14 @@ class cell_reference
     row_t row_;
 
     /// <summary>
-    /// True if the reference is absolute. This looks like "$A$1" in Excel.
+    /// True if the reference's row is absolute. This looks like "A$1" in Excel.
     /// </summary>
-    bool absolute_;
+    bool absolute_row_;
+    
+    /// <summary>
+    /// True if the reference's column is absolute. This looks like "$A1" in Excel.
+    /// </summary>
+    bool absolute_column_;
 };
 
 } // namespace xlnt

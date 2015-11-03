@@ -13,39 +13,38 @@ std::size_t cell_reference_hash::operator()(const cell_reference &k) const
     return k.get_row() * constants::MaxColumn + k.get_column_index();
 }
 
-cell_reference cell_reference::make_absolute(const cell_reference &relative_reference)
+cell_reference &cell_reference::make_absolute(bool absolute_column, bool absolute_row)
 {
-    cell_reference copy = relative_reference;
-    copy.absolute_ = true;
-    return copy;
+    column_absolute(absolute_column);
+    row_absolute(absolute_row);
+    
+    return *this;
 }
 
-cell_reference::cell_reference() : cell_reference(1, 1, false)
+cell_reference::cell_reference() : cell_reference(1, 1)
 {
 }
 
 cell_reference::cell_reference(const std::string &string)
 {
-    bool absolute = false;
-    auto split = split_reference(string, absolute, absolute);
-    *this = cell_reference(split.first, split.second, absolute);
+    auto split = split_reference(string, absolute_column_, absolute_row_);
+    
+    set_column(split.first);
+    set_row(split.second);
 }
 
-cell_reference::cell_reference(const char *reference_string) : cell_reference(std::string(reference_string))
+cell_reference::cell_reference(const char *reference_string)
+    : cell_reference(std::string(reference_string))
 {
 }
 
-cell_reference::cell_reference(const std::string &column, row_t row, bool absolute)
-    : column_(column_index_from_string(column)), row_(row), absolute_(absolute)
+cell_reference::cell_reference(const std::string &column, row_t row)
+    : cell_reference(column_index_from_string(column), row)
 {
-    if (row == 0 || row_ >= constants::MaxRow || column_ == 0 || column_ >= constants::MaxColumn)
-    {
-        throw cell_coordinates_exception(column_, row_);
-    }
 }
 
-cell_reference::cell_reference(column_t column_index, row_t row, bool absolute)
-    : column_(column_index), row_(row), absolute_(absolute)
+cell_reference::cell_reference(column_t column_index, row_t row)
+    : column_(column_index), row_(row), absolute_column_(false), absolute_row_(false)
 {
     if (row_ == 0 || row_ >= constants::MaxRow || column_ == 0 || column_ >= constants::MaxColumn)
     {
@@ -60,12 +59,23 @@ range_reference cell_reference::operator, (const xlnt::cell_reference &other) co
 
 std::string cell_reference::to_string() const
 {
-    if (absolute_)
+    std::string string_representation;
+    
+    if (absolute_column_)
     {
-        return std::string("$") + column_string_from_index(column_) + "$" + std::to_string(row_);
+        string_representation.append("$");
     }
+    
+    string_representation.append(column_string_from_index(column_));
+    
+    if (absolute_row_)
+    {
+        string_representation.append("$");
+    }
+    
+    string_representation.append(std::to_string(row_));
 
-    return column_string_from_index(column_) + std::to_string(row_);
+    return string_representation;
 }
 
 range_reference cell_reference::to_range() const
@@ -150,13 +160,17 @@ std::pair<std::string, row_t> cell_reference::split_reference(const std::string 
 
 cell_reference cell_reference::make_offset(int column_offset, int row_offset) const
 {
+    //TODO: check for overflow/underflow
     return cell_reference(static_cast<column_t>(static_cast<int>(column_) + column_offset),
                           static_cast<row_t>(static_cast<int>(row_) + row_offset));
 }
 
 bool cell_reference::operator==(const cell_reference &comparand) const
 {
-    return comparand.column_ == column_ && comparand.row_ == row_ && absolute_ == comparand.absolute_;
+    return comparand.column_ == column_ &&
+        comparand.row_ == row_ &&
+        absolute_column_ == comparand.absolute_column_ &&
+        absolute_row_ == comparand.absolute_row_;
 }
 
 column_t cell_reference::column_index_from_string(const std::string &column_string)

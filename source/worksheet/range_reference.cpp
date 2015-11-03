@@ -7,8 +7,8 @@ namespace xlnt {
 range_reference range_reference::make_absolute(const xlnt::range_reference &relative_reference)
 {
     range_reference copy = relative_reference;
-    copy.top_left_.set_absolute(true);
-    copy.bottom_right_.set_absolute(true);
+    copy.top_left_.make_absolute(true, true);
+    copy.bottom_right_.make_absolute(true, true);
     return copy;
 }
 
