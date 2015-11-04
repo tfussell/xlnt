@@ -29,9 +29,11 @@
 #include <xlnt/utils/hash_combine.hpp>
 #include <xlnt/styles/side.hpp>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
-enum class diagonal_direction
+enum class XLNT_CLASS diagonal_direction
 {
     none,
     up,
@@ -39,7 +41,7 @@ enum class diagonal_direction
     both
 };
 
-class border
+class XLNT_CLASS border
 {
   public:
     static border default_border();

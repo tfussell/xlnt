@@ -23,9 +23,11 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
-class worksheet_properties
+class XLNT_CLASS worksheet_properties
 {
 };
 

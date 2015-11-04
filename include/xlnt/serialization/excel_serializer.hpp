@@ -30,6 +30,8 @@
 
 #include <xlnt/packaging/zip_file.hpp>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
 class workbook;
@@ -38,7 +40,7 @@ class workbook;
 /// Handles reading and writing workbooks from an actual XLSX archive
 /// using other serializers.
 /// </summary>
-class excel_serializer
+class XLNT_CLASS excel_serializer
 {
   public:
     /// <summary>

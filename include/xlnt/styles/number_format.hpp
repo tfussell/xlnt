@@ -27,9 +27,11 @@
 #include <unordered_map>
 #include <utility>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
-class number_format
+class XLNT_CLASS number_format
 {
   public:
     static const number_format general();

@@ -29,6 +29,8 @@
 
 #include <xlnt/workbook/workbook.hpp>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
 class alignment;
@@ -48,7 +50,7 @@ class xml_node;
 /// <summary>
 /// Reads and writes xl/styles.xml from/to an associated workbook.
 /// </summary>
-class style_serializer
+class XLNT_CLASS style_serializer
 {
   public:
     /// <summary>

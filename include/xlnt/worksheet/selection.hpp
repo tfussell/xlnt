@@ -22,9 +22,11 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
-class selection
+class XLNT_CLASS selection
 {
 };
 

@@ -33,6 +33,8 @@
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/worksheet/page_setup.hpp>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
 class cell;
@@ -47,14 +49,12 @@ class workbook;
 
 struct date;
 
-namespace detail {
-struct worksheet_impl;
-} // namespace detail
+namespace detail { struct worksheet_impl; }
 
 /// <summary>
 /// Worksheet header
 /// </summary>
-class header
+class XLNT_CLASS header
 {
   public:
     header();
@@ -94,7 +94,7 @@ class header
 /// <summary>
 /// Worksheet footer
 /// </summary>
-class footer
+class XLNT_CLASS footer
 {
   public:
     footer();
@@ -134,7 +134,7 @@ class footer
 /// <summary>
 /// Worksheet header and footer
 /// </summary>
-class header_footer
+class XLNT_CLASS header_footer
 {
   public:
     header_footer();
@@ -185,7 +185,7 @@ class header_footer
 /// <summary>
 /// Worksheet margins
 /// </summary>
-struct margins
+struct XLNT_CLASS margins
 {
   public:
     margins() : default_(true), top_(0), left_(0), bottom_(0), right_(0), header_(0), footer_(0)
@@ -264,7 +264,7 @@ struct margins
 /// <summary>
 /// A worksheet is a 2D array of cells.
 /// </summary>
-class worksheet
+class XLNT_CLASS worksheet
 {
   public:
     worksheet();

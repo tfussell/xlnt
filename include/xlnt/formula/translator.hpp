@@ -1,12 +1,16 @@
+#pragma once
+
 #include <string>
 #include <vector>
+
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 
 class cell_reference;
 class tokenizer;
 
-class translator
+class XLNT_CLASS translator
 {
     translator(const std::string &formula, const cell_reference &ref);
 

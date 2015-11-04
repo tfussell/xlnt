@@ -25,12 +25,14 @@
 
 #include <string>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
 /// <summary>
 /// Security information about the document.
 /// </summary>
-class document_security
+class XLNT_CLASS document_security
 {
   public:
     document_security();

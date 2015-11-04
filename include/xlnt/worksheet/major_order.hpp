@@ -1,8 +1,10 @@
 #pragma once
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
-enum class major_order
+enum class XLNT_CLASS major_order
 {
     column,
     row

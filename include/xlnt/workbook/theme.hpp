@@ -1,8 +1,10 @@
 #pragma once
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
-class theme
+class XLNT_CLASS theme
 {
 };
 

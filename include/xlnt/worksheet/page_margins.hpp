@@ -23,9 +23,11 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
-class page_margins
+class XLNT_CLASS page_margins
 {
   public:
     page_margins() : default_(true), top_(0), left_(0), bottom_(0), right_(0), header_(0), footer_(0)

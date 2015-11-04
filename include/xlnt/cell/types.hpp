@@ -26,6 +26,8 @@
 #include <cstdint>
 #include <string>
 
+#include "xlnt_config.hpp"
+
 // We might want to change these types for various optimizations in the future
 // so use typedefs.
 
@@ -41,7 +43,7 @@ using row_t = std::uint32_t;
 /// or as a 1-indexed index. This class encapsulates both of these forms of
 /// column referencing and allows for convertions between them.
 /// </summary>
-class column_t
+class XLNT_CLASS column_t
 {
 public:
     using index_t = std::uint32_t;
@@ -315,7 +317,7 @@ public:
 /// Functor for hashing a column.
 /// Allows for use of std::unordered_set<column, column_hash> and similar.
 /// </summary>
-struct column_hash
+struct XLNT_CLASS column_hash
 {
     std::size_t operator()(const column_t &k) const;
 };

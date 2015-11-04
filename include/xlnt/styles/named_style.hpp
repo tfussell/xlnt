@@ -23,11 +23,13 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include "style.hpp"
+#include <xlnt/styles/style.hpp>
+
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 
-class named_style
+class XLNT_CLASS named_style
 {
   public:
     named_style();

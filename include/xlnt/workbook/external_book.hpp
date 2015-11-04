@@ -1,8 +1,11 @@
 #pragma once
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
-class external_book
+class XLNT_CLASS external_book
 {
 };
+
 }

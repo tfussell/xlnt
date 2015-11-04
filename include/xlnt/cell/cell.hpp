@@ -29,6 +29,8 @@
 
 #include <xlnt/cell/types.hpp>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
 enum class calendar;
@@ -60,7 +62,7 @@ namespace detail { struct cell_impl; }
 /// and any other features of an Excel cell.Utilities for referencing
 /// cells using Excel's 'A1' column/row nomenclature are also provided.
 /// </remarks>
-class cell
+class XLNT_CLASS cell
 {
 public:
     /// <summary>
@@ -407,7 +409,7 @@ private:
 /// Convenience function for writing cell to an ostream.
 /// Uses cell::to_string() internally.
 /// </summary>
-inline std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)
+inline std::ostream & XLNT_FUNCTION operator<<(std::ostream &stream, const xlnt::cell &cell)
 {
     return stream << cell.to_string();
 }

@@ -2,12 +2,14 @@
 
 #include <string>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
 class xml_document;
 class xml_node;
 
-class xml_serializer
+class XLNT_CLASS xml_serializer
 {
   public:
     static std::string serialize(const xml_document &xml);

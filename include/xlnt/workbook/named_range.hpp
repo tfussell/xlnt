@@ -3,14 +3,16 @@
 #include <string>
 #include <vector>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
 class range_reference;
 class worksheet;
 
-std::vector<std::pair<std::string, std::string>> split_named_range(const std::string &named_range_string);
+std::vector<std::pair<std::string, std::string>> XLNT_FUNCTION split_named_range(const std::string &named_range_string);
 
-class named_range
+class XLNT_CLASS named_range
 {
   public:
     using target = std::pair<worksheet, range_reference>;

@@ -1,8 +1,8 @@
 #include <limits>
 
-#include <xlnt/config.hpp>
+#include <detail/constants.hpp>
 
-#include "constants.hpp"
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 

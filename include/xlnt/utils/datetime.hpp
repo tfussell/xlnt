@@ -24,13 +24,15 @@
 
 #include <string>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
 /// <summary>
 /// An enumeration of possible base dates.
 /// Dates in Excel are stored as days since this base date.
 /// </summary>
-enum class calendar
+enum class XLNT_CLASS calendar
 {
     windows_1900,
     mac_1904
@@ -41,7 +43,7 @@ enum class calendar
 /// It can also be initialized as a number of days since a base date
 /// using date::from_number.
 /// </summary>
-struct date
+struct XLNT_CLASS date
 {
     /// <summary>
     /// Return the current date according to the system time.
@@ -78,7 +80,7 @@ struct date
 /// minute, second, and microsecond (0-999999).
 /// It can also be initialized as a fraction of a day using time::from_number.
 /// </summary>
-struct time
+struct XLNT_CLASS time
 {
     /// <summary>
     /// Return the current time according to the system time.
@@ -107,7 +109,7 @@ struct time
     int microsecond;
 };
 
-struct datetime
+struct XLNT_CLASS datetime
 {
     /// <summary>
     /// Return the current date and time according to the system time.
@@ -158,7 +160,7 @@ struct datetime
 /// Represents a span of time between two datetimes. This is
 /// not fully supported yet.
 /// </summary>
-struct timedelta
+struct XLNT_CLASS timedelta
 {
     static timedelta from_number(long double number);
 

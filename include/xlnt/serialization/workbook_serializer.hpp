@@ -26,6 +26,8 @@
 #include <string>
 #include <vector>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
 class document_properties;
@@ -37,7 +39,7 @@ class zip_file;
 class xml_document;
 class xml_node;
 
-class workbook_serializer
+class XLNT_CLASS workbook_serializer
 {
   public:
     using string_pair = std::pair<std::string, std::string>;

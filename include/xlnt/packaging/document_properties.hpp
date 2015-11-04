@@ -27,12 +27,14 @@
 
 #include <xlnt/utils/datetime.hpp>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
 /// <summary>
 /// High-level properties of the document.
 /// </summary>
-class document_properties
+class XLNT_CLASS document_properties
 {
   public:
     document_properties();

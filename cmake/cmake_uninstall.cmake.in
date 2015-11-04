@@ -20,10 +20,12 @@ foreach(file ${files})
   endif(IS_SYMLINK "$ENV{DESTDIR}${file}" OR EXISTS "$ENV{DESTDIR}${file}")
 endforeach(file)
 
+message(STATUS "Uninstalling @INC_DEST_DIR@/xlnt")
+
 exec_program("@CMAKE_COMMAND@" 
-             ARGS "-E remove_directory @INC_DEST_DIR@/xlnt")
-             OUTPUT_VARIABLE rm_out
-             RETURN_VALUE rm_retval
+              ARGS "-E remove_directory @INC_DEST_DIR@/xlnt"
+              OUTPUT_VARIABLE rm_out
+              RETURN_VALUE rm_retval
 )
 
 if(NOT "${rm_retval}" STREQUAL 0)

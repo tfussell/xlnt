@@ -54,4 +54,27 @@ enum class limit_style
 /// </summary>
 const limit_style LimitStyle = limit_style::openpyxl;
 
-}
+// If no API is defined, assume default
+#ifndef XLNT_API
+#ifdef _MSC_VER
+#ifdef _DLL
+#define XLNT_API __declspec(dllexport)
+#else
+#define XLNT_API __declspec(dllimport)
+#endif
+#else
+#define XLNT_API
+#endif
+#endif
+
+// If no API for classes is defined, assume default
+#ifndef XLNT_CLASS
+#define XLNT_CLASS XLNT_API
+#endif
+
+// If no API for functions is defined, assume default
+#ifndef XLNT_FUNCTION
+#define XLNT_FUNCTION XLNT_API
+#endif
+
+} // namespace xlnt

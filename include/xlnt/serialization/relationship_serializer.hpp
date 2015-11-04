@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
 class relationship;
@@ -11,7 +13,7 @@ class zip_file;
 /// <summary>
 /// Reads and writes collections of relationshps for a particular file.
 /// </summary>
-class relationship_serializer
+class XLNT_CLASS relationship_serializer
 {
 public:
     /// <summary>

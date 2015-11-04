@@ -32,9 +32,11 @@
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
-class range
+class XLNT_CLASS range
 {
   public:
     template <bool is_const = true>

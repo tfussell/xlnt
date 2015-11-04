@@ -25,7 +25,7 @@
 
 #include <string>
 
-#include <xlnt/config.hpp>
+#include "xlnt_config.hpp"
 
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>

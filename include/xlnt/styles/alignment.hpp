@@ -25,12 +25,14 @@
 
 #include <xlnt/utils/hash_combine.hpp>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
 /// <summary>
 /// Alignment options for use in styles.
 /// </summary>
-class alignment
+class XLNT_CLASS alignment
 {
   public:
     enum class horizontal_alignment

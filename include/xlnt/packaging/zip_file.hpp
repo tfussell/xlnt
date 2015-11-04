@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include "xlnt_config.hpp"
+
 // Note: this comes from https://github.com/tfussell/miniz-cpp
 
 struct mz_zip_archive_tag;
@@ -16,7 +18,7 @@ namespace xlnt {
 /// <summary>
 /// Information about a specific file in zip_file.
 /// </summary>
-struct zip_info
+struct XLNT_CLASS zip_info
 {
     /// <summary>
     /// A struct representing a particular date and time.
@@ -57,7 +59,7 @@ struct zip_info
 /// A compressed archive file that exists in memory which can read
 /// or write to and from the filesystem, std::iostreams, and byte vectors.
 /// </summary>
-class zip_file
+class XLNT_CLASS zip_file
 {
   public:
     zip_file();

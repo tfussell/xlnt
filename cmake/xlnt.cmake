@@ -17,6 +17,7 @@ if(NOT LIB_DEST_DIR)
 endif()
 
 include_directories(../include)
+include_directories(../include/xlnt)
 include_directories(../source)
 include_directories(../third-party/miniz)
 include_directories(../third-party/pugixml/src)

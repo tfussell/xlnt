@@ -3,9 +3,11 @@
 #include <string>
 #include <vector>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
-class default_type
+class XLNT_CLASS default_type
 {
   public:
     default_type();
@@ -27,7 +29,7 @@ class default_type
     std::string content_type_;
 };
 
-class override_type
+class XLNT_CLASS override_type
 {
   public:
     override_type();
@@ -49,7 +51,7 @@ class override_type
     std::string content_type_;
 };
 
-class manifest
+class XLNT_CLASS manifest
 {
   public:
     void add_default_type(const std::string &extension, const std::string &content_type);

@@ -23,9 +23,11 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
-class row_properties
+class XLNT_CLASS row_properties
 {
 public:
     long double height;

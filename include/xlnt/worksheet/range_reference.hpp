@@ -24,9 +24,11 @@
 
 #include <xlnt/cell/cell_reference.hpp>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
-class range_reference
+class XLNT_CLASS range_reference
 {
   public:
     /// <summary>
@@ -92,22 +94,22 @@ class range_reference
     cell_reference bottom_right_;
 };
 
-inline bool operator==(const std::string &reference_string, const range_reference &ref)
+inline bool XLNT_FUNCTION operator==(const std::string &reference_string, const range_reference &ref)
 {
     return ref == reference_string;
 }
 
-inline bool operator==(const char *reference_string, const range_reference &ref)
+inline bool XLNT_FUNCTION operator==(const char *reference_string, const range_reference &ref)
 {
     return ref == reference_string;
 }
 
-inline bool operator!=(const std::string &reference_string, const range_reference &ref)
+inline bool XLNT_FUNCTION operator!=(const std::string &reference_string, const range_reference &ref)
 {
     return ref != reference_string;
 }
 
-inline bool operator!=(const char *reference_string, const range_reference &ref)
+inline bool XLNT_FUNCTION operator!=(const char *reference_string, const range_reference &ref)
 {
     return ref != reference_string;
 }

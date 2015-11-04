@@ -23,9 +23,11 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
-class column_properties
+class XLNT_CLASS column_properties
 {
 public:
     long double width;

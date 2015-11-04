@@ -28,6 +28,8 @@
 
 #include <xlnt/worksheet/worksheet.hpp>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
 class relationship;
@@ -35,7 +37,7 @@ class workbook;
 class worksheet;
 class xml_document;
 
-class worksheet_serializer
+class XLNT_CLASS worksheet_serializer
 {
   public:
     worksheet_serializer(worksheet sheet);

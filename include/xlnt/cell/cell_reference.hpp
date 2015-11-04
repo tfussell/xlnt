@@ -28,6 +28,8 @@
 
 #include <xlnt/cell/types.hpp>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
 class cell_reference;
@@ -37,7 +39,7 @@ class range_reference;
 /// Functor for hashing a cell reference.
 /// Allows for use of std::unordered_set<cell_reference, cel_reference_hash> and similar.
 /// </summary>
-struct cell_reference_hash
+struct XLNT_CLASS cell_reference_hash
 {
     std::size_t operator()(const cell_reference &k) const;
 };
@@ -49,7 +51,7 @@ struct cell_reference_hash
 /// can be initialized from a string of this form or a 1-indexed ordered pair of the form
 /// column, row.
 /// </summary>
-class cell_reference
+class XLNT_CLASS cell_reference
 {
   public:
     /// <summary>

@@ -4,14 +4,14 @@
 #include <string>
 #include <vector>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
-namespace detail {
-struct xml_node_impl;
-} // namespace detail
+namespace detail { struct xml_node_impl; }
 
 class xml_document;
 
-class xml_node
+class XLNT_CLASS xml_node
 {
   public:
     using string_pair = std::pair<std::string, std::string>;

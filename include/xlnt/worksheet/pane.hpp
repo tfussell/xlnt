@@ -22,9 +22,11 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
-class pane
+class XLNT_CLASS pane
 {
 };
 

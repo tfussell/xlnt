@@ -26,11 +26,13 @@
 #include <string>
 #include <vector>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
 class xml_document;
 
-class shared_strings_serializer
+class XLNT_CLASS shared_strings_serializer
 {
   public:
     static bool read_shared_strings(const xml_document &xml, std::vector<std::string> &strings);

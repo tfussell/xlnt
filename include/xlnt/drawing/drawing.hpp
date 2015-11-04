@@ -23,12 +23,14 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
 class worksheet;
 struct drawing_struct;
 
-class drawing
+class XLNT_CLASS drawing
 {
   public:
     drawing();

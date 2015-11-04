@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
 class cell;
@@ -10,7 +12,7 @@ namespace detail { struct comment_impl; }
 /// <summary>
 /// A comment can be applied to a cell to provide extra information.
 /// </summary>
-class comment
+class XLNT_CLASS comment
 {
   public:
     /// <summary>

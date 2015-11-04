@@ -27,9 +27,11 @@
 
 #include <xlnt/utils/hash_combine.hpp>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
-class color
+class XLNT_CLASS color
 {
   public:
     enum class type

@@ -27,9 +27,11 @@
 
 #include <xlnt/styles/color.hpp>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
-enum class border_style
+enum class XLNT_CLASS border_style
 {
     none,
     dashdot,
@@ -47,7 +49,7 @@ enum class border_style
     thin
 };
 
-class side
+class XLNT_CLASS side
 {
   public:
     side();

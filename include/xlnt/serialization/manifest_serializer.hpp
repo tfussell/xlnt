@@ -2,12 +2,14 @@
 
 #include <string>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
 class manifest;
 class xml_document;
 
-class manifest_serializer
+class XLNT_CLASS manifest_serializer
 {
   public:
     manifest_serializer(manifest &m);

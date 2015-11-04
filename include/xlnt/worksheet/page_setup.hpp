@@ -23,9 +23,11 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
-struct page_setup
+struct XLNT_CLASS page_setup
 {
     enum class page_break
     {

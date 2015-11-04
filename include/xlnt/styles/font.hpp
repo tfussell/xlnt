@@ -28,11 +28,13 @@
 #include <xlnt/utils/hash_combine.hpp>
 #include <xlnt/styles/color.hpp>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
 class style;
 
-class font
+class XLNT_CLASS font
 {
   public:
     enum class underline_style

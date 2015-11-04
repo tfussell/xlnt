@@ -30,11 +30,13 @@
 #include <xlnt/styles/number_format.hpp>
 #include <xlnt/styles/protection.hpp>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
 class workbook;
 
-class style
+class XLNT_CLASS style
 {
   public:
     style();

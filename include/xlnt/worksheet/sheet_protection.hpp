@@ -2,9 +2,11 @@
 
 #include <string>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
-class sheet_protection
+class XLNT_CLASS sheet_protection
 {
   public:
     static std::string hash_password(const std::string &password);

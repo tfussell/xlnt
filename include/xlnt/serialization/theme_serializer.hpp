@@ -25,12 +25,14 @@
 
 #include <string>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
 class theme;
 class xml_document;
 
-class theme_serializer
+class XLNT_CLASS theme_serializer
 {
   public:
     bool read_theme(const xml_document &xml, theme &t);

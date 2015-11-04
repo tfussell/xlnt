@@ -27,9 +27,11 @@
 
 #include <xlnt/utils/hash_combine.hpp>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
-class protection
+class XLNT_CLASS protection
 {
   public:
     enum class type

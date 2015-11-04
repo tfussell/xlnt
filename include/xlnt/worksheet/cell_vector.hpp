@@ -7,12 +7,14 @@
 #include <xlnt/worksheet/major_order.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
 class cell;
 class range_reference;
 
-class cell_vector
+class XLNT_CLASS cell_vector
 {
   public:
     template <bool is_const = true>

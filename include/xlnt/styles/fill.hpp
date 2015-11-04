@@ -26,9 +26,11 @@
 #include <xlnt/styles/color.hpp>
 #include <xlnt/utils/hash_combine.hpp>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
-class fill
+class XLNT_CLASS fill
 {
   public:
     enum class type

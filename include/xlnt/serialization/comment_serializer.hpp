@@ -28,11 +28,13 @@
 #include <xlnt/cell/comment.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
 class xml_document;
 
-class comment_serializer
+class XLNT_CLASS comment_serializer
 {
     comment_serializer(worksheet sheet);
 

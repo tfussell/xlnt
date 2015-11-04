@@ -1,6 +1,10 @@
+#pragma once
+
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
-class tokenizer
+class XLNT_CLASS tokenizer
 {
 };
 

@@ -22,9 +22,11 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
-class sheet_view
+class XLNT_CLASS sheet_view
 {
 };
 

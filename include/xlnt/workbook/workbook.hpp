@@ -31,6 +31,8 @@
 
 #include <xlnt/packaging/relationship.hpp>
 
+#include "xlnt_config.hpp"
+
 namespace xlnt {
 
 class alignment;
@@ -55,14 +57,12 @@ class zip_file;
 
 enum class encoding;
 
-namespace detail {
-struct workbook_impl;
-} // namespace detail
+namespace detail { struct workbook_impl; } // namespace detail
 
 /// <summary>
 /// workbook is the container for all other parts of the document.
 /// </summary>
-class workbook
+class XLNT_CLASS workbook
 {
   public:
     class iterator
