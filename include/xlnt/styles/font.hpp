@@ -101,11 +101,11 @@ class XLNT_CLASS font
         return size_;
     }
 
-    void set_name(const std::string &name)
+    void set_name(const string &name)
     {
         name_ = name;
     }
-    std::string get_name() const
+    string get_name() const
     {
         return name_;
     }
@@ -121,7 +121,7 @@ class XLNT_CLASS font
         family_ = family;
     }
     
-    void set_scheme(const std::string &scheme)
+    void set_scheme(const string &scheme)
     {
         has_scheme_ = true;
         scheme_ = scheme;
@@ -174,7 +174,7 @@ class XLNT_CLASS font
   private:
     friend class style;
 
-    std::string name_ = "Calibri";
+    string name_ = "Calibri";
     std::size_t size_ = 11;
     bool bold_ = false;
     bool italic_ = false;
@@ -186,7 +186,7 @@ class XLNT_CLASS font
     bool has_family_ = false;
     std::size_t family_;
     bool has_scheme_ = false;
-    std::string scheme_;
+    string scheme_;
 };
 
 } // namespace xlnt

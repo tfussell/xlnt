@@ -10,7 +10,7 @@
 class TemporaryFile
 {
 public:
-    static std::string CreateTemporaryFilename()
+    static xlnt::string CreateTemporaryFilename()
     {
 #ifdef _MSC_VER
 	std::array<TCHAR, MAX_PATH> buffer;
@@ -26,7 +26,7 @@ public:
 	    throw std::runtime_error("GetTempPath failed");
 	}
     
-	std::string directory(buffer.begin(), buffer.begin() + result);
+	xlnt::string directory(buffer.begin(), buffer.begin() + result);
     
     return PathHelper::WindowsToUniversalPath(directory + "xlnt.xlsx");
 #else
@@ -38,17 +38,17 @@ public:
     {
         if(PathHelper::FileExists(GetFilename()))
         {
-            std::remove(filename_.c_str());
+            std::remove(filename_.data());
         }
     }
 
     ~TemporaryFile()
     {
-        std::remove(filename_.c_str());
+        std::remove(filename_.data());
     }
 
-    std::string GetFilename() const { return filename_; }
+    xlnt::string GetFilename() const { return filename_; }
 
 private:
-    const std::string filename_;
+    const xlnt::string filename_;
 };

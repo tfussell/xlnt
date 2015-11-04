@@ -58,12 +58,12 @@ class XLNT_CLASS header
 {
   public:
     header();
-    void set_text(const std::string &text)
+    void set_text(const string &text)
     {
         default_ = false;
         text_ = text;
     }
-    void set_font_name(const std::string &font_name)
+    void set_font_name(const string &font_name)
     {
         default_ = false;
         font_name_ = font_name;
@@ -73,7 +73,7 @@ class XLNT_CLASS header
         default_ = false;
         font_size_ = font_size;
     }
-    void set_font_color(const std::string &font_color)
+    void set_font_color(const string &font_color)
     {
         default_ = false;
         font_color_ = font_color;
@@ -85,10 +85,10 @@ class XLNT_CLASS header
 
   private:
     bool default_;
-    std::string text_;
-    std::string font_name_;
+    string text_;
+    string font_name_;
     std::size_t font_size_;
-    std::string font_color_;
+    string font_color_;
 };
 
 /// <summary>
@@ -98,12 +98,12 @@ class XLNT_CLASS footer
 {
   public:
     footer();
-    void set_text(const std::string &text)
+    void set_text(const string &text)
     {
         default_ = false;
         text_ = text;
     }
-    void set_font_name(const std::string &font_name)
+    void set_font_name(const string &font_name)
     {
         default_ = false;
         font_name_ = font_name;
@@ -113,7 +113,7 @@ class XLNT_CLASS footer
         default_ = false;
         font_size_ = font_size;
     }
-    void set_font_color(const std::string &font_color)
+    void set_font_color(const string &font_color)
     {
         default_ = false;
         font_color_ = font_color;
@@ -125,10 +125,10 @@ class XLNT_CLASS footer
 
   private:
     bool default_;
-    std::string text_;
-    std::string font_name_;
+    string text_;
+    string font_name_;
     std::size_t font_size_;
-    std::string font_color_;
+    string font_color_;
 };
 
 /// <summary>
@@ -269,21 +269,21 @@ class XLNT_CLASS worksheet
   public:
     worksheet();
     worksheet(const worksheet &rhs);
-    worksheet(workbook &parent_workbook, const std::string &title = std::string());
+    worksheet(workbook &parent_workbook, const string &title = string());
 
-    std::string to_string() const;
+    string to_string() const;
     workbook &get_parent() const;
     void garbage_collect();
 
     // title
-    std::string get_title() const;
-    void set_title(const std::string &title);
-    std::string make_unique_sheet_name(const std::string &value);
+    string get_title() const;
+    void set_title(const string &title);
+    string make_unique_sheet_name(const string &value);
 
     // freeze panes
     cell_reference get_frozen_panes() const;
     void freeze_panes(cell top_left_cell);
-    void freeze_panes(const std::string &top_left_coordinate);
+    void freeze_panes(const string &top_left_coordinate);
     void unfreeze_panes();
     bool has_frozen_panes() const;
 
@@ -295,9 +295,9 @@ class XLNT_CLASS worksheet
     range get_squared_range(column_t min_col, row_t min_row, column_t max_col, row_t max_row);
     const range get_squared_range(column_t min_col, row_t min_row, column_t max_col, row_t max_row) const;
     range rows() const;
-    range rows(const std::string &range_string) const;
+    range rows(const string &range_string) const;
     range rows(int row_offset, int column_offset) const;
-    range rows(const std::string &range_string, int row_offset, int column_offset) const;
+    range rows(const string &range_string, int row_offset, int column_offset) const;
     range columns() const;
     std::list<cell> get_cell_collection();
 
@@ -316,13 +316,13 @@ class XLNT_CLASS worksheet
     cell_reference get_point_pos(int left, int top) const;
     cell_reference get_point_pos(const std::pair<int, int> &point) const;
 
-    std::string unique_sheet_name(const std::string &value) const;
+    string unique_sheet_name(const string &value) const;
 
     // named range
-    void create_named_range(const std::string &name, const range_reference &reference);
-    bool has_named_range(const std::string &name);
-    range get_named_range(const std::string &name);
-    void remove_named_range(const std::string &name);
+    void create_named_range(const string &name, const range_reference &reference);
+    bool has_named_range(const string &name);
+    range get_named_range(const string &name);
+    void remove_named_range(const string &name);
 
     // extents
     row_t get_lowest_row() const;
@@ -333,7 +333,7 @@ class XLNT_CLASS worksheet
     range_reference calculate_dimension() const;
 
     // relationships
-    relationship create_relationship(relationship::type type, const std::string &target_uri);
+    relationship create_relationship(relationship::type type, const string &target_uri);
     const std::vector<relationship> &get_relationships() const;
 
     // charts
@@ -348,12 +348,12 @@ class XLNT_CLASS worksheet
 
     // append
     void append();
-    void append(const std::vector<std::string> &cells);
+    void append(const std::vector<string> &cells);
     void append(const std::vector<int> &cells);
     void append(const std::vector<date> &cells);
     void append(const std::vector<cell> &cells);
-    void append(const std::unordered_map<std::string, std::string> &cells);
-    void append(const std::unordered_map<int, std::string> &cells);
+    void append(const std::unordered_map<string, string> &cells);
+    void append(const std::unordered_map<int, string> &cells);
 
     void append(const std::vector<int>::const_iterator begin, const std::vector<int>::const_iterator end);
 
@@ -367,8 +367,8 @@ class XLNT_CLASS worksheet
     const cell operator[](const cell_reference &reference) const;
     range operator[](const range_reference &reference);
     const range operator[](const range_reference &reference) const;
-    range operator[](const std::string &range_string);
-    const range operator[](const std::string &range_string) const;
+    range operator[](const string &range_string);
+    const range operator[](const string &range_string) const;
     range operator()(const cell_reference &top_left, const cell_reference &bottom_right);
     const range operator()(const cell_reference &top_left, const cell_reference &bottom_right) const;
 
@@ -397,7 +397,7 @@ class XLNT_CLASS worksheet
 
     void set_parent(workbook &wb);
 
-    std::vector<std::string> get_formula_attributes() const;
+    std::vector<string> get_formula_attributes() const;
 
     void set_sheet_state(page_setup::sheet_state state);
 

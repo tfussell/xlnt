@@ -31,7 +31,7 @@ worksheet::worksheet(const worksheet &rhs) : d_(rhs.d_)
 {
 }
 
-worksheet::worksheet(workbook &parent, const std::string &title)
+worksheet::worksheet(workbook &parent, const string &title)
     : d_(title == "" ? parent.create_sheet().d_ : parent.create_sheet(title).d_)
 {
 }
@@ -41,7 +41,7 @@ bool worksheet::has_frozen_panes() const
     return get_frozen_panes() != cell_reference("A1");
 }
 
-std::string worksheet::unique_sheet_name(const std::string &value) const
+string worksheet::unique_sheet_name(const string &value) const
 {
     auto names = get_parent().get_sheet_names();
     auto match = std::find(names.begin(), names.end(), value);
@@ -49,12 +49,12 @@ std::string worksheet::unique_sheet_name(const std::string &value) const
     while (match != names.end())
     {
         append++;
-        match = std::find(names.begin(), names.end(), value + std::to_string(append));
+        match = std::find(names.begin(), names.end(), value + string::from(append));
     }
-    return append == 0 ? value : value + std::to_string(append);
+    return append == 0 ? value : value + string::from(append);
 }
 
-void worksheet::create_named_range(const std::string &name, const range_reference &reference)
+void worksheet::create_named_range(const string &name, const range_reference &reference)
 {
     std::vector<named_range::target> targets;
     targets.push_back({ *this, reference });
@@ -121,7 +121,7 @@ const page_setup &worksheet::get_page_setup() const
     return d_->page_setup_;
 }
 
-std::string worksheet::to_string() const
+string worksheet::to_string() const
 {
     return "<Worksheet \"" + d_->title_ + "\">";
 }
@@ -175,7 +175,7 @@ std::list<cell> worksheet::get_cell_collection()
     return cells;
 }
 
-std::string worksheet::get_title() const
+string worksheet::get_title() const
 {
     if (d_ == nullptr)
     {
@@ -184,7 +184,7 @@ std::string worksheet::get_title() const
     return d_->title_;
 }
 
-void worksheet::set_title(const std::string &title)
+void worksheet::set_title(const string &title)
 {
     d_->title_ = title;
 }
@@ -199,7 +199,7 @@ void worksheet::freeze_panes(xlnt::cell top_left_cell)
     d_->freeze_panes_ = top_left_cell.get_reference();
 }
 
-void worksheet::freeze_panes(const std::string &top_left_coordinate)
+void worksheet::freeze_panes(const string &top_left_coordinate)
 {
     d_->freeze_panes_ = cell_reference(top_left_coordinate);
 }
@@ -236,7 +236,7 @@ bool worksheet::has_row_properties(row_t row) const
     return d_->row_properties_.find(row) != d_->row_properties_.end();
 }
 
-range worksheet::get_named_range(const std::string &name)
+range worksheet::get_named_range(const string &name)
 {
     if (!has_named_range(name))
     {
@@ -348,9 +348,9 @@ const std::vector<relationship> &worksheet::get_relationships() const
     return d_->relationships_;
 }
 
-relationship worksheet::create_relationship(relationship::type type, const std::string &target_uri)
+relationship worksheet::create_relationship(relationship::type type, const string &target_uri)
 {
-    std::string r_id = "rId" + std::to_string(d_->relationships_.size() + 1);
+    string r_id = "rId" + string::from(d_->relationships_.size() + 1);
     d_->relationships_.push_back(relationship(type, r_id, target_uri));
     return d_->relationships_.back();
 }
@@ -418,7 +418,7 @@ void worksheet::append()
     get_cell(cell_reference(1, get_next_row()));
 }
 
-void worksheet::append(const std::vector<std::string> &cells)
+void worksheet::append(const std::vector<string> &cells)
 {
     xlnt::cell_reference next(1, get_next_row());
 
@@ -474,7 +474,7 @@ void worksheet::append(const std::vector<cell> &cells)
     }
 }
 
-void worksheet::append(const std::unordered_map<std::string, std::string> &cells)
+void worksheet::append(const std::unordered_map<string, string> &cells)
 {
     auto row = get_next_row();
 
@@ -484,7 +484,7 @@ void worksheet::append(const std::unordered_map<std::string, std::string> &cells
     }
 }
 
-void worksheet::append(const std::unordered_map<int, std::string> &cells)
+void worksheet::append(const std::unordered_map<int, string> &cells)
 {
     auto row = get_next_row();
 
@@ -510,12 +510,12 @@ xlnt::range worksheet::rows() const
     return get_range(calculate_dimension());
 }
 
-xlnt::range worksheet::rows(const std::string &range_string) const
+xlnt::range worksheet::rows(const string &range_string) const
 {
     return get_range(range_reference(range_string));
 }
 
-xlnt::range worksheet::rows(const std::string &range_string, int row_offset, int column_offset) const
+xlnt::range worksheet::rows(const string &range_string, int row_offset, int column_offset) const
 {
     range_reference reference(range_string);
     return get_range(reference.make_offset(column_offset, row_offset));
@@ -561,7 +561,7 @@ range worksheet::operator[](const range_reference &ref)
     return get_range(ref);
 }
 
-range worksheet::operator[](const std::string &name)
+range worksheet::operator[](const string &name)
 {
     if (has_named_range(name))
     {
@@ -570,12 +570,12 @@ range worksheet::operator[](const std::string &name)
     return get_range(range_reference(name));
 }
 
-bool worksheet::has_named_range(const std::string &name)
+bool worksheet::has_named_range(const string &name)
 {
     return d_->named_ranges_.find(name) != d_->named_ranges_.end();
 }
 
-void worksheet::remove_named_range(const std::string &name)
+void worksheet::remove_named_range(const string &name)
 {
     if (!has_named_range(name))
     {
@@ -632,7 +632,7 @@ void worksheet::set_parent(xlnt::workbook &wb)
     d_->parent_ = &wb;
 }
 
-std::vector<std::string> worksheet::get_formula_attributes() const
+std::vector<string> worksheet::get_formula_attributes() const
 {
     return {};
 }

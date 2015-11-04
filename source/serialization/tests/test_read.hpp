@@ -35,7 +35,7 @@ public:
     void test_read_standard_workbook_from_fileobj()
     {
         auto path = PathHelper::GetDataDirectory("/genuine/empty.xlsx");
-        std::ifstream fo(path, std::ios::binary);
+        std::ifstream fo(path.data(), std::ios::binary);
         
         xlnt::workbook wb;
         xlnt::excel_serializer serializer(wb);
@@ -51,7 +51,7 @@ public:
         auto sheet2 = wb.get_sheet_by_name("Sheet2 - Numbers");
         
         TS_ASSERT_DIFFERS(sheet2, nullptr);
-        TS_ASSERT_EQUALS("This is cell G5", sheet2.get_cell("G5").get_value<std::string>());
+        TS_ASSERT_EQUALS("This is cell G5", sheet2.get_cell("G5").get_value<xlnt::string>());
         TS_ASSERT_EQUALS(18, sheet2.get_cell("D18").get_value<int>());
         TS_ASSERT_EQUALS(true, sheet2.get_cell("G9").get_value<bool>());
         TS_ASSERT_EQUALS(false, sheet2.get_cell("G10").get_value<bool>());
@@ -216,8 +216,8 @@ public:
     
     void test_repair_central_directory()
     {
-        std::string data_a = "foobarbaz" + xlnt::excel_serializer::central_directory_signature();
-        std::string data_b = "bazbarfoo12345678901234567890";
+        xlnt::string data_a = "foobarbaz" + xlnt::excel_serializer::central_directory_signature();
+        xlnt::string data_b = "bazbarfoo12345678901234567890";
         
         auto f = xlnt::excel_serializer::repair_central_directory(data_a + data_b);
         TS_ASSERT_EQUALS(f, data_a + data_b.substr(0, 18));
@@ -259,7 +259,7 @@ public:
         ws.get_cell("A5").set_formula("SUM(A2:A4)");
 
         // Test unicode
-        std::string expected = "=IF(ISBLANK(B16), \"D\xFCsseldorf\", B16)";
+        xlnt::string expected = "=IF(ISBLANK(B16), \"D\xFCsseldorf\", B16)";
         TS_ASSERT(ws.get_cell("A16").get_formula() == expected);
 
         // Test shared forumlae
@@ -365,7 +365,7 @@ public:
     
     void test_read_content_types()
     {
-        std::vector<std::pair<std::string, std::string>> expected = 
+        std::vector<std::pair<xlnt::string, xlnt::string>> expected = 
         {
             {"/xl/workbook.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"},
             {"/xl/worksheets/sheet1.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"},

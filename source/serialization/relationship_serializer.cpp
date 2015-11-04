@@ -1,15 +1,15 @@
 #include <xlnt/serialization/relationship_serializer.hpp>
-
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/packaging/zip_file.hpp>
 #include <xlnt/serialization/xml_document.hpp>
 #include <xlnt/serialization/xml_node.hpp>
+#include <xlnt/utils/string.hpp>
 
-#include "detail/constants.hpp"
+#include <detail/constants.hpp>
 
 namespace {
 
-std::string make_rels_name(const std::string &target)
+xlnt::string make_rels_name(const xlnt::string &target)
 {
     const char sep = '/';
 
@@ -32,7 +32,7 @@ relationship_serializer::relationship_serializer(zip_file &archive) : archive_(a
 {
 }
 
-std::vector<relationship> relationship_serializer::read_relationships(const std::string &target)
+std::vector<relationship> relationship_serializer::read_relationships(const string &target)
 {
     xml_document xml;
     xml.from_string(archive_.read(make_rels_name(target)));
@@ -48,9 +48,9 @@ std::vector<relationship> relationship_serializer::read_relationships(const std:
             continue;
         }
 
-        std::string id = relationship_node.get_attribute("Id");
-        std::string type = relationship_node.get_attribute("Type");
-        std::string rel_target = relationship_node.get_attribute("Target");
+        string id = relationship_node.get_attribute("Id");
+        string type = relationship_node.get_attribute("Type");
+        string rel_target = relationship_node.get_attribute("Target");
 
         relationships.push_back(xlnt::relationship(type, id, rel_target));
     }
@@ -59,7 +59,7 @@ std::vector<relationship> relationship_serializer::read_relationships(const std:
 }
 
 bool relationship_serializer::write_relationships(const std::vector<relationship> &relationships,
-                                                  const std::string &target)
+                                                  const string &target)
 {
     xml_document xml;
 

@@ -12,13 +12,13 @@ namespace {
 /// <remark>
 /// This should maybe be in a utility header so it can be used elsewhere.
 /// </remarks>
-std::vector<std::string> split_string(const std::string &string, char delim)
+std::vector<xlnt::string> split_string(const xlnt::string &string, char delim)
 {
-    std::vector<std::string> split;
-    std::string::size_type previous_index = 0;
+    std::vector<xlnt::string> split;
+    xlnt::string::size_type previous_index = 0;
     auto separator_index = string.find(delim);
 
-    while (separator_index != std::string::npos)
+    while (separator_index != xlnt::string::npos)
     {
         auto part = string.substr(previous_index, separator_index - previous_index);
         split.push_back(part);
@@ -36,9 +36,9 @@ std::vector<std::string> split_string(const std::string &string, char delim)
 
 namespace xlnt {
 
-std::vector<std::pair<std::string, std::string>> split_named_range(const std::string &named_range_string)
+std::vector<std::pair<string, string>> split_named_range(const string &named_range_string)
 {
-    std::vector<std::pair<std::string, std::string>> final;
+    std::vector<std::pair<string, string>> final;
 
     for (auto part : split_string(named_range_string, ','))
     {
@@ -74,7 +74,7 @@ named_range::named_range(const named_range &other)
     *this = other;
 }
 
-named_range::named_range(const std::string &name, const std::vector<named_range::target> &targets)
+named_range::named_range(const string &name, const std::vector<named_range::target> &targets)
     : name_(name), targets_(targets)
 {
 }

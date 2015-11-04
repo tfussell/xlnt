@@ -35,7 +35,7 @@ public:
     {
         xlnt::worksheet ws(wb_);
         
-        const std::vector<std::vector<std::string>> expected =
+        const std::vector<std::vector<xlnt::string>> expected =
         {
             { "A1", "B1", "C1" },
             { "A2", "B2", "C2" },
@@ -64,7 +64,7 @@ public:
     {
         std::size_t row = 0;
         std::size_t column = 0;
-        std::string coordinate = "A1";
+        xlnt::string coordinate = "A1";
         
         xlnt::worksheet ws(wb_);
         
@@ -85,7 +85,7 @@ public:
     {
         xlnt::worksheet ws(wb_);
         
-        const std::vector<std::vector<std::string>> expected =
+        const std::vector<std::vector<xlnt::string>> expected =
         {
             { "A1", "B1", "C1" },
             { "A2", "B2", "C2" },
@@ -115,7 +115,7 @@ public:
         xlnt::worksheet ws(wb_);
         auto rows = ws.rows("A1:C4", 1, 3);
         
-        const std::vector<std::vector<std::string>> expected =
+        const std::vector<std::vector<xlnt::string>> expected =
         {
             { "D2", "E2", "F2" },
             { "D3", "E3", "F3" },
@@ -222,9 +222,9 @@ public:
     {
         xlnt::worksheet ws(wb_);
         ws.get_cell("A1").set_hyperlink("http://test.com");
-        TS_ASSERT_EQUALS("http://test.com", ws.get_cell("A1").get_value<std::string>());
+        TS_ASSERT_EQUALS("http://test.com", ws.get_cell("A1").get_value<xlnt::string>());
         ws.get_cell("A1").set_value("test");
-        TS_ASSERT_EQUALS("test", ws.get_cell("A1").get_value<std::string>());
+        TS_ASSERT_EQUALS("test", ws.get_cell("A1").get_value<xlnt::string>());
         TS_ASSERT_EQUALS(ws.get_cell("A1").get_hyperlink().get_target_uri(), "http://test.com");
     }
     
@@ -243,25 +243,25 @@ public:
     void test_append()
     {
         xlnt::worksheet ws(wb_);
-        ws.append(std::vector<std::string> {"value"});
-        TS_ASSERT_EQUALS("value", ws.get_cell("A1").get_value<std::string>());
+        ws.append(std::vector<xlnt::string> {"value"});
+        TS_ASSERT_EQUALS("value", ws.get_cell("A1").get_value<xlnt::string>());
     }
     
     void test_append_list()
     {
         xlnt::worksheet ws(wb_);
         
-        ws.append(std::vector<std::string> {"This is A1", "This is B1"});
+        ws.append(std::vector<xlnt::string> {"This is A1", "This is B1"});
         
-        TS_ASSERT_EQUALS("This is A1", ws.get_cell("A1").get_value<std::string>());
-        TS_ASSERT_EQUALS("This is B1", ws.get_cell("B1").get_value<std::string>());
+        TS_ASSERT_EQUALS("This is A1", ws.get_cell("A1").get_value<xlnt::string>());
+        TS_ASSERT_EQUALS("This is B1", ws.get_cell("B1").get_value<xlnt::string>());
     }
     
     void test_append_dict_letter()
     {
         xlnt::worksheet ws(wb_);
         
-        const std::unordered_map<std::string, std::string> dict_letter =
+        const std::unordered_map<xlnt::string, xlnt::string> dict_letter =
         {
             { "A", "This is A1" },
             { "C", "This is C1" }
@@ -269,15 +269,15 @@ public:
         
         ws.append(dict_letter);
         
-        TS_ASSERT_EQUALS("This is A1", ws.get_cell("A1").get_value<std::string>());
-        TS_ASSERT_EQUALS("This is C1", ws.get_cell("C1").get_value<std::string>());
+        TS_ASSERT_EQUALS("This is A1", ws.get_cell("A1").get_value<xlnt::string>());
+        TS_ASSERT_EQUALS("This is C1", ws.get_cell("C1").get_value<xlnt::string>());
     }
     
     void test_append_dict_index()
     {
         xlnt::worksheet ws(wb_);
         
-        const std::unordered_map<int, std::string> dict_index =
+        const std::unordered_map<int, xlnt::string> dict_index =
         {
             { 1, "This is A1" },
             { 3, "This is C1" }
@@ -285,8 +285,8 @@ public:
         
         ws.append(dict_index);
         
-        TS_ASSERT_EQUALS("This is A1", ws.get_cell("A1").get_value<std::string>());
-        TS_ASSERT_EQUALS("This is C1", ws.get_cell("C1").get_value<std::string>());
+        TS_ASSERT_EQUALS("This is A1", ws.get_cell("A1").get_value<xlnt::string>());
+        TS_ASSERT_EQUALS("This is C1", ws.get_cell("C1").get_value<xlnt::string>());
     }
     
     void _test_bad_append()
@@ -317,15 +317,15 @@ public:
     {
         xlnt::worksheet ws(wb_);
         
-        ws.append(std::vector<std::string> {"This is A1", "This is B1"});
-        ws.append(std::vector<std::string> {"This is A2", "This is B2"});
+        ws.append(std::vector<xlnt::string> {"This is A1", "This is B1"});
+        ws.append(std::vector<xlnt::string> {"This is A2", "This is B2"});
         
         auto vals = ws.get_range("A1:B2");
         
-        TS_ASSERT_EQUALS(vals[0][0].get_value<std::string>(), "This is A1");
-        TS_ASSERT_EQUALS(vals[0][1].get_value<std::string>(), "This is B1");
-        TS_ASSERT_EQUALS(vals[1][0].get_value<std::string>(), "This is A2");
-        TS_ASSERT_EQUALS(vals[1][1].get_value<std::string>(), "This is B2");
+        TS_ASSERT_EQUALS(vals[0][0].get_value<xlnt::string>(), "This is A1");
+        TS_ASSERT_EQUALS(vals[0][1].get_value<xlnt::string>(), "This is B1");
+        TS_ASSERT_EQUALS(vals[1][0].get_value<xlnt::string>(), "This is A2");
+        TS_ASSERT_EQUALS(vals[1][1].get_value<xlnt::string>(), "This is B2");
     }
     
     void _test_append_cell()
@@ -358,9 +358,9 @@ public:
         auto first_row = rows[0];
         auto last_row = rows[8];
         
-        TS_ASSERT_EQUALS(first_row[0].get_value<std::string>(), "first");
+        TS_ASSERT_EQUALS(first_row[0].get_value<xlnt::string>(), "first");
         TS_ASSERT_EQUALS(first_row[0].get_reference(), "A1");
-        TS_ASSERT_EQUALS(last_row[2].get_value<std::string>(), "last");
+        TS_ASSERT_EQUALS(last_row[2].get_value<xlnt::string>(), "last");
     }
     
     void test_no_cols()
@@ -382,8 +382,8 @@ public:
         
         TS_ASSERT_EQUALS(cols.length(), 3);
         
-        TS_ASSERT_EQUALS(cols[0][0].get_value<std::string>(), "first");
-        TS_ASSERT_EQUALS(cols[2][8].get_value<std::string>(), "last");
+        TS_ASSERT_EQUALS(cols[0][0].get_value<xlnt::string>(), "first");
+        TS_ASSERT_EQUALS(cols[2][8].get_value<xlnt::string>(), "last");
     }
     
     void test_auto_filter()
@@ -578,7 +578,7 @@ public:
 
     void test_set_bad_title()
     {
-        std::string title(50, 'X');
+        xlnt::string title(std::string(50, 'X').c_str());
         TS_ASSERT_THROWS(wb_.create_sheet(title), xlnt::sheet_title_exception);
     }
     
@@ -884,7 +884,7 @@ public:
         ws.get_header_footer().get_right_footer().set_font_size(14);
         ws.get_header_footer().get_right_footer().set_font_color("AABBCC");
         
-        std::string expected_xml_string =
+        xlnt::string expected_xml_string =
         "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
         "  <sheetPr>"
         "    <outlinePr summaryRight=\"1\" summaryBelow=\"1\"/>"

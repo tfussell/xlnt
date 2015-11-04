@@ -17,7 +17,7 @@ class XLNT_CLASS manifest_serializer
     void read_manifest(const xml_document &xml);
     xml_document write_manifest() const;
 
-    std::string determine_document_type() const;
+    string determine_document_type() const;
 
   private:
     manifest &manifest_;

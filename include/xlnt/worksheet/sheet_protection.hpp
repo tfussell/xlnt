@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string>
+#include <xlnt/utils/string.hpp>
 
 #include "xlnt_config.hpp"
 
@@ -9,16 +9,16 @@ namespace xlnt {
 class XLNT_CLASS sheet_protection
 {
   public:
-    static std::string hash_password(const std::string &password);
+    static string hash_password(const string &password);
 
-    void set_password(const std::string &password);
-    std::string get_hashed_password() const
+    void set_password(const string &password);
+    string get_hashed_password() const
     {
         return hashed_password_;
     }
 
   private:
-    std::string hashed_password_;
+    string hashed_password_;
 };
 
 } // namespace xlnt

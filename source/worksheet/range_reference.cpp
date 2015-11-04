@@ -16,15 +16,15 @@ range_reference::range_reference() : range_reference("A1")
 {
 }
 
-range_reference::range_reference(const char *range_string) : range_reference(std::string(range_string))
+range_reference::range_reference(const char *range_string) : range_reference(string(range_string))
 {
 }
 
-range_reference::range_reference(const std::string &range_string) : top_left_("A1"), bottom_right_("A1")
+range_reference::range_reference(const string &range_string) : top_left_("A1"), bottom_right_("A1")
 {
     auto colon_index = range_string.find(':');
 
-    if (colon_index != std::string::npos)
+    if (colon_index != string::npos)
     {
         top_left_ = cell_reference(range_string.substr(0, colon_index));
         bottom_right_ = cell_reference(range_string.substr(colon_index + 1));
@@ -68,7 +68,7 @@ bool range_reference::is_single_cell() const
     return get_width() == 0 && get_height() == 0;
 }
 
-std::string range_reference::to_string() const
+string range_reference::to_string() const
 {
     return top_left_.to_string() + ":" + bottom_right_.to_string();
 }

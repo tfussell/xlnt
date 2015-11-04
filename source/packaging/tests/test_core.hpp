@@ -28,7 +28,7 @@ public:
     {
         auto path = PathHelper::GetDataDirectory() + "/genuine/empty.xlsx";
         
-        const std::vector<std::string> expected_titles = {"Sheet1 - Text", "Sheet2 - Numbers", "Sheet3 - Formulas", "Sheet4 - Dates"};
+        const std::vector<xlnt::string> expected_titles = {"Sheet1 - Text", "Sheet2 - Numbers", "Sheet3 - Formulas", "Sheet4 - Dates"};
         
         std::size_t i = 0;
         
@@ -57,7 +57,7 @@ public:
     {
         auto path = PathHelper::GetDataDirectory() + "/genuine/empty_libre.xlsx";
         
-        const std::vector<std::string> expected_titles = {"Sheet1 - Text", "Sheet2 - Numbers", "Sheet3 - Formulas", "Sheet4 - Dates"};
+        const std::vector<xlnt::string> expected_titles = {"Sheet1 - Text", "Sheet2 - Numbers", "Sheet3 - Formulas", "Sheet4 - Dates"};
         
         std::size_t i = 0;
         

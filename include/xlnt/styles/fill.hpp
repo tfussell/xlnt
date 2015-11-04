@@ -79,7 +79,7 @@ class XLNT_CLASS fill
         type_ = t;
     }
 
-    std::string get_pattern_type_string() const
+    string get_pattern_type_string() const
     {
         if (type_ != type::pattern)
         {
@@ -131,7 +131,7 @@ class XLNT_CLASS fill
         }
     }
 
-    std::string get_gradient_type_string() const
+    string get_gradient_type_string() const
     {
         if (type_ != type::gradient)
         {

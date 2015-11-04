@@ -15,7 +15,7 @@ public:
         xlnt::style_serializer writer(wb);
         xlnt::xml_document observed;
         writer.write_number_formats(observed.add_child("numFmts"));
-        std::string expected =
+        xlnt::string expected =
         "    <numFmts count=\"1\">"
         "    <numFmt formatCode=\"YYYY\" numFmtId=\"164\"></numFmt>"
         "    </numFmts>";

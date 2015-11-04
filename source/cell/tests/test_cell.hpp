@@ -145,7 +145,7 @@ public:
         
         cell.set_value("=");
         TS_ASSERT(cell.get_data_type() == xlnt::cell::type::string);
-        TS_ASSERT(cell.get_value<std::string>() == "=");
+        TS_ASSERT(cell.get_value<xlnt::string>() == "=");
         TS_ASSERT(!cell.has_formula());
     }
     
@@ -228,7 +228,7 @@ public:
         cell.set_value(xlnt::datetime::today());
         cell.set_value("testme");
         TS_ASSERT(!cell.is_date());
-        TS_ASSERT(cell.get_value<std::string>() == "testme");
+        TS_ASSERT(cell.get_value<xlnt::string>() == "testme");
     }
     
     void test_cell_formatted_as_date3()
@@ -252,14 +252,15 @@ public:
         
         for(auto i : illegal_chrs)
         {
-            std::string str(1, i);
+			xlnt::string str;
+			str.append(char(i));
             TS_ASSERT_THROWS(cell.set_value(str), xlnt::illegal_character_error);
         }
         
-        cell.set_value(std::string(1, 33));
-        cell.set_value(std::string(1, 9));  // Tab
-        cell.set_value(std::string(1, 10));  // Newline
-        cell.set_value(std::string(1, 13));  // Carriage return
+        cell.set_value(xlnt::string("\33"));
+        cell.set_value(xlnt::string("\t"));  // Tab
+        cell.set_value(xlnt::string("\n"));  // Newline
+        cell.set_value(xlnt::string("\r"));  // Carriage return
         cell.set_value(" Leading and trailing spaces are legal ");
     }
     /*

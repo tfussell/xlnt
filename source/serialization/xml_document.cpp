@@ -26,14 +26,14 @@ xml_document::~xml_document()
 {
 }
 
-void xml_document::set_encoding(const std::string &encoding)
+void xml_document::set_encoding(const string &encoding)
 {
     d_->encoding = encoding;
 }
 
-void xml_document::add_namespace(const std::string &id, const std::string &uri)
+void xml_document::add_namespace(const string &id, const string &uri)
 {
-    d_->doc.first_child().append_attribute((id.empty() ? "xmlns" : "xmlns:" + id).c_str()).set_value(uri.c_str());
+    d_->doc.first_child().append_attribute((id.empty() ? "xmlns" : "xmlns:" + id).data()).set_value(uri.data());
 }
 
 xml_node xml_document::add_child(const xml_node &child)
@@ -42,9 +42,9 @@ xml_node xml_document::add_child(const xml_node &child)
     return xml_node(detail::xml_node_impl(child_node));
 }
 
-xml_node xml_document::add_child(const std::string &child_name)
+xml_node xml_document::add_child(const string &child_name)
 {
-    auto child = d_->doc.root().append_child(child_name.c_str());
+    auto child = d_->doc.root().append_child(child_name.data());
     return xml_node(detail::xml_node_impl(child));
 }
 
@@ -58,26 +58,26 @@ const xml_node xml_document::get_root() const
     return xml_node(detail::xml_node_impl(d_->doc.root()));
 }
 
-std::string xml_document::to_string() const
+string xml_document::to_string() const
 {
     return xml_serializer::serialize(*this);
 }
 
-xml_document &xml_document::from_string(const std::string &xml_string)
+xml_document &xml_document::from_string(const string &xml_string)
 {
-	d_->doc.load(xml_string.c_str());
+	d_->doc.load(xml_string.data());
 
     return *this;
 }
 
-xml_node xml_document::get_child(const std::string &child_name)
+xml_node xml_document::get_child(const string &child_name)
 {
-    return xml_node(detail::xml_node_impl(d_->doc.child(child_name.c_str())));
+    return xml_node(detail::xml_node_impl(d_->doc.child(child_name.data())));
 }
 
-const xml_node xml_document::get_child(const std::string &child_name) const
+const xml_node xml_document::get_child(const string &child_name) const
 {
-    return xml_node(detail::xml_node_impl(d_->doc.child(child_name.c_str())));
+    return xml_node(detail::xml_node_impl(d_->doc.child(child_name.data())));
 }
 
 } // namespace xlnt

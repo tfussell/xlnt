@@ -24,10 +24,10 @@
 #pragma once
 
 #include <memory>
-#include <string>
 #include <unordered_map>
 
 #include <xlnt/cell/types.hpp>
+#include <xlnt/utils/string.hpp>
 
 #include "xlnt_config.hpp"
 
@@ -87,7 +87,7 @@ public:
     /// <summary>
     /// Return a map of error strings such as \#DIV/0! and their associated indices.
     /// </summary>
-    static const std::unordered_map<std::string, int> &error_codes();
+    static const std::unordered_map<string, int> &error_codes();
 
     // TODO: Should it be possible to construct and use a cell without a parent worksheet?
     //(cont'd) If so, it would need to be responsible for allocating and deleting its PIMPL.
@@ -121,7 +121,7 @@ public:
     /// <summary>
     /// Return the value of this cell as an instance of type T.
     /// Overloads exist for most C++ fundamental types like bool, int, etc. as well
-    /// as for std::string and xlnt datetime types: date, time, datetime, and timedelta.
+    /// as for string and xlnt datetime types: date, time, datetime, and timedelta.
     /// </summary>
     template <typename T>
     T get_value() const;
@@ -135,7 +135,8 @@ public:
     /// <summary>
     /// Set the value of this cell to the given value.
     /// Overloads exist for most C++ fundamental types like bool, int, etc. as well
-    /// as for std::string and xlnt datetime types: date, time, datetime, and timedelta.
+    /// as for string and xlnt datetime types: date, time, datetime, and timedelta.
+	/// </summary>
     template <typename T>
     void set_value(T value);
 
@@ -194,7 +195,7 @@ public:
     /// <summary>
     /// Add a hyperlink to this cell pointing to the URI of the given value.
     /// </summary>
-    void set_hyperlink(const std::string &value);
+    void set_hyperlink(const string &value);
     
     /// <summary>
     /// Return true if this cell has a hyperlink set.
@@ -292,8 +293,8 @@ public:
     bool has_comment() const;
 
     // formula
-    std::string get_formula() const;
-    void set_formula(const std::string &formula);
+    string get_formula() const;
+    void set_formula(const string &formula);
     void clear_formula();
     bool has_formula() const;
 
@@ -302,13 +303,13 @@ public:
     /// <summary>
     /// Returns a string describing this cell like <Cell Sheet.A1>.
     /// </summary>
-    std::string to_repr() const;
+    string to_repr() const;
 
     /// <summary>
     /// Returns a string representing the value of this cell. If the data type is not a string,
     /// it will be converted according to the number format.
     /// </summary>
-    std::string to_string() const;
+    string to_string() const;
 
     // merging
     
@@ -328,12 +329,12 @@ public:
     /// <summary>
     /// Return the error string that is stored in this cell.
     /// </summary>
-    std::string get_error() const;
+    string get_error() const;
     
     /// <summary>
     /// Directly assign the value of this cell to be the given error.
     /// </summary>
-    void set_error(const std::string &error);
+    void set_error(const string &error);
 
     /// <summary>
     /// Return a cell from this cell's parent workbook at
@@ -409,7 +410,7 @@ private:
 /// Convenience function for writing cell to an ostream.
 /// Uses cell::to_string() internally.
 /// </summary>
-inline std::ostream & XLNT_FUNCTION operator<<(std::ostream &stream, const xlnt::cell &cell)
+inline std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)
 {
     return stream << cell.to_string();
 }

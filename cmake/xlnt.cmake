@@ -21,6 +21,7 @@ include_directories(../include/xlnt)
 include_directories(../source)
 include_directories(../third-party/miniz)
 include_directories(../third-party/pugixml/src)
+include_directories(../third-party/utfcpp)
 
 FILE(GLOB ROOT_HEADERS ../include/xlnt/*.hpp)
 FILE(GLOB CELL_HEADERS ../include/xlnt/cell/*.hpp)

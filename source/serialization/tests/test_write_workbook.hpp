@@ -35,7 +35,7 @@ public:
         xlnt::workbook_serializer serializer(wb);
         auto observed = serializer.write_workbook();
         
-        std::string expected_string =
+        xlnt::string expected_string =
         "<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
         "    <workbookPr/>"
         "    <bookViews>"
@@ -124,7 +124,7 @@ public:
         auto observed_node = serializer.write_named_ranges();
         xlnt::xml_document observed;
         observed.add_child(observed_node);
-        std::string expected =
+        xlnt::string expected =
         "<root>"
             "<s:definedName xmlns:s=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" name=\"test_range\">'Sheet'!$A$1:$B$5</s:definedName>"
         "</root>";
@@ -146,7 +146,7 @@ public:
         xlnt::workbook_serializer serializer(wb);
         auto observed = serializer.write_workbook();
 
-        std::string expected =
+        xlnt::string expected =
         "<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
         "    <workbookPr codeName=\"MyWB\"/>"
         "    <bookViews>"
@@ -171,7 +171,7 @@ public:
         xlnt::xml_document observed;
         observed.from_string(archive.read("_rels/.rels"));
         
-        std::string expected =
+        xlnt::string expected =
         "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
         "    <Relationship Id=\"rId1\" Target=\"xl/workbook.xml\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\"/>"
         "    <Relationship Id=\"rId2\" Target=\"docProps/core.xml\" Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties\"/>"

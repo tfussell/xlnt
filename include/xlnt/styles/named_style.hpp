@@ -42,7 +42,7 @@ class XLNT_CLASS named_style
     }
 
   private:
-    std::string name_;
+    string name_;
     style style_;
 };
 

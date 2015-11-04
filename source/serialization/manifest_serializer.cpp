@@ -52,14 +52,14 @@ xml_document manifest_serializer::write_manifest() const
     return xml;
 }
 
-std::string manifest_serializer::determine_document_type() const
+string manifest_serializer::determine_document_type() const
 {
     if (!manifest_.has_override_type(constants::ArcWorkbook()))
     {
         return "unsupported";
     }
 
-    std::string type = manifest_.get_override_type(constants::ArcWorkbook());
+    string type = manifest_.get_override_type(constants::ArcWorkbook());
 
     if (type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml")
     {

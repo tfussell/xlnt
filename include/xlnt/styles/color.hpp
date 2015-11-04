@@ -23,9 +23,8 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <string>
-
 #include <xlnt/utils/hash_combine.hpp>
+#include <xlnt/utils/string.hpp>
 
 #include "xlnt_config.hpp"
 
@@ -61,7 +60,7 @@ class XLNT_CLASS color
     {
     }
 
-    color(type t, const std::string &v) : type_(t), rgb_string_(v)
+    color(type t, const string &v) : type_(t), rgb_string_(v)
     {
     }
 
@@ -118,7 +117,7 @@ class XLNT_CLASS color
         return index_;
     }
 
-    std::string get_rgb_string() const
+    string get_rgb_string() const
     {
         if (type_ != type::rgb)
         {
@@ -152,7 +151,7 @@ class XLNT_CLASS color
   private:
     type type_ = type::indexed;
     std::size_t index_ = 0;
-    std::string rgb_string_;
+    string rgb_string_;
 };
 
 } // namespace xlnt

@@ -42,7 +42,7 @@ class xml_node;
 class XLNT_CLASS workbook_serializer
 {
   public:
-    using string_pair = std::pair<std::string, std::string>;
+    using string_pair = std::pair<string, string>;
 
     workbook_serializer(workbook &wb);
 

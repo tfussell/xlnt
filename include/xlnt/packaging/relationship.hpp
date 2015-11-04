@@ -23,7 +23,7 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <string>
+#include <xlnt/utils/string.hpp>
 
 namespace xlnt {
 
@@ -65,7 +65,7 @@ class relationship
         custom_xml
     };
 
-    static type type_from_string(const std::string &type_string)
+    static type type_from_string(const string &type_string)
     {
         if (type_string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties")
         {
@@ -111,7 +111,7 @@ class relationship
         return type::invalid;
     }
 
-    static std::string type_to_string(type t)
+    static string type_to_string(type t)
     {
         switch (t)
         {
@@ -141,16 +141,16 @@ class relationship
     }
 
     relationship();
-    relationship(const std::string &t, const std::string &r_id = "", const std::string &target_uri = "")
+    relationship(const string &t, const string &r_id = "", const string &target_uri = "")
         : relationship(type_from_string(t), r_id, target_uri)
     {
     }
-    relationship(type t, const std::string &r_id = "", const std::string &target_uri = "");
+    relationship(type t, const string &r_id = "", const string &target_uri = "");
 
     /// <summary>
     /// gets a string that identifies the relationship.
     /// </summary>
-    std::string get_id() const
+    string get_id() const
     {
         return id_;
     }
@@ -158,7 +158,7 @@ class relationship
     /// <summary>
     /// gets the URI of the package or part that owns the relationship.
     /// </summary>
-    std::string get_source_uri() const
+    string get_source_uri() const
     {
         return source_uri_;
     }
@@ -174,7 +174,7 @@ class relationship
     /// <summary>
     /// gets the URI of the target resource of the relationship.
     /// </summary>
-    std::string get_target_uri() const
+    string get_target_uri() const
     {
         return target_uri_;
     }
@@ -183,22 +183,25 @@ class relationship
     {
         return type_;
     }
-    std::string get_type_string() const
+    string get_type_string() const
     {
         return type_to_string(type_);
     }
 
     friend bool operator==(const relationship &left, const relationship &right)
     {
-        return left.type_ == right.type_ && left.id_ == right.id_ && left.source_uri_ == right.source_uri_ &&
-               left.target_uri_ == right.target_uri_ && left.target_mode_ == right.target_mode_;
+        return left.type_ == right.type_ 
+			&& left.id_ == right.id_ 
+			&& left.source_uri_ == right.source_uri_ 
+			&& left.target_uri_ == right.target_uri_ 
+			&& left.target_mode_ == right.target_mode_;
     }
 
   private:
     type type_;
-    std::string id_;
-    std::string source_uri_;
-    std::string target_uri_;
+    string id_;
+    string source_uri_;
+    string target_uri_;
     target_mode target_mode_;
 };
 

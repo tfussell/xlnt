@@ -23,10 +23,10 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 #include <utility>
 
 #include <xlnt/cell/types.hpp>
+#include <xlnt/utils/string.hpp>
 
 #include "xlnt_config.hpp"
 
@@ -57,7 +57,7 @@ class XLNT_CLASS cell_reference
     /// <summary>
     /// Split a coordinate string like "A1" into an equivalent pair like {"A", 1}.
     /// </summary>
-    static std::pair<std::string, row_t> split_reference(const std::string &reference_string);
+    static std::pair<string, row_t> split_reference(const string &reference_string);
 
     /// <summary>
     /// Split a coordinate string like "A1" into an equivalent pair like {"A", 1}.
@@ -65,7 +65,7 @@ class XLNT_CLASS cell_reference
     /// if column part or row part are prefixed by a dollar-sign indicating they
     /// are absolute, otherwise false.
     /// </summary>
-    static std::pair<std::string, row_t> split_reference(const std::string &reference_string, bool &absolute_column,
+    static std::pair<string, row_t> split_reference(const string &reference_string, bool &absolute_column,
                                                          bool &absolute_row);
 
     // constructors
@@ -85,13 +85,13 @@ class XLNT_CLASS cell_reference
     /// <summary>
     /// Constructs a cell_reference from a string reprenting a cell coordinate (e.g. $B14).
     /// </summary>
-    cell_reference(const std::string &reference_string);
+    cell_reference(const string &reference_string);
     
     /// <summary>
     /// Constructs a cell_reference from a string reprenting a column (e.g. A) and
     /// a 1-indexed row.
     /// </summary>
-    cell_reference(const std::string &column, row_t row);
+    cell_reference(const string &column, row_t row);
     
     /// <summary>
     /// Constructs a cell_reference from a 1-indexed column index and row index.
@@ -163,7 +163,7 @@ class XLNT_CLASS cell_reference
     /// <summary>
     /// Set the column of this reference from a string that identifies a particular column.
     /// </summary>
-    void set_column(const std::string &column_string)
+    void set_column(const string &column_string)
     {
         column_ = column_t(column_string);
     }
@@ -211,7 +211,7 @@ class XLNT_CLASS cell_reference
     /// <summary>
     /// Return a string like "A1" for cell_reference(1, 1).
     /// </summary>
-    std::string to_string() const;
+    string to_string() const;
 
     /// <summary>
     /// Return a 1x1 range_reference containing only this cell_reference.
@@ -237,7 +237,7 @@ class XLNT_CLASS cell_reference
     /// Construct a cell_reference from reference_string and return the result
     /// of their comparison.
     /// </summary>
-    bool operator==(const std::string &reference_string) const
+    bool operator==(const string &reference_string) const
     {
         return *this == cell_reference(reference_string);
     }
@@ -248,7 +248,7 @@ class XLNT_CLASS cell_reference
     /// </summary>
     bool operator==(const char *reference_string) const
     {
-        return *this == std::string(reference_string);
+        return *this == string(reference_string);
     }
     
     /// <summary>
@@ -264,7 +264,7 @@ class XLNT_CLASS cell_reference
     /// Construct a cell_reference from reference_string and return the result
     /// of their comparison.
     /// </summary>
-    bool operator!=(const std::string &reference_string) const
+    bool operator!=(const string &reference_string) const
     {
         return *this != cell_reference(reference_string);
     }
@@ -275,7 +275,7 @@ class XLNT_CLASS cell_reference
     /// </summary>
     bool operator!=(const char *reference_string) const
     {
-        return *this != std::string(reference_string);
+        return *this != string(reference_string);
     }
 
     //TODO: are these useful? maybe get rid of them

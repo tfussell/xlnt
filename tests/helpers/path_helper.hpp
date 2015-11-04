@@ -22,37 +22,37 @@
 class PathHelper
 {
 public:
-    static std::string read_file(const std::string &filename)
+    static xlnt::string read_file(const xlnt::string &filename)
     {
-        std::ifstream f(filename);
+        std::ifstream f(filename.data());
         std::ostringstream ss;
         ss << f.rdbuf();
         
-        return ss.str();
+        return ss.str().c_str();
     }
     
-    static std::string WindowsToUniversalPath(const std::string &windows_path)
+    static xlnt::string WindowsToUniversalPath(const xlnt::string &windows_path)
     {
-        std::string fixed;
-        std::stringstream ss(windows_path);
+        xlnt::string fixed;
+        std::stringstream ss(windows_path.data());
         std::string part;
         
         while(std::getline(ss, part, '\\'))
         {
             if(fixed == "")
             {
-                fixed = part;
+                fixed = part.c_str();
             }
             else
             {
-                fixed += "/" + part;
+                fixed += "/" + xlnt::string(part.c_str());
             }
         }
         
         return fixed;
     }
     
-    static std::string GetExecutableDirectory()
+    static xlnt::string GetExecutableDirectory()
     {
         
 #ifdef __APPLE__
@@ -76,7 +76,7 @@ public:
         {
             throw std::runtime_error("GetModuleFileName failed or buffer was too small");
         }
-        return WindowsToUniversalPath(std::string(buffer.begin(), buffer.begin() + result - 13)) + "/";
+        return WindowsToUniversalPath(xlnt::string(buffer.begin(), buffer.begin() + result - 13)) + "/";
         
 #else
 	char arg1[20];
@@ -84,39 +84,40 @@ public:
 	
 	sprintf(arg1, "/proc/%d/exe", getpid());
 	readlink(arg1, exepath, 1024);
-	return std::string(exepath).substr(0, std::strlen(exepath) - 9);
+
+	return xlnt::string(exepath).substr(0, std::strlen(exepath) - 9);
 #endif
         
     }
     
-    static std::string GetDataDirectory(const std::string &append = "")
+    static xlnt::string GetDataDirectory(const xlnt::string &append = "")
     {
         return GetExecutableDirectory() + "../tests/data" + append;
     }
     
-    static void CopyFile(const std::string &source, const std::string &destination, bool overwrite)
+    static void CopyFile(const xlnt::string &source, const xlnt::string &destination, bool overwrite)
     {
         if(!overwrite && FileExists(destination))
         {
             throw std::runtime_error("destination file already exists and overwrite==false");
         }
         
-        std::ifstream src(source, std::ios::binary);
-        std::ofstream dst(destination, std::ios::binary);
+        std::ifstream src(source.data(), std::ios::binary);
+        std::ofstream dst(destination.data(), std::ios::binary);
         
         dst << src.rdbuf();
     }
 
-    static void DeleteFile(const std::string &path)
+    static void DeleteFile(const xlnt::string &path)
     {
-      std::remove(path.c_str());
+      std::remove(path.data());
     }
     
-    static bool FileExists(const std::string &path)
+    static bool FileExists(const xlnt::string &path)
     {        
 #ifdef _MSC_VER
-        
-        std::wstring path_wide(path.begin(), path.end());
+		std::string path_stdstring = path.data();
+        std::wstring path_wide(path_stdstring.begin(), path_stdstring.end());
         return PathFileExists(path_wide.c_str()) && !PathIsDirectory(path_wide.c_str());
         
 #else

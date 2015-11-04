@@ -22,6 +22,8 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <string>
+
 // Change these values for programs using this library.
 
 namespace xlnt {
@@ -55,9 +57,9 @@ enum class limit_style
 const limit_style LimitStyle = limit_style::openpyxl;
 
 // If no API is defined, assume default
-#ifndef XLNT_API
 #ifdef _MSC_VER
-#ifdef _DLL
+#if !defined(XLNT_API) && defined(SHARED)
+#ifdef XLNT_EXPORT
 #define XLNT_API __declspec(dllexport)
 #else
 #define XLNT_API __declspec(dllimport)

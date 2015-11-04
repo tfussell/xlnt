@@ -63,7 +63,7 @@ struct workbook_impl
     std::vector<relationship> relationships_;
     std::vector<relationship> root_relationships_;
     std::vector<drawing> drawings_;
-    std::vector<std::string> shared_strings_;
+    std::vector<string> shared_strings_;
 
     document_properties properties_;
 

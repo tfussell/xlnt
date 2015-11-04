@@ -23,8 +23,9 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <string>
 #include <vector>
+
+#include <xlnt/utils/string.hpp>
 
 #include "xlnt_config.hpp"
 
@@ -35,8 +36,8 @@ class xml_document;
 class XLNT_CLASS shared_strings_serializer
 {
   public:
-    static bool read_shared_strings(const xml_document &xml, std::vector<std::string> &strings);
-    static xml_document write_shared_strings(const std::vector<std::string> &strings);
+    static bool read_shared_strings(const xml_document &xml, std::vector<string> &strings);
+    static xml_document write_shared_strings(const std::vector<string> &strings);
 };
 
 } // namespace xlnt

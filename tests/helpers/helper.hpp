@@ -26,8 +26,8 @@ public:
     struct comparison_result
     {
         difference_type difference;
-        std::string value_left;
-        std::string value_right;
+        xlnt::string value_left;
+        xlnt::string value_right;
         operator bool() const { return difference == difference_type::equivalent; }
     };
     
@@ -36,21 +36,21 @@ public:
         return compare_xml(expected.get_root(), observed.get_root());
     }
     
-    static comparison_result compare_xml(const std::string &expected, const xlnt::xml_document &observed)
+    static comparison_result compare_xml(const xlnt::string &expected, const xlnt::xml_document &observed)
     {
-        std::string expected_contents = expected;
+        xlnt::string expected_contents = expected;
         
         if(PathHelper::FileExists(expected))
         {
-            std::ifstream f(expected);
+            std::ifstream f(expected.data());
             std::ostringstream s;
             f >> s.rdbuf();
             
-            expected_contents = s.str();
+            expected_contents = s.str().c_str();
         }
         
 		xlnt::xml_document expected_xml;
-		expected_xml.from_string(expected_contents);
+		expected_xml.from_string(expected_contents.data());
 
         return compare_xml(expected_xml.get_root(), observed.get_root());
     }
@@ -58,18 +58,18 @@ public:
     static comparison_result compare_xml(const std::string &left_contents, const std::string &right_contents)
     {
 		xlnt::xml_document left_xml;
-		left_xml.from_string(left_contents);
+		left_xml.from_string(left_contents.c_str());
 
 		xlnt::xml_document right_xml;
-		right_xml.from_string(right_contents);
+		right_xml.from_string(right_contents.c_str());
 
         return compare_xml(left_xml.get_root(), right_xml.get_root());
     }
     
     static comparison_result compare_xml(const xlnt::xml_node &left, const xlnt::xml_node &right)
     {
-        std::string left_temp = left.get_name();
-        std::string right_temp = right.get_name();
+        xlnt::string left_temp = left.get_name();
+        xlnt::string right_temp = right.get_name();
         
         if(left_temp != right_temp)
         {

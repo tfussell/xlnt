@@ -24,7 +24,8 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <string>
+
+#include <xlnt/utils/string.hpp>
 
 #include "xlnt_config.hpp"
 
@@ -56,7 +57,7 @@ public:
     /// restrict our column names to 1 - 3 characters, each in the range A - Z.
     /// Strings outside this range and malformed strings will throw xlnt::column_string_index_exception.
     /// </remarks>
-    static index_t column_index_from_string(const std::string &column_string);
+    static index_t column_index_from_string(const string &column_string);
 
     /// <summary>
     /// Convert a column number into a column letter (3 -> 'C')
@@ -66,7 +67,7 @@ public:
     /// order. These indices are 1-based, and can be converted to ASCII
     /// ordinals by adding 64.
     /// </remarks>
-    static std::string column_string_from_index(index_t column_index);
+    static string column_string_from_index(index_t column_index);
     
     /// <summary>
     /// Default column_t is the first (left-most) column.
@@ -81,12 +82,12 @@ public:
     /// <summary>
     /// Construct a column from a string.
     /// </summary>
-    explicit column_t(const std::string &column_string) : index(column_index_from_string(column_string)) {}
+    explicit column_t(const string &column_string) : index(column_index_from_string(column_string)) {}
     
     /// <summary>
     /// Construct a column from a string.
     /// </summary>
-    explicit column_t(const char *column_string) : column_t(std::string(column_string)) {}
+    explicit column_t(const char *column_string) : column_t(string(column_string)) {}
     
     /// <summary>
     /// Copy constructor
@@ -101,7 +102,7 @@ public:
     /// <summary>
     /// Return a string representation of this column index.
     /// </summary>
-    std::string column_string() const { return column_string_from_index(index); }
+    string column_string() const { return column_string_from_index(index); }
     
     /// <summary>
     /// Set this column to be the same as rhs's and return reference to self.
@@ -111,7 +112,7 @@ public:
     /// <summary>
     /// Set this column to be equal to rhs and return reference to self.
     /// </summary>
-    column_t &operator=(const std::string &rhs) { return *this = column_t(rhs); }
+    column_t &operator=(const string &rhs) { return *this = column_t(rhs); }
     
     /// <summary>
     /// Set this column to be equal to rhs and return reference to self.
@@ -141,7 +142,7 @@ public:
     /// <summary>
     /// Return true if this column refers to the same column as other.
     /// </summary>
-    bool operator==(const std::string &other) const { return *this == column_t(other); }
+    bool operator==(const string &other) const { return *this == column_t(other); }
     
     /// <summary>
     /// Return true if this column refers to the same column as other.
@@ -161,7 +162,7 @@ public:
     /// <summary>
     /// Return true if this column doesn't refer to the same column as other.
     /// </summary>
-    bool operator!=(const std::string &other) const { return !(*this == other); }
+    bool operator!=(const string &other) const { return !(*this == other); }
     
     /// <summary>
     /// Return true if this column doesn't refer to the same column as other.

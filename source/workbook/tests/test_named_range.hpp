@@ -10,9 +10,9 @@ class test_named_range : public CxxTest::TestSuite
 public:
     void test_split()
     {
-        using string_pair = std::pair<std::string, std::string>;
+        using string_pair = std::pair<xlnt::string, xlnt::string>;
         using string_pair_vector = std::vector<string_pair>;
-        using expected_pair = std::pair<std::string, string_pair_vector>;
+        using expected_pair = std::pair<xlnt::string, string_pair_vector>;
         
         std::vector<expected_pair> expected_pairs =
         {
