@@ -57,11 +57,11 @@ add_custom_target (generate-test-runner
 
 add_dependencies(xlnt.test generate-test-runner)
 
-if(${CMAKE_GENERATOR} STREQUAL "Unix Makefiles")
-  add_custom_command(
-    TARGET xlnt.test
-    POST_BUILD
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../bin/xlnt.test
-    VERBATIM
-  )
+if(AUTORUN_TESTS)
+    add_custom_command(
+        TARGET xlnt.test
+        POST_BUILD
+        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../bin/xlnt.test
+        VERBATIM
+    )
 endif()

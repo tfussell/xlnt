@@ -1,5 +1,21 @@
 project(xlnt)
 
+set(PROJECT_VENDOR "Thomas Fussell")
+set(PROJECT_CONTACT "thomas.fussellgmail.com")
+set(PROJECT_URL "https://github.com/tfussell/xlnt")
+set(PROJECT_DESCRIPTION "user-friendly xlsx library for C++14")
+include(VERSION.cmake)
+
+if(NOT CMAKE_INSTALL_PREFIX)
+  set(CMAKE_INSTALL_PREFIX /usr/local)
+endif()
+
+set(INC_DEST_DIR ${CMAKE_INSTALL_PREFIX}/include)
+
+if(NOT LIB_DEST_DIR)
+  set(LIB_DEST_DIR ${CMAKE_INSTALL_PREFIX}/lib)
+endif()
+
 include_directories(../include)
 include_directories(../source)
 include_directories(../third-party/miniz)
@@ -40,7 +56,19 @@ SET(MINIZ ../third-party/miniz/miniz.c ../third-party/miniz/miniz.h)
 
 SET(PUGIXML ../third-party/pugixml/src/pugixml.hpp ../third-party/pugixml/src/pugixml.cpp ../third-party/pugixml/src/pugiconfig.hpp)
 
-add_library(xlnt STATIC ${HEADERS} ${SOURCES} ${MINIZ} ${PUGIXML})
+if(SHARED)
+    add_library(xlnt SHARED ${HEADERS} ${SOURCES} ${MINIZ} ${PUGIXML})
+else()
+    add_library(xlnt STATIC ${HEADERS} ${SOURCES} ${MINIZ} ${PUGIXML})
+endif()
+
+SET_TARGET_PROPERTIES(
+  xlnt
+  PROPERTIES
+  VERSION ${PROJECT_VERSION_FULL}
+  SOVERSION ${PROJECT_VERSION}
+  INSTALL_NAME_DIR "${LIB_DEST_DIR}"
+)
 
 source_group(xlnt FILES ${ROOT_HEADERS})
 source_group(detail FILES ${DETAIL_HEADERS} ${DETAIL_SOURCES})
@@ -57,3 +85,38 @@ source_group(workbook FILES ${WORKBOOK_HEADERS} ${WORKBOOK_SOURCES})
 source_group(worksheet FILES ${WORKSHEET_HEADERS} ${WORKSHEET_SOURCES})
 source_group(third-party\\miniz FILES ${MINIZ})
 source_group(third-party\\pugixml FILES ${PUGIXML})
+
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+SET(PKG_CONFIG_LIBDIR ${LIB_DEST_DIR})
+SET(PKG_CONFIG_INCLUDEDIR ${INC_DEST_DIR})
+SET(PKG_CONFIG_LIBS "-L\${libdir} -lxlnt")
+SET(PKG_CONFIG_CFLAGS "-I\${includedir}")
+
+CONFIGURE_FILE(
+  "${CMAKE_CURRENT_SOURCE_DIR}/pkg-config.pc.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc"
+)
+
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+    IMMEDIATE @ONLY)
+
+
+INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../include/xlnt 
+        DESTINATION include
+        PATTERN ".DS_Store" EXCLUDE
+)
+
+install(TARGETS xlnt
+        LIBRARY DESTINATION ${LIB_DEST_DIR}
+        ARCHIVE DESTINATION ${LIB_DEST_DIR}
+)
+
+INSTALL(FILES "${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc"
+        DESTINATION ${LIB_DEST_DIR}/pkgconfig
+)
+
+add_custom_target(uninstall
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)

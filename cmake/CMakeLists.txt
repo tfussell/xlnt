@@ -6,6 +6,11 @@ endif()
 
 project(xlnt)
 
+option(SHARED "Set to OFF to build static libraries" ON)
+option(BUILD_EXAMPLES "Build examples" OFF)
+option(BUILD_TESTS "Build tests runner" OFF)
+option(AUTORUN_TESTS "Automatically run tests after building" OFF)
+
 if(APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.10)
 endif(APPLE)
@@ -33,5 +38,8 @@ foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/../bin)
 endforeach(OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES)
 
-include(xlnt.test.cmake)
+if(BUILD_TESTS)
+    include(xlnt.test.cmake)
+endif()
+
 include(xlnt.cmake)
