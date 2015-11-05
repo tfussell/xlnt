@@ -37,9 +37,9 @@ class XLNT_CLASS range_reference
     static range_reference make_absolute(const range_reference &relative_reference);
 
     range_reference();
-    range_reference(const string &range_string);
-    range_reference(const char *range_string);
-    range_reference(const std::pair<cell_reference, cell_reference> &reference_pair);
+    explicit range_reference(const string &range_string);
+    explicit range_reference(const char *range_string);
+    explicit range_reference(const std::pair<cell_reference, cell_reference> &reference_pair);
     range_reference(const cell_reference &start, const cell_reference &end);
     range_reference(column_t column_index_start, row_t row_index_start, column_t column_index_end, row_t row_index_end);
 
@@ -71,19 +71,24 @@ class XLNT_CLASS range_reference
     string to_string() const;
 
     bool operator==(const range_reference &comparand) const;
+
     bool operator==(const string &reference_string) const
     {
         return *this == range_reference(reference_string);
     }
+
     bool operator==(const char *reference_string) const
     {
         return *this == string(reference_string);
     }
+
     bool operator!=(const range_reference &comparand) const;
+
     bool operator!=(const string &reference_string) const
     {
         return *this != range_reference(reference_string);
     }
+
     bool operator!=(const char *reference_string) const
     {
         return *this != string(reference_string);

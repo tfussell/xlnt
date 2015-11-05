@@ -1071,7 +1071,7 @@ bool cell::has_hyperlink() const
 
 void cell::set_hyperlink(const string &hyperlink)
 {
-    if (hyperlink.length() == 0 || std::find(hyperlink.begin(), hyperlink.end(), ':') == hyperlink.end())
+    if (hyperlink.length() == 0 || hyperlink.find(':') == std::string::npos)
     {
         throw data_type_exception();
     }

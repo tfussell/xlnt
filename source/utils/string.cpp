@@ -540,22 +540,12 @@ void string::append(code_point c)
 
 string::code_point string::at(size_type index)
 {
-	auto iter = begin();
-	size_type i = 0;
-
-	while (i < index) ++iter;
-
-	return *iter;
+	return *(begin() + index);
 }
 
 const string::code_point string::at(size_type index) const
 {
-	auto iter = begin();
-	size_type i = 0;
-
-	while (i < index) ++iter;
-
-	return *iter;
+	return *(begin() + index);
 }
 
 bool string::operator==(const_byte_pointer str) const

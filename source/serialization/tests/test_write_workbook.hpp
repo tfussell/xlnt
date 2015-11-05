@@ -16,7 +16,7 @@ public:
         xlnt::workbook wb;
         auto ws = wb.create_sheet();
         ws.get_cell("F42").set_value("hello");
-        ws.get_auto_filter() = "A1:F1";
+        ws.auto_filter("A1:F1");
     
         xlnt::workbook_serializer serializer(wb);
         auto observed = serializer.write_workbook();

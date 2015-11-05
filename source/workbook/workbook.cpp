@@ -924,4 +924,9 @@ void workbook::add_shared_string(const string &shared)
     d_->shared_strings_.push_back(shared);
 }
 
+void workbook::create_named_range(const string &name, worksheet owner, const string &reference_string)
+{
+	create_named_range(name, owner, range_reference(reference_string));
+}
+
 } // namespace xlnt

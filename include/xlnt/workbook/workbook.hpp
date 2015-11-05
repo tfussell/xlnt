@@ -174,6 +174,7 @@ class XLNT_CLASS workbook
     // named ranges
     std::vector<named_range> get_named_ranges() const;
     void create_named_range(const string &name, worksheet worksheet, const range_reference &reference);
+	void create_named_range(const string &name, worksheet worksheet, const string &reference_string);
     bool has_named_range(const string &name) const;
     range get_named_range(const string &name);
     void remove_named_range(const string &name);

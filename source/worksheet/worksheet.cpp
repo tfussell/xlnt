@@ -63,7 +63,7 @@ void worksheet::create_named_range(const string &name, const range_reference &re
 
 range worksheet::operator()(const xlnt::cell_reference &top_left, const xlnt::cell_reference &bottom_right)
 {
-    return get_range({ top_left, bottom_right });
+    return get_range(range_reference(top_left, bottom_right));
 }
 
 cell worksheet::operator[](const cell_reference &ref)
@@ -89,6 +89,26 @@ const margins &worksheet::get_page_margins() const
 void worksheet::auto_filter(const range_reference &reference)
 {
     d_->auto_filter_ = reference;
+}
+
+void worksheet::auto_filter(const string &reference_string)
+{
+	auto_filter(range_reference(reference_string));
+}
+
+void worksheet::merge_cells(const string &reference_string)
+{
+	merge_cells(range_reference(reference_string));
+}
+
+void worksheet::unmerge_cells(const string &reference_string)
+{
+	unmerge_cells(range_reference(reference_string));
+}
+
+range worksheet::get_range(const string &reference_string)
+{
+	return get_range(range_reference(reference_string));
 }
 
 void worksheet::auto_filter(const xlnt::range &range)
