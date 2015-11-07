@@ -62,7 +62,7 @@ public:
         
         if (_NSGetExecutablePath(path.data(), &size) == 0)
         {
-            return std::string(path.begin(), std::find(path.begin(), path.end(), '\0') - 9);
+            return xlnt::string(path.begin(), std::find(path.begin(), path.end(), '\0') - 9);
         }
         
         throw std::runtime_error("buffer too small, " + std::to_string(path.size()) + ", should be: " + std::to_string(size));
@@ -126,7 +126,7 @@ public:
 	{
 	    struct stat fileAtt;
         
-	    if (stat(path.c_str(), &fileAtt) == 0)
+	    if (stat(path.data(), &fileAtt) == 0)
 	    {
 	        return S_ISREG(fileAtt.st_mode);
 	    }

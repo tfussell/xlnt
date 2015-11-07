@@ -27,7 +27,7 @@
 
 #include <xlnt/cell/types.hpp>
 
-#include "xlnt_config.hpp"
+#include <xlnt/xlnt_config.hpp>
 
 namespace xlnt {
 
@@ -48,7 +48,7 @@ class XLNT_CLASS cell_coordinates_exception
 class XLNT_CLASS illegal_character_error
 {
   public:
-    illegal_character_error(char c);
+    illegal_character_error(utf32_char c);
 };
 
 /// <summary>

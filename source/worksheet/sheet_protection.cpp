@@ -23,7 +23,7 @@ string sheet_protection::hash_password(const string &plaintext_password)
 {
     int password = 0x0000;
 
-	for (int i = 1; i <= plaintext_password.bytes(); i++)
+	for (int i = 1; i <= plaintext_password.num_bytes(); i++)
     {
 		char character = plaintext_password.data()[i - 1];
         int value = character << i;
@@ -33,13 +33,13 @@ string sheet_protection::hash_password(const string &plaintext_password)
         i++;
     }
 
-    password ^= plaintext_password.bytes();
+    password ^= plaintext_password.num_bytes();
     password ^= 0xCE4B;
 
     string hashed = int_to_hex(password);
 	auto iter = hashed.data();
 
-	while (iter != hashed.data() + hashed.bytes())
+	while (iter != hashed.data() + hashed.num_bytes())
 	{
 		*iter = std::toupper(*iter, std::locale::classic());
 	}

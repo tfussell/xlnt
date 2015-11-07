@@ -289,7 +289,7 @@ void zip_file::append_comment()
         auto comment_length = std::min(static_cast<uint16_t>(comment.length()), std::numeric_limits<uint16_t>::max());
         buffer_[buffer_.size() - 2] = static_cast<char>(comment_length);
         buffer_[buffer_.size() - 1] = static_cast<char>(comment_length >> 8);
-        std::copy(comment.data(), comment.data() + comment.bytes(), std::back_inserter(buffer_));
+        std::copy(comment.data(), comment.data() + comment.num_bytes(), std::back_inserter(buffer_));
     }
 }
 

@@ -47,9 +47,9 @@ public:
     {
         xlnt::workbook wb;
         auto new_sheet = wb.create_sheet();
-        std::string title = "my sheet";
-        new_sheet.set_title(title.c_str());
-        auto found_sheet = wb.get_sheet_by_name(title.c_str());
+        xlnt::string title = "my sheet";
+        new_sheet.set_title(title);
+        auto found_sheet = wb.get_sheet_by_name(title);
         TS_ASSERT_EQUALS(new_sheet, found_sheet);
     }
     
@@ -120,9 +120,9 @@ public:
     {
         xlnt::workbook wb;
         auto new_sheet = wb.create_sheet();
-        std::string title = "my sheet";
-        new_sheet.set_title(title.c_str());
-        auto found_sheet = wb.get_sheet_by_name(title.c_str());
+        xlnt::string title = "my sheet";
+        new_sheet.set_title(title);
+        auto found_sheet = wb.get_sheet_by_name(title);
         TS_ASSERT_EQUALS(new_sheet, found_sheet);
     }
 

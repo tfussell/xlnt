@@ -351,7 +351,7 @@ std::size_t workbook::index_from_ws_filename(const string &ws_filename)
     sheet_index_string = sheet_index_string.substr(sheet_index_string.find_last_of('/'));
     auto iter = sheet_index_string.end();
     --iter;
-    while (isdigit((*iter).get()))
+    while (isdigit((*iter)))
         --iter;
     auto first_digit = static_cast<std::size_t>(iter - sheet_index_string.begin());
     sheet_index_string = sheet_index_string.substr(first_digit + 1);
@@ -388,9 +388,9 @@ worksheet workbook::create_sheet(const string &title)
         throw sheet_title_exception(title);
     }
 
-    if (std::find_if(title.data(), title.data() + title.bytes(), [](char c) {
+    if (std::find_if(title.data(), title.data() + title.num_bytes(), [](char c) {
             return c == '*' || c == ':' || c == '/' || c == '\\' || c == '?' || c == '[' || c == ']';
-        }) != title.data() + title.bytes())
+        }) != title.data() + title.num_bytes())
     {
         throw sheet_title_exception(title);
     }

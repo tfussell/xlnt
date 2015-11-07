@@ -34,7 +34,7 @@ cell_coordinates_exception::cell_coordinates_exception(const string &coord_strin
 {
 }
 
-illegal_character_error::illegal_character_error(char c)
+illegal_character_error::illegal_character_error(xlnt::utf32_char c)
 {
 }
 

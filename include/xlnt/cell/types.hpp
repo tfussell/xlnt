@@ -27,7 +27,7 @@
 
 #include <xlnt/utils/string.hpp>
 
-#include "xlnt_config.hpp"
+#include <xlnt/xlnt_config.hpp>
 
 // We might want to change these types for various optimizations in the future
 // so use typedefs.

@@ -225,7 +225,7 @@ xml_document workbook_serializer::write_workbook() const
             sheet_index_string = sheet_index_string.substr(sheet_index_string.find_last_of('/'));
             auto iter = sheet_index_string.end();
             --iter;
-            while (isdigit((*iter).get()))
+            while (isdigit(*iter))
                 --iter;
             auto first_digit = iter - sheet_index_string.begin();
             sheet_index_string = sheet_index_string.substr(static_cast<string::size_type>(first_digit + 1));

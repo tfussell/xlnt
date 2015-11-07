@@ -257,7 +257,7 @@ public:
             TS_ASSERT_THROWS(cell.set_value(str), xlnt::illegal_character_error);
         }
         
-        cell.set_value(xlnt::string("\33"));
+        cell.set_value(xlnt::string("\41")); // !
         cell.set_value(xlnt::string("\t"));  // Tab
         cell.set_value(xlnt::string("\n"));  // Newline
         cell.set_value(xlnt::string("\r"));  // Carriage return
@@ -361,7 +361,7 @@ public:
     {
         /*
         unsigned char pound = 163;
-        auto test_string = "Compount Value (" + std::string(pound) + ")";
+        auto test_string = "Compount Value (" + xlnt::string(pound) + ")";
         auto ws = wb.create_sheet();
         cell = ws[xlnt::cell_reference("A1")];
         TS_ASSERT_THROWS(cell.check_string(test_string), xlnt::unicode_decode_error);

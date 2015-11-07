@@ -88,71 +88,53 @@ std::pair<string, row_t> cell_reference::split_reference(const string &reference
 {
     absolute_column = false;
     absolute_row = false;
-
-    // Convert a coordinate string like 'B12' to a tuple ('B', 12)
-    bool column_part = true;
-
-    string column_string;
-
-    for (auto character : reference_string)
+    
+    auto is_alpha = [](string::code_point c)
     {
-        auto upper = std::toupper(character.get(), std::locale::classic());
-
-        if (std::isalpha(character.get(), std::locale::classic()))
-        {
-            if (column_part)
-            {
-                column_string.append(upper);
-            }
-            else
-            {
-                throw cell_coordinates_exception(reference_string);
-            }
-        }
-        else if (character == '$')
-        {
-            if (column_part)
-            {
-                if (column_string.empty())
-                {
-                    column_string.append(upper);
-                }
-                else
-                {
-                    column_part = false;
-                }
-            }
-        }
-        else
-        {
-            if (column_part)
-            {
-                column_part = false;
-            }
-            else if (!std::isdigit(character.get(), std::locale::classic()))
-            {
-                throw cell_coordinates_exception(reference_string);
-            }
-        }
-    }
-
-    string row_string = reference_string.substr(column_string.length());
-
-    if (row_string.length() == 0)
+        return (c >= U'A' && c <= U'Z') || (c >= U'a' && c <= U'z');
+    };
+    
+    auto upper_ref_string = reference_string.to_upper();
+    auto iter = upper_ref_string.begin();
+    auto end = upper_ref_string.end();
+    
+    while(iter != end && (is_alpha(*iter) || *iter == U'$'))
     {
-        throw cell_coordinates_exception(reference_string);
+        ++iter;
     }
-
-    if (column_string[0] == '$')
-    {
-        absolute_row = true;
-        column_string = column_string.substr(1);
-    }
-
-    if (row_string[0] == '$')
+    
+    string column_string(upper_ref_string.begin(), iter);
+    
+    if (column_string.length() > 1 && column_string.front() == '$')
     {
         absolute_column = true;
-        row_string = row_string.substr(1);
+        column_string.erase(0);
+    }
+
+    if (column_string.length() > 1 && column_string.back() == '$')
+    {
+        absolute_row = true;
+        column_string.erase(column_string.length() - 1);
+    }
+    
+    string row_string(iter, end);
+    
+    auto is_digit = [](string::code_point c)
+    {
+        return (c >= U'0' && c <= U'9');
+    };
+    
+    for(auto c : row_string)
+    {
+        if(!is_digit(c))
+        {
+            throw cell_coordinates_exception(reference_string);
+        }
+    }
+    
+    if (column_string.length() == 0 || row_string.length() == 0)
+    {
+        throw cell_coordinates_exception(reference_string);
     }
 
     return { column_string, row_string.to<row_t>() };

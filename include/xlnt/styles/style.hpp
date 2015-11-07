@@ -30,7 +30,7 @@
 #include <xlnt/styles/number_format.hpp>
 #include <xlnt/styles/protection.hpp>
 
-#include "xlnt_config.hpp"
+#include <xlnt/xlnt_config.hpp>
 
 namespace xlnt {
 

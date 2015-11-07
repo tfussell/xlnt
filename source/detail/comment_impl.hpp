@@ -1,6 +1,7 @@
 #pragma once
 
 #include <xlnt/cell/comment.hpp>
+#include <xlnt/utils/string.hpp>
 
 namespace xlnt {
 namespace detail {

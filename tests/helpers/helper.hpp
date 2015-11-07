@@ -55,13 +55,13 @@ public:
         return compare_xml(expected_xml.get_root(), observed.get_root());
     }
     
-    static comparison_result compare_xml(const std::string &left_contents, const std::string &right_contents)
+    static comparison_result compare_xml(const xlnt::string &left_contents, const xlnt::string &right_contents)
     {
 		xlnt::xml_document left_xml;
-		left_xml.from_string(left_contents.c_str());
+		left_xml.from_string(left_contents.data());
 
 		xlnt::xml_document right_xml;
-		right_xml.from_string(right_contents.c_str());
+		right_xml.from_string(right_contents.data());
 
         return compare_xml(left_xml.get_root(), right_xml.get_root());
     }

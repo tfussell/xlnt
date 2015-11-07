@@ -144,7 +144,7 @@ bool is_valid_color(const xlnt::string &color)
 
         for (std::size_t i = 0; i < color.length(); i++)
         {
-            if (std::toupper(color[i].get()) != std::toupper(other[i].get()))
+            if (std::toupper(color[i]) != std::toupper(other[i]))
             {
                 return false;
             }
@@ -335,7 +335,7 @@ bool is_valid_locale(const xlnt::string &locale_string)
 
     for (auto c : country)
     {
-        if (!is_hex(static_cast<char>(std::toupper(c.get()))))
+        if (!is_hex(static_cast<char>(std::toupper(c))))
         {
             return false;
         }
@@ -699,12 +699,12 @@ xlnt::string format_section(long double number, const section &format, xlnt::cal
 
         if (decimal_pos != xlnt::string::npos)
         {
-            result[decimal_pos] = ',';
+            result.replace(decimal_pos, U',');
             decimal_pos += 3;
 
             while (decimal_pos < result.length())
             {
-                result.remove(result.back());
+                result.erase(result.length());
             }
         }
     }
@@ -1071,7 +1071,7 @@ bool cell::has_hyperlink() const
 
 void cell::set_hyperlink(const string &hyperlink)
 {
-    if (hyperlink.length() == 0 || hyperlink.find(':') == std::string::npos)
+    if (hyperlink.length() == 0 || hyperlink.find(':') == xlnt::string::npos)
     {
         throw data_type_exception();
     }

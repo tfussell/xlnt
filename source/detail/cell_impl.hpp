@@ -30,11 +30,11 @@ xlnt::string check_string(xlnt::string s)
         s = s.substr(0, 32767); // max string length in Excel
     }
 
-    for (xlnt::string::code_point c : s)
+    for (auto c : s)
     {
-        if (c >= 0 && (c <= 8 || c == 11 || c == 12 || (c >= 14 && c <= 31)))
+        if (c <= 8 || c == 11 || c == 12 || (c >= 14 && c <= 31))
         {
-            throw xlnt::illegal_character_error(0);
+            throw xlnt::illegal_character_error(c);
         }
     }
 
@@ -68,7 +68,49 @@ std::pair<bool, long double> cast_percentage(const xlnt::string &s)
 std::pair<bool, xlnt::time> cast_time(const xlnt::string &s)
 {
     xlnt::time result;
-    return { false, result };
+
+    try
+    {
+        auto last_colon = s.find_last_of(':');
+        
+        if (last_colon == xlnt::string::npos)
+        {
+            return { false, result };
+        }
+        
+        double seconds = s.substr(last_colon + 1).to<double>();
+        result.second = static_cast<int>(seconds);
+        result.microsecond = static_cast<int>((seconds - static_cast<double>(result.second)) * 1e6);
+
+        auto first_colon = s.find(':');
+
+        if (first_colon == last_colon)
+        {
+            auto decimal_pos = s.find('.');
+            
+            if (decimal_pos != xlnt::string::npos)
+            {
+                result.minute = s.substr(0, first_colon).to<int>();
+            }
+            else
+            {
+                result.hour = s.substr(0, first_colon).to<int>();
+                result.minute = result.second;
+                result.second = 0;
+            }
+        }
+        else
+        {
+            result.hour = s.substr(0, first_colon).to<int>();
+            result.minute = s.substr(first_colon + 1, last_colon - first_colon - 1).to<int>();
+        }
+    }
+    catch (std::invalid_argument)
+    {
+        return { false, result };
+    }
+
+    return { true, result };
 }
 
 } // namespace

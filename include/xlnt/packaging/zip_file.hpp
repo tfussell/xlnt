@@ -8,7 +8,7 @@
 
 #include <xlnt/utils/string.hpp>
 
-#include "xlnt_config.hpp"
+#include <xlnt/xlnt_config.hpp>
 
 // Note: this comes from https://github.com/tfussell/miniz-cpp
 

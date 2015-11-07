@@ -1,6 +1,6 @@
 #pragma once
 
-#include "xlnt_config.hpp"
+#include <xlnt/xlnt_config.hpp>
 
 namespace xlnt {
 

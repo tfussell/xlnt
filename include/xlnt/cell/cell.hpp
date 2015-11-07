@@ -29,7 +29,7 @@
 #include <xlnt/cell/types.hpp>
 #include <xlnt/utils/string.hpp>
 
-#include "xlnt_config.hpp"
+#include <xlnt/xlnt_config.hpp>
 
 namespace xlnt {
 
@@ -412,7 +412,7 @@ private:
 /// </summary>
 inline std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)
 {
-    return stream << cell.to_string();
+    return stream << std::string(cell.to_string().data());
 }
 
 } // namespace xlnt

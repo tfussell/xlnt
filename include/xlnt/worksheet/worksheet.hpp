@@ -33,7 +33,7 @@
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/worksheet/page_setup.hpp>
 
-#include "xlnt_config.hpp"
+#include <xlnt/xlnt_config.hpp>
 
 namespace xlnt {
 

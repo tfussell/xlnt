@@ -24,7 +24,7 @@
 
 #include <xlnt/cell/cell_reference.hpp>
 
-#include "xlnt_config.hpp"
+#include <xlnt/xlnt_config.hpp>
 
 namespace xlnt {
 

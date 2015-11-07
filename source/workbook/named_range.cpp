@@ -27,7 +27,8 @@ std::vector<xlnt::string> split_string(const xlnt::string &string, char delim)
         separator_index = string.find(delim, previous_index);
     }
 
-    split.push_back(string.substr(previous_index));
+    auto part = string.substr(previous_index);
+    split.push_back(part);
 
     return split;
 }

@@ -16,15 +16,24 @@ column_t::index_t column_t::column_index_from_string(const string &column_string
 
     column_t::index_t column_index = 0;
     int place = 1;
+    
+    auto is_alpha = [](string::code_point c)
+    {
+        return (c >= U'A' && c <= U'Z') || (c >= U'a' && c <= U'z');
+    };
+    
+    auto column_string_upper = column_string.to_upper();
 
     for (int i = static_cast<int>(column_string.length()) - 1; i >= 0; i--)
     {
-        if (!std::isalpha(column_string[static_cast<std::size_t>(i)].get(), std::locale::classic()))
+        auto index = static_cast<std::size_t>(i);
+        
+        if (!is_alpha(column_string[index]))
         {
             throw column_string_index_exception();
         }
 
-        auto char_index = std::toupper(column_string[static_cast<std::size_t>(i)].get(), std::locale::classic()) - U'A';
+        auto char_index = column_string_upper[index] - U'A';
 
         column_index += static_cast<column_t::index_t>((char_index + 1) * place);
         place *= 26;
