@@ -99,14 +99,6 @@ string string::from(std::uint64_t i)
 	return string(std::to_string(i).c_str());
 }
 
-#ifdef __APPLE__
-template<>
-string string::from(std::size_t i)
-{
-	return string(std::to_string(i).c_str());
-}
-#endif
-
 template<>
 string string::from(float i)
 {
@@ -124,14 +116,6 @@ string string::from(long double i)
 {
 	return string(std::to_string(i).c_str());
 }
-
-#ifdef XLNT_STD_STRING
-template<>
-string string::from(const std::string &s)
-{
-    return string(s.data());
-}
-#endif
 
 xlnt::string::iterator::iterator(xlnt::string *parent, size_type index)
     : parent_(parent),
@@ -280,12 +264,6 @@ string::string(const string &str, size_type offset, size_type len) : string()
     *data_ = *part.data_;
     *code_point_byte_offsets_ = *part.code_point_byte_offsets_;
 }
-
-#ifdef XLNT_STD_STRING
-string::string(const std::string &str) : string(str.data())
-{
-}
-#endif
 
 string::string(const utf_mb_wide_string str) : string()
 {
@@ -610,6 +588,10 @@ double string::to() const
 }
 
 #ifdef XLNT_STD_STRING
+string::string(const std::string &str) : string(str.data())
+{
+}
+
 template<>
 std::string string::to() const
 {
@@ -904,5 +886,45 @@ string::size_type string::length() const
 {
     return code_point_byte_offsets_->size() - 1;
 }
+
+#ifdef _MSC_VER
+template<>
+string string::from(unsigned long i)
+{
+	return string(std::to_string(i).c_str());
+}
+
+template<>
+unsigned long string::to() const
+{
+	return std::stoul(std::string(data()));
+}
+#endif
+
+#ifdef __linux
+template<>
+string string::from(long long int i)
+{
+	return string(std::to_string(i).c_str());
+}
+
+template<>
+string string::from(unsigned long long int i)
+{
+	return string(std::to_string(i).c_str());
+}
+
+template<>
+long long int string::to() const
+{
+	return std::stoll(std::string(data()));
+}
+
+template<>
+unsigned long long int string::to() const
+{
+	return std::stoull(std::string(data()));
+}
+#endif
 
 } // namespace xlnt
