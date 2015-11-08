@@ -99,7 +99,7 @@ string string::from(std::uint64_t i)
 	return string(std::to_string(i).c_str());
 }
 
-#ifndef _MSC_VER
+#ifdef __APPLE__
 template<>
 string string::from(std::size_t i)
 {
