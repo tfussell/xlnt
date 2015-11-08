@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-
-import os
-import shutil
-
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
-dirs = ['./bin', './lib', './build']
-
-for dir in dirs:
-    if os.path.isdir(dir): shutil.rmtree(dir)
+# -*- mode: sh -*-
+cd ${0%/*}
+./configure clean
