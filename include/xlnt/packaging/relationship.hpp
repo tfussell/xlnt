@@ -46,10 +46,10 @@ enum class target_mode
 /// Represents an association between a source Package or part, and a target object which can be a part or external
 /// resource.
 /// </summary>
-class relationship
+class XLNT_CLASS relationship
 {
   public:
-    enum class type
+    enum class XLNT_CLASS type
     {
         invalid,
         hyperlink,
@@ -140,17 +140,19 @@ class relationship
         }
     }
 
-    relationship();
-    relationship(const string &t, const string &r_id = "", const string &target_uri = "")
+	relationship();
+
+	relationship(const string &t, const string &r_id = "", const string &target_uri = "")
         : relationship(type_from_string(t), r_id, target_uri)
     {
     }
-    relationship(type t, const string &r_id = "", const string &target_uri = "");
+
+	relationship(type t, const string &r_id = "", const string &target_uri = "");
 
     /// <summary>
     /// gets a string that identifies the relationship.
     /// </summary>
-    string get_id() const
+	string get_id() const
     {
         return id_;
     }
@@ -158,7 +160,7 @@ class relationship
     /// <summary>
     /// gets the URI of the package or part that owns the relationship.
     /// </summary>
-    string get_source_uri() const
+	string get_source_uri() const
     {
         return source_uri_;
     }
@@ -166,7 +168,7 @@ class relationship
     /// <summary>
     /// gets a value that indicates whether the target of the relationship is or External to the Package.
     /// </summary>
-    target_mode get_target_mode() const
+	target_mode get_target_mode() const
     {
         return target_mode_;
     }
@@ -174,21 +176,22 @@ class relationship
     /// <summary>
     /// gets the URI of the target resource of the relationship.
     /// </summary>
-    string get_target_uri() const
+	string get_target_uri() const
     {
         return target_uri_;
     }
 
-    type get_type() const
+	type get_type() const
     {
         return type_;
     }
-    string get_type_string() const
+
+	string get_type_string() const
     {
         return type_to_string(type_);
     }
 
-    friend bool operator==(const relationship &left, const relationship &right)
+    friend XLNT_FUNCTION bool operator==(const relationship &left, const relationship &right)
     {
         return left.type_ == right.type_ 
 			&& left.id_ == right.id_ 

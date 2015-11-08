@@ -99,11 +99,13 @@ string string::from(std::uint64_t i)
 	return string(std::to_string(i).c_str());
 }
 
+#ifndef _MSC_VER
 template<>
 string string::from(std::size_t i)
 {
 	return string(std::to_string(i).c_str());
 }
+#endif
 
 template<>
 string string::from(float i)
@@ -213,8 +215,8 @@ xlnt::string::const_iterator &xlnt::string::const_iterator::operator++()
 
 string::const_iterator &string::const_iterator::operator+=(int offset)
 {
-    auto new_index = index_ + offset;
-    new_index = std::max<int>(0, std::min<int>(parent_->length(), new_index));
+    auto new_index = static_cast<int>(index_) + offset;
+    new_index = std::max<int>(0, std::min<int>(static_cast<int>(parent_->length()), new_index));
     index_ = static_cast<std::size_t>(new_index);
     
     return *this;
@@ -224,8 +226,8 @@ xlnt::string::iterator xlnt::string::iterator::operator+(int offset)
 {
     iterator copy = *this;
     
-    auto new_index = index_ + offset;
-    new_index = std::max<int>(0, std::min<int>(parent_->length(), new_index));
+	auto new_index = static_cast<int>(index_) + offset;
+    new_index = std::max<int>(0, std::min<int>(static_cast<int>(parent_->length()), new_index));
     copy.index_ = static_cast<std::size_t>(new_index);
     
     return copy;
@@ -235,8 +237,8 @@ xlnt::string::const_iterator xlnt::string::const_iterator::operator+(int offset)
 {
     const_iterator copy = *this;
     
-    auto new_index = index_ + offset;
-    new_index = std::max<int>(0, std::min<int>(parent_->length(), new_index));
+	auto new_index = static_cast<int>(index_) + offset;
+    new_index = std::max<int>(0, std::min<int>(static_cast<int>(parent_->length()), new_index));
     copy.index_ = static_cast<std::size_t>(new_index);
     
     return copy;
@@ -378,10 +380,10 @@ string string::substr(size_type offset, size_type len) const
 {
     if(len != npos && offset + len < length())
     {
-      	return string(begin() + offset, begin() + (offset + len));
+      	return string(begin() + static_cast<int>(offset), begin() + static_cast<int>(offset + len));
     }
     
-    return string(begin() + offset, end());
+    return string(begin() + static_cast<int>(offset), end());
 }
 
 string::code_point string::back() const
@@ -411,7 +413,7 @@ string::size_type string::find(const string &str) const
 
 string::size_type string::find(code_point c, size_type offset) const
 {
-	auto iter = begin() + offset;
+	auto iter = begin() + static_cast<int>(offset);
 
 	while (iter != end())
 	{
@@ -464,7 +466,7 @@ string::size_type string::find_last_of(const string &str) const
 
 string::size_type string::find_last_of(code_point c, size_type offset) const
 {
-    auto stop = begin() + offset;
+    auto stop = begin() + static_cast<int>(offset);
     auto iter = end() - 1;
     
     while (iter != stop)
@@ -486,7 +488,7 @@ string::size_type string::find_last_of(char c, size_type offset) const
 
 string::size_type string::find_last_of(const string &str, size_type offset) const
 {
-    auto stop = begin() + offset;
+    auto stop = begin() + static_cast<int>(offset);
     auto iter = end() - 1;
     
     while (iter != stop)
@@ -509,7 +511,7 @@ string::size_type string::find_first_of(const string &str) const
 
 string::size_type string::find_first_of(const string &str, size_type offset) const
 {
-    auto iter = begin() + offset;
+    auto iter = begin() + static_cast<int>(offset);
     
     while (iter != end())
     {
@@ -531,7 +533,7 @@ string::size_type string::find_first_not_of(const string &str) const
 
 string::size_type string::find_first_not_of(const string &str, size_type offset) const
 {
-    auto iter = begin() + offset;
+    auto iter = begin() + static_cast<int>(offset);
     
     while (iter != end())
     {
@@ -553,7 +555,7 @@ string::size_type string::find_last_not_of(const string &str) const
 
 string::size_type string::find_last_not_of(const string &str, size_type offset) const
 {
-    auto stop = begin() + offset;
+    auto stop = begin() + static_cast<int>(offset);
     auto iter = end() - 1;
     
     while (iter != stop)
@@ -767,8 +769,8 @@ void string::replace(size_type index, utf32_char value)
     auto data_start = code_point_byte_offsets_->at(index);
     auto data_end = code_point_byte_offsets_->at(index + 1);
     
-    auto previous_len = data_end - data_start;
-    int difference = encoded_len - previous_len;
+    auto previous_len = static_cast<int>(data_end - data_start);
+    int difference = static_cast<int>(encoded_len) - previous_len;
     
     if(difference < 0)
     {
@@ -866,7 +868,7 @@ string &string::operator+=(const string &rhs)
 	return *this;
 }
 
-void swap(string &left, string &right)
+XLNT_FUNCTION void swap(string &left, string &right)
 {
 	using std::swap;
 
@@ -874,7 +876,7 @@ void swap(string &left, string &right)
     swap(left.code_point_byte_offsets_, right.code_point_byte_offsets_);
 }
 
-std::ostream &operator<<(std::ostream &left, string &right)
+XLNT_FUNCTION std::ostream &operator<<(std::ostream &left, string &right)
 {
 	auto d = right.data();
 	std::size_t i = 0;
@@ -888,12 +890,12 @@ std::ostream &operator<<(std::ostream &left, string &right)
 	return left;
 }
 
-string operator+(const char *left, const string &right)
+XLNT_FUNCTION string operator+(const char *left, const string &right)
 {
 	return string(left) + right;
 }
 
-bool string::operator<(const string &other) const
+XLNT_FUNCTION bool string::operator<(const string &other) const
 {
 	return std::string(data()) < std::string(other.data());
 }

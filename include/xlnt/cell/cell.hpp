@@ -381,13 +381,19 @@ public:
     /// <summary>
     /// Return true if this cell is uninitialized.
     /// </summary>
-    friend bool operator==(std::nullptr_t, const cell &cell);
+    friend XLNT_FUNCTION bool operator==(std::nullptr_t, const cell &cell);
     
     /// <summary>
     /// Return the result of left.get_reference() < right.get_reference().
     /// What's the point of this?
     /// </summary>
-    friend bool operator<(cell left, cell right);
+    friend XLNT_FUNCTION bool operator<(const cell left, const cell right);
+
+	/// <summary>
+	/// Convenience function for writing cell to an ostream.
+	/// Uses cell::to_string() internally.
+	/// </summary>
+	friend XLNT_FUNCTION std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell);
 
 private:
     // make these friends so they can use the private constructor
@@ -405,14 +411,5 @@ private:
     /// </summary>
     detail::cell_impl *d_;
 };
-
-/// <summary>
-/// Convenience function for writing cell to an ostream.
-/// Uses cell::to_string() internally.
-/// </summary>
-inline std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)
-{
-    return stream << std::string(cell.to_string().data());
-}
 
 } // namespace xlnt

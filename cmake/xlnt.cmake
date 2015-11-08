@@ -60,6 +60,11 @@ SET(PUGIXML ../third-party/pugixml/src/pugixml.hpp ../third-party/pugixml/src/pu
 
 if(SHARED)
     add_library(xlnt SHARED ${HEADERS} ${SOURCES} ${MINIZ} ${PUGIXML})
+    target_compile_definitions(xlnt PRIVATE XLNT_EXPORT=1)
+    add_definitions(-DXLNT_SHARED)
+    if(MSVC)
+        set_target_properties(xlnt PROPERTIES COMPILE_FLAGS "/wd\"4251\"")
+    endif()
 else()
     add_library(xlnt STATIC ${HEADERS} ${SOURCES} ${MINIZ} ${PUGIXML})
 endif()
@@ -106,7 +111,7 @@ configure_file(
     IMMEDIATE @ONLY)
 
 
-INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../include/xlnt 
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../include/xlnt 
         DESTINATION include
         PATTERN ".DS_Store" EXCLUDE
 )
@@ -116,7 +121,7 @@ install(TARGETS xlnt
         ARCHIVE DESTINATION ${LIB_DEST_DIR}
 )
 
-INSTALL(FILES "${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc"
+install(FILES "${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc"
         DESTINATION ${LIB_DEST_DIR}/pkgconfig
 )
 

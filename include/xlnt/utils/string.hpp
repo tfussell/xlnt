@@ -278,12 +278,12 @@ public:
 
 	bool operator<(const string &other) const;
 
-	friend void swap(string &left, string &right);
-	friend std::ostream &operator<<(std::ostream &left, string &right);
-	friend string operator+(const char *left, const string &right);
+	friend XLNT_FUNCTION void swap(string &left, string &right);
+	friend XLNT_FUNCTION std::ostream & operator<<(std::ostream &left, string &right);
+	friend XLNT_FUNCTION string operator+(const char *left, const string &right);
 
-	friend bool operator==(const char *left, const string &right) { return right == left; }
-	friend bool operator!=(const char *left, const string &right) { return right != left; }
+	friend XLNT_FUNCTION bool operator==(const char *left, const string &right) { return right == left; }
+	friend XLNT_FUNCTION bool operator!=(const char *left, const string &right) { return right != left; }
 
 private:
 	explicit string(size_type initial_size);
