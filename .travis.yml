@@ -1,6 +1,6 @@
 language: cpp
 script:
-  - mkdir build && cd build && cmake ../cmake && make
+  - ./configure SHARED=0 BUILD_TESTS=1 AUTORUN_TESTS=1 "Unix Makefiles" && make -C build
 compiler:
   - clang
   - gcc

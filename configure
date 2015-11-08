@@ -1,14 +1,24 @@
 #!/usr/bin/env python3
+# -*- mode: python -*-
 
 import os
 import subprocess
 import sys
 
-def which(program):
-    def is_exe(fpath):
-        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+def clean():
+    import shutil
 
+    dirs = ['./bin', './lib', './build']
+
+    for dir in dirs:
+    	if os.path.isdir(dir): shutil.rmtree(dir)
+
+def is_exe(fpath):
+    return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+def which(program):
     fpath, fname = os.path.split(program)
+
     if fpath:
         if is_exe(program):
             return program
@@ -16,28 +26,81 @@ def which(program):
         for path in os.environ["PATH"].split(os.pathsep):
             path = path.strip('"')
             exe_file = os.path.join(path, program)
+
             if is_exe(exe_file):
                 return exe_file
 
     return None
 
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+def default_generator(platform):
+    generator = 'Unix Makefiles'
 
-if not os.path.isdir('./build'):
-   os.mkdir('./build')
+    if sys.platform == 'darwin':
+        generator = 'Xcode'
+    elif sys.platform == 'win32':
+        generator = 'Visual Studio 14 2015 Win64'
 
-generator = 'Unix Makefiles'
+    return generator
 
-if len(sys.argv) > 1:
-   generator = sys.argv[1]
-elif sys.platform == 'darwin':
-   generator = 'Unix Makefiles'
-elif sys.platform == 'win32':
-   generator = 'Visual Studio 14 2015 Win64'
+def find_cmake():
+    cmake = None
+    
+    if which('cmake3'):
+        cmake = 'cmake3'
+    elif which('cmake'):
+        cmake = 'cmake'
+        
+    if cmake == None:
+        raise Exception("cmake not found")
 
-cmake = 'cmake'
+    return cmake
 
-if which('cmake3'):
-	cmake = 'cmake3'
+def parse_args(args):
+    options = {}
+    generator = default_generator(sys.platform)
 
-subprocess.call([cmake, '-G', generator, '../cmake'], cwd='./build')
+    if len(args) == 0:
+        return options, generator
+
+    while len(args) > 1:
+        option = args.pop(0)
+
+        if '=' not in option:
+            raise Exception('bad option: {}'.format(option))
+
+        options[option.split('=')[0]] = option.split('=')[1]
+
+    generator = args[0]
+
+    return options, generator
+
+def main():
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+    if len(sys.argv) == 2 and sys.argv[1] == 'clean':
+        clean()
+        return
+
+    build_dir = './build'
+
+    if not os.path.isdir(build_dir):
+        os.mkdir(build_dir)
+
+    cmake = find_cmake()
+    options, generator = parse_args(sys.argv[1:])
+    command = [cmake]
+
+    if generator != None:
+        command.extend(['-G', generator])
+
+    if options != None:
+        for option in options:
+            command.extend(['-D', '{}={}'.format(option, options[option])])
+
+    cmake_scripts_dir = '../cmake' # relative to build_dir
+    command.append(cmake_scripts_dir)
+
+    subprocess.call(command, cwd=build_dir)
+
+if __name__ == '__main__':
+   main()
