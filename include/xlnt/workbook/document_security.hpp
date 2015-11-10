@@ -25,7 +25,7 @@
 
 #include <string>
 
-#include <xlnt/xlnt_config.hpp>
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 
@@ -40,8 +40,8 @@ class XLNT_CLASS document_security
     bool lock_revision;
     bool lock_structure;
     bool lock_windows;
-    string revision_password;
-    string workbook_password;
+    std::string revision_password;
+    std::string workbook_password;
 };
 
 } // namespace xlnt

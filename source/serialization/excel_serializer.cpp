@@ -15,7 +15,6 @@
 #include <xlnt/packaging/document_properties.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/utils/exceptions.hpp>
-#include <xlnt/utils/string.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
@@ -23,13 +22,13 @@
 
 namespace {
 
-xlnt::string::size_type find_string_in_string(const xlnt::string &string, const xlnt::string &substring)
+std::string::size_type find_string_in_string(const std::string &string, const std::string &substring)
 {
-	xlnt::string::size_type possible_match_index = string.find(substring.at(0));
+    std::string::size_type possible_match_index = string.find(substring.at(0));
 
-    while (possible_match_index != xlnt::string::npos)
+    while (possible_match_index != std::string::npos)
     {
-        if (string.substr(possible_match_index, substring.length()) == substring)
+        if (string.substr(possible_match_index, substring.size()) == substring)
         {
             return possible_match_index;
         }
@@ -91,7 +90,7 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
 
     if(archive.has_file(xlnt::constants::ArcSharedString()))
     {
-        std::vector<xlnt::string> shared_strings;
+        std::vector<std::string> shared_strings;
 		xlnt::xml_document shared_strings_xml;
 		shared_strings_xml.from_string(archive.read(xlnt::constants::ArcSharedString()));
 		xlnt::shared_strings_serializer::read_shared_strings(shared_strings_xml, shared_strings);
@@ -137,16 +136,16 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
 
 namespace xlnt {
 
-const string excel_serializer::central_directory_signature()
+const std::string excel_serializer::central_directory_signature()
 {
     return "\x50\x4b\x05\x06";
 }
 
-string excel_serializer::repair_central_directory(const string &original)
+std::string excel_serializer::repair_central_directory(const std::string &original)
 {
     auto pos = find_string_in_string(original, central_directory_signature());
 
-    if (pos != string::npos)
+    if (pos != std::string::npos)
     {
         return original.substr(0, pos + 22);
     }
@@ -167,7 +166,7 @@ bool excel_serializer::load_stream_workbook(std::istream &stream, bool guess_typ
     return load_virtual_workbook(bytes, guess_types, data_only);
 }
 
-bool excel_serializer::load_workbook(const string &filename, bool guess_types, bool data_only)
+bool excel_serializer::load_workbook(const std::string &filename, bool guess_types, bool data_only)
 {
     try
     {
@@ -233,7 +232,7 @@ void excel_serializer::write_worksheets()
                 workbook::index_from_ws_filename(relationship.get_target_uri()) == index)
             {
                 worksheet_serializer serializer_(ws);
-                string ws_filename = (relationship.get_target_uri().substr(0, 3) != "xl/" ? "xl/" : "") + relationship.get_target_uri();
+                std::string ws_filename = (relationship.get_target_uri().substr(0, 3) != "xl/" ? "xl/" : "") + relationship.get_target_uri();
                 archive_.writestr(ws_filename, serializer_.write_worksheet().to_string());
                 break;
             }
@@ -255,7 +254,7 @@ bool excel_serializer::save_stream_workbook(std::ostream &stream, bool as_templa
     return true;
 }
 
-bool excel_serializer::save_workbook(const string &filename, bool as_template)
+bool excel_serializer::save_workbook(const std::string &filename, bool as_template)
 {
     write_data(as_template);
     archive_.save(filename);

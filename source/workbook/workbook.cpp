@@ -122,7 +122,7 @@ bool workbook::const_iterator::operator==(const const_iterator &comparand) const
     return index_ == comparand.index_ && wb_ == comparand.wb_;
 }
 
-worksheet workbook::get_sheet_by_name(const string &name)
+worksheet workbook::get_sheet_by_name(const std::string &name)
 {
     for (auto &impl : d_->worksheets_)
     {
@@ -150,7 +150,7 @@ worksheet workbook::get_active_sheet()
     return worksheet(&d_->worksheets_[d_->active_sheet_index_]);
 }
 
-bool workbook::has_named_range(const string &name) const
+bool workbook::has_named_range(const std::string &name) const
 {
     for (auto worksheet : *this)
     {
@@ -164,18 +164,18 @@ bool workbook::has_named_range(const string &name) const
 
 worksheet workbook::create_sheet()
 {
-    string title = "Sheet1";
+    std::string title = "Sheet1";
     int index = 1;
 
     while (get_sheet_by_name(title) != nullptr)
     {
-        title = "Sheet" + string::from(++index);
+        title = "Sheet" + std::to_string(++index);
     }
     
-    string sheet_filename = "worksheets/sheet" + string::from(d_->worksheets_.size() + 1) + ".xml";
+    std::string sheet_filename = "worksheets/sheet" + std::to_string(d_->worksheets_.size() + 1) + ".xml";
 
     d_->worksheets_.push_back(detail::worksheet_impl(this, title));
-    create_relationship("rId" + string::from(d_->relationships_.size() + 1),
+    create_relationship("rId" + std::to_string(d_->relationships_.size() + 1),
                         sheet_filename,
                         relationship::type::worksheet);
     
@@ -217,7 +217,7 @@ int workbook::get_index(xlnt::worksheet worksheet)
     throw std::runtime_error("worksheet isn't owned by this workbook");
 }
 
-void workbook::create_named_range(const string &name, worksheet range_owner, const range_reference &reference)
+void workbook::create_named_range(const std::string &name, worksheet range_owner, const range_reference &reference)
 {
     auto match = get_sheet_by_name(range_owner.get_title());
     if (match != nullptr)
@@ -228,7 +228,7 @@ void workbook::create_named_range(const string &name, worksheet range_owner, con
     throw std::runtime_error("worksheet isn't owned by this workbook");
 }
 
-void workbook::remove_named_range(const string &name)
+void workbook::remove_named_range(const std::string &name)
 {
     for (auto ws : *this)
     {
@@ -242,7 +242,7 @@ void workbook::remove_named_range(const string &name)
     throw std::runtime_error("named range not found");
 }
 
-range workbook::get_named_range(const string &name)
+range workbook::get_named_range(const std::string &name)
 {
     for (auto ws : *this)
     {
@@ -271,7 +271,7 @@ bool workbook::load(const std::vector<unsigned char> &data)
     return true;
 }
 
-bool workbook::load(const string &filename)
+bool workbook::load(const std::string &filename)
 {
     excel_serializer serializer_(*this);
     serializer_.load_workbook(filename);
@@ -289,12 +289,12 @@ bool workbook::get_guess_types() const
     return d_->guess_types_;
 }
 
-void workbook::create_relationship(const string &id, const string &target, relationship::type type)
+void workbook::create_relationship(const std::string &id, const std::string &target, relationship::type type)
 {
     d_->relationships_.push_back(relationship(type, id, target));
 }
 
-relationship workbook::get_relationship(const string &id) const
+relationship workbook::get_relationship(const std::string &id) const
 {
     for (auto &rel : d_->relationships_)
     {
@@ -317,7 +317,7 @@ void workbook::remove_sheet(worksheet ws)
         throw std::runtime_error("worksheet not owned by this workbook");
     }
 
-    auto sheet_filename = "worksheets/sheet" + string::from(d_->worksheets_.size()) + ".xml";
+    auto sheet_filename = "worksheets/sheet" + std::to_string(d_->worksheets_.size()) + ".xml";
     auto rel_iter = std::find_if(d_->relationships_.begin(), d_->relationships_.end(),
                                  [=](relationship &r) { return r.get_target_uri() == sheet_filename; });
 
@@ -344,22 +344,22 @@ worksheet workbook::create_sheet(std::size_t index)
 }
 
 // TODO: There should be a better way to do this...
-std::size_t workbook::index_from_ws_filename(const string &ws_filename)
+std::size_t workbook::index_from_ws_filename(const std::string &ws_filename)
 {
-    string sheet_index_string(ws_filename);
+    std::string sheet_index_string(ws_filename);
     sheet_index_string = sheet_index_string.substr(0, sheet_index_string.find('.'));
     sheet_index_string = sheet_index_string.substr(sheet_index_string.find_last_of('/'));
     auto iter = sheet_index_string.end();
-    --iter;
-    while (isdigit((*iter)))
-        --iter;
+    iter--;
+    while (isdigit(*iter))
+        iter--;
     auto first_digit = static_cast<std::size_t>(iter - sheet_index_string.begin());
     sheet_index_string = sheet_index_string.substr(first_digit + 1);
-    auto sheet_index = sheet_index_string.to<std::size_t>() - 1;
+    auto sheet_index = static_cast<std::size_t>(std::stoll(sheet_index_string) - 1);
     return sheet_index;
 }
 
-worksheet workbook::create_sheet(const string &title, const relationship &rel)
+worksheet workbook::create_sheet(const std::string &title, const relationship &rel)
 {
     d_->worksheets_.push_back(detail::worksheet_impl(this, title));
 
@@ -373,7 +373,7 @@ worksheet workbook::create_sheet(const string &title, const relationship &rel)
     return worksheet(&d_->worksheets_[index]);
 }
 
-worksheet workbook::create_sheet(std::size_t index, const string &title)
+worksheet workbook::create_sheet(std::size_t index, const std::string &title)
 {
     auto ws = create_sheet(index);
     ws.set_title(title);
@@ -381,21 +381,21 @@ worksheet workbook::create_sheet(std::size_t index, const string &title)
     return ws;
 }
 
-worksheet workbook::create_sheet(const string &title)
+worksheet workbook::create_sheet(const std::string &title)
 {
     if (title.length() > 31)
     {
         throw sheet_title_exception(title);
     }
 
-    if (std::find_if(title.data(), title.data() + title.num_bytes(), [](char c) {
+    if (std::find_if(title.begin(), title.end(), [](char c) {
             return c == '*' || c == ':' || c == '/' || c == '\\' || c == '?' || c == '[' || c == ']';
-        }) != title.data() + title.num_bytes())
+        }) != title.end())
     {
         throw sheet_title_exception(title);
     }
 
-    string unique_title = title;
+    std::string unique_title = title;
 
     if (std::find_if(d_->worksheets_.begin(), d_->worksheets_.end(), [&](detail::worksheet_impl &ws) {
             return worksheet(&ws).get_title() == unique_title;
@@ -407,7 +407,7 @@ worksheet workbook::create_sheet(const string &title)
                    return worksheet(&ws).get_title() == unique_title;
                }) != d_->worksheets_.end())
         {
-            unique_title = title + string::from(suffix);
+            unique_title = title + std::to_string(suffix);
             suffix++;
         }
     }
@@ -438,9 +438,9 @@ workbook::const_iterator workbook::cend() const
     return const_iterator(*this, d_->worksheets_.size());
 }
 
-std::vector<string> workbook::get_sheet_names() const
+std::vector<std::string> workbook::get_sheet_names() const
 {
-    std::vector<string> names;
+    std::vector<std::string> names;
 
     for (auto ws : *this)
     {
@@ -450,7 +450,7 @@ std::vector<string> workbook::get_sheet_names() const
     return names;
 }
 
-worksheet workbook::operator[](const string &name)
+worksheet workbook::operator[](const std::string &name)
 {
     return get_sheet_by_name(name);
 }
@@ -477,7 +477,7 @@ bool workbook::save(std::vector<unsigned char> &data)
     return true;
 }
 
-bool workbook::save(const string &filename)
+bool workbook::save(const std::string &filename)
 {
     excel_serializer serializer(*this);
     serializer.save_workbook(filename);
@@ -589,7 +589,7 @@ void workbook::add_number_format(const number_format &number_format_)
     }
 }
 
-void workbook::set_code_name(const string & /*code_name*/)
+void workbook::set_code_name(const std::string & /*code_name*/)
 {
 }
 
@@ -903,17 +903,17 @@ const std::vector<relationship> &workbook::get_root_relationships() const
     return d_->root_relationships_;
 }
 
-std::vector<string> &workbook::get_shared_strings()
+std::vector<std::string> &workbook::get_shared_strings()
 {
     return d_->shared_strings_;
 }
 
-const std::vector<string> &workbook::get_shared_strings() const
+const std::vector<std::string> &workbook::get_shared_strings() const
 {
     return d_->shared_strings_;
 }
 
-void workbook::add_shared_string(const string &shared)
+void workbook::add_shared_string(const std::string &shared)
 {
     //TODO: inefficient, use a set or something?
     for(auto &s : d_->shared_strings_)
@@ -922,11 +922,6 @@ void workbook::add_shared_string(const string &shared)
     }
     
     d_->shared_strings_.push_back(shared);
-}
-
-void workbook::create_named_range(const string &name, worksheet owner, const string &reference_string)
-{
-	create_named_range(name, owner, range_reference(reference_string));
 }
 
 } // namespace xlnt

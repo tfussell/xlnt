@@ -2,7 +2,7 @@
 
 #include <detail/constants.hpp>
 
-#include <xlnt/xlnt_config.hpp>
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 
@@ -42,27 +42,27 @@ const column_t constants::MaxColumn()
 }
 
 // constants
-const string constants::PackageProps() { return "docProps"; }
-const string constants::PackageXl() { return "xl"; }
-const string constants::PackageRels() { return "_rels"; }
-const string constants::PackageTheme() { return PackageXl() + "/" + "theme"; }
-const string constants::PackageWorksheets() { return PackageXl() + "/" + "worksheets"; }
-const string constants::PackageDrawings() { return PackageXl() + "/" + "drawings"; }
-const string constants::PackageCharts() { return PackageXl() + "/" + "charts"; }
+const std::string constants::PackageProps() { return "docProps"; }
+const std::string constants::PackageXl() { return "xl"; }
+const std::string constants::PackageRels() { return "_rels"; }
+const std::string constants::PackageTheme() { return PackageXl() + "/" + "theme"; }
+const std::string constants::PackageWorksheets() { return PackageXl() + "/" + "worksheets"; }
+const std::string constants::PackageDrawings() { return PackageXl() + "/" + "drawings"; }
+const std::string constants::PackageCharts() { return PackageXl() + "/" + "charts"; }
 
-const string constants::ArcContentTypes() { return "[Content_Types].xml"; }
-const string constants::ArcRootRels() { return PackageRels() + "/.rels"; }
-const string constants::ArcWorkbookRels() { return PackageXl() + "/" + PackageRels() + "/workbook.xml.rels"; }
-const string constants::ArcCore() { return PackageProps() + "/core.xml"; }
-const string constants::ArcApp() { return PackageProps() + "/app.xml"; }
-const string constants::ArcWorkbook() { return PackageXl() + "/workbook.xml"; }
-const string constants::ArcStyles() { return PackageXl() + "/styles.xml"; }
-const string constants::ArcTheme() { return PackageTheme() + "/theme1.xml"; }
-const string constants::ArcSharedString() { return PackageXl() + "/sharedStrings.xml"; }
+const std::string constants::ArcContentTypes() { return "[Content_Types].xml"; }
+const std::string constants::ArcRootRels() { return PackageRels() + "/.rels"; }
+const std::string constants::ArcWorkbookRels() { return PackageXl() + "/" + PackageRels() + "/workbook.xml.rels"; }
+const std::string constants::ArcCore() { return PackageProps() + "/core.xml"; }
+const std::string constants::ArcApp() { return PackageProps() + "/app.xml"; }
+const std::string constants::ArcWorkbook() { return PackageXl() + "/workbook.xml"; }
+const std::string constants::ArcStyles() { return PackageXl() + "/styles.xml"; }
+const std::string constants::ArcTheme() { return PackageTheme() + "/theme1.xml"; }
+const std::string constants::ArcSharedString() { return PackageXl() + "/sharedStrings.xml"; }
 
-const std::unordered_map<string, string> constants::Namespaces()
+const std::unordered_map<std::string, std::string> constants::Namespaces()
 {
-    const std::unordered_map<string, string> namespaces =
+    const std::unordered_map<std::string, std::string> namespaces =
     {
         { "spreadsheetml", "http://schemas.openxmlformats.org/spreadsheetml/2006/main" },
         { "content-types", "http://schemas.openxmlformats.org/package/2006/content-types" },
@@ -81,7 +81,7 @@ const std::unordered_map<string, string> constants::Namespaces()
     return namespaces;
 }
 
-const string constants::Namespace(const string &id)
+const std::string constants::Namespace(const std::string &id)
 {
     return Namespaces().find(id)->second;
 }

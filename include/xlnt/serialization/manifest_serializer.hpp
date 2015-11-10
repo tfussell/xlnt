@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include <xlnt/xlnt_config.hpp>
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 
@@ -17,7 +17,7 @@ class XLNT_CLASS manifest_serializer
     void read_manifest(const xml_document &xml);
     xml_document write_manifest() const;
 
-    string determine_document_type() const;
+    std::string determine_document_type() const;
 
   private:
     manifest &manifest_;

@@ -23,7 +23,7 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <xlnt/utils/string.hpp>
+#include <string>
 
 namespace xlnt {
 
@@ -46,10 +46,10 @@ enum class target_mode
 /// Represents an association between a source Package or part, and a target object which can be a part or external
 /// resource.
 /// </summary>
-class XLNT_CLASS relationship
+class relationship
 {
   public:
-    enum class XLNT_CLASS type
+    enum class type
     {
         invalid,
         hyperlink,
@@ -65,7 +65,7 @@ class XLNT_CLASS relationship
         custom_xml
     };
 
-    static type type_from_string(const string &type_string)
+    static type type_from_string(const std::string &type_string)
     {
         if (type_string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties")
         {
@@ -111,7 +111,7 @@ class XLNT_CLASS relationship
         return type::invalid;
     }
 
-    static string type_to_string(type t)
+    static std::string type_to_string(type t)
     {
         switch (t)
         {
@@ -140,19 +140,17 @@ class XLNT_CLASS relationship
         }
     }
 
-	relationship();
-
-	relationship(const string &t, const string &r_id = "", const string &target_uri = "")
+    relationship();
+    relationship(const std::string &t, const std::string &r_id = "", const std::string &target_uri = "")
         : relationship(type_from_string(t), r_id, target_uri)
     {
     }
-
-	relationship(type t, const string &r_id = "", const string &target_uri = "");
+    relationship(type t, const std::string &r_id = "", const std::string &target_uri = "");
 
     /// <summary>
     /// gets a string that identifies the relationship.
     /// </summary>
-	string get_id() const
+    std::string get_id() const
     {
         return id_;
     }
@@ -160,7 +158,7 @@ class XLNT_CLASS relationship
     /// <summary>
     /// gets the URI of the package or part that owns the relationship.
     /// </summary>
-	string get_source_uri() const
+    std::string get_source_uri() const
     {
         return source_uri_;
     }
@@ -168,7 +166,7 @@ class XLNT_CLASS relationship
     /// <summary>
     /// gets a value that indicates whether the target of the relationship is or External to the Package.
     /// </summary>
-	target_mode get_target_mode() const
+    target_mode get_target_mode() const
     {
         return target_mode_;
     }
@@ -176,35 +174,31 @@ class XLNT_CLASS relationship
     /// <summary>
     /// gets the URI of the target resource of the relationship.
     /// </summary>
-	string get_target_uri() const
+    std::string get_target_uri() const
     {
         return target_uri_;
     }
 
-	type get_type() const
+    type get_type() const
     {
         return type_;
     }
-
-	string get_type_string() const
+    std::string get_type_string() const
     {
         return type_to_string(type_);
     }
 
-    friend XLNT_FUNCTION bool operator==(const relationship &left, const relationship &right)
+    friend bool operator==(const relationship &left, const relationship &right)
     {
-        return left.type_ == right.type_ 
-			&& left.id_ == right.id_ 
-			&& left.source_uri_ == right.source_uri_ 
-			&& left.target_uri_ == right.target_uri_ 
-			&& left.target_mode_ == right.target_mode_;
+        return left.type_ == right.type_ && left.id_ == right.id_ && left.source_uri_ == right.source_uri_ &&
+               left.target_uri_ == right.target_uri_ && left.target_mode_ == right.target_mode_;
     }
 
   private:
     type type_;
-    string id_;
-    string source_uri_;
-    string target_uri_;
+    std::string id_;
+    std::string source_uri_;
+    std::string target_uri_;
     target_mode target_mode_;
 };
 

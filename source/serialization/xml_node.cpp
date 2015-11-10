@@ -30,14 +30,14 @@ xml_node &xml_node::operator=(const xlnt::xml_node &other)
     return *this;
 }
 
-string xml_node::get_name() const
+std::string xml_node::get_name() const
 {
     return d_->node.name();
 }
 
-void xml_node::set_name(const string &name)
+void xml_node::set_name(const std::string &name)
 {
-    d_->node.set_name(name.data());
+    d_->node.set_name(name.c_str());
 }
 
 bool xml_node::has_text() const
@@ -45,14 +45,14 @@ bool xml_node::has_text() const
     return d_->node.text() != nullptr;
 }
 
-string xml_node::get_text() const
+std::string xml_node::get_text() const
 {
     return d_->node.text().as_string();
 }
 
-void xml_node::set_text(const string &text)
+void xml_node::set_text(const std::string &text)
 {
-    d_->node.text().set(text.data());
+    d_->node.text().set(text.c_str());
 }
 
 const std::vector<xml_node> xml_node::get_children() const
@@ -69,7 +69,7 @@ const std::vector<xml_node> xml_node::get_children() const
 
 xml_node xml_node::add_child(const xml_node &child)
 {
-    auto child_node = xml_node(detail::xml_node_impl(d_->node.append_child(child.get_name().data())));
+    auto child_node = xml_node(detail::xml_node_impl(d_->node.append_child(child.get_name().c_str())));
 
     for (auto attr : child.get_attributes())
     {
@@ -84,9 +84,9 @@ xml_node xml_node::add_child(const xml_node &child)
     return child_node;
 }
 
-xml_node xml_node::add_child(const string &child_name)
+xml_node xml_node::add_child(const std::string &child_name)
 {
-    return xml_node(detail::xml_node_impl(d_->node.append_child(child_name.data())));
+    return xml_node(detail::xml_node_impl(d_->node.append_child(child_name.c_str())));
 }
 
 const std::vector<xml_node::string_pair> xml_node::get_attributes() const
@@ -95,43 +95,43 @@ const std::vector<xml_node::string_pair> xml_node::get_attributes() const
 
     for (auto attr : d_->node.attributes())
     {
-        attributes.push_back(std::make_pair<string, string>(attr.name(), attr.value()));
+        attributes.push_back(std::make_pair<std::string, std::string>(attr.name(), attr.value()));
     }
 
     return attributes;
 }
 
-void xml_node::add_attribute(const string &name, const string &value)
+void xml_node::add_attribute(const std::string &name, const std::string &value)
 {
-    d_->node.append_attribute(name.data()).set_value(value.data());
+    d_->node.append_attribute(name.c_str()).set_value(value.c_str());
 }
 
-bool xml_node::has_attribute(const string &attribute_name) const
+bool xml_node::has_attribute(const std::string &attribute_name) const
 {
-    return d_->node.attribute(attribute_name.data()) != nullptr;
+    return d_->node.attribute(attribute_name.c_str()) != nullptr;
 }
 
-string xml_node::get_attribute(const string &attribute_name) const
+std::string xml_node::get_attribute(const std::string &attribute_name) const
 {
-    return d_->node.attribute(attribute_name.data()).value();
+    return d_->node.attribute(attribute_name.c_str()).value();
 }
 
-bool xml_node::has_child(const string &child_name) const
+bool xml_node::has_child(const std::string &child_name) const
 {
-    return d_->node.child(child_name.data()) != nullptr;
+    return d_->node.child(child_name.c_str()) != nullptr;
 }
 
-xml_node xml_node::get_child(const string &child_name)
+xml_node xml_node::get_child(const std::string &child_name)
 {
-    return xml_node(detail::xml_node_impl(d_->node.child(child_name.data())));
+    return xml_node(detail::xml_node_impl(d_->node.child(child_name.c_str())));
 }
 
-const xml_node xml_node::get_child(const string &child_name) const
+const xml_node xml_node::get_child(const std::string &child_name) const
 {
-    return xml_node(detail::xml_node_impl(d_->node.child(child_name.data())));
+    return xml_node(detail::xml_node_impl(d_->node.child(child_name.c_str())));
 }
 
-string xml_node::to_string() const
+std::string xml_node::to_string() const
 {
     return xml_serializer::serialize_node(*this);
 }

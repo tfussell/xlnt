@@ -19,7 +19,7 @@ public:
 
     void remove_temp_file()
     {
-        std::remove(temp_file.GetFilename().data());
+        std::remove(temp_file.GetFilename().c_str());
     }
 
     void make_temp_directory()
@@ -30,14 +30,14 @@ public:
     {
     }
 
-    bool files_equal(const xlnt::string &a, const xlnt::string &b)
+    bool files_equal(const std::string &a, const std::string &b)
     {
         if(a == b)
         {
             return true;
         }
         
-        std::ifstream stream_a(a.data(), std::ios::binary), stream_b(a.data(), std::ios::binary);
+        std::ifstream stream_a(a, std::ios::binary), stream_b(a, std::ios::binary);
 
         while(stream_a && stream_b)
         {
@@ -63,9 +63,9 @@ public:
     {
         remove_temp_file();
         {
-            std::ifstream in_stream(existing_file.data(), std::ios::binary);
+            std::ifstream in_stream(existing_file, std::ios::binary);
             xlnt::zip_file f(in_stream);
-            std::ofstream out_stream(temp_file.GetFilename().data(), std::ios::binary);
+            std::ofstream out_stream(temp_file.GetFilename(), std::ios::binary);
             f.save(out_stream);
         }
         TS_ASSERT(files_equal(existing_file, temp_file.GetFilename()));
@@ -78,7 +78,7 @@ public:
         
         xlnt::zip_file f;
         std::vector<unsigned char> source_bytes, result_bytes;
-        std::ifstream in_stream(existing_file.data(), std::ios::binary);
+        std::ifstream in_stream(existing_file, std::ios::binary);
         while(in_stream)
         {
             source_bytes.push_back((unsigned char)in_stream.get());
@@ -149,7 +149,7 @@ public:
         xlnt::zip_file f(existing_file);
         std::stringstream ss;
         ss << f.open("[Content_Types].xml").rdbuf();
-        xlnt::string result = ss.str().c_str();
+        std::string result = ss.str();
         TS_ASSERT(result == expected_content_types_string);
     }
 
@@ -158,7 +158,7 @@ public:
         xlnt::zip_file f(existing_file);
         std::stringstream ss;
         ss << f.open("[Content_Types].xml").rdbuf();
-        xlnt::string result = ss.str().data();
+        std::string result = ss.str();
         TS_ASSERT(result == expected_content_types_string);
     }
 
@@ -197,7 +197,7 @@ public:
         xlnt::zip_file f(existing_file);
         std::stringstream ss;
         f.printdir(ss);
-        xlnt::string printed = ss.str().data();
+        auto printed = ss.str();
         TS_ASSERT(printed == expected_printdir_string);
     }
 
@@ -232,7 +232,7 @@ public:
             {
                 TS_ASSERT(f2.read(info) == expected_atxt_string);
             }
-            else if(info.filename.substr(info.filename.length() - 17) == "sharedStrings.xml")
+            else if(info.filename.substr(info.filename.size() - 17) == "sharedStrings.xml")
             {
                 TS_ASSERT(f2.read(info) == expected_atxt_string);
             }
@@ -276,8 +276,8 @@ public:
 
 private:
     TemporaryFile temp_file;
-    xlnt::string existing_file;
-    xlnt::string expected_content_types_string;
-    xlnt::string expected_atxt_string;
-    xlnt::string expected_printdir_string;
+    std::string existing_file;
+    std::string expected_content_types_string;
+    std::string expected_atxt_string;
+    std::string expected_printdir_string;
 };

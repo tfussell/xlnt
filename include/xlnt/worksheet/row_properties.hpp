@@ -23,7 +23,7 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <xlnt/xlnt_config.hpp>
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 

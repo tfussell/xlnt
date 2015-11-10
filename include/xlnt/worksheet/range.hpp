@@ -32,7 +32,7 @@
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
-#include <xlnt/xlnt_config.hpp>
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 
@@ -40,7 +40,7 @@ class XLNT_CLASS range
 {
   public:
     template <bool is_const = true>
-    class XLNT_CLASS common_iterator : public std::iterator<std::bidirectional_iterator_tag, cell>
+    class common_iterator : public std::iterator<std::bidirectional_iterator_tag, cell>
     {
       public:
         common_iterator(worksheet ws, const range_reference &start_cell, major_order order = major_order::row)

@@ -11,13 +11,13 @@
 
 namespace {
 
-xlnt::string get_working_directory()
+std::string get_working_directory()
 {
 #ifdef _WIN32
     TCHAR buffer[MAX_PATH];
     GetCurrentDirectory(MAX_PATH, buffer);
     std::basic_string<TCHAR> working_directory(buffer);
-    return xlnt::string(working_directory.begin(), working_directory.end());
+    return std::string(working_directory.begin(), working_directory.end());
 #else
     return "";
 #endif
@@ -31,9 +31,9 @@ char directory_separator = '/';
 char alt_directory_separator = '\\';
 #endif
 
-xlnt::string join_path(const std::vector<xlnt::string> &parts)
+std::string join_path(const std::vector<std::string> &parts)
 {
-    xlnt::string joined;
+    std::string joined;
     std::size_t i = 0;
     for (auto part : parts)
     {
@@ -41,19 +41,19 @@ xlnt::string join_path(const std::vector<xlnt::string> &parts)
 
         if (i++ != parts.size() - 1)
         {
-            joined.append('/');
+            joined.append(1, '/');
         }
     }
     return joined;
 }
 
-std::vector<xlnt::string> split_path(const xlnt::string &path, char delim = directory_separator)
+std::vector<std::string> split_path(const std::string &path, char delim = directory_separator)
 {
-    std::vector<xlnt::string> split;
-    xlnt::string::size_type previous_index = 0;
+    std::vector<std::string> split;
+    std::string::size_type previous_index = 0;
     auto separator_index = path.find(delim);
 
-    while (separator_index != xlnt::string::npos)
+    while (separator_index != std::string::npos)
     {
         auto part = path.substr(previous_index, separator_index - previous_index);
         if (part != "..")
@@ -190,7 +190,7 @@ zip_file::zip_file() : archive_(new mz_zip_archive())
     reset();
 }
 
-zip_file::zip_file(const string &filename) : zip_file()
+zip_file::zip_file(const std::string &filename) : zip_file()
 {
     load(filename);
 }
@@ -218,10 +218,10 @@ void zip_file::load(std::istream &stream)
     start_read();
 }
 
-void zip_file::load(const string &filename)
+void zip_file::load(const std::string &filename)
 {
     filename_ = filename;
-    std::ifstream stream(filename.data(), std::ios::binary);
+    std::ifstream stream(filename, std::ios::binary);
     load(stream);
 }
 
@@ -233,10 +233,10 @@ void zip_file::load(const std::vector<unsigned char> &bytes)
     start_read();
 }
 
-void zip_file::save(const string &filename)
+void zip_file::save(const std::string &filename)
 {
     filename_ = filename;
-    std::ofstream stream(filename.data(), std::ios::binary);
+    std::ofstream stream(filename, std::ios::binary);
     save(stream);
 }
 
@@ -289,7 +289,7 @@ void zip_file::append_comment()
         auto comment_length = std::min(static_cast<uint16_t>(comment.length()), std::numeric_limits<uint16_t>::max());
         buffer_[buffer_.size() - 2] = static_cast<char>(comment_length);
         buffer_[buffer_.size() - 1] = static_cast<char>(comment_length >> 8);
-        std::copy(comment.data(), comment.data() + comment.num_bytes(), std::back_inserter(buffer_));
+        std::copy(comment.begin(), comment.end(), std::back_inserter(buffer_));
     }
 }
 
@@ -320,7 +320,7 @@ void zip_file::remove_comment()
 
     if (length != 0)
     {
-        comment = string(buffer_.data() + position, buffer_.data() + position + length);
+        comment = std::string(buffer_.data() + position, buffer_.data() + position + length);
         buffer_.resize(buffer_.size() - length);
         buffer_[buffer_.size() - 1] = 0;
         buffer_[buffer_.size() - 2] = 0;
@@ -358,14 +358,14 @@ void zip_file::reset()
     mz_zip_writer_end(archive_.get());
 }
 
-zip_info zip_file::getinfo(const string &name)
+zip_info zip_file::getinfo(const std::string &name)
 {
     if (archive_->m_zip_mode != MZ_ZIP_MODE_READING)
     {
         start_read();
     }
 
-    int index = mz_zip_reader_locate_file(archive_.get(), name.data(), nullptr, 0);
+    int index = mz_zip_reader_locate_file(archive_.get(), name.c_str(), nullptr, 0);
 
     if (index == -1)
     {
@@ -387,8 +387,8 @@ zip_info zip_file::getinfo(int index)
 
     zip_info result;
 
-    result.filename = string(stat.m_filename, stat.m_filename + std::strlen(stat.m_filename));
-    result.comment = string(stat.m_comment, stat.m_comment + stat.m_comment_size);
+    result.filename = std::string(stat.m_filename, stat.m_filename + std::strlen(stat.m_filename));
+    result.comment = std::string(stat.m_comment, stat.m_comment + stat.m_comment_size);
     result.compress_size = static_cast<std::size_t>(stat.m_comp_size);
     result.file_size = static_cast<std::size_t>(stat.m_uncomp_size);
     result.header_offset = static_cast<std::size_t>(stat.m_local_header_ofs);
@@ -487,7 +487,7 @@ void zip_file::start_write()
     }
 }
 
-void zip_file::write(const string &filename)
+void zip_file::write(const std::string &filename)
 {
     auto split = split_path(filename);
     if (split.size() > 1)
@@ -498,30 +498,30 @@ void zip_file::write(const string &filename)
     write(filename, arcname);
 }
 
-void zip_file::write(const string &filename, const string &arcname)
+void zip_file::write(const std::string &filename, const std::string &arcname)
 {
-    std::fstream file(filename.data(), std::ios::binary | std::ios::in);
+    std::fstream file(filename, std::ios::binary | std::ios::in);
     std::stringstream ss;
     ss << file.rdbuf();
-    string bytes = ss.str().data();
+    std::string bytes = ss.str();
 
     writestr(arcname, bytes);
 }
 
-void zip_file::writestr(const string &arcname, const string &bytes)
+void zip_file::writestr(const std::string &arcname, const std::string &bytes)
 {
     if (archive_->m_zip_mode != MZ_ZIP_MODE_WRITING)
     {
         start_write();
     }
 
-    if (!mz_zip_writer_add_mem(archive_.get(), arcname.data(), bytes.data(), bytes.length(), MZ_BEST_COMPRESSION))
+    if (!mz_zip_writer_add_mem(archive_.get(), arcname.c_str(), bytes.data(), bytes.size(), MZ_BEST_COMPRESSION))
     {
         throw std::runtime_error("write error");
     }
 }
 
-void zip_file::writestr(const zip_info &info, const string &bytes)
+void zip_file::writestr(const zip_info &info, const std::string &bytes)
 {
     if (info.filename.empty() || info.date_time.year < 1980)
     {
@@ -533,43 +533,43 @@ void zip_file::writestr(const zip_info &info, const string &bytes)
         start_write();
     }
 
-    auto crc = crc32buf(bytes.data(), bytes.length());
+    auto crc = crc32buf(bytes.c_str(), bytes.size());
 
-    if (!mz_zip_writer_add_mem_ex(archive_.get(), info.filename.data(), bytes.data(), bytes.length(),
-                                  info.comment.data(), static_cast<mz_uint16>(info.comment.length()),
+    if (!mz_zip_writer_add_mem_ex(archive_.get(), info.filename.c_str(), bytes.data(), bytes.size(),
+                                  info.comment.c_str(), static_cast<mz_uint16>(info.comment.size()),
                                   MZ_BEST_COMPRESSION, 0, crc))
     {
         throw std::runtime_error("write error");
     }
 }
 
-string zip_file::read(const zip_info &info)
+std::string zip_file::read(const zip_info &info)
 {
     std::size_t size;
     char *data =
-        static_cast<char *>(mz_zip_reader_extract_file_to_heap(archive_.get(), info.filename.data(), &size, 0));
+        static_cast<char *>(mz_zip_reader_extract_file_to_heap(archive_.get(), info.filename.c_str(), &size, 0));
     if (data == nullptr)
     {
         throw std::runtime_error("file couldn't be read");
     }
-    string extracted(data, data + size);
+    std::string extracted(data, data + size);
     mz_free(data);
     return extracted;
 }
 
-string zip_file::read(const string &name)
+std::string zip_file::read(const std::string &name)
 {
     return read(getinfo(name));
 }
 
-bool zip_file::has_file(const string &name)
+bool zip_file::has_file(const std::string &name)
 {
     if (archive_->m_zip_mode != MZ_ZIP_MODE_READING)
     {
         start_read();
     }
 
-    int index = mz_zip_reader_locate_file(archive_.get(), name.data(), nullptr, 0);
+    int index = mz_zip_reader_locate_file(archive_.get(), name.c_str(), nullptr, 0);
 
     return index != -1;
 }
@@ -596,9 +596,9 @@ std::vector<zip_info> zip_file::infolist()
     return info;
 }
 
-std::vector<string> zip_file::namelist()
+std::vector<std::string> zip_file::namelist()
 {
-    std::vector<string> names;
+    std::vector<std::string> names;
 
     for (auto &info : infolist())
     {
@@ -608,7 +608,7 @@ std::vector<string> zip_file::namelist()
     return names;
 }
 
-std::ostream &zip_file::open(const string &name)
+std::ostream &zip_file::open(const std::string &name)
 {
     return open(getinfo(name));
 }
@@ -616,19 +616,19 @@ std::ostream &zip_file::open(const string &name)
 std::ostream &zip_file::open(const zip_info &name)
 {
     auto data = read(name);
-    string data_string(data.begin(), data.end());
+    std::string data_string(data.begin(), data.end());
     open_stream_ << data_string;
     return open_stream_;
 }
 
-void zip_file::extract(const string &member)
+void zip_file::extract(const std::string &member)
 {
     extract(member, get_working_directory());
 }
 
-void zip_file::extract(const string &member, const string &path)
+void zip_file::extract(const std::string &member, const std::string &path)
 {
-    std::fstream stream(join_path({ path, member }).data(), std::ios::binary | std::ios::out);
+    std::fstream stream(join_path({ path, member }), std::ios::binary | std::ios::out);
     stream << open(member).rdbuf();
 }
 
@@ -637,18 +637,18 @@ void zip_file::extract(const zip_info &member)
     extract(member, get_working_directory());
 }
 
-void zip_file::extract(const zip_info &member, const string &path)
+void zip_file::extract(const zip_info &member, const std::string &path)
 {
-    std::fstream stream(join_path({ path, member.filename }).data(), std::ios::binary | std::ios::out);
+    std::fstream stream(join_path({ path, member.filename }), std::ios::binary | std::ios::out);
     stream << open(member).rdbuf();
 }
 
-void zip_file::extractall(const string &path)
+void zip_file::extractall(const std::string &path)
 {
     extractall(path, infolist());
 }
 
-void zip_file::extractall(const string &path, const std::vector<string> &members)
+void zip_file::extractall(const std::string &path, const std::vector<std::string> &members)
 {
     for (auto &member : members)
     {
@@ -656,7 +656,7 @@ void zip_file::extractall(const string &path, const std::vector<string> &members
     }
 }
 
-void zip_file::extractall(const string &path, const std::vector<zip_info> &members)
+void zip_file::extractall(const std::string &path, const std::vector<zip_info> &members)
 {
     for (auto &member : members)
     {
@@ -690,7 +690,7 @@ void zip_file::printdir(std::ostream &stream)
         sum_length += member.file_size;
         file_count++;
 
-        string length_string = string::from(member.file_size);
+        std::string length_string = std::to_string(member.file_size);
         while (length_string.length() < 9)
         {
             length_string = " " + length_string;
@@ -714,7 +714,7 @@ void zip_file::printdir(std::ostream &stream)
 
     stream << "---------                     -------" << std::endl;
 
-    string length_string = string::from(sum_length);
+    std::string length_string = std::to_string(sum_length);
     while (length_string.length() < 9)
     {
         length_string = " " + length_string;
@@ -723,7 +723,7 @@ void zip_file::printdir(std::ostream &stream)
     stream << std::endl;
 }
 
-std::pair<bool, string> zip_file::testzip()
+std::pair<bool, std::string> zip_file::testzip()
 {
     if (archive_->m_zip_mode == MZ_ZIP_MODE_INVALID)
     {
@@ -733,7 +733,7 @@ std::pair<bool, string> zip_file::testzip()
     for (auto &file : infolist())
     {
         auto content = read(file);
-        auto crc = crc32buf(content.data(), content.length());
+        auto crc = crc32buf(content.c_str(), content.size());
 
         if (crc != file.crc)
         {

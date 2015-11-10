@@ -2,7 +2,7 @@
 
 namespace xlnt {
 
-XLNT_FUNCTION relationship::relationship(type t, const string &r_id, const string &target_uri)
+relationship::relationship(type t, const std::string &r_id, const std::string &target_uri)
     : type_(t), id_(r_id), source_uri_(""), target_uri_(target_uri), target_mode_(target_mode::internal)
 {
     if (t == type::hyperlink)
@@ -11,7 +11,7 @@ XLNT_FUNCTION relationship::relationship(type t, const string &r_id, const strin
     }
 }
 
-XLNT_FUNCTION relationship::relationship()
+relationship::relationship()
     : type_(type::invalid), id_(""), source_uri_(""), target_uri_(""), target_mode_(target_mode::internal)
 {
 }

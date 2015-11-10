@@ -1,10 +1,9 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
-#include <xlnt/utils/string.hpp>
-
-#include <xlnt/xlnt_config.hpp>
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 
@@ -25,12 +24,12 @@ public:
     /// <summary>
     /// Return a vector of relationships corresponding to target.
     /// </summary>
-    std::vector<relationship> read_relationships(const string &target);
+    std::vector<relationship> read_relationships(const std::string &target);
     
     /// <summary>
     /// Write relationships to archive for the given target.
     /// </summary>
-    bool write_relationships(const std::vector<relationship> &relationships, const string &target);
+    bool write_relationships(const std::vector<relationship> &relationships, const std::string &target);
     
 private:
     /// <summary>

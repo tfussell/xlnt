@@ -10,7 +10,6 @@
 #include <xlnt/styles/color.hpp>
 #include <xlnt/utils/datetime.hpp>
 #include <xlnt/utils/exceptions.hpp>
-#include <xlnt/utils/string.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/column_properties.hpp>
 #include <xlnt/worksheet/row_properties.hpp>
@@ -34,14 +33,14 @@ enum class condition_type
 struct section
 {
     bool has_value = false;
-    xlnt::string value;
+    std::string value;
     bool has_color = false;
-	xlnt::string color;
+    std::string color;
     bool has_condition = false;
     condition_type condition = condition_type::invalid;
-	xlnt::string condition_value;
+    std::string condition_value;
     bool has_locale = false;
-	xlnt::string locale;
+    std::string locale;
 
     section &operator=(const section &other)
     {
@@ -74,13 +73,13 @@ struct format_sections
 /// <remark>
 /// This should maybe be in a utility header so it can be used elsewhere.
 /// </remarks>
-std::vector<xlnt::string> split_string(const xlnt::string &string, char delim)
+std::vector<std::string> split_string(const std::string &string, char delim)
 {
-    std::vector<xlnt::string> split;
-	xlnt::string::size_type previous_index = 0;
+    std::vector<std::string> split;
+    std::string::size_type previous_index = 0;
     auto separator_index = string.find(delim);
 
-    while (separator_index != xlnt::string::npos)
+    while (separator_index != std::string::npos)
     {
         auto part = string.substr(previous_index, separator_index - previous_index);
         split.push_back(part);
@@ -94,13 +93,13 @@ std::vector<xlnt::string> split_string(const xlnt::string &string, char delim)
     return split;
 }
 
-std::vector<xlnt::string> split_string_any(const xlnt::string &string, const xlnt::string &delims)
+std::vector<std::string> split_string_any(const std::string &string, const std::string &delims)
 {
-    std::vector<xlnt::string> split;
-	xlnt::string::size_type previous_index = 0;
+    std::vector<std::string> split;
+    std::string::size_type previous_index = 0;
     auto separator_index = string.find_first_of(delims);
 
-    while (separator_index != xlnt::string::npos)
+    while (separator_index != std::string::npos)
     {
         auto part = string.substr(previous_index, separator_index - previous_index);
 
@@ -118,16 +117,16 @@ std::vector<xlnt::string> split_string_any(const xlnt::string &string, const xln
     return split;
 }
 
-bool is_date_format(const xlnt::string &format_string)
+bool is_date_format(const std::string &format_string)
 {
     auto not_in = format_string.find_first_not_of("/-:, mMyYdDhHsS");
-    return not_in == xlnt::string::npos;
+    return not_in == std::string::npos;
 }
 
-bool is_valid_color(const xlnt::string &color)
+bool is_valid_color(const std::string &color)
 {
-    static const std::vector<xlnt::string> *colors =
-        new std::vector<xlnt::string>(
+    static const std::vector<std::string> *colors =
+        new std::vector<std::string>(
         {
             "Black",
             "Green"
@@ -139,10 +138,10 @@ bool is_valid_color(const xlnt::string &color)
             "Red"
         });
 
-    auto compare_color = [&](const xlnt::string &other) {
-        if (color.length() != other.length()) return false;
+    auto compare_color = [&](const std::string &other) {
+        if (color.size() != other.size()) return false;
 
-        for (std::size_t i = 0; i < color.length(); i++)
+        for (std::size_t i = 0; i < color.size(); i++)
         {
             if (std::toupper(color[i]) != std::toupper(other[i]))
             {
@@ -156,7 +155,7 @@ bool is_valid_color(const xlnt::string &color)
     return std::find_if(colors->begin(), colors->end(), compare_color) != colors->end();
 }
 
-bool parse_condition(const xlnt::string &string, section &s)
+bool parse_condition(const std::string &string, section &s)
 {
     s.has_condition = false;
     s.condition = condition_type::invalid;
@@ -209,10 +208,10 @@ bool is_hex(char c)
     return false;
 }
 
-const std::unordered_map<int, xlnt::string> known_locales()
+const std::unordered_map<int, std::string> known_locales()
 {
-    const std::unordered_map<int, xlnt::string> *all =
-        new std::unordered_map<int, xlnt::string>(
+    const std::unordered_map<int, std::string> *all =
+        new std::unordered_map<int, std::string>(
             {
                  { 0x401, "Arabic - Saudi Arabia" },
                  { 0x402, "Bulgarian" },
@@ -324,9 +323,9 @@ const std::unordered_map<int, xlnt::string> known_locales()
     return *all;
 }
 
-bool is_valid_locale(const xlnt::string &locale_string)
+bool is_valid_locale(const std::string &locale_string)
 {
-    auto country = locale_string.substr(locale_string.find('-') + 1);
+    std::string country = locale_string.substr(locale_string.find('-') + 1);
 
     if (country.empty())
     {
@@ -341,7 +340,7 @@ bool is_valid_locale(const xlnt::string &locale_string)
         }
     }
 
-    auto index = country.to_hex();
+    auto index = std::stoi(country, 0, 16);
 
     auto known_locales_ = known_locales();
 
@@ -350,14 +349,14 @@ bool is_valid_locale(const xlnt::string &locale_string)
         return false;
     }
 
-    auto beginning = locale_string.substr(0, locale_string.find('-'));
+    std::string beginning = locale_string.substr(0, locale_string.find('-'));
 
     if (beginning.empty() || beginning[0] != '$')
     {
         return false;
     }
 
-    if (beginning.length() == 1)
+    if (beginning.size() == 1)
     {
         return true;
     }
@@ -367,32 +366,32 @@ bool is_valid_locale(const xlnt::string &locale_string)
     return true;
 }
 
-section parse_section(const xlnt::string &section_string)
+section parse_section(const std::string &section_string)
 {
     section s;
 
-    xlnt::string format_part;
-    xlnt::string bracket_part;
+    std::string format_part;
+    std::string bracket_part;
 
-    std::vector<xlnt::string> bracket_parts;
+    std::vector<std::string> bracket_parts;
 
     bool in_quotes = false;
     bool in_brackets = false;
 
-    const std::vector<xlnt::string> bracket_times = { "h", "hh", "m", "mm", "s", "ss" };
+    const std::vector<std::string> bracket_times = { "h", "hh", "m", "mm", "s", "ss" };
 
-    for (std::size_t i = 0; i < section_string.length(); i++)
+    for (std::size_t i = 0; i < section_string.size(); i++)
     {
         if (!in_quotes && section_string[i] == '"')
         {
-            format_part.append(section_string[i]);
+            format_part.push_back(section_string[i]);
             in_quotes = true;
         }
         else if (in_quotes && section_string[i] == '"')
         {
-            format_part.append(section_string[i]);
+            format_part.push_back(section_string[i]);
 
-            if (i < section_string.length() - 1 && section_string[i + 1] != '"')
+            if (i < section_string.size() - 1 && section_string[i + 1] != '"')
             {
                 in_quotes = false;
             }
@@ -403,8 +402,8 @@ section parse_section(const xlnt::string &section_string)
 
             for (auto bracket_time : bracket_times)
             {
-                if (i < section_string.length() - bracket_time.length() &&
-                    section_string.substr(i + 1, bracket_time.length()) == bracket_time)
+                if (i < section_string.size() - bracket_time.size() &&
+                    section_string.substr(i + 1, bracket_time.size()) == bracket_time)
                 {
                     in_brackets = false;
                     break;
@@ -450,12 +449,12 @@ section parse_section(const xlnt::string &section_string)
             }
             else
             {
-                bracket_part.append(section_string[i]);
+                bracket_part.push_back(section_string[i]);
             }
         }
         else
         {
-            format_part.append(section_string[i]);
+            format_part.push_back(section_string[i]);
         }
     }
 
@@ -465,7 +464,7 @@ section parse_section(const xlnt::string &section_string)
     return s;
 }
 
-format_sections parse_format_sections(const xlnt::string &combined)
+format_sections parse_format_sections(const std::string &combined)
 {
     format_sections result = {};
 
@@ -522,32 +521,40 @@ format_sections parse_format_sections(const xlnt::string &combined)
     return result;
 }
 
-xlnt::string format_section(long double number, const section &format, xlnt::calendar base_date)
+std::string format_section(long double number, const section &format, xlnt::calendar base_date)
 {
-    const xlnt::string unquoted = "$+(:^'{<=-/)!&~}> ";
-    xlnt::string format_temp = format.value;
-    xlnt::string result;
+    const std::string unquoted = "$+(:^'{<=-/)!&~}> ";
+    std::string format_temp = format.value;
+    std::string result;
 
     if (is_date_format(format.value))
     {
-        const xlnt::string date_unquoted = ",-/: ";
+        const std::string date_unquoted = ",-/: ";
 
-        const std::vector<xlnt::string> dates = { "m", "mm", "mmm", "mmmmm", "mmmmmm", "d", "dd", "ddd", "dddd", "yy",
+        const std::vector<std::string> dates = { "m", "mm", "mmm", "mmmmm", "mmmmmm", "d", "dd", "ddd", "dddd", "yy",
                                                  "yyyy", "h", "[h]", "hh", "m", "[m]", "mm", "s", "[s]", "ss", "AM/PM",
                                                  "am/pm", "A/P", "a/p" };
         
-        const std::vector<xlnt::string> MonthNames = { "January", "February", "March",
+        const std::vector<std::string> MonthNames = { "January", "February", "March",
         "April", "May", "June", "July", "August", "September", "October", "November", "December" };
 
 
         auto split = split_string_any(format.value, date_unquoted);
-        xlnt::string::size_type index = 0, prev = 0;
+        std::string::size_type index = 0, prev = 0;
         auto d = xlnt::datetime::from_number(number, base_date);
         bool processed_month = false;
 
+        auto lower_string = [](const std::string &s) {
+            std::string lower;
+            lower.resize(s.size());
+            for (std::size_t i = 0; i < s.size(); i++)
+                lower[i] = static_cast<char>(std::tolower(s[i]));
+            return lower;
+        };
+
         for (auto part : split)
         {
-            while (format.value.substr(index, part.length()) != part)
+            while (format.value.substr(index, part.size()) != part)
             {
                 index++;
             }
@@ -555,11 +562,11 @@ xlnt::string format_section(long double number, const section &format, xlnt::cal
             auto between = format.value.substr(prev, index - prev);
             result.append(between);
 
-			part = part.to_lower();
+            part = lower_string(part);
 
             if (part == "m" && !processed_month)
             {
-                result.append(xlnt::string::from(d.month));
+                result.append(std::to_string(d.month));
                 processed_month = true;
             }
             else if (part == "mm" && !processed_month)
@@ -569,7 +576,7 @@ xlnt::string format_section(long double number, const section &format, xlnt::cal
                     result.append("0");
                 }
 
-                result.append(xlnt::string::from(d.month));
+                result.append(std::to_string(d.month));
                 processed_month = true;
             }
             else if (part == "mmm" && !processed_month)
@@ -584,7 +591,7 @@ xlnt::string format_section(long double number, const section &format, xlnt::cal
             }
             else if (part == "d")
             {
-                result.append(xlnt::string::from(d.day));
+                result.append(std::to_string(d.day));
             }
             else if (part == "dd")
             {
@@ -593,16 +600,16 @@ xlnt::string format_section(long double number, const section &format, xlnt::cal
                     result.append("0");
                 }
 
-                result.append(xlnt::string::from(d.day));
+                result.append(std::to_string(d.day));
             }
             else if (part == "yyyy")
             {
-                result.append(xlnt::string::from(d.year));
+                result.append(std::to_string(d.year));
             }
 
             else if (part == "h")
             {
-                result.append(xlnt::string::from(d.hour));
+                result.append(std::to_string(d.hour));
                 processed_month = true;
             }
             else if (part == "hh")
@@ -612,12 +619,12 @@ xlnt::string format_section(long double number, const section &format, xlnt::cal
                     result.append("0");
                 }
 
-                result.append(xlnt::string::from(d.hour));
+                result.append(std::to_string(d.hour));
                 processed_month = true;
             }
             else if (part == "m")
             {
-                result.append(xlnt::string::from(d.minute));
+                result.append(std::to_string(d.minute));
             }
             else if (part == "mm")
             {
@@ -626,11 +633,11 @@ xlnt::string format_section(long double number, const section &format, xlnt::cal
                     result.append("0");
                 }
 
-                result.append(xlnt::string::from(d.minute));
+                result.append(std::to_string(d.minute));
             }
             else if (part == "s")
             {
-                result.append(xlnt::string::from(d.second));
+                result.append(std::to_string(d.second));
             }
             else if (part == "ss")
             {
@@ -639,7 +646,7 @@ xlnt::string format_section(long double number, const section &format, xlnt::cal
                     result.append("0");
                 }
 
-                result.append(xlnt::string::from(d.second));
+                result.append(std::to_string(d.second));
             }
             else if (part == "am/pm" || part == "a/p")
             {
@@ -653,11 +660,11 @@ xlnt::string format_section(long double number, const section &format, xlnt::cal
                 }
             }
 
-            index += part.length();
+            index += part.size();
             prev = index;
         }
 
-        if (index < format.value.length())
+        if (index < format.value.size())
         {
             result.append(format.value.substr(index));
         }
@@ -666,11 +673,11 @@ xlnt::string format_section(long double number, const section &format, xlnt::cal
     {
         if (number == static_cast<long long int>(number))
         {
-            result = xlnt::string::from(static_cast<long long int>(number));
+            result = std::to_string(static_cast<long long int>(number));
         }
         else
         {
-            result = xlnt::string::from(number);
+            result = std::to_string(number);
         }
     }
     else if (format.value.substr(0, 8) == "#,##0.00" || format.value.substr(0, 9) == "-#,##0.00")
@@ -693,18 +700,18 @@ xlnt::string format_section(long double number, const section &format, xlnt::cal
             result += "$";
         }
 
-        result += xlnt::string::from(number < 0 ? -number : number);
+        result += std::to_string(number < 0 ? -number : number);
 
         auto decimal_pos = result.find('.');
 
-        if (decimal_pos != xlnt::string::npos)
+        if (decimal_pos != std::string::npos)
         {
-            result.replace(decimal_pos, U',');
+            result[decimal_pos] = ',';
             decimal_pos += 3;
 
-            while (decimal_pos < result.length())
+            while (decimal_pos < result.size())
             {
-                result.erase(result.length());
+                result.pop_back();
             }
         }
     }
@@ -712,13 +719,13 @@ xlnt::string format_section(long double number, const section &format, xlnt::cal
     return result;
 }
 
-xlnt::string format_section(const xlnt::string &text, const section &format)
+std::string format_section(const std::string &text, const section &format)
 {
     auto arobase_index = format.value.find('@');
 
-    xlnt::string first_part, middle_part, last_part;
+    std::string first_part, middle_part, last_part;
 
-    if (arobase_index != xlnt::string::npos)
+    if (arobase_index != std::string::npos)
     {
         first_part = format.value.substr(0, arobase_index);
         middle_part = text;
@@ -729,11 +736,11 @@ xlnt::string format_section(const xlnt::string &text, const section &format)
         first_part = format.value;
     }
 
-    auto unquote = [](xlnt::string &s) {
+    auto unquote = [](std::string &s) {
         if (!s.empty())
         {
             if (s.front() != '"' || s.back() != '"') return false;
-            s = s.substr(0, s.length() - 2);
+            s = s.substr(0, s.size() - 2);
         }
 
         return true;
@@ -741,13 +748,13 @@ xlnt::string format_section(const xlnt::string &text, const section &format)
 
     if (!unquote(first_part) || !unquote(last_part))
     {
-        throw std::runtime_error("additional text must be enclosed in quotes");
+        throw std::runtime_error(std::string("additional text must be enclosed in quotes: ") + format.value);
     }
 
     return first_part + middle_part + last_part;
 }
 
-xlnt::string format_number(long double number, const xlnt::string &format, xlnt::calendar base_date)
+std::string format_number(long double number, const std::string &format, xlnt::calendar base_date)
 {
     auto sections = parse_format_sections(format);
 
@@ -764,7 +771,7 @@ xlnt::string format_number(long double number, const xlnt::string &format, xlnt:
     return format_section(number, sections.third, base_date);
 }
 
-xlnt::string format_text(const xlnt::string &text, const xlnt::string &format)
+std::string format_text(const std::string &text, const std::string &format)
 {
     if (format == "General") return text;
     auto sections = parse_format_sections(format);
@@ -774,10 +781,10 @@ xlnt::string format_text(const xlnt::string &text, const xlnt::string &format)
 
 namespace xlnt {
 
-const std::unordered_map<string, int> &cell::error_codes()
+const std::unordered_map<std::string, int> &cell::error_codes()
 {
-    static const std::unordered_map<string, int> *codes =
-    new std::unordered_map<string, int>({ { "#NULL!", 0 }, { "#DIV/0!", 1 }, { "#VALUE!", 2 },
+    static const std::unordered_map<std::string, int> *codes =
+    new std::unordered_map<std::string, int>({ { "#NULL!", 0 }, { "#DIV/0!", 1 }, { "#VALUE!", 2 },
                                                                 { "#REF!", 3 },  { "#NAME?", 4 },  { "#NUM!", 5 },
                                                                 { "#N/A!", 6 } });
 
@@ -810,117 +817,116 @@ bool cell::garbage_collectible() const
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(bool b)
+void cell::set_value(bool b)
 {
     d_->value_numeric_ = b ? 1 : 0;
     d_->type_ = type::boolean;
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(std::int8_t i)
+void cell::set_value(std::int8_t i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(std::int16_t i)
+void cell::set_value(std::int16_t i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(std::int32_t i)
+void cell::set_value(std::int32_t i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(std::int64_t i)
+void cell::set_value(std::int64_t i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(std::uint8_t i)
+void cell::set_value(std::uint8_t i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(std::uint16_t i)
+void cell::set_value(std::uint16_t i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(std::uint32_t i)
+void cell::set_value(std::uint32_t i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(std::uint64_t i)
+void cell::set_value(std::uint64_t i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 template <>
-XLNT_FUNCTION void cell::set_value(unsigned long i)
+void cell::set_value(unsigned long i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
-#endif // _MSC_VER
+#endif
 
-//TODO: base this on 64-bit model (i.e. LLP64/LP64) rather than system/compiler
 #ifdef __linux
 template <>
-XLNT_FUNCTION void cell::set_value(long long i)
+void cell::set_value(long long i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(unsigned long long i)
+void cell::set_value(unsigned long long i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
-#endif // __linux
+#endif
 
 template <>
-XLNT_FUNCTION void cell::set_value(float f)
+void cell::set_value(float f)
 {
     d_->value_numeric_ = static_cast<long double>(f);
     d_->type_ = type::numeric;
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(double d)
+void cell::set_value(double d)
 {
     d_->value_numeric_ = static_cast<long double>(d);
     d_->type_ = type::numeric;
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(long double d)
+void cell::set_value(long double d)
 {
     d_->value_numeric_ = static_cast<long double>(d);
     d_->type_ = type::numeric;
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(string s)
+void cell::set_value(std::string s)
 {
     d_->set_string(s, get_parent().get_parent().get_guess_types());
 
@@ -931,13 +937,13 @@ XLNT_FUNCTION void cell::set_value(string s)
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(char const *c)
+void cell::set_value(char const *c)
 {
-    set_value(string(c));
+    set_value(std::string(c));
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(cell c)
+void cell::set_value(cell c)
 {
     d_->type_ = c.d_->type_;
     d_->value_numeric_ = c.d_->value_numeric_;
@@ -950,7 +956,7 @@ XLNT_FUNCTION void cell::set_value(cell c)
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(date d)
+void cell::set_value(date d)
 {
     d_->type_ = type::numeric;
     d_->value_numeric_ = d.to_number(get_base_date());
@@ -958,7 +964,7 @@ XLNT_FUNCTION void cell::set_value(date d)
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(datetime d)
+void cell::set_value(datetime d)
 {
     d_->type_ = type::numeric;
     d_->value_numeric_ = d.to_number(get_base_date());
@@ -966,7 +972,7 @@ XLNT_FUNCTION void cell::set_value(datetime d)
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(time t)
+void cell::set_value(time t)
 {
     d_->type_ = type::numeric;
     d_->value_numeric_ = t.to_number();
@@ -974,20 +980,12 @@ XLNT_FUNCTION void cell::set_value(time t)
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(timedelta t)
+void cell::set_value(timedelta t)
 {
     d_->type_ = type::numeric;
     d_->value_numeric_ = t.to_number();
     set_number_format(number_format::date_timedelta());
 }
-
-#ifdef XLNT_STD_STRING
-template<>
-XLNT_FUNCTION void cell::set_value(std::string str)
-{
-	set_value(string(str.data()));
-}
-#endif
 
 row_t cell::get_row() const
 {
@@ -1053,22 +1051,12 @@ cell &cell::operator=(const cell &rhs)
     return *this;
 }
 
-XLNT_FUNCTION bool operator==(std::nullptr_t, const cell &cell)
-{
-	return cell == nullptr;
-}
-
-XLNT_FUNCTION bool operator<(const cell left, const cell right)
+bool operator<(cell left, cell right)
 {
     return left.get_reference() < right.get_reference();
 }
 
-XLNT_FUNCTION std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)
-{
-	return stream << std::string(cell.to_string().data());
-}
-
-string cell::to_repr() const
+std::string cell::to_repr() const
 {
     return "<Cell " + worksheet(d_->parent_).get_title() + "." + get_reference().to_string() + ">";
 }
@@ -1088,9 +1076,9 @@ bool cell::has_hyperlink() const
     return d_->has_hyperlink_;
 }
 
-void cell::set_hyperlink(const string &hyperlink)
+void cell::set_hyperlink(const std::string &hyperlink)
 {
-    if (hyperlink.length() == 0 || hyperlink.find(':') == xlnt::string::npos)
+    if (hyperlink.length() == 0 || std::find(hyperlink.begin(), hyperlink.end(), ':') == hyperlink.end())
     {
         throw data_type_exception();
     }
@@ -1104,7 +1092,7 @@ void cell::set_hyperlink(const string &hyperlink)
     }
 }
 
-void cell::set_formula(const string &formula)
+void cell::set_formula(const std::string &formula)
 {
     if (formula.length() == 0)
     {
@@ -1126,7 +1114,7 @@ bool cell::has_formula() const
     return !d_->formula_.empty();
 }
 
-string cell::get_formula() const
+std::string cell::get_formula() const
 {
     if (d_->formula_.empty())
     {
@@ -1171,7 +1159,7 @@ bool cell::has_comment() const
     return d_->comment_ != nullptr;
 }
 
-void cell::set_error(const string &error)
+void cell::set_error(const std::string &error)
 {
     if (error.length() == 0 || error[0] != '#')
     {
@@ -1328,105 +1316,105 @@ void cell::clear_value()
 }
 
 template <>
-XLNT_FUNCTION bool cell::get_value() const
+bool cell::get_value() const
 {
     return d_->value_numeric_ != 0;
 }
 
 template <>
-XLNT_FUNCTION std::int8_t cell::get_value() const
+std::int8_t cell::get_value() const
 {
     return static_cast<std::int8_t>(d_->value_numeric_);
 }
 
 template <>
-XLNT_FUNCTION std::int16_t cell::get_value() const
+std::int16_t cell::get_value() const
 {
     return static_cast<std::int16_t>(d_->value_numeric_);
 }
 
 template <>
-XLNT_FUNCTION std::int32_t cell::get_value() const
+std::int32_t cell::get_value() const
 {
     return static_cast<std::int32_t>(d_->value_numeric_);
 }
 
 template <>
-XLNT_FUNCTION std::int64_t cell::get_value() const
+std::int64_t cell::get_value() const
 {
     return static_cast<std::int64_t>(d_->value_numeric_);
 }
 
 template <>
-XLNT_FUNCTION std::uint8_t cell::get_value() const
+std::uint8_t cell::get_value() const
 {
     return static_cast<std::uint8_t>(d_->value_numeric_);
 }
 
 template <>
-XLNT_FUNCTION std::uint16_t cell::get_value() const
+std::uint16_t cell::get_value() const
 {
     return static_cast<std::uint16_t>(d_->value_numeric_);
 }
 
 template <>
-XLNT_FUNCTION std::uint32_t cell::get_value() const
+std::uint32_t cell::get_value() const
 {
     return static_cast<std::uint32_t>(d_->value_numeric_);
 }
 
 template <>
-XLNT_FUNCTION std::uint64_t cell::get_value() const
+std::uint64_t cell::get_value() const
 {
     return static_cast<std::uint64_t>(d_->value_numeric_);
 }
 
 #ifdef __linux
 template <>
-XLNT_FUNCTION long long int cell::get_value() const
+long long int cell::get_value() const
 {
     return static_cast<long long int>(d_->value_numeric_);
 }
 #endif
 
 template <>
-XLNT_FUNCTION float cell::get_value() const
+float cell::get_value() const
 {
     return static_cast<float>(d_->value_numeric_);
 }
 
 template <>
-XLNT_FUNCTION double cell::get_value() const
+double cell::get_value() const
 {
     return static_cast<double>(d_->value_numeric_);
 }
 
 template <>
-XLNT_FUNCTION long double cell::get_value() const
+long double cell::get_value() const
 {
     return d_->value_numeric_;
 }
 
 template <>
-XLNT_FUNCTION time cell::get_value() const
+time cell::get_value() const
 {
     return time::from_number(d_->value_numeric_);
 }
 
 template <>
-XLNT_FUNCTION datetime cell::get_value() const
+datetime cell::get_value() const
 {
     return datetime::from_number(d_->value_numeric_, get_base_date());
 }
 
 template <>
-XLNT_FUNCTION date cell::get_value() const
+date cell::get_value() const
 {
     return date::from_number(static_cast<int>(d_->value_numeric_), get_base_date());
 }
 
 template <>
-XLNT_FUNCTION timedelta cell::get_value() const
+timedelta cell::get_value() const
 {
     return timedelta::from_number(d_->value_numeric_);
 }
@@ -1438,25 +1426,17 @@ void cell::set_number_format(const number_format &number_format_)
 }
 
 template <>
-XLNT_FUNCTION string cell::get_value() const
+std::string cell::get_value() const
 {
     return d_->value_string_;
 }
-
-#ifdef XLNT_STD_STRING
-template<>
-XLNT_FUNCTION std::string cell::get_value() const
-{
-	return std::string(d_->value_string_.data());
-}
-#endif
 
 bool cell::has_value() const
 {
     return d_->type_ != cell::type::null;
 }
 
-string cell::to_string() const
+std::string cell::to_string() const
 {
     auto nf = get_number_format();
 
@@ -1469,7 +1449,7 @@ string cell::to_string() const
     case cell::type::string:
     case cell::type::formula:
     case cell::type::error:
-        return format_text(get_value<string>(), nf.get_format_string());
+        return format_text(get_value<std::string>(), nf.get_format_string());
     case cell::type::boolean:
         return get_value<long double>() == 0 ? "FALSE" : "TRUE";
     default:

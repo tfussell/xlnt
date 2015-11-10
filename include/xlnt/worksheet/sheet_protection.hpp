@@ -1,24 +1,24 @@
 #pragma once
 
-#include <xlnt/utils/string.hpp>
+#include <string>
 
-#include <xlnt/xlnt_config.hpp>
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 
 class XLNT_CLASS sheet_protection
 {
   public:
-    static string hash_password(const string &password);
+    static std::string hash_password(const std::string &password);
 
-    void set_password(const string &password);
-    string get_hashed_password() const
+    void set_password(const std::string &password);
+    std::string get_hashed_password() const
     {
         return hashed_password_;
     }
 
   private:
-    string hashed_password_;
+    std::string hashed_password_;
 };
 
 } // namespace xlnt

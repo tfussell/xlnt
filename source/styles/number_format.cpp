@@ -6,10 +6,10 @@
 
 namespace {
 
-const std::unordered_map<std::size_t, xlnt::string> &builtin_formats()
+const std::unordered_map<std::size_t, std::string> &builtin_formats()
 {
-    static const std::unordered_map<std::size_t, xlnt::string> *formats =
-        new std::unordered_map<std::size_t, xlnt::string>
+    static const std::unordered_map<std::size_t, std::string> *formats =
+        new std::unordered_map<std::size_t, std::string>
         ({
             { 0, "General" },
             { 1, "0" },
@@ -281,12 +281,12 @@ number_format::number_format(std::size_t id) : number_format(from_builtin_id(id)
 {
 }
 
-number_format::number_format(const string &format_string) : id_set_(false), id_(0)
+number_format::number_format(const std::string &format_string) : id_set_(false), id_(0)
 {
     set_format_string(format_string);
 }
 
-number_format::number_format(const string &format_string, std::size_t id) : id_set_(false), id_(0)
+number_format::number_format(const std::string &format_string, std::size_t id) : id_set_(false), id_(0)
 {
     set_format_string(format_string, id);
 }
@@ -295,14 +295,14 @@ number_format number_format::from_builtin_id(std::size_t builtin_id)
 {
     if (builtin_formats().find(builtin_id) == builtin_formats().end())
     {
-        throw std::runtime_error(("unknown id: " + string::from(builtin_id)).data());
+        throw std::runtime_error("unknown id: " + std::to_string(builtin_id));
     }
 
     auto format_string = builtin_formats().at(builtin_id);
     return number_format(format_string, builtin_id);
 }
 
-string number_format::get_format_string() const
+std::string number_format::get_format_string() const
 {
     return format_string_;
 }
@@ -316,7 +316,7 @@ std::size_t number_format::hash() const
 }
 
 
-void number_format::set_format_string(const string &format_string)
+void number_format::set_format_string(const std::string &format_string)
 {
     format_string_ = format_string;
     id_ = 0;
@@ -333,7 +333,7 @@ void number_format::set_format_string(const string &format_string)
     }
 }
 
-void number_format::set_format_string(const string &format_string, std::size_t id)
+void number_format::set_format_string(const std::string &format_string, std::size_t id)
 {
     format_string_ = format_string;
     id_ = id;

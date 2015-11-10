@@ -6,26 +6,26 @@
 
 namespace xlnt {
 
-void sheet_protection::set_password(const string &password)
+void sheet_protection::set_password(const std::string &password)
 {
     hashed_password_ = hash_password(password);
 }
 
 template <typename T>
-string int_to_hex(T i)
+std::string int_to_hex(T i)
 {
     std::stringstream stream;
     stream << std::hex << i;
-    return stream.str().c_str();
+    return stream.str();
 }
 
-string sheet_protection::hash_password(const string &plaintext_password)
+std::string sheet_protection::hash_password(const std::string &plaintext_password)
 {
     int password = 0x0000;
+    int i = 1;
 
-	for (int i = 1; i <= plaintext_password.num_bytes(); i++)
+    for (auto character : plaintext_password)
     {
-		char character = plaintext_password.data()[i - 1];
         int value = character << i;
         int rotated_bits = value >> 15;
         value &= 0x7fff;
@@ -33,17 +33,12 @@ string sheet_protection::hash_password(const string &plaintext_password)
         i++;
     }
 
-    password ^= plaintext_password.num_bytes();
+    password ^= plaintext_password.size();
     password ^= 0xCE4B;
 
-    string hashed = int_to_hex(password);
-	auto iter = hashed.data();
-
-	while (iter != hashed.data() + hashed.num_bytes())
-	{
-		*iter = std::toupper(*iter, std::locale::classic());
-	}
-
+    std::string hashed = int_to_hex(password);
+    std::transform(hashed.begin(), hashed.end(), hashed.begin(),
+                   [](char c) { return std::toupper(c, std::locale::classic()); });
     return hashed;
 }
 }

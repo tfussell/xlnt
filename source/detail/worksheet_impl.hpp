@@ -15,7 +15,7 @@ namespace detail {
 
 struct worksheet_impl
 {
-    worksheet_impl(workbook *parent_workbook, const string &title)
+    worksheet_impl(workbook *parent_workbook, const std::string &title)
         : parent_(parent_workbook), title_(title), freeze_panes_("A1"), comment_count_(0)
     {
         page_margins_.set_left(0.75);
@@ -59,7 +59,7 @@ struct worksheet_impl
     workbook *parent_;
     std::unordered_map<column_t, column_properties> column_properties_;
     std::unordered_map<row_t, row_properties> row_properties_;
-    string title_;
+    std::string title_;
     cell_reference freeze_panes_;
     std::unordered_map<row_t, std::unordered_map<column_t, cell_impl>> cell_map_;
     std::vector<relationship> relationships_;
@@ -67,7 +67,7 @@ struct worksheet_impl
     range_reference auto_filter_;
     margins page_margins_;
     std::vector<range_reference> merged_cells_;
-    std::unordered_map<string, named_range> named_ranges_;
+    std::unordered_map<std::string, named_range> named_ranges_;
     std::size_t comment_count_;
     header_footer header_footer_;
 };

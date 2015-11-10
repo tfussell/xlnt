@@ -5,34 +5,33 @@
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/comment.hpp>
 #include <xlnt/cell/types.hpp>
+#include <xlnt/utils/exceptions.hpp>
+#include <xlnt/utils/datetime.hpp>
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/styles/number_format.hpp>
-#include <xlnt/utils/datetime.hpp>
-#include <xlnt/utils/exceptions.hpp>
-#include <xlnt/utils/string.hpp>
 
-#include <detail/comment_impl.hpp>
+#include "comment_impl.hpp"
 
 namespace {
 
 // return s after checking encoding, size, and illegal characters
-xlnt::string check_string(xlnt::string s)
+std::string check_string(std::string s)
 {
-    if (s.length() == 0)
+    if (s.size() == 0)
     {
         return s;
     }
 
     // check encoding?
 
-    if (s.length() > 32767)
+    if (s.size() > 32767)
     {
         s = s.substr(0, 32767); // max string length in Excel
     }
 
-    for (auto c : s)
+    for (char c : s)
     {
-        if (c <= 8 || c == 11 || c == 12 || (c >= 14 && c <= 31))
+        if (c >= 0 && (c <= 8 || c == 11 || c == 12 || (c >= 14 && c <= 31)))
         {
             throw xlnt::illegal_character_error(c);
         }
@@ -41,20 +40,20 @@ xlnt::string check_string(xlnt::string s)
     return s;
 }
 
-std::pair<bool, long double> cast_numeric(const xlnt::string &s)
+std::pair<bool, long double> cast_numeric(const std::string &s)
 {
-    const char *str = s.data();
+    const char *str = s.c_str();
     char *str_end = nullptr;
     auto result = std::strtold(str, &str_end);
-    if (str_end != str + s.length()) return { false, 0 };
+    if (str_end != str + s.size()) return { false, 0 };
     return { true, result };
 }
 
-std::pair<bool, long double> cast_percentage(const xlnt::string &s)
+std::pair<bool, long double> cast_percentage(const std::string &s)
 {
     if (s.back() == '%')
     {
-        auto number = cast_numeric(s.substr(0, s.length() - 1));
+        auto number = cast_numeric(s.substr(0, s.size() - 1));
 
         if (number.first)
         {
@@ -65,44 +64,38 @@ std::pair<bool, long double> cast_percentage(const xlnt::string &s)
     return { false, 0 };
 }
 
-std::pair<bool, xlnt::time> cast_time(const xlnt::string &s)
+std::pair<bool, xlnt::time> cast_time(const std::string &s)
 {
     xlnt::time result;
 
     try
     {
         auto last_colon = s.find_last_of(':');
-        
-        if (last_colon == xlnt::string::npos)
-        {
-            return { false, result };
-        }
-        
-        double seconds = s.substr(last_colon + 1).to<double>();
+        if (last_colon == std::string::npos) return { false, result };
+        double seconds = std::stod(s.substr(last_colon + 1));
         result.second = static_cast<int>(seconds);
         result.microsecond = static_cast<int>((seconds - static_cast<double>(result.second)) * 1e6);
 
-        auto first_colon = s.find(':');
+        auto first_colon = s.find_first_of(':');
 
         if (first_colon == last_colon)
         {
             auto decimal_pos = s.find('.');
-            
-            if (decimal_pos != xlnt::string::npos)
+            if (decimal_pos != std::string::npos)
             {
-                result.minute = s.substr(0, first_colon).to<int>();
+                result.minute = std::stoi(s.substr(0, first_colon));
             }
             else
             {
-                result.hour = s.substr(0, first_colon).to<int>();
+                result.hour = std::stoi(s.substr(0, first_colon));
                 result.minute = result.second;
                 result.second = 0;
             }
         }
         else
         {
-            result.hour = s.substr(0, first_colon).to<int>();
-            result.minute = s.substr(first_colon + 1, last_colon - first_colon - 1).to<int>();
+            result.hour = std::stoi(s.substr(0, first_colon));
+            result.minute = std::stoi(s.substr(first_colon + 1, last_colon - first_colon - 1));
         }
     }
     catch (std::invalid_argument)
@@ -136,16 +129,16 @@ struct cell_impl
         return xlnt::cell(this);
     }
 
-    void set_string(const string &s, bool guess_types)
+    void set_string(const std::string &s, bool guess_types)
     {
         value_string_ = check_string(s);
         type_ = cell::type::string;
 
-        if (value_string_.length() > 1 && value_string_.front() == '=')
+        if (value_string_.size() > 1 && value_string_.front() == '=')
         {
             formula_ = value_string_;
             type_ = cell::type::formula;
-            value_string_.length();
+            value_string_.clear();
         }
         else if (cell::error_codes().find(s) != cell::error_codes().end())
         {
@@ -192,10 +185,10 @@ struct cell_impl
     column_t column_;
     row_t row_;
 
-    string value_string_;
+    std::string value_string_;
     long double value_numeric_;
 
-    string formula_;
+    std::string formula_;
 
     bool has_hyperlink_;
     relationship hyperlink_;

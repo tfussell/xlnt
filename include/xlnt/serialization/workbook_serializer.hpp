@@ -26,7 +26,7 @@
 #include <string>
 #include <vector>
 
-#include <xlnt/xlnt_config.hpp>
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 
@@ -42,7 +42,7 @@ class xml_node;
 class XLNT_CLASS workbook_serializer
 {
   public:
-    using string_pair = std::pair<string, string>;
+    using string_pair = std::pair<std::string, std::string>;
 
     workbook_serializer(workbook &wb);
 

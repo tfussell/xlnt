@@ -9,7 +9,7 @@ namespace detail {
 
 struct xml_document_impl
 {
-    string encoding;
+    std::string encoding;
     pugi::xml_document doc;
 };
 

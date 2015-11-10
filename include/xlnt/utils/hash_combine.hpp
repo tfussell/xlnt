@@ -2,7 +2,7 @@
 
 #include <functional>
 
-#include <xlnt/xlnt_config.hpp>
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 

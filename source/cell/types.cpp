@@ -7,7 +7,7 @@
 
 namespace xlnt {
 
-column_t::index_t column_t::column_index_from_string(const string &column_string)
+column_t::index_t column_t::column_index_from_string(const std::string &column_string)
 {
     if (column_string.length() > 3 || column_string.empty())
     {
@@ -16,24 +16,15 @@ column_t::index_t column_t::column_index_from_string(const string &column_string
 
     column_t::index_t column_index = 0;
     int place = 1;
-    
-    auto is_alpha = [](string::code_point c)
-    {
-        return (c >= U'A' && c <= U'Z') || (c >= U'a' && c <= U'z');
-    };
-    
-    auto column_string_upper = column_string.to_upper();
 
     for (int i = static_cast<int>(column_string.length()) - 1; i >= 0; i--)
     {
-        auto index = static_cast<std::size_t>(i);
-        
-        if (!is_alpha(column_string[index]))
+        if (!std::isalpha(column_string[static_cast<std::size_t>(i)], std::locale::classic()))
         {
             throw column_string_index_exception();
         }
 
-        auto char_index = column_string_upper[index] - U'A';
+        auto char_index = std::toupper(column_string[static_cast<std::size_t>(i)], std::locale::classic()) - 'A';
 
         column_index += static_cast<column_t::index_t>((char_index + 1) * place);
         place *= 26;
@@ -46,18 +37,18 @@ column_t::index_t column_t::column_index_from_string(const string &column_string
 // Right shift the column col_idx by 26 to find column letters in reverse
 // order.These numbers are 1 - based, and can be converted to ASCII
 // ordinals by adding 64.
-string column_t::column_string_from_index(column_t::index_t column_index)
+std::string column_t::column_string_from_index(column_t::index_t column_index)
 {
     // these indicies corrospond to A->ZZZ and include all allowed
     // columns
     if (column_index < constants::MinColumn() || column_index > constants::MaxColumn())
     {
-        //        auto msg = "Column index out of bounds: " + string::from(column_index);
+        //        auto msg = "Column index out of bounds: " + std::to_string(column_index);
         throw column_string_index_exception();
     }
 
     int temp = static_cast<int>(column_index);
-    string column_letter = "";
+    std::string column_letter = "";
 
     while (temp > 0)
     {
@@ -70,9 +61,7 @@ string column_t::column_string_from_index(column_t::index_t column_index)
             remainder = 26;
         }
 
-		string char_string;
-		char_string.append(char(remainder + 64));
-        column_letter = char_string + column_letter;
+        column_letter = std::string(1, char(remainder + 64)) + column_letter;
         temp = quotient;
     }
 

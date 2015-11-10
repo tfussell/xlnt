@@ -28,7 +28,7 @@
 #include <xlnt/utils/hash_combine.hpp>
 #include <xlnt/styles/color.hpp>
 
-#include <xlnt/xlnt_config.hpp>
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 
@@ -101,11 +101,11 @@ class XLNT_CLASS font
         return size_;
     }
 
-    void set_name(const string &name)
+    void set_name(const std::string &name)
     {
         name_ = name;
     }
-    string get_name() const
+    std::string get_name() const
     {
         return name_;
     }
@@ -121,7 +121,7 @@ class XLNT_CLASS font
         family_ = family;
     }
     
-    void set_scheme(const string &scheme)
+    void set_scheme(const std::string &scheme)
     {
         has_scheme_ = true;
         scheme_ = scheme;
@@ -174,7 +174,7 @@ class XLNT_CLASS font
   private:
     friend class style;
 
-    string name_ = "Calibri";
+    std::string name_ = "Calibri";
     std::size_t size_ = 11;
     bool bold_ = false;
     bool italic_ = false;
@@ -186,7 +186,7 @@ class XLNT_CLASS font
     bool has_family_ = false;
     std::size_t family_;
     bool has_scheme_ = false;
-    string scheme_;
+    std::string scheme_;
 };
 
 } // namespace xlnt

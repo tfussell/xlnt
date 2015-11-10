@@ -29,7 +29,7 @@
 
 #include <xlnt/workbook/workbook.hpp>
 
-#include <xlnt/xlnt_config.hpp>
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 
@@ -133,7 +133,7 @@ class XLNT_CLASS style_serializer
     /// <summary>
     /// Read and return a pair containing a name and corresponding style from named_style_node.
     /// </summary>
-    static std::pair<string, style> read_named_style(const xml_node &named_style_node);
+    static std::pair<std::string, style> read_named_style(const xml_node &named_style_node);
 
     //
     // Static element writers (i.e. writers that don't use internal state)

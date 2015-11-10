@@ -5,7 +5,7 @@
 
 namespace {
 
-bool match_path(const xlnt::string &path, const xlnt::string &comparand)
+bool match_path(const std::string &path, const std::string &comparand)
 {
     if (path == comparand)
     {
@@ -32,7 +32,7 @@ default_type::default_type()
 {
 }
 
-default_type::default_type(const string &extension, const string &content_type)
+default_type::default_type(const std::string &extension, const std::string &content_type)
     : extension_(extension), content_type_(content_type)
 {
 }
@@ -53,7 +53,7 @@ override_type::override_type()
 {
 }
 
-override_type::override_type(const string &part_name, const string &content_type)
+override_type::override_type(const std::string &part_name, const std::string &content_type)
     : part_name_(part_name), content_type_(content_type)
 {
 }
@@ -71,52 +71,52 @@ override_type &override_type::operator=(const override_type &other)
     return *this;
 }
 
-bool manifest::has_default_type(const string &extension) const
+bool manifest::has_default_type(const std::string &extension) const
 {
     return std::find_if(default_types_.begin(), default_types_.end(),
                         [&](const default_type &d) { return d.get_extension() == extension; }) != default_types_.end();
 }
 
-bool manifest::has_override_type(const string &part_name) const
+bool manifest::has_override_type(const std::string &part_name) const
 {
     return std::find_if(override_types_.begin(), override_types_.end(), [&](const override_type &d) {
                return match_path(d.get_part_name(), part_name);
            }) != override_types_.end();
 }
 
-void manifest::add_default_type(const string &extension, const string &content_type)
+void manifest::add_default_type(const std::string &extension, const std::string &content_type)
 {
     if(has_default_type(extension)) return;
     default_types_.push_back(default_type(extension, content_type));
 }
 
-void manifest::add_override_type(const string &part_name, const string &content_type)
+void manifest::add_override_type(const std::string &part_name, const std::string &content_type)
 {
     if(has_override_type(part_name)) return;
     override_types_.push_back(override_type(part_name, content_type));
 }
 
-string manifest::get_default_type(const string &extension) const
+std::string manifest::get_default_type(const std::string &extension) const
 {
     auto match = std::find_if(default_types_.begin(), default_types_.end(),
                               [&](const default_type &d) { return d.get_extension() == extension; });
 
     if (match == default_types_.end())
     {
-        throw std::runtime_error("no default type found for extension");
+        throw std::runtime_error("no default type found for extension: " + extension);
     }
 
     return match->get_content_type();
 }
 
-string manifest::get_override_type(const string &part_name) const
+std::string manifest::get_override_type(const std::string &part_name) const
 {
     auto match = std::find_if(override_types_.begin(), override_types_.end(),
                               [&](const override_type &d) { return match_path(d.get_part_name(), part_name); });
 
     if (match == override_types_.end())
     {
-        throw std::runtime_error("no default type found for part name");
+        throw std::runtime_error("no default type found for part name: " + part_name);
     }
 
     return match->get_content_type();

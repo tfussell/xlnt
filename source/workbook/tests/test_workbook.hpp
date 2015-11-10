@@ -47,7 +47,7 @@ public:
     {
         xlnt::workbook wb;
         auto new_sheet = wb.create_sheet();
-        xlnt::string title = "my sheet";
+        std::string title = "my sheet";
         new_sheet.set_title(title);
         auto found_sheet = wb.get_sheet_by_name(title);
         TS_ASSERT_EQUALS(new_sheet, found_sheet);
@@ -58,8 +58,8 @@ public:
         xlnt::workbook wb;
         auto new_sheet = wb.create_sheet();
         std::string title = "my sheet";
-        new_sheet.set_title(title.c_str());
-        auto found_sheet = wb.get_sheet_by_name(title.c_str());
+        new_sheet.set_title(title);
+        auto found_sheet = wb.get_sheet_by_name(title);
         TS_ASSERT_EQUALS(new_sheet, found_sheet);
         
         TS_ASSERT_EQUALS(wb.get_sheet_by_name("NotThere"), nullptr);
@@ -78,7 +78,7 @@ public:
         xlnt::workbook wb;
         wb.clear();
         
-        std::vector<xlnt::string> names = {"NewSheet", "NewSheet1", "NewSheet2", "NewSheet3", "NewSheet4", "NewSheet5"};
+        std::vector<std::string> names = {"NewSheet", "NewSheet1", "NewSheet2", "NewSheet3", "NewSheet4", "NewSheet5"};
         
         for(std::size_t count = 0; count < names.size(); count++)
         {
@@ -120,7 +120,7 @@ public:
     {
         xlnt::workbook wb;
         auto new_sheet = wb.create_sheet();
-        xlnt::string title = "my sheet";
+        std::string title = "my sheet";
         new_sheet.set_title(title);
         auto found_sheet = wb.get_sheet_by_name(title);
         TS_ASSERT_EQUALS(new_sheet, found_sheet);

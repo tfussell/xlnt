@@ -179,9 +179,9 @@ public:
     {
 		auto ws = wb_.create_sheet();
         ws.get_cell("A1").set_hyperlink("http://test.com");
-        TS_ASSERT_EQUALS("http://test.com", ws.get_cell("A1").get_value<xlnt::string>());
+        TS_ASSERT_EQUALS("http://test.com", ws.get_cell("A1").get_value<std::string>());
         ws.get_cell("A1").set_value("test");
-        TS_ASSERT_EQUALS("test", ws.get_cell("A1").get_value<xlnt::string>());
+        TS_ASSERT_EQUALS("test", ws.get_cell("A1").get_value<std::string>());
     }
 
     void test_write_auto_filter()

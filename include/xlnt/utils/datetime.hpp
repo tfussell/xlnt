@@ -22,9 +22,9 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <xlnt/utils/string.hpp>
+#include <string>
 
-#include <xlnt/xlnt_config.hpp>
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 
@@ -98,8 +98,7 @@ struct XLNT_CLASS time
         : hour(hour_), minute(minute_), second(second_), microsecond(microsecond_)
     {
     }
-
-    explicit time(const string &time_string);
+    explicit time(const std::string &time_string);
 
     long double to_number() const;
     bool operator==(const time &comparand) const;
@@ -144,7 +143,7 @@ struct XLNT_CLASS datetime
     {
     }
 
-    string to_string(calendar base_date) const;
+    std::string to_string(calendar base_date) const;
     long double to_number(calendar base_date) const;
     bool operator==(const datetime &comparand) const;
 

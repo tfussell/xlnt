@@ -27,34 +27,34 @@
 
 #include <xlnt/cell/types.hpp>
 
-#include <xlnt/xlnt_config.hpp>
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 
 /// <summary>
 /// Error for converting between numeric and A1-style cell references.
 /// </summary>
-class XLNT_CLASS cell_coordinates_exception
+class XLNT_CLASS cell_coordinates_exception : public std::runtime_error
 {
   public:
     cell_coordinates_exception(column_t column, row_t row);
-    cell_coordinates_exception(const string &coord_string);
+    cell_coordinates_exception(const std::string &coord_string);
 };
 
 /// <summary>
 /// The data submitted which cannot be used directly in Excel files. It
 /// must be removed or escaped.
 /// </summary>
-class XLNT_CLASS illegal_character_error
+class XLNT_CLASS illegal_character_error : public std::runtime_error
 {
   public:
-    illegal_character_error(utf32_char c);
+    illegal_character_error(char c);
 };
 
 /// <summary>
 /// Error for bad column names in A1-style cell references.
 /// </summary>
-class XLNT_CLASS column_string_index_exception
+class XLNT_CLASS column_string_index_exception : public std::runtime_error
 {
   public:
     column_string_index_exception();
@@ -63,7 +63,7 @@ class XLNT_CLASS column_string_index_exception
 /// <summary>
 /// Error for any data type inconsistencies.
 /// </summary>
-class XLNT_CLASS data_type_exception
+class XLNT_CLASS data_type_exception : public std::runtime_error
 {
   public:
     data_type_exception();
@@ -72,7 +72,7 @@ class XLNT_CLASS data_type_exception
 /// <summary>
 /// Error for badly formatted named ranges.
 /// </summary>
-class XLNT_CLASS named_range_exception
+class XLNT_CLASS named_range_exception : public std::runtime_error
 {
   public:
     named_range_exception();
@@ -81,25 +81,25 @@ class XLNT_CLASS named_range_exception
 /// <summary>
 /// Error for bad sheet names.
 /// </summary>
-class XLNT_CLASS sheet_title_exception
+class XLNT_CLASS sheet_title_exception : public std::runtime_error
 {
   public:
-    sheet_title_exception(const string &title);
+    sheet_title_exception(const std::string &title);
 };
 
 /// <summary>
 /// Error for trying to open a non-ooxml file.
 /// </summary>
-class XLNT_CLASS invalid_file_exception
+class XLNT_CLASS invalid_file_exception : public std::runtime_error
 {
   public:
-    invalid_file_exception(const string &filename);
+    invalid_file_exception(const std::string &filename);
 };
 
 /// <summary>
 /// Error for trying to modify a read-only workbook.
 /// </summary>
-class XLNT_CLASS read_only_workbook_exception
+class XLNT_CLASS read_only_workbook_exception : public std::runtime_error
 {
   public:
     read_only_workbook_exception();
@@ -108,7 +108,7 @@ class XLNT_CLASS read_only_workbook_exception
 /// <summary>
 /// Error when a references number format is not in the stylesheet.
 /// </summary>
-class XLNT_CLASS missing_number_format
+class XLNT_CLASS missing_number_format : public std::runtime_error
 {
   public:
     missing_number_format();
@@ -117,16 +117,16 @@ class XLNT_CLASS missing_number_format
 /// <summary>
 /// Error when an attribute value is invalid.
 /// </summary>
-class XLNT_CLASS attribute_error
+class XLNT_CLASS attribute_error : public std::runtime_error
 {
   public:
     attribute_error();
 };
 
-class XLNT_CLASS value_error
+class XLNT_CLASS value_error : public std::runtime_error
 {
   public:
-    value_error()
+    value_error() : std::runtime_error("")
     {
     }
 };

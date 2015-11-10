@@ -25,7 +25,7 @@
 
 #include <xlnt/styles/style.hpp>
 
-#include <xlnt/xlnt_config.hpp>
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 
@@ -42,7 +42,7 @@ class XLNT_CLASS named_style
     }
 
   private:
-    string name_;
+    std::string name_;
     style style_;
 };
 

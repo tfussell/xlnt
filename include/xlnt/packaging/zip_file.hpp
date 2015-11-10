@@ -4,11 +4,10 @@
 #include <iostream>
 #include <memory>
 #include <sstream>
+#include <string>
 #include <vector>
 
-#include <xlnt/utils/string.hpp>
-
-#include <xlnt/xlnt_config.hpp>
+#include "xlnt_config.hpp"
 
 // Note: this comes from https://github.com/tfussell/miniz-cpp
 
@@ -40,9 +39,9 @@ struct XLNT_CLASS zip_info
     zip_info();
 
     date_time_t date_time;
-    string filename;
-    string comment;
-    string extra;
+    std::string filename;
+    std::string comment;
+    std::string extra;
     uint16_t create_system;
     uint16_t create_version;
     uint16_t extract_version;
@@ -64,14 +63,14 @@ class XLNT_CLASS zip_file
 {
   public:
     zip_file();
-    zip_file(const string &filename);
+    zip_file(const std::string &filename);
     zip_file(const std::vector<unsigned char> &bytes);
     zip_file(std::istream &stream);
     ~zip_file();
 
     // to/from file
-    void load(const string &filename);
-    void save(const string &filename);
+    void load(const std::string &filename);
+    void save(const std::string &filename);
 
     // to/from byte vector
     void load(const std::vector<unsigned char> &bytes);
@@ -83,47 +82,47 @@ class XLNT_CLASS zip_file
 
     void reset();
 
-    bool has_file(const string &name);
+    bool has_file(const std::string &name);
     bool has_file(const zip_info &name);
 
-    zip_info getinfo(const string &name);
+    zip_info getinfo(const std::string &name);
 
     std::vector<zip_info> infolist();
-    std::vector<string> namelist();
+    std::vector<std::string> namelist();
 
-    std::ostream &open(const string &name);
+    std::ostream &open(const std::string &name);
     std::ostream &open(const zip_info &name);
 
-    void extract(const string &name);
-    void extract(const string &name, const string &path);
+    void extract(const std::string &name);
+    void extract(const std::string &name, const std::string &path);
     void extract(const zip_info &name);
-    void extract(const zip_info &name, const string &path);
+    void extract(const zip_info &name, const std::string &path);
 
     void extractall();
-    void extractall(const string &path);
-    void extractall(const string &path, const std::vector<string> &members);
-    void extractall(const string &path, const std::vector<zip_info> &members);
+    void extractall(const std::string &path);
+    void extractall(const std::string &path, const std::vector<std::string> &members);
+    void extractall(const std::string &path, const std::vector<zip_info> &members);
 
     void printdir();
     void printdir(std::ostream &stream);
 
-    string read(const string &name);
-    string read(const zip_info &name);
+    std::string read(const std::string &name);
+    std::string read(const zip_info &name);
 
-    std::pair<bool, string> testzip();
+    std::pair<bool, std::string> testzip();
 
-    void write(const string &filename);
-    void write(const string &filename, const string &arcname);
+    void write(const std::string &filename);
+    void write(const std::string &filename, const std::string &arcname);
 
-    void writestr(const string &arcname, const string &bytes);
-    void writestr(const zip_info &arcname, const string &bytes);
+    void writestr(const std::string &arcname, const std::string &bytes);
+    void writestr(const zip_info &arcname, const std::string &bytes);
 
-    string get_filename() const
+    std::string get_filename() const
     {
         return filename_;
     }
 
-    string comment;
+    std::string comment;
 
   private:
     void start_read();
@@ -137,7 +136,7 @@ class XLNT_CLASS zip_file
     std::unique_ptr<mz_zip_archive_tag> archive_;
     std::vector<char> buffer_;
     std::stringstream open_stream_;
-    string filename_;
+    std::string filename_;
 };
 
 } // namespace xlnt

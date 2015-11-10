@@ -25,7 +25,7 @@ cell_reference::cell_reference() : cell_reference(1, 1)
 {
 }
 
-cell_reference::cell_reference(const string &string)
+cell_reference::cell_reference(const std::string &string)
 {
     auto split = split_reference(string, absolute_column_, absolute_row_);
     
@@ -34,11 +34,11 @@ cell_reference::cell_reference(const string &string)
 }
 
 cell_reference::cell_reference(const char *reference_string)
-    : cell_reference(string(reference_string))
+    : cell_reference(std::string(reference_string))
 {
 }
 
-cell_reference::cell_reference(const string &column, row_t row)
+cell_reference::cell_reference(const std::string &column, row_t row)
     : cell_reference(column_t(column), row)
 {
 }
@@ -57,9 +57,9 @@ range_reference cell_reference::operator, (const xlnt::cell_reference &other) co
     return range_reference(*this, other);
 }
 
-string cell_reference::to_string() const
+std::string cell_reference::to_string() const
 {
-    string string_representation;
+    std::string string_representation;
     
     if (absolute_column_)
     {
@@ -73,7 +73,7 @@ string cell_reference::to_string() const
         string_representation.append("$");
     }
     
-    string_representation.append(string::from(row_));
+    string_representation.append(std::to_string(row_));
 
     return string_representation;
 }
@@ -83,61 +83,79 @@ range_reference cell_reference::to_range() const
     return range_reference(column_, row_, column_, row_);
 }
 
-std::pair<string, row_t> cell_reference::split_reference(const string &reference_string,
+std::pair<std::string, row_t> cell_reference::split_reference(const std::string &reference_string,
                                                               bool &absolute_column, bool &absolute_row)
 {
     absolute_column = false;
     absolute_row = false;
-    
-    auto is_alpha = [](string::code_point c)
-    {
-        return (c >= U'A' && c <= U'Z') || (c >= U'a' && c <= U'z');
-    };
-    
-    auto upper_ref_string = reference_string.to_upper();
-    auto iter = upper_ref_string.begin();
-    auto end = upper_ref_string.end();
-    
-    while(iter != end && (is_alpha(*iter) || *iter == U'$'))
-    {
-        ++iter;
-    }
-    
-    string column_string(upper_ref_string.begin(), iter);
-    
-    if (column_string.length() > 1 && column_string.front() == '$')
-    {
-        absolute_column = true;
-        column_string.erase(0);
-    }
 
-    if (column_string.length() > 1 && column_string.back() == '$')
+    // Convert a coordinate string like 'B12' to a tuple ('B', 12)
+    bool column_part = true;
+
+    std::string column_string;
+
+    for (auto character : reference_string)
     {
-        absolute_row = true;
-        column_string.erase(column_string.length() - 1);
-    }
-    
-    string row_string(iter, end);
-    
-    auto is_digit = [](string::code_point c)
-    {
-        return (c >= U'0' && c <= U'9');
-    };
-    
-    for(auto c : row_string)
-    {
-        if(!is_digit(c))
+        char upper = std::toupper(character, std::locale::classic());
+
+        if (std::isalpha(character, std::locale::classic()))
         {
-            throw cell_coordinates_exception(reference_string);
+            if (column_part)
+            {
+                column_string.append(1, upper);
+            }
+            else
+            {
+                throw cell_coordinates_exception(reference_string);
+            }
+        }
+        else if (character == '$')
+        {
+            if (column_part)
+            {
+                if (column_string.empty())
+                {
+                    column_string.append(1, upper);
+                }
+                else
+                {
+                    column_part = false;
+                }
+            }
+        }
+        else
+        {
+            if (column_part)
+            {
+                column_part = false;
+            }
+            else if (!std::isdigit(character, std::locale::classic()))
+            {
+                throw cell_coordinates_exception(reference_string);
+            }
         }
     }
-    
-    if (column_string.length() == 0 || row_string.length() == 0)
+
+    std::string row_string = reference_string.substr(column_string.length());
+
+    if (row_string.length() == 0)
     {
         throw cell_coordinates_exception(reference_string);
     }
 
-    return { column_string, row_string.to<row_t>() };
+    if (column_string[0] == '$')
+    {
+        absolute_row = true;
+        column_string = column_string.substr(1);
+    }
+
+    if (row_string[0] == '$')
+    {
+        absolute_column = true;
+        row_string = row_string.substr(1);
+    }
+
+    return { column_string, std::stoi(row_string) };
 }
 
 cell_reference cell_reference::make_offset(int column_offset, int row_offset) const

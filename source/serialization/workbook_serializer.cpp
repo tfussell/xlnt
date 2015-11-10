@@ -17,47 +17,38 @@
 
 namespace {
 
-xlnt::datetime w3cdtf_to_datetime(const xlnt::string &string)
+xlnt::datetime w3cdtf_to_datetime(const std::string &string)
 {
     xlnt::datetime result(1900, 1, 1);
-
     auto separator_index = string.find('-');
-    result.year = string.substr(0, separator_index).to<int>();
-    result.month = string.substr(separator_index + 1, string.find('-', separator_index + 1)).to<int>();
+    result.year = std::stoi(string.substr(0, separator_index));
+    result.month = std::stoi(string.substr(separator_index + 1, string.find('-', separator_index + 1)));
     separator_index = string.find('-', separator_index + 1);
-    result.day = string.substr(separator_index + 1, string.find('T', separator_index + 1)).to<int>();
+    result.day = std::stoi(string.substr(separator_index + 1, string.find('T', separator_index + 1)));
     separator_index = string.find('T', separator_index + 1);
-    result.hour = string.substr(separator_index + 1, string.find(':', separator_index + 1)).to<int>();
+    result.hour = std::stoi(string.substr(separator_index + 1, string.find(':', separator_index + 1)));
     separator_index = string.find(':', separator_index + 1);
-    result.minute = string.substr(separator_index + 1, string.find(':', separator_index + 1)).to<int>();
+    result.minute = std::stoi(string.substr(separator_index + 1, string.find(':', separator_index + 1)));
     separator_index = string.find(':', separator_index + 1);
-    result.second = string.substr(separator_index + 1, string.find('Z', separator_index + 1)).to<int>();
-
+    result.second = std::stoi(string.substr(separator_index + 1, string.find('Z', separator_index + 1)));
     return result;
 }
 
-xlnt::string fill(const xlnt::string &str, std::size_t length = 2)
+std::string fill(const std::string &string, std::size_t length = 2)
 {
-    if (str.length() >= length)
+    if (string.size() >= length)
     {
-        return str;
+        return string;
     }
 
-	xlnt::string result;
-
-	for (std::size_t i = 0; i < length - str.length(); i++)
-	{
-		result.append('0');
-	}
-
-    return result + str;
+    return std::string(length - string.size(), '0') + string;
 }
 
-xlnt::string datetime_to_w3cdtf(const xlnt::datetime &dt)
+std::string datetime_to_w3cdtf(const xlnt::datetime &dt)
 {
-    return xlnt::string::from(dt.year) + "-" + fill(xlnt::string::from(dt.month)) + "-" + fill(xlnt::string::from(dt.day)) + "T" +
-           fill(xlnt::string::from(dt.hour)) + ":" + fill(xlnt::string::from(dt.minute)) + ":" +
-           fill(xlnt::string::from(dt.second)) + "Z";
+    return std::to_string(dt.year) + "-" + fill(std::to_string(dt.month)) + "-" + fill(std::to_string(dt.day)) + "T" +
+           fill(std::to_string(dt.hour)) + ":" + fill(std::to_string(dt.minute)) + ":" +
+           fill(std::to_string(dt.second)) + "Z";
 }
 
 } // namespace
@@ -85,12 +76,12 @@ void workbook_serializer::read_properties_core(const xml_document &xml)
     }
     if (root_node.has_child("dcterms:created"))
     {
-        string created_string = root_node.get_child("dcterms:created").get_text();
+        std::string created_string = root_node.get_child("dcterms:created").get_text();
         props.created = w3cdtf_to_datetime(created_string);
     }
     if (root_node.has_child("dcterms:modified"))
     {
-        string modified_string = root_node.get_child("dcterms:modified").get_text();
+        std::string modified_string = root_node.get_child("dcterms:modified").get_text();
         props.modified = w3cdtf_to_datetime(modified_string);
     }
 }
@@ -149,12 +140,12 @@ xml_document workbook_serializer::write_properties_app() const
     heading_pairs_vector_node.add_child("vt:variant").add_child("vt:lpstr").set_text("Worksheets");
     heading_pairs_vector_node.add_child("vt:variant")
         .add_child("vt:i4")
-        .set_text(string::from(workbook_.get_sheet_names().size()));
+        .set_text(std::to_string(workbook_.get_sheet_names().size()));
 
     auto titles_of_parts_node = root_node.add_child("TitlesOfParts");
     auto titles_of_parts_vector_node = titles_of_parts_node.add_child("vt:vector");
     titles_of_parts_vector_node.add_attribute("baseType", "lpstr");
-    titles_of_parts_vector_node.add_attribute("size", string::from(workbook_.get_sheet_names().size()));
+    titles_of_parts_vector_node.add_attribute("size", std::to_string(workbook_.get_sheet_names().size()));
 
     for (auto ws : workbook_)
     {
@@ -220,22 +211,22 @@ xml_document workbook_serializer::write_workbook() const
         if (relationship.get_type() == relationship::type::worksheet)
         {
             // TODO: this is ugly
-            string sheet_index_string = relationship.get_target_uri();
+            std::string sheet_index_string = relationship.get_target_uri();
             sheet_index_string = sheet_index_string.substr(0, sheet_index_string.find('.'));
             sheet_index_string = sheet_index_string.substr(sheet_index_string.find_last_of('/'));
             auto iter = sheet_index_string.end();
-            --iter;
+            iter--;
             while (isdigit(*iter))
-                --iter;
+                iter--;
             auto first_digit = iter - sheet_index_string.begin();
-            sheet_index_string = sheet_index_string.substr(static_cast<string::size_type>(first_digit + 1));
-            std::size_t sheet_index = sheet_index_string.to<std::size_t>() - 1;
+            sheet_index_string = sheet_index_string.substr(static_cast<std::string::size_type>(first_digit + 1));
+            std::size_t sheet_index = static_cast<std::size_t>(std::stoll(sheet_index_string) - 1);
 
             auto ws = workbook_.get_sheet_by_index(sheet_index);
 
             auto sheet_node = sheets_node.add_child("sheet");
             sheet_node.add_attribute("name", ws.get_title());
-            sheet_node.add_attribute("sheetId", string::from(sheet_index + 1));
+            sheet_node.add_attribute("sheetId", std::to_string(sheet_index + 1));
             sheet_node.add_attribute("r:id", relationship.get_id());
 
             if (ws.has_auto_filter())
@@ -244,7 +235,7 @@ xml_document workbook_serializer::write_workbook() const
                 defined_name_node.add_attribute("name", "_xlnm._FilterDatabase");
                 defined_name_node.add_attribute("hidden", "1");
                 defined_name_node.add_attribute("localSheetId", "0");
-                string name =
+                std::string name =
                     "'" + ws.get_title() + "'!" + range_reference::make_absolute(ws.get_auto_filter()).to_string();
                 defined_name_node.set_text(name);
             }

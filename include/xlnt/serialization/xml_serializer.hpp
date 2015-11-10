@@ -1,8 +1,8 @@
 #pragma once
 
-#include <xlnt/utils/string.hpp>
+#include <string>
 
-#include <xlnt/xlnt_config.hpp>
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 
@@ -12,10 +12,10 @@ class xml_node;
 class XLNT_CLASS xml_serializer
 {
   public:
-    static string serialize(const xml_document &xml);
-    static xml_document deserialize(const string &xml_string);
+    static std::string serialize(const xml_document &xml);
+    static xml_document deserialize(const std::string &xml_string);
 
-    static string serialize_node(const xml_node &xml);
+    static std::string serialize_node(const xml_node &xml);
 };
 
 } // namespace xlnt

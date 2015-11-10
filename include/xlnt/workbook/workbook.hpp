@@ -31,7 +31,7 @@
 
 #include <xlnt/packaging/relationship.hpp>
 
-#include <xlnt/xlnt_config.hpp>
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 
@@ -65,7 +65,7 @@ namespace detail { struct workbook_impl; } // namespace detail
 class XLNT_CLASS workbook
 {
   public:
-    class XLNT_CLASS iterator
+    class iterator
     {
       public:
         iterator(workbook &wb, std::size_t index);
@@ -85,7 +85,7 @@ class XLNT_CLASS workbook
         std::size_t index_;
     };
 
-    class XLNT_CLASS const_iterator
+    class const_iterator
     {
       public:
         const_iterator(const workbook &wb, std::size_t index);
@@ -105,7 +105,7 @@ class XLNT_CLASS workbook
         std::size_t index_;
     };
 
-    static std::size_t index_from_ws_filename(const string &filename);
+    static std::size_t index_from_ws_filename(const std::string &filename);
 
     // constructors
     workbook();
@@ -128,9 +128,9 @@ class XLNT_CLASS workbook
     // create
     worksheet create_sheet();
     worksheet create_sheet(std::size_t index);
-    worksheet create_sheet(const string &title);
-    worksheet create_sheet(std::size_t index, const string &title);
-    worksheet create_sheet(const string &title, const relationship &rel);
+    worksheet create_sheet(const std::string &title);
+    worksheet create_sheet(std::size_t index, const std::string &title);
+    worksheet create_sheet(const std::string &title, const relationship &rel);
 
     // add
     void add_sheet(worksheet worksheet);
@@ -141,14 +141,14 @@ class XLNT_CLASS workbook
     void clear();
 
     // container operations
-    worksheet get_sheet_by_name(const string &sheet_name);
-    const worksheet get_sheet_by_name(const string &sheet_name) const;
+    worksheet get_sheet_by_name(const std::string &sheet_name);
+    const worksheet get_sheet_by_name(const std::string &sheet_name) const;
     worksheet get_sheet_by_index(std::size_t index);
     const worksheet get_sheet_by_index(std::size_t index) const;
-    bool contains(const string &key) const;
+    bool contains(const std::string &key) const;
     int get_index(worksheet worksheet);
 
-    worksheet operator[](const string &name);
+    worksheet operator[](const std::string &name);
     worksheet operator[](std::size_t index);
 
     iterator begin();
@@ -166,24 +166,23 @@ class XLNT_CLASS workbook
     const_iterator cbegin() const;
     const_iterator cend() const;
 
-    std::vector<string> get_sheet_names() const;
+    std::vector<std::string> get_sheet_names() const;
 
     document_properties &get_properties();
     const document_properties &get_properties() const;
 
     // named ranges
     std::vector<named_range> get_named_ranges() const;
-    void create_named_range(const string &name, worksheet worksheet, const range_reference &reference);
-	void create_named_range(const string &name, worksheet worksheet, const string &reference_string);
-    bool has_named_range(const string &name) const;
-    range get_named_range(const string &name);
-    void remove_named_range(const string &name);
+    void create_named_range(const std::string &name, worksheet worksheet, const range_reference &reference);
+    bool has_named_range(const std::string &name) const;
+    range get_named_range(const std::string &name);
+    void remove_named_range(const std::string &name);
 
     // serialization
     bool save(std::vector<unsigned char> &data);
-    bool save(const string &filename);
+    bool save(const std::string &filename);
     bool load(const std::vector<unsigned char> &data);
-    bool load(const string &filename);
+    bool load(const std::string &filename);
     bool load(std::istream &stream);
     bool load(zip_file &archive);
 
@@ -201,8 +200,8 @@ class XLNT_CLASS workbook
         return !(*this == std::nullptr_t{});
     }
 
-    void create_relationship(const string &id, const string &target, relationship::type type);
-    relationship get_relationship(const string &id) const;
+    void create_relationship(const std::string &id, const std::string &target, relationship::type type);
+    relationship get_relationship(const std::string &id) const;
     const std::vector<relationship> &get_relationships() const;
 
     void add_alignment(const alignment &a);
@@ -239,7 +238,7 @@ class XLNT_CLASS workbook
     bool get_pivot_button(std::size_t style_id) const;
     bool get_quote_prefix(std::size_t style_id) const;
 
-    void set_code_name(const string &code_name);
+    void set_code_name(const std::string &code_name);
 
     bool has_loaded_theme() const;
     const theme &get_loaded_theme() const;
@@ -252,9 +251,9 @@ class XLNT_CLASS workbook
 
     const std::vector<relationship> &get_root_relationships() const;
 
-    void add_shared_string(const string &shared);
-    std::vector<string> &get_shared_strings();
-    const std::vector<string> &get_shared_strings() const;
+    void add_shared_string(const std::string &shared);
+    std::vector<std::string> &get_shared_strings();
+    const std::vector<std::string> &get_shared_strings() const;
 
   private:
     friend class worksheet;

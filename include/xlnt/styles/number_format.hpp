@@ -23,12 +23,11 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <string>
 #include <unordered_map>
 #include <utility>
 
-#include <xlnt/utils/string.hpp>
-
-#include <xlnt/xlnt_config.hpp>
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 
@@ -74,13 +73,13 @@ class XLNT_CLASS number_format
 
     number_format();
     number_format(std::size_t builtin_id);
-    number_format(const string &code);
-    number_format(const string &code, std::size_t custom_id);
+    number_format(const std::string &code);
+    number_format(const std::string &code, std::size_t custom_id);
 
-    void set_format_string(const string &format_code);
-    void set_format_string(const string &format_code, std::size_t custom_id);
+    void set_format_string(const std::string &format_code);
+    void set_format_string(const std::string &format_code, std::size_t custom_id);
     
-    string get_format_string() const;
+    std::string get_format_string() const;
 
     bool has_id() const
     {
@@ -113,7 +112,7 @@ class XLNT_CLASS number_format
   private:
     bool id_set_;
     std::size_t id_;
-    string format_string_;
+    std::string format_string_;
 };
 
 } // namespace xlnt

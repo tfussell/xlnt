@@ -24,7 +24,7 @@
 
 #include <xlnt/cell/cell_reference.hpp>
 
-#include <xlnt/xlnt_config.hpp>
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 
@@ -37,9 +37,9 @@ class XLNT_CLASS range_reference
     static range_reference make_absolute(const range_reference &relative_reference);
 
     range_reference();
-    explicit range_reference(const string &range_string);
-    explicit range_reference(const char *range_string);
-    explicit range_reference(const std::pair<cell_reference, cell_reference> &reference_pair);
+    range_reference(const std::string &range_string);
+    range_reference(const char *range_string);
+    range_reference(const std::pair<cell_reference, cell_reference> &reference_pair);
     range_reference(const cell_reference &start, const cell_reference &end);
     range_reference(column_t column_index_start, row_t row_index_start, column_t column_index_end, row_t row_index_end);
 
@@ -68,30 +68,25 @@ class XLNT_CLASS range_reference
 
     range_reference make_offset(int column_offset, int row_offset) const;
 
-    string to_string() const;
+    std::string to_string() const;
 
     bool operator==(const range_reference &comparand) const;
-
-    bool operator==(const string &reference_string) const
+    bool operator==(const std::string &reference_string) const
     {
         return *this == range_reference(reference_string);
     }
-
     bool operator==(const char *reference_string) const
     {
-        return *this == string(reference_string);
+        return *this == std::string(reference_string);
     }
-
     bool operator!=(const range_reference &comparand) const;
-
-    bool operator!=(const string &reference_string) const
+    bool operator!=(const std::string &reference_string) const
     {
         return *this != range_reference(reference_string);
     }
-
     bool operator!=(const char *reference_string) const
     {
-        return *this != string(reference_string);
+        return *this != std::string(reference_string);
     }
 
   private:
@@ -99,7 +94,7 @@ class XLNT_CLASS range_reference
     cell_reference bottom_right_;
 };
 
-inline bool XLNT_FUNCTION operator==(const string &reference_string, const range_reference &ref)
+inline bool XLNT_FUNCTION operator==(const std::string &reference_string, const range_reference &ref)
 {
     return ref == reference_string;
 }
@@ -109,7 +104,7 @@ inline bool XLNT_FUNCTION operator==(const char *reference_string, const range_r
     return ref == reference_string;
 }
 
-inline bool XLNT_FUNCTION operator!=(const string &reference_string, const range_reference &ref)
+inline bool XLNT_FUNCTION operator!=(const std::string &reference_string, const range_reference &ref)
 {
     return ref != reference_string;
 }

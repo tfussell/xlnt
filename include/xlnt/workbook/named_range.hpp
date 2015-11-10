@@ -3,14 +3,14 @@
 #include <string>
 #include <vector>
 
-#include <xlnt/xlnt_config.hpp>
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 
 class range_reference;
 class worksheet;
 
-std::vector<std::pair<string, string>> XLNT_FUNCTION split_named_range(const string &named_range_string);
+std::vector<std::pair<std::string, std::string>> XLNT_FUNCTION split_named_range(const std::string &named_range_string);
 
 class XLNT_CLASS named_range
 {
@@ -19,9 +19,9 @@ class XLNT_CLASS named_range
 
     named_range();
     named_range(const named_range &other);
-    named_range(const string &name, const std::vector<target> &targets);
+    named_range(const std::string &name, const std::vector<target> &targets);
 
-    string get_name() const
+    std::string get_name() const
     {
         return name_;
     }
@@ -33,7 +33,7 @@ class XLNT_CLASS named_range
     named_range &operator=(const named_range &other);
 
   private:
-    string name_;
+    std::string name_;
     std::vector<target> targets_;
 };
 }

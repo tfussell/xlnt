@@ -27,7 +27,7 @@
 
 #include <xlnt/utils/datetime.hpp>
 
-#include <xlnt/xlnt_config.hpp>
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 
@@ -39,16 +39,16 @@ class XLNT_CLASS document_properties
   public:
     document_properties();
 
-    string creator;
-    string last_modified_by;
+    std::string creator;
+    std::string last_modified_by;
     datetime created;
     datetime modified;
-    string title = "Untitled";
-    string subject;
-    string description;
-    string keywords;
-    string category;
-    string company;
+    std::string title = "Untitled";
+    std::string subject;
+    std::string description;
+    std::string keywords;
+    std::string category;
+    std::string company;
     calendar excel_base_date;
 };
 

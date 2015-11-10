@@ -26,7 +26,7 @@
 #include <xlnt/styles/color.hpp>
 #include <xlnt/utils/hash_combine.hpp>
 
-#include <xlnt/xlnt_config.hpp>
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 
@@ -79,7 +79,7 @@ class XLNT_CLASS fill
         type_ = t;
     }
 
-    string get_pattern_type_string() const
+    std::string get_pattern_type_string() const
     {
         if (type_ != type::pattern)
         {
@@ -131,7 +131,7 @@ class XLNT_CLASS fill
         }
     }
 
-    string get_gradient_type_string() const
+    std::string get_gradient_type_string() const
     {
         if (type_ != type::gradient)
         {

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <xlnt/utils/string.hpp>
+#include <string>
 
-#include <xlnt/xlnt_config.hpp>
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 
@@ -23,19 +23,19 @@ class XLNT_CLASS comment
     /// <summary>
     /// Constructs a comment applied to the given cell, parent, and with the comment
     /// text and author set to the provided respective values.
-    comment(cell parent, const string &text, const string &auth);
+    comment(cell parent, const std::string &text, const std::string &auth);
     
     ~comment();
     
     /// <summary>
     /// Return the text that will be displayed for this comment.
     /// </summary>
-    string get_text() const;
+    std::string get_text() const;
     
     /// <summary>
     /// Return the author of this comment.
     /// </summary>
-    string get_author() const;
+    std::string get_author() const;
 
     /// <summary>
     /// True if the comments point to the same sell (false if

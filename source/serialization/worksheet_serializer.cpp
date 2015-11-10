@@ -35,14 +35,14 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml)
     auto &root_node = xml.get_child("worksheet");
 
     auto &dimension_node = root_node.get_child("dimension");
-    string dimension = dimension_node.get_attribute("ref");
+    std::string dimension = dimension_node.get_attribute("ref");
     auto full_range = xlnt::range_reference(dimension);
     auto sheet_data_node = root_node.get_child("sheetData");
 
     if (root_node.has_child("mergeCells"))
     {
         auto merge_cells_node = root_node.get_child("mergeCells");
-        auto count = merge_cells_node.get_attribute("count").to<std::size_t>();
+        auto count = std::stoull(merge_cells_node.get_attribute("count"));
 
         for (auto merge_cell_node : merge_cells_node.get_children())
         {
@@ -70,23 +70,23 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml)
             continue;
         }
 
-        auto row_index = row_node.get_attribute("r").to<row_t>();
+        auto row_index = static_cast<row_t>(std::stoull(row_node.get_attribute("r")));
 
         if (row_node.has_attribute("ht"))
         {
-            sheet_.get_row_properties(row_index).height = row_node.get_attribute("ht").to<long double>();
+            sheet_.get_row_properties(row_index).height = std::stold(row_node.get_attribute("ht"));
         }
 
-        string span_string = row_node.get_attribute("spans");
+        std::string span_string = row_node.get_attribute("spans");
         auto colon_index = span_string.find(':');
 
         column_t min_column = 0;
         column_t max_column = 0;
 
-        if (colon_index != string::npos)
+        if (colon_index != std::string::npos)
         {
-            min_column = static_cast<column_t>(span_string.substr(0, colon_index).to<column_t::index_t>());
-            max_column = static_cast<column_t>(span_string.substr(colon_index + 1).to<column_t::index_t>());
+            min_column = static_cast<column_t>(std::stoll(span_string.substr(0, colon_index)));
+            max_column = static_cast<column_t>(std::stoll(span_string.substr(colon_index + 1)));
         }
         else
         {
@@ -96,7 +96,7 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml)
 
         for (column_t i = min_column; i <= max_column; i++)
         {
-            string address = i.column_string() + string::from(row_index);
+            std::string address = i.column_string() + std::to_string(row_index);
 
             xml_node cell_node;
             bool cell_found = false;
@@ -119,13 +119,13 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml)
             if (cell_found)
             {
                 bool has_value = cell_node.has_child("v");
-                string value_string = has_value ? cell_node.get_child("v").get_text() : "";
+                std::string value_string = has_value ? cell_node.get_child("v").get_text() : "";
 
                 bool has_type = cell_node.has_attribute("t");
-                string type = has_type ? cell_node.get_attribute("t") : "";
+                std::string type = has_type ? cell_node.get_attribute("t") : "";
 
                 bool has_style = cell_node.has_attribute("s");
-                auto style_id = static_cast<std::size_t>(has_style ? cell_node.get_attribute("s").to<std::size_t>() : 0ULL);
+                auto style_id = static_cast<std::size_t>(has_style ? std::stoull(cell_node.get_attribute("s")) : 0LL);
 
                 bool has_formula = cell_node.has_child("f");
                 bool has_shared_formula = has_formula && cell_node.get_child("f").has_attribute("t") &&
@@ -135,18 +135,18 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml)
 
                 if (has_formula && !has_shared_formula && !sheet_.get_parent().get_data_only())
                 {
-                    string formula = cell_node.get_child("f").get_text();
+                    std::string formula = cell_node.get_child("f").get_text();
                     cell.set_formula(formula);
                 }
 
                 if (has_type && type == "inlineStr") // inline string
                 {
-                    string inline_string = cell_node.get_child("is").get_child("t").get_text();
+                    std::string inline_string = cell_node.get_child("is").get_child("t").get_text();
                     cell.set_value(inline_string);
                 }
                 else if (has_type && type == "s" && !has_formula) // shared string
                 {
-                    auto shared_string_index = value_string.to<std::size_t>();
+                    auto shared_string_index = static_cast<std::size_t>(std::stoull(value_string));
                     auto shared_string = shared_strings.at(shared_string_index);
                     cell.set_value(shared_string);
                 }
@@ -166,7 +166,7 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml)
                     }
                     else
                     {
-                        cell.set_value(value_string.to<long double>());
+                        cell.set_value(std::stold(value_string));
                     }
                 }
 
@@ -187,11 +187,11 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml)
             continue;
         }
 
-        auto min = static_cast<column_t>(col_node.get_attribute("min").to<column_t::index_t>());
-        auto max = static_cast<column_t>(col_node.get_attribute("max").to<column_t::index_t>());
-        auto width = col_node.get_attribute("width").to<long double>();
+        auto min = static_cast<column_t>(std::stoull(col_node.get_attribute("min")));
+        auto max = static_cast<column_t>(std::stoull(col_node.get_attribute("max")));
+        auto width = std::stold(col_node.get_attribute("width"));
         bool custom = col_node.get_attribute("customWidth") == "1";
-        auto column_style = static_cast<std::size_t>(col_node.has_attribute("style") ? col_node.get_attribute("style").to<std::size_t>() : 0ULL);
+        auto column_style = static_cast<std::size_t>(col_node.has_attribute("style") ? std::stoull(col_node.get_attribute("style")) : 0);
 
         for (auto column = min; column <= max; column++)
         {
@@ -245,7 +245,7 @@ xml_document worksheet_serializer::write_worksheet() const
     auto sheet_view_node = sheet_views_node.add_child("sheetView");
     sheet_view_node.add_attribute("workbookViewId", "0");
 
-    string active_pane = "bottomRight";
+    std::string active_pane = "bottomRight";
 
     if (sheet_.has_frozen_panes())
     {
@@ -253,13 +253,13 @@ xml_document worksheet_serializer::write_worksheet() const
 
         if (sheet_.get_frozen_panes().get_column_index() > 1)
         {
-            pane_node.add_attribute("xSplit", string::from(sheet_.get_frozen_panes().get_column_index().index - 1));
+            pane_node.add_attribute("xSplit", std::to_string(sheet_.get_frozen_panes().get_column_index().index - 1));
             active_pane = "topRight";
         }
 
         if (sheet_.get_frozen_panes().get_row() > 1)
         {
-            pane_node.add_attribute("ySplit", string::from(sheet_.get_frozen_panes().get_row() - 1));
+            pane_node.add_attribute("ySplit", std::to_string(sheet_.get_frozen_panes().get_row() - 1));
             active_pane = "bottomLeft";
         }
 
@@ -295,7 +295,7 @@ xml_document worksheet_serializer::write_worksheet() const
         }
     }
 
-    string active_cell = "A1";
+    std::string active_cell = "A1";
     selection_node.add_attribute("activeCell", active_cell);
     selection_node.add_attribute("sqref", active_cell);
 
@@ -329,15 +329,15 @@ xml_document worksheet_serializer::write_worksheet() const
 
             auto col_node = cols_node.add_child("col");
 
-            col_node.add_attribute("min", string::from(column.index));
-            col_node.add_attribute("max", string::from(column.index));
-            col_node.add_attribute("width", string::from(props.width));
-            col_node.add_attribute("style", string::from(props.style));
+            col_node.add_attribute("min", std::to_string(column.index));
+            col_node.add_attribute("max", std::to_string(column.index));
+            col_node.add_attribute("width", std::to_string(props.width));
+            col_node.add_attribute("style", std::to_string(props.style));
             col_node.add_attribute("customWidth", props.custom ? "1" : "0");
         }
     }
 
-    std::unordered_map<string, string> hyperlink_references;
+    std::unordered_map<std::string, std::string> hyperlink_references;
 
     auto sheet_data_node = root_node.add_child("sheetData");
     const auto &shared_strings = sheet_.get_parent().get_shared_strings();
@@ -366,8 +366,8 @@ xml_document worksheet_serializer::write_worksheet() const
 
         auto row_node = sheet_data_node.add_child("row");
 
-        row_node.add_attribute("r", string::from(row.front().get_row()));
-        row_node.add_attribute("spans", (string::from(min) + ":" + string::from(max)));
+        row_node.add_attribute("r", std::to_string(row.front().get_row()));
+        row_node.add_attribute("spans", (std::to_string(min) + ":" + std::to_string(max)));
 
         if (sheet_.has_row_properties(row.front().get_row()))
         {
@@ -376,11 +376,11 @@ xml_document worksheet_serializer::write_worksheet() const
 
             if (height == std::floor(height))
             {
-                row_node.add_attribute("ht", string::from(static_cast<long long int>(height)) + ".0");
+                row_node.add_attribute("ht", std::to_string(static_cast<long long int>(height)) + ".0");
             }
             else
             {
-                row_node.add_attribute("ht", string::from(height));
+                row_node.add_attribute("ht", std::to_string(height));
             }
         }
 
@@ -413,7 +413,7 @@ xml_document worksheet_serializer::write_worksheet() const
 
                     for (std::size_t i = 0; i < shared_strings.size(); i++)
                     {
-                        if (shared_strings[i] == cell.get_value<string>())
+                        if (shared_strings[i] == cell.get_value<std::string>())
                         {
                             match_index = static_cast<int>(i);
                             break;
@@ -422,7 +422,7 @@ xml_document worksheet_serializer::write_worksheet() const
 
                     if (match_index == -1)
                     {
-                        if (cell.get_value<string>().empty())
+                        if (cell.get_value<std::string>().empty())
                         {
                             cell_node.add_attribute("t", "s");
                         }
@@ -430,14 +430,14 @@ xml_document worksheet_serializer::write_worksheet() const
                         {
                             cell_node.add_attribute("t", "inlineStr");
                             auto inline_string_node = cell_node.add_child("is");
-                            inline_string_node.add_child("t").set_text(cell.get_value<string>());
+                            inline_string_node.add_child("t").set_text(cell.get_value<std::string>());
                         }
                     }
                     else
                     {
                         cell_node.add_attribute("t", "s");
                         auto value_node = cell_node.add_child("v");
-                        value_node.set_text(string::from(match_index));
+                        value_node.set_text(std::to_string(match_index));
                     }
                 }
                 else
@@ -464,7 +464,7 @@ xml_document worksheet_serializer::write_worksheet() const
 
                             if (is_integral(cell.get_value<long double>()))
                             {
-                                value_node.set_text(string::from(cell.get_value<long long>()));
+                                value_node.set_text(std::to_string(cell.get_value<long long>()));
                             }
                             else
                             {
@@ -472,7 +472,7 @@ xml_document worksheet_serializer::write_worksheet() const
                                 ss.precision(20);
                                 ss << cell.get_value<long double>();
                                 ss.str();
-                                value_node.set_text(ss.str().data());
+                                value_node.set_text(ss.str());
                             }
                         }
                     }
@@ -486,7 +486,7 @@ xml_document worksheet_serializer::write_worksheet() const
 
                 if (cell.has_style())
                 {
-                    cell_node.add_attribute("s", string::from(cell.get_style_id()));
+                    cell_node.add_attribute("s", std::to_string(cell.get_style_id()));
                 }
             }
         }
@@ -501,7 +501,7 @@ xml_document worksheet_serializer::write_worksheet() const
     if (!sheet_.get_merged_ranges().empty())
     {
         auto merge_cells_node = root_node.add_child("mergeCells");
-        merge_cells_node.add_attribute("count", string::from(sheet_.get_merged_ranges().size()));
+        merge_cells_node.add_attribute("count", std::to_string(sheet_.get_merged_ranges().size()));
 
         for (auto merged_range : sheet_.get_merged_ranges())
         {
@@ -535,13 +535,13 @@ xml_document worksheet_serializer::write_worksheet() const
     auto page_margins_node = root_node.add_child("pageMargins");
     
     //TODO: there must be a better way to do this
-    auto remove_trailing_zeros = [](const string &n)
+    auto remove_trailing_zeros = [](const std::string &n)
     {
         auto decimal = n.find('.');
         
-        if (decimal == string::npos) return n;
+        if (decimal == std::string::npos) return n;
         
-        auto index = n.length() - 1;
+        auto index = n.size() - 1;
         
         while (index >= decimal && n[index] == '0')
         {
@@ -556,22 +556,22 @@ xml_document worksheet_serializer::write_worksheet() const
         return n.substr(0, index + 1);
     };
 
-    page_margins_node.add_attribute("left", remove_trailing_zeros(string::from(sheet_.get_page_margins().get_left())));
-    page_margins_node.add_attribute("right", remove_trailing_zeros(string::from(sheet_.get_page_margins().get_right())));
-    page_margins_node.add_attribute("top", remove_trailing_zeros(string::from(sheet_.get_page_margins().get_top())));
-    page_margins_node.add_attribute("bottom", remove_trailing_zeros(string::from(sheet_.get_page_margins().get_bottom())));
-    page_margins_node.add_attribute("header", remove_trailing_zeros(string::from(sheet_.get_page_margins().get_header())));
-    page_margins_node.add_attribute("footer", remove_trailing_zeros(string::from(sheet_.get_page_margins().get_footer())));
+    page_margins_node.add_attribute("left", remove_trailing_zeros(std::to_string(sheet_.get_page_margins().get_left())));
+    page_margins_node.add_attribute("right", remove_trailing_zeros(std::to_string(sheet_.get_page_margins().get_right())));
+    page_margins_node.add_attribute("top", remove_trailing_zeros(std::to_string(sheet_.get_page_margins().get_top())));
+    page_margins_node.add_attribute("bottom", remove_trailing_zeros(std::to_string(sheet_.get_page_margins().get_bottom())));
+    page_margins_node.add_attribute("header", remove_trailing_zeros(std::to_string(sheet_.get_page_margins().get_header())));
+    page_margins_node.add_attribute("footer", remove_trailing_zeros(std::to_string(sheet_.get_page_margins().get_footer())));
 
     if (!sheet_.get_page_setup().is_default())
     {
         auto page_setup_node = root_node.add_child("pageSetup");
 
-        string orientation_string =
+        std::string orientation_string =
             sheet_.get_page_setup().get_orientation() == page_setup::orientation::landscape ? "landscape" : "portrait";
         page_setup_node.add_attribute("orientation", orientation_string);
         page_setup_node.add_attribute("paperSize",
-                                      string::from(static_cast<int>(sheet_.get_page_setup().get_paper_size())));
+                                      std::to_string(static_cast<int>(sheet_.get_page_setup().get_paper_size())));
         page_setup_node.add_attribute("fitToHeight", sheet_.get_page_setup().fit_to_height() ? "1" : "0");
         page_setup_node.add_attribute("fitToWidth", sheet_.get_page_setup().fit_to_width() ? "1" : "0");
     }
@@ -580,12 +580,12 @@ xml_document worksheet_serializer::write_worksheet() const
     {
         auto header_footer_node = root_node.add_child("headerFooter");
         auto odd_header_node = header_footer_node.add_child("oddHeader");
-        string header_text =
+        std::string header_text =
             "&L&\"Calibri,Regular\"&K000000Left Header Text&C&\"Arial,Regular\"&6&K445566Center Header "
             "Text&R&\"Arial,Bold\"&8&K112233Right Header Text";
         odd_header_node.set_text(header_text);
         auto odd_footer_node = header_footer_node.add_child("oddFooter");
-        string footer_text =
+        std::string footer_text =
             "&L&\"Times New Roman,Regular\"&10&K445566Left Footer Text_x000D_And &D and &T&C&\"Times New "
             "Roman,Bold\"&12&K778899Center Footer Text &Z&F on &A&R&\"Times New Roman,Italic\"&14&KAABBCCRight Footer "
             "Text &P of &N";

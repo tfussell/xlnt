@@ -4,7 +4,7 @@
 
 namespace xlnt {
 
-xml_document shared_strings_serializer::write_shared_strings(const std::vector<string> &strings)
+xml_document shared_strings_serializer::write_shared_strings(const std::vector<std::string> &strings)
 {
     xml_document xml;
 
@@ -12,7 +12,7 @@ xml_document shared_strings_serializer::write_shared_strings(const std::vector<s
 
     xml.add_namespace("", "http://schemas.openxmlformats.org/spreadsheetml/2006/main");
 
-    root_node.add_attribute("uniqueCount", string::from(strings.size()));
+    root_node.add_attribute("uniqueCount", std::to_string(strings.size()));
 
     for (const auto &string : strings)
     {
@@ -22,13 +22,13 @@ xml_document shared_strings_serializer::write_shared_strings(const std::vector<s
     return xml;
 }
 
-bool shared_strings_serializer::read_shared_strings(const xml_document &xml, std::vector<string> &strings)
+bool shared_strings_serializer::read_shared_strings(const xml_document &xml, std::vector<std::string> &strings)
 {
     strings.clear();
 
     auto root_node = xml.get_child("sst");
 
-    auto unique_count = root_node.get_attribute("uniqueCount").to<std::size_t>();
+    auto unique_count = std::stoull(root_node.get_attribute("uniqueCount"));
 
     for (const auto &si_node : root_node.get_children())
     {

@@ -119,20 +119,20 @@ bool datetime::operator==(const datetime &comparand) const
            minute == comparand.minute && second == comparand.second && microsecond == comparand.microsecond;
 }
 
-time::time(const string &time_string) : hour(0), minute(0), second(0), microsecond(0)
+time::time(const std::string &time_string) : hour(0), minute(0), second(0), microsecond(0)
 {
-    string remaining = time_string;
+    std::string remaining = time_string;
     auto colon_index = remaining.find(':');
-    hour = remaining.substr(0, colon_index).to<int>();
+    hour = std::stoi(remaining.substr(0, colon_index));
     remaining = remaining.substr(colon_index + 1);
     colon_index = remaining.find(':');
-    minute = remaining.substr(0, colon_index).to<int>();
+    minute = std::stoi(remaining.substr(0, colon_index));
     colon_index = remaining.find(':');
     
-    if (colon_index != string::npos)
+    if (colon_index != std::string::npos)
     {
         remaining = remaining.substr(colon_index + 1);
-        second = remaining.to<int>();
+        second = std::stoi(remaining);
     }
 }
 
@@ -179,10 +179,10 @@ long double datetime::to_number(calendar base_date) const
     return date(year, month, day).to_number(base_date) + time(hour, minute, second, microsecond).to_number();
 }
 
-string datetime::to_string(xlnt::calendar /*base_date*/) const
+std::string datetime::to_string(xlnt::calendar /*base_date*/) const
 {
-    return string::from(year) + "/" + string::from(month) + "/" + string::from(day) + " " + string::from(hour) +
-           ":" + string::from(minute) + ":" + string::from(second) + ":" + string::from(microsecond);
+    return std::to_string(year) + "/" + std::to_string(month) + "/" + std::to_string(day) + " " + std::to_string(hour) +
+           ":" + std::to_string(minute) + ":" + std::to_string(second) + ":" + std::to_string(microsecond);
 }
 
 date date::today()

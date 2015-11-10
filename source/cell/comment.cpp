@@ -9,7 +9,7 @@ comment::comment(detail::comment_impl *d) : d_(d)
 {
 }
 
-comment::comment(cell parent, const string &text, const string &author) : d_(nullptr)
+comment::comment(cell parent, const std::string &text, const std::string &author) : d_(nullptr)
 {
     d_ = parent.get_comment().d_;
     d_->text_ = text;
@@ -24,12 +24,12 @@ comment::~comment()
 {
 }
 
-string comment::get_author() const
+std::string comment::get_author() const
 {
     return d_->author_;
 }
 
-string comment::get_text() const
+std::string comment::get_text() const
 {
     return d_->text_;
 }

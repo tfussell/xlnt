@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include <xlnt/xlnt_config.hpp>
+#include "xlnt_config.hpp"
 
 namespace xlnt {
 
@@ -12,24 +12,24 @@ class tokenizer;
 
 class XLNT_CLASS translator
 {
-    translator(const string &formula, const cell_reference &ref);
+    translator(const std::string &formula, const cell_reference &ref);
 
-    std::vector<string> get_tokens();
+    std::vector<std::string> get_tokens();
 
-    static string translate_row(const string &row_str, int row_delta);
-    static string translate_col(const string &col_str, col_delta);
+    static std::string translate_row(const std::string &row_str, int row_delta);
+    static std::string translate_col(const std::string &col_str, col_delta);
 
-    std::pair<string, string> strip_ws_name(const string &range_str);
+    std::pair<std::string, std::string> strip_ws_name(const std::string &range_str);
 
     void translate_range(const range_reference &range_ref);
     void translate_formula(const cell_reference &dest);
 
   private:
-    const string ROW_RANGE_RE;
-    const string COL_RANGE_RE;
-    const string CELL_REF_RE;
+    const std::string ROW_RANGE_RE;
+    const std::string COL_RANGE_RE;
+    const std::string CELL_REF_RE;
 
-    string formula_;
+    std::string formula_;
     cell_reference reference_;
     tokenizer tokenizer_;
 };

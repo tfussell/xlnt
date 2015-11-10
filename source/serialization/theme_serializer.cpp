@@ -21,9 +21,9 @@ xml_document theme_serializer::write_theme(const theme &) const
 
     struct scheme_element
     {
-        string name;
-        string sub_element_name;
-        string val;
+        std::string name;
+        std::string sub_element_name;
+        std::string val;
     };
 
     std::vector<scheme_element> scheme_elements = {
@@ -53,9 +53,9 @@ xml_document theme_serializer::write_theme(const theme &) const
     struct font_scheme
     {
         bool typeface;
-        string script;
-        string major;
-        string minor;
+        std::string script;
+        std::string major;
+        std::string minor;
     };
 
     std::vector<font_scheme> font_schemes = {
