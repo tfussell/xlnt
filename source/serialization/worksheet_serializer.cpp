@@ -85,13 +85,13 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml)
 
         if (colon_index != std::string::npos)
         {
-            min_column = static_cast<column_t>(std::stoll(span_string.substr(0, colon_index)));
-            max_column = static_cast<column_t>(std::stoll(span_string.substr(colon_index + 1)));
+            min_column = static_cast<column_t::index_t>(std::stoll(span_string.substr(0, colon_index)));
+            max_column = static_cast<column_t::index_t>(std::stoll(span_string.substr(colon_index + 1)));
         }
         else
         {
-            min_column = static_cast<column_t>(full_range.get_top_left().get_column_index());
-            max_column = static_cast<column_t>(full_range.get_bottom_right().get_column_index());
+            min_column = full_range.get_top_left().get_column_index();
+            max_column = full_range.get_bottom_right().get_column_index();
         }
 
         for (column_t i = min_column; i <= max_column; i++)
@@ -187,8 +187,8 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml)
             continue;
         }
 
-        auto min = static_cast<column_t>(std::stoull(col_node.get_attribute("min")));
-        auto max = static_cast<column_t>(std::stoull(col_node.get_attribute("max")));
+        auto min = static_cast<column_t::index_t>(std::stoull(col_node.get_attribute("min")));
+        auto max = static_cast<column_t::index_t>(std::stoull(col_node.get_attribute("max")));
         auto width = std::stold(col_node.get_attribute("width"));
         bool custom = col_node.get_attribute("customWidth") == "1";
         auto column_style = static_cast<std::size_t>(col_node.has_attribute("style") ? std::stoull(col_node.get_attribute("style")) : 0);

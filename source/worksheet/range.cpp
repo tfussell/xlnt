@@ -147,9 +147,9 @@ cell_vector range::get_vector(std::size_t vector_index)
     }
 
     range_reference reference(
-        static_cast<column_t>(static_cast<std::size_t>(ref_.get_top_left().get_column().index) + vector_index),
+        static_cast<column_t::index_t>(static_cast<std::size_t>(ref_.get_top_left().get_column().index) + vector_index),
         ref_.get_top_left().get_row(),
-        static_cast<column_t>(static_cast<std::size_t>(ref_.get_top_left().get_column().index) + vector_index),
+        static_cast<column_t::index_t>(static_cast<std::size_t>(ref_.get_top_left().get_column().index) + vector_index),
         ref_.get_bottom_right().get_row());
 
     return cell_vector(ws_, reference, order_);

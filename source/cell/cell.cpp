@@ -817,71 +817,71 @@ bool cell::garbage_collectible() const
 }
 
 template <>
-void cell::set_value(bool b)
+XLNT_FUNCTION void cell::set_value(bool b)
 {
     d_->value_numeric_ = b ? 1 : 0;
     d_->type_ = type::boolean;
 }
 
 template <>
-void cell::set_value(std::int8_t i)
+XLNT_FUNCTION void cell::set_value(std::int8_t i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
 template <>
-void cell::set_value(std::int16_t i)
+XLNT_FUNCTION void cell::set_value(std::int16_t i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
 template <>
-void cell::set_value(std::int32_t i)
+XLNT_FUNCTION void cell::set_value(std::int32_t i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
 template <>
-void cell::set_value(std::int64_t i)
+XLNT_FUNCTION void cell::set_value(std::int64_t i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
 template <>
-void cell::set_value(std::uint8_t i)
+XLNT_FUNCTION void cell::set_value(std::uint8_t i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
 template <>
-void cell::set_value(std::uint16_t i)
+XLNT_FUNCTION void cell::set_value(std::uint16_t i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
 template <>
-void cell::set_value(std::uint32_t i)
+XLNT_FUNCTION void cell::set_value(std::uint32_t i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
 template <>
-void cell::set_value(std::uint64_t i)
+XLNT_FUNCTION void cell::set_value(std::uint64_t i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 template <>
-void cell::set_value(unsigned long i)
+XLNT_FUNCTION void cell::set_value(unsigned long i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
@@ -890,14 +890,14 @@ void cell::set_value(unsigned long i)
 
 #ifdef __linux
 template <>
-void cell::set_value(long long i)
+XLNT_FUNCTION void cell::set_value(long long i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
 template <>
-void cell::set_value(unsigned long long i)
+XLNT_FUNCTION void cell::set_value(unsigned long long i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
@@ -905,28 +905,28 @@ void cell::set_value(unsigned long long i)
 #endif
 
 template <>
-void cell::set_value(float f)
+XLNT_FUNCTION void cell::set_value(float f)
 {
     d_->value_numeric_ = static_cast<long double>(f);
     d_->type_ = type::numeric;
 }
 
 template <>
-void cell::set_value(double d)
+XLNT_FUNCTION void cell::set_value(double d)
 {
     d_->value_numeric_ = static_cast<long double>(d);
     d_->type_ = type::numeric;
 }
 
 template <>
-void cell::set_value(long double d)
+XLNT_FUNCTION void cell::set_value(long double d)
 {
     d_->value_numeric_ = static_cast<long double>(d);
     d_->type_ = type::numeric;
 }
 
 template <>
-void cell::set_value(std::string s)
+XLNT_FUNCTION void cell::set_value(std::string s)
 {
     d_->set_string(s, get_parent().get_parent().get_guess_types());
 
@@ -937,13 +937,13 @@ void cell::set_value(std::string s)
 }
 
 template <>
-void cell::set_value(char const *c)
+XLNT_FUNCTION void cell::set_value(char const *c)
 {
     set_value(std::string(c));
 }
 
 template <>
-void cell::set_value(cell c)
+XLNT_FUNCTION void cell::set_value(cell c)
 {
     d_->type_ = c.d_->type_;
     d_->value_numeric_ = c.d_->value_numeric_;
@@ -956,7 +956,7 @@ void cell::set_value(cell c)
 }
 
 template <>
-void cell::set_value(date d)
+XLNT_FUNCTION void cell::set_value(date d)
 {
     d_->type_ = type::numeric;
     d_->value_numeric_ = d.to_number(get_base_date());
@@ -964,7 +964,7 @@ void cell::set_value(date d)
 }
 
 template <>
-void cell::set_value(datetime d)
+XLNT_FUNCTION void cell::set_value(datetime d)
 {
     d_->type_ = type::numeric;
     d_->value_numeric_ = d.to_number(get_base_date());
@@ -972,7 +972,7 @@ void cell::set_value(datetime d)
 }
 
 template <>
-void cell::set_value(time t)
+XLNT_FUNCTION void cell::set_value(time t)
 {
     d_->type_ = type::numeric;
     d_->value_numeric_ = t.to_number();
@@ -980,7 +980,7 @@ void cell::set_value(time t)
 }
 
 template <>
-void cell::set_value(timedelta t)
+XLNT_FUNCTION void cell::set_value(timedelta t)
 {
     d_->type_ = type::numeric;
     d_->value_numeric_ = t.to_number();
@@ -1316,105 +1316,105 @@ void cell::clear_value()
 }
 
 template <>
-bool cell::get_value() const
+XLNT_FUNCTION bool cell::get_value() const
 {
     return d_->value_numeric_ != 0;
 }
 
 template <>
-std::int8_t cell::get_value() const
+XLNT_FUNCTION std::int8_t cell::get_value() const
 {
     return static_cast<std::int8_t>(d_->value_numeric_);
 }
 
 template <>
-std::int16_t cell::get_value() const
+XLNT_FUNCTION std::int16_t cell::get_value() const
 {
     return static_cast<std::int16_t>(d_->value_numeric_);
 }
 
 template <>
-std::int32_t cell::get_value() const
+XLNT_FUNCTION std::int32_t cell::get_value() const
 {
     return static_cast<std::int32_t>(d_->value_numeric_);
 }
 
 template <>
-std::int64_t cell::get_value() const
+XLNT_FUNCTION std::int64_t cell::get_value() const
 {
     return static_cast<std::int64_t>(d_->value_numeric_);
 }
 
 template <>
-std::uint8_t cell::get_value() const
+XLNT_FUNCTION std::uint8_t cell::get_value() const
 {
     return static_cast<std::uint8_t>(d_->value_numeric_);
 }
 
 template <>
-std::uint16_t cell::get_value() const
+XLNT_FUNCTION std::uint16_t cell::get_value() const
 {
     return static_cast<std::uint16_t>(d_->value_numeric_);
 }
 
 template <>
-std::uint32_t cell::get_value() const
+XLNT_FUNCTION std::uint32_t cell::get_value() const
 {
     return static_cast<std::uint32_t>(d_->value_numeric_);
 }
 
 template <>
-std::uint64_t cell::get_value() const
+XLNT_FUNCTION std::uint64_t cell::get_value() const
 {
     return static_cast<std::uint64_t>(d_->value_numeric_);
 }
 
 #ifdef __linux
 template <>
-long long int cell::get_value() const
+XLNT_FUNCTION long long int cell::get_value() const
 {
     return static_cast<long long int>(d_->value_numeric_);
 }
 #endif
 
 template <>
-float cell::get_value() const
+XLNT_FUNCTION float cell::get_value() const
 {
     return static_cast<float>(d_->value_numeric_);
 }
 
 template <>
-double cell::get_value() const
+XLNT_FUNCTION double cell::get_value() const
 {
     return static_cast<double>(d_->value_numeric_);
 }
 
 template <>
-long double cell::get_value() const
+XLNT_FUNCTION long double cell::get_value() const
 {
     return d_->value_numeric_;
 }
 
 template <>
-time cell::get_value() const
+XLNT_FUNCTION time cell::get_value() const
 {
     return time::from_number(d_->value_numeric_);
 }
 
 template <>
-datetime cell::get_value() const
+XLNT_FUNCTION datetime cell::get_value() const
 {
     return datetime::from_number(d_->value_numeric_, get_base_date());
 }
 
 template <>
-date cell::get_value() const
+XLNT_FUNCTION date cell::get_value() const
 {
     return date::from_number(static_cast<int>(d_->value_numeric_), get_base_date());
 }
 
 template <>
-timedelta cell::get_value() const
+XLNT_FUNCTION timedelta cell::get_value() const
 {
     return timedelta::from_number(d_->value_numeric_);
 }
@@ -1426,7 +1426,7 @@ void cell::set_number_format(const number_format &number_format_)
 }
 
 template <>
-std::string cell::get_value() const
+XLNT_FUNCTION std::string cell::get_value() const
 {
     return d_->value_string_;
 }

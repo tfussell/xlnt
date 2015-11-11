@@ -65,7 +65,7 @@ namespace detail { struct workbook_impl; } // namespace detail
 class XLNT_CLASS workbook
 {
   public:
-    class iterator
+    class XLNT_CLASS iterator
     {
       public:
         iterator(workbook &wb, std::size_t index);
@@ -85,7 +85,7 @@ class XLNT_CLASS workbook
         std::size_t index_;
     };
 
-    class const_iterator
+    class XLNT_CLASS const_iterator
     {
       public:
         const_iterator(const workbook &wb, std::size_t index);

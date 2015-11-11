@@ -18,7 +18,7 @@ class XLNT_CLASS cell_vector
 {
   public:
     template <bool is_const = true>
-    class common_iterator : public std::iterator<std::bidirectional_iterator_tag, cell>
+    class XLNT_CLASS common_iterator : public std::iterator<std::bidirectional_iterator_tag, cell>
     {
       public:
         common_iterator(worksheet ws, const cell_reference &start_cell, major_order order = major_order::row)

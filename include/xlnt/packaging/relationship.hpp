@@ -25,6 +25,8 @@
 
 #include <string>
 
+#include <xlnt/xlnt_config.hpp>
+
 namespace xlnt {
 
 /// <summary>
@@ -46,7 +48,7 @@ enum class target_mode
 /// Represents an association between a source Package or part, and a target object which can be a part or external
 /// resource.
 /// </summary>
-class relationship
+class XLNT_CLASS relationship
 {
   public:
     enum class type

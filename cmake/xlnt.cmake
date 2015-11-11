@@ -7,13 +7,21 @@ set(PROJECT_DESCRIPTION "user-friendly xlsx library for C++14")
 include(VERSION.cmake)
 
 if(NOT CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX /usr/local)
+  if(MSVC)
+    set(CMAKE_INSTALL_PREFIX /c/Program Files/xlnt)
+  else()
+    set(CMAKE_INSTALL_PREFIX /usr/local)
+  endif()
 endif()
 
 set(INC_DEST_DIR ${CMAKE_INSTALL_PREFIX}/include)
 
 if(NOT LIB_DEST_DIR)
   set(LIB_DEST_DIR ${CMAKE_INSTALL_PREFIX}/lib)
+endif()
+
+if(NOT BIN_DEST_DIR)
+  set(BIN_DEST_DIR ${CMAKE_INSTALL_PREFIX}/bin)
 endif()
 
 include_directories(../include)
@@ -63,7 +71,7 @@ if(SHARED)
     target_compile_definitions(xlnt PRIVATE XLNT_EXPORT=1)
     add_definitions(-DXLNT_SHARED)
     if(MSVC)
-        set_target_properties(xlnt PROPERTIES COMPILE_FLAGS "/wd\"4251\" /MD")
+        set_target_properties(xlnt PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\"")
     endif()
 else()
     add_library(xlnt STATIC ${HEADERS} ${SOURCES} ${MINIZ} ${PUGIXML})
@@ -119,6 +127,7 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../include/xlnt
 install(TARGETS xlnt
         LIBRARY DESTINATION ${LIB_DEST_DIR}
         ARCHIVE DESTINATION ${LIB_DEST_DIR}
+        RUNTIME DESTINATION ${BIN_DEST_DIR}
 )
 
 install(FILES "${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc"

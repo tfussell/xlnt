@@ -46,7 +46,7 @@ source_group(runner FILES ${RUNNER})
 target_link_libraries(xlnt.test xlnt)
 
 if(MSVC)
-    set_target_properties(xlnt.test PROPERTIES COMPILE_FLAGS "/wd\"4251\"")
+    set_target_properties(xlnt.test PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\"")
 endif()
 
 # Needed for PathFileExists in path_helper (test helper)
