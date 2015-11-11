@@ -68,9 +68,9 @@ SET(PUGIXML ../third-party/pugixml/src/pugixml.hpp ../third-party/pugixml/src/pu
 
 if(SHARED)
     add_library(xlnt SHARED ${HEADERS} ${SOURCES} ${MINIZ} ${PUGIXML})
-    target_compile_definitions(xlnt PRIVATE XLNT_EXPORT=1)
     add_definitions(-DXLNT_SHARED)
     if(MSVC)
+        target_compile_definitions(xlnt PRIVATE XLNT_EXPORT=1)
         set_target_properties(xlnt PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\"")
     endif()
 else()
