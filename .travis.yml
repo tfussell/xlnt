@@ -1,6 +1,6 @@
 language: cpp
 script:
-  - python configure SHARED=0 BUILD_TESTS=1 AUTORUN_TESTS=1 "Unix Makefiles" && make -C build
+  - python configure --shared --build-tests --autotest && make -C build
 compiler:
   - clang
   - gcc
