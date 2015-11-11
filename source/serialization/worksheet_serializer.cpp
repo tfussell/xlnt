@@ -51,7 +51,7 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml)
                 continue;
             }
 
-            sheet_.merge_cells(merge_cell_node.get_attribute("ref"));
+            sheet_.merge_cells(range_reference(merge_cell_node.get_attribute("ref")));
             count--;
         }
 

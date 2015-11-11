@@ -217,6 +217,11 @@ int workbook::get_index(xlnt::worksheet worksheet)
     throw std::runtime_error("worksheet isn't owned by this workbook");
 }
 
+void workbook::create_named_range(const std::string &name, worksheet range_owner, const std::string &reference_string)
+{
+    create_named_range(name, range_owner, range_reference(reference_string));
+}
+
 void workbook::create_named_range(const std::string &name, worksheet range_owner, const range_reference &reference)
 {
     auto match = get_sheet_by_name(range_owner.get_title());

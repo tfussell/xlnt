@@ -54,6 +54,11 @@ std::string worksheet::unique_sheet_name(const std::string &value) const
     return append == 0 ? value : value + std::to_string(append);
 }
 
+void worksheet::create_named_range(const std::string &name, const std::string &reference_string)
+{
+    create_named_range(name, range_reference(reference_string));
+}
+
 void worksheet::create_named_range(const std::string &name, const range_reference &reference)
 {
     std::vector<named_range::target> targets;
@@ -63,7 +68,7 @@ void worksheet::create_named_range(const std::string &name, const range_referenc
 
 range worksheet::operator()(const xlnt::cell_reference &top_left, const xlnt::cell_reference &bottom_right)
 {
-    return get_range({ top_left, bottom_right });
+    return get_range(range_reference(top_left, bottom_right));
 }
 
 cell worksheet::operator[](const cell_reference &ref)
@@ -84,6 +89,11 @@ margins &worksheet::get_page_margins()
 const margins &worksheet::get_page_margins() const
 {
     return d_->page_margins_;
+}
+
+void worksheet::auto_filter(const std::string &reference_string)
+{
+    auto_filter(range_reference(reference_string));
 }
 
 void worksheet::auto_filter(const range_reference &reference)
@@ -321,9 +331,19 @@ range_reference worksheet::calculate_dimension() const
     return range_reference(lowest_column, lowest_row, highest_column, highest_row);
 }
 
+range worksheet::get_range(const std::string &reference_string)
+{
+    return get_range(range_reference(reference_string));
+}
+
 range worksheet::get_range(const range_reference &reference)
 {
     return range(*this, reference);
+}
+
+const range worksheet::get_range(const std::string &reference_string) const
+{
+    return get_range(range_reference(reference_string));
 }
 
 const range worksheet::get_range(const range_reference &reference) const
@@ -353,6 +373,16 @@ relationship worksheet::create_relationship(relationship::type type, const std::
     std::string r_id = "rId" + std::to_string(d_->relationships_.size() + 1);
     d_->relationships_.push_back(relationship(type, r_id, target_uri));
     return d_->relationships_.back();
+}
+
+void worksheet::merge_cells(const std::string &reference_string)
+{
+    merge_cells(range_reference(reference_string));
+}
+
+void worksheet::unmerge_cells(const std::string &reference_string)
+{
+    unmerge_cells(range_reference(reference_string));
 }
 
 void worksheet::merge_cells(const range_reference &reference)

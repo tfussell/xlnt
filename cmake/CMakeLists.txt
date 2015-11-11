@@ -6,10 +6,11 @@ endif()
 
 project(xlnt)
 
-option(SHARED "Set to OFF to build static libraries" ON)
+option(SHARED "Set to ON to build shared libraries" OFF)
 option(BUILD_EXAMPLES "Build examples" OFF)
 option(BUILD_TESTS "Build tests runner" OFF)
 option(AUTORUN_TESTS "Automatically run tests after building" OFF)
+option(COVERAGE "Create coverage files" OFF)
 
 if(APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.10)

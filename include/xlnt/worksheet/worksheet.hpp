@@ -290,7 +290,9 @@ class XLNT_CLASS worksheet
     // container
     cell get_cell(const cell_reference &reference);
     const cell get_cell(const cell_reference &reference) const;
+    range get_range(const std::string &reference_string);
     range get_range(const range_reference &reference);
+    const range get_range(const std::string &reference_string) const;
     const range get_range(const range_reference &reference) const;
     range get_squared_range(column_t min_col, row_t min_row, column_t max_col, row_t max_row);
     const range get_squared_range(column_t min_col, row_t min_row, column_t max_col, row_t max_row) const;
@@ -319,6 +321,7 @@ class XLNT_CLASS worksheet
     std::string unique_sheet_name(const std::string &value) const;
 
     // named range
+    void create_named_range(const std::string &name, const std::string &reference_string);
     void create_named_range(const std::string &name, const range_reference &reference);
     bool has_named_range(const std::string &name);
     range get_named_range(const std::string &name);
@@ -340,8 +343,10 @@ class XLNT_CLASS worksheet
     // void add_chart(chart chart);
 
     // cell merge
+    void merge_cells(const std::string &reference_string);
     void merge_cells(const range_reference &reference);
     void merge_cells(column_t start_column, row_t start_row, column_t end_column, row_t end_row);
+    void unmerge_cells(const std::string &reference_string);
     void unmerge_cells(const range_reference &reference);
     void unmerge_cells(column_t start_column, row_t start_row, column_t end_column, row_t end_row);
     std::vector<range_reference> get_merged_ranges() const;
@@ -380,6 +385,7 @@ class XLNT_CLASS worksheet
 
     // auto filter
     range_reference get_auto_filter() const;
+    void auto_filter(const std::string &range_string);
     void auto_filter(const xlnt::range &range);
     void auto_filter(const range_reference &reference);
     void unset_auto_filter();

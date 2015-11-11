@@ -73,6 +73,8 @@ def parse_args(args):
 
         if option == '--shared':
             options['SHARED'] = 1
+        elif option == '--static':
+            options['SHARED'] = 0
         elif option == '--build-tests':
             options['BUILD_TESTS'] = 1
         elif option == '--autotest':
@@ -81,8 +83,10 @@ def parse_args(args):
             options['COVERAGE'] = 1
         elif option == '--build-examples':
             options['BUILD_EXAMPLES'] = 1
-        if option == '--prefix':
-            options['CMAKE_INSTALL_PREFIX'] = args.pop(len(args) - 1)
+        elif option.startswith('--prefix='):
+            options['CMAKE_INSTALL_PREFIX'] = option.split('=')[1]
+        else:
+            print('skipping unknown option: {}'.format(option))
 
     return options, generator
 
@@ -111,6 +115,8 @@ def main():
 
     cmake_scripts_dir = '../cmake' # relative to build_dir
     command.append(cmake_scripts_dir)
+
+    print(' '.join(command))
 
     subprocess.call(command, cwd=build_dir)
 
