@@ -36,7 +36,7 @@ def default_generator(platform):
     generator = 'Unix Makefiles'
 
     if sys.platform == 'darwin':
-        generator = 'Xcode'
+        generator = 'Unix Makefiles'#'Xcode'
     elif sys.platform == 'win32':
         generator = 'Visual Studio 14 2015 Win64'
 
@@ -62,15 +62,27 @@ def parse_args(args):
     if len(args) == 0:
         return options, generator
 
-    while len(args) > 1:
+    if not args[-1].startswith('--'):
+        generator = args.pop(len(args) - 1)
+
+    while len(args) and args[0].startswith('--'):
         option = args.pop(0)
 
-        if '=' not in option:
+        if not option.startswith('--'):
             raise Exception('bad option: {}'.format(option))
 
-        options[option.split('=')[0]] = option.split('=')[1]
-
-    generator = args[0]
+        if option == '--shared':
+            options['SHARED'] = 1
+        elif option == '--build-tests':
+            options['BUILD_TESTS'] = 1
+        elif option == '--autotest':
+            options['AUTORUN_TESTS'] = 1
+        elif option == '--coverage':
+            options['COVERAGE'] = 1
+        elif option == '--build-examples':
+            options['BUILD_EXAMPLES'] = 1
+        if option == '--prefix':
+            options['CMAKE_INSTALL_PREFIX'] = args.pop(len(args) - 1)
 
     return options, generator
 
