@@ -22,37 +22,37 @@
 class PathHelper
 {
 public:
-    static xlnt::string read_file(const xlnt::string &filename)
+    static std::string read_file(const std::string &filename)
     {
-        std::ifstream f(filename.data());
+        std::ifstream f(filename);
         std::ostringstream ss;
         ss << f.rdbuf();
         
-        return ss.str().c_str();
+        return ss.str();
     }
     
-    static xlnt::string WindowsToUniversalPath(const xlnt::string &windows_path)
+    static std::string WindowsToUniversalPath(const std::string &windows_path)
     {
-        xlnt::string fixed;
-        std::stringstream ss(windows_path.data());
+        std::string fixed;
+        std::stringstream ss(windows_path);
         std::string part;
         
         while(std::getline(ss, part, '\\'))
         {
             if(fixed == "")
             {
-                fixed = part.c_str();
+                fixed = part;
             }
             else
             {
-                fixed += "/" + xlnt::string(part.c_str());
+                fixed += "/" + part;
             }
         }
         
         return fixed;
     }
     
-    static xlnt::string GetExecutableDirectory()
+    static std::string GetExecutableDirectory()
     {
         
 #ifdef __APPLE__
@@ -62,7 +62,7 @@ public:
         
         if (_NSGetExecutablePath(path.data(), &size) == 0)
         {
-            return xlnt::string(path.begin(), std::find(path.begin(), path.end(), '\0') - 9);
+            return std::string(path.begin(), std::find(path.begin(), path.end(), '\0') - 9);
         }
         
         throw std::runtime_error("buffer too small, " + std::to_string(path.size()) + ", should be: " + std::to_string(size));
@@ -76,7 +76,7 @@ public:
         {
             throw std::runtime_error("GetModuleFileName failed or buffer was too small");
         }
-        return WindowsToUniversalPath(xlnt::string(buffer.begin(), buffer.begin() + result - 13)) + "/";
+        return WindowsToUniversalPath(std::string(buffer.begin(), buffer.begin() + result - 13)) + "/";
         
 #else
 	char arg1[20];
@@ -84,40 +84,39 @@ public:
 	
 	sprintf(arg1, "/proc/%d/exe", getpid());
 	readlink(arg1, exepath, 1024);
-
-	return xlnt::string(exepath).substr(0, std::strlen(exepath) - 9);
+	return std::string(exepath).substr(0, std::strlen(exepath) - 9);
 #endif
         
     }
     
-    static xlnt::string GetDataDirectory(const xlnt::string &append = "")
+    static std::string GetDataDirectory(const std::string &append = "")
     {
         return GetExecutableDirectory() + "../tests/data" + append;
     }
     
-    static void CopyFile(const xlnt::string &source, const xlnt::string &destination, bool overwrite)
+    static void CopyFile(const std::string &source, const std::string &destination, bool overwrite)
     {
         if(!overwrite && FileExists(destination))
         {
             throw std::runtime_error("destination file already exists and overwrite==false");
         }
         
-        std::ifstream src(source.data(), std::ios::binary);
-        std::ofstream dst(destination.data(), std::ios::binary);
+        std::ifstream src(source, std::ios::binary);
+        std::ofstream dst(destination, std::ios::binary);
         
         dst << src.rdbuf();
     }
 
-    static void DeleteFile(const xlnt::string &path)
+    static void DeleteFile(const std::string &path)
     {
-      std::remove(path.data());
+      std::remove(path.c_str());
     }
     
-    static bool FileExists(const xlnt::string &path)
+    static bool FileExists(const std::string &path)
     {        
 #ifdef _MSC_VER
-		std::string path_stdstring = path.data();
-        std::wstring path_wide(path_stdstring.begin(), path_stdstring.end());
+        
+        std::wstring path_wide(path.begin(), path.end());
         return PathFileExists(path_wide.c_str()) && !PathIsDirectory(path_wide.c_str());
         
 #else
@@ -126,7 +125,7 @@ public:
 	{
 	    struct stat fileAtt;
         
-	    if (stat(path.data(), &fileAtt) == 0)
+	    if (stat(path.c_str(), &fileAtt) == 0)
 	    {
 	        return S_ISREG(fileAtt.st_mode);
 	    }
