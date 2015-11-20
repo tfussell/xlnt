@@ -91,7 +91,7 @@ public:
     void test_write_hidden_worksheet()
     {
 		auto ws = wb_.create_sheet();
-        ws.get_page_setup().set_sheet_state(xlnt::page_setup::sheet_state::hidden);
+        ws.get_page_setup().set_sheet_state(xlnt::sheet_state::hidden);
         ws.get_cell("F42").set_value("hello");
 
         xlnt::worksheet_serializer serializer(ws);

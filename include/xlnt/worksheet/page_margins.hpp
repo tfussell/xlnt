@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Thomas Fussell
+// Copyright (c) 2014-2015 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,75 +23,34 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include "xlnt_config.hpp"
+#include <xlnt/xlnt_config.hpp>
 
 namespace xlnt {
 
 class XLNT_CLASS page_margins
 {
   public:
-    page_margins() : default_(true), top_(0), left_(0), bottom_(0), right_(0), header_(0), footer_(0)
-    {
-    }
+    page_margins();
 
-    bool is_default() const
-    {
-        return default_;
-    }
-    double get_top() const
-    {
-        return top_;
-    }
-    void set_top(double top)
-    {
-        default_ = false;
-        top_ = top;
-    }
-    double get_left() const
-    {
-        return left_;
-    }
-    void set_left(double left)
-    {
-        default_ = false;
-        left_ = left;
-    }
-    double get_bottom() const
-    {
-        return bottom_;
-    }
-    void set_bottom(double bottom)
-    {
-        default_ = false;
-        bottom_ = bottom;
-    }
-    double get_right() const
-    {
-        return right_;
-    }
-    void set_right(double right)
-    {
-        default_ = false;
-        right_ = right;
-    }
-    double get_header() const
-    {
-        return header_;
-    }
-    void set_header(double header)
-    {
-        default_ = false;
-        header_ = header;
-    }
-    double get_footer() const
-    {
-        return footer_;
-    }
-    void set_footer(double footer)
-    {
-        default_ = false;
-        footer_ = footer;
-    }
+    bool is_default() const;
+    
+    double get_top() const;
+    void set_top(double top);
+    
+    double get_left() const;
+    void set_left(double left);
+    
+    double get_bottom() const;
+    void set_bottom(double bottom);
+    
+    double get_right() const;
+    void set_right(double right);
+    
+    double get_header() const;
+    void set_header(double header);
+    
+    double get_footer() const;
+    void set_footer(double footer);
 
   private:
     bool default_;

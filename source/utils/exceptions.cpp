@@ -7,15 +7,18 @@ sheet_title_exception::sheet_title_exception(const std::string &title)
 {
 }
 
-column_string_index_exception::column_string_index_exception() : std::runtime_error("")
+column_string_index_exception::column_string_index_exception()
+    : std::runtime_error("column string index exception")
 {
 }
 
-data_type_exception::data_type_exception() : std::runtime_error("")
+data_type_exception::data_type_exception()
+    : std::runtime_error("data type exception")
 {
 }
 
-attribute_error::attribute_error() : std::runtime_error("")
+attribute_error::attribute_error()
+    : std::runtime_error("attribute error")
 {
 }
 
@@ -42,6 +45,11 @@ cell_coordinates_exception::cell_coordinates_exception(const std::string &coord_
 
 illegal_character_error::illegal_character_error(char c)
     : std::runtime_error(std::string("illegal character: (") + std::to_string(static_cast<unsigned char>(c)) + ")")
+{
+}
+
+value_error::value_error()
+    : std::runtime_error("value error")
 {
 }
 

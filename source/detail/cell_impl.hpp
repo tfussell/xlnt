@@ -6,7 +6,7 @@
 #include <xlnt/cell/comment.hpp>
 #include <xlnt/cell/types.hpp>
 #include <xlnt/utils/exceptions.hpp>
-#include <xlnt/utils/datetime.hpp>
+#include <xlnt/utils/time.hpp>
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/styles/number_format.hpp>
 

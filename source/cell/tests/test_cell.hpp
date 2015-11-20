@@ -13,7 +13,10 @@
 #include <xlnt/styles/fill.hpp>
 #include <xlnt/styles/number_format.hpp>
 #include <xlnt/styles/protection.hpp>
+#include <xlnt/utils/date.hpp>
 #include <xlnt/utils/datetime.hpp>
+#include <xlnt/utils/time.hpp>
+#include <xlnt/utils/timedelta.hpp>
 #include <xlnt/utils/exceptions.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/worksheet.hpp>

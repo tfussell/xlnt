@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Thomas Fussell
+// Copyright (c) 2014-2015 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,11 +29,12 @@
 #include <unordered_map>
 #include <vector>
 
+#include <xlnt/xlnt_config.hpp>
 #include <xlnt/cell/types.hpp>
 #include <xlnt/packaging/relationship.hpp>
+#include <xlnt/worksheet/header_footer.hpp>
+#include <xlnt/worksheet/page_margins.hpp>
 #include <xlnt/worksheet/page_setup.hpp>
-
-#include "xlnt_config.hpp"
 
 namespace xlnt {
 
@@ -50,216 +51,6 @@ class workbook;
 struct date;
 
 namespace detail { struct worksheet_impl; }
-
-/// <summary>
-/// Worksheet header
-/// </summary>
-class XLNT_CLASS header
-{
-  public:
-    header();
-    void set_text(const std::string &text)
-    {
-        default_ = false;
-        text_ = text;
-    }
-    void set_font_name(const std::string &font_name)
-    {
-        default_ = false;
-        font_name_ = font_name;
-    }
-    void set_font_size(std::size_t font_size)
-    {
-        default_ = false;
-        font_size_ = font_size;
-    }
-    void set_font_color(const std::string &font_color)
-    {
-        default_ = false;
-        font_color_ = font_color;
-    }
-    bool is_default() const
-    {
-        return default_;
-    }
-
-  private:
-    bool default_;
-    std::string text_;
-    std::string font_name_;
-    std::size_t font_size_;
-    std::string font_color_;
-};
-
-/// <summary>
-/// Worksheet footer
-/// </summary>
-class XLNT_CLASS footer
-{
-  public:
-    footer();
-    void set_text(const std::string &text)
-    {
-        default_ = false;
-        text_ = text;
-    }
-    void set_font_name(const std::string &font_name)
-    {
-        default_ = false;
-        font_name_ = font_name;
-    }
-    void set_font_size(std::size_t font_size)
-    {
-        default_ = false;
-        font_size_ = font_size;
-    }
-    void set_font_color(const std::string &font_color)
-    {
-        default_ = false;
-        font_color_ = font_color;
-    }
-    bool is_default() const
-    {
-        return default_;
-    }
-
-  private:
-    bool default_;
-    std::string text_;
-    std::string font_name_;
-    std::size_t font_size_;
-    std::string font_color_;
-};
-
-/// <summary>
-/// Worksheet header and footer
-/// </summary>
-class XLNT_CLASS header_footer
-{
-  public:
-    header_footer();
-
-    header &get_left_header()
-    {
-        return left_header_;
-    }
-    header &get_center_header()
-    {
-        return center_header_;
-    }
-    header &get_right_header()
-    {
-        return right_header_;
-    }
-    footer &get_left_footer()
-    {
-        return left_footer_;
-    }
-    footer &get_center_footer()
-    {
-        return center_footer_;
-    }
-    footer &get_right_footer()
-    {
-        return right_footer_;
-    }
-
-    bool is_default_header() const
-    {
-        return left_header_.is_default() && center_header_.is_default() && right_header_.is_default();
-    }
-    bool is_default_footer() const
-    {
-        return left_footer_.is_default() && center_footer_.is_default() && right_footer_.is_default();
-    }
-    bool is_default() const
-    {
-        return is_default_header() && is_default_footer();
-    }
-
-  private:
-    header left_header_, right_header_, center_header_;
-    footer left_footer_, right_footer_, center_footer_;
-};
-
-/// <summary>
-/// Worksheet margins
-/// </summary>
-struct XLNT_CLASS margins
-{
-  public:
-    margins() : default_(true), top_(0), left_(0), bottom_(0), right_(0), header_(0), footer_(0)
-    {
-    }
-
-    bool is_default() const
-    {
-        return default_;
-    }
-    double get_top() const
-    {
-        return top_;
-    }
-    void set_top(double top)
-    {
-        default_ = false;
-        top_ = top;
-    }
-    double get_left() const
-    {
-        return left_;
-    }
-    void set_left(double left)
-    {
-        default_ = false;
-        left_ = left;
-    }
-    double get_bottom() const
-    {
-        return bottom_;
-    }
-    void set_bottom(double bottom)
-    {
-        default_ = false;
-        bottom_ = bottom;
-    }
-    double get_right() const
-    {
-        return right_;
-    }
-    void set_right(double right)
-    {
-        default_ = false;
-        right_ = right;
-    }
-    double get_header() const
-    {
-        return header_;
-    }
-    void set_header(double header)
-    {
-        default_ = false;
-        header_ = header;
-    }
-    double get_footer() const
-    {
-        return footer_;
-    }
-    void set_footer(double footer)
-    {
-        default_ = false;
-        footer_ = footer;
-    }
-
-  private:
-    bool default_;
-    double top_;
-    double left_;
-    double bottom_;
-    double right_;
-    double header_;
-    double footer_;
-};
 
 /// <summary>
 /// A worksheet is a 2D array of cells.
@@ -380,8 +171,8 @@ class XLNT_CLASS worksheet
     // page
     page_setup &get_page_setup();
     const page_setup &get_page_setup() const;
-    margins &get_page_margins();
-    const margins &get_page_margins() const;
+    page_margins &get_page_margins();
+    const page_margins &get_page_margins() const;
 
     // auto filter
     range_reference get_auto_filter() const;
@@ -405,7 +196,7 @@ class XLNT_CLASS worksheet
 
     std::vector<std::string> get_formula_attributes() const;
 
-    void set_sheet_state(page_setup::sheet_state state);
+    void set_sheet_state(sheet_state state);
 
   private:
     friend class workbook;

@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Thomas Fussell
+// Copyright (c) 2014-2015 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,7 +32,7 @@ namespace xlnt {
 /// <summary>
 /// Specifies whether the target of a relationship is inside or outside the Package.
 /// </summary>
-enum class target_mode
+enum class XLNT_CLASS target_mode
 {
     /// <summary>
     /// The relationship references a part that is inside the package.

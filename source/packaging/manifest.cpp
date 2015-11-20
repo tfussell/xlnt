@@ -28,49 +28,6 @@ bool match_path(const std::string &path, const std::string &comparand)
 
 namespace xlnt {
 
-default_type::default_type()
-{
-}
-
-default_type::default_type(const std::string &extension, const std::string &content_type)
-    : extension_(extension), content_type_(content_type)
-{
-}
-
-default_type::default_type(const default_type &other) : extension_(other.extension_), content_type_(other.content_type_)
-{
-}
-
-default_type &default_type::operator=(const default_type &other)
-{
-    extension_ = other.extension_;
-    content_type_ = other.content_type_;
-
-    return *this;
-}
-
-override_type::override_type()
-{
-}
-
-override_type::override_type(const std::string &part_name, const std::string &content_type)
-    : part_name_(part_name), content_type_(content_type)
-{
-}
-
-override_type::override_type(const override_type &other)
-    : part_name_(other.part_name_), content_type_(other.content_type_)
-{
-}
-
-override_type &override_type::operator=(const override_type &other)
-{
-    part_name_ = other.part_name_;
-    content_type_ = other.content_type_;
-
-    return *this;
-}
-
 bool manifest::has_default_type(const std::string &extension) const
 {
     return std::find_if(default_types_.begin(), default_types_.end(),
@@ -120,6 +77,16 @@ std::string manifest::get_override_type(const std::string &part_name) const
     }
 
     return match->get_content_type();
+}
+
+const std::vector<default_type> &manifest::get_default_types() const
+{
+    return default_types_;
+}
+
+const std::vector<override_type> &manifest::get_override_types() const
+{
+    return override_types_;
 }
 
 } // namespace xlnt

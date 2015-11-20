@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Thomas Fussell
+// Copyright (c) 2014-2015 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,9 +27,9 @@
 #include <string>
 #include <unordered_map>
 
+#include <xlnt/xlnt_config.hpp>
+#include <xlnt/cell/cell_type.hpp>
 #include <xlnt/cell/types.hpp>
-
-#include "xlnt_config.hpp"
 
 namespace xlnt {
 
@@ -65,25 +65,8 @@ namespace detail { struct cell_impl; }
 class XLNT_CLASS cell
 {
 public:
-    /// <summary>
-    /// Enumerates the possible types a cell can be determined by it's current value.
-    /// </summary>
-    enum class type
-    {
-        /// no value. note: this is different from an empty string value or 0 numeric value
-        null,
-        /// number
-        numeric,
-        /// string
-        string,
-        /// value is a formula
-        formula,
-        /// value is a known error code such as \#VALUE!
-        error,
-        /// value is TRUE or FALSE
-        boolean
-    };
-
+    using type = cell_type;
+    
     /// <summary>
     /// Return a map of error strings such as \#DIV/0! and their associated indices.
     /// </summary>
@@ -392,16 +375,13 @@ public:
 	/// Convenience function for writing cell to an ostream.
 	/// Uses cell::to_string() internally.
 	/// </summary>
-	friend XLNT_FUNCTION std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)
-	{
-		return stream << cell.to_string();
-	}
+	friend XLNT_FUNCTION std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell);
 
 private:
     // make these friends so they can use the private constructor
+    friend class style;
     friend class worksheet;
     friend struct detail::cell_impl;
-    friend class style;
 
     /// <summary>
     /// Private constructor to create a cell from its implementation.

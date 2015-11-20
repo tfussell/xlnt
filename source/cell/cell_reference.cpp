@@ -158,6 +158,81 @@ std::pair<std::string, row_t> cell_reference::split_reference(const std::string 
     return { column_string, std::stoi(row_string) };
 }
 
+bool cell_reference::column_absolute() const
+{
+    return absolute_column_;
+}
+
+void cell_reference::column_absolute(bool absolute_column)
+{
+    absolute_column_ = absolute_column;
+}
+
+bool cell_reference::row_absolute() const
+{
+    return absolute_row_;
+}
+
+void cell_reference::row_absolute(bool absolute_row)
+{
+    absolute_row_ = absolute_row;
+}
+
+column_t cell_reference::get_column() const
+{
+    return column_;
+}
+
+void cell_reference::set_column(const std::string &column_string)
+{
+    column_ = column_t(column_string);
+}
+
+column_t cell_reference::get_column_index() const
+{
+    return column_;
+}
+
+void cell_reference::set_column_index(column_t column)
+{
+    column_ = column;
+}
+
+row_t cell_reference::get_row() const
+{
+    return row_;
+}
+
+void cell_reference::set_row(row_t row)
+{
+    row_ = row;
+}
+
+bool cell_reference::operator==(const std::string &reference_string) const
+{
+    return *this == cell_reference(reference_string);
+}
+
+bool cell_reference::operator==(const char *reference_string) const
+{
+    return *this == std::string(reference_string);
+}
+
+bool cell_reference::operator!=(const cell_reference &comparand) const
+{
+    return !(*this == comparand);
+}
+
+bool cell_reference::operator!=(const std::string &reference_string) const
+{
+    return *this != cell_reference(reference_string);
+}
+
+bool cell_reference::operator!=(const char *reference_string) const
+{
+    return *this != std::string(reference_string);
+}
+
 cell_reference cell_reference::make_offset(int column_offset, int row_offset) const
 {
     //TODO: check for overflow/underflow

@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Thomas Fussell
+// Copyright (c) 2014-2015 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,12 +27,11 @@
 #include <string>
 #include <vector>
 
+#include <xlnt/xlnt_config.hpp>
 #include <xlnt/worksheet/cell_vector.hpp>
 #include <xlnt/worksheet/major_order.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
-
-#include "xlnt_config.hpp"
 
 namespace xlnt {
 

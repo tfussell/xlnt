@@ -68,6 +68,246 @@ std::string column_t::column_string_from_index(column_t::index_t column_index)
     return column_letter;
 }
 
+
+/// <summary>
+/// Default column_t is the first (left-most) column.
+/// </summary>
+column_t::column_t() : index(1) {}
+
+/// <summary>
+/// Construct a column from a number.
+/// </summary>
+column_t::column_t(index_t column_index) : index(column_index) {}
+
+/// <summary>
+/// Construct a column from a string.
+/// </summary>
+column_t::column_t(const std::string &column_string) : index(column_index_from_string(column_string)) {}
+
+/// <summary>
+/// Construct a column from a string.
+/// </summary>
+column_t::column_t(const char *column_string) : column_t(std::string(column_string)) {}
+
+/// <summary>
+/// Copy constructor
+/// </summary>
+column_t::column_t(const column_t &other) : column_t(other.index) {}
+
+/// <summary>
+/// Move constructor
+/// </summary>
+column_t::column_t(column_t &&other) { swap(*this, other); }
+
+/// <summary>
+/// Return a string representation of this column index.
+/// </summary>
+std::string column_t::column_string() const { return column_string_from_index(index); }
+
+/// <summary>
+/// Set this column to be the same as rhs's and return reference to self.
+/// </summary>
+column_t &column_t::operator=(column_t rhs) { swap(*this, rhs); return *this; }
+
+/// <summary>
+/// Set this column to be equal to rhs and return reference to self.
+/// </summary>
+column_t &column_t::operator=(const std::string &rhs) { return *this = column_t(rhs); }
+
+/// <summary>
+/// Set this column to be equal to rhs and return reference to self.
+/// </summary>
+column_t &column_t::operator=(const char *rhs) { return *this = column_t(rhs); }
+
+/// <summary>
+/// Return true if this column refers to the same column as other.
+/// </summary>
+bool column_t::operator==(const column_t &other) const { return index == other.index; }
+
+/// <summary>
+/// Return true if this column doesn't refer to the same column as other.
+/// </summary>
+bool column_t::operator!=(const column_t &other) const { return !(*this == other); }
+
+/// <summary>
+/// Return true if this column refers to the same column as other.
+/// </summary>
+bool column_t::operator==(int other) const { return *this == column_t(other); }
+
+/// <summary>
+/// Return true if this column refers to the same column as other.
+/// </summary>
+bool column_t::operator==(index_t other) const { return *this == column_t(other); }
+
+/// <summary>
+/// Return true if this column refers to the same column as other.
+/// </summary>
+bool column_t::operator==(const std::string &other) const { return *this == column_t(other); }
+
+/// <summary>
+/// Return true if this column refers to the same column as other.
+/// </summary>
+bool column_t::operator==(const char *other) const { return *this == column_t(other); }
+
+/// <summary>
+/// Return true if this column doesn't refer to the same column as other.
+/// </summary>
+bool column_t::operator!=(int other) const { return !(*this == other); }
+
+/// <summary>
+/// Return true if this column doesn't refer to the same column as other.
+/// </summary>
+bool column_t::operator!=(index_t other) const { return !(*this == other); }
+
+/// <summary>
+/// Return true if this column doesn't refer to the same column as other.
+/// </summary>
+bool column_t::operator!=(const std::string &other) const { return !(*this == other); }
+
+/// <summary>
+/// Return true if this column doesn't refer to the same column as other.
+/// </summary>
+bool column_t::operator!=(const char *other) const { return !(*this == other); }
+
+/// <summary>
+/// Return true if other is to the right of this column.
+/// </summary>
+bool column_t::operator>(const column_t &other) const { return index > other.index; }
+
+/// <summary>
+/// Return true if other is to the right of or equal to this column.
+/// </summary>
+bool column_t::operator>=(const column_t &other) const { return index >= other.index; }
+
+/// <summary>
+/// Return true if other is to the left of this column.
+/// </summary>
+bool column_t::operator<(const column_t &other) const { return index < other.index; }
+
+/// <summary>
+/// Return true if other is to the left of or equal to this column.
+/// </summary>
+bool column_t::operator<=(const column_t &other) const { return index <= other.index; }
+
+/// <summary>
+/// Return true if other is to the right of this column.
+/// </summary>
+bool column_t::operator>(const column_t::index_t &other) const { return index > other; }
+
+/// <summary>
+/// Return true if other is to the right of or equal to this column.
+/// </summary>
+bool column_t::operator>=(const column_t::index_t &other) const { return index >= other; }
+
+/// <summary>
+/// Return true if other is to the left of this column.
+/// </summary>
+bool column_t::operator<(const column_t::index_t &other) const { return index < other; }
+
+/// <summary>
+/// Return true if other is to the left of or equal to this column.
+/// </summary>
+bool column_t::operator<=(const column_t::index_t &other) const { return index <= other; }
+
+/// <summary>
+/// Pre-increment this column, making it point to the column one to the right.
+/// </summary>
+column_t &column_t::operator++() { index++; return *this; }
+
+/// <summary>
+/// Pre-deccrement this column, making it point to the column one to the left.
+/// </summary>
+column_t &column_t::operator--() { index--; return *this; }
+
+/// <summary>
+/// Post-increment this column, making it point to the column one to the right and returning the old column.
+/// </summary>
+column_t column_t::operator++(int) { column_t copy(index); ++(*this); return copy; }
+
+/// <summary>
+/// Post-decrement this column, making it point to the column one to the left and returning the old column.
+/// </summary>
+column_t column_t::operator--(int) { column_t copy(index); --(*this); return copy; }
+
+/// <summary>
+/// Return the result of adding rhs to this column.
+/// </summary>
+column_t column_t::operator+(const column_t &rhs) { column_t copy(*this); copy.index += rhs.index; return copy; }
+
+/// <summary>
+/// Return the result of adding rhs to this column.
+/// </summary>
+column_t column_t::operator-(const column_t &rhs) { column_t copy(*this); copy.index -= rhs.index; return copy; }
+
+/// <summary>
+/// Return the result of adding rhs to this column.
+/// </summary>
+column_t column_t::operator*(const column_t &rhs) { column_t copy(*this); copy.index *= rhs.index; return copy; }
+
+/// <summary>
+/// Return the result of adding rhs to this column.
+/// </summary>
+column_t column_t::operator/(const column_t &rhs) { column_t copy(*this); copy.index /= rhs.index; return copy; }
+
+/// <summary>
+/// Return the result of adding rhs to this column.
+/// </summary>
+column_t column_t::operator%(const column_t &rhs) { column_t copy(*this); copy.index %= rhs.index; return copy; }
+
+/// <summary>
+/// Add rhs to this column and return a reference to this column.
+/// </summary>
+column_t &column_t::operator+=(const column_t &rhs) { return *this = (*this + rhs); }
+
+/// <summary>
+/// Subtrac rhs from this column and return a reference to this column.
+/// </summary>
+column_t &column_t::operator-=(const column_t &rhs) { return *this = (*this - rhs); }
+
+/// <summary>
+/// Multiply this column by rhs and return a reference to this column.
+/// </summary>
+column_t &column_t::operator*=(const column_t &rhs) { return *this = (*this * rhs); }
+
+/// <summary>
+/// Divide this column by rhs and return a reference to this column.
+/// </summary>
+column_t &column_t::operator/=(const column_t &rhs) { return *this = (*this / rhs); }
+
+/// <summary>
+/// Mod this column by rhs and return a reference to this column.
+/// </summary>
+column_t &column_t::operator%=(const column_t &rhs) { return *this = (*this % rhs); }
+
+/// <summary>
+/// Return true if other is to the right of this column.
+/// </summary>
+bool operator>(const column_t::index_t &left, const column_t &right) { return column_t(left) > right; }
+
+/// <summary>
+/// Return true if other is to the right of or equal to this column.
+/// </summary>
+bool operator>=(const column_t::index_t &left, const column_t &right) { return column_t(left) >= right; }
+
+/// <summary>
+/// Return true if other is to the left of this column.
+/// </summary>
+bool operator<(const column_t::index_t &left, const column_t &right) { return column_t(left) < right; }
+
+/// <summary>
+/// Return true if other is to the left of or equal to this column.
+/// </summary>
+bool operator<=(const column_t::index_t &left, const column_t &right) { return column_t(left) <= right; }
+
+/// <summary>
+/// Swap the columns that left and right refer to.
+/// </summary>
+void swap(column_t &left, column_t &right)
+{
+    using std::swap;
+    swap(left.index, right.index);
+}
+
 std::size_t column_hash::operator()(const column_t &k) const
 {
     static std::hash<column_t::index_t> hasher;

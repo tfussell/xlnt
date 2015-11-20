@@ -161,7 +161,7 @@ xml_document workbook_serializer::write_workbook() const
 
     for (auto ws : workbook_)
     {
-        if (ws.get_page_setup().get_sheet_state() == xlnt::page_setup::sheet_state::visible)
+        if (ws.get_page_setup().get_sheet_state() == sheet_state::visible)
         {
             num_visible++;
         }

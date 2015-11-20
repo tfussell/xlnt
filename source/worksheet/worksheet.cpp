@@ -5,6 +5,7 @@
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/cell/types.hpp>
 #include <xlnt/packaging/relationship.hpp>
+#include <xlnt/utils/date.hpp>
 #include <xlnt/utils/datetime.hpp>
 #include <xlnt/utils/exceptions.hpp>
 #include <xlnt/workbook/named_range.hpp>
@@ -81,12 +82,12 @@ std::vector<range_reference> worksheet::get_merged_ranges() const
     return d_->merged_cells_;
 }
 
-margins &worksheet::get_page_margins()
+page_margins &worksheet::get_page_margins()
 {
     return d_->page_margins_;
 }
 
-const margins &worksheet::get_page_margins() const
+const page_margins &worksheet::get_page_margins() const
 {
     return d_->page_margins_;
 }
@@ -486,7 +487,7 @@ void worksheet::append(const std::vector<date> &cells)
 {
     xlnt::cell_reference next(1, get_next_row());
 
-    for (auto cell : cells)
+    for (const auto &cell : cells)
     {
         get_cell(next).set_value(cell);
         next.set_column_index(next.get_column_index() + 1);
@@ -730,7 +731,7 @@ cell_reference worksheet::get_point_pos(const std::pair<int, int> &point) const
     return get_point_pos(point.first, point.second);
 }
 
-void worksheet::set_sheet_state(page_setup::sheet_state state)
+void worksheet::set_sheet_state(sheet_state state)
 {
     get_page_setup().set_sheet_state(state);
 }

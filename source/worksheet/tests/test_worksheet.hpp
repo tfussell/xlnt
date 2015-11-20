@@ -822,8 +822,8 @@ public:
     {
         xlnt::worksheet ws(wb_);
 
-        ws.get_page_setup().set_orientation(xlnt::page_setup::orientation::landscape);
-        ws.get_page_setup().set_paper_size(xlnt::page_setup::paper_size::tabloid);
+        ws.get_page_setup().set_orientation(xlnt::orientation::landscape);
+        ws.get_page_setup().set_paper_size(xlnt::paper_size::tabloid);
         ws.get_page_setup().set_fit_to_page(true);
         ws.get_page_setup().set_fit_to_height(false);
         ws.get_page_setup().set_fit_to_width(true);

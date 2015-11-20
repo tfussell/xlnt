@@ -29,7 +29,7 @@ public:
     {
         xlnt::workbook wb;
         auto ws = wb.create_sheet();
-        ws.set_sheet_state(xlnt::page_setup::sheet_state::hidden);
+        ws.set_sheet_state(xlnt::sheet_state::hidden);
         wb.create_sheet();
 
         xlnt::workbook_serializer serializer(wb);
@@ -60,7 +60,7 @@ public:
     {
         xlnt::workbook wb;
         auto ws = wb.get_active_sheet();
-        ws.set_sheet_state(xlnt::page_setup::sheet_state::hidden);
+        ws.set_sheet_state(xlnt::sheet_state::hidden);
         
         xlnt::workbook_serializer serializer(wb);
         

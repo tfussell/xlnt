@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Thomas Fussell
+// Copyright (c) 2014-2015 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,9 +26,8 @@
 #include <string>
 #include <utility>
 
+#include <xlnt/xlnt_config.hpp>
 #include <xlnt/cell/types.hpp>
-
-#include "xlnt_config.hpp"
 
 namespace xlnt {
 
@@ -65,8 +64,8 @@ class XLNT_CLASS cell_reference
     /// if column part or row part are prefixed by a dollar-sign indicating they
     /// are absolute, otherwise false.
     /// </summary>
-    static std::pair<std::string, row_t> split_reference(const std::string &reference_string, bool &absolute_column,
-                                                         bool &absolute_row);
+    static std::pair<std::string, row_t> split_reference(const std::string &reference_string,
+        bool &absolute_column, bool &absolute_row);
 
     // constructors
     
@@ -118,36 +117,24 @@ class XLNT_CLASS cell_reference
     /// <summary>
     /// Return true if the reference refers to an absolute column, otherwise false.
     /// </summary>
-    bool column_absolute() const
-    {
-        return absolute_column_;
-    }
+    bool column_absolute() const;
 
     /// <summary>
     /// Make this reference have an absolute column if absolute_column is true,
     /// otherwise not absolute.
     /// </summary>
-    void column_absolute(bool absolute_column)
-    {
-        absolute_column_ = absolute_column;
-    }
+    void column_absolute(bool absolute_column);
 
     /// <summary>
     /// Return true if the reference refers to an absolute row, otherwise false.
     /// </summary>
-    bool row_absolute() const
-    {
-        return absolute_row_;
-    }
+    bool row_absolute() const;
 
     /// <summary>
     /// Make this reference have an absolute row if absolute_row is true,
     /// otherwise not absolute.
     /// </summary>
-    void row_absolute(bool absolute_row)
-    {
-        absolute_row_ = absolute_row;
-    }
+    void row_absolute(bool absolute_row);
 
     // getters/setters
     
@@ -155,50 +142,32 @@ class XLNT_CLASS cell_reference
     /// Return a string that identifies the column of this reference
     /// (e.g. second column from left is "B")
     /// </summary>
-    column_t get_column() const
-    {
-        return column_;
-    }
+    column_t get_column() const;
     
     /// <summary>
     /// Set the column of this reference from a string that identifies a particular column.
     /// </summary>
-    void set_column(const std::string &column_string)
-    {
-        column_ = column_t(column_string);
-    }
+    void set_column(const std::string &column_string);
 
     /// <summary>
     /// Return a 1-indexed numeric index of the column of this reference.
     /// </summary>
-    column_t get_column_index() const
-    {
-        return column_;
-    }
+    column_t get_column_index() const;
     
     /// <summary>
     /// Set the column of this reference from a 1-indexed number that identifies a particular column.
     /// </summary>
-    void set_column_index(column_t column)
-    {
-        column_ = column;
-    }
+    void set_column_index(column_t column);
 
     /// <summary>
     /// Return a 1-indexed numeric index of the row of this reference.
     /// </summary>
-    row_t get_row() const
-    {
-        return row_;
-    }
+    row_t get_row() const;
     
     /// <summary>
     /// Set the row of this reference from a 1-indexed number that identifies a particular row.
     /// </summary>
-    void set_row(row_t row)
-    {
-        row_ = row;
-    }
+    void set_row(row_t row);
 
     /// <summary>
     /// Return a cell_reference offset from this cell_reference by
@@ -237,46 +206,31 @@ class XLNT_CLASS cell_reference
     /// Construct a cell_reference from reference_string and return the result
     /// of their comparison.
     /// </summary>
-    bool operator==(const std::string &reference_string) const
-    {
-        return *this == cell_reference(reference_string);
-    }
+    bool operator==(const std::string &reference_string) const;
     
     /// <summary>
     /// Construct a cell_reference from reference_string and return the result
     /// of their comparison.
     /// </summary>
-    bool operator==(const char *reference_string) const
-    {
-        return *this == std::string(reference_string);
-    }
+    bool operator==(const char *reference_string) const;
     
     /// <summary>
     /// Return true if this reference is not identical to comparand including
     /// in absoluteness of column and row.
     /// </summary>
-    bool operator!=(const cell_reference &comparand) const
-    {
-        return !(*this == comparand);
-    }
+    bool operator!=(const cell_reference &comparand) const;
     
     /// <summary>
     /// Construct a cell_reference from reference_string and return the result
     /// of their comparison.
     /// </summary>
-    bool operator!=(const std::string &reference_string) const
-    {
-        return *this != cell_reference(reference_string);
-    }
+    bool operator!=(const std::string &reference_string) const;
     
     /// <summary>
     /// Construct a cell_reference from reference_string and return the result
     /// of their comparison.
     /// </summary>
-    bool operator!=(const char *reference_string) const
-    {
-        return *this != std::string(reference_string);
-    }
+    bool operator!=(const char *reference_string) const;
 
     //TODO: are these useful? maybe get rid of them
     bool operator<(const cell_reference &other);

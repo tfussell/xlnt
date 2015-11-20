@@ -8,7 +8,10 @@
 #include <xlnt/packaging/document_properties.hpp>
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/styles/color.hpp>
+#include <xlnt/utils/date.hpp>
 #include <xlnt/utils/datetime.hpp>
+#include <xlnt/utils/time.hpp>
+#include <xlnt/utils/timedelta.hpp>
 #include <xlnt/utils/exceptions.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/column_properties.hpp>
@@ -1476,6 +1479,11 @@ void cell::set_style_id(std::size_t style_id)
 calendar cell::get_base_date() const
 {
     return get_parent().get_parent().get_properties().excel_base_date;
+}
+
+std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)
+{
+    return stream << cell.to_string();
 }
 
 } // namespace xlnt

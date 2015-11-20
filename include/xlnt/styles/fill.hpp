@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Thomas Fussell
+// Copyright (c) 2014-2015 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,10 +23,9 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <xlnt/xlnt_config.hpp>
 #include <xlnt/styles/color.hpp>
 #include <xlnt/utils/hash_combine.hpp>
-
-#include "xlnt_config.hpp"
 
 namespace xlnt {
 

@@ -65,7 +65,7 @@ struct worksheet_impl
     std::vector<relationship> relationships_;
     page_setup page_setup_;
     range_reference auto_filter_;
-    margins page_margins_;
+    page_margins page_margins_;
     std::vector<range_reference> merged_cells_;
     std::unordered_map<std::string, named_range> named_ranges_;
     std::size_t comment_count_;

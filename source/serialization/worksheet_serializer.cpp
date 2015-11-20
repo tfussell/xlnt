@@ -568,7 +568,7 @@ xml_document worksheet_serializer::write_worksheet() const
         auto page_setup_node = root_node.add_child("pageSetup");
 
         std::string orientation_string =
-            sheet_.get_page_setup().get_orientation() == page_setup::orientation::landscape ? "landscape" : "portrait";
+            sheet_.get_page_setup().get_orientation() == orientation::landscape ? "landscape" : "portrait";
         page_setup_node.add_attribute("orientation", orientation_string);
         page_setup_node.add_attribute("paperSize",
                                       std::to_string(static_cast<int>(sheet_.get_page_setup().get_paper_size())));
