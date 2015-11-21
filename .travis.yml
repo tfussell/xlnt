@@ -46,9 +46,9 @@ after_success:
   - if [ "$COMPILER" = "g++-4.9" ]; then cmake -G "Unix Makefiles" -D DEBUG=1 -D COVERAGE=1 -D SHARED=0 -D STATIC=1 -D BUILD_TESTS=1 ../cmake ; fi
   - if [ "$COMPILER" = "g++-4.9" ]; then make VERBOSE=1 ; fi
   - if [ "$COMPILER" = "g++-4.9" ]; then cd .. && ./bin/xlnt.test ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then find ./ -name "*.gcda" ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then find ./ -name "*.gcno" ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then coveralls --verbose --build-root "build/CMakeFiles/xlnt.static$(pwd)" --exclude bin --exclude build --exclude cmake --exclude docs --exclude include --exclude lib --exclude samples --include source --exclude tests --exclude third-party --gcov-options '\-lp' -x ".cpp" ; fi
+  - if [ "$COMPILER" = "g++-4.9" ]; then export OLDWD=$(pwd) ; fi
+  - if [ "$COMPILER" = "g++-4.9" ]; then cd "build/CMakeFiles/xlnt.static.dir$(pwd)" ; pwd ; fi
+  - if [ "$COMPILER" = "g++-4.9" ]; then coveralls --root $OLDWD --verbose -x ".cpp" --gcov-options '\-p' --exclude include --exclude third-party ; fi
 
 notifications:
   email: false
