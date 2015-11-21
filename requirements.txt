@@ -1,3 +1,0 @@
-miniz>=1.15_r4
-pugixml>=1.6
-cxxtest>=4.4
