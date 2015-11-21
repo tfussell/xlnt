@@ -43,7 +43,11 @@ source_group(tests\\workbook FILES ${WORKBOOK_TESTS})
 source_group(tests\\worksheet FILES ${WORKSHEET_TESTS})
 source_group(runner FILES ${RUNNER})
 
-target_link_libraries(xlnt.test xlnt)
+if(SHARED)
+    target_link_libraries(xlnt.test xlnt.shared)
+else()
+    target_link_libraries(xlnt.test xlnt.static)
+endif()
 
 if(MSVC)
     set_target_properties(xlnt.test PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\"")

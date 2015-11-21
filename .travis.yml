@@ -1,21 +1,51 @@
+# from: https://github.com/nlohmann/json/blob/master/.travis.yml
+
 language: cpp
+
+sudo: false
+
+matrix:
+  include:
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['g++-4.9', 'valgrind', 'python-pip', 'python-yaml']
+      before_script:
+        - pip install --user git+git://github.com/eddyxu/cpp-coveralls.git
+      env: COMPILER=g++-4.9
+
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['g++-5', 'valgrind']
+      env: COMPILER=g++-5
+
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.6']
+          packages: ['clang-3.6', 'valgrind']
+      env: COMPILER=clang++-3.6
+
 script:
-  - python configure --shared --build-tests --autotest && make -C build
-compiler:
-  - clang
-  - gcc
-install:
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    packages:
-    - gcc-4.8
-    - g++-4.8
-    - clang
+  - ./configure --enable-shared --enable-tests
+  - make -C build CXX=$COMPILER CXXFLAGS="-lstdc++"
+  - ./bin/xlnt.test
+  - valgrind --error-exitcode=1 --leak-check=full ./xlnt.test
+
+after_success:
+  - if [ "$COMPILER" = "g++-4.9" ]; then make -C build clean ; fi
+  - if [ "$COMPILER" = "g++-4.9" ]; then touch include/xlnt/xlnt_config.hpp ; fi
+  - if [ "$COMPILER" = "g++-4.9" ]; then make -C build xlnt.test CXXFLAGS="-fprofile-arcs -ftest-coverage -std=c++11 -lstdc++" CXX=$COMPILER ; fi
+  - if [ "$COMPILER" = "g++-4.9" ]; then ./bin/xlnt.test ; fi
+  - if [ "$COMPILER" = "g++-4.9" ]; then coveralls --include source/worksheet/test_worksheet.hpp --gcov-options '\-lp' --gcov 'gcov-4.9' ; fi
+
 notifications:
   email: false
-sudo: false
 
 

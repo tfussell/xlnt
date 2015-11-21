@@ -58,7 +58,7 @@ def find_cmake():
     return cmake
 
 def parse_args(args):
-    options = {}
+    options = {'SHARED' : 1}
     generator = default_generator(sys.platform)
 
     if len(args) == 0:
@@ -73,18 +73,24 @@ def parse_args(args):
         if not option.startswith('--'):
             raise Exception('bad option: {}'.format(option))
 
-        if option == '--shared':
+        if option == '--enable-shared':
             options['SHARED'] = 1
-        elif option == '--static':
+        elif option == '--enable-static':
+            options['STATIC'] = 1
+        elif option == '--disable-shared':
             options['SHARED'] = 0
-        elif option == '--build-tests':
+        elif option == '--disable-static':
+            options['STATIC'] = 0
+        elif option == '--enable-tests':
             options['BUILD_TESTS'] = 1
-        elif option == '--autotest':
-            options['AUTORUN_TESTS'] = 1
-        elif option == '--coverage':
-            options['COVERAGE'] = 1
-        elif option == '--build-examples':
+        elif option == '--enable-coverage':
+            options['CALC_COVERAGE'] = 1
+        elif option == '--enable-examples':
             options['BUILD_EXAMPLES'] = 1
+        elif option == '--enable-benchmarks':
+            options['BUILD_BENCHMARKS'] = 1
+        elif option == '--enable-benchmarks':
+            options['BUILD_BENCHMARKS'] = 1
         elif option.startswith('--prefix='):
             options['CMAKE_INSTALL_PREFIX'] = option.split('=')[1]
         else:

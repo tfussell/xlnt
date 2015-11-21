@@ -67,23 +67,40 @@ SET(MINIZ ../third-party/miniz/miniz.c ../third-party/miniz/miniz.h)
 SET(PUGIXML ../third-party/pugixml/src/pugixml.hpp ../third-party/pugixml/src/pugixml.cpp ../third-party/pugixml/src/pugiconfig.hpp)
 
 if(SHARED)
-    add_library(xlnt SHARED ${HEADERS} ${SOURCES} ${MINIZ} ${PUGIXML})
+    add_library(xlnt.shared SHARED ${HEADERS} ${SOURCES} ${MINIZ} ${PUGIXML})
     add_definitions(-DXLNT_SHARED)
     if(MSVC)
-        target_compile_definitions(xlnt PRIVATE XLNT_EXPORT=1)
-        set_target_properties(xlnt PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\"")
+        target_compile_definitions(xlnt.shared PRIVATE XLNT_EXPORT=1)
+        set_target_properties(xlnt.shared PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\"")
     endif()
-else()
-    add_library(xlnt STATIC ${HEADERS} ${SOURCES} ${MINIZ} ${PUGIXML})
+    install(TARGETS xlnt.shared
+        LIBRARY DESTINATION ${LIB_DEST_DIR}
+        ARCHIVE DESTINATION ${LIB_DEST_DIR}
+        RUNTIME DESTINATION ${BIN_DEST_DIR}
+    )
+    SET_TARGET_PROPERTIES(
+        xlnt.shared
+	PROPERTIES
+	OUTPUT_NAME xlnt
+	VERSION ${PROJECT_VERSION_FULL}
+	SOVERSION ${PROJECT_VERSION}
+	INSTALL_NAME_DIR "${LIB_DEST_DIR}"
+    )
 endif()
 
-SET_TARGET_PROPERTIES(
-  xlnt
-  PROPERTIES
-  VERSION ${PROJECT_VERSION_FULL}
-  SOVERSION ${PROJECT_VERSION}
-  INSTALL_NAME_DIR "${LIB_DEST_DIR}"
-)
+if(STATIC)
+    add_library(xlnt.static STATIC ${HEADERS} ${SOURCES} ${MINIZ} ${PUGIXML})
+    install(TARGETS xlnt.static
+        LIBRARY DESTINATION ${LIB_DEST_DIR}
+        ARCHIVE DESTINATION ${LIB_DEST_DIR}
+        RUNTIME DESTINATION ${BIN_DEST_DIR}
+    )
+    SET_TARGET_PROPERTIES(
+        xlnt.static
+	PROPERTIES
+	OUTPUT_NAME xlnt
+    )
+endif()
 
 source_group(xlnt FILES ${ROOT_HEADERS})
 source_group(detail FILES ${DETAIL_HEADERS} ${DETAIL_SOURCES})
@@ -118,16 +135,9 @@ configure_file(
     "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
     IMMEDIATE @ONLY)
 
-
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../include/xlnt 
         DESTINATION include
         PATTERN ".DS_Store" EXCLUDE
-)
-
-install(TARGETS xlnt
-        LIBRARY DESTINATION ${LIB_DEST_DIR}
-        ARCHIVE DESTINATION ${LIB_DEST_DIR}
-        RUNTIME DESTINATION ${BIN_DEST_DIR}
 )
 
 install(FILES "${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc"
