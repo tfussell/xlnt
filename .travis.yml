@@ -39,9 +39,10 @@ script:
   - ../bin/xlnt.test
 
 after_success:
+  - if [ "$COMPILER" = "g++-4.9" ]; then g++-4.9 --version ; gcov-4.9 --version ; fi
   - if [ "$COMPILER" = "g++-4.9" ]; then rm -rf ./* ; fi
   - if [ "$COMPILER" = "g++-4.9" ]; then cmake -G "Unix Makefiles" -D DEBUG=1 -D COVERAGE=1 -D SHARED=0 -D STATIC=1 -D BUILD_TESTS=1 -D CMAKE_CXX_COMPILER=$COMPILER ../cmake ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then make VERBOSE=1 ; fi
+  - if [ "$COMPILER" = "g++-4.9" ]; then LDFLAGS="-fprofile-arcs -ftest-coverage" && make VERBOSE=1 ; fi
   - if [ "$COMPILER" = "g++-4.9" ]; then cd .. && ./bin/xlnt.test ; fi
   - if [ "$COMPILER" = "g++-4.9" ]; then coveralls --exclude bin --exclude build --exclude cmake --exclude docs --exclude include --exclude lib --exclude samples --include source --exclude tests --exclude third-party --gcov-options '\-lp' --gcov 'gcov-4.9' ; fi
 
