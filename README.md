@@ -2,8 +2,8 @@
 ====
 
 [![Build Status](https://travis-ci.org/tfussell/xlnt.svg)](https://travis-ci.org/tfussell/xlnt)
-[![Documentation Status](https://readthedocs.org/projects/xlnt/badge/?version=latest)](http://xlnt.readthedocs.org/en/latest/?badge=latest)
 [![Coverage Status](https://coveralls.io/repos/tfussell/xlnt/badge.svg?branch=master&service=github)](https://coveralls.io/github/tfussell/xlnt?branch=master)
+[![Documentation Status](https://readthedocs.org/projects/xlnt/badge/?version=latest)](http://xlnt.readthedocs.org/en/latest/?badge=latest)
 [![License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](http://opensource.org/licenses/MIT)
 [![Github Releases](https://img.shields.io/github/release/tfussell/xlnt.svg)](https://github.com/tfussell/xlnt/releases)
 [![Github Issues](https://img.shields.io/github/issues/tfussell/xlnt.svg)](http://github.com/tfussell/xlnt/issues)
