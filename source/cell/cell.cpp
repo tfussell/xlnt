@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <cctype>
 #include <sstream>
 
 #include <xlnt/cell/cell.hpp>

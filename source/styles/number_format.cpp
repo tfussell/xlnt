@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cctype>
 #include <regex>
 
 #include <xlnt/utils/datetime.hpp>
