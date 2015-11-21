@@ -6,11 +6,20 @@ endif()
 
 project(xlnt)
 
-option(SHARED "Set to ON to build shared libraries" OFF)
+option(SHARED "Set to OFF to not build shared libraries" ON)
+option(STATIC "Set to ON to build static libraries" OFF)
+option(DEBUG "Set to ON to for debug configuration" OFF)
 option(BUILD_EXAMPLES "Build examples" OFF)
 option(BUILD_TESTS "Build tests runner" OFF)
-option(AUTORUN_TESTS "Automatically run tests after building" OFF)
 option(COVERAGE "Create coverage files" OFF)
+
+if(${CMAKE_GENERATOR} STREQUAL "Unix Makefiles")
+    if(DEBUG)
+        set(CMAKE_BUILD_TYPE "Debug")
+    else()
+        set(CMAKE_BUILD_TYPE "Release")
+    endif()
+endif()
 
 if(APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.10)

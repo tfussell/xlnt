@@ -93,6 +93,8 @@ def parse_args(args):
             options['BUILD_BENCHMARKS'] = 1
         elif option.startswith('--prefix='):
             options['CMAKE_INSTALL_PREFIX'] = option.split('=')[1]
+        elif option == '--debug':
+            options['DEBUG'] = 1
         else:
             print('skipping unknown option: {}'.format(option))
 
