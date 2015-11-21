@@ -13,6 +13,10 @@ option(BUILD_EXAMPLES "Build examples" OFF)
 option(BUILD_TESTS "Build tests runner" OFF)
 option(COVERAGE "Create coverage files" OFF)
 
+if(COVERAGE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
+endif()
+
 if(${CMAKE_GENERATOR} STREQUAL "Unix Makefiles")
     if(DEBUG)
         set(CMAKE_BUILD_TYPE "Debug")
