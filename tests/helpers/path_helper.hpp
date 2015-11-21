@@ -83,8 +83,9 @@ public:
 	char exepath[PATH_MAX + 1] = {0};
 	
 	sprintf(arg1, "/proc/%d/exe", getpid());
-	readlink(arg1, exepath, 1024);
-	return std::string(exepath).substr(0, std::strlen(exepath) - 9);
+	auto bytes_written = readlink(arg1, exepath, 1024);
+    
+	return std::string(exepath).substr(0, bytes_written - 9);
 #endif
         
     }
