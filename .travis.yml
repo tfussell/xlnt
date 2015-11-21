@@ -34,7 +34,8 @@ matrix:
 
 script:
   - python configure --enable-tests
-  - make -C build CXX=$COMPILER CXXFLAGS="-lstdc++"
+  - env
+  - make VERBOSE=1 -C build CXX=$COMPILER CXXFLAGS="-lstdc++"
   - ./bin/xlnt.test
   - valgrind --error-exitcode=1 --leak-check=full ./xlnt.test
 
