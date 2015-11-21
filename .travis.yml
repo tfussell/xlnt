@@ -48,7 +48,7 @@ after_success:
   - if [ "$COMPILER" = "g++-4.9" ]; then cd .. && ./bin/xlnt.test ; fi
   - if [ "$COMPILER" = "g++-4.9" ]; then find ./ -name "*.gcda" ; fi
   - if [ "$COMPILER" = "g++-4.9" ]; then find ./ -name "*.gcno" ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then coveralls --build-root build/CMakeFiles/xlnt.static --exclude bin --exclude build --exclude cmake --exclude docs --exclude include --exclude lib --exclude samples --include source --exclude tests --exclude third-party --gcov-options '\-lp' -x ".cpp" ; fi
+  - if [ "$COMPILER" = "g++-4.9" ]; then coveralls --verbose --build-root "build/CMakeFiles/xlnt.static$(pwd)" --exclude bin --exclude build --exclude cmake --exclude docs --exclude include --exclude lib --exclude samples --include source --exclude tests --exclude third-party --gcov-options '\-lp' -x ".cpp" ; fi
 
 notifications:
   email: false
