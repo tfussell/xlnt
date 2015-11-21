@@ -39,7 +39,6 @@ script:
   - cmake -G "Unix Makefiles" -D SHARED=1 -D BUILD_TESTS=1 -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_CXX_FLAGS="-lstdc++" ../cmake
   - make
   - ../bin/xlnt.test
-  - valgrind --error-exitcode=1 --leak-check=full --suppressions=../.xlnt.supp --show-possibly-lost=no ../bin/xlnt.test
 
 after_success:
   - if [ "$COMPILER" = "g++-4.9" ]; then cd .. && mkdir build && cd build ; fi
