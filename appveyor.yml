@@ -11,4 +11,6 @@ build_script:
 - cmake -G "Visual Studio 14 2015 Win64" -D SHARED=1 -D BUILD_TESTS=1 ../cmake
 - cmake --build . --config Debug
 test_script:
-- x64\Debug\xlnt.test.exe
+- echo %cd%
+- dir bin
+- bin\xlnt.test.exe
