@@ -33,16 +33,13 @@ matrix:
       env: COMPILER=clang++-3.6
 
 script:
-  - env
-  - mkdir build
-  - cd build
+  - mkdir build && cd build
   - cmake -G "Unix Makefiles" -D SHARED=1 -D BUILD_TESTS=1 -D CMAKE_CXX_COMPILER=$COMPILER ../cmake
   - make
   - ../bin/xlnt.test
 
 after_success:
-  - echo "$COMPILER"
-  - if [ "$COMPILER" = "g++-4.9" ]; then cd .. ; mkdir build ; cd build ; fi
+  - if [ "$COMPILER" = "g++-4.9" ]; then rm -rf ./* ; cd build ; fi
   - if [ "$COMPILER" = "g++-4.9" ]; then cmake -G "Unix Makefiles" -D SHARED=1 -D BUILD_TESTS=1 -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_CXX_FLAGS="-fprofile-arcs -ftest-coverage" ../cmake ; fi
   - if [ "$COMPILER" = "g++-4.9" ]; then make ; fi
   - if [ "$COMPILER" = "g++-4.9" ]; then ../bin/xlnt.test ; fi
