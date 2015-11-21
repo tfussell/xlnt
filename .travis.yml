@@ -36,14 +36,14 @@ script:
   - env
   - mkdir build
   - cd build
-  - cmake -G "Unix Makefiles" SHARED=1 BUILD_TESTS=1 -DCMAKE_CXX_COMPILE=$COMPILE -DCMAKE_CXX_FLAGS="-lstdc++" ../cmake
+  - cmake -G "Unix Makefiles" SHARED=1 BUILD_TESTS=1 -DCMAKE_CXX_COMPILER=$COMPILE -DCMAKE_CXX_FLAGS="-lstdc++" ../cmake
   - make VERBOSE=1
   - ../bin/xlnt.test
   - valgrind --error-exitcode=1 --leak-check=full ../bin/xlnt.test
 
 after_success:
   - if [ "$COMPILER" = "g++-4.9" ]; then cd .. && mkdir build && cd build ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then cmake -G "Unix Makefiles" SHARED=1 BUILD_TESTS=1 -DCMAKE_CXX_COMPILE=$COMPILE -DCMAKE_CXX_FLAGS="-fprofile-arcs -ftest-coverage -lstdc++" ../cmake
+  - if [ "$COMPILER" = "g++-4.9" ]; then cmake -G "Unix Makefiles" SHARED=1 BUILD_TESTS=1 -DCMAKE_CXX_COMPILER=$COMPILE -DCMAKE_CXX_FLAGS="-fprofile-arcs -ftest-coverage -lstdc++" ../cmake
   - if [ "$COMPILER" = "g++-4.9" ]; then make xlnt.test ; fi
   - if [ "$COMPILER" = "g++-4.9" ]; then ../bin/xlnt.test ; fi
   - if [ "$COMPILER" = "g++-4.9" ]; then coveralls --include ../source/worksheet/test_worksheet.hpp --gcov-options '\-lp' --gcov 'gcov-4.9' ; fi
