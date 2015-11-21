@@ -33,7 +33,7 @@ matrix:
       env: COMPILER=clang++-3.6
 
 script:
-  - ./configure --enable-shared --enable-tests
+  - python configure --enable-tests
   - make -C build CXX=$COMPILER CXXFLAGS="-lstdc++"
   - ./bin/xlnt.test
   - valgrind --error-exitcode=1 --leak-check=full ./xlnt.test
