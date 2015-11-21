@@ -26,6 +26,9 @@
 
 namespace xlnt {
 
+/// <summary>
+/// Defines whether iterating a range returns columns or rows sequentially.
+/// </summary>
 enum class XLNT_CLASS major_order
 {
     column,

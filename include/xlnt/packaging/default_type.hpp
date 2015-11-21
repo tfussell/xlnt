@@ -29,6 +29,11 @@
 
 namespace xlnt {
 
+/// <summary>
+/// Default types in an OOXML package are identified by their extension.
+/// All files in the package with this extension will be assigned the given
+/// content type unless an override type for the exact file is provided.
+/// </summary>
 class XLNT_CLASS default_type
 {
   public:

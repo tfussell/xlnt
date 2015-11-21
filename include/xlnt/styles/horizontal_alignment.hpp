@@ -23,31 +23,22 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <vector>
-
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/cell/comment.hpp>
-#include <xlnt/worksheet/worksheet.hpp>
 
 namespace xlnt {
 
-class xml_document;
-
 /// <summary>
-/// Manages converting comments to and from XML.
+/// Text can be aligned horizontally in these enumerated ways.
 /// </summary>
-class XLNT_CLASS comment_serializer
+enum class XLNT_CLASS horizontal_alignment
 {
-    comment_serializer(worksheet sheet);
-
-    void read_comments(const xml_document &xml);
-    void read_comments_vml(const xml_document &xml);
-
-    xml_document write_comments() const;
-    xml_document write_comments_vml() const;
-
-  private:
-    worksheet sheet_;
+    none,
+    general,
+    left,
+    right,
+    center,
+    center_continuous,
+    justify
 };
 
 } // namespace xlnt

@@ -14,30 +14,16 @@ class XLNT_CLASS footer
 {
   public:
     footer();
-    void set_text(const std::string &text)
-    {
-        default_ = false;
-        text_ = text;
-    }
-    void set_font_name(const std::string &font_name)
-    {
-        default_ = false;
-        font_name_ = font_name;
-    }
-    void set_font_size(std::size_t font_size)
-    {
-        default_ = false;
-        font_size_ = font_size;
-    }
-    void set_font_color(const std::string &font_color)
-    {
-        default_ = false;
-        font_color_ = font_color;
-    }
-    bool is_default() const
-    {
-        return default_;
-    }
+    
+    void set_text(const std::string &text);
+    
+    void set_font_name(const std::string &font_name);
+    
+    void set_font_size(std::size_t font_size);
+    
+    void set_font_color(const std::string &font_color);
+    
+    bool is_default() const;
 
   private:
     bool default_;

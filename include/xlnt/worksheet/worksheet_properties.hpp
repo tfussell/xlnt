@@ -27,6 +27,9 @@
 
 namespace xlnt {
 
+/// <summary>
+/// ?
+/// </summary>
 class XLNT_CLASS worksheet_properties
 {
 };

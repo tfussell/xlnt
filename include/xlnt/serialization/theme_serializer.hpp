@@ -32,6 +32,9 @@ namespace xlnt {
 class theme;
 class xml_document;
 
+/// <summary>
+/// Manages converting a theme to and from XML.
+/// </summary>
 class XLNT_CLASS theme_serializer
 {
   public:

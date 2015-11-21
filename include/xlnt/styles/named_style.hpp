@@ -28,6 +28,9 @@
 
 namespace xlnt {
 
+/// <summary>
+/// A named style is simply a style that can be referred to by name rather than by index.
+/// </summary>
 class XLNT_CLASS named_style
 {
   public:

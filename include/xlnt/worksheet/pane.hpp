@@ -27,6 +27,9 @@
 
 namespace xlnt {
 
+/// <summary>
+/// A fixed portion of a worksheet.
+/// </summary>
 class XLNT_CLASS pane
 {
 };

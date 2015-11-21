@@ -192,8 +192,16 @@ public:
         
         ws.garbage_collect();
         
-        auto cell_collection = ws.get_cell_collection();
-        std::set<xlnt::cell> cells(cell_collection.begin(), cell_collection.end());
+        std::set<xlnt::cell> cells;
+        
+        for(auto row : ws)
+        {
+            for(auto cell : row)
+            {
+                if(!cell.garbage_collectible()) cells.insert(cell);
+            }
+        }
+        
         std::set<xlnt::cell> expected = {ws.get_cell("B2"), ws.get_cell("C4"), ws.get_cell("D1")};
         
         // Set difference

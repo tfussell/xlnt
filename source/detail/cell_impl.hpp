@@ -4,7 +4,7 @@
 
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/comment.hpp>
-#include <xlnt/cell/types.hpp>
+#include <xlnt/cell/index_types.hpp>
 #include <xlnt/utils/exceptions.hpp>
 #include <xlnt/utils/time.hpp>
 #include <xlnt/packaging/relationship.hpp>

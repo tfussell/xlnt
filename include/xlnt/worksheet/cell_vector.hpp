@@ -35,78 +35,33 @@ namespace xlnt {
 class cell;
 class range_reference;
 
+/// <summary>
+/// A cell vector is a linear (1D) range of cells, either vertical or horizontal
+/// depending on the major order specified in the constructor.
+/// </summary>
 class XLNT_CLASS cell_vector
 {
   public:
-    template <bool is_const = true>
-    class XLNT_CLASS common_iterator : public std::iterator<std::bidirectional_iterator_tag, cell>
+    class XLNT_CLASS iterator : public std::iterator<std::bidirectional_iterator_tag, cell>
     {
       public:
-        common_iterator(worksheet ws, const cell_reference &start_cell, major_order order = major_order::row)
-            : ws_(ws), current_cell_(start_cell), range_(start_cell.to_range()), order_(order)
-        {
-        }
+        iterator(worksheet ws, const cell_reference &start_cell, major_order order = major_order::row);
 
-        common_iterator(const common_iterator<false> &other)
-        {
-            *this = other;
-        }
+        iterator(const iterator &other);
 
         cell operator*();
 
-        bool operator==(const common_iterator &other) const
-        {
-            return ws_ == other.ws_ && current_cell_ == other.current_cell_ && order_ == other.order_;
-        }
+        bool operator==(const iterator &other) const;
 
-        bool operator!=(const common_iterator &other) const
-        {
-            return !(*this == other);
-        }
+        bool operator!=(const iterator &other) const;
 
-        common_iterator &operator--()
-        {
-            if (order_ == major_order::row)
-            {
-                current_cell_.set_column_index(current_cell_.get_column_index() - 1);
-            }
-            else
-            {
-                current_cell_.set_row(current_cell_.get_row() - 1);
-            }
+        iterator &operator--();
+        
+        iterator operator--(int);
 
-            return *this;
-        }
+        iterator &operator++();
 
-        common_iterator operator--(int)
-        {
-            iterator old = *this;
-            --*this;
-            return old;
-        }
-
-        common_iterator &operator++()
-        {
-            if (order_ == major_order::row)
-            {
-                current_cell_.set_column_index(current_cell_.get_column_index() + 1);
-            }
-            else
-            {
-                current_cell_.set_row(current_cell_.get_row() + 1);
-            }
-
-            return *this;
-        }
-
-        common_iterator operator++(int)
-        {
-            iterator old = *this;
-            ++*this;
-            return old;
-        }
-
-        friend class common_iterator<true>;
+        iterator operator++(int);
 
       private:
         worksheet ws_;
@@ -114,9 +69,34 @@ class XLNT_CLASS cell_vector
         range_reference range_;
         major_order order_;
     };
+    
+    class XLNT_CLASS const_iterator : public std::iterator<std::bidirectional_iterator_tag, const cell>
+    {
+      public:
+        const_iterator(worksheet ws, const cell_reference &start_cell, major_order order = major_order::row);
 
-    using iterator = common_iterator<false>;
-    using const_iterator = common_iterator<true>;
+        const_iterator(const const_iterator &other);
+
+        const cell operator*();
+
+        bool operator==(const const_iterator &other) const;
+
+        bool operator!=(const const_iterator &other) const;
+
+        const_iterator &operator--();
+
+        const_iterator operator--(int);
+
+        const_iterator &operator++();
+        
+        const_iterator operator++(int);
+
+      private:
+        worksheet ws_;
+        cell_reference current_cell_;
+        range_reference range_;
+        major_order order_;
+    };
 
     cell_vector(worksheet ws, const range_reference &ref, major_order order = major_order::row);
 

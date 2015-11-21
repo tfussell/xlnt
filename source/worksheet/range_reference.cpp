@@ -82,4 +82,62 @@ bool range_reference::operator!=(const range_reference &comparand) const
 {
     return comparand.top_left_ != top_left_ || comparand.bottom_right_ != bottom_right_;
 }
+
+cell_reference range_reference::get_top_left() const
+{
+    return top_left_;
 }
+cell_reference range_reference::get_bottom_right() const
+{
+    return bottom_right_;
+}
+cell_reference &range_reference::get_top_left()
+{
+    return top_left_;
+}
+cell_reference &range_reference::get_bottom_right()
+{
+    return bottom_right_;
+}
+
+bool range_reference::operator==(const std::string &reference_string) const
+{
+    return *this == range_reference(reference_string);
+}
+
+bool range_reference::operator==(const char *reference_string) const
+{
+    return *this == std::string(reference_string);
+}
+
+bool range_reference::operator!=(const std::string &reference_string) const
+{
+    return *this != range_reference(reference_string);
+}
+
+bool range_reference::operator!=(const char *reference_string) const
+{
+    return *this != std::string(reference_string);
+}
+
+XLNT_FUNCTION bool operator==(const std::string &reference_string, const range_reference &ref)
+{
+    return ref == reference_string;
+}
+
+XLNT_FUNCTION bool operator==(const char *reference_string, const range_reference &ref)
+{
+    return ref == reference_string;
+}
+
+XLNT_FUNCTION bool operator!=(const std::string &reference_string, const range_reference &ref)
+{
+    return ref != reference_string;
+}
+
+XLNT_FUNCTION bool operator!=(const char *reference_string, const range_reference &ref)
+{
+    return ref != reference_string;
+}
+
+} // namespace xlnt

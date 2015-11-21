@@ -30,95 +30,22 @@
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/worksheet/cell_vector.hpp>
 #include <xlnt/worksheet/major_order.hpp>
+#include <xlnt/worksheet/range_iterator_2d.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
 namespace xlnt {
 
+/// <summary>
+/// A range is a 2D collection of cells with defined extens that can be iterated upon.
+/// </summary>
 class XLNT_CLASS range
 {
   public:
-    template <bool is_const = true>
-    class XLNT_CLASS common_iterator : public std::iterator<std::bidirectional_iterator_tag, cell>
-    {
-      public:
-        common_iterator(worksheet ws, const range_reference &start_cell, major_order order = major_order::row)
-            : ws_(ws), current_cell_(start_cell.get_top_left()), range_(start_cell), order_(order)
-        {
-        }
-
-        common_iterator(const common_iterator<false> &other)
-        {
-            *this = other;
-        }
-
-        cell_vector operator*();
-
-        bool operator==(const common_iterator &other) const
-        {
-            return ws_ == other.ws_ && current_cell_ == other.current_cell_ && order_ == other.order_;
-        }
-
-        bool operator!=(const common_iterator &other) const
-        {
-            return !(*this == other);
-        }
-
-        common_iterator &operator--()
-        {
-            if (order_ == major_order::row)
-            {
-                current_cell_.set_row(current_cell_.get_row() - 1);
-            }
-            else
-            {
-                current_cell_.set_column_index(current_cell_.get_column_index() - 1);
-            }
-
-            return *this;
-        }
-
-        common_iterator operator--(int)
-        {
-            iterator old = *this;
-            --*this;
-            return old;
-        }
-
-        common_iterator &operator++()
-        {
-            if (order_ == major_order::row)
-            {
-                current_cell_.set_row(current_cell_.get_row() + 1);
-            }
-            else
-            {
-                current_cell_.set_column_index(current_cell_.get_column_index() + 1);
-            }
-
-            return *this;
-        }
-
-        common_iterator operator++(int)
-        {
-            iterator old = *this;
-            ++*this;
-            return old;
-        }
-
-        friend class common_iterator<true>;
-
-      private:
-        worksheet ws_;
-        cell_reference current_cell_;
-        range_reference range_;
-        major_order order_;
-    };
-
-    using iterator = common_iterator<false>;
-    using const_iterator = common_iterator<true>;
-
-    range(worksheet ws, const range_reference &reference, major_order order = major_order::row);
+    using iterator = range_iterator_2d;
+    using const_iterator = const_range_iterator_2d;
+    
+    range(worksheet ws, const range_reference &reference, major_order order = major_order::row, bool skip_null = false);
 
     ~range();
 
@@ -128,10 +55,7 @@ class XLNT_CLASS range
 
     bool operator==(const range &comparand) const;
 
-    bool operator!=(const range &comparand) const
-    {
-        return !(*this == comparand);
-    }
+    bool operator!=(const range &comparand) const;
 
     cell_vector get_vector(std::size_t vector_index);
 
@@ -150,14 +74,8 @@ class XLNT_CLASS range
     iterator begin();
     iterator end();
 
-    const_iterator begin() const
-    {
-        return cbegin();
-    }
-    const_iterator end() const
-    {
-        return cend();
-    }
+    const_iterator begin() const;
+    const_iterator end() const;
 
     const_iterator cbegin() const;
     const_iterator cend() const;
@@ -166,6 +84,7 @@ class XLNT_CLASS range
     worksheet ws_;
     range_reference ref_;
     major_order order_;
+    bool skip_null_;
 };
 
 } // namespace xlnt

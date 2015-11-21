@@ -31,7 +31,7 @@
 namespace xlnt {
 
 /// <summary>
-/// High-level properties of the document.
+/// High-level properties of the OOXML document.
 /// </summary>
 class XLNT_CLASS document_properties
 {

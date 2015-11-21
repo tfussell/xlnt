@@ -30,9 +30,15 @@
 
 namespace xlnt {
 
+/// <summary>
+/// Colors can be applied to many parts of a cell's style.
+/// </summary>
 class XLNT_CLASS color
 {
-  public:
+public:
+    /// <summary>
+    /// Some colors are references to colors rather than having a particular RGB value.
+    /// </summary>
     enum class type
     {
         indexed,

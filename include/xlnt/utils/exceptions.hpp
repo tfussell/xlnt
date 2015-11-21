@@ -23,6 +23,8 @@
 // @author: see AUTHORS file
 #pragma once
 
+// An shortcut for including all possible exceptions in xlnt.
+
 #include <xlnt/utils/attribute_error.hpp>
 #include <xlnt/utils/cell_coordinates_exception.hpp>
 #include <xlnt/utils/column_string_index_exception.hpp>

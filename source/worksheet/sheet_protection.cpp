@@ -4,12 +4,7 @@
 
 #include <xlnt/worksheet/sheet_protection.hpp>
 
-namespace xlnt {
-
-void sheet_protection::set_password(const std::string &password)
-{
-    hashed_password_ = hash_password(password);
-}
+namespace {
 
 template <typename T>
 std::string int_to_hex(T i)
@@ -17,6 +12,20 @@ std::string int_to_hex(T i)
     std::stringstream stream;
     stream << std::hex << i;
     return stream.str();
+}
+
+} // namespace
+
+namespace xlnt {
+
+void sheet_protection::set_password(const std::string &password)
+{
+    hashed_password_ = hash_password(password);
+}
+
+std::string sheet_protection::get_hashed_password() const
+{
+    return hashed_password_;
 }
 
 std::string sheet_protection::hash_password(const std::string &plaintext_password)

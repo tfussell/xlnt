@@ -30,7 +30,7 @@
 namespace xlnt {
 
 /// <summary>
-/// Error when a references number format is not in the stylesheet.
+/// Error when a referenced number format is not in the stylesheet.
 /// </summary>
 class XLNT_CLASS missing_number_format : public std::runtime_error
 {

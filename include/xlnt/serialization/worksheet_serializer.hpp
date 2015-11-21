@@ -36,6 +36,9 @@ class workbook;
 class worksheet;
 class xml_document;
 
+/// <summary>
+/// Manages converting a worksheet to and from XML.
+/// </summary>
 class XLNT_CLASS worksheet_serializer
 {
   public:

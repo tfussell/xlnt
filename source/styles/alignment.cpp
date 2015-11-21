@@ -21,33 +21,66 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#pragma once
 
-#include <vector>
-
-#include <xlnt/xlnt_config.hpp>
-#include <xlnt/cell/comment.hpp>
-#include <xlnt/worksheet/worksheet.hpp>
+#include <xlnt/styles/alignment.hpp>
 
 namespace xlnt {
 
-class xml_document;
-
-/// <summary>
-/// Manages converting comments to and from XML.
-/// </summary>
-class XLNT_CLASS comment_serializer
+bool alignment::get_wrap_text() const
 {
-    comment_serializer(worksheet sheet);
+    return wrap_text_;
+}
 
-    void read_comments(const xml_document &xml);
-    void read_comments_vml(const xml_document &xml);
+void alignment::set_wrap_text(bool wrap_text)
+{
+    wrap_text_ = wrap_text;
+}
 
-    xml_document write_comments() const;
-    xml_document write_comments_vml() const;
+bool alignment::has_horizontal() const
+{
+    return horizontal_ != horizontal_alignment::none;
+}
 
-  private:
-    worksheet sheet_;
-};
+horizontal_alignment alignment::get_horizontal() const
+{
+    return horizontal_;
+}
+
+void alignment::set_horizontal(horizontal_alignment horizontal)
+{
+    horizontal_ = horizontal;
+}
+
+bool alignment::has_vertical() const
+{
+    return vertical_ != vertical_alignment::none;
+}
+
+vertical_alignment alignment::get_vertical() const
+{
+    return vertical_;
+}
+
+void alignment::set_vertical(vertical_alignment vertical)
+{
+    vertical_ = vertical;
+}
+
+bool alignment::operator==(const alignment &other) const
+{
+    return hash() == other.hash();
+}
+
+std::size_t alignment::hash() const
+{
+    std::size_t seed = 0;
+    hash_combine(seed, wrap_text_);
+    hash_combine(seed, shrink_to_fit_);
+    hash_combine(seed, static_cast<std::size_t>(horizontal_));
+    hash_combine(seed, static_cast<std::size_t>(vertical_));
+    hash_combine(seed, text_rotation_);
+    hash_combine(seed, indent_);
+    return seed;
+}
 
 } // namespace xlnt

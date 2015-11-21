@@ -31,6 +31,11 @@
 
 namespace xlnt {
 
+enum class calendar;
+
+/// <summary>
+/// Describes the number formatting applied to text and numbers within a certain cell.
+/// </summary>
 class XLNT_CLASS number_format
 {
   public:
@@ -81,33 +86,19 @@ class XLNT_CLASS number_format
     
     std::string get_format_string() const;
 
-    bool has_id() const
-    {
-        return id_set_;
-    }
-
-    void set_id(std::size_t id)
-    {
-        id_ = id;
-        id_set_ = true;
-    }
+    bool has_id() const;
+    void set_id(std::size_t id);
     
-    std::size_t get_id() const
-    {
-        if(!id_set_)
-        {
-            throw std::runtime_error("number format doesn't have an id");
-        }
-        
-        return id_;
-    }
+    std::size_t get_id() const;
 
     std::size_t hash() const;
+    
+    std::string format(const std::string &text) const;
+    std::string format(long double number, calendar base_date) const;
+    
+    bool is_date_format() const;
 
-    bool operator==(const number_format &other) const
-    {
-        return hash() == other.hash();
-    }
+    bool operator==(const number_format &other) const;
 
   private:
     bool id_set_;

@@ -27,6 +27,9 @@
 
 namespace xlnt {
 
+/// <summary>
+/// The properties of a row in a worksheet.
+/// </summary>
 class XLNT_CLASS row_properties
 {
 public:

@@ -23,31 +23,21 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <vector>
-
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/cell/comment.hpp>
-#include <xlnt/worksheet/worksheet.hpp>
 
 namespace xlnt {
 
-class xml_document;
-
 /// <summary>
-/// Manages converting comments to and from XML.
+/// Cells can have borders that go from the top-left to bottom-right
+/// or from the top-right to bottom-left, or both, or neither.
+/// Used by style->border.
 /// </summary>
-class XLNT_CLASS comment_serializer
+enum class XLNT_CLASS diagonal_direction
 {
-    comment_serializer(worksheet sheet);
-
-    void read_comments(const xml_document &xml);
-    void read_comments_vml(const xml_document &xml);
-
-    xml_document write_comments() const;
-    xml_document write_comments_vml() const;
-
-  private:
-    worksheet sheet_;
+    none,
+    up,
+    down,
+    both
 };
 
 } // namespace xlnt

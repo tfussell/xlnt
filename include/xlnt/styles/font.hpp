@@ -33,6 +33,9 @@ namespace xlnt {
 
 class style;
 
+/// <summary>
+/// Describes the font style of a particular cell.
+/// </summary>
 class XLNT_CLASS font
 {
   public:

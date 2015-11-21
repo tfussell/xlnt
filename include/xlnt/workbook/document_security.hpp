@@ -30,7 +30,7 @@
 namespace xlnt {
 
 /// <summary>
-/// Security information about the document.
+/// Security information about the OOXML document.
 /// </summary>
 class XLNT_CLASS document_security
 {

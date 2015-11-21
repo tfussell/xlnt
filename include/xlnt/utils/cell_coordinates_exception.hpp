@@ -27,7 +27,7 @@
 #include <string>
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/cell/types.hpp>
+#include <xlnt/cell/index_types.hpp>
 
 namespace xlnt {
 

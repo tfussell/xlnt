@@ -27,6 +27,9 @@
 
 namespace xlnt {
 
+/// <summary>
+/// The orientation of the worksheet when it is printed.
+/// </summary>
 enum class XLNT_CLASS orientation
 {
     portrait,

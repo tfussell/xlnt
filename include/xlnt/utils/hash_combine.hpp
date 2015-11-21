@@ -35,6 +35,9 @@
 namespace xlnt {
 
 // TODO: Can this be in source->detail, or must it be in a header?
+/// <summary>
+/// Return a value by combining the hashed value of v (using std::hash) with seed.
+/// </summary>
 template <class T>
 inline void XLNT_FUNCTION hash_combine(std::size_t &seed, const T &v)
 {

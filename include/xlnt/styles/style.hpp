@@ -35,6 +35,9 @@ namespace xlnt {
 
 class workbook;
 
+/// <summary>
+/// Describes the entirety of the styling of a particular cell.
+/// </summary>
 class XLNT_CLASS style
 {
   public:

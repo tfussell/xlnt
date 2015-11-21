@@ -27,6 +27,9 @@
 
 namespace xlnt {
 
+/// <summary>
+/// The possible paper sizes for printing.
+/// </summary>
 enum class XLNT_CLASS paper_size
 {
     letter = 1,

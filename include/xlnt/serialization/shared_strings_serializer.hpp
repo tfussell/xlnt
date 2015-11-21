@@ -32,6 +32,9 @@ namespace xlnt {
 
 class xml_document;
 
+/// <summary>
+/// Manages converting a set of shared strings to and from XML.
+/// </summary>
 class XLNT_CLASS shared_strings_serializer
 {
   public:

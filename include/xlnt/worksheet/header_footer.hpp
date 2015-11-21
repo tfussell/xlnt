@@ -10,7 +10,7 @@
 namespace xlnt {
 
 /// <summary>
-/// Worksheet header and footer
+/// Worksheet header and footer for all six possible positions.
 /// </summary>
 class XLNT_CLASS header_footer
 {

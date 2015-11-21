@@ -29,6 +29,10 @@
 
 namespace xlnt {
 
+/// <summary>
+/// An override_type applies a different content type to a file which
+/// already has a default content type for its extension.
+/// </summary>
 class XLNT_CLASS override_type
 {
   public:

@@ -27,6 +27,10 @@
 
 namespace xlnt {
 
+/// <summary>
+/// Defines how a worksheet appears in the workbook.
+/// A workbook must have at least one sheet which is visible at all times.
+/// </summary>
 enum class XLNT_CLASS sheet_state
 {
     visible,

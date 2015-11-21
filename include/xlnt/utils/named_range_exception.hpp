@@ -30,7 +30,7 @@
 namespace xlnt {
 
 /// <summary>
-/// Error for badly formatted named ranges.
+/// Error for incorrectly formatted named ranges.
 /// </summary>
 class XLNT_CLASS named_range_exception : public std::runtime_error
 {

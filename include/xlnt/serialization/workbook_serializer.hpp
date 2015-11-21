@@ -39,6 +39,9 @@ class zip_file;
 class xml_document;
 class xml_node;
 
+/// <summary>
+/// Manages converting workbook to and from XML.
+/// </summary>
 class XLNT_CLASS workbook_serializer
 {
   public:

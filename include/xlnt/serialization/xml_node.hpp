@@ -33,6 +33,9 @@ namespace detail { struct xml_node_impl; }
 
 class xml_document;
 
+/// <summary>
+/// Abstracts an XML node from a particular implementation.
+/// </summary>
 class XLNT_CLASS xml_node
 {
   public:

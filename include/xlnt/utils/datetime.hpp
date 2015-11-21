@@ -29,6 +29,9 @@
 
 namespace xlnt {
 
+/// <summary>
+/// A datetime is a combination of a date and a time.
+/// </summary>
 struct XLNT_CLASS datetime
 {
     /// <summary>

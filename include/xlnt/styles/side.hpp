@@ -48,6 +48,9 @@ enum class XLNT_CLASS border_style
     thin
 };
 
+/// <summary>
+/// Describes the one of the sides of a border of a particular cell.
+/// </summary>
 class XLNT_CLASS side
 {
   public:

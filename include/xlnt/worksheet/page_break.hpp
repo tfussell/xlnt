@@ -27,6 +27,9 @@
 
 namespace xlnt {
 
+/// <summary>
+/// The types of page breaks.
+/// </summary>
 enum class XLNT_CLASS page_break
 {
     none = 0,

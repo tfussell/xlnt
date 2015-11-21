@@ -25,6 +25,8 @@
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/utils/hash_combine.hpp>
+#include <xlnt/styles/horizontal_alignment.hpp>
+#include <xlnt/styles/vertical_alignment.hpp>
 
 namespace xlnt {
 
@@ -34,82 +36,25 @@ namespace xlnt {
 class XLNT_CLASS alignment
 {
   public:
-    enum class horizontal_alignment
-    {
-        none,
-        general,
-        left,
-        right,
-        center,
-        center_continuous,
-        justify
-    };
+    bool get_wrap_text() const;
 
-    enum class vertical_alignment
-    {
-        none,
-        bottom,
-        top,
-        center,
-        justify
-    };
+    void set_wrap_text(bool wrap_text);
 
-    bool get_wrap_text() const
-    {
-        return wrap_text_;
-    }
+    bool has_horizontal() const;
 
-    void set_wrap_text(bool wrap_text)
-    {
-        wrap_text_ = wrap_text;
-    }
+    horizontal_alignment get_horizontal() const;
 
-    bool has_horizontal() const
-    {
-        return horizontal_ != horizontal_alignment::none;
-    }
+    void set_horizontal(horizontal_alignment horizontal);
 
-    horizontal_alignment get_horizontal() const
-    {
-        return horizontal_;
-    }
+    bool has_vertical() const;
 
-    void set_horizontal(horizontal_alignment horizontal)
-    {
-        horizontal_ = horizontal;
-    }
+    vertical_alignment get_vertical() const;
 
-    bool has_vertical() const
-    {
-        return vertical_ != vertical_alignment::none;
-    }
+    void set_vertical(vertical_alignment vertical);
 
-    vertical_alignment get_vertical() const
-    {
-        return vertical_;
-    }
+    bool operator==(const alignment &other) const;
 
-    void set_vertical(vertical_alignment vertical)
-    {
-        vertical_ = vertical;
-    }
-
-    bool operator==(const alignment &other) const
-    {
-        return hash() == other.hash();
-    }
-
-    std::size_t hash() const
-    {
-        std::size_t seed = 0;
-        hash_combine(seed, wrap_text_);
-        hash_combine(seed, shrink_to_fit_);
-        hash_combine(seed, static_cast<std::size_t>(horizontal_));
-        hash_combine(seed, static_cast<std::size_t>(vertical_));
-        hash_combine(seed, text_rotation_);
-        hash_combine(seed, indent_);
-        return seed;
-    }
+    std::size_t hash() const;
 
   private:
     horizontal_alignment horizontal_ = horizontal_alignment::none;

@@ -160,19 +160,19 @@ alignment style_serializer::read_alignment(const xml_node &alignment_node)
 
         if (vertical == "bottom")
         {
-            align.set_vertical(alignment::vertical_alignment::bottom);
+            align.set_vertical(vertical_alignment::bottom);
         }
         else if (vertical == "center")
         {
-            align.set_vertical(alignment::vertical_alignment::center);
+            align.set_vertical(vertical_alignment::center);
         }
         else if (vertical == "justify")
         {
-            align.set_vertical(alignment::vertical_alignment::justify);
+            align.set_vertical(vertical_alignment::justify);
         }
         else if (vertical == "top")
         {
-            align.set_vertical(alignment::vertical_alignment::top);
+            align.set_vertical(vertical_alignment::top);
         }
         else
         {
@@ -188,27 +188,27 @@ alignment style_serializer::read_alignment(const xml_node &alignment_node)
 
         if (horizontal == "left")
         {
-            align.set_horizontal(alignment::horizontal_alignment::left);
+            align.set_horizontal(horizontal_alignment::left);
         }
         else if (horizontal == "center")
         {
-            align.set_horizontal(alignment::horizontal_alignment::center);
+            align.set_horizontal(horizontal_alignment::center);
         }
         else if (horizontal == "center-continuous")
         {
-            align.set_horizontal(alignment::horizontal_alignment::center_continuous);
+            align.set_horizontal(horizontal_alignment::center_continuous);
         }
         else if (horizontal == "right")
         {
-            align.set_horizontal(alignment::horizontal_alignment::right);
+            align.set_horizontal(horizontal_alignment::right);
         }
         else if (horizontal == "justify")
         {
-            align.set_horizontal(alignment::horizontal_alignment::justify);
+            align.set_horizontal(horizontal_alignment::justify);
         }
         else if (horizontal == "general")
         {
-            align.set_horizontal(alignment::horizontal_alignment::general);
+            align.set_horizontal(horizontal_alignment::general);
         }
         else
         {
@@ -885,16 +885,16 @@ xml_document style_serializer::write_stylesheet() const
             {
                 switch (style.alignment_.get_vertical())
                 {
-                case alignment::vertical_alignment::bottom:
+                case vertical_alignment::bottom:
                     alignment_node.add_attribute("vertical", "bottom");
                     break;
-                case alignment::vertical_alignment::center:
+                case vertical_alignment::center:
                     alignment_node.add_attribute("vertical", "center");
                     break;
-                case alignment::vertical_alignment::justify:
+                case vertical_alignment::justify:
                     alignment_node.add_attribute("vertical", "justify");
                     break;
-                case alignment::vertical_alignment::top:
+                case vertical_alignment::top:
                     alignment_node.add_attribute("vertical", "top");
                     break;
                 default:
@@ -906,22 +906,22 @@ xml_document style_serializer::write_stylesheet() const
             {
                 switch (style.alignment_.get_horizontal())
                 {
-                case alignment::horizontal_alignment::center:
+                case horizontal_alignment::center:
                     alignment_node.add_attribute("horizontal", "center");
                     break;
-                case alignment::horizontal_alignment::center_continuous:
+                case horizontal_alignment::center_continuous:
                     alignment_node.add_attribute("horizontal", "center_continuous");
                     break;
-                case alignment::horizontal_alignment::general:
+                case horizontal_alignment::general:
                     alignment_node.add_attribute("horizontal", "general");
                     break;
-                case alignment::horizontal_alignment::justify:
+                case horizontal_alignment::justify:
                     alignment_node.add_attribute("horizontal", "justify");
                     break;
-                case alignment::horizontal_alignment::left:
+                case horizontal_alignment::left:
                     alignment_node.add_attribute("horizontal", "left");
                     break;
-                case alignment::horizontal_alignment::right:
+                case horizontal_alignment::right:
                     alignment_node.add_attribute("horizontal", "right");
                     break;
                 default:

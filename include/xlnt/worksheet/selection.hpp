@@ -26,6 +26,9 @@
 
 namespace xlnt {
 
+/// <summary>
+/// The selected area of a worksheet.
+/// </summary>
 class XLNT_CLASS selection
 {
 };

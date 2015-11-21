@@ -27,6 +27,9 @@
 
 namespace xlnt {
 
+/// <summary>
+/// Describes the margins around a worksheet for printing.
+/// </summary>
 class XLNT_CLASS page_margins
 {
   public:

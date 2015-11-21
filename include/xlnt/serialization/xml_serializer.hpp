@@ -31,6 +31,9 @@ namespace xlnt {
 class xml_document;
 class xml_node;
 
+/// <summary>
+/// Converts XML documents to and from raw strings.
+/// </summary>
 class XLNT_CLASS xml_serializer
 {
   public:

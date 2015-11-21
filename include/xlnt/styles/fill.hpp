@@ -29,6 +29,9 @@
 
 namespace xlnt {
 
+/// <summary>
+/// Describes the fill style of a particular cell.
+/// </summary>
 class XLNT_CLASS fill
 {
   public:

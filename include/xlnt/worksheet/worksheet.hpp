@@ -23,23 +23,24 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <list>
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/cell/types.hpp>
+#include <xlnt/cell/index_types.hpp>
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/page_margins.hpp>
 #include <xlnt/worksheet/page_setup.hpp>
+#include <xlnt/worksheet/range_iterator_2d.hpp>
 
 namespace xlnt {
 
 class cell;
 class cell_reference;
+class cell_vector;
 class column_properties;
 class comment;
 class range;
@@ -53,11 +54,15 @@ struct date;
 namespace detail { struct worksheet_impl; }
 
 /// <summary>
-/// A worksheet is a 2D array of cells.
+/// A worksheet is a 2D array of cells starting with cell A1 in the top-left corner
+/// and extending indefinitely down and right as needed.
 /// </summary>
 class XLNT_CLASS worksheet
 {
-  public:
+public:
+    using iterator = range_iterator_2d;
+    using const_iterator = const_range_iterator_2d;
+    
     worksheet();
     worksheet(const worksheet &rhs);
     worksheet(workbook &parent_workbook, const std::string &title = std::string());
@@ -92,7 +97,6 @@ class XLNT_CLASS worksheet
     range rows(int row_offset, int column_offset) const;
     range rows(const std::string &range_string, int row_offset, int column_offset) const;
     range columns() const;
-    std::list<cell> get_cell_collection();
 
     // properties
     column_properties &get_column_properties(column_t column);
@@ -198,9 +202,23 @@ class XLNT_CLASS worksheet
 
     void set_sheet_state(sheet_state state);
 
+    iterator begin();
+    iterator end();
+
+    const_iterator begin() const;
+    const_iterator end() const;
+
+    const_iterator cbegin() const;
+    const_iterator cend() const;
+    
+    range iter_cells(bool skip_null);
+
   private:
     friend class workbook;
     friend class cell;
+    friend class range_iterator_2d;
+    friend class const_range_iterator_2d;
+    
     worksheet(detail::worksheet_impl *d);
     detail::worksheet_impl *d_;
 };

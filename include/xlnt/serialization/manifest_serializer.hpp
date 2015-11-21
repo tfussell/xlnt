@@ -32,6 +32,9 @@ namespace xlnt {
 class manifest;
 class xml_document;
 
+/// <summary>
+/// Manages converting a manifest to and from XML.
+/// </summary>
 class XLNT_CLASS manifest_serializer
 {
   public:

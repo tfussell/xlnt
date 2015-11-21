@@ -31,6 +31,9 @@
 
 namespace xlnt {
 
+/// <summary>
+/// Describes how a worksheet will be converted into a page during printing.
+/// </summary>
 struct XLNT_CLASS page_setup
 {
   public:

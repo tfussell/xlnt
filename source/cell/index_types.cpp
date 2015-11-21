@@ -1,6 +1,6 @@
 #include <locale>
 
-#include <xlnt/cell/types.hpp>
+#include <xlnt/cell/index_types.hpp>
 #include <xlnt/utils/exceptions.hpp>
 
 #include <detail/constants.hpp>

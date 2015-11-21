@@ -27,19 +27,15 @@
 #include <functional>
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/styles/diagonal_direction.hpp>
 #include <xlnt/styles/side.hpp>
 #include <xlnt/utils/hash_combine.hpp>
 
 namespace xlnt {
 
-enum class XLNT_CLASS diagonal_direction
-{
-    none,
-    up,
-    down,
-    both
-};
-
+/// <summary>
+/// Describes the border style of a particular cell.
+/// </summary>
 class XLNT_CLASS border
 {
   public:
@@ -70,36 +66,9 @@ class XLNT_CLASS border
 
     diagonal_direction diagonal_direction_ = diagonal_direction::none;
 
-    bool operator==(const border &other) const
-    {
-        return hash() == other.hash();
-    }
+    bool operator==(const border &other) const;
 
-    std::size_t hash() const
-    {
-        std::size_t seed = 0;
-
-        hash_combine(seed, start_assigned);
-        if (start_assigned) hash_combine(seed, start.hash());
-        hash_combine(seed, end_assigned);
-        if (end_assigned) hash_combine(seed, end.hash());
-        hash_combine(seed, left_assigned);
-        if (left_assigned) hash_combine(seed, left.hash());
-        hash_combine(seed, right_assigned);
-        if (right_assigned) hash_combine(seed, right.hash());
-        hash_combine(seed, top_assigned);
-        if (top_assigned) hash_combine(seed, top.hash());
-        hash_combine(seed, bottom_assigned);
-        if (bottom_assigned) hash_combine(seed, bottom.hash());
-        hash_combine(seed, diagonal_assigned);
-        if (diagonal_assigned) hash_combine(seed, diagonal.hash());
-        hash_combine(seed, vertical_assigned);
-        if (vertical_assigned) hash_combine(seed, vertical.hash());
-        hash_combine(seed, horizontal_assigned);
-        if (horizontal_assigned) hash_combine(seed, horizontal.hash());
-
-        return seed;
-    }
+    std::size_t hash() const;
 };
 
 } // namespace xlnt

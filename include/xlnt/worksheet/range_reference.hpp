@@ -27,6 +27,10 @@
 
 namespace xlnt {
 
+/// <summary>
+/// A range_reference describes a rectangular area of a worksheet with positive
+/// width and height defined by a top-left and bottom-right corner.
+/// </summary>
 class XLNT_CLASS range_reference
 {
   public:
@@ -48,69 +52,43 @@ class XLNT_CLASS range_reference
     
     std::size_t get_height() const;
     
-    cell_reference get_top_left() const
-    {
-        return top_left_;
-    }
-    cell_reference get_bottom_right() const
-    {
-        return bottom_right_;
-    }
-    cell_reference &get_top_left()
-    {
-        return top_left_;
-    }
-    cell_reference &get_bottom_right()
-    {
-        return bottom_right_;
-    }
+    cell_reference get_top_left() const;
+    
+    cell_reference get_bottom_right() const;
+    
+    cell_reference &get_top_left();
+    
+    cell_reference &get_bottom_right();
 
     range_reference make_offset(int column_offset, int row_offset) const;
 
     std::string to_string() const;
 
     bool operator==(const range_reference &comparand) const;
-    bool operator==(const std::string &reference_string) const
-    {
-        return *this == range_reference(reference_string);
-    }
-    bool operator==(const char *reference_string) const
-    {
-        return *this == std::string(reference_string);
-    }
+    
+    bool operator==(const std::string &reference_string) const;
+    
+    bool operator==(const char *reference_string) const;
+    
     bool operator!=(const range_reference &comparand) const;
-    bool operator!=(const std::string &reference_string) const
-    {
-        return *this != range_reference(reference_string);
-    }
-    bool operator!=(const char *reference_string) const
-    {
-        return *this != std::string(reference_string);
-    }
+    
+    bool operator!=(const std::string &reference_string) const;
+    
+    bool operator!=(const char *reference_string) const;
+    
+    XLNT_FUNCTION friend bool operator==(const std::string &reference_string, const range_reference &ref);
+
+    XLNT_FUNCTION friend bool operator==(const char *reference_string, const range_reference &ref);
+
+    XLNT_FUNCTION friend bool operator!=(const std::string &reference_string, const range_reference &ref);
+
+    XLNT_FUNCTION friend bool operator!=(const char *reference_string, const range_reference &ref);
 
   private:
     cell_reference top_left_;
     cell_reference bottom_right_;
 };
 
-inline bool XLNT_FUNCTION operator==(const std::string &reference_string, const range_reference &ref)
-{
-    return ref == reference_string;
-}
 
-inline bool XLNT_FUNCTION operator==(const char *reference_string, const range_reference &ref)
-{
-    return ref == reference_string;
-}
-
-inline bool XLNT_FUNCTION operator!=(const std::string &reference_string, const range_reference &ref)
-{
-    return ref != reference_string;
-}
-
-inline bool XLNT_FUNCTION operator!=(const char *reference_string, const range_reference &ref)
-{
-    return ref != reference_string;
-}
 
 } // namespace xlnt

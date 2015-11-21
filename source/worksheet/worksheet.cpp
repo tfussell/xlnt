@@ -3,7 +3,7 @@
 
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>
-#include <xlnt/cell/types.hpp>
+#include <xlnt/cell/index_types.hpp>
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/utils/date.hpp>
 #include <xlnt/utils/datetime.hpp>
@@ -171,19 +171,6 @@ void worksheet::garbage_collect()
 
         cell_map_iter++;
     }
-}
-
-std::list<cell> worksheet::get_cell_collection()
-{
-    std::list<cell> cells;
-    for (auto &c : d_->cell_map_)
-    {
-        for (auto &d : c.second)
-        {
-            cells.push_back(cell(&d.second));
-        }
-    }
-    return cells;
 }
 
 std::string worksheet::get_title() const
@@ -764,6 +751,59 @@ row_properties &worksheet::get_row_properties(row_t row)
 const row_properties &worksheet::get_row_properties(row_t row) const
 {
     return d_->row_properties_.at(row);
+}
+
+worksheet::iterator worksheet::begin()
+{
+    auto dimensions = calculate_dimension();
+    cell_reference top_right(dimensions.get_bottom_right().get_column_index(), dimensions.get_top_left().get_row());
+    range_reference row_range(dimensions.get_top_left(), top_right);
+    
+    return iterator(*this, row_range, major_order::row);
+}
+
+worksheet::iterator worksheet::end()
+{
+    auto dimensions = calculate_dimension();
+    auto past_end_row_index = dimensions.get_bottom_right().get_row() + 1;
+    cell_reference bottom_left(dimensions.get_top_left().get_column_index(), past_end_row_index);
+    cell_reference bottom_right(dimensions.get_bottom_right().get_column_index(), past_end_row_index);
+    
+    return iterator(*this, range_reference(bottom_left, bottom_right), major_order::row);
+}
+
+worksheet::const_iterator worksheet::cbegin() const
+{
+    auto dimensions = calculate_dimension();
+    cell_reference top_right(dimensions.get_bottom_right().get_column_index(), dimensions.get_top_left().get_row());
+    range_reference row_range(dimensions.get_top_left(), top_right);
+    
+    return const_iterator(*this, row_range, major_order::row);
+}
+
+worksheet::const_iterator worksheet::cend() const
+{
+    auto dimensions = calculate_dimension();
+    auto past_end_row_index = dimensions.get_bottom_right().get_row() + 1;
+    cell_reference bottom_left(dimensions.get_top_left().get_column_index(), past_end_row_index);
+    cell_reference bottom_right(dimensions.get_bottom_right().get_column_index(), past_end_row_index);
+    
+    return const_iterator(*this, range_reference(bottom_left, bottom_right), major_order::row);
+}
+
+worksheet::const_iterator worksheet::begin() const
+{
+    return cbegin();
+}
+
+worksheet::const_iterator worksheet::end() const
+{
+    return cend();
+}
+
+range worksheet::iter_cells(bool skip_null)
+{
+    return range(*this, calculate_dimension(), major_order::row, skip_null);
 }
 
 } // namespace xlnt

@@ -27,6 +27,9 @@
 
 namespace xlnt {
 
+/// <summary>
+/// A reference to an external workbook for use in formulae.
+/// </summary>
 class XLNT_CLASS external_book
 {
 };

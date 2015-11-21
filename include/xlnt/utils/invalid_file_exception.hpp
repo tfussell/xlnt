@@ -31,7 +31,7 @@
 namespace xlnt {
 
 /// <summary>
-/// Error for trying to open a non-ooxml file.
+/// Error for trying to open a non-OOXML file.
 /// </summary>
 class XLNT_CLASS invalid_file_exception : public std::runtime_error
 {

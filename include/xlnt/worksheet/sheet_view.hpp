@@ -27,6 +27,10 @@
 
 namespace xlnt {
 
+/// <summary>
+/// Describes a view of a worksheet.
+/// Worksheets can have multiple views which show the data differently.
+/// </summary>
 class XLNT_CLASS sheet_view
 {
 };
