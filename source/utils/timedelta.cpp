@@ -18,7 +18,7 @@ timedelta::timedelta(int days_, int hours_, int minutes_, int seconds_, int micr
     {
     }
 
-double timedelta::to_number() const
+long double timedelta::to_number() const
 {
     std::uint64_t total_microseconds = static_cast<std::uint64_t>(microseconds);
     total_microseconds += static_cast<std::uint64_t>(seconds * 1e6);
@@ -37,10 +37,10 @@ timedelta timedelta::from_number(long double raw_time)
 {
     timedelta result;
 
-    double integer_part;
-    double fractional_part = std::modf((double)raw_time, &integer_part);
+    long double integer_part;
+    long double fractional_part = std::modf(raw_time, &integer_part);
 
-    result.days = integer_part;
+    result.days = static_cast<int>(integer_part);
 
     fractional_part *= 24;
     result.hours = (int)fractional_part;

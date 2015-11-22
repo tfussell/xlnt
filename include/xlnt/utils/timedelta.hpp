@@ -40,7 +40,7 @@ struct XLNT_CLASS timedelta
 
     timedelta(int days_, int hours_, int minutes_, int seconds_, int microseconds_);
 
-    double to_number() const;
+    long double to_number() const;
 
     int days;
     int hours;

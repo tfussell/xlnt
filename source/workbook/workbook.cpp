@@ -9,6 +9,7 @@
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/packaging/zip_file.hpp>
+#include <xlnt/serialization/encoding.hpp>
 #include <xlnt/serialization/excel_serializer.hpp>
 #include <xlnt/styles/alignment.hpp>
 #include <xlnt/styles/border.hpp>
@@ -48,6 +49,8 @@ workbook::workbook() : d_(new detail::workbook_impl())
     create_relationship("rId4", "theme/theme1.xml", relationship::type::theme);
     
     add_number_format(number_format::general());
+
+    d_->encoding_ = encoding::ascii;
     
     d_->manifest_.add_default_type("rels", "application/vnd.openxmlformats-package.relationships+xml");
     d_->manifest_.add_default_type("xml", "application/xml");

@@ -48,7 +48,7 @@ after_success:
   - if [ "$COMPILER" = "g++-4.9" ]; then cd .. && ./bin/xlnt.test ; fi
   - if [ "$COMPILER" = "g++-4.9" ]; then export OLDWD=$(pwd) ; fi
   - if [ "$COMPILER" = "g++-4.9" ]; then cd "build/CMakeFiles/xlnt.static.dir$(pwd)" ; pwd ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then coveralls --root $OLDWD --verbose -x ".cpp" --gcov-options '\-p' --exclude include --exclude third-party ; fi
+  - if [ "$COMPILER" = "g++-4.9" ]; then coveralls --root $OLDWD --verbose -x ".cpp" --gcov-options '\-p' --exclude include --exclude third-party --exclude tests --exclude samples --exclude benchmarks ; fi
 
 notifications:
   email: false
