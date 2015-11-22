@@ -60,6 +60,11 @@ workbook::workbook() : d_(new detail::workbook_impl())
     d_->manifest_.add_override_type("/docProps/app.xml", "application/vnd.openxmlformats-officedocument.extended-properties+xml");
 }
 
+workbook::workbook(encoding e) : workbook()
+{
+    d_->encoding_ = e;
+}
+
 workbook::iterator::iterator(workbook &wb, std::size_t index) : wb_(wb), index_(index)
 {
 }
@@ -423,6 +428,11 @@ worksheet workbook::create_sheet(const std::string &title)
     return ws;
 }
 
+encoding workbook::get_encoding() const
+{
+    return d_->encoding_;
+}
+
 workbook::iterator workbook::begin()
 {
     return iterator(*this, 0);
@@ -431,6 +441,16 @@ workbook::iterator workbook::begin()
 workbook::iterator workbook::end()
 {
     return iterator(*this, d_->worksheets_.size());
+}
+
+workbook::const_iterator workbook::begin() const
+{
+    return cbegin();
+}
+
+workbook::const_iterator workbook::end() const
+{
+    return cend();
 }
 
 workbook::const_iterator workbook::cbegin() const
@@ -681,39 +701,78 @@ const font &workbook::get_font(std::size_t font_id) const
 std::size_t workbook::set_font(const font &font_, std::size_t style_id)
 {
     auto match = std::find(d_->fonts_.begin(), d_->fonts_.end(), font_);
-    std::size_t font_index = 0;
+    std::size_t font_id = 0;
 
     if (match == d_->fonts_.end())
     {
         d_->fonts_.push_back(font_);
-        font_index = d_->fonts_.size() - 1;
+        font_id = d_->fonts_.size() - 1;
     }
     else
     {
-        font_index = static_cast<std::size_t>(match - d_->fonts_.begin());
+        font_id = match - d_->fonts_.begin();
     }
 
-    auto existing_style = d_->styles_[style_id];
+    if (d_->styles_.empty())
+    {
+        style new_style;
 
-    if (font_index == existing_style.font_id_)
+        new_style.id_ = 0;
+        new_style.border_id_ = 0;
+        new_style.fill_id_ = 0;
+        new_style.font_id_ = font_id;
+        new_style.font_apply_ = true;
+        new_style.number_format_id_ = 0;
+
+        if (d_->borders_.empty())
+        {
+            d_->borders_.push_back(new_style.get_border());
+        }
+
+        if (d_->fills_.empty())
+        {
+            d_->fills_.push_back(new_style.get_fill());
+        }
+
+        if (d_->number_formats_.empty())
+        {
+            d_->number_formats_.push_back(new_style.get_number_format());
+        }
+
+        d_->styles_.push_back(new_style);
+
+        return 0;
+    }
+
+    // If the style is unchanged, just return it.
+    auto &existing_style = d_->styles_[style_id];
+    existing_style.font_apply_ = true;
+
+    if (font_id == existing_style.font_id_)
     {
         // no change
         return style_id;
     }
 
+    // Make a new style with this format.
     auto new_style = existing_style;
-    new_style.font_id_ = font_index;
 
+    new_style.font_id_ = font_id;
+    new_style.font_ = font_;
+
+    // Check if the new style is already applied to a different cell. If so, reuse it.
     auto style_match = std::find(d_->styles_.begin(), d_->styles_.end(), new_style);
 
     if (style_match != d_->styles_.end())
     {
-        return static_cast<std::size_t>(style_match - d_->styles_.begin());
+        return style_match->get_id();
     }
 
+    // No match found, so add it.
+    new_style.id_ = d_->styles_.size();
     d_->styles_.push_back(new_style);
 
-    return d_->styles_.size() - 1;
+    return new_style.id_;
 }
 
 const fill &workbook::get_fill(std::size_t fill_id) const
@@ -766,6 +825,7 @@ bool workbook::get_quote_prefix(std::size_t style_id) const
     return d_->styles_[style_id].quote_prefix_;
 }
 
+//TODO: this is terrible!
 std::size_t workbook::set_number_format(const xlnt::number_format &format, std::size_t style_id)
 {
     auto match = std::find(d_->number_formats_.begin(), d_->number_formats_.end(), format);

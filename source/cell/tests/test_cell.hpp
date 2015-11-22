@@ -7,6 +7,7 @@
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/cell/comment.hpp>
+#include <xlnt/serialization/encoding.hpp>
 #include <xlnt/styles/alignment.hpp>
 #include <xlnt/styles/border.hpp>
 #include <xlnt/styles/font.hpp>
@@ -265,31 +266,14 @@ public:
         cell.set_value(std::string(1, 13));  // Carriage return
         cell.set_value(" Leading and trailing spaces are legal ");
     }
-    /*
-    values = (
-              ('30:33.865633336', [('', '', '', '30', '33', '865633')]),
-              ('03:40:16', [('03', '40', '16', '', '', '')]),
-              ('03:40', [('03', '40', '',  '', '', '')]),
-              ('55:72:12', []),
-              )
-    @pytest.mark.parametrize("value, expected",
-                             values)
-     */
-    void test_time_regex()
-    {
-        /*
-        from openpyxl.cell.cell import TIME_REGEX;
-        m = TIME_REGEX.findall(value);
-        TS_ASSERT(m == expected;
-         */
-    }
     
     void test_timedelta()
     {
         auto ws = wb.create_sheet();
         auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
         
-        cell.set_value(xlnt::timedelta(1, 3));
+        cell.set_value(xlnt::timedelta(1, 3, 0, 0, 0));
+
         TS_ASSERT(cell.get_value<long double>() == 1.125);
         TS_ASSERT(cell.get_data_type() == xlnt::cell::type::numeric);
         TS_ASSERT(!cell.is_date());
@@ -352,43 +336,42 @@ public:
     
     void test_cell_offset()
     {
-        /*
         auto ws = wb.create_sheet();
         auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
-        TS_ASSERT(cell.offset(2, 1).get_reference() == "B3");
-         */
+        TS_ASSERT(cell.offset(1, 2).get_reference() == "B3");
+    }
+
+    std::string make_latin1_string()
+    {
+        unsigned char pound = 163;
+        auto test_string = "Compound Value (" + std::string(1, pound) + ")";
+        return test_string;
     }
     
     void test_bad_encoding()
     {
-        /*
-        unsigned char pound = 163;
-        auto test_string = "Compount Value (" + std::string(pound) + ")";
         auto ws = wb.create_sheet();
-        cell = ws[xlnt::cell_reference("A1")];
-        TS_ASSERT_THROWS(cell.check_string(test_string), xlnt::unicode_decode_error);
-        TS_ASSERT_THROWS(cell.set_value(test_string), xlnt::unicode_decode_error);
-         */
+        auto cell = ws[xlnt::cell_reference("A1")];
+        TS_ASSERT_THROWS(cell.check_string(make_latin1_string()), xlnt::unicode_decode_error);
+        TS_ASSERT_THROWS(cell.set_value(make_latin1_string()), xlnt::unicode_decode_error);
     }
     
     void test_good_encoding()
     {
-        /*
-        auto wb = xlnt::workbook(xlnt::encoding::latin1);
-        auto ws = wb.get_active_sheet();
+        xlnt::workbook latin1_wb(xlnt::encoding::latin1);
+        auto ws = latin1_wb.get_active_sheet();
         auto cell = ws[xlnt::cell_reference("A1")];
-        cell.set_value(test_string);
-         */
+        cell.check_string(make_latin1_string());
+        cell.set_value(make_latin1_string());
     }
     
-    void _test_font()
+    void test_font()
     {
         xlnt::font font;
         font.set_bold(true);
-        auto ws = wb.create_sheet();
-        ws.get_parent().add_font(font);
-    
+        auto ws = wb.create_sheet();    
         auto cell = xlnt::cell(ws, "A1");
+        cell.set_font(font);
         TS_ASSERT_EQUALS(cell.get_font(), font);
     }
     

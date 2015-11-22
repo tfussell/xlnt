@@ -6,7 +6,9 @@
 #include <xlnt/cell/comment.hpp>
 #include <xlnt/packaging/document_properties.hpp>
 #include <xlnt/packaging/relationship.hpp>
+#include <xlnt/serialization/encoding.hpp>
 #include <xlnt/styles/color.hpp>
+#include <xlnt/styles/style.hpp>
 #include <xlnt/utils/date.hpp>
 #include <xlnt/utils/datetime.hpp>
 #include <xlnt/utils/time.hpp>
@@ -31,6 +33,159 @@ const std::unordered_map<std::string, int> &cell::error_codes()
 
     return *codes;
 };
+
+std::string cell::check_string(const std::string &to_check)
+{
+    // so we can modify it
+    std::string s = to_check;
+
+    if (s.size() == 0)
+    {
+        return s;
+    }
+
+    auto wb_encoding = get_parent().get_parent().get_encoding();
+
+    //XXX: use utfcpp for this!
+    switch(wb_encoding)
+    {
+    case encoding::latin1: break; // all bytes are valid in latin1
+    case encoding::ascii:
+        for (char c : s)
+        {
+            if (c < 0)
+            {
+                throw xlnt::unicode_decode_error(c);
+            }
+        }
+        break;
+    case encoding::utf8:
+    {
+        std::vector<std::uint8_t> bytes;
+
+        for (char c : s)
+        {
+            auto byte = static_cast<std::uint8_t>(c);
+
+            if (byte < 128)
+            {
+                if(!bytes.empty())
+                {
+                    throw xlnt::unicode_decode_error(c);
+                }
+            }
+            else
+            {
+                if(!bytes.empty())
+                {
+                    if(byte >> 6 != 2)
+                    {
+                        throw xlnt::unicode_decode_error(c);
+                    }
+                }
+            }
+
+            bytes.push_back(byte);
+
+            auto first_byte = bytes[0];
+            auto num_bytes = 0;
+
+            if(first_byte < 128)
+            {
+                num_bytes = 1;
+            }
+            else if(first_byte >> 5 == 0b110)
+            {
+                num_bytes = 2;
+            }
+            else if(first_byte >> 4 == 0b1110)
+            {
+                num_bytes = 3;
+            }
+            else if(first_byte >> 3 == 0b11110)
+            {
+                num_bytes = 4;
+            }
+            else if(first_byte >> 2 == 0b111110)
+            {
+                num_bytes = 5;
+            }
+            else if(first_byte >> 1 == 0b1111110)
+            {
+                num_bytes = 6;
+            }
+
+            if(num_bytes > bytes.size())
+            {
+                throw xlnt::unicode_decode_error(c);
+            }
+
+            if(num_bytes == bytes.size())
+            {
+                bytes.clear();
+            }
+        }
+
+        // Check last code point
+        if(!bytes.empty())
+        {
+            auto first_byte = bytes[0];
+            auto num_bytes = 0;
+
+            if(first_byte < 128)
+            {
+                num_bytes = 1;
+            }
+            else if(first_byte >> 5 == 0b110)
+            {
+                num_bytes = 2;
+            }
+            else if(first_byte >> 4 == 0b1110)
+            {
+                num_bytes = 3;
+            }
+            else if(first_byte >> 3 == 0b11110)
+            {
+                num_bytes = 4;
+            }
+            else if(first_byte >> 2 == 0b111110)
+            {
+                num_bytes = 5;
+            }
+            else if(first_byte >> 1 == 0b1111110)
+            {
+                num_bytes = 6;
+            }
+
+            if(num_bytes > bytes.size())
+            {
+                throw xlnt::unicode_decode_error();
+            }
+        }
+
+        break;
+    }
+    default:
+        // other encodings not supported yet
+        break;
+    } // switch(wb_encoding)
+
+    // check encoding?
+    if (s.size() > 32767)
+    {
+        s = s.substr(0, 32767); // max string length in Excel
+    }
+
+    for (char c : s)
+    {
+        if (c >= 0 && (c <= 8 || c == 11 || c == 12 || (c >= 14 && c <= 31)))
+        {
+            throw xlnt::illegal_character_error(c);
+        }
+    }
+
+    return s;
+}
 
 cell::cell() : d_(nullptr)
 {
@@ -169,7 +324,7 @@ XLNT_FUNCTION void cell::set_value(long double d)
 template <>
 XLNT_FUNCTION void cell::set_value(std::string s)
 {
-    d_->set_string(s, get_parent().get_parent().get_guess_types());
+    d_->set_string(check_string(s), get_parent().get_parent().get_guess_types());
 
 	if (get_data_type() == type::string && !s.empty())
 	{
@@ -497,7 +652,15 @@ const number_format &cell::get_number_format() const
 
 const font &cell::get_font() const
 {
-    return get_parent().get_parent().get_font(d_->style_id_);
+    if (d_->has_style_)
+    {
+        auto font_id = get_parent().get_parent().get_styles()[d_->style_id_].get_font_id();
+        return get_parent().get_parent().get_font(font_id);
+    }
+    else
+    {
+        return get_parent().get_parent().get_font(0);
+    }
 }
 
 const fill &cell::get_fill() const
@@ -640,6 +803,12 @@ template <>
 XLNT_FUNCTION timedelta cell::get_value() const
 {
     return timedelta::from_number(d_->value_numeric_);
+}
+
+void cell::set_font(const font &font_)
+{
+    d_->has_style_ = true;
+    d_->style_id_ = get_parent().get_parent().set_font(font_, d_->style_id_);
 }
 
 void cell::set_number_format(const number_format &number_format_)

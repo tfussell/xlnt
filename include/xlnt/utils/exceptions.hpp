@@ -35,4 +35,5 @@
 #include <xlnt/utils/named_range_exception.hpp>
 #include <xlnt/utils/read_only_workbook_exception.hpp>
 #include <xlnt/utils/sheet_title_exception.hpp>
+#include <xlnt/utils/unicode_decode_error.hpp>
 #include <xlnt/utils/value_error.hpp>

@@ -116,6 +116,8 @@ class XLNT_CLASS workbook
 
     friend void swap(workbook &left, workbook &right);
 
+    encoding get_encoding() const;
+
     worksheet get_active_sheet();
 
     bool get_guess_types() const;
@@ -153,14 +155,8 @@ class XLNT_CLASS workbook
     iterator begin();
     iterator end();
 
-    const_iterator begin() const
-    {
-        return cbegin();
-    }
-    const_iterator end() const
-    {
-        return cend();
-    }
+    const_iterator begin() const;
+    const_iterator end() const;
 
     const_iterator cbegin() const;
     const_iterator cend() const;

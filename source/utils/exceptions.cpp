@@ -48,6 +48,16 @@ illegal_character_error::illegal_character_error(char c)
 {
 }
 
+unicode_decode_error::unicode_decode_error()
+    : std::runtime_error("unicode decode error")
+{
+}
+
+unicode_decode_error::unicode_decode_error(char)
+    : std::runtime_error("unicode decode error")
+{
+}
+
 value_error::value_error()
     : std::runtime_error("value error")
 {

@@ -14,32 +14,6 @@
 
 namespace {
 
-// return s after checking encoding, size, and illegal characters
-std::string check_string(std::string s)
-{
-    if (s.size() == 0)
-    {
-        return s;
-    }
-
-    // check encoding?
-
-    if (s.size() > 32767)
-    {
-        s = s.substr(0, 32767); // max string length in Excel
-    }
-
-    for (char c : s)
-    {
-        if (c >= 0 && (c <= 8 || c == 11 || c == 12 || (c >= 14 && c <= 31)))
-        {
-            throw xlnt::illegal_character_error(c);
-        }
-    }
-
-    return s;
-}
-
 std::pair<bool, long double> cast_numeric(const std::string &s)
 {
     const char *str = s.c_str();
@@ -124,59 +98,9 @@ struct cell_impl
     cell_impl(const cell_impl &rhs);
     cell_impl &operator=(const cell_impl &rhs);
 
-    cell self()
-    {
-        return xlnt::cell(this);
-    }
+    cell self();
 
-    void set_string(const std::string &s, bool guess_types)
-    {
-        value_string_ = check_string(s);
-        type_ = cell::type::string;
-
-        if (value_string_.size() > 1 && value_string_.front() == '=')
-        {
-            formula_ = value_string_;
-            type_ = cell::type::formula;
-            value_string_.clear();
-        }
-        else if (cell::error_codes().find(s) != cell::error_codes().end())
-        {
-            type_ = cell::type::error;
-        }
-        else if (guess_types)
-        {
-            auto percentage = cast_percentage(s);
-
-            if (percentage.first)
-            {
-                value_numeric_ = percentage.second;
-                type_ = cell::type::numeric;
-                self().set_number_format(xlnt::number_format::percentage());
-            }
-            else
-            {
-                auto time = cast_time(s);
-
-                if (time.first)
-                {
-                    type_ = cell::type::numeric;
-                    self().set_number_format(number_format::date_time6());
-                    value_numeric_ = time.second.to_number();
-                }
-                else
-                {
-                    auto numeric = cast_numeric(s);
-
-                    if (numeric.first)
-                    {
-                        value_numeric_ = numeric.second;
-                        type_ = cell::type::numeric;
-                    }
-                }
-            }
-        }
-    }
+    void set_string(const std::string &s, bool guess_types);
 
     cell::type type_;
 

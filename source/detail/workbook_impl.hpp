@@ -83,6 +83,8 @@ struct workbook_impl
     manifest manifest_;
 
     theme theme_;
+
+    encoding encoding_;
 };
 
 } // namespace detail

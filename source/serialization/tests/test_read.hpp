@@ -299,8 +299,7 @@ public:
     {
         auto path = PathHelper::GetDataDirectory("/reader/formulae.xlsx");
         
-        
-        xlnt::workbook wb;
+        xlnt::workbook wb(xlnt::encoding::latin1);
         xlnt::excel_serializer serializer(wb);
         
         serializer.load_workbook(path, false, true);

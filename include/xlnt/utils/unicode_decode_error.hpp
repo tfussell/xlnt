@@ -1,4 +1,5 @@
 // Copyright (c) 2014-2015 Thomas Fussell
+// Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,31 +23,22 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <string>
+#include <cstdint>
+#include <stdexcept>
 
 #include <xlnt/xlnt_config.hpp>
 
 namespace xlnt {
 
 /// <summary>
-/// Represents a span of time between two datetimes. This is
-/// not fully supported yet.
+/// Error for string encoding not matching workbook encoding
 /// </summary>
-struct XLNT_CLASS timedelta
+class XLNT_CLASS unicode_decode_error : public std::runtime_error
 {
-    static timedelta from_number(long double number);
-
-    timedelta();
-
-    timedelta(int days_, int hours_, int minutes_, int seconds_, int microseconds_);
-
-    double to_number() const;
-
-    int days;
-    int hours;
-    int minutes;
-    int seconds;
-    int microseconds;
+  public:
+    unicode_decode_error();
+    unicode_decode_error(char c);
+    unicode_decode_error(std::uint8_t b);
 };
 
 } // namespace xlnt

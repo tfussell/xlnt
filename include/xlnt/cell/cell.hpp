@@ -340,6 +340,11 @@ public:
     /// </summary>
     calendar get_base_date() const;
 
+    /// <summary>
+    /// Return to_check after checking encoding, size, and illegal characters.
+    /// </summary>
+    std::string check_string(const std::string &to_check);
+
     // operators
     
     /// <summary>
