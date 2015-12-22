@@ -27,8 +27,12 @@ bool shared_strings_serializer::read_shared_strings(const xml_document &xml, std
     strings.clear();
 
     auto root_node = xml.get_child("sst");
+    auto unique_count = 0;
 
-    auto unique_count = std::stoull(root_node.get_attribute("uniqueCount"));
+    if (root_node.has_attribute("uniqueCount"))
+    {
+        unique_count = std::stoull(root_node.get_attribute("uniqueCount"));
+    }
 
     for (const auto &si_node : root_node.get_children())
     {
