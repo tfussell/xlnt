@@ -207,4 +207,10 @@ public:
 
         TS_ASSERT_EQUALS(test_sheet.get_cell("A1").get_value<long double>(), float_value);
     }
+
+    void test_read_empty_shared_strings()
+    {
+	xlnt::workbook test_ss;
+	TS_ASSERT_THROWS_NOTHING(test_ss.load(PathHelper::GetDataDirectory("/genuine/number_empty_shared_strings.xlsx")));
+    }
 };
