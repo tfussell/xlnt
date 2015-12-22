@@ -448,4 +448,43 @@ public:
         cell.set_quote_prefix(true);
         TS_ASSERT(cell.quote_prefix());
     }
+
+    void test_check_string()
+    {
+        xlnt::workbook utf8_wb(xlnt::encoding::utf8);
+        auto ws = utf8_wb.get_active_sheet();
+        auto cell = ws[xlnt::cell_reference("A1")];
+
+	std::vector<std::string> valid_utf8_strings = 
+        {
+            "a",
+            "\xc3\xa0",
+            "\xc3\xb1",
+	    "\xe2\x82\xa1",
+	    "\xf0\x90\x8c\xbc",
+	};
+
+	for(auto valid : valid_utf8_strings)
+        {
+	    TS_ASSERT_THROWS_NOTHING(cell.check_string(valid));
+	    TS_ASSERT_THROWS_NOTHING(cell.set_value(valid));
+        }
+
+	std::vector<std::string> invalid_utf8_strings = 
+        {
+            "\xc3\x28",
+	    "\xa0\xa1",
+	    "\xe2\x28\xa1",
+	    "\xe2\x82\x28",
+	    "\xf0\x28\x8c\xbc",
+	    "\xf0\x90\x28\xbc",
+	    "\xf0\x28\x8c\x28",
+        };
+
+	for(auto invalid : invalid_utf8_strings)
+        {
+	    TS_ASSERT_THROWS(cell.check_string(invalid), xlnt::unicode_decode_error);
+	    TS_ASSERT_THROWS(cell.set_value(invalid), xlnt::unicode_decode_error);
+        }
+    }
 };

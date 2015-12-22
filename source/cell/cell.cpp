@@ -14,6 +14,7 @@
 #include <xlnt/utils/time.hpp>
 #include <xlnt/utils/timedelta.hpp>
 #include <xlnt/utils/exceptions.hpp>
+#include <xlnt/utils/utf8string.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/column_properties.hpp>
 #include <xlnt/worksheet/row_properties.hpp>
@@ -61,108 +62,26 @@ std::string cell::check_string(const std::string &to_check)
         break;
     case encoding::utf8:
     {
-        std::vector<std::uint8_t> bytes;
-
-        for (char c : s)
+	if(!utf8string::is_valid(s))
         {
-            auto byte = static_cast<std::uint8_t>(c);
-
-            if (byte < 128)
-            {
-                if(!bytes.empty())
-                {
-                    throw xlnt::unicode_decode_error(c);
-                }
-            }
-            else
-            {
-                if(!bytes.empty())
-                {
-                    if(byte >> 6 != 2)
-                    {
-                        throw xlnt::unicode_decode_error(c);
-                    }
-                }
-            }
-
-            bytes.push_back(byte);
-
-            auto first_byte = bytes[0];
-            auto num_bytes = 0;
-
-            if(first_byte < 128)
-            {
-                num_bytes = 1;
-            }
-            else if(first_byte >> 5 == 0b110)
-            {
-                num_bytes = 2;
-            }
-            else if(first_byte >> 4 == 0b1110)
-            {
-                num_bytes = 3;
-            }
-            else if(first_byte >> 3 == 0b11110)
-            {
-                num_bytes = 4;
-            }
-            else if(first_byte >> 2 == 0b111110)
-            {
-                num_bytes = 5;
-            }
-            else if(first_byte >> 1 == 0b1111110)
-            {
-                num_bytes = 6;
-            }
-
-            if(num_bytes > bytes.size())
-            {
-                throw xlnt::unicode_decode_error(c);
-            }
-
-            if(num_bytes == bytes.size())
-            {
-                bytes.clear();
-            }
-        }
-
-        // Check last code point
-        if(!bytes.empty())
+            throw xlnt::unicode_decode_error('0');
+        } 
+        break;
+    }
+    case encoding::utf16:
+    {
+	if(!utf8string::from_utf16(s).is_valid())
         {
-            auto first_byte = bytes[0];
-            auto num_bytes = 0;
-
-            if(first_byte < 128)
-            {
-                num_bytes = 1;
-            }
-            else if(first_byte >> 5 == 0b110)
-            {
-                num_bytes = 2;
-            }
-            else if(first_byte >> 4 == 0b1110)
-            {
-                num_bytes = 3;
-            }
-            else if(first_byte >> 3 == 0b11110)
-            {
-                num_bytes = 4;
-            }
-            else if(first_byte >> 2 == 0b111110)
-            {
-                num_bytes = 5;
-            }
-            else if(first_byte >> 1 == 0b1111110)
-            {
-                num_bytes = 6;
-            }
-
-            if(num_bytes > bytes.size())
-            {
-                throw xlnt::unicode_decode_error();
-            }
-        }
-
+            throw xlnt::unicode_decode_error('0');
+        } 
+        break;
+    }
+    case encoding::utf32:
+    {
+	if(!utf8string::from_utf32(s).is_valid())
+        {
+            throw xlnt::unicode_decode_error('0');
+        } 
         break;
     }
     default:
