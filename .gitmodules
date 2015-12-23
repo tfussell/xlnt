@@ -7,3 +7,6 @@
 	path = third-party/cxxtest
 	url = https://github.com/CxxTest/cxxtest
 	branch = master
+[submodule "third-party/utfcpp"]
+	path = third-party/utfcpp
+	url = https://github.com/nemtrif/utfcpp
