@@ -25,9 +25,11 @@
 #include <cstdint>
 #include <string>
 
+#include <xlnt/xlnt_config.hpp>
+
 namespace xlnt {
 
-class hashable
+class XLNT_CLASS hashable
 {
 public:
     std::size_t hash() const;
