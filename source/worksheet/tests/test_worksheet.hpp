@@ -21,6 +21,18 @@ public:
         auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
         TS_ASSERT_EQUALS(cell.get_reference(), "A1");
     }
+
+    void test_has_cell()
+    {
+        xlnt::worksheet ws(wb_);
+
+        const xlnt::worksheet& const_ws = ws;
+        TS_ASSERT_EQUALS(const_ws.has_cell(xlnt::cell_reference("A", 1)), false);
+
+        ws.get_cell("C10").set_value("value");
+        TS_ASSERT_EQUALS(const_ws.has_cell(xlnt::cell_reference("C", 9)), false);
+        TS_ASSERT_EQUALS(const_ws.has_cell(xlnt::cell_reference("C", 10)), true);
+    }
     
     void test_worksheet_dimension()
     {
