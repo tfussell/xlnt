@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Thomas Fussell
+// Copyright (c) 2014-2016 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
