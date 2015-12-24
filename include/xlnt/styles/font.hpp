@@ -36,7 +36,7 @@ class style;
 /// <summary>
 /// Describes the font style of a particular cell.
 /// </summary>
-class XLNT_CLASS font
+class XLNT_CLASS font : public hashable
 {
   public:
     enum class underline_style
@@ -48,130 +48,48 @@ class XLNT_CLASS font
         single_accounting
     };
 
-    void set_bold(bool bold)
-    {
-        bold_ = bold;
-    }
+    void set_bold(bool bold);
     
-    bool is_bold() const
-    {
-        return bold_;
-    }
+    bool is_bold() const;
 
-    void set_italic(bool italic)
-    {
-        italic_ = italic;
-    }
+    void set_italic(bool italic);
     
-    bool is_italic() const
-    {
-        return italic_;
-    }
+    bool is_italic() const;
 
-    void set_strikethrough(bool strikethrough)
-    {
-        strikethrough_ = strikethrough;
-    }
+    void set_strikethrough(bool strikethrough);
     
-    bool is_strikethrough() const
-    {
-        return strikethrough_;
-    }
+    bool is_strikethrough() const;
 
-    void set_underline(underline_style new_underline)
-    {
-        underline_ = new_underline;
-    }
+    void set_underline(underline_style new_underline);
     
-    bool is_underline() const
-    {
-        return underline_ != underline_style::none;
-    }
+    bool is_underline() const;
     
-    underline_style get_underline() const
-    {
-        return underline_;
-    }
+    underline_style get_underline() const;
 
-    void set_size(std::size_t size)
-    {
-        size_ = size;
-    }
+    void set_size(std::size_t size);
     
-    std::size_t get_size() const
-    {
-        return size_;
-    }
+    std::size_t get_size() const;
 
-    void set_name(const std::string &name)
-    {
-        name_ = name;
-    }
-    std::string get_name() const
-    {
-        return name_;
-    }
-
-    void set_color(color c)
-    {
-        color_ = c;
-    }
+    void set_name(const std::string &name);
     
-    void set_family(std::size_t family)
-    {
-        has_family_ = true;
-        family_ = family;
-    }
+    std::string get_name() const;
+
+    void set_color(color c);
     
-    void set_scheme(const std::string &scheme)
-    {
-        has_scheme_ = true;
-        scheme_ = scheme;
-    }
-
-    color get_color() const
-    {
-        return color_;
-    }
-
-    bool has_family() const
-    {
-        return has_family_;
-    }
+    void set_family(std::size_t family);
     
-    std::size_t get_family() const
-    {
-        return family_;
-    }
+    void set_scheme(const std::string &scheme);
 
-    bool has_scheme() const
-    {
-        return has_scheme_;
-    }
+    color get_color() const;
 
-    std::size_t hash() const
-    {
-        std::size_t seed = 0;
+    bool has_family() const;
+    
+    std::size_t get_family() const;
 
-		hash_combine(seed, bold_);
-		hash_combine(seed, italic_);
-		hash_combine(seed, superscript_);
-		hash_combine(seed, subscript_);
-		hash_combine(seed, strikethrough_);
-        hash_combine(seed, name_);
-        hash_combine(seed, size_);
-        hash_combine(seed, static_cast<std::size_t>(underline_));
-		hash_combine(seed, color_.hash());
-        hash_combine(seed, family_);
-        hash_combine(seed, scheme_);
-
-        return seed;
-    }
-
-    bool operator==(const font &other) const
-    {
-        return hash() == other.hash();
-    }
+    bool has_scheme() const;
+    
+protected:
+    std::string to_hash_string() const override;
 
   private:
     friend class style;

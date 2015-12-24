@@ -21,31 +21,46 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#pragma once
-
-#include <xlnt/xlnt_config.hpp>
-#include <xlnt/styles/style.hpp>
+#include <xlnt/worksheet/header_footer.hpp>
 
 namespace xlnt {
 
-/// <summary>
-/// A named style is simply a style that can be referred to by name rather than by index.
-/// </summary>
-class XLNT_CLASS named_style
+header &header_footer::get_left_header()
 {
-  public:
-    named_style();
+    return left_header_;
+}
+header &header_footer::get_center_header()
+{
+    return center_header_;
+}
+header &header_footer::get_right_header()
+{
+    return right_header_;
+}
+footer &header_footer::get_left_footer()
+{
+    return left_footer_;
+}
+footer &header_footer::get_center_footer()
+{
+    return center_footer_;
+}
+footer &header_footer::get_right_footer()
+{
+    return right_footer_;
+}
 
-    std::size_t hash() const;
-
-    bool operator==(const named_style &other) const
-    {
-        return style_.hash() == other.style_.hash();
-    }
-
-  private:
-    std::string name_;
-    style style_;
-};
+bool header_footer::is_default_header() const
+{
+    return left_header_.is_default() && center_header_.is_default() && right_header_.is_default();
+}
+bool header_footer::is_default_footer() const
+{
+    return left_footer_.is_default() && center_footer_.is_default() && right_footer_.is_default();
+}
+bool header_footer::is_default() const
+{
+    return is_default_header() && is_default_footer();
+}
 
 } // namespace xlnt

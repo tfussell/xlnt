@@ -47,9 +47,7 @@ struct XLNT_CLASS date
     /// </summary>
     static date from_number(int days_since_base_year, calendar base_date);
 
-    date(int year_, int month_, int day_) : year(year_), month(month_), day(day_)
-    {
-    }
+    date(int year_, int month_, int day_);
 
     /// <summary>
     /// Return the number of days between this date and base_date.

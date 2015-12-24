@@ -24,10 +24,9 @@
 #pragma once
 
 #include <string>
-#include <unordered_map>
-#include <utility>
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/utils/hashable.hpp>
 
 namespace xlnt {
 
@@ -36,9 +35,9 @@ enum class calendar;
 /// <summary>
 /// Describes the number formatting applied to text and numbers within a certain cell.
 /// </summary>
-class XLNT_CLASS number_format
+class XLNT_CLASS number_format : public hashable
 {
-  public:
+public:
     static const number_format general();
     static const number_format text();
     static const number_format number();
@@ -90,17 +89,16 @@ class XLNT_CLASS number_format
     void set_id(std::size_t id);
     
     std::size_t get_id() const;
-
-    std::size_t hash() const;
     
     std::string format(const std::string &text) const;
     std::string format(long double number, calendar base_date) const;
     
     bool is_date_format() const;
+    
+protected:
+    std::string to_hash_string() const override;
 
-    bool operator==(const number_format &other) const;
-
-  private:
+private:
     bool id_set_;
     std::size_t id_;
     std::string format_string_;

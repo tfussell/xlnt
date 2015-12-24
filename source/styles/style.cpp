@@ -1,3 +1,26 @@
+// Copyright (c) 2014-2015 Thomas Fussell
+// Copyright (c) 2010-2015 openpyxl
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, WRISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE
+//
+// @license: http://www.opensource.org/licenses/mit-license.php
+// @author: see AUTHORS file
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/styles/font.hpp>
 #include <xlnt/styles/number_format.hpp>
@@ -91,29 +114,29 @@ style &style::operator=(const style &other)
     return *this;
 }
 
-std::size_t style::hash() const
+std::string style::to_hash_string() const
 {
-    std::size_t seed = 0;
+    std::string hash_string("style");
+    
+    hash_string.append(std::to_string(alignment_apply_));
+    hash_string.append(alignment_apply_ ? std::to_string(alignment_.hash()) : " ");
 
-    hash_combine(seed, alignment_apply_);
-    hash_combine(seed, alignment_apply_ ? alignment_.hash() : 0);
+    hash_string.append(std::to_string(border_apply_));
+    hash_string.append(border_apply_ ? std::to_string(border_id_) : " ");
 
-    hash_combine(seed, border_apply_);
-    hash_combine(seed, border_apply_ ? border_id_ : 0);
+    hash_string.append(std::to_string(font_apply_));
+    hash_string.append(font_apply_ ? std::to_string(font_id_) : " ");
 
-    hash_combine(seed, font_apply_);
-    hash_combine(seed, font_apply_ ? font_id_ : 0);
+    hash_string.append(std::to_string(fill_apply_));
+    hash_string.append(fill_apply_ ? std::to_string(fill_id_) : " ");
 
-    hash_combine(seed, fill_apply_);
-    hash_combine(seed, fill_apply_ ? fill_id_ : 0);
+    hash_string.append(std::to_string(number_format_apply_));
+    hash_string.append(number_format_apply_ ? std::to_string(number_format_id_) : " ");
 
-    hash_combine(seed, number_format_apply_);
-    hash_combine(seed, number_format_apply_ ? number_format_id_ : 0);
+    hash_string.append(std::to_string(protection_apply_));
+    hash_string.append(protection_apply_ ? std::to_string(protection_.hash()) : " ");
 
-    hash_combine(seed, protection_apply_);
-    hash_combine(seed, protection_apply_ ? get_protection().hash() : 0);
-
-    return seed;
+    return hash_string;
 }
 
 const number_format style::get_number_format() const
@@ -154,6 +177,61 @@ bool style::pivot_button() const
 bool style::quote_prefix() const
 {
     return quote_prefix_;
+}
+
+std::size_t style::get_id() const
+{
+    return id_;
+}
+
+std::size_t style::get_fill_id() const
+{
+    return fill_id_;
+}
+
+std::size_t style::get_font_id() const
+{
+    return font_id_;
+}
+
+std::size_t style::get_border_id() const
+{
+    return border_id_;
+}
+
+std::size_t style::get_number_format_id() const
+{
+    return number_format_id_;
+}
+
+void style::apply_alignment(bool apply)
+{
+    alignment_apply_ = apply;
+}
+
+void style::apply_border(bool apply)
+{
+    border_apply_ = apply;
+}
+
+void style::apply_fill(bool apply)
+{
+    fill_apply_ = apply;
+}
+
+void style::apply_font(bool apply)
+{
+    font_apply_ = apply;
+}
+
+void style::apply_number_format(bool apply)
+{
+    number_format_apply_ = apply;
+}
+
+void style::apply_protection(bool apply)
+{
+    protection_apply_ = apply;
 }
 
 } // namespace xlnt

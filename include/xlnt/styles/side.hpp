@@ -24,101 +24,37 @@
 #pragma once
 
 #include <cstddef>
+#include <optional.hpp>
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/styles/border_style.hpp>
 #include <xlnt/styles/color.hpp>
+#include <xlnt/utils/hashable.hpp>
 
 namespace xlnt {
-
-enum class XLNT_CLASS border_style
-{
-    none,
-    dashdot,
-    dashdotdot,
-    dashed,
-    dotted,
-    double_,
-    hair,
-    medium,
-    mediumdashdot,
-    mediumdashdotdot,
-    mediumdashed,
-    slantdashdot,
-    thick,
-    thin
-};
 
 /// <summary>
 /// Describes the one of the sides of a border of a particular cell.
 /// </summary>
-class XLNT_CLASS side
+class XLNT_CLASS side : public hashable
 {
   public:
     side();
 
-    std::size_t hash() const
-    {
-        std::size_t seed = 0;
+    std::experimental::optional<border_style> &get_border_style();
+    
+    const std::experimental::optional<border_style> &get_border_style() const;
 
-        hash_combine(seed, style_assigned_);
+    std::experimental::optional<color> &get_color();
+    
+    const std::experimental::optional<color> &get_color() const;
 
-        if (style_assigned_)
-        {
-            hash_combine(seed, static_cast<std::size_t>(style_));
-        }
-
-        hash_combine(seed, color_assigned_);
-
-        if (color_assigned_)
-        {
-            hash_combine(seed, color_.hash());
-        }
-
-        return seed;
-    }
-
-    border_style get_style() const
-    {
-        return style_;
-    }
-
-    color get_color() const
-    {
-        return color_;
-    }
-
-    bool is_style_assigned() const
-    {
-        return style_assigned_;
-    }
-
-    bool is_color_assigned() const
-    {
-        return color_assigned_;
-    }
-
-    bool operator==(const side &other) const
-    {
-        return other.style_ == style_ && color_ == other.color_;
-    }
-
-    void set_border_style(border_style bs)
-    {
-        style_assigned_ = true;
-        style_ = bs;
-    }
-
-    void set_color(color new_color)
-    {
-        color_assigned_ = true;
-        color_ = new_color;
-    }
-
-  private:
-    bool style_assigned_ = false;
-    border_style style_ = border_style::none;
-    bool color_assigned_ = false;
-    color color_ = color::black();
+protected:
+    std::string to_hash_string() const override;
+    
+private:
+    std::experimental::optional<border_style> border_style_;
+    std::experimental::optional<color> color_;
 };
 
 } // namespace xlnt

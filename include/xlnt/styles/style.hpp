@@ -38,9 +38,9 @@ class workbook;
 /// <summary>
 /// Describes the entirety of the styling of a particular cell.
 /// </summary>
-class XLNT_CLASS style
+class XLNT_CLASS style : public hashable
 {
-  public:
+public:
     style();
     style(const style &other);
     style &operator=(const style &other);
@@ -56,59 +56,23 @@ class XLNT_CLASS style
     bool pivot_button() const;
     bool quote_prefix() const;
 
-    std::size_t get_id() const
-    {
-        return id_;
-    }
+    std::size_t get_id() const;
+    std::size_t get_fill_id() const;
+    std::size_t get_font_id() const;
+    std::size_t get_border_id() const;
+    std::size_t get_number_format_id() const;
 
-    std::size_t get_fill_id() const
-    {
-        return fill_id_;
-    }
-    std::size_t get_font_id() const
-    {
-        return font_id_;
-    }
-    std::size_t get_border_id() const
-    {
-        return border_id_;
-    }
-    std::size_t get_number_format_id() const
-    {
-        return number_format_id_;
-    }
+    void apply_alignment(bool apply);
+    void apply_border(bool apply);
+    void apply_fill(bool apply);
+    void apply_font(bool apply);
+    void apply_number_format(bool apply);
+    void apply_protection(bool apply);
+    
+protected:
+    std::string to_hash_string() const override;
 
-    void apply_alignment(bool apply)
-    {
-        alignment_apply_ = apply;
-    }
-    void apply_border(bool apply)
-    {
-        border_apply_ = apply;
-    }
-    void apply_fill(bool apply)
-    {
-        fill_apply_ = apply;
-    }
-    void apply_font(bool apply)
-    {
-        font_apply_ = apply;
-    }
-    void apply_number_format(bool apply)
-    {
-        number_format_apply_ = apply;
-    }
-    void apply_protection(bool apply)
-    {
-        protection_apply_ = apply;
-    }
-
-    bool operator==(const style &other) const
-    {
-        return hash() == other.hash();
-    }
-
-  private:
+private:
     friend class style_serializer;
     friend class workbook;
 

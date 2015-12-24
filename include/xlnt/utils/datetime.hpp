@@ -43,10 +43,7 @@ struct XLNT_CLASS datetime
     /// Return the current date and time according to the system time.
     /// This is equivalent to datetime::now().
     /// </summary>
-    static datetime today()
-    {
-        return now();
-    }
+    static datetime today();
 
     /// <summary>
     /// Return a datetime from number by converting the integer part into
@@ -55,16 +52,7 @@ struct XLNT_CLASS datetime
     /// </summary>
     static datetime from_number(long double number, calendar base_date);
 
-    datetime(int year_, int month_, int day_, int hour_ = 0, int minute_ = 0, int second_ = 0, int microsecond_ = 0)
-        : year(year_),
-          month(month_),
-          day(day_),
-          hour(hour_),
-          minute(minute_),
-          second(second_),
-          microsecond(microsecond_)
-    {
-    }
+    datetime(int year_, int month_, int day_, int hour_ = 0, int minute_ = 0, int second_ = 0, int microsecond_ = 0);
 
     std::string to_string(calendar base_date) const;
     long double to_number(calendar base_date) const;

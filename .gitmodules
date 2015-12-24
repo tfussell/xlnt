@@ -10,3 +10,6 @@
 [submodule "third-party/utfcpp"]
 	path = third-party/utfcpp
 	url = https://github.com/nemtrif/utfcpp
+[submodule "third-party/Optional"]
+	path = third-party/Optional
+	url = https://github.com/akrzemi1/Optional

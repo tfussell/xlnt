@@ -25,50 +25,61 @@
 
 #include <cstddef>
 #include <functional>
+#include <optional.hpp>
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/styles/diagonal_direction.hpp>
 #include <xlnt/styles/side.hpp>
-#include <xlnt/utils/hash_combine.hpp>
+#include <xlnt/utils/hashable.hpp>
 
 namespace xlnt {
 
 /// <summary>
 /// Describes the border style of a particular cell.
 /// </summary>
-class XLNT_CLASS border
+class XLNT_CLASS border : public hashable
 {
-  public:
+public:
     static border default_border();
+    
+    std::experimental::optional<side> &get_start();
+    const std::experimental::optional<side> &get_start() const;
+    std::experimental::optional<side> &get_end();
+    const std::experimental::optional<side> &get_end() const;
+    std::experimental::optional<side> &get_left();
+    const std::experimental::optional<side> &get_left() const;
+    std::experimental::optional<side> &get_right();
+    const std::experimental::optional<side> &get_right() const;
+    std::experimental::optional<side> &get_top();
+    const std::experimental::optional<side> &get_top() const;
+    std::experimental::optional<side> &get_bottom();
+    const std::experimental::optional<side> &get_bottom() const;
+    std::experimental::optional<side> &get_diagonal();
+    const std::experimental::optional<side> &get_diagonal() const;
+    std::experimental::optional<side> &get_vertical();
+    const std::experimental::optional<side> &get_vertical() const;
+    std::experimental::optional<side> &get_horizontal();
+    const std::experimental::optional<side> &get_horizontal() const;
 
-    bool start_assigned = false;
-    side start;
-    bool end_assigned = false;
-    side end;
-    bool left_assigned = false;
-    side left;
-    bool right_assigned = false;
-    side right;
-    bool top_assigned = false;
-    side top;
-    bool bottom_assigned = false;
-    side bottom;
-    bool diagonal_assigned = false;
-    side diagonal;
-    bool vertical_assigned = false;
-    side vertical;
-    bool horizontal_assigned = false;
-    side horizontal;
+protected:
+    std::string to_hash_string() const override;
+    
+private:
+    std::experimental::optional<side> start_;
+    std::experimental::optional<side> end_;
+    std::experimental::optional<side> left_;
+    std::experimental::optional<side> right_;
+    std::experimental::optional<side> top_;
+    std::experimental::optional<side> bottom_;
+    std::experimental::optional<side> diagonal_;
+    std::experimental::optional<side> vertical_;
+    std::experimental::optional<side> horizontal_;
 
-    bool outline = false;
-    bool diagonal_up = false;
-    bool diagonal_down = false;
+    bool outline_ = false;
+    bool diagonal_up_ = false;
+    bool diagonal_down_ = false;
 
     diagonal_direction diagonal_direction_ = diagonal_direction::none;
-
-    bool operator==(const border &other) const;
-
-    std::size_t hash() const;
 };
 
 } // namespace xlnt

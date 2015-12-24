@@ -66,21 +66,18 @@ void alignment::set_vertical(vertical_alignment vertical)
     vertical_ = vertical;
 }
 
-bool alignment::operator==(const alignment &other) const
+std::string alignment::to_hash_string() const
 {
-    return hash() == other.hash();
-}
+    std::string hash_string;
 
-std::size_t alignment::hash() const
-{
-    std::size_t seed = 0;
-    hash_combine(seed, wrap_text_);
-    hash_combine(seed, shrink_to_fit_);
-    hash_combine(seed, static_cast<std::size_t>(horizontal_));
-    hash_combine(seed, static_cast<std::size_t>(vertical_));
-    hash_combine(seed, text_rotation_);
-    hash_combine(seed, indent_);
-    return seed;
+    hash_string.append(wrap_text_ ? "1" : "0");
+    hash_string.append(shrink_to_fit_ ? "1" : "0");
+    hash_string.append(std::to_string(static_cast<std::size_t>(horizontal_)));
+    hash_string.append(std::to_string(static_cast<std::size_t>(vertical_)));
+    hash_string.append(std::to_string(text_rotation_));
+    hash_string.append(std::to_string(indent_));
+    
+    return hash_string;
 }
 
 } // namespace xlnt

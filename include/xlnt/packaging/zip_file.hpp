@@ -139,10 +139,7 @@ class XLNT_CLASS zip_file
     void writestr(const std::string &arcname, const std::string &bytes);
     void writestr(const zip_info &arcname, const std::string &bytes);
 
-    std::string get_filename() const
-    {
-        return filename_;
-    }
+    std::string get_filename() const;
 
     std::string comment;
 

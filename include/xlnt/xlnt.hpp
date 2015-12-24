@@ -37,7 +37,6 @@
 #include <xlnt/styles/color.hpp>
 #include <xlnt/styles/fill.hpp>
 #include <xlnt/styles/font.hpp>
-#include <xlnt/styles/named_style.hpp>
 #include <xlnt/styles/number_format.hpp>
 #include <xlnt/styles/protection.hpp>
 #include <xlnt/styles/side.hpp>

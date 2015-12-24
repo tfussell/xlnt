@@ -26,14 +26,14 @@
 #include <cstddef>
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/utils/hash_combine.hpp>
+#include <xlnt/utils/hashable.hpp>
 
 namespace xlnt {
 
 /// <summary>
 /// Describes the protection style of a particular cell.
 /// </summary>
-class XLNT_CLASS protection
+class XLNT_CLASS protection : public hashable
 {
   public:
     enum class type
@@ -46,30 +46,13 @@ class XLNT_CLASS protection
     protection();
     protection(type locked);
 
-    void set_locked(type locked_type)
-    {
-        locked_ = locked_type;
-    }
+    void set_locked(type locked_type);
+    void set_hidden(type hidden_type);
+    
+protected:
+    std::string to_hash_string() const override;
 
-    void set_hidden(type hidden_type)
-    {
-        hidden_ = hidden_type;
-    }
-
-    bool operator==(const protection &other) const
-    {
-        return hash() == other.hash();
-    }
-
-    std::size_t hash() const
-    {
-        std::size_t seed = static_cast<std::size_t>(locked_);
-        hash_combine(seed, static_cast<std::size_t>(hidden_));
-
-        return seed;
-    }
-
-  private:
+private:
     type locked_;
     type hidden_;
 };

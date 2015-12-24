@@ -27,15 +27,16 @@
 #include <xlnt/utils/hash_combine.hpp>
 #include <xlnt/styles/horizontal_alignment.hpp>
 #include <xlnt/styles/vertical_alignment.hpp>
+#include <xlnt/utils/hashable.hpp>
 
 namespace xlnt {
 
 /// <summary>
 /// Alignment options for use in styles.
 /// </summary>
-class XLNT_CLASS alignment
+class XLNT_CLASS alignment : public hashable
 {
-  public:
+public:
     bool get_wrap_text() const;
 
     void set_wrap_text(bool wrap_text);
@@ -51,12 +52,11 @@ class XLNT_CLASS alignment
     vertical_alignment get_vertical() const;
 
     void set_vertical(vertical_alignment vertical);
+    
+protected:
+    std::string to_hash_string() const override;
 
-    bool operator==(const alignment &other) const;
-
-    std::size_t hash() const;
-
-  private:
+private:
     horizontal_alignment horizontal_ = horizontal_alignment::none;
     vertical_alignment vertical_ = vertical_alignment::none;
     int text_rotation_ = 0;

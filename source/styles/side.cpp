@@ -21,42 +21,53 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#pragma once
-
-#include <string>
-#include <vector>
-
-#include <xlnt/xlnt_config.hpp>
+#include <xlnt/styles/side.hpp>
 
 namespace xlnt {
 
-class range_reference;
-class worksheet;
-
-//TODO: why is this not in a class?
-std::vector<std::pair<std::string, std::string>> XLNT_FUNCTION split_named_range(const std::string &named_range_string);
-
-/// <summary>
-/// A 2D range of cells in a worksheet that is referred to by name.
-/// ws->get_range("A1:B2") could be replaced by ws->get_range("range1")
-/// </summary>
-class XLNT_CLASS named_range
+side::side()
 {
-  public:
-    using target = std::pair<worksheet, range_reference>;
+}
 
-    named_range();
-    named_range(const named_range &other);
-    named_range(const std::string &name, const std::vector<target> &targets);
+std::string side::to_hash_string() const
+{
+    std::string hash_string;
+    
+    hash_string.append(border_style_ ? "1" : "0");
+    
+    if(border_style_)
+    {
+        hash_string.append(std::to_string(static_cast<std::size_t>(*border_style_)));
+    }
+    
+    hash_string.append(color_ ? "1" : "0");
+    
+    if(color_)
+    {
+        hash_string.append(std::to_string(color_->hash()));
+    }
+    
+    return hash_string;
+}
 
-    std::string get_name() const;
-    const std::vector<target> &get_targets() const;
+std::experimental::optional<border_style> &side::get_border_style()
+{
+    return border_style_;
+}
 
-    named_range &operator=(const named_range &other);
+const std::experimental::optional<border_style> &side::get_border_style() const
+{
+    return border_style_;
+}
 
-  private:
-    std::string name_;
-    std::vector<target> targets_;
-};
+std::experimental::optional<color> &side::get_color()
+{
+    return color_;
+}
 
+const std::experimental::optional<color> &side::get_color() const
+{
+    return color_;
+}
+    
 } // namespace xlnt

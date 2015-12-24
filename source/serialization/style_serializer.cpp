@@ -1,3 +1,26 @@
+// Copyright (c) 2014-2015 Thomas Fussell
+// Copyright (c) 2010-2015 openpyxl
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, WRISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE
+//
+// @license: http://www.opensource.org/licenses/mit-license.php
+// @author: see AUTHORS file
 #include <xlnt/serialization/style_serializer.hpp>
 #include <xlnt/serialization/xml_document.hpp>
 #include <xlnt/serialization/xml_node.hpp>
@@ -420,12 +443,12 @@ fill style_serializer::read_fill(const xml_node &fill_node)
 
         if (pattern_fill_node.has_child("bgColor"))
         {
-            new_fill.set_background_color(read_color(pattern_fill_node.get_child("bgColor")));
+            new_fill.get_background_color() = read_color(pattern_fill_node.get_child("bgColor"));
         }
 
         if (pattern_fill_node.has_child("fgColor"))
         {
-            new_fill.set_foreground_color(read_color(pattern_fill_node.get_child("fgColor")));
+            new_fill.get_foreground_color() = read_color(pattern_fill_node.get_child("fgColor"));
         }
     }
 
@@ -438,12 +461,12 @@ side style_serializer::read_side(const xml_node &side_node)
 
     if (side_node.has_attribute("style"))
     {
-        new_side.set_border_style(border_style_from_string(side_node.get_attribute("style")));
+        new_side.get_border_style() = border_style_from_string(side_node.get_attribute("style"));
     }
 
     if (side_node.has_child("color"))
     {
-        new_side.set_color(read_color(side_node.get_child("color")));
+        new_side.get_color() = read_color(side_node.get_child("color"));
     }
 
     return new_side;
@@ -465,56 +488,47 @@ border style_serializer::read_border(const xml_node &border_node)
 
     if (border_node.has_child("start"))
     {
-        new_border.start_assigned = true;
-        new_border.start = read_side(border_node.get_child("start"));
+        new_border.get_start() = read_side(border_node.get_child("start"));
     }
 
     if (border_node.has_child("end"))
     {
-        new_border.end_assigned = true;
-        new_border.end = read_side(border_node.get_child("end"));
+        new_border.get_end() = read_side(border_node.get_child("end"));
     }
 
     if (border_node.has_child("left"))
     {
-        new_border.left_assigned = true;
-        new_border.left = read_side(border_node.get_child("left"));
+        new_border.get_left() = read_side(border_node.get_child("left"));
     }
 
     if (border_node.has_child("right"))
     {
-        new_border.right_assigned = true;
-        new_border.right = read_side(border_node.get_child("right"));
+        new_border.get_right() = read_side(border_node.get_child("right"));
     }
 
     if (border_node.has_child("top"))
     {
-        new_border.top_assigned = true;
-        new_border.top = read_side(border_node.get_child("top"));
+        new_border.get_top() = read_side(border_node.get_child("top"));
     }
 
     if (border_node.has_child("bottom"))
     {
-        new_border.bottom_assigned = true;
-        new_border.bottom = read_side(border_node.get_child("bottom"));
+        new_border.get_bottom() = read_side(border_node.get_child("bottom"));
     }
 
     if (border_node.has_child("diagonal"))
     {
-        new_border.diagonal_assigned = true;
-        new_border.diagonal = read_side(border_node.get_child("diagonal"));
+        new_border.get_diagonal() = read_side(border_node.get_child("diagonal"));
     }
 
     if (border_node.has_child("vertical"))
     {
-        new_border.vertical_assigned = true;
-        new_border.vertical = read_side(border_node.get_child("vertical"));
+        new_border.get_vertical() = read_side(border_node.get_child("vertical"));
     }
 
     if (border_node.has_child("horizontal"))
     {
-        new_border.horizontal_assigned = true;
-        new_border.horizontal = read_side(border_node.get_child("horizontal"));
+        new_border.get_horizontal() = read_side(border_node.get_child("horizontal"));
     }
 
     return new_border;
@@ -667,40 +681,40 @@ xml_document style_serializer::write_stylesheet() const
             auto type_string = fill_.get_pattern_type_string();
             pattern_fill_node.add_attribute("patternType", type_string);
 
-            if (fill_.has_foreground_color())
+            if (fill_.get_foreground_color())
             {
                 auto fg_color_node = pattern_fill_node.add_child("fgColor");
 
-                switch (fill_.get_foreground_color().get_type())
+                switch (fill_.get_foreground_color()->get_type())
                 {
                 case color::type::auto_:
-                    fg_color_node.add_attribute("auto", std::to_string(fill_.get_foreground_color().get_auto()));
+                    fg_color_node.add_attribute("auto", std::to_string(fill_.get_foreground_color()->get_auto()));
                     break;
                 case color::type::theme:
-                    fg_color_node.add_attribute("theme", std::to_string(fill_.get_foreground_color().get_theme()));
+                    fg_color_node.add_attribute("theme", std::to_string(fill_.get_foreground_color()->get_theme()));
                     break;
                 case color::type::indexed:
-                    fg_color_node.add_attribute("indexed", std::to_string(fill_.get_foreground_color().get_index()));
+                    fg_color_node.add_attribute("indexed", std::to_string(fill_.get_foreground_color()->get_index()));
                     break;
                 default:
                     throw std::runtime_error("bad type");
                 }
             }
 
-            if (fill_.has_background_color())
+            if (fill_.get_background_color())
             {
                 auto bg_color_node = pattern_fill_node.add_child("bgColor");
 
-                switch (fill_.get_background_color().get_type())
+                switch (fill_.get_background_color()->get_type())
                 {
                 case color::type::auto_:
-                    bg_color_node.add_attribute("auto", std::to_string(fill_.get_background_color().get_auto()));
+                    bg_color_node.add_attribute("auto", std::to_string(fill_.get_background_color()->get_auto()));
                     break;
                 case color::type::theme:
-                    bg_color_node.add_attribute("theme", std::to_string(fill_.get_background_color().get_theme()));
+                    bg_color_node.add_attribute("theme", std::to_string(fill_.get_background_color()->get_theme()));
                     break;
                 case color::type::indexed:
-                    bg_color_node.add_attribute("indexed", std::to_string(fill_.get_background_color().get_index()));
+                    bg_color_node.add_attribute("indexed", std::to_string(fill_.get_background_color()->get_index()));
                     break;
                 default:
                     throw std::runtime_error("bad type");
@@ -744,32 +758,32 @@ xml_document style_serializer::write_stylesheet() const
     {
         auto border_node = borders_node.add_child("border");
 
-        std::vector<std::tuple<std::string, const side, bool>> sides;
-        sides.push_back(std::make_tuple("start", border_.start, border_.start_assigned));
-        sides.push_back(std::make_tuple("end", border_.end, border_.end_assigned));
-        sides.push_back(std::make_tuple("left", border_.left, border_.left_assigned));
-        sides.push_back(std::make_tuple("right", border_.right, border_.right_assigned));
-        sides.push_back(std::make_tuple("top", border_.top, border_.top_assigned));
-        sides.push_back(std::make_tuple("bottom", border_.bottom, border_.bottom_assigned));
-        sides.push_back(std::make_tuple("diagonal", border_.diagonal, border_.diagonal_assigned));
-        sides.push_back(std::make_tuple("vertical", border_.vertical, border_.vertical_assigned));
-        sides.push_back(std::make_tuple("horizontal", border_.horizontal, border_.horizontal_assigned));
+        std::vector<std::tuple<std::string, const std::experimental::optional<side>>> sides;
+        
+        sides.push_back(std::make_tuple("start", border_.get_start()));
+        sides.push_back(std::make_tuple("end", border_.get_end()));
+        sides.push_back(std::make_tuple("left", border_.get_left()));
+        sides.push_back(std::make_tuple("right", border_.get_right()));
+        sides.push_back(std::make_tuple("top", border_.get_top()));
+        sides.push_back(std::make_tuple("bottom", border_.get_bottom()));
+        sides.push_back(std::make_tuple("diagonal", border_.get_diagonal()));
+        sides.push_back(std::make_tuple("vertical", border_.get_vertical()));
+        sides.push_back(std::make_tuple("horizontal", border_.get_horizontal()));
 
         for (const auto &side_tuple : sides)
         {
-            std::string name = std::get<0>(side_tuple);
-            const side side_ = std::get<1>(side_tuple);
-            bool assigned = std::get<2>(side_tuple);
+            std::string current_name = std::get<0>(side_tuple);
+            const auto current_side = std::get<1>(side_tuple);
 
-            if (assigned)
+            if (current_side)
             {
-                auto side_node = border_node.add_child(name);
+                auto side_node = border_node.add_child(current_name);
 
-                if (side_.is_style_assigned())
+                if (current_side->get_border_style())
                 {
                     std::string style_string;
 
-                    switch (side_.get_style())
+                    switch (*current_side->get_border_style())
                     {
                     case border_style::none:
                         style_string = "none";
@@ -820,17 +834,17 @@ xml_document style_serializer::write_stylesheet() const
                     side_node.add_attribute("style", style_string);
                 }
 
-                if (side_.is_color_assigned())
+                if (current_side->get_color())
                 {
                     auto color_node = side_node.add_child("color");
 
-                    if (side_.get_color().get_type() == color::type::indexed)
+                    if (current_side->get_color()->get_type() == color::type::indexed)
                     {
-                        color_node.add_attribute("indexed", std::to_string(side_.get_color().get_index()));
+                        color_node.add_attribute("indexed", std::to_string(current_side->get_color()->get_index()));
                     }
-                    else if (side_.get_color().get_type() == color::type::theme)
+                    else if (current_side->get_color()->get_type() == color::type::theme)
                     {
-                        color_node.add_attribute("theme", std::to_string(side_.get_color().get_theme()));
+                        color_node.add_attribute("theme", std::to_string(current_side->get_color()->get_theme()));
                     }
                     else
                     {

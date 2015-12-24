@@ -47,10 +47,7 @@ struct XLNT_CLASS time
     /// </summary>
     static time from_number(long double number);
 
-    explicit time(int hour_ = 0, int minute_ = 0, int second_ = 0, int microsecond_ = 0)
-        : hour(hour_), minute(minute_), second(second_), microsecond(microsecond_)
-    {
-    }
+    explicit time(int hour_ = 0, int minute_ = 0, int second_ = 0, int microsecond_ = 0);
     explicit time(const std::string &time_string);
 
     long double to_number() const;

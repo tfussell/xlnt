@@ -26,14 +26,14 @@
 #include <string>
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/utils/hash_combine.hpp>
+#include <xlnt/utils/hashable.hpp>
 
 namespace xlnt {
 
 /// <summary>
 /// Colors can be applied to many parts of a cell's style.
 /// </summary>
-class XLNT_CLASS color
+class XLNT_CLASS color : public hashable
 {
 public:
     /// <summary>
@@ -58,103 +58,32 @@ public:
     static const color yellow();
     static const color darkyellow();
 
-    color()
-    {
-    }
+    color();
 
-    color(type t, std::size_t v) : type_(t), index_(v)
-    {
-    }
+    color(type t, std::size_t v);
+    
+    color(type t, const std::string &v);
 
-    color(type t, const std::string &v) : type_(t), rgb_string_(v)
-    {
-    }
+    void set_auto(std::size_t auto_index);
 
-    void set_auto(std::size_t auto_index)
-    {
-        type_ = type::auto_;
-        index_ = auto_index;
-    }
+    void set_index(std::size_t index);
 
-    void set_index(std::size_t index)
-    {
-        type_ = type::indexed;
-        index_ = index;
-    }
+    void set_theme(std::size_t theme);
 
-    void set_theme(std::size_t theme)
-    {
-        type_ = type::theme;
-        index_ = theme;
-    }
+    type get_type() const;
 
-    type get_type() const
-    {
-        return type_;
-    }
+    std::size_t get_auto() const;
 
-    std::size_t get_auto() const
-    {
-        if (type_ != type::auto_)
-        {
-            throw std::runtime_error("not auto color");
-        }
+    std::size_t get_index() const;
 
-        return index_;
-    }
+    std::size_t get_theme() const;
 
-    std::size_t get_index() const
-    {
-        if (type_ != type::indexed)
-        {
-            throw std::runtime_error("not indexed color");
-        }
+    std::string get_rgb_string() const;
+    
+protected:
+    std::string to_hash_string() const override;
 
-        return index_;
-    }
-
-    std::size_t get_theme() const
-    {
-        if (type_ != type::theme)
-        {
-            throw std::runtime_error("not theme color");
-        }
-
-        return index_;
-    }
-
-    std::string get_rgb_string() const
-    {
-        if (type_ != type::rgb)
-        {
-            throw std::runtime_error("not rgb color");
-        }
-
-        return rgb_string_;
-    }
-
-    std::size_t hash() const
-    {
-        auto seed = static_cast<std::size_t>(type_);
-
-        if (type_ != type::rgb)
-        {
-            hash_combine(seed, index_);
-        }
-        else
-        {
-            hash_combine(seed, rgb_string_);
-        }
-
-        return seed;
-    }
-
-    bool operator==(const color &other) const
-    {
-        return hash() == other.hash();
-    }
-
-  private:
+private:
     type type_ = type::indexed;
     std::size_t index_ = 0;
     std::string rgb_string_;
