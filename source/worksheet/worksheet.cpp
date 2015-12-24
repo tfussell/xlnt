@@ -252,6 +252,19 @@ const cell worksheet::get_cell(const cell_reference &reference) const
     return cell(&d_->cell_map_.at(reference.get_row()).at(reference.get_column_index()));
 }
 
+bool worksheet::has_cell(const cell_reference &reference) const
+{
+    const auto row = d_->cell_map_.find(reference.get_row());
+    if(row == d_->cell_map_.cend())
+        return false;
+    
+    const auto col = row->second.find(reference.get_column_index());
+    if(col == row->second.cend())
+        return false;
+    
+    return true;
+}
+
 bool worksheet::has_row_properties(row_t row) const
 {
     return d_->row_properties_.find(row) != d_->row_properties_.end();

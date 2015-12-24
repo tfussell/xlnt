@@ -86,6 +86,7 @@ public:
     // container
     cell get_cell(const cell_reference &reference);
     const cell get_cell(const cell_reference &reference) const;
+    bool has_cell(const cell_reference &reference) const;
     range get_range(const std::string &reference_string);
     range get_range(const range_reference &reference);
     const range get_range(const std::string &reference_string) const;
