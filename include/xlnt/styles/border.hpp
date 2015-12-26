@@ -25,12 +25,12 @@
 
 #include <cstddef>
 #include <functional>
-#include <optional.hpp>
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/styles/diagonal_direction.hpp>
 #include <xlnt/styles/side.hpp>
 #include <xlnt/utils/hashable.hpp>
+#include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 

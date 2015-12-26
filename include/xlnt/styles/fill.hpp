@@ -23,10 +23,9 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <optional.hpp>
-
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/styles/color.hpp>
+#include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 

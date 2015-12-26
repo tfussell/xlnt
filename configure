@@ -81,6 +81,8 @@ def parse_args(args):
             options['SHARED'] = 0
         elif option == '--disable-static':
             options['STATIC'] = 0
+        elif option == '--enable-framework':
+            options['FRAMEWORK'] = 1
         elif option == '--enable-tests':
             options['BUILD_TESTS'] = 1
         elif option == '--enable-coverage':

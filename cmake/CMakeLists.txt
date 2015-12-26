@@ -8,6 +8,7 @@ project(xlnt)
 
 option(SHARED "Set to OFF to not build shared libraries" ON)
 option(STATIC "Set to ON to build static libraries" OFF)
+option(FRAMEWORK "Set to ON to package dylib and headers into a .framework, OSX only" OFF)
 option(DEBUG "Set to ON to for debug configuration" OFF)
 option(BUILD_EXAMPLES "Build examples" OFF)
 option(BUILD_TESTS "Build tests runner" OFF)

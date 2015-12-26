@@ -30,7 +30,6 @@ include_directories(../source)
 include_directories(../third-party/miniz)
 include_directories(../third-party/pugixml/src)
 include_directories(../third-party/utfcpp/source)
-include_directories(../third-party/Optional)
 
 FILE(GLOB ROOT_HEADERS ../include/xlnt/*.hpp)
 FILE(GLOB CELL_HEADERS ../include/xlnt/cell/*.hpp)
@@ -87,6 +86,18 @@ if(SHARED)
 	SOVERSION ${PROJECT_VERSION}
 	INSTALL_NAME_DIR "${LIB_DEST_DIR}"
     )
+
+    if(FRAMEWORK)
+        add_custom_command(
+            TARGET xlnt.shared
+            POST_BUILD
+            COMMAND mkdir -p "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.framework/Versions/${PROJECT_VERSION_FULL}/Headers"
+            COMMAND cp -R ../include/xlnt/* "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.framework/Versions/${PROJECT_VERSION_FULL}/Headers"
+            COMMAND cp "../lib/lib${PROJECT_NAME}.${PROJECT_VERSION_FULL}.dylib" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.framework/Versions/${PROJECT_VERSION_FULL}/xlnt"
+            COMMAND cd "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.framework/Versions" && ln -s "${PROJECT_VERSION_FULL}" Current
+            COMMAND cd "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.framework" && ln -s Versions/Current/* ./
+        )
+    endif()
 endif()
 
 if(STATIC)

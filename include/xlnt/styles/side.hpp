@@ -24,12 +24,12 @@
 #pragma once
 
 #include <cstddef>
-#include <optional.hpp>
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/styles/border_style.hpp>
 #include <xlnt/styles/color.hpp>
 #include <xlnt/utils/hashable.hpp>
+#include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 
