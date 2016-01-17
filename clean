@@ -1,3 +1,0 @@
-# -*- mode: sh -*-
-cd ${0%/*}
-./configure clean

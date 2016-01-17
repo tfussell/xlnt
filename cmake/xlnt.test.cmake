@@ -1,31 +1,31 @@
 project(xlnt.test)
 
-include_directories(../include)
-include_directories(../source)
-include_directories(../tests)
-include_directories(../third-party/cxxtest)
-include_directories(../third-party/pugixml/src)
+include_directories(include)
+include_directories(source)
+include_directories(tests)
+include_directories(third-party/cxxtest)
+include_directories(third-party/pugixml/src)
 
-FILE(GLOB CELL_TESTS ../source/cell/tests/test_*.hpp)
-FILE(GLOB CHARTS_TESTS ../source/charts/tests/test_*.hpp)
-FILE(GLOB CHARTSHEET_TESTS ../source/chartsheet/tests/test_*.hpp)
-FILE(GLOB DRAWING_TESTS ../source/drawing/tests/test_*.hpp)
-FILE(GLOB FORMULA_TESTS ../source/formula/tests/test_*.hpp)
-FILE(GLOB PACKAGING_TESTS ../source/packaging/tests/test_*.hpp)
-FILE(GLOB SERIALIZATION_TESTS ../source/serialization/tests/test_*.hpp)
-FILE(GLOB STYLES_TESTS ../source/styles/tests/test_*.hpp)
-FILE(GLOB UTILS_TESTS ../source/utils/tests/test_*.hpp)
-FILE(GLOB WORKBOOK_TESTS ../source/workbook/tests/test_*.hpp)
-FILE(GLOB WORKSHEET_TESTS ../source/worksheet/tests/test_*.hpp)
+FILE(GLOB CELL_TESTS source/cell/tests/test_*.hpp)
+FILE(GLOB CHARTS_TESTS source/charts/tests/test_*.hpp)
+FILE(GLOB CHARTSHEET_TESTS source/chartsheet/tests/test_*.hpp)
+FILE(GLOB DRAWING_TESTS source/drawing/tests/test_*.hpp)
+FILE(GLOB FORMULA_TESTS source/formula/tests/test_*.hpp)
+FILE(GLOB PACKAGING_TESTS source/packaging/tests/test_*.hpp)
+FILE(GLOB SERIALIZATION_TESTS source/serialization/tests/test_*.hpp)
+FILE(GLOB STYLES_TESTS source/styles/tests/test_*.hpp)
+FILE(GLOB UTILS_TESTS source/utils/tests/test_*.hpp)
+FILE(GLOB WORKBOOK_TESTS source/workbook/tests/test_*.hpp)
+FILE(GLOB WORKSHEET_TESTS source/worksheet/tests/test_*.hpp)
 
 SET(TESTS ${CELL_TESTS} ${CHARTS_TESTS} ${CHARTSHEET_TESTS} ${DRAWING_TESTS} ${FORMULA_TESTS} ${PACKAGING_TESTS} ${SERIALIZATION_TESTS} ${STYLES_TESTS} ${UTILS_TESTS} ${WORKBOOK_TESTS} ${WORKSHEET_TESTS})
 
-FILE(GLOB TEST_HELPERS_HEADERS ../tests/helpers/*.hpp)
-FILE(GLOB TEST_HELPERS_SOURCES ../tests/helpers/*.cpp)
+FILE(GLOB TEST_HELPERS_HEADERS tests/helpers/*.hpp)
+FILE(GLOB TEST_HELPERS_SOURCES tests/helpers/*.cpp)
 
 SET(TEST_HELPERS ${TEST_HELPERS_HEADERS} ${TEST_HELPERS_SOURCES})
 
-SET(RUNNER ../tests/runner-autogen.cpp)
+SET(RUNNER tests/runner-autogen.cpp)
 
 add_executable(xlnt.test ${TEST_HELPERS} ${TESTS} ${RUNNER} )
 
@@ -59,7 +59,7 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
 endif()
 
 add_custom_target (generate-test-runner
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/generate-tests
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/cmake/generate-tests
     COMMENT "Generating test runner ${RUNNER}"
 )
 

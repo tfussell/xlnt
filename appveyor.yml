@@ -8,7 +8,7 @@ build_script:
 - set PATH=C:\Program Files (x86)\MSBuild\14.0\Bin;%PATH%
 - mkdir build
 - cd build
-- cmake -G "Visual Studio 14 2015 Win64" -D SHARED=1 -D BUILD_TESTS=1 ../cmake
+- cmake -G "Visual Studio 14 2015 Win64" -D SHARED=1 -D TESTS=1 ..
 - cmake --build . --config Debug
 test_script:
-- ..\bin\xlnt.test.exe
+- bin\xlnt.test.exe

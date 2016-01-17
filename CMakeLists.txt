@@ -8,11 +8,15 @@ project(xlnt)
 
 option(SHARED "Set to OFF to not build shared libraries" ON)
 option(STATIC "Set to ON to build static libraries" OFF)
-option(FRAMEWORK "Set to ON to package dylib and headers into a .framework, OSX only" OFF)
 option(DEBUG "Set to ON to for debug configuration" OFF)
-option(BUILD_EXAMPLES "Build examples" OFF)
-option(BUILD_TESTS "Build tests runner" OFF)
-option(COVERAGE "Create coverage files" OFF)
+option(EXAMPLES "Build examples" OFF)
+option(TESTS "Build tests" OFF)
+option(BENCHMARKS "Build performance benchmarks" OFF)
+option(COVERAGE "Generate coverage data for use in Coveralls" OFF)
+
+if(APPLE)
+    option(FRAMEWORK "Set to ON to package dylib and headers into a .framework, OSX only" OFF)
+endif()
 
 if(COVERAGE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
@@ -27,9 +31,11 @@ if(${CMAKE_GENERATOR} STREQUAL "Unix Makefiles")
 endif()
 
 if(APPLE)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.10)
+    execute_process(COMMAND "sw_vers -productVersion | awk -F'.' '{print $1\".\"$2}'"
+                    OUTPUT_VARIABLE OSX_VERSION
+    )
+    set(CMAKE_OSX_DEPLOYMENT_TARGET ${OSX_VERSION})
 endif(APPLE)
-
 
 if(CMAKE_VERSION VERSION_LESS 3.1)
     if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
@@ -50,19 +56,19 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
     add_definitions(-DUNICODE -D_UNICODE)
 endif()
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
     string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/../lib)
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/../lib)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/../bin)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/lib)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/lib)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/bin)
 endforeach(OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES)
 
-if(BUILD_TESTS)
-    include(xlnt.test.cmake)
+if(TESTS)
+    include(cmake/xlnt.test.cmake)
 endif()
 
-include(xlnt.cmake)
+include(cmake/xlnt.cmake)
