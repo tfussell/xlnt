@@ -34,9 +34,9 @@ matrix:
 
 script:
   - mkdir build && cd build
-  - cmake -G "Unix Makefiles" -D SHARED=1 -D TESTS=1 -D CMAKE_CXX_COMPILER=$COMPILER ../cmake
+  - cmake -G "Unix Makefiles" -D SHARED=1 -D TESTS=1 -D CMAKE_CXX_COMPILER=$COMPILER ..
   - make
-  - ../bin/xlnt.test
+  - bin/xlnt.test
 
 after_success:
   - if [ "$COMPILER" = "g++-4.9" ]; then sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 90 ; fi
