@@ -34,7 +34,7 @@ matrix:
 
 script:
   - mkdir build && cd build
-  - cmake -G "Unix Makefiles" -D SHARED=1 -D BUILD_TESTS=1 -D CMAKE_CXX_COMPILER=$COMPILER ../cmake
+  - cmake -G "Unix Makefiles" -D SHARED=1 -D TESTS=1 -D CMAKE_CXX_COMPILER=$COMPILER ../cmake
   - make
   - ../bin/xlnt.test
 
