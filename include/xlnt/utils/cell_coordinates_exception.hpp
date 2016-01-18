@@ -36,7 +36,7 @@ namespace xlnt {
 /// </summary>
 class XLNT_CLASS cell_coordinates_exception : public std::runtime_error
 {
-  public:
+public:
     cell_coordinates_exception(column_t column, row_t row);
     cell_coordinates_exception(const std::string &coord_string);
 };

@@ -38,7 +38,7 @@ class style;
 /// </summary>
 class XLNT_CLASS font : public hashable
 {
-  public:
+public:
     enum class underline_style
     {
         none,
@@ -49,49 +49,49 @@ class XLNT_CLASS font : public hashable
     };
 
     void set_bold(bool bold);
-    
+
     bool is_bold() const;
 
     void set_italic(bool italic);
-    
+
     bool is_italic() const;
 
     void set_strikethrough(bool strikethrough);
-    
+
     bool is_strikethrough() const;
 
     void set_underline(underline_style new_underline);
-    
+
     bool is_underline() const;
-    
+
     underline_style get_underline() const;
 
     void set_size(std::size_t size);
-    
+
     std::size_t get_size() const;
 
     void set_name(const std::string &name);
-    
+
     std::string get_name() const;
 
     void set_color(color c);
-    
+
     void set_family(std::size_t family);
-    
+
     void set_scheme(const std::string &scheme);
 
     color get_color() const;
 
     bool has_family() const;
-    
+
     std::size_t get_family() const;
 
     bool has_scheme() const;
-    
+
 protected:
     std::string to_hash_string() const override;
 
-  private:
+private:
     friend class style;
 
     std::string name_ = "Calibri";

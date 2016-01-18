@@ -82,19 +82,19 @@ public:
 
     void set_format_string(const std::string &format_code);
     void set_format_string(const std::string &format_code, std::size_t custom_id);
-    
+
     std::string get_format_string() const;
 
     bool has_id() const;
     void set_id(std::size_t id);
-    
+
     std::size_t get_id() const;
-    
+
     std::string format(const std::string &text) const;
     std::string format(long double number, calendar base_date) const;
-    
+
     bool is_date_format() const;
-    
+
 protected:
     std::string to_hash_string() const override;
 

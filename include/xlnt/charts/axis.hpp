@@ -27,7 +27,8 @@
 
 namespace xlnt {
 
-class XLNT_CLASS axis {
+class XLNT_CLASS axis
+{
 };
 
 } // namespace xlnt

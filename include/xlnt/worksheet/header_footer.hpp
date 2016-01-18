@@ -37,13 +37,13 @@ namespace xlnt {
 /// </summary>
 class XLNT_CLASS header_footer
 {
-  public:
+public:
     header_footer();
 
     header &get_left_header();
     header &get_center_header();
     header &get_right_header();
-    
+
     footer &get_left_footer();
     footer &get_center_footer();
     footer &get_right_footer();
@@ -52,7 +52,7 @@ class XLNT_CLASS header_footer
     bool is_default_footer() const;
     bool is_default() const;
 
-  private:
+private:
     header left_header_, right_header_, center_header_;
     footer left_footer_, right_footer_, center_footer_;
 };

@@ -34,7 +34,7 @@ namespace xlnt {
 /// </summary>
 class XLNT_CLASS named_range_exception : public std::runtime_error
 {
-  public:
+public:
     named_range_exception();
 };
 

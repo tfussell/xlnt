@@ -27,7 +27,8 @@
 
 namespace xlnt {
 
-class XLNT_CLASS series {
+class XLNT_CLASS series
+{
 };
 
 } // namespace xlnt

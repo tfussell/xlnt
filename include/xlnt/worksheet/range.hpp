@@ -41,10 +41,10 @@ namespace xlnt {
 /// </summary>
 class XLNT_CLASS range
 {
-  public:
+public:
     using iterator = range_iterator_2d;
     using const_iterator = const_range_iterator_2d;
-    
+
     range(worksheet ws, const range_reference &reference, major_order order = major_order::row, bool skip_null = false);
 
     ~range();
@@ -80,7 +80,7 @@ class XLNT_CLASS range
     const_iterator cbegin() const;
     const_iterator cend() const;
 
-  private:
+private:
     worksheet ws_;
     range_reference ref_;
     major_order order_;

@@ -83,7 +83,7 @@ struct XLNT_CLASS zip_info
 /// </summary>
 class XLNT_CLASS zip_file
 {
-  public:
+public:
     zip_file();
     zip_file(const std::string &filename);
     zip_file(const std::vector<unsigned char> &bytes);
@@ -143,7 +143,7 @@ class XLNT_CLASS zip_file
 
     std::string comment;
 
-  private:
+private:
     void start_read();
     void start_write();
 

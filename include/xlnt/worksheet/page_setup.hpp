@@ -36,9 +36,9 @@ namespace xlnt {
 /// </summary>
 struct XLNT_CLASS page_setup
 {
-  public:
+public:
     page_setup();
-    
+
     bool is_default() const;
 
     page_break get_break() const;
@@ -78,10 +78,10 @@ struct XLNT_CLASS page_setup
     bool get_vertical_centered() const;
 
     void set_scale(double scale);
-    
+
     double get_scale() const;
 
-  private:
+private:
     bool default_;
     page_break break_;
     sheet_state sheet_state_;

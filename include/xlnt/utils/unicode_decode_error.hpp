@@ -35,7 +35,7 @@ namespace xlnt {
 /// </summary>
 class XLNT_CLASS unicode_decode_error : public std::runtime_error
 {
-  public:
+public:
     unicode_decode_error();
     unicode_decode_error(char c);
     unicode_decode_error(std::uint8_t b);

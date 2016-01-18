@@ -50,7 +50,7 @@ enum class XLNT_CLASS target_mode
 /// </summary>
 class XLNT_CLASS relationship
 {
-  public:
+public:
     enum class type
     {
         invalid,
@@ -70,11 +70,11 @@ class XLNT_CLASS relationship
     static type type_from_string(const std::string &type_string);
 
     static std::string type_to_string(type t);
-    
+
     relationship();
-    
+
     relationship(const std::string &t, const std::string &r_id = "", const std::string &target_uri = "");
-    
+
     relationship(type t, const std::string &r_id = "", const std::string &target_uri = "");
 
     /// <summary>
@@ -98,12 +98,12 @@ class XLNT_CLASS relationship
     std::string get_target_uri() const;
 
     type get_type() const;
-    
+
     std::string get_type_string() const;
-    
+
     bool operator==(const relationship &rhs) const;
 
-  private:
+private:
     type type_;
     std::string id_;
     std::string source_uri_;

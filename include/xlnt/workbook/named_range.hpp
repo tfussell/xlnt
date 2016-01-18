@@ -33,7 +33,7 @@ namespace xlnt {
 class range_reference;
 class worksheet;
 
-//TODO: why is this not in a class?
+// TODO: why is this not in a class?
 std::vector<std::pair<std::string, std::string>> XLNT_FUNCTION split_named_range(const std::string &named_range_string);
 
 /// <summary>
@@ -42,7 +42,7 @@ std::vector<std::pair<std::string, std::string>> XLNT_FUNCTION split_named_range
 /// </summary>
 class XLNT_CLASS named_range
 {
-  public:
+public:
     using target = std::pair<worksheet, range_reference>;
 
     named_range();
@@ -54,7 +54,7 @@ class XLNT_CLASS named_range
 
     named_range &operator=(const named_range &other);
 
-  private:
+private:
     std::string name_;
     std::vector<target> targets_;
 };

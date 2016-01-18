@@ -51,7 +51,7 @@ class xml_node;
 /// </summary>
 class XLNT_CLASS style_serializer
 {
-  public:
+public:
     /// <summary>
     /// Construct a style_serializer which can write styles.xml based on wb or populate wb
     /// with styles from an existing styles.xml.
@@ -269,7 +269,7 @@ class XLNT_CLASS style_serializer
     /// </summary>
     bool write_style(const style &style_, xml_node &style_node) const;
 
-  private:
+private:
     /// <summary>
     /// Set in the constructor, this workbook is used as the source or target for all writing or reading, respectively.
     /// </summary>

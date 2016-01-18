@@ -47,7 +47,7 @@ class XLNT_CLASS translator
     void translate_range(const range_reference &range_ref);
     void translate_formula(const cell_reference &dest);
 
-  private:
+private:
     const std::string ROW_RANGE_RE;
     const std::string COL_RANGE_RE;
     const std::string CELL_REF_RE;

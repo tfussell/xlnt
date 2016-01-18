@@ -52,7 +52,7 @@ public:
     vertical_alignment get_vertical() const;
 
     void set_vertical(vertical_alignment vertical);
-    
+
 protected:
     std::string to_hash_string() const override;
 

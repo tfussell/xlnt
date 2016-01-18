@@ -41,7 +41,7 @@ class workbook;
 /// </summary>
 class XLNT_CLASS excel_serializer
 {
-  public:
+public:
     /// <summary>
     ///
     /// </summary>
@@ -73,8 +73,8 @@ class XLNT_CLASS excel_serializer
     /// Create a ZIP file in memory, load archive from bytes, then populate workbook
     /// with data from archive.
     /// </summary>
-    bool load_virtual_workbook(const std::vector<std::uint8_t> &bytes, bool guess_types = false,
-                               bool data_only = false);
+    bool load_virtual_workbook(
+        const std::vector<std::uint8_t> &bytes, bool guess_types = false, bool data_only = false);
 
     /// <summary>
     /// Create a ZIP file in memory, save workbook to this archive, then save archive
@@ -94,7 +94,7 @@ class XLNT_CLASS excel_serializer
     /// </summary>
     bool save_stream_workbook(std::ostream &stream, bool as_template = false);
 
-  private:
+private:
     /// <summary>
     /// Reads all files in archive and populates workbook with associated data
     /// using other appropriate serializers such as workbook_serializer.

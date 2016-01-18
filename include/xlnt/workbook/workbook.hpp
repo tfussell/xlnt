@@ -56,17 +56,19 @@ class zip_file;
 
 enum class encoding;
 
-namespace detail { struct workbook_impl; } // namespace detail
+namespace detail {
+struct workbook_impl;
+} // namespace detail
 
 /// <summary>
 /// workbook is the container for all other parts of the document.
 /// </summary>
 class XLNT_CLASS workbook
 {
-  public:
+public:
     class XLNT_CLASS iterator
     {
-      public:
+    public:
         iterator(workbook &wb, std::size_t index);
         iterator(const iterator &);
         iterator &operator=(const iterator &);
@@ -79,14 +81,14 @@ class XLNT_CLASS workbook
         iterator operator++(int);
         iterator &operator++();
 
-      private:
+    private:
         workbook &wb_;
         std::size_t index_;
     };
 
     class XLNT_CLASS const_iterator
     {
-      public:
+    public:
         const_iterator(const workbook &wb, std::size_t index);
         const_iterator(const const_iterator &);
         const_iterator &operator=(const const_iterator &);
@@ -99,7 +101,7 @@ class XLNT_CLASS workbook
         const_iterator operator++(int);
         const_iterator &operator++();
 
-      private:
+    private:
         const workbook &wb_;
         std::size_t index_;
     };
@@ -251,7 +253,7 @@ class XLNT_CLASS workbook
     std::vector<std::string> &get_shared_strings();
     const std::vector<std::string> &get_shared_strings() const;
 
-  private:
+private:
     friend class worksheet;
     std::shared_ptr<detail::workbook_impl> d_;
 };

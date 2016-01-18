@@ -33,7 +33,7 @@ namespace xlnt {
 /// </summary>
 class XLNT_CLASS range_reference
 {
-  public:
+public:
     /// <summary>
     /// Convert a coordinate to an absolute coordinate string (B12 -> $B$12)
     /// </summary>
@@ -47,17 +47,17 @@ class XLNT_CLASS range_reference
     range_reference(column_t column_index_start, row_t row_index_start, column_t column_index_end, row_t row_index_end);
 
     bool is_single_cell() const;
-    
+
     std::size_t get_width() const;
-    
+
     std::size_t get_height() const;
-    
+
     cell_reference get_top_left() const;
-    
+
     cell_reference get_bottom_right() const;
-    
+
     cell_reference &get_top_left();
-    
+
     cell_reference &get_bottom_right();
 
     range_reference make_offset(int column_offset, int row_offset) const;
@@ -65,17 +65,17 @@ class XLNT_CLASS range_reference
     std::string to_string() const;
 
     bool operator==(const range_reference &comparand) const;
-    
+
     bool operator==(const std::string &reference_string) const;
-    
+
     bool operator==(const char *reference_string) const;
-    
+
     bool operator!=(const range_reference &comparand) const;
-    
+
     bool operator!=(const std::string &reference_string) const;
-    
+
     bool operator!=(const char *reference_string) const;
-    
+
     XLNT_FUNCTION friend bool operator==(const std::string &reference_string, const range_reference &ref);
 
     XLNT_FUNCTION friend bool operator==(const char *reference_string, const range_reference &ref);
@@ -84,11 +84,9 @@ class XLNT_CLASS range_reference
 
     XLNT_FUNCTION friend bool operator!=(const char *reference_string, const range_reference &ref);
 
-  private:
+private:
     cell_reference top_left_;
     cell_reference bottom_right_;
 };
-
-
 
 } // namespace xlnt

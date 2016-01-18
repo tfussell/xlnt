@@ -36,7 +36,7 @@ namespace xlnt {
 /// </summary>
 class XLNT_CLASS default_type
 {
-  public:
+public:
     default_type();
     default_type(const std::string &extension, const std::string &content_type);
     default_type(const default_type &other);
@@ -45,7 +45,7 @@ class XLNT_CLASS default_type
     std::string get_extension() const;
     std::string get_content_type() const;
 
-  private:
+private:
     std::string extension_;
     std::string content_type_;
 };

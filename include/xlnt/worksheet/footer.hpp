@@ -35,20 +35,20 @@ namespace xlnt {
 /// </summary>
 class XLNT_CLASS footer
 {
-  public:
+public:
     footer();
-    
+
     void set_text(const std::string &text);
-    
+
     void set_font_name(const std::string &font_name);
-    
+
     void set_font_size(std::size_t font_size);
-    
+
     void set_font_color(const std::string &font_color);
-    
+
     bool is_default() const;
 
-  private:
+private:
     bool default_;
     std::string text_;
     std::string font_name_;

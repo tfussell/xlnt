@@ -41,10 +41,10 @@ class range_reference;
 /// </summary>
 class XLNT_CLASS cell_vector
 {
-  public:
+public:
     class XLNT_CLASS iterator : public std::iterator<std::bidirectional_iterator_tag, cell>
     {
-      public:
+    public:
         iterator(worksheet ws, const cell_reference &start_cell, major_order order = major_order::row);
 
         iterator(const iterator &other);
@@ -56,23 +56,23 @@ class XLNT_CLASS cell_vector
         bool operator!=(const iterator &other) const;
 
         iterator &operator--();
-        
+
         iterator operator--(int);
 
         iterator &operator++();
 
         iterator operator++(int);
 
-      private:
+    private:
         worksheet ws_;
         cell_reference current_cell_;
         range_reference range_;
         major_order order_;
     };
-    
+
     class XLNT_CLASS const_iterator : public std::iterator<std::bidirectional_iterator_tag, const cell>
     {
-      public:
+    public:
         const_iterator(worksheet ws, const cell_reference &start_cell, major_order order = major_order::row);
 
         const_iterator(const const_iterator &other);
@@ -88,10 +88,10 @@ class XLNT_CLASS cell_vector
         const_iterator operator--(int);
 
         const_iterator &operator++();
-        
+
         const_iterator operator++(int);
 
-      private:
+    private:
         worksheet ws_;
         cell_reference current_cell_;
         range_reference range_;
@@ -125,11 +125,11 @@ class XLNT_CLASS cell_vector
 
     const_iterator begin() const;
     const_iterator cbegin() const;
-    
+
     const_iterator end() const;
     const_iterator cend() const;
 
-  private:
+private:
     worksheet ws_;
     range_reference ref_;
     major_order order_;

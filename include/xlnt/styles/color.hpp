@@ -61,7 +61,7 @@ public:
     color();
 
     color(type t, std::size_t v);
-    
+
     color(type t, const std::string &v);
 
     void set_auto(std::size_t auto_index);
@@ -79,7 +79,7 @@ public:
     std::size_t get_theme() const;
 
     std::string get_rgb_string() const;
-    
+
 protected:
     std::string to_hash_string() const override;
 

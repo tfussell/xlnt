@@ -32,30 +32,30 @@ namespace xlnt {
 /// </summary>
 class XLNT_CLASS page_margins
 {
-  public:
+public:
     page_margins();
 
     bool is_default() const;
-    
+
     double get_top() const;
     void set_top(double top);
-    
+
     double get_left() const;
     void set_left(double left);
-    
+
     double get_bottom() const;
     void set_bottom(double bottom);
-    
+
     double get_right() const;
     void set_right(double right);
-    
+
     double get_header() const;
     void set_header(double header);
-    
+
     double get_footer() const;
     void set_footer(double footer);
 
-  private:
+private:
     bool default_;
     double top_;
     double left_;

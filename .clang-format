@@ -1,6 +1,9 @@
 ---
 BasedOnStyle: LLVM
-AccessModifierOffset: 0
+AccessModifierOffset: -4
+AlignAfterOpenBracket: DontAlign
+AlignTrailingComments: false
+AllowAllParametersOfDeclarationOnNextLine: false
 AllowShortBlocksOnASingleLine: false
 AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: true
@@ -21,7 +24,7 @@ BraceWrapping:
 BreakBeforeBraces: Custom
 ColumnLimit: 120
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
-Cpp11BracedListStyle: false
+Cpp11BracedListStyle: true
 DerivePointerAlignment: false
 DisableFormat: false
 IndentCaseLabels: false
@@ -30,6 +33,7 @@ KeepEmptyLinesAtTheStartOfBlocks: false
 Language: Cpp
 NamespaceIndentation: None
 MaxEmptyLinesToKeep: 1
+PenaltyBreakComment: 1000
 PointerAlignment: Right
 SpaceAfterCStyleCast: false
 SpaceBeforeParens: ControlStatements

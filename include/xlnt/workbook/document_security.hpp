@@ -34,13 +34,13 @@ namespace xlnt {
 /// </summary>
 class XLNT_CLASS document_security
 {
-  public:
+public:
     document_security();
 
     bool lock_revision;
     bool lock_structure;
     bool lock_windows;
-    
+
     std::string revision_password;
     std::string workbook_password;
 };

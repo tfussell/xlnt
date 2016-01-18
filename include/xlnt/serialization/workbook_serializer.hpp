@@ -44,7 +44,7 @@ class xml_node;
 /// </summary>
 class XLNT_CLASS workbook_serializer
 {
-  public:
+public:
     using string_pair = std::pair<std::string, std::string>;
 
     workbook_serializer(workbook &wb);
@@ -59,7 +59,7 @@ class XLNT_CLASS workbook_serializer
 
     xml_node write_named_ranges() const;
 
-  private:
+private:
     workbook &workbook_;
 };
 

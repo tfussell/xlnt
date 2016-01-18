@@ -51,7 +51,9 @@ class workbook;
 
 struct date;
 
-namespace detail { struct worksheet_impl; }
+namespace detail {
+struct worksheet_impl;
+}
 
 /// <summary>
 /// A worksheet is a 2D array of cells starting with cell A1 in the top-left corner
@@ -62,7 +64,7 @@ class XLNT_CLASS worksheet
 public:
     using iterator = range_iterator_2d;
     using const_iterator = const_range_iterator_2d;
-    
+
     worksheet();
     worksheet(const worksheet &rhs);
     worksheet(workbook &parent_workbook, const std::string &title = std::string());
@@ -211,15 +213,15 @@ public:
 
     const_iterator cbegin() const;
     const_iterator cend() const;
-    
+
     range iter_cells(bool skip_null);
 
-  private:
+private:
     friend class workbook;
     friend class cell;
     friend class range_iterator_2d;
     friend class const_range_iterator_2d;
-    
+
     worksheet(detail::worksheet_impl *d);
     detail::worksheet_impl *d_;
 };

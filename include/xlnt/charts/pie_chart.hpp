@@ -27,7 +27,8 @@
 
 namespace xlnt {
 
-class XLNT_CLASS pie_chart {
+class XLNT_CLASS pie_chart
+{
 };
 
 } // namespace xlnt

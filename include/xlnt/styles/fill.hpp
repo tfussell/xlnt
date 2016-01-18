@@ -34,7 +34,7 @@ namespace xlnt {
 /// </summary>
 class XLNT_CLASS fill : public hashable
 {
-  public:
+public:
     enum class type
     {
         none,
@@ -73,11 +73,11 @@ class XLNT_CLASS fill : public hashable
     };
 
     type get_type() const;
-    
+
     void set_type(type t);
 
     std::string get_pattern_type_string() const;
-    
+
     std::string get_gradient_type_string() const;
 
     pattern_type get_pattern_type() const;
@@ -87,17 +87,17 @@ class XLNT_CLASS fill : public hashable
     void set_gradient_type(gradient_type t);
 
     std::experimental::optional<color> &get_foreground_color();
-    
+
     const std::experimental::optional<color> &get_foreground_color() const;
-    
+
     std::experimental::optional<color> &get_background_color();
 
     const std::experimental::optional<color> &get_background_color() const;
-    
+
     std::experimental::optional<color> &get_start_color();
-    
+
     const std::experimental::optional<color> &get_start_color() const;
-    
+
     std::experimental::optional<color> &get_end_color();
 
     const std::experimental::optional<color> &get_end_color() const;
@@ -105,15 +105,15 @@ class XLNT_CLASS fill : public hashable
     void set_rotation(double rotation);
 
     double get_rotation() const;
-    
+
     double get_gradient_left() const;
 
     double get_gradient_right() const;
-    
+
     double get_gradient_top() const;
-    
+
     double get_gradient_bottom() const;
-    
+
 protected:
     std::string to_hash_string() const override;
 

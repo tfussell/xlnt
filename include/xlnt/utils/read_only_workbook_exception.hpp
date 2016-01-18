@@ -34,7 +34,7 @@ namespace xlnt {
 /// </summary>
 class XLNT_CLASS read_only_workbook_exception : public std::runtime_error
 {
-  public:
+public:
     read_only_workbook_exception();
 };
 

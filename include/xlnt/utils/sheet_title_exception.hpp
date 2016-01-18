@@ -35,7 +35,7 @@ namespace xlnt {
 /// </summary>
 class XLNT_CLASS sheet_title_exception : public std::runtime_error
 {
-  public:
+public:
     sheet_title_exception(const std::string &title);
 };
 

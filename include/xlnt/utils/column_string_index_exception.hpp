@@ -34,7 +34,7 @@ namespace xlnt {
 /// </summary>
 class XLNT_CLASS column_string_index_exception : public std::runtime_error
 {
-  public:
+public:
     column_string_index_exception();
 };
 

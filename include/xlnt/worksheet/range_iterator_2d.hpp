@@ -32,7 +32,9 @@ namespace xlnt {
 class cell_vector;
 class worksheet;
 
-namespace detail { struct worksheet_impl; }
+namespace detail {
+struct worksheet_impl;
+}
 
 /// <summary>
 /// An iterator used by worksheet and range for traversing
@@ -40,7 +42,7 @@ namespace detail { struct worksheet_impl; }
 /// </summary>
 class XLNT_CLASS range_iterator_2d : public std::iterator<std::bidirectional_iterator_tag, cell_vector>
 {
-  public:
+public:
     range_iterator_2d(worksheet &ws, const range_reference &start_cell, major_order order = major_order::row);
 
     range_iterator_2d(const range_iterator_2d &other);
@@ -59,13 +61,12 @@ class XLNT_CLASS range_iterator_2d : public std::iterator<std::bidirectional_ite
 
     range_iterator_2d operator++(int);
 
-  private:
+private:
     detail::worksheet_impl *ws_;
     cell_reference current_cell_;
     range_reference range_;
     major_order order_;
 };
-
 
 /// <summary>
 /// A const version of range_iterator_2d which does not allow modification
@@ -73,8 +74,9 @@ class XLNT_CLASS range_iterator_2d : public std::iterator<std::bidirectional_ite
 /// </summary>
 class XLNT_CLASS const_range_iterator_2d : public std::iterator<std::bidirectional_iterator_tag, const cell_vector>
 {
-  public:
-    const_range_iterator_2d(const worksheet &ws, const range_reference &start_cell, major_order order = major_order::row);
+public:
+    const_range_iterator_2d(
+        const worksheet &ws, const range_reference &start_cell, major_order order = major_order::row);
 
     const_range_iterator_2d(const const_range_iterator_2d &other);
 
@@ -92,7 +94,7 @@ class XLNT_CLASS const_range_iterator_2d : public std::iterator<std::bidirection
 
     const_range_iterator_2d operator++(int);
 
-  private:
+private:
     detail::worksheet_impl *ws_;
     cell_reference current_cell_;
     range_reference range_;

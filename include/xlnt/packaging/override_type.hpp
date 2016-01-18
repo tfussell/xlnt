@@ -35,7 +35,7 @@ namespace xlnt {
 /// </summary>
 class XLNT_CLASS override_type
 {
-  public:
+public:
     override_type();
     override_type(const std::string &extension, const std::string &content_type);
     override_type(const override_type &other);
@@ -44,7 +44,7 @@ class XLNT_CLASS override_type
     std::string get_part_name() const;
     std::string get_content_type() const;
 
-  private:
+private:
     std::string part_name_;
     std::string content_type_;
 };

@@ -37,7 +37,7 @@ class xml_document;
 /// </summary>
 class XLNT_CLASS manifest_serializer
 {
-  public:
+public:
     manifest_serializer(manifest &m);
 
     void read_manifest(const xml_document &xml);
@@ -45,7 +45,7 @@ class XLNT_CLASS manifest_serializer
 
     std::string determine_document_type() const;
 
-  private:
+private:
     manifest &manifest_;
 };
 

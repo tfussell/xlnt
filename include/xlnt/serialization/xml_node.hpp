@@ -29,7 +29,9 @@
 #include <xlnt/xlnt_config.hpp>
 
 namespace xlnt {
-namespace detail { struct xml_node_impl; }
+namespace detail {
+struct xml_node_impl;
+}
 
 class xml_document;
 
@@ -38,7 +40,7 @@ class xml_document;
 /// </summary>
 class XLNT_CLASS xml_node
 {
-  public:
+public:
     using string_pair = std::pair<std::string, std::string>;
 
     xml_node();
@@ -68,7 +70,7 @@ class XLNT_CLASS xml_node
 
     std::string to_string() const;
 
-  private:
+private:
     friend class xml_document;
     friend class xml_serializer;
     xml_node(const detail::xml_node_impl &d);

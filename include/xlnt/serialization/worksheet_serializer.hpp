@@ -41,13 +41,13 @@ class xml_document;
 /// </summary>
 class XLNT_CLASS worksheet_serializer
 {
-  public:
+public:
     worksheet_serializer(worksheet sheet);
 
     bool read_worksheet(const xml_document &xml);
     xml_document write_worksheet() const;
 
-  private:
+private:
     worksheet sheet_;
 };
 

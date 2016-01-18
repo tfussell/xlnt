@@ -51,7 +51,9 @@ struct datetime;
 struct time;
 struct timedelta;
 
-namespace detail { struct cell_impl; }
+namespace detail {
+struct cell_impl;
+}
 
 /// <summary>
 /// Describes cell associated properties.
@@ -66,7 +68,7 @@ class XLNT_CLASS cell
 {
 public:
     using type = cell_type;
-    
+
     /// <summary>
     /// Return a map of error strings such as \#DIV/0! and their associated indices.
     /// </summary>
@@ -126,7 +128,7 @@ public:
     /// Return the type of this cell.
     /// </summary>
     type get_data_type() const;
-    
+
     /// <summary>
     /// Set the type of this cell.
     /// </summary>
@@ -146,130 +148,130 @@ public:
     bool is_date() const;
 
     // position
-    
+
     /// <summary>
     /// Return a cell_reference that points to the location of this cell.
     /// </summary>
     cell_reference get_reference() const;
-    
+
     /// <summary>
     /// Return the column of this cell.
     /// </summary>
     column_t get_column() const;
-    
+
     /// <summary>
     /// Return the row of this cell.
     /// </summary>
     row_t get_row() const;
-    
+
     /// <summary>
     /// Return the location of this cell as an ordered pair.
     /// </summary>
     std::pair<int, int> get_anchor() const;
 
     // hyperlink
-    
+
     /// <summary>
     /// Return a relationship representing this cell's hyperlink.
     /// </summary>
     relationship get_hyperlink() const;
-    
+
     /// <summary>
     /// Add a hyperlink to this cell pointing to the URI of the given value.
     /// </summary>
     void set_hyperlink(const std::string &value);
-    
+
     /// <summary>
     /// Return true if this cell has a hyperlink set.
     /// </summary>
     bool has_hyperlink() const;
 
     // style
-    
+
     /// <summary>
     /// Return true if this cell has had a style applied to it.
     /// </summary>
     bool has_style() const;
-    
+
     /// <summary>
     /// Return the index of this cell's style in its parent workbook.
     /// This is also the index of the style in the stylesheet XML, xl/styles.xml.
     /// </summary>
     std::size_t get_style_id() const;
-    
+
     /// <summary>
     /// Set the style index of this cell. This should be an existing style in
     /// the parent workbook.
     /// </summary>
     void set_style_id(std::size_t style_id);
-    
+
     /// <summary>
     /// Return the number format of this cell.
     /// </summary>
     const number_format &get_number_format() const;
     void set_number_format(const number_format &format);
-    
+
     /// <summary>
     /// Return the font applied to the text in this cell.
     /// </summary>
     const font &get_font() const;
-    
+
     void set_font(const font &font_);
-    
+
     /// <summary>
     /// Return the fill applied to this cell.
     /// </summary>
     const fill &get_fill() const;
-    
+
     void set_fill(const fill &fill_);
-    
+
     /// <summary>
     /// Return the border of this cell.
     /// </summary>
     const border &get_border() const;
-    
+
     void set_border(const border &border_);
-    
+
     /// <summary>
     /// Return the alignment of the text in this cell.
     /// </summary>
     const alignment &get_alignment() const;
-    
+
     void set_alignment(const alignment &alignment_);
-    
+
     /// <summary>
     /// Return the protection of this cell.
     /// </summary>
     const protection &get_protection() const;
-    
+
     void set_protection(const protection &protection_);
-    
+
     void set_pivot_button(bool b);
-    
+
     /// <summary>
     /// Return true iff pivot button?
     /// </summary>
     bool pivot_button() const;
-    
+
     void set_quote_prefix(bool b);
-    
+
     /// <summary>
     /// Return true iff quote prefix?
     /// </summary>
     bool quote_prefix() const;
 
     // comment
-    
+
     /// <summary>
     /// Return the comment of this cell.
     /// </summary>
     comment get_comment();
-    
+
     /// <summary>
     /// Return the comment of this cell.
     /// </summary>
     const comment get_comment() const;
-    
+
     void set_comment(const comment &comment);
     void clear_comment();
     bool has_comment() const;
@@ -294,13 +296,13 @@ public:
     std::string to_string() const;
 
     // merging
-    
+
     /// <summary>
     /// Return true iff this cell has been merged with one or more
     /// surrounding cells.
     /// </summary>
     bool is_merged() const;
-    
+
     /// <summary>
     /// Make this a merged cell iff merged is true.
     /// Generally, this shouldn't be called directly. Instead,
@@ -312,7 +314,7 @@ public:
     /// Return the error string that is stored in this cell.
     /// </summary>
     std::string get_error() const;
-    
+
     /// <summary>
     /// Directly assign the value of this cell to be the given error.
     /// </summary>
@@ -323,12 +325,12 @@ public:
     /// a relative offset given by the parameters.
     /// </summary>
     cell offset(int column, int row);
-    
+
     /// <summary>
     /// Return the worksheet that owns this cell.
     /// </summary>
     worksheet get_parent();
-    
+
     /// <summary>
     /// Return the worksheet that owns this cell.
     /// </summary>
@@ -346,7 +348,7 @@ public:
     std::string check_string(const std::string &to_check);
 
     // operators
-    
+
     /// <summary>
     /// Make this cell point to rhs.
     /// The cell originally pointed to by this cell will be unchanged.
@@ -357,30 +359,30 @@ public:
     /// Return true if this cell the same cell as comparand (compare by reference).
     /// </summary>
     bool operator==(const cell &comparand) const;
-    
+
     /// <summary>
     /// Return true if this cell is uninitialized.
     /// </summary>
     bool operator==(std::nullptr_t) const;
 
     // friend operators, so we can put cell on either side of comparisons with other types
-    
+
     /// <summary>
     /// Return true if this cell is uninitialized.
     /// </summary>
     friend XLNT_FUNCTION bool operator==(std::nullptr_t, const cell &cell);
-    
+
     /// <summary>
     /// Return the result of left.get_reference() < right.get_reference().
     /// What's the point of this?
     /// </summary>
     friend XLNT_FUNCTION bool operator<(cell left, cell right);
 
-	/// <summary>
-	/// Convenience function for writing cell to an ostream.
-	/// Uses cell::to_string() internally.
-	/// </summary>
-	friend XLNT_FUNCTION std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell);
+    /// <summary>
+    /// Convenience function for writing cell to an ostream.
+    /// Uses cell::to_string() internally.
+    /// </summary>
+    friend XLNT_FUNCTION std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell);
 
 private:
     // make these friends so they can use the private constructor
@@ -392,7 +394,7 @@ private:
     /// Private constructor to create a cell from its implementation.
     /// </summary>
     cell(detail::cell_impl *d);
-    
+
     /// <summary>
     /// A pointer to this cell's implementation.
     /// </summary>

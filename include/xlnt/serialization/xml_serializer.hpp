@@ -36,7 +36,7 @@ class xml_node;
 /// </summary>
 class XLNT_CLASS xml_serializer
 {
-  public:
+public:
     static std::string serialize(const xml_document &xml);
     static xml_document deserialize(const std::string &xml_string);
 

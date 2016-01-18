@@ -52,7 +52,7 @@ struct XLNT_CLASS cell_reference_hash
 /// </summary>
 class XLNT_CLASS cell_reference
 {
-  public:
+public:
     /// <summary>
     /// Split a coordinate string like "A1" into an equivalent pair like {"A", 1}.
     /// </summary>
@@ -64,41 +64,41 @@ class XLNT_CLASS cell_reference
     /// if column part or row part are prefixed by a dollar-sign indicating they
     /// are absolute, otherwise false.
     /// </summary>
-    static std::pair<std::string, row_t> split_reference(const std::string &reference_string,
-        bool &absolute_column, bool &absolute_row);
+    static std::pair<std::string, row_t> split_reference(
+        const std::string &reference_string, bool &absolute_column, bool &absolute_row);
 
     // constructors
-    
+
     /// <summary>
     /// Default constructor makes a reference to the top-left-most cell, "A1".
     /// </summary>
     cell_reference();
-    
-    //TODO: should these be explicit? The implicit conversion is nice sometimes.
-    
+
+    // TODO: should these be explicit? The implicit conversion is nice sometimes.
+
     /// <summary>
     /// Constructs a cell_reference from a string reprenting a cell coordinate (e.g. $B14).
     /// </summary>
     cell_reference(const char *reference_string);
-    
+
     /// <summary>
     /// Constructs a cell_reference from a string reprenting a cell coordinate (e.g. $B14).
     /// </summary>
     cell_reference(const std::string &reference_string);
-    
+
     /// <summary>
     /// Constructs a cell_reference from a string reprenting a column (e.g. A) and
     /// a 1-indexed row.
     /// </summary>
     cell_reference(const std::string &column, row_t row);
-    
+
     /// <summary>
     /// Constructs a cell_reference from a 1-indexed column index and row index.
     /// </summary>
     cell_reference(column_t column, row_t row);
 
     // absoluateness
-    
+
     /// <summary>
     /// Convert a coordinate to an absolute coordinate string (e.g. B12 -> $B$12)
     /// Defaulting to true, absolute_column and absolute_row can optionally control
@@ -113,7 +113,7 @@ class XLNT_CLASS cell_reference
     /// return copy;
     /// </remarks>
     cell_reference &make_absolute(bool absolute_column = true, bool absolute_row = true);
-    
+
     /// <summary>
     /// Return true if the reference refers to an absolute column, otherwise false.
     /// </summary>
@@ -137,13 +137,13 @@ class XLNT_CLASS cell_reference
     void row_absolute(bool absolute_row);
 
     // getters/setters
-    
+
     /// <summary>
     /// Return a string that identifies the column of this reference
     /// (e.g. second column from left is "B")
     /// </summary>
     column_t get_column() const;
-    
+
     /// <summary>
     /// Set the column of this reference from a string that identifies a particular column.
     /// </summary>
@@ -153,7 +153,7 @@ class XLNT_CLASS cell_reference
     /// Return a 1-indexed numeric index of the column of this reference.
     /// </summary>
     column_t get_column_index() const;
-    
+
     /// <summary>
     /// Set the column of this reference from a 1-indexed number that identifies a particular column.
     /// </summary>
@@ -163,7 +163,7 @@ class XLNT_CLASS cell_reference
     /// Return a 1-indexed numeric index of the row of this reference.
     /// </summary>
     row_t get_row() const;
-    
+
     /// <summary>
     /// Set the row of this reference from a 1-indexed number that identifies a particular row.
     /// </summary>
@@ -188,7 +188,7 @@ class XLNT_CLASS cell_reference
     range_reference to_range() const;
 
     // operators
-    
+
     /// <summary>
     /// I've always wanted to overload the comma operator.
     /// cell_reference("A", 1), cell_reference("B", 1) will return
@@ -201,44 +201,44 @@ class XLNT_CLASS cell_reference
     /// in absoluteness of column and row.
     /// </summary>
     bool operator==(const cell_reference &comparand) const;
-    
+
     /// <summary>
     /// Construct a cell_reference from reference_string and return the result
     /// of their comparison.
     /// </summary>
     bool operator==(const std::string &reference_string) const;
-    
+
     /// <summary>
     /// Construct a cell_reference from reference_string and return the result
     /// of their comparison.
     /// </summary>
     bool operator==(const char *reference_string) const;
-    
+
     /// <summary>
     /// Return true if this reference is not identical to comparand including
     /// in absoluteness of column and row.
     /// </summary>
     bool operator!=(const cell_reference &comparand) const;
-    
+
     /// <summary>
     /// Construct a cell_reference from reference_string and return the result
     /// of their comparison.
     /// </summary>
     bool operator!=(const std::string &reference_string) const;
-    
+
     /// <summary>
     /// Construct a cell_reference from reference_string and return the result
     /// of their comparison.
     /// </summary>
     bool operator!=(const char *reference_string) const;
 
-    //TODO: are these useful? maybe get rid of them
+    // TODO: are these useful? maybe get rid of them
     bool operator<(const cell_reference &other);
     bool operator>(const cell_reference &other);
     bool operator<=(const cell_reference &other);
     bool operator>=(const cell_reference &other);
 
-  private:
+private:
     /// <summary>
     /// Index of the column. Important: this is one-indexed to conform
     /// with Excel. Column "A", the first column, would have an index of 1.
@@ -255,7 +255,7 @@ class XLNT_CLASS cell_reference
     /// True if the reference's row is absolute. This looks like "A$1" in Excel.
     /// </summary>
     bool absolute_row_;
-    
+
     /// <summary>
     /// True if the reference's column is absolute. This looks like "$A1" in Excel.
     /// </summary>

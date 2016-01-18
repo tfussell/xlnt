@@ -35,7 +35,7 @@ namespace xlnt {
 /// </summary>
 class XLNT_CLASS protection : public hashable
 {
-  public:
+public:
     enum class type
     {
         inherit,
@@ -48,7 +48,7 @@ class XLNT_CLASS protection : public hashable
 
     void set_locked(type locked_type);
     void set_hidden(type hidden_type);
-    
+
 protected:
     std::string to_hash_string() const override;
 

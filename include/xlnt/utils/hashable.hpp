@@ -34,7 +34,7 @@ class XLNT_CLASS hashable
 public:
     std::size_t hash() const;
     bool operator==(const hashable &other) const;
-    
+
 protected:
     virtual std::string to_hash_string() const = 0;
 };

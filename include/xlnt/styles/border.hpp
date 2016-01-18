@@ -41,7 +41,7 @@ class XLNT_CLASS border : public hashable
 {
 public:
     static border default_border();
-    
+
     std::experimental::optional<side> &get_start();
     const std::experimental::optional<side> &get_start() const;
     std::experimental::optional<side> &get_end();
@@ -63,7 +63,7 @@ public:
 
 protected:
     std::string to_hash_string() const override;
-    
+
 private:
     std::experimental::optional<side> start_;
     std::experimental::optional<side> end_;

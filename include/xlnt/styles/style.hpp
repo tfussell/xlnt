@@ -68,7 +68,7 @@ public:
     void apply_font(bool apply);
     void apply_number_format(bool apply);
     void apply_protection(bool apply);
-    
+
 protected:
     std::string to_hash_string() const override;
 

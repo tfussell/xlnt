@@ -46,7 +46,7 @@ class XLNT_CLASS comment_serializer
     xml_document write_comments() const;
     xml_document write_comments_vml() const;
 
-  private:
+private:
     worksheet sheet_;
 };
 

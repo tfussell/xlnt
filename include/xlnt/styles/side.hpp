@@ -38,20 +38,20 @@ namespace xlnt {
 /// </summary>
 class XLNT_CLASS side : public hashable
 {
-  public:
+public:
     side();
 
     std::experimental::optional<border_style> &get_border_style();
-    
+
     const std::experimental::optional<border_style> &get_border_style() const;
 
     std::experimental::optional<color> &get_color();
-    
+
     const std::experimental::optional<color> &get_color() const;
 
 protected:
     std::string to_hash_string() const override;
-    
+
 private:
     std::experimental::optional<border_style> border_style_;
     std::experimental::optional<color> color_;

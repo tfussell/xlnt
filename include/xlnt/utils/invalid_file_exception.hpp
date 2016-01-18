@@ -35,7 +35,7 @@ namespace xlnt {
 /// </summary>
 class XLNT_CLASS invalid_file_exception : public std::runtime_error
 {
-  public:
+public:
     invalid_file_exception(const std::string &filename);
 };
 

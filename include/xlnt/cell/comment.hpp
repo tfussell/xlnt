@@ -30,31 +30,33 @@
 namespace xlnt {
 
 class cell;
-namespace detail { struct comment_impl; }
+namespace detail {
+struct comment_impl;
+}
 
 /// <summary>
 /// A comment can be applied to a cell to provide extra information.
 /// </summary>
 class XLNT_CLASS comment
 {
-  public:
+public:
     /// <summary>
     /// The default constructor makes an invalid comment without a parent cell.
     /// </summary>
     comment();
-    
+
     /// <summary>
     /// Constructs a comment applied to the given cell, parent, and with the comment
     /// text and author set to the provided respective values.
     comment(cell parent, const std::string &text, const std::string &auth);
-    
+
     ~comment();
-    
+
     /// <summary>
     /// Return the text that will be displayed for this comment.
     /// </summary>
     std::string get_text() const;
-    
+
     /// <summary>
     /// Return the author of this comment.
     /// </summary>
@@ -68,14 +70,14 @@ class XLNT_CLASS comment
     /// </summary>
     bool operator==(const comment &other) const;
 
-  private:
+private:
     friend class cell; // cell needs access to private constructor
-    
+
     /// <summary>
     /// Construct a comment from an implementation of a comment.
     /// </summary>
     comment(detail::comment_impl *d);
-    
+
     /// <summary>
     /// Pointer to the implementation of this comment.
     /// This allows comments to be passed by value while

@@ -27,7 +27,8 @@
 
 namespace xlnt {
 
-class XLNT_CLASS legend {
+class XLNT_CLASS legend
+{
 };
 
 } // namespace xlnt
