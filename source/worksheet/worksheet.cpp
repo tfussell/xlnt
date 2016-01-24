@@ -33,7 +33,11 @@
 #include <xlnt/utils/exceptions.hpp>
 #include <xlnt/workbook/named_range.hpp>
 #include <xlnt/workbook/workbook.hpp>
+#include <xlnt/worksheet/cell_iterator.hpp>
+#include <xlnt/worksheet/const_cell_iterator.hpp>
+#include <xlnt/worksheet/const_range_iterator.hpp>
 #include <xlnt/worksheet/range.hpp>
+#include <xlnt/worksheet/range_iterator.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 

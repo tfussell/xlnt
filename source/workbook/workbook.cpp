@@ -42,9 +42,11 @@
 #include <xlnt/styles/protection.hpp>
 #include <xlnt/styles/style.hpp>
 #include <xlnt/utils/exceptions.hpp>
+#include <xlnt/workbook/const_worksheet_iterator.hpp>
 #include <xlnt/workbook/named_range.hpp>
 #include <xlnt/workbook/theme.hpp>
 #include <xlnt/workbook/workbook.hpp>
+#include <xlnt/workbook/worksheet_iterator.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
@@ -89,68 +91,6 @@ workbook::workbook() : d_(new detail::workbook_impl())
 workbook::workbook(encoding e) : workbook()
 {
     d_->encoding_ = e;
-}
-
-workbook::iterator::iterator(workbook &wb, std::size_t index) : wb_(wb), index_(index)
-{
-}
-
-workbook::iterator::iterator(const iterator &rhs) : wb_(rhs.wb_), index_(rhs.index_)
-{
-}
-
-worksheet workbook::iterator::operator*()
-{
-    return wb_[index_];
-}
-
-workbook::iterator &workbook::iterator::operator++()
-{
-    index_++;
-    return *this;
-}
-
-workbook::iterator workbook::iterator::operator++(int)
-{
-    iterator old(wb_, index_);
-    ++*this;
-    return old;
-}
-
-bool workbook::iterator::operator==(const iterator &comparand) const
-{
-    return index_ == comparand.index_ && wb_ == comparand.wb_;
-}
-
-workbook::const_iterator::const_iterator(const workbook &wb, std::size_t index) : wb_(wb), index_(index)
-{
-}
-
-workbook::const_iterator::const_iterator(const const_iterator &rhs) : wb_(rhs.wb_), index_(rhs.index_)
-{
-}
-
-const worksheet workbook::const_iterator::operator*()
-{
-    return wb_.get_sheet_by_index(index_);
-}
-
-workbook::const_iterator &workbook::const_iterator::operator++()
-{
-    index_++;
-    return *this;
-}
-
-workbook::const_iterator workbook::const_iterator::operator++(int)
-{
-    const_iterator old(wb_, index_);
-    ++*this;
-    return old;
-}
-
-bool workbook::const_iterator::operator==(const const_iterator &comparand) const
-{
-    return index_ == comparand.index_ && wb_ == comparand.wb_;
 }
 
 worksheet workbook::get_sheet_by_name(const std::string &name)

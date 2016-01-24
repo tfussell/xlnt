@@ -22,6 +22,8 @@
 // @author: see AUTHORS file
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/cell/cell.hpp>
+#include <xlnt/worksheet/const_range_iterator.hpp>
+#include <xlnt/worksheet/range_iterator.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
@@ -153,148 +155,6 @@ range::const_iterator range::cend() const
     cell_reference top_right(past_end_column_index, ref_.get_top_left().get_row());
     cell_reference bottom_right(past_end_column_index, ref_.get_bottom_right().get_row());
     return const_iterator(ws_, range_reference(top_right, bottom_right), order_);
-}
-
-cell_vector range::iterator::operator*()
-{
-    if (order_ == major_order::row)
-    {
-        range_reference reference(range_.get_top_left().get_column_index(), current_cell_.get_row(),
-                                  range_.get_bottom_right().get_column_index(), current_cell_.get_row());
-        return cell_vector(ws_, reference, order_);
-    }
-
-    range_reference reference(current_cell_.get_column_index(), range_.get_top_left().get_row(),
-                              current_cell_.get_column_index(), range_.get_bottom_right().get_row());
-    return cell_vector(ws_, reference, order_);
-}
-
-range_iterator_2d::range_iterator_2d(worksheet &ws, const range_reference &start_cell, major_order order)
-    : ws_(ws.d_), current_cell_(start_cell.get_top_left()), range_(start_cell), order_(order)
-{
-}
-
-range_iterator_2d::range_iterator_2d(const range_iterator_2d &other)
-{
-    *this = other;
-}
-
-bool range_iterator_2d::operator==(const range_iterator_2d &other) const
-{
-    return ws_ == other.ws_ && current_cell_ == other.current_cell_ && order_ == other.order_;
-}
-
-bool range_iterator_2d::operator!=(const range_iterator_2d &other) const
-{
-    return !(*this == other);
-}
-
-range_iterator_2d &range_iterator_2d::operator--()
-{
-    if (order_ == major_order::row)
-    {
-        current_cell_.set_row(current_cell_.get_row() - 1);
-    }
-    else
-    {
-        current_cell_.set_column_index(current_cell_.get_column_index() - 1);
-    }
-
-    return *this;
-}
-
-range_iterator_2d range_iterator_2d::operator--(int)
-{
-    range_iterator_2d old = *this;
-    --*this;
-    
-    return old;
-}
-
-range_iterator_2d &range_iterator_2d::operator++()
-{
-    if (order_ == major_order::row)
-    {
-        current_cell_.set_row(current_cell_.get_row() + 1);
-    }
-    else
-    {
-        current_cell_.set_column_index(current_cell_.get_column_index() + 1);
-    }
-
-    return *this;
-}
-
-range_iterator_2d range_iterator_2d::operator++(int)
-{
-    range_iterator_2d old = *this;
-    ++*this;
-    
-    return old;
-}
-
-const_range_iterator_2d::const_range_iterator_2d(const worksheet &ws, const range_reference &start_cell, major_order order)
-    : ws_(ws.d_), current_cell_(start_cell.get_top_left()), range_(start_cell), order_(order)
-{
-}
-
-const_range_iterator_2d::const_range_iterator_2d(const const_range_iterator_2d &other)
-{
-    *this = other;
-}
-
-bool const_range_iterator_2d::operator==(const const_range_iterator_2d &other) const
-{
-    return ws_ == other.ws_ && current_cell_ == other.current_cell_ && order_ == other.order_;
-}
-
-bool const_range_iterator_2d::operator!=(const const_range_iterator_2d &other) const
-{
-    return !(*this == other);
-}
-
-range::const_iterator &range::const_iterator::operator--()
-{
-    if (order_ == major_order::row)
-    {
-        current_cell_.set_row(current_cell_.get_row() - 1);
-    }
-    else
-    {
-        current_cell_.set_column_index(current_cell_.get_column_index() - 1);
-    }
-
-    return *this;
-}
-
-range::const_iterator range::const_iterator::operator--(int)
-{
-    const_range_iterator_2d old = *this;
-    --*this;
-    
-    return old;
-}
-
-range::const_iterator &range::const_iterator::operator++()
-{
-    if (order_ == major_order::row)
-    {
-        current_cell_.set_row(current_cell_.get_row() + 1);
-    }
-    else
-    {
-        current_cell_.set_column_index(current_cell_.get_column_index() + 1);
-    }
-
-    return *this;
-}
-
-range::const_iterator range::const_iterator::operator++(int)
-{
-    const_range_iterator_2d old = *this;
-    ++*this;
-    
-    return old;
 }
 
 bool range::operator!=(const range &comparand) const

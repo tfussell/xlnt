@@ -26,6 +26,8 @@
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/cell/cell_reference.hpp>
+#include <xlnt/worksheet/cell_iterator.hpp>
+#include <xlnt/worksheet/const_cell_iterator.hpp>
 #include <xlnt/worksheet/major_order.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
@@ -33,6 +35,8 @@
 namespace xlnt {
 
 class cell;
+class cell_iterator;
+class const_cell_iterator;
 class range_reference;
 
 /// <summary>
@@ -42,62 +46,9 @@ class range_reference;
 class XLNT_CLASS cell_vector
 {
 public:
-    class XLNT_CLASS iterator : public std::iterator<std::bidirectional_iterator_tag, cell>
-    {
-    public:
-        iterator(worksheet ws, const cell_reference &start_cell, major_order order = major_order::row);
-
-        iterator(const iterator &other);
-
-        cell operator*();
-
-        bool operator==(const iterator &other) const;
-
-        bool operator!=(const iterator &other) const;
-
-        iterator &operator--();
-
-        iterator operator--(int);
-
-        iterator &operator++();
-
-        iterator operator++(int);
-
-    private:
-        worksheet ws_;
-        cell_reference current_cell_;
-        range_reference range_;
-        major_order order_;
-    };
-
-    class XLNT_CLASS const_iterator : public std::iterator<std::bidirectional_iterator_tag, const cell>
-    {
-    public:
-        const_iterator(worksheet ws, const cell_reference &start_cell, major_order order = major_order::row);
-
-        const_iterator(const const_iterator &other);
-
-        const cell operator*();
-
-        bool operator==(const const_iterator &other) const;
-
-        bool operator!=(const const_iterator &other) const;
-
-        const_iterator &operator--();
-
-        const_iterator operator--(int);
-
-        const_iterator &operator++();
-
-        const_iterator operator++(int);
-
-    private:
-        worksheet ws_;
-        cell_reference current_cell_;
-        range_reference range_;
-        major_order order_;
-    };
-
+    using iterator = cell_iterator;
+    using const_iterator = const_cell_iterator;
+    
     cell_vector(worksheet ws, const range_reference &ref, major_order order = major_order::row);
 
     std::size_t num_cells() const;

@@ -1,4 +1,5 @@
 // Copyright (c) 2014-2016 Thomas Fussell
+// Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,72 +24,47 @@
 #pragma once
 
 #include <iterator>
-#include <memory>
-#include <string>
-#include <vector>
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/worksheet/cell_vector.hpp>
-#include <xlnt/worksheet/major_order.hpp>
-#include <xlnt/worksheet/const_range_iterator.hpp>
-#include <xlnt/worksheet/range_iterator.hpp>
+#include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
 namespace xlnt {
 
-class const_range_iterator;
-class range_iterator;
+class cell;
+class cell_reference;
+class range_reference;
+enum class major_order;
 
-/// <summary>
-/// A range is a 2D collection of cells with defined extens that can be iterated upon.
-/// </summary>
-class XLNT_CLASS range
+class XLNT_CLASS const_cell_iterator : public std::iterator<std::bidirectional_iterator_tag, const cell>
 {
 public:
-    using iterator = range_iterator;
-    using const_iterator = const_range_iterator;
+    const_cell_iterator(worksheet ws, const cell_reference &start_cell);
+    
+    const_cell_iterator(worksheet ws, const cell_reference &start_cell, major_order order);
 
-    range(worksheet ws, const range_reference &reference, major_order order = major_order::row, bool skip_null = false);
+    const_cell_iterator(const const_cell_iterator &other);
 
-    ~range();
+    const cell operator*();
 
-    cell_vector operator[](std::size_t vector_index);
+    bool operator==(const const_cell_iterator &other) const;
 
-    const cell_vector operator[](std::size_t vector_index) const;
+    bool operator!=(const const_cell_iterator &other) const;
 
-    bool operator==(const range &comparand) const;
+    const_cell_iterator &operator--();
 
-    bool operator!=(const range &comparand) const;
+    const_cell_iterator operator--(int);
 
-    cell_vector get_vector(std::size_t vector_index);
+    const_cell_iterator &operator++();
 
-    const cell_vector get_vector(std::size_t vector_index) const;
-
-    cell get_cell(const cell_reference &ref);
-
-    const cell get_cell(const cell_reference &ref) const;
-
-    range_reference get_reference() const;
-
-    std::size_t length() const;
-
-    bool contains(const cell_reference &ref);
-
-    iterator begin();
-    iterator end();
-
-    const_iterator begin() const;
-    const_iterator end() const;
-
-    const_iterator cbegin() const;
-    const_iterator cend() const;
+    const_cell_iterator operator++(int);
 
 private:
     worksheet ws_;
-    range_reference ref_;
+    cell_reference current_cell_;
+    range_reference range_;
     major_order order_;
-    bool skip_null_;
 };
 
 } // namespace xlnt

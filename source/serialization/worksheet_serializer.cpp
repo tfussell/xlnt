@@ -31,8 +31,10 @@
 #include <xlnt/serialization/xml_document.hpp>
 #include <xlnt/serialization/xml_node.hpp>
 #include <xlnt/workbook/workbook.hpp>
+#include <xlnt/worksheet/cell_iterator.hpp>
 #include <xlnt/worksheet/column_properties.hpp>
 #include <xlnt/worksheet/range.hpp>
+#include <xlnt/worksheet/range_iterator.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/row_properties.hpp>
 

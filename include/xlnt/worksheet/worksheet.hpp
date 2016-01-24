@@ -34,7 +34,6 @@
 #include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/page_margins.hpp>
 #include <xlnt/worksheet/page_setup.hpp>
-#include <xlnt/worksheet/range_iterator_2d.hpp>
 
 namespace xlnt {
 
@@ -43,7 +42,9 @@ class cell_reference;
 class cell_vector;
 class column_properties;
 class comment;
+class const_range_iterator;
 class range;
+class range_iterator;
 class range_reference;
 class relationship;
 class row_properties;
@@ -62,8 +63,8 @@ struct worksheet_impl;
 class XLNT_CLASS worksheet
 {
 public:
-    using iterator = range_iterator_2d;
-    using const_iterator = const_range_iterator_2d;
+    using iterator = range_iterator;
+    using const_iterator = const_range_iterator;
 
     worksheet();
     worksheet(const worksheet &rhs);
@@ -219,8 +220,8 @@ public:
 private:
     friend class workbook;
     friend class cell;
-    friend class range_iterator_2d;
-    friend class const_range_iterator_2d;
+    friend class range_iterator;
+    friend class const_range_iterator;
 
     worksheet(detail::worksheet_impl *d);
     detail::worksheet_impl *d_;

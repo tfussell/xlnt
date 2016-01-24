@@ -37,6 +37,7 @@ namespace xlnt {
 class alignment;
 class border;
 class color;
+class const_worksheet_iterator;
 class document_properties;
 class drawing;
 class fill;
@@ -52,6 +53,7 @@ class relationship;
 class style;
 class theme;
 class worksheet;
+class worksheet_iterator;
 class zip_file;
 
 enum class encoding;
@@ -66,46 +68,9 @@ struct workbook_impl;
 class XLNT_CLASS workbook
 {
 public:
-    class XLNT_CLASS iterator
-    {
-    public:
-        iterator(workbook &wb, std::size_t index);
-        iterator(const iterator &);
-        iterator &operator=(const iterator &);
-        worksheet operator*();
-        bool operator==(const iterator &comparand) const;
-        bool operator!=(const iterator &comparand) const
-        {
-            return !(*this == comparand);
-        }
-        iterator operator++(int);
-        iterator &operator++();
-
-    private:
-        workbook &wb_;
-        std::size_t index_;
-    };
-
-    class XLNT_CLASS const_iterator
-    {
-    public:
-        const_iterator(const workbook &wb, std::size_t index);
-        const_iterator(const const_iterator &);
-        const_iterator &operator=(const const_iterator &);
-        const worksheet operator*();
-        bool operator==(const const_iterator &comparand) const;
-        bool operator!=(const const_iterator &comparand) const
-        {
-            return !(*this == comparand);
-        }
-        const_iterator operator++(int);
-        const_iterator &operator++();
-
-    private:
-        const workbook &wb_;
-        std::size_t index_;
-    };
-
+    using iterator = worksheet_iterator;
+    using const_iterator = const_worksheet_iterator;
+    
     static std::size_t index_from_ws_filename(const std::string &filename);
 
     // constructors

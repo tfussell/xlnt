@@ -39,6 +39,8 @@
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/utils/exceptions.hpp>
 #include <xlnt/workbook/workbook.hpp>
+#include <xlnt/workbook/worksheet_iterator.hpp>
+#include <xlnt/worksheet/range_iterator.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
 #include <detail/constants.hpp>
