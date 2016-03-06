@@ -175,6 +175,8 @@ public:
     const range operator[](const std::string &range_string) const;
     range operator()(const cell_reference &top_left, const cell_reference &bottom_right);
     const range operator()(const cell_reference &top_left, const cell_reference &bottom_right) const;
+    
+    bool compare(const worksheet &other, bool reference) const;
 
     // page
     page_setup &get_page_setup();

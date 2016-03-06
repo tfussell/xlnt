@@ -86,4 +86,14 @@ value_error::value_error()
 {
 }
 
+key_error::key_error()
+    : std::runtime_error("key error")
+{
+}
+
+read_only_workbook_exception::read_only_workbook_exception()
+    : std::runtime_error("workbook is read-only")
+{
+}
+
 } // namespace xlnt

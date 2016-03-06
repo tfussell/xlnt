@@ -59,7 +59,7 @@ namespace xlnt {
 namespace detail {
 
 workbook_impl::workbook_impl()
-    : active_sheet_index_(0), guess_types_(false), data_only_(false), next_custom_format_id_(164)
+    : active_sheet_index_(0), guess_types_(false), data_only_(false), read_only_(false), next_custom_format_id_(164)
 {
 }
 
@@ -135,8 +135,10 @@ bool workbook::has_named_range(const std::string &name) const
 
 worksheet workbook::create_sheet()
 {
-    std::string title = "Sheet1";
-    int index = 1;
+    if(get_read_only()) throw xlnt::read_only_workbook_exception();
+    
+    std::string title = "Sheet";
+    int index = 0;
 
     while (get_sheet_by_name(title) != nullptr)
     {
@@ -157,14 +159,7 @@ worksheet workbook::create_sheet()
 
 void workbook::add_sheet(xlnt::worksheet worksheet)
 {
-    for (auto ws : *this)
-    {
-        if (worksheet == ws)
-        {
-            throw std::runtime_error("worksheet already in workbook");
-        }
-    }
-
+    if(worksheet.d_->parent_ != this) throw xlnt::value_error();
     d_->worksheets_.emplace_back(*worksheet.d_);
 }
 
@@ -443,6 +438,7 @@ std::vector<std::string> workbook::get_sheet_names() const
 
 worksheet workbook::operator[](const std::string &name)
 {
+    if(!contains(name)) throw xlnt::key_error();
     return get_sheet_by_name(name);
 }
 
@@ -546,6 +542,16 @@ bool workbook::get_data_only() const
 void workbook::set_data_only(bool data_only)
 {
     d_->data_only_ = data_only;
+}
+
+bool workbook::get_read_only() const
+{
+    return d_->read_only_;
+}
+
+void workbook::set_read_only(bool read_only)
+{
+    d_->read_only_ = read_only;
 }
 
 void workbook::add_border(const xlnt::border &border_)
@@ -953,6 +959,16 @@ void workbook::add_shared_string(const std::string &shared)
     }
     
     d_->shared_strings_.push_back(shared);
+}
+
+bool workbook::contains(const std::string &sheet_title) const
+{
+    for(auto ws : *this)
+    {
+        if(ws.get_title() == sheet_title) return true;
+    }
+    
+    return false;
 }
 
 } // namespace xlnt

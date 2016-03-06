@@ -92,6 +92,9 @@ public:
 
     bool get_data_only() const;
     void set_data_only(bool data_only);
+    
+    bool get_read_only() const;
+    void set_read_only(bool read_only);
 
     // create
     worksheet create_sheet();

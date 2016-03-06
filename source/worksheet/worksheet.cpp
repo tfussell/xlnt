@@ -586,12 +586,56 @@ xlnt::range worksheet::columns() const
 
 bool worksheet::operator==(const worksheet &other) const
 {
-    return d_ == other.d_;
+    return compare(other, true);
+}
+
+bool worksheet::compare(const worksheet &other, bool reference) const
+{
+    if(reference)
+    {
+        return d_ == other.d_;
+    }
+    
+    if(d_->parent_ != other.d_->parent_) return false;
+    
+    for(auto &row : d_->cell_map_)
+    {
+        if(other.d_->cell_map_.find(row.first) == other.d_->cell_map_.end())
+        {
+            return false;
+        }
+        
+        for(auto &cell : row.second)
+        {
+            if(other.d_->cell_map_[row.first].find(cell.first) == other.d_->cell_map_[row.first].end())
+            {
+                return false;
+            }
+            
+            if(!(cell.second.self() == other.d_->cell_map_[row.first][cell.first].self()))
+            {
+                return false;
+            }
+        }
+    }
+    
+    // todo: missing some comparisons
+    
+    if(d_->auto_filter_ == other.d_->auto_filter_
+        && d_->comment_count_ == other.d_->comment_count_
+        && d_->freeze_panes_ == other.d_->freeze_panes_
+        && d_->merged_cells_ == other.d_->merged_cells_
+        && d_->relationships_ == other.d_->relationships_)
+    {
+        return true;
+    }
+    
+    return false;
 }
 
 bool worksheet::operator!=(const worksheet &other) const
 {
-    return d_ != other.d_;
+    return !(*this == other);
 }
 
 bool worksheet::operator==(std::nullptr_t) const

@@ -23,18 +23,19 @@
 // @author: see AUTHORS file
 #pragma once
 
-// An shortcut for including all possible exceptions in xlnt.
+#include <stdexcept>
 
-#include <xlnt/utils/attribute_error.hpp>
-#include <xlnt/utils/cell_coordinates_exception.hpp>
-#include <xlnt/utils/column_string_index_exception.hpp>
-#include <xlnt/utils/data_type_exception.hpp>
-#include <xlnt/utils/illegal_character_error.hpp>
-#include <xlnt/utils/invalid_file_exception.hpp>
-#include <xlnt/utils/key_error.hpp>
-#include <xlnt/utils/missing_number_format.hpp>
-#include <xlnt/utils/named_range_exception.hpp>
-#include <xlnt/utils/read_only_workbook_exception.hpp>
-#include <xlnt/utils/sheet_title_exception.hpp>
-#include <xlnt/utils/unicode_decode_error.hpp>
-#include <xlnt/utils/value_error.hpp>
+#include <xlnt/xlnt_config.hpp>
+
+namespace xlnt {
+
+/// <summary>
+/// key_error
+/// </summary>
+class XLNT_CLASS key_error : public std::runtime_error
+{
+public:
+    key_error();
+};
+
+} // namespace xlnt

@@ -42,6 +42,7 @@ struct workbook_impl
           properties_(other.properties_),
           guess_types_(other.guess_types_),
           data_only_(other.data_only_),
+          read_only_(other.read_only_),
           styles_(other.styles_),
           colors_(other.colors_),
           borders_(other.borders_),
@@ -69,6 +70,7 @@ struct workbook_impl
         properties_ = other.properties_;
         guess_types_ = other.guess_types_;
         data_only_ = other.data_only_;
+        read_only_ = other.read_only_;
         styles_ = other.styles_;
         borders_ = other.borders_;
         fills_ = other.fills_;
@@ -91,6 +93,7 @@ struct workbook_impl
 
     bool guess_types_;
     bool data_only_;
+    bool read_only_;
 
     std::vector<style> styles_;
 
