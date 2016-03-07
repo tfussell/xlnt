@@ -58,4 +58,10 @@ bool worksheet_iterator::operator==(const worksheet_iterator &comparand) const
     return index_ == comparand.index_ && wb_ == comparand.wb_;
 }
 
+worksheet_iterator &worksheet_iterator::operator=(const worksheet_iterator &other)
+{
+    index_ = other.index_;
+    return *this;
+}
+
 } // namespace xlnt
