@@ -50,7 +50,7 @@ bool shared_strings_serializer::read_shared_strings(const xml_document &xml, std
     strings.clear();
 
     auto root_node = xml.get_child("sst");
-    auto unique_count = 0;
+    std::size_t unique_count = 0;
 
     if (root_node.has_attribute("uniqueCount"))
     {
