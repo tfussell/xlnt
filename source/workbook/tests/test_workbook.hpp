@@ -39,7 +39,7 @@ public:
         xlnt::workbook wb;
         auto new_sheet = wb.create_sheet();
         wb.add_sheet(new_sheet);
-        TS_ASSERT(new_sheet.compare(wb[2], false));
+        TS_ASSERT(wb[1].compare(wb[2], false));
     }
     
     // void test_add_sheetname() {} unnecessary

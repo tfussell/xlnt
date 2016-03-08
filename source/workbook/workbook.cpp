@@ -160,7 +160,9 @@ worksheet workbook::create_sheet()
 void workbook::add_sheet(xlnt::worksheet worksheet)
 {
     if(worksheet.d_->parent_ != this) throw xlnt::value_error();
-    d_->worksheets_.emplace_back(*worksheet.d_);
+
+    xlnt::detail::worksheet_impl impl(*worksheet.d_);
+    *create_sheet().d_ = impl;
 }
 
 void workbook::add_sheet(xlnt::worksheet worksheet, std::size_t index)
