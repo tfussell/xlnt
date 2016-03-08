@@ -11,32 +11,30 @@ class test_worksheet : public CxxTest::TestSuite
 public:
     void test_new_worksheet()
     {
-        xlnt::worksheet ws = wb_.create_sheet();
-        TS_ASSERT(wb_ == ws.get_parent());
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
+        TS_ASSERT(ws.get_parent() == wb);
     }
     
     void test_get_cell()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
         TS_ASSERT_EQUALS(cell.get_reference(), "A1");
     }
-
-    void test_has_cell()
+    
+    void test_invalid_cell()
     {
-        xlnt::worksheet ws(wb_);
-
-        const xlnt::worksheet& const_ws = ws;
-        TS_ASSERT_EQUALS(const_ws.has_cell(xlnt::cell_reference("A", 1)), false);
-
-        ws.get_cell("C10").set_value("value");
-        TS_ASSERT_EQUALS(const_ws.has_cell(xlnt::cell_reference("C", 9)), false);
-        TS_ASSERT_EQUALS(const_ws.has_cell(xlnt::cell_reference("C", 10)), true);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
+        TS_ASSERT_THROWS(ws.get_cell(xlnt::cell_reference((xlnt::column_t::index_t)0, 0)), xlnt::value_error);
     }
     
     void test_worksheet_dimension()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         
         TS_ASSERT_EQUALS("A1:A1", ws.calculate_dimension());
         ws.get_cell("B12").set_value("AAA");
@@ -45,7 +43,8 @@ public:
     
     void test_squared_range()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         
         const std::vector<std::vector<std::string>> expected =
         {
@@ -72,13 +71,14 @@ public:
         }
     }
     
-    void test_iter_rows_1()
+    void test_fill_rows()
     {
         std::size_t row = 0;
         std::size_t column = 0;
         std::string coordinate = "A1";
         
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         
         ws.get_cell("A1").set_value("first");
         ws.get_cell("C9").set_value("last");
@@ -93,9 +93,10 @@ public:
         TS_ASSERT_EQUALS(ws.rows()[row][column].get_reference(), coordinate);
     }
     
-    void test_iter_rows_2()
+    void test_iter_rows()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         
         const std::vector<std::vector<std::string>> expected =
         {
@@ -124,7 +125,8 @@ public:
     
     void test_iter_rows_offset()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         auto rows = ws.rows("A1:C4", 1, 3);
         
         const std::vector<std::vector<std::string>> expected =
@@ -153,8 +155,9 @@ public:
     
     void test_get_named_range()
     {
-        xlnt::worksheet ws(wb_);
-        wb_.create_named_range("test_range", ws, "C5");
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
+        wb.create_named_range("test_range", ws, "C5");
         auto xlrange = ws.get_named_range("test_range");
         TS_ASSERT_EQUALS(1, xlrange.length());
         TS_ASSERT_EQUALS(1, xlrange[0].num_cells());
@@ -163,29 +166,35 @@ public:
     
     void test_get_bad_named_range()
     {
-        xlnt::worksheet ws(wb_);
-        TS_ASSERT_THROWS(ws.get_named_range("bad_range"), xlnt::named_range_exception);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
+        TS_ASSERT_THROWS(ws.get_named_range("bad_range"), xlnt::key_error);
     }
     
     void test_get_named_range_wrong_sheet()
     {
-        xlnt::worksheet ws1(wb_);
-        xlnt::worksheet ws2(wb_);
-        wb_.create_named_range("wrong_sheet_range", ws1, "C5");
+        xlnt::workbook wb;
+        auto ws1 = wb.create_sheet("Sheet1");
+        auto ws2 = wb.create_sheet("Sheet2");
+        wb.create_named_range("wrong_sheet_range", ws1, "C5");
         TS_ASSERT_THROWS(ws2.get_named_range("wrong_sheet_range"), xlnt::named_range_exception);
     }
     
     void test_cell_alternate_coordinates()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         auto cell = ws.get_cell(xlnt::cell_reference(4, 8));
-        TS_ASSERT_EQUALS("D8", cell.get_reference().to_string());
+        TS_ASSERT_EQUALS(cell.get_reference(), "D8");
     }
+    
+    // void test_cell_insufficient_coordinates() {}
     
     void test_cell_range_name()
     {
-        xlnt::worksheet ws(wb_);
-        wb_.create_named_range("test_range_single", ws, "B12");
+        xlnt::workbook wb;
+        auto ws = wb.get_active_sheet();
+        wb.create_named_range("test_range_single", ws, "B12");
         auto c_range_name = ws.get_named_range("test_range_single");
         auto c_range_coord = ws.get_range("B12");
         auto c_cell = ws.get_cell("B12");
@@ -193,54 +202,10 @@ public:
         TS_ASSERT(c_range_coord[0][0] == c_cell);
     }
     
-    void test_garbage_collect()
-    {
-        xlnt::worksheet ws(wb_);
-        
-        ws.get_cell("A1");
-        ws.get_cell("B2").set_value("0");
-        ws.get_cell("C4").set_value(0);
-        xlnt::comment(ws.get_cell("D1"), "Comment", "Comment");
-        
-        ws.garbage_collect();
-        
-        std::set<xlnt::cell> cells;
-        
-        for(auto row : ws)
-        {
-            for(auto cell : row)
-            {
-                if(!cell.garbage_collectible()) cells.insert(cell);
-            }
-        }
-        
-        std::set<xlnt::cell> expected = {ws.get_cell("B2"), ws.get_cell("C4"), ws.get_cell("D1")};
-        
-        // Set difference
-        std::set<xlnt::cell> difference;
-        
-        for(auto a : expected)
-        {
-            if(cells.find(a) == cells.end())
-            {
-                difference.insert(a);
-            }
-        }
-        
-        for(auto a : cells)
-        {
-            if(expected.find(a) == expected.end())
-            {
-                difference.insert(a);
-            }
-        }
-        
-        TS_ASSERT(difference.empty());
-    }
-    
     void test_hyperlink_value()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         ws.get_cell("A1").set_hyperlink("http://test.com");
         TS_ASSERT_EQUALS("http://test.com", ws.get_cell("A1").get_value<std::string>());
         ws.get_cell("A1").set_value("test");
@@ -248,28 +213,18 @@ public:
         TS_ASSERT_EQUALS(ws.get_cell("A1").get_hyperlink().get_target_uri(), "http://test.com");
     }
     
-    void test_hyperlink_relationships()
-    {
-        xlnt::worksheet ws(wb_);
-        TS_ASSERT_EQUALS(ws.get_relationships().size(), 0);
-        
-        ws.get_cell("A1").set_hyperlink("http://test.com");
-        TS_ASSERT_EQUALS(ws.get_relationships().size(), 1);
-        
-        ws.get_cell("A2").set_hyperlink("http://test2.com");
-        TS_ASSERT_EQUALS(ws.get_relationships().size(), 2);
-    }
-    
     void test_append()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         ws.append(std::vector<std::string> {"value"});
         TS_ASSERT_EQUALS("value", ws.get_cell("A1").get_value<std::string>());
     }
     
     void test_append_list()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         
         ws.append(std::vector<std::string> {"This is A1", "This is B1"});
         
@@ -279,7 +234,8 @@ public:
     
     void test_append_dict_letter()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         
         const std::unordered_map<std::string, std::string> dict_letter =
         {
@@ -295,7 +251,8 @@ public:
     
     void test_append_dict_index()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         
         const std::unordered_map<int, std::string> dict_index =
         {
@@ -309,14 +266,9 @@ public:
         TS_ASSERT_EQUALS("This is C1", ws.get_cell("C1").get_value<std::string>());
     }
     
-    void _test_bad_append()
-    {
-    }
+    // void test_bad_append() {}
     
-    void _test_append_range()
-    {
-
-    }
+    // void test_append_range() {}
     
     void test_append_iterator()
     {
@@ -327,7 +279,8 @@ public:
             range.push_back(i);
         }
         
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         ws.append(range.begin(), range.end());
         
         TS_ASSERT_EQUALS(ws[xlnt::cell_reference("AD1")].get_value<int>(), 29);
@@ -335,7 +288,8 @@ public:
     
     void test_append_2d_list()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         
         ws.append(std::vector<std::string> {"This is A1", "This is B1"});
         ws.append(std::vector<std::string> {"This is A2", "This is B2"});
@@ -348,25 +302,25 @@ public:
         TS_ASSERT_EQUALS(vals[1][1].get_value<std::string>(), "This is B2");
     }
     
-    void _test_append_cell()
-    {
+    // void test_append_cell()
+    // {
         // Right now, a cell cannot be created without a parent worksheet.
         // This should be possible by instantiating a cell_impl, but the
         // memory management is complicated.
-        /*
-        xlnt::worksheet ws(wb_);
-        xlnt::cell cell;
-        cell.set_value(25);
+        // xlnt::workbook wb;
+        // xlnt::worksheet ws(wb);
+        // xlnt::cell cell;
+        // cell.set_value(25);
         
-        ws.append({ cell });
+        // ws.append({ cell });
         
-        TS_ASSERT_EQUALS(cell.get_value<int>(), 25);
-         */
-    }
+        // TS_ASSERT_EQUALS(cell.get_value<int>(), 25);
+    // }
     
     void test_rows()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         
         ws.get_cell("A1").set_value("first");
         ws.get_cell("C9").set_value("last");
@@ -383,17 +337,42 @@ public:
         TS_ASSERT_EQUALS(last_row[2].get_value<std::string>(), "last");
     }
     
+    void test_no_rows()
+    {
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
+        
+        TS_ASSERT_EQUALS(ws.rows().length(), 1);
+        TS_ASSERT_EQUALS(ws.rows()[0].length(), 1);
+    }
+    
     void test_no_cols()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         
         TS_ASSERT_EQUALS(ws.columns().length(), 1);
         TS_ASSERT_EQUALS(ws.columns()[0].length(), 1);
     }
     
+    void test_one_cell()
+    {
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
+        
+        auto cell = ws.get_cell("A1");
+        
+        TS_ASSERT_EQUALS(ws.columns().length(), 1);
+        TS_ASSERT_EQUALS(ws.columns()[0].length(), 1);
+        TS_ASSERT_EQUALS(ws.columns()[0][0], cell);
+    }
+    
+    // void test_by_col() {}
+    
     void test_cols()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         
         ws.get_cell("A1").set_value("first");
         ws.get_cell("C9").set_value("last");
@@ -408,7 +387,8 @@ public:
     
     void test_auto_filter()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         
         ws.auto_filter(ws.get_range("a1:f1"));
         TS_ASSERT_EQUALS(ws.get_auto_filter(), "A1:F1");
@@ -422,22 +402,27 @@ public:
     
     void test_getitem()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         xlnt::cell cell = ws[xlnt::cell_reference("A1")];
         TS_ASSERT_EQUALS(cell.get_reference().to_string(), "A1");
         TS_ASSERT_EQUALS(cell.get_data_type(), xlnt::cell::type::null);
     }
     
+    // void test_getitem_invalid() {}
+    
     void test_setitem()
     {
-        xlnt::worksheet ws(wb_);
-        ws[xlnt::cell_reference("A1")].set_value(5);
-        TS_ASSERT(ws[xlnt::cell_reference("A1")].get_value<int>() == 5);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
+        ws[xlnt::cell_reference("A12")].set_value(5);
+        TS_ASSERT(ws[xlnt::cell_reference("A12")].get_value<int>() == 5);
     }
     
     void test_getslice()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         auto cell_range = ws("A1", "B2");
         TS_ASSERT_EQUALS(cell_range[0][0], ws.get_cell("A1"));
         TS_ASSERT_EQUALS(cell_range[1][0], ws.get_cell("A2"));
@@ -445,9 +430,13 @@ public:
         TS_ASSERT_EQUALS(cell_range[1][1], ws.get_cell("B2"));
     }
     
+    // void test_get_column() {}
+    // void test_get_row() {}
+    
     void test_freeze()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         
         ws.freeze_panes(ws.get_cell("b2"));
         TS_ASSERT_EQUALS(ws.get_frozen_panes(), "B2");
@@ -464,7 +453,8 @@ public:
     
     void test_merged_cells_lookup()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         ws.merge_cells("A1:N50");
         auto all_merged = ws.get_merged_ranges();
         TS_ASSERT_EQUALS(all_merged.size(), 1);
@@ -478,13 +468,15 @@ public:
     
     void test_merged_cell_ranges()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         TS_ASSERT_EQUALS(ws.get_merged_ranges().size(), 0);
     }
     
     void test_merge_range_string()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         ws.get_cell("A1").set_value(1);
         ws.get_cell("D4").set_value(16);
         ws.merge_cells("A1:D4");
@@ -495,7 +487,8 @@ public:
     
     void test_merge_coordinate()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         ws.merge_cells(1, 1, 4, 4);
         std::vector<xlnt::range_reference> expected = { xlnt::range_reference("A1:D4") };
         TS_ASSERT_EQUALS(ws.get_merged_ranges(), expected);
@@ -503,7 +496,8 @@ public:
     
     void test_unmerge_range_string()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         ws.merge_cells("A1:D4");
         TS_ASSERT_EQUALS(ws.get_merged_ranges().size(), 1);
         ws.unmerge_cells("A1:D4");
@@ -512,59 +506,133 @@ public:
     
     void test_unmerge_coordinate()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         ws.merge_cells("A1:D4");
         TS_ASSERT_EQUALS(ws.get_merged_ranges().size(), 1);
         ws.unmerge_cells(1, 1, 4, 4);
         TS_ASSERT_EQUALS(ws.get_merged_ranges().size(), 0);
     }
     
-    void test_print_titles()
+    void test_print_titles_old()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        
+        {
+            wb.clear();
+            auto ws = wb.create_sheet();
+            ws.add_print_title(3);
+            TS_ASSERT_EQUALS(ws.get_print_titles(), "Sheet!1:3");
+        }
+        
+        {
+            wb.clear();
+            auto ws = wb.create_sheet();
+            ws.add_print_title(4, "cols");
+            TS_ASSERT_EQUALS(ws.get_print_titles(), "Sheet!A:D");
+        }
     }
     
-    void test_positioning_point()
+    void test_print_titles_new()
     {
-        xlnt::worksheet ws(wb_);
-        TS_ASSERT_EQUALS(ws.get_point_pos(150, 40), "C3");
+        xlnt::workbook wb;
+        
+        {
+            wb.clear();
+            auto ws = wb.create_sheet();
+            ws.set_print_title_rows("1:4");
+            TS_ASSERT_EQUALS(ws.get_print_titles(), "Sheet!1:4");
+        }
+        
+        {
+            wb.clear();
+            auto ws = wb.create_sheet();
+            ws.set_print_title_cols("A:F");
+            TS_ASSERT_EQUALS(ws.get_print_titles(), "Sheet!A:F");
+        }
+
+        {
+            wb.clear();
+            auto ws = wb.create_sheet();
+            ws.set_print_title_rows("1:2");
+            ws.set_print_title_cols("C:D");
+            TS_ASSERT_EQUALS(ws.get_print_titles(), "Sheet!1:2,Sheet!C:D");
+        }
     }
     
-    void test_positioning_roundtrip()
+    void test_print_area()
     {
-        xlnt::worksheet ws(wb_);
-        TS_ASSERT_EQUALS(ws.get_point_pos(ws.get_cell("A1").get_anchor()), xlnt::cell_reference("A1"));
-        TS_ASSERT_EQUALS(ws.get_point_pos(ws.get_cell("D52").get_anchor()), xlnt::cell_reference("D52"));
-        TS_ASSERT_EQUALS(ws.get_point_pos(ws.get_cell("X11").get_anchor()), xlnt::cell_reference("X11"));
+        xlnt::workbook wb;
+        auto ws = wb.get_active_sheet();
+        ws.set_print_area("A1:F5");
+        TS_ASSERT_EQUALS(ws.get_print_area(), "$A$1:$F$5");
     }
     
     void test_freeze_panes_horiz()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         ws.freeze_panes("A4");
+        
+        auto view = ws.get_sheet_view();
+        TS_ASSERT_EQUALS(view.get_selections().size(), 1);
+        TS_ASSERT_EQUALS(view.get_selections()[0].get_active_cell(), "A1");
+        TS_ASSERT_EQUALS(view.get_selections()[0].get_pane(), xlnt::pane_corner::bottom_left);
+        TS_ASSERT_EQUALS(view.get_selections()[0].get_sqref(), "A1");
+        TS_ASSERT_EQUALS(view.get_pane().active_pane, xlnt::pane_corner::bottom_left);
+        TS_ASSERT_EQUALS(view.get_pane().state, xlnt::pane_state::frozen);
+        TS_ASSERT_EQUALS(view.get_pane().top_left_cell, "A4");
+        TS_ASSERT_EQUALS(view.get_pane().y_split, 3);
     }
     
     void test_freeze_panes_vert()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         ws.freeze_panes("D1");
+        
+        auto view = ws.get_sheet_view();
+        TS_ASSERT_EQUALS(view.get_selections().size(), 1);
+        TS_ASSERT_EQUALS(view.get_selections()[0].get_active_cell(), "A1");
+        TS_ASSERT_EQUALS(view.get_selections()[0].get_pane(), xlnt::pane_corner::top_right);
+        TS_ASSERT_EQUALS(view.get_selections()[0].get_sqref(), "A1");
+        TS_ASSERT_EQUALS(view.get_pane().active_pane, xlnt::pane_corner::top_right);
+        TS_ASSERT_EQUALS(view.get_pane().state, xlnt::pane_state::frozen);
+        TS_ASSERT_EQUALS(view.get_pane().top_left_cell, "D1");
+        TS_ASSERT_EQUALS(view.get_pane().x_split, 3);
     }
     
     void test_freeze_panes_both()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         ws.freeze_panes("D4");
+        
+        auto view = ws.get_sheet_view();
+        TS_ASSERT_EQUALS(view.get_selections().size(), 3);
+        TS_ASSERT_EQUALS(view.get_selections()[0].get_pane(), xlnt::pane_corner::top_right);
+        TS_ASSERT_EQUALS(view.get_selections()[1].get_pane(), xlnt::pane_corner::bottom_left);
+        TS_ASSERT_EQUALS(view.get_selections()[2].get_active_cell(), "A1");
+        TS_ASSERT_EQUALS(view.get_selections()[2].get_pane(), xlnt::pane_corner::bottom_right);
+        TS_ASSERT_EQUALS(view.get_selections()[2].get_sqref(), "A1");
+        TS_ASSERT_EQUALS(view.get_pane().active_pane, xlnt::pane_corner::bottom_right);
+        TS_ASSERT_EQUALS(view.get_pane().state, xlnt::pane_state::frozen);
+        TS_ASSERT_EQUALS(view.get_pane().top_left_cell, "D4");
+        TS_ASSERT_EQUALS(view.get_pane().x_split, 3);
+        TS_ASSERT_EQUALS(view.get_pane().y_split, 3);
     }
     
     void test_min_column()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         TS_ASSERT_EQUALS(ws.get_lowest_column(), 1);
     }
     
     void test_max_column()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         ws[xlnt::cell_reference("F1")].set_value(10);
         ws[xlnt::cell_reference("F2")].set_value(32);
         ws[xlnt::cell_reference("F3")].set_formula("=F1+F2");
@@ -574,414 +642,19 @@ public:
 
     void test_min_row()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         TS_ASSERT_EQUALS(ws.get_lowest_row(), 1);
     }
     
     void test_max_row()
     {
-        xlnt::worksheet ws(wb_);
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
         ws.append();
         ws.append(std::vector<int> { 5 });
         ws.append();
         ws.append(std::vector<int> { 4 });
         TS_ASSERT_EQUALS(ws.get_highest_row(), 4);
     }
-    
-    // end 2.4 synchronized tests
-    
-    void test_new_sheet_name()
-    {
-        xlnt::worksheet ws = wb_.create_sheet("TestName");
-        TS_ASSERT_EQUALS(ws.to_string(), "<Worksheet \"TestName\">");
-    }
-
-    void test_set_bad_title()
-    {
-        std::string title(50, 'X');
-        TS_ASSERT_THROWS(wb_.create_sheet(title), xlnt::sheet_title_exception);
-    }
-    
-    void test_increment_title()
-    {
-    	auto ws1 = wb_.create_sheet("Test");
-    	TS_ASSERT_EQUALS(ws1.get_title(), "Test");
-    	auto ws2 = wb_.create_sheet("Test");
-    	TS_ASSERT_EQUALS(ws2.get_title(), "Test1");
-    }
-
-    void test_set_bad_title_character()
-    {
-        TS_ASSERT_THROWS(wb_.create_sheet("["), xlnt::sheet_title_exception);
-        TS_ASSERT_THROWS(wb_.create_sheet("]"), xlnt::sheet_title_exception);
-        TS_ASSERT_THROWS(wb_.create_sheet("*"), xlnt::sheet_title_exception);
-        TS_ASSERT_THROWS(wb_.create_sheet(":"), xlnt::sheet_title_exception);
-        TS_ASSERT_THROWS(wb_.create_sheet("?"), xlnt::sheet_title_exception);
-        TS_ASSERT_THROWS(wb_.create_sheet("/"), xlnt::sheet_title_exception);
-        TS_ASSERT_THROWS(wb_.create_sheet("\\"), xlnt::sheet_title_exception);
-    }
-    
-    void test_unique_sheet_title()
-    {
-        auto ws = wb_.create_sheet("AGE");
-        TS_ASSERT_EQUALS(ws.unique_sheet_name("GE"), "GE");
-    }
-
-
-    void test_worksheet_range()
-    {
-        xlnt::worksheet ws(wb_);
-        auto xlrange = ws.get_range("A1:C4");
-        TS_ASSERT_EQUALS(4, xlrange.length());
-        TS_ASSERT_EQUALS(3, xlrange[0].num_cells());
-    }
-
-    void test_cell_offset()
-    {
-        xlnt::worksheet ws(wb_);
-        TS_ASSERT_EQUALS("C17", ws.get_cell(xlnt::cell_reference("B15").make_offset(1, 2)).get_reference().to_string());
-    }
-
-    void test_range_offset()
-    {
-        xlnt::worksheet ws(wb_);
-        auto xlrange = ws.get_range(xlnt::range_reference("A1:C4").make_offset(3, 1));
-        TS_ASSERT_EQUALS(4, xlrange.length());
-        TS_ASSERT_EQUALS(3, xlrange[0].num_cells());
-        TS_ASSERT_EQUALS("D2", xlrange[0][0].get_reference().to_string());
-    }
-
-    void test_bad_relationship_type()
-    {
-        xlnt::relationship rel("bad");
-    }
-
-    void test_write_empty()
-    {
-        xlnt::worksheet ws(wb_);
-        
-        xlnt::worksheet_serializer serializer(ws);
-        auto observed = serializer.write_worksheet();
-
-        auto expected_string =
-        "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
-        "  <sheetPr>"
-        "    <outlinePr summaryRight=\"1\" summaryBelow=\"1\"/>"
-        "  </sheetPr>"
-        "  <dimension ref=\"A1:A1\"/>"
-        "  <sheetViews>"
-        "    <sheetView workbookViewId=\"0\">"
-        "      <selection sqref=\"A1\" activeCell=\"A1\"/>"
-        "    </sheetView>"
-        "  </sheetViews>"
-        "  <sheetFormatPr baseColWidth=\"10\" defaultRowHeight=\"15\"/>"
-        "  <sheetData/>"
-        "  <pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\"/>"
-        "</worksheet>";
-
-        xlnt::xml_document expected;
-        expected.from_string(expected_string);
-
-        TS_ASSERT(Helper::compare_xml(expected, observed));
-    }
-    
-    void test_page_margins()
-    {
-        xlnt::worksheet ws(wb_);
-
-        ws.get_page_margins().set_left(2);
-        ws.get_page_margins().set_right(2);
-        ws.get_page_margins().set_top(2);
-        ws.get_page_margins().set_bottom(2);
-        ws.get_page_margins().set_header(1.5);
-        ws.get_page_margins().set_footer(1.5);
-        
-        xlnt::worksheet_serializer serializer(ws);
-        auto observed = serializer.write_worksheet();
-
-        auto expected_string = 
-        "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
-        "  <sheetPr>"
-        "    <outlinePr summaryRight=\"1\" summaryBelow=\"1\"/>"
-        "  </sheetPr>"
-        "  <dimension ref=\"A1:A1\"/>"
-        "  <sheetViews>"
-        "    <sheetView workbookViewId=\"0\">"
-        "      <selection sqref=\"A1\" activeCell=\"A1\"/>"
-        "    </sheetView>"
-        "  </sheetViews>"
-        "  <sheetFormatPr baseColWidth=\"10\" defaultRowHeight=\"15\"/>"
-        "  <sheetData/>"
-        "  <pageMargins left=\"2\" right=\"2\" top=\"2\" bottom=\"2\" header=\"1.5\" footer=\"1.5\"/>"
-        "</worksheet>";
-
-        xlnt::xml_document expected;
-        expected.from_string(expected_string);
-        
-        TS_ASSERT(Helper::compare_xml(expected, observed));
-    }
-   
-    void test_merge()
-    {
-        xlnt::workbook clean_wb; // for shared strings
-        xlnt::worksheet ws(clean_wb);
-        
-        auto expected_string1 = 
-        "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
-        "  <sheetPr>"
-        "    <outlinePr summaryRight=\"1\" summaryBelow=\"1\"/>"
-        "  </sheetPr>"
-        "  <dimension ref=\"A1:B1\"/>"
-        "  <sheetViews>"
-        "    <sheetView workbookViewId=\"0\">"
-        "      <selection sqref=\"A1\" activeCell=\"A1\"/>"
-        "    </sheetView>"
-        "  </sheetViews>"
-        "  <sheetFormatPr baseColWidth=\"10\" defaultRowHeight=\"15\"/>"
-        "  <sheetData>"
-        "    <row r=\"1\" spans=\"1:2\">"
-        "      <c r=\"A1\" t=\"s\">"
-        "        <v>0</v>"
-        "      </c>"
-        "      <c r=\"B1\" t=\"s\">"
-        "        <v>1</v>"
-        "      </c>"
-        "    </row>"
-        "  </sheetData>"
-        "  <pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\"/>"
-        "</worksheet>";
-
-        ws.get_cell("A1").set_value("Cell A1");
-        ws.get_cell("B1").set_value("Cell B1");
-
-        {
-            xlnt::worksheet_serializer serializer(ws);
-            auto observed = serializer.write_worksheet();
-
-            xlnt::xml_document expected;
-            expected.from_string(expected_string1);
-            
-            TS_ASSERT(Helper::compare_xml(expected, observed));
-        }
-
-        ws.merge_cells("A1:B1");
-
-        auto expected_string2 = 
-        "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
-        "  <sheetPr>"
-        "    <outlinePr summaryRight=\"1\" summaryBelow=\"1\"/>"
-        "  </sheetPr>"
-        "  <dimension ref=\"A1:B1\"/>"
-        "  <sheetViews>"
-        "    <sheetView workbookViewId=\"0\">"
-        "      <selection sqref=\"A1\" activeCell=\"A1\"/>"
-        "    </sheetView>"
-        "  </sheetViews>"
-        "  <sheetFormatPr baseColWidth=\"10\" defaultRowHeight=\"15\"/>"
-        "  <sheetData>"
-        "    <row r=\"1\" spans=\"1:2\">"
-        "      <c r=\"A1\" t=\"s\">"
-        "        <v>0</v>"
-        "      </c>"
-        "      <c r=\"B1\" t=\"s\"/>"
-        "    </row>"
-        "  </sheetData>"
-        " <mergeCells count=\"1\">"
-        "    <mergeCell ref=\"A1:B1\"/>"
-        "  </mergeCells>"
-        "  <pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\"/>"
-        "</worksheet>";
-
-        {
-            xlnt::worksheet_serializer serializer(ws);
-            auto observed = serializer.write_worksheet();
-
-            xlnt::xml_document expected;
-            expected.from_string(expected_string2);
-            
-            TS_ASSERT(Helper::compare_xml(expected, observed));
-        }
-
-        ws.unmerge_cells("A1:B1");
-
-        auto expected_string3 = 
-        "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
-        "  <sheetPr>"
-        "    <outlinePr summaryRight=\"1\" summaryBelow=\"1\"/>"
-        "  </sheetPr>"
-        "  <dimension ref=\"A1:B1\"/>"
-        "  <sheetViews>"
-        "    <sheetView workbookViewId=\"0\">"
-        "      <selection sqref=\"A1\" activeCell=\"A1\"/>"
-        "    </sheetView>"
-        "  </sheetViews>"
-        "  <sheetFormatPr baseColWidth=\"10\" defaultRowHeight=\"15\"/>"
-        "  <sheetData>"
-        "    <row r=\"1\" spans=\"1:2\">"
-        "      <c r=\"A1\" t=\"s\">"
-        "        <v>0</v>"
-        "      </c>"
-        "      <c r=\"B1\" t=\"s\"/>"
-        "    </row>"
-        "  </sheetData>"
-        "  <pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\"/>"
-        "</worksheet>";
-
-        {
-            xlnt::worksheet_serializer serializer(ws);
-            auto observed = serializer.write_worksheet();
-            
-            xlnt::xml_document expected;
-            expected.from_string(expected_string3);
-            
-            TS_ASSERT(Helper::compare_xml(expected, observed));
-        }
-    }
-
-    void test_printer_settings()
-    {
-        xlnt::worksheet ws(wb_);
-
-        ws.get_page_setup().set_orientation(xlnt::orientation::landscape);
-        ws.get_page_setup().set_paper_size(xlnt::paper_size::tabloid);
-        ws.get_page_setup().set_fit_to_page(true);
-        ws.get_page_setup().set_fit_to_height(false);
-        ws.get_page_setup().set_fit_to_width(true);
-        ws.get_page_setup().set_horizontal_centered(true);
-        ws.get_page_setup().set_vertical_centered(true);
-
-        xlnt::worksheet_serializer serializer(ws);
-        auto observed = serializer.write_worksheet();
-
-        auto expected_string =
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-        "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
-        "   <sheetPr>"
-        "      <outlinePr summaryRight=\"1\" summaryBelow=\"1\" />"
-        "      <pageSetUpPr fitToPage=\"1\" />"
-        "   </sheetPr>"
-        "   <dimension ref=\"A1:A1\" />"
-        "   <sheetViews>"
-        "      <sheetView workbookViewId=\"0\">"
-        "         <selection sqref=\"A1\" activeCell=\"A1\" />"
-        "      </sheetView>"
-        "   </sheetViews>"
-        "   <sheetFormatPr baseColWidth=\"10\" defaultRowHeight=\"15\" />"
-        "   <sheetData />"
-        "   <printOptions horizontalCentered=\"1\" verticalCentered=\"1\" />"
-        "   <pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" />"
-        "   <pageSetup orientation=\"landscape\" paperSize=\"3\" fitToHeight=\"0\" fitToWidth=\"1\" />"
-        "</worksheet>";
-        
-        xlnt::xml_document expected;
-        expected.from_string(expected_string);
-        
-        TS_ASSERT(Helper::compare_xml(expected, observed));
-    }
-    
-    void test_header_footer()
-    {
-    	auto ws = wb_.create_sheet();
-    	ws.get_header_footer().get_left_header().set_text("Left Header Text");
-        ws.get_header_footer().get_center_header().set_text("Center Header Text");
-        ws.get_header_footer().get_center_header().set_font_name("Arial,Regular");
-        ws.get_header_footer().get_center_header().set_font_size(6);
-        ws.get_header_footer().get_center_header().set_font_color("445566");
-        ws.get_header_footer().get_right_header().set_text("Right Header Text");
-        ws.get_header_footer().get_right_header().set_font_name("Arial,Bold");
-        ws.get_header_footer().get_right_header().set_font_size(8);
-        ws.get_header_footer().get_right_header().set_font_color("112233");
-        ws.get_header_footer().get_left_footer().set_text("Left Footer Text\nAnd &[Date] and &[Time]");
-        ws.get_header_footer().get_left_footer().set_font_name("Times New Roman,Regular");
-        ws.get_header_footer().get_left_footer().set_font_size(10);
-        ws.get_header_footer().get_left_footer().set_font_color("445566");
-        ws.get_header_footer().get_center_footer().set_text("Center Footer Text &[Path]&[File] on &[Tab]");
-        ws.get_header_footer().get_center_footer().set_font_name("Times New Roman,Bold");
-        ws.get_header_footer().get_center_footer().set_font_size(12);
-        ws.get_header_footer().get_center_footer().set_font_color("778899");
-        ws.get_header_footer().get_right_footer().set_text("Right Footer Text &[Page] of &[Pages]");
-        ws.get_header_footer().get_right_footer().set_font_name("Times New Roman,Italic");
-        ws.get_header_footer().get_right_footer().set_font_size(14);
-        ws.get_header_footer().get_right_footer().set_font_color("AABBCC");
-        
-        std::string expected_xml_string =
-        "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
-        "  <sheetPr>"
-        "    <outlinePr summaryRight=\"1\" summaryBelow=\"1\"/>"
-        "  </sheetPr>"
-        "  <dimension ref=\"A1:A1\"/>"
-        "  <sheetViews>"
-        "    <sheetView workbookViewId=\"0\">"
-        "      <selection sqref=\"A1\" activeCell=\"A1\"/>"
-        "    </sheetView>"
-        "  </sheetViews>"
-        "  <sheetFormatPr baseColWidth=\"10\" defaultRowHeight=\"15\"/>"
-        "  <sheetData/>"
-        "  <pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\"/>"
-        "  <headerFooter>"
-        "    <oddHeader>&amp;L&amp;\"Calibri,Regular\"&amp;K000000Left Header Text&amp;C&amp;\"Arial,Regular\"&amp;6&amp;K445566Center Header Text&amp;R&amp;\"Arial,Bold\"&amp;8&amp;K112233Right Header Text</oddHeader>"
-        "    <oddFooter>&amp;L&amp;\"Times New Roman,Regular\"&amp;10&amp;K445566Left Footer Text_x000D_And &amp;D and &amp;T&amp;C&amp;\"Times New Roman,Bold\"&amp;12&amp;K778899Center Footer Text &amp;Z&amp;F on &amp;A&amp;R&amp;\"Times New Roman,Italic\"&amp;14&amp;KAABBCCRight Footer Text &amp;P of &amp;N</oddFooter>"
-        "  </headerFooter>"
-        "</worksheet>";
-        
-        {
-            xlnt::worksheet_serializer serializer(ws);
-            auto observed = serializer.write_worksheet();
-            
-            xlnt::xml_document expected;
-            expected.from_string(expected_xml_string);
-            
-            TS_ASSERT(Helper::compare_xml(expected, observed));
-        }
-        
-        ws = wb_.create_sheet();
-        
-        expected_xml_string =
-        "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
-        "  <sheetPr>"
-        "    <outlinePr summaryRight=\"1\" summaryBelow=\"1\"/>"
-        "  </sheetPr>"
-        "  <dimension ref=\"A1:A1\"/>"
-        "  <sheetViews>"
-        "    <sheetView workbookViewId=\"0\">"
-        "      <selection sqref=\"A1\" activeCell=\"A1\"/>"
-        "    </sheetView>"
-        "  </sheetViews>"
-        "  <sheetFormatPr baseColWidth=\"10\" defaultRowHeight=\"15\"/>"
-        "  <sheetData/>"
-        "  <pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\"/>"
-        "</worksheet>";
-        
-        {
-            xlnt::worksheet_serializer serializer(ws);
-            auto observed = serializer.write_worksheet();
-            
-            xlnt::xml_document expected;
-            expected.from_string(expected_xml_string);
-            
-            TS_ASSERT(Helper::compare_xml(expected, observed));
-        }
-    }
-    
-    void test_page_setup()
-    {
-    	xlnt::page_setup p;
-    	TS_ASSERT_EQUALS(p.get_scale(), 1);
-    	p.set_scale(2);
-    	TS_ASSERT_EQUALS(p.get_scale(), 2);
-    }
-    
-    void test_page_options()
-    {
-    	xlnt::page_setup p;
-    	TS_ASSERT(!p.get_horizontal_centered());
-        TS_ASSERT(!p.get_vertical_centered());
-    	p.set_horizontal_centered(true);
-    	p.set_vertical_centered(true);
-        TS_ASSERT(p.get_horizontal_centered());
-        TS_ASSERT(p.get_vertical_centered());
-    }
-
-private:
-    xlnt::workbook wb_;
 };

@@ -23,6 +23,9 @@
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/cell/cell_reference.hpp>
+#include <xlnt/worksheet/pane.hpp>
+#include <xlnt/worksheet/range_reference.hpp>
 
 namespace xlnt {
 
@@ -31,6 +34,16 @@ namespace xlnt {
 /// </summary>
 class XLNT_CLASS selection
 {
+public:
+    cell_reference get_active_cell() const { return active_cell_; }
+    range_reference get_sqref() const { return sqref_; }
+    pane_corner get_pane() const { return pane_; }
+    void set_pane(pane_corner corner) { pane_ = corner; }
+    
+private:
+    cell_reference active_cell_;
+    range_reference sqref_;
+    pane_corner pane_;
 };
 
 } // namespace xlnt

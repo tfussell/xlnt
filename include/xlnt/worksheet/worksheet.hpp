@@ -34,6 +34,7 @@
 #include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/page_margins.hpp>
 #include <xlnt/worksheet/page_setup.hpp>
+#include <xlnt/worksheet/sheet_view.hpp>
 
 namespace xlnt {
 
@@ -218,6 +219,17 @@ public:
     const_iterator cend() const;
 
     range iter_cells(bool skip_null);
+    
+    void add_print_title(int i);
+    void add_print_title(int i, const std::string &rows_or_cols);
+    void set_print_title_rows(const std::string &rows);
+    void set_print_title_cols(const std::string &rows);
+    std::string get_print_titles() const;
+    
+    void set_print_area(const std::string &print_area);
+    range_reference get_print_area() const;
+    
+    sheet_view get_sheet_view() const;
 
 private:
     friend class workbook;

@@ -216,22 +216,59 @@ void worksheet::set_title(const std::string &title)
 
 cell_reference worksheet::get_frozen_panes() const
 {
-    return d_->freeze_panes_;
+    return d_->view_.get_pane().top_left_cell;
 }
 
 void worksheet::freeze_panes(xlnt::cell top_left_cell)
 {
-    d_->freeze_panes_ = top_left_cell.get_reference();
+    freeze_panes(top_left_cell.get_reference().to_string());
 }
 
 void worksheet::freeze_panes(const std::string &top_left_coordinate)
 {
-    d_->freeze_panes_ = cell_reference(top_left_coordinate);
+    auto ref = cell_reference(top_left_coordinate);
+    d_->view_.get_pane().top_left_cell = ref;
+    d_->view_.get_pane().state = pane_state::frozen;
+    
+    d_->view_.get_selections().clear();
+    d_->view_.get_selections().push_back(selection());
+    
+    if (ref.get_column_index() == 1
+        && ref.get_row() == 1)
+    {
+        d_->view_.get_selections().back().set_pane(pane_corner::top_left);
+        d_->view_.get_pane().active_pane = pane_corner::top_left;
+        d_->view_.get_pane().state = pane_state::normal;
+    }
+    else if (ref.get_column_index() == 1)
+    {
+        d_->view_.get_selections().back().set_pane(pane_corner::bottom_left);
+        d_->view_.get_pane().active_pane = pane_corner::bottom_left;
+        d_->view_.get_pane().y_split = ref.get_row() - 1;
+    }
+    else if (ref.get_row() == 1)
+    {
+        d_->view_.get_selections().back().set_pane(pane_corner::top_right);
+        d_->view_.get_pane().active_pane = pane_corner::top_right;
+        d_->view_.get_pane().x_split = ref.get_column_index().index - 1;
+    }
+    else
+    {
+        d_->view_.get_selections().push_back(selection());
+        d_->view_.get_selections().push_back(selection());
+        d_->view_.get_selections()[0].set_pane(pane_corner::top_right);
+        d_->view_.get_selections()[1].set_pane(pane_corner::bottom_left);
+        d_->view_.get_selections()[2].set_pane(pane_corner::bottom_right);
+        d_->view_.get_pane().active_pane = pane_corner::bottom_right;
+        d_->view_.get_pane().x_split = ref.get_column_index().index - 1;
+        d_->view_.get_pane().y_split = ref.get_row() - 1;
+    }
 }
 
 void worksheet::unfreeze_panes()
 {
-    d_->freeze_panes_ = cell_reference("A1");
+    d_->view_.get_pane().top_left_cell = cell_reference("A1");
+    d_->view_.get_pane().state = pane_state::normal;
 }
 
 cell worksheet::get_cell(const cell_reference &reference)
@@ -276,6 +313,11 @@ bool worksheet::has_row_properties(row_t row) const
 
 range worksheet::get_named_range(const std::string &name)
 {
+    if (!get_parent().has_named_range(name))
+    {
+        throw key_error();
+    }
+    
     if (!has_named_range(name))
     {
         throw named_range_exception();
@@ -623,7 +665,7 @@ bool worksheet::compare(const worksheet &other, bool reference) const
     
     if(d_->auto_filter_ == other.d_->auto_filter_
         && d_->comment_count_ == other.d_->comment_count_
-        && d_->freeze_panes_ == other.d_->freeze_panes_
+        && d_->view_.get_pane().top_left_cell == other.d_->view_.get_pane().top_left_cell
         && d_->merged_cells_ == other.d_->merged_cells_
         && d_->relationships_ == other.d_->relationships_)
     {
@@ -888,6 +930,64 @@ worksheet::const_iterator worksheet::end() const
 range worksheet::iter_cells(bool skip_null)
 {
     return range(*this, calculate_dimension(), major_order::row, skip_null);
+}
+
+void worksheet::add_print_title(int i)
+{
+    add_print_title(i, "rows");
+}
+
+void worksheet::add_print_title(int i, const std::string &rows_or_cols)
+{
+    if(rows_or_cols == "cols")
+    {
+        set_print_title_cols("A:" + column_t::column_string_from_index(i));
+    }
+    else
+    {
+        set_print_title_rows("1:" + std::to_string(i));
+    }
+}
+
+void worksheet::set_print_title_rows(const std::string &rows)
+{
+    d_->print_title_rows_ = rows;
+}
+
+void worksheet::set_print_title_cols(const std::string &cols)
+{
+    d_->print_title_cols_ = cols;
+}
+
+std::string worksheet::get_print_titles() const
+{
+    if (!d_->print_title_rows_.empty() && !d_->print_title_cols_.empty())
+    {
+        return d_->title_ + "!" + d_->print_title_rows_ + "," + d_->title_ + "!" + d_->print_title_cols_;
+    }
+    else if (!d_->print_title_cols_.empty())
+    {
+        return d_->title_ + "!" + d_->print_title_cols_;
+    }
+    else
+    {
+        return d_->title_ + "!" + d_->print_title_rows_;
+    }
+}
+
+void worksheet::set_print_area(const std::string &print_area)
+{
+    d_->print_area_ = range_reference::make_absolute(range_reference(print_area));
+}
+
+range_reference worksheet::get_print_area() const
+{
+    return d_->print_area_;
+}
+
+sheet_view worksheet::get_sheet_view() const
+{
+    return d_->view_;
 }
 
 } // namespace xlnt

@@ -24,6 +24,8 @@
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/worksheet/pane.hpp>
+#include <xlnt/worksheet/selection.hpp>
 
 namespace xlnt {
 
@@ -33,6 +35,15 @@ namespace xlnt {
 /// </summary>
 class XLNT_CLASS sheet_view
 {
+public:
+    pane &get_pane() { return pane_; }
+    const pane &get_pane() const { return pane_; }
+    std::vector<selection> &get_selections() { return selections_; }
+    const std::vector<selection> &get_selections() const { return selections_; }
+    
+private:
+    pane pane_;
+    std::vector<selection> selections_;
 };
 
 } // namespace xlnt

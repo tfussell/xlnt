@@ -24,14 +24,41 @@
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/cell/cell_reference.hpp>
 
 namespace xlnt {
+
+/// <summary>
+///
+/// </summary>
+enum class XLNT_CLASS pane_state
+{
+    frozen,
+    normal
+};
+
+/// <summary>
+///
+/// </summary>
+enum class XLNT_CLASS pane_corner
+{
+    top_left,
+    top_right,
+    bottom_left,
+    bottom_right
+};
 
 /// <summary>
 /// A fixed portion of a worksheet.
 /// </summary>
 class XLNT_CLASS pane
 {
+public:
+    cell_reference top_left_cell;
+    pane_state state;
+    pane_corner active_pane;
+    int y_split;
+    int x_split;
 };
 
 } // namespace xlnt

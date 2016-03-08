@@ -69,7 +69,12 @@ cell_reference::cell_reference(const std::string &column, row_t row)
 cell_reference::cell_reference(column_t column_index, row_t row)
     : column_(column_index), row_(row), absolute_row_(false), absolute_column_(false)
 {
-    if (row_ == 0 || !(row_ <= constants::MaxRow()) || column_ == 0 || !(column_ <= constants::MaxColumn()))
+    if (row_ == 0 || column_ == 0)
+    {
+        throw value_error();
+    }
+    
+    if (!(row_ <= constants::MaxRow()) || !(column_ <= constants::MaxColumn()))
     {
         throw cell_coordinates_exception(column_, row_);
     }
