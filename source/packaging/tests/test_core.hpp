@@ -3,13 +3,14 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
+#include <xlnt/packaging/app_properties.hpp>
 #include <xlnt/serialization/workbook_serializer.hpp>
 #include <xlnt/serialization/xml_document.hpp>
 
 #include <helpers/path_helper.hpp>
 #include <helpers/helper.hpp>
 
-class test_props : public CxxTest::TestSuite
+class test_core : public CxxTest::TestSuite
 {
 public:
     void test_read_properties_core()
@@ -86,6 +87,8 @@ public:
     void test_write_properties_app()
     {
         xlnt::workbook wb;
+        wb.get_app_properties().application = "Microsoft Excel";
+        wb.get_app_properties().app_version = "12.0000";
         wb.create_sheet();
         wb.create_sheet();
         xlnt::workbook_serializer serializer(wb);

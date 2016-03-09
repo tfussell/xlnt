@@ -40,6 +40,7 @@ struct workbook_impl
           drawings_(other.drawings_),
           shared_strings_(other.shared_strings_),
           properties_(other.properties_),
+          app_properties_(other.app_properties_),
           guess_types_(other.guess_types_),
           data_only_(other.data_only_),
           read_only_(other.read_only_),
@@ -68,6 +69,7 @@ struct workbook_impl
         shared_strings_.clear();
         std::copy(other.shared_strings_.begin(), other.shared_strings_.end(), std::back_inserter(shared_strings_));
         properties_ = other.properties_;
+        app_properties_ = other.app_properties_;
         guess_types_ = other.guess_types_;
         data_only_ = other.data_only_;
         read_only_ = other.read_only_;
@@ -90,6 +92,7 @@ struct workbook_impl
     std::vector<std::string> shared_strings_;
 
     document_properties properties_;
+    app_properties app_properties_;
 
     bool guess_types_;
     bool data_only_;

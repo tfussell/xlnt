@@ -34,6 +34,24 @@
 
 namespace {
 
+bool equals_case_insensitive(const std::string &left, const std::string &right)
+{
+    if (left.size() != right.size())
+    {
+        return false;
+    }
+
+    for (std::size_t i = 0; i < left.size(); i++)
+    {
+        if (std::tolower(left[i]) != std::tolower(right[i]))
+        {
+            return false;
+        }
+    }
+    
+    return true;
+}
+
 bool is_true(const std::string &bool_string)
 {
     return bool_string == "1";
@@ -41,11 +59,11 @@ bool is_true(const std::string &bool_string)
 
 xlnt::protection::type protection_type_from_string(const std::string &type_string)
 {
-    if (type_string == "true")
+    if (equals_case_insensitive(type_string, "true"))
     {
         return xlnt::protection::type::protected_;
     }
-    else if (type_string == "inherit")
+    else if (equals_case_insensitive(type_string, "inherit"))
     {
         return xlnt::protection::type::inherit;
     }
@@ -55,23 +73,23 @@ xlnt::protection::type protection_type_from_string(const std::string &type_strin
 
 xlnt::font::underline_style underline_style_from_string(const std::string &underline_string)
 {
-    if (underline_string == "none")
+    if (equals_case_insensitive(underline_string, "none"))
     {
         return xlnt::font::underline_style::none;
     }
-    else if (underline_string == "single")
+    else if (equals_case_insensitive(underline_string, "single"))
     {
         return xlnt::font::underline_style::single;
     }
-    else if (underline_string == "single-accounting")
+    else if (equals_case_insensitive(underline_string, "single-accounting"))
     {
         return xlnt::font::underline_style::single_accounting;
     }
-    else if (underline_string == "double")
+    else if (equals_case_insensitive(underline_string, "double"))
     {
         return xlnt::font::underline_style::double_;
     }
-    else if (underline_string == "double-accounting")
+    else if (equals_case_insensitive(underline_string, "double-accounting"))
     {
         return xlnt::font::underline_style::double_accounting;
     }
@@ -81,73 +99,75 @@ xlnt::font::underline_style underline_style_from_string(const std::string &under
 
 xlnt::fill::pattern_type pattern_fill_type_from_string(const std::string &fill_type)
 {
-    if (fill_type == "none") return xlnt::fill::pattern_type::none;
-    if (fill_type == "solid") return xlnt::fill::pattern_type::solid;
-    if (fill_type == "gray125") return xlnt::fill::pattern_type::gray125;
+    if (equals_case_insensitive(fill_type, "none")) return xlnt::fill::pattern_type::none;
+    if (equals_case_insensitive(fill_type, "solid")) return xlnt::fill::pattern_type::solid;
+    if (equals_case_insensitive(fill_type, "gray125")) return xlnt::fill::pattern_type::gray125;
     return xlnt::fill::pattern_type::none;
 };
 
 xlnt::border_style border_style_from_string(const std::string &border_style_string)
 {
-    if (border_style_string == "none")
+    if (equals_case_insensitive(border_style_string, "none"))
     {
         return xlnt::border_style::none;
     }
-    else if (border_style_string == "dashdot")
+    else if (equals_case_insensitive(border_style_string, "dashdot"))
     {
         return xlnt::border_style::dashdot;
     }
-    else if (border_style_string == "dashdotdot")
+    else if (equals_case_insensitive(border_style_string, "dashdotdot"))
     {
         return xlnt::border_style::dashdotdot;
     }
-    else if (border_style_string == "dashed")
+    else if (equals_case_insensitive(border_style_string, "dashed"))
     {
         return xlnt::border_style::dashed;
     }
-    else if (border_style_string == "dotted")
+    else if (equals_case_insensitive(border_style_string, "dotted"))
     {
         return xlnt::border_style::dotted;
     }
-    else if (border_style_string == "double")
+    else if (equals_case_insensitive(border_style_string, "double"))
     {
         return xlnt::border_style::double_;
     }
-    else if (border_style_string == "hair")
+    else if (equals_case_insensitive(border_style_string, "hair"))
     {
         return xlnt::border_style::hair;
     }
-    else if (border_style_string == "medium")
+    else if (equals_case_insensitive(border_style_string, "medium"))
     {
         return xlnt::border_style::medium;
     }
-    else if (border_style_string == "mediumdashdot")
+    else if (equals_case_insensitive(border_style_string, "mediumdashdot"))
     {
         return xlnt::border_style::mediumdashdot;
     }
-    else if (border_style_string == "mediumdashdotdot")
+    else if (equals_case_insensitive(border_style_string, "mediumdashdotdot"))
     {
         return xlnt::border_style::mediumdashdotdot;
     }
-    else if (border_style_string == "mediumdashed")
+    else if (equals_case_insensitive(border_style_string, "mediumdashed"))
     {
         return xlnt::border_style::mediumdashed;
     }
-    else if (border_style_string == "slantdashdot")
+    else if (equals_case_insensitive(border_style_string, "slantdashdot"))
     {
         return xlnt::border_style::slantdashdot;
     }
-    else if (border_style_string == "thick")
+    else if (equals_case_insensitive(border_style_string, "thick"))
     {
         return xlnt::border_style::thick;
     }
-    else if (border_style_string == "thin")
+    else if (equals_case_insensitive(border_style_string, "thin"))
     {
         return xlnt::border_style::thin;
     }
     else
     {
-        throw std::runtime_error("unknown border style");
+        std::string message = "unknown border style: ";
+        message.append(border_style_string);
+        throw std::runtime_error(border_style_string);
     }
 }
 
@@ -696,6 +716,9 @@ xml_document style_serializer::write_stylesheet() const
                 case color::type::indexed:
                     fg_color_node.add_attribute("indexed", std::to_string(fill_.get_foreground_color()->get_index()));
                     break;
+                case color::type::rgb:
+                    fg_color_node.add_attribute("rgb", fill_.get_foreground_color()->get_rgb_string());
+                    break;
                 default:
                     throw std::runtime_error("bad type");
                 }
@@ -715,6 +738,9 @@ xml_document style_serializer::write_stylesheet() const
                     break;
                 case color::type::indexed:
                     bg_color_node.add_attribute("indexed", std::to_string(fill_.get_background_color()->get_index()));
+                    break;
+                case color::type::rgb:
+                    bg_color_node.add_attribute("rgb", fill_.get_background_color()->get_rgb_string());
                     break;
                 default:
                     throw std::runtime_error("bad type");
@@ -845,6 +871,10 @@ xml_document style_serializer::write_stylesheet() const
                     else if (current_side->get_color()->get_type() == color::type::theme)
                     {
                         color_node.add_attribute("theme", std::to_string(current_side->get_color()->get_theme()));
+                    }
+                    else if (current_side->get_color()->get_type() == color::type::rgb)
+                    {
+                        color_node.add_attribute("rgb", current_side->get_color()->get_rgb_string());
                     }
                     else
                     {

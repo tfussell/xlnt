@@ -94,6 +94,14 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
         workbook_serializer_.read_properties_core(core_properties_xml);
     }
     
+    if(archive.has_file(xlnt::constants::ArcApp()))
+    {
+        xlnt::workbook_serializer workbook_serializer_(wb);
+		xlnt::xml_document app_properties_xml;
+		app_properties_xml.from_string(archive.read(xlnt::constants::ArcApp()));
+        workbook_serializer_.read_properties_app(app_properties_xml);
+    }
+
     xlnt::relationship_serializer relationship_serializer_(archive);
     auto workbook_relationships = relationship_serializer_.read_relationships(xlnt::constants::ArcWorkbook());
 

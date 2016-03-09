@@ -28,6 +28,7 @@
 #include <sstream>
 
 #include <xlnt/drawing/drawing.hpp>
+#include <xlnt/packaging/app_properties.hpp>
 #include <xlnt/packaging/document_properties.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/packaging/relationship.hpp>
@@ -498,6 +499,17 @@ const document_properties &workbook::get_properties() const
 {
     return d_->properties_;
 }
+
+app_properties &workbook::get_app_properties()
+{
+    return d_->app_properties_;
+}
+
+const app_properties &workbook::get_app_properties() const
+{
+    return d_->app_properties_;
+}
+
 
 void swap(workbook &left, workbook &right)
 {

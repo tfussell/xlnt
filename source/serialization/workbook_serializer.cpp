@@ -23,6 +23,7 @@
 // @author: see AUTHORS file
 #include <algorithm>
 
+#include <xlnt/packaging/app_properties.hpp>
 #include <xlnt/packaging/document_properties.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/packaging/relationship.hpp>
@@ -110,6 +111,52 @@ void workbook_serializer::read_properties_core(const xml_document &xml)
     }
 }
 
+void workbook_serializer::read_properties_app(const xml_document &xml)
+{
+    auto &props = workbook_.get_app_properties();
+    auto root_node = xml.get_child("Properties");
+
+    if(root_node.has_child("Application"))
+    {
+        props.application = root_node.get_child("Application").get_text();
+    }
+
+    if(root_node.has_child("DocSecurity"))
+    {
+        props.doc_security = std::stoi(root_node.get_child("DocSecurity").get_text());
+    }
+
+    if(root_node.has_child("ScaleCrop"))
+    {
+        props.scale_crop = root_node.get_child("ScaleCrop").get_text() == "true";
+    }
+
+    if(root_node.has_child("Company"))
+    {
+        props.company = root_node.get_child("Company").get_text();
+    }
+
+    if(root_node.has_child("ScaleCrop"))
+    {
+        props.links_up_to_date = root_node.get_child("ScaleCrop").get_text() == "true";
+    }
+
+    if(root_node.has_child("SharedDoc"))
+    {
+        props.shared_doc = root_node.get_child("SharedDoc").get_text() == "true";
+    }
+
+    if(root_node.has_child("HyperlinksChanged"))
+    {
+        props.hyperlinks_changed = root_node.get_child("HyperlinksChanged").get_text() == "true";
+    }
+
+    if(root_node.has_child("AppVersion"))
+    {
+        props.app_version = root_node.get_child("AppVersion").get_text();
+    }
+}
+
 xml_document workbook_serializer::write_properties_core() const
 {
     auto &props = workbook_.get_properties();
@@ -147,16 +194,27 @@ xml_document workbook_serializer::write_properties_app() const
 
     xml.add_namespace("", "http://schemas.openxmlformats.org/officeDocument/2006/extended-properties");
     xml.add_namespace("vt", "http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes");
+    
+    auto &properties = workbook_.get_app_properties();
 
-    root_node.add_child("Application").set_text("Microsoft Excel");
-    root_node.add_child("DocSecurity").set_text("0");
-    root_node.add_child("ScaleCrop").set_text("false");
-    root_node.add_child("Company");
-    root_node.add_child("LinksUpToDate").set_text("false");
-    root_node.add_child("SharedDoc").set_text("false");
-    root_node.add_child("HyperlinksChanged").set_text("false");
-    root_node.add_child("AppVersion").set_text("12.0000");
+    root_node.add_child("Application").set_text(properties.application);
+    root_node.add_child("DocSecurity").set_text(std::to_string(properties.doc_security));
+    root_node.add_child("ScaleCrop").set_text(properties.scale_crop ? "true" : "false");
+    
+    auto company_node = root_node.add_child("Company");
+    
+    if (!properties.company.empty())
+    {
+        company_node.set_text(properties.company);
+    }
+    
+    root_node.add_child("LinksUpToDate").set_text(properties.links_up_to_date ? "true" : "false");
+    root_node.add_child("SharedDoc").set_text(properties.shared_doc ? "true" : "false");
+    root_node.add_child("HyperlinksChanged").set_text(properties.hyperlinks_changed ? "true" : "false");
+    root_node.add_child("AppVersion").set_text(properties.app_version);
 
+    // TODO what is this stuff?
+    
     auto heading_pairs_node = root_node.add_child("HeadingPairs");
     auto heading_pairs_vector_node = heading_pairs_node.add_child("vt:vector");
     heading_pairs_vector_node.add_attribute("baseType", "variant");

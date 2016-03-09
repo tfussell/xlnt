@@ -35,6 +35,7 @@
 namespace xlnt {
 
 class alignment;
+class app_properties;
 class border;
 class color;
 class const_worksheet_iterator;
@@ -135,6 +136,9 @@ public:
 
     document_properties &get_properties();
     const document_properties &get_properties() const;
+
+    app_properties &get_app_properties();
+    const app_properties &get_app_properties() const;
 
     // named ranges
     std::vector<named_range> get_named_ranges() const;
