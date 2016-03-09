@@ -28,7 +28,7 @@ public:
     {
         xlnt::workbook wb;
         xlnt::worksheet ws(wb);
-        TS_ASSERT_THROWS(ws.get_cell(xlnt::cell_reference((xlnt::column_t::index_t)0, 0)), xlnt::value_error);
+        TS_ASSERT_THROWS(xlnt::cell_reference invalid(xlnt::column_t((xlnt::column_t::index_t)0), 0), xlnt::value_error);
     }
     
     void test_worksheet_dimension()
