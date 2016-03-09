@@ -174,8 +174,10 @@ public:
     void test_get_named_range_wrong_sheet()
     {
         xlnt::workbook wb;
-        auto ws1 = wb.create_sheet("Sheet1");
-        auto ws2 = wb.create_sheet("Sheet2");
+        wb.create_sheet();
+        wb.create_sheet();
+        auto ws1 = wb[0];
+        auto ws2 = wb[1];
         wb.create_named_range("wrong_sheet_range", ws1, "C5");
         TS_ASSERT_THROWS(ws2.get_named_range("wrong_sheet_range"), xlnt::named_range_exception);
     }
