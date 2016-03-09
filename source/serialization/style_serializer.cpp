@@ -21,6 +21,8 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+#include <locale>
+
 #include <xlnt/serialization/style_serializer.hpp>
 #include <xlnt/serialization/xml_document.hpp>
 #include <xlnt/serialization/xml_node.hpp>
