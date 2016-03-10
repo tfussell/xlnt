@@ -829,10 +829,10 @@ bool workbook::get_quote_prefix(std::size_t format_id) const
 }
 
 //TODO: this is terrible!
-std::size_t workbook::set_number_format(const xlnt::number_format &nf, std::size_t style_id)
+std::size_t workbook::set_number_format(const xlnt::number_format &nf, std::size_t format_id)
 {
     auto match = std::find(d_->number_formats_.begin(), d_->number_formats_.end(), nf);
-    std::size_t format_id = 0;
+    std::size_t number_format_id = 0;
 
     if (match == d_->number_formats_.end())
     {
@@ -843,11 +843,11 @@ std::size_t workbook::set_number_format(const xlnt::number_format &nf, std::size
             d_->number_formats_.back().set_id(d_->next_custom_format_id_++);
         }
 
-        format_id = d_->number_formats_.back().get_id();
+		number_format_id = d_->number_formats_.back().get_id();
     }
     else
     {
-        format_id = match->get_id();
+		number_format_id = match->get_id();
     }
 
     if (d_->cell_formats_.empty())
@@ -858,7 +858,7 @@ std::size_t workbook::set_number_format(const xlnt::number_format &nf, std::size
         new_format.border_id_ = 0;
         new_format.fill_id_ = 0;
         new_format.font_id_ = 0;
-        new_format.number_format_id_ = format_id;
+        new_format.number_format_id_ = number_format_id;
         new_format.number_format_apply_ = true;
 
         if (d_->borders_.empty())
@@ -882,19 +882,19 @@ std::size_t workbook::set_number_format(const xlnt::number_format &nf, std::size
     }
 
     // If the style is unchanged, just return it.
-    auto existing_style = d_->cell_formats_[format_id];
-    existing_style.number_format_apply_ = true;
+    auto existing_format = d_->cell_formats_[format_id];
+    existing_format.number_format_apply_ = true;
 
-    if (format_id == existing_style.number_format_id_)
+    if (number_format_id == existing_format.number_format_id_)
     {
         // no change
-        return style_id;
+        return format_id;
     }
 
     // Make a new style with this format.
-    auto new_format = existing_style;
+    auto new_format = existing_format;
 
-    new_format.number_format_id_ = format_id;
+    new_format.number_format_id_ = number_format_id;
     new_format.number_format_ = nf;
 
     // Check if the new style is already applied to a different cell. If so, reuse it.
