@@ -95,15 +95,18 @@ void workbook_serializer::read_properties_core(const xml_document &xml)
     {
         props.creator = root_node.get_child("dc:creator").get_text();
     }
+    
     if (root_node.has_child("cp:lastModifiedBy"))
     {
         props.last_modified_by = root_node.get_child("cp:lastModifiedBy").get_text();
     }
+    
     if (root_node.has_child("dcterms:created"))
     {
         std::string created_string = root_node.get_child("dcterms:created").get_text();
         props.created = w3cdtf_to_datetime(created_string);
     }
+    
     if (root_node.has_child("dcterms:modified"))
     {
         std::string modified_string = root_node.get_child("dcterms:modified").get_text();

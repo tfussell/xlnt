@@ -31,7 +31,7 @@
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/serialization/encoding.hpp>
 #include <xlnt/styles/color.hpp>
-#include <xlnt/styles/style.hpp>
+#include <xlnt/styles/format.hpp>
 #include <xlnt/utils/date.hpp>
 #include <xlnt/utils/datetime.hpp>
 #include <xlnt/utils/time.hpp>
@@ -596,7 +596,7 @@ const font &cell::get_font() const
 {
     if (d_->has_style_)
     {
-        auto font_id = get_parent().get_parent().get_styles()[d_->style_id_].get_font_id();
+        auto font_id = get_parent().get_parent().get_cell_formats()[d_->style_id_].get_font_id();
         return get_parent().get_parent().get_font(font_id);
     }
     else

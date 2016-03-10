@@ -43,6 +43,7 @@ class document_properties;
 class drawing;
 class fill;
 class font;
+class format;
 class manifest;
 class named_range;
 class number_format;
@@ -182,6 +183,8 @@ public:
     void add_number_format(const number_format &format);
     void add_protection(const protection &p);
 
+    const std::vector<format> &get_cell_style_formats() const;
+    const std::vector<format> &get_cell_formats() const;
     const std::vector<style> &get_styles() const;
 
     const std::vector<color> &get_colors() const;
@@ -213,6 +216,12 @@ public:
     bool has_loaded_theme() const;
     const theme &get_loaded_theme() const;
 
+    const format &get_cell_style_format(std::size_t format_id) const;
+    std::size_t add_cell_style_format(const format &format_);
+    
+    const format &get_cell_format(std::size_t format_id) const;
+    std::size_t add_cell_format(const format &format_);
+    
     const style &get_style(std::size_t style_id) const;
     std::size_t add_style(const style &style_);
 
@@ -224,6 +233,9 @@ public:
     void add_shared_string(const std::string &shared);
     std::vector<std::string> &get_shared_strings();
     const std::vector<std::string> &get_shared_strings() const;
+    
+    void set_thumbnail(const std::vector<std::uint8_t> &thumbnail);
+    const std::vector<std::uint8_t> &get_thumbnail() const;
 
 private:
     friend class worksheet;

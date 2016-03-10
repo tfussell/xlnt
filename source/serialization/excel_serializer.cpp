@@ -162,6 +162,12 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
         worksheet_serializer.read_worksheet(worksheet_xml);
     }
 
+    if (archive.has_file("docProps/thumbnail.jpeg"))
+    {
+        auto thumbnail_data = archive.read("docProps/thumbnail.jpeg");
+        wb.set_thumbnail(std::vector<std::uint8_t>(thumbnail_data.begin(), thumbnail_data.end()));
+    }
+
     return true;
 }
 
@@ -251,6 +257,12 @@ void excel_serializer::write_data(bool /*as_template*/)
     archive_.writestr(constants::ArcContentTypes(), manifest_serializer_.write_manifest().to_string());
 
     write_worksheets();
+    
+    if(!workbook_.get_thumbnail().empty())
+    {
+        const auto &thumbnail = workbook_.get_thumbnail();
+        archive_.writestr("docProps/thumbnail.jpeg", std::string(thumbnail.begin(), thumbnail.end()));
+    }
 }
 
 void excel_serializer::write_worksheets()

@@ -38,6 +38,7 @@ class color;
 class conditional_format;
 class fill;
 class font;
+class format;
 class named_style;
 class number_format;
 class protection;
@@ -219,6 +220,16 @@ public:
     /// </summary>
     bool read_number_formats(const xml_node &number_formats_node);
 
+    /// <summary>
+    /// Read a single format from the given node. In styles.xml, this is an "xf" element.
+    /// A format has an optional border id, fill id, font id, and number format id where
+    /// each id is an index in the corresponding list of borders, etc. A style also has
+    /// optional alignment and protection children. A style also defines whether each of
+    /// these is "applied". For example, a style with a defined font id, font=# but with
+    /// "applyFont=0" will not use the font in formatting.
+    /// </summary>
+    format read_format(const xml_node &format_node);
+    
     /// <summary>
     /// Read a single style from the given node. In styles.xml, this is an "xf" element.
     /// A style has an optional border id, fill id, font id, and number format id where

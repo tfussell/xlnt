@@ -98,6 +98,8 @@ struct workbook_impl
     bool data_only_;
     bool read_only_;
 
+    std::vector<format> cell_style_formats_;
+    std::vector<format> cell_formats_;
     std::vector<style> styles_;
 
     std::size_t next_custom_format_id_;
@@ -113,6 +115,8 @@ struct workbook_impl
     theme theme_;
 
     encoding encoding_;
+    
+    std::vector<std::uint8_t> thumbnail_;
 };
 
 } // namespace detail

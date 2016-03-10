@@ -21,10 +21,6 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#include <xlnt/cell/cell.hpp>
-#include <xlnt/styles/font.hpp>
-#include <xlnt/styles/number_format.hpp>
-#include <xlnt/styles/protection.hpp>
 #include <xlnt/styles/style.hpp>
 
 namespace {
@@ -39,199 +35,74 @@ void hash_combine(std::size_t &seed, const T &v)
 
 namespace xlnt {
 
-const color color::black()
-{
-    return color(color::type::rgb, "ff000000");
-}
-
-const color color::white()
-{
-    return color(color::type::rgb, "ffffffff");
-}
-
-style::style()
-    : id_(0),
-      alignment_apply_(false),
-      border_apply_(false),
-      border_id_(0),
-      fill_apply_(false),
-      fill_id_(0),
-      font_apply_(false),
-      font_id_(0),
-      number_format_apply_(false),
-      number_format_id_(0),
-      protection_apply_(false),
-      pivot_button_(false),
-      quote_prefix_(false)
-{
-}
-
-style::style(const style &other)
-    : id_(other.id_),
-      alignment_apply_(other.alignment_apply_),
-      alignment_(other.alignment_),
-      border_apply_(other.border_apply_),
-      border_id_(other.border_id_),
-      border_(other.border_),
-      fill_apply_(other.fill_apply_),
-      fill_id_(other.fill_id_),
-      fill_(other.fill_),
-      font_apply_(other.font_apply_),
-      font_id_(other.font_id_),
-      font_(other.font_),
-      number_format_apply_(other.number_format_apply_),
-      number_format_id_(other.number_format_id_),
-      number_format_(other.number_format_),
-      protection_apply_(other.protection_apply_),
-      protection_(other.protection_),
-      pivot_button_(other.pivot_button_),
-      quote_prefix_(other.quote_prefix_)
-{
-}
-
-style &style::operator=(const style &other)
-{
-    id_ = other.id_;
-    alignment_ = other.alignment_;
-    alignment_apply_ = other.alignment_apply_;
-    border_ = other.border_;
-    border_apply_ = other.border_apply_;
-    border_id_ = other.border_id_;
-    fill_ = other.fill_;
-    fill_apply_ = other.fill_apply_;
-    fill_id_ = other.fill_id_;
-    font_ = other.font_;
-    font_apply_ = other.font_apply_;
-    font_id_ = other.font_id_;
-    number_format_ = other.number_format_;
-    number_format_apply_ = other.number_format_apply_;
-    number_format_id_ = other.number_format_id_;
-    protection_ = other.protection_;
-    protection_apply_ = other.protection_apply_;
-    pivot_button_ = other.pivot_button_;
-    quote_prefix_ = other.quote_prefix_;
-
-    return *this;
-}
-
 std::string style::to_hash_string() const
 {
     std::string hash_string("style");
     
-    hash_string.append(std::to_string(alignment_apply_));
-    hash_string.append(alignment_apply_ ? std::to_string(alignment_.hash()) : " ");
-
-    hash_string.append(std::to_string(border_apply_));
-    hash_string.append(border_apply_ ? std::to_string(border_id_) : " ");
-
-    hash_string.append(std::to_string(font_apply_));
-    hash_string.append(font_apply_ ? std::to_string(font_id_) : " ");
-
-    hash_string.append(std::to_string(fill_apply_));
-    hash_string.append(fill_apply_ ? std::to_string(fill_id_) : " ");
-
-    hash_string.append(std::to_string(number_format_apply_));
-    hash_string.append(number_format_apply_ ? std::to_string(number_format_id_) : " ");
-
-    hash_string.append(std::to_string(protection_apply_));
-    hash_string.append(protection_apply_ ? std::to_string(protection_.hash()) : " ");
+    hash_string.append(name_);
+    hash_string.append(std::to_string(format_id_));
+    hash_string.append(std::to_string(builtin_id_));
+    hash_string.append(std::to_string(hidden_ ? 0 : 1));
 
     return hash_string;
 }
 
-const number_format style::get_number_format() const
+style::style() : name_("style"), format_id_(0), builtin_id_(0), hidden_(false)
 {
-    return number_format_;
 }
 
-const border style::get_border() const
+style::style(const style &other) : name_(other.name_), format_id_(other.format_id_), builtin_id_(other.builtin_id_), hidden_(other.hidden_)
 {
-    return border_;
 }
 
-const alignment style::get_alignment() const
+style &style::operator=(const xlnt::style &other)
 {
-    return alignment_;
+    name_ = other.name_;
+    builtin_id_ = other.builtin_id_;
+    format_id_ = other.format_id_;
+    hidden_ = other.hidden_;
+    
+    return *this;
 }
 
-const fill style::get_fill() const
+std::string style::get_name() const
 {
-    return fill_;
+    return name_;
 }
 
-const font style::get_font() const
+void style::set_name(const std::string &name)
 {
-    return font_;
+    name_ = name;
 }
 
-const protection style::get_protection() const
+std::size_t style::get_format_id() const
 {
-    return protection_;
+    return format_id_;
 }
 
-bool style::pivot_button() const
+void style::set_format_id(std::size_t format_id)
 {
-    return pivot_button_;
+    format_id_ = format_id;
 }
 
-bool style::quote_prefix() const
+std::size_t style::get_builtin_id() const
 {
-    return quote_prefix_;
+    return builtin_id_;
 }
 
-std::size_t style::get_id() const
+void style::set_builtin_id(std::size_t builtin_id)
 {
-    return id_;
+    builtin_id_ = builtin_id;
 }
 
-std::size_t style::get_fill_id() const
+void style::set_hidden(bool hidden)
 {
-    return fill_id_;
+    hidden_ = hidden;
 }
 
-std::size_t style::get_font_id() const
+bool style::get_hidden() const
 {
-    return font_id_;
-}
-
-std::size_t style::get_border_id() const
-{
-    return border_id_;
-}
-
-std::size_t style::get_number_format_id() const
-{
-    return number_format_id_;
-}
-
-void style::apply_alignment(bool apply)
-{
-    alignment_apply_ = apply;
-}
-
-void style::apply_border(bool apply)
-{
-    border_apply_ = apply;
-}
-
-void style::apply_fill(bool apply)
-{
-    fill_apply_ = apply;
-}
-
-void style::apply_font(bool apply)
-{
-    font_apply_ = apply;
-}
-
-void style::apply_number_format(bool apply)
-{
-    number_format_apply_ = apply;
-}
-
-void style::apply_protection(bool apply)
-{
-    protection_apply_ = apply;
+    return hidden_;
 }
 
 } // namespace xlnt

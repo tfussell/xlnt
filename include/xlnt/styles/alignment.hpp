@@ -32,7 +32,7 @@
 namespace xlnt {
 
 /// <summary>
-/// Alignment options for use in styles.
+/// Alignment options for use in cell formats.
 /// </summary>
 class XLNT_CLASS alignment : public hashable
 {
@@ -52,6 +52,10 @@ public:
     vertical_alignment get_vertical() const;
 
     void set_vertical(vertical_alignment vertical);
+    
+    void set_shrink_to_fit(bool shrink_to_fit);
+    
+    bool get_shrink_to_fit() const;
 
 protected:
     std::string to_hash_string() const override;

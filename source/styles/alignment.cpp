@@ -31,6 +31,16 @@ bool alignment::get_wrap_text() const
     return wrap_text_;
 }
 
+void alignment::set_shrink_to_fit(bool shrink_to_fit)
+{
+    shrink_to_fit_ = shrink_to_fit;
+}
+
+bool alignment::get_shrink_to_fit() const
+{
+    return shrink_to_fit_;
+}
+
 void alignment::set_wrap_text(bool wrap_text)
 {
     wrap_text_ = wrap_text;

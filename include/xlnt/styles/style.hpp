@@ -24,12 +24,7 @@
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/styles/alignment.hpp>
-#include <xlnt/styles/border.hpp>
-#include <xlnt/styles/fill.hpp>
-#include <xlnt/styles/font.hpp>
-#include <xlnt/styles/number_format.hpp>
-#include <xlnt/styles/protection.hpp>
+#include <xlnt/utils/hashable.hpp>
 
 namespace xlnt {
 
@@ -46,62 +41,29 @@ public:
     style &operator=(const style &other);
 
     std::size_t hash() const;
-
-    const alignment get_alignment() const;
-    const border get_border() const;
-    const fill get_fill() const;
-    const font get_font() const;
-    const number_format get_number_format() const;
-    const protection get_protection() const;
-    bool pivot_button() const;
-    bool quote_prefix() const;
-
-    std::size_t get_id() const;
-    std::size_t get_fill_id() const;
-    std::size_t get_font_id() const;
-    std::size_t get_border_id() const;
-    std::size_t get_number_format_id() const;
-
-    void apply_alignment(bool apply);
-    void apply_border(bool apply);
-    void apply_fill(bool apply);
-    void apply_font(bool apply);
-    void apply_number_format(bool apply);
-    void apply_protection(bool apply);
-
+    
+    std::string get_name() const;
+    void set_name(const std::string &name);
+    
+    std::size_t get_format_id() const;
+    void set_format_id(std::size_t format_id);
+    
+    std::size_t get_builtin_id() const;
+    void set_builtin_id(std::size_t builtin_id);
+    
+    void set_hidden(bool hidden);
+    bool get_hidden() const;
+    
 protected:
     std::string to_hash_string() const override;
-
+    
 private:
-    friend class style_serializer;
     friend class workbook;
-
     std::size_t id_;
-
-    bool alignment_apply_;
-    alignment alignment_;
-
-    bool border_apply_;
-    std::size_t border_id_;
-    border border_;
-
-    bool fill_apply_;
-    std::size_t fill_id_;
-    fill fill_;
-
-    bool font_apply_;
-    std::size_t font_id_;
-    font font_;
-
-    bool number_format_apply_;
-    std::size_t number_format_id_;
-    number_format number_format_;
-
-    bool protection_apply_;
-    protection protection_;
-
-    bool pivot_button_;
-    bool quote_prefix_;
+    std::string name_;
+    std::size_t format_id_;
+    std::size_t builtin_id_;
+    bool hidden_;
 };
 
 } // namespace xlnt
