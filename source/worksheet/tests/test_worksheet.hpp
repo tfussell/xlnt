@@ -9,13 +9,6 @@
 class test_worksheet : public CxxTest::TestSuite
 {
 public:
-    void test_roundtrip()
-    {
-        xlnt::workbook wb;
-        wb.load("/Users/thomas/Development/xlnt/tests/data/complex-styles.xlsx");
-        wb.save("/Users/thomas/Desktop/comparison_temp/out.zip");
-    }
-    
     void test_new_worksheet()
     {
         xlnt::workbook wb;
