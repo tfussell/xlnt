@@ -123,6 +123,11 @@ void fill::set_gradient_type(gradient_type t)
     gradient_type_ = t;
 }
 
+void fill::set_foreground_color(const color &c)
+{
+    foreground_color_ = c;
+}
+
 std::experimental::optional<color> &fill::get_foreground_color()
 {
     return foreground_color_;

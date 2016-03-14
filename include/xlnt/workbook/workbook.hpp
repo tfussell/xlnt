@@ -37,6 +37,7 @@ namespace xlnt {
 class alignment;
 class app_properties;
 class border;
+class format;
 class color;
 class const_worksheet_iterator;
 class document_properties;
@@ -195,6 +196,8 @@ public:
 
     color add_indexed_color(const color &rgb_color);
     color get_indexed_color(const color &indexed_color) const;
+    
+    format &add_default_cell_format();
 
     const number_format &get_number_format(std::size_t style_id) const;
     std::size_t set_number_format(const number_format &format, std::size_t style_id);

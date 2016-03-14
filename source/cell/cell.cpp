@@ -607,12 +607,12 @@ const font &cell::get_font() const
 
 const fill &cell::get_fill() const
 {
-    return get_parent().get_parent().get_fill(d_->style_id_);
+    return get_parent().get_parent().get_fill(get_parent().get_parent().get_cell_format(d_->style_id_).get_fill_id());
 }
 
 const border &cell::get_border() const
 {
-    return get_parent().get_parent().get_border(d_->style_id_);
+    return get_parent().get_parent().get_border(get_parent().get_parent().get_cell_format(d_->style_id_).get_border_id());
 }
 
 const alignment &cell::get_alignment() const
@@ -627,12 +627,12 @@ const protection &cell::get_protection() const
 
 bool cell::pivot_button() const
 {
-    return get_parent().get_parent().get_pivot_button(d_->style_id_);
+    return d_->pivot_button_;
 }
 
 bool cell::quote_prefix() const
 {
-    return get_parent().get_parent().get_quote_prefix(d_->style_id_);
+    return d_->quote_prefix_;
 }
 
 void cell::clear_value()
@@ -747,6 +747,18 @@ XLNT_FUNCTION timedelta cell::get_value() const
     return timedelta::from_number(d_->value_numeric_);
 }
 
+void cell::set_border(const xlnt::border &border_)
+{
+    d_->has_style_ = true;
+    d_->style_id_ = get_parent().get_parent().set_border(border_, d_->style_id_);
+}
+
+void cell::set_fill(const xlnt::fill &fill_)
+{
+    d_->has_style_ = true;
+    d_->style_id_ = get_parent().get_parent().set_fill(fill_, d_->style_id_);
+}
+
 void cell::set_font(const font &font_)
 {
     d_->has_style_ = true;
@@ -757,6 +769,18 @@ void cell::set_number_format(const number_format &number_format_)
 {
     d_->has_style_ = true;
     d_->style_id_ = get_parent().get_parent().set_number_format(number_format_, d_->style_id_);
+}
+
+void cell::set_alignment(const xlnt::alignment &alignment_)
+{
+    d_->has_style_ = true;
+    d_->style_id_ = get_parent().get_parent().set_alignment(alignment_, d_->style_id_);
+}
+
+void cell::set_protection(const xlnt::protection &protection_)
+{
+    d_->has_style_ = true;
+    d_->style_id_ = get_parent().get_parent().set_protection(protection_, d_->style_id_);
 }
 
 template <>
@@ -815,6 +839,16 @@ calendar cell::get_base_date() const
 std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)
 {
     return stream << cell.to_string();
+}
+
+void cell::set_pivot_button(bool b)
+{
+    d_->pivot_button_ = b;
+}
+
+void cell::set_quote_prefix(bool b)
+{
+    d_->quote_prefix_ = b;
 }
 
 } // namespace xlnt

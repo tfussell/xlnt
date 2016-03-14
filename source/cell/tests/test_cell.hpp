@@ -92,12 +92,17 @@ public:
     
     void test_null()
     {
-        auto datatypes =
+        const auto datatypes =
         {
-            xlnt::cell::type::null
+            xlnt::cell::type::null,
+            xlnt::cell::type::boolean,
+            xlnt::cell::type::error,
+            xlnt::cell::type::formula,
+            xlnt::cell::type::numeric,
+            xlnt::cell::type::string
         };
         
-        for(auto datatype : datatypes)
+        for(const auto &datatype : datatypes)
         {
             auto ws = wb.create_sheet();
             auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
@@ -135,7 +140,7 @@ public:
     
     void test_formula2()
     {
-        auto ws = wb.create_sheet();
+        auto ws = wb_guess_types.create_sheet();
         auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
         
         cell.set_value("=if(A1<4;-1;1)");
@@ -246,7 +251,7 @@ public:
         TS_ASSERT(cell.get_value<bool>() == true);
     }
     
-    void test_illegal_chacters()
+    void test_illegal_characters()
     {
         auto ws = wb.create_sheet();
         auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
@@ -266,6 +271,8 @@ public:
         cell.set_value(std::string(1, 13));  // Carriage return
         cell.set_value(" Leading and trailing spaces are legal ");
     }
+    
+    // void test_time_regex() {}
     
     void test_timedelta()
     {
@@ -296,22 +303,6 @@ public:
         TS_ASSERT(!cell.has_comment());
         xlnt::comment comm(cell, "text", "author");
         TS_ASSERT(cell.get_comment() == comm);
-    }
-    
-    void test_comment_count()
-    {
-        auto ws = wb.create_sheet();
-        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
-
-        TS_ASSERT(ws.get_comment_count() == 0);
-        xlnt::comment(cell, "text", "author");
-        TS_ASSERT(ws.get_comment_count() == 1);
-        xlnt::comment(cell, "text", "author");
-        TS_ASSERT(ws.get_comment_count() == 1);
-        cell.clear_comment();
-        TS_ASSERT(ws.get_comment_count() == 0);
-        cell.clear_comment();
-        TS_ASSERT(ws.get_comment_count() == 0);
     }
     
     void test_only_one_cell_per_comment()
@@ -375,29 +366,29 @@ public:
         TS_ASSERT_EQUALS(cell.get_font(), font);
     }
     
-    void _test_fill()
+    void test_fill()
     {
         xlnt::fill f;
-        f.set_type(xlnt::fill::type::solid);
-//        f.set_foreground_color("FF0000");
+        f.set_pattern_type(xlnt::fill::pattern_type::solid);
+        f.set_foreground_color(xlnt::color(xlnt::color::type::rgb, "FF0000"));
         auto ws = wb.create_sheet();
-        ws.get_parent().add_fill(f);
-    
         xlnt::cell cell(ws, "A1");
+        cell.set_fill(f);
         TS_ASSERT(cell.get_fill() == f);
     }
     
-    void _test_border()
+    void test_border()
     {
         xlnt::border border;
         auto ws = wb.create_sheet();
-        ws.get_parent().add_border(border);
         
         auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
+        cell.set_border(border);
+        
         TS_ASSERT(cell.get_border() == border);
     }
     
-    void _test_number_format()
+    void test_number_format()
     {
         auto ws = wb.create_sheet();
         ws.get_parent().add_number_format(xlnt::number_format("dd--hh--mm"));
@@ -407,31 +398,33 @@ public:
         TS_ASSERT(cell.get_number_format().get_format_string() == "dd--hh--mm");
     }
     
-    void _test_alignment()
+    void test_alignment()
     {
         xlnt::alignment align;
         align.set_wrap_text(true);
         
         auto ws = wb.create_sheet();
-        ws.get_parent().add_alignment(align);
     
         xlnt::cell cell(ws, "A1");
+        cell.set_alignment(align);
+        
         TS_ASSERT(cell.get_alignment() == align);
     }
     
-    void _test_protection()
+    void test_protection()
     {
         xlnt::protection prot;
         prot.set_locked(xlnt::protection::type::protected_);
         
         auto ws = wb.create_sheet();
-        ws.get_parent().add_protection(prot);
     
         xlnt::cell cell(ws, "A1");
+        cell.set_protection(prot);
+        
         TS_ASSERT(cell.get_protection() == prot);
     }
     
-    void _test_pivot_button()
+    void test_pivot_button()
     {
         auto ws = wb.create_sheet();
         
@@ -440,51 +433,12 @@ public:
         TS_ASSERT(cell.pivot_button());
     }
     
-    void _test_quote_prefix()
+    void test_quote_prefix()
     {
         auto ws = wb.create_sheet();
     
         xlnt::cell cell(ws, "A1");
         cell.set_quote_prefix(true);
         TS_ASSERT(cell.quote_prefix());
-    }
-
-    void test_check_string()
-    {
-        xlnt::workbook utf8_wb(xlnt::encoding::utf8);
-        auto ws = utf8_wb.get_active_sheet();
-        auto cell = ws[xlnt::cell_reference("A1")];
-
-	std::vector<std::string> valid_utf8_strings = 
-        {
-            "a",
-            "\xc3\xa0",
-            "\xc3\xb1",
-	    "\xe2\x82\xa1",
-	    "\xf0\x90\x8c\xbc",
-	};
-
-	for(auto valid : valid_utf8_strings)
-        {
-	    TS_ASSERT_THROWS_NOTHING(cell.check_string(valid));
-	    TS_ASSERT_THROWS_NOTHING(cell.set_value(valid));
-        }
-
-	std::vector<std::string> invalid_utf8_strings = 
-        {
-            "\xc3\x28",
-	    "\xa0\xa1",
-	    "\xe2\x28\xa1",
-	    "\xe2\x82\x28",
-	    "\xf0\x28\x8c\xbc",
-	    "\xf0\x90\x28\xbc",
-	    "\xf0\x28\x8c\x28",
-        };
-
-	for(auto invalid : invalid_utf8_strings)
-        {
-	    TS_ASSERT_THROWS(cell.check_string(invalid), xlnt::unicode_decode_error);
-	    TS_ASSERT_THROWS(cell.set_value(invalid), xlnt::unicode_decode_error);
-        }
     }
 };

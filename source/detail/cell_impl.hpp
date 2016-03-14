@@ -75,6 +75,9 @@ struct cell_impl
     std::size_t style_id_;
 
     std::unique_ptr<comment_impl> comment_;
+    
+    bool pivot_button_;
+    bool quote_prefix_;
 };
 
 } // namespace detail

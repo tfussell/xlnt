@@ -1054,7 +1054,7 @@ xml_document style_serializer::write_stylesheet() const
     for (auto &format : formats)
     {
         auto xf_node = cell_xfs_node.add_child("xf");
-        xf_node.add_attribute("numFmtId", std::to_string(format.get_number_format().get_id()));
+        xf_node.add_attribute("numFmtId", std::to_string(format.get_number_format_id()));
         xf_node.add_attribute("fontId", std::to_string(format.get_font_id()));
 
         if (format.fill_apply_)

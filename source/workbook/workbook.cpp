@@ -601,6 +601,16 @@ void workbook::add_number_format(const number_format &number_format_)
     }
 }
 
+void workbook::add_protection(const xlnt::protection &p)
+{
+
+}
+
+void workbook::add_alignment(const xlnt::alignment &a)
+{
+
+}
+
 void workbook::set_code_name(const std::string & /*code_name*/)
 {
 }
@@ -701,6 +711,50 @@ const font &workbook::get_font(std::size_t font_id) const
     return d_->fonts_[font_id];
 }
 
+format &workbook::add_default_cell_format()
+{
+    format new_format;
+
+    new_format.id_ = 0;
+    new_format.border_id_ = 0;
+    new_format.fill_id_ = 0;
+    new_format.font_id_ = 0;
+    new_format.number_format_id_ = 0;
+
+    if (d_->borders_.empty())
+    {
+        d_->borders_.push_back(new_format.get_border());
+    }
+
+    if (d_->fills_.empty())
+    {
+        d_->fills_.push_back(new_format.get_fill());
+    }
+
+    if (d_->fonts_.empty())
+    {
+        d_->fonts_.push_back(new_format.get_font());
+    }
+
+    if (d_->number_formats_.empty())
+    {
+        d_->number_formats_.push_back(new_format.get_number_format());
+    }
+
+    d_->cell_formats_.push_back(new_format);
+    
+    return d_->cell_formats_[0];
+}
+
+// find font in font list
+// if not found, add to font list and make font_id equal to list length - 1
+// otherwise, font_id is the index of the matching font in font list
+// if there are no cell formats defined yet, create a new format with components set to default and font as parameter font, return 0
+// if the font is identical to the font for the cell's format, just return the provided cell format id
+// make a new cell format based on the existing cell format
+// set font on this style to the parameter font
+// see if this modified format already exists in the font list, if so return its id
+// otherwise, add the new cell format to the list of formats and return its id
 std::size_t workbook::set_font(const font &font_, std::size_t format_id)
 {
     auto match = std::find(d_->fonts_.begin(), d_->fonts_.end(), font_);
@@ -718,52 +772,31 @@ std::size_t workbook::set_font(const font &font_, std::size_t format_id)
 
     if (d_->cell_formats_.empty())
     {
-        format new_format;
-
-        new_format.id_ = 0;
-        new_format.border_id_ = 0;
-        new_format.fill_id_ = 0;
-        new_format.font_id_ = font_id;
-        new_format.font_apply_ = true;
-        new_format.number_format_id_ = 0;
-
-        if (d_->borders_.empty())
-        {
-            d_->borders_.push_back(new_format.get_border());
-        }
-
-        if (d_->fills_.empty())
-        {
-            d_->fills_.push_back(new_format.get_fill());
-        }
-
-        if (d_->number_formats_.empty())
-        {
-            d_->number_formats_.push_back(new_format.get_number_format());
-        }
-
-        d_->cell_formats_.push_back(new_format);
-
+        auto &added = add_default_cell_format();
+        
+        added.font_id_ = font_id;
+        added.font_ = font_;
+        added.font_apply_ = true;
+        
         return 0;
     }
 
-    // If the style is unchanged, just return it.
-    auto &existing_style = d_->cell_formats_[format_id];
-    existing_style.font_apply_ = true;
+    auto &existing_format = d_->cell_formats_[format_id];
+    existing_format.font_apply_ = true;
 
-    if (font_id == existing_style.font_id_)
+    // If the style is unchanged, just return it.
+    if (font_id == existing_format.font_id_)
     {
-        // no change
         return format_id;
     }
 
-    // Make a new style with this format.
-    auto new_format = existing_style;
+    // Make a new format based on existing format.
+    auto new_format = existing_format;
 
     new_format.font_id_ = font_id;
     new_format.font_ = font_;
 
-    // Check if the new style is already applied to a different cell. If so, reuse it.
+    // Check if the new modified style is already applied to a different cell. If so, reuse it.
     auto format_match = std::find(d_->cell_formats_.begin(), d_->cell_formats_.end(), new_format);
 
     if (format_match != d_->cell_formats_.end())
@@ -778,14 +811,70 @@ std::size_t workbook::set_font(const font &font_, std::size_t format_id)
     return new_format.id_;
 }
 
+const format &workbook::get_cell_format(std::size_t format_id) const
+{
+    return d_->cell_formats_.at(format_id);
+}
+
 const fill &workbook::get_fill(std::size_t fill_id) const
 {
     return d_->fills_[fill_id];
 }
 
-std::size_t workbook::set_fill(const fill & /*fill_*/, std::size_t format_id)
+std::size_t workbook::set_fill(const fill & fill_, std::size_t format_id)
 {
-    return format_id;
+    auto match = std::find(d_->fills_.begin(), d_->fills_.end(), fill_);
+    std::size_t fill_id = 0;
+
+    if (match == d_->fills_.end())
+    {
+        d_->fills_.push_back(fill_);
+        fill_id = d_->fills_.size() - 1;
+    }
+    else
+    {
+        fill_id = match - d_->fills_.begin();
+    }
+
+    if (d_->cell_formats_.empty())
+    {
+        auto &added = add_default_cell_format();
+        
+        added.fill_id_ = fill_id;
+        added.fill_ = fill_;
+        added.fill_apply_ = true;
+        
+        return 0;
+    }
+
+    auto &existing_format = d_->cell_formats_[format_id];
+    existing_format.fill_apply_ = true;
+
+    // If the style is unchanged, just return it.
+    if (fill_id == existing_format.fill_id_)
+    {
+        return format_id;
+    }
+
+    // Make a new format based on existing format.
+    auto new_format = existing_format;
+
+    new_format.fill_id_ = fill_id;
+    new_format.fill_ = fill_;
+
+    // Check if the new modified style is already applied to a different cell. If so, reuse it.
+    auto format_match = std::find(d_->cell_formats_.begin(), d_->cell_formats_.end(), new_format);
+
+    if (format_match != d_->cell_formats_.end())
+    {
+        return format_match->get_id();
+    }
+
+    // No match found, so add it.
+    new_format.id_ = d_->cell_formats_.size();
+    d_->cell_formats_.push_back(new_format);
+
+    return new_format.id_;
 }
 
 const border &workbook::get_border(std::size_t border_id) const
@@ -793,9 +882,60 @@ const border &workbook::get_border(std::size_t border_id) const
     return d_->borders_[border_id];
 }
 
-std::size_t workbook::set_border(const border & /*border_*/, std::size_t format_id)
+std::size_t workbook::set_border(const border & border_, std::size_t format_id)
 {
-    return format_id;
+    auto match = std::find(d_->borders_.begin(), d_->borders_.end(), border_);
+    std::size_t border_id = 0;
+
+    if (match == d_->borders_.end())
+    {
+        d_->borders_.push_back(border_);
+        border_id = d_->borders_.size() - 1;
+    }
+    else
+    {
+        border_id = match - d_->borders_.begin();
+    }
+
+    if (d_->cell_formats_.empty())
+    {
+        auto &added = add_default_cell_format();
+        
+        added.border_id_ = border_id;
+        added.border_ = border_;
+        added.border_apply_ = true;
+        
+        return 0;
+    }
+
+    auto &existing_format = d_->cell_formats_[format_id];
+    existing_format.border_apply_ = true;
+
+    // If the style is unchanged, just return it.
+    if (border_id == existing_format.border_id_)
+    {
+        return format_id;
+    }
+
+    // Make a new format based on existing format.
+    auto new_format = existing_format;
+
+    new_format.border_id_ = border_id;
+    new_format.border_ = border_;
+
+    // Check if the new modified style is already applied to a different cell. If so, reuse it.
+    auto format_match = std::find(d_->cell_formats_.begin(), d_->cell_formats_.end(), new_format);
+
+    if (format_match != d_->cell_formats_.end())
+    {
+        return format_match->get_id();
+    }
+
+    // No match found, so add it.
+    new_format.id_ = d_->cell_formats_.size();
+    d_->cell_formats_.push_back(new_format);
+
+    return new_format.id_;
 }
 
 const alignment &workbook::get_alignment(std::size_t format_id) const
@@ -803,9 +943,46 @@ const alignment &workbook::get_alignment(std::size_t format_id) const
     return d_->cell_formats_[format_id].alignment_;
 }
 
-std::size_t workbook::set_alignment(const alignment & /*alignment_*/, std::size_t format_id)
+// differs from border, fill, font, number_format because alignment is a member of format
+std::size_t workbook::set_alignment(const alignment & alignment_, std::size_t format_id)
 {
-    return format_id;
+    if (d_->cell_formats_.empty())
+    {
+        auto &added = add_default_cell_format();
+        
+        added.alignment_ = alignment_;
+        added.alignment_apply_ = true;
+        
+        return 0;
+    }
+
+    auto &existing_format = d_->cell_formats_[format_id];
+    existing_format.alignment_apply_ = true;
+
+    // If the style is unchanged, just return it.
+    if (alignment_ == existing_format.alignment_)
+    {
+        return format_id;
+    }
+
+    // Make a new format based on existing format.
+    auto new_format = existing_format;
+
+    new_format.alignment_ = alignment_;
+
+    // Check if the new modified style is already applied to a different cell. If so, reuse it.
+    auto format_match = std::find(d_->cell_formats_.begin(), d_->cell_formats_.end(), new_format);
+
+    if (format_match != d_->cell_formats_.end())
+    {
+        return format_match->get_id();
+    }
+
+    // No match found, so add it.
+    new_format.id_ = d_->cell_formats_.size();
+    d_->cell_formats_.push_back(new_format);
+
+    return new_format.id_;
 }
 
 const protection &workbook::get_protection(std::size_t format_id) const
@@ -813,9 +990,46 @@ const protection &workbook::get_protection(std::size_t format_id) const
     return d_->cell_formats_[format_id].protection_;
 }
 
-std::size_t workbook::set_protection(const protection & /*protection_*/, std::size_t format_id)
+// differs from border, fill, font, number_format because protection is a member of format
+std::size_t workbook::set_protection(const protection & protection_, std::size_t format_id)
 {
-    return format_id;
+    if (d_->cell_formats_.empty())
+    {
+        auto &added = add_default_cell_format();
+        
+        added.protection_ = protection_;
+        added.protection_apply_ = true;
+        
+        return 0;
+    }
+
+    auto &existing_format = d_->cell_formats_[format_id];
+    existing_format.protection_apply_ = true;
+
+    // If the style is unchanged, just return it.
+    if (protection_ == existing_format.protection_)
+    {
+        return format_id;
+    }
+
+    // Make a new format based on existing format.
+    auto new_format = existing_format;
+
+    new_format.protection_ = protection_;
+
+    // Check if the new modified style is already applied to a different cell. If so, reuse it.
+    auto format_match = std::find(d_->cell_formats_.begin(), d_->cell_formats_.end(), new_format);
+
+    if (format_match != d_->cell_formats_.end())
+    {
+        return format_match->get_id();
+    }
+
+    // No match found, so add it.
+    new_format.id_ = d_->cell_formats_.size();
+    d_->cell_formats_.push_back(new_format);
+
+    return new_format.id_;
 }
 
 bool workbook::get_pivot_button(std::size_t format_id) const
@@ -829,75 +1043,54 @@ bool workbook::get_quote_prefix(std::size_t format_id) const
 }
 
 //TODO: this is terrible!
-std::size_t workbook::set_number_format(const xlnt::number_format &nf, std::size_t style_id)
+std::size_t workbook::set_number_format(const xlnt::number_format &number_format_, std::size_t format_id)
 {
-    auto match = std::find(d_->number_formats_.begin(), d_->number_formats_.end(), nf);
-    std::size_t format_id = 0;
+    auto match = std::find(d_->number_formats_.begin(), d_->number_formats_.end(), number_format_);
+    std::size_t number_format_id = 0;
 
     if (match == d_->number_formats_.end())
     {
-        d_->number_formats_.push_back(nf);
+        d_->number_formats_.push_back(number_format_);
 
-        if (!nf.has_id())
+        if (!number_format_.has_id())
         {
             d_->number_formats_.back().set_id(d_->next_custom_format_id_++);
         }
 
-        format_id = d_->number_formats_.back().get_id();
+        number_format_id = d_->number_formats_.back().get_id();
     }
     else
     {
-        format_id = match->get_id();
+        number_format_id = match->get_id();
     }
 
     if (d_->cell_formats_.empty())
     {
-        format new_format;
-
-        new_format.id_ = 0;
-        new_format.border_id_ = 0;
-        new_format.fill_id_ = 0;
-        new_format.font_id_ = 0;
-        new_format.number_format_id_ = format_id;
-        new_format.number_format_apply_ = true;
-
-        if (d_->borders_.empty())
-        {
-            d_->borders_.push_back(new_format.get_border());
-        }
-
-        if (d_->fills_.empty())
-        {
-            d_->fills_.push_back(new_format.get_fill());
-        }
-
-        if (d_->fonts_.empty())
-        {
-            d_->fonts_.push_back(new_format.get_font());
-        }
-
-        d_->cell_formats_.push_back(new_format);
-
+        auto &added = add_default_cell_format();
+        
+        added.number_format_id_ = number_format_id;
+        added.number_format_ = number_format_;
+        added.number_format_apply_ = true;
+        
         return 0;
     }
 
-    // If the style is unchanged, just return it.
-    auto existing_style = d_->cell_formats_[format_id];
-    existing_style.number_format_apply_ = true;
+    auto &existing_format = d_->cell_formats_[format_id];
+    existing_format.number_format_apply_ = true;
 
-    if (format_id == existing_style.number_format_id_)
+    // If the style is unchanged, just return it.
+    if (number_format_id == existing_format.number_format_id_)
     {
-        // no change
-        return style_id;
+        return format_id;
     }
 
-    // Make a new style with this format.
-    auto new_format = existing_style;
+    // Make a new format based on existing format.
+    auto new_format = existing_format;
 
-    new_format.number_format_id_ = format_id;
-    new_format.number_format_ = nf;
+    new_format.number_format_id_ = number_format_id;
+    new_format.number_format_ = number_format_;
 
-    // Check if the new style is already applied to a different cell. If so, reuse it.
+    // Check if the new modified style is already applied to a different cell. If so, reuse it.
     auto format_match = std::find(d_->cell_formats_.begin(), d_->cell_formats_.end(), new_format);
 
     if (format_match != d_->cell_formats_.end())

@@ -86,9 +86,13 @@ public:
 
     void set_gradient_type(gradient_type t);
 
+    void set_foreground_color(const color &c);
+
     std::experimental::optional<color> &get_foreground_color();
 
     const std::experimental::optional<color> &get_foreground_color() const;
+    
+    void set_background_color(const color &c);
 
     std::experimental::optional<color> &get_background_color();
 
