@@ -1,4 +1,4 @@
-<img height="100" src="http://tfussell.github.io/xlnt/images/xlnt.png"><br/>
+<img height="100" src="https://raw.githubusercontent.com/tfussell/xlnt/gh-pages/images/xlnt.png"><br/>
 ====
 
 [![Travis Build Status](https://travis-ci.org/tfussell/xlnt.svg)](https://travis-ci.org/tfussell/xlnt)
