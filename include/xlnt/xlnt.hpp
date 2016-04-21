@@ -41,7 +41,10 @@
 #include <xlnt/styles/protection.hpp>
 #include <xlnt/styles/side.hpp>
 #include <xlnt/styles/style.hpp>
+#include <xlnt/utils/date.hpp>
 #include <xlnt/utils/datetime.hpp>
+#include <xlnt/utils/time.hpp>
+#include <xlnt/utils/timedelta.hpp>
 #include <xlnt/utils/exceptions.hpp>
 #include <xlnt/workbook/const_worksheet_iterator.hpp>
 #include <xlnt/workbook/document_security.hpp>
