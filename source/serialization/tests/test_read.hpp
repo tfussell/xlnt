@@ -156,6 +156,20 @@ public:
         TS_ASSERT_EQUALS(code, expected);
     }
     
+    void test_read_charset_excel()
+    {
+        auto path = PathHelper::GetDataDirectory("/reader/charset-excel.xlsx");
+        
+        xlnt::workbook wb;
+        xlnt::excel_serializer serializer(wb);
+        
+        serializer.load_workbook(path);
+        
+        auto ws = wb["Sheet1"];
+        auto val = ws.get_cell("A1").get_value<std::string>();
+        TS_ASSERT_EQUALS(val, "DirenÃ§");
+    }
+    
     xlnt::workbook date_mac_1904()
     {
         auto path = PathHelper::GetDataDirectory("/reader/date_1904.xlsx");
