@@ -77,7 +77,7 @@ workbook::workbook() : d_(new detail::workbook_impl())
     
     add_number_format(number_format::general());
 
-    d_->encoding_ = encoding::ascii;
+    d_->encoding_ = encoding::utf8;
     
     d_->manifest_.add_default_type("rels", "application/vnd.openxmlformats-package.relationships+xml");
     d_->manifest_.add_default_type("xml", "application/xml");
