@@ -170,6 +170,20 @@ public:
         TS_ASSERT_EQUALS(val, "DirenÃ§");
     }
     
+    void test_read_shared_strings_max_range()
+    {
+        auto path = PathHelper::GetDataDirectory("/reader/shared_strings-max_range.xlsx");
+        
+        xlnt::workbook wb;
+        xlnt::excel_serializer serializer(wb);
+        
+        serializer.load_workbook(path);
+        
+        auto ws = wb["Sheet1"];
+        auto val = ws.get_cell("A1").get_value<std::string>();
+        TS_ASSERT_EQUALS(val, "Donald");
+    }
+    
     xlnt::workbook date_mac_1904()
     {
         auto path = PathHelper::GetDataDirectory("/reader/date_1904.xlsx");
