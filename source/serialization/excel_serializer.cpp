@@ -130,7 +130,7 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
 
         for (auto shared_string : shared_strings)
         {
-            wb.add_shared_string(shared_string);
+            wb.add_shared_string(shared_string, true);
         }
     }
 

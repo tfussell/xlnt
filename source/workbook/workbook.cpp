@@ -1184,13 +1184,16 @@ const std::vector<std::string> &workbook::get_shared_strings() const
     return d_->shared_strings_;
 }
 
-void workbook::add_shared_string(const std::string &shared)
+void workbook::add_shared_string(const std::string &shared, bool allow_duplicates)
 {
-    //TODO: inefficient, use a set or something?
-    for(auto &s : d_->shared_strings_)
-    {
-        if(s == shared) return;
-    }
+	if (!allow_duplicates)
+	{
+		//TODO: inefficient, use a set or something?
+		for (auto &s : d_->shared_strings_)
+		{
+			if (s == shared) return;
+		}
+	}
     
     d_->shared_strings_.push_back(shared);
 }

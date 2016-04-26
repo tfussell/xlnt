@@ -233,7 +233,7 @@ public:
 
     const std::vector<relationship> &get_root_relationships() const;
 
-    void add_shared_string(const std::string &shared);
+    void add_shared_string(const std::string &shared, bool allow_duplicates=false);
     std::vector<std::string> &get_shared_strings();
     const std::vector<std::string> &get_shared_strings() const;
     
