@@ -34,6 +34,7 @@ namespace xlnt {
 
 class alignment;
 class border;
+class cell_style;
 class color;
 class conditional_format;
 class fill;
@@ -43,7 +44,6 @@ class named_style;
 class number_format;
 class protection;
 class side;
-class style;
 class xml_document;
 class xml_node;
 
@@ -71,7 +71,7 @@ public:
     /// Populate parameter xml with an XML tree representing the styles contained in the workbook
     /// given in the constructor.
     /// </summary>
-    xml_document write_stylesheet() const;
+    xml_document write_stylesheet();
 
     // TODO: These need to be public for unit tests. Could also make test class a friend?
     // private:
@@ -131,58 +131,28 @@ public:
     static conditional_format read_conditional_format(const xml_node &conditional_formats_node);
 
     /// <summary>
-    /// Read and return a pair containing a name and corresponding style from named_style_node.
+    /// Read a single format from the given node. In styles.xml, this is an "xf" element.
+    /// A format has an optional border id, fill id, font id, and number format id where
+    /// each id is an index in the corresponding list of borders, etc. A style also has
+    /// optional alignment and protection children. A style also defines whether each of
+    /// these is "applied". For example, a style with a defined font id, font=# but with
+    /// "applyFont=0" will not use the font in formatting.
     /// </summary>
-    static std::pair<std::string, style> read_named_style(const xml_node &named_style_node);
-
-    //
-    // Static element writers (i.e. writers that don't use internal state)
-    //
-
+    cell_style read_cell_style(const xml_node &style_node);
+    
     /// <summary>
-    /// Build and return an xml tree representing alignment_.
+    /// Read a single named style from the given named_style_node. In styles.xml, this is a
+    /// (confusingly named) "cellStyle" element. This node defines the name, whether it is
+    /// built-in and an xfId which is the index of an element in cellStyleXfs which should
+    /// be provided as the style_node parameter (cellStyleXfs itself, not the child xf node).
     /// </summary>
-    static xml_node write_alignment(const alignment &alignment_);
-
-    /// <summary>
-    /// Build and return an xml tree representing border_.
-    /// </summary>
-    static xml_node write_border(const border &border_);
-
-    /// <summary>
-    /// Build and return an xml tree representing conditional_format_.
-    /// </summary>
-    static xml_node write_conditional_format(const conditional_format &conditional_format_);
-
-    /// <summary>
-    /// Build and return an xml tree representing fill_.
-    /// </summary>
-    static xml_node write_fill(const fill &fill_);
-
-    /// <summary>
-    /// Build and return an xml tree representing font_.
-    /// </summary>
-    static xml_node write_font(const font &font_);
-
-    /// <summary>
-    /// Build and return two xml trees, first=cell style and second=named style, representing named_style_.
-    /// </summary>
-    static std::pair<xml_node, xml_node> write_named_style(const named_style &named_style_);
-
-    /// <summary>
-    /// Build an xml tree representing all named styles in workbook into named_styles_node and cell_styles_node.
-    /// Returns true on success.
-    /// </summary>
-    static std::pair<xml_node, xml_node> write_named_styles();
-
-    /// <summary>
-    /// Build and return an xml tree representing number_format_.
-    /// </summary>
-    static xml_node write_number_format(const number_format &number_format_);
-
+    named_style read_named_style(const xml_node &named_style_node, const xml_node &style_parent_node);
+    
     //
     // Non-static element readers (i.e. readers that modify internal state)
     //
+    
+    bool read_number_formats(const xml_node &number_formats_node);
 
     /// <summary>
     /// Read all borders from borders_node and add them to workbook.
@@ -207,38 +177,24 @@ public:
     /// Return true on success.
     /// </summary>
     bool read_colors(const xml_node &colors_node);
+    
+    /// <summary>
+    /// Read all cell styles from cell_styles_node and add them to workbook.
+    /// Return true on success.
+    /// </summary>
+    bool read_cell_styles(const xml_node &cell_styles_node);
 
     /// <summary>
     /// Read all named styles from named_style_node and cell_styles_node and add them to workbook.
     /// Return true on success.
     /// </summary>
-    bool read_named_styles(const xml_node &named_styles_node);
+    bool read_named_styles(const xml_node &named_styles_node, const xml_node &cell_styles_node);
 
     /// <summary>
     /// Read all borders from number_formats_node and add them to workbook.
     /// Return true on success.
     /// </summary>
-    bool read_number_formats(const xml_node &number_formats_node);
-
-    /// <summary>
-    /// Read a single format from the given node. In styles.xml, this is an "xf" element.
-    /// A format has an optional border id, fill id, font id, and number format id where
-    /// each id is an index in the corresponding list of borders, etc. A style also has
-    /// optional alignment and protection children. A style also defines whether each of
-    /// these is "applied". For example, a style with a defined font id, font=# but with
-    /// "applyFont=0" will not use the font in formatting.
-    /// </summary>
-    format read_format(const xml_node &format_node);
-    
-    /// <summary>
-    /// Read a single style from the given node. In styles.xml, this is an "xf" element.
-    /// A style has an optional border id, fill id, font id, and number format id where
-    /// each id is an index in the corresponding list of borders, etc. A style also has
-    /// optional alignment and protection children. A style also defines whether each of
-    /// these is "applied". For example, a style with a defined font id, font=# but with
-    /// "applyFont=0" will not use the font in formatting.
-    /// </summary>
-    style read_style(const xml_node &style_node);
+    bool read_stylesheet(const xml_node &number_formats_node);
 
     //
     // Non-static element writers (i.e. writers that modify internal workbook)
@@ -272,19 +228,47 @@ public:
     /// Build an xml tree representing all number formats in workbook into number_formats_node.
     /// Returns true on success.
     /// </summary>
-    bool write_number_formats(xml_node fonts_node) const;
+    bool write_number_formats(xml_node &number_formats_node) const;
+
+    bool write_style_common(const alignment &style_alignment, const border &style_border, const fill &style_fill, const font &style_font, const number_format &style_number_format, const protection &style_protection, xml_node xf_node) const;
 
     /// <summary>
     /// Build an xml tree representing the given style into style_node.
     /// Returns true on success.
     /// </summary>
-    bool write_style(const style &style_, xml_node &style_node) const;
-
+    bool write_cell_style(const cell_style &style, xml_node &style_node) const;
+    
+    /// <summary>
+    /// Build an xml tree representing the given style into style_node.
+    /// Returns true on success.
+    /// </summary>
+    bool write_cell_styles(xml_node &styles_node) const;
+    
+    /// <summary>
+    /// Build an xml tree representing the given style into cell_styles_node and styles_node.
+    /// Returns true on success.
+    /// </summary>
+    bool write_named_style(const named_style &style, xml_node &cell_styles_node) const;
+    
+    bool write_named_styles(xml_node &cell_styles_node, xml_node &styles_node) const;
+    
+    bool write_colors(xml_node &colors_node) const;
+    
 private:
+    void initialize_vectors();
+    
     /// <summary>
     /// Set in the constructor, this workbook is used as the source or target for all writing or reading, respectively.
     /// </summary>
     workbook &workbook_;
+    
+    std::vector<color> colors_;
+    std::vector<border> borders_;
+    std::vector<fill> fills_;
+    std::vector<font> fonts_;
+    std::vector<number_format> number_formats_;
+    std::vector<cell_style> cell_styles_;
+    std::vector<named_style> named_styles_;
 };
 
 } // namespace xlnt

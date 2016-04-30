@@ -30,8 +30,8 @@
 #include <xlnt/packaging/document_properties.hpp>
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/serialization/encoding.hpp>
+#include <xlnt/styles/cell_style.hpp>
 #include <xlnt/styles/color.hpp>
-#include <xlnt/styles/format.hpp>
 #include <xlnt/utils/date.hpp>
 #include <xlnt/utils/datetime.hpp>
 #include <xlnt/utils/time.hpp>

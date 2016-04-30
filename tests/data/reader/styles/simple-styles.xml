@@ -1,0 +1,48 @@
+<?xml version="1.0" ?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+    <numFmts count="1">
+        <numFmt numFmtId="164" formatCode="yyyy-mm-dd"/>
+    </numFmts>
+    <fonts count="1">
+        <font>
+            <name val="Calibri"/>
+            <family val="2"/>
+            <color theme="1"/>
+            <sz val="11"/>
+            <scheme val="minor"/>
+        </font>
+    </fonts>
+    <fills count="2">
+        <fill>
+            <patternFill/>
+        </fill>
+        <fill>
+            <patternFill patternType="gray125"/>
+        </fill>
+    </fills>
+    <borders count="1">
+        <border>
+            <left/>
+            <right/>
+            <top/>
+            <bottom/>
+            <diagonal/>
+        </border>
+    </borders>
+    <cellStyleXfs count="1">
+        <xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>
+    </cellStyleXfs>
+    <cellXfs count="5">
+      <xf borderId="0" fillId="0" fontId="0" numFmtId="0" quotePrefix="0" pivotButton="0" xfId="0"/>
+      <xf borderId="0" fillId="0" fontId="0" numFmtId="9" quotePrefix="0" pivotButton="0" xfId="0"/>
+      <xf borderId="0" fillId="0" fontId="0" numFmtId="164" quotePrefix="0" pivotButton="0" xfId="0"/>
+      <xf borderId="0" fillId="0" fontId="0" numFmtId="2" quotePrefix="0" pivotButton="0" xfId="0"/>
+      <xf applyProtection="1" borderId="0" fillId="0" fontId="0" quotePrefix="0" pivotButton="0" numFmtId="0" xfId="0">
+        <protection hidden="1" locked="1"/>
+      </xf>
+    </cellXfs>
+    <cellStyles count="1">
+        <cellStyle name="Normal" hidden="0" xfId="0" builtinId="0"/>
+    </cellStyles>
+    <tableStyles count="0" defaultTableStyle="TableStyleMedium9" defaultPivotStyle="PivotStyleLight16"/>
+</styleSheet>

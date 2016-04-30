@@ -37,7 +37,7 @@ namespace xlnt {
 class alignment;
 class app_properties;
 class border;
-class format;
+class cell_style;
 class color;
 class const_worksheet_iterator;
 class document_properties;
@@ -53,7 +53,7 @@ class protection;
 class range;
 class range_reference;
 class relationship;
-class style;
+class named_style;
 class theme;
 class worksheet;
 class worksheet_iterator;
@@ -176,57 +176,16 @@ public:
     relationship get_relationship(const std::string &id) const;
     const std::vector<relationship> &get_relationships() const;
 
-    void add_alignment(const alignment &a);
-    void add_border(const border &b);
-    void add_fill(const fill &f);
-    void add_font(const font &f);
-    void add_color(const color &c);
-    void add_number_format(const number_format &format);
-    void add_protection(const protection &p);
-
-    const std::vector<format> &get_cell_style_formats() const;
-    const std::vector<format> &get_cell_formats() const;
-    const std::vector<style> &get_styles() const;
-
-    const std::vector<color> &get_colors() const;
-    const std::vector<border> &get_borders() const;
-    const std::vector<fill> &get_fills() const;
-    const std::vector<font> &get_fonts() const;
-    const std::vector<number_format> &get_number_formats() const;
-
-    color add_indexed_color(const color &rgb_color);
-    color get_indexed_color(const color &indexed_color) const;
-    
-    format &add_default_cell_format();
-
-    const number_format &get_number_format(std::size_t style_id) const;
-    std::size_t set_number_format(const number_format &format, std::size_t style_id);
-    const font &get_font(std::size_t style_id) const;
-    std::size_t set_font(const font &font_, std::size_t style_id);
-    const fill &get_fill(std::size_t style_id) const;
-    std::size_t set_fill(const fill &fill_, std::size_t style_id);
-    const border &get_border(std::size_t style_id) const;
-    std::size_t set_border(const border &border_, std::size_t style_id);
-    const alignment &get_alignment(std::size_t style_id) const;
-    std::size_t set_alignment(const alignment &alignment_, std::size_t style_id);
-    const protection &get_protection(std::size_t style_id) const;
-    std::size_t set_protection(const protection &protection_, std::size_t style_id);
-    bool get_pivot_button(std::size_t style_id) const;
-    bool get_quote_prefix(std::size_t style_id) const;
-
     void set_code_name(const std::string &code_name);
 
     bool has_loaded_theme() const;
     const theme &get_loaded_theme() const;
-
-    const format &get_cell_style_format(std::size_t format_id) const;
-    std::size_t add_cell_style_format(const format &format_);
     
-    const format &get_cell_format(std::size_t format_id) const;
-    std::size_t add_cell_format(const format &format_);
-    
-    const style &get_style(std::size_t style_id) const;
-    std::size_t add_style(const style &style_);
+    // Named Styles
+    bool has_named_style(const std::string &name);
+    named_style &get_named_style(const std::string &name);
+    const named_style &get_named_style(const std::string &name) const;
+    named_style &create_named_style(const std::string &name);
 
     manifest &get_manifest();
     const manifest &get_manifest() const;
@@ -242,7 +201,7 @@ public:
 
 private:
     friend class worksheet;
-    std::shared_ptr<detail::workbook_impl> d_;
+    std::unique_ptr<detail::workbook_impl> d_;
 };
 
 } // namespace xlnt

@@ -117,19 +117,27 @@ public:
     double get_gradient_top() const;
 
     double get_gradient_bottom() const;
+    
+    void apply(bool value);
+    bool apply() const;
 
 protected:
     std::string to_hash_string() const override;
 
 private:
+    bool apply_ = false;
+    
     type type_ = type::none;
     pattern_type pattern_type_;
     gradient_type gradient_type_;
+    
     double rotation_ = 0;
+    
     std::experimental::optional<color> foreground_color_ = color::black();
     std::experimental::optional<color> background_color_ = color::white();
     std::experimental::optional<color> start_color_ = color::white();
     std::experimental::optional<color> end_color_ = color::black();
+    
     double gradient_path_left_ = 0;
     double gradient_path_right_ = 0;
     double gradient_path_top_ = 0;

@@ -1,4 +1,5 @@
 // Copyright (c) 2014-2016 Thomas Fussell
+// Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,34 +23,33 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <cstdint>
-#include <string>
-
-#include <xlnt/xlnt_config.hpp>
+#include <xlnt/styles/common_style.hpp>
 
 namespace xlnt {
 
-class XLNT_CLASS hashable
+/// <summary>
+/// Describes the formatting of a particular cell.
+/// </summary>
+class XLNT_CLASS cell_style : public common_style
 {
 public:
-    std::size_t hash() const;
-    bool operator==(const hashable &other) const;
-
+    cell_style();
+    cell_style(const cell_style &other);
+    cell_style &operator=(const cell_style &other);
+    
+    // Named Style
+    named_style &get_named_style();
+    const named_style &get_named_style() const;
+    void set_named_style(const std::string &style_name);
+    void set_named_style(const named_style &new_named_style);
+    void remove_named_style();
+    
 protected:
-    virtual std::string to_hash_string() const = 0;
+    std::string to_hash_string() const override;
+
+private:
+    detail::workbook_impl *parent_;
+    std::string named_style_name_;
 };
 
 } // namespace xlnt
-
-namespace std {
-
-template<>
-struct hash<xlnt::hashable>
-{
-    size_t operator()(const xlnt::hashable &k) const
-    {
-        return k.hash();
-    }
-};
-
-} // namepsace std

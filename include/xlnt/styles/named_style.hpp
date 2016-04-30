@@ -23,47 +23,39 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <xlnt/xlnt_config.hpp>
-#include <xlnt/utils/hashable.hpp>
+#include <xlnt/styles/common_style.hpp>
 
 namespace xlnt {
 
 class workbook;
 
 /// <summary>
-/// Describes the entirety of the styling of a particular cell.
+/// Describes a style which has a name and can be applied to multiple individual
+/// cell_styles.
 /// </summary>
-class XLNT_CLASS style : public hashable
+class XLNT_CLASS named_style : public common_style
 {
 public:
-    style();
-    style(const style &other);
-    style &operator=(const style &other);
+    named_style();
+    named_style(const named_style &other);
+    named_style &operator=(const named_style &other);
 
-    std::size_t hash() const;
-    
     std::string get_name() const;
     void set_name(const std::string &name);
     
-    std::size_t get_format_id() const;
-    void set_format_id(std::size_t format_id);
+    bool get_hidden() const;
+    void set_hidden(bool value);
     
     std::size_t get_builtin_id() const;
     void set_builtin_id(std::size_t builtin_id);
-    
-    void set_hidden(bool hidden);
-    bool get_hidden() const;
-    
+
 protected:
     std::string to_hash_string() const override;
-    
+
 private:
-    friend class workbook;
-    std::size_t id_;
     std::string name_;
-    std::size_t format_id_;
-    std::size_t builtin_id_;
     bool hidden_;
+    std::size_t builtin_id;
 };
 
 } // namespace xlnt

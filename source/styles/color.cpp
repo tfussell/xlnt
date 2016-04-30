@@ -27,6 +27,16 @@
 
 namespace xlnt {
 
+const color color::black()
+{
+    return color(color::type::rgb, "ff000000");
+}
+
+const color color::white()
+{
+    return color(color::type::rgb, "ffffffff");
+}
+
 color::color()
 {
 }

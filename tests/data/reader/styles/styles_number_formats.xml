@@ -1,0 +1,112 @@
+<?xml version="1.0" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:x14ac="http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac" mc:Ignorable="x14ac">
+  <numFmts count="4">
+    <numFmt numFmtId="43" formatCode="_ * #,##0.00_ ;_ * \-#,##0.00_ ;_ * &quot;-&quot;??_ ;_ @_ "/>
+    <numFmt numFmtId="176" formatCode="#,##0.00_ "/>
+    <numFmt numFmtId="180" formatCode="yyyy/m/d;@"/>
+    <numFmt numFmtId="181" formatCode="0.00000_ "/>
+  </numFmts>
+  <fonts count="4">
+    <font>
+      <sz val="11"/>
+      <color theme="1"/>
+      <name val="宋体"/>
+      <family val="2"/>
+      <charset val="134"/>
+      <scheme val="minor"/>
+    </font>
+    <font>
+      <sz val="9"/>
+      <name val="宋体"/>
+      <family val="2"/>
+      <charset val="134"/>
+      <scheme val="minor"/>
+    </font>
+    <font>
+      <sz val="11"/>
+      <color theme="1"/>
+      <name val="宋体"/>
+      <family val="2"/>
+      <charset val="134"/>
+      <scheme val="minor"/>
+    </font>
+    <font>
+      <sz val="9"/>
+      <color indexed="8"/>
+      <name val="仿宋_GB2312"/>
+      <family val="3"/>
+      <charset val="134"/>
+    </font>
+  </fonts>
+  <fills count="2">
+    <fill>
+      <patternFill patternType="none"/>
+    </fill>
+    <fill>
+      <patternFill patternType="gray125"/>
+    </fill>
+  </fills>
+  <borders count="2">
+    <border>
+      <left/>
+      <right/>
+      <top/>
+      <bottom/>
+      <diagonal/>
+    </border>
+    <border>
+      <left style="thin">
+        <color indexed="64"/>
+      </left>
+      <right style="thin">
+        <color indexed="64"/>
+      </right>
+      <top style="thin">
+        <color indexed="64"/>
+      </top>
+      <bottom style="thin">
+        <color indexed="64"/>
+      </bottom>
+      <diagonal/>
+    </border>
+  </borders>
+  <cellStyleXfs count="2">
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="0">
+      <alignment vertical="center"/>
+    </xf>
+    <xf numFmtId="43" fontId="2" fillId="0" borderId="0" applyFont="0" applyFill="0" applyBorder="0" applyAlignment="0" applyProtection="0">
+      <alignment vertical="center"/>
+    </xf>
+  </cellStyleXfs>
+  <cellXfs count="5">
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0">
+      <alignment vertical="center"/>
+    </xf>
+    <xf numFmtId="176" fontId="3" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyBorder="1" applyAlignment="1">
+      <alignment horizontal="right" vertical="center"/>
+    </xf>
+    <xf numFmtId="43" fontId="3" fillId="0" borderId="1" xfId="1" applyFont="1" applyBorder="1">
+      <alignment vertical="center"/>
+    </xf>
+    <xf numFmtId="180" fontId="3" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyBorder="1" applyAlignment="1">
+      <alignment horizontal="center" vertical="center"/>
+    </xf>
+    <xf numFmtId="181" fontId="3" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyBorder="1">
+      <alignment vertical="center"/>
+    </xf>
+  </cellXfs>
+  <cellStyles count="2">
+    <cellStyle name="常规" xfId="0" builtinId="0"/>
+    <cellStyle name="千位分隔" xfId="1" builtinId="3"/>
+  </cellStyles>
+  <dxfs count="0"/>
+  <tableStyles count="0" defaultTableStyle="TableStyleMedium9" defaultPivotStyle="PivotStyleLight16"/>
+  <extLst>
+    <ext xmlns:x14="http://schemas.microsoft.com/office/spreadsheetml/2009/9/main" uri="{EB79DEF2-80B8-43e5-95BD-54CBDDF9020C}">
+      <x14:slicerStyles defaultSlicerStyle="SlicerStyleLight1"/>
+    </ext>
+    <ext xmlns:x15="http://schemas.microsoft.com/office/spreadsheetml/2010/11/main" uri="{9260A510-F301-46a8-8635-F512D64BE5F5}">
+      <x15:timelineStyles defaultTimelineStyle="TimeSlicerStyleLight1"/>
+    </ext>
+  </extLst>
+</styleSheet>

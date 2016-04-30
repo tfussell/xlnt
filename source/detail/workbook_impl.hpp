@@ -73,12 +73,6 @@ struct workbook_impl
         guess_types_ = other.guess_types_;
         data_only_ = other.data_only_;
         read_only_ = other.read_only_;
-        styles_ = other.styles_;
-        borders_ = other.borders_;
-        fills_ = other.fills_;
-        fonts_ = other.fonts_;
-        number_formats_ = other.number_formats_;
-        colors_ = other.colors_;
         manifest_ = other.manifest_;
 
         return *this;
@@ -98,24 +92,12 @@ struct workbook_impl
     bool data_only_;
     bool read_only_;
 
-    std::vector<format> cell_style_formats_;
-    std::vector<format> cell_formats_;
     std::vector<style> styles_;
-
     std::size_t next_custom_format_id_;
-
-    std::vector<color> colors_;
-    std::vector<border> borders_;
-    std::vector<fill> fills_;
-    std::vector<font> fonts_;
-    std::vector<number_format> number_formats_;
-
-    manifest manifest_;
-
-    theme theme_;
-
-    encoding encoding_;
     
+    manifest manifest_;
+    theme theme_;
+    encoding encoding_;
     std::vector<std::uint8_t> thumbnail_;
 };
 

@@ -1,0 +1,76 @@
+<?xml version="1.0" standalone="yes" ?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="x14ac" xmlns:x14ac="http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac">
+ <fonts count="5" x14ac:knownFonts="1">
+  <font>
+   <sz val="12"/>
+   <color theme="1"/>
+   <name val="Calibri"/>
+   <family val="2"/>
+   <scheme val="minor"/>
+  </font>
+  <font>
+   <u/>
+   <sz val="12"/>
+   <color theme="10"/>
+   <name val="Calibri"/>
+   <family val="2"/>
+   <scheme val="minor"/>
+  </font>
+  <font>
+   <u/>
+   <sz val="12"/>
+   <color theme="11"/>
+   <name val="Calibri"/>
+   <family val="2"/>
+   <scheme val="minor"/>
+  </font>
+  <font>
+   <sz val="12"/>
+   <color theme="6"/>
+   <name val="Calibri"/>
+   <scheme val="minor"/>
+  </font>
+  <font>
+   <sz val="12"/>
+   <color theme="5"/>
+   <name val="Calibri"/>
+   <scheme val="minor"/>
+  </font>
+ </fonts>
+ <fills count="2">
+  <fill>
+   <patternFill patternType="none"/>
+  </fill>
+  <fill>
+   <patternFill patternType="gray125"/>
+  </fill>
+ </fills>
+ <borders count="1">
+  <border>
+   <left/>
+   <right/>
+   <top/>
+   <bottom/>
+   <diagonal/>
+  </border>
+ </borders>
+ <cellStyleXfs count="3">
+  <xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>
+  <xf numFmtId="0" fontId="1" fillId="0" borderId="0" applyNumberFormat="0" applyFill="0" applyBorder="0" applyAlignment="0" applyProtection="0"/>
+  <xf numFmtId="0" fontId="2" fillId="0" borderId="0" applyNumberFormat="0" applyFill="0" applyBorder="0" applyAlignment="0" applyProtection="0"/>
+ </cellStyleXfs>
+ <cellXfs count="3">
+  <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+  <xf numFmtId="0" fontId="4" fillId="0" borderId="0" xfId="0" applyFont="1"/>
+  <xf numFmtId="0" fontId="3" fillId="0" borderId="0" xfId="0" applyFont="1" applyProtection="1">
+   <protection locked="0"/>
+  </xf>
+ </cellXfs>
+ <cellStyles count="3">
+  <cellStyle name="Followed Hyperlink" xfId="2" builtinId="9" hidden="1"/>
+  <cellStyle name="Hyperlink" xfId="1" builtinId="8" hidden="1"/>
+  <cellStyle name="Normal" xfId="0" builtinId="0"/>
+ </cellStyles>
+ <dxfs count="0"/>
+ <tableStyles count="0" defaultTableStyle="TableStyleMedium9" defaultPivotStyle="PivotStyleMedium4"/>
+</styleSheet>

@@ -664,6 +664,12 @@ std::size_t workbook::add_style(const xlnt::style &style_)
     return d_->styles_.back().id_;
 }
 
+const std::vector<style> &workbook::get_named_styles() const
+{
+    static std::vector<style> named_styles;
+    return named_styles;
+}
+
 color workbook::add_indexed_color(const color &rgb_color)
 {
 	std::size_t index = 0;

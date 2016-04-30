@@ -56,11 +56,15 @@ public:
     void set_shrink_to_fit(bool shrink_to_fit);
     
     bool get_shrink_to_fit() const;
+    
+    void apply(bool value);
+    bool apply() const;
 
 protected:
     std::string to_hash_string() const override;
 
 private:
+    bool apply_ = false;
     horizontal_alignment horizontal_ = horizontal_alignment::none;
     vertical_alignment vertical_ = vertical_alignment::none;
     int text_rotation_ = 0;

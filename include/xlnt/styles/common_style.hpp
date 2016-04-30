@@ -33,75 +33,67 @@
 
 namespace xlnt {
 
-class workbook;
+class cell;
+namespace detail { struct workbook_impl; }
 
 /// <summary>
-/// Describes the entirety of the formatting of a particular cell.
+/// Describes the formatting of a particular cell.
 /// </summary>
-class XLNT_CLASS format : public hashable
+class XLNT_CLASS common_style : public hashable
 {
 public:
-    format();
-    format(const format &other);
-    format &operator=(const format &other);
+    common_style();
+    common_style(const common_style &other);
+    common_style &operator=(const common_style &other);
+    
+    void reset();
 
-    std::size_t hash() const;
-
-    const alignment get_alignment() const;
-    const border get_border() const;
-    const fill get_fill() const;
-    const font get_font() const;
-    const number_format get_number_format() const;
-    const protection get_protection() const;
-    bool pivot_button() const;
-    bool quote_prefix() const;
-
-    std::size_t get_id() const;
-    std::size_t get_fill_id() const;
-    std::size_t get_font_id() const;
-    std::size_t get_border_id() const;
-    std::size_t get_number_format_id() const;
-
-    void apply_alignment(bool apply);
-    void apply_border(bool apply);
-    void apply_fill(bool apply);
-    void apply_font(bool apply);
-    void apply_number_format(bool apply);
-    void apply_protection(bool apply);
-
+    // Alignment
+    alignment &get_alignment();
+    const alignment &get_alignment() const;
+    void set_alignment(const alignment &new_alignment);
+    void remove_alignment();
+    
+    // Border
+    border &get_border();
+    const border &get_border() const;
+    void set_border(const border &new_border);
+    void remove_border();
+    
+    // Fill
+    fill &get_fill();
+    const fill &get_fill() const;
+    void set_fill(const fill &new_fill);
+    void remove_fill();
+    
+    // Font
+    font &get_font();
+    const font &get_font() const;
+    void set_font(const font &new_font);
+    void remove_font();
+    
+    // Number Format
+    number_format &get_number_format();
+    const number_format &get_number_format() const;
+    void set_number_format(const number_format &new_number_format);
+    void remove_number_format();
+    
+    // Protection
+    protection &get_protection();
+    const protection &get_protection() const;
+    void set_protection(const protection &new_protection);
+    void remove_protection();
+    
 protected:
     std::string to_hash_string() const override;
 
 private:
-    friend class style_serializer;
-    friend class workbook;
-
-    std::size_t id_;
-
-    bool alignment_apply_;
     alignment alignment_;
-
-    bool border_apply_;
-    std::size_t border_id_;
     border border_;
-
-    bool fill_apply_;
-    std::size_t fill_id_;
     fill fill_;
-
-    bool font_apply_;
-    std::size_t font_id_;
     font font_;
-
-    bool number_format_apply_;
-    std::size_t number_format_id_;
     number_format number_format_;
-
-    bool protection_apply_;
     protection protection_;
-
-    bool pivot_button_;
-    bool quote_prefix_;
 };
 
 } // namespace xlnt

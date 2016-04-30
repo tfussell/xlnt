@@ -38,6 +38,7 @@ enum class calendar;
 class alignment;
 class border;
 class cell_reference;
+class cell_style;
 class comment;
 class fill;
 class font;
@@ -194,21 +195,20 @@ public:
     bool has_style() const;
 
     /// <summary>
-    /// Return the index of this cell's style in its parent workbook.
-    /// This is also the index of the style in the stylesheet XML, xl/styles.xml.
+    /// Return a reference to the style applied to this cell.
     /// </summary>
-    std::size_t get_style_id() const;
+    cell_style &get_style();
 
     /// <summary>
-    /// Set the style index of this cell. This should be an existing style in
-    /// the parent workbook.
+    /// Return a reference to the style applied to this cell.
     /// </summary>
-    void set_style_id(std::size_t style_id);
+    const cell_style &get_style() const;
 
     /// <summary>
     /// Return the number format of this cell.
     /// </summary>
     const number_format &get_number_format() const;
+    
     void set_number_format(const number_format &format);
 
     /// <summary>
@@ -245,20 +245,6 @@ public:
     const protection &get_protection() const;
 
     void set_protection(const protection &protection_);
-
-    void set_pivot_button(bool b);
-
-    /// <summary>
-    /// Return true iff pivot button?
-    /// </summary>
-    bool pivot_button() const;
-
-    void set_quote_prefix(bool b);
-
-    /// <summary>
-    /// Return true iff quote prefix?
-    /// </summary>
-    bool quote_prefix() const;
 
     // comment
 
