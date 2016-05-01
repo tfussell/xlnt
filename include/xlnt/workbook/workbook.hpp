@@ -181,6 +181,10 @@ public:
     bool has_loaded_theme() const;
     const theme &get_loaded_theme() const;
     
+    cell_style &get_style(std::size_t style_index);
+    const cell_style &get_style(std::size_t style_index) const;
+    std::size_t add_style(const cell_style &style);
+    
     // Named Styles
     bool has_named_style(const std::string &name);
     named_style &get_named_style(const std::string &name);

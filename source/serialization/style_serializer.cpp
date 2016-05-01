@@ -33,6 +33,7 @@
 #include <xlnt/styles/cell_style.hpp>
 #include <xlnt/styles/fill.hpp>
 #include <xlnt/styles/font.hpp>
+#include <xlnt/styles/named_style.hpp>
 #include <xlnt/styles/number_format.hpp>
 #include <xlnt/styles/protection.hpp>
 #include <xlnt/workbook/worksheet_iterator.hpp>
@@ -1180,7 +1181,7 @@ bool style_serializer::write_colors(xlnt::xml_node &colors_node) const
     return true;
 }
 
-bool write_colors(xlnt::xml_node &ext_list_node)
+bool style_serializer::write_ext_list(xlnt::xml_node &ext_list_node) const
 {
     auto ext_node = ext_list_node.add_child("ext");
     ext_node.add_attribute("uri", "{EB79DEF2-80B8-43e5-95BD-54CBDDF9020C}");
@@ -1250,6 +1251,11 @@ bool style_serializer::write_number_formats(xml_node &number_formats_node) const
     }
 
     return true;
+}
+
+bool style_serializer::read_named_styles(const xlnt::xml_node &named_styles_node, const xlnt::xml_node &cell_styles_node)
+{
+    return false;
 }
 
 } // namespace xlnt

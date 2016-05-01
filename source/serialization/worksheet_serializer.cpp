@@ -197,7 +197,7 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml)
 
                 if (has_style)
                 {
-                    cell.set_style_id(style_id);
+                    cell.set_style(sheet_.get_parent().get_style(style_id));
                 }
             }
         }

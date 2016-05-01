@@ -27,6 +27,8 @@
 
 namespace xlnt {
 
+class named_style;
+
 /// <summary>
 /// Describes the formatting of a particular cell.
 /// </summary>

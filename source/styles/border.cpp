@@ -149,4 +149,14 @@ std::string border::to_hash_string() const
     return hash_string;
 }
 
+bool border::apply() const
+{
+    return apply_;
+}
+
+void border::apply(bool value)
+{
+    apply_ = value;
+}
+
 } // namespace xlnt

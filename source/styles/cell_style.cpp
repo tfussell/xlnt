@@ -30,17 +30,12 @@
 
 namespace xlnt {
 
-cell_style::cell_style(cell parent) : parent_(parent)
+cell_style::cell_style()
 {
 }
 
 cell_style::cell_style(const cell_style &other)
-    : alignment_(other.alignment_),
-      border_(other.border_),
-      fill_(other.fill_),
-      font_(other.font_),
-      number_format_(other.number_format_),
-      protection_(other.protection_)
+    : common_style(other)
 {
 }
 
@@ -57,36 +52,6 @@ cell_style &cell_style::operator=(const cell_style &other)
     protection_ = other.protection_;
 
     return *this;
-}
-
-const alignment &cell_style::get_alignment() const
-{
-    return alignment_;
-}
-
-const number_format &cell_style::get_number_format() const
-{
-    return number_format_;
-}
-
-const border &cell_style::get_border() const
-{
-    return border_;
-}
-
-const fill &cell_style::get_fill() const
-{
-    return fill_;
-}
-
-const font &cell_style::get_font() const
-{
-    return font_;
-}
-
-const protection &cell_style::get_protection() const
-{
-    return protection_;
 }
 
 std::string cell_style::to_hash_string() const

@@ -87,7 +87,6 @@ public:
 protected:
     std::string to_hash_string() const override;
 
-private:
     alignment alignment_;
     border border_;
     fill fill_;

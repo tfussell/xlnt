@@ -1175,4 +1175,14 @@ std::string number_format::format(long double number, calendar base_date) const
     return format_number(number, format_string_, base_date);
 }
 
+bool number_format::apply() const
+{
+    return apply_;
+}
+
+void number_format::apply(bool value)
+{
+    apply_ = value;
+}
+
 } // namespace xlnt

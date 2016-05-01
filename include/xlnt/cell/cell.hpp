@@ -203,6 +203,8 @@ public:
     /// Return a reference to the style applied to this cell.
     /// </summary>
     const cell_style &get_style() const;
+    
+    void set_style(const cell_style &style);
 
     /// <summary>
     /// Return the number format of this cell.
@@ -371,9 +373,12 @@ public:
     friend XLNT_FUNCTION std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell);
 
 private:
+    std::size_t get_style_id() const;
+    
     // make these friends so they can use the private constructor
     friend class style;
     friend class worksheet;
+    friend class worksheet_serializer;
     friend struct detail::cell_impl;
 
     /// <summary>

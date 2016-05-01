@@ -254,6 +254,8 @@ public:
     
     bool write_colors(xml_node &colors_node) const;
     
+    bool write_ext_list(xml_node &ext_list_node) const;
+    
 private:
     void initialize_vectors();
     

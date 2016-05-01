@@ -584,11 +584,11 @@ const number_format &cell::get_number_format() const
 {
     if (d_->has_style_)
     {
-        return get_parent().get_parent().get_number_format(d_->style_id_);
+        return get_parent().get_parent().get_style(d_->style_id_).get_number_format();
     }
     else
     {
-        return get_parent().get_parent().get_number_formats().front();
+        return get_parent().get_parent().get_style(0).get_number_format();
     }
 }
 
@@ -596,43 +596,60 @@ const font &cell::get_font() const
 {
     if (d_->has_style_)
     {
-        auto font_id = get_parent().get_parent().get_cell_formats()[d_->style_id_].get_font_id();
-        return get_parent().get_parent().get_font(font_id);
+        return get_parent().get_parent().get_style(d_->style_id_).get_font();
     }
     else
     {
-        return get_parent().get_parent().get_font(0);
+        return get_parent().get_parent().get_style(0).get_font();
     }
 }
 
 const fill &cell::get_fill() const
 {
-    return get_parent().get_parent().get_fill(get_parent().get_parent().get_cell_format(d_->style_id_).get_fill_id());
+    if (d_->has_style_)
+    {
+        return get_parent().get_parent().get_style(d_->style_id_).get_fill();
+    }
+    else
+    {
+        return get_parent().get_parent().get_style(0).get_fill();
+    }
 }
 
 const border &cell::get_border() const
 {
-    return get_parent().get_parent().get_border(get_parent().get_parent().get_cell_format(d_->style_id_).get_border_id());
+    if (d_->has_style_)
+    {
+        return get_parent().get_parent().get_style(d_->style_id_).get_border();
+    }
+    else
+    {
+        return get_parent().get_parent().get_style(0).get_border();
+    }
 }
 
 const alignment &cell::get_alignment() const
 {
-    return get_parent().get_parent().get_alignment(d_->style_id_);
+    if (d_->has_style_)
+    {
+        return get_parent().get_parent().get_style(d_->style_id_).get_alignment();
+    }
+    else
+    {
+        return get_parent().get_parent().get_style(0).get_alignment();
+    }
 }
 
 const protection &cell::get_protection() const
 {
-    return get_parent().get_parent().get_protection(d_->style_id_);
-}
-
-bool cell::pivot_button() const
-{
-    return d_->pivot_button_;
-}
-
-bool cell::quote_prefix() const
-{
-    return d_->quote_prefix_;
+    if (d_->has_style_)
+    {
+        return get_parent().get_parent().get_style(d_->style_id_).get_protection();
+    }
+    else
+    {
+        return get_parent().get_parent().get_style(0).get_protection();
+    }
 }
 
 void cell::clear_value()
@@ -750,37 +767,49 @@ XLNT_FUNCTION timedelta cell::get_value() const
 void cell::set_border(const xlnt::border &border_)
 {
     d_->has_style_ = true;
-    d_->style_id_ = get_parent().get_parent().set_border(border_, d_->style_id_);
+    auto style_copy = get_parent().get_parent().get_style(d_->style_id_);
+    style_copy.set_border(border_);
+    d_->style_id_ = get_parent().get_parent().add_style(style_copy);
 }
 
 void cell::set_fill(const xlnt::fill &fill_)
 {
     d_->has_style_ = true;
-    d_->style_id_ = get_parent().get_parent().set_fill(fill_, d_->style_id_);
+    auto style_copy = get_parent().get_parent().get_style(d_->style_id_);
+    style_copy.set_fill(fill_);
+    d_->style_id_ = get_parent().get_parent().add_style(style_copy);
 }
 
 void cell::set_font(const font &font_)
 {
     d_->has_style_ = true;
-    d_->style_id_ = get_parent().get_parent().set_font(font_, d_->style_id_);
+    auto style_copy = get_parent().get_parent().get_style(d_->style_id_);
+    style_copy.set_font(font_);
+    d_->style_id_ = get_parent().get_parent().add_style(style_copy);
 }
 
 void cell::set_number_format(const number_format &number_format_)
 {
     d_->has_style_ = true;
-    d_->style_id_ = get_parent().get_parent().set_number_format(number_format_, d_->style_id_);
+    auto style_copy = get_parent().get_parent().get_style(d_->style_id_);
+    style_copy.set_number_format(number_format_);
+    d_->style_id_ = get_parent().get_parent().add_style(style_copy);
 }
 
 void cell::set_alignment(const xlnt::alignment &alignment_)
 {
     d_->has_style_ = true;
-    d_->style_id_ = get_parent().get_parent().set_alignment(alignment_, d_->style_id_);
+    auto style_copy = get_parent().get_parent().get_style(d_->style_id_);
+    style_copy.set_alignment(alignment_);
+    d_->style_id_ = get_parent().get_parent().add_style(style_copy);
 }
 
 void cell::set_protection(const xlnt::protection &protection_)
 {
     d_->has_style_ = true;
-    d_->style_id_ = get_parent().get_parent().set_protection(protection_, d_->style_id_);
+    auto style_copy = get_parent().get_parent().get_style(d_->style_id_);
+    style_copy.set_protection(protection_);
+    d_->style_id_ = get_parent().get_parent().add_style(style_copy);
 }
 
 template <>
@@ -815,9 +844,9 @@ std::string cell::to_string() const
     }
 }
 
-std::size_t cell::get_style_id() const
+cell_style &cell::get_style()
 {
-    return d_->style_id_;
+    return get_parent().get_parent().get_style(d_->style_id_);
 }
 
 bool cell::has_style() const
@@ -825,9 +854,9 @@ bool cell::has_style() const
     return d_->has_style_;
 }
 
-void cell::set_style_id(std::size_t style_id)
+void cell::set_style(const cell_style &style)
 {
-    d_->style_id_ = style_id;
+    d_->style_id_ = get_parent().get_parent().add_style(style);
     d_->has_style_ = true;
 }
 
@@ -841,14 +870,9 @@ std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)
     return stream << cell.to_string();
 }
 
-void cell::set_pivot_button(bool b)
+std::size_t cell::get_style_id() const
 {
-    d_->pivot_button_ = b;
-}
-
-void cell::set_quote_prefix(bool b)
-{
-    d_->quote_prefix_ = b;
+    return d_->style_id_;
 }
 
 } // namespace xlnt

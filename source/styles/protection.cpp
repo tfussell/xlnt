@@ -54,4 +54,14 @@ std::string protection::to_hash_string() const
     return hash_string;
 }
 
+bool protection::apply() const
+{
+    return apply_;
+}
+
+void protection::apply(bool value)
+{
+    apply_ = value;
+}
+
 } // namespace xlnt

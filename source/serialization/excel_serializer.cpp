@@ -37,6 +37,8 @@
 #include <xlnt/serialization/xml_serializer.hpp>
 #include <xlnt/packaging/document_properties.hpp>
 #include <xlnt/packaging/manifest.hpp>
+#include <xlnt/styles/cell_style.hpp>
+#include <xlnt/styles/named_style.hpp>
 #include <xlnt/utils/exceptions.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/workbook/worksheet_iterator.hpp>
