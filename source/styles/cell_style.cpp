@@ -56,27 +56,24 @@ cell_style &cell_style::operator=(const cell_style &other)
 
 std::string cell_style::to_hash_string() const
 {
-    std::string hash_string("style");
+    auto hash_string = common_style::to_hash_string();
+    hash_string.append(":cell_style:");
     
-    hash_string.append(std::to_string(alignment_.apply()));
-    hash_string.append(alignment_.apply() ? std::to_string(alignment_.hash()) : " ");
-
-    hash_string.append(std::to_string(border_.apply()));
-    hash_string.append(border_.apply() ? std::to_string(border_.hash()) : " ");
-
-    hash_string.append(std::to_string(font_.apply()));
-    hash_string.append(font_.apply() ? std::to_string(font_.hash()) : " ");
-
-    hash_string.append(std::to_string(fill_.apply()));
-    hash_string.append(fill_.apply() ? std::to_string(fill_.hash()) : " ");
-
-    hash_string.append(std::to_string(number_format_.apply()));
-    hash_string.append(number_format_.apply() ? std::to_string(number_format_.hash()) : " ");
-
-    hash_string.append(std::to_string(protection_.apply()));
-    hash_string.append(protection_.apply() ? std::to_string(protection_.hash()) : " ");
+    if (!named_style_name_.empty())
+    {
+        hash_string.append(named_style_name_);
+    }
+    else
+    {
+        hash_string.append(":");
+    }
 
     return hash_string;
+}
+
+void cell_style::set_named_style(const std::string &style_name)
+{
+    named_style_name_ = style_name;
 }
 
 } // namespace xlnt

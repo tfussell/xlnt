@@ -346,13 +346,20 @@ named_style style_serializer::read_named_style(const xml_node &named_style_node,
     auto base_style_node = style_parent_node.get_children().at(base_style_id);
     auto base_style = read_cell_style(base_style_node);
     
+    //TODO shouldn't have to set apply after set_X()
     s.set_alignment(base_style.get_alignment());
+    s.get_alignment().apply(base_style.get_alignment().apply());
     s.set_border(base_style.get_border());
+    s.get_border().apply(base_style.get_border().apply());
     s.set_fill(base_style.get_fill());
+    s.get_fill().apply(base_style.get_fill().apply());
     s.set_font(base_style.get_font());
+    s.get_font().apply(base_style.get_font().apply());
     s.set_number_format(base_style.get_number_format());
+    s.get_number_format().apply(base_style.get_number_format().apply());
     s.set_protection(base_style.get_protection());
-
+    s.get_protection().apply(base_style.get_protection().apply());
+    
     return s;
 }
 
@@ -367,6 +374,16 @@ bool style_serializer::read_stylesheet(const xml_document &xml)
     read_colors(stylesheet_node.get_child("colors"));
     read_named_styles(stylesheet_node.get_child("cellStyles"), stylesheet_node.get_child("cellStyleXfs"));
     read_cell_styles(stylesheet_node.get_child("cellXfs"));
+
+    for (const auto &ns : named_styles_)
+    {
+        workbook_.create_named_style(ns.second.get_name()) = ns.second;
+    }
+    
+    for (const auto &s : cell_styles_)
+    {
+        workbook_.add_style(s);
+    }
 
     return true;
 }
@@ -386,7 +403,24 @@ bool style_serializer::read_cell_styles(const xlnt::xml_node &cell_styles_node)
         {
             auto named_style_index = std::stoull(style_node.get_attribute("xfId"));
             auto named_style = named_styles_.at(named_style_index);
+            
+            style.set_named_style(named_style.get_name());
         }
+        
+        cell_styles_.push_back(style);
+    }
+    
+    return true;
+}
+
+bool style_serializer::read_named_styles(const xlnt::xml_node &named_styles_node, const xlnt::xml_node &cell_styles_node)
+{
+    for (auto named_style_node : named_styles_node.get_children())
+    {
+        auto ns = read_named_style(named_style_node, cell_styles_node);
+        auto named_style_index = std::stoull(named_style_node.get_attribute("xfId"));
+        
+        named_styles_[named_style_index] = ns;
     }
     
     return true;
@@ -1115,23 +1149,23 @@ bool style_serializer::write_named_styles(xml_node &cell_styles_node, xml_node &
 {
     styles_node.add_attribute("count", std::to_string(named_styles_.size()));
 
-    for(auto &style : named_styles_)
+    for(auto &key_style : named_styles_)
     {
         auto xf_node = styles_node.add_child("xf");
-        write_named_style(style, xf_node);
+        write_named_style(key_style.second, xf_node);
     }
     
     cell_styles_node.add_attribute("count", std::to_string(named_styles_.size()));
 
-    for(auto &style : named_styles_)
+    for(auto &key_style : named_styles_)
     {
         auto cell_style_node = cell_styles_node.add_child("cellStyle");
         
-        cell_style_node.add_attribute("name", style.get_name());
-//        cell_style_node.add_attribute("xfId", std::to_string(style.get_format_id()));
-        cell_style_node.add_attribute("builtinId", std::to_string(style.get_builtin_id()));
+        cell_style_node.add_attribute("name", key_style.second.get_name());
+        cell_style_node.add_attribute("xfId", std::to_string(key_style.first));
+        cell_style_node.add_attribute("builtinId", std::to_string(key_style.second.get_builtin_id()));
         
-        if (style.get_hidden())
+        if (key_style.second.get_hidden())
         {
             cell_style_node.add_attribute("hidden", "1");
         }
@@ -1253,9 +1287,29 @@ bool style_serializer::write_number_formats(xml_node &number_formats_node) const
     return true;
 }
 
-bool style_serializer::read_named_styles(const xlnt::xml_node &named_styles_node, const xlnt::xml_node &cell_styles_node)
+const std::vector<border> &style_serializer::get_borders() const
 {
-    return false;
+    return borders_;
+}
+
+const std::vector<fill> &style_serializer::get_fills() const
+{
+    return fills_;
+}
+
+const std::vector<font> &style_serializer::get_fonts() const
+{
+    return fonts_;
+}
+
+const std::vector<number_format> &style_serializer::get_number_formats() const
+{
+    return number_formats_;
+}
+
+const std::vector<color> &style_serializer::get_colors() const
+{
+    return colors_;
 }
 
 } // namespace xlnt

@@ -57,7 +57,7 @@ public:
         xlnt::workbook wb;
         xlnt::style_serializer s(wb);
         TS_ASSERT(s.read_stylesheet(doc));
-        TS_ASSERT_EQUALS(wb.get_number_formats().size(), 1);
+        TS_ASSERT_EQUALS(s.get_number_formats().size(), 1);
     }
 
     void test_from_complex()
@@ -68,10 +68,10 @@ public:
         xlnt::workbook wb;
         xlnt::style_serializer s(wb);
         TS_ASSERT(s.read_stylesheet(doc));
-        TS_ASSERT_EQUALS(wb.get_borders().size(), 7);
-        TS_ASSERT_EQUALS(wb.get_fills().size(), 6);
-        TS_ASSERT_EQUALS(wb.get_fonts().size(), 8);
-        TS_ASSERT_EQUALS(wb.get_number_formats().size(), 1);
+        TS_ASSERT_EQUALS(s.get_borders().size(), 7);
+        TS_ASSERT_EQUALS(s.get_fills().size(), 6);
+        TS_ASSERT_EQUALS(s.get_fonts().size(), 8);
+        TS_ASSERT_EQUALS(s.get_number_formats().size(), 1);
     }
 
     void test_merge_named_styles()

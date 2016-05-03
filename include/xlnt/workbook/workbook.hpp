@@ -83,6 +83,8 @@ public:
     workbook &operator=(workbook other);
     workbook(workbook &&other);
     workbook(const workbook &other);
+    
+    ~workbook();
 
     friend void swap(workbook &left, workbook &right);
 
@@ -190,6 +192,7 @@ public:
     named_style &get_named_style(const std::string &name);
     const named_style &get_named_style(const std::string &name) const;
     named_style &create_named_style(const std::string &name);
+    const std::vector<named_style> &get_named_styles() const;
 
     manifest &get_manifest();
     const manifest &get_manifest() const;

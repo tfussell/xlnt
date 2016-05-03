@@ -1095,7 +1095,7 @@ std::string number_format::to_hash_string() const
 {
     std::string hash_string("number_format");
     
-    hash_string.append(std::to_string(id_));
+//    hash_string.append(std::to_string(id_));
     hash_string.append(format_string_);
 
     return hash_string;

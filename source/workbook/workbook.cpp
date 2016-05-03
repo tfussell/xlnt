@@ -27,7 +27,6 @@
 #include <set>
 #include <sstream>
 
-#include <xlnt/drawing/drawing.hpp>
 #include <xlnt/packaging/app_properties.hpp>
 #include <xlnt/packaging/document_properties.hpp>
 #include <xlnt/packaging/manifest.hpp>
@@ -86,6 +85,8 @@ workbook::workbook() : d_(new detail::workbook_impl())
     d_->manifest_.add_override_type("/xl/sharedStrings.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml");
     d_->manifest_.add_override_type("/docProps/core.xml", "application/vnd.openxmlformats-package.core-properties+xml");
     d_->manifest_.add_override_type("/docProps/app.xml", "application/vnd.openxmlformats-officedocument.extended-properties+xml");
+    
+    add_style(cell_style());
 }
 
 workbook::workbook(encoding e) : workbook()
@@ -454,7 +455,6 @@ void workbook::clear()
     d_->worksheets_.clear();
     d_->relationships_.clear();
     d_->active_sheet_index_ = 0;
-    d_->drawings_.clear();
     d_->properties_ = document_properties();
 }
 
@@ -547,6 +547,15 @@ workbook::workbook(const workbook &other) : workbook()
     }
 }
 
+workbook::~workbook()
+{
+}
+
+const std::vector<named_style> &workbook::get_named_styles() const
+{
+    return d_->named_styles_;
+}
+
 bool workbook::get_data_only() const
 {
     return d_->data_only_;
@@ -598,8 +607,17 @@ std::vector<named_range> workbook::get_named_ranges() const
 
 std::size_t workbook::add_style(const cell_style &style)
 {
+    for (std::size_t i = 0; i < d_->cell_styles_.size(); i++)
+    {
+        if (d_->cell_styles_[i] == style)
+        {
+            return i;
+        }
+    }
+    
     d_->cell_styles_.push_back(style);
-    return d_->cell_styles_.size();
+    
+    return d_->cell_styles_.size() - 1;
 }
 
 cell_style &workbook::get_style(std::size_t style_index)
@@ -678,6 +696,16 @@ void workbook::set_thumbnail(const std::vector<std::uint8_t> &thumbnail)
 const std::vector<std::uint8_t> &workbook::get_thumbnail() const
 {
     return d_->thumbnail_;
+}
+
+named_style &workbook::create_named_style(const std::string &name)
+{
+    named_style style;
+    style.set_name(name);
+    
+    d_->named_styles_.push_back(style);
+    
+    return d_->named_styles_.back();
 }
 
 } // namespace xlnt

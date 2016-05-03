@@ -26,11 +26,28 @@
 namespace xlnt {
 
 named_style::named_style()
+    : hidden_(false),
+      builtin_id_(0)
 {
 }
 
 named_style::named_style(const named_style &other)
+    : common_style(other),
+      name_(other.name_),
+      hidden_(other.hidden_),
+      builtin_id_(other.builtin_id_)
 {
+}
+
+named_style &named_style::operator=(const named_style &other)
+{
+    common_style::operator=(other);
+    
+    name_ = other.name_;
+    hidden_ = other.hidden_;
+    builtin_id_ = other.builtin_id_;
+    
+    return *this;
 }
 
 bool named_style::get_hidden() const

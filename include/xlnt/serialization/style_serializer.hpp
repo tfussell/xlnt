@@ -28,6 +28,7 @@
 #include <vector>
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/styles/named_style.hpp>
 #include <xlnt/workbook/workbook.hpp>
 
 namespace xlnt {
@@ -256,6 +257,16 @@ public:
     
     bool write_ext_list(xml_node &ext_list_node) const;
     
+    const std::vector<border> &get_borders() const;
+    
+    const std::vector<fill> &get_fills() const;
+    
+    const std::vector<font> &get_fonts() const;
+    
+    const std::vector<number_format> &get_number_formats() const;
+    
+    const std::vector<color> &get_colors() const;
+    
 private:
     void initialize_vectors();
     
@@ -270,7 +281,7 @@ private:
     std::vector<font> fonts_;
     std::vector<number_format> number_formats_;
     std::vector<cell_style> cell_styles_;
-    std::vector<named_style> named_styles_;
+    std::unordered_map<std::size_t, named_style> named_styles_;
 };
 
 } // namespace xlnt

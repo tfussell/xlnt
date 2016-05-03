@@ -11,10 +11,11 @@ public:
     void test_write_number_formats()
     {
         xlnt::workbook wb;
-        wb.add_number_format(xlnt::number_format("YYYY"));
+        wb.get_active_sheet().get_cell("A1").set_number_format(xlnt::number_format("YYYY"));
         xlnt::style_serializer writer(wb);
         xlnt::xml_document observed;
-        writer.write_number_formats(observed.add_child("numFmts"));
+        auto num_fmts_node = observed.add_child("numFmts");
+        writer.write_number_formats(num_fmts_node);
         std::string expected =
         "    <numFmts count=\"1\">"
         "    <numFmt formatCode=\"YYYY\" numFmtId=\"164\"></numFmt>"

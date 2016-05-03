@@ -30,7 +30,25 @@ common_style::common_style()
 }
 
 common_style::common_style(const common_style &other)
+    : alignment_(other.alignment_),
+      border_(other.border_),
+      fill_(other.fill_),
+      font_(other.font_),
+      number_format_(other.number_format_),
+      protection_(other.protection_)
 {
+}
+
+common_style &common_style::operator=(const xlnt::common_style &other)
+{
+    alignment_ = other.alignment_;
+    border_ = other.border_;
+    fill_ = other.fill_;
+    font_ = other.font_;
+    number_format_ = other.number_format_;
+    protection_ = other.protection_;
+
+    return *this;
 }
 
 alignment &common_style::get_alignment()
@@ -46,6 +64,7 @@ const alignment &common_style::get_alignment() const
 void common_style::set_alignment(const xlnt::alignment &new_alignment)
 {
     alignment_ = new_alignment;
+    alignment_.apply(true);
 }
 
 number_format &common_style::get_number_format()
@@ -61,6 +80,7 @@ const number_format &common_style::get_number_format() const
 void common_style::set_number_format(const xlnt::number_format &new_number_format)
 {
     number_format_ = new_number_format;
+    number_format_.apply(true);
 }
 
 border &common_style::get_border()
@@ -76,6 +96,7 @@ const border &common_style::get_border() const
 void common_style::set_border(const xlnt::border &new_border)
 {
     border_ = new_border;
+    border_.apply(true);
 }
 
 fill &common_style::get_fill()
@@ -91,6 +112,7 @@ const fill &common_style::get_fill() const
 void common_style::set_fill(const xlnt::fill &new_fill)
 {
     fill_ = new_fill;
+    fill_.apply(true);
 }
 
 font &common_style::get_font()
@@ -106,6 +128,7 @@ const font &common_style::get_font() const
 void common_style::set_font(const xlnt::font &new_font)
 {
     font_ = new_font;
+    font_.apply(true);
 }
 
 protection &common_style::get_protection()
@@ -121,11 +144,32 @@ const protection &common_style::get_protection() const
 void common_style::set_protection(const xlnt::protection &new_protection)
 {
     protection_ = new_protection;
+    protection_.apply(true);
 }
 
 std::string common_style::to_hash_string() const
 {
-    return "common_style";
+    std::string hash_string("common_style:");
+    
+    hash_string.append(std::to_string(alignment_.apply()));
+    hash_string.append(alignment_.apply() ? std::to_string(alignment_.hash()) : ":");
+
+    hash_string.append(std::to_string(border_.apply()));
+    hash_string.append(border_.apply() ? std::to_string(border_.hash()) : ":");
+
+    hash_string.append(std::to_string(font_.apply()));
+    hash_string.append(font_.apply() ? std::to_string(font_.hash()) : ":");
+
+    hash_string.append(std::to_string(fill_.apply()));
+    hash_string.append(fill_.apply() ? std::to_string(fill_.hash()) : ":");
+
+    hash_string.append(std::to_string(number_format_.apply()));
+    hash_string.append(number_format_.apply() ? std::to_string(number_format_.hash()) : ":");
+
+    hash_string.append(std::to_string(protection_.apply()));
+    hash_string.append(protection_.apply() ? std::to_string(protection_.hash()) : ":");
+    
+    return hash_string;
 }
 
 } // namespace xlnt
