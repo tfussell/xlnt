@@ -52,6 +52,8 @@ public:
 		xlnt::xml_document expected_xml;
 		expected_xml.from_string(expected_contents);
 
+		auto observed_string = observed.to_string();
+
         return compare_xml(expected_xml.get_root(), observed.get_root());
     }
     

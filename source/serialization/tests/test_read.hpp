@@ -335,7 +335,7 @@ public:
         auto ws = wb.get_active_sheet();
 
         TS_ASSERT(ws.get_formula_attributes().empty());
-        TS_ASSERT(ws.get_parent().get_data_only());
+        TS_ASSERT(ws.get_workbook().get_data_only());
         TS_ASSERT(ws.get_cell("A2").get_data_type() == xlnt::cell::type::numeric);
         TS_ASSERT(ws.get_cell("A2").get_value<int>() == 12345);
         TS_ASSERT(!ws.get_cell("A2").has_formula());

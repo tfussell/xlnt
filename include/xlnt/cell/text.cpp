@@ -21,68 +21,42 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#include <xlnt/worksheet/worksheet.hpp>
 
-#include "cell_impl.hpp"
-#include "comment_impl.hpp"
+#include <xlnt/cell/text.hpp>
+#include <xlnt/cell/text_run.hpp>
 
 namespace xlnt {
-namespace detail {
 
-cell_impl::cell_impl() : cell_impl(column_t(1), 1)
+void text::clear()
 {
+	runs_.clear();
 }
 
-cell_impl::cell_impl(column_t column, row_t row) : cell_impl(nullptr, column, row)
+void text::set_plain_string(const std::string &s)
 {
+	clear();
+	add_run(text_run(s));
 }
 
-cell_impl::cell_impl(worksheet_impl *parent, column_t column, row_t row)
-    : type_(cell::type::null),
-      parent_(parent),
-      column_(column),
-      row_(row),
-      value_numeric_(0),
-      has_hyperlink_(false),
-      is_merged_(false),
-      has_style_(false),
-      style_id_(0),
-      comment_(nullptr)
+std::string text::get_plain_string() const
 {
+	std::string plain_string;
+
+	for (const auto &run : runs_)
+	{
+		plain_string.append(run.get_string());
+	}
+
+	return plain_string;
+}
+std::vector<text_run> text::get_runs()
+{
+	return runs_;
 }
 
-cell_impl::cell_impl(const cell_impl &rhs)
+void text::add_run(const text_run &t)
 {
-    *this = rhs;
+	runs_.push_back(t);
 }
 
-cell_impl &cell_impl::operator=(const cell_impl &rhs)
-{
-    parent_ = rhs.parent_;
-    value_numeric_ = rhs.value_numeric_;
-    value_text_ = rhs.value_text_;
-    hyperlink_ = rhs.hyperlink_;
-    formula_ = rhs.formula_;
-    column_ = rhs.column_;
-    row_ = rhs.row_;
-    is_merged_ = rhs.is_merged_;
-    has_hyperlink_ = rhs.has_hyperlink_;
-    type_ = rhs.type_;
-    style_id_ = rhs.style_id_;
-    has_style_ = rhs.has_style_;
-
-    if (rhs.comment_ != nullptr)
-    {
-        comment_.reset(new comment_impl(*rhs.comment_));
-    }
-
-    return *this;
-}
-
-cell cell_impl::self()
-{
-    return xlnt::cell(this);
-}
-
-} // namespace detail
 } // namespace xlnt

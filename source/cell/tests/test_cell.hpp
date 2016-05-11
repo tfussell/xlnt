@@ -391,7 +391,7 @@ public:
     void test_number_format()
     {
         auto ws = wb.create_sheet();
-        ws.get_parent().add_number_format(xlnt::number_format("dd--hh--mm"));
+        ws.get_workbook().add_number_format(xlnt::number_format("dd--hh--mm"));
     
         xlnt::cell cell(ws, "A1");
         cell.set_number_format(xlnt::number_format("dd--hh--mm"));
