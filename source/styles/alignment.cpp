@@ -90,14 +90,4 @@ std::string alignment::to_hash_string() const
     return hash_string;
 }
 
-bool alignment::apply() const
-{
-    return apply_;
-}
-
-void alignment::apply(bool value)
-{
-    apply_ = value;
-}
-
 } // namespace xlnt

@@ -117,16 +117,11 @@ public:
     double get_gradient_top() const;
 
     double get_gradient_bottom() const;
-    
-    void apply(bool value);
-    bool apply() const;
 
 protected:
     std::string to_hash_string() const override;
 
 private:
-    bool apply_ = false;
-    
     type type_ = type::none;
     pattern_type pattern_type_;
     gradient_type gradient_type_;

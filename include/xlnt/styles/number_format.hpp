@@ -95,15 +95,11 @@ public:
     std::string format(long double number, calendar base_date) const;
 
     bool is_date_format() const;
-    
-    void apply(bool value);
-    bool apply() const;
 
 protected:
     std::string to_hash_string() const override;
 
 private:
-    bool apply_ = false;
     bool id_set_;
     std::size_t id_;
     std::string format_string_;

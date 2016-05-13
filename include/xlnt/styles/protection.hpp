@@ -48,15 +48,11 @@ public:
 
     void set_locked(type locked_type);
     void set_hidden(type hidden_type);
-    
-    void apply(bool value);
-    bool apply() const;
 
 protected:
     std::string to_hash_string() const override;
 
 private:
-    bool apply_ = false;
     type locked_;
     type hidden_;
 };

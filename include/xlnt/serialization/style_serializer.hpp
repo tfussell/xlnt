@@ -37,6 +37,7 @@ class alignment;
 class border;
 class cell_style;
 class color;
+class common_style;
 class conditional_format;
 class fill;
 class font;
@@ -231,7 +232,7 @@ public:
     /// </summary>
     bool write_number_formats(xml_node &number_formats_node) const;
 
-    bool write_style_common(const alignment &style_alignment, const border &style_border, const fill &style_fill, const font &style_font, const number_format &style_number_format, const protection &style_protection, xml_node xf_node) const;
+    bool write_style_common(const common_style &style, xml_node xf_node) const;
 
     /// <summary>
     /// Build an xml tree representing the given style into style_node.

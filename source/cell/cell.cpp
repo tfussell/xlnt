@@ -876,49 +876,49 @@ XLNT_FUNCTION timedelta cell::get_value() const
 void cell::set_border(const xlnt::border &border_)
 {
     d_->has_style_ = true;
-    auto style_copy = get_parent().get_parent().get_style(d_->style_id_);
+    auto style_copy = get_workbook().get_style(d_->style_id_);
     style_copy.set_border(border_);
-    d_->style_id_ = get_parent().get_parent().add_style(style_copy);
+    d_->style_id_ = get_workbook().add_style(style_copy);
 }
 
 void cell::set_fill(const xlnt::fill &fill_)
 {
     d_->has_style_ = true;
-    auto style_copy = get_parent().get_parent().get_style(d_->style_id_);
+    auto style_copy = get_workbook().get_style(d_->style_id_);
     style_copy.set_fill(fill_);
-    d_->style_id_ = get_parent().get_parent().add_style(style_copy);
+    d_->style_id_ = get_workbook().add_style(style_copy);
 }
 
 void cell::set_font(const font &font_)
 {
     d_->has_style_ = true;
-    auto style_copy = get_parent().get_parent().get_style(d_->style_id_);
+    auto style_copy = get_workbook().get_style(d_->style_id_);
     style_copy.set_font(font_);
-    d_->style_id_ = get_parent().get_parent().add_style(style_copy);
+    d_->style_id_ = get_workbook().add_style(style_copy);
 }
 
 void cell::set_number_format(const number_format &number_format_)
 {
     d_->has_style_ = true;
-    auto style_copy = get_parent().get_parent().get_style(d_->style_id_);
+    auto style_copy = get_workbook().get_style(d_->style_id_);
     style_copy.set_number_format(number_format_);
-    d_->style_id_ = get_parent().get_parent().add_style(style_copy);
+    d_->style_id_ = get_workbook().add_style(style_copy);
 }
 
 void cell::set_alignment(const xlnt::alignment &alignment_)
 {
     d_->has_style_ = true;
-    auto style_copy = get_parent().get_parent().get_style(d_->style_id_);
+    auto style_copy = get_workbook().get_style(d_->style_id_);
     style_copy.set_alignment(alignment_);
-    d_->style_id_ = get_parent().get_parent().add_style(style_copy);
+    d_->style_id_ = get_workbook().add_style(style_copy);
 }
 
 void cell::set_protection(const xlnt::protection &protection_)
 {
     d_->has_style_ = true;
-    auto style_copy = get_parent().get_parent().get_style(d_->style_id_);
+    auto style_copy = get_workbook().get_style(d_->style_id_);
     style_copy.set_protection(protection_);
-    d_->style_id_ = get_parent().get_parent().add_style(style_copy);
+    d_->style_id_ = get_workbook().add_style(style_copy);
 }
 
 template <>
@@ -955,7 +955,7 @@ std::string cell::to_string() const
 
 cell_style &cell::get_style()
 {
-    return get_parent().get_parent().get_style(d_->style_id_);
+    return get_workbook().get_style(d_->style_id_);
 }
 
 bool cell::has_style() const
@@ -965,7 +965,7 @@ bool cell::has_style() const
 
 void cell::set_style(const cell_style &style)
 {
-    d_->style_id_ = get_parent().get_parent().add_style(style);
+    d_->style_id_ = get_workbook().add_style(style);
     d_->has_style_ = true;
 }
 

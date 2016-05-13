@@ -87,17 +87,12 @@ public:
     std::size_t get_family() const;
 
     bool has_scheme() const;
-    
-    void apply(bool value);
-    bool apply() const;
 
 protected:
     std::string to_hash_string() const override;
 
 private:
     friend class style;
-    
-    bool apply_ = false;
 
     std::string name_ = "Calibri";
     std::size_t size_ = 11;

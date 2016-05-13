@@ -1094,9 +1094,9 @@ std::string number_format::get_format_string() const
 std::string number_format::to_hash_string() const
 {
     std::string hash_string("number_format");
-    
-//    hash_string.append(std::to_string(id_));
     hash_string.append(format_string_);
+    hash_string.append("|||");
+    hash_string.append(std::to_string(id_));
 
     return hash_string;
 }
@@ -1173,16 +1173,6 @@ std::string number_format::format(const std::string &text) const
 std::string number_format::format(long double number, calendar base_date) const
 {
     return format_number(number, format_string_, base_date);
-}
-
-bool number_format::apply() const
-{
-    return apply_;
-}
-
-void number_format::apply(bool value)
-{
-    apply_ = value;
 }
 
 } // namespace xlnt

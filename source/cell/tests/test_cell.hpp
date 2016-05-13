@@ -10,6 +10,7 @@
 #include <xlnt/serialization/encoding.hpp>
 #include <xlnt/styles/alignment.hpp>
 #include <xlnt/styles/border.hpp>
+#include <xlnt/styles/cell_style.hpp>
 #include <xlnt/styles/font.hpp>
 #include <xlnt/styles/fill.hpp>
 #include <xlnt/styles/number_format.hpp>
@@ -367,7 +368,7 @@ public:
         cell.set_font(font);
         
         TS_ASSERT(cell.has_style());
-        TS_ASSERT(cell.get_font().apply());
+        TS_ASSERT(cell.get_style().font_applied());
         TS_ASSERT_EQUALS(cell.get_font(), font);
     }
     
@@ -383,7 +384,7 @@ public:
         cell.set_fill(f);
         
         TS_ASSERT(cell.has_style());
-        TS_ASSERT(cell.get_fill().apply());
+        TS_ASSERT(cell.get_style().fill_applied());
         TS_ASSERT_EQUALS(cell.get_fill(), f);
     }
     
@@ -397,7 +398,7 @@ public:
         cell.set_border(border);
         
         TS_ASSERT(cell.has_style());
-        TS_ASSERT(cell.get_border().apply());
+        TS_ASSERT(cell.get_style().border_applied());
         TS_ASSERT_EQUALS(cell.get_border(), border);
     }
     
@@ -410,7 +411,7 @@ public:
         cell.set_number_format(format);
         
         TS_ASSERT(cell.has_style());
-        TS_ASSERT(cell.get_number_format().apply());
+        TS_ASSERT(cell.get_style().number_format_applied());
         TS_ASSERT_EQUALS(cell.get_number_format().get_format_string(), "dd--hh--mm");
     }
     
@@ -425,7 +426,7 @@ public:
         cell.set_alignment(align);
         
         TS_ASSERT(cell.has_style());
-        TS_ASSERT(cell.get_alignment().apply());
+        TS_ASSERT(cell.get_style().alignment_applied());
         TS_ASSERT_EQUALS(cell.get_alignment(), align);
     }
     
@@ -440,7 +441,7 @@ public:
         cell.set_protection(prot);
         
         TS_ASSERT(cell.has_style());
-        TS_ASSERT(cell.get_protection().apply());
+        TS_ASSERT(cell.get_style().protection_applied());
         TS_ASSERT_EQUALS(cell.get_protection(), prot);
     }
 };

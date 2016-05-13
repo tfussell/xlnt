@@ -267,14 +267,4 @@ double fill::get_gradient_bottom() const
     return gradient_path_bottom_;
 }
 
-bool fill::apply() const
-{
-    return apply_;
-}
-
-void fill::apply(bool value)
-{
-    apply_ = value;
-}
-
 } // namespace xlnt

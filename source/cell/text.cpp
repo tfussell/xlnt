@@ -21,52 +21,42 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#pragma once
 
-#include <xlnt/xlnt_config.hpp>
-#include <xlnt/utils/hash_combine.hpp>
-#include <xlnt/styles/horizontal_alignment.hpp>
-#include <xlnt/styles/vertical_alignment.hpp>
-#include <xlnt/utils/hashable.hpp>
+#include <xlnt/cell/text.hpp>
+#include <xlnt/cell/text_run.hpp>
 
 namespace xlnt {
 
-/// <summary>
-/// Alignment options for use in cell formats.
-/// </summary>
-class XLNT_CLASS alignment : public hashable
+void text::clear()
 {
-public:
-    bool get_wrap_text() const;
+	runs_.clear();
+}
 
-    void set_wrap_text(bool wrap_text);
+void text::set_plain_string(const std::string &s)
+{
+	clear();
+	add_run(text_run(s));
+}
 
-    bool has_horizontal() const;
+std::string text::get_plain_string() const
+{
+	std::string plain_string;
 
-    horizontal_alignment get_horizontal() const;
+	for (const auto &run : runs_)
+	{
+		plain_string.append(run.get_string());
+	}
 
-    void set_horizontal(horizontal_alignment horizontal);
+	return plain_string;
+}
+std::vector<text_run> text::get_runs()
+{
+	return runs_;
+}
 
-    bool has_vertical() const;
-
-    vertical_alignment get_vertical() const;
-
-    void set_vertical(vertical_alignment vertical);
-    
-    void set_shrink_to_fit(bool shrink_to_fit);
-    
-    bool get_shrink_to_fit() const;
-
-protected:
-    std::string to_hash_string() const override;
-
-private:
-    horizontal_alignment horizontal_ = horizontal_alignment::none;
-    vertical_alignment vertical_ = vertical_alignment::none;
-    int text_rotation_ = 0;
-    bool wrap_text_ = false;
-    bool shrink_to_fit_ = false;
-    int indent_ = 0;
-};
+void text::add_run(const text_run &t)
+{
+	runs_.push_back(t);
+}
 
 } // namespace xlnt

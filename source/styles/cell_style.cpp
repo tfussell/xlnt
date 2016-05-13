@@ -41,15 +41,10 @@ cell_style::cell_style(const cell_style &other)
 
 cell_style &cell_style::operator=(const cell_style &other)
 {
+    common_style::operator=(other);
+    
     parent_ = other.parent_;
     named_style_name_ = other.named_style_name_;
-    
-    alignment_ = other.alignment_;
-    border_ = other.border_;
-    fill_ = other.fill_;
-    font_ = other.font_;
-    number_format_ = other.number_format_;
-    protection_ = other.protection_;
 
     return *this;
 }

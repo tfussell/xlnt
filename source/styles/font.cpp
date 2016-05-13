@@ -146,14 +146,4 @@ std::string font::to_hash_string() const
     return hash_string;
 }
 
-bool font::apply() const
-{
-    return apply_;
-}
-
-void font::apply(bool value)
-{
-    apply_ = value;
-}
-
 } // namespace xlnt

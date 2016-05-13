@@ -60,16 +60,11 @@ public:
     const std::experimental::optional<side> &get_vertical() const;
     std::experimental::optional<side> &get_horizontal();
     const std::experimental::optional<side> &get_horizontal() const;
-    
-    void apply(bool value);
-    bool apply() const;
 
 protected:
     std::string to_hash_string() const override;
 
 private:
-    bool apply_ = false;
-    
     std::experimental::optional<side> start_;
     std::experimental::optional<side> end_;
     std::experimental::optional<side> left_;

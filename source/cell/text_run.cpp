@@ -1,5 +1,4 @@
 // Copyright (c) 2014-2016 Thomas Fussell
-// Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,52 +20,27 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#pragma once
 
-#include <xlnt/xlnt_config.hpp>
-#include <xlnt/utils/hash_combine.hpp>
-#include <xlnt/styles/horizontal_alignment.hpp>
-#include <xlnt/styles/vertical_alignment.hpp>
-#include <xlnt/utils/hashable.hpp>
+#include <xlnt/cell/text_run.hpp>
 
 namespace xlnt {
 
-/// <summary>
-/// Alignment options for use in cell formats.
-/// </summary>
-class XLNT_CLASS alignment : public hashable
+text_run::text_run() : text_run("")
 {
-public:
-    bool get_wrap_text() const;
+}
 
-    void set_wrap_text(bool wrap_text);
+text_run::text_run(const std::string &string) : string_(string)
+{
+}
 
-    bool has_horizontal() const;
+std::string text_run::get_string() const
+{
+	return string_;
+}
 
-    horizontal_alignment get_horizontal() const;
-
-    void set_horizontal(horizontal_alignment horizontal);
-
-    bool has_vertical() const;
-
-    vertical_alignment get_vertical() const;
-
-    void set_vertical(vertical_alignment vertical);
-    
-    void set_shrink_to_fit(bool shrink_to_fit);
-    
-    bool get_shrink_to_fit() const;
-
-protected:
-    std::string to_hash_string() const override;
-
-private:
-    horizontal_alignment horizontal_ = horizontal_alignment::none;
-    vertical_alignment vertical_ = vertical_alignment::none;
-    int text_rotation_ = 0;
-    bool wrap_text_ = false;
-    bool shrink_to_fit_ = false;
-    int indent_ = 0;
-};
+void text_run::set_string(const std::string &string)
+{
+	string_ = string;
+}
 
 } // namespace xlnt

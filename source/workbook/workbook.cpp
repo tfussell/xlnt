@@ -607,17 +607,45 @@ std::vector<named_range> workbook::get_named_ranges() const
 
 std::size_t workbook::add_style(const cell_style &style)
 {
+    cell_style style_copy = style;
+    
+    //TODO this is ugly
+    if (!style.get_number_format().has_id())
+    {
+        bool match = false;
+        
+        for (std::size_t i = 0; i < d_->cell_styles_.size(); i++)
+        {
+            if (d_->cell_styles_.at(i).get_number_format().get_format_string() == style_copy.get_number_format().get_format_string())
+            {
+                style_copy.set_number_format(d_->cell_styles_.at(i).get_number_format());
+                match = true;
+                break;
+            }
+        }
+        
+        if (!match)
+        {
+            style_copy.get_number_format().set_id(d_->next_custom_format_id_++);
+        }
+    }
+    
     for (std::size_t i = 0; i < d_->cell_styles_.size(); i++)
     {
-        if (d_->cell_styles_[i] == style)
+        if (d_->cell_styles_[i] == style_copy)
         {
             return i;
         }
     }
     
-    d_->cell_styles_.push_back(style);
+    d_->cell_styles_.push_back(style_copy);
     
     return d_->cell_styles_.size() - 1;
+}
+
+void workbook::clear_styles()
+{
+    d_->cell_styles_.clear();
 }
 
 cell_style &workbook::get_style(std::size_t style_index)
