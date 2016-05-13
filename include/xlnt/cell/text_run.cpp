@@ -20,64 +20,27 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#pragma once
 
-#include <cstdlib>
-
-#include <xlnt/cell/cell.hpp>
-#include <xlnt/cell/text.hpp>
-#include <xlnt/cell/comment.hpp>
-#include <xlnt/cell/index_types.hpp>
-#include <xlnt/utils/exceptions.hpp>
-#include <xlnt/utils/time.hpp>
-#include <xlnt/packaging/relationship.hpp>
-#include <xlnt/styles/number_format.hpp>
-
-#include "comment_impl.hpp"
+#include <xlnt/cell/text_run.hpp>
 
 namespace xlnt {
 
-class style;
-
-namespace detail {
-
-struct worksheet_impl;
-
-struct cell_impl
+text_run::text_run() : text_run("")
 {
-    cell_impl();
-    cell_impl(column_t column, row_t row);
-    cell_impl(worksheet_impl *parent, column_t column, row_t row);
-    cell_impl(const cell_impl &rhs);
-    cell_impl &operator=(const cell_impl &rhs);
+}
 
-    cell self();
+text_run::text_run(const std::string &string) : string_(string)
+{
+}
 
-    cell::type type_;
+std::string text_run::get_string() const
+{
+	return string_;
+}
 
-    worksheet_impl *parent_;
+void text_run::set_string(const std::string &string)
+{
+	string_ = string;
+}
 
-    column_t column_;
-    row_t row_;
-
-    text value_text_;
-    long double value_numeric_;
-
-    std::string formula_;
-
-    bool has_hyperlink_;
-    relationship hyperlink_;
-
-    bool is_merged_;
-
-    bool has_style_;
-    std::size_t style_id_;
-
-    std::unique_ptr<comment_impl> comment_;
-    
-    bool pivot_button_;
-    bool quote_prefix_;
-};
-
-} // namespace detail
 } // namespace xlnt

@@ -86,7 +86,7 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml)
         }
     }
 
-    auto &shared_strings = sheet_.get_parent().get_shared_strings();
+    auto &shared_strings = sheet_.get_workbook().get_shared_strings();
 
     for (auto row_node : sheet_data_node.get_children())
     {
@@ -158,7 +158,7 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml)
 
                 auto cell = sheet_.get_cell(address);
 
-                if (has_formula && !has_shared_formula && !sheet_.get_parent().get_data_only())
+                if (has_formula && !has_shared_formula && !sheet_.get_workbook().get_data_only())
                 {
                     std::string formula = cell_node.get_child("f").get_text();
                     cell.set_formula(formula);
@@ -365,7 +365,7 @@ xml_document worksheet_serializer::write_worksheet() const
     std::unordered_map<std::string, std::string> hyperlink_references;
 
     auto sheet_data_node = root_node.add_child("sheetData");
-    const auto &shared_strings = sheet_.get_parent().get_shared_strings();
+    const auto &shared_strings = sheet_.get_workbook().get_shared_strings();
 
     for (auto row : sheet_.rows())
     {

@@ -407,7 +407,6 @@ public:
         auto cell = ws.get_cell("A1");
         
         xlnt::number_format format("dd--hh--mm");
-    
         cell.set_number_format(format);
         
         TS_ASSERT(cell.has_style());

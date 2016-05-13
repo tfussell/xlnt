@@ -13,7 +13,7 @@ public:
     {
         xlnt::workbook wb;
         xlnt::worksheet ws(wb);
-        TS_ASSERT(ws.get_parent() == wb);
+        TS_ASSERT(ws.get_workbook() == wb);
     }
     
     void test_get_cell()

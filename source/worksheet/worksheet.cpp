@@ -71,7 +71,7 @@ bool worksheet::has_frozen_panes() const
 
 std::string worksheet::unique_sheet_name(const std::string &value) const
 {
-    auto names = get_parent().get_sheet_names();
+    auto names = get_workbook().get_sheet_names();
     auto match = std::find(names.begin(), names.end(), value);
     std::size_t append = 0;
     while (match != names.end())
@@ -164,9 +164,14 @@ std::string worksheet::to_string() const
     return "<Worksheet \"" + d_->title_ + "\">";
 }
 
-workbook &worksheet::get_parent() const
+workbook &worksheet::get_workbook()
 {
     return *d_->parent_;
+}
+
+const workbook &worksheet::get_workbook() const
+{
+	return *d_->parent_;
 }
 
 void worksheet::garbage_collect()
@@ -313,7 +318,7 @@ bool worksheet::has_row_properties(row_t row) const
 
 range worksheet::get_named_range(const std::string &name)
 {
-    if (!get_parent().has_named_range(name))
+    if (!get_workbook().has_named_range(name))
     {
         throw key_error();
     }

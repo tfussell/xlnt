@@ -45,6 +45,7 @@ class font;
 class number_format;
 class protection;
 class relationship;
+class workbook;
 class worksheet;
 
 struct date;
@@ -317,16 +318,26 @@ public:
     /// <summary>
     /// Return the worksheet that owns this cell.
     /// </summary>
-    worksheet get_parent();
+    worksheet get_worksheet();
 
     /// <summary>
     /// Return the worksheet that owns this cell.
     /// </summary>
-    const worksheet get_parent() const;
+    const worksheet get_worksheet() const;
+
+	/// <summary>
+	/// Return the workbook of the worksheet that owns this cell.
+	/// </summary>
+	workbook &get_workbook();
+
+	/// <summary>
+	/// Return the workbook of the worksheet that owns this cell.
+	/// </summary>
+	const workbook &get_workbook() const;
 
     /// <summary>
     /// Shortcut to return the base date of the parent workbook.
-    /// Equivalent to get_parent().get_parent().get_properties().excel_base_date
+    /// Equivalent to get_workbook().get_properties().excel_base_date
     /// </summary>
     calendar get_base_date() const;
 
@@ -380,6 +391,8 @@ private:
     friend class worksheet;
     friend class worksheet_serializer;
     friend struct detail::cell_impl;
+
+	void guess_type_and_set_value(const std::string &value);
 
     /// <summary>
     /// Private constructor to create a cell from its implementation.

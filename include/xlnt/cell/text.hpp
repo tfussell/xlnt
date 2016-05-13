@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Thomas Fussell
+// Copyright (c) 2016 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,62 +22,28 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <cstdlib>
+#include <string>
+#include <vector>
 
-#include <xlnt/cell/cell.hpp>
-#include <xlnt/cell/text.hpp>
-#include <xlnt/cell/comment.hpp>
-#include <xlnt/cell/index_types.hpp>
-#include <xlnt/utils/exceptions.hpp>
-#include <xlnt/utils/time.hpp>
-#include <xlnt/packaging/relationship.hpp>
-#include <xlnt/styles/number_format.hpp>
-
-#include "comment_impl.hpp"
+#include <xlnt/xlnt_config.hpp> // for XLNT_CLASS, XLNT_FUNCTION
+#include <xlnt/cell/text_run.hpp>
 
 namespace xlnt {
 
-class style;
+class text_run;
 
-namespace detail {
-
-struct worksheet_impl;
-
-struct cell_impl
+class XLNT_CLASS text
 {
-    cell_impl();
-    cell_impl(column_t column, row_t row);
-    cell_impl(worksheet_impl *parent, column_t column, row_t row);
-    cell_impl(const cell_impl &rhs);
-    cell_impl &operator=(const cell_impl &rhs);
+public:
+	void clear();
+	void set_plain_string(const std::string &s);
+	std::string get_plain_string() const;
+	std::vector<text_run> get_runs();
+	void add_run(const text_run &t);
+	void set_run(const std::vector<text_run> &parts);
 
-    cell self();
-
-    cell::type type_;
-
-    worksheet_impl *parent_;
-
-    column_t column_;
-    row_t row_;
-
-    text value_text_;
-    long double value_numeric_;
-
-    std::string formula_;
-
-    bool has_hyperlink_;
-    relationship hyperlink_;
-
-    bool is_merged_;
-
-    bool has_style_;
-    std::size_t style_id_;
-
-    std::unique_ptr<comment_impl> comment_;
-    
-    bool pivot_button_;
-    bool quote_prefix_;
+private:
+	std::vector<text_run> runs_;
 };
 
-} // namespace detail
 } // namespace xlnt

@@ -72,7 +72,8 @@ public:
     worksheet(workbook &parent_workbook, const std::string &title = std::string());
 
     std::string to_string() const;
-    workbook &get_parent() const;
+    workbook &get_workbook();
+	const workbook &get_workbook() const;
     void garbage_collect();
 
     // title
