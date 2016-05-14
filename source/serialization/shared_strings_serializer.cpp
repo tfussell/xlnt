@@ -68,9 +68,18 @@ bool shared_strings_serializer::read_shared_strings(const xml_document &xml, std
         {
             strings.push_back(si_node.get_child("t").get_text());
         }
-        else if (si_node.has_child("r"))
+        else if (si_node.has_child("r")) // possible multiple text entities.
         {
-            strings.push_back(si_node.get_child("r").get_child("t").get_text());
+            std::string text;
+            for (const auto& r_node : si_node.get_children())
+            {
+                if (r_node.get_name() == "r" && r_node.has_child("t"))
+                {
+                    std::cout << r_node.get_child("t").get_text() << std::endl;
+                    text += r_node.get_child("t").get_text();
+                }
+            }
+            strings.push_back(std::move(text));
         }
     }
 

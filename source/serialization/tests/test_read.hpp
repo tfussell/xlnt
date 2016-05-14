@@ -184,6 +184,20 @@ public:
         TS_ASSERT_EQUALS(val, "Donald");
     }
     
+    void test_read_shared_strings_multiple_r_nodes()
+    {
+        auto path = PathHelper::GetDataDirectory("/reader/shared_strings-multiple_r_nodes.xlsx");
+
+        xlnt::workbook wb;
+        xlnt::excel_serializer serializer(wb);
+
+        serializer.load_workbook(path);
+
+        auto ws = wb["Sheet1"];
+        auto val = ws.get_cell("A1").get_value<std::string>();
+        TS_ASSERT_EQUALS(val, "abcdef");
+    }
+
     xlnt::workbook date_mac_1904()
     {
         auto path = PathHelper::GetDataDirectory("/reader/date_1904.xlsx");
