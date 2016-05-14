@@ -736,4 +736,14 @@ named_style &workbook::create_named_style(const std::string &name)
     return d_->named_styles_.back();
 }
 
+std::vector<cell_style> &workbook::get_styles()
+{
+    return d_->cell_styles_;
+}
+
+const std::vector<cell_style> &workbook::get_styles() const
+{
+    return d_->cell_styles_;
+}
+
 } // namespace xlnt

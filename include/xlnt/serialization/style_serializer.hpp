@@ -190,7 +190,7 @@ public:
     /// Read all named styles from named_style_node and cell_styles_node and add them to workbook.
     /// Return true on success.
     /// </summary>
-    bool read_named_styles(const xml_node &named_styles_node, const xml_node &cell_styles_node);
+    bool read_named_styles(const xml_node &cell_styles_node, const xml_node &cell_style_formats_node);
 
     /// <summary>
     /// Read all borders from number_formats_node and add them to workbook.

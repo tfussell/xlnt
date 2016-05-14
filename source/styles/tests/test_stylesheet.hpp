@@ -74,16 +74,6 @@ public:
         TS_ASSERT_EQUALS(s.get_number_formats().size(), 1);
     }
 
-    void test_merge_named_styles()
-    {
-        xlnt::xml_document doc;
-        auto xml = PathHelper::read_file(PathHelper::GetDataDirectory("/reader/styles/complex-styles.xml"));
-        doc.from_string(xml);
-        xlnt::workbook wb;
-        xlnt::style_serializer s(wb);
-        TS_ASSERT(s.read_stylesheet(doc));
-        TS_ASSERT_EQUALS(wb.get_named_styles().size(), 3);
-    }
 /*
     void _test_unprotected_cell()
     {

@@ -187,6 +187,8 @@ public:
     const cell_style &get_style(std::size_t style_index) const;
     std::size_t add_style(const cell_style &style);
     void clear_styles();
+    std::vector<cell_style> &get_styles();
+    const std::vector<cell_style> &get_styles() const;
     
     // Named Styles
     bool has_named_style(const std::string &name);

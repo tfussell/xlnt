@@ -357,17 +357,15 @@ cell_style style_serializer::read_cell_style(const xml_node &style_node)
     return s;
 }
 
-named_style style_serializer::read_named_style(const xml_node &named_style_node, const xml_node &style_parent_node)
+named_style style_serializer::read_named_style(const xml_node &cell_style_node, const xml_node &cell_style_format_node)
 {
     named_style s;
 
-    s.set_name(named_style_node.get_attribute("name"));
-    s.set_hidden(named_style_node.has_attribute("hidden") && is_true(named_style_node.get_attribute("hidden")));
-    s.set_builtin_id(std::stoull(named_style_node.get_attribute("builtinId")));
+    s.set_name(cell_style_node.get_attribute("name"));
+    s.set_hidden(cell_style_node.has_attribute("hidden") && is_true(cell_style_node.get_attribute("hidden")));
+    s.set_builtin_id(std::stoull(cell_style_node.get_attribute("builtinId")));
     
-    auto base_style_id = std::stoull(named_style_node.get_attribute("xfId"));
-    auto base_style_node = style_parent_node.get_children().at(base_style_id);
-    auto base_style = read_cell_style(base_style_node);
+    auto base_style = read_cell_style(cell_style_format_node);
     
     //TODO shouldn't have to set apply after set_X()
     s.set_alignment(base_style.get_alignment());
@@ -441,14 +439,35 @@ bool style_serializer::read_cell_styles(const xlnt::xml_node &cell_styles_node)
     return true;
 }
 
-bool style_serializer::read_named_styles(const xlnt::xml_node &named_styles_node, const xlnt::xml_node &cell_styles_node)
+bool style_serializer::read_named_styles(const xlnt::xml_node &cell_styles_node, const xlnt::xml_node &cell_style_formats_node)
 {
-    for (auto named_style_node : named_styles_node.get_children())
+    std::size_t style_index = 0;
+    
+    for (auto cell_style_format_node : cell_style_formats_node.get_children())
     {
-        auto ns = read_named_style(named_style_node, cell_styles_node);
-        auto named_style_index = std::stoull(named_style_node.get_attribute("xfId"));
+        for (auto cell_style_node : cell_styles_node.get_children())
+        {
+            auto cell_style_format_index = std::stoull(cell_style_node.get_attribute("xfId"));
+            
+            if (cell_style_format_index == style_index)
+            {
+                auto ns = read_named_style(cell_style_node, cell_style_format_node);
+                named_styles_[style_index] = ns;
+                
+                break;
+            }
+        }
         
-        named_styles_[named_style_index] = ns;
+        style_index++;
+    }
+    
+    if (named_styles_.empty())
+    {
+        named_style ns;
+        ns.set_name("Standard");
+        ns.set_hidden(false);
+        ns.set_builtin_id(0);
+        named_styles_[0] = ns;
     }
     
     return true;
@@ -476,6 +495,11 @@ bool style_serializer::read_number_formats(const xml_node &number_formats_node)
         nf.set_id(std::stoull(num_fmt_node.get_attribute("numFmtId")));
 
         number_formats_.push_back(nf);
+    }
+    
+    if (number_formats_.empty())
+    {
+        number_formats_.push_back(number_format::general());
     }
 
     return true;
@@ -730,23 +754,27 @@ color style_serializer::read_color(const xml_node &color_node)
 
 void style_serializer::initialize_vectors()
 {
-    std::unordered_set<cell_style, std::hash<hashable>> cell_styles_set;
+    bool any_style = false;
     
     for (auto ws : workbook_)
     {
         for (auto row : ws)
         {
-            for (auto c : row)
+            for (auto cell : row)
             {
-                if (c.has_style())
+                if (cell.has_style())
                 {
-                    cell_styles_set.insert(c.get_style());
+                    any_style = true;
                 }
             }
         }
     }
     
-    cell_styles_.assign(cell_styles_set.begin(), cell_styles_set.end());
+    if (any_style)
+    {
+        cell_styles_.assign(workbook_.get_styles().begin(), workbook_.get_styles().end());
+    }
+    
     colors_.clear();
     borders_.clear();
     fills_.clear();
