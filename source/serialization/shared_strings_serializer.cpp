@@ -75,7 +75,6 @@ bool shared_strings_serializer::read_shared_strings(const xml_document &xml, std
             {
                 if (r_node.get_name() == "r" && r_node.has_child("t"))
                 {
-                    std::cout << r_node.get_child("t").get_text() << std::endl;
                     text += r_node.get_child("t").get_text();
                 }
             }
