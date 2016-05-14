@@ -149,8 +149,8 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml)
                 bool has_type = cell_node.has_attribute("t");
                 std::string type = has_type ? cell_node.get_attribute("t") : "";
 
-                bool has_style = cell_node.has_attribute("s");
-                auto style_id = static_cast<std::size_t>(has_style ? std::stoull(cell_node.get_attribute("s")) : 0LL);
+                bool has_format = cell_node.has_attribute("s");
+                auto format_id = static_cast<std::size_t>(has_format ? std::stoull(cell_node.get_attribute("s")) : 0LL);
 
                 bool has_formula = cell_node.has_child("f");
                 bool has_shared_formula = has_formula && cell_node.get_child("f").has_attribute("t") &&
@@ -195,9 +195,9 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml)
                     }
                 }
 
-                if (has_style)
+                if (has_format)
                 {
-                    cell.set_style(sheet_.get_workbook().get_style(style_id));
+                    cell.set_format(sheet_.get_workbook().get_format(format_id));
                 }
             }
         }
@@ -509,9 +509,9 @@ xml_document worksheet_serializer::write_worksheet() const
                     }
                 }
 
-                if (cell.has_style())
+                if (cell.has_format())
                 {
-                    cell_node.add_attribute("s", std::to_string(cell.get_style_id()));
+                    cell_node.add_attribute("s", std::to_string(cell.get_format_id()));
                 }
             }
         }

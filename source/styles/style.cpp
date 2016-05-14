@@ -21,41 +21,70 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#pragma once
 
-#include <xlnt/styles/common_style.hpp>
+#include <xlnt/styles/style.hpp>
 
 namespace xlnt {
 
-class workbook;
-
-/// <summary>
-/// Describes a style which has a name and can be applied to multiple individual
-/// cell_styles.
-/// </summary>
-class XLNT_CLASS named_style : public common_style
+style::style()
+    : formattable(),
+      hidden_(false),
+      builtin_id_(0)
 {
-public:
-    named_style();
-    named_style(const named_style &other);
-    named_style &operator=(const named_style &other);
+}
 
-    std::string get_name() const;
-    void set_name(const std::string &name);
+style::style(const style &other)
+    : formattable(other),
+      name_(other.name_),
+      hidden_(other.hidden_),
+      builtin_id_(other.builtin_id_)
+{
+}
+
+style &style::operator=(const style &other)
+{
+    formattable::operator=(other);
     
-    bool get_hidden() const;
-    void set_hidden(bool value);
+    name_ = other.name_;
+    hidden_ = other.hidden_;
+    builtin_id_ = other.builtin_id_;
     
-    std::size_t get_builtin_id() const;
-    void set_builtin_id(std::size_t builtin_id);
+    return *this;
+}
 
-protected:
-    std::string to_hash_string() const override;
+bool style::get_hidden() const
+{
+    return hidden_;
+}
 
-private:
-    std::string name_;
-    bool hidden_;
-    std::size_t builtin_id_;
-};
+void style::set_hidden(bool value)
+{
+    hidden_ = value;
+}
+
+std::size_t style::get_builtin_id() const
+{
+    return builtin_id_;
+}
+
+void style::set_builtin_id(std::size_t builtin_id)
+{
+    builtin_id_ = builtin_id;
+}
+
+std::string style::get_name() const
+{
+    return name_;
+}
+
+void style::set_name(const std::string &name)
+{
+    name_ = name;
+}
+
+std::string style::to_hash_string() const
+{
+    return formattable::to_hash_string() + name_;
+}
 
 } // namespace xlnt

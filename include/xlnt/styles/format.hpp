@@ -21,68 +21,40 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#include <xlnt/styles/named_style.hpp>
+#pragma once
+
+#include <xlnt/styles/formattable.hpp>
 
 namespace xlnt {
 
-named_style::named_style()
-    : hidden_(false),
-      builtin_id_(0)
-{
-}
+class style;
+namespace detail { struct workbook_impl; }
 
-named_style::named_style(const named_style &other)
-    : common_style(other),
-      name_(other.name_),
-      hidden_(other.hidden_),
-      builtin_id_(other.builtin_id_)
+/// <summary>
+/// Describes the formatting of a particular cell.
+/// </summary>
+class XLNT_CLASS format : public formattable
 {
-}
-
-named_style &named_style::operator=(const named_style &other)
-{
-    common_style::operator=(other);
+public:
+    format();
+    format(const format &other);
+    format &operator=(const format &other);
     
-    name_ = other.name_;
-    hidden_ = other.hidden_;
-    builtin_id_ = other.builtin_id_;
+    // Named Style
+    bool has_style() const;
+    std::string get_style_name() const;
+    style &get_style();
+    const style &get_style() const;
+    void set_style(const std::string &name);
+    void set_style(const style &new_style);
+    void remove_style();
     
-    return *this;
-}
+protected:
+    std::string to_hash_string() const override;
 
-bool named_style::get_hidden() const
-{
-    return hidden_;
-}
-
-void named_style::set_hidden(bool value)
-{
-    hidden_ = value;
-}
-
-std::size_t named_style::get_builtin_id() const
-{
-    return builtin_id_;
-}
-
-void named_style::set_builtin_id(std::size_t builtin_id)
-{
-    builtin_id_ = builtin_id;
-}
-
-std::string named_style::get_name() const
-{
-    return name_;
-}
-
-void named_style::set_name(const std::string &name)
-{
-    name_ = name;
-}
-
-std::string named_style::to_hash_string() const
-{
-    return common_style::to_hash_string() + name_;
-}
+private:
+    detail::workbook_impl *parent_;
+    std::string named_style_name_;
+};
 
 } // namespace xlnt

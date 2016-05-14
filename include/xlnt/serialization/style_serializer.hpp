@@ -28,24 +28,24 @@
 #include <vector>
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/styles/named_style.hpp>
+#include <xlnt/styles/style.hpp>
 #include <xlnt/workbook/workbook.hpp>
 
 namespace xlnt {
 
 class alignment;
 class border;
-class cell_style;
 class color;
-class common_style;
 class conditional_format;
 class fill;
 class font;
 class format;
-class named_style;
+class formattable;
+class style;
 class number_format;
 class protection;
 class side;
+class style;
 class xml_document;
 class xml_node;
 
@@ -140,15 +140,15 @@ public:
     /// these is "applied". For example, a style with a defined font id, font=# but with
     /// "applyFont=0" will not use the font in formatting.
     /// </summary>
-    cell_style read_cell_style(const xml_node &style_node);
+    format read_format(const xml_node &format_node);
     
     /// <summary>
     /// Read a single named style from the given named_style_node. In styles.xml, this is a
     /// (confusingly named) "cellStyle" element. This node defines the name, whether it is
-    /// built-in and an xfId which is the index of an element in cellStyleXfs which should
-    /// be provided as the style_node parameter (cellStyleXfs itself, not the child xf node).
+    /// built-in and an xfId which is the index of an element in cellStyleXfs. style_format_node
+    /// should be the XML node of the element at the index of xfId.
     /// </summary>
-    named_style read_named_style(const xml_node &named_style_node, const xml_node &style_parent_node);
+    style read_style(const xml_node &style_node, const xml_node &style_format_node);
     
     //
     // Non-static element readers (i.e. readers that modify internal state)
@@ -184,13 +184,13 @@ public:
     /// Read all cell styles from cell_styles_node and add them to workbook.
     /// Return true on success.
     /// </summary>
-    bool read_cell_styles(const xml_node &cell_styles_node);
+    bool read_formats(const xml_node &formats_node);
 
     /// <summary>
     /// Read all named styles from named_style_node and cell_styles_node and add them to workbook.
     /// Return true on success.
     /// </summary>
-    bool read_named_styles(const xml_node &cell_styles_node, const xml_node &cell_style_formats_node);
+    bool read_styles(const xml_node &styles_node, const xml_node &style_formats_node);
 
     /// <summary>
     /// Read all borders from number_formats_node and add them to workbook.
@@ -232,27 +232,15 @@ public:
     /// </summary>
     bool write_number_formats(xml_node &number_formats_node) const;
 
-    bool write_style_common(const common_style &style, xml_node xf_node) const;
-
-    /// <summary>
-    /// Build an xml tree representing the given style into style_node.
-    /// Returns true on success.
-    /// </summary>
-    bool write_cell_style(const cell_style &style, xml_node &style_node) const;
+    bool write_formattable(const formattable &xf, xml_node xf_node) const;
     
     /// <summary>
     /// Build an xml tree representing the given style into style_node.
     /// Returns true on success.
     /// </summary>
-    bool write_cell_styles(xml_node &styles_node) const;
+    bool write_formats(xml_node &styles_node) const;
     
-    /// <summary>
-    /// Build an xml tree representing the given style into cell_styles_node and styles_node.
-    /// Returns true on success.
-    /// </summary>
-    bool write_named_style(const named_style &style, xml_node &cell_styles_node) const;
-    
-    bool write_named_styles(xml_node &cell_styles_node, xml_node &styles_node) const;
+    bool write_styles(xml_node &cell_styles_node, xml_node &cell_style_formats_node) const;
     
     bool write_colors(xml_node &colors_node) const;
     
@@ -281,8 +269,8 @@ private:
     std::vector<fill> fills_;
     std::vector<font> fonts_;
     std::vector<number_format> number_formats_;
-    std::vector<cell_style> cell_styles_;
-    std::unordered_map<std::size_t, named_style> named_styles_;
+    std::vector<format> formats_;
+    std::vector<style> styles_;
 };
 
 } // namespace xlnt

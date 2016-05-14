@@ -45,8 +45,8 @@ cell_impl::cell_impl(worksheet_impl *parent, column_t column, row_t row)
       value_numeric_(0),
       has_hyperlink_(false),
       is_merged_(false),
-      has_style_(false),
-      style_id_(0),
+      has_format_(false),
+      format_id_(0),
       comment_(nullptr)
 {
 }
@@ -68,8 +68,8 @@ cell_impl &cell_impl::operator=(const cell_impl &rhs)
     is_merged_ = rhs.is_merged_;
     has_hyperlink_ = rhs.has_hyperlink_;
     type_ = rhs.type_;
-    style_id_ = rhs.style_id_;
-    has_style_ = rhs.has_style_;
+    format_id_ = rhs.format_id_;
+    has_format_ = rhs.has_format_;
 
     if (rhs.comment_ != nullptr)
     {

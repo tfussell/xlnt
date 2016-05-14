@@ -36,10 +36,10 @@
 #include <xlnt/serialization/excel_serializer.hpp>
 #include <xlnt/styles/alignment.hpp>
 #include <xlnt/styles/border.hpp>
-#include <xlnt/styles/cell_style.hpp>
+#include <xlnt/styles/format.hpp>
 #include <xlnt/styles/fill.hpp>
 #include <xlnt/styles/font.hpp>
-#include <xlnt/styles/named_style.hpp>
+#include <xlnt/styles/style.hpp>
 #include <xlnt/styles/number_format.hpp>
 #include <xlnt/styles/protection.hpp>
 #include <xlnt/utils/exceptions.hpp>
@@ -86,7 +86,7 @@ workbook::workbook() : d_(new detail::workbook_impl())
     d_->manifest_.add_override_type("/docProps/core.xml", "application/vnd.openxmlformats-package.core-properties+xml");
     d_->manifest_.add_override_type("/docProps/app.xml", "application/vnd.openxmlformats-officedocument.extended-properties+xml");
     
-    add_style(cell_style());
+    add_format(format());
 }
 
 workbook::workbook(encoding e) : workbook()
@@ -551,9 +551,9 @@ workbook::~workbook()
 {
 }
 
-const std::vector<named_style> &workbook::get_named_styles() const
+const std::vector<style> &workbook::get_styles() const
 {
-    return d_->named_styles_;
+    return d_->styles_;
 }
 
 bool workbook::get_data_only() const
@@ -605,20 +605,22 @@ std::vector<named_range> workbook::get_named_ranges() const
     return named_ranges;
 }
 
-std::size_t workbook::add_style(const cell_style &style)
+std::size_t workbook::add_format(const format &style)
 {
-    cell_style style_copy = style;
+    auto format_copy = style;
     
     //TODO this is ugly
     if (!style.get_number_format().has_id())
     {
         bool match = false;
         
-        for (std::size_t i = 0; i < d_->cell_styles_.size(); i++)
+        for (std::size_t i = 0; i < d_->formats_.size(); i++)
         {
-            if (d_->cell_styles_.at(i).get_number_format().get_format_string() == style_copy.get_number_format().get_format_string())
+            const auto &current_number_format = d_->formats_.at(i).get_number_format();
+            
+            if (current_number_format.get_format_string() == format_copy.get_number_format().get_format_string())
             {
-                style_copy.set_number_format(d_->cell_styles_.at(i).get_number_format());
+                format_copy.set_number_format(current_number_format);
                 match = true;
                 break;
             }
@@ -626,36 +628,37 @@ std::size_t workbook::add_style(const cell_style &style)
         
         if (!match)
         {
-            style_copy.get_number_format().set_id(d_->next_custom_format_id_++);
+            format_copy.get_number_format().set_id(d_->next_custom_format_id_++);
         }
     }
     
-    for (std::size_t i = 0; i < d_->cell_styles_.size(); i++)
+    // TODO hashmap?
+    for (std::size_t i = 0; i < d_->formats_.size(); i++)
     {
-        if (d_->cell_styles_[i] == style_copy)
+        if (d_->formats_[i] == format_copy)
         {
             return i;
         }
     }
     
-    d_->cell_styles_.push_back(style_copy);
+    d_->formats_.push_back(format_copy);
     
-    return d_->cell_styles_.size() - 1;
+    return d_->formats_.size() - 1;
 }
 
-void workbook::clear_styles()
+void workbook::clear_formats()
 {
-    d_->cell_styles_.clear();
+    d_->formats_.clear();
 }
 
-cell_style &workbook::get_style(std::size_t style_index)
+format &workbook::get_format(std::size_t format_index)
 {
-    return d_->cell_styles_.at(style_index);
+    return d_->formats_.at(format_index);
 }
 
-const cell_style &workbook::get_style(std::size_t style_index) const
+const format &workbook::get_format(std::size_t format_index) const
 {
-    return d_->cell_styles_.at(style_index);
+    return d_->formats_.at(format_index);
 }
 
 manifest &workbook::get_manifest()
@@ -726,24 +729,24 @@ const std::vector<std::uint8_t> &workbook::get_thumbnail() const
     return d_->thumbnail_;
 }
 
-named_style &workbook::create_named_style(const std::string &name)
+style &workbook::create_style(const std::string &name)
 {
-    named_style style;
+    style style;
     style.set_name(name);
     
-    d_->named_styles_.push_back(style);
+    d_->styles_.push_back(style);
     
-    return d_->named_styles_.back();
+    return d_->styles_.back();
 }
 
-std::vector<cell_style> &workbook::get_styles()
+std::vector<format> &workbook::get_formats()
 {
-    return d_->cell_styles_;
+    return d_->formats_;
 }
 
-const std::vector<cell_style> &workbook::get_styles() const
+const std::vector<format> &workbook::get_formats() const
 {
-    return d_->cell_styles_;
+    return d_->formats_;
 }
 
 } // namespace xlnt

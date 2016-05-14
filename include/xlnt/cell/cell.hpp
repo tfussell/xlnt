@@ -42,6 +42,7 @@ class cell_style;
 class comment;
 class fill;
 class font;
+class format;
 class number_format;
 class protection;
 class relationship;
@@ -53,9 +54,7 @@ struct datetime;
 struct time;
 struct timedelta;
 
-namespace detail {
-struct cell_impl;
-}
+namespace detail { struct cell_impl; }
 
 /// <summary>
 /// Describes cell associated properties.
@@ -191,21 +190,21 @@ public:
     // style
 
     /// <summary>
-    /// Return true if this cell has had a style applied to it.
+    /// Return true if this cell has had a format applied to it.
     /// </summary>
-    bool has_style() const;
+    bool has_format() const;
 
     /// <summary>
-    /// Return a reference to the style applied to this cell.
+    /// Return a reference to the format applied to this cell.
     /// </summary>
-    cell_style &get_style();
+    format &get_format();
 
     /// <summary>
-    /// Return a reference to the style applied to this cell.
+    /// Return a reference to the format applied to this cell.
     /// </summary>
-    const cell_style &get_style() const;
+    const format &get_format() const;
     
-    void set_style(const cell_style &style);
+    void set_format(const format &new_format);
 
     /// <summary>
     /// Return the number format of this cell.
@@ -384,7 +383,7 @@ public:
     friend XLNT_FUNCTION std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell);
 
 private:
-    std::size_t get_style_id() const;
+    std::size_t get_format_id() const;
     
     // make these friends so they can use the private constructor
     friend class style;

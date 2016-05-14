@@ -21,37 +21,59 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#pragma once
 
-#include <xlnt/styles/common_style.hpp>
+#include <xlnt/cell/cell.hpp>
+#include <xlnt/styles/font.hpp>
+#include <xlnt/styles/format.hpp>
+#include <xlnt/styles/number_format.hpp>
+#include <xlnt/styles/protection.hpp>
+#include <xlnt/utils/hash_combine.hpp>
 
 namespace xlnt {
 
-class named_style;
-
-/// <summary>
-/// Describes the formatting of a particular cell.
-/// </summary>
-class XLNT_CLASS cell_style : public common_style
+format::format()
 {
-public:
-    cell_style();
-    cell_style(const cell_style &other);
-    cell_style &operator=(const cell_style &other);
-    
-    // Named Style
-    named_style &get_named_style();
-    const named_style &get_named_style() const;
-    void set_named_style(const std::string &style_name);
-    void set_named_style(const named_style &new_named_style);
-    void remove_named_style();
-    
-protected:
-    std::string to_hash_string() const override;
+}
 
-private:
-    detail::workbook_impl *parent_;
-    std::string named_style_name_;
-};
+format::format(const format &other) : formattable(other)
+{
+}
+
+format &format::operator=(const format &other)
+{
+    formattable::operator=(other);
+    
+    parent_ = other.parent_;
+    named_style_name_ = other.named_style_name_;
+
+    return *this;
+}
+
+std::string format::to_hash_string() const
+{
+    auto hash_string = formattable::to_hash_string();
+    hash_string.append(":format:");
+    
+    if (!named_style_name_.empty())
+    {
+        hash_string.append(named_style_name_);
+    }
+    else
+    {
+        hash_string.append(":");
+    }
+
+    return hash_string;
+}
+
+void format::set_style(const std::string &style_name)
+{
+    named_style_name_ = style_name;
+}
+
+bool format::has_style() const
+{
+    return !named_style_name_.empty();
+}
 
 } // namespace xlnt

@@ -53,7 +53,7 @@ class protection;
 class range;
 class range_reference;
 class relationship;
-class named_style;
+class style;
 class theme;
 class worksheet;
 class worksheet_iterator;
@@ -183,19 +183,19 @@ public:
     bool has_loaded_theme() const;
     const theme &get_loaded_theme() const;
     
-    cell_style &get_style(std::size_t style_index);
-    const cell_style &get_style(std::size_t style_index) const;
-    std::size_t add_style(const cell_style &style);
-    void clear_styles();
-    std::vector<cell_style> &get_styles();
-    const std::vector<cell_style> &get_styles() const;
+    format &get_format(std::size_t format_index);
+    const format &get_format(std::size_t format_index) const;
+    std::size_t add_format(const format &new_format);
+    void clear_formats();
+    std::vector<format> &get_formats();
+    const std::vector<format> &get_formats() const;
     
     // Named Styles
-    bool has_named_style(const std::string &name);
-    named_style &get_named_style(const std::string &name);
-    const named_style &get_named_style(const std::string &name) const;
-    named_style &create_named_style(const std::string &name);
-    const std::vector<named_style> &get_named_styles() const;
+    bool has_style(const std::string &name);
+    style &get_style(const std::string &name);
+    const style &get_style(const std::string &name) const;
+    style &create_style(const std::string &name);
+    const std::vector<style> &get_styles() const;
 
     manifest &get_manifest();
     const manifest &get_manifest() const;

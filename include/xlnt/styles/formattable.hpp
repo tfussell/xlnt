@@ -34,17 +34,16 @@
 namespace xlnt {
 
 class cell;
-namespace detail { struct workbook_impl; }
 
 /// <summary>
 /// Describes the formatting of a particular cell.
 /// </summary>
-class XLNT_CLASS common_style : public hashable
+class XLNT_CLASS formattable : public hashable
 {
 public:
-    common_style();
-    common_style(const common_style &other);
-    common_style &operator=(const common_style &other);
+    formattable();
+    formattable(const formattable &other);
+    formattable &operator=(const formattable &other);
     
     void reset();
 

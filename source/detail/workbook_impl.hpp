@@ -43,8 +43,8 @@ struct workbook_impl
           guess_types_(other.guess_types_),
           data_only_(other.data_only_),
           read_only_(other.read_only_),
-          cell_styles_(other.cell_styles_),
-          named_styles_(other.named_styles_),
+          formats_(other.formats_),
+          styles_(other.styles_),
           manifest_(other.manifest_)
     {
     }
@@ -84,8 +84,8 @@ struct workbook_impl
     bool data_only_;
     bool read_only_;
 
-    std::vector<cell_style> cell_styles_;
-    std::vector<named_style> named_styles_;
+    std::vector<format> formats_;
+    std::vector<style> styles_;
     std::size_t next_custom_format_id_;
     
     manifest manifest_;

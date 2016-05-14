@@ -21,54 +21,44 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#include <xlnt/cell/cell.hpp>
-#include <xlnt/styles/cell_style.hpp>
-#include <xlnt/styles/font.hpp>
-#include <xlnt/styles/number_format.hpp>
-#include <xlnt/styles/protection.hpp>
-#include <xlnt/utils/hash_combine.hpp>
+#pragma once
+
+#include <cstdint>
+#include <string>
+
+#include <xlnt/styles/formattable.hpp>
 
 namespace xlnt {
 
-cell_style::cell_style()
-{
-}
+class workbook;
 
-cell_style::cell_style(const cell_style &other)
-    : common_style(other)
+/// <summary>
+/// Describes a style which has a name and can be applied to multiple individual
+/// formats. In Excel this is a "Cell Style".
+/// </summary>
+class XLNT_CLASS style : public formattable
 {
-}
+public:
+    style();
+    style(const style &other);
+    style &operator=(const style &other);
 
-cell_style &cell_style::operator=(const cell_style &other)
-{
-    common_style::operator=(other);
+    std::string get_name() const;
+    void set_name(const std::string &name);
     
-    parent_ = other.parent_;
-    named_style_name_ = other.named_style_name_;
-
-    return *this;
-}
-
-std::string cell_style::to_hash_string() const
-{
-    auto hash_string = common_style::to_hash_string();
-    hash_string.append(":cell_style:");
+    bool get_hidden() const;
+    void set_hidden(bool value);
     
-    if (!named_style_name_.empty())
-    {
-        hash_string.append(named_style_name_);
-    }
-    else
-    {
-        hash_string.append(":");
-    }
+    std::size_t get_builtin_id() const;
+    void set_builtin_id(std::size_t builtin_id);
 
-    return hash_string;
-}
+protected:
+    std::string to_hash_string() const override;
 
-void cell_style::set_named_style(const std::string &style_name)
-{
-    named_style_name_ = style_name;
-}
+private:
+    std::string name_;
+    bool hidden_;
+    std::size_t builtin_id_;
+};
 
 } // namespace xlnt

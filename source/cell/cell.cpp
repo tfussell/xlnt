@@ -31,7 +31,7 @@
 #include <xlnt/packaging/document_properties.hpp>
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/serialization/encoding.hpp>
-#include <xlnt/styles/cell_style.hpp>
+#include <xlnt/styles/format.hpp>
 #include <xlnt/styles/color.hpp>
 #include <xlnt/utils/date.hpp>
 #include <xlnt/utils/datetime.hpp>
@@ -223,7 +223,7 @@ cell::cell(worksheet worksheet, const cell_reference &reference, const T &initia
 
 bool cell::garbage_collectible() const
 {
-    return !(get_data_type() != type::null || is_merged() || has_comment() || has_formula() || has_style());
+    return !(get_data_type() != type::null || is_merged() || has_comment() || has_formula() || has_format());
 }
 
 template <>
@@ -389,7 +389,7 @@ XLNT_FUNCTION void cell::set_value(cell c)
     d_->hyperlink_ = c.d_->hyperlink_;
     d_->has_hyperlink_ = c.d_->has_hyperlink_;
     d_->formula_ = c.d_->formula_;
-    d_->style_id_ = c.d_->style_id_;
+    d_->format_id_ = c.d_->format_id_;
     set_comment(c.get_comment());
 }
 
@@ -691,73 +691,73 @@ void cell::set_data_type(type t)
 
 const number_format &cell::get_number_format() const
 {
-    if (d_->has_style_)
+    if (d_->has_format_)
     {
-        return get_workbook().get_style(d_->style_id_).get_number_format();
+        return get_workbook().get_format(d_->format_id_).get_number_format();
     }
     else
     {
-        return get_workbook().get_style(0).get_number_format();
+        return get_workbook().get_format(0).get_number_format();
     }
 }
 
 const font &cell::get_font() const
 {
-    if (d_->has_style_)
+    if (d_->has_format_)
     {
-        return get_workbook().get_style(d_->style_id_).get_font();
+        return get_workbook().get_format(d_->format_id_).get_font();
     }
     else
     {
-        return get_workbook().get_style(0).get_font();
+        return get_workbook().get_format(0).get_font();
     }
 }
 
 const fill &cell::get_fill() const
 {
-    if (d_->has_style_)
+    if (d_->has_format_)
     {
-        return get_workbook().get_style(d_->style_id_).get_fill();
+        return get_workbook().get_format(d_->format_id_).get_fill();
     }
     else
     {
-        return get_workbook().get_style(0).get_fill();
+        return get_workbook().get_format(0).get_fill();
     }
 }
 
 const border &cell::get_border() const
 {
-    if (d_->has_style_)
+    if (d_->has_format_)
     {
-        return get_workbook().get_style(d_->style_id_).get_border();
+        return get_workbook().get_format(d_->format_id_).get_border();
     }
     else
     {
-        return get_workbook().get_style(0).get_border();
+        return get_workbook().get_format(0).get_border();
     }
 }
 
 const alignment &cell::get_alignment() const
 {
-    if (d_->has_style_)
+    if (d_->has_format_)
     {
-        return get_workbook().get_style(d_->style_id_).get_alignment();
+        return get_workbook().get_format(d_->format_id_).get_alignment();
     }
     else
     {
-        return get_workbook().get_style(0).get_alignment();
+        return get_workbook().get_format(0).get_alignment();
     }
 }
 
 const protection &cell::get_protection() const
 {
-    if (d_->has_style_)
+    if (d_->has_format_)
     {
-        return get_workbook().get_style(d_->style_id_).get_protection();
+        return get_workbook().get_format(d_->format_id_).get_protection();
     }
     else
     {
-        return get_workbook().get_style(0).get_protection();
+        return get_workbook().get_format(0).get_protection();
     }
 }
 
@@ -875,50 +875,50 @@ XLNT_FUNCTION timedelta cell::get_value() const
 
 void cell::set_border(const xlnt::border &border_)
 {
-    d_->has_style_ = true;
-    auto style_copy = get_workbook().get_style(d_->style_id_);
-    style_copy.set_border(border_);
-    d_->style_id_ = get_workbook().add_style(style_copy);
+    d_->has_format_ = true;
+    auto format_copy = get_workbook().get_format(d_->format_id_);
+    format_copy.set_border(border_);
+    d_->format_id_ = get_workbook().add_format(format_copy);
 }
 
 void cell::set_fill(const xlnt::fill &fill_)
 {
-    d_->has_style_ = true;
-    auto style_copy = get_workbook().get_style(d_->style_id_);
-    style_copy.set_fill(fill_);
-    d_->style_id_ = get_workbook().add_style(style_copy);
+    d_->has_format_ = true;
+    auto format_copy = get_workbook().get_format(d_->format_id_);
+    format_copy.set_fill(fill_);
+    d_->format_id_ = get_workbook().add_format(format_copy);
 }
 
 void cell::set_font(const font &font_)
 {
-    d_->has_style_ = true;
-    auto style_copy = get_workbook().get_style(d_->style_id_);
-    style_copy.set_font(font_);
-    d_->style_id_ = get_workbook().add_style(style_copy);
+    d_->has_format_ = true;
+    auto format_copy = get_workbook().get_format(d_->format_id_);
+    format_copy.set_font(font_);
+    d_->format_id_ = get_workbook().add_format(format_copy);
 }
 
 void cell::set_number_format(const number_format &number_format_)
 {
-    d_->has_style_ = true;
-    auto style_copy = get_workbook().get_style(d_->style_id_);
-    style_copy.set_number_format(number_format_);
-    d_->style_id_ = get_workbook().add_style(style_copy);
+    d_->has_format_ = true;
+    auto format_copy = get_workbook().get_format(d_->format_id_);
+    format_copy.set_number_format(number_format_);
+    d_->format_id_ = get_workbook().add_format(format_copy);
 }
 
 void cell::set_alignment(const xlnt::alignment &alignment_)
 {
-    d_->has_style_ = true;
-    auto style_copy = get_workbook().get_style(d_->style_id_);
-    style_copy.set_alignment(alignment_);
-    d_->style_id_ = get_workbook().add_style(style_copy);
+    d_->has_format_ = true;
+    auto format_copy = get_workbook().get_format(d_->format_id_);
+    format_copy.set_alignment(alignment_);
+    d_->format_id_ = get_workbook().add_format(format_copy);
 }
 
 void cell::set_protection(const xlnt::protection &protection_)
 {
-    d_->has_style_ = true;
-    auto style_copy = get_workbook().get_style(d_->style_id_);
-    style_copy.set_protection(protection_);
-    d_->style_id_ = get_workbook().add_style(style_copy);
+    d_->has_format_ = true;
+    auto format_copy = get_workbook().get_format(d_->format_id_);
+    format_copy.set_protection(protection_);
+    d_->format_id_ = get_workbook().add_format(format_copy);
 }
 
 template <>
@@ -953,20 +953,20 @@ std::string cell::to_string() const
     }
 }
 
-cell_style &cell::get_style()
+format &cell::get_format()
 {
-    return get_workbook().get_style(d_->style_id_);
+    return get_workbook().get_format(d_->format_id_);
 }
 
-bool cell::has_style() const
+bool cell::has_format() const
 {
-    return d_->has_style_;
+    return d_->has_format_;
 }
 
-void cell::set_style(const cell_style &style)
+void cell::set_format(const format &new_format)
 {
-    d_->style_id_ = get_workbook().add_style(style);
-    d_->has_style_ = true;
+    d_->format_id_ = get_workbook().add_format(new_format);
+    d_->has_format_ = true;
 }
 
 calendar cell::get_base_date() const
@@ -979,9 +979,9 @@ std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)
     return stream << cell.to_string();
 }
 
-std::size_t cell::get_style_id() const
+std::size_t cell::get_format_id() const
 {
-    return d_->style_id_;
+    return d_->format_id_;
 }
 
 void cell::guess_type_and_set_value(const std::string &value)
