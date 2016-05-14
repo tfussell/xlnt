@@ -33,12 +33,26 @@ class XLNT_CLASS text_run
 public:
 	text_run();
 	text_run(const std::string &string);
+    
+    bool has_formatting() const;
 
 	std::string get_string() const;
 	void set_string(const std::string &string);
+    
+    std::size_t get_size() const;
+    std::string get_color() const;
+    std::string get_font() const;
+    std::size_t get_family() const;
+    std::string get_scheme() const;
 
 private:
 	std::string string_;
+    bool has_formatting_ = false;
+    std::size_t size_;
+    std::string color_;
+    std::string font_;
+    std::size_t family_;
+    std::string scheme_;
 };
 
 } // namespace xlnt

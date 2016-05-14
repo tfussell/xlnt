@@ -54,6 +54,7 @@ class range;
 class range_reference;
 class relationship;
 class style;
+class text;
 class theme;
 class worksheet;
 class worksheet_iterator;
@@ -202,9 +203,9 @@ public:
 
     const std::vector<relationship> &get_root_relationships() const;
 
-    void add_shared_string(const std::string &shared, bool allow_duplicates=false);
-    std::vector<std::string> &get_shared_strings();
-    const std::vector<std::string> &get_shared_strings() const;
+    void add_shared_string(const text &shared, bool allow_duplicates=false);
+    std::vector<text> &get_shared_strings();
+    const std::vector<text> &get_shared_strings() const;
     
     void set_thumbnail(const std::vector<std::uint8_t> &thumbnail);
     const std::vector<std::uint8_t> &get_thumbnail() const;

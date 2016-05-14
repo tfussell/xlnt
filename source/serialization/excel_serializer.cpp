@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <iterator>
 
+#include <xlnt/cell/text.hpp>
 #include <xlnt/serialization/excel_serializer.hpp>
 #include <xlnt/serialization/manifest_serializer.hpp>
 #include <xlnt/serialization/relationship_serializer.hpp>
@@ -125,12 +126,12 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
 
     if(archive.has_file(xlnt::constants::ArcSharedString()))
     {
-        std::vector<std::string> shared_strings;
+        std::vector<xlnt::text> shared_strings;
 		xlnt::xml_document shared_strings_xml;
 		shared_strings_xml.from_string(archive.read(xlnt::constants::ArcSharedString()));
 		xlnt::shared_strings_serializer::read_shared_strings(shared_strings_xml, shared_strings);
 
-        for (auto shared_string : shared_strings)
+        for (auto &shared_string : shared_strings)
         {
             wb.add_shared_string(shared_string, true);
         }

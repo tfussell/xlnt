@@ -75,7 +75,7 @@ struct workbook_impl
     std::vector<worksheet_impl> worksheets_;
     std::vector<relationship> relationships_;
     std::vector<relationship> root_relationships_;
-    std::vector<std::string> shared_strings_;
+    std::vector<text> shared_strings_;
 
     document_properties properties_;
     app_properties app_properties_;

@@ -28,6 +28,7 @@
 #include <xlnt/serialization/worksheet_serializer.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>
+#include <xlnt/cell/text.hpp>
 #include <xlnt/serialization/xml_document.hpp>
 #include <xlnt/serialization/xml_node.hpp>
 #include <xlnt/workbook/workbook.hpp>
@@ -438,7 +439,7 @@ xml_document worksheet_serializer::write_worksheet() const
 
                     for (std::size_t i = 0; i < shared_strings.size(); i++)
                     {
-                        if (shared_strings[i] == cell.get_value<std::string>())
+                        if (shared_strings[i] == cell.get_value<text>())
                         {
                             match_index = static_cast<int>(i);
                             break;

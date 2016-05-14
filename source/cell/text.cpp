@@ -49,7 +49,8 @@ std::string text::get_plain_string() const
 
 	return plain_string;
 }
-std::vector<text_run> text::get_runs()
+
+std::vector<text_run> text::get_runs() const
 {
 	return runs_;
 }
@@ -57,6 +58,28 @@ std::vector<text_run> text::get_runs()
 void text::add_run(const text_run &t)
 {
 	runs_.push_back(t);
+}
+
+bool text::operator==(const text &rhs) const
+{
+    if (runs_.size() != rhs.runs_.size()) return false;
+    
+    for (std::size_t i = 0; i < runs_.size(); i++)
+    {
+        if (runs_[i].get_string() != rhs.runs_[i].get_string()) return false;
+        if (runs_[i].has_formatting() != rhs.runs_[i].has_formatting()) return false;
+        
+        if (runs_[i].has_formatting())
+        {
+            if (runs_[i].get_color() != rhs.runs_[i].get_color()) return false;
+            if (runs_[i].get_family() != rhs.runs_[i].get_family()) return false;
+            if (runs_[i].get_font() != rhs.runs_[i].get_font()) return false;
+            if (runs_[i].get_scheme() != rhs.runs_[i].get_scheme()) return false;
+            if (runs_[i].get_size() != rhs.runs_[i].get_size()) return false;
+        }
+    }
+    
+    return true;
 }
 
 } // namespace xlnt

@@ -43,4 +43,34 @@ void text_run::set_string(const std::string &string)
 	string_ = string;
 }
 
+bool text_run::has_formatting() const
+{
+    return has_formatting_;
+}
+
+std::size_t text_run::get_size() const
+{
+    return size_;
+}
+
+std::string text_run::get_color() const
+{
+    return color_;
+}
+
+std::string text_run::get_font() const
+{
+    return font_;
+}
+
+std::size_t text_run::get_family() const
+{
+    return family_;
+}
+
+std::string text_run::get_scheme() const
+{
+    return scheme_;
+}
+
 } // namespace xlnt

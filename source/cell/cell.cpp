@@ -336,18 +336,6 @@ XLNT_FUNCTION void cell::set_value(long double d)
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(text t)
-{
-	d_->value_text_ = t;
-	d_->type_ = type::string;
-
-	if (!t.get_plain_string().empty())
-	{
-		get_workbook().add_shared_string(t.get_plain_string());
-	}
-}
-
-template <>
 XLNT_FUNCTION void cell::set_value(std::string s)
 {
 	s = check_string(s);
@@ -363,15 +351,34 @@ XLNT_FUNCTION void cell::set_value(std::string s)
 	}
 	else
 	{
-		text t;
-		t.set_plain_string(s);
-		set_value(t);
+		d_->type_ = type::string;
+        d_->value_text_.set_plain_string(s);
+        
+        if (s.size() > 0)
+        {
+            get_workbook().add_shared_string(d_->value_text_);
+        }
 	}
 
 	if (get_workbook().get_guess_types())
 	{
 		guess_type_and_set_value(s);
 	}
+}
+
+template <>
+XLNT_FUNCTION void cell::set_value(text t)
+{
+    if (t.get_runs().size() == 1 && !t.get_runs().front().has_formatting())
+    {
+        set_value(t.get_plain_string());
+    }
+    else
+    {
+        d_->type_ = type::string;
+        d_->value_text_ = t;
+        get_workbook().add_shared_string(t);
+    }
 }
 
 template <>
@@ -925,6 +932,12 @@ template <>
 XLNT_FUNCTION std::string cell::get_value() const
 {
     return d_->value_text_.get_plain_string();
+}
+
+template <>
+XLNT_FUNCTION text cell::get_value() const
+{
+    return d_->value_text_;
 }
 
 bool cell::has_value() const

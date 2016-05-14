@@ -38,9 +38,11 @@ public:
 	void clear();
 	void set_plain_string(const std::string &s);
 	std::string get_plain_string() const;
-	std::vector<text_run> get_runs();
+	std::vector<text_run> get_runs() const;
 	void add_run(const text_run &t);
 	void set_run(const std::vector<text_run> &parts);
+    
+    bool operator==(const text &rhs) const;
 
 private:
 	std::vector<text_run> runs_;

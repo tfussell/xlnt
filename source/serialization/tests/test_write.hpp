@@ -73,7 +73,7 @@ public:
         ws.get_cell("A3").set_value("nice");
         
         auto content = xlnt::shared_strings_serializer::write_shared_strings(wb.get_shared_strings());
-        
+
         TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sharedStrings.xml", content));
     }
 
@@ -220,7 +220,7 @@ public:
 
         xlnt::worksheet_serializer serializer(ws);
         auto observed = serializer.write_worksheet();
-        
+        auto temp = observed.to_string();
         TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_freeze_panes_horiz.xml", observed));
     }
 

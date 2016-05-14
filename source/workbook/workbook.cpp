@@ -685,17 +685,17 @@ const std::vector<relationship> &workbook::get_root_relationships() const
     return d_->root_relationships_;
 }
 
-std::vector<std::string> &workbook::get_shared_strings()
+std::vector<text> &workbook::get_shared_strings()
 {
     return d_->shared_strings_;
 }
 
-const std::vector<std::string> &workbook::get_shared_strings() const
+const std::vector<text> &workbook::get_shared_strings() const
 {
     return d_->shared_strings_;
 }
 
-void workbook::add_shared_string(const std::string &shared, bool allow_duplicates)
+void workbook::add_shared_string(const text &shared, bool allow_duplicates)
 {
 	if (!allow_duplicates)
 	{

@@ -23,13 +23,13 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <string>
 #include <vector>
 
 #include <xlnt/xlnt_config.hpp>
 
 namespace xlnt {
 
+class text;
 class xml_document;
 
 /// <summary>
@@ -38,8 +38,8 @@ class xml_document;
 class XLNT_CLASS shared_strings_serializer
 {
 public:
-    static bool read_shared_strings(const xml_document &xml, std::vector<std::string> &strings);
-    static xml_document write_shared_strings(const std::vector<std::string> &strings);
+    static bool read_shared_strings(const xml_document &xml, std::vector<text> &strings);
+    static xml_document write_shared_strings(const std::vector<text> &strings);
 };
 
 } // namespace xlnt
