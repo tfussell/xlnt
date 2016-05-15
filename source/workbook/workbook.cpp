@@ -70,9 +70,8 @@ workbook::workbook() : d_(new detail::workbook_impl())
 {
     create_sheet("Sheet");
     
-    create_relationship("rId2", "sharedStrings.xml", relationship::type::shared_strings);
-    create_relationship("rId3", "styles.xml", relationship::type::styles);
-    create_relationship("rId4", "theme/theme1.xml", relationship::type::theme);
+    create_relationship("rId2", "styles.xml", relationship::type::styles);
+    create_relationship("rId3", "theme/theme1.xml", relationship::type::theme);
     
     d_->encoding_ = encoding::utf8;
     
@@ -82,11 +81,11 @@ workbook::workbook() : d_(new detail::workbook_impl())
     d_->manifest_.add_override_type("/xl/workbook.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml");
     d_->manifest_.add_override_type("/xl/theme/theme1.xml", "application/vnd.openxmlformats-officedocument.theme+xml");
     d_->manifest_.add_override_type("/xl/styles.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml");
-    d_->manifest_.add_override_type("/xl/sharedStrings.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml");
     d_->manifest_.add_override_type("/docProps/core.xml", "application/vnd.openxmlformats-package.core-properties+xml");
     d_->manifest_.add_override_type("/docProps/app.xml", "application/vnd.openxmlformats-officedocument.extended-properties+xml");
     
     add_format(format());
+    create_style("Normal");
 }
 
 workbook::workbook(encoding e) : workbook()
@@ -266,6 +265,11 @@ bool workbook::get_guess_types() const
 void workbook::create_relationship(const std::string &id, const std::string &target, relationship::type type)
 {
     d_->relationships_.push_back(relationship(type, id, target));
+}
+
+void workbook::create_root_relationship(const std::string &id, const std::string &target, relationship::type type)
+{
+    d_->root_relationships_.push_back(relationship(type, id, target));
 }
 
 relationship workbook::get_relationship(const std::string &id) const
@@ -646,6 +650,11 @@ std::size_t workbook::add_format(const format &style)
     return d_->formats_.size() - 1;
 }
 
+void workbook::clear_styles()
+{
+    d_->styles_.clear();
+}
+
 void workbook::clear_formats()
 {
     d_->formats_.clear();
@@ -697,6 +706,12 @@ const std::vector<text> &workbook::get_shared_strings() const
 
 void workbook::add_shared_string(const text &shared, bool allow_duplicates)
 {
+    if (d_->shared_strings_.empty())
+    {
+        create_relationship(next_relationship_id(), "sharedStrings.xml", relationship::type::shared_strings);
+        d_->manifest_.add_override_type("/xl/sharedStrings.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml");
+    }
+    
 	if (!allow_duplicates)
 	{
 		//TODO: inefficient, use a set or something?
@@ -759,6 +774,19 @@ const style &workbook::get_style(const std::string &name) const
 {
     return *std::find_if(d_->styles_.begin(), d_->styles_.end(),
         [&name](const style &s) { return s.get_name() == name; });
+}
+
+std::string workbook::next_relationship_id() const
+{
+    std::size_t i = 1;
+    
+    while (std::find_if(d_->relationships_.begin(), d_->relationships_.end(),
+        [i](const relationship &r) { return r.get_id() == "rId" + std::to_string(i); }) != d_->relationships_.end())
+    {
+        i++;
+    }
+    
+    return "rId" + std::to_string(i);
 }
 
 } // namespace xlnt

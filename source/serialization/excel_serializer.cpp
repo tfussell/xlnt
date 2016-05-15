@@ -106,6 +106,13 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
     }
 
     xlnt::relationship_serializer relationship_serializer_(archive);
+    auto root_relationships = relationship_serializer_.read_relationships("");
+    
+    for (const auto &relationship : root_relationships)
+    {
+        wb.create_root_relationship(relationship.get_id(), relationship.get_target_uri(), relationship.get_type());
+    }
+    
     auto workbook_relationships = relationship_serializer_.read_relationships(xlnt::constants::ArcWorkbook());
 
     for (const auto &relationship : workbook_relationships)
@@ -247,9 +254,13 @@ void excel_serializer::write_data(bool /*as_template*/)
     theme_serializer theme_serializer_;
     archive_.writestr(constants::ArcTheme(), theme_serializer_.write_theme(workbook_.get_loaded_theme()).to_string());
 
-    archive_.writestr(
-        constants::ArcSharedString(),
-        xml_serializer::serialize(xlnt::shared_strings_serializer::write_shared_strings(workbook_.get_shared_strings())));
+    if (!workbook_.get_shared_strings().empty())
+    {
+        const auto &strings = workbook_.get_shared_strings();
+        auto shared_strings_xml = xlnt::shared_strings_serializer::write_shared_strings(strings);
+        
+        archive_.writestr(constants::ArcSharedString(), xml_serializer::serialize(shared_strings_xml));
+    }
 
     archive_.writestr(constants::ArcWorkbook(), xml_serializer::serialize(workbook_serializer_.write_workbook()));
 

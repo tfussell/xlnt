@@ -95,18 +95,18 @@ private:
     friend class style;
 
     std::string name_ = "Calibri";
-    std::size_t size_ = 11;
+    std::size_t size_ = 12;
     bool bold_ = false;
     bool italic_ = false;
     bool superscript_ = false;
     bool subscript_ = false;
     underline_style underline_ = underline_style::none;
     bool strikethrough_ = false;
-    color color_;
-    bool has_family_ = false;
-    std::size_t family_;
-    bool has_scheme_ = false;
-    std::string scheme_;
+    color color_ = color(xlnt::color::type::theme, 1);
+    bool has_family_ = true;
+    std::size_t family_ = 2;
+    bool has_scheme_ = true;
+    std::string scheme_ = "minor";
 };
 
 } // namespace xlnt

@@ -35,7 +35,7 @@ namespace xlnt {
 std::string xml_serializer::serialize(const xml_document &xml)
 {
     std::ostringstream ss;
-    xml.d_->doc.save(ss, "   ", pugi::format_default, pugi::encoding_utf8);
+    xml.d_->doc.save(ss, "  ", pugi::format_default, pugi::encoding_utf8);
 
     return ss.str();
 }

@@ -54,6 +54,7 @@ class range;
 class range_reference;
 class relationship;
 class style;
+class style_serializer;
 class text;
 class theme;
 class worksheet;
@@ -196,11 +197,13 @@ public:
     style &get_style(const std::string &name);
     const style &get_style(const std::string &name) const;
     style &create_style(const std::string &name);
+    void clear_styles();
     const std::vector<style> &get_styles() const;
 
     manifest &get_manifest();
     const manifest &get_manifest() const;
 
+    void create_root_relationship(const std::string &id, const std::string &target, relationship::type type);
     const std::vector<relationship> &get_root_relationships() const;
 
     void add_shared_string(const text &shared, bool allow_duplicates=false);
@@ -212,6 +215,10 @@ public:
 
 private:
     friend class worksheet;
+    friend class style_serializer;
+    
+    std::string next_relationship_id() const;
+    
     std::unique_ptr<detail::workbook_impl> d_;
 };
 

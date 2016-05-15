@@ -81,6 +81,10 @@ relationship::type relationship::type_from_string(const std::string &type_string
     {
         return type::custom_xml;
     }
+    else if (type_string == "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail")
+    {
+        return type::thumbnail;
+    }
 
     return type::invalid;
 }
@@ -109,6 +113,8 @@ std::string relationship::type_to_string(type t)
         return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/chartsheet";
     case type::custom_xml:
         return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml";
+    case type::thumbnail:
+        return "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail";
     default:
         return "??";
     }

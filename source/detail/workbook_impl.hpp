@@ -25,8 +25,19 @@
 #include <iterator>
 #include <vector>
 
+#include <detail/worksheet_impl.hpp>
+#include <xlnt/packaging/app_properties.hpp>
+#include <xlnt/packaging/document_properties.hpp>
+#include <xlnt/packaging/manifest.hpp>
+#include <xlnt/workbook/theme.hpp>
+#include <xlnt/worksheet/range.hpp>
+#include <xlnt/worksheet/range_reference.hpp>
+#include <xlnt/worksheet/sheet_view.hpp>
+
 namespace xlnt {
 namespace detail {
+
+struct worksheet_impl;
 
 struct workbook_impl
 {

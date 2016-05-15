@@ -64,7 +64,8 @@ public:
         extended_properties,
         core_properties,
         office_document,
-        custom_xml
+        custom_xml,
+        thumbnail
     };
 
     static type type_from_string(const std::string &type_string);

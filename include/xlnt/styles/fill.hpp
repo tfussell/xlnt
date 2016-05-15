@@ -122,8 +122,8 @@ protected:
     std::string to_hash_string() const override;
 
 private:
-    type type_ = type::none;
-    pattern_type pattern_type_;
+    type type_ = type::pattern;
+    pattern_type pattern_type_ = pattern_type::none;
     gradient_type gradient_type_;
     
     double rotation_ = 0;

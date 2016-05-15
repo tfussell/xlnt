@@ -220,8 +220,8 @@ xml_document workbook_serializer::write_properties_app() const
     
     auto heading_pairs_node = root_node.add_child("HeadingPairs");
     auto heading_pairs_vector_node = heading_pairs_node.add_child("vt:vector");
-    heading_pairs_vector_node.add_attribute("baseType", "variant");
     heading_pairs_vector_node.add_attribute("size", "2");
+    heading_pairs_vector_node.add_attribute("baseType", "variant");
     heading_pairs_vector_node.add_child("vt:variant").add_child("vt:lpstr").set_text("Worksheets");
     heading_pairs_vector_node.add_child("vt:variant")
         .add_child("vt:i4")
@@ -229,8 +229,8 @@ xml_document workbook_serializer::write_properties_app() const
 
     auto titles_of_parts_node = root_node.add_child("TitlesOfParts");
     auto titles_of_parts_vector_node = titles_of_parts_node.add_child("vt:vector");
-    titles_of_parts_vector_node.add_attribute("baseType", "lpstr");
     titles_of_parts_vector_node.add_attribute("size", std::to_string(workbook_.get_sheet_names().size()));
+    titles_of_parts_vector_node.add_attribute("baseType", "lpstr");
 
     for (auto ws : workbook_)
     {

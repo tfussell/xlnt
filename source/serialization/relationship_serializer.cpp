@@ -95,8 +95,8 @@ bool relationship_serializer::write_relationships(const std::vector<relationship
         auto relationship_node = root_node.add_child("Relationship");
 
         relationship_node.add_attribute("Id", relationship.get_id());
-        relationship_node.add_attribute("Target", relationship.get_target_uri());
         relationship_node.add_attribute("Type", relationship.get_type_string());
+        relationship_node.add_attribute("Target", relationship.get_target_uri());
 
         if (relationship.get_target_mode() == target_mode::external)
         {

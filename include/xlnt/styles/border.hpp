@@ -67,11 +67,11 @@ protected:
 private:
     std::experimental::optional<side> start_;
     std::experimental::optional<side> end_;
-    std::experimental::optional<side> left_;
-    std::experimental::optional<side> right_;
-    std::experimental::optional<side> top_;
-    std::experimental::optional<side> bottom_;
-    std::experimental::optional<side> diagonal_;
+    std::experimental::optional<side> left_ = side();
+    std::experimental::optional<side> right_ = side();
+    std::experimental::optional<side> top_ = side();
+    std::experimental::optional<side> bottom_ = side();
+    std::experimental::optional<side> diagonal_ = side();
     std::experimental::optional<side> vertical_;
     std::experimental::optional<side> horizontal_;
 

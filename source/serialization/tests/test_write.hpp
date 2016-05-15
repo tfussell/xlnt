@@ -46,6 +46,7 @@ public:
     void test_write_workbook_rels()
     {
         xlnt::workbook wb;
+        wb.add_shared_string(xlnt::text());
         xlnt::zip_file archive;
         xlnt::relationship_serializer serializer(archive);
         serializer.write_relationships(wb.get_relationships(), "xl/workbook.xml");
