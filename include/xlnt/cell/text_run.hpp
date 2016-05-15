@@ -25,6 +25,7 @@
 #include <string>
 
 #include <xlnt/xlnt_config.hpp> // for XLNT_CLASS, XLNT_FUNCTION
+#include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 
@@ -38,21 +39,35 @@ public:
 
 	std::string get_string() const;
 	void set_string(const std::string &string);
-    
+
+    bool has_size() const;
     std::size_t get_size() const;
+    void set_size(std::size_t size);
+    
+    bool has_color() const;
     std::string get_color() const;
+    void set_color(const std::string &color);
+    
+    bool has_font() const;
     std::string get_font() const;
+    void set_font(const std::string &font);
+    
+    bool has_family() const;
     std::size_t get_family() const;
+    void set_family(std::size_t family);
+    
+    bool has_scheme() const;
     std::string get_scheme() const;
+    void set_scheme(const std::string &scheme);
 
 private:
 	std::string string_;
-    bool has_formatting_ = false;
-    std::size_t size_;
-    std::string color_;
-    std::string font_;
-    std::size_t family_;
-    std::string scheme_;
+    
+    std::experimental::optional<std::size_t> size_;
+    std::experimental::optional<std::string> color_;
+    std::experimental::optional<std::string> font_;
+    std::experimental::optional<std::size_t> family_;
+    std::experimental::optional<std::string> scheme_;
 };
 
 } // namespace xlnt

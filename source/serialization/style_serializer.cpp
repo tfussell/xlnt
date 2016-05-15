@@ -468,7 +468,7 @@ bool style_serializer::read_styles(const xlnt::xml_node &styles_node, const xlnt
     if (styles_.empty())
     {
         style ns;
-        ns.set_name("Standard");
+        ns.set_name("Normal");
         ns.set_hidden(false);
         ns.set_builtin_id(0);
         styles_.push_back(ns);
@@ -805,6 +805,14 @@ void style_serializer::initialize_vectors()
         if (std::find(number_formats_.begin(), number_formats_.end(), current_format.get_number_format()) == number_formats_.end())
         {
             number_formats_.push_back(current_format.get_number_format());
+        }
+        
+        auto existing_style = std::find_if(styles_.begin(), styles_.end(),
+            [&current_format](const style &s) { return s.get_name() == current_format.get_style_name(); });
+
+        if (existing_style == styles_.end())
+        {
+            styles_.push_back(workbook_.get_style(current_format.get_style_name()));
         }
     }
     
@@ -1237,7 +1245,16 @@ bool style_serializer::write_formats(xml_node &formats_node) const
         
         if(current_format.has_style())
         {
-            xf_node.add_attribute("xfId", "0");
+            for (std::size_t i = 0; i < styles_.size(); i++)
+            {
+                const auto &current_style = styles_.at(i);
+                
+                if (current_style.get_name() == current_format.get_style_name())
+                {
+                    xf_node.add_attribute("xfId", std::to_string(i));
+                    break;
+                }
+            }
         }
     }
 

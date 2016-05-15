@@ -14,6 +14,9 @@
 
 #include <helpers/path_helper.hpp>
 
+#include <xlnt/cell/text.hpp>
+#include <xlnt/cell/text_run.hpp>
+
 class test_read : public CxxTest::TestSuite
 {
 public:

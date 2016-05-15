@@ -32,10 +32,16 @@
 namespace xlnt {
 
 format::format()
+    : formattable(),
+      parent_(nullptr),
+      named_style_name_("Normal")
 {
 }
 
-format::format(const format &other) : formattable(other)
+format::format(const format &other)
+    : formattable(other),
+      parent_(other.parent_),
+      named_style_name_(other.named_style_name_)
 {
 }
 
@@ -74,6 +80,11 @@ void format::set_style(const std::string &style_name)
 bool format::has_style() const
 {
     return !named_style_name_.empty();
+}
+
+std::string format::get_style_name() const
+{
+    return named_style_name_;
 }
 
 } // namespace xlnt

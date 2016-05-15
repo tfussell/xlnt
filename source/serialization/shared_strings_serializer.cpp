@@ -37,6 +37,7 @@ xml_document shared_strings_serializer::write_shared_strings(const std::vector<t
 
     xml.add_namespace("", "http://schemas.openxmlformats.org/spreadsheetml/2006/main");
 
+    root_node.add_attribute("count", std::to_string(strings.size()));
     root_node.add_attribute("uniqueCount", std::to_string(strings.size()));
 
     for (const auto &string : strings)
@@ -47,24 +48,44 @@ xml_document shared_strings_serializer::write_shared_strings(const std::vector<t
         }
         else
         {
+            auto string_item_node = root_node.add_child("si");
+            
             for (const auto &run : string.get_runs())
             {
-                auto string_item_node = root_node.add_child("si");
                 auto rich_text_run_node = string_item_node.add_child("r");
-                
-                auto text_node = rich_text_run_node.add_child("t");
-                text_node.set_text(run.get_string());
                 
                 if (run.has_formatting())
                 {
                     auto run_properties_node = rich_text_run_node.add_child("rPr");
                     
-                    run_properties_node.add_child("sz").add_attribute("val", std::to_string(run.get_size()));
-                    run_properties_node.add_child("color").add_attribute("rgb", run.get_color());
-                    run_properties_node.add_child("rFont").add_attribute("val", run.get_font());
-                    run_properties_node.add_child("family").add_attribute("val", std::to_string(run.get_family()));
-                    run_properties_node.add_child("scheme").add_attribute("val", run.get_scheme());
+                    if (run.has_size())
+                    {
+                        run_properties_node.add_child("sz").add_attribute("val", std::to_string(run.get_size()));
+                    }
+                    
+                    if (run.has_color())
+                    {
+                        run_properties_node.add_child("color").add_attribute("rgb", run.get_color());
+                    }
+                    
+                    if (run.has_font())
+                    {
+                        run_properties_node.add_child("rFont").add_attribute("val", run.get_font());
+                    }
+                    
+                    if (run.has_family())
+                    {
+                        run_properties_node.add_child("family").add_attribute("val", std::to_string(run.get_family()));
+                    }
+                    
+                    if (run.has_scheme())
+                    {
+                        run_properties_node.add_child("scheme").add_attribute("val", run.get_scheme());
+                    }
                 }
+                
+                auto text_node = rich_text_run_node.add_child("t");
+                text_node.set_text(run.get_string());
             }
         }
     }
@@ -106,7 +127,39 @@ bool shared_strings_serializer::read_shared_strings(const xml_document &xml, std
                 if (rich_text_run_node.get_name() == "r" && rich_text_run_node.has_child("t"))
                 {
                     text_run run;
+                    
                     run.set_string(rich_text_run_node.get_child("t").get_text());
+                    
+                    if (rich_text_run_node.has_child("rPr"))
+                    {
+                        auto run_properties_node = rich_text_run_node.get_child("rPr");
+                        
+                        if (run_properties_node.has_child("sz"))
+                        {
+                            run.set_size(std::stoull(run_properties_node.get_child("sz").get_attribute("val")));
+                        }
+                        
+                        if (run_properties_node.has_child("rFont"))
+                        {
+                            run.set_font(run_properties_node.get_child("rFont").get_attribute("val"));
+                        }
+                        
+                        if (run_properties_node.has_child("color"))
+                        {
+                            run.set_color(run_properties_node.get_child("color").get_attribute("rgb"));
+                        }
+                        
+                        if (run_properties_node.has_child("family"))
+                        {
+                            run.set_family(std::stoull(run_properties_node.get_child("family").get_attribute("val")));
+                        }
+                        
+                        if (run_properties_node.has_child("scheme"))
+                        {
+                            run.set_scheme(run_properties_node.get_child("scheme").get_attribute("val"));
+                        }
+                    }
+                    
                     t.add_run(run);
                 }
             }

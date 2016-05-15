@@ -749,4 +749,16 @@ const std::vector<format> &workbook::get_formats() const
     return d_->formats_;
 }
 
+style &workbook::get_style(const std::string &name)
+{
+    return *std::find_if(d_->styles_.begin(), d_->styles_.end(),
+        [&name](const style &s) { return s.get_name() == name; });
+}
+
+const style &workbook::get_style(const std::string &name) const
+{
+    return *std::find_if(d_->styles_.begin(), d_->styles_.end(),
+        [&name](const style &s) { return s.get_name() == name; });
+}
+
 } // namespace xlnt
