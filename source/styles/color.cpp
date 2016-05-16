@@ -37,6 +37,46 @@ const color color::white()
     return color(color::type::rgb, "ffffffff");
 }
 
+const color color::red()
+{
+    return color(color::type::rgb, "ffff0000");
+}
+
+const color color::darkred()
+{
+    return color(color::type::rgb, "ff8b0000");
+}
+
+const color color::blue()
+{
+    return color(color::type::rgb, "ff0000ff");
+}
+
+const color color::darkblue()
+{
+    return color(color::type::rgb, "ff00008b");
+}
+
+const color color::green()
+{
+    return color(color::type::rgb, "ff00ff00");
+}
+
+const color color::darkgreen()
+{
+    return color(color::type::rgb, "ff008b00");
+}
+
+const color color::yellow()
+{
+    return color(color::type::rgb, "ffffff00");
+}
+
+const color color::darkyellow()
+{
+    return color(color::type::rgb, "ffcccc00");
+}
+
 color::color()
 {
 }

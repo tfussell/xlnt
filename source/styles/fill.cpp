@@ -267,4 +267,9 @@ double fill::get_gradient_bottom() const
     return gradient_path_bottom_;
 }
 
+void fill::set_background_color(const color &c)
+{
+    background_color_ = c;
+}
+
 } // namespace xlnt

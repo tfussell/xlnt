@@ -29,7 +29,7 @@ public:
         
         return wb;
     }
-    
+
     void test_read_standard_workbook()
     {
         TS_ASSERT_DIFFERS(standard_workbook(), nullptr);
