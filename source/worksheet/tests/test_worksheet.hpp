@@ -152,6 +152,36 @@ public:
             expected_row_iter++;
         }
     }
+
+    void test_iter_rows_offset_int_int()
+    {
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
+        auto rows = ws.rows(1, 3);
+
+        const std::vector<std::vector<std::string>> expected =
+        {
+            { "D2", "E2", "F2" },
+            { "D3", "E3", "F3" },
+            { "D4", "E4", "F4" },
+            { "D5", "E5", "F5" }
+        };
+
+        auto expected_row_iter = expected.begin();
+
+        for (auto row : rows)
+        {
+            auto expected_cell_iter = (*expected_row_iter).begin();
+
+            for (auto cell : row)
+            {
+                TS_ASSERT_EQUALS(cell.get_reference(), *expected_cell_iter);
+                expected_cell_iter++;
+            }
+
+            expected_row_iter++;
+        }
+    }
     
     void test_get_named_range()
     {
