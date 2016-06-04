@@ -93,7 +93,7 @@ workbook::workbook(encoding e) : workbook()
     d_->encoding_ = e;
 }
 
-worksheet workbook::get_sheet_by_name(const std::string &name)
+const worksheet workbook::get_sheet_by_name(const std::string &name) const
 {
     for (auto &impl : d_->worksheets_)
     {
@@ -104,6 +104,11 @@ worksheet workbook::get_sheet_by_name(const std::string &name)
     }
 
     return worksheet();
+}
+
+worksheet workbook::get_sheet_by_name(const std::string &name)
+{
+	return worksheet(static_cast<const workbook*>(this)->get_sheet_by_name(name));
 }
 
 worksheet workbook::get_sheet_by_index(std::size_t index)
