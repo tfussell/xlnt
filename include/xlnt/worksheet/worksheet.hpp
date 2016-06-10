@@ -237,6 +237,8 @@ private:
     friend class cell;
     friend class range_iterator;
     friend class const_range_iterator;
+    
+    std::size_t next_custom_number_format_id();
 
     worksheet(detail::worksheet_impl *d);
     detail::worksheet_impl *d_;

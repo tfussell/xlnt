@@ -43,6 +43,7 @@
 
 #include <detail/cell_impl.hpp>
 #include <detail/constants.hpp>
+#include <detail/workbook_impl.hpp>
 #include <detail/worksheet_impl.hpp>
 
 namespace xlnt {
@@ -993,6 +994,11 @@ range_reference worksheet::get_print_area() const
 sheet_view worksheet::get_sheet_view() const
 {
     return d_->view_;
+}
+
+std::size_t worksheet::next_custom_number_format_id()
+{
+    return get_workbook().d_->stylesheet_.next_custom_format_id++;
 }
 
 } // namespace xlnt

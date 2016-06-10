@@ -31,8 +31,9 @@
 #include <xlnt/packaging/document_properties.hpp>
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/serialization/encoding.hpp>
-#include <xlnt/styles/format.hpp>
 #include <xlnt/styles/color.hpp>
+#include <xlnt/styles/format.hpp>
+#include <xlnt/styles/style.hpp>
 #include <xlnt/utils/date.hpp>
 #include <xlnt/utils/datetime.hpp>
 #include <xlnt/utils/time.hpp>
@@ -906,10 +907,24 @@ void cell::set_font(const font &font_)
 
 void cell::set_number_format(const number_format &number_format_)
 {
+    format new_format;
+    
+    if (d_->has_format_)
+    {
+        new_format = get_workbook().get_format(d_->format_id_);
+    }
+    
+    auto number_format_with_id = number_format_;
+    
+    if (!number_format_with_id.has_id())
+    {
+        number_format_with_id.set_id(get_worksheet().next_custom_number_format_id());
+    }
+    
+    new_format.set_number_format(number_format_with_id);
+    
     d_->has_format_ = true;
-    auto format_copy = get_workbook().get_format(d_->format_id_);
-    format_copy.set_number_format(number_format_);
-    d_->format_id_ = get_workbook().add_format(format_copy);
+    d_->format_id_ = get_workbook().add_format(new_format);
 }
 
 void cell::set_alignment(const xlnt::alignment &alignment_)
@@ -1028,6 +1043,44 @@ void cell::guess_type_and_set_value(const std::string &value)
 			}
 		}
 	}
+}
+
+void cell::clear_format()
+{
+    d_->format_id_ = 0;
+    d_->has_format_ = false;
+}
+
+void cell::clear_style()
+{
+    d_->style_id_ = 0;
+    d_->has_style_ = false;
+}
+
+void cell::set_style(const style &new_style)
+{
+    d_->has_style_ = true;
+
+    if (get_workbook().has_style(new_style.get_name()))
+    {
+        d_->style_id_ = get_workbook().get_style_id(new_style.get_name());
+    }
+    else
+    {
+        d_->style_id_ = get_workbook().add_style(new_style);
+    }
+}
+
+void cell::set_style(const std::string &style_name)
+{
+    d_->has_style_ = true;
+    
+    if (!get_workbook().has_style(style_name))
+    {
+        throw std::runtime_error("style " + style_name + " doesn't exist in workbook");
+    }
+    
+    d_->style_id_ = get_workbook().get_style_id(style_name);
 }
 
 } // namespace xlnt

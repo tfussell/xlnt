@@ -71,6 +71,8 @@ public:
         lightvertical,
         mediumgray,
     };
+    
+    fill();
 
     type get_type() const;
 
@@ -122,21 +124,21 @@ protected:
     std::string to_hash_string() const override;
 
 private:
-    type type_ = type::pattern;
-    pattern_type pattern_type_ = pattern_type::none;
+    type type_;
+    pattern_type pattern_type_;
     gradient_type gradient_type_;
     
-    double rotation_ = 0;
+    double rotation_;
     
-    std::experimental::optional<color> foreground_color_ = color::black();
-    std::experimental::optional<color> background_color_ = color::white();
-    std::experimental::optional<color> start_color_ = color::white();
-    std::experimental::optional<color> end_color_ = color::black();
+    std::experimental::optional<color> foreground_color_;
+    std::experimental::optional<color> background_color_;
+    std::experimental::optional<color> start_color_;
+    std::experimental::optional<color> end_color_;
     
-    double gradient_path_left_ = 0;
-    double gradient_path_right_ = 0;
-    double gradient_path_top_ = 0;
-    double gradient_path_bottom_ = 0;
+    double gradient_path_left_;
+    double gradient_path_right_;
+    double gradient_path_top_;
+    double gradient_path_bottom_;
 };
 
 } // namespace xlnt

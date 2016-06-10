@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <array>
 #include <fstream>
+#include <functional>
 #include <set>
 #include <sstream>
 
@@ -60,7 +61,10 @@ namespace xlnt {
 namespace detail {
 
 workbook_impl::workbook_impl()
-    : active_sheet_index_(0), guess_types_(false), data_only_(false), read_only_(false), next_custom_format_id_(164)
+    : active_sheet_index_(0),
+      guess_types_(false),
+      data_only_(false),
+      read_only_(false)
 {
 }
 
@@ -86,6 +90,7 @@ workbook::workbook() : d_(new detail::workbook_impl())
     
     add_format(format());
     create_style("Normal");
+    d_->stylesheet_.format_styles.front() = "Normal";
 }
 
 workbook::workbook(encoding e) : workbook()
@@ -555,11 +560,6 @@ workbook::~workbook()
 {
 }
 
-const std::vector<style> &workbook::get_styles() const
-{
-    return d_->styles_;
-}
-
 bool workbook::get_data_only() const
 {
     return d_->data_only_;
@@ -609,65 +609,63 @@ std::vector<named_range> workbook::get_named_ranges() const
     return named_ranges;
 }
 
-std::size_t workbook::add_format(const format &style)
+std::size_t workbook::add_format(const format &to_add)
 {
-    auto format_copy = style;
-    
-    //TODO this is ugly
-    if (!style.get_number_format().has_id())
-    {
-        bool match = false;
-        
-        for (std::size_t i = 0; i < d_->formats_.size(); i++)
-        {
-            const auto &current_number_format = d_->formats_.at(i).get_number_format();
-            
-            if (current_number_format.get_format_string() == format_copy.get_number_format().get_format_string())
-            {
-                format_copy.set_number_format(current_number_format);
-                match = true;
-                break;
-            }
-        }
-        
-        if (!match)
-        {
-            format_copy.get_number_format().set_id(d_->next_custom_format_id_++);
-        }
-    }
-    
-    // TODO hashmap?
-    for (std::size_t i = 0; i < d_->formats_.size(); i++)
-    {
-        if (d_->formats_[i] == format_copy)
-        {
-            return i;
-        }
-    }
-    
-    d_->formats_.push_back(format_copy);
-    
-    return d_->formats_.size() - 1;
+    return d_->stylesheet_.add_format(to_add);
+}
+
+std::size_t workbook::add_style(const style &to_add)
+{
+    return d_->stylesheet_.add_style(to_add);
+}
+
+bool workbook::has_style(const std::string &name) const
+{
+    return std::find_if(d_->stylesheet_.styles.begin(), d_->stylesheet_.styles.end(),
+        [&](const style &s) { return s.get_name() == name; }) != d_->stylesheet_.styles.end();
+}
+
+std::size_t workbook::get_style_id(const std::string &name) const
+{
+    return std::distance(d_->stylesheet_.styles.begin(),
+        std::find_if(d_->stylesheet_.styles.begin(), d_->stylesheet_.styles.end(),
+            [&](const style &s) { return s.get_name() == name; }));
 }
 
 void workbook::clear_styles()
 {
-    d_->styles_.clear();
+    d_->stylesheet_.styles.clear();
+    apply_to_cells([](cell c) { c.clear_style(); });
 }
 
 void workbook::clear_formats()
 {
-    d_->formats_.clear();
+    d_->stylesheet_.formats.clear();
+    apply_to_cells([](cell c) { c.clear_format(); });
+}
+
+void workbook::apply_to_cells(std::function<void(cell)> f)
+{
+    for (auto ws : *this)
+    {
+        for (auto r : ws.iter_cells(true))
+        {
+            for (auto c : r)
+            {
+                f.operator()(c);
+            }
+        }
+    }
 }
 
 format &workbook::get_format(std::size_t format_index)
 {
-    return d_->formats_.at(format_index);
+    return d_->stylesheet_.formats.at(format_index);
 }
 
 const format &workbook::get_format(std::size_t format_index) const
 {
-    return d_->formats_.at(format_index);
+    return d_->stylesheet_.formats.at(format_index);
 }
 
 manifest &workbook::get_manifest()
@@ -749,30 +747,30 @@ style &workbook::create_style(const std::string &name)
     style style;
     style.set_name(name);
     
-    d_->styles_.push_back(style);
+    d_->stylesheet_.styles.push_back(style);
     
-    return d_->styles_.back();
+    return d_->stylesheet_.styles.back();
 }
 
 std::vector<format> &workbook::get_formats()
 {
-    return d_->formats_;
+    return d_->stylesheet_.formats;
 }
 
 const std::vector<format> &workbook::get_formats() const
 {
-    return d_->formats_;
+    return d_->stylesheet_.formats;
 }
 
 style &workbook::get_style(const std::string &name)
 {
-    return *std::find_if(d_->styles_.begin(), d_->styles_.end(),
+    return *std::find_if(d_->stylesheet_.styles.begin(), d_->stylesheet_.styles.end(),
         [&name](const style &s) { return s.get_name() == name; });
 }
 
 const style &workbook::get_style(const std::string &name) const
 {
-    return *std::find_if(d_->styles_.begin(), d_->styles_.end(),
+    return *std::find_if(d_->stylesheet_.styles.begin(), d_->stylesheet_.styles.end(),
         [&name](const style &s) { return s.get_name() == name; });
 }
 

@@ -15,9 +15,12 @@ public:
     void test_ctor()
     {
         xlnt::workbook wb;
-        xlnt::style_serializer style_serializer(wb);
+        xlnt::excel_serializer excel_serializer(wb);
+        xlnt::style_serializer style_serializer(excel_serializer.get_stylesheet());
         xlnt::zip_file archive;
-        auto stylesheet_xml = style_serializer.write_stylesheet().to_string();
+        xlnt::xml_document stylesheet_doc;
+        style_serializer.write_stylesheet(stylesheet_doc);
+        auto stylesheet_xml = stylesheet_doc.to_string();
         
         const std::string expected =
         "<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:x14ac=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac\" mc:Ignorable=\"x14ac\">"
@@ -72,9 +75,10 @@ public:
         auto xml = PathHelper::read_file(PathHelper::GetDataDirectory("/reader/styles/simple-styles.xml"));
         doc.from_string(xml);
         xlnt::workbook wb;
-        xlnt::style_serializer s(wb);
+        xlnt::excel_serializer e(wb);
+        xlnt::style_serializer s(e.get_stylesheet());
         TS_ASSERT(s.read_stylesheet(doc));
-        TS_ASSERT_EQUALS(s.get_number_formats().size(), 1);
+        TS_ASSERT_EQUALS(e.get_stylesheet().number_formats.size(), 1);
     }
 
     void test_from_complex()
@@ -83,12 +87,13 @@ public:
         auto xml = PathHelper::read_file(PathHelper::GetDataDirectory("/reader/styles/complex-styles.xml"));
         doc.from_string(xml);
         xlnt::workbook wb;
-        xlnt::style_serializer s(wb);
+        xlnt::excel_serializer e(wb);
+        xlnt::style_serializer s(e.get_stylesheet());
         TS_ASSERT(s.read_stylesheet(doc));
-        TS_ASSERT_EQUALS(s.get_borders().size(), 7);
-        TS_ASSERT_EQUALS(s.get_fills().size(), 6);
-        TS_ASSERT_EQUALS(s.get_fonts().size(), 8);
-        TS_ASSERT_EQUALS(s.get_number_formats().size(), 1);
+        TS_ASSERT_EQUALS(e.get_stylesheet().borders.size(), 7);
+        TS_ASSERT_EQUALS(e.get_stylesheet().fills.size(), 6);
+        TS_ASSERT_EQUALS(e.get_stylesheet().fonts.size(), 8);
+        TS_ASSERT_EQUALS(e.get_stylesheet().number_formats.size(), 0);
     }
 
 /*

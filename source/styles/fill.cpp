@@ -26,6 +26,18 @@
 
 namespace xlnt {
 
+fill::fill()
+    : type_(type::pattern),
+      pattern_type_(pattern_type::none),
+      gradient_type_(gradient_type::linear),
+      rotation_(0),
+      gradient_path_left_(0),
+      gradient_path_right_(0),
+      gradient_path_top_(0),
+      gradient_path_bottom_(0)
+{
+}
+
 fill::type fill::get_type() const
 {
     return type_;

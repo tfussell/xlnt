@@ -25,7 +25,9 @@
 #include <iterator>
 #include <vector>
 
+#include <detail/stylesheet.hpp>
 #include <detail/worksheet_impl.hpp>
+#include <xlnt/serialization/encoding.hpp>
 #include <xlnt/packaging/app_properties.hpp>
 #include <xlnt/packaging/document_properties.hpp>
 #include <xlnt/packaging/manifest.hpp>
@@ -54,8 +56,7 @@ struct workbook_impl
           guess_types_(other.guess_types_),
           data_only_(other.data_only_),
           read_only_(other.read_only_),
-          formats_(other.formats_),
-          styles_(other.styles_),
+          stylesheet_(other.stylesheet_),
           manifest_(other.manifest_)
     {
     }
@@ -95,9 +96,7 @@ struct workbook_impl
     bool data_only_;
     bool read_only_;
 
-    std::vector<format> formats_;
-    std::vector<style> styles_;
-    std::size_t next_custom_format_id_;
+    stylesheet stylesheet_;
     
     manifest manifest_;
     theme theme_;

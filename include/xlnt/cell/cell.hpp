@@ -38,7 +38,6 @@ enum class calendar;
 class alignment;
 class border;
 class cell_reference;
-class cell_style;
 class comment;
 class fill;
 class font;
@@ -46,6 +45,7 @@ class format;
 class number_format;
 class protection;
 class relationship;
+class style;
 class workbook;
 class worksheet;
 
@@ -205,6 +205,26 @@ public:
     const format &get_format() const;
     
     void set_format(const format &new_format);
+    
+    void clear_format();
+    
+    // style
+
+    /// <summary>
+    /// Return true if this cell has had a format applied to it.
+    /// </summary>
+    bool has_style() const;
+
+    /// <summary>
+    /// Return a reference to the format applied to this cell.
+    /// </summary>
+    const style &get_style() const;
+    
+    void set_style(const style &new_style);
+    
+    void set_style(const std::string &style_name);
+    
+    void clear_style();
 
     /// <summary>
     /// Return the number format of this cell.

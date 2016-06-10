@@ -23,6 +23,7 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -32,11 +33,14 @@
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/packaging/relationship.hpp>
 
+namespace CxxTest { class TestSuite; }
+
 namespace xlnt {
 
 class alignment;
 class app_properties;
 class border;
+class cell;
 class cell_style;
 class color;
 class const_worksheet_iterator;
@@ -193,10 +197,12 @@ public:
     const std::vector<format> &get_formats() const;
     
     // Named Styles
-    bool has_style(const std::string &name);
+    bool has_style(const std::string &name) const;
     style &get_style(const std::string &name);
     const style &get_style(const std::string &name) const;
+    std::size_t get_style_id(const std::string &name) const;
     style &create_style(const std::string &name);
+    std::size_t add_style(const style &new_style);
     void clear_styles();
     const std::vector<style> &get_styles() const;
 
@@ -214,10 +220,11 @@ public:
     const std::vector<std::uint8_t> &get_thumbnail() const;
 
 private:
+    friend class excel_serializer;
     friend class worksheet;
-    friend class style_serializer;
     
     std::string next_relationship_id() const;
+    void apply_to_cells(std::function<void(cell)> f);
     
     std::unique_ptr<detail::workbook_impl> d_;
 };

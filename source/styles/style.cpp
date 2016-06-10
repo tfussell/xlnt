@@ -27,14 +27,14 @@
 namespace xlnt {
 
 style::style()
-    : formattable(),
+    : base_format(),
       hidden_(false),
       builtin_id_(0)
 {
 }
 
 style::style(const style &other)
-    : formattable(other),
+    : base_format(other),
       name_(other.name_),
       hidden_(other.hidden_),
       builtin_id_(other.builtin_id_)
@@ -43,7 +43,7 @@ style::style(const style &other)
 
 style &style::operator=(const style &other)
 {
-    formattable::operator=(other);
+    base_format::operator=(other);
     
     name_ = other.name_;
     hidden_ = other.hidden_;
@@ -84,7 +84,7 @@ void style::set_name(const std::string &name)
 
 std::string style::to_hash_string() const
 {
-    return formattable::to_hash_string() + name_;
+    return base_format::to_hash_string() + name_;
 }
 
 } // namespace xlnt

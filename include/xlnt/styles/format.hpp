@@ -23,7 +23,7 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <xlnt/styles/formattable.hpp>
+#include <xlnt/styles/base_format.hpp>
 
 namespace xlnt {
 
@@ -33,28 +33,15 @@ namespace detail { struct workbook_impl; }
 /// <summary>
 /// Describes the formatting of a particular cell.
 /// </summary>
-class XLNT_CLASS format : public formattable
+class XLNT_CLASS format : public base_format
 {
 public:
     format();
     format(const format &other);
     format &operator=(const format &other);
     
-    // Named Style
-    bool has_style() const;
-    std::string get_style_name() const;
-    style &get_style();
-    const style &get_style() const;
-    void set_style(const std::string &name);
-    void set_style(const style &new_style);
-    void remove_style();
-    
 protected:
     std::string to_hash_string() const override;
-
-private:
-    detail::workbook_impl *parent_;
-    std::string named_style_name_;
 };
 
 } // namespace xlnt

@@ -21,11 +21,11 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#include <xlnt/styles/formattable.hpp>
+#include <xlnt/styles/base_format.hpp>
 
 namespace xlnt {
 
-formattable::formattable()
+base_format::base_format()
     : apply_alignment_(false),
       apply_border_(false),
       apply_fill_(false),
@@ -35,7 +35,7 @@ formattable::formattable()
 {
 }
 
-formattable::formattable(const formattable &other)
+base_format::base_format(const base_format &other)
     : alignment_(other.alignment_),
       border_(other.border_),
       fill_(other.fill_),
@@ -51,7 +51,7 @@ formattable::formattable(const formattable &other)
 {
 }
 
-formattable &formattable::operator=(const xlnt::formattable &other)
+base_format &base_format::operator=(const xlnt::base_format &other)
 {
     alignment_ = other.alignment_;
     border_ = other.border_;
@@ -70,105 +70,105 @@ formattable &formattable::operator=(const xlnt::formattable &other)
     return *this;
 }
 
-alignment &formattable::get_alignment()
+alignment &base_format::get_alignment()
 {
     return alignment_;
 }
 
-const alignment &formattable::get_alignment() const
+const alignment &base_format::get_alignment() const
 {
     return alignment_;
 }
 
-void formattable::set_alignment(const xlnt::alignment &new_alignment)
+void base_format::set_alignment(const xlnt::alignment &new_alignment)
 {
     alignment_ = new_alignment;
     alignment_applied(true);
 }
 
-number_format &formattable::get_number_format()
+number_format &base_format::get_number_format()
 {
     return number_format_;
 }
 
-const number_format &formattable::get_number_format() const
+const number_format &base_format::get_number_format() const
 {
     return number_format_;
 }
 
-void formattable::set_number_format(const xlnt::number_format &new_number_format)
+void base_format::set_number_format(const xlnt::number_format &new_number_format)
 {
     number_format_ = new_number_format;
     number_format_applied(true);
 }
 
-border &formattable::get_border()
+border &base_format::get_border()
 {
     return border_;
 }
 
-const border &formattable::get_border() const
+const border &base_format::get_border() const
 {
     return border_;
 }
 
-void formattable::set_border(const xlnt::border &new_border)
+void base_format::set_border(const xlnt::border &new_border)
 {
     border_ = new_border;
     border_applied(true);
 }
 
-fill &formattable::get_fill()
+fill &base_format::get_fill()
 {
     return fill_;
 }
 
-const fill &formattable::get_fill() const
+const fill &base_format::get_fill() const
 {
     return fill_;
 }
 
-void formattable::set_fill(const xlnt::fill &new_fill)
+void base_format::set_fill(const xlnt::fill &new_fill)
 {
     fill_ = new_fill;
     fill_applied(true);
 }
 
-font &formattable::get_font()
+font &base_format::get_font()
 {
     return font_;
 }
 
-const font &formattable::get_font() const
+const font &base_format::get_font() const
 {
     return font_;
 }
 
-void formattable::set_font(const xlnt::font &new_font)
+void base_format::set_font(const xlnt::font &new_font)
 {
     font_ = new_font;
     font_applied(true);
 }
 
-protection &formattable::get_protection()
+protection &base_format::get_protection()
 {
     return protection_;
 }
 
-const protection &formattable::get_protection() const
+const protection &base_format::get_protection() const
 {
     return protection_;
 }
 
-void formattable::set_protection(const xlnt::protection &new_protection)
+void base_format::set_protection(const xlnt::protection &new_protection)
 {
     protection_ = new_protection;
     protection_applied(true);
 }
 
-std::string formattable::to_hash_string() const
+std::string base_format::to_hash_string() const
 {
-    std::string hash_string("formattable:");
+    std::string hash_string("base_format:");
     
     hash_string.append(std::to_string(alignment_applied()));
     hash_string.append(alignment_applied() ? std::to_string(alignment_.hash()) : ":");
@@ -191,62 +191,62 @@ std::string formattable::to_hash_string() const
     return hash_string;
 }
 
-void formattable::alignment_applied(bool applied)
+void base_format::alignment_applied(bool applied)
 {
     apply_alignment_ = applied;
 }
 
-void formattable::border_applied(bool applied)
+void base_format::border_applied(bool applied)
 {
     apply_border_ = applied;
 }
 
-void formattable::fill_applied(bool applied)
+void base_format::fill_applied(bool applied)
 {
     apply_fill_ = applied;
 }
 
-void formattable::font_applied(bool applied)
+void base_format::font_applied(bool applied)
 {
     apply_font_ = applied;
 }
 
-void formattable::number_format_applied(bool applied)
+void base_format::number_format_applied(bool applied)
 {
     apply_number_format_ = applied;
 }
 
-void formattable::protection_applied(bool applied)
+void base_format::protection_applied(bool applied)
 {
     apply_protection_ = applied;
 }
 
-bool formattable::alignment_applied() const
+bool base_format::alignment_applied() const
 {
     return apply_alignment_;
 }
 
-bool formattable::border_applied() const
+bool base_format::border_applied() const
 {
     return apply_border_;
 }
 
-bool formattable::fill_applied() const
+bool base_format::fill_applied() const
 {
     return apply_fill_;
 }
 
-bool formattable::font_applied() const
+bool base_format::font_applied() const
 {
     return apply_font_;
 }
 
-bool formattable::number_format_applied() const
+bool base_format::number_format_applied() const
 {
     return apply_number_format_;
 }
 
-bool formattable::protection_applied() const
+bool base_format::protection_applied() const
 {
     return apply_protection_;
 }

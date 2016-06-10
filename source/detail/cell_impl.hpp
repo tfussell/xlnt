@@ -72,6 +72,9 @@ struct cell_impl
 
     bool has_format_;
     std::size_t format_id_;
+    
+    bool has_style_;
+    std::size_t style_id_;
 
     std::unique_ptr<comment_impl> comment_;
 };

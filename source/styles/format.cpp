@@ -31,60 +31,27 @@
 
 namespace xlnt {
 
-format::format()
-    : formattable(),
-      parent_(nullptr),
-      named_style_name_("Normal")
+format::format() : base_format()
 {
 }
 
-format::format(const format &other)
-    : formattable(other),
-      parent_(other.parent_),
-      named_style_name_(other.named_style_name_)
+format::format(const format &other) : base_format(other)
 {
 }
 
 format &format::operator=(const format &other)
 {
-    formattable::operator=(other);
-    
-    parent_ = other.parent_;
-    named_style_name_ = other.named_style_name_;
+    base_format::operator=(other);
 
     return *this;
 }
 
 std::string format::to_hash_string() const
 {
-    auto hash_string = formattable::to_hash_string();
+    auto hash_string = base_format::to_hash_string();
     hash_string.append(":format:");
-    
-    if (!named_style_name_.empty())
-    {
-        hash_string.append(named_style_name_);
-    }
-    else
-    {
-        hash_string.append(":");
-    }
 
     return hash_string;
-}
-
-void format::set_style(const std::string &style_name)
-{
-    named_style_name_ = style_name;
-}
-
-bool format::has_style() const
-{
-    return !named_style_name_.empty();
-}
-
-std::string format::get_style_name() const
-{
-    return named_style_name_;
 }
 
 } // namespace xlnt

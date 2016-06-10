@@ -26,7 +26,7 @@
 #include <cstdint>
 #include <string>
 
-#include <xlnt/styles/formattable.hpp>
+#include <xlnt/styles/base_format.hpp>
 
 namespace xlnt {
 
@@ -36,7 +36,7 @@ class workbook;
 /// Describes a style which has a name and can be applied to multiple individual
 /// formats. In Excel this is a "Cell Style".
 /// </summary>
-class XLNT_CLASS style : public formattable
+class XLNT_CLASS style : public base_format
 {
 public:
     style();

@@ -36,6 +36,8 @@ class workbook;
 class worksheet;
 class xml_document;
 
+namespace detail { struct stylesheet; }
+
 /// <summary>
 /// Manages converting a worksheet to and from XML.
 /// </summary>
@@ -44,7 +46,7 @@ class XLNT_CLASS worksheet_serializer
 public:
     worksheet_serializer(worksheet sheet);
 
-    bool read_worksheet(const xml_document &xml);
+    bool read_worksheet(const xml_document &xml, detail::stylesheet &stylesheet);
     xml_document write_worksheet() const;
 
 private:

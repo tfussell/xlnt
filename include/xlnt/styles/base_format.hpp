@@ -38,12 +38,12 @@ class cell;
 /// <summary>
 /// Describes the formatting of a particular cell.
 /// </summary>
-class XLNT_CLASS formattable : public hashable
+class XLNT_CLASS base_format : public hashable
 {
 public:
-    formattable();
-    formattable(const formattable &other);
-    formattable &operator=(const formattable &other);
+    base_format();
+    base_format(const base_format &other);
+    base_format &operator=(const base_format &other);
     
     void reset();
 

@@ -47,6 +47,8 @@ public:
         single,
         single_accounting
     };
+    
+    font();
 
     void set_bold(bool bold);
 

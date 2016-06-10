@@ -40,6 +40,7 @@
 #include <xlnt/worksheet/row_properties.hpp>
 
 #include <detail/constants.hpp>
+#include <detail/stylesheet.hpp>
 
 namespace {
 
@@ -56,7 +57,7 @@ worksheet_serializer::worksheet_serializer(worksheet sheet) : sheet_(sheet)
 {
 }
 
-bool worksheet_serializer::read_worksheet(const xml_document &xml)
+bool worksheet_serializer::read_worksheet(const xml_document &xml, detail::stylesheet &stylesheet)
 {
     auto &root_node = xml.get_child("worksheet");
 
@@ -198,7 +199,7 @@ bool worksheet_serializer::read_worksheet(const xml_document &xml)
 
                 if (has_format)
                 {
-                    cell.set_format(sheet_.get_workbook().get_format(format_id));
+                    cell.set_format(stylesheet.formats.at(format_id));
                 }
             }
         }

@@ -30,6 +30,7 @@
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/packaging/zip_file.hpp>
+#include <detail/stylesheet.hpp>
 
 namespace xlnt {
 
@@ -93,6 +94,8 @@ public:
     /// binary data to stream.
     /// </summary>
     bool save_stream_workbook(std::ostream &stream, bool as_template = false);
+    
+    xlnt::detail::stylesheet &get_stylesheet();
 
 private:
     /// <summary>

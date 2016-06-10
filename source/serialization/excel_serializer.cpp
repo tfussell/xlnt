@@ -47,6 +47,8 @@
 #include <xlnt/worksheet/worksheet.hpp>
 
 #include <detail/constants.hpp>
+#include <detail/stylesheet.hpp>
+#include <detail/workbook_impl.hpp>
 
 namespace {
 
@@ -144,10 +146,11 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
         }
     }
 
-    xlnt::style_serializer style_reader_(wb);
+    xlnt::detail::stylesheet stylesheet;
+    xlnt::style_serializer style_serializer(stylesheet);
 	xlnt::xml_document style_xml;
 	style_xml.from_string(archive.read(xlnt::constants::ArcStyles()));
-    style_reader_.read_stylesheet(style_xml);
+    style_serializer.read_stylesheet(style_xml);
 
     auto sheets_node = root_node.get_child("sheets");
 
@@ -169,7 +172,7 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
         xlnt::worksheet_serializer worksheet_serializer(ws);
 		xlnt::xml_document worksheet_xml;
 		worksheet_xml.from_string(archive.read(ws_filename));
-        worksheet_serializer.read_worksheet(worksheet_xml);
+        worksheet_serializer.read_worksheet(worksheet_xml, stylesheet);
     }
 
     if (archive.has_file("docProps/thumbnail.jpeg"))
@@ -264,8 +267,10 @@ void excel_serializer::write_data(bool /*as_template*/)
 
     archive_.writestr(constants::ArcWorkbook(), xml_serializer::serialize(workbook_serializer_.write_workbook()));
 
-    style_serializer style_serializer_(workbook_);
-    archive_.writestr(constants::ArcStyles(), style_serializer_.write_stylesheet().to_string());
+    style_serializer style_serializer(workbook_.d_->stylesheet_);
+    xlnt::xml_document style_xml;
+    style_serializer.write_stylesheet(style_xml);
+    archive_.writestr(constants::ArcStyles(), style_xml.to_string());
 
     manifest_serializer manifest_serializer_(workbook_.get_manifest());
     archive_.writestr(constants::ArcContentTypes(), manifest_serializer_.write_manifest().to_string());
@@ -327,6 +332,11 @@ bool excel_serializer::save_virtual_workbook(std::vector<std::uint8_t> &bytes, b
     archive_.save(bytes);
 
     return true;
+}
+
+detail::stylesheet &excel_serializer::get_stylesheet()
+{
+    return workbook_.d_->stylesheet_;
 }
 
 } // namespace xlnt

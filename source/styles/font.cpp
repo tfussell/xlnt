@@ -26,6 +26,24 @@
 
 namespace xlnt {
 
+
+font::font()
+    : name_("Calibri"),
+      size_(12),
+      bold_(false),
+      italic_(false),
+      superscript_(false),
+      subscript_(false),
+      underline_(underline_style::none),
+      strikethrough_(false),
+      color_(xlnt::color::type::theme, 1),
+      has_family_(true),
+      family_(2),
+      has_scheme_(true),
+      scheme_("minor")
+{
+}
+
 void font::set_bold(bool bold)
 {
     bold_ = bold;
