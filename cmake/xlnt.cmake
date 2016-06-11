@@ -68,7 +68,7 @@ SET(PUGIXML ../third-party/pugixml/src/pugixml.hpp ../third-party/pugixml/src/pu
 
 if(SHARED)
     add_library(xlnt.shared SHARED ${HEADERS} ${SOURCES} ${MINIZ} ${PUGIXML})
-    add_definitions(-DXLNT_SHARED)
+    target_compile_definitions(xlnt.shared PRIVATE XLNT_SHARED=1)
     if(MSVC)
         target_compile_definitions(xlnt.shared PRIVATE XLNT_EXPORT=1)
         set_target_properties(xlnt.shared PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\"")
@@ -102,9 +102,7 @@ endif()
 
 if(STATIC)
     add_library(xlnt.static STATIC ${HEADERS} ${SOURCES} ${MINIZ} ${PUGIXML})
-    if(MSVC)
-        target_compile_definitions(xlnt.static PRIVATE XLNT_API=)
-    endif()
+	target_compile_definitions(xlnt.static PRIVATE XLNT_STATIC=1)
     install(TARGETS xlnt.static
         LIBRARY DESTINATION ${LIB_DEST_DIR}
         ARCHIVE DESTINATION ${LIB_DEST_DIR}

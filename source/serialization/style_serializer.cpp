@@ -75,6 +75,15 @@ bool is_true(const std::string &bool_string)
     return bool_string == "1" || bool_string == "true";
 }
 
+std::size_t string_to_size_t(const std::string &s)
+{
+#if ULLONG_MAX == SIZE_MAX
+	return std::stoull(s);
+#else
+	return std::stoul(s);
+#endif
+}
+
 // Enumerations from string
 
 xlnt::protection::type protection_type_from_string(const std::string &type_string)
@@ -316,7 +325,7 @@ void read_number_formats(const xlnt::xml_node &number_formats_node, std::vector<
         xlnt::number_format nf;
 
         nf.set_format_string(format_string);
-        nf.set_id(std::stoull(num_fmt_node.get_attribute("numFmtId")));
+        nf.set_id(string_to_size_t(num_fmt_node.get_attribute("numFmtId")));
 
         number_formats.push_back(nf);
     }
@@ -330,15 +339,15 @@ xlnt::color read_color(const xlnt::xml_node &color_node)
     }
     else if (color_node.has_attribute("theme"))
     {
-        return xlnt::color(xlnt::color::type::theme, std::stoull(color_node.get_attribute("theme")));
+        return xlnt::color(xlnt::color::type::theme, string_to_size_t(color_node.get_attribute("theme")));
     }
     else if (color_node.has_attribute("indexed"))
     {
-        return xlnt::color(xlnt::color::type::indexed, std::stoull(color_node.get_attribute("indexed")));
+        return xlnt::color(xlnt::color::type::indexed, string_to_size_t(color_node.get_attribute("indexed")));
     }
     else if (color_node.has_attribute("auto"))
     {
-        return xlnt::color(xlnt::color::type::auto_, std::stoull(color_node.get_attribute("auto")));
+        return xlnt::color(xlnt::color::type::auto_, string_to_size_t(color_node.get_attribute("auto")));
     }
 
     throw std::runtime_error("bad color");
@@ -348,7 +357,7 @@ xlnt::font read_font(const xlnt::xml_node &font_node)
 {
     xlnt::font new_font;
 
-    new_font.set_size(std::stoull(font_node.get_child("sz").get_attribute("val")));
+    new_font.set_size(string_to_size_t(font_node.get_child("sz").get_attribute("val")));
     new_font.set_name(font_node.get_child("name").get_attribute("val"));
 
     if (font_node.has_child("color"))
@@ -358,7 +367,7 @@ xlnt::font read_font(const xlnt::xml_node &font_node)
 
     if (font_node.has_child("family"))
     {
-        new_font.set_family(std::stoull(font_node.get_child("family").get_attribute("val")));
+        new_font.set_family(string_to_size_t(font_node.get_child("family").get_attribute("val")));
     }
 
     if (font_node.has_child("scheme"))
@@ -574,22 +583,22 @@ bool read_base_format(const xlnt::xml_node &format_node, const xlnt::detail::sty
     }
     
     // Border
-    auto border_index = format_node.has_attribute("borderId") ? std::stoull(format_node.get_attribute("borderId")) : 0;
+    auto border_index = format_node.has_attribute("borderId") ? string_to_size_t(format_node.get_attribute("borderId")) : 0;
     f.set_border(stylesheet.borders.at(border_index));
     f.border_applied(is_true(format_node.get_attribute("applyBorder")));
     
     // Fill
-    auto fill_index = format_node.has_attribute("fillId") ? std::stoull(format_node.get_attribute("fillId")) : 0;
+    auto fill_index = format_node.has_attribute("fillId") ? string_to_size_t(format_node.get_attribute("fillId")) : 0;
     f.set_fill(stylesheet.fills.at(fill_index));
     f.fill_applied(is_true(format_node.get_attribute("applyFill")));
     
     // Font
-    auto font_index = format_node.has_attribute("fontId") ? std::stoull(format_node.get_attribute("fontId")) : 0;
+    auto font_index = format_node.has_attribute("fontId") ? string_to_size_t(format_node.get_attribute("fontId")) : 0;
     f.set_font(stylesheet.fonts.at(font_index));
     f.font_applied(is_true(format_node.get_attribute("applyFont")));
 
     // Number Format
-    auto number_format_id = std::stoull(format_node.get_attribute("numFmtId"));
+    auto number_format_id = string_to_size_t(format_node.get_attribute("numFmtId"));
 
     bool builtin_format = true;
 
@@ -639,7 +648,7 @@ void read_formats(const xlnt::xml_node &formats_node, const xlnt::detail::styles
         // TODO do all formats have xfId?
         if(format_node.has_attribute("xfId"))
         {
-            auto style_index = std::stoull(format_node.get_attribute("xfId"));
+            auto style_index = string_to_size_t(format_node.get_attribute("xfId"));
             auto style_name = stylesheet.style_name_map.at(style_index);
             format_styles.push_back(style_name);
         }
@@ -660,7 +669,7 @@ xlnt::style read_style(const xlnt::xml_node &style_node, const xlnt::xml_node &s
 
     s.set_name(style_node.get_attribute("name"));
     s.set_hidden(style_node.has_attribute("hidden") && is_true(style_node.get_attribute("hidden")));
-    s.set_builtin_id(std::stoull(style_node.get_attribute("builtinId")));
+    s.set_builtin_id(string_to_size_t(style_node.get_attribute("builtinId")));
     
     return s;
 }

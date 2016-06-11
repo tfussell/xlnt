@@ -27,6 +27,19 @@
 #include <xlnt/serialization/xml_document.hpp>
 #include <xlnt/serialization/xml_node.hpp>
 
+namespace {
+
+std::size_t string_to_size_t(const std::string &s)
+{
+#if ULLONG_MAX == SIZE_MAX
+	return std::stoull(s);
+#else
+	return std::stoul(s);
+#endif
+} // namespace
+
+}
+
 namespace xlnt {
 
 xml_document shared_strings_serializer::write_shared_strings(const std::vector<text> &strings)
@@ -102,7 +115,7 @@ bool shared_strings_serializer::read_shared_strings(const xml_document &xml, std
 
     if (root_node.has_attribute("uniqueCount"))
     {
-        unique_count = std::stoull(root_node.get_attribute("uniqueCount"));
+        unique_count = string_to_size_t(root_node.get_attribute("uniqueCount"));
     }
 
     for (const auto &string_item_node : root_node.get_children())
@@ -136,7 +149,7 @@ bool shared_strings_serializer::read_shared_strings(const xml_document &xml, std
                         
                         if (run_properties_node.has_child("sz"))
                         {
-                            run.set_size(std::stoull(run_properties_node.get_child("sz").get_attribute("val")));
+                            run.set_size(string_to_size_t(run_properties_node.get_child("sz").get_attribute("val")));
                         }
                         
                         if (run_properties_node.has_child("rFont"))
@@ -151,7 +164,7 @@ bool shared_strings_serializer::read_shared_strings(const xml_document &xml, std
                         
                         if (run_properties_node.has_child("family"))
                         {
-                            run.set_family(std::stoull(run_properties_node.get_child("family").get_attribute("val")));
+                            run.set_family(string_to_size_t(run_properties_node.get_child("family").get_attribute("val")));
                         }
                         
                         if (run_properties_node.has_child("scheme"))
