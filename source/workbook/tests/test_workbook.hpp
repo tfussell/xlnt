@@ -76,6 +76,17 @@ public:
         TS_ASSERT_EQUALS(new_sheet, found_sheet);
     }
     
+    void test_get_sheet_by_name_const()
+    {
+        xlnt::workbook wb;
+        auto new_sheet = wb.create_sheet();
+        std::string title = "my sheet";
+        new_sheet.set_title(title);
+        const xlnt::workbook& wbconst = wb;
+        auto found_sheet = wbconst.get_sheet_by_name(title);
+        TS_ASSERT_EQUALS(new_sheet, found_sheet);
+    }
+
     void test_index_operator() // test_getitem
     {
         xlnt::workbook wb;

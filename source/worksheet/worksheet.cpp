@@ -627,6 +627,12 @@ xlnt::range worksheet::rows(const std::string &range_string, int row_offset, int
     return get_range(reference.make_offset(column_offset, row_offset));
 }
 
+xlnt::range worksheet::rows(int row_offset, int column_offset) const
+{
+    range_reference reference(calculate_dimension());
+    return get_range(reference.make_offset(column_offset, row_offset));
+}
+
 xlnt::range worksheet::columns() const
 {
     return range(*this, calculate_dimension(), major_order::column);

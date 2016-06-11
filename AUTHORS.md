@@ -5,5 +5,6 @@ It was initially inspired by the openpyxl library: https://openpyxl.readthedocs.
 Thanks to everyone who has contributed to this project (in alphabetical order):
 
 * Malvineous
+* xpol
 
 Project logo designed by Thomas Fussell.
