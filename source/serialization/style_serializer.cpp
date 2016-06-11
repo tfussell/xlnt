@@ -22,6 +22,7 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <algorithm>
 #include <cctype> // for std::tolower
 #include <unordered_set>
 #include <utility> // for std::move
