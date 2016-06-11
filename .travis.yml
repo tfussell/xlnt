@@ -2,7 +2,11 @@
 
 language: cpp
 
-sudo: true
+sudo: required
+dist: trusty
+
+notifications:
+  email: false
 
 matrix:
   include:
@@ -10,37 +14,41 @@ matrix:
       compiler: gcc
       addons:
         apt:
-          sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-4.9', 'valgrind', 'python-pip', 'python-yaml']
+          sources: 
+            - ubuntu-toolchain-r-test
+            - george-edison55/cmake-3.x
+          packages:
+            - g++-4.9
+            - valgrind
+            - python-pip
+            - python-yaml
+            - cmake
       before_script:
         - pip install --user git+git://github.com/eddyxu/cpp-coveralls.git
-      env: COMPILER=g++-4.9
+      env: 
+        - COMPILER=g++-4.9
 
     - os: linux
       compiler: gcc
       addons:
         apt:
-          sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-5', 'valgrind']
-      env: COMPILER=g++-5
+          sources:
+            - ubuntu-toolchain-r-test
+            - george-edison55/cmake-3.x
+          packages:
+            - g++-5
+            - valgrind
+            - cmake
+      env:
+        - COMPILER=g++-5
 
 script:
-  - mkdir build && cd build
-  - cmake -G "Unix Makefiles" -D SHARED=1 -D TESTS=1 -D CMAKE_CXX_COMPILER=$COMPILER ..
-  - make
+  - cmake --version
+  - mkdir build
+  - cd build
+  - cmake -D SHARED=1 -D STATIC=0 -D TESTS=1 -D CMAKE_CXX_COMPILER=$COMPILER ..
+  - cmake --build . --target xlnt.test
   - bin/xlnt.test
 
 after_success:
-  - if [ "$COMPILER" = "g++-4.9" ]; then sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 90 ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 90 ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-4.9 90 ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then rm -rf ./* ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then cmake -G "Unix Makefiles" -D DEBUG=1 -D COVERAGE=1 -D SHARED=0 -D STATIC=1 -D TESTS=1 .. ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then make VERBOSE=1 ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then cd .. && ./build/bin/xlnt.test ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then export OLDWD=$(pwd) ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then cd "build/CMakeFiles/xlnt.static.dir$(pwd)" ; pwd ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then coveralls --root $OLDWD --verbose -x ".cpp" --gcov-options '\-p' --exclude include --exclude third-party --exclude tests --exclude samples --exclude benchmarks ; fi
-
-notifications:
-  email: false
+  - if [ "$COMPILER" = "g++-4.9" ]; then /bin/bash cmake/calculate_coverage_travis.sh ; fi
