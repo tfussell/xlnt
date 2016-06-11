@@ -102,6 +102,9 @@ endif()
 
 if(STATIC)
     add_library(xlnt.static STATIC ${HEADERS} ${SOURCES} ${MINIZ} ${PUGIXML})
+    if(MSVC)
+        target_compile_definitions(xlnt.static PRIVATE XLNT_API=)
+    endif()
     install(TARGETS xlnt.static
         LIBRARY DESTINATION ${LIB_DEST_DIR}
         ARCHIVE DESTINATION ${LIB_DEST_DIR}
