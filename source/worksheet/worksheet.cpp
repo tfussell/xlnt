@@ -22,6 +22,7 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 #include <algorithm>
+#include <cmath>
 #include <limits>
 
 #include <xlnt/cell/cell.hpp>
