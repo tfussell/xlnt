@@ -78,13 +78,11 @@ public:
 
     void set_type(type t);
 
-    std::string get_pattern_type_string() const;
-
-    std::string get_gradient_type_string() const;
-
     pattern_type get_pattern_type() const;
 
     void set_pattern_type(pattern_type t);
+    
+    gradient_type get_gradient_type() const;
 
     void set_gradient_type(gradient_type t);
 

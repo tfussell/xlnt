@@ -46,7 +46,10 @@ public:
     protection();
     protection(type locked);
 
+    type get_locked() const;
     void set_locked(type locked_type);
+    
+    type get_hidden() const;
     void set_hidden(type hidden_type);
 
 protected:

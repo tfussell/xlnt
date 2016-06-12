@@ -48,76 +48,6 @@ void fill::set_type(type t)
     type_ = t;
 }
 
-std::string fill::get_pattern_type_string() const
-{
-    if (type_ != type::pattern)
-    {
-        throw std::runtime_error("not pattern fill");
-    }
-
-    switch (pattern_type_)
-    {
-    case pattern_type::none:
-        return "none";
-    case pattern_type::solid:
-        return "solid";
-    case pattern_type::darkdown:
-        return "darkdown";
-    case pattern_type::darkgray:
-        return "darkgray";
-    case pattern_type::darkgrid:
-        return "darkgrid";
-    case pattern_type::darkhorizontal:
-        return "darkhorizontal";
-    case pattern_type::darktrellis:
-        return "darktrellis";
-    case pattern_type::darkup:
-        return "darkup";
-    case pattern_type::darkvertical:
-        return "darkvertical";
-    case pattern_type::gray0625:
-        return "gray0625";
-    case pattern_type::gray125:
-        return "gray125";
-    case pattern_type::lightdown:
-        return "lightdown";
-    case pattern_type::lightgray:
-        return "lightgray";
-    case pattern_type::lightgrid:
-        return "lightgrid";
-    case pattern_type::lighthorizontal:
-        return "lighthorizontal";
-    case pattern_type::lighttrellis:
-        return "lighttrellis";
-    case pattern_type::lightup:
-        return "lightup";
-    case pattern_type::lightvertical:
-        return "lightvertical";
-    case pattern_type::mediumgray:
-        return "mediumgray";
-    default:
-        throw std::runtime_error("invalid type");
-    }
-}
-
-std::string fill::get_gradient_type_string() const
-{
-    if (type_ != type::gradient)
-    {
-        throw std::runtime_error("not gradient fill");
-    }
-
-    switch (gradient_type_)
-    {
-    case gradient_type::linear:
-        return "linear";
-    case gradient_type::path:
-        return "path";
-    default:
-        throw std::runtime_error("invalid type");
-    }
-}
-
 fill::pattern_type fill::get_pattern_type() const
 {
     return pattern_type_;
@@ -127,6 +57,11 @@ void fill::set_pattern_type(pattern_type t)
 {
     type_ = type::pattern;
     pattern_type_ = t;
+}
+
+fill::gradient_type fill::get_gradient_type() const
+{
+    return gradient_type_;
 }
 
 void fill::set_gradient_type(gradient_type t)

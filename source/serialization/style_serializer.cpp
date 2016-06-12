@@ -52,27 +52,24 @@ namespace {
 
 // Miscellaneous Functions
 
-bool equals_case_insensitive(const std::string &left, const std::string &right)
+std::string string_lower(std::string str)
 {
-    if (left.size() != right.size())
+    for (std::size_t i = 0; i < str.size(); i++)
     {
-        return false;
-    }
-
-    for (std::size_t i = 0; i < left.size(); i++)
-    {
-        if (std::tolower(left[i]) != std::tolower(right[i]))
-        {
-            return false;
-        }
+        str[i] = std::tolower(str[i]);
     }
     
-    return true;
+    return str;
 }
 
 bool is_true(const std::string &bool_string)
 {
     return bool_string == "1" || bool_string == "true";
+}
+
+bool is_false(const std::string &bool_string)
+{
+    return bool_string == "0" || bool_string == "false";
 }
 
 std::size_t string_to_size_t(const std::string &s)
@@ -84,186 +81,307 @@ std::size_t string_to_size_t(const std::string &s)
 #endif
 }
 
-// Enumerations from string
+//
+// enum serialization
+//
+
+// protection::type serialization
 
 xlnt::protection::type protection_type_from_string(const std::string &type_string)
 {
-    if (equals_case_insensitive(type_string, "true"))
+    auto lower = string_lower(type_string);
+    
+    if (lower == "inherit") return xlnt::protection::type::inherit;
+    if (is_true(lower)) return xlnt::protection::type::protected_;
+    
+    if (!is_false(lower))
     {
-        return xlnt::protection::type::protected_;
+        throw std::runtime_error("bad enum " + type_string);
     }
-    else if (equals_case_insensitive(type_string, "inherit"))
-    {
-        return xlnt::protection::type::inherit;
-    }
-
+    
     return xlnt::protection::type::unprotected;
 };
 
+std::string protection_type_to_string(xlnt::protection::type type)
+{
+    switch (type)
+    {
+        case xlnt::protection::type::inherit: return "inherit";
+        case xlnt::protection::type::protected_: return "true";
+        case xlnt::protection::type::unprotected: return "false";
+    }
+    
+    throw std::runtime_error("bad enum " + std::to_string(static_cast<std::size_t>(type)));
+}
+
+
+// font::underline_style serialization
+
+const std::unordered_map<std::string, xlnt::font::underline_style> &get_string_underline_style_map()
+{
+    static std::unordered_map<std::string, xlnt::font::underline_style> *map = nullptr;
+    
+    if (map == nullptr)
+    {
+        map = new std::unordered_map<std::string, xlnt::font::underline_style>
+        {
+            { "double", xlnt::font::underline_style::double_ },
+            { "double-accounting", xlnt::font::underline_style::double_accounting },
+            { "none", xlnt::font::underline_style::none },
+            { "single", xlnt::font::underline_style::single },
+            { "single-accounting", xlnt::font::underline_style::single_accounting }
+        };
+    }
+    
+    return *map;
+}
+
+const std::unordered_map<xlnt::font::underline_style, std::string> &get_underline_style_string_map()
+{
+    static std::unordered_map<xlnt::font::underline_style, std::string> *map = nullptr;
+    
+    if (map == nullptr)
+    {
+        map = new std::unordered_map<xlnt::font::underline_style, std::string>;
+        
+        for (auto pair : get_string_underline_style_map())
+        {
+            map->emplace(pair.second, pair.first);
+        }
+    }
+    
+    return *map;
+}
+
 xlnt::font::underline_style underline_style_from_string(const std::string &underline_string)
 {
-    if (equals_case_insensitive(underline_string, "none"))
-    {
-        return xlnt::font::underline_style::none;
-    }
-    else if (equals_case_insensitive(underline_string, "single"))
-    {
-        return xlnt::font::underline_style::single;
-    }
-    else if (equals_case_insensitive(underline_string, "single-accounting"))
-    {
-        return xlnt::font::underline_style::single_accounting;
-    }
-    else if (equals_case_insensitive(underline_string, "double"))
-    {
-        return xlnt::font::underline_style::double_;
-    }
-    else if (equals_case_insensitive(underline_string, "double-accounting"))
-    {
-        return xlnt::font::underline_style::double_accounting;
-    }
+    return get_string_underline_style_map().at(string_lower(underline_string));
+}
 
-    return xlnt::font::underline_style::none;
+std::string underline_style_to_string(xlnt::font::underline_style underline_style)
+{
+    return get_underline_style_string_map().at(underline_style);
+}
+
+
+// fill::pattern_type serialization
+
+const std::unordered_map<std::string, xlnt::fill::pattern_type> &get_string_pattern_fill_type_map()
+{
+    static std::unordered_map<std::string, xlnt::fill::pattern_type> *map = nullptr;
+    
+    if (map == nullptr)
+    {
+        map = new std::unordered_map<std::string, xlnt::fill::pattern_type>
+        {
+            { "darkdown", xlnt::fill::pattern_type::darkdown },
+            { "darkgray", xlnt::fill::pattern_type::darkgray },
+            { "darkgrid", xlnt::fill::pattern_type::darkgrid },
+            { "darkhorizontal", xlnt::fill::pattern_type::darkhorizontal },
+            { "darktrellis", xlnt::fill::pattern_type::darktrellis },
+            { "darkup", xlnt::fill::pattern_type::darkup },
+            { "darkvertical", xlnt::fill::pattern_type::darkvertical },
+            { "gray0625", xlnt::fill::pattern_type::gray0625 },
+            { "gray125", xlnt::fill::pattern_type::gray125 },
+            { "lightdown", xlnt::fill::pattern_type::lightdown },
+            { "lightgray", xlnt::fill::pattern_type::lightgray },
+            { "lightgrid", xlnt::fill::pattern_type::lightgrid },
+            { "lighthorizontal", xlnt::fill::pattern_type::lighthorizontal },
+            { "lighttrellis", xlnt::fill::pattern_type::lighttrellis },
+            { "lightup", xlnt::fill::pattern_type::lightup },
+            { "lightvertical", xlnt::fill::pattern_type::lightvertical },
+            { "mediumgray", xlnt::fill::pattern_type::mediumgray },
+            { "none", xlnt::fill::pattern_type::none },
+            { "solid", xlnt::fill::pattern_type::solid }
+        };
+    }
+    
+    return *map;
+}
+
+const std::unordered_map<xlnt::fill::pattern_type, std::string> &get_pattern_fill_type_string_map()
+{
+    static std::unordered_map<xlnt::fill::pattern_type, std::string> *map = nullptr;
+    
+    if (map == nullptr)
+    {
+        map = new std::unordered_map<xlnt::fill::pattern_type, std::string>;
+
+        for (auto pair : get_string_pattern_fill_type_map())
+        {
+            map->emplace(pair.second, pair.first);
+        }
+    }
+    
+    return *map;
 }
 
 xlnt::fill::pattern_type pattern_fill_type_from_string(const std::string &fill_type)
 {
-    if (equals_case_insensitive(fill_type, "none") || fill_type.empty())
-    {
-        return xlnt::fill::pattern_type::none;
-    }
-    else if (equals_case_insensitive(fill_type, "solid"))
-    {
-        return xlnt::fill::pattern_type::solid;
-    }
-    else if (equals_case_insensitive(fill_type, "gray125"))
-    {
-        return xlnt::fill::pattern_type::gray125;
-    }
-
-    std::string message = "unknown fill type: ";
-    message.append(fill_type);
-    throw std::runtime_error(message);
+    return get_string_pattern_fill_type_map().at(string_lower(fill_type));
 };
+
+std::string pattern_fill_type_to_string(xlnt::fill::pattern_type fill_type)
+{
+    return get_pattern_fill_type_string_map().at(fill_type);
+}
+
+
+// border_style serialization
+
+const std::unordered_map<std::string, xlnt::border_style> &get_string_border_style_map()
+{
+    static std::unordered_map<std::string, xlnt::border_style> *map = nullptr;
+    
+    if (map == nullptr)
+    {
+        map = new std::unordered_map<std::string, xlnt::border_style>
+        {
+            { "dashdot", xlnt::border_style::dashdot },
+            { "dashdotdot", xlnt::border_style::dashdotdot },
+            { "dashed", xlnt::border_style::dashed },
+            { "dotted", xlnt::border_style::dotted },
+            { "double", xlnt::border_style::double_ },
+            { "hair", xlnt::border_style::hair },
+            { "medium", xlnt::border_style::medium },
+            { "mediumdashdot", xlnt::border_style::mediumdashdot },
+            { "mediumdashdotdot", xlnt::border_style::mediumdashdotdot },
+            { "mediumdashed", xlnt::border_style::mediumdashed },
+            { "none", xlnt::border_style::none },
+            { "slantdashdot", xlnt::border_style::slantdashdot },
+            { "thick", xlnt::border_style::thick },
+            { "thin", xlnt::border_style::thin }
+        };
+    }
+    
+    return *map;
+}
+
+const std::unordered_map<xlnt::border_style, std::string> &get_border_style_string_map()
+{
+    static std::unordered_map<xlnt::border_style, std::string> *map = nullptr;
+    
+    if (map == nullptr)
+    {
+        map = new std::unordered_map<xlnt::border_style, std::string>;
+
+        for (auto pair : get_string_border_style_map())
+        {
+            map->emplace(pair.second, pair.first);
+        }
+    }
+    
+    return *map;
+}
 
 xlnt::border_style border_style_from_string(const std::string &border_style_string)
 {
-    if (equals_case_insensitive(border_style_string, "none"))
-    {
-        return xlnt::border_style::none;
-    }
-    else if (equals_case_insensitive(border_style_string, "dashdot"))
-    {
-        return xlnt::border_style::dashdot;
-    }
-    else if (equals_case_insensitive(border_style_string, "dashdotdot"))
-    {
-        return xlnt::border_style::dashdotdot;
-    }
-    else if (equals_case_insensitive(border_style_string, "dashed"))
-    {
-        return xlnt::border_style::dashed;
-    }
-    else if (equals_case_insensitive(border_style_string, "dotted"))
-    {
-        return xlnt::border_style::dotted;
-    }
-    else if (equals_case_insensitive(border_style_string, "double"))
-    {
-        return xlnt::border_style::double_;
-    }
-    else if (equals_case_insensitive(border_style_string, "hair"))
-    {
-        return xlnt::border_style::hair;
-    }
-    else if (equals_case_insensitive(border_style_string, "medium"))
-    {
-        return xlnt::border_style::medium;
-    }
-    else if (equals_case_insensitive(border_style_string, "mediumdashdot"))
-    {
-        return xlnt::border_style::mediumdashdot;
-    }
-    else if (equals_case_insensitive(border_style_string, "mediumdashdotdot"))
-    {
-        return xlnt::border_style::mediumdashdotdot;
-    }
-    else if (equals_case_insensitive(border_style_string, "mediumdashed"))
-    {
-        return xlnt::border_style::mediumdashed;
-    }
-    else if (equals_case_insensitive(border_style_string, "slantdashdot"))
-    {
-        return xlnt::border_style::slantdashdot;
-    }
-    else if (equals_case_insensitive(border_style_string, "thick"))
-    {
-        return xlnt::border_style::thick;
-    }
-    else if (equals_case_insensitive(border_style_string, "thin"))
-    {
-        return xlnt::border_style::thin;
-    }
+    return get_string_border_style_map().at(string_lower(border_style_string));
+}
 
-    std::string message = "unknown border style: ";
-    message.append(border_style_string);
-    throw std::runtime_error(message);
+std::string border_style_to_string(xlnt::border_style border_style)
+{
+    return get_border_style_string_map().at(border_style);
+}
+
+
+// vertical_alignment serialization
+
+const std::unordered_map<std::string, xlnt::vertical_alignment> &get_string_vertical_alignment_map()
+{
+    static std::unordered_map<std::string, xlnt::vertical_alignment> *map = nullptr;
+    
+    if (map == nullptr)
+    {
+        map = new std::unordered_map<std::string, xlnt::vertical_alignment>
+        {
+            { "bottom", xlnt::vertical_alignment::bottom },
+            { "center", xlnt::vertical_alignment::center },
+            { "justify", xlnt::vertical_alignment::justify },
+            { "none", xlnt::vertical_alignment::none },
+            { "top", xlnt::vertical_alignment::top }
+        };
+    }
+    
+    return *map;
+}
+
+const std::unordered_map<xlnt::vertical_alignment, std::string> &get_vertical_alignment_string_map()
+{
+    static std::unordered_map<xlnt::vertical_alignment, std::string> *map = nullptr;
+    
+    if (map == nullptr)
+    {
+        map = new std::unordered_map<xlnt::vertical_alignment, std::string>;
+
+        for (auto pair : get_string_vertical_alignment_map())
+        {
+            map->emplace(pair.second, pair.first);
+        }
+    }
+    
+    return *map;
 }
 
 xlnt::vertical_alignment vertical_alignment_from_string(const std::string &vertical_alignment_string)
 {
-    if (vertical_alignment_string == "bottom")
-    {
-        return xlnt::vertical_alignment::bottom;
-    }
-    else if (vertical_alignment_string == "center")
-    {
-        return xlnt::vertical_alignment::center;
-    }
-    else if (vertical_alignment_string == "justify")
-    {
-        return xlnt::vertical_alignment::justify;
-    }
-    else if (vertical_alignment_string == "top")
-    {
-        return xlnt::vertical_alignment::top;
-    }
+    return get_string_vertical_alignment_map().at(string_lower(vertical_alignment_string));
+}
 
-    std::string message = "unknown vertical alignment: ";
-    message.append(vertical_alignment_string);
-    throw std::runtime_error(message);
+std::string vertical_alignment_to_string(xlnt::vertical_alignment vertical_alignment)
+{
+    return get_vertical_alignment_string_map().at(vertical_alignment);
+}
+
+// horizontal_alignment
+
+
+const std::unordered_map<std::string, xlnt::horizontal_alignment> &get_string_horizontal_alignment_map()
+{
+    static std::unordered_map<std::string, xlnt::horizontal_alignment> *map = nullptr;
+    
+    if (map == nullptr)
+    {
+        map = new std::unordered_map<std::string, xlnt::horizontal_alignment>
+        {
+            { "center", xlnt::horizontal_alignment::center },
+            { "center-continous", xlnt::horizontal_alignment::center_continuous },
+            { "general", xlnt::horizontal_alignment::general },
+            { "justify", xlnt::horizontal_alignment::justify },
+            { "left", xlnt::horizontal_alignment::left },
+            { "none", xlnt::horizontal_alignment::none },
+            { "right", xlnt::horizontal_alignment::right }
+        };
+    }
+    
+    return *map;
+}
+
+const std::unordered_map<xlnt::horizontal_alignment, std::string> &get_horizontal_alignment_string_map()
+{
+    static std::unordered_map<xlnt::horizontal_alignment, std::string> *map = nullptr;
+    
+    if (map == nullptr)
+    {
+        map = new std::unordered_map<xlnt::horizontal_alignment, std::string>;
+
+        for (auto pair : get_string_horizontal_alignment_map())
+        {
+            map->emplace(pair.second, pair.first);
+        }
+    }
+    
+    return *map;
 }
 
 xlnt::horizontal_alignment horizontal_alignment_from_string(const std::string &horizontal_alignment_string)
 {
-    if (horizontal_alignment_string == "left")
-    {
-        return xlnt::horizontal_alignment::left;
-    }
-    else if (horizontal_alignment_string == "center")
-    {
-        return xlnt::horizontal_alignment::center;
-    }
-    else if (horizontal_alignment_string == "center-continuous")
-    {
-        return xlnt::horizontal_alignment::center_continuous;
-    }
-    else if (horizontal_alignment_string == "right")
-    {
-        return xlnt::horizontal_alignment::right;
-    }
-    else if (horizontal_alignment_string == "justify")
-    {
-        return xlnt::horizontal_alignment::justify;
-    }
-    else if (horizontal_alignment_string == "general")
-    {
-        return xlnt::horizontal_alignment::general;
-    }
+    return get_string_horizontal_alignment_map().at(string_lower(horizontal_alignment_string));
+}
 
-    std::string message = "unknown horizontal alignment: ";
-    message.append(horizontal_alignment_string);
-    throw std::runtime_error(message);
+std::string horizontal_alignment_to_string(xlnt::horizontal_alignment horizontal_alignment)
+{
+    return get_horizontal_alignment_string_map().at(horizontal_alignment);
 }
 
 // Reading
@@ -464,16 +582,21 @@ xlnt::fill read_fill(const xlnt::xml_node &fill_node)
         new_fill.set_type(xlnt::fill::type::pattern);
 
         auto pattern_fill_node = fill_node.get_child("patternFill");
-        new_fill.set_pattern_type(pattern_fill_type_from_string(pattern_fill_node.get_attribute("patternType")));
-
-        if (pattern_fill_node.has_child("bgColor"))
+        auto pattern_fill_type_string = pattern_fill_node.get_attribute("patternType");
+        
+        if (!pattern_fill_type_string.empty())
         {
-            new_fill.get_background_color() = read_color(pattern_fill_node.get_child("bgColor"));
-        }
+            new_fill.set_pattern_type(pattern_fill_type_from_string(pattern_fill_type_string));
 
-        if (pattern_fill_node.has_child("fgColor"))
-        {
-            new_fill.get_foreground_color() = read_color(pattern_fill_node.get_child("fgColor"));
+            if (pattern_fill_node.has_child("bgColor"))
+            {
+                new_fill.get_background_color() = read_color(pattern_fill_node.get_child("bgColor"));
+            }
+
+            if (pattern_fill_node.has_child("fgColor"))
+            {
+                new_fill.get_foreground_color() = read_color(pattern_fill_node.get_child("fgColor"));
+            }
         }
     }
 
@@ -700,6 +823,29 @@ void read_styles(const xlnt::xml_node &styles_node, const xlnt::xml_node &style_
     }
 }
 
+bool write_color(const xlnt::color &color, xlnt::xml_node color_node)
+{
+    switch (color.get_type())
+    {
+    case xlnt::color::type::auto_:
+        color_node.add_attribute("auto", std::to_string(color.get_auto()));
+        break;
+    case xlnt::color::type::theme:
+        color_node.add_attribute("theme", std::to_string(color.get_theme()));
+        break;
+    case xlnt::color::type::indexed:
+        color_node.add_attribute("indexed", std::to_string(color.get_index()));
+        break;
+    case xlnt::color::type::rgb:
+        color_node.add_attribute("rgb", color.get_rgb_string());
+        break;
+    default:
+        throw std::runtime_error("bad type");
+    }
+    
+    return true;
+}
+
 bool write_fonts(const std::vector<xlnt::font> &fonts, xlnt::xml_node &fonts_node)
 {
     fonts_node.add_attribute("count", std::to_string(fonts.size()));
@@ -725,15 +871,7 @@ bool write_fonts(const std::vector<xlnt::font> &fonts, xlnt::xml_node &fonts_nod
         if (f.is_underline())
         {
             auto underline_node = font_node.add_child("u");
-
-            switch (f.get_underline())
-            {
-            case xlnt::font::underline_style::single:
-                underline_node.add_attribute("val", "single");
-                break;
-            default:
-                break;
-            }
+            underline_node.add_attribute("val", underline_style_to_string(f.get_underline()));
         }
 
         if (f.is_strikethrough())
@@ -746,24 +884,9 @@ bool write_fonts(const std::vector<xlnt::font> &fonts, xlnt::xml_node &fonts_nod
         size_node.add_attribute("val", std::to_string(f.get_size()));
 
         auto color_node = font_node.add_child("color");
-
-        if (f.get_color().get_type() == xlnt::color::type::indexed)
-        {
-            color_node.add_attribute("indexed", std::to_string(f.get_color().get_index()));
-        }
-        else if (f.get_color().get_type() == xlnt::color::type::theme)
-        {
-            color_node.add_attribute("theme", std::to_string(f.get_color().get_theme()));
-        }
-        else if (f.get_color().get_type() == xlnt::color::type::auto_)
-        {
-            color_node.add_attribute("auto", std::to_string(f.get_color().get_auto()));
-        }
-        else if (f.get_color().get_type() == xlnt::color::type::rgb)
-        {
-            color_node.add_attribute("rgb", f.get_color().get_rgb_string());
-        }
         
+        write_color(f.get_color(), color_node);
+
         auto name_node = font_node.add_child("name");
         name_node.add_attribute("val", f.get_name());
 
@@ -794,55 +917,18 @@ bool write_fills(const std::vector<xlnt::fill> &fills, xlnt::xml_node &fills_nod
         if (fill_.get_type() == xlnt::fill::type::pattern)
         {
             auto pattern_fill_node = fill_node.add_child("patternFill");
-            auto type_string = fill_.get_pattern_type_string();
-            pattern_fill_node.add_attribute("patternType", type_string);
+            pattern_fill_node.add_attribute("patternType", pattern_fill_type_to_string(fill_.get_pattern_type()));
             
             if (fill_.get_pattern_type() != xlnt::fill::pattern_type::solid) continue;
 
             if (fill_.get_foreground_color())
             {
-                auto fg_color_node = pattern_fill_node.add_child("fgColor");
-
-                switch (fill_.get_foreground_color()->get_type())
-                {
-                case xlnt::color::type::auto_:
-                    fg_color_node.add_attribute("auto", std::to_string(fill_.get_foreground_color()->get_auto()));
-                    break;
-                case xlnt::color::type::theme:
-                    fg_color_node.add_attribute("theme", std::to_string(fill_.get_foreground_color()->get_theme()));
-                    break;
-                case xlnt::color::type::indexed:
-                    fg_color_node.add_attribute("indexed", std::to_string(fill_.get_foreground_color()->get_index()));
-                    break;
-                case xlnt::color::type::rgb:
-                    fg_color_node.add_attribute("rgb", fill_.get_foreground_color()->get_rgb_string());
-                    break;
-                default:
-                    throw std::runtime_error("bad type");
-                }
+                write_color(*fill_.get_foreground_color(), pattern_fill_node.add_child("fgColor"));
             }
 
             if (fill_.get_background_color())
             {
-                auto bg_color_node = pattern_fill_node.add_child("bgColor");
-
-                switch (fill_.get_background_color()->get_type())
-                {
-                case xlnt::color::type::auto_:
-                    bg_color_node.add_attribute("auto", std::to_string(fill_.get_background_color()->get_auto()));
-                    break;
-                case xlnt::color::type::theme:
-                    bg_color_node.add_attribute("theme", std::to_string(fill_.get_background_color()->get_theme()));
-                    break;
-                case xlnt::color::type::indexed:
-                    bg_color_node.add_attribute("indexed", std::to_string(fill_.get_background_color()->get_index()));
-                    break;
-                case xlnt::color::type::rgb:
-                    bg_color_node.add_attribute("rgb", fill_.get_background_color()->get_rgb_string());
-                    break;
-                default:
-                    throw std::runtime_error("bad type");
-                }
+                write_color(*fill_.get_background_color(), pattern_fill_node.add_child("bgColor"));
             }
         }
         else if (fill_.get_type() == xlnt::fill::type::solid)
@@ -854,11 +940,11 @@ bool write_fills(const std::vector<xlnt::fill> &fills, xlnt::xml_node &fills_nod
         {
             auto gradient_fill_node = fill_node.add_child("gradientFill");
 
-            if (fill_.get_gradient_type_string() == "linear")
+            if (fill_.get_gradient_type() == xlnt::fill::gradient_type::linear)
             {
                 gradient_fill_node.add_attribute("degree", std::to_string(fill_.get_rotation()));
             }
-            else if (fill_.get_gradient_type_string() == "path")
+            else if (fill_.get_gradient_type() == xlnt::fill::gradient_type::path)
             {
                 gradient_fill_node.add_attribute("left", std::to_string(fill_.get_gradient_left()));
                 gradient_fill_node.add_attribute("right", std::to_string(fill_.get_gradient_right()));
@@ -908,79 +994,14 @@ bool write_borders(const std::vector<xlnt::border> &borders, xlnt::xml_node &bor
 
                 if (current_side->get_border_style())
                 {
-                    std::string style_string;
-
-                    switch (*current_side->get_border_style())
-                    {
-                    case xlnt::border_style::none:
-                        style_string = "none";
-                        break;
-                    case xlnt::border_style::dashdot:
-                        style_string = "dashDot";
-                        break;
-                    case xlnt::border_style::dashdotdot:
-                        style_string = "dashDotDot";
-                        break;
-                    case xlnt::border_style::dashed:
-                        style_string = "dashed";
-                        break;
-                    case xlnt::border_style::dotted:
-                        style_string = "dotted";
-                        break;
-                    case xlnt::border_style::double_:
-                        style_string = "double";
-                        break;
-                    case xlnt::border_style::hair:
-                        style_string = "hair";
-                        break;
-                    case xlnt::border_style::medium:
-                        style_string = "thin";
-                        break;
-                    case xlnt::border_style::mediumdashdot:
-                        style_string = "mediumDashDot";
-                        break;
-                    case xlnt::border_style::mediumdashdotdot:
-                        style_string = "mediumDashDotDot";
-                        break;
-                    case xlnt::border_style::mediumdashed:
-                        style_string = "mediumDashed";
-                        break;
-                    case xlnt::border_style::slantdashdot:
-                        style_string = "slantDashDot";
-                        break;
-                    case xlnt::border_style::thick:
-                        style_string = "thick";
-                        break;
-                    case xlnt::border_style::thin:
-                        style_string = "thin";
-                        break;
-                    default:
-                        throw std::runtime_error("invalid style");
-                    }
-
+                    auto style_string = border_style_to_string(*current_side->get_border_style());
                     side_node.add_attribute("style", style_string);
                 }
 
                 if (current_side->get_color())
                 {
                     auto color_node = side_node.add_child("color");
-
-                    if (current_side->get_color()->get_type() == xlnt::color::type::indexed)
-                    {
-                        color_node.add_attribute("indexed", std::to_string(current_side->get_color()->get_index()));
-                    }
-                    else if (current_side->get_color()->get_type() == xlnt::color::type::theme)
-                    {
-                        color_node.add_attribute("theme", std::to_string(current_side->get_color()->get_theme()));
-                    }
-                    else if (current_side->get_color()->get_type() == xlnt::color::type::rgb)
-                    {
-                        color_node.add_attribute("rgb", current_side->get_color()->get_rgb_string());
-                    }
-                    else
-                    {
-                        throw std::runtime_error("invalid color type");
-                    }
+                    write_color(*current_side->get_color(), color_node);
                 }
             }
         }
@@ -1015,50 +1036,12 @@ bool write_base_format(const xlnt::base_format &xf, const xlnt::detail::styleshe
 
         if (xf.get_alignment().has_vertical())
         {
-            switch (xf.get_alignment().get_vertical())
-            {
-            case xlnt::vertical_alignment::bottom:
-                alignment_node.add_attribute("vertical", "bottom");
-                break;
-            case xlnt::vertical_alignment::center:
-                alignment_node.add_attribute("vertical", "center");
-                break;
-            case xlnt::vertical_alignment::justify:
-                alignment_node.add_attribute("vertical", "justify");
-                break;
-            case xlnt::vertical_alignment::top:
-                alignment_node.add_attribute("vertical", "top");
-                break;
-            default:
-                throw std::runtime_error("invalid alignment");
-            }
+            alignment_node.add_attribute("vertical", vertical_alignment_to_string(xf.get_alignment().get_vertical()));
         }
 
         if (xf.get_alignment().has_horizontal())
         {
-            switch (xf.get_alignment().get_horizontal())
-            {
-            case xlnt::horizontal_alignment::center:
-                alignment_node.add_attribute("horizontal", "center");
-                break;
-            case xlnt::horizontal_alignment::center_continuous:
-                alignment_node.add_attribute("horizontal", "center_continuous");
-                break;
-            case xlnt::horizontal_alignment::general:
-                alignment_node.add_attribute("horizontal", "general");
-                break;
-            case xlnt::horizontal_alignment::justify:
-                alignment_node.add_attribute("horizontal", "justify");
-                break;
-            case xlnt::horizontal_alignment::left:
-                alignment_node.add_attribute("horizontal", "left");
-                break;
-            case xlnt::horizontal_alignment::right:
-                alignment_node.add_attribute("horizontal", "right");
-                break;
-            default:
-                throw std::runtime_error("invalid alignment");
-            }
+            alignment_node.add_attribute("horizontal", horizontal_alignment_to_string(xf.get_alignment().get_horizontal()));
         }
 
         if (xf.get_alignment().get_wrap_text())
@@ -1072,7 +1055,13 @@ bool write_base_format(const xlnt::base_format &xf, const xlnt::detail::styleshe
         }
     }
     
-    //TODO protection!
+    if (xf.protection_applied())
+    {
+        auto protection_node = xf_node.add_child("protection");
+        
+        protection_node.add_attribute("locked", protection_type_to_string(xf.get_protection().get_locked()));
+        protection_node.add_attribute("hidden", protection_type_to_string(xf.get_protection().get_hidden()));
+    }
     
     return true;
 }

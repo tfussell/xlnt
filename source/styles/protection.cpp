@@ -34,9 +34,20 @@ protection::protection(type t) : locked_(t), hidden_(type::unprotected)
 {
 }
 
+protection::type protection::get_locked() const
+{
+    return locked_;
+}
+
 void protection::set_locked(type locked_type)
 {
     locked_ = locked_type;
+}
+
+
+protection::type protection::get_hidden() const
+{
+    return hidden_;
 }
 
 void protection::set_hidden(type hidden_type)
