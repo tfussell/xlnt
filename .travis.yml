@@ -51,4 +51,13 @@ script:
   - bin/xlnt.test
 
 after_success:
-  - if [ "$COMPILER" = "g++-4.9" ]; then /bin/bash cmake/calculate_coverage_travis.sh ; fi
+  - if [ "$COMPILER" = "g++-4.9" ]; then sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 90 ; fi
+  - if [ "$COMPILER" = "g++-4.9" ]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 90 ; fi
+  - if [ "$COMPILER" = "g++-4.9" ]; then sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-4.9 90 ; fi
+  - if [ "$COMPILER" = "g++-4.9" ]; then cmake -D DEBUG=1 -D COVERAGE=1 -D SHARED=0 -D STATIC=1 -D TESTS=1 .. ; fi
+  - if [ "$COMPILER" = "g++-4.9" ]; then cmake --build . ; fi
+  - if [ "$COMPILER" = "g++-4.9" ]; then ./bin/xlnt.test ; fi
+  - if [ "$COMPILER" = "g++-4.9" ]; then cd .. ; fi
+  - if [ "$COMPILER" = "g++-4.9" ]; then export OLDWD=$(pwd) ; fi
+  - if [ "$COMPILER" = "g++-4.9" ]; then cd "build/CMakeFiles/xlnt.static.dir$(pwd)" ; fi
+  - if [ "$COMPILER" = "g++-4.9" ]; then coveralls --root $OLDWD --verbose -x ".cpp" --gcov-options '\-p' --exclude include --exclude third-party --exclude tests --exclude samples --exclude benchmarks ; fi
