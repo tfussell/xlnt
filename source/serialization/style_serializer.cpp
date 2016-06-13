@@ -52,6 +52,15 @@ namespace {
 
 // Miscellaneous Functions
 
+struct EnumClassHash
+{
+    template <typename T>
+    std::size_t operator()(T t) const
+    {
+        return static_cast<std::size_t>(t);
+    }
+};
+
 std::string string_lower(std::string str)
 {
     for (std::size_t i = 0; i < str.size(); i++)
@@ -136,13 +145,13 @@ const std::unordered_map<std::string, xlnt::font::underline_style> &get_string_u
     return *map;
 }
 
-const std::unordered_map<xlnt::font::underline_style, std::string> &get_underline_style_string_map()
+const std::unordered_map<xlnt::font::underline_style, std::string, EnumClassHash> &get_underline_style_string_map()
 {
-    static std::unordered_map<xlnt::font::underline_style, std::string> *map = nullptr;
+    static std::unordered_map<xlnt::font::underline_style, std::string, EnumClassHash> *map = nullptr;
     
     if (map == nullptr)
     {
-        map = new std::unordered_map<xlnt::font::underline_style, std::string>;
+        map = new std::unordered_map<xlnt::font::underline_style, std::string, EnumClassHash>;
         
         for (auto pair : get_string_underline_style_map())
         {
@@ -199,13 +208,13 @@ const std::unordered_map<std::string, xlnt::fill::pattern_type> &get_string_patt
     return *map;
 }
 
-const std::unordered_map<xlnt::fill::pattern_type, std::string> &get_pattern_fill_type_string_map()
+const std::unordered_map<xlnt::fill::pattern_type, std::string, EnumClassHash> &get_pattern_fill_type_string_map()
 {
-    static std::unordered_map<xlnt::fill::pattern_type, std::string> *map = nullptr;
+    static std::unordered_map<xlnt::fill::pattern_type, std::string, EnumClassHash> *map = nullptr;
     
     if (map == nullptr)
     {
-        map = new std::unordered_map<xlnt::fill::pattern_type, std::string>;
+        map = new std::unordered_map<xlnt::fill::pattern_type, std::string, EnumClassHash>;
 
         for (auto pair : get_string_pattern_fill_type_map())
         {
@@ -257,13 +266,13 @@ const std::unordered_map<std::string, xlnt::border_style> &get_string_border_sty
     return *map;
 }
 
-const std::unordered_map<xlnt::border_style, std::string> &get_border_style_string_map()
+const std::unordered_map<xlnt::border_style, std::string, EnumClassHash> &get_border_style_string_map()
 {
-    static std::unordered_map<xlnt::border_style, std::string> *map = nullptr;
+    static std::unordered_map<xlnt::border_style, std::string, EnumClassHash> *map = nullptr;
     
     if (map == nullptr)
     {
-        map = new std::unordered_map<xlnt::border_style, std::string>;
+        map = new std::unordered_map<xlnt::border_style, std::string, EnumClassHash>;
 
         for (auto pair : get_string_border_style_map())
         {
@@ -306,13 +315,13 @@ const std::unordered_map<std::string, xlnt::vertical_alignment> &get_string_vert
     return *map;
 }
 
-const std::unordered_map<xlnt::vertical_alignment, std::string> &get_vertical_alignment_string_map()
+const std::unordered_map<xlnt::vertical_alignment, std::string, EnumClassHash> &get_vertical_alignment_string_map()
 {
-    static std::unordered_map<xlnt::vertical_alignment, std::string> *map = nullptr;
+    static std::unordered_map<xlnt::vertical_alignment, std::string, EnumClassHash> *map = nullptr;
     
     if (map == nullptr)
     {
-        map = new std::unordered_map<xlnt::vertical_alignment, std::string>;
+        map = new std::unordered_map<xlnt::vertical_alignment, std::string, EnumClassHash>;
 
         for (auto pair : get_string_vertical_alignment_map())
         {
@@ -357,13 +366,13 @@ const std::unordered_map<std::string, xlnt::horizontal_alignment> &get_string_ho
     return *map;
 }
 
-const std::unordered_map<xlnt::horizontal_alignment, std::string> &get_horizontal_alignment_string_map()
+const std::unordered_map<xlnt::horizontal_alignment, std::string, EnumClassHash> &get_horizontal_alignment_string_map()
 {
-    static std::unordered_map<xlnt::horizontal_alignment, std::string> *map = nullptr;
+    static std::unordered_map<xlnt::horizontal_alignment, std::string, EnumClassHash> *map = nullptr;
     
     if (map == nullptr)
     {
-        map = new std::unordered_map<xlnt::horizontal_alignment, std::string>;
+        map = new std::unordered_map<xlnt::horizontal_alignment, std::string, EnumClassHash>;
 
         for (auto pair : get_string_horizontal_alignment_map())
         {
