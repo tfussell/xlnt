@@ -166,15 +166,15 @@ column_t operator/(column_t lhs, const column_t& rhs) { lhs /= rhs; return lhs; 
 
 column_t operator%(column_t lhs, const column_t& rhs) { lhs %= rhs; return lhs; }
 
-column_t &column_t::operator+=(const column_t &rhs) { return *this = (*this + rhs); }
+column_t &column_t::operator+=(const column_t &rhs) { index += rhs.index; return *this; }
 
-column_t &column_t::operator-=(const column_t &rhs) { return *this = (*this - rhs); }
+column_t &column_t::operator-=(const column_t &rhs) { index -= rhs.index; return *this; }
 
-column_t &column_t::operator*=(const column_t &rhs) { return *this = (*this * rhs); }
+column_t &column_t::operator*=(const column_t &rhs) { index *= rhs.index; return *this; }
 
-column_t &column_t::operator/=(const column_t &rhs) { return *this = (*this / rhs); }
+column_t &column_t::operator/=(const column_t &rhs) { index /= rhs.index; return *this; }
 
-column_t &column_t::operator%=(const column_t &rhs) { return *this = (*this % rhs); }
+column_t &column_t::operator%=(const column_t &rhs) { index %= rhs.index; return *this; }
 
 bool operator>(const column_t::index_t &left, const column_t &right) { return column_t(left) > right; }
 
