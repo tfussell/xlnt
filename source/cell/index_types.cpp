@@ -252,30 +252,15 @@ column_t column_t::operator++(int) { column_t copy(index); ++(*this); return cop
 /// </summary>
 column_t column_t::operator--(int) { column_t copy(index); --(*this); return copy; }
 
-/// <summary>
-/// Return the result of adding rhs to this column.
-/// </summary>
-column_t column_t::operator+(const column_t &rhs) { column_t copy(*this); copy.index += rhs.index; return copy; }
+column_t operator+(column_t lhs, const column_t& rhs) { lhs += rhs; return lhs; }
 
-/// <summary>
-/// Return the result of adding rhs to this column.
-/// </summary>
-column_t column_t::operator-(const column_t &rhs) { column_t copy(*this); copy.index -= rhs.index; return copy; }
+column_t operator-(column_t lhs, const column_t& rhs) { lhs -= rhs; return lhs; }
 
-/// <summary>
-/// Return the result of adding rhs to this column.
-/// </summary>
-column_t column_t::operator*(const column_t &rhs) { column_t copy(*this); copy.index *= rhs.index; return copy; }
+column_t operator*(column_t lhs, const column_t& rhs) { lhs *= rhs; return lhs; }
 
-/// <summary>
-/// Return the result of adding rhs to this column.
-/// </summary>
-column_t column_t::operator/(const column_t &rhs) { column_t copy(*this); copy.index /= rhs.index; return copy; }
+column_t operator/(column_t lhs, const column_t& rhs) { lhs /= rhs; return lhs; }
 
-/// <summary>
-/// Return the result of adding rhs to this column.
-/// </summary>
-column_t column_t::operator%(const column_t &rhs) { column_t copy(*this); copy.index %= rhs.index; return copy; }
+column_t operator%(column_t lhs, const column_t& rhs) { lhs %= rhs; return lhs; }
 
 /// <summary>
 /// Add rhs to this column and return a reference to this column.
