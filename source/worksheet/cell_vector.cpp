@@ -129,4 +129,34 @@ cell_vector::const_iterator cell_vector::end() const
     return cend();
 }
 
+cell_vector::reverse_iterator cell_vector::rbegin()
+{
+    return reverse_iterator(end());
+}
+
+cell_vector::reverse_iterator cell_vector::rend()
+{
+    return reverse_iterator(begin());
+}
+
+cell_vector::const_reverse_iterator cell_vector::crbegin() const
+{
+    return const_reverse_iterator(cend());
+}
+
+cell_vector::const_reverse_iterator cell_vector::rbegin() const
+{
+    return crbegin();
+}
+
+cell_vector::const_reverse_iterator cell_vector::crend() const
+{
+    return const_reverse_iterator(cbegin());
+}
+
+cell_vector::const_reverse_iterator cell_vector::rend() const
+{
+    return crend();
+}
+
 } // namespace xlnt

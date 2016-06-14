@@ -172,4 +172,34 @@ range::const_iterator range::end() const
     return cend();
 }
 
+range::reverse_iterator range::rbegin()
+{
+    return reverse_iterator(end());
+}
+
+range::reverse_iterator range::rend()
+{
+    return reverse_iterator(begin());
+}
+
+range::const_reverse_iterator range::crbegin() const
+{
+    return const_reverse_iterator(cend());
+}
+
+range::const_reverse_iterator range::rbegin() const
+{
+    return crbegin();
+}
+
+range::const_reverse_iterator range::crend() const
+{
+    return const_reverse_iterator(cbegin());
+}
+
+range::const_reverse_iterator range::rend() const
+{
+    return crend();
+}
+
 } // namespace xlnt

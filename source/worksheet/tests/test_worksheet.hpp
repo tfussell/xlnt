@@ -4,6 +4,9 @@
 #include <cxxtest/TestSuite.h>
 
 #include <xlnt/serialization/worksheet_serializer.hpp>
+#include <xlnt/worksheet/footer.hpp>
+#include <xlnt/worksheet/header.hpp>
+#include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
 class test_worksheet : public CxxTest::TestSuite
@@ -688,5 +691,101 @@ public:
         ws.append();
         ws.append(std::vector<int> { 4 });
         TS_ASSERT_EQUALS(ws.get_highest_row(), 4);
+    }
+    
+    void test_const_iterators()
+    {
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
+
+        ws.append({"A1", "B1", "C1"});
+        ws.append({"A2", "B2", "C2"});
+
+        const xlnt::worksheet ws_const = ws;
+        const auto rows = ws_const.rows();
+
+        const auto first_row = *rows.begin();
+        const auto first_cell = *first_row.begin();
+        TS_ASSERT_EQUALS(first_cell.get_value<std::string>(), "A1");
+
+        const auto last_row = *(--rows.end());
+        const auto last_cell = *(--last_row.end());
+        TS_ASSERT_EQUALS(last_cell.get_value<std::string>(), "C2");
+
+        for (const auto row : rows)
+        {
+            for (const auto cell : row)
+            {
+                TS_ASSERT_EQUALS(cell.get_value<std::string>(), cell.get_reference().to_string());
+            }
+        }
+    }
+    
+    void test_const_reverse_iterators()
+    {
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
+
+        ws.append({"A1", "B1", "C1"});
+        ws.append({"A2", "B2", "C2"});
+
+        const xlnt::worksheet ws_const = ws;
+        const auto rows = ws_const.rows();
+
+        const auto first_row = *rows.rbegin();
+        const auto first_cell = *first_row.rbegin();
+        TS_ASSERT_EQUALS(first_cell.get_value<std::string>(), "C2");
+
+        const auto last_row = *(--rows.rend());
+        const auto last_cell = *(--last_row.rend());
+        TS_ASSERT_EQUALS(last_cell.get_value<std::string>(), "A1");
+
+        for (auto ws_iter = rows.rbegin(); ws_iter != rows.rend(); ++ws_iter)
+        {
+            const auto row = *ws_iter;
+
+            for (auto row_iter = row.rbegin(); row_iter != row.rend(); ++row_iter)
+            {
+                const auto cell = *row_iter;
+                TS_ASSERT_EQUALS(cell.get_value<std::string>(), cell.get_reference().to_string());
+            }
+        }
+    }
+    
+    void test_header()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.get_active_sheet();
+        TS_ASSERT(ws.get_header_footer().get_center_header().is_default());
+        ws.get_header_footer().get_center_header().set_text("abc");
+        ws.get_header_footer().get_center_header().set_font_name("def");
+        ws.get_header_footer().get_center_header().set_font_size(121);
+        ws.get_header_footer().get_center_header().set_font_color("ghi");
+        TS_ASSERT(!ws.get_header_footer().get_center_header().is_default());
+    }
+    
+    void test_footer()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.get_active_sheet();
+        TS_ASSERT(ws.get_header_footer().get_center_footer().is_default());
+        ws.get_header_footer().get_center_footer().set_text("abc");
+        ws.get_header_footer().get_center_footer().set_font_name("def");
+        ws.get_header_footer().get_center_footer().set_font_size(121);
+        ws.get_header_footer().get_center_footer().set_font_color("ghi");
+        TS_ASSERT(!ws.get_header_footer().get_center_footer().is_default());
+    }
+    
+    void test_page_setup()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.get_active_sheet();
+        TS_ASSERT(ws.get_page_setup().is_default());
+        ws.get_page_setup().set_break(xlnt::page_break::column);
+        TS_ASSERT_EQUALS(ws.get_page_setup().get_break(), xlnt::page_break::column);
+        TS_ASSERT(!ws.get_page_setup().is_default());
+        ws.get_page_setup().set_scale(1.23);
+        TS_ASSERT_EQUALS(ws.get_page_setup().get_scale(), 1.23);
+        TS_ASSERT(!ws.get_page_setup().is_default());
     }
 };

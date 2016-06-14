@@ -48,6 +48,8 @@ class XLNT_CLASS cell_vector
 public:
     using iterator = cell_iterator;
     using const_iterator = const_cell_iterator;
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
     
     cell_vector(worksheet ws, const range_reference &ref, major_order order = major_order::row);
 
@@ -79,6 +81,15 @@ public:
 
     const_iterator end() const;
     const_iterator cend() const;
+
+    reverse_iterator rbegin();
+    reverse_iterator rend();
+
+    const_reverse_iterator rbegin() const;
+    const_reverse_iterator rend() const;
+
+    const_reverse_iterator crbegin() const;
+    const_reverse_iterator crend() const;
 
 private:
     worksheet ws_;

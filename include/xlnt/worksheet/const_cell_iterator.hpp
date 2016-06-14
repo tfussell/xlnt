@@ -46,7 +46,7 @@ public:
 
     const_cell_iterator(const const_cell_iterator &other);
 
-    const cell operator*();
+    const cell operator*() const;
 
     bool operator==(const const_cell_iterator &other) const;
 

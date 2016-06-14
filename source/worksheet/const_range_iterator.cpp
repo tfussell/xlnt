@@ -92,4 +92,18 @@ const_range_iterator const_range_iterator::operator++(int)
     return old;
 }
 
+const cell_vector const_range_iterator::operator*() const
+{
+    if (order_ == major_order::row)
+    {
+        range_reference reference(range_.get_top_left().get_column_index(), current_cell_.get_row(),
+                                  range_.get_bottom_right().get_column_index(), current_cell_.get_row());
+        return cell_vector(ws_, reference, order_);
+    }
+
+    range_reference reference(current_cell_.get_column_index(), range_.get_top_left().get_row(),
+                              current_cell_.get_column_index(), range_.get_bottom_right().get_row());
+    return cell_vector(ws_, reference, order_);
+}
+
 } // namespace xlnt

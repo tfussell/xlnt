@@ -89,4 +89,9 @@ const_cell_iterator const_cell_iterator::operator++(int)
     return old;
 }
 
+const cell const_cell_iterator::operator*() const
+{
+    return ws_.get_cell(current_cell_);
+}
+
 } // namespace xlnt

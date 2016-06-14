@@ -24,6 +24,7 @@
 #pragma once
 
 #include <functional>
+#include <iterator>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -79,6 +80,8 @@ class XLNT_CLASS workbook
 public:
     using iterator = worksheet_iterator;
     using const_iterator = const_worksheet_iterator;
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
     
     static std::size_t index_from_ws_filename(const std::string &filename);
 
@@ -141,6 +144,15 @@ public:
 
     const_iterator cbegin() const;
     const_iterator cend() const;
+    
+    reverse_iterator rbegin();
+    reverse_iterator rend();
+
+    const_reverse_iterator rbegin() const;
+    const_reverse_iterator rend() const;
+
+    const_reverse_iterator crbegin() const;
+    const_reverse_iterator crend() const;
 
     std::vector<std::string> get_sheet_names() const;
 

@@ -23,6 +23,7 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <iterator>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -66,6 +67,8 @@ class XLNT_CLASS worksheet
 public:
     using iterator = range_iterator;
     using const_iterator = const_range_iterator;
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     worksheet();
     worksheet(const worksheet &rhs);
@@ -218,6 +221,15 @@ public:
 
     const_iterator cbegin() const;
     const_iterator cend() const;
+    
+    reverse_iterator rbegin();
+    reverse_iterator rend();
+
+    const_reverse_iterator rbegin() const;
+    const_reverse_iterator rend() const;
+
+    const_reverse_iterator crbegin() const;
+    const_reverse_iterator crend() const;
 
     range iter_cells(bool skip_null);
     
