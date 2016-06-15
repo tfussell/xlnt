@@ -40,7 +40,7 @@ struct worksheet_impl;
 /// An iterator used by worksheet and range for traversing
 /// a 2D grid of cells by row/column then across that row/column.
 /// </summary>
-class XLNT_CLASS range_iterator : public std::iterator<std::bidirectional_iterator_tag, cell_vector>
+class XLNT_CLASS range_iterator : public std::iterator<std::bidirectional_iterator_tag, cell_vector, ptrdiff_t, cell_vector*, cell_vector>
 {
 public:
     range_iterator(worksheet &ws, const range_reference &start_cell, major_order order = major_order::row);
