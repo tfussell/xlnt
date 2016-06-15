@@ -799,22 +799,22 @@ public:
         auto columns = ws.columns();
 
         auto column_iter = columns.rbegin();
-        *column_iter;
-        /*
+        auto first_column = *column_iter;
+
         auto first_column_iter = first_column.rbegin();
-        auto &first_cell = *first_column_iter;
+        auto first_cell = *first_column_iter;
         TS_ASSERT_EQUALS(first_cell.get_value<std::string>(), "C2");
         first_column_iter++;
-        auto &second_cell = *first_column_iter;
+        auto second_cell = *first_column_iter;
         TS_ASSERT_EQUALS(second_cell.get_value<std::string>(), "C1");
 
-        auto &last_column = *(--columns.rend());
+        auto last_column = *(--columns.rend());
         auto last_column_iter = last_column.rend();
         last_column_iter--;
-        auto &last_cell = *last_column_iter;
+        auto last_cell = *last_column_iter;
         TS_ASSERT_EQUALS(last_cell.get_value<std::string>(), "A1");
         last_column_iter--;
-        auto &penultimate_cell = *last_column_iter;
+        auto penultimate_cell = *last_column_iter;
         TS_ASSERT_EQUALS(penultimate_cell.get_value<std::string>(), "A2");
 
         for (auto column_iter = columns.rbegin(); column_iter != columns.rend(); ++column_iter)
@@ -828,7 +828,6 @@ public:
                 TS_ASSERT_EQUALS(cell.get_value<std::string>(), cell.get_reference().to_string());
             }
         }
-        */
     }
 
     void test_const_column_major_iterators()
