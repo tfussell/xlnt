@@ -231,27 +231,27 @@ public:
     /// <summary>
     /// Return the result of adding rhs to this column.
     /// </summary>
-    column_t operator+(const column_t &rhs);
+    friend column_t operator+(column_t lhs, const column_t& rhs);
 
     /// <summary>
-    /// Return the result of adding rhs to this column.
+    /// Return the result of subtracing lhs by rhs column.
     /// </summary>
-    column_t operator-(const column_t &rhs);
+    friend column_t operator-(column_t lhs, const column_t& rhs);
 
     /// <summary>
-    /// Return the result of adding rhs to this column.
+    /// Return the result of multiply lhs by rhs column.
     /// </summary>
-    column_t operator*(const column_t &rhs);
+    friend column_t operator*(column_t lhs, const column_t& rhs);
 
     /// <summary>
-    /// Return the result of adding rhs to this column.
+    /// Return the result of divide lhs by rhs column.
     /// </summary>
-    column_t operator/(const column_t &rhs);
+    friend column_t operator/(column_t lhs, const column_t& rhs);
 
     /// <summary>
-    /// Return the result of adding rhs to this column.
+    /// Return the result of mod lhs by rhs column.
     /// </summary>
-    column_t operator%(const column_t &rhs);
+    friend column_t operator%(column_t lhs, const column_t& rhs);
 
     /// <summary>
     /// Add rhs to this column and return a reference to this column.
