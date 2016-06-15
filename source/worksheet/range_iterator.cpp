@@ -28,7 +28,7 @@
 
 namespace xlnt {
 
-cell_vector range_iterator::operator*()
+cell_vector range_iterator::operator*() const
 {
     if (order_ == major_order::row)
     {

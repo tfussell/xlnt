@@ -752,6 +752,163 @@ public:
         }
     }
     
+    void test_column_major_iterators()
+    {
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
+
+        ws.append({"A1", "B1", "C1"});
+        ws.append({"A2", "B2", "C2"});
+
+        auto columns = ws.columns();
+
+        auto first_column = *columns.begin();
+        auto first_column_iter = first_column.begin();
+        auto first_cell = *first_column_iter;
+        TS_ASSERT_EQUALS(first_cell.get_value<std::string>(), "A1");
+        first_column_iter++;
+        auto second_cell = *first_column_iter;
+        TS_ASSERT_EQUALS(second_cell.get_value<std::string>(), "A2");
+
+        auto last_column = *(--columns.end());
+        auto last_column_iter = last_column.end();
+        last_column_iter--;
+        auto last_cell = *last_column_iter;
+        TS_ASSERT_EQUALS(last_cell.get_value<std::string>(), "C2");
+        last_column_iter--;
+        auto penultimate_cell = *last_column_iter;
+        TS_ASSERT_EQUALS(penultimate_cell.get_value<std::string>(), "C1");
+
+        for (auto column : columns)
+        {
+            for (auto cell : column)
+            {
+                TS_ASSERT_EQUALS(cell.get_value<std::string>(), cell.get_reference().to_string());
+            }
+        }
+    }
+
+    void test_reverse_column_major_iterators()
+    {
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
+
+        ws.append({"A1", "B1", "C1"});
+        ws.append({"A2", "B2", "C2"});
+
+        auto columns = ws.columns();
+
+        auto column_iter = columns.rbegin();
+        *column_iter;
+        /*
+        auto first_column_iter = first_column.rbegin();
+        auto &first_cell = *first_column_iter;
+        TS_ASSERT_EQUALS(first_cell.get_value<std::string>(), "C2");
+        first_column_iter++;
+        auto &second_cell = *first_column_iter;
+        TS_ASSERT_EQUALS(second_cell.get_value<std::string>(), "C1");
+
+        auto &last_column = *(--columns.rend());
+        auto last_column_iter = last_column.rend();
+        last_column_iter--;
+        auto &last_cell = *last_column_iter;
+        TS_ASSERT_EQUALS(last_cell.get_value<std::string>(), "A1");
+        last_column_iter--;
+        auto &penultimate_cell = *last_column_iter;
+        TS_ASSERT_EQUALS(penultimate_cell.get_value<std::string>(), "A2");
+
+        for (auto column_iter = columns.rbegin(); column_iter != columns.rend(); ++column_iter)
+        {
+            auto column = *column_iter;
+            
+            for (auto cell_iter = column.rbegin(); cell_iter != column.rend(); ++cell_iter)
+            {
+                auto cell = *cell_iter;
+
+                TS_ASSERT_EQUALS(cell.get_value<std::string>(), cell.get_reference().to_string());
+            }
+        }
+        */
+    }
+
+    void test_const_column_major_iterators()
+    {
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
+
+        ws.append({"A1", "B1", "C1"});
+        ws.append({"A2", "B2", "C2"});
+
+        const xlnt::worksheet ws_const = ws;
+        const auto columns = ws_const.columns();
+
+        const auto first_column = *columns.begin();
+        auto first_column_iter = first_column.begin();
+        const auto first_cell = *first_column_iter;
+        TS_ASSERT_EQUALS(first_cell.get_value<std::string>(), "A1");
+        first_column_iter++;
+        const auto second_cell = *first_column_iter;
+        TS_ASSERT_EQUALS(second_cell.get_value<std::string>(), "A2");
+
+        const auto last_column = *(--columns.end());
+        auto last_column_iter = last_column.end();
+        last_column_iter--;
+        const auto last_cell = *last_column_iter;
+        TS_ASSERT_EQUALS(last_cell.get_value<std::string>(), "C2");
+        last_column_iter--;
+        const auto penultimate_cell = *last_column_iter;
+        TS_ASSERT_EQUALS(penultimate_cell.get_value<std::string>(), "C1");
+
+        for (const auto column : columns)
+        {
+            for (const auto cell : column)
+            {
+                TS_ASSERT_EQUALS(cell.get_value<std::string>(), cell.get_reference().to_string());
+            }
+        }
+    }
+    
+    void test_const_reverse_column_major_iterators()
+    {
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
+
+        ws.append({"A1", "B1", "C1"});
+        ws.append({"A2", "B2", "C2"});
+
+        const xlnt::worksheet ws_const = ws;
+        const auto columns = ws_const.columns();
+
+        const auto first_column = *columns.crbegin();
+        auto first_column_iter = first_column.crbegin();
+        const auto first_cell = *first_column_iter;
+        TS_ASSERT_EQUALS(first_cell.get_value<std::string>(), "C2");
+        first_column_iter++;
+        const auto second_cell = *first_column_iter;
+        TS_ASSERT_EQUALS(second_cell.get_value<std::string>(), "C1");
+
+        const auto last_column = *(--columns.crend());
+        auto last_column_iter = last_column.crend();
+        last_column_iter--;
+        const auto last_cell = *last_column_iter;
+        TS_ASSERT_EQUALS(last_cell.get_value<std::string>(), "A1");
+        last_column_iter--;
+        const auto penultimate_cell = *last_column_iter;
+        TS_ASSERT_EQUALS(penultimate_cell.get_value<std::string>(), "A2");
+
+        for (auto column_iter = columns.crbegin(); column_iter != columns.crend(); ++column_iter)
+        {
+            const auto column = *column_iter;
+            
+            for (auto cell_iter = column.crbegin(); cell_iter != column.crend(); ++cell_iter)
+            {
+                const auto cell = *cell_iter;
+
+                TS_ASSERT_EQUALS(cell.get_value<std::string>(), cell.get_reference().to_string());
+            }
+        }
+    }
+    
     void test_header()
     {
         xlnt::workbook wb;

@@ -47,7 +47,7 @@ public:
 
     range_iterator(const range_iterator &other);
 
-    cell_vector operator*();
+    cell_vector operator*() const;
 
     bool operator==(const range_iterator &other) const;
 

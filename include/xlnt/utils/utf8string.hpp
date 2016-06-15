@@ -26,9 +26,11 @@
 
 #include <utf8.h>
 
+#include <xlnt/xlnt_config.hpp>
+
 namespace xlnt {
 
-class utf8string
+class XLNT_CLASS utf8string
 {
 public:
     static utf8string from_utf8(const std::string &s);
