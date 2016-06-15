@@ -25,6 +25,7 @@
 #include <vector>
 
 #include <utf8.h>
+#include <xlnt/xlnt_config.hpp> // for XLNT_CLASS
 
 #include <xlnt/xlnt_config.hpp>
 
