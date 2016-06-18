@@ -815,7 +815,7 @@ std::string format_section(const std::string &text, const section &format)
         if (!s.empty())
         {
             if (s.front() != '"' || s.back() != '"') return false;
-            s = s.substr(0, s.size() - 2);
+            s = s.substr(1, s.size() - 2);
         }
 
         return true;
