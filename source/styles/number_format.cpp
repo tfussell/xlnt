@@ -673,6 +673,10 @@ std::string format_section(long double number, const section &format, xlnt::cale
 
                 result.append(std::to_string(d.day));
             }
+            else if (part == "yy")
+            {
+                result.append(std::to_string(d.year % 1000));
+            }
             else if (part == "yyyy")
             {
                 result.append(std::to_string(d.year));

@@ -9,7 +9,7 @@
 #include <helpers/helper.hpp>
 #include <helpers/path_helper.hpp>
 
-class test_number_style : public CxxTest::TestSuite
+class test_stylesheet : public CxxTest::TestSuite
 {
 public:
     void test_ctor()
