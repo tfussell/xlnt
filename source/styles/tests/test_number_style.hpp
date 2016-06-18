@@ -20,6 +20,17 @@ public:
         TS_ASSERT_EQUALS(formatted, "18/06/16");
     }
 
+    void test_simple_time()
+    {
+        auto time = xlnt::time(20, 15, 10);
+        auto time_number = time.to_number();
+
+        xlnt::number_format nf = xlnt::number_format::date_time2();
+        auto formatted = nf.format(time_number, xlnt::calendar::windows_1900);
+
+        TS_ASSERT_EQUALS(formatted, "8:15:10 PM");
+    }
+
     void test_text_section_string()
     {
         xlnt::number_format nf;
@@ -28,5 +39,15 @@ public:
         auto formatted = nf.format("text");
 
         TS_ASSERT_EQUALS(formatted, "atextb");
+    }
+
+    void test_conditional_format()
+    {
+        xlnt::number_format nf;
+        nf.set_format_string("[>5]\"first\"General;[>3]\"second\"General;\"third\"General");
+
+        auto formatted = nf.format(4, xlnt::calendar::windows_1900);
+
+        TS_ASSERT_EQUALS(formatted, "second4");
     }
 };

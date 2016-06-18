@@ -190,7 +190,7 @@ std::vector<std::string> split_string_any(const std::string &string, const std::
 
 bool is_date_format(const std::string &format_string)
 {
-    auto not_in = format_string.find_first_not_of("/-:, mMyYdDhHsS");
+    auto not_in = format_string.find_first_not_of("/-:, mMyYdDhHsSAP");
     return not_in == std::string::npos;
 }
 
@@ -396,7 +396,14 @@ const std::unordered_map<int, std::string> known_locales()
 
 bool is_valid_locale(const std::string &locale_string)
 {
-    std::string country = locale_string.substr(locale_string.find('-') + 1);
+    auto hyphen_index = locale_string.find('-');
+    
+    if (hyphen_index == std::string::npos)
+    {
+        return false;
+    }
+    
+    std::string country = locale_string.substr(hyphen_index + 1);
 
     if (country.empty())
     {
@@ -600,12 +607,25 @@ std::string format_section(long double number, const section &format, xlnt::cale
 
     if (is_date_format(format.value))
     {
-        const std::string date_unquoted = ",-/: ";
-
-        const std::vector<std::string> dates = { "m", "mm", "mmm", "mmmmm", "mmmmmm", "d", "dd", "ddd", "dddd", "yy",
-                                                 "yyyy", "h", "[h]", "hh", "m", "[m]", "mm", "s", "[s]", "ss", "AM/PM",
-                                                 "am/pm", "A/P", "a/p" };
+        auto lower_string = [](const std::string &s) {
+            std::string lower;
+            lower.resize(s.size());
+            for (std::size_t i = 0; i < s.size(); i++)
+                lower[i] = static_cast<char>(std::tolower(s[i]));
+            return lower;
+        };
         
+        auto value = format.value;
+        bool twelve_hour = false;
+        
+        if (lower_string(value).substr(format.value.size() - 5) == "am/pm")
+        {
+            twelve_hour = true;
+        }
+        
+        const std::string date_unquoted = ",-/: ";
+        const std::vector<std::string> dates = { "m", "mm", "mmm", "mmmmm", "mmmmmm", "d", "dd", "ddd", "dddd", "yy",
+                                                 "yyyy", "h", "[h]", "hh", "m", "[m]", "mm", "s", "[s]", "ss" };
         const std::vector<std::string> MonthNames = { "January", "February", "March",
         "April", "May", "June", "July", "August", "September", "October", "November", "December" };
 
@@ -615,14 +635,6 @@ std::string format_section(long double number, const section &format, xlnt::cale
         auto d = xlnt::datetime::from_number(number, base_date);
         bool processed_month = false;
 
-        auto lower_string = [](const std::string &s) {
-            std::string lower;
-            lower.resize(s.size());
-            for (std::size_t i = 0; i < s.size(); i++)
-                lower[i] = static_cast<char>(std::tolower(s[i]));
-            return lower;
-        };
-
         for (auto part : split)
         {
             while (format.value.substr(index, part.size()) != part)
@@ -630,10 +642,18 @@ std::string format_section(long double number, const section &format, xlnt::cale
                 index++;
             }
 
-            auto between = format.value.substr(prev, index - prev);
-            result.append(between);
-
             part = lower_string(part);
+
+            auto between = format.value.substr(prev, index - prev);
+            
+            if (between == "/" and part == "pm")
+            {
+                index += part.size();
+                prev = index;
+                continue;
+            }
+
+            result.append(between);
 
             if (part == "m" && !processed_month)
             {
@@ -684,14 +704,36 @@ std::string format_section(long double number, const section &format, xlnt::cale
 
             else if (part == "h")
             {
-                result.append(std::to_string(d.hour));
+                if (twelve_hour)
+                {
+                    result.append(std::to_string(d.hour % 12));
+                }
+                else
+                {
+                    result.append(std::to_string(d.hour));
+                }
+                
                 processed_month = true;
             }
             else if (part == "hh")
             {
-                if (d.hour < 10)
+                if (twelve_hour)
                 {
-                    result.append("0");
+                    if (d.hour % 12 < 10)
+                    {
+                        result.append("0");
+                    }
+
+                    result.append(std::to_string(d.hour % 12));
+                }
+                else
+                {
+                    if (d.hour < 10)
+                    {
+                        result.append("0");
+                    }
+
+                    result.append(std::to_string(d.hour));
                 }
 
                 result.append(std::to_string(d.hour));
@@ -723,7 +765,7 @@ std::string format_section(long double number, const section &format, xlnt::cale
 
                 result.append(std::to_string(d.second));
             }
-            else if (part == "am/pm" || part == "a/p")
+            else if (part == "am")
             {
                 if (d.hour < 12)
                 {
@@ -744,15 +786,33 @@ std::string format_section(long double number, const section &format, xlnt::cale
             result.append(format.value.substr(index));
         }
     }
-    else if (format.value == "General" || format.value == "0")
+    else if (format.value.find_first_of("General") != std::string::npos || format.value == "0")
     {
+        std::string before_text, end_text;
+        auto open_quote = format.value.find('"');
+        
+        if (open_quote != std::string::npos)
+        {
+            auto close_quote = format.value.find('"', open_quote + 1);
+            auto quoted_text = format.value.substr(open_quote, close_quote - open_quote + 1);
+            
+            if (open_quote == 0)
+            {
+                before_text = quoted_text.substr(1, quoted_text.size() - 2);
+            }
+            else
+            {
+                end_text = quoted_text.substr(1, quoted_text.size() - 2);
+            }
+        }
+        
         if (number == static_cast<long long int>(number))
         {
-            result = std::to_string(static_cast<long long int>(number));
+            result = before_text + std::to_string(static_cast<long long int>(number)) + end_text;
         }
         else
         {
-            result = std::to_string(number);
+            result = before_text + std::to_string(number) + end_text;
         }
     }
     else if (format.value.substr(0, 8) == "#,##0.00" || format.value.substr(0, 9) == "-#,##0.00")
@@ -832,17 +892,44 @@ std::string format_section(const std::string &text, const section &format)
 std::string format_number(long double number, const std::string &format, xlnt::calendar base_date)
 {
     auto sections = parse_format_sections(format);
-
-    if (number > 0)
+    
+    if (sections.first.has_condition)
     {
-        return format_section(number, sections.first, base_date);
+        auto right_side = std::stod(sections.first.condition_value);
+        
+        if ((sections.first.condition == condition_type::equal && number == right_side) ||
+            (sections.first.condition == condition_type::greater_or_equal && number >= right_side) ||
+            (sections.first.condition == condition_type::greater_than && number > right_side) ||
+            (sections.first.condition == condition_type::less_or_equal && number <= right_side) ||
+            (sections.first.condition == condition_type::less_than && number < right_side))
+        {
+            return format_section(number, sections.first, base_date);
+        }
+        
+        right_side = std::stod(sections.second.condition_value);
+        
+        if ((sections.second.condition == condition_type::equal && number == right_side) ||
+            (sections.second.condition == condition_type::greater_or_equal && number >= right_side) ||
+            (sections.second.condition == condition_type::greater_than && number > right_side) ||
+            (sections.second.condition == condition_type::less_or_equal && number <= right_side) ||
+            (sections.second.condition == condition_type::less_than && number < right_side))
+        {
+            return format_section(number, sections.second, base_date);
+        }
     }
-    else if (number < 0)
+    else
     {
-        return format_section(number, sections.second, base_date);
+        if (number > 0)
+        {
+            return format_section(number, sections.first, base_date);
+        }
+        else if (number < 0)
+        {
+            return format_section(number, sections.second, base_date);
+        }
     }
 
-    // number == 0
+    // number == 0 or default condition
     return format_section(number, sections.third, base_date);
 }
 
