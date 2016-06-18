@@ -646,7 +646,7 @@ std::string format_section(long double number, const section &format, xlnt::cale
 
             auto between = format.value.substr(prev, index - prev);
             
-            if (between == "/" and part == "pm")
+            if (between == "/" && part == "pm")
             {
                 index += part.size();
                 prev = index;
