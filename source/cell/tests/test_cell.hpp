@@ -586,9 +586,6 @@ public:
 
         cell.set_value(static_cast<std::uint64_t>(3));
         TS_ASSERT_EQUALS(cell.get_value<std::uint64_t>(), 3);
-        
-        cell.set_value(static_cast<unsigned long long>(4));
-        TS_ASSERT_EQUALS(cell.get_value<unsigned long long>(), 4);
 
         cell.set_value(static_cast<float>(3.14));
         TS_ASSERT_DELTA(cell.get_value<float>(), 3.14, 0.001);
@@ -604,5 +601,20 @@ public:
         cell.set_value(cell2);
         
         TS_ASSERT_EQUALS(cell.get_value<std::string>(), "test");
+    }
+
+    void test_operators()
+    {
+        xlnt::cell cell;
+        TS_ASSERT_EQUALS(cell, nullptr);
+
+        auto ws = wb.create_sheet();
+        auto cell2 = ws.get_cell("A1");
+/*
+        cell2.set_value("test");
+        cell = cell2;
+        
+        TS_ASSERT_EQUALS(cell.get_value<std::string>(), "test");
+*/
     }
 };
