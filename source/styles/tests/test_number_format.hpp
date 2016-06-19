@@ -105,4 +105,13 @@ public:
         formatted = nf.format(0, xlnt::calendar::windows_1900);
         TS_ASSERT_EQUALS(formatted, "third0");
     }
+    
+    void test_locale_currency()
+    {
+        xlnt::number_format nf;
+        nf.set_format_string("[$€-407]#,##0.00");
+        
+        auto formatted = nf.format(1.2, xlnt::calendar::windows_1900);
+        TS_ASSERT_EQUALS(formatted, "€1,20");
+    }
 };
