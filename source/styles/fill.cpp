@@ -29,7 +29,7 @@ namespace xlnt {
 fill::fill()
     : type_(type::pattern),
       pattern_type_(pattern_type::none),
-      gradient_type_(gradient_type::linear),
+      gradient_type_(gradient_type::none),
       rotation_(0),
       gradient_path_left_(0),
       gradient_path_right_(0),
@@ -217,6 +217,16 @@ double fill::get_gradient_bottom() const
 void fill::set_background_color(const color &c)
 {
     background_color_ = c;
+}
+
+void fill::set_start_color(const color &c)
+{
+    start_color_ = c;
+}
+
+void fill::set_end_color(const color &c)
+{
+    end_color_ = c;
 }
 
 } // namespace xlnt

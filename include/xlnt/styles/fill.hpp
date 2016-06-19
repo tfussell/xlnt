@@ -45,6 +45,7 @@ public:
 
     enum class gradient_type
     {
+        none,
         linear,
         path
     };
@@ -98,9 +99,13 @@ public:
 
     const std::experimental::optional<color> &get_background_color() const;
 
+    void set_start_color(const color &c);
+
     std::experimental::optional<color> &get_start_color();
 
     const std::experimental::optional<color> &get_start_color() const;
+
+    void set_end_color(const color &c);
 
     std::experimental::optional<color> &get_end_color();
 
