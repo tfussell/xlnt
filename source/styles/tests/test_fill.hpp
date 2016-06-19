@@ -40,6 +40,12 @@ public:
         TS_ASSERT_EQUALS(fill.get_gradient_left(), 0);
         TS_ASSERT_EQUALS(fill.get_gradient_top(), 0);
         TS_ASSERT_EQUALS(fill.get_gradient_right(), 0);
+        
+        const auto &const_fill = fill;
+        TS_ASSERT(const_fill.get_foreground_color());
+        TS_ASSERT(const_fill.get_background_color());
+        TS_ASSERT(const_fill.get_start_color());
+        TS_ASSERT(const_fill.get_end_color());
     }
     
     void test_hash()
@@ -52,12 +58,20 @@ public:
         xlnt::fill pattern_fill;
         pattern_fill.set_type(xlnt::fill::type::pattern);
 
-        xlnt::fill gradient_fill;
-        gradient_fill.set_type(xlnt::fill::type::gradient);
+        xlnt::fill gradient_fill_linear;
+        gradient_fill_linear.set_type(xlnt::fill::type::gradient);
+        gradient_fill_linear.set_gradient_type(xlnt::fill::gradient_type::linear);
+        
+        xlnt::fill gradient_fill_path;
+        gradient_fill_path.set_type(xlnt::fill::type::gradient);
+        gradient_fill_path.set_gradient_type(xlnt::fill::gradient_type::linear);
+        gradient_fill_path.set_start_color(xlnt::color::red());
+        gradient_fill_path.set_end_color(xlnt::color::green());
 
         TS_ASSERT_DIFFERS(none_fill.hash(), solid_fill.hash());
         TS_ASSERT_DIFFERS(solid_fill.hash(), pattern_fill.hash());
-        TS_ASSERT_DIFFERS(pattern_fill.hash(), gradient_fill.hash());
-        TS_ASSERT_DIFFERS(gradient_fill.hash(), none_fill.hash());
+        TS_ASSERT_DIFFERS(pattern_fill.hash(), gradient_fill_linear.hash());
+        TS_ASSERT_DIFFERS(gradient_fill_linear.hash(), gradient_fill_path.hash());
+        TS_ASSERT_DIFFERS(gradient_fill_path.hash(), none_fill.hash());
     }
 };

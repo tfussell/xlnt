@@ -178,9 +178,9 @@ std::string fill::to_hash_string() const
         
         hash_string.append(end_color_ ? "1" : "0");
 
-        if (start_color_)
+        if (end_color_)
         {
-            hash_string.append(std::to_string(background_color_->hash()));
+            hash_string.append(std::to_string(end_color_->hash()));
         }
         
         break;
