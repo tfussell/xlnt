@@ -805,15 +805,26 @@ std::string format_section(long double number, const section &format, xlnt::cale
                 end_text = quoted_text.substr(1, quoted_text.size() - 2);
             }
         }
-        
+
+        result = before_text;
+
         if (number == static_cast<long long int>(number))
         {
-            result = before_text + std::to_string(static_cast<long long int>(number)) + end_text;
+            result.append(std::to_string(static_cast<long long int>(number)));
         }
         else
         {
-            result = before_text + std::to_string(number) + end_text;
+            auto number_string = std::to_string(number);
+            
+            while (number_string.find('.') != std::string::npos && number_string.back() == '0' && number_string.find('.') < number_string.size() - 1)
+            {
+                number_string.erase(number_string.end() - 1);
+            }
+            
+            result.append(number_string);
         }
+
+        result.append(end_text);
     }
     else if (format.value.substr(0, 8) == "#,##0.00" || format.value.substr(0, 9) == "-#,##0.00")
     {

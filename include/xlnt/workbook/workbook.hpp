@@ -212,6 +212,8 @@ public:
     bool has_style(const std::string &name) const;
     style &get_style(const std::string &name);
     const style &get_style(const std::string &name) const;
+    style &get_style_by_id(std::size_t style_id);
+    const style &get_style_by_id(std::size_t style_id) const;
     std::size_t get_style_id(const std::string &name) const;
     style &create_style(const std::string &name);
     std::size_t add_style(const style &new_style);

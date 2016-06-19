@@ -399,7 +399,7 @@ XLNT_FUNCTION void cell::set_value(cell c)
     d_->has_hyperlink_ = c.d_->has_hyperlink_;
     d_->formula_ = c.d_->formula_;
     d_->format_id_ = c.d_->format_id_;
-    set_comment(c.get_comment());
+    if (c.has_comment()) set_comment(c.get_comment());
 }
 
 template <>
@@ -1082,6 +1082,21 @@ void cell::set_style(const std::string &style_name)
     }
     
     d_->style_id_ = get_workbook().get_style_id(style_name);
+}
+
+const style &cell::get_style() const
+{
+    if (!d_->has_style_)
+    {
+        throw std::runtime_error("cell has no style");
+    }
+
+    return get_workbook().get_style_by_id(d_->style_id_);
+}
+
+bool cell::has_style() const
+{
+    return d_->has_style_;
 }
 
 } // namespace xlnt

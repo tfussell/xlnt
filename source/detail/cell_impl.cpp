@@ -47,6 +47,8 @@ cell_impl::cell_impl(worksheet_impl *parent, column_t column, row_t row)
       is_merged_(false),
       has_format_(false),
       format_id_(0),
+      has_style_(false),
+      style_id_(0),
       comment_(nullptr)
 {
 }

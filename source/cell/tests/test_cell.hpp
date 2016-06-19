@@ -2,27 +2,10 @@
 
 #include <ctime>
 #include <iostream>
+#include <sstream>
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/cell/cell.hpp>
-#include <xlnt/cell/cell_reference.hpp>
-#include <xlnt/cell/comment.hpp>
-#include <xlnt/serialization/encoding.hpp>
-#include <xlnt/styles/alignment.hpp>
-#include <xlnt/styles/border.hpp>
-#include <xlnt/styles/font.hpp>
-#include <xlnt/styles/fill.hpp>
-#include <xlnt/styles/format.hpp>
-#include <xlnt/styles/number_format.hpp>
-#include <xlnt/styles/protection.hpp>
-#include <xlnt/utils/date.hpp>
-#include <xlnt/utils/datetime.hpp>
-#include <xlnt/utils/time.hpp>
-#include <xlnt/utils/timedelta.hpp>
-#include <xlnt/utils/exceptions.hpp>
-#include <xlnt/worksheet/range.hpp>
-#include <xlnt/worksheet/worksheet.hpp>
-#include <xlnt/workbook/workbook.hpp>
+#include <xlnt/xlnt.hpp>
 
 class test_cell : public CxxTest::TestSuite
 {
@@ -434,7 +417,9 @@ public:
     {
         auto ws = wb.create_sheet();
         auto cell = ws.get_cell("A1");
-        
+
+        TS_ASSERT(!cell.has_format());
+
         xlnt::protection prot;
         prot.set_locked(xlnt::protection::type::protected_);
 
@@ -443,5 +428,181 @@ public:
         TS_ASSERT(cell.has_format());
         TS_ASSERT(cell.get_format().protection_applied());
         TS_ASSERT_EQUALS(cell.get_protection(), prot);
+        
+        TS_ASSERT(cell.has_format());
+        cell.clear_format();
+        TS_ASSERT(!cell.has_format());
+    }
+    
+    void test_style()
+    {
+        auto ws = wb.create_sheet();
+        auto cell = ws.get_cell("A1");
+        
+        TS_ASSERT(!cell.has_style());
+        
+        auto &test_style = wb.create_style("test_style");
+        test_style.set_number_format(xlnt::number_format::date_ddmmyyyy());
+        
+        cell.set_style(test_style);
+        TS_ASSERT(cell.has_style());
+        TS_ASSERT_EQUALS(cell.get_style().get_number_format(), xlnt::number_format::date_ddmmyyyy());
+        TS_ASSERT_EQUALS(cell.get_style(), test_style);
+
+        auto &other_style = wb.create_style("other_style");
+        other_style.set_number_format(xlnt::number_format::date_time2());
+        
+        cell.set_style("other_style");
+        TS_ASSERT_EQUALS(cell.get_style().get_number_format(), xlnt::number_format::date_time2());
+        TS_ASSERT_EQUALS(cell.get_style(), other_style);
+        
+        xlnt::style last_style;
+        last_style.set_number_format(xlnt::number_format::percentage());
+        
+        cell.set_style(last_style);
+        TS_ASSERT_EQUALS(cell.get_style().get_number_format(), xlnt::number_format::percentage());
+        TS_ASSERT_EQUALS(cell.get_style(), last_style);
+        
+        TS_ASSERT_THROWS(cell.set_style("doesn't exist"), std::runtime_error);
+        
+        cell.clear_style();
+        
+        TS_ASSERT(!cell.has_style());
+        TS_ASSERT_THROWS(cell.get_style(), std::runtime_error);
+    }
+    
+    void test_print()
+    {
+        auto ws = wb.create_sheet();
+
+        {
+            auto cell = ws.get_cell("A1");
+
+            std::stringstream ss;
+            ss << cell;
+
+            auto stream_string = ss.str();
+
+            TS_ASSERT_EQUALS(cell.to_string(), stream_string);
+            TS_ASSERT_EQUALS(stream_string, "");
+        }
+
+        {
+            auto cell = ws.get_cell("A2");
+
+            cell.set_value(false);
+
+            std::stringstream ss;
+            ss << cell;
+
+            auto stream_string = ss.str();
+
+            TS_ASSERT_EQUALS(cell.to_string(), stream_string);
+            TS_ASSERT_EQUALS(stream_string, "FALSE");
+        }
+        
+        {
+            auto cell = ws.get_cell("A3");
+
+            cell.set_value(true);
+
+            std::stringstream ss;
+            ss << cell;
+
+            auto stream_string = ss.str();
+
+            TS_ASSERT_EQUALS(cell.to_string(), stream_string);
+            TS_ASSERT_EQUALS(stream_string, "TRUE");
+        }
+        
+        {
+            auto cell = ws.get_cell("A4");
+
+            cell.set_value(1.234);
+
+            std::stringstream ss;
+            ss << cell;
+
+            auto stream_string = ss.str();
+
+            TS_ASSERT_EQUALS(cell.to_string(), stream_string);
+            TS_ASSERT_EQUALS(stream_string, "1.234");
+        }
+        
+        {
+            auto cell = ws.get_cell("A5");
+
+            cell.set_error("#REF");
+
+            std::stringstream ss;
+            ss << cell;
+
+            auto stream_string = ss.str();
+
+            TS_ASSERT_EQUALS(cell.to_string(), stream_string);
+            TS_ASSERT_EQUALS(stream_string, "#REF");
+        }
+        
+        {
+            auto cell = ws.get_cell("A6");
+
+            cell.set_value("test");
+
+            std::stringstream ss;
+            ss << cell;
+
+            auto stream_string = ss.str();
+
+            TS_ASSERT_EQUALS(cell.to_string(), stream_string);
+            TS_ASSERT_EQUALS(stream_string, "test");
+        }
+    }
+
+    void test_values()
+    {
+        auto ws = wb.create_sheet();
+        auto cell = ws.get_cell("A1");
+        
+        cell.set_value(static_cast<std::int8_t>(4));
+        TS_ASSERT_EQUALS(cell.get_value<int8_t>(), 4);
+
+        cell.set_value(static_cast<std::uint8_t>(3));
+        TS_ASSERT_EQUALS(cell.get_value<std::uint8_t>(), 3);
+
+        cell.set_value(static_cast<std::int16_t>(4));
+        TS_ASSERT_EQUALS(cell.get_value<int16_t>(), 4);
+
+        cell.set_value(static_cast<std::uint16_t>(3));
+        TS_ASSERT_EQUALS(cell.get_value<std::uint16_t>(), 3);
+
+        cell.set_value(static_cast<std::int32_t>(4));
+        TS_ASSERT_EQUALS(cell.get_value<int32_t>(), 4);
+
+        cell.set_value(static_cast<std::uint32_t>(3));
+        TS_ASSERT_EQUALS(cell.get_value<std::uint32_t>(), 3);
+
+        cell.set_value(static_cast<std::int64_t>(4));
+        TS_ASSERT_EQUALS(cell.get_value<int64_t>(), 4);
+
+        cell.set_value(static_cast<std::uint64_t>(3));
+        TS_ASSERT_EQUALS(cell.get_value<std::uint64_t>(), 3);
+        
+        cell.set_value(static_cast<unsigned long long>(4));
+        TS_ASSERT_EQUALS(cell.get_value<unsigned long long>(), 4);
+
+        cell.set_value(static_cast<float>(3.14));
+        TS_ASSERT_DELTA(cell.get_value<float>(), 3.14, 0.001);
+
+        cell.set_value(static_cast<double>(4.1415));
+        TS_ASSERT_EQUALS(cell.get_value<double>(), 4.1415);
+
+        cell.set_value(static_cast<long double>(3.141592));
+        TS_ASSERT_EQUALS(cell.get_value<long double>(), 3.141592);
+
+        auto cell2 = ws.get_cell("A2");
+        cell2.set_value("test");
+        cell.set_value(cell2);
+        
+        TS_ASSERT_EQUALS(cell.get_value<std::string>(), "test");
     }
 };

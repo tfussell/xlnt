@@ -779,6 +779,16 @@ const style &workbook::get_style(const std::string &name) const
         [&name](const style &s) { return s.get_name() == name; });
 }
 
+style &workbook::get_style_by_id(std::size_t style_id)
+{
+    return d_->stylesheet_.styles.at(style_id);
+}
+
+const style &workbook::get_style_by_id(std::size_t style_id) const
+{
+    return d_->stylesheet_.styles.at(style_id);
+}
+
 std::string workbook::next_relationship_id() const
 {
     std::size_t i = 1;
