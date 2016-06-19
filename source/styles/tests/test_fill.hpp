@@ -64,7 +64,7 @@ public:
         
         xlnt::fill gradient_fill_path;
         gradient_fill_path.set_type(xlnt::fill::type::gradient);
-        gradient_fill_path.set_gradient_type(xlnt::fill::gradient_type::linear);
+        gradient_fill_path.set_gradient_type(xlnt::fill::gradient_type::path);
         gradient_fill_path.set_start_color(xlnt::color::red());
         gradient_fill_path.set_end_color(xlnt::color::green());
 
