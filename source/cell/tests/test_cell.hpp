@@ -607,14 +607,5 @@ public:
     {
         xlnt::cell cell;
         TS_ASSERT_EQUALS(cell, nullptr);
-
-        auto ws = wb.create_sheet();
-        auto cell2 = ws.get_cell("A1");
-/*
-        cell2.set_value("test");
-        cell = cell2;
-        
-        TS_ASSERT_EQUALS(cell.get_value<std::string>(), "test");
-*/
     }
 };
