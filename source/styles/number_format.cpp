@@ -200,7 +200,7 @@ bool is_valid_color(const std::string &color)
         new std::vector<std::string>(
         {
             "Black",
-            "Green"
+            "Green",
             "White",
             "Blue",
             "Magenta",
