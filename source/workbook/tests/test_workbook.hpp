@@ -38,8 +38,11 @@ public:
     {
         xlnt::workbook wb;
         auto new_sheet = wb.create_sheet();
+        new_sheet.get_cell("A6").set_value(1.498);
         wb.add_sheet(new_sheet);
         TS_ASSERT(wb[1].compare(wb[2], false));
+        wb.create_sheet().get_cell("A6").set_value(1.497);
+        TS_ASSERT(!wb[1].compare(wb[3], false));
     }
     
     // void test_add_sheetname() {} unnecessary

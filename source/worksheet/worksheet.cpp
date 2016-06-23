@@ -559,28 +559,6 @@ void worksheet::append(const std::vector<int> &cells)
     }
 }
 
-void worksheet::append(const std::vector<date> &cells)
-{
-    xlnt::cell_reference next(1, get_next_row());
-
-    for (const auto &cell : cells)
-    {
-        get_cell(next).set_value(cell);
-        next.set_column_index(next.get_column_index() + 1);
-    }
-}
-
-void worksheet::append(const std::vector<cell> &cells)
-{
-    xlnt::cell_reference next(1, get_next_row());
-
-    for (auto cell : cells)
-    {
-        get_cell(next).set_value(cell);
-        next.set_column_index(next.get_column_index() + 1);
-    }
-}
-
 void worksheet::append(const std::unordered_map<std::string, std::string> &cells)
 {
     auto row = get_next_row();
@@ -667,7 +645,15 @@ bool worksheet::compare(const worksheet &other, bool reference) const
                 return false;
             }
             
-            if(!(cell.second.self() == other.d_->cell_map_[row.first][cell.first].self()))
+            auto this_cell = cell.second.self();
+            auto other_cell = other.d_->cell_map_[row.first][cell.first].self();
+
+            if (this_cell.get_data_type() != other_cell.get_data_type())
+            {
+                return false;
+            }
+
+            if (this_cell.get_data_type() == xlnt::cell::type::numeric && this_cell.get_value<long double>() != other_cell.get_value<long double>())
             {
                 return false;
             }

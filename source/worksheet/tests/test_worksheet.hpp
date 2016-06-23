@@ -195,6 +195,12 @@ public:
         TS_ASSERT_EQUALS(1, xlrange.length());
         TS_ASSERT_EQUALS(1, xlrange[0].num_cells());
         TS_ASSERT_EQUALS(5, xlrange[0][0].get_row());
+
+        ws.create_named_range("test_range2", "C6");
+        auto xlrange2 = ws.get_named_range("test_range2");
+        TS_ASSERT_EQUALS(1, xlrange2.length());
+        TS_ASSERT_EQUALS(1, xlrange2[0].num_cells());
+        TS_ASSERT_EQUALS(6, xlrange2[0][0].get_row());
     }
     
     void test_get_bad_named_range()
@@ -215,6 +221,13 @@ public:
         TS_ASSERT_THROWS(ws2.get_named_range("wrong_sheet_range"), xlnt::named_range_exception);
     }
     
+    void test_remove_named_range_bad()
+    {
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
+        TS_ASSERT_THROWS(ws.remove_named_range("bad_range"), std::runtime_error);
+    }
+
     void test_cell_alternate_coordinates()
     {
         xlnt::workbook wb;
@@ -490,6 +503,7 @@ public:
     {
         xlnt::workbook wb;
         xlnt::worksheet ws(wb);
+        ws.get_cell("A2").set_value("test");
         ws.merge_cells("A1:N50");
         auto all_merged = ws.get_merged_ranges();
         TS_ASSERT_EQUALS(all_merged.size(), 1);
@@ -529,6 +543,14 @@ public:
         TS_ASSERT_EQUALS(ws.get_merged_ranges(), expected);
     }
     
+    void test_unmerge_bad()
+    {
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
+
+        TS_ASSERT_THROWS(ws.unmerge_cells("A1:D3"), std::runtime_error);
+    }
+
     void test_unmerge_range_string()
     {
         xlnt::workbook wb;
@@ -538,7 +560,7 @@ public:
         ws.unmerge_cells("A1:D4");
         TS_ASSERT_EQUALS(ws.get_merged_ranges().size(), 0);
     }
-    
+
     void test_unmerge_coordinate()
     {
         xlnt::workbook wb;
@@ -548,7 +570,7 @@ public:
         ws.unmerge_cells(1, 1, 4, 4);
         TS_ASSERT_EQUALS(ws.get_merged_ranges().size(), 0);
     }
-    
+
     void test_print_titles_old()
     {
         xlnt::workbook wb;
@@ -943,5 +965,155 @@ public:
         ws.get_page_setup().set_scale(1.23);
         TS_ASSERT_EQUALS(ws.get_page_setup().get_scale(), 1.23);
         TS_ASSERT(!ws.get_page_setup().is_default());
+    }
+
+    void test_unique_sheet_name()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.get_active_sheet();
+
+        auto active_name = ws.get_title();
+        auto next_name = ws.unique_sheet_name(active_name);
+
+        TS_ASSERT_DIFFERS(active_name, next_name);
+    }
+
+    void test_page_margins()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.get_active_sheet();
+        ws.get_page_margins();
+        //TODO: uhh... this isn't a test
+    }
+
+    void test_to_string()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.get_active_sheet();
+        auto ws_string = ws.to_string();
+        TS_ASSERT_EQUALS(ws_string, "<Worksheet \"Sheet\">");
+    }
+
+    void test_garbage_collect()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.get_active_sheet();
+
+        auto dimensions = ws.calculate_dimension();
+        TS_ASSERT_EQUALS(dimensions, xlnt::range_reference("A1", "A1"));
+
+        ws.get_cell("B2").set_value("text");
+        ws.garbage_collect();
+
+        dimensions = ws.calculate_dimension();
+        TS_ASSERT_EQUALS(dimensions, xlnt::range_reference("B2", "B2"));
+    }
+
+    void test_get_title_bad()
+    {
+        xlnt::worksheet ws;
+        TS_ASSERT_THROWS(ws.get_title(), std::runtime_error);
+    }
+
+    void test_has_cell()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.get_active_sheet();
+
+        ws.get_cell("A3").set_value("test");
+
+        TS_ASSERT(!ws.has_cell("A2"));
+        TS_ASSERT(ws.has_cell("A3"));
+    }
+
+    void test_get_range_by_string()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.get_active_sheet();
+
+        ws.get_cell("A2").set_value(3.14);
+        ws.get_cell("B3").set_value(false);
+
+        auto range = ws.get_range("A2:B3");
+        TS_ASSERT_EQUALS((*(*range.begin()).begin()).get_value<double>(), 3.14);
+        TS_ASSERT_EQUALS((*(--(*(--range.end())).end())).get_value<double>(), false);
+    }
+
+    void test_get_squared_range()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.get_active_sheet();
+
+        ws.get_cell("A2").set_value(3.14);
+        ws.get_cell("B3").set_value(false);
+
+        auto range = ws.get_squared_range(1, 2, 2, 3);
+        TS_ASSERT_EQUALS((*(*range.begin()).begin()).get_value<double>(), 3.14);
+        TS_ASSERT_EQUALS((*(--(*(--range.end())).end())).get_value<double>(), false);
+    }
+
+    void test_operators()
+    {
+        xlnt::workbook wb;
+
+        wb.create_sheet();
+        wb.create_sheet();
+
+        auto ws1 = wb[1];
+        auto ws2 = wb[2];
+
+        TS_ASSERT_DIFFERS(ws1, ws2);
+
+        ws1[xlnt::cell_reference("A2")].set_value(true);
+
+        const auto ws1_const = ws1;
+        TS_ASSERT_EQUALS(ws1[xlnt::cell_reference("A2")].get_value<bool>(), true);
+        TS_ASSERT_EQUALS((*(*ws1[xlnt::range_reference("A2:A2")].begin()).begin()).get_value<bool>(), true);
+
+        ws1.create_named_range("rangey", "A2:A2");
+        TS_ASSERT_EQUALS(ws1[std::string("rangey")], ws1.get_range("A2:A2"));
+        TS_ASSERT_EQUALS(ws1[std::string("A2:A2")], ws1.get_range("A2:A2"));
+    }
+
+    void test_reserve()
+    {
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
+
+        ws.reserve(1000);
+        //TODO: actual tests go here
+    }
+
+    void test_iterate()
+    {
+        xlnt::workbook wb;
+        xlnt::worksheet ws(wb);
+
+        ws.get_cell("B3").set_value("B3");
+        ws.get_cell("C7").set_value("C7");
+
+        for (auto row : ws)
+        {
+            for (auto cell : row)
+            {
+                if (cell.has_value())
+                {
+                    TS_ASSERT_EQUALS(cell.get_reference().to_string(), cell.get_value<std::string>());
+                }
+            }
+        }
+
+        const auto ws_const = ws;
+
+        for (auto row : ws_const)
+        {
+            for (auto cell : row)
+            {
+                if (cell.has_value())
+                {
+                    TS_ASSERT_EQUALS(cell.get_reference().to_string(), cell.get_value<std::string>());
+                }
+            }
+        }
     }
 };

@@ -159,8 +159,6 @@ public:
     void append();
     void append(const std::vector<std::string> &cells);
     void append(const std::vector<int> &cells);
-    void append(const std::vector<date> &cells);
-    void append(const std::vector<cell> &cells);
     void append(const std::unordered_map<std::string, std::string> &cells);
     void append(const std::unordered_map<int, std::string> &cells);
 
