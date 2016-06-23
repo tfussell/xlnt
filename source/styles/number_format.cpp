@@ -274,9 +274,7 @@ bool parse_condition(const std::string &string, section &s)
 
 bool is_hex(char c)
 {
-    if (c >= 'A' || c <= 'F') return true;
-    if (c >= '0' || c <= '9') return true;
-    return false;
+    return (c >= 'A' && c <= 'F') || (c >= '0' && c <= '9');
 }
 
 const std::unordered_map<int, std::string> known_locales()
@@ -446,6 +444,11 @@ bool is_valid_locale(const std::string &locale_string)
 
 section parse_section(const std::string &section_string)
 {
+    if (section_string.empty())
+    {
+        throw std::runtime_error("empty format");
+    }
+
     section s;
 
     std::string format_part;
@@ -496,7 +499,7 @@ section parse_section(const std::string &section_string)
 
                 if (is_valid_color(bracket_part))
                 {
-                    if (s.color.empty())
+                    if (!s.has_color)
                     {
                         s.color = bracket_part;
                         s.has_color = true;
@@ -508,7 +511,7 @@ section parse_section(const std::string &section_string)
                 }
                 else if (is_valid_locale(bracket_part))
                 {
-                    if (s.locale.empty())
+                    if (!s.has_locale)
                     {
                         s.locale = bracket_part;
                         s.has_locale = true;
@@ -547,12 +550,6 @@ format_sections parse_format_sections(const std::string &combined)
     format_sections result = {};
 
     auto split = split_string(combined, ';');
-
-    if (split.empty())
-    {
-        throw std::runtime_error("empty string");
-    }
-
     result.first = parse_section(split[0]);
 
     if (!result.first.has_condition)
@@ -806,15 +803,20 @@ std::string format_section(long double number, const section &format, xlnt::cale
             }
         }
 
+        if (number < 0)
+        {
+            before_text = std::string("-") + before_text;
+        }
+
         result = before_text;
 
         if (number == static_cast<long long int>(number))
         {
-            result.append(std::to_string(static_cast<long long int>(number)));
+            result.append(std::to_string(static_cast<long long int>(std::abs(number))));
         }
         else
         {
-            auto number_string = std::to_string(number);
+            auto number_string = std::to_string(std::abs(number));
             
             while (number_string.find('.') != std::string::npos && number_string.back() == '0' && number_string.find('.') < number_string.size() - 1)
             {

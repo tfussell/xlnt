@@ -9,6 +9,19 @@
 class test_number_format : public CxxTest::TestSuite
 {
 public:
+    void test_simple_format()
+    {
+        xlnt::number_format nf;
+
+        nf.set_format_string("\"positive\"General;\"negative\"General");
+        auto formatted = nf.format(3.14, xlnt::calendar::windows_1900);
+        TS_ASSERT_EQUALS(formatted, "positive3.14");
+
+        nf.set_format_string("\"positive\"General;\"negative\"General");
+        formatted = nf.format(-3.14, xlnt::calendar::windows_1900);
+        TS_ASSERT_EQUALS(formatted, "-negative3.14");
+    }
+
     void test_simple_date()
     {
         auto date = xlnt::date(2016, 6, 18);
@@ -45,9 +58,9 @@ public:
     {
         xlnt::number_format nf;
 
-        nf.set_format_string("[>5]\"first\"General;[>3]\"second\"General;\"third\"General");
+        nf.set_format_string("[>5]General\"first\";[>3]\"second\"General;\"third\"General");
         auto formatted = nf.format(6, xlnt::calendar::windows_1900);
-        TS_ASSERT_EQUALS(formatted, "first6");
+        TS_ASSERT_EQUALS(formatted, "6first");
         formatted = nf.format(4, xlnt::calendar::windows_1900);
         TS_ASSERT_EQUALS(formatted, "second4");
         formatted = nf.format(5, xlnt::calendar::windows_1900);
@@ -81,7 +94,7 @@ public:
 
         nf.set_format_string("[<=1]\"first\"General;[<=5]\"second\"General;\"third\"General");
         formatted = nf.format(-1000, xlnt::calendar::windows_1900);
-        TS_ASSERT_EQUALS(formatted, "first-1000");
+        TS_ASSERT_EQUALS(formatted, "-first1000");
         formatted = nf.format(0, xlnt::calendar::windows_1900);
         TS_ASSERT_EQUALS(formatted, "first0");
         formatted = nf.format(1, xlnt::calendar::windows_1900);
@@ -109,9 +122,68 @@ public:
     void test_locale_currency()
     {
         xlnt::number_format nf;
-        nf.set_format_string("[$€-407]#,##0.00");
-        
+
+        nf.set_format_string("[$€-407]-#,##0.00");
         auto formatted = nf.format(1.2, xlnt::calendar::windows_1900);
-        TS_ASSERT_EQUALS(formatted, "€1,20");
+        TS_ASSERT_EQUALS(formatted, "-€1,20");
+
+        nf.set_format_string("[$$-1009]#,##0.00");
+        formatted = nf.format(1.2, xlnt::calendar::windows_1900);
+        TS_ASSERT_EQUALS(formatted, "CA$1,20");
+        
+    }
+    
+    void test_bad_country()
+    {
+        xlnt::number_format nf;
+
+        nf.set_format_string("[$-]#,##0.00");
+        TS_ASSERT_THROWS(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+
+        nf.set_format_string("[$-G]#,##0.00");
+        TS_ASSERT_THROWS(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+
+        nf.set_format_string("[$-4002]#,##0.00");
+        TS_ASSERT_THROWS(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+
+        nf.set_format_string("[-4001]#,##0.00");
+        TS_ASSERT_THROWS(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+    }
+
+    void test_duplicate_bracket_sections()
+    {
+        xlnt::number_format nf;
+
+        nf.set_format_string("[Red][Green]#,##0.00");
+        TS_ASSERT_THROWS(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+
+        nf.set_format_string("[$-403][$-4001]#,##0.00");
+        TS_ASSERT_THROWS(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+
+        nf.set_format_string("[>3][>4]#,##0.00");
+        TS_ASSERT_THROWS(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+    }
+    
+    void test_bad_format()
+    {
+        xlnt::number_format nf;
+
+        nf.set_format_string("");
+        TS_ASSERT_THROWS(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+
+        nf.set_format_string(";;;");
+        TS_ASSERT_THROWS(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+
+        nf.set_format_string("[=1]\"first\"General;\"second\"General;\"third\"General");
+        TS_ASSERT_THROWS(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+
+        nf.set_format_string("[=1]\"first\"General;\"second\"General;[=3]\"third\"General");
+        TS_ASSERT_THROWS(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+
+        nf.set_format_string("[=1]\"first\"General;[=2]\"second\"General;\"third\"General;\"fourth\"General");
+        TS_ASSERT_THROWS(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+
+        nf.set_format_string("\"first\"General;\"second\"General;\"third\"General;\"fourth\"General;\"fifth\"General");
+        TS_ASSERT_THROWS(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
     }
 };
