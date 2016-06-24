@@ -615,7 +615,7 @@ std::string format_section(long double number, const section &format, xlnt::cale
         auto value = format.value;
         bool twelve_hour = false;
         
-        if (lower_string(value).substr(format.value.size() - 5) == "am/pm")
+        if (format.value.size() > 5 && lower_string(value).substr(format.value.size() - 5) == "am/pm")
         {
             twelve_hour = true;
         }
@@ -733,7 +733,6 @@ std::string format_section(long double number, const section &format, xlnt::cale
                     result.append(std::to_string(d.hour));
                 }
 
-                result.append(std::to_string(d.hour));
                 processed_month = true;
             }
             else if (part == "m")
@@ -828,27 +827,28 @@ std::string format_section(long double number, const section &format, xlnt::cale
 
         result.append(end_text);
     }
-    else if (format.value.substr(0, 8) == "#,##0.00" || format.value.substr(0, 9) == "-#,##0.00")
+    else if (format.value.find("#,##0.00") != std::string::npos)
     {
-        if (format.value[0] == '-')
+        auto index = format.value.find("#,##0.00");
+        auto before_text = format.value.substr(0, index);
+        auto after_text = format.value.substr(index + 8);
+        bool minus_first = before_text.substr(0, 1) == "-";
+
+        if (minus_first)
         {
-            result = "-";
+            before_text = before_text.substr(1);
         }
 
         if (format.has_locale && format.locale == "$$-1009")
         {
-            result += "CA$";
+            before_text = std::string(minus_first ? "-" : "") + "CA$" + before_text;
         }
         else if (format.has_locale && format.locale == "$€-407")
         {
-            result += "€";
-        }
-        else
-        {
-            result += "$";
+            before_text = std::string(minus_first ? "-" : "") + "€" + before_text;
         }
 
-        result += std::to_string(number < 0 ? -number : number);
+        result = before_text + std::to_string(number < 0 ? -number : number) + after_text;
 
         auto decimal_pos = result.find('.');
 
@@ -948,7 +948,7 @@ std::string format_number(long double number, const std::string &format, xlnt::c
 
 std::string format_text(const std::string &text, const std::string &format)
 {
-    if (format == "General") return text;
+    if (format == "General" || format == "@") return text;
     auto sections = parse_format_sections(format);
     return format_section(text, sections.fourth);
 }
@@ -984,12 +984,6 @@ const number_format number_format::number_00()
 const number_format number_format::number_comma_separated1()
 {
     static const number_format *format = new number_format(builtin_formats().at(4), 4);
-    return *format;
-}
-
-const number_format number_format::number_comma_separated2()
-{
-    static const number_format *format = new number_format("#,##0.00_-");
     return *format;
 }
 

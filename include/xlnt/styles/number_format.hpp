@@ -44,7 +44,6 @@ public:
     static const number_format number();
     static const number_format number_00();
     static const number_format number_comma_separated1();
-    static const number_format number_comma_separated2();
     static const number_format percentage();
     static const number_format percentage_00();
     static const number_format date_yyyymmdd2();
