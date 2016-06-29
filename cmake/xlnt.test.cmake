@@ -25,8 +25,8 @@ FILE(GLOB TEST_HELPERS_SOURCES tests/helpers/*.cpp)
 
 SET(TEST_HELPERS ${TEST_HELPERS_HEADERS} ${TEST_HELPERS_SOURCES})
 
-file(WRITE tests/runner-autogen.cpp "#error This file should be generated from tests before compiling")
-SET(RUNNER tests/runner-autogen.cpp)
+SET(RUNNER "${CMAKE_CURRENT_BINARY_DIR}/tests/runner-autogen.cpp")
+SET_SOURCE_FILES_PROPERTIES(${RUNNER} PROPERTIES GENERATED TRUE)
 
 add_executable(xlnt.test ${TEST_HELPERS} ${TESTS} ${RUNNER} )
 
@@ -59,9 +59,13 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
     target_link_libraries(xlnt.test Shlwapi)
 endif()
 
-add_custom_target (generate-test-runner
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/cmake/generate-tests
+add_custom_command(OUTPUT ${RUNNER}
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/cmake/generate-tests ${CMAKE_CURRENT_BINARY_DIR}
+    DEPENDS ${TESTS}
+    IMPLICIT_DEPENDS CXX ${TESTS}
     COMMENT "Generating test runner ${RUNNER}"
 )
+
+add_custom_target(generate-test-runner DEPENDS ${RUNNER})
 
 add_dependencies(xlnt.test generate-test-runner)

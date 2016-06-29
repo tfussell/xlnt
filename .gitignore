@@ -12,4 +12,3 @@ docs/doxyxml/
 #*#
 *~
 .DS_Store
-tests/runner-autogen.cpp
