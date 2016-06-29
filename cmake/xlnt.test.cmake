@@ -25,6 +25,7 @@ FILE(GLOB TEST_HELPERS_SOURCES tests/helpers/*.cpp)
 
 SET(TEST_HELPERS ${TEST_HELPERS_HEADERS} ${TEST_HELPERS_SOURCES})
 
+file(WRITE tests/runner-autogen.cpp "#error This file should be generated from tests before compiling")
 SET(RUNNER tests/runner-autogen.cpp)
 
 add_executable(xlnt.test ${TEST_HELPERS} ${TESTS} ${RUNNER} )
