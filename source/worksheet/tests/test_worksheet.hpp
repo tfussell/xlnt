@@ -1036,7 +1036,7 @@ public:
 
         auto range = ws.get_range("A2:B3");
         TS_ASSERT_EQUALS((*(*range.begin()).begin()).get_value<double>(), 3.14);
-        TS_ASSERT_EQUALS((*(--(*(--range.end())).end())).get_value<double>(), false);
+        TS_ASSERT_EQUALS((*(--(*(--range.end())).end())).get_value<bool>(), false);
     }
 
     void test_get_squared_range()
@@ -1049,7 +1049,7 @@ public:
 
         auto range = ws.get_squared_range(1, 2, 2, 3);
         TS_ASSERT_EQUALS((*(*range.begin()).begin()).get_value<double>(), 3.14);
-        TS_ASSERT_EQUALS((*(--(*(--range.end())).end())).get_value<double>(), false);
+        TS_ASSERT_EQUALS((*(--(*(--range.end())).end())).get_value<bool>(), false);
     }
 
     void test_operators()
