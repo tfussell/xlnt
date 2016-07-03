@@ -141,7 +141,7 @@ const std::unordered_map<int, std::string> known_locales()
     return *all;
 }
 
-bool condition::satisfied_by(long double number) const
+bool format_condition::satisfied_by(long double number) const
 {
     switch (type)
     {
@@ -199,9 +199,9 @@ void number_format_parser::parse()
             throw std::runtime_error("bad format");
 
         case number_format_token::token_type::color:
-            if (section.color != bracket_color::none
-                || section.condition.type != condition::condition_type::none
-                || section.locale != locale::none
+            if (section.color != format_color::none
+                || section.condition.type != format_condition::condition_type::none
+                || section.locale != format_locale::none
                 || !section.parts.empty())
             {
                 throw std::runtime_error("color should be the first part of a format");
@@ -212,7 +212,7 @@ void number_format_parser::parse()
 
         case number_format_token::token_type::locale:
         {
-            if (section.locale != locale::none)
+            if (section.locale != format_locale::none)
             {
                 throw std::runtime_error("multiple locales");
             }
@@ -233,7 +233,7 @@ void number_format_parser::parse()
 
         case number_format_token::token_type::condition:
         {
-            if (section.condition.type != condition::condition_type::none)
+            if (section.condition.type != format_condition::condition_type::none)
             {
                 throw std::runtime_error("multiple conditions");
             }
@@ -244,17 +244,17 @@ void number_format_parser::parse()
             {
                 if (token.string[1] == '=')
                 {
-                    section.condition.type = condition::condition_type::less_or_equal;
+                    section.condition.type = format_condition::condition_type::less_or_equal;
                     value = token.string.substr(2);
                 }
                 else if (token.string[1] == '>')
                 {
-                    section.condition.type = condition::condition_type::not_equal;
+                    section.condition.type = format_condition::condition_type::not_equal;
                     value = token.string.substr(2);
                 }
                 else
                 {
-                    section.condition.type = condition::condition_type::less_than;
+                    section.condition.type = format_condition::condition_type::less_than;
                     value = token.string.substr(1);
                 }
             }
@@ -262,18 +262,18 @@ void number_format_parser::parse()
             {
                 if (token.string[1] == '=')
                 {
-                    section.condition.type = condition::condition_type::greater_or_equal;
+                    section.condition.type = format_condition::condition_type::greater_or_equal;
                     value = token.string.substr(2);
                 }
                 else
                 {
-                    section.condition.type = condition::condition_type::greater_than;
+                    section.condition.type = format_condition::condition_type::greater_than;
                     value = token.string.substr(1);
                 }
             }
             else if (token.string.front() == '=')
             {
-                section.condition.type = condition::condition_type::equal;
+                section.condition.type = format_condition::condition_type::equal;
                 value = token.string.substr(1);
             }
             
@@ -706,32 +706,32 @@ void number_format_parser::validate()
 
     if (codes_.size() > 2)
     {
-        if (codes_[0].condition.type != condition::condition_type::none &&
-            codes_[1].condition.type != condition::condition_type::none &&
-            codes_[2].condition.type != condition::condition_type::none)
+        if (codes_[0].condition.type != format_condition::condition_type::none &&
+            codes_[1].condition.type != format_condition::condition_type::none &&
+            codes_[2].condition.type != format_condition::condition_type::none)
         {
             throw std::runtime_error("format should have a maximum of two codes with conditions");
         }
     }
 }
 
-placeholders number_format_parser::parse_placeholders(const std::string &placeholders_string)
+format_placeholders number_format_parser::parse_placeholders(const std::string &placeholders_string)
 {
-    placeholders p;
+    format_placeholders p;
 
     if (placeholders_string == "General")
     {
-        p.type = placeholders::placeholders_type::general;
+        p.type = format_placeholders::placeholders_type::general;
         return p;
     }
     else if (placeholders_string == "@")
     {
-        p.type = placeholders::placeholders_type::text;
+        p.type = format_placeholders::placeholders_type::text;
         return p;
     }
     else if (placeholders_string.front() == '.')
     {
-        p.type = placeholders::placeholders_type::fractional_part;
+        p.type = format_placeholders::placeholders_type::fractional_part;
     }
 
     std::vector<std::size_t> comma_indices;
@@ -775,14 +775,14 @@ placeholders number_format_parser::parse_placeholders(const std::string &placeho
     return p;
 }
 
-bracket_color number_format_parser::color_from_string(const std::string &color)
+format_color number_format_parser::color_from_string(const std::string &color)
 {
     switch (color[0])
     {
     case 'C':
         if (color == "Cyan")
         {
-            return bracket_color::cyan;
+            return format_color::cyan;
         }
         else if (color.substr(0, 5) == "Color")
         {
@@ -790,50 +790,50 @@ bracket_color number_format_parser::color_from_string(const std::string &color)
 
             if (color_number >= 1 && color_number <= 56)
             {
-                return static_cast<bracket_color>(color_number);
+                return static_cast<format_color>(color_number);
             }
         }
     case 'B':
         if (color == "Black")
         {
-            return bracket_color::black;
+            return format_color::black;
         }
         else if (color == "Blue")
         {
-            return bracket_color::blue;
+            return format_color::blue;
         }
     case 'G':
         if (color == "Green")
         {
-            return bracket_color::black;
+            return format_color::black;
         }
     case 'W':
         if (color == "White")
         {
-            return bracket_color::white;
+            return format_color::white;
         }
     case 'M':
         if (color == "Magenta")
         {
-            return bracket_color::white;
+            return format_color::white;
         }
-        return bracket_color::magenta;
+        return format_color::magenta;
     case 'Y':
         if (color == "Yellow")
         {
-            return bracket_color::white;
+            return format_color::white;
         }
     case 'R':
         if (color == "Red")
         {
-            return bracket_color::white;
+            return format_color::white;
         }
     default:
         throw std::runtime_error("bad color: " + color);
     }
 }
 
-std::pair<locale, std::string> number_format_parser::locale_from_string(const std::string &locale_string)
+std::pair<format_locale, std::string> number_format_parser::locale_from_string(const std::string &locale_string)
 {
     auto hyphen_index = locale_string.find('-');
 
@@ -842,7 +842,7 @@ std::pair<locale, std::string> number_format_parser::locale_from_string(const st
         throw std::runtime_error("bad locale: " + locale_string);
     }
 
-    std::pair<locale, std::string> result;
+    std::pair<format_locale, std::string> result;
 
     if (hyphen_index > 1)
     {
@@ -870,7 +870,7 @@ std::pair<locale, std::string> number_format_parser::locale_from_string(const st
     {
         if (known_locale.first == country_code)
         {
-            result.first = static_cast<locale>(country_code);
+            result.first = static_cast<format_locale>(country_code);
             return result;
         }
     }
@@ -888,7 +888,7 @@ number_formatter::number_formatter(const std::string &format_string, xlnt::calen
 
 std::string number_formatter::format_number(long double number)
 {
-    if (format_[0].condition.type != condition::condition_type::none)
+    if (format_[0].condition.type != format_condition::condition_type::none)
     {
         if (format_[0].condition.satisfied_by(number))
         {
@@ -900,7 +900,8 @@ std::string number_formatter::format_number(long double number)
             return std::string(11, '#');
         }
         
-        if (format_[1].condition.type == condition::condition_type::none || format_[1].condition.satisfied_by(number))
+        if (format_[1].condition.type == format_condition::condition_type::none
+            || format_[1].condition.satisfied_by(number))
         {
             return format_number(format_[1], number);
         }
@@ -960,9 +961,9 @@ std::string number_formatter::format_text(const std::string &text)
     return format_text(format_[3], text);
 }
 
-std::string number_formatter::fill_placeholders(const placeholders &p, long double number)
+std::string number_formatter::fill_placeholders(const format_placeholders &p, long double number)
 {
-    if (p.type == placeholders::placeholders_type::general)
+    if (p.type == format_placeholders::placeholders_type::general)
     {
         auto result = std::to_string(number);
 
@@ -981,7 +982,7 @@ std::string number_formatter::fill_placeholders(const placeholders &p, long doub
 
     auto integer_part = static_cast<int>(number);
 
-    if (p.type != placeholders::placeholders_type::fractional_part)
+    if (p.type != format_placeholders::placeholders_type::fractional_part)
     {
         auto result = std::to_string(integer_part);
         
@@ -1194,8 +1195,8 @@ std::string number_formatter::format_text(const format_code &format, const std::
             break;
 
         case template_part::template_type::general:
-            if (part.placeholders.type == placeholders::placeholders_type::general
-                || part.placeholders.type == placeholders::placeholders_type::text)
+            if (part.placeholders.type == format_placeholders::placeholders_type::general
+                || part.placeholders.type == format_placeholders::placeholders_type::text)
             {
                 result.append(text);
             }

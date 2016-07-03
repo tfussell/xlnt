@@ -32,7 +32,7 @@
 namespace xlnt {
 namespace detail {
 
-enum class bracket_color
+enum class format_color
 {
     none,
     black,
@@ -101,7 +101,7 @@ enum class bracket_color
     color56
 };
 
-enum class locale
+enum class format_locale
 {
     none = 0,
     arabic_saudi_arabia = 0x401,
@@ -211,7 +211,7 @@ enum class locale
     arabic_qatar = 0x4001
 };
 
-struct condition
+struct format_condition
 {
     enum class condition_type
     {
@@ -229,7 +229,7 @@ struct condition
     bool satisfied_by(long double number) const;
 };
 
-struct placeholders
+struct format_placeholders
 {
     enum class placeholders_type
     {
@@ -308,14 +308,14 @@ struct template_part
     } type = template_type::bad;
 
     std::string string;
-    placeholders placeholders;
+    format_placeholders placeholders;
 };
 
 struct format_code
 {
-    bracket_color color = bracket_color::none;
-    locale locale = locale::none;
-    condition condition;
+    format_color color = format_color::none;
+    format_locale locale = format_locale::none;
+    format_condition condition;
     bool is_datetime = false;
     bool is_timedelta = false;
     bool twelve_hour = false;
@@ -336,9 +336,9 @@ private:
 
     number_format_token parse_next_token();
 
-    placeholders parse_placeholders(const std::string &placeholders_string);
-    bracket_color color_from_string(const std::string &color);
-    std::pair<locale, std::string> locale_from_string(const std::string &locale_string);
+    format_placeholders parse_placeholders(const std::string &placeholders_string);
+    format_color color_from_string(const std::string &color);
+    std::pair<format_locale, std::string> locale_from_string(const std::string &locale_string);
 
     std::size_t position_ = 0;
     std::string format_string_;
@@ -353,7 +353,7 @@ public:
     std::string format_text(const std::string &text);
 
 private:
-    std::string fill_placeholders(const placeholders &p, long double number);
+    std::string fill_placeholders(const format_placeholders &p, long double number);
     std::string format_number(const format_code &format, long double number);
     std::string format_text(const format_code &format, const std::string &text);
 
