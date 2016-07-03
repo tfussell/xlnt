@@ -21,6 +21,8 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <cmath>
+
 #include <detail/number_formatter.hpp>
 
 namespace xlnt {
@@ -930,7 +932,7 @@ std::string number_formatter::format_number(long double number)
         }
         else
         {
-            return format_number(format_[1], std::abs(number));
+            return format_number(format_[1], std::fabs(number));
         }
     }
     // 3+ sections, first for positive, second for negative, third for zero
@@ -942,7 +944,7 @@ std::string number_formatter::format_number(long double number)
         }
         else if (number < 0)
         {
-            return format_number(format_[1], std::abs(number));
+            return format_number(format_[1], std::fabs(number));
         }
         else
         {
@@ -1066,7 +1068,7 @@ std::string number_formatter::format_number(const format_code &format, long doub
         result.push_back('-');
     }
 
-    number = std::abs(number);
+    number = std::fabs(number);
 
     xlnt::datetime dt(0, 0, 0);
 
