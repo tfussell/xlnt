@@ -16,10 +16,12 @@ public:
         nf.set_format_string("\"positive\"General;\"negative\"General");
         auto formatted = nf.format(3.14, xlnt::calendar::windows_1900);
         TS_ASSERT_EQUALS(formatted, "positive3.14");
-
-        nf.set_format_string("\"positive\"General;\"negative\"General");
         formatted = nf.format(-3.14, xlnt::calendar::windows_1900);
-        TS_ASSERT_EQUALS(formatted, "-negative3.14");
+        TS_ASSERT_EQUALS(formatted, "negative3.14");
+
+        nf.set_format_string("\"any\"General");
+        formatted = nf.format(-3.14, xlnt::calendar::windows_1900);
+        TS_ASSERT_EQUALS(formatted, "-any3.14");
     }
 
     void test_simple_date()
@@ -311,14 +313,13 @@ public:
     {
         xlnt::number_format nf;
 
-        nf.set_format_string("[$€-407]-#,##0.00");
-        auto formatted = nf.format(1.2, xlnt::calendar::windows_1900);
-        TS_ASSERT_EQUALS(formatted, "-€1,20");
+        nf.set_format_string("[$€-407]#,##0.00");
+        auto formatted = nf.format(-45000.1, xlnt::calendar::windows_1900);
+        TS_ASSERT_EQUALS(formatted, "-€45,000.10");
 
         nf.set_format_string("[$$-1009]#,##0.00");
-        formatted = nf.format(1.2, xlnt::calendar::windows_1900);
-        TS_ASSERT_EQUALS(formatted, "CA$1,20");
-        
+        formatted = nf.format(-45000.1, xlnt::calendar::windows_1900);
+        TS_ASSERT_EQUALS(formatted, "-$45,000.10");
     }
     
     void test_bad_country()
@@ -356,19 +357,7 @@ public:
     {
         xlnt::number_format nf;
 
-        nf.set_format_string("");
-        TS_ASSERT_THROWS(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
-
-        nf.set_format_string(";;;");
-        TS_ASSERT_THROWS(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
-
-        nf.set_format_string("[=1]\"first\"General;\"second\"General;\"third\"General");
-        TS_ASSERT_THROWS(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
-
         nf.set_format_string("[=1]\"first\"General;[=2]\"second\"General;[=3]\"third\"General");
-        TS_ASSERT_THROWS(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
-
-        nf.set_format_string("[=1]\"first\"General;[=2]\"second\"General;\"third\"General;\"fourth\"General");
         TS_ASSERT_THROWS(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
 
         nf.set_format_string("\"first\"General;\"second\"General;\"third\"General;\"fourth\"General;\"fifth\"General");
@@ -379,7 +368,7 @@ public:
     {
         TS_ASSERT_EQUALS(xlnt::number_format::text().format("a"), "a");
         TS_ASSERT_EQUALS(xlnt::number_format::number().format(1, xlnt::calendar::windows_1900), "1");
-        TS_ASSERT_EQUALS(xlnt::number_format::number_comma_separated1().format(1, xlnt::calendar::windows_1900), "1,00");
+        TS_ASSERT_EQUALS(xlnt::number_format::number_comma_separated1().format(12345.67, xlnt::calendar::windows_1900), "12,345.67");
 
 /*
         auto datetime = xlnt::datetime(2016, 6, 24, 0, 45, 58);
