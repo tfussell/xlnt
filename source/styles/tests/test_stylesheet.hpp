@@ -1,9 +1,11 @@
 #pragma once
 
 #include <iostream>
+#include <pugixml.hpp>
 #include <cxxtest/TestSuite.h>
 
-#include "pugixml.hpp"
+#include <detail/excel_serializer.hpp>
+#include <detail/style_serializer.hpp>
 #include <xlnt/xlnt.hpp>
 #include <xlnt/packaging/zip_file.hpp>
 #include <helpers/helper.hpp>
@@ -18,9 +20,11 @@ public:
         xlnt::excel_serializer excel_serializer(wb);
         xlnt::style_serializer style_serializer(excel_serializer.get_stylesheet());
         xlnt::zip_file archive;
-        xlnt::xml_document stylesheet_doc;
+        pugi::xml_document stylesheet_doc;
         style_serializer.write_stylesheet(stylesheet_doc);
-        auto stylesheet_xml = stylesheet_doc.to_string();
+        std::ostringstream ss;
+        stylesheet_doc.save(ss);
+        auto stylesheet_xml = ss.str();
         
         const std::string expected =
         "<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:x14ac=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac\" mc:Ignorable=\"x14ac\">"
@@ -71,9 +75,9 @@ public:
 
     void test_from_simple()
     {
-        xlnt::xml_document doc;
+        pugi::xml_document doc;
         auto xml = PathHelper::read_file(PathHelper::GetDataDirectory("/reader/styles/simple-styles.xml"));
-        doc.from_string(xml);
+        doc.load(xml.c_str());
         xlnt::workbook wb;
         xlnt::excel_serializer e(wb);
         xlnt::style_serializer s(e.get_stylesheet());
@@ -83,9 +87,9 @@ public:
 
     void test_from_complex()
     {
-        xlnt::xml_document doc;
+        pugi::xml_document doc;
         auto xml = PathHelper::read_file(PathHelper::GetDataDirectory("/reader/styles/complex-styles.xml"));
-        doc.from_string(xml);
+        doc.load(xml.c_str());
         xlnt::workbook wb;
         xlnt::excel_serializer e(wb);
         xlnt::style_serializer s(e.get_stylesheet());

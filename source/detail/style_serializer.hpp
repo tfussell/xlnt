@@ -24,24 +24,60 @@
 #pragma once
 
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 #include <xlnt/xlnt_config.hpp>
 
+namespace pugi {
+class xml_document;
+} // namespace pugi
+
 namespace xlnt {
 
-class theme;
-class xml_document;
+class alignment;
+class border;
+class color;
+class conditional_format;
+class fill;
+class font;
+class format;
+class base_format;
+class style;
+class number_format;
+class protection;
+class side;
+class style;
+
+namespace detail { struct stylesheet; }
 
 /// <summary>
-/// Manages converting a theme to and from XML.
+/// Reads and writes xl/styles.xml from/to an associated stylesheet.
 /// </summary>
-class XLNT_CLASS theme_serializer
+class XLNT_CLASS style_serializer
 {
 public:
-    bool read_theme(const xml_document &xml, theme &t);
-    xml_document write_theme(const theme &t) const;
+    /// <summary>
+    /// Construct a style_serializer which can write styles.xml based on wb or populate wb
+    /// with styles from an existing styles.xml.
+    style_serializer(detail::stylesheet &s);
+
+    /// <summary>
+    /// Load all styles from xml_document into workbook given in constructor.
+    /// </summary>
+    bool read_stylesheet(const pugi::xml_document &xml);
+
+    /// <summary>
+    /// Populate parameter xml with an XML tree representing the styles contained in the workbook
+    /// given in the constructor.
+    /// </summary>
+    bool write_stylesheet(pugi::xml_document &xml);
 
 private:
+    /// <summary>
+    /// Set in the constructor, this stylesheet is used as the source or target for all writing or reading, respectively.
+    /// </summary>
+    detail::stylesheet &stylesheet_;
 };
 
 } // namespace xlnt

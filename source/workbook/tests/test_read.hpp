@@ -2,20 +2,16 @@
 
 #include <fstream>
 #include <iostream>
-
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/packaging/manifest.hpp>
-#include <xlnt/serialization/excel_serializer.hpp>
-#include <xlnt/serialization/manifest_serializer.hpp>
-#include <xlnt/serialization/relationship_serializer.hpp>
-#include <xlnt/serialization/workbook_serializer.hpp>
-#include <xlnt/serialization/xml_serializer.hpp>
-
+#include <detail/excel_serializer.hpp>
+#include <detail/manifest_serializer.hpp>
+#include <detail/relationship_serializer.hpp>
+#include <detail/workbook_serializer.hpp>
 #include <helpers/path_helper.hpp>
-
 #include <xlnt/cell/text.hpp>
 #include <xlnt/cell/text_run.hpp>
+#include <xlnt/packaging/manifest.hpp>
 
 class test_read : public CxxTest::TestSuite
 {

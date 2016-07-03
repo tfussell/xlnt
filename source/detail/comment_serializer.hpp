@@ -1,4 +1,5 @@
 // Copyright (c) 2014-2016 Thomas Fussell
+// Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,54 +23,35 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <memory>
-#include <string>
 #include <vector>
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/cell/comment.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
+
+namespace pugi {
+class xml_document;
+} // namespace pugi
 
 namespace xlnt {
 namespace detail {
-struct xml_document_impl;
-}
-
-class xml_node;
-class xml_serializer;
 
 /// <summary>
-/// Abstracts an XML document from a particular implementation.
+/// Manages converting comments to and from XML.
 /// </summary>
-class XLNT_CLASS xml_document
+class XLNT_CLASS comment_serializer
 {
-public:
-    using string_pair = std::pair<std::string, std::string>;
+    comment_serializer(worksheet sheet);
 
-    xml_document();
-    xml_document(const xml_document &other);
-    xml_document(xml_document &&other);
-    ~xml_document();
+    void read_comments(const pugi::xml_document &xml);
+    void read_comments_vml(const pugi::xml_document &xml);
 
-    xml_document &operator=(const xml_document &other);
-    xml_document &operator=(xml_document &&other);
-
-    void set_encoding(const std::string &encoding);
-    void add_namespace(const std::string &id, const std::string &uri);
-
-    xml_node add_child(const xml_node &child);
-    xml_node add_child(const std::string &child_name);
-
-    xml_node get_root();
-    const xml_node get_root() const;
-
-    xml_node get_child(const std::string &child_name);
-    const xml_node get_child(const std::string &child_name) const;
-
-    std::string to_string() const;
-    xml_document &from_string(const std::string &xml_string);
+    void write_comments(pugi::xml_document &xml) const;
+    void write_comments_vml(pugi::xml_document &xml) const;
 
 private:
-    friend class xml_serializer;
-    std::unique_ptr<detail::xml_document_impl> d_;
+    worksheet sheet_;
 };
 
+} // namespace detail
 } // namespace xlnt

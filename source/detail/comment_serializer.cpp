@@ -1,4 +1,5 @@
 // Copyright (c) 2014-2016 Thomas Fussell
+// Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,43 +21,14 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#include <sstream>
-
-#include <xlnt/serialization/xml_serializer.hpp>
-#include <xlnt/serialization/xml_document.hpp>
-#include <xlnt/serialization/xml_node.hpp>
-
-#include "detail/include_pugixml.hpp"
-#include "detail/xml_document_impl.hpp"
-#include "detail/xml_node_impl.hpp"
+#include <detail/comment_serializer.hpp>
 
 namespace xlnt {
+namespace detail {
 
-std::string xml_serializer::serialize(const xml_document &xml)
+comment_serializer::comment_serializer(worksheet sheet) : sheet_(sheet)
 {
-    std::ostringstream ss;
-    xml.d_->doc.save(ss, "  ", pugi::format_default, pugi::encoding_utf8);
-
-    return ss.str();
 }
 
-xml_document xml_serializer::deserialize(const std::string &xml_string)
-{
-    xml_document doc;
-    doc.d_->doc.load(xml_string.c_str());
-
-    return doc;
-}
-
-std::string xml_serializer::serialize_node(const xml_node &xml)
-{
-    pugi::xml_document doc;
-    doc.append_copy(xml.d_->node);
-
-    std::ostringstream ss;
-    doc.save(ss);
-
-    return ss.str();
-}
-
+} // namespace detail
 } // namespace xlnt

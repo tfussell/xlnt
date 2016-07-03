@@ -31,7 +31,6 @@
 #include <xlnt/cell/text.hpp>
 #include <xlnt/packaging/document_properties.hpp>
 #include <xlnt/packaging/relationship.hpp>
-#include <xlnt/serialization/encoding.hpp>
 #include <xlnt/styles/color.hpp>
 #include <xlnt/styles/format.hpp>
 #include <xlnt/styles/style.hpp>
@@ -41,6 +40,7 @@
 #include <xlnt/utils/timedelta.hpp>
 #include <xlnt/utils/exceptions.hpp>
 #include <xlnt/utils/utf8string.hpp>
+#include <xlnt/workbook/encoding.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/column_properties.hpp>
 #include <xlnt/worksheet/row_properties.hpp>

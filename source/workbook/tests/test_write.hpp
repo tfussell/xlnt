@@ -3,15 +3,14 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/serialization/relationship_serializer.hpp>
-#include <xlnt/serialization/shared_strings_serializer.hpp>
-#include <xlnt/serialization/workbook_serializer.hpp>
-#include <xlnt/serialization/worksheet_serializer.hpp>
+#include <detail/relationship_serializer.hpp>
+#include <detail/shared_strings_serializer.hpp>
+#include <detail/workbook_serializer.hpp>
+#include <detail/worksheet_serializer.hpp>
+#include <helpers/temporary_file.hpp>
+#include <helpers/path_helper.hpp>
+#include <helpers/helper.hpp>
 #include <xlnt/workbook/workbook.hpp>
-
-#include "helpers/temporary_file.hpp"
-#include "helpers/path_helper.hpp"
-#include "helpers/helper.hpp"
 
 class test_write : public CxxTest::TestSuite
 {
@@ -50,18 +49,20 @@ public:
         xlnt::zip_file archive;
         xlnt::relationship_serializer serializer(archive);
         serializer.write_relationships(wb.get_relationships(), "xl/workbook.xml");
-        auto content = xlnt::xml_serializer::deserialize(archive.read("xl/_rels/workbook.xml.rels"));
+        pugi::xml_document xml;
+        xml.load(archive.read("xl/_rels/workbook.xml.rels").c_str());
 
-        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/workbook.xml.rels", content));
+        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/workbook.xml.rels", xml));
     }
 
     void test_write_workbook()
     {
         xlnt::workbook wb;
         xlnt::workbook_serializer serializer(wb);
-        auto content = serializer.write_workbook();
+        pugi::xml_document xml;
+        serializer.write_workbook(xml);
 
-        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/workbook.xml", content));
+        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/workbook.xml", xml));
     }
 
     void test_write_string_table()
@@ -73,9 +74,10 @@ public:
         ws.get_cell("A2").set_value("world");
         ws.get_cell("A3").set_value("nice");
         
-        auto content = xlnt::shared_strings_serializer::write_shared_strings(wb.get_shared_strings());
+        pugi::xml_document xml;
+        xlnt::shared_strings_serializer::write_shared_strings(wb.get_shared_strings(), xml);
 
-        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sharedStrings.xml", content));
+        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sharedStrings.xml", xml));
     }
 
     void test_write_worksheet()
@@ -84,9 +86,10 @@ public:
         ws.get_cell("F42").set_value("hello");
         
         xlnt::worksheet_serializer serializer(ws);
-        auto observed = serializer.write_worksheet();
+        pugi::xml_document xml;
+        serializer.write_worksheet(xml);
     
-        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sheet1.xml", observed));
+        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sheet1.xml", xml));
     }
 
     void test_write_hidden_worksheet()
@@ -96,9 +99,10 @@ public:
         ws.get_cell("F42").set_value("hello");
 
         xlnt::worksheet_serializer serializer(ws);
-        auto observed = serializer.write_worksheet();
+        pugi::xml_document xml;
+        serializer.write_worksheet(xml);
         
-        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sheet1.xml", observed));
+        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sheet1.xml", xml));
     }
 
     void test_write_bool()
@@ -108,9 +112,10 @@ public:
         ws.get_cell("F43").set_value(true);
 
         xlnt::worksheet_serializer serializer(ws);
-        auto observed = serializer.write_worksheet();
+        pugi::xml_document xml;
+        serializer.write_worksheet(xml);
         
-        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_bool.xml", observed));
+        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_bool.xml", xml));
     }
 
     void test_write_formula()
@@ -121,9 +126,10 @@ public:
         ws.get_cell("F3").set_formula("F1+F2");
 
         xlnt::worksheet_serializer serializer(ws);
-        auto observed = serializer.write_worksheet();
+        pugi::xml_document xml;
+        serializer.write_worksheet(xml);
         
-        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_formula.xml", observed));
+        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_formula.xml", xml));
     }
 
     void test_write_height()
@@ -133,9 +139,10 @@ public:
         ws.get_row_properties(ws.get_cell("F1").get_row()).height = 30;
 
         xlnt::worksheet_serializer serializer(ws);
-        auto observed = serializer.write_worksheet();
+        pugi::xml_document xml;
+        serializer.write_worksheet(xml);
         
-        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_height.xml", observed));
+        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_height.xml", xml));
     }
 
     void test_write_hyperlink()
@@ -147,9 +154,10 @@ public:
         ws.get_cell("A1").set_hyperlink("http://test.com");
 
         xlnt::worksheet_serializer serializer(ws);
-        auto observed = serializer.write_worksheet();
+        pugi::xml_document xml;
+        serializer.write_worksheet(xml);
         
-        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_hyperlink.xml", observed));
+        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_hyperlink.xml", xml));
     }
 
     void test_write_hyperlink_rels()
@@ -166,9 +174,10 @@ public:
         xlnt::zip_file archive;
         xlnt::relationship_serializer serializer(archive);
         serializer.write_relationships(ws.get_relationships(), "xl/worksheets/sheet1.xml");
-        auto content = xlnt::xml_serializer::deserialize(archive.read("xl/worksheets/_rels/sheet1.xml.rels"));
+        pugi::xml_document xml;
+        xml.load(archive.read("xl/worksheets/_rels/sheet1.xml.rels").c_str());
         
-        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_hyperlink.xml.rels", content));
+        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_hyperlink.xml.rels", xml));
     }
     
     void _test_write_hyperlink_image_rels()
@@ -193,14 +202,16 @@ public:
         ws.auto_filter("A1:F1");
 
         xlnt::worksheet_serializer ws_serializer(ws);
-        auto observed = ws_serializer.write_worksheet();
+        pugi::xml_document xml;
+        ws_serializer.write_worksheet(xml);
         
-        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_auto_filter.xml", observed));
+        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_auto_filter.xml", xml));
 
         xlnt::workbook_serializer wb_serializer(wb);
-        auto observed2 = wb_serializer.write_workbook();
+        pugi::xml_document xml2;
+        wb_serializer.write_workbook(xml2);
 
-        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/workbook_auto_filter.xml", observed2));
+        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/workbook_auto_filter.xml", xml2));
     }
     
     void test_write_auto_filter_filter_column()
@@ -220,9 +231,10 @@ public:
         ws.freeze_panes("A4");
 
         xlnt::worksheet_serializer serializer(ws);
-        auto observed = serializer.write_worksheet();
-        auto temp = observed.to_string();
-        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_freeze_panes_horiz.xml", observed));
+        pugi::xml_document xml;
+        serializer.write_worksheet(xml);
+
+        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_freeze_panes_horiz.xml", xml));
     }
 
     void test_freeze_panes_vert()
@@ -232,9 +244,10 @@ public:
         ws.freeze_panes("D1");
 
         xlnt::worksheet_serializer serializer(ws);
-        auto observed = serializer.write_worksheet();
+        pugi::xml_document xml;
+        serializer.write_worksheet(xml);
         
-        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_freeze_panes_vert.xml", observed));
+        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_freeze_panes_vert.xml", xml));
     }
 
     void test_freeze_panes_both()
@@ -244,9 +257,10 @@ public:
         ws.freeze_panes("D4");
         
         xlnt::worksheet_serializer serializer(ws);
-        auto observed = serializer.write_worksheet();
+        pugi::xml_document xml;
+        serializer.write_worksheet(xml);
         
-        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_freeze_panes_both.xml", observed));
+        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/sheet1_freeze_panes_both.xml", xml));
     }
 
     void test_long_number()
@@ -255,9 +269,10 @@ public:
         ws.get_cell("A1").set_value(9781231231230LL);
    
         xlnt::worksheet_serializer serializer(ws);
-        auto observed = serializer.write_worksheet();
+        pugi::xml_document xml;
+        serializer.write_worksheet(xml);
         
-        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/long_number.xml", observed));
+        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/long_number.xml", xml));
     }
 
     void test_short_number()
@@ -266,9 +281,10 @@ public:
         ws.get_cell("A1").set_value(1234567890);
         
         xlnt::worksheet_serializer serializer(ws);
-        auto observed = serializer.write_worksheet();
+        pugi::xml_document xml;
+        serializer.write_worksheet(xml);
         
-        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/short_number.xml", observed));
+        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/short_number.xml", xml));
     }
     
     void _test_write_images()

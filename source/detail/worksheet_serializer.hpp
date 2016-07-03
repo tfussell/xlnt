@@ -23,28 +23,34 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/cell/comment.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
+
+namespace pugi {
+class xml_document;
+} // namespace pugi
 
 namespace xlnt {
 
-class xml_document;
+class relationship;
+class workbook;
+class worksheet;
+
+namespace detail { struct stylesheet; }
 
 /// <summary>
-/// Manages converting comments to and from XML.
+/// Manages converting a worksheet to and from XML.
 /// </summary>
-class XLNT_CLASS comment_serializer
+class XLNT_CLASS worksheet_serializer
 {
-    comment_serializer(worksheet sheet);
+public:
+    worksheet_serializer(worksheet sheet);
 
-    void read_comments(const xml_document &xml);
-    void read_comments_vml(const xml_document &xml);
-
-    xml_document write_comments() const;
-    xml_document write_comments_vml() const;
+    bool read_worksheet(const pugi::xml_document &xml, detail::stylesheet &stylesheet);
+    void write_worksheet(pugi::xml_document &xml) const;
 
 private:
     worksheet sheet_;

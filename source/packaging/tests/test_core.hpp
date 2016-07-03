@@ -4,8 +4,7 @@
 #include <cxxtest/TestSuite.h>
 
 #include <xlnt/packaging/app_properties.hpp>
-#include <xlnt/serialization/workbook_serializer.hpp>
-#include <xlnt/serialization/xml_document.hpp>
+#include <detail/workbook_serializer.hpp>
 
 #include <helpers/path_helper.hpp>
 #include <helpers/helper.hpp>
@@ -48,7 +47,7 @@ public:
         auto content = archive.read("docProps/core.xml");
         xlnt::workbook wb;
         xlnt::workbook_serializer serializer(wb);
-        xlnt::xml_document xml;
+        pugi::xml_document xml;
         serializer.read_properties_core(xml);
         auto &prop = wb.get_properties();
         TS_ASSERT_EQUALS(prop.excel_base_date, xlnt::calendar::windows_1900);
@@ -80,7 +79,8 @@ public:
         prop.created = xlnt::datetime(2010, 4, 1, 20, 30, 00);
         prop.modified = xlnt::datetime(2010, 4, 5, 14, 5, 30);
         xlnt::workbook_serializer serializer(wb);
-        xlnt::xml_document xml = serializer.write_properties_core();
+        pugi::xml_document xml;
+        serializer.write_properties_core(xml);
         TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/core.xml", xml));
     }
 
@@ -92,7 +92,8 @@ public:
         wb.create_sheet();
         wb.create_sheet();
         xlnt::workbook_serializer serializer(wb);
-        xlnt::xml_document xml = serializer.write_properties_app();
+        pugi::xml_document xml;
+        serializer.write_properties_app(xml);
         TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/app.xml", xml));
     }
 };

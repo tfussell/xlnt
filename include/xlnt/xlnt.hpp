@@ -43,9 +43,6 @@
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/packaging/zip_file.hpp>
 
-// serialization
-#include <xlnt/serialization/encoding.hpp>
-
 // styles
 #include <xlnt/styles/alignment.hpp>
 #include <xlnt/styles/base_format.hpp>
@@ -74,6 +71,7 @@
 // workbook
 #include <xlnt/workbook/const_worksheet_iterator.hpp>
 #include <xlnt/workbook/document_security.hpp>
+#include <xlnt/workbook/encoding.hpp>
 #include <xlnt/workbook/external_book.hpp>
 #include <xlnt/workbook/named_range.hpp>
 #include <xlnt/workbook/theme.hpp>

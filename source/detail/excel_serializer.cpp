@@ -23,19 +23,20 @@
 // @author: see AUTHORS file
 #include <algorithm>
 #include <iterator>
+#include <pugixml.hpp>
 
+#include <detail/constants.hpp>
+#include <detail/excel_serializer.hpp>
+#include <detail/manifest_serializer.hpp>
+#include <detail/relationship_serializer.hpp>
+#include <detail/shared_strings_serializer.hpp>
+#include <detail/style_serializer.hpp>
+#include <detail/stylesheet.hpp>
+#include <detail/theme_serializer.hpp>
+#include <detail/workbook_impl.hpp>
+#include <detail/workbook_serializer.hpp>
+#include <detail/worksheet_serializer.hpp>
 #include <xlnt/cell/text.hpp>
-#include <xlnt/serialization/excel_serializer.hpp>
-#include <xlnt/serialization/manifest_serializer.hpp>
-#include <xlnt/serialization/relationship_serializer.hpp>
-#include <xlnt/serialization/shared_strings_serializer.hpp>
-#include <xlnt/serialization/style_serializer.hpp>
-#include <xlnt/serialization/theme_serializer.hpp>
-#include <xlnt/serialization/workbook_serializer.hpp>
-#include <xlnt/serialization/worksheet_serializer.hpp>
-#include <xlnt/serialization/xml_document.hpp>
-#include <xlnt/serialization/xml_node.hpp>
-#include <xlnt/serialization/xml_serializer.hpp>
 #include <xlnt/packaging/document_properties.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/styles/format.hpp>
@@ -45,10 +46,6 @@
 #include <xlnt/workbook/worksheet_iterator.hpp>
 #include <xlnt/worksheet/range_iterator.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
-
-#include <detail/constants.hpp>
-#include <detail/stylesheet.hpp>
-#include <detail/workbook_impl.hpp>
 
 namespace {
 
@@ -80,8 +77,8 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
     }
     
     xlnt::manifest_serializer ms(wb.get_manifest());
-	xlnt::xml_document manifest_xml;
-	manifest_xml.from_string(archive.read(xlnt::constants::ArcContentTypes()));
+	pugi::xml_document manifest_xml;
+    manifest_xml.load(archive.read(xlnt::constants::ArcContentTypes()).c_str());
     ms.read_manifest(manifest_xml);
 
     if (ms.determine_document_type() != "excel")
@@ -94,16 +91,16 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
     if(archive.has_file(xlnt::constants::ArcCore()))
     {
         xlnt::workbook_serializer workbook_serializer_(wb);
-		xlnt::xml_document core_properties_xml;
-		core_properties_xml.from_string(archive.read(xlnt::constants::ArcCore()));
+		pugi::xml_document core_properties_xml;
+		core_properties_xml.load(archive.read(xlnt::constants::ArcCore()).c_str());
         workbook_serializer_.read_properties_core(core_properties_xml);
     }
     
     if(archive.has_file(xlnt::constants::ArcApp()))
     {
         xlnt::workbook_serializer workbook_serializer_(wb);
-		xlnt::xml_document app_properties_xml;
-		app_properties_xml.from_string(archive.read(xlnt::constants::ArcApp()));
+		pugi::xml_document app_properties_xml;
+		app_properties_xml.load(archive.read(xlnt::constants::ArcApp()).c_str());
         workbook_serializer_.read_properties_app(app_properties_xml);
     }
 
@@ -122,22 +119,22 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
         wb.create_relationship(relationship.get_id(), relationship.get_target_uri(), relationship.get_type());
     }
 
-	xlnt::xml_document xml;
-    xml.from_string(archive.read(xlnt::constants::ArcWorkbook()));
+	pugi::xml_document xml;
+    xml.load(archive.read(xlnt::constants::ArcWorkbook()).c_str());
 
-    auto root_node = xml.get_child("workbook");
+    auto root_node = xml.child("workbook");
 
-    auto workbook_pr_node = root_node.get_child("workbookPr");
+    auto workbook_pr_node = root_node.child("workbookPr");
     wb.get_properties().excel_base_date =
-        (workbook_pr_node.has_attribute("date1904") && workbook_pr_node.get_attribute("date1904") != "0")
+        (workbook_pr_node.attribute("date1904") && workbook_pr_node.attribute("date1904").value() != std::string("0"))
             ? xlnt::calendar::mac_1904
             : xlnt::calendar::windows_1900;
 
     if(archive.has_file(xlnt::constants::ArcSharedString()))
     {
         std::vector<xlnt::text> shared_strings;
-		xlnt::xml_document shared_strings_xml;
-		shared_strings_xml.from_string(archive.read(xlnt::constants::ArcSharedString()));
+		pugi::xml_document shared_strings_xml;
+		shared_strings_xml.load(archive.read(xlnt::constants::ArcSharedString()).c_str());
 		xlnt::shared_strings_serializer::read_shared_strings(shared_strings_xml, shared_strings);
 
         for (auto &shared_string : shared_strings)
@@ -148,16 +145,16 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
 
     xlnt::detail::stylesheet stylesheet;
     xlnt::style_serializer style_serializer(stylesheet);
-	xlnt::xml_document style_xml;
-	style_xml.from_string(archive.read(xlnt::constants::ArcStyles()));
+	pugi::xml_document style_xml;
+	style_xml.load(archive.read(xlnt::constants::ArcStyles()).c_str());
     style_serializer.read_stylesheet(style_xml);
 
-    auto sheets_node = root_node.get_child("sheets");
+    auto sheets_node = root_node.child("sheets");
 
-    for (auto sheet_node : sheets_node.get_children())
+    for (auto sheet_node : sheets_node.children())
     {
-        auto rel = wb.get_relationship(sheet_node.get_attribute("r:id"));
-        auto ws = wb.create_sheet(sheet_node.get_attribute("name"), rel);
+        auto rel = wb.get_relationship(sheet_node.attribute("r:id").value());
+        auto ws = wb.create_sheet(sheet_node.attribute("name").value(), rel);
         
         //TODO: this is really bad
         auto ws_filename = (rel.get_target_uri().substr(0, 3) != "xl/" ? "xl/" : "") + rel.get_target_uri();
@@ -170,8 +167,8 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
         }
         
         xlnt::worksheet_serializer worksheet_serializer(ws);
-		xlnt::xml_document worksheet_xml;
-		worksheet_xml.from_string(archive.read(ws_filename));
+		pugi::xml_document worksheet_xml;
+		worksheet_xml.load(archive.read(ws_filename).c_str());
         worksheet_serializer.read_worksheet(worksheet_xml, stylesheet);
     }
 
@@ -249,31 +246,51 @@ void excel_serializer::write_data(bool /*as_template*/)
     relationship_serializer_.write_relationships(workbook_.get_root_relationships(), "");
     relationship_serializer_.write_relationships(workbook_.get_relationships(), constants::ArcWorkbook());
 
-    xml_document properties_app_xml;
+    pugi::xml_document properties_app_xml;
     workbook_serializer workbook_serializer_(workbook_);
-    archive_.writestr(constants::ArcApp(), xml_serializer::serialize(workbook_serializer_.write_properties_app()));
-    archive_.writestr(constants::ArcCore(), xml_serializer::serialize(workbook_serializer_.write_properties_core()));
+    workbook_serializer_.write_properties_app(properties_app_xml);
+    std::ostringstream ss;
+    properties_app_xml.save(ss);
+    archive_.writestr(constants::ArcApp(), ss.str());
 
+    pugi::xml_document properties_core_xml;
+    workbook_serializer_.write_properties_core(properties_core_xml);
+    properties_core_xml.save(ss);
+    archive_.writestr(constants::ArcCore(), ss.str());
+
+    pugi::xml_document theme_xml;
     theme_serializer theme_serializer_;
-    archive_.writestr(constants::ArcTheme(), theme_serializer_.write_theme(workbook_.get_loaded_theme()).to_string());
+    theme_serializer_.write_theme(workbook_.get_loaded_theme(), theme_xml);
+    theme_xml.save(ss);
+    archive_.writestr(constants::ArcTheme(), ss.str());
 
     if (!workbook_.get_shared_strings().empty())
     {
         const auto &strings = workbook_.get_shared_strings();
-        auto shared_strings_xml = xlnt::shared_strings_serializer::write_shared_strings(strings);
-        
-        archive_.writestr(constants::ArcSharedString(), xml_serializer::serialize(shared_strings_xml));
+        pugi::xml_document shared_strings_xml;
+        shared_strings_serializer strings_serializer;
+        strings_serializer.write_shared_strings(strings, shared_strings_xml);
+        shared_strings_xml.save(ss);
+
+        archive_.writestr(constants::ArcSharedString(), ss.str());
     }
 
-    archive_.writestr(constants::ArcWorkbook(), xml_serializer::serialize(workbook_serializer_.write_workbook()));
+    pugi::xml_document workbook_xml;
+    workbook_serializer_.write_workbook(workbook_xml);
+    workbook_xml.save(ss);
+    archive_.writestr(constants::ArcWorkbook(), ss.str());
 
     style_serializer style_serializer(workbook_.d_->stylesheet_);
-    xlnt::xml_document style_xml;
+    pugi::xml_document style_xml;
     style_serializer.write_stylesheet(style_xml);
-    archive_.writestr(constants::ArcStyles(), style_xml.to_string());
+    style_xml.save(ss);
+    archive_.writestr(constants::ArcStyles(), ss.str());
 
     manifest_serializer manifest_serializer_(workbook_.get_manifest());
-    archive_.writestr(constants::ArcContentTypes(), manifest_serializer_.write_manifest().to_string());
+    pugi::xml_document manifest_xml;
+    manifest_serializer_.write_manifest(manifest_xml);
+    manifest_xml.save(ss);
+    archive_.writestr(constants::ArcContentTypes(), ss.str());
 
     write_worksheets();
     
@@ -297,7 +314,12 @@ void excel_serializer::write_worksheets()
             {
                 worksheet_serializer serializer_(ws);
                 std::string ws_filename = (relationship.get_target_uri().substr(0, 3) != "xl/" ? "xl/" : "") + relationship.get_target_uri();
-                archive_.writestr(ws_filename, serializer_.write_worksheet().to_string());
+                std::ostringstream ss;
+                pugi::xml_document worksheet_xml;
+                serializer_.write_worksheet(worksheet_xml);
+                worksheet_xml.save(ss);
+                archive_.writestr(ws_filename, ss.str());
+
                 break;
             }
         }

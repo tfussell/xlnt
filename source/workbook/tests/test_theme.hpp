@@ -3,11 +3,10 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/serialization/theme_serializer.hpp>
+#include <detail/theme_serializer.hpp>
+#include <helpers/path_helper.hpp>
+#include <helpers/helper.hpp>
 #include <xlnt/workbook/workbook.hpp>
-
-#include "helpers/path_helper.hpp"
-#include "helpers/helper.hpp"
 
 class test_theme : public CxxTest::TestSuite
 {
@@ -16,7 +15,8 @@ public:
     {
         xlnt::workbook wb;
         xlnt::theme_serializer serializer;
-        auto xml = serializer.write_theme(wb.get_loaded_theme());
+        pugi::xml_document xml;
+        serializer.write_theme(wb.get_loaded_theme(), xml);
         TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/theme1.xml", xml));
     }
 };

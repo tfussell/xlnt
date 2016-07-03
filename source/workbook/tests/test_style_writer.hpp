@@ -3,7 +3,7 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/serialization/style_serializer.hpp>
+#include <detail/style_serializer.hpp>
 #include <detail/stylesheet.hpp>
 #include <detail/workbook_impl.hpp>
 
@@ -16,15 +16,15 @@ public:
         wb.get_active_sheet().get_cell("A1").set_number_format(xlnt::number_format("YYYY"));
         xlnt::excel_serializer excel_serializer(wb);
         xlnt::style_serializer style_serializer(excel_serializer.get_stylesheet());
-        xlnt::xml_document observed;
+        pugi::xml_document observed;
         style_serializer.write_stylesheet(observed);
-        xlnt::xml_document expected_doc;
+        pugi::xml_document expected_doc;
         std::string expected =
         "    <numFmts count=\"1\">"
         "    <numFmt formatCode=\"YYYY\" numFmtId=\"164\"></numFmt>"
         "    </numFmts>";
-        expected_doc.from_string(expected);
-        auto diff = Helper::compare_xml(expected_doc.get_child("numFmts"), observed.get_child("styleSheet").get_child("numFmts"));
+        expected_doc.load(expected.c_str());
+        auto diff = Helper::compare_xml(expected_doc.child("numFmts"), observed.child("styleSheet").child("numFmts"));
         TS_ASSERT(diff);
     }
     /*

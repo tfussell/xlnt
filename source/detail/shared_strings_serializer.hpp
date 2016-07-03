@@ -21,12 +21,28 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#include <xlnt/serialization/comment_serializer.hpp>
+#pragma once
+
+#include <vector>
+
+#include <xlnt/xlnt_config.hpp>
+
+namespace pugi {
+class xml_document;
+} // namespace pugi
 
 namespace xlnt {
 
-comment_serializer::comment_serializer(worksheet sheet) : sheet_(sheet)
+class text;
+
+/// <summary>
+/// Manages converting a set of shared strings to and from XML.
+/// </summary>
+class XLNT_CLASS shared_strings_serializer
 {
-}
+public:
+    static bool read_shared_strings(const pugi::xml_document &xml, std::vector<text> &strings);
+    static void write_shared_strings(const std::vector<text> &strings, pugi::xml_document &xml);
+};
 
 } // namespace xlnt

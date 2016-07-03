@@ -1,10 +1,7 @@
 #pragma once
 
+#include <pugixml.hpp>
 #include <sstream>
-
-#include <xlnt/serialization/xml_document.hpp>
-#include <xlnt/serialization/xml_node.hpp>
-#include <xlnt/serialization/xml_serializer.hpp>
 
 #include "path_helper.hpp"
 
@@ -31,12 +28,12 @@ public:
         operator bool() const { return difference == difference_type::equivalent; }
     };
     
-    static comparison_result compare_xml(const xlnt::xml_document &expected, const xlnt::xml_document &observed)
+    static comparison_result compare_xml(const pugi::xml_document &expected, const pugi::xml_document &observed)
     {
-        return compare_xml(expected.get_root(), observed.get_root());
+        return compare_xml(expected.root(), observed.root());
     }
-    
-    static comparison_result compare_xml(const std::string &expected, const xlnt::xml_document &observed)
+
+    static comparison_result compare_xml(const std::string &expected, const pugi::xml_document &observed)
     {
         std::string expected_contents = expected;
         
@@ -49,46 +46,48 @@ public:
             expected_contents = s.str();
         }
         
-		xlnt::xml_document expected_xml;
-		expected_xml.from_string(expected_contents);
+		pugi::xml_document expected_xml;
+		expected_xml.load(expected_contents.c_str());
 
-		auto observed_string = observed.to_string();
+        std::ostringstream ss;
+        observed.save(ss);
+		auto observed_string = ss.str();
 
-        return compare_xml(expected_xml.get_root(), observed.get_root());
+        return compare_xml(expected_xml.root(), observed.root());
     }
     
     static comparison_result compare_xml(const std::string &left_contents, const std::string &right_contents)
     {
-		xlnt::xml_document left_xml;
-		left_xml.from_string(left_contents);
+		pugi::xml_document left_xml;
+		left_xml.load(left_contents.c_str());
 
-		xlnt::xml_document right_xml;
-		right_xml.from_string(right_contents);
+		pugi::xml_document right_xml;
+		right_xml.load(right_contents.c_str());
 
-        return compare_xml(left_xml.get_root(), right_xml.get_root());
+        return compare_xml(left_xml.root(), right_xml.root());
     }
     
-    static comparison_result compare_xml(const xlnt::xml_node &left, const xlnt::xml_node &right)
+    static comparison_result compare_xml(const pugi::xml_node &left, const pugi::xml_node &right)
     {
-        std::string left_temp = left.get_name();
-        std::string right_temp = right.get_name();
+        std::string left_temp = left.name();
+        std::string right_temp = right.name();
         
         if(left_temp != right_temp)
         {
             return {difference_type::names_differ, left_temp, right_temp};
         }
         
-        for(auto &left_attribute : left.get_attributes())
+        for(auto &left_attribute : left.attributes())
         {
-            left_temp = left_attribute.second;
-            
-            if(!right.has_attribute(left_attribute.first))
+            left_temp = left_attribute.name();
+
+            if(!right.attribute(left_attribute.name()))
             {
                 return {difference_type::missing_attribute, left_temp, "((empty))"};
             }
             
-            left_temp = left_attribute.second;
-            right_temp = right.get_attribute(left_attribute.first);
+            left_temp = left_attribute.name();
+            right_temp = right.attribute(left_attribute.name()).name();
             
             if(left_temp != right_temp)
             {
@@ -96,34 +95,34 @@ public:
             }
         }
         
-        if(left.has_text())
+        if(left.text())
         {
-            left_temp = left.get_text();
+            left_temp = left.text().get();
             
-            if(!right.has_text())
+            if(!right.text())
             {
                 return {difference_type::missing_text, left_temp, "((empty))"};
             }
             
-            right_temp = right.get_text();
+            right_temp = right.text().get();
             
             if(left_temp != right_temp)
             {
                 return {difference_type::text_values_differ, left_temp, right_temp};
             }
         }
-        else if(right.has_text())
+        else if(right.text())
         {
-            right_temp = right.get_text();
+            right_temp = right.text().get();
             return {difference_type::text_values_differ, "((empty))", right_temp};
         }
         
-        auto right_children = right.get_children();
+        auto right_children = right.children();
         auto right_child_iter = right_children.begin();
         
-        for(auto left_child : left.get_children())
+        for(auto left_child : left.children())
         {
-            left_temp = left_child.get_name();
+            left_temp = left_child.name();
             
             if(right_child_iter == right_children.end())
             {
@@ -143,7 +142,7 @@ public:
         
         if(right_child_iter != right_children.end())
         {
-            right_temp = right_child_iter->get_name();
+            right_temp = right_child_iter->name();
             return {difference_type::child_order_differs, "((end))", right_temp};
         }
         

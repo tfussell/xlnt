@@ -3,7 +3,6 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/serialization/worksheet_serializer.hpp>
 #include <xlnt/worksheet/footer.hpp>
 #include <xlnt/worksheet/header.hpp>
 #include <xlnt/worksheet/header_footer.hpp>

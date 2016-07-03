@@ -21,14 +21,14 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#include <xlnt/serialization/relationship_serializer.hpp>
 
+#include <pugixml.hpp>
+#include <sstream>
+
+#include <detail/constants.hpp>
+#include <detail/relationship_serializer.hpp>
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/packaging/zip_file.hpp>
-#include <xlnt/serialization/xml_document.hpp>
-#include <xlnt/serialization/xml_node.hpp>
-
-#include "detail/constants.hpp"
 
 namespace {
 
@@ -57,23 +57,18 @@ relationship_serializer::relationship_serializer(zip_file &archive) : archive_(a
 
 std::vector<relationship> relationship_serializer::read_relationships(const std::string &target)
 {
-    xml_document xml;
-    xml.from_string(archive_.read(make_rels_name(target)));
+    pugi::xml_document xml;
+    xml.load(archive_.read(make_rels_name(target)).c_str());
 
-    auto root_node = xml.get_child("Relationships");
+    auto root_node = xml.child("Relationships");
 
     std::vector<relationship> relationships;
 
-    for (auto relationship_node : root_node.get_children())
+    for (auto relationship_node : root_node.children("Relationship"))
     {
-        if (relationship_node.get_name() != "Relationship")
-        {
-            continue;
-        }
-
-        std::string id = relationship_node.get_attribute("Id");
-        std::string type = relationship_node.get_attribute("Type");
-        std::string rel_target = relationship_node.get_attribute("Target");
+        std::string id = relationship_node.attribute("Id").value();
+        std::string type = relationship_node.attribute("Type").value();
+        std::string rel_target = relationship_node.attribute("Target").value();
 
         relationships.push_back(xlnt::relationship(type, id, rel_target));
     }
@@ -84,27 +79,29 @@ std::vector<relationship> relationship_serializer::read_relationships(const std:
 bool relationship_serializer::write_relationships(const std::vector<relationship> &relationships,
                                                   const std::string &target)
 {
-    xml_document xml;
+    pugi::xml_document xml;
 
-    auto root_node = xml.add_child("Relationships");
+    auto root_node = xml.append_child("Relationships");
 
-    xml.add_namespace("", constants::Namespace("relationships"));
+    root_node.append_attribute("xmlns").set_value(constants::Namespace("relationships").c_str());
 
     for (const auto &relationship : relationships)
     {
-        auto relationship_node = root_node.add_child("Relationship");
+        auto relationship_node = root_node.append_child("Relationship");
 
-        relationship_node.add_attribute("Id", relationship.get_id());
-        relationship_node.add_attribute("Type", relationship.get_type_string());
-        relationship_node.add_attribute("Target", relationship.get_target_uri());
+        relationship_node.append_attribute("Id").set_value(relationship.get_id().c_str());
+        relationship_node.append_attribute("Type").set_value(relationship.get_type_string().c_str());
+        relationship_node.append_attribute("Target").set_value(relationship.get_target_uri().c_str());
 
         if (relationship.get_target_mode() == target_mode::external)
         {
-            relationship_node.add_attribute("TargetMode", "External");
+            relationship_node.append_attribute("TargetMode").set_value("External");
         }
     }
 
-    archive_.writestr(make_rels_name(target), xml.to_string());
+    std::ostringstream ss;
+    xml.save(ss);
+    archive_.writestr(make_rels_name(target), ss.str());
 
     return true;
 }

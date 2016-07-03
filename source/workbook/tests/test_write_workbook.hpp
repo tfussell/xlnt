@@ -3,10 +3,9 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/serialization/workbook_serializer.hpp>
-#include <xlnt/utils/exceptions.hpp>
-
+#include <detail/workbook_serializer.hpp>
 #include <helpers/path_helper.hpp>
+#include <xlnt/utils/exceptions.hpp>
 
 class test_write_workbook : public CxxTest::TestSuite
 {
@@ -19,9 +18,10 @@ public:
         ws.auto_filter("A1:F1");
     
         xlnt::workbook_serializer serializer(wb);
-        auto observed = serializer.write_workbook();
+        pugi::xml_document xml;
+        serializer.write_workbook(xml);
 
-        auto diff = Helper::compare_xml(PathHelper::read_file("workbook_auto_filter.xml"), observed);
+        auto diff = Helper::compare_xml(PathHelper::read_file("workbook_auto_filter.xml"), xml);
         TS_ASSERT(!diff);
     }
     
@@ -33,7 +33,8 @@ public:
         wb.create_sheet();
 
         xlnt::workbook_serializer serializer(wb);
-        auto observed = serializer.write_workbook();
+        pugi::xml_document xml;
+        serializer.write_workbook(xml);
         
         std::string expected_string =
         "<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
@@ -49,10 +50,10 @@ public:
         "    <calcPr calcId=\"124519\" fullCalcOnLoad=\"1\"/>"
         "</workbook>";
         
-        xlnt::xml_document expected;
-        expected.from_string(expected_string);
+        pugi::xml_document expected;
+        expected.load(expected_string.c_str());
         
-        auto diff = Helper::compare_xml(expected, observed);
+        auto diff = Helper::compare_xml(expected, xml);
         TS_ASSERT(!diff);
     }
     
@@ -64,7 +65,8 @@ public:
         
         xlnt::workbook_serializer serializer(wb);
         
-        TS_ASSERT_THROWS(serializer.write_workbook(), xlnt::value_error);
+        pugi::xml_document xml;
+        TS_ASSERT_THROWS(serializer.write_workbook(xml), xlnt::value_error);
     }
     
     void test_write_empty_workbook()
@@ -98,8 +100,8 @@ public:
         xlnt::zip_file archive;
         xlnt::relationship_serializer serializer(archive);
         serializer.write_relationships(wb.get_relationships(), "xl/workbook.xml");
-        xlnt::xml_document observed;
-        observed.from_string(archive.read("xl/_rels/workbook.xml.rels"));
+        pugi::xml_document observed;
+        observed.load(archive.read("xl/_rels/workbook.xml.rels").c_str());
         auto filename = "workbook.xml.rels";
         auto diff = Helper::compare_xml(PathHelper::read_file(filename), observed);
         TS_ASSERT(!diff);
@@ -109,9 +111,10 @@ public:
     {
         xlnt::workbook wb;
         xlnt::workbook_serializer serializer(wb);
-        auto observed = serializer.write_workbook();
+        pugi::xml_document xml;
+        serializer.write_workbook(xml);
         auto filename = PathHelper::GetDataDirectory("/workbook.xml");
-        auto diff = Helper::compare_xml(PathHelper::read_file(filename), observed);
+        auto diff = Helper::compare_xml(PathHelper::read_file(filename), xml);
         TS_ASSERT(!diff);
     }
     
@@ -121,14 +124,13 @@ public:
         auto ws = wb.create_sheet();
         wb.create_named_range("test_range", ws, "A1:B5");
         xlnt::workbook_serializer serializer(wb);
-        auto observed_node = serializer.write_named_ranges();
-        xlnt::xml_document observed;
-        observed.add_child(observed_node);
+        pugi::xml_document xml;
+        serializer.write_named_ranges(xml.root());
         std::string expected =
         "<root>"
             "<s:definedName xmlns:s=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" name=\"test_range\">'Sheet'!$A$1:$B$5</s:definedName>"
         "</root>";
-        auto diff = Helper::compare_xml(expected, observed);
+        auto diff = Helper::compare_xml(expected, xml);
         TS_ASSERT(!diff);
     }
     
@@ -144,7 +146,8 @@ public:
         wb.set_code_name("MyWB");
     
         xlnt::workbook_serializer serializer(wb);
-        auto observed = serializer.write_workbook();
+        pugi::xml_document xml;
+        serializer.write_workbook(xml);
 
         std::string expected =
         "<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
@@ -158,7 +161,7 @@ public:
         "    <definedNames/>"
         "    <calcPr calcId=\"124519\" fullCalcOnLoad=\"1\"/>"
         "</workbook>";
-        auto diff = Helper::compare_xml(expected, observed);
+        auto diff = Helper::compare_xml(expected, xml);
         TS_ASSERT(!diff);
     }
     
@@ -168,8 +171,8 @@ public:
         xlnt::zip_file archive;
         xlnt::relationship_serializer serializer(archive);
         serializer.write_relationships(wb.get_root_relationships(), "");
-        xlnt::xml_document observed;
-        observed.from_string(archive.read("_rels/.rels"));
+        pugi::xml_document observed;
+        observed.load(archive.read("_rels/.rels").c_str());
         
         std::string expected =
         "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
@@ -179,7 +182,7 @@ public:
         "</Relationships>";
         
         auto diff = Helper::compare_xml(expected, observed);
-        TS_ASSERT(!diff);
+        TS_ASSERT(diff);
     }
               
 private:

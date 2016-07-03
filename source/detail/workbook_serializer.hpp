@@ -24,58 +24,46 @@
 #pragma once
 
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include <xlnt/xlnt_config.hpp>
 
-namespace xlnt {
-
-class alignment;
-class border;
-class color;
-class conditional_format;
-class fill;
-class font;
-class format;
-class base_format;
-class style;
-class number_format;
-class protection;
-class side;
-class style;
+namespace pugi {
 class xml_document;
 class xml_node;
+} // namespace pugi
 
-namespace detail { struct stylesheet; }
+namespace xlnt {
+
+class document_properties;
+class manifest;
+class relationship;
+class worksheet;
+class workbook;
+class zip_file;
 
 /// <summary>
-/// Reads and writes xl/styles.xml from/to an associated stylesheet.
+/// Manages converting workbook to and from XML.
 /// </summary>
-class XLNT_CLASS style_serializer
+class XLNT_CLASS workbook_serializer
 {
 public:
-    /// <summary>
-    /// Construct a style_serializer which can write styles.xml based on wb or populate wb
-    /// with styles from an existing styles.xml.
-    style_serializer(detail::stylesheet &s);
+    using string_pair = std::pair<std::string, std::string>;
 
-    /// <summary>
-    /// Load all styles from xml_document into workbook given in constructor.
-    /// </summary>
-    bool read_stylesheet(const xml_document &xml);
+    workbook_serializer(workbook &wb);
 
-    /// <summary>
-    /// Populate parameter xml with an XML tree representing the styles contained in the workbook
-    /// given in the constructor.
-    /// </summary>
-    bool write_stylesheet(xml_document &xml);
+    void read_workbook(const pugi::xml_document &xml);
+    void read_properties_app(const pugi::xml_document &xml);
+    void read_properties_core(const pugi::xml_document &xml);
+
+    void write_workbook(pugi::xml_document &xml) const;
+    void write_properties_app(pugi::xml_document &xml) const;
+    void write_properties_core(pugi::xml_document &xml) const;
+
+    void write_named_ranges(pugi::xml_node node) const;
 
 private:
-    /// <summary>
-    /// Set in the constructor, this stylesheet is used as the source or target for all writing or reading, respectively.
-    /// </summary>
-    detail::stylesheet &stylesheet_;
+    workbook &workbook_;
 };
 
 } // namespace xlnt

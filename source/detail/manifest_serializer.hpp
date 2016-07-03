@@ -23,23 +23,33 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <vector>
+#include <string>
 
 #include <xlnt/xlnt_config.hpp>
 
+namespace pugi {
+class xml_document;
+} // namespace pugi
+
 namespace xlnt {
 
-class text;
-class xml_document;
+class manifest;
 
 /// <summary>
-/// Manages converting a set of shared strings to and from XML.
+/// Manages converting a manifest to and from XML.
 /// </summary>
-class XLNT_CLASS shared_strings_serializer
+class XLNT_CLASS manifest_serializer
 {
 public:
-    static bool read_shared_strings(const xml_document &xml, std::vector<text> &strings);
-    static xml_document write_shared_strings(const std::vector<text> &strings);
+    manifest_serializer(manifest &m);
+
+    void read_manifest(const pugi::xml_document &xml);
+    void write_manifest(pugi::xml_document &xml) const;
+
+    std::string determine_document_type() const;
+
+private:
+    manifest &manifest_;
 };
 
-} // namespace xlnt
+}; // namespace xlnt

@@ -27,7 +27,7 @@
 
 #include <detail/stylesheet.hpp>
 #include <detail/worksheet_impl.hpp>
-#include <xlnt/serialization/encoding.hpp>
+#include <xlnt/workbook/encoding.hpp>
 #include <xlnt/packaging/app_properties.hpp>
 #include <xlnt/packaging/document_properties.hpp>
 #include <xlnt/packaging/manifest.hpp>

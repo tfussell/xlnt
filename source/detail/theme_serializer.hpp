@@ -24,33 +24,27 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/worksheet/worksheet.hpp>
+
+namespace pugi {
+class xml_document;
+} // namespace pugi
 
 namespace xlnt {
 
-class relationship;
-class workbook;
-class worksheet;
-class xml_document;
-
-namespace detail { struct stylesheet; }
+class theme;
 
 /// <summary>
-/// Manages converting a worksheet to and from XML.
+/// Manages converting a theme to and from XML.
 /// </summary>
-class XLNT_CLASS worksheet_serializer
+class XLNT_CLASS theme_serializer
 {
 public:
-    worksheet_serializer(worksheet sheet);
-
-    bool read_worksheet(const xml_document &xml, detail::stylesheet &stylesheet);
-    xml_document write_worksheet() const;
+    bool read_theme(const pugi::xml_document &xml, theme &t);
+    void write_theme(const theme &t, pugi::xml_document &xml) const;
 
 private:
-    worksheet sheet_;
 };
 
 } // namespace xlnt
