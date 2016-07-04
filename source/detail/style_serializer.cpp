@@ -411,17 +411,13 @@ xlnt::alignment read_alignment(const pugi::xml_node alignment_node)
     align.set_wrap_text(is_true(alignment_node.attribute("wrapText").value()));
     align.set_shrink_to_fit(is_true(alignment_node.attribute("shrinkToFit").value()));
 
-    bool has_vertical = alignment_node.attribute("vertical");
-
-    if (has_vertical)
+    if (alignment_node.attribute("vertical"))
     {
         std::string vertical = alignment_node.attribute("vertical").value();
         align.set_vertical(vertical_alignment_from_string(vertical));
     }
 
-    bool has_horizontal = alignment_node.attribute("horizontal");
-
-    if (has_horizontal)
+    if (alignment_node.attribute("horizontal"))
     {
         std::string horizontal = alignment_node.attribute("horizontal").value();
         align.set_horizontal(horizontal_alignment_from_string(horizontal));

@@ -129,17 +129,17 @@ bool worksheet_serializer::read_worksheet(const pugi::xml_document &xml, detail:
 
             if (cell_found)
             {
-                bool has_value = cell_node.child("v");
+                bool has_value = cell_node.child("v") != nullptr;
                 std::string value_string = has_value ? cell_node.child("v").text().get() : "";
 
-                bool has_type = cell_node.attribute("t");
+                bool has_type = cell_node.attribute("t") != nullptr;
                 std::string type = has_type ? cell_node.attribute("t").value() : "";
 
-                bool has_format = cell_node.attribute("s");
+                bool has_format = cell_node.attribute("s") != nullptr;
                 auto format_id = static_cast<std::size_t>(has_format ? std::stoull(cell_node.attribute("s").value()) : 0LL);
 
-                bool has_formula = cell_node.child("f");
-                bool has_shared_formula = has_formula && cell_node.child("f").attribute("t")
+                bool has_formula = cell_node.child("f") != nullptr;
+                bool has_shared_formula = has_formula && cell_node.child("f").attribute("t") != nullptr
                     && cell_node.child("f").attribute("t").value() == std::string("shared");
 
                 auto cell = sheet_.get_cell(address);

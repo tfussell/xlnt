@@ -268,8 +268,7 @@ void excel_serializer::write_data(bool /*as_template*/)
     {
         const auto &strings = workbook_.get_shared_strings();
         pugi::xml_document shared_strings_xml;
-        shared_strings_serializer strings_serializer;
-        strings_serializer.write_shared_strings(strings, shared_strings_xml);
+		shared_strings_serializer::write_shared_strings(strings, shared_strings_xml);
         shared_strings_xml.save(ss);
 
         archive_.writestr(constants::ArcSharedString(), ss.str());

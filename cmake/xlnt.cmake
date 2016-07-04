@@ -71,6 +71,7 @@ if(SHARED)
     target_compile_definitions(xlnt.shared PRIVATE XLNT_SHARED=1)
     if(MSVC)
         target_compile_definitions(xlnt.shared PRIVATE XLNT_EXPORT=1)
+        target_compile_definitions(xlnt.shared PRIVATE PUGIXML_API=__declspec\(dllexport\))
         set_target_properties(xlnt.shared PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\"")
     endif()
     install(TARGETS xlnt.shared

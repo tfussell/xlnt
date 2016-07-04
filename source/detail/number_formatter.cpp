@@ -160,6 +160,7 @@ bool format_condition::satisfied_by(long double number) const
     case condition_type::not_equal:
         return number != value;
     case condition_type::none:
+	default:
         return false;
     }
 }
@@ -471,11 +472,11 @@ void number_format_parser::finalize()
             if (part.type == template_part::template_type::month_number
                 || part.type == template_part::template_type::month_number_leading_zero)
             {
-                if (i < code.parts.size() - 2)
+                if (code.parts.size() > 1 && i < code.parts.size() - 2)
                 {
                     const auto &next = code.parts[i + 1];
                     const auto &after_next = code.parts[i + 2];
-                    
+
                     if (next.type == template_part::template_type::text
                         && next.string == ":"
                         && (after_next.type == template_part::template_type::second ||
