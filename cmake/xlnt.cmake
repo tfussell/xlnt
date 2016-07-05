@@ -149,7 +149,7 @@ configure_file(
     "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
     IMMEDIATE @ONLY)
 
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../include/xlnt 
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../include/xlnt
         DESTINATION include
         PATTERN ".DS_Store" EXCLUDE
 )
