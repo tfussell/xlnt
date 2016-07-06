@@ -1172,7 +1172,7 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, lo
         auto exponent = number != 0 ? static_cast<int>(std::log10(integer_part)) : 0;
         auto result = std::to_string(exponent);
         
-        while (result.back() == '0' || result.size() > (p.num_zeros + p.num_optionals))
+        while (!result.empty() && (result.back() == '0' || result.size() > (p.num_zeros + p.num_optionals)))
         {
             result.pop_back();
         }
