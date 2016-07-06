@@ -103,7 +103,7 @@ endif()
 
 if(STATIC)
     add_library(xlnt.static STATIC ${HEADERS} ${SOURCES} ${MINIZ} ${PUGIXML})
-	target_compile_definitions(xlnt.static PRIVATE XLNT_STATIC=1)
+    target_compile_definitions(xlnt.static PUBLIC XLNT_STATIC=1)
     install(TARGETS xlnt.static
         LIBRARY DESTINATION ${LIB_DEST_DIR}
         ARCHIVE DESTINATION ${LIB_DEST_DIR}
@@ -149,7 +149,7 @@ configure_file(
     "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
     IMMEDIATE @ONLY)
 
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../include/xlnt 
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../include/xlnt
         DESTINATION include
         PATTERN ".DS_Store" EXCLUDE
 )
