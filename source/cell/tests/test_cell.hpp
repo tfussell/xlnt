@@ -420,14 +420,11 @@ public:
 
         TS_ASSERT(!cell.has_format());
 
-        xlnt::protection prot;
-        prot.set_locked(xlnt::protection::type::protected_);
-
-        cell.set_protection(prot);
+        cell.set_protection(xlnt::protection(false, true));
         
         TS_ASSERT(cell.has_format());
         TS_ASSERT(cell.get_format().protection_applied());
-        TS_ASSERT_EQUALS(cell.get_protection(), prot);
+        TS_ASSERT_EQUALS(cell.get_protection(), xlnt::protection(false, true));
         
         TS_ASSERT(cell.has_format());
         cell.clear_format();

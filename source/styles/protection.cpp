@@ -26,41 +26,42 @@
 
 namespace xlnt {
 
-protection::protection() : protection(type::unprotected)
+protection::protection() : protection(true, false)
 {
 }
 
-protection::protection(type t) : locked_(t), hidden_(type::unprotected)
+protection::protection(bool locked, bool hidden)
+    : locked_(locked),
+      hidden_(hidden)
 {
 }
 
-protection::type protection::get_locked() const
+bool protection::get_locked() const
 {
     return locked_;
 }
 
-void protection::set_locked(type locked_type)
+void protection::set_locked(bool locked)
 {
-    locked_ = locked_type;
+    locked_ = locked;
 }
 
-
-protection::type protection::get_hidden() const
+bool protection::get_hidden() const
 {
     return hidden_;
 }
 
-void protection::set_hidden(type hidden_type)
+void protection::set_hidden(bool hidden)
 {
-    hidden_ = hidden_type;
+    hidden_ = hidden;
 }
 
 std::string protection::to_hash_string() const
 {
     std::string hash_string = "protection";
     
-    hash_string.append(std::to_string(static_cast<std::size_t>(locked_)));
-    hash_string.append(std::to_string(static_cast<std::size_t>(hidden_)));
+    hash_string.append(locked_ ? "1" : "0");
+    hash_string.append(hidden_ ? "1" : "0");
 
     return hash_string;
 }

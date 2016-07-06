@@ -93,36 +93,6 @@ std::size_t string_to_size_t(const std::string &s)
 // enum serialization
 //
 
-// protection::type serialization
-
-xlnt::protection::type protection_type_from_string(const std::string &type_string)
-{
-    auto lower = string_lower(type_string);
-    
-    if (lower == "inherit") return xlnt::protection::type::inherit;
-    if (is_true(lower)) return xlnt::protection::type::protected_;
-    
-    if (!is_false(lower))
-    {
-        throw std::runtime_error("bad enum " + type_string);
-    }
-    
-    return xlnt::protection::type::unprotected;
-};
-
-std::string protection_type_to_string(xlnt::protection::type type)
-{
-    switch (type)
-    {
-        case xlnt::protection::type::inherit: return "inherit";
-        case xlnt::protection::type::protected_: return "true";
-        case xlnt::protection::type::unprotected: return "false";
-    }
-    
-    throw std::runtime_error("bad enum " + std::to_string(static_cast<std::size_t>(type)));
-}
-
-
 // font::underline_style serialization
 
 const std::unordered_map<std::string, xlnt::font::underline_style> &get_string_underline_style_map()
@@ -398,10 +368,25 @@ xlnt::protection read_protection(const pugi::xml_node protection_node)
 {
     xlnt::protection prot;
 
-    prot.set_locked(protection_type_from_string(protection_node.attribute("locked").value()));
-    prot.set_hidden(protection_type_from_string(protection_node.attribute("hidden").value()));
+    if (is_true(protection_node.attribute("locked").value()))
+    {
+        prot.set_locked(true);
+    }
+    else if (!is_false(protection_node.attribute("locked").value()))
+    {
+        throw std::runtime_error("bad protection value");
+    }
 
-    return std::move(prot);
+    if (is_true(protection_node.attribute("hidden").value()))
+    {
+        prot.set_hidden(true);
+    }
+    else if (!is_false(protection_node.attribute("hidden").value()))
+    {
+        throw std::runtime_error("bad protection value");
+    }
+
+    return prot;
 }
 
 xlnt::alignment read_alignment(const pugi::xml_node alignment_node)
@@ -1030,12 +1015,14 @@ bool write_base_format(const xlnt::base_format &xf, const xlnt::detail::styleshe
 
         if (xf.get_alignment().has_vertical())
         {
-            alignment_node.append_attribute("vertical").set_value(vertical_alignment_to_string(xf.get_alignment().get_vertical()).c_str());
+            auto vertical = vertical_alignment_to_string(xf.get_alignment().get_vertical());
+            alignment_node.append_attribute("vertical").set_value(vertical.c_str());
         }
 
         if (xf.get_alignment().has_horizontal())
         {
-            alignment_node.append_attribute("horizontal").set_value(horizontal_alignment_to_string(xf.get_alignment().get_horizontal()).c_str());
+            auto horizontal = horizontal_alignment_to_string(xf.get_alignment().get_horizontal());
+            alignment_node.append_attribute("horizontal").set_value(horizontal.c_str());
         }
 
         if (xf.get_alignment().get_wrap_text())
@@ -1052,9 +1039,8 @@ bool write_base_format(const xlnt::base_format &xf, const xlnt::detail::styleshe
     if (xf.protection_applied())
     {
         auto protection_node = xf_node.append_child("protection");
-        
-        protection_node.append_attribute("locked").set_value(protection_type_to_string(xf.get_protection().get_locked()).c_str());
-        protection_node.append_attribute("hidden").set_value(protection_type_to_string(xf.get_protection().get_hidden()).c_str());
+        protection_node.append_attribute("locked").set_value(xf.get_protection().get_locked() ? "1" : "0");
+        protection_node.append_attribute("hidden").set_value(xf.get_protection().get_hidden() ? "1" : "0");
     }
     
     return true;
@@ -1135,17 +1121,6 @@ bool write_colors(const std::vector<xlnt::color> &colors, pugi::xml_node &colors
     {
         indexed_colors_node.append_child("rgbColor").append_attribute("rgb").set_value(c.get_rgb_string().c_str());
     }
-    
-    return true;
-}
-
-bool write_ext_list(pugi::xml_node &ext_list_node)
-{
-    auto ext_node = ext_list_node.append_child("ext");
-
-    ext_node.append_attribute("uri").set_value("{EB79DEF2-80B8-43e5-95BD-54CBDDF9020C}");
-    ext_node.append_attribute("xmlns:x14").set_value("http://schemas.microsoft.com/office/spreadsheetml/2009/9/main");
-    ext_node.append_child("x14:slicerStyles").append_attribute("defaultSlicerStyle").set_value("SlicerStyleLight1");
     
     return true;
 }
@@ -1238,9 +1213,6 @@ bool style_serializer::write_stylesheet(pugi::xml_document &doc)
         auto colors_node = root_node.append_child("colors");
         write_colors(stylesheet_.colors, colors_node);
     }
-    
-    auto ext_list_node = root_node.append_child("extLst");
-    write_ext_list(ext_list_node);
 
     return true;
 }

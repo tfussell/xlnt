@@ -465,9 +465,39 @@ void number_format_parser::finalize()
         bool leading_zero = false;
         std::size_t minutes_index = 0;
 
+        bool integer_part = false;
+        bool fractional_part = false;
+        std::size_t integer_part_index = 0;
+
+        bool percentage = false;
+
+        bool exponent = false;
+        std::size_t exponent_index = 0;
+
         for (std::size_t i = 0; i < code.parts.size(); ++i)
         {
             const auto &part = code.parts[i];
+
+            if (part.placeholders.type == format_placeholders::placeholders_type::integer_part)
+            {
+                integer_part = true;
+                integer_part_index = i;
+            }
+            else if (part.placeholders.type == format_placeholders::placeholders_type::fractional_part)
+            {
+                fractional_part = true;
+            }
+            else if (part.placeholders.type == format_placeholders::placeholders_type::scientific_exponent_plus
+                || part.placeholders.type == format_placeholders::placeholders_type::scientific_exponent_minus)
+            {
+                exponent = true;
+                exponent_index = i;
+            }
+
+            if (part.placeholders.percentage)
+            {
+                percentage = true;
+            }
 
             if (part.type == template_part::template_type::month_number
                 || part.type == template_part::template_type::month_number_leading_zero)
@@ -513,6 +543,30 @@ void number_format_parser::finalize()
             code.parts[minutes_index].type = leading_zero ?
                 template_part::template_type::minute_leading_zero :
                 template_part::template_type::minute;
+        }
+
+        if (integer_part && !fractional_part)
+        {
+            code.parts[integer_part_index].placeholders.type = format_placeholders::placeholders_type::integer_only;
+        }
+
+        if (integer_part && fractional_part && percentage)
+        {
+            code.parts[integer_part_index].placeholders.percentage = true;
+        }
+        
+        if (exponent)
+        {
+            const auto &next = code.parts[exponent_index + 1];
+            auto temp = code.parts[exponent_index].placeholders.type;
+            code.parts[exponent_index].placeholders = next.placeholders;
+            code.parts[exponent_index].placeholders.type = temp;
+            code.parts.erase(code.parts.begin() + exponent_index + 1);
+
+            for (std::size_t i = 0; i < code.parts.size(); ++i)
+            {
+                code.parts[i].placeholders.scientific = true;
+            }
         }
     }
 
@@ -608,14 +662,17 @@ number_format_token number_format_parser::parse_next_token()
         do
         {
             token.string.push_back(current_char);
-            current_char = format_string_[position_];
-            
-            if (current_char != '.')
-            {
-                ++position_;
-            }
+            current_char = format_string_[position_++];
         }
         while (current_char == '0' || current_char == '#' || current_char == '?' || current_char == ',');
+
+        --position_;
+
+        if (current_char == '%')
+        {
+            token.string.push_back('%');
+            ++position_;
+        }
 
         break;
         
@@ -692,6 +749,17 @@ number_format_token number_format_parser::parse_next_token()
         token.type = number_format_token::token_type::number;
         token.string.push_back(current_char);
         break;
+        
+    case 'E':
+        token.type = number_format_token::token_type::number;
+        token.string.push_back(current_char);
+        current_char = format_string_[position_++];
+        
+        if (current_char == '+' || current_char == '-')
+        {
+            token.string.push_back(current_char);
+            break;
+        }
 
     default:
         throw std::runtime_error("unexpected character");
@@ -735,6 +803,22 @@ format_placeholders number_format_parser::parse_placeholders(const std::string &
     else if (placeholders_string.front() == '.')
     {
         p.type = format_placeholders::placeholders_type::fractional_part;
+    }
+    else if (placeholders_string.front() == 'E')
+    {
+        p.type = placeholders_string[1] == '+'
+            ? format_placeholders::placeholders_type::scientific_exponent_plus
+            : format_placeholders::placeholders_type::scientific_exponent_minus;
+        return p;
+    }
+    else
+    {
+        p.type = format_placeholders::placeholders_type::integer_part;
+    }
+
+    if (placeholders_string.back() == '%')
+    {
+        p.percentage = true;
     }
 
     std::vector<std::size_t> comma_indices;
@@ -983,10 +1067,28 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, lo
         return result;
     }
 
+    if (p.percentage)
+    {
+        number *= 100;
+    }
+
     auto integer_part = static_cast<int>(number);
 
-    if (p.type != format_placeholders::placeholders_type::fractional_part)
+    if (p.type == format_placeholders::placeholders_type::integer_only
+        || p.type == format_placeholders::placeholders_type::integer_part)
     {
+        if (p.scientific)
+        {
+            auto fractional_part = number;
+
+            while (fractional_part > 10)
+            {
+                fractional_part /= 10;
+            }
+            
+            integer_part = static_cast<int>(fractional_part);
+        }
+
         auto result = std::to_string(integer_part);
         
         while (result.size() < p.num_zeros)
@@ -1017,14 +1119,32 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, lo
             result = std::string(temp.rbegin(), temp.rend());
         }
 
+        if (p.percentage && p.type == format_placeholders::placeholders_type::integer_only)
+        {
+            result.push_back('%');
+        }
+
         return result;
     }
-    else
+    else if (p.type == format_placeholders::placeholders_type::fractional_part)
     {
         auto fractional_part = number - integer_part;
-        auto result = std::to_string(fractional_part).substr(1);
 
-        while (result.back() == '0')
+        if (p.scientific)
+        {
+            fractional_part = number;
+
+            while (fractional_part > 10)
+            {
+                fractional_part /= 10;
+            }
+            
+            fractional_part -= static_cast<int>(fractional_part);
+        }
+
+        auto result = fractional_part == 0 ? std::string(".") : std::to_string(fractional_part).substr(1);
+
+        while (result.back() == '0' || result.size() > (p.num_zeros + p.num_optionals + 1))
         {
             result.pop_back();
         }
@@ -1039,8 +1159,45 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, lo
             result.push_back(' ');
         }
 
+        if (p.percentage)
+        {
+            result.push_back('%');
+        }
+
         return result;
     }
+    else if (p.type == format_placeholders::placeholders_type::scientific_exponent_minus
+        || p.type == format_placeholders::placeholders_type::scientific_exponent_plus)
+    {
+        auto exponent = number != 0 ? static_cast<int>(std::log10(integer_part)) : 0;
+        auto result = std::to_string(exponent);
+        
+        while (result.back() == '0' || result.size() > (p.num_zeros + p.num_optionals))
+        {
+            result.pop_back();
+        }
+
+        while (result.size() < p.num_zeros)
+        {
+            result = "0" + result;
+        }
+        
+        while (result.size() < p.num_zeros + p.num_spaces)
+        {
+            result = " " + result;
+        }
+
+        if (p.percentage)
+        {
+            result.push_back('%');
+        }
+        
+        result = (p.type == format_placeholders::placeholders_type::scientific_exponent_plus ? "E+" : "E") + result;
+
+        return result;
+    }
+    
+    return "";
 }
 
 std::string number_formatter::format_number(const format_code &format, long double number)
@@ -1188,6 +1345,7 @@ std::string number_formatter::format_number(const format_code &format, long doub
 std::string number_formatter::format_text(const format_code &format, const std::string &text)
 {
     std::string result;
+    bool any_text_part = false;
 
     for (const auto &part : format.parts)
     {
@@ -1195,6 +1353,7 @@ std::string number_formatter::format_text(const format_code &format, const std::
         {
         case template_part::template_type::text:
             result.append(part.string);
+            any_text_part = true;
             break;
 
         case template_part::template_type::general:
@@ -1202,6 +1361,7 @@ std::string number_formatter::format_text(const format_code &format, const std::
                 || part.placeholders.type == format_placeholders::placeholders_type::text)
             {
                 result.append(text);
+                any_text_part = true;
             }
 
             break;
@@ -1209,6 +1369,11 @@ std::string number_formatter::format_text(const format_code &format, const std::
         default:
             break;
         }
+    }
+
+    if (!format.parts.empty() && !any_text_part)
+    {
+        return text;
     }
 
     return result;

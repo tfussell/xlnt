@@ -236,16 +236,20 @@ struct format_placeholders
         bad,
         general,
         text,
-        fractional_part,
+        integer_only,
         integer_part,
+        fractional_part,
         fraction_integer,
         fraction_numerator,
         fraction_denominator,
         scientific_significand,
-        scientific_exponent
+        scientific_exponent_plus,
+        scientific_exponent_minus
     } type = placeholders_type::bad;
 
     bool use_comma_separator = false;
+    bool percentage = false;
+    bool scientific = false;
 
     std::size_t num_zeros = 0; // 0
     std::size_t num_optionals = 0; // #

@@ -36,28 +36,21 @@ namespace xlnt {
 class XLNT_CLASS protection : public hashable
 {
 public:
-    enum class type
-    {
-        inherit,
-        protected_,
-        unprotected
-    };
-
     protection();
-    protection(type locked);
+    protection(bool locked, bool hidden);
 
-    type get_locked() const;
-    void set_locked(type locked_type);
+    bool get_locked() const;
+    void set_locked(bool locked);
     
-    type get_hidden() const;
-    void set_hidden(type hidden_type);
+    bool get_hidden() const;
+    void set_hidden(bool hidden);
 
 protected:
     std::string to_hash_string() const override;
 
 private:
-    type locked_;
-    type hidden_;
+    bool locked_;
+    bool hidden_;
 };
 
 } // namespace xlnt

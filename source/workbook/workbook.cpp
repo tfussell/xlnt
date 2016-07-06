@@ -91,6 +91,11 @@ workbook::workbook() : d_(new detail::workbook_impl())
     add_format(format());
     create_style("Normal");
     d_->stylesheet_.format_styles.front() = "Normal";
+
+    xlnt::fill gray125;
+    gray125.set_type(xlnt::fill::type::pattern);
+    gray125.set_pattern_type(xlnt::fill::pattern_type::gray125);
+    d_->stylesheet_.fills.push_back(gray125);
 }
 
 workbook::workbook(encoding e) : workbook()

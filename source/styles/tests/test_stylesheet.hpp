@@ -14,65 +14,6 @@
 class test_stylesheet : public CxxTest::TestSuite
 {
 public:
-    void test_ctor()
-    {
-        xlnt::workbook wb;
-        xlnt::excel_serializer excel_serializer(wb);
-        xlnt::style_serializer style_serializer(excel_serializer.get_stylesheet());
-        xlnt::zip_file archive;
-        pugi::xml_document stylesheet_doc;
-        style_serializer.write_stylesheet(stylesheet_doc);
-        std::ostringstream ss;
-        stylesheet_doc.save(ss);
-        auto stylesheet_xml = ss.str();
-        
-        const std::string expected =
-        "<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:x14ac=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac\" mc:Ignorable=\"x14ac\">"
-        "  <fonts count=\"1\">"
-        "    <font>"
-        "      <sz val=\"12\"/>"
-        "      <color theme=\"1\"/>"
-        "      <name val=\"Calibri\"/>"
-        "      <family val=\"2\"/>"
-        "      <scheme val=\"minor\"/>"
-        "    </font>"
-        "  </fonts>"
-        "  <fills count=\"1\">"
-        "    <fill>"
-        "      <patternFill patternType=\"none\"/>"
-        "    </fill>"
-        "  </fills>"
-        "  <borders count=\"1\">"
-        "    <border>"
-        "      <left/>"
-        "      <right/>"
-        "      <top/>"
-        "      <bottom/>"
-        "      <diagonal/>"
-        "    </border>"
-        "  </borders>"
-        "  <cellStyleXfs count=\"1\">"
-        "    <xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/>"
-        "  </cellStyleXfs>"
-        "  <cellXfs count=\"1\">"
-        "    <xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/>"
-        "  </cellXfs>"
-        "  <cellStyles count=\"1\">"
-        "    <cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/>"
-        "  </cellStyles>"
-        "  <dxfs count=\"0\"/>"
-        "  <tableStyles count=\"0\" defaultTableStyle=\"TableStyleMedium9\" defaultPivotStyle=\"PivotStyleMedium7\"/>"
-        "  <extLst>"
-        "    <ext xmlns:x14=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/main\" uri=\"{EB79DEF2-80B8-43e5-95BD-54CBDDF9020C}\">"
-        "      <x14:slicerStyles defaultSlicerStyle=\"SlicerStyleLight1\"/>"
-        "    </ext>"
-        "  </extLst>"
-        "</styleSheet>";
-        
-        TS_ASSERT(Helper::compare_xml(expected, stylesheet_xml));
-    }
-
-
     void test_from_simple()
     {
         pugi::xml_document doc;

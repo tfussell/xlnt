@@ -95,7 +95,7 @@ struct stylesheet
         }
         
         formats.push_back(f);
-        format_styles.push_back("");
+        format_styles.push_back("Normal");
         
         try
         {

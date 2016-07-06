@@ -162,8 +162,11 @@ const protection &base_format::get_protection() const
 
 void base_format::set_protection(const xlnt::protection &new_protection)
 {
-    protection_ = new_protection;
-    protection_applied(true);
+    if (!new_protection.get_locked() || new_protection.get_hidden())
+    {
+        protection_ = new_protection;
+        protection_applied(true);
+    }
 }
 
 std::string base_format::to_hash_string() const
