@@ -1,14 +1,26 @@
 version: '{build}'
 os: Visual Studio 2015
+
+configuration:
+- Debug
+
+environment:
+  matrix:
+  - SHARED: ON
+    STATIC: OFF
+  - SHARED: OFF
+    STATIC: ON
+
 init: []
 install: []
-build_script:
-- git submodule init
-- git submodule update
-- set PATH=C:\Program Files (x86)\MSBuild\14.0\Bin;%PATH%
-- mkdir build
-- cd build
-- cmake -G "Visual Studio 14 2015 Win64" -D SHARED=1 -D TESTS=1 ..
-- cmake --build . --config Debug
+before_build:
+- git submodule update --init --recursive
+- cmake -H. -Bbuild -G"Visual Studio 14 2015 Win64" -DSHARED=%SHARED% -DSTATIC=%STATIC% -DTESTS=ON
+
+build:
+  project: build\xlnt.sln
+  parallel: true
+  verbosity: minimal
+
 test_script:
-- bin\xlnt.test.exe
+- build\bin\xlnt.test.exe
