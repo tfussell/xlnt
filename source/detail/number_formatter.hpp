@@ -303,7 +303,9 @@ struct template_part
         minute,
         minute_leading_zero,
         second,
+        second_fractional,
         second_leading_zero,
+        second_leading_zero_fractional,
         am_pm,
         a_p,
         elapsed_hours,
@@ -358,6 +360,8 @@ public:
 
 private:
     std::string fill_placeholders(const format_placeholders &p, long double number);
+    std::string fill_fraction_placeholders(const format_placeholders &numerator,
+        const format_placeholders &denominator, long double number, bool improper);
     std::string format_number(const format_code &format, long double number);
     std::string format_text(const format_code &format, const std::string &text);
 

@@ -474,9 +474,29 @@ void number_format_parser::finalize()
         bool exponent = false;
         std::size_t exponent_index = 0;
 
+        bool fraction = false;
+        std::size_t fraction_denominator_index = 0;
+        std::size_t fraction_numerator_index = 0;
+        
+        bool seconds = false;
+        bool fractional_seconds = false;
+        std::size_t seconds_index = 0;
+
         for (std::size_t i = 0; i < code.parts.size(); ++i)
         {
             const auto &part = code.parts[i];
+            
+            if (i > 0
+                && i + 1 < code.parts.size()
+                && part.type == template_part::template_type::text
+                && part.string == "/"
+                && code.parts[i - 1].placeholders.type == format_placeholders::placeholders_type::integer_part
+                && code.parts[i + 1].placeholders.type == format_placeholders::placeholders_type::integer_part)
+            {
+                fraction = true;
+                fraction_numerator_index = i - 1;
+                fraction_denominator_index = i + 1;
+            }
 
             if (part.placeholders.type == format_placeholders::placeholders_type::integer_part)
             {
@@ -497,6 +517,18 @@ void number_format_parser::finalize()
             if (part.placeholders.percentage)
             {
                 percentage = true;
+            }
+            
+            if (part.type == template_part::template_type::second
+                || part.type == template_part::template_type::second_leading_zero)
+            {
+                seconds = true;
+                seconds_index = i;
+            }
+
+            if (seconds && part.placeholders.type == format_placeholders::placeholders_type::fractional_part)
+            {
+                fractional_seconds = true;
             }
 
             if (part.type == template_part::template_type::month_number
@@ -547,7 +579,8 @@ void number_format_parser::finalize()
 
         if (integer_part && !fractional_part)
         {
-            code.parts[integer_part_index].placeholders.type = format_placeholders::placeholders_type::integer_only;
+            code.parts[integer_part_index].placeholders.type =
+                format_placeholders::placeholders_type::integer_only;
         }
 
         if (integer_part && fractional_part && percentage)
@@ -566,6 +599,36 @@ void number_format_parser::finalize()
             for (std::size_t i = 0; i < code.parts.size(); ++i)
             {
                 code.parts[i].placeholders.scientific = true;
+            }
+        }
+        
+        if (fraction)
+        {
+            code.parts[fraction_numerator_index].placeholders.type =
+                format_placeholders::placeholders_type::fraction_numerator;
+            code.parts[fraction_denominator_index].placeholders.type =
+                format_placeholders::placeholders_type::fraction_denominator;
+            
+            for (std::size_t i = 0; i < code.parts.size(); ++i)
+            {
+                if (code.parts[i].placeholders.type ==
+                    format_placeholders::placeholders_type::integer_part)
+                {
+                    code.parts[i].placeholders.type =
+                        format_placeholders::placeholders_type::fraction_integer;
+                }
+            }
+        }
+        
+        if (fractional_seconds)
+        {
+            if (code.parts[seconds_index].type == template_part::template_type::second)
+            {
+                code.parts[seconds_index].type = template_part::template_type::second_fractional;
+            }
+            else
+            {
+                code.parts[seconds_index].type = template_part::template_type::second_leading_zero_fractional;
             }
         }
     }
@@ -1042,7 +1105,12 @@ std::string number_formatter::format_text(const std::string &text)
 {
     if (format_.size() < 4)
     {
-        return format_text(format_[0], text);
+        format_code temp;
+        template_part temp_part;
+        temp_part.type = template_part::template_type::general;
+        temp_part.placeholders.type = format_placeholders::placeholders_type::general;
+        temp.parts.push_back(temp_part);
+        return format_text(temp, text);
     }
 
     return format_text(format_[3], text);
@@ -1075,7 +1143,8 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, lo
     auto integer_part = static_cast<int>(number);
 
     if (p.type == format_placeholders::placeholders_type::integer_only
-        || p.type == format_placeholders::placeholders_type::integer_part)
+        || p.type == format_placeholders::placeholders_type::integer_part
+        || p.type == format_placeholders::placeholders_type::fraction_integer)
     {
         if (p.scientific)
         {
@@ -1200,6 +1269,45 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, lo
     return "";
 }
 
+std::string number_formatter::fill_fraction_placeholders(const format_placeholders &numerator,
+    const format_placeholders &denominator, long double number, bool improper)
+{
+    auto fractional_part = number - static_cast<int>(number);
+    auto original_fractional_part = fractional_part;
+    fractional_part *= 10;
+
+    while (std::abs(fractional_part - static_cast<int>(fractional_part)) > 0.000001
+        && std::abs(fractional_part - static_cast<int>(fractional_part)) < 0.999999)
+    {
+        fractional_part *= 10;
+    }
+
+    fractional_part = static_cast<int>(fractional_part);
+    auto denominator_digits = denominator.num_zeros + denominator.num_optionals + denominator.num_spaces;
+//    auto denominator_digits = static_cast<std::size_t>(std::ceil(std::log10(fractional_part)));
+
+    auto lower = static_cast<int>(std::pow(10, denominator_digits - 1));
+    auto upper = static_cast<int>(std::pow(10, denominator_digits));
+    auto best_denominator = lower;
+    auto best_difference = 1000.0L;
+
+    for (int i = lower; i < upper; ++i)
+    {
+        auto numerator_full = original_fractional_part * i;
+        auto numerator_rounded = static_cast<int>(std::round(numerator_full));
+        auto difference = std::fabs(original_fractional_part - (numerator_rounded / static_cast<long double>(i)));
+        
+        if (difference < best_difference)
+        {
+            best_difference = difference;
+            best_denominator = i;
+        }
+    }
+
+    auto numerator_rounded = static_cast<int>(std::round(original_fractional_part * best_denominator));
+    return std::to_string(numerator_rounded) + "/" + std::to_string(best_denominator);
+}
+
 std::string number_formatter::format_number(const format_code &format, long double number)
 {
     static const std::vector<std::string> *month_names =
@@ -1224,19 +1332,44 @@ std::string number_formatter::format_number(const format_code &format, long doub
     if (number < 0)
     {
         result.push_back('-');
+
+        if (format.is_datetime)
+        {
+            return std::string(11, '#');
+        }
     }
 
     number = std::fabs(number);
 
-    xlnt::datetime dt(0, 0, 0);
+    xlnt::datetime dt(0, 1, 0);
+    std::size_t hour = 0;
 
     if (format.is_datetime)
     {
-        dt = xlnt::datetime::from_number(number, calendar_);
-    }
+        if (number != 0)
+        {
+            dt = xlnt::datetime::from_number(number, calendar_);
+        }
 
-    for (const auto &part : format.parts)
+        hour = dt.hour;
+
+        if (format.twelve_hour)
+        {
+            hour %= 12;
+
+            if (hour == 0)
+            {
+                hour = 12;
+            }
+        }
+    }
+    
+    bool improper_fraction = true;
+
+    for (std::size_t i = 0; i < format.parts.size(); ++i)
     {
+        const auto &part = format.parts[i];
+
         switch (part.type)
         {
         case template_part::template_type::space:
@@ -1247,7 +1380,28 @@ std::string number_formatter::format_number(const format_code &format, long doub
             break;
         case template_part::template_type::general:
         {
-            result.append(fill_placeholders(part.placeholders, number));
+            if (part.placeholders.type == format_placeholders::placeholders_type::fraction_integer)
+            {
+                improper_fraction = false;
+            }
+
+            if (part.placeholders.type == format_placeholders::placeholders_type::fraction_numerator)
+            {
+                i += 2;
+
+                if (number == 0)
+                {
+                    result.pop_back();
+                    break;
+                }
+
+                result.append(fill_fraction_placeholders(part.placeholders, format.parts[i].placeholders, number, improper_fraction));
+            }
+            else
+            {
+                result.append(fill_placeholders(part.placeholders, number));
+            }
+
             break;
         }
         case template_part::template_type::day_number:
@@ -1290,15 +1444,15 @@ std::string number_formatter::format_number(const format_code &format, long doub
             result.append(std::to_string(dt.year));
             break;
         case template_part::template_type::hour:
-            result.append(std::to_string(format.twelve_hour ? dt.hour % 12 : dt.hour));
+            result.append(std::to_string(hour));
             break;
         case template_part::template_type::hour_leading_zero:
-            if (format.twelve_hour ? dt.hour % 12 : dt.hour < 10)
+            if (hour < 10)
             {
                 result.push_back('0');
             }
 
-            result.append(std::to_string(format.twelve_hour ? dt.hour % 12 : dt.hour));
+            result.append(std::to_string(hour));
             break;
         case template_part::template_type::minute:
             result.append(std::to_string(dt.minute));
@@ -1312,9 +1466,20 @@ std::string number_formatter::format_number(const format_code &format, long doub
             result.append(std::to_string(dt.minute));
             break;
         case template_part::template_type::second:
+            result.append(std::to_string(dt.second + (dt.microsecond > 500000 ? 1 : 0)));
+            break;
+        case template_part::template_type::second_fractional:
             result.append(std::to_string(dt.second));
             break;
         case template_part::template_type::second_leading_zero:
+            if ((dt.second + (dt.microsecond > 500000 ? 1 : 0)) < 10)
+            {
+                result.push_back('0');
+            }
+
+            result.append(std::to_string(dt.second + (dt.microsecond > 500000 ? 1 : 0)));
+            break;
+        case template_part::template_type::second_leading_zero_fractional:
             if (dt.second < 10)
             {
                 result.push_back('0');

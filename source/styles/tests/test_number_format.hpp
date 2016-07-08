@@ -450,67 +450,67 @@ public:
     }
 
     // # ?/?
-    void _test_builtin_format_12()
+    void test_builtin_format_12()
     {
         format_and_test(xlnt::number_format::from_builtin_id(12), {{"42503 1/8", "-42503 1/8", "0", "text"}});
     }
 
     // # ??/??
-    void _test_builtin_format_13()
+    void test_builtin_format_13()
     {
         format_and_test(xlnt::number_format::from_builtin_id(13), {{"42503 10/81", "-42503 10/81", "0", "text"}});
     }
 
     // mm-dd-yy
-    void _test_builtin_format_14()
+    void test_builtin_format_14()
     {
         format_and_test(xlnt::number_format::from_builtin_id(14), {{"05-13-16", "###########", "01-00-00", "text"}});
     }
 
     // d-mmm-yy
-    void _test_builtin_format_15()
+    void test_builtin_format_15()
     {
         format_and_test(xlnt::number_format::from_builtin_id(15), {{"13-May-16", "###########", "0-Jan-00", "text"}});
     }
 
     // d-mmm
-    void _test_builtin_format_16()
+    void test_builtin_format_16()
     {
         format_and_test(xlnt::number_format::from_builtin_id(16), {{"13-May", "###########", "0-Jan", "text"}});
     }
 
     // mmm-yy
-    void _test_builtin_format_17()
+    void test_builtin_format_17()
     {
         format_and_test(xlnt::number_format::from_builtin_id(17), {{"May-16", "###########", "Jan-00", "text"}});
     }
 
     // h:mm AM/PM
-    void _test_builtin_format_18()
+    void test_builtin_format_18()
     {
         format_and_test(xlnt::number_format::from_builtin_id(18), {{"2:57 AM", "###########", "12:00 AM", "text"}});
     }
     
     // h:mm:ss AM/PM
-    void _test_builtin_format_19()
+    void test_builtin_format_19()
     {
         format_and_test(xlnt::number_format::from_builtin_id(19), {{"2:57:42 AM", "###########", "12:00:00 AM", "text"}});
     }
     
     // h:mm
-    void _test_builtin_format_20()
+    void test_builtin_format_20()
     {
         format_and_test(xlnt::number_format::from_builtin_id(20), {{"2:57", "###########", "0:00", "text"}});
     }
     
     // h:mm:ss
-    void _test_builtin_format_21()
+    void test_builtin_format_21()
     {
         format_and_test(xlnt::number_format::from_builtin_id(21), {{"2:57:42", "###########", "0:00:00", "text"}});
     }
     
     // m/d/yy h:mm
-    void _test_builtin_format_22()
+    void test_builtin_format_22()
     {
         format_and_test(xlnt::number_format::from_builtin_id(22), {{"5/13/16 2:57", "###########", "1/0/00 0:00", "text"}});
     }
