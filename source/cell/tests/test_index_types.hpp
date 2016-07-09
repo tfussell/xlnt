@@ -59,9 +59,9 @@ public:
         TS_ASSERT_EQUALS(c1, 3);
         
         TS_ASSERT(c2 <= 4);
-        TS_ASSERT(!(c2 <= 3));
+        TS_ASSERT(!(c2 < 3));
         TS_ASSERT(c1 >= 3);
-        TS_ASSERT(!(c1 >= 4));
+        TS_ASSERT(!(c1 > 4));
 
         TS_ASSERT(4 >= c2);
         TS_ASSERT(!(3 >= c2));
