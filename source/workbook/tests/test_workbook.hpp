@@ -223,6 +223,15 @@ public:
         TS_ASSERT_EQUALS((*(iter++)).get_title(), "Sheet1");
         TS_ASSERT_EQUALS((*(iter++)).get_title(), "Sheet2");
         TS_ASSERT_EQUALS(iter, wb.end());
+
+        const auto wb_const = wb;
+
+        auto const_iter = wb_const.begin();
+
+        TS_ASSERT_EQUALS((*(const_iter++)).get_title(), "Sheet");
+        TS_ASSERT_EQUALS((*(const_iter++)).get_title(), "Sheet1");
+        TS_ASSERT_EQUALS((*(const_iter++)).get_title(), "Sheet2");
+        TS_ASSERT_EQUALS(const_iter, wb_const.end());
     }
 
     void test_copy_iterator()
