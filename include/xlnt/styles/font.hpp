@@ -80,15 +80,17 @@ public:
 
     void set_family(std::size_t family);
 
+    bool has_scheme() const;
+
     void set_scheme(const std::string &scheme);
+
+    std::string get_scheme() const;
 
     color get_color() const;
 
     bool has_family() const;
 
     std::size_t get_family() const;
-
-    bool has_scheme() const;
 
 protected:
     std::string to_hash_string() const override;

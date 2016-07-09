@@ -878,7 +878,7 @@ bool write_fonts(const std::vector<xlnt::font> &fonts, pugi::xml_node &fonts_nod
         if (f.has_scheme())
         {
             auto scheme_node = font_node.append_child("scheme");
-            scheme_node.append_attribute("val").set_value("minor");
+            scheme_node.append_attribute("val").set_value(f.get_scheme().c_str());
         }
     }
     

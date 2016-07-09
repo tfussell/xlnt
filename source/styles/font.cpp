@@ -145,6 +145,11 @@ bool font::has_scheme() const
     return has_scheme_;
 }
 
+std::string font::get_scheme() const
+{
+    return scheme_;
+}
+
 std::string font::to_hash_string() const
 {
     std::string hash_string = "font";
