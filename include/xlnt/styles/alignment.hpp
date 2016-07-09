@@ -61,8 +61,8 @@ protected:
     std::string to_hash_string() const override;
 
 private:
-    horizontal_alignment horizontal_ = horizontal_alignment::none;
-    vertical_alignment vertical_ = vertical_alignment::none;
+    horizontal_alignment horizontal_ = horizontal_alignment::general;
+    vertical_alignment vertical_ = vertical_alignment::bottom;
     int text_rotation_ = 0;
     bool wrap_text_ = false;
     bool shrink_to_fit_ = false;
