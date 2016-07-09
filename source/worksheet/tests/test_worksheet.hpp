@@ -933,24 +933,42 @@ public:
     {
         xlnt::workbook wb;
         auto ws = wb.get_active_sheet();
-        TS_ASSERT(ws.get_header_footer().get_center_header().is_default());
-        ws.get_header_footer().get_center_header().set_text("abc");
-        ws.get_header_footer().get_center_header().set_font_name("def");
-        ws.get_header_footer().get_center_header().set_font_size(121);
-        ws.get_header_footer().get_center_header().set_font_color("ghi");
-        TS_ASSERT(!ws.get_header_footer().get_center_header().is_default());
+
+        auto &header_footer = ws.get_header_footer();
+
+        for (auto header_pointer : { &header_footer.get_left_header(),
+            &header_footer.get_center_header(), &header_footer.get_right_header() })
+        {
+            auto &header = *header_pointer;
+
+            TS_ASSERT(header.is_default());
+            header.set_text("abc");
+            header.set_font_name("def");
+            header.set_font_size(121);
+            header.set_font_color("ghi");
+            TS_ASSERT(!header.is_default());
+        }
     }
     
     void test_footer()
     {
         xlnt::workbook wb;
         auto ws = wb.get_active_sheet();
-        TS_ASSERT(ws.get_header_footer().get_center_footer().is_default());
-        ws.get_header_footer().get_center_footer().set_text("abc");
-        ws.get_header_footer().get_center_footer().set_font_name("def");
-        ws.get_header_footer().get_center_footer().set_font_size(121);
-        ws.get_header_footer().get_center_footer().set_font_color("ghi");
-        TS_ASSERT(!ws.get_header_footer().get_center_footer().is_default());
+
+        auto &header_footer = ws.get_header_footer();
+
+        for (auto header_pointer : { &header_footer.get_left_footer(),
+            &header_footer.get_center_footer(), &header_footer.get_right_footer() })
+        {
+            auto &header = *header_pointer;
+
+            TS_ASSERT(header.is_default());
+            header.set_text("abc");
+            header.set_font_name("def");
+            header.set_font_size(121);
+            header.set_font_color("ghi");
+            TS_ASSERT(!header.is_default());
+        }
     }
     
     void test_page_setup()
