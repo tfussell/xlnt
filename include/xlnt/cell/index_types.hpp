@@ -231,27 +231,27 @@ public:
     /// <summary>
     /// Return the result of adding rhs to this column.
     /// </summary>
-    friend column_t operator+(column_t lhs, const column_t& rhs);
+    friend XLNT_FUNCTION column_t operator+(column_t lhs, const column_t& rhs);
 
     /// <summary>
     /// Return the result of subtracing lhs by rhs column.
     /// </summary>
-    friend column_t operator-(column_t lhs, const column_t& rhs);
+    friend XLNT_FUNCTION column_t operator-(column_t lhs, const column_t& rhs);
 
     /// <summary>
     /// Return the result of multiply lhs by rhs column.
     /// </summary>
-    friend column_t operator*(column_t lhs, const column_t& rhs);
+    friend XLNT_FUNCTION column_t operator*(column_t lhs, const column_t& rhs);
 
     /// <summary>
     /// Return the result of divide lhs by rhs column.
     /// </summary>
-    friend column_t operator/(column_t lhs, const column_t& rhs);
+    friend XLNT_FUNCTION column_t operator/(column_t lhs, const column_t& rhs);
 
     /// <summary>
     /// Return the result of mod lhs by rhs column.
     /// </summary>
-    friend column_t operator%(column_t lhs, const column_t& rhs);
+    friend XLNT_FUNCTION column_t operator%(column_t lhs, const column_t& rhs);
 
     /// <summary>
     /// Add rhs to this column and return a reference to this column.
@@ -281,27 +281,27 @@ public:
     /// <summary>
     /// Return true if other is to the right of this column.
     /// </summary>
-    friend bool operator>(const column_t::index_t &left, const column_t &right);
+    friend XLNT_FUNCTION bool operator>(const column_t::index_t &left, const column_t &right);
 
     /// <summary>
     /// Return true if other is to the right of or equal to this column.
     /// </summary>
-    friend bool operator>=(const column_t::index_t &left, const column_t &right);
+    friend XLNT_FUNCTION bool operator>=(const column_t::index_t &left, const column_t &right);
 
     /// <summary>
     /// Return true if other is to the left of this column.
     /// </summary>
-    friend bool operator<(const column_t::index_t &left, const column_t &right);
+    friend XLNT_FUNCTION bool operator<(const column_t::index_t &left, const column_t &right);
 
     /// <summary>
     /// Return true if other is to the left of or equal to this column.
     /// </summary>
-    friend bool operator<=(const column_t::index_t &left, const column_t &right);
+    friend XLNT_FUNCTION bool operator<=(const column_t::index_t &left, const column_t &right);
 
     /// <summary>
     /// Swap the columns that left and right refer to.
     /// </summary>
-    friend void swap(column_t &left, column_t &right);
+    friend XLNT_FUNCTION void swap(column_t &left, column_t &right);
 
     /// <summary>
     /// Internal numeric value of this column index.

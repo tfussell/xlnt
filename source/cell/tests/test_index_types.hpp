@@ -62,5 +62,10 @@ public:
         TS_ASSERT(!(c2 <= 3));
         TS_ASSERT(c1 >= 3);
         TS_ASSERT(!(c1 >= 4));
+
+        TS_ASSERT(4 >= c2);
+        TS_ASSERT(!(3 >= c2));
+        TS_ASSERT(3 <= c1);
+        TS_ASSERT(!(4 <= c1));
     }
 };
