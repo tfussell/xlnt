@@ -209,6 +209,47 @@ public:
 
         TS_ASSERT_EQUALS(test_sheet.get_cell("A1").get_value<long double>(), float_value);
     }
+
+    void test_post_increment_iterator()
+    {
+        xlnt::workbook wb;
+
+        wb.create_sheet("Sheet1");
+        wb.create_sheet("Sheet2");
+
+        auto iter = wb.begin();
+
+        TS_ASSERT_EQUALS((*(iter++)).get_title(), "Sheet");
+        TS_ASSERT_EQUALS((*(iter++)).get_title(), "Sheet1");
+        TS_ASSERT_EQUALS((*(iter++)).get_title(), "Sheet2");
+        TS_ASSERT_EQUALS(iter, wb.end());
+    }
+
+    void test_copy_iterator()
+    {
+        xlnt::workbook wb;
+
+        wb.create_sheet("Sheet1");
+        wb.create_sheet("Sheet2");
+
+        auto iter = wb.begin();
+
+        iter++;
+        TS_ASSERT_EQUALS((*iter).get_title(), "Sheet1");
+
+        auto copy = wb.begin();
+        copy = iter;
+        TS_ASSERT_EQUALS((*iter).get_title(), "Sheet1");
+        TS_ASSERT_EQUALS(iter, copy);
+
+        iter++;
+        TS_ASSERT_EQUALS((*iter).get_title(), "Sheet2");
+        TS_ASSERT_DIFFERS(iter, copy);
+
+        copy++;
+        TS_ASSERT_EQUALS((*iter).get_title(), "Sheet2");
+        TS_ASSERT_EQUALS(iter, copy);
+    }
     
     // void test_add_invalid_worksheet_class_instance() {} not needed in c++
 };
