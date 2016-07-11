@@ -159,8 +159,7 @@ bool format_condition::satisfied_by(long double number) const
         return number < value;
     case condition_type::not_equal:
         return number != value;
-    case condition_type::none:
-	default:
+    default:
         return false;
     }
 }
@@ -197,9 +196,6 @@ void number_format_parser::parse()
             section = format_code();
 
             break;
-
-        case number_format_token::token_type::bad:
-            throw std::runtime_error("bad format");
 
         case number_format_token::token_type::color:
             if (section.color != format_color::none
@@ -715,7 +711,13 @@ number_format_token number_format_parser::parse_next_token()
         token.string.push_back(format_string_[position_++]);
 
         break;
-        
+
+    case '*':
+        token.type = number_format_token::token_type::fill;
+        token.string.push_back(format_string_[position_++]);
+
+        break;
+
     case '0':
     case '#':
     case '?':
@@ -783,10 +785,18 @@ number_format_token number_format_parser::parse_next_token()
 
         while (end != std::string::npos && format_string_[end - 1] == '\\')
         {
+            token.string.append(format_string_.substr(start, end - start - 1));
+            token.string.push_back('"');
+            position_ = end + 1;
+            start = position_;
             end = format_string_.find('"', position_);
         }
 
-        token.string = format_string_.substr(start, end - start);
+        if (end != start)
+        {
+            token.string.append(format_string_.substr(start, end - start));
+        }
+
         position_ = end + 1;
 
         break;
@@ -910,9 +920,9 @@ format_placeholders number_format_parser::parse_placeholders(const std::string &
     
     if (!comma_indices.empty())
     {
-        std::size_t i = placeholders_string.size();
+        std::size_t i = placeholders_string.size() - 1;
 
-        while (i == comma_indices.back())
+        while (!comma_indices.empty() && i == comma_indices.back())
         {
             ++p.thousands_scale;
             --i;
@@ -1140,6 +1150,11 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, lo
         number *= 100;
     }
 
+    if (p.thousands_scale > 0)
+    {
+        number /= std::pow(1000, p.thousands_scale);
+    }
+
     auto integer_part = static_cast<int>(number);
 
     if (p.type == format_placeholders::placeholders_type::integer_only
@@ -1365,6 +1380,9 @@ std::string number_formatter::format_number(const format_code &format, long doub
     }
     
     bool improper_fraction = true;
+    std::size_t fill_index = 0;
+    bool fill = false;
+    std::string fill_character;
 
     for (std::size_t i = 0; i < format.parts.size(); ++i)
     {
@@ -1377,6 +1395,11 @@ std::string number_formatter::format_number(const format_code &format, long doub
             break;
         case template_part::template_type::text:
             result.append(part.string);
+            break;
+        case template_part::template_type::fill:
+            fill = true;
+            fill_index = result.size();
+            fill_character = part.string;
             break;
         case template_part::template_type::general:
         {
@@ -1502,6 +1525,28 @@ std::string number_formatter::format_number(const format_code &format, long doub
         default:
             throw "unhandled";
         }
+    }
+    
+    const std::size_t width = 11;
+    
+    if (fill && result.size() < width)
+    {
+        auto remaining = width - result.size();
+
+        std::string fill_string(remaining, fill_character.front());
+
+        // A UTF-8 character could be multiple bytes
+        if (fill_character.size() > 1)
+        {
+            fill_string.clear();
+
+            for (std::size_t i = 0; i < remaining; ++i)
+            {
+                fill_string.append(fill_character);
+            }
+        }
+
+        result = result.substr(0, fill_index) + fill_string + result.substr(fill_index);
     }
 
     return result;
