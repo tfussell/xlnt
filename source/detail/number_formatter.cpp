@@ -647,16 +647,16 @@ number_format_token number_format_parser::parse_next_token()
     switch (current_char)
     {
     case '[':
-        do
-        {
-            token.string.push_back(format_string_[position_++]);
-        }
-        while (format_string_[position_] != ']' && position_ < format_string_.size());
-
         if (position_ == format_string_.size())
         {
             throw std::runtime_error("missing ]");
         }
+
+        do
+        {
+            token.string.push_back(format_string_[position_++]);
+        }
+        while (position_ < format_string_.size() && format_string_[position_] != ']');
 
         if (token.string.empty())
         {
