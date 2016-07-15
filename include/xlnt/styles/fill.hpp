@@ -31,7 +31,7 @@
 
 namespace xlnt {
 
-class pattern_fill : public hashable
+class XLNT_CLASS pattern_fill : public hashable
 {
 public:
     enum class type
@@ -87,7 +87,7 @@ private:
     std::experimental::optional<color> background_color_;
 };
 
-class gradient_fill : public hashable
+class XLNT_CLASS gradient_fill : public hashable
 {
 public:
     enum class type
