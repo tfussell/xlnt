@@ -249,50 +249,74 @@ void excel_serializer::write_data(bool /*as_template*/)
     pugi::xml_document properties_app_xml;
     workbook_serializer workbook_serializer_(workbook_);
     workbook_serializer_.write_properties_app(properties_app_xml);
-    std::ostringstream ss;
-    properties_app_xml.save(ss);
-    archive_.writestr(constants::ArcApp(), ss.str());
+
+    {
+        std::ostringstream ss;
+        properties_app_xml.save(ss);
+        archive_.writestr(constants::ArcApp(), ss.str());
+    }
 
     pugi::xml_document properties_core_xml;
     workbook_serializer_.write_properties_core(properties_core_xml);
-    properties_core_xml.save(ss);
-    archive_.writestr(constants::ArcCore(), ss.str());
+
+    {
+        std::ostringstream ss;
+        properties_core_xml.save(ss);
+        archive_.writestr(constants::ArcCore(), ss.str());
+    }
 
     pugi::xml_document theme_xml;
     theme_serializer theme_serializer_;
     theme_serializer_.write_theme(workbook_.get_loaded_theme(), theme_xml);
-    theme_xml.save(ss);
-    archive_.writestr(constants::ArcTheme(), ss.str());
+
+    {
+        std::ostringstream ss;
+        theme_xml.save(ss);
+        archive_.writestr(constants::ArcTheme(), ss.str());
+    }
 
     if (!workbook_.get_shared_strings().empty())
     {
         const auto &strings = workbook_.get_shared_strings();
         pugi::xml_document shared_strings_xml;
-		shared_strings_serializer::write_shared_strings(strings, shared_strings_xml);
-        shared_strings_xml.save(ss);
+        shared_strings_serializer::write_shared_strings(strings, shared_strings_xml);
 
+        std::ostringstream ss;
+        shared_strings_xml.save(ss);
         archive_.writestr(constants::ArcSharedString(), ss.str());
     }
 
     pugi::xml_document workbook_xml;
     workbook_serializer_.write_workbook(workbook_xml);
-    workbook_xml.save(ss);
-    archive_.writestr(constants::ArcWorkbook(), ss.str());
+
+    {
+        std::ostringstream ss;
+        workbook_xml.save(ss);
+        archive_.writestr(constants::ArcWorkbook(), ss.str());
+    }
 
     style_serializer style_serializer(workbook_.d_->stylesheet_);
     pugi::xml_document style_xml;
     style_serializer.write_stylesheet(style_xml);
-    style_xml.save(ss);
-    archive_.writestr(constants::ArcStyles(), ss.str());
+
+    {
+        std::ostringstream ss;
+        style_xml.save(ss);
+        archive_.writestr(constants::ArcStyles(), ss.str());
+    }
 
     manifest_serializer manifest_serializer_(workbook_.get_manifest());
     pugi::xml_document manifest_xml;
     manifest_serializer_.write_manifest(manifest_xml);
-    manifest_xml.save(ss);
-    archive_.writestr(constants::ArcContentTypes(), ss.str());
+
+    {
+        std::ostringstream ss;
+        manifest_xml.save(ss);
+        archive_.writestr(constants::ArcContentTypes(), ss.str());
+    }
 
     write_worksheets();
-    
+
     if(!workbook_.get_thumbnail().empty())
     {
         const auto &thumbnail = workbook_.get_thumbnail();
