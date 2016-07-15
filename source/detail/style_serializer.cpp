@@ -144,46 +144,46 @@ std::string underline_style_to_string(xlnt::font::underline_style underline_styl
 
 // fill::pattern_type serialization
 
-const std::unordered_map<std::string, xlnt::fill::pattern_type> &get_string_pattern_fill_type_map()
+const std::unordered_map<std::string, xlnt::pattern_fill::type> &get_string_pattern_fill_type_map()
 {
-    static std::unordered_map<std::string, xlnt::fill::pattern_type> *map = nullptr;
+    static std::unordered_map<std::string, xlnt::pattern_fill::type> *map = nullptr;
     
     if (map == nullptr)
     {
-        map = new std::unordered_map<std::string, xlnt::fill::pattern_type>
+        map = new std::unordered_map<std::string, xlnt::pattern_fill::type>
         {
-            { "darkdown", xlnt::fill::pattern_type::darkdown },
-            { "darkgray", xlnt::fill::pattern_type::darkgray },
-            { "darkgrid", xlnt::fill::pattern_type::darkgrid },
-            { "darkhorizontal", xlnt::fill::pattern_type::darkhorizontal },
-            { "darktrellis", xlnt::fill::pattern_type::darktrellis },
-            { "darkup", xlnt::fill::pattern_type::darkup },
-            { "darkvertical", xlnt::fill::pattern_type::darkvertical },
-            { "gray0625", xlnt::fill::pattern_type::gray0625 },
-            { "gray125", xlnt::fill::pattern_type::gray125 },
-            { "lightdown", xlnt::fill::pattern_type::lightdown },
-            { "lightgray", xlnt::fill::pattern_type::lightgray },
-            { "lightgrid", xlnt::fill::pattern_type::lightgrid },
-            { "lighthorizontal", xlnt::fill::pattern_type::lighthorizontal },
-            { "lighttrellis", xlnt::fill::pattern_type::lighttrellis },
-            { "lightup", xlnt::fill::pattern_type::lightup },
-            { "lightvertical", xlnt::fill::pattern_type::lightvertical },
-            { "mediumgray", xlnt::fill::pattern_type::mediumgray },
-            { "none", xlnt::fill::pattern_type::none },
-            { "solid", xlnt::fill::pattern_type::solid }
+            { "darkdown", xlnt::pattern_fill::type::darkdown },
+            { "darkgray", xlnt::pattern_fill::type::darkgray },
+            { "darkgrid", xlnt::pattern_fill::type::darkgrid },
+            { "darkhorizontal", xlnt::pattern_fill::type::darkhorizontal },
+            { "darktrellis", xlnt::pattern_fill::type::darktrellis },
+            { "darkup", xlnt::pattern_fill::type::darkup },
+            { "darkvertical", xlnt::pattern_fill::type::darkvertical },
+            { "gray0625", xlnt::pattern_fill::type::gray0625 },
+            { "gray125", xlnt::pattern_fill::type::gray125 },
+            { "lightdown", xlnt::pattern_fill::type::lightdown },
+            { "lightgray", xlnt::pattern_fill::type::lightgray },
+            { "lightgrid", xlnt::pattern_fill::type::lightgrid },
+            { "lighthorizontal", xlnt::pattern_fill::type::lighthorizontal },
+            { "lighttrellis", xlnt::pattern_fill::type::lighttrellis },
+            { "lightup", xlnt::pattern_fill::type::lightup },
+            { "lightvertical", xlnt::pattern_fill::type::lightvertical },
+            { "mediumgray", xlnt::pattern_fill::type::mediumgray },
+            { "none", xlnt::pattern_fill::type::none },
+            { "solid", xlnt::pattern_fill::type::solid }
         };
     }
     
     return *map;
 }
 
-const std::unordered_map<xlnt::fill::pattern_type, std::string, EnumClassHash> &get_pattern_fill_type_string_map()
+const std::unordered_map<xlnt::pattern_fill::type, std::string, EnumClassHash> &get_pattern_fill_type_string_map()
 {
-    static std::unordered_map<xlnt::fill::pattern_type, std::string, EnumClassHash> *map = nullptr;
+    static std::unordered_map<xlnt::pattern_fill::type, std::string, EnumClassHash> *map = nullptr;
     
     if (map == nullptr)
     {
-        map = new std::unordered_map<xlnt::fill::pattern_type, std::string, EnumClassHash>;
+        map = new std::unordered_map<xlnt::pattern_fill::type, std::string, EnumClassHash>;
 
         for (auto pair : get_string_pattern_fill_type_map())
         {
@@ -194,14 +194,59 @@ const std::unordered_map<xlnt::fill::pattern_type, std::string, EnumClassHash> &
     return *map;
 }
 
-xlnt::fill::pattern_type pattern_fill_type_from_string(const std::string &fill_type)
+xlnt::pattern_fill::type pattern_fill_type_from_string(const std::string &fill_type)
 {
     return get_string_pattern_fill_type_map().at(string_lower(fill_type));
 };
 
-std::string pattern_fill_type_to_string(xlnt::fill::pattern_type fill_type)
+std::string pattern_fill_type_to_string(xlnt::pattern_fill::type fill_type)
 {
     return get_pattern_fill_type_string_map().at(fill_type);
+}
+
+// fill::gradient_type serialization
+
+const std::unordered_map<std::string, xlnt::gradient_fill::type> &get_string_gradient_fill_type_map()
+{
+    static std::unordered_map<std::string, xlnt::gradient_fill::type> *map = nullptr;
+    
+    if (map == nullptr)
+    {
+        map = new std::unordered_map<std::string, xlnt::gradient_fill::type>
+        {
+            { "linear", xlnt::gradient_fill::type::linear },
+            { "path", xlnt::gradient_fill::type::path }
+        };
+    }
+    
+    return *map;
+}
+
+const std::unordered_map<xlnt::gradient_fill::type, std::string, EnumClassHash> &get_gradient_fill_type_string_map()
+{
+    static std::unordered_map<xlnt::gradient_fill::type, std::string, EnumClassHash> *map = nullptr;
+    
+    if (map == nullptr)
+    {
+        map = new std::unordered_map<xlnt::gradient_fill::type, std::string, EnumClassHash>;
+
+        for (auto pair : get_string_gradient_fill_type_map())
+        {
+            map->emplace(pair.second, pair.first);
+        }
+    }
+    
+    return *map;
+}
+
+xlnt::gradient_fill::type gradient_fill_type_from_string(const std::string &fill_type)
+{
+    return get_string_gradient_fill_type_map().at(string_lower(fill_type));
+};
+
+std::string gradient_fill_type_to_string(xlnt::gradient_fill::type fill_type)
+{
+    return get_gradient_fill_type_string_map().at(fill_type);
 }
 
 
@@ -563,24 +608,40 @@ xlnt::fill read_fill(const pugi::xml_node &fill_node)
 
     if (fill_node.child("patternFill"))
     {
-        new_fill.set_type(xlnt::fill::type::pattern);
-
         auto pattern_fill_node = fill_node.child("patternFill");
         std::string pattern_fill_type_string = pattern_fill_node.attribute("patternType").value();
         
         if (!pattern_fill_type_string.empty())
         {
-            new_fill.set_pattern_type(pattern_fill_type_from_string(pattern_fill_type_string));
+            new_fill = xlnt::fill::pattern(pattern_fill_type_from_string(pattern_fill_type_string));
 
             if (pattern_fill_node.child("bgColor"))
             {
-                new_fill.get_background_color() = read_color(pattern_fill_node.child("bgColor"));
+                new_fill.get_pattern_fill().get_background_color() = read_color(pattern_fill_node.child("bgColor"));
             }
 
             if (pattern_fill_node.child("fgColor"))
             {
-                new_fill.get_foreground_color() = read_color(pattern_fill_node.child("fgColor"));
+                new_fill.get_pattern_fill().get_foreground_color() = read_color(pattern_fill_node.child("fgColor"));
             }
+        }
+        else
+        {
+            new_fill = xlnt::fill::pattern(xlnt::pattern_fill::type::none);
+        }
+    }
+    else if (fill_node.child("gradientFill"))
+    {
+        auto gradient_fill_node = fill_node.child("gradientFill");
+        std::string gradient_fill_type_string = gradient_fill_node.attribute("gradientType").value();
+        
+        if (!gradient_fill_type_string.empty())
+        {
+            new_fill = xlnt::fill::gradient(gradient_fill_type_from_string(gradient_fill_type_string));
+        }
+        else
+        {
+            new_fill = xlnt::fill::gradient(xlnt::gradient_fill::type::linear);
         }
     }
 
@@ -895,46 +956,59 @@ bool write_fills(const std::vector<xlnt::fill> &fills, pugi::xml_node &fills_nod
 
         if (fill_.get_type() == xlnt::fill::type::pattern)
         {
+            const auto &pattern = fill_.get_pattern_fill();
+
             auto pattern_fill_node = fill_node.append_child("patternFill");
-            pattern_fill_node.append_attribute("patternType").set_value(pattern_fill_type_to_string(fill_.get_pattern_type()).c_str());
-            
-            if (fill_.get_pattern_type() != xlnt::fill::pattern_type::solid) continue;
+            pattern_fill_node.append_attribute("patternType").set_value(pattern_fill_type_to_string(pattern.get_type()).c_str());
 
-            if (fill_.get_foreground_color())
+            if (pattern.get_foreground_color())
             {
-                write_color(*fill_.get_foreground_color(), pattern_fill_node.append_child("fgColor"));
+                write_color(*pattern.get_foreground_color(), pattern_fill_node.append_child("fgColor"));
             }
 
-            if (fill_.get_background_color())
+            if (pattern.get_background_color())
             {
-                write_color(*fill_.get_background_color(), pattern_fill_node.append_child("bgColor"));
+                write_color(*pattern.get_background_color(), pattern_fill_node.append_child("bgColor"));
             }
-        }
-        else if (fill_.get_type() == xlnt::fill::type::solid)
-        {
-            auto solid_fill_node = fill_node.append_child("solidFill");
-            solid_fill_node.append_child("color");
         }
         else if (fill_.get_type() == xlnt::fill::type::gradient)
         {
+            const auto &gradient = fill_.get_gradient_fill();
+
             auto gradient_fill_node = fill_node.append_child("gradientFill");
+            auto gradient_fill_type_string = gradient_fill_type_to_string(gradient.get_type());
+            gradient_fill_node.append_attribute("gradientType").set_value(gradient_fill_type_string.c_str());
 
-            if (fill_.get_gradient_type() == xlnt::fill::gradient_type::linear)
+            if (gradient.get_degree() != 0)
             {
-                gradient_fill_node.append_attribute("degree").set_value(std::to_string(fill_.get_rotation()).c_str());
+                gradient_fill_node.append_attribute("degree").set_value(gradient.get_degree());
             }
-            else if (fill_.get_gradient_type() == xlnt::fill::gradient_type::path)
+
+            if (gradient.get_gradient_left() != 0)
             {
-                gradient_fill_node.append_attribute("left").set_value(std::to_string(fill_.get_gradient_left()).c_str());
-                gradient_fill_node.append_attribute("right").set_value(std::to_string(fill_.get_gradient_right()).c_str());
-                gradient_fill_node.append_attribute("top").set_value(std::to_string(fill_.get_gradient_top()).c_str());
-                gradient_fill_node.append_attribute("bottom").set_value(std::to_string(fill_.get_gradient_bottom()).c_str());
+                gradient_fill_node.append_attribute("left").set_value(gradient.get_gradient_left());
+            }
 
-                auto start_node = gradient_fill_node.append_child("stop");
-                start_node.append_attribute("position").set_value("0");
+            if (gradient.get_gradient_right() != 0)
+            {
+                gradient_fill_node.append_attribute("right").set_value(gradient.get_gradient_right());
+            }
 
-                auto end_node = gradient_fill_node.append_child("stop");
-                end_node.append_attribute("position").set_value("1");
+            if (gradient.get_gradient_top() != 0)
+            {
+                gradient_fill_node.append_attribute("top").set_value(gradient.get_gradient_top());
+            }
+
+            if (gradient.get_gradient_bottom() != 0)
+            {
+                gradient_fill_node.append_attribute("bottom").set_value(gradient.get_gradient_bottom());
+            }
+            
+            for (const auto &stop : gradient.get_stops())
+            {
+                auto stop_node = gradient_fill_node.append_child("stop");
+                stop_node.append_attribute("position").set_value(stop.first);
+                write_color(stop.second, stop_node.append_child("color"));
             }
         }
     }
@@ -989,6 +1063,41 @@ bool write_borders(const std::vector<xlnt::border> &borders, pugi::xml_node &bor
     return true;
 }
 
+bool write_alignment(const xlnt::alignment &a, pugi::xml_node alignment_node)
+{
+    if (a.has_vertical())
+    {
+        auto vertical = vertical_alignment_to_string(a.get_vertical());
+        alignment_node.append_attribute("vertical").set_value(vertical.c_str());
+    }
+
+    if (a.has_horizontal())
+    {
+        auto horizontal = horizontal_alignment_to_string(a.get_horizontal());
+        alignment_node.append_attribute("horizontal").set_value(horizontal.c_str());
+    }
+
+    if (a.get_wrap_text())
+    {
+        alignment_node.append_attribute("wrapText").set_value("1");
+    }
+    
+    if (a.get_shrink_to_fit())
+    {
+        alignment_node.append_attribute("shrinkToFit").set_value("1");
+    }
+
+    return true;
+}
+
+bool write_protection(const xlnt::protection &p, pugi::xml_node protection_node)
+{
+    protection_node.append_attribute("locked").set_value(p.get_locked() ? "1" : "0");
+    protection_node.append_attribute("hidden").set_value(p.get_hidden() ? "1" : "0");
+
+    return true;
+}
+
 bool write_base_format(const xlnt::base_format &xf, const xlnt::detail::stylesheet &stylesheet, pugi::xml_node xf_node)
 {
     xf_node.append_attribute("numFmtId").set_value(std::to_string(xf.get_number_format().get_id()).c_str());
@@ -1006,41 +1115,17 @@ bool write_base_format(const xlnt::base_format &xf, const xlnt::detail::styleshe
     if(xf.fill_applied()) xf_node.append_attribute("applyFill").set_value("1");
     if(xf.font_applied()) xf_node.append_attribute("applyFont").set_value("1");
     if(xf.border_applied()) xf_node.append_attribute("applyBorder").set_value("1");
-    if(xf.alignment_applied()) xf_node.append_attribute("applyAlignment").set_value("1");
-    if(xf.protection_applied()) xf_node.append_attribute("applyProtection").set_value("1");
 
-    if (xf.alignment_applied())
+    if(xf.alignment_applied())
     {
-        auto alignment_node = xf_node.append_child("alignment");
-
-        if (xf.get_alignment().has_vertical())
-        {
-            auto vertical = vertical_alignment_to_string(xf.get_alignment().get_vertical());
-            alignment_node.append_attribute("vertical").set_value(vertical.c_str());
-        }
-
-        if (xf.get_alignment().has_horizontal())
-        {
-            auto horizontal = horizontal_alignment_to_string(xf.get_alignment().get_horizontal());
-            alignment_node.append_attribute("horizontal").set_value(horizontal.c_str());
-        }
-
-        if (xf.get_alignment().get_wrap_text())
-        {
-            alignment_node.append_attribute("wrapText").set_value("1");
-        }
-        
-        if (xf.get_alignment().get_shrink_to_fit())
-        {
-            alignment_node.append_attribute("shrinkToFit").set_value("1");
-        }
+        xf_node.append_attribute("applyAlignment").set_value("1");
+        write_alignment(xf.get_alignment(), xf_node.append_child("alignment"));
     }
     
     if (xf.protection_applied())
     {
-        auto protection_node = xf_node.append_child("protection");
-        protection_node.append_attribute("locked").set_value(xf.get_protection().get_locked() ? "1" : "0");
-        protection_node.append_attribute("hidden").set_value(xf.get_protection().get_hidden() ? "1" : "0");
+        xf_node.append_attribute("applyProtection").set_value("1");
+        write_protection(xf.get_protection(), xf_node.append_child("protection"));
     }
     
     return true;

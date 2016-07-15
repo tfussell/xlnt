@@ -23,69 +23,47 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <unordered_map>
+
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/styles/color.hpp>
 #include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 
-/// <summary>
-/// Describes the fill style of a particular cell.
-/// </summary>
-class XLNT_CLASS fill : public hashable
+class pattern_fill : public hashable
 {
 public:
     enum class type
     {
         none,
         solid,
-        gradient,
-        pattern
-    };
-
-    enum class gradient_type
-    {
-        none,
-        linear,
-        path
-    };
-
-    enum class pattern_type
-    {
-        none,
-        solid,
-        darkdown,
-        darkgray,
-        darkgrid,
-        darkhorizontal,
-        darktrellis,
-        darkup,
-        darkvertical,
-        gray0625,
-        gray125,
-        lightdown,
-        lightgray,
-        lightgrid,
-        lighthorizontal,
-        lighttrellis,
-        lightup,
-        lightvertical,
         mediumgray,
+        darkgray,
+        lightgray,
+        darkhorizontal,
+        darkvertical,
+        darkdown,
+        darkup,
+        darkgrid,
+        darktrellis,
+        lighthorizontal,
+        lightvertical,
+        lightdown,
+        lightup,
+        lightgrid,
+        lighttrellis,
+        gray125,
+        gray0625
     };
-    
-    fill();
+
+    pattern_fill();
+
+    pattern_fill(type pattern_type);
 
     type get_type() const;
 
-    void set_type(type t);
-
-    pattern_type get_pattern_type() const;
-
-    void set_pattern_type(pattern_type t);
-    
-    gradient_type get_gradient_type() const;
-
-    void set_gradient_type(gradient_type t);
+    void set_type(type pattern_type);
 
     void set_foreground_color(const color &c);
 
@@ -99,49 +77,110 @@ public:
 
     const std::experimental::optional<color> &get_background_color() const;
 
-    void set_start_color(const color &c);
+protected:
+    std::string to_hash_string() const override;
 
-    std::experimental::optional<color> &get_start_color();
+private:
+    type type_ = type::none;
 
-    const std::experimental::optional<color> &get_start_color() const;
+    std::experimental::optional<color> foreground_color_;
+    std::experimental::optional<color> background_color_;
+};
 
-    void set_end_color(const color &c);
+class gradient_fill : public hashable
+{
+public:
+    enum class type
+    {
+        linear,
+        path
+    };
 
-    std::experimental::optional<color> &get_end_color();
+    gradient_fill();
 
-    const std::experimental::optional<color> &get_end_color() const;
+    gradient_fill(type gradient_type);
 
-    void set_rotation(double rotation);
+    type get_type() const;
 
-    double get_rotation() const;
+    void set_type(type gradient_type);
+
+    void set_degree(double degree);
+
+    double get_degree() const;
 
     double get_gradient_left() const;
 
+    void set_gradient_left(double value);
+
     double get_gradient_right() const;
+
+    void set_gradient_right(double value);
 
     double get_gradient_top() const;
 
+    void set_gradient_top(double value);
+
     double get_gradient_bottom() const;
+
+    void set_gradient_bottom(double value);
+
+    void add_stop(double position, color stop_color);
+
+    void delete_stop(double position);
+
+    void clear_stops();
+    
+    const std::unordered_map<double, color> &get_stops() const;
 
 protected:
     std::string to_hash_string() const override;
 
 private:
-    type type_;
-    pattern_type pattern_type_;
-    gradient_type gradient_type_;
-    
-    double rotation_;
-    
-    std::experimental::optional<color> foreground_color_;
-    std::experimental::optional<color> background_color_;
-    std::experimental::optional<color> start_color_;
-    std::experimental::optional<color> end_color_;
-    
-    double gradient_path_left_;
-    double gradient_path_right_;
-    double gradient_path_top_;
-    double gradient_path_bottom_;
+    type type_ = type::linear;
+
+    std::unordered_map<double, color> stops_;
+
+    double degree_ = 0;
+
+    double left_ = 0;
+    double right_ = 0;
+    double top_ = 0;
+    double bottom_ = 0;
+};
+
+/// <summary>
+/// Describes the fill style of a particular cell.
+/// </summary>
+class XLNT_CLASS fill : public hashable
+{
+public:
+    enum class type
+    {
+        pattern,
+        gradient
+    };
+
+    static fill gradient(gradient_fill::type gradient_type);
+
+    static fill pattern(pattern_fill::type pattern_type);
+
+    type get_type() const;
+
+    gradient_fill &get_gradient_fill();
+
+    const gradient_fill &get_gradient_fill() const;
+
+    pattern_fill &get_pattern_fill();
+
+    const pattern_fill &get_pattern_fill() const;
+
+protected:
+    std::string to_hash_string() const override;
+
+private:
+    type type_ = type::pattern;
+    gradient_fill gradient_;
+    pattern_fill pattern_;
 };
 
 } // namespace xlnt

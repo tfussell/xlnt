@@ -214,4 +214,147 @@ public:
 
         TS_ASSERT(style_xml_matches(expected, wb));
     }
+
+    void test_alignment()
+    {
+        xlnt::workbook wb;
+        xlnt::alignment a;
+        a.set_horizontal(xlnt::horizontal_alignment::center_continuous);
+        a.set_vertical(xlnt::vertical_alignment::justify);
+        a.set_wrap_text(true);
+        a.set_shrink_to_fit(true);
+        wb.get_active_sheet().get_cell("A1").set_alignment(a);
+
+        std::string expected =
+        "<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:x14ac=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac\" mc:Ignorable=\"x14ac\">"
+        "  <fonts count=\"1\">"
+        "    <font>"
+        "      <sz val=\"12\"/>"
+        "      <color theme=\"1\"/>"
+        "      <name val=\"Calibri\"/>"
+        "      <family val=\"2\"/>"
+        "      <scheme val=\"minor\"/>"
+        "    </font>"
+        "  </fonts>"
+        "  <fills count=\"2\">"
+        "    <fill>"
+        "      <patternFill patternType=\"none\"/>"
+        "    </fill>"
+        "    <fill>"
+        "      <patternFill patternType=\"gray125\"/>"
+        "    </fill>"
+        "  </fills>"
+        "  <borders count=\"1\">"
+        "    <border>"
+        "      <left/>"
+        "      <right/>"
+        "      <top/>"
+        "      <bottom/>"
+        "      <diagonal/>"
+        "    </border>"
+        "  </borders>"
+        "  <cellStyleXfs count=\"1\">"
+        "    <xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/>"
+        "  </cellStyleXfs>"
+        "  <cellXfs count=\"2\">"
+        "    <xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/>"
+        "    <xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\">"
+        "      <alignment vertical=\"justify\" horizontal=\"center-continuous\" wrapText=\"1\" shrinkToFit=\"1\"/>"
+        "    </xf>"
+        "  </cellXfs>"
+        "  <cellStyles count=\"1\">"
+        "    <cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/>"
+        "  </cellStyles>"
+        "  <dxfs count=\"0\"/>"
+        "  <tableStyles count=\"0\" defaultTableStyle=\"TableStyleMedium9\" defaultPivotStyle=\"PivotStyleMedium7\"/>"
+        "</styleSheet>";
+        TS_ASSERT(style_xml_matches(expected, wb));
+    }
+
+    void test_fill()
+    {
+        xlnt::workbook wb;
+
+        xlnt::fill pattern_fill = xlnt::fill::pattern(xlnt::pattern_fill::type::solid);
+        pattern_fill.get_pattern_fill().set_foreground_color(xlnt::color::red());
+        pattern_fill.get_pattern_fill().set_background_color(xlnt::color::blue());
+        wb.get_active_sheet().get_cell("A1").set_fill(pattern_fill);
+
+        xlnt::fill gradient_fill_linear = xlnt::fill::gradient(xlnt::gradient_fill::type::linear);
+        gradient_fill_linear.get_gradient_fill().set_degree(90);
+        wb.get_active_sheet().get_cell("A1").set_fill(gradient_fill_linear);
+
+        xlnt::fill gradient_fill_path = xlnt::fill::gradient(xlnt::gradient_fill::type::path);
+        gradient_fill_path.get_gradient_fill().set_gradient_left(1);
+        gradient_fill_path.get_gradient_fill().set_gradient_right(2);
+        gradient_fill_path.get_gradient_fill().set_gradient_top(3);
+        gradient_fill_path.get_gradient_fill().set_gradient_bottom(4);
+        gradient_fill_path.get_gradient_fill().add_stop(0, xlnt::color::red());
+        gradient_fill_path.get_gradient_fill().add_stop(1, xlnt::color::blue());
+        wb.get_active_sheet().get_cell("A1").set_fill(gradient_fill_path);
+
+        std::string expected =
+        "<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:x14ac=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac\" mc:Ignorable=\"x14ac\">"
+        "  <fonts count=\"1\">"
+        "    <font>"
+        "      <sz val=\"12\"/>"
+        "      <color theme=\"1\"/>"
+        "      <name val=\"Calibri\"/>"
+        "      <family val=\"2\"/>"
+        "      <scheme val=\"minor\"/>"
+        "    </font>"
+        "  </fonts>"
+        "  <fills count=\"5\">"
+        "    <fill>"
+        "      <patternFill patternType=\"none\"/>"
+        "    </fill>"
+        "    <fill>"
+        "      <patternFill patternType=\"gray125\"/>"
+        "    </fill>"
+        "    <fill>"
+        "      <patternFill patternType=\"solid\">"
+        "        <fgColor rgb=\"ffff0000\"/>"
+        "        <bgColor rgb=\"ff0000ff\"/>"
+        "      </patternFill>"
+        "    </fill>"
+        "    <fill>"
+        "      <gradientFill gradientType=\"linear\" degree=\"90\"/>"
+        "    </fill>"
+        "    <fill>"
+        "      <gradientFill gradientType=\"path\" left=\"1\" right=\"2\" top=\"3\" bottom=\"4\">"
+        "        <stop position=\"0\">"
+        "          <color rgb=\"ff00ff00\"/>"
+        "        </stop>"
+        "        <stop position=\"1\">"
+        "          <color rgb=\"ffffff00\"/>"
+        "        </stop>"
+        "      </gradientFill>"
+        "    </fill>"
+        "  </fills>"
+        "  <borders count=\"1\">"
+        "    <border>"
+        "      <left/>"
+        "      <right/>"
+        "      <top/>"
+        "      <bottom/>"
+        "      <diagonal/>"
+        "    </border>"
+        "  </borders>"
+        "  <cellStyleXfs count=\"1\">"
+        "    <xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/>"
+        "  </cellStyleXfs>"
+        "  <cellXfs count=\"2\">"
+        "    <xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/>"
+        "    <xf numFmtId=\"0\" fontId=\"0\" fillId=\"2\" borderId=\"0\" xfId=\"0\"/>"
+        "    <xf numFmtId=\"0\" fontId=\"0\" fillId=\"3\" borderId=\"0\" xfId=\"0\"/>"
+        "    <xf numFmtId=\"0\" fontId=\"0\" fillId=\"4\" borderId=\"0\" xfId=\"0\"/>"
+        "  </cellXfs>"
+        "  <cellStyles count=\"1\">"
+        "    <cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/>"
+        "  </cellStyles>"
+        "  <dxfs count=\"0\"/>"
+        "  <tableStyles count=\"0\" defaultTableStyle=\"TableStyleMedium9\" defaultPivotStyle=\"PivotStyleMedium7\"/>"
+        "</styleSheet>";
+        TS_ASSERT(style_xml_matches(expected, wb));
+    }
 };

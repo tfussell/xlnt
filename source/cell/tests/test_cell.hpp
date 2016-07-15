@@ -360,9 +360,8 @@ public:
         auto ws = wb.create_sheet();
         auto cell = ws.get_cell("A1");
         
-        xlnt::fill f;
-        f.set_pattern_type(xlnt::fill::pattern_type::solid);
-        f.set_foreground_color(xlnt::color(xlnt::color::type::rgb, "FF0000"));
+        xlnt::fill f = xlnt::fill::pattern(xlnt::pattern_fill::type::solid);
+        f.get_pattern_fill().set_foreground_color(xlnt::color::red());
         
         cell.set_fill(f);
         
