@@ -260,5 +260,14 @@ public:
         TS_ASSERT_EQUALS(iter, copy);
     }
     
-    // void test_add_invalid_worksheet_class_instance() {} not needed in c++
+    void test_manifest()
+    {
+        xlnt::default_type d;
+        TS_ASSERT(d.get_content_type().empty());
+        TS_ASSERT(d.get_extension().empty());
+
+        xlnt::override_type o;
+        TS_ASSERT(o.get_content_type().empty());
+        TS_ASSERT(o.get_part_name().empty());
+    }
 };

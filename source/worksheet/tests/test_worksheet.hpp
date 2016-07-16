@@ -999,8 +999,12 @@ public:
     {
         xlnt::workbook wb;
         auto ws = wb.get_active_sheet();
-        ws.get_page_margins();
-        //TODO: uhh... this isn't a test
+        auto &margins = ws.get_page_margins();
+
+        TS_ASSERT(margins.is_default());
+
+        margins.set_bottom(1);
+        TS_ASSERT(!margins.is_default());
     }
 
     void test_to_string()
@@ -1090,6 +1094,9 @@ public:
         ws1.create_named_range("rangey", "A2:A2");
         TS_ASSERT_EQUALS(ws1[std::string("rangey")], ws1.get_range("A2:A2"));
         TS_ASSERT_EQUALS(ws1[std::string("A2:A2")], ws1.get_range("A2:A2"));
+        TS_ASSERT_DIFFERS(ws1[std::string("rangey")], ws1.get_range("A2:A3"));
+
+        TS_ASSERT_EQUALS(ws1[std::string("rangey")].get_cell("A1"), ws1.get_cell("A2"));
     }
 
     void test_reserve()

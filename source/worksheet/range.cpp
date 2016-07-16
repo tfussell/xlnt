@@ -94,7 +94,27 @@ bool range::contains(const cell_reference &ref)
 
 cell range::get_cell(const cell_reference &ref)
 {
-    return (*this)[ref.get_row()][ref.get_column().index];
+    return (*this)[ref.get_row() - 1][ref.get_column().index - 1];
+}
+
+cell_vector range::front()
+{
+    return *begin();
+}
+
+const cell_vector range::front() const
+{
+    return *cbegin();
+}
+
+cell_vector range::back()
+{
+    return *(--end());
+}
+
+const cell_vector range::back() const
+{
+    return *(--cend());
 }
 
 range::iterator range::begin()

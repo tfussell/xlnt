@@ -54,7 +54,7 @@ struct XLNT_CLASS datetime
 
     datetime(int year_, int month_, int day_, int hour_ = 0, int minute_ = 0, int second_ = 0, int microsecond_ = 0);
 
-    std::string to_string(calendar base_date) const;
+    std::string to_string() const;
     long double to_number(calendar base_date) const;
     bool operator==(const datetime &comparand) const;
 

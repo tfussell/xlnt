@@ -76,6 +76,12 @@ public:
     std::size_t length() const;
 
     bool contains(const cell_reference &ref);
+    
+    cell_vector front();
+    const cell_vector front() const;
+
+    cell_vector back();
+    const cell_vector back() const;
 
     iterator begin();
     iterator end();

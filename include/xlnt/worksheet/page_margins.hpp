@@ -56,13 +56,14 @@ public:
     void set_footer(double footer);
 
 private:
-    bool default_;
-    double top_;
-    double left_;
-    double bottom_;
-    double right_;
-    double header_;
-    double footer_;
+    bool default_ = true;
+
+    double top_ = 1;
+    double left_ = 0.75;
+    double bottom_ = 1;
+    double right_ = 0.75;
+    double header_ = 0.5;
+    double footer_ = 0.5;
 };
 
 } // namespace xlnt

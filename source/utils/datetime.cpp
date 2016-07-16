@@ -65,7 +65,7 @@ long double datetime::to_number(calendar base_date) const
     return date(year, month, day).to_number(base_date) + time(hour, minute, second, microsecond).to_number();
 }
 
-std::string datetime::to_string(xlnt::calendar /*base_date*/) const
+std::string datetime::to_string() const
 {
     return std::to_string(year) + "/" + std::to_string(month) + "/" + std::to_string(day) + " " + std::to_string(hour) +
            ":" + std::to_string(minute) + ":" + std::to_string(second) + ":" + std::to_string(microsecond);

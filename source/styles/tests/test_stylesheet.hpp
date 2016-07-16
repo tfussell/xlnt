@@ -41,6 +41,20 @@ public:
         TS_ASSERT_EQUALS(e.get_stylesheet().number_formats.size(), 0);
     }
 
+    void test_add_existing_style()
+    {
+        xlnt::workbook wb;
+        xlnt::excel_serializer e(wb);
+
+        TS_ASSERT_EQUALS(e.get_stylesheet().styles.size(), 1);
+
+        auto &s = wb.create_style("test");
+        TS_ASSERT_EQUALS(e.get_stylesheet().styles.size(), 2);
+
+        wb.add_style(s);
+        TS_ASSERT_EQUALS(e.get_stylesheet().styles.size(), 2);
+    }
+
 /*
     void _test_unprotected_cell()
     {

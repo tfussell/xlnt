@@ -25,7 +25,7 @@
 
 namespace xlnt {
 
-page_margins::page_margins() : default_(true), top_(0), left_(0), bottom_(0), right_(0), header_(0), footer_(0)
+page_margins::page_margins()
 {
 }
 

@@ -16,6 +16,12 @@ public:
         TS_ASSERT_EQUALS(t.second, 45);
     }
 
+    void test_to_string()
+    {
+        xlnt::datetime dt(2016, 7, 16, 9, 11, 32, 999999);
+        TS_ASSERT_EQUALS(dt.to_string(), "2016/7/16 9:11:32:999999");
+    }
+
     void test_carry()
     {
         // We want a time that rolls over to the next second, minute, and hour
