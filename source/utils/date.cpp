@@ -61,6 +61,8 @@ date date::from_number(int days_since_base_year, calendar base_date)
         result.day = 29;
         result.month = 2;
         result.year = 1900;
+
+        return result;
     }
     else if (days_since_base_year < 60)
     {

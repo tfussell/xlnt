@@ -88,6 +88,12 @@ timedelta timedelta::from_number(long double raw_time)
             {
                 result.minutes = 0;
                 result.hours += 1;
+                
+                if (result.hours == 24)
+                {
+                    result.hours = 0;
+                    result.days += 1;
+                }
             }
         }
     }

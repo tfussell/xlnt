@@ -1061,8 +1061,19 @@ public:
         ws.get_cell("B3").set_value(false);
 
         auto range = ws.get_range("A2:B3");
-        TS_ASSERT_EQUALS((*(*range.begin()).begin()).get_value<double>(), 3.14);
-        TS_ASSERT_EQUALS((*(--(*(--range.end())).end())).get_value<bool>(), false);
+        auto range_iter = range.begin();
+        auto row = *range_iter;
+        auto row_iter = row.begin();
+        auto cell = *row_iter;
+        TS_ASSERT_EQUALS(cell.get_value<double>(), 3.14);
+
+        range_iter = range.end();
+        range_iter--;
+        row = *range_iter;
+        row_iter = row.end();
+        row_iter--;
+        cell = *row_iter;
+        TS_ASSERT_EQUALS(cell.get_value<bool>(), false);
     }
 
     void test_get_squared_range()
