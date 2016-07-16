@@ -89,6 +89,7 @@ public:
         xlnt::workbook wb;
         wb.get_app_properties().application = "Microsoft Excel";
         wb.get_app_properties().app_version = "12.0000";
+        wb.get_app_properties().company = "Company";
         wb.create_sheet();
         wb.create_sheet();
         xlnt::workbook_serializer serializer(wb);

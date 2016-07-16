@@ -1003,7 +1003,12 @@ public:
 
         TS_ASSERT(margins.is_default());
 
+        margins.set_top(0);
         margins.set_bottom(1);
+        margins.set_header(2);
+        margins.set_footer(3);
+        margins.set_left(4);
+        margins.set_right(5);
         TS_ASSERT(!margins.is_default());
     }
 

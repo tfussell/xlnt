@@ -71,37 +71,37 @@ bool text::operator==(const text &rhs) const
         
         if (runs_[i].has_formatting())
         {
-            if (runs_[i].has_color() == rhs.runs_[i].has_color()
-                && runs_[i].has_color()
-                && runs_[i].get_color() != rhs.runs_[i].get_color())
+            if (runs_[i].has_color() != rhs.runs_[i].has_color()
+                || (runs_[i].has_color()
+                && runs_[i].get_color() != rhs.runs_[i].get_color()))
             {
                 return false;
             }
             
-            if (runs_[i].has_family() == rhs.runs_[i].has_family()
-                && runs_[i].has_family()
-                && runs_[i].get_family() != rhs.runs_[i].get_family())
+            if (runs_[i].has_family() != rhs.runs_[i].has_family()
+                || (runs_[i].has_family()
+                && runs_[i].get_family() != rhs.runs_[i].get_family()))
             {
                 return false;
             }
             
-            if (runs_[i].has_font() == rhs.runs_[i].has_font()
-                && runs_[i].has_font()
-                && runs_[i].get_font() != rhs.runs_[i].get_font())
+            if (runs_[i].has_font() != rhs.runs_[i].has_font()
+                || (runs_[i].has_font()
+                && runs_[i].get_font() != rhs.runs_[i].get_font()))
             {
                 return false;
             }
             
-            if (runs_[i].has_scheme() == rhs.runs_[i].has_scheme()
-                && runs_[i].has_scheme()
-                && runs_[i].get_scheme() != rhs.runs_[i].get_scheme())
+            if (runs_[i].has_scheme() != rhs.runs_[i].has_scheme()
+                || (runs_[i].has_scheme()
+                && runs_[i].get_scheme() != rhs.runs_[i].get_scheme()))
             {
                 return false;
             }
             
-            if (runs_[i].has_size() == rhs.runs_[i].has_size()
-                && runs_[i].has_size()
-                && runs_[i].get_size() != rhs.runs_[i].get_size())
+            if (runs_[i].has_size() != rhs.runs_[i].has_size()
+                || (runs_[i].has_size()
+                && runs_[i].get_size() != rhs.runs_[i].get_size()))
             {
                 return false;
             }
