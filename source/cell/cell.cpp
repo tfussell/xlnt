@@ -141,53 +141,7 @@ std::string cell::check_string(const std::string &to_check)
     {
         return s;
     }
-
-    auto wb_encoding = get_workbook().get_encoding();
-
-    //XXX: use utfcpp for this!
-    switch(wb_encoding)
-    {
-    case encoding::latin1: break; // all bytes are valid in latin1
-    case encoding::ascii:
-        for (char c : s)
-        {
-            if (c < 0)
-            {
-                throw xlnt::unicode_decode_error(c);
-            }
-        }
-        break;
-    case encoding::utf8:
-    {
-	if(!utf8string::is_valid(s))
-        {
-            throw xlnt::unicode_decode_error('0');
-        } 
-        break;
-    }
-    case encoding::utf16:
-    {
-	if(!utf8string::from_utf16(s).is_valid())
-        {
-            throw xlnt::unicode_decode_error('0');
-        } 
-        break;
-    }
-    case encoding::utf32:
-    {
-	if(!utf8string::from_utf32(s).is_valid())
-        {
-            throw xlnt::unicode_decode_error('0');
-        } 
-        break;
-    }
-    default:
-        // other encodings not supported yet
-        break;
-    } // switch(wb_encoding)
-
-    // check encoding?
-    if (s.size() > 32767)
+    else if (s.size() > 32767)
     {
         s = s.substr(0, 32767); // max string length in Excel
     }

@@ -53,6 +53,9 @@ public:
 		cell.set_value("03:40:16");
         TS_ASSERT(cell.get_value<xlnt::time>() == xlnt::time(3, 40, 16));
 
+		cell.set_value("03:");
+        TS_ASSERT_EQUALS(cell.get_value<std::string>(), "03:");
+
 		cell.set_value("03:40");
         TS_ASSERT(cell.get_value<xlnt::time>() == xlnt::time(3, 40));
 
@@ -322,15 +325,7 @@ public:
         auto test_string = "Compound Value (" + std::string(1, pound) + ")";
         return test_string;
     }
-    
-    void test_bad_encoding()
-    {
-        auto ws = wb.create_sheet();
-        auto cell = ws[xlnt::cell_reference("A1")];
-        TS_ASSERT_THROWS(cell.check_string(make_latin1_string()), xlnt::unicode_decode_error);
-        TS_ASSERT_THROWS(cell.set_value(make_latin1_string()), xlnt::unicode_decode_error);
-    }
-    
+
     void test_good_encoding()
     {
         xlnt::workbook latin1_wb(xlnt::encoding::latin1);

@@ -36,8 +36,8 @@ class XLNT_CLASS utf8string
 public:
     static utf8string from_utf8(const std::string &s);
     static utf8string from_latin1(const std::string &s);
-    static utf8string from_utf16(const std::string &s);
-    static utf8string from_utf32(const std::string &s);
+    static utf8string from_utf16(const std::vector<std::uint16_t> &s);
+    static utf8string from_utf32(const std::vector<std::uint32_t> &s);
 
     static bool is_valid(const std::string &s);
 

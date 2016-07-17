@@ -21,6 +21,7 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 #include <xlnt/utils/utf8string.hpp>
+#include <xlnt/utils/unicode_decode_error.hpp>
 
 namespace xlnt {
 
@@ -40,7 +41,7 @@ utf8string utf8string::from_latin1(const std::string &s)
     return result;
 }
 
-utf8string utf8string::from_utf16(const std::string &s)
+utf8string utf8string::from_utf16(const std::vector<std::uint16_t> &s)
 {
     utf8string result;
     utf8::utf16to8(s.begin(), s.end(), std::back_inserter(result.bytes_));
@@ -48,7 +49,7 @@ utf8string utf8string::from_utf16(const std::string &s)
     return result;
 }
 
-utf8string utf8string::from_utf32(const std::string &s)
+utf8string utf8string::from_utf32(const std::vector<std::uint32_t> &s)
 {
     utf8string result;
     utf8::utf32to8(s.begin(), s.end(), std::back_inserter(result.bytes_));
