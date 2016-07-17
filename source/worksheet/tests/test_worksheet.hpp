@@ -1058,6 +1058,8 @@ public:
         auto ws = wb.get_active_sheet();
 
         ws.get_cell("A2").set_value(3.14);
+        ws.get_cell("A3").set_value(true);
+        ws.get_cell("B2").set_value("text");
         ws.get_cell("B3").set_value(false);
 
         auto range = ws.get_range("A2:B3");
@@ -1066,6 +1068,12 @@ public:
         auto row_iter = row.begin();
         auto cell = *row_iter;
         TS_ASSERT_EQUALS(cell.get_value<double>(), 3.14);
+        TS_ASSERT_EQUALS(row.front().get_reference(), "A2");
+
+        row_iter++;
+        cell = *row_iter;
+        TS_ASSERT_EQUALS(cell.get_value<std::string>(), "text");
+        TS_ASSERT_EQUALS(row.back().get_reference(), "B2");
 
         range_iter = range.end();
         range_iter--;
@@ -1110,7 +1118,7 @@ public:
         ws1.create_named_range("rangey", "A2:A2");
         TS_ASSERT_EQUALS(ws1[std::string("rangey")], ws1.get_range("A2:A2"));
         TS_ASSERT_EQUALS(ws1[std::string("A2:A2")], ws1.get_range("A2:A2"));
-        TS_ASSERT_DIFFERS(ws1[std::string("rangey")], ws1.get_range("A2:A3"));
+        TS_ASSERT(ws1[std::string("rangey")] != ws1.get_range("A2:A3"));
 
         TS_ASSERT_EQUALS(ws1[std::string("rangey")].get_cell("A1"), ws1.get_cell("A2"));
     }

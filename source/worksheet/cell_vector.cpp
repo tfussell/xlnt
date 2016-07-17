@@ -89,20 +89,20 @@ cell cell_vector::front()
 {
     if (order_ == major_order::row)
     {
-        return get_cell(ref_.get_top_left().get_column().index);
+        return ws_.get_cell(ref_.get_top_left());
     }
 
-    return get_cell(ref_.get_top_left().get_row());
+    return ws_.get_cell(ref_.get_top_left());
 }
 
 cell cell_vector::back()
 {
     if (order_ == major_order::row)
     {
-        return get_cell(ref_.get_bottom_right().get_column().index);
+        return ws_.get_cell(ref_.get_bottom_right());
     }
 
-    return get_cell(ref_.get_top_left().get_row());
+    return ws_.get_cell(ref_.get_bottom_right());
 }
 
 cell cell_vector::get_cell(std::size_t index)
