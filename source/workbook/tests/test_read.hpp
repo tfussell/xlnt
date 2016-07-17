@@ -35,13 +35,9 @@ public:
     {
         auto path = PathHelper::GetDataDirectory("/genuine/empty.xlsx");
         std::ifstream fo(path, std::ios::binary);
-        
+
         xlnt::workbook wb;
-        xlnt::excel_serializer serializer(wb);
-        
-        serializer.load_stream_workbook(fo);
-        
-        TS_ASSERT_DIFFERS(wb, nullptr);
+        TS_ASSERT(wb.load(fo));
     }
 
     void test_read_worksheet()
@@ -103,9 +99,7 @@ public:
         auto path = PathHelper::GetDataDirectory("/genuine/empty-with-styles.xlsx");
 
         xlnt::workbook wb;
-        xlnt::excel_serializer serializer(wb);
-        
-        serializer.load_workbook(path);
+        wb.load(path);
         
         return wb;
     }
@@ -340,7 +334,7 @@ public:
     {
         auto path = PathHelper::GetDataDirectory("/reader/formulae.xlsx");
         
-        xlnt::workbook wb(xlnt::encoding::latin1);
+        xlnt::workbook wb;
         xlnt::excel_serializer serializer(wb);
         
         serializer.load_workbook(path, false, true);

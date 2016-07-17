@@ -87,7 +87,6 @@ public:
 
     // constructors
     workbook();
-    workbook(encoding e);
 
     workbook &operator=(workbook other);
     workbook(workbook &&other);
@@ -96,8 +95,6 @@ public:
     ~workbook();
 
     friend void swap(workbook &left, workbook &right);
-
-    encoding get_encoding() const;
 
     worksheet get_active_sheet();
 

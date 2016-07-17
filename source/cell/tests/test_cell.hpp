@@ -318,22 +318,6 @@ public:
         auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
         TS_ASSERT(cell.offset(1, 2).get_reference() == "B3");
     }
-
-    std::string make_latin1_string()
-    {
-        unsigned char pound = 163;
-        auto test_string = "Compound Value (" + std::string(1, pound) + ")";
-        return test_string;
-    }
-
-    void test_good_encoding()
-    {
-        xlnt::workbook latin1_wb(xlnt::encoding::latin1);
-        auto ws = latin1_wb.get_active_sheet();
-        auto cell = ws[xlnt::cell_reference("A1")];
-        cell.check_string(make_latin1_string());
-        cell.set_value(make_latin1_string());
-    }
     
     void test_font()
     {

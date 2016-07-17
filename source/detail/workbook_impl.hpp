@@ -100,7 +100,6 @@ struct workbook_impl
     
     manifest manifest_;
     theme theme_;
-    encoding encoding_;
     std::vector<std::uint8_t> thumbnail_;
 };
 

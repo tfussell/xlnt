@@ -39,8 +39,6 @@
 #include <xlnt/utils/time.hpp>
 #include <xlnt/utils/timedelta.hpp>
 #include <xlnt/utils/exceptions.hpp>
-#include <xlnt/utils/utf8string.hpp>
-#include <xlnt/workbook/encoding.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/column_properties.hpp>
 #include <xlnt/worksheet/row_properties.hpp>

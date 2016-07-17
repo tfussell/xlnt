@@ -43,7 +43,6 @@
 #include <xlnt/styles/protection.hpp>
 #include <xlnt/utils/exceptions.hpp>
 #include <xlnt/workbook/const_worksheet_iterator.hpp>
-#include <xlnt/workbook/encoding.hpp>
 #include <xlnt/workbook/named_range.hpp>
 #include <xlnt/workbook/theme.hpp>
 #include <xlnt/workbook/workbook.hpp>
@@ -77,8 +76,6 @@ workbook::workbook() : d_(new detail::workbook_impl())
     create_relationship("rId2", "styles.xml", relationship::type::styles);
     create_relationship("rId3", "theme/theme1.xml", relationship::type::theme);
     
-    d_->encoding_ = encoding::utf8;
-    
     d_->manifest_.add_default_type("rels", "application/vnd.openxmlformats-package.relationships+xml");
     d_->manifest_.add_default_type("xml", "application/xml");
     
@@ -94,11 +91,6 @@ workbook::workbook() : d_(new detail::workbook_impl())
 
     xlnt::fill gray125 = xlnt::fill::pattern(xlnt::pattern_fill::type::gray125);
     d_->stylesheet_.fills.push_back(gray125);
-}
-
-workbook::workbook(encoding e) : workbook()
-{
-    d_->encoding_ = e;
 }
 
 const worksheet workbook::get_sheet_by_name(const std::string &name) const
@@ -175,7 +167,9 @@ void workbook::add_sheet(xlnt::worksheet worksheet)
     if(worksheet.d_->parent_ != this) throw xlnt::value_error();
 
     xlnt::detail::worksheet_impl impl(*worksheet.d_);
-    *create_sheet().d_ = impl;
+    auto new_sheet = create_sheet();
+    impl.title_ = new_sheet.get_title();
+    *new_sheet.d_ = impl;
 }
 
 void workbook::add_sheet(xlnt::worksheet worksheet, std::size_t index)
@@ -312,11 +306,6 @@ void workbook::remove_sheet(worksheet ws)
     auto rel_iter = std::find_if(d_->relationships_.begin(), d_->relationships_.end(),
                                  [=](relationship &r) { return r.get_target_uri() == sheet_filename; });
 
-    if (rel_iter == d_->relationships_.end())
-    {
-        throw std::runtime_error("no matching rel found");
-    }
-
     d_->relationships_.erase(rel_iter);
     d_->worksheets_.erase(match_iter);
 }
@@ -409,11 +398,6 @@ worksheet workbook::create_sheet(const std::string &title)
     return ws;
 }
 
-encoding workbook::get_encoding() const
-{
-    return d_->encoding_;
-}
-
 workbook::iterator workbook::begin()
 {
     return iterator(*this, 0);
@@ -473,6 +457,8 @@ void workbook::clear()
     d_->relationships_.clear();
     d_->active_sheet_index_ = 0;
     d_->properties_ = document_properties();
+    clear_styles();
+    clear_formats();
 }
 
 bool workbook::save(std::vector<unsigned char> &data)

@@ -66,7 +66,7 @@ std::string::size_type find_string_in_string(const std::string &string, const st
     return possible_match_index;
 }
 
-bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xlnt::workbook &wb)
+bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xlnt::workbook &wb, xlnt::detail::stylesheet &stylesheet)
 {
     wb.set_guess_types(guess_types);
     wb.set_data_only(data_only);
@@ -143,7 +143,6 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
         }
     }
 
-    xlnt::detail::stylesheet stylesheet;
     xlnt::style_serializer style_serializer(stylesheet);
 	pugi::xml_document style_xml;
 	style_xml.load(archive.read(xlnt::constants::ArcStyles()).c_str());
@@ -226,14 +225,14 @@ bool excel_serializer::load_workbook(const std::string &filename, bool guess_typ
         throw invalid_file_exception(filename);
     }
 
-    return ::load_workbook(archive_, guess_types, data_only, workbook_);
+    return ::load_workbook(archive_, guess_types, data_only, workbook_, get_stylesheet());
 }
 
 bool excel_serializer::load_virtual_workbook(const std::vector<std::uint8_t> &bytes, bool guess_types, bool data_only)
 {
     archive_.load(bytes);
 
-    return ::load_workbook(archive_, guess_types, data_only, workbook_);
+    return ::load_workbook(archive_, guess_types, data_only, workbook_, get_stylesheet());
 }
 
 excel_serializer::excel_serializer(workbook &wb) : workbook_(wb)
