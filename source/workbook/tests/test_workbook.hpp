@@ -89,8 +89,9 @@ public:
     {
         xlnt::workbook wb, wb2;
         auto new_sheet = wb.create_sheet(0);
+		new_sheet.set_title("removed");
         wb.remove_sheet(new_sheet);
-        TS_ASSERT(std::find(wb.begin(), wb.end(), new_sheet) == wb.end());
+        TS_ASSERT_EQUALS(wb.get_sheet_by_name("removed"), nullptr);
         TS_ASSERT_THROWS(wb.remove_sheet(wb2.get_active_sheet()), std::runtime_error);
     }
 

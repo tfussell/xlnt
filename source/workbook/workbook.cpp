@@ -316,8 +316,8 @@ worksheet workbook::create_sheet(std::size_t index)
 
     if (index != d_->worksheets_.size() - 1)
     {
-        std::swap(d_->worksheets_.back(), d_->worksheets_[index]);
-        d_->worksheets_.pop_back();
+		d_->worksheets_.insert(d_->worksheets_.begin() + index, d_->worksheets_.back());
+		d_->worksheets_.pop_back();
     }
 
     return worksheet(&d_->worksheets_[index]);
