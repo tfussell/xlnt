@@ -595,4 +595,29 @@ public:
         TS_ASSERT_EQUALS(cell_a2.get_comment().get_text(), "text");
         TS_ASSERT_EQUALS(cell_a2.get_comment().get_author(), "author");
     }
+
+    void test_reference()
+    {
+        xlnt::cell_reference_hash hash;
+        TS_ASSERT_DIFFERS(hash(xlnt::cell_reference("A2")), hash(xlnt::cell_reference(1, 1)));
+        TS_ASSERT_EQUALS(hash(xlnt::cell_reference("A2")), hash(xlnt::cell_reference(1, 2)));
+
+        TS_ASSERT_THROWS(xlnt::cell_reference(10000000, 10000000), xlnt::cell_coordinates_exception);
+
+        TS_ASSERT_EQUALS((xlnt::cell_reference("A1"), xlnt::cell_reference("B2")), xlnt::range_reference("A1:B2"));
+
+        TS_ASSERT_THROWS(xlnt::cell_reference("A1A"), xlnt::cell_coordinates_exception);
+        TS_ASSERT_THROWS(xlnt::cell_reference("A"), xlnt::cell_coordinates_exception);
+
+        auto ref = xlnt::cell_reference("$B$7");
+        TS_ASSERT(ref.row_absolute());
+        TS_ASSERT(ref.column_absolute());
+
+        TS_ASSERT(xlnt::cell_reference("A1") == "A1");
+        TS_ASSERT(xlnt::cell_reference("A1") != "A2");
+        TS_ASSERT(xlnt::cell_reference("A1") < xlnt::cell_reference("A2"));
+        TS_ASSERT(xlnt::cell_reference("A2") <= xlnt::cell_reference("A2"));
+        TS_ASSERT(xlnt::cell_reference("A2") > xlnt::cell_reference("A1"));
+        TS_ASSERT(xlnt::cell_reference("A2") >= xlnt::cell_reference("A2"));
+    }
 };
