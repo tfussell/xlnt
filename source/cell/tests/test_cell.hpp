@@ -583,4 +583,16 @@ public:
         xlnt::cell cell;
         TS_ASSERT_EQUALS(cell, nullptr);
     }
+
+    void test_comment()
+    {
+        xlnt::workbook wb;
+        auto cell_a1 = wb.get_active_sheet().get_cell("A1");
+        xlnt::comment comment(cell_a1, "text", "author");
+        auto cell_a2 = wb.get_active_sheet().get_cell("A2");
+        cell_a2 = cell_a1;
+        TS_ASSERT(cell_a2.has_comment());
+        TS_ASSERT_EQUALS(cell_a2.get_comment().get_text(), "text");
+        TS_ASSERT_EQUALS(cell_a2.get_comment().get_author(), "author");
+    }
 };
