@@ -27,11 +27,11 @@
 #include <fstream>
 #include <iterator>
 #include <miniz.h>
-#include <unistd.h>
 
 #ifdef _WIN32
 #include <direct.h>
 #else
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #endif
