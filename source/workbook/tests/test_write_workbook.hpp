@@ -201,9 +201,9 @@ public:
         xlnt::text text;
         text.add_run(run);
         cell.set_value(text);
-        xlnt::shared_strings_serializer serializer;
+
         pugi::xml_document xml;
-        serializer.write_shared_strings(wb.get_shared_strings(), xml);
+        xlnt::shared_strings_serializer::write_shared_strings(wb.get_shared_strings(), xml);
 
         std::string expected =
         "<sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"1\" uniqueCount=\"1\">"

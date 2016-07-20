@@ -523,9 +523,8 @@ public:
         pugi::xml_document xml;
         xml.load(source.c_str());
 
-        xlnt::shared_strings_serializer serializer;
         std::vector<xlnt::text> strings;
-        serializer.read_shared_strings(xml, strings);
+        xlnt::shared_strings_serializer::read_shared_strings(xml, strings);
 
         TS_ASSERT_EQUALS(strings.size(), 1);
         TS_ASSERT_EQUALS(strings.front().get_runs().size(), 1);
@@ -553,6 +552,6 @@ public:
         pugi::xml_document xml_bad;
         xml_bad.load(source_bad.c_str());
 
-        TS_ASSERT_THROWS(serializer.read_shared_strings(xml_bad, strings), std::runtime_error);
+        TS_ASSERT_THROWS(xlnt::shared_strings_serializer::read_shared_strings(xml_bad, strings), std::runtime_error);
     }
 };
