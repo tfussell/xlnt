@@ -26,8 +26,15 @@
 #include <cstring>
 #include <fstream>
 #include <iterator>
-
 #include <miniz.h>
+#include <unistd.h>
+
+#ifdef _WIN32
+#include <direct.h>
+#else
+#include <sys/types.h>
+#include <sys/stat.h>
+#endif
 
 #include <detail/include_windows.hpp>
 #include <xlnt/packaging/zip_file.hpp>
@@ -42,7 +49,9 @@ std::string get_working_directory()
     std::basic_string<TCHAR> working_directory(buffer);
     return std::string(working_directory.begin(), working_directory.end());
 #else
-    return "";
+    char buffer[2048];
+    getcwd(buffer, 2048);
+    return std::string(buffer);
 #endif
 }
 
@@ -64,7 +73,7 @@ std::string join_path(const std::vector<std::string> &parts)
 
         if (i++ != parts.size() - 1)
         {
-            joined.append(1, '/');
+            joined.append(1, directory_separator);
         }
     }
     return joined;
@@ -103,6 +112,33 @@ std::vector<std::string> split_path(const std::string &path, char delim = direct
     }
 
     return split;
+}
+
+bool directory_exists(const std::string path)
+{
+    struct stat info;
+    return stat(path.c_str(), &info) == 0 && (info.st_mode & S_IFDIR);
+}
+
+void mkdir_recursive(const std::string path)
+{
+    if (directory_exists(path)) return;
+
+    auto split = split_path(path);
+    auto last = split.back();
+    split.pop_back();
+    
+    if (!split.empty())
+    {
+        auto parent = join_path(split);
+        mkdir_recursive(parent);
+    }
+
+#ifdef _WIN32
+    _mkdir(path.c_str());
+#else
+    mkdir(path.c_str(), 0755);
+#endif
 }
 
 uint32_t crc32buf(const char *buf, std::size_t len)
@@ -651,7 +687,12 @@ void zip_file::extract(const std::string &member)
 
 void zip_file::extract(const std::string &member, const std::string &path)
 {
-    std::fstream stream(join_path({ path, member }), std::ios::binary | std::ios::out);
+    auto fullpath = join_path({ path, member });
+    auto split = split_path(fullpath);
+    split.pop_back();
+    mkdir_recursive(join_path(split));
+
+    std::fstream stream(fullpath, std::ios::binary | std::ios::out);
     stream << open(member).rdbuf();
 }
 
