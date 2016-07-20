@@ -94,8 +94,13 @@ public:
         std::basic_string<TCHAR> working_directory(buffer);
         return windows_to_universal_path(std::string(working_directory.begin(), working_directory.end()));
 #else
-        char buffer[2048];
-        getcwd(buffer, 2048);
+        char buffer[PATH_MAX];
+
+        if (getcwd(buffer, 2048) == nullptr)
+        {
+            throw std::runtime_error("getcwd failed");
+        }
+
         return std::string(buffer);
 #endif
     }

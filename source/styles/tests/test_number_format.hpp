@@ -168,7 +168,7 @@ public:
         auto period = xlnt::timedelta(1, 2, 3, 4, 5);
         auto period_number = period.to_number();
 
-        xlnt::number_format nf = xlnt::number_format::number_format("[mm]:ss");
+        xlnt::number_format nf("[mm]:ss");
         auto formatted = nf.format(period_number, xlnt::calendar::windows_1900);
 
         TS_ASSERT_EQUALS(formatted, "1563:04");
@@ -179,7 +179,7 @@ public:
         auto time = xlnt::time(1, 2, 3, 400000);
         auto time_number = time.to_number();
 
-        xlnt::number_format nf = xlnt::number_format::number_format("ss.0");
+        xlnt::number_format nf("ss.0");
         auto formatted = nf.format(time_number, xlnt::calendar::windows_1900);
 
         TS_ASSERT_EQUALS(formatted, "03.4");
@@ -190,7 +190,7 @@ public:
         auto time = xlnt::time(1, 2, 3, 400000);
         auto time_number = time.to_number();
 
-        xlnt::number_format nf = xlnt::number_format::number_format("s.0");
+        xlnt::number_format nf("s.0");
         auto formatted = nf.format(time_number, xlnt::calendar::windows_1900);
 
         TS_ASSERT_EQUALS(formatted, "3.4");
@@ -201,7 +201,7 @@ public:
         auto period = xlnt::timedelta(1, 2, 3, 4, 5);
         auto period_number = period.to_number();
 
-        xlnt::number_format nf = xlnt::number_format::number_format("[ss]");
+        xlnt::number_format nf("[ss]");
         auto formatted = nf.format(period_number, xlnt::calendar::windows_1900);
 
         TS_ASSERT_EQUALS(formatted, "93784");
