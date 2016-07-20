@@ -7,6 +7,7 @@
 #include <detail/excel_serializer.hpp>
 #include <detail/manifest_serializer.hpp>
 #include <detail/relationship_serializer.hpp>
+#include <detail/shared_strings_serializer.hpp>
 #include <detail/workbook_serializer.hpp>
 #include <helpers/path_helper.hpp>
 #include <xlnt/cell/text.hpp>
@@ -499,5 +500,59 @@ public:
         xlnt::excel_serializer serializer(wb);
         
         TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file_exception);
+    }
+
+
+    void test_read_shared_strings_with_runs()
+    {
+        std::string source =
+        "<sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"1\" uniqueCount=\"1\">"
+        "  <si>"
+        "    <r>"
+        "      <rPr>"
+        "        <sz val=\"13\"/>"
+        "        <color rgb=\"color\"/>"
+        "        <rFont val=\"font\"/>"
+        "        <family val=\"12\"/>"
+        "        <scheme val=\"scheme\"/>"
+        "      </rPr>"
+        "      <t>string</t>"
+        "    </r>"
+        "  </si>"
+        "</sst>";
+        pugi::xml_document xml;
+        xml.load(source.c_str());
+
+        xlnt::shared_strings_serializer serializer;
+        std::vector<xlnt::text> strings;
+        serializer.read_shared_strings(xml, strings);
+
+        TS_ASSERT_EQUALS(strings.size(), 1);
+        TS_ASSERT_EQUALS(strings.front().get_runs().size(), 1);
+        TS_ASSERT_EQUALS(strings.front().get_runs().front().get_size(), 13);
+        TS_ASSERT_EQUALS(strings.front().get_runs().front().get_color(), "color");
+        TS_ASSERT_EQUALS(strings.front().get_runs().front().get_font(), "font");
+        TS_ASSERT_EQUALS(strings.front().get_runs().front().get_family(), 12);
+        TS_ASSERT_EQUALS(strings.front().get_runs().front().get_scheme(), "scheme");
+
+        std::string source_bad =
+        "<sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"2\" uniqueCount=\"2\">"
+        "  <si>"
+        "    <r>"
+        "      <rPr>"
+        "        <sz val=\"13\"/>"
+        "        <color rgb=\"color\"/>"
+        "        <rFont val=\"font\"/>"
+        "        <family val=\"12\"/>"
+        "        <scheme val=\"scheme\"/>"
+        "      </rPr>"
+        "      <t>string</t>"
+        "    </r>"
+        "  </si>"
+        "</sst>";
+        pugi::xml_document xml_bad;
+        xml_bad.load(source_bad.c_str());
+
+        TS_ASSERT_THROWS(serializer.read_shared_strings(xml_bad, strings), std::runtime_error);
     }
 };

@@ -224,7 +224,7 @@ public:
         auto diff = Helper::compare_xml(expected, xml);
         TS_ASSERT(diff);
     }
-              
+
 private:
     xlnt::workbook wb_;
 };
