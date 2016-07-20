@@ -20,7 +20,7 @@ public:
         pugi::xml_document expected;
         expected.load(expected_string.c_str());
 
-        auto comparison = Helper::compare_xml(expected.root(), observed.root());
+        auto comparison = xml_helper::compare_xml(expected.root(), observed.root());
         return (bool)comparison;
     }
 
@@ -93,7 +93,7 @@ public:
         xlnt::protection hidden(true, true);
         ws.get_cell("E1").set_protection(hidden);
 
-        std::string expected = PathHelper::read_file(PathHelper::GetDataDirectory("/writer/expected/simple-styles.xml"));
+        std::string expected = path_helper::read_file(path_helper::get_data_directory("/writer/expected/simple-styles.xml"));
         TS_ASSERT(style_xml_matches(expected, wb));
     }
     

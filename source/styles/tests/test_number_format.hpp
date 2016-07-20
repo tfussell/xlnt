@@ -5,6 +5,7 @@
 
 #include "pugixml.hpp"
 #include <xlnt/xlnt.hpp>
+#include <detail/number_formatter.hpp>
 
 class test_number_format : public CxxTest::TestSuite
 {
@@ -115,6 +116,42 @@ public:
         TS_ASSERT_EQUALS(formatted, "2016");
     }
 
+    void test_day_name()
+    {
+        auto date = xlnt::date(2016, 6, 18);
+        auto date_number = date.to_number(xlnt::calendar::windows_1900);
+
+        xlnt::number_format nf;
+        nf.set_format_string("dddd");
+        auto formatted = nf.format(date_number, xlnt::calendar::windows_1900);
+
+        TS_ASSERT_EQUALS(formatted, "Sunday");
+    }
+
+    void test_day_abbreviation()
+    {
+        auto date = xlnt::date(2016, 6, 18);
+        auto date_number = date.to_number(xlnt::calendar::windows_1900);
+
+        xlnt::number_format nf;
+        nf.set_format_string("ddd");
+        auto formatted = nf.format(date_number, xlnt::calendar::windows_1900);
+
+        TS_ASSERT_EQUALS(formatted, "Sun");
+    }
+
+    void test_month_letter()
+    {
+        auto date = xlnt::date(2016, 6, 18);
+        auto date_number = date.to_number(xlnt::calendar::windows_1900);
+
+        xlnt::number_format nf;
+        nf.set_format_string("mmmmm");
+        auto formatted = nf.format(date_number, xlnt::calendar::windows_1900);
+
+        TS_ASSERT_EQUALS(formatted, "J");
+    }
+
     void test_time_24_hour()
     {
         auto time = xlnt::time(20, 15, 10);
@@ -124,6 +161,50 @@ public:
         auto formatted = nf.format(time_number, xlnt::calendar::windows_1900);
 
         TS_ASSERT_EQUALS(formatted, "20:15:10");
+    }
+
+    void test_elapsed_minutes()
+    {
+        auto period = xlnt::timedelta(1, 2, 3, 4, 5);
+        auto period_number = period.to_number();
+
+        xlnt::number_format nf = xlnt::number_format::number_format("[mm]:ss");
+        auto formatted = nf.format(period_number, xlnt::calendar::windows_1900);
+
+        TS_ASSERT_EQUALS(formatted, "1563:04");
+    }
+
+    void test_second_fractional_leading_zero()
+    {
+        auto time = xlnt::time(1, 2, 3, 400000);
+        auto time_number = time.to_number();
+
+        xlnt::number_format nf = xlnt::number_format::number_format("ss.0");
+        auto formatted = nf.format(time_number, xlnt::calendar::windows_1900);
+
+        TS_ASSERT_EQUALS(formatted, "03.4");
+    }
+    
+    void test_second_fractional()
+    {
+        auto time = xlnt::time(1, 2, 3, 400000);
+        auto time_number = time.to_number();
+
+        xlnt::number_format nf = xlnt::number_format::number_format("s.0");
+        auto formatted = nf.format(time_number, xlnt::calendar::windows_1900);
+
+        TS_ASSERT_EQUALS(formatted, "3.4");
+    }
+
+    void test_elapsed_seconds()
+    {
+        auto period = xlnt::timedelta(1, 2, 3, 4, 5);
+        auto period_number = period.to_number();
+
+        xlnt::number_format nf = xlnt::number_format::number_format("[ss]");
+        auto formatted = nf.format(period_number, xlnt::calendar::windows_1900);
+
+        TS_ASSERT_EQUALS(formatted, "93784");
     }
 
     void test_time_12_hour_am()
@@ -158,6 +239,23 @@ public:
         auto formatted = nf.format(time_number, xlnt::calendar::windows_1900);
 
         TS_ASSERT_EQUALS(formatted, "08 PM");
+    }
+
+    void test_long_hour_12_hour_ap()
+    {
+        auto time1 = xlnt::time(20, 15, 10);
+        auto time1_number = time1.to_number();
+
+        auto time2 = xlnt::time(8, 15, 10);
+        auto time2_number = time2.to_number();
+
+        xlnt::number_format nf("hh A/P");
+
+        auto formatted = nf.format(time1_number, xlnt::calendar::windows_1900);
+        TS_ASSERT_EQUALS(formatted, "08 P");
+
+        formatted = nf.format(time2_number, xlnt::calendar::windows_1900);
+        TS_ASSERT_EQUALS(formatted, "08 A");
     }
 
     void test_long_hour_24_hour()
@@ -245,11 +343,31 @@ public:
     void test_text_section_no_string()
     {
         xlnt::number_format nf;
-        nf.set_format_string("General;General;General;[Green]\"ab\"");
+        nf.set_format_string("General;General;General;[Green]m\"ab\"");
 
         auto formatted = nf.format("text");
 
         TS_ASSERT_EQUALS(formatted, "ab");
+    }
+
+    void test_text_section_no_text()
+    {
+        xlnt::number_format nf;
+        nf.set_format_string("General;General;General;[Green]m");
+
+        auto formatted = nf.format("text");
+
+        TS_ASSERT_EQUALS(formatted, "text");
+    }
+
+    void test_bad_part()
+    {
+        xlnt::detail::template_part bad_part;
+        xlnt::detail::format_code bad_code;
+        bad_code.parts.push_back(bad_part);
+        xlnt::detail::number_formatter formatter("", xlnt::calendar::windows_1900);
+        formatter.format_ = { bad_code };
+        TS_ASSERT_THROWS(formatter.format_number(1), std::runtime_error);
     }
 
     void test_conditional_format()
@@ -452,6 +570,10 @@ public:
         nf.set_format_string("[Yellow]#");
         formatted = nf.format(6, xlnt::calendar::windows_1900);
         TS_ASSERT_EQUALS(formatted, "6");
+
+        nf.set_format_string("[White]#");
+        formatted = nf.format(6, xlnt::calendar::windows_1900);
+        TS_ASSERT_EQUALS(formatted, "6");
         
         nf.set_format_string("[Color15]#");
         formatted = nf.format(6, xlnt::calendar::windows_1900);
@@ -485,8 +607,19 @@ public:
 
         nf.set_format_string("!");
         TS_ASSERT_THROWS(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+
+        nf.set_format_string("A/");
+        TS_ASSERT_THROWS(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
     }
-    
+
+    void test_none_condition()
+    {
+        xlnt::detail::format_condition f;
+        f.type = xlnt::detail::format_condition::condition_type::none;
+        f.value = 3;
+        TS_ASSERT(!f.satisfied_by(3));
+    }
+
     void format_and_test(const xlnt::number_format &nf, const std::array<std::string, 4> &expect)
     {
         long double positive = 42503.1234;
@@ -528,30 +661,6 @@ public:
     void test_builtin_format_4()
     {
         format_and_test(xlnt::number_format::number_comma_separated1(), {{"42,503.12", "-42,503.12", "0.00", "text"}});
-    }
-
-    // #,##0;-#,##0
-    void test_builtin_format_5()
-    {
-        format_and_test(xlnt::number_format::from_builtin_id(5), {{"42,503", "-42,503", "0", "text"}});
-    }
-
-    // #,##0;[Red]-#,##0
-    void test_builtin_format_6()
-    {
-        format_and_test(xlnt::number_format::from_builtin_id(6), {{"42,503", "-42,503", "0", "text"}});
-    }
-
-    // #,##0.00;-#,##0.00
-    void test_builtin_format_7()
-    {
-        format_and_test(xlnt::number_format::from_builtin_id(7), {{"42,503.12", "-42,503.12", "0.00", "text"}});
-    }
-
-    // #,##0.00;[Red]-#,##0.00
-    void test_builtin_format_8()
-    {
-        format_and_test(xlnt::number_format::from_builtin_id(8), {{"42,503.12", "-42,503.12", "0.00", "text"}});
     }
 
     // 0%
@@ -635,6 +744,60 @@ public:
     // m/d/yy h:mm
     void test_builtin_format_22()
     {
-        format_and_test(xlnt::number_format::from_builtin_id(22), {{"5/13/16 2:57", "###########", "1/0/00 0:00", "text"}});
+        format_and_test(xlnt::number_format::date_xlsx22(), {{"5/13/16 2:57", "###########", "1/0/00 0:00", "text"}});
+    }
+
+    // #,##0 ;(#,##0)
+    void test_builtin_format_37()
+    {
+        format_and_test(xlnt::number_format::from_builtin_id(37), {{"42,503 ", "(42,503)", "0 ", "text"}});
+    }
+
+    // #,##0 ;[Red](#,##0)
+    void test_builtin_format_38()
+    {
+        format_and_test(xlnt::number_format::from_builtin_id(38), {{"42,503 ", "(42,503)", "0 ", "text"}});
+    }
+
+    // #,##0.00;(#,##0.00)
+    void test_builtin_format_39()
+    {
+        format_and_test(xlnt::number_format::from_builtin_id(39), {{"42,503.12", "(42,503.12)", "0.00", "text"}});
+    }
+
+    // #,##0.00;[Red](#,##0.00)
+    void test_builtin_format_40()
+    {
+        format_and_test(xlnt::number_format::from_builtin_id(40), {{"42,503.12", "(42,503.12)", "0.00", "text"}});
+    }
+
+    // mm:ss
+    void test_builtin_format_45()
+    {
+        format_and_test(xlnt::number_format::date_time5(), {{"57:42", "###########", "00:00", "text"}});
+    }
+
+    // [h]:mm:ss
+    void test_builtin_format_46()
+    {
+        format_and_test(xlnt::number_format::from_builtin_id(46), {{"1020074:57:42", "###########", "0:00:00", "text"}});
+    }
+
+    // mmss.0
+    void test_builtin_format_47()
+    {
+        format_and_test(xlnt::number_format::from_builtin_id(47), {{"5741.8", "###########", "0000.0", "text"}});
+    }
+
+    // ##0.0E+0
+    void test_builtin_format_48()
+    {
+        format_and_test(xlnt::number_format::from_builtin_id(48), {{"42.5E+3", "-42.5E+3", "000.0E+0", "text"}});
+    }
+
+    // @
+    void test_builtin_format_49()
+    {
+        format_and_test(xlnt::number_format::text(), {{"42503.1234", "-42503.1234", "0", "text"}});
     }
 };

@@ -11,7 +11,7 @@ class test_zip_file : public CxxTest::TestSuite
 public:
     test_zip_file()
     {
-        existing_file = PathHelper::GetDataDirectory("/genuine/empty.xlsx");
+        existing_file = path_helper::get_data_directory("/genuine/empty.xlsx");
         expected_content_types_string = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"xml\" ContentType=\"application/xml\"/><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/><Override PartName=\"/xl/worksheets/sheet1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/><Override PartName=\"/xl/worksheets/sheet2.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/><Override PartName=\"/xl/worksheets/sheet3.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/><Override PartName=\"/xl/worksheets/sheet4.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/><Override PartName=\"/xl/theme/theme1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.theme+xml\"/><Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/><Override PartName=\"/xl/sharedStrings.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml\"/><Override PartName=\"/xl/calcChain.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.calcChain+xml\"/><Override PartName=\"/docProps/core.xml\" ContentType=\"application/vnd.openxmlformats-package.core-properties+xml\"/><Override PartName=\"/docProps/app.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.extended-properties+xml\"/></Types>";
         expected_atxt_string = "<?xml version=\"1.0\" ?>\n<sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"3\" uniqueCount=\"2\"><si><t>This is cell A1 in Sheet 1</t></si><si><t>This is cell G5</t></si></sst>";
         expected_printdir_string = "  Length      Date    Time    Name\n---------  ---------- -----   ----\n     1704  01/01/1980 00:00   [Content_Types].xml\n      588  01/01/1980 00:00   _rels/.rels\n     1254  01/01/1980 00:00   xl/_rels/workbook.xml.rels\n      898  01/01/1980 00:00   xl/workbook.xml\n     1231  01/01/1980 00:00   xl/worksheets/sheet4.xml\n     4427  01/01/1980 00:00   xl/worksheets/sheet2.xml\n     1032  01/01/1980 00:00   xl/worksheets/sheet3.xml\n     1026  01/01/1980 00:00   xl/worksheets/sheet1.xml\n     6995  01/01/1980 00:00   xl/theme/theme1.xml\n      233  01/01/1980 00:00   xl/sharedStrings.xml\n     1724  01/01/1980 00:00   xl/styles.xml\n      169  01/01/1980 00:00   xl/calcChain.xml\n      917  01/01/1980 00:00   docProps/app.xml\n      609  01/01/1980 00:00   docProps/core.xml\n---------                     -------\n    22807                     14 files\n";
@@ -226,7 +226,7 @@ public:
         remove_temp_file();
         
         xlnt::zip_file f;
-        auto text_file = PathHelper::GetDataDirectory("/reader/sharedStrings.xml");
+        auto text_file = path_helper::get_data_directory("/reader/sharedStrings.xml");
         f.write(text_file);
         f.write(text_file, "sharedStrings2.xml");
         f.save(temp_file.GetFilename());
@@ -288,20 +288,20 @@ public:
     void test_extract()
     {
         xlnt::zip_file f;
-        f.load(PathHelper::GetDataDirectory("/genuine/empty.xlsx"));
+        f.load(path_helper::get_data_directory("/genuine/empty.xlsx"));
 
-        auto expected = PathHelper::GetWorkingDirectory() + "/xl/styles.xml";
+        auto expected = path_helper::get_working_directory() + "/xl/styles.xml";
 
-        TS_ASSERT(!PathHelper::FileExists(expected));
+        TS_ASSERT(!path_helper::file_exists(expected));
         f.extract("xl/styles.xml");
-        TS_ASSERT(PathHelper::FileExists(expected));
-        PathHelper::DeleteFile(expected);
+        TS_ASSERT(path_helper::file_exists(expected));
+        path_helper::delete_file(expected);
 
         auto info = f.getinfo("xl/styles.xml");
-        TS_ASSERT(!PathHelper::FileExists(expected));
+        TS_ASSERT(!path_helper::file_exists(expected));
         f.extract(info);
-        TS_ASSERT(PathHelper::FileExists(expected));
-        PathHelper::DeleteFile(expected);
+        TS_ASSERT(path_helper::file_exists(expected));
+        path_helper::delete_file(expected);
     }
 
 private:

@@ -782,7 +782,14 @@ bool read_base_format(const pugi::xml_node &format_node, const xlnt::detail::sty
 
     if (builtin_format)
     {
-        f.set_number_format(xlnt::number_format::from_builtin_id(number_format_id));
+        try
+        {
+            f.set_number_format(xlnt::number_format::from_builtin_id(number_format_id));
+        }
+        catch(std::runtime_error)
+        {
+            f.set_number_format(xlnt::number_format::general());
+        }
     }
     
     f.number_format_applied(is_true(format_node.attribute("applyNumberFormat").value()));

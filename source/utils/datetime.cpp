@@ -94,4 +94,9 @@ datetime::datetime(int year_, int month_, int day_, int hour_, int minute_, int 
 {
 }
 
+int datetime::weekday() const
+{
+    return date(year, month, day).weekday();
+}
+
 } // namespace xlnt

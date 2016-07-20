@@ -59,6 +59,8 @@ struct XLNT_CLASS date
     /// </summary>
     bool operator==(const date &comparand) const;
 
+    int weekday() const;
+
     int year;
     int month;
     int day;

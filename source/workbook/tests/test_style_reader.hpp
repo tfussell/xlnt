@@ -14,7 +14,7 @@ public:
     void test_complex_formatting()
     {
         xlnt::workbook wb;
-        wb.load(PathHelper::GetDataDirectory("/reader/formatting.xlsx"));
+        wb.load(path_helper::get_data_directory("/reader/formatting.xlsx"));
         
         // border_style
         TS_ASSERT_EQUALS(wb.get_active_sheet().get_cell("E30").get_border().get_top()->get_color(), xlnt::color(xlnt::color::type::indexed, 10));

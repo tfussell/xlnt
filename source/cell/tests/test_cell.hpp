@@ -594,6 +594,8 @@ public:
         TS_ASSERT(cell_a2.has_comment());
         TS_ASSERT_EQUALS(cell_a2.get_comment().get_text(), "text");
         TS_ASSERT_EQUALS(cell_a2.get_comment().get_author(), "author");
+        xlnt::comment null;
+        TS_ASSERT_DIFFERS(null, comment);
     }
 
     void test_reference()

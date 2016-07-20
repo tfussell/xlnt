@@ -8,7 +8,7 @@
 #include <detail/style_serializer.hpp>
 #include <xlnt/xlnt.hpp>
 #include <xlnt/packaging/zip_file.hpp>
-#include <helpers/helper.hpp>
+#include <helpers/xml_helper.hpp>
 #include <helpers/path_helper.hpp>
 
 class test_stylesheet : public CxxTest::TestSuite
@@ -17,7 +17,7 @@ public:
     void test_from_simple()
     {
         pugi::xml_document doc;
-        auto xml = PathHelper::read_file(PathHelper::GetDataDirectory("/reader/styles/simple-styles.xml"));
+        auto xml = path_helper::read_file(path_helper::get_data_directory("/reader/styles/simple-styles.xml"));
         doc.load(xml.c_str());
         xlnt::workbook wb;
         xlnt::excel_serializer e(wb);
@@ -29,7 +29,7 @@ public:
     void test_from_complex()
     {
         pugi::xml_document doc;
-        auto xml = PathHelper::read_file(PathHelper::GetDataDirectory("/reader/styles/complex-styles.xml"));
+        auto xml = path_helper::read_file(path_helper::get_data_directory("/reader/styles/complex-styles.xml"));
         doc.load(xml.c_str());
         xlnt::workbook wb;
         xlnt::excel_serializer e(wb);

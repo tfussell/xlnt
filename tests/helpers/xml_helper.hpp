@@ -5,7 +5,7 @@
 
 #include "path_helper.hpp"
 
-class Helper
+class xml_helper
 {
 public:
     enum class difference_type
@@ -25,7 +25,11 @@ public:
         difference_type difference;
         std::string value_left;
         std::string value_right;
-        operator bool() const { return difference == difference_type::equivalent; }
+
+        operator bool() const
+        {
+            return difference == difference_type::equivalent;
+        }
     };
     
     static comparison_result compare_xml(const pugi::xml_document &expected, const pugi::xml_document &observed)
@@ -37,7 +41,7 @@ public:
     {
         std::string expected_contents = expected;
         
-        if(PathHelper::FileExists(expected))
+        if(path_helper::file_exists(expected))
         {
             std::ifstream f(expected);
             std::ostringstream s;

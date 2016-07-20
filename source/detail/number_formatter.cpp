@@ -333,10 +333,6 @@ void number_format_parser::parse()
                     part.type = template_part::template_type::elapsed_seconds;
                     break;
                 }
-                else
-                {
-                    throw std::runtime_error("expected [h], [m], or [s]");
-                }
             case 'm':
                 if (token.string == "m")
                 {
@@ -535,20 +531,20 @@ void number_format_parser::finalize()
                     const auto &next = code.parts[i + 1];
                     const auto &after_next = code.parts[i + 2];
 
-                    if (next.type == template_part::template_type::text
+                    if ((next.type == template_part::template_type::second
+                        || next.type == template_part::template_type::second_leading_zero)
+                        || (next.type == template_part::template_type::text
                         && next.string == ":"
                         && (after_next.type == template_part::template_type::second ||
-                            after_next.type == template_part::template_type::second_leading_zero))
+                            after_next.type == template_part::template_type::second_leading_zero)))
                     {
                         fix = true;
                         leading_zero = part.type == template_part::template_type::month_number_leading_zero;
                         minutes_index = i;
-
-                        break;
                     }
                 }
 
-                if (i > 1)
+                if (!fix && i > 1)
                 {
                     const auto &previous = code.parts[i - 1];
                     const auto &before_previous = code.parts[i - 2];
@@ -652,17 +648,18 @@ number_format_token number_format_parser::parse_next_token()
             throw std::runtime_error("missing ]");
         }
 
+        if (format_string_[position_] == ']')
+        {
+            throw std::runtime_error("empty []");
+        }
+
         do
         {
             token.string.push_back(format_string_[position_++]);
         }
         while (position_ < format_string_.size() && format_string_[position_] != ']');
 
-        if (token.string.empty())
-        {
-            throw std::runtime_error("empty []");
-        }
-        else if (token.string[0] == '<' || token.string[0] == '>' || token.string[0] == '=')
+        if (token.string[0] == '<' || token.string[0] == '>' || token.string[0] == '=')
         {
             token.type = number_format_token::token_type::condition;
         }
@@ -965,7 +962,7 @@ format_color number_format_parser::color_from_string(const std::string &color)
     case 'G':
         if (color == "Green")
         {
-            return format_color::black;
+            return format_color::green;
         }
     case 'W':
         if (color == "White")
@@ -975,18 +972,17 @@ format_color number_format_parser::color_from_string(const std::string &color)
     case 'M':
         if (color == "Magenta")
         {
-            return format_color::white;
+            return format_color::magenta;
         }
-        return format_color::magenta;
     case 'Y':
         if (color == "Yellow")
         {
-            return format_color::white;
+            return format_color::yellow;
         }
     case 'R':
         if (color == "Red")
         {
-            return format_color::white;
+            return format_color::red;
         }
     default:
         throw std::runtime_error("bad color: " + color);
@@ -1128,7 +1124,8 @@ std::string number_formatter::format_text(const std::string &text)
 
 std::string number_formatter::fill_placeholders(const format_placeholders &p, long double number)
 {
-    if (p.type == format_placeholders::placeholders_type::general)
+    if (p.type == format_placeholders::placeholders_type::general
+        || p.type == format_placeholders::placeholders_type::text)
     {
         auto result = std::to_string(number);
 
@@ -1157,22 +1154,12 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, lo
 
     auto integer_part = static_cast<int>(number);
 
-    if (p.type == format_placeholders::placeholders_type::integer_only
-        || p.type == format_placeholders::placeholders_type::integer_part
-        || p.type == format_placeholders::placeholders_type::fraction_integer)
+    switch (p.type)
     {
-        if (p.scientific)
-        {
-            auto fractional_part = number;
-
-            while (fractional_part > 10)
-            {
-                fractional_part /= 10;
-            }
-            
-            integer_part = static_cast<int>(fractional_part);
-        }
-
+    case format_placeholders::placeholders_type::integer_only:
+    case format_placeholders::placeholders_type::integer_part:
+    case format_placeholders::placeholders_type::fraction_integer:
+    {
         auto result = std::to_string(integer_part);
         
         while (result.size() < p.num_zeros)
@@ -1210,22 +1197,10 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, lo
 
         return result;
     }
-    else if (p.type == format_placeholders::placeholders_type::fractional_part)
+
+    case format_placeholders::placeholders_type::fractional_part:
     {
         auto fractional_part = number - integer_part;
-
-        if (p.scientific)
-        {
-            fractional_part = number;
-
-            while (fractional_part > 10)
-            {
-                fractional_part /= 10;
-            }
-            
-            fractional_part -= static_cast<int>(fractional_part);
-        }
-
         auto result = fractional_part == 0 ? std::string(".") : std::to_string(fractional_part).substr(1);
 
         while (result.back() == '0' || result.size() > (p.num_zeros + p.num_optionals + 1))
@@ -1250,38 +1225,64 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, lo
 
         return result;
     }
-    else if (p.type == format_placeholders::placeholders_type::scientific_exponent_minus
-        || p.type == format_placeholders::placeholders_type::scientific_exponent_plus)
-    {
-        auto exponent = number != 0 ? static_cast<int>(std::log10(integer_part)) : 0;
-        auto result = std::to_string(exponent);
-        
-        while (!result.empty() && (result.back() == '0' || result.size() > (p.num_zeros + p.num_optionals)))
-        {
-            result.pop_back();
-        }
 
-        while (result.size() < p.num_zeros)
-        {
-            result = "0" + result;
-        }
-        
-        while (result.size() < p.num_zeros + p.num_spaces)
-        {
-            result = " " + result;
-        }
-
-        if (p.percentage)
-        {
-            result.push_back('%');
-        }
-        
-        result = (p.type == format_placeholders::placeholders_type::scientific_exponent_plus ? "E+" : "E") + result;
-
-        return result;
+    default:
+        return "";
     }
+}
+
+std::string number_formatter::fill_scientific_placeholders(const format_placeholders &integer_part,
+        const format_placeholders &fractional_part, const format_placeholders &exponent_part,
+        long double number)
+{
+    auto logarithm = 0;
     
-    return "";
+    if (number != 0)
+    {
+        logarithm = static_cast<int>(std::log10(number));
+
+        if (integer_part.num_zeros + integer_part.num_optionals > 1)
+        {
+            logarithm = integer_part.num_zeros + integer_part.num_optionals;
+        }
+    }
+
+    number /= std::pow(10, logarithm);
+    
+    auto integer = static_cast<int>(number);
+    auto fraction = number - integer;
+
+    std::string integer_string = std::to_string(integer);
+
+    if (number == 0)
+    {
+        integer_string = std::string(integer_part.num_zeros + integer_part.num_optionals, '0');
+    }
+
+    std::string fractional_string = std::to_string(fraction).substr(1);
+
+    while (fractional_string.size() > fractional_part.num_zeros + fractional_part.num_optionals + 1)
+    {
+        fractional_string.pop_back();
+    }
+
+    std::string exponent_string = std::to_string(logarithm);
+
+    while (exponent_string.size() < fractional_part.num_zeros)
+    {
+        exponent_string.insert(0, "0");
+    }
+
+    if (exponent_part.type == format_placeholders::placeholders_type::scientific_exponent_plus)
+    {
+        exponent_string.insert(0, "E+");
+    }
+    else
+    {
+        exponent_string.insert(0, "E");
+    }
+
+    return integer_string + fractional_string + exponent_string;
 }
 
 std::string number_formatter::fill_fraction_placeholders(const format_placeholders &numerator,
@@ -1341,6 +1342,18 @@ std::string number_formatter::format_number(const format_code &format, long doub
         "November",
         "December"
     };
+
+    static const std::vector<std::string> *day_names =
+    new std::vector<std::string>
+    {
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday"
+    };
     
     std::string result;
 
@@ -1396,6 +1409,7 @@ std::string number_formatter::format_number(const format_code &format, long doub
         case template_part::template_type::text:
             result.append(part.string);
             break;
+
         case template_part::template_type::fill:
             fill = true;
             fill_index = result.size();
@@ -1403,6 +1417,17 @@ std::string number_formatter::format_number(const format_code &format, long doub
             break;
         case template_part::template_type::general:
         {
+            if (part.placeholders.type == format_placeholders::placeholders_type::fractional_part
+                && (format.is_datetime || format.is_timedelta))
+            {
+                auto digits = std::min(6UL, part.placeholders.num_zeros + part.placeholders.num_optionals);
+                auto denominator = std::pow(10, digits);
+                auto fractional_seconds = dt.microsecond / 1.0E6 * denominator;
+                fractional_seconds = std::round(fractional_seconds) / denominator;
+                result.append(fill_placeholders(part.placeholders, fractional_seconds));
+                break;
+            }
+
             if (part.placeholders.type == format_placeholders::placeholders_type::fraction_integer)
             {
                 improper_fraction = false;
@@ -1419,6 +1444,14 @@ std::string number_formatter::format_number(const format_code &format, long doub
                 }
 
                 result.append(fill_fraction_placeholders(part.placeholders, format.parts[i].placeholders, number, improper_fraction));
+            }
+            else if (part.placeholders.scientific && part.placeholders.type == format_placeholders::placeholders_type::integer_part)
+            {
+                auto integer_part = part.placeholders;
+                ++i;
+                auto fractional_part = format.parts[i++].placeholders;
+                auto exponent_part = format.parts[i++].placeholders;
+                result.append(fill_scientific_placeholders(integer_part, fractional_part, exponent_part, number));
             }
             else
             {
@@ -1522,8 +1555,44 @@ std::string number_formatter::format_number(const format_code &format, long doub
 
             break;
 
-        default:
-            throw "unhandled";
+        case template_part::template_type::a_p:
+            if (dt.hour < 12)
+            {
+                result.append("A");
+            }
+            else
+            {
+                result.append("P");
+            }
+
+            break;
+
+        case template_part::template_type::elapsed_hours:
+            result.append(std::to_string(24 * static_cast<int>(number) + dt.hour));
+            break;
+
+        case template_part::template_type::elapsed_minutes:
+            result.append(std::to_string(24 * 60 * static_cast<int>(number) + (60 * dt.hour) + dt.minute));
+            break;
+
+        case template_part::template_type::elapsed_seconds:
+            result.append(std::to_string(24 * 60 * 60 * static_cast<int>(number) + (60 * 60 * dt.hour) + (60 * dt.minute) + dt.second));
+            break;
+
+        case template_part::template_type::month_letter:
+            result.append(month_names->at(dt.month - 1).substr(0, 1));
+            break;
+
+        case template_part::template_type::day_abbreviation:
+            result.append(day_names->at(dt.weekday() - 1).substr(0, 3));
+            break;
+
+        case template_part::template_type::day_name:
+            result.append(day_names->at(dt.weekday() - 1));
+            break;
+
+        case template_part::template_type::bad:
+            throw std::runtime_error("bad state");
         }
     }
     
@@ -1534,17 +1603,7 @@ std::string number_formatter::format_number(const format_code &format, long doub
         auto remaining = width - result.size();
 
         std::string fill_string(remaining, fill_character.front());
-
-        // A UTF-8 character could be multiple bytes
-        if (fill_character.size() > 1)
-        {
-            fill_string.clear();
-
-            for (std::size_t i = 0; i < remaining; ++i)
-            {
-                fill_string.append(fill_character);
-            }
-        }
+        // TODO: A UTF-8 character could be multiple bytes
 
         result = result.substr(0, fill_index) + fill_string + result.substr(fill_index);
     }

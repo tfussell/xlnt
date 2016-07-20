@@ -36,7 +36,7 @@ public:
 
     TemporaryFile() : filename_(CreateTemporaryFilename())
     {
-        if(PathHelper::FileExists(GetFilename()))
+        if(path_helper::file_exists(GetFilename()))
         {
             std::remove(filename_.c_str());
         }

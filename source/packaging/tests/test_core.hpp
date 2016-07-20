@@ -7,14 +7,14 @@
 #include <detail/workbook_serializer.hpp>
 
 #include <helpers/path_helper.hpp>
-#include <helpers/helper.hpp>
+#include <helpers/xml_helper.hpp>
 
 class test_core : public CxxTest::TestSuite
 {
 public:
     void test_read_properties_core()
     {
-        auto path = PathHelper::GetDataDirectory() + "/genuine/empty.xlsx";
+        auto path = path_helper::get_data_directory() + "/genuine/empty.xlsx";
         xlnt::workbook wb;
         wb.load(path);
         auto &prop = wb.get_properties();
@@ -26,7 +26,7 @@ public:
 
     void test_read_sheets_titles()
     {
-        auto path = PathHelper::GetDataDirectory() + "/genuine/empty.xlsx";
+        auto path = path_helper::get_data_directory() + "/genuine/empty.xlsx";
         
         const std::vector<std::string> expected_titles = {"Sheet1 - Text", "Sheet2 - Numbers", "Sheet3 - Formulas", "Sheet4 - Dates"};
         
@@ -43,7 +43,7 @@ public:
 
     void test_read_properties_core_libre()
     {
-        xlnt::zip_file archive(PathHelper::GetDataDirectory() + "/genuine/empty_libre.xlsx");
+        xlnt::zip_file archive(path_helper::get_data_directory() + "/genuine/empty_libre.xlsx");
         auto content = archive.read("docProps/core.xml");
         xlnt::workbook wb;
         xlnt::workbook_serializer serializer(wb);
@@ -55,7 +55,7 @@ public:
 
     void test_read_sheets_titles_libre()
     {
-        auto path = PathHelper::GetDataDirectory() + "/genuine/empty_libre.xlsx";
+        auto path = path_helper::get_data_directory() + "/genuine/empty_libre.xlsx";
         
         const std::vector<std::string> expected_titles = {"Sheet1 - Text", "Sheet2 - Numbers", "Sheet3 - Formulas", "Sheet4 - Dates"};
         
@@ -81,7 +81,7 @@ public:
         xlnt::workbook_serializer serializer(wb);
         pugi::xml_document xml;
         serializer.write_properties_core(xml);
-        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/core.xml", xml));
+        TS_ASSERT(xml_helper::compare_xml(path_helper::get_data_directory() + "/writer/expected/core.xml", xml));
     }
 
     void test_write_properties_app()
@@ -95,6 +95,6 @@ public:
         xlnt::workbook_serializer serializer(wb);
         pugi::xml_document xml;
         serializer.write_properties_app(xml);
-        TS_ASSERT(Helper::compare_xml(PathHelper::GetDataDirectory() + "/writer/expected/app.xml", xml));
+        TS_ASSERT(xml_helper::compare_xml(path_helper::get_data_directory() + "/writer/expected/app.xml", xml));
     }
 };

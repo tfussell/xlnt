@@ -29,6 +29,8 @@
 
 #include <xlnt/utils/datetime.hpp>
 
+class test_number_format;
+
 namespace xlnt {
 namespace detail {
 
@@ -286,7 +288,6 @@ struct template_part
         fill,
         space,
         general,
-        placeholder,
         month_number,
         month_number_leading_zero,
         month_abbreviation,
@@ -359,9 +360,14 @@ public:
     std::string format_text(const std::string &text);
 
 private:
+    friend class ::test_number_format;
+
     std::string fill_placeholders(const format_placeholders &p, long double number);
     std::string fill_fraction_placeholders(const format_placeholders &numerator,
         const format_placeholders &denominator, long double number, bool improper);
+    std::string fill_scientific_placeholders(const format_placeholders &integer_part,
+        const format_placeholders &fractional_part, const format_placeholders &exponent_part,
+        long double number);
     std::string format_number(const format_code &format, long double number);
     std::string format_text(const format_code &format, const std::string &text);
 

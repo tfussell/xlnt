@@ -21,7 +21,7 @@ public:
     xlnt::workbook standard_workbook()
     {
         xlnt::workbook wb;
-        auto path = PathHelper::GetDataDirectory("/genuine/empty.xlsx");
+        auto path = path_helper::get_data_directory("/genuine/empty.xlsx");
         wb.load(path);
         
         return wb;
@@ -34,7 +34,7 @@ public:
 
     void test_read_standard_workbook_from_fileobj()
     {
-        auto path = PathHelper::GetDataDirectory("/genuine/empty.xlsx");
+        auto path = path_helper::get_data_directory("/genuine/empty.xlsx");
         std::ifstream fo(path, std::ios::binary);
 
         xlnt::workbook wb;
@@ -55,7 +55,7 @@ public:
 
     void test_read_nostring_workbook()
     {
-        auto path = PathHelper::GetDataDirectory("/genuine/empty-no-string.xlsx");
+        auto path = path_helper::get_data_directory("/genuine/empty-no-string.xlsx");
         
         xlnt::workbook wb;
         xlnt::excel_serializer serializer(wb);
@@ -67,7 +67,7 @@ public:
 
     void test_read_empty_file()
     {
-        auto path = PathHelper::GetDataDirectory("/reader/null_file.xlsx");
+        auto path = path_helper::get_data_directory("/reader/null_file.xlsx");
         
         xlnt::workbook wb;
         xlnt::excel_serializer serializer(wb);
@@ -77,7 +77,7 @@ public:
 
     void test_read_empty_archive()
     {
-        auto path = PathHelper::GetDataDirectory("/reader/null_archive.xlsx");
+        auto path = path_helper::get_data_directory("/reader/null_archive.xlsx");
         
         xlnt::workbook wb;
         xlnt::excel_serializer serializer(wb);
@@ -87,7 +87,7 @@ public:
     
     void test_read_workbook_with_no_properties()
     {
-        auto path = PathHelper::GetDataDirectory("/genuine/empty_with_no_properties.xlsx");
+        auto path = path_helper::get_data_directory("/genuine/empty_with_no_properties.xlsx");
 
         xlnt::workbook wb;
         xlnt::excel_serializer serializer(wb);
@@ -97,7 +97,7 @@ public:
 
     xlnt::workbook workbook_with_styles()
     {
-        auto path = PathHelper::GetDataDirectory("/genuine/empty-with-styles.xlsx");
+        auto path = path_helper::get_data_directory("/genuine/empty-with-styles.xlsx");
 
         xlnt::workbook wb;
         wb.load(path);
@@ -152,7 +152,7 @@ public:
     
     void test_read_charset_excel()
     {
-        auto path = PathHelper::GetDataDirectory("/reader/charset-excel.xlsx");
+        auto path = path_helper::get_data_directory("/reader/charset-excel.xlsx");
         
         xlnt::workbook wb;
         xlnt::excel_serializer serializer(wb);
@@ -166,7 +166,7 @@ public:
     
     void test_read_shared_strings_max_range()
     {
-        auto path = PathHelper::GetDataDirectory("/reader/shared_strings-max_range.xlsx");
+        auto path = path_helper::get_data_directory("/reader/shared_strings-max_range.xlsx");
         
         xlnt::workbook wb;
         xlnt::excel_serializer serializer(wb);
@@ -180,7 +180,7 @@ public:
     
     void test_read_shared_strings_multiple_r_nodes()
     {
-        auto path = PathHelper::GetDataDirectory("/reader/shared_strings-multiple_r_nodes.xlsx");
+        auto path = path_helper::get_data_directory("/reader/shared_strings-multiple_r_nodes.xlsx");
 
         xlnt::workbook wb;
         xlnt::excel_serializer serializer(wb);
@@ -194,7 +194,7 @@ public:
 
     xlnt::workbook date_mac_1904()
     {
-        auto path = PathHelper::GetDataDirectory("/reader/date_1904.xlsx");
+        auto path = path_helper::get_data_directory("/reader/date_1904.xlsx");
         
         xlnt::workbook wb;
 		wb.load(path);
@@ -204,7 +204,7 @@ public:
     
     xlnt::workbook date_std_1900()
     {
-        auto path = PathHelper::GetDataDirectory("/reader/date_1900.xlsx");
+        auto path = path_helper::get_data_directory("/reader/date_1900.xlsx");
 
         xlnt::workbook wb;
 		wb.load(path);
@@ -264,7 +264,7 @@ public:
     
     void test_read_no_theme()
     {
-        auto path = PathHelper::GetDataDirectory("/genuine/libreoffice_nrt.xlsx");
+        auto path = path_helper::get_data_directory("/genuine/libreoffice_nrt.xlsx");
         
         xlnt::workbook wb;
         xlnt::excel_serializer serializer(wb);
@@ -333,7 +333,7 @@ public:
     
     void test_data_only()
     {
-        auto path = PathHelper::GetDataDirectory("/reader/formulae.xlsx");
+        auto path = path_helper::get_data_directory("/reader/formulae.xlsx");
         
         xlnt::workbook wb;
         xlnt::excel_serializer serializer(wb);
@@ -370,7 +370,7 @@ public:
                 {xlnt::relationship::type::styles, "rId4", "styles.xml"}
             };
 
-            auto path = PathHelper::GetDataDirectory("/reader/bug137.xlsx");
+            auto path = path_helper::get_data_directory("/reader/bug137.xlsx");
             xlnt::zip_file archive(path);
             xlnt::relationship_serializer serializer(archive);
             
@@ -390,7 +390,7 @@ public:
                 {xlnt::relationship::type::theme, "rId4", "/xl/theme/theme.xml"}
             };
 
-            auto path = PathHelper::GetDataDirectory("/reader/bug304.xlsx");
+            auto path = path_helper::get_data_directory("/reader/bug304.xlsx");
             xlnt::zip_file archive(path);
             xlnt::relationship_serializer serializer(archive);
 
@@ -418,7 +418,7 @@ public:
             {"/docProps/app.xml", "application/vnd.openxmlformats-officedocument.extended-properties+xml"}
         };
         
-        auto path = PathHelper::GetDataDirectory("/reader/contains_chartsheets.xlsx");
+        auto path = path_helper::get_data_directory("/reader/contains_chartsheets.xlsx");
 
         xlnt::workbook wb;
         wb.load(path);
@@ -447,7 +447,7 @@ public:
         for(const auto &expected : test_cases)
         {
             std::tie(guess, dtype) = expected;
-            auto path = PathHelper::GetDataDirectory("/genuine/guess_types.xlsx");
+            auto path = path_helper::get_data_directory("/genuine/guess_types.xlsx");
             
             xlnt::workbook wb;
             xlnt::excel_serializer serializer(wb);
@@ -461,7 +461,7 @@ public:
     
     void test_read_autofilter()
     {
-        auto path = PathHelper::GetDataDirectory("/reader/bug275.xlsx");
+        auto path = path_helper::get_data_directory("/reader/bug275.xlsx");
 
         xlnt::workbook wb;
         xlnt::excel_serializer serializer(wb);
@@ -474,7 +474,7 @@ public:
     
     void test_bad_formats_xlsb()
     {
-        auto path = PathHelper::GetDataDirectory("/genuine/a.xlsb");
+        auto path = path_helper::get_data_directory("/genuine/a.xlsb");
         
         xlnt::workbook wb;
         xlnt::excel_serializer serializer(wb);
@@ -484,7 +484,7 @@ public:
     
     void test_bad_formats_xls()
     {
-        auto path = PathHelper::GetDataDirectory("/genuine/a.xls");
+        auto path = path_helper::get_data_directory("/genuine/a.xls");
         
         xlnt::workbook wb;
         xlnt::excel_serializer serializer(wb);
@@ -494,7 +494,7 @@ public:
     
     void test_bad_formats_no()
     {
-        auto path = PathHelper::GetDataDirectory("/genuine/a.no-format");
+        auto path = path_helper::get_data_directory("/genuine/a.no-format");
         
         xlnt::workbook wb;
         xlnt::excel_serializer serializer(wb);

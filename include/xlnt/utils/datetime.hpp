@@ -58,6 +58,8 @@ struct XLNT_CLASS datetime
     long double to_number(calendar base_date) const;
     bool operator==(const datetime &comparand) const;
 
+    int weekday() const;
+
     int year;
     int month;
     int day;
