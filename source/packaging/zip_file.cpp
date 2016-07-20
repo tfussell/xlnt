@@ -73,7 +73,7 @@ std::string join_path(const std::vector<std::string> &parts)
 
         if (i++ != parts.size() - 1)
         {
-            joined.append(1, directory_separator);
+            joined.append(1, '/');
         }
     }
     return joined;
@@ -687,10 +687,14 @@ void zip_file::extract(const std::string &member)
 
 void zip_file::extract(const std::string &member, const std::string &path)
 {
-    auto fullpath = join_path({ path, member });
-    auto split = split_path(fullpath);
-    split.pop_back();
-    mkdir_recursive(join_path(split));
+    auto member_split = split_path(member);
+    auto fullpath_parts = split_path(path);
+    fullpath_parts.insert(fullpath_parts.end(), member_split.begin(), member_split.end());
+    auto fullpath = join_path(fullpath_parts);
+
+    auto directory = fullpath_parts;
+    directory.pop_back();
+    mkdir_recursive(join_path(directory));
 
     std::fstream stream(fullpath, std::ios::binary | std::ios::out);
     stream << open(member).rdbuf();

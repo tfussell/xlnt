@@ -89,6 +89,20 @@ public:
 #endif
         
     }
+
+    static std::string GetWorkingDirectory()
+    {
+#ifdef _WIN32
+        TCHAR buffer[MAX_PATH];
+        GetCurrentDirectory(MAX_PATH, buffer);
+        std::basic_string<TCHAR> working_directory(buffer);
+        return WindowsToUniversalPath(std::string(working_directory.begin(), working_directory.end()));
+#else
+        char buffer[2048];
+        getcwd(buffer, 2048);
+        return std::string(buffer);
+#endif
+    }
     
     static std::string GetDataDirectory(const std::string &append = "")
     {

@@ -279,7 +279,7 @@ public:
         xlnt::zip_file f;
         f.load(PathHelper::GetDataDirectory("/genuine/empty.xlsx"));
 
-        auto expected = PathHelper::GetExecutableDirectory() + "xl/styles.xml";
+        auto expected = PathHelper::GetWorkingDirectory() + "/xl/styles.xml";
 
         TS_ASSERT(!PathHelper::FileExists(expected));
         f.extract("xl/styles.xml");
