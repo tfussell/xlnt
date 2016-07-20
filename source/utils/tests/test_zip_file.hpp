@@ -75,15 +75,13 @@ public:
     void test_load_bytes()
     {
         remove_temp_file();
-        
-        xlnt::zip_file f;
         std::vector<unsigned char> source_bytes, result_bytes;
         std::ifstream in_stream(existing_file, std::ios::binary);
         while(in_stream)
         {
             source_bytes.push_back((unsigned char)in_stream.get());
         }
-        f.load(source_bytes);
+        xlnt::zip_file f(source_bytes);
         f.save(temp_file.GetFilename());
         
         xlnt::zip_file f2;
@@ -123,6 +121,15 @@ public:
         catch(std::exception e)
         {
         }
+
+        f.writestr("a", "b");
+        f.reset();
+
+        TS_ASSERT(f.namelist().empty());
+
+        f.writestr("a", "b");
+
+        TS_ASSERT_DIFFERS(f.getinfo("a").file_size, 0);
     }
 
     void test_getinfo()
@@ -270,7 +277,11 @@ public:
         
         xlnt::zip_file f2(temp_file.GetFilename());
         TS_ASSERT(f2.comment == "comment");
-        
+
+        xlnt::zip_file f3;
+        std::vector<std::uint8_t> bytes { 1, 2, 3 };
+        TS_ASSERT_THROWS(f3.load(bytes), std::runtime_error);
+
         remove_temp_file();
     }
 

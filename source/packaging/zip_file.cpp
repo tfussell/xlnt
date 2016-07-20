@@ -368,7 +368,7 @@ void zip_file::remove_comment()
         }
     }
 
-    if (position == 3)
+    if (position <= 3)
     {
         throw std::runtime_error("didn't find end of central directory signature");
     }
@@ -397,16 +397,8 @@ void zip_file::reset()
         mz_zip_writer_finalize_archive(archive_.get());
         mz_zip_writer_end(archive_.get());
         break;
-    case MZ_ZIP_MODE_WRITING_HAS_BEEN_FINALIZED:
-        mz_zip_writer_end(archive_.get());
+    default:
         break;
-    case MZ_ZIP_MODE_INVALID:
-        break;
-    }
-
-    if (archive_->m_zip_mode != MZ_ZIP_MODE_INVALID)
-    {
-        throw std::runtime_error("");
     }
 
     buffer_.clear();
@@ -529,21 +521,14 @@ void zip_file::start_write()
         mz_zip_reader_end(&archive_copy);
         return;
     }
-    case MZ_ZIP_MODE_WRITING_HAS_BEEN_FINALIZED:
-        mz_zip_writer_end(archive_.get());
-        break;
-    case MZ_ZIP_MODE_INVALID:
-    case MZ_ZIP_MODE_WRITING:
+    default:
         break;
     }
 
     archive_->m_pWrite = &write_callback;
     archive_->m_pIO_opaque = &buffer_;
 
-    if (!mz_zip_writer_init(archive_.get(), 0))
-    {
-        throw std::runtime_error("bad zip");
-    }
+    mz_zip_writer_init(archive_.get(), 0);
 }
 
 void zip_file::write(const std::string &filename)
@@ -574,10 +559,7 @@ void zip_file::writestr(const std::string &arcname, const std::string &bytes)
         start_write();
     }
 
-    if (!mz_zip_writer_add_mem(archive_.get(), arcname.c_str(), bytes.data(), bytes.size(), MZ_BEST_COMPRESSION))
-    {
-        throw std::runtime_error("write error");
-    }
+    mz_zip_writer_add_mem(archive_.get(), arcname.c_str(), bytes.data(), bytes.size(), MZ_BEST_COMPRESSION);
 }
 
 void zip_file::writestr(const zip_info &info, const std::string &bytes)
@@ -594,12 +576,9 @@ void zip_file::writestr(const zip_info &info, const std::string &bytes)
 
     auto crc = crc32buf(bytes.c_str(), bytes.size());
 
-    if (!mz_zip_writer_add_mem_ex(archive_.get(), info.filename.c_str(), bytes.data(), bytes.size(),
-                                  info.comment.c_str(), static_cast<mz_uint16>(info.comment.size()),
-                                  MZ_BEST_COMPRESSION, 0, crc))
-    {
-        throw std::runtime_error("write error");
-    }
+    mz_zip_writer_add_mem_ex(archive_.get(), info.filename.c_str(), bytes.data(), bytes.size(),
+        info.comment.c_str(), static_cast<mz_uint16>(info.comment.size()),
+        MZ_BEST_COMPRESSION, 0, crc);
 }
 
 std::string zip_file::read(const zip_info &info)
