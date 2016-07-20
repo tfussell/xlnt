@@ -21,6 +21,7 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <algorithm>
 #include <cmath>
 
 #include <detail/number_formatter.hpp>
@@ -1235,7 +1236,7 @@ std::string number_formatter::fill_scientific_placeholders(const format_placehol
         const format_placeholders &fractional_part, const format_placeholders &exponent_part,
         long double number)
 {
-    auto logarithm = 0;
+    std::size_t logarithm = 0;
     
     if (number != 0)
     {
@@ -1420,8 +1421,8 @@ std::string number_formatter::format_number(const format_code &format, long doub
             if (part.placeholders.type == format_placeholders::placeholders_type::fractional_part
                 && (format.is_datetime || format.is_timedelta))
             {
-                auto digits = std::min(6UL, part.placeholders.num_zeros + part.placeholders.num_optionals);
-                auto denominator = std::pow(10, digits);
+                auto digits = std::min(static_cast<std::size_t>(6), part.placeholders.num_zeros + part.placeholders.num_optionals);
+                auto denominator = static_cast<int>(std::pow(10.0, digits));
                 auto fractional_seconds = dt.microsecond / 1.0E6 * denominator;
                 fractional_seconds = std::round(fractional_seconds) / denominator;
                 result.append(fill_placeholders(part.placeholders, fractional_seconds));
