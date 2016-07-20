@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
+#include <detail/shared_strings_serializer.hpp>
 #include <detail/workbook_serializer.hpp>
 #include <helpers/path_helper.hpp>
 #include <xlnt/utils/exceptions.hpp>
@@ -182,6 +183,45 @@ public:
         "</Relationships>";
         
         auto diff = Helper::compare_xml(expected, observed);
+        TS_ASSERT(diff);
+    }
+
+    void test_write_shared_strings_with_runs()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.get_active_sheet();
+        auto cell = ws.get_cell("A1");
+        xlnt::text_run run;
+        run.set_color("color");
+        run.set_family(12);
+        run.set_font("font");
+        run.set_scheme("scheme");
+        run.set_size(13);
+        run.set_string("string");
+        xlnt::text text;
+        text.add_run(run);
+        cell.set_value(text);
+        xlnt::shared_strings_serializer serializer;
+        pugi::xml_document xml;
+        serializer.write_shared_strings(wb.get_shared_strings(), xml);
+
+        std::string expected =
+        "<sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"1\" uniqueCount=\"1\">"
+        "  <si>"
+        "    <r>"
+        "      <rPr>"
+        "        <sz val=\"13\"/>"
+        "        <color rgb=\"color\"/>"
+        "        <rFont val=\"font\"/>"
+        "        <family val=\"12\"/>"
+        "        <scheme val=\"scheme\"/>"
+        "      </rPr>"
+        "      <t>string</t>"
+        "    </r>"
+        "  </si>"
+        "</sst>";
+
+        auto diff = Helper::compare_xml(expected, xml);
         TS_ASSERT(diff);
     }
               
