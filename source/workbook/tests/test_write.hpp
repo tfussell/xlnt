@@ -21,16 +21,16 @@ public:
         wbk.get_active_sheet().get_cell("A2").set_value("xlnt");
         wbk.get_active_sheet().get_cell("B5").set_value(88);
         wbk.get_active_sheet().get_cell("B5").set_number_format(xlnt::number_format::percentage_00());
-        wbk.save(temp_file.GetFilename());
+        wbk.save(temp_file.get_filename());
         
-        if(path_helper::file_exists(temp_file.GetFilename()))
+        if(path_helper::file_exists(temp_file.get_filename()))
         {
-            path_helper::delete_file(temp_file.GetFilename());
+            path_helper::delete_file(temp_file.get_filename());
         }
 
-        TS_ASSERT(!path_helper::file_exists(temp_file.GetFilename()));
-        wb_.save(temp_file.GetFilename());
-        TS_ASSERT(path_helper::file_exists(temp_file.GetFilename()));
+        TS_ASSERT(!path_helper::file_exists(temp_file.get_filename()));
+        wb_.save(temp_file.get_filename());
+        TS_ASSERT(path_helper::file_exists(temp_file.get_filename()));
     }
 
     void test_write_virtual_workbook()
@@ -293,6 +293,6 @@ public:
     }
 
  private:
-    TemporaryFile temp_file;
+    temporary_file temp_file;
     xlnt::workbook wb_;
 };

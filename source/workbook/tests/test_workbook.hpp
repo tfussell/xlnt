@@ -217,11 +217,11 @@ public:
         xlnt::workbook book;
         auto sheet = book.get_active_sheet();
         sheet.get_cell("A1").set_value(today);
-        TemporaryFile temp_file;
-        book.save(temp_file.GetFilename());
+        temporary_file temp_file;
+        book.save(temp_file.get_filename());
 
         xlnt::workbook test_book;
-        test_book.load(temp_file.GetFilename());
+        test_book.load(temp_file.get_filename());
         auto test_sheet = test_book.get_active_sheet();
 
         TS_ASSERT_EQUALS(test_sheet.get_cell("A1").get_value<xlnt::datetime>(), today);
@@ -234,11 +234,11 @@ public:
         xlnt::workbook book;
         auto sheet = book.get_active_sheet();
         sheet.get_cell("A1").set_value(float_value);
-        TemporaryFile temp_file;
-        book.save(temp_file.GetFilename());
+        temporary_file temp_file;
+        book.save(temp_file.get_filename());
 
         xlnt::workbook test_book;
-        test_book.load(temp_file.GetFilename());
+        test_book.load(temp_file.get_filename());
         auto test_sheet = test_book.get_active_sheet();
 
         TS_ASSERT_EQUALS(test_sheet.get_cell("A1").get_value<long double>(), float_value);

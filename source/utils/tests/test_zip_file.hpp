@@ -19,7 +19,7 @@ public:
 
     void remove_temp_file()
     {
-        std::remove(temp_file.GetFilename().c_str());
+        std::remove(temp_file.get_filename().c_str());
     }
 
     void make_temp_directory()
@@ -54,8 +54,8 @@ public:
     {
         remove_temp_file();
         xlnt::zip_file f(existing_file);
-        f.save(temp_file.GetFilename());
-        TS_ASSERT(files_equal(existing_file, temp_file.GetFilename()));
+        f.save(temp_file.get_filename());
+        TS_ASSERT(files_equal(existing_file, temp_file.get_filename()));
         remove_temp_file();
     }
 
@@ -65,10 +65,10 @@ public:
         {
             std::ifstream in_stream(existing_file, std::ios::binary);
             xlnt::zip_file f(in_stream);
-            std::ofstream out_stream(temp_file.GetFilename(), std::ios::binary);
+            std::ofstream out_stream(temp_file.get_filename(), std::ios::binary);
             f.save(out_stream);
         }
-        TS_ASSERT(files_equal(existing_file, temp_file.GetFilename()));
+        TS_ASSERT(files_equal(existing_file, temp_file.get_filename()));
         remove_temp_file();
     }
 
@@ -82,10 +82,10 @@ public:
             source_bytes.push_back((unsigned char)in_stream.get());
         }
         xlnt::zip_file f(source_bytes);
-        f.save(temp_file.GetFilename());
+        f.save(temp_file.get_filename());
         
         xlnt::zip_file f2;
-        f2.load(temp_file.GetFilename());
+        f2.load(temp_file.get_filename());
         result_bytes = std::vector<unsigned char>();
         f2.save(result_bytes);
         
@@ -229,9 +229,9 @@ public:
         auto text_file = path_helper::get_data_directory("/reader/sharedStrings.xml");
         f.write(text_file);
         f.write(text_file, "sharedStrings2.xml");
-        f.save(temp_file.GetFilename());
+        f.save(temp_file.get_filename());
         
-        xlnt::zip_file f2(temp_file.GetFilename());
+        xlnt::zip_file f2(temp_file.get_filename());
 
         for(auto &info : f2.infolist())
         {
@@ -258,9 +258,9 @@ public:
         info.filename = "b.txt";
         info.date_time.year = 2014;
         f.writestr(info, "b\nb");
-        f.save(temp_file.GetFilename());
+        f.save(temp_file.get_filename());
         
-        xlnt::zip_file f2(temp_file.GetFilename());
+        xlnt::zip_file f2(temp_file.get_filename());
         TS_ASSERT(f2.read("a.txt") == "a\na");
         TS_ASSERT(f2.read(f2.getinfo("b.txt")) == "b\nb");
         
@@ -273,9 +273,9 @@ public:
         
         xlnt::zip_file f;
         f.comment = "comment";
-        f.save(temp_file.GetFilename());
+        f.save(temp_file.get_filename());
         
-        xlnt::zip_file f2(temp_file.GetFilename());
+        xlnt::zip_file f2(temp_file.get_filename());
         TS_ASSERT(f2.comment == "comment");
 
         xlnt::zip_file f3;
@@ -305,7 +305,7 @@ public:
     }
 
 private:
-    TemporaryFile temp_file;
+    temporary_file temp_file;
     std::string existing_file;
     std::string expected_content_types_string;
     std::string expected_atxt_string;

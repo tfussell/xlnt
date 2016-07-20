@@ -7,10 +7,10 @@
 #include <detail/include_windows.hpp>
 #include <helpers/path_helper.hpp>
 
-class TemporaryFile
+class temporary_file
 {
 public:
-    static std::string CreateTemporaryFilename()
+    static std::string create()
     {
 #ifdef _MSC_VER
 	std::array<TCHAR, MAX_PATH> buffer;
@@ -27,27 +27,26 @@ public:
 	}
     
 	std::string directory(buffer.begin(), buffer.begin() + result);
-    
-    return PathHelper::WindowsToUniversalPath(directory + "xlnt.xlsx");
+    return path_helper::windows_to_universal_path(directory + "xlnt.xlsx");
 #else
 	return "/tmp/xlnt.xlsx";
 #endif
 }
 
-    TemporaryFile() : filename_(CreateTemporaryFilename())
+    temporary_file() : filename_(create())
     {
-        if(path_helper::file_exists(GetFilename()))
+        if(path_helper::file_exists(get_filename()))
         {
             std::remove(filename_.c_str());
         }
     }
 
-    ~TemporaryFile()
+    ~temporary_file()
     {
         std::remove(filename_.c_str());
     }
 
-    std::string GetFilename() const { return filename_; }
+    std::string get_filename() const { return filename_; }
 
 private:
     const std::string filename_;

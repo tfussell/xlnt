@@ -73,12 +73,12 @@ public:
     void test_write_empty_workbook()
     {
         xlnt::workbook wb;
-        TemporaryFile file;
+        temporary_file file;
 
         xlnt::excel_serializer serializer(wb);
-        serializer.save_workbook(file.GetFilename());
+        serializer.save_workbook(file.get_filename());
         
-        TS_ASSERT(path_helper::file_exists(file.GetFilename()));
+        TS_ASSERT(path_helper::file_exists(file.get_filename()));
     }
     
     void test_write_virtual_workbook()

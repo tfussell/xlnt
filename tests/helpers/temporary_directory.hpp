@@ -8,10 +8,10 @@
 
 #include "PathHelper.h"
 
-class TemporaryDirectory
+class temporary_directory
 {
 public:
-    static std::string CreateTemporaryFilename()
+    static std::string create()
     {
 #ifdef _WIN32
 	std::array<TCHAR, MAX_PATH> buffer;
@@ -25,23 +25,23 @@ public:
 	    throw std::runtime_error("GetTempPath failed");
 	}
 	std::string directory(buffer.begin(), buffer.begin() + result);
-    return PathHelper::WindowsToUniversalPath(directory + "xlnt");
+    return path_helper::windows_to_universal_path(directory + "xlnt");
 #else
 	return "/tmp/xlsx";
 #endif
     }
 
-    TemporaryDirectory() : filename_(CreateTemporaryFilename())
+    temporary_directory() : filename_(create())
     {
 
     }
 
-    ~TemporaryDirectory()
+    ~temporary_directory()
     {
         remove(filename_.c_str());
     }
 
-    std::string GetFilename() const { return filename_; }
+    std::string get_filename() const { return filename_; }
 
 private:
     const std::string filename_;
