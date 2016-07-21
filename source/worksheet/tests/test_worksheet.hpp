@@ -1168,4 +1168,23 @@ public:
             }
         }
     }
+
+    void test_range_reference()
+    {
+        xlnt::range_reference ref1("A1:A1");
+        TS_ASSERT(ref1.is_single_cell());
+        xlnt::range_reference ref2("A1:B2");
+
+        TS_ASSERT(!ref2.is_single_cell());
+        TS_ASSERT(ref1 == xlnt::range_reference("A1:A1"));
+        TS_ASSERT(ref1 != ref2);
+        TS_ASSERT(ref1 == "A1:A1");
+        TS_ASSERT(ref1 == std::string("A1:A1"));
+        TS_ASSERT(std::string("A1:A1") == ref1);
+        TS_ASSERT("A1:A1" == ref1);
+        TS_ASSERT(ref1 != "A1:B2");
+        TS_ASSERT(ref1 != std::string("A1:B2"));
+        TS_ASSERT(std::string("A1:B2") != ref1);
+        TS_ASSERT("A1:B2" != ref1);
+    }
 };
