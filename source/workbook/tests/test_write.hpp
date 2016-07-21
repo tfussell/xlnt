@@ -292,6 +292,52 @@ public:
         TS_SKIP("not implemented");
     }
 
+    void test_write_page_setup()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.get_active_sheet();
+
+        auto page_setup = ws.get_page_setup();
+        page_setup.set_break(xlnt::page_break::column);
+        page_setup.set_fit_to_height(true);
+        page_setup.set_fit_to_page(true);
+        page_setup.set_fit_to_width(true);
+        page_setup.set_horizontal_centered(true);
+        page_setup.set_orientation(xlnt::orientation::landscape);
+        page_setup.set_paper_size(xlnt::paper_size::a5);
+        page_setup.set_scale(14.1);
+        page_setup.set_sheet_state(xlnt::sheet_state::very_hidden);
+        page_setup.set_vertical_centered(true);
+
+        std::vector<std::uint8_t> bytes;
+        wb.save(bytes);
+
+        xlnt::zip_file archive;
+        archive.load(bytes);
+        auto worksheet_xml_string = archive.read("xl/worksheets/sheet1.xml");
+
+        pugi::xml_document worksheet_xml;
+        worksheet_xml.load(worksheet_xml_string.c_str());
+
+        std::string expected =
+        "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
+        "	<sheetPr>"
+        "		<outlinePr summaryBelow=\"1\" summaryRight=\"1\" />"
+        "	</sheetPr>"
+        "	<dimension ref=\"A1:A1\" />"
+        "	<sheetViews>"
+        "		<sheetView workbookViewId=\"0\">"
+        "			<selection activeCell=\"A1\" sqref=\"A1\" />"
+        "		</sheetView>"
+        "	</sheetViews>"
+        "	<sheetFormatPr baseColWidth=\"10\" defaultRowHeight=\"15\" />"
+        "	<sheetData />"
+        "	<pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" />"
+        "</worksheet>";
+
+        TS_ASSERT(xml_helper::compare_xml(expected, worksheet_xml));
+    }
+
  private:
     temporary_file temp_file;
     xlnt::workbook wb_;
