@@ -297,7 +297,9 @@ public:
         xlnt::workbook wb;
         auto ws = wb.get_active_sheet();
 
-        auto page_setup = ws.get_page_setup();
+        auto &page_setup = ws.get_page_setup();
+        TS_ASSERT(page_setup.is_default());
+
         page_setup.set_break(xlnt::page_break::column);
         page_setup.set_fit_to_height(true);
         page_setup.set_fit_to_page(true);
@@ -305,9 +307,11 @@ public:
         page_setup.set_horizontal_centered(true);
         page_setup.set_orientation(xlnt::orientation::landscape);
         page_setup.set_paper_size(xlnt::paper_size::a5);
-        page_setup.set_scale(14.1);
-        page_setup.set_sheet_state(xlnt::sheet_state::very_hidden);
+        page_setup.set_scale(4.0);
+        page_setup.set_sheet_state(xlnt::sheet_state::visible);
         page_setup.set_vertical_centered(true);
+
+        TS_ASSERT(!page_setup.is_default());
 
         std::vector<std::uint8_t> bytes;
         wb.save(bytes);
@@ -323,6 +327,7 @@ public:
         "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
         "	<sheetPr>"
         "		<outlinePr summaryBelow=\"1\" summaryRight=\"1\" />"
+        "       <pageSetUpPr fitToPage=\"1\" />"
         "	</sheetPr>"
         "	<dimension ref=\"A1:A1\" />"
         "	<sheetViews>"
@@ -332,7 +337,9 @@ public:
         "	</sheetViews>"
         "	<sheetFormatPr baseColWidth=\"10\" defaultRowHeight=\"15\" />"
         "	<sheetData />"
+        "   <printOptions horizontalCentered=\"1\" verticalCentered=\"1\" />"
         "	<pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" />"
+        "   <pageSetup orientation=\"landscape\" paperSize=\"11\" fitToHeight=\"1\" fitToWidth=\"1\" />"
         "</worksheet>";
 
         TS_ASSERT(xml_helper::compare_xml(expected, worksheet_xml));
