@@ -757,15 +757,19 @@ public:
         const auto first_cell = *first_row.rbegin();
         TS_ASSERT_EQUALS(first_cell.get_value<std::string>(), "C2");
 
-        const auto last_row = *(--rows.rend());
-        const auto last_cell = *(--last_row.rend());
+        auto row_iter = rows.rend();
+        row_iter--;
+        const auto last_row = *row_iter;
+        auto cell_iter = last_row.rend();
+        cell_iter--;
+        const auto last_cell = *cell_iter;
         TS_ASSERT_EQUALS(last_cell.get_value<std::string>(), "A1");
 
-        for (auto ws_iter = rows.rbegin(); ws_iter != rows.rend(); ++ws_iter)
+        for (auto ws_iter = rows.rbegin(); ws_iter != rows.rend(); ws_iter++)
         {
             const auto row = *ws_iter;
 
-            for (auto row_iter = row.rbegin(); row_iter != row.rend(); ++row_iter)
+            for (auto row_iter = row.rbegin(); row_iter != row.rend(); row_iter++)
             {
                 const auto cell = *row_iter;
                 TS_ASSERT_EQUALS(cell.get_value<std::string>(), cell.get_reference().to_string());
