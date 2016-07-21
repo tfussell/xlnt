@@ -622,4 +622,13 @@ public:
         TS_ASSERT(xlnt::cell_reference("A2") > xlnt::cell_reference("A1"));
         TS_ASSERT(xlnt::cell_reference("A2") >= xlnt::cell_reference("A2"));
     }
+
+    void test_anchor()
+    {
+        xlnt::workbook wb;
+        xlnt::cell cell(wb.get_active_sheet(), "A1");
+        auto anchor = cell.get_anchor();
+        TS_ASSERT_EQUALS(anchor.first, 0);
+        TS_ASSERT_EQUALS(anchor.second, 0);
+    }
 };
