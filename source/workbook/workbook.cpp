@@ -162,7 +162,7 @@ worksheet workbook::create_sheet()
     return worksheet(&d_->worksheets_.back());
 }
 
-void workbook::add_sheet(xlnt::worksheet worksheet)
+void workbook::copy_sheet(xlnt::worksheet worksheet)
 {
     if(worksheet.d_->parent_ != this) throw xlnt::value_error();
 
@@ -172,24 +172,27 @@ void workbook::add_sheet(xlnt::worksheet worksheet)
     *new_sheet.d_ = impl;
 }
 
-void workbook::add_sheet(xlnt::worksheet worksheet, std::size_t index)
+void workbook::copy_sheet(xlnt::worksheet worksheet, std::size_t index)
 {
-    add_sheet(worksheet);
-    std::swap(d_->worksheets_[index], d_->worksheets_.back());
+    copy_sheet(worksheet);
+
+    if (index != d_->worksheets_.size() - 1)
+    {
+		d_->worksheets_.insert(d_->worksheets_.begin() + index, d_->worksheets_.back());
+		d_->worksheets_.pop_back();
+    }
 }
 
-int workbook::get_index(xlnt::worksheet worksheet)
+std::size_t workbook::get_index(xlnt::worksheet worksheet)
 {
-    int i = 0;
-    for (auto ws : *this)
+    auto match = std::find(begin(), end(), worksheet);
+
+    if (match == end())
     {
-        if (worksheet == ws)
-        {
-            return i;
-        }
-        i++;
+        throw std::runtime_error("worksheet isn't owned by this workbook");
     }
-    throw std::runtime_error("worksheet isn't owned by this workbook");
+
+    return std::distance(begin(), match);
 }
 
 void workbook::create_named_range(const std::string &name, worksheet range_owner, const std::string &reference_string)
@@ -477,14 +480,14 @@ bool workbook::save(const std::string &filename)
     return true;
 }
 
-bool workbook::operator==(std::nullptr_t) const
-{
-    return d_.get() == nullptr;
-}
-
 bool workbook::operator==(const workbook &rhs) const
 {
     return d_.get() == rhs.d_.get();
+}
+
+bool workbook::operator!=(const workbook &rhs) const
+{
+    return d_.get() != rhs.d_.get();
 }
 
 const std::vector<relationship> &xlnt::workbook::get_relationships() const

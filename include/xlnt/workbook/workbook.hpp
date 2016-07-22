@@ -34,8 +34,6 @@
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/packaging/relationship.hpp>
 
-namespace CxxTest { class TestSuite; }
-
 namespace xlnt {
 
 class alignment;
@@ -66,8 +64,6 @@ class worksheet;
 class worksheet_iterator;
 class zip_file;
 
-enum class encoding;
-
 namespace detail {
 struct workbook_impl;
 } // namespace detail
@@ -82,21 +78,35 @@ public:
     using const_iterator = const_worksheet_iterator;
     using reverse_iterator = std::reverse_iterator<iterator>;
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
-    
-    static std::size_t index_from_ws_filename(const std::string &filename);
 
-    // constructors
-    workbook();
-
-    workbook &operator=(workbook other);
-    workbook(workbook &&other);
-    workbook(const workbook &other);
-    
-    ~workbook();
-
+    /// <summary>
+    /// Swap the data held in workbooks "left" and "right".
+    /// </summary>
     friend void swap(workbook &left, workbook &right);
 
-    worksheet get_active_sheet();
+    // constructors
+
+    /// <summary>
+    /// Create a workbook containing a single empty worksheet.
+    /// </summary>
+    workbook();
+
+    /// <summary>
+    /// Move construct this workbook from existing workbook "other".
+    /// </summary>
+    workbook(workbook &&other);
+
+    /// <summary>
+    /// Copy construct this workbook from existing workbook "other".
+    /// </summary>
+    workbook(const workbook &other);
+
+    /// <summary>
+    /// Destroy this workbook.
+    /// </summary>
+    ~workbook();
+
+    // general properties
 
     bool get_guess_types() const;
     void set_guess_types(bool guess);
@@ -107,31 +117,67 @@ public:
     bool get_read_only() const;
     void set_read_only(bool read_only);
 
-    // create
+    // add worksheets
+
     worksheet create_sheet();
     worksheet create_sheet(std::size_t index);
     worksheet create_sheet(const std::string &title);
     worksheet create_sheet(std::size_t index, const std::string &title);
     worksheet create_sheet(const std::string &title, const relationship &rel);
 
-    // add
-    void add_sheet(worksheet worksheet);
-    void add_sheet(worksheet worksheet, std::size_t index);
+    void copy_sheet(worksheet worksheet);
+    void copy_sheet(worksheet worksheet, std::size_t index);
 
-    // remove
+    // get worksheets
+
+    /// <summary>
+    /// Returns the worksheet that was most recently accessed.
+    /// This is also the sheet that will be shown when the workbook is opened
+    /// in the spreadsheet editor program.
+    /// </summary>
+    worksheet get_active_sheet();
+
+    /// <summary>
+    /// Return the worksheet with the given name.
+    /// This may throw an exception if the sheet isn't found.
+    /// Use workbook::contains(const std::string &) to make sure the sheet exists.
+    /// </summary>
+    worksheet get_sheet_by_name(const std::string &sheet_name);
+    
+    /// <summary>
+    /// Return the const worksheet with the given name.
+    /// This may throw an exception if the sheet isn't found.
+    /// Use workbook::contains(const std::string &) to make sure the sheet exists.
+    /// </summary>
+    const worksheet get_sheet_by_name(const std::string &sheet_name) const;
+
+    /// <summary>
+    /// Return the worksheet at the given index.
+    /// </summary>
+    worksheet get_sheet_by_index(std::size_t index);
+
+    /// <summary>
+    /// Return the const worksheet at the given index.
+    /// </summary>
+    const worksheet get_sheet_by_index(std::size_t index) const;
+
+    /// <summary>
+    /// Return true if this workbook contains a sheet with the given name.
+    /// </summary>
+    bool contains(const std::string &key) const;
+
+    /// <summary>
+    /// Return the index of the given worksheet.
+    /// The worksheet must be owned by this workbook.
+    /// </summary>
+    std::size_t get_index(worksheet worksheet);
+
+    // remove worksheets
+
     void remove_sheet(worksheet worksheet);
     void clear();
 
-    // container operations
-    worksheet get_sheet_by_name(const std::string &sheet_name);
-    const worksheet get_sheet_by_name(const std::string &sheet_name) const;
-    worksheet get_sheet_by_index(std::size_t index);
-    const worksheet get_sheet_by_index(std::size_t index) const;
-    bool contains(const std::string &key) const;
-    int get_index(worksheet worksheet);
-
-    worksheet operator[](const std::string &name);
-    worksheet operator[](std::size_t index);
+    // iterators
 
     iterator begin();
     iterator end();
@@ -160,6 +206,7 @@ public:
     const app_properties &get_app_properties() const;
 
     // named ranges
+
     std::vector<named_range> get_named_ranges() const;
     void create_named_range(const std::string &name, worksheet worksheet, const range_reference &reference);
     void create_named_range(const std::string &name, worksheet worksheet, const std::string &reference_string);
@@ -168,6 +215,7 @@ public:
     void remove_named_range(const std::string &name);
 
     // serialization
+
     bool save(std::vector<unsigned char> &data);
     bool save(const std::string &filename);
     bool load(const std::vector<unsigned char> &data);
@@ -175,28 +223,14 @@ public:
     bool load(std::istream &stream);
     bool load(zip_file &archive);
 
-    bool operator==(const workbook &rhs) const;
-
-    bool operator!=(const workbook &rhs) const
-    {
-        return !(*this == rhs);
-    }
-
-    bool operator==(std::nullptr_t) const;
-
-    bool operator!=(std::nullptr_t) const
-    {
-        return !(*this == std::nullptr_t{});
-    }
-
-    void create_relationship(const std::string &id, const std::string &target, relationship::type type);
-    relationship get_relationship(const std::string &id) const;
-    const std::vector<relationship> &get_relationships() const;
-
     void set_code_name(const std::string &code_name);
+
+    // theme
 
     bool has_loaded_theme() const;
     const theme &get_loaded_theme() const;
+
+    // formats
     
     format &get_format(std::size_t format_index);
     const format &get_format(std::size_t format_index) const;
@@ -204,8 +238,9 @@ public:
     void clear_formats();
     std::vector<format> &get_formats();
     const std::vector<format> &get_formats() const;
-    
-    // Named Styles
+
+    // named styles
+
     bool has_style(const std::string &name) const;
     style &get_style(const std::string &name);
     const style &get_style(const std::string &name) const;
@@ -217,26 +252,83 @@ public:
     void clear_styles();
     const std::vector<style> &get_styles() const;
 
+    // manifest
+
     manifest &get_manifest();
     const manifest &get_manifest() const;
 
+    // relationships
+
+    void create_relationship(const std::string &id, const std::string &target, relationship::type type);
+    relationship get_relationship(const std::string &id) const;
+    const std::vector<relationship> &get_relationships() const;
+
     void create_root_relationship(const std::string &id, const std::string &target, relationship::type type);
     const std::vector<relationship> &get_root_relationships() const;
+
+    // shared strings
 
     void add_shared_string(const text &shared, bool allow_duplicates=false);
     std::vector<text> &get_shared_strings();
     const std::vector<text> &get_shared_strings() const;
     
+    // thumbnail
+
     void set_thumbnail(const std::vector<std::uint8_t> &thumbnail);
     const std::vector<std::uint8_t> &get_thumbnail() const;
+
+    // operators
+
+    /// <summary>
+    /// Set the contents of this workbook to be equal to those of "other".
+    /// Other is passed as value to allow for copy-swap idiom.
+    /// </summary>
+    workbook &operator=(workbook other);
+
+    /// <summary>
+    /// Return the worksheet with a title of "name".
+    /// </summary>
+    worksheet operator[](const std::string &name);
+
+    /// <summary>
+    /// Return the worksheet at "index".
+    /// </summary>
+    worksheet operator[](std::size_t index);
+
+    /// <summary>
+    /// Return true if this workbook internal implementation points to the same
+    /// memory as rhs's.
+    /// </summary>
+    bool operator==(const workbook &rhs) const;
+
+    /// <summary>
+    /// Return true if this workbook internal implementation doesn't point to the same
+    /// memory as rhs's.
+    /// </summary>
+    bool operator!=(const workbook &rhs) const;
 
 private:
     friend class excel_serializer;
     friend class worksheet;
-    
+
+    /// <summary>
+    /// Helper function to calculate an index from a worksheet filename.
+    /// </summary>
+    static std::size_t index_from_ws_filename(const std::string &filename);
+
+    /// <summary>
+    /// Get the name of the next unused relationship.
+    /// </summary>
     std::string next_relationship_id() const;
+
+    /// <summary>
+    /// Apply the function "f" to every cell in every worksheet in this workbook.
+    /// </summary>
     void apply_to_cells(std::function<void(cell)> f);
     
+    /// <summary>
+    /// An opaque pointer to a structure that holds all of the data relating to this workbook.
+    /// </summary>
     std::unique_ptr<detail::workbook_impl> d_;
 };
 

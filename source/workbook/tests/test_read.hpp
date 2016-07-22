@@ -29,7 +29,7 @@ public:
 
     void test_read_standard_workbook()
     {
-        TS_ASSERT_DIFFERS(standard_workbook(), nullptr);
+        TS_ASSERT_THROWS_NOTHING(standard_workbook());
     }
 
     void test_read_standard_workbook_from_fileobj()
@@ -58,11 +58,7 @@ public:
         auto path = path_helper::get_data_directory("/genuine/empty-no-string.xlsx");
         
         xlnt::workbook wb;
-        xlnt::excel_serializer serializer(wb);
-        
-        serializer.load_workbook(path);
-        
-        TS_ASSERT_DIFFERS(wb, nullptr);
+        TS_ASSERT_THROWS_NOTHING(wb.load(path));
     }
 
     void test_read_empty_file()
@@ -267,11 +263,7 @@ public:
         auto path = path_helper::get_data_directory("/genuine/libreoffice_nrt.xlsx");
         
         xlnt::workbook wb;
-        xlnt::excel_serializer serializer(wb);
-        
-        serializer.load_workbook(path);
-        
-        TS_ASSERT_DIFFERS(wb, nullptr);
+        TS_ASSERT_THROWS_NOTHING(wb.load(path));
     }
     
     void _test_read_complex_formulae()

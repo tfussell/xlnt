@@ -51,7 +51,7 @@ public:
         xlnt::workbook wb;
         auto new_sheet = wb.create_sheet();
         new_sheet.get_cell("A6").set_value(1.498);
-        wb.add_sheet(new_sheet);
+        wb.copy_sheet(new_sheet);
         TS_ASSERT(wb[1].compare(wb[2], false));
         wb.create_sheet().get_cell("A6").set_value(1.497);
         TS_ASSERT(!wb[1].compare(wb[3], false));
@@ -61,7 +61,7 @@ public:
     {
         xlnt::workbook wb1, wb2;
         auto new_sheet = wb1.get_active_sheet();
-        TS_ASSERT_THROWS(wb2.add_sheet(new_sheet), xlnt::value_error);
+        TS_ASSERT_THROWS(wb2.copy_sheet(new_sheet), xlnt::value_error);
         TS_ASSERT_THROWS(wb2.get_index(new_sheet), std::runtime_error);
     }
 
@@ -71,7 +71,7 @@ public:
         auto ws = wb.get_active_sheet();
         ws.get_cell("B3").set_value(2);
         ws.set_title("Active");
-        wb.add_sheet(ws, 0);
+        wb.copy_sheet(ws, 0);
         TS_ASSERT_EQUALS(wb.get_sheet_names().at(0), "Sheet");
         TS_ASSERT_EQUALS(wb.get_sheet_by_index(0).get_cell("B3").get_value<int>(), 2);
         TS_ASSERT_EQUALS(wb.get_sheet_names().at(1), "Active");

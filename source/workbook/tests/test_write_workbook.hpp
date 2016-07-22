@@ -91,8 +91,6 @@ public:
         
         xlnt::excel_serializer deserializer(new_wb);
         deserializer.load_virtual_workbook(wb_bytes);
-
-        TS_ASSERT(new_wb != nullptr);
     }
     
     void test_write_workbook_rels()
