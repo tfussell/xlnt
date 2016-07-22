@@ -383,7 +383,7 @@ XLNT_FUNCTION void cell::set_value(timedelta t)
 {
     d_->type_ = type::numeric;
     d_->value_numeric_ = t.to_number();
-    set_number_format(number_format::date_timedelta());
+    set_number_format(number_format("[hh]:mm:ss"));
 }
 
 row_t cell::get_row() const

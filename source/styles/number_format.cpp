@@ -124,7 +124,7 @@ const number_format number_format::date_yyyymmdd2()
     return *format;
 }
 
-const number_format number_format::date_yyyymmdd()
+const number_format number_format::date_yymmdd()
 {
     static const number_format *format = new number_format("yy-mm-dd");
     return *format;
@@ -138,13 +138,13 @@ const number_format number_format::date_ddmmyyyy()
 
 const number_format number_format::date_dmyslash()
 {
-    static const number_format *format = new number_format("d/m/y");
+    static const number_format *format = new number_format("d/m/yy");
     return *format;
 }
 
 const number_format number_format::date_dmyminus()
 {
-    static const number_format *format = new number_format("d-m-y");
+    static const number_format *format = new number_format("d-m-yy");
     return *format;
 }
 
@@ -156,7 +156,7 @@ const number_format number_format::date_dmminus()
 
 const number_format number_format::date_myminus()
 {
-    static const number_format *format = new number_format("m-y");
+    static const number_format *format = new number_format("m-yy");
     return *format;
 }
 
@@ -229,48 +229,6 @@ const number_format number_format::date_time5()
 const number_format number_format::date_time6()
 {
     static const number_format *format = new number_format(builtin_formats().at(21), 21);
-    return *format;
-}
-
-const number_format number_format::date_time7()
-{
-    static const number_format *format = new number_format("i:s.S");
-    return *format;
-}
-
-const number_format number_format::date_time8()
-{
-    static const number_format *format = new number_format("h:mm:ss@");
-    return *format;
-}
-
-const number_format number_format::date_timedelta()
-{
-    static const number_format *format = new number_format("[hh]:mm:ss");
-    return *format;
-}
-
-const number_format number_format::date_yyyymmddslash()
-{
-    static const number_format *format = new number_format("yy/mm/dd@");
-    return *format;
-}
-
-const number_format number_format::currency_usd_simple()
-{
-    static const number_format *format = new number_format("\"$\"#,##0.00_-");
-    return *format;
-}
-
-const number_format number_format::currency_usd()
-{
-    static const number_format *format = new number_format("$#,##0_-");
-    return *format;
-}
-
-const number_format number_format::currency_eur_simple()
-{
-    static const number_format *format = new number_format("[$EUR ]#,##0.00_-");
     return *format;
 }
 

@@ -10,6 +10,21 @@
 class test_number_format : public CxxTest::TestSuite
 {
 public:
+    void test_basic()
+    {
+        xlnt::number_format no_id("#\\x\\y\\z");
+        TS_ASSERT_THROWS(no_id.get_id(), std::runtime_error);
+
+        xlnt::number_format id("General", 200);
+        TS_ASSERT_EQUALS(id.get_id(), 200);
+        TS_ASSERT_EQUALS(id.get_format_string(), "General");
+        
+        xlnt::number_format general(0);
+        TS_ASSERT_EQUALS(general, xlnt::number_format::general());
+        TS_ASSERT_EQUALS(general.get_id(), 0);
+        TS_ASSERT_EQUALS(general.get_format_string(), "General");
+    }
+
     void test_simple_format()
     {
         xlnt::number_format nf;
@@ -799,5 +814,29 @@ public:
     void test_builtin_format_49()
     {
         format_and_test(xlnt::number_format::text(), {{"42503.1234", "-42503.1234", "0", "text"}});
+    }
+
+    // yy-mm-dd
+    void test_builtin_format_date_yyyymmdd()
+    {
+        format_and_test(xlnt::number_format::date_yymmdd(), {{"16-05-13", "###########", "00-01-00", "text"}});
+    }
+
+    // d/m/y
+    void test_builtin_format_date_dmyslash()
+    {
+        format_and_test(xlnt::number_format::date_dmyslash(), {{"13/5/16", "###########", "0/1/00", "text"}});
+    }
+
+    // d-m-y
+    void test_builtin_format_date_dmyminus()
+    {
+        format_and_test(xlnt::number_format::date_dmyminus(), {{"13-5-16", "###########", "0-1-00", "text"}});
+    }
+
+    // d-m
+    void test_builtin_format_date_dmminus()
+    {
+        format_and_test(xlnt::number_format::date_dmminus(), {{"13-5", "###########", "0-1", "text"}});
     }
 };

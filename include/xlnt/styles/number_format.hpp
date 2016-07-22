@@ -47,7 +47,7 @@ public:
     static const number_format percentage();
     static const number_format percentage_00();
     static const number_format date_yyyymmdd2();
-    static const number_format date_yyyymmdd();
+    static const number_format date_yymmdd();
     static const number_format date_ddmmyyyy();
     static const number_format date_dmyslash();
     static const number_format date_dmyminus();
@@ -65,13 +65,6 @@ public:
     static const number_format date_time4();
     static const number_format date_time5();
     static const number_format date_time6();
-    static const number_format date_time7();
-    static const number_format date_time8();
-    static const number_format date_timedelta();
-    static const number_format date_yyyymmddslash();
-    static const number_format currency_usd_simple();
-    static const number_format currency_usd();
-    static const number_format currency_eur_simple();
 
     static number_format from_builtin_id(std::size_t builtin_id);
 

@@ -1593,7 +1593,7 @@ std::string number_formatter::format_number(const format_code &format, long doub
             break;
 
         case template_part::template_type::bad:
-            throw std::runtime_error("bad state");
+            throw std::runtime_error("bad format");
         }
     }
     
