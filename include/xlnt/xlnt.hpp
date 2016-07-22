@@ -71,7 +71,6 @@
 // workbook
 #include <xlnt/workbook/const_worksheet_iterator.hpp>
 #include <xlnt/workbook/document_security.hpp>
-#include <xlnt/workbook/encoding.hpp>
 #include <xlnt/workbook/external_book.hpp>
 #include <xlnt/workbook/named_range.hpp>
 #include <xlnt/workbook/theme.hpp>
