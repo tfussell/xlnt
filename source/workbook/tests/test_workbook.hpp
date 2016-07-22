@@ -82,7 +82,7 @@ public:
     {
         xlnt::workbook wb;
         wb.set_read_only(true);
-        TS_ASSERT_THROWS(wb.create_sheet(), xlnt::read_only_workbook_exception);
+        TS_ASSERT_THROWS(wb.create_sheet(), xlnt::read_only_workbook_error);
     }
     
     void test_remove_sheet()
@@ -91,7 +91,7 @@ public:
         auto new_sheet = wb.create_sheet(0);
 		new_sheet.set_title("removed");
         wb.remove_sheet(new_sheet);
-        TS_ASSERT_EQUALS(wb.get_sheet_by_name("removed"), nullptr);
+        TS_ASSERT(!wb.contains("removed"));
         TS_ASSERT_THROWS(wb.remove_sheet(wb2.get_active_sheet()), std::runtime_error);
     }
 

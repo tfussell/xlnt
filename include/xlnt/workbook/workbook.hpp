@@ -32,7 +32,6 @@
 #include <vector>
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/packaging/relationship.hpp>
 
 namespace xlnt {
 
@@ -63,6 +62,8 @@ class theme;
 class worksheet;
 class worksheet_iterator;
 class zip_file;
+
+enum class relationship_type;
 
 namespace detail {
 struct workbook_impl;
@@ -259,11 +260,11 @@ public:
 
     // relationships
 
-    void create_relationship(const std::string &id, const std::string &target, relationship::type type);
+    void create_relationship(const std::string &id, const std::string &target, relationship_type type);
     relationship get_relationship(const std::string &id) const;
     const std::vector<relationship> &get_relationships() const;
 
-    void create_root_relationship(const std::string &id, const std::string &target, relationship::type type);
+    void create_root_relationship(const std::string &id, const std::string &target, relationship_type type);
     const std::vector<relationship> &get_root_relationships() const;
 
     // shared strings

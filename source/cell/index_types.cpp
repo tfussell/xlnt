@@ -23,10 +23,9 @@
 // @author: see AUTHORS file
 #include <locale>
 
+#include <detail/constants.hpp>
 #include <xlnt/cell/index_types.hpp>
 #include <xlnt/utils/exceptions.hpp>
-
-#include <detail/constants.hpp>
 
 namespace xlnt {
 
@@ -34,7 +33,7 @@ column_t::index_t column_t::column_index_from_string(const std::string &column_s
 {
     if (column_string.length() > 3 || column_string.empty())
     {
-        throw column_string_index_exception();
+        throw column_string_index_error();
     }
 
     column_t::index_t column_index = 0;
@@ -44,7 +43,7 @@ column_t::index_t column_t::column_index_from_string(const std::string &column_s
     {
         if (!std::isalpha(column_string[static_cast<std::size_t>(i)], std::locale::classic()))
         {
-            throw column_string_index_exception();
+            throw column_string_index_error();
         }
 
         auto char_index = std::toupper(column_string[static_cast<std::size_t>(i)], std::locale::classic()) - 'A';
@@ -67,7 +66,7 @@ std::string column_t::column_string_from_index(column_t::index_t column_index)
     if (column_index < constants::MinColumn() || column_index > constants::MaxColumn())
     {
         //        auto msg = "Column index out of bounds: " + std::to_string(column_index);
-        throw column_string_index_exception();
+        throw column_string_index_error();
     }
 
     int temp = static_cast<int>(column_index);

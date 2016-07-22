@@ -103,12 +103,20 @@ const worksheet workbook::get_sheet_by_name(const std::string &name) const
         }
     }
 
-    return worksheet();
+    throw key_error();
 }
 
 worksheet workbook::get_sheet_by_name(const std::string &name)
 {
-	return worksheet(static_cast<const workbook*>(this)->get_sheet_by_name(name));
+    for (auto &impl : d_->worksheets_)
+    {
+        if (impl.title_ == name)
+        {
+            return worksheet(&impl);
+        }
+    }
+
+    throw key_error();
 }
 
 worksheet workbook::get_sheet_by_index(std::size_t index)
@@ -140,12 +148,12 @@ bool workbook::has_named_range(const std::string &name) const
 
 worksheet workbook::create_sheet()
 {
-    if(get_read_only()) throw xlnt::read_only_workbook_exception();
+    if(get_read_only()) throw xlnt::read_only_workbook_error();
     
     std::string title = "Sheet";
     int index = 0;
 
-    while (get_sheet_by_name(title) != nullptr)
+    while (contains(title))
     {
         title = "Sheet" + std::to_string(++index);
     }
@@ -368,14 +376,14 @@ worksheet workbook::create_sheet(const std::string &title)
 {
     if (title.length() > 31)
     {
-        throw sheet_title_exception(title);
+        throw sheet_title_error(title);
     }
 
     if (std::find_if(title.begin(), title.end(), [](char c) {
             return c == '*' || c == ':' || c == '/' || c == '\\' || c == '?' || c == '[' || c == ']';
         }) != title.end())
     {
-        throw sheet_title_exception(title);
+        throw sheet_title_error(title);
     }
 
     std::string unique_title = title;
@@ -445,12 +453,16 @@ std::vector<std::string> workbook::get_sheet_names() const
 
 worksheet workbook::operator[](const std::string &name)
 {
-    if(!contains(name)) throw xlnt::key_error();
     return get_sheet_by_name(name);
 }
 
 worksheet workbook::operator[](std::size_t index)
 {
+    if (index > d_->worksheets_.size())
+    {
+        throw key_error();
+    }
+
     return worksheet(&d_->worksheets_[index]);
 }
 

@@ -21,7 +21,6 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 #include <xlnt/utils/utf8string.hpp>
-#include <xlnt/utils/unicode_decode_error.hpp>
 
 namespace xlnt {
 

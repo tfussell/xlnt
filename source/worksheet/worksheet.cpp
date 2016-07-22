@@ -327,7 +327,7 @@ range worksheet::get_named_range(const std::string &name)
     
     if (!has_named_range(name))
     {
-        throw named_range_exception();
+        throw named_range_error();
     }
 
     return get_range(d_->named_ranges_[name].get_targets()[0].second);

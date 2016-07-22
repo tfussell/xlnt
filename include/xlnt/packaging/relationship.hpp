@@ -45,28 +45,33 @@ enum class XLNT_CLASS target_mode
 };
 
 /// <summary>
+/// All package relationships must be one of these defined types.
+/// </summary>
+enum class relationship_type
+{
+    invalid,
+    hyperlink,
+    drawing,
+    worksheet,
+    chartsheet,
+    shared_strings,
+    styles,
+    theme,
+    extended_properties,
+    core_properties,
+    office_document,
+    custom_xml,
+    thumbnail
+};
+
+/// <summary>
 /// Represents an association between a source Package or part, and a target object which can be a part or external
 /// resource.
 /// </summary>
 class XLNT_CLASS relationship
 {
 public:
-    enum class type
-    {
-        invalid,
-        hyperlink,
-        drawing,
-        worksheet,
-        chartsheet,
-        shared_strings,
-        styles,
-        theme,
-        extended_properties,
-        core_properties,
-        office_document,
-        custom_xml,
-        thumbnail
-    };
+    using type = relationship_type;
 
     static type type_from_string(const std::string &type_string);
 

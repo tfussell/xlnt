@@ -68,7 +68,7 @@ public:
         xlnt::workbook wb;
         xlnt::excel_serializer serializer(wb);
         
-        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file_exception);
+        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file_error);
     }
 
     void test_read_empty_archive()
@@ -78,7 +78,7 @@ public:
         xlnt::workbook wb;
         xlnt::excel_serializer serializer(wb);
         
-        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file_exception);
+        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file_error);
     }
     
     void test_read_workbook_with_no_properties()
@@ -471,7 +471,7 @@ public:
         xlnt::workbook wb;
         xlnt::excel_serializer serializer(wb);
         
-        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file_exception);
+        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file_error);
     }
     
     void test_bad_formats_xls()
@@ -481,7 +481,7 @@ public:
         xlnt::workbook wb;
         xlnt::excel_serializer serializer(wb);
         
-        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file_exception);
+        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file_error);
     }
     
     void test_bad_formats_no()
@@ -491,7 +491,7 @@ public:
         xlnt::workbook wb;
         xlnt::excel_serializer serializer(wb);
         
-        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file_exception);
+        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file_error);
     }
 
 

@@ -21,78 +21,94 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #include <xlnt/utils/exceptions.hpp>
 
 namespace xlnt {
 
-sheet_title_exception::sheet_title_exception(const std::string &title)
-    : std::runtime_error(std::string("bad worksheet title: ") + title)
+error::error() : std::runtime_error("xlnt::error")
 {
 }
 
-column_string_index_exception::column_string_index_exception()
-    : std::runtime_error("column string index exception")
+error::error(const std::string &message)
+    : std::runtime_error("xlnt::error : " + message)
+{
+    set_message(message);
+}
+
+void error::set_message(const std::string &message)
+{
+    message_ = message;
+}
+
+sheet_title_error::sheet_title_error(const std::string &title)
+    : error(std::string("bad worksheet title: ") + title)
 {
 }
 
-data_type_exception::data_type_exception()
-    : std::runtime_error("data type exception")
+column_string_index_error::column_string_index_error()
+    : error("column string index error")
 {
 }
 
-attribute_error::attribute_error()
-    : std::runtime_error("attribute error")
+data_type_error::data_type_error()
+    : error("data type error")
 {
 }
 
-named_range_exception::named_range_exception()
-    : std::runtime_error("named range not found or not owned by this worksheet")
+named_range_error::named_range_error()
+    : error("named range not found or not owned by this worksheet")
 {
 }
 
-invalid_file_exception::invalid_file_exception(const std::string &filename)
-    : std::runtime_error(std::string("couldn't open file: (") + filename + ")")
+invalid_file_error::invalid_file_error(const std::string &filename)
+    : error(std::string("couldn't open file: (") + filename + ")")
 {
 }
 
-cell_coordinates_exception::cell_coordinates_exception(column_t column, row_t row)
-    : std::runtime_error(std::string("bad cell coordinates: (") + std::to_string(column.index) + ", " + std::to_string(row) +
+cell_coordinates_error::cell_coordinates_error(column_t column, row_t row)
+    : error(std::string("bad cell coordinates: (") + std::to_string(column.index) + ", " + std::to_string(row) +
                          ")")
 {
 }
 
-cell_coordinates_exception::cell_coordinates_exception(const std::string &coord_string)
-    : std::runtime_error(std::string("bad cell coordinates: (") + (coord_string.empty() ? "<empty>" : coord_string) + ")")
+cell_coordinates_error::cell_coordinates_error(const std::string &coord_string)
+    : error(std::string("bad cell coordinates: (") + (coord_string.empty() ? "<empty>" : coord_string) + ")")
 {
 }
 
 illegal_character_error::illegal_character_error(char c)
-    : std::runtime_error(std::string("illegal character: (") + std::to_string(static_cast<unsigned char>(c)) + ")")
+    : error(std::string("illegal character: (") + std::to_string(static_cast<unsigned char>(c)) + ")")
 {
 }
 
 unicode_decode_error::unicode_decode_error()
-    : std::runtime_error("unicode decode error")
+    : error("unicode decode error")
 {
 }
 
 unicode_decode_error::unicode_decode_error(char)
-    : std::runtime_error("unicode decode error")
+    : error("unicode decode error")
 {
 }
 
 value_error::value_error()
-    : std::runtime_error("value error")
+    : error("value error")
+{
+}
+
+read_only_workbook_error::read_only_workbook_error()
+    : error("workbook is read-only")
+{
+}
+
+attribute_error::attribute_error()
+    : error("bad attribute")
 {
 }
 
 key_error::key_error()
-    : std::runtime_error("key error")
-{
-}
-
-read_only_workbook_exception::read_only_workbook_exception()
-    : std::runtime_error("workbook is read-only")
+    : error("key not found in container")
 {
 }
 

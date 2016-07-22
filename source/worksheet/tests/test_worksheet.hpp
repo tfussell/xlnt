@@ -217,7 +217,7 @@ public:
         auto ws1 = wb[0];
         auto ws2 = wb[1];
         wb.create_named_range("wrong_sheet_range", ws1, "C5");
-        TS_ASSERT_THROWS(ws2.get_named_range("wrong_sheet_range"), xlnt::named_range_exception);
+        TS_ASSERT_THROWS(ws2.get_named_range("wrong_sheet_range"), xlnt::named_range_error);
     }
     
     void test_remove_named_range_bad()

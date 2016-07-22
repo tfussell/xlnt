@@ -23,18 +23,145 @@
 // @author: see AUTHORS file
 #pragma once
 
-// An shortcut for including all possible exceptions in xlnt.
+#include <cstdint>
+#include <stdexcept>
 
-#include <xlnt/utils/attribute_error.hpp>
-#include <xlnt/utils/cell_coordinates_exception.hpp>
-#include <xlnt/utils/column_string_index_exception.hpp>
-#include <xlnt/utils/data_type_exception.hpp>
-#include <xlnt/utils/illegal_character_error.hpp>
-#include <xlnt/utils/invalid_file_exception.hpp>
-#include <xlnt/utils/key_error.hpp>
-#include <xlnt/utils/missing_number_format.hpp>
-#include <xlnt/utils/named_range_exception.hpp>
-#include <xlnt/utils/read_only_workbook_exception.hpp>
-#include <xlnt/utils/sheet_title_exception.hpp>
-#include <xlnt/utils/unicode_decode_error.hpp>
-#include <xlnt/utils/value_error.hpp>
+#include <xlnt/xlnt_config.hpp>
+#include <xlnt/cell/index_types.hpp>
+
+namespace xlnt {
+
+/// <summary>
+/// Parent type of all custom exceptions thrown in this library.
+/// </summary>
+class XLNT_CLASS error : public std::runtime_error
+{
+public:
+    error();
+    error(const std::string &message);
+
+    void set_message(const std::string &message);
+
+private:
+    std::string message_;
+};
+
+class XLNT_CLASS value_error : public error
+{
+public:
+    value_error();
+};
+
+/// <summary>
+/// Error for string encoding not matching workbook encoding
+/// </summary>
+class XLNT_CLASS unicode_decode_error : public error
+{
+public:
+    unicode_decode_error();
+    unicode_decode_error(char c);
+    unicode_decode_error(std::uint8_t b);
+};
+
+/// <summary>
+/// Error for bad sheet names.
+/// </summary>
+class XLNT_CLASS sheet_title_error : public error
+{
+public:
+    sheet_title_error(const std::string &title);
+};
+
+/// <summary>
+/// Error for trying to modify a read-only workbook.
+/// </summary>
+class XLNT_CLASS read_only_workbook_error : public error
+{
+public:
+    read_only_workbook_error();
+};
+
+/// <summary>
+/// Error for incorrectly formatted named ranges.
+/// </summary>
+class XLNT_CLASS named_range_error : public error
+{
+public:
+    named_range_error();
+};
+
+/// <summary>
+/// Error when a referenced number format is not in the stylesheet.
+/// </summary>
+class XLNT_CLASS missing_number_format : public error
+{
+public:
+    missing_number_format();
+};
+
+/// <summary>
+/// Error for trying to open a non-OOXML file.
+/// </summary>
+class XLNT_CLASS invalid_file_error : public error
+{
+public:
+    invalid_file_error(const std::string &filename);
+};
+
+/// <summary>
+/// The data submitted which cannot be used directly in Excel files. It
+/// must be removed or escaped.
+/// </summary>
+class XLNT_CLASS illegal_character_error : public error
+{
+public:
+    illegal_character_error(char c);
+};
+
+/// <summary>
+/// Error for any data type inconsistencies.
+/// </summary>
+class XLNT_CLASS data_type_error : public error
+{
+public:
+    data_type_error();
+};
+
+/// <summary>
+/// Error for bad column names in A1-style cell references.
+/// </summary>
+class XLNT_CLASS column_string_index_error : public error
+{
+public:
+    column_string_index_error();
+};
+
+/// <summary>
+/// Error for converting between numeric and A1-style cell references.
+/// </summary>
+class XLNT_CLASS cell_coordinates_error : public error
+{
+public:
+    cell_coordinates_error(column_t column, row_t row);
+    cell_coordinates_error(const std::string &coord_string);
+};
+
+/// <summary>
+/// Error when an attribute value is invalid.
+/// </summary>
+class XLNT_CLASS attribute_error : public error
+{
+public:
+    attribute_error();
+};
+
+/// <summary>
+/// key_error
+/// </summary>
+class XLNT_CLASS key_error : public error
+{
+public:
+    key_error();
+};
+
+} // namespace xlnt

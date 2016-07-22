@@ -461,7 +461,7 @@ void cell::set_hyperlink(const std::string &hyperlink)
 {
     if (hyperlink.length() == 0 || std::find(hyperlink.begin(), hyperlink.end(), ':') == hyperlink.end())
     {
-        throw data_type_exception();
+        throw data_type_error();
     }
 
     d_->has_hyperlink_ = true;
@@ -477,7 +477,7 @@ void cell::set_formula(const std::string &formula)
 {
     if (formula.length() == 0)
     {
-        throw data_type_exception();
+        throw data_type_error();
     }
 
     if (formula[0] == '=')
@@ -499,7 +499,7 @@ std::string cell::get_formula() const
 {
     if (d_->formula_.empty())
     {
-        throw data_type_exception();
+        throw data_type_error();
     }
 
     return d_->formula_;
@@ -544,7 +544,7 @@ void cell::set_error(const std::string &error)
 {
     if (error.length() == 0 || error[0] != '#')
     {
-        throw data_type_exception();
+        throw data_type_error();
     }
 
     d_->value_text_.set_plain_string(error);
