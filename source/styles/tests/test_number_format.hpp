@@ -839,4 +839,10 @@ public:
     {
         format_and_test(xlnt::number_format::date_dmminus(), {{"13-5", "###########", "0-1", "text"}});
     }
+
+    // m-yy
+    void test_builtin_format_date_myminus()
+    {
+        format_and_test(xlnt::number_format::date_myminus(), {{"5-16", "###########", "1-00", "text"}});
+    }
 };

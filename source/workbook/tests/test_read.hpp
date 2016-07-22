@@ -554,4 +554,11 @@ public:
 
         TS_ASSERT_THROWS(xlnt::shared_strings_serializer::read_shared_strings(xml_bad, strings), std::runtime_error);
     }
+
+    void test_read_inlinestr()
+    {
+        xlnt::workbook wb;
+        wb.load(path_helper::get_data_directory("/genuine/empty.xlsx"));
+        TS_ASSERT_EQUALS(wb.get_sheet_by_index(0).get_cell("A1").get_value<std::string>(), "This is cell A1 in Sheet 1");
+    }
 };
