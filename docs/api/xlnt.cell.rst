@@ -7,6 +7,9 @@ Cell Module
 .. doxygenclass:: xlnt::cell_reference
     :members:
 
+.. doxygenclass:: xlnt::cell_type
+    :members:
+
 .. doxygenclass:: xlnt::cell
     :members:
 
@@ -21,3 +24,8 @@ Cell Module
 .. doxygenstruct:: xlnt::column_hash
     :members:
 
+.. doxygenclass:: xlnt::text
+    :members:
+
+.. doxygenclass:: xlnt::text_run
+    :members:

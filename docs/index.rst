@@ -14,11 +14,7 @@
 Introduction
 ------------
 
-xlnt is a C++14 library for reading, writing, and modifying xlsx files as described in ECMA 376. 
-
-The API is generally based on openpyxl, a python library for reading and writing xlsx/xlsm files. 
-
-This is still very much a work in progress, but the core development work is complete.
+xlnt is a C++14 library for reading, writing, and modifying XLSX files as described in [ECMA 376](http://www.ecma-international.org/publications/standards/Ecma-376.htm). The API is based on [openpyxl](https://bitbucket.org/openpyxl/openpyxl), a Python library to read/write Excel 2007 xlsx/xlsm files, and ultimately on [PHPExcel](https://github.com/PHPOffice/PHPExcel), pure PHP library for reading and writing spreadsheet files upon which openpyxl was based. This project is still very much a work in progress, but the core development work is complete.
 
 Support
 +++++++
@@ -26,23 +22,13 @@ Support
 Sample code:
 ++++++++++++
 
-.. literalinclude:: /samples/sample1.cpp
-
-User List
----------
-
+.. literalinclude:: /samples/sample.cpp
 
 
 How to Contribute Code
 ----------------------
 
-For further information see :ref:`development`
-
-.. note:
-
-
-Other ways to help
-------------------
+See :ref:`development`
 
 Installation
 ------------

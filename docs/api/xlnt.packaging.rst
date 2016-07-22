@@ -1,16 +1,19 @@
 Packaging Module
 ================
 
-.. doxygenclass:: xlnt::document_properties
+.. doxygenclass:: xlnt::app_properties
     :members:
 
 .. doxygenclass:: xlnt::default_type
     :members:
 
-.. doxygenclass:: xlnt::override_type
+.. doxygenclass:: xlnt::document_properties
     :members:
 
 .. doxygenclass:: xlnt::manifest
+    :members:
+
+.. doxygenclass:: xlnt::override_type
     :members:
 
 .. doxygenclass:: xlnt::relationship
@@ -21,4 +24,3 @@ Packaging Module
 
 .. doxygenclass:: xlnt::zip_file
     :members:
-
