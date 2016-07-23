@@ -553,4 +553,15 @@ public:
         wb.load(path_helper::get_data_directory("/genuine/empty.xlsx"));
         TS_ASSERT_EQUALS(wb.get_sheet_by_index(0).get_cell("A1").get_value<std::string>(), "This is cell A1 in Sheet 1");
     }
+
+    void test_determine_document_type()
+    {
+        xlnt::workbook wb;
+        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("1_empty.txt")), xlnt::invalid_file_error);
+        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("2_not-empty.txt")), xlnt::invalid_file_error);
+        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("3_empty.zip")), xlnt::invalid_file_error);
+        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("4_not-package.zip")), xlnt::invalid_file_error);
+        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("5_document.docx")), xlnt::invalid_file_error);
+        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("6_presentation.pptx")), xlnt::invalid_file_error);
+    }
 };

@@ -1168,8 +1168,8 @@ public:
             }
         }
 
-        auto const_range = ws_const.get_range("B3:C7");
-        auto const_range_iter = const_range.begin();
+        const auto const_range = ws_const.get_range("B3:C7");
+        auto const_range_iter = const_range.cbegin();
         const_range_iter++;
         const_range_iter--;
         TS_ASSERT_EQUALS(const_range_iter, const_range.begin());
