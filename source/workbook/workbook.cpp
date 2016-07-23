@@ -210,13 +210,7 @@ void workbook::create_named_range(const std::string &name, worksheet range_owner
 
 void workbook::create_named_range(const std::string &name, worksheet range_owner, const range_reference &reference)
 {
-    auto match = get_sheet_by_name(range_owner.get_title());
-    if (match != nullptr)
-    {
-        match.create_named_range(name, reference);
-        return;
-    }
-    throw std::runtime_error("worksheet isn't owned by this workbook");
+    get_sheet_by_name(range_owner.get_title()).create_named_range(name, reference);
 }
 
 void workbook::remove_named_range(const std::string &name)
@@ -350,20 +344,6 @@ std::size_t workbook::index_from_ws_filename(const std::string &ws_filename)
     return sheet_index;
 }
 
-worksheet workbook::create_sheet(const std::string &title, const relationship &rel)
-{
-    d_->worksheets_.push_back(detail::worksheet_impl(this, title));
-
-    auto index = index_from_ws_filename(rel.get_target_uri());
-    if (index != d_->worksheets_.size() - 1)
-    {
-        std::swap(d_->worksheets_.back(), d_->worksheets_[index]);
-        d_->worksheets_.pop_back();
-    }
-
-    return worksheet(&d_->worksheets_[index]);
-}
-
 worksheet workbook::create_sheet(std::size_t index, const std::string &title)
 {
     auto ws = create_sheet(index);
@@ -458,12 +438,7 @@ worksheet workbook::operator[](const std::string &name)
 
 worksheet workbook::operator[](std::size_t index)
 {
-    if (index > d_->worksheets_.size())
-    {
-        throw key_error();
-    }
-
-    return worksheet(&d_->worksheets_[index]);
+    return worksheet(&d_->worksheets_.at(index));
 }
 
 void workbook::clear()
@@ -760,16 +735,6 @@ style &workbook::create_style(const std::string &name)
     d_->stylesheet_.styles.push_back(style);
     
     return d_->stylesheet_.styles.back();
-}
-
-std::vector<format> &workbook::get_formats()
-{
-    return d_->stylesheet_.formats;
-}
-
-const std::vector<format> &workbook::get_formats() const
-{
-    return d_->stylesheet_.formats;
 }
 
 style &workbook::get_style(const std::string &name)

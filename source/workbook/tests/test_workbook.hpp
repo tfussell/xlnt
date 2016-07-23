@@ -103,6 +103,7 @@ public:
         new_sheet.set_title(title);
         auto found_sheet = wb.get_sheet_by_name(title);
         TS_ASSERT_EQUALS(new_sheet, found_sheet);
+        TS_ASSERT_THROWS(wb.get_sheet_by_name("error"), xlnt::key_error);
     }
     
     void test_get_sheet_by_name_const()
@@ -347,5 +348,26 @@ public:
         TS_ASSERT(!wb.get_active_sheet().get_cell("B2").has_format());
         wb.clear();
         TS_ASSERT(wb.get_sheet_names().empty());
+    }
+
+    void test_comparison()
+    {
+        xlnt::workbook wb, wb2;
+        TS_ASSERT(wb == wb);
+        TS_ASSERT(!(wb != wb));
+        TS_ASSERT(!(wb == wb2));
+        TS_ASSERT(wb != wb2)
+        
+        const auto &wb_const = wb;
+        //TODO these aren't tests...
+        wb_const.get_app_properties();
+        wb_const.get_manifest();
+        
+        TS_ASSERT(!wb.has_loaded_theme());
+        
+        wb.create_style("style1");
+        wb.get_style("style1");
+        wb_const.get_style("style1");
+        wb.get_style_by_id(0);
     }
 };

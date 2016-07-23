@@ -190,7 +190,7 @@ void workbook_serializer::write_properties_app(pugi::xml_document &xml) const
     root_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/officeDocument/2006/extended-properties");
     root_node.append_attribute("xmlns:vt").set_value("http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes");
     
-    auto &properties = workbook_.get_app_properties();
+    const auto &properties = workbook_.get_app_properties();
 
     root_node.append_child("Application").text().set(properties.application.c_str());
     root_node.append_child("DocSecurity").text().set(std::to_string(properties.doc_security).c_str());

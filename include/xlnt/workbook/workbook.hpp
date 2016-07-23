@@ -124,7 +124,6 @@ public:
     worksheet create_sheet(std::size_t index);
     worksheet create_sheet(const std::string &title);
     worksheet create_sheet(std::size_t index, const std::string &title);
-    worksheet create_sheet(const std::string &title, const relationship &rel);
 
     void copy_sheet(worksheet worksheet);
     void copy_sheet(worksheet worksheet, std::size_t index);
@@ -237,10 +236,8 @@ public:
     const format &get_format(std::size_t format_index) const;
     std::size_t add_format(const format &new_format);
     void clear_formats();
-    std::vector<format> &get_formats();
-    const std::vector<format> &get_formats() const;
 
-    // named styles
+    // styles
 
     bool has_style(const std::string &name) const;
     style &get_style(const std::string &name);

@@ -781,9 +781,15 @@ XLNT_FUNCTION std::uint64_t cell::get_value() const
 
 #ifdef __linux
 template <>
-XLNT_FUNCTION long long int cell::get_value() const
+XLNT_FUNCTION long long cell::get_value() const
 {
-    return static_cast<long long int>(d_->value_numeric_);
+    return static_cast<long long>(d_->value_numeric_);
+}
+
+template <>
+XLNT_FUNCTION unsigned long long cell::get_value() const
+{
+    return static_cast<unsigned long long>(d_->value_numeric_);
 }
 #endif
 
