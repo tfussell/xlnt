@@ -1193,4 +1193,12 @@ public:
         TS_ASSERT(std::string("A1:B2") != ref1);
         TS_ASSERT("A1:B2" != ref1);
     }
+
+    void test_get_point_pos()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.get_active_sheet();
+
+        TS_ASSERT_EQUALS(ws.get_point_pos({0, 0}), "A1");
+    }
 };
