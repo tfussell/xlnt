@@ -76,7 +76,6 @@ public:
         TS_ASSERT(!cell.has_comment());
     }
 
-    
     void test_null()
     {
         const auto datatypes =
@@ -120,7 +119,7 @@ public:
     {
         auto ws = wb_guess_types.create_sheet();
         auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
-        
+
         cell.set_value("=42");
         TS_ASSERT(cell.get_data_type() == xlnt::cell::type::formula);
     }
@@ -133,6 +132,22 @@ public:
         cell.set_value("=if(A1<4;-1;1)");
         TS_ASSERT(cell.get_data_type() == xlnt::cell::type::formula);
     }
+
+    void test_formula3()
+    {
+        auto ws = wb.create_sheet();
+        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
+
+        TS_ASSERT(!cell.has_formula());
+        TS_ASSERT_THROWS(cell.set_formula(""), std::runtime_error);
+        TS_ASSERT_THROWS(cell.get_formula(), std::runtime_error);
+        cell.set_formula("=42");
+        TS_ASSERT(cell.has_formula());
+        TS_ASSERT_EQUALS(cell.get_formula(), "42");
+        cell.clear_formula();
+        TS_ASSERT(!cell.has_formula());
+    }
+
     
     void test_not_formula()
     {
@@ -290,6 +305,7 @@ public:
         TS_ASSERT(!cell.has_comment());
         xlnt::comment comm(cell, "text", "author");
         TS_ASSERT(cell.get_comment() == comm);
+        cell.set_comment(comm);
     }
     
     void test_only_one_cell_per_comment()
@@ -562,6 +578,17 @@ public:
         cell.set_value(static_cast<std::uint64_t>(3));
         TS_ASSERT_EQUALS(cell.get_value<std::uint64_t>(), 3);
 
+#ifdef __linux
+        cell.set_value(static_cast<long long>(3));
+        TS_ASSERT_EQUALS(cell.get_value<long long>(), 3);
+
+        cell.set_value(static_cast<unsigned long long>(3));
+        TS_ASSERT_EQUALS(cell.get_value<unsigned long long>(), 3);
+#endif
+
+        cell.set_value(static_cast<std::uint64_t>(3));
+        TS_ASSERT_EQUALS(cell.get_value<std::uint64_t>(), 3);
+
         cell.set_value(static_cast<float>(3.14));
         TS_ASSERT_DELTA(cell.get_value<float>(), 3.14, 0.001);
 
@@ -572,10 +599,9 @@ public:
         TS_ASSERT_EQUALS(cell.get_value<long double>(), 3.141592);
 
         auto cell2 = ws.get_cell("A2");
-        cell2.set_value("test");
+        cell2.set_value(std::string(100'000, 'a'));
         cell.set_value(cell2);
-        
-        TS_ASSERT_EQUALS(cell.get_value<std::string>(), "test");
+        TS_ASSERT_EQUALS(cell.get_value<std::string>(), std::string(32'767, 'a'));
     }
 
     void test_operators()
@@ -626,5 +652,18 @@ public:
         auto anchor = cell.get_anchor();
         TS_ASSERT_EQUALS(anchor.first, 0);
         TS_ASSERT_EQUALS(anchor.second, 0);
+    }
+
+    void test_hyperlink()
+    {
+        xlnt::workbook wb;
+        xlnt::cell cell(wb.get_active_sheet(), "A1");
+        TS_ASSERT(!cell.has_hyperlink());
+        TS_ASSERT_THROWS(cell.get_hyperlink(), std::runtime_error);
+        TS_ASSERT_THROWS(cell.set_hyperlink("notaurl"), std::runtime_error);
+        TS_ASSERT_THROWS(cell.set_hyperlink(""), std::runtime_error);
+        cell.set_hyperlink("http://example.com");
+        TS_ASSERT(cell.has_hyperlink());
+        TS_ASSERT_EQUALS(cell.get_hyperlink().get_target_uri(), "http://example.com");
     }
 };
