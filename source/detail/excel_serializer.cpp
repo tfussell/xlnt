@@ -148,26 +148,21 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
 	style_xml.load(archive.read(xlnt::constants::part_styles()).c_str());
     style_serializer.read_stylesheet(style_xml);
 
-    auto sheets_node = root_node.child("sheets");
-
-    for (auto sheet_node : sheets_node.children())
+    for (auto sheet_node : root_node.child("sheets").children())
     {
         auto rel = wb.get_relationship(sheet_node.attribute("r:id").value());
-        auto ws = wb.create_sheet(sheet_node.attribute("name").value(), rel);
-        
-        //TODO: this is really bad
-        auto ws_filename = (rel.get_target_uri().substr(0, 3) != "xl/" ? "xl/" : "") + rel.get_target_uri();
-        
-        auto sheet_type = wb.get_manifest().get_override_type(ws_filename);
-        
-        if(rel.get_type() != xlnt::relationship::type::worksheet)
+
+        // TODO impelement chartsheets
+        if(rel.get_type() == xlnt::relationship::type::chartsheet)
         {
             continue;
         }
-        
+
+        auto ws = wb.create_sheet(sheet_node.attribute("name").value(), rel);
         xlnt::worksheet_serializer worksheet_serializer(ws);
 		pugi::xml_document worksheet_xml;
-		worksheet_xml.load(archive.read(ws_filename).c_str());
+		worksheet_xml.load(archive.read("xl/" + rel.get_target_uri()).c_str());
+
         worksheet_serializer.read_worksheet(worksheet_xml, stylesheet);
     }
 

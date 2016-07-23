@@ -303,6 +303,12 @@ public:
         xlnt::override_type o;
         TS_ASSERT(o.get_content_type().empty());
         TS_ASSERT(o.get_part_name().empty());
+
+        xlnt::manifest m;
+        TS_ASSERT(!m.has_default_type("xml"));
+        TS_ASSERT_THROWS(m.get_default_type("xml"), std::out_of_range);
+        TS_ASSERT(!m.has_override_type("xl/workbook.xml"));
+        TS_ASSERT_THROWS(m.get_override_type("xl/workbook.xml"), std::out_of_range);
     }
 
     void test_get_bad_relationship()
