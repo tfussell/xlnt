@@ -432,11 +432,6 @@ cell &cell::operator=(const cell &rhs)
     return *this;
 }
 
-bool operator<(cell left, cell right)
-{
-    return left.get_reference() < right.get_reference();
-}
-
 std::string cell::to_repr() const
 {
     return "<Cell " + worksheet(d_->parent_).get_title() + "." + get_reference().to_string() + ">";

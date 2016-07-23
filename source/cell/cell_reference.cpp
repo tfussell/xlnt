@@ -276,44 +276,4 @@ bool cell_reference::operator==(const cell_reference &comparand) const
         absolute_row_ == comparand.absolute_row_;
 }
 
-bool cell_reference::operator<(const cell_reference &other)
-{
-    if (row_ != other.row_)
-    {
-        return row_ < other.row_;
-    }
-
-    return column_ < other.column_;
-}
-
-bool cell_reference::operator>(const cell_reference &other)
-{
-    if (row_ != other.row_)
-    {
-        return row_ > other.row_;
-    }
-
-    return column_ > other.column_;
-}
-
-bool cell_reference::operator<=(const cell_reference &other)
-{
-    if (row_ != other.row_)
-    {
-        return row_ < other.row_;
-    }
-
-    return column_ <= other.column_;
-}
-
-bool cell_reference::operator>=(const cell_reference &other)
-{
-    if (row_ != other.row_)
-    {
-        return row_ > other.row_;
-    }
-
-    return column_ >= other.column_;
-}
-
 } // namespace xlnt

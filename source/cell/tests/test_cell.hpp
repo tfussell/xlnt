@@ -608,7 +608,7 @@ public:
 
         TS_ASSERT_EQUALS((xlnt::cell_reference("A1"), xlnt::cell_reference("B2")), xlnt::range_reference("A1:B2"));
 
-        TS_ASSERT_THROWS(xlnt::cell_reference("A1A"), xlnt::cell_coordinates_error);
+        TS_ASSERT_THROWS(xlnt::cell_reference("A1&"), xlnt::cell_coordinates_error);
         TS_ASSERT_THROWS(xlnt::cell_reference("A"), xlnt::cell_coordinates_error);
 
         auto ref = xlnt::cell_reference("$B$7");
@@ -617,10 +617,6 @@ public:
 
         TS_ASSERT(xlnt::cell_reference("A1") == "A1");
         TS_ASSERT(xlnt::cell_reference("A1") != "A2");
-        TS_ASSERT(xlnt::cell_reference("A1") < xlnt::cell_reference("A2"));
-        TS_ASSERT(xlnt::cell_reference("A2") <= xlnt::cell_reference("A2"));
-        TS_ASSERT(xlnt::cell_reference("A2") > xlnt::cell_reference("A1"));
-        TS_ASSERT(xlnt::cell_reference("A2") >= xlnt::cell_reference("A2"));
     }
 
     void test_anchor()

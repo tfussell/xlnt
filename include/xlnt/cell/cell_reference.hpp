@@ -232,12 +232,6 @@ public:
     /// </summary>
     bool operator!=(const char *reference_string) const;
 
-    // TODO: are these useful? maybe get rid of them
-    bool operator<(const cell_reference &other);
-    bool operator>(const cell_reference &other);
-    bool operator<=(const cell_reference &other);
-    bool operator>=(const cell_reference &other);
-
 private:
     /// <summary>
     /// Index of the column. Important: this is one-indexed to conform

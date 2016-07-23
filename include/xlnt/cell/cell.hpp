@@ -391,12 +391,6 @@ public:
     friend XLNT_FUNCTION bool operator==(std::nullptr_t, const cell &cell);
 
     /// <summary>
-    /// Return the result of left.get_reference() < right.get_reference().
-    /// What's the point of this?
-    /// </summary>
-    friend XLNT_FUNCTION bool operator<(cell left, cell right);
-
-    /// <summary>
     /// Convenience function for writing cell to an ostream.
     /// Uses cell::to_string() internally.
     /// </summary>
