@@ -1167,6 +1167,12 @@ public:
                 }
             }
         }
+
+        auto const_range = ws_const.get_range("B3:C7");
+        auto const_range_iter = const_range.begin();
+        const_range_iter++;
+        const_range_iter--;
+        TS_ASSERT_EQUALS(const_range_iter, const_range.begin());
     }
 
     void test_range_reference()

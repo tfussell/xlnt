@@ -28,6 +28,12 @@
 #include <set>
 #include <sstream>
 
+#include <detail/cell_impl.hpp>
+#include <detail/constants.hpp>
+#include <detail/excel_serializer.hpp>
+#include <detail/include_windows.hpp>
+#include <detail/workbook_impl.hpp>
+#include <detail/worksheet_impl.hpp>
 #include <xlnt/packaging/app_properties.hpp>
 #include <xlnt/packaging/document_properties.hpp>
 #include <xlnt/packaging/manifest.hpp>
@@ -49,12 +55,6 @@
 #include <xlnt/workbook/worksheet_iterator.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
-
-#include <detail/cell_impl.hpp>
-#include <detail/excel_serializer.hpp>
-#include <detail/include_windows.hpp>
-#include <detail/workbook_impl.hpp>
-#include <detail/worksheet_impl.hpp>
 
 namespace xlnt {
 namespace detail {
@@ -79,11 +79,11 @@ workbook::workbook() : d_(new detail::workbook_impl())
     d_->manifest_.add_default_type("rels", "application/vnd.openxmlformats-package.relationships+xml");
     d_->manifest_.add_default_type("xml", "application/xml");
     
-    d_->manifest_.add_override_type("/xl/workbook.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml");
-    d_->manifest_.add_override_type("/xl/theme/theme1.xml", "application/vnd.openxmlformats-officedocument.theme+xml");
-    d_->manifest_.add_override_type("/xl/styles.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml");
-    d_->manifest_.add_override_type("/docProps/core.xml", "application/vnd.openxmlformats-package.core-properties+xml");
-    d_->manifest_.add_override_type("/docProps/app.xml", "application/vnd.openxmlformats-officedocument.extended-properties+xml");
+    d_->manifest_.add_override_type("/" + constants::part_workbook(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml");
+    d_->manifest_.add_override_type("/" + constants::part_theme(), "application/vnd.openxmlformats-officedocument.theme+xml");
+    d_->manifest_.add_override_type("/" + constants::part_styles(), "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml");
+    d_->manifest_.add_override_type("/" + constants::part_core(), "application/vnd.openxmlformats-package.core-properties+xml");
+    d_->manifest_.add_override_type("/" + constants::part_app(), "application/vnd.openxmlformats-officedocument.extended-properties+xml");
     
     add_format(format());
     create_style("Normal");
@@ -692,10 +692,11 @@ const std::vector<relationship> &workbook::get_root_relationships() const
     if (d_->root_relationships_.empty())
     {
         d_->root_relationships_.push_back(
-            relationship(relationship::type::core_properties, "rId1", "docProps/core.xml"));
+            relationship(relationship::type::core_properties, "rId1", constants::part_core()));
         d_->root_relationships_.push_back(
-            relationship(relationship::type::extended_properties, "rId2", "docProps/app.xml"));
-        d_->root_relationships_.push_back(relationship(relationship::type::office_document, "rId3", "xl/workbook.xml"));
+            relationship(relationship::type::extended_properties, "rId2", constants::part_app()));
+        d_->root_relationships_.push_back(
+            relationship(relationship::type::office_document, "rId3", constants::part_workbook()));
     }
 
     return d_->root_relationships_;
@@ -716,9 +717,9 @@ void workbook::add_shared_string(const text &shared, bool allow_duplicates)
     if (d_->shared_strings_.empty())
     {
         create_relationship(next_relationship_id(), "sharedStrings.xml", relationship::type::shared_strings);
-        d_->manifest_.add_override_type("/xl/sharedStrings.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml");
+        d_->manifest_.add_override_type("/" + constants::part_shared_strings(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml");
     }
-    
+
 	if (!allow_duplicates)
 	{
 		//TODO: inefficient, use a set or something?

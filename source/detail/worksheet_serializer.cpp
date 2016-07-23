@@ -226,8 +226,8 @@ void worksheet_serializer::write_worksheet(pugi::xml_document &xml) const
 {
     auto root_node = xml.append_child("worksheet");
 
-    root_node.append_attribute("xmlns").set_value(constants::Namespace("spreadsheetml").c_str());
-    root_node.append_attribute("xmlns:r").set_value(constants::Namespace("r").c_str());
+    root_node.append_attribute("xmlns").set_value(constants::get_namespace("spreadsheetml").c_str());
+    root_node.append_attribute("xmlns:r").set_value(constants::get_namespace("r").c_str());
 
     auto sheet_pr_node = root_node.append_child("sheetPr");
 

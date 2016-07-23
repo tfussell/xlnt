@@ -337,10 +337,10 @@ column_t worksheet::get_lowest_column() const
 {
     if (d_->cell_map_.empty())
     {
-        return constants::MinColumn();
+        return constants::min_column();
     }
 
-    column_t lowest = constants::MaxColumn();
+    column_t lowest = constants::max_column();
 
     for (auto &row : d_->cell_map_)
     {
@@ -357,10 +357,10 @@ row_t worksheet::get_lowest_row() const
 {
     if (d_->cell_map_.empty())
     {
-        return constants::MinRow();
+        return constants::min_row();
     }
 
-    row_t lowest = constants::MaxRow();
+    row_t lowest = constants::max_row();
 
     for (auto &row : d_->cell_map_)
     {
@@ -372,7 +372,7 @@ row_t worksheet::get_lowest_row() const
 
 row_t worksheet::get_highest_row() const
 {
-    row_t highest = constants::MinRow();
+    row_t highest = constants::min_row();
 
     for (auto &row : d_->cell_map_)
     {
@@ -384,7 +384,7 @@ row_t worksheet::get_highest_row() const
 
 column_t worksheet::get_highest_column() const
 {
-    column_t highest = constants::MinColumn();
+    column_t highest = constants::min_column();
 
     for (auto &row : d_->cell_map_)
     {

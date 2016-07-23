@@ -54,7 +54,7 @@ void manifest_serializer::read_manifest(const pugi::xml_document &xml)
 void manifest_serializer::write_manifest(pugi::xml_document &xml) const
 {
     auto root_node = xml.append_child("Types");
-    root_node.append_attribute("xmlns").set_value(constants::Namespace("content-types").c_str());
+    root_node.append_attribute("xmlns").set_value(constants::get_namespace("content-types").c_str());
 
     for (const auto default_type : manifest_.get_default_types())
     {
@@ -73,12 +73,12 @@ void manifest_serializer::write_manifest(pugi::xml_document &xml) const
 
 std::string manifest_serializer::determine_document_type() const
 {
-    if (!manifest_.has_override_type(constants::ArcWorkbook()))
+    if (!manifest_.has_override_type(constants::part_workbook()))
     {
         return "unsupported";
     }
 
-    std::string type = manifest_.get_override_type(constants::ArcWorkbook());
+    std::string type = manifest_.get_override_type(constants::part_workbook());
 
     if (type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml")
     {

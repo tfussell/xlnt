@@ -33,7 +33,7 @@ namespace xlnt {
 
 std::size_t cell_reference_hash::operator()(const cell_reference &k) const
 {
-    return k.get_row() * constants::MaxColumn().index + k.get_column_index().index;
+    return k.get_row() * constants::max_column().index + k.get_column_index().index;
 }
 
 cell_reference &cell_reference::make_absolute(bool absolute_column, bool absolute_row)
@@ -74,7 +74,7 @@ cell_reference::cell_reference(column_t column_index, row_t row)
         throw value_error();
     }
     
-    if (!(row_ <= constants::MaxRow()) || !(column_ <= constants::MaxColumn()))
+    if (!(row_ <= constants::max_row()) || !(column_ <= constants::max_column()))
     {
         throw cell_coordinates_error(column_, row_);
     }

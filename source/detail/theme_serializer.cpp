@@ -34,7 +34,7 @@ namespace xlnt {
 void theme_serializer::write_theme(const theme &, pugi::xml_document &xml) const
 {
     auto theme_node = xml.append_child("a:theme");
-    theme_node.append_attribute("xmlns:a").set_value(constants::Namespace("drawingml").c_str());
+    theme_node.append_attribute("xmlns:a").set_value(constants::get_namespace("drawingml").c_str());
     theme_node.append_attribute("name").set_value("Office Theme");
 
     auto theme_elements_node = theme_node.append_child("a:themeElements");

@@ -52,7 +52,7 @@ enum class limit_style
 /// The style of limits to use for reading and writing XLSX files.
 /// See limit_style for more information.
 /// </summary>
-const limit_style LimitStyle = limit_style::openpyxl;
+const limit_style xlnt_limit_style = limit_style::openpyxl;
 
 #ifndef XLNT_API
 #if !defined(XLNT_STATIC) && defined(_MSC_VER)

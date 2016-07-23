@@ -31,33 +31,100 @@ namespace xlnt {
 
 struct constants
 {
-    static const row_t MinRow();
-    static const row_t MaxRow();
-    static const column_t MinColumn();
-    static const column_t MaxColumn();
+    /// <summary>
+    /// Returns the lowest allowable row index in a worksheet.
+    /// </summary>
+    static const row_t min_row();
 
-    // constants
-    static const std::string PackageProps();
-    static const std::string PackageXl();
-    static const std::string PackageRels();
-    static const std::string PackageTheme();
-    static const std::string PackageWorksheets();
-    static const std::string PackageDrawings();
-    static const std::string PackageCharts();
+    /// <summary>
+    /// Returns the largest allowable row index in a worksheet.
+    /// </summary>
+    static const row_t max_row();
 
-    static const std::string ArcContentTypes();
-    static const std::string ArcRootRels();
-    static const std::string ArcWorkbookRels();
-    static const std::string ArcCore();
-    static const std::string ArcApp();
-    static const std::string ArcWorkbook();
-    static const std::string ArcStyles();
-    static const std::string ArcTheme();
-    static const std::string ArcSharedString();
+    /// <summary>
+    /// Returns the lowest allowable column index in a worksheet.
+    /// </summary>
+    static const column_t min_column();
 
-    static const std::unordered_map<std::string, std::string> Namespaces();
-    
-    static const std::string Namespace(const std::string &id);
+    /// <summary>
+    /// Returns the largest allowable column index in a worksheet.
+    /// </summary>
+    static const column_t max_column();
+
+    /// <summary>
+    /// Returns the URI of the directory containing package properties.
+    /// </summary>
+    static const std::string package_properties();
+
+    /// <summary>
+    /// Returns the URI of the directory containing SpreatsheetML package parts.
+    /// </summary>
+    static const std::string package_xl();
+
+    /// <summary>
+    /// Returns the URI of the directory containing root relationships package part.
+    /// </summary>
+    static const std::string package_root_rels();
+
+    /// <summary>
+    /// Returns the URI of the directory containing package themes.
+    /// </summary>
+    static const std::string package_theme();
+
+    /// <summary>
+    /// Returns the URI of the directory containing package worksheets.
+    /// </summary>
+    static const std::string package_worksheets();
+
+    /// <summary>
+    /// Returns the URI of the content types package part.
+    /// </summary>
+    static const std::string part_content_types();
+
+    /// <summary>
+    /// Returns the URI of the core properties package part.
+    /// </summary>
+    static const std::string part_core();
+
+    /// <summary>
+    /// Returns the URI of the app properties package part.
+    /// </summary>
+    static const std::string part_app();
+
+    /// <summary>
+    /// Returns the URI of the workbook package part.
+    /// </summary>
+    static const std::string part_workbook();
+
+    /// <summary>
+    /// Returns the URI of the root relationships package part.
+    /// </summary>
+    static const std::string part_root_relationships();
+
+    /// <summary>
+    /// Returns the URI of the styles package part.
+    /// </summary>
+    static const std::string part_styles();
+
+    /// <summary>
+    /// Returns the URI of the theme package part.
+    /// </summary>
+    static const std::string part_theme();
+
+    /// <summary>
+    /// Returns the URI of the shared strings package part.
+    /// </summary>
+    static const std::string part_shared_strings();
+
+    /// <summary>
+    /// Returns an unordered_map mapping namespace names to namespaces.
+    /// </summary>
+    static const std::unordered_map<std::string, std::string> &get_namespaces();
+
+    /// <summary>
+    /// Returns the namespace URI from a namespace name.
+    /// </summary>
+    static const std::string get_namespace(const std::string &id);
 };
 
 } // namespace xlnt

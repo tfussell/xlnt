@@ -36,16 +36,16 @@ std::string make_rels_name(const std::string &target)
 {
     const char sep = '/';
 
-    if (target.empty() || target.back() == sep)
+    if (target.empty())
     {
-        return target + "_rels/.rels";
+        return xlnt::constants::part_root_relationships();
     }
 
     auto sep_pos = target.find_last_of(sep);
-    auto first_part = target.substr(0, sep_pos + 1);
-    auto last_part = target.substr(sep_pos + 1);
+    auto path = target.substr(0, sep_pos + 1);
+    auto filename = target.substr(sep_pos + 1);
 
-    return first_part + "_rels/" + last_part + ".rels";
+    return path + "_rels/" + filename + ".rels";
 }
 }
 
@@ -83,7 +83,7 @@ bool relationship_serializer::write_relationships(const std::vector<relationship
 
     auto root_node = xml.append_child("Relationships");
 
-    root_node.append_attribute("xmlns").set_value(constants::Namespace("relationships").c_str());
+    root_node.append_attribute("xmlns").set_value(constants::get_namespace("relationships").c_str());
 
     for (const auto &relationship : relationships)
     {

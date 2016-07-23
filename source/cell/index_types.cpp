@@ -63,7 +63,7 @@ std::string column_t::column_string_from_index(column_t::index_t column_index)
 {
     // these indicies corrospond to A->ZZZ and include all allowed
     // columns
-    if (column_index < constants::MinColumn() || column_index > constants::MaxColumn())
+    if (column_index < constants::min_column() || column_index > constants::max_column())
     {
         //        auto msg = "Column index out of bounds: " + std::to_string(column_index);
         throw column_string_index_error();
