@@ -24,7 +24,7 @@
 #pragma once
 
 #include <string>
-#include <vector>
+#include <unordered_map>
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/packaging/default_type.hpp>
@@ -41,17 +41,17 @@ class XLNT_CLASS manifest
 public:
     bool has_default_type(const std::string &extension) const;
     std::string get_default_type(const std::string &extension) const;
-    const std::vector<default_type> &get_default_types() const;
+    const std::unordered_map<std::string, default_type> &get_default_types() const;
     void add_default_type(const std::string &extension, const std::string &content_type);
 
     bool has_override_type(const std::string &part_name) const;
     std::string get_override_type(const std::string &part_name) const;
-    const std::vector<override_type> &get_override_types() const;
+    const std::unordered_map<std::string, override_type> &get_override_types() const;
     void add_override_type(const std::string &part_name, const std::string &content_type);
 
 private:
-    std::vector<default_type> default_types_;
-    std::vector<override_type> override_types_;
+    std::unordered_map<std::string, default_type> default_types_;
+    std::unordered_map<std::string, override_type> override_types_;
 };
 
 } // namespace xlnt

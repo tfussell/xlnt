@@ -59,15 +59,15 @@ void manifest_serializer::write_manifest(pugi::xml_document &xml) const
     for (const auto default_type : manifest_.get_default_types())
     {
         auto type_node = root_node.append_child("Default");
-        type_node.append_attribute("Extension").set_value(default_type.get_extension().c_str());
-        type_node.append_attribute("ContentType").set_value(default_type.get_content_type().c_str());
+        type_node.append_attribute("Extension").set_value(default_type.second.get_extension().c_str());
+        type_node.append_attribute("ContentType").set_value(default_type.second.get_content_type().c_str());
     }
 
     for (const auto override_type : manifest_.get_override_types())
     {
         auto type_node = root_node.append_child("Override");
-        type_node.append_attribute("PartName").set_value(override_type.get_part_name().c_str());
-        type_node.append_attribute("ContentType").set_value(override_type.get_content_type().c_str());
+        type_node.append_attribute("PartName").set_value(override_type.second.get_part_name().c_str());
+        type_node.append_attribute("ContentType").set_value(override_type.second.get_content_type().c_str());
     }
 }
 

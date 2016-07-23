@@ -53,6 +53,11 @@ public:
 
         wb.add_style(s);
         TS_ASSERT_EQUALS(e.get_stylesheet().styles.size(), 2);
+
+        xlnt::style copy;
+        copy = s;
+
+        TS_ASSERT_EQUALS(s, copy);
     }
 
 /*
