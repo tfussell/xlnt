@@ -104,6 +104,8 @@ public:
         auto found_sheet = wb.get_sheet_by_name(title);
         TS_ASSERT_EQUALS(new_sheet, found_sheet);
         TS_ASSERT_THROWS(wb.get_sheet_by_name("error"), xlnt::key_error);
+        const auto &wb_const = wb;
+        TS_ASSERT_THROWS(wb_const.get_sheet_by_name("error"), xlnt::key_error);
     }
     
     void test_get_sheet_by_name_const()

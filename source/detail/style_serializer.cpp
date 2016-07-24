@@ -633,7 +633,7 @@ xlnt::fill read_fill(const pugi::xml_node &fill_node)
     else if (fill_node.child("gradientFill"))
     {
         auto gradient_fill_node = fill_node.child("gradientFill");
-        std::string gradient_fill_type_string = gradient_fill_node.attribute("gradientType").value();
+        std::string gradient_fill_type_string = gradient_fill_node.attribute("type").value();
         
         if (!gradient_fill_type_string.empty())
         {
@@ -642,6 +642,14 @@ xlnt::fill read_fill(const pugi::xml_node &fill_node)
         else
         {
             new_fill = xlnt::fill::gradient(xlnt::gradient_fill::type::linear);
+        }
+
+        for (auto stop_node : gradient_fill_node.children("stop"))
+        {
+            auto position = stop_node.attribute("position").as_double();
+            auto color = read_color(stop_node.child("color"));
+
+            new_fill.get_gradient_fill().add_stop(position, color);
         }
     }
 
