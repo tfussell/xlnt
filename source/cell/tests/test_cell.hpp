@@ -630,8 +630,6 @@ public:
         TS_ASSERT_DIFFERS(hash(xlnt::cell_reference("A2")), hash(xlnt::cell_reference(1, 1)));
         TS_ASSERT_EQUALS(hash(xlnt::cell_reference("A2")), hash(xlnt::cell_reference(1, 2)));
 
-        TS_ASSERT_THROWS(xlnt::cell_reference(10000000, 10000000), xlnt::cell_coordinates_error);
-
         TS_ASSERT_EQUALS((xlnt::cell_reference("A1"), xlnt::cell_reference("B2")), xlnt::range_reference("A1:B2"));
 
         TS_ASSERT_THROWS(xlnt::cell_reference("A1&"), xlnt::cell_coordinates_error);

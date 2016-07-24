@@ -795,6 +795,9 @@ public:
         auto second_cell = *first_column_iter;
         TS_ASSERT_EQUALS(second_cell.get_value<std::string>(), "A2");
 
+        TS_ASSERT_EQUALS(first_cell, first_column.front());
+        TS_ASSERT_EQUALS(second_cell, first_column.back());
+
         auto last_column = *(--columns.end());
         auto last_column_iter = last_column.end();
         last_column_iter--;
@@ -1070,22 +1073,27 @@ public:
         auto range_iter = range.begin();
         auto row = *range_iter;
         auto row_iter = row.begin();
-        auto cell = *row_iter;
-        TS_ASSERT_EQUALS(cell.get_value<double>(), 3.14);
-        TS_ASSERT_EQUALS(row.front().get_reference(), "A2");
+        TS_ASSERT_EQUALS((*row_iter).get_value<double>(), 3.14);
+        TS_ASSERT_EQUALS((*row_iter).get_reference(), "A2");
+        TS_ASSERT_EQUALS((*row_iter), row.front());
 
         row_iter++;
-        cell = *row_iter;
-        TS_ASSERT_EQUALS(cell.get_value<std::string>(), "text");
-        TS_ASSERT_EQUALS(row.back().get_reference(), "B2");
+        TS_ASSERT_EQUALS((*row_iter).get_value<std::string>(), "text");
+        TS_ASSERT_EQUALS((*row_iter).get_reference(), "B2");
+        TS_ASSERT_EQUALS((*row_iter), row.back());
+
+        range_iter++;
+        row = *range_iter;
+        row_iter = row.begin();
+        TS_ASSERT_EQUALS((*row_iter).get_value<bool>(), true);
+        TS_ASSERT_EQUALS((*row_iter).get_reference(), "A3");
 
         range_iter = range.end();
         range_iter--;
         row = *range_iter;
         row_iter = row.end();
         row_iter--;
-        cell = *row_iter;
-        TS_ASSERT_EQUALS(cell.get_value<bool>(), false);
+        TS_ASSERT_EQUALS((*row_iter).get_value<bool>(), false);
     }
 
     void test_get_squared_range()

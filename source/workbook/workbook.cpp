@@ -158,14 +158,14 @@ worksheet workbook::create_sheet()
         title = "Sheet" + std::to_string(++index);
     }
     
-    std::string sheet_filename = "worksheets/sheet" + std::to_string(d_->worksheets_.size() + 1) + ".xml";
+    std::string sheet_filename = "sheet" + std::to_string(d_->worksheets_.size() + 1) + ".xml";
 
     d_->worksheets_.push_back(detail::worksheet_impl(this, title));
     create_relationship("rId" + std::to_string(d_->relationships_.size() + 1),
-                        sheet_filename,
+                        "worksheets/" + sheet_filename,
                         relationship::type::worksheet);
     
-    d_->manifest_.add_override_type("/xl/" + sheet_filename, "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
+    d_->manifest_.add_override_type("/" + constants::package_worksheets() + "/" + sheet_filename, "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
 
     return worksheet(&d_->worksheets_.back());
 }

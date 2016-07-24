@@ -73,7 +73,7 @@ cell_reference::cell_reference(column_t column_index, row_t row)
     {
         throw value_error();
     }
-    
+
     if (!(row_ <= constants::max_row()) || !(column_ <= constants::max_column()))
     {
         throw cell_coordinates_error(column_, row_);

@@ -18,7 +18,6 @@ public:
     void test_bad_column()
     {
         TS_ASSERT_THROWS(xlnt::column_t::column_string_from_index(0), xlnt::column_string_index_error);
-        TS_ASSERT_THROWS(xlnt::column_t::column_string_from_index(10000000), xlnt::column_string_index_error);
     }
 
     void test_column_operators()

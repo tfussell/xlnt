@@ -39,8 +39,6 @@ public:
     static utf8string from_utf16(const std::vector<std::uint16_t> &s);
     static utf8string from_utf32(const std::vector<std::uint32_t> &s);
 
-    static bool is_valid(const std::string &s);
-
     bool is_valid() const;
 
 private:

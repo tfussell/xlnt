@@ -56,11 +56,6 @@ utf8string utf8string::from_utf32(const std::vector<std::uint32_t> &s)
     return result;
 }
 
-bool utf8string::is_valid(const std::string &s)
-{
-    return utf8::is_valid(s.begin(), s.end());
-}
-
 bool utf8string::is_valid() const
 {
     return utf8::is_valid(bytes_.begin(), bytes_.end());

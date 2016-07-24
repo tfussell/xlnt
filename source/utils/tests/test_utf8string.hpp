@@ -21,13 +21,13 @@ public:
         auto latin1_valid = xlnt::utf8string::from_latin1("abc");
         TS_ASSERT(latin1_valid.is_valid());
     }
-    
+
     void test_utf16()
     {
         auto utf16_valid = xlnt::utf8string::from_utf16({ 'a', 'b', 'c' });
         TS_ASSERT(utf16_valid.is_valid());
     }
-    
+
     void test_utf32()
     {
         auto utf32_valid = xlnt::utf8string::from_utf32({ 'a', 'b', 'c' });

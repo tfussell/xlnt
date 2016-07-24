@@ -35,11 +35,6 @@ const row_t constants::min_row()
     
 const row_t constants::max_row()
 {
-    if(xlnt_limit_style == limit_style::excel)
-    {
-        return 1u << 20;
-    }
-    
     return std::numeric_limits<row_t>::max();
 }
 
@@ -50,17 +45,7 @@ const column_t constants::min_column()
 
 const column_t constants::max_column()
 {
-    switch (xlnt_limit_style)
-    {
-    case limit_style::excel:
-        return column_t(1u << 14);
-
-    case limit_style::openpyxl:
-        return column_t(18'278);
-
-    default:
-        return column_t(std::numeric_limits<column_t::index_t>::max());
-    }
+    return column_t(std::numeric_limits<column_t::index_t>::max());
 }
 
 // constants

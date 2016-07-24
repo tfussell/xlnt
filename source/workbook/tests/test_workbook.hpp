@@ -372,4 +372,9 @@ public:
         wb_const.get_style("style1");
         wb.get_style_by_id(0);
     }
+
+    void test_limits()
+    {
+        
+    }
 };
