@@ -225,6 +225,43 @@ public:
         TS_ASSERT(xml_helper::compare_xml(expected, xml));
     }
 
+    void test_write_worksheet_order()
+    {
+        auto path = path_helper::get_data_directory("/genuine/tab_order.xlsx");
+
+        // Load an original workbook produced by Excel
+        xlnt::workbook wb_src;
+        {
+          xlnt::excel_serializer serializer(wb_src);
+          serializer.load_workbook(path);
+        }
+
+        // Save it to a new file, unmodified
+        temporary_file file;
+        {
+          xlnt::excel_serializer serializer(wb_src);
+          serializer.save_workbook(file.get_filename());
+          TS_ASSERT(path_helper::file_exists(file.get_filename()));
+        }
+
+        // Load it again
+        xlnt::workbook wb_dst;
+        {
+          xlnt::excel_serializer serializer(wb_dst);
+          serializer.load_workbook(file.get_filename());
+        }
+
+        // Make sure the number of worksheets is the same
+        auto count_src = std::distance(wb_src.begin(), wb_src.end());
+        auto count_dst = std::distance(wb_dst.begin(), wb_dst.end());
+        TS_ASSERT(count_src == count_dst);
+
+        // Make sure the title of the first sheet matches
+        auto ws1title_src = wb_src[0].get_title();
+        auto ws1title_dst = wb_dst[0].get_title();
+        TS_ASSERT(ws1title_src.compare(ws1title_dst) == 0);
+    }
+
 private:
     xlnt::workbook wb_;
 };
