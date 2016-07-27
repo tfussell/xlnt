@@ -277,10 +277,11 @@ void workbook_serializer::write_workbook(pugi::xml_document &xml) const
 
     auto sheets_node = root_node.append_child("sheets");
     auto defined_names_node = root_node.append_child("definedNames");
+    std::size_t index = 1;
 
     for (const auto ws : workbook_)
     {
-        auto target = "worksheets/sheet" + std::to_string(ws.get_id()) + ".xml";
+        auto target = "worksheets/sheet" + std::to_string(index++) + ".xml";
 
         for (const auto &rel : workbook_.get_relationships())
         {
@@ -301,6 +302,8 @@ void workbook_serializer::write_workbook(pugi::xml_document &xml) const
                     "'" + ws.get_title() + "'!" + range_reference::make_absolute(ws.get_auto_filter()).to_string();
                 defined_name_node.text().set(name.c_str());
             }
+
+            break;
         }
     }
 

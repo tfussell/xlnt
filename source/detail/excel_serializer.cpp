@@ -321,28 +321,26 @@ void excel_serializer::write_data(bool /*as_template*/)
 
 void excel_serializer::write_worksheets()
 {
-    std::size_t index = 0;
+    std::size_t index = 1;
 
-    for (auto ws : workbook_)
+    for (const auto ws : workbook_)
     {
-        for (auto relationship : workbook_.get_relationships())
+        auto target = "worksheets/sheet" + std::to_string(index++) + ".xml";
+
+        for (const auto &rel : workbook_.get_relationships())
         {
-            if (relationship.get_type() == relationship::type::worksheet &&
-                workbook::index_from_ws_filename(relationship.get_target_uri()) == index)
-            {
-                worksheet_serializer serializer_(ws);
-                std::string ws_filename = (relationship.get_target_uri().substr(0, 3) != "xl/" ? "xl/" : "") + relationship.get_target_uri();
-                std::ostringstream ss;
-                pugi::xml_document worksheet_xml;
-                serializer_.write_worksheet(worksheet_xml);
-                worksheet_xml.save(ss);
-                archive_.writestr(ws_filename, ss.str());
+            if (rel.get_target_uri() != target) continue;
 
-                break;
-            }
+            worksheet_serializer serializer_(ws);
+            std::string ws_filename = (rel.get_target_uri().substr(0, 3) != "xl/" ? "xl/" : "") + rel.get_target_uri();
+            std::ostringstream ss;
+            pugi::xml_document worksheet_xml;
+            serializer_.write_worksheet(worksheet_xml);
+            worksheet_xml.save(ss);
+            archive_.writestr(ws_filename, ss.str());
+
+            break;
         }
-
-        index++;
     }
 }
 
