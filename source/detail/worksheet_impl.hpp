@@ -43,8 +43,9 @@ namespace detail {
 
 struct worksheet_impl
 {
-    worksheet_impl(workbook *parent_workbook, const std::string &title)
+    worksheet_impl(workbook *parent_workbook, std::size_t id, const std::string &title)
         : parent_(parent_workbook),
+          id_(id),
           title_(title),
           comment_count_(0)
     {
@@ -58,9 +59,10 @@ struct worksheet_impl
     void operator=(const worksheet_impl &other)
     {
         parent_ = other.parent_;
+        id_ = other.id_;
+        title_ = other.title_;
         column_properties_ = other.column_properties_;
         row_properties_ = other.row_properties_;
-        title_ = other.title_;
         cell_map_ = other.cell_map_;
         for (auto &row : cell_map_)
         {
@@ -84,9 +86,10 @@ struct worksheet_impl
     }
 
     workbook *parent_;
+    std::size_t id_;
+    std::string title_;
     std::unordered_map<column_t, column_properties> column_properties_;
     std::unordered_map<row_t, row_properties> row_properties_;
-    std::string title_;
     std::unordered_map<row_t, std::unordered_map<column_t, cell_impl>> cell_map_;
     std::vector<relationship> relationships_;
     page_setup page_setup_;

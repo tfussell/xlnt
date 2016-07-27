@@ -158,7 +158,8 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
             continue;
         }
 
-        auto ws = wb.create_sheet(sheet_node.attribute("name").value());
+        auto ws = wb.create_sheet(sheet_node.attribute("name").value(), rel);
+        ws.set_id(sheet_node.attribute("sheetId").as_ullong());
         xlnt::worksheet_serializer worksheet_serializer(ws);
 		pugi::xml_document worksheet_xml;
 		worksheet_xml.load(archive.read("xl/" + rel.get_target_uri()).c_str());

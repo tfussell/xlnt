@@ -157,15 +157,17 @@ worksheet workbook::create_sheet()
     {
         title = "Sheet" + std::to_string(++index);
     }
-    
-    std::string sheet_filename = "sheet" + std::to_string(d_->worksheets_.size() + 1) + ".xml";
 
-    d_->worksheets_.push_back(detail::worksheet_impl(this, title));
-    create_relationship("rId" + std::to_string(d_->relationships_.size() + 1),
+    auto sheet_id = d_->worksheets_.size() + 1;
+    std::string sheet_filename = "sheet" + std::to_string(sheet_id) + ".xml";
+
+    d_->worksheets_.push_back(detail::worksheet_impl(this, sheet_id, title));
+    create_relationship("rId" + std::to_string(sheet_id),
                         "worksheets/" + sheet_filename,
                         relationship::type::worksheet);
-    
-    d_->manifest_.add_override_type("/" + constants::package_worksheets() + "/" + sheet_filename, "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
+    d_->manifest_.add_override_type("/" + constants::package_worksheets()
+        + "/" + sheet_filename,
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
 
     return worksheet(&d_->worksheets_.back());
 }
@@ -387,6 +389,14 @@ worksheet workbook::create_sheet(const std::string &title)
     ws.set_title(unique_title);
 
     return ws;
+}
+
+worksheet workbook::create_sheet(const std::string &title, const relationship &rel)
+{
+    auto sheet_id = d_->worksheets_.size() + 1;
+    d_->worksheets_.push_back(detail::worksheet_impl(this, sheet_id, title));
+
+    return worksheet(&d_->worksheets_.back());
 }
 
 workbook::iterator workbook::begin()
@@ -691,8 +701,22 @@ void workbook::add_shared_string(const text &shared, bool allow_duplicates)
 {
     if (d_->shared_strings_.empty())
     {
-        create_relationship(next_relationship_id(), "sharedStrings.xml", relationship::type::shared_strings);
-        d_->manifest_.add_override_type("/" + constants::part_shared_strings(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml");
+        bool has_shared_strings = false;
+
+        for (const auto &rel : get_relationships())
+        {
+            if (rel.get_type() == relationship::type::shared_strings)
+            {
+                has_shared_strings = true;
+                break;
+            }
+        }
+
+        if (!has_shared_strings)
+        {
+            create_relationship(next_relationship_id(), "sharedStrings.xml", relationship::type::shared_strings);
+            d_->manifest_.add_override_type("/" + constants::part_shared_strings(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml");
+        }
     }
 
 	if (!allow_duplicates)

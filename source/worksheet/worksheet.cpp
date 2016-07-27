@@ -207,12 +207,23 @@ void worksheet::garbage_collect()
     }
 }
 
+void worksheet::set_id(std::size_t id)
+{
+    d_->id_ = id;
+}
+
+std::size_t worksheet::get_id() const
+{
+    return d_->id_;
+}
+
 std::string worksheet::get_title() const
 {
     if (d_ == nullptr)
     {
         throw std::runtime_error("null worksheet");
     }
+
     return d_->title_;
 }
 

@@ -278,28 +278,18 @@ void workbook_serializer::write_workbook(pugi::xml_document &xml) const
     auto sheets_node = root_node.append_child("sheets");
     auto defined_names_node = root_node.append_child("definedNames");
 
-    for (const auto &relationship : workbook_.get_relationships())
+    for (const auto ws : workbook_)
     {
-        if (relationship.get_type() == relationship::type::worksheet)
-        {
-            // TODO: this is ugly
-            std::string sheet_index_string = relationship.get_target_uri();
-            sheet_index_string = sheet_index_string.substr(0, sheet_index_string.find('.'));
-            sheet_index_string = sheet_index_string.substr(sheet_index_string.find_last_of('/'));
-            auto iter = sheet_index_string.end();
-            iter--;
-            while (isdigit(*iter))
-                iter--;
-            auto first_digit = iter - sheet_index_string.begin();
-            sheet_index_string = sheet_index_string.substr(static_cast<std::string::size_type>(first_digit + 1));
-            std::size_t sheet_index = static_cast<std::size_t>(std::stoll(sheet_index_string) - 1);
+        auto target = "worksheets/sheet" + std::to_string(ws.get_id()) + ".xml";
 
-            auto ws = workbook_.get_sheet_by_index(sheet_index);
+        for (const auto &rel : workbook_.get_relationships())
+        {
+            if (rel.get_target_uri() != target) continue;
 
             auto sheet_node = sheets_node.append_child("sheet");
             sheet_node.append_attribute("name").set_value(ws.get_title().c_str());
-            sheet_node.append_attribute("sheetId").set_value(std::to_string(sheet_index + 1).c_str());
-            sheet_node.append_attribute("r:id").set_value(relationship.get_id().c_str());
+            sheet_node.append_attribute("sheetId").set_value(std::to_string(ws.get_id()).c_str());
+            sheet_node.append_attribute("r:id").set_value(rel.get_id().c_str());
 
             if (ws.has_auto_filter())
             {

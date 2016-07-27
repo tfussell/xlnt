@@ -79,7 +79,10 @@ public:
 	const workbook &get_workbook() const;
     void garbage_collect();
 
-    // title
+    // identification
+    std::size_t get_id() const;
+    void set_id(std::size_t id);
+
     std::string get_title() const;
     void set_title(const std::string &title);
     std::string make_unique_sheet_name(const std::string &value);

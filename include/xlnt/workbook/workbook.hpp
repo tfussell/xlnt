@@ -124,6 +124,7 @@ public:
     worksheet create_sheet(std::size_t index);
     worksheet create_sheet(const std::string &title);
     worksheet create_sheet(std::size_t index, const std::string &title);
+    worksheet create_sheet(const std::string &title, const relationship &rel);
 
     void copy_sheet(worksheet worksheet);
     void copy_sheet(worksheet worksheet, std::size_t index);
