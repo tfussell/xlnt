@@ -30,7 +30,7 @@ public:
     {
         xlnt::workbook wb;
         xlnt::worksheet ws(wb);
-        TS_ASSERT_THROWS(xlnt::cell_reference invalid(xlnt::column_t((xlnt::column_t::index_t)0), 0), xlnt::cell_coordinates_error);
+        TS_ASSERT_THROWS(xlnt::cell_reference invalid(xlnt::column_t((xlnt::column_t::index_t)0), 0), xlnt::invalid_cell_reference);
     }
     
     void test_worksheet_dimension()
@@ -206,7 +206,7 @@ public:
     {
         xlnt::workbook wb;
         xlnt::worksheet ws(wb);
-        TS_ASSERT_THROWS(ws.get_named_range("bad_range"), xlnt::key_error);
+        TS_ASSERT_THROWS(ws.get_named_range("bad_range"), xlnt::key_not_found);
     }
     
     void test_get_named_range_wrong_sheet()
@@ -217,7 +217,7 @@ public:
         auto ws1 = wb[0];
         auto ws2 = wb[1];
         wb.create_named_range("wrong_sheet_range", ws1, "C5");
-        TS_ASSERT_THROWS(ws2.get_named_range("wrong_sheet_range"), xlnt::named_range_error);
+        TS_ASSERT_THROWS(ws2.get_named_range("wrong_sheet_range"), xlnt::key_not_found);
     }
     
     void test_remove_named_range_bad()

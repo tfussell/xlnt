@@ -86,7 +86,7 @@ std::vector<std::pair<std::string, std::string>> split_named_range(const std::st
         {
             xlnt::range_reference ref(split[1]);
         }
-        catch (xlnt::cell_coordinates_error)
+        catch (xlnt::invalid_cell_reference)
         {
             split[1] = "";
         }

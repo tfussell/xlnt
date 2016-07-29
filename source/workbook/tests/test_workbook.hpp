@@ -61,7 +61,7 @@ public:
     {
         xlnt::workbook wb1, wb2;
         auto new_sheet = wb1.get_active_sheet();
-        TS_ASSERT_THROWS(wb2.copy_sheet(new_sheet), xlnt::value_error);
+        TS_ASSERT_THROWS(wb2.copy_sheet(new_sheet), xlnt::invalid_parameter);
         TS_ASSERT_THROWS(wb2.get_index(new_sheet), std::runtime_error);
     }
 
@@ -76,13 +76,6 @@ public:
         TS_ASSERT_EQUALS(wb.get_sheet_by_index(0).get_cell("B3").get_value<int>(), 2);
         TS_ASSERT_EQUALS(wb.get_sheet_names().at(1), "Active");
         TS_ASSERT_EQUALS(wb.get_sheet_by_index(1).get_cell("B3").get_value<int>(), 2);
-    }
-    
-    void test_create_sheet_readonly()
-    {
-        xlnt::workbook wb;
-        wb.set_read_only(true);
-        TS_ASSERT_THROWS(wb.create_sheet(), xlnt::read_only_workbook_error);
     }
     
     void test_remove_sheet()
@@ -103,9 +96,9 @@ public:
         new_sheet.set_title(title);
         auto found_sheet = wb.get_sheet_by_name(title);
         TS_ASSERT_EQUALS(new_sheet, found_sheet);
-        TS_ASSERT_THROWS(wb.get_sheet_by_name("error"), xlnt::key_error);
+        TS_ASSERT_THROWS(wb.get_sheet_by_name("error"), xlnt::key_not_found);
         const auto &wb_const = wb;
-        TS_ASSERT_THROWS(wb_const.get_sheet_by_name("error"), xlnt::key_error);
+        TS_ASSERT_THROWS(wb_const.get_sheet_by_name("error"), xlnt::key_not_found);
     }
     
     void test_get_sheet_by_name_const()
@@ -123,7 +116,7 @@ public:
     {
         xlnt::workbook wb;
         TS_ASSERT_THROWS_NOTHING(wb["Sheet"]);
-        TS_ASSERT_THROWS(wb["NotThere"], xlnt::key_error);
+        TS_ASSERT_THROWS(wb["NotThere"], xlnt::key_not_found);
     }
     
     // void test_delitem() {} doesn't make sense in c++

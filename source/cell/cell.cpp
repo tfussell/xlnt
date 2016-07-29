@@ -148,7 +148,7 @@ std::string cell::check_string(const std::string &to_check)
     {
         if (c >= 0 && (c <= 8 || c == 11 || c == 12 || (c >= 14 && c <= 31)))
         {
-            throw xlnt::illegal_character_error(c);
+            throw xlnt::illegal_character(c);
         }
     }
 
@@ -456,7 +456,7 @@ void cell::set_hyperlink(const std::string &hyperlink)
 {
     if (hyperlink.length() == 0 || std::find(hyperlink.begin(), hyperlink.end(), ':') == hyperlink.end())
     {
-        throw data_type_error();
+        throw invalid_data_type();
     }
 
     d_->has_hyperlink_ = true;
@@ -472,7 +472,7 @@ void cell::set_formula(const std::string &formula)
 {
     if (formula.length() == 0)
     {
-        throw data_type_error();
+        throw invalid_data_type();
     }
 
     if (formula[0] == '=')
@@ -494,7 +494,7 @@ std::string cell::get_formula() const
 {
     if (d_->formula_.empty())
     {
-        throw data_type_error();
+        throw invalid_data_type();
     }
 
     return d_->formula_;
@@ -509,7 +509,7 @@ void cell::set_comment(const xlnt::comment &c)
 {
     if (c.d_ != d_->comment_.get())
     {
-        throw xlnt::attribute_error();
+        throw xlnt::invalid_attribute();
     }
 
     if (!has_comment())
@@ -539,7 +539,7 @@ void cell::set_error(const std::string &error)
 {
     if (error.length() == 0 || error[0] != '#')
     {
-        throw data_type_error();
+        throw invalid_data_type();
     }
 
     d_->value_text_.set_plain_string(error);

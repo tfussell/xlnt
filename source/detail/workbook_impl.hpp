@@ -54,7 +54,6 @@ struct workbook_impl
           app_properties_(other.app_properties_),
           guess_types_(other.guess_types_),
           data_only_(other.data_only_),
-          read_only_(other.read_only_),
           stylesheet_(other.stylesheet_),
           manifest_(other.manifest_)
     {
@@ -76,7 +75,6 @@ struct workbook_impl
         app_properties_ = other.app_properties_;
         guess_types_ = other.guess_types_;
         data_only_ = other.data_only_;
-        read_only_ = other.read_only_;
         manifest_ = other.manifest_;
 
         return *this;
@@ -93,7 +91,6 @@ struct workbook_impl
 
     bool guess_types_;
     bool data_only_;
-    bool read_only_;
 
     stylesheet stylesheet_;
     

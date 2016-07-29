@@ -75,7 +75,7 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
 
     if(!archive.has_file(xlnt::constants::part_content_types()))
     {
-        throw xlnt::invalid_file_error("missing [Content Types].xml");
+        throw xlnt::invalid_file("missing [Content Types].xml");
     }
     
     xlnt::manifest_serializer ms(wb.get_manifest());
@@ -85,7 +85,7 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
 
     if (ms.determine_document_type() != "excel")
     {
-        throw xlnt::invalid_file_error("package is not an OOXML SpreadsheetML");
+        throw xlnt::invalid_file("package is not an OOXML SpreadsheetML");
     }
 
     if(archive.has_file(xlnt::constants::part_core()))
@@ -218,7 +218,7 @@ bool excel_serializer::load_workbook(const std::string &filename, bool guess_typ
     }
     catch (std::runtime_error)
     {
-        throw invalid_file_error(filename);
+        throw invalid_file(filename);
     }
 
     return ::load_workbook(archive_, guess_types, data_only, workbook_, get_stylesheet());

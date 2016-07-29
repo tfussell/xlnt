@@ -66,7 +66,7 @@ public:
         xlnt::workbook_serializer serializer(wb);
         
         pugi::xml_document xml;
-        TS_ASSERT_THROWS(serializer.write_workbook(xml), xlnt::value_error);
+        TS_ASSERT_THROWS(serializer.write_workbook(xml), xlnt::no_visible_worksheets);
     }
     
     void test_write_empty_workbook()

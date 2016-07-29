@@ -104,9 +104,9 @@ void worksheet::create_named_range(const std::string &name, const range_referenc
         }
         
     }
-    catch(xlnt::error)
+    catch(xlnt::exception)
     {
-        // not a valid cell reference
+        // must not be a valid cell reference
     }
     
 
@@ -350,12 +350,12 @@ range worksheet::get_named_range(const std::string &name)
 {
     if (!get_workbook().has_named_range(name))
     {
-        throw key_error();
+        throw key_not_found();
     }
     
     if (!has_named_range(name))
     {
-        throw named_range_error();
+        throw key_not_found();
     }
 
     return get_range(d_->named_ranges_[name].get_targets()[0].second);

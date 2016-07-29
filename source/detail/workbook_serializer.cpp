@@ -244,7 +244,7 @@ void workbook_serializer::write_workbook(pugi::xml_document &xml) const
 
     if (num_visible == 0)
     {
-        throw xlnt::value_error();
+        throw xlnt::no_visible_worksheets();
     }
 
     auto root_node = xml.append_child("workbook");

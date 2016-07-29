@@ -62,8 +62,7 @@ namespace detail {
 workbook_impl::workbook_impl()
     : active_sheet_index_(0),
       guess_types_(false),
-      data_only_(false),
-      read_only_(false)
+      data_only_(false)
 {
 }
 
@@ -103,7 +102,7 @@ const worksheet workbook::get_sheet_by_name(const std::string &name) const
         }
     }
 
-    throw key_error();
+    throw key_not_found();
 }
 
 worksheet workbook::get_sheet_by_name(const std::string &name)
@@ -116,7 +115,7 @@ worksheet workbook::get_sheet_by_name(const std::string &name)
         }
     }
 
-    throw key_error();
+    throw key_not_found();
 }
 
 worksheet workbook::get_sheet_by_index(std::size_t index)
@@ -148,8 +147,6 @@ bool workbook::has_named_range(const std::string &name) const
 
 worksheet workbook::create_sheet()
 {
-    if(get_read_only()) throw xlnt::read_only_workbook_error();
-    
     std::string title = "Sheet";
     int index = 0;
 
@@ -174,7 +171,7 @@ worksheet workbook::create_sheet()
 
 void workbook::copy_sheet(xlnt::worksheet worksheet)
 {
-    if(worksheet.d_->parent_ != this) throw xlnt::value_error();
+    if(worksheet.d_->parent_ != this) throw xlnt::invalid_parameter();
 
     xlnt::detail::worksheet_impl impl(*worksheet.d_);
     auto new_sheet = create_sheet();
@@ -358,14 +355,14 @@ worksheet workbook::create_sheet(const std::string &title)
 {
     if (title.length() > 31)
     {
-        throw sheet_title_error(title);
+        throw invalid_sheet_title(title);
     }
 
     if (std::find_if(title.begin(), title.end(), [](char c) {
             return c == '*' || c == ':' || c == '/' || c == '\\' || c == '?' || c == '[' || c == ']';
         }) != title.end())
     {
-        throw sheet_title_error(title);
+        throw invalid_sheet_title(title);
     }
 
     std::string unique_title = title;
@@ -563,16 +560,6 @@ bool workbook::get_data_only() const
 void workbook::set_data_only(bool data_only)
 {
     d_->data_only_ = data_only;
-}
-
-bool workbook::get_read_only() const
-{
-    return d_->read_only_;
-}
-
-void workbook::set_read_only(bool read_only)
-{
-    d_->read_only_ = read_only;
 }
 
 void workbook::set_code_name(const std::string & /*code_name*/)

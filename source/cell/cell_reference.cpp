@@ -74,7 +74,7 @@ cell_reference::cell_reference(column_t column_index, row_t row)
         || !(row_ <= constants::max_row())
         || !(column_ <= constants::max_column()))
     {
-        throw cell_coordinates_error(column_, row_);
+        throw invalid_cell_reference(column_, row_);
     }
 }
 
@@ -138,7 +138,7 @@ std::pair<std::string, row_t> cell_reference::split_reference(const std::string 
             }
             else
             {
-                throw cell_coordinates_error(reference_string);
+                throw invalid_cell_reference(reference_string);
             }
         }
         else if (character == '$')
@@ -163,7 +163,7 @@ std::pair<std::string, row_t> cell_reference::split_reference(const std::string 
             }
             else if (!std::isdigit(character, std::locale::classic()))
             {
-                throw cell_coordinates_error(reference_string);
+                throw invalid_cell_reference(reference_string);
             }
         }
     }
@@ -172,7 +172,7 @@ std::pair<std::string, row_t> cell_reference::split_reference(const std::string 
 
     if (row_string.length() == 0)
     {
-        throw cell_coordinates_error(reference_string);
+        throw invalid_cell_reference(reference_string);
     }
 
     if (column_string[0] == '$')

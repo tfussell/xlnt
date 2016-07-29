@@ -68,7 +68,7 @@ public:
         xlnt::workbook wb;
         xlnt::excel_serializer serializer(wb);
         
-        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file_error);
+        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file);
     }
 
     void test_read_empty_archive()
@@ -78,7 +78,7 @@ public:
         xlnt::workbook wb;
         xlnt::excel_serializer serializer(wb);
         
-        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file_error);
+        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file);
     }
     
     void test_read_workbook_with_no_properties()
@@ -471,7 +471,7 @@ public:
         xlnt::workbook wb;
         xlnt::excel_serializer serializer(wb);
         
-        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file_error);
+        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file);
     }
     
     void test_bad_formats_xls()
@@ -481,7 +481,7 @@ public:
         xlnt::workbook wb;
         xlnt::excel_serializer serializer(wb);
         
-        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file_error);
+        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file);
     }
     
     void test_bad_formats_no()
@@ -491,7 +491,7 @@ public:
         xlnt::workbook wb;
         xlnt::excel_serializer serializer(wb);
         
-        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file_error);
+        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file);
     }
 
 
@@ -557,12 +557,12 @@ public:
     void test_determine_document_type()
     {
         xlnt::workbook wb;
-        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("1_empty.txt")), xlnt::invalid_file_error);
-        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("2_not-empty.txt")), xlnt::invalid_file_error);
-        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("3_empty.zip")), xlnt::invalid_file_error);
-        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("4_not-package.zip")), xlnt::invalid_file_error);
-        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("5_visio.vsdx")), xlnt::invalid_file_error);
-        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("6_document.docx")), xlnt::invalid_file_error);
-        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("7_presentation.pptx")), xlnt::invalid_file_error);
+        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("1_empty.txt")), xlnt::invalid_file);
+        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("2_not-empty.txt")), xlnt::invalid_file);
+        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("3_empty.zip")), xlnt::invalid_file);
+        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("4_not-package.zip")), xlnt::invalid_file);
+        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("5_visio.vsdx")), xlnt::invalid_file);
+        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("6_document.docx")), xlnt::invalid_file);
+        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("7_presentation.pptx")), xlnt::invalid_file);
     }
 };

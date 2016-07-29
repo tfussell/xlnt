@@ -34,11 +34,10 @@ namespace xlnt {
 /// <summary>
 /// Parent type of all custom exceptions thrown in this library.
 /// </summary>
-class XLNT_CLASS error : public std::runtime_error
+class XLNT_CLASS exception : public std::runtime_error
 {
 public:
-    error();
-    error(const std::string &message);
+    exception(const std::string &message);
 
     void set_message(const std::string &message);
 
@@ -46,122 +45,114 @@ private:
     std::string message_;
 };
 
-class XLNT_CLASS value_error : public error
+/// <summary>
+/// Exception for a bad parameter value
+/// </summary>
+class XLNT_CLASS invalid_parameter : public exception
 {
 public:
-    value_error();
+    invalid_parameter();
 };
 
 /// <summary>
-/// Error for string encoding not matching workbook encoding
+/// Exception for bad sheet names.
 /// </summary>
-class XLNT_CLASS unicode_decode_error : public error
+class XLNT_CLASS invalid_sheet_title : public exception
 {
 public:
-    unicode_decode_error();
-    unicode_decode_error(char c);
-    unicode_decode_error(std::uint8_t b);
+    invalid_sheet_title(const std::string &title);
 };
 
 /// <summary>
-/// Error for bad sheet names.
+/// Exception for incorrectly formatted named ranges.
 /// </summary>
-class XLNT_CLASS sheet_title_error : public error
+class XLNT_CLASS invalid_named_range : public exception
 {
 public:
-    sheet_title_error(const std::string &title);
+    invalid_named_range();
 };
 
 /// <summary>
-/// Error for trying to modify a read-only workbook.
+/// Exception when a referenced number format is not in the stylesheet.
 /// </summary>
-class XLNT_CLASS read_only_workbook_error : public error
-{
-public:
-    read_only_workbook_error();
-};
-
-/// <summary>
-/// Error for incorrectly formatted named ranges.
-/// </summary>
-class XLNT_CLASS named_range_error : public error
-{
-public:
-    named_range_error();
-};
-
-/// <summary>
-/// Error when a referenced number format is not in the stylesheet.
-/// </summary>
-class XLNT_CLASS missing_number_format : public error
+class XLNT_CLASS missing_number_format : public exception
 {
 public:
     missing_number_format();
 };
 
 /// <summary>
-/// Error for trying to open a non-OOXML file.
+/// Exception for trying to open a non-XLSX file.
 /// </summary>
-class XLNT_CLASS invalid_file_error : public error
+class XLNT_CLASS invalid_file : public exception
 {
 public:
-    invalid_file_error(const std::string &filename);
+    invalid_file(const std::string &filename);
 };
 
 /// <summary>
 /// The data submitted which cannot be used directly in Excel files. It
 /// must be removed or escaped.
 /// </summary>
-class XLNT_CLASS illegal_character_error : public error
+class XLNT_CLASS illegal_character : public exception
 {
 public:
-    illegal_character_error(char c);
+    illegal_character(char c);
 };
 
 /// <summary>
-/// Error for any data type inconsistencies.
+/// Exception for any data type inconsistencies.
 /// </summary>
-class XLNT_CLASS data_type_error : public error
+class XLNT_CLASS invalid_data_type : public exception
 {
 public:
-    data_type_error();
+    invalid_data_type();
 };
 
 /// <summary>
-/// Error for bad column names in A1-style cell references.
+/// Exception for bad column names in A1-style cell references.
 /// </summary>
-class XLNT_CLASS column_string_index_error : public error
+class XLNT_CLASS invalid_column_string_index : public exception
 {
 public:
-    column_string_index_error();
+    invalid_column_string_index();
 };
 
 /// <summary>
-/// Error for converting between numeric and A1-style cell references.
+/// Exception for converting between numeric and A1-style cell references.
 /// </summary>
-class XLNT_CLASS cell_coordinates_error : public error
+class XLNT_CLASS invalid_cell_reference : public exception
 {
 public:
-    cell_coordinates_error(column_t column, row_t row);
-    cell_coordinates_error(const std::string &coord_string);
+    invalid_cell_reference(column_t column, row_t row);
+    invalid_cell_reference(const std::string &reference_string);
 };
 
 /// <summary>
-/// Error when an attribute value is invalid.
+/// Exception when setting a class's attribute to an invalid value
 /// </summary>
-class XLNT_CLASS attribute_error : public error
+class XLNT_CLASS invalid_attribute : public exception
 {
 public:
-    attribute_error();
+    invalid_attribute();
 };
 
 /// <summary>
-/// key_error
+/// Exception for a key that doesn't exist in a container
 /// </summary>
-class XLNT_CLASS key_error : public error
+class XLNT_CLASS key_not_found : public exception
 {
 public:
-    key_error();
+    key_not_found();
+};
+
+/// <summary>
+/// Exception for a workbook with no visible worksheets
+/// </summary>
+class XLNT_CLASS no_visible_worksheets : public exception
+{
+public:
+    no_visible_worksheets();
 };
 
 } // namespace xlnt

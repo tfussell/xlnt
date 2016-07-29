@@ -264,7 +264,7 @@ public:
         for(auto i : illegal_chrs)
         {
             std::string str(1, i);
-            TS_ASSERT_THROWS(cell.set_value(str), xlnt::illegal_character_error);
+            TS_ASSERT_THROWS(cell.set_value(str), xlnt::illegal_character);
         }
         
         cell.set_value(std::string(1, 33));
@@ -315,7 +315,7 @@ public:
         xlnt::comment comm(cell, "text", "author");
     
         auto c2 = ws.get_cell(xlnt::cell_reference(1, 2));
-        TS_ASSERT_THROWS(c2.set_comment(comm), xlnt::attribute_error);
+        TS_ASSERT_THROWS(c2.set_comment(comm), xlnt::invalid_attribute);
     }
     
     void test_remove_comment()
@@ -632,8 +632,8 @@ public:
 
         TS_ASSERT_EQUALS((xlnt::cell_reference("A1"), xlnt::cell_reference("B2")), xlnt::range_reference("A1:B2"));
 
-        TS_ASSERT_THROWS(xlnt::cell_reference("A1&"), xlnt::cell_coordinates_error);
-        TS_ASSERT_THROWS(xlnt::cell_reference("A"), xlnt::cell_coordinates_error);
+        TS_ASSERT_THROWS(xlnt::cell_reference("A1&"), xlnt::invalid_cell_reference);
+        TS_ASSERT_THROWS(xlnt::cell_reference("A"), xlnt::invalid_cell_reference);
 
         auto ref = xlnt::cell_reference("$B$7");
         TS_ASSERT(ref.row_absolute());
