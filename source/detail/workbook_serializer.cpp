@@ -290,6 +290,12 @@ void workbook_serializer::write_workbook(pugi::xml_document &xml) const
             auto sheet_node = sheets_node.append_child("sheet");
             sheet_node.append_attribute("name").set_value(ws.get_title().c_str());
             sheet_node.append_attribute("sheetId").set_value(std::to_string(ws.get_id()).c_str());
+            
+            if (ws.get_sheet_state() == xlnt::sheet_state::hidden)
+            {
+                sheet_node.append_attribute("state").set_value("hidden");
+            }
+            
             sheet_node.append_attribute("r:id").set_value(rel.get_id().c_str());
 
             if (ws.has_auto_filter())
@@ -317,7 +323,15 @@ void workbook_serializer::write_named_ranges(pugi::xml_node node) const
 {
     for (auto &named_range : workbook_.get_named_ranges())
     {
-        node.append_child(named_range.get_name().c_str());
+        auto defined_name_node = node.append_child("s:definedName");
+        defined_name_node.append_attribute("xmlns:s").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
+        defined_name_node.append_attribute("name").set_value(named_range.get_name().c_str());
+        const auto &target = named_range.get_targets().front();
+        std::string target_string = "'" + target.first.get_title();
+        target_string.push_back('\'');
+        target_string.push_back('!');
+        target_string.append(target.second.to_string());
+        defined_name_node.text().set(target_string.c_str());
     }
 }
 

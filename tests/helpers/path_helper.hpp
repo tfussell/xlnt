@@ -107,7 +107,19 @@ public:
     
     static std::string get_data_directory(const std::string &append = "")
     {
-        return get_executable_directory() + "../../tests/data" + append;
+        auto path = get_executable_directory() + "../../tests/data";
+
+        if (!append.empty())
+        {
+            if (append.front() != '/')
+            {
+                path.push_back('/');
+            }
+
+            path.append(append);
+        }
+
+        return path;
     }
     
     static void copy_file(const std::string &source, const std::string &destination, bool overwrite)

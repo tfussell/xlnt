@@ -69,12 +69,10 @@ cell_reference::cell_reference(const std::string &column, row_t row)
 cell_reference::cell_reference(column_t column_index, row_t row)
     : column_(column_index), row_(row), absolute_row_(false), absolute_column_(false)
 {
-    if (row_ == 0 || column_ == 0)
-    {
-        throw value_error();
-    }
-
-    if (!(row_ <= constants::max_row()) || !(column_ <= constants::max_column()))
+    if (row_ == 0
+        || column_ == 0
+        || !(row_ <= constants::max_row())
+        || !(column_ <= constants::max_column()))
     {
         throw cell_coordinates_error(column_, row_);
     }
@@ -109,6 +107,12 @@ std::string cell_reference::to_string() const
 range_reference cell_reference::to_range() const
 {
     return range_reference(column_, row_, column_, row_);
+}
+
+std::pair<std::string, row_t> cell_reference::split_reference(const std::string &reference_string)
+{
+    bool ignore1, ignore2;
+    return split_reference(reference_string, ignore1, ignore2);
 }
 
 std::pair<std::string, row_t> cell_reference::split_reference(const std::string &reference_string,

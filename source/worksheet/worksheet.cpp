@@ -93,6 +93,23 @@ void worksheet::create_named_range(const std::string &name, const range_referenc
 {
     std::vector<named_range::target> targets;
     targets.push_back({ *this, reference });
+
+    try
+    {
+        auto temp = cell_reference::split_reference(name);
+
+        if (column_t(temp.first).index <= column_t("XFD").index || temp.second <= 1048576)
+        {
+            throw std::runtime_error("named range name must be outside the range A1-XFD1048576");
+        }
+        
+    }
+    catch(xlnt::error)
+    {
+        // not a valid cell reference
+    }
+    
+
     d_->named_ranges_[name] = named_range(name, targets);
 }
 
@@ -857,6 +874,11 @@ cell_reference worksheet::get_point_pos(const std::pair<int, int> &point) const
 void worksheet::set_sheet_state(sheet_state state)
 {
     get_page_setup().set_sheet_state(state);
+}
+
+sheet_state worksheet::get_sheet_state() const
+{
+    return get_page_setup().get_sheet_state();
 }
 
 void worksheet::add_column_properties(column_t column, const xlnt::column_properties &props)

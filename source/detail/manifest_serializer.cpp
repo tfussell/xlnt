@@ -73,24 +73,22 @@ void manifest_serializer::write_manifest(pugi::xml_document &xml) const
 
 std::string manifest_serializer::determine_document_type() const
 {
-    if (!manifest_.has_override_type(constants::part_workbook()))
+    for (auto current_override_type : manifest_.get_override_types())
     {
-        return "unsupported";
-    }
+        auto type = current_override_type.second.get_content_type();
 
-    std::string type = manifest_.get_override_type(constants::part_workbook());
-
-    if (type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml")
-    {
-        return "excel";
-    }
-    else if (type == "application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml")
-    {
-        return "powerpoint";
-    }
-    else if (type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml")
-    {
-        return "word";
+        if (type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml")
+        {
+            return "excel";
+        }
+        else if (type == "application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml")
+        {
+            return "powerpoint";
+        }
+        else if (type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml")
+        {
+            return "word";
+        }
     }
 
     return "unsupported";

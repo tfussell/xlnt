@@ -68,6 +68,8 @@ std::string::size_type find_string_in_string(const std::string &string, const st
 
 bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xlnt::workbook &wb, xlnt::detail::stylesheet &stylesheet)
 {
+    wb.clear();
+
     wb.set_guess_types(guess_types);
     wb.set_data_only(data_only);
 
@@ -86,8 +88,6 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
         throw xlnt::invalid_file_error("package is not an OOXML SpreadsheetML");
     }
 
-    wb.clear();
-    
     if(archive.has_file(xlnt::constants::part_core()))
     {
         xlnt::workbook_serializer workbook_serializer_(wb);

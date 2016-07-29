@@ -457,6 +457,7 @@ void workbook::clear()
     d_->relationships_.clear();
     d_->active_sheet_index_ = 0;
     d_->properties_ = document_properties();
+    d_->manifest_.clear();
     clear_styles();
     clear_formats();
 }

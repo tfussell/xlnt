@@ -561,7 +561,8 @@ public:
         TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("2_not-empty.txt")), xlnt::invalid_file_error);
         TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("3_empty.zip")), xlnt::invalid_file_error);
         TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("4_not-package.zip")), xlnt::invalid_file_error);
-        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("5_document.docx")), xlnt::invalid_file_error);
-        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("6_presentation.pptx")), xlnt::invalid_file_error);
+        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("5_visio.vsdx")), xlnt::invalid_file_error);
+        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("6_document.docx")), xlnt::invalid_file_error);
+        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("7_presentation.pptx")), xlnt::invalid_file_error);
     }
 };

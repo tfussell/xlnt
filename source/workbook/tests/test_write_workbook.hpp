@@ -14,7 +14,7 @@ public:
     void test_write_auto_filter()
     {
         xlnt::workbook wb;
-        auto ws = wb.create_sheet();
+        auto ws = wb.get_active_sheet();
         ws.get_cell("F42").set_value("hello");
         ws.auto_filter("A1:F1");
     
@@ -22,21 +22,20 @@ public:
         pugi::xml_document xml;
         serializer.write_workbook(xml);
 
-        TS_SKIP("");
-        TS_ASSERT(xml_helper::compare_xml(path_helper::read_file("workbook_auto_filter.xml"), xml));
+        TS_ASSERT(xml_helper::compare_xml(path_helper::get_data_directory("/writer/expected/workbook_auto_filter.xml"), xml));
     }
     
     void test_write_hidden_worksheet()
     {
         xlnt::workbook wb;
-        auto ws = wb.create_sheet();
+        auto ws = wb.get_active_sheet();
         ws.set_sheet_state(xlnt::sheet_state::hidden);
         wb.create_sheet();
 
         xlnt::workbook_serializer serializer(wb);
         pugi::xml_document xml;
         serializer.write_workbook(xml);
-        
+
         std::string expected_string =
         "<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
         "    <workbookPr/>"
@@ -50,12 +49,12 @@ public:
         "    <definedNames/>"
         "    <calcPr calcId=\"124519\" fullCalcOnLoad=\"1\"/>"
         "</workbook>";
-        
+
         pugi::xml_document expected;
         expected.load(expected_string.c_str());
 
-        TS_SKIP("");
-        TS_ASSERT(xml_helper::compare_xml(expected, xml));
+        TS_ASSERT(xml_helper::compare_xml(expected.child("workbook").child("sheets"),
+            xml.child("workbook").child("sheets")));
     }
     
     void test_write_hidden_single_worksheet()
@@ -96,43 +95,43 @@ public:
     void test_write_workbook_rels()
     {
         xlnt::workbook wb;
+        auto ws = wb.get_active_sheet();
+        ws.get_cell("A1").set_value("string");
+
         xlnt::zip_file archive;
         xlnt::relationship_serializer serializer(archive);
         serializer.write_relationships(wb.get_relationships(), "xl/workbook.xml");
         pugi::xml_document observed;
         observed.load(archive.read("xl/_rels/workbook.xml.rels").c_str());
-        auto filename = "workbook.xml.rels";
 
-        TS_SKIP("");
-        TS_ASSERT(xml_helper::compare_xml(path_helper::read_file(filename), observed));
+        TS_ASSERT(xml_helper::compare_xml(path_helper::get_data_directory("/writer/expected/workbook.xml.rels"), observed));
     }
     
-    void test_write_workbook_()
+    void test_write_workbook_part()
     {
         xlnt::workbook wb;
         xlnt::workbook_serializer serializer(wb);
         pugi::xml_document xml;
         serializer.write_workbook(xml);
-        auto filename = path_helper::get_data_directory("/workbook.xml");
+        auto filename = path_helper::get_data_directory("/writer/expected/workbook.xml");
 
-        TS_SKIP("");
-        TS_ASSERT(xml_helper::compare_xml(path_helper::read_file(filename), xml));
+        TS_ASSERT(xml_helper::compare_xml(filename, xml));
     }
     
     void test_write_named_range()
     {
         xlnt::workbook wb;
-        auto ws = wb.create_sheet();
-        wb.create_named_range("test_range", ws, "A1:B5");
+        auto ws = wb.get_active_sheet();
+        wb.create_named_range("test_range", ws, "$A$1:$B$5");
         xlnt::workbook_serializer serializer(wb);
         pugi::xml_document xml;
-        serializer.write_named_ranges(xml.root());
+        auto root = xml.root().append_child("root");
+        serializer.write_named_ranges(root);
         std::string expected =
         "<root>"
             "<s:definedName xmlns:s=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" name=\"test_range\">'Sheet'!$A$1:$B$5</s:definedName>"
         "</root>";
 
-        TS_SKIP("");
         TS_ASSERT(xml_helper::compare_xml(expected, xml));
     }
     
@@ -163,9 +162,11 @@ public:
         "    <definedNames/>"
         "    <calcPr calcId=\"124519\" fullCalcOnLoad=\"1\"/>"
         "</workbook>";
+        pugi::xml_document expected_xml;
+        expected_xml.load(expected.c_str());
 
-        TS_SKIP("");
-        TS_ASSERT(xml_helper::compare_xml(expected, xml));
+        TS_ASSERT(xml_helper::compare_xml(expected_xml.child("workbook").child("workbookPr"),
+            xml.child("workbook").child("workbookPr")));
     }
     
     void test_write_root_rels()

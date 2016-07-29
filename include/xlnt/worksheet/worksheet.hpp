@@ -212,6 +212,7 @@ public:
 
     std::vector<std::string> get_formula_attributes() const;
 
+    sheet_state get_sheet_state() const;
     void set_sheet_state(sheet_state state);
 
     iterator begin();

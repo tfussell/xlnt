@@ -39,6 +39,8 @@ namespace xlnt {
 class XLNT_CLASS manifest
 {
 public:
+    void clear();
+
     bool has_default_type(const std::string &extension) const;
     std::string get_default_type(const std::string &extension) const;
     const std::unordered_map<std::string, default_type> &get_default_types() const;

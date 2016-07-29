@@ -28,6 +28,12 @@
 
 namespace xlnt {
 
+void manifest::clear()
+{
+    default_types_.clear();
+    override_types_.clear();
+}
+
 bool manifest::has_default_type(const std::string &extension) const
 {
     return default_types_.find(extension) != default_types_.end();
