@@ -1,11 +1,10 @@
 ﻿#pragma once
 
 #include <iostream>
+#include <pugixml.hpp>
 #include <cxxtest/TestSuite.h>
 
-#include "pugixml.hpp"
 #include <xlnt/xlnt.hpp>
-#include <detail/number_formatter.hpp>
 
 class test_number_format : public CxxTest::TestSuite
 {
@@ -375,16 +374,6 @@ public:
         TS_ASSERT_EQUALS(formatted, "text");
     }
 
-    void test_bad_part()
-    {
-        xlnt::detail::template_part bad_part;
-        xlnt::detail::format_code bad_code;
-        bad_code.parts.push_back(bad_part);
-        xlnt::detail::number_formatter formatter("", xlnt::calendar::windows_1900);
-        formatter.format_ = { bad_code };
-        TS_ASSERT_THROWS(formatter.format_number(1), std::runtime_error);
-    }
-
     void test_conditional_format()
     {
         xlnt::number_format nf;
@@ -487,7 +476,53 @@ public:
         formatted = nf.format(6, xlnt::calendar::windows_1900);
         TS_ASSERT_EQUALS(formatted, "a---------b");
     }
-    
+
+    void test_placeholders_zero()
+    {
+        xlnt::number_format nf;
+        nf.set_format_string("00");
+        auto formatted = nf.format(6, xlnt::calendar::windows_1900);
+        TS_ASSERT_EQUALS(formatted, "06");
+
+        nf.set_format_string("00");
+        formatted = nf.format(63, xlnt::calendar::windows_1900);
+        TS_ASSERT_EQUALS(formatted, "63");
+    }
+
+    void test_placeholders_space()
+    {
+        xlnt::number_format nf;
+        nf.set_format_string("?0");
+        auto formatted = nf.format(6, xlnt::calendar::windows_1900);
+        TS_ASSERT_EQUALS(formatted, " 6");
+
+        nf.set_format_string("?0");
+        formatted = nf.format(63, xlnt::calendar::windows_1900);
+        TS_ASSERT_EQUALS(formatted, "63");
+
+        nf.set_format_string("?0");
+        formatted = nf.format(637, xlnt::calendar::windows_1900);
+        TS_ASSERT_EQUALS(formatted, "637");
+
+        nf.set_format_string("0.?");
+        formatted = nf.format(6, xlnt::calendar::windows_1900);
+        TS_ASSERT_EQUALS(formatted, "6. ");
+
+        nf.set_format_string("0.0?");
+        formatted = nf.format(6.3, xlnt::calendar::windows_1900);
+        TS_ASSERT_EQUALS(formatted, "6.3 ");
+        formatted = nf.format(6.34, xlnt::calendar::windows_1900);
+        TS_ASSERT_EQUALS(formatted, "6.34");
+    }
+
+    void test_scientific()
+    {
+        xlnt::number_format nf;
+        nf.set_format_string("0E-0");
+        auto formatted = nf.format(6.1, xlnt::calendar::windows_1900);
+        TS_ASSERT_EQUALS(formatted, "6.1E0");
+    }
+
     void test_locale_currency()
     {
         xlnt::number_format nf;
@@ -625,14 +660,6 @@ public:
 
         nf.set_format_string("A/");
         TS_ASSERT_THROWS(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
-    }
-
-    void test_none_condition()
-    {
-        xlnt::detail::format_condition f;
-        f.type = xlnt::detail::format_condition::condition_type::none;
-        f.value = 3;
-        TS_ASSERT(!f.satisfied_by(3));
     }
 
     void format_and_test(const xlnt::number_format &nf, const std::array<std::string, 4> &expect)

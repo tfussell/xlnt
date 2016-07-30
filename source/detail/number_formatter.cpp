@@ -160,8 +160,6 @@ bool format_condition::satisfied_by(long double number) const
         return number < value;
     case condition_type::not_equal:
         return number != value;
-    default:
-        return false;
     }
 }
 
@@ -199,24 +197,26 @@ void number_format_parser::parse()
             break;
 
         case number_format_token::token_type::color:
-            if (section.color != format_color::none
-                || section.condition.type != format_condition::condition_type::none
-                || section.locale != format_locale::none
+            if (section.has_color
+                || section.has_condition
+                || section.has_locale
                 || !section.parts.empty())
             {
                 throw std::runtime_error("color should be the first part of a format");
             }
 
+            section.has_color = true;
             section.color = color_from_string(token.string);
             break;
 
         case number_format_token::token_type::locale:
         {
-            if (section.locale != format_locale::none)
+            if (section.has_locale)
             {
                 throw std::runtime_error("multiple locales");
             }
 
+            section.has_locale = true;
             auto parsed_locale = locale_from_string(token.string);
             section.locale = parsed_locale.first;
 
@@ -233,11 +233,12 @@ void number_format_parser::parse()
 
         case number_format_token::token_type::condition:
         {
-            if (section.condition.type != format_condition::condition_type::none)
+            if (section.has_condition)
             {
                 throw std::runtime_error("multiple conditions");
             }
 
+            section.has_condition = true;
             std::string value;
 
             if (token.string.front() == '<')
@@ -439,9 +440,6 @@ void number_format_parser::parse()
             finalize();
 
             return;
-            
-        default:
-            break;
         }
 
         token = parse_next_token();
@@ -524,6 +522,7 @@ void number_format_parser::finalize()
                 fractional_seconds = true;
             }
 
+            //TODO this block needs improvement
             if (part.type == template_part::template_type::month_number
                 || part.type == template_part::template_type::month_number_leading_zero)
             {
@@ -552,8 +551,8 @@ void number_format_parser::finalize()
 
                     if (previous.type == template_part::template_type::text
                         && previous.string == ":"
-                        && (before_previous.type == template_part::template_type::hour ||
-                            before_previous.type == template_part::template_type::hour_leading_zero))
+                        && (before_previous.type == template_part::template_type::hour_leading_zero
+                        || before_previous.type == template_part::template_type::hour))
                     {
                         fix = true;
                         leading_zero = part.type == template_part::template_type::month_number_leading_zero;
@@ -848,9 +847,9 @@ void number_format_parser::validate()
 
     if (codes_.size() > 2)
     {
-        if (codes_[0].condition.type != format_condition::condition_type::none &&
-            codes_[1].condition.type != format_condition::condition_type::none &&
-            codes_[2].condition.type != format_condition::condition_type::none)
+        if (codes_[0].has_condition
+            && codes_[1].has_condition
+            && codes_[2].has_condition)
         {
             throw std::runtime_error("format should have a maximum of two codes with conditions");
         }
@@ -1045,7 +1044,7 @@ number_formatter::number_formatter(const std::string &format_string, xlnt::calen
 
 std::string number_formatter::format_number(long double number)
 {
-    if (format_[0].condition.type != format_condition::condition_type::none)
+    if (format_[0].has_condition)
     {
         if (format_[0].condition.satisfied_by(number))
         {
@@ -1057,7 +1056,7 @@ std::string number_formatter::format_number(long double number)
             return std::string(11, '#');
         }
         
-        if (format_[1].condition.type == format_condition::condition_type::none
+        if (!format_[1].has_condition
             || format_[1].condition.satisfied_by(number))
         {
             return format_number(format_[1], number);
@@ -1125,10 +1124,12 @@ std::string number_formatter::format_text(const std::string &text)
 
 std::string number_formatter::fill_placeholders(const format_placeholders &p, long double number)
 {
+    std::string result;
+
     if (p.type == format_placeholders::placeholders_type::general
         || p.type == format_placeholders::placeholders_type::text)
     {
-        auto result = std::to_string(number);
+        result = std::to_string(number);
 
         while (result.back() == '0')
         {
@@ -1155,13 +1156,11 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, lo
 
     auto integer_part = static_cast<int>(number);
 
-    switch (p.type)
+    if (p.type == format_placeholders::placeholders_type::integer_only
+        || p.type == format_placeholders::placeholders_type::integer_part
+        || p.type == format_placeholders::placeholders_type::fraction_integer)
     {
-    case format_placeholders::placeholders_type::integer_only:
-    case format_placeholders::placeholders_type::integer_part:
-    case format_placeholders::placeholders_type::fraction_integer:
-    {
-        auto result = std::to_string(integer_part);
+        result = std::to_string(integer_part);
         
         while (result.size() < p.num_zeros)
         {
@@ -1195,16 +1194,13 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, lo
         {
             result.push_back('%');
         }
-
-        return result;
     }
-
-    case format_placeholders::placeholders_type::fractional_part:
+    else if (p.type == format_placeholders::placeholders_type::fractional_part)
     {
         auto fractional_part = number - integer_part;
-        auto result = fractional_part == 0 ? std::string(".") : std::to_string(fractional_part).substr(1);
+        result = fractional_part == 0 ? std::string(".") : std::to_string(fractional_part).substr(1);
 
-        while (result.back() == '0' || result.size() > (p.num_zeros + p.num_optionals + 1))
+        while (result.back() == '0' || result.size() > (p.num_zeros + p.num_optionals + p.num_spaces + 1))
         {
             result.pop_back();
         }
@@ -1214,7 +1210,7 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, lo
             result.push_back('0');
         }
 
-        while (result.size() < p.num_zeros + p.num_spaces + 1)
+        while (result.size() < p.num_zeros + p.num_optionals + p.num_spaces + 1)
         {
             result.push_back(' ');
         }
@@ -1223,13 +1219,9 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, lo
         {
             result.push_back('%');
         }
-
-        return result;
     }
 
-    default:
-        return "";
-    }
+    return result;
 }
 
 std::string number_formatter::fill_scientific_placeholders(const format_placeholders &integer_part,
@@ -1591,9 +1583,6 @@ std::string number_formatter::format_number(const format_code &format, long doub
         case template_part::template_type::day_name:
             result.append(day_names->at(dt.weekday() - 1));
             break;
-
-        case template_part::template_type::bad:
-            throw std::runtime_error("bad format");
         }
     }
     

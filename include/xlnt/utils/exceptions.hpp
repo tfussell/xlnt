@@ -64,15 +64,6 @@ public:
 };
 
 /// <summary>
-/// Exception for incorrectly formatted named ranges.
-/// </summary>
-class XLNT_CLASS invalid_named_range : public exception
-{
-public:
-    invalid_named_range();
-};
-
-/// <summary>
 /// Exception when a referenced number format is not in the stylesheet.
 /// </summary>
 class XLNT_CLASS missing_number_format : public exception

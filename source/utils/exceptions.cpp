@@ -52,11 +52,6 @@ invalid_data_type::invalid_data_type()
 {
 }
 
-invalid_named_range::invalid_named_range()
-    : exception("named range not found or not owned by this worksheet")
-{
-}
-
 invalid_file::invalid_file(const std::string &filename)
     : exception(std::string("couldn't open file: (") + filename + ")")
 {
