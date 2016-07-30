@@ -518,7 +518,7 @@ public:
     void test_scientific()
     {
         xlnt::number_format nf;
-        nf.set_format_string("0E-0");
+        nf.set_format_string("0.0E-0");
         auto formatted = nf.format(6.1, xlnt::calendar::windows_1900);
         TS_ASSERT_EQUALS(formatted, "6.1E0");
     }
