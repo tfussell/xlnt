@@ -148,8 +148,6 @@ bool format_condition::satisfied_by(long double number) const
 {
     switch (type)
     {
-    case condition_type::equal:
-        return number == value;
     case condition_type::greater_or_equal:
         return number >= value;
     case condition_type::greater_than:
@@ -160,6 +158,9 @@ bool format_condition::satisfied_by(long double number) const
         return number < value;
     case condition_type::not_equal:
         return number != value;
+	case condition_type::equal:
+	default:
+		return number == value;
     }
 }
 

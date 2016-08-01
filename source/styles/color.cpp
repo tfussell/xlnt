@@ -21,90 +21,100 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#include <stdexcept>
 
 #include <xlnt/styles/color.hpp>
+#include <xlnt/utils/exceptions.hpp>
 
 namespace xlnt {
 
+indexed_color::indexed_color(std::size_t index) : index_(index)
+{
+}
+
+theme_color::theme_color(std::size_t index) : index_(index)
+{
+}
+
 const color color::black()
 {
-    return color(color::type::rgb, "ff000000");
+    return color(rgb_color("ff000000"));
 }
 
 const color color::white()
 {
-    return color(color::type::rgb, "ffffffff");
+    return color(rgb_color("ffffffff"));
 }
 
 const color color::red()
 {
-    return color(color::type::rgb, "ffff0000");
+    return color(rgb_color("ffff0000"));
 }
 
 const color color::darkred()
 {
-    return color(color::type::rgb, "ff8b0000");
+    return color(rgb_color("ff8b0000"));
 }
 
 const color color::blue()
 {
-    return color(color::type::rgb, "ff0000ff");
+    return color(rgb_color("ff0000ff"));
 }
 
 const color color::darkblue()
 {
-    return color(color::type::rgb, "ff00008b");
+    return color(rgb_color("ff00008b"));
 }
 
 const color color::green()
 {
-    return color(color::type::rgb, "ff00ff00");
+    return color(rgb_color("ff00ff00"));
 }
 
 const color color::darkgreen()
 {
-    return color(color::type::rgb, "ff008b00");
+    return color(rgb_color("ff008b00"));
 }
 
 const color color::yellow()
 {
-    return color(color::type::rgb, "ffffff00");
+    return color(rgb_color("ffffff00"));
 }
 
 const color color::darkyellow()
 {
-    return color(color::type::rgb, "ffcccc00");
+    return color(rgb_color("ffcccc00"));
 }
 
 color::color()
+    : type_(type::auto_),
+      rgb_(rgb_color(0, 0, 0, 0)),
+      indexed_(0),
+      theme_(0)
 {
 }
 
-color::color(type t, std::size_t v) : type_(t), index_(v)
+color::color(const rgb_color &rgb)
+	: type_(type::rgb),
+	  rgb_(rgb),
+	  indexed_(0),
+	  theme_(0)
 {
 }
 
-color::color(type t, const std::string &v) : type_(t), rgb_string_(v)
+color::color(const indexed_color &indexed)
+	: type_(type::indexed),
+      rgb_(rgb_color(0, 0, 0, 0)),
+      indexed_(indexed),
+      theme_(0)
 {
 }
 
-void color::set_auto(std::size_t auto_index)
+color::color(const theme_color &theme)
+	: type_(type::theme),
+      rgb_(rgb_color(0, 0, 0, 0)),
+      indexed_(0),
+      theme_(theme)
 {
-    type_ = type::auto_;
-    index_ = auto_index;
-}
-
-void color::set_index(std::size_t index)
-{
-    type_ = type::indexed;
-    index_ = index;
-}
-
-void color::set_theme(std::size_t theme)
-{
-    type_ = type::theme;
-    index_ = theme;
 }
 
 color::type color::get_type() const
@@ -112,44 +122,82 @@ color::type color::get_type() const
     return type_;
 }
 
-std::size_t color::get_auto() const
+bool color::is_auto() const
 {
-    if (type_ != type::auto_)
-    {
-        throw std::runtime_error("not auto color");
-    }
-
-    return index_;
+	return type_ == type::auto_;
 }
 
-std::size_t color::get_index() const
+const indexed_color &color::get_indexed() const
 {
-    if (type_ != type::indexed)
-    {
-        throw std::runtime_error("not indexed color");
-    }
-
-    return index_;
+	assert_type(type::indexed);
+	return indexed_;
 }
 
-std::size_t color::get_theme() const
+const theme_color &color::get_theme() const
 {
-    if (type_ != type::theme)
-    {
-        throw std::runtime_error("not theme color");
-    }
-
-    return index_;
+	assert_type(type::theme);
+	return theme_;
 }
 
-std::string color::get_rgb_string() const
+std::string rgb_color::get_hex_string() const
 {
-    if (type_ != type::rgb)
-    {
-        throw std::runtime_error("not rgb color");
-    }
+	static const char* digits = "0123456789abcdef";
+	std::string hex_string(8, '0');
+	auto out_iter = hex_string.begin();
 
-    return rgb_string_;
+	for (auto byte : { rgba_[3], rgba_[0], rgba_[1], rgba_[2] })
+	{
+		for (auto i = 0; i < 2; ++i)
+		{
+			auto nibble = byte >> (4 * (1 - i)) & 0xf;
+			*(out_iter++) = digits[nibble];
+		}
+	}
+
+	return hex_string;
+}
+
+std::array<std::uint8_t, 4> rgb_color::decode_hex_string(const std::string &hex_string)
+{
+	auto x = strtoul(hex_string.c_str(), NULL, 16);
+
+	auto a = static_cast<std::uint8_t>(x >> 24);
+	auto r = static_cast<std::uint8_t>((x >> 16) & 0xff);
+	auto g = static_cast<std::uint8_t>((x >> 8) & 0xff);
+	auto b = static_cast<std::uint8_t>(x & 0xff);
+
+	return { r, g, b, a };
+}
+
+rgb_color::rgb_color(const std::string &hex_string)
+	: rgba_(decode_hex_string(hex_string))
+{
+}
+
+rgb_color::rgb_color(std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint8_t a)
+	: rgba_({r, g, b, a})
+{
+}
+
+std::size_t indexed_color::get_index() const
+{
+	return index_;
+}
+
+std::size_t theme_color::get_index() const
+{
+	return index_;
+}
+
+const rgb_color &color::get_rgb() const
+{
+	assert_type(type::rgb);
+	return rgb_;
+}
+
+void color::set_tint(double tint)
+{
+	tint_ = tint;
 }
 
 std::string color::to_hash_string() const
@@ -157,17 +205,33 @@ std::string color::to_hash_string() const
     std::string hash_string = "color";
     
     hash_string.append(std::to_string(static_cast<std::size_t>(type_)));
+	hash_string.append(std::to_string(static_cast<double>(tint_)));
 
-    if (type_ != type::rgb)
-    {
-        hash_string.append(std::to_string(index_));
-    }
-    else
-    {
-        hash_string.append(rgb_string_);
-    }
+	if (type_ == type::indexed)
+	{
+		hash_string.append("indexed");
+		hash_string.append(std::to_string(indexed_.get_index()));
+	}
+	else if (type_ == type::theme)
+	{
+		hash_string.append("theme");
+		hash_string.append(std::to_string(theme_.get_index()));
+	}
+	else if (type_ == type::rgb)
+	{
+		hash_string.append("rgb");
+		hash_string.append(rgb_.get_hex_string());
+	}
 
     return hash_string;
+}
+
+void color::assert_type(type t) const
+{
+	if (t != type_)
+	{
+		throw invalid_attribute();
+	}
 }
 
 } // namespace xlnt

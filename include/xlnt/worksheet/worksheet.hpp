@@ -72,7 +72,6 @@ public:
 
     worksheet();
     worksheet(const worksheet &rhs);
-    worksheet(workbook &parent_workbook, const std::string &title = std::string());
 
     std::string to_string() const;
     workbook &get_workbook();
@@ -85,7 +84,6 @@ public:
 
     std::string get_title() const;
     void set_title(const std::string &title);
-    std::string make_unique_sheet_name(const std::string &value);
 
     // freeze panes
     cell_reference get_frozen_panes() const;
@@ -102,8 +100,6 @@ public:
     range get_range(const range_reference &reference);
     const range get_range(const std::string &reference_string) const;
     const range get_range(const range_reference &reference) const;
-    range get_squared_range(column_t min_col, row_t min_row, column_t max_col, row_t max_row);
-    const range get_squared_range(column_t min_col, row_t min_row, column_t max_col, row_t max_row) const;
     range rows() const;
     range rows(const std::string &range_string) const;
     range rows(int row_offset, int column_offset) const;

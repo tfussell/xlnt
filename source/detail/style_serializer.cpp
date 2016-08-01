@@ -104,10 +104,10 @@ const std::unordered_map<std::string, xlnt::font::underline_style> &get_string_u
         map = new std::unordered_map<std::string, xlnt::font::underline_style>
         {
             { "double", xlnt::font::underline_style::double_ },
-            { "double-accounting", xlnt::font::underline_style::double_accounting },
+            { "doubleAccounting", xlnt::font::underline_style::double_accounting },
             { "none", xlnt::font::underline_style::none },
             { "single", xlnt::font::underline_style::single },
-            { "single-accounting", xlnt::font::underline_style::single_accounting }
+            { "singleAccounting", xlnt::font::underline_style::single_accounting }
         };
     }
     
@@ -133,7 +133,7 @@ const std::unordered_map<xlnt::font::underline_style, std::string, EnumClassHash
 
 xlnt::font::underline_style underline_style_from_string(const std::string &underline_string)
 {
-    return get_string_underline_style_map().at(string_lower(underline_string));
+    return get_string_underline_style_map().at(underline_string);
 }
 
 std::string underline_style_to_string(xlnt::font::underline_style underline_style)
@@ -413,23 +413,8 @@ xlnt::protection read_protection(const pugi::xml_node protection_node)
 {
     xlnt::protection prot;
 
-    if (is_true(protection_node.attribute("locked").value()))
-    {
-        prot.set_locked(true);
-    }
-    else if (!is_false(protection_node.attribute("locked").value()))
-    {
-        throw std::runtime_error("bad protection value");
-    }
-
-    if (is_true(protection_node.attribute("hidden").value()))
-    {
-        prot.set_hidden(true);
-    }
-    else if (!is_false(protection_node.attribute("hidden").value()))
-    {
-        throw std::runtime_error("bad protection value");
-    }
+    prot.set_locked(is_true(protection_node.attribute("locked").value()));
+    prot.set_hidden(is_true(protection_node.attribute("hidden").value()));
 
     return prot;
 }
@@ -480,24 +465,32 @@ void read_number_formats(const pugi::xml_node number_formats_node, std::vector<x
 
 xlnt::color read_color(const pugi::xml_node &color_node)
 {
+	xlnt::color result;
+
+	if (color_node.attribute("auto"))
+	{
+		return result;
+	}
+
     if (color_node.attribute("rgb"))
     {
-        return xlnt::color(xlnt::color::type::rgb, color_node.attribute("rgb").value());
+		result = xlnt::rgb_color(color_node.attribute("rgb").value());
     }
     else if (color_node.attribute("theme"))
     {
-        return xlnt::color(xlnt::color::type::theme, string_to_size_t(color_node.attribute("theme").value()));
+        result = xlnt::theme_color(string_to_size_t(color_node.attribute("theme").value()));
     }
     else if (color_node.attribute("indexed"))
     {
-        return xlnt::color(xlnt::color::type::indexed, string_to_size_t(color_node.attribute("indexed").value()));
-    }
-    else if (color_node.attribute("auto"))
-    {
-        return xlnt::color(xlnt::color::type::auto_, string_to_size_t(color_node.attribute("auto").value()));
+        result = xlnt::indexed_color(string_to_size_t(color_node.attribute("indexed").value()));
     }
 
-    throw std::runtime_error("bad color");
+	if (color_node.attribute("tint"))
+	{
+		result.set_tint(color_node.attribute("tint").as_double());
+	}
+
+	return result;
 }
 
 xlnt::font read_font(const pugi::xml_node font_node)
@@ -667,18 +660,18 @@ void read_fills(const pugi::xml_node &fills_node, std::vector<xlnt::fill> &fills
     }
 }
 
-xlnt::side read_side(const pugi::xml_node &side_node)
+xlnt::border::border_property read_side(const pugi::xml_node &side_node)
 {
-    xlnt::side new_side;
+    xlnt::border::border_property new_side;
 
     if (side_node.attribute("style"))
     {
-        new_side.get_border_style() = border_style_from_string(side_node.attribute("style").value());
+        new_side.set_style(border_style_from_string(side_node.attribute("style").value()));
     }
 
     if (side_node.child("color"))
     {
-        new_side.get_color() = read_color(side_node.child("color"));
+		new_side.set_color(read_color(side_node.child("color")));
     }
 
     return new_side;
@@ -688,52 +681,16 @@ xlnt::border read_border(const pugi::xml_node &border_node)
 {
     xlnt::border new_border;
 
-    if (border_node.child("start"))
-    {
-        new_border.get_start() = read_side(border_node.child("start"));
-    }
+	for (const auto &side_name : xlnt::border::get_side_names())
+	{
+		if (border_node.child(side_name.second.c_str()))
+		{
+			auto side = read_side(border_node.child(side_name.second.c_str()));
+			new_border.set_side(side_name.first, side);
+		}
+	}
 
-    if (border_node.child("end"))
-    {
-        new_border.get_end() = read_side(border_node.child("end"));
-    }
-
-    if (border_node.child("left"))
-    {
-        new_border.get_left() = read_side(border_node.child("left"));
-    }
-
-    if (border_node.child("right"))
-    {
-        new_border.get_right() = read_side(border_node.child("right"));
-    }
-
-    if (border_node.child("top"))
-    {
-        new_border.get_top() = read_side(border_node.child("top"));
-    }
-
-    if (border_node.child("bottom"))
-    {
-        new_border.get_bottom() = read_side(border_node.child("bottom"));
-    }
-
-    if (border_node.child("diagonal"))
-    {
-        new_border.get_diagonal() = read_side(border_node.child("diagonal"));
-    }
-
-    if (border_node.child("vertical"))
-    {
-        new_border.get_vertical() = read_side(border_node.child("vertical"));
-    }
-
-    if (border_node.child("horizontal"))
-    {
-        new_border.get_horizontal() = read_side(border_node.child("horizontal"));
-    }
-
-    return new_border;
+	return new_border;
 }
 
 void read_borders(const pugi::xml_node &borders_node, std::vector<xlnt::border> &borders)
@@ -822,19 +779,11 @@ void read_formats(const pugi::xml_node &formats_node, const xlnt::detail::styles
     {
         xlnt::format format;
         read_base_format(format_node, stylesheet, format);
-        
-        // TODO do all formats have xfId?
-        if(format_node.attribute("xfId"))
-        {
-            auto style_index = string_to_size_t(format_node.attribute("xfId").value());
-            auto style_name = stylesheet.style_name_map.at(style_index);
-            format_styles.push_back(style_name);
-        }
-        else
-        {
-            format_styles.push_back("");
-        }
-        
+
+        auto style_index = string_to_size_t(format_node.attribute("xfId").value());
+        auto style_name = stylesheet.style_name_map.at(style_index);
+        format_styles.push_back(style_name);
+
         formats.push_back(format);
     }
 }
@@ -882,20 +831,21 @@ bool write_color(const xlnt::color &color, pugi::xml_node color_node)
 {
     switch (color.get_type())
     {
-    case xlnt::color::type::auto_:
-        color_node.append_attribute("auto").set_value(std::to_string(color.get_auto()).c_str());
-        break;
     case xlnt::color::type::theme:
-        color_node.append_attribute("theme").set_value(std::to_string(color.get_theme()).c_str());
+        color_node.append_attribute("theme")
+			.set_value(std::to_string(color.get_theme().get_index()).c_str());
         break;
+
     case xlnt::color::type::indexed:
-        color_node.append_attribute("indexed").set_value(std::to_string(color.get_index()).c_str());
+        color_node.append_attribute("indexed")
+			.set_value(std::to_string(color.get_indexed().get_index()).c_str());
         break;
+
     case xlnt::color::type::rgb:
-        color_node.append_attribute("rgb").set_value(color.get_rgb_string().c_str());
+	default:
+        color_node.append_attribute("rgb")
+			.set_value(color.get_rgb().get_hex_string().c_str());
         break;
-    default:
-        throw std::runtime_error("bad type");
     }
     
     return true;
@@ -1039,37 +989,26 @@ bool write_borders(const std::vector<xlnt::border> &borders, pugi::xml_node &bor
     {
         auto border_node = borders_node.append_child("border");
 
-        std::vector<std::tuple<std::string, const std::experimental::optional<xlnt::side>>> sides;
-        
-        sides.push_back(std::make_tuple("start", border_.get_start()));
-        sides.push_back(std::make_tuple("end", border_.get_end()));
-        sides.push_back(std::make_tuple("left", border_.get_left()));
-        sides.push_back(std::make_tuple("right", border_.get_right()));
-        sides.push_back(std::make_tuple("top", border_.get_top()));
-        sides.push_back(std::make_tuple("bottom", border_.get_bottom()));
-        sides.push_back(std::make_tuple("diagonal", border_.get_diagonal()));
-        sides.push_back(std::make_tuple("vertical", border_.get_vertical()));
-        sides.push_back(std::make_tuple("horizontal", border_.get_horizontal()));
-
-        for (const auto &side_tuple : sides)
+        for (const auto &side_name : xlnt::border::get_side_names())
         {
-            std::string current_name = std::get<0>(side_tuple);
-            const auto current_side = std::get<1>(side_tuple);
+            const auto &current_name = side_name.second;
+            const auto &current_side_type = side_name.first;
 
-            if (current_side)
+            if (border_.has_side(current_side_type))
             {
                 auto side_node = border_node.append_child(current_name.c_str());
+				const auto &current_side = border_.get_side(current_side_type);
 
-                if (current_side->get_border_style())
+                if (current_side.has_style())
                 {
-                    auto style_string = border_style_to_string(*current_side->get_border_style());
+                    auto style_string = border_style_to_string(current_side.get_style());
                     side_node.append_attribute("style").set_value(style_string.c_str());
                 }
 
-                if (current_side->get_color())
+                if (current_side.has_color())
                 {
                     auto color_node = side_node.append_child("color");
-                    write_color(*current_side->get_color(), color_node);
+                    write_color(current_side.get_color(), color_node);
                 }
             }
         }
@@ -1219,7 +1158,9 @@ bool write_colors(const std::vector<xlnt::color> &colors, pugi::xml_node &colors
 
     for (auto &c : colors)
     {
-        indexed_colors_node.append_child("rgbColor").append_attribute("rgb").set_value(c.get_rgb_string().c_str());
+		auto rgb_color_node = indexed_colors_node.append_child("rgbColor");
+		auto rgb_attribute = rgb_color_node.append_attribute("rgb");
+		rgb_attribute.set_value(c.get_rgb().get_hex_string().c_str());
     }
     
     return true;

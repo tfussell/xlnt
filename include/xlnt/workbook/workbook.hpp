@@ -109,24 +109,54 @@ public:
 
     // general properties
 
+	/// <summary>
+	/// Returns true if guess_types is enabled for this workbook.
+	/// </summary>
     bool get_guess_types() const;
+
+	/// <summary>
+	/// Set to true to guess the type represented by a string set as the value
+	/// for a cell and then set the actual value of the cell to that type.
+	/// For example, cell.set_value("1") with guess_types enabled will set
+	/// type of the cell to numeric and it's value to the number 1.
+	/// </summary>
     void set_guess_types(bool guess);
 
+	/// <summary>
+	/// ?
+	/// </summary>
     bool get_data_only() const;
+
+	/// <summary>
+	/// ?
+	/// </summary>
     void set_data_only(bool data_only);
-    
-    bool get_read_only() const;
-    void set_read_only(bool read_only);
 
     // add worksheets
 
+	/// <summary>
+	/// Create a sheet after the last sheet in this workbook and return it.
+	/// </summary>
     worksheet create_sheet();
-    worksheet create_sheet(std::size_t index);
-    worksheet create_sheet(const std::string &title);
-    worksheet create_sheet(std::size_t index, const std::string &title);
-    worksheet create_sheet(const std::string &title, const relationship &rel);
 
+	/// <summary>
+	/// Create a sheet at the specified index and return it.
+	/// </summary>
+    worksheet create_sheet(std::size_t index);
+
+	/// <summary>
+	/// This should be private...
+	/// </summary>
+    worksheet create_sheet_with_rel(const std::string &title, const relationship &rel);
+
+	/// <summary>
+	/// Create a new sheet initializing it with all of the data from the provided worksheet.
+	/// </summary>
     void copy_sheet(worksheet worksheet);
+
+	/// <summary>
+	/// Create a new sheet at the specified index initializing it with all of the data
+	/// from the provided worksheet.
     void copy_sheet(worksheet worksheet, std::size_t index);
 
     // get worksheets
@@ -175,30 +205,97 @@ public:
 
     // remove worksheets
 
+	/// <summary>
+	/// Remove the given worksheet from this workbook.
+	/// </summary>
     void remove_sheet(worksheet worksheet);
+
+	/// <summary>
+	/// Delete every cell in this worksheet. After this is called, the
+	/// worksheet will be equivalent to a newly created sheet at the same
+	/// index and with the same title.
+	/// </summary>
     void clear();
 
     // iterators
 
+	/// <summary>
+	/// Returns an iterator to the first worksheet in this workbook.
+	/// </summary>
     iterator begin();
+
+	/// <summary>
+	/// Returns an iterator to the worksheet following the last worksheet of the workbook.
+	/// This worksheet acts as a placeholder; attempting to access it will cause an 
+	/// exception to be thrown.
+	/// </summary>
     iterator end();
 
+	/// <summary>
+	/// Returns a const iterator to the first worksheet in this workbook.
+	/// </summary>
     const_iterator begin() const;
+
+	/// <summary>
+	/// Returns a const iterator to the worksheet following the last worksheet of the workbook.
+	/// This worksheet acts as a placeholder; attempting to access it will cause an 
+	/// exception to be thrown.
+	/// </summary>
     const_iterator end() const;
 
+	/// <summary>
+	/// Returns an iterator to the first worksheet in this workbook.
+	/// </summary>
     const_iterator cbegin() const;
+
+	/// <summary>
+	/// Returns a const iterator to the worksheet following the last worksheet of the workbook.
+	/// This worksheet acts as a placeholder; attempting to access it will cause an 
+	/// exception to be thrown.
+	/// </summary>
     const_iterator cend() const;
     
+	/// <summary>
+	/// Returns a reverse iterator to the last worksheet in this workbook.
+	/// </summary>
     reverse_iterator rbegin();
+
+	/// <summary>
+	/// Returns an iterator to the worksheet preceeding the first worksheet of the workbook.
+	/// This worksheet acts as a placeholder; attempting to access it will cause an 
+	/// exception to be thrown.
+	/// </summary>
     reverse_iterator rend();
 
+	/// <summary>
+	/// Returns a const reverse iterator to the last worksheet in this workbook.
+	/// </summary>
     const_reverse_iterator rbegin() const;
+
+	/// <summary>
+	/// Returns a const reverse iterator to the worksheet preceeding the first worksheet of the workbook.
+	/// This worksheet acts as a placeholder; attempting to access it will cause an 
+	/// exception to be thrown.
+	/// </summary>
     const_reverse_iterator rend() const;
 
+	/// <summary>
+	/// Returns a const reverse iterator to the last worksheet in this workbook.
+	/// </summary>
     const_reverse_iterator crbegin() const;
+
+	/// <summary>
+	/// Returns a const reverse iterator to the worksheet preceeding the first worksheet of the workbook.
+	/// This worksheet acts as a placeholder; attempting to access it will cause an 
+	/// exception to be thrown.
+	/// </summary>
     const_reverse_iterator crend() const;
 
-    std::vector<std::string> get_sheet_names() const;
+	/// <summary>
+	/// Returns a temporary vector containing the titles of each sheet in the order
+	/// of the sheets in the workbook.
+	/// </summary>
+    std::vector<std::string> get_sheet_titles() const;
 
     document_properties &get_properties();
     const document_properties &get_properties() const;
@@ -308,12 +405,7 @@ public:
 
 private:
     friend class excel_serializer;
-    friend class worksheet;
-
-    /// <summary>
-    /// Helper function to calculate an index from a worksheet filename.
-    /// </summary>
-    static std::size_t index_from_ws_filename(const std::string &filename);
+	friend class worksheet;
 
     /// <summary>
     /// Get the name of the next unused relationship.

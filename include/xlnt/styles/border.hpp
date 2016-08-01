@@ -25,12 +25,14 @@
 
 #include <cstddef>
 #include <functional>
+#include <unordered_map>
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/styles/border_style.hpp>
+#include <xlnt/styles/color.hpp>
 #include <xlnt/styles/diagonal_direction.hpp>
 #include <xlnt/styles/side.hpp>
 #include <xlnt/utils/hashable.hpp>
-#include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 
@@ -40,46 +42,54 @@ namespace xlnt {
 class XLNT_CLASS border : public hashable
 {
 public:
-    static border default_border();
+	enum class XLNT_CLASS side
+	{
+		start,
+		end,
+		top,
+		bottom,
+		diagonal,
+		vertical,
+		horizontal
+	};
 
-    std::experimental::optional<side> &get_start();
-    const std::experimental::optional<side> &get_start() const;
-    std::experimental::optional<side> &get_end();
-    const std::experimental::optional<side> &get_end() const;
-    std::experimental::optional<side> &get_left();
-    const std::experimental::optional<side> &get_left() const;
-    std::experimental::optional<side> &get_right();
-    const std::experimental::optional<side> &get_right() const;
-    std::experimental::optional<side> &get_top();
-    const std::experimental::optional<side> &get_top() const;
-    std::experimental::optional<side> &get_bottom();
-    const std::experimental::optional<side> &get_bottom() const;
-    std::experimental::optional<side> &get_diagonal();
-    const std::experimental::optional<side> &get_diagonal() const;
-    std::experimental::optional<side> &get_vertical();
-    const std::experimental::optional<side> &get_vertical() const;
-    std::experimental::optional<side> &get_horizontal();
-    const std::experimental::optional<side> &get_horizontal() const;
+	class XLNT_CLASS border_property
+	{
+	public:
+		bool has_color() const;
+		const color &get_color() const;
+		void set_color(const color &c);
+
+		bool has_style() const;
+		border_style get_style() const;
+		void set_style(border_style style);
+
+	private:
+		bool has_color_ = false;
+		color color_ = color::black();
+
+		bool has_style_ = false;
+		border_style style_;
+	};
+
+    static border default();
+
+	static const std::unordered_map<side, std::string> &get_side_names();
+
+	border();
+
+	bool has_side(side s) const;
+	border_property &get_side(side s);
+	const border_property &get_side(side s) const;
+	void set_side(side s, const border_property &prop);
 
 protected:
     std::string to_hash_string() const override;
 
 private:
-    std::experimental::optional<side> start_;
-    std::experimental::optional<side> end_;
-    std::experimental::optional<side> left_ = side();
-    std::experimental::optional<side> right_ = side();
-    std::experimental::optional<side> top_ = side();
-    std::experimental::optional<side> bottom_ = side();
-    std::experimental::optional<side> diagonal_ = side();
-    std::experimental::optional<side> vertical_;
-    std::experimental::optional<side> horizontal_;
-
-    bool outline_ = false;
-    bool diagonal_up_ = false;
-    bool diagonal_down_ = false;
-
-    diagonal_direction diagonal_direction_ = diagonal_direction::none;
+	std::unordered_map<side, border_property> sides_;
+    bool outline_ = true;
+    diagonal_direction diagonal_direction_ = diagonal_direction::neither;
 };
 
 } // namespace xlnt

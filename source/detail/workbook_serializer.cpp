@@ -217,11 +217,11 @@ void workbook_serializer::write_properties_app(pugi::xml_document &xml) const
     heading_pairs_vector_node.append_child("vt:variant").append_child("vt:lpstr").text().set("Worksheets");
     heading_pairs_vector_node.append_child("vt:variant")
         .append_child("vt:i4")
-        .text().set(std::to_string(workbook_.get_sheet_names().size()).c_str());
+        .text().set(std::to_string(workbook_.get_sheet_titles().size()).c_str());
 
     auto titles_of_parts_node = root_node.append_child("TitlesOfParts");
     auto titles_of_parts_vector_node = titles_of_parts_node.append_child("vt:vector");
-    titles_of_parts_vector_node.append_attribute("size").set_value(std::to_string(workbook_.get_sheet_names().size()).c_str());
+    titles_of_parts_vector_node.append_attribute("size").set_value(std::to_string(workbook_.get_sheet_titles().size()).c_str());
     titles_of_parts_vector_node.append_attribute("baseType").set_value("lpstr");
 
     for (auto ws : workbook_)

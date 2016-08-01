@@ -70,7 +70,7 @@ workbook_impl::workbook_impl()
 
 workbook::workbook() : d_(new detail::workbook_impl())
 {
-    create_sheet("Sheet");
+	create_sheet();
     
     create_relationship("rId2", "styles.xml", relationship::type::styles);
     create_relationship("rId3", "theme/theme1.xml", relationship::type::theme);
@@ -327,68 +327,7 @@ worksheet workbook::create_sheet(std::size_t index)
     return worksheet(&d_->worksheets_[index]);
 }
 
-// TODO: There should be a better way to do this...
-std::size_t workbook::index_from_ws_filename(const std::string &ws_filename)
-{
-    std::string sheet_index_string(ws_filename);
-    sheet_index_string = sheet_index_string.substr(0, sheet_index_string.find('.'));
-    sheet_index_string = sheet_index_string.substr(sheet_index_string.find_last_of('/'));
-    auto iter = sheet_index_string.end();
-    iter--;
-    while (isdigit(*iter))
-        iter--;
-    auto first_digit = static_cast<std::size_t>(iter - sheet_index_string.begin());
-    sheet_index_string = sheet_index_string.substr(first_digit + 1);
-    auto sheet_index = static_cast<std::size_t>(std::stoll(sheet_index_string) - 1);
-    return sheet_index;
-}
-
-worksheet workbook::create_sheet(std::size_t index, const std::string &title)
-{
-    auto ws = create_sheet(index);
-    ws.set_title(title);
-
-    return ws;
-}
-
-worksheet workbook::create_sheet(const std::string &title)
-{
-    if (title.length() > 31)
-    {
-        throw invalid_sheet_title(title);
-    }
-
-    if (std::find_if(title.begin(), title.end(), [](char c) {
-            return c == '*' || c == ':' || c == '/' || c == '\\' || c == '?' || c == '[' || c == ']';
-        }) != title.end())
-    {
-        throw invalid_sheet_title(title);
-    }
-
-    std::string unique_title = title;
-
-    if (std::find_if(d_->worksheets_.begin(), d_->worksheets_.end(), [&](detail::worksheet_impl &ws) {
-            return worksheet(&ws).get_title() == unique_title;
-        }) != d_->worksheets_.end())
-    {
-        std::size_t suffix = 1;
-
-        while (std::find_if(d_->worksheets_.begin(), d_->worksheets_.end(), [&](detail::worksheet_impl &ws) {
-                   return worksheet(&ws).get_title() == unique_title;
-               }) != d_->worksheets_.end())
-        {
-            unique_title = title + std::to_string(suffix);
-            suffix++;
-        }
-    }
-
-    auto ws = create_sheet();
-    ws.set_title(unique_title);
-
-    return ws;
-}
-
-worksheet workbook::create_sheet(const std::string &title, const relationship &rel)
+worksheet workbook::create_sheet_with_rel(const std::string &title, const relationship &rel)
 {
     auto sheet_id = d_->worksheets_.size() + 1;
     d_->worksheets_.push_back(detail::worksheet_impl(this, sheet_id, title));
@@ -426,7 +365,7 @@ workbook::const_iterator workbook::cend() const
     return const_iterator(*this, d_->worksheets_.size());
 }
 
-std::vector<std::string> workbook::get_sheet_names() const
+std::vector<std::string> workbook::get_sheet_titles() const
 {
     std::vector<std::string> names;
 

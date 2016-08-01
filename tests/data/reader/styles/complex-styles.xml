@@ -9,7 +9,7 @@
       <scheme val="minor"/>
     </font>
     <font>
-      <u/>
+      <u val="doubleAccounting"/>
       <sz val="12"/>
       <color theme="10"/>
       <name val="Calibri"/>
@@ -25,7 +25,9 @@
       <scheme val="minor"/>
     </font>
     <font>
-      <b/>
+      <b val="0"/>
+      <strike val="0"/>
+      <i val="0"/>
       <sz val="12"/>
       <color theme="1"/>
       <name val="Arial"/>

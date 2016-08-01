@@ -7,6 +7,7 @@
 #include <xlnt/worksheet/header.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
+#include <xlnt/workbook/workbook.hpp>
 
 class test_worksheet : public CxxTest::TestSuite
 {
@@ -14,14 +15,14 @@ public:
     void test_new_worksheet()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         TS_ASSERT(ws.get_workbook() == wb);
     }
     
     void test_get_cell()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
         TS_ASSERT_EQUALS(cell.get_reference(), "A1");
     }
@@ -29,48 +30,18 @@ public:
     void test_invalid_cell()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         TS_ASSERT_THROWS(xlnt::cell_reference invalid(xlnt::column_t((xlnt::column_t::index_t)0), 0), xlnt::invalid_cell_reference);
     }
     
     void test_worksheet_dimension()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         
         TS_ASSERT_EQUALS("A1:A1", ws.calculate_dimension());
         ws.get_cell("B12").set_value("AAA");
         TS_ASSERT_EQUALS("B12:B12", ws.calculate_dimension());
-    }
-    
-    void test_squared_range()
-    {
-        xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
-        
-        const std::vector<std::vector<std::string>> expected =
-        {
-            { "A1", "B1", "C1" },
-            { "A2", "B2", "C2" },
-            { "A3", "B3", "C3" },
-            { "A4", "B4", "C4" }
-        };
-        
-        auto rows = ws.get_squared_range(1, 1, 3, 4);
-        auto expected_row_iter = expected.begin();
-        
-        for(auto row : rows)
-        {
-            auto expected_cell_iter = (*expected_row_iter).begin();
-            
-            for(auto cell : row)
-            {
-                TS_ASSERT_EQUALS(cell.get_reference(), *expected_cell_iter);
-                expected_cell_iter++;
-            }
-            
-            expected_row_iter++;
-        }
     }
     
     void test_fill_rows()
@@ -80,7 +51,7 @@ public:
         std::string coordinate = "A1";
         
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         
         ws.get_cell("A1").set_value("first");
         ws.get_cell("C9").set_value("last");
@@ -98,7 +69,7 @@ public:
     void test_iter_rows()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         
         const std::vector<std::vector<std::string>> expected =
         {
@@ -128,7 +99,7 @@ public:
     void test_iter_rows_offset()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         auto rows = ws.rows("A1:C4", 1, 3);
         
         const std::vector<std::vector<std::string>> expected =
@@ -158,7 +129,7 @@ public:
     void test_iter_rows_offset_int_int()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         auto rows = ws.rows(1, 3);
 
         const std::vector<std::vector<std::string>> expected =
@@ -188,7 +159,7 @@ public:
     void test_get_named_range()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         wb.create_named_range("test_range", ws, "C5");
         auto xlrange = ws.get_named_range("test_range");
         TS_ASSERT_EQUALS(1, xlrange.length());
@@ -205,7 +176,7 @@ public:
     void test_get_bad_named_range()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         TS_ASSERT_THROWS(ws.get_named_range("bad_range"), xlnt::key_not_found);
     }
     
@@ -223,14 +194,14 @@ public:
     void test_remove_named_range_bad()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         TS_ASSERT_THROWS(ws.remove_named_range("bad_range"), std::runtime_error);
     }
 
     void test_cell_alternate_coordinates()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         auto cell = ws.get_cell(xlnt::cell_reference(4, 8));
         TS_ASSERT_EQUALS(cell.get_reference(), "D8");
     }
@@ -252,7 +223,7 @@ public:
     void test_hyperlink_value()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         ws.get_cell("A1").set_hyperlink("http://test.com");
         TS_ASSERT_EQUALS("http://test.com", ws.get_cell("A1").get_value<std::string>());
         ws.get_cell("A1").set_value("test");
@@ -263,7 +234,7 @@ public:
     void test_append()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+		auto ws = wb.get_active_sheet();
         ws.append(std::vector<std::string> {"value"});
         TS_ASSERT_EQUALS("value", ws.get_cell("A1").get_value<std::string>());
     }
@@ -271,7 +242,7 @@ public:
     void test_append_list()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+		auto ws = wb.get_active_sheet();
         
         ws.append(std::vector<std::string> {"This is A1", "This is B1"});
         
@@ -282,7 +253,7 @@ public:
     void test_append_dict_letter()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+		auto ws = wb.get_active_sheet();
         
         const std::unordered_map<std::string, std::string> dict_letter =
         {
@@ -299,7 +270,7 @@ public:
     void test_append_dict_index()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+		auto ws = wb.get_active_sheet();
         
         const std::unordered_map<int, std::string> dict_index =
         {
@@ -313,10 +284,6 @@ public:
         TS_ASSERT_EQUALS("This is C1", ws.get_cell("C1").get_value<std::string>());
     }
     
-    // void test_bad_append() {}
-    
-    // void test_append_range() {}
-    
     void test_append_iterator()
     {
         std::vector<int> range;
@@ -327,7 +294,7 @@ public:
         }
         
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+		auto ws = wb.get_active_sheet();
         ws.append(range.begin(), range.end());
         
         TS_ASSERT_EQUALS(ws[xlnt::cell_reference("AD1")].get_value<int>(), 29);
@@ -336,7 +303,7 @@ public:
     void test_append_2d_list()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+		auto ws = wb.get_active_sheet();
         
         ws.append(std::vector<std::string> {"This is A1", "This is B1"});
         ws.append(std::vector<std::string> {"This is A2", "This is B2"});
@@ -348,26 +315,11 @@ public:
         TS_ASSERT_EQUALS(vals[1][0].get_value<std::string>(), "This is A2");
         TS_ASSERT_EQUALS(vals[1][1].get_value<std::string>(), "This is B2");
     }
-    
-    // void test_append_cell()
-    // {
-        // Right now, a cell cannot be created without a parent worksheet.
-        // This should be possible by instantiating a cell_impl, but the
-        // memory management is complicated.
-        // xlnt::workbook wb;
-        // xlnt::worksheet ws(wb);
-        // xlnt::cell cell;
-        // cell.set_value(25);
-        
-        // ws.append({ cell });
-        
-        // TS_ASSERT_EQUALS(cell.get_value<int>(), 25);
-    // }
-    
+
     void test_rows()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         
         ws.get_cell("A1").set_value("first");
         ws.get_cell("C9").set_value("last");
@@ -387,7 +339,7 @@ public:
     void test_no_rows()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+		auto ws = wb.get_active_sheet();
         
         TS_ASSERT_EQUALS(ws.rows().length(), 1);
         TS_ASSERT_EQUALS(ws.rows()[0].length(), 1);
@@ -396,7 +348,7 @@ public:
     void test_no_cols()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+		auto ws = wb.get_active_sheet();
         
         TS_ASSERT_EQUALS(ws.columns().length(), 1);
         TS_ASSERT_EQUALS(ws.columns()[0].length(), 1);
@@ -405,7 +357,7 @@ public:
     void test_one_cell()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+		auto ws = wb.get_active_sheet();
         
         auto cell = ws.get_cell("A1");
         
@@ -419,7 +371,7 @@ public:
     void test_cols()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+		auto ws = wb.get_active_sheet();
         
         ws.get_cell("A1").set_value("first");
         ws.get_cell("C9").set_value("last");
@@ -435,7 +387,7 @@ public:
     void test_auto_filter()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+		auto ws = wb.get_active_sheet();
         
         ws.auto_filter(ws.get_range("a1:f1"));
         TS_ASSERT_EQUALS(ws.get_auto_filter(), "A1:F1");
@@ -450,18 +402,16 @@ public:
     void test_getitem()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+		auto ws = wb.get_active_sheet();
         xlnt::cell cell = ws[xlnt::cell_reference("A1")];
         TS_ASSERT_EQUALS(cell.get_reference().to_string(), "A1");
         TS_ASSERT_EQUALS(cell.get_data_type(), xlnt::cell::type::null);
     }
-    
-    // void test_getitem_invalid() {}
-    
+
     void test_setitem()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+		auto ws = wb.get_active_sheet();
         ws[xlnt::cell_reference("A12")].set_value(5);
         TS_ASSERT(ws[xlnt::cell_reference("A12")].get_value<int>() == 5);
     }
@@ -469,21 +419,18 @@ public:
     void test_getslice()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+		auto ws = wb.get_active_sheet();
         auto cell_range = ws("A1", "B2");
         TS_ASSERT_EQUALS(cell_range[0][0], ws.get_cell("A1"));
         TS_ASSERT_EQUALS(cell_range[1][0], ws.get_cell("A2"));
         TS_ASSERT_EQUALS(cell_range[0][1], ws.get_cell("B1"));
         TS_ASSERT_EQUALS(cell_range[1][1], ws.get_cell("B2"));
     }
-    
-    // void test_get_column() {}
-    // void test_get_row() {}
-    
+
     void test_freeze()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+		auto ws = wb.get_active_sheet();
         
         ws.freeze_panes(ws.get_cell("b2"));
         TS_ASSERT_EQUALS(ws.get_frozen_panes(), "B2");
@@ -501,7 +448,7 @@ public:
     void test_merged_cells_lookup()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+		auto ws = wb.get_active_sheet();
         ws.get_cell("A2").set_value("test");
         ws.merge_cells("A1:N50");
         auto all_merged = ws.get_merged_ranges();
@@ -517,14 +464,14 @@ public:
     void test_merged_cell_ranges()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         TS_ASSERT_EQUALS(ws.get_merged_ranges().size(), 0);
     }
     
     void test_merge_range_string()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         ws.get_cell("A1").set_value(1);
         ws.get_cell("D4").set_value(16);
         ws.merge_cells("A1:D4");
@@ -536,7 +483,7 @@ public:
     void test_merge_coordinate()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         ws.merge_cells(1, 1, 4, 4);
         std::vector<xlnt::range_reference> expected = { xlnt::range_reference("A1:D4") };
         TS_ASSERT_EQUALS(ws.get_merged_ranges(), expected);
@@ -545,7 +492,7 @@ public:
     void test_unmerge_bad()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
 
         TS_ASSERT_THROWS(ws.unmerge_cells("A1:D3"), std::runtime_error);
     }
@@ -553,7 +500,7 @@ public:
     void test_unmerge_range_string()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         ws.merge_cells("A1:D4");
         TS_ASSERT_EQUALS(ws.get_merged_ranges().size(), 1);
         ws.unmerge_cells("A1:D4");
@@ -563,7 +510,7 @@ public:
     void test_unmerge_coordinate()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         ws.merge_cells("A1:D4");
         TS_ASSERT_EQUALS(ws.get_merged_ranges().size(), 1);
         ws.unmerge_cells(1, 1, 4, 4);
@@ -627,7 +574,7 @@ public:
     void test_freeze_panes_horiz()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         ws.freeze_panes("A4");
         
         auto view = ws.get_sheet_view();
@@ -644,7 +591,7 @@ public:
     void test_freeze_panes_vert()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         ws.freeze_panes("D1");
         
         auto view = ws.get_sheet_view();
@@ -661,7 +608,7 @@ public:
     void test_freeze_panes_both()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         ws.freeze_panes("D4");
         
         auto view = ws.get_sheet_view();
@@ -681,14 +628,14 @@ public:
     void test_min_column()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         TS_ASSERT_EQUALS(ws.get_lowest_column(), 1);
     }
     
     void test_max_column()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         ws[xlnt::cell_reference("F1")].set_value(10);
         ws[xlnt::cell_reference("F2")].set_value(32);
         ws[xlnt::cell_reference("F3")].set_formula("=F1+F2");
@@ -699,14 +646,14 @@ public:
     void test_min_row()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         TS_ASSERT_EQUALS(ws.get_lowest_row(), 1);
     }
     
     void test_max_row()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
         ws.append();
         ws.append(std::vector<int> { 5 });
         ws.append();
@@ -717,7 +664,7 @@ public:
     void test_const_iterators()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
 
         ws.append({"A1", "B1", "C1"});
         ws.append({"A2", "B2", "C2"});
@@ -745,7 +692,7 @@ public:
     void test_const_reverse_iterators()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
 
         ws.append({"A1", "B1", "C1"});
         ws.append({"A2", "B2", "C2"});
@@ -780,7 +727,7 @@ public:
     void test_column_major_iterators()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
 
         ws.append({"A1", "B1", "C1"});
         ws.append({"A2", "B2", "C2"});
@@ -819,7 +766,7 @@ public:
     void test_reverse_column_major_iterators()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
 
         ws.append({"A1", "B1", "C1"});
         ws.append({"A2", "B2", "C2"});
@@ -861,7 +808,7 @@ public:
     void test_const_column_major_iterators()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
 
         ws.append({"A1", "B1", "C1"});
         ws.append({"A2", "B2", "C2"});
@@ -898,7 +845,7 @@ public:
     void test_const_reverse_column_major_iterators()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
 
         ws.append({"A1", "B1", "C1"});
         ws.append({"A2", "B2", "C2"});
@@ -1096,19 +1043,6 @@ public:
         TS_ASSERT_EQUALS((*row_iter).get_value<bool>(), false);
     }
 
-    void test_get_squared_range()
-    {
-        xlnt::workbook wb;
-        auto ws = wb.get_active_sheet();
-
-        ws.get_cell("A2").set_value(3.14);
-        ws.get_cell("B3").set_value(false);
-
-        auto range = ws.get_squared_range(1, 2, 2, 3);
-        TS_ASSERT_EQUALS((*(*range.begin()).begin()).get_value<double>(), 3.14);
-        TS_ASSERT_EQUALS((*(--(*(--range.end())).end())).get_value<bool>(), false);
-    }
-
     void test_operators()
     {
         xlnt::workbook wb;
@@ -1138,7 +1072,7 @@ public:
     void test_reserve()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
 
         ws.reserve(1000);
         //TODO: actual tests go here
@@ -1147,7 +1081,7 @@ public:
     void test_iterate()
     {
         xlnt::workbook wb;
-        xlnt::worksheet ws(wb);
+        auto ws = wb.get_active_sheet();
 
         ws.get_cell("B3").set_value("B3");
         ws.get_cell("C7").set_value("C7");
@@ -1209,4 +1143,14 @@ public:
 
         TS_ASSERT_EQUALS(ws.get_point_pos({0, 0}), "A1");
     }
+
+	void test_named_range_named_cell_reference()
+	{
+		xlnt::workbook wb;
+		auto ws = wb.get_active_sheet();
+		TS_ASSERT_THROWS(ws.create_named_range("A1", "A2"), std::runtime_error);
+		TS_ASSERT_THROWS(ws.create_named_range("XFD1048576", "A2"), std::runtime_error);
+		TS_ASSERT_THROWS_NOTHING(ws.create_named_range("XFE1048576", "A2"));
+		TS_ASSERT_THROWS_NOTHING(ws.create_named_range("XFD1048577", "A2"));
+	}
 };

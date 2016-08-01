@@ -93,6 +93,13 @@ public:
         xlnt::protection hidden(true, true);
         ws.get_cell("E1").set_protection(hidden);
 
+		xlnt::border b;
+		xlnt::border::border_property prop;
+		prop.set_style(xlnt::border_style::dashdot);
+		prop.set_color(xlnt::rgb_color("ffff0000"));
+		b.set_side(xlnt::border::side::top, prop);
+		ws.get_cell("D10").set_border(b);
+
         std::string expected = path_helper::read_file(path_helper::get_data_directory("/writer/expected/simple-styles.xml"));
         TS_ASSERT(style_xml_matches(expected, wb));
     }

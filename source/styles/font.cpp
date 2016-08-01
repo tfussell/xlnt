@@ -36,7 +36,7 @@ font::font()
       subscript_(false),
       underline_(underline_style::none),
       strikethrough_(false),
-      color_(xlnt::color::type::theme, 1),
+      color_(theme_color(1)),
       has_family_(true),
       family_(2),
       has_scheme_(true),

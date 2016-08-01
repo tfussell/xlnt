@@ -60,18 +60,20 @@ cell_impl::cell_impl(const cell_impl &rhs)
 
 cell_impl &cell_impl::operator=(const cell_impl &rhs)
 {
+	type_ = rhs.type_;
     parent_ = rhs.parent_;
+	column_ = rhs.column_;
+	row_ = rhs.row_;
+	value_text_ = rhs.value_text_;
     value_numeric_ = rhs.value_numeric_;
-    value_text_ = rhs.value_text_;
+	has_hyperlink_ = rhs.has_hyperlink_;
     hyperlink_ = rhs.hyperlink_;
     formula_ = rhs.formula_;
-    column_ = rhs.column_;
-    row_ = rhs.row_;
     is_merged_ = rhs.is_merged_;
-    has_hyperlink_ = rhs.has_hyperlink_;
-    type_ = rhs.type_;
+	has_format_ = rhs.has_format_;
     format_id_ = rhs.format_id_;
-    has_format_ = rhs.has_format_;
+	has_style_ = rhs.has_style_;
+	style_id_ = rhs.style_id_;
 
     if (rhs.comment_ != nullptr)
     {

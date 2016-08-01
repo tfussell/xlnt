@@ -34,7 +34,7 @@ namespace xlnt {
 /// </summary>
 enum class XLNT_CLASS diagonal_direction
 {
-    none,
+    neither,
     up,
     down,
     both

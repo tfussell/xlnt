@@ -23,12 +23,66 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <array>
 #include <string>
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/utils/hashable.hpp>
 
 namespace xlnt {
+
+class XLNT_CLASS indexed_color
+{
+public:
+	indexed_color(std::size_t index);
+
+	std::size_t get_index() const;
+
+	void set_index(std::size_t index);
+
+private:
+	std::size_t index_;
+};
+
+class XLNT_CLASS theme_color
+{
+public:
+	theme_color(std::size_t index);
+
+	std::size_t get_index() const;
+
+	void set_index(std::size_t index);
+
+private:
+	std::size_t index_;
+};
+
+class XLNT_CLASS rgb_color
+{
+public:
+	rgb_color(const std::string &hex_string);
+
+	rgb_color(std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint8_t a = 255);
+
+	std::string get_hex_string() const;
+
+	std::uint8_t get_red() const;
+
+	std::uint8_t get_green() const;
+
+	std::uint8_t get_blue() const;
+
+	std::uint8_t get_alpha() const;
+
+	std::array<std::uint8_t, 3> get_rgb() const;
+
+	std::array<std::uint8_t, 4> get_rgba() const;
+
+private:
+	static std::array<std::uint8_t, 4> decode_hex_string(const std::string &hex_string);
+
+	std::array<std::uint8_t, 4> rgba_;
+};
 
 /// <summary>
 /// Colors can be applied to many parts of a cell's style.
@@ -43,8 +97,8 @@ public:
     {
         indexed,
         theme,
-        auto_,
-        rgb
+        rgb,
+		auto_
     };
 
     static const color black();
@@ -58,35 +112,38 @@ public:
     static const color yellow();
     static const color darkyellow();
 
-    color();
+	color();
+	color(const rgb_color &rgb);
+	color(const indexed_color &indexed);
+	color(const theme_color &theme);
 
-    color(type t, std::size_t v);
+	type get_type() const;
 
-    color(type t, const std::string &v);
+	bool is_auto() const;
 
-    void set_auto(std::size_t auto_index);
+    void set_auto(bool value);
 
-    void set_index(std::size_t index);
+	const rgb_color &get_rgb() const;
 
-    void set_theme(std::size_t theme);
+    const indexed_color &get_indexed() const;
 
-    type get_type() const;
+    const theme_color &get_theme() const;
 
-    std::size_t get_auto() const;
+	double get_tint() const;
 
-    std::size_t get_index() const;
-
-    std::size_t get_theme() const;
-
-    std::string get_rgb_string() const;
+	void set_tint(double tint);
 
 protected:
     std::string to_hash_string() const override;
 
 private:
-    type type_ = type::indexed;
-    std::size_t index_ = 0;
-    std::string rgb_string_;
+	void assert_type(type t) const;
+
+	type type_;
+	rgb_color rgb_;
+	indexed_color indexed_;
+	theme_color theme_;
+	double tint_;
 };
 
 } // namespace xlnt

@@ -25,26 +25,6 @@ public:
         auto last = std::distance(wb.begin(), wb.end()) - 1;
         TS_ASSERT_EQUALS(new_sheet, wb[last]);
     }
-
-    void test_create_sheet_with_name()
-    {
-        xlnt::workbook wb;
-        auto new_sheet = wb.create_sheet("LikeThisName");
-        auto last = std::distance(wb.begin(), wb.end()) - 1;
-        TS_ASSERT_EQUALS(new_sheet, wb[last]);
-        TS_ASSERT_THROWS(wb.create_sheet(std::string(40, 'a')), std::runtime_error);
-        TS_ASSERT_THROWS(wb.create_sheet("a:a"), std::runtime_error);
-        TS_ASSERT_EQUALS(wb.create_sheet("LikeThisName").get_title(), "LikeThisName1");
-    }
-
-    void test_create_sheet_with_name_at_index()
-    {
-        xlnt::workbook wb;
-        TS_ASSERT_EQUALS(wb.get_sheet_by_index(0).get_title(), "Sheet");
-        wb.create_sheet(0, "LikeThisName");
-        TS_ASSERT_EQUALS(wb.get_sheet_by_index(0).get_title(), "LikeThisName");
-        TS_ASSERT_EQUALS(wb.get_sheet_by_index(1).get_title(), "Sheet");
-    }
     
     void test_add_correct_sheet()
     {
@@ -72,9 +52,9 @@ public:
         ws.get_cell("B3").set_value(2);
         ws.set_title("Active");
         wb.copy_sheet(ws, 0);
-        TS_ASSERT_EQUALS(wb.get_sheet_names().at(0), "Sheet");
+        TS_ASSERT_EQUALS(wb.get_sheet_titles().at(0), "Sheet");
         TS_ASSERT_EQUALS(wb.get_sheet_by_index(0).get_cell("B3").get_value<int>(), 2);
-        TS_ASSERT_EQUALS(wb.get_sheet_names().at(1), "Active");
+        TS_ASSERT_EQUALS(wb.get_sheet_titles().at(1), "Active");
         TS_ASSERT_EQUALS(wb.get_sheet_by_index(1).get_cell("B3").get_value<int>(), 2);
     }
     
@@ -154,24 +134,11 @@ public:
     void test_get_sheet_names()
     {
         xlnt::workbook wb;
-        wb.clear();
-        
-        std::vector<std::string> names = {"Sheet", "Sheet1", "Sheet2", "Sheet3", "Sheet4", "Sheet5"};
-        
-        for(std::size_t count = 0; count < names.size(); count++)
-        {
-            wb.create_sheet();
-        }
-        
-        auto actual_names = wb.get_sheet_names();
-        
-        std::sort(actual_names.begin(), actual_names.end());
-        std::sort(names.begin(), names.end());
-        
-        for(std::size_t count = 0; count < names.size(); count++)
-        {
-            TS_ASSERT_EQUALS(actual_names[count], names[count]);
-        }
+        wb.create_sheet().set_title("test_get_sheet_titles");
+
+		const std::vector<std::string> expected_titles = { "Sheet", "test_get_sheet_titles" };
+
+		TS_ASSERT_EQUALS(wb.get_sheet_titles(), expected_titles);
     }
     
     void test_add_named_range()
@@ -244,8 +211,8 @@ public:
     {
         xlnt::workbook wb;
 
-        wb.create_sheet("Sheet1");
-        wb.create_sheet("Sheet2");
+        wb.create_sheet().set_title("Sheet1");
+        wb.create_sheet().set_title("Sheet2");
 
         auto iter = wb.begin();
 
@@ -268,8 +235,8 @@ public:
     {
         xlnt::workbook wb;
 
-        wb.create_sheet("Sheet1");
-        wb.create_sheet("Sheet2");
+        wb.create_sheet().set_title("Sheet1");
+        wb.create_sheet().set_title("Sheet2");
 
         auto iter = wb.begin();
 
@@ -342,7 +309,7 @@ public:
         wb.clear_formats();
         TS_ASSERT(!wb.get_active_sheet().get_cell("B2").has_format());
         wb.clear();
-        TS_ASSERT(wb.get_sheet_names().empty());
+        TS_ASSERT(wb.get_sheet_titles().empty());
     }
 
     void test_comparison()

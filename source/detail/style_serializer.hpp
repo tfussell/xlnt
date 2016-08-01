@@ -46,7 +46,6 @@ class base_format;
 class style;
 class number_format;
 class protection;
-class side;
 class style;
 
 namespace detail { struct stylesheet; }

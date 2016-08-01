@@ -32,11 +32,11 @@ public:
 
         fill.get_pattern_fill().set_foreground_color(xlnt::color::black());
         TS_ASSERT(fill.get_pattern_fill().get_foreground_color());
-        TS_ASSERT_EQUALS(*fill.get_pattern_fill().get_foreground_color(), xlnt::color::black());
-        
+        TS_ASSERT_EQUALS((*fill.get_pattern_fill().get_foreground_color()).get_rgb().get_hex_string(), xlnt::color::black().get_rgb().get_hex_string());
+
         fill.get_pattern_fill().set_background_color(xlnt::color::green());
         TS_ASSERT(fill.get_pattern_fill().get_background_color());
-        TS_ASSERT_EQUALS(*fill.get_pattern_fill().get_background_color(), xlnt::color::green());
+        TS_ASSERT_EQUALS((*fill.get_pattern_fill().get_background_color()).get_rgb().get_hex_string(), xlnt::color::green().get_rgb().get_hex_string());
         
         const auto &const_fill = fill;
         TS_ASSERT(const_fill.get_pattern_fill().get_foreground_color());

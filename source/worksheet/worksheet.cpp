@@ -34,6 +34,7 @@
 #include <xlnt/utils/exceptions.hpp>
 #include <xlnt/workbook/named_range.hpp>
 #include <xlnt/workbook/workbook.hpp>
+#include <xlnt/workbook/worksheet_iterator.hpp>
 #include <xlnt/worksheet/cell_iterator.hpp>
 #include <xlnt/worksheet/const_cell_iterator.hpp>
 #include <xlnt/worksheet/const_range_iterator.hpp>
@@ -61,11 +62,6 @@ worksheet::worksheet(const worksheet &rhs) : d_(rhs.d_)
 {
 }
 
-worksheet::worksheet(workbook &parent, const std::string &title)
-    : d_(title == "" ? parent.create_sheet().d_ : parent.create_sheet(title).d_)
-{
-}
-
 bool worksheet::has_frozen_panes() const
 {
     return get_frozen_panes() != cell_reference("A1");
@@ -73,14 +69,17 @@ bool worksheet::has_frozen_panes() const
 
 std::string worksheet::unique_sheet_name(const std::string &value) const
 {
-    auto names = get_workbook().get_sheet_names();
+    auto names = get_workbook().get_sheet_titles();
     auto match = std::find(names.begin(), names.end(), value);
+
     std::size_t append = 0;
+
     while (match != names.end())
     {
         append++;
         match = std::find(names.begin(), names.end(), value + std::to_string(append));
     }
+
     return append == 0 ? value : value + std::to_string(append);
 }
 
@@ -98,7 +97,7 @@ void worksheet::create_named_range(const std::string &name, const range_referenc
     {
         auto temp = cell_reference::split_reference(name);
 
-        if (column_t(temp.first).index <= column_t("XFD").index || temp.second <= 1048576)
+        if (column_t(temp.first).index <= column_t("XFD").index && temp.second <= 1048576)
         {
             throw std::runtime_error("named range name must be outside the range A1-XFD1048576");
         }
@@ -108,8 +107,7 @@ void worksheet::create_named_range(const std::string &name, const range_referenc
     {
         // must not be a valid cell reference
     }
-    
-
+   
     d_->named_ranges_[name] = named_range(name, targets);
 }
 
@@ -246,7 +244,25 @@ std::string worksheet::get_title() const
 
 void worksheet::set_title(const std::string &title)
 {
-    d_->title_ = title;
+	if (title.length() > 31)
+	{
+		throw invalid_sheet_title(title);
+	}
+
+	if (title.find_first_of("*:/\\?[]") != std::string::npos)
+	{
+		throw invalid_sheet_title(title);
+	}
+
+	auto same_title = std::find_if(get_workbook().begin(), get_workbook().end(), 
+		[&](worksheet ws) { return ws.get_title() == title; });
+
+	if (same_title != get_workbook().end() && *same_title != *this)
+	{
+		throw invalid_sheet_title(title);
+	}
+
+	d_->title_ = title;
 }
 
 cell_reference worksheet::get_frozen_panes() const
@@ -454,18 +470,6 @@ const range worksheet::get_range(const std::string &reference_string) const
 const range worksheet::get_range(const range_reference &reference) const
 {
     return range(*this, reference);
-}
-
-range worksheet::get_squared_range(column_t min_col, row_t min_row, column_t max_col, row_t max_row)
-{
-    range_reference reference(min_col, min_row, max_col, max_row);
-    return get_range(reference);
-}
-
-const range worksheet::get_squared_range(column_t min_col, row_t min_row, column_t max_col, row_t max_row) const
-{
-    range_reference reference(min_col, min_row, max_col, max_row);
-    return get_range(reference);
 }
 
 const std::vector<relationship> &worksheet::get_relationships() const

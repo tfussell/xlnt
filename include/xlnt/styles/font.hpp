@@ -106,7 +106,7 @@ private:
     bool subscript_ = false;
     underline_style underline_ = underline_style::none;
     bool strikethrough_ = false;
-    color color_ = color(xlnt::color::type::theme, 1);
+    color color_ = theme_color(1);
     bool has_family_ = true;
     std::size_t family_ = 2;
     bool has_scheme_ = true;
