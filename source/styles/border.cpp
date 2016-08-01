@@ -69,11 +69,6 @@ void border::border_property::set_style(border_style s)
 	style_ = s;
 }
 
-border border::default()
-{
-	return border();
-}
-
 border::border()
 {
 	sides_ =

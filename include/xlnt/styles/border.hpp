@@ -36,22 +36,41 @@
 
 namespace xlnt {
 
+enum class XLNT_CLASS border_side
+{
+	start,
+	end,
+	top,
+	bottom,
+	diagonal,
+	vertical,
+	horizontal
+};
+
+} // namespace xlnt
+
+namespace std {
+
+template<>
+struct hash<xlnt::border_side>
+{
+	size_t operator()(const xlnt::border_side &k) const
+	{
+		return static_cast<std::size_t>(k);
+	}
+};
+
+} // namepsace std
+
+namespace xlnt {
+
 /// <summary>
 /// Describes the border style of a particular cell.
 /// </summary>
 class XLNT_CLASS border : public hashable
 {
 public:
-	enum class XLNT_CLASS side
-	{
-		start,
-		end,
-		top,
-		bottom,
-		diagonal,
-		vertical,
-		horizontal
-	};
+	using side = border_side;
 
 	class XLNT_CLASS border_property
 	{
@@ -72,14 +91,11 @@ public:
 		border_style style_;
 	};
 
-    static border default();
-
 	static const std::unordered_map<side, std::string> &get_side_names();
 
 	border();
 
 	bool has_side(side s) const;
-	border_property &get_side(side s);
 	const border_property &get_side(side s) const;
 	void set_side(side s, const border_property &prop);
 
