@@ -19,7 +19,7 @@ public:
         style_serializer.write_stylesheet(observed);
         pugi::xml_document expected;
         expected.load(expected_string.c_str());
-		observed.save(std::cout);
+
         auto comparison = xml_helper::compare_xml(expected.root(), observed.root());
         return (bool)comparison;
     }

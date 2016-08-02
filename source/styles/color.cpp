@@ -89,7 +89,8 @@ color::color()
     : type_(type::auto_),
       rgb_(rgb_color(0, 0, 0, 0)),
       indexed_(0),
-      theme_(0)
+      theme_(0),
+	  tint_(0)
 {
 }
 
@@ -97,7 +98,8 @@ color::color(const rgb_color &rgb)
 	: type_(type::rgb),
 	  rgb_(rgb),
 	  indexed_(0),
-	  theme_(0)
+	  theme_(0),
+	  tint_(0)
 {
 }
 
@@ -105,7 +107,8 @@ color::color(const indexed_color &indexed)
 	: type_(type::indexed),
       rgb_(rgb_color(0, 0, 0, 0)),
       indexed_(indexed),
-      theme_(0)
+      theme_(0),
+	  tint_(0)
 {
 }
 
@@ -113,7 +116,8 @@ color::color(const theme_color &theme)
 	: type_(type::theme),
       rgb_(rgb_color(0, 0, 0, 0)),
       indexed_(0),
-      theme_(theme)
+      theme_(theme),
+	  tint_(0)
 {
 }
 
