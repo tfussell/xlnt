@@ -64,6 +64,10 @@ workbook workbook::minimal()
 	auto impl = new detail::workbook_impl();
 	workbook wb(impl);
 
+	wb.create_sheet();
+
+	wb.d_->root_relationships_.push_back(relationship(relationship::type::office_document, "rId1", constants::part_workbook().to_string()));
+
 	return wb;
 }
 
@@ -71,6 +75,10 @@ workbook workbook::empty_excel()
 {
 	auto impl = new detail::workbook_impl();
 	xlnt::workbook wb(impl);
+
+	wb.d_->root_relationships_.push_back(relationship(relationship::type::core_properties, "rId1", constants::part_core().to_string()));
+	wb.d_->root_relationships_.push_back(relationship(relationship::type::extended_properties, "rId2", constants::part_app().to_string()));
+	wb.d_->root_relationships_.push_back(relationship(relationship::type::office_document, "rId3", constants::part_workbook().to_string()));
 
 	wb.set_application("Microsoft Excel");
 	wb.create_sheet();
@@ -711,16 +719,6 @@ const manifest &workbook::get_manifest() const
 
 const std::vector<relationship> &workbook::get_root_relationships() const
 {
-    if (d_->root_relationships_.empty())
-    {
-        d_->root_relationships_.push_back(
-            relationship(relationship::type::core_properties, "rId1", constants::part_core().to_string()));
-        d_->root_relationships_.push_back(
-            relationship(relationship::type::extended_properties, "rId2", constants::part_app().to_string()));
-        d_->root_relationships_.push_back(
-            relationship(relationship::type::office_document, "rId3", constants::part_workbook().to_string()));
-    }
-
     return d_->root_relationships_;
 }
 

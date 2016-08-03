@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #include <algorithm>
 #include <cassert>
 #include <cstring>
@@ -28,37 +29,10 @@
 #include <iterator>
 #include <miniz.h>
 
-#ifdef _WIN32
-#include <direct.h>
-#else
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#endif
-
-#include <detail/include_windows.hpp>
 #include <xlnt/packaging/zip_file.hpp>
 #include <xlnt/utils/path.hpp>
 
 namespace {
-
-void mkdir_recursive(const xlnt::path &path)
-{
-    if (path.exists()) return;
-    
-	auto parent = path.parent();
-
-    if (!parent.is_root())
-    {
-        mkdir_recursive(parent);
-    }
-
-#ifdef _WIN32
-    _mkdir(path.to_string().c_str());
-#else
-    mkdir(path.c_str(), 0755);
-#endif
-}
 
 uint32_t crc32buf(const char *buf, std::size_t len)
 {

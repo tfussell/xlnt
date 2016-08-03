@@ -3,6 +3,7 @@
 #include <detail/constants.hpp>
 #include <detail/include_pugixml.hpp>
 #include <xlnt/utils/path.hpp>
+#include <xlnt/packaging/manifest.hpp>
 #include <xlnt/packaging/zip_file.hpp>
 #include <xlnt/workbook/const_worksheet_iterator.hpp>
 #include <xlnt/workbook/workbook.hpp>
@@ -46,17 +47,19 @@ void write_content_types(const xlnt::workbook &target, xlnt::zip_file &archive)
 	auto types_node = document.append_child("Types");
 	types_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/package/2006/content-types");
 
-	auto default_node = types_node.append_child("Default");
-	default_node.append_attribute("Extension").set_value("rels");
-	default_node.append_attribute("ContentType").set_value("application/vnd.openxmlformats-package.relationships+xml");
+	for (const auto &default_type : target.get_manifest().get_default_types())
+	{
+		auto default_node = types_node.append_child("Default");
+		default_node.append_attribute("Extension").set_value(default_type.second.get_extension().c_str());
+		default_node.append_attribute("ContentType").set_value(default_type.second.get_content_type().c_str());
+	}
 
-	auto workbook_override_node = types_node.append_child("Override");
-	workbook_override_node.append_attribute("PartName").set_value("/workbook.xml");
-	workbook_override_node.append_attribute("ContentType").set_value("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml");
-
-	auto sheet_override_node = types_node.append_child("Default");
-	sheet_override_node.append_attribute("PartName").set_value("/sheet1.xml");
-	sheet_override_node.append_attribute("ContentType").set_value("application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
+	for (const auto &override_type : target.get_manifest().get_override_types())
+	{
+		auto override_node = types_node.append_child("Override");
+		override_node.append_attribute("PartName").set_value(override_type.second.get_part().to_string('/').c_str());
+		override_node.append_attribute("ContentType").set_value(override_type.second.get_content_type().c_str());
+	}
 
 	write_document_to_archive(document, xlnt::constants::part_content_types(), archive);
 }
