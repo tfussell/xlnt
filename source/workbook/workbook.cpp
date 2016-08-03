@@ -117,7 +117,8 @@ workbook workbook::empty_numbers()
 
 workbook::workbook()
 {
-	swap(*this, empty_excel());
+	auto wb_template = empty_excel();
+	swap(*this, wb_template);
 }
 
 workbook::workbook(detail::workbook_impl *impl) : d_(impl)
