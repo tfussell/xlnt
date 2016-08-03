@@ -52,30 +52,7 @@ public:
         sprintf(arg1, "/proc/%d/exe", getpid());
         auto bytes_written = readlink(arg1, exepath, 1024);
 
-        return std::string(exepath).substr(0, bytes_written - 9);
-#endif
-    }
-
-    static xlnt::path get_working_directory(const std::string &append = "")
-    {
-#ifdef _MSC_VER
-        TCHAR buffer[MAX_PATH];
-        GetCurrentDirectory(MAX_PATH, buffer);
-
-        std::basic_string<TCHAR> working_directory(buffer);
-		std::string working_directory_narrow(working_directory.begin(), working_directory.end());
-
-        return xlnt::path(working_directory_narrow)
-			.append(xlnt::path(append));
-#else
-        char buffer[PATH_MAX];
-
-        if (getcwd(buffer, 2048) == nullptr)
-        {
-            throw std::runtime_error("getcwd failed");
-        }
-
-        return std::string(buffer);
+        return xlnt::path(std::string(exepath).substr(0, bytes_written - 9));
 #endif
     }
     
