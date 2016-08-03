@@ -3,9 +3,7 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/packaging/app_properties.hpp>
 #include <detail/workbook_serializer.hpp>
-
 #include <helpers/path_helper.hpp>
 #include <helpers/xml_helper.hpp>
 

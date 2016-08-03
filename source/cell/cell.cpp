@@ -29,7 +29,6 @@
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/cell/comment.hpp>
 #include <xlnt/cell/text.hpp>
-#include <xlnt/packaging/document_properties.hpp>
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/styles/color.hpp>
 #include <xlnt/styles/format.hpp>

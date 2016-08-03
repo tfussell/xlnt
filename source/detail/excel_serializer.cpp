@@ -37,7 +37,6 @@
 #include <detail/workbook_serializer.hpp>
 #include <detail/worksheet_serializer.hpp>
 #include <xlnt/cell/text.hpp>
-#include <xlnt/packaging/document_properties.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/styles/format.hpp>
 #include <xlnt/styles/style.hpp>

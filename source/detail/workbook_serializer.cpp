@@ -27,8 +27,6 @@
 
 #include <detail/constants.hpp>
 #include <detail/workbook_serializer.hpp>
-#include <xlnt/packaging/app_properties.hpp>
-#include <xlnt/packaging/document_properties.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/utils/datetime.hpp>
