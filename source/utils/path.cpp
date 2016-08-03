@@ -22,21 +22,17 @@
 // @author: see AUTHORS file
 #include <fstream>
 #include <sstream>
-
-#include <detail/include_windows.hpp>
+#include <sys/stat.h>
 
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
-#include <sys/stat.h>
-#elif defined(_MSC_VER)
-#include <Shlwapi.h>
 #elif defined(__linux)
 #include <unistd.h>
 #include <linux/limits.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 #endif
 
+#include <detail/include_windows.hpp>
 #include <xlnt/utils/path.hpp>
 
 namespace {
@@ -52,12 +48,6 @@ bool is_root(const std::string &part)
 {
 	return part.size() == 2 && part.back() == ':' 
 		&& part.front() >= 'A' && part.front() <= 'Z';
-}
-
-bool file_exists(const std::string &path_string)
-{
-	std::wstring path_wide(path_string.begin(), path_string.end());
-	return PathFileExists(path_wide.c_str()) && !PathIsDirectory(path_wide.c_str());
 }
 
 std::string get_working_directory()
@@ -78,22 +68,6 @@ char system_separator()
 bool is_root(const std::string &part)
 {
 	return part.empty();
-}
-
-bool file_exists(const std::string &path_string)
-{
-	try
-	{
-		struct stat fileAtt;
-
-		if (stat(path.c_str(), &fileAtt) == 0)
-		{
-			return S_ISREG(fileAtt.st_mode);
-		}
-	}
-	catch (...) {}
-
-	return false;
 }
 
 std::string get_working_directory()
@@ -151,6 +125,12 @@ std::vector<std::string> split_path_universal(const std::string &path)
 	}
 
 	return initial;
+}
+
+bool file_exists(const std::string &path)
+{
+	struct stat info;
+	return stat(path.c_str(), &info) == 0 && (info.st_mode & S_IFREG);
 }
 
 bool directory_exists(const std::string path)
