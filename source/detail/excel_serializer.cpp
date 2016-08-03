@@ -70,9 +70,6 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
 {
     wb.clear();
 
-    wb.set_guess_types(guess_types);
-    wb.set_data_only(data_only);
-
     if(!archive.has_file(xlnt::constants::part_content_types()))
     {
         throw xlnt::invalid_file("missing [Content Types].xml");
@@ -112,7 +109,7 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
         wb.create_root_relationship(relationship.get_id(), relationship.get_target_uri(), relationship.get_type());
     }
     
-    auto workbook_relationships = relationship_serializer_.read_relationships(xlnt::constants::part_workbook());
+    auto workbook_relationships = relationship_serializer_.read_relationships(xlnt::constants::part_workbook().to_string('/'));
 
     for (const auto &relationship : workbook_relationships)
     {
@@ -123,12 +120,17 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
     xml.load(archive.read(xlnt::constants::part_workbook()).c_str());
 
     auto root_node = xml.child("workbook");
-
     auto workbook_pr_node = root_node.child("workbookPr");
-    wb.get_properties().excel_base_date =
-        (workbook_pr_node.attribute("date1904") && workbook_pr_node.attribute("date1904").value() != std::string("0"))
-            ? xlnt::calendar::mac_1904
-            : xlnt::calendar::windows_1900;
+
+	if (workbook_pr_node.attribute("date1904"))
+	{
+		std::string value = workbook_pr_node.attribute("date1904").value();
+
+		if (value == "1" || value == "true")
+		{
+			wb.set_base_date(xlnt::calendar::mac_1904);
+		}
+	}
 
     if(archive.has_file(xlnt::constants::part_shared_strings()))
     {
@@ -162,14 +164,15 @@ bool load_workbook(xlnt::zip_file &archive, bool guess_types, bool data_only, xl
         ws.set_id(static_cast<std::size_t>(sheet_node.attribute("sheetId").as_ullong()));
         xlnt::worksheet_serializer worksheet_serializer(ws);
 		pugi::xml_document worksheet_xml;
-		worksheet_xml.load(archive.read("xl/" + rel.get_target_uri()).c_str());
+		auto target_uri = xlnt::constants::package_xl().append(rel.get_target_uri());
+		worksheet_xml.load(archive.read(target_uri).c_str());
 
         worksheet_serializer.read_worksheet(worksheet_xml, stylesheet);
     }
 
-    if (archive.has_file("docProps/thumbnail.jpeg"))
+    if (archive.has_file(xlnt::path("docProps/thumbnail.jpeg")))
     {
-        auto thumbnail_data = archive.read("docProps/thumbnail.jpeg");
+        auto thumbnail_data = archive.read(xlnt::path("docProps/thumbnail.jpeg"));
         wb.set_thumbnail(std::vector<std::uint8_t>(thumbnail_data.begin(), thumbnail_data.end()));
     }
 
@@ -210,7 +213,7 @@ bool excel_serializer::load_stream_workbook(std::istream &stream, bool guess_typ
     return load_virtual_workbook(bytes, guess_types, data_only);
 }
 
-bool excel_serializer::load_workbook(const std::string &filename, bool guess_types, bool data_only)
+bool excel_serializer::load_workbook(const path &filename, bool guess_types, bool data_only)
 {
     try
     {
@@ -218,7 +221,7 @@ bool excel_serializer::load_workbook(const std::string &filename, bool guess_typ
     }
     catch (std::runtime_error)
     {
-        throw invalid_file(filename);
+        throw invalid_file(filename.to_string());
     }
 
     return ::load_workbook(archive_, guess_types, data_only, workbook_, get_stylesheet());
@@ -239,7 +242,7 @@ void excel_serializer::write_data(bool /*as_template*/)
 {
     relationship_serializer relationship_serializer_(archive_);
     relationship_serializer_.write_relationships(workbook_.get_root_relationships(), "");
-    relationship_serializer_.write_relationships(workbook_.get_relationships(), constants::part_workbook());
+    relationship_serializer_.write_relationships(workbook_.get_relationships(), constants::part_workbook().to_string('/'));
 
     pugi::xml_document properties_app_xml;
     workbook_serializer workbook_serializer_(workbook_);
@@ -248,7 +251,7 @@ void excel_serializer::write_data(bool /*as_template*/)
     {
         std::ostringstream ss;
         properties_app_xml.save(ss);
-        archive_.writestr(constants::part_app(), ss.str());
+        archive_.write_string(ss.str(), constants::part_app());
     }
 
     pugi::xml_document properties_core_xml;
@@ -257,17 +260,17 @@ void excel_serializer::write_data(bool /*as_template*/)
     {
         std::ostringstream ss;
         properties_core_xml.save(ss);
-        archive_.writestr(constants::part_core(), ss.str());
+        archive_.write_string(ss.str(), constants::part_core());
     }
 
     pugi::xml_document theme_xml;
     theme_serializer theme_serializer_;
-    theme_serializer_.write_theme(workbook_.get_loaded_theme(), theme_xml);
+    theme_serializer_.write_theme(workbook_.get_theme(), theme_xml);
 
     {
         std::ostringstream ss;
         theme_xml.save(ss);
-        archive_.writestr(constants::part_theme(), ss.str());
+        archive_.write_string(ss.str(), constants::part_theme());
     }
 
     if (!workbook_.get_shared_strings().empty())
@@ -278,7 +281,7 @@ void excel_serializer::write_data(bool /*as_template*/)
 
         std::ostringstream ss;
         shared_strings_xml.save(ss);
-        archive_.writestr(constants::part_shared_strings(), ss.str());
+        archive_.write_string(ss.str(), constants::part_shared_strings());
     }
 
     pugi::xml_document workbook_xml;
@@ -287,7 +290,7 @@ void excel_serializer::write_data(bool /*as_template*/)
     {
         std::ostringstream ss;
         workbook_xml.save(ss);
-        archive_.writestr(constants::part_workbook(), ss.str());
+        archive_.write_string(ss.str(), constants::part_workbook());
     }
 
     style_serializer style_serializer(workbook_.d_->stylesheet_);
@@ -297,7 +300,7 @@ void excel_serializer::write_data(bool /*as_template*/)
     {
         std::ostringstream ss;
         style_xml.save(ss);
-        archive_.writestr(constants::part_styles(), ss.str());
+        archive_.write_string(ss.str(), constants::part_styles());
     }
 
     manifest_serializer manifest_serializer_(workbook_.get_manifest());
@@ -307,7 +310,7 @@ void excel_serializer::write_data(bool /*as_template*/)
     {
         std::ostringstream ss;
         manifest_xml.save(ss);
-        archive_.writestr(constants::part_content_types(), ss.str());
+        archive_.write_string(ss.str(), constants::part_content_types());
     }
 
     write_worksheets();
@@ -315,7 +318,7 @@ void excel_serializer::write_data(bool /*as_template*/)
     if(!workbook_.get_thumbnail().empty())
     {
         const auto &thumbnail = workbook_.get_thumbnail();
-        archive_.writestr("docProps/thumbnail.jpeg", std::string(thumbnail.begin(), thumbnail.end()));
+        archive_.write_string(std::string(thumbnail.begin(), thumbnail.end()), path("docProps/thumbnail.jpeg"));
     }
 }
 
@@ -332,12 +335,13 @@ void excel_serializer::write_worksheets()
             if (rel.get_target_uri() != target) continue;
 
             worksheet_serializer serializer_(ws);
-            std::string ws_filename = (rel.get_target_uri().substr(0, 3) != "xl/" ? "xl/" : "") + rel.get_target_uri();
+			path ws_path(rel.get_target_uri().substr(0, 3) != "xl/" ? "xl/" : "", '/');
+			ws_path.append(rel.get_target_uri());
             std::ostringstream ss;
             pugi::xml_document worksheet_xml;
             serializer_.write_worksheet(worksheet_xml);
             worksheet_xml.save(ss);
-            archive_.writestr(ws_filename, ss.str());
+            archive_.write_string(ss.str(), ws_path);
 
             break;
         }
@@ -356,7 +360,7 @@ bool excel_serializer::save_stream_workbook(std::ostream &stream, bool as_templa
     return true;
 }
 
-bool excel_serializer::save_workbook(const std::string &filename, bool as_template)
+bool excel_serializer::save_workbook(const path &filename, bool as_template)
 {
     write_data(as_template);
     archive_.save(filename);

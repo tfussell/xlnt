@@ -35,14 +35,7 @@ namespace xlnt {
 class XLNT_CLASS app_properties
 {
 public:
-    std::string application = "libxlnt";
-    int doc_security = 0;
-    bool scale_crop = false;
-    std::string company = "";
-    bool links_up_to_date = false;
-    bool shared_doc = false;
-    bool hyperlinks_changed = false;
-    std::string app_version = "0.9";
+
 };
 
 } // namespace xlnt

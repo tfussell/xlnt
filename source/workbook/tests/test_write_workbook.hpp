@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
+#include <detail/xlsx_writer.hpp>
 #include <detail/shared_strings_serializer.hpp>
 #include <detail/workbook_serializer.hpp>
 #include <helpers/path_helper.hpp>
@@ -22,7 +23,7 @@ public:
         pugi::xml_document xml;
         serializer.write_workbook(xml);
 
-        TS_ASSERT(xml_helper::compare_xml(path_helper::get_data_directory("/writer/expected/workbook_auto_filter.xml"), xml));
+        TS_ASSERT(xml_helper::file_matches_document(path_helper::get_data_directory("writer/expected/workbook_auto_filter.xml"), xml));
     }
     
     void test_write_hidden_worksheet()
@@ -53,7 +54,7 @@ public:
         pugi::xml_document expected;
         expected.load(expected_string.c_str());
 
-        TS_ASSERT(xml_helper::compare_xml(expected.child("workbook").child("sheets"),
+        TS_ASSERT(xml_helper::compare_xml_nodes(expected.child("workbook").child("sheets"),
             xml.child("workbook").child("sheets")));
     }
     
@@ -74,10 +75,10 @@ public:
         xlnt::workbook wb;
         temporary_file file;
 
+		TS_ASSERT(!file.get_path().exists())
         xlnt::excel_serializer serializer(wb);
-        serializer.save_workbook(file.get_filename());
-        
-        TS_ASSERT(path_helper::file_exists(file.get_filename()));
+		wb.save(file.get_path());
+		TS_ASSERT(file.get_path().exists());
     }
     
     void test_write_virtual_workbook()
@@ -102,9 +103,9 @@ public:
         xlnt::relationship_serializer serializer(archive);
         serializer.write_relationships(wb.get_relationships(), "xl/workbook.xml");
         pugi::xml_document observed;
-        observed.load(archive.read("xl/_rels/workbook.xml.rels").c_str());
+        observed.load(archive.read(xlnt::path("xl/_rels/workbook.xml.rels")).c_str());
 
-        TS_ASSERT(xml_helper::compare_xml(path_helper::get_data_directory("/writer/expected/workbook.xml.rels"), observed));
+        TS_ASSERT(xml_helper::file_matches_document(path_helper::get_data_directory("writer/expected/workbook.xml.rels"), observed));
     }
     
     void test_write_workbook_part()
@@ -113,9 +114,9 @@ public:
         xlnt::workbook_serializer serializer(wb);
         pugi::xml_document xml;
         serializer.write_workbook(xml);
-        auto filename = path_helper::get_data_directory("/writer/expected/workbook.xml");
 
-        TS_ASSERT(xml_helper::compare_xml(filename, xml));
+        auto filename = path_helper::get_data_directory("writer/expected/workbook.xml");
+        TS_ASSERT(xml_helper::file_matches_document(filename, xml));
     }
     
     void test_write_named_range()
@@ -132,7 +133,7 @@ public:
             "<s:definedName xmlns:s=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" name=\"test_range\">'Sheet'!$A$1:$B$5</s:definedName>"
         "</root>";
 
-        TS_ASSERT(xml_helper::compare_xml(expected, xml));
+        TS_ASSERT(xml_helper::string_matches_document(expected, xml));
     }
     
     void test_read_workbook_code_name()
@@ -165,7 +166,7 @@ public:
         pugi::xml_document expected_xml;
         expected_xml.load(expected.c_str());
 
-        TS_ASSERT(xml_helper::compare_xml(expected_xml.child("workbook").child("workbookPr"),
+        TS_ASSERT(xml_helper::compare_xml_nodes(expected_xml.child("workbook").child("workbookPr"),
             xml.child("workbook").child("workbookPr")));
     }
     
@@ -176,7 +177,7 @@ public:
         xlnt::relationship_serializer serializer(archive);
         serializer.write_relationships(wb.get_root_relationships(), "");
         pugi::xml_document observed;
-        observed.load(archive.read("_rels/.rels").c_str());
+        observed.load(archive.read(xlnt::path("_rels/.rels")).c_str());
         
         std::string expected =
         "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
@@ -185,7 +186,7 @@ public:
         "    <Relationship Id=\"rId3\" Target=\"docProps/app.xml\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties\"/>"
         "</Relationships>";
         
-        TS_ASSERT(xml_helper::compare_xml(expected, observed));
+        TS_ASSERT(xml_helper::string_matches_document(expected, observed));
     }
 
     void test_write_shared_strings_with_runs()
@@ -223,44 +224,27 @@ public:
         "  </si>"
         "</sst>";
 
-        TS_ASSERT(xml_helper::compare_xml(expected, xml));
+        TS_ASSERT(xml_helper::string_matches_document(expected, xml));
     }
 
     void test_write_worksheet_order()
     {
-        auto path = path_helper::get_data_directory("/genuine/tab_order.xlsx");
+        auto path = path_helper::get_data_directory("genuine/tab_order.xlsx");
 
         // Load an original workbook produced by Excel
         xlnt::workbook wb_src;
-        {
-          xlnt::excel_serializer serializer(wb_src);
-          serializer.load_workbook(path);
-        }
+		wb_src.load(path);
 
         // Save it to a new file, unmodified
         temporary_file file;
-        {
-          xlnt::excel_serializer serializer(wb_src);
-          serializer.save_workbook(file.get_filename());
-          TS_ASSERT(path_helper::file_exists(file.get_filename()));
-        }
+		wb_src.save(file.get_path());
+        TS_ASSERT(file.get_path().exists());
 
         // Load it again
         xlnt::workbook wb_dst;
-        {
-          xlnt::excel_serializer serializer(wb_dst);
-          serializer.load_workbook(file.get_filename());
-        }
+		wb_dst.load(file.get_path());
 
-        // Make sure the number of worksheets is the same
-        auto count_src = std::distance(wb_src.begin(), wb_src.end());
-        auto count_dst = std::distance(wb_dst.begin(), wb_dst.end());
-        TS_ASSERT(count_src == count_dst);
-
-        // Make sure the title of the first sheet matches
-        auto ws1title_src = wb_src[0].get_title();
-        auto ws1title_dst = wb_dst[0].get_title();
-        TS_ASSERT(ws1title_src.compare(ws1title_dst) == 0);
+		TS_ASSERT_EQUALS(wb_src.get_sheet_titles(), wb_dst.get_sheet_titles());
     }
 
 private:

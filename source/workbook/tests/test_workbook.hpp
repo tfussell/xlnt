@@ -181,10 +181,10 @@ public:
         auto sheet = book.get_active_sheet();
         sheet.get_cell("A1").set_value(today);
         temporary_file temp_file;
-        book.save(temp_file.get_filename());
+        book.save(temp_file.get_path());
 
         xlnt::workbook test_book;
-        test_book.load(temp_file.get_filename());
+        test_book.load(temp_file.get_path());
         auto test_sheet = test_book.get_active_sheet();
 
         TS_ASSERT_EQUALS(test_sheet.get_cell("A1").get_value<xlnt::datetime>(), today);
@@ -198,10 +198,10 @@ public:
         auto sheet = book.get_active_sheet();
         sheet.get_cell("A1").set_value(float_value);
         temporary_file temp_file;
-        book.save(temp_file.get_filename());
+        book.save(temp_file.get_path());
 
         xlnt::workbook test_book;
-        test_book.load(temp_file.get_filename());
+        test_book.load(temp_file.get_path());
         auto test_sheet = test_book.get_active_sheet();
 
         TS_ASSERT_EQUALS(test_sheet.get_cell("A1").get_value<long double>(), float_value);
@@ -265,13 +265,13 @@ public:
 
         xlnt::override_type o;
         TS_ASSERT(o.get_content_type().empty());
-        TS_ASSERT(o.get_part_name().empty());
+        TS_ASSERT(o.get_part().to_string().empty());
 
         xlnt::manifest m;
         TS_ASSERT(!m.has_default_type("xml"));
         TS_ASSERT_THROWS(m.get_default_type("xml"), std::out_of_range);
-        TS_ASSERT(!m.has_override_type("xl/workbook.xml"));
-        TS_ASSERT_THROWS(m.get_override_type("xl/workbook.xml"), std::out_of_range);
+        TS_ASSERT(!m.has_override_type(xlnt::path("xl/workbook.xml")));
+        TS_ASSERT_THROWS(m.get_override_type(xlnt::path("xl/workbook.xml")), std::out_of_range);
     }
 
     void test_get_bad_relationship()
@@ -322,19 +322,13 @@ public:
         
         const auto &wb_const = wb;
         //TODO these aren't tests...
-        wb_const.get_app_properties();
         wb_const.get_manifest();
         
-        TS_ASSERT(!wb.has_loaded_theme());
+        TS_ASSERT(wb.has_theme());
         
         wb.create_style("style1");
         wb.get_style("style1");
         wb_const.get_style("style1");
         wb.get_style_by_id(0);
-    }
-
-    void test_limits()
-    {
-        
     }
 };

@@ -26,10 +26,11 @@
 #include <unordered_map>
 
 #include <xlnt/cell/index_types.hpp>
+#include <xlnt/utils/path.hpp>
 
 namespace xlnt {
 
-struct constants
+struct XLNT_CLASS constants
 {
     /// <summary>
     /// Returns the lowest allowable row index in a worksheet.
@@ -54,67 +55,67 @@ struct constants
     /// <summary>
     /// Returns the URI of the directory containing package properties.
     /// </summary>
-    static const std::string package_properties();
+    static const path package_properties();
 
     /// <summary>
     /// Returns the URI of the directory containing SpreatsheetML package parts.
     /// </summary>
-    static const std::string package_xl();
+    static const path package_xl();
 
     /// <summary>
     /// Returns the URI of the directory containing root relationships package part.
     /// </summary>
-    static const std::string package_root_rels();
+    static const path package_root_rels();
 
     /// <summary>
     /// Returns the URI of the directory containing package themes.
     /// </summary>
-    static const std::string package_theme();
+    static const path package_theme();
 
     /// <summary>
     /// Returns the URI of the directory containing package worksheets.
     /// </summary>
-    static const std::string package_worksheets();
+    static const path package_worksheets();
 
     /// <summary>
     /// Returns the URI of the content types package part.
     /// </summary>
-    static const std::string part_content_types();
+    static const path part_content_types();
 
     /// <summary>
     /// Returns the URI of the core properties package part.
     /// </summary>
-    static const std::string part_core();
+    static const path part_core();
 
     /// <summary>
     /// Returns the URI of the app properties package part.
     /// </summary>
-    static const std::string part_app();
+    static const path part_app();
 
     /// <summary>
     /// Returns the URI of the workbook package part.
     /// </summary>
-    static const std::string part_workbook();
+    static const path part_workbook();
 
     /// <summary>
     /// Returns the URI of the root relationships package part.
     /// </summary>
-    static const std::string part_root_relationships();
+    static const path part_root_relationships();
 
     /// <summary>
     /// Returns the URI of the styles package part.
     /// </summary>
-    static const std::string part_styles();
+    static const path part_styles();
 
     /// <summary>
     /// Returns the URI of the theme package part.
     /// </summary>
-    static const std::string part_theme();
+    static const path part_theme();
 
     /// <summary>
     /// Returns the URI of the shared strings package part.
     /// </summary>
-    static const std::string part_shared_strings();
+    static const path part_shared_strings();
 
     /// <summary>
     /// Returns an unordered_map mapping namespace names to namespaces.

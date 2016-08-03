@@ -23,8 +23,7 @@
 #include <limits>
 
 #include <detail/constants.hpp>
-
-#include "xlnt_config.hpp"
+#include <xlnt/xlnt_config.hpp>
 
 namespace xlnt {
 
@@ -49,20 +48,20 @@ const column_t constants::max_column()
 }
 
 // constants
-const std::string constants::package_properties() { return "docProps"; }
-const std::string constants::package_xl() { return "xl"; }
-const std::string constants::package_root_rels() { return "_rels"; }
-const std::string constants::package_theme() { return package_xl() + "/" + "theme"; }
-const std::string constants::package_worksheets() { return package_xl() + "/" + "worksheets"; }
+const path constants::package_properties() { return path("docProps"); }
+const path constants::package_xl() { return path("xl"); }
+const path constants::package_root_rels() { return path(std::string("_rels")); }
+const path constants::package_theme() { return package_xl().append("theme"); }
+const path constants::package_worksheets() { return package_xl().append("worksheets"); }
 
-const std::string constants::part_content_types() { return "[Content_Types].xml"; }
-const std::string constants::part_root_relationships() { return package_root_rels() + "/.rels"; }
-const std::string constants::part_core() { return package_properties() + "/core.xml"; }
-const std::string constants::part_app() { return package_properties() + "/app.xml"; }
-const std::string constants::part_workbook() { return package_xl() + "/workbook.xml"; }
-const std::string constants::part_styles() { return package_xl() + "/styles.xml"; }
-const std::string constants::part_theme() { return package_theme() + "/theme1.xml"; }
-const std::string constants::part_shared_strings() { return package_xl() + "/sharedStrings.xml"; }
+const path constants::part_content_types() { return path("[Content_Types].xml"); }
+const path constants::part_root_relationships() { return package_root_rels().append(".rels"); }
+const path constants::part_core() { return package_properties().append("core.xml"); }
+const path constants::part_app() { return package_properties().append("app.xml"); }
+const path constants::part_workbook() { return package_xl().append("workbook.xml"); }
+const path constants::part_styles() { return package_xl().append("styles.xml"); }
+const path constants::part_theme() { return package_theme().append("theme1.xml"); }
+const path constants::part_shared_strings() { return package_xl().append("sharedStrings.xml"); }
 
 const std::unordered_map<std::string, std::string> &constants::get_namespaces()
 {

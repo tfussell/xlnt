@@ -604,12 +604,6 @@ public:
         TS_ASSERT_EQUALS(cell.get_value<std::string>(), std::string(32'767, 'a'));
     }
 
-    void test_operators()
-    {
-        xlnt::cell cell;
-        TS_ASSERT_EQUALS(cell, nullptr);
-    }
-
     void test_comment()
     {
         xlnt::workbook wb;
@@ -646,7 +640,7 @@ public:
     void test_anchor()
     {
         xlnt::workbook wb;
-        xlnt::cell cell(wb.get_active_sheet(), "A1");
+		auto cell = wb.get_active_sheet().get_cell("A1");
         auto anchor = cell.get_anchor();
         TS_ASSERT_EQUALS(anchor.first, 0);
         TS_ASSERT_EQUALS(anchor.second, 0);
@@ -655,7 +649,7 @@ public:
     void test_hyperlink()
     {
         xlnt::workbook wb;
-        xlnt::cell cell(wb.get_active_sheet(), "A1");
+		auto cell = wb.get_active_sheet().get_cell("A1");
         TS_ASSERT(!cell.has_hyperlink());
         TS_ASSERT_THROWS(cell.get_hyperlink(), std::runtime_error);
         TS_ASSERT_THROWS(cell.set_hyperlink("notaurl"), std::runtime_error);

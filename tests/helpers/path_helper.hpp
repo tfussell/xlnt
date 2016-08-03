@@ -22,39 +22,8 @@
 class path_helper
 {
 public:
-    static std::string read_file(const std::string &filename)
+    static xlnt::path get_executable_directory()
     {
-        std::ifstream f(filename);
-        std::ostringstream ss;
-        ss << f.rdbuf();
-        
-        return ss.str();
-    }
-    
-    static std::string windows_to_universal_path(const std::string &windows_path)
-    {
-        std::string fixed;
-        std::stringstream ss(windows_path);
-        std::string part;
-
-        while(std::getline(ss, part, '\\'))
-        {
-            if(fixed == "")
-            {
-                fixed = part;
-            }
-            else
-            {
-                fixed += "/" + part;
-            }
-        }
-
-        return fixed;
-    }
-    
-    static std::string get_executable_directory()
-    {
-        
 #ifdef __APPLE__
         std::array<char, 1024> path;
         uint32_t size = static_cast<uint32_t>(path.size());
@@ -74,7 +43,8 @@ public:
         {
             throw std::runtime_error("GetModuleFileName failed or buffer was too small");
         }
-        return windows_to_universal_path(std::string(buffer.begin(), buffer.begin() + result - 13)) + "/";
+
+        return xlnt::path(std::string(buffer.begin(), buffer.begin() + result - 13));
 #else
         char arg1[20];
         char exepath[PATH_MAX + 1] = {0};
@@ -86,13 +56,17 @@ public:
 #endif
     }
 
-    static std::string get_working_directory()
+    static xlnt::path get_working_directory(const std::string &append = "")
     {
-#ifdef _WIN32
+#ifdef _MSC_VER
         TCHAR buffer[MAX_PATH];
         GetCurrentDirectory(MAX_PATH, buffer);
+
         std::basic_string<TCHAR> working_directory(buffer);
-        return windows_to_universal_path(std::string(working_directory.begin(), working_directory.end()));
+		std::string working_directory_narrow(working_directory.begin(), working_directory.end());
+
+        return xlnt::path(working_directory_narrow)
+			.append(xlnt::path(append));
 #else
         char buffer[PATH_MAX];
 
@@ -105,59 +79,28 @@ public:
 #endif
     }
     
-    static std::string get_data_directory(const std::string &append = "")
+    static xlnt::path get_data_directory(const std::string &append = "")
     {
-        auto path = get_executable_directory() + "../../tests/data";
-
-        if (!append.empty())
-        {
-            if (append.front() != '/')
-            {
-                path.push_back('/');
-            }
-
-            path.append(append);
-        }
-
-        return path;
+        return xlnt::path("../../tests/data")
+			.make_absolute(get_executable_directory())
+			.append(xlnt::path(append));
     }
     
-    static void copy_file(const std::string &source, const std::string &destination, bool overwrite)
+    static void copy_file(const xlnt::path &source, const xlnt::path &destination, bool overwrite)
     {
-        if(!overwrite && file_exists(destination))
+        if(!overwrite && destination.exists())
         {
             throw std::runtime_error("destination file already exists and overwrite==false");
         }
         
-        std::ifstream src(source, std::ios::binary);
-        std::ofstream dst(destination, std::ios::binary);
+        std::ifstream src(source.to_string(), std::ios::binary);
+        std::ofstream dst(destination.to_string(), std::ios::binary);
         
         dst << src.rdbuf();
     }
 
-    static void delete_file(const std::string &path)
+    static void delete_file(const xlnt::path &path)
     {
-      std::remove(path.c_str());
-    }
-    
-    static bool file_exists(const std::string &path)
-    {        
-#ifdef _MSC_VER
-        std::wstring path_wide(path.begin(), path.end());
-        return PathFileExists(path_wide.c_str()) && !PathIsDirectory(path_wide.c_str());
-#else
-        try
-        {
-            struct stat fileAtt;
-
-            if (stat(path.c_str(), &fileAtt) == 0)
-            {
-                return S_ISREG(fileAtt.st_mode);
-            }
-        }
-        catch(...) {}
-
-        return false;
-#endif
+      std::remove(path.to_string().c_str());
     }
 };

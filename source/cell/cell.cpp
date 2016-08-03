@@ -155,24 +155,8 @@ std::string cell::check_string(const std::string &to_check)
     return s;
 }
 
-cell::cell() : d_(nullptr)
-{
-}
-
 cell::cell(detail::cell_impl *d) : d_(d)
 {
-}
-
-cell::cell(worksheet worksheet, const cell_reference &reference) : d_(nullptr)
-{
-    cell self = worksheet.get_cell(reference);
-    d_ = self.d_;
-}
-
-template <typename T>
-cell::cell(worksheet worksheet, const cell_reference &reference, const T &initial_value) : cell(worksheet, reference)
-{
-    set_value(initial_value);
 }
 
 bool cell::garbage_collectible() const
@@ -953,7 +937,7 @@ void cell::set_format(const format &new_format)
 
 calendar cell::get_base_date() const
 {
-    return get_workbook().get_properties().excel_base_date;
+	return get_workbook().get_base_date();
 }
 
 std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)

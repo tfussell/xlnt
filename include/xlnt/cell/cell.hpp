@@ -75,28 +75,6 @@ public:
     /// </summary>
     static const std::unordered_map<std::string, int> &error_codes();
 
-    // TODO: Should it be possible to construct and use a cell without a parent worksheet?
-    //(cont'd) If so, it would need to be responsible for allocating and deleting its PIMPL.
-
-    /// <summary>
-    /// Construct a null cell without a parent.
-    /// Most methods will throw an exception if this cell is not further initialized.
-    /// </summary>
-    cell();
-
-    /// <summary>
-    /// Construct a cell in worksheet, sheet, at the given reference location (e.g. A1).
-    /// </summary>
-    cell(worksheet sheet, const cell_reference &reference);
-
-    /// <summary>
-    /// This constructor, provided for convenience, is equivalent to calling:
-    /// cell c(sheet, reference);
-    /// c.set_value(initial_value);
-    /// </summary>
-    template <typename T>
-    cell(worksheet sheet, const cell_reference &reference, const T &initial_value);
-
     // value
 
     /// <summary>

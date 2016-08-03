@@ -21,7 +21,7 @@ public:
     xlnt::workbook standard_workbook()
     {
         xlnt::workbook wb;
-        auto path = path_helper::get_data_directory("/genuine/empty.xlsx");
+        auto path = path_helper::get_data_directory("genuine/empty.xlsx");
         wb.load(path);
         
         return wb;
@@ -34,8 +34,8 @@ public:
 
     void test_read_standard_workbook_from_fileobj()
     {
-        auto path = path_helper::get_data_directory("/genuine/empty.xlsx");
-        std::ifstream fo(path, std::ios::binary);
+        auto path = path_helper::get_data_directory("genuine/empty.xlsx");
+        std::ifstream fo(path.to_string(), std::ios::binary);
 
         xlnt::workbook wb;
         TS_ASSERT(wb.load(fo));
@@ -55,7 +55,7 @@ public:
 
     void test_read_nostring_workbook()
     {
-        auto path = path_helper::get_data_directory("/genuine/empty-no-string.xlsx");
+        auto path = path_helper::get_data_directory("genuine/empty-no-string.xlsx");
         
         xlnt::workbook wb;
         TS_ASSERT_THROWS_NOTHING(wb.load(path));
@@ -63,42 +63,28 @@ public:
 
     void test_read_empty_file()
     {
-        auto path = path_helper::get_data_directory("/reader/null_file.xlsx");
-        
         xlnt::workbook wb;
-        xlnt::excel_serializer serializer(wb);
-        
-        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file);
+        TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("reader/null_file.xlsx")), xlnt::invalid_file);
     }
 
     void test_read_empty_archive()
     {
-        auto path = path_helper::get_data_directory("/reader/null_archive.xlsx");
-        
-        xlnt::workbook wb;
-        xlnt::excel_serializer serializer(wb);
-        
-        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file);
+		xlnt::workbook wb;
+		TS_ASSERT_THROWS(wb.load(path_helper::get_data_directory("reader/null_archive.xlsx")), xlnt::invalid_file);
     }
     
     void test_read_workbook_with_no_properties()
     {
-        auto path = path_helper::get_data_directory("/genuine/empty_with_no_properties.xlsx");
-
-        xlnt::workbook wb;
-        xlnt::excel_serializer serializer(wb);
-        
-        serializer.load_workbook(path);
+		xlnt::workbook wb;
+		TS_ASSERT_THROWS_NOTHING(wb.load(path_helper::get_data_directory("genuine/empty_with_no_properties.xlsx")));
     }
 
     xlnt::workbook workbook_with_styles()
     {
-        auto path = path_helper::get_data_directory("/genuine/empty-with-styles.xlsx");
+		xlnt::workbook wb;
+		wb.load(path_helper::get_data_directory("genuine/empty-with-styles.xlsx"));
 
-        xlnt::workbook wb;
-        wb.load(path);
-        
-        return wb;
+		return wb;
     }
 
     void test_read_workbook_with_styles_general()
@@ -148,12 +134,9 @@ public:
     
     void test_read_charset_excel()
     {
-        auto path = path_helper::get_data_directory("/reader/charset-excel.xlsx");
-        
         xlnt::workbook wb;
-        xlnt::excel_serializer serializer(wb);
-        
-        serializer.load_workbook(path);
+		auto path = path_helper::get_data_directory("reader/charset-excel.xlsx");
+		wb.load(path);
         
         auto ws = wb["Sheet1"];
         auto val = ws.get_cell("A1").get_value<std::string>();
@@ -162,13 +145,10 @@ public:
     
     void test_read_shared_strings_max_range()
     {
-        auto path = path_helper::get_data_directory("/reader/shared_strings-max_range.xlsx");
-        
         xlnt::workbook wb;
-        xlnt::excel_serializer serializer(wb);
-        
-        serializer.load_workbook(path);
-        
+		const auto path = path_helper::get_data_directory("reader/shared_strings-max_range.xlsx");
+		wb.load(path);
+
         auto ws = wb["Sheet1"];
         auto val = ws.get_cell("A1").get_value<std::string>();
         TS_ASSERT_EQUALS(val, "Donald");
@@ -176,12 +156,10 @@ public:
     
     void test_read_shared_strings_multiple_r_nodes()
     {
-        auto path = path_helper::get_data_directory("/reader/shared_strings-multiple_r_nodes.xlsx");
+        auto path = path_helper::get_data_directory("reader/shared_strings-multiple_r_nodes.xlsx");
 
         xlnt::workbook wb;
-        xlnt::excel_serializer serializer(wb);
-
-        serializer.load_workbook(path);
+		wb.load(path);
 
         auto ws = wb["Sheet1"];
         auto val = ws.get_cell("A1").get_value<std::string>();
@@ -190,34 +168,30 @@ public:
 
     xlnt::workbook date_mac_1904()
     {
-        auto path = path_helper::get_data_directory("/reader/date_1904.xlsx");
-        
         xlnt::workbook wb;
-		wb.load(path);
-        
+		wb.load(path_helper::get_data_directory("reader/date_1904.xlsx"));
+
         return wb;
     }
     
     xlnt::workbook date_std_1900()
     {
-        auto path = path_helper::get_data_directory("/reader/date_1900.xlsx");
-
         xlnt::workbook wb;
-		wb.load(path);
-        
+		wb.load(path_helper::get_data_directory("reader/date_1900.xlsx"));
+
         return wb;
     }
     
     void test_read_win_base_date()
     {
         auto wb = date_std_1900();
-        TS_ASSERT_EQUALS(wb.get_properties().excel_base_date, xlnt::calendar::windows_1900);
+        TS_ASSERT_EQUALS(wb.get_base_date(), xlnt::calendar::windows_1900);
     }
     
     void test_read_mac_base_date()
     {
         auto wb = date_mac_1904();
-        TS_ASSERT_EQUALS(wb.get_properties().excel_base_date, xlnt::calendar::mac_1904);
+        TS_ASSERT_EQUALS(wb.get_base_date(), xlnt::calendar::mac_1904);
     }
 
     void test_read_date_style_win()
@@ -260,7 +234,7 @@ public:
     
     void test_read_no_theme()
     {
-        auto path = path_helper::get_data_directory("/genuine/libreoffice_nrt.xlsx");
+        auto path = path_helper::get_data_directory("genuine/libreoffice_nrt.xlsx");
         
         xlnt::workbook wb;
         TS_ASSERT_THROWS_NOTHING(wb.load(path));
@@ -269,7 +243,7 @@ public:
     void _test_read_complex_formulae()
     {
         /*
-        auto path = PathHelper::GetDataDirectory("/reader/formulae.xlsx");
+        auto path = PathHelper::GetDataDirectory("reader/formulae.xlsx");
         auto wb = xlnt::reader::load_workbook(path);
         auto ws = wb.get_active_sheet();
 
@@ -325,12 +299,11 @@ public:
     
     void test_data_only()
     {
-        auto path = path_helper::get_data_directory("/reader/formulae.xlsx");
+        auto path = path_helper::get_data_directory("reader/formulae.xlsx");
         
         xlnt::workbook wb;
-        xlnt::excel_serializer serializer(wb);
-        
-        serializer.load_workbook(path, false, true);
+		wb.set_data_only(true);
+		wb.load(path);
 
         auto ws = wb.get_active_sheet();
 
@@ -362,7 +335,7 @@ public:
                 {xlnt::relationship::type::styles, "rId4", "styles.xml"}
             };
 
-            auto path = path_helper::get_data_directory("/reader/bug137.xlsx");
+            auto path = path_helper::get_data_directory("reader/bug137.xlsx");
             xlnt::zip_file archive(path);
             xlnt::relationship_serializer serializer(archive);
             
@@ -382,7 +355,7 @@ public:
                 {xlnt::relationship::type::theme, "rId4", "/xl/theme/theme.xml"}
             };
 
-            auto path = path_helper::get_data_directory("/reader/bug304.xlsx");
+            auto path = path_helper::get_data_directory("reader/bug304.xlsx");
             xlnt::zip_file archive(path);
             xlnt::relationship_serializer serializer(archive);
 
@@ -410,7 +383,7 @@ public:
             {"/docProps/app.xml", "application/vnd.openxmlformats-officedocument.extended-properties+xml"}
         };
         
-        auto path = path_helper::get_data_directory("/reader/contains_chartsheets.xlsx");
+        auto path = path_helper::get_data_directory("reader/contains_chartsheets.xlsx");
 
         xlnt::workbook wb;
         wb.load(path);
@@ -425,8 +398,8 @@ public:
 
         for(std::size_t i = 0; i < expected.size(); i++)
         {
-            TS_ASSERT(wb.get_manifest().has_override_type(expected[i].first));
-            TS_ASSERT_EQUALS(wb.get_manifest().get_override_type(expected[i].first), expected[i].second);
+            TS_ASSERT(wb.get_manifest().has_override_type(xlnt::path(expected[i].first)));
+            TS_ASSERT_EQUALS(wb.get_manifest().get_override_type(xlnt::path(expected[i].first)), expected[i].second);
         }
     }
     
@@ -439,12 +412,11 @@ public:
         for(const auto &expected : test_cases)
         {
             std::tie(guess, dtype) = expected;
-            auto path = path_helper::get_data_directory("/genuine/guess_types.xlsx");
+            auto path = path_helper::get_data_directory("genuine/guess_types.xlsx");
             
             xlnt::workbook wb;
-            xlnt::excel_serializer serializer(wb);
-            
-            serializer.load_workbook(path, guess);
+			wb.set_guess_types(guess);
+			wb.load(path);
 
             auto ws = wb.get_active_sheet();
             TS_ASSERT(ws.get_cell("D2").get_data_type() == dtype);
@@ -453,12 +425,10 @@ public:
     
     void test_read_autofilter()
     {
-        auto path = path_helper::get_data_directory("/reader/bug275.xlsx");
+        auto path = path_helper::get_data_directory("reader/bug275.xlsx");
 
         xlnt::workbook wb;
-        xlnt::excel_serializer serializer(wb);
-        
-        serializer.load_workbook(path);
+		wb.load(path);
         
         auto ws = wb.get_active_sheet();
         TS_ASSERT_EQUALS(ws.get_auto_filter().to_string(), "A1:B6");
@@ -466,32 +436,23 @@ public:
     
     void test_bad_formats_xlsb()
     {
-        auto path = path_helper::get_data_directory("/genuine/a.xlsb");
-        
+        auto path = path_helper::get_data_directory("genuine/a.xlsb");
         xlnt::workbook wb;
-        xlnt::excel_serializer serializer(wb);
-        
-        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file);
+        TS_ASSERT_THROWS(wb.load(path), xlnt::invalid_file);
     }
     
     void test_bad_formats_xls()
     {
-        auto path = path_helper::get_data_directory("/genuine/a.xls");
-        
+        auto path = path_helper::get_data_directory("genuine/a.xls");
         xlnt::workbook wb;
-        xlnt::excel_serializer serializer(wb);
-        
-        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file);
+		TS_ASSERT_THROWS(wb.load(path), xlnt::invalid_file);
     }
     
     void test_bad_formats_no()
     {
-        auto path = path_helper::get_data_directory("/genuine/a.no-format");
-        
+        auto path = path_helper::get_data_directory("genuine/a.no-format");
         xlnt::workbook wb;
-        xlnt::excel_serializer serializer(wb);
-        
-        TS_ASSERT_THROWS(serializer.load_workbook(path), xlnt::invalid_file);
+		TS_ASSERT_THROWS(wb.load(path), xlnt::invalid_file);
     }
 
 
@@ -550,7 +511,7 @@ public:
     void test_read_inlinestr()
     {
         xlnt::workbook wb;
-        wb.load(path_helper::get_data_directory("/genuine/empty.xlsx"));
+        wb.load(path_helper::get_data_directory("genuine/empty.xlsx"));
         TS_ASSERT_EQUALS(wb.get_sheet_by_index(0).get_cell("A1").get_value<std::string>(), "This is cell A1 in Sheet 1");
     }
 

@@ -38,7 +38,7 @@ std::string make_rels_name(const std::string &target)
 
     if (target.empty())
     {
-        return xlnt::constants::part_root_relationships();
+        return xlnt::constants::part_root_relationships().to_string();
     }
 
     auto sep_pos = target.find_last_of(sep);
@@ -58,7 +58,7 @@ relationship_serializer::relationship_serializer(zip_file &archive) : archive_(a
 std::vector<relationship> relationship_serializer::read_relationships(const std::string &target)
 {
     pugi::xml_document xml;
-    xml.load(archive_.read(make_rels_name(target)).c_str());
+    xml.load(archive_.read(path(make_rels_name(target))).c_str());
 
     auto root_node = xml.child("Relationships");
 
@@ -101,7 +101,7 @@ bool relationship_serializer::write_relationships(const std::vector<relationship
 
     std::ostringstream ss;
     xml.save(ss);
-    archive_.writestr(make_rels_name(target), ss.str());
+    archive_.write_string(ss.str(), path(make_rels_name(target)));
 
     return true;
 }

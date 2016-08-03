@@ -23,41 +23,43 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <string>
-#include <unordered_map>
+#include <cstdint>
+#include <iostream>
+#include <vector>
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/packaging/default_type.hpp>
-#include <xlnt/packaging/override_type.hpp>
-#include <xlnt/utils/path.hpp>
 
 namespace xlnt {
 
+class path;
+class workbook;
+class zip_file;
+
 /// <summary>
-/// The manifest keeps track of all files the OOXML package and
-/// their type.
+/// Handles writing a workbook into an XLSX file.
 /// </summary>
-class XLNT_CLASS manifest
+class XLNT_CLASS xlsx_writer
 {
 public:
-	using default_types_container = std::unordered_map<std::string, default_type>;
-	using override_types_container = std::unordered_map<path, override_type, std::hash<hashable>>;
+	xlsx_writer(const workbook &target);
 
-    void clear();
+	void write(const path &destination);
 
-    bool has_default_type(const std::string &extension) const;
-    std::string get_default_type(const std::string &extension) const;
-    const default_types_container &get_default_types() const;
-    void add_default_type(const std::string &extension, const std::string &content_type);
+	void write(std::ostream &destination);
 
-    bool has_override_type(const path &part) const;
-    std::string get_override_type(const path &part) const;
-    const override_types_container &get_override_types() const;
-    void add_override_type(const path &part, const std::string &content_type);
+	void write(std::vector<std::uint8_t> &destination);
 
 private:
-    default_types_container default_types_;
-    override_types_container override_types_;
+	/// <summary>
+	/// Write all files needed to create a valid XLSX file which represents all
+	/// data contained in workbook.
+	/// </summary>
+	void populate_archive(zip_file &archive);
+
+	/// <summary>
+	/// A reference to the workbook which is the object of read/write operations.
+	/// </summary>
+	const workbook &target_;
 };
 
 } // namespace xlnt

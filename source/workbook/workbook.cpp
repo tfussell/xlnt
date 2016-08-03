@@ -48,6 +48,7 @@
 #include <xlnt/styles/number_format.hpp>
 #include <xlnt/styles/protection.hpp>
 #include <xlnt/utils/exceptions.hpp>
+#include <xlnt/utils/path.hpp>
 #include <xlnt/workbook/const_worksheet_iterator.hpp>
 #include <xlnt/workbook/named_range.hpp>
 #include <xlnt/workbook/theme.hpp>
@@ -57,39 +58,64 @@
 #include <xlnt/worksheet/worksheet.hpp>
 
 namespace xlnt {
-namespace detail {
 
-workbook_impl::workbook_impl()
-    : active_sheet_index_(0),
-      guess_types_(false),
-      data_only_(false)
+workbook workbook::minimal()
 {
+	auto impl = new detail::workbook_impl();
+	workbook wb(impl);
+
+	return wb;
 }
 
-} // namespace detail
-
-workbook::workbook() : d_(new detail::workbook_impl())
+workbook workbook::empty_excel()
 {
-	create_sheet();
-    
-    create_relationship("rId2", "styles.xml", relationship::type::styles);
-    create_relationship("rId3", "theme/theme1.xml", relationship::type::theme);
-    
-    d_->manifest_.add_default_type("rels", "application/vnd.openxmlformats-package.relationships+xml");
-    d_->manifest_.add_default_type("xml", "application/xml");
-    
-    d_->manifest_.add_override_type("/" + constants::part_workbook(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml");
-    d_->manifest_.add_override_type("/" + constants::part_theme(), "application/vnd.openxmlformats-officedocument.theme+xml");
-    d_->manifest_.add_override_type("/" + constants::part_styles(), "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml");
-    d_->manifest_.add_override_type("/" + constants::part_core(), "application/vnd.openxmlformats-package.core-properties+xml");
-    d_->manifest_.add_override_type("/" + constants::part_app(), "application/vnd.openxmlformats-officedocument.extended-properties+xml");
-    
-    add_format(format());
-    create_style("Normal");
-    d_->stylesheet_.format_styles.front() = "Normal";
+	auto impl = new detail::workbook_impl();
+	xlnt::workbook wb(impl);
 
-    xlnt::fill gray125 = xlnt::fill::pattern(xlnt::pattern_fill::type::gray125);
-    d_->stylesheet_.fills.push_back(gray125);
+	wb.set_application("Microsoft Excel");
+	wb.create_sheet();
+	wb.add_format(format());
+	wb.create_style("Normal");
+	wb.set_theme(theme());
+
+	auto &manifest = wb.d_->manifest_;
+	manifest.add_override_type(constants::part_workbook(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml");
+	manifest.add_override_type(constants::part_theme(), "application/vnd.openxmlformats-officedocument.theme+xml");
+	manifest.add_override_type(constants::part_styles(), "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml");
+	manifest.add_override_type(constants::part_core(), "application/vnd.openxmlformats-package.core-properties+xml");
+	manifest.add_override_type(constants::part_app(), "application/vnd.openxmlformats-officedocument.extended-properties+xml");
+
+	wb.d_->stylesheet_.format_styles.front() = "Normal";
+
+	xlnt::fill gray125 = xlnt::fill::pattern(xlnt::pattern_fill::type::gray125);
+	wb.d_->stylesheet_.fills.push_back(gray125);
+
+	return wb;
+}
+
+workbook workbook::empty_libre_office()
+{
+	auto impl = new detail::workbook_impl();
+	workbook wb(impl);
+
+	return wb;
+}
+
+workbook workbook::empty_numbers()
+{
+	auto impl = new detail::workbook_impl();
+	workbook wb(impl);
+
+	return wb;
+}
+
+workbook::workbook()
+{
+	swap(*this, empty_excel());
+}
+
+workbook::workbook(detail::workbook_impl *impl) : d_(impl)
+{
 }
 
 const worksheet workbook::get_sheet_by_name(const std::string &name) const
@@ -120,17 +146,29 @@ worksheet workbook::get_sheet_by_name(const std::string &name)
 
 worksheet workbook::get_sheet_by_index(std::size_t index)
 {
-    return worksheet(&d_->worksheets_[index]);
+	auto iter = d_->worksheets_.begin();
+
+	for (std::size_t i = 0; i < index; ++i, ++iter)
+	{
+	}
+
+	return worksheet(&*iter);
 }
 
 const worksheet workbook::get_sheet_by_index(std::size_t index) const
 {
-    return worksheet(&d_->worksheets_.at(index));
+	auto iter = d_->worksheets_.begin();
+
+	for (std::size_t i = 0; i < index; ++i, ++iter)
+	{
+	}
+
+	return worksheet(&*iter);
 }
 
 worksheet workbook::get_active_sheet()
 {
-    return worksheet(&d_->worksheets_[d_->active_sheet_index_]);
+    return get_sheet_by_index(d_->active_sheet_index_);
 }
 
 bool workbook::has_named_range(const std::string &name) const
@@ -157,13 +195,13 @@ worksheet workbook::create_sheet()
 
     auto sheet_id = d_->worksheets_.size() + 1;
     std::string sheet_filename = "sheet" + std::to_string(sheet_id) + ".xml";
+	path sheet_path = constants::package_worksheets().append(sheet_filename);
 
     d_->worksheets_.push_back(detail::worksheet_impl(this, sheet_id, title));
     create_relationship("rId" + std::to_string(sheet_id),
                         "worksheets/" + sheet_filename,
                         relationship::type::worksheet);
-    d_->manifest_.add_override_type("/" + constants::package_worksheets()
-        + "/" + sheet_filename,
+    d_->manifest_.add_override_type(sheet_path,
         "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
 
     return worksheet(&d_->worksheets_.back());
@@ -185,7 +223,13 @@ void workbook::copy_sheet(xlnt::worksheet worksheet, std::size_t index)
 
     if (index != d_->worksheets_.size() - 1)
     {
-		d_->worksheets_.insert(d_->worksheets_.begin() + index, d_->worksheets_.back());
+		auto iter = d_->worksheets_.begin();
+
+		for (std::size_t i = 0; i < index; ++i, ++iter)
+		{
+		}
+
+		d_->worksheets_.insert(iter, d_->worksheets_.back());
 		d_->worksheets_.pop_back();
     }
 }
@@ -257,10 +301,15 @@ bool workbook::load(const std::vector<unsigned char> &data)
 
 bool workbook::load(const std::string &filename)
 {
-    excel_serializer serializer_(*this);
-    serializer_.load_workbook(filename);
+	return load(path(filename));
+}
 
-    return true;
+bool workbook::load(const path &filename)
+{
+	excel_serializer serializer_(*this);
+	serializer_.load_workbook(filename);
+
+	return true;
 }
 
 void workbook::set_guess_types(bool guess)
@@ -320,11 +369,17 @@ worksheet workbook::create_sheet(std::size_t index)
 
     if (index != d_->worksheets_.size() - 1)
     {
-		d_->worksheets_.insert(d_->worksheets_.begin() + index, d_->worksheets_.back());
+		auto iter = d_->worksheets_.begin();
+
+		for (std::size_t i = 0; i < index; ++i, ++iter)
+		{
+		}
+
+		d_->worksheets_.insert(iter, d_->worksheets_.back());
 		d_->worksheets_.pop_back();
     }
 
-    return worksheet(&d_->worksheets_[index]);
+	return get_sheet_by_index(index);
 }
 
 worksheet workbook::create_sheet_with_rel(const std::string &title, const relationship &rel)
@@ -384,7 +439,7 @@ worksheet workbook::operator[](const std::string &name)
 
 worksheet workbook::operator[](std::size_t index)
 {
-    return worksheet(&d_->worksheets_.at(index));
+	return get_sheet_by_index(index);
 }
 
 void workbook::clear()
@@ -392,7 +447,6 @@ void workbook::clear()
     d_->worksheets_.clear();
     d_->relationships_.clear();
     d_->active_sheet_index_ = 0;
-    d_->properties_ = document_properties();
     d_->manifest_.clear();
     clear_styles();
     clear_formats();
@@ -408,10 +462,15 @@ bool workbook::save(std::vector<unsigned char> &data)
 
 bool workbook::save(const std::string &filename)
 {
-    excel_serializer serializer(*this);
-    serializer.save_workbook(filename);
+	return save(path(filename));
+}
 
-    return true;
+bool workbook::save(const path &filename)
+{
+	excel_serializer serializer(*this);
+	serializer.save_workbook(filename);
+
+	return true;
 }
 
 bool workbook::operator==(const workbook &rhs) const
@@ -429,41 +488,26 @@ const std::vector<relationship> &xlnt::workbook::get_relationships() const
     return d_->relationships_;
 }
 
-document_properties &workbook::get_properties()
-{
-    return d_->properties_;
-}
-
-const document_properties &workbook::get_properties() const
-{
-    return d_->properties_;
-}
-
-app_properties &workbook::get_app_properties()
-{
-    return d_->app_properties_;
-}
-
-const app_properties &workbook::get_app_properties() const
-{
-    return d_->app_properties_;
-}
-
-
 void swap(workbook &left, workbook &right)
 {
     using std::swap;
     swap(left.d_, right.d_);
 
-    for (auto ws : left)
-    {
-        ws.set_parent(left);
-    }
+	if (left.d_ != nullptr)
+	{
+		for (auto ws : left)
+		{
+			ws.set_parent(left);
+		}
+	}
 
-    for (auto ws : right)
-    {
-        ws.set_parent(right);
-    }
+	if (right.d_ != nullptr)
+	{
+		for (auto ws : right)
+		{
+			ws.set_parent(right);
+		}
+	}
 }
 
 workbook &workbook::operator=(workbook other)
@@ -472,7 +516,7 @@ workbook &workbook::operator=(workbook other)
     return *this;
 }
 
-workbook::workbook(workbook &&other) : workbook()
+workbook::workbook(workbook &&other) : workbook(nullptr)
 {
     swap(*this, other);
 }
@@ -505,14 +549,40 @@ void workbook::set_code_name(const std::string & /*code_name*/)
 {
 }
 
-bool workbook::has_loaded_theme() const
+bool workbook::has_theme() const
 {
-    return false;
+	return d_->has_theme_;
 }
 
-const theme &workbook::get_loaded_theme() const
+const theme &workbook::get_theme() const
 {
     return d_->theme_;
+}
+
+void workbook::set_theme(const theme &value)
+{
+	if (!d_->has_theme_)
+	{
+		bool has_theme_relationship = false;
+
+		for (const auto &rel : get_relationships())
+		{
+			if (rel.get_type() == relationship::type::theme)
+			{
+				has_theme_relationship = true;
+				break;
+			}
+		}
+
+		if (!has_theme_relationship)
+		{
+			create_relationship(next_relationship_id(), "theme/theme1.xml", relationship::type::theme);
+			d_->manifest_.add_override_type(constants::part_theme(), "application/vnd.openxmlformats-officedocument.spreadsheetml.theme+xml");
+		}
+	}
+
+	d_->has_theme_ = true;
+	d_->theme_ = value;
 }
 
 std::vector<named_range> workbook::get_named_ranges() const
@@ -532,11 +602,51 @@ std::vector<named_range> workbook::get_named_ranges() const
 
 std::size_t workbook::add_format(const format &to_add)
 {
+	if (d_->stylesheet_.formats.empty())
+	{
+		bool has_style_relationship = false;
+
+		for (const auto &rel : get_relationships())
+		{
+			if (rel.get_type() == relationship::type::styles)
+			{
+				has_style_relationship = true;
+				break;
+			}
+		}
+
+		if (!has_style_relationship)
+		{
+			create_relationship(next_relationship_id(), "styles.xml", relationship::type::styles);
+			d_->manifest_.add_override_type(constants::part_styles(), "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml");
+		}
+	}
+
     return d_->stylesheet_.add_format(to_add);
 }
 
 std::size_t workbook::add_style(const style &to_add)
 {
+	if (d_->stylesheet_.formats.empty())
+	{
+		bool has_style_relationship = false;
+
+		for (const auto &rel : get_relationships())
+		{
+			if (rel.get_type() == relationship::type::styles)
+			{
+				has_style_relationship = true;
+				break;
+			}
+		}
+
+		if (!has_style_relationship)
+		{
+			create_relationship(next_relationship_id(), "styles.xml", relationship::type::styles);
+			d_->manifest_.add_override_type(constants::part_styles(), "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml");
+		}
+	}
+
     return d_->stylesheet_.add_style(to_add);
 }
 
@@ -604,11 +714,11 @@ const std::vector<relationship> &workbook::get_root_relationships() const
     if (d_->root_relationships_.empty())
     {
         d_->root_relationships_.push_back(
-            relationship(relationship::type::core_properties, "rId1", constants::part_core()));
+            relationship(relationship::type::core_properties, "rId1", constants::part_core().to_string()));
         d_->root_relationships_.push_back(
-            relationship(relationship::type::extended_properties, "rId2", constants::part_app()));
+            relationship(relationship::type::extended_properties, "rId2", constants::part_app().to_string()));
         d_->root_relationships_.push_back(
-            relationship(relationship::type::office_document, "rId3", constants::part_workbook()));
+            relationship(relationship::type::office_document, "rId3", constants::part_workbook().to_string()));
     }
 
     return d_->root_relationships_;
@@ -642,7 +752,7 @@ void workbook::add_shared_string(const text &shared, bool allow_duplicates)
         if (!has_shared_strings)
         {
             create_relationship(next_relationship_id(), "sharedStrings.xml", relationship::type::shared_strings);
-            d_->manifest_.add_override_type("/" + constants::part_shared_strings(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml");
+            d_->manifest_.add_override_type(constants::part_shared_strings(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml");
         }
     }
 
@@ -722,5 +832,147 @@ std::string workbook::next_relationship_id() const
     
     return "rId" + std::to_string(i);
 }
+
+std::string workbook::get_application() const
+{
+	return d_->application_;
+}
+
+void workbook::set_application(const std::string &application)
+{
+	d_->write_app_properties_ = true;
+	d_->application_ = application;
+}
+
+calendar workbook::get_base_date() const
+{
+	return d_->base_date_;
+}
+
+void workbook::set_base_date(calendar base_date)
+{
+	d_->base_date_ = base_date;
+}
+
+std::string workbook::get_creator() const
+{
+	return d_->creator_;
+}
+
+void workbook::set_creator(const std::string &creator)
+{
+	d_->creator_ = creator;
+}
+
+std::string workbook::get_last_modified_by() const
+{
+	return d_->last_modified_by_;
+}
+
+void workbook::set_last_modified_by(const std::string &last_modified_by)
+{
+	d_->last_modified_by_ = last_modified_by;
+}
+
+datetime workbook::get_created() const
+{
+	return d_->created_;
+}
+
+void workbook::set_created(const datetime &when)
+{
+	d_->created_ = when;
+}
+
+datetime workbook::get_modified() const
+{
+	return d_->modified_;
+}
+
+void workbook::set_modified(const datetime &when)
+{
+	d_->modified_ = when;
+}
+
+int workbook::get_doc_security() const
+{
+	return d_->doc_security_;
+}
+
+void workbook::set_doc_security(int doc_security)
+{
+	d_->doc_security_ = doc_security;
+}
+
+bool workbook::get_scale_crop() const
+{
+	return d_->scale_crop_;
+}
+
+void workbook::set_scale_crop(bool scale_crop)
+{
+	d_->scale_crop_ = scale_crop;
+}
+
+std::string workbook::get_company() const
+{
+	return d_->company_;
+}
+
+void workbook::set_company(const std::string &company)
+{
+	d_->company_ = company;
+}
+
+bool workbook::links_up_to_date() const
+{
+	return d_->links_up_to_date_;
+}
+
+void workbook::set_links_up_to_date(bool links_up_to_date)
+{
+	d_->links_up_to_date_ = links_up_to_date;
+}
+
+bool workbook::is_shared_doc() const
+{
+	return d_->shared_doc_;
+}
+
+void workbook::set_shared_doc(bool shared_doc)
+{
+	d_->shared_doc_ = shared_doc;
+}
+
+bool workbook::hyperlinks_changed() const
+{
+	return d_->hyperlinks_changed_;
+}
+
+void workbook::set_hyperlinks_changed(bool hyperlinks_changed)
+{
+	d_->hyperlinks_changed_ = hyperlinks_changed;
+}
+
+std::string workbook::get_app_version() const
+{
+	return d_->app_version_;
+}
+
+void workbook::set_app_version(const std::string &version)
+{
+	d_->app_version_ = version;
+}
+
+std::string workbook::get_title() const
+{
+	return d_->title_;
+}
+
+void workbook::set_title(const std::string &title)
+{
+	d_->title_ = title;
+}
+
 
 } // namespace xlnt

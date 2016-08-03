@@ -62,7 +62,7 @@ public:
     /// Create a ZIP file in memory, load archive from filename, then populate workbook
     /// with data from archive.
     /// </summary>
-    bool load_workbook(const std::string &filename, bool guess_types = false, bool data_only = false);
+    bool load_workbook(const path &filename, bool guess_types = false, bool data_only = false);
 
     /// <summary>
     /// Create a ZIP file in memory, load archive from stream, then populate workbook
@@ -81,7 +81,7 @@ public:
     /// Create a ZIP file in memory, save workbook to this archive, then save archive
     /// to filename.
     /// </summary>
-    bool save_workbook(const std::string &filename, bool as_template = false);
+    bool save_workbook(const path &filename, bool as_template = false);
 
     /// <summary>
     /// Create a ZIP file in memory, save workbook to this archive, then assign ZIP file

@@ -46,7 +46,7 @@ void manifest_serializer::read_manifest(const pugi::xml_document &xml)
         }
         else if (child.name() == std::string("Override"))
         {
-            manifest_.add_override_type(child.attribute("PartName").value(), child.attribute("ContentType").value());
+            manifest_.add_override_type(path(child.attribute("PartName").value()), child.attribute("ContentType").value());
         }
     }
 }
@@ -66,7 +66,7 @@ void manifest_serializer::write_manifest(pugi::xml_document &xml) const
     for (const auto override_type : manifest_.get_override_types())
     {
         auto type_node = root_node.append_child("Override");
-        type_node.append_attribute("PartName").set_value(override_type.second.get_part_name().c_str());
+        type_node.append_attribute("PartName").set_value(override_type.second.get_part().to_string('/').c_str());
         type_node.append_attribute("ContentType").set_value(override_type.second.get_content_type().c_str());
     }
 }

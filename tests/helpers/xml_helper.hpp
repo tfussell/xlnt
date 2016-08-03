@@ -32,46 +32,56 @@ public:
         }
     };
     
-    static comparison_result compare_xml(const pugi::xml_document &expected, const pugi::xml_document &observed)
+    static bool documents_match(const pugi::xml_document &expected, 
+		const pugi::xml_document &observed)
     {
-        return compare_xml(expected.root(), observed.root());
+        auto result = compare_xml_nodes(expected.root(), observed.root());
+
+		if (!result)
+		{
+			std::cout << "documents don't match" << std::endl;
+
+			std::cout << "expected:" << std::endl;
+			expected.save(std::cout);
+			std::cout << std::endl;
+
+			std::cout << "observed:" << std::endl;
+			observed.save(std::cout);
+			std::cout << std::endl;
+
+			return false;
+		}
+
+		return true;
     }
 
-    static comparison_result compare_xml(const std::string &expected, const pugi::xml_document &observed)
-    {
-        std::string expected_contents = expected;
-        
-        if(path_helper::file_exists(expected))
-        {
-            std::ifstream f(expected);
-            std::ostringstream s;
-            f >> s.rdbuf();
-            
-            expected_contents = s.str();
-        }
-        
-		pugi::xml_document expected_xml;
-		expected_xml.load(expected_contents.c_str());
+	static bool file_matches_document(const xlnt::path &expected, 
+		const pugi::xml_document &observed)
+	{
+		return string_matches_document(expected.read_contents(), observed);
+	}
 
-        std::ostringstream ss;
-        observed.save(ss);
-		auto observed_string = ss.str();
+    static bool string_matches_document(const std::string &expected_string,
+		const pugi::xml_document &observed_document)
+    {        
+		pugi::xml_document expected_document;
+		expected_document.load(expected_string.c_str());
 
-        return compare_xml(expected_xml.root(), observed.root());
+        return documents_match(expected_document, observed_document);
     }
     
-    static comparison_result compare_xml(const std::string &left_contents, const std::string &right_contents)
+    static bool strings_match(const std::string &expected_string, const std::string &observed_string)
     {
 		pugi::xml_document left_xml;
-		left_xml.load(left_contents.c_str());
+		left_xml.load(expected_string.c_str());
 
 		pugi::xml_document right_xml;
-		right_xml.load(right_contents.c_str());
+		right_xml.load(observed_string.c_str());
 
-        return compare_xml(left_xml.root(), right_xml.root());
+        return documents_match(left_xml, right_xml);
     }
     
-    static comparison_result compare_xml(const pugi::xml_node &left, const pugi::xml_node &right)
+    static comparison_result compare_xml_nodes(const pugi::xml_node &left, const pugi::xml_node &right)
     {
         std::string left_temp = left.name();
         std::string right_temp = right.name();
@@ -136,7 +146,7 @@ public:
             auto right_child = *right_child_iter;
             right_child_iter++;
             
-            auto child_comparison_result = compare_xml(left_child, right_child);
+            auto child_comparison_result = compare_xml_nodes(left_child, right_child);
             
             if(!child_comparison_result)
             {

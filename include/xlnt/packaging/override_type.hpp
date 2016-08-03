@@ -26,6 +26,7 @@
 #include <string>
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/utils/path.hpp>
 
 namespace xlnt {
 
@@ -37,15 +38,15 @@ class XLNT_CLASS override_type
 {
 public:
     override_type();
-    override_type(const std::string &extension, const std::string &content_type);
+    override_type(const path &part, const std::string &content_type);
     override_type(const override_type &other);
     override_type &operator=(const override_type &other);
 
-    std::string get_part_name() const;
+    path get_part() const;
     std::string get_content_type() const;
 
 private:
-    std::string part_name_;
+    path part_;
     std::string content_type_;
 };
 

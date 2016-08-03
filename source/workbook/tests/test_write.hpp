@@ -21,16 +21,16 @@ public:
         wbk.get_active_sheet().get_cell("A2").set_value("xlnt");
         wbk.get_active_sheet().get_cell("B5").set_value(88);
         wbk.get_active_sheet().get_cell("B5").set_number_format(xlnt::number_format::percentage_00());
-        wbk.save(temp_file.get_filename());
+        wbk.save(temp_file.get_path());
         
-        if(path_helper::file_exists(temp_file.get_filename()))
+        if(temp_file.get_path().exists())
         {
-            path_helper::delete_file(temp_file.get_filename());
+            path_helper::delete_file(temp_file.get_path());
         }
 
-        TS_ASSERT(!path_helper::file_exists(temp_file.get_filename()));
-        wb_.save(temp_file.get_filename());
-        TS_ASSERT(path_helper::file_exists(temp_file.get_filename()));
+        TS_ASSERT(!temp_file.get_path().exists());
+        wb_.save(temp_file.get_path());
+        TS_ASSERT(temp_file.get_path().exists());
     }
 
     void test_write_virtual_workbook()
@@ -50,9 +50,9 @@ public:
         xlnt::relationship_serializer serializer(archive);
         serializer.write_relationships(wb.get_relationships(), "xl/workbook.xml");
         pugi::xml_document xml;
-        xml.load(archive.read("xl/_rels/workbook.xml.rels").c_str());
+        xml.load(archive.read(xlnt::path("xl/_rels/workbook.xml.rels")).c_str());
 
-        TS_ASSERT(xml_helper::compare_xml(path_helper::get_data_directory() + "/writer/expected/workbook.xml.rels", xml));
+        TS_ASSERT(xml_helper::file_matches_document(path_helper::get_data_directory("writer/expected/workbook.xml.rels"), xml));
     }
 
     void test_write_workbook()
@@ -62,7 +62,7 @@ public:
         pugi::xml_document xml;
         serializer.write_workbook(xml);
 
-        TS_ASSERT(xml_helper::compare_xml(path_helper::get_data_directory() + "/writer/expected/workbook.xml", xml));
+        TS_ASSERT(xml_helper::file_matches_document(path_helper::get_data_directory("writer/expected/workbook.xml"), xml));
     }
 
     void test_write_string_table()
@@ -77,7 +77,7 @@ public:
         pugi::xml_document xml;
         xlnt::shared_strings_serializer::write_shared_strings(wb.get_shared_strings(), xml);
 
-        TS_ASSERT(xml_helper::compare_xml(path_helper::get_data_directory() + "/writer/expected/sharedStrings.xml", xml));
+        TS_ASSERT(xml_helper::file_matches_document(path_helper::get_data_directory("writer/expected/sharedStrings.xml"), xml));
     }
 
     void test_write_worksheet()
@@ -89,7 +89,7 @@ public:
         pugi::xml_document xml;
         serializer.write_worksheet(xml);
     
-        TS_ASSERT(xml_helper::compare_xml(path_helper::get_data_directory() + "/writer/expected/sheet1.xml", xml));
+        TS_ASSERT(xml_helper::file_matches_document(path_helper::get_data_directory("writer/expected/sheet1.xml"), xml));
     }
 
     void test_write_hidden_worksheet()
@@ -102,7 +102,7 @@ public:
         pugi::xml_document xml;
         serializer.write_worksheet(xml);
         
-        TS_ASSERT(xml_helper::compare_xml(path_helper::get_data_directory() + "/writer/expected/sheet1.xml", xml));
+        TS_ASSERT(xml_helper::file_matches_document(path_helper::get_data_directory("writer/expected/sheet1.xml"), xml));
     }
 
     void test_write_bool()
@@ -115,7 +115,7 @@ public:
         pugi::xml_document xml;
         serializer.write_worksheet(xml);
         
-        TS_ASSERT(xml_helper::compare_xml(path_helper::get_data_directory() + "/writer/expected/sheet1_bool.xml", xml));
+        TS_ASSERT(xml_helper::file_matches_document(path_helper::get_data_directory("writer/expected/sheet1_bool.xml"), xml));
     }
 
     void test_write_formula()
@@ -129,7 +129,7 @@ public:
         pugi::xml_document xml;
         serializer.write_worksheet(xml);
         
-        TS_ASSERT(xml_helper::compare_xml(path_helper::get_data_directory() + "/writer/expected/sheet1_formula.xml", xml));
+        TS_ASSERT(xml_helper::file_matches_document(path_helper::get_data_directory("writer/expected/sheet1_formula.xml"), xml));
     }
 
     void test_write_height()
@@ -142,7 +142,7 @@ public:
         pugi::xml_document xml;
         serializer.write_worksheet(xml);
         
-        TS_ASSERT(xml_helper::compare_xml(path_helper::get_data_directory() + "/writer/expected/sheet1_height.xml", xml));
+        TS_ASSERT(xml_helper::file_matches_document(path_helper::get_data_directory("writer/expected/sheet1_height.xml"), xml));
     }
 
     void test_write_hyperlink()
@@ -157,7 +157,7 @@ public:
         pugi::xml_document xml;
         serializer.write_worksheet(xml);
         
-        TS_ASSERT(xml_helper::compare_xml(path_helper::get_data_directory() + "/writer/expected/sheet1_hyperlink.xml", xml));
+        TS_ASSERT(xml_helper::file_matches_document(path_helper::get_data_directory("writer/expected/sheet1_hyperlink.xml"), xml));
     }
 
     void test_write_hyperlink_rels()
@@ -175,9 +175,9 @@ public:
         xlnt::relationship_serializer serializer(archive);
         serializer.write_relationships(ws.get_relationships(), "xl/worksheets/sheet1.xml");
         pugi::xml_document xml;
-        xml.load(archive.read("xl/worksheets/_rels/sheet1.xml.rels").c_str());
+        xml.load(archive.read(xlnt::path("xl/worksheets/_rels/sheet1.xml.rels")).c_str());
         
-        TS_ASSERT(xml_helper::compare_xml(path_helper::get_data_directory() + "/writer/expected/sheet1_hyperlink.xml.rels", xml));
+        TS_ASSERT(xml_helper::file_matches_document(path_helper::get_data_directory("writer/expected/sheet1_hyperlink.xml.rels"), xml));
     }
     
     void _test_write_hyperlink_image_rels()
@@ -205,13 +205,13 @@ public:
         pugi::xml_document xml;
         ws_serializer.write_worksheet(xml);
         
-        TS_ASSERT(xml_helper::compare_xml(path_helper::get_data_directory() + "/writer/expected/sheet1_auto_filter.xml", xml));
+        TS_ASSERT(xml_helper::file_matches_document(path_helper::get_data_directory("writer/expected/sheet1_auto_filter.xml"), xml));
 
         xlnt::workbook_serializer wb_serializer(wb);
         pugi::xml_document xml2;
         wb_serializer.write_workbook(xml2);
 
-        TS_ASSERT(xml_helper::compare_xml(path_helper::get_data_directory() + "/writer/expected/workbook_auto_filter.xml", xml2));
+        TS_ASSERT(xml_helper::file_matches_document(path_helper::get_data_directory("writer/expected/workbook_auto_filter.xml"), xml2));
     }
     
     void test_write_auto_filter_filter_column()
@@ -234,7 +234,7 @@ public:
         pugi::xml_document xml;
         serializer.write_worksheet(xml);
 
-        TS_ASSERT(xml_helper::compare_xml(path_helper::get_data_directory() + "/writer/expected/sheet1_freeze_panes_horiz.xml", xml));
+        TS_ASSERT(xml_helper::file_matches_document(path_helper::get_data_directory("writer/expected/sheet1_freeze_panes_horiz.xml"), xml));
     }
 
     void test_freeze_panes_vert()
@@ -247,7 +247,7 @@ public:
         pugi::xml_document xml;
         serializer.write_worksheet(xml);
         
-        TS_ASSERT(xml_helper::compare_xml(path_helper::get_data_directory() + "/writer/expected/sheet1_freeze_panes_vert.xml", xml));
+        TS_ASSERT(xml_helper::file_matches_document(path_helper::get_data_directory("writer/expected/sheet1_freeze_panes_vert.xml"), xml));
     }
 
     void test_freeze_panes_both()
@@ -260,7 +260,7 @@ public:
         pugi::xml_document xml;
         serializer.write_worksheet(xml);
         
-        TS_ASSERT(xml_helper::compare_xml(path_helper::get_data_directory() + "/writer/expected/sheet1_freeze_panes_both.xml", xml));
+        TS_ASSERT(xml_helper::file_matches_document(path_helper::get_data_directory("writer/expected/sheet1_freeze_panes_both.xml"), xml));
     }
 
     void test_long_number()
@@ -272,7 +272,7 @@ public:
         pugi::xml_document xml;
         serializer.write_worksheet(xml);
         
-        TS_ASSERT(xml_helper::compare_xml(path_helper::get_data_directory() + "/writer/expected/long_number.xml", xml));
+        TS_ASSERT(xml_helper::file_matches_document(path_helper::get_data_directory("writer/expected/long_number.xml"), xml));
     }
 
     void test_short_number()
@@ -284,12 +284,7 @@ public:
         pugi::xml_document xml;
         serializer.write_worksheet(xml);
         
-        TS_ASSERT(xml_helper::compare_xml(path_helper::get_data_directory() + "/writer/expected/short_number.xml", xml));
-    }
-    
-    void _test_write_images()
-    {
-        TS_SKIP("not implemented");
+        TS_ASSERT(xml_helper::file_matches_document(path_helper::get_data_directory("writer/expected/short_number.xml"), xml));
     }
 
     void test_write_page_setup()
@@ -318,7 +313,7 @@ public:
 
         xlnt::zip_file archive;
         archive.load(bytes);
-        auto worksheet_xml_string = archive.read("xl/worksheets/sheet1.xml");
+        auto worksheet_xml_string = archive.read(xlnt::path("xl/worksheets/sheet1.xml"));
 
         pugi::xml_document worksheet_xml;
         worksheet_xml.load(worksheet_xml_string.c_str());
@@ -342,7 +337,7 @@ public:
         "   <pageSetup orientation=\"landscape\" paperSize=\"11\" fitToHeight=\"1\" fitToWidth=\"1\" />"
         "</worksheet>";
 
-        TS_ASSERT(xml_helper::compare_xml(expected, worksheet_xml));
+        TS_ASSERT(xml_helper::string_matches_document(expected, worksheet_xml));
     }
 
  private:

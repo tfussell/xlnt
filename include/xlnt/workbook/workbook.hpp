@@ -36,13 +36,11 @@
 namespace xlnt {
 
 class alignment;
-class app_properties;
 class border;
 class cell;
 class cell_style;
 class color;
 class const_worksheet_iterator;
-class document_properties;
 class drawing;
 class fill;
 class font;
@@ -50,6 +48,7 @@ class format;
 class manifest;
 class named_range;
 class number_format;
+class path;
 class pattern_fill;
 class protection;
 class range;
@@ -63,6 +62,9 @@ class worksheet;
 class worksheet_iterator;
 class zip_file;
 
+struct datetime;
+
+enum class calendar;
 enum class relationship_type;
 
 namespace detail {
@@ -84,6 +86,14 @@ public:
     /// Swap the data held in workbooks "left" and "right".
     /// </summary>
     friend void swap(workbook &left, workbook &right);
+
+	static workbook minimal();
+
+	static workbook empty_excel();
+
+	static workbook empty_libre_office();
+
+	static workbook empty_numbers();
 
     // constructors
 
@@ -297,11 +307,47 @@ public:
 	/// </summary>
     std::vector<std::string> get_sheet_titles() const;
 
-    document_properties &get_properties();
-    const document_properties &get_properties() const;
+	std::string get_application() const;
+	void set_application(const std::string &application);
 
-    app_properties &get_app_properties();
-    const app_properties &get_app_properties() const;
+	calendar get_base_date() const;
+	void set_base_date(calendar base_date);
+
+	std::string get_creator() const;
+	void set_creator(const std::string &creator);
+
+	std::string get_last_modified_by() const;
+	void set_last_modified_by(const std::string &last_modified_by);
+
+	datetime get_created() const;
+	void set_created(const datetime &when);
+
+	datetime get_modified() const;
+	void set_modified(const datetime &when);
+
+	int get_doc_security() const;
+	void set_doc_security(int doc_security);
+
+	bool get_scale_crop() const;
+	void set_scale_crop(bool scale_crop);
+
+	std::string get_company() const;
+	void set_company(const std::string &company);
+
+	bool links_up_to_date() const;
+	void set_links_up_to_date(bool links_up_to_date);
+
+	bool is_shared_doc() const;
+	void set_shared_doc(bool shared_doc);
+
+	bool hyperlinks_changed() const;
+	void set_hyperlinks_changed(bool hyperlinks_changed);
+
+	std::string get_app_version() const;
+	void set_app_version(const std::string &version);
+
+	std::string get_title() const;
+	void set_title(const std::string &title);
 
     // named ranges
 
@@ -314,19 +360,23 @@ public:
 
     // serialization
 
-    bool save(std::vector<unsigned char> &data);
+    bool save(std::vector<std::uint8_t> &data);
     bool save(const std::string &filename);
-    bool load(const std::vector<unsigned char> &data);
+	bool save(const xlnt::path &filename);
+	bool save(std::ostream &stream);
+
+    bool load(const std::vector<std::uint8_t> &data);
     bool load(const std::string &filename);
+	bool load(const xlnt::path &filename);
     bool load(std::istream &stream);
-    bool load(zip_file &archive);
 
     void set_code_name(const std::string &code_name);
 
     // theme
 
-    bool has_loaded_theme() const;
-    const theme &get_loaded_theme() const;
+    bool has_theme() const;
+    const theme &get_theme() const;
+	void set_theme(const theme &value);
 
     // formats
     
@@ -406,6 +456,8 @@ public:
 private:
     friend class excel_serializer;
 	friend class worksheet;
+
+	workbook(detail::workbook_impl *impl);
 
     /// <summary>
     /// Get the name of the next unused relationship.

@@ -39,9 +39,9 @@ bool manifest::has_default_type(const std::string &extension) const
     return default_types_.find(extension) != default_types_.end();
 }
 
-bool manifest::has_override_type(const std::string &part_name) const
+bool manifest::has_override_type(const path &part) const
 {
-    auto absolute = part_name.front() == '/' ? part_name : ("/" + part_name);
+    auto absolute = part.is_absolute() ? part : part.make_absolute(path("/"));
     return override_types_.find(absolute) != override_types_.end();
 }
 
@@ -50,9 +50,9 @@ void manifest::add_default_type(const std::string &extension, const std::string 
     default_types_[extension] = default_type(extension, content_type);
 }
 
-void manifest::add_override_type(const std::string &part_name, const std::string &content_type)
+void manifest::add_override_type(const path &part, const std::string &content_type)
 {
-    auto absolute = part_name.front() == '/' ? part_name : ("/" + part_name);
+	auto absolute = part.is_absolute() ? part : part.make_absolute(path("/"));
     override_types_[absolute] = override_type(absolute, content_type);
 }
 
@@ -61,18 +61,18 @@ std::string manifest::get_default_type(const std::string &extension) const
     return default_types_.at(extension).get_content_type();
 }
 
-std::string manifest::get_override_type(const std::string &part_name) const
+std::string manifest::get_override_type(const path &part) const
 {
-    auto absolute = part_name.front() == '/' ? part_name : ("/" + part_name);
+    auto absolute = part.is_absolute() ? part : part.make_absolute(path("/"));
     return override_types_.at(absolute).get_content_type();
 }
 
-const std::unordered_map<std::string, default_type> &manifest::get_default_types() const
+const manifest::default_types_container &manifest::get_default_types() const
 {
     return default_types_;
 }
 
-const std::unordered_map<std::string, override_type> &manifest::get_override_types() const
+const manifest::override_types_container &manifest::get_override_types() const
 {
     return override_types_;
 }

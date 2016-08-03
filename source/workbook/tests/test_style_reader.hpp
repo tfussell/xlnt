@@ -14,7 +14,7 @@ public:
     void test_complex_formatting()
     {
         xlnt::workbook wb;
-        wb.load(path_helper::get_data_directory("/reader/formatting.xlsx"));
+        wb.load(path_helper::get_data_directory("reader/formatting.xlsx"));
         
         // border_style
         auto ws = wb.get_active_sheet();

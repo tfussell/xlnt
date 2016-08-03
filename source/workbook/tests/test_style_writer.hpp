@@ -3,25 +3,23 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include <detail/style_serializer.hpp>
-#include <detail/stylesheet.hpp>
-#include <detail/workbook_impl.hpp>
-#include <helpers/path_helper.hpp>
+#include <detail/constants.hpp>
 
 class test_style_writer : public CxxTest::TestSuite
 {
 public:
     bool style_xml_matches(const std::string &expected_string, xlnt::workbook &wb)
     {
-        xlnt::excel_serializer excel_serializer(wb);
-        xlnt::style_serializer style_serializer(excel_serializer.get_stylesheet());
-        pugi::xml_document observed;
-        style_serializer.write_stylesheet(observed);
-        pugi::xml_document expected;
-        expected.load(expected_string.c_str());
+		std::vector<std::uint8_t> bytes;
+		wb.save(bytes);
 
-        auto comparison = xml_helper::compare_xml(expected.root(), observed.root());
-        return (bool)comparison;
+		xlnt::zip_file archive;
+		archive.load(bytes);
+
+		pugi::xml_document observed;
+		observed.load(archive.read(xlnt::constants::part_styles()).c_str());
+
+        return xml_helper::string_matches_document(expected_string, observed);
     }
 
     void test_write_custom_number_format()
@@ -100,8 +98,8 @@ public:
 		b.set_side(xlnt::border::side::top, prop);
 		ws.get_cell("D10").set_border(b);
 
-        std::string expected = path_helper::read_file(path_helper::get_data_directory("/writer/expected/simple-styles.xml"));
-        TS_ASSERT(style_xml_matches(expected, wb));
+		auto expected = path_helper::get_data_directory("writer/expected/simple-styles.xml");
+        TS_ASSERT(style_xml_matches(expected.read_contents(), wb));
     }
     
     void test_empty_workbook()
