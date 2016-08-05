@@ -68,27 +68,27 @@ public:
         TS_ASSERT_THROWS(wb.remove_sheet(wb2.get_active_sheet()), std::runtime_error);
     }
 
-    void test_get_sheet_by_name()
+    void test_get_sheet_by_title()
     {
         xlnt::workbook wb;
         auto new_sheet = wb.create_sheet();
         std::string title = "my sheet";
         new_sheet.set_title(title);
-        auto found_sheet = wb.get_sheet_by_name(title);
+        auto found_sheet = wb.get_sheet_by_title(title);
         TS_ASSERT_EQUALS(new_sheet, found_sheet);
-        TS_ASSERT_THROWS(wb.get_sheet_by_name("error"), xlnt::key_not_found);
+        TS_ASSERT_THROWS(wb.get_sheet_by_title("error"), xlnt::key_not_found);
         const auto &wb_const = wb;
-        TS_ASSERT_THROWS(wb_const.get_sheet_by_name("error"), xlnt::key_not_found);
+        TS_ASSERT_THROWS(wb_const.get_sheet_by_title("error"), xlnt::key_not_found);
     }
     
-    void test_get_sheet_by_name_const()
+    void test_get_sheet_by_title_const()
     {
         xlnt::workbook wb;
         auto new_sheet = wb.create_sheet();
         std::string title = "my sheet";
         new_sheet.set_title(title);
         const xlnt::workbook& wbconst = wb;
-        auto found_sheet = wbconst.get_sheet_by_name(title);
+        auto found_sheet = wbconst.get_sheet_by_title(title);
         TS_ASSERT_EQUALS(new_sheet, found_sheet);
     }
 
@@ -124,10 +124,10 @@ public:
         wb.create_sheet().set_title("1");
         wb.create_sheet().set_title("2");
 
-        auto sheet_index = wb.get_index(wb.get_sheet_by_name("1"));
+        auto sheet_index = wb.get_index(wb.get_sheet_by_title("1"));
         TS_ASSERT_EQUALS(sheet_index, 1);
 
-        sheet_index = wb.get_index(wb.get_sheet_by_name("2"));
+        sheet_index = wb.get_index(wb.get_sheet_by_title("2"));
         TS_ASSERT_EQUALS(sheet_index, 2);
     }
 
@@ -259,25 +259,11 @@ public:
     
     void test_manifest()
     {
-        xlnt::default_type d;
-        TS_ASSERT(d.get_content_type().empty());
-        TS_ASSERT(d.get_extension().empty());
-
-        xlnt::override_type o;
-        TS_ASSERT(o.get_content_type().empty());
-        TS_ASSERT(o.get_part().to_string().empty());
-
-        xlnt::manifest m;
+		xlnt::manifest m;
         TS_ASSERT(!m.has_default_type("xml"));
-        TS_ASSERT_THROWS(m.get_default_type("xml"), std::out_of_range);
-        TS_ASSERT(!m.has_override_type(xlnt::path("xl/workbook.xml")));
-        TS_ASSERT_THROWS(m.get_override_type(xlnt::path("xl/workbook.xml")), std::out_of_range);
-    }
-
-    void test_get_bad_relationship()
-    {
-        xlnt::workbook wb;
-        TS_ASSERT_THROWS(wb.get_relationship("bad"), std::runtime_error);
+        TS_ASSERT_THROWS(m.get_default_type("xml"), xlnt::key_not_found);
+        TS_ASSERT(!m.has_part(xlnt::path("xl/workbook.xml")));
+        TS_ASSERT_THROWS(m.get_part_relationships(xlnt::path("xl/workbook.xml")), xlnt::key_not_found);
     }
 
     void test_memory()

@@ -191,9 +191,19 @@ path path::parent() const
 	return result;
 }
 
-std::string path::basename()
+std::string path::basename() const
 {
 	return parts_.empty() ? "" : parts_.back();
+}
+
+std::string path::extension() const
+{
+	auto base = basename();
+	auto last_dot = base.find_last_of('.');
+	
+	if (last_dot == std::string::npos) return "";
+
+	return base.substr(last_dot + 1);
 }
 
 // conversion

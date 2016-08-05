@@ -66,8 +66,6 @@ struct workbook_impl
     workbook_impl(const workbook_impl &other)
         : active_sheet_index_(other.active_sheet_index_),
           worksheets_(other.worksheets_),
-          relationships_(other.relationships_),
-          root_relationships_(other.root_relationships_),
           shared_strings_(other.shared_strings_),
           guess_types_(other.guess_types_),
           data_only_(other.data_only_),
@@ -103,11 +101,6 @@ struct workbook_impl
         active_sheet_index_ = other.active_sheet_index_;
         worksheets_.clear();
         std::copy(other.worksheets_.begin(), other.worksheets_.end(), back_inserter(worksheets_));
-        relationships_.clear();
-        std::copy(other.relationships_.begin(), other.relationships_.end(), std::back_inserter(relationships_));
-        root_relationships_.clear();
-        std::copy(other.root_relationships_.begin(), other.root_relationships_.end(),
-                  std::back_inserter(root_relationships_));
         shared_strings_.clear();
         std::copy(other.shared_strings_.begin(), other.shared_strings_.end(), std::back_inserter(shared_strings_));
         guess_types_ = other.guess_types_;
@@ -143,8 +136,6 @@ struct workbook_impl
 
     std::size_t active_sheet_index_;
     std::list<worksheet_impl> worksheets_;
-    std::vector<relationship> relationships_;
-    std::vector<relationship> root_relationships_;
     std::vector<text> shared_strings_;
 
     bool guess_types_;

@@ -66,7 +66,7 @@ struct cell_impl
     std::string formula_;
 
     bool has_hyperlink_;
-    relationship hyperlink_;
+    std::string hyperlink_;
 
     bool is_merged_;
 

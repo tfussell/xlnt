@@ -68,7 +68,10 @@ enum class calendar;
 enum class relationship_type;
 
 namespace detail {
+struct stylesheet;
 struct workbook_impl;
+class xlsx_consumer;
+class xlsx_producer;
 } // namespace detail
 
 /// <summary>
@@ -183,14 +186,14 @@ public:
     /// This may throw an exception if the sheet isn't found.
     /// Use workbook::contains(const std::string &) to make sure the sheet exists.
     /// </summary>
-    worksheet get_sheet_by_name(const std::string &sheet_name);
+    worksheet get_sheet_by_title(const std::string &sheet_name);
     
     /// <summary>
     /// Return the const worksheet with the given name.
     /// This may throw an exception if the sheet isn't found.
     /// Use workbook::contains(const std::string &) to make sure the sheet exists.
     /// </summary>
-    const worksheet get_sheet_by_name(const std::string &sheet_name) const;
+    const worksheet get_sheet_by_title(const std::string &sheet_name) const;
 
     /// <summary>
     /// Return the worksheet at the given index.
@@ -201,6 +204,16 @@ public:
     /// Return the const worksheet at the given index.
     /// </summary>
     const worksheet get_sheet_by_index(std::size_t index) const;
+
+	/// <summary>
+	/// Return the worksheet with a sheetId of id.
+	/// </summary>
+	worksheet get_sheet_by_id(std::size_t id);
+
+	/// <summary>
+	/// Return the const worksheet with a sheetId of id.
+	/// </summary>
+	const worksheet get_sheet_by_id(std::size_t id) const;
 
     /// <summary>
     /// Return true if this workbook contains a sheet with the given name.
@@ -360,15 +373,15 @@ public:
 
     // serialization
 
-    bool save(std::vector<std::uint8_t> &data);
-    bool save(const std::string &filename);
-	bool save(const xlnt::path &filename);
-	bool save(std::ostream &stream);
+	void save(std::vector<std::uint8_t> &data);
+	void save(const std::string &filename);
+	void save(const xlnt::path &filename);
+	void save(std::ostream &stream);
 
-    bool load(const std::vector<std::uint8_t> &data);
-    bool load(const std::string &filename);
-	bool load(const xlnt::path &filename);
-    bool load(std::istream &stream);
+	void load(const std::vector<std::uint8_t> &data);
+	void load(const std::string &filename);
+	void load(const xlnt::path &filename);
+	void load(std::istream &stream);
 
     void set_code_name(const std::string &code_name);
 
@@ -396,21 +409,11 @@ public:
     style &create_style(const std::string &name);
     std::size_t add_style(const style &new_style);
     void clear_styles();
-    const std::vector<style> &get_styles() const;
 
     // manifest
 
     manifest &get_manifest();
     const manifest &get_manifest() const;
-
-    // relationships
-
-    void create_relationship(const std::string &id, const std::string &target, relationship_type type);
-    relationship get_relationship(const std::string &id) const;
-    const std::vector<relationship> &get_relationships() const;
-
-    void create_root_relationship(const std::string &id, const std::string &target, relationship_type type);
-    const std::vector<relationship> &get_root_relationships() const;
 
     // shared strings
 
@@ -454,15 +457,15 @@ public:
     bool operator!=(const workbook &rhs) const;
 
 private:
-    friend class excel_serializer;
 	friend class worksheet;
+	friend class detail::xlsx_consumer;
+	friend class detail::xlsx_producer;
 
 	workbook(detail::workbook_impl *impl);
 
-    /// <summary>
-    /// Get the name of the next unused relationship.
-    /// </summary>
-    std::string next_relationship_id() const;
+	detail::workbook_impl &impl();
+
+	const detail::workbook_impl &impl() const;
 
     /// <summary>
     /// Apply the function "f" to every cell in every worksheet in this workbook.

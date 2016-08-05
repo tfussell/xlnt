@@ -3,9 +3,7 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include <detail/style_serializer.hpp>
-#include <detail/stylesheet.hpp>
-#include <detail/workbook_impl.hpp>
+#include <xlnt/workbook/workbook.hpp>
 #include <helpers/path_helper.hpp>
 
 class test_style_reader : public CxxTest::TestSuite

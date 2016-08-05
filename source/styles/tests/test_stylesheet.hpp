@@ -4,10 +4,9 @@
 #include <pugixml.hpp>
 #include <cxxtest/TestSuite.h>
 
-#include <detail/excel_serializer.hpp>
-#include <detail/style_serializer.hpp>
-#include <xlnt/xlnt.hpp>
+#include <detail/stylesheet.hpp>
 #include <xlnt/packaging/zip_file.hpp>
+#include <xlnt/workbook/workbook.hpp>
 #include <helpers/xml_helper.hpp>
 #include <helpers/path_helper.hpp>
 
@@ -16,45 +15,23 @@ class test_stylesheet : public CxxTest::TestSuite
 public:
     void test_from_simple()
     {
-        pugi::xml_document doc;
-        doc.load_file(path_helper::get_data_directory("reader/styles/simple-styles.xml").to_string().c_str());
-
         xlnt::workbook wb;
-        xlnt::excel_serializer e(wb);
-        xlnt::style_serializer s(e.get_stylesheet());
-
-        TS_ASSERT(s.read_stylesheet(doc));
-        TS_ASSERT_EQUALS(e.get_stylesheet().number_formats.size(), 1);
+		wb.load(path_helper::get_data_directory("reader/styles/simple-styles.xml"));
     }
 
     void test_from_complex()
     {
-        pugi::xml_document doc;
-        doc.load_file(path_helper::get_data_directory("reader/styles/complex-styles.xml").to_string().c_str());
-
         xlnt::workbook wb;
-        xlnt::excel_serializer e(wb);
-        xlnt::style_serializer s(e.get_stylesheet());
-
-        TS_ASSERT(s.read_stylesheet(doc));
-        TS_ASSERT_EQUALS(e.get_stylesheet().borders.size(), 7);
-        TS_ASSERT_EQUALS(e.get_stylesheet().fills.size(), 6);
-        TS_ASSERT_EQUALS(e.get_stylesheet().fonts.size(), 8);
-        TS_ASSERT_EQUALS(e.get_stylesheet().number_formats.size(), 0);
+		wb.load(path_helper::get_data_directory("reader/styles/complex-styles.xml"));
     }
 
     void test_add_existing_style()
     {
         xlnt::workbook wb;
-        xlnt::excel_serializer e(wb);
-
-        TS_ASSERT_EQUALS(e.get_stylesheet().styles.size(), 1);
 
         auto &s = wb.create_style("test");
-        TS_ASSERT_EQUALS(e.get_stylesheet().styles.size(), 2);
 
         wb.add_style(s);
-        TS_ASSERT_EQUALS(e.get_stylesheet().styles.size(), 2);
 
         xlnt::style copy;
         copy = s;

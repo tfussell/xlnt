@@ -472,18 +472,6 @@ const range worksheet::get_range(const range_reference &reference) const
     return range(*this, reference);
 }
 
-const std::vector<relationship> &worksheet::get_relationships() const
-{
-    return d_->relationships_;
-}
-
-relationship worksheet::create_relationship(relationship::type type, const std::string &target_uri)
-{
-    std::string r_id = "rId" + std::to_string(d_->relationships_.size() + 1);
-    d_->relationships_.push_back(relationship(type, r_id, target_uri));
-    return d_->relationships_.back();
-}
-
 void worksheet::merge_cells(const std::string &reference_string)
 {
     merge_cells(range_reference(reference_string));
@@ -1028,7 +1016,7 @@ sheet_view worksheet::get_sheet_view() const
 
 std::size_t worksheet::next_custom_number_format_id()
 {
-    return get_workbook().d_->stylesheet_.next_custom_format_id++;
+	return get_workbook().impl().stylesheet_.next_custom_format_id;
 }
 
 } // namespace xlnt

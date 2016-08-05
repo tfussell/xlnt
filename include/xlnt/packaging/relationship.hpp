@@ -26,6 +26,7 @@
 #include <string>
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/utils/path.hpp>
 
 namespace xlnt {
 
@@ -34,34 +35,61 @@ namespace xlnt {
 /// </summary>
 enum class XLNT_CLASS target_mode
 {
+	/// <summary>
+	/// The relationship references a resource that is external to the package.
+	/// </summary>
+	internal,
     /// <summary>
     /// The relationship references a part that is inside the package.
     /// </summary>
-    external,
-    /// <summary>
-    /// The relationship references a resource that is external to the package.
-    /// </summary>
-    internal
+    external
 };
 
 /// <summary>
 /// All package relationships must be one of these defined types.
 /// </summary>
-enum class relationship_type
+enum class XLNT_CLASS relationship_type
 {
-    invalid,
-    hyperlink,
-    drawing,
-    worksheet,
-    chartsheet,
-    shared_strings,
-    styles,
-    theme,
-    extended_properties,
-    core_properties,
-    office_document,
-    custom_xml,
-    thumbnail
+    unknown,
+
+	// Package
+	core_properties,
+	extended_properties,
+	custom_properties,
+	office_document,
+	thumbnail,
+	printer_settings,
+
+	// SpreadsheetML
+	calculation_chain,
+	chartsheet,
+	comments,
+	connections,
+	custom_property,
+	custom_xml_mappings,
+	dialogsheet,
+	drawings,
+	external_workbook_references,
+	metadata,
+	pivot_table,
+	pivot_table_cache_definition,
+	pivot_table_cache_records,
+	query_table,
+	shared_string_table,
+	shared_workbook_revision_headers,
+	shared_workbook,
+	theme,
+	revision_log,
+	shared_workbook_user_data,
+	single_cell_table_definitions,
+	styles,
+	table_definition,
+	volatile_dependencies,
+	workbook,
+	worksheet,
+
+	hyperlink,
+	image
 };
 
 /// <summary>
@@ -73,47 +101,44 @@ class XLNT_CLASS relationship
 public:
     using type = relationship_type;
 
-    static type type_from_string(const std::string &type_string);
-
-    static std::string type_to_string(type t);
-
     relationship();
 
-    relationship(const std::string &t, const std::string &r_id = "", const std::string &target_uri = "");
-
-    relationship(type t, const std::string &r_id = "", const std::string &target_uri = "");
+    relationship(const std::string &id, type t, const path &target, target_mode mode);
 
     /// <summary>
-    /// gets a string that identifies the relationship.
+    /// Returns a string of the form rId# that identifies the relationship.
     /// </summary>
     std::string get_id() const;
 
-    /// <summary>
-    /// gets the URI of the package or part that owns the relationship.
-    /// </summary>
-    std::string get_source_uri() const;
+	/// <summary>
+	/// Returns the type of this relationship.
+	/// </summary>
+	type get_type() const;
 
     /// <summary>
-    /// gets a value that indicates whether the target of the relationship is or External to the Package.
+    /// Returns whether the target of the relationship is internal or external to the package.
     /// </summary>
     target_mode get_target_mode() const;
 
     /// <summary>
-    /// gets the URI of the target resource of the relationship.
+    /// Returns the URI of the package part this relationship points to.
     /// </summary>
-    std::string get_target_uri() const;
+    path get_target_uri() const;
 
-    type get_type() const;
-
-    std::string get_type_string() const;
-
+	/// <summary>
+	/// Returns true if and only if rhs is equal to this relationship.
+	/// </summary>
     bool operator==(const relationship &rhs) const;
 
+	/// <summary>
+	/// Returns true if and only if rhs is not equal to this relationship.
+	/// </summary>
+	bool operator!=(const relationship &rhs) const;
+
 private:
+	std::string id_;
     type type_;
-    std::string id_;
-    std::string source_uri_;
-    std::string target_uri_;
+    path target_uri_;
     target_mode target_mode_;
 };
 

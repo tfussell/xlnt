@@ -656,6 +656,6 @@ public:
         TS_ASSERT_THROWS(cell.set_hyperlink(""), std::runtime_error);
         cell.set_hyperlink("http://example.com");
         TS_ASSERT(cell.has_hyperlink());
-        TS_ASSERT_EQUALS(cell.get_hyperlink().get_target_uri(), "http://example.com");
+        TS_ASSERT_EQUALS(cell.get_hyperlink(), "http://example.com");
     }
 };

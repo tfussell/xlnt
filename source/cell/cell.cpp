@@ -420,14 +420,14 @@ std::string cell::to_repr() const
     return "<Cell " + worksheet(d_->parent_).get_title() + "." + get_reference().to_string() + ">";
 }
 
-relationship cell::get_hyperlink() const
+std::string cell::get_hyperlink() const
 {
     if (!d_->has_hyperlink_)
     {
         throw std::runtime_error("no hyperlink set");
     }
 
-    return d_->hyperlink_;
+	return d_->hyperlink_;
 }
 
 bool cell::has_hyperlink() const
@@ -443,7 +443,7 @@ void cell::set_hyperlink(const std::string &hyperlink)
     }
 
     d_->has_hyperlink_ = true;
-    d_->hyperlink_ = worksheet(d_->parent_).create_relationship(relationship::type::hyperlink, hyperlink);
+	d_->hyperlink_ = hyperlink;
 
     if (get_data_type() == type::null)
     {
@@ -932,6 +932,12 @@ void cell::set_format(const format &new_format)
 {
     d_->format_id_ = get_workbook().add_format(new_format);
     d_->has_format_ = true;
+}
+
+void cell::set_format_id(std::size_t format_id)
+{
+	d_->format_id_ = format_id;
+	d_->has_format_ = true;
 }
 
 calendar cell::get_base_date() const

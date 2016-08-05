@@ -44,17 +44,24 @@ class font;
 class format;
 class number_format;
 class protection;
-class relationship;
 class style;
 class workbook;
 class worksheet;
+class xlsx_consumer;
+class xlsx_producer;
 
 struct date;
 struct datetime;
 struct time;
 struct timedelta;
 
-namespace detail { struct cell_impl; }
+namespace detail { 
+
+class xlsx_consumer;
+class xlsx_producer;
+struct cell_impl; 
+
+} // namespace detail
 
 /// <summary>
 /// Describes cell associated properties.
@@ -151,9 +158,9 @@ public:
     // hyperlink
 
     /// <summary>
-    /// Return a relationship representing this cell's hyperlink.
+    /// Return the URL of this cell's hyperlink.
     /// </summary>
-    relationship get_hyperlink() const;
+    std::string get_hyperlink() const;
 
     /// <summary>
     /// Add a hyperlink to this cell pointing to the URI of the given value.
@@ -183,6 +190,8 @@ public:
     const format &get_format() const;
     
     void set_format(const format &new_format);
+
+	void set_format_id(std::size_t format_id);
     
     void clear_format();
     
@@ -380,7 +389,8 @@ private:
     // make these friends so they can use the private constructor
     friend class style;
     friend class worksheet;
-    friend class worksheet_serializer;
+	friend class detail::xlsx_consumer;
+	friend class detail::xlsx_producer;
     friend struct detail::cell_impl;
 
 	void guess_type_and_set_value(const std::string &value);

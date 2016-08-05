@@ -138,13 +138,6 @@ public:
     column_t get_highest_column() const;
     range_reference calculate_dimension() const;
 
-    // relationships
-    relationship create_relationship(relationship::type type, const std::string &target_uri);
-    const std::vector<relationship> &get_relationships() const;
-
-    // charts
-    // void add_chart(chart chart);
-
     // cell merge
     void merge_cells(const std::string &reference_string);
     void merge_cells(const range_reference &reference);

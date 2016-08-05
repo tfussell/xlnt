@@ -27,37 +27,236 @@
 #include <unordered_map>
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/packaging/default_type.hpp>
-#include <xlnt/packaging/override_type.hpp>
+#include <xlnt/packaging/relationship.hpp>
 #include <xlnt/utils/path.hpp>
 
 namespace xlnt {
 
+enum class content_type
+{
+	core_properties,
+	extended_properties,
+	custom_properties,
+
+	calculation_chain,
+	chartsheet,
+	comments,
+	connections,
+	custom_property,
+	custom_xml_mappings,
+	dialogsheet,
+	drawings,
+	external_workbook_references,
+	metadata,
+	pivot_table,
+	pivot_table_cache_definition,
+	pivot_table_cache_records,
+	query_table,
+	shared_string_table,
+	shared_workbook_revision_headers,
+	shared_workbook,
+	revision_log,
+	shared_workbook_user_data,
+	single_cell_table_definitions,
+	styles,
+	table_definition,
+	theme,
+	volatile_dependencies,
+	workbook,
+	worksheet,
+
+	unknown
+};
+
 /// <summary>
-/// The manifest keeps track of all files the OOXML package and
-/// their type.
+/// The manifest keeps track of all files in the OOXML package and
+/// their type and relationships.
 /// </summary>
 class XLNT_CLASS manifest
 {
 public:
-	using default_types_container = std::unordered_map<std::string, default_type>;
-	using override_types_container = std::unordered_map<path, override_type, std::hash<hashable>>;
-
+	/// <summary>
+	/// Convenience method for clear_types() and clear_relationships()
+	/// </summary>
     void clear();
 
-    bool has_default_type(const std::string &extension) const;
-    std::string get_default_type(const std::string &extension) const;
-    const default_types_container &get_default_types() const;
-    void add_default_type(const std::string &extension, const std::string &content_type);
+	/// <summary>
+	/// Convenince method for clear_default_types() and clear_override_types()
+	/// </summary>
+	void clear_types();
 
-    bool has_override_type(const path &part) const;
-    std::string get_override_type(const path &part) const;
-    const override_types_container &get_override_types() const;
-    void add_override_type(const path &part, const std::string &content_type);
+	/// <summary>
+	/// Unregisters every default content type (i.e. type based on part extension).
+	/// </summary>
+	void clear_default_types();
+
+	/// <summary>
+	/// Unregisters every content type for every part except default types.
+	/// </summary>
+	void clear_override_types();
+
+	/// <summary>
+	/// Convenince method for clear_package_relationships() and clear_part_relationships()
+	/// </summary>
+	void clear_relationships();
+
+	/// <summary>
+	/// Unregisters every relationship with the package root as the source.
+	/// </summary>
+	void clear_package_relationships();
+
+	/// <summary>
+	/// Unregisters every relationship except those with the package root as the source.
+	/// </summary>
+	void clear_part_relationships();
+
+	/// <summary>
+	/// Returns true if the manifest contains a package relationship with the given type.
+	/// </summary>
+	bool has_package_relationship(relationship::type type) const;
+
+	/// <summary>
+	/// Returns true if the manifest contains a relationship with the given type with part as the source.
+	/// </summary>
+	bool has_part_relationship(const path &part, relationship::type type) const;
+
+	relationship get_package_relationship(relationship::type type) const;
+
+	std::vector<relationship> get_package_relationships(relationship::type type) const;
+
+	relationship get_part_relationship(const path &part, relationship::type type) const;
+
+	std::vector<relationship> get_part_relationships(const path &part, relationship::type type) const;
+
+	/// <summary>
+	/// Given the path to a part, returns the content type of the part as
+	/// a content_type enum value or content_type::unknown if it isn't known.
+	/// </summary>
+	content_type get_part_content_type(const path &part) const;
+
+	/// <summary>
+	/// Given the path to a part, returns the content type of the part as a string.
+	/// </summary>
+	std::string get_part_content_type_string(const path &part) const;
+
+	/// <summary>
+	/// Registers a part of the given type at the standard path and creates a 
+	/// relationship with the new part as a target of "source". The type of the
+	/// relationship is inferred based on the provided types.
+	/// </summary>
+	void register_part(const path &part, const path &parent, const std::string &content_type, relationship::type relation);
+
+	/// <summary>
+	/// 
+	/// </summary>
+	void register_part(const path &parent, const relationship &rel, const std::string &content_type);
+
+	/// <summary>
+	/// Registers a package part of the given type at the standard path and creates a 
+	/// relationship with the package root as the source. The type of the
+	/// relationship is inferred based on the provided type.
+	/// </summary>
+	void register_package_part(const path &part, const std::string &content_type, relationship::type relation);
+
+	/// <summary>
+	/// Unregisters the path of the part of the given type and removes all relationships
+	/// with the part as a source or target.
+	/// </summary>
+	void unregister_part(const path &part);
+
+	/// <summary>
+	/// Returns true if the part at the given path has been registered in this manifest.
+	/// </summary>
+	bool has_part(const path &part) const;
+
+	/// <summary>
+	/// Returns the path of every registered part in this manifest.
+	/// </summary>
+	std::vector<path> get_parts() const;
+
+	/// <summary>
+	/// Returns every registered relationship with the package root as the source.
+	/// </summary>
+	std::vector<relationship> get_package_relationships() const;
+
+	/// <summary>
+	/// Returns the package relationship with the given ID.
+	/// </summary>
+	relationship get_package_relationship(const std::string &rel_id);
+
+	/// <summary>
+	/// Returns every registered relationship with the part of the given type
+	/// as the source.
+	/// </summary>
+	std::vector<relationship> get_part_relationships(const path &part) const;
+
+	/// <summary>
+	/// Returns the registered relationship with the part of the given type
+	/// as the source and the ID matching the provided ID.
+	/// </summary>
+	relationship get_part_relationship(const path &part, const std::string &rel_id) const;
+
+	/// <summary>
+	/// 
+	/// </summary>
+	std::string register_external_package_relationship(relationship::type type, const std::string &target_uri);
+
+	/// <summary>
+	/// 
+	/// </summary>
+	std::string register_external_package_relationship(relationship::type type, const std::string &target_uri, const std::string &rel_id);
+
+	/// <summary>
+	/// 
+	/// </summary>
+	std::string register_external_relationship(const path &source_part, relationship::type type, const std::string &target_uri);
+
+	/// <summary>
+	/// 
+	/// </summary>
+	std::string register_external_relationship(const path &source_part, relationship::type type, const std::string &target_uri, const std::string &rel_id);
+
+	/// <summary>
+	/// Returns true if a default content type for the extension has been registered.
+	/// </summary>
+	bool has_default_type(const std::string &extension) const;
+
+	/// <summary>
+	/// Returns a vector of all extensions with registered default content types.
+	/// </summary>
+	std::vector<std::string> get_default_type_extensions() const;
+
+	/// <summary>
+	/// Returns the registered default content type for parts of the given extension.
+	/// </summary>
+	std::string get_default_type(const std::string &extension) const;
+
+	/// <summary>
+	/// Associates the given extension with the given content type.
+	/// </summary>
+    void register_default_type(const std::string &extension, const std::string &content_type);
+
+	/// <summary>
+	/// Unregisters the default content type for the given extension.
+	/// </summary>
+	void unregister_default_type(const std::string &extension);
 
 private:
-    default_types_container default_types_;
-    override_types_container override_types_;
+	struct part_info
+	{
+		std::string content_type;
+		std::vector<relationship> relationships;
+	};
+
+	std::string next_package_relationship_id() const;\
+
+	std::string next_relationship_id(const path &part) const;
+
+	std::unordered_map<path, part_info, std::hash<hashable>> part_infos_;
+
+	std::vector<relationship> package_relationships_;
+
+	std::unordered_map<std::string, std::string> extension_content_type_map_;
 };
 
 } // namespace xlnt

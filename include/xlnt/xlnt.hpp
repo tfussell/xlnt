@@ -35,9 +35,7 @@
 #include <xlnt/cell/text_run.hpp>
 
 // packaging
-#include <xlnt/packaging/default_type.hpp>
 #include <xlnt/packaging/manifest.hpp>
-#include <xlnt/packaging/override_type.hpp>
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/packaging/zip_file.hpp>
 

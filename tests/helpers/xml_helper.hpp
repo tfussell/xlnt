@@ -55,6 +55,55 @@ public:
 		return true;
     }
 
+	static bool string_matches_workbook_part(const std::string &expected,
+		xlnt::workbook &wb, const xlnt::path &part)
+	{
+		std::vector<std::uint8_t> bytes;
+		wb.save(bytes);
+		xlnt::zip_file archive;
+		archive.load(bytes);
+
+		return string_matches_archive_member(expected, archive, part);
+	}
+
+	static bool file_matches_workbook_part(const xlnt::path &expected,
+		xlnt::workbook &wb, const xlnt::path &part)
+	{
+		std::vector<std::uint8_t> bytes;
+		wb.save(bytes);
+		xlnt::zip_file archive;
+		archive.load(bytes);
+
+		return file_matches_archive_member(expected, archive, part);
+	}
+
+	static bool string_matches_archive_member(const std::string &expected,
+		xlnt::zip_file &archive,
+		const xlnt::path &member)
+	{
+		pugi::xml_document expected_document;
+		expected_document.load(expected.c_str());
+
+		pugi::xml_document observed_document;
+		expected_document.load(archive.read(member).c_str());
+
+		return documents_match(expected_document, observed_document);
+	}
+
+	static bool file_matches_archive_member(const xlnt::path &file,
+		xlnt::zip_file &archive,
+		const xlnt::path &member)
+	{
+		pugi::xml_document expected_document;
+		expected_document.load(file.read_contents().c_str());
+
+		pugi::xml_document observed_document;
+		if (!archive.has_file(member)) return false;
+		expected_document.load(archive.read(member).c_str());
+
+		return documents_match(expected_document, observed_document);
+	}
+
 	static bool file_matches_document(const xlnt::path &expected, 
 		const pugi::xml_document &observed)
 	{

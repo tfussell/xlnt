@@ -4,11 +4,6 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include <detail/excel_serializer.hpp>
-#include <detail/manifest_serializer.hpp>
-#include <detail/relationship_serializer.hpp>
-#include <detail/shared_strings_serializer.hpp>
-#include <detail/workbook_serializer.hpp>
 #include <helpers/path_helper.hpp>
 #include <xlnt/cell/text.hpp>
 #include <xlnt/cell/text_run.hpp>
@@ -38,13 +33,15 @@ public:
         std::ifstream fo(path.to_string(), std::ios::binary);
 
         xlnt::workbook wb;
-        TS_ASSERT(wb.load(fo));
+		wb.load(fo);
+
+		TS_ASSERT(wb.get_sheet_titles().size() == 1);
     }
 
     void test_read_worksheet()
     {
         auto wb = standard_workbook();
-        auto sheet2 = wb.get_sheet_by_name("Sheet2 - Numbers");
+        auto sheet2 = wb.get_sheet_by_title("Sheet2 - Numbers");
         
         TS_ASSERT_DIFFERS(sheet2, nullptr);
         TS_ASSERT_EQUALS("This is cell G5", sheet2.get_cell("G5").get_value<std::string>());
@@ -220,18 +217,6 @@ public:
         TS_ASSERT_EQUALS(ws_mac.get_cell("A1").get_value<xlnt::datetime>(), ws_win.get_cell("A1").get_value<xlnt::datetime>());
     }
     
-    void test_repair_central_directory()
-    {
-        std::string data_a = "foobarbaz" + xlnt::excel_serializer::central_directory_signature();
-        std::string data_b = "bazbarfoo12345678901234567890";
-        
-        auto f = xlnt::excel_serializer::repair_central_directory(data_a + data_b);
-        TS_ASSERT_EQUALS(f, data_a + data_b.substr(0, 18));
-        
-        f = xlnt::excel_serializer::repair_central_directory(data_b);
-        TS_ASSERT_EQUALS(f, data_b);
-    }
-    
     void test_read_no_theme()
     {
         auto path = path_helper::get_data_directory("genuine/libreoffice_nrt.xlsx");
@@ -322,46 +307,6 @@ public:
         TS_ASSERT(ws.get_cell("A5").get_value<int>() == 49380);
         TS_ASSERT(!ws.get_cell("A5").has_formula());
     }
-
-    void test_read_rels()
-    {
-        {
-            std::vector<xlnt::relationship> expected =
-            {
-                {xlnt::relationship::type::theme, "rId3", "theme/theme1.xml"},
-                {xlnt::relationship::type::worksheet, "rId2", "worksheets/sheet1.xml"},
-                {xlnt::relationship::type::chartsheet, "rId1", "chartsheets/sheet1.xml"},
-                {xlnt::relationship::type::shared_strings, "rId5", "sharedStrings.xml"},
-                {xlnt::relationship::type::styles, "rId4", "styles.xml"}
-            };
-
-            auto path = path_helper::get_data_directory("reader/bug137.xlsx");
-            xlnt::zip_file archive(path);
-            xlnt::relationship_serializer serializer(archive);
-            
-            TS_ASSERT_EQUALS(serializer.read_relationships("xl/workbook.xml"), expected);
-        }
-
-        {
-            std::vector<xlnt::relationship> expected =
-            {
-                {xlnt::relationship::type::custom_xml, "rId8", "../customXml/item3.xml"},
-                {xlnt::relationship::type::worksheet, "rId3", "/xl/worksheets/sheet.xml"},
-                {xlnt::relationship::type::custom_xml, "rId7", "../customXml/item2.xml"},
-                {xlnt::relationship::type::worksheet, "rId2", "/xl/worksheets/sheet2.xml"},
-                {xlnt::relationship::type::worksheet, "rId1", "/xl/worksheets/sheet3.xml"},
-                {xlnt::relationship::type::custom_xml, "rId6", "../customXml/item1.xml"},
-                {xlnt::relationship::type::styles, "rId5", "/xl/styles.xml"},
-                {xlnt::relationship::type::theme, "rId4", "/xl/theme/theme.xml"}
-            };
-
-            auto path = path_helper::get_data_directory("reader/bug304.xlsx");
-            xlnt::zip_file archive(path);
-            xlnt::relationship_serializer serializer(archive);
-
-            TS_ASSERT_EQUALS(serializer.read_relationships("xl/workbook.xml"), expected);
-        }
-    }
     
     void test_read_content_types()
     {
@@ -388,7 +333,7 @@ public:
         xlnt::workbook wb;
         wb.load(path);
         
-        auto &result = wb.get_manifest().get_override_types();
+        auto &result = wb.get_manifest().get_parts();
 
         if(result.size() != expected.size())
         {
@@ -398,8 +343,8 @@ public:
 
         for(std::size_t i = 0; i < expected.size(); i++)
         {
-            TS_ASSERT(wb.get_manifest().has_override_type(xlnt::path(expected[i].first)));
-            TS_ASSERT_EQUALS(wb.get_manifest().get_override_type(xlnt::path(expected[i].first)), expected[i].second);
+            TS_ASSERT(wb.get_manifest().has_part(xlnt::path(expected[i].first)));
+            TS_ASSERT_EQUALS(wb.get_manifest().get_part_content_type_string(xlnt::path(expected[i].first)), expected[i].second);
         }
     }
     
@@ -458,26 +403,10 @@ public:
 
     void test_read_shared_strings_with_runs()
     {
-        std::string source =
-        "<sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"1\" uniqueCount=\"1\">"
-        "  <si>"
-        "    <r>"
-        "      <rPr>"
-        "        <sz val=\"13\"/>"
-        "        <color rgb=\"color\"/>"
-        "        <rFont val=\"font\"/>"
-        "        <family val=\"12\"/>"
-        "        <scheme val=\"scheme\"/>"
-        "      </rPr>"
-        "      <t>string</t>"
-        "    </r>"
-        "  </si>"
-        "</sst>";
-        pugi::xml_document xml;
-        xml.load(source.c_str());
+		xlnt::workbook wb;
+		wb.load("reader/genuine/a.xlsx");
 
-        std::vector<xlnt::text> strings;
-        xlnt::shared_strings_serializer::read_shared_strings(xml, strings);
+		const auto &strings = wb.get_shared_strings();
 
         TS_ASSERT_EQUALS(strings.size(), 1);
         TS_ASSERT_EQUALS(strings.front().get_runs().size(), 1);
@@ -486,26 +415,6 @@ public:
         TS_ASSERT_EQUALS(strings.front().get_runs().front().get_font(), "font");
         TS_ASSERT_EQUALS(strings.front().get_runs().front().get_family(), 12);
         TS_ASSERT_EQUALS(strings.front().get_runs().front().get_scheme(), "scheme");
-
-        std::string source_bad =
-        "<sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"2\" uniqueCount=\"2\">"
-        "  <si>"
-        "    <r>"
-        "      <rPr>"
-        "        <sz val=\"13\"/>"
-        "        <color rgb=\"color\"/>"
-        "        <rFont val=\"font\"/>"
-        "        <family val=\"12\"/>"
-        "        <scheme val=\"scheme\"/>"
-        "      </rPr>"
-        "      <t>string</t>"
-        "    </r>"
-        "  </si>"
-        "</sst>";
-        pugi::xml_document xml_bad;
-        xml_bad.load(source_bad.c_str());
-
-        TS_ASSERT_THROWS(xlnt::shared_strings_serializer::read_shared_strings(xml_bad, strings), std::runtime_error);
     }
 
     void test_read_inlinestr()

@@ -228,7 +228,7 @@ public:
         TS_ASSERT_EQUALS("http://test.com", ws.get_cell("A1").get_value<std::string>());
         ws.get_cell("A1").set_value("test");
         TS_ASSERT_EQUALS("test", ws.get_cell("A1").get_value<std::string>());
-        TS_ASSERT_EQUALS(ws.get_cell("A1").get_hyperlink().get_target_uri(), "http://test.com");
+        TS_ASSERT_EQUALS(ws.get_cell("A1").get_hyperlink(), "http://test.com");
     }
     
     void test_append()

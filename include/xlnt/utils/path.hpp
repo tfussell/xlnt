@@ -106,7 +106,12 @@ public:
 	/// <summary>
 	/// Return the last component of this path.
 	/// </summary>
-	std::string basename();
+	std::string basename() const;
+
+	/// <summary>
+	/// Return the part of the path following the last . in the basename.
+	/// </summary>
+	std::string extension() const;
 
 	// conversion
 
