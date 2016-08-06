@@ -65,11 +65,6 @@ struct stylesheet
 {
     ~stylesheet() {}
     
-    std::size_t index(const format &f) 
-	{ 
-		return ::index(formats, f);
-	}
-    
     std::size_t index(const std::string &style_name)
     {
         auto match = std::find_if(styles.begin(), styles.end(),

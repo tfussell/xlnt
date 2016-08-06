@@ -22,6 +22,8 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <cstdlib>
+
 #include <xlnt/styles/color.hpp>
 #include <xlnt/utils/exceptions.hpp>
 
@@ -163,7 +165,7 @@ std::string rgb_color::get_hex_string() const
 
 std::array<std::uint8_t, 4> rgb_color::decode_hex_string(const std::string &hex_string)
 {
-	auto x = strtoul(hex_string.c_str(), NULL, 16);
+	auto x = std::strtoul(hex_string.c_str(), NULL, 16);
 
 	auto a = static_cast<std::uint8_t>(x >> 24);
 	auto r = static_cast<std::uint8_t>((x >> 16) & 0xff);
