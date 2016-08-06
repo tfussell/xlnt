@@ -85,7 +85,6 @@ enum class XLNT_CLASS relationship_type
 	styles,
 	table_definition,
 	volatile_dependencies,
-	workbook,
 	worksheet,
 
 	hyperlink,

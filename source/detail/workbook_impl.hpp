@@ -22,8 +22,9 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <iterator>
 #include <list>
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 #include <detail/stylesheet.hpp>
@@ -92,7 +93,8 @@ struct workbook_impl
 		  links_up_to_date_(other.links_up_to_date_),
 		  shared_doc_(other.shared_doc_),
 		  hyperlinks_changed_(other.hyperlinks_changed_),
-		  app_version_(other.app_version_)
+		  app_version_(other.app_version_),
+		  sheet_title_rel_id_map_(other.sheet_title_rel_id_map_)
     {
     }
 
@@ -130,6 +132,8 @@ struct workbook_impl
 		shared_doc_ = other.shared_doc_;
 		hyperlinks_changed_ = other.hyperlinks_changed_;
 		app_version_ = other.app_version_;
+
+		sheet_title_rel_id_map_ = other.sheet_title_rel_id_map_;
 
         return *this;
     }
@@ -173,6 +177,8 @@ struct workbook_impl
 	bool shared_doc_;
 	bool hyperlinks_changed_;
 	std::string app_version_;
+
+	std::unordered_map<std::string, std::string> sheet_title_rel_id_map_;
 };
 
 } // namespace detail

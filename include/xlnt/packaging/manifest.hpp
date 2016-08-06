@@ -116,15 +116,33 @@ public:
 	bool has_package_relationship(relationship::type type) const;
 
 	/// <summary>
+	/// Returns true if the manifest contains a package relationship with the given id.
+	/// </summary>
+	bool has_package_relationship(const std::string &rel_id) const;
+
+	/// <summary>
 	/// Returns true if the manifest contains a relationship with the given type with part as the source.
 	/// </summary>
 	bool has_part_relationship(const path &part, relationship::type type) const;
 
+	/// <summary>
+	/// Returns true if the manifest contains a relationship with the given type with part as the source.
+	/// </summary>
+	bool has_part_relationship(const path &part, const std::string &rel_id) const;
+
 	relationship get_package_relationship(relationship::type type) const;
+
+	relationship get_package_relationship(const std::string &rel_id) const;
+
+	std::vector<relationship> get_package_relationships() const;
 
 	std::vector<relationship> get_package_relationships(relationship::type type) const;
 
 	relationship get_part_relationship(const path &part, relationship::type type) const;
+
+	relationship get_part_relationship(const path &part, const std::string &rel_id) const;
+
+	std::vector<relationship> get_part_relationships(const path &part) const;
 
 	std::vector<relationship> get_part_relationships(const path &part, relationship::type type) const;
 
@@ -132,89 +150,47 @@ public:
 	/// Given the path to a part, returns the content type of the part as
 	/// a content_type enum value or content_type::unknown if it isn't known.
 	/// </summary>
-	content_type get_part_content_type(const path &part) const;
+	content_type get_content_type(const path &part) const;
 
 	/// <summary>
 	/// Given the path to a part, returns the content type of the part as a string.
 	/// </summary>
-	std::string get_part_content_type_string(const path &part) const;
+	std::string get_content_type_string(const path &part) const;
 
-	/// <summary>
-	/// Registers a part of the given type at the standard path and creates a 
-	/// relationship with the new part as a target of "source". The type of the
-	/// relationship is inferred based on the provided types.
-	/// </summary>
-	void register_part(const path &part, const path &parent, const std::string &content_type, relationship::type relation);
-
-	/// <summary>
-	/// 
-	/// </summary>
-	void register_part(const path &parent, const relationship &rel, const std::string &content_type);
-
-	/// <summary>
-	/// Registers a package part of the given type at the standard path and creates a 
-	/// relationship with the package root as the source. The type of the
-	/// relationship is inferred based on the provided type.
-	/// </summary>
-	void register_package_part(const path &part, const std::string &content_type, relationship::type relation);
+	void register_override_type(const path &part, const std::string &content_type);
 
 	/// <summary>
 	/// Unregisters the path of the part of the given type and removes all relationships
 	/// with the part as a source or target.
 	/// </summary>
-	void unregister_part(const path &part);
+	void unregister_override_type(const path &part);
 
 	/// <summary>
 	/// Returns true if the part at the given path has been registered in this manifest.
 	/// </summary>
-	bool has_part(const path &part) const;
+	bool has_override_type(const path &part) const;
 
-	/// <summary>
-	/// Returns the path of every registered part in this manifest.
-	/// </summary>
-	std::vector<path> get_parts() const;
-
-	/// <summary>
-	/// Returns every registered relationship with the package root as the source.
-	/// </summary>
-	std::vector<relationship> get_package_relationships() const;
-
-	/// <summary>
-	/// Returns the package relationship with the given ID.
-	/// </summary>
-	relationship get_package_relationship(const std::string &rel_id);
-
-	/// <summary>
-	/// Returns every registered relationship with the part of the given type
-	/// as the source.
-	/// </summary>
-	std::vector<relationship> get_part_relationships(const path &part) const;
-
-	/// <summary>
-	/// Returns the registered relationship with the part of the given type
-	/// as the source and the ID matching the provided ID.
-	/// </summary>
-	relationship get_part_relationship(const path &part, const std::string &rel_id) const;
+	std::vector<path> get_overriden_parts() const;
 
 	/// <summary>
 	/// 
 	/// </summary>
-	std::string register_external_package_relationship(relationship::type type, const std::string &target_uri);
+	std::string register_package_relationship(relationship::type type, const path &target_uri, target_mode mode);
 
 	/// <summary>
 	/// 
 	/// </summary>
-	std::string register_external_package_relationship(relationship::type type, const std::string &target_uri, const std::string &rel_id);
+	std::string register_package_relationship(relationship::type type, const path &target_uri, target_mode mode, const std::string &rel_id);
 
 	/// <summary>
 	/// 
 	/// </summary>
-	std::string register_external_relationship(const path &source_part, relationship::type type, const std::string &target_uri);
+	std::string register_part_relationship(const path &source_uri, relationship::type type, const path &target_uri, target_mode mode);
 
 	/// <summary>
 	/// 
 	/// </summary>
-	std::string register_external_relationship(const path &source_part, relationship::type type, const std::string &target_uri, const std::string &rel_id);
+	std::string register_part_relationship(const path &source_uri, relationship::type type, const path &target_uri, target_mode mode, const std::string &rel_id);
 
 	/// <summary>
 	/// Returns true if a default content type for the extension has been registered.
@@ -225,6 +201,8 @@ public:
 	/// Returns a vector of all extensions with registered default content types.
 	/// </summary>
 	std::vector<std::string> get_default_type_extensions() const;
+
+	std::vector<path> get_parts_with_relationships() const;
 
 	/// <summary>
 	/// Returns the registered default content type for parts of the given extension.
@@ -248,7 +226,7 @@ private:
 		std::vector<relationship> relationships;
 	};
 
-	std::string next_package_relationship_id() const;\
+	std::string next_package_relationship_id() const;
 
 	std::string next_relationship_id(const path &part) const;
 

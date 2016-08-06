@@ -27,6 +27,7 @@
 #include <iostream>
 #include <vector>
 
+#include <detail/include_pugixml.hpp>
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/packaging/zip_file.hpp>
 
@@ -57,50 +58,47 @@ private:
 	/// Write all files needed to create a valid XLSX file which represents all
 	/// data contained in workbook.
 	/// </summary>
-	void populate_archive(zip_file &archive);
+	void populate_archive();
 
 	// Package Parts
 
-	void write_package_relationships();
-	void write_content_types();
-	void write_app_properties();
-	void write_core_properties();
-	void write_custom_file_properties();
+	void write_manifest();
+	void write_core_properties(pugi::xml_node root);
+	void write_extended_properties(pugi::xml_node root);
+	void write_custom_properties(pugi::xml_node root);
 
 	// SpreadsheetML-Specific Package Parts
 
-	void write_workbook();
-	void write_workbook_relationships();
+	void write_workbook(pugi::xml_node root);
 
 	// Workbook Relationship Target Parts
 
-	void write_calculation_chain();
-	void write_connections();
-	void write_custom_property();
-	void write_custom_xml_mappings();
-	void write_external_workbook_references();
-	void write_metadata();
-	void write_pivot_table();
-	void write_shared_string_table();
-	void write_shared_workbook_revision_headers();
-	void write_shared_workbook();
-	void write_shared_workbook_user_data();
-	void write_styles();
-	void write_theme();
-	void write_volatile_dependencies();
+	void write_calculation_chain(pugi::xml_node root);
+	void write_connections(pugi::xml_node root);
+	void write_custom_xml_mappings(pugi::xml_node root);
+	void write_external_workbook_references(pugi::xml_node root);
+	void write_metadata(pugi::xml_node root);
+	void write_pivot_table(pugi::xml_node root);
+	void write_shared_string_table(pugi::xml_node root);
+	void write_shared_workbook_revision_headers(pugi::xml_node root);
+	void write_shared_workbook(pugi::xml_node root);
+	void write_shared_workbook_user_data(pugi::xml_node root);
+	void write_styles(pugi::xml_node root);
+	void write_theme(pugi::xml_node root);
+	void write_volatile_dependencies(pugi::xml_node root);
 
-	void write_chartsheet(const relationship &rel);
-	void write_dialogsheet(const relationship &rel);
-	bool read_worksheet(const relationship &rel);
-	void write_worksheet(const relationship &rel);
+	void write_chartsheet(pugi::xml_node root, const relationship &rel);
+	void write_dialogsheet(pugi::xml_node root, const relationship &rel);
+	void write_worksheet(pugi::xml_node root, const relationship &rel);
 
 	// Sheet Relationship Target Parts
 
-	void write_comments();
-	void write_drawings();
+	void write_comments(pugi::xml_node root);
+	void write_drawings(pugi::xml_node root);
 
-	// Unknown Parts
+	// Other Parts
 
+	void write_custom_property();
 	void write_unknown_parts();
 	void write_unknown_relationships();
 

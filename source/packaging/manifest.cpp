@@ -169,99 +169,77 @@ std::vector<relationship> manifest::get_part_relationships(const path &part, rel
 	return matches;
 }
 
-content_type manifest::get_part_content_type(const path &part) const
+content_type manifest::get_content_type(const path &part) const
 {
-	return from_string(get_part_content_type_string(part));
+	return from_string(get_content_type_string(part));
 }
 
-std::string manifest::get_part_content_type_string(const path &part) const
+std::string manifest::get_content_type_string(const path &part) const
 {
 	if (part_infos_.find(part) == part_infos_.end())
 	{
+		auto extension = part.extension();
+
+		if (has_default_type(extension))
+		{
+			return get_default_type(extension);
+		}
+
 		throw key_not_found();
 	}
 
 	return part_infos_.at(part).content_type;
 }
 
-void manifest::register_part(const path &part, const path &parent, const std::string &content_type, relationship::type relation)
+void manifest::register_override_type(const path &part, const std::string &content_type)
 {
 	part_infos_[part] = { content_type, {} };
-
-	relationship rel(next_package_relationship_id(), relation, part, target_mode::internal);
-	part_infos_[parent].relationships.push_back(rel);
 }
 
-void manifest::register_part(const path &parent, const relationship &rel, const std::string &content_type)
+std::string manifest::register_package_relationship(relationship::type type, const path &target_uri, target_mode mode)
 {
-	part_infos_[rel.get_target_uri()] = { content_type,{} };
-	part_infos_[parent].relationships.push_back(rel);
+	return register_package_relationship(type, target_uri, mode, next_package_relationship_id());
 }
 
-void manifest::register_package_part(const path &part, const std::string &content_type, relationship::type relation)
+std::string manifest::register_package_relationship(relationship::type type, const path &target_uri, target_mode mode, const std::string &rel_id)
 {
-	part_infos_[part] = { content_type, {} };
+	if (has_package_relationship(rel_id))
+	{
+		throw invalid_parameter();
+	}
 
-	relationship rel(next_package_relationship_id(), relation, part, target_mode::internal);
+	relationship rel(rel_id, type, target_uri, mode);
 	package_relationships_.push_back(rel);
+
+	return rel_id;
 }
 
-void manifest::unregister_part(const path &part)
+bool manifest::has_package_relationship(const std::string &rel_id) const
 {
-	if (part_infos_.find(part) != part_infos_.end())
+	for (const auto &rel : package_relationships_)
 	{
-		part_infos_.erase(part);
-	}
-	else
-	{
-		throw key_not_found();
-	}
-
-	auto package_rels_iter = package_relationships_.begin();
-
-	while (package_rels_iter != package_relationships_.end())
-	{
-		if (package_rels_iter->get_target_uri() == part)
+		if (rel.get_id() == rel_id)
 		{
-			package_rels_iter = package_relationships_.erase(package_rels_iter);
-			continue;
-		}
-
-		++package_rels_iter;
-	}
-
-	for (auto &current_part : part_infos_)
-	{
-		auto rels_iter = current_part.second.relationships.begin();
-
-		while (rels_iter != current_part.second.relationships.end())
-		{
-			if (rels_iter->get_target_uri() == part)
-			{
-				rels_iter = current_part.second.relationships.erase(rels_iter);
-				continue;
-			}
-
-			++rels_iter;
+			return true;
 		}
 	}
+
+	return false;
 }
 
-std::vector<path> manifest::get_parts() const
+std::vector<path> manifest::get_overriden_parts() const
 {
-	std::vector<path> parts;
+	std::vector<path> overriden;
 
 	for (const auto &part : part_infos_)
 	{
-		parts.push_back(part.first);
+		if (!part.second.content_type.empty())
+		{
+			overriden.push_back(part.first);
+		}
 	}
 
-	return parts;
-}
-
-bool manifest::has_part(const path &part) const
-{
-	return part_infos_.find(part) != part_infos_.end();
+	return overriden;
 }
 
 std::vector<relationship> manifest::get_package_relationships() const
@@ -269,7 +247,7 @@ std::vector<relationship> manifest::get_package_relationships() const
 	return package_relationships_;
 }
 
-relationship manifest::get_package_relationship(const std::string &rel_id)
+relationship manifest::get_package_relationship(const std::string &rel_id) const
 {
 	for (const auto rel : package_relationships_)
 	{
@@ -284,14 +262,12 @@ relationship manifest::get_package_relationship(const std::string &rel_id)
 
 std::vector<relationship> manifest::get_part_relationships(const path &part) const
 {
-	std::vector<relationship> matches;
-
-	for (const auto &rel : part_infos_.at(part).relationships)
+	if (part_infos_.find(part) == part_infos_.end())
 	{
-		matches.push_back(rel);
+		throw key_not_found();
 	}
 
-	return matches;
+	return part_infos_.at(part).relationships;
 }
 
 relationship manifest::get_part_relationship(const path &part, const std::string &rel_id) const
@@ -312,27 +288,30 @@ relationship manifest::get_part_relationship(const path &part, const std::string
 	throw key_not_found();
 }
 
-std::string manifest::register_external_package_relationship(relationship::type type, const std::string &target_uri)
+std::vector<path> manifest::get_parts_with_relationships() const
 {
-	return register_external_package_relationship(type, target_uri, next_package_relationship_id());
+	std::vector<path> with_relationships;
+
+	for (const auto &info : part_infos_)
+	{
+		if (!info.second.relationships.empty())
+		{
+			with_relationships.push_back(info.first);
+		}
+	}
+
+	return with_relationships;
 }
 
-std::string manifest::register_external_package_relationship(relationship::type type, const std::string &target_uri, const std::string &rel_id)
+std::string manifest::register_part_relationship(const path &source_uri, relationship::type type, const path &target_uri, target_mode mode)
 {
-	relationship rel(rel_id, type, path(target_uri), target_mode::external);
-	package_relationships_.push_back(rel);
-	return rel_id;
+	return register_part_relationship(source_uri, type, target_uri, mode, next_relationship_id(source_uri));
 }
 
-std::string manifest::register_external_relationship(const path &source_part, relationship::type type, const std::string &target_uri)
+std::string manifest::register_part_relationship(const path &source_uri, relationship::type type, const path &target_uri, target_mode mode, const std::string &rel_id)
 {
-	return register_external_relationship(source_part, type, target_uri, next_relationship_id(source_part));
-}
-
-std::string manifest::register_external_relationship(const path &source_part, relationship::type type, const std::string &target_uri, const std::string &rel_id)
-{
-	relationship rel(rel_id, type, path(target_uri), target_mode::external);
-	part_infos_.at(source_part).relationships.push_back(rel);
+	relationship rel(rel_id, type, path(target_uri), mode);
+	part_infos_.at(source_uri).relationships.push_back(rel);
 	return rel_id;
 }
 

@@ -173,40 +173,6 @@ public:
         TS_ASSERT_THROWS(wb.remove_named_range("test_nr2"), std::runtime_error);
     }
 
-    void test_write_regular_date()
-    {
-        const xlnt::datetime today(2010, 1, 18, 14, 15, 20, 1600);
-        
-        xlnt::workbook book;
-        auto sheet = book.get_active_sheet();
-        sheet.get_cell("A1").set_value(today);
-        temporary_file temp_file;
-        book.save(temp_file.get_path());
-
-        xlnt::workbook test_book;
-        test_book.load(temp_file.get_path());
-        auto test_sheet = test_book.get_active_sheet();
-
-        TS_ASSERT_EQUALS(test_sheet.get_cell("A1").get_value<xlnt::datetime>(), today);
-    }
-
-    void test_write_regular_float()
-    {
-        long double float_value = 1.0L / 3.0L;
-        
-        xlnt::workbook book;
-        auto sheet = book.get_active_sheet();
-        sheet.get_cell("A1").set_value(float_value);
-        temporary_file temp_file;
-        book.save(temp_file.get_path());
-
-        xlnt::workbook test_book;
-        test_book.load(temp_file.get_path());
-        auto test_sheet = test_book.get_active_sheet();
-
-        TS_ASSERT_EQUALS(test_sheet.get_cell("A1").get_value<long double>(), float_value);
-    }
-
     void test_post_increment_iterator()
     {
         xlnt::workbook wb;
@@ -262,7 +228,7 @@ public:
 		xlnt::manifest m;
         TS_ASSERT(!m.has_default_type("xml"));
         TS_ASSERT_THROWS(m.get_default_type("xml"), xlnt::key_not_found);
-        TS_ASSERT(!m.has_part(xlnt::path("xl/workbook.xml")));
+        TS_ASSERT(!m.has_package_relationship(xlnt::relationship::type::office_document));
         TS_ASSERT_THROWS(m.get_part_relationships(xlnt::path("xl/workbook.xml")), xlnt::key_not_found);
     }
 

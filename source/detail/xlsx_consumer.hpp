@@ -86,7 +86,7 @@ private:
 	void read_shared_workbook_revision_headers(const pugi::xml_node root);
 	void read_shared_workbook(const pugi::xml_node root);
 	void read_shared_workbook_user_data(const pugi::xml_node root);
-	void read_styles(const pugi::xml_node root);
+	void read_stylesheet(const pugi::xml_node root);
 	void read_theme(const pugi::xml_node root);
 	void read_volatile_dependencies(const pugi::xml_node root);
 
@@ -110,11 +110,8 @@ private:
 	/// </summary>
 	zip_file source_;
 
-	/// <summary>
-	/// Worksheet titles from workbook.xml are saved here so we know what its
-	/// title is when readind the associated worksheet XML.
-	/// </summary>
-	std::unordered_map<std::string, std::tuple<std::string, std::size_t, std::size_t>> worksheet_rel_title_id_index_map_;
+	std::unordered_map<std::string, std::size_t> sheet_title_id_map_;
+	std::unordered_map<std::string, std::size_t> sheet_title_index_map_;
 
 	/// <summary>
 	/// A reference to the workbook which is being read.

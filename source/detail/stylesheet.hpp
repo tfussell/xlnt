@@ -37,7 +37,7 @@
 namespace {
 
 template<typename T>
-std::size_t search_vector(const std::vector<T> &items, const T &to_find)
+std::size_t index(const std::vector<T> &items, const T &to_find)
 {
     auto match = std::find(items.begin(), items.end(), to_find);
     
@@ -49,6 +49,13 @@ std::size_t search_vector(const std::vector<T> &items, const T &to_find)
     return std::distance(items.begin(), match);
 }
 
+template<typename T>
+bool contains(const std::vector<T> &items, const T &to_find)
+{
+	auto match = std::find(items.begin(), items.end(), to_find);
+	return match != items.end();
+}
+
 } // namespace
 
 namespace xlnt {
@@ -58,7 +65,10 @@ struct stylesheet
 {
     ~stylesheet() {}
     
-    std::size_t index(const format &f) { return search_vector(formats, f); }
+    std::size_t index(const format &f) 
+	{ 
+		return ::index(formats, f);
+	}
     
     std::size_t index(const std::string &style_name)
     {
@@ -72,11 +82,6 @@ struct stylesheet
         
         return std::distance(styles.begin(), match);
     }
-
-    std::size_t index(const border &b) { return search_vector(borders, b); }
-    std::size_t index(const fill &f) { return search_vector(fills, f); }
-    std::size_t index(const font &f) { return search_vector(fonts, f); }
-    std::size_t index(const number_format &f) { return search_vector(number_formats, f); }
     
     std::size_t add_format(const format &f)
     {
@@ -97,43 +102,24 @@ struct stylesheet
         formats.push_back(f);
         format_styles.push_back("Normal");
         
-        try
-        {
-            search_vector(borders, f.get_border());
-        }
-        catch(std::out_of_range)
+		if (!contains(borders, f.get_border()))
         {
             borders.push_back(f.get_border());
         }
 
-        try
-        {
-            search_vector(fills, f.get_fill());
-        }
-        catch(std::out_of_range)
-        {
-            fills.push_back(f.get_fill());
-        }
+		if (!contains(fills, f.get_fill()))
+		{
+			fills.push_back(f.get_fill());
+		}
+
+		if (!contains(fonts, f.get_font()))
+		{
+			fonts.push_back(f.get_font());
+		}
         
-        try
+        if (f.get_number_format().get_id() >= 164 && !contains(number_formats, f.get_number_format()))
         {
-            search_vector(fonts, f.get_font());
-        }
-        catch(std::out_of_range)
-        {
-            fonts.push_back(f.get_font());
-        }
-        
-        if (f.get_number_format().get_id() >= 164)
-        {
-            try
-            {
-                search_vector(number_formats, f.get_number_format());
-            }
-            catch(std::out_of_range)
-            {
-                number_formats.push_back(f.get_number_format());
-            }
+			number_formats.push_back(f.get_number_format());
         }
         
         return formats.size() - 1;

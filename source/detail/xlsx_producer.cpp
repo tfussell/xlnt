@@ -180,14 +180,14 @@ std::string to_string(xlnt::horizontal_alignment horizontal_alignment)
 	}
 }
 
-void write_relationships(const std::vector<xlnt::relationship> &relationships, pugi::xml_document &document)
+void write_relationships(const std::vector<xlnt::relationship> &relationships, pugi::xml_node root)
 {
-	auto root_node = document.append_child("Relationships");
-	root_node.append_attribute("xmlns").set_value(xlnt::constants::get_namespace("relationships").c_str());
+	auto relationships_node = root.append_child("Relationships");
+	relationships_node.append_attribute("xmlns").set_value(xlnt::constants::get_namespace("relationships").c_str());
 
 	for (const auto &relationship : relationships)
 	{
-		auto relationship_node = root_node.append_child("Relationship");
+		auto relationship_node = relationships_node.append_child("Relationship");
 
 		relationship_node.append_attribute("Id").set_value(relationship.get_id().c_str());
 		relationship_node.append_attribute("Type").set_value(to_string(relationship.get_type()).c_str());
@@ -565,103 +565,112 @@ xlsx_producer::xlsx_producer(const workbook &target) : source_(target)
 
 void xlsx_producer::write(const path &destination)
 {
-	xlnt::zip_file archive;
-	populate_archive(destination_);
-	archive.save(destination);
+	populate_archive();
+	destination_.save(destination);
 }
 
 void xlsx_producer::write(std::ostream &destination)
 {
-	xlnt::zip_file archive;
-	populate_archive(destination_);
-	archive.save(destination);
+	populate_archive();
+	destination_.save(destination);
 }
 
 void xlsx_producer::write(std::vector<std::uint8_t> &destination)
 {
-	xlnt::zip_file archive;
-	populate_archive(destination_);
-	archive.save(destination);
+	populate_archive();
+	destination_.save(destination);
 }
 
 // Part Writing Methods
 
-void xlsx_producer::populate_archive(zip_file &destination_)
+void xlsx_producer::populate_archive()
 {
-	write_package_relationships();
-	write_content_types();
-	write_workbook();
-	write_workbook_relationships();
+	write_manifest();
+	path workbook_part;
 
 	for (auto &rel : source_.impl().manifest_.get_package_relationships())
 	{
+		pugi::xml_document document;
+
 		switch (rel.get_type())
 		{
 		case relationship::type::core_properties:
-			write_core_properties();
+			write_core_properties(document.root());
 			break;
 		case relationship::type::extended_properties:
-			write_app_properties();
+			write_extended_properties(document.root());
 			break;
 		case relationship::type::custom_properties:
-			write_custom_property();
+			write_custom_properties(document.root());
 			break;
+		case relationship::type::office_document:
+			write_workbook(document.root());
+			workbook_part = rel.get_target_uri();
+			break;
+		case relationship::type::thumbnail:
+			destination_.write_string(
+				std::string(source_.get_thumbnail().begin(), source_.get_thumbnail().end()), 
+				rel.get_target_uri());
+			continue;
 		}
+
+		write_document_to_archive(document, rel.get_target_uri(), destination_);
 	}
 
-	for (auto rel : source_.impl().manifest_.get_part_relationships(constants::part_workbook()))
+	for (auto rel : source_.impl().manifest_.get_part_relationships(workbook_part))
 	{
+		pugi::xml_document document;
+
 		switch (rel.get_type())
 		{
 		case relationship::type::calculation_chain:
-			write_calculation_chain();
+			write_calculation_chain(document.root());
 			break;
 		case relationship::type::chartsheet:
-			write_chartsheet(rel);
+			write_chartsheet(document.root(), rel);
 			break;
 		case relationship::type::connections:
-			write_connections();
+			write_connections(document.root());
 			break;
 		case relationship::type::custom_xml_mappings:
-			write_custom_xml_mappings();
+			write_custom_xml_mappings(document.root());
 			break;
 		case relationship::type::dialogsheet:
-			write_dialogsheet(rel);
+			write_dialogsheet(document.root(), rel);
 			break;
 		case relationship::type::external_workbook_references:
-			write_external_workbook_references();
+			write_external_workbook_references(document.root());
 			break;
 		case relationship::type::metadata:
-			write_metadata();
+			write_metadata(document.root());
 			break;
 		case relationship::type::pivot_table:
-			write_pivot_table();
+			write_pivot_table(document.root());
 			break;
 		case relationship::type::shared_string_table:
-			write_shared_string_table();
+			write_shared_string_table(document.root());
 			break;
 		case relationship::type::shared_workbook_revision_headers:
-			write_shared_workbook_revision_headers();
+			write_shared_workbook_revision_headers(document.root());
 			break;
 		case relationship::type::styles:
-			write_styles();
+			write_styles(document.root());
 			break;
 		case relationship::type::theme:
-			write_theme();
+			write_theme(document.root());
 			break;
 		case relationship::type::volatile_dependencies:
-			write_volatile_dependencies();
+			write_volatile_dependencies(document.root());
 			break;
 		case relationship::type::worksheet:
-			write_worksheet(rel);
+			write_worksheet(document.root(), rel);
 			break;
 		}
+
+		std::ostringstream document_stream;
+		document.save(document_stream);
+		destination_.write_string(document_stream.str(), rel.get_target_uri());
 	}
-
-	// Sheet Relationship Target Parts
-
-	void write_comments();
-	void write_drawings();
 
 	// Unknown Parts
 
@@ -671,30 +680,11 @@ void xlsx_producer::populate_archive(zip_file &destination_)
 
 // Package Parts
 
-void xlsx_producer::write_package_relationships()
+void xlsx_producer::write_manifest()
 {
-	pugi::xml_document document;
+	pugi::xml_document content_types_document;
 
-	auto relationships_node = document.append_child("Relationships");
-	relationships_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/package/2006/relationships");
-
-	for (const auto &relationship : source_.impl().manifest_.get_package_relationships())
-	{
-		auto relationship_node = relationships_node.append_child("Relationship");
-
-		relationship_node.append_attribute("Id").set_value(relationship.get_id().c_str());
-		relationship_node.append_attribute("Type").set_value(to_string(relationship.get_type()).c_str());
-		relationship_node.append_attribute("Target").set_value(relationship.get_target_uri().to_string('/').c_str());
-	}
-
-	write_document_to_archive(document, xlnt::constants::part_root_relationships(), destination_);
-}
-
-void xlsx_producer::write_content_types()
-{
-	pugi::xml_document document;
-
-	auto types_node = document.append_child("Types");
+	auto types_node = content_types_document.append_child("Types");
 	types_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/package/2006/content-types");
 
 	for (const auto &extension : source_.get_manifest().get_default_type_extensions())
@@ -705,44 +695,57 @@ void xlsx_producer::write_content_types()
 		default_node.append_attribute("ContentType").set_value(content_type.c_str());
 	}
 
-	for (const auto &part : source_.get_manifest().get_parts())
+	for (const auto &part : source_.get_manifest().get_overriden_parts())
 	{
 		auto override_node = types_node.append_child("Override");
-		override_node.append_attribute("PartName").set_value(part.to_string('/').c_str());
-		auto content_type = source_.get_manifest().get_part_content_type_string(part);
+		override_node.append_attribute("PartName").set_value(("/" + part.to_string('/')).c_str());
+		auto content_type = source_.get_manifest().get_content_type_string(part);
 		override_node.append_attribute("ContentType").set_value(content_type.c_str());
 	}
 
-	write_document_to_archive(document, xlnt::constants::part_content_types(), destination_);
+	for (const auto &part : source_.get_manifest().get_parts_with_relationships())
+	{
+		auto part_rels = source_.get_manifest().get_part_relationships(part);
+
+		pugi::xml_document part_rels_document;
+		write_relationships(part_rels, part_rels_document.root());
+		path rels_path = part.parent().append("_rels").append(part.basename() + ".rels");
+		write_document_to_archive(part_rels_document, rels_path, destination_);
+	}
+
+	write_document_to_archive(content_types_document, path("[Content_Types].xml"), destination_);
+
+	pugi::xml_document package_rels_document;
+	write_relationships(source_.get_manifest().get_package_relationships(), package_rels_document);
+	write_document_to_archive(package_rels_document, path("_rels/.rels"), destination_);
 }
 
-void xlsx_producer::write_app_properties()
+void xlsx_producer::write_extended_properties(pugi::xml_node root)
 {
-	pugi::xml_document document;
-	auto root_node = document.append_child("Properties");
+	auto properties_node = root.append_child("Properties");
 
-	root_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/officeDocument/2006/extended-properties");
-	root_node.append_attribute("xmlns:vt").set_value("http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes");
+	properties_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/officeDocument/2006/extended-properties");
+	properties_node.append_attribute("xmlns:vt").set_value("http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes");
 
-	root_node.append_child("Application").text().set(source_.get_application().c_str());
-	root_node.append_child("DocSecurity").text().set(std::to_string(source_.get_doc_security()).c_str());
-	root_node.append_child("ScaleCrop").text().set(source_.get_scale_crop() ? "true" : "false");
+	properties_node.append_child("Application").text().set(source_.get_application().c_str());
+	properties_node.append_child("DocSecurity").text().set(std::to_string(source_.get_doc_security()).c_str());
+	properties_node.append_child("ScaleCrop").text().set(source_.get_scale_crop() ? "true" : "false");
 
-	auto company_node = root_node.append_child("Company");
+	auto company_node = properties_node.append_child("Company");
 
 	if (!source_.get_company().empty())
 	{
 		company_node.text().set(source_.get_company().c_str());
 	}
 
-	root_node.append_child("LinksUpToDate").text().set(source_.links_up_to_date() ? "true" : "false");
-	root_node.append_child("SharedDoc").text().set(source_.is_shared_doc() ? "true" : "false");
-	root_node.append_child("HyperlinksChanged").text().set(source_.hyperlinks_changed() ? "true" : "false");
-	root_node.append_child("AppVersion").text().set(source_.get_app_version().c_str());
+	properties_node.append_child("LinksUpToDate").text().set(source_.links_up_to_date() ? "true" : "false");
+	properties_node.append_child("SharedDoc").text().set(source_.is_shared_doc() ? "true" : "false");
+	properties_node.append_child("HyperlinksChanged").text().set(source_.hyperlinks_changed() ? "true" : "false");
+	properties_node.append_child("AppVersion").text().set(source_.get_app_version().c_str());
 
 	// TODO what is this stuff?
 
-	auto heading_pairs_node = root_node.append_child("HeadingPairs");
+	auto heading_pairs_node = properties_node.append_child("HeadingPairs");
 	auto heading_pairs_vector_node = heading_pairs_node.append_child("vt:vector");
 	heading_pairs_vector_node.append_attribute("size").set_value("2");
 	heading_pairs_vector_node.append_attribute("baseType").set_value("variant");
@@ -751,7 +754,7 @@ void xlsx_producer::write_app_properties()
 		.append_child("vt:i4")
 		.text().set(std::to_string(source_.get_sheet_titles().size()).c_str());
 
-	auto titles_of_parts_node = root_node.append_child("TitlesOfParts");
+	auto titles_of_parts_node = properties_node.append_child("TitlesOfParts");
 	auto titles_of_parts_vector_node = titles_of_parts_node.append_child("vt:vector");
 	titles_of_parts_vector_node.append_attribute("size").set_value(std::to_string(source_.get_sheet_titles().size()).c_str());
 	titles_of_parts_vector_node.append_attribute("baseType").set_value("lpstr");
@@ -760,49 +763,40 @@ void xlsx_producer::write_app_properties()
 	{
 		titles_of_parts_vector_node.append_child("vt:lpstr").text().set(ws.get_title().c_str());
 	}
-
-	write_document_to_archive(document, xlnt::constants::part_app(), destination_);
 }
 
-void xlsx_producer::write_core_properties()
+void xlsx_producer::write_core_properties(pugi::xml_node root)
 {
-	pugi::xml_document document;
-	auto root_node = document.append_child("cp:coreProperties");
+	auto core_properties_node = root.append_child("cp:coreProperties");
 
-	root_node.append_attribute("xmlns:cp").set_value("http://schemas.openxmlformats.org/package/2006/metadata/core-properties");
-	root_node.append_attribute("xmlns:dc").set_value("http://purl.org/dc/elements/1.1/");
-	root_node.append_attribute("xmlns:dcmitype").set_value("http://purl.org/dc/dcmitype/");
-	root_node.append_attribute("xmlns:dcterms").set_value("http://purl.org/dc/terms/");
-	root_node.append_attribute("xmlns:xsi").set_value("http://www.w3.org/2001/XMLSchema-instance");
+	core_properties_node.append_attribute("xmlns:cp").set_value("http://schemas.openxmlformats.org/package/2006/metadata/core-properties");
+	core_properties_node.append_attribute("xmlns:dc").set_value("http://purl.org/dc/elements/1.1/");
+	core_properties_node.append_attribute("xmlns:dcmitype").set_value("http://purl.org/dc/dcmitype/");
+	core_properties_node.append_attribute("xmlns:dcterms").set_value("http://purl.org/dc/terms/");
+	core_properties_node.append_attribute("xmlns:xsi").set_value("http://www.w3.org/2001/XMLSchema-instance");
 
-	root_node.append_child("dc:creator").text().set(source_.get_creator().c_str());
-	root_node.append_child("cp:lastModifiedBy").text().set(source_.get_last_modified_by().c_str());
-	root_node.append_child("dcterms:created").text().set(datetime_to_w3cdtf(source_.get_created()).c_str());
-	root_node.child("dcterms:created").append_attribute("xsi:type").set_value("dcterms:W3CDTF");
-	root_node.append_child("dcterms:modified").text().set(datetime_to_w3cdtf(source_.get_modified()).c_str());
-	root_node.child("dcterms:modified").append_attribute("xsi:type").set_value("dcterms:W3CDTF");
-	root_node.append_child("dc:title").text().set(source_.get_title().c_str());
-	root_node.append_child("dc:description");
-	root_node.append_child("dc:subject");
-	root_node.append_child("cp:keywords");
-	root_node.append_child("cp:category");
-
-	write_document_to_archive(document, xlnt::constants::part_core(), destination_);
+	core_properties_node.append_child("dc:creator").text().set(source_.get_creator().c_str());
+	core_properties_node.append_child("cp:lastModifiedBy").text().set(source_.get_last_modified_by().c_str());
+	core_properties_node.append_child("dcterms:created").text().set(datetime_to_w3cdtf(source_.get_created()).c_str());
+	core_properties_node.child("dcterms:created").append_attribute("xsi:type").set_value("dcterms:W3CDTF");
+	core_properties_node.append_child("dcterms:modified").text().set(datetime_to_w3cdtf(source_.get_modified()).c_str());
+	core_properties_node.child("dcterms:modified").append_attribute("xsi:type").set_value("dcterms:W3CDTF");
+	core_properties_node.append_child("dc:title").text().set(source_.get_title().c_str());
+	core_properties_node.append_child("dc:description");
+	core_properties_node.append_child("dc:subject");
+	core_properties_node.append_child("cp:keywords");
+	core_properties_node.append_child("cp:category");
 }
 
-void xlsx_producer::write_custom_file_properties()
+void xlsx_producer::write_custom_properties(pugi::xml_node root)
 {
-	pugi::xml_document document;
-	auto root_node = document.append_child("customFileProperties");
-	write_document_to_archive(document, xlnt::constants::part_core(), destination_);
+	auto properties_node = root.append_child("Properties");
 }
 
 // Write SpreadsheetML-Specific Package Parts
 
-void xlsx_producer::write_workbook()
+void xlsx_producer::write_workbook(pugi::xml_node root)
 {
-	pugi::xml_document document;
-
 	std::size_t num_visible = 0;
 
 	for (auto ws : source_)
@@ -818,23 +812,23 @@ void xlsx_producer::write_workbook()
 		throw xlnt::no_visible_worksheets();
 	}
 
-	auto root_node = document.append_child("workbook");
+	auto workbook_node = root.append_child("workbook");
 
-	root_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
-	root_node.append_attribute("xmlns:r").set_value("http://schemas.openxmlformats.org/officeDocument/2006/relationships");
+	workbook_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
+	workbook_node.append_attribute("xmlns:r").set_value("http://schemas.openxmlformats.org/officeDocument/2006/relationships");
 
-	auto file_version_node = root_node.append_child("fileVersion");
+	auto file_version_node = workbook_node.append_child("fileVersion");
 	file_version_node.append_attribute("appName").set_value("xl");
 	file_version_node.append_attribute("lastEdited").set_value("4");
 	file_version_node.append_attribute("lowestEdited").set_value("4");
 	file_version_node.append_attribute("rupBuild").set_value("4505");
 
-	auto workbook_pr_node = root_node.append_child("workbookPr");
+	auto workbook_pr_node = workbook_node.append_child("workbookPr");
 	workbook_pr_node.append_attribute("codeName").set_value("ThisWorkbook");
 	workbook_pr_node.append_attribute("defaultThemeVersion").set_value("124226");
 	workbook_pr_node.append_attribute("date1904").set_value(source_.get_base_date() == calendar::mac_1904 ? "1" : "0");
 
-	auto book_views_node = root_node.append_child("bookViews");
+	auto book_views_node = workbook_node.append_child("bookViews");
 	auto workbook_view_node = book_views_node.append_child("workbookView");
 	workbook_view_node.append_attribute("activeTab").set_value("0");
 	workbook_view_node.append_attribute("autoFilterDateGrouping").set_value("1");
@@ -846,45 +840,41 @@ void xlsx_producer::write_workbook()
 	workbook_view_node.append_attribute("tabRatio").set_value("600");
 	workbook_view_node.append_attribute("visibility").set_value("visible");
 
-	auto sheets_node = root_node.append_child("sheets");
-	auto defined_names_node = root_node.append_child("definedNames");
+	auto sheets_node = workbook_node.append_child("sheets");
+	auto defined_names_node = workbook_node.append_child("definedNames");
 	std::size_t index = 1;
+
+	auto wb_rel = source_.d_->manifest_.get_package_relationship(xlnt::relationship::type::office_document);
 
 	for (const auto ws : source_)
 	{
-		path target("worksheets/sheet" + std::to_string(index++) + ".xml");
+		auto sheet_rel_id = source_.d_->sheet_title_rel_id_map_[ws.get_title()];
+		auto sheet_rel = source_.d_->manifest_.get_part_relationship(wb_rel.get_target_uri(), sheet_rel_id);
 
-		for (const auto &rel : source_.impl().manifest_.get_part_relationships(constants::part_workbook()))
+		auto sheet_node = sheets_node.append_child("sheet");
+		sheet_node.append_attribute("name").set_value(ws.get_title().c_str());
+		sheet_node.append_attribute("sheetId").set_value(std::to_string(ws.get_id()).c_str());
+
+		if (ws.get_sheet_state() == xlnt::sheet_state::hidden)
 		{
-			if (rel.get_target_uri().to_string('/') != target.to_string('/')) continue;
+			sheet_node.append_attribute("state").set_value("hidden");
+		}
 
-			auto sheet_node = sheets_node.append_child("sheet");
-			sheet_node.append_attribute("name").set_value(ws.get_title().c_str());
-			sheet_node.append_attribute("sheetId").set_value(std::to_string(ws.get_id()).c_str());
+		sheet_node.append_attribute("r:id").set_value(sheet_rel_id.c_str());
 
-			if (ws.get_sheet_state() == xlnt::sheet_state::hidden)
-			{
-				sheet_node.append_attribute("state").set_value("hidden");
-			}
-
-			sheet_node.append_attribute("r:id").set_value(rel.get_id().c_str());
-
-			if (ws.has_auto_filter())
-			{
-				auto defined_name_node = defined_names_node.append_child("definedName");
-				defined_name_node.append_attribute("name").set_value("_xlnm._FilterDatabase");
-				defined_name_node.append_attribute("hidden").set_value("1");
-				defined_name_node.append_attribute("localSheetId").set_value("0");
-				std::string name =
-					"'" + ws.get_title() + "'!" + range_reference::make_absolute(ws.get_auto_filter()).to_string();
-				defined_name_node.text().set(name.c_str());
-			}
-
-			break;
+		if (ws.has_auto_filter())
+		{
+			auto defined_name_node = defined_names_node.append_child("definedName");
+			defined_name_node.append_attribute("name").set_value("_xlnm._FilterDatabase");
+			defined_name_node.append_attribute("hidden").set_value("1");
+			defined_name_node.append_attribute("localSheetId").set_value("0");
+			std::string name =
+				"'" + ws.get_title() + "'!" + range_reference::make_absolute(ws.get_auto_filter()).to_string();
+			defined_name_node.text().set(name.c_str());
 		}
 	}
 
-	auto calc_pr_node = root_node.append_child("calcPr");
+	auto calc_pr_node = workbook_node.append_child("calcPr");
 	calc_pr_node.append_attribute("calcId").set_value("124519");
 	calc_pr_node.append_attribute("calcMode").set_value("auto");
 	calc_pr_node.append_attribute("fullCalcOnLoad").set_value("1");
@@ -903,110 +893,68 @@ void xlsx_producer::write_workbook()
 	defined_name_node.text().set(target_string.c_str());
 	}
 	*/
-
-	write_document_to_archive(document, xlnt::path("workbook.xml"), destination_);
-}
-
-void xlsx_producer::write_workbook_relationships()
-{
-	pugi::xml_document document;
-
-	auto relationships_node = document.append_child("Relationships");
-	relationships_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/package/2006/relationships");
-
-	auto relationship_node = relationships_node.append_child("Relationship");
-	relationship_node.append_attribute("Id").set_value("rId1");
-	relationship_node.append_attribute("Type").set_value("http://purl.oclc.org/ooxml/officeDocument/relationships/worksheet");
-	relationship_node.append_attribute("Target").set_value("sheet1.xml");
-
-	write_document_to_archive(document, xlnt::path("_rels/workbook.xml.rels"), destination_);
 }
 
 // Write Workbook Relationship Target Parts
 
-void xlsx_producer::write_calculation_chain()
+void xlsx_producer::write_calculation_chain(pugi::xml_node root)
 {
-	pugi::xml_document document;
-	auto root_node = document.append_child("calcChain");
-	write_document_to_archive(document, xlnt::constants::part_core(), destination_);
+	auto calc_chain_node = root.append_child("calcChain");
 }
 
-void xlsx_producer::write_chartsheet(const relationship &rel)
+void xlsx_producer::write_chartsheet(pugi::xml_node root, const relationship &rel)
 {
-	pugi::xml_document document;
-	auto root_node = document.append_child("chartsheet");
-	write_document_to_archive(document, xlnt::constants::part_core(), destination_);
+	auto chartsheet_node = root.append_child("chartsheet");
 }
 
-void xlsx_producer::write_connections()
+void xlsx_producer::write_connections(pugi::xml_node root)
 {
-	pugi::xml_document document;
-	auto root_node = document.append_child("connections");
-	write_document_to_archive(document, xlnt::constants::part_core(), destination_);
+	auto connections_node = root.append_child("connections");
 }
 
-void xlsx_producer::write_custom_property()
+void xlsx_producer::write_custom_xml_mappings(pugi::xml_node root)
 {
-	pugi::xml_document document;
-	auto root_node = document.append_child("customProperty");
-	write_document_to_archive(document, xlnt::constants::part_core(), destination_);
+	auto map_info_node = root.append_child("MapInfo");
 }
 
-void xlsx_producer::write_custom_xml_mappings()
+void xlsx_producer::write_dialogsheet(pugi::xml_node root, const relationship &rel)
 {
-	pugi::xml_document document;
-	auto root_node = document.append_child("connections");
-	write_document_to_archive(document, xlnt::constants::part_core(), destination_);
+	auto dialogsheet_node = root.append_child("dialogsheet");
 }
 
-void xlsx_producer::write_dialogsheet(const relationship &rel)
+void xlsx_producer::write_external_workbook_references(pugi::xml_node root)
 {
-	pugi::xml_document document;
-	auto root_node = document.append_child("dialogsheet");
-	write_document_to_archive(document, xlnt::constants::part_core(), destination_);
+	auto external_link_node = root.append_child("externalLink");
 }
 
-void xlsx_producer::write_external_workbook_references()
+void xlsx_producer::write_metadata(pugi::xml_node root)
 {
-	pugi::xml_document document;
-	auto root_node = document.append_child("externalLink");
-	write_document_to_archive(document, xlnt::constants::part_core(), destination_);
+	auto metadata_node = root.append_child("metadata");
 }
 
-void xlsx_producer::write_metadata()
+void xlsx_producer::write_pivot_table(pugi::xml_node root)
 {
-	pugi::xml_document document;
-	auto root_node = document.append_child("metadata");
-	write_document_to_archive(document, xlnt::constants::part_core(), destination_);
+	auto pivot_table_definition_node = root.append_child("pivotTableDefinition");
 }
 
-void xlsx_producer::write_pivot_table()
+void xlsx_producer::write_shared_string_table(pugi::xml_node root)
 {
-	pugi::xml_document document;
-	auto root_node = document.append_child("pivotTableDefinition");
-	write_document_to_archive(document, xlnt::constants::part_core(), destination_);
-}
+	auto sst_node = root.append_child("sst");
 
-void xlsx_producer::write_shared_string_table()
-{
-	pugi::xml_document document;
+	sst_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
 
-	auto root_node = document.append_child("sst");
-
-	root_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
-
-	root_node.append_attribute("count").set_value(std::to_string(source_.get_shared_strings().size()).c_str());
-	root_node.append_attribute("uniqueCount").set_value(std::to_string(source_.get_shared_strings().size()).c_str());
+	sst_node.append_attribute("count").set_value(std::to_string(source_.get_shared_strings().size()).c_str());
+	sst_node.append_attribute("uniqueCount").set_value(std::to_string(source_.get_shared_strings().size()).c_str());
 
 	for (const auto &string : source_.get_shared_strings())
 	{
 		if (string.get_runs().size() == 1 && !string.get_runs().at(0).has_formatting())
 		{
-			root_node.append_child("si").append_child("t").text().set(string.get_plain_string().c_str());
+			sst_node.append_child("si").append_child("t").text().set(string.get_plain_string().c_str());
 		}
 		else
 		{
-			auto string_item_node = root_node.append_child("si");
+			auto string_item_node = sst_node.append_child("si");
 
 			for (const auto &run : string.get_runs())
 			{
@@ -1047,95 +995,81 @@ void xlsx_producer::write_shared_string_table()
 			}
 		}
 	}
-
-	write_document_to_archive(document, xlnt::constants::part_core(), destination_);
 }
 
-void xlsx_producer::write_shared_workbook_revision_headers()
+void xlsx_producer::write_shared_workbook_revision_headers(pugi::xml_node root)
 {
-	pugi::xml_document document;
-	auto root_node = document.append_child("headers");
-	write_document_to_archive(document, xlnt::constants::part_core(), destination_);
+	auto headers_node = root.append_child("headers");
 }
 
-void xlsx_producer::write_shared_workbook()
+void xlsx_producer::write_shared_workbook(pugi::xml_node root)
 {
-	pugi::xml_document document;
-	auto root_node = document.append_child("revisions");
-	write_document_to_archive(document, xlnt::constants::part_core(), destination_);
+	auto revisions_node = root.append_child("revisions");
 }
 
-void xlsx_producer::write_shared_workbook_user_data()
+void xlsx_producer::write_shared_workbook_user_data(pugi::xml_node root)
 {
-	pugi::xml_document document;
-	auto root_node = document.append_child("users");
-	write_document_to_archive(document, xlnt::constants::part_core(), destination_);
+	auto users_node = root.append_child("users");
 }
 
-void xlsx_producer::write_styles()
+void xlsx_producer::write_styles(pugi::xml_node root)
 {
-	pugi::xml_document document;
-
-	auto root_node = document.append_child("styleSheet");
-	root_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
-	root_node.append_attribute("xmlns:mc").set_value("http://schemas.openxmlformats.org/markup-compatibility/2006");
-	root_node.append_attribute("mc:Ignorable").set_value("x14ac");
-	root_node.append_attribute("xmlns:x14ac").set_value("http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac");
+	auto stylesheet_node = root.append_child("styleSheet");
+	stylesheet_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
+	stylesheet_node.append_attribute("xmlns:mc").set_value("http://schemas.openxmlformats.org/markup-compatibility/2006");
+	stylesheet_node.append_attribute("mc:Ignorable").set_value("x14ac");
+	stylesheet_node.append_attribute("xmlns:x14ac").set_value("http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac");
 
 	const auto &stylesheet = source_.impl().stylesheet_;
 
 	if (!stylesheet.number_formats.empty())
 	{
-		auto number_formats_node = root_node.append_child("numFmts");
+		auto number_formats_node = stylesheet_node.append_child("numFmts");
 		write_number_formats(stylesheet.number_formats, number_formats_node);
 	}
 
 	if (!stylesheet.fonts.empty())
 	{
-		auto fonts_node = root_node.append_child("fonts");
+		auto fonts_node = stylesheet_node.append_child("fonts");
 		write_fonts(stylesheet.fonts, fonts_node);
 	}
 
 	if (!stylesheet.fills.empty())
 	{
-		auto fills_node = root_node.append_child("fills");
+		auto fills_node = stylesheet_node.append_child("fills");
 		write_fills(stylesheet.fills, fills_node);
 	}
 
 	if (!stylesheet.borders.empty())
 	{
-		auto borders_node = root_node.append_child("borders");
+		auto borders_node = stylesheet_node.append_child("borders");
 		write_borders(stylesheet.borders, borders_node);
 	}
 
-	auto cell_style_xfs_node = root_node.append_child("cellStyleXfs");
+	auto cell_style_xfs_node = stylesheet_node.append_child("cellStyleXfs");
 
-	auto cell_xfs_node = root_node.append_child("cellXfs");
+	auto cell_xfs_node = stylesheet_node.append_child("cellXfs");
 	write_formats(stylesheet, cell_xfs_node);
 
-	auto cell_styles_node = root_node.append_child("cellStyles");
+	auto cell_styles_node = stylesheet_node.append_child("cellStyles");
 	::write_styles(stylesheet, cell_styles_node, cell_style_xfs_node);
 
-	auto dxfs_node = root_node.append_child("dxfs");
+	auto dxfs_node = stylesheet_node.append_child("dxfs");
 	write_dxfs(dxfs_node);
 
-	auto table_styles_node = root_node.append_child("tableStyles");
+	auto table_styles_node = stylesheet_node.append_child("tableStyles");
 	write_table_styles(table_styles_node);
 
 	if (!stylesheet.colors.empty())
 	{
-		auto colors_node = root_node.append_child("colors");
+		auto colors_node = stylesheet_node.append_child("colors");
 		write_colors(stylesheet.colors, colors_node);
 	}
-
-	write_document_to_archive(document, xlnt::constants::part_core(), destination_);
 }
 
-void xlsx_producer::write_theme()
+void xlsx_producer::write_theme(pugi::xml_node root)
 {
-	pugi::xml_document document;
-
-	auto theme_node = document.append_child("a:theme");
+	auto theme_node = root.append_child("a:theme");
 	theme_node.append_attribute("xmlns:a").set_value(constants::get_namespace("drawingml").c_str());
 	theme_node.append_attribute("name").set_value("Office Theme");
 
@@ -1467,191 +1401,16 @@ void xlsx_producer::write_theme()
 
 	theme_node.append_child("a:objectDefaults");
 	theme_node.append_child("a:extraClrSchemeLst");
-
-	write_document_to_archive(document, xlnt::constants::part_core(), destination_);
 }
 
-void xlsx_producer::write_volatile_dependencies()
+void xlsx_producer::write_volatile_dependencies(pugi::xml_node root)
 {
-	pugi::xml_document document;
-	auto root_node = document.append_child("volTypes");
-	write_document_to_archive(document, xlnt::constants::part_core(), destination_);
+	auto vol_types_node = root.append_child("volTypes");
 }
 
-/*
-bool xlsx_producer::read_worksheet(const relationship &rel)
+void xlsx_producer::write_worksheet(pugi::xml_node root, const relationship &rel)
 {
-	const auto ws = source_.get_active_sheet();
-	auto root_node = xml.child("worksheet");
-
-	auto dimension_node = root_node.child("dimension");
-	std::string dimension(dimension_node.attribute("ref").value());
-	auto full_range = xlnt::range_reference(dimension);
-	auto sheet_data_node = root_node.child("sheetData");
-
-	if (root_node.child("mergeCells"))
-	{
-		auto merge_cells_node = root_node.child("mergeCells");
-		auto count = std::stoull(merge_cells_node.attribute("count").value());
-
-		for (auto merge_cell_node : merge_cells_node.children("mergeCell"))
-		{
-			sheet_.merge_cells(range_reference(merge_cell_node.attribute("ref").value()));
-			count--;
-		}
-
-		if (count != 0)
-		{
-			throw std::runtime_error("mismatch between count and actual number of merged cells");
-		}
-	}
-
-	auto &shared_strings = sheet_.get_workbook().get_shared_strings();
-
-	for (auto row_node : sheet_data_node.children("row"))
-	{
-		auto row_index = static_cast<row_t>(std::stoull(row_node.attribute("r").value()));
-
-		if (row_node.attribute("ht"))
-		{
-			sheet_.get_row_properties(row_index).height = std::stold(row_node.attribute("ht").value());
-		}
-
-		std::string span_string = row_node.attribute("spans").value();
-		auto colon_index = span_string.find(':');
-
-		column_t min_column = 0;
-		column_t max_column = 0;
-
-		if (colon_index != std::string::npos)
-		{
-			min_column = static_cast<column_t::index_t>(std::stoll(span_string.substr(0, colon_index)));
-			max_column = static_cast<column_t::index_t>(std::stoll(span_string.substr(colon_index + 1)));
-		}
-		else
-		{
-			min_column = full_range.get_top_left().get_column_index();
-			max_column = full_range.get_bottom_right().get_column_index();
-		}
-
-		for (column_t i = min_column; i <= max_column; i++)
-		{
-			std::string address = i.column_string() + std::to_string(row_index);
-
-			pugi::xml_node cell_node;
-			bool cell_found = false;
-
-			for (auto &check_cell_node : row_node.children("c"))
-			{
-				if (check_cell_node.attribute("r") && check_cell_node.attribute("r").value() == address)
-				{
-					cell_node = check_cell_node;
-					cell_found = true;
-					break;
-				}
-			}
-
-			if (cell_found)
-			{
-				bool has_value = cell_node.child("v") != nullptr;
-				std::string value_string = has_value ? cell_node.child("v").text().get() : "";
-
-				bool has_type = cell_node.attribute("t") != nullptr;
-				std::string type = has_type ? cell_node.attribute("t").value() : "";
-
-				bool has_format = cell_node.attribute("s") != nullptr;
-				auto format_id = static_cast<std::size_t>(has_format ? std::stoull(cell_node.attribute("s").value()) : 0LL);
-
-				bool has_formula = cell_node.child("f") != nullptr;
-				bool has_shared_formula = has_formula && cell_node.child("f").attribute("t") != nullptr
-					&& cell_node.child("f").attribute("t").value() == std::string("shared");
-
-				auto cell = sheet_.get_cell(address);
-
-				if (has_formula && !has_shared_formula && !sheet_.get_workbook().get_data_only())
-				{
-					std::string formula = cell_node.child("f").text().get();
-					cell.set_formula(formula);
-				}
-
-				if (has_type && type == "inlineStr") // inline string
-				{
-					std::string inline_string = cell_node.child("is").child("t").text().get();
-					cell.set_value(inline_string);
-				}
-				else if (has_type && type == "s" && !has_formula) // shared string
-				{
-					auto shared_string_index = static_cast<std::size_t>(std::stoull(value_string));
-					auto shared_string = shared_strings.at(shared_string_index);
-					cell.set_value(shared_string);
-				}
-				else if (has_type && type == "b") // boolean
-				{
-					cell.set_value(value_string != "0");
-				}
-				else if (has_type && type == "str")
-				{
-					cell.set_value(value_string);
-				}
-				else if (has_value && !value_string.empty())
-				{
-					if (!value_string.empty() && value_string[0] == '#')
-					{
-						cell.set_error(value_string);
-					}
-					else
-					{
-						cell.set_value(std::stold(value_string));
-					}
-				}
-
-				if (has_format)
-				{
-					cell.set_format(stylesheet.formats.at(format_id));
-				}
-			}
-		}
-	}
-
-	auto cols_node = root_node.child("cols");
-
-	for (auto col_node : cols_node.children("col"))
-	{
-		auto min = static_cast<column_t::index_t>(std::stoull(col_node.attribute("min").value()));
-		auto max = static_cast<column_t::index_t>(std::stoull(col_node.attribute("max").value()));
-		auto width = std::stold(col_node.attribute("width").value());
-		bool custom = col_node.attribute("customWidth").value() == std::string("1");
-		auto column_style = static_cast<std::size_t>(col_node.attribute("style") ? std::stoull(col_node.attribute("style").value()) : 0);
-
-		for (auto column = min; column <= max; column++)
-		{
-			if (!sheet_.has_column_properties(column))
-			{
-				sheet_.add_column_properties(column, column_properties());
-			}
-
-			sheet_.get_column_properties(min).width = width;
-			sheet_.get_column_properties(min).style = column_style;
-			sheet_.get_column_properties(min).custom = custom;
-		}
-	}
-
-	if (root_node.child("autoFilter"))
-	{
-		auto auto_filter_node = root_node.child("autoFilter");
-		xlnt::range_reference ref(auto_filter_node.attribute("ref").value());
-		sheet_.auto_filter(ref);
-	}
-
-	return true;
-}
-*/
-
-void xlsx_producer::write_worksheet(const relationship &rel)
-{
-	pugi::xml_document document;
-
-	auto worksheet_node = document.append_child("worksheet");
+	auto worksheet_node = root.append_child("worksheet");
 	worksheet_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
 	worksheet_node.append_attribute("xmlns:r").set_value("http://schemas.openxmlformats.org/package/2006/relationships");
 
@@ -1661,7 +1420,14 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 	outline_pr_node.append_attribute("summaryBelow").set_value("1");
 	outline_pr_node.append_attribute("summaryRight").set_value("1");
 
-	auto ws = source_.get_sheet_by_index(0);
+	auto title = std::find_if(source_.d_->sheet_title_rel_id_map_.begin(),
+		source_.d_->sheet_title_rel_id_map_.end(),
+		[&](const std::pair<std::string, std::string> &p)
+	{
+		return p.second == rel.get_id();
+	})->first;
+
+	auto ws = source_.get_sheet_by_title(title);
 
 	if (!ws.get_page_setup().is_default())
 	{
@@ -1821,11 +1587,6 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 		{
 			if (!cell.garbage_collectible())
 			{
-				if (cell.has_hyperlink())
-				{
-//					hyperlink_references[cell.get_hyperlink().get_id()] = cell.get_reference().to_string();
-				}
-
 				auto cell_node = row_node.append_child("c");
 				cell_node.append_attribute("r").set_value(cell.get_reference().to_string().c_str());
 
@@ -1943,14 +1704,28 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
 	if (!source_.impl().manifest_.get_part_relationships(rel.get_target_uri()).empty())
 	{
-		auto hyperlinks_node = worksheet_node.append_child("hyperlinks");
+		auto sheet_rels = source_.impl().manifest_.get_part_relationships(rel.get_target_uri());
+		std::vector<relationship> hyperlink_sheet_rels;
 
-		for (const auto &relationship : source_.impl().manifest_.get_part_relationships(rel.get_target_uri()))
+		for (const auto &sheet_rel : sheet_rels)
 		{
-			auto hyperlink_node = hyperlinks_node.append_child("hyperlink");
-			hyperlink_node.append_attribute("display").set_value(relationship.get_target_uri().to_string('/').c_str());
-			hyperlink_node.append_attribute("ref").set_value(hyperlink_references.at(relationship.get_id()).c_str());
-			hyperlink_node.append_attribute("r:id").set_value(relationship.get_id().c_str());
+			if (sheet_rel.get_type() == relationship::type::hyperlink)
+			{
+				hyperlink_sheet_rels.push_back(sheet_rel);
+			}
+		}
+
+		if (!hyperlink_sheet_rels.empty())
+		{
+			auto hyperlinks_node = worksheet_node.append_child("hyperlinks");
+
+			for (const auto &hyperlink_rel : hyperlink_sheet_rels)
+			{
+				auto hyperlink_node = hyperlinks_node.append_child("hyperlink");
+				hyperlink_node.append_attribute("display").set_value(hyperlink_rel.get_target_uri().to_string('/').c_str());
+				hyperlink_node.append_attribute("ref").set_value(hyperlink_references.at(hyperlink_rel.get_id()).c_str());
+				hyperlink_node.append_attribute("r:id").set_value(hyperlink_rel.get_id().c_str());
+			}
 		}
 	}
 
@@ -2022,40 +1797,32 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 			"Text &P of &N";
 		odd_footer_node.text().set(footer_text.c_str());
 	}
-
-	write_document_to_archive(document, rel.get_target_uri(), destination_);
 }
 
 // Sheet Relationship Target Parts
 
-void xlsx_producer::write_comments()
+void xlsx_producer::write_comments(pugi::xml_node root)
 {
-	pugi::xml_document document;
-	auto root_node = document.append_child("comments");
-	write_document_to_archive(document, xlnt::constants::part_core(), destination_);
+	auto comments_node = root.append_child("comments");
 }
 
-void xlsx_producer::write_drawings()
+void xlsx_producer::write_drawings(pugi::xml_node root)
 {
-	pugi::xml_document document;
-	auto root_node = document.append_child("wsDr");
-	write_document_to_archive(document, xlnt::constants::part_core(), destination_);
+	auto ws_dr_node = root.append_child("wsDr");
 }
 
-// Unknown Parts
+// Other Parts
+
+void xlsx_producer::write_custom_property()
+{
+}
 
 void xlsx_producer::write_unknown_parts()
 {
-	pugi::xml_document document;
-	auto root_node = document.append_child("Hmm");
-	write_document_to_archive(document, xlnt::constants::part_core(), destination_);
 }
 
 void xlsx_producer::write_unknown_relationships()
 {
-	pugi::xml_document document;
-	auto root_node = document.append_child("Relationships");
-	write_document_to_archive(document, xlnt::constants::part_core(), destination_);
 }
 
 } // namespace detail

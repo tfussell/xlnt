@@ -520,47 +520,32 @@ public:
     void test_print_titles_old()
     {
         xlnt::workbook wb;
+
+        auto ws = wb.create_sheet();
+        ws.add_print_title(3);
+        TS_ASSERT_EQUALS(ws.get_print_titles(), "Sheet1!1:3");
         
-        {
-            wb.clear();
-            auto ws = wb.create_sheet();
-            ws.add_print_title(3);
-            TS_ASSERT_EQUALS(ws.get_print_titles(), "Sheet!1:3");
-        }
-        
-        {
-            wb.clear();
-            auto ws = wb.create_sheet();
-            ws.add_print_title(4, "cols");
-            TS_ASSERT_EQUALS(ws.get_print_titles(), "Sheet!A:D");
-        }
+        auto ws2 = wb.create_sheet();
+        ws2.add_print_title(4, "cols");
+        TS_ASSERT_EQUALS(ws2.get_print_titles(), "Sheet2!A:D");
     }
     
     void test_print_titles_new()
     {
         xlnt::workbook wb;
         
-        {
-            wb.clear();
-            auto ws = wb.create_sheet();
-            ws.set_print_title_rows("1:4");
-            TS_ASSERT_EQUALS(ws.get_print_titles(), "Sheet!1:4");
-        }
-        
-        {
-            wb.clear();
-            auto ws = wb.create_sheet();
-            ws.set_print_title_cols("A:F");
-            TS_ASSERT_EQUALS(ws.get_print_titles(), "Sheet!A:F");
-        }
+        auto ws = wb.create_sheet();
+        ws.set_print_title_rows("1:4");
+        TS_ASSERT_EQUALS(ws.get_print_titles(), "Sheet1!1:4");
 
-        {
-            wb.clear();
-            auto ws = wb.create_sheet();
-            ws.set_print_title_rows("1:2");
-            ws.set_print_title_cols("C:D");
-            TS_ASSERT_EQUALS(ws.get_print_titles(), "Sheet!1:2,Sheet!C:D");
-        }
+        auto ws2 = wb.create_sheet();
+        ws2.set_print_title_cols("A:F");
+        TS_ASSERT_EQUALS(ws2.get_print_titles(), "Sheet2!A:F");
+
+        auto ws3 = wb.create_sheet();
+        ws3.set_print_title_rows("1:2");
+        ws3.set_print_title_cols("C:D");
+        TS_ASSERT_EQUALS(ws3.get_print_titles(), "Sheet3!1:2,Sheet3!C:D");
     }
     
     void test_print_area()

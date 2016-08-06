@@ -77,39 +77,61 @@ std::pair<bool, xlnt::time> cast_time(const std::string &s)
 {
 	xlnt::time result;
 
-	try
+	std::vector<std::string> time_components;
+	std::size_t prev = 0;
+	auto colon_index = s.find(':');
+
+	while (colon_index != std::string::npos)
 	{
-		auto last_colon = s.find_last_of(':');
-		if (last_colon == std::string::npos) return{ false, result };
-		double seconds = std::stod(s.substr(last_colon + 1));
-		result.second = static_cast<int>(seconds);
-		result.microsecond = static_cast<int>((seconds - static_cast<double>(result.second)) * 1e6);
-
-		auto first_colon = s.find_first_of(':');
-
-		if (first_colon == last_colon)
-		{
-			auto decimal_pos = s.find('.');
-			if (decimal_pos != std::string::npos)
-			{
-				result.minute = std::stoi(s.substr(0, first_colon));
-			}
-			else
-			{
-				result.hour = std::stoi(s.substr(0, first_colon));
-				result.minute = result.second;
-				result.second = 0;
-			}
-		}
-		else
-		{
-			result.hour = std::stoi(s.substr(0, first_colon));
-			result.minute = std::stoi(s.substr(first_colon + 1, last_colon - first_colon - 1));
-		}
+		time_components.push_back(s.substr(prev, colon_index - prev));
+		prev = colon_index + 1;
+		colon_index = s.find(':', colon_index + 1);
 	}
-	catch (std::invalid_argument)
+
+	time_components.push_back(s.substr(prev, colon_index - prev));
+
+	if (time_components.size() < 2 || time_components.size() > 3)
 	{
 		return{ false, result };
+	}
+
+	std::vector<double> numeric_components;
+
+	for (auto component : time_components)
+	{
+		if (component.empty() || (component.substr(0, component.find('.')).size() > 2))
+		{
+			return{ false, result };
+		}
+
+		for (auto d : component)
+		{
+			if (!(d >= '0' && d <= '9') && d != '.')
+			{
+				return{ false, result };
+			}
+		}
+
+		auto without_leading_zero = component.front() == '0' ? component.substr(1) : component;
+		auto numeric = std::stod(without_leading_zero);
+
+		numeric_components.push_back(numeric);
+	}
+
+	result.hour = static_cast<int>(numeric_components[0]);
+	result.minute = static_cast<int>(numeric_components[1]);
+
+	if (result.minute != numeric_components[1])
+	{
+		result.minute = result.hour;
+		result.hour = 0;
+		result.second = static_cast<int>(numeric_components[1]);
+		result.microsecond = static_cast<int>((numeric_components[1] - result.second) * 1E6);
+	}
+	else if (numeric_components.size() > 2)
+	{
+		result.second = static_cast<int>(numeric_components[2]);
+		result.microsecond = static_cast<int>((numeric_components[2] - result.second) * 1E6);
 	}
 
 	return{ true, result };
@@ -453,9 +475,9 @@ void cell::set_hyperlink(const std::string &hyperlink)
 
 void cell::set_formula(const std::string &formula)
 {
-    if (formula.length() == 0)
+    if (formula.empty())
     {
-        throw invalid_data_type();
+        throw invalid_parameter();
     }
 
     if (formula[0] == '=')
@@ -477,7 +499,7 @@ std::string cell::get_formula() const
 {
     if (d_->formula_.empty())
     {
-        throw invalid_data_type();
+        throw invalid_attribute();
     }
 
     return d_->formula_;

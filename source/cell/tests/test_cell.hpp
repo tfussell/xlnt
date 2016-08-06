@@ -139,8 +139,8 @@ public:
         auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
 
         TS_ASSERT(!cell.has_formula());
-        TS_ASSERT_THROWS(cell.set_formula(""), std::runtime_error);
-        TS_ASSERT_THROWS(cell.get_formula(), std::runtime_error);
+        TS_ASSERT_THROWS(cell.set_formula(""), xlnt::invalid_parameter);
+        TS_ASSERT_THROWS(cell.get_formula(), xlnt::invalid_attribute);
         cell.set_formula("=42");
         TS_ASSERT(cell.has_formula());
         TS_ASSERT_EQUALS(cell.get_formula(), "42");

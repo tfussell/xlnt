@@ -31,6 +31,7 @@
 
 #include <xlnt/packaging/zip_file.hpp>
 #include <xlnt/utils/path.hpp>
+#include <xlnt/utils/exceptions.hpp>
 
 namespace {
 
@@ -164,8 +165,19 @@ zip_file::~zip_file()
 
 void zip_file::load(std::istream &stream)
 {
+	if (!stream.good())
+	{
+		throw invalid_file("((std::istream))");
+	}
+
     reset();
     buffer_.assign(std::istreambuf_iterator<char>(stream), std::istreambuf_iterator<char>());
+
+	if (buffer_.empty())
+	{
+		throw invalid_file("((stream)) - empty file");
+	}
+
     remove_comment();
     start_read();
 }
@@ -174,11 +186,31 @@ void zip_file::load(const path &filename)
 {
     filename_ = filename;
     std::ifstream stream(filename.to_string(), std::ios::binary);
-    load(stream);
+
+	if (!stream.good())
+	{
+		throw invalid_file(filename.to_string());
+	}
+
+	reset();
+	buffer_.assign(std::istreambuf_iterator<char>(stream), std::istreambuf_iterator<char>());
+
+	if (buffer_.empty())
+	{
+		throw invalid_file(filename.to_string() + " - empty file");
+	}
+
+	remove_comment();
+	start_read();
 }
 
 void zip_file::load(const std::vector<unsigned char> &bytes)
 {
+	if (bytes.empty())
+	{
+		throw invalid_file("((bytes))");
+	}
+
     reset();
     buffer_.assign(bytes.begin(), bytes.end());
     remove_comment();

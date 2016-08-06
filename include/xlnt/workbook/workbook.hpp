@@ -373,10 +373,10 @@ public:
 
     // serialization
 
-	void save(std::vector<std::uint8_t> &data);
-	void save(const std::string &filename);
-	void save(const xlnt::path &filename);
-	void save(std::ostream &stream);
+	void save(std::vector<std::uint8_t> &data) const;
+	void save(const std::string &filename) const;
+	void save(const xlnt::path &filename) const;
+	void save(std::ostream &stream) const;
 
 	void load(const std::vector<std::uint8_t> &data);
 	void load(const std::string &filename);
@@ -423,7 +423,8 @@ public:
     
     // thumbnail
 
-    void set_thumbnail(const std::vector<std::uint8_t> &thumbnail);
+    void set_thumbnail(const std::vector<std::uint8_t> &thumbnail, 
+		const std::string &extension, const std::string &content_type);
     const std::vector<std::uint8_t> &get_thumbnail() const;
 
     // operators

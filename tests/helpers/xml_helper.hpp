@@ -129,6 +129,45 @@ public:
 
         return documents_match(left_xml, right_xml);
     }
+
+	static bool archives_match(xlnt::zip_file &left_archive, xlnt::zip_file &right_archive)
+	{
+		auto left_info = left_archive.infolist();
+		auto right_info = right_archive.infolist();
+
+		if (left_info.size() != right_info.size()) return false;
+
+		for (auto left_member : left_info)
+		{
+			if (!right_archive.has_file(left_member)) return false;
+
+			auto left_member_contents = left_archive.read(left_member);
+			auto right_member_contents = right_archive.read(left_member.filename);
+
+			if (!strings_match(left_member_contents, right_member_contents))
+			{
+				std::cout << left_member.filename.to_string() << std::endl;
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	static bool workbooks_match(const xlnt::workbook &left, const xlnt::workbook &right)
+	{
+		std::vector<std::uint8_t> buffer;
+
+		left.save(buffer);
+		xlnt::zip_file left_archive(buffer);
+
+		buffer.clear();
+
+		right.save(buffer);
+		xlnt::zip_file right_archive(buffer);
+
+		return archives_match(left_archive, right_archive);
+	}
     
     static comparison_result compare_xml_nodes(const pugi::xml_node &left, const pugi::xml_node &right)
     {

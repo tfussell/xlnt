@@ -187,6 +187,10 @@ path path::parent() const
 	{
 		result.parts_.pop_back();
 	}
+	else
+	{
+		return path("");
+	}
 
 	return result;
 }

@@ -708,18 +708,21 @@ xlsx_consumer::xlsx_consumer(workbook &destination) : destination_(destination)
 
 void xlsx_consumer::read(const path &source)
 {
+	destination_.clear();
 	source_.load(source);
 	populate_workbook();
 }
 
 void xlsx_consumer::read(std::istream &source)
 {
+	destination_.clear();
 	source_.load(source);
 	populate_workbook();
 }
 
 void xlsx_consumer::read(const std::vector<std::uint8_t> &source)
 {
+	destination_.clear();
 	source_.load(source);
 	populate_workbook();
 }
@@ -729,10 +732,8 @@ void xlsx_consumer::read(const std::vector<std::uint8_t> &source)
 void xlsx_consumer::populate_workbook()
 {
 	auto &manifest = destination_.get_manifest();
-	manifest.clear();
-	destination_.d_->worksheets_.clear();
-
 	read_manifest();
+	path workbook_part;
 
 	for (const auto &rel : manifest.get_package_relationships())
 	{
@@ -751,13 +752,14 @@ void xlsx_consumer::populate_workbook()
 			read_custom_property(document.root());
 			break;
 		case relationship::type::office_document:
-			check_document_type(manifest.get_part_content_type_string(rel.get_target_uri()));
+			check_document_type(manifest.get_content_type_string(rel.get_target_uri()));
+			workbook_part = rel.get_target_uri();
 			read_workbook(document.root());
 			break;
 		}
 	}
 
-	for (const auto &rel : manifest.get_part_relationships(constants::part_workbook()))
+	for (const auto &rel : manifest.get_part_relationships(workbook_part))
 	{
 		pugi::xml_document document;
 		document.load_string(source_.read(path(rel.get_target_uri())).c_str());
@@ -767,17 +769,11 @@ void xlsx_consumer::populate_workbook()
 		case relationship::type::calculation_chain:
 			read_calculation_chain(document.root());
 			break;
-		case relationship::type::chartsheet:
-			read_chartsheet(document.root(), rel.get_id());
-			break;
 		case relationship::type::connections:
 			read_connections(document.root());
 			break;
 		case relationship::type::custom_xml_mappings:
 			read_custom_xml_mappings(document.root());
-			break;
-		case relationship::type::dialogsheet:
-			read_dialogsheet(document.root(), rel.get_id());
 			break;
 		case relationship::type::external_workbook_references:
 			read_external_workbook_references(document.root());
@@ -795,13 +791,29 @@ void xlsx_consumer::populate_workbook()
 			read_shared_workbook_revision_headers(document.root());
 			break;
 		case relationship::type::styles:
-			read_styles(document.root());
+			read_stylesheet(document.root());
 			break;
 		case relationship::type::theme:
 			read_theme(document.root());
 			break;
 		case relationship::type::volatile_dependencies:
 			read_volatile_dependencies(document.root());
+			break;
+		}
+	}
+
+	for (const auto &rel : manifest.get_part_relationships(workbook_part))
+	{
+		pugi::xml_document document;
+		document.load_string(source_.read(path(rel.get_target_uri())).c_str());
+
+		switch (rel.get_type())
+		{
+		case relationship::type::chartsheet:
+			read_chartsheet(document.root(), rel.get_id());
+			break;
+		case relationship::type::dialogsheet:
+			read_dialogsheet(document.root(), rel.get_id());
 			break;
 		case relationship::type::worksheet:
 			read_worksheet(document.root(), rel.get_id());
@@ -818,46 +830,21 @@ void xlsx_consumer::populate_workbook()
 
 	void read_unknown_parts();
 	void read_unknown_relationships();
-
-	auto current_iter = destination_.d_->worksheets_.begin();
-	for (std::size_t current_index = 0; current_index < destination_.get_sheet_titles().size(); ++current_index)
-	{
-		auto current_id = current_iter->id_;
-
-		for (const auto j : worksheet_rel_title_id_index_map_)
-		{
-			if (std::get<1>(j.second) == current_id)
-			{
-				if (std::get<2>(j.second) == current_index) break;
-
-				auto switch_iter = destination_.d_->worksheets_.begin();
-
-				for (std::size_t k = 0; k < std::get<2>(j.second); ++k)
-				{
-					++switch_iter;
-				}
-
-				std::swap(*switch_iter, *current_iter);
-			}
-		}
-
-		++current_iter;
-	}
 }
 
 // Package Parts
 
 void xlsx_consumer::read_manifest()
 {
-	auto package_rels = read_relationships(path("_rels/.rels"), source_);
+	path package_rels_path("_rels/.rels");
+	if (!source_.has_file(package_rels_path)) throw invalid_file("missing package rels");
+	auto package_rels = read_relationships(package_rels_path, source_);
 
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content_Types].xml")).c_str());
 
 	const auto root_node = document.child("Types");
 	auto &manifest = destination_.get_manifest();
-
-	std::unordered_map<path, std::string, std::hash<xlnt::hashable>> part_types;
 
 	auto make_relative = [](const path &p)
 	{
@@ -881,30 +868,32 @@ void xlsx_consumer::read_manifest()
 		else if (child.name() == std::string("Override"))
 		{
 			path part(child.attribute("PartName").value());
-			part_types[make_relative(part)] = child.attribute("ContentType").value();
+			manifest.register_override_type(part, child.attribute("ContentType").value());
 		}
 	}
 
 	for (const auto &package_rel : package_rels)
 	{
-		manifest.register_package_part(package_rel.get_target_uri(), 
-			part_types.at(package_rel.get_target_uri()), package_rel.get_type());
+		manifest.register_package_relationship(package_rel.get_type(), 
+			package_rel.get_target_uri(), 
+			package_rel.get_target_mode(), 
+			package_rel.get_id());
 	}
 
-	for (const auto &relationship_source : part_types)
+	for (const auto &relationship_source : source_.infolist())
 	{
-		auto rels_name = relationship_source.first.parent()
-			.append("_rels")
-			.append(relationship_source.first.basename() + ".rels");
-		auto part_rels = read_relationships(rels_name, source_);
+		if (relationship_source.filename == path("_rels/.rels") 
+			|| relationship_source.filename.extension() != ".rels") continue;
 
-		if (part_rels.empty()) continue;
+		auto part_rels = read_relationships(relationship_source.filename, source_);
+		auto source_uri = relationship_source.filename.parent().parent()
+			.append(relationship_source.filename.basename());
 
 		for (const auto part_rel : part_rels)
 		{
-			auto part = relationship_source.first.parent().append(part_rel.get_target_uri());
-			relationship new_part_rel(part_rel.get_id(), part_rel.get_type(), part, target_mode::internal);
-			manifest.register_part(relationship_source.first, new_part_rel, part_types.at(part));
+			auto part = source_uri;
+			manifest.register_part_relationship(source_uri, part_rel.get_type(), 
+				part_rel.get_target_uri(), part_rel.get_target_mode(), part_rel.get_id());
 		}
 	}
 }
@@ -965,14 +954,16 @@ void xlsx_consumer::read_workbook(const pugi::xml_node root)
 		}
 	}
 
+	std::size_t index = 0;
 	for (auto sheet_node : workbook_node.child("sheets").children("sheet"))
 	{
 		std::string rel_id(sheet_node.attribute("r:id").value());
 		std::string title(sheet_node.attribute("name").value());
 		auto id = string_to_size_t(sheet_node.attribute("sheetId").value());
 
-		worksheet_rel_title_id_index_map_[rel_id] = 
-		{ title, id, worksheet_rel_title_id_index_map_.size() };
+		sheet_title_id_map_[rel_id] = id;
+		sheet_title_index_map_[rel_id] = index++;
+		destination_.d_->sheet_title_rel_id_map_[title] = rel_id;
 	}
 }
 
@@ -1135,21 +1126,18 @@ void xlsx_consumer::read_shared_workbook_user_data(const pugi::xml_node root)
 	auto root_node = document.append_child("users");
 }
 
-void xlsx_consumer::read_styles(const pugi::xml_node root)
+void xlsx_consumer::read_stylesheet(const pugi::xml_node root)
 {
-	pugi::xml_document document;
-	
-	auto stylesheet_node = document.child("styleSheet");
-
+	auto stylesheet_node = root.child("styleSheet");
 	auto &stylesheet = destination_.impl().stylesheet_;
 
-	::read_borders(stylesheet_node.child("borders"), stylesheet.borders);
-	::read_fills(stylesheet_node.child("fills"), stylesheet.fills);
-	::read_fonts(stylesheet_node.child("fonts"), stylesheet.fonts);
-	::read_number_formats(stylesheet_node.child("numFmts"), stylesheet.number_formats);
-	::read_colors(stylesheet_node.child("colors"), stylesheet.colors);
-	::read_styles(stylesheet_node.child("cellStyles"), stylesheet_node.child("cellStyleXfs"), stylesheet, stylesheet.styles, stylesheet.style_name_map);
-	::read_formats(stylesheet_node.child("cellXfs"), stylesheet, stylesheet.formats, stylesheet.format_styles);
+	read_borders(stylesheet_node.child("borders"), stylesheet.borders);
+	read_fills(stylesheet_node.child("fills"), stylesheet.fills);
+	read_fonts(stylesheet_node.child("fonts"), stylesheet.fonts);
+	read_number_formats(stylesheet_node.child("numFmts"), stylesheet.number_formats);
+	read_colors(stylesheet_node.child("colors"), stylesheet.colors);
+	read_styles(stylesheet_node.child("cellStyles"), stylesheet_node.child("cellStyleXfs"), stylesheet, stylesheet.styles, stylesheet.style_name_map);
+	read_formats(stylesheet_node.child("cellXfs"), stylesheet, stylesheet.formats, stylesheet.format_styles);
 }
 
 void xlsx_consumer::read_theme(const pugi::xml_node root)
@@ -1167,10 +1155,24 @@ void xlsx_consumer::read_volatile_dependencies(const pugi::xml_node root)
 
 void xlsx_consumer::read_worksheet(const pugi::xml_node root, const std::string &rel_id)
 {
-	auto title = std::get<0>(worksheet_rel_title_id_index_map_[rel_id]);
-	auto id = std::get<1>(worksheet_rel_title_id_index_map_[rel_id]);
+	auto title = std::find_if(destination_.d_->sheet_title_rel_id_map_.begin(),
+		destination_.d_->sheet_title_rel_id_map_.end(),
+		[&](const std::pair<std::string, std::string> &p)
+	{
+		return p.second == rel_id;
+	})->first;
 
-	destination_.d_->worksheets_.emplace_back(&destination_, id, title);
+	auto id = sheet_title_id_map_[title];
+	auto index = sheet_title_index_map_[title];
+
+	auto insertion_iter = destination_.d_->worksheets_.begin();
+	while (insertion_iter != destination_.d_->worksheets_.end()
+		&& sheet_title_index_map_[insertion_iter->title_] < index)
+	{
+		++insertion_iter;
+	}
+
+	destination_.d_->worksheets_.emplace(insertion_iter, &destination_, id, title);
 
 	auto ws = destination_.get_sheet_by_id(id);
 
