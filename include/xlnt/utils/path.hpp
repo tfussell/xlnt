@@ -179,7 +179,7 @@ namespace std {
 template <>
 struct hash<xlnt::path>
 {
-    size_t operator()(const path &p) const
+    size_t operator()(const xlnt::path &p) const
     {
         return hasher(p);
     }

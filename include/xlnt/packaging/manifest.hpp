@@ -230,7 +230,7 @@ private:
 
 	std::string next_relationship_id(const path &part) const;
 
-	std::unordered_map<path, part_info, std::hash<hashable>> part_infos_;
+	std::unordered_map<path, part_info> part_infos_;
 
 	std::vector<relationship> package_relationships_;
 
