@@ -23,10 +23,10 @@
 #pragma once
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/utils/hashable.hpp>
 
 namespace xlnt {
 
@@ -92,7 +92,7 @@ public:
 	/// <summary>
 	/// Return a pair of strings resulting from splitting the filename on the last dot.
 	/// </summary>
-	std::pair<std::string> split_extension() const;
+	std::pair<std::string, std::string> split_extension() const;
 
 	// conversion
 

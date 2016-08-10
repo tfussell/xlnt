@@ -25,11 +25,12 @@
 #include <string>
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/utils/path.hpp>
 
 namespace xlnt {
 
 /// <summary>
-/// 
+///
 /// </summary>
 class XLNT_CLASS uri
 {
