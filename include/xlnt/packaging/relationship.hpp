@@ -145,7 +145,7 @@ private:
     type type_;
     uri source_;
     uri target_;
-    target_mode target_mode_;
+    target_mode mode_;
 };
 
 } // namespace xlnt

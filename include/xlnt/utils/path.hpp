@@ -181,7 +181,7 @@ struct hash<xlnt::path>
 {
     size_t operator()(const xlnt::path &p) const
     {
-        return hasher(p);
+        return hasher(p.string());
     }
 
     hash<string> hasher;

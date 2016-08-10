@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #include <xlnt/packaging/relationship.hpp>
 
 namespace xlnt {
@@ -29,11 +30,12 @@ relationship::relationship()
 {
 }
 
-relationship::relationship(const std::string &id, type t, const path &target, target_mode mode)
+relationship::relationship(const std::string &id, type t, const path &source, const path &target, target_mode mode)
 	: id_(id),
 	type_(t),
-	target_uri_(target),
-	target_mode_(mode)
+	source_(source),
+	target_(target),
+	mode_(mode)
 {
 }
 
@@ -42,14 +44,19 @@ std::string relationship::get_id() const
     return id_;
 }
 
-target_mode relationship::get_target_mode() const
+target_mode relationship::get_mode() const
 {
-    return target_mode_;
+    return mode_;
 }
 
-path relationship::get_target_uri() const
+path relationship::get_source() const
 {
-    return target_uri_;
+    return source_;
+}
+
+path relationship::get_target() const
+{
+    return target_;
 }
 
 relationship::type relationship::get_type() const
@@ -61,8 +68,9 @@ bool relationship::operator==(const relationship &rhs) const
 {
     return type_ == rhs.type_ 
 		&& id_ == rhs.id_ 
-		&& target_uri_ == rhs.target_uri_ 
-		&& target_mode_ == rhs.target_mode_;
+		&& source_ == the.source_
+		&& target_ == rhs.target_
+		&& mode_ == rhs.mode_;
 }
 
 } // namespace xlnt
