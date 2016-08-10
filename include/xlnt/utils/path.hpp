@@ -33,37 +33,13 @@ namespace xlnt {
 /// <summary>
 /// Encapsulates a path that points to location in a filesystem.
 /// </summary>
-class XLNT_CLASS path : public hashable
+class XLNT_CLASS path
 {
 public:
 	/// <summary>
-	/// The parts of this path are held in a container of this type.
-	/// </summary>
-	using container = std::vector<std::string>;
-
-	/// <summary>
-	/// Expose the container's iterator as the iterator for this class.
-	/// </summary>
-	using iterator = container::iterator;
-	/// <summary>
-	/// Expose the container's const_iterator as the const_iterator for this class.
-	/// </summary>
-	using const_iterator = container::const_iterator;
-
-	/// <summary>
-	/// Expose the container's reverse_iterator as the reverse_iterator for this class.
-	/// </summary>
-	using reverse_iterator = container::reverse_iterator;
-
-	/// <summary>
-	/// Expose the container's const_reverse_iterator as the const_reverse_iterator for this class.
-	/// </summary>
-	using const_reverse_iterator = container::const_reverse_iterator;
-
-	/// <summary>
 	/// The system-specific path separator character (e.g. '/' or '\').
 	/// </summary>
-	static char separator();
+	static char system_separator();
 
 	/// <summary>
 	/// Construct an empty path.
@@ -93,7 +69,7 @@ public:
 	bool is_absolute() const;
 
 	/// <summary>
-	/// Return true iff this path is the root of the host's filesystem.
+	/// Return true iff this path is the root directory.
 	/// </summary>
 	bool is_root() const;
 
@@ -106,12 +82,17 @@ public:
 	/// <summary>
 	/// Return the last component of this path.
 	/// </summary>
-	std::string basename() const;
+	std::string filename() const;
 
 	/// <summary>
-	/// Return the part of the path following the last . in the basename.
+	/// Return the part of the path following the last dot in the filename.
 	/// </summary>
 	std::string extension() const;
+
+	/// <summary>
+	/// Return a pair of strings resulting from splitting the filename on the last dot.
+	/// </summary>
+	std::pair<std::string> split_extension() const;
 
 	// conversion
 
@@ -119,14 +100,20 @@ public:
 	/// Create a string representing this path separated by the provided
 	/// separator or the system-default separator if not provided.
 	/// </summary>
-	std::string to_string(char sep = separator()) const;
+	std::vector<std::string> split() const;
+
+	/// <summary>
+	/// Create a string representing this path separated by the provided
+	/// separator or the system-default separator if not provided.
+	/// </summary>
+	std::string string() const;
 
 	/// <summary>
 	/// If this path is relative, append each component of this path
 	/// to base_path and return the resulting absolute path. Otherwise,
 	/// the the current path will be returned and base_path will be ignored.
 	/// </summary>
-	path make_absolute(const path &base_path) const;
+	path resolve(const path &base_path) const;
 
 	// filesystem attributes
 
@@ -159,94 +146,45 @@ public:
 	// mutators
 
 	/// <summary>
-	/// Append the provided part to this path and return a reference to this same path
-	/// so calls can be chained.
-	/// </summary>
-	path &append(const std::string &to_append);
-
-	/// <summary>
 	/// Append the provided part to this path and return the result.
 	/// </summary>
 	path append(const std::string &to_append) const;
-
-	/// <summary>
-	/// Append the provided part to this path and return a reference to this same path
-	/// so calls can be chained.
-	/// </summary>
-	path &append(const path &to_append);
 
 	/// <summary>
 	/// Append the provided part to this path and return the result.
 	/// </summary>
 	path append(const path &to_append) const;
 
-	// iterators
-
-	/// <summary>
-	/// An iterator to the first element in this path.
-	/// </summary>
-	iterator begin();
-
-	/// <summary>
-	/// An iterator to one past the last element in this path.
-	/// </summary>
-	iterator end();
-
-	/// <summary>
-	/// An iterator to the first element in this path.
-	/// </summary>
-	const_iterator begin() const;
-
-	/// <summary>
-	/// A const iterator to one past the last element in this path.
-	/// </summary>
-	const_iterator end() const;
-
-	/// <summary>
-	/// An iterator to the first element in this path.
-	/// </summary>
-	const_iterator cbegin() const;
-
-	/// <summary>
-	/// A const iterator to one past the last element in this path.
-	/// </summary>
-	const_iterator cend() const;
-
-	/// <summary>
-	/// A reverse iterator to the last element in this path.
-	/// </summary>
-	reverse_iterator rbegin();
-
-	/// <summary>
-	/// A reverse iterator to one before the first element in this path.
-	/// </summary>
-	reverse_iterator rend();
-
-	/// <summary>
-	/// A const reverse iterator to the last element in this path.
-	/// </summary>
-	const_reverse_iterator rbegin() const;
-
-	/// <summary>
-	/// A const reverse iterator to one before the first element in this path.
-	/// </summary>
-	const_reverse_iterator rend() const;
-
-	/// <summary>
-	/// A const reverse iterator to the last element in this path.
-	/// </summary>
-	const_reverse_iterator crbegin() const;
-
-	/// <summary>
-	/// A const reverse iterator to one before the first element in this path.
-	/// </summary>
-	const_reverse_iterator crend() const;
-
-protected:
-	std::string to_hash_string() const override;
-
 private:
-	container parts_;
+	/// <summary>
+	/// Returns the character that separates directories in the path.
+	/// On POSIX style filesystems, this is always '/'.
+	/// On Windows, this is the character that separates the drive letter from
+	/// the rest of the path for absolute paths with a drive letter, '/' if the path
+	/// is absolute and starts with '/', and '/' or '\' for relative paths
+	/// depending on which splits the path into more directory components.
+	/// </summary>
+    char guess_separator() const;
+
+	/// <summary>
+	/// A string that represents this path.
+	/// </summary>
+	std::string internal_;
 };
 
 } // namespace xlnt
+
+namespace std {
+
+template <>
+struct hash<xlnt::path>
+{
+    size_t operator()(const path &p) const
+    {
+        return hasher(p);
+    }
+
+    hash<string> hasher;
+};
+
+} // namespace std

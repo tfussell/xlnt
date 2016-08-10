@@ -26,6 +26,7 @@
 #include <string>
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/packaging/uri.hpp>
 #include <xlnt/utils/path.hpp>
 
 namespace xlnt {
@@ -102,7 +103,7 @@ public:
 
     relationship();
 
-    relationship(const std::string &id, type t, const path &target, target_mode mode);
+    relationship(const std::string &id, type t, const uri &source, const uri &target, target_mode mode);
 
     /// <summary>
     /// Returns a string of the form rId# that identifies the relationship.
@@ -122,7 +123,12 @@ public:
     /// <summary>
     /// Returns the URI of the package part this relationship points to.
     /// </summary>
-    path get_target_uri() const;
+    uri get_source() const;
+
+    /// <summary>
+    /// Returns the URI of the package part this relationship points to.
+    /// </summary>
+    uri get_target() const;
 
 	/// <summary>
 	/// Returns true if and only if rhs is equal to this relationship.
@@ -137,7 +143,8 @@ public:
 private:
 	std::string id_;
     type type_;
-    path target_uri_;
+    uri source_;
+    uri target_;
     target_mode target_mode_;
 };
 
