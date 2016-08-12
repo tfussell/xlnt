@@ -68,16 +68,16 @@ workbook workbook::minimal()
 
 	wb.d_->manifest_.register_override_type(path("workbook.xml"),
 		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml");
-	wb.d_->manifest_.register_package_relationship(relationship::type::office_document, 
-		path("workbook.xml"), target_mode::internal);
+	wb.d_->manifest_.register_relationship(uri("/"), relationship::type::office_document,
+		uri("workbook.xml"), target_mode::internal);
 
 	std::string title("Sheet");
 	wb.d_->worksheets_.push_back(detail::worksheet_impl(&wb, 1, title));
 
 	wb.d_->manifest_.register_override_type(path("sheet1.xml"),
 		"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
-	auto ws_rel = wb.d_->manifest_.register_part_relationship(path("workbook.xml"), 
-		relationship::type::worksheet, path("sheet1.xml"), target_mode::internal);
+	auto ws_rel = wb.d_->manifest_.register_relationship(uri("workbook.xml"),
+		relationship::type::worksheet, uri("sheet1.xml"), target_mode::internal);
 	wb.d_->sheet_title_rel_id_map_[title] = ws_rel;
 
 	return wb;
@@ -90,8 +90,8 @@ workbook workbook::empty_excel()
 
 	wb.d_->manifest_.register_override_type(path("xl/workbook.xml"),
 		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml");
-	wb.d_->manifest_.register_package_relationship(relationship::type::office_document,
-		path("xl/workbook.xml"), target_mode::internal);
+	wb.d_->manifest_.register_relationship(uri("/"), relationship::type::office_document,
+		uri("xl/workbook.xml"), target_mode::internal);
 
 	wb.d_->manifest_.register_default_type("rels",
 		"application/vnd.openxmlformats-package.relationships+xml");
@@ -127,13 +127,13 @@ workbook workbook::empty_excel()
 
 	wb.d_->manifest_.register_override_type(path("docProps/core.xml"),
 		"application/vnd.openxmlformats-package.coreproperties+xml");
-	wb.d_->manifest_.register_package_relationship(relationship::type::core_properties,
-		path("docProps/core.xml"), target_mode::internal);
+	wb.d_->manifest_.register_relationship(uri("/"), relationship::type::core_properties,
+		uri("docProps/core.xml"), target_mode::internal);
 
 	wb.d_->manifest_.register_override_type(path("docProps/app.xml"),
 		"application/vnd.openxmlformats-officedocument.extended-properties+xml");
-	wb.d_->manifest_.register_package_relationship(relationship::type::extended_properties,
-		path("docProps/app.xml"), target_mode::internal);
+	wb.d_->manifest_.register_relationship(uri("/"), relationship::type::extended_properties,
+		uri("docProps/app.xml"), target_mode::internal);
 
 	wb.set_application("Microsoft Excel");
 	wb.create_sheet();
@@ -278,15 +278,15 @@ worksheet workbook::create_sheet()
 
     auto sheet_id = d_->worksheets_.size() + 1;
     std::string sheet_filename = "sheet" + std::to_string(sheet_id) + ".xml";
-	path sheet_path = constants::package_worksheets().append(sheet_filename);
 
     d_->worksheets_.push_back(detail::worksheet_impl(this, sheet_id, title));
 
-	auto workbook_rel = d_->manifest_.get_package_relationship(relationship::type::office_document);
-	d_->manifest_.register_override_type(sheet_path,
+	auto workbook_rel = d_->manifest_.get_relationship(path("/"), relationship::type::office_document);
+    uri sheet_uri(constants::package_worksheets().append(sheet_filename).string());
+	d_->manifest_.register_override_type(sheet_uri.get_path(),
 		"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
-	auto ws_rel = d_->manifest_.register_part_relationship(workbook_rel.get_target_uri(),
-		relationship::type::worksheet, sheet_path, target_mode::internal);
+	auto ws_rel = d_->manifest_.register_relationship(workbook_rel.get_target(),
+		relationship::type::worksheet, sheet_uri, target_mode::internal);
 	d_->sheet_title_rel_id_map_[title] = ws_rel;
 
     return worksheet(&d_->worksheets_.back());
@@ -611,14 +611,14 @@ const theme &workbook::get_theme() const
 
 void workbook::set_theme(const theme &value)
 {
-	auto workbook_rel = d_->manifest_.get_package_relationship(relationship::type::office_document);
+	auto workbook_rel = d_->manifest_.get_relationship(path("/"), relationship::type::office_document);
 
-	if (!d_->manifest_.has_part_relationship(workbook_rel.get_target_uri(), relationship::type::theme))
+	if (!d_->manifest_.has_relationship(workbook_rel.get_target().get_path(), relationship::type::theme))
 	{
 		d_->manifest_.register_override_type(constants::part_theme(),
 			"application/vnd.openxmlformats-officedocument.theme+xml");
-		d_->manifest_.register_part_relationship(workbook_rel.get_target_uri(), 
-			relationship::type::theme, constants::part_theme(), target_mode::internal);
+		d_->manifest_.register_relationship(workbook_rel.get_target(),
+			relationship::type::theme, uri(constants::part_theme().string()), target_mode::internal);
 	}
 
 	d_->has_theme_ = true;
@@ -642,14 +642,14 @@ std::vector<named_range> workbook::get_named_ranges() const
 
 std::size_t workbook::add_format(const format &to_add)
 {
-	auto workbook_rel = d_->manifest_.get_package_relationship(relationship::type::office_document);
+	auto workbook_rel = d_->manifest_.get_relationship(path("/"), relationship::type::office_document);
 
-	if (!d_->manifest_.has_part_relationship(workbook_rel.get_target_uri(), relationship::type::styles))
+	if (!d_->manifest_.has_relationship(workbook_rel.get_target().get_path(), relationship::type::styles))
 	{
 		d_->manifest_.register_override_type(constants::part_styles(),
 			"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml");
-		d_->manifest_.register_part_relationship(workbook_rel.get_target_uri(),
-			relationship::type::styles, constants::part_styles(), target_mode::internal);
+		d_->manifest_.register_relationship(workbook_rel.get_target(),
+			relationship::type::styles, uri(constants::part_styles().string()), target_mode::internal);
 	}
 
     return d_->stylesheet_.add_format(to_add);
@@ -657,14 +657,14 @@ std::size_t workbook::add_format(const format &to_add)
 
 std::size_t workbook::add_style(const style &to_add)
 {
-	auto workbook_rel = d_->manifest_.get_package_relationship(relationship::type::office_document);
+	auto workbook_rel = d_->manifest_.get_relationship(path("/"), relationship::type::office_document);
 
-	if (!d_->manifest_.has_part_relationship(workbook_rel.get_target_uri(), relationship::type::styles))
+	if (!d_->manifest_.has_relationship(workbook_rel.get_target().get_path(), relationship::type::styles))
 	{
 		d_->manifest_.register_override_type(constants::part_styles(),
 			"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml");
-		d_->manifest_.register_part_relationship(workbook_rel.get_target_uri(),
-			relationship::type::styles, constants::part_styles(), target_mode::internal);
+		d_->manifest_.register_relationship(workbook_rel.get_target(),
+			relationship::type::styles, uri(constants::part_styles().string()), target_mode::internal);
 	}
 
     return d_->stylesheet_.add_style(to_add);
@@ -741,14 +741,14 @@ const std::vector<text> &workbook::get_shared_strings() const
 
 void workbook::add_shared_string(const text &shared, bool allow_duplicates)
 {
-	auto workbook_rel = d_->manifest_.get_package_relationship(relationship::type::office_document);
+	auto workbook_rel = d_->manifest_.get_relationship(path("/"), relationship::type::office_document);
 
-	if (!d_->manifest_.has_part_relationship(workbook_rel.get_target_uri(), relationship::type::shared_string_table))
+	if (!d_->manifest_.has_relationship(workbook_rel.get_target().get_path(), relationship::type::styles))
 	{
 		d_->manifest_.register_override_type(constants::part_shared_strings(),
 			"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml");
-		d_->manifest_.register_part_relationship(workbook_rel.get_target_uri(),
-			relationship::type::shared_string_table, constants::part_shared_strings(), target_mode::internal);
+		d_->manifest_.register_relationship(workbook_rel.get_target(),
+			relationship::type::shared_string_table, uri(constants::part_shared_strings().string()), target_mode::internal);
 	}
 
 	if (!allow_duplicates)
@@ -776,9 +776,12 @@ bool workbook::contains(const std::string &sheet_title) const
 void workbook::set_thumbnail(const std::vector<std::uint8_t> &thumbnail,
 	const std::string &extension, const std::string &content_type)
 {
-	d_->manifest_.register_default_type(extension, content_type);
-	d_->manifest_.register_package_relationship(relationship::type::thumbnail, 
-		path("docProps/thumbnail.jpeg"), target_mode::internal);
+	if (!d_->manifest_.has_relationship(path("/"), relationship::type::thumbnail))
+	{
+        d_->manifest_.register_default_type(extension, content_type);
+        d_->manifest_.register_relationship(uri("/"), relationship::type::thumbnail,
+            uri("docProps/thumbnail.jpeg"), target_mode::internal);
+	}
 
     d_->thumbnail_.assign(thumbnail.begin(), thumbnail.end());
 }

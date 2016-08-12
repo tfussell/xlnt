@@ -63,38 +63,39 @@ private:
 	// Package Parts
 
 	void write_manifest();
-	void write_core_properties(pugi::xml_node root);
-	void write_extended_properties(pugi::xml_node root);
-	void write_custom_properties(pugi::xml_node root);
+	void write_core_properties(const relationship &rel, pugi::xml_node root);
+	void write_extended_properties(const relationship &rel, pugi::xml_node root);
+	void write_custom_properties(const relationship &rel, pugi::xml_node root);
+    void write_thumbnail(const relationship &rel);
 
 	// SpreadsheetML-Specific Package Parts
 
-	void write_workbook(pugi::xml_node root);
+	void write_workbook(const relationship &rel, pugi::xml_node root);
 
 	// Workbook Relationship Target Parts
 
-	void write_calculation_chain(pugi::xml_node root);
-	void write_connections(pugi::xml_node root);
-	void write_custom_xml_mappings(pugi::xml_node root);
-	void write_external_workbook_references(pugi::xml_node root);
-	void write_metadata(pugi::xml_node root);
-	void write_pivot_table(pugi::xml_node root);
-	void write_shared_string_table(pugi::xml_node root);
-	void write_shared_workbook_revision_headers(pugi::xml_node root);
-	void write_shared_workbook(pugi::xml_node root);
-	void write_shared_workbook_user_data(pugi::xml_node root);
-	void write_styles(pugi::xml_node root);
-	void write_theme(pugi::xml_node root);
-	void write_volatile_dependencies(pugi::xml_node root);
+	void write_calculation_chain(const relationship &rel, pugi::xml_node root);
+	void write_connections(const relationship &rel, pugi::xml_node root);
+	void write_custom_xml_mappings(const relationship &rel, pugi::xml_node root);
+	void write_external_workbook_references(const relationship &rel, pugi::xml_node root);
+	void write_metadata(const relationship &rel, pugi::xml_node root);
+	void write_pivot_table(const relationship &rel, pugi::xml_node root);
+	void write_shared_string_table(const relationship &rel, pugi::xml_node root);
+	void write_shared_workbook_revision_headers(const relationship &rel, pugi::xml_node root);
+	void write_shared_workbook(const relationship &rel, pugi::xml_node root);
+	void write_shared_workbook_user_data(const relationship &rel, pugi::xml_node root);
+	void write_styles(const relationship &rel, pugi::xml_node root);
+	void write_theme(const relationship &rel, pugi::xml_node root);
+	void write_volatile_dependencies(const relationship &rel, pugi::xml_node root);
 
-	void write_chartsheet(pugi::xml_node root, const relationship &rel);
-	void write_dialogsheet(pugi::xml_node root, const relationship &rel);
-	void write_worksheet(pugi::xml_node root, const relationship &rel);
+	void write_chartsheet(const relationship &rel, pugi::xml_node root);
+	void write_dialogsheet(const relationship &rel, pugi::xml_node root);
+	void write_worksheet(const relationship &rel, pugi::xml_node root);
 
 	// Sheet Relationship Target Parts
 
-	void write_comments(pugi::xml_node root);
-	void write_drawings(pugi::xml_node root);
+	void write_comments(const relationship &rel, pugi::xml_node root);
+	void write_drawings(const relationship &rel, pugi::xml_node root);
 
 	// Other Parts
 

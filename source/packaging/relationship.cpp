@@ -30,7 +30,7 @@ relationship::relationship()
 {
 }
 
-relationship::relationship(const std::string &id, type t, const path &source, const path &target, target_mode mode)
+relationship::relationship(const std::string &id, type t, const uri &source, const uri &target, target_mode mode)
 	: id_(id),
 	type_(t),
 	source_(source),
@@ -44,17 +44,17 @@ std::string relationship::get_id() const
     return id_;
 }
 
-target_mode relationship::get_mode() const
+target_mode relationship::get_target_mode() const
 {
     return mode_;
 }
 
-path relationship::get_source() const
+uri relationship::get_source() const
 {
     return source_;
 }
 
-path relationship::get_target() const
+uri relationship::get_target() const
 {
     return target_;
 }
@@ -68,7 +68,7 @@ bool relationship::operator==(const relationship &rhs) const
 {
     return type_ == rhs.type_ 
 		&& id_ == rhs.id_ 
-		&& source_ == the.source_
+		&& source_ == rhs.source_
 		&& target_ == rhs.target_
 		&& mode_ == rhs.mode_;
 }

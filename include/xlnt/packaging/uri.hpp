@@ -63,6 +63,8 @@ public:
     uri make_absolute(const uri &base);
     uri make_reference(const uri &base);
     
+    friend XLNT_FUNCTION bool operator==(const uri &left, const uri &right);
+    
 private:
     bool absolute_;
     std::string scheme_;

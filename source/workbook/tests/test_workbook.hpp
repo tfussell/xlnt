@@ -228,8 +228,8 @@ public:
 		xlnt::manifest m;
         TS_ASSERT(!m.has_default_type("xml"));
         TS_ASSERT_THROWS(m.get_default_type("xml"), xlnt::key_not_found);
-        TS_ASSERT(!m.has_package_relationship(xlnt::relationship::type::office_document));
-        TS_ASSERT_THROWS(m.get_part_relationships(xlnt::path("xl/workbook.xml")), xlnt::key_not_found);
+        TS_ASSERT(!m.has_relationship(xlnt::path("/"), xlnt::relationship::type::office_document));
+        TS_ASSERT_THROWS(m.get_relationships(xlnt::path("xl/workbook.xml")), xlnt::key_not_found);
     }
 
     void test_memory()

@@ -154,6 +154,8 @@ public:
 	/// Append the provided part to this path and return the result.
 	/// </summary>
 	path append(const path &to_append) const;
+    
+    friend XLNT_FUNCTION bool operator==(const path &left, const path &right);
 
 private:
 	/// <summary>

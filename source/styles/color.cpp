@@ -172,7 +172,7 @@ std::array<std::uint8_t, 4> rgb_color::decode_hex_string(const std::string &hex_
 	auto g = static_cast<std::uint8_t>((x >> 8) & 0xff);
 	auto b = static_cast<std::uint8_t>(x & 0xff);
 
-	return { r, g, b, a };
+	return { {r, g, b, a} };
 }
 
 rgb_color::rgb_color(const std::string &hex_string)
@@ -181,7 +181,7 @@ rgb_color::rgb_color(const std::string &hex_string)
 }
 
 rgb_color::rgb_color(std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint8_t a)
-	: rgba_({r, g, b, a})
+	: rgba_({{r, g, b, a}})
 {
 }
 

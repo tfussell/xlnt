@@ -135,23 +135,47 @@ public:
 		auto left_info = left_archive.infolist();
 		auto right_info = right_archive.infolist();
 
-		if (left_info.size() != right_info.size()) return false;
+		if (left_info.size() != right_info.size())
+        {
+            std::cout << "left has a different number of files than right" << std::endl;
+
+            std::cout << "left has: ";
+            for (auto &info : left_info)
+            {
+                std::cout << info.filename.string() << ", ";
+            }
+            std::cout << std::endl;
+
+            std::cout << "right has: ";
+            for (auto &info : left_info)
+            {
+                std::cout << info.filename.string() << ", ";
+            }
+            std::cout << std::endl;
+        }
+        
+        bool match = true;
 
 		for (auto left_member : left_info)
 		{
-			if (!right_archive.has_file(left_member)) return false;
+			if (!right_archive.has_file(left_member))
+            {
+                match = false;
+                std::cout << "right is missing file: " << left_member.filename.string() << std::endl;
+                continue;
+            }
 
 			auto left_member_contents = left_archive.read(left_member);
 			auto right_member_contents = right_archive.read(left_member.filename);
 
 			if (!strings_match(left_member_contents, right_member_contents))
 			{
-				std::cout << left_member.filename.to_string() << std::endl;
-				return false;
+				std::cout << left_member.filename.string() << std::endl;
+                match = false;
 			}
 		}
 
-		return true;
+		return match;
 	}
 
 	static bool workbooks_match(const xlnt::workbook &left, const xlnt::workbook &right)

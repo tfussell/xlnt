@@ -17,13 +17,13 @@ public:
 
     bool files_equal(const xlnt::path &left, const xlnt::path &right)
     {
-        if(left.to_string() == right.to_string())
+        if(left.string() == right.string())
         {
             return true;
         }
         
-		std::ifstream stream_left(left.to_string(), std::ios::binary);
-		std::ifstream stream_right(right.to_string(), std::ios::binary);
+		std::ifstream stream_left(left.string(), std::ios::binary);
+		std::ifstream stream_right(right.string(), std::ios::binary);
 
         while(stream_left && stream_right)
         {
@@ -48,9 +48,9 @@ public:
     {
 		temporary_file temp;
 
-        std::ifstream in_stream(existing_file.to_string(), std::ios::binary);
+        std::ifstream in_stream(existing_file.string(), std::ios::binary);
         xlnt::zip_file f(in_stream);
-        std::ofstream out_stream(temp.get_path().to_string(), std::ios::binary);
+        std::ofstream out_stream(temp.get_path().string(), std::ios::binary);
 		f.save(out_stream);
 		out_stream.close();
 
@@ -62,7 +62,7 @@ public:
 		temporary_file temp_file;
 
 		std::vector<std::uint8_t> source_bytes;
-        std::ifstream in_stream(existing_file.to_string(), std::ios::binary);
+        std::ifstream in_stream(existing_file.string(), std::ios::binary);
 
         while(in_stream)
         {
@@ -122,7 +122,7 @@ public:
     {
         xlnt::zip_file f(existing_file);
         auto info = f.getinfo(xlnt::path("text.txt"));
-        TS_ASSERT(info.filename.to_string() == "text.txt");
+        TS_ASSERT(info.filename.string() == "text.txt");
     }
 
     void test_infolist()

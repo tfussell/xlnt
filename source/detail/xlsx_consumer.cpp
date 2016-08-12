@@ -19,11 +19,6 @@ bool is_true(const std::string &bool_string)
 	return bool_string == "1" || bool_string == "true";
 }
 
-bool is_false(const std::string &bool_string)
-{
-	return bool_string == "0" || bool_string == "false";
-}
-
 std::size_t string_to_size_t(const std::string &s)
 {
 #if ULLONG_MAX == SIZE_MAX
@@ -58,16 +53,6 @@ struct EnumClassHash
 		return static_cast<std::size_t>(t);
 	}
 };
-
-std::string string_lower(std::string str)
-{
-	for (std::size_t i = 0; i < str.size(); i++)
-	{
-		str[i] = std::tolower(str[i]);
-	}
-
-	return str;
-}
 
 template<typename T>
 T from_string(const std::string &string);
@@ -649,43 +634,19 @@ std::vector<xlnt::relationship> read_relationships(const xlnt::path &part, xlnt:
 	document.load_string(archive.read(part).c_str());
 
 	auto root_node = document.child("Relationships");
+    xlnt::uri source(part.string());
 
 	for (auto relationship_node : root_node.children("Relationship"))
 	{
 		std::string id(relationship_node.attribute("Id").value());
 		std::string type_string(relationship_node.attribute("Type").value());
 		auto type = from_string<xlnt::relationship::type>(type_string);
-		xlnt::path rel_target(relationship_node.attribute("Target").value());
+		xlnt::uri target(relationship_node.attribute("Target").value());
 
-		relationships.push_back(xlnt::relationship(id, type, rel_target, xlnt::target_mode::internal));
+		relationships.push_back(xlnt::relationship(id, type, source, target, xlnt::target_mode::internal));
 	}
 
 	return relationships;
-}
-
-std::string::size_type find_string_in_string(const std::string &string, const std::string &substring)
-{
-	std::string::size_type possible_match_index = string.find(substring.at(0));
-
-	while (possible_match_index != std::string::npos)
-	{
-		if (string.substr(possible_match_index, substring.size()) == substring)
-		{
-			return possible_match_index;
-		}
-
-		possible_match_index = string.find(substring.at(0), possible_match_index + 1);
-	}
-
-	return possible_match_index;
-}
-
-/// <summary>
-/// Returns true if d is exactly equal to an integer.
-/// </summary>
-bool is_integral(long double d)
-{
-	return d == static_cast<long long int>(d);
 }
 
 void check_document_type(const std::string &document_content_type)
@@ -733,12 +694,11 @@ void xlsx_consumer::populate_workbook()
 {
 	auto &manifest = destination_.get_manifest();
 	read_manifest();
-	path workbook_part;
 
-	for (const auto &rel : manifest.get_package_relationships())
+	for (const auto &rel : manifest.get_relationships(path("/")))
 	{
 		pugi::xml_document document;
-		document.load_string(source_.read(path(rel.get_target_uri())).c_str());
+		document.load_string(source_.read(rel.get_target().get_path()).c_str());
 
 		switch (rel.get_type())
 		{
@@ -752,20 +712,9 @@ void xlsx_consumer::populate_workbook()
 			read_custom_property(document.root());
 			break;
 		case relationship::type::office_document:
-			check_document_type(manifest.get_content_type_string(rel.get_target_uri()));
-			workbook_part = rel.get_target_uri();
+            check_document_type(manifest.get_content_type(rel.get_target().get_path()));
 			read_workbook(document.root());
 			break;
-		}
-	}
-
-	for (const auto &rel : manifest.get_part_relationships(workbook_part))
-	{
-		pugi::xml_document document;
-		document.load_string(source_.read(path(rel.get_target_uri())).c_str());
-
-		switch (rel.get_type())
-		{
 		case relationship::type::calculation_chain:
 			read_calculation_chain(document.root());
 			break;
@@ -799,13 +748,17 @@ void xlsx_consumer::populate_workbook()
 		case relationship::type::volatile_dependencies:
 			read_volatile_dependencies(document.root());
 			break;
+        default:
+            break;
 		}
 	}
 
-	for (const auto &rel : manifest.get_part_relationships(workbook_part))
+    const auto workbook_rel = manifest.get_relationship(path("/"), relationship::type::office_document);
+
+	for (const auto &rel : manifest.get_relationships(workbook_rel.get_target().get_path()))
 	{
 		pugi::xml_document document;
-		document.load_string(source_.read(path(rel.get_target_uri())).c_str());
+		document.load_string(source_.read(path(rel.get_target().get_path())).c_str());
 
 		switch (rel.get_type())
 		{
@@ -818,6 +771,8 @@ void xlsx_consumer::populate_workbook()
 		case relationship::type::worksheet:
 			read_worksheet(document.root(), rel.get_id());
 			break;
+        default:
+            break;
 		}
 	}
 
@@ -846,18 +801,6 @@ void xlsx_consumer::read_manifest()
 	const auto root_node = document.child("Types");
 	auto &manifest = destination_.get_manifest();
 
-	auto make_relative = [](const path &p)
-	{
-		path copy;
-
-		for (const auto &part : std::vector<std::string>(p.begin() + 1, p.end()))
-		{
-			copy.append(part);
-		}
-
-		return copy;
-	};
-
 	for (const auto child : root_node.children())
 	{
 		if (child.name() == std::string("Default"))
@@ -874,8 +817,9 @@ void xlsx_consumer::read_manifest()
 
 	for (const auto &package_rel : package_rels)
 	{
-		manifest.register_package_relationship(package_rel.get_type(), 
-			package_rel.get_target_uri(), 
+		manifest.register_relationship(uri("/"),
+            package_rel.get_type(),
+			package_rel.get_target(),
 			package_rel.get_target_mode(), 
 			package_rel.get_id());
 	}
@@ -886,14 +830,13 @@ void xlsx_consumer::read_manifest()
 			|| relationship_source.filename.extension() != ".rels") continue;
 
 		auto part_rels = read_relationships(relationship_source.filename, source_);
-		auto source_uri = relationship_source.filename.parent().parent()
-			.append(relationship_source.filename.basename());
+		uri source(relationship_source.filename.parent().parent()
+			.append(relationship_source.filename.filename()).string());
 
 		for (const auto part_rel : part_rels)
 		{
-			auto part = source_uri;
-			manifest.register_part_relationship(source_uri, part_rel.get_type(), 
-				part_rel.get_target_uri(), part_rel.get_target_mode(), part_rel.get_id());
+			manifest.register_relationship(source, part_rel.get_type(),
+				part_rel.get_target(), part_rel.get_target_mode(), part_rel.get_id());
 		}
 	}
 }
@@ -934,7 +877,7 @@ void xlsx_consumer::read_custom_file_properties(const pugi::xml_node root)
 {
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	auto root_node = document.append_child("customFileProperties");
+	/*auto root_node = */document.append_child("customFileProperties");
 }
 
 // Write SpreadsheetML-Specific Package Parts
@@ -977,56 +920,56 @@ void xlsx_consumer::read_chartsheet(const pugi::xml_node root, const std::string
 {
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	auto root_node = document.append_child("chartsheet");
+	/*auto root_node = */ document.append_child("chartsheet");
 }
 
 void xlsx_consumer::read_connections(const pugi::xml_node root)
 {
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	auto root_node = document.append_child("connections");
+	/*auto root_node = */ document.append_child("connections");
 }
 
 void xlsx_consumer::read_custom_property(const pugi::xml_node root)
 {
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	auto root_node = document.append_child("customProperty");
+	/*auto root_node = */ document.append_child("customProperty");
 }
 
 void xlsx_consumer::read_custom_xml_mappings(const pugi::xml_node root)
 {
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	auto root_node = document.append_child("connections");
+	/*auto root_node = */ document.append_child("connections");
 }
 
 void xlsx_consumer::read_dialogsheet(const pugi::xml_node root, const std::string &title)
 {
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	auto root_node = document.append_child("dialogsheet");
+	/*auto root_node = */ document.append_child("dialogsheet");
 }
 
 void xlsx_consumer::read_external_workbook_references(const pugi::xml_node root)
 {
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	auto root_node = document.append_child("externalLink");
+	/*auto root_node = */ document.append_child("externalLink");
 }
 
 void xlsx_consumer::read_metadata(const pugi::xml_node root)
 {
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	auto root_node = document.append_child("metadata");
+	/*auto root_node = */ document.append_child("metadata");
 }
 
 void xlsx_consumer::read_pivot_table(const pugi::xml_node root)
 {
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	auto root_node = document.append_child("pivotTableDefinition");
+	/*auto root_node = */ document.append_child("pivotTableDefinition");
 }
 
 void xlsx_consumer::read_shared_string_table(const pugi::xml_node root)
@@ -1109,21 +1052,21 @@ void xlsx_consumer::read_shared_workbook_revision_headers(const pugi::xml_node r
 {
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	auto root_node = document.append_child("headers");
+	/*auto root_node = */ document.append_child("headers");
 }
 
 void xlsx_consumer::read_shared_workbook(const pugi::xml_node root)
 {
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	auto root_node = document.append_child("revisions");
+	/*auto root_node = */ document.append_child("revisions");
 }
 
 void xlsx_consumer::read_shared_workbook_user_data(const pugi::xml_node root)
 {
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	auto root_node = document.append_child("users");
+	/*auto root_node = */ document.append_child("users");
 }
 
 void xlsx_consumer::read_stylesheet(const pugi::xml_node root)
@@ -1150,7 +1093,7 @@ void xlsx_consumer::read_volatile_dependencies(const pugi::xml_node root)
 {
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	auto root_node = document.append_child("volTypes");
+	/*auto root_node = */ document.append_child("volTypes");
 }
 
 void xlsx_consumer::read_worksheet(const pugi::xml_node root, const std::string &rel_id)
@@ -1344,14 +1287,14 @@ void xlsx_consumer::read_comments(const pugi::xml_node root)
 {
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	auto root_node = document.append_child("comments");
+	/*auto root_node = */ document.append_child("comments");
 }
 
 void xlsx_consumer::read_drawings(const pugi::xml_node root)
 {
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	auto root_node = document.append_child("wsDr");
+	/*auto root_node = */ document.append_child("wsDr");
 }
 
 // Unknown Parts
@@ -1360,14 +1303,14 @@ void xlsx_consumer::read_unknown_parts(const pugi::xml_node root)
 {
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	auto root_node = document.append_child("Hmm");
+	/*auto root_node = */ document.append_child("Hmm");
 }
 
 void xlsx_consumer::read_unknown_relationships(const pugi::xml_node root)
 {
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	auto root_node = document.append_child("Relationships");
+	/*auto root_node = */ document.append_child("Relationships");
 }
 
 } // namespace detail

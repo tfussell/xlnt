@@ -185,11 +185,11 @@ void zip_file::load(std::istream &stream)
 void zip_file::load(const path &filename)
 {
     filename_ = filename;
-    std::ifstream stream(filename.to_string(), std::ios::binary);
+    std::ifstream stream(filename.string(), std::ios::binary);
 
 	if (!stream.good())
 	{
-		throw invalid_file(filename.to_string());
+		throw invalid_file(filename.string());
 	}
 
 	reset();
@@ -197,7 +197,7 @@ void zip_file::load(const path &filename)
 
 	if (buffer_.empty())
 	{
-		throw invalid_file(filename.to_string() + " - empty file");
+		throw invalid_file(filename.string() + " - empty file");
 	}
 
 	remove_comment();
@@ -220,7 +220,7 @@ void zip_file::load(const std::vector<unsigned char> &bytes)
 void zip_file::save(const path &filename)
 {
     filename_ = filename;
-    std::ofstream stream(filename.to_string(), std::ios::binary);
+    std::ofstream stream(filename.string(), std::ios::binary);
     save(stream);
 }
 
@@ -341,7 +341,7 @@ zip_info zip_file::getinfo(const path &name)
         start_read();
     }
 
-    int index = mz_zip_reader_locate_file(archive_.get(), name.to_string('/').c_str(), nullptr, 0);
+    int index = mz_zip_reader_locate_file(archive_.get(), name.string().c_str(), nullptr, 0);
 
     if (index == -1)
     {
@@ -462,19 +462,15 @@ void zip_file::write_file(const path &filename)
 
 	if (filename.is_absolute())
 	{
-		arcname = path();
-		bool first = true;
+        auto split = filename.split();
+        
+        auto iter = split.begin() + 1;
+        arcname = path();
 
-		for (auto part : filename)
-		{
-			if (first)
-			{
-				first = false;
-				continue;
-			}
-
-			arcname.append(part);
-		}
+        while (iter != split.end())
+        {
+            arcname.append(*iter++);
+        }
 	}
 
     write_file(filename, arcname);
@@ -482,7 +478,7 @@ void zip_file::write_file(const path &filename)
 
 void zip_file::write_file(const path &filename, const path &arcname)
 {
-    std::fstream file(filename.to_string(), std::ios::binary | std::ios::in);
+    std::fstream file(filename.string(), std::ios::binary | std::ios::in);
 
     std::stringstream ss;
     ss << file.rdbuf();
@@ -497,13 +493,13 @@ void zip_file::write_string(const std::string &bytes, const path &arcname)
         start_write();
     }
 
-    mz_zip_writer_add_mem(archive_.get(), arcname.to_string('/').c_str(),
+    mz_zip_writer_add_mem(archive_.get(), arcname.string().c_str(),
 		bytes.data(), bytes.size(), MZ_BEST_COMPRESSION);
 }
 
 void zip_file::write_string(const std::string &bytes, const zip_info &info)
 {
-    if (info.filename.to_string().empty() || info.date_time.year < 1980)
+    if (info.filename.string().empty() || info.date_time.year < 1980)
     {
         throw std::runtime_error("must specify a filename and valid date (year >= 1980");
     }
@@ -515,7 +511,7 @@ void zip_file::write_string(const std::string &bytes, const zip_info &info)
 
     auto crc = crc32buf(bytes.c_str(), bytes.size());
 
-    mz_zip_writer_add_mem_ex(archive_.get(), info.filename.to_string('/').c_str(), bytes.data(), bytes.size(),
+    mz_zip_writer_add_mem_ex(archive_.get(), info.filename.string().c_str(), bytes.data(), bytes.size(),
         info.comment.c_str(), static_cast<mz_uint16>(info.comment.size()),
         MZ_BEST_COMPRESSION, 0, crc);
 }
@@ -524,7 +520,7 @@ std::string zip_file::read(const zip_info &info)
 {
     std::size_t size;
 	void *data_raw = mz_zip_reader_extract_file_to_heap(archive_.get(), 
-		info.filename.to_string('/').c_str(), &size, 0);
+		info.filename.string().c_str(), &size, 0);
 
     if (data_raw == nullptr)
     {
@@ -550,7 +546,7 @@ bool zip_file::has_file(const path &name)
         start_read();
     }
 
-    int index = mz_zip_reader_locate_file(archive_.get(), name.to_string('/').c_str(), nullptr, 0);
+    int index = mz_zip_reader_locate_file(archive_.get(), name.string().c_str(), nullptr, 0);
 
     return index != -1;
 }

@@ -59,7 +59,7 @@ public:
     static xlnt::path get_data_directory(const std::string &append = "")
     {
         return xlnt::path("../../tests/data")
-			.make_absolute(get_executable_directory())
+			.resolve(get_executable_directory())
 			.append(xlnt::path(append));
     }
     
@@ -70,14 +70,14 @@ public:
             throw std::runtime_error("destination file already exists and overwrite==false");
         }
         
-        std::ifstream src(source.to_string(), std::ios::binary);
-        std::ofstream dst(destination.to_string(), std::ios::binary);
+        std::ifstream src(source.string(), std::ios::binary);
+        std::ofstream dst(destination.string(), std::ios::binary);
         
         dst << src.rdbuf();
     }
 
     static void delete_file(const xlnt::path &path)
     {
-      std::remove(path.to_string().c_str());
+      std::remove(path.string().c_str());
     }
 };

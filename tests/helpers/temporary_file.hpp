@@ -40,13 +40,13 @@ public:
     {
         if(path_.exists())
         {
-            std::remove(path_.to_string().c_str());
+            std::remove(path_.string().c_str());
         }
     }
 
     ~temporary_file()
     {
-        std::remove(path_.to_string().c_str());
+        std::remove(path_.string().c_str());
     }
 
     xlnt::path get_path() const { return path_; }

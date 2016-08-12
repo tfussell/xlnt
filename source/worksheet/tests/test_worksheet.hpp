@@ -29,9 +29,8 @@ public:
     
     void test_invalid_cell()
     {
-        xlnt::workbook wb;
-        auto ws = wb.get_active_sheet();
-        TS_ASSERT_THROWS(xlnt::cell_reference invalid(xlnt::column_t((xlnt::column_t::index_t)0), 0), xlnt::invalid_cell_reference);
+        TS_ASSERT_THROWS(xlnt::cell_reference(xlnt::column_t((xlnt::column_t::index_t)0), 0),
+            xlnt::invalid_cell_reference);
     }
     
     void test_worksheet_dimension()

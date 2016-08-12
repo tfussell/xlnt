@@ -16,7 +16,7 @@ public:
 	{
 		std::vector<std::uint8_t> buffer;
 		wb.save(buffer);
-		wb.save(xlnt::path("C:\\Users\\Thomas\\Desktop\\a.xlsx"));
+		wb.save(xlnt::path("a.xlsx"));
 		xlnt::zip_file wb_archive(buffer);
 
 		xlnt::zip_file file_archive(file);

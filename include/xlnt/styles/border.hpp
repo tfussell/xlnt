@@ -104,8 +104,10 @@ protected:
 
 private:
 	std::unordered_map<side, border_property> sides_;
+    /*
     bool outline_ = true;
     diagonal_direction diagonal_direction_ = diagonal_direction::neither;
+    */
 };
 
 } // namespace xlnt

@@ -20,7 +20,7 @@ public:
 		}
 
 		TS_ASSERT(!temp.get_path().exists());
-		std::ofstream stream(temp.get_path().to_string());
+		std::ofstream stream(temp.get_path().string());
 		TS_ASSERT(temp.get_path().exists());
 	}
 };
