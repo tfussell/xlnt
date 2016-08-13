@@ -78,9 +78,11 @@ std::vector<relationship> manifest::get_relationships(const path &part, relation
 
 std::string manifest::get_content_type(const path &part) const
 {
-    if (has_override_type(part))
+	auto absolute = part.resolve(path("/"));
+
+    if (has_override_type(absolute))
     {
-        return get_override_type(part);
+        return get_override_type(absolute);
     }
     
     if (has_default_type(part.extension()))

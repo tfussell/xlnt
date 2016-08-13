@@ -135,7 +135,13 @@ workbook workbook::empty_excel()
 	wb.d_->manifest_.register_relationship(uri("/"), relationship::type::extended_properties,
 		uri("docProps/app.xml"), target_mode::internal);
 
-	wb.set_application("Microsoft Excel");
+	wb.set_creator("Microsoft Office User");
+	wb.set_last_modified_by("Microsoft Office User");
+	wb.set_created(datetime(2016, 8, 12, 3, 16, 56));
+	wb.set_modified(datetime(2016, 8, 12, 3, 17, 16));
+	wb.set_application("Microsoft Macintosh Excel");
+	wb.set_app_version("15.0300");
+
 	wb.create_sheet();
 	wb.add_format(format());
 	wb.create_style("Normal");
@@ -268,8 +274,8 @@ bool workbook::has_named_range(const std::string &name) const
 
 worksheet workbook::create_sheet()
 {
-    std::string title = "Sheet";
-    int index = 0;
+    std::string title = "Sheet1";
+    int index = 1;
 
     while (contains(title))
     {

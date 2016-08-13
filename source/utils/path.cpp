@@ -44,10 +44,26 @@ char system_separator()
 	return '\\';
 }
 
+bool is_drive_letter(char letter)
+{
+	return letter >= 'A' && letter <= 'Z';
+}
+
 bool is_root(const std::string &part)
 {
-	return part == "/" || (part.size() == 2 && part.back() == ':'
-		&& part.front() >= 'A' && part.front() <= 'Z');
+	if (part.size() == 1 && part[0] == '/') return true;
+	if (part.size() != 3) return false;
+
+	return is_drive_letter(part[0]) && part[1] == ':'
+		&& (part[2] == '\\' || part[2] == '/');
+}
+
+bool is_absolute(const std::string &part)
+{
+	if (!part.empty() && part[0] == '/') return true;
+	if (part.size() < 3) return false;
+
+	return is_root(part.substr(0, 3));
 }
 
 #else
@@ -127,8 +143,7 @@ bool path::is_relative() const
 
 bool path::is_absolute() const
 {
-    auto split_path = split();
-	return !split_path.empty() && ::is_root(split_path.front());
+	return ::is_absolute(internal_);
 }
 
 bool path::is_root() const
@@ -171,6 +186,14 @@ std::string path::extension() const
 	auto last_dot = base.find_last_of('.');
 	
 	return last_dot == std::string::npos ? "" : base.substr(last_dot + 1);
+}
+
+std::pair<std::string, std::string> path::split_extension() const
+{
+	auto base = filename();
+	auto last_dot = base.find_last_of('.');
+
+	return{ base.substr(0, last_dot), base.substr(last_dot + 1) };
 }
 
 // conversion
@@ -248,14 +271,21 @@ path path::append(const std::string &to_append) const
 
 path path::append(const path &to_append) const
 {
-    return append(to_append.string());
+	path copy(internal_);
+
+	for (const auto &component : to_append.split())
+	{
+		copy = copy.append(component);
+	}
+
+	return copy;
 }
 
 char path::guess_separator() const
 {
-    if (system_separator() == '/') return '/';
+    if (system_separator() == '/' || internal_.empty() || internal_.front() == '/') return '/';
     if (is_absolute()) return internal_.at(2);
-    return internal_.find('/') == std::string::npos ? '/' : '\\';
+    return internal_.find('\\') != std::string::npos ? '\\' : '/';
 }
 
 bool operator==(const path &left, const path &right)

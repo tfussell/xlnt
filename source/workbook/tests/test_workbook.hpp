@@ -52,7 +52,7 @@ public:
         ws.get_cell("B3").set_value(2);
         ws.set_title("Active");
         wb.copy_sheet(ws, 0);
-        TS_ASSERT_EQUALS(wb.get_sheet_titles().at(0), "Sheet");
+        TS_ASSERT_EQUALS(wb.get_sheet_titles().at(0), "Sheet1");
         TS_ASSERT_EQUALS(wb.get_sheet_by_index(0).get_cell("B3").get_value<int>(), 2);
         TS_ASSERT_EQUALS(wb.get_sheet_titles().at(1), "Active");
         TS_ASSERT_EQUALS(wb.get_sheet_by_index(1).get_cell("B3").get_value<int>(), 2);
@@ -95,7 +95,7 @@ public:
     void test_index_operator() // test_getitem
     {
         xlnt::workbook wb;
-        TS_ASSERT_THROWS_NOTHING(wb["Sheet"]);
+        TS_ASSERT_THROWS_NOTHING(wb["Sheet1"]);
         TS_ASSERT_THROWS(wb["NotThere"], xlnt::key_not_found);
     }
     
@@ -104,7 +104,7 @@ public:
     void test_contains()
     {
         xlnt::workbook wb;
-        TS_ASSERT(wb.contains("Sheet"));
+        TS_ASSERT(wb.contains("Sheet1"));
         TS_ASSERT(!wb.contains("NotThere"));
     }
     
@@ -114,7 +114,7 @@ public:
         
         for(auto ws : wb)
         {
-            TS_ASSERT_EQUALS(ws.get_title(), "Sheet");
+            TS_ASSERT_EQUALS(ws.get_title(), "Sheet1");
         }
     }
     
@@ -136,7 +136,7 @@ public:
         xlnt::workbook wb;
         wb.create_sheet().set_title("test_get_sheet_titles");
 
-		const std::vector<std::string> expected_titles = { "Sheet", "test_get_sheet_titles" };
+		const std::vector<std::string> expected_titles = { "Sheet1", "test_get_sheet_titles" };
 
 		TS_ASSERT_EQUALS(wb.get_sheet_titles(), expected_titles);
     }
@@ -177,23 +177,23 @@ public:
     {
         xlnt::workbook wb;
 
-        wb.create_sheet().set_title("Sheet1");
         wb.create_sheet().set_title("Sheet2");
+        wb.create_sheet().set_title("Sheet3");
 
         auto iter = wb.begin();
 
-        TS_ASSERT_EQUALS((*(iter++)).get_title(), "Sheet");
         TS_ASSERT_EQUALS((*(iter++)).get_title(), "Sheet1");
         TS_ASSERT_EQUALS((*(iter++)).get_title(), "Sheet2");
+        TS_ASSERT_EQUALS((*(iter++)).get_title(), "Sheet3");
         TS_ASSERT_EQUALS(iter, wb.end());
 
         const auto wb_const = wb;
 
         auto const_iter = wb_const.begin();
 
-        TS_ASSERT_EQUALS((*(const_iter++)).get_title(), "Sheet");
         TS_ASSERT_EQUALS((*(const_iter++)).get_title(), "Sheet1");
         TS_ASSERT_EQUALS((*(const_iter++)).get_title(), "Sheet2");
+        TS_ASSERT_EQUALS((*(const_iter++)).get_title(), "Sheet3");
         TS_ASSERT_EQUALS(const_iter, wb_const.end());
     }
 
@@ -201,25 +201,26 @@ public:
     {
         xlnt::workbook wb;
 
-        wb.create_sheet().set_title("Sheet1");
         wb.create_sheet().set_title("Sheet2");
+        wb.create_sheet().set_title("Sheet3");
 
         auto iter = wb.begin();
+		TS_ASSERT_EQUALS((*iter).get_title(), "Sheet1");
 
         iter++;
-        TS_ASSERT_EQUALS((*iter).get_title(), "Sheet1");
+        TS_ASSERT_EQUALS((*iter).get_title(), "Sheet2");
 
         auto copy = wb.begin();
         copy = iter;
-        TS_ASSERT_EQUALS((*iter).get_title(), "Sheet1");
+        TS_ASSERT_EQUALS((*iter).get_title(), "Sheet2");
         TS_ASSERT_EQUALS(iter, copy);
 
         iter++;
-        TS_ASSERT_EQUALS((*iter).get_title(), "Sheet2");
+        TS_ASSERT_EQUALS((*iter).get_title(), "Sheet3");
         TS_ASSERT_DIFFERS(iter, copy);
 
         copy++;
-        TS_ASSERT_EQUALS((*iter).get_title(), "Sheet2");
+        TS_ASSERT_EQUALS((*iter).get_title(), "Sheet3");
         TS_ASSERT_EQUALS(iter, copy);
     }
     
@@ -229,7 +230,7 @@ public:
         TS_ASSERT(!m.has_default_type("xml"));
         TS_ASSERT_THROWS(m.get_default_type("xml"), xlnt::key_not_found);
         TS_ASSERT(!m.has_relationship(xlnt::path("/"), xlnt::relationship::type::office_document));
-        TS_ASSERT_THROWS(m.get_relationships(xlnt::path("xl/workbook.xml")), xlnt::key_not_found);
+        TS_ASSERT(m.get_relationships(xlnt::path("xl/workbook.xml")).empty());
     }
 
     void test_memory()
@@ -237,7 +238,7 @@ public:
         xlnt::workbook wb, wb2;
         wb.get_active_sheet().set_title("swap");
         std::swap(wb, wb2);
-        TS_ASSERT_EQUALS(wb.get_active_sheet().get_title(), "Sheet");
+        TS_ASSERT_EQUALS(wb.get_active_sheet().get_title(), "Sheet1");
         TS_ASSERT_EQUALS(wb2.get_active_sheet().get_title(), "swap");
         wb = wb2;
         TS_ASSERT_EQUALS(wb.get_active_sheet().get_title(), "swap");

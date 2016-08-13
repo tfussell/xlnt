@@ -520,7 +520,7 @@ public:
     {
         xlnt::workbook wb;
 
-        auto ws = wb.create_sheet();
+        auto ws = wb.get_active_sheet();
         ws.add_print_title(3);
         TS_ASSERT_EQUALS(ws.get_print_titles(), "Sheet1!1:3");
         
@@ -533,7 +533,7 @@ public:
     {
         xlnt::workbook wb;
         
-        auto ws = wb.create_sheet();
+        auto ws = wb.get_active_sheet();
         ws.set_print_title_rows("1:4");
         TS_ASSERT_EQUALS(ws.get_print_titles(), "Sheet1!1:4");
 
@@ -955,7 +955,7 @@ public:
         xlnt::workbook wb;
         auto ws = wb.get_active_sheet();
         auto ws_string = ws.to_string();
-        TS_ASSERT_EQUALS(ws_string, "<Worksheet \"Sheet\">");
+        TS_ASSERT_EQUALS(ws_string, "<Worksheet \"Sheet1\">");
     }
 
     void test_garbage_collect()

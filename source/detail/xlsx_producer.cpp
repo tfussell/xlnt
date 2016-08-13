@@ -228,8 +228,7 @@ bool write_color(const xlnt::color &color, pugi::xml_node color_node)
 bool write_fonts(const std::vector<xlnt::font> &fonts, pugi::xml_node &fonts_node)
 {
 	fonts_node.append_attribute("count").set_value(std::to_string(fonts.size()).c_str());
-	// TODO: what does this do?
-	// fonts_node.append_attribute("x14ac:knownFonts", "1");
+	fonts_node.append_attribute("x14ac:knownFonts").set_value(std::to_string(fonts.size()).c_str());
 
 	for (auto &f : fonts)
 	{
@@ -651,7 +650,7 @@ void xlsx_producer::write_manifest()
 	for (const auto &part : source_.get_manifest().get_parts_with_overriden_types())
 	{
 		auto override_node = types_node.append_child("Override");
-		override_node.append_attribute("PartName").set_value(part.string().c_str());
+		override_node.append_attribute("PartName").set_value(part.resolve(path("/")).string().c_str());
 		auto content_type = source_.get_manifest().get_override_type(part);
 		override_node.append_attribute("ContentType").set_value(content_type.c_str());
 	}
@@ -664,7 +663,11 @@ void xlsx_producer::write_manifest()
 
 		pugi::xml_document part_rels_document;
 		write_relationships(part_rels, part_rels_document.root());
-        path parent(part.parent().string().front() == '/' ? part.parent().string().substr(1) : part.parent().string());
+		path parent = part.parent();
+		if (parent.is_absolute())
+		{
+			parent = path(parent.string().substr(1));
+		}
 		path rels_path(parent.append("_rels").append(part.filename() + ".rels").string());
 		write_document_to_archive(part_rels_document, rels_path, destination_);
 	}
@@ -682,20 +685,6 @@ void xlsx_producer::write_extended_properties(const relationship &rel, pugi::xml
 	properties_node.append_child("Application").text().set(source_.get_application().c_str());
 	properties_node.append_child("DocSecurity").text().set(std::to_string(source_.get_doc_security()).c_str());
 	properties_node.append_child("ScaleCrop").text().set(source_.get_scale_crop() ? "true" : "false");
-
-	auto company_node = properties_node.append_child("Company");
-
-	if (!source_.get_company().empty())
-	{
-		company_node.text().set(source_.get_company().c_str());
-	}
-
-	properties_node.append_child("LinksUpToDate").text().set(source_.links_up_to_date() ? "true" : "false");
-	properties_node.append_child("SharedDoc").text().set(source_.is_shared_doc() ? "true" : "false");
-	properties_node.append_child("HyperlinksChanged").text().set(source_.hyperlinks_changed() ? "true" : "false");
-	properties_node.append_child("AppVersion").text().set(source_.get_app_version().c_str());
-
-	// TODO what is this stuff?
 
 	auto heading_pairs_node = properties_node.append_child("HeadingPairs");
 	auto heading_pairs_vector_node = heading_pairs_node.append_child("vt:vector");
@@ -715,6 +704,18 @@ void xlsx_producer::write_extended_properties(const relationship &rel, pugi::xml
 	{
 		titles_of_parts_vector_node.append_child("vt:lpstr").text().set(ws.get_title().c_str());
 	}
+
+	auto company_node = properties_node.append_child("Company");
+
+	if (!source_.get_company().empty())
+	{
+		company_node.text().set(source_.get_company().c_str());
+	}
+
+	properties_node.append_child("LinksUpToDate").text().set(source_.links_up_to_date() ? "true" : "false");
+	properties_node.append_child("SharedDoc").text().set(source_.is_shared_doc() ? "true" : "false");
+	properties_node.append_child("HyperlinksChanged").text().set(source_.hyperlinks_changed() ? "true" : "false");
+	properties_node.append_child("AppVersion").text().set(source_.get_app_version().c_str());
 }
 
 void xlsx_producer::write_core_properties(const relationship &rel, pugi::xml_node root)
@@ -723,8 +724,8 @@ void xlsx_producer::write_core_properties(const relationship &rel, pugi::xml_nod
 
 	core_properties_node.append_attribute("xmlns:cp").set_value("http://schemas.openxmlformats.org/package/2006/metadata/core-properties");
 	core_properties_node.append_attribute("xmlns:dc").set_value("http://purl.org/dc/elements/1.1/");
-	core_properties_node.append_attribute("xmlns:dcmitype").set_value("http://purl.org/dc/dcmitype/");
 	core_properties_node.append_attribute("xmlns:dcterms").set_value("http://purl.org/dc/terms/");
+	core_properties_node.append_attribute("xmlns:dcmitype").set_value("http://purl.org/dc/dcmitype/");
 	core_properties_node.append_attribute("xmlns:xsi").set_value("http://www.w3.org/2001/XMLSchema-instance");
 
 	core_properties_node.append_child("dc:creator").text().set(source_.get_creator().c_str());
@@ -733,11 +734,18 @@ void xlsx_producer::write_core_properties(const relationship &rel, pugi::xml_nod
 	core_properties_node.child("dcterms:created").append_attribute("xsi:type").set_value("dcterms:W3CDTF");
 	core_properties_node.append_child("dcterms:modified").text().set(datetime_to_w3cdtf(source_.get_modified()).c_str());
 	core_properties_node.child("dcterms:modified").append_attribute("xsi:type").set_value("dcterms:W3CDTF");
-	core_properties_node.append_child("dc:title").text().set(source_.get_title().c_str());
+
+	if (!source_.get_title().empty())
+	{
+		core_properties_node.append_child("dc:title").text().set(source_.get_title().c_str());
+	}
+
+	/*
 	core_properties_node.append_child("dc:description");
 	core_properties_node.append_child("dc:subject");
 	core_properties_node.append_child("cp:keywords");
 	core_properties_node.append_child("cp:category");
+	*/
 }
 
 void xlsx_producer::write_custom_properties(const relationship &rel, pugi::xml_node root)
@@ -750,12 +758,18 @@ void xlsx_producer::write_custom_properties(const relationship &rel, pugi::xml_n
 void xlsx_producer::write_workbook(const relationship &rel, pugi::xml_node root)
 {
 	std::size_t num_visible = 0;
+	bool any_defined_names = false;
 
 	for (auto ws : source_)
 	{
 		if (ws.get_page_setup().get_sheet_state() == sheet_state::visible)
 		{
 			num_visible++;
+		}
+
+		if (ws.has_auto_filter())
+		{
+			any_defined_names = true;
 		}
 	}
 
@@ -768,39 +782,60 @@ void xlsx_producer::write_workbook(const relationship &rel, pugi::xml_node root)
 
 	workbook_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
 	workbook_node.append_attribute("xmlns:r").set_value("http://schemas.openxmlformats.org/officeDocument/2006/relationships");
+	workbook_node.append_attribute("xmlns:mc").set_value("http://schemas.openxmlformats.org/markup-compatibility/2006");
+	workbook_node.append_attribute("mc:Ignorable").set_value("x15");
+	workbook_node.append_attribute("xmlns:x15").set_value("http://schemas.microsoft.com/office/spreadsheetml/2010/11/main");
 
 	auto file_version_node = workbook_node.append_child("fileVersion");
 	file_version_node.append_attribute("appName").set_value("xl");
-	file_version_node.append_attribute("lastEdited").set_value("4");
-	file_version_node.append_attribute("lowestEdited").set_value("4");
-	file_version_node.append_attribute("rupBuild").set_value("4505");
+	file_version_node.append_attribute("lastEdited").set_value("6");
+	file_version_node.append_attribute("lowestEdited").set_value("6");
+	file_version_node.append_attribute("rupBuild").set_value("29709");
 
 	auto workbook_pr_node = workbook_node.append_child("workbookPr");
+	/*
 	workbook_pr_node.append_attribute("codeName").set_value("ThisWorkbook");
 	workbook_pr_node.append_attribute("defaultThemeVersion").set_value("124226");
 	workbook_pr_node.append_attribute("date1904").set_value(source_.get_base_date() == calendar::mac_1904 ? "1" : "0");
+	*/
+
+	auto alternate_content_node = workbook_node.append_child("mc:AlternateContent");
+	alternate_content_node.append_attribute("xmlns:mc").set_value("http://schemas.openxmlformats.org/markup-compatibility/2006");
+	auto choice_node = alternate_content_node.append_child("mc:Choice");
+	choice_node.append_attribute("Requires").set_value("x15");
+	auto abs_path_node = choice_node.append_child("x15ac:absPath");
+	abs_path_node.append_attribute("url").set_value("/Users/thomas/Development/xlnt/tests/data/xlsx/");
+	abs_path_node.append_attribute("xmlns:x15ac").set_value("http://schemas.microsoft.com/office/spreadsheetml/2010/11/ac");
 
 	auto book_views_node = workbook_node.append_child("bookViews");
 	auto workbook_view_node = book_views_node.append_child("workbookView");
-	workbook_view_node.append_attribute("activeTab").set_value("0");
-	workbook_view_node.append_attribute("autoFilterDateGrouping").set_value("1");
-	workbook_view_node.append_attribute("firstSheet").set_value("0");
-	workbook_view_node.append_attribute("minimized").set_value("0");
-	workbook_view_node.append_attribute("showHorizontalScroll").set_value("1");
-	workbook_view_node.append_attribute("showSheetTabs").set_value("1");
-	workbook_view_node.append_attribute("showVerticalScroll").set_value("1");
-	workbook_view_node.append_attribute("tabRatio").set_value("600");
-	workbook_view_node.append_attribute("visibility").set_value("visible");
+	//workbook_view_node.append_attribute("activeTab").set_value("0");
+	//workbook_view_node.append_attribute("autoFilterDateGrouping").set_value("1");
+	//workbook_view_node.append_attribute("firstSheet").set_value("0");
+	//workbook_view_node.append_attribute("minimized").set_value("0");
+	//workbook_view_node.append_attribute("showHorizontalScroll").set_value("1");
+	//workbook_view_node.append_attribute("showSheetTabs").set_value("1");
+	//workbook_view_node.append_attribute("showVerticalScroll").set_value("1");
+	//workbook_view_node.append_attribute("tabRatio").set_value("600");
+	//workbook_view_node.append_attribute("visibility").set_value("visible");
+	workbook_view_node.append_attribute("xWindow").set_value("0");
+	workbook_view_node.append_attribute("yWindow").set_value("460");
+	workbook_view_node.append_attribute("windowWidth").set_value("28800");
+	workbook_view_node.append_attribute("windowHeight").set_value("17460");
+	workbook_view_node.append_attribute("tabRatio").set_value("500");
 
 	auto sheets_node = workbook_node.append_child("sheets");
-	auto defined_names_node = workbook_node.append_child("definedNames");
-
-	auto wb_rel = source_.d_->manifest_.get_relationship(path("/"), xlnt::relationship::type::office_document);
+	pugi::xml_node defined_names_node;
+	
+	if (any_defined_names)
+	{
+		defined_names_node = workbook_node.append_child("definedNames");
+	}
 
 	for (const auto ws : source_)
 	{
 		auto sheet_rel_id = source_.d_->sheet_title_rel_id_map_[ws.get_title()];
-		auto sheet_rel = source_.d_->manifest_.get_relationship(wb_rel.get_target().get_path(), sheet_rel_id);
+		auto sheet_rel = source_.d_->manifest_.get_relationship(rel.get_source().get_path(), sheet_rel_id);
 
 		auto sheet_node = sheets_node.append_child("sheet");
 		sheet_node.append_attribute("name").set_value(ws.get_title().c_str());
@@ -826,9 +861,10 @@ void xlsx_producer::write_workbook(const relationship &rel, pugi::xml_node root)
 	}
 
 	auto calc_pr_node = workbook_node.append_child("calcPr");
-	calc_pr_node.append_attribute("calcId").set_value("124519");
-	calc_pr_node.append_attribute("calcMode").set_value("auto");
-	calc_pr_node.append_attribute("fullCalcOnLoad").set_value("1");
+	calc_pr_node.append_attribute("calcId").set_value("150000");
+	//calc_pr_node.append_attribute("calcMode").set_value("auto");
+	//calc_pr_node.append_attribute("fullCalcOnLoad").set_value("1");
+	calc_pr_node.append_attribute("concurrentCalc").set_value("0");
 
 	/*
 	for (auto &named_range : workbook_.get_named_ranges())
@@ -844,6 +880,13 @@ void xlsx_producer::write_workbook(const relationship &rel, pugi::xml_node root)
 	defined_name_node.text().set(target_string.c_str());
 	}
 	*/
+
+	auto ext_lst_node = workbook_node.append_child("extLst");
+	auto ext_node = ext_lst_node.append_child("ext");
+	ext_node.append_attribute("uri").set_value("{7523E5D3-25F3-A5E0-1632-64F254C22452}");
+	ext_node.append_attribute("xmlns:mx").set_value("http://schemas.microsoft.com/office/mac/excel/2008/main");
+	auto arch_id_node = ext_node.append_child("mx:ArchID");
+	arch_id_node.append_attribute("Flags").set_value("2");
     
     for (const auto &child_rel : source_.get_manifest().get_relationships(rel.get_target().get_path()))
     {
@@ -1083,6 +1126,13 @@ void xlsx_producer::write_styles(const relationship &rel, pugi::xml_node root)
 		auto colors_node = stylesheet_node.append_child("colors");
 		write_colors(stylesheet.colors, colors_node);
 	}
+
+	auto ext_list_node = stylesheet_node.append_child("extLst");
+	auto ext_node = ext_list_node.append_child("ext");
+	ext_node.append_attribute("uri").set_value("{EB79DEF2-80B8-43e5-95BD-54CBDDF9020C}");
+	ext_node.append_attribute("xmlns:x14").set_value("http://schemas.microsoft.com/office/spreadsheetml/2009/9/main");
+	auto slicer_styles_node = ext_node.append_child("x14:slicerStyles");
+	slicer_styles_node.append_attribute("defaultSlicerStyle").set_value("SlicerStyleLight1");
 }
 
 void xlsx_producer::write_theme(const relationship &rel, pugi::xml_node root)
@@ -1104,11 +1154,11 @@ void xlsx_producer::write_theme(const relationship &rel, pugi::xml_node root)
 
 	std::vector<scheme_element> scheme_elements = {
 		{ "a:dk1", "a:sysClr", "windowText" },{ "a:lt1", "a:sysClr", "window" },
-		{ "a:dk2", "a:srgbClr", "1F497D" },{ "a:lt2", "a:srgbClr", "EEECE1" },
-		{ "a:accent1", "a:srgbClr", "4F81BD" },{ "a:accent2", "a:srgbClr", "C0504D" },
-		{ "a:accent3", "a:srgbClr", "9BBB59" },{ "a:accent4", "a:srgbClr", "8064A2" },
-		{ "a:accent5", "a:srgbClr", "4BACC6" },{ "a:accent6", "a:srgbClr", "F79646" },
-		{ "a:hlink", "a:srgbClr", "0000FF" },{ "a:folHlink", "a:srgbClr", "800080" },
+		{ "a:dk2", "a:srgbClr", "44546A" },{ "a:lt2", "a:srgbClr", "E7E6E6" },
+		{ "a:accent1", "a:srgbClr", "5B9BD5" },{ "a:accent2", "a:srgbClr", "ED7D31" },
+		{ "a:accent3", "a:srgbClr", "A5A5A5" },{ "a:accent4", "a:srgbClr", "FFC000" },
+		{ "a:accent5", "a:srgbClr", "4472C4" },{ "a:accent6", "a:srgbClr", "70AD47" },
+		{ "a:hlink", "a:srgbClr", "0563C1" },{ "a:folHlink", "a:srgbClr", "954F72" },
 	};
 
 	for (auto element : scheme_elements)
@@ -1135,14 +1185,13 @@ void xlsx_producer::write_theme(const relationship &rel, pugi::xml_node root)
 	};
 
 	std::vector<font_scheme> font_schemes = {
-		{ true, "a:latin", "Cambria", "Calibri" },
+		{ true, "a:latin", "Calibri Light", "Calibri" },
 		{ true, "a:ea", "", "" },
 		{ true, "a:cs", "", "" },
-		{ false, "Jpan", "\xef\xbc\xad\xef\xbc\xb3 \xef\xbc\xb0\xe3\x82\xb4\xe3\x82\xb7\xe3\x83\x83\xe3\x82\xaf",
-		"\xef\xbc\xad\xef\xbc\xb3 \xef\xbc\xb0\xe3\x82\xb4\xe3\x82\xb7\xe3\x83\x83\xe3\x82\xaf" },
+		{ false, "Jpan", "Yu Gothic Light", "Yu Gothic" },
 		{ false, "Hang", "\xeb\xa7\x91\xec\x9d\x80 \xea\xb3\xa0\xeb\x94\x95",
 		"\xeb\xa7\x91\xec\x9d\x80 \xea\xb3\xa0\xeb\x94\x95" },
-		{ false, "Hans", "\xe5\xae\x8b\xe4\xbd\x93", "\xe5\xae\x8b\xe4\xbd\x93" },
+		{ false, "Hans", "DengXian Light", "DengXian" },
 		{ false, "Hant", "\xe6\x96\xb0\xe7\xb4\xb0\xe6\x98\x8e\xe9\xab\x94",
 		"\xe6\x96\xb0\xe7\xb4\xb0\xe6\x98\x8e\xe9\xab\x94" },
 		{ false, "Arab", "Times New Roman", "Arial" },
@@ -1169,7 +1218,8 @@ void xlsx_producer::write_theme(const relationship &rel, pugi::xml_node root)
 		{ false, "Sinh", "Iskoola Pota", "Iskoola Pota" },
 		{ false, "Mong", "Mongolian Baiti", "Mongolian Baiti" },
 		{ false, "Viet", "Times New Roman", "Arial" },
-		{ false, "Uigh", "Microsoft Uighur", "Microsoft Uighur" }
+		{ false, "Uigh", "Microsoft Uighur", "Microsoft Uighur" },
+		{ false, "Geor", "Sylfaen", "Sylfaen" }
 	};
 
 	auto font_scheme_node = theme_elements_node.append_child("a:fontScheme");
@@ -1185,8 +1235,18 @@ void xlsx_producer::write_theme(const relationship &rel, pugi::xml_node root)
 			auto major_font_node = major_fonts_node.append_child(scheme.script.c_str());
 			major_font_node.append_attribute("typeface").set_value(scheme.major.c_str());
 
+			if (scheme.major == "Calibri Light")
+			{
+				major_font_node.append_attribute("panose").set_value("020F0302020204030204");
+			}
+
 			auto minor_font_node = minor_fonts_node.append_child(scheme.script.c_str());
 			minor_font_node.append_attribute("typeface").set_value(scheme.minor.c_str());
+
+			if (scheme.minor == "Calibri")
+			{
+				minor_font_node.append_attribute("panose").set_value("020F0302020204030204");
+			}
 		}
 		else
 		{
@@ -1214,26 +1274,29 @@ void xlsx_producer::write_theme(const relationship &rel, pugi::xml_node root)
 	gs_node.append_attribute("pos").set_value("0");
 	auto scheme_color_node = gs_node.append_child("a:schemeClr");
 	scheme_color_node.append_attribute("val").set_value("phClr");
-	scheme_color_node.append_child("a:tint").append_attribute("val").set_value("50000");
-	scheme_color_node.append_child("a:satMod").append_attribute("val").set_value("300000");
+	scheme_color_node.append_child("a:lumMod").append_attribute("val").set_value("110000");
+	scheme_color_node.append_child("a:satMod").append_attribute("val").set_value("105000");
+	scheme_color_node.append_child("a:tint").append_attribute("val").set_value("67000");
 
 	gs_node = grad_fill_list.append_child("a:gs");
-	gs_node.append_attribute("pos").set_value("35000");
+	gs_node.append_attribute("pos").set_value("50000");
 	scheme_color_node = gs_node.append_child("a:schemeClr");
 	scheme_color_node.append_attribute("val").set_value("phClr");
-	scheme_color_node.append_child("a:tint").append_attribute("val").set_value("37000");
-	scheme_color_node.append_child("a:satMod").append_attribute("val").set_value("300000");
+	scheme_color_node.append_child("a:lumMod").append_attribute("val").set_value("105000");
+	scheme_color_node.append_child("a:satMod").append_attribute("val").set_value("103000");
+	scheme_color_node.append_child("a:tint").append_attribute("val").set_value("73000");
 
 	gs_node = grad_fill_list.append_child("a:gs");
 	gs_node.append_attribute("pos").set_value("100000");
 	scheme_color_node = gs_node.append_child("a:schemeClr");
 	scheme_color_node.append_attribute("val").set_value("phClr");
-	scheme_color_node.append_child("a:tint").append_attribute("val").set_value("15000");
-	scheme_color_node.append_child("a:satMod").append_attribute("val").set_value("350000");
+	scheme_color_node.append_child("a:lumMod").append_attribute("val").set_value("105000");
+	scheme_color_node.append_child("a:satMod").append_attribute("val").set_value("109000");
+	scheme_color_node.append_child("a:tint").append_attribute("val").set_value("81000");
 
 	auto lin_node = grad_fill_node.append_child("a:lin");
-	lin_node.append_attribute("ang").set_value("16200000");
-	lin_node.append_attribute("scaled").set_value("1");
+	lin_node.append_attribute("ang").set_value("5400000");
+	lin_node.append_attribute("scaled").set_value("0");
 
 	grad_fill_node = fill_style_list_node.append_child("a:gradFill");
 	grad_fill_node.append_attribute("rotWithShape").set_value("1");
@@ -1243,31 +1306,34 @@ void xlsx_producer::write_theme(const relationship &rel, pugi::xml_node root)
 	gs_node.append_attribute("pos").set_value("0");
 	scheme_color_node = gs_node.append_child("a:schemeClr");
 	scheme_color_node.append_attribute("val").set_value("phClr");
-	scheme_color_node.append_child("a:shade").append_attribute("val").set_value("51000");
-	scheme_color_node.append_child("a:satMod").append_attribute("val").set_value("130000");
+	scheme_color_node.append_child("a:satMod").append_attribute("val").set_value("103000");
+	scheme_color_node.append_child("a:lumMod").append_attribute("val").set_value("102000");
+	scheme_color_node.append_child("a:tint").append_attribute("val").set_value("94000");
 
 	gs_node = grad_fill_list.append_child("a:gs");
-	gs_node.append_attribute("pos").set_value("80000");
+	gs_node.append_attribute("pos").set_value("50000");
 	scheme_color_node = gs_node.append_child("a:schemeClr");
 	scheme_color_node.append_attribute("val").set_value("phClr");
-	scheme_color_node.append_child("a:shade").append_attribute("val").set_value("93000");
-	scheme_color_node.append_child("a:satMod").append_attribute("val").set_value("130000");
+	scheme_color_node.append_child("a:satMod").append_attribute("val").set_value("110000");
+	scheme_color_node.append_child("a:lumMod").append_attribute("val").set_value("100000");
+	scheme_color_node.append_child("a:shade").append_attribute("val").set_value("100000");
 
 	gs_node = grad_fill_list.append_child("a:gs");
 	gs_node.append_attribute("pos").set_value("100000");
 	scheme_color_node = gs_node.append_child("a:schemeClr");
 	scheme_color_node.append_attribute("val").set_value("phClr");
-	scheme_color_node.append_child("a:shade").append_attribute("val").set_value("94000");
-	scheme_color_node.append_child("a:satMod").append_attribute("val").set_value("135000");
+	scheme_color_node.append_child("a:lumMod").append_attribute("val").set_value("99000");
+	scheme_color_node.append_child("a:satMod").append_attribute("val").set_value("120000");
+	scheme_color_node.append_child("a:shade").append_attribute("val").set_value("78000");
 
 	lin_node = grad_fill_node.append_child("a:lin");
-	lin_node.append_attribute("ang").set_value("16200000");
+	lin_node.append_attribute("ang").set_value("5400000");
 	lin_node.append_attribute("scaled").set_value("0");
 
 	auto line_style_list_node = format_scheme_node.append_child("a:lnStyleLst");
 
 	auto ln_node = line_style_list_node.append_child("a:ln");
-	ln_node.append_attribute("w").set_value("9525");
+	ln_node.append_attribute("w").set_value("6350");
 	ln_node.append_attribute("cap").set_value("flat");
 	ln_node.append_attribute("cmpd").set_value("sng");
 	ln_node.append_attribute("algn").set_value("ctr");
@@ -1275,12 +1341,11 @@ void xlsx_producer::write_theme(const relationship &rel, pugi::xml_node root)
 	auto solid_fill_node = ln_node.append_child("a:solidFill");
 	scheme_color_node = solid_fill_node.append_child("a:schemeClr");
 	scheme_color_node.append_attribute("val").set_value("phClr");
-	scheme_color_node.append_child("a:shade").append_attribute("val").set_value("95000");
-	scheme_color_node.append_child("a:satMod").append_attribute("val").set_value("105000");
 	ln_node.append_child("a:prstDash").append_attribute("val").set_value("solid");
+	ln_node.append_child("a:miter").append_attribute("lim").set_value("800000");
 
 	ln_node = line_style_list_node.append_child("a:ln");
-	ln_node.append_attribute("w").set_value("25400");
+	ln_node.append_attribute("w").set_value("12700");
 	ln_node.append_attribute("cap").set_value("flat");
 	ln_node.append_attribute("cmpd").set_value("sng");
 	ln_node.append_attribute("algn").set_value("ctr");
@@ -1289,9 +1354,10 @@ void xlsx_producer::write_theme(const relationship &rel, pugi::xml_node root)
 	scheme_color_node = solid_fill_node.append_child("a:schemeClr");
 	scheme_color_node.append_attribute("val").set_value("phClr");
 	ln_node.append_child("a:prstDash").append_attribute("val").set_value("solid");
+	ln_node.append_child("a:miter").append_attribute("lim").set_value("800000");
 
 	ln_node = line_style_list_node.append_child("a:ln");
-	ln_node.append_attribute("w").set_value("38100");
+	ln_node.append_attribute("w").set_value("19050");
 	ln_node.append_attribute("cap").set_value("flat");
 	ln_node.append_attribute("cmpd").set_value("sng");
 	ln_node.append_attribute("algn").set_value("ctr");
@@ -1300,96 +1366,35 @@ void xlsx_producer::write_theme(const relationship &rel, pugi::xml_node root)
 	scheme_color_node = solid_fill_node.append_child("a:schemeClr");
 	scheme_color_node.append_attribute("val").set_value("phClr");
 	ln_node.append_child("a:prstDash").append_attribute("val").set_value("solid");
+	ln_node.append_child("a:miter").append_attribute("lim").set_value("800000");
 
 	auto effect_style_list_node = format_scheme_node.append_child("a:effectStyleLst");
 	auto effect_style_node = effect_style_list_node.append_child("a:effectStyle");
 	auto effect_list_node = effect_style_node.append_child("a:effectLst");
+
+	effect_style_node = effect_style_list_node.append_child("a:effectStyle");
+	effect_list_node = effect_style_node.append_child("a:effectLst");
+
+	effect_style_node = effect_style_list_node.append_child("a:effectStyle");
+	effect_list_node = effect_style_node.append_child("a:effectLst");
 	auto outer_shadow_node = effect_list_node.append_child("a:outerShdw");
-	outer_shadow_node.append_attribute("blurRad").set_value("40000");
-	outer_shadow_node.append_attribute("dist").set_value("20000");
+	outer_shadow_node.append_attribute("blurRad").set_value("57150");
+	outer_shadow_node.append_attribute("dist").set_value("19050");
 	outer_shadow_node.append_attribute("dir").set_value("5400000");
+	outer_shadow_node.append_attribute("algn").set_value("ctr");
 	outer_shadow_node.append_attribute("rotWithShape").set_value("0");
 	auto srgb_clr_node = outer_shadow_node.append_child("a:srgbClr");
 	srgb_clr_node.append_attribute("val").set_value("000000");
-	srgb_clr_node.append_child("a:alpha").append_attribute("val").set_value("38000");
-
-	effect_style_node = effect_style_list_node.append_child("a:effectStyle");
-	effect_list_node = effect_style_node.append_child("a:effectLst");
-	outer_shadow_node = effect_list_node.append_child("a:outerShdw");
-	outer_shadow_node.append_attribute("blurRad").set_value("40000");
-	outer_shadow_node.append_attribute("dist").set_value("23000");
-	outer_shadow_node.append_attribute("dir").set_value("5400000");
-	outer_shadow_node.append_attribute("rotWithShape").set_value("0");
-	srgb_clr_node = outer_shadow_node.append_child("a:srgbClr");
-	srgb_clr_node.append_attribute("val").set_value("000000");
-	srgb_clr_node.append_child("a:alpha").append_attribute("val").set_value("35000");
-
-	effect_style_node = effect_style_list_node.append_child("a:effectStyle");
-	effect_list_node = effect_style_node.append_child("a:effectLst");
-	outer_shadow_node = effect_list_node.append_child("a:outerShdw");
-	outer_shadow_node.append_attribute("blurRad").set_value("40000");
-	outer_shadow_node.append_attribute("dist").set_value("23000");
-	outer_shadow_node.append_attribute("dir").set_value("5400000");
-	outer_shadow_node.append_attribute("rotWithShape").set_value("0");
-	srgb_clr_node = outer_shadow_node.append_child("a:srgbClr");
-	srgb_clr_node.append_attribute("val").set_value("000000");
-	srgb_clr_node.append_child("a:alpha").append_attribute("val").set_value("35000");
-	auto scene3d_node = effect_style_node.append_child("a:scene3d");
-	auto camera_node = scene3d_node.append_child("a:camera");
-	camera_node.append_attribute("prst").set_value("orthographicFront");
-	auto rot_node = camera_node.append_child("a:rot");
-	rot_node.append_attribute("lat").set_value("0");
-	rot_node.append_attribute("lon").set_value("0");
-	rot_node.append_attribute("rev").set_value("0");
-	auto light_rig_node = scene3d_node.append_child("a:lightRig");
-	light_rig_node.append_attribute("rig").set_value("threePt");
-	light_rig_node.append_attribute("dir").set_value("t");
-	rot_node = light_rig_node.append_child("a:rot");
-	rot_node.append_attribute("lat").set_value("0");
-	rot_node.append_attribute("lon").set_value("0");
-	rot_node.append_attribute("rev").set_value("1200000");
-
-	auto bevel_node = effect_style_node.append_child("a:sp3d").append_child("a:bevelT");
-	bevel_node.append_attribute("w").set_value("63500");
-	bevel_node.append_attribute("h").set_value("25400");
+	srgb_clr_node.append_child("a:alpha").append_attribute("val").set_value("63000");
 
 	auto bg_fill_style_list_node = format_scheme_node.append_child("a:bgFillStyleLst");
 
 	bg_fill_style_list_node.append_child("a:solidFill").append_child("a:schemeClr").append_attribute("val").set_value("phClr");
 
-	grad_fill_node = bg_fill_style_list_node.append_child("a:gradFill");
-	grad_fill_node.append_attribute("rotWithShape").set_value("1");
-
-	grad_fill_list = grad_fill_node.append_child("a:gsLst");
-	gs_node = grad_fill_list.append_child("a:gs");
-	gs_node.append_attribute("pos").set_value("0");
-	scheme_color_node = gs_node.append_child("a:schemeClr");
+	scheme_color_node = bg_fill_style_list_node.append_child("a:solidFill").append_child("a:schemeClr");
 	scheme_color_node.append_attribute("val").set_value("phClr");
-	scheme_color_node.append_child("a:tint").append_attribute("val").set_value("40000");
-	scheme_color_node.append_child("a:satMod").append_attribute("val").set_value("350000");
-
-	gs_node = grad_fill_list.append_child("a:gs");
-	gs_node.append_attribute("pos").set_value("40000");
-	scheme_color_node = gs_node.append_child("a:schemeClr");
-	scheme_color_node.append_attribute("val").set_value("phClr");
-	scheme_color_node.append_child("a:tint").append_attribute("val").set_value("45000");
-	scheme_color_node.append_child("a:shade").append_attribute("val").set_value("99000");
-	scheme_color_node.append_child("a:satMod").append_attribute("val").set_value("350000");
-
-	gs_node = grad_fill_list.append_child("a:gs");
-	gs_node.append_attribute("pos").set_value("100000");
-	scheme_color_node = gs_node.append_child("a:schemeClr");
-	scheme_color_node.append_attribute("val").set_value("phClr");
-	scheme_color_node.append_child("a:shade").append_attribute("val").set_value("20000");
-	scheme_color_node.append_child("a:satMod").append_attribute("val").set_value("255000");
-
-	auto path_node = grad_fill_node.append_child("a:path");
-	path_node.append_attribute("path").set_value("circle");
-	auto fill_to_rect_node = path_node.append_child("a:fillToRect");
-	fill_to_rect_node.append_attribute("l").set_value("50000");
-	fill_to_rect_node.append_attribute("t").set_value("-80000");
-	fill_to_rect_node.append_attribute("r").set_value("50000");
-	fill_to_rect_node.append_attribute("b").set_value("180000");
+	scheme_color_node.append_child("a:tint").append_attribute("val").set_value("95000");
+	scheme_color_node.append_child("a:satMod").append_attribute("val").set_value("170000");
 
 	grad_fill_node = bg_fill_style_list_node.append_child("a:gradFill");
 	grad_fill_node.append_attribute("rotWithShape").set_value("1");
@@ -1399,26 +1404,42 @@ void xlsx_producer::write_theme(const relationship &rel, pugi::xml_node root)
 	gs_node.append_attribute("pos").set_value("0");
 	scheme_color_node = gs_node.append_child("a:schemeClr");
 	scheme_color_node.append_attribute("val").set_value("phClr");
-	scheme_color_node.append_child("a:tint").append_attribute("val").set_value("80000");
-	scheme_color_node.append_child("a:satMod").append_attribute("val").set_value("300000");
+	scheme_color_node.append_child("a:tint").append_attribute("val").set_value("93000");
+	scheme_color_node.append_child("a:satMod").append_attribute("val").set_value("150000");
+	scheme_color_node.append_child("a:shade").append_attribute("val").set_value("98000");
+	scheme_color_node.append_child("a:lumMod").append_attribute("val").set_value("102000");
+
+	gs_node = grad_fill_list.append_child("a:gs");
+	gs_node.append_attribute("pos").set_value("50000");
+	scheme_color_node = gs_node.append_child("a:schemeClr");
+	scheme_color_node.append_attribute("val").set_value("phClr");
+	scheme_color_node.append_child("a:tint").append_attribute("val").set_value("98000");
+	scheme_color_node.append_child("a:satMod").append_attribute("val").set_value("130000");
+	scheme_color_node.append_child("a:shade").append_attribute("val").set_value("90000");
+	scheme_color_node.append_child("a:lumMod").append_attribute("val").set_value("103000");
 
 	gs_node = grad_fill_list.append_child("a:gs");
 	gs_node.append_attribute("pos").set_value("100000");
 	scheme_color_node = gs_node.append_child("a:schemeClr");
 	scheme_color_node.append_attribute("val").set_value("phClr");
-	scheme_color_node.append_child("a:shade").append_attribute("val").set_value("30000");
-	scheme_color_node.append_child("a:satMod").append_attribute("val").set_value("200000");
+	scheme_color_node.append_child("a:shade").append_attribute("val").set_value("63000");
+	scheme_color_node.append_child("a:satMod").append_attribute("val").set_value("120000");
 
-	path_node = grad_fill_node.append_child("a:path");
-	path_node.append_attribute("path").set_value("circle");
-	fill_to_rect_node = path_node.append_child("a:fillToRect");
-	fill_to_rect_node.append_attribute("l").set_value("50000");
-	fill_to_rect_node.append_attribute("t").set_value("50000");
-	fill_to_rect_node.append_attribute("r").set_value("50000");
-	fill_to_rect_node.append_attribute("b").set_value("50000");
+	lin_node = grad_fill_node.append_child("a:lin");
+	lin_node.append_attribute("ang").set_value("5400000");
+	lin_node.append_attribute("scaled").set_value("0");
 
 	theme_node.append_child("a:objectDefaults");
 	theme_node.append_child("a:extraClrSchemeLst");
+
+	auto ext_lst_node = theme_node.append_child("a:extLst");
+	auto ext_node = ext_lst_node.append_child("a:ext");
+	ext_node.append_attribute("uri").set_value("{05A4C25C-085E-4340-85A3-A5531E510DB2}");
+	auto theme_family_node = ext_node.append_child("thm15:themeFamily");
+	theme_family_node.append_attribute("xmlns:thm15").set_value("http://schemas.microsoft.com/office/thememl/2012/main");
+	theme_family_node.append_attribute("name").set_value("Office Theme");
+	theme_family_node.append_attribute("id").set_value("{62F939B6-93AF-4DB8-9C6B-D6C7DFDC589F}");
+	theme_family_node.append_attribute("vid").set_value("{4A3C46E8-61CC-4603-A589-7422A47A8E4A}");
 }
 
 void xlsx_producer::write_volatile_dependencies(const relationship &rel, pugi::xml_node root)
@@ -1430,13 +1451,10 @@ void xlsx_producer::write_worksheet(const relationship &rel, pugi::xml_node root
 {
 	auto worksheet_node = root.append_child("worksheet");
 	worksheet_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
-	worksheet_node.append_attribute("xmlns:r").set_value("http://schemas.openxmlformats.org/package/2006/relationships");
-
-	auto sheet_pr_node = worksheet_node.append_child("sheetPr");
-	auto outline_pr_node = sheet_pr_node.append_child("outlinePr");
-
-	outline_pr_node.append_attribute("summaryBelow").set_value("1");
-	outline_pr_node.append_attribute("summaryRight").set_value("1");
+	worksheet_node.append_attribute("xmlns:r").set_value("http://schemas.openxmlformats.org/officeDocument/2006/relationships");
+	worksheet_node.append_attribute("xmlns:mc").set_value("http://schemas.openxmlformats.org/markup-compatibility/2006");
+	worksheet_node.append_attribute("mc:Ignorable").set_value("x14ac");
+	worksheet_node.append_attribute("xmlns:x14ac").set_value("http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac");
 
 	auto title = std::find_if(source_.d_->sheet_title_rel_id_map_.begin(),
 		source_.d_->sheet_title_rel_id_map_.end(),
@@ -1449,12 +1467,20 @@ void xlsx_producer::write_worksheet(const relationship &rel, pugi::xml_node root
 
 	if (!ws.get_page_setup().is_default())
 	{
+		auto sheet_pr_node = worksheet_node.append_child("sheetPr");
+		auto outline_pr_node = sheet_pr_node.append_child("outlinePr");
+
+		outline_pr_node.append_attribute("summaryBelow").set_value("1");
+		outline_pr_node.append_attribute("summaryRight").set_value("1");
+
 		auto page_set_up_pr_node = sheet_pr_node.append_child("pageSetUpPr");
 		page_set_up_pr_node.append_attribute("fitToPage").set_value(ws.get_page_setup().fit_to_page() ? "1" : "0");
 	}
 
 	auto dimension_node = worksheet_node.append_child("dimension");
-	dimension_node.append_attribute("ref").set_value(ws.calculate_dimension().to_string().c_str());
+	auto dimension = ws.calculate_dimension();
+	auto dimension_string = dimension.is_single_cell() ? dimension.get_top_left().to_string() : dimension.to_string();
+	dimension_node.append_attribute("ref").set_value(dimension_string.c_str());
 
 	auto sheet_views_node = worksheet_node.append_child("sheetViews");
 	auto sheet_view_node = sheet_views_node.append_child("sheetView");
@@ -1490,12 +1516,9 @@ void xlsx_producer::write_worksheet(const relationship &rel, pugi::xml_node root
 		pane_node.append_attribute("topLeftCell").set_value(ws.get_frozen_panes().to_string().c_str());
 		pane_node.append_attribute("activePane").set_value(active_pane.c_str());
 		pane_node.append_attribute("state").set_value("frozen");
-	}
 
-	auto selection_node = sheet_view_node.append_child("selection");
+		auto selection_node = sheet_view_node.append_child("selection");
 
-	if (ws.has_frozen_panes())
-	{
 		if (ws.get_frozen_panes().get_row() > 1 && ws.get_frozen_panes().get_column_index() > 1)
 		{
 			selection_node.append_attribute("pane").set_value("bottomRight");
@@ -1510,9 +1533,21 @@ void xlsx_producer::write_worksheet(const relationship &rel, pugi::xml_node root
 		}
 	}
 
-	std::string active_cell = "A1";
-	selection_node.append_attribute("activeCell").set_value(active_cell.c_str());
-	selection_node.append_attribute("sqref").set_value(active_cell.c_str());
+	if (!ws.get_sheet_view().get_selections().empty())
+	{
+		auto selection_node = sheet_view_node.child("selection") ? 
+			sheet_view_node.child("selection") 
+			: sheet_view_node.append_child("selection");
+
+		const auto &first_selection = ws.get_sheet_view().get_selections().front();
+
+		if (first_selection.has_active_cell())
+		{
+			auto active_cell = first_selection.get_active_cell();
+			selection_node.append_attribute("activeCell").set_value(active_cell.to_string().c_str());
+			selection_node.append_attribute("sqref").set_value(active_cell.to_string().c_str());
+		}
+	}
 
 	auto sheet_format_pr_node = worksheet_node.append_child("sheetFormatPr");
 	sheet_format_pr_node.append_attribute("baseColWidth").set_value("10");

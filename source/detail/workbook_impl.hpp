@@ -51,7 +51,6 @@ struct workbook_impl
 		write_core_properties_(false),
 		created_(xlnt::datetime::now()),
 		modified_(xlnt::datetime::now()),
-		title_("Untitled"),
 		base_date_(calendar::windows_1900),
 		write_app_properties_(false),
 		application_("libxlnt"),

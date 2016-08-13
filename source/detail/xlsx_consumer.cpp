@@ -827,11 +827,13 @@ void xlsx_consumer::read_manifest()
 	for (const auto &relationship_source : source_.infolist())
 	{
 		if (relationship_source.filename == path("_rels/.rels") 
-			|| relationship_source.filename.extension() != ".rels") continue;
+			|| relationship_source.filename.extension() != "rels") continue;
+
+		path part(relationship_source.filename.parent().parent());
+		part = part.append(relationship_source.filename.split_extension().first);
+		uri source(part.string());
 
 		auto part_rels = read_relationships(relationship_source.filename, source_);
-		uri source(relationship_source.filename.parent().parent()
-			.append(relationship_source.filename.filename()).string());
 
 		for (const auto part_rel : part_rels)
 		{

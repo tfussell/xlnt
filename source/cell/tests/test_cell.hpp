@@ -294,7 +294,7 @@ public:
         auto ws = wb[1];
         auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
         
-        TS_ASSERT(cell.to_repr() == "<Cell Sheet1.A1>");
+        TS_ASSERT(cell.to_repr() == "<Cell Sheet2.A1>");
     }
     
     void test_comment_assignment()

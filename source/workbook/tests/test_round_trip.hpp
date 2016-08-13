@@ -40,7 +40,6 @@ public:
 
 	void test_round_trip_minimal_wr()
 	{
-		TS_SKIP("");
 		xlnt::workbook wb = xlnt::workbook::minimal();
 		TS_ASSERT(round_trip_matches_wr(wb));
 	}
