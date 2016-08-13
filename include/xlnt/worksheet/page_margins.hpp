@@ -35,8 +35,6 @@ class XLNT_CLASS page_margins
 public:
     page_margins();
 
-    bool is_default() const;
-
     double get_top() const;
     void set_top(double top);
 
@@ -56,8 +54,6 @@ public:
     void set_footer(double footer);
 
 private:
-    bool default_ = true;
-
     double top_ = 1;
     double left_ = 0.75;
     double bottom_ = 1;

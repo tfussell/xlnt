@@ -933,9 +933,7 @@ public:
     {
         xlnt::workbook wb;
         auto ws = wb.get_active_sheet();
-        auto &margins = ws.get_page_margins();
-
-        TS_ASSERT(margins.is_default());
+        auto margins = ws.get_page_margins();
 
         margins.set_top(0);
         margins.set_bottom(1);
@@ -943,7 +941,6 @@ public:
         margins.set_footer(3);
         margins.set_left(4);
         margins.set_right(5);
-        TS_ASSERT(!margins.is_default());
     }
 
     void test_to_string()

@@ -29,11 +29,6 @@ page_margins::page_margins()
 {
 }
 
-bool page_margins::is_default() const
-{
-    return default_;
-}
-
 double page_margins::get_top() const
 {
     return top_;
@@ -41,7 +36,6 @@ double page_margins::get_top() const
 
 void page_margins::set_top(double top)
 {
-    default_ = false;
     top_ = top;
 }
 
@@ -52,7 +46,6 @@ double page_margins::get_left() const
 
 void page_margins::set_left(double left)
 {
-    default_ = false;
     left_ = left;
 }
 
@@ -63,7 +56,6 @@ double page_margins::get_bottom() const
 
 void page_margins::set_bottom(double bottom)
 {
-    default_ = false;
     bottom_ = bottom;
 }
 
@@ -74,7 +66,6 @@ double page_margins::get_right() const
 
 void page_margins::set_right(double right)
 {
-    default_ = false;
     right_ = right;
 }
 
@@ -85,7 +76,6 @@ double page_margins::get_header() const
 
 void page_margins::set_header(double header)
 {
-    default_ = false;
     header_ = header;
 }
 
@@ -96,7 +86,6 @@ double page_margins::get_footer() const
 
 void page_margins::set_footer(double footer)
 {
-    default_ = false;
     footer_ = footer;
 }
     
