@@ -665,10 +665,12 @@ void xlsx_producer::write_manifest()
 		pugi::xml_document part_rels_document;
 		write_relationships(part_rels, part_rels_document.root());
 		path parent = part.parent();
+
 		if (parent.is_absolute())
 		{
 			parent = path(parent.string().substr(1));
 		}
+
 		path rels_path(parent.append("_rels").append(part.filename() + ".rels").string());
 		write_document_to_archive(part_rels_document, rels_path, destination_);
 	}
@@ -991,7 +993,8 @@ void xlsx_producer::write_workbook(const relationship &rel, pugi::xml_node root)
             break;
 		}
         
-        write_document_to_archive(document, child_rel.get_target().get_path(), destination_);
+		path archive_path(child_rel.get_source().get_path().parent().append(child_rel.get_target().get_path()));
+        write_document_to_archive(document, archive_path, destination_);
     }
 }
 
@@ -1535,6 +1538,7 @@ void xlsx_producer::write_worksheet(const relationship &rel, pugi::xml_node root
 
 		const auto view = ws.get_view();
 
+		sheet_view_node.append_attribute("tabSelected").set_value("1");
 		sheet_view_node.append_attribute("workbookViewId").set_value("0");
 
 		if (!view.get_selections().empty())
@@ -1606,6 +1610,7 @@ void xlsx_producer::write_worksheet(const relationship &rel, pugi::xml_node root
 		auto sheet_format_pr_node = worksheet_node.append_child("sheetFormatPr");
 		sheet_format_pr_node.append_attribute("baseColWidth").set_value("10");
 		sheet_format_pr_node.append_attribute("defaultRowHeight").set_value("15");
+		sheet_format_pr_node.append_attribute("x14ac:dyDescent").set_value("0.2");
 	}
 
 	bool has_column_properties = false;

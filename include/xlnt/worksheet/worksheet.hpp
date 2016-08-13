@@ -56,6 +56,8 @@ struct date;
 
 namespace detail {
 struct worksheet_impl;
+class xlsx_consumer;
+class xlsx_producer;
 }
 
 /// <summary>
@@ -242,6 +244,8 @@ private:
     friend class cell;
     friend class range_iterator;
     friend class const_range_iterator;
+	friend class detail::xlsx_consumer;
+	friend class detail::xlsx_producer;
     
     std::size_t next_custom_number_format_id();
 

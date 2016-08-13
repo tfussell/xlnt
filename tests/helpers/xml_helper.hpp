@@ -220,6 +220,24 @@ public:
                 return {difference_type::attribute_values_differ, left_temp, right_temp};
             }
         }
+
+		for (auto &right_attribute : right.attributes())
+		{
+			right_temp = right_attribute.name();
+
+			if (!left.attribute(right_attribute.name()))
+			{
+				return{ difference_type::missing_attribute, "((empty))", right_temp };
+			}
+
+			right_temp = right_attribute.name();
+			left_temp = left.attribute(right_attribute.name()).name();
+
+			if (left_temp != right_temp)
+			{
+				return{ difference_type::attribute_values_differ, left_temp, right_temp };
+			}
+		}
         
         if(left.text())
         {

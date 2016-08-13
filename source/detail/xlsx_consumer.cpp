@@ -758,7 +758,8 @@ void xlsx_consumer::populate_workbook()
 	for (const auto &rel : manifest.get_relationships(workbook_rel.get_target().get_path()))
 	{
 		pugi::xml_document document;
-		document.load_string(source_.read(path(rel.get_target().get_path())).c_str());
+		path part_path(rel.get_source().get_path().parent().append(rel.get_target().get_path()));
+		document.load_string(source_.read(part_path).c_str());
 
 		switch (rel.get_type())
 		{
@@ -833,10 +834,13 @@ void xlsx_consumer::read_manifest()
 		part = part.append(relationship_source.filename.split_extension().first);
 		uri source(part.string());
 
+		path source_directory = part.parent();
+
 		auto part_rels = read_relationships(relationship_source.filename, source_);
 
 		for (const auto part_rel : part_rels)
 		{
+			path target_path(source_directory.append(part_rel.get_target().get_path()));
 			manifest.register_relationship(source, part_rel.get_type(),
 				part_rel.get_target(), part_rel.get_target_mode(), part_rel.get_id());
 		}
@@ -887,15 +891,60 @@ void xlsx_consumer::read_custom_file_properties(const pugi::xml_node root)
 void xlsx_consumer::read_workbook(const pugi::xml_node root)
 {
 	auto workbook_node = root.child("workbook");
-	auto workbook_pr_node = workbook_node.child("workbookPr");
 
-	if (workbook_pr_node.attribute("date1904"))
+	if (workbook_node.attribute("xmlns:x15"))
 	{
-		std::string value = workbook_pr_node.attribute("date1904").value();
+		destination_.enable_x15();
+	}
 
-		if (value == "1" || value == "true")
+	if (workbook_node.child("fileVersion"))
+	{
+		auto file_version_node = workbook_node.child("fileVersion");
+
+		destination_.d_->has_file_version_ = true;
+		destination_.d_->file_version_.app_name = file_version_node.attribute("appName").value();
+		destination_.d_->file_version_.last_edited = string_to_size_t(file_version_node.attribute("lastEdited").value());
+		destination_.d_->file_version_.lowest_edited = string_to_size_t(file_version_node.attribute("lowestEdited").value());
+		destination_.d_->file_version_.rup_build = string_to_size_t(file_version_node.attribute("rupBuild").value());
+	}
+
+	if (workbook_node.child("mc:AlternateContent"))
+	{
+		destination_.set_absolute_path(path(workbook_node.child("mc:AlternateContent")
+			.child("mc:Choice").child("x15ac:absPath").attribute("url").value()));
+	}
+
+	if (workbook_node.child("bookViews"))
+	{
+		auto book_views_node = workbook_node.child("bookViews");
+
+		if (book_views_node.child("workbookView"))
 		{
-			destination_.set_base_date(xlnt::calendar::mac_1904);
+			auto book_view_node = book_views_node.child("workbookView");
+			workbook_view view;
+			view.x_window = string_to_size_t(book_view_node.attribute("xWindow").value());
+			view.y_window = string_to_size_t(book_view_node.attribute("yWindow").value());
+			view.window_width = string_to_size_t(book_view_node.attribute("windowWidth").value());
+			view.window_height = string_to_size_t(book_view_node.attribute("windowHeight").value());
+			view.tab_ratio = string_to_size_t(book_view_node.attribute("tabRatio").value());
+			destination_.set_view(view);
+		}
+	}
+
+	if (workbook_node.child("workbookPr"))
+	{
+		destination_.d_->has_properties_ = true;
+
+		auto workbook_pr_node = workbook_node.child("workbookPr");
+
+		if (workbook_pr_node.attribute("date1904"))
+		{
+			std::string value = workbook_pr_node.attribute("date1904").value();
+
+			if (value == "1" || value == "true")
+			{
+				destination_.set_base_date(xlnt::calendar::mac_1904);
+			}
 		}
 	}
 
@@ -909,6 +958,16 @@ void xlsx_consumer::read_workbook(const pugi::xml_node root)
 		sheet_title_id_map_[rel_id] = id;
 		sheet_title_index_map_[rel_id] = index++;
 		destination_.d_->sheet_title_rel_id_map_[title] = rel_id;
+	}
+
+	if (workbook_node.child("calcPr"))
+	{
+		destination_.d_->has_calculation_properties_ = true;
+	}
+
+	if (workbook_node.child("extLst"))
+	{
+		destination_.d_->has_arch_id_ = true;
 	}
 }
 
@@ -1123,12 +1182,28 @@ void xlsx_consumer::read_worksheet(const pugi::xml_node root, const std::string 
 
 	auto worksheet_node = root.child("worksheet");
 
+	if (worksheet_node.attribute("xmlns:x14ac"))
+	{
+		ws.enable_x14ac();
+	}
+
 	xlnt::range_reference full_range;
 
 	if (worksheet_node.child("dimension"))
 	{
 		std::string dimension(worksheet_node.child("dimension").attribute("ref").value());
 		full_range = xlnt::range_reference(dimension);
+		ws.d_->has_dimension_ = true;
+	}
+
+	if (worksheet_node.child("sheetViews"))
+	{
+		ws.d_->has_view_ = true;
+	}
+
+	if (worksheet_node.child("sheetFormatPr"))
+	{
+		ws.d_->has_format_properties_ = true;
 	}
 
 	if (worksheet_node.child("mergeCells"))
@@ -1284,6 +1359,21 @@ void xlsx_consumer::read_worksheet(const pugi::xml_node root, const std::string 
 		auto auto_filter_node = worksheet_node.child("autoFilter");
 		xlnt::range_reference ref(auto_filter_node.attribute("ref").value());
 		ws.auto_filter(ref);
+	}
+
+	if (worksheet_node.child("pageMargins"))
+	{
+		auto page_margins_node = worksheet_node.child("pageMargins");
+
+		page_margins margins;
+		margins.set_top(page_margins_node.attribute("top").as_double());
+		margins.set_bottom(page_margins_node.attribute("bottom").as_double());
+		margins.set_left(page_margins_node.attribute("left").as_double());
+		margins.set_right(page_margins_node.attribute("right").as_double());
+		margins.set_header(page_margins_node.attribute("header").as_double());
+		margins.set_footer(page_margins_node.attribute("footer").as_double());
+
+		ws.set_page_margins(margins);
 	}
 }
 

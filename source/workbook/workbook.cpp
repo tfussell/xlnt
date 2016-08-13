@@ -308,7 +308,7 @@ worksheet workbook::create_sheet()
     d_->worksheets_.push_back(detail::worksheet_impl(this, sheet_id, title));
 
 	auto workbook_rel = d_->manifest_.get_relationship(path("/"), relationship::type::office_document);
-    uri sheet_uri(constants::package_worksheets().append(sheet_filename).string());
+    uri sheet_uri(path("worksheets").append(sheet_filename).string());
 	d_->manifest_.register_override_type(sheet_uri.get_path(),
 		"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
 	auto ws_rel = d_->manifest_.register_relationship(workbook_rel.get_target(),
@@ -643,7 +643,7 @@ void workbook::set_theme(const theme &value)
 		d_->manifest_.register_override_type(constants::part_theme(),
 			"application/vnd.openxmlformats-officedocument.theme+xml");
 		d_->manifest_.register_relationship(workbook_rel.get_target(),
-			relationship::type::theme, uri(constants::part_theme().string()), target_mode::internal);
+			relationship::type::theme, uri("theme/theme1.xml"), target_mode::internal);
 	}
 
 	d_->has_theme_ = true;
@@ -674,7 +674,7 @@ std::size_t workbook::add_format(const format &to_add)
 		d_->manifest_.register_override_type(constants::part_styles(),
 			"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml");
 		d_->manifest_.register_relationship(workbook_rel.get_target(),
-			relationship::type::styles, uri(constants::part_styles().string()), target_mode::internal);
+			relationship::type::styles, uri("styles.xml"), target_mode::internal);
 	}
 
     return d_->stylesheet_.add_format(to_add);
@@ -689,7 +689,7 @@ std::size_t workbook::add_style(const style &to_add)
 		d_->manifest_.register_override_type(constants::part_styles(),
 			"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml");
 		d_->manifest_.register_relationship(workbook_rel.get_target(),
-			relationship::type::styles, uri(constants::part_styles().string()), target_mode::internal);
+			relationship::type::styles, uri("styles.xml"), target_mode::internal);
 	}
 
     return d_->stylesheet_.add_style(to_add);
@@ -773,7 +773,7 @@ void workbook::add_shared_string(const text &shared, bool allow_duplicates)
 		d_->manifest_.register_override_type(constants::part_shared_strings(),
 			"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml");
 		d_->manifest_.register_relationship(workbook_rel.get_target(),
-			relationship::type::shared_string_table, uri(constants::part_shared_strings().string()), target_mode::internal);
+			relationship::type::shared_string_table, uri("styles.xml"), target_mode::internal);
 	}
 
 	if (!allow_duplicates)

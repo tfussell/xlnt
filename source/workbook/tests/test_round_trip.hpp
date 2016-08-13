@@ -46,7 +46,6 @@ public:
 
 	void test_round_trip_empty_excel_wr()
 	{
-		TS_SKIP("");
 		xlnt::workbook wb = xlnt::workbook::empty_excel();
 		TS_ASSERT(round_trip_matches_wr(wb));
 	}
@@ -67,7 +66,6 @@ public:
 
 	void test_round_trip_empty_excel_rw()
 	{
-		TS_SKIP("");
 		auto path = path_helper::get_data_directory("8_default-excel.xlsx");
 		TS_ASSERT(round_trip_matches_rw(path));
 	}
