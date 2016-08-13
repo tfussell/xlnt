@@ -32,7 +32,6 @@
 #include <detail/constants.hpp>
 #include <detail/xlsx_consumer.hpp>
 #include <detail/xlsx_producer.hpp>
-#include <detail/include_windows.hpp>
 #include <detail/workbook_impl.hpp>
 #include <detail/worksheet_impl.hpp>
 #include <xlnt/packaging/manifest.hpp>
@@ -52,6 +51,7 @@
 #include <xlnt/workbook/named_range.hpp>
 #include <xlnt/workbook/theme.hpp>
 #include <xlnt/workbook/workbook.hpp>
+#include <xlnt/workbook/workbook_view.hpp>
 #include <xlnt/workbook/worksheet_iterator.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
@@ -71,7 +71,7 @@ workbook workbook::minimal()
 	wb.d_->manifest_.register_relationship(uri("/"), relationship::type::office_document,
 		uri("workbook.xml"), target_mode::internal);
 
-	std::string title("Sheet");
+	std::string title("1");
 	wb.d_->worksheets_.push_back(detail::worksheet_impl(&wb, 1, title));
 
 	wb.d_->manifest_.register_override_type(path("sheet1.xml"),
@@ -141,8 +141,28 @@ workbook workbook::empty_excel()
 	wb.set_modified(datetime(2016, 8, 12, 3, 17, 16));
 	wb.set_application("Microsoft Macintosh Excel");
 	wb.set_app_version("15.0300");
+	wb.set_absolute_path(path("/Users/thomas/Development/xlnt/tests/data/xlsx/"));
+	wb.enable_x15();
 
-	wb.create_sheet();
+	wb.d_->has_file_version_ = true;
+	wb.d_->file_version_.app_name = "xl";
+	wb.d_->file_version_.last_edited = 6;
+	wb.d_->file_version_.lowest_edited = 6;
+	wb.d_->file_version_.rup_build = 26709;
+
+	wb.d_->has_properties_ = true;
+	wb.d_->has_view_ = true;
+	wb.d_->has_arch_id_ = true;
+	wb.d_->has_calculation_properties_ = true;
+
+	auto ws = wb.create_sheet();
+
+	ws.enable_x14ac();
+	ws.set_page_margins(page_margins());
+	ws.d_->has_dimension_ = true;
+	ws.d_->has_format_properties_ = true;
+	ws.d_->has_view_ = true;
+
 	wb.add_format(format());
 	wb.create_style("Normal");
 	wb.set_theme(theme());
@@ -376,12 +396,14 @@ range workbook::get_named_range(const std::string &name)
 
 void workbook::load(std::istream &stream)
 {
+	clear();
     detail::xlsx_consumer consumer(*this);
 	consumer.read(stream);
 }
 
 void workbook::load(const std::vector<unsigned char> &data)
 {
+	clear();
 	detail::xlsx_consumer consumer(*this);
 	consumer.read(data);
 }
@@ -393,6 +415,7 @@ void workbook::load(const std::string &filename)
 
 void workbook::load(const path &filename)
 {
+	clear();
 	detail::xlsx_consumer consumer(*this);
 	consumer.read(filename);
 }
@@ -514,6 +537,11 @@ std::vector<std::string> workbook::get_sheet_titles() const
     return names;
 }
 
+std::size_t workbook::get_sheet_count() const
+{
+	return d_->worksheets_.size();
+}
+
 worksheet workbook::operator[](const std::string &name)
 {
     return get_sheet_by_title(name);
@@ -526,12 +554,7 @@ worksheet workbook::operator[](std::size_t index)
 
 void workbook::clear()
 {
-    d_->worksheets_.clear();
-	d_->manifest_.clear();
-    d_->active_sheet_index_ = 0;
-    d_->manifest_.clear();
-    clear_styles();
-    clear_formats();
+	*d_ = detail::workbook_impl();
 }
 
 bool workbook::operator==(const workbook &rhs) const
@@ -599,10 +622,6 @@ bool workbook::get_data_only() const
 void workbook::set_data_only(bool data_only)
 {
     d_->data_only_ = data_only;
-}
-
-void workbook::set_code_name(const std::string & /*code_name*/)
-{
 }
 
 bool workbook::has_theme() const
@@ -978,6 +997,125 @@ detail::workbook_impl &workbook::impl()
 const detail::workbook_impl &workbook::impl() const
 {
 	return *d_;
+}
+
+bool workbook::has_view() const
+{
+	return d_->has_view_;
+}
+
+workbook_view workbook::get_view() const
+{
+	if (!d_->has_view_)
+	{
+		throw invalid_attribute();
+	}
+
+	return d_->view_;
+}
+
+void workbook::set_view(const workbook_view &view)
+{
+	d_->has_view_ = true;
+	d_->view_ = view;
+}
+
+bool workbook::has_code_name() const
+{
+	return d_->has_code_name_;
+}
+
+std::string workbook::get_code_name() const
+{
+	if (!d_->has_code_name_)
+	{
+		throw invalid_attribute();
+	}
+
+	return d_->code_name_;
+}
+
+void workbook::set_code_name(const std::string &code_name)
+{
+	d_->code_name_ = code_name;
+	d_->has_code_name_ = true;
+}
+
+bool workbook::x15_enabled() const
+{
+	return d_->x15_;
+}
+
+void workbook::enable_x15()
+{
+	d_->x15_ = true;
+}
+
+void workbook::disable_x15()
+{
+	d_->x15_ = false;
+}
+
+bool workbook::has_absolute_path() const
+{
+	return d_->has_absolute_path_;
+}
+
+path workbook::get_absolute_path() const
+{
+	return d_->absolute_path_;
+}
+
+void workbook::set_absolute_path(const path &absolute_path)
+{
+	d_->absolute_path_ = absolute_path;
+	d_->has_absolute_path_ = true;
+}
+
+void workbook::clear_absolute_path()
+{
+	d_->absolute_path_ = path();
+	d_->has_absolute_path_ = false;
+}
+
+bool workbook::has_properties() const
+{
+	return d_->has_properties_;
+}
+
+bool workbook::has_file_version() const
+{
+	return d_->has_file_version_;
+}
+
+std::string workbook::get_app_name() const
+{
+	return d_->file_version_.app_name;
+}
+
+std::size_t workbook::get_last_edited() const
+{
+	return d_->file_version_.last_edited;
+}
+
+std::size_t workbook::get_lowest_edited() const
+{
+	return d_->file_version_.lowest_edited;
+}
+
+std::size_t workbook::get_rup_build() const
+{
+	return d_->file_version_.rup_build;
+}
+
+bool workbook::has_calculation_properties() const
+{
+	return d_->has_calculation_properties_;
+}
+
+bool workbook::has_arch_id() const
+{
+	return d_->has_arch_id_;
 }
 
 } // namespace xlnt

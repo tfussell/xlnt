@@ -11,7 +11,7 @@ class test_zip_file : public CxxTest::TestSuite
 public:
     test_zip_file()
     {
-        existing_file = path_helper::get_data_directory("xlsx/4_not-package.xlsx");
+        existing_file = path_helper::get_data_directory("4_not-package.xlsx");
         expected_string = "not-empty";
     }
 
@@ -174,7 +174,7 @@ public:
 		temporary_file temp_file;
 
         xlnt::zip_file f;
-        auto text_file = path_helper::get_data_directory("xlsx/2_text.xlsx");
+        auto text_file = path_helper::get_data_directory("2_text.xlsx");
         f.write_file(text_file);
         f.write_file(text_file, xlnt::path("a.txt"));
         f.save(temp_file.get_path());

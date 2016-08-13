@@ -24,9 +24,15 @@ public:
 		return xml_helper::archives_match(wb_archive, file_archive);
 	}
 
+	void test_minimal()
+	{
+		xlnt::workbook wb = xlnt::workbook::minimal();
+		TS_ASSERT(workbook_matches_file(wb, path_helper::get_data_directory("10_minimal.xlsx")));
+	}
+
 	void test_empty_excel()
 	{
 		xlnt::workbook wb = xlnt::workbook::empty_excel();
-		TS_ASSERT(workbook_matches_file(wb, path_helper::get_data_directory("xlsx/8_default-excel.xlsx")));
+		TS_ASSERT(workbook_matches_file(wb, path_helper::get_data_directory("8_default-excel.xlsx")));
 	}
 };

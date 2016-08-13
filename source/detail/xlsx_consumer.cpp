@@ -1123,10 +1123,13 @@ void xlsx_consumer::read_worksheet(const pugi::xml_node root, const std::string 
 
 	auto worksheet_node = root.child("worksheet");
 
-	auto dimension_node = worksheet_node.child("dimension");
-	std::string dimension(dimension_node.attribute("ref").value());
-	auto full_range = xlnt::range_reference(dimension);
-	auto sheet_data_node = worksheet_node.child("sheetData");
+	xlnt::range_reference full_range;
+
+	if (worksheet_node.child("dimension"))
+	{
+		std::string dimension(worksheet_node.child("dimension").attribute("ref").value());
+		full_range = xlnt::range_reference(dimension);
+	}
 
 	if (worksheet_node.child("mergeCells"))
 	{
@@ -1146,6 +1149,7 @@ void xlsx_consumer::read_worksheet(const pugi::xml_node root, const std::string 
 	}
 
 	auto &shared_strings = destination_.get_shared_strings();
+	auto sheet_data_node = worksheet_node.child("sheetData");
 
 	for (auto row_node : sheet_data_node.children("row"))
 	{

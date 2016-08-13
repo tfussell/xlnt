@@ -58,6 +58,7 @@ class style;
 class style_serializer;
 class text;
 class theme;
+class workbook_view;
 class worksheet;
 class worksheet_iterator;
 class zip_file;
@@ -277,42 +278,6 @@ public:
 	/// exception to be thrown.
 	/// </summary>
     const_iterator cend() const;
-    
-	/// <summary>
-	/// Returns a reverse iterator to the last worksheet in this workbook.
-	/// </summary>
-    reverse_iterator rbegin();
-
-	/// <summary>
-	/// Returns an iterator to the worksheet preceeding the first worksheet of the workbook.
-	/// This worksheet acts as a placeholder; attempting to access it will cause an 
-	/// exception to be thrown.
-	/// </summary>
-    reverse_iterator rend();
-
-	/// <summary>
-	/// Returns a const reverse iterator to the last worksheet in this workbook.
-	/// </summary>
-    const_reverse_iterator rbegin() const;
-
-	/// <summary>
-	/// Returns a const reverse iterator to the worksheet preceeding the first worksheet of the workbook.
-	/// This worksheet acts as a placeholder; attempting to access it will cause an 
-	/// exception to be thrown.
-	/// </summary>
-    const_reverse_iterator rend() const;
-
-	/// <summary>
-	/// Returns a const reverse iterator to the last worksheet in this workbook.
-	/// </summary>
-    const_reverse_iterator crbegin() const;
-
-	/// <summary>
-	/// Returns a const reverse iterator to the worksheet preceeding the first worksheet of the workbook.
-	/// This worksheet acts as a placeholder; attempting to access it will cause an 
-	/// exception to be thrown.
-	/// </summary>
-    const_reverse_iterator crend() const;
 
 	/// <summary>
 	/// Returns a temporary vector containing the titles of each sheet in the order
@@ -320,7 +285,19 @@ public:
 	/// </summary>
     std::vector<std::string> get_sheet_titles() const;
 
+	/// <summary>
+	/// Returns the number of sheets in this workbook.
+	/// </summary>
+	std::size_t get_sheet_count() const;
+
+	/// <summary>
+	/// Returns the name of the application that created this workbook.
+	/// </summary>
 	std::string get_application() const;
+
+	/// <summary>
+	/// Sets the name of the application that created this workbook to "application".
+	/// </summary>
 	void set_application(const std::string &application);
 
 	calendar get_base_date() const;
@@ -383,7 +360,36 @@ public:
 	void load(const xlnt::path &filename);
 	void load(std::istream &stream);
 
+	bool has_view() const;
+	workbook_view get_view() const;
+	void set_view(const workbook_view &view);
+
+	bool has_code_name() const;
+	std::string get_code_name() const;
     void set_code_name(const std::string &code_name);
+
+	bool x15_enabled() const;
+	void enable_x15();
+	void disable_x15();
+
+	bool has_absolute_path() const;
+	path get_absolute_path() const;
+	void set_absolute_path(const path &absolute_path);
+	void clear_absolute_path();
+
+	bool has_properties() const;
+
+	bool has_file_version() const;
+	std::string get_app_name() const;
+	std::size_t get_last_edited() const;
+	std::size_t get_lowest_edited() const;
+	std::size_t get_rup_build() const;
+
+	bool has_arch_id() const;
+
+	// calculation
+
+	bool has_calculation_properties() const;
 
     // theme
 

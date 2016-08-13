@@ -72,8 +72,10 @@ struct worksheet_impl
             }
         }
         relationships_ = other.relationships_;
+		has_page_setup_ = other.has_page_setup_;
         page_setup_ = other.page_setup_;
         auto_filter_ = other.auto_filter_;
+		has_page_margins_ = other.has_page_margins_;
         page_margins_ = other.page_margins_;
         merged_cells_ = other.merged_cells_;
         named_ranges_ = other.named_ranges_;
@@ -83,6 +85,9 @@ struct worksheet_impl
         print_title_rows_ = other.print_title_rows_;
         print_area_ = other.print_area_;
         view_ = other.view_;
+		x14ac_ = other.x14ac_;
+		has_dimension_ = other.has_dimension_;
+		has_format_properties_ = other.has_format_properties_;
     }
 
     workbook *parent_;
@@ -92,8 +97,10 @@ struct worksheet_impl
     std::unordered_map<row_t, row_properties> row_properties_;
     std::unordered_map<row_t, std::unordered_map<column_t, cell_impl>> cell_map_;
     std::vector<relationship> relationships_;
+	bool has_page_setup_ = false;
     page_setup page_setup_;
     range_reference auto_filter_;
+	bool has_page_margins_ = false;
     page_margins page_margins_;
     std::vector<range_reference> merged_cells_;
     std::unordered_map<std::string, named_range> named_ranges_;
@@ -102,7 +109,11 @@ struct worksheet_impl
     std::string print_title_cols_;
     std::string print_title_rows_;
     range_reference print_area_;
+	bool has_view_ = false;
     sheet_view view_;
+	bool x14ac_ = false;
+	bool has_dimension_ = false;
+	bool has_format_properties_ = false;
 };
 
 } // namespace detail

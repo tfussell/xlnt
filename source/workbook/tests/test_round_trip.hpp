@@ -68,14 +68,14 @@ public:
 	void test_round_trip_empty_excel_rw()
 	{
 		TS_SKIP("");
-		auto path = path_helper::get_data_directory("xlsx/8_default-excel.xlsx");
+		auto path = path_helper::get_data_directory("8_default-excel.xlsx");
 		TS_ASSERT(round_trip_matches_rw(path));
 	}
 
 	void test_round_trip_empty_libre_rw()
 	{
 		TS_SKIP("");
-		auto path = path_helper::get_data_directory("xlsx/9_default-libre-office.xlsx");
+		auto path = path_helper::get_data_directory("9_default-libre-office.xlsx");
 		TS_ASSERT(round_trip_matches_rw(path));
 	}
 };

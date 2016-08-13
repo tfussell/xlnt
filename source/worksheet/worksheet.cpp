@@ -126,14 +126,25 @@ std::vector<range_reference> worksheet::get_merged_ranges() const
     return d_->merged_cells_;
 }
 
-page_margins &worksheet::get_page_margins()
+bool worksheet::has_page_margins() const
+{
+	return d_->has_page_margins_;
+}
+
+bool worksheet::has_page_setup() const
+{
+	return d_->has_page_setup_;
+}
+
+page_margins worksheet::get_page_margins() const
 {
     return d_->page_margins_;
 }
 
-const page_margins &worksheet::get_page_margins() const
+void worksheet::set_page_margins(const page_margins &margins)
 {
-    return d_->page_margins_;
+	d_->page_margins_ = margins;
+	d_->has_page_margins_ = true;
 }
 
 void worksheet::auto_filter(const std::string &reference_string)
@@ -166,13 +177,19 @@ void worksheet::unset_auto_filter()
     d_->auto_filter_ = range_reference(1, 1, 1, 1);
 }
 
-page_setup &worksheet::get_page_setup()
+void worksheet::set_page_setup(const page_setup &setup)
 {
-    return d_->page_setup_;
+	d_->has_page_setup_ = true;
+	d_->page_setup_ = setup;
 }
 
-const page_setup &worksheet::get_page_setup() const
+page_setup worksheet::get_page_setup() const
 {
+	if (!d_->has_page_setup_)
+	{
+		throw invalid_attribute();
+	}
+
     return d_->page_setup_;
 }
 
@@ -439,6 +456,16 @@ column_t worksheet::get_highest_column() const
     }
 
     return highest;
+}
+
+bool worksheet::has_dimension() const
+{
+	return d_->has_dimension_;
+}
+
+bool worksheet::has_format_properties() const
+{
+	return d_->has_format_properties_;
 }
 
 range_reference worksheet::calculate_dimension() const
@@ -1009,7 +1036,12 @@ range_reference worksheet::get_print_area() const
     return d_->print_area_;
 }
 
-sheet_view worksheet::get_sheet_view() const
+bool worksheet::has_view() const
+{
+	return d_->has_view_;
+}
+
+sheet_view worksheet::get_view() const
 {
     return d_->view_;
 }
@@ -1017,6 +1049,21 @@ sheet_view worksheet::get_sheet_view() const
 std::size_t worksheet::next_custom_number_format_id()
 {
 	return get_workbook().impl().stylesheet_.next_custom_format_id;
+}
+
+bool worksheet::x14ac_enabled() const
+{
+	return d_->x14ac_;
+}
+
+void worksheet::enable_x14ac()
+{
+	d_->x14ac_ = true;
+}
+
+void worksheet::disable_x14ac()
+{
+	d_->x14ac_ = false;
 }
 
 } // namespace xlnt

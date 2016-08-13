@@ -26,8 +26,7 @@
 namespace xlnt {
 
 page_setup::page_setup()
-    : default_(true),
-      break_(page_break::none),
+    : break_(page_break::none),
       sheet_state_(sheet_state::visible),
       paper_size_(paper_size::letter),
       orientation_(orientation::portrait),
@@ -40,11 +39,6 @@ page_setup::page_setup()
 {
 }
 
-bool page_setup::is_default() const
-{
-    return default_;
-}
-
 page_break page_setup::get_break() const
 {
     return break_;
@@ -52,7 +46,6 @@ page_break page_setup::get_break() const
 
 void page_setup::set_break(page_break b)
 {
-    default_ = false;
     break_ = b;
 }
 
@@ -73,7 +66,6 @@ paper_size page_setup::get_paper_size() const
 
 void page_setup::set_paper_size(paper_size paper_size)
 {
-    default_ = false;
     paper_size_ = paper_size;
 }
 
@@ -84,7 +76,6 @@ orientation page_setup::get_orientation() const
 
 void page_setup::set_orientation(orientation orientation)
 {
-    default_ = false;
     orientation_ = orientation;
 }
 
@@ -95,7 +86,6 @@ bool page_setup::fit_to_page() const
 
 void page_setup::set_fit_to_page(bool fit_to_page)
 {
-    default_ = false;
     fit_to_page_ = fit_to_page;
 }
 
@@ -106,7 +96,6 @@ bool page_setup::fit_to_height() const
 
 void page_setup::set_fit_to_height(bool fit_to_height)
 {
-    default_ = false;
     fit_to_height_ = fit_to_height;
 }
 
@@ -117,13 +106,11 @@ bool page_setup::fit_to_width() const
 
 void page_setup::set_fit_to_width(bool fit_to_width)
 {
-    default_ = false;
     fit_to_width_ = fit_to_width;
 }
 
 void page_setup::set_horizontal_centered(bool horizontal_centered)
 {
-    default_ = false;
     horizontal_centered_ = horizontal_centered;
 }
 
@@ -134,7 +121,6 @@ bool page_setup::get_horizontal_centered() const
 
 void page_setup::set_vertical_centered(bool vertical_centered)
 {
-    default_ = false;
     vertical_centered_ = vertical_centered;
 }
 
@@ -145,7 +131,6 @@ bool page_setup::get_vertical_centered() const
 
 void page_setup::set_scale(double scale)
 {
-    default_ = false;
     scale_ = scale;
 }
 

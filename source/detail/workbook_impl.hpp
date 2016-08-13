@@ -32,6 +32,7 @@
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/utils/datetime.hpp>
 #include <xlnt/workbook/theme.hpp>
+#include <xlnt/workbook/workbook_view.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/sheet_view.hpp>
@@ -59,7 +60,15 @@ struct workbook_impl
 		links_up_to_date_(false),
 		shared_doc_(false),
 		hyperlinks_changed_(false),
-		app_version_("0.9")
+		app_version_("0.9"),
+		x15_(false),
+		has_properties_(false),
+		has_absolute_path_(false),
+		has_view_(false),
+		has_code_name_(false),
+		has_file_version_(false),
+		has_calculation_properties_(false),
+		has_arch_id_(false)
 	{
 	}
 
@@ -93,7 +102,19 @@ struct workbook_impl
 		  shared_doc_(other.shared_doc_),
 		  hyperlinks_changed_(other.hyperlinks_changed_),
 		  app_version_(other.app_version_),
-		  sheet_title_rel_id_map_(other.sheet_title_rel_id_map_)
+		  sheet_title_rel_id_map_(other.sheet_title_rel_id_map_),
+		  x15_(other.x15_),
+		  has_properties_(other.has_properties_),
+		  has_absolute_path_(other.has_absolute_path_),
+		  absolute_path_(other.absolute_path_),
+		  has_view_(other.has_view_),
+		  view_(other.view_),
+		  has_code_name_(other.has_code_name_),
+		  code_name_(other.code_name_),
+		  has_file_version_(other.has_file_version_),
+		  file_version_(other.file_version_),
+		  has_calculation_properties_(other.has_calculation_properties_),
+		  has_arch_id_(other.has_arch_id_)
     {
     }
 
@@ -133,6 +154,21 @@ struct workbook_impl
 		app_version_ = other.app_version_;
 
 		sheet_title_rel_id_map_ = other.sheet_title_rel_id_map_;
+
+		x15_ = other.x15_;
+		has_properties_ = other.has_properties_;
+		has_absolute_path_ = other.has_absolute_path_;
+		absolute_path_ = other.absolute_path_;
+		has_view_ = other.has_view_;
+		view_ = other.view_;
+		has_code_name_ = other.has_code_name_;
+		code_name_ = other.code_name_;
+
+		has_file_version_ = other.has_file_version_;
+		file_version_ = other.file_version_;
+
+		has_calculation_properties_ = other.has_calculation_properties_;
+		has_arch_id_ = other.has_arch_id_;
 
         return *this;
     }
@@ -178,6 +214,27 @@ struct workbook_impl
 	std::string app_version_;
 
 	std::unordered_map<std::string, std::string> sheet_title_rel_id_map_;
+
+	bool x15_;
+	bool has_properties_;
+	bool has_absolute_path_;
+	path absolute_path_;
+	bool has_view_;
+	workbook_view view_;
+	bool has_code_name_;
+	std::string code_name_;
+
+	bool has_file_version_;
+	struct file_version_t
+	{
+		std::string app_name;
+		std::size_t last_edited;
+		std::size_t lowest_edited;
+		std::size_t rup_build;
+	} file_version_;
+
+	bool has_calculation_properties_;
+	bool has_arch_id_;
 };
 
 } // namespace detail

@@ -8,6 +8,7 @@
 #include <xlnt/packaging/zip_file.hpp>
 #include <xlnt/workbook/const_worksheet_iterator.hpp>
 #include <xlnt/workbook/workbook.hpp>
+#include <xlnt/workbook/workbook_view.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
 namespace {
@@ -762,7 +763,7 @@ void xlsx_producer::write_workbook(const relationship &rel, pugi::xml_node root)
 
 	for (auto ws : source_)
 	{
-		if (ws.get_page_setup().get_sheet_state() == sheet_state::visible)
+		if (!ws.has_page_setup() || ws.get_page_setup().get_sheet_state() == sheet_state::visible)
 		{
 			num_visible++;
 		}
@@ -782,47 +783,76 @@ void xlsx_producer::write_workbook(const relationship &rel, pugi::xml_node root)
 
 	workbook_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
 	workbook_node.append_attribute("xmlns:r").set_value("http://schemas.openxmlformats.org/officeDocument/2006/relationships");
-	workbook_node.append_attribute("xmlns:mc").set_value("http://schemas.openxmlformats.org/markup-compatibility/2006");
-	workbook_node.append_attribute("mc:Ignorable").set_value("x15");
-	workbook_node.append_attribute("xmlns:x15").set_value("http://schemas.microsoft.com/office/spreadsheetml/2010/11/main");
 
-	auto file_version_node = workbook_node.append_child("fileVersion");
-	file_version_node.append_attribute("appName").set_value("xl");
-	file_version_node.append_attribute("lastEdited").set_value("6");
-	file_version_node.append_attribute("lowestEdited").set_value("6");
-	file_version_node.append_attribute("rupBuild").set_value("29709");
+	if (source_.x15_enabled())
+	{
+		workbook_node.append_attribute("xmlns:mc").set_value("http://schemas.openxmlformats.org/markup-compatibility/2006");
+		workbook_node.append_attribute("mc:Ignorable").set_value("x15");
+		workbook_node.append_attribute("xmlns:x15").set_value("http://schemas.microsoft.com/office/spreadsheetml/2010/11/main");
+	}
 
-	auto workbook_pr_node = workbook_node.append_child("workbookPr");
-	/*
-	workbook_pr_node.append_attribute("codeName").set_value("ThisWorkbook");
-	workbook_pr_node.append_attribute("defaultThemeVersion").set_value("124226");
-	workbook_pr_node.append_attribute("date1904").set_value(source_.get_base_date() == calendar::mac_1904 ? "1" : "0");
-	*/
+	if (source_.has_file_version())
+	{
+		auto file_version_node = workbook_node.append_child("fileVersion");
 
-	auto alternate_content_node = workbook_node.append_child("mc:AlternateContent");
-	alternate_content_node.append_attribute("xmlns:mc").set_value("http://schemas.openxmlformats.org/markup-compatibility/2006");
-	auto choice_node = alternate_content_node.append_child("mc:Choice");
-	choice_node.append_attribute("Requires").set_value("x15");
-	auto abs_path_node = choice_node.append_child("x15ac:absPath");
-	abs_path_node.append_attribute("url").set_value("/Users/thomas/Development/xlnt/tests/data/xlsx/");
-	abs_path_node.append_attribute("xmlns:x15ac").set_value("http://schemas.microsoft.com/office/spreadsheetml/2010/11/ac");
+		file_version_node.append_attribute("appName").set_value(source_.get_app_name().c_str());
+		file_version_node.append_attribute("lastEdited").set_value(source_.get_last_edited());
+		file_version_node.append_attribute("lowestEdited").set_value(source_.get_lowest_edited());
+		file_version_node.append_attribute("rupBuild").set_value(source_.get_rup_build());
+	}
 
-	auto book_views_node = workbook_node.append_child("bookViews");
-	auto workbook_view_node = book_views_node.append_child("workbookView");
-	//workbook_view_node.append_attribute("activeTab").set_value("0");
-	//workbook_view_node.append_attribute("autoFilterDateGrouping").set_value("1");
-	//workbook_view_node.append_attribute("firstSheet").set_value("0");
-	//workbook_view_node.append_attribute("minimized").set_value("0");
-	//workbook_view_node.append_attribute("showHorizontalScroll").set_value("1");
-	//workbook_view_node.append_attribute("showSheetTabs").set_value("1");
-	//workbook_view_node.append_attribute("showVerticalScroll").set_value("1");
-	//workbook_view_node.append_attribute("tabRatio").set_value("600");
-	//workbook_view_node.append_attribute("visibility").set_value("visible");
-	workbook_view_node.append_attribute("xWindow").set_value("0");
-	workbook_view_node.append_attribute("yWindow").set_value("460");
-	workbook_view_node.append_attribute("windowWidth").set_value("28800");
-	workbook_view_node.append_attribute("windowHeight").set_value("17460");
-	workbook_view_node.append_attribute("tabRatio").set_value("500");
+	if (source_.has_properties())
+	{
+		auto workbook_pr_node = workbook_node.append_child("workbookPr");
+
+		if (source_.has_code_name())
+		{
+			workbook_pr_node.append_attribute("codeName").set_value(source_.get_code_name().c_str());
+		}
+
+		/*
+		workbook_pr_node.append_attribute("defaultThemeVersion").set_value("124226");
+		workbook_pr_node.append_attribute("date1904").set_value(source_.get_base_date() == calendar::mac_1904 ? "1" : "0");
+		*/
+	}
+
+	if (source_.has_absolute_path())
+	{
+		auto alternate_content_node = workbook_node.append_child("mc:AlternateContent");
+		alternate_content_node.append_attribute("xmlns:mc").set_value("http://schemas.openxmlformats.org/markup-compatibility/2006");
+
+		auto choice_node = alternate_content_node.append_child("mc:Choice");
+		choice_node.append_attribute("Requires").set_value("x15");
+
+		auto abs_path_node = choice_node.append_child("x15ac:absPath");
+
+		std::string absolute_path = source_.get_absolute_path().string();
+		abs_path_node.append_attribute("url").set_value(absolute_path.c_str());
+		abs_path_node.append_attribute("xmlns:x15ac").set_value("http://schemas.microsoft.com/office/spreadsheetml/2010/11/ac");
+	}
+
+	if (source_.has_view())
+	{
+		auto book_views_node = workbook_node.append_child("bookViews");
+		auto workbook_view_node = book_views_node.append_child("workbookView");
+
+		const auto &view = source_.get_view();
+
+		//workbook_view_node.append_attribute("activeTab").set_value("0");
+		//workbook_view_node.append_attribute("autoFilterDateGrouping").set_value("1");
+		//workbook_view_node.append_attribute("firstSheet").set_value("0");
+		//workbook_view_node.append_attribute("minimized").set_value("0");
+		//workbook_view_node.append_attribute("showHorizontalScroll").set_value("1");
+		//workbook_view_node.append_attribute("showSheetTabs").set_value("1");
+		//workbook_view_node.append_attribute("showVerticalScroll").set_value("1");
+		//workbook_view_node.append_attribute("tabRatio").set_value("600");
+		//workbook_view_node.append_attribute("visibility").set_value("visible");
+		workbook_view_node.append_attribute("xWindow").set_value(view.x_window);
+		workbook_view_node.append_attribute("yWindow").set_value(view.y_window);
+		workbook_view_node.append_attribute("windowWidth").set_value(view.window_width);
+		workbook_view_node.append_attribute("windowHeight").set_value(view.window_height);
+		workbook_view_node.append_attribute("tabRatio").set_value(view.tab_ratio);
+	}
 
 	auto sheets_node = workbook_node.append_child("sheets");
 	pugi::xml_node defined_names_node;
@@ -841,7 +871,7 @@ void xlsx_producer::write_workbook(const relationship &rel, pugi::xml_node root)
 		sheet_node.append_attribute("name").set_value(ws.get_title().c_str());
 		sheet_node.append_attribute("sheetId").set_value(std::to_string(ws.get_id()).c_str());
 
-		if (ws.get_sheet_state() == xlnt::sheet_state::hidden)
+		if (ws.has_page_setup() && ws.get_sheet_state() == xlnt::sheet_state::hidden)
 		{
 			sheet_node.append_attribute("state").set_value("hidden");
 		}
@@ -860,33 +890,42 @@ void xlsx_producer::write_workbook(const relationship &rel, pugi::xml_node root)
 		}
 	}
 
-	auto calc_pr_node = workbook_node.append_child("calcPr");
-	calc_pr_node.append_attribute("calcId").set_value("150000");
-	//calc_pr_node.append_attribute("calcMode").set_value("auto");
-	//calc_pr_node.append_attribute("fullCalcOnLoad").set_value("1");
-	calc_pr_node.append_attribute("concurrentCalc").set_value("0");
-
-	/*
-	for (auto &named_range : workbook_.get_named_ranges())
+	if (source_.has_calculation_properties())
 	{
-	auto defined_name_node = node.append_child("s:definedName");
-	defined_name_node.append_attribute("xmlns:s").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
-	defined_name_node.append_attribute("name").set_value(named_range.get_name().c_str());
-	const auto &target = named_range.get_targets().front();
-	std::string target_string = "'" + target.first.get_title();
-	target_string.push_back('\'');
-	target_string.push_back('!');
-	target_string.append(target.second.to_string());
-	defined_name_node.text().set(target_string.c_str());
+		auto calc_pr_node = workbook_node.append_child("calcPr");
+		calc_pr_node.append_attribute("calcId").set_value("150000");
+		//calc_pr_node.append_attribute("calcMode").set_value("auto");
+		//calc_pr_node.append_attribute("fullCalcOnLoad").set_value("1");
+		calc_pr_node.append_attribute("concurrentCalc").set_value("0");
 	}
-	*/
 
-	auto ext_lst_node = workbook_node.append_child("extLst");
-	auto ext_node = ext_lst_node.append_child("ext");
-	ext_node.append_attribute("uri").set_value("{7523E5D3-25F3-A5E0-1632-64F254C22452}");
-	ext_node.append_attribute("xmlns:mx").set_value("http://schemas.microsoft.com/office/mac/excel/2008/main");
-	auto arch_id_node = ext_node.append_child("mx:ArchID");
-	arch_id_node.append_attribute("Flags").set_value("2");
+	if (!source_.get_named_ranges().empty())
+	{
+		auto defined_names_node = workbook_node.append_child("definedNames");
+
+		for (auto &named_range : source_.get_named_ranges())
+		{
+			auto defined_name_node = defined_names_node.append_child("s:definedName");
+			defined_name_node.append_attribute("xmlns:s").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
+			defined_name_node.append_attribute("name").set_value(named_range.get_name().c_str());
+			const auto &target = named_range.get_targets().front();
+			std::string target_string = "'" + target.first.get_title();
+			target_string.push_back('\'');
+			target_string.push_back('!');
+			target_string.append(target.second.to_string());
+			defined_name_node.text().set(target_string.c_str());
+		}
+	}
+
+	if (source_.has_arch_id())
+	{
+		auto ext_lst_node = workbook_node.append_child("extLst");
+		auto ext_node = ext_lst_node.append_child("ext");
+		ext_node.append_attribute("uri").set_value("{7523E5D3-25F3-A5E0-1632-64F254C22452}");
+		ext_node.append_attribute("xmlns:mx").set_value("http://schemas.microsoft.com/office/mac/excel/2008/main");
+		auto arch_id_node = ext_node.append_child("mx:ArchID");
+		arch_id_node.append_attribute("Flags").set_value("2");
+	}
     
     for (const auto &child_rel : source_.get_manifest().get_relationships(rel.get_target().get_path()))
     {
@@ -1449,13 +1488,6 @@ void xlsx_producer::write_volatile_dependencies(const relationship &rel, pugi::x
 
 void xlsx_producer::write_worksheet(const relationship &rel, pugi::xml_node root)
 {
-	auto worksheet_node = root.append_child("worksheet");
-	worksheet_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
-	worksheet_node.append_attribute("xmlns:r").set_value("http://schemas.openxmlformats.org/officeDocument/2006/relationships");
-	worksheet_node.append_attribute("xmlns:mc").set_value("http://schemas.openxmlformats.org/markup-compatibility/2006");
-	worksheet_node.append_attribute("mc:Ignorable").set_value("x14ac");
-	worksheet_node.append_attribute("xmlns:x14ac").set_value("http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac");
-
 	auto title = std::find_if(source_.d_->sheet_title_rel_id_map_.begin(),
 		source_.d_->sheet_title_rel_id_map_.end(),
 		[&](const std::pair<std::string, std::string> &p)
@@ -1465,7 +1497,18 @@ void xlsx_producer::write_worksheet(const relationship &rel, pugi::xml_node root
 
 	auto ws = source_.get_sheet_by_title(title);
 
-	if (!ws.get_page_setup().is_default())
+	auto worksheet_node = root.append_child("worksheet");
+	worksheet_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
+	worksheet_node.append_attribute("xmlns:r").set_value("http://schemas.openxmlformats.org/officeDocument/2006/relationships");
+
+	if (ws.x14ac_enabled())
+	{
+		worksheet_node.append_attribute("xmlns:mc").set_value("http://schemas.openxmlformats.org/markup-compatibility/2006");
+		worksheet_node.append_attribute("mc:Ignorable").set_value("x14ac");
+		worksheet_node.append_attribute("xmlns:x14ac").set_value("http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac");
+	}
+
+	if (ws.has_page_setup())
 	{
 		auto sheet_pr_node = worksheet_node.append_child("sheetPr");
 		auto outline_pr_node = sheet_pr_node.append_child("outlinePr");
@@ -1477,81 +1520,93 @@ void xlsx_producer::write_worksheet(const relationship &rel, pugi::xml_node root
 		page_set_up_pr_node.append_attribute("fitToPage").set_value(ws.get_page_setup().fit_to_page() ? "1" : "0");
 	}
 
-	auto dimension_node = worksheet_node.append_child("dimension");
-	auto dimension = ws.calculate_dimension();
-	auto dimension_string = dimension.is_single_cell() ? dimension.get_top_left().to_string() : dimension.to_string();
-	dimension_node.append_attribute("ref").set_value(dimension_string.c_str());
-
-	auto sheet_views_node = worksheet_node.append_child("sheetViews");
-	auto sheet_view_node = sheet_views_node.append_child("sheetView");
-	sheet_view_node.append_attribute("workbookViewId").set_value("0");
-
-	std::string active_pane = "bottomRight";
-
-	if (ws.has_frozen_panes())
+	if (ws.has_dimension())
 	{
-		auto pane_node = sheet_view_node.append_child("pane");
+		auto dimension_node = worksheet_node.append_child("dimension");
+		auto dimension = ws.calculate_dimension();
+		auto dimension_string = dimension.is_single_cell() ? dimension.get_top_left().to_string() : dimension.to_string();
+		dimension_node.append_attribute("ref").set_value(dimension_string.c_str());
+	}
 
-		if (ws.get_frozen_panes().get_column_index() > 1)
+	if (ws.has_view())
+	{
+		auto sheet_views_node = worksheet_node.append_child("sheetViews");
+		auto sheet_view_node = sheet_views_node.append_child("sheetView");
+
+		const auto view = ws.get_view();
+
+		sheet_view_node.append_attribute("workbookViewId").set_value("0");
+
+		if (!view.get_selections().empty())
 		{
-			pane_node.append_attribute("xSplit").set_value(std::to_string(ws.get_frozen_panes().get_column_index().index - 1).c_str());
-			active_pane = "topRight";
+			auto selection_node = sheet_view_node.child("selection") ?
+				sheet_view_node.child("selection")
+				: sheet_view_node.append_child("selection");
+
+			const auto &first_selection = view.get_selections().front();
+
+			if (first_selection.has_active_cell())
+			{
+				auto active_cell = first_selection.get_active_cell();
+				selection_node.append_attribute("activeCell").set_value(active_cell.to_string().c_str());
+				selection_node.append_attribute("sqref").set_value(active_cell.to_string().c_str());
+			}
 		}
 
-		if (ws.get_frozen_panes().get_row() > 1)
-		{
-			pane_node.append_attribute("ySplit").set_value(std::to_string(ws.get_frozen_panes().get_row() - 1).c_str());
-			active_pane = "bottomLeft";
-		}
+		std::string active_pane = "bottomRight";
 
-		if (ws.get_frozen_panes().get_row() > 1 && ws.get_frozen_panes().get_column_index() > 1)
+		if (ws.has_frozen_panes())
 		{
-			auto top_right_node = sheet_view_node.append_child("selection");
-			top_right_node.append_attribute("pane").set_value("topRight");
-			auto bottom_left_node = sheet_view_node.append_child("selection");
-			bottom_left_node.append_attribute("pane").set_value("bottomLeft");
-			active_pane = "bottomRight";
-		}
+			auto pane_node = sheet_view_node.append_child("pane");
 
-		pane_node.append_attribute("topLeftCell").set_value(ws.get_frozen_panes().to_string().c_str());
-		pane_node.append_attribute("activePane").set_value(active_pane.c_str());
-		pane_node.append_attribute("state").set_value("frozen");
+			if (ws.get_frozen_panes().get_column_index() > 1)
+			{
+				pane_node.append_attribute("xSplit").set_value(std::to_string(ws.get_frozen_panes().get_column_index().index - 1).c_str());
+				active_pane = "topRight";
+			}
 
-		auto selection_node = sheet_view_node.append_child("selection");
+			if (ws.get_frozen_panes().get_row() > 1)
+			{
+				pane_node.append_attribute("ySplit").set_value(std::to_string(ws.get_frozen_panes().get_row() - 1).c_str());
+				active_pane = "bottomLeft";
+			}
 
-		if (ws.get_frozen_panes().get_row() > 1 && ws.get_frozen_panes().get_column_index() > 1)
-		{
-			selection_node.append_attribute("pane").set_value("bottomRight");
-		}
-		else if (ws.get_frozen_panes().get_row() > 1)
-		{
-			selection_node.append_attribute("pane").set_value("bottomLeft");
-		}
-		else if (ws.get_frozen_panes().get_column_index() > 1)
-		{
-			selection_node.append_attribute("pane").set_value("topRight");
+			if (ws.get_frozen_panes().get_row() > 1 && ws.get_frozen_panes().get_column_index() > 1)
+			{
+				auto top_right_node = sheet_view_node.append_child("selection");
+				top_right_node.append_attribute("pane").set_value("topRight");
+				auto bottom_left_node = sheet_view_node.append_child("selection");
+				bottom_left_node.append_attribute("pane").set_value("bottomLeft");
+				active_pane = "bottomRight";
+			}
+
+			pane_node.append_attribute("topLeftCell").set_value(ws.get_frozen_panes().to_string().c_str());
+			pane_node.append_attribute("activePane").set_value(active_pane.c_str());
+			pane_node.append_attribute("state").set_value("frozen");
+
+			auto selection_node = sheet_view_node.append_child("selection");
+
+			if (ws.get_frozen_panes().get_row() > 1 && ws.get_frozen_panes().get_column_index() > 1)
+			{
+				selection_node.append_attribute("pane").set_value("bottomRight");
+			}
+			else if (ws.get_frozen_panes().get_row() > 1)
+			{
+				selection_node.append_attribute("pane").set_value("bottomLeft");
+			}
+			else if (ws.get_frozen_panes().get_column_index() > 1)
+			{
+				selection_node.append_attribute("pane").set_value("topRight");
+			}
 		}
 	}
 
-	if (!ws.get_sheet_view().get_selections().empty())
+	if (ws.has_format_properties())
 	{
-		auto selection_node = sheet_view_node.child("selection") ? 
-			sheet_view_node.child("selection") 
-			: sheet_view_node.append_child("selection");
-
-		const auto &first_selection = ws.get_sheet_view().get_selections().front();
-
-		if (first_selection.has_active_cell())
-		{
-			auto active_cell = first_selection.get_active_cell();
-			selection_node.append_attribute("activeCell").set_value(active_cell.to_string().c_str());
-			selection_node.append_attribute("sqref").set_value(active_cell.to_string().c_str());
-		}
+		auto sheet_format_pr_node = worksheet_node.append_child("sheetFormatPr");
+		sheet_format_pr_node.append_attribute("baseColWidth").set_value("10");
+		sheet_format_pr_node.append_attribute("defaultRowHeight").set_value("15");
 	}
-
-	auto sheet_format_pr_node = worksheet_node.append_child("sheetFormatPr");
-	sheet_format_pr_node.append_attribute("baseColWidth").set_value("10");
-	sheet_format_pr_node.append_attribute("defaultRowHeight").set_value("15");
 
 	bool has_column_properties = false;
 
@@ -1755,9 +1810,10 @@ void xlsx_producer::write_worksheet(const relationship &rel, pugi::xml_node root
 		}
 	}
 
-	if (!source_.impl().manifest_.get_relationships(rel.get_target().get_path()).empty())
+	const auto sheet_rels = source_.get_manifest().get_relationships(rel.get_target().get_path());
+
+	if (!sheet_rels.empty())
 	{
-		auto sheet_rels = source_.impl().manifest_.get_relationships(rel.get_target().get_path());
 		std::vector<relationship> hyperlink_sheet_rels;
 
 		for (const auto &sheet_rel : sheet_rels)
@@ -1782,7 +1838,7 @@ void xlsx_producer::write_worksheet(const relationship &rel, pugi::xml_node root
 		}
 	}
 
-	if (!ws.get_page_setup().is_default())
+	if (ws.has_page_setup())
 	{
 		auto print_options_node = worksheet_node.append_child("printOptions");
 		print_options_node.append_attribute("horizontalCentered").set_value(
@@ -1791,38 +1847,41 @@ void xlsx_producer::write_worksheet(const relationship &rel, pugi::xml_node root
 			ws.get_page_setup().get_vertical_centered() ? "1" : "0");
 	}
 
-	auto page_margins_node = worksheet_node.append_child("pageMargins");
-
-	//TODO: there must be a better way to do this
-	auto remove_trailing_zeros = [](const std::string &n)
+	if (ws.has_page_margins())
 	{
-		auto decimal = n.find('.');
+		auto page_margins_node = worksheet_node.append_child("pageMargins");
 
-		if (decimal == std::string::npos) return n;
-
-		auto index = n.size() - 1;
-
-		while (index >= decimal && n[index] == '0')
+		//TODO: there must be a better way to do this
+		auto remove_trailing_zeros = [](const std::string &n)
 		{
-			index--;
-		}
+			auto decimal = n.find('.');
 
-		if (index == decimal)
-		{
-			return n.substr(0, decimal);
-		}
+			if (decimal == std::string::npos) return n;
 
-		return n.substr(0, index + 1);
-	};
+			auto index = n.size() - 1;
 
-	page_margins_node.append_attribute("left").set_value(remove_trailing_zeros(std::to_string(ws.get_page_margins().get_left())).c_str());
-	page_margins_node.append_attribute("right").set_value(remove_trailing_zeros(std::to_string(ws.get_page_margins().get_right())).c_str());
-	page_margins_node.append_attribute("top").set_value(remove_trailing_zeros(std::to_string(ws.get_page_margins().get_top())).c_str());
-	page_margins_node.append_attribute("bottom").set_value(remove_trailing_zeros(std::to_string(ws.get_page_margins().get_bottom())).c_str());
-	page_margins_node.append_attribute("header").set_value(remove_trailing_zeros(std::to_string(ws.get_page_margins().get_header())).c_str());
-	page_margins_node.append_attribute("footer").set_value(remove_trailing_zeros(std::to_string(ws.get_page_margins().get_footer())).c_str());
+			while (index >= decimal && n[index] == '0')
+			{
+				index--;
+			}
 
-	if (!ws.get_page_setup().is_default())
+			if (index == decimal)
+			{
+				return n.substr(0, decimal);
+			}
+
+			return n.substr(0, index + 1);
+		};
+
+		page_margins_node.append_attribute("left").set_value(remove_trailing_zeros(std::to_string(ws.get_page_margins().get_left())).c_str());
+		page_margins_node.append_attribute("right").set_value(remove_trailing_zeros(std::to_string(ws.get_page_margins().get_right())).c_str());
+		page_margins_node.append_attribute("top").set_value(remove_trailing_zeros(std::to_string(ws.get_page_margins().get_top())).c_str());
+		page_margins_node.append_attribute("bottom").set_value(remove_trailing_zeros(std::to_string(ws.get_page_margins().get_bottom())).c_str());
+		page_margins_node.append_attribute("header").set_value(remove_trailing_zeros(std::to_string(ws.get_page_margins().get_header())).c_str());
+		page_margins_node.append_attribute("footer").set_value(remove_trailing_zeros(std::to_string(ws.get_page_margins().get_footer())).c_str());
+	}
+
+	if (ws.has_page_setup())
 	{
 		auto page_setup_node = worksheet_node.append_child("pageSetup");
 

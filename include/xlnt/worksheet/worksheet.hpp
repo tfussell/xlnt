@@ -137,6 +137,7 @@ public:
     column_t get_lowest_column() const;
     column_t get_highest_column() const;
     range_reference calculate_dimension() const;
+	bool has_dimension() const;
 
     // cell merge
     void merge_cells(const std::string &reference_string);
@@ -174,10 +175,15 @@ public:
     bool compare(const worksheet &other, bool reference) const;
 
     // page
-    page_setup &get_page_setup();
-    const page_setup &get_page_setup() const;
-    page_margins &get_page_margins();
-    const page_margins &get_page_margins() const;
+	bool has_page_setup() const;
+    page_setup get_page_setup() const;
+	void set_page_setup(const page_setup &setup);
+
+	bool has_page_margins() const;
+    page_margins get_page_margins() const;
+    void set_page_margins(const page_margins &margins);
+
+	bool has_format_properties() const;
 
     // auto filter
     range_reference get_auto_filter() const;
@@ -212,15 +218,6 @@ public:
 
     const_iterator cbegin() const;
     const_iterator cend() const;
-    
-    reverse_iterator rbegin();
-    reverse_iterator rend();
-
-    const_reverse_iterator rbegin() const;
-    const_reverse_iterator rend() const;
-
-    const_reverse_iterator crbegin() const;
-    const_reverse_iterator crend() const;
 
     range iter_cells(bool skip_null);
     
@@ -233,7 +230,12 @@ public:
     void set_print_area(const std::string &print_area);
     range_reference get_print_area() const;
     
-    sheet_view get_sheet_view() const;
+	bool has_view() const;
+    sheet_view get_view() const;
+
+	bool x14ac_enabled() const;
+	void enable_x14ac();
+	void disable_x14ac();
 
 private:
     friend class workbook;

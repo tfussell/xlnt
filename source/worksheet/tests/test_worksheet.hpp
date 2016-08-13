@@ -561,7 +561,7 @@ public:
         auto ws = wb.get_active_sheet();
         ws.freeze_panes("A4");
         
-        auto view = ws.get_sheet_view();
+        auto view = ws.get_view();
         TS_ASSERT_EQUALS(view.get_selections().size(), 1);
         TS_ASSERT_EQUALS(view.get_selections()[0].get_active_cell(), "A1");
         TS_ASSERT_EQUALS(view.get_selections()[0].get_pane(), xlnt::pane_corner::bottom_left);
@@ -578,7 +578,7 @@ public:
         auto ws = wb.get_active_sheet();
         ws.freeze_panes("D1");
         
-        auto view = ws.get_sheet_view();
+        auto view = ws.get_view();
         TS_ASSERT_EQUALS(view.get_selections().size(), 1);
         TS_ASSERT_EQUALS(view.get_selections()[0].get_active_cell(), "A1");
         TS_ASSERT_EQUALS(view.get_selections()[0].get_pane(), xlnt::pane_corner::top_right);
@@ -595,7 +595,7 @@ public:
         auto ws = wb.get_active_sheet();
         ws.freeze_panes("D4");
         
-        auto view = ws.get_sheet_view();
+        auto view = ws.get_view();
         TS_ASSERT_EQUALS(view.get_selections().size(), 3);
         TS_ASSERT_EQUALS(view.get_selections()[0].get_pane(), xlnt::pane_corner::top_right);
         TS_ASSERT_EQUALS(view.get_selections()[1].get_pane(), xlnt::pane_corner::bottom_left);
@@ -911,15 +911,11 @@ public:
     
     void test_page_setup()
     {
-        xlnt::workbook wb;
-        auto ws = wb.get_active_sheet();
-        TS_ASSERT(ws.get_page_setup().is_default());
-        ws.get_page_setup().set_break(xlnt::page_break::column);
-        TS_ASSERT_EQUALS(ws.get_page_setup().get_break(), xlnt::page_break::column);
-        TS_ASSERT(!ws.get_page_setup().is_default());
-        ws.get_page_setup().set_scale(1.23);
-        TS_ASSERT_EQUALS(ws.get_page_setup().get_scale(), 1.23);
-        TS_ASSERT(!ws.get_page_setup().is_default());
+		xlnt::page_setup setup;
+		setup.set_break(xlnt::page_break::column);
+        TS_ASSERT_EQUALS(setup.get_break(), xlnt::page_break::column);
+		setup.set_scale(1.23);
+        TS_ASSERT_EQUALS(setup.get_scale(), 1.23);
     }
 
     void test_unique_sheet_name()

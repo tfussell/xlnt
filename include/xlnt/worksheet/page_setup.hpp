@@ -39,8 +39,6 @@ struct XLNT_CLASS page_setup
 public:
     page_setup();
 
-    bool is_default() const;
-
     page_break get_break() const;
 
     void set_break(page_break b);
@@ -82,7 +80,6 @@ public:
     double get_scale() const;
 
 private:
-    bool default_;
     page_break break_;
     sheet_state sheet_state_;
     paper_size paper_size_;
