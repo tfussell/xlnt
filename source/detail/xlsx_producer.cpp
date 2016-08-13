@@ -796,9 +796,9 @@ void xlsx_producer::write_workbook(const relationship &rel, pugi::xml_node root)
 		auto file_version_node = workbook_node.append_child("fileVersion");
 
 		file_version_node.append_attribute("appName").set_value(source_.get_app_name().c_str());
-		file_version_node.append_attribute("lastEdited").set_value(source_.get_last_edited());
-		file_version_node.append_attribute("lowestEdited").set_value(source_.get_lowest_edited());
-		file_version_node.append_attribute("rupBuild").set_value(source_.get_rup_build());
+		file_version_node.append_attribute("lastEdited").set_value(std::to_string(source_.get_last_edited()).c_str());
+		file_version_node.append_attribute("lowestEdited").set_value(std::to_string(source_.get_lowest_edited()).c_str());
+		file_version_node.append_attribute("rupBuild").set_value(std::to_string(source_.get_rup_build()).c_str());
 	}
 
 	if (source_.has_properties())
@@ -847,11 +847,11 @@ void xlsx_producer::write_workbook(const relationship &rel, pugi::xml_node root)
 		//workbook_view_node.append_attribute("showVerticalScroll").set_value("1");
 		//workbook_view_node.append_attribute("tabRatio").set_value("600");
 		//workbook_view_node.append_attribute("visibility").set_value("visible");
-		workbook_view_node.append_attribute("xWindow").set_value(view.x_window);
-		workbook_view_node.append_attribute("yWindow").set_value(view.y_window);
-		workbook_view_node.append_attribute("windowWidth").set_value(view.window_width);
-		workbook_view_node.append_attribute("windowHeight").set_value(view.window_height);
-		workbook_view_node.append_attribute("tabRatio").set_value(view.tab_ratio);
+		workbook_view_node.append_attribute("xWindow").set_value(std::to_string(view.x_window).c_str());
+		workbook_view_node.append_attribute("yWindow").set_value(std::to_string(view.y_window).c_str());
+		workbook_view_node.append_attribute("windowWidth").set_value(std::to_string(view.window_width).c_str());
+		workbook_view_node.append_attribute("windowHeight").set_value(std::to_string(view.window_height).c_str());
+		workbook_view_node.append_attribute("tabRatio").set_value(std::to_string(view.tab_ratio).c_str());
 	}
 
 	auto sheets_node = workbook_node.append_child("sheets");
