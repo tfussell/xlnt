@@ -78,6 +78,12 @@ bool is_root(const std::string &part)
 	return part == "/";
 }
 
+
+bool is_absolute(const std::string &part)
+{
+    return !part.empty() && part[0] == '/';
+}
+
 #endif
 
 std::vector<std::string> split_path(const std::string &path, char delim)

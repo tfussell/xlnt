@@ -26,6 +26,7 @@
 #include <cstddef>
 #include <functional>
 #include <unordered_map>
+#include <vector>
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/styles/border_style.hpp>
@@ -91,7 +92,7 @@ public:
 		border_style style_;
 	};
 
-	static const std::unordered_map<side, std::string> &get_side_names();
+	static const std::vector<std::pair<side, std::string>> &get_side_names();
 
 	border();
 

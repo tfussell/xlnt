@@ -81,10 +81,10 @@ border::border()
 	};
 }
 
-const std::unordered_map<xlnt::border::side, std::string> &border::get_side_names()
+const std::vector<std::pair<xlnt::border::side, std::string>> &border::get_side_names()
 {
 	static auto *sides =
-		new std::unordered_map<xlnt::border::side, std::string>
+	    new std::vector<std::pair<xlnt::border::side, std::string>>
 		{
 			{ xlnt::border::side::start, "left" },
 			{ xlnt::border::side::end, "right" },
