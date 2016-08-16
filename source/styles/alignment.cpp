@@ -26,52 +26,42 @@
 
 namespace xlnt {
 
-bool alignment::get_wrap_text() const
+optional<bool> alignment::wrap() const
 {
     return wrap_text_;
 }
 
-void alignment::set_shrink_to_fit(bool shrink_to_fit)
+alignment &alignment::wrap(bool wrap_text)
+{
+	wrap_text_ = wrap_text;
+}
+
+optional<bool> alignment::shrink() const
+{
+	return shrink_to_fit_;
+}
+
+alignment &alignment::shrink(bool shrink_to_fit)
 {
     shrink_to_fit_ = shrink_to_fit;
 }
 
-bool alignment::get_shrink_to_fit() const
-{
-    return shrink_to_fit_;
-}
-
-void alignment::set_wrap_text(bool wrap_text)
-{
-    wrap_text_ = wrap_text;
-}
-
-bool alignment::has_horizontal() const
-{
-    return horizontal_ != horizontal_alignment::none;
-}
-
-horizontal_alignment alignment::get_horizontal() const
+optional<horizontal_alignment> alignment::horizontal() const
 {
     return horizontal_;
 }
 
-void alignment::set_horizontal(horizontal_alignment horizontal)
+alignment &alignment::horizontal(horizontal_alignment horizontal)
 {
     horizontal_ = horizontal;
 }
 
-bool alignment::has_vertical() const
-{
-    return vertical_ != vertical_alignment::none;
-}
-
-vertical_alignment alignment::get_vertical() const
+optional<vertical_alignment> alignment::vertical() const
 {
     return vertical_;
 }
 
-void alignment::set_vertical(vertical_alignment vertical)
+alignment &alignment::vertical(vertical_alignment vertical)
 {
     vertical_ = vertical;
 }

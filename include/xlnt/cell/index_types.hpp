@@ -54,7 +54,7 @@ public:
     /// <remarks>
     /// Excel only supports 1 - 3 letter column names from A->ZZZ, so we
     /// restrict our column names to 1 - 3 characters, each in the range A - Z.
-    /// Strings outside this range and malformed strings will throw xlnt::column_string_index_exception.
+    /// Strings outside this range and malformed strings will throw column_string_index_exception.
     /// </remarks>
     static index_t column_index_from_string(const std::string &column_string);
 

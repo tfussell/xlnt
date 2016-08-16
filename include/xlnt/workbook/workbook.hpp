@@ -401,7 +401,7 @@ public:
     
     format &get_format(std::size_t format_index);
     const format &get_format(std::size_t format_index) const;
-    std::size_t add_format(const format &new_format);
+	format &create_format();
     void clear_formats();
 
     // styles
@@ -409,11 +409,7 @@ public:
     bool has_style(const std::string &name) const;
     style &get_style(const std::string &name);
     const style &get_style(const std::string &name) const;
-    style &get_style_by_id(std::size_t style_id);
-    const style &get_style_by_id(std::size_t style_id) const;
-    std::size_t get_style_id(const std::string &name) const;
     style &create_style(const std::string &name);
-    std::size_t add_style(const style &new_style);
     void clear_styles();
 
     // manifest
@@ -478,6 +474,16 @@ private:
     /// Apply the function "f" to every cell in every worksheet in this workbook.
     /// </summary>
     void apply_to_cells(std::function<void(cell)> f);
+
+	void register_app_properties_in_manifest();
+
+	void register_core_properties_in_manifest();
+
+	void register_shared_string_table_in_manifest();
+
+	void register_stylesheet_in_manifest();
+
+	void register_theme_in_manifest();
     
     /// <summary>
     /// An opaque pointer to a structure that holds all of the data relating to this workbook.

@@ -29,6 +29,9 @@
 
 namespace xlnt {
 
+struct date;
+struct time;
+
 /// <summary>
 /// A datetime is a combination of a date and a time.
 /// </summary>
@@ -52,6 +55,7 @@ struct XLNT_CLASS datetime
     /// </summary>
     static datetime from_number(long double number, calendar base_date);
 
+	datetime(const date &d, const time &t);
     datetime(int year_, int month_, int day_, int hour_ = 0, int minute_ = 0, int second_ = 0, int microsecond_ = 0);
 
     std::string to_string() const;

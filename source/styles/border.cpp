@@ -27,130 +27,97 @@
 
 namespace xlnt {
 
-bool border::border_property::has_color() const
+optional<xlnt::color> border::border_property::color() const
 {
-	return has_color_;
-}
-
-const color &border::border_property::get_color() const
-{
-	if (!has_color_)
-	{
-		throw invalid_attribute();
-	}
-
 	return color_;
 }
 
-void border::border_property::set_color(const color &c)
+border::border_property &border::border_property::color(const xlnt::color &c)
 {
-	has_color_ = true;
 	color_ = c;
+	return *this;
 }
 
-bool border::border_property::has_style() const
+optional<border_style> border::border_property::style() const
 {
-	return has_style_;
-}
-
-border_style border::border_property::get_style() const
-{
-	if (!has_style_)
-	{
-		throw invalid_attribute();
-	}
-
 	return style_;
 }
 
-void border::border_property::set_style(border_style s)
+border::border_property &border::border_property::style(border_style s)
 {
-	has_style_ = true;
 	style_ = s;
+	return *this;
 }
 
 border::border()
 {
-	sides_ =
-	{
-		{ xlnt::border::side::start, border_property() },
-		{ xlnt::border::side::end, border_property() },
-		{ xlnt::border::side::top, border_property() },
-		{ xlnt::border::side::bottom, border_property() },
-		{ xlnt::border::side::diagonal, border_property() }
-	};
 }
 
-const std::vector<std::pair<xlnt::border::side, std::string>> &border::get_side_names()
+const std::vector<xlnt::border_side> &border::all_sides()
 {
-	static auto *sides =
-	    new std::vector<std::pair<xlnt::border::side, std::string>>
-		{
-			{ xlnt::border::side::start, "left" },
-			{ xlnt::border::side::end, "right" },
-			{ xlnt::border::side::top, "top" },
-			{ xlnt::border::side::bottom, "bottom" },
-			{ xlnt::border::side::diagonal, "diagonal" },
-			{ xlnt::border::side::vertical, "vertical" },
-			{ xlnt::border::side::horizontal, "horizontal" }
-		};
+	static auto *sides = new std::vector<xlnt::border_side>
+	{
+		xlnt::border_side::start,
+		xlnt::border_side::end,
+		xlnt::border_side::top,
+		xlnt::border_side::bottom,
+		xlnt::border_side::diagonal,
+		xlnt::border_side::vertical,
+		xlnt::border_side::horizontal
+	};
 
 	return *sides;
 }
 
-bool border::has_side(side s) const
+optional<border::border_property> border::side(border_side s) const
 {
-	return sides_.find(s) != sides_.end();
-}
-
-const border::border_property &border::get_side(side s) const
-{
-	if (has_side(s))
+	switch (s)
 	{
-		return sides_.at(s);
+	case border_side::bottom: return bottom_;
 	}
-
-	throw key_not_found();
 }
 
-void border::set_side(side s, const border_property &prop)
+border &border::side(border_side s, const border_property &prop)
 {
-	sides_[s] = prop;
+	switch (s)
+	{
+	case border_side::bottom: bottom_ = prop;
+	}
 }
 
 std::string border::to_hash_string() const
 {
     std::string hash_string;
 
-	for (const auto &side_name : get_side_names())
+	for (const auto &side_type : all_sides())
 	{
-		hash_string.append(side_name.second);
+		hash_string.append(std::to_string(static_cast<std::size_t>(side_type)));
 
-		if (has_side(side_name.first))
+		if (side(side_type))
 		{
-			const auto &side_properties = get_side(side_name.first);
+			const auto side_properties = *side(side_type);
 
-			if (side_properties.has_style())
+			if (side_properties.style())
 			{
-				hash_string.append(std::to_string(static_cast<std::size_t>(side_properties.get_style())));
+				hash_string.append(std::to_string(static_cast<std::size_t>(*side_properties.style())));
 			}
 			else
 			{
-				hash_string.push_back('=');
+				hash_string.push_back(' ');
 			}
 
-			if (side_properties.has_color())
+			if (side_properties.color())
 			{
-				hash_string.append(std::to_string(std::hash<xlnt::hashable>()(side_properties.get_color())));
+				hash_string.append(std::to_string(std::hash<xlnt::hashable>()(*side_properties.color())));
 			}
 			else
 			{
-				hash_string.push_back('=');
+				hash_string.push_back(' ');
 			}
 		}
 		else
 		{
-			hash_string.push_back('=');
+			hash_string.push_back(' ');
 		}
 
 		hash_string.push_back(' ');

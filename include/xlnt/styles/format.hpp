@@ -1,5 +1,4 @@
 // Copyright (c) 2014-2016 Thomas Fussell
-// Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,25 +22,58 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <xlnt/styles/base_format.hpp>
+#include <cstddef>
+#include <string>
+
+#include <xlnt/xlnt_config.hpp>
 
 namespace xlnt {
 
-class style;
-namespace detail { struct workbook_impl; }
+class alignment;
+class border;
+class fill;
+class font;
+class number_format;
+class protection;
+
+namespace detail {
+struct format_impl;
+struct stylesheet;
+} // namespace detail
 
 /// <summary>
 /// Describes the formatting of a particular cell.
 /// </summary>
-class XLNT_CLASS format : public base_format
+class XLNT_CLASS format
 {
 public:
-    format();
-    format(const format &other);
-    format &operator=(const format &other);
-    
-protected:
-    std::string to_hash_string() const override;
+	std::size_t get_id() const;
+
+	alignment get_alignment() const;
+	void set_alignment(const alignment &new_alignment);
+
+	border get_border() const;
+	void set_border(const border &new_border);
+
+	fill get_fill() const;
+	void set_fill(const fill &new_fill);
+
+	font get_font() const;
+	void set_font(const font &new_font);
+
+	number_format get_number_format() const;
+	void set_number_format(const number_format &new_number_format);
+
+	protection get_protection() const;
+	void set_protection(const protection &new_protection);
+
+	void set_style(const std::string &name);
+	std::string get_name() const;
+
+private:
+	friend struct detail::stylesheet;
+	format(detail::format_impl *d);
+	detail::format_impl *d_;
 };
 
 } // namespace xlnt

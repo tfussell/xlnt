@@ -30,35 +30,34 @@
 
 namespace xlnt {
 
-class workbook;
+namespace detail {
+struct style_impl;
+struct stylesheet;
+}
 
 /// <summary>
 /// Describes a style which has a name and can be applied to multiple individual
 /// formats. In Excel this is a "Cell Style".
 /// </summary>
-class XLNT_CLASS style : public base_format
+class XLNT_CLASS style
 {
 public:
-    style();
-    style(const style &other);
-    style &operator=(const style &other);
-
-    std::string get_name() const;
-    void set_name(const std::string &name);
+    std::string name() const;
+    style &name(const std::string &name);
     
-    bool get_hidden() const;
-    void set_hidden(bool value);
-    
-    std::size_t get_builtin_id() const;
-    void set_builtin_id(std::size_t builtin_id);
+    bool hidden() const;
+	style &hidden(bool value);
 
-protected:
-    std::string to_hash_string() const override;
+	bool custom() const;
+	style &custom(bool value);
+    
+    std::size_t built_in_id() const;
+	style &built_in_id(std::size_t builtin_id);
 
 private:
-    std::string name_;
-    bool hidden_;
-    std::size_t builtin_id_;
+	friend struct detail::stylesheet;
+	style(detail::style_impl *d);
+	detail::style_impl *d_;
 };
 
 } // namespace xlnt

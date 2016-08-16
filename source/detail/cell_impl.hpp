@@ -22,61 +22,42 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <cstdlib>
+#include <cstddef>
+#include <string>
 
-#include <xlnt/cell/cell.hpp>
-#include <xlnt/cell/text.hpp>
-#include <xlnt/cell/comment.hpp>
+#include <xlnt/cell/cell_type.hpp>
 #include <xlnt/cell/index_types.hpp>
-#include <xlnt/utils/exceptions.hpp>
-#include <xlnt/utils/time.hpp>
-#include <xlnt/packaging/relationship.hpp>
-#include <xlnt/styles/number_format.hpp>
-
-#include "comment_impl.hpp"
+#include <xlnt/cell/text.hpp>
+#include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 
-class style;
-
 namespace detail {
 
+struct comment_impl;
 struct worksheet_impl;
 
 struct cell_impl
 {
-    cell_impl();
-    cell_impl(column_t column, row_t row);
-    cell_impl(worksheet_impl *parent, column_t column, row_t row);
-    cell_impl(const cell_impl &rhs);
-    cell_impl &operator=(const cell_impl &rhs);
-
-    cell self();
-
-    cell::type type_;
+    cell_type type_;
 
     worksheet_impl *parent_;
 
     column_t column_;
     row_t row_;
 
+	bool is_merged_;
+
     text value_text_;
     long double value_numeric_;
 
-    std::string formula_;
+    optional<std::string> formula_;
 
-    bool has_hyperlink_;
-    std::string hyperlink_;
+    optional<std::string> hyperlink_;
 
-    bool is_merged_;
+    optional<std::size_t> format_id_;
 
-    bool has_format_;
-    std::size_t format_id_;
-    
-    bool has_style_;
-    std::size_t style_id_;
-
-    std::unique_ptr<comment_impl> comment_;
+    optional<std::string> style_name_;
 };
 
 } // namespace detail

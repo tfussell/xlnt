@@ -24,15 +24,21 @@ public:
 		return xml_helper::archives_match(wb_archive, file_archive);
 	}
 
-	void test_minimal()
+	void test_produce_minimal()
 	{
 		xlnt::workbook wb = xlnt::workbook::minimal();
-		TS_ASSERT(workbook_matches_file(wb, path_helper::get_data_directory("10_minimal.xlsx")));
+		TS_ASSERT(workbook_matches_file(wb, path_helper::get_data_directory("8_minimal.xlsx")));
 	}
 
-	void test_empty_excel()
+	void test_produce_default_excel()
 	{
 		xlnt::workbook wb = xlnt::workbook::empty_excel();
-		TS_ASSERT(workbook_matches_file(wb, path_helper::get_data_directory("8_default-excel.xlsx")));
+		TS_ASSERT(workbook_matches_file(wb, path_helper::get_data_directory("9_default-excel.xlsx")));
+	}
+
+	void test_produce_default_libre_office()
+	{
+		xlnt::workbook wb = xlnt::workbook::empty_libre_office();
+		TS_ASSERT(workbook_matches_file(wb, path_helper::get_data_directory("10_default-libre-office.xlsx")));
 	}
 };

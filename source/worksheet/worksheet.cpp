@@ -90,24 +90,25 @@ void worksheet::create_named_range(const std::string &name, const std::string &r
 
 void worksheet::create_named_range(const std::string &name, const range_reference &reference)
 {
+	try
+	{
+		auto temp = cell_reference::split_reference(name);
+
+		// name is a valid reference, make sure it's outside the allowed range
+
+		if (column_t(temp.first).index <= column_t("XFD").index && temp.second <= 1048576)
+		{
+			throw invalid_parameter(); //("named range name must be outside the range A1-XFD1048576");
+		}
+	}
+	catch (xlnt::invalid_cell_reference)
+	{
+		// name is not a valid reference, that's good
+	}
+
     std::vector<named_range::target> targets;
-    targets.push_back({ *this, reference });
+    targets.push_back({ *this, reference }); 
 
-    try
-    {
-        auto temp = cell_reference::split_reference(name);
-
-        if (column_t(temp.first).index <= column_t("XFD").index && temp.second <= 1048576)
-        {
-            throw std::runtime_error("named range name must be outside the range A1-XFD1048576");
-        }
-        
-    }
-    catch(xlnt::exception)
-    {
-        // must not be a valid cell reference
-    }
-   
     d_->named_ranges_[name] = named_range(name, targets);
 }
 
@@ -251,11 +252,6 @@ std::size_t worksheet::get_id() const
 
 std::string worksheet::get_title() const
 {
-    if (d_ == nullptr)
-    {
-        throw std::runtime_error("null worksheet");
-    }
-
     return d_->title_;
 }
 
@@ -350,7 +346,10 @@ cell worksheet::get_cell(const cell_reference &reference)
 
     if (row.find(reference.get_column_index()) == row.end())
     {
-        row[reference.get_column_index()] = detail::cell_impl(d_, reference.get_column_index(), reference.get_row());
+        auto impl = row[reference.get_column_index()] = detail::cell_impl();
+		impl.parent_ = d_;
+		impl.column_ = reference.get_column_index();
+		impl.row_ = reference.get_row();
     }
 
     return cell(&row[reference.get_column_index()]);
@@ -548,7 +547,7 @@ void worksheet::unmerge_cells(const range_reference &reference)
 
     if (match == d_->merged_cells_.end())
     {
-        throw std::runtime_error("cells not merged");
+		throw invalid_parameter();
     }
 
     d_->merged_cells_.erase(match);
@@ -692,8 +691,8 @@ bool worksheet::compare(const worksheet &other, bool reference) const
                 return false;
             }
             
-            auto this_cell = cell.second.self();
-            auto other_cell = other.d_->cell_map_[row.first][cell.first].self();
+            xlnt::cell this_cell(&cell.second);
+			xlnt::cell other_cell(&other.d_->cell_map_[row.first][cell.first]);
 
             if (this_cell.get_data_type() != other_cell.get_data_type())
             {
@@ -769,7 +768,7 @@ void worksheet::remove_named_range(const std::string &name)
 {
     if (!has_named_range(name))
     {
-        throw std::runtime_error("worksheet doesn't have named range");
+		throw key_not_found();
     }
 
     d_->named_ranges_.erase(name);
@@ -1044,11 +1043,6 @@ bool worksheet::has_view() const
 sheet_view worksheet::get_view() const
 {
     return d_->view_;
-}
-
-std::size_t worksheet::next_custom_number_format_id()
-{
-	return get_workbook().impl().stylesheet_.next_custom_format_id;
 }
 
 bool worksheet::x14ac_enabled() const

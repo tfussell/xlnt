@@ -24,129 +24,77 @@
 #pragma once
 
 #include <string>
-#include <unordered_map>
 #include <vector>
 
-#include <xlnt/styles/border.hpp>
-#include <xlnt/styles/fill.hpp>
-#include <xlnt/styles/font.hpp>
+#include <detail/format_impl.hpp>
+#include <detail/style_impl.hpp>
 #include <xlnt/styles/format.hpp>
-#include <xlnt/styles/number_format.hpp>
 #include <xlnt/styles/style.hpp>
-
-namespace {
-
-template<typename T>
-std::size_t index(const std::vector<T> &items, const T &to_find)
-{
-    auto match = std::find(items.begin(), items.end(), to_find);
-    
-    if (match == items.end())
-    {
-        throw std::out_of_range("xlnt::stylesheet index lookup");
-    }
-    
-    return std::distance(items.begin(), match);
-}
-
-template<typename T>
-bool contains(const std::vector<T> &items, const T &to_find)
-{
-	auto match = std::find(items.begin(), items.end(), to_find);
-	return match != items.end();
-}
-
-} // namespace
+#include <xlnt/utils/exceptions.hpp>
 
 namespace xlnt {
 namespace detail {
 
 struct stylesheet
 {
-    ~stylesheet() {}
-    
-    std::size_t index(const std::string &style_name)
-    {
-        auto match = std::find_if(styles.begin(), styles.end(),
-            [&](const style &s) { return s.get_name() == style_name; });
-        
-        if (match == styles.end())
-        {
-            throw std::out_of_range("xlnt::stylesheet style index lookup");
-        }
-        
-        return std::distance(styles.begin(), match);
-    }
-    
-    std::size_t add_format(const format &f)
-    {
-        auto match = std::find(formats.begin(), formats.end(), f);
-        
-        if (match != formats.end())
-        {
-            return std::distance(formats.begin(), match);
-        }
-        
-        auto number_format_match = std::find_if(number_formats.begin(), number_formats.end(), [&](const number_format &nf) { return nf.get_format_string() == f.get_number_format().get_format_string(); });
-        
-        if (number_format_match == number_formats.end() && f.get_number_format().get_id() >= 164)
-        {
-            number_formats.push_back(f.get_number_format());
-        }
-        
-        formats.push_back(f);
-        format_styles.push_back("Normal");
-        
-		if (!contains(borders, f.get_border()))
-        {
-            borders.push_back(f.get_border());
-        }
+    ~stylesheet() 
+	{
+	}
 
-		if (!contains(fills, f.get_fill()))
+    format &create_format()
+    {
+		formats.push_back(format_impl());
+		return format(&formats.back());
+    }
+
+	format &get_format(std::size_t index)
+	{
+		return format(&formats.at(index));
+	}
+    
+    style &create_style()
+    {
+		styles.push_back(style_impl());
+		return style(&styles.back());
+    }
+
+	style &get_style(const std::string &name)
+	{
+		for (auto &s : styles)
 		{
-			fills.push_back(f.get_fill());
+			if (s.name == name)
+			{
+				return style(&s);
+			}
 		}
 
-		if (!contains(fonts, f.get_font()))
+		throw key_not_found();
+	}
+
+	bool has_style(const std::string &name)
+	{
+		for (auto &s : styles)
 		{
-			fonts.push_back(f.get_font());
+			if (s.name == name)
+			{
+				return true;
+			}
 		}
-        
-        if (f.get_number_format().get_id() >= 164 && !contains(number_formats, f.get_number_format()))
-        {
-			number_formats.push_back(f.get_number_format());
-        }
-        
-        return formats.size() - 1;
-    }
-    
-    std::size_t add_style(const style &s)
-    {
-        auto match = std::find(styles.begin(), styles.end(), s);
-        
-        if (match != styles.end())
-        {
-            return std::distance(styles.begin(), match);
-        }
-        
-        styles.push_back(s);
-        return styles.size() - 1;
-    }
 
-    std::vector<format> formats;
-    std::vector<std::string> format_styles;
-    std::vector<style> styles;
+		return false;
+	}
 
+    std::vector<format_impl> formats;
+    std::vector<style_impl> styles;
+
+	std::vector<alignment> alignments;
     std::vector<border> borders;
     std::vector<fill> fills;
     std::vector<font> fonts;
     std::vector<number_format> number_formats;
+	std::vector<protection> protections;
     
     std::vector<color> colors;
-
-    std::unordered_map<std::size_t, std::string> style_name_map;
-    
-    std::size_t next_custom_format_id = 164;
 };
 
 } // namespace detail

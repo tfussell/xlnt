@@ -22,36 +22,15 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#include <xlnt/cell/cell.hpp>
-#include <xlnt/styles/font.hpp>
 #include <xlnt/styles/format.hpp>
+#include <xlnt/styles/alignment.hpp>
+#include <xlnt/styles/border.hpp>
+#include <xlnt/styles/fill.hpp>
+#include <xlnt/styles/font.hpp>
 #include <xlnt/styles/number_format.hpp>
 #include <xlnt/styles/protection.hpp>
-#include <xlnt/utils/hash_combine.hpp>
+#include <detail/format_impl.hpp>
 
 namespace xlnt {
-
-format::format() : base_format()
-{
-}
-
-format::format(const format &other) : base_format(other)
-{
-}
-
-format &format::operator=(const format &other)
-{
-    base_format::operator=(other);
-
-    return *this;
-}
-
-std::string format::to_hash_string() const
-{
-    auto hash_string = base_format::to_hash_string();
-    hash_string.append(":format:");
-
-    return hash_string;
-}
 
 } // namespace xlnt

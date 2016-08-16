@@ -31,114 +31,115 @@
 
 namespace xlnt {
 
+enum class XLNT_CLASS pattern_fill_type
+{
+	none,
+	solid,
+	mediumgray,
+	darkgray,
+	lightgray,
+	darkhorizontal,
+	darkvertical,
+	darkdown,
+	darkup,
+	darkgrid,
+	darktrellis,
+	lighthorizontal,
+	lightvertical,
+	lightdown,
+	lightup,
+	lightgrid,
+	lighttrellis,
+	gray125,
+	gray0625
+};
+
 class XLNT_CLASS pattern_fill : public hashable
 {
 public:
-    enum class type
-    {
-        none,
-        solid,
-        mediumgray,
-        darkgray,
-        lightgray,
-        darkhorizontal,
-        darkvertical,
-        darkdown,
-        darkup,
-        darkgrid,
-        darktrellis,
-        lighthorizontal,
-        lightvertical,
-        lightdown,
-        lightup,
-        lightgrid,
-        lighttrellis,
-        gray125,
-        gray0625
-    };
-
     pattern_fill();
 
-    pattern_fill(type pattern_type);
+	pattern_fill_type type() const;
 
-    type get_type() const;
+	pattern_fill &type(pattern_fill_type new_type);
 
-    void set_type(type pattern_type);
+	optional<color> foreground() const;
 
-    void set_foreground_color(const color &c);
-
-    std::experimental::optional<color> &get_foreground_color();
-
-    const std::experimental::optional<color> &get_foreground_color() const;
+	pattern_fill &foreground(const color &foreground);
     
-    void set_background_color(const color &c);
+    optional<color> background() const;
 
-    std::experimental::optional<color> &get_background_color();
-
-    const std::experimental::optional<color> &get_background_color() const;
+	pattern_fill &background(const color &background);
 
 protected:
     std::string to_hash_string() const override;
 
 private:
-    type type_ = type::none;
+	pattern_fill_type type_ = pattern_fill_type::none;
 
-    std::experimental::optional<color> foreground_color_;
-    std::experimental::optional<color> background_color_;
+    optional<color> foreground_;
+    optional<color> background_;
+};
+
+enum class XLNT_CLASS gradient_fill_type
+{
+	linear,
+	path
 };
 
 class XLNT_CLASS gradient_fill : public hashable
 {
 public:
-    enum class type
-    {
-        linear,
-        path
-    };
-
     gradient_fill();
 
-    gradient_fill(type gradient_type);
+    gradient_fill_type type() const;
 
-    type get_type() const;
+	// Type
+    gradient_fill &type(gradient_fill_type new_type);
 
-    void set_type(type gradient_type);
+	// Degree
 
-    void set_degree(double degree);
+    gradient_fill &degree(double degree);
 
-    double get_degree() const;
+    double degree() const;
 
-    double get_gradient_left() const;
+	// Left
 
-    void set_gradient_left(double value);
+    double left() const;
 
-    double get_gradient_right() const;
+	gradient_fill &left(double value);
 
-    void set_gradient_right(double value);
+	// Right
 
-    double get_gradient_top() const;
+    double right() const;
 
-    void set_gradient_top(double value);
+	gradient_fill &right(double value);
 
-    double get_gradient_bottom() const;
+	// Top
 
-    void set_gradient_bottom(double value);
+    double top() const;
 
-    void add_stop(double position, color stop_color);
+	gradient_fill &top(double value);
 
-    void delete_stop(double position);
+	// Bottom
 
-    void clear_stops();
+    double bottom() const;
+
+	gradient_fill &bottom(double value);
+
+	// Stops
+
+	gradient_fill &add_stop(double position, color stop_color);
+
+	gradient_fill &clear_stops();
     
-    const std::unordered_map<double, color> &get_stops() const;
+    std::unordered_map<double, color> stops() const;
 
 protected:
     std::string to_hash_string() const override;
 
 private:
-    type type_ = type::linear;
-
-    std::unordered_map<double, color> stops_;
+    gradient_fill_type type_ = gradient_fill_type::linear;
 
     double degree_ = 0;
 
@@ -146,6 +147,14 @@ private:
     double right_ = 0;
     double top_ = 0;
     double bottom_ = 0;
+
+	std::unordered_map<double, color> stops_;
+};
+
+enum class XLNT_CLASS fill_type
+{
+	pattern,
+	gradient
 };
 
 /// <summary>
@@ -154,33 +163,46 @@ private:
 class XLNT_CLASS fill : public hashable
 {
 public:
-    enum class type
-    {
-        pattern,
-        gradient
-    };
+	/// <summary>
+	/// Constructs a fill initialized as a none-type pattern fill with no 
+	/// foreground or background colors.
+	/// </summary>
+	fill();
 
-    static fill gradient(gradient_fill::type gradient_type);
+	/// <summary>
+	/// Constructs a fill initialized as a pattern fill based on the given pattern.
+	/// </summary>
+	fill(const pattern_fill &pattern);
 
-    static fill pattern(pattern_fill::type pattern_type);
+	/// <summary>
+	/// Constructs a fill initialized as a gradient fill based on the given gradient.
+	/// </summary>
+	fill(const gradient_fill &gradient);
 
-    type get_type() const;
+	/// <summary>
+	/// Returns the fill_type of this fill depending on how it was constructed.
+	/// </summary>
+    fill_type type() const;
 
-    gradient_fill &get_gradient_fill();
+	/// <summary>
+	/// Returns the gradient fill represented by this fill.
+	/// Throws an invalid_attribute exception if this is not a gradient fill.
+	/// </summary>
+    gradient_fill gradient_fill() const;
 
-    const gradient_fill &get_gradient_fill() const;
-
-    pattern_fill &get_pattern_fill();
-
-    const pattern_fill &get_pattern_fill() const;
+	/// <summary>
+	/// Returns the pattern fill represented by this fill.
+	/// Throws an invalid_attribute exception if this is not a pattern fill.
+	/// </summary>
+    pattern_fill pattern_fill() const;
 
 protected:
     std::string to_hash_string() const override;
 
 private:
-    type type_ = type::pattern;
-    gradient_fill gradient_;
-    pattern_fill pattern_;
+    fill_type type_ = fill_type::pattern;
+    xlnt::gradient_fill gradient_;
+    xlnt::pattern_fill pattern_;
 };
 
 } // namespace xlnt

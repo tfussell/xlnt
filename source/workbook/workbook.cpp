@@ -30,10 +30,12 @@
 
 #include <detail/cell_impl.hpp>
 #include <detail/constants.hpp>
+#include <detail/excel_thumbnail.hpp>
 #include <detail/xlsx_consumer.hpp>
 #include <detail/xlsx_producer.hpp>
 #include <detail/workbook_impl.hpp>
 #include <detail/worksheet_impl.hpp>
+#include <xlnt/cell/cell.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/packaging/zip_file.hpp>
@@ -86,7 +88,7 @@ workbook workbook::minimal()
 workbook workbook::empty_excel()
 {
 	auto impl = new detail::workbook_impl();
-	xlnt::workbook wb(impl);
+	workbook wb(impl);
 
 	wb.d_->manifest_.register_override_type(path("xl/workbook.xml"),
 		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml");
@@ -97,33 +99,7 @@ workbook workbook::empty_excel()
 		"application/vnd.openxmlformats-package.relationships+xml");
 	wb.d_->manifest_.register_default_type("xml", "application/xml");
 
-	const std::vector<std::uint8_t> thumbnail = {
-		0xff,0xd8,0xff,0xe0,0x00,0x10,0x4a,0x46,0x49,0x46,0x00,0x01,0x01,0x01,
-		0x00,0x60,0x00,0x60,0x00,0x00,0xff,0xe1,0x00,0x16,0x45,0x78,0x69,0x66,
-		0x00,0x00,0x49,0x49,0x2a,0x00,0x08,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-		0x00,0x00,0xff,0xdb,0x00,0x43,0x00,0x01,0x01,0x01,0x01,0x01,0x01,0x01,
-		0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,
-		0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,
-		0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,
-		0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,
-		0x01,0xff,0xdb,0x00,0x43,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,
-		0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,
-		0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,
-		0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,
-		0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,
-		0xff,0xc0,0x00,0x11,0x08,0x00,0x01,0x00,0x01,0x03,0x01,0x22,0x00,0x02,
-		0x11,0x01,0x03,0x11,0x01,0xff,0xc4,0x00,0x15,0x00,0x01,0x01,0x00,0x00,
-		0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x0a,
-		0xff,0xc4,0x00,0x14,0x10,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-		0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xff,0xc4,0x00,0x14,0x01,0x01,
-		0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-		0x00,0x00,0xff,0xc4,0x00,0x14,0x11,0x01,0x00,0x00,0x00,0x00,0x00,0x00,
-		0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xff,0xda,0x00,0x0c,
-		0x03,0x01,0x00,0x02,0x11,0x03,0x11,0x00,0x3f,0x00,0xbf,0x80,0x01,0xff,
-		0xd9
-	};
-
-	wb.set_thumbnail(thumbnail, "jpeg", "image/jpeg");
+	wb.set_thumbnail(excel_thumbnail(), "jpeg", "image/jpeg");
 
 	wb.d_->manifest_.register_override_type(path("docProps/core.xml"),
 		"application/vnd.openxmlformats-package.coreproperties+xml");
@@ -163,14 +139,11 @@ workbook workbook::empty_excel()
 	ws.d_->has_format_properties_ = true;
 	ws.d_->has_view_ = true;
 
-	wb.add_format(format());
+	wb.create_format();
 	wb.create_style("Normal");
 	wb.set_theme(theme());
 
-	wb.d_->stylesheet_.format_styles.front() = "Normal";
-
-	xlnt::fill gray125 = xlnt::fill::pattern(xlnt::pattern_fill::type::gray125);
-	wb.d_->stylesheet_.fills.push_back(gray125);
+	wb.d_->stylesheet_.fills.push_back(pattern_fill().type(pattern_fill_type::gray125));
 
 	return wb;
 }
@@ -179,6 +152,90 @@ workbook workbook::empty_libre_office()
 {
 	auto impl = new detail::workbook_impl();
 	workbook wb(impl);
+
+	wb.d_->manifest_.register_override_type(path("xl/workbook.xml"),
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml");
+	wb.d_->manifest_.register_relationship(uri("/"), relationship::type::office_document,
+		uri("xl/workbook.xml"), target_mode::internal);
+
+	wb.d_->manifest_.register_override_type(path("docProps/core.xml"),
+		"application/vnd.openxmlformats-package.coreproperties+xml");
+	wb.d_->manifest_.register_relationship(uri("/"), relationship::type::core_properties,
+		uri("docProps/core.xml"), target_mode::internal);
+
+	wb.d_->manifest_.register_override_type(path("docProps/app.xml"),
+		"application/vnd.openxmlformats-officedocument.extended-properties+xml");
+	wb.d_->manifest_.register_relationship(uri("/"), relationship::type::extended_properties,
+		uri("docProps/app.xml"), target_mode::internal);
+
+	wb.d_->manifest_.register_override_type(path("_rels/.rels"),
+		"application/vnd.openxmlformats-package.relationships+xml");
+	wb.d_->manifest_.register_override_type(path("xl/_rels/workbook.xml.rels"),
+		"application/vnd.openxmlformats-package.relationships+xml");
+
+	std::string title("Sheet1");
+	wb.d_->worksheets_.push_back(detail::worksheet_impl(&wb, 1, title));
+
+	wb.d_->manifest_.register_override_type(path("xl/worksheets/sheet1.xml"),
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
+	auto ws_rel = wb.d_->manifest_.register_relationship(uri("xl/workbook.xml"),
+		relationship::type::worksheet, uri("worksheets/sheet1.xml"), target_mode::internal);
+	wb.d_->sheet_title_rel_id_map_[title] = ws_rel;
+
+	wb.d_->stylesheet_.number_formats.push_back(xlnt::number_format("General", 164));
+	wb.d_->stylesheet_.fonts.push_back(xlnt::font().size(10).name("Arial").family(2));
+	wb.d_->stylesheet_.fonts.push_back(xlnt::font().size(10).name("Arial").family(0));
+	wb.d_->stylesheet_.fills.push_back(xlnt::pattern_fill().type(pattern_fill_type::none));
+	wb.d_->stylesheet_.fills.push_back(xlnt::pattern_fill().type(pattern_fill_type::gray125));
+	wb.d_->stylesheet_.borders.push_back(xlnt::border().diagonal(xlnt::diagonal_direction::neither));
+
+	auto alignment = xlnt::alignment()
+		.horizontal(horizontal_alignment::general)
+		.vertical(vertical_alignment::bottom)
+		.rotation(0)
+		.wrap(false)
+		.indent(0)
+		.shrink(false);
+
+	auto protection = xlnt::protection()
+		.locked(true)
+		.hidden(false);
+
+	wb.create_style("Normal").built_in_id(0).custom(false);
+	wb.create_style("Comma").built_in_id(0).custom(false);
+	wb.create_style("Comma [0]").built_in_id(0).custom(false);
+	wb.create_style("Currency").built_in_id(0).custom(false);
+	wb.create_style("Currency [0]").built_in_id(0).custom(false);
+	wb.create_style("Percent").built_in_id(0).custom(false);
+
+	/*
+	wb.d_->stylesheet_.styles.push_back(xlnt::style().name("Normal")
+		.builtin_id(0).custom(false).number_format_id(164)
+		.font_id(0).fill_id(0).border_id(0).font_applied(true)
+		.border_applied(true).alignment(alignment).protection(protection));
+	wb.d_->stylesheet_.styles.push_back(xlnt::style().name("Comma")
+		.builtin_id(3).custom(false).number_format_id(164)
+		.number_format_id(43).font_id(1).fill_id(0).border_id(0).font_applied(true));
+	wb.d_->stylesheet_.styles.push_back(xlnt::style().name("Comma [0]")
+		.builtin_id(6).custom(false).number_format_id(164)
+		.number_format_id(41).font_id(1).fill_id(0).border_id(0).font_applied(true));
+	wb.d_->stylesheet_.styles.push_back(xlnt::style().name("Currency")
+		.builtin_id(4).custom(false).number_format_id(164)
+		.number_format_id(44).font_id(1).fill_id(0).border_id(0).font_applied(true));
+	wb.d_->stylesheet_.styles.push_back(xlnt::style().name("Currency[0]")
+		.builtin_id(7).custom(false).number_format_id(164)
+		.number_format_id(42).font_id(1).fill_id(0).border_id(0).font_applied(true));
+	wb.d_->stylesheet_.styles.push_back(xlnt::style().name("Percent")
+		.builtin_id(5).custom(false).number_format_id(164)
+		.number_format_id(9).font_id(1).fill_id(0).border_id(0).font_applied(true));
+	*/
+
+
+	auto &format = wb.create_format();
+	format.set_number_format(number_format("General", 164));
+	format.set_alignment(alignment);
+	format.set_protection(protection);
+	format.set_style("Normal");
 
 	return wb;
 }
@@ -199,6 +256,71 @@ workbook::workbook()
 
 workbook::workbook(detail::workbook_impl *impl) : d_(impl)
 {
+}
+
+void workbook::register_app_properties_in_manifest()
+{
+	auto wb_rel = get_manifest().get_relationship(path("/"), relationship_type::office_document);
+
+	if (!get_manifest().has_relationship(wb_rel.get_target().get_path(), relationship_type::extended_properties))
+	{
+		get_manifest().register_override_type(path("docProps/app.xml"),
+			"application/vnd.openxmlformats-officedocument.extended-properties+xml");
+		get_manifest().register_relationship(uri("/"), relationship::type::extended_properties,
+			uri("docProps/app.xml"), target_mode::internal);
+	}
+}
+
+void workbook::register_core_properties_in_manifest()
+{
+	auto wb_rel = get_manifest().get_relationship(path("/"), relationship_type::office_document);
+
+	if (!get_manifest().has_relationship(wb_rel.get_target().get_path(), relationship_type::core_properties))
+	{
+		get_manifest().register_override_type(path("docProps/core.xml"),
+			"application/vnd.openxmlformats-package.coreproperties+xml");
+		get_manifest().register_relationship(uri("/"), relationship::type::core_properties,
+			uri("docProps/core.xml"), target_mode::internal);
+	}
+}
+
+void workbook::register_shared_string_table_in_manifest()
+{
+	auto wb_rel = get_manifest().get_relationship(path("/"), relationship_type::office_document);
+
+	if (!get_manifest().has_relationship(wb_rel.get_target().get_path(), relationship_type::shared_string_table))
+	{
+		get_manifest().register_override_type(constants::part_shared_strings(),
+			"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml");
+		get_manifest().register_relationship(wb_rel.get_target(),
+			relationship::type::shared_string_table, uri("styles.xml"), target_mode::internal);
+	}
+}
+
+void workbook::register_stylesheet_in_manifest()
+{
+	auto wb_rel = get_manifest().get_relationship(path("/"), relationship_type::office_document);
+
+	if (!get_manifest().has_relationship(wb_rel.get_target().get_path(), relationship_type::styles))
+	{
+		get_manifest().register_override_type(constants::part_styles(),
+			"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml");
+		get_manifest().register_relationship(wb_rel.get_target(),
+			relationship::type::styles, uri("styles.xml"), target_mode::internal);
+	}
+}
+
+void workbook::register_theme_in_manifest()
+{
+	auto wb_rel = get_manifest().get_relationship(path("/"), relationship_type::office_document);
+
+	if (!get_manifest().has_relationship(wb_rel.get_target().get_path(), relationship_type::theme))
+	{
+		get_manifest().register_override_type(constants::part_theme(),
+			"application/vnd.openxmlformats-officedocument.theme+xml");
+		get_manifest().register_relationship(wb_rel.get_target(),
+			relationship::type::theme, uri("theme/theme1.xml"), target_mode::internal);
+	}
 }
 
 const worksheet workbook::get_sheet_by_title(const std::string &title) const
@@ -318,19 +440,19 @@ worksheet workbook::create_sheet()
     return worksheet(&d_->worksheets_.back());
 }
 
-void workbook::copy_sheet(xlnt::worksheet worksheet)
+void workbook::copy_sheet(worksheet to_copy)
 {
-    if(worksheet.d_->parent_ != this) throw xlnt::invalid_parameter();
+    if(to_copy.d_->parent_ != this) throw invalid_parameter();
 
-    xlnt::detail::worksheet_impl impl(*worksheet.d_);
+    detail::worksheet_impl impl(*to_copy.d_);
     auto new_sheet = create_sheet();
     impl.title_ = new_sheet.get_title();
     *new_sheet.d_ = impl;
 }
 
-void workbook::copy_sheet(xlnt::worksheet worksheet, std::size_t index)
+void workbook::copy_sheet(worksheet to_copy, std::size_t index)
 {
-    copy_sheet(worksheet);
+    copy_sheet(to_copy);
 
     if (index != d_->worksheets_.size() - 1)
     {
@@ -345,13 +467,13 @@ void workbook::copy_sheet(xlnt::worksheet worksheet, std::size_t index)
     }
 }
 
-std::size_t workbook::get_index(xlnt::worksheet worksheet)
+std::size_t workbook::get_index(worksheet ws)
 {
-    auto match = std::find(begin(), end(), worksheet);
+    auto match = std::find(begin(), end(), ws);
 
     if (match == end())
     {
-        throw std::runtime_error("worksheet isn't owned by this workbook");
+		throw invalid_parameter();
     }
 
     return std::distance(begin(), match);
@@ -378,7 +500,7 @@ void workbook::remove_named_range(const std::string &name)
         }
     }
 
-    throw std::runtime_error("named range not found");
+	throw key_not_found();
 }
 
 range workbook::get_named_range(const std::string &name)
@@ -391,7 +513,7 @@ range workbook::get_named_range(const std::string &name)
         }
     }
 
-    throw std::runtime_error("named range not found");
+    throw key_not_found();
 }
 
 void workbook::load(std::istream &stream)
@@ -460,7 +582,7 @@ void workbook::remove_sheet(worksheet ws)
 
     if (match_iter == d_->worksheets_.end())
     {
-        throw std::runtime_error("worksheet not owned by this workbook");
+		throw invalid_parameter();
     }
 
     auto sheet_filename = path("worksheets/sheet" + std::to_string(d_->worksheets_.size()) + ".xml");
@@ -636,16 +758,7 @@ const theme &workbook::get_theme() const
 
 void workbook::set_theme(const theme &value)
 {
-	auto workbook_rel = d_->manifest_.get_relationship(path("/"), relationship::type::office_document);
-
-	if (!d_->manifest_.has_relationship(workbook_rel.get_target().get_path(), relationship::type::theme))
-	{
-		d_->manifest_.register_override_type(constants::part_theme(),
-			"application/vnd.openxmlformats-officedocument.theme+xml");
-		d_->manifest_.register_relationship(workbook_rel.get_target(),
-			relationship::type::theme, uri("theme/theme1.xml"), target_mode::internal);
-	}
-
+	register_theme_in_manifest();
 	d_->has_theme_ = true;
 	d_->theme_ = value;
 }
@@ -665,47 +778,15 @@ std::vector<named_range> workbook::get_named_ranges() const
     return named_ranges;
 }
 
-std::size_t workbook::add_format(const format &to_add)
+format &workbook::create_format()
 {
-	auto workbook_rel = d_->manifest_.get_relationship(path("/"), relationship::type::office_document);
-
-	if (!d_->manifest_.has_relationship(workbook_rel.get_target().get_path(), relationship::type::styles))
-	{
-		d_->manifest_.register_override_type(constants::part_styles(),
-			"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml");
-		d_->manifest_.register_relationship(workbook_rel.get_target(),
-			relationship::type::styles, uri("styles.xml"), target_mode::internal);
-	}
-
-    return d_->stylesheet_.add_format(to_add);
-}
-
-std::size_t workbook::add_style(const style &to_add)
-{
-	auto workbook_rel = d_->manifest_.get_relationship(path("/"), relationship::type::office_document);
-
-	if (!d_->manifest_.has_relationship(workbook_rel.get_target().get_path(), relationship::type::styles))
-	{
-		d_->manifest_.register_override_type(constants::part_styles(),
-			"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml");
-		d_->manifest_.register_relationship(workbook_rel.get_target(),
-			relationship::type::styles, uri("styles.xml"), target_mode::internal);
-	}
-
-    return d_->stylesheet_.add_style(to_add);
+	register_stylesheet_in_manifest();
+    return d_->stylesheet_.create_format();
 }
 
 bool workbook::has_style(const std::string &name) const
 {
-    return std::find_if(d_->stylesheet_.styles.begin(), d_->stylesheet_.styles.end(),
-        [&](const style &s) { return s.get_name() == name; }) != d_->stylesheet_.styles.end();
-}
-
-std::size_t workbook::get_style_id(const std::string &name) const
-{
-    return std::distance(d_->stylesheet_.styles.begin(),
-        std::find_if(d_->stylesheet_.styles.begin(), d_->stylesheet_.styles.end(),
-            [&](const style &s) { return s.get_name() == name; }));
+	return d_->stylesheet_.has_style(name);
 }
 
 void workbook::clear_styles()
@@ -736,12 +817,12 @@ void workbook::apply_to_cells(std::function<void(cell)> f)
 
 format &workbook::get_format(std::size_t format_index)
 {
-    return d_->stylesheet_.formats.at(format_index);
+	return d_->stylesheet_.get_format(format_index);
 }
 
 const format &workbook::get_format(std::size_t format_index) const
 {
-    return d_->stylesheet_.formats.at(format_index);
+	return d_->stylesheet_.get_format(format_index);
 }
 
 manifest &workbook::get_manifest()
@@ -766,15 +847,7 @@ const std::vector<text> &workbook::get_shared_strings() const
 
 void workbook::add_shared_string(const text &shared, bool allow_duplicates)
 {
-	auto workbook_rel = d_->manifest_.get_relationship(path("/"), relationship::type::office_document);
-
-	if (!d_->manifest_.has_relationship(workbook_rel.get_target().get_path(), relationship::type::styles))
-	{
-		d_->manifest_.register_override_type(constants::part_shared_strings(),
-			"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml");
-		d_->manifest_.register_relationship(workbook_rel.get_target(),
-			relationship::type::shared_string_table, uri("styles.xml"), target_mode::internal);
-	}
+	register_shared_string_table_in_manifest();
 
 	if (!allow_duplicates)
 	{
@@ -818,34 +891,17 @@ const std::vector<std::uint8_t> &workbook::get_thumbnail() const
 
 style &workbook::create_style(const std::string &name)
 {
-    style style;
-    style.set_name(name);
-    
-    d_->stylesheet_.styles.push_back(style);
-    
-    return d_->stylesheet_.styles.back();
+	return d_->stylesheet_.create_style().name(name);
 }
 
 style &workbook::get_style(const std::string &name)
 {
-    return *std::find_if(d_->stylesheet_.styles.begin(), d_->stylesheet_.styles.end(),
-        [&name](const style &s) { return s.get_name() == name; });
+	return d_->stylesheet_.get_style(name);
 }
 
 const style &workbook::get_style(const std::string &name) const
 {
-    return *std::find_if(d_->stylesheet_.styles.begin(), d_->stylesheet_.styles.end(),
-        [&name](const style &s) { return s.get_name() == name; });
-}
-
-style &workbook::get_style_by_id(std::size_t style_id)
-{
-    return d_->stylesheet_.styles.at(style_id);
-}
-
-const style &workbook::get_style_by_id(std::size_t style_id) const
-{
-    return d_->stylesheet_.styles.at(style_id);
+	return d_->stylesheet_.get_style(name);
 }
 
 std::string workbook::get_application() const

@@ -295,7 +295,7 @@ void zip_file::remove_comment()
 
     if (position <= 3)
     {
-        throw std::runtime_error("didn't find end of central directory signature");
+        throw invalid_file("zip");
     }
 
     uint16_t length = static_cast<uint16_t>(buffer_[position + 1]);

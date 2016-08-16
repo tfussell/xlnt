@@ -25,6 +25,22 @@
 
 #include <xlnt/utils/time.hpp>
 
+namespace {
+
+std::tm safe_localtime(std::time_t raw_time)
+{
+#ifdef _MSC_VER
+	std::tm result;
+	localtime_s(&result, &raw_time);
+
+	return result;
+#else
+	return *localtime(&raw_time);
+#endif
+}
+
+} // namespace
+
 namespace xlnt {
 
 time time::from_number(long double raw_time)
@@ -105,6 +121,12 @@ long double time::to_number() const
     number = std::floor(number * hundred_billion + 0.5L) / hundred_billion;
     
     return number;
+}
+
+time time::now()
+{
+	std::tm now = safe_localtime(std::time(0));
+	return time(now.tm_hour, now.tm_min, now.tm_sec);
 }
 
 } // namespace xlnt

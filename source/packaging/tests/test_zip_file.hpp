@@ -216,7 +216,7 @@ public:
 
         xlnt::zip_file f3;
         std::vector<std::uint8_t> bytes { 1, 2, 3 };
-        TS_ASSERT_THROWS(f3.load(bytes), std::runtime_error);
+        TS_ASSERT_THROWS(f3.load(bytes), xlnt::invalid_file);
     }
 
 private:

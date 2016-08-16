@@ -96,38 +96,36 @@ std::string to_string(xlnt::font::underline_style underline_style)
 	}
 }
 
-
-std::string to_string(xlnt::pattern_fill::type fill_type)
+std::string to_string(xlnt::pattern_fill_type fill_type)
 {
 	switch (fill_type)
 	{
-	case xlnt::pattern_fill::type::darkdown: return "darkdown";
-	case xlnt::pattern_fill::type::darkgray: return "darkgray";
-	case xlnt::pattern_fill::type::darkgrid: return "darkgrid";
-	case xlnt::pattern_fill::type::darkhorizontal: return "darkhorizontal";
-	case xlnt::pattern_fill::type::darktrellis: return "darkhorizontal";
-	case xlnt::pattern_fill::type::darkup: return "darkup";
-	case xlnt::pattern_fill::type::darkvertical: return "darkvertical";
-	case xlnt::pattern_fill::type::gray0625: return "gray0625";
-	case xlnt::pattern_fill::type::gray125: return "gray125";
-	case xlnt::pattern_fill::type::lightdown: return "lightdown";
-	case xlnt::pattern_fill::type::lightgray: return "lightgray";
-	case xlnt::pattern_fill::type::lightgrid: return "lightgrid";
-	case xlnt::pattern_fill::type::lighthorizontal: return "lighthorizontal";
-	case xlnt::pattern_fill::type::lighttrellis: return "lighttrellis";
-	case xlnt::pattern_fill::type::lightup: return "lightup";
-	case xlnt::pattern_fill::type::lightvertical: return "lightvertical";
-	case xlnt::pattern_fill::type::mediumgray: return "mediumgray";
-	case xlnt::pattern_fill::type::solid: return "solid";
+	case xlnt::pattern_fill_type::darkdown: return "darkdown";
+	case xlnt::pattern_fill_type::darkgray: return "darkgray";
+	case xlnt::pattern_fill_type::darkgrid: return "darkgrid";
+	case xlnt::pattern_fill_type::darkhorizontal: return "darkhorizontal";
+	case xlnt::pattern_fill_type::darktrellis: return "darkhorizontal";
+	case xlnt::pattern_fill_type::darkup: return "darkup";
+	case xlnt::pattern_fill_type::darkvertical: return "darkvertical";
+	case xlnt::pattern_fill_type::gray0625: return "gray0625";
+	case xlnt::pattern_fill_type::gray125: return "gray125";
+	case xlnt::pattern_fill_type::lightdown: return "lightdown";
+	case xlnt::pattern_fill_type::lightgray: return "lightgray";
+	case xlnt::pattern_fill_type::lightgrid: return "lightgrid";
+	case xlnt::pattern_fill_type::lighthorizontal: return "lighthorizontal";
+	case xlnt::pattern_fill_type::lighttrellis: return "lighttrellis";
+	case xlnt::pattern_fill_type::lightup: return "lightup";
+	case xlnt::pattern_fill_type::lightvertical: return "lightvertical";
+	case xlnt::pattern_fill_type::mediumgray: return "mediumgray";
+	case xlnt::pattern_fill_type::solid: return "solid";
 	default:
-	case xlnt::pattern_fill::type::none: return "none";
+	case xlnt::pattern_fill_type::none: return "none";
 	}
 }
 
-
-std::string to_string(xlnt::gradient_fill::type fill_type)
+std::string to_string(xlnt::gradient_fill_type fill_type)
 {
-	return fill_type == xlnt::gradient_fill::type::linear ? "linear" : "path";
+	return fill_type == xlnt::gradient_fill_type::linear ? "linear" : "path";
 }
 
 std::string to_string(xlnt::border_style border_style)
@@ -151,7 +149,6 @@ std::string to_string(xlnt::border_style border_style)
 	case xlnt::border_style::none: return "none";
 	}
 }
-
 
 std::string to_string(xlnt::vertical_alignment vertical_alignment)
 {
@@ -178,6 +175,14 @@ std::string to_string(xlnt::horizontal_alignment horizontal_alignment)
 	case xlnt::horizontal_alignment::right: return "right";
 	default:
 	case xlnt::horizontal_alignment::none: return "none";
+	}
+}
+
+std::string to_string(xlnt::border_side side)
+{
+	switch (side)
+	{
+	case xlnt::border_side::bottom: return "bottom";
 	}
 }
 
@@ -235,50 +240,52 @@ bool write_fonts(const std::vector<xlnt::font> &fonts, pugi::xml_node &fonts_nod
 	{
 		auto font_node = fonts_node.append_child("font");
 
-		if (f.is_bold())
+		if (f.bold())
 		{
 			auto bold_node = font_node.append_child("b");
 			bold_node.append_attribute("val").set_value("1");
 		}
 
-		if (f.is_italic())
+		if (f.italic())
 		{
 			auto italic_node = font_node.append_child("i");
 			italic_node.append_attribute("val").set_value("1");
 		}
 
-		if (f.is_underline())
+		if (f.underlined())
 		{
 			auto underline_node = font_node.append_child("u");
-			underline_node.append_attribute("val").set_value(to_string(f.get_underline()).c_str());
+			underline_node.append_attribute("val").set_value(to_string(f.underline()).c_str());
 		}
 
-		if (f.is_strikethrough())
+		if (f.strikethrough())
 		{
 			auto strike_node = font_node.append_child("strike");
 			strike_node.append_attribute("val").set_value("1");
 		}
 
 		auto size_node = font_node.append_child("sz");
-		size_node.append_attribute("val").set_value(std::to_string(f.get_size()).c_str());
+		size_node.append_attribute("val").set_value(std::to_string(f.size()).c_str());
 
-		auto color_node = font_node.append_child("color");
-
-		write_color(f.get_color(), color_node);
-
-		auto name_node = font_node.append_child("name");
-		name_node.append_attribute("val").set_value(f.get_name().c_str());
-
-		if (f.has_family())
+		if (f.color())
 		{
-			auto family_node = font_node.append_child("family");
-			family_node.append_attribute("val").set_value(std::to_string(f.get_family()).c_str());
+			auto color_node = font_node.append_child("color");
+			write_color(*f.color(), color_node);
 		}
 
-		if (f.has_scheme())
+		auto name_node = font_node.append_child("name");
+		name_node.append_attribute("val").set_value(f.name().c_str());
+
+		if (f.family())
+		{
+			auto family_node = font_node.append_child("family");
+			family_node.append_attribute("val").set_value(std::to_string(*f.family()).c_str());
+		}
+
+		if (f.scheme())
 		{
 			auto scheme_node = font_node.append_child("scheme");
-			scheme_node.append_attribute("val").set_value(f.get_scheme().c_str());
+			scheme_node.append_attribute("val").set_value(f.scheme()->c_str());
 		}
 	}
 
@@ -293,57 +300,57 @@ bool write_fills(const std::vector<xlnt::fill> &fills, pugi::xml_node &fills_nod
 	{
 		auto fill_node = fills_node.append_child("fill");
 
-		if (fill_.get_type() == xlnt::fill::type::pattern)
+		if (fill_.type() == xlnt::fill_type::pattern)
 		{
-			const auto &pattern = fill_.get_pattern_fill();
+			const auto &pattern = fill_.pattern_fill();
 
 			auto pattern_fill_node = fill_node.append_child("patternFill");
-			pattern_fill_node.append_attribute("patternType").set_value(to_string(pattern.get_type()).c_str());
+			pattern_fill_node.append_attribute("patternType").set_value(to_string(pattern.type()).c_str());
 
-			if (pattern.get_foreground_color())
+			if (pattern.foreground())
 			{
-				write_color(*pattern.get_foreground_color(), pattern_fill_node.append_child("fgColor"));
+				write_color(*pattern.foreground(), pattern_fill_node.append_child("fgColor"));
 			}
 
-			if (pattern.get_background_color())
+			if (pattern.background())
 			{
-				write_color(*pattern.get_background_color(), pattern_fill_node.append_child("bgColor"));
+				write_color(*pattern.background(), pattern_fill_node.append_child("bgColor"));
 			}
 		}
-		else if (fill_.get_type() == xlnt::fill::type::gradient)
+		else if (fill_.type() == xlnt::fill_type::gradient)
 		{
-			const auto &gradient = fill_.get_gradient_fill();
+			const auto &gradient = fill_.gradient_fill();
 
 			auto gradient_fill_node = fill_node.append_child("gradientFill");
-			auto gradient_fill_type_string = to_string(gradient.get_type());
+			auto gradient_fill_type_string = to_string(gradient.type());
 			gradient_fill_node.append_attribute("gradientType").set_value(gradient_fill_type_string.c_str());
 
-			if (gradient.get_degree() != 0)
+			if (gradient.degree() != 0)
 			{
-				gradient_fill_node.append_attribute("degree").set_value(gradient.get_degree());
+				gradient_fill_node.append_attribute("degree").set_value(gradient.degree());
 			}
 
-			if (gradient.get_gradient_left() != 0)
+			if (gradient.left() != 0)
 			{
-				gradient_fill_node.append_attribute("left").set_value(gradient.get_gradient_left());
+				gradient_fill_node.append_attribute("left").set_value(gradient.left());
 			}
 
-			if (gradient.get_gradient_right() != 0)
+			if (gradient.right() != 0)
 			{
-				gradient_fill_node.append_attribute("right").set_value(gradient.get_gradient_right());
+				gradient_fill_node.append_attribute("right").set_value(gradient.right());
 			}
 
-			if (gradient.get_gradient_top() != 0)
+			if (gradient.top() != 0)
 			{
-				gradient_fill_node.append_attribute("top").set_value(gradient.get_gradient_top());
+				gradient_fill_node.append_attribute("top").set_value(gradient.top());
 			}
 
-			if (gradient.get_gradient_bottom() != 0)
+			if (gradient.bottom() != 0)
 			{
-				gradient_fill_node.append_attribute("bottom").set_value(gradient.get_gradient_bottom());
+				gradient_fill_node.append_attribute("bottom").set_value(gradient.bottom());
 			}
 
-			for (const auto &stop : gradient.get_stops())
+			for (const auto &stop : gradient.stops())
 			{
 				auto stop_node = gradient_fill_node.append_child("stop");
 				stop_node.append_attribute("position").set_value(stop.first);
@@ -363,26 +370,24 @@ bool write_borders(const std::vector<xlnt::border> &borders, pugi::xml_node &bor
 	{
 		auto border_node = borders_node.append_child("border");
 
-		for (const auto &side_name : xlnt::border::get_side_names())
+		for (const auto &side : xlnt::border::all_sides())
 		{
-			const auto &current_name = side_name.second;
-			const auto &current_side_type = side_name.first;
-
-			if (border_.has_side(current_side_type))
+			if (border_.side(side))
 			{
-				auto side_node = border_node.append_child(current_name.c_str());
-				const auto &current_side = border_.get_side(current_side_type);
+				auto side_name = to_string(side);
+				auto side_node = border_node.append_child(side_name.c_str());
+				const auto current_side = *border_.side(side);
 
-				if (current_side.has_style())
+				if (current_side.style())
 				{
-					auto style_string = to_string(current_side.get_style());
+					auto style_string = to_string(*current_side.style());
 					side_node.append_attribute("style").set_value(style_string.c_str());
 				}
 
-				if (current_side.has_color())
+				if (current_side.color())
 				{
 					auto color_node = side_node.append_child("color");
-					write_color(current_side.get_color(), color_node);
+					write_color(*current_side.color(), color_node);
 				}
 			}
 		}
@@ -778,7 +783,7 @@ void xlsx_producer::write_workbook(const relationship &rel, pugi::xml_node root)
 
 	if (num_visible == 0)
 	{
-		throw xlnt::no_visible_worksheets();
+		throw no_visible_worksheets();
 	}
 
 	auto workbook_node = root.append_child("workbook");

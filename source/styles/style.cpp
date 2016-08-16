@@ -22,69 +22,45 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <xlnt/styles/alignment.hpp>
+#include <xlnt/styles/border.hpp>
+#include <xlnt/styles/fill.hpp>
+#include <xlnt/styles/font.hpp>
+#include <xlnt/styles/number_format.hpp>
+#include <xlnt/styles/protection.hpp>
+#include <detail/style_impl.hpp> // include order is important here
 #include <xlnt/styles/style.hpp>
 
 namespace xlnt {
 
-style::style()
-    : base_format(),
-      hidden_(false),
-      builtin_id_(0)
+bool style::hidden() const
 {
+    return d_->hidden_style;
 }
 
-style::style(const style &other)
-    : base_format(other),
-      name_(other.name_),
-      hidden_(other.hidden_),
-      builtin_id_(other.builtin_id_)
+style &style::hidden(bool value)
 {
+    d_->hidden_style = value;
 }
 
-style &style::operator=(const style &other)
+std::size_t style::built_in_id() const
 {
-    base_format::operator=(other);
-    
-    name_ = other.name_;
-    hidden_ = other.hidden_;
-    builtin_id_ = other.builtin_id_;
-    
-    return *this;
+    return d_->built_in_style_id;
 }
 
-bool style::get_hidden() const
+style &style::built_in_id(std::size_t builtin_id)
 {
-    return hidden_;
+    d_->built_in_style_id = builtin_id;
 }
 
-void style::set_hidden(bool value)
+std::string style::name() const
 {
-    hidden_ = value;
+    return d_->name;
 }
 
-std::size_t style::get_builtin_id() const
+style &style::name(const std::string &name)
 {
-    return builtin_id_;
-}
-
-void style::set_builtin_id(std::size_t builtin_id)
-{
-    builtin_id_ = builtin_id;
-}
-
-std::string style::get_name() const
-{
-    return name_;
-}
-
-void style::set_name(const std::string &name)
-{
-    name_ = name;
-}
-
-std::string style::to_hash_string() const
-{
-    return base_format::to_hash_string() + name_;
+    d_->name = name;
 }
 
 } // namespace xlnt

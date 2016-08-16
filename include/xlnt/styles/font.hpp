@@ -27,7 +27,7 @@
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/styles/color.hpp>
-#include <xlnt/utils/hash_combine.hpp>
+#include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 
@@ -50,47 +50,43 @@ public:
     
     font();
 
-    void set_bold(bool bold);
+    font &bold(bool bold);
 
-    bool is_bold() const;
+    bool bold() const;
 
-    void set_italic(bool italic);
+    font &italic(bool italic);
 
-    bool is_italic() const;
+    bool italic() const;
 
-    void set_strikethrough(bool strikethrough);
+    font &strikethrough(bool strikethrough);
 
-    bool is_strikethrough() const;
+    bool strikethrough() const;
 
-    void set_underline(underline_style new_underline);
+    font &underline(underline_style new_underline);
 
-    bool is_underline() const;
+    bool underlined() const;
 
-    underline_style get_underline() const;
+    underline_style underline() const;
 
-    void set_size(std::size_t size);
+    font &size(std::size_t size);
 
-    std::size_t get_size() const;
+    std::size_t size() const;
 
-    void set_name(const std::string &name);
+    font &name(const std::string &name);
 
-    std::string get_name() const;
+    std::string name() const;
 
-    void set_color(color c);
+    font &color(const color &c);
 
-    void set_family(std::size_t family);
+	optional<xlnt::color> color() const;
 
-    bool has_scheme() const;
+    font &family(std::size_t family);
 
-    void set_scheme(const std::string &scheme);
+	optional<std::size_t> family() const;
 
-    std::string get_scheme() const;
+    font &scheme(const std::string &scheme);
 
-    color get_color() const;
-
-    bool has_family() const;
-
-    std::size_t get_family() const;
+    optional<std::string> scheme() const;
 
 protected:
     std::string to_hash_string() const override;
@@ -104,13 +100,11 @@ private:
     bool italic_ = false;
     bool superscript_ = false;
     bool subscript_ = false;
-    underline_style underline_ = underline_style::none;
     bool strikethrough_ = false;
-    color color_ = theme_color(1);
-    bool has_family_ = true;
-    std::size_t family_ = 2;
-    bool has_scheme_ = true;
-    std::string scheme_ = "minor";
+	underline_style underline_ = underline_style::none;
+	optional<xlnt::color> color_;
+	optional<std::size_t> family_;
+	optional<std::string> scheme_;
 };
 
 } // namespace xlnt

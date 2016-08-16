@@ -63,11 +63,11 @@ public:
 private:
 	std::string string_;
     
-    std::experimental::optional<std::size_t> size_;
-    std::experimental::optional<std::string> color_;
-    std::experimental::optional<std::string> font_;
-    std::experimental::optional<std::size_t> family_;
-    std::experimental::optional<std::string> scheme_;
+    optional<std::size_t> size_;
+    optional<std::string> color_;
+    optional<std::string> font_;
+    optional<std::size_t> family_;
+    optional<std::string> scheme_;
 };
 
 } // namespace xlnt

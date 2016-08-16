@@ -172,7 +172,48 @@ public:
     /// </summary>
     bool has_hyperlink() const;
 
-    // style
+	// computed format
+
+	/// <summary>
+	/// For each of alignment, border, fill, font, number format, and protection,
+	/// returns a format using the value from the cell format if that value is
+	/// applied, or else the value from the named style if that value is applied,
+	/// or else the default value. This is used to retreive the formatting of the cell
+	/// as it will be displayed in an editing application.
+	/// </summary>
+	format get_computed_format() const;
+
+	/// <summary>
+	/// Returns the result of get_computed_format().get_alignment().
+	/// </summary>
+	alignment get_computed_alignment() const;
+
+	/// <summary>
+	/// Returns the result of get_computed_format().get_border().
+	/// </summary>
+	border get_computed_border() const;
+
+	/// <summary>
+	/// Returns the result of get_computed_format().get_fill().
+	/// </summary>
+	fill get_computed_fill() const;
+
+	/// <summary>
+	/// Returns the result of get_computed_format().get_font().
+	/// </summary>
+	font get_computed_font() const;
+
+	/// <summary>
+	/// Returns the result of get_computed_format().get_number_format().
+	/// </summary>
+	number_format get_computed_number_format() const;
+
+	/// <summary>
+	/// Returns the result of get_computed_format().get_protection().
+	/// </summary>
+	protection get_computed_protection() const;
+
+    // format
 
     /// <summary>
     /// Return true if this cell has had a format applied to it.
@@ -181,100 +222,145 @@ public:
 
     /// <summary>
     /// Return a reference to the format applied to this cell.
+	/// If this cell has no format, an invalid_attribute exception will be thrown.
     /// </summary>
-    format &get_format();
-
-    /// <summary>
-    /// Return a reference to the format applied to this cell.
-    /// </summary>
-    const format &get_format() const;
+    format get_format() const;
     
+	/// <summary>
+	/// Applies the cell-level formatting of new_format to this cell.
+	/// </summary>
     void set_format(const format &new_format);
-
-	void set_format_id(std::size_t format_id);
     
+	/// <summary>
+	/// Remove the cell-level formatting from this cell.
+	/// This doesn't affect the style that may also be applied to the cell.
+	/// Throws an invalid_attribute exception if no format is applied.
+	/// </summary>
     void clear_format();
-    
-    // style
 
     /// <summary>
-    /// Return true if this cell has had a format applied to it.
-    /// </summary>
-    bool has_style() const;
-
-    /// <summary>
-    /// Return a reference to the format applied to this cell.
-    /// </summary>
-    const style &get_style() const;
-    
-    void set_style(const style &new_style);
-    
-    void set_style(const std::string &style_name);
-    
-    void clear_style();
-
-    /// <summary>
-    /// Return the number format of this cell.
+    /// Returns the number format of this cell.
     /// </summary>
     const number_format &get_number_format() const;
     
+	/// <summary>
+	/// Creates a new format in the workbook, sets its number_format
+	/// to the given format, and applies the format to this cell.
+	/// </summary>
     void set_number_format(const number_format &format);
 
     /// <summary>
-    /// Return the font applied to the text in this cell.
+    /// Returns the font applied to the text in this cell.
     /// </summary>
     const font &get_font() const;
 
+	/// <summary>
+	/// Creates a new format in the workbook, sets its font
+	/// to the given font, and applies the format to this cell.
+	/// </summary>
     void set_font(const font &font_);
 
     /// <summary>
-    /// Return the fill applied to this cell.
+    /// Returns the fill applied to this cell.
     /// </summary>
     const fill &get_fill() const;
 
+	/// <summary>
+	/// Creates a new format in the workbook, sets its fill
+	/// to the given fill, and applies the format to this cell.
+	/// </summary>
     void set_fill(const fill &fill_);
 
     /// <summary>
-    /// Return the border of this cell.
+    /// Returns the border of this cell.
     /// </summary>
     const border &get_border() const;
 
+	/// <summary>
+	/// Creates a new format in the workbook, sets its border
+	/// to the given border, and applies the format to this cell.
+	/// </summary>
     void set_border(const border &border_);
 
     /// <summary>
-    /// Return the alignment of the text in this cell.
+    /// Returns the alignment of the text in this cell.
     /// </summary>
     const alignment &get_alignment() const;
 
+	/// <summary>
+	/// Creates a new format in the workbook, sets its alignment
+	/// to the given alignment, and applies the format to this cell.
+	/// </summary>
     void set_alignment(const alignment &alignment_);
 
     /// <summary>
-    /// Return the protection of this cell.
+    /// Returns the protection of this cell.
     /// </summary>
     const protection &get_protection() const;
 
+	/// <summary>
+	/// Creates a new format in the workbook, sets its protection
+	/// to the given protection, and applies the format to this cell.
+	/// </summary>
     void set_protection(const protection &protection_);
 
-    // comment
+	// style
 
-    /// <summary>
-    /// Return the comment of this cell.
-    /// </summary>
-    comment get_comment();
+	/// <summary>
+	/// Returns true if this cell has had a style applied to it.
+	/// </summary>
+	bool has_style() const;
 
-    /// <summary>
-    /// Return the comment of this cell.
-    /// </summary>
-    const comment get_comment() const;
+	/// <summary>
+	/// Returns a reference to the named style applied to this cell.
+	/// </summary>
+	style get_style() const;
 
-    void set_comment(const comment &comment);
-    void clear_comment();
-    bool has_comment() const;
+	/// <summary>
+	/// Returns the name of the style applied to this cell.
+	/// </summary>
+	std::string get_style_name() const;
+
+	/// <summary>
+	/// Equivalent to set_style(new_style.name())
+	/// </summary>
+	void set_style(const style &new_style);
+
+	/// <summary>
+	/// Sets the named style applied to this cell to a style named style_name.
+	/// If this style has not been previously created in the workbook, a
+	/// key_not_found exception will be thrown.
+	/// </summary>
+	void set_style(const std::string &style_name);
+
+	/// <summary>
+	/// Removes the named style from this cell.
+	/// An invalid_attribute exception will be thrown if this cell has no style.
+	/// This will not affect the cell format of the cell.
+	/// </summary>
+	void clear_style();
 
     // formula
+
+	/// <summary>
+	/// Returns the string representation of the formula applied to this cell.
+	/// </summary>
     std::string get_formula() const;
+
+	/// <summary>
+	/// Sets the formula of this cell to the given value.
+	/// This formula string should begin with '='.
+	/// </summary>
     void set_formula(const std::string &formula);
+
+	/// <summary>
+	/// Removes the formula from this cell. After this is called, has_formula() will return false.
+	/// </summary>
     void clear_formula();
+
+	/// <summary>
+	/// Returns true if this cell has had a formula applied to it.
+	/// </summary>
     bool has_formula() const;
 
     // printing
@@ -384,8 +470,6 @@ public:
     friend XLNT_FUNCTION std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell);
 
 private:
-    std::size_t get_format_id() const;
-    
     // make these friends so they can use the private constructor
     friend class style;
     friend class worksheet;
@@ -393,7 +477,17 @@ private:
 	friend class detail::xlsx_producer;
     friend struct detail::cell_impl;
 
+	/// <summary>
+	/// Helper function to guess the type of a string, convert it,
+	/// and then use the correct cell::get_value according to the type.
+	/// </summary>
 	void guess_type_and_set_value(const std::string &value);
+
+	/// <summary>
+	/// Returns a non-const reference to the format of this cell.
+	/// This is for internal use only.
+	/// </summary>
+	format &get_format();
 
     /// <summary>
     /// Private constructor to create a cell from its implementation.

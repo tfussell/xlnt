@@ -355,14 +355,14 @@ public:
         auto ws = wb.create_sheet();
         auto cell = ws.get_cell("A1");
         
-        xlnt::fill f = xlnt::fill::pattern(xlnt::pattern_fill::type::solid);
-        f.get_pattern_fill().set_foreground_color(xlnt::color::red());
-        
-        cell.set_fill(f);
+		xlnt::fill fill(xlnt::pattern_fill()
+			.type(xlnt::pattern_fill_type::solid)
+			.foreground(xlnt::color::red()));
+        cell.set_fill(fill);
         
         TS_ASSERT(cell.has_format());
         TS_ASSERT(cell.get_format().fill_applied());
-        TS_ASSERT_EQUALS(cell.get_fill(), f);
+        TS_ASSERT_EQUALS(cell.get_fill(), fill);
     }
     
     void test_border()
@@ -454,12 +454,12 @@ public:
         TS_ASSERT_EQUALS(cell.get_style().get_number_format(), xlnt::number_format::percentage());
         TS_ASSERT_EQUALS(cell.get_style(), last_style);
         
-        TS_ASSERT_THROWS(cell.set_style("doesn't exist"), std::runtime_error);
+        TS_ASSERT_THROWS(cell.set_style("doesn't exist"), xlnt::key_not_found);
         
         cell.clear_style();
         
         TS_ASSERT(!cell.has_style());
-        TS_ASSERT_THROWS(cell.get_style(), std::runtime_error);
+        TS_ASSERT_THROWS(cell.get_style(), xlnt::invalid_attribute);
     }
     
     void test_print()
@@ -651,9 +651,9 @@ public:
         xlnt::workbook wb;
 		auto cell = wb.get_active_sheet().get_cell("A1");
         TS_ASSERT(!cell.has_hyperlink());
-        TS_ASSERT_THROWS(cell.get_hyperlink(), std::runtime_error);
-        TS_ASSERT_THROWS(cell.set_hyperlink("notaurl"), std::runtime_error);
-        TS_ASSERT_THROWS(cell.set_hyperlink(""), std::runtime_error);
+        TS_ASSERT_THROWS(cell.get_hyperlink(), xlnt::invalid_attribute);
+        TS_ASSERT_THROWS(cell.set_hyperlink("notaurl"), xlnt::invalid_parameter);
+        TS_ASSERT_THROWS(cell.set_hyperlink(""), xlnt::invalid_parameter);
         cell.set_hyperlink("http://example.com");
         TS_ASSERT(cell.has_hyperlink());
         TS_ASSERT_EQUALS(cell.get_hyperlink(), "http://example.com");

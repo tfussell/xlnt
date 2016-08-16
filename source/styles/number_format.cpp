@@ -26,11 +26,11 @@
 #include <unordered_map>
 #include <vector>
 
+#include <detail/number_formatter.hpp>
 #include <xlnt/utils/datetime.hpp>
+#include <xlnt/utils/exceptions.hpp>
 #include <xlnt/utils/hash_combine.hpp>
 #include <xlnt/styles/number_format.hpp>
-
-#include <detail/number_formatter.hpp>
 
 namespace {
 
@@ -254,7 +254,7 @@ number_format number_format::from_builtin_id(std::size_t builtin_id)
 {
     if (builtin_formats().find(builtin_id) == builtin_formats().end())
     {
-        throw std::runtime_error("unknown id: " + std::to_string(builtin_id));
+		throw invalid_parameter(); //("unknown id: " + std::to_string(builtin_id));
     }
 
     auto format_string = builtin_formats().at(builtin_id);
@@ -316,7 +316,7 @@ std::size_t number_format::get_id() const
 {
     if(!id_set_)
     {
-        throw std::runtime_error("number format doesn't have an id");
+		throw invalid_attribute();
     }
     
     return id_;

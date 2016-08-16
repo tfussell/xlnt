@@ -147,7 +147,7 @@ public:
             std::cout << std::endl;
 
             std::cout << "right has: ";
-            for (auto &info : left_info)
+            for (auto &info : right_info)
             {
                 std::cout << info.filename.string() << ", ";
             }

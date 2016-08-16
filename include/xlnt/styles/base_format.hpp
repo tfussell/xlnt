@@ -33,8 +33,6 @@
 
 namespace xlnt {
 
-class cell;
-
 /// <summary>
 /// Describes the formatting of a particular cell.
 /// </summary>

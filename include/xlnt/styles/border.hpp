@@ -34,6 +34,7 @@
 #include <xlnt/styles/diagonal_direction.hpp>
 #include <xlnt/styles/side.hpp>
 #include <xlnt/utils/hashable.hpp>
+#include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 
@@ -50,19 +51,6 @@ enum class XLNT_CLASS border_side
 
 } // namespace xlnt
 
-namespace std {
-
-template<>
-struct hash<xlnt::border_side>
-{
-	size_t operator()(const xlnt::border_side &k) const
-	{
-		return static_cast<std::size_t>(k);
-	}
-};
-
-} // namepsace std
-
 namespace xlnt {
 
 /// <summary>
@@ -71,44 +59,44 @@ namespace xlnt {
 class XLNT_CLASS border : public hashable
 {
 public:
-	using side = border_side;
-
 	class XLNT_CLASS border_property
 	{
 	public:
-		bool has_color() const;
-		const color &get_color() const;
-		void set_color(const color &c);
+		optional<color> color() const;
+		border_property &color(const xlnt::color &c);
 
-		bool has_style() const;
-		border_style get_style() const;
-		void set_style(border_style style);
+		optional<border_style> style() const;
+		border_property &style(border_style style);
 
 	private:
-		bool has_color_ = false;
-		color color_ = color::black();
-
-		bool has_style_ = false;
-		border_style style_;
+		optional<xlnt::color> color_;
+		optional<border_style> style_;
 	};
 
-	static const std::vector<std::pair<side, std::string>> &get_side_names();
+	static const std::vector<border_side> &all_sides();
 
 	border();
 
-	bool has_side(side s) const;
-	const border_property &get_side(side s) const;
-	void set_side(side s, const border_property &prop);
+	optional<border_property> side(border_side s) const;
+	border &side(border_side s, const border_property &prop);
+
+	optional<diagonal_direction> diagonal() const;
+	border &diagonal(diagonal_direction dir);
 
 protected:
     std::string to_hash_string() const override;
 
 private:
-	std::unordered_map<side, border_property> sides_;
-    /*
-    bool outline_ = true;
-    diagonal_direction diagonal_direction_ = diagonal_direction::neither;
-    */
+	optional<border_property> start_;
+	optional<border_property> end_;
+	optional<border_property> top_;
+	optional<border_property> bottom_;
+	optional<border_property> vertical_;
+	optional<border_property> horizontal_;
+	optional<border_property> diagonal_;
+
+    //bool outline_ = true;
+	optional<diagonal_direction> diagonal_direction_;
 };
 
 } // namespace xlnt

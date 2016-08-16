@@ -27,6 +27,7 @@
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/utils/hashable.hpp>
+#include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 
@@ -36,14 +37,18 @@ namespace xlnt {
 class XLNT_CLASS protection : public hashable
 {
 public:
-    protection();
-    protection(bool locked, bool hidden);
+	static protection unlocked_and_visible();
+	static protection locked_and_visible();
+	static protection unlocked_and_hidden();
+	static protection locked_and_hidden();
 
-    bool get_locked() const;
-    void set_locked(bool locked);
+    protection();
+
+    bool locked() const;
+    protection &locked(bool locked);
     
-    bool get_hidden() const;
-    void set_hidden(bool hidden);
+    bool hidden() const;
+    protection &hidden(bool hidden);
 
 protected:
     std::string to_hash_string() const override;

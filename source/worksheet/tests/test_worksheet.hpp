@@ -966,12 +966,6 @@ public:
         TS_ASSERT_EQUALS(dimensions, xlnt::range_reference("B2", "B2"));
     }
 
-    void test_get_title_bad()
-    {
-        xlnt::worksheet ws;
-        TS_ASSERT_THROWS(ws.get_title(), std::runtime_error);
-    }
-
     void test_has_cell()
     {
         xlnt::workbook wb;
@@ -1125,8 +1119,8 @@ public:
 	{
 		xlnt::workbook wb;
 		auto ws = wb.get_active_sheet();
-		TS_ASSERT_THROWS(ws.create_named_range("A1", "A2"), std::runtime_error);
-		TS_ASSERT_THROWS(ws.create_named_range("XFD1048576", "A2"), std::runtime_error);
+		TS_ASSERT_THROWS(ws.create_named_range("A1", "A2"), xlnt::invalid_parameter);
+		TS_ASSERT_THROWS(ws.create_named_range("XFD1048576", "A2"), xlnt::invalid_parameter);
 		TS_ASSERT_THROWS_NOTHING(ws.create_named_range("XFE1048576", "A2"));
 		TS_ASSERT_THROWS_NOTHING(ws.create_named_range("XFD1048577", "A2"));
 	}

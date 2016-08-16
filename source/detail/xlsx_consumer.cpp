@@ -68,34 +68,34 @@ xlnt::font::underline_style from_string(const std::string &underline_string)
 }
 
 template<>
-xlnt::pattern_fill::type from_string(const std::string &fill_type)
+xlnt::pattern_fill_type from_string(const std::string &fill_type)
 {
-	if (fill_type == "darkdown") return xlnt::pattern_fill::type::darkdown;
-	if (fill_type == "darkgray") return xlnt::pattern_fill::type::darkgray;
-	if (fill_type == "darkgrid") return xlnt::pattern_fill::type::darkgrid;
-	if (fill_type == "darkhorizontal") return xlnt::pattern_fill::type::darkhorizontal;
-	if (fill_type == "darktrellis") return xlnt::pattern_fill::type::darktrellis;
-	if (fill_type == "darkup") return xlnt::pattern_fill::type::darkup;
-	if (fill_type == "darkvertical") return xlnt::pattern_fill::type::darkvertical;
-	if (fill_type == "gray0625") return xlnt::pattern_fill::type::gray0625;
-	if (fill_type == "gray125") return xlnt::pattern_fill::type::gray125;
-	if (fill_type == "lightdown") return xlnt::pattern_fill::type::lightdown;
-	if (fill_type == "lightgray") return xlnt::pattern_fill::type::lightgray;
-	if (fill_type == "lighthorizontal") return xlnt::pattern_fill::type::lighthorizontal;
-	if (fill_type == "lighttrellis") return xlnt::pattern_fill::type::lighttrellis;
-	if (fill_type == "lightup") return xlnt::pattern_fill::type::lightup;
-	if (fill_type == "lightvertical") return xlnt::pattern_fill::type::lightvertical;
-	if (fill_type == "mediumgray") return xlnt::pattern_fill::type::mediumgray;
-	if (fill_type == "solid") return xlnt::pattern_fill::type::solid;
-	return  xlnt::pattern_fill::type::none;
+	if (fill_type == "darkdown") return xlnt::pattern_fill_type::darkdown;
+	if (fill_type == "darkgray") return xlnt::pattern_fill_type::darkgray;
+	if (fill_type == "darkgrid") return xlnt::pattern_fill_type::darkgrid;
+	if (fill_type == "darkhorizontal") return xlnt::pattern_fill_type::darkhorizontal;
+	if (fill_type == "darktrellis") return xlnt::pattern_fill_type::darktrellis;
+	if (fill_type == "darkup") return xlnt::pattern_fill_type::darkup;
+	if (fill_type == "darkvertical") return xlnt::pattern_fill_type::darkvertical;
+	if (fill_type == "gray0625") return xlnt::pattern_fill_type::gray0625;
+	if (fill_type == "gray125") return xlnt::pattern_fill_type::gray125;
+	if (fill_type == "lightdown") return xlnt::pattern_fill_type::lightdown;
+	if (fill_type == "lightgray") return xlnt::pattern_fill_type::lightgray;
+	if (fill_type == "lighthorizontal") return xlnt::pattern_fill_type::lighthorizontal;
+	if (fill_type == "lighttrellis") return xlnt::pattern_fill_type::lighttrellis;
+	if (fill_type == "lightup") return xlnt::pattern_fill_type::lightup;
+	if (fill_type == "lightvertical") return xlnt::pattern_fill_type::lightvertical;
+	if (fill_type == "mediumgray") return xlnt::pattern_fill_type::mediumgray;
+	if (fill_type == "solid") return xlnt::pattern_fill_type::solid;
+	return  xlnt::pattern_fill_type::none;
 };
 
 template<>
-xlnt::gradient_fill::type from_string(const std::string &fill_type)
+xlnt::gradient_fill_type from_string(const std::string &fill_type)
 {
 	//TODO what's the default?
-	if (fill_type == "linear") return xlnt::gradient_fill::type::linear;
-	return xlnt::gradient_fill::type::path;
+	if (fill_type == "linear") return xlnt::gradient_fill_type::linear;
+	return xlnt::gradient_fill_type::path;
 };
 
 template<>
@@ -206,12 +206,20 @@ xlnt::relationship::type from_string(const std::string &type_string)
 	return xlnt::relationship::type::unknown;
 }
 
+std::string to_string(xlnt::border_side side)
+{
+	switch (side)
+	{
+	case xlnt::border_side::bottom: return "bottom";
+	}
+}
+
 xlnt::protection read_protection(const pugi::xml_node protection_node)
 {
 	xlnt::protection prot;
 
-	prot.set_locked(is_true(protection_node.attribute("locked").value()));
-	prot.set_hidden(is_true(protection_node.attribute("hidden").value()));
+	prot.locked(is_true(protection_node.attribute("locked").value()));
+	prot.hidden(is_true(protection_node.attribute("hidden").value()));
 
 	return prot;
 }
@@ -220,19 +228,19 @@ xlnt::alignment read_alignment(const pugi::xml_node alignment_node)
 {
 	xlnt::alignment align;
 
-	align.set_wrap_text(is_true(alignment_node.attribute("wrapText").value()));
-	align.set_shrink_to_fit(is_true(alignment_node.attribute("shrinkToFit").value()));
+	align.wrap(is_true(alignment_node.attribute("wrapText").value()));
+	align.shrink(is_true(alignment_node.attribute("shrinkToFit").value()));
 
 	if (alignment_node.attribute("vertical"))
 	{
 		std::string vertical = alignment_node.attribute("vertical").value();
-		align.set_vertical(from_string<xlnt::vertical_alignment>(vertical));
+		align.vertical(from_string<xlnt::vertical_alignment>(vertical));
 	}
 
 	if (alignment_node.attribute("horizontal"))
 	{
 		std::string horizontal = alignment_node.attribute("horizontal").value();
-		align.set_horizontal(from_string<xlnt::horizontal_alignment>(horizontal));
+		align.horizontal(from_string<xlnt::horizontal_alignment>(horizontal));
 	}
 
 	return align;
@@ -294,33 +302,33 @@ xlnt::font read_font(const pugi::xml_node font_node)
 {
 	xlnt::font new_font;
 
-	new_font.set_size(string_to_size_t(font_node.child("sz").attribute("val").value()));
-	new_font.set_name(font_node.child("name").attribute("val").value());
+	new_font.size(string_to_size_t(font_node.child("sz").attribute("val").value()));
+	new_font.name(font_node.child("name").attribute("val").value());
 
 	if (font_node.child("color"))
 	{
-		new_font.set_color(read_color(font_node.child("color")));
+		new_font.color(read_color(font_node.child("color")));
 	}
 
 	if (font_node.child("family"))
 	{
-		new_font.set_family(string_to_size_t(font_node.child("family").attribute("val").value()));
+		new_font.family(string_to_size_t(font_node.child("family").attribute("val").value()));
 	}
 
 	if (font_node.child("scheme"))
 	{
-		new_font.set_scheme(font_node.child("scheme").attribute("val").value());
+		new_font.scheme(font_node.child("scheme").attribute("val").value());
 	}
 
 	if (font_node.child("b"))
 	{
 		if (font_node.child("b").attribute("val"))
 		{
-			new_font.set_bold(is_true(font_node.child("b").attribute("val").value()));
+			new_font.bold(is_true(font_node.child("b").attribute("val").value()));
 		}
 		else
 		{
-			new_font.set_bold(true);
+			new_font.bold(true);
 		}
 	}
 
@@ -328,11 +336,11 @@ xlnt::font read_font(const pugi::xml_node font_node)
 	{
 		if (font_node.child("strike").attribute("val"))
 		{
-			new_font.set_strikethrough(is_true(font_node.child("strike").attribute("val").value()));
+			new_font.strikethrough(is_true(font_node.child("strike").attribute("val").value()));
 		}
 		else
 		{
-			new_font.set_strikethrough(true);
+			new_font.strikethrough(true);
 		}
 	}
 
@@ -340,11 +348,11 @@ xlnt::font read_font(const pugi::xml_node font_node)
 	{
 		if (font_node.child("i").attribute("val"))
 		{
-			new_font.set_italic(is_true(font_node.child("i").attribute("val").value()));
+			new_font.italic(is_true(font_node.child("i").attribute("val").value()));
 		}
 		else
 		{
-			new_font.set_italic(true);
+			new_font.italic(true);
 		}
 	}
 
@@ -353,11 +361,11 @@ xlnt::font read_font(const pugi::xml_node font_node)
 		if (font_node.child("u").attribute("val"))
 		{
 			std::string underline_string = font_node.child("u").attribute("val").value();
-			new_font.set_underline(from_string<xlnt::font::underline_style>(underline_string));
+			new_font.underline(from_string<xlnt::font::underline_style>(underline_string));
 		}
 		else
 		{
-			new_font.set_underline(xlnt::font::underline_style::single);
+			new_font.underline(xlnt::font::underline_style::single);
 		}
 	}
 
@@ -401,37 +409,39 @@ xlnt::fill read_fill(const pugi::xml_node &fill_node)
 		auto pattern_fill_node = fill_node.child("patternFill");
 		std::string pattern_fill_type_string = pattern_fill_node.attribute("patternType").value();
 
+		xlnt::pattern_fill pattern;
+
 		if (!pattern_fill_type_string.empty())
 		{
-			new_fill = xlnt::fill::pattern(from_string<xlnt::pattern_fill::type>(pattern_fill_type_string));
-
-			if (pattern_fill_node.child("bgColor"))
-			{
-				new_fill.get_pattern_fill().get_background_color() = read_color(pattern_fill_node.child("bgColor"));
-			}
+			pattern.type(from_string<xlnt::pattern_fill_type>(pattern_fill_type_string));
 
 			if (pattern_fill_node.child("fgColor"))
 			{
-				new_fill.get_pattern_fill().get_foreground_color() = read_color(pattern_fill_node.child("fgColor"));
+				pattern.foreground(read_color(pattern_fill_node.child("fgColor")));
+			}
+
+			if (pattern_fill_node.child("bgColor"))
+			{
+				pattern.background(read_color(pattern_fill_node.child("bgColor")));
 			}
 		}
-		else
-		{
-			new_fill = xlnt::fill::pattern(xlnt::pattern_fill::type::none);
-		}
+
+		new_fill = pattern;
 	}
 	else if (fill_node.child("gradientFill"))
 	{
 		auto gradient_fill_node = fill_node.child("gradientFill");
 		std::string gradient_fill_type_string = gradient_fill_node.attribute("type").value();
 
+		xlnt::gradient_fill gradient;
+
 		if (!gradient_fill_type_string.empty())
 		{
-			new_fill = xlnt::fill::gradient(from_string<xlnt::gradient_fill::type>(gradient_fill_type_string));
+			gradient.type(from_string<xlnt::gradient_fill_type>(gradient_fill_type_string));
 		}
 		else
 		{
-			new_fill = xlnt::fill::gradient(xlnt::gradient_fill::type::linear);
+			gradient.type(xlnt::gradient_fill_type::linear);
 		}
 
 		for (auto stop_node : gradient_fill_node.children("stop"))
@@ -439,8 +449,10 @@ xlnt::fill read_fill(const pugi::xml_node &fill_node)
 			auto position = stop_node.attribute("position").as_double();
 			auto color = read_color(stop_node.child("color"));
 
-			new_fill.get_gradient_fill().add_stop(position, color);
+			gradient.add_stop(position, color);
 		}
+
+		new_fill = gradient;
 	}
 
 	return new_fill;
@@ -463,12 +475,12 @@ xlnt::border::border_property read_side(const pugi::xml_node &side_node)
 
 	if (side_node.attribute("style"))
 	{
-		new_side.set_style(from_string<xlnt::border_style>(side_node.attribute("style").value()));
+		new_side.style(from_string<xlnt::border_style>(side_node.attribute("style").value()));
 	}
 
 	if (side_node.child("color"))
 	{
-		new_side.set_color(read_color(side_node.child("color")));
+		new_side.color(read_color(side_node.child("color")));
 	}
 
 	return new_side;
@@ -478,12 +490,13 @@ xlnt::border read_border(const pugi::xml_node &border_node)
 {
 	xlnt::border new_border;
 
-	for (const auto &side_name : xlnt::border::get_side_names())
+	for (const auto &side : xlnt::border::all_sides())
 	{
-		if (border_node.child(side_name.second.c_str()))
+		auto side_name = to_string(side);
+
+		if (border_node.child(side_name.c_str()))
 		{
-			auto side = read_side(border_node.child(side_name.second.c_str()));
-			new_border.set_side(side_name.first, side);
+			new_border.side(side, read_side(border_node.child(side_name.c_str())));
 		}
 	}
 
@@ -591,9 +604,9 @@ xlnt::style read_style(const pugi::xml_node &style_node, const pugi::xml_node &s
 
 	read_base_format(style_format_node, stylesheet, s);
 
-	s.set_name(style_node.attribute("name").value());
-	s.set_hidden(style_node.attribute("hidden") && is_true(style_node.attribute("hidden").value()));
-	s.set_builtin_id(string_to_size_t(style_node.attribute("builtinId").value()));
+	s.name(style_node.attribute("name").value());
+	s.hidden(style_node.attribute("hidden") && is_true(style_node.attribute("hidden").value()));
+	s.built_in_id(string_to_size_t(style_node.attribute("builtinId").value()));
 
 	return s;
 }
@@ -1105,7 +1118,7 @@ void xlsx_consumer::read_shared_string_table(const pugi::xml_node root)
 
 	if (unique_count != strings.size())
 	{
-		throw std::runtime_error("counts don't match");
+		throw invalid_file("sizes don't match");
 	}
 }
 
@@ -1219,7 +1232,7 @@ void xlsx_consumer::read_worksheet(const pugi::xml_node root, const std::string 
 
 		if (count != 0)
 		{
-			throw std::runtime_error("mismatch between count and actual number of merged cells");
+			throw invalid_file("sizes don't match");
 		}
 	}
 

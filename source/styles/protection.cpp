@@ -26,32 +26,22 @@
 
 namespace xlnt {
 
-protection::protection() : protection(true, false)
-{
-}
-
-protection::protection(bool locked, bool hidden)
-    : locked_(locked),
-      hidden_(hidden)
-{
-}
-
-bool protection::get_locked() const
+bool protection::locked() const
 {
     return locked_;
 }
 
-void protection::set_locked(bool locked)
+protection &protection::locked(bool locked)
 {
     locked_ = locked;
 }
 
-bool protection::get_hidden() const
+bool protection::hidden() const
 {
     return hidden_;
 }
 
-void protection::set_hidden(bool hidden)
+protection &protection::hidden(bool hidden)
 {
     hidden_ = hidden;
 }

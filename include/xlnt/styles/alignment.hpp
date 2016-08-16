@@ -28,6 +28,7 @@
 #include <xlnt/styles/horizontal_alignment.hpp>
 #include <xlnt/styles/vertical_alignment.hpp>
 #include <xlnt/utils/hashable.hpp>
+#include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 
@@ -37,36 +38,40 @@ namespace xlnt {
 class XLNT_CLASS alignment : public hashable
 {
 public:
-    bool get_wrap_text() const;
+	optional<bool> shrink() const;
 
-    void set_wrap_text(bool wrap_text);
+	alignment &shrink(bool shrink_to_fit);
 
-    bool has_horizontal() const;
+    optional<bool> wrap() const;
 
-    horizontal_alignment get_horizontal() const;
+	alignment &wrap(bool wrap_text);
 
-    void set_horizontal(horizontal_alignment horizontal);
+	optional<int> indent() const;
 
-    bool has_vertical() const;
+	alignment &indent(int indent_size);
 
-    vertical_alignment get_vertical() const;
+	optional<int> rotation() const;
 
-    void set_vertical(vertical_alignment vertical);
-    
-    void set_shrink_to_fit(bool shrink_to_fit);
-    
-    bool get_shrink_to_fit() const;
+	alignment &rotation(bool text_rotation);
+
+    optional<horizontal_alignment> horizontal() const;
+
+	alignment &horizontal(horizontal_alignment horizontal);
+
+    optional<vertical_alignment> vertical() const;
+
+    alignment &vertical(vertical_alignment vertical);
 
 protected:
     std::string to_hash_string() const override;
 
 private:
-    horizontal_alignment horizontal_ = horizontal_alignment::general;
-    vertical_alignment vertical_ = vertical_alignment::bottom;
-    int text_rotation_ = 0;
-    bool wrap_text_ = false;
-    bool shrink_to_fit_ = false;
-    int indent_ = 0;
+	optional<bool> shrink_to_fit_;
+	optional<bool> wrap_text_;
+	optional<int> indent_;
+	optional<int> text_rotation_;
+	optional<horizontal_alignment> horizontal_;
+	optional<vertical_alignment> vertical_;
 };
 
 } // namespace xlnt

@@ -35,117 +35,100 @@ font::font()
       superscript_(false),
       subscript_(false),
       underline_(underline_style::none),
-      strikethrough_(false),
-      color_(theme_color(1)),
-      has_family_(true),
-      family_(2),
-      has_scheme_(true),
-      scheme_("minor")
+      strikethrough_(false)
 {
 }
 
-void font::set_bold(bool bold)
+font &font::bold(bool bold)
 {
     bold_ = bold;
 }
 
-bool font::is_bold() const
+bool font::bold() const
 {
     return bold_;
 }
 
-void font::set_italic(bool italic)
+font &font::italic(bool italic)
 {
     italic_ = italic;
 }
 
-bool font::is_italic() const
+bool font::italic() const
 {
     return italic_;
 }
 
-void font::set_strikethrough(bool strikethrough)
+font &font::strikethrough(bool strikethrough)
 {
     strikethrough_ = strikethrough;
 }
 
-bool font::is_strikethrough() const
+bool font::strikethrough() const
 {
     return strikethrough_;
 }
 
-void font::set_underline(underline_style new_underline)
+font &font::underline(underline_style new_underline)
 {
     underline_ = new_underline;
 }
 
-bool font::is_underline() const
+bool font::underlined() const
 {
     return underline_ != underline_style::none;
 }
 
-font::underline_style font::get_underline() const
+font::underline_style font::underline() const
 {
     return underline_;
 }
 
-void font::set_size(std::size_t size)
+font &font::size(std::size_t size)
 {
     size_ = size;
 }
 
-std::size_t font::get_size() const
+std::size_t font::size() const
 {
     return size_;
 }
 
-void font::set_name(const std::string &name)
+font &font::name(const std::string &name)
 {
     name_ = name;
 }
-std::string font::get_name() const
+std::string font::name() const
 {
     return name_;
 }
 
-void font::set_color(color c)
+font &font::color(const xlnt::color &c)
 {
     color_ = c;
 }
 
-void font::set_family(std::size_t family)
+font &font::family(std::size_t family)
 {
-    has_family_ = true;
     family_ = family;
 }
 
-void font::set_scheme(const std::string &scheme)
+font &font::scheme(const std::string &scheme)
 {
-    has_scheme_ = true;
     scheme_ = scheme;
 }
 
-color font::get_color() const
+optional<color> font::color() const
 {
     return color_;
 }
 
-bool font::has_family() const
-{
-    return has_family_;
-}
-
-std::size_t font::get_family() const
+optional<std::size_t> font::family() const
 {
     return family_;
 }
 
-bool font::has_scheme() const
-{
-    return has_scheme_;
-}
-
-std::string font::get_scheme() const
+optional<std::string> font::scheme() const
 {
     return scheme_;
 }
@@ -162,9 +145,8 @@ std::string font::to_hash_string() const
     hash_string.append(name_);
     hash_string.append(std::to_string(size_));
     hash_string.append(std::to_string(static_cast<std::size_t>(underline_)));
-    hash_string.append(std::to_string(color_.hash()));
-    hash_string.append(std::to_string(family_));
-    hash_string.append(scheme_);
+    hash_string.append(family_ ? std::to_string(*family_) : "");
+	hash_string.append(scheme_ ? *scheme_ : "");
 
     return hash_string;
 }
