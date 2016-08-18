@@ -36,6 +36,7 @@ namespace xlnt {
 enum class calendar;
 
 class alignment;
+class base_format;
 class border;
 class cell_reference;
 class comment;
@@ -107,6 +108,7 @@ public:
     /// Set the value of this cell to the given value.
     /// Overloads exist for most C++ fundamental types like bool, int, etc. as well
     /// as for std::string and xlnt datetime types: date, time, datetime, and timedelta.
+	/// </summary>
     template <typename T>
     void set_value(T value);
 
@@ -181,7 +183,7 @@ public:
 	/// or else the default value. This is used to retreive the formatting of the cell
 	/// as it will be displayed in an editing application.
 	/// </summary>
-	format get_computed_format() const;
+	base_format get_computed_format() const;
 
 	/// <summary>
 	/// Returns the result of get_computed_format().get_alignment().
@@ -241,7 +243,7 @@ public:
     /// <summary>
     /// Returns the number format of this cell.
     /// </summary>
-    const number_format &get_number_format() const;
+    number_format get_number_format() const;
     
 	/// <summary>
 	/// Creates a new format in the workbook, sets its number_format
@@ -252,7 +254,7 @@ public:
     /// <summary>
     /// Returns the font applied to the text in this cell.
     /// </summary>
-    const font &get_font() const;
+    font get_font() const;
 
 	/// <summary>
 	/// Creates a new format in the workbook, sets its font
@@ -263,7 +265,7 @@ public:
     /// <summary>
     /// Returns the fill applied to this cell.
     /// </summary>
-    const fill &get_fill() const;
+    fill get_fill() const;
 
 	/// <summary>
 	/// Creates a new format in the workbook, sets its fill
@@ -274,7 +276,7 @@ public:
     /// <summary>
     /// Returns the border of this cell.
     /// </summary>
-    const border &get_border() const;
+    border get_border() const;
 
 	/// <summary>
 	/// Creates a new format in the workbook, sets its border
@@ -285,7 +287,7 @@ public:
     /// <summary>
     /// Returns the alignment of the text in this cell.
     /// </summary>
-    const alignment &get_alignment() const;
+    alignment get_alignment() const;
 
 	/// <summary>
 	/// Creates a new format in the workbook, sets its alignment
@@ -296,7 +298,7 @@ public:
     /// <summary>
     /// Returns the protection of this cell.
     /// </summary>
-    const protection &get_protection() const;
+    protection get_protection() const;
 
 	/// <summary>
 	/// Creates a new format in the workbook, sets its protection
@@ -315,11 +317,6 @@ public:
 	/// Returns a reference to the named style applied to this cell.
 	/// </summary>
 	style get_style() const;
-
-	/// <summary>
-	/// Returns the name of the style applied to this cell.
-	/// </summary>
-	std::string get_style_name() const;
 
 	/// <summary>
 	/// Equivalent to set_style(new_style.name())
@@ -487,7 +484,7 @@ private:
 	/// Returns a non-const reference to the format of this cell.
 	/// This is for internal use only.
 	/// </summary>
-	format &get_format();
+	format &get_format_internal();
 
     /// <summary>
     /// Private constructor to create a cell from its implementation.

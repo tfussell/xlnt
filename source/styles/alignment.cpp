@@ -34,6 +34,7 @@ optional<bool> alignment::wrap() const
 alignment &alignment::wrap(bool wrap_text)
 {
 	wrap_text_ = wrap_text;
+	return *this;
 }
 
 optional<bool> alignment::shrink() const
@@ -44,6 +45,7 @@ optional<bool> alignment::shrink() const
 alignment &alignment::shrink(bool shrink_to_fit)
 {
     shrink_to_fit_ = shrink_to_fit;
+	return *this;
 }
 
 optional<horizontal_alignment> alignment::horizontal() const
@@ -54,6 +56,7 @@ optional<horizontal_alignment> alignment::horizontal() const
 alignment &alignment::horizontal(horizontal_alignment horizontal)
 {
     horizontal_ = horizontal;
+	return *this;
 }
 
 optional<vertical_alignment> alignment::vertical() const
@@ -64,6 +67,29 @@ optional<vertical_alignment> alignment::vertical() const
 alignment &alignment::vertical(vertical_alignment vertical)
 {
     vertical_ = vertical;
+	return *this;
+}
+
+alignment &alignment::indent(int value)
+{
+	indent_ = value;
+	return *this;
+}
+
+optional<int> alignment::indent() const
+{
+	return indent_;
+}
+
+alignment &alignment::rotation(bool value)
+{
+	text_rotation_ = 0;
+	return *this;
+}
+
+optional<int> alignment::rotation() const
+{
+	return text_rotation_;
 }
 
 std::string alignment::to_hash_string() const

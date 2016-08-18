@@ -186,6 +186,12 @@ bool cell::garbage_collectible() const
 }
 
 template <>
+XLNT_FUNCTION void cell::set_value(nullptr_t)
+{
+	d_->type_ = type::null;
+}
+
+template <>
 XLNT_FUNCTION void cell::set_value(bool b)
 {
     d_->value_numeric_ = b ? 1 : 0;
@@ -411,7 +417,9 @@ bool cell::is_merged() const
 
 bool cell::is_date() const
 {
-    return get_data_type() == type::numeric && get_number_format().is_date_format();
+    return get_data_type() == type::numeric 
+		&& has_format()
+		&& get_number_format().is_date_format();
 }
 
 cell_reference cell::get_reference() const
@@ -605,32 +613,32 @@ void cell::set_data_type(type t)
 
 number_format cell::get_computed_number_format() const
 {
-	return get_computed_format().get_number_format();
+	return get_computed_format().number_format();
 }
 
 font cell::get_computed_font() const
 {
-	return get_computed_format().get_font();
+	return get_computed_format().font();
 }
 
 fill cell::get_computed_fill() const
 {
-	return get_computed_format().get_fill();
+	return get_computed_format().fill();
 }
 
 border cell::get_computed_border() const
 {
-	return get_computed_format().get_border();
+	return get_computed_format().border();
 }
 
 alignment cell::get_computed_alignment() const
 {
-	return get_computed_format().get_alignment();
+	return get_computed_format().alignment();
 }
 
 protection cell::get_computed_protection() const
 {
-	return get_computed_format().get_protection();
+	return get_computed_format().protection();
 }
 
 void cell::clear_value()
@@ -753,32 +761,44 @@ XLNT_FUNCTION timedelta cell::get_value() const
 
 void cell::set_border(const xlnt::border &border_)
 {
-	get_format().set_border(border_);
+	auto &format = get_workbook().create_format();
+	format.border(border_, true);
+	d_->format_id_ = format.id();
 }
 
 void cell::set_fill(const xlnt::fill &fill_)
 {
-	get_format().set_fill(fill_);
+	auto &format = get_workbook().create_format();
+	format.fill(fill_, true);
+	d_->format_id_ = format.id();
 }
 
 void cell::set_font(const font &font_)
 {
-	get_format().set_font(font_);
+	auto &format = get_workbook().create_format();
+	format.font(font_, true);
+	d_->format_id_ = format.id();
 }
 
 void cell::set_number_format(const number_format &number_format_)
 {
-	get_format().set_number_format(number_format_);
+	auto &format = get_workbook().create_format();
+	format.number_format(number_format_, true);
+	d_->format_id_ = format.id();
 }
 
 void cell::set_alignment(const xlnt::alignment &alignment_)
 {
-	get_format().set_alignment(alignment_);
+	auto &format = get_workbook().create_format();
+	format.alignment(alignment_, true);
+	d_->format_id_ = format.id();
 }
 
 void cell::set_protection(const xlnt::protection &protection_)
 {
-	get_format().set_protection(protection_);
+	auto &format = get_workbook().create_format();
+	format.protection(protection_, true);
+	d_->format_id_ = format.id();
 }
 
 template <>
@@ -800,28 +820,23 @@ bool cell::has_value() const
 
 std::string cell::to_string() const
 {
-    auto nf = get_number_format();
+	auto nf = get_computed_number_format();
 
     switch (get_data_type())
     {
     case cell::type::null:
         return "";
     case cell::type::numeric:
-        return get_number_format().format(get_value<long double>(), get_base_date());
+        return nf.format(get_value<long double>(), get_base_date());
     case cell::type::string:
     case cell::type::formula:
     case cell::type::error:
-        return get_number_format().format(get_value<std::string>());
+        return nf.format(get_value<std::string>());
     case cell::type::boolean:
         return get_value<long double>() == 0 ? "FALSE" : "TRUE";
     default:
         return "";
     }
-}
-
-format &cell::get_format()
-{
-    return get_workbook().get_format(d_->format_id_);
 }
 
 bool cell::has_format() const
@@ -831,7 +846,7 @@ bool cell::has_format() const
 
 void cell::set_format(const format &new_format)
 {
-	d_->format_id_ = get_workbook().create_format().get_id();
+	d_->format_id_ = get_workbook().create_format().id();
 }
 
 calendar cell::get_base_date() const
@@ -894,7 +909,7 @@ void cell::set_style(const style &new_style)
 
 void cell::set_style(const std::string &style_name)
 {
-	d_->style_name_ = style_name;
+	d_->style_name_ = get_workbook().get_style(style_name).name();
 }
 
 style cell::get_style() const
@@ -910,6 +925,105 @@ style cell::get_style() const
 bool cell::has_style() const
 {
     return d_->style_name_;
+}
+
+base_format cell::get_computed_format() const
+{
+	base_format result;
+
+	// Check style first
+
+	if (has_style())
+	{
+		style cell_style = get_style();
+
+		if (cell_style.alignment_applied()) result.alignment(cell_style.alignment(), true);
+		if (cell_style.border_applied()) result.border(cell_style.border(), true);
+		if (cell_style.fill_applied()) result.fill(cell_style.fill(), true);
+		if (cell_style.font_applied()) result.font(cell_style.font(), true);
+		if (cell_style.number_format_applied()) result.number_format(cell_style.number_format(), true);
+		if (cell_style.protection_applied()) result.protection(cell_style.protection(), true);
+	}
+
+	// Cell format overrides style
+
+	if (has_format())
+	{
+		format cell_format = get_format();
+
+		if (cell_format.alignment_applied()) result.alignment(cell_format.alignment(), true);
+		if (cell_format.border_applied()) result.border(cell_format.border(), true);
+		if (cell_format.fill_applied()) result.fill(cell_format.fill(), true);
+		if (cell_format.font_applied()) result.font(cell_format.font(), true);
+		if (cell_format.number_format_applied()) result.number_format(cell_format.number_format(), true);
+		if (cell_format.protection_applied()) result.protection(cell_format.protection(), true);
+	}
+
+	// Use defaults for any remaining non-applied components
+
+	if (!result.alignment_applied()) result.alignment(alignment(), true);
+	if (!result.border_applied()) result.border(border(), true);
+	if (!result.fill_applied()) result.fill(fill(), true);
+	if (!result.font_applied()) result.font(font(), true);
+	if (!result.number_format_applied()) result.number_format(number_format(), true);
+	if (!result.protection_applied()) result.protection(protection(), true);
+
+	return result;
+}
+
+format &cell::get_format_internal()
+{
+	if (!d_->format_id_)
+	{
+		throw invalid_attribute();
+	}
+
+	return get_workbook().get_format(*d_->format_id_);
+}
+
+format cell::get_format() const
+{
+	if (!d_->format_id_)
+	{
+		throw invalid_attribute();
+	}
+
+	return get_workbook().get_format(*d_->format_id_);
+}
+
+alignment cell::get_alignment() const
+{
+	return get_format().alignment();
+}
+
+border cell::get_border() const
+{
+	return get_format().border();
+}
+
+fill cell::get_fill() const
+{
+	return get_format().fill();
+}
+
+font cell::get_font() const
+{
+	return get_format().font();
+}
+
+number_format cell::get_number_format() const
+{
+	return get_format().number_format();
+}
+
+protection cell::get_protection() const
+{
+	return get_format().protection();
+}
+
+bool cell::has_hyperlink() const
+{
+	return d_->hyperlink_;
 }
 
 } // namespace xlnt

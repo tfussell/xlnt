@@ -26,6 +26,7 @@
 #include <string>
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/styles/base_format.hpp>
 
 namespace xlnt {
 
@@ -44,31 +45,26 @@ struct stylesheet;
 /// <summary>
 /// Describes the formatting of a particular cell.
 /// </summary>
-class XLNT_CLASS format
+class XLNT_CLASS format : public base_format
 {
 public:
-	std::size_t get_id() const;
+	std::size_t id() const;
 
-	alignment get_alignment() const;
-	void set_alignment(const alignment &new_alignment);
+	bool has_style() const;
+	void style(const std::string &name);
+	void style(const xlnt::style &new_style);
+	const xlnt::style &style() const;
 
-	border get_border() const;
-	void set_border(const border &new_border);
+	virtual xlnt::number_format &number_format();
+	virtual const xlnt::number_format &number_format() const;
+	void number_format(const xlnt::number_format &new_number_format, bool applied) override;
 
-	fill get_fill() const;
-	void set_fill(const fill &new_fill);
-
-	font get_font() const;
-	void set_font(const font &new_font);
-
-	number_format get_number_format() const;
-	void set_number_format(const number_format &new_number_format);
-
-	protection get_protection() const;
-	void set_protection(const protection &new_protection);
-
-	void set_style(const std::string &name);
-	std::string get_name() const;
+	format &alignment_id(std::size_t id);
+	format &border_id(std::size_t id);
+	format &fill_id(std::size_t id);
+	format &font_id(std::size_t id);
+	format &number_format_id(std::size_t id);
+	format &protection_id(std::size_t id);
 
 private:
 	friend struct detail::stylesheet;

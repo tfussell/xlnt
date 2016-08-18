@@ -34,8 +34,8 @@ comment::comment(detail::comment_impl *d) : d_(d)
 
 comment::comment(cell parent, const std::string &text, const std::string &author) : d_(nullptr)
 {
-    d_->text_ = text;
-    d_->author_ = author;
+    /*d_->text_ = text;
+    d_->author_ = author;*/
 }
 
 comment::comment() : d_(nullptr)

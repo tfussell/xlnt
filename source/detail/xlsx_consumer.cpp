@@ -5,6 +5,7 @@
 #include <detail/constants.hpp>
 #include <detail/include_pugixml.hpp>
 #include <detail/workbook_impl.hpp>
+#include <xlnt/cell/cell.hpp>
 #include <xlnt/utils/path.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/packaging/zip_file.hpp>
@@ -211,6 +212,13 @@ std::string to_string(xlnt::border_side side)
 	switch (side)
 	{
 	case xlnt::border_side::bottom: return "bottom";
+	case xlnt::border_side::top: return "top";
+	case xlnt::border_side::start: return "start";
+	case xlnt::border_side::end: return "end";
+	case xlnt::border_side::horizontal: return "horizontal";
+	case xlnt::border_side::vertical: return "vertical";
+	default:
+	case xlnt::border_side::diagonal: return "diagonal";
 	}
 }
 
@@ -510,130 +518,6 @@ void read_borders(const pugi::xml_node &borders_node, std::vector<xlnt::border> 
 	for (auto border_node : borders_node.children())
 	{
 		borders.push_back(read_border(border_node));
-	}
-}
-
-
-bool read_base_format(const pugi::xml_node &format_node, const xlnt::detail::stylesheet &stylesheet, xlnt::base_format &f)
-{
-	// Alignment
-	f.alignment_applied(format_node.child("alignment") || is_true(format_node.attribute("applyAlignment").value()));
-
-	if (f.alignment_applied())
-	{
-		auto inline_alignment = read_alignment(format_node.child("alignment"));
-		f.set_alignment(inline_alignment);
-	}
-
-	// Border
-	auto border_index = format_node.attribute("borderId") ? string_to_size_t(format_node.attribute("borderId").value()) : 0;
-	f.set_border(stylesheet.borders.at(border_index));
-	f.border_applied(is_true(format_node.attribute("applyBorder").value()));
-
-	// Fill
-	auto fill_index = format_node.attribute("fillId") ? string_to_size_t(format_node.attribute("fillId").value()) : 0;
-	f.set_fill(stylesheet.fills.at(fill_index));
-	f.fill_applied(is_true(format_node.attribute("applyFill").value()));
-
-	// Font
-	auto font_index = format_node.attribute("fontId") ? string_to_size_t(format_node.attribute("fontId").value()) : 0;
-	f.set_font(stylesheet.fonts.at(font_index));
-	f.font_applied(is_true(format_node.attribute("applyFont").value()));
-
-	// Number Format
-	auto number_format_id = string_to_size_t(format_node.attribute("numFmtId").value());
-
-	bool builtin_format = true;
-
-	for (const auto &num_fmt : stylesheet.number_formats)
-	{
-		if (static_cast<std::size_t>(num_fmt.get_id()) == number_format_id)
-		{
-			f.set_number_format(num_fmt);
-			builtin_format = false;
-			break;
-		}
-	}
-
-	if (builtin_format)
-	{
-		try
-		{
-			f.set_number_format(xlnt::number_format::from_builtin_id(number_format_id));
-		}
-		catch (std::runtime_error)
-		{
-			f.set_number_format(xlnt::number_format::general());
-		}
-	}
-
-	f.number_format_applied(is_true(format_node.attribute("applyNumberFormat").value()));
-
-	// Protection
-	f.protection_applied(format_node.attribute("protection") || is_true(format_node.attribute("applyProtection").value()));
-
-	if (f.protection_applied())
-	{
-		auto inline_protection = read_protection(format_node.child("protection"));
-		f.set_protection(inline_protection);
-	}
-
-	return true;
-}
-
-
-void read_formats(const pugi::xml_node &formats_node, const xlnt::detail::stylesheet &stylesheet,
-	std::vector<xlnt::format> &formats, std::vector<std::string> &format_styles)
-{
-	for (auto format_node : formats_node.children("xf"))
-	{
-		xlnt::format format;
-		read_base_format(format_node, stylesheet, format);
-
-		auto style_index = string_to_size_t(format_node.attribute("xfId").value());
-		auto style_name = stylesheet.style_name_map.at(style_index);
-		format_styles.push_back(style_name);
-
-		formats.push_back(format);
-	}
-}
-
-xlnt::style read_style(const pugi::xml_node &style_node, const pugi::xml_node &style_format_node, const xlnt::detail::stylesheet &stylesheet)
-{
-	xlnt::style s;
-
-	read_base_format(style_format_node, stylesheet, s);
-
-	s.name(style_node.attribute("name").value());
-	s.hidden(style_node.attribute("hidden") && is_true(style_node.attribute("hidden").value()));
-	s.built_in_id(string_to_size_t(style_node.attribute("builtinId").value()));
-
-	return s;
-}
-
-void read_styles(const pugi::xml_node &styles_node, const pugi::xml_node &style_formats_node, const xlnt::detail::stylesheet stylesheet, std::vector<xlnt::style> &styles, std::unordered_map<std::size_t, std::string> &style_names)
-{
-	std::size_t style_index = 0;
-
-	for (auto cell_style_format_node : style_formats_node.children())
-	{
-		bool match = false;
-
-		for (auto cell_style_node : styles_node.children())
-		{
-			auto cell_style_format_index = std::stoull(cell_style_node.attribute("xfId").value());
-
-			if (cell_style_format_index == style_index)
-			{
-				styles.push_back(read_style(cell_style_node, cell_style_format_node, stylesheet));
-				style_names[style_index] = styles.back().get_name();
-				match = true;
-
-				break;
-			}
-		}
-
-		style_index++;
 	}
 }
 
@@ -1153,8 +1037,103 @@ void xlsx_consumer::read_stylesheet(const pugi::xml_node root)
 	read_fonts(stylesheet_node.child("fonts"), stylesheet.fonts);
 	read_number_formats(stylesheet_node.child("numFmts"), stylesheet.number_formats);
 	read_colors(stylesheet_node.child("colors"), stylesheet.colors);
-	read_styles(stylesheet_node.child("cellStyles"), stylesheet_node.child("cellStyleXfs"), stylesheet, stylesheet.styles, stylesheet.style_name_map);
-	read_formats(stylesheet_node.child("cellXfs"), stylesheet, stylesheet.formats, stylesheet.format_styles);
+
+	auto cell_styles_node = stylesheet_node.child("cellStyles");
+	auto cell_style_range = cell_styles_node.children("cellStyle");
+	auto cell_style_iter = cell_style_range.begin();
+	auto cell_style_xfs_node = stylesheet_node.child("cellStyleXfs");
+
+	for (auto xf_node : cell_style_xfs_node.children("xf"))
+	{
+		auto cell_style_node = *(cell_style_iter++);
+		auto &style = destination_.create_style(cell_style_node.attribute("Name").value());
+
+		// Alignment
+		auto alignment_node = xf_node.child("alignment");
+		auto apply_alignment_attr = xf_node.attribute("applyAlignment");
+		auto alignment_applied = apply_alignment_attr ? is_true(xf_node.attribute("applyAlignment").value()) : alignment_node != nullptr;
+		auto alignment = alignment_node ? read_alignment(alignment_node) : xlnt::alignment();
+		style.alignment(alignment, alignment_applied);
+
+		// Border
+		auto border_applied = is_true(xf_node.attribute("applyBorder").value());
+		auto border_index = xf_node.attribute("borderId") ? string_to_size_t(xf_node.attribute("borderId").value()) : 0;
+		auto border = stylesheet.borders.at(border_index);
+		style.border(stylesheet.borders.at(border_index), border_applied);
+
+		// Fill
+		auto fill_applied = is_true(xf_node.attribute("applyFill").value());
+		auto fill_index = xf_node.attribute("fillId") ? string_to_size_t(xf_node.attribute("fillId").value()) : 0;
+		auto fill = stylesheet.fills.at(fill_index);
+		style.fill(fill, fill_applied);
+
+		// Font
+		auto font_applied = is_true(xf_node.attribute("applyFont").value());
+		auto font_index = xf_node.attribute("fontId") ? string_to_size_t(xf_node.attribute("fontId").value()) : 0;
+		auto font = stylesheet.fonts.at(font_index);
+		style.font(font, font_applied);
+
+		// Number Format
+		auto number_format_applied = is_true(xf_node.attribute("applyNumberFormat").value());
+		auto number_format_id = xf_node.attribute("numFmtId") ? string_to_size_t(xf_node.attribute("numFmtId").value()) : 0;
+		auto number_format = stylesheet.number_formats.at(number_format_id);
+		style.number_format(number_format, number_format_applied);
+
+		// Protection
+		auto protection_node = xf_node.child("protection");
+		auto apply_protection_attr = xf_node.attribute("applyProtection");
+		auto protection_applied = apply_protection_attr ? is_true(apply_protection_attr.value()) : protection_node != nullptr;
+		auto protection = protection_node ? read_protection(protection_node) : xlnt::protection();
+		style.protection(protection, protection_applied);
+	}
+
+	for (auto xf_node : stylesheet_node.child("cellXfs").children("xf"))
+	{
+		auto &format = destination_.create_format();
+
+		// Alignment
+		auto alignment_node = xf_node.child("alignment");
+		auto apply_alignment_attr = xf_node.attribute("applyAlignment");
+		auto alignment_applied = apply_alignment_attr ? is_true(xf_node.attribute("applyAlignment").value()) : alignment_node != nullptr;
+		auto alignment = alignment_node ? read_alignment(alignment_node) : xlnt::alignment();
+		format.alignment(alignment, alignment_applied);
+
+		// Border
+		auto border_applied = is_true(xf_node.attribute("applyBorder").value());
+		auto border_index = xf_node.attribute("borderId") ? string_to_size_t(xf_node.attribute("borderId").value()) : 0;
+		auto border = stylesheet.borders.at(border_index);
+		format.border(stylesheet.borders.at(border_index), border_applied);
+
+		// Fill
+		auto fill_applied = is_true(xf_node.attribute("applyFill").value());
+		auto fill_index = xf_node.attribute("fillId") ? string_to_size_t(xf_node.attribute("fillId").value()) : 0;
+		auto fill = stylesheet.fills.at(fill_index);
+		format.fill(fill, fill_applied);
+
+		// Font
+		auto font_applied = is_true(xf_node.attribute("applyFont").value());
+		auto font_index = xf_node.attribute("fontId") ? string_to_size_t(xf_node.attribute("fontId").value()) : 0;
+		auto font = stylesheet.fonts.at(font_index);
+		format.font(font, font_applied);
+
+		// Number Format
+		auto number_format_applied = is_true(xf_node.attribute("applyNumberFormat").value());
+		auto number_format_id = xf_node.attribute("numFmtId") ? string_to_size_t(xf_node.attribute("numFmtId").value()) : 0;
+		auto number_format = stylesheet.number_formats.at(number_format_id);
+		format.number_format(number_format, number_format_applied);
+
+		// Protection
+		auto protection_node = xf_node.child("protection");
+		auto apply_protection_attr = xf_node.attribute("applyProtection");
+		auto protection_applied = apply_protection_attr ? is_true(apply_protection_attr.value()) : protection_node != nullptr;
+		auto protection = protection_node ? read_protection(protection_node) : xlnt::protection();
+		format.protection(protection, protection_applied);
+		
+		// Style
+		auto style_index = string_to_size_t(xf_node.attribute("xfId").value());
+		auto style_name = stylesheet.styles.at(style_index).name();
+		format.style(stylesheet.get_style(style_name));
+	}
 }
 
 void xlsx_consumer::read_theme(const pugi::xml_node root)
@@ -1338,7 +1317,7 @@ void xlsx_consumer::read_worksheet(const pugi::xml_node root, const std::string 
 
 				if (has_format)
 				{
-					cell.set_format_id(format_id);
+					cell.set_format(destination_.get_format(format_id));
 				}
 			}
 		}

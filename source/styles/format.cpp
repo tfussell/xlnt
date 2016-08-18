@@ -22,15 +22,77 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#include <xlnt/styles/format.hpp>
-#include <xlnt/styles/alignment.hpp>
-#include <xlnt/styles/border.hpp>
-#include <xlnt/styles/fill.hpp>
-#include <xlnt/styles/font.hpp>
-#include <xlnt/styles/number_format.hpp>
-#include <xlnt/styles/protection.hpp>
 #include <detail/format_impl.hpp>
+#include <detail/stylesheet.hpp>
+#include <xlnt/styles/format.hpp>
+#include <xlnt/styles/style.hpp>
 
 namespace xlnt {
+
+format::format(detail::format_impl *d) : d_(d)
+{
+}
+
+std::size_t format::id() const
+{
+	return d_->id;
+}
+
+void format::style(const xlnt::style &new_style)
+{
+	d_->style = new_style.name();
+}
+
+void format::style(const std::string &new_style)
+{
+	for (auto &style : d_->parent->styles)
+	{
+		if (style.name() == new_style)
+		{
+			d_->style = new_style;
+			return;
+		}
+	}
+
+	throw key_not_found();
+}
+
+bool format::has_style() const
+{
+	return d_->style;
+}
+
+const style &format::style() const
+{
+	if (!has_style())
+	{
+		throw invalid_attribute();
+	}
+
+	return d_->parent->get_style(*d_->style);
+}
+
+xlnt::number_format &format::number_format()
+{
+	return base_format::number_format();
+}
+
+const xlnt::number_format &format::number_format() const
+{
+	return base_format::number_format();
+}
+
+void format::number_format(const xlnt::number_format &new_number_format, bool applied)
+{
+	auto copy = new_number_format;
+
+	if (!copy.has_id())
+	{
+		copy.set_id(d_->parent->next_custom_number_format_id());
+		d_->parent->number_formats.push_back(copy);
+	}
+
+	base_format::number_format(copy, applied);
+}
 
 } // namespace xlnt

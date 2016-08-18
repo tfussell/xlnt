@@ -346,7 +346,7 @@ cell worksheet::get_cell(const cell_reference &reference)
 
     if (row.find(reference.get_column_index()) == row.end())
     {
-        auto impl = row[reference.get_column_index()] = detail::cell_impl();
+        auto &impl = row[reference.get_column_index()] = detail::cell_impl();
 		impl.parent_ = d_;
 		impl.column_ = reference.get_column_index();
 		impl.row_ = reference.get_row();

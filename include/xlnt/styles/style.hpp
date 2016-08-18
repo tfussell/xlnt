@@ -26,6 +26,7 @@
 #include <cstdint>
 #include <string>
 
+#include <xlnt/xlnt_config.hpp>
 #include <xlnt/styles/base_format.hpp>
 
 namespace xlnt {
@@ -39,7 +40,7 @@ struct stylesheet;
 /// Describes a style which has a name and can be applied to multiple individual
 /// formats. In Excel this is a "Cell Style".
 /// </summary>
-class XLNT_CLASS style
+class XLNT_CLASS style : public base_format
 {
 public:
     std::string name() const;
@@ -48,11 +49,20 @@ public:
     bool hidden() const;
 	style &hidden(bool value);
 
-	bool custom() const;
+	optional<bool> custom() const;
 	style &custom(bool value);
     
-    std::size_t built_in_id() const;
-	style &built_in_id(std::size_t builtin_id);
+    optional<std::size_t> builtin_id() const;
+	style &builtin_id(std::size_t builtin_id);
+
+	style &alignment_id(std::size_t id);
+	style &border_id(std::size_t id);
+	style &fill_id(std::size_t id);
+	style &font_id(std::size_t id);
+	style &number_format_id(std::size_t id);
+	style &protection_id(std::size_t id);
+
+	bool operator==(const style &other);
 
 private:
 	friend struct detail::stylesheet;

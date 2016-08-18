@@ -103,6 +103,15 @@ private:
 	void write_unknown_parts();
 	void write_unknown_relationships();
 
+	// Helpers
+
+	/// <summary>
+	/// Some XLSX producers write booleans as "true" or "false" while others use "1" and "0".
+	/// Both are valid, but we can use this method to write either depending on the producer
+	/// we're trying to match.
+	/// </summary>
+	std::string write_bool(bool boolean) const;
+
 	/// <summary>
 	/// A reference to the workbook which is the object of read/write operations.
 	/// </summary>

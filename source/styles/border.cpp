@@ -74,6 +74,13 @@ optional<border::border_property> border::side(border_side s) const
 	switch (s)
 	{
 	case border_side::bottom: return bottom_;
+	case border_side::top: return top_;
+	case border_side::start: return start_;
+	case border_side::end: return end_;
+	case border_side::vertical: return vertical_;
+	case border_side::horizontal: return horizontal_;
+	default:
+	case border_side::diagonal: return diagonal_;
 	}
 }
 
@@ -81,8 +88,28 @@ border &border::side(border_side s, const border_property &prop)
 {
 	switch (s)
 	{
-	case border_side::bottom: bottom_ = prop;
+	case border_side::bottom: bottom_ = prop; break;
+	case border_side::top: top_ = prop; break;
+	case border_side::start: start_ = prop; break;
+	case border_side::end: end_ = prop; break;
+	case border_side::vertical: vertical_ = prop; break;
+	case border_side::horizontal: horizontal_ = prop; break;
+	default:
+	case border_side::diagonal: diagonal_ = prop; break;
 	}
+
+	return *this;
+}
+
+border &border::diagonal(diagonal_direction direction)
+{
+	diagonal_direction_ = direction;
+	return *this;
+}
+
+optional<diagonal_direction> border::diagonal() const
+{
+	return diagonal_direction_;
 }
 
 std::string border::to_hash_string() const

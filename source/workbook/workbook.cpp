@@ -139,11 +139,29 @@ workbook workbook::empty_excel()
 	ws.d_->has_format_properties_ = true;
 	ws.d_->has_view_ = true;
 
-	wb.create_format();
-	wb.create_style("Normal");
-	wb.set_theme(theme());
-
+	wb.d_->stylesheet_.fills.push_back(pattern_fill().type(pattern_fill_type::none));
 	wb.d_->stylesheet_.fills.push_back(pattern_fill().type(pattern_fill_type::gray125));
+
+	auto default_font = font().name("Calibri").size(12).scheme("minor").family(2).color(theme_color(1));
+	wb.d_->stylesheet_.fonts.push_back(default_font);
+
+	auto default_border = border().side(border_side::bottom, border::border_property())
+		.side(border_side::top, border::border_property())
+		.side(border_side::start, border::border_property())
+		.side(border_side::end, border::border_property())
+		.side(border_side::diagonal, border::border_property());
+	wb.d_->stylesheet_.borders.push_back(default_border);
+
+	auto &normal_style = wb.create_style("Normal").builtin_id(0);
+	normal_style.font(default_font, false);
+	normal_style.border(default_border, false);
+
+	auto &default_format = wb.create_format();
+	default_format.font(default_font, false);
+	default_format.border(default_border, false);
+	default_format.style("Normal");
+
+	wb.set_theme(theme());
 
 	return wb;
 }
@@ -182,60 +200,123 @@ workbook workbook::empty_libre_office()
 		relationship::type::worksheet, uri("worksheets/sheet1.xml"), target_mode::internal);
 	wb.d_->sheet_title_rel_id_map_[title] = ws_rel;
 
-	wb.d_->stylesheet_.number_formats.push_back(xlnt::number_format("General", 164));
-	wb.d_->stylesheet_.fonts.push_back(xlnt::font().size(10).name("Arial").family(2));
-	wb.d_->stylesheet_.fonts.push_back(xlnt::font().size(10).name("Arial").family(0));
-	wb.d_->stylesheet_.fills.push_back(xlnt::pattern_fill().type(pattern_fill_type::none));
-	wb.d_->stylesheet_.fills.push_back(xlnt::pattern_fill().type(pattern_fill_type::gray125));
-	wb.d_->stylesheet_.borders.push_back(xlnt::border().diagonal(xlnt::diagonal_direction::neither));
+	auto ws = wb.get_sheet_by_index(0);
+	ws.d_->has_format_properties_ = true;
+	ws.d_->has_view_ = true;
+	ws.d_->has_dimension_ = true;
+	page_margins margins;
+	margins.set_left(0.7875);
+	margins.set_right(0.7875);
+	margins.set_top(1.05277777777778);
+	margins.set_bottom(1.05277777777778);
+	margins.set_header(0.7875);
+	margins.set_footer(0.7875);
+	ws.set_page_margins(margins);
+	ws.set_page_setup(page_setup());
+	ws.get_header_footer().get_center_header().set_font_name("&C&\"Times New Roman\"&12&A");
+	ws.get_header_footer().get_center_footer().set_font_name("&C&\"Times New Roman\"&12Page &B");
+	ws.add_column_properties(1, column_properties());
 
-	auto alignment = xlnt::alignment()
+	auto default_alignment = xlnt::alignment()
 		.horizontal(horizontal_alignment::general)
 		.vertical(vertical_alignment::bottom)
 		.rotation(0)
 		.wrap(false)
 		.indent(0)
 		.shrink(false);
+	wb.d_->stylesheet_.alignments.push_back(default_alignment);
 
-	auto protection = xlnt::protection()
+	auto default_border = border().side(border_side::bottom, border::border_property())
+		.side(border_side::top, border::border_property())
+		.side(border_side::start, border::border_property())
+		.side(border_side::end, border::border_property())
+		.side(border_side::diagonal, border::border_property())
+		.diagonal(diagonal_direction::neither);
+	wb.d_->stylesheet_.borders.push_back(default_border);
+
+	auto default_fill = xlnt::fill(xlnt::pattern_fill().type(pattern_fill_type::none));
+	wb.d_->stylesheet_.fills.push_back(default_fill);
+
+	auto gray125_fill = xlnt::fill(xlnt::pattern_fill().type(pattern_fill_type::gray125));
+	wb.d_->stylesheet_.fills.push_back(gray125_fill);
+
+	auto default_font = font().name("Arial").size(10).family(2);
+	wb.d_->stylesheet_.fonts.push_back(default_font);
+
+	auto second_font = font().name("Arial").size(10).family(0);
+	wb.d_->stylesheet_.fonts.push_back(second_font);
+
+	auto default_number_format = xlnt::number_format();
+	default_number_format.set_format_string("General");
+	default_number_format.set_id(164);
+	wb.d_->stylesheet_.number_formats.push_back(default_number_format);
+
+	auto default_protection = xlnt::protection()
 		.locked(true)
 		.hidden(false);
+	wb.d_->stylesheet_.protections.push_back(default_protection);
 
-	wb.create_style("Normal").built_in_id(0).custom(false);
-	wb.create_style("Comma").built_in_id(0).custom(false);
-	wb.create_style("Comma [0]").built_in_id(0).custom(false);
-	wb.create_style("Currency").built_in_id(0).custom(false);
-	wb.create_style("Currency [0]").built_in_id(0).custom(false);
-	wb.create_style("Percent").built_in_id(0).custom(false);
+	auto &normal_style = wb.create_style("Normal").builtin_id(0).custom(false);
+	normal_style.alignment(default_alignment, false);
+	normal_style.border(default_border, true);
+	normal_style.fill(default_fill, true);
+	normal_style.font(default_font, true);
+	normal_style.number_format(default_number_format, false);
+	normal_style.protection(default_protection, false);
 
-	/*
-	wb.d_->stylesheet_.styles.push_back(xlnt::style().name("Normal")
-		.builtin_id(0).custom(false).number_format_id(164)
-		.font_id(0).fill_id(0).border_id(0).font_applied(true)
-		.border_applied(true).alignment(alignment).protection(protection));
-	wb.d_->stylesheet_.styles.push_back(xlnt::style().name("Comma")
-		.builtin_id(3).custom(false).number_format_id(164)
-		.number_format_id(43).font_id(1).fill_id(0).border_id(0).font_applied(true));
-	wb.d_->stylesheet_.styles.push_back(xlnt::style().name("Comma [0]")
-		.builtin_id(6).custom(false).number_format_id(164)
-		.number_format_id(41).font_id(1).fill_id(0).border_id(0).font_applied(true));
-	wb.d_->stylesheet_.styles.push_back(xlnt::style().name("Currency")
-		.builtin_id(4).custom(false).number_format_id(164)
-		.number_format_id(44).font_id(1).fill_id(0).border_id(0).font_applied(true));
-	wb.d_->stylesheet_.styles.push_back(xlnt::style().name("Currency[0]")
-		.builtin_id(7).custom(false).number_format_id(164)
-		.number_format_id(42).font_id(1).fill_id(0).border_id(0).font_applied(true));
-	wb.d_->stylesheet_.styles.push_back(xlnt::style().name("Percent")
-		.builtin_id(5).custom(false).number_format_id(164)
-		.number_format_id(9).font_id(1).fill_id(0).border_id(0).font_applied(true));
-	*/
+	auto &comma_style = wb.create_style("Comma").builtin_id(3).custom(false);
+	comma_style.alignment(default_alignment, false);
+	comma_style.border(default_border, true);
+	comma_style.fill(default_fill, true);
+	comma_style.font(second_font, true);
+	comma_style.number_format(number_format::from_builtin_id(43), false);
+	comma_style.protection(default_protection, false);
 
+	auto &comma0_style = wb.create_style("Comma [0]").builtin_id(6).custom(false);
+	comma0_style.alignment(default_alignment, false);
+	comma0_style.border(default_border, true);
+	comma0_style.fill(default_fill, true);
+	comma0_style.font(second_font, true);
+	comma0_style.number_format(number_format::from_builtin_id(41), false);
+	comma0_style.protection(default_protection, false);
+
+	auto &currency_style = wb.create_style("Currency").builtin_id(4).custom(false);
+	currency_style.alignment(default_alignment, false);
+	currency_style.border(default_border, true);
+	currency_style.fill(default_fill, true);
+	currency_style.font(second_font, true);
+	currency_style.number_format(number_format::from_builtin_id(44), false);
+	currency_style.protection(default_protection, false);
+
+	auto &currency0_style = wb.create_style("Currency [0]").builtin_id(7).custom(false);
+	currency0_style.alignment(default_alignment, false);
+	currency0_style.border(default_border, true);
+	currency0_style.fill(default_fill, true);
+	currency0_style.font(second_font, true);
+	currency0_style.number_format(number_format::from_builtin_id(42), false);
+	currency0_style.protection(default_protection, false);
+
+	auto &percent_style = wb.create_style("Percent").builtin_id(5).custom(false);
+	percent_style.alignment(default_alignment, false);
+	percent_style.border(default_border, true);
+	percent_style.fill(default_fill, false);
+	percent_style.font(second_font, true);
+	percent_style.number_format(number_format::percentage(), false);
+	percent_style.protection(default_protection, false);
 
 	auto &format = wb.create_format();
-	format.set_number_format(number_format("General", 164));
-	format.set_alignment(alignment);
-	format.set_protection(protection);
-	format.set_style("Normal");
+	format.number_format(default_number_format, true);
+	format.alignment(default_alignment, true);
+	format.protection(default_protection, true);
+	format.style("Normal");
+
+	wb.d_->has_file_version_ = true;
+	wb.d_->file_version_.app_name = "Calc";
+	wb.d_->has_properties_ = true;
+	wb.d_->has_view_ = true;
+	wb.d_->has_calculation_properties_ = true;
+	wb.d_->application_ = "LibreOffice/5.1.4.2$Windows_x86 LibreOffice_project/f99d75f39f1c57ebdd7ffc5f42867c12031db97a";
+	wb.d_->short_bools_ = false;
 
 	return wb;
 }

@@ -73,7 +73,6 @@ public:
         TS_ASSERT(cell.get_row() == 1);
         TS_ASSERT(cell.get_reference() == "A1");
         TS_ASSERT(!cell.has_value());
-        TS_ASSERT(!cell.has_comment());
     }
 
     void test_null()
@@ -297,37 +296,6 @@ public:
         TS_ASSERT(cell.to_repr() == "<Cell Sheet2.A1>");
     }
     
-    void test_comment_assignment()
-    {
-        auto ws = wb.create_sheet();
-        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
-        
-        TS_ASSERT(!cell.has_comment());
-        xlnt::comment comm(cell, "text", "author");
-        TS_ASSERT(cell.get_comment() == comm);
-        cell.set_comment(comm);
-    }
-    
-    void test_only_one_cell_per_comment()
-    {
-        auto ws = wb.create_sheet();
-        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
-        xlnt::comment comm(cell, "text", "author");
-    
-        auto c2 = ws.get_cell(xlnt::cell_reference(1, 2));
-        TS_ASSERT_THROWS(c2.set_comment(comm), xlnt::invalid_attribute);
-    }
-    
-    void test_remove_comment()
-    {
-        auto ws = wb.create_sheet();
-        auto cell = ws.get_cell(xlnt::cell_reference(1, 1));
-        
-        xlnt::comment comm(cell, "text", "author");
-        cell.clear_comment();
-        TS_ASSERT(!cell.has_comment());
-    }
-    
     void test_cell_offset()
     {
         auto ws = wb.create_sheet();
@@ -340,8 +308,7 @@ public:
         auto ws = wb.create_sheet();    
         auto cell = ws.get_cell("A1");
 
-        xlnt::font font;
-        font.set_bold(true);
+		auto font = xlnt::font().bold(true);
         
         cell.set_font(font);
         
@@ -398,7 +365,7 @@ public:
         auto cell = ws.get_cell("A1");
         
         xlnt::alignment align;
-        align.set_wrap_text(true);
+        align.wrap(true);
     
         cell.set_alignment(align);
         
@@ -414,11 +381,12 @@ public:
 
         TS_ASSERT(!cell.has_format());
 
-        cell.set_protection(xlnt::protection(false, true));
+		auto protection = xlnt::protection().locked(false).hidden(true);
+        cell.set_protection(protection);
         
         TS_ASSERT(cell.has_format());
         TS_ASSERT(cell.get_format().protection_applied());
-        TS_ASSERT_EQUALS(cell.get_protection(), xlnt::protection(false, true));
+        TS_ASSERT_EQUALS(cell.get_protection(), protection);
         
         TS_ASSERT(cell.has_format());
         cell.clear_format();
@@ -433,25 +401,25 @@ public:
         TS_ASSERT(!cell.has_style());
         
         auto &test_style = wb.create_style("test_style");
-        test_style.set_number_format(xlnt::number_format::date_ddmmyyyy());
+        test_style.number_format(xlnt::number_format::date_ddmmyyyy(), true);
         
         cell.set_style(test_style);
         TS_ASSERT(cell.has_style());
-        TS_ASSERT_EQUALS(cell.get_style().get_number_format(), xlnt::number_format::date_ddmmyyyy());
+        TS_ASSERT_EQUALS(cell.get_style().number_format(), xlnt::number_format::date_ddmmyyyy());
         TS_ASSERT_EQUALS(cell.get_style(), test_style);
 
         auto &other_style = wb.create_style("other_style");
-        other_style.set_number_format(xlnt::number_format::date_time2());
+        other_style.number_format(xlnt::number_format::date_time2(), true);
         
         cell.set_style("other_style");
-        TS_ASSERT_EQUALS(cell.get_style().get_number_format(), xlnt::number_format::date_time2());
+        TS_ASSERT_EQUALS(cell.get_style().number_format(), xlnt::number_format::date_time2());
         TS_ASSERT_EQUALS(cell.get_style(), other_style);
         
-        xlnt::style last_style;
-        last_style.set_number_format(xlnt::number_format::percentage());
+		auto &last_style = wb.create_style("last_style");
+        last_style.number_format(xlnt::number_format::percentage(), true);
         
         cell.set_style(last_style);
-        TS_ASSERT_EQUALS(cell.get_style().get_number_format(), xlnt::number_format::percentage());
+        TS_ASSERT_EQUALS(cell.get_style().number_format(), xlnt::number_format::percentage());
         TS_ASSERT_EQUALS(cell.get_style(), last_style);
         
         TS_ASSERT_THROWS(cell.set_style("doesn't exist"), xlnt::key_not_found);
@@ -602,20 +570,6 @@ public:
         cell2.set_value(std::string(100'000, 'a'));
         cell.set_value(cell2);
         TS_ASSERT_EQUALS(cell.get_value<std::string>(), std::string(32'767, 'a'));
-    }
-
-    void test_comment()
-    {
-        xlnt::workbook wb;
-        auto cell_a1 = wb.get_active_sheet().get_cell("A1");
-        xlnt::comment comment(cell_a1, "text", "author");
-        auto cell_a2 = wb.get_active_sheet().get_cell("A2");
-        cell_a2 = cell_a1;
-        TS_ASSERT(cell_a2.has_comment());
-        TS_ASSERT_EQUALS(cell_a2.get_comment().get_text(), "text");
-        TS_ASSERT_EQUALS(cell_a2.get_comment().get_author(), "author");
-        xlnt::comment null;
-        TS_ASSERT_DIFFERS(null, comment);
     }
 
     void test_reference()

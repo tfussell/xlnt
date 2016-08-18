@@ -33,6 +33,10 @@
 
 namespace xlnt {
 
+style::style(detail::style_impl *d) : d_(d)
+{
+}
+
 bool style::hidden() const
 {
     return d_->hidden_style;
@@ -41,16 +45,18 @@ bool style::hidden() const
 style &style::hidden(bool value)
 {
     d_->hidden_style = value;
+	return *this;
 }
 
-std::size_t style::built_in_id() const
+optional<std::size_t> style::builtin_id() const
 {
-    return d_->built_in_style_id;
+    return d_->builtin_id;
 }
 
-style &style::built_in_id(std::size_t builtin_id)
+style &style::builtin_id(std::size_t builtin_id)
 {
-    d_->built_in_style_id = builtin_id;
+    d_->builtin_id = builtin_id;
+	return *this;
 }
 
 std::string style::name() const
@@ -61,6 +67,23 @@ std::string style::name() const
 style &style::name(const std::string &name)
 {
     d_->name = name;
+	return *this;
+}
+
+optional<bool> style::custom() const
+{
+	return d_->custom_builtin;
+}
+
+style &style::custom(bool value)
+{
+	d_->custom_builtin = value;
+	return *this;
+}
+
+bool style::operator==(const style &other)
+{
+	return d_ == other.d_;
 }
 
 } // namespace xlnt

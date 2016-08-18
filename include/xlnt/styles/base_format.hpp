@@ -36,79 +36,59 @@ namespace xlnt {
 /// <summary>
 /// Describes the formatting of a particular cell.
 /// </summary>
-class XLNT_CLASS base_format : public hashable
+class XLNT_CLASS base_format
 {
 public:
-    base_format();
-    base_format(const base_format &other);
-    base_format &operator=(const base_format &other);
-    
-    void reset();
-
     // Alignment
-    alignment &get_alignment();
-    const alignment &get_alignment() const;
-    void set_alignment(const alignment &new_alignment);
-    void remove_alignment();
+    xlnt::alignment &alignment();
+    const xlnt::alignment &alignment() const;
+    void alignment(const xlnt::alignment &new_alignment, bool applied);
     bool alignment_applied() const;
-    void alignment_applied(bool applied);
     
     // Border
-    border &get_border();
-    const border &get_border() const;
-    void set_border(const border &new_border);
-    void remove_border();
+	xlnt::border &border();
+    const xlnt::border &border() const;
+    void border(const xlnt::border &new_border, bool applied);
     bool border_applied() const;
-    void border_applied(bool applied);
     
     // Fill
-    fill &get_fill();
-    const fill &get_fill() const;
-    void set_fill(const fill &new_fill);
-    void remove_fill();
+	xlnt::fill &fill();
+    const xlnt::fill &fill() const;
+    void fill(const xlnt::fill &new_fill, bool applied);
     bool fill_applied() const;
-    void fill_applied(bool applied);
     
     // Font
-    font &get_font();
-    const font &get_font() const;
-    void set_font(const font &new_font);
-    void remove_font();
+	xlnt::font &font();
+    const xlnt::font &font() const;
+    void font(const xlnt::font &new_font, bool applied);
     bool font_applied() const;
-    void font_applied(bool applied);
     
     // Number Format
-    number_format &get_number_format();
-    const number_format &get_number_format() const;
-    void set_number_format(const number_format &new_number_format);
-    void remove_number_format();
+	virtual xlnt::number_format &number_format();
+    virtual const xlnt::number_format &number_format() const;
+    virtual void number_format(const xlnt::number_format &new_number_format, bool applied);
     bool number_format_applied() const;
-    void number_format_applied(bool applied);
     
     // Protection
-    protection &get_protection();
-    const protection &get_protection() const;
-    void set_protection(const protection &new_protection);
-    void remove_protection();
+    xlnt::protection &protection();
+    const xlnt::protection &protection() const;
+    void protection(const xlnt::protection &new_protection, bool applied);
     bool protection_applied() const;
-    void protection_applied(bool applied);
     
 protected:
-    std::string to_hash_string() const override;
-
-    alignment alignment_;
-    border border_;
-    fill fill_;
-    font font_;
-    number_format number_format_;
-    protection protection_;
+	xlnt::alignment alignment_;
+	xlnt::border border_;
+	xlnt::fill fill_;
+	xlnt::font font_;
+	xlnt::number_format number_format_;
+	xlnt::protection protection_;
     
-    bool apply_alignment_;
-    bool apply_border_;
-    bool apply_fill_;
-    bool apply_font_;
-    bool apply_number_format_;
-    bool apply_protection_;
+    bool apply_alignment_ = false;
+    bool apply_border_ = false;
+    bool apply_fill_ = false;
+    bool apply_font_ = false;
+    bool apply_number_format_ = false;
+    bool apply_protection_ = false;
 };
 
 } // namespace xlnt

@@ -23,6 +23,7 @@
 // @author: see AUTHORS file
 #pragma once
 
+#include <list>
 #include <string>
 #include <vector>
 
@@ -43,28 +44,35 @@ struct stylesheet
 
     format &create_format()
     {
-		formats.push_back(format_impl());
-		return format(&formats.back());
+		format_impls.push_back(format_impl());
+		auto &impl = format_impls.back();
+		impl.parent = this;
+		impl.id = format_impls.size() - 1;
+		formats.push_back(format(&impl));
+		return formats.back();
     }
 
 	format &get_format(std::size_t index)
 	{
-		return format(&formats.at(index));
+		return formats.at(index);
 	}
     
     style &create_style()
     {
-		styles.push_back(style_impl());
-		return style(&styles.back());
+		style_impls.push_back(style_impl());
+		auto &impl = style_impls.back();
+		impl.parent = this;
+		styles.push_back(style(&impl));
+		return styles.back();
     }
 
 	style &get_style(const std::string &name)
 	{
 		for (auto &s : styles)
 		{
-			if (s.name == name)
+			if (s.name() == name)
 			{
-				return style(&s);
+				return s;
 			}
 		}
 
@@ -75,7 +83,7 @@ struct stylesheet
 	{
 		for (auto &s : styles)
 		{
-			if (s.name == name)
+			if (s.name() == name)
 			{
 				return true;
 			}
@@ -84,8 +92,26 @@ struct stylesheet
 		return false;
 	}
 
-    std::vector<format_impl> formats;
-    std::vector<style_impl> styles;
+	std::size_t next_custom_number_format_id() const
+	{
+		std::size_t id = 164;
+
+		for (const auto &nf : number_formats)
+		{
+			if (nf.get_id() > id)
+			{
+				id = nf.get_id() + 1;
+			}
+		}
+
+		return id;
+	}
+
+    std::list<format_impl> format_impls;
+	std::vector<format> formats;
+
+    std::list<style_impl> style_impls;
+	std::vector<style> styles;
 
 	std::vector<alignment> alignments;
     std::vector<border> borders;

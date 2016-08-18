@@ -68,7 +68,8 @@ struct workbook_impl
 		has_code_name_(false),
 		has_file_version_(false),
 		has_calculation_properties_(false),
-		has_arch_id_(false)
+		has_arch_id_(false),
+		short_bools_(true)
 	{
 	}
 
@@ -114,7 +115,8 @@ struct workbook_impl
 		  has_file_version_(other.has_file_version_),
 		  file_version_(other.file_version_),
 		  has_calculation_properties_(other.has_calculation_properties_),
-		  has_arch_id_(other.has_arch_id_)
+		  has_arch_id_(other.has_arch_id_),
+		  short_bools_(other.short_bools_)
     {
     }
 
@@ -169,6 +171,8 @@ struct workbook_impl
 
 		has_calculation_properties_ = other.has_calculation_properties_;
 		has_arch_id_ = other.has_arch_id_;
+
+		short_bools_ = other.short_bools_;
 
         return *this;
     }
@@ -235,6 +239,8 @@ struct workbook_impl
 
 	bool has_calculation_properties_;
 	bool has_arch_id_;
+
+	bool short_bools_;
 };
 
 } // namespace detail

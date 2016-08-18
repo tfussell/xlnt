@@ -253,10 +253,10 @@ public:
         TS_ASSERT(wb.get_active_sheet().get_cell("B2").has_style());
         wb.clear_styles();
         TS_ASSERT(!wb.get_active_sheet().get_cell("B2").has_style());
-        xlnt::format format;
+		xlnt::format format = wb.create_format();
         xlnt::font font;
-        font.set_size(41);
-        format.set_font(font);
+        font.size(41);
+        format.font(font, true);
         wb.get_active_sheet().get_cell("B2").set_format(format);
         TS_ASSERT(wb.get_active_sheet().get_cell("B2").has_format());
         wb.clear_formats();
@@ -282,6 +282,5 @@ public:
         wb.create_style("style1");
         wb.get_style("style1");
         wb_const.get_style("style1");
-        wb.get_style_by_id(0);
     }
 };

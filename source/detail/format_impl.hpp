@@ -27,14 +27,16 @@ struct format_impl
 {
 	stylesheet *parent;
 
-	std::size_t formatting_record_id;
+	std::size_t id;
 
-	optional<alignment> alignment;
-	optional<border> border;
-	optional<fill> fill;
-	optional<font> font;
-	optional<number_format> number_format;
-	optional<protection> protection;
+	optional<std::size_t> alignment;
+	optional<std::size_t> border;
+	optional<std::size_t> fill;
+	optional<std::size_t> font;
+	optional<std::size_t> number_format;
+	optional<std::size_t> protection;
+
+	optional<std::string> style;
 };
 
 } // namespace detail

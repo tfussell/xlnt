@@ -26,6 +26,10 @@
 
 namespace xlnt {
 
+protection::protection() : locked_(false), hidden_(false)
+{
+}
+
 bool protection::locked() const
 {
     return locked_;
@@ -34,6 +38,7 @@ bool protection::locked() const
 protection &protection::locked(bool locked)
 {
     locked_ = locked;
+	return *this;
 }
 
 bool protection::hidden() const
@@ -44,6 +49,7 @@ bool protection::hidden() const
 protection &protection::hidden(bool hidden)
 {
     hidden_ = hidden;
+	return *this;
 }
 
 std::string protection::to_hash_string() const

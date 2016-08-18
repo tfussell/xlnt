@@ -70,8 +70,8 @@ private:
 	optional<bool> wrap_text_;
 	optional<int> indent_;
 	optional<int> text_rotation_;
-	optional<horizontal_alignment> horizontal_;
-	optional<vertical_alignment> vertical_;
+	optional<horizontal_alignment> horizontal_ = horizontal_alignment::general;
+	optional<vertical_alignment> vertical_ = vertical_alignment::bottom;
 };
 
 } // namespace xlnt

@@ -25,10 +25,10 @@ struct style_impl
 	std::string name;
 	std::size_t formatting_record_id;
 
-	bool custom_built_in;
+	optional<bool> custom_builtin;
 	bool hidden_style;
 
-	optional<std::size_t> built_in_style_id;
+	optional<std::size_t> builtin_id;
 	optional<std::size_t> outline_style;
 
 	optional<alignment> alignment;

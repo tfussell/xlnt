@@ -42,6 +42,7 @@ font::font()
 font &font::bold(bool bold)
 {
     bold_ = bold;
+	return *this;
 }
 
 bool font::bold() const
@@ -52,6 +53,7 @@ bool font::bold() const
 font &font::italic(bool italic)
 {
     italic_ = italic;
+	return *this;
 }
 
 bool font::italic() const
@@ -62,6 +64,7 @@ bool font::italic() const
 font &font::strikethrough(bool strikethrough)
 {
     strikethrough_ = strikethrough;
+	return *this;
 }
 
 bool font::strikethrough() const
@@ -72,6 +75,7 @@ bool font::strikethrough() const
 font &font::underline(underline_style new_underline)
 {
     underline_ = new_underline;
+	return *this;
 }
 
 bool font::underlined() const
@@ -87,6 +91,7 @@ font::underline_style font::underline() const
 font &font::size(std::size_t size)
 {
     size_ = size;
+	return *this;
 }
 
 std::size_t font::size() const
@@ -97,6 +102,7 @@ std::size_t font::size() const
 font &font::name(const std::string &name)
 {
     name_ = name;
+	return *this;
 }
 std::string font::name() const
 {
@@ -106,16 +112,19 @@ std::string font::name() const
 font &font::color(const xlnt::color &c)
 {
     color_ = c;
+	return *this;
 }
 
 font &font::family(std::size_t family)
 {
     family_ = family;
+	return *this;
 }
 
 font &font::scheme(const std::string &scheme)
 {
     scheme_ = scheme;
+	return *this;
 }
 
 optional<color> font::color() const
