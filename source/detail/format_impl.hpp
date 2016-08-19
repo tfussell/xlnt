@@ -29,12 +29,12 @@ struct format_impl
 
 	std::size_t id;
 
-	optional<std::size_t> alignment;
-	optional<std::size_t> border;
-	optional<std::size_t> fill;
-	optional<std::size_t> font;
-	optional<std::size_t> number_format;
-	optional<std::size_t> protection;
+	optional<std::size_t> alignment_id;
+	optional<std::size_t> border_id;
+	optional<std::size_t> fill_id;
+	optional<std::size_t> font_id;
+	optional<std::size_t> number_format_id;
+	optional<std::size_t> protection_id;
 
 	optional<std::string> style;
 };

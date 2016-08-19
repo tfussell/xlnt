@@ -40,48 +40,48 @@ class XLNT_CLASS base_format
 {
 public:
     // Alignment
-    xlnt::alignment &alignment();
-    const xlnt::alignment &alignment() const;
+    class alignment &alignment();
+    const class alignment &alignment() const;
     void alignment(const xlnt::alignment &new_alignment, bool applied);
     bool alignment_applied() const;
     
     // Border
-	xlnt::border &border();
-    const xlnt::border &border() const;
+    class border &border();
+    const class border &border() const;
     void border(const xlnt::border &new_border, bool applied);
     bool border_applied() const;
     
     // Fill
-	xlnt::fill &fill();
-    const xlnt::fill &fill() const;
+    class fill &fill();
+    const class fill &fill() const;
     void fill(const xlnt::fill &new_fill, bool applied);
     bool fill_applied() const;
     
     // Font
-	xlnt::font &font();
-    const xlnt::font &font() const;
+    class font &font();
+    const class font &font() const;
     void font(const xlnt::font &new_font, bool applied);
     bool font_applied() const;
     
     // Number Format
-	virtual xlnt::number_format &number_format();
-    virtual const xlnt::number_format &number_format() const;
+    virtual class number_format &number_format();
+    virtual const class number_format &number_format() const;
     virtual void number_format(const xlnt::number_format &new_number_format, bool applied);
     bool number_format_applied() const;
     
     // Protection
-    xlnt::protection &protection();
-    const xlnt::protection &protection() const;
+    class protection &protection();
+    const class protection &protection() const;
     void protection(const xlnt::protection &new_protection, bool applied);
     bool protection_applied() const;
     
 protected:
-	xlnt::alignment alignment_;
-	xlnt::border border_;
-	xlnt::fill fill_;
-	xlnt::font font_;
-	xlnt::number_format number_format_;
-	xlnt::protection protection_;
+    class alignment alignment_;
+    class border border_;
+    class fill fill_;
+    class font font_;
+    class number_format number_format_;
+    class protection protection_;
     
     bool apply_alignment_ = false;
     bool apply_border_ = false;

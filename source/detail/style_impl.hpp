@@ -31,12 +31,12 @@ struct style_impl
 	optional<std::size_t> builtin_id;
 	optional<std::size_t> outline_style;
 
-	optional<alignment> alignment;
-	optional<border> border;
-	optional<fill> fill;
-	optional<font> font;
-	optional<number_format> number_format;
-	optional<protection> protection;
+	optional<class alignment> alignment;
+	optional<class border> border;
+	optional<class fill> fill;
+	optional<class font> font;
+	optional<class number_format> number_format;
+	optional<class protection> protection;
 };
 
 } // namespace detail
