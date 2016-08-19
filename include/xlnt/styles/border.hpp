@@ -62,14 +62,14 @@ public:
 	class XLNT_CLASS border_property
 	{
 	public:
-		optional<color> color() const;
+		optional<class color> color() const;
 		border_property &color(const xlnt::color &c);
 
 		optional<border_style> style() const;
 		border_property &style(border_style style);
 
 	private:
-		optional<xlnt::color> color_;
+		optional<class color> color_;
 		optional<border_style> style_;
 	};
 
