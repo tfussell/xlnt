@@ -55,8 +55,8 @@ public:
 	void style(const xlnt::style &new_style);
 	const xlnt::style &style() const;
 
-	virtual xlnt::number_format &number_format();
-	virtual const xlnt::number_format &number_format() const;
+	xlnt::number_format &number_format() override;
+	const xlnt::number_format &number_format() const override;
 	void number_format(const xlnt::number_format &new_number_format, bool applied) override;
 
 	format &alignment_id(std::size_t id);

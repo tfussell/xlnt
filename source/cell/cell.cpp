@@ -186,7 +186,7 @@ bool cell::garbage_collectible() const
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(nullptr_t)
+XLNT_FUNCTION void cell::set_value(std::nullptr_t)
 {
 	d_->type_ = type::null;
 }
