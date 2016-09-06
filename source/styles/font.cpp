@@ -34,8 +34,8 @@ font::font()
       italic_(false),
       superscript_(false),
       subscript_(false),
-      underline_(underline_style::none),
-      strikethrough_(false)
+      strikethrough_(false),
+      underline_(underline_style::none)
 {
 }
 

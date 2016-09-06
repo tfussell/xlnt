@@ -852,8 +852,8 @@ void xlsx_consumer::read_workbook(const pugi::xml_node root)
 		std::string title(sheet_node.attribute("name").value());
 		auto id = string_to_size_t(sheet_node.attribute("sheetId").value());
 
-		sheet_title_id_map_[rel_id] = id;
-		sheet_title_index_map_[rel_id] = index++;
+		sheet_title_id_map_[title] = id;
+		sheet_title_index_map_[title] = index++;
 		destination_.d_->sheet_title_rel_id_map_[title] = rel_id;
 	}
 

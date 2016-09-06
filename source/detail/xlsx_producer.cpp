@@ -1698,7 +1698,7 @@ void xlsx_producer::write_worksheet(const relationship &rel, pugi::xml_node root
 	{
 		auto sheet_format_pr_node = worksheet_node.append_child("sheetFormatPr");
 		sheet_format_pr_node.append_attribute("baseColWidth").set_value("10");
-		sheet_format_pr_node.append_attribute("defaultRowHeight").set_value("15");
+		sheet_format_pr_node.append_attribute("defaultRowHeight").set_value("16");
 		sheet_format_pr_node.append_attribute("x14ac:dyDescent").set_value("0.2");
 	}
 

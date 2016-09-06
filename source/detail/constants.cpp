@@ -49,7 +49,7 @@ const column_t constants::max_column()
 
 // constants
 const path constants::package_properties() { return path("docProps"); }
-const path constants::package_xl() { return path("xl"); }
+const path constants::package_xl() { return path("/xl"); }
 const path constants::package_root_rels() { return path(std::string("_rels")); }
 const path constants::package_theme() { return package_xl().append("theme"); }
 const path constants::package_worksheets() { return package_xl().append("worksheets"); }

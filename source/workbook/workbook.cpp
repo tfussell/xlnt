@@ -68,7 +68,7 @@ workbook workbook::minimal()
 	wb.d_->manifest_.register_default_type("rels", 
 		"application/vnd.openxmlformats-package.relationships+xml");
 
-	wb.d_->manifest_.register_override_type(path("workbook.xml"),
+	wb.d_->manifest_.register_override_type(path("/workbook.xml"),
 		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml");
 	wb.d_->manifest_.register_relationship(uri("/"), relationship::type::office_document,
 		uri("workbook.xml"), target_mode::internal);
@@ -76,7 +76,7 @@ workbook workbook::minimal()
 	std::string title("1");
 	wb.d_->worksheets_.push_back(detail::worksheet_impl(&wb, 1, title));
 
-	wb.d_->manifest_.register_override_type(path("sheet1.xml"),
+	wb.d_->manifest_.register_override_type(path("/sheet1.xml"),
 		"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
 	auto ws_rel = wb.d_->manifest_.register_relationship(uri("workbook.xml"),
 		relationship::type::worksheet, uri("sheet1.xml"), target_mode::internal);
@@ -90,7 +90,7 @@ workbook workbook::empty_excel()
 	auto impl = new detail::workbook_impl();
 	workbook wb(impl);
 
-	wb.d_->manifest_.register_override_type(path("xl/workbook.xml"),
+	wb.d_->manifest_.register_override_type(path("/xl/workbook.xml"),
 		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml");
 	wb.d_->manifest_.register_relationship(uri("/"), relationship::type::office_document,
 		uri("xl/workbook.xml"), target_mode::internal);
@@ -101,12 +101,12 @@ workbook workbook::empty_excel()
 
 	wb.set_thumbnail(excel_thumbnail(), "jpeg", "image/jpeg");
 
-	wb.d_->manifest_.register_override_type(path("docProps/core.xml"),
-		"application/vnd.openxmlformats-package.coreproperties+xml");
+	wb.d_->manifest_.register_override_type(path("/docProps/core.xml"),
+		"application/vnd.openxmlformats-package.core-properties+xml");
 	wb.d_->manifest_.register_relationship(uri("/"), relationship::type::core_properties,
 		uri("docProps/core.xml"), target_mode::internal);
 
-	wb.d_->manifest_.register_override_type(path("docProps/app.xml"),
+	wb.d_->manifest_.register_override_type(path("/docProps/app.xml"),
 		"application/vnd.openxmlformats-officedocument.extended-properties+xml");
 	wb.d_->manifest_.register_relationship(uri("/"), relationship::type::extended_properties,
 		uri("docProps/app.xml"), target_mode::internal);
@@ -134,7 +134,14 @@ workbook workbook::empty_excel()
 	auto ws = wb.create_sheet();
 
 	ws.enable_x14ac();
-	ws.set_page_margins(page_margins());
+    page_margins margins;
+    margins.set_left(0.7);
+    margins.set_right(0.7);
+    margins.set_top(0.75);
+    margins.set_bottom(0.75);
+    margins.set_header(0.3);
+    margins.set_footer(0.3);
+	ws.set_page_margins(margins);
 	ws.d_->has_dimension_ = true;
 	ws.d_->has_format_properties_ = true;
 	ws.d_->has_view_ = true;
@@ -177,7 +184,7 @@ workbook workbook::empty_libre_office()
 		uri("xl/workbook.xml"), target_mode::internal);
 
 	wb.d_->manifest_.register_override_type(path("docProps/core.xml"),
-		"application/vnd.openxmlformats-package.coreproperties+xml");
+		"application/vnd.openxmlformats-package.core-properties+xml");
 	wb.d_->manifest_.register_relationship(uri("/"), relationship::type::core_properties,
 		uri("docProps/core.xml"), target_mode::internal);
 
@@ -359,7 +366,7 @@ void workbook::register_core_properties_in_manifest()
 	if (!get_manifest().has_relationship(wb_rel.get_target().get_path(), relationship_type::core_properties))
 	{
 		get_manifest().register_override_type(path("docProps/core.xml"),
-			"application/vnd.openxmlformats-package.coreproperties+xml");
+			"application/vnd.openxmlformats-package.core-properties+xml");
 		get_manifest().register_relationship(uri("/"), relationship::type::core_properties,
 			uri("docProps/core.xml"), target_mode::internal);
 	}
@@ -511,11 +518,12 @@ worksheet workbook::create_sheet()
     d_->worksheets_.push_back(detail::worksheet_impl(this, sheet_id, title));
 
 	auto workbook_rel = d_->manifest_.get_relationship(path("/"), relationship::type::office_document);
-    uri sheet_uri(path("worksheets").append(sheet_filename).string());
-	d_->manifest_.register_override_type(sheet_uri.get_path(),
+    uri relative_sheet_uri(path("worksheets").append(sheet_filename).string());
+    auto absolute_sheet_path = path("/xl").append(relative_sheet_uri.get_path());
+	d_->manifest_.register_override_type(absolute_sheet_path,
 		"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
 	auto ws_rel = d_->manifest_.register_relationship(workbook_rel.get_target(),
-		relationship::type::worksheet, sheet_uri, target_mode::internal);
+		relationship::type::worksheet, relative_sheet_uri, target_mode::internal);
 	d_->sheet_title_rel_id_map_[title] = ws_rel;
 
     return worksheet(&d_->worksheets_.back());
