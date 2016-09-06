@@ -1,5 +1,6 @@
-#include <detail/xlsx_producer.hpp>
+#include <cmath>
 
+#include <detail/xlsx_producer.hpp>
 #include <detail/constants.hpp>
 #include <detail/include_pugixml.hpp>
 #include <detail/workbook_impl.hpp>
