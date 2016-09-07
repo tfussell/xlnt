@@ -1631,7 +1631,7 @@ void xlsx_producer::write_worksheet(const relationship &rel, pugi::xml_node root
 		sheet_view_node.append_attribute("tabSelected").set_value("1");
 		sheet_view_node.append_attribute("workbookViewId").set_value("0");
 
-		if (!view.get_selections().empty())
+		if (!view.get_selections().empty() && !ws.has_frozen_panes())
 		{
 			auto selection_node = sheet_view_node.child("selection") ?
 				sheet_view_node.child("selection")

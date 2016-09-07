@@ -119,7 +119,7 @@ public:
 		ws.get_cell("A22").set_value("timedelta");
 		ws.get_cell("B22").set_value(xlnt::timedelta(1, 2, 3, 4, 5));
 
-		//ws.freeze_panes("B2");
+		ws.freeze_panes("B2");
 
 		wb.save("simple.xlsx");
 	}
