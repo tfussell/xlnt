@@ -58,9 +58,9 @@ public:
     bool fill_applied() const;
     
     // Font
-    class font &font();
-    const class font &font() const;
-    void font(const xlnt::font &new_font, bool applied);
+    virtual class font &font();
+    virtual const class font &font() const;
+    virtual void font(const xlnt::font &new_font, bool applied);
     bool font_applied() const;
     
     // Number Format

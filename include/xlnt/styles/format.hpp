@@ -54,6 +54,10 @@ public:
 	void style(const std::string &name);
 	void style(const xlnt::style &new_style);
 	const class style &style() const;
+    
+	class font &font() override;
+	const class font &font() const override;
+	void font(const xlnt::font &new_font, bool applied) override;
 
 	class number_format &number_format() override;
 	const class number_format &number_format() const override;

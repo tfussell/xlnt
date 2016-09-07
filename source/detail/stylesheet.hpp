@@ -49,7 +49,39 @@ struct stylesheet
 		impl.parent = this;
 		impl.id = format_impls.size() - 1;
 		formats.push_back(format(&impl));
-		return formats.back();
+        auto &format = formats.back();
+        
+        if (!alignments.empty())
+        {
+            format.alignment(alignments.front(), false);
+        }
+        
+        if (!borders.empty())
+        {
+            format.border(borders.front(), false);
+        }
+        
+        if (!fills.empty())
+        {
+            format.fill(fills.front(), false);
+        }
+        
+        if (!fonts.empty())
+        {
+            format.font(fonts.front(), false);
+        }
+        
+        if (!number_formats.empty())
+        {
+            format.number_format(number_formats.front(), false);
+        }
+        
+        if (!protections.empty())
+        {
+            format.protection(protections.front(), false);
+        }
+        
+        return format;
     }
 
 	format &get_format(std::size_t index)
@@ -98,7 +130,7 @@ struct stylesheet
 
 		for (const auto &nf : number_formats)
 		{
-			if (nf.get_id() > id)
+			if (nf.get_id() >= id)
 			{
 				id = nf.get_id() + 1;
 			}
@@ -106,6 +138,25 @@ struct stylesheet
 
 		return id;
 	}
+    
+    std::size_t add_font(const font &new_font)
+    {
+        std::size_t index = 0;
+        
+        for (const font &f : fonts)
+        {
+            if (f == new_font)
+            {
+                return index;
+            }
+            
+            ++index;
+        }
+        
+        fonts.push_back(new_font);
+
+        return index;
+    }
 
     std::list<format_impl> format_impls;
 	std::vector<format> formats;

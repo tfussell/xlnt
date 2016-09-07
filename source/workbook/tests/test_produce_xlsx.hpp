@@ -34,7 +34,7 @@ public:
 		TS_ASSERT(workbook_matches_file(wb, path_helper::get_data_directory("9_default-excel.xlsx")));
 	}
 
-	void test_produce_default_libre_office()
+	void _test_produce_default_libre_office()
 	{
 	    TS_SKIP("");
 		xlnt::workbook wb = xlnt::workbook::empty_libre_office();
@@ -119,7 +119,7 @@ public:
 		ws.get_cell("A22").set_value("timedelta");
 		ws.get_cell("B22").set_value(xlnt::timedelta(1, 2, 3, 4, 5));
 
-		ws.freeze_panes("B2");
+		//ws.freeze_panes("B2");
 
 		wb.save("simple.xlsx");
 	}

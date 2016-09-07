@@ -352,7 +352,7 @@ void workbook::register_app_properties_in_manifest()
 
 	if (!get_manifest().has_relationship(wb_rel.get_target().get_path(), relationship_type::extended_properties))
 	{
-		get_manifest().register_override_type(path("docProps/app.xml"),
+		get_manifest().register_override_type(path("/docProps/app.xml"),
 			"application/vnd.openxmlformats-officedocument.extended-properties+xml");
 		get_manifest().register_relationship(uri("/"), relationship::type::extended_properties,
 			uri("docProps/app.xml"), target_mode::internal);
@@ -365,7 +365,7 @@ void workbook::register_core_properties_in_manifest()
 
 	if (!get_manifest().has_relationship(wb_rel.get_target().get_path(), relationship_type::core_properties))
 	{
-		get_manifest().register_override_type(path("docProps/core.xml"),
+		get_manifest().register_override_type(path("/docProps/core.xml"),
 			"application/vnd.openxmlformats-package.core-properties+xml");
 		get_manifest().register_relationship(uri("/"), relationship::type::core_properties,
 			uri("docProps/core.xml"), target_mode::internal);
@@ -381,7 +381,7 @@ void workbook::register_shared_string_table_in_manifest()
 		get_manifest().register_override_type(constants::part_shared_strings(),
 			"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml");
 		get_manifest().register_relationship(wb_rel.get_target(),
-			relationship::type::shared_string_table, uri("styles.xml"), target_mode::internal);
+			relationship::type::shared_string_table, uri("sharedStrings.xml"), target_mode::internal);
 	}
 }
 

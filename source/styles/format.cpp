@@ -72,6 +72,23 @@ const style &format::style() const
 	return d_->parent->get_style(*d_->style);
 }
 
+xlnt::font &format::font()
+{
+	return base_format::font();
+}
+
+const xlnt::font &format::font() const
+{
+	return base_format::font();
+}
+
+void format::font(const xlnt::font &new_font, bool applied)
+{
+    font_id(d_->parent->add_font(new_font));
+	base_format::font(new_font, applied);
+}
+
+
 xlnt::number_format &format::number_format()
 {
 	return base_format::number_format();
@@ -93,6 +110,12 @@ void format::number_format(const xlnt::number_format &new_number_format, bool ap
 	}
 
 	base_format::number_format(copy, applied);
+}
+
+format &format::font_id(std::size_t id)
+{
+    d_->font_id = id;
+    return *this;
 }
 
 } // namespace xlnt
