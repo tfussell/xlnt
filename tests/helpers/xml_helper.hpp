@@ -323,20 +323,10 @@ public:
         return compare_files(string, ss.str(), content_type);
     }
 
-	static bool workbooks_match(const xlnt::workbook &left, const xlnt::workbook &right)
+	static bool xlsx_archives_match(xlnt::zip_file &left, xlnt::zip_file &right)
 	{
-		std::vector<std::uint8_t> buffer;
-
-		left.save(buffer);
-		xlnt::zip_file left_archive(buffer);
-
-		buffer.clear();
-
-		right.save(buffer);
-		xlnt::zip_file right_archive(buffer);
-
-		auto left_info = left_archive.infolist();
-		auto right_info = right_archive.infolist();
+		const auto left_info = left.infolist();
+		const auto right_info = right.infolist();
 
 		if (left_info.size() != right_info.size())
         {
@@ -358,21 +348,32 @@ public:
         }
         
         bool match = true;
+        std::vector<std::uint8_t> buffer;
         
-        auto &left_manifest = left.get_manifest();
-        auto &right_manifest = right.get_manifest();
+        left.save(buffer);
+        xlnt::workbook left_workbook;
+        left_workbook.load(buffer);
+        
+        buffer.clear();
+        
+        right.save(buffer);
+        xlnt::workbook right_workbook;
+        right_workbook.load(buffer);
+        
+        auto &left_manifest = left_workbook.get_manifest();
+        auto &right_manifest = right_workbook.get_manifest();
 
 		for (auto left_member : left_info)
 		{
-			if (!right_archive.has_file(left_member))
+			if (!right.has_file(left_member))
             {
                 match = false;
                 std::cout << "right is missing file: " << left_member.filename.string() << std::endl;
                 continue;
             }
 
-			auto left_member_contents = left_archive.read(left_member);
-			auto right_member_contents = right_archive.read(left_member.filename);
+			auto left_member_contents = left.read(left_member);
+			auto right_member_contents = right.read(left_member.filename);
             
             std::string left_content_type, right_content_type;
             

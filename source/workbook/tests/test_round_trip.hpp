@@ -12,66 +12,87 @@
 class test_round_trip : public CxxTest::TestSuite
 {
 public:
-	bool round_trip_matches_wr(const xlnt::workbook &original)
+    /// <summary>
+    /// Write original to a memory as an XLSX-formatted ZIP, read it from memory back to a workbook,
+    /// then ensure that the resulting workbook matches the original.
+    /// </summary>
+	bool round_trip_matches_wrw(const xlnt::workbook &original)
 	{
-		std::vector<std::uint8_t> serialized;
-		original.save(serialized);
+		std::vector<std::uint8_t> buffer;
+		original.save(buffer);
+        
+        xlnt::zip_file original_archive;
+        original_archive.load(buffer);
 
-		xlnt::workbook deserialized;
-		deserialized.load(serialized);
+		xlnt::workbook resulting_workbook;
+		resulting_workbook.load(buffer);
+        
+        buffer.clear();
+        resulting_workbook.save(buffer);
+        
+        xlnt::zip_file resulting_archive;
+        resulting_archive.load(buffer);
 
-		return xml_helper::workbooks_match(original, deserialized);
+		return xml_helper::xlsx_archives_match(original_archive, resulting_archive);
 	}
-/*
-	bool round_trip_matches_rw(const xlnt::path &file)
+
+    /// <summary>
+    /// Read file as an XLSX-formatted ZIP file in the filesystem to a workbook,
+    /// write the workbook back to memory, then ensure that the contents of the two files are equivalent.
+    /// </summary>
+	bool round_trip_matches_rw(const xlnt::path &original)
 	{
-		xlnt::workbook read;
-		read.load(file);
+        xlnt::zip_file original_archive;
+        original_archive.load(original);
 
-		xlnt::workbook written;
-		std::vector<std::uint8_t> write;
-		write.save(serialized);
+		xlnt::workbook original_workbook;
+		original_workbook.load(original);
+        
+        std::vector<std::uint8_t> buffer;
+        original_workbook.save(buffer);
 
-		return xml_helper::workbooks_match(original_archive, resulting_archive);
+        xlnt::zip_file resulting_archive;
+        resulting_archive.load(buffer);
+
+		return xml_helper::xlsx_archives_match(original_archive, resulting_archive);
 	}
 
-	void _test_round_trip_minimal_wr()
+	void test_round_trip_minimal_wr()
 	{
 		xlnt::workbook wb = xlnt::workbook::minimal();
-		TS_ASSERT(round_trip_matches_wr(wb));
+		TS_ASSERT(round_trip_matches_wrw(wb));
 	}
 
-	void _test_round_trip_empty_excel_wr()
+	void test_round_trip_empty_excel_wr()
 	{
 		xlnt::workbook wb = xlnt::workbook::empty_excel();
-		TS_ASSERT(round_trip_matches_wr(wb));
+		TS_ASSERT(round_trip_matches_wrw(wb));
 	}
 
 	void _test_round_trip_empty_libre_office_wr()
 	{
 		TS_SKIP("");
 		xlnt::workbook wb = xlnt::workbook::empty_libre_office();
-		TS_ASSERT(round_trip_matches_wr(wb));
+		TS_ASSERT(round_trip_matches_wrw(wb));
 	}
 
 	void _test_round_trip_empty_pages_wr()
 	{
 		TS_SKIP("");
 		xlnt::workbook wb = xlnt::workbook::empty_numbers();
-		TS_ASSERT(round_trip_matches_wr(wb));
+		TS_ASSERT(round_trip_matches_wrw(wb));
 	}
 
-	void _test_round_trip_empty_excel_rw()
+	void test_round_trip_empty_excel_rw()
 	{
 		auto path = path_helper::get_data_directory("9_default-excel.xlsx");
 		TS_ASSERT(round_trip_matches_rw(path));
 	}
 
-	void _test_round_trip_empty_libre_rw()
+	void test_round_trip_empty_libre_rw()
 	{
 		TS_SKIP("");
 		auto path = path_helper::get_data_directory("10_default-libre-office.xlsx");
 		TS_ASSERT(round_trip_matches_rw(path));
 	}
-    */
 };

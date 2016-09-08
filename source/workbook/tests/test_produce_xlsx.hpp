@@ -14,12 +14,13 @@ class test_produce_xlsx : public CxxTest::TestSuite
 public:
 	bool workbook_matches_file(xlnt::workbook &wb, const xlnt::path &file)
 	{
-		wb.save(xlnt::path("a.xlsx"));
+        std::vector<std::uint8_t> buffer;
+        wb.save(buffer);
 
-        xlnt::workbook file_wb;
-        file_wb.load(file);
+        xlnt::zip_file wb_archive(buffer);
+        xlnt::zip_file file_archive(file);
 
-		return xml_helper::workbooks_match(wb, file_wb);
+		return xml_helper::xlsx_archives_match(wb_archive, file_archive);
 	}
 
 	void test_produce_minimal()

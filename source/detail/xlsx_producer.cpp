@@ -1377,7 +1377,7 @@ void xlsx_producer::write_theme(const relationship &rel, pugi::xml_node root)
 
 			if (scheme.minor == "Calibri")
 			{
-				minor_font_node.append_attribute("panose").set_value("020F0302020204030204");
+				minor_font_node.append_attribute("panose").set_value("020F0502020204030204");
 			}
 		}
 		else
