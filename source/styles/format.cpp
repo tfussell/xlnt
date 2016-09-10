@@ -72,6 +72,38 @@ const style &format::style() const
 	return d_->parent->get_style(*d_->style);
 }
 
+xlnt::border &format::border()
+{
+	return base_format::border();
+}
+
+const xlnt::border &format::border() const
+{
+	return base_format::border();
+}
+
+void format::border(const xlnt::border &new_border, bool applied)
+{
+    border_id(d_->parent->add_border(new_border));
+	base_format::border(new_border, applied);
+}
+
+xlnt::fill &format::fill()
+{
+	return base_format::fill();
+}
+
+const xlnt::fill &format::fill() const
+{
+	return base_format::fill();
+}
+
+void format::fill(const xlnt::fill &new_fill, bool applied)
+{
+    fill_id(d_->parent->add_fill(new_fill));
+	base_format::fill(new_fill, applied);
+}
+
 xlnt::font &format::font()
 {
 	return base_format::font();
@@ -87,7 +119,6 @@ void format::font(const xlnt::font &new_font, bool applied)
     font_id(d_->parent->add_font(new_font));
 	base_format::font(new_font, applied);
 }
-
 
 xlnt::number_format &format::number_format()
 {
@@ -110,6 +141,18 @@ void format::number_format(const xlnt::number_format &new_number_format, bool ap
 	}
 
 	base_format::number_format(copy, applied);
+}
+
+format &format::border_id(std::size_t id)
+{
+    d_->border_id = id;
+    return *this;
+}
+
+format &format::fill_id(std::size_t id)
+{
+    d_->fill_id = id;
+    return *this;
 }
 
 format &format::font_id(std::size_t id)

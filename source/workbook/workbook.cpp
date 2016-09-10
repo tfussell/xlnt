@@ -766,6 +766,7 @@ worksheet workbook::operator[](std::size_t index)
 void workbook::clear()
 {
 	*d_ = detail::workbook_impl();
+    d_->stylesheet_.clear();
 }
 
 bool workbook::operator==(const workbook &rhs) const

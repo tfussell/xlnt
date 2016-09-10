@@ -139,6 +139,44 @@ struct stylesheet
 		return id;
 	}
     
+    std::size_t add_border(const border &new_border)
+    {
+        std::size_t index = 0;
+        
+        for (const border &f : borders)
+        {
+            if (f == new_border)
+            {
+                return index;
+            }
+            
+            ++index;
+        }
+        
+        borders.push_back(new_border);
+
+        return index;
+    }
+    
+    std::size_t add_fill(const fill &new_fill)
+    {
+        std::size_t index = 0;
+        
+        for (const fill &f : fills)
+        {
+            if (f == new_fill)
+            {
+                return index;
+            }
+            
+            ++index;
+        }
+        
+        fills.push_back(new_fill);
+
+        return index;
+    }
+    
     std::size_t add_font(const font &new_font)
     {
         std::size_t index = 0;
@@ -156,6 +194,24 @@ struct stylesheet
         fonts.push_back(new_font);
 
         return index;
+    }
+    
+    void clear()
+    {
+        format_impls.clear();
+        formats.clear();
+        
+        style_impls.clear();
+        styles.clear();
+        
+        alignments.clear();
+        borders.clear();
+        fills.clear();
+        fonts.clear();
+        number_formats.clear();
+        protections.clear();
+        
+        colors.clear();
     }
 
     std::list<format_impl> format_impls;

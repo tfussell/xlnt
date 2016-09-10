@@ -1070,12 +1070,27 @@ void xlsx_producer::write_styles(const relationship &rel, pugi::xml_node root)
 
 		xf_node.append_attribute("numFmtId").set_value(std::to_string(current_format.number_format().get_id()).c_str());
 
-		auto font_id = std::distance(stylesheet.fonts.begin(), std::find(stylesheet.fonts.begin(), stylesheet.fonts.end(), current_format.font()));
+        auto font_iter = std::find(stylesheet.fonts.begin(), stylesheet.fonts.end(), current_format.font());
+        if (font_iter == stylesheet.fonts.end())
+        {
+            throw xlnt::exception("font not found");
+        }
+		auto font_id = std::distance(stylesheet.fonts.begin(), font_iter);
 		xf_node.append_attribute("fontId").set_value(std::to_string(font_id).c_str());
 
+        auto fill_iter = std::find(stylesheet.fills.begin(), stylesheet.fills.end(), current_format.fill());
+        if (fill_iter == stylesheet.fills.end())
+        {
+            throw xlnt::exception("fill not found");
+        }
 		auto fill_id = std::distance(stylesheet.fills.begin(), std::find(stylesheet.fills.begin(), stylesheet.fills.end(), current_format.fill()));
 		xf_node.append_attribute("fillId").set_value(std::to_string(fill_id).c_str());
 
+        auto border_iter = std::find(stylesheet.borders.begin(), stylesheet.borders.end(), current_format.border());
+        if (border_iter == stylesheet.borders.end())
+        {
+            throw xlnt::exception("border not found");
+        }
 		auto border_id = std::distance(stylesheet.borders.begin(), std::find(stylesheet.borders.begin(), stylesheet.borders.end(), current_format.border()));
 		xf_node.append_attribute("borderId").set_value(std::to_string(border_id).c_str());
 

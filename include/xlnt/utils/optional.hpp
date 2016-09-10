@@ -9,7 +9,7 @@ template<typename T>
 class XLNT_CLASS optional
 {
 public:
-	optional() : has_value_(false)
+	optional() : has_value_(false), value_(T())
 	{
 	}
 

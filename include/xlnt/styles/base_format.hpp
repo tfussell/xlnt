@@ -46,15 +46,15 @@ public:
     bool alignment_applied() const;
     
     // Border
-    class border &border();
-    const class border &border() const;
-    void border(const xlnt::border &new_border, bool applied);
+    virtual class border &border();
+    virtual const class border &border() const;
+    virtual void border(const xlnt::border &new_border, bool applied);
     bool border_applied() const;
     
     // Fill
-    class fill &fill();
-    const class fill &fill() const;
-    void fill(const xlnt::fill &new_fill, bool applied);
+    virtual class fill &fill();
+    virtual const class fill &fill() const;
+    virtual void fill(const xlnt::fill &new_fill, bool applied);
     bool fill_applied() const;
     
     // Font

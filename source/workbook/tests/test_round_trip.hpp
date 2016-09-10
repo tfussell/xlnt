@@ -20,6 +20,7 @@ public:
 	{
 		std::vector<std::uint8_t> buffer;
 		original.save(buffer);
+        original.save("a.xlsx");
         
         xlnt::zip_file original_archive;
         original_archive.load(buffer);
@@ -29,6 +30,7 @@ public:
         
         buffer.clear();
         resulting_workbook.save(buffer);
+        resulting_workbook.save("b.xlsx");
         
         xlnt::zip_file resulting_archive;
         resulting_archive.load(buffer);
@@ -57,26 +59,26 @@ public:
 		return xml_helper::xlsx_archives_match(original_archive, resulting_archive);
 	}
 
-	void test_round_trip_minimal_wr()
+	void test_round_trip_minimal_wrw()
 	{
 		xlnt::workbook wb = xlnt::workbook::minimal();
 		TS_ASSERT(round_trip_matches_wrw(wb));
 	}
 
-	void test_round_trip_empty_excel_wr()
+	void test_round_trip_empty_excel_wrw()
 	{
 		xlnt::workbook wb = xlnt::workbook::empty_excel();
 		TS_ASSERT(round_trip_matches_wrw(wb));
 	}
 
-	void _test_round_trip_empty_libre_office_wr()
+	void _test_round_trip_empty_libre_office_wrw()
 	{
 		TS_SKIP("");
 		xlnt::workbook wb = xlnt::workbook::empty_libre_office();
 		TS_ASSERT(round_trip_matches_wrw(wb));
 	}
 
-	void _test_round_trip_empty_pages_wr()
+	void _test_round_trip_empty_pages_wrw()
 	{
 		TS_SKIP("");
 		xlnt::workbook wb = xlnt::workbook::empty_numbers();

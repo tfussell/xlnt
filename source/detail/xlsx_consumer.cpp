@@ -213,8 +213,8 @@ std::string to_string(xlnt::border_side side)
 	{
 	case xlnt::border_side::bottom: return "bottom";
 	case xlnt::border_side::top: return "top";
-	case xlnt::border_side::start: return "start";
-	case xlnt::border_side::end: return "end";
+	case xlnt::border_side::start: return "left";
+	case xlnt::border_side::end: return "right";
 	case xlnt::border_side::horizontal: return "horizontal";
 	case xlnt::border_side::vertical: return "vertical";
 	default:
@@ -669,6 +669,15 @@ void xlsx_consumer::populate_workbook()
 		case relationship::type::worksheet:
 			read_worksheet(document.root(), rel.get_id());
 			break;
+        case relationship::type::shared_string_table:
+            read_shared_string_table(document);
+            break;
+        case relationship::type::styles:
+            read_stylesheet(document);
+            break;
+        case relationship::type::theme:
+            read_theme(document);
+            break;
         default:
             break;
 		}
@@ -1046,7 +1055,9 @@ void xlsx_consumer::read_stylesheet(const pugi::xml_node root)
 	for (auto xf_node : cell_style_xfs_node.children("xf"))
 	{
 		auto cell_style_node = *(cell_style_iter++);
-		auto &style = destination_.create_style(cell_style_node.attribute("Name").value());
+		auto &style = destination_.create_style(cell_style_node.attribute("name").value());
+        
+        style.builtin_id(string_to_size_t(cell_style_node.attribute("builtinId").value()));
 
 		// Alignment
 		auto alignment_node = xf_node.child("alignment");
@@ -1076,7 +1087,23 @@ void xlsx_consumer::read_stylesheet(const pugi::xml_node root)
 		// Number Format
 		auto number_format_applied = is_true(xf_node.attribute("applyNumberFormat").value());
 		auto number_format_id = xf_node.attribute("numFmtId") ? string_to_size_t(xf_node.attribute("numFmtId").value()) : 0;
-		auto number_format = stylesheet.number_formats.at(number_format_id);
+        auto number_format = number_format::general();
+        bool is_custom_number_format = false;
+        
+        for (const auto &nf : stylesheet.number_formats)
+        {
+            if (nf.get_id() == number_format_id)
+            {
+                number_format = nf;
+                is_custom_number_format = true;
+                break;
+            }
+        }
+        if (number_format_id < 164 && !is_custom_number_format)
+        {
+            number_format = number_format::from_builtin_id(number_format_id);
+        }
+        
 		style.number_format(number_format, number_format_applied);
 
 		// Protection
@@ -1119,7 +1146,23 @@ void xlsx_consumer::read_stylesheet(const pugi::xml_node root)
 		// Number Format
 		auto number_format_applied = is_true(xf_node.attribute("applyNumberFormat").value());
 		auto number_format_id = xf_node.attribute("numFmtId") ? string_to_size_t(xf_node.attribute("numFmtId").value()) : 0;
-		auto number_format = stylesheet.number_formats.at(number_format_id);
+        auto number_format = number_format::general();
+        bool is_custom_number_format = false;
+        
+        for (const auto &nf : stylesheet.number_formats)
+        {
+            if (nf.get_id() == number_format_id)
+            {
+                number_format = nf;
+                is_custom_number_format = true;
+                break;
+            }
+        }
+        if (number_format_id < 164 && !is_custom_number_format)
+        {
+            number_format = number_format::from_builtin_id(number_format_id);
+        }
+        
 		format.number_format(number_format, number_format_applied);
 
 		// Protection

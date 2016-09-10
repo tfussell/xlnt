@@ -54,6 +54,14 @@ public:
 	void style(const std::string &name);
 	void style(const xlnt::style &new_style);
 	const class style &style() const;
+
+	class border &border() override;
+	const class border &border() const override;
+	void border(const xlnt::border &new_border, bool applied) override;
+
+	class fill &fill() override;
+	const class fill &fill() const override;
+	void fill(const xlnt::fill &new_fill, bool applied) override;
     
 	class font &font() override;
 	const class font &font() const override;
