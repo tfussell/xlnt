@@ -46,7 +46,7 @@ for(auto row : wb2["sheet2"].rows())
 ```
 
 ## Building
-xlnt uses continous integration and passes all 300+ tests in GCC 4.9, VS2015, and Clang (using Apple LLVM 7.0).
+xlnt uses continous integration and passes all 200+ tests in GCC 4.9, GCC5, VS2015, and Clang (using Apple LLVM 7.0).
 
 Build configurations for Visual Studio 2015, GNU Make, and Xcode can be created using [cmake](https://cmake.org/) and the cmake scripts in the project's cmake directory. A full list of cmake generators can be found [here](https://cmake.org/cmake/help/v3.0/manual/cmake-generators.7.html). A basic build would look like (starting in the root xlnt directory):
 
