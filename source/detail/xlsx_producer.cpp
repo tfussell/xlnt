@@ -762,8 +762,23 @@ void xlsx_producer::write_shared_string_table(const relationship &rel, pugi::xml
 	auto sst_node = root.append_child("sst");
 
 	sst_node.append_attribute("xmlns").set_value("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
+    std::size_t string_count = 0;
 
-	sst_node.append_attribute("count").set_value(std::to_string(source_.get_shared_strings().size()).c_str());
+    for (const auto ws : source_)
+    {
+        for (const auto row : ws.rows())
+        {
+            for (const auto cell : row)
+            {
+                if (cell.get_data_type() == cell::type::string)
+                {
+                    ++string_count;
+                }
+            }
+        }
+    }
+
+	sst_node.append_attribute("count").set_value(std::to_string(string_count).c_str());
 	sst_node.append_attribute("uniqueCount").set_value(std::to_string(source_.get_shared_strings().size()).c_str());
 
 	for (const auto &string : source_.get_shared_strings())

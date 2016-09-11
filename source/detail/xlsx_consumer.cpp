@@ -652,6 +652,32 @@ void xlsx_consumer::populate_workbook()
 
     const auto workbook_rel = manifest.get_relationship(path("/"), relationship::type::office_document);
 
+    // First pass of workbook relationship parts which must be read before sheets (e.g. shared strings)
+    
+	for (const auto &rel : manifest.get_relationships(workbook_rel.get_target().get_path()))
+	{
+		pugi::xml_document document;
+		path part_path(rel.get_source().get_path().parent().append(rel.get_target().get_path()));
+		document.load_string(source_.read(part_path).c_str());
+
+		switch (rel.get_type())
+		{
+        case relationship::type::shared_string_table:
+            read_shared_string_table(document);
+            break;
+        case relationship::type::styles:
+            read_stylesheet(document);
+            break;
+        case relationship::type::theme:
+            read_theme(document);
+            break;
+        default:
+            break;
+		}
+	}
+    
+    // Second pass, read sheets themselves
+
 	for (const auto &rel : manifest.get_relationships(workbook_rel.get_target().get_path()))
 	{
 		pugi::xml_document document;
@@ -669,24 +695,10 @@ void xlsx_consumer::populate_workbook()
 		case relationship::type::worksheet:
 			read_worksheet(document.root(), rel.get_id());
 			break;
-        case relationship::type::shared_string_table:
-            read_shared_string_table(document);
-            break;
-        case relationship::type::styles:
-            read_stylesheet(document);
-            break;
-        case relationship::type::theme:
-            read_theme(document);
-            break;
         default:
             break;
 		}
 	}
-
-	// Sheet Relationship Target Parts
-
-	void read_comments();
-	void read_drawings();
 
 	// Unknown Parts
 
@@ -1173,9 +1185,12 @@ void xlsx_consumer::read_stylesheet(const pugi::xml_node root)
 		format.protection(protection, protection_applied);
 		
 		// Style
-		auto style_index = string_to_size_t(xf_node.attribute("xfId").value());
-		auto style_name = stylesheet.styles.at(style_index).name();
-		format.style(stylesheet.get_style(style_name));
+        if (xf_node.attribute("xfId"))
+        {
+            auto style_index = string_to_size_t(xf_node.attribute("xfId").value());
+            auto style_name = stylesheet.styles.at(style_index).name();
+            format.style(stylesheet.get_style(style_name));
+        }
 	}
 }
 

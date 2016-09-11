@@ -88,37 +88,32 @@ public:
 		ws.get_cell("A12").set_value("number (std::uint64_t)");
 		ws.get_cell("B12").set_value(std::numeric_limits<std::uint64_t>::max());
 
-#if UINT64_MAX != SIZE_MAX && UINT32_MAX != SIZE_MAX
-		ws.get_cell("A13").set_value("number (std::size_t)");
-		ws.get_cell("B13").set_value(std::numeric_limits<std::size_t>::max());
-#endif
+		ws.get_cell("A13").set_value("number (float)");
+		ws.get_cell("B13").set_value(std::numeric_limits<float>::max());
 
-		ws.get_cell("A14").set_value("number (float)");
-		ws.get_cell("B14").set_value(std::numeric_limits<float>::max());
+		ws.get_cell("A14").set_value("number (double)");
+		ws.get_cell("B14").set_value(std::numeric_limits<double>::max());
 
-		ws.get_cell("A15").set_value("number (double)");
-		ws.get_cell("B15").set_value(std::numeric_limits<double>::max());
+		ws.get_cell("A15").set_value("number (long double)");
+		ws.get_cell("B15").set_value(std::numeric_limits<long double>::max());
 
-		ws.get_cell("A16").set_value("number (long double)");
-		ws.get_cell("B16").set_value(std::numeric_limits<long double>::max());
+		ws.get_cell("A16").set_value("text (char *)");
+		ws.get_cell("B16").set_value("string");
 
-		ws.get_cell("A17").set_value("text (char *)");
-		ws.get_cell("B17").set_value("string");
+		ws.get_cell("A17").set_value("text (std::string)");
+		ws.get_cell("B17").set_value(std::string("string"));
 
-		ws.get_cell("A18").set_value("text (std::string)");
-		ws.get_cell("B18").set_value(std::string("string"));
+		ws.get_cell("A18").set_value("date");
+		ws.get_cell("B18").set_value(xlnt::date(2016, 2, 3));
 
-		ws.get_cell("A19").set_value("date");
-		ws.get_cell("B19").set_value(xlnt::date(2016, 2, 3));
+		ws.get_cell("A19").set_value("time");
+		ws.get_cell("B19").set_value(xlnt::time(1, 2, 3, 4));
 
-		ws.get_cell("A20").set_value("time");
-		ws.get_cell("B20").set_value(xlnt::time(1, 2, 3, 4));
+		ws.get_cell("A20").set_value("datetime");
+		ws.get_cell("B20").set_value(xlnt::datetime(2016, 2, 3, 1, 2, 3, 4));
 
-		ws.get_cell("A21").set_value("datetime");
-		ws.get_cell("B21").set_value(xlnt::datetime(2016, 2, 3, 1, 2, 3, 4));
-
-		ws.get_cell("A22").set_value("timedelta");
-		ws.get_cell("B22").set_value(xlnt::timedelta(1, 2, 3, 4, 5));
+		ws.get_cell("A21").set_value("timedelta");
+		ws.get_cell("B21").set_value(xlnt::timedelta(1, 2, 3, 4, 5));
 
 		ws.freeze_panes("B2");
 
