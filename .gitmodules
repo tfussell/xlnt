@@ -11,3 +11,4 @@
 [submodule "third-party/utfcpp"]
 	path = third-party/utfcpp
 	url = https://github.com/nemtrif/utfcpp
+	branch = master
