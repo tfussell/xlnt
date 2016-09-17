@@ -27,6 +27,7 @@ endif()
 include_directories(include)
 include_directories(include/xlnt)
 include_directories(source)
+include_directories(source/detail)
 include_directories(third-party/miniz)
 include_directories(third-party/libstudxml)
 include_directories(third-party/utfcpp/source)
@@ -63,8 +64,7 @@ FILE(GLOB DETAIL_SOURCES source/detail/*.cpp)
 SET(SOURCES ${CELL_SOURCES} ${CHARTS_SOURCES} ${CHARTSHEET_SOURCES} ${DRAWING_SOURCES} ${FORMULA_SOURCES} ${PACKAGING_SOURCES} ${SERIALIZATION_SOURCES} ${STYLES_SOURCES} ${UTILS_SOURCES} ${WORKBOOK_SOURCES} ${WORKSHEET_SOURCES} ${DETAIL_SOURCES})
 
 SET(MINIZ ../third-party/miniz/miniz.c ../third-party/miniz/miniz.h)
-
-SET(LIBSTUDXML ../third-party/libstudxml/xml/parser.cxx)
+SET(LIBSTUDXML ../third-party/libstudxml/xml/parser.cxx ../third-party/libstudxml/xml/qname.cxx ../third-party/libstudxml/xml/serializer.cxx ../third-party/libstudxml/xml/value-traits.cxx ../third-party/libstudxml/xml/details/expat/xmlparse.c ../third-party/libstudxml/xml/details/expat/xmlrole.c ../third-party/libstudxml/xml/details/expat/xmltok_impl.c ../third-party/libstudxml/xml/details/expat/xmltok_ns.c ../third-party/libstudxml/xml/details/expat/xmltok.c ../third-party/libstudxml/xml/details/genx/char-props.c ../third-party/libstudxml/xml/details/genx/genx.c)
 
 if(SHARED)
     add_library(xlnt.shared SHARED ${HEADERS} ${SOURCES} ${MINIZ} ${LIBSTUDXML})
