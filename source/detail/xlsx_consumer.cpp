@@ -3,7 +3,6 @@
 #include <detail/xlsx_consumer.hpp>
 
 #include <detail/constants.hpp>
-#include <detail/include_pugixml.hpp>
 #include <detail/workbook_impl.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/utils/path.hpp>
@@ -222,20 +221,36 @@ std::string to_string(xlnt::border_side side)
 	}
 }
 
-xlnt::protection read_protection(const pugi::xml_node protection_node)
+xlnt::protection read_protection(xml::parser &parser)
 {
 	xlnt::protection prot;
 
-	prot.locked(is_true(protection_node.attribute("locked").value()));
-	prot.hidden(is_true(protection_node.attribute("hidden").value()));
+    for (auto event : parser)
+    {
+        if (event == xml::parser::event_type::start_attribute)
+        {
+            if (parser.name() == "locked")
+            {
+                prot.locked(is_true(parser.value()));
+            }
+            else if (parser.name() == "hidden")
+            {
+                prot.hidden(is_true(parser.value()));
+            }
+        }
+        else
+        {
+            break;
+        }
+    }
 
 	return prot;
 }
 
-xlnt::alignment read_alignment(const pugi::xml_node alignment_node)
+xlnt::alignment read_alignment(xml::parser &parser)
 {
 	xlnt::alignment align;
-
+/*
 	align.wrap(is_true(alignment_node.attribute("wrapText").value()));
 	align.shrink(is_true(alignment_node.attribute("shrinkToFit").value()));
 
@@ -250,14 +265,14 @@ xlnt::alignment read_alignment(const pugi::xml_node alignment_node)
 		std::string horizontal = alignment_node.attribute("horizontal").value();
 		align.horizontal(from_string<xlnt::horizontal_alignment>(horizontal));
 	}
-
+*/
 	return align;
 }
 
-void read_number_formats(const pugi::xml_node number_formats_node, std::vector<xlnt::number_format> &number_formats)
+void read_number_formats(xml::parser &parser, std::vector<xlnt::number_format> &number_formats)
 {
 	number_formats.clear();
-
+/*
 	for (auto num_fmt_node : number_formats_node.children("numFmt"))
 	{
 		std::string format_string(num_fmt_node.attribute("formatCode").value());
@@ -274,12 +289,13 @@ void read_number_formats(const pugi::xml_node number_formats_node, std::vector<x
 
 		number_formats.push_back(nf);
 	}
+*/
 }
 
-xlnt::color read_color(const pugi::xml_node &color_node)
+xlnt::color read_color(xml::parser &parser)
 {
 	xlnt::color result;
-
+/*
 	if (color_node.attribute("auto"))
 	{
 		return result;
@@ -302,14 +318,14 @@ xlnt::color read_color(const pugi::xml_node &color_node)
 	{
 		result.set_tint(color_node.attribute("tint").as_double());
 	}
-
+*/
 	return result;
 }
 
-xlnt::font read_font(const pugi::xml_node font_node)
+xlnt::font read_font(xml::parser &parser)
 {
 	xlnt::font new_font;
-
+/*
 	new_font.size(string_to_size_t(font_node.child("sz").attribute("val").value()));
 	new_font.name(font_node.child("name").attribute("val").value());
 
@@ -376,42 +392,46 @@ xlnt::font read_font(const pugi::xml_node font_node)
 			new_font.underline(xlnt::font::underline_style::single);
 		}
 	}
-
+*/
 	return new_font;
 }
 
-void read_fonts(const pugi::xml_node &fonts_node, std::vector<xlnt::font> &fonts)
+void read_fonts(xml::parser &parser, std::vector<xlnt::font> &fonts)
 {
 	fonts.clear();
-
+/*
 	for (auto font_node : fonts_node.children())
 	{
 		fonts.push_back(read_font(font_node));
 	}
+*/
 }
 
-void read_indexed_colors(const pugi::xml_node &indexed_colors_node, std::vector<xlnt::color> &colors)
+void read_indexed_colors(xml::parser &parser, std::vector<xlnt::color> &colors)
 {
+/*
 	for (auto color_node : indexed_colors_node.children())
 	{
 		colors.push_back(read_color(color_node));
 	}
+*/
 }
 
-void read_colors(const pugi::xml_node &colors_node, std::vector<xlnt::color> &colors)
+void read_colors(xml::parser &parser, std::vector<xlnt::color> &colors)
 {
 	colors.clear();
-
+/*
 	if (colors_node.child("indexedColors"))
 	{
 		read_indexed_colors(colors_node.child("indexedColors"), colors);
 	}
+*/
 }
 
-xlnt::fill read_fill(const pugi::xml_node &fill_node)
+xlnt::fill read_fill(xml::parser &parser)
 {
 	xlnt::fill new_fill;
-
+/*
 	if (fill_node.child("patternFill"))
 	{
 		auto pattern_fill_node = fill_node.child("patternFill");
@@ -462,25 +482,26 @@ xlnt::fill read_fill(const pugi::xml_node &fill_node)
 
 		new_fill = gradient;
 	}
-
+*/
 	return new_fill;
 }
 
-void read_fills(const pugi::xml_node &fills_node, std::vector<xlnt::fill> &fills)
+void read_fills(xml::parser &parser, std::vector<xlnt::fill> &fills)
 {
 	fills.clear();
-
+/*
 	for (auto fill_node : fills_node.children())
 	{
 		fills.emplace_back();
 		fills.back() = read_fill(fill_node);
 	}
+*/
 }
 
-xlnt::border::border_property read_side(const pugi::xml_node &side_node)
+xlnt::border::border_property read_side(xml::parser &parser)
 {
 	xlnt::border::border_property new_side;
-
+/*
 	if (side_node.attribute("style"))
 	{
 		new_side.style(from_string<xlnt::border_style>(side_node.attribute("style").value()));
@@ -490,14 +511,14 @@ xlnt::border::border_property read_side(const pugi::xml_node &side_node)
 	{
 		new_side.color(read_color(side_node.child("color")));
 	}
-
+*/
 	return new_side;
 }
 
-xlnt::border read_border(const pugi::xml_node &border_node)
+xlnt::border read_border(xml::parser &parser)
 {
 	xlnt::border new_border;
-
+/*
 	for (const auto &side : xlnt::border::all_sides())
 	{
 		auto side_name = to_string(side);
@@ -507,41 +528,53 @@ xlnt::border read_border(const pugi::xml_node &border_node)
 			new_border.side(side, read_side(border_node.child(side_name.c_str())));
 		}
 	}
-
+*/
 	return new_border;
 }
 
-void read_borders(const pugi::xml_node &borders_node, std::vector<xlnt::border> &borders)
+void read_borders(xml::parser &parser, std::vector<xlnt::border> &borders)
 {
 	borders.clear();
-
+/*
 	for (auto border_node : borders_node.children())
 	{
 		borders.push_back(read_border(border_node));
 	}
+*/
 }
 
 std::vector<xlnt::relationship> read_relationships(const xlnt::path &part, xlnt::zip_file &archive)
 {
 	std::vector<xlnt::relationship> relationships;
-
 	if (!archive.has_file(part)) return relationships;
 
-	pugi::xml_document document;
-	document.load_string(archive.read(part).c_str());
+    std::istringstream rels_stream(archive.read(part));
+    xml::parser parser(rels_stream, part.string());
 
-	auto root_node = document.child("Relationships");
     xlnt::uri source(part.string());
 
-	for (auto relationship_node : root_node.children("Relationship"))
-	{
-		std::string id(relationship_node.attribute("Id").value());
-		std::string type_string(relationship_node.attribute("Type").value());
-		auto type = from_string<xlnt::relationship::type>(type_string);
-		xlnt::uri target(relationship_node.attribute("Target").value());
+    const auto xmlns = xlnt::constants::get_namespace("relationships");
+    parser.next_expect(xml::parser::event_type::start_element, xmlns, "Relationships");
+    parser.content(xml::content::complex);
 
-		relationships.push_back(xlnt::relationship(id, type, source, target, xlnt::target_mode::internal));
+    while (true)
+	{
+        if (parser.peek() == xml::parser::event_type::end_element) break;
+        
+        parser.next_expect(xml::parser::event_type::start_element, xmlns, "Relationship");
+
+        std::string id(parser.attribute("Id"));
+        std::string type_string(parser.attribute("Type"));
+        xlnt::uri target(parser.attribute("Target"));
+
+		relationships.emplace_back(id, from_string<xlnt::relationship::type>(type_string),
+            source, target, xlnt::target_mode::internal);
+
+        parser.next_expect(xml::parser::event_type::end_element,
+            xlnt::constants::get_namespace("relationships"), "Relationship");
 	}
+    
+    parser.next_expect(xml::parser::event_type::end_element, xmlns, "Relationships");
 
 	return relationships;
 }
@@ -594,56 +627,56 @@ void xlsx_consumer::populate_workbook()
 
 	for (const auto &rel : manifest.get_relationships(path("/")))
 	{
-		pugi::xml_document document;
-		document.load_string(source_.read(rel.get_target().get_path()).c_str());
+        std::istringstream parser_stream(source_.read(rel.get_target().get_path()));
+        xml::parser parser(parser_stream, rel.get_target().get_path().string());
 
 		switch (rel.get_type())
 		{
 		case relationship::type::core_properties:
-			read_core_properties(document.root());
+			read_core_properties(parser);
 			break;
 		case relationship::type::extended_properties:
-			read_extended_properties(document.root());
+			read_extended_properties(parser);
 			break;
 		case relationship::type::custom_properties:
-			read_custom_property(document.root());
+			read_custom_property(parser);
 			break;
 		case relationship::type::office_document:
             check_document_type(manifest.get_content_type(rel.get_target().get_path()));
-			read_workbook(document.root());
+			read_workbook(parser);
 			break;
 		case relationship::type::calculation_chain:
-			read_calculation_chain(document.root());
+			read_calculation_chain(parser);
 			break;
 		case relationship::type::connections:
-			read_connections(document.root());
+			read_connections(parser);
 			break;
 		case relationship::type::custom_xml_mappings:
-			read_custom_xml_mappings(document.root());
+			read_custom_xml_mappings(parser);
 			break;
 		case relationship::type::external_workbook_references:
-			read_external_workbook_references(document.root());
+			read_external_workbook_references(parser);
 			break;
 		case relationship::type::metadata:
-			read_metadata(document.root());
+			read_metadata(parser);
 			break;
 		case relationship::type::pivot_table:
-			read_pivot_table(document.root());
+			read_pivot_table(parser);
 			break;
 		case relationship::type::shared_string_table:
-			read_shared_string_table(document.root());
+			read_shared_string_table(parser);
 			break;
 		case relationship::type::shared_workbook_revision_headers:
-			read_shared_workbook_revision_headers(document.root());
+			read_shared_workbook_revision_headers(parser);
 			break;
 		case relationship::type::styles:
-			read_stylesheet(document.root());
+			read_stylesheet(parser);
 			break;
 		case relationship::type::theme:
-			read_theme(document.root());
+			read_theme(parser);
 			break;
 		case relationship::type::volatile_dependencies:
-			read_volatile_dependencies(document.root());
+			read_volatile_dependencies(parser);
 			break;
         default:
             break;
@@ -656,20 +689,20 @@ void xlsx_consumer::populate_workbook()
     
 	for (const auto &rel : manifest.get_relationships(workbook_rel.get_target().get_path()))
 	{
-		pugi::xml_document document;
 		path part_path(rel.get_source().get_path().parent().append(rel.get_target().get_path()));
-		document.load_string(source_.read(part_path).c_str());
+        std::istringstream parser_stream(source_.read(part_path));
+        xml::parser parser(parser_stream, rel.get_target().get_path().string());
 
 		switch (rel.get_type())
 		{
         case relationship::type::shared_string_table:
-            read_shared_string_table(document);
+            read_shared_string_table(parser);
             break;
         case relationship::type::styles:
-            read_stylesheet(document);
+            read_stylesheet(parser);
             break;
         case relationship::type::theme:
-            read_theme(document);
+            read_theme(parser);
             break;
         default:
             break;
@@ -679,21 +712,21 @@ void xlsx_consumer::populate_workbook()
     // Second pass, read sheets themselves
 
 	for (const auto &rel : manifest.get_relationships(workbook_rel.get_target().get_path()))
-	{
-		pugi::xml_document document;
+    {
 		path part_path(rel.get_source().get_path().parent().append(rel.get_target().get_path()));
-		document.load_string(source_.read(part_path).c_str());
+        std::istringstream parser_stream(source_.read(part_path));
+        xml::parser parser(parser_stream, rel.get_target().get_path().string());
 
 		switch (rel.get_type())
 		{
 		case relationship::type::chartsheet:
-			read_chartsheet(document.root(), rel.get_id());
+			read_chartsheet(rel.get_id(), parser);
 			break;
 		case relationship::type::dialogsheet:
-			read_dialogsheet(document.root(), rel.get_id());
+			read_dialogsheet(rel.get_id(), parser);
 			break;
 		case relationship::type::worksheet:
-			read_worksheet(document.root(), rel.get_id());
+			read_worksheet(rel.get_id(), parser);
 			break;
         default:
             break;
@@ -714,25 +747,36 @@ void xlsx_consumer::read_manifest()
 	if (!source_.has_file(package_rels_path)) throw invalid_file("missing package rels");
 	auto package_rels = read_relationships(package_rels_path, source_);
 
-	pugi::xml_document document;
-	document.load_string(source_.read(path("[Content_Types].xml")).c_str());
-
-	const auto root_node = document.child("Types");
+    std::istringstream parser_stream(source_.read(path("[Content_Types].xml")));
+    xml::parser parser(parser_stream, "[Content_Types].xml");
+    
 	auto &manifest = destination_.get_manifest();
+    
+    const std::string xmlns = "http://schemas.openxmlformats.org/package/2006/content-types";
+    parser.next_expect(xml::parser::event_type::start_element, xmlns, "Types");
+    parser.content(xml::content::complex);
 
-	for (const auto child : root_node.children())
+    while (true)
 	{
-		if (child.name() == std::string("Default"))
-		{
-			manifest.register_default_type(child.attribute("Extension").value(), 
-				child.attribute("ContentType").value());
-		}
-		else if (child.name() == std::string("Override"))
-		{
-			path part(child.attribute("PartName").value());
-			manifest.register_override_type(part, child.attribute("ContentType").value());
-		}
+        if (parser.peek() == xml::parser::event_type::end_element) break;
+        
+        parser.next_expect(xml::parser::event_type::start_element);
+        
+        if (parser.name() == "Default")
+        {
+            manifest.register_default_type(parser.attribute("Extension"),
+				parser.attribute("ContentType"));
+            parser.next_expect(xml::parser::event_type::end_element, xmlns, "Default");
+        }
+        else if (parser.name() == "Override")
+        {
+			manifest.register_override_type(path(parser.attribute("PartName")),
+                parser.attribute("ContentType"));
+            parser.next_expect(xml::parser::event_type::end_element, xmlns, "Override");
+        }
 	}
+    
+    parser.next_expect(xml::parser::event_type::end_element, xmlns, "Types");
 
 	for (const auto &package_rel : package_rels)
 	{
@@ -765,8 +809,9 @@ void xlsx_consumer::read_manifest()
 	}
 }
 
-void xlsx_consumer::read_extended_properties(const pugi::xml_node root)
+void xlsx_consumer::read_extended_properties(xml::parser &parser)
 {
+/*
 	for (auto property_node : root.child("Properties"))
 	{
 		std::string name(property_node.name());
@@ -781,10 +826,12 @@ void xlsx_consumer::read_extended_properties(const pugi::xml_node root)
 		else if (name == "AppVersion") destination_.set_app_version(value);
 		else if (name == "Application") destination_.set_application(value);
 	}
+    */
 }
 
-void xlsx_consumer::read_core_properties(const pugi::xml_node root)
+void xlsx_consumer::read_core_properties(xml::parser &parser)
 {
+/*
 	for (auto property_node : root.child("cp:coreProperties"))
 	{
 		std::string name(property_node.name());
@@ -795,19 +842,23 @@ void xlsx_consumer::read_core_properties(const pugi::xml_node root)
 		else if (name == "dcterms:created") destination_.set_created(w3cdtf_to_datetime(value));
 		else if (name == "dcterms:modified") destination_.set_modified(w3cdtf_to_datetime(value));
 	}
+    */
 }
 
-void xlsx_consumer::read_custom_file_properties(const pugi::xml_node root)
+void xlsx_consumer::read_custom_file_properties(xml::parser &parser)
 {
+/*
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	/*auto root_node = */document.append_child("customFileProperties");
+	document.append_child("customFileProperties");
+    */
 }
 
 // Write SpreadsheetML-Specific Package Parts
 
-void xlsx_consumer::read_workbook(const pugi::xml_node root)
+void xlsx_consumer::read_workbook(xml::parser &parser)
 {
+/*
 	auto workbook_node = root.child("workbook");
 
 	if (workbook_node.attribute("xmlns:x15"))
@@ -887,72 +938,90 @@ void xlsx_consumer::read_workbook(const pugi::xml_node root)
 	{
 		destination_.d_->has_arch_id_ = true;
 	}
+    */
 }
 
 // Write Workbook Relationship Target Parts
 
-void xlsx_consumer::read_calculation_chain(const pugi::xml_node root)
+void xlsx_consumer::read_calculation_chain(xml::parser &parser)
 {
 }
 
-void xlsx_consumer::read_chartsheet(const pugi::xml_node root, const std::string &title)
+void xlsx_consumer::read_chartsheet(const std::string &title, xml::parser &parser)
 {
+/*
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	/*auto root_node = */ document.append_child("chartsheet");
+	document.append_child("chartsheet");
+    */
 }
 
-void xlsx_consumer::read_connections(const pugi::xml_node root)
+void xlsx_consumer::read_connections(xml::parser &parser)
 {
+/*
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	/*auto root_node = */ document.append_child("connections");
+	document.append_child("connections");
+    */
 }
 
-void xlsx_consumer::read_custom_property(const pugi::xml_node root)
+void xlsx_consumer::read_custom_property(xml::parser &parser)
 {
+/*
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	/*auto root_node = */ document.append_child("customProperty");
+	document.append_child("customProperty");
+    */
 }
 
-void xlsx_consumer::read_custom_xml_mappings(const pugi::xml_node root)
+void xlsx_consumer::read_custom_xml_mappings(xml::parser &parser)
 {
+/*
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	/*auto root_node = */ document.append_child("connections");
+	document.append_child("connections");
+    */
 }
 
-void xlsx_consumer::read_dialogsheet(const pugi::xml_node root, const std::string &title)
+void xlsx_consumer::read_dialogsheet(const std::string &title, xml::parser &parser)
 {
+/*
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	/*auto root_node = */ document.append_child("dialogsheet");
+	document.append_child("dialogsheet");
+    */
 }
 
-void xlsx_consumer::read_external_workbook_references(const pugi::xml_node root)
+void xlsx_consumer::read_external_workbook_references(xml::parser &parser)
 {
+/*
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	/*auto root_node = */ document.append_child("externalLink");
+	document.append_child("externalLink");
+    */
 }
 
-void xlsx_consumer::read_metadata(const pugi::xml_node root)
+void xlsx_consumer::read_metadata(xml::parser &parser)
 {
+/*
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	/*auto root_node = */ document.append_child("metadata");
+	document.append_child("metadata");
+    */
 }
 
-void xlsx_consumer::read_pivot_table(const pugi::xml_node root)
+void xlsx_consumer::read_pivot_table(xml::parser &parser)
 {
+/*
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	/*auto root_node = */ document.append_child("pivotTableDefinition");
+	document.append_child("pivotTableDefinition");
+    */
 }
 
-void xlsx_consumer::read_shared_string_table(const pugi::xml_node root)
+void xlsx_consumer::read_shared_string_table(xml::parser &parser)
 {
+/*
 	auto sst_node = root.child("sst");
 	std::size_t unique_count = 0;
 
@@ -1025,31 +1094,39 @@ void xlsx_consumer::read_shared_string_table(const pugi::xml_node root)
 	{
 		throw invalid_file("sizes don't match");
 	}
+    */
 }
 
-void xlsx_consumer::read_shared_workbook_revision_headers(const pugi::xml_node root)
+void xlsx_consumer::read_shared_workbook_revision_headers(xml::parser &parser)
 {
+/*
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	/*auto root_node = */ document.append_child("headers");
+	document.append_child("headers");
+    */
 }
 
-void xlsx_consumer::read_shared_workbook(const pugi::xml_node root)
+void xlsx_consumer::read_shared_workbook(xml::parser &parser)
 {
+/*
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	/*auto root_node = */ document.append_child("revisions");
+	document.append_child("revisions");
+    */
 }
 
-void xlsx_consumer::read_shared_workbook_user_data(const pugi::xml_node root)
+void xlsx_consumer::read_shared_workbook_user_data(xml::parser &parser)
 {
+/*
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	/*auto root_node = */ document.append_child("users");
+	document.append_child("users");
+    */
 }
 
-void xlsx_consumer::read_stylesheet(const pugi::xml_node root)
+void xlsx_consumer::read_stylesheet(xml::parser &parser)
 {
+/*
 	auto stylesheet_node = root.child("styleSheet");
 	auto &stylesheet = destination_.impl().stylesheet_;
 
@@ -1192,23 +1269,29 @@ void xlsx_consumer::read_stylesheet(const pugi::xml_node root)
             format.style(stylesheet.get_style(style_name));
         }
 	}
+    */
 }
 
-void xlsx_consumer::read_theme(const pugi::xml_node root)
+void xlsx_consumer::read_theme(xml::parser &parser)
 {
+/*
 	root.child("theme");
 	destination_.set_theme(theme());
+    */
 }
 
-void xlsx_consumer::read_volatile_dependencies(const pugi::xml_node root)
+void xlsx_consumer::read_volatile_dependencies(xml::parser &parser)
 {
+/*
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	/*auto root_node = */ document.append_child("volTypes");
+	document.append_child("volTypes");
+    */
 }
 
-void xlsx_consumer::read_worksheet(const pugi::xml_node root, const std::string &rel_id)
+void xlsx_consumer::read_worksheet(const std::string &title, xml::parser &parser)
 {
+/*
 	auto title = std::find_if(destination_.d_->sheet_title_rel_id_map_.begin(),
 		destination_.d_->sheet_title_rel_id_map_.end(),
 		[&](const std::pair<std::string, std::string> &p)
@@ -1425,38 +1508,47 @@ void xlsx_consumer::read_worksheet(const pugi::xml_node root, const std::string 
 
 		ws.set_page_margins(margins);
 	}
+    */
 }
 
 // Sheet Relationship Target Parts
 
-void xlsx_consumer::read_comments(const pugi::xml_node root)
+void xlsx_consumer::read_comments(xml::parser &parser)
 {
+/*
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	/*auto root_node = */ document.append_child("comments");
+	document.append_child("comments");
+    */
 }
 
-void xlsx_consumer::read_drawings(const pugi::xml_node root)
+void xlsx_consumer::read_drawings(xml::parser &parser)
 {
+/*
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	/*auto root_node = */ document.append_child("wsDr");
+	document.append_child("wsDr");
+    */
 }
 
 // Unknown Parts
 
-void xlsx_consumer::read_unknown_parts(const pugi::xml_node root)
+void xlsx_consumer::read_unknown_parts(xml::parser &parser)
 {
+/*
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	/*auto root_node = */ document.append_child("Hmm");
+	document.append_child("Hmm");
+    */
 }
 
-void xlsx_consumer::read_unknown_relationships(const pugi::xml_node root)
+void xlsx_consumer::read_unknown_relationships(xml::parser &parser)
 {
+/*
 	pugi::xml_document document;
 	document.load_string(source_.read(path("[Content Types].xml")).c_str());
-	/*auto root_node = */ document.append_child("Relationships");
+	document.append_child("Relationships");
+    */
 }
 
 } // namespace detail

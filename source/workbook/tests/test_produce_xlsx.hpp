@@ -16,6 +16,8 @@ public:
 	{
         std::vector<std::uint8_t> buffer;
         wb.save(buffer);
+        
+        wb.save("a.xlsx");
 
         xlnt::zip_file wb_archive(buffer);
         xlnt::zip_file file_archive(file);

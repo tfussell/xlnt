@@ -27,7 +27,7 @@
 #include <iostream>
 #include <vector>
 
-#include <detail/include_pugixml.hpp>
+#include <detail/include_libstudxml.hpp>
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/packaging/zip_file.hpp>
 
@@ -63,45 +63,45 @@ private:
 	// Package Parts
 
 	void write_manifest();
-	void write_core_properties(const relationship &rel, pugi::xml_node root);
-	void write_extended_properties(const relationship &rel, pugi::xml_node root);
-	void write_custom_properties(const relationship &rel, pugi::xml_node root);
+	void write_core_properties(const relationship &rel, xml::serializer &serializer);
+	void write_extended_properties(const relationship &rel, xml::serializer &serializer);
+	void write_custom_properties(const relationship &rel, xml::serializer &serializer);
     void write_thumbnail(const relationship &rel);
 
 	// SpreadsheetML-Specific Package Parts
 
-	void write_workbook(const relationship &rel, pugi::xml_node root);
+	void write_workbook(const relationship &rel, xml::serializer &serializer);
 
 	// Workbook Relationship Target Parts
 
-	void write_calculation_chain(const relationship &rel, pugi::xml_node root);
-	void write_connections(const relationship &rel, pugi::xml_node root);
-	void write_custom_xml_mappings(const relationship &rel, pugi::xml_node root);
-	void write_external_workbook_references(const relationship &rel, pugi::xml_node root);
-	void write_metadata(const relationship &rel, pugi::xml_node root);
-	void write_pivot_table(const relationship &rel, pugi::xml_node root);
-	void write_shared_string_table(const relationship &rel, pugi::xml_node root);
-	void write_shared_workbook_revision_headers(const relationship &rel, pugi::xml_node root);
-	void write_shared_workbook(const relationship &rel, pugi::xml_node root);
-	void write_shared_workbook_user_data(const relationship &rel, pugi::xml_node root);
-	void write_styles(const relationship &rel, pugi::xml_node root);
-	void write_theme(const relationship &rel, pugi::xml_node root);
-	void write_volatile_dependencies(const relationship &rel, pugi::xml_node root);
+	void write_calculation_chain(const relationship &rel, xml::serializer &serializer);
+	void write_connections(const relationship &rel, xml::serializer &serializer);
+	void write_custom_xml_mappings(const relationship &rel, xml::serializer &serializer);
+	void write_external_workbook_references(const relationship &rel, xml::serializer &serializer);
+	void write_metadata(const relationship &rel, xml::serializer &serializer);
+	void write_pivot_table(const relationship &rel, xml::serializer &serializer);
+	void write_shared_string_table(const relationship &rel, xml::serializer &serializer);
+	void write_shared_workbook_revision_headers(const relationship &rel, xml::serializer &serializer);
+	void write_shared_workbook(const relationship &rel, xml::serializer &serializer);
+	void write_shared_workbook_user_data(const relationship &rel, xml::serializer &serializer);
+	void write_styles(const relationship &rel, xml::serializer &serializer);
+	void write_theme(const relationship &rel, xml::serializer &serializer);
+	void write_volatile_dependencies(const relationship &rel, xml::serializer &serializer);
 
-	void write_chartsheet(const relationship &rel, pugi::xml_node root);
-	void write_dialogsheet(const relationship &rel, pugi::xml_node root);
-	void write_worksheet(const relationship &rel, pugi::xml_node root);
+	void write_chartsheet(const relationship &rel, xml::serializer &serializer);
+	void write_dialogsheet(const relationship &rel, xml::serializer &serializer);
+	void write_worksheet(const relationship &rel, xml::serializer &serializer);
 
 	// Sheet Relationship Target Parts
 
-	void write_comments(const relationship &rel, pugi::xml_node root);
-	void write_drawings(const relationship &rel, pugi::xml_node root);
+	void write_comments(const relationship &rel, xml::serializer &serializer);
+	void write_drawings(const relationship &rel, xml::serializer &serializer);
 
 	// Other Parts
 
-	void write_custom_property();
-	void write_unknown_parts();
-	void write_unknown_relationships();
+	void write_custom_property(xml::serializer &serializer);
+	void write_unknown_parts(xml::serializer &serializer);
+	void write_unknown_relationships(xml::serializer &serializer);
 
 	// Helpers
 

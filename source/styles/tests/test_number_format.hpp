@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include <iostream>
-#include <pugixml.hpp>
 #include <cxxtest/TestSuite.h>
 
 #include <xlnt/xlnt.hpp>
