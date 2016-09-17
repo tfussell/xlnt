@@ -68,9 +68,9 @@ SET(LIBSTUDXML ../third-party/libstudxml/xml/parser.cxx ../third-party/libstudxm
 
 if(SHARED)
     add_library(xlnt.shared SHARED ${HEADERS} ${SOURCES} ${MINIZ} ${LIBSTUDXML})
-    target_compile_definitions(xlnt.shared PRIVATE XLNT_SHARED=1)
+    target_compile_definitions(xlnt.shared PRIVATE XLNT_SHARED=1 LIBSTUDXML_STATIC_LIB=1)
     if(MSVC)
-        target_compile_definitions(xlnt.shared PRIVATE XLNT_EXPORT=1)
+        target_compile_definitions(xlnt.shared PRIVATE XLNT_EXPORT=1 _CRT_SECURE_NO_WARNINGS=1)
         set_target_properties(xlnt.shared PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\"")
     endif()
     install(TARGETS xlnt.shared
@@ -103,6 +103,10 @@ endif()
 if(STATIC)
     add_library(xlnt.static STATIC ${HEADERS} ${SOURCES} ${MINIZ} ${LIBSTUDXML})
     target_compile_definitions(xlnt.static PUBLIC XLNT_STATIC=1)
+    target_compile_definitions(xlnt.static PRIVATE LIBSTUDXML_STATIC_LIB=1)
+    if(MSVC)
+        target_compile_definitions(xlnt.static PRIVATE _CRT_SECURE_NO_WARNINGS=1)
+    endif()
     install(TARGETS xlnt.static
         LIBRARY DESTINATION ${LIB_DEST_DIR}
         ARCHIVE DESTINATION ${LIB_DEST_DIR}

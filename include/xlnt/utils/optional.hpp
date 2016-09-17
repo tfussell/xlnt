@@ -1,12 +1,11 @@
 #pragma once
 
-#include <xlnt/xlnt_config.hpp>
 #include <xlnt/utils/exceptions.hpp>
 
 namespace xlnt {
 
 template<typename T>
-class XLNT_CLASS optional
+class optional
 {
 public:
 	optional() : has_value_(false), value_(T())
