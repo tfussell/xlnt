@@ -3,6 +3,7 @@
 #include <detail/xlsx_consumer.hpp>
 
 #include <detail/constants.hpp>
+#include <detail/custom_value_traits.hpp>
 #include <detail/workbook_impl.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/utils/path.hpp>
@@ -56,16 +57,6 @@ struct EnumClassHash
 
 template<typename T>
 T from_string(const std::string &string);
-
-template<>
-xlnt::font::underline_style from_string(const std::string &underline_string)
-{
-	if (underline_string == "double") return xlnt::font::underline_style::double_;
-	if (underline_string == "doubleAccounting") return xlnt::font::underline_style::double_accounting;
-	if (underline_string == "single") return xlnt::font::underline_style::single;
-	if (underline_string == "singleAccounting") return xlnt::font::underline_style::single_accounting;
-	return xlnt::font::underline_style::none;
-}
 
 template<>
 xlnt::pattern_fill_type from_string(const std::string &fill_type)
@@ -250,32 +241,38 @@ xlnt::protection read_protection(xml::parser &parser)
 xlnt::alignment read_alignment(xml::parser &parser)
 {
 	xlnt::alignment align;
-/*
-	align.wrap(is_true(alignment_node.attribute("wrapText").value()));
-	align.shrink(is_true(alignment_node.attribute("shrinkToFit").value()));
 
-	if (alignment_node.attribute("vertical"))
+	align.wrap(is_true(parser.attribute("wrapText")));
+	align.shrink(is_true(parser.attribute("shrinkToFit")));
+
+	if (parser.attribute_present("vertical"))
 	{
-		std::string vertical = alignment_node.attribute("vertical").value();
-		align.vertical(from_string<xlnt::vertical_alignment>(vertical));
+		align.vertical(from_string<xlnt::vertical_alignment>(
+            parser.attribute("vertical")));
 	}
 
-	if (alignment_node.attribute("horizontal"))
+	if (parser.attribute_present("horizontal"))
 	{
-		std::string horizontal = alignment_node.attribute("horizontal").value();
-		align.horizontal(from_string<xlnt::horizontal_alignment>(horizontal));
+		align.horizontal(from_string<xlnt::horizontal_alignment>(
+            parser.attribute("horizontal")));
 	}
-*/
+
 	return align;
 }
 
 void read_number_formats(xml::parser &parser, std::vector<xlnt::number_format> &number_formats)
 {
 	number_formats.clear();
-/*
-	for (auto num_fmt_node : number_formats_node.children("numFmt"))
+
+    while (true)
 	{
-		std::string format_string(num_fmt_node.attribute("formatCode").value());
+        if (parser.peek() == xml::parser::event_type::end_element)
+        {
+            break;
+        }
+        
+        parser.next_expect(xml::parser::event_type::start_element, "numFmt");
+        auto format_string = parser.attribute("formatCode");
 
 		if (format_string == "GENERAL")
 		{
@@ -285,11 +282,14 @@ void read_number_formats(xml::parser &parser, std::vector<xlnt::number_format> &
 		xlnt::number_format nf;
 
 		nf.set_format_string(format_string);
-		nf.set_id(string_to_size_t(num_fmt_node.attribute("numFmtId").value()));
+		nf.set_id(string_to_size_t(parser.attribute("numFmtId")));
 
 		number_formats.push_back(nf);
+        
+        parser.next_expect(xml::parser::event_type::end_element, "numFmt");
 	}
-*/
+    
+    parser.next_expect(xml::parser::event_type::end_element, "numFmts");
 }
 
 xlnt::color read_color(xml::parser &parser)

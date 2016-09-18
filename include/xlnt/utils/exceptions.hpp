@@ -146,4 +146,13 @@ public:
     no_visible_worksheets();
 };
 
+/// <summary>
+/// Debug exception for a switch that fell through to the default case
+/// </summary>
+class XLNT_CLASS unhandled_switch_case : public exception
+{
+public:
+    unhandled_switch_case();
+};
+
 } // namespace xlnt
