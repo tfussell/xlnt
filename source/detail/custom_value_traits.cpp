@@ -6,9 +6,9 @@ namespace detail {
 /// <summary>
 /// Returns the string representation of the underline style.
 /// </summary>
-std::string to_string(font::underline_style underline_style)
+std::string to_string(font::underline_style style)
 {
-    switch (underline_style)
+    switch (style)
     {
     case font::underline_style::double_: return "double";
     case font::underline_style::double_accounting: return "doubleAccounting";
@@ -86,9 +86,9 @@ std::string to_string(gradient_fill_type fill_type)
 	return fill_type == gradient_fill_type::linear ? "linear" : "path";
 }
 
-std::string to_string(border_style border_style)
+std::string to_string(border_style style)
 {
-	switch (border_style)
+	switch (style)
 	{
 	case border_style::dashdot: return "dashdot";
 	case border_style::dashdotdot: return "dashdotdot";
@@ -108,9 +108,9 @@ std::string to_string(border_style border_style)
 	}
 }
 
-std::string to_string(vertical_alignment vertical_alignment)
+std::string to_string(vertical_alignment alignment)
 {
-	switch (vertical_alignment)
+	switch (alignment)
 	{
 	case vertical_alignment::bottom: return "bottom";
 	case vertical_alignment::center: return "center";
@@ -121,9 +121,9 @@ std::string to_string(vertical_alignment vertical_alignment)
 	}
 }
 
-std::string to_string(horizontal_alignment horizontal_alignment)
+std::string to_string(horizontal_alignment alignment)
 {
-	switch (horizontal_alignment)
+	switch (alignment)
 	{
 	case horizontal_alignment::center: return "center";
 	case horizontal_alignment::center_continuous: return "center-continous";
