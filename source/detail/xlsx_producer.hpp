@@ -118,7 +118,7 @@ private:
 	std::string write_bool(bool boolean) const;
     
     void write_relationships(const std::vector<xlnt::relationship> &relationships, const path &part);
-    bool write_color(const xlnt::color &color);
+    void write_color(const xlnt::color &color);
     void write_dxfs();
     void write_table_styles();
     void write_colors(const std::vector<xlnt::color> &colors);
