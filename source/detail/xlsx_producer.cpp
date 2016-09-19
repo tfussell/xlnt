@@ -19,6 +19,11 @@ using namespace std::string_literals;
 namespace {
 
 /// <summary>
+/// Some XML elements do unknown things and will be skipped during writing if this is true.
+/// </summary>
+const bool skip_unknown_elements = true;
+
+/// <summary>
 /// Returns true if d is exactly equal to an integer.
 /// </summary>
 bool is_integral(long double d)
@@ -173,7 +178,7 @@ void xlsx_producer::write_extended_properties(const relationship &rel)
     serializer().namespace_decl(xmlns_vt, "vt");
 
     serializer().element(xmlns, "Application", source_.get_application());
-    serializer().element(xmlns, "DocSecurity", std::to_string(source_.get_doc_security()));
+    serializer().element(xmlns, "DocSecurity", source_.get_doc_security());
     serializer().element(xmlns, "ScaleCrop", source_.get_scale_crop() ? "true" : "false");
 
     serializer().start_element(xmlns, "HeadingPairs");
@@ -184,14 +189,14 @@ void xlsx_producer::write_extended_properties(const relationship &rel)
     serializer().element(xmlns_vt, "lpstr", "Worksheets");
     serializer().end_element(xmlns_vt, "variant");
     serializer().start_element(xmlns_vt, "variant");
-    serializer().element(xmlns_vt, "i4", std::to_string(source_.get_sheet_titles().size()));
+    serializer().element(xmlns_vt, "i4", source_.get_sheet_titles().size());
     serializer().end_element(xmlns_vt, "variant");
     serializer().end_element(xmlns_vt, "vector");
     serializer().end_element(xmlns, "HeadingPairs");
 
     serializer().start_element(xmlns, "TitlesOfParts");
     serializer().start_element(xmlns_vt, "vector");
-    serializer().attribute("size", std::to_string(source_.get_sheet_titles().size()));
+    serializer().attribute("size", source_.get_sheet_titles().size());
     serializer().attribute("baseType", "lpstr");
 
 	for (auto ws : source_)
@@ -248,7 +253,7 @@ void xlsx_producer::write_core_properties(const relationship &rel)
 		serializer().element(xmlns_dc, "title", source_.get_title());
 	}
 
-    if (false)
+    if (!skip_unknown_elements)
     {
         serializer().element(xmlns_dc, "description", "");
         serializer().element(xmlns_dc, "subject", "");
@@ -290,12 +295,12 @@ void xlsx_producer::write_workbook(const relationship &rel)
 	}
 
     static const auto xmlns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"s;
-    static const auto xmlns_r = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"s;
     static const auto xmlns_mc = "http://schemas.openxmlformats.org/markup-compatibility/2006"s;
+    static const auto xmlns_mx = "http://schemas.microsoft.com/office/mac/excel/2008/main"s;
+    static const auto xmlns_r = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"s;
+    static const auto xmlns_s = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"s;
     static const auto xmlns_x15 = "http://schemas.microsoft.com/office/spreadsheetml/2010/11/main"s;
     static const auto xmlns_x15ac = "http://schemas.microsoft.com/office/spreadsheetml/2010/11/ac"s;
-    static const auto xmlns_s = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"s;
-    static const auto xmlns_mx = "http://schemas.microsoft.com/office/mac/excel/2008/main"s;
 
 	serializer().start_element(xmlns, "workbook");
     serializer().namespace_decl(xmlns, "");
@@ -313,9 +318,9 @@ void xlsx_producer::write_workbook(const relationship &rel)
 		serializer().start_element(xmlns, "fileVersion");
 
 		serializer().attribute("appName", source_.get_app_name());
-		serializer().attribute("lastEdited", std::to_string(source_.get_last_edited()));
-		serializer().attribute("lowestEdited", std::to_string(source_.get_lowest_edited()));
-		serializer().attribute("rupBuild", std::to_string(source_.get_rup_build()));
+		serializer().attribute("lastEdited", source_.get_last_edited());
+		serializer().attribute("lowestEdited", source_.get_lowest_edited());
+		serializer().attribute("rupBuild", source_.get_rup_build());
         
 		serializer().end_element(xmlns, "fileVersion");
 	}
@@ -329,7 +334,7 @@ void xlsx_producer::write_workbook(const relationship &rel)
 			serializer().attribute("codeName", source_.get_code_name());
 		}
 
-        if (false)
+        if (!skip_unknown_elements)
         {
             serializer().attribute("defaultThemeVersion", "124226");
             serializer().attribute("date1904", source_.get_base_date() == calendar::mac_1904 ? "1" : "0");
@@ -362,20 +367,24 @@ void xlsx_producer::write_workbook(const relationship &rel)
 
 		const auto &view = source_.get_view();
 
-		//workbook_view_node.append_attribute("activeTab", "0");
-		//workbook_view_node.append_attribute("autoFilterDateGrouping", "1");
-		//workbook_view_node.append_attribute("firstSheet", "0");
-		//workbook_view_node.append_attribute("minimized", "0");
-		//workbook_view_node.append_attribute("showHorizontalScroll", "1");
-		//workbook_view_node.append_attribute("showSheetTabs", "1");
-		//workbook_view_node.append_attribute("showVerticalScroll", "1");
-		//workbook_view_node.append_attribute("tabRatio", "600");
-		//workbook_view_node.append_attribute("visibility", "visible");
-		serializer().attribute("xWindow", std::to_string(view.x_window));
-		serializer().attribute("yWindow", std::to_string(view.y_window));
-		serializer().attribute("windowWidth", std::to_string(view.window_width));
-		serializer().attribute("windowHeight", std::to_string(view.window_height));
-		serializer().attribute("tabRatio", std::to_string(view.tab_ratio));
+        if (!skip_unknown_elements)
+        {
+            serializer().attribute("activeTab", "0");
+            serializer().attribute("autoFilterDateGrouping", "1");
+            serializer().attribute("firstSheet", "0");
+            serializer().attribute("minimized", "0");
+            serializer().attribute("showHorizontalScroll", "1");
+            serializer().attribute("showSheetTabs", "1");
+            serializer().attribute("showVerticalScroll", "1");
+            serializer().attribute("tabRatio", "600");
+            serializer().attribute("visibility", "visible");
+        }
+
+		serializer().attribute("xWindow", view.x_window);
+		serializer().attribute("yWindow", view.y_window);
+		serializer().attribute("windowWidth", view.window_width);
+		serializer().attribute("windowHeight", view.window_height);
+		serializer().attribute("tabRatio", view.tab_ratio);
         
 		serializer().end_element(xmlns, "workbookView");
 		serializer().end_element(xmlns, "bookViews");
@@ -395,7 +404,7 @@ void xlsx_producer::write_workbook(const relationship &rel)
 
 		serializer().start_element(xmlns, "sheet");
 		serializer().attribute("name", ws.get_title());
-		serializer().attribute("sheetId", std::to_string(ws.get_id()));
+		serializer().attribute("sheetId", ws.get_id());
 
 		if (ws.has_page_setup() && ws.get_sheet_state() == xlnt::sheet_state::hidden)
 		{
@@ -426,8 +435,13 @@ void xlsx_producer::write_workbook(const relationship &rel)
 	{
 		serializer().start_element(xmlns, "calcPr");
         serializer().attribute("calcId", 150000);
-		//calc_pr_node.append_attribute("calcMode", "auto");
-		//calc_pr_node.append_attribute("fullCalcOnLoad", "1");
+        
+        if (!skip_unknown_elements)
+        {
+            serializer().attribute("calcMode", "auto");
+            serializer().attribute("fullCalcOnLoad", "1");
+        }
+        
         serializer().attribute("concurrentCalc", "0");
         serializer().end_element(xmlns, "calcPr");
 	}
@@ -698,6 +712,7 @@ void xlsx_producer::write_styles(const relationship &rel)
 {
     static const auto xmlns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"s;
     static const auto xmlns_mc = "http://schemas.openxmlformats.org/markup-compatibility/2006"s;
+    static const auto xmlns_x14 = "http://schemas.microsoft.com/office/spreadsheetml/2009/9/main"s;
     static const auto xmlns_x14ac = "http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac"s;
     
 	serializer().start_element(xmlns, "styleSheet");
@@ -806,104 +821,122 @@ void xlsx_producer::write_styles(const relationship &rel)
                 serializer().attribute("val", *current_font.scheme());
                 serializer().end_element(xmlns, "scheme");
 			}
+            
+            serializer().end_element(xmlns, "font");
 		}
+        
+		serializer().end_element(xmlns, "fonts");
 	}
-/*
+
 	// Fills
 
 	if (!stylesheet.fills.empty())
 	{
-		auto fills_node = stylesheet_node.append_child("fills");
 		const auto &fills = stylesheet.fills;
 
-		fills_node.append_attribute("count", std::to_string(fills.size()).c_str());
+		serializer().start_element(xmlns, "fills");
+		serializer().attribute("count", fills.size());
 
 		for (auto &fill_ : fills)
 		{
-			auto fill_node = fills_node.append_child("fill");
+			serializer().start_element(xmlns, "fill");
 
 			if (fill_.type() == xlnt::fill_type::pattern)
 			{
 				const auto &pattern = fill_.pattern_fill();
 
-				auto pattern_fill_node = fill_node.append_child("patternFill");
-				pattern_fill_node.append_attribute("patternType", to_string(pattern.type()).c_str());
+				serializer().start_element(xmlns, "patternFill");
+				serializer().attribute("patternType", pattern.type());
 
 				if (pattern.foreground())
 				{
-					write_color(*pattern.foreground(), pattern_fill_node.append_child("fgColor"));
+                    serializer().start_element(xmlns, "fgColor");
+					write_color(*pattern.foreground());
+                    serializer().end_element(xmlns, "fgColor");
 				}
 
 				if (pattern.background())
 				{
-					write_color(*pattern.background(), pattern_fill_node.append_child("bgColor"));
+                    serializer().start_element(xmlns, "bgColor");
+					write_color(*pattern.background());
+                    serializer().end_element(xmlns, "bgColor");
 				}
+                
+				serializer().end_element(xmlns, "patternFill");
 			}
 			else if (fill_.type() == xlnt::fill_type::gradient)
 			{
 				const auto &gradient = fill_.gradient_fill();
 
-				auto gradient_fill_node = fill_node.append_child("gradientFill");
-				auto gradient_fill_type_string = to_string(gradient.type());
-				gradient_fill_node.append_attribute("gradientType", gradient_fill_type_string.c_str());
+				serializer().start_element(xmlns, "gradientFill");
+				serializer().attribute("gradientType", gradient.type());
 
 				if (gradient.degree() != 0)
 				{
-					gradient_fill_node.append_attribute("degree", gradient.degree());
+					serializer().attribute("degree", gradient.degree());
 				}
 
 				if (gradient.left() != 0)
 				{
-					gradient_fill_node.append_attribute("left", gradient.left());
+					serializer().attribute("left", gradient.left());
 				}
 
 				if (gradient.right() != 0)
 				{
-					gradient_fill_node.append_attribute("right", gradient.right());
+					serializer().attribute("right", gradient.right());
 				}
 
 				if (gradient.top() != 0)
 				{
-					gradient_fill_node.append_attribute("top", gradient.top());
+					serializer().attribute("top", gradient.top());
 				}
 
 				if (gradient.bottom() != 0)
 				{
-					gradient_fill_node.append_attribute("bottom", gradient.bottom());
+					serializer().attribute("bottom", gradient.bottom());
 				}
 
 				for (const auto &stop : gradient.stops())
 				{
-					auto stop_node = gradient_fill_node.append_child("stop");
-					stop_node.append_attribute("position", stop.first);
-					write_color(stop.second, stop_node.append_child("color"));
+					serializer().start_element(xmlns, "stop");
+					serializer().attribute("position", stop.first);
+					serializer().start_element(xmlns, "color");
+					write_color(stop.second);
+					serializer().end_element(xmlns, "color");
+					serializer().end_element(xmlns, "stop");
 				}
+                
+				serializer().end_element(xmlns, "gradientFill");
 			}
+            
+			serializer().end_element(xmlns, "fill");
 		}
+        
+		serializer().end_element(xmlns, "fills");
 	}
 
 	// Borders
 
 	if (!stylesheet.borders.empty())
 	{
-		auto borders_node = stylesheet_node.append_child("borders");
 		const auto &borders = stylesheet.borders;
 
-		borders_node.append_attribute("count", std::to_string(borders.size()).c_str());
+		serializer().start_element(xmlns, "borders");
+		serializer().attribute("count", borders.size());
 
 		for (const auto &current_border : borders)
 		{
-			auto border_node = borders_node.append_child("border");
+			serializer().start_element(xmlns, "border");
 
 			if (current_border.diagonal())
 			{
 				auto up = *current_border.diagonal() == diagonal_direction::both
 					|| *current_border.diagonal() == diagonal_direction::up;
-				border_node.append_attribute("diagonalUp", up ? "true" : "false");
+				serializer().attribute("diagonalUp", up ? "true" : "false");
 
 				auto down = *current_border.diagonal() == diagonal_direction::both
 					|| *current_border.diagonal() == diagonal_direction::down;
-				border_node.append_attribute("diagonalDown", down ? "true" : "false");
+                serializer().attribute("diagonalDown", down ? "true" : "false");
 			}
 
 			for (const auto &side : xlnt::border::all_sides())
@@ -913,249 +946,259 @@ void xlsx_producer::write_styles(const relationship &rel)
 					const auto current_side = *current_border.side(side);
 
 					auto side_name = to_string(side);
-					auto side_node = border_node.append_child(side_name.c_str());
+					serializer().start_element(xmlns, side_name);
 
 					if (current_side.style())
 					{
-						auto style_string = to_string(*current_side.style());
-						side_node.append_attribute("style", style_string.c_str());
+                        serializer().attribute("style", *current_side.style());
 					}
 
 					if (current_side.color())
 					{
-						auto color_node = side_node.append_child("color");
-						write_color(*current_side.color(), color_node);
+						serializer().start_element(xmlns, "color");
+						write_color(*current_side.color());
+						serializer().end_element(xmlns, "color");
 					}
+                    
+					serializer().end_element(xmlns, side_name);
 				}
 			}
+            
+			serializer().end_element(xmlns, "border");
 		}
+        
+		serializer().end_element(xmlns, "borders");
 	}
 
-	// Formats & Styles
-
-	auto cell_style_xfs_node = stylesheet_node.append_child("cellStyleXfs");
-	auto cell_xfs_node = stylesheet_node.append_child("cellXfs");
-	cell_xfs_node.append_attribute("count", std::to_string(stylesheet.formats.size()).c_str());
-
-	// Formats
-
-	for (auto &current_format : stylesheet.formats)
-	{
-		auto xf_node = cell_xfs_node.append_child("xf");
-
-		xf_node.append_attribute("numFmtId", std::to_string(current_format.number_format().get_id()).c_str());
-
-        auto font_iter = std::find(stylesheet.fonts.begin(), stylesheet.fonts.end(), current_format.font());
-        if (font_iter == stylesheet.fonts.end())
-        {
-            throw xlnt::exception("font not found");
-        }
-		auto font_id = std::distance(stylesheet.fonts.begin(), font_iter);
-		xf_node.append_attribute("fontId", std::to_string(font_id).c_str());
-
-        auto fill_iter = std::find(stylesheet.fills.begin(), stylesheet.fills.end(), current_format.fill());
-        if (fill_iter == stylesheet.fills.end())
-        {
-            throw xlnt::exception("fill not found");
-        }
-		auto fill_id = std::distance(stylesheet.fills.begin(), std::find(stylesheet.fills.begin(), stylesheet.fills.end(), current_format.fill()));
-		xf_node.append_attribute("fillId", std::to_string(fill_id).c_str());
-
-        auto border_iter = std::find(stylesheet.borders.begin(), stylesheet.borders.end(), current_format.border());
-        if (border_iter == stylesheet.borders.end())
-        {
-            throw xlnt::exception("border not found");
-        }
-		auto border_id = std::distance(stylesheet.borders.begin(), std::find(stylesheet.borders.begin(), stylesheet.borders.end(), current_format.border()));
-		xf_node.append_attribute("borderId", std::to_string(border_id).c_str());
-
-		if (current_format.number_format_applied()) xf_node.append_attribute("applyNumberFormat", write_bool(true).c_str());
-		if (current_format.fill_applied()) xf_node.append_attribute("applyFill", write_bool(true).c_str());
-		if (current_format.font_applied()) xf_node.append_attribute("applyFont", write_bool(true).c_str());
-		if (current_format.border_applied()) xf_node.append_attribute("applyBorder", write_bool(true).c_str());
-
-		if (current_format.alignment_applied())
-		{
-			xf_node.append_attribute("applyAlignment", write_bool(true).c_str());
-			auto alignment_node = xf_node.append_child("alignment");
-			auto current_alignment = current_format.alignment();
-
-			if (current_alignment.vertical())
-			{
-				auto vertical = to_string(*current_alignment.vertical());
-				alignment_node.append_attribute("vertical", vertical.c_str());
-			}
-
-			if (current_alignment.horizontal())
-			{
-				auto horizontal = to_string(*current_alignment.horizontal());
-				alignment_node.append_attribute("horizontal", horizontal.c_str());
-			}
-
-			if (current_alignment.rotation())
-			{
-				alignment_node.append_attribute("textRotation", std::to_string(*current_alignment.rotation()).c_str());
-			}
-
-			if (current_alignment.wrap())
-			{
-				alignment_node.append_attribute("wrapText", *current_alignment.wrap() ? "true" : "false");
-			}
-
-			if (current_alignment.indent())
-			{
-				alignment_node.append_attribute("indent", std::to_string(*current_alignment.indent()).c_str());
-			}
-
-			if (current_alignment.shrink())
-			{
-				alignment_node.append_attribute("shrinkToFit", *current_alignment.shrink() ? "true" : "false");
-			}
-		}
-
-		if (current_format.protection_applied())
-		{
-			xf_node.append_attribute("applyProtection", write_bool(true).c_str());
-			auto protection_node = xf_node.append_child("protection");
-			auto current_protection = current_format.protection();
-
-			protection_node.append_attribute("locked", current_protection.locked() ? "true" : "false");
-			protection_node.append_attribute("hidden", current_protection.hidden() ? "true" : "false");
-		}
-
-		if (current_format.has_style())
-		{
-			auto style_iter = std::find_if(stylesheet.styles.begin(), stylesheet.styles.end(),
-				[&](const xlnt::style &s) { return s.name() == current_format.style().name(); });
-			auto style_index = std::distance(stylesheet.styles.begin(), style_iter);
-			xf_node.append_attribute("xfId", std::to_string(style_index).c_str());
-		}
-	}
-
-	// Styles
-
-	auto cell_styles_node = stylesheet_node.append_child("cellStyles");
-	cell_style_xfs_node.append_attribute("count", std::to_string(stylesheet.styles.size()).c_str());
-	cell_styles_node.append_attribute("count", std::to_string(stylesheet.styles.size()).c_str());
-	std::size_t style_index = 0;
+    // Style XFs
+    
+    serializer().start_element(xmlns, "cellStyleXfs");
+    serializer().attribute("count", stylesheet.styles.size());
 
 	for (auto &current_style : stylesheet.styles)
 	{
-		auto cell_style_node = cell_styles_node.append_child("cellStyle");
+		serializer().start_element(xmlns, "xf");
+        serializer().attribute("numFmtId", current_style.number_format().get_id());
+        serializer().attribute("fontId", std::distance(stylesheet.fonts.begin(),
+            std::find(stylesheet.fonts.begin(), stylesheet.fonts.end(), current_style.font())));
+		serializer().attribute("fillId", std::distance(stylesheet.fills.begin(),
+            std::find(stylesheet.fills.begin(), stylesheet.fills.end(), current_style.fill())));
+		serializer().attribute("borderId", std::distance(stylesheet.borders.begin(),
+            std::find(stylesheet.borders.begin(), stylesheet.borders.end(), current_style.border())));
 
-		cell_style_node.append_attribute("name", current_style.name().c_str());
-		cell_style_node.append_attribute("xfId", std::to_string(style_index++).c_str());
-
-		if (current_style.builtin_id())
-		{
-			cell_style_node.append_attribute("builtinId", std::to_string(*current_style.builtin_id()).c_str());
-		}
-
-		if (current_style.hidden())
-		{
-			cell_style_node.append_attribute("hidden", write_bool(true).c_str());
-		}
-
-		if (current_style.custom())
-		{
-			cell_style_node.append_attribute("customBuiltin", write_bool(*current_style.custom()).c_str());
-		}
-
-		auto xf_node = cell_style_xfs_node.append_child("xf");
-
-		xf_node.append_attribute("numFmtId", std::to_string(current_style.number_format().get_id()).c_str());
-
-		auto font_id = std::distance(stylesheet.fonts.begin(), std::find(stylesheet.fonts.begin(), stylesheet.fonts.end(), current_style.font()));
-		xf_node.append_attribute("fontId", std::to_string(font_id).c_str());
-
-		auto fill_id = std::distance(stylesheet.fills.begin(), std::find(stylesheet.fills.begin(), stylesheet.fills.end(), current_style.fill()));
-		xf_node.append_attribute("fillId", std::to_string(fill_id).c_str());
-
-		auto border_id = std::distance(stylesheet.borders.begin(), std::find(stylesheet.borders.begin(), stylesheet.borders.end(), current_style.border()));
-		xf_node.append_attribute("borderId", std::to_string(border_id).c_str());
-
-		if (current_style.number_format_applied()) xf_node.append_attribute("applyNumberFormat", write_bool(true).c_str());
-		if (current_style.fill_applied()) xf_node.append_attribute("applyFill", write_bool(true).c_str());
-		if (current_style.font_applied()) xf_node.append_attribute("applyFont", write_bool(true).c_str());
-		if (current_style.border_applied()) xf_node.append_attribute("applyBorder", write_bool(true).c_str());
+		if (current_style.number_format_applied()) serializer().attribute("applyNumberFormat", write_bool(true));
+		if (current_style.fill_applied()) serializer().attribute("applyFill", write_bool(true));
+		if (current_style.font_applied()) serializer().attribute("applyFont", write_bool(true));
+		if (current_style.border_applied()) serializer().attribute("applyBorder", write_bool(true));
+        if (current_style.alignment_applied()) serializer().attribute("applyAlignment", write_bool(true));
+        if (current_style.protection_applied()) serializer().attribute("applyProtection", write_bool(true));
 
 		if (current_style.alignment_applied())
 		{
-			xf_node.append_attribute("applyAlignment", write_bool(true).c_str());
-			auto alignment_node = xf_node.append_child("alignment");
-			auto current_alignment = current_style.alignment();
+            const auto current_alignment = current_style.alignment();
+
+			serializer().start_element("alignment");
 
 			if (current_alignment.vertical())
 			{
-				auto vertical = to_string(*current_alignment.vertical());
-				alignment_node.append_attribute("vertical", vertical.c_str());
+				serializer().attribute("vertical", *current_alignment.vertical());
 			}
 
 			if (current_alignment.horizontal())
 			{
-				auto horizontal = to_string(*current_alignment.horizontal());
-				alignment_node.append_attribute("horizontal", horizontal.c_str());
+				serializer().attribute("horizontal", *current_alignment.horizontal());
 			}
 
 			if (current_alignment.rotation())
 			{
-				alignment_node.append_attribute("textRotation", std::to_string(*current_alignment.rotation()).c_str());
+				serializer().attribute("textRotation", *current_alignment.rotation());
 			}
 
 			if (current_alignment.wrap())
 			{
-				alignment_node.append_attribute("wrapText", write_bool(*current_alignment.wrap()).c_str());
+				serializer().attribute("wrapText", write_bool(*current_alignment.wrap()));
 			}
 
 			if (current_alignment.indent())
 			{
-				alignment_node.append_attribute("indent", std::to_string(*current_alignment.indent()).c_str());
+				serializer().attribute("indent", *current_alignment.indent());
 			}
 
 			if (current_alignment.shrink())
 			{
-				alignment_node.append_attribute("shrinkToFit", write_bool(*current_alignment.shrink()).c_str());
+				serializer().attribute("shrinkToFit", write_bool(*current_alignment.shrink()));
 			}
+            
+			serializer().end_element("alignment");
 		}
 
 		if (current_style.protection_applied())
 		{
-			xf_node.append_attribute("applyProtection", write_bool(true).c_str());
-			auto protection_node = xf_node.append_child("protection");
-			auto current_protection = current_style.protection();
+            const auto current_protection = current_style.protection();
 
-			protection_node.append_attribute("locked", write_bool(current_protection.locked()).c_str());
-			protection_node.append_attribute("hidden", write_bool(current_protection.hidden()).c_str());
+			serializer().start_element("protection");
+			serializer().attribute("locked", write_bool(current_protection.locked()));
+			serializer().attribute("hidden", write_bool(current_protection.hidden()));
+			serializer().end_element("protection");
 		}
+        
+        serializer().end_element(xmlns, "xf");
 	}
+    
+    serializer().end_element(xmlns, "cellStyleXfs");
 
-	// Dxfs
+	// Format XFs
 
-	auto dxfs_node = stylesheet_node.append_child("dxfs");
-	write_dxfs(dxfs_node);
+	serializer().start_element(xmlns, "cellXfs");
+	serializer().attribute("count", stylesheet.formats.size());
 
-	// Table Styles
-
-	auto table_styles_node = stylesheet_node.append_child("tableStyles");
-	write_table_styles(table_styles_node);
-
-	// Colors
-
-	if (!stylesheet.colors.empty())
+	for (auto &current_format : stylesheet.formats)
 	{
-		auto colors_node = stylesheet_node.append_child("colors");
-		write_colors(stylesheet.colors, colors_node);
+		serializer().start_element(xmlns, "xf");
+        serializer().attribute("numFmtId", current_format.number_format().get_id());
+        serializer().attribute("fontId", std::distance(stylesheet.fonts.begin(),
+            std::find(stylesheet.fonts.begin(), stylesheet.fonts.end(), current_format.font())));
+		serializer().attribute("fillId", std::distance(stylesheet.fills.begin(),
+            std::find(stylesheet.fills.begin(), stylesheet.fills.end(), current_format.fill())));
+		serializer().attribute("borderId", std::distance(stylesheet.borders.begin(),
+            std::find(stylesheet.borders.begin(), stylesheet.borders.end(), current_format.border())));
+
+		if (current_format.number_format_applied()) serializer().attribute("applyNumberFormat", write_bool(true));
+		if (current_format.fill_applied()) serializer().attribute("applyFill", write_bool(true));
+		if (current_format.font_applied()) serializer().attribute("applyFont", write_bool(true));
+		if (current_format.border_applied()) serializer().attribute("applyBorder", write_bool(true));
+        if (current_format.alignment_applied()) serializer().attribute("applyAlignment", write_bool(true));
+        if (current_format.protection_applied()) serializer().attribute("applyProtection", write_bool(true));
+
+		if (current_format.alignment_applied())
+		{
+            const auto current_alignment = current_format.alignment();
+
+			serializer().start_element("alignment");
+
+			if (current_alignment.vertical())
+			{
+				serializer().attribute("vertical", *current_alignment.vertical());
+			}
+
+			if (current_alignment.horizontal())
+			{
+				serializer().attribute("horizontal", *current_alignment.horizontal());
+			}
+
+			if (current_alignment.rotation())
+			{
+				serializer().attribute("textRotation", *current_alignment.rotation());
+			}
+
+			if (current_alignment.wrap())
+			{
+				serializer().attribute("wrapText", write_bool(*current_alignment.wrap()));
+			}
+
+			if (current_alignment.indent())
+			{
+				serializer().attribute("indent", *current_alignment.indent());
+			}
+
+			if (current_alignment.shrink())
+			{
+				serializer().attribute("shrinkToFit", write_bool(*current_alignment.shrink()));
+			}
+            
+			serializer().end_element("alignment");
+		}
+
+		if (current_format.protection_applied())
+		{
+            const auto current_protection = current_format.protection();
+
+			serializer().start_element("protection");
+			serializer().attribute("locked", write_bool(current_protection.locked()));
+			serializer().attribute("hidden", write_bool(current_protection.hidden()));
+			serializer().end_element("protection");
+		}
+
+		if (current_format.has_style())
+		{
+			serializer().attribute("xfId", std::distance(stylesheet.styles.begin(),
+                std::find_if(stylesheet.styles.begin(), stylesheet.styles.end(),
+                    [&](const xlnt::style &s) { return s.name() == current_format.style().name(); })));
+		}
+
+        serializer().end_element(xmlns, "xf");
 	}
+    
+    serializer().end_element(xmlns, "cellXfs");
 
-	// Ext Lst
+	// Styles
 
-	auto ext_list_node = stylesheet_node.append_child("extLst");
-	auto ext_node = ext_list_node.append_child("ext");
-	ext_node.append_attribute("uri", "{EB79DEF2-80B8-43e5-95BD-54CBDDF9020C}");
-	ext_node.append_attribute("xmlns:x14", "http://schemas.microsoft.com/office/spreadsheetml/2009/9/main");
-	auto slicer_styles_node = ext_node.append_child("x14:slicerStyles");
-	slicer_styles_node.append_attribute("defaultSlicerStyle", "SlicerStyleLight1");
-    */
+	serializer().start_element(xmlns, "cellStyles");
+    serializer().attribute("count", stylesheet.styles.size());
+	std::size_t style_index = 0;
+
+	for (auto &current_style : stylesheet.styles)
+	{
+		serializer().start_element(xmlns, "cellStyle");
+
+		serializer().attribute("name", current_style.name());
+		serializer().attribute("xfId", style_index++);
+
+		if (current_style.builtin_id())
+		{
+			serializer().attribute("builtinId", *current_style.builtin_id());
+		}
+
+		if (current_style.hidden())
+		{
+			serializer().attribute("hidden", write_bool(true));
+		}
+
+		if (current_style.custom())
+		{
+			serializer().attribute("customBuiltin", write_bool(*current_style.custom()));
+		}
+        
+		serializer().end_element(xmlns, "cellStyle");
+	}
+    
+    serializer().end_element(xmlns, "cellStyles");
+
+    serializer().start_element(xmlns, "dxfs");
+	serializer().attribute("count", "0");
+    serializer().end_element(xmlns, "dxfs");
+    
+    serializer().start_element(xmlns, "tableStyles");
+	serializer().attribute("count", "0");
+	serializer().attribute("defaultTableStyle", "TableStyleMedium9");
+	serializer().attribute("defaultPivotStyle", "PivotStyleMedium7");
+    serializer().end_element(xmlns, "tableStyles");
+    
+    if (!stylesheet.colors.empty())
+    {
+        serializer().start_element(xmlns, "indexedColors");
+
+        for (auto &c : stylesheet.colors)
+        {
+            serializer().start_element(xmlns, "rgbColor");
+            serializer().attribute("rgb", c.get_rgb().get_hex_string());
+            serializer().end_element(xmlns, "rgbColor");
+        }
+
+        serializer().end_element(xmlns, "indexedColors");
+    }
+
+	serializer().start_element(xmlns, "extLst");
+	serializer().start_element(xmlns, "ext");
+    serializer().namespace_decl(xmlns_x14, "x14");
+	serializer().attribute("uri", "{EB79DEF2-80B8-43e5-95BD-54CBDDF9020C}");
+	serializer().start_element(xmlns_x14, "slicerStyles");
+	serializer().attribute("defaultSlicerStyle", "SlicerStyleLight1");
+	serializer().end_element(xmlns_x14, "slicerStyles");
+	serializer().end_element(xmlns, "ext");
+    serializer().end_element(xmlns, "extLst");
+    
+    serializer().end_element(xmlns, "styleSheet");
 }
 
 void xlsx_producer::write_theme(const relationship &rel)
@@ -1659,107 +1702,121 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 		serializer().namespace_decl(xmlns_x14ac, "x14ac");
 		serializer().attribute(xmlns_mc, "Ignorable", "x14ac");
 	}
-/*
+
 	if (ws.has_page_setup())
 	{
-		auto sheet_pr_node = worksheet_node.append_child("sheetPr");
-		auto outline_pr_node = sheet_pr_node.append_child("outlinePr");
+		serializer().start_element(xmlns, "sheetPr");
 
-		outline_pr_node.append_attribute("summaryBelow", "1");
-		outline_pr_node.append_attribute("summaryRight", "1");
+		serializer().start_element(xmlns, "outlinePr");
+        serializer().attribute("summaryBelow", "1");
+		serializer().attribute("summaryRight", "1");
+        serializer().end_element(xmlns, "outlinePr");
 
-		auto page_set_up_pr_node = sheet_pr_node.append_child("pageSetUpPr");
-		page_set_up_pr_node.append_attribute("fitToPage", ws.get_page_setup().fit_to_page() ? "1" : "0");
+		serializer().start_element(xmlns, "pageSetUpPr");
+		serializer().attribute("fitToPage", write_bool(ws.get_page_setup().fit_to_page()));
+		serializer().end_element(xmlns, "pageSetUpPr");
+
+		serializer().end_element(xmlns, "sheetPr");
 	}
 
 	if (ws.has_dimension())
 	{
-		auto dimension_node = worksheet_node.append_child("dimension");
-		auto dimension = ws.calculate_dimension();
-		auto dimension_string = dimension.is_single_cell() ? dimension.get_top_left().to_string() : dimension.to_string();
-		dimension_node.append_attribute("ref", dimension_string.c_str());
+		serializer().start_element(xmlns, "dimension");
+        const auto dimension = ws.calculate_dimension();
+		serializer().attribute("ref", dimension.is_single_cell()
+            ? dimension.get_top_left().to_string() : dimension.to_string());
+		serializer().end_element(xmlns, "dimension");
 	}
 
 	if (ws.has_view())
 	{
-		auto sheet_views_node = worksheet_node.append_child("sheetViews");
-		auto sheet_view_node = sheet_views_node.append_child("sheetView");
+		serializer().start_element(xmlns, "sheetViews");
+		serializer().start_element(xmlns, "sheetView");
 
 		const auto view = ws.get_view();
 
-		sheet_view_node.append_attribute("tabSelected", "1");
-		sheet_view_node.append_attribute("workbookViewId", "0");
+		serializer().attribute("tabSelected", "1");
+		serializer().attribute("workbookViewId", "0");
 
 		if (!view.get_selections().empty() && !ws.has_frozen_panes())
 		{
-			auto selection_node = sheet_view_node.child("selection") ?
-				sheet_view_node.child("selection")
-				: sheet_view_node.append_child("selection");
+			serializer().start_element(xmlns, "selection");
 
 			const auto &first_selection = view.get_selections().front();
 
 			if (first_selection.has_active_cell())
 			{
 				auto active_cell = first_selection.get_active_cell();
-				selection_node.append_attribute("activeCell", active_cell.to_string().c_str());
-				selection_node.append_attribute("sqref", active_cell.to_string().c_str());
+				serializer().attribute("activeCell", active_cell.to_string());
+				serializer().attribute("sqref", active_cell.to_string());
 			}
+            
+            serializer().end_element(xmlns, "selection");
 		}
 
-		std::string active_pane = "bottomRight";
+		auto active_pane = "bottomRight"s;
 
 		if (ws.has_frozen_panes())
 		{
-			auto pane_node = sheet_view_node.append_child("pane");
+			serializer().start_element(xmlns, "pane");
 
 			if (ws.get_frozen_panes().get_column_index() > 1)
 			{
-				pane_node.append_attribute("xSplit", std::to_string(ws.get_frozen_panes().get_column_index().index - 1).c_str());
+				serializer().attribute("xSplit", ws.get_frozen_panes().get_column_index().index - 1);
 				active_pane = "topRight";
 			}
 
 			if (ws.get_frozen_panes().get_row() > 1)
 			{
-				pane_node.append_attribute("ySplit", std::to_string(ws.get_frozen_panes().get_row() - 1).c_str());
+				serializer().attribute("ySplit", ws.get_frozen_panes().get_row() - 1);
 				active_pane = "bottomLeft";
 			}
 
+/*
 			if (ws.get_frozen_panes().get_row() > 1 && ws.get_frozen_panes().get_column_index() > 1)
 			{
-				auto top_right_node = sheet_view_node.append_child("selection");
-				top_right_node.append_attribute("pane", "topRight");
+				serializer().start_element(xmlns, "selection");
+				serializer().attribute("pane", "topRight");
 				auto bottom_left_node = sheet_view_node.append_child("selection");
-				bottom_left_node.append_attribute("pane", "bottomLeft");
+				serializer().attribute("pane", "bottomLeft");
 				active_pane = "bottomRight";
 			}
+            */
 
-			pane_node.append_attribute("topLeftCell", ws.get_frozen_panes().to_string().c_str());
-			pane_node.append_attribute("activePane", active_pane.c_str());
-			pane_node.append_attribute("state", "frozen");
+			serializer().attribute("topLeftCell", ws.get_frozen_panes().to_string());
+			serializer().attribute("activePane", active_pane);
+			serializer().attribute("state", "frozen");
 
-			auto selection_node = sheet_view_node.append_child("selection");
+			serializer().start_element(xmlns, "selection");
 
 			if (ws.get_frozen_panes().get_row() > 1 && ws.get_frozen_panes().get_column_index() > 1)
 			{
-				selection_node.append_attribute("pane", "bottomRight");
+				serializer().attribute("pane", "bottomRight");
 			}
 			else if (ws.get_frozen_panes().get_row() > 1)
 			{
-				selection_node.append_attribute("pane", "bottomLeft");
+				serializer().attribute("pane", "bottomLeft");
 			}
 			else if (ws.get_frozen_panes().get_column_index() > 1)
 			{
-				selection_node.append_attribute("pane", "topRight");
+				serializer().attribute("pane", "topRight");
 			}
+            
+            serializer().end_element(xmlns, "selection");
+            serializer().end_element(xmlns, "pane");
 		}
+
+		serializer().end_element(xmlns, "sheetView");
+        serializer().end_element(xmlns, "sheetViews");
 	}
 
 	if (ws.has_format_properties())
 	{
-		auto sheet_format_pr_node = worksheet_node.append_child("sheetFormatPr");
-		sheet_format_pr_node.append_attribute("baseColWidth", "10");
-		sheet_format_pr_node.append_attribute("defaultRowHeight", "16");
-		sheet_format_pr_node.append_attribute("x14ac:dyDescent", "0.2");
+		serializer().start_element(xmlns, "sheetFormatPr");
+		serializer().attribute("baseColWidth", "10");
+		serializer().attribute("defaultRowHeight", "16");
+		serializer().attribute(xmlns_x14ac, "dyDescent", "0.2");
+		serializer().end_element(xmlns, "sheetFormatPr");
 	}
 
 	bool has_column_properties = false;
@@ -1775,33 +1832,31 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
 	if (has_column_properties)
 	{
-		auto cols_node = worksheet_node.append_child("cols");
+		serializer().start_element(xmlns, "cols");
 
 		for (auto column = ws.get_lowest_column(); column <= ws.get_highest_column(); column++)
 		{
-			if (!ws.has_column_properties(column))
-			{
-				continue;
-			}
+			if (!ws.has_column_properties(column)) continue;
 
 			const auto &props = ws.get_column_properties(column);
 
-			auto col_node = cols_node.append_child("col");
-
-			col_node.append_attribute("min", std::to_string(column.index).c_str());
-			col_node.append_attribute("max", std::to_string(column.index).c_str());
-			col_node.append_attribute("width", std::to_string(props.width).c_str());
-			col_node.append_attribute("style", std::to_string(props.style).c_str());
-			col_node.append_attribute("customWidth", props.custom ? "1" : "0");
+            serializer().end_element(xmlns, "col");
+			serializer().attribute("min", column.index);
+			serializer().attribute("max", column.index);
+			serializer().attribute("width", props.width);
+			serializer().attribute("style", props.style);
+			serializer().attribute("customWidth", write_bool(props.custom));
+            serializer().end_element(xmlns, "cols");
 		}
+        
+		serializer().end_element(xmlns, "cols");
 	}
-    */
 
 	std::unordered_map<std::string, std::string> hyperlink_references;
 
 	serializer().start_element(xmlns, "sheetData");
 	const auto &shared_strings = ws.get_workbook().get_shared_strings();
-/*
+
 	for (auto row : ws.rows())
 	{
 		auto min = static_cast<xlnt::row_t>(row.num_cells());
@@ -1824,42 +1879,51 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 			continue;
 		}
 
-		auto row_node = sheet_data_node.append_child("row");
+		serializer().start_element(xmlns, "row");
 
-		row_node.append_attribute("r", std::to_string(row.front().get_row()).c_str());
-		row_node.append_attribute("spans", (std::to_string(min) + ":" + std::to_string(max)).c_str());
+		serializer().attribute("r", row.front().get_row());
+		serializer().attribute("spans", std::to_string(min) + ":" + std::to_string(max));
 
 		if (ws.has_row_properties(row.front().get_row()))
 		{
-			row_node.append_attribute("customHeight", "1");
+			serializer().attribute("customHeight", "1");
 			auto height = ws.get_row_properties(row.front().get_row()).height;
 
 			if (height == std::floor(height))
 			{
-				row_node.append_attribute("ht", (std::to_string(static_cast<long long int>(height)) + ".0").c_str());
+				serializer().attribute("ht", std::to_string(static_cast<long long int>(height)) + ".0");
 			}
 			else
 			{
-				row_node.append_attribute("ht", std::to_string(height).c_str());
+				serializer().attribute("ht", height);
 			}
 		}
 
-		// row_node.append_attribute("x14ac:dyDescent", 0.25);
+        if (!skip_unknown_elements)
+        {
+            serializer().attribute("x14ac:dyDescent", 0.25);
+        }
 
 		for (auto cell : row)
 		{
 			if (!cell.garbage_collectible())
 			{
-				auto cell_node = row_node.append_child("c");
-				cell_node.append_attribute("r", cell.get_reference().to_string().c_str());
+				serializer().start_element(xmlns, "c");
+				serializer().attribute("r", cell.get_reference().to_string());
+            
+				if (cell.has_format())
+				{
+					serializer().attribute("s", cell.get_format().id());
+				}
 
 				if (cell.get_data_type() == cell::type::string)
 				{
 					if (cell.has_formula())
 					{
-						cell_node.append_attribute("t", "str");
-						cell_node.append_child("f").text().set(cell.get_formula().c_str());
-						cell_node.append_child("v").text().set(cell.to_string().c_str());
+						serializer().attribute("t", "str");
+						serializer().element(xmlns, "f", cell.get_formula());
+						serializer().element(xmlns, "v", cell.to_string());
+                        serializer().end_element(xmlns, "c");
 
 						continue;
 					}
@@ -1879,20 +1943,20 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 					{
 						if (cell.get_value<std::string>().empty())
 						{
-							cell_node.append_attribute("t", "s");
+							serializer().attribute("t", "s");
 						}
 						else
 						{
-							cell_node.append_attribute("t", "inlineStr");
-							auto inline_string_node = cell_node.append_child("is");
-							inline_string_node.append_child("t").text().set(cell.get_value<std::string>().c_str());
+							serializer().attribute("t", "inlineStr");
+							serializer().start_element(xmlns, "is");
+							serializer().element(xmlns, "t", cell.get_value<std::string>());
+							serializer().end_element(xmlns, "is");
 						}
 					}
 					else
 					{
-						cell_node.append_attribute("t", "s");
-						auto value_node = cell_node.append_child("v");
-						value_node.text().set(std::to_string(match_index).c_str());
+						serializer().attribute("t", "s");
+						serializer().element(xmlns, "v", match_index);
 					}
 				}
 				else
@@ -1901,25 +1965,26 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 					{
 						if (cell.get_data_type() == cell::type::boolean)
 						{
-							cell_node.append_attribute("t", "b");
-							auto value_node = cell_node.append_child("v");
-							value_node.text().set(cell.get_value<bool>() ? "1" : "0");
+							serializer().attribute("t", "b");
+							serializer().element(xmlns, "v", write_bool(cell.get_value<bool>()));
 						}
 						else if (cell.get_data_type() == cell::type::numeric)
 						{
 							if (cell.has_formula())
 							{
-								cell_node.append_child("f").text().set(cell.get_formula().c_str());
-								cell_node.append_child("v").text().set(cell.to_string().c_str());
+								serializer().element(xmlns, "f", cell.get_formula());
+								serializer().element(xmlns, "v", cell.to_string());
+                                serializer().end_element(xmlns, "c");
+
 								continue;
 							}
 
-							cell_node.append_attribute("t", "n");
-							auto value_node = cell_node.append_child("v");
+							serializer().attribute("t", "n");
+							serializer().start_element(xmlns, "v");
 
 							if (is_integral(cell.get_value<long double>()))
 							{
-								value_node.text().set(std::to_string(cell.get_value<long long>()).c_str());
+                                serializer().characters(cell.get_value<long long>());
 							}
 							else
 							{
@@ -1927,44 +1992,51 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 								ss.precision(20);
 								ss << cell.get_value<long double>();
 								ss.str();
-								value_node.text().set(ss.str().c_str());
+                                serializer().characters(ss.str());
 							}
+                            
+                            serializer().end_element(xmlns, "v");
 						}
 					}
 					else if (cell.has_formula())
 					{
-						cell_node.append_child("f").text().set(cell.get_formula().c_str());
-						cell_node.append_child("v");
+						serializer().element(xmlns, "f", cell.get_formula());
+						serializer().element(xmlns, "v", "");
+                        serializer().end_element(xmlns, "c");
+
 						continue;
 					}
 				}
-
-				if (cell.has_format())
-				{
-					cell_node.append_attribute("s", std::to_string(cell.get_format().id()).c_str());
-				}
+                
+                serializer().end_element(xmlns, "c");
 			}
 		}
+        
+        serializer().end_element(xmlns, "row");
 	}
-    */
-    serializer().end_element();
-/*
+
+    serializer().end_element(xmlns, "sheetData");
+
 	if (ws.has_auto_filter())
 	{
-		auto auto_filter_node = worksheet_node.append_child("autoFilter");
-		auto_filter_node.append_attribute("ref", ws.get_auto_filter().to_string().c_str());
+		serializer().start_element(xmlns, "autoFilter");
+		serializer().attribute("ref", ws.get_auto_filter().to_string());
+		serializer().end_element(xmlns, "autoFilter");
 	}
 
 	if (!ws.get_merged_ranges().empty())
 	{
-		auto merge_cells_node = worksheet_node.append_child("mergeCells");
-		merge_cells_node.append_attribute("count", std::to_string(ws.get_merged_ranges().size()).c_str());
+		serializer().start_element(xmlns, "mergeCells");
+		serializer().attribute("count", ws.get_merged_ranges().size());
 
 		for (auto merged_range : ws.get_merged_ranges())
 		{
-			auto merge_cell_node = merge_cells_node.append_child("mergeCell");
-			merge_cell_node.append_attribute("ref", merged_range.to_string().c_str());
+            serializer().start_element(xmlns, "mergeCell");
+			serializer().attribute("ref", merged_range.to_string());
+            serializer().end_element(xmlns, "mergeCell");
 		}
+        
+		serializer().end_element(xmlns, "mergeCells");
 	}
 
 	const auto sheet_rels = source_.get_manifest().get_relationships(rel.get_target().get_path());
@@ -1983,30 +2055,32 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
 		if (!hyperlink_sheet_rels.empty())
 		{
-			auto hyperlinks_node = worksheet_node.append_child("hyperlinks");
+            serializer().start_element(xmlns, "hyperlinks");
 
 			for (const auto &hyperlink_rel : hyperlink_sheet_rels)
 			{
-				auto hyperlink_node = hyperlinks_node.append_child("hyperlink");
-				hyperlink_node.append_attribute("display", hyperlink_rel.get_target().get_path().string().c_str());
-				hyperlink_node.append_attribute("ref", hyperlink_references.at(hyperlink_rel.get_id()).c_str());
-				hyperlink_node.append_attribute("r:id", hyperlink_rel.get_id().c_str());
+                serializer().start_element(xmlns, "hyperlink");
+				serializer().attribute("display", hyperlink_rel.get_target().get_path().string());
+				serializer().attribute("ref", hyperlink_references.at(hyperlink_rel.get_id()));
+				serializer().attribute(xmlns_r, "id", hyperlink_rel.get_id());
+                serializer().end_element(xmlns, "hyperlink");
 			}
+            
+            serializer().end_element(xmlns, "hyperlinks");
 		}
 	}
 
 	if (ws.has_page_setup())
 	{
-		auto print_options_node = worksheet_node.append_child("printOptions");
-		print_options_node.append_attribute("horizontalCentered", 
-			ws.get_page_setup().get_horizontal_centered() ? "1" : "0");
-		print_options_node.append_attribute("verticalCentered", 
-			ws.get_page_setup().get_vertical_centered() ? "1" : "0");
+		serializer().start_element(xmlns, "printOptions");
+		serializer().attribute("horizontalCentered", write_bool(ws.get_page_setup().get_horizontal_centered()));
+		serializer().attribute("verticalCentered", write_bool(ws.get_page_setup().get_vertical_centered()));
+		serializer().end_element(xmlns, "printOptions");
 	}
 
 	if (ws.has_page_margins())
 	{
-		auto page_margins_node = worksheet_node.append_child("pageMargins");
+		serializer().start_element(xmlns, "pageMargins");
 
 		//TODO: there must be a better way to do this
 		auto remove_trailing_zeros = [](const std::string &n)
@@ -2030,43 +2104,44 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 			return n.substr(0, index + 1);
 		};
 
-		page_margins_node.append_attribute("left", remove_trailing_zeros(std::to_string(ws.get_page_margins().get_left())).c_str());
-		page_margins_node.append_attribute("right", remove_trailing_zeros(std::to_string(ws.get_page_margins().get_right())).c_str());
-		page_margins_node.append_attribute("top", remove_trailing_zeros(std::to_string(ws.get_page_margins().get_top())).c_str());
-		page_margins_node.append_attribute("bottom", remove_trailing_zeros(std::to_string(ws.get_page_margins().get_bottom())).c_str());
-		page_margins_node.append_attribute("header", remove_trailing_zeros(std::to_string(ws.get_page_margins().get_header())).c_str());
-		page_margins_node.append_attribute("footer", remove_trailing_zeros(std::to_string(ws.get_page_margins().get_footer())).c_str());
+		serializer().attribute("left", remove_trailing_zeros(std::to_string(ws.get_page_margins().get_left())));
+		serializer().attribute("right", remove_trailing_zeros(std::to_string(ws.get_page_margins().get_right())));
+		serializer().attribute("top", remove_trailing_zeros(std::to_string(ws.get_page_margins().get_top())));
+		serializer().attribute("bottom", remove_trailing_zeros(std::to_string(ws.get_page_margins().get_bottom())));
+		serializer().attribute("header", remove_trailing_zeros(std::to_string(ws.get_page_margins().get_header())));
+		serializer().attribute("footer", remove_trailing_zeros(std::to_string(ws.get_page_margins().get_footer())));
+        
+        serializer().end_element(xmlns, "pageMargins");
 	}
 
 	if (ws.has_page_setup())
 	{
-		auto page_setup_node = worksheet_node.append_child("pageSetup");
-
-		std::string orientation_string = ws.get_page_setup().get_orientation()
-			== xlnt::orientation::landscape ? "landscape" : "portrait";
-		page_setup_node.append_attribute("orientation", orientation_string.c_str());
-		page_setup_node.append_attribute("paperSize", 
-			std::to_string(static_cast<int>(ws.get_page_setup().get_paper_size())).c_str());
-		page_setup_node.append_attribute("fitToHeight", ws.get_page_setup().fit_to_height() ? "1" : "0");
-		page_setup_node.append_attribute("fitToWidth", ws.get_page_setup().fit_to_width() ? "1" : "0");
+		serializer().start_element(xmlns, "pageSetup");
+		serializer().attribute("orientation",
+            ws.get_page_setup().get_orientation() == xlnt::orientation::landscape
+            ? "landscape" : "portrait");
+		serializer().attribute("paperSize",  static_cast<std::size_t>(ws.get_page_setup().get_paper_size()));
+        serializer().attribute("fitToHeight", write_bool(ws.get_page_setup().fit_to_height()));
+		serializer().attribute("fitToWidth", write_bool(ws.get_page_setup().fit_to_width()));
+		serializer().end_element(xmlns, "pageSetup");
 	}
 
 	if (!ws.get_header_footer().is_default())
 	{
-		auto header_footer_node = worksheet_node.append_child("headerFooter");
-		auto odd_header_node = header_footer_node.append_child("oddHeader");
-		std::string header_text =
+        // todo: this shouldn't be hardcoded
+        static const auto header_text =
 			"&L&\"Calibri,Regular\"&K000000Left Header Text&C&\"Arial,Regular\"&6&K445566Center Header "
-			"Text&R&\"Arial,Bold\"&8&K112233Right Header Text";
-		odd_header_node.text().set(header_text.c_str());
-		auto odd_footer_node = header_footer_node.append_child("oddFooter");
-		std::string footer_text =
+			"Text&R&\"Arial,Bold\"&8&K112233Right Header Text"s;
+        static const auto footer_text =
 			"&L&\"Times New Roman,Regular\"&10&K445566Left Footer Text_x000D_And &D and &T&C&\"Times New "
 			"Roman,Bold\"&12&K778899Center Footer Text &Z&F on &A&R&\"Times New Roman,Italic\"&14&KAABBCCRight Footer "
-			"Text &P of &N";
-		odd_footer_node.text().set(footer_text.c_str());
+			"Text &P of &N"s;
+
+		serializer().start_element(xmlns, "headerFooter");
+		serializer().element(xmlns, "oddHeader", header_text);
+		serializer().element(xmlns, "oddFooter", footer_text);
+		serializer().end_element(xmlns, "headerFooter");
 	}
-    */
     
     serializer().end_element();
 }
@@ -2176,32 +2251,6 @@ void xlsx_producer::write_color(const xlnt::color &color)
         serializer().attribute("rgb", color.get_rgb().get_hex_string());
 		break;
 	}
-}
-
-void xlsx_producer::write_dxfs()
-{
-	serializer().attribute("count", "0");
-}
-
-void xlsx_producer::write_table_styles()
-{
-	serializer().attribute("count", "0");
-	serializer().attribute("defaultTableStyle", "TableStyleMedium9");
-	serializer().attribute("defaultPivotStyle", "PivotStyleMedium7");
-}
-
-void xlsx_producer::write_colors(const std::vector<xlnt::color> &colors)
-{
-    serializer().start_element("indexedColors");
-
-	for (auto &c : colors)
-	{
-		serializer().start_element("rgbColor");
-		serializer().attribute("rgb", c.get_rgb().get_hex_string());
-        serializer().end_element();
-	}
-
-    serializer().end_element();
 }
 
 } // namespace detail
