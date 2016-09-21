@@ -1036,16 +1036,13 @@ void xlsx_consumer::read_stylesheet(xml::parser &parser)
     
     struct formatting_record
     {
-        template<typename T>
-        using togglable = std::pair<T, bool>;
-
-        togglable<class alignment> alignment = { {}, 0 };
-        togglable<std::size_t> border_id = { 0, false };
-        togglable<std::size_t> fill_id = { 0, false };
-        togglable<std::size_t> font_id = { 0, false };
-        togglable<std::size_t> number_format_id = { 0, false };
-        togglable<class protection> protection = { {}, false };
-        togglable<std::size_t> style_id = { 0, false };
+        std::pair<class alignment, bool> alignment = { {}, 0 };
+        std::pair<std::size_t, bool> border_id = { 0, false };
+        std::pair<std::size_t, bool> fill_id = { 0, false };
+        std::pair<std::size_t, bool> font_id = { 0, false };
+        std::pair<std::size_t, bool> number_format_id = { 0, false };
+        std::pair<class protection, bool> protection = { {}, false };
+        std::pair<std::size_t, bool> style_id = { 0, false };
     };
     
     struct style_data
