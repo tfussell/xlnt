@@ -1977,7 +1977,7 @@ void xlsx_producer::write_worksheet(const relationship &rel, pugi::xml_node root
 		auto page_margins_node = worksheet_node.append_child("pageMargins");
 
 		//TODO: there must be a better way to do this
-		auto remove_trailing_zeros = [](const std::string &n)
+		auto remove_trailing_zeros = [](const std::string &n) -> const std::string
 		{
 			auto decimal = n.find('.');
 
