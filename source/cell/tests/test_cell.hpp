@@ -567,9 +567,9 @@ public:
         TS_ASSERT_EQUALS(cell.get_value<long double>(), 3.141592);
 
         auto cell2 = ws.get_cell("A2");
-        cell2.set_value(std::string(100'000, 'a'));
+        cell2.set_value(std::string(100000, 'a'));
         cell.set_value(cell2);
-        TS_ASSERT_EQUALS(cell.get_value<std::string>(), std::string(32'767, 'a'));
+        TS_ASSERT_EQUALS(cell.get_value<std::string>(), std::string(32767, 'a'));
     }
 
     void test_reference()
