@@ -220,15 +220,17 @@ void xlsx_producer::write_extended_properties(const relationship &rel)
 	serializer().element(xmlns, "SharedDoc", source_.is_shared_doc() ? "true" : "false");
 	serializer().element(xmlns, "HyperlinksChanged", source_.hyperlinks_changed() ? "true" : "false");
 	serializer().element(xmlns, "AppVersion", source_.get_app_version());
+    
+    serializer().end_element(xmlns, "Properties");
 }
 
 void xlsx_producer::write_core_properties(const relationship &rel)
 {
-    static const auto xmlns_cp = "http://schemas.openxmlformats.org/package/2006/metadata/core-properties"s;
-    static const auto xmlns_dc = "http://purl.org/dc/elements/1.1/"s;
-    static const auto xmlns_dcterms = "http://purl.org/dc/terms/"s;
-    static const auto xmlns_dcmitype = "http://purl.org/dc/dcmitype/"s;
-    static const auto xmlns_xsi = "http://www.w3.org/2001/XMLSchema-instance"s;
+    static const auto xmlns_cp = constants::get_namespace("core-properties");
+    static const auto xmlns_dc = constants::get_namespace("dc");
+    static const auto xmlns_dcterms = constants::get_namespace("dcterms");
+    static const auto xmlns_dcmitype = constants::get_namespace("dcmitype");
+    static const auto xmlns_xsi = constants::get_namespace("xsi");
     
 	serializer().start_element(xmlns_cp, "coreProperties");
     serializer().namespace_decl(xmlns_cp, "cp");
@@ -294,13 +296,13 @@ void xlsx_producer::write_workbook(const relationship &rel)
 		throw no_visible_worksheets();
 	}
 
-    static const auto xmlns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"s;
-    static const auto xmlns_mc = "http://schemas.openxmlformats.org/markup-compatibility/2006"s;
-    static const auto xmlns_mx = "http://schemas.microsoft.com/office/mac/excel/2008/main"s;
-    static const auto xmlns_r = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"s;
-    static const auto xmlns_s = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"s;
-    static const auto xmlns_x15 = "http://schemas.microsoft.com/office/spreadsheetml/2010/11/main"s;
-    static const auto xmlns_x15ac = "http://schemas.microsoft.com/office/spreadsheetml/2010/11/ac"s;
+    static const auto xmlns = constants::get_namespace("workbook");
+    static const auto xmlns_mc = constants::get_namespace("mc");
+    static const auto xmlns_mx = constants::get_namespace("mx");
+    static const auto xmlns_r = constants::get_namespace("r");
+    static const auto xmlns_s = constants::get_namespace("worksheet");
+    static const auto xmlns_x15 = constants::get_namespace("x15");
+    static const auto xmlns_x15ac = constants::get_namespace("x15ac");
 
 	serializer().start_element(xmlns, "workbook");
     serializer().namespace_decl(xmlns, "");
@@ -599,7 +601,7 @@ void xlsx_producer::write_pivot_table(const relationship &rel)
 
 void xlsx_producer::write_shared_string_table(const relationship &rel)
 {
-    static const auto xmlns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"s;
+    static const auto xmlns = constants::get_namespace("worksheet");
 
 	serializer().start_element(xmlns, "sst");
     serializer().namespace_decl(xmlns, "");
@@ -710,10 +712,10 @@ void xlsx_producer::write_shared_workbook_user_data(const relationship &rel)
 
 void xlsx_producer::write_styles(const relationship &rel)
 {
-    static const auto xmlns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"s;
-    static const auto xmlns_mc = "http://schemas.openxmlformats.org/markup-compatibility/2006"s;
-    static const auto xmlns_x14 = "http://schemas.microsoft.com/office/spreadsheetml/2009/9/main"s;
-    static const auto xmlns_x14ac = "http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac"s;
+    static const auto xmlns = constants::get_namespace("worksheet");
+    static const auto xmlns_mc = constants::get_namespace("mc");
+    static const auto xmlns_x14 = constants::get_namespace("x14");
+    static const auto xmlns_x14ac = constants::get_namespace("x14ac");
     
 	serializer().start_element(xmlns, "styleSheet");
 	serializer().namespace_decl(xmlns, "");
@@ -1204,7 +1206,7 @@ void xlsx_producer::write_styles(const relationship &rel)
 void xlsx_producer::write_theme(const relationship &rel)
 {
     static const auto xmlns_a = constants::get_namespace("drawingml");
-    static const auto xmlns_thm15 = "http://schemas.microsoft.com/office/thememl/2012/main"s;
+    static const auto xmlns_thm15 = constants::get_namespace("thm15");
     
 	serializer().start_element(xmlns_a, "theme");
     serializer().namespace_decl(xmlns_a, "a");
@@ -1687,10 +1689,10 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
 	auto ws = source_.get_sheet_by_title(title);
 
-    static const auto xmlns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"s;
-    static const auto xmlns_r = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"s;
-    static const auto xmlns_mc = "http://schemas.openxmlformats.org/markup-compatibility/2006"s;
-    static const auto xmlns_x14ac = "http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac"s;
+    static const auto xmlns = constants::get_namespace("worksheet");
+    static const auto xmlns_r = constants::get_namespace("r");
+    static const auto xmlns_mc = constants::get_namespace("mc");
+    static const auto xmlns_x14ac = constants::get_namespace("x14ac");
 
 	serializer().start_element(xmlns, "worksheet");
     serializer().namespace_decl(xmlns, "");
@@ -1815,7 +1817,10 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 		serializer().start_element(xmlns, "sheetFormatPr");
 		serializer().attribute("baseColWidth", "10");
 		serializer().attribute("defaultRowHeight", "16");
-		serializer().attribute(xmlns_x14ac, "dyDescent", "0.2");
+        if (ws.x14ac_enabled())
+        {
+            serializer().attribute(xmlns_x14ac, "dyDescent", "0.2");
+        }
 		serializer().end_element(xmlns, "sheetFormatPr");
 	}
 
@@ -1901,7 +1906,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
         if (!skip_unknown_elements)
         {
-            serializer().attribute("x14ac:dyDescent", 0.25);
+            serializer().attribute(xmlns_x14ac, "dyDescent", 0.25);
         }
 
 		for (auto cell : row)

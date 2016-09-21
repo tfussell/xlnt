@@ -61,14 +61,12 @@ public:
 
 	void test_round_trip_minimal_wrw()
 	{
-		TS_SKIP("");
 		xlnt::workbook wb = xlnt::workbook::minimal();
 		TS_ASSERT(round_trip_matches_wrw(wb));
 	}
 
 	void test_round_trip_empty_excel_wrw()
 	{
-		TS_SKIP("");
 		xlnt::workbook wb = xlnt::workbook::empty_excel();
 		TS_ASSERT(round_trip_matches_wrw(wb));
 	}
@@ -85,6 +83,12 @@ public:
 		TS_SKIP("");
 		xlnt::workbook wb = xlnt::workbook::empty_numbers();
 		TS_ASSERT(round_trip_matches_wrw(wb));
+	}
+
+	void test_round_trip_minimal_rw()
+	{
+		auto path = path_helper::get_data_directory("8_minimal.xlsx");
+		TS_ASSERT(round_trip_matches_rw(path));
 	}
 
 	void test_round_trip_empty_excel_rw()
