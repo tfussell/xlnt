@@ -27,8 +27,9 @@ endif()
 include_directories(include)
 include_directories(include/xlnt)
 include_directories(source)
+include_directories(source/detail)
 include_directories(third-party/miniz)
-include_directories(third-party/pugixml/src)
+include_directories(third-party/libstudxml)
 include_directories(third-party/utfcpp/source)
 
 FILE(GLOB ROOT_HEADERS include/xlnt/*.hpp)
@@ -63,15 +64,13 @@ FILE(GLOB DETAIL_SOURCES source/detail/*.cpp)
 SET(SOURCES ${CELL_SOURCES} ${CHARTS_SOURCES} ${CHARTSHEET_SOURCES} ${DRAWING_SOURCES} ${FORMULA_SOURCES} ${PACKAGING_SOURCES} ${SERIALIZATION_SOURCES} ${STYLES_SOURCES} ${UTILS_SOURCES} ${WORKBOOK_SOURCES} ${WORKSHEET_SOURCES} ${DETAIL_SOURCES})
 
 SET(MINIZ ../third-party/miniz/miniz.c ../third-party/miniz/miniz.h)
-
-SET(PUGIXML ../third-party/pugixml/src/pugixml.hpp ../third-party/pugixml/src/pugixml.cpp ../third-party/pugixml/src/pugiconfig.hpp)
+SET(LIBSTUDXML ../third-party/libstudxml/xml/parser.cxx ../third-party/libstudxml/xml/qname.cxx ../third-party/libstudxml/xml/serializer.cxx ../third-party/libstudxml/xml/value-traits.cxx ../third-party/libstudxml/xml/details/expat/xmlparse.c ../third-party/libstudxml/xml/details/expat/xmlrole.c ../third-party/libstudxml/xml/details/expat/xmltok_impl.c ../third-party/libstudxml/xml/details/expat/xmltok_ns.c ../third-party/libstudxml/xml/details/expat/xmltok.c ../third-party/libstudxml/xml/details/genx/char-props.c ../third-party/libstudxml/xml/details/genx/genx.c)
 
 if(SHARED)
-    add_library(xlnt.shared SHARED ${HEADERS} ${SOURCES} ${MINIZ} ${PUGIXML})
-    target_compile_definitions(xlnt.shared PRIVATE XLNT_SHARED=1)
+    add_library(xlnt.shared SHARED ${HEADERS} ${SOURCES} ${MINIZ} ${LIBSTUDXML})
+    target_compile_definitions(xlnt.shared PRIVATE XLNT_SHARED=1 LIBSTUDXML_STATIC_LIB=1)
     if(MSVC)
-        target_compile_definitions(xlnt.shared PRIVATE XLNT_EXPORT=1)
-        target_compile_definitions(xlnt.shared PRIVATE PUGIXML_API=__declspec\(dllexport\))
+        target_compile_definitions(xlnt.shared PRIVATE XLNT_EXPORT=1 _CRT_SECURE_NO_WARNINGS=1)
         set_target_properties(xlnt.shared PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\"")
     endif()
     install(TARGETS xlnt.shared
@@ -102,8 +101,12 @@ if(SHARED)
 endif()
 
 if(STATIC)
-    add_library(xlnt.static STATIC ${HEADERS} ${SOURCES} ${MINIZ} ${PUGIXML})
+    add_library(xlnt.static STATIC ${HEADERS} ${SOURCES} ${MINIZ} ${LIBSTUDXML})
     target_compile_definitions(xlnt.static PUBLIC XLNT_STATIC=1)
+    target_compile_definitions(xlnt.static PRIVATE LIBSTUDXML_STATIC_LIB=1)
+    if(MSVC)
+        target_compile_definitions(xlnt.static PRIVATE _CRT_SECURE_NO_WARNINGS=1)
+    endif()
     install(TARGETS xlnt.static
         LIBRARY DESTINATION ${LIB_DEST_DIR}
         ARCHIVE DESTINATION ${LIB_DEST_DIR}
@@ -130,7 +133,7 @@ source_group(utils FILES ${UTILS_HEADERS} ${UTILS_SOURCES})
 source_group(workbook FILES ${WORKBOOK_HEADERS} ${WORKBOOK_SOURCES})
 source_group(worksheet FILES ${WORKSHEET_HEADERS} ${WORKSHEET_SOURCES})
 source_group(third-party\\miniz FILES ${MINIZ})
-source_group(third-party\\pugixml FILES ${PUGIXML})
+source_group(third-party\\libstudxml FILES ${LIBSTUDXML})
 
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 

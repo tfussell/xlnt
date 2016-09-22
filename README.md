@@ -70,8 +70,7 @@ bin/xlnt.test
 ## Dependencies
 xlnt uses the following libraries, which are included in the source tree (all but miniz as [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules#Cloning-a-Project-with-Submodules)) for convenience:
 - [miniz v1.15_r4](https://code.google.com/p/miniz/) (public domain/unlicense)
-- [pugixml v1.6](http://pugixml.org/) (MIT license)
-- [Optional](https://github.com/akrzemi1/Optional) (Boost Software License, Version 1.0)
+- [libstudxml v1.1.0](http://www.codesynthesis.com/projects/libstudxml/) (MIT license)
 - [utfcpp v2.3.4](http://utfcpp.sourceforge.net/) (Boost Software License, Version 1.0)
 - [cxxtest v4.4](http://cxxtest.com/) (LGPLv3 license [only used for testing, separate from main library assembly])
 

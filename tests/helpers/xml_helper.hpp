@@ -422,8 +422,12 @@ public:
         {
             std::string attribute_name(left_attribute.name());
             auto right_attribute = right.attribute(attribute_name.c_str());
+            
+            // pugixml doesn't handle namespaces correctly
+            bool special_exception = left_name == "mc:AlternateContent"
+                && attribute_name == "xmlns:mc";
 
-            if(!right_attribute)
+            if(!right_attribute && !special_exception)
             {
                 return {difference_type::missing_attribute, attribute_name, "((empty))"};
             }
@@ -431,7 +435,7 @@ public:
             std::string left_attribute_value(left_attribute.value());
             std::string right_attribute_value(right_attribute.value());
             
-            if(left_attribute_value != right_attribute_value)
+            if(left_attribute_value != right_attribute_value && !special_exception)
             {
                 return {difference_type::attribute_values_differ, left_attribute_value, right_attribute_value};
             }
@@ -442,7 +446,11 @@ public:
             std::string attribute_name(right_attribute.name());
             auto left_attribute = left.attribute(attribute_name.c_str());
 
-            if(!left_attribute)
+            // pugixml doesn't handle namespaces correctly
+            bool special_exception = left_name == "mc:AlternateContent"
+                && attribute_name == "xmlns:mc";
+
+            if(!left_attribute && !special_exception)
             {
                 return {difference_type::missing_attribute, "((empty))", attribute_name};
             }
@@ -450,7 +458,7 @@ public:
             std::string left_attribute_value(left_attribute.value());
             std::string right_attribute_value(right_attribute.value());
             
-            if(left_attribute_value != right_attribute_value)
+            if(left_attribute_value != right_attribute_value && !special_exception)
             {
                 return {difference_type::attribute_values_differ, left_attribute_value, right_attribute_value};
             }

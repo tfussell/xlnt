@@ -28,7 +28,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include <detail/include_pugixml.hpp>
+#include <detail/include_libstudxml.hpp>
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/packaging/zip_file.hpp>
 
@@ -65,44 +65,44 @@ private:
 
 	void read_manifest();
 
-	void read_core_properties(const pugi::xml_node root);
-	void read_extended_properties(const pugi::xml_node root);
-	void read_custom_file_properties(const pugi::xml_node root);
+	void read_core_properties(xml::parser &parser);
+	void read_extended_properties(xml::parser &parser);
+	void read_custom_file_properties(xml::parser &parser);
 
 	// SpreadsheetML-Specific Package Parts
 
-	void read_workbook(const pugi::xml_node root);
+	void read_workbook(xml::parser &parser);
 
 	// Workbook Relationship Target Parts
 
-	void read_calculation_chain(const pugi::xml_node root);
-	void read_connections(const pugi::xml_node root);
-	void read_custom_property(const pugi::xml_node root);
-	void read_custom_xml_mappings(const pugi::xml_node root);
-	void read_external_workbook_references(const pugi::xml_node root);
-	void read_metadata(const pugi::xml_node root);
-	void read_pivot_table(const pugi::xml_node root);
-	void read_shared_string_table(const pugi::xml_node root);
-	void read_shared_workbook_revision_headers(const pugi::xml_node root);
-	void read_shared_workbook(const pugi::xml_node root);
-	void read_shared_workbook_user_data(const pugi::xml_node root);
-	void read_stylesheet(const pugi::xml_node root);
-	void read_theme(const pugi::xml_node root);
-	void read_volatile_dependencies(const pugi::xml_node root);
+	void read_calculation_chain(xml::parser &parser);
+	void read_connections(xml::parser &parser);
+	void read_custom_property(xml::parser &parser);
+	void read_custom_xml_mappings(xml::parser &parser);
+	void read_external_workbook_references(xml::parser &parser);
+	void read_metadata(xml::parser &parser);
+	void read_pivot_table(xml::parser &parser);
+	void read_shared_string_table(xml::parser &parser);
+	void read_shared_workbook_revision_headers(xml::parser &parser);
+	void read_shared_workbook(xml::parser &parser);
+	void read_shared_workbook_user_data(xml::parser &parser);
+	void read_stylesheet(xml::parser &parser);
+	void read_theme(xml::parser &parser);
+	void read_volatile_dependencies(xml::parser &parser);
 
-	void read_chartsheet(const pugi::xml_node root, const std::string &title);
-	void read_dialogsheet(const pugi::xml_node root, const std::string &title);
-	void read_worksheet(const pugi::xml_node root, const std::string &title);
+	void read_chartsheet(const std::string &title, xml::parser &parser);
+	void read_dialogsheet(const std::string &title, xml::parser &parser);
+	void read_worksheet(const std::string &title, xml::parser &parser);
 
 	// Sheet Relationship Target Parts
 
-	void read_comments(const pugi::xml_node root);
-	void read_drawings(const pugi::xml_node root);
+	void read_comments(xml::parser &parser);
+	void read_drawings(xml::parser &parser);
 
 	// Unknown Parts
 
-	void read_unknown_parts(const pugi::xml_node root);
-	void read_unknown_relationships(const pugi::xml_node root);
+	void read_unknown_parts(xml::parser &parser);
+	void read_unknown_relationships(xml::parser &parser);
 
 	/// <summary>
 	/// A reference to the archive from which files representing the workbook

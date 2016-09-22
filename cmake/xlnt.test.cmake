@@ -19,6 +19,7 @@ FILE(GLOB WORKBOOK_TESTS source/workbook/tests/test_*.hpp)
 FILE(GLOB WORKSHEET_TESTS source/worksheet/tests/test_*.hpp)
 
 SET(TESTS ${CELL_TESTS} ${CHARTS_TESTS} ${CHARTSHEET_TESTS} ${DRAWING_TESTS} ${FORMULA_TESTS} ${PACKAGING_TESTS} ${SERIALIZATION_TESTS} ${STYLES_TESTS} ${UTILS_TESTS} ${WORKBOOK_TESTS} ${WORKSHEET_TESTS})
+SET(PUGIXML ../third-party/pugixml/src/pugixml.cpp)
 
 FILE(GLOB TEST_HELPERS_HEADERS tests/helpers/*.hpp)
 FILE(GLOB TEST_HELPERS_SOURCES tests/helpers/*.cpp)
@@ -29,7 +30,7 @@ file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/tests")
 SET(RUNNER "${CMAKE_CURRENT_BINARY_DIR}/tests/runner-autogen.cpp")
 SET_SOURCE_FILES_PROPERTIES(${RUNNER} PROPERTIES GENERATED TRUE)
 
-add_executable(xlnt.test ${TEST_HELPERS} ${TESTS} ${RUNNER} )
+add_executable(xlnt.test ${TEST_HELPERS} ${TESTS} ${RUNNER} ${PUGIXML})
 
 source_group(helpers FILES ${TEST_HELPERS})
 source_group(tests\\cell FILES ${CELL_TESTS})

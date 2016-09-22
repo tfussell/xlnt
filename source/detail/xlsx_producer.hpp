@@ -27,12 +27,17 @@
 #include <iostream>
 #include <vector>
 
-#include <detail/include_pugixml.hpp>
+#include <detail/include_libstudxml.hpp>
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/packaging/zip_file.hpp>
 
+namespace xml {
+class serializer;
+} // namespace xml
+
 namespace xlnt {
 
+class color;
 class path;
 class relationship;
 class workbook;
@@ -62,40 +67,40 @@ private:
 
 	// Package Parts
 
-	void write_manifest();
-	void write_core_properties(const relationship &rel, pugi::xml_node root);
-	void write_extended_properties(const relationship &rel, pugi::xml_node root);
-	void write_custom_properties(const relationship &rel, pugi::xml_node root);
+	void write_content_types();
+	void write_core_properties(const relationship &rel);
+	void write_extended_properties(const relationship &rel);
+	void write_custom_properties(const relationship &rel);
     void write_thumbnail(const relationship &rel);
 
 	// SpreadsheetML-Specific Package Parts
 
-	void write_workbook(const relationship &rel, pugi::xml_node root);
+	void write_workbook(const relationship &rel);
 
 	// Workbook Relationship Target Parts
 
-	void write_calculation_chain(const relationship &rel, pugi::xml_node root);
-	void write_connections(const relationship &rel, pugi::xml_node root);
-	void write_custom_xml_mappings(const relationship &rel, pugi::xml_node root);
-	void write_external_workbook_references(const relationship &rel, pugi::xml_node root);
-	void write_metadata(const relationship &rel, pugi::xml_node root);
-	void write_pivot_table(const relationship &rel, pugi::xml_node root);
-	void write_shared_string_table(const relationship &rel, pugi::xml_node root);
-	void write_shared_workbook_revision_headers(const relationship &rel, pugi::xml_node root);
-	void write_shared_workbook(const relationship &rel, pugi::xml_node root);
-	void write_shared_workbook_user_data(const relationship &rel, pugi::xml_node root);
-	void write_styles(const relationship &rel, pugi::xml_node root);
-	void write_theme(const relationship &rel, pugi::xml_node root);
-	void write_volatile_dependencies(const relationship &rel, pugi::xml_node root);
+	void write_calculation_chain(const relationship &rel);
+	void write_connections(const relationship &rel);
+	void write_custom_xml_mappings(const relationship &rel);
+	void write_external_workbook_references(const relationship &rel);
+	void write_metadata(const relationship &rel);
+	void write_pivot_table(const relationship &rel);
+	void write_shared_string_table(const relationship &rel);
+	void write_shared_workbook_revision_headers(const relationship &rel);
+	void write_shared_workbook(const relationship &rel);
+	void write_shared_workbook_user_data(const relationship &rel);
+	void write_styles(const relationship &rel);
+	void write_theme(const relationship &rel);
+	void write_volatile_dependencies(const relationship &rel);
 
-	void write_chartsheet(const relationship &rel, pugi::xml_node root);
-	void write_dialogsheet(const relationship &rel, pugi::xml_node root);
-	void write_worksheet(const relationship &rel, pugi::xml_node root);
+	void write_chartsheet(const relationship &rel);
+	void write_dialogsheet(const relationship &rel);
+	void write_worksheet(const relationship &rel);
 
 	// Sheet Relationship Target Parts
 
-	void write_comments(const relationship &rel, pugi::xml_node root);
-	void write_drawings(const relationship &rel, pugi::xml_node root);
+	void write_comments(const relationship &rel);
+	void write_drawings(const relationship &rel);
 
 	// Other Parts
 
@@ -111,6 +116,18 @@ private:
 	/// we're trying to match.
 	/// </summary>
 	std::string write_bool(bool boolean) const;
+    
+    void write_relationships(const std::vector<xlnt::relationship> &relationships, const path &part);
+    void write_color(const xlnt::color &color);
+    void write_dxfs();
+    void write_table_styles();
+    void write_colors(const std::vector<xlnt::color> &colors);
+    
+    /// <summary>
+    /// Dereference serializer_ pointer and return a reference to the object.
+    /// This is called by internal methods so that we can use . instead of ->.
+    /// </summary>
+    xml::serializer &serializer();
 
 	/// <summary>
 	/// A reference to the workbook which is the object of read/write operations.
@@ -122,6 +139,12 @@ private:
 	/// will be written.
 	/// </summary>
 	zip_file destination_;
+    
+    /// <summary>
+    /// Instead of passing the current serializer into part serialization methods,
+    /// store pointer in this field and access it in methods with xlsx_producer::serializer().
+    /// </summary>
+    xml::serializer *serializer_;
 };
 
 } // namespace detail
