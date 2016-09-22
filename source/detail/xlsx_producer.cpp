@@ -2088,7 +2088,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 		serializer().start_element(xmlns, "pageMargins");
 
 		//TODO: there must be a better way to do this
-		auto remove_trailing_zeros = [](const std::string &n)
+		auto remove_trailing_zeros = [](const std::string &n) -> const std::string
 		{
 			auto decimal = n.find('.');
 
