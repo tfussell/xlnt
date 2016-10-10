@@ -1,7 +1,6 @@
 #include <cctype>
 
 #include <detail/xlsx_consumer.hpp>
-
 #include <detail/constants.hpp>
 #include <detail/custom_value_traits.hpp>
 #include <detail/workbook_impl.hpp>

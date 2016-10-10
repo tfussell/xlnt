@@ -93,4 +93,9 @@ no_visible_worksheets::no_visible_worksheets()
 {
 }
 
+unsupported::unsupported(const std::string &message)
+	: exception(message)
+{
+}
+
 } // namespace xlnt

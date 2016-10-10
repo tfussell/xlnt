@@ -153,7 +153,7 @@ zip_file::zip_file(std::istream &stream) : zip_file()
     load(stream);
 }
 
-zip_file::zip_file(const std::vector<unsigned char> &bytes) : zip_file()
+zip_file::zip_file(const std::vector<std::uint8_t> &bytes) : zip_file()
 {
     load(bytes);
 }
@@ -204,7 +204,7 @@ void zip_file::load(const path &filename)
 	start_read();
 }
 
-void zip_file::load(const std::vector<unsigned char> &bytes)
+void zip_file::load(const std::vector<std::uint8_t> &bytes)
 {
 	if (bytes.empty())
 	{
@@ -245,7 +245,7 @@ void zip_file::save(std::ostream &stream)
     stream.write(buffer_.data(), static_cast<long>(buffer_.size()));
 }
 
-void zip_file::save(std::vector<unsigned char> &bytes)
+void zip_file::save(std::vector<std::uint8_t> &bytes)
 {
     if (archive_->m_zip_mode == MZ_ZIP_MODE_WRITING)
     {

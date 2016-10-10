@@ -155,4 +155,13 @@ public:
     unhandled_switch_case();
 };
 
+/// <summary>
+/// Exception for attempting to use a feature which is not supported
+/// </summary>
+class XLNT_CLASS unsupported : public exception
+{
+public:
+	unsupported(const std::string &message);
+};
+
 } // namespace xlnt

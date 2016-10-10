@@ -402,7 +402,7 @@ void xlsx_producer::write_workbook(const relationship &rel)
 	for (const auto ws : source_)
 	{
 		auto sheet_rel_id = source_.d_->sheet_title_rel_id_map_[ws.get_title()];
-		auto sheet_rel = source_.d_->manifest_.get_relationship(rel.get_source().get_path(), sheet_rel_id);
+		auto sheet_rel = source_.d_->manifest_.get_relationship(rel.get_target().get_path(), sheet_rel_id);
 
 		serializer().start_element(xmlns, "sheet");
 		serializer().attribute("name", ws.get_title());

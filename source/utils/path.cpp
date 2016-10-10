@@ -133,7 +133,6 @@ char path::system_separator()
 
 path::path()
 {
-
 }
 
 path::path(const std::string &path_string) : internal_(path_string)

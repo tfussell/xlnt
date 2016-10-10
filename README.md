@@ -62,7 +62,7 @@ The resulting library, libxlnt.dylib or libxlnt.so or xlnt.dll, would be found i
 ```bash
 mkdir build
 cd build
-cmake -D TESTS=1 -D SHARED=0 -D STATIC=1 -G Xcode ..
+cmake -D WITH_TESTS=1 -D SHARED=0 -D STATIC=1 -G Xcode ..
 cmake --build .
 bin/xlnt.test
 ```
@@ -73,6 +73,9 @@ xlnt uses the following libraries, which are included in the source tree (all bu
 - [libstudxml v1.1.0](http://www.codesynthesis.com/projects/libstudxml/) (MIT license)
 - [utfcpp v2.3.4](http://utfcpp.sourceforge.net/) (Boost Software License, Version 1.0)
 - [cxxtest v4.4](http://cxxtest.com/) (LGPLv3 license [only used for testing, separate from main library assembly])
+- [pugixml v1.7](http://cxxtest.com/) (LGPLv3 license [only used for testing, separate from main library assembly])
+- [botan v1.11](https://botan.randombit.net/) (BSD license [only used for reading/writing password-protected workbooks, WITH_CRYPTO=1])
+- [pole v0.5](https://github.com/catlan/pole) (BSD license [only used for reading/writing password-protected workbooks, WITH_CRYPTO=1])
 
 Initialize the submodules with this command:
 ```bash
@@ -81,7 +84,7 @@ git submodule update --init
 
 ## Documentation
 
-More extensive documentation with examples can be found on [Read The Docs](http://xlnt.readthedocs.org/en/latest/).
+More detailed documentation with examples can be found on [Read The Docs](http://xlnt.readthedocs.org/en/latest/) (warning: this is somewhat out of date at the moment).
 
 ## License
 xlnt is currently released to the public for free under the terms of the MIT License:

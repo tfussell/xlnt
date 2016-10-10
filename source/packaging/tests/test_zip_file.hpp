@@ -1,5 +1,6 @@
 #include <cassert>
 #include <fstream>
+#include <iostream>
 #include <cxxtest/TestSuite.h>
 
 #include <xlnt/xlnt.hpp>
