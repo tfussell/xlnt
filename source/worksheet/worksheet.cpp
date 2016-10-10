@@ -275,6 +275,9 @@ void worksheet::set_title(const std::string &title)
 		throw invalid_sheet_title(title);
 	}
 
+	get_workbook().d_->sheet_title_rel_id_map_[title] = 
+		get_workbook().d_->sheet_title_rel_id_map_[d_->title_];
+	get_workbook().d_->sheet_title_rel_id_map_.erase(d_->title_);
 	d_->title_ = title;
 }
 
