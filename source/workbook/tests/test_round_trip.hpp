@@ -93,7 +93,6 @@ public:
 
 	void test_round_trip_empty_excel_rw()
 	{
-		TS_SKIP("");
 		auto path = path_helper::get_data_directory("9_default-excel.xlsx");
 		TS_ASSERT(round_trip_matches_rw(path));
 	}
@@ -107,13 +106,12 @@ public:
 
 	void test_round_trip_all_styles_rw()
 	{
-		TS_SKIP("");
 		auto path = path_helper::get_data_directory("13_all_styles.xlsx");
 		xlnt::workbook original_workbook;
 		original_workbook.load(path);
         
         std::vector<std::uint8_t> buffer;
         original_workbook.save(buffer);
-//		TS_ASSERT(round_trip_matches_rw(path));
+		//TS_ASSERT(round_trip_matches_rw(path));
 	}
 };

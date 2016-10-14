@@ -81,9 +81,9 @@ optional<int> alignment::indent() const
 	return indent_;
 }
 
-alignment &alignment::rotation(bool value)
+alignment &alignment::rotation(int value)
 {
-	text_rotation_ = 0;
+	text_rotation_ = value;
 	return *this;
 }
 

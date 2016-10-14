@@ -50,6 +50,17 @@ bool font::bold() const
     return bold_;
 }
 
+font &font::superscript(bool superscript)
+{
+	superscript_ = superscript;
+	return *this;
+}
+
+bool font::superscript() const
+{
+	return superscript_;
+}
+
 font &font::italic(bool italic)
 {
     italic_ = italic;

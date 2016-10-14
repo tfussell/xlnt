@@ -52,7 +52,7 @@ public:
 
 	optional<int> rotation() const;
 
-	alignment &rotation(bool text_rotation);
+	alignment &rotation(int text_rotation);
 
     optional<horizontal_alignment> horizontal() const;
 

@@ -758,9 +758,19 @@ void xlsx_producer::write_styles(const relationship &rel)
 		serializer().start_element(xmlns, "fonts");
 		serializer().attribute("count", fonts.size());
 
+		auto num_known_fonts = std::count_if(fonts.begin(), fonts.end(), [](const xlnt::font &f)
+		{
+			static const auto known_fonts = std::vector<xlnt::font>
+			{
+				xlnt::font().color(xlnt::theme_color(1)).scheme("minor").family(2)
+			};
+
+			return std::find(known_fonts.begin(), known_fonts.end(), f) != known_fonts.end();
+		});
+
 		if (source_.x15_enabled())
 		{
-			serializer().attribute(xmlns_x14ac, "knownFonts", fonts.size());
+			serializer().attribute(xmlns_x14ac, "knownFonts", num_known_fonts);
 		}
 
 		for (const auto &current_font : fonts)
@@ -999,7 +1009,7 @@ void xlsx_producer::write_styles(const relationship &rel)
 		{
             const auto current_alignment = current_style.alignment();
 
-			serializer().start_element("alignment");
+			serializer().start_element(xmlns, "alignment");
 
 			if (current_alignment.vertical())
 			{
@@ -1031,17 +1041,17 @@ void xlsx_producer::write_styles(const relationship &rel)
 				serializer().attribute("shrinkToFit", write_bool(*current_alignment.shrink()));
 			}
             
-			serializer().end_element("alignment");
+			serializer().end_element(xmlns, "alignment");
 		}
 
 		if (current_style.protection_applied())
 		{
             const auto current_protection = current_style.protection();
 
-			serializer().start_element("protection");
+			serializer().start_element(xmlns, "protection");
 			serializer().attribute("locked", write_bool(current_protection.locked()));
 			serializer().attribute("hidden", write_bool(current_protection.hidden()));
-			serializer().end_element("protection");
+			serializer().end_element(xmlns, "protection");
 		}
         
         serializer().end_element(xmlns, "xf");
@@ -1072,11 +1082,18 @@ void xlsx_producer::write_styles(const relationship &rel)
         if (current_format.alignment_applied()) serializer().attribute("applyAlignment", write_bool(true));
         if (current_format.protection_applied()) serializer().attribute("applyProtection", write_bool(true));
 
+		if (current_format.has_style())
+		{
+			serializer().attribute("xfId", std::distance(stylesheet.styles.begin(),
+				std::find_if(stylesheet.styles.begin(), stylesheet.styles.end(),
+					[&](const xlnt::style &s) { return s.name() == current_format.style().name(); })));
+		}
+
 		if (current_format.alignment_applied())
 		{
             const auto current_alignment = current_format.alignment();
 
-			serializer().start_element("alignment");
+			serializer().start_element(xmlns, "alignment");
 
 			if (current_alignment.vertical())
 			{
@@ -1108,24 +1125,17 @@ void xlsx_producer::write_styles(const relationship &rel)
 				serializer().attribute("shrinkToFit", write_bool(*current_alignment.shrink()));
 			}
             
-			serializer().end_element("alignment");
+			serializer().end_element(xmlns, "alignment");
 		}
 
 		if (current_format.protection_applied())
 		{
             const auto current_protection = current_format.protection();
 
-			serializer().start_element("protection");
+			serializer().start_element(xmlns, "protection");
 			serializer().attribute("locked", write_bool(current_protection.locked()));
 			serializer().attribute("hidden", write_bool(current_protection.hidden()));
-			serializer().end_element("protection");
-		}
-
-		if (current_format.has_style())
-		{
-			serializer().attribute("xfId", std::distance(stylesheet.styles.begin(),
-                std::find_if(stylesheet.styles.begin(), stylesheet.styles.end(),
-                    [&](const xlnt::style &s) { return s.name() == current_format.style().name(); })));
+			serializer().end_element(xmlns, "protection");
 		}
 
         serializer().end_element(xmlns, "xf");
@@ -1845,13 +1855,13 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
 			const auto &props = ws.get_column_properties(column);
 
-            serializer().end_element(xmlns, "col");
+            serializer().start_element(xmlns, "col");
 			serializer().attribute("min", column.index);
 			serializer().attribute("max", column.index);
 			serializer().attribute("width", props.width);
 			serializer().attribute("style", props.style);
 			serializer().attribute("customWidth", write_bool(props.custom));
-            serializer().end_element(xmlns, "cols");
+            serializer().end_element(xmlns, "col");
 		}
         
 		serializer().end_element(xmlns, "cols");

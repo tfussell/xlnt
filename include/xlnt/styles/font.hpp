@@ -54,6 +54,10 @@ public:
 
     bool bold() const;
 
+	font &superscript(bool superscript);
+
+	bool superscript() const;
+
     font &italic(bool italic);
 
     bool italic() const;

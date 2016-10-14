@@ -673,9 +673,11 @@ void xlsx_consumer::read_pivot_table()
 
 void xlsx_consumer::read_shared_string_table()
 {
-    static const auto xmlns = constants::get_namespace("shared-strings");
+    static const auto xmlns = constants::get_namespace("worksheet");
     
     parser().next_expect(xml::parser::event_type::start_element, xmlns, "sst");
+	parser().content(xml::content::complex);
+
 	std::size_t unique_count = 0;
 
 	if (parser().attribute_present("uniqueCount"))
@@ -690,12 +692,14 @@ void xlsx_consumer::read_shared_string_table()
         if (parser().peek() == xml::parser::event_type::end_element) break;
         
         parser().next_expect(xml::parser::event_type::start_element, xmlns, "si");
+		parser().content(xml::content::complex);
         parser().next_expect(xml::parser::event_type::start_element);
         
         text t;
         
 		if (parser().name() == "t")
 		{
+			parser().next_expect(xml::parser::event_type::characters);
 			t.set_plain_string(parser().value());
 		}
 		else if (parser().name() == "r") // possible multiple text entities.
@@ -705,8 +709,8 @@ void xlsx_consumer::read_shared_string_table()
                 if (parser().peek() == xml::parser::event_type::end_element) break;
                 
                 parser().next_expect(xml::parser::event_type::start_element, xmlns, "t");
-                
-                text_run run;
+				parser().next_expect(xml::parser::event_type::characters);
+				text_run run;
                 run.set_string(parser().value());
 
                 if (parser().peek() == xml::parser::event_type::start_element)
@@ -740,14 +744,16 @@ void xlsx_consumer::read_shared_string_table()
                             run.set_scheme(parser().attribute("val"));
                         }
                         
-                        parser().next_expect(xml::parser::event_type::end_element, parser().qname());
+                        parser().next_expect(xml::parser::event_type::end_element);
                     }
                 }
 
                 t.add_run(run);
             }
 		}
-        
+
+		parser().next_expect(xml::parser::event_type::end_element);
+		parser().next_expect(xml::parser::event_type::end_element);
         strings.push_back(t);
 	}
 
@@ -1022,6 +1028,10 @@ void xlsx_consumer::read_stylesheet()
 							new_font.bold(true);
 						}
 					}
+					else if (parser().name() == "vertAlign")
+					{
+						new_font.superscript(parser().attribute("val") == "superscript");
+					}
 					else if (parser().name() == "strike")
 					{
 						if (parser().attribute_present("val"))
@@ -1127,6 +1137,7 @@ void xlsx_consumer::read_stylesheet()
                 if (parser().peek() == xml::parser::event_type::end_element) break;
                 
                 parser().next_expect(xml::parser::event_type::start_element, xmlns, "xf");
+				parser().content(xml::content::complex);
 
                 auto &record = *(!in_style_records
                     ? format_records.emplace(format_records.end())
@@ -1179,8 +1190,25 @@ void xlsx_consumer::read_stylesheet()
                     
                     if (parser().qname() == xml::qname(xmlns, "alignment"))
                     {
-                        record.alignment.first.wrap(is_true(parser().attribute("wrapText")));
-						record.alignment.first.shrink(is_true(parser().attribute("shrinkToFit")));
+						if (parser().attribute_present("wrapText"))
+						{
+							record.alignment.first.wrap(is_true(parser().attribute("wrapText")));
+						}
+
+						if (parser().attribute_present("shrinkToFit"))
+						{
+							record.alignment.first.shrink(is_true(parser().attribute("shrinkToFit")));
+						}
+
+						if (parser().attribute_present("indent"))
+						{
+							record.alignment.first.indent(parser().attribute<int>("indent"));
+						}
+
+						if (parser().attribute_present("textRotation"))
+						{
+							record.alignment.first.rotation(parser().attribute<int>("textRotation"));
+						}
 
 						if (parser().attribute_present("vertical"))
 						{
@@ -1462,6 +1490,7 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
                 if (parser().peek() == xml::parser::event_type::end_element) break;
                 
                 parser().next_expect(xml::parser::event_type::start_element, xmlns, "row");
+				parser().content(xml::content::complex);
 
                 auto row_index = static_cast<row_t>(std::stoull(parser().attribute("r")));
 
@@ -1469,6 +1498,16 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
                 {
                     ws.get_row_properties(row_index).height = std::stold(parser().attribute("ht"));
                 }
+
+				if (parser().attribute_present("customHeight"))
+				{
+					ws.get_row_properties(row_index).height = std::stold(parser().attribute("customHeight"));
+				}
+
+				if (parser().attribute_present(xml::qname(xmlns_x14ac, "dyDescent")))
+				{
+					parser().attribute(xml::qname(xmlns_x14ac, "dyDescent"));
+				}
 
                 std::string span_string = parser().attribute("spans");
                 auto colon_index = span_string.find(':');
@@ -1492,6 +1531,7 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
                     if (parser().peek() == xml::parser::event_type::end_element) break;
 
                     parser().next_expect(xml::parser::event_type::start_element, xmlns, "c");
+					parser().content(xml::content::complex);
                     auto cell = ws.get_cell(cell_reference(parser().attribute("r")));
                     
                     auto has_type = parser().attribute_present("t");
@@ -1516,22 +1556,26 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
                         if (parser().qname() == xml::qname(xmlns, "v"))
                         {
                             has_value = true;
+							parser().next_expect(xml::parser::event_type::characters);
                             value_string = parser().value();
                         }
                         else if (parser().qname() == xml::qname(xmlns, "f"))
                         {
                             has_formula = true;
-                            has_shared_formula = parser().attribute_present("t") && parser().attribute("t") == "shared";
+                            has_shared_formula = parser().attribute_present("t")
+								&& parser().attribute("t") == "shared";
+							parser().next_expect(xml::parser::event_type::characters);
                             formula_value_string = parser().value();
                         }
                         else if (parser().qname() == xml::qname(xmlns, "is"))
                         {
                             parser().next_expect(xml::parser::event_type::start_element, xmlns, "t");
+							parser().next_expect(xml::parser::event_type::characters);
                             value_string = parser().value();
                             parser().next_expect(xml::parser::event_type::end_element, xmlns, "t");
                         }
                         
-                        parser().next_expect(xml::parser::event_type::end_element, parser().qname());
+                        parser().next_expect(xml::parser::event_type::end_element);
                     }
 
                     if (has_formula && !has_shared_formula && !ws.get_workbook().get_data_only())
@@ -1572,6 +1616,8 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
                     
                     parser().next_expect(xml::parser::event_type::end_element, xmlns, "c");
                 }
+
+				parser().next_expect(xml::parser::event_type::end_element, xmlns, "row");
             }
             
             parser().next_expect(xml::parser::event_type::end_element, xmlns, "sheetData");
@@ -1601,6 +1647,11 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
                     ws.get_column_properties(min).style = column_style;
                     ws.get_column_properties(min).custom = custom;
                 }
+
+				if (parser().attribute_present("bestFit"))
+				{
+					parser().attribute("bestFit");
+				}
                 
                 parser().next_expect(xml::parser::event_type::end_element, xmlns, "col");
             }
