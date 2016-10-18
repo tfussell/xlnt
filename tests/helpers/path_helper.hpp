@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include <detail/include_windows.hpp>
+#include <xlnt/utils/path.hpp>
 
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
