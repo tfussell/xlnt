@@ -504,6 +504,7 @@ void xlsx_consumer::read_workbook()
     static const auto xmlns_mx = constants::get_namespace("mx");
     static const auto xmlns_r = constants::get_namespace("r");
     static const auto xmlns_s = constants::get_namespace("worksheet");
+	static const auto xmlns_x15 = constants::get_namespace("x15");
     static const auto xmlns_x15ac = constants::get_namespace("x15ac");
 
     parser().next_expect(xml::parser::event_type::start_element, xmlns, "workbook");
@@ -562,7 +563,10 @@ void xlsx_consumer::read_workbook()
                 view.y_window = string_to_size_t(parser().attribute("yWindow"));
                 view.window_width = string_to_size_t(parser().attribute("windowWidth"));
                 view.window_height = string_to_size_t(parser().attribute("windowHeight"));
-                view.tab_ratio = string_to_size_t(parser().attribute("tabRatio"));
+				if (parser().attribute_present("tabRatio"))
+				{
+					view.tab_ratio = string_to_size_t(parser().attribute("tabRatio"));
+				}
                 target_.set_view(view);
                 
                 parser().next_expect(xml::parser::event_type::end_element, xmlns, "workbookView");
@@ -583,6 +587,11 @@ void xlsx_consumer::read_workbook()
                     target_.set_base_date(xlnt::calendar::mac_1904);
                 }
             }
+
+			if (parser().attribute_present("defaultThemeVersion"))
+			{
+				parser().attribute("defaultThemeVersion");
+			}
             
             parser().next_expect(xml::parser::event_type::end_element, xmlns, "workbookPr");
         }
@@ -613,7 +622,10 @@ void xlsx_consumer::read_workbook()
         {
             target_.d_->has_calculation_properties_ = true;
             parser().attribute("calcId");
-            parser().attribute("concurrentCalc");
+			if (parser().attribute_present("concurrentCalc"))
+			{
+				parser().attribute("concurrentCalc");
+			}
             parser().next_expect(xml::parser::event_type::end_element, xmlns, "calcPr");
         }
         else if (qname == xml::qname(xmlns, "extLst"))
@@ -621,10 +633,26 @@ void xlsx_consumer::read_workbook()
             parser().next_expect(xml::parser::event_type::start_element, xmlns, "ext");
             parser().content(xml::parser::content_type::complex);
             parser().attribute("uri");
-            parser().next_expect(xml::parser::event_type::start_element, xmlns_mx, "ArchID");
-            target_.d_->has_arch_id_ = true;
-            parser().attribute("Flags");
-            parser().next_expect(xml::parser::event_type::end_element, xmlns_mx, "ArchID");
+
+			for (;;)
+			{
+				if (parser().peek() == xml::parser::event_type::end_element) break;
+
+				parser().next_expect(xml::parser::event_type::start_element);
+
+				if (parser().qname() == xml::qname(xmlns_mx, "ArchID"))
+				{
+					target_.d_->has_arch_id_ = true;
+					parser().attribute("Flags");
+				}
+				else if (parser().qname() == xml::qname(xmlns_x15, "workbookPr"))
+				{
+					parser().attribute("chartTrackingRefBase");
+				}
+
+				parser().next_expect(xml::parser::event_type::end_element);
+			}
+
             parser().next_expect(xml::parser::event_type::end_element, xmlns, "ext");
             parser().next_expect(xml::parser::event_type::end_element, xmlns, "extLst");
         }
@@ -781,6 +809,7 @@ void xlsx_consumer::read_stylesheet()
     static const auto xmlns_mc = constants::get_namespace("mc");
     static const auto xmlns_x14 = constants::get_namespace("x14");
     static const auto xmlns_x14ac = constants::get_namespace("x14ac");
+	static const auto xmlns_x15 = constants::get_namespace("x15");
     
 	auto &stylesheet = target_.impl().stylesheet_;
 
@@ -1285,15 +1314,31 @@ void xlsx_consumer::read_stylesheet()
         }
         else if (parser().qname() == xml::qname(xmlns, "extLst"))
         {
-            parser().next_expect(xml::parser::event_type::start_element, xmlns, "ext");
-            parser().content(xml::parser::content_type::complex);
-            parser().attribute("uri");
-            parser().next_expect(xml::parser::event_type::start_namespace_decl);
-            parser().next_expect(xml::parser::event_type::start_element, xmlns_x14, "slicerStyles");
-            parser().attribute("defaultSlicerStyle");
-            parser().next_expect(xml::parser::event_type::end_element, xmlns_x14, "slicerStyles");
-            parser().next_expect(xml::parser::event_type::end_element, xmlns, "ext");
-            parser().next_expect(xml::parser::event_type::end_namespace_decl);
+			for (;;)
+			{
+				if (parser().peek() == xml::parser::event_type::end_element) break;
+
+				parser().next_expect(xml::parser::event_type::start_element, xmlns, "ext");
+				parser().content(xml::parser::content_type::complex);
+				parser().attribute("uri");
+				parser().next_expect(xml::parser::event_type::start_namespace_decl);
+
+				parser().next_expect(xml::parser::event_type::start_element);
+
+				if (parser().qname() == xml::qname(xmlns_x14, "slicerStyles"))
+				{
+					parser().attribute("defaultSlicerStyle");
+				}
+				else if (parser().qname() == xml::qname(xmlns_x15, "timelineStyles"))
+				{
+					parser().attribute("defaultTimelineStyle");
+				}
+
+				parser().next_expect(xml::parser::event_type::end_element);
+
+				parser().next_expect(xml::parser::event_type::end_element, xmlns, "ext");
+				parser().next_expect(xml::parser::event_type::end_namespace_decl);
+			}
         }
         
         parser().next_expect(xml::parser::event_type::end_element);
