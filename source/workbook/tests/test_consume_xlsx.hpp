@@ -14,7 +14,7 @@ public:
 	{
 #ifdef CRYPTO_ENABLED
 		xlnt::workbook wb;
-		wb.load(path_helper::get_data_directory("14_encrypted.xlsx"), "password");
+		wb.load(path_helper::get_data_directory("14_encrypted.xlsx"), "secret");
 #endif
 	}
 };
