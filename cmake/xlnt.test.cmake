@@ -6,6 +6,11 @@ include_directories(tests)
 include_directories(third-party/cxxtest)
 include_directories(third-party/pugixml/src)
 
+if(WITH_CRYPTO)
+	include_directories(third-party/nss/nspr/lib/ds third-party/nss/nspr/lib/libc/include third-party/nss/nspr/pr/include third-party/nss/nss/lib/base third-party/nss/nss/lib/certdb third-party/nss/nss/lib/certhigh third-party/nss/nss/lib/cryptohi third-party/nss/nss/lib/nss third-party/nss/nss/lib/pk11wrap third-party/nss/nss/lib/pkcs7 third-party/nss/nss/lib/smime third-party/nss/nss/lib/util)
+	link_directories(third-party/nss/build/lib)
+endif()
+
 FILE(GLOB CELL_TESTS source/cell/tests/test_*.hpp)
 FILE(GLOB CHARTS_TESTS source/charts/tests/test_*.hpp)
 FILE(GLOB CHARTSHEET_TESTS source/chartsheet/tests/test_*.hpp)
@@ -54,11 +59,11 @@ endif()
 
 if(MSVC)
     set_target_properties(xlnt.test PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\"")
-endif()
-
-# Needed for PathFileExists in path_helper (test helper)
-if(${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
+	# Needed for PathFileExists in path_helper
     target_link_libraries(xlnt.test Shlwapi)
+    if(WITH_CRYPTO)
+    	target_link_libraries(xlnt.test Ws2_32.lib Winmm.lib nss.lib)
+    endif()
 endif()
 
 add_custom_command(OUTPUT ${RUNNER}
