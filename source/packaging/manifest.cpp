@@ -98,6 +98,11 @@ void manifest::register_override_type(const path &part, const std::string &conte
     override_content_types_[part] = content_type;
 }
 
+void manifest::unregister_override_type(const path &part)
+{
+	override_content_types_.erase(part);
+}
+
 std::vector<path> manifest::get_parts_with_overriden_types() const
 {
 	std::vector<path> overriden;
@@ -174,6 +179,11 @@ std::string manifest::register_relationship(const uri &source, relationship::typ
 {
     relationships_[source.get_path()][rel_id] = relationship(rel_id, type, source, target, mode);
 	return rel_id;
+}
+
+void manifest::unregister_relationship(const uri &source, const std::string &rel_id)
+{
+	relationships_.at(source.get_path()).erase(rel_id);
 }
 
 bool manifest::has_default_type(const std::string &extension) const

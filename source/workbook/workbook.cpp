@@ -694,15 +694,19 @@ bool workbook::get_guess_types() const
 void workbook::remove_sheet(worksheet ws)
 {
     auto match_iter = std::find_if(d_->worksheets_.begin(), d_->worksheets_.end(),
-		[=](detail::worksheet_impl &comp) { return worksheet(&comp) == ws; });
+		[=](detail::worksheet_impl &comp) { return &comp == ws.d_; });
 
     if (match_iter == d_->worksheets_.end())
     {
 		throw invalid_parameter();
     }
 
-    auto sheet_filename = path("worksheets/sheet" + std::to_string(d_->worksheets_.size()) + ".xml");
-
+	auto ws_rel_id = d_->sheet_title_rel_id_map_.at(ws.get_title());
+	auto wb_rel = d_->manifest_.get_relationship(xlnt::path("/"), xlnt::relationship_type::office_document);
+	auto ws_rel = d_->manifest_.get_relationship(wb_rel.get_target().get_path(), ws_rel_id);
+	d_->manifest_.unregister_override_type(ws_rel.get_target().get_path());
+	d_->manifest_.unregister_relationship(wb_rel.get_target(), ws_rel_id);;
+	d_->sheet_title_rel_id_map_.erase(ws.get_title());
     d_->worksheets_.erase(match_iter);
 }
 

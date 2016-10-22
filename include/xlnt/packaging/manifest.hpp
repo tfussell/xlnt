@@ -94,6 +94,11 @@ public:
 	/// </summary>
 	std::string register_relationship(const uri &source, relationship::type type, const uri &target, target_mode mode, const std::string &rel_id);
 
+	/// <summary>
+	/// 
+	/// </summary>
+	void unregister_relationship(const uri &source, const std::string &rel_id);
+
     // Content Types
 
 	/// <summary>

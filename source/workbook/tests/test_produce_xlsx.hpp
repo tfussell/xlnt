@@ -121,4 +121,20 @@ public:
 
 		wb.save("simple.xlsx");
 	}
+
+	void test_save_after_sheet_deletion()
+	{
+		xlnt::workbook workbook;
+
+		TS_ASSERT_EQUALS(workbook.get_sheet_titles().size(), 1);
+
+		auto sheet = workbook.create_sheet();
+		sheet.set_title("XXX1");
+		TS_ASSERT_EQUALS(workbook.get_sheet_titles().size(), 2);
+
+		workbook.remove_sheet(workbook.get_sheet_by_title("XXX1"));
+		TS_ASSERT_EQUALS(workbook.get_sheet_titles().size(), 1);
+
+		TS_ASSERT_THROWS_NOTHING(workbook.save("sample.xlsx"));
+	}
 };
