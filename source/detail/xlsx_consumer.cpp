@@ -1571,6 +1571,16 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
                     max_column = full_range.get_bottom_right().get_column_index();
                 }
 
+				if (parser().attribute_present("customFormat"))
+				{
+					parser().attribute("customFormat");
+				}
+
+				if (parser().attribute_present("s"))
+				{
+					parser().attribute("s");
+				}
+
                 while (true)
                 {
                     if (parser().peek() == xml::parser::event_type::end_element) break;
