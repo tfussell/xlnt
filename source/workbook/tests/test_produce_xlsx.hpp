@@ -39,7 +39,6 @@ public:
 
 	void _test_produce_default_libre_office()
 	{
-	    TS_SKIP("");
 		xlnt::workbook wb = xlnt::workbook::empty_libre_office();
 		TS_ASSERT(workbook_matches_file(wb, path_helper::get_data_directory("10_default-libre-office.xlsx")));
 	}
