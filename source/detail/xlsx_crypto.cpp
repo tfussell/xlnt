@@ -307,7 +307,7 @@ struct agile_encryption_info
 		std::size_t hash_size;
 		std::string cipher_algorithm;
 		std::string cipher_chaining;
-		enum hash_algorithm hash_algorithm;
+	        hash_algorithm hash;
 		std::vector<std::uint8_t> salt_value;
 		std::vector<std::uint8_t> verifier_hash_input;
 		std::vector<std::uint8_t> verifier_hash_value;
@@ -367,19 +367,19 @@ std::vector<std::uint8_t> decrypt_xlsx_agile(const std::vector<std::uint8_t> &en
 			auto hash_algorithm_string = parser.attribute("hashAlgorithm");
 			if (hash_algorithm_string == "SHA512")
 			{
-				result.key_encryptor.hash_algorithm = hash_algorithm::sha512;
+				result.key_encryptor.hash = hash_algorithm::sha512;
 			}
 			else if (hash_algorithm_string == "SHA1")
 			{
-				result.key_encryptor.hash_algorithm = hash_algorithm::sha1;
+				result.key_encryptor.hash = hash_algorithm::sha1;
 			}
 			else if (hash_algorithm_string == "SHA256")
 			{
-				result.key_encryptor.hash_algorithm = hash_algorithm::sha256;
+				result.key_encryptor.hash = hash_algorithm::sha256;
 			}
 			else if (hash_algorithm_string == "SHA384")
 			{
-				result.key_encryptor.hash_algorithm = hash_algorithm::sha384;
+				result.key_encryptor.hash = hash_algorithm::sha384;
 			}
 
 			result.key_encryptor.salt_value = decode_base64(parser.attribute("saltValue"));
@@ -420,7 +420,7 @@ std::vector<std::uint8_t> decrypt_xlsx_agile(const std::vector<std::uint8_t> &en
 			reinterpret_cast<char *>(&c) + sizeof(std::uint16_t));
 	});
 
-	auto h_0 = hash(result.key_encryptor.hash_algorithm, salt_plus_password);
+	auto h_0 = hash(result.key_encryptor.hash, salt_plus_password);
 
 	// H_n = H(iterator + H_n-1)
 	std::vector<std::uint8_t> iterator_plus_h_n(4, 0);
@@ -430,7 +430,7 @@ std::vector<std::uint8_t> decrypt_xlsx_agile(const std::vector<std::uint8_t> &en
 
 	for (iterator = 0; iterator < result.key_encryptor.spin_count; ++iterator)
 	{
-		h_n = hash(result.key_encryptor.hash_algorithm, iterator_plus_h_n);
+		h_n = hash(result.key_encryptor.hash, iterator_plus_h_n);
 		std::copy(h_n.begin(), h_n.end(), iterator_plus_h_n.begin() + 4);
 	}
 	
@@ -443,7 +443,7 @@ std::vector<std::uint8_t> decrypt_xlsx_agile(const std::vector<std::uint8_t> &en
 	{
 		auto combined = raw_key;
 		combined.insert(combined.end(), block.begin(), block.end());
-		auto key = hash(result.key_encryptor.hash_algorithm, combined);
+		auto key = hash(result.key_encryptor.hash, combined);
 		key.resize(result.key_encryptor.key_bits / 8);
 		return aes(key, result.key_encryptor.salt_value, encrypted,
             cipher_chaining::cbc, cipher_direction::decryption);
@@ -453,7 +453,7 @@ std::vector<std::uint8_t> decrypt_xlsx_agile(const std::vector<std::uint8_t> &en
 		= { {0xfe, 0xa7, 0xd2, 0x76, 0x3b, 0x4b, 0x9e, 0x79} };
 	auto hash_input = calculate_block(h_n, input_block_key,
 		result.key_encryptor.verifier_hash_input);
-	auto calculated_verifier = hash(result.key_encryptor.hash_algorithm, hash_input);
+	auto calculated_verifier = hash(result.key_encryptor.hash, hash_input);
 
 	const std::array<std::uint8_t, block_size> verifier_block_key 
 		= { {0xd7, 0xaa, 0x0f, 0x6d, 0x30, 0x61, 0x34, 0x4e} };
@@ -486,7 +486,7 @@ std::vector<std::uint8_t> decrypt_xlsx_agile(const std::vector<std::uint8_t> &en
 
 	for (std::size_t i = 8; i < encrypted_package.size(); i += segment_length)
 	{
-		auto iv = hash(result.key_encryptor.hash_algorithm, salt_with_block_key);
+		auto iv = hash(result.key_encryptor.hash, salt_with_block_key);
 		iv.resize(16);
 
 		auto decrypted_segment = aes(key, iv, std::vector<std::uint8_t>(
