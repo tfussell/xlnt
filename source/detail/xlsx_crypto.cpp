@@ -307,7 +307,7 @@ struct agile_encryption_info
 		std::size_t hash_size;
 		std::string cipher_algorithm;
 		std::string cipher_chaining;
-		hash_algorithm hash_algorithm;
+		enum class hash_algorithm hash_algorithm;
 		std::vector<std::uint8_t> salt_value;
 		std::vector<std::uint8_t> verifier_hash_input;
 		std::vector<std::uint8_t> verifier_hash_value;

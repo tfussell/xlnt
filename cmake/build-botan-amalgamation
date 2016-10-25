@@ -1,3 +1,0 @@
-cd ${0%/*}
-cd ../third-party/botan
-python configure.py --minimized-build --enable-modules=sha1,aes,filters,codec_filt,cbc,ecb,sha2_32,sha2_64 --disable-shared --amalgamation

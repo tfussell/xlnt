@@ -71,7 +71,8 @@ set(POLE ../third-party/pole/pole.cpp)
 set(BOTAN ../third-party/botan/botan_all.cpp)
 
 add_custom_command(OUTPUT ${BOTAN}
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/cmake/build-botan-amalgamation ${CMAKE_CURRENT_BINARY_DIR}
+    COMMAND python configure.py --minimized-build --enable-modules=sha1,aes,filters,codec_filt,cbc,ecb,sha2_32,sha2_64 --disable-shared --amalgamation
+    WORKING_DIRECTORY ../third-party/botan
     COMMENT "Generating botan amalgamation ${BOTAN}")
 
 if(SHARED)
