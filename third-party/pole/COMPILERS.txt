@@ -1,0 +1,21 @@
+
+Borland C++ Compiler 5.5.1
+------------------------------
+The command-line Borland C++ Compiler version 5.5.1 is available for free 
+(as 'free' in 'free beer') from:
+http://www.borland.com/products/downloads/download_cbuilder.html
+
+OpenWatcom 1.3
+------------------------------
+OpenWatcom 1.3 does not have STL implementation, therefore you need to 
+install STLport (tested with version 4.6, earlier version may or may not 
+work).  Because mainstream STLport can not be used directly with OpenWatcom,
+please download and use the patched version from this site:
+http://www.ecet.vtc.edu/~pchapin/OW/index.html
+
+Digital Mars 8.41n
+-------------------------------
+Digital Mars command-line C/C++ compilers are available for download 
+from http://www.digitalmars.com. STLport is required and must be 
+installed as well.
+
