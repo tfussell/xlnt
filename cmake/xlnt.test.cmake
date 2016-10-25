@@ -51,10 +51,13 @@ source_group(tests\\workbook FILES ${WORKBOOK_TESTS})
 source_group(tests\\worksheet FILES ${WORKSHEET_TESTS})
 source_group(runner FILES ${RUNNER})
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
 if(SHARED)
-    target_link_libraries(xlnt.test xlnt.shared)
+    target_link_libraries(xlnt.test xlnt.shared Threads::Threads)
 else()
-    target_link_libraries(xlnt.test xlnt.static)
+    target_link_libraries(xlnt.test xlnt.static Threads::Threads)
 endif()
 
 if(MSVC)
