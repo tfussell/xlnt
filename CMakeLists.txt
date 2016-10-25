@@ -9,7 +9,6 @@ option(COVERAGE "Generate coverage data for use in Coveralls" OFF)
 option(WITH_EXAMPLES "Build examples" OFF)
 option(WITH_TESTS "Build tests" OFF)
 option(WITH_BENCHMARKS "Build performance benchmarks" OFF)
-option(WITH_CRYPTO "Set to ON to be able to read and write password-protected workbooks; requires botan and pole libraries" OFF)
 
 if(APPLE)
   option(FRAMEWORK "Set to ON to package dylib and headers into a .framework, OSX only" OFF)

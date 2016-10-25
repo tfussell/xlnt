@@ -54,13 +54,11 @@ public:
 
 	void read(const std::vector<std::uint8_t> &source);
 
-#ifdef CRYPTO_ENABLED
 	void read(const path &source, const std::string &password);
 
 	void read(std::istream &source, const std::string &password);
 
 	void read(const std::vector<std::uint8_t> &source, const std::string &password);
-#endif
 
 private:
 	/// <summary>

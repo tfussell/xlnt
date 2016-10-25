@@ -24,10 +24,6 @@ if(NOT BIN_DEST_DIR)
   set(BIN_DEST_DIR ${CMAKE_INSTALL_PREFIX}/bin)
 endif()
 
-if(WITH_CRYPTO)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DCRYPTO_ENABLED")
-endif()
-
 include_directories(include)
 include_directories(include/xlnt)
 include_directories(source)
@@ -36,6 +32,7 @@ include_directories(third-party/miniz)
 include_directories(third-party/libstudxml)
 include_directories(third-party/utfcpp/source)
 include_directories(third-party/pole)
+include_directories(third-party/botan)
 
 FILE(GLOB ROOT_HEADERS include/xlnt/*.hpp)
 FILE(GLOB CELL_HEADERS include/xlnt/cell/*.hpp)
@@ -70,13 +67,15 @@ set(SOURCES ${CELL_SOURCES} ${CHARTS_SOURCES} ${CHARTSHEET_SOURCES} ${DRAWING_SO
 
 set(MINIZ ../third-party/miniz/miniz.c ../third-party/miniz/miniz.h)
 set(LIBSTUDXML ../third-party/libstudxml/xml/parser.cxx ../third-party/libstudxml/xml/qname.cxx ../third-party/libstudxml/xml/serializer.cxx ../third-party/libstudxml/xml/value-traits.cxx ../third-party/libstudxml/xml/details/expat/xmlparse.c ../third-party/libstudxml/xml/details/expat/xmlrole.c ../third-party/libstudxml/xml/details/expat/xmltok_impl.c ../third-party/libstudxml/xml/details/expat/xmltok_ns.c ../third-party/libstudxml/xml/details/expat/xmltok.c ../third-party/libstudxml/xml/details/genx/char-props.c ../third-party/libstudxml/xml/details/genx/genx.c)
+set(POLE ../third-party/pole/pole.cpp)
+set(BOTAN ../third-party/botan/botan_all.cpp)
 
-if(WITH_CRYPTO)
-  set(POLE ../third-party/pole/pole.cpp)
-endif()
+add_custom_command(OUTPUT ${BOTAN}
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/cmake/build-botan-amalgamation ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Generating botan amalgamation ${BOTAN}")
 
 if(SHARED)
-    add_library(xlnt.shared SHARED ${HEADERS} ${SOURCES} ${MINIZ} ${LIBSTUDXML} ${POLE})
+    add_library(xlnt.shared SHARED ${HEADERS} ${SOURCES} ${MINIZ} ${LIBSTUDXML} ${POLE} ${BOTAN})
     target_compile_definitions(xlnt.shared PRIVATE XLNT_SHARED=1 LIBSTUDXML_STATIC_LIB=1)
     if(MSVC)
         target_compile_definitions(xlnt.shared PRIVATE XLNT_EXPORT=1 _CRT_SECURE_NO_WARNINGS=1)
@@ -115,7 +114,7 @@ if(SHARED)
 endif()
 
 if(STATIC)
-    add_library(xlnt.static STATIC ${HEADERS} ${SOURCES} ${MINIZ} ${LIBSTUDXML} ${POLE})
+    add_library(xlnt.static STATIC ${HEADERS} ${SOURCES} ${MINIZ} ${LIBSTUDXML} ${POLE} ${BOTAN})
     target_compile_definitions(xlnt.static PUBLIC XLNT_STATIC=1)
     target_compile_definitions(xlnt.static PRIVATE LIBSTUDXML_STATIC_LIB=1)
     if(MSVC)

@@ -631,7 +631,6 @@ void workbook::load(const path &filename)
 	consumer.read(filename);
 }
 
-#ifdef CRYPTO_ENABLED
 void workbook::load(const std::string &filename, const std::string &password)
 {
 	return load(path(filename), password);
@@ -656,7 +655,6 @@ void workbook::load(std::istream &stream, const std::string &password)
 	detail::xlsx_consumer consumer(*this);
 	consumer.read(stream, password);
 }
-#endif
 
 void workbook::save(std::vector<std::uint8_t> &data) const
 {

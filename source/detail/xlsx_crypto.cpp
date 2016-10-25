@@ -1,11 +1,29 @@
-#ifdef CRYPTO_ENABLED
-
+// Copyright (c) 2014-2016 Thomas Fussell
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, WRISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE
+//
+// @license: http://www.opensource.org/licenses/mit-license.php
+// @author: see AUTHORS file
 #include <array>
 #include <pole.h>
+#include <botan_all.h>
 #include <include_libstudxml.hpp>
-#include <nss.h>
-#include <pk11pub.h>
-#include <sechash.h>
 
 #include <detail/xlsx_consumer.hpp>
 #include <xlnt/utils/exceptions.hpp>
@@ -34,6 +52,12 @@ enum class cipher_chaining
 	cfb // cipher feedback chaining
 };
 
+enum class cipher_direction
+{
+    encryption,
+    decryption
+};
+
 enum class hash_algorithm
 {
 	sha1,
@@ -48,153 +72,43 @@ enum class hash_algorithm
 	whirlpool
 };
 
-std::vector<std::uint8_t> rijndael_ecb_decrypt(std::vector<std::uint8_t> key,
-	const std::vector<std::uint8_t> &encrypted)
+std::vector<std::uint8_t> aes(const std::vector<std::uint8_t> &key,
+    const std::vector<std::uint8_t> &iv,
+	const std::vector<std::uint8_t> &encrypted,
+    cipher_chaining chaining, cipher_direction direction)
 {
-	static const CK_MECHANISM_TYPE mechanism = CKM_AES_ECB;
-	static const CK_ATTRIBUTE_TYPE direction = CKA_DECRYPT;
+    std::string cipher_name("AES-");
+    cipher_name.append(std::to_string(key.size() * 8));
+    cipher_name.append(chaining == cipher_chaining::ecb
+        ? "/ECB/NoPadding" : "/CBC/NoPadding");
 
-	// IV (null)
-	auto nss_iv_param = PK11_ParamFromIV(mechanism, nullptr);
+    auto botan_direction = direction == cipher_direction::decryption
+        ? Botan::DECRYPTION : Botan::ENCRYPTION;
+    Botan::Pipe pipe(Botan::get_cipher(cipher_name, key, iv, botan_direction));
+    pipe.process_msg(encrypted);
+    auto decrypted = pipe.read_all();
 
-	// key
-	SECItem nss_key_item{ siBuffer, key.data(), static_cast<unsigned int>(key.size()) };
-	auto nss_key = PK11_ImportSymKey(PK11_GetBestSlot(mechanism, nullptr), 
-		mechanism, PK11_OriginUnwrap, direction, &nss_key_item, nullptr);
-
-	// context
-	auto nss_context = PK11_CreateContextBySymKey(mechanism, direction, nss_key, nss_iv_param);
-
-	// decrypt
-	std::vector<std::uint8_t> decrypted(encrypted.size(), 0);
-	int output_length;
-	PK11_CipherOp(nss_context, decrypted.data(), &output_length,
-		static_cast<int>(encrypted.size()), encrypted.data(),
-		static_cast<int>(encrypted.size()));
-
-	// clean up
-	PK11_DestroyContext(nss_context, PR_TRUE);
-	PK11_FreeSymKey(nss_key);
-	SECITEM_FreeItem(nss_iv_param, PR_TRUE);
-
-	return decrypted;
+    return std::vector<std::uint8_t>(decrypted.begin(), decrypted.end());
 }
 
-std::vector<std::uint8_t> rijndael_cbc_decrypt(std::vector<std::uint8_t> key, 
-	std::vector<std::uint8_t> iv, const std::vector<std::uint8_t> &encrypted)
-{
-	static const CK_MECHANISM_TYPE mechanism = CKM_AES_CBC;
-	static const CK_ATTRIBUTE_TYPE direction = CKA_DECRYPT;
-
-	// IV
-	SECItem nss_iv_item{ siBuffer, iv.data(), 
-		static_cast<unsigned int>(iv.size()) };
-	auto nss_iv_param = PK11_ParamFromIV(mechanism, &nss_iv_item);
-
-	// key
-	SECItem nss_key_item{ siBuffer, key.data(), 
-		static_cast<unsigned int>(key.size()) };
-	auto nss_key = PK11_ImportSymKey(PK11_GetBestSlot(mechanism, nullptr), 
-		mechanism, PK11_OriginUnwrap, direction, &nss_key_item, nullptr);
-
-	// context
-	auto nss_context = PK11_CreateContextBySymKey(mechanism, direction, nss_key, nss_iv_param);
-
-	// decrypt
-	std::vector<std::uint8_t> decrypted(encrypted.size(), 0);
-	int output_length;
-	PK11_CipherOp(nss_context, decrypted.data(), &output_length,
-		static_cast<int>(encrypted.size()), encrypted.data(),
-		static_cast<int>(encrypted.size()));
-
-	// clean up
-	PK11_DestroyContext(nss_context, PR_TRUE);
-	PK11_FreeSymKey(nss_key);
-	SECITEM_FreeItem(nss_iv_param, PR_TRUE);
-
-	return decrypted;
-};
-
-// Adapted from https://en.wikibooks.org/wiki/Algorithm_Implementation/Miscellaneous/Base64
-// This function is public domain
 std::vector<std::uint8_t> decode_base64(const std::string &encoded)
 {
-	if (encoded.length() % 4)
-	{
-		throw xlnt::exception("invalid base64");
-	}
+    Botan::Pipe pipe(new Botan::Base64_Decoder);
+    pipe.process_msg(encoded);
+    auto decoded = pipe.read_all();
 
-	std::size_t padding = 0;
+	return std::vector<std::uint8_t>(decoded.begin(), decoded.end());
+};
 
-	if (!encoded.empty())
-	{
-		if (encoded[encoded.length() - 1] == '=') padding++;
-		if (encoded[encoded.length() - 2] == '=') padding++;
-	}
+std::vector<std::uint8_t> hash(hash_algorithm algorithm,
+    const std::vector<std::uint8_t> &input)
+{
+    Botan::Pipe pipe(new Botan::Hash_Filter(
+        algorithm == hash_algorithm::sha512 ? "SHA-512" : "SHA-1"));
+    pipe.process_msg(input);
+    auto hash = pipe.read_all();
 
-	std::vector<std::uint8_t> decoded(((encoded.length() / 4) * 3) - padding, 0);
-	auto decoded_iter = decoded.begin();
-
-	std::uint32_t temp = 0;
-
-	for (auto encoded_iter = encoded.begin(); encoded_iter != encoded.end();)
-	{
-		for (std::size_t quantumPosition = 0; quantumPosition < 4; quantumPosition++)
-		{
-			auto current_char = *encoded_iter;
-			temp <<= 6;
-
-			// convert character into index from 0 to 63
-			if (current_char >= 'A' && current_char <= 'Z')
-			{
-				temp |= current_char - 'A';
-			}
-			else if (current_char >= 'a' && current_char <= 'z')
-			{
-				temp |= current_char - 71;
-			}
-			else if (current_char >= '0' && current_char <= '9')
-			{
-				temp |= current_char + 4;
-			}
-			else if (current_char == '+')
-			{
-				temp |= 62;
-			}
-			else if (current_char == '/')
-			{
-				temp |= 63;
-			}
-			else if (current_char == '=')
-			{
-				switch (encoded.end() - encoded_iter)
-				{
-				case 1: // one pad character
-					*(decoded_iter++) = (temp >> 16) & 0x000000ff;
-					*(decoded_iter++) = (temp >> 8) & 0x000000ff;
-					return decoded;
-				case 2: // two pad characters
-					*(decoded_iter++) = (temp >> 10) & 0x000000ff;
-					return decoded;
-				default:
-					throw std::runtime_error("Invalid Padding in Base 64!");
-				}
-			}
-			else
-			{
-				throw std::runtime_error("Non-Valid Character in Base 64!");
-			}
-
-			++encoded_iter;
-		}
-
-		// split lower 24 bits into 3 bytes
-		*(decoded_iter++) = (temp >> 16) & 0x000000FF;
-		*(decoded_iter++) = (temp >> 8) & 0x000000FF;
-		*(decoded_iter++) = (temp) & 0x000000FF;
-	}
-
-	return decoded;
+	return std::vector<std::uint8_t>(hash.begin(), hash.end());
 };
 
 std::vector<std::uint8_t> get_file(POLE::Storage &storage, const std::string &name)
@@ -206,50 +120,12 @@ std::vector<std::uint8_t> get_file(POLE::Storage &storage, const std::string &na
 	return bytes;
 }
 
-template<typename InIter>
-std::vector<std::uint8_t> hash(hash_algorithm algorithm, InIter begin, InIter end)
-{
-	HASH_HashType hash_type = HASH_HashType::HASH_AlgNULL;
-	std::size_t out_length = 0;
-
-	if (algorithm == hash_algorithm::sha1)
-	{
-		hash_type = HASH_HashType::HASH_AlgSHA1;
-		out_length = SHA1_LENGTH;
-	}
-	else if (algorithm == hash_algorithm::sha512)
-	{
-		hash_type = HASH_HashType::HASH_AlgSHA512;
-		out_length = SHA512_LENGTH;
-	}
-	else if (algorithm == hash_algorithm::sha256)
-	{
-		hash_type = HASH_HashType::HASH_AlgSHA256;
-		out_length = SHA256_LENGTH;
-	}
-	else if (algorithm == hash_algorithm::sha384)
-	{
-		hash_type = HASH_HashType::HASH_AlgSHA384;
-		out_length = SHA384_LENGTH;
-	}
-
-	auto context = HASH_Create(hash_type);
-	HASH_Begin(context);
-	std::vector<std::uint8_t> input(begin, end);
-	HASH_Update(context, input.data(), static_cast<unsigned int>(input.size()));
-	unsigned int write_length;
-	std::vector<std::uint8_t> result(out_length, 0);
-	HASH_End(context, result.data(), &write_length, static_cast<unsigned int>(out_length));
-	HASH_Destroy(context);
-
-	return result;
-}
-
 template<typename T>
 auto read_int(std::size_t &index, const std::vector<std::uint8_t> &raw_data)
 {
 	auto result = *reinterpret_cast<const T *>(&raw_data[index]);
 	index += sizeof(T);
+
 	return result;
 };
 
@@ -351,8 +227,7 @@ std::vector<std::uint8_t> decrypt_xlsx_standard(const std::vector<std::uint8_t> 
 			reinterpret_cast<char *>(&c), 
 			reinterpret_cast<char *>(&c) + sizeof(std::uint16_t));
 	});
-	std::vector<std::uint8_t> h_0 = hash(info.hash, 
-		salt_plus_password.begin(), salt_plus_password.end());
+	std::vector<std::uint8_t> h_0 = hash(info.hash, salt_plus_password);
 
 	// H_n = H(iterator + H_n-1)
 	std::vector<std::uint8_t> iterator_plus_h_n(4, 0);
@@ -361,7 +236,7 @@ std::vector<std::uint8_t> decrypt_xlsx_standard(const std::vector<std::uint8_t> 
 	std::vector<std::uint8_t> h_n;
 	for (iterator = 0; iterator < info.spin_count; ++iterator)
 	{
-		h_n = hash(info.hash, iterator_plus_h_n.begin(), iterator_plus_h_n.end());
+		h_n = hash(info.hash, iterator_plus_h_n);
 		std::copy(h_n.begin(), h_n.end(), iterator_plus_h_n.begin() + 4);
 	}
 
@@ -371,7 +246,7 @@ std::vector<std::uint8_t> decrypt_xlsx_standard(const std::vector<std::uint8_t> 
 	h_n_plus_block.insert(h_n_plus_block.end(),
 		reinterpret_cast<const std::uint8_t *>(&block_number),
 		reinterpret_cast<const std::uint8_t *>(&block_number) + sizeof(std::uint32_t));
-	auto h_final = hash(info.hash, h_n_plus_block.begin(), h_n_plus_block.end());
+	auto h_final = hash(info.hash, h_n_plus_block);
 
 	// X1 = H(h_final ^ 0x36)
 	std::vector<std::uint8_t> buffer(64, 0x36);
@@ -379,7 +254,7 @@ std::vector<std::uint8_t> decrypt_xlsx_standard(const std::vector<std::uint8_t> 
 	{
 		buffer[i] = static_cast<std::uint8_t>(0x36 ^ h_final[i]);
 	}
-	auto X1 = hash(info.hash, buffer.begin(), buffer.end());
+	auto X1 = hash(info.hash, buffer);
 
 	// X2 = H(h_final ^ 0x5C)
 	buffer.assign(64, 0x5c);
@@ -387,7 +262,7 @@ std::vector<std::uint8_t> decrypt_xlsx_standard(const std::vector<std::uint8_t> 
 	{
 		buffer[i] = static_cast<std::uint8_t>(0x5c ^ h_final[i]);
 	}
-	auto X2 = hash(info.hash, buffer.begin(), buffer.end());
+	auto X2 = hash(info.hash, buffer);
 
 	auto X3 = X1;
 	X3.insert(X3.end(), X2.begin(), X2.end());
@@ -396,8 +271,9 @@ std::vector<std::uint8_t> decrypt_xlsx_standard(const std::vector<std::uint8_t> 
 
 	//todo: verify here
 
-	std::vector<std::uint8_t> encrypted_data(encrypted_package.begin() + 8, encrypted_package.end());
-	return rijndael_ecb_decrypt(key_derived, encrypted_data);
+	return aes(key_derived, {}, std::vector<std::uint8_t>(
+        encrypted_package.begin() + 8, encrypted_package.end()),
+        cipher_chaining::ecb, cipher_direction::decryption);
 }
 
 
@@ -535,6 +411,7 @@ std::vector<std::uint8_t> decrypt_xlsx_agile(const std::vector<std::uint8_t> &en
 	// H_0 = H(salt + password)
 	auto salt_plus_password = result.key_encryptor.salt_value;
 	std::vector<std::uint16_t> password_wide(password.begin(), password.end());
+
 	std::for_each(password_wide.begin(), password_wide.end(),
 		[&salt_plus_password](std::uint16_t c)
 	{
@@ -542,18 +419,18 @@ std::vector<std::uint8_t> decrypt_xlsx_agile(const std::vector<std::uint8_t> &en
 			reinterpret_cast<char *>(&c),
 			reinterpret_cast<char *>(&c) + sizeof(std::uint16_t));
 	});
-	std::vector<std::uint8_t> h_0 = hash(result.key_encryptor.hash_algorithm,
-		salt_plus_password.begin(), salt_plus_password.end());
+
+	auto h_0 = hash(result.key_encryptor.hash_algorithm, salt_plus_password);
 
 	// H_n = H(iterator + H_n-1)
 	std::vector<std::uint8_t> iterator_plus_h_n(4, 0);
 	iterator_plus_h_n.insert(iterator_plus_h_n.end(), h_0.begin(), h_0.end());
 	std::uint32_t &iterator = *reinterpret_cast<std::uint32_t *>(iterator_plus_h_n.data());
 	std::vector<std::uint8_t> h_n;
+
 	for (iterator = 0; iterator < result.key_encryptor.spin_count; ++iterator)
 	{
-		h_n = hash(result.key_encryptor.hash_algorithm, 
-			iterator_plus_h_n.begin(), iterator_plus_h_n.end());
+		h_n = hash(result.key_encryptor.hash_algorithm, iterator_plus_h_n);
 		std::copy(h_n.begin(), h_n.end(), iterator_plus_h_n.begin() + 4);
 	}
 	
@@ -566,20 +443,20 @@ std::vector<std::uint8_t> decrypt_xlsx_agile(const std::vector<std::uint8_t> &en
 	{
 		auto combined = raw_key;
 		combined.insert(combined.end(), block.begin(), block.end());
-		auto key = hash(result.key_encryptor.hash_algorithm, combined.begin(), combined.end());
+		auto key = hash(result.key_encryptor.hash_algorithm, combined);
 		key.resize(result.key_encryptor.key_bits / 8);
-		return rijndael_cbc_decrypt(key, result.key_encryptor.salt_value, encrypted);
+		return aes(key, result.key_encryptor.salt_value, encrypted,
+            cipher_chaining::cbc, cipher_direction::decryption);
 	};
 
 	const std::array<std::uint8_t, block_size> input_block_key 
-		= { 0xfe, 0xa7, 0xd2, 0x76, 0x3b, 0x4b, 0x9e, 0x79 };
+		= { {0xfe, 0xa7, 0xd2, 0x76, 0x3b, 0x4b, 0x9e, 0x79} };
 	auto hash_input = calculate_block(h_n, input_block_key,
 		result.key_encryptor.verifier_hash_input);
-	auto calculated_verifier = hash(result.key_encryptor.hash_algorithm,
-		hash_input.begin(), hash_input.end());
+	auto calculated_verifier = hash(result.key_encryptor.hash_algorithm, hash_input);
 
 	const std::array<std::uint8_t, block_size> verifier_block_key 
-		= { 0xd7, 0xaa, 0x0f, 0x6d, 0x30, 0x61, 0x34, 0x4e };
+		= { {0xd7, 0xaa, 0x0f, 0x6d, 0x30, 0x61, 0x34, 0x4e} };
 	auto expected_verifier = calculate_block(h_n, verifier_block_key,
 		result.key_encryptor.verifier_hash_value);
 
@@ -592,7 +469,7 @@ std::vector<std::uint8_t> decrypt_xlsx_agile(const std::vector<std::uint8_t> &en
 	}
 
 	const std::array<std::uint8_t, block_size> key_value_block_key 
-		= { 0x14, 0x6e, 0x0b, 0xe7, 0xab, 0xac, 0xd0, 0xd6 };
+		= { {0x14, 0x6e, 0x0b, 0xe7, 0xab, 0xac, 0xd0, 0xd6} };
 	auto key = calculate_block(h_n, key_value_block_key, 
 		result.key_encryptor.encrypted_key_value);
 
@@ -609,12 +486,12 @@ std::vector<std::uint8_t> decrypt_xlsx_agile(const std::vector<std::uint8_t> &en
 
 	for (std::size_t i = 8; i < encrypted_package.size(); i += segment_length)
 	{
-		auto iv = hash(result.key_encryptor.hash_algorithm, 
-			salt_with_block_key.begin(), salt_with_block_key.end());
-		iv.resize(32);
+		auto iv = hash(result.key_encryptor.hash_algorithm, salt_with_block_key);
+		iv.resize(16);
 
-		auto decrypted_segment = rijndael_cbc_decrypt(key, iv, std::vector<std::uint8_t>(
-			encrypted_package.begin() + i, encrypted_package.begin() + i + segment_length));
+		auto decrypted_segment = aes(key, iv, std::vector<std::uint8_t>(
+			encrypted_package.begin() + i, encrypted_package.begin() + i + segment_length),
+            cipher_chaining::cbc, cipher_direction::decryption);
 		decrypted_package.insert(decrypted_package.end(), 
 			decrypted_segment.begin(), decrypted_segment.end());
 
@@ -628,15 +505,6 @@ std::vector<std::uint8_t> decrypt_xlsx_agile(const std::vector<std::uint8_t> &en
 
 std::vector<std::uint8_t> decrypt_xlsx(const std::vector<std::uint8_t> &bytes, const std::string &password)
 {
-	// nss has checks for re-initialization, but there might be some overhead
-	static bool nss_initialized = false;
-
-	if (!nss_initialized)
-	{
-		NSS_NoDB_Init(nullptr);
-		nss_initialized = true;
-	}
-
 	if (bytes.empty())
 	{
 		throw xlnt::exception("empty file");
@@ -720,5 +588,3 @@ void xlsx_consumer::read(const path &source, const std::string &password)
 
 } // namespace detail
 } // namespace xlnt
-
-#endif

@@ -7,8 +7,8 @@ include_directories(third-party/cxxtest)
 include_directories(third-party/pugixml/src)
 
 if(WITH_CRYPTO)
-	include_directories(third-party/nss/nspr/lib/ds third-party/nss/nspr/lib/libc/include third-party/nss/nspr/pr/include third-party/nss/nss/lib/base third-party/nss/nss/lib/certdb third-party/nss/nss/lib/certhigh third-party/nss/nss/lib/cryptohi third-party/nss/nss/lib/nss third-party/nss/nss/lib/pk11wrap third-party/nss/nss/lib/pkcs7 third-party/nss/nss/lib/smime third-party/nss/nss/lib/util)
-	link_directories(third-party/nss/build/lib)
+	include_directories(third-party/botan/build/include)
+	link_directories(third-party/botan/build/lib)
 endif()
 
 FILE(GLOB CELL_TESTS source/cell/tests/test_*.hpp)
@@ -59,18 +59,14 @@ endif()
 
 if(MSVC)
     set_target_properties(xlnt.test PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\"")
-	# Needed for PathFileExists in path_helper
+    # Needed for PathFileExists in path_helper
     target_link_libraries(xlnt.test Shlwapi)
-    if(WITH_CRYPTO)
-    	target_link_libraries(xlnt.test Ws2_32.lib Winmm.lib nss.lib)
-    endif()
 endif()
 
 add_custom_command(OUTPUT ${RUNNER}
     COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/cmake/generate-tests ${CMAKE_CURRENT_BINARY_DIR}
     DEPENDS ${TESTS}
-    COMMENT "Generating test runner ${RUNNER}"
-)
+    COMMENT "Generating test runner ${RUNNER}")
 
 add_custom_target(generate-test-runner DEPENDS ${RUNNER})
 

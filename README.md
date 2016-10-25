@@ -74,8 +74,8 @@ xlnt uses the following libraries, which are included in the source tree (all bu
 - [utfcpp v2.3.4](http://utfcpp.sourceforge.net/) (Boost Software License, Version 1.0)
 - [cxxtest v4.4](http://cxxtest.com/) (LGPLv3 license [only used for testing, separate from main library assembly])
 - [pugixml v1.7](http://cxxtest.com/) (LGPLv3 license [only used for testing, separate from main library assembly])
-- [botan v1.11](https://botan.randombit.net/) (BSD license [only used for reading/writing password-protected workbooks, WITH_CRYPTO=1])
-- [pole v0.5](https://github.com/catlan/pole) (BSD license [only used for reading/writing password-protected workbooks, WITH_CRYPTO=1])
+- [botan v1.11](https://botan.randombit.net/) (BSD license)
+- [pole v0.5](https://github.com/catlan/pole) (BSD license)
 
 Initialize the submodules with this command:
 ```bash
