@@ -78,13 +78,8 @@ if(SHARED)
     add_library(xlnt.shared SHARED ${HEADERS} ${SOURCES} ${MINIZ} ${LIBSTUDXML} ${POLE} ${BOTAN})
     target_compile_definitions(xlnt.shared PRIVATE XLNT_SHARED=1 LIBSTUDXML_STATIC_LIB=1)
     if(MSVC)
-        target_compile_definitions(xlnt.shared PRIVATE XLNT_EXPORT=1 _CRT_SECURE_NO_WARNINGS=1)
+        target_compile_definitions(xlnt.shared PRIVATE XLNT_EXPORT=1 _CRT_SECURE_NO_WARNINGS=1 NOMINMAX)
         set_target_properties(xlnt.shared PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\"")
-        if(WITH_CRYPTO)
-            set_target_properties(xlnt.shared PROPERTIES COMPILE_FLAGS "/wd\"4250\" /wd\"4251\" /wd\"4275\"")
-        else()
-            set_target_properties(xlnt.shared PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\"")
-        endif()
     endif()
     install(TARGETS xlnt.shared
         LIBRARY DESTINATION ${LIB_DEST_DIR}
@@ -118,7 +113,7 @@ if(STATIC)
     target_compile_definitions(xlnt.static PUBLIC XLNT_STATIC=1)
     target_compile_definitions(xlnt.static PRIVATE LIBSTUDXML_STATIC_LIB=1)
     if(MSVC)
-        target_compile_definitions(xlnt.static PRIVATE _CRT_SECURE_NO_WARNINGS=1)
+        target_compile_definitions(xlnt.static PRIVATE _CRT_SECURE_NO_WARNINGS=1 NOMINMAX)
     endif()
     install(TARGETS xlnt.static
         LIBRARY DESTINATION ${LIB_DEST_DIR}
