@@ -36,13 +36,6 @@ set_source_files_properties(${RUNNER} PROPERTIES GENERATED TRUE)
 
 add_executable(xlnt.test ${TEST_HELPERS} ${TESTS} ${RUNNER} ${PUGIXML})
 
-set_target_properties(${PROJECT_NAME}
-    PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/bin"
-    RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${CMAKE_BINARY_DIR}/bin"
-    RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_BINARY_DIR}/bin"
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin")
-
 source_group(helpers FILES ${TEST_HELPERS})
 source_group(tests\\cell FILES ${CELL_TESTS})
 source_group(tests\\charts FILES ${CHARTS_TESTS})
