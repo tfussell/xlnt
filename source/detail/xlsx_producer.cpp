@@ -633,13 +633,18 @@ void xlsx_producer::write_shared_string_table(const relationship &rel)
 
     for (const auto ws : source_)
     {
-        for (const auto row : ws.rows())
+        auto dimension = ws.calculate_dimension();
+
+        for (xlnt::row_t row = dimension.get_top_left().get_row();
+            row <= dimension.get_bottom_right().get_row(); ++row)
         {
-            for (const auto cell : row)
+            for (xlnt::column_t column = dimension.get_top_left().get_column();
+                column <= dimension.get_bottom_right().get_column(); ++column)
             {
-                if (cell.get_data_type() == cell::type::string)
+                if (ws.has_cell(xlnt::cell_reference(column, row)))
                 {
-                    ++string_count;
+                    string_count += (ws.get_cell(xlnt::cell_reference(column, row))
+                        .get_data_type() == cell::type::string) ? 1 : 0;
                 }
             }
         }
