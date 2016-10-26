@@ -37,7 +37,7 @@ struct comment_impl;
 /// <summary>
 /// A comment can be applied to a cell to provide extra information.
 /// </summary>
-class XLNT_CLASS comment
+class XLNT_API comment
 {
 public:
     /// <summary>

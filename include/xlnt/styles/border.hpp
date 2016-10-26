@@ -38,7 +38,7 @@
 
 namespace xlnt {
 
-enum class XLNT_CLASS border_side
+enum class XLNT_API border_side
 {
 	start,
 	end,
@@ -56,10 +56,10 @@ namespace xlnt {
 /// <summary>
 /// Describes the border style of a particular cell.
 /// </summary>
-class XLNT_CLASS border : public hashable
+class XLNT_API border : public hashable
 {
 public:
-	class XLNT_CLASS border_property
+	class XLNT_API border_property
 	{
 	public:
 		optional<class color> color() const;

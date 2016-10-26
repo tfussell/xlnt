@@ -295,7 +295,7 @@ void zip_file::remove_comment()
 
     if (position <= 3)
     {
-        throw invalid_file("zip");
+        throw invalid_file("not a zip file");
     }
 
     uint16_t length = static_cast<uint16_t>(buffer_[position + 1]);

@@ -34,7 +34,7 @@ namespace xlnt {
 /// It can also be initialized as a number of days since a base date
 /// using date::from_number.
 /// </summary>
-struct XLNT_CLASS date
+struct XLNT_API date
 {
     /// <summary>
     /// Return the current date according to the system time.

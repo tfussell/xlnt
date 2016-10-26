@@ -20,7 +20,6 @@ public:
 	{
 		std::vector<std::uint8_t> buffer;
 		original.save(buffer);
-        original.save("a.xlsx");
         
         xlnt::zip_file original_archive;
         original_archive.load(buffer);
@@ -30,7 +29,6 @@ public:
         
         buffer.clear();
         resulting_workbook.save(buffer);
-        resulting_workbook.save("b.xlsx");
         
         xlnt::zip_file resulting_archive;
         resulting_archive.load(buffer);

@@ -30,7 +30,7 @@ namespace xlnt {
 /// <summary>
 /// Text can be aligned vertically in these enumerated ways.
 /// </summary>
-enum class XLNT_CLASS vertical_alignment
+enum class XLNT_API vertical_alignment
 {
     none,
     bottom,

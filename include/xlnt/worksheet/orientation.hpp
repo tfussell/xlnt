@@ -30,7 +30,7 @@ namespace xlnt {
 /// <summary>
 /// The orientation of the worksheet when it is printed.
 /// </summary>
-enum class XLNT_CLASS orientation
+enum class XLNT_API orientation
 {
     portrait,
     landscape

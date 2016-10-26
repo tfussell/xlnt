@@ -30,7 +30,7 @@ namespace xlnt {
 /// <summary>
 /// ?
 /// </summary>
-class XLNT_CLASS worksheet_properties
+class XLNT_API worksheet_properties
 {
 };
 

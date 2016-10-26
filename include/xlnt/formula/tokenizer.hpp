@@ -27,7 +27,7 @@
 
 namespace xlnt {
 
-class XLNT_CLASS tokenizer
+class XLNT_API tokenizer
 {
 };
 

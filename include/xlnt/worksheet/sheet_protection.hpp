@@ -32,7 +32,7 @@ namespace xlnt {
 /// <summary>
 /// Protection applied to a particular worksheet to prevent it from being modified.
 /// </summary>
-class XLNT_CLASS sheet_protection
+class XLNT_API sheet_protection
 {
 public:
     static std::string hash_password(const std::string &password);

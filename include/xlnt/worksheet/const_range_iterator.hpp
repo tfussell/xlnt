@@ -42,7 +42,7 @@ struct worksheet_impl;
 /// A const version of range_iterator which does not allow modification
 /// to the dereferenced cell_vector.
 /// </summary>
-class XLNT_CLASS const_range_iterator : public std::iterator<std::bidirectional_iterator_tag, const cell_vector, std::ptrdiff_t, const cell_vector*, const cell_vector>
+class XLNT_API const_range_iterator : public std::iterator<std::bidirectional_iterator_tag, const cell_vector, std::ptrdiff_t, const cell_vector*, const cell_vector>
 {
 public:
     const_range_iterator(

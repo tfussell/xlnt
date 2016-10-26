@@ -29,7 +29,7 @@
 
 namespace xlnt {
 
-class XLNT_CLASS hashable
+class XLNT_API hashable
 {
 public:
     std::size_t hash() const;

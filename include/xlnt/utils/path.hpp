@@ -33,7 +33,7 @@ namespace xlnt {
 /// <summary>
 /// Encapsulates a path that points to location in a filesystem.
 /// </summary>
-class XLNT_CLASS path
+class XLNT_API path
 {
 public:
 	/// <summary>
@@ -155,7 +155,7 @@ public:
 	/// </summary>
 	path append(const path &to_append) const;
     
-    friend XLNT_FUNCTION bool operator==(const path &left, const path &right);
+    friend XLNT_API bool operator==(const path &left, const path &right);
 
 private:
 	/// <summary>

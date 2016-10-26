@@ -43,7 +43,7 @@ namespace detail {
 /// <summary>
 /// Handles writing a workbook into an XLSX file.
 /// </summary>
-class XLNT_CLASS xlsx_consumer
+class XLNT_API xlsx_consumer
 {
 public:
 	xlsx_consumer(workbook &destination);

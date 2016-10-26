@@ -32,7 +32,7 @@ namespace xlnt {
 /// Represents a span of time between two datetimes. This is
 /// not fully supported yet.
 /// </summary>
-struct XLNT_CLASS timedelta
+struct XLNT_API timedelta
 {
     static timedelta from_number(long double number);
 

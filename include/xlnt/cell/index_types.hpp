@@ -43,7 +43,7 @@ using row_t = std::uint32_t;
 /// or as a 1-indexed index. This class encapsulates both of these forms of
 /// column referencing and allows for convertions between them.
 /// </summary>
-class XLNT_CLASS column_t
+class XLNT_API column_t
 {
 public:
     using index_t = std::uint32_t;
@@ -231,27 +231,27 @@ public:
     /// <summary>
     /// Return the result of adding rhs to this column.
     /// </summary>
-    friend XLNT_FUNCTION column_t operator+(column_t lhs, const column_t& rhs);
+    friend XLNT_API column_t operator+(column_t lhs, const column_t& rhs);
 
     /// <summary>
     /// Return the result of subtracing lhs by rhs column.
     /// </summary>
-    friend XLNT_FUNCTION column_t operator-(column_t lhs, const column_t& rhs);
+    friend XLNT_API column_t operator-(column_t lhs, const column_t& rhs);
 
     /// <summary>
     /// Return the result of multiply lhs by rhs column.
     /// </summary>
-    friend XLNT_FUNCTION column_t operator*(column_t lhs, const column_t& rhs);
+    friend XLNT_API column_t operator*(column_t lhs, const column_t& rhs);
 
     /// <summary>
     /// Return the result of divide lhs by rhs column.
     /// </summary>
-    friend XLNT_FUNCTION column_t operator/(column_t lhs, const column_t& rhs);
+    friend XLNT_API column_t operator/(column_t lhs, const column_t& rhs);
 
     /// <summary>
     /// Return the result of mod lhs by rhs column.
     /// </summary>
-    friend XLNT_FUNCTION column_t operator%(column_t lhs, const column_t& rhs);
+    friend XLNT_API column_t operator%(column_t lhs, const column_t& rhs);
 
     /// <summary>
     /// Add rhs to this column and return a reference to this column.
@@ -281,27 +281,27 @@ public:
     /// <summary>
     /// Return true if other is to the right of this column.
     /// </summary>
-    friend XLNT_FUNCTION bool operator>(const column_t::index_t &left, const column_t &right);
+    friend XLNT_API bool operator>(const column_t::index_t &left, const column_t &right);
 
     /// <summary>
     /// Return true if other is to the right of or equal to this column.
     /// </summary>
-    friend XLNT_FUNCTION bool operator>=(const column_t::index_t &left, const column_t &right);
+    friend XLNT_API bool operator>=(const column_t::index_t &left, const column_t &right);
 
     /// <summary>
     /// Return true if other is to the left of this column.
     /// </summary>
-    friend XLNT_FUNCTION bool operator<(const column_t::index_t &left, const column_t &right);
+    friend XLNT_API bool operator<(const column_t::index_t &left, const column_t &right);
 
     /// <summary>
     /// Return true if other is to the left of or equal to this column.
     /// </summary>
-    friend XLNT_FUNCTION bool operator<=(const column_t::index_t &left, const column_t &right);
+    friend XLNT_API bool operator<=(const column_t::index_t &left, const column_t &right);
 
     /// <summary>
     /// Swap the columns that left and right refer to.
     /// </summary>
-    friend XLNT_FUNCTION void swap(column_t &left, column_t &right);
+    friend XLNT_API void swap(column_t &left, column_t &right);
 
     /// <summary>
     /// Internal numeric value of this column index.
@@ -313,7 +313,7 @@ public:
 /// Functor for hashing a column.
 /// Allows for use of std::unordered_set<column, column_hash> and similar.
 /// </summary>
-struct XLNT_CLASS column_hash
+struct XLNT_API column_hash
 {
     std::size_t operator()(const column_t &k) const;
 };

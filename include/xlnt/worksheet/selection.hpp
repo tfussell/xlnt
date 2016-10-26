@@ -32,7 +32,7 @@ namespace xlnt {
 /// <summary>
 /// The selected area of a worksheet.
 /// </summary>
-class XLNT_CLASS selection
+class XLNT_API selection
 {
 public:
 	bool has_active_cell() const { return has_active_cell_; }

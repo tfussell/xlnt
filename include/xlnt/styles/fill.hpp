@@ -31,7 +31,7 @@
 
 namespace xlnt {
 
-enum class XLNT_CLASS pattern_fill_type
+enum class XLNT_API pattern_fill_type
 {
 	none,
 	solid,
@@ -54,7 +54,7 @@ enum class XLNT_CLASS pattern_fill_type
 	gray0625
 };
 
-class XLNT_CLASS pattern_fill : public hashable
+class XLNT_API pattern_fill : public hashable
 {
 public:
     pattern_fill();
@@ -81,13 +81,13 @@ private:
     optional<color> background_;
 };
 
-enum class XLNT_CLASS gradient_fill_type
+enum class XLNT_API gradient_fill_type
 {
 	linear,
 	path
 };
 
-class XLNT_CLASS gradient_fill : public hashable
+class XLNT_API gradient_fill : public hashable
 {
 public:
     gradient_fill();
@@ -151,7 +151,7 @@ private:
 	std::unordered_map<double, color> stops_;
 };
 
-enum class XLNT_CLASS fill_type
+enum class XLNT_API fill_type
 {
 	pattern,
 	gradient
@@ -160,7 +160,7 @@ enum class XLNT_CLASS fill_type
 /// <summary>
 /// Describes the fill style of a particular cell.
 /// </summary>
-class XLNT_CLASS fill : public hashable
+class XLNT_API fill : public hashable
 {
 public:
 	/// <summary>

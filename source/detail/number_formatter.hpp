@@ -212,7 +212,7 @@ enum class format_locale
 };
 
 // TODO this really shouldn't be exported...
-struct XLNT_CLASS format_condition
+struct XLNT_API format_condition
 {
     enum class condition_type
     {
@@ -350,7 +350,7 @@ private:
     std::vector<format_code> codes_;
 };
 
-class XLNT_CLASS number_formatter
+class XLNT_API number_formatter
 {
 public:
     number_formatter(const std::string &format_string, xlnt::calendar calendar);

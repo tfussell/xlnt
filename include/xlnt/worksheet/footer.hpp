@@ -33,7 +33,7 @@ namespace xlnt {
 /// <summary>
 /// Worksheet footer
 /// </summary>
-class XLNT_CLASS footer
+class XLNT_API footer
 {
 public:
     footer();

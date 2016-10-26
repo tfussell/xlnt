@@ -53,21 +53,14 @@ enum class limit_style
 #ifdef XLNT_EXPORT
 #define XLNT_API __declspec(dllexport)
 #else
+// For clients of the library, supress warnings about DLL interfaces for standard library classes
+#pragma warning(disable: 4251)
+#pragma warning(disable: 4275)
 #define XLNT_API __declspec(dllimport)
 #endif
 #else
 #define XLNT_API
 #endif
-#endif
-
-// If no API for classes is defined, assume default
-#ifndef XLNT_CLASS
-#define XLNT_CLASS XLNT_API
-#endif
-
-// If no API for functions is defined, assume default
-#ifndef XLNT_FUNCTION
-#define XLNT_FUNCTION XLNT_API
 #endif
 
 } // namespace xlnt

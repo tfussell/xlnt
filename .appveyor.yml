@@ -15,7 +15,7 @@ init: []
 install: []
 before_build:
 - git submodule update --init --recursive
-- cmake -H. -Bbuild -G"Visual Studio 14 2015 Win64" -DSHARED=%SHARED% -DSTATIC=%STATIC% -DWITH_TESTS=ON
+- cmake -H. -Bbuild -G"Visual Studio 14 2015 Win64" -DSHARED=%SHARED% -DSTATIC=%STATIC% -DWITH_TESTS=ON -DWITH_SAMPLES=ON
 
 build:
   project: build\xlnt.sln
@@ -23,4 +23,5 @@ build:
   verbosity: minimal
 
 test_script:
-- build\bin\xlnt.test.exe
+- cd build\bin
+- xlnt.test.exe

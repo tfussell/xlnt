@@ -25,13 +25,13 @@
 #include <vector>
 
 #include <utf8.h>
-#include <xlnt/xlnt_config.hpp> // for XLNT_CLASS
+#include <xlnt/xlnt_config.hpp> // for XLNT_API
 
 #include <xlnt/xlnt_config.hpp>
 
 namespace xlnt {
 
-class XLNT_CLASS utf8string
+class XLNT_API utf8string
 {
 public:
     static utf8string from_utf8(const std::string &s);

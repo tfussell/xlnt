@@ -1,46 +1,71 @@
+# Top level cmake script
 cmake_minimum_required(VERSION 3.1)
 
-project(xlnt)
+project(xlnt
+        VERSION 0.9.0
+        LANGUAGES CXX C)
 
+
+# Library type
 option(SHARED "Set to OFF to not build shared libraries" ON)
 option(STATIC "Set to ON to build static libraries" OFF)
-option(COVERAGE "Generate coverage data for use in Coveralls" OFF)
 
-option(WITH_EXAMPLES "Build examples" OFF)
-option(WITH_TESTS "Build tests" OFF)
+
+# Optional components
+option(WITH_SAMPLES "Build executable code samples" OFF)
 option(WITH_BENCHMARKS "Build performance benchmarks" OFF)
 
-if(APPLE)
-  option(FRAMEWORK "Set to ON to package dylib and headers into a .framework, OSX only" OFF)
-  execute_process(COMMAND "sw_vers -productVersion | awk -F'.' '{print $1\".\"$2}'"
-                  OUTPUT_VARIABLE OSX_VERSION)
-  set(CMAKE_OSX_DEPLOYMENT_TARGET ${OSX_VERSION})
+
+# Platform specific options
+if(NOT MSVC)
+    option(COVERAGE "Generate coverage data for use in Coveralls" OFF)
 endif()
 
+if(APPLE)
+    option(FRAMEWORK "Set to ON to package dylib and headers into a .framework, OSX only" OFF)
+endif()
+
+
+# Global language settings
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+
+# Platform specific settings
 if(COVERAGE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
 endif()
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+if(APPLE)
+    # Prevent a warning about deployment target not being set
+    execute_process(COMMAND "sw_vers -productVersion | awk -F'.' '{print $1\".\"$2}'"
+                    OUTPUT_VARIABLE OSX_VERSION)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET ${OSX_VERSION})
+endif()
 
 if(MSVC)
     add_definitions(-DUNICODE -D_UNICODE)
 endif()
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
-    string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/lib)
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/lib)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/bin)
-endforeach()
+# Define project directories
+set(XLNT_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
+set(XLNT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/source)
+set(THIRD_PARTY_DIR ${CMAKE_SOURCE_DIR}/third-party)
 
-if(WITH_TESTS)
-  include(cmake/xlnt.test.cmake)
+
+# Tell CMake where to find .cmake files
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+
+
+# Add components according to selected options
+if (WITH_SAMPLES)
+    add_subdirectory(samples)
 endif()
 
-include(cmake/xlnt.cmake)
+if (WITH_BENCHMARKS)
+    add_subdirectory(benchmarks)
+endif()
+
+add_subdirectory(tests)
+add_subdirectory(source)

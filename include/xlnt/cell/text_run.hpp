@@ -24,12 +24,12 @@
 
 #include <string>
 
-#include <xlnt/xlnt_config.hpp> // for XLNT_CLASS, XLNT_FUNCTION
+#include <xlnt/xlnt_config.hpp> // for XLNT_API, XLNT_API
 #include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 
-class XLNT_CLASS text_run 
+class XLNT_API text_run 
 {
 public:
 	text_run();

@@ -43,7 +43,7 @@ class range_iterator;
 /// <summary>
 /// A range is a 2D collection of cells with defined extens that can be iterated upon.
 /// </summary>
-class XLNT_CLASS range
+class XLNT_API range
 {
 public:
     using iterator = range_iterator;

@@ -31,7 +31,7 @@ namespace xlnt {
 /// Properties applied to a column in a worksheet.
 /// Columns can have a size and a style.
 /// </summary>
-class XLNT_CLASS column_properties
+class XLNT_API column_properties
 {
 public:
     long double width;

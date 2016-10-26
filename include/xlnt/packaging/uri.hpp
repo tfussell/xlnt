@@ -32,7 +32,7 @@ namespace xlnt {
 /// <summary>
 ///
 /// </summary>
-class XLNT_CLASS uri
+class XLNT_API uri
 {
 public:
     uri();
@@ -63,7 +63,7 @@ public:
     uri make_absolute(const uri &base);
     uri make_reference(const uri &base);
     
-    friend XLNT_FUNCTION bool operator==(const uri &left, const uri &right);
+    friend XLNT_API bool operator==(const uri &left, const uri &right);
     
 private:
     bool absolute_;

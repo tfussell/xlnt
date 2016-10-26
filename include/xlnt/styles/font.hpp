@@ -36,7 +36,7 @@ class style;
 /// <summary>
 /// Describes the font style of a particular cell.
 /// </summary>
-class XLNT_CLASS font : public hashable
+class XLNT_API font : public hashable
 {
 public:
     enum class underline_style

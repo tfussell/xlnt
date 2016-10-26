@@ -21,3 +21,4 @@
 [submodule "third-party/botan"]
 	path = third-party/botan
 	url = https://github.com/randombit/botan
+ 	branch = master

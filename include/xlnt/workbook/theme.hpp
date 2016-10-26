@@ -30,7 +30,7 @@ namespace xlnt {
 /// A theme is a combination of fonts, colors, and effects.
 /// This isn't really supported yet.
 /// </summary>
-class XLNT_CLASS theme
+class XLNT_API theme
 {
 };
 

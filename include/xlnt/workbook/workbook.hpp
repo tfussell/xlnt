@@ -78,7 +78,7 @@ class xlsx_producer;
 /// <summary>
 /// workbook is the container for all other parts of the document.
 /// </summary>
-class XLNT_CLASS workbook
+class XLNT_API workbook
 {
 public:
     using iterator = worksheet_iterator;

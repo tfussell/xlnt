@@ -56,7 +56,7 @@ namespace POLE
         /**
          * Constructs a storage with name filename.
          **/
-        Storage( char* bytes, unsigned long length );
+        Storage( char* bytes, std::size_t length );
         
         /**
          * Destroys the storage.
@@ -142,17 +142,17 @@ namespace POLE
         /**
          * Returns the stream size.
          **/
-        unsigned long size();
+        std::size_t size();
         
         /**
          * Returns the current read/write position.
          **/
-        unsigned long tell();
+        std::size_t tell();
         
         /**
          * Sets the read/write position.
          **/
-        void seek( unsigned long pos );
+        void seek( std::size_t pos );
         
         /**
          * Reads a byte.
@@ -162,7 +162,7 @@ namespace POLE
         /**
          * Reads a block of data.
          **/
-        unsigned long read( unsigned char* data, unsigned long maxlen );
+        std::size_t read( std::uint8_t* data, std::size_t maxlen );
         
         /**
          * Returns true if the read/write position is past the file.
@@ -185,49 +185,49 @@ namespace POLE
     class Header
     {
     public:
-        unsigned char id[8];       // signature, or magic identifier
-        unsigned b_shift;          // bbat->blockSize = 1 << b_shift
-        unsigned s_shift;          // sbat->blockSize = 1 << s_shift
-        unsigned num_bat;          // blocks allocated for big bat
-        unsigned dirent_start;     // starting block for directory info
-        unsigned threshold;        // switch from small to big file (usually 4K)
-        unsigned sbat_start;       // starting block index to store small bat
-        unsigned num_sbat;         // blocks allocated for small bat
-        unsigned mbat_start;       // starting block to store meta bat
-        unsigned num_mbat;         // blocks allocated for meta bat
-        unsigned long bb_blocks[109];
+        std::uint8_t id[8];       // signature, or magic identifier
+        std::uint16_t b_shift;          // bbat->blockSize = 1 << b_shift
+        std::uint16_t s_shift;          // sbat->blockSize = 1 << s_shift
+        std::uint32_t num_bat;          // blocks allocated for big bat
+        std::uint32_t dirent_start;     // starting block for directory info
+        std::uint32_t threshold;        // switch from small to big file (usually 4K)
+        std::uint32_t sbat_start;       // starting block index to store small bat
+        std::uint32_t num_sbat;         // blocks allocated for small bat
+        std::uint32_t mbat_start;       // starting block to store meta bat
+        std::uint32_t num_mbat;         // blocks allocated for meta bat
+        std::uint32_t bb_blocks[109];
         
         Header();
         bool valid();
-        void load( const unsigned char* buffer );
-        void save( unsigned char* buffer );
+        void load( const std::uint8_t* buffer );
+        void save( std::uint8_t* buffer );
         void debug();
     };
     
     class AllocTable
     {
     public:
-        static const unsigned Eof;
-        static const unsigned Avail;
-        static const unsigned Bat;
-        static const unsigned MetaBat;
-        unsigned blockSize;
+        static const std::uint32_t Eof;
+        static const std::uint32_t Avail;
+        static const std::uint32_t Bat;
+        static const std::uint32_t MetaBat;
+        std::size_t blockSize;
         AllocTable();
         void clear();
-        unsigned long count();
-        void resize( unsigned long newsize );
-        void preserve( unsigned long n );
-        void set( unsigned long index, unsigned long val );
-        unsigned unused();
-        void setChain( std::vector<unsigned long> );
-        std::vector<unsigned long> follow( unsigned long start );
-        unsigned long operator[](unsigned long index );
-        void load( const unsigned char* buffer, unsigned len );
-        void save( unsigned char* buffer );
-        unsigned size();
+        std::size_t count();
+        void resize( std::size_t newsize );
+        void preserve( std::size_t n );
+        void set( std::size_t index, std::uint32_t val );
+        std::size_t unused();
+        void setChain( std::vector<std::uint32_t> );
+        std::vector<std::size_t> follow( std::size_t start );
+        std::size_t operator[](std::size_t index );
+        void load( const std::uint8_t* buffer, std::size_t len );
+        void save( std::uint8_t* buffer );
+        std::size_t size();
         void debug();
     private:
-        std::vector<unsigned long> data;
+        std::vector<std::uint32_t> data;
         AllocTable( const AllocTable& );
         AllocTable& operator=( const AllocTable& );
     };
@@ -238,11 +238,11 @@ namespace POLE
         bool valid;            // false if invalid (should be skipped)
         std::string name;      // the name, not in unicode anymore
         bool dir;              // true if directory
-        unsigned long size;    // size (not valid if directory)
-        unsigned long start;   // starting block
-        unsigned prev;         // previous sibling
-        unsigned next;         // next sibling
-        unsigned child;        // first child
+        std::uint32_t size;    // size (not valid if directory)
+        std::uint32_t start;   // starting block
+        std::uint32_t prev;         // previous sibling
+        std::uint32_t next;         // next sibling
+        std::uint32_t child;        // first child
         
         DirEntry(): valid(false), name(), dir(false), size(0), start(0),
         prev(0), next(0), child(0) {}
@@ -251,19 +251,19 @@ namespace POLE
     class DirTree
     {
     public:
-        static const unsigned End;
+        static const std::uint32_t End;
         DirTree();
         void clear();
-        unsigned entryCount();
-        DirEntry* entry( unsigned index );
+        std::size_t entryCount();
+        DirEntry* entry( std::size_t index );
         DirEntry* entry( const std::string& name, bool create=false );
-        int indexOf( DirEntry* e );
-        int parent( unsigned index );
-        std::string fullName( unsigned index );
-        std::vector<unsigned> children( unsigned index );
-        void load( unsigned char* buffer, unsigned len );
-        void save( unsigned char* buffer );
-        unsigned size();
+        std::ptrdiff_t indexOf( DirEntry* e );
+        std::ptrdiff_t parent( std::size_t index );
+        std::string fullName( std::size_t index );
+        std::vector<std::size_t> children( std::size_t index );
+        void load( std::uint8_t* buffer, std::size_t len );
+        void save( std::uint8_t* buffer );
+        std::size_t size();
         void debug();
     private:
         std::vector<DirEntry> entries;
@@ -275,22 +275,22 @@ namespace POLE
     {
     public:
         Storage* storage;         // owner
-        unsigned char *filedata;
-        unsigned long dataLength;
+        std::uint8_t *filedata;
+        std::size_t dataLength;
         int result;               // result of operation
         bool opened;              // true if file is opened
-        unsigned long filesize;   // size of the file
+        std::size_t filesize;   // size of the file
         
         Header* header;           // storage header
         DirTree* dirtree;         // directory tree
         AllocTable* bbat;         // allocation table for big blocks
         AllocTable* sbat;         // allocation table for small blocks
         
-        std::vector<unsigned long> sb_blocks; // blocks for "small" files
+        std::vector<std::size_t> sb_blocks; // blocks for "small" files
         
         std::list<Stream*> streams;
         
-        StorageIO( Storage* storage, char* bytes, unsigned long length );
+        StorageIO( Storage* storage, char* bytes, std::size_t length );
         ~StorageIO();
         
         bool open();
@@ -299,13 +299,13 @@ namespace POLE
         void load();
         void create();
         
-        unsigned long loadBigBlocks( std::vector<unsigned long> blocks, unsigned char* buffer, unsigned long maxlen );
+        std::size_t loadBigBlocks( std::vector<std::size_t> blocks, std::uint8_t* buffer, std::size_t maxlen );
         
-        unsigned long loadBigBlock( unsigned long block, unsigned char* buffer, unsigned long maxlen );
+        std::size_t loadBigBlock( std::size_t block, std::uint8_t* buffer, std::size_t maxlen );
         
-        unsigned long loadSmallBlocks( std::vector<unsigned long> blocks, unsigned char* buffer, unsigned long maxlen );
+        std::size_t loadSmallBlocks( std::vector<std::size_t> blocks, std::uint8_t* buffer, std::size_t maxlen );
         
-        unsigned long loadSmallBlock( unsigned long block, unsigned char* buffer, unsigned long maxlen );
+        std::size_t loadSmallBlock( std::size_t block, std::uint8_t* buffer, std::size_t maxlen );
         
         StreamIO* streamIO( const std::string& name );
         
@@ -327,28 +327,28 @@ namespace POLE
         
         StreamIO( StorageIO* io, DirEntry* entry );
         ~StreamIO();
-        unsigned long size();
-        void seek( unsigned long pos );
-        unsigned long tell();
+        std::size_t size();
+        void seek( std::size_t pos );
+        std::size_t tell();
         int getch();
-        unsigned long read( unsigned char* data, unsigned long maxlen );
-        unsigned long read( unsigned long pos, unsigned char* data, unsigned long maxlen );
+        std::size_t read( std::uint8_t* data, std::size_t maxlen );
+        std::size_t read( std::size_t pos, std::uint8_t* data, std::size_t maxlen );
         
         
     private:
-        std::vector<unsigned long> blocks;
+        std::vector<std::size_t> blocks;
         
         // no copy or assign
         StreamIO( const StreamIO& );
         StreamIO& operator=( const StreamIO& );
         
         // pointer for read
-        unsigned long m_pos;
+        std::size_t m_pos;
         
         // simple cache system to speed-up getch()
-        unsigned char* cache_data;
-        unsigned long cache_size;
-        unsigned long cache_pos;
+        std::uint8_t* cache_data;
+        std::size_t cache_size;
+        std::size_t cache_pos;
         void updateCache();
     };
     

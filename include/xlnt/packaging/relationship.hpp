@@ -34,7 +34,7 @@ namespace xlnt {
 /// <summary>
 /// Specifies whether the target of a relationship is inside or outside the Package.
 /// </summary>
-enum class XLNT_CLASS target_mode
+enum class XLNT_API target_mode
 {
 	/// <summary>
 	/// The relationship references a resource that is external to the package.
@@ -49,7 +49,7 @@ enum class XLNT_CLASS target_mode
 /// <summary>
 /// All package relationships must be one of these defined types.
 /// </summary>
-enum class XLNT_CLASS relationship_type
+enum class XLNT_API relationship_type
 {
     unknown,
 
@@ -96,7 +96,7 @@ enum class XLNT_CLASS relationship_type
 /// Represents an association between a source Package or part, and a target object which can be a part or external
 /// resource.
 /// </summary>
-class XLNT_CLASS relationship
+class XLNT_API relationship
 {
 public:
     using type = relationship_type;

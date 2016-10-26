@@ -31,7 +31,7 @@
 
 namespace xlnt {
 
-class XLNT_CLASS indexed_color
+class XLNT_API indexed_color
 {
 public:
 	indexed_color(std::size_t index);
@@ -44,7 +44,7 @@ private:
 	std::size_t index_;
 };
 
-class XLNT_CLASS theme_color
+class XLNT_API theme_color
 {
 public:
 	theme_color(std::size_t index);
@@ -57,7 +57,7 @@ private:
 	std::size_t index_;
 };
 
-class XLNT_CLASS rgb_color
+class XLNT_API rgb_color
 {
 public:
 	rgb_color(const std::string &hex_string);
@@ -87,7 +87,7 @@ private:
 /// <summary>
 /// Colors can be applied to many parts of a cell's style.
 /// </summary>
-class XLNT_CLASS color : public hashable
+class XLNT_API color : public hashable
 {
 public:
     /// <summary>

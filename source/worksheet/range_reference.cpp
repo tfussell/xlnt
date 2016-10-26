@@ -142,22 +142,22 @@ bool range_reference::operator!=(const char *reference_string) const
     return *this != std::string(reference_string);
 }
 
-XLNT_FUNCTION bool operator==(const std::string &reference_string, const range_reference &ref)
+XLNT_API bool operator==(const std::string &reference_string, const range_reference &ref)
 {
     return ref == reference_string;
 }
 
-XLNT_FUNCTION bool operator==(const char *reference_string, const range_reference &ref)
+XLNT_API bool operator==(const char *reference_string, const range_reference &ref)
 {
     return ref == reference_string;
 }
 
-XLNT_FUNCTION bool operator!=(const std::string &reference_string, const range_reference &ref)
+XLNT_API bool operator!=(const std::string &reference_string, const range_reference &ref)
 {
     return ref != reference_string;
 }
 
-XLNT_FUNCTION bool operator!=(const char *reference_string, const range_reference &ref)
+XLNT_API bool operator!=(const char *reference_string, const range_reference &ref)
 {
     return ref != reference_string;
 }

@@ -27,7 +27,7 @@
 
 namespace xlnt {
 
-class XLNT_CLASS scatter_chart
+class XLNT_API scatter_chart
 {
 };
 

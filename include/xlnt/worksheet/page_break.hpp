@@ -30,7 +30,7 @@ namespace xlnt {
 /// <summary>
 /// The types of page breaks.
 /// </summary>
-enum class XLNT_CLASS page_break
+enum class XLNT_API page_break
 {
     none = 0,
     row = 1,

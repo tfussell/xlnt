@@ -27,7 +27,7 @@
 
 namespace xlnt {
 
-enum class XLNT_CLASS border_style
+enum class XLNT_API border_style
 {
     none,
     dashdot,

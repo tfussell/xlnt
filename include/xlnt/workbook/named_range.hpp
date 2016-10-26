@@ -34,13 +34,13 @@ class range_reference;
 class worksheet;
 
 // TODO: why is this not in a class?
-std::vector<std::pair<std::string, std::string>> XLNT_FUNCTION split_named_range(const std::string &named_range_string);
+std::vector<std::pair<std::string, std::string>> XLNT_API split_named_range(const std::string &named_range_string);
 
 /// <summary>
 /// A 2D range of cells in a worksheet that is referred to by name.
 /// ws->get_range("A1:B2") could be replaced by ws->get_range("range1")
 /// </summary>
-class XLNT_CLASS named_range
+class XLNT_API named_range
 {
 public:
     using target = std::pair<worksheet, range_reference>;

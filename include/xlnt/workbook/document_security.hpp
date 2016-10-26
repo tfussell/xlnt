@@ -32,7 +32,7 @@ namespace xlnt {
 /// <summary>
 /// Security information about the OOXML document.
 /// </summary>
-class XLNT_CLASS document_security
+class XLNT_API document_security
 {
 public:
     document_security();

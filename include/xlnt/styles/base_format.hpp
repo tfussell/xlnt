@@ -36,7 +36,7 @@ namespace xlnt {
 /// <summary>
 /// Describes the formatting of a particular cell.
 /// </summary>
-class XLNT_CLASS base_format
+class XLNT_API base_format
 {
 public:
     // Alignment

@@ -35,7 +35,7 @@ namespace xlnt {
 /// <summary>
 /// Worksheet header and footer for all six possible positions.
 /// </summary>
-class XLNT_CLASS header_footer
+class XLNT_API header_footer
 {
 public:
     header_footer();

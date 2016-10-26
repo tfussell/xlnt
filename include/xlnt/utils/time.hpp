@@ -33,7 +33,7 @@ namespace xlnt {
 /// minute, second, and microsecond (0-999999).
 /// It can also be initialized as a fraction of a day using time::from_number.
 /// </summary>
-struct XLNT_CLASS time
+struct XLNT_API time
 {
     /// <summary>
     /// Return the current time according to the system time.

@@ -27,7 +27,7 @@
 
 namespace xlnt {
 
-class XLNT_CLASS chart
+class XLNT_API chart
 {
 };
 

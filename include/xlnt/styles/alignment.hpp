@@ -35,7 +35,7 @@ namespace xlnt {
 /// <summary>
 /// Alignment options for use in cell formats.
 /// </summary>
-class XLNT_CLASS alignment : public hashable
+class XLNT_API alignment : public hashable
 {
 public:
 	optional<bool> shrink() const;

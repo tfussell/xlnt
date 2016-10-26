@@ -40,7 +40,7 @@ struct stylesheet;
 /// Describes a style which has a name and can be applied to multiple individual
 /// formats. In Excel this is a "Cell Style".
 /// </summary>
-class XLNT_CLASS style : public base_format
+class XLNT_API style : public base_format
 {
 public:
     std::string name() const;

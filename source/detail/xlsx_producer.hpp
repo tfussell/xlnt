@@ -46,7 +46,7 @@ namespace detail {
 /// <summary>
 /// Handles writing a workbook into an XLSX file.
 /// </summary>
-class XLNT_CLASS xlsx_producer
+class XLNT_API xlsx_producer
 {
 public:
 	xlsx_producer(const workbook &target);

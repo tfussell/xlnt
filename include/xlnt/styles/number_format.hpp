@@ -36,7 +36,7 @@ enum class calendar;
 /// <summary>
 /// Describes the number formatting applied to text and numbers within a certain cell.
 /// </summary>
-class XLNT_CLASS number_format : public hashable
+class XLNT_API number_format : public hashable
 {
 public:
     static const number_format general();

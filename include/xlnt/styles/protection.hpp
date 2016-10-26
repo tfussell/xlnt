@@ -34,7 +34,7 @@ namespace xlnt {
 /// <summary>
 /// Describes the protection style of a particular cell.
 /// </summary>
-class XLNT_CLASS protection : public hashable
+class XLNT_API protection : public hashable
 {
 public:
 	static protection unlocked_and_visible();

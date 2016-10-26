@@ -36,7 +36,7 @@ namespace xlnt {
 /// The manifest keeps track of all files in the OOXML package and
 /// their type and relationships.
 /// </summary>
-class XLNT_CLASS manifest
+class XLNT_API manifest
 {
 public:
 	/// <summary>

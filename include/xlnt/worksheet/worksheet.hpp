@@ -64,7 +64,7 @@ class xlsx_producer;
 /// A worksheet is a 2D array of cells starting with cell A1 in the top-left corner
 /// and extending indefinitely down and right as needed.
 /// </summary>
-class XLNT_CLASS worksheet
+class XLNT_API worksheet
 {
 public:
     using iterator = range_iterator;

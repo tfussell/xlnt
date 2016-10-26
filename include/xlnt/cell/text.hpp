@@ -25,14 +25,14 @@
 #include <string>
 #include <vector>
 
-#include <xlnt/xlnt_config.hpp> // for XLNT_CLASS, XLNT_FUNCTION
+#include <xlnt/xlnt_config.hpp> // for XLNT_API, XLNT_API
 #include <xlnt/cell/text_run.hpp>
 
 namespace xlnt {
 
 class text_run;
 
-class XLNT_CLASS text
+class XLNT_API text
 {
 public:
 	void clear();

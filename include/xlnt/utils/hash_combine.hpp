@@ -39,7 +39,7 @@ namespace xlnt {
 /// Return a value by combining the hashed value of v (using std::hash) with seed.
 /// </summary>
 template <class T>
-inline void XLNT_FUNCTION hash_combine(std::size_t &seed, const T &v)
+inline void XLNT_API hash_combine(std::size_t &seed, const T &v)
 {
     std::hash<T> hasher;
     seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);

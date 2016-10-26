@@ -38,7 +38,7 @@ class range_reference;
 /// Functor for hashing a cell reference.
 /// Allows for use of std::unordered_set<cell_reference, cel_reference_hash> and similar.
 /// </summary>
-struct XLNT_CLASS cell_reference_hash
+struct XLNT_API cell_reference_hash
 {
     std::size_t operator()(const cell_reference &k) const;
 };
@@ -50,7 +50,7 @@ struct XLNT_CLASS cell_reference_hash
 /// can be initialized from a string of this form or a 1-indexed ordered pair of the form
 /// column, row.
 /// </summary>
-class XLNT_CLASS cell_reference
+class XLNT_API cell_reference
 {
 public:
     /// <summary>

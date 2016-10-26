@@ -27,7 +27,7 @@
 
 namespace xlnt {
 
-class XLNT_CLASS error_bar
+class XLNT_API error_bar
 {
 };
 

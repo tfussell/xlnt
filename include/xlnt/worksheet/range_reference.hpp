@@ -31,7 +31,7 @@ namespace xlnt {
 /// A range_reference describes a rectangular area of a worksheet with positive
 /// width and height defined by a top-left and bottom-right corner.
 /// </summary>
-class XLNT_CLASS range_reference
+class XLNT_API range_reference
 {
 public:
     /// <summary>
@@ -76,13 +76,13 @@ public:
 
     bool operator!=(const char *reference_string) const;
 
-    XLNT_FUNCTION friend bool operator==(const std::string &reference_string, const range_reference &ref);
+    XLNT_API friend bool operator==(const std::string &reference_string, const range_reference &ref);
 
-    XLNT_FUNCTION friend bool operator==(const char *reference_string, const range_reference &ref);
+    XLNT_API friend bool operator==(const char *reference_string, const range_reference &ref);
 
-    XLNT_FUNCTION friend bool operator!=(const std::string &reference_string, const range_reference &ref);
+    XLNT_API friend bool operator!=(const std::string &reference_string, const range_reference &ref);
 
-    XLNT_FUNCTION friend bool operator!=(const char *reference_string, const range_reference &ref);
+    XLNT_API friend bool operator!=(const char *reference_string, const range_reference &ref);
 
 private:
     cell_reference top_left_;

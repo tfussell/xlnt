@@ -32,7 +32,7 @@ namespace xlnt {
 /// A workbook can be opened in multiple windows with different views.
 /// This class represents a particular view used by one window.
 /// </summary>
-class XLNT_CLASS workbook_view
+class XLNT_API workbook_view
 {
 public:
 	bool auto_filter_date_grouping = false;

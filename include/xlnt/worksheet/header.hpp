@@ -33,7 +33,7 @@ namespace xlnt {
 /// <summary>
 /// Worksheet header
 /// </summary>
-class XLNT_CLASS header
+class XLNT_API header
 {
 public:
     header();

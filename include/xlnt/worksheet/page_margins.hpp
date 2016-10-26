@@ -30,7 +30,7 @@ namespace xlnt {
 /// <summary>
 /// Describes the margins around a worksheet for printing.
 /// </summary>
-class XLNT_CLASS page_margins
+class XLNT_API page_margins
 {
 public:
     page_margins();

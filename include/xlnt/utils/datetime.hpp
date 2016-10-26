@@ -35,7 +35,7 @@ struct time;
 /// <summary>
 /// A datetime is a combination of a date and a time.
 /// </summary>
-struct XLNT_CLASS datetime
+struct XLNT_API datetime
 {
     /// <summary>
     /// Return the current date and time according to the system time.

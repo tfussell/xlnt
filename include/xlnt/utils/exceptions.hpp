@@ -34,7 +34,7 @@ namespace xlnt {
 /// <summary>
 /// Parent type of all custom exceptions thrown in this library.
 /// </summary>
-class XLNT_CLASS exception : public std::runtime_error
+class XLNT_API exception : public std::runtime_error
 {
 public:
     exception(const std::string &message);
@@ -48,7 +48,7 @@ private:
 /// <summary>
 /// Exception for a bad parameter value
 /// </summary>
-class XLNT_CLASS invalid_parameter : public exception
+class XLNT_API invalid_parameter : public exception
 {
 public:
     invalid_parameter();
@@ -57,7 +57,7 @@ public:
 /// <summary>
 /// Exception for bad sheet names.
 /// </summary>
-class XLNT_CLASS invalid_sheet_title : public exception
+class XLNT_API invalid_sheet_title : public exception
 {
 public:
     invalid_sheet_title(const std::string &title);
@@ -66,7 +66,7 @@ public:
 /// <summary>
 /// Exception when a referenced number format is not in the stylesheet.
 /// </summary>
-class XLNT_CLASS missing_number_format : public exception
+class XLNT_API missing_number_format : public exception
 {
 public:
     missing_number_format();
@@ -75,7 +75,7 @@ public:
 /// <summary>
 /// Exception for trying to open a non-XLSX file.
 /// </summary>
-class XLNT_CLASS invalid_file : public exception
+class XLNT_API invalid_file : public exception
 {
 public:
     invalid_file(const std::string &filename);
@@ -85,7 +85,7 @@ public:
 /// The data submitted which cannot be used directly in Excel files. It
 /// must be removed or escaped.
 /// </summary>
-class XLNT_CLASS illegal_character : public exception
+class XLNT_API illegal_character : public exception
 {
 public:
     illegal_character(char c);
@@ -94,7 +94,7 @@ public:
 /// <summary>
 /// Exception for any data type inconsistencies.
 /// </summary>
-class XLNT_CLASS invalid_data_type : public exception
+class XLNT_API invalid_data_type : public exception
 {
 public:
     invalid_data_type();
@@ -103,7 +103,7 @@ public:
 /// <summary>
 /// Exception for bad column names in A1-style cell references.
 /// </summary>
-class XLNT_CLASS invalid_column_string_index : public exception
+class XLNT_API invalid_column_string_index : public exception
 {
 public:
     invalid_column_string_index();
@@ -112,7 +112,7 @@ public:
 /// <summary>
 /// Exception for converting between numeric and A1-style cell references.
 /// </summary>
-class XLNT_CLASS invalid_cell_reference : public exception
+class XLNT_API invalid_cell_reference : public exception
 {
 public:
     invalid_cell_reference(column_t column, row_t row);
@@ -122,7 +122,7 @@ public:
 /// <summary>
 /// Exception when setting a class's attribute to an invalid value
 /// </summary>
-class XLNT_CLASS invalid_attribute : public exception
+class XLNT_API invalid_attribute : public exception
 {
 public:
     invalid_attribute();
@@ -131,7 +131,7 @@ public:
 /// <summary>
 /// Exception for a key that doesn't exist in a container
 /// </summary>
-class XLNT_CLASS key_not_found : public exception
+class XLNT_API key_not_found : public exception
 {
 public:
     key_not_found();
@@ -140,7 +140,7 @@ public:
 /// <summary>
 /// Exception for a workbook with no visible worksheets
 /// </summary>
-class XLNT_CLASS no_visible_worksheets : public exception
+class XLNT_API no_visible_worksheets : public exception
 {
 public:
     no_visible_worksheets();
@@ -149,7 +149,7 @@ public:
 /// <summary>
 /// Debug exception for a switch that fell through to the default case
 /// </summary>
-class XLNT_CLASS unhandled_switch_case : public exception
+class XLNT_API unhandled_switch_case : public exception
 {
 public:
     unhandled_switch_case();
@@ -158,7 +158,7 @@ public:
 /// <summary>
 /// Exception for attempting to use a feature which is not supported
 /// </summary>
-class XLNT_CLASS unsupported : public exception
+class XLNT_API unsupported : public exception
 {
 public:
 	unsupported(const std::string &message);

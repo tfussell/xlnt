@@ -30,7 +30,7 @@
 
 namespace xlnt {
 
-struct XLNT_CLASS constants
+struct XLNT_API constants
 {
     /// <summary>
     /// Returns the lowest allowable row index in a worksheet.

@@ -30,7 +30,7 @@ namespace xlnt {
 class worksheet;
 struct drawing_struct;
 
-class XLNT_CLASS drawing
+class XLNT_API drawing
 {
 public:
     drawing();

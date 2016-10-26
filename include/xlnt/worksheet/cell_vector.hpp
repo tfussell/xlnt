@@ -43,7 +43,7 @@ class range_reference;
 /// A cell vector is a linear (1D) range of cells, either vertical or horizontal
 /// depending on the major order specified in the constructor.
 /// </summary>
-class XLNT_CLASS cell_vector
+class XLNT_API cell_vector
 {
 public:
     using iterator = cell_iterator;

@@ -33,7 +33,7 @@ namespace xlnt {
 class cell_reference;
 class tokenizer;
 
-class XLNT_CLASS translator
+class XLNT_API translator
 {
     translator(const std::string &formula, const cell_reference &ref);
 

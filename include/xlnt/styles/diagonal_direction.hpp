@@ -32,7 +32,7 @@ namespace xlnt {
 /// or from the top-right to bottom-left, or both, or neither.
 /// Used by style->border.
 /// </summary>
-enum class XLNT_CLASS diagonal_direction
+enum class XLNT_API diagonal_direction
 {
     neither,
     up,

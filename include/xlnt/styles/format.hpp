@@ -45,7 +45,7 @@ struct stylesheet;
 /// <summary>
 /// Describes the formatting of a particular cell.
 /// </summary>
-class XLNT_CLASS format : public base_format
+class XLNT_API format : public base_format
 {
 public:
 	std::size_t id() const;

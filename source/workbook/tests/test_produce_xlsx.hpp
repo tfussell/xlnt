@@ -16,8 +16,6 @@ public:
 	{
         std::vector<std::uint8_t> buffer;
         wb.save(buffer);
-        
-        wb.save("a.xlsx");
 
         xlnt::zip_file wb_archive(buffer);
         xlnt::zip_file file_archive(file);
@@ -118,7 +116,9 @@ public:
 
 		ws.freeze_panes("B2");
 
-		wb.save("simple.xlsx");
+		std::vector<std::uint8_t> temp_buffer;
+		wb.save(temp_buffer);
+		TS_ASSERT(!temp_buffer.empty());
 	}
 
 	void test_save_after_sheet_deletion()
@@ -134,6 +134,8 @@ public:
 		workbook.remove_sheet(workbook.get_sheet_by_title("XXX1"));
 		TS_ASSERT_EQUALS(workbook.get_sheet_titles().size(), 1);
 
-		TS_ASSERT_THROWS_NOTHING(workbook.save("sample.xlsx"));
+		std::vector<std::uint8_t> temp_buffer;
+		TS_ASSERT_THROWS_NOTHING(workbook.save(temp_buffer));
+		TS_ASSERT(!temp_buffer.empty());
 	}
 };

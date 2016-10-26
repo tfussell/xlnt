@@ -27,7 +27,7 @@
 #include <string>
 #include <unordered_map>
 
-#include <xlnt/xlnt_config.hpp> // for XLNT_CLASS, XLNT_FUNCTION
+#include <xlnt/xlnt_config.hpp> // for XLNT_API, XLNT_API
 #include <xlnt/cell/cell_type.hpp> // for cell_type
 #include <xlnt/cell/index_types.hpp> // for column_t, row_t
 
@@ -73,7 +73,7 @@ struct cell_impl;
 /// and any other features of an Excel cell.Utilities for referencing
 /// cells using Excel's 'A1' column/row nomenclature are also provided.
 /// </remarks>
-class XLNT_CLASS cell
+class XLNT_API cell
 {
 public:
     using type = cell_type;
@@ -458,13 +458,13 @@ public:
     /// <summary>
     /// Return true if this cell is uninitialized.
     /// </summary>
-    friend XLNT_FUNCTION bool operator==(std::nullptr_t, const cell &cell);
+    friend XLNT_API bool operator==(std::nullptr_t, const cell &cell);
 
     /// <summary>
     /// Convenience function for writing cell to an ostream.
     /// Uses cell::to_string() internally.
     /// </summary>
-    friend XLNT_FUNCTION std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell);
+    friend XLNT_API std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell);
 
 private:
     // make these friends so they can use the private constructor

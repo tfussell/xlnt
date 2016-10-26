@@ -41,7 +41,7 @@ namespace xlnt {
 /// <summary>
 /// Information about a specific file in zip_file.
 /// </summary>
-struct XLNT_CLASS zip_info
+struct XLNT_API zip_info
 {
     /// <summary>
     /// A struct representing a particular date and time.
@@ -82,7 +82,7 @@ struct XLNT_CLASS zip_info
 /// A compressed archive file that exists in memory which can read
 /// or write to and from the filesystem, std::iostreams, and byte vectors.
 /// </summary>
-class XLNT_CLASS zip_file
+class XLNT_API zip_file
 {
 public:
     zip_file();

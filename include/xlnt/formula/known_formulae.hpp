@@ -27,7 +27,7 @@
 
 namespace xlnt {
 
-class XLNT_CLASS known_formulae
+class XLNT_API known_formulae
 {
 };
 

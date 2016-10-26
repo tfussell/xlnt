@@ -31,7 +31,7 @@ namespace xlnt {
 /// <summary>
 ///
 /// </summary>
-enum class XLNT_CLASS pane_state
+enum class XLNT_API pane_state
 {
     frozen,
     normal
@@ -40,7 +40,7 @@ enum class XLNT_CLASS pane_state
 /// <summary>
 ///
 /// </summary>
-enum class XLNT_CLASS pane_corner
+enum class XLNT_API pane_corner
 {
     top_left,
     top_right,
@@ -51,7 +51,7 @@ enum class XLNT_CLASS pane_corner
 /// <summary>
 /// A fixed portion of a worksheet.
 /// </summary>
-class XLNT_CLASS pane
+class XLNT_API pane
 {
 public:
     cell_reference top_left_cell;

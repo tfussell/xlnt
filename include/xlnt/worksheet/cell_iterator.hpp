@@ -38,7 +38,7 @@ class cell_reference;
 class range_reference;
 enum class major_order;
 
-class XLNT_CLASS cell_iterator : public std::iterator<std::bidirectional_iterator_tag, cell, std::ptrdiff_t, cell*, cell>
+class XLNT_API cell_iterator : public std::iterator<std::bidirectional_iterator_tag, cell, std::ptrdiff_t, cell*, cell>
 {
 public:
     cell_iterator(worksheet ws, const cell_reference &start_cell);

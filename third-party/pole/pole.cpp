@@ -44,31 +44,31 @@ namespace POLE
 
 using namespace POLE;
 
-static inline unsigned long readU16( const unsigned char* ptr )
+static inline std::uint16_t readU16( const std::uint8_t* ptr )
 {
     return ptr[0]+(ptr[1]<<8);
 }
 
-static inline unsigned long readU32( const unsigned char* ptr )
+static inline std::uint32_t readU32( const std::uint8_t* ptr )
 {
     return ptr[0]+(ptr[1]<<8)+(ptr[2]<<16)+(ptr[3]<<24);
 }
 
-static inline void writeU16( unsigned char* ptr, unsigned long data )
+static inline void writeU16( std::uint8_t* ptr, std::uint16_t data )
 {
-    ptr[0] = (unsigned char)(data & 0xff);
-    ptr[1] = (unsigned char)((data >> 8) & 0xff);
+    ptr[0] = (std::uint8_t)(data & 0xff);
+    ptr[1] = (std::uint8_t)((data >> 8) & 0xff);
 }
 
-static inline void writeU32( unsigned char* ptr, unsigned long data )
+static inline void writeU32( std::uint8_t* ptr, std::uint32_t data )
 {
-    ptr[0] = (unsigned char)(data & 0xff);
-    ptr[1] = (unsigned char)((data >> 8) & 0xff);
-    ptr[2] = (unsigned char)((data >> 16) & 0xff);
-    ptr[3] = (unsigned char)((data >> 24) & 0xff);
+    ptr[0] = (std::uint8_t)(data & 0xff);
+    ptr[1] = (std::uint8_t)((data >> 8) & 0xff);
+    ptr[2] = (std::uint8_t)((data >> 16) & 0xff);
+    ptr[3] = (std::uint8_t)((data >> 24) & 0xff);
 }
 
-static const unsigned char pole_magic[] =
+static const std::uint8_t pole_magic[] =
 { 0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1 };
 
 // =========== Header ==========
@@ -84,9 +84,9 @@ num_sbat( 0 ),
 mbat_start( 0 ),
 num_mbat( 0 )
 {
-    for( unsigned i = 0; i < 8; i++ )
+    for( std::size_t i = 0; i < 8; i++ )
         id[i] = pole_magic[i];
-    for( unsigned i=0; i<109; i++ )
+    for( std::size_t i=0; i<109; i++ )
         bb_blocks[i] = AllocTable::Avail;
 }
 
@@ -103,7 +103,7 @@ bool Header::valid()
     return true;
 }
 
-void Header::load( const unsigned char* buffer )
+void Header::load( const std::uint8_t* buffer )
 {
     b_shift      = readU16( buffer + 0x1e );
     s_shift      = readU16( buffer + 0x20 );
@@ -115,13 +115,13 @@ void Header::load( const unsigned char* buffer )
     mbat_start   = readU32( buffer + 0x44 );
     num_mbat     = readU32( buffer + 0x48 );
     
-    for( unsigned i = 0; i < 8; i++ )
+    for( std::size_t i = 0; i < 8; i++ )
         id[i] = buffer[i];
-    for( unsigned i=0; i<109; i++ )
+    for( std::size_t i=0; i<109; i++ )
         bb_blocks[i] = readU32( buffer + 0x4C+i*4 );
 }
 
-void Header::save( unsigned char* buffer )
+void Header::save( std::uint8_t* buffer )
 {
     memset( buffer, 0, 0x4c );
     memcpy( buffer, pole_magic, 8 );        // ole signature
@@ -141,7 +141,7 @@ void Header::save( unsigned char* buffer )
     writeU32( buffer + 0x44, mbat_start );
     writeU32( buffer + 0x48, num_mbat );
     
-    for( unsigned i=0; i<109; i++ )
+    for( std::size_t i=0; i<109; i++ )
         writeU32( buffer + 0x4C+i*4, bb_blocks[i] );
 }
 
@@ -158,19 +158,19 @@ void Header::debug()
     std::cout << "mbat_start " << mbat_start << std::endl;
     std::cout << "num_mbat " << num_mbat << std::endl;
     
-    unsigned s = (num_bat<=109) ? num_bat : 109;
+    std::size_t s = (num_bat<=109) ? num_bat : 109;
     std::cout << "bat blocks: ";
-    for( unsigned i = 0; i < s; i++ )
+    for( std::size_t i = 0; i < s; i++ )
         std::cout << bb_blocks[i] << " ";
     std::cout << std::endl;
 }
 
 // =========== AllocTable ==========
 
-const unsigned AllocTable::Avail = 0xffffffff;
-const unsigned AllocTable::Eof = 0xfffffffe;
-const unsigned AllocTable::Bat = 0xfffffffd;
-const unsigned AllocTable::MetaBat = 0xfffffffc;
+const std::uint32_t AllocTable::Avail = 0xffffffff;
+const std::uint32_t AllocTable::Eof = 0xfffffffe;
+const std::uint32_t AllocTable::Bat = 0xfffffffd;
+const std::uint32_t AllocTable::MetaBat = 0xfffffffc;
 
 AllocTable::AllocTable(): blockSize( 4096 ), data()
 {
@@ -178,74 +178,74 @@ AllocTable::AllocTable(): blockSize( 4096 ), data()
     resize( 128 );
 }
 
-unsigned long AllocTable::count()
+std::size_t AllocTable::count()
 {
     return data.size();
 }
 
-void AllocTable::resize( unsigned long newsize )
+void AllocTable::resize( std::size_t newsize )
 {
-    unsigned oldsize = data.size();
+    std::size_t oldsize = data.size();
     data.resize( newsize );
     if( newsize > oldsize )
-        for( unsigned i = oldsize; i<newsize; i++ )
+        for( std::size_t i = oldsize; i<newsize; i++ )
             data[i] = Avail;
 }
 
 // make sure there're still free blocks
-void AllocTable::preserve( unsigned long n )
+void AllocTable::preserve( std::size_t n )
 {
-    std::vector<unsigned long> pre;
-    for( unsigned i=0; i < n; i++ )
+    std::vector<std::size_t> pre;
+    for( std::size_t i=0; i < n; i++ )
         pre.push_back( unused() );
 }
 
-unsigned long AllocTable::operator[]( unsigned long index )
+std::size_t AllocTable::operator[]( std::size_t index )
 {
-    unsigned long result;
+    std::size_t result;
     result = data[index];
     return result;
 }
 
-void AllocTable::set( unsigned long index, unsigned long value )
+void AllocTable::set( std::size_t index, std::uint32_t value )
 {
     if( index >= count() ) resize( index + 1);
     data[ index ] = value;
 }
 
-void AllocTable::setChain( std::vector<unsigned long> chain )
+void AllocTable::setChain( std::vector<std::uint32_t> chain )
 {
     if( chain.size() )
     {
-        for( unsigned i=0; i<chain.size()-1; i++ )
+        for( std::size_t i=0; i<chain.size()-1; i++ )
             set( chain[i], chain[i+1] );
         set( chain[ chain.size()-1 ], AllocTable::Eof );
     }
 }
 
 // TODO: optimize this with better search
-static bool already_exist(const std::vector<unsigned long>& chain,
-                          unsigned long item)
+static bool already_exist(const std::vector<std::size_t>& chain,
+                          std::size_t item)
 {
-    for(unsigned i = 0; i < chain.size(); i++)
+    for(std::size_t i = 0; i < chain.size(); i++)
         if(chain[i] == item) return true;
     
     return false;
 }
 
 // follow
-std::vector<unsigned long> AllocTable::follow( unsigned long start )
+std::vector<std::size_t> AllocTable::follow( std::size_t start )
 {
-    std::vector<unsigned long> chain;
+    std::vector<std::size_t> chain;
     
     if( start >= count() ) return chain;
     
-    unsigned long p = start;
+    std::size_t p = start;
     while( p < count() )
     {
-        if( p == (unsigned long)Eof ) break;
-        if( p == (unsigned long)Bat ) break;
-        if( p == (unsigned long)MetaBat ) break;
+        if( p == (std::size_t)Eof ) break;
+        if( p == (std::size_t)Bat ) break;
+        if( p == (std::size_t)MetaBat ) break;
         if( already_exist(chain, p) ) break;
         chain.push_back(p);
         if( data[p] >= count() ) break;
@@ -255,42 +255,42 @@ std::vector<unsigned long> AllocTable::follow( unsigned long start )
     return chain;
 }
 
-unsigned AllocTable::unused()
+std::size_t AllocTable::unused()
 {
     // find first available block
-    for( unsigned i = 0; i < data.size(); i++ )
+    for( std::size_t i = 0; i < data.size(); i++ )
         if( data[i] == Avail )
             return i;
     
     // completely full, so enlarge the table
-    unsigned block = data.size();
+    std::size_t block = data.size();
     resize( data.size()+10 );
     return block;
 }
 
-void AllocTable::load( const unsigned char* buffer, unsigned len )
+void AllocTable::load( const std::uint8_t* buffer, std::size_t len )
 {
     resize( len / 4 );
-    for( unsigned i = 0; i < count(); i++ )
+    for( std::size_t i = 0; i < count(); i++ )
         set( i, readU32( buffer + i*4 ) );
 }
 
 // return space required to save this dirtree
-unsigned AllocTable::size()
+std::size_t AllocTable::size()
 {
     return count() * 4;
 }
 
-void AllocTable::save( unsigned char* buffer )
+void AllocTable::save( std::uint8_t* buffer )
 {
-    for( unsigned i = 0; i < count(); i++ )
+    for( std::size_t i = 0; i < count(); i++ )
         writeU32( buffer + i*4, data[i] );
 }
 
 void AllocTable::debug()
 {
     std::cout << "block size " << data.size() << std::endl;
-    for( unsigned i=0; i< data.size(); i++ )
+    for( std::size_t i=0; i< data.size(); i++ )
     {
         if( data[i] == Avail ) continue;
         std::cout << i << ": ";
@@ -304,7 +304,7 @@ void AllocTable::debug()
 
 // =========== DirTree ==========
 
-const unsigned DirTree::End = 0xffffffff;
+const std::uint32_t DirTree::End = 0xffffffff;
 
 DirTree::DirTree(): entries()
 {
@@ -325,33 +325,33 @@ void DirTree::clear()
     entries[0].child = End;
 }
 
-unsigned DirTree::entryCount()
+std::size_t DirTree::entryCount()
 {
     return entries.size();
 }
 
-DirEntry* DirTree::entry( unsigned index )
+DirEntry* DirTree::entry( std::size_t index )
 {
     if( index >= entryCount() ) return (DirEntry*) 0;
     return &entries[ index ];
 }
 
-int DirTree::indexOf( DirEntry* e )
+std::ptrdiff_t DirTree::indexOf( DirEntry* e )
 {
-    for( unsigned i = 0; i < entryCount(); i++ )
+    for( std::size_t i = 0; i < entryCount(); i++ )
         if( entry( i ) == e ) return i;
     
     return -1;
 }
 
-int DirTree::parent( unsigned index )
+std::ptrdiff_t DirTree::parent( std::size_t index )
 {
     // brute-force, basically we iterate for each entries, find its children
     // and check if one of the children is 'index'
-    for( unsigned j=0; j<entryCount(); j++ )
+    for( std::size_t j=0; j<entryCount(); j++ )
     {
-        std::vector<unsigned> chi = children( j );
-        for( unsigned i=0; i<chi.size();i++ )
+        std::vector<std::size_t> chi = children( j );
+        for( std::size_t i=0; i<chi.size();i++ )
             if( chi[i] == index )
                 return j;
     }
@@ -359,14 +359,14 @@ int DirTree::parent( unsigned index )
     return -1;
 }
 
-std::string DirTree::fullName( unsigned index )
+std::string DirTree::fullName( std::size_t index )
 {
     // don't use root name ("Root Entry"), just give "/"
     if( index == 0 ) return "/";
     
     std::string result = entry( index )->name;
     result.insert( 0,  "/" );
-    int p = parent( index );
+    auto p = parent( index );
     DirEntry * _entry = 0;
     while( p > 0 )
     {
@@ -407,7 +407,7 @@ DirEntry* DirTree::entry( const std::string& name, bool create )
     }
     
     // start from root
-    int index = 0 ;
+    std::size_t index = 0 ;
     
     // trace one by one
     std::list<std::string>::iterator it;
@@ -415,9 +415,9 @@ DirEntry* DirTree::entry( const std::string& name, bool create )
     for( it = names.begin(); it != names.end(); ++it )
     {
         // find among the children of index
-        std::vector<unsigned> chi = children( index );
-        unsigned child = 0;
-        for( unsigned i = 0; i < chi.size(); i++ )
+        std::vector<std::size_t> chi = children( index );
+        std::ptrdiff_t child = 0;
+        for( std::size_t i = 0; i < chi.size(); i++ )
         {
             DirEntry* ce = entry( chi[i] );
             if( ce )
@@ -434,7 +434,7 @@ DirEntry* DirTree::entry( const std::string& name, bool create )
             if( !create ) return (DirEntry*)0;
             
             // create a new entry
-            unsigned parent = index;
+            std::size_t parent = index;
             entries.push_back( DirEntry() );
             index = entryCount()-1;
             DirEntry* e = entry( index );
@@ -446,7 +446,7 @@ DirEntry* DirTree::entry( const std::string& name, bool create )
             e->child = End;
             e->prev = End;
             e->next = entry(parent)->child;
-            entry(parent)->child = index;
+            entry(parent)->child = static_cast<std::uint32_t>(index);
         }
     }
     
@@ -454,42 +454,42 @@ DirEntry* DirTree::entry( const std::string& name, bool create )
 }
 
 // helper function: recursively find siblings of index
-void dirtree_find_siblings( DirTree* dirtree, std::vector<unsigned>& result,
-                           unsigned index )
+void dirtree_find_siblings( DirTree* dirtree, std::vector<std::size_t>& result,
+                           std::size_t index )
 {
     DirEntry* e = dirtree->entry( index );
     if( !e ) return;
     if( !e->valid ) return;
     
     // prevent infinite loop
-    for( unsigned i = 0; i < result.size(); i++ )
+    for( std::size_t i = 0; i < result.size(); i++ )
         if( result[i] == index ) return;
     
     // add myself
     result.push_back( index );
     
     // visit previous sibling, don't go infinitely
-    unsigned prev = e->prev;
+    std::size_t prev = e->prev;
     if( ( prev > 0 ) && ( prev < dirtree->entryCount() ) )
     {
-        for( unsigned i = 0; i < result.size(); i++ )
+        for( std::size_t i = 0; i < result.size(); i++ )
             if( result[i] == prev ) prev = 0;
         if( prev ) dirtree_find_siblings( dirtree, result, prev );
     }
     
     // visit next sibling, don't go infinitely
-    unsigned next = e->next;
+    std::size_t next = e->next;
     if( ( next > 0 ) && ( next < dirtree->entryCount() ) )
     {
-        for( unsigned i = 0; i < result.size(); i++ )
+        for( std::size_t i = 0; i < result.size(); i++ )
             if( result[i] == next ) next = 0;
         if( next ) dirtree_find_siblings( dirtree, result, next );
     }
 }
 
-std::vector<unsigned> DirTree::children( unsigned index )
+std::vector<std::size_t> DirTree::children( std::size_t index )
 {
-    std::vector<unsigned> result;
+    std::vector<std::size_t> result;
     
     DirEntry* e = entry( index );
     if( e ) if( e->valid && e->child < entryCount() )
@@ -498,16 +498,16 @@ std::vector<unsigned> DirTree::children( unsigned index )
     return result;
 }
 
-void DirTree::load( unsigned char* buffer, unsigned size )
+void DirTree::load( std::uint8_t* buffer, std::size_t size )
 {
     entries.clear();
     
-    for( unsigned i = 0; i < size/128; i++ )
+    for( std::size_t i = 0; i < size/128; i++ )
     {
-        unsigned p = i * 128;
+        std::size_t p = i * 128;
         
         // would be < 32 if first char in the name isn't printable
-        unsigned prefix = 32;
+        std::size_t prefix = 32;
         
         // parse name of this entry, which stored as Unicode 16-bit
         std::string name;
@@ -524,7 +524,7 @@ void DirTree::load( unsigned char* buffer, unsigned size )
         }
         
         // 2 = file (aka stream), 1 = directory (aka storage), 5 = root
-        unsigned type = buffer[ 0x42 + p];
+        std::size_t type = buffer[ 0x42 + p];
         
         DirEntry e;
         e.valid = true;
@@ -545,21 +545,21 @@ void DirTree::load( unsigned char* buffer, unsigned size )
 }
 
 // return space required to save this dirtree
-unsigned DirTree::size()
+std::size_t DirTree::size()
 {
     return entryCount() * 128;
 }
 
-void DirTree::save( unsigned char* buffer )
+void DirTree::save( std::uint8_t* buffer )
 {
     memset( buffer, 0, size() );
     
     // root is fixed as "Root Entry"
     DirEntry* root = entry( 0 );
     std::string name = "Root Entry";
-    for( unsigned j = 0; j < name.length(); j++ )
+    for( std::size_t j = 0; j < name.length(); j++ )
         buffer[ j*2 ] = name[j];
-    writeU16( buffer + 0x40, name.length()*2 + 2 );
+    writeU16( buffer + 0x40, static_cast<std::uint16_t>(name.length()*2 + 2) );
     writeU32( buffer + 0x74, 0xffffffff );
     writeU32( buffer + 0x78, 0 );
     writeU32( buffer + 0x44, 0xffffffff );
@@ -568,7 +568,7 @@ void DirTree::save( unsigned char* buffer )
     buffer[ 0x42 ] = 5;
     buffer[ 0x43 ] = 1;
     
-    for( unsigned i = 1; i < entryCount(); i++ )
+    for( std::size_t i = 1; i < entryCount(); i++ )
     {
         DirEntry* e = entry( i );
         if( !e ) continue;
@@ -584,10 +584,10 @@ void DirTree::save( unsigned char* buffer )
             name.erase( 32, name.length() );
         
         // write name as Unicode 16-bit
-        for( unsigned j = 0; j < name.length(); j++ )
+        for( std::size_t j = 0; j < name.length(); j++ )
             buffer[ i*128 + j*2 ] = name[j];
         
-        writeU16( buffer + i*128 + 0x40, name.length()*2 + 2 );
+        writeU16( buffer + i*128 + 0x40, static_cast<std::uint16_t>(name.length()*2 + 2) );
         writeU32( buffer + i*128 + 0x74, e->start );
         writeU32( buffer + i*128 + 0x78, e->size );
         writeU32( buffer + i*128 + 0x44, e->prev );
@@ -600,7 +600,7 @@ void DirTree::save( unsigned char* buffer )
 
 void DirTree::debug()
 {
-    for( unsigned i = 0; i < entryCount(); i++ )
+    for( std::size_t i = 0; i < entryCount(); i++ )
     {
         DirEntry* e = entry( i );
         if( !e ) continue;
@@ -624,9 +624,9 @@ void DirTree::debug()
 
 // =========== StorageIO ==========
 
-StorageIO::StorageIO( Storage* st, char* bytes, unsigned long length ):
+StorageIO::StorageIO( Storage* st, char* bytes, std::size_t length ):
 storage( st ),
-filedata((unsigned char *)bytes),
+filedata((std::uint8_t *)bytes),
 dataLength(length),
 result( Storage::Ok ),
 opened( false ),
@@ -638,8 +638,8 @@ sbat ( new AllocTable() ),
 sb_blocks(),
 streams()
 {
-    bbat->blockSize = 1 << header->b_shift;
-    sbat->blockSize = 1 << header->s_shift;
+    bbat->blockSize = static_cast<std::size_t>(1) << header->b_shift;
+    sbat->blockSize = static_cast<std::size_t>(1) << header->s_shift;
 }
 
 StorageIO::~StorageIO()
@@ -663,9 +663,9 @@ bool StorageIO::open()
 
 void StorageIO::load()
 {
-    unsigned char* buffer = 0;
-    unsigned long buflen = 0;
-    std::vector<unsigned long> blocks;
+    std::uint8_t* buffer = 0;
+    std::size_t buflen = 0;
+    std::vector<std::size_t> blocks;
     
     // open the file, check for error
     result = Storage::OpenFailed;
@@ -678,7 +678,7 @@ void StorageIO::load()
     filesize = dataLength;
     
     // load header
-    buffer = new unsigned char[512];
+    buffer = new std::uint8_t[512];
     //FSTREAM file.seekg( 0 );
     //FSTREAM file.read( (char*)buffer, 512 );
     memcpy(buffer, filedata, 512);
@@ -687,7 +687,7 @@ void StorageIO::load()
     
     // check OLE magic id
     result = Storage::NotOLE;
-    for( unsigned i=0; i<8; i++ )
+    for( std::size_t i=0; i<8; i++ )
         if( header->id[i] != pole_magic[i] )
             return;
     
@@ -697,26 +697,26 @@ void StorageIO::load()
     if( header->threshold != 4096 ) return;
     
     // important block size
-    bbat->blockSize = 1 << header->b_shift;
-    sbat->blockSize = 1 << header->s_shift;
+    bbat->blockSize = static_cast<std::size_t>(1) << header->b_shift;
+    sbat->blockSize = static_cast<std::size_t>(1) << header->s_shift;
     
     // find blocks allocated to store big bat
     // the first 109 blocks are in header, the rest in meta bat
     blocks.clear();
     blocks.resize( header->num_bat );
-    for( unsigned i = 0; i < 109; i++ )
+    for( std::size_t i = 0; i < 109; i++ )
         if( i >= header->num_bat ) break;
         else blocks[i] = header->bb_blocks[i];
     if( (header->num_bat > 109) && (header->num_mbat > 0) )
     {
-        unsigned char* buffer2 = new unsigned char[ bbat->blockSize ];
+        std::uint8_t* buffer2 = new std::uint8_t[ bbat->blockSize ];
         memset(buffer2, 0, bbat->blockSize);
-        unsigned k = 109;
-        unsigned mblock = header->mbat_start;
-        for( unsigned r = 0; r < header->num_mbat; r++ )
+        std::size_t k = 109;
+        std::size_t mblock = header->mbat_start;
+        for( std::size_t r = 0; r < header->num_mbat; r++ )
         {
             loadBigBlock( mblock, buffer2, bbat->blockSize );
-            for( unsigned s=0; s < bbat->blockSize-4; s+=4 )
+            for( std::size_t s=0; s < bbat->blockSize-4; s+=4 )
             {
                 if( k >= header->num_bat ) break;
                 else  blocks[k++] = readU32( buffer2 + s );
@@ -730,7 +730,7 @@ void StorageIO::load()
     buflen = blocks.size()*bbat->blockSize;
     if( buflen > 0 )
     {
-        buffer = new unsigned char[ buflen ];
+        buffer = new std::uint8_t[ buflen ];
         memset(buffer, 0, buflen);
         loadBigBlocks( blocks, buffer, buflen );
         bbat->load( buffer, buflen );
@@ -743,7 +743,7 @@ void StorageIO::load()
     buflen = blocks.size()*bbat->blockSize;
     if( buflen > 0 )
     {
-        buffer = new unsigned char[ buflen ];
+        buffer = new std::uint8_t[ buflen ];
         memset(buffer, 0, buflen);
         loadBigBlocks( blocks, buffer, buflen );
         sbat->load( buffer, buflen );
@@ -754,11 +754,11 @@ void StorageIO::load()
     blocks.clear();
     blocks = bbat->follow( header->dirent_start );
     buflen = blocks.size()*bbat->blockSize;
-    buffer = new unsigned char[ buflen ];
+    buffer = new std::uint8_t[ buflen ];
     memset(buffer, 0, buflen);
     loadBigBlocks( blocks, buffer, buflen );
     dirtree->load( buffer, buflen );
-    unsigned sb_start = readU32( buffer + 0x74 );
+    std::size_t sb_start = readU32( buffer + 0x74 );
     delete[] buffer;
     
     // fetch block chain as data for small-files
@@ -833,8 +833,8 @@ StreamIO* StorageIO::streamIO( const std::string& name )
     return result;
 }
 
-unsigned long StorageIO::loadBigBlocks( std::vector<unsigned long> blocks,
-                                       unsigned char* data, unsigned long maxlen )
+std::size_t StorageIO::loadBigBlocks( std::vector<std::size_t> blocks,
+                                       std::uint8_t* data, std::size_t maxlen )
 {
     // sentinel
     if( !data ) return 0;
@@ -842,12 +842,12 @@ unsigned long StorageIO::loadBigBlocks( std::vector<unsigned long> blocks,
     if( maxlen == 0 ) return 0;
     
     // read block one by one, seems fast enough
-    unsigned long bytes = 0;
-    for( unsigned long i=0; (i < blocks.size() ) && ( bytes<maxlen ); i++ )
+    std::size_t bytes = 0;
+    for( std::size_t i=0; (i < blocks.size() ) && ( bytes<maxlen ); i++ )
     {
-        unsigned long block = blocks[i];
-        unsigned long pos =  bbat->blockSize * ( block+1 );
-        unsigned long p = (bbat->blockSize < maxlen-bytes) ? bbat->blockSize : maxlen-bytes;
+        std::size_t block = blocks[i];
+        std::size_t pos =  bbat->blockSize * ( block+1 );
+        std::size_t p = (bbat->blockSize < maxlen-bytes) ? bbat->blockSize : maxlen-bytes;
         if( pos + p > filesize ) p = filesize - pos;
         //FSTREAM file.seekg( pos );
         //FSTREAM file.read( (char*)data + bytes, p );
@@ -858,14 +858,14 @@ unsigned long StorageIO::loadBigBlocks( std::vector<unsigned long> blocks,
     return bytes;
 }
 
-unsigned long StorageIO::loadBigBlock( unsigned long block,
-                                      unsigned char* data, unsigned long maxlen )
+std::size_t StorageIO::loadBigBlock( std::size_t block,
+                                      std::uint8_t* data, std::size_t maxlen )
 {
     // sentinel
     if( !data ) return 0;
     
     // wraps call for loadBigBlocks
-    std::vector<unsigned long> blocks;
+    std::vector<std::size_t> blocks;
     blocks.resize( 1 );
     blocks[ 0 ] = block;
     
@@ -873,8 +873,8 @@ unsigned long StorageIO::loadBigBlock( unsigned long block,
 }
 
 // return number of bytes which has been read
-unsigned long StorageIO::loadSmallBlocks( std::vector<unsigned long> blocks,
-                                         unsigned char* data, unsigned long maxlen )
+std::size_t StorageIO::loadSmallBlocks( std::vector<std::size_t> blocks,
+                                         std::uint8_t* data, std::size_t maxlen )
 {
     // sentinel
     if( !data ) return 0;
@@ -882,24 +882,24 @@ unsigned long StorageIO::loadSmallBlocks( std::vector<unsigned long> blocks,
     if( maxlen == 0 ) return 0;
     
     // our own local buffer
-    unsigned char* buf = new unsigned char[ bbat->blockSize ];
+    std::uint8_t* buf = new std::uint8_t[ bbat->blockSize ];
     
     // read small block one by one
-    unsigned long bytes = 0;
-    for( unsigned long i=0; ( i<blocks.size() ) && ( bytes<maxlen ); i++ )
+    std::size_t bytes = 0;
+    for( std::size_t i=0; ( i<blocks.size() ) && ( bytes<maxlen ); i++ )
     {
-        unsigned long block = blocks[i];
+        std::size_t block = blocks[i];
         
         // find where the small-block exactly is
-        unsigned long pos = block * sbat->blockSize;
-        unsigned long bbindex = pos / bbat->blockSize;
+        std::size_t pos = block * sbat->blockSize;
+        std::size_t bbindex = pos / bbat->blockSize;
         if( bbindex >= sb_blocks.size() ) break;
         
         loadBigBlock( sb_blocks[ bbindex ], buf, bbat->blockSize );
         
         // copy the data
-        unsigned offset = pos % bbat->blockSize;
-        unsigned long p = (maxlen-bytes < bbat->blockSize-offset ) ? maxlen-bytes :  bbat->blockSize-offset;
+        std::size_t offset = pos % bbat->blockSize;
+        std::size_t p = (maxlen-bytes < bbat->blockSize-offset ) ? maxlen-bytes :  bbat->blockSize-offset;
         p = (sbat->blockSize<p ) ? sbat->blockSize : p;
         memcpy( data + bytes, buf + offset, p );
         bytes += p;
@@ -910,14 +910,14 @@ unsigned long StorageIO::loadSmallBlocks( std::vector<unsigned long> blocks,
     return bytes;
 }
 
-unsigned long StorageIO::loadSmallBlock( unsigned long block,
-                                        unsigned char* data, unsigned long maxlen )
+std::size_t StorageIO::loadSmallBlock( std::size_t block,
+                                        std::uint8_t* data, std::size_t maxlen )
 {
     // sentinel
     if( !data ) return 0;
     
     // wraps call for loadSmallBlocks
-    std::vector<unsigned long> blocks;
+    std::vector<std::size_t> blocks;
     blocks.resize( 1 );
     blocks.assign( 1, block );
     
@@ -944,7 +944,7 @@ cache_pos( 0 )
         blocks = io->sbat->follow( entry->start );
     
     // prepare cache
-    cache_data = new unsigned char[cache_size];
+    cache_data = new std::uint8_t[cache_size];
     updateCache();
 }
 
@@ -954,12 +954,12 @@ StreamIO::~StreamIO()
     delete[] cache_data;
 }
 
-void StreamIO::seek( unsigned long pos )
+void StreamIO::seek( std::size_t pos )
 {
     m_pos = pos;
 }
 
-unsigned long StreamIO::tell()
+std::size_t StreamIO::tell()
 {
     return m_pos;
 }
@@ -983,28 +983,28 @@ int StreamIO::getch()
     return data;
 }
 
-unsigned long StreamIO::read( unsigned long pos, unsigned char* data, unsigned long maxlen )
+std::size_t StreamIO::read( std::size_t pos, std::uint8_t* data, std::size_t maxlen )
 {
     // sanity checks
     if( !data ) return 0;
     if( maxlen == 0 ) return 0;
     
-    unsigned long totalbytes = 0;
+    std::size_t totalbytes = 0;
     
     if ( entry->size < io->header->threshold )
     {
         // small file
-        unsigned long index = pos / io->sbat->blockSize;
+        std::size_t index = pos / io->sbat->blockSize;
         
         if( index >= blocks.size() ) return 0;
         
-        unsigned char* buf = new unsigned char[ io->sbat->blockSize ];
-        unsigned long offset = pos % io->sbat->blockSize;
+        std::uint8_t* buf = new std::uint8_t[ io->sbat->blockSize ];
+        std::size_t offset = pos % io->sbat->blockSize;
         while( totalbytes < maxlen )
         {
             if( index >= blocks.size() ) break;
             io->loadSmallBlock( blocks[index], buf, io->bbat->blockSize );
-            unsigned long count = io->sbat->blockSize - offset;
+            std::size_t count = io->sbat->blockSize - offset;
             if( count > maxlen-totalbytes ) count = maxlen-totalbytes;
             memcpy( data+totalbytes, buf + offset, count );
             totalbytes += count;
@@ -1017,17 +1017,17 @@ unsigned long StreamIO::read( unsigned long pos, unsigned char* data, unsigned l
     else
     {
         // big file
-        unsigned long index = pos / io->bbat->blockSize;
+        std::size_t index = pos / io->bbat->blockSize;
         
         if( index >= blocks.size() ) return 0;
         
-        unsigned char* buf = new unsigned char[ io->bbat->blockSize ];
-        unsigned long offset = pos % io->bbat->blockSize;
+        std::uint8_t* buf = new std::uint8_t[ io->bbat->blockSize ];
+        std::size_t offset = pos % io->bbat->blockSize;
         while( totalbytes < maxlen )
         {
             if( index >= blocks.size() ) break;
             io->loadBigBlock( blocks[index], buf, io->bbat->blockSize );
-            unsigned long count = io->bbat->blockSize - offset;
+            std::size_t count = io->bbat->blockSize - offset;
             if( count > maxlen-totalbytes ) count = maxlen-totalbytes;
             memcpy( data+totalbytes, buf + offset, count );
             totalbytes += count;
@@ -1041,9 +1041,9 @@ unsigned long StreamIO::read( unsigned long pos, unsigned char* data, unsigned l
     return totalbytes;
 }
 
-unsigned long StreamIO::read( unsigned char* data, unsigned long maxlen )
+std::size_t StreamIO::read( std::uint8_t* data, std::size_t maxlen )
 {
-    unsigned long bytes = read( tell(), data, maxlen );
+    std::size_t bytes = read( tell(), data, maxlen );
     m_pos += bytes;
     return bytes;
 }
@@ -1054,7 +1054,7 @@ void StreamIO::updateCache()
     if( !cache_data ) return;
     
     cache_pos = m_pos - ( m_pos % cache_size );
-    unsigned long bytes = cache_size;
+    std::size_t bytes = cache_size;
     if( cache_pos + bytes > entry->size ) bytes = entry->size - cache_pos;
     cache_size = read( cache_pos, cache_data, bytes );
 }
@@ -1062,7 +1062,7 @@ void StreamIO::updateCache()
 
 // =========== Storage ==========
 
-Storage::Storage( char* bytes, unsigned long length ):
+Storage::Storage( char* bytes, std::size_t length ):
 io( new StorageIO( this, bytes, length ) )
 {
 }
@@ -1094,9 +1094,9 @@ std::list<std::string> Storage::entries( const std::string& path )
     DirEntry* e = dt->entry( path, false );
     if( e  && e->dir )
     {
-        unsigned parent = dt->indexOf( e );
-        std::vector<unsigned> children = dt->children( parent );
-        for( unsigned i = 0; i < children.size(); i++ )
+        std::size_t parent = dt->indexOf( e );
+        std::vector<std::size_t> children = dt->children( parent );
+        for( std::size_t i = 0; i < children.size(); i++ )
             result.push_back( dt->entry( children[i] )->name );
     }
     
@@ -1127,9 +1127,9 @@ std::list<DirEntry*> Storage::dirEntries( const std::string& path )
     DirEntry* e = dt->entry( path, false );
     if( e  && e->dir )
     {
-        unsigned parent = dt->indexOf( e );
-        std::vector<unsigned> children = dt->children( parent );
-        for( unsigned i = 0; i < children.size(); i++ )
+        std::size_t parent = dt->indexOf( e );
+        std::vector<std::size_t> children = dt->children( parent );
+        for( std::size_t i = 0; i < children.size(); i++ )
             result.push_back( dt->entry( children[i] ) );
     }
     
@@ -1154,17 +1154,17 @@ std::string Stream::fullName()
     return io ? io->fullName : std::string();
 }
 
-unsigned long Stream::tell()
+std::size_t Stream::tell()
 {
     return io ? io->tell() : 0;
 }
 
-void Stream::seek( unsigned long newpos )
+void Stream::seek( std::size_t newpos )
 {
     if( io ) io->seek( newpos );
 }
 
-unsigned long Stream::size()
+std::size_t Stream::size()
 {
     return io ? io->entry->size : 0;
 }
@@ -1174,7 +1174,7 @@ int Stream::getch()
     return io ? io->getch() : 0;
 }
 
-unsigned long Stream::read( unsigned char* data, unsigned long maxlen )
+std::size_t Stream::read( std::uint8_t* data, std::size_t maxlen )
 {
     return io ? io->read( data, maxlen ) : 0;
 }

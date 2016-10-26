@@ -9,7 +9,7 @@ int main()
     ws.get_cell("C3").set_formula("=RAND()");
     ws.merge_cells("C3:C4");
     ws.freeze_panes("B2");
-    wb.save("book1.xlsx");
+    wb.save("data/sample.xlsx");
 
     return 0;
 }
