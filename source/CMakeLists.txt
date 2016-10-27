@@ -1,15 +1,21 @@
-if(STATIC)
-	set(PROJECT_NAME xlnt.static)
-else()
-	set(PROJECT_NAME xlnt.shared)
-endif()
+cmake_minimum_required(VERSION 3.1)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/common.cmake)
+project(${LIBRARY_NAME} VERSION ${LIBRARY_VERSION} LANGUAGES CXX C)
 
-project(${PROJECT_NAME})
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../third-party ${CMAKE_CURRENT_BINARY_DIR}/third-party)
+
+if(APPLE)
+    option(FRAMEWORK "Set to ON to package dylib and headers into a .framework, OSX only" OFF)
+endif()
 
 set(PROJECT_VENDOR "Thomas Fussell")
 set(PROJECT_CONTACT "thomas.fussell@gmail.com")
 set(PROJECT_URL "https://github.com/tfussell/xlnt")
 set(PROJECT_DESCRIPTION "cross-platform user-friendly xlsx library for C++14")
+
+set(XLNT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+set(XLNT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../third-party)
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/installed" CACHE PATH "default install path" FORCE)
@@ -27,100 +33,98 @@ if(NOT BIN_DEST_DIR)
     set(BIN_DEST_DIR ${CMAKE_INSTALL_PREFIX}/bin)
 endif()
 
-include_directories(${XLNT_INCLUDE_DIR})
-include_directories(${XLNT_INCLUDE_DIR}/xlnt)
-include_directories(${XLNT_SOURCE_DIR})
-include_directories(${XLNT_SOURCE_DIR}/detail)
-include_directories(${THIRD_PARTY_DIR}/miniz)
-include_directories(${THIRD_PARTY_DIR}/libstudxml)
-include_directories(${THIRD_PARTY_DIR}/utfcpp/source)
-include_directories(${THIRD_PARTY_DIR}/pole)
-include_directories(${THIRD_PARTY_DIR}/botan)
+
+# Put all output files in the same directory
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
+    string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/lib)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/lib)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/bin)
+endforeach()
+
+# Platform specific settings
+if(COVERAGE)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
+endif()
+
+if(APPLE)
+    # Prevent a warning about deployment target not being set
+    execute_process(COMMAND "sw_vers -productVersion | awk -F'.' '{print $1\".\"$2}'"
+                    OUTPUT_VARIABLE OSX_VERSION)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET ${OSX_VERSION})
+endif()
+
+# Includes
+include_directories(${XLNT_INCLUDE_DIR}
+    ${XLNT_INCLUDE_DIR}/xlnt
+    ${XLNT_SOURCE_DIR}
+    ${XLNT_SOURCE_DIR}/detail
+    ${THIRD_PARTY_DIR}/miniz
+    ${THIRD_PARTY_DIR}/libstudxml
+    ${THIRD_PARTY_DIR}/utfcpp/source
+    ${THIRD_PARTY_DIR}/pole
+    ${THIRD_PARTY_DIR}/botan)
 
 file(GLOB ROOT_HEADERS ${XLNT_INCLUDE_DIR}/xlnt/*.hpp)
 file(GLOB CELL_HEADERS ${XLNT_INCLUDE_DIR}/xlnt/cell/*.hpp)
+file(GLOB CELL_SOURCES ${XLNT_SOURCE_DIR}/cell/*.cpp)
 file(GLOB CHARTS_HEADERS ${XLNT_INCLUDE_DIR}/xlnt/charts/*.hpp)
+file(GLOB CHARTS_SOURCES ${XLNT_SOURCE_DIR}/charts/*.cpp)
 file(GLOB CHARTSHEET_HEADERS ${XLNT_INCLUDE_DIR}/xlnt/chartsheet/*.hpp)
+file(GLOB CHARTSHEET_SOURCES ${XLNT_SOURCE_DIR}/chartsheet/*.cpp)
 file(GLOB DRAWING_HEADERS ${XLNT_INCLUDE_DIR}/xlnt/drawing/*.hpp)
+file(GLOB DRAWING_SOURCES ${XLNT_SOURCE_DIR}/drawing/*.cpp)
 file(GLOB FORMULA_HEADERS ${XLNT_INCLUDE_DIR}/xlnt/formula/*.hpp)
+file(GLOB FORMULA_SOURCES ${XLNT_SOURCE_DIR}/formula/*.cpp)
 file(GLOB PACKAGING_HEADERS ${XLNT_INCLUDE_DIR}/xlnt/packaging/*.hpp)
+file(GLOB PACKAGING_SOURCES ${XLNT_SOURCE_DIR}/packaging/*.cpp)
 file(GLOB STYLES_HEADERS ${XLNT_INCLUDE_DIR}/xlnt/styles/*.hpp)
+file(GLOB STYLES_SOURCES ${XLNT_SOURCE_DIR}/styles/*.cpp)
 file(GLOB UTILS_HEADERS ${XLNT_INCLUDE_DIR}/xlnt/utils/*.hpp)
+file(GLOB UTILS_SOURCES ${XLNT_SOURCE_DIR}/utils/*.cpp)
 file(GLOB WORKBOOK_HEADERS ${XLNT_INCLUDE_DIR}/xlnt/workbook/*.hpp)
+file(GLOB WORKBOOK_SOURCES ${XLNT_SOURCE_DIR}/workbook/*.cpp)
 file(GLOB WORKSHEET_HEADERS ${XLNT_INCLUDE_DIR}/xlnt/worksheet/*.hpp)
+file(GLOB WORKSHEET_SOURCES ${XLNT_SOURCE_DIR}/worksheet/*.cpp)
 file(GLOB DETAIL_HEADERS ${XLNT_INCLUDE_DIR}/detail/*.hpp)
+file(GLOB DETAIL_SOURCES ${XLNT_SOURCE_DIR}/detail/*.cpp)
 
-set(HEADERS ${ROOT_HEADERS} ${CELL_HEADERS} ${CHARTS_HEADERS} 
+set(XLNT_HEADERS ${ROOT_HEADERS} ${CELL_HEADERS} ${CHARTS_HEADERS} 
     ${CHARTSHEET_HEADERS} ${DRAWING_HEADERS} ${FORMULA_HEADERS}
 	${PACKAGING_HEADERS} ${STYLES_HEADERS} ${UTILS_HEADERS} 
 	${WORKBOOK_HEADERS} ${WORKSHEET_HEADERS} ${DETAIL_HEADERS})
-
-file(GLOB CELL_SOURCES ${XLNT_SOURCE_DIR}/cell/*.cpp)
-file(GLOB CHARTS_SOURCES ${XLNT_SOURCE_DIR}/charts/*.cpp)
-file(GLOB CHARTSHEET_SOURCES ${XLNT_SOURCE_DIR}/chartsheet/*.cpp)
-file(GLOB DRAWING_SOURCES ${XLNT_SOURCE_DIR}/drawing/*.cpp)
-file(GLOB FORMULA_SOURCES ${XLNT_SOURCE_DIR}/formula/*.cpp)
-file(GLOB PACKAGING_SOURCES ${XLNT_SOURCE_DIR}/packaging/*.cpp)
-file(GLOB STYLES_SOURCES ${XLNT_SOURCE_DIR}/styles/*.cpp)
-file(GLOB UTILS_SOURCES ${XLNT_SOURCE_DIR}/utils/*.cpp)
-file(GLOB WORKBOOK_SOURCES ${XLNT_SOURCE_DIR}/workbook/*.cpp)
-file(GLOB WORKSHEET_SOURCES ${XLNT_SOURCE_DIR}/worksheet/*.cpp)
-file(GLOB DETAIL_SOURCES ${XLNT_SOURCE_DIR}/detail/*.cpp)
-
-set(SOURCES ${CELL_SOURCES} ${CHARTS_SOURCES} ${CHARTSHEET_SOURCES} 
+set(XLNT_SOURCES ${CELL_SOURCES} ${CHARTS_SOURCES} ${CHARTSHEET_SOURCES} 
     ${DRAWING_SOURCES} ${FORMULA_SOURCES} ${PACKAGING_SOURCES} 
 	${STYLES_SOURCES} ${UTILS_SOURCES} ${WORKBOOK_SOURCES} 
 	${WORKSHEET_SOURCES} ${DETAIL_SOURCES})
 
-set(MINIZ ../third-party/miniz/miniz.c ../third-party/miniz/miniz.h)
-set(LIBSTUDXML ../third-party/libstudxml/xml/parser.cxx ../third-party/libstudxml/xml/qname.cxx 
-    ../third-party/libstudxml/xml/serializer.cxx ../third-party/libstudxml/xml/value-traits.cxx 
-	../third-party/libstudxml/xml/details/expat/xmlparse.c ../third-party/libstudxml/xml/details/expat/xmlrole.c 
-	../third-party/libstudxml/xml/details/expat/xmltok_impl.c ../third-party/libstudxml/xml/details/expat/xmltok_ns.c 
-	../third-party/libstudxml/xml/details/expat/xmltok.c ../third-party/libstudxml/xml/details/genx/char-props.c 
-	../third-party/libstudxml/xml/details/genx/genx.c)
-set(POLE ${THIRD_PARTY_DIR}/pole/pole.cpp)
-set(BOTAN ${THIRD_PARTY_DIR}/botan/botan_all.cpp)
-
-if(MSVC)
-    set_source_files_properties(${BOTAN} PROPERTIES COMPILE_FLAGS "/wd\"4244\"")
-endif()
-
-if (CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(CPU "x64")
-else()
-    set(CPU "x86")
-endif()
-
-add_custom_command(OUTPUT ${BOTAN}
-    COMMAND python configure.py --minimized-build --enable-modules=sha1,aes,filters,codec_filt,cbc,ecb,sha2_32,sha2_64 --disable-shared --amalgamation --cpu=${CPU}
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/third-party/botan
-    COMMENT "Generating botan amalgamation ${BOTAN}")
-
-if(SHARED)
-    add_library(xlnt.shared SHARED ${HEADERS} ${SOURCES} ${MINIZ} ${LIBSTUDXML} ${POLE} ${BOTAN})
-    target_compile_definitions(xlnt.shared PRIVATE XLNT_SHARED=1 LIBSTUDXML_STATIC_LIB=1)
+if(NOT STATIC)
+    add_library(xlnt SHARED ${XLNT_HEADERS} ${XLNT_SOURCES} $<TARGET_OBJECTS:xlnt.third-party>)
+    target_compile_definitions(xlnt PRIVATE XLNT_SHARED=1)
 
     if(MSVC)
-        target_compile_definitions(xlnt.shared PRIVATE XLNT_EXPORT=1 _CRT_SECURE_NO_WARNINGS=1 NOMINMAX)
-        set_target_properties(xlnt.shared PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\" /MP")
+        target_compile_definitions(xlnt PRIVATE XLNT_EXPORT=1 _CRT_SECURE_NO_WARNINGS=1)
+        set_target_properties(xlnt PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\" /MP")
     endif()
 
-    install(TARGETS xlnt.shared
+    install(TARGETS xlnt
         LIBRARY DESTINATION ${LIB_DEST_DIR}
         ARCHIVE DESTINATION ${LIB_DEST_DIR}
         RUNTIME DESTINATION ${BIN_DEST_DIR})
     set_target_properties(
-        xlnt.shared
+        xlnt
         PROPERTIES
-        OUTPUT_NAME xlnt
-        VERSION ${PROJECT_VERSION_FULL}
-        SOVERSION ${PROJECT_VERSION}
+        VERSION ${PROJECT_VERSION}
+        SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
         INSTALL_NAME_DIR "${LIB_DEST_DIR}")
 
     if(FRAMEWORK)
         add_custom_command(
-            TARGET xlnt.shared
+            TARGET xlnt
             POST_BUILD
             COMMAND mkdir -p "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.framework/Versions/${PROJECT_VERSION_FULL}/Headers"
             COMMAND cp -R ../include/xlnt/* "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.framework/Versions/${PROJECT_VERSION_FULL}/Headers"
@@ -129,26 +133,20 @@ if(SHARED)
             COMMAND cd "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.framework" && ln -s Versions/Current/* ./
         )
     endif()
-endif()
-
-if(STATIC)
-    add_library(xlnt.static STATIC ${HEADERS} ${SOURCES} ${MINIZ} ${LIBSTUDXML} ${POLE} ${BOTAN})
-    target_compile_definitions(xlnt.static PUBLIC XLNT_STATIC=1)
-    target_compile_definitions(xlnt.static PRIVATE LIBSTUDXML_STATIC_LIB=1)
+else()
+    add_library(xlnt STATIC ${XLNT_HEADERS} ${XLNT_SOURCES} $<TARGET_OBJECTS:xlnt.third-party>)
+    target_compile_definitions(xlnt PUBLIC XLNT_STATIC=1)
 
     if(MSVC)
-        target_compile_definitions(xlnt.static PRIVATE _CRT_SECURE_NO_WARNINGS=1 NOMINMAX)
-		set_target_properties(xlnt.static PROPERTIES COMPILE_FLAGS "/MP")
+        target_compile_definitions(xlnt PRIVATE _CRT_SECURE_NO_WARNINGS=1 NOMINMAX)
+		set_target_properties(xlnt PROPERTIES COMPILE_FLAGS "/MP")
     endif()
 
-    install(TARGETS xlnt.static
+    install(TARGETS xlnt
         LIBRARY DESTINATION ${LIB_DEST_DIR}
         ARCHIVE DESTINATION ${LIB_DEST_DIR}
         RUNTIME DESTINATION ${BIN_DEST_DIR}
     )
-    set_target_properties(xlnt.static
-        PROPERTIES
-        OUTPUT_NAME xlnt)
 endif()
 
 source_group(xlnt FILES ${ROOT_HEADERS})
@@ -164,8 +162,6 @@ source_group(styles FILES ${STYLES_HEADERS} ${STYLES_SOURCES})
 source_group(utils FILES ${UTILS_HEADERS} ${UTILS_SOURCES})
 source_group(workbook FILES ${WORKBOOK_HEADERS} ${WORKBOOK_SOURCES})
 source_group(worksheet FILES ${WORKSHEET_HEADERS} ${WORKSHEET_SOURCES})
-source_group(third-party\\miniz FILES ${MINIZ})
-source_group(third-party\\libstudxml FILES ${LIBSTUDXML})
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
@@ -175,11 +171,11 @@ set(PKG_CONFIG_LIBS "-L\${libdir} -lxlnt")
 set(PKG_CONFIG_CFLAGS "-I\${includedir}")
 
 configure_file(
-    "${CMAKE_SOURCE_DIR}/cmake/pkg-config.pc.cmake"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/pkg-config.pc.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc")
 
 configure_file(
-    "${CMAKE_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/cmake_uninstall.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
     IMMEDIATE @ONLY)
 
