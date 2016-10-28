@@ -10,20 +10,20 @@ include_directories(miniz
     ${LIBRARY_SOURCE_DIR}/detail)
 
 set(MINIZ
-    ../third-party/miniz/miniz.c
-    ../third-party/miniz/miniz.h)
+    ${CMAKE_CURRENT_SOURCE_DIR}/miniz/miniz.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/miniz/miniz.h)
 set(LIBSTUDXML 
-    ../third-party/libstudxml/xml/parser.cxx
-    ../third-party/libstudxml/xml/qname.cxx 
-    ../third-party/libstudxml/xml/serializer.cxx
-    ../third-party/libstudxml/xml/value-traits.cxx 
-    ../third-party/libstudxml/xml/details/expat/xmlparse.c
-    ../third-party/libstudxml/xml/details/expat/xmlrole.c 
-    ../third-party/libstudxml/xml/details/expat/xmltok_impl.c
-    ../third-party/libstudxml/xml/details/expat/xmltok_ns.c 
-    ../third-party/libstudxml/xml/details/expat/xmltok.c
-    ../third-party/libstudxml/xml/details/genx/char-props.c 
-    ../third-party/libstudxml/xml/details/genx/genx.c)
+    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/parser.cxx
+    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/qname.cxx 
+    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/serializer.cxx
+    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/value-traits.cxx 
+    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/expat/xmlparse.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/expat/xmlrole.c 
+    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/expat/xmltok_impl.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/expat/xmltok_ns.c 
+    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/expat/xmltok.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/genx/char-props.c 
+    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/genx/genx.c)
 set(POLE pole/pole.cpp)
 set(BOTAN ${CMAKE_CURRENT_SOURCE_DIR}/botan/botan_all.cpp)
 

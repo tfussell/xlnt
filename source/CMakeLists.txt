@@ -149,6 +149,8 @@ else()
     )
 endif()
 
+target_compile_definitions(${PROJECT_NAME} PRIVATE LIBSTUDXML_STATIC_LIB=1)
+
 source_group(xlnt FILES ${ROOT_HEADERS})
 source_group(detail FILES ${DETAIL_HEADERS} ${DETAIL_SOURCES})
 source_group(cell FILES ${CELL_HEADERS} ${CELL_SOURCES})
