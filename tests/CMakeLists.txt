@@ -38,7 +38,7 @@ file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/tests")
 set(RUNNER "${CMAKE_CURRENT_BINARY_DIR}/runner-autogen.cpp")
 set_source_files_properties(${RUNNER} PROPERTIES GENERATED TRUE)
 
-add_executable(xlnt.test ${TEST_HELPERS} ${TESTS} ${RUNNER} ${PUGIXML})
+add_executable(${PROJECT_NAME} ${TEST_HELPERS} ${TESTS} ${RUNNER} ${PUGIXML})
 
 source_group(helpers FILES ${TEST_HELPERS})
 source_group(tests\\cell FILES ${CELL_TESTS})
@@ -60,6 +60,10 @@ if(MSVC)
     set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\"")
     # Needed for PathFileExists in path_helper
     target_link_libraries(${PROJECT_NAME} Shlwapi)
+else()
+    set(THREADS_PREFER_PTHREAD_FLAG ON)
+    find_package(Threads REQUIRED)
+    target_link_libraries(${PROJECT_NAME} Threads::Threads)
 endif()
 
 add_custom_command(OUTPUT ${RUNNER}
@@ -68,6 +72,6 @@ add_custom_command(OUTPUT ${RUNNER}
     COMMENT "Generating test runner ${RUNNER}")
 
 add_custom_target(generate-test-runner DEPENDS ${RUNNER})
-add_dependencies(xlnt.test generate-test-runner)
+add_dependencies(${PROJECT_NAME} generate-test-runner)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION ${CMAKE_BINARY_DIR}/bin)

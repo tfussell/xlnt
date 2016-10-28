@@ -38,7 +38,7 @@ else()
 endif()
 
 add_custom_command(OUTPUT ${BOTAN}
-    COMMAND python configure.py --minimized-build --enable-modules=sha1,aes,filters,codec_filt,cbc,ecb,sha2_32,sha2_64 --disable-shared --amalgamation --cpu=${CPU}
+    COMMAND python configure.py --minimized-build --enable-modules=sha1,aes,filters,codec_filt,cbc,ecb,sha2_32,sha2_64 --without-sphinx --disable-shared --amalgamation --cpu=${CPU}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/botan
     COMMENT "Generating botan amalgamation ${BOTAN}")
 
