@@ -13,13 +13,10 @@ init: []
 install: []
 before_build:
 - git submodule update --init --recursive
-- mkdir build
-- cd build
-- cmake -G "Visual Studio 14 2015 Win64" -D STATIC=%STATIC% ..
-- ls source
+- cmake -H. -Bbuild -G"Visual Studio 14 2015 Win64" -DSTATIC=%STATIC%
 
 build:
-  project: build\xlnt_all.sln
+  project: build/xlnt_all.sln
   parallel: true
   verbosity: minimal
 
