@@ -16,12 +16,13 @@ before_build:
 - mkdir build
 - cd build
 - cmake -G "Visual Studio 14 2015 Win64" -D STATIC=%STATIC% ..
+- ls .
 
 build:
-  project: build\xlnt.sln
+  project: xlnt.sln
   parallel: true
   verbosity: minimal
 
 test_script:
-- cd build\bin
+- cd bin
 - xlnt.test.exe
