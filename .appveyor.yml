@@ -19,10 +19,10 @@ before_build:
 - ls .
 
 build:
-  project: xlnt_all.sln
+  project: build/xlnt_all.sln
   parallel: true
   verbosity: minimal
 
 test_script:
-- cd bin
+- cd build/bin
 - xlnt.test.exe
