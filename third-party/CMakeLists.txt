@@ -45,6 +45,11 @@ add_custom_command(OUTPUT ${BOTAN}
 add_library(xlnt.third-party OBJECT ${MINIZ} ${LIBSTUDXML} ${POLE} ${BOTAN})
 target_compile_definitions(xlnt.third-party PRIVATE LIBSTUDXML_STATIC_LIB=1)
 
+if(NOT STATIC)
+    set_target_properties(xlnt.third-party
+        PROPERTIES POSITION_INDEPENDENT_CODE 1)
+endif()
+
 if(MSVC)
     target_compile_definitions(xlnt.third-party PRIVATE _CRT_SECURE_NO_WARNINGS=1 NOMINMAX)
     set_target_properties(xlnt.third-party PROPERTIES COMPILE_FLAGS "/MP")
