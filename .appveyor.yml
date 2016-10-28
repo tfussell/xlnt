@@ -19,7 +19,7 @@ before_build:
 - ls .
 
 build:
-  project: xlnt.sln
+  project: xlnt_all.sln
   parallel: true
   verbosity: minimal
 
