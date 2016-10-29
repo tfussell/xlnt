@@ -28,7 +28,7 @@
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/cell/comment.hpp>
-#include <xlnt/cell/text.hpp>
+#include <xlnt/cell/formatted_text.hpp>
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/styles/color.hpp>
 #include <xlnt/styles/format.hpp>
@@ -44,8 +44,6 @@
 #include <xlnt/worksheet/worksheet.hpp>
 
 #include <detail/cell_impl.hpp>
-#include <detail/comment_impl.hpp>
-
 
 namespace {
 
@@ -316,13 +314,13 @@ XLNT_API void cell::set_value(std::string s)
 	}
 	else
 	{
-		d_->type_ = type::string;
-        d_->value_text_.set_plain_string(s);
+	    d_->type_ = type::string;
+	    d_->value_text_.plain_text(s);
         
-        if (s.size() > 0)
-        {
-            get_workbook().add_shared_string(d_->value_text_);
-        }
+	    if (s.size() > 0)
+	    {
+		get_workbook().add_shared_string(d_->value_text_);
+	    }
 	}
 
 	if (get_workbook().get_guess_types())
@@ -332,17 +330,17 @@ XLNT_API void cell::set_value(std::string s)
 }
 
 template <>
-XLNT_API void cell::set_value(text t)
+XLNT_API void cell::set_value(formatted_text text)
 {
-    if (t.get_runs().size() == 1 && !t.get_runs().front().has_formatting())
+    if (text.runs().size() == 1 && !text.runs().front().has_formatting())
     {
-        set_value(t.get_plain_string());
+        set_value(text.plain_text());
     }
     else
     {
         d_->type_ = type::string;
-        d_->value_text_ = t;
-        get_workbook().add_shared_string(t);
+        d_->value_text_ = text;
+        get_workbook().add_shared_string(text);
     }
 }
 
@@ -518,7 +516,7 @@ void cell::set_error(const std::string &error)
         throw invalid_data_type();
     }
 
-    d_->value_text_.set_plain_string(error);
+    d_->value_text_.plain_text(error);
     d_->type_ = type::error;
 }
 
@@ -804,11 +802,11 @@ void cell::set_protection(const xlnt::protection &protection_)
 template <>
 XLNT_API std::string cell::get_value() const
 {
-    return d_->value_text_.get_plain_string();
+    return d_->value_text_.plain_text();
 }
 
 template <>
-XLNT_API text cell::get_value() const
+XLNT_API formatted_text cell::get_value() const
 {
     return d_->value_text_;
 }
@@ -1024,6 +1022,33 @@ protection cell::get_protection() const
 bool cell::has_hyperlink() const
 {
 	return d_->hyperlink_;
+}
+
+// comment
+
+bool cell::has_comment()
+{
+    return (bool)d_->comment_;
+}
+
+void cell::clear_comment()
+{
+    d_->comment_.clear();
+}
+
+comment cell::comment()
+{
+    if (!has_comment())
+    {
+	throw xlnt::exception("cell has no comment");
+    }
+
+    return d_->comment_.get();
+}
+
+void cell::comment(const class comment &new_comment)
+{
+    d_->comment_.set(new_comment);
 }
 
 } // namespace xlnt

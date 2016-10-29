@@ -45,6 +45,7 @@ class drawing;
 class fill;
 class font;
 class format;
+class formatted_text;
 class manifest;
 class named_range;
 class number_format;
@@ -56,7 +57,6 @@ class range_reference;
 class relationship;
 class style;
 class style_serializer;
-class text;
 class theme;
 class workbook_view;
 class worksheet;
@@ -429,10 +429,10 @@ public:
 
     // shared strings
 
-    void add_shared_string(const text &shared, bool allow_duplicates=false);
-    std::vector<text> &get_shared_strings();
-    const std::vector<text> &get_shared_strings() const;
-    
+    void add_shared_string(const formatted_text &shared, bool allow_duplicates=false);
+    std::vector<formatted_text> &get_shared_strings();
+    const std::vector<formatted_text> &get_shared_strings() const;
+
     // thumbnail
 
     void set_thumbnail(const std::vector<std::uint8_t> &thumbnail, 
@@ -470,30 +470,30 @@ public:
     bool operator!=(const workbook &rhs) const;
 
 private:
-	friend class worksheet;
-	friend class detail::xlsx_consumer;
-	friend class detail::xlsx_producer;
+    friend class worksheet;
+    friend class detail::xlsx_consumer;
+    friend class detail::xlsx_producer;
 
-	workbook(detail::workbook_impl *impl);
+    workbook(detail::workbook_impl *impl);
 
-	detail::workbook_impl &impl();
+    detail::workbook_impl &impl();
 
-	const detail::workbook_impl &impl() const;
+    const detail::workbook_impl &impl() const;
 
     /// <summary>
     /// Apply the function "f" to every cell in every worksheet in this workbook.
     /// </summary>
     void apply_to_cells(std::function<void(cell)> f);
 
-	void register_app_properties_in_manifest();
+    void register_app_properties_in_manifest();
 
-	void register_core_properties_in_manifest();
+    void register_core_properties_in_manifest();
 
-	void register_shared_string_table_in_manifest();
+    void register_shared_string_table_in_manifest();
 
-	void register_stylesheet_in_manifest();
+    void register_stylesheet_in_manifest();
 
-	void register_theme_in_manifest();
+    void register_theme_in_manifest();
     
     /// <summary>
     /// An opaque pointer to a structure that holds all of the data relating to this workbook.

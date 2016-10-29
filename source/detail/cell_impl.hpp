@@ -26,19 +26,20 @@
 #include <string>
 
 #include <xlnt/cell/cell_type.hpp>
+#include <xlnt/cell/comment.hpp>
+#include <xlnt/cell/formatted_text.hpp>
 #include <xlnt/cell/index_types.hpp>
-#include <xlnt/cell/text.hpp>
 #include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
-
 namespace detail {
 
-struct comment_impl;
 struct worksheet_impl;
 
 struct cell_impl
 {
+    cell_impl();
+
     cell_type type_;
 
     worksheet_impl *parent_;
@@ -46,18 +47,16 @@ struct cell_impl
     column_t column_;
     row_t row_;
 
-	bool is_merged_;
+    bool is_merged_;
 
-    text value_text_;
+    formatted_text value_text_;
     long double value_numeric_;
 
     optional<std::string> formula_;
-
     optional<std::string> hyperlink_;
-
     optional<std::size_t> format_id_;
-
     optional<std::string> style_name_;
+    optional<comment> comment_;
 };
 
 } // namespace detail

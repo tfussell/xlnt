@@ -24,7 +24,8 @@
 
 #include <string>
 
-#include <xlnt/xlnt_config.hpp> // for XLNT_API, XLNT_API
+#include <xlnt/xlnt_config.hpp>
+#include <xlnt/styles/color.hpp>
 #include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
@@ -45,8 +46,8 @@ public:
     void set_size(std::size_t size);
     
     bool has_color() const;
-    std::string get_color() const;
-    void set_color(const std::string &color);
+    color get_color() const;
+    void set_color(const color &new_color);
     
     bool has_font() const;
     std::string get_font() const;
@@ -60,14 +61,19 @@ public:
     std::string get_scheme() const;
     void set_scheme(const std::string &scheme);
 
+    bool bold_set() const;
+    bool is_bold() const;
+    void set_bold(bool bold);
+
 private:
 	std::string string_;
     
     optional<std::size_t> size_;
-    optional<std::string> color_;
+    optional<color> color_;
     optional<std::string> font_;
     optional<std::size_t> family_;
     optional<std::string> scheme_;
+    optional<bool> bold_;
 };
 
 } // namespace xlnt

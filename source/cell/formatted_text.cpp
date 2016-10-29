@@ -21,46 +21,41 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+#include <numeric>
 
-#include <xlnt/cell/text.hpp>
+#include <xlnt/cell/formatted_text.hpp>
 #include <xlnt/cell/text_run.hpp>
 
 namespace xlnt {
 
-void text::clear()
+void formatted_text::clear()
 {
-	runs_.clear();
+    runs_.clear();
 }
 
-void text::set_plain_string(const std::string &s)
+void formatted_text::plain_text(const std::string &s)
 {
-	clear();
-	add_run(text_run(s));
+    clear();
+    add_run(text_run(s));
 }
 
-std::string text::get_plain_string() const
+std::string formatted_text::plain_text() const
 {
-	std::string plain_string;
-
-	for (const auto &run : runs_)
-	{
-		plain_string.append(run.get_string());
-	}
-
-	return plain_string;
+    return std::accumulate(runs_.begin(), runs_.end(), std::string(),
+        [](const std::string &a, const text_run &run) { return a + run.get_string(); });
 }
 
-std::vector<text_run> text::get_runs() const
+std::vector<text_run> formatted_text::runs() const
 {
-	return runs_;
+    return runs_;
 }
 
-void text::add_run(const text_run &t)
+void formatted_text::add_run(const text_run &t)
 {
-	runs_.push_back(t);
+    runs_.push_back(t);
 }
 
-bool text::operator==(const text &rhs) const
+bool formatted_text::operator==(const formatted_text &rhs) const
 {
     if (runs_.size() != rhs.runs_.size()) return false;
     

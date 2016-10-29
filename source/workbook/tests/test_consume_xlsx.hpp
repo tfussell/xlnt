@@ -34,4 +34,20 @@ public:
 		xlnt::workbook wb;
 		wb.load(path_helper::get_data_directory("17_encrypted_numbers.xlsx"), "secret");
 	}
+
+    void test_comments()
+    {
+	xlnt::workbook wb;
+	wb.load("data/18_basic_comments.xlsx");
+
+	auto sheet1 = wb[0];
+	TS_ASSERT_EQUALS(sheet1.get_cell("A1").get_value<std::string>(), "Sheet1!A1");
+	TS_ASSERT_EQUALS(sheet1.get_cell("A1").comment().plain_text(), "Sheet1 comment");
+	TS_ASSERT_EQUALS(sheet1.get_cell("A1").comment().author(), "Microsoft Office User");
+
+	auto sheet2 = wb[1];
+	TS_ASSERT_EQUALS(sheet2.get_cell("A1").get_value<std::string>(), "Sheet2!A1");
+	TS_ASSERT_EQUALS(sheet2.get_cell("A1").comment().plain_text(), "Sheet2 comment");
+	TS_ASSERT_EQUALS(sheet2.get_cell("A1").comment().author(), "Microsoft Office User");
+    }
 };

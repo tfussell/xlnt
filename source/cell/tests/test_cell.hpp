@@ -612,4 +612,19 @@ public:
         TS_ASSERT(cell.has_hyperlink());
         TS_ASSERT_EQUALS(cell.get_hyperlink(), "http://example.com");
     }
+
+    void test_comment()
+    {
+	xlnt::workbook wb;
+	auto ws = wb.get_active_sheet();
+	auto cell = ws.get_cell("A1");
+	TS_ASSERT(!cell.has_comment());
+	TS_ASSERT_THROWS(cell.comment(), xlnt::exception);
+	cell.comment(xlnt::comment("comment", "author"));
+	TS_ASSERT(cell.has_comment());
+	TS_ASSERT_EQUALS(cell.comment(), xlnt::comment("comment", "author"));
+	cell.clear_comment();
+	TS_ASSERT(!cell.has_comment());
+	TS_ASSERT_THROWS(cell.comment(), xlnt::exception);
+    }
 };

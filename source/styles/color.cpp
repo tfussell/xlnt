@@ -240,4 +240,20 @@ void color::assert_type(type t) const
 	}
 }
 
+bool color::operator==(const xlnt::color &other) const
+{
+    if (type_ != other.type_ || tint_ != other.tint_) return false;
+    switch(type_)
+    {
+        case type::auto_:
+        case type::indexed :
+            return indexed_.get_index() == other.indexed_.get_index();
+        case type::theme:
+            return theme_.get_index() == other.theme_.get_index();
+        case type::rgb:
+            return rgb_.get_hex_string() == other.rgb_.get_hex_string();
+    }
+    return false;
+}
+
 } // namespace xlnt

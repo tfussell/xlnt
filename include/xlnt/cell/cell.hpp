@@ -435,6 +435,28 @@ public:
     /// </summary>
     std::string check_string(const std::string &to_check);
 
+    // comment
+
+    /// <summary>
+    /// Return true if this cell has a comment applied.
+    /// </summary>
+    bool has_comment();
+
+    /// <summary>
+    /// Delete the comment applied to this cell if it exists.
+    /// </summary>
+    void clear_comment();
+
+    /// <summary>
+    /// Get the comment applied to this cell.
+    /// </summary>
+    comment comment();
+
+    /// <summary>
+    /// Apply the comment provided as the ony argument to the cell.
+    /// </summary>
+    void comment(const class comment &new_comment);
+
     // operators
 
     /// <summary>

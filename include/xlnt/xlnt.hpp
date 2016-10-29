@@ -30,8 +30,8 @@
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/cell/cell_type.hpp>
 #include <xlnt/cell/comment.hpp>
+#include <xlnt/cell/formatted_text.hpp>
 #include <xlnt/cell/index_types.hpp>
-#include <xlnt/cell/text.hpp>
 #include <xlnt/cell/text_run.hpp>
 
 // packaging

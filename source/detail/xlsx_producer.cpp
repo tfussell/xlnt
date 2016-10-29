@@ -655,10 +655,10 @@ void xlsx_producer::write_shared_string_table(const relationship &rel)
 
 	for (const auto &string : source_.get_shared_strings())
 	{
-		if (string.get_runs().size() == 1 && !string.get_runs().at(0).has_formatting())
+		if (string.runs().size() == 1 && !string.runs().at(0).has_formatting())
 		{
             serializer().start_element(xmlns, "si");
-            serializer().element(xmlns, "t", string.get_plain_string());
+            serializer().element(xmlns, "t", string.plain_text());
             serializer().end_element(xmlns, "si");
             
             continue;
@@ -666,7 +666,7 @@ void xlsx_producer::write_shared_string_table(const relationship &rel)
 
         serializer().start_element(xmlns, "si");
 
-        for (const auto &run : string.get_runs())
+        for (const auto &run : string.runs())
         {
             serializer().start_element(xmlns, "r");
 
@@ -684,7 +684,7 @@ void xlsx_producer::write_shared_string_table(const relationship &rel)
                 if (run.has_color())
                 {
                     serializer().start_element(xmlns, "color");
-                    serializer().attribute("val", run.get_color());
+                    write_color(run.get_color());
                     serializer().end_element(xmlns, "color");
                 }
 
@@ -1974,7 +1974,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
 					for (std::size_t i = 0; i < shared_strings.size(); i++)
 					{
-						if (shared_strings[i] == cell.get_value<text>())
+						if (shared_strings[i] == cell.get_value<formatted_text>())
 						{
 							match_index = static_cast<int>(i);
 							break;

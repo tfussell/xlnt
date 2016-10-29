@@ -124,6 +124,7 @@ struct value_traits<xlnt::relationship_type>
             relationship_type::theme,
             relationship_type::thumbnail,
             relationship_type::unknown,
+            relationship_type::vml_drawing,
             relationship_type::volatile_dependencies,
             relationship_type::worksheet
         };

@@ -1,5 +1,4 @@
 // Copyright (c) 2014-2016 Thomas Fussell
-// Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,64 +25,54 @@
 #include <string>
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/cell/formatted_text.hpp>
 
 namespace xlnt {
 
-class cell;
-namespace detail {
-struct comment_impl;
-}
-
 /// <summary>
-/// A comment can be applied to a cell to provide extra information.
+/// A comment can be applied to a cell to provide extra information about its contents.
 /// </summary>
 class XLNT_API comment
 {
 public:
     /// <summary>
-    /// The default constructor makes an invalid comment without a parent cell.
+    /// Constructs a new blank comment.
     /// </summary>
     comment();
 
     /// <summary>
-    /// Constructs a comment applied to the given cell, parent, and with the comment
-    /// text and author set to the provided respective values.
-    comment(cell parent, const std::string &text, const std::string &auth);
+    /// Constructs a new comment with the given text and author.
+    /// </summary>
+    comment(const formatted_text &text, const std::string &author);
 
-    ~comment();
+    /// <summary>
+    /// Constructs a new comment with the given unformatted text and author.
+    /// </summary>
+    comment(const std::string &text, const std::string &author);
 
     /// <summary>
     /// Return the text that will be displayed for this comment.
     /// </summary>
-    std::string get_text() const;
+    formatted_text text() const;
+    
+    /// <summary>
+    /// Return the plain text that will be displayed for this comment without formatting information.
+    /// </summary>
+    std::string plain_text() const;
 
     /// <summary>
     /// Return the author of this comment.
     /// </summary>
-    std::string get_author() const;
+    std::string author() const;
 
     /// <summary>
-    /// True if the comments point to the same sell (false if
-    /// they are different cells but identical comments). Note
-    /// that a cell can only have one comment and a comment
-    /// can only be applied to one cell.
+    /// Return true if both comments are equivalent.
     /// </summary>
-    bool operator==(const comment &other) const;
+    friend bool operator==(const comment &left, const comment &right);
 
 private:
-    friend class cell; // cell needs access to private constructor
-
-    /// <summary>
-    /// Construct a comment from an implementation of a comment.
-    /// </summary>
-    comment(detail::comment_impl *d);
-
-    /// <summary>
-    /// Pointer to the implementation of this comment.
-    /// This allows comments to be passed by value while
-    /// retaining the ability to modify the parent cell.
-    /// </summary>
-    detail::comment_impl *d_;
+    formatted_text text_;
+    std::string author_;
 };
 
 } // namespace xlnt

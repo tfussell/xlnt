@@ -154,8 +154,8 @@ std::vector<std::uint8_t> decrypt_xlsx_standard(const std::vector<std::uint8_t> 
 
 	auto header_length = read_int<std::uint32_t>(offset, encryption_info);
 	auto index_at_start = offset;
-	auto skip_flags = read_int<std::uint32_t>(offset, encryption_info);
-	auto size_extra = read_int<std::uint32_t>(offset, encryption_info);
+	/*auto skip_flags = */read_int<std::uint32_t>(offset, encryption_info);
+	/*auto size_extra = */read_int<std::uint32_t>(offset, encryption_info);
 	auto alg_id = read_int<std::uint32_t>(offset, encryption_info);
 
 	if (alg_id == 0 || alg_id == 0x0000660E || alg_id == 0x0000660F || alg_id == 0x00006610)

@@ -25,27 +25,27 @@
 #include <string>
 #include <vector>
 
-#include <xlnt/xlnt_config.hpp> // for XLNT_API, XLNT_API
+#include <xlnt/xlnt_config.hpp>
 #include <xlnt/cell/text_run.hpp>
 
 namespace xlnt {
 
-class text_run;
-
-class XLNT_API text
+class XLNT_API formatted_text
 {
 public:
-	void clear();
-	void set_plain_string(const std::string &s);
-	std::string get_plain_string() const;
-	std::vector<text_run> get_runs() const;
-	void add_run(const text_run &t);
-	void set_run(const std::vector<text_run> &parts);
+    void clear();
+
+    void plain_text(const std::string &s);
+    std::string plain_text() const;
+
+    std::vector<text_run> runs() const;
+    void runs(const std::vector<text_run> &new_runs);
+    void add_run(const text_run &t);
     
-    bool operator==(const text &rhs) const;
+    bool operator==(const formatted_text &rhs) const;
 
 private:
-	std::vector<text_run> runs_;
+    std::vector<text_run> runs_;
 };
 
 } // namespace xlnt

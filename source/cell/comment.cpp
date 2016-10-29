@@ -21,44 +21,45 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/comment.hpp>
-
-#include "detail/comment_impl.hpp"
 
 namespace xlnt {
 
-comment::comment(detail::comment_impl *d) : d_(d)
+comment::comment() : comment("", "")
 {
 }
 
-comment::comment(cell parent, const std::string &text, const std::string &author) : d_(nullptr)
-{
-    /*d_->text_ = text;
-    d_->author_ = author;*/
-}
-
-comment::comment() : d_(nullptr)
+comment::comment(const formatted_text &text, const std::string &author)
+    : text_(text),
+      author_(author)
 {
 }
 
-comment::~comment()
+comment::comment(const std::string &text, const std::string &author)
+    : text_(),
+      author_(author)
 {
+    text_.plain_text(text);
 }
 
-std::string comment::get_author() const
+formatted_text comment::text() const
 {
-    return d_->author_;
+    return text_;
 }
 
-std::string comment::get_text() const
+std::string comment::plain_text() const
 {
-    return d_->text_;
+    return text_.plain_text();
 }
 
-bool comment::operator==(const xlnt::comment &other) const
+std::string comment::author() const
 {
-    return d_ == other.d_;
+    return author_;
+}
+
+bool operator==(const comment &left, const comment &right)
+{
+    return left.text_ == right.text_ && left.author_ == right.author_;
 }
 
 } // namespace xlnt

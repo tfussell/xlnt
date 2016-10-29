@@ -132,6 +132,9 @@ public:
 	double get_tint() const;
 
 	void set_tint(double tint);
+    
+    bool operator==(const color &other) const;
+    bool operator!=(const color &other) const { return !(*this == other); }
 
 protected:
     std::string to_hash_string() const override;

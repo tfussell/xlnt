@@ -954,17 +954,17 @@ const manifest &workbook::get_manifest() const
     return d_->manifest_;
 }
 
-std::vector<text> &workbook::get_shared_strings()
+std::vector<formatted_text> &workbook::get_shared_strings()
 {
     return d_->shared_strings_;
 }
 
-const std::vector<text> &workbook::get_shared_strings() const
+const std::vector<formatted_text> &workbook::get_shared_strings() const
 {
     return d_->shared_strings_;
 }
 
-void workbook::add_shared_string(const text &shared, bool allow_duplicates)
+void workbook::add_shared_string(const formatted_text &shared, bool allow_duplicates)
 {
 	register_shared_string_table_in_manifest();
 

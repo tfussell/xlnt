@@ -49,6 +49,10 @@ std::string to_string(relationship::type t)
 		return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";
 	case relationship::type::chartsheet:
 		return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/chartsheet";
+	case relationship::type::comments:
+		return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments";
+	case relationship::type::vml_drawing:
+		return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/vmlDrawing";
 	default:
 		return default_case("?");
 	}

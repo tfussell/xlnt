@@ -22,6 +22,7 @@
 // @author: see AUTHORS file
 
 #include <xlnt/cell/text_run.hpp>
+#include <xlnt/styles/color.hpp>
 
 namespace xlnt {
 
@@ -68,14 +69,14 @@ bool text_run::has_color() const
     return (bool)color_;
 }
 
-std::string text_run::get_color() const
+color text_run::get_color() const
 {
     return *color_;
 }
 
-void text_run::set_color(const std::string &color)
+void text_run::set_color(const color &new_color)
 {
-    color_ = color;
+    color_ = new_color;
 }
 
 bool text_run::has_font() const
@@ -121,6 +122,21 @@ std::string text_run::get_scheme() const
 void text_run::set_scheme(const std::string &scheme)
 {
     scheme_ = scheme;
+}
+
+bool text_run::bold_set() const
+{
+    return (bool)bold_;
+}
+
+bool text_run::is_bold() const
+{
+    return *bold_;
+}
+
+void text_run::set_bold(bool bold)
+{
+    bold_ = bold;
 }
 
 } // namespace xlnt

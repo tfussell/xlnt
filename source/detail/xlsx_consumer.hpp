@@ -37,6 +37,7 @@ namespace xlnt {
 class path;
 class relationship;
 class workbook;
+class worksheet;
 
 namespace detail {
 
@@ -200,7 +201,7 @@ private:
 	/// <summary>
 	/// 
 	/// </summary>
-	void read_comments();
+	void read_comments(worksheet ws);
 
 	/// <summary>
 	/// 

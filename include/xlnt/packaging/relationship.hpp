@@ -85,6 +85,7 @@ enum class XLNT_API relationship_type
 	single_cell_table_definitions,
 	styles,
 	table_definition,
+    vml_drawing,
 	volatile_dependencies,
 	worksheet,
 

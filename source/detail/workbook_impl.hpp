@@ -179,7 +179,7 @@ struct workbook_impl
 
     std::size_t active_sheet_index_;
     std::list<worksheet_impl> worksheets_;
-    std::vector<text> shared_strings_;
+    std::vector<formatted_text> shared_strings_;
 
     bool guess_types_;
     bool data_only_;
