@@ -68,7 +68,7 @@ public:
     /// <summary>
     /// Return true if both comments are equivalent.
     /// </summary>
-    friend bool operator==(const comment &left, const comment &right);
+    friend XLNT_API bool operator==(const comment &left, const comment &right);
 
 private:
     formatted_text text_;
