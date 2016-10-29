@@ -138,4 +138,46 @@ public:
 		TS_ASSERT_THROWS_NOTHING(workbook.save(temp_buffer));
 		TS_ASSERT(!temp_buffer.empty());
 	}
+
+	void test_write_comments()
+	{
+		xlnt::workbook wb;
+
+		xlnt::formatted_text comment_text;
+		xlnt::text_run formatted_run;;
+		formatted_run.set_bold(true);
+		formatted_run.set_size(10);
+		formatted_run.set_color(xlnt::indexed_color(81));
+		formatted_run.set_font("Calibri");
+
+		auto sheet1 = wb.get_active_sheet();
+
+		sheet1.get_cell("A1").set_value("Sheet1!A1");
+		formatted_run.set_string("Sheet1 comment");
+		comment_text.add_run(formatted_run);
+		sheet1.get_cell("A1").comment(xlnt::comment(comment_text, "Microsoft Office User"));
+
+		sheet1.get_cell("A2").set_value("Sheet1!A2");
+		formatted_run.set_string("Sheet1 comment2");
+		comment_text.clear();
+		comment_text.add_run(formatted_run);
+		sheet1.get_cell("A2").comment(xlnt::comment(comment_text, "Microsoft Office User"));
+
+		auto sheet2 = wb.create_sheet();
+		sheet2.get_cell("A1").set_value("Sheet2!A1");
+		formatted_run.set_string("Sheet2 comment");
+		comment_text.clear();
+		comment_text.add_run(formatted_run);
+		sheet2.get_cell("A1").comment(xlnt::comment(comment_text, "Microsoft Office User"));
+
+		sheet2.get_cell("A2").set_value("Sheet2!A2");
+		formatted_run.set_string("Sheet2 comment2");
+		comment_text.clear();
+		comment_text.add_run(formatted_run);
+		sheet2.get_cell("A2").comment(xlnt::comment(comment_text, "Microsoft Office User"));
+
+		wb.save("debug.xlsx");
+
+		//TS_ASSERT(workbook_matches_file(wb, xlnt::path("data/18_basic_comments.xlsx")));
+	}
 };

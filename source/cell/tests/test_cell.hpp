@@ -17,7 +17,7 @@ public:
     {
         wb_guess_types.set_guess_types(true);
     }
-    
+
 	void test_infer_numeric()
 	{
 		auto ws = wb_guess_types.create_sheet();

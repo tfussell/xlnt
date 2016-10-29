@@ -494,6 +494,8 @@ private:
     void register_stylesheet_in_manifest();
 
     void register_theme_in_manifest();
+
+	void register_comments_in_manifest(worksheet ws);
     
     /// <summary>
     /// An opaque pointer to a structure that holds all of the data relating to this workbook.

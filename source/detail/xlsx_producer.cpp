@@ -21,6 +21,7 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 #include <cmath>
+#include <numeric> // for std::accumulate
 #include <string>
 
 #include <detail/custom_value_traits.hpp>
@@ -708,6 +709,12 @@ void xlsx_producer::write_shared_string_table(const relationship &rel)
                     serializer().attribute("val", run.get_scheme());
                     serializer().end_element(xmlns, "scheme");
                 }
+
+				if (run.bold_set())
+				{
+					serializer().start_element(xmlns, "b");
+					serializer().end_element(xmlns, "b");
+				}
                 
                 serializer().end_element(xmlns, "rPr");
             }
@@ -1717,6 +1724,14 @@ void xlsx_producer::write_volatile_dependencies(const relationship &rel)
 
 void xlsx_producer::write_worksheet(const relationship &rel)
 {
+	static const auto xmlns = constants::get_namespace("worksheet");
+	static const auto xmlns_r = constants::get_namespace("r");
+	static const auto xmlns_mc = constants::get_namespace("mc");
+	static const auto xmlns_x14ac = constants::get_namespace("x14ac");
+
+	auto worksheet_part = rel.get_source().get_path().parent().append(rel.get_target().get_path());
+	auto worksheet_rels = source_.get_manifest().get_relationships(worksheet_part);
+
 	auto title = std::find_if(source_.d_->sheet_title_rel_id_map_.begin(),
 		source_.d_->sheet_title_rel_id_map_.end(),
 		[&](const std::pair<std::string, std::string> &p)
@@ -1725,11 +1740,6 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 	})->first;
 
 	auto ws = source_.get_sheet_by_title(title);
-
-    static const auto xmlns = constants::get_namespace("worksheet");
-    static const auto xmlns_r = constants::get_namespace("r");
-    static const auto xmlns_mc = constants::get_namespace("mc");
-    static const auto xmlns_x14ac = constants::get_namespace("x14ac");
 
 	serializer().start_element(xmlns, "worksheet");
     serializer().namespace_decl(xmlns, "");
@@ -1898,6 +1908,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
 	serializer().start_element(xmlns, "sheetData");
 	const auto &shared_strings = ws.get_workbook().get_shared_strings();
+	std::vector<cell_reference> cells_with_comments;
 
 	for (auto row : ws.rows())
 	{
@@ -1948,6 +1959,11 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
 		for (auto cell : row)
 		{
+			if (cell.has_comment())
+			{
+				cells_with_comments.push_back(cell.get_reference());
+			}
+
 			if (!cell.garbage_collectible())
 			{
 				serializer().start_element(xmlns, "c");
@@ -2081,13 +2097,11 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 		serializer().end_element(xmlns, "mergeCells");
 	}
 
-	const auto sheet_rels = source_.get_manifest().get_relationships(rel.get_target().get_path());
-
-	if (!sheet_rels.empty())
+	if (!worksheet_rels.empty())
 	{
 		std::vector<relationship> hyperlink_sheet_rels;
 
-		for (const auto &sheet_rel : sheet_rels)
+		for (const auto &sheet_rel : worksheet_rels)
 		{
 			if (sheet_rel.get_type() == relationship::type::hyperlink)
 			{
@@ -2184,20 +2198,295 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 		serializer().element(xmlns, "oddFooter", footer_text);
 		serializer().end_element(xmlns, "headerFooter");
 	}
+
+	if (!worksheet_rels.empty())
+	{
+		for (const auto &child_rel : worksheet_rels)
+		{
+			if (child_rel.get_type() == xlnt::relationship_type::vml_drawing)
+			{
+				serializer().start_element(xmlns, "legacyDrawing");
+				serializer().attribute(xml::qname(xmlns_r, "id"), child_rel.get_id());
+				serializer().end_element(xmlns, "legacyDrawing");
+
+				//todo: there's only one of these per sheet, right?
+				break;
+			}
+		}
+	}
     
-    serializer().end_element();
+    serializer().end_element(xmlns, "worksheet");
+
+	if (!worksheet_rels.empty())
+	{
+		write_relationships(worksheet_rels, worksheet_part);
+
+		for (const auto &child_rel : worksheet_rels)
+		{
+			std::ostringstream child_stream;
+			xml::serializer child_serializer(child_stream, child_rel.get_target().get_path().string());
+			serializer_ = &child_serializer;
+
+			switch (child_rel.get_type())
+			{
+			case relationship::type::comments:
+				write_comments(child_rel, ws, cells_with_comments);
+				break;
+
+			case relationship::type::vml_drawing:
+				write_vml_drawings(child_rel, ws, cells_with_comments);
+				break;
+
+			default:
+				break;
+			}
+
+			path archive_path(worksheet_part.parent().append(child_rel.get_target().get_path()));
+			auto split_part_path = archive_path.split();
+			auto part_path_iter = split_part_path.begin();
+			while (part_path_iter != split_part_path.end())
+			{
+				if (*part_path_iter == "..")
+				{
+					part_path_iter = split_part_path.erase(part_path_iter - 1, part_path_iter + 1);
+					continue;
+				}
+
+				++part_path_iter;
+			}
+			archive_path = std::accumulate(split_part_path.begin(), split_part_path.end(), path(""),
+				[](const path &a, const std::string &b) { return a.append(b); });
+			destination_.write_string(child_stream.str(), archive_path);
+		}
+	}
 }
 
 // Sheet Relationship Target Parts
 
-void xlsx_producer::write_comments(const relationship &rel)
+void xlsx_producer::write_comments(const relationship &rel, worksheet ws, 
+	const std::vector<cell_reference> &cells)
 {
-	serializer().start_element("comments");
+	static const auto xmlns = constants::get_namespace("worksheet");
+
+	serializer().start_element(xmlns, "comments");
+	serializer().namespace_decl(xmlns, "");
+
+	if (!cells.empty())
+	{
+		std::unordered_map<std::string, std::size_t> authors;
+
+		for (auto cell_ref : cells)
+		{
+			auto cell = ws.get_cell(cell_ref);
+			auto author = cell.comment().author();
+
+			if (authors.find(author) == authors.end())
+			{
+				authors[author] = authors.size();
+			}
+		}
+
+		serializer().start_element(xmlns, "authors");
+
+		for (const auto &author : authors)
+		{
+			serializer().start_element(xmlns, "author");
+			serializer().characters(author.first);
+			serializer().end_element(xmlns, "author");
+		}
+
+		serializer().end_element(xmlns, "authors");
+		serializer().start_element(xmlns, "commentList");
+
+		for (const auto &cell_ref : cells)
+		{
+			serializer().start_element(xmlns, "comment");
+
+			auto cell = ws.get_cell(cell_ref);
+			auto cell_comment = cell.comment();
+
+			serializer().attribute("ref", cell_ref.to_string());
+			auto author_id = authors.at(cell_comment.author());
+			serializer().attribute("authorId", author_id);
+			serializer().start_element(xmlns, "text");
+
+			for (const auto &run : cell_comment.text().runs())
+			{
+				serializer().start_element(xmlns, "r");
+
+				if (run.has_formatting())
+				{
+					serializer().start_element(xmlns, "rPr");
+
+					if (run.has_size())
+					{
+						serializer().start_element(xmlns, "sz");
+						serializer().attribute("val", run.get_size());
+						serializer().end_element(xmlns, "sz");
+					}
+
+					if (run.has_color())
+					{
+						serializer().start_element(xmlns, "color");
+						write_color(run.get_color());
+						serializer().end_element(xmlns, "color");
+					}
+
+					if (run.has_font())
+					{
+						serializer().start_element(xmlns, "rFont");
+						serializer().attribute("val", run.get_font());
+						serializer().end_element(xmlns, "rFont");
+					}
+
+					if (run.has_family())
+					{
+						serializer().start_element(xmlns, "family");
+						serializer().attribute("val", run.get_family());
+						serializer().end_element(xmlns, "family");
+					}
+
+					if (run.has_scheme())
+					{
+						serializer().start_element(xmlns, "scheme");
+						serializer().attribute("val", run.get_scheme());
+						serializer().end_element(xmlns, "scheme");
+					}
+
+					if (run.bold_set())
+					{
+						serializer().start_element(xmlns, "b");
+						serializer().end_element(xmlns, "b");
+					}
+
+					serializer().end_element(xmlns, "rPr");
+				}
+
+				serializer().element(xmlns, "t", run.get_string());
+				serializer().end_element(xmlns, "r");
+			}
+
+			serializer().end_element(xmlns, "text");
+			serializer().end_element(xmlns, "comment");
+		}
+
+		serializer().end_element(xmlns, "commentList");
+	}
+
+	serializer().end_element(xmlns, "comments");
 }
 
-void xlsx_producer::write_drawings(const relationship &rel)
+void xlsx_producer::write_vml_drawings(const relationship &rel, worksheet ws, const std::vector<cell_reference> &cells)
 {
-	serializer().start_element("wsDr");
+	static const auto xmlns_o = std::string("urn:schemas-microsoft-com:vml");
+	static const auto xmlns_mv = std::string("http://macVmlSchemaUri");
+	static const auto xmlns_v = std::string("urn:schemas-microsoft-com:office:office");
+	static const auto xmlns_x = std::string("urn:schemas-microsoft-com:office:excel");
+
+	serializer().start_element("xml");
+	serializer().namespace_decl(xmlns_v, "v");
+	serializer().namespace_decl(xmlns_o, "o");
+	serializer().namespace_decl(xmlns_x, "x");
+	serializer().namespace_decl(xmlns_mv, "mv");
+
+	serializer().start_element(xmlns_o, "shapeLayout");
+	serializer().attribute(xml::qname(xmlns_v, "ext"), "edit");
+	serializer().start_element(xmlns_o, "idmap");
+	serializer().attribute(xml::qname(xmlns_v, "ext"), "edit");
+	auto filename = rel.get_target().get_path().split_extension().first;
+	auto index_pos = filename.size() - 1;
+	while (filename[index_pos] >= '0' && filename[index_pos] <= '9')
+	{
+		index_pos--;
+	}
+	auto file_index = std::stoull(filename.substr(index_pos + 1));
+	serializer().attribute("data", file_index);
+	serializer().end_element(xmlns_o, "idmap");
+	serializer().end_element(xmlns_o, "shapeLayout");
+
+	serializer().start_element(xmlns_v, "shapetype");
+	serializer().attribute("id", "_x0000_t202");
+	serializer().attribute("coordsize", "21600,21600");
+	serializer().attribute(xml::qname(xmlns_o, "spt"), "202");
+	serializer().attribute("path", "m0,0l0,21600,21600,21600,21600,0xe");
+	serializer().start_element(xmlns_v, "stroke");
+	serializer().attribute("joinstyle", "miter");
+	serializer().end_element(xmlns_v, "stroke");
+	serializer().start_element(xmlns_v, "path");
+	serializer().attribute("gradientshapeok", "t");
+	serializer().attribute(xml::qname(xmlns_o, "connecttype"), "rect");
+	serializer().end_element(xmlns_v, "path");
+	serializer().end_element(xmlns_v, "shapetype");
+
+	std::size_t comment_index = 0;
+
+	for (const auto &cell_ref : cells)
+	{
+		serializer().start_element(xmlns_v, "shape");
+		serializer().attribute("id", "_x0000_s" + std::to_string(file_index) + "02" + std::to_string(comment_index));
+		serializer().attribute("type", "#_x0000_t202");
+		std::string style("position:absolute;margin-left:80pt;margin-top:");
+		style.append(std::to_string(2 + comment_index * 4));
+		style.append("pt;width:104pt;height:76pt;z-index:");
+		style.append(std::to_string(comment_index + 1));
+		style.append(";visibility:hidden");
+		serializer().attribute("style", style);
+		serializer().attribute("fillcolor", "#fbf6d6");
+		serializer().attribute("strokecolor", "#edeaa1");
+
+		serializer().start_element(xmlns_v, "fill");
+		serializer().attribute("color2", "#fbfe82");
+		serializer().attribute("angle", -180);
+		serializer().attribute("type", "gradient");
+		serializer().start_element(xmlns_o, "fill");
+		serializer().attribute(xml::qname(xmlns_v, "ext"), "view");
+		serializer().attribute("type", "gradientUnscaled");
+		serializer().end_element(xmlns_o, "fill");
+		serializer().end_element(xmlns_v, "fill");
+
+		serializer().start_element(xmlns_v, "shadow");
+		serializer().attribute("on", "t");
+		serializer().attribute("obscured", "t");
+		serializer().end_element(xmlns_v, "shadow");
+
+		serializer().start_element(xmlns_v, "path");
+		serializer().attribute(xml::qname(xmlns_o, "connecttype"), "none");
+		serializer().end_element(xmlns_v, "path");
+
+		serializer().start_element(xmlns_v, "textbox");
+		serializer().attribute("style", "mso-direction-alt:auto");
+		serializer().start_element(xmlns_v, "div");
+		serializer().attribute("style", "text-align:left");
+		serializer().characters("");
+		serializer().end_element(xmlns_v, "div");
+		serializer().end_element(xmlns_v, "textbox");
+
+		serializer().start_element(xmlns_x, "ClientData");
+		serializer().attribute("ObjectType", "Note");
+		serializer().start_element(xmlns_x, "MoveWithCells");
+		serializer().end_element(xmlns_x, "MoveWithCells");
+		serializer().start_element(xmlns_x, "SizeWithCells");
+		serializer().end_element(xmlns_x, "SizeWithCells");
+		serializer().start_element(xmlns_x, "Anchor");
+		serializer().characters("1, 15, 0, " + std::to_string(2 + comment_index * 4) + ", 2, 54, 4, 14");
+		serializer().end_element(xmlns_x, "Anchor");
+		serializer().start_element(xmlns_x, "AutoFill");
+		serializer().characters("False");
+		serializer().end_element(xmlns_x, "AutoFill");
+		serializer().start_element(xmlns_x, "Row");
+		serializer().characters(cell_ref.get_row() - 1);
+		serializer().end_element(xmlns_x, "Row");
+		serializer().start_element(xmlns_x, "Column");
+		serializer().characters(cell_ref.get_column_index().index - 1);
+		serializer().end_element(xmlns_x, "Column");
+		serializer().end_element(xmlns_x, "ClientData");
+
+		serializer().end_element(xmlns_v, "shape");
+
+		++comment_index;
+	}
+
+	serializer().end_element("xml");
 }
 
 // Other Parts

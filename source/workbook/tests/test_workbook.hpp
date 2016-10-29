@@ -25,7 +25,7 @@ public:
         auto last = std::distance(wb.begin(), wb.end()) - 1;
         TS_ASSERT_EQUALS(new_sheet, wb[last]);
     }
-    
+
     void test_add_correct_sheet()
     {
         xlnt::workbook wb;

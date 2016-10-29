@@ -2045,7 +2045,9 @@ void xlsx_consumer::read_comments(worksheet ws)
     std::vector<std::string> authors;
     
     parser().next_expect(xml::parser::event_type::start_element, xmlns, "comments");
+	parser().content(xml::content::complex);
     parser().next_expect(xml::parser::event_type::start_element, xmlns, "authors");
+	parser().content(xml::content::complex);
     
     for (;;)
     {
@@ -2058,18 +2060,22 @@ void xlsx_consumer::read_comments(worksheet ws)
     }
     
     parser().next_expect(xml::parser::event_type::end_element, xmlns, "authors");
+
     parser().next_expect(xml::parser::event_type::start_element, xmlns, "commentList");
+	parser().content(xml::content::complex);
     
     for (;;)
     {
         if (parser().peek() == xml::parser::event_type::end_element) break;
 
         parser().next_expect(xml::parser::event_type::start_element, xmlns, "comment");
+		parser().content(xml::content::complex);
 
         auto cell_ref = parser().attribute("ref");
         auto author_id = parser().attribute<std::size_t>("authorId");
         
         parser().next_expect(xml::parser::event_type::start_element, xmlns, "text");
+		parser().content(xml::content::complex);
 
         // todo: this is duplicated from shared strings
         formatted_text text;
@@ -2079,6 +2085,8 @@ void xlsx_consumer::read_comments(worksheet ws)
             if (parser().peek() == xml::parser::event_type::end_element) break;
             
             parser().next_expect(xml::parser::event_type::start_element, xmlns, "r");
+			parser().content(xml::content::complex);
+
             text_run run;
             
             for (;;)
@@ -2095,6 +2103,8 @@ void xlsx_consumer::read_comments(worksheet ws)
                 }
                 else if (parser().name() == "rPr")
                 {
+					parser().content(xml::content::complex);
+
                     for (;;)
                     {
                         if (parser().peek() == xml::parser::event_type::end_element) break;

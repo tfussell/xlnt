@@ -53,6 +53,7 @@ const path constants::package_xl() { return path("/xl"); }
 const path constants::package_root_rels() { return path(std::string("_rels")); }
 const path constants::package_theme() { return package_xl().append("theme"); }
 const path constants::package_worksheets() { return package_xl().append("worksheets"); }
+const path constants::package_drawings() { return package_xl().append("drawings"); }
 
 const path constants::part_content_types() { return path("[Content_Types].xml"); }
 const path constants::part_root_relationships() { return package_root_rels().append(".rels"); }

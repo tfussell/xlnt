@@ -27,7 +27,7 @@ public:
 		xlnt::workbook wb;
 		wb.load(path_helper::get_data_directory("16_encrypted_excel_2007.xlsx"), "password");
 	}
-    
+
     void test_decrypt_numbers()
 	{
         TS_SKIP("");

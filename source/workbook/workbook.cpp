@@ -411,6 +411,79 @@ void workbook::register_theme_in_manifest()
 	}
 }
 
+void workbook::register_comments_in_manifest(worksheet ws)
+{
+	auto wb_rel = get_manifest().get_relationship(path("/"), relationship_type::office_document);
+	auto ws_rel = get_manifest().get_relationship(wb_rel.get_target().get_path(), 
+		d_->sheet_title_rel_id_map_.at(ws.get_title()));
+	path ws_path(ws_rel.get_source().get_path().parent().append(ws_rel.get_target().get_path()));
+
+	if (!get_manifest().has_relationship(ws_path, relationship_type::vml_drawing))
+	{
+		std::size_t file_number = 1;
+		path filename("vmlDrawing1.vml");
+
+		while (true)
+		{
+			bool filename_exists = false;
+
+			for (auto current_ws_rel : get_manifest().get_relationships(wb_rel.get_target().get_path(), xlnt::relationship_type::worksheet))
+			{
+				path current_ws_path(current_ws_rel.get_source().get_path().parent().append(current_ws_rel.get_target().get_path()));
+				if (!get_manifest().has_relationship(current_ws_path, xlnt::relationship_type::vml_drawing)) break;
+
+				for (auto current_ws_child_rel : get_manifest().get_relationships(current_ws_path, xlnt::relationship_type::vml_drawing))
+				{
+					if (current_ws_child_rel.get_target().get_path() == path("../drawings").append(filename))
+					{
+						filename_exists = true;
+						break;
+					}
+				}
+
+				if (filename_exists)
+				{
+					break;
+				}
+			}
+
+			if (!filename_exists) break;
+
+			file_number++;
+			filename = path("vmlDrawing" + std::to_string(file_number) + ".vml");
+		}
+
+		get_manifest().register_default_type("vml",
+			"application/vnd.openxmlformats-officedocument.vmlDrawing");
+
+		const path relative_path(path("../drawings").append(filename));
+		get_manifest().register_relationship(uri(ws_path.string()),
+			relationship::type::vml_drawing, uri(relative_path.string()), target_mode::internal);
+	}
+
+	if (!get_manifest().has_relationship(ws_path, relationship_type::comments))
+	{
+		std::size_t file_number = 1;
+		path filename("comments1.xml");
+
+		while (true)
+		{
+			if (!get_manifest().has_override_type(constants::package_xl().append(filename))) break;
+
+			file_number++;
+			filename = path("comments" + std::to_string(file_number) + ".xml");
+		}
+
+		const path absolute_path(constants::package_xl().append(filename));
+		get_manifest().register_override_type(absolute_path,
+			"application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml");
+
+		const path relative_path(path("..").append(filename));
+		get_manifest().register_relationship(uri(ws_path.string()),
+			relationship::type::comments, uri(relative_path.string()), target_mode::internal);
+	}
+}
+
 const worksheet workbook::get_sheet_by_title(const std::string &title) const
 {
     for (auto &impl : d_->worksheets_)

@@ -246,8 +246,8 @@ private:
     friend class const_range_iterator;
 	friend class detail::xlsx_consumer;
 	friend class detail::xlsx_producer;
-    
-    std::size_t next_custom_number_format_id();
+
+	void register_comments_in_manifest();
 
     worksheet(detail::worksheet_impl *d);
     detail::worksheet_impl *d_;

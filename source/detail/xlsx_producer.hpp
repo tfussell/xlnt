@@ -36,10 +36,12 @@ class serializer;
 
 namespace xlnt {
 
+class cell_reference;
 class color;
 class path;
 class relationship;
 class workbook;
+class worksheet;
 
 namespace detail {
 
@@ -98,8 +100,8 @@ private:
 
 	// Sheet Relationship Target Parts
 
-	void write_comments(const relationship &rel);
-	void write_drawings(const relationship &rel);
+	void write_comments(const relationship &rel, worksheet ws, const std::vector<cell_reference> &cells);
+	void write_vml_drawings(const relationship &rel, worksheet ws, const std::vector<cell_reference> &cells);
 
 	// Other Parts
 

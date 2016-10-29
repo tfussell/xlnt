@@ -1063,4 +1063,9 @@ void worksheet::disable_x14ac()
 	d_->x14ac_ = false;
 }
 
+void worksheet::register_comments_in_manifest()
+{
+	get_workbook().register_comments_in_manifest(*this);
+}
+
 } // namespace xlnt

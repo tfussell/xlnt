@@ -1049,6 +1049,7 @@ class comment cell::comment()
 void cell::comment(const class comment &new_comment)
 {
     d_->comment_.set(new_comment);
+	get_worksheet().register_comments_in_manifest();
 }
 
 } // namespace xlnt
