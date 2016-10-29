@@ -1036,7 +1036,7 @@ void cell::clear_comment()
     d_->comment_.clear();
 }
 
-comment cell::comment()
+class comment cell::comment()
 {
     if (!has_comment())
     {

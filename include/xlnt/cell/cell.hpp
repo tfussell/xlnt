@@ -450,7 +450,7 @@ public:
     /// <summary>
     /// Get the comment applied to this cell.
     /// </summary>
-    comment comment();
+    class comment comment();
 
     /// <summary>
     /// Apply the comment provided as the ony argument to the cell.

@@ -57,7 +57,7 @@ std::string comment::author() const
     return author_;
 }
 
-bool operator==(const comment &left, const comment &right)
+XLNT_API bool operator==(const comment &left, const comment &right)
 {
     return left.text_ == right.text_ && left.author_ == right.author_;
 }
