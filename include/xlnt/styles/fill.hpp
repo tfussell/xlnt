@@ -164,6 +164,14 @@ class XLNT_API fill : public hashable
 {
 public:
 	/// <summary>
+	/// Helper method for the most common use case, setting the fill color of a cell to a single solid color.
+	/// The foreground and background colors of a fill are not the same as the foreground and background colors
+	/// of a cell. When setting a fill color in Excel, a new fill is created with the given color as the fill's
+	/// fgColor and index color number 64 as the bgColor. This method creates a fill in the same way.
+	/// </summary>
+	static fill solid(const color &fill_color);
+
+	/// <summary>
 	/// Constructs a fill initialized as a none-type pattern fill with no 
 	/// foreground or background colors.
 	/// </summary>

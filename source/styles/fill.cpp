@@ -194,6 +194,14 @@ std::unordered_map<double, color> gradient_fill::stops() const
 
 // fill
 
+fill fill::solid(const color &fill_color)
+{
+	return fill(xlnt::pattern_fill()
+		.type(xlnt::pattern_fill_type::solid)
+		.foreground(fill_color)
+		.background(indexed_color(64)));
+}
+
 fill::fill() : type_(fill_type::pattern)
 {
 }
