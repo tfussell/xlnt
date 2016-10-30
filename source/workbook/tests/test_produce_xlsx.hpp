@@ -3,10 +3,10 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
+#include <detail/vector_streambuf.hpp>
 #include <helpers/temporary_file.hpp>
 #include <helpers/path_helper.hpp>
 #include <helpers/xml_helper.hpp>
-#include <xlnt/packaging/zip_file.hpp>
 #include <xlnt/workbook/workbook.hpp>
 
 class test_produce_xlsx : public CxxTest::TestSuite
@@ -14,13 +14,19 @@ class test_produce_xlsx : public CxxTest::TestSuite
 public:
 	bool workbook_matches_file(xlnt::workbook &wb, const xlnt::path &file)
 	{
-        std::vector<std::uint8_t> buffer;
-        wb.save(buffer);
+        std::vector<std::uint8_t> wb_data;
+        wb.save(wb_data);
 
-        xlnt::zip_file wb_archive(buffer);
-        xlnt::zip_file file_archive(file);
+        std::ifstream file_stream(file.string(), std::ios::binary);
+        std::vector<std::uint8_t> file_data;
 
-		return xml_helper::xlsx_archives_match(wb_archive, file_archive);
+        {
+            xlnt::detail::vector_ostreambuf file_data_buffer(file_data);
+            std::ostream file_data_stream(&file_data_buffer);
+            file_data_stream << file_stream.rdbuf();
+        }
+
+		return xml_helper::xlsx_archives_match(wb_data, file_data);
 	}
 
 	void test_produce_minimal()
@@ -35,8 +41,9 @@ public:
 		TS_ASSERT(workbook_matches_file(wb, path_helper::get_data_directory("9_default-excel.xlsx")));
 	}
 
-	void _test_produce_default_libre_office()
+	void test_produce_default_libre_office()
 	{
+        TS_SKIP("");
 		xlnt::workbook wb = xlnt::workbook::empty_libre_office();
 		TS_ASSERT(workbook_matches_file(wb, path_helper::get_data_directory("10_default-libre-office.xlsx")));
 	}

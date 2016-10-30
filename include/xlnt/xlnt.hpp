@@ -37,7 +37,6 @@
 // packaging
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/packaging/relationship.hpp>
-#include <xlnt/packaging/zip_file.hpp>
 
 // styles
 #include <xlnt/styles/alignment.hpp>

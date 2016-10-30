@@ -24,11 +24,15 @@
 
 #include <cstdint>
 #include <iostream>
+#include <memory>
 #include <vector>
 
 #include <detail/include_libstudxml.hpp>
-#include <xlnt/xlnt_config.hpp>
-#include <xlnt/packaging/zip_file.hpp>
+#include <detail/zip.hpp>
+
+namespace Partio {
+class ZipFileWriter;
+}
 
 namespace xml {
 class serializer;
@@ -48,16 +52,12 @@ namespace detail {
 /// <summary>
 /// Handles writing a workbook into an XLSX file.
 /// </summary>
-class XLNT_API xlsx_producer
+class xlsx_producer
 {
 public:
 	xlsx_producer(const workbook &target);
 
-	void write(const path &destination);
-
 	void write(std::ostream &destination);
-
-	void write(std::vector<std::uint8_t> &destination);
 
 private:
 	/// <summary>
@@ -65,6 +65,9 @@ private:
 	/// data contained in workbook.
 	/// </summary>
 	void populate_archive();
+
+    void begin_part(const path &part);
+    void end_part();
 
 	// Package Parts
 
@@ -134,18 +137,10 @@ private:
 	/// A reference to the workbook which is the object of read/write operations.
 	/// </summary>
 	const workbook &source_;
-
-	/// <summary>
-	/// A reference to the archive into which files representing the workbook
-	/// will be written.
-	/// </summary>
-	zip_file destination_;
     
-    /// <summary>
-    /// Instead of passing the current serializer into part serialization methods,
-    /// store pointer in this field and access it in methods with xlsx_producer::serializer().
-    /// </summary>
-    xml::serializer *serializer_;
+	Partio::ZipFileWriter *archive_;
+    std::unique_ptr<std::ostream> current_part_stream_;
+    std::unique_ptr<xml::serializer> current_part_serializer_;
 };
 
 } // namespace detail

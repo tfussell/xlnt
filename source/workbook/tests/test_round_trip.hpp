@@ -4,9 +4,9 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
+#include <detail/vector_streambuf.hpp>
 #include <helpers/path_helper.hpp>
 #include <helpers/xml_helper.hpp>
-#include <xlnt/packaging/zip_file.hpp>
 #include <xlnt/workbook/workbook.hpp>
 
 class test_round_trip : public CxxTest::TestSuite
@@ -18,22 +18,16 @@ public:
     /// </summary>
 	bool round_trip_matches_wrw(const xlnt::workbook &original)
 	{
-		std::vector<std::uint8_t> buffer;
-		original.save(buffer);
-        
-        xlnt::zip_file original_archive;
-        original_archive.load(buffer);
+		std::vector<std::uint8_t> original_buffer;
+		original.save(original_buffer);
 
 		xlnt::workbook resulting_workbook;
-		resulting_workbook.load(buffer);
+		resulting_workbook.load(original_buffer);
         
-        buffer.clear();
-        resulting_workbook.save(buffer);
-        
-        xlnt::zip_file resulting_archive;
-        resulting_archive.load(buffer);
+        std::vector<std::uint8_t> resulting_buffer;
+        resulting_workbook.save(resulting_buffer);
 
-		return xml_helper::xlsx_archives_match(original_archive, resulting_archive);
+		return xml_helper::xlsx_archives_match(original_buffer, resulting_buffer);
 	}
 
     /// <summary>
@@ -42,8 +36,14 @@ public:
     /// </summary>
 	bool round_trip_matches_rw(const xlnt::path &original)
 	{
-        xlnt::zip_file original_archive;
-        original_archive.load(original);
+        std::ifstream file_stream(original.string(), std::ios::binary);
+        std::vector<std::uint8_t> original_data;
+
+        {
+            xlnt::detail::vector_ostreambuf file_data_buffer(original_data);
+            std::ostream file_data_stream(&file_data_buffer);
+            file_data_stream << file_stream.rdbuf();
+        }
 
 		xlnt::workbook original_workbook;
 		original_workbook.load(original);
@@ -51,10 +51,7 @@ public:
         std::vector<std::uint8_t> buffer;
         original_workbook.save(buffer);
 
-        xlnt::zip_file resulting_archive;
-        resulting_archive.load(buffer);
-
-		return xml_helper::xlsx_archives_match(original_archive, resulting_archive);
+		return xml_helper::xlsx_archives_match(original_data, buffer);
 	}
 
 	void test_round_trip_minimal_wrw()
@@ -69,14 +66,14 @@ public:
 		TS_ASSERT(round_trip_matches_wrw(wb));
 	}
 
-	void _test_round_trip_empty_libre_office_wrw()
+	void test_round_trip_empty_libre_office_wrw()
 	{
 		TS_SKIP("");
 		xlnt::workbook wb = xlnt::workbook::empty_libre_office();
 		TS_ASSERT(round_trip_matches_wrw(wb));
 	}
 
-	void _test_round_trip_empty_pages_wrw()
+	void test_round_trip_empty_pages_wrw()
 	{
 		TS_SKIP("");
 		xlnt::workbook wb = xlnt::workbook::empty_numbers();

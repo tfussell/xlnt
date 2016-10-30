@@ -4,6 +4,7 @@ project(${LIBRARY_NAME}.test VERSION ${LIBRARY_VERSION} LANGUAGES CXX C)
 
 if(NOT COMBINED_PROJECT)
     add_subdirectory(${LIBRARY_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/source)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../third-party ${CMAKE_CURRENT_BINARY_DIR}/third-party)
 endif()
 
 include_directories(${LIBRARY_INCLUDE_DIR})
@@ -12,6 +13,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${THIRD_PARTY_DIR}/cxxtest)
 include_directories(${THIRD_PARTY_DIR}/utfcpp/source)
 include_directories(${THIRD_PARTY_DIR}/pugixml/src)
+include_directories(${THIRD_PARTY_DIR}/zlib)
 
 file(GLOB CELL_TESTS ${LIBRARY_SOURCE_DIR}/cell/tests/test_*.hpp)
 file(GLOB CHARTS_TESTS ${LIBRARY_SOURCE_DIR}/charts/tests/test_*.hpp)
@@ -23,6 +25,8 @@ file(GLOB STYLES_TESTS ${LIBRARY_SOURCE_DIR}/styles/tests/test_*.hpp)
 file(GLOB UTILS_TESTS ${LIBRARY_SOURCE_DIR}/utils/tests/test_*.hpp)
 file(GLOB WORKBOOK_TESTS ${LIBRARY_SOURCE_DIR}/workbook/tests/test_*.hpp)
 file(GLOB WORKSHEET_TESTS ${LIBRARY_SOURCE_DIR}/worksheet/tests/test_*.hpp)
+
+set(ZIP ${LIBRARY_SOURCE_DIR}/detail/zip.cpp)
 
 set(TESTS ${CELL_TESTS} ${CHARTS_TESTS} ${CHARTSHEET_TESTS} ${DRAWING_TESTS} 
     ${FORMULA_TESTS} ${PACKAGING_TESTS} ${STYLES_TESTS} ${UTILS_TESTS} 
@@ -38,7 +42,7 @@ file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/tests")
 set(RUNNER "${CMAKE_CURRENT_BINARY_DIR}/runner-autogen.cpp")
 set_source_files_properties(${RUNNER} PROPERTIES GENERATED TRUE)
 
-add_executable(${PROJECT_NAME} ${TEST_HELPERS} ${TESTS} ${RUNNER} ${PUGIXML})
+add_executable(${PROJECT_NAME} ${TEST_HELPERS} ${TESTS} ${RUNNER} ${PUGIXML} $<TARGET_OBJECTS:xlnt.third-party> ${ZIP})
 
 source_group(helpers FILES ${TEST_HELPERS})
 source_group(tests\\cell FILES ${CELL_TESTS})

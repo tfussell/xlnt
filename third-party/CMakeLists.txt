@@ -2,16 +2,12 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/common.cmake)
 project(${LIBRARY_NAME}.third-party VERSION ${LIBRARY_VERSION} LANGUAGES CXX C)
 
 # Includes
-include_directories(miniz
-    libstudxml
+include_directories(libstudxml
     utfcpp/source
     pole
     botan
-    ${LIBRARY_SOURCE_DIR}/detail)
+    zlib)
 
-set(MINIZ
-    ${CMAKE_CURRENT_SOURCE_DIR}/miniz/miniz.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/miniz/miniz.h)
 set(LIBSTUDXML 
     ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/parser.cxx
     ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/qname.cxx 
@@ -26,6 +22,21 @@ set(LIBSTUDXML
     ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/genx/genx.c)
 set(POLE pole/pole.cpp)
 set(BOTAN ${CMAKE_CURRENT_SOURCE_DIR}/botan/botan_all.cpp)
+set(ZLIB ${CMAKE_CURRENT_SOURCE_DIR}/zlib/adler32.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/compress.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/crc32.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/deflate.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/gzclose.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/gzlib.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/gzread.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/gzwrite.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/infback.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/inffast.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/inflate.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/inftrees.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/trees.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/uncompr.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/zutil.c)
 
 if(MSVC)
     set_source_files_properties(${BOTAN} PROPERTIES COMPILE_FLAGS "/wd\"4244\"")
@@ -42,7 +53,7 @@ add_custom_command(OUTPUT ${BOTAN}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/botan
     COMMENT "Generating botan amalgamation ${BOTAN}")
 
-add_library(xlnt.third-party OBJECT ${MINIZ} ${LIBSTUDXML} ${POLE} ${BOTAN})
+add_library(xlnt.third-party OBJECT ${LIBSTUDXML} ${POLE} ${BOTAN} ${ZLIB})
 target_compile_definitions(xlnt.third-party PRIVATE LIBSTUDXML_STATIC_LIB=1)
 
 if(NOT STATIC)
@@ -55,5 +66,7 @@ if(MSVC)
     set_target_properties(xlnt.third-party PROPERTIES COMPILE_FLAGS "/MP")
 endif()
 
-source_group(miniz FILES ${MINIZ})
+source_group(botan FILES ${BOTAN})
 source_group(libstudxml FILES ${LIBSTUDXML})
+source_group(pole FILES ${LIBSTUDXML})
+source_group(zlib FILES ${ZLIB})

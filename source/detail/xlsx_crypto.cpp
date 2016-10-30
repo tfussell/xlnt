@@ -25,6 +25,7 @@
 #include <botan_all.h>
 #include <include_libstudxml.hpp>
 
+#include <detail/vector_streambuf.hpp>
 #include <detail/xlsx_consumer.hpp>
 #include <xlnt/utils/exceptions.hpp>
 #include <xlnt/workbook/workbook.hpp>
@@ -271,9 +272,14 @@ std::vector<std::uint8_t> decrypt_xlsx_standard(const std::vector<std::uint8_t> 
 
 	//todo: verify here
 
-	return aes(key_derived, {}, std::vector<std::uint8_t>(
+	std::size_t package_offset = 0;
+	auto decrypted_size = read_int<std::uint64_t>(package_offset, encrypted_package);
+	auto decrypted = aes(key_derived, {}, std::vector<std::uint8_t>(
         encrypted_package.begin() + 8, encrypted_package.end()),
         cipher_chaining::ecb, cipher_direction::decryption);
+	decrypted.resize(decrypted_size);
+
+	return decrypted;
 }
 
 
@@ -567,23 +573,14 @@ std::vector<std::uint8_t> decrypt_xlsx(const std::vector<std::uint8_t> &bytes, c
 	return decrypt_xlsx_standard(encryption_info, password, encrypted_package);
 }
 
-void xlsx_consumer::read(const std::vector<std::uint8_t> &source, const std::string &password)
-{
-	source_.load(decrypt_xlsx(source, password));
-	populate_workbook();
-}
-
 void xlsx_consumer::read(std::istream &source, const std::string &password)
 {
-	std::vector<std::uint8_t> data((std::istreambuf_iterator<char>(source)), 
-		std::istreambuf_iterator<char>());
-	return read(data, password);
-}
-
-void xlsx_consumer::read(const path &source, const std::string &password)
-{
-	std::ifstream file_stream(source.string(), std::iostream::binary);
-	return read(file_stream, password);
+	std::vector<std::uint8_t> data((std::istreambuf_iterator<char>(source)),
+		(std::istreambuf_iterator<char>()));
+	const auto decrypted = decrypt_xlsx(data, password);
+	vector_istreambuf decrypted_buffer(decrypted);
+	std::istream decrypted_stream(&decrypted_buffer);
+	read(decrypted_stream);
 }
 
 } // namespace detail

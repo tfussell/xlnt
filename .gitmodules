@@ -22,3 +22,6 @@
 	path = third-party/botan
 	url = https://github.com/randombit/botan
  	branch = master
+[submodule "third-party/zlib"]
+	path = third-party/zlib
+	url = https://github.com/madler/zlib.git

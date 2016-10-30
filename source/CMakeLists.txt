@@ -67,7 +67,9 @@ include_directories(${XLNT_INCLUDE_DIR}
     ${THIRD_PARTY_DIR}/libstudxml
     ${THIRD_PARTY_DIR}/utfcpp/source
     ${THIRD_PARTY_DIR}/pole
-    ${THIRD_PARTY_DIR}/botan)
+    ${THIRD_PARTY_DIR}/botan
+    ${THIRD_PARTY_DIR}/partio
+    ${THIRD_PARTY_DIR}/zlib)
 
 file(GLOB ROOT_HEADERS ${XLNT_INCLUDE_DIR}/xlnt/*.hpp)
 file(GLOB CELL_HEADERS ${XLNT_INCLUDE_DIR}/xlnt/cell/*.hpp)

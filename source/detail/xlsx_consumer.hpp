@@ -25,12 +25,15 @@
 
 #include <cstdint>
 #include <iostream>
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
 #include <detail/include_libstudxml.hpp>
-#include <xlnt/xlnt_config.hpp>
-#include <xlnt/packaging/zip_file.hpp>
+
+namespace Partio {
+class ZipFileReader;
+}
 
 namespace xlnt {
 
@@ -44,22 +47,14 @@ namespace detail {
 /// <summary>
 /// Handles writing a workbook into an XLSX file.
 /// </summary>
-class XLNT_API xlsx_consumer
+class xlsx_consumer
 {
 public:
 	xlsx_consumer(workbook &destination);
 
-	void read(const path &source);
-
 	void read(std::istream &source);
 
-	void read(const std::vector<std::uint8_t> &source);
-
-	void read(const path &source, const std::string &password);
-
 	void read(std::istream &source, const std::string &password);
-
-	void read(const std::vector<std::uint8_t> &source, const std::string &password);
 
 private:
 	/// <summary>
@@ -223,7 +218,7 @@ private:
 	/// <summary>
 	/// The ZIP file containing the files that make up the OOXML package.
 	/// </summary>
-	zip_file source_;
+	std::unique_ptr<Partio::ZipFileReader> archive_;
 
 	/// <summary>
 	/// Map of sheet titles to relationship IDs.

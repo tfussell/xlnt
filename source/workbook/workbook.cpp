@@ -26,19 +26,18 @@
 #include <fstream>
 #include <functional>
 #include <set>
-#include <sstream>
 
 #include <detail/cell_impl.hpp>
 #include <detail/constants.hpp>
 #include <detail/excel_thumbnail.hpp>
-#include <detail/xlsx_consumer.hpp>
-#include <detail/xlsx_producer.hpp>
+#include <detail/vector_streambuf.hpp>
 #include <detail/workbook_impl.hpp>
 #include <detail/worksheet_impl.hpp>
+#include <detail/xlsx_consumer.hpp>
+#include <detail/xlsx_producer.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/packaging/relationship.hpp>
-#include <xlnt/packaging/zip_file.hpp>
 #include <xlnt/styles/alignment.hpp>
 #include <xlnt/styles/border.hpp>
 #include <xlnt/styles/format.hpp>
@@ -689,7 +688,9 @@ void workbook::load(const std::vector<std::uint8_t> &data)
 {
 	clear();
 	detail::xlsx_consumer consumer(*this);
-	consumer.read(data);
+    xlnt::detail::vector_istreambuf data_buffer(data);
+    std::istream data_stream(&data_buffer);
+	consumer.read(data_stream);
 }
 
 void workbook::load(const std::string &filename)
@@ -701,7 +702,8 @@ void workbook::load(const path &filename)
 {
 	clear();
 	detail::xlsx_consumer consumer(*this);
-	consumer.read(filename);
+	std::ifstream file_stream(filename.string(), std::ios::binary);
+	consumer.read(file_stream);
 }
 
 void workbook::load(const std::string &filename, const std::string &password)
@@ -719,7 +721,9 @@ void workbook::load(const std::vector<std::uint8_t> &data, const std::string &pa
 {
 	clear();
 	detail::xlsx_consumer consumer(*this);
-	consumer.read(data, password);
+    xlnt::detail::vector_istreambuf data_buffer(data);
+    std::istream data_stream(&data_buffer);
+	consumer.read(data_stream, password);
 }
 
 void workbook::load(std::istream &stream, const std::string &password)
@@ -731,8 +735,9 @@ void workbook::load(std::istream &stream, const std::string &password)
 
 void workbook::save(std::vector<std::uint8_t> &data) const
 {
-	detail::xlsx_producer producer(*this);
-	producer.write(data);
+    xlnt::detail::vector_ostreambuf data_buffer(data);
+    std::ostream data_stream(&data_buffer);
+    save(data_stream);
 }
 
 void workbook::save(const std::string &filename) const
@@ -743,7 +748,8 @@ void workbook::save(const std::string &filename) const
 void workbook::save(const path &filename) const
 {
 	detail::xlsx_producer producer(*this);
-	producer.write(filename);
+	std::ofstream file_stream(filename.string(), std::ios::binary);
+	save(file_stream);
 }
 
 void workbook::save(std::ostream &stream) const

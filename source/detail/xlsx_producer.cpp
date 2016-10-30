@@ -31,7 +31,6 @@
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/utils/path.hpp>
 #include <xlnt/packaging/manifest.hpp>
-#include <xlnt/packaging/zip_file.hpp>
 #include <xlnt/workbook/const_worksheet_iterator.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/workbook/workbook_view.hpp>
@@ -83,22 +82,11 @@ xlsx_producer::xlsx_producer(const workbook &target) : source_(target)
 {
 }
 
-void xlsx_producer::write(const path &destination)
-{
-	populate_archive();
-	destination_.save(destination);
-}
-
 void xlsx_producer::write(std::ostream &destination)
 {
+	Partio::ZipFileWriter archive(destination);
+    archive_ = &archive;
 	populate_archive();
-	destination_.save(destination);
-}
-
-void xlsx_producer::write(std::vector<std::uint8_t> &destination)
-{
-	populate_archive();
-	destination_.save(destination);
 }
 
 // Part Writing Methods
@@ -112,11 +100,7 @@ void xlsx_producer::populate_archive()
 
 	for (auto &rel : root_rels)
 	{
-        std::ostringstream serializer_stream;
-        xml::serializer serializer(serializer_stream, rel.get_target().get_path().string());
-        serializer_ = &serializer;
-
-        bool write_document = true;
+        begin_part(rel.get_target().get_path());
 
 		switch (rel.get_type())
 		{
@@ -138,16 +122,10 @@ void xlsx_producer::populate_archive()
             
 		case relationship::type::thumbnail:
             write_thumbnail(rel);
-            write_document = false;
             break;
         
         default:
             break;
-        }
-
-        if (write_document)
-        {
-            destination_.write_string(serializer_stream.str(), rel.get_target().get_path());
         }
 	}
 
@@ -155,40 +133,62 @@ void xlsx_producer::populate_archive()
 
 	void write_unknown_parts();
 	void write_unknown_relationships();
+
+    end_part();
+}
+
+void xlsx_producer::end_part()
+{
+    if (current_part_serializer_)
+    {
+        current_part_serializer_.reset();
+    }
+
+    if (current_part_stream_)
+    {
+        current_part_stream_.reset();
+    }
+}
+
+void xlsx_producer::begin_part(const path &part)
+{
+    end_part();
+
+    current_part_stream_.reset(archive_->Add_File(part.string(), true));
+    current_part_serializer_.reset(new xml::serializer(*current_part_stream_, part.string()));
 }
 
 // Package Parts
 
 void xlsx_producer::write_content_types()
 {
-    std::ostringstream content_types_stream;
-    xml::serializer content_types_serializer(content_types_stream, "[Content_Types].xml");
+    const auto content_types_path = path("[Content_Types].xml");
+    begin_part(content_types_path);
 
     const auto xmlns = "http://schemas.openxmlformats.org/package/2006/content-types"s;
 
-    content_types_serializer.start_element(xmlns, "Types");
-    content_types_serializer.namespace_decl(xmlns, "");
+	serializer().start_element(xmlns, "Types");
+	serializer().namespace_decl(xmlns, "");
 
 	for (const auto &extension : source_.get_manifest().get_extensions_with_default_types())
 	{
-        content_types_serializer.start_element(xmlns, "Default");
-        content_types_serializer.attribute("Extension", extension);
-		content_types_serializer.attribute("ContentType",
+		serializer().start_element(xmlns, "Default");
+		serializer().attribute("Extension", extension);
+		serializer().attribute("ContentType",
             source_.get_manifest().get_default_type(extension));
-        content_types_serializer.end_element(xmlns, "Default");
+		serializer().end_element(xmlns, "Default");
 	}
 
 	for (const auto &part : source_.get_manifest().get_parts_with_overriden_types())
 	{
-        content_types_serializer.start_element(xmlns, "Override");
-        content_types_serializer.attribute("PartName", part.resolve(path("/")).string());
-		content_types_serializer.attribute("ContentType",
+		serializer().start_element(xmlns, "Override");
+		serializer().attribute("PartName", part.resolve(path("/")).string());
+		serializer().attribute("ContentType",
             source_.get_manifest().get_override_type(part));
-        content_types_serializer.end_element(xmlns, "Override");
+		serializer().end_element(xmlns, "Override");
 	}
     
-    content_types_serializer.end_element(xmlns, "Types");
-    destination_.write_string(content_types_stream.str(), path("[Content_Types].xml"));
+	serializer().end_element(xmlns, "Types");
 }
 
 void xlsx_producer::write_extended_properties(const relationship &rel)
@@ -509,9 +509,8 @@ void xlsx_producer::write_workbook(const relationship &rel)
     
     for (const auto &child_rel : workbook_rels)
     {
-        std::ostringstream child_stream;
-        xml::serializer child_serializer(child_stream, child_rel.get_target().get_path().string());
-        serializer_ = &child_serializer;
+		path archive_path(child_rel.get_source().get_path().parent().append(child_rel.get_target().get_path()));
+        begin_part(archive_path);
         
         switch (child_rel.get_type())
         {
@@ -574,9 +573,6 @@ void xlsx_producer::write_workbook(const relationship &rel)
         default:
             break;
 		}
-        
-		path archive_path(child_rel.get_source().get_path().parent().append(child_rel.get_target().get_path()));
-        destination_.write_string(child_stream.str(), archive_path);
     }
 }
 
@@ -2223,24 +2219,6 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
 		for (const auto &child_rel : worksheet_rels)
 		{
-			std::ostringstream child_stream;
-			xml::serializer child_serializer(child_stream, child_rel.get_target().get_path().string());
-			serializer_ = &child_serializer;
-
-			switch (child_rel.get_type())
-			{
-			case relationship::type::comments:
-				write_comments(child_rel, ws, cells_with_comments);
-				break;
-
-			case relationship::type::vml_drawing:
-				write_vml_drawings(child_rel, ws, cells_with_comments);
-				break;
-
-			default:
-				break;
-			}
-
 			path archive_path(worksheet_part.parent().append(child_rel.get_target().get_path()));
 			auto split_part_path = archive_path.split();
 			auto part_path_iter = split_part_path.begin();
@@ -2256,7 +2234,22 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 			}
 			archive_path = std::accumulate(split_part_path.begin(), split_part_path.end(), path(""),
 				[](const path &a, const std::string &b) { return a.append(b); });
-			destination_.write_string(child_stream.str(), archive_path);
+
+            begin_part(archive_path);
+
+			switch (child_rel.get_type())
+			{
+			case relationship::type::comments:
+				write_comments(child_rel, ws, cells_with_comments);
+				break;
+
+			case relationship::type::vml_drawing:
+				write_vml_drawings(child_rel, ws, cells_with_comments);
+				break;
+
+			default:
+				break;
+			}
 		}
 	}
 }
@@ -2506,13 +2499,15 @@ void xlsx_producer::write_unknown_relationships()
 void xlsx_producer::write_thumbnail(const relationship &rel)
 {
     const auto &thumbnail = source_.get_thumbnail();
-    std::string thumbnail_string(thumbnail.begin(), thumbnail.end());
-    destination_.write_string(thumbnail_string, rel.get_target().get_path());
+	std::unique_ptr<std::ostream> thumbnail_stream(
+		archive_->Add_File(rel.get_target().get_path().string(), true));
+	std::for_each(thumbnail.begin(), thumbnail.end(),
+		[&thumbnail_stream](std::uint8_t b) { *thumbnail_stream << b; });
 }
 
 xml::serializer &xlsx_producer::serializer()
 {
-    return *serializer_;
+    return *current_part_serializer_;
 }
 
 std::string xlsx_producer::write_bool(bool boolean) const
@@ -2535,33 +2530,31 @@ void xlsx_producer::write_relationships(const std::vector<xlnt::relationship> &r
         parent = path(parent.string().substr(1));
     }
 
-    std::ostringstream rels_stream;
-    path rels_path(parent.append("_rels").append(part.filename() + ".rels").string());
-    xml::serializer rels_serializer(rels_stream, rels_path.string());
+	path rels_path(parent.append("_rels").append(part.filename() + ".rels").string());
+    begin_part(rels_path);
 
     const auto xmlns = xlnt::constants::get_namespace("relationships");
 
-    rels_serializer.start_element(xmlns, "Relationships");
-    rels_serializer.namespace_decl(xmlns, "");
+    serializer().start_element(xmlns, "Relationships");
+    serializer().namespace_decl(xmlns, "");
 
 	for (const auto &relationship : relationships)
 	{
-        rels_serializer.start_element(xmlns, "Relationship");
+        serializer().start_element(xmlns, "Relationship");
 
-        rels_serializer.attribute("Id", relationship.get_id());
-        rels_serializer.attribute("Type", relationship.get_type());
-        rels_serializer.attribute("Target", relationship.get_target().get_path().string());
+        serializer().attribute("Id", relationship.get_id());
+        serializer().attribute("Type", relationship.get_type());
+        serializer().attribute("Target", relationship.get_target().get_path().string());
 
 		if (relationship.get_target_mode() == xlnt::target_mode::external)
 		{
-            rels_serializer.attribute("TargetMode", "External");
+            serializer().attribute("TargetMode", "External");
 		}
 
-        rels_serializer.end_element(xmlns, "Relationship");
+        serializer().end_element(xmlns, "Relationship");
 	}
     
-    rels_serializer.end_element(xmlns, "Relationships");
-    destination_.write_string(rels_stream.str(), rels_path);
+    serializer().end_element(xmlns, "Relationships");
 }
 
 
