@@ -6,7 +6,8 @@ include_directories(libstudxml
     utfcpp/source
     pole
     botan
-    zlib)
+    zlib
+    ${LIBRARY_SOURCE_DIR}/detail)
 
 set(LIBSTUDXML 
     ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/parser.cxx
