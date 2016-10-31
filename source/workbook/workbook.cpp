@@ -686,11 +686,9 @@ void workbook::load(std::istream &stream)
 
 void workbook::load(const std::vector<std::uint8_t> &data)
 {
-	clear();
-	detail::xlsx_consumer consumer(*this);
     xlnt::detail::vector_istreambuf data_buffer(data);
     std::istream data_stream(&data_buffer);
-	consumer.read(data_stream);
+    load(data_stream);
 }
 
 void workbook::load(const std::string &filename)
@@ -700,10 +698,8 @@ void workbook::load(const std::string &filename)
 
 void workbook::load(const path &filename)
 {
-	clear();
-	detail::xlsx_consumer consumer(*this);
 	std::ifstream file_stream(filename.string(), std::ios::binary);
-	consumer.read(file_stream);
+    load(file_stream);
 }
 
 void workbook::load(const std::string &filename, const std::string &password)
@@ -719,11 +715,9 @@ void workbook::load(const path &filename, const std::string &password)
 
 void workbook::load(const std::vector<std::uint8_t> &data, const std::string &password)
 {
-	clear();
-	detail::xlsx_consumer consumer(*this);
     xlnt::detail::vector_istreambuf data_buffer(data);
     std::istream data_stream(&data_buffer);
-	consumer.read(data_stream, password);
+    load(data_stream, password);
 }
 
 void workbook::load(std::istream &stream, const std::string &password)
@@ -747,7 +741,6 @@ void workbook::save(const std::string &filename) const
 
 void workbook::save(const path &filename) const
 {
-	detail::xlsx_producer producer(*this);
 	std::ofstream file_stream(filename.string(), std::ios::binary);
 	save(file_stream);
 }
@@ -757,6 +750,20 @@ void workbook::save(std::ostream &stream) const
 	detail::xlsx_producer producer(*this);
 	producer.write(stream);
 }
+
+#ifdef WIN32
+void workbook::save(const std::wstring &filename)
+{
+    std::ofstream file_stream(filename, std::ios::binary);
+    save(file_stream);
+}
+
+void workbook::load(const std::wstring &filename)
+{
+    std::ifstream file_stream(filename, std::ios::binary);
+    load(file_stream);
+}
+#endif
 
 void workbook::set_guess_types(bool guess)
 {

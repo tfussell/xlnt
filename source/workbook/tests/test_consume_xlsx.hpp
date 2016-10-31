@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <fstream>
 #include <iostream>
@@ -7,7 +7,7 @@
 #include <helpers/path_helper.hpp>
 #include <xlnt/workbook/workbook.hpp>
 
-#define TEST_CRYPTO true
+#define TEST_CRYPTO false
 
 #ifndef TEST_CRYPTO
 #define TEST_CRYPTO false
@@ -63,5 +63,11 @@ public:
         TS_ASSERT_EQUALS(sheet2.get_cell("A1").get_value<std::string>(), "Sheet2!A1");
         TS_ASSERT_EQUALS(sheet2.get_cell("A1").comment().plain_text(), "Sheet2 comment");
         TS_ASSERT_EQUALS(sheet2.get_cell("A1").comment().author(), "Microsoft Office User");
+    }
+
+    void test_read_unicode_filename()
+    {
+        xlnt::workbook wb;
+        wb.load(L"data\\19_unicode_Λ.xlsx");
     }
 };

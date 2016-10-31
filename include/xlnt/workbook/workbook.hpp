@@ -365,10 +365,18 @@ public:
 	void load(const xlnt::path &filename);
 	void load(std::istream &stream);
 
-	void load(const std::string &filename, const std::string &password);
+    void load(const std::string &filename, const std::string &password);
 	void load(const xlnt::path &filename, const std::string &password);
 	void load(std::istream &stream, const std::string &password);
 	void load(const std::vector<std::uint8_t> &data, const std::string &password);
+
+#ifdef WIN32
+    void save(const std::wstring &filename);
+    void save(const std::wstring &filename, const std::string &password);
+
+    void load(const std::wstring &filename);
+    void load(const std::wstring &filename, const std::string &password);
+#endif
 
 	bool has_view() const;
 	workbook_view get_view() const;
