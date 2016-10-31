@@ -67,7 +67,9 @@ public:
 
     void test_read_unicode_filename()
     {
+#ifdef WIN32
         xlnt::workbook wb;
         wb.load(L"data\\19_unicode_Λ.xlsx");
+#endif
     }
 };
