@@ -179,14 +179,16 @@ private:
             position_ = data_.size();
         }
 
-        return (position_ < 0 || position_ > data_.size()) ? -1 : position_;
+        return (position_ < 0 || position_ > data_.size())
+          ? std::streampos(-1) : position_;
     }
 
     std::streampos seekpos(std::streampos sp,
         std::ios_base::openmode which = std::ios_base::in | std::ios_base::out)
     {
         position_ = sp;
-        return (position_ < 0 || position_ > data_.size()) ? -1 : position_;
+        return (position_ < 0 || position_ > data_.size())
+          ? std::streampos(-1) : position_;
     }
 
 private:
