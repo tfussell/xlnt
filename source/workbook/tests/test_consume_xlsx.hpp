@@ -7,7 +7,7 @@
 #include <helpers/path_helper.hpp>
 #include <xlnt/workbook/workbook.hpp>
 
-#define TEST_CRYPTO false
+#define TEST_CRYPTO true
 
 #ifndef TEST_CRYPTO
 #define TEST_CRYPTO false

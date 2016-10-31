@@ -302,18 +302,20 @@ public:
 		delete stream;
 		return compare_files(expected, contents, content_type);
 	}
-
-	static bool file_matches_archive_member(const xlnt::path &file,
+    
+    static bool file_matches_archive_member(const xlnt::path &file,
 		Partio::ZipFileReader &archive,
 		const xlnt::path &member,
         const std::string &content_type)
 	{
 		if (!archive.Has_File(member.string())) return false;
-		std::ostringstream member_stream;
-		auto stream = archive.Get_File(member.string(), true);
-		std::string contents((std::istreambuf_iterator<char>(*stream)), (std::istreambuf_iterator<char>()));
-		delete stream;
-		auto result = compare_files(file.read_contents(), contents, content_type);
+		std::vector<std::uint8_t> member_data;
+		xlnt::detail::vector_ostreambuf member_data_buffer(member_data);
+		std::ostream member_data_stream(&member_data_buffer);
+		std::unique_ptr<std::istream> member_stream(archive.Get_File(member.string(), true));
+		member_data_stream << member_stream->rdbuf();
+		std::string contents(member_data.begin(), member_data.end());
+		return compare_files(file.read_contents(), contents, content_type);
 	}
 
 	static bool file_matches_document(const xlnt::path &expected, 

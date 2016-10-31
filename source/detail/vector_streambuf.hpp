@@ -153,7 +153,7 @@ private:
         else
         {
             auto position_size = data_.size();
-            auto required_size = static_cast<std::size_t>(position_ + n);
+            auto required_size = static_cast<std::size_t>(position_ + static_cast<std::streampos>(n));
             data_.resize(std::max(position_size, required_size));
         }
 
