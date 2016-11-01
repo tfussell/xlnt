@@ -2377,9 +2377,9 @@ void xlsx_producer::write_comments(const relationship &rel, worksheet ws,
 void xlsx_producer::write_vml_drawings(const relationship &rel, worksheet ws,
     const std::vector<cell_reference> &cells)
 {
-	static const auto xmlns_o = std::string("urn:schemas-microsoft-com:vml");
 	static const auto xmlns_mv = std::string("http://macVmlSchemaUri");
-	static const auto xmlns_v = std::string("urn:schemas-microsoft-com:office:office");
+	static const auto xmlns_o = std::string("urn:schemas-microsoft-com:office:office");
+    static const auto xmlns_v = std::string("urn:schemas-microsoft-com:vml");
 	static const auto xmlns_x = std::string("urn:schemas-microsoft-com:office:excel");
 
 	serializer().start_element("xml");
@@ -2388,7 +2388,7 @@ void xlsx_producer::write_vml_drawings(const relationship &rel, worksheet ws,
 	serializer().namespace_decl(xmlns_x, "x");
 	serializer().namespace_decl(xmlns_mv, "mv");
 
-	serializer().start_element(xmlns_o, "shapeLayout");
+	serializer().start_element(xmlns_o, "shapelayout");
 	serializer().attribute(xml::qname(xmlns_v, "ext"), "edit");
 	serializer().start_element(xmlns_o, "idmap");
 	serializer().attribute(xml::qname(xmlns_v, "ext"), "edit");
@@ -2401,7 +2401,7 @@ void xlsx_producer::write_vml_drawings(const relationship &rel, worksheet ws,
 	auto file_index = std::stoull(filename.substr(index_pos + 1));
 	serializer().attribute("data", file_index);
 	serializer().end_element(xmlns_o, "idmap");
-	serializer().end_element(xmlns_o, "shapeLayout");
+	serializer().end_element(xmlns_o, "shapelayout");
 
 	serializer().start_element(xmlns_v, "shapetype");
 	serializer().attribute("id", "_x0000_t202");
@@ -2422,9 +2422,10 @@ void xlsx_producer::write_vml_drawings(const relationship &rel, worksheet ws,
 	for (const auto &cell_ref : cells)
 	{
         auto comment = ws.get_cell(cell_ref).comment();
+        auto shape_id = 1024 * file_index + 1 + comment_index * 2;
 
 		serializer().start_element(xmlns_v, "shape");
-		serializer().attribute("id", "_x0000_s" + std::to_string(file_index) + "02" + std::to_string(comment_index));
+		serializer().attribute("id", "_x0000_s" + std::to_string(shape_id));
 		serializer().attribute("type", "#_x0000_t202");
 		std::string style("position:absolute;margin-left:80pt;margin-top:");
 		style.append(std::to_string(2 + comment_index * 4));
@@ -2456,10 +2457,10 @@ void xlsx_producer::write_vml_drawings(const relationship &rel, worksheet ws,
 
 		serializer().start_element(xmlns_v, "textbox");
 		serializer().attribute("style", "mso-direction-alt:auto");
-		serializer().start_element(xmlns_v, "div");
+		serializer().start_element("div");
 		serializer().attribute("style", "text-align:left");
 		serializer().characters("");
-		serializer().end_element(xmlns_v, "div");
+		serializer().end_element("div");
 		serializer().end_element(xmlns_v, "textbox");
 
 		serializer().start_element(xmlns_x, "ClientData");
