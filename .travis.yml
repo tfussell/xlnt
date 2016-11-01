@@ -24,6 +24,8 @@ matrix:
       env: 
         - COMPILER=g++-4.9
         - COVERAGE=ON
+        - STATIC=ON
+        - SAMPLES=OFF
 
     - os: linux
       compiler: gcc
@@ -37,11 +39,13 @@ matrix:
       env:
         - COMPILER=g++-5
         - COVERAGE=OFF
+        - STATIC=OFF
+        - SAMPLES=ON
 
 script:
   - mkdir build
   - cd build
-  - cmake -D STATIC=ON -D SAMPLES=ON -D COVERAGE=$COVERAGE -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=Debug ..
+  - cmake -D STATIC=$STATIC -D SAMPLES=$STATIC -D COVERAGE=$COVERAGE -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=Debug ..
   - cmake --build .
   - cd bin && ./xlnt.test
   - find .
