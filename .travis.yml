@@ -48,4 +48,6 @@ script:
   - cmake -D STATIC=$STATIC -D SAMPLES=$SAMPLES -D COVERAGE=$COVERAGE -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=Debug ..
   - cmake --build .
   - cd bin && ./xlnt.test
-  - find ../../
+  - cd ..
+  - find source/CMakeFiles/xlnt.dir
+  - if [ "$COMPILER" = "g++4.9" ]; then coveralls --root source/CMakeFiles/xlnt.dir --verbose -x ".cpp" --gcov-options '\-p'
