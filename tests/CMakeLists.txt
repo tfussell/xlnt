@@ -48,6 +48,10 @@ file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/tests")
 set(RUNNER "${CMAKE_CURRENT_BINARY_DIR}/runner-autogen.cpp")
 set_source_files_properties(${RUNNER} PROPERTIES GENERATED TRUE)
 
+if(COVERAGE)
+    SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -lgcov --coverage")
+endif()
+
 add_executable(${PROJECT_NAME} ${TEST_HELPERS} ${TESTS} ${RUNNER} ${PUGIXML} $<TARGET_OBJECTS:xlnt.third-party> ${XLNT_ZIP})
 
 source_group(helpers FILES ${TEST_HELPERS})
