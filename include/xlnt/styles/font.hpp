@@ -36,7 +36,7 @@ class style;
 /// <summary>
 /// Describes the font style of a particular cell.
 /// </summary>
-class XLNT_API font : public hashable
+class XLNT_API font
 {
 public:
     enum class underline_style
@@ -91,9 +91,16 @@ public:
     font &scheme(const std::string &scheme);
 
     optional<std::string> scheme() const;
-
-protected:
-    std::string to_hash_string() const override;
+    
+    /// <summary>
+    /// Returns true if left is exactly equal to right.
+    /// </summary>
+    friend bool operator==(const font &left, const font &right);
+    
+    /// <summary>
+    /// Returns true if left is not exactly equal to right.
+    /// </summary>
+    friend bool operator!=(const font &left, const font &right) { return !(left == right); }
 
 private:
     friend class style;

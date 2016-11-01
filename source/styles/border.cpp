@@ -49,6 +49,38 @@ border::border_property &border::border_property::style(border_style s)
 	return *this;
 }
 
+bool operator==(const border::border_property &left,
+    const border::border_property &right)
+{
+    if (left.style().is_set() != right.style().is_set())
+    {
+        return false;
+    }
+    
+    if (left.style().is_set())
+    {
+        if (left.style().get() != right.style().get())
+        {
+            return false;
+        }
+    }
+    
+    if (left.color().is_set() != right.color().is_set())
+    {
+        return false;
+    }
+    
+    if (left.color().is_set())
+    {
+        if (left.color().get() != right.color().get())
+        {
+            return false;
+        }
+    }
+    
+    return true;
+}
+
 border::border()
 {
 }
@@ -112,45 +144,25 @@ optional<diagonal_direction> border::diagonal() const
 	return diagonal_direction_;
 }
 
-std::string border::to_hash_string() const
+bool operator==(const border &left, const border &right)
 {
-    std::string hash_string;
-
-	for (const auto &side_type : all_sides())
-	{
-		hash_string.append(std::to_string(static_cast<std::size_t>(side_type)));
-
-		if (side(side_type))
-		{
-			const auto side_properties = *side(side_type);
-
-			if (side_properties.style())
-			{
-				hash_string.append(std::to_string(static_cast<std::size_t>(*side_properties.style())));
-			}
-			else
-			{
-				hash_string.push_back(' ');
-			}
-
-			if (side_properties.color())
-			{
-				hash_string.append(std::to_string(std::hash<xlnt::hashable>()(*side_properties.color())));
-			}
-			else
-			{
-				hash_string.push_back(' ');
-			}
-		}
-		else
-		{
-			hash_string.push_back(' ');
-		}
-
-		hash_string.push_back(' ');
-	}
-
-    return hash_string;
+    for (auto side : border::all_sides())
+    {
+        if (left.side(side).is_set() != right.side(side).is_set())
+        {
+            return false;
+        }
+        
+        if (left.side(side).is_set())
+        {
+            if (left.side(side).get() != right.side(side).get())
+            {
+                return false;
+            }
+        }
+    }
+    
+    return true;
 }
 
 } // namespace xlnt

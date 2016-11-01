@@ -52,14 +52,9 @@ protection &protection::hidden(bool hidden)
 	return *this;
 }
 
-std::string protection::to_hash_string() const
+bool operator==(const protection &left, const protection &right)
 {
-    std::string hash_string = "protection";
-    
-    hash_string.append(locked_ ? "1" : "0");
-    hash_string.append(hidden_ ? "1" : "0");
-
-    return hash_string;
+    return left.locked_ == right.locked_ && left.hidden_ == right.hidden_;
 }
 
 } // namespace xlnt

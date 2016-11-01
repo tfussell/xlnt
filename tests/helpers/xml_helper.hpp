@@ -276,7 +276,7 @@ public:
 		std::vector<std::uint8_t> bytes;
 		wb.save(bytes);
 		std::istringstream file_stream(std::string(bytes.begin(), bytes.end()));
-		Partio::ZipFileReader archive(file_stream);
+		xlnt::detail::ZipFileReader archive(file_stream);
 
 		return string_matches_archive_member(expected, archive, part, content_type);
 	}
@@ -287,33 +287,32 @@ public:
 		std::vector<std::uint8_t> bytes;
 		wb.save(bytes);
 		std::istringstream file_stream(std::string(bytes.begin(), bytes.end()));
-		Partio::ZipFileReader archive(file_stream);
+		xlnt::detail::ZipFileReader archive(file_stream);
 
 		return file_matches_archive_member(expected, archive, part, content_type);
 	}
 
 	static bool string_matches_archive_member(const std::string &expected,
-		Partio::ZipFileReader &archive,
+		xlnt::detail::ZipFileReader &archive,
 		const xlnt::path &member,
         const std::string &content_type)
 	{
-		auto stream = archive.Get_File(member.string(), true);
-		std::string contents((std::istreambuf_iterator<char>(*stream)), (std::istreambuf_iterator<char>()));
-		delete stream;
+		auto &stream = archive.open(member.string());
+		std::string contents((std::istreambuf_iterator<char>(stream)), (std::istreambuf_iterator<char>()));
 		return compare_files(expected, contents, content_type);
 	}
     
     static bool file_matches_archive_member(const xlnt::path &file,
-		Partio::ZipFileReader &archive,
+		xlnt::detail::ZipFileReader &archive,
 		const xlnt::path &member,
         const std::string &content_type)
 	{
-		if (!archive.Has_File(member.string())) return false;
+		if (!archive.has_file(member.string())) return false;
 		std::vector<std::uint8_t> member_data;
 		xlnt::detail::vector_ostreambuf member_data_buffer(member_data);
 		std::ostream member_data_stream(&member_data_buffer);
-		std::unique_ptr<std::istream> member_stream(archive.Get_File(member.string(), true));
-		member_data_stream << member_stream->rdbuf();
+		auto &member_stream = archive.open(member.string());
+		member_data_stream << member_stream.rdbuf();
 		std::string contents(member_data.begin(), member_data.end());
 		return compare_files(file.read_contents(), contents, content_type);
 	}
@@ -337,15 +336,15 @@ public:
 	{
         xlnt::detail::vector_istreambuf left_buffer(left);
         std::istream left_stream(&left_buffer);
-        Partio::ZipFileReader left_archive(left_stream);
+        xlnt::detail::ZipFileReader left_archive(left_stream);
 
-		const auto left_info = left_archive.filename_to_header;
+		const auto left_info = left_archive.files();
 
         xlnt::detail::vector_istreambuf right_buffer(right);
         std::istream right_stream(&right_buffer);
-        Partio::ZipFileReader right_archive(right_stream);
+        xlnt::detail::ZipFileReader right_archive(right_stream);
 
-		const auto right_info = right_archive.filename_to_header;
+		const auto right_info = right_archive.files();
 
 		if (left_info.size() != right_info.size())
         {
@@ -354,14 +353,14 @@ public:
             std::cout << "left has: ";
             for (auto &info : left_info)
             {
-                std::cout << info.first << ", ";
+                std::cout << info << ", ";
             }
             std::cout << std::endl;
 
             std::cout << "right has: ";
             for (auto &info : right_info)
             {
-                std::cout << info.first << ", ";
+                std::cout << info << ", ";
             }
             std::cout << std::endl;
         }
@@ -379,33 +378,33 @@ public:
 
 		for (auto left_member : left_info)
 		{
-			if (!right_archive.Has_File(left_member.first))
+			if (!right_archive.has_file(left_member))
             {
                 match = false;
-                std::cout << "right is missing file: " << left_member.first << std::endl;
+                std::cout << "right is missing file: " << left_member << std::endl;
                 continue;
             }
 
-            std::unique_ptr<std::istream> left_member_stream(left_archive.Get_File(left_member.first));
+            auto &left_member_stream = left_archive.open(left_member);
             std::vector<std::uint8_t> left_contents_raw;
             xlnt::detail::vector_ostreambuf left_contents_buffer(left_contents_raw);
             std::ostream left_contents_stream(&left_contents_buffer);
-            left_contents_stream << left_member_stream->rdbuf();
+            left_contents_stream << left_member_stream.rdbuf();
             std::string left_member_contents(left_contents_raw.begin(), left_contents_raw.end());
 
-            std::unique_ptr<std::istream> right_member_stream(left_archive.Get_File(left_member.first));
+            auto &right_member_stream = left_archive.open(left_member);
             std::vector<std::uint8_t> right_contents_raw;
             xlnt::detail::vector_ostreambuf right_contents_buffer(right_contents_raw);
             std::ostream right_contents_stream(&right_contents_buffer);
-            right_contents_stream << right_member_stream->rdbuf();
+            right_contents_stream << right_member_stream.rdbuf();
             std::string right_member_contents(right_contents_raw.begin(), right_contents_raw.end());
 
             std::string left_content_type, right_content_type;
             
-            if (left_member.first != "[Content_Types].xml")
+            if (left_member != "[Content_Types].xml")
             {
-                left_content_type = left_manifest.get_content_type(xlnt::path(left_member.first));
-                right_content_type = right_manifest.get_content_type(xlnt::path(left_member.first));
+                left_content_type = left_manifest.get_content_type(xlnt::path(left_member));
+                right_content_type = right_manifest.get_content_type(xlnt::path(left_member));
             }
             else
             {
@@ -415,7 +414,7 @@ public:
             if (left_content_type != right_content_type)
             {
                 std::cout << "content types differ: "
-                    << left_member.first
+                    << left_member
                     << " "
                     << left_content_type
                     << " "
@@ -425,7 +424,7 @@ public:
             }
             else if (!compare_files(left_member_contents, right_member_contents, left_content_type))
 			{
-				std::cout << left_member.first << std::endl;
+				std::cout << left_member << std::endl;
                 match = false;
 			}
 		}

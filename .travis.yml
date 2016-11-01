@@ -23,6 +23,7 @@ matrix:
         - pip install --user git+git://github.com/eddyxu/cpp-coveralls.git
       env: 
         - COMPILER=g++-4.9
+        - COVERAGE=ON
 
     - os: linux
       compiler: gcc
@@ -35,25 +36,12 @@ matrix:
             - valgrind
       env:
         - COMPILER=g++-5
+        - COVERAGE=OFF
 
 script:
-  - cmake --version
   - mkdir build
   - cd build
-  - cmake -D SHARED=1 -D STATIC=0 -D WITH_TESTS=1 -D WITH_SAMPLES=1 -D CMAKE_CXX_COMPILER=$COMPILER ..
-  - cmake --build . --target xlnt.test
+  - cmake -D STATIC=ON -D SAMPLES=ON -D COVERAGE=$COVERAGE -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=Debug ..
+  - cmake --build .
   - cd bin && ./xlnt.test
-
-after_success:
-  - if [ "$COMPILER" = "g++-4.9" ]; then sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 90 ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 90 ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-4.9 90 ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then cd .. ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then rm -rf ./* ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then cmake -G "Unix Makefiles" -D DEBUG=1 -D COVERAGE=1 -D SHARED=0 -DCMAKE_BUILD_TYPE=Debug -D STATIC=1 .. ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then make ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then cd bin && ./xlnt.test ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then cd ../ ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then export OLDWD=$(pwd) ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then cd "build/CMakeFiles/xlnt.static.dir$(pwd)" ; pwd ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then coveralls --root $OLDWD --verbose -x ".cpp" --gcov-options '\-p' --exclude include --exclude third-party --exclude tests --exclude samples --exclude benchmarks -E ".*/source/.*/tests/.*" -E ".*/build/tests/runner-autogen.cpp.*" -E ".*CompilerIdCXX/.*" ; fi
+  - find .

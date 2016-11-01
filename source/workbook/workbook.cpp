@@ -637,7 +637,7 @@ std::size_t workbook::get_index(worksheet ws)
 		throw invalid_parameter();
     }
 
-    return std::distance(begin(), match);
+    return static_cast<std::size_t>(std::distance(begin(), match));
 }
 
 void workbook::create_named_range(const std::string &name, worksheet range_owner, const std::string &reference_string)

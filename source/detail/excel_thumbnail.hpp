@@ -5,6 +5,8 @@
 
 namespace xlnt {
 
+const std::vector<std::uint8_t> &excel_thumbnail();
+
 const std::vector<std::uint8_t> &excel_thumbnail()
 {
 	const auto *data = new std::vector<std::uint8_t>{

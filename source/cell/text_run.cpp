@@ -51,7 +51,7 @@ bool text_run::has_formatting() const
 
 bool text_run::has_size() const
 {
-    return (bool)size_;
+    return size_.is_set();
 }
 
 std::size_t text_run::get_size() const
@@ -66,7 +66,7 @@ void text_run::set_size(std::size_t size)
 
 bool text_run::has_color() const
 {
-    return (bool)color_;
+    return color_.is_set();
 }
 
 color text_run::get_color() const
@@ -81,7 +81,7 @@ void text_run::set_color(const color &new_color)
 
 bool text_run::has_font() const
 {
-    return (bool)font_;
+    return font_.is_set();
 }
 
 std::string text_run::get_font() const
@@ -96,7 +96,7 @@ void text_run::set_font(const std::string &font)
 
 bool text_run::has_family() const
 {
-    return (bool)family_;
+    return family_.is_set();
 }
 
 std::size_t text_run::get_family() const
@@ -111,7 +111,7 @@ void text_run::set_family(std::size_t family)
 
 bool text_run::has_scheme() const
 {
-    return (bool)scheme_;
+    return scheme_.is_set();
 }
 
 std::string text_run::get_scheme() const
@@ -126,7 +126,7 @@ void text_run::set_scheme(const std::string &scheme)
 
 bool text_run::bold_set() const
 {
-    return (bool)bold_;
+    return bold_.is_set();
 }
 
 bool text_run::is_bold() const

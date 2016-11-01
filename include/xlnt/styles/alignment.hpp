@@ -27,7 +27,6 @@
 #include <xlnt/utils/hash_combine.hpp>
 #include <xlnt/styles/horizontal_alignment.hpp>
 #include <xlnt/styles/vertical_alignment.hpp>
-#include <xlnt/utils/hashable.hpp>
 #include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
@@ -35,7 +34,7 @@ namespace xlnt {
 /// <summary>
 /// Alignment options for use in cell formats.
 /// </summary>
-class XLNT_API alignment : public hashable
+class XLNT_API alignment
 {
 public:
 	optional<bool> shrink() const;
@@ -62,8 +61,15 @@ public:
 
     alignment &vertical(vertical_alignment vertical);
 
-protected:
-    std::string to_hash_string() const override;
+    /// <summary>
+    /// Returns true if left is exactly equal to right.
+    /// </summary>
+    friend bool operator==(const alignment &left, const alignment &right);
+
+    /// <summary>
+    /// Returns true if left is not exactly equal to right.
+    /// </summary>
+    friend bool operator!=(const alignment &left, const alignment &right) { return !(left == right); }
 
 private:
 	optional<bool> shrink_to_fit_;

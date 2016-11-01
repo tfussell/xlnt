@@ -206,32 +206,6 @@ void color::set_tint(double tint)
 	tint_ = tint;
 }
 
-std::string color::to_hash_string() const
-{
-    std::string hash_string = "color";
-    
-    hash_string.append(std::to_string(static_cast<std::size_t>(type_)));
-	hash_string.append(std::to_string(static_cast<double>(tint_)));
-
-	if (type_ == type::indexed)
-	{
-		hash_string.append("indexed");
-		hash_string.append(std::to_string(indexed_.get_index()));
-	}
-	else if (type_ == type::theme)
-	{
-		hash_string.append("theme");
-		hash_string.append(std::to_string(theme_.get_index()));
-	}
-	else if (type_ == type::rgb)
-	{
-		hash_string.append("rgb");
-		hash_string.append(rgb_.get_hex_string());
-	}
-
-    return hash_string;
-}
-
 void color::assert_type(type t) const
 {
 	if (t != type_)

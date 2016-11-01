@@ -27,12 +27,12 @@
 
 namespace xlnt {
 
-const row_t constants::min_row()
+row_t constants::min_row()
 {
     return 1;
 }
     
-const row_t constants::max_row()
+row_t constants::max_row()
 {
     return std::numeric_limits<row_t>::max();
 }

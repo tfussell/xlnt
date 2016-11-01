@@ -28,11 +28,6 @@
 #include <vector>
 
 #include <detail/include_libstudxml.hpp>
-#include <detail/zip.hpp>
-
-namespace Partio {
-class ZipFileWriter;
-}
 
 namespace xml {
 class serializer;
@@ -48,6 +43,8 @@ class workbook;
 class worksheet;
 
 namespace detail {
+
+class ZipFileWriter;
 
 /// <summary>
 /// Handles writing a workbook into an XLSX file.
@@ -138,7 +135,7 @@ private:
 	/// </summary>
 	const workbook &source_;
     
-	Partio::ZipFileWriter *archive_;
+	ZipFileWriter *archive_;
     std::unique_ptr<std::ostream> current_part_stream_;
     std::unique_ptr<xml::serializer> current_part_serializer_;
 };

@@ -81,12 +81,12 @@ public:
     /// <summary>
     /// Construct a column from a string.
     /// </summary>
-    explicit column_t(const std::string &column_string);
+    column_t(const std::string &column_string);
 
     /// <summary>
     /// Construct a column from a string.
     /// </summary>
-    explicit column_t(const char *column_string);
+    column_t(const char *column_string);
 
     /// <summary>
     /// Copy constructor

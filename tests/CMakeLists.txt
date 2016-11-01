@@ -26,15 +26,21 @@ file(GLOB UTILS_TESTS ${LIBRARY_SOURCE_DIR}/utils/tests/test_*.hpp)
 file(GLOB WORKBOOK_TESTS ${LIBRARY_SOURCE_DIR}/workbook/tests/test_*.hpp)
 file(GLOB WORKSHEET_TESTS ${LIBRARY_SOURCE_DIR}/worksheet/tests/test_*.hpp)
 
-set(ZIP ${LIBRARY_SOURCE_DIR}/detail/zip.cpp)
+set(XLNT_ZIP
+    ${LIBRARY_SOURCE_DIR}/detail/zip.cpp
+    ${LIBRARY_SOURCE_DIR}/detail/zip.hpp)
 
 set(TESTS ${CELL_TESTS} ${CHARTS_TESTS} ${CHARTSHEET_TESTS} ${DRAWING_TESTS} 
     ${FORMULA_TESTS} ${PACKAGING_TESTS} ${STYLES_TESTS} ${UTILS_TESTS} 
 	${WORKBOOK_TESTS} ${WORKSHEET_TESTS})
-set(PUGIXML ${THIRD_PARTY_DIR}/pugixml/src/pugixml.cpp)
 
-file(GLOB TEST_HELPERS_HEADERS ${XLNT_TESTS_DIR}/helpers/*.hpp)
-file(GLOB TEST_HELPERS_SOURCES ${XLNT_TESTS_DIR}/helpers/*.cpp)
+set(PUGIXML
+    ${THIRD_PARTY_DIR}/pugixml/src/pugixml.cpp
+    ${THIRD_PARTY_DIR}/pugixml/src/pugixml.hpp
+    ${THIRD_PARTY_DIR}/pugixml/src/pugiconfig.hpp)
+
+file(GLOB TEST_HELPERS_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/helpers/*.hpp)
+file(GLOB TEST_HELPERS_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/helpers/*.cpp)
 
 SET(TEST_HELPERS ${TEST_HELPERS_HEADERS} ${TEST_HELPERS_SOURCES})
 
@@ -42,9 +48,11 @@ file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/tests")
 set(RUNNER "${CMAKE_CURRENT_BINARY_DIR}/runner-autogen.cpp")
 set_source_files_properties(${RUNNER} PROPERTIES GENERATED TRUE)
 
-add_executable(${PROJECT_NAME} ${TEST_HELPERS} ${TESTS} ${RUNNER} ${PUGIXML} $<TARGET_OBJECTS:xlnt.third-party> ${ZIP})
+add_executable(${PROJECT_NAME} ${TEST_HELPERS} ${TESTS} ${RUNNER} ${PUGIXML} $<TARGET_OBJECTS:xlnt.third-party> ${XLNT_ZIP})
 
 source_group(helpers FILES ${TEST_HELPERS})
+source_group(xlnt\\detail FILES ${XLNT_ZIP})
+source_group(third-party\\pugixml FILES ${PUGIXML})
 source_group(tests\\cell FILES ${CELL_TESTS})
 source_group(tests\\charts FILES ${CHARTS_TESTS})
 source_group(tests\\chartsheet FILES ${CHARTSHEET_TESTS})

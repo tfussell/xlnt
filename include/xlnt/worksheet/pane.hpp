@@ -24,6 +24,7 @@
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/cell/index_types.hpp>
 #include <xlnt/cell/cell_reference.hpp>
 
 namespace xlnt {
@@ -57,8 +58,8 @@ public:
     cell_reference top_left_cell;
     pane_state state;
     pane_corner active_pane;
-    int y_split;
-    int x_split;
+    row_t y_split;
+    column_t x_split;
 };
 
 } // namespace xlnt

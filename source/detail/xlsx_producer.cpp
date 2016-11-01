@@ -24,10 +24,12 @@
 #include <numeric> // for std::accumulate
 #include <string>
 
-#include <detail/custom_value_traits.hpp>
-#include <detail/xlsx_producer.hpp>
 #include <detail/constants.hpp>
+#include <detail/custom_value_traits.hpp>
+#include <detail/vector_streambuf.hpp>
 #include <detail/workbook_impl.hpp>
+#include <detail/xlsx_producer.hpp>
+#include <detail/zip.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/utils/path.hpp>
 #include <xlnt/packaging/manifest.hpp>
@@ -84,7 +86,7 @@ xlsx_producer::xlsx_producer(const workbook &target) : source_(target)
 
 void xlsx_producer::write(std::ostream &destination)
 {
-	Partio::ZipFileWriter archive(destination);
+	ZipFileWriter archive(destination);
     archive_ = &archive;
 	populate_archive();
 }
@@ -100,6 +102,13 @@ void xlsx_producer::populate_archive()
 
 	for (auto &rel : root_rels)
 	{
+        // thumbnail is binary content so we don't want to open an xml serializer stream
+        if (rel.get_type() == relationship::type::thumbnail)
+        {
+            write_thumbnail(rel);
+            continue;
+        }
+
         begin_part(rel.get_target().get_path());
 
 		switch (rel.get_type())
@@ -119,10 +128,6 @@ void xlsx_producer::populate_archive()
 		case relationship::type::office_document:
 			write_workbook(rel);
 			break;
-            
-		case relationship::type::thumbnail:
-            write_thumbnail(rel);
-            break;
         
         default:
             break;
@@ -154,7 +159,7 @@ void xlsx_producer::begin_part(const path &part)
 {
     end_part();
 
-    current_part_stream_.reset(archive_->Add_File(part.string(), true));
+    current_part_stream_.reset(archive_->open(part.string()));
     current_part_serializer_.reset(new xml::serializer(*current_part_stream_, part.string()));
 }
 
@@ -2498,11 +2503,12 @@ void xlsx_producer::write_unknown_relationships()
 
 void xlsx_producer::write_thumbnail(const relationship &rel)
 {
+    end_part();
+    
     const auto &thumbnail = source_.get_thumbnail();
-	std::unique_ptr<std::ostream> thumbnail_stream(
-		archive_->Add_File(rel.get_target().get_path().string(), true));
-	std::for_each(thumbnail.begin(), thumbnail.end(),
-		[&thumbnail_stream](std::uint8_t b) { *thumbnail_stream << b; });
+    current_part_stream_.reset(archive_->open(rel.get_target().get_path().string()));
+    vector_istreambuf thumbnail_buffer(thumbnail);
+    *current_part_stream_ << &thumbnail_buffer;
 }
 
 xml::serializer &xlsx_producer::serializer()

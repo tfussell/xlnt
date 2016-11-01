@@ -30,10 +30,7 @@
 #include <vector>
 
 #include <detail/include_libstudxml.hpp>
-
-namespace Partio {
-class ZipFileReader;
-}
+#include <detail/zip.hpp>
 
 namespace xlnt {
 
@@ -43,6 +40,8 @@ class workbook;
 class worksheet;
 
 namespace detail {
+
+class ZipFileReader;
 
 /// <summary>
 /// Handles writing a workbook into an XLSX file.
@@ -218,7 +217,7 @@ private:
 	/// <summary>
 	/// The ZIP file containing the files that make up the OOXML package.
 	/// </summary>
-	std::unique_ptr<Partio::ZipFileReader> archive_;
+	std::unique_ptr<ZipFileReader> archive_;
 
 	/// <summary>
 	/// Map of sheet titles to relationship IDs.

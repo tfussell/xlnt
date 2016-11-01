@@ -99,13 +99,13 @@ xlnt::color read_color(xml::parser &parser)
 	return result;
 }
 
-std::vector<xlnt::relationship> read_relationships(const xlnt::path &part, Partio::ZipFileReader &archive)
+std::vector<xlnt::relationship> read_relationships(const xlnt::path &part, xlnt::detail::ZipFileReader &archive)
 {
 	std::vector<xlnt::relationship> relationships;
-	if (!archive.Has_File(part.string())) return relationships;
+	if (!archive.has_file(part.string())) return relationships;
 
-    std::unique_ptr<std::istream> rels_stream(archive.Get_File(part.string(), true));
-    xml::parser parser(*rels_stream, part.string());
+    auto &rels_stream = archive.open(part.string());
+    xml::parser parser(rels_stream, part.string());
 
     xlnt::uri source(part.string());
 
@@ -152,7 +152,7 @@ xlsx_consumer::xlsx_consumer(workbook &target)
 
 void xlsx_consumer::read(std::istream &source)
 {
-	archive_.reset(new Partio::ZipFileReader(source));
+	archive_.reset(new ZipFileReader(source));
 	populate_workbook();
 }
 
@@ -170,8 +170,8 @@ void xlsx_consumer::populate_workbook()
 
 	for (const auto &rel : manifest.get_relationships(path("/")))
 	{
-		std::unique_ptr<std::istream> parser_stream(archive_->Get_File(rel.get_target().get_path().string(), true));
-        xml::parser parser(*parser_stream, rel.get_target().get_path().string());
+        xml::parser parser(archive_->open(rel.get_target().get_path().string()),
+            rel.get_target().get_path().string());
 		parser_ = &parser;
 
 		switch (rel.get_type())
@@ -235,11 +235,10 @@ void xlsx_consumer::populate_workbook()
 	for (const auto &rel : manifest.get_relationships(workbook_rel.get_target().get_path()))
 	{
 		path part_path(rel.get_source().get_path().parent().append(rel.get_target().get_path()));
-		std::unique_ptr<std::istream> parser_stream(archive_->Get_File(part_path.string(), true));
         auto using_namespaces = rel.get_type() == relationship::type::styles;
         auto receive = xml::parser::receive_default
             | (using_namespaces ? xml::parser::receive_namespace_decls : 0);
-        xml::parser parser(*parser_stream, part_path.string(), receive);
+        xml::parser parser(archive_->open(part_path.string()), part_path.string(), receive);
 		parser_ = &parser;
 
 		switch (rel.get_type())
@@ -268,9 +267,8 @@ void xlsx_consumer::populate_workbook()
 	for (const auto &rel : manifest.get_relationships(workbook_rel.get_target().get_path()))
     {
 		path part_path(rel.get_source().get_path().parent().append(rel.get_target().get_path()));
-		std::unique_ptr<std::istream> parser_stream(archive_->Get_File(part_path.string(), true));
         auto receive = xml::parser::receive_default | xml::parser::receive_namespace_decls;
-        xml::parser parser(*parser_stream, rel.get_target().get_path().string(), receive);
+        xml::parser parser(archive_->open(part_path.string()), rel.get_target().get_path().string(), receive);
 		parser_ = &parser;
 
 		switch (rel.get_type())
@@ -306,21 +304,17 @@ void xlsx_consumer::read_manifest()
 {
 	path package_rels_path("_rels/.rels");
 
-	if (!archive_->Has_File(package_rels_path.string()))
+	if (!archive_->has_file(package_rels_path.string()))
 	{
 		throw invalid_file("missing package rels");
 	}
 
 	auto package_rels = read_relationships(package_rels_path, *archive_);
-
-	std::unique_ptr<std::istream> parser_stream(archive_->Get_File("[Content_Types].xml", true));
-	//std::string stream_string((std::istreambuf_iterator<char>(*parser_stream)), std::istreambuf_iterator<char>());
-    xml::parser parser(*parser_stream, "[Content_Types].xml");
-    
 	auto &manifest = target_.get_manifest();
 
     static const auto xmlns = constants::get_namespace("content-types");
 
+    xml::parser parser(archive_->open("[Content_Types].xml"), "[Content_Types].xml");
     parser.next_expect(xml::parser::event_type::start_element, xmlns, "Types");
     parser.content(xml::content::complex);
 
@@ -355,10 +349,7 @@ void xlsx_consumer::read_manifest()
 			package_rel.get_id());
 	}
 
-	std::vector<std::string> file_list;
-	archive_->Get_File_List(file_list);
-
-	for (const auto &relationship_source_string : file_list)
+	for (const auto &relationship_source_string : archive_->files())
 	{
 		auto relationship_source = path(relationship_source_string);
 
@@ -2013,9 +2004,8 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
         part_path = std::accumulate(split_part_path.begin(), split_part_path.end(), path(""),
             [](const path &a, const std::string &b) { return a.append(b); });
 
-		std::unique_ptr<std::istream> parser_stream(archive_->Get_File(part_path.string(), true));
         auto receive = xml::parser::receive_default;
-        xml::parser parser(*parser_stream, rel.get_target().get_path().string(), receive);
+        xml::parser parser(archive_->open(part_path.string()), rel.get_target().get_path().string(), receive);
         parser_ = &parser;
 
         switch (rel.get_type())

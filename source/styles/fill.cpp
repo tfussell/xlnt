@@ -72,25 +72,40 @@ pattern_fill &pattern_fill::background(const color &new_background)
 	return *this;
 }
 
-std::string pattern_fill::to_hash_string() const
+bool operator==(const pattern_fill &left, const pattern_fill &right)
 {
-	std::string hash_string = "pattern_fill";
+    if (left.background().is_set() != right.background().is_set())
+    {
+        return false;
+    }
+    
+    if (left.background().is_set())
+    {
+        if (left.background().get() != right.background().get())
+        {
+            return false;
+        }
+    }
 
-	hash_string.append(background_ ? "1" : "0");
-
-	if (background_)
-	{
-		hash_string.append(std::to_string(background_->hash()));
-	}
-
-	hash_string.append(background_ ? "1" : "0");
-
-	if (background_)
-	{
-		hash_string.append(std::to_string(background_->hash()));
-	}
-
-	return hash_string;
+    if (left.foreground().is_set() != right.foreground().is_set())
+    {
+        return false;
+    }
+    
+    if (left.foreground().is_set())
+    {
+        if (left.foreground().get() != right.foreground().get())
+        {
+            return false;
+        }
+    }
+    
+    if (left.type() != right.type())
+    {
+        return false;
+    }
+    
+    return true;
 }
 
 // gradient_fill
@@ -166,21 +181,6 @@ gradient_fill &gradient_fill::bottom(double value)
 	return *this;
 }
 
-std::string gradient_fill::to_hash_string() const
-{
-	std::string hash_string = "gradient_fill";
-
-	hash_string.append(std::to_string(static_cast<std::size_t>(type_)));
-	hash_string.append(std::to_string(stops_.size()));
-	hash_string.append(std::to_string(degree_));
-	hash_string.append(std::to_string(left_));
-	hash_string.append(std::to_string(right_));
-	hash_string.append(std::to_string(top_));
-	hash_string.append(std::to_string(bottom_));
-
-	return hash_string;
-}
-
 gradient_fill &gradient_fill::add_stop(double position, color stop_color)
 {
 	stops_[position] = stop_color;
@@ -196,6 +196,46 @@ gradient_fill &gradient_fill::clear_stops()
 std::unordered_map<double, color> gradient_fill::stops() const
 {
 	return stops_;
+}
+
+bool operator==(const gradient_fill &left, const gradient_fill &right)
+{
+    if (left.type() != right.type())
+    {
+        return false;
+    }
+    
+    if (left.degree() != right.degree())
+    {
+        return false;
+    }
+    
+    if (left.bottom() != right.bottom())
+    {
+        return false;
+    }
+    
+    if (left.right() != right.right())
+    {
+        return false;
+    }
+    
+    if (left.top() != right.top())
+    {
+        return false;
+    }
+    
+    if (left.left() != right.left())
+    {
+        return false;
+    }
+    
+    if (left.stops() != right.stops())
+    {
+        return false;
+    }
+    
+    return true;
 }
 
 // fill
@@ -249,27 +289,19 @@ pattern_fill fill::pattern_fill() const
     return pattern_;
 }
 
-std::string fill::to_hash_string() const
+bool operator==(const fill &left, const fill &right)
 {
-	std::string hash_string = "fill";
+    if (left.type() != right.type())
+    {
+        return false;
+    }
+    
+    if (left.type() == fill_type::gradient)
+    {
+        return left.gradient_fill() == right.gradient_fill();
+    }
 
-	hash_string.append(std::to_string(static_cast<std::size_t>(type_)));
-
-	switch (type_)
-	{
-	case fill_type::pattern:
-		hash_string.append(std::to_string(pattern_.hash()));
-		break;
-
-	case fill_type::gradient:
-		hash_string.append(std::to_string(gradient_.hash()));
-		break;
-
-	default:
-		break;
-	} // switch (type_)
-
-	return hash_string;
+    return left.pattern_fill() == right.pattern_fill();
 }
 
 } // namespace xlnt

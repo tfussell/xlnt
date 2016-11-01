@@ -43,14 +43,14 @@ public:
         TS_ASSERT(const_fill.pattern_fill().background());
     }
     
-    void test_hash()
+    void test_comparison()
     {
         xlnt::fill pattern_fill = xlnt::pattern_fill().type(xlnt::pattern_fill_type::solid);
         xlnt::fill gradient_fill_linear = xlnt::gradient_fill().type(xlnt::gradient_fill_type::linear);
         xlnt::fill gradient_fill_path = xlnt::gradient_fill().type(xlnt::gradient_fill_type::path);
 
-        TS_ASSERT_DIFFERS(pattern_fill.hash(), gradient_fill_linear.hash());
-        TS_ASSERT_DIFFERS(gradient_fill_linear.hash(), gradient_fill_path.hash());
-        TS_ASSERT_DIFFERS(gradient_fill_path.hash(), pattern_fill.hash());
+        TS_ASSERT_DIFFERS(pattern_fill, gradient_fill_linear);
+        TS_ASSERT_DIFFERS(gradient_fill_linear, gradient_fill_path);
+        TS_ASSERT_DIFFERS(gradient_fill_path, pattern_fill);
     }
 };

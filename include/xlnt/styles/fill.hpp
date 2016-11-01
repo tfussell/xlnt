@@ -54,7 +54,7 @@ enum class XLNT_API pattern_fill_type
 	gray0625
 };
 
-class XLNT_API pattern_fill : public hashable
+class XLNT_API pattern_fill
 {
 public:
     pattern_fill();
@@ -71,8 +71,15 @@ public:
 
 	pattern_fill &background(const color &background);
 
-protected:
-    std::string to_hash_string() const override;
+    /// <summary>
+    /// Returns true if left is exactly equal to right.
+    /// </summary>
+    friend bool operator==(const pattern_fill &left, const pattern_fill &right);
+
+    /// <summary>
+    /// Returns true if left is not exactly equal to right.
+    /// </summary>
+    friend bool operator!=(const pattern_fill &left, const pattern_fill &right) { return !(left == right); }
 
 private:
 	pattern_fill_type type_ = pattern_fill_type::none;
@@ -87,7 +94,7 @@ enum class XLNT_API gradient_fill_type
 	path
 };
 
-class XLNT_API gradient_fill : public hashable
+class XLNT_API gradient_fill
 {
 public:
     gradient_fill();
@@ -134,9 +141,16 @@ public:
 	gradient_fill &clear_stops();
     
     std::unordered_map<double, color> stops() const;
+    
+    /// <summary>
+    /// Returns true if left is exactly equal to right.
+    /// </summary>
+    friend bool operator==(const gradient_fill &left, const gradient_fill &right);
 
-protected:
-    std::string to_hash_string() const override;
+    /// <summary>
+    /// Returns true if left is not exactly equal to right.
+    /// </summary>
+    friend bool operator!=(const gradient_fill &left, const gradient_fill &right) { return !(left == right); }
 
 private:
     gradient_fill_type type_ = gradient_fill_type::linear;
@@ -160,7 +174,7 @@ enum class XLNT_API fill_type
 /// <summary>
 /// Describes the fill style of a particular cell.
 /// </summary>
-class XLNT_API fill : public hashable
+class XLNT_API fill
 {
 public:
 	/// <summary>
@@ -203,9 +217,16 @@ public:
 	/// Throws an invalid_attribute exception if this is not a pattern fill.
 	/// </summary>
     class pattern_fill pattern_fill() const;
+    
+    /// <summary>
+    /// Returns true if left is exactly equal to right.
+    /// </summary>
+    friend bool operator==(const fill &left, const fill &right);
 
-protected:
-    std::string to_hash_string() const override;
+    /// <summary>
+    /// Returns true if left is not exactly equal to right.
+    /// </summary>
+    friend bool operator!=(const fill &left, const fill &right) { return !(left == right); }
 
 private:
     fill_type type_ = fill_type::pattern;

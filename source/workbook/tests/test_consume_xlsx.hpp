@@ -70,6 +70,10 @@ public:
 #ifdef WIN32
         xlnt::workbook wb;
         wb.load(L"data\\19_unicode_Λ.xlsx");
+#else
+        xlnt::workbook wb;
+        wb.load("data/19_unicode_Λ.xlsx");
 #endif
+	TS_ASSERT_EQUALS(wb.get_active_sheet().get_cell("A1").get_value<std::string>(), "unicode!");
     }
 };

@@ -38,6 +38,8 @@ class XLNT_API exception : public std::runtime_error
 {
 public:
     exception(const std::string &message);
+    exception(const exception &) = default;
+    virtual ~exception();
 
     void set_message(const std::string &message);
 
@@ -107,6 +109,8 @@ class XLNT_API invalid_column_string_index : public exception
 {
 public:
     invalid_column_string_index();
+    invalid_column_string_index(const invalid_column_string_index &) = default;
+    ~invalid_column_string_index();
 };
 
 /// <summary>
@@ -117,6 +121,8 @@ class XLNT_API invalid_cell_reference : public exception
 public:
     invalid_cell_reference(column_t column, row_t row);
     invalid_cell_reference(const std::string &reference_string);
+    invalid_cell_reference(const invalid_cell_reference &) = default;
+    ~invalid_cell_reference();
 };
 
 /// <summary>
@@ -126,6 +132,8 @@ class XLNT_API invalid_attribute : public exception
 {
 public:
     invalid_attribute();
+    invalid_attribute(const invalid_attribute &) = default;
+    virtual ~invalid_attribute();
 };
 
 /// <summary>

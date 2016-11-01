@@ -26,7 +26,6 @@
 #include <cstddef>
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/utils/hashable.hpp>
 #include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
@@ -34,7 +33,7 @@ namespace xlnt {
 /// <summary>
 /// Describes the protection style of a particular cell.
 /// </summary>
-class XLNT_API protection : public hashable
+class XLNT_API protection
 {
 public:
 	static protection unlocked_and_visible();
@@ -49,9 +48,16 @@ public:
     
     bool hidden() const;
     protection &hidden(bool hidden);
+    
+    /// <summary>
+    /// Returns true if left is exactly equal to right.
+    /// </summary>
+    friend bool operator==(const protection &left, const protection &right);
 
-protected:
-    std::string to_hash_string() const override;
+    /// <summary>
+    /// Returns true if left is not exactly equal to right.
+    /// </summary>
+    friend bool operator!=(const protection &left, const protection &right) { return !(left == right); }
 
 private:
     bool locked_;

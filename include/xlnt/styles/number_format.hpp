@@ -27,7 +27,6 @@
 #include <string>
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/utils/hashable.hpp>
 
 namespace xlnt {
 
@@ -36,7 +35,7 @@ enum class calendar;
 /// <summary>
 /// Describes the number formatting applied to text and numbers within a certain cell.
 /// </summary>
-class XLNT_API number_format : public hashable
+class XLNT_API number_format
 {
 public:
     static const number_format general();
@@ -88,8 +87,16 @@ public:
 
     bool is_date_format() const;
 
-protected:
-    std::string to_hash_string() const override;
+
+    /// <summary>
+    /// Returns true if left is exactly equal to right.
+    /// </summary>
+    friend bool operator==(const number_format &left, const number_format &right);
+
+    /// <summary>
+    /// Returns true if left is not exactly equal to right.
+    /// </summary>
+    friend bool operator!=(const number_format &left, const number_format &right) { return !(left == right); }
 
 private:
     bool id_set_;

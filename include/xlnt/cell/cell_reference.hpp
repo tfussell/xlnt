@@ -87,12 +87,6 @@ public:
     cell_reference(const std::string &reference_string);
 
     /// <summary>
-    /// Constructs a cell_reference from a string reprenting a column (e.g. A) and
-    /// a 1-indexed row.
-    /// </summary>
-    cell_reference(const std::string &column, row_t row);
-
-    /// <summary>
     /// Constructs a cell_reference from a 1-indexed column index and row index.
     /// </summary>
     cell_reference(column_t column, row_t row);

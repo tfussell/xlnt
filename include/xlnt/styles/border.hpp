@@ -33,7 +33,6 @@
 #include <xlnt/styles/color.hpp>
 #include <xlnt/styles/diagonal_direction.hpp>
 #include <xlnt/styles/side.hpp>
-#include <xlnt/utils/hashable.hpp>
 #include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
@@ -56,7 +55,7 @@ namespace xlnt {
 /// <summary>
 /// Describes the border style of a particular cell.
 /// </summary>
-class XLNT_API border : public hashable
+class XLNT_API border
 {
 public:
 	class XLNT_API border_property
@@ -67,6 +66,16 @@ public:
 
 		optional<border_style> style() const;
 		border_property &style(border_style style);
+
+        /// <summary>
+        /// Returns true if left is exactly equal to right.
+        /// </summary>
+        friend bool operator==(const border_property &left, const border_property &right);
+        
+        /// <summary>
+        /// Returns true if left is not exactly equal to right.
+        /// </summary>
+        friend bool operator!=(const border_property &left, const border_property &right) { return !(left == right); }
 
 	private:
 		optional<class color> color_;
@@ -82,9 +91,16 @@ public:
 
 	optional<diagonal_direction> diagonal() const;
 	border &diagonal(diagonal_direction dir);
-
-protected:
-    std::string to_hash_string() const override;
+    
+    /// <summary>
+    /// Returns true if left is exactly equal to right.
+    /// </summary>
+    friend bool operator==(const border &left, const border &right);
+    
+    /// <summary>
+    /// Returns true if left is not exactly equal to right.
+    /// </summary>
+    friend bool operator!=(const border &left, const border &right) { return !(left == right); }
 
 private:
 	optional<border_property> start_;

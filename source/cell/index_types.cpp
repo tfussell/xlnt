@@ -114,7 +114,7 @@ bool column_t::operator==(const column_t &other) const { return index == other.i
 
 bool column_t::operator!=(const column_t &other) const { return !(*this == other); }
 
-bool column_t::operator==(int other) const { return *this == column_t(other); }
+bool column_t::operator==(int other) const { return *this == column_t(static_cast<index_t>(other)); }
 
 bool column_t::operator==(index_t other) const { return *this == column_t(other); }
 

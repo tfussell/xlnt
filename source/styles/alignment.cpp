@@ -92,18 +92,87 @@ optional<int> alignment::rotation() const
 	return text_rotation_;
 }
 
-std::string alignment::to_hash_string() const
+bool operator==(const alignment &left, const alignment &right)
 {
-    std::string hash_string;
-
-    hash_string.append(wrap_text_ ? "1" : "0");
-    hash_string.append(shrink_to_fit_ ? "1" : "0");
-    hash_string.append(std::to_string(static_cast<std::size_t>(horizontal_)));
-    hash_string.append(std::to_string(static_cast<std::size_t>(vertical_)));
-    hash_string.append(std::to_string(text_rotation_));
-    hash_string.append(std::to_string(indent_));
+    if (left.horizontal().is_set() != right.horizontal().is_set())
+    {
+        return false;
+    }
     
-    return hash_string;
+    if (left.horizontal().is_set())
+    {
+        if (left.horizontal().get() != right.horizontal().get())
+        {
+            return false;
+        }
+    }
+
+    if (left.indent().is_set() != right.indent().is_set())
+    {
+        return false;
+    }
+    
+    if (left.indent().is_set())
+    {
+        if (left.indent().get() != right.indent().get())
+        {
+            return false;
+        }
+    }
+
+    if (left.rotation().is_set() != right.rotation().is_set())
+    {
+        return false;
+    }
+    
+    if (left.rotation().is_set())
+    {
+        if (left.rotation().get() != right.rotation().get())
+        {
+            return false;
+        }
+    }
+    
+    if (left.shrink().is_set() != right.shrink().is_set())
+    {
+        return false;
+    }
+    
+    if (left.shrink().is_set())
+    {
+        if (left.shrink().get() != right.shrink().get())
+        {
+            return false;
+        }
+    }
+    
+    if (left.vertical().is_set() != right.vertical().is_set())
+    {
+        return false;
+    }
+    
+    if (left.vertical().is_set())
+    {
+        if (left.vertical().get() != right.vertical().get())
+        {
+            return false;
+        }
+    }
+    
+    if (left.wrap().is_set() != right.wrap().is_set())
+    {
+        return false;
+    }
+    
+    if (left.wrap().is_set())
+    {
+        if (left.wrap().get() != right.wrap().get())
+        {
+            return false;
+        }
+    }
+    
+    return true;
 }
 
 } // namespace xlnt

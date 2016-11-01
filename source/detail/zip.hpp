@@ -33,56 +33,46 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 */
 
-#ifndef __ZIP__
-#define __ZIP__
+#pragma once
 
-#include <fstream>
 #include <iostream>
-#include <map>
-#include <stdexcept>
+#include <memory>
+#include <unordered_map>
 #include <vector>
 
-namespace Partio{
-struct ZipFileHeader;
-//#####################################################################
-// Functions Gzip_Out/Gzip_In - Create streams that read/write .gz
-//#####################################################################
-std::istream* Gzip_In(const std::string& filename,std::ios::openmode mode);
-std::ostream* Gzip_Out(const std::string& filename,std::ios::openmode mode);
-//#####################################################################
-// Class ZipFileWriter
-//#####################################################################
+namespace xlnt {
+namespace detail {
+
+struct zip_file_header;
+
 class ZipFileWriter
 {
-    std::ostream &ostream;
-    std::vector<ZipFileHeader*> files;
 public:
-
-//#####################################################################
     ZipFileWriter(std::ostream &filename);
     virtual ~ZipFileWriter();
-    std::ostream* Add_File(const std::string& filename,const bool binary=true);
-//#####################################################################
+    std::ostream* open(const std::string& filename);
+
+private:
+    std::ostream &target_stream_;
+    std::vector<zip_file_header> file_headers_;
 };
 
-//#####################################################################
-// Class ZipFileReader
-//#####################################################################
 class ZipFileReader
 {
-    std::istream &istream;
 public:
-    std::map<std::string,ZipFileHeader*> filename_to_header;
-    
-//#####################################################################
     ZipFileReader(std::istream &stream);
     virtual ~ZipFileReader();
-    std::istream* Get_File(const std::string& filename,const bool binary=true);
-    void Get_File_List(std::vector<std::string>& filenames) const;
-	bool Has_File(const std::string &filename) const;
+    std::istream &open(const std::string &filename);
+    std::vector<std::string> files() const;
+	bool has_file(const std::string &filename) const;
+
 private:
-    bool Find_And_Read_Central_Header();
-//#####################################################################
+    bool read_central_header();
+
+    std::unordered_map<std::string, zip_file_header> file_headers_;
+    std::istream &source_stream_;
+    std::unique_ptr<std::istream> read_stream_;
 };
-}
-#endif
+
+} // namespace detail
+} // namespace xlnt

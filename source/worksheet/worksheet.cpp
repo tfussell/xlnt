@@ -624,7 +624,7 @@ void worksheet::append(const std::unordered_map<int, std::string> &cells)
 
     for (auto cell : cells)
     {
-        get_cell(cell_reference(static_cast<column_t>(cell.first), row)).set_value(cell.second);
+        get_cell(cell_reference(static_cast<column_t::index_t>(cell.first), row)).set_value(cell.second);
     }
 }
 
@@ -985,31 +985,24 @@ range worksheet::iter_cells(bool skip_null)
     return range(*this, calculate_dimension(), major_order::row, skip_null);
 }
 
-void worksheet::add_print_title(int i)
+void worksheet::set_print_title_rows(row_t last_row)
 {
-    add_print_title(i, "rows");
+    set_print_title_rows(1, last_row);
 }
 
-void worksheet::add_print_title(int i, const std::string &rows_or_cols)
+void worksheet::set_print_title_rows(row_t first_row, row_t last_row)
 {
-    if(rows_or_cols == "cols")
-    {
-        set_print_title_cols("A:" + column_t::column_string_from_index(i));
-    }
-    else
-    {
-        set_print_title_rows("1:" + std::to_string(i));
-    }
+    d_->print_title_rows_ = std::to_string(first_row) + ":" + std::to_string(last_row);
 }
 
-void worksheet::set_print_title_rows(const std::string &rows)
+void worksheet::set_print_title_cols(column_t last_column)
 {
-    d_->print_title_rows_ = rows;
+    set_print_title_cols(1, last_column);
 }
 
-void worksheet::set_print_title_cols(const std::string &cols)
+void worksheet::set_print_title_cols(column_t first_column, column_t last_column)
 {
-    d_->print_title_cols_ = cols;
+    d_->print_title_cols_ = first_column.column_string() + ":" + last_column.column_string();
 }
 
 std::string worksheet::get_print_titles() const

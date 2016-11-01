@@ -153,22 +153,83 @@ optional<std::string> font::scheme() const
     return scheme_;
 }
 
-std::string font::to_hash_string() const
+bool operator==(const font &left, const font &right)
 {
-    std::string hash_string = "font";
+    if (left.bold() != right.bold())
+    {
+        return false;
+    }
 
-    hash_string.append(std::to_string(bold_));
-    hash_string.append(std::to_string(italic_));
-    hash_string.append(std::to_string(superscript_));
-    hash_string.append(std::to_string(subscript_));
-    hash_string.append(std::to_string(strikethrough_));
-    hash_string.append(name_);
-    hash_string.append(std::to_string(size_));
-    hash_string.append(std::to_string(static_cast<std::size_t>(underline_)));
-    hash_string.append(family_ ? std::to_string(*family_) : "");
-	hash_string.append(scheme_ ? *scheme_ : "");
+    if (left.color().is_set() != right.color().is_set())
+    {
+        return false;
+    }
+    
+    if (left.color().is_set())
+    {
+        if (left.color().get() != right.color().get())
+        {
+            return false;
+        }
+    }
 
-    return hash_string;
+    if (left.family().is_set() != right.family().is_set())
+    {
+        return false;
+    }
+    
+    if (left.family().is_set())
+    {
+        if (left.family().get() != right.family().get())
+        {
+            return false;
+        }
+    }
+    
+    if (left.italic() != right.italic())
+    {
+        return false;
+    }
+    
+    if (left.name() != right.name())
+    {
+        return false;
+    }
+    
+    if (left.scheme().is_set() != right.scheme().is_set())
+    {
+        return false;
+    }
+    
+    if (left.scheme().is_set())
+    {
+        if (left.scheme().get() != right.scheme().get())
+        {
+            return false;
+        }
+    }
+    
+    if (left.size() != right.size())
+    {
+        return false;
+    }
+    
+    if (left.strikethrough() != right.strikethrough())
+    {
+        return false;
+    }
+    
+    if (left.superscript() != right.superscript())
+    {
+        return false;
+    }
+    
+    if (left.underline() != right.underline())
+    {
+        return false;
+    }
+    
+    return true;
 }
 
 } // namespace xlnt

@@ -26,28 +26,6 @@
 
 namespace xlnt {
 
-/// <summary>
-/// Enumeration of possible limit styles.
-/// Excel places limitations on the number of rows and columns,
-/// but we may wish to change those limits in some cases. Values
-/// other than excel might prevent the file from being opened in Excel.
-/// </summary>
-enum class limit_style
-{
-    /// <summary>
-    /// limits used in openpyxl
-    /// </summary>
-    openpyxl,
-    /// <summary>
-    /// limits as determined by Excel
-    /// </summary>
-    excel,
-    /// <summary>
-    /// limits as high as possible based on system (i.e. 32-bit or 64-bit)
-    /// </summary>
-    maximum
-};
-
 #ifndef XLNT_API
 #if !defined(XLNT_STATIC) && defined(_MSC_VER)
 #ifdef XLNT_EXPORT

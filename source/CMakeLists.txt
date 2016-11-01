@@ -48,7 +48,15 @@ endforeach()
 
 # Platform specific settings
 if(COVERAGE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
+endif()
+
+if(MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything -Wno-c++98-compat -Wno-padded")
 endif()
 
 if(APPLE)
@@ -68,7 +76,6 @@ include_directories(${XLNT_INCLUDE_DIR}
     ${THIRD_PARTY_DIR}/utfcpp/source
     ${THIRD_PARTY_DIR}/pole
     ${THIRD_PARTY_DIR}/botan
-    ${THIRD_PARTY_DIR}/partio
     ${THIRD_PARTY_DIR}/zlib)
 
 file(GLOB ROOT_HEADERS ${XLNT_INCLUDE_DIR}/xlnt/*.hpp)
@@ -92,7 +99,7 @@ file(GLOB WORKBOOK_HEADERS ${XLNT_INCLUDE_DIR}/xlnt/workbook/*.hpp)
 file(GLOB WORKBOOK_SOURCES ${XLNT_SOURCE_DIR}/workbook/*.cpp)
 file(GLOB WORKSHEET_HEADERS ${XLNT_INCLUDE_DIR}/xlnt/worksheet/*.hpp)
 file(GLOB WORKSHEET_SOURCES ${XLNT_SOURCE_DIR}/worksheet/*.cpp)
-file(GLOB DETAIL_HEADERS ${XLNT_INCLUDE_DIR}/detail/*.hpp)
+file(GLOB DETAIL_HEADERS ${XLNT_SOURCE_DIR}/detail/*.hpp)
 file(GLOB DETAIL_SOURCES ${XLNT_SOURCE_DIR}/detail/*.cpp)
 
 set(XLNT_HEADERS ${ROOT_HEADERS} ${CELL_HEADERS} ${CHARTS_HEADERS} 

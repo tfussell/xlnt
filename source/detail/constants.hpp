@@ -35,12 +35,12 @@ struct XLNT_API constants
     /// <summary>
     /// Returns the lowest allowable row index in a worksheet.
     /// </summary>
-    static const row_t min_row();
+    static row_t min_row();
 
     /// <summary>
     /// Returns the largest allowable row index in a worksheet.
     /// </summary>
-    static const row_t max_row();
+    static row_t max_row();
 
     /// <summary>
     /// Returns the lowest allowable column index in a worksheet.

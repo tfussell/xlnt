@@ -87,7 +87,7 @@ private:
 /// <summary>
 /// Colors can be applied to many parts of a cell's style.
 /// </summary>
-class XLNT_API color : public hashable
+class XLNT_API color
 {
 public:
     /// <summary>
@@ -135,9 +135,6 @@ public:
     
     bool operator==(const color &other) const;
     bool operator!=(const color &other) const { return !(*this == other); }
-
-protected:
-    std::string to_hash_string() const override;
 
 private:
 	void assert_type(type t) const;

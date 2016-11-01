@@ -32,6 +32,10 @@ exception::exception(const std::string &message)
     set_message(message);
 }
 
+exception::~exception()
+{
+}
+
 void exception::set_message(const std::string &message)
 {
     message_ = message;
@@ -44,6 +48,10 @@ invalid_sheet_title::invalid_sheet_title(const std::string &title)
 
 invalid_column_string_index::invalid_column_string_index()
     : exception("column string index error")
+{
+}
+
+invalid_column_string_index::~invalid_column_string_index()
 {
 }
 
@@ -68,6 +76,10 @@ invalid_cell_reference::invalid_cell_reference(const std::string &coord_string)
 {
 }
 
+invalid_cell_reference::~invalid_cell_reference()
+{
+}
+
 illegal_character::illegal_character(char c)
     : exception(std::string("illegal character: (") + std::to_string(static_cast<unsigned char>(c)) + ")")
 {
@@ -80,6 +92,10 @@ invalid_parameter::invalid_parameter()
 
 invalid_attribute::invalid_attribute()
     : exception("bad attribute")
+{
+}
+
+invalid_attribute::~invalid_attribute()
 {
 }
 

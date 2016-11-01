@@ -521,11 +521,11 @@ public:
         xlnt::workbook wb;
 
         auto ws = wb.get_active_sheet();
-        ws.add_print_title(3);
+        ws.set_print_title_rows(3);
         TS_ASSERT_EQUALS(ws.get_print_titles(), "Sheet1!1:3");
         
         auto ws2 = wb.create_sheet();
-        ws2.add_print_title(4, "cols");
+        ws2.set_print_title_cols(4);
         TS_ASSERT_EQUALS(ws2.get_print_titles(), "Sheet2!A:D");
     }
     
@@ -534,17 +534,17 @@ public:
         xlnt::workbook wb;
         
         auto ws = wb.get_active_sheet();
-        ws.set_print_title_rows("1:4");
+        ws.set_print_title_rows(4);
         TS_ASSERT_EQUALS(ws.get_print_titles(), "Sheet1!1:4");
 
         auto ws2 = wb.create_sheet();
-        ws2.set_print_title_cols("A:F");
+        ws2.set_print_title_cols("F");
         TS_ASSERT_EQUALS(ws2.get_print_titles(), "Sheet2!A:F");
 
         auto ws3 = wb.create_sheet();
-        ws3.set_print_title_rows("1:2");
-        ws3.set_print_title_cols("C:D");
-        TS_ASSERT_EQUALS(ws3.get_print_titles(), "Sheet3!1:2,Sheet3!C:D");
+        ws3.set_print_title_rows(2, 3);
+        ws3.set_print_title_cols("C", "D");
+        TS_ASSERT_EQUALS(ws3.get_print_titles(), "Sheet3!2:3,Sheet3!C:D");
     }
     
     void test_print_area()

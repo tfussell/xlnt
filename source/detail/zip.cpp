@@ -33,10 +33,6 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 */
 
-extern "C"{
-#include <zlib.h>
-}
-
 #include <algorithm>
 #include <cassert>
 #include <fstream>
@@ -46,123 +42,129 @@ extern "C"{
 #include <cstring>
 #include <string>
 
+#include <zlib.h>
+
 #include <detail/zip.hpp>
 
-namespace Partio{
+namespace xlnt {
+namespace detail {
 
 template<class T>
-inline void Swap_Endianity(T& x)
+inline T read_int(std::istream &stream)
 {
-    assert(sizeof(T)<=8);
-    if(sizeof(T)>1) {
-        T old=x;
-        for(unsigned int k=1;k<=sizeof(T);k++) ((char*)&x)[k-1]=((char*)&old)[sizeof(T)-k];
-    }
+    T value;
+    stream.read(reinterpret_cast<char *>(&value), sizeof(T));
+    return value;
 }
 
 template<class T>
-inline void Read_Primitive(std::istream& stream,T& x)
+inline void write_int(std::ostream &stream, T value)
 {
-    stream.read(&(char&)x,sizeof(T));
+    stream.write(reinterpret_cast<char *>(&value), sizeof(T));
 }
 
-template<class T>
-inline void Write_Primitive(std::ostream& stream,const T& x)
+struct zip_file_header
 {
-    stream.write(&(char&)x,sizeof(T));
-}
-
-//#####################################################################
-// class ZipFileHeader
-//#####################################################################
-struct ZipFileHeader
-{
-    unsigned short version;
-    unsigned short flags;
-    unsigned short compression_type;
-    unsigned short stamp_date,stamp_time;
-    unsigned int crc;
-    unsigned int compressed_size,uncompressed_size;
+    std::uint16_t version = 20;
+    std::uint16_t flags = 0;
+    std::uint16_t compression_type = 8;
+    std::uint16_t stamp_date,stamp_time = 0;
+    std::uint32_t crc = 0;
+    std::uint32_t compressed_size = 0;
+    std::uint32_t uncompressed_size = 0;
     std::string filename;
-    unsigned int header_offset; // local header offset
+    std::string comment;
+    std::vector<std::uint8_t> extra;
+    std::uint32_t header_offset = 0; // local header offset
 
-    ZipFileHeader()
-    {}
+    zip_file_header()
+    {
+    }
 
-    ZipFileHeader(const std::string& filename_input)
-        :version(20),flags(0),compression_type(8),stamp_date(0),stamp_time(0),crc(0),
-        compressed_size(0),uncompressed_size(0),filename(filename_input),header_offset(0)
-    {}
+    bool read(std::istream& istream,const bool global)
+    {
+        auto sig = read_int<std::uint32_t>(istream);
 
-    bool Read(std::istream& istream,const bool global)
-    {unsigned int sig;
-    unsigned short version,flags;
-    // read and check for local/global magic
-    if(global){
-        Read_Primitive(istream,sig);
-        if(sig!=0x02014b50){std::cerr<<"Did not find global header signature"<<std::endl;return false;}
-        Read_Primitive(istream,version);}
-    else{
-        Read_Primitive(istream,sig);
-        if(sig!=0x04034b50){std::cerr<<"Did not find local header signature"<<std::endl;return false;}}
-    // Read rest of header
-    Read_Primitive(istream,version);
-    Read_Primitive(istream,flags);
-    Read_Primitive(istream,compression_type);
-    Read_Primitive(istream,stamp_date);
-    Read_Primitive(istream,stamp_time);
-    Read_Primitive(istream,crc);
-    Read_Primitive(istream,compressed_size);
-    Read_Primitive(istream,uncompressed_size);
-    unsigned short filename_length,extra_length;
-    Read_Primitive(istream,filename_length);
-    Read_Primitive(istream,extra_length);
-    unsigned short comment_length=0;
-    if(global){
-        Read_Primitive(istream,comment_length); // filecomment
-        unsigned short disk_number_start,int_file_attrib;
-        unsigned int ext_file_attrib;
-        Read_Primitive(istream,disk_number_start); // disk# start
-        Read_Primitive(istream,int_file_attrib); // internal file
-        Read_Primitive(istream,ext_file_attrib); // ext final
-        Read_Primitive(istream,header_offset);} // rel offset
-    char* buf=new char[std::max(comment_length,std::max(filename_length,extra_length))+1];
-    istream.read(buf,filename_length);
-    buf[filename_length]=0;
-    filename=std::string(buf, buf + filename_length);
-    istream.read(buf,extra_length);
-    if(global) istream.read(buf,comment_length);
-    delete [] buf;
-    return true;}
+        // read and check for local/global magic
+        if(global)
+        {
+            if(sig!=0x02014b50)
+            {
+                std::cerr<<"Did not find global header signature"<<std::endl;
+                return false;
+            }
+
+            version = read_int<std::uint16_t>(istream);
+        }
+        else if(sig!=0x04034b50)
+        {
+            std::cerr<<"Did not find local header signature"<<std::endl;
+            return false;
+        }
+
+        // Read rest of header
+        version = read_int<std::uint16_t>(istream);
+        flags = read_int<std::uint16_t>(istream);
+        compression_type = read_int<std::uint16_t>(istream);
+        stamp_date = read_int<std::uint16_t>(istream);
+        stamp_time = read_int<std::uint16_t>(istream);
+        crc = read_int<std::uint32_t>(istream);
+        compressed_size = read_int<std::uint32_t>(istream);
+        uncompressed_size = read_int<std::uint32_t>(istream);
+
+        auto filename_length = read_int<std::uint16_t>(istream);
+        auto extra_length = read_int<std::uint16_t>(istream);
+
+        std::uint16_t comment_length = 0;
+
+        if(global)
+        {
+            comment_length = read_int<std::uint16_t>(istream);
+            /*std::uint16_t disk_number_start = */read_int<std::uint16_t>(istream);
+            /*std::uint16_t int_file_attrib = */read_int<std::uint16_t>(istream);
+            /*std::uint32_t ext_file_attrib = */read_int<std::uint32_t>(istream);
+            header_offset = read_int<std::uint32_t>(istream);
+        }
+
+        filename.resize(filename_length, '\0');
+        istream.read(&filename[0], filename_length);
+        
+        extra.resize(extra_length, 0);
+        istream.read(reinterpret_cast<char *>(extra.data()), extra_length);
+
+        if (global)
+        {
+            comment.resize(comment_length, '\0');
+            istream.read(&comment[0], comment_length);
+        }
+
+        return true;
+    }
 
     void Write(std::ostream& ostream,const bool global) const
     {if(global){
-        Write_Primitive(ostream,(unsigned int)0x02014b50); // header sig
-        Write_Primitive(ostream,(unsigned short)00);} // version made by
-    else Write_Primitive(ostream,(unsigned int)0x04034b50);
-    Write_Primitive(ostream,version);
-    Write_Primitive(ostream,flags);
-    Write_Primitive(ostream,compression_type);
-    Write_Primitive(ostream,stamp_date);
-    Write_Primitive(ostream,stamp_time);
-    Write_Primitive(ostream,crc);
-    Write_Primitive(ostream,compressed_size);
-    Write_Primitive(ostream,uncompressed_size);
-    Write_Primitive(ostream,(unsigned short)filename.length());
-    Write_Primitive(ostream,(unsigned short)0); // extra lengthx
+        write_int(ostream,(unsigned int)0x02014b50); // header sig
+        write_int(ostream,(unsigned short)00);} // version made by
+    else write_int(ostream,(unsigned int)0x04034b50);
+    write_int(ostream,version);
+    write_int(ostream,flags);
+    write_int(ostream,compression_type);
+    write_int(ostream,stamp_date);
+    write_int(ostream,stamp_time);
+    write_int(ostream,crc);
+    write_int(ostream,compressed_size);
+    write_int(ostream,uncompressed_size);
+    write_int(ostream,(unsigned short)filename.length());
+    write_int(ostream,(unsigned short)0); // extra lengthx
     if(global){
-        Write_Primitive(ostream,(unsigned short)0); // filecomment
-        Write_Primitive(ostream,(unsigned short)0); // disk# start
-        Write_Primitive(ostream,(unsigned short)0); // internal file
-        Write_Primitive(ostream,(unsigned int)0); // ext final
-        Write_Primitive(ostream,(unsigned int)header_offset);} // rel offset
-    for(unsigned int i=0;i<filename.length();i++) Write_Primitive(ostream,filename.c_str()[i]);}
-//#####################################################################
+        write_int(ostream,(unsigned short)0); // filecomment
+        write_int(ostream,(unsigned short)0); // disk# start
+        write_int(ostream,(unsigned short)0); // internal file
+        write_int(ostream,(unsigned int)0); // ext final
+        write_int(ostream,(unsigned int)header_offset);} // rel offset
+    for(unsigned int i=0;i<filename.length();i++) write_int(ostream,filename.c_str()[i]);}
 };
 
-//#####################################################################
-// class ZipStreambufDecompress
-//#####################################################################
 class ZipStreambufDecompress:public std::streambuf
 {
     static const unsigned int buffer_size=512;
@@ -170,23 +172,23 @@ class ZipStreambufDecompress:public std::streambuf
 
     z_stream strm;
     unsigned char in[buffer_size],out[buffer_size];
-    ZipFileHeader header;
+    zip_file_header header;
     int total_read,total_uncompressed;
-    bool own_istream;
+    //bool own_istream;
     bool valid;
     bool compressed_data;
 
     static const unsigned short DEFLATE=8;
     static const unsigned short UNCOMPRESSED=0;
 public:
-    ZipStreambufDecompress(std::istream& stream,ZipFileHeader central_header)
-        :istream(stream),total_read(0),total_uncompressed(0),valid(true),header(central_header)
+    ZipStreambufDecompress(std::istream& stream,zip_file_header central_header)
+        :istream(stream),header(central_header),total_read(0),total_uncompressed(0),valid(true)
     {
         strm.zalloc=Z_NULL;strm.zfree=Z_NULL;strm.opaque=Z_NULL;strm.avail_in=0;strm.next_in=Z_NULL;
         setg((char*)in,(char*)in,(char*)in);
         setp(0,0);
         // skip the header
-        valid=header.Read(istream,false);
+        valid=header.read(istream,false);
         if(header.compression_type==DEFLATE) compressed_data=true;
         else if(header.compression_type==UNCOMPRESSED) compressed_data=false;
         else{
@@ -246,13 +248,8 @@ public:
 
     virtual int overflow(int c=EOF)
     {assert(false);return EOF;}
-
-//#####################################################################
 };
 
-//#####################################################################
-// class ZipStreambufCompress
-//#####################################################################
 class ZipStreambufCompress:public std::streambuf
 {
     static const int buffer_size=512;
@@ -261,16 +258,15 @@ class ZipStreambufCompress:public std::streambuf
     z_stream strm;
     unsigned char in[buffer_size],out[buffer_size];
 
-    ZipFileHeader* header;
-    unsigned int header_offset;
+    zip_file_header* header;
     unsigned int uncompressed_size;
     unsigned int crc;
 
     bool valid;
 
 public:
-    ZipStreambufCompress(ZipFileHeader* header,std::ostream& stream)
-        :ostream(stream),header(header),valid(true)
+    ZipStreambufCompress(zip_file_header* central_header,std::ostream& stream)
+        :ostream(stream),header(central_header),valid(true)
     {
         strm.zalloc=Z_NULL;strm.zfree=Z_NULL;strm.opaque=Z_NULL;
         int ret=deflateInit2(&strm,Z_DEFAULT_COMPRESSION,Z_DEFLATED,-MAX_WBITS,8,Z_DEFAULT_STRATEGY); 
@@ -293,7 +289,7 @@ public:
             ostream.seekp(header->header_offset);
             header->Write(ostream,false);
             ostream.seekp(final_position);}
-        else{Write_Primitive(ostream,crc);Write_Primitive(ostream,uncompressed_size);}}
+        else{write_int(ostream,crc);write_int(ostream,uncompressed_size);}}
     if(!header) delete &ostream;}
 
 protected:
@@ -329,174 +325,189 @@ protected:
     {if(c!=EOF){*pptr()=c;pbump(1);}
     if(process(false)==EOF) return EOF;
     return c;}
-
-//#####################################################################
 };
-//#####################################################################
-// Class ZIP_FILE_ISTREAM
-//#####################################################################
-// Class needed because istream cannot own its streambuf
+
 class ZIP_FILE_ISTREAM:public std::istream
 {
     ZipStreambufDecompress buf;
+
 public:
-    ZIP_FILE_ISTREAM(std::istream& istream,ZipFileHeader header)
+    ZIP_FILE_ISTREAM(std::istream& istream,zip_file_header header)
         :std::istream(&buf),buf(istream,header)
-    {}
+    {
+    }
 
     virtual ~ZIP_FILE_ISTREAM()
-    {}
-
-//#####################################################################
+    {
+    }
 };
-//#####################################################################
-// Class ZIP_FILE_OSTREAM
-//#####################################################################
-// Class needed because ostream cannot own its streambuf
+
 class ZIP_FILE_OSTREAM:public std::ostream
 {
     ZipStreambufCompress buf;
+
 public:
-    ZIP_FILE_OSTREAM(ZipFileHeader* header,std::ostream& ostream)
+    ZIP_FILE_OSTREAM(zip_file_header* header,std::ostream& ostream)
         :std::ostream(&buf),buf(header,ostream)
-    {}
+    {
+    }
 
     virtual ~ZIP_FILE_OSTREAM()
-    {}
-
-//#####################################################################
+    {
+    }
 };
-//#####################################################################
-// Function ZipFileWriter
-//#####################################################################
-ZipFileWriter::
-ZipFileWriter(std::ostream& stream) : ostream(stream)
+
+ZipFileWriter::ZipFileWriter(std::ostream& stream) : target_stream_(stream)
 {
-    if(!ostream) throw std::runtime_error("ZIP: Invalid file handle");
+    if(!target_stream_) throw std::runtime_error("ZIP: Invalid file handle");
 }
-//#####################################################################
-// Function ZipFileWriter
-//#####################################################################
-ZipFileWriter::
-~ZipFileWriter()
+
+ZipFileWriter::~ZipFileWriter()
 {
     // Write all file headers
-    std::ios::streampos final_position=ostream.tellp();
-    for(unsigned int i=0;i<files.size();i++){files[i]->Write(ostream,true);delete files[i];}
-    std::ios::streampos central_end=ostream.tellp();
+    std::ios::streampos final_position=target_stream_.tellp();
+    for(unsigned int i=0;i<file_headers_.size();i++)
+    {
+        file_headers_[i].Write(target_stream_,true);
+    }
+    std::ios::streampos central_end=target_stream_.tellp();
     // Write end of central
-    Write_Primitive(ostream,(unsigned int)0x06054b50); // end of central
-    Write_Primitive(ostream,(unsigned short)0); // this disk number
-    Write_Primitive(ostream,(unsigned short)0); // this disk number
-    Write_Primitive(ostream,(unsigned short)files.size()); // one entry in center in this disk
-    Write_Primitive(ostream,(unsigned short)files.size()); // one entry in center 
-    Write_Primitive(ostream,(unsigned int)(central_end-final_position)); // size of header
-    Write_Primitive(ostream,(unsigned int)final_position); // offset to header
-    Write_Primitive(ostream,(unsigned short)0); // zip comment
+    write_int(target_stream_,(unsigned int)0x06054b50); // end of central
+    write_int(target_stream_,(unsigned short)0); // this disk number
+    write_int(target_stream_,(unsigned short)0); // this disk number
+    write_int(target_stream_,(unsigned short)file_headers_.size()); // one entry in center in this disk
+    write_int(target_stream_,(unsigned short)file_headers_.size()); // one entry in center
+    write_int(target_stream_,(unsigned int)(central_end - final_position)); // size of header
+    write_int(target_stream_,(unsigned int)final_position); // offset to header
+    write_int(target_stream_,(unsigned short)0); // zip comment
 }
-//#####################################################################
-// Function ZipFileWriter
-//#####################################################################
-std::ostream* ZipFileWriter::
-Add_File(const std::string& filename,const bool binary)
+
+std::ostream* ZipFileWriter::open(const std::string& filename)
 {
-    files.push_back(new ZipFileHeader(filename));
-    return new ZIP_FILE_OSTREAM(files.back(),ostream);
+    zip_file_header header;
+    header.filename = filename;
+    file_headers_.push_back(header);
+    return new ZIP_FILE_OSTREAM(&file_headers_.back(),target_stream_);
 }
-//#####################################################################
-// Function ZipFileReader
-//#####################################################################
-ZipFileReader::
-ZipFileReader(std::istream &stream) : istream(stream)
+
+ZipFileReader::ZipFileReader(std::istream &stream) : source_stream_(stream)
 {
-    if(!istream) throw std::runtime_error("ZIP: Invalid file handle");
-    Find_And_Read_Central_Header();
+    if(!stream)
+    {
+        throw std::runtime_error("ZIP: Invalid file handle");
+    }
+
+    read_central_header();
 }
-//#####################################################################
-// Function ZipFileReader
-//#####################################################################
-ZipFileReader::
-~ZipFileReader()
+
+ZipFileReader::~ZipFileReader()
 {
-    std::map<std::string,ZipFileHeader*>::iterator i=filename_to_header.begin();
-    for(;i!=filename_to_header.end();++i)
-        delete i->second;
 }
-//#####################################################################
-// Function Find_And_Read_Central_Header
-//#####################################################################
-bool ZipFileReader::
-Find_And_Read_Central_Header()
+
+bool ZipFileReader::read_central_header()
 {
     // Find the header
     // NOTE: this assumes the zip file header is the last thing written to file...
-    istream.seekg(0,std::ios_base::end);
-    std::ios::streampos end_position=istream.tellg();
-    unsigned int max_comment_size=0xffff; // max size of header
-    unsigned int read_size_before_comment=22;
+    source_stream_.seekg(0,std::ios_base::end);
+    std::ios::streampos end_position=source_stream_.tellg();
+
+    auto max_comment_size = std::uint32_t(0xffff); // max size of header
+    auto read_size_before_comment = std::uint32_t(22);
+
     std::ios::streamoff read_start=max_comment_size+read_size_before_comment;
+
     if(read_start>end_position) read_start=end_position;
-    istream.seekg(end_position-read_start);
-    char *buf=new char[read_start];
+    source_stream_.seekg(end_position-read_start);
+    std::vector<char> buf(static_cast<std::size_t>(read_start), '\0');
     if(read_start<=0){std::cerr<<"ZIP: Invalid read buffer size"<<std::endl;return false;}
-    istream.read(buf,read_start);
-    int found=-1;
-    for(unsigned int i=0;i<read_start-3;i++){
-        if(buf[i]==0x50 && buf[i+1]==0x4b && buf[i+2]==0x05 && buf[i+3]==0x06){found=i;break;}}
-    delete [] buf;
-    if(found==-1){std::cerr<<"ZIP: Failed to find zip header"<<std::endl;return false;}
+    source_stream_.read(buf.data(), read_start);
+
+    auto found_header = false;
+    std::size_t header_index = 0;
+
+    for(std::size_t i = 0; i < read_start - 3; ++i)
+    {
+        if(buf[i] == 0x50 && buf[i + 1] == 0x4b && buf[i + 2] == 0x05 && buf[i + 3] == 0x06)
+        {
+            found_header = true;
+            header_index = i;
+            break;
+        }
+    }
+
+    if(!found_header)
+    {
+        std::cerr<<"ZIP: Failed to find zip header"<<std::endl;
+        return false;
+    }
+
     // seek to end of central header and read
-    istream.seekg(end_position-(read_start-found));
-    unsigned int word;
-    unsigned short disk_number1,disk_number2,num_files,num_files_this_disk;
-    Read_Primitive(istream,word); // end of central
-    Read_Primitive(istream,disk_number1); // this disk number
-    Read_Primitive(istream,disk_number2); // this disk number
-    if(disk_number1!=disk_number2 || disk_number1!=0){
-        std::cerr<<"ZIP: multiple disk zip files are not supported"<<std::endl;return false;}
-    Read_Primitive(istream,num_files); // one entry in center in this disk
-    Read_Primitive(istream,num_files_this_disk); // one entry in center 
-    if(num_files != num_files_this_disk){
-        std::cerr<<"ZIP: multi disk zip files are not supported"<<std::endl;return false;}
-    unsigned int size_of_header,header_offset;
-    Read_Primitive(istream,size_of_header); // size of header
-    Read_Primitive(istream,header_offset); // offset to header
+    source_stream_.seekg(end_position - (read_start - static_cast<std::ptrdiff_t>(header_index)));
+
+    /*auto word = */read_int<std::uint32_t>(source_stream_);
+    auto disk_number1 = read_int<std::uint16_t>(source_stream_);
+    auto disk_number2 = read_int<std::uint16_t>(source_stream_);
+
+    if(disk_number1 != disk_number2 || disk_number1 != 0)
+    {
+        std::cerr<<"ZIP: multiple disk zip files are not supported"<<std::endl;
+        return false;
+    }
+
+    auto num_files = read_int<std::uint16_t>(source_stream_); // one entry in center in this disk
+    auto num_files_this_disk = read_int<std::uint16_t>(source_stream_); // one entry in center
+
+    if(num_files != num_files_this_disk)
+    {
+        std::cerr<<"ZIP: multi disk zip files are not supported"<<std::endl;
+        return false;
+    }
+
+    /*auto size_of_header = */read_int<std::uint32_t>(source_stream_); // size of header
+    auto header_offset = read_int<std::uint32_t>(source_stream_); // offset to header
+
     // go to header and read all file headers
-    istream.seekg(header_offset);
-    for(int i=0;i<num_files;i++){
-        ZipFileHeader* header=new ZipFileHeader;
-        bool valid=header->Read(istream,true);
-        if(valid) filename_to_header[header->filename]=header;}
+    source_stream_.seekg(header_offset);
+
+    for (std::uint16_t i = 0; i < num_files; ++i)
+    {
+        zip_file_header header;
+
+        if (header.read(source_stream_, true))
+        {
+            file_headers_[header.filename] = header;
+        }
+    }
+
     return true;
 }
-//#####################################################################
-// Function Get_File
-//#####################################################################
-std::istream* ZipFileReader::Get_File(const std::string& filename,const bool binary)
+
+std::istream &ZipFileReader::open(const std::string &filename)
 {
-    std::map<std::string,ZipFileHeader*>::iterator i=filename_to_header.find(filename);
-    if(i!=filename_to_header.end()){
-        ZipFileHeader* header=i->second;
-        istream.seekg((*header).header_offset);return new ZIP_FILE_ISTREAM(istream,*header);
+    if (!has_file(filename))
+    {
+        throw "not found";
     }
-    return 0;
-}
-//#####################################################################
-// Function Get_File_List
-//#####################################################################
-void ZipFileReader::Get_File_List(std::vector<std::string>& filenames) const
-{
-    filenames.clear();
-    std::map<std::string,ZipFileHeader*>::const_iterator i=filename_to_header.begin();
-    for(;i!=filename_to_header.end();++i)
-        filenames.push_back(i->first);
-}
-//#####################################################################
-// Function Has_File
-//#####################################################################
-bool ZipFileReader::Has_File(const std::string &filename) const
-{
-	return filename_to_header.find(filename) != filename_to_header.end();
+
+    auto header = file_headers_.at(filename);
+    source_stream_.seekg(header.header_offset);
+    read_stream_.reset(new ZIP_FILE_ISTREAM(source_stream_, header));
+
+    return *read_stream_;
 }
 
-} // namespace Partio
+std::vector<std::string> ZipFileReader::files() const
+{
+    std::vector<std::string> filenames;
+    std::transform(file_headers_.begin(), file_headers_.end(), std::back_inserter(filenames),
+        [](const std::pair<std::string, zip_file_header> &h) { return h.first; });
+    return filenames;
+}
+
+bool ZipFileReader::has_file(const std::string &filename) const
+{
+	return file_headers_.count(filename) != 0;
+}
+
+} // namespace detail
+} // namespace xlnt

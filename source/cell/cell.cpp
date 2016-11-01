@@ -522,7 +522,7 @@ void cell::set_error(const std::string &error)
 
 cell cell::offset(int column, int row)
 {
-    return get_worksheet().get_cell(cell_reference(d_->column_ + column, d_->row_ + row));
+    return get_worksheet().get_cell(get_reference().make_offset(column, row));
 }
 
 worksheet cell::get_worksheet()

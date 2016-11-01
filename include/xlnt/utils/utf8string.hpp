@@ -24,7 +24,6 @@
 #include <string>
 #include <vector>
 
-#include <utf8.h>
 #include <xlnt/xlnt_config.hpp> // for XLNT_API
 
 #include <xlnt/xlnt_config.hpp>

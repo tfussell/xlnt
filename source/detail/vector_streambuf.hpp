@@ -48,39 +48,32 @@ public:
 private:
     int_type underflow()
     {
-        return (position_ == static_cast<std::streampos>(data_.size()))
-            ? traits_type::eof() : traits_type::to_int_type(data_[position_]);
+        if (position_ == data_.size())
+        {
+            return traits_type::eof();
+        }
+
+        return traits_type::to_int_type(static_cast<char>(data_[position_]));
     }
 
     int_type uflow()
     {
-        if (position_ == static_cast<std::streampos>(data_.size()))
+        if (position_ == data_.size())
         {
             return traits_type::eof();
         }
 
-        auto previous = position_;
-        position_ += 1;
-
-        return traits_type::to_int_type(data_[previous]);
-    }
-
-    int_type pbackfail(int_type ch)
-    {
-        if (position_ == std::streampos(0) || (ch != traits_type::eof() && ch != data_[position_ - std::streampos(1)]))
-        {
-            return traits_type::eof();
-        }
-
-        auto old_pos = position_;
-        position_ -= 1;
-
-        return traits_type::to_int_type(data_[position_]);
+        return traits_type::to_int_type(static_cast<char>(data_[position_++]));
     }
 
     std::streamsize showmanyc()
     {
-        return position_ < data_.size() ? data_.size() - position_ : -1;
+        if (position_ == data_.size())
+        {
+            return static_cast<std::streamsize>(-1);
+        }
+
+        return static_cast<std::streamsize>(data_.size() - position_);
     }
 
     std::streampos seekoff(std::streamoff off,
@@ -96,23 +89,56 @@ private:
             position_ = data_.size();
         }
 
-        position_ += off;
+        if (off < 0)
+        {
+            if (static_cast<std::size_t>(-off) > position_)
+            {
+                position_ = 0;
+                return static_cast<std::ptrdiff_t>(-1);
+            }
+            else
+            {
+                position_ -= static_cast<std::size_t>(-off);
+            }
+        }
+        else if (off > 0)
+        {
+            if (static_cast<std::size_t>(off) + position_ > data_.size())
+            {
+                position_ = data_.size();
+                return static_cast<std::ptrdiff_t>(-1);
+            }
+            else
+            {
+                position_ += static_cast<std::size_t>(off);
+            }
+        }
 
-        if (position_ < 0) return -1;
-        if (position_ > data_.size()) return -1;
-
-        return position_;
+        return static_cast<std::ptrdiff_t>(position_);
     }
 
     std::streampos seekpos(std::streampos sp,
         std::ios_base::openmode which = std::ios_base::in | std::ios_base::out)
     {
-        return position_ = sp;
+        if (sp < 0)
+        {
+            position_ = 0;
+        }
+        else if (static_cast<std::size_t>(sp) > data_.size())
+        {
+            position_ = data_.size();
+        }
+        else
+        {
+            position_ = static_cast<std::size_t>(sp);
+        }
+        
+        return static_cast<std::ptrdiff_t>(position_);
     }
 
 private:
     const std::vector<std::uint8_t> &data_;
-    std::streampos position_;
+    std::size_t position_;
 };
 
 /// <summary>
@@ -141,59 +167,91 @@ private:
             position_ = data_.size() - 1;
         }
 
-        return traits_type::to_int_type(data_[position_]);
+        return traits_type::to_int_type(static_cast<char>(data_[position_]));
     }
 
     std::streamsize xsputn(const char *s, std::streamsize n)
     {
         if (data_.empty())
         {
-            data_.resize(n);
+            data_.resize(static_cast<std::size_t>(n));
         }
         else
         {
             auto position_size = data_.size();
-            auto required_size = static_cast<std::size_t>(position_ + static_cast<std::streampos>(n));
+            auto required_size = static_cast<std::size_t>(position_ + static_cast<std::size_t>(n));
             data_.resize(std::max(position_size, required_size));
         }
 
-        std::copy(s, s + n, data_.begin() + position_);
-        position_ += n;
+        std::copy(s, s + n, data_.begin() + static_cast<std::ptrdiff_t>(position_));
+        position_ += static_cast<std::size_t>(n);
 
         return n;
     }
 
-    std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way,
+    std::streampos seekoff(std::streamoff off,
+        std::ios_base::seekdir way,
         std::ios_base::openmode which = std::ios_base::in | std::ios_base::out)
     {
         if (way == std::ios_base::beg)
         {
-            position_ = off;
-        }
-        else if (way == std::ios_base::cur)
-        {
-            position_ += off;
+            position_ = 0;
         }
         else if (way == std::ios_base::end)
         {
             position_ = data_.size();
         }
 
-        return (position_ < 0 || position_ > data_.size())
-          ? std::streampos(-1) : position_;
+        if (off < 0)
+        {
+            if (static_cast<std::size_t>(-off) > position_)
+            {
+                position_ = 0;
+                return static_cast<std::ptrdiff_t>(-1);
+            }
+            else
+            {
+                position_ -= static_cast<std::size_t>(-off);
+            }
+        }
+        else if (off > 0)
+        {
+            if (static_cast<std::size_t>(off) + position_ > data_.size())
+            {
+                position_ = data_.size();
+                return static_cast<std::ptrdiff_t>(-1);
+            }
+            else
+            {
+                position_ += static_cast<std::size_t>(off);
+            }
+        }
+
+        return static_cast<std::ptrdiff_t>(position_);
     }
 
     std::streampos seekpos(std::streampos sp,
         std::ios_base::openmode which = std::ios_base::in | std::ios_base::out)
     {
-        position_ = sp;
-        return (position_ < 0 || position_ > data_.size())
-          ? std::streampos(-1) : position_;
+        if (sp < 0)
+        {
+            position_ = 0;
+        }
+        else if (static_cast<std::size_t>(sp) > data_.size())
+        {
+            position_ = data_.size();
+        }
+        else
+        {
+            position_ = static_cast<std::size_t>(sp);
+        }
+        
+        return static_cast<std::ptrdiff_t>(position_);
     }
 
 private:
     std::vector<std::uint8_t> &data_;
-    std::streampos position_;
+    std::size_t position_;
 };
 
 } // namespace detail

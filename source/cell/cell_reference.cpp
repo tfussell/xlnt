@@ -61,11 +61,6 @@ cell_reference::cell_reference(const char *reference_string)
 {
 }
 
-cell_reference::cell_reference(const std::string &column, row_t row)
-    : cell_reference(column_t(column), row)
-{
-}
-
 cell_reference::cell_reference(column_t column_index, row_t row)
     : column_(column_index), row_(row), absolute_row_(false), absolute_column_(false)
 {
@@ -268,8 +263,10 @@ bool cell_reference::operator!=(const char *reference_string) const
 cell_reference cell_reference::make_offset(int column_offset, int row_offset) const
 {
     //TODO: check for overflow/underflow
-    return cell_reference(static_cast<column_t>(static_cast<int>(column_.index) + column_offset),
-                          static_cast<row_t>(static_cast<int>(row_) + row_offset));
+    auto relative_column = static_cast<column_t::index_t>(static_cast<int>(column_.index) + column_offset);
+    auto relative_row = static_cast<row_t>(static_cast<int>(row_) + row_offset);
+    return cell_reference(relative_column, relative_row);
+                          
 }
 
 bool cell_reference::operator==(const cell_reference &comparand) const

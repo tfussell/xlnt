@@ -223,10 +223,10 @@ public:
 
     range iter_cells(bool skip_null);
     
-    void add_print_title(int i);
-    void add_print_title(int i, const std::string &rows_or_cols);
-    void set_print_title_rows(const std::string &rows);
-    void set_print_title_cols(const std::string &rows);
+    void set_print_title_rows(row_t first_row, row_t last_row);
+    void set_print_title_rows(row_t last_row);
+    void set_print_title_cols(column_t first_column, column_t last_column);
+    void set_print_title_cols(column_t last_column);
     std::string get_print_titles() const;
     
     void set_print_area(const std::string &print_area);
