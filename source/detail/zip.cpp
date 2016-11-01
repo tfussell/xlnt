@@ -66,86 +66,73 @@ inline void write_int(std::ostream &stream, T value)
     stream.write(reinterpret_cast<char *>(&value), sizeof(T));
 }
 
-struct zip_file_header
+zip_file_header::zip_file_header()
 {
-    std::uint16_t version = 20;
-    std::uint16_t flags = 0;
-    std::uint16_t compression_type = 8;
-    std::uint16_t stamp_date,stamp_time = 0;
-    std::uint32_t crc = 0;
-    std::uint32_t compressed_size = 0;
-    std::uint32_t uncompressed_size = 0;
-    std::string filename;
-    std::string comment;
-    std::vector<std::uint8_t> extra;
-    std::uint32_t header_offset = 0; // local header offset
+}
 
-    zip_file_header()
+bool zip_file_header::read(std::istream& istream,const bool global)
+{
+    auto sig = read_int<std::uint32_t>(istream);
+
+    // read and check for local/global magic
+    if(global)
     {
-    }
-
-    bool read(std::istream& istream,const bool global)
-    {
-        auto sig = read_int<std::uint32_t>(istream);
-
-        // read and check for local/global magic
-        if(global)
+        if(sig!=0x02014b50)
         {
-            if(sig!=0x02014b50)
-            {
-                std::cerr<<"Did not find global header signature"<<std::endl;
-                return false;
-            }
-
-            version = read_int<std::uint16_t>(istream);
-        }
-        else if(sig!=0x04034b50)
-        {
-            std::cerr<<"Did not find local header signature"<<std::endl;
+            std::cerr<<"Did not find global header signature"<<std::endl;
             return false;
         }
 
-        // Read rest of header
         version = read_int<std::uint16_t>(istream);
-        flags = read_int<std::uint16_t>(istream);
-        compression_type = read_int<std::uint16_t>(istream);
-        stamp_date = read_int<std::uint16_t>(istream);
-        stamp_time = read_int<std::uint16_t>(istream);
-        crc = read_int<std::uint32_t>(istream);
-        compressed_size = read_int<std::uint32_t>(istream);
-        uncompressed_size = read_int<std::uint32_t>(istream);
-
-        auto filename_length = read_int<std::uint16_t>(istream);
-        auto extra_length = read_int<std::uint16_t>(istream);
-
-        std::uint16_t comment_length = 0;
-
-        if(global)
-        {
-            comment_length = read_int<std::uint16_t>(istream);
-            /*std::uint16_t disk_number_start = */read_int<std::uint16_t>(istream);
-            /*std::uint16_t int_file_attrib = */read_int<std::uint16_t>(istream);
-            /*std::uint32_t ext_file_attrib = */read_int<std::uint32_t>(istream);
-            header_offset = read_int<std::uint32_t>(istream);
-        }
-
-        filename.resize(filename_length, '\0');
-        istream.read(&filename[0], filename_length);
-        
-        extra.resize(extra_length, 0);
-        istream.read(reinterpret_cast<char *>(extra.data()), extra_length);
-
-        if (global)
-        {
-            comment.resize(comment_length, '\0');
-            istream.read(&comment[0], comment_length);
-        }
-
-        return true;
+    }
+    else if(sig!=0x04034b50)
+    {
+        std::cerr<<"Did not find local header signature"<<std::endl;
+        return false;
     }
 
-    void Write(std::ostream& ostream,const bool global) const
-    {if(global){
+    // Read rest of header
+    version = read_int<std::uint16_t>(istream);
+    flags = read_int<std::uint16_t>(istream);
+    compression_type = read_int<std::uint16_t>(istream);
+    stamp_date = read_int<std::uint16_t>(istream);
+    stamp_time = read_int<std::uint16_t>(istream);
+    crc = read_int<std::uint32_t>(istream);
+    compressed_size = read_int<std::uint32_t>(istream);
+    uncompressed_size = read_int<std::uint32_t>(istream);
+
+    auto filename_length = read_int<std::uint16_t>(istream);
+    auto extra_length = read_int<std::uint16_t>(istream);
+
+    std::uint16_t comment_length = 0;
+
+    if(global)
+    {
+        comment_length = read_int<std::uint16_t>(istream);
+        /*std::uint16_t disk_number_start = */read_int<std::uint16_t>(istream);
+        /*std::uint16_t int_file_attrib = */read_int<std::uint16_t>(istream);
+        /*std::uint32_t ext_file_attrib = */read_int<std::uint32_t>(istream);
+        header_offset = read_int<std::uint32_t>(istream);
+    }
+
+    filename.resize(filename_length, '\0');
+    istream.read(&filename[0], filename_length);
+        
+    extra.resize(extra_length, 0);
+    istream.read(reinterpret_cast<char *>(extra.data()), extra_length);
+
+    if (global)
+    {
+        comment.resize(comment_length, '\0');
+        istream.read(&comment[0], comment_length);
+    }
+
+    return true;
+}
+
+void zip_file_header::Write(std::ostream& ostream,const bool global) const
+{
+    if(global){
         write_int(ostream,(unsigned int)0x02014b50); // header sig
         write_int(ostream,(unsigned short)00);} // version made by
     else write_int(ostream,(unsigned int)0x04034b50);
@@ -165,8 +152,8 @@ struct zip_file_header
         write_int(ostream,(unsigned short)0); // internal file
         write_int(ostream,(unsigned int)0); // ext final
         write_int(ostream,(unsigned int)header_offset);} // rel offset
-    for(unsigned int i=0;i<filename.length();i++) write_int(ostream,filename.c_str()[i]);}
-};
+    for(unsigned int i=0;i<filename.length();i++) write_int(ostream,filename.c_str()[i]);
+}
 
 class ZipStreambufDecompress:public std::streambuf
 {

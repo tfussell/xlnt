@@ -43,7 +43,25 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 namespace xlnt {
 namespace detail {
 
-struct zip_file_header;
+struct zip_file_header
+{
+    std::uint16_t version = 20;
+    std::uint16_t flags = 0;
+    std::uint16_t compression_type = 8;
+    std::uint16_t stamp_date, stamp_time = 0;
+    std::uint32_t crc = 0;
+    std::uint32_t compressed_size = 0;
+    std::uint32_t uncompressed_size = 0;
+    std::string filename;
+    std::string comment;
+    std::vector<std::uint8_t> extra;
+    std::uint32_t header_offset = 0;
+
+    zip_file_header();
+
+    bool read(std::istream& istream, const bool global);
+    void Write(std::ostream& ostream, const bool global) const;
+};
 
 class ZipFileWriter
 {
