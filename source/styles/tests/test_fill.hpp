@@ -53,4 +53,22 @@ public:
         TS_ASSERT_DIFFERS(gradient_fill_linear, gradient_fill_path);
         TS_ASSERT_DIFFERS(gradient_fill_path, pattern_fill);
     }
+
+    void test_two_fills()
+    {
+        xlnt::workbook wb;
+        auto ws1 = wb.get_active_sheet();
+
+        auto cell1 = ws1.get_cell("A10");
+        auto cell2 = ws1.get_cell("A11");
+
+        cell1.set_fill(xlnt::fill::solid(xlnt::color::yellow()));
+        cell1.set_value("Fill Yellow");
+
+        cell2.set_fill(xlnt::fill::solid(xlnt::color::green()));
+        cell2.set_value(xlnt::date(2010, 7, 13));
+
+        TS_ASSERT_EQUALS(cell1.get_fill(), xlnt::fill::solid(xlnt::color::yellow()));
+        TS_ASSERT_EQUALS(cell2.get_fill(), xlnt::fill::solid(xlnt::color::green()));
+    }
 };

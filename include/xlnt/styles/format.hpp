@@ -51,6 +51,7 @@ public:
 	std::size_t id() const;
 
 	bool has_style() const;
+    void clear_style();
 	void style(const std::string &name);
 	void style(const xlnt::style &new_style);
 	const class style &style() const;

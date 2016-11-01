@@ -55,7 +55,6 @@ struct cell_impl
     optional<std::string> formula_;
     optional<std::string> hyperlink_;
     optional<std::size_t> format_id_;
-    optional<std::string> style_name_;
     optional<comment> comment_;
 };
 

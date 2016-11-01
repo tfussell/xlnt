@@ -509,6 +509,12 @@ private:
 	format &get_format_internal();
 
     /// <summary>
+    /// Use workbook::create_format() to create a new format then copy
+    /// this cell's formatting to that new format and return it.
+    /// </summary>
+    format &duplicate_format();
+
+    /// <summary>
     /// Private constructor to create a cell from its implementation.
     /// </summary>
     cell(detail::cell_impl *d);

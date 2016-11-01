@@ -38,6 +38,11 @@ std::size_t format::id() const
 	return d_->id;
 }
 
+void format::clear_style()
+{
+    d_->style.clear();
+}
+
 void format::style(const xlnt::style &new_style)
 {
 	d_->style = new_style.name();
