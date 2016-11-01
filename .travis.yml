@@ -48,4 +48,4 @@ script:
   - cmake -D STATIC=$STATIC -D SAMPLES=$SAMPLES -D COVERAGE=$COVERAGE -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=Debug ..
   - cmake --build .
   - cd bin && ./xlnt.test
-  - find .
+  - find ../../
