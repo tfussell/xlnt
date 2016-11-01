@@ -92,7 +92,7 @@ optional<int> alignment::rotation() const
 	return text_rotation_;
 }
 
-bool operator==(const alignment &left, const alignment &right)
+XLNT_API bool operator==(const alignment &left, const alignment &right)
 {
     if (left.horizontal().is_set() != right.horizontal().is_set())
     {

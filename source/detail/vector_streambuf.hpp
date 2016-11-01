@@ -76,9 +76,7 @@ private:
         return static_cast<std::streamsize>(data_.size() - position_);
     }
 
-    std::streampos seekoff(std::streamoff off,
-        std::ios_base::seekdir way,
-        std::ios_base::openmode which = std::ios_base::in | std::ios_base::out)
+    std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode)
     {
         if (way == std::ios_base::beg)
         {
@@ -117,8 +115,7 @@ private:
         return static_cast<std::ptrdiff_t>(position_);
     }
 
-    std::streampos seekpos(std::streampos sp,
-        std::ios_base::openmode which = std::ios_base::in | std::ios_base::out)
+    std::streampos seekpos(std::streampos sp, std::ios_base::openmode)
     {
         if (sp < 0)
         {
@@ -189,9 +186,7 @@ private:
         return n;
     }
 
-    std::streampos seekoff(std::streamoff off,
-        std::ios_base::seekdir way,
-        std::ios_base::openmode which = std::ios_base::in | std::ios_base::out)
+    std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode)
     {
         if (way == std::ios_base::beg)
         {
@@ -230,8 +225,7 @@ private:
         return static_cast<std::ptrdiff_t>(position_);
     }
 
-    std::streampos seekpos(std::streampos sp,
-        std::ios_base::openmode which = std::ios_base::in | std::ios_base::out)
+    std::streampos seekpos(std::streampos sp, std::ios_base::openmode)
     {
         if (sp < 0)
         {

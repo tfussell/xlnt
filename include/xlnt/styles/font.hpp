@@ -95,12 +95,12 @@ public:
     /// <summary>
     /// Returns true if left is exactly equal to right.
     /// </summary>
-    friend bool operator==(const font &left, const font &right);
+    XLNT_API friend bool operator==(const font &left, const font &right);
     
     /// <summary>
     /// Returns true if left is not exactly equal to right.
     /// </summary>
-    friend bool operator!=(const font &left, const font &right) { return !(left == right); }
+    XLNT_API friend bool operator!=(const font &left, const font &right) { return !(left == right); }
 
 private:
     friend class style;

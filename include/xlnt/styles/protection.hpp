@@ -52,12 +52,12 @@ public:
     /// <summary>
     /// Returns true if left is exactly equal to right.
     /// </summary>
-    friend bool operator==(const protection &left, const protection &right);
+    XLNT_API friend bool operator==(const protection &left, const protection &right);
 
     /// <summary>
     /// Returns true if left is not exactly equal to right.
     /// </summary>
-    friend bool operator!=(const protection &left, const protection &right) { return !(left == right); }
+    XLNT_API friend bool operator!=(const protection &left, const protection &right) { return !(left == right); }
 
 private:
     bool locked_;

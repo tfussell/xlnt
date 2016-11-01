@@ -844,7 +844,7 @@ bool cell::has_format() const
 
 void cell::set_format(const format &new_format)
 {
-	d_->format_id_ = get_workbook().create_format().id();
+	d_->format_id_ = new_format.id();
 }
 
 calendar cell::get_base_date() const

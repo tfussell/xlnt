@@ -72,7 +72,7 @@ pattern_fill &pattern_fill::background(const color &new_background)
 	return *this;
 }
 
-bool operator==(const pattern_fill &left, const pattern_fill &right)
+XLNT_API bool operator==(const pattern_fill &left, const pattern_fill &right)
 {
     if (left.background().is_set() != right.background().is_set())
     {
@@ -198,7 +198,7 @@ std::unordered_map<double, color> gradient_fill::stops() const
 	return stops_;
 }
 
-bool operator==(const gradient_fill &left, const gradient_fill &right)
+XLNT_API bool operator==(const gradient_fill &left, const gradient_fill &right)
 {
     if (left.type() != right.type())
     {
@@ -289,7 +289,7 @@ pattern_fill fill::pattern_fill() const
     return pattern_;
 }
 
-bool operator==(const fill &left, const fill &right)
+XLNT_API bool operator==(const fill &left, const fill &right)
 {
     if (left.type() != right.type())
     {

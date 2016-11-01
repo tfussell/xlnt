@@ -153,7 +153,7 @@ optional<std::string> font::scheme() const
     return scheme_;
 }
 
-bool operator==(const font &left, const font &right)
+XLNT_API bool operator==(const font &left, const font &right)
 {
     if (left.bold() != right.bold())
     {

@@ -91,12 +91,12 @@ public:
     /// <summary>
     /// Returns true if left is exactly equal to right.
     /// </summary>
-    friend bool operator==(const number_format &left, const number_format &right);
+    XLNT_API friend bool operator==(const number_format &left, const number_format &right);
 
     /// <summary>
     /// Returns true if left is not exactly equal to right.
     /// </summary>
-    friend bool operator!=(const number_format &left, const number_format &right) { return !(left == right); }
+    XLNT_API friend bool operator!=(const number_format &left, const number_format &right) { return !(left == right); }
 
 private:
     bool id_set_;

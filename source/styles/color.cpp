@@ -214,7 +214,7 @@ void color::assert_type(type t) const
 	}
 }
 
-bool color::operator==(const xlnt::color &other) const
+XLNT_API bool color::operator==(const xlnt::color &other) const
 {
     if (type_ != other.type_ || tint_ != other.tint_) return false;
     switch(type_)

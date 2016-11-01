@@ -74,12 +74,12 @@ public:
     /// <summary>
     /// Returns true if left is exactly equal to right.
     /// </summary>
-    friend bool operator==(const pattern_fill &left, const pattern_fill &right);
+    XLNT_API friend bool operator==(const pattern_fill &left, const pattern_fill &right);
 
     /// <summary>
     /// Returns true if left is not exactly equal to right.
     /// </summary>
-    friend bool operator!=(const pattern_fill &left, const pattern_fill &right) { return !(left == right); }
+    XLNT_API friend bool operator!=(const pattern_fill &left, const pattern_fill &right) { return !(left == right); }
 
 private:
 	pattern_fill_type type_ = pattern_fill_type::none;
@@ -145,12 +145,12 @@ public:
     /// <summary>
     /// Returns true if left is exactly equal to right.
     /// </summary>
-    friend bool operator==(const gradient_fill &left, const gradient_fill &right);
+    XLNT_API friend bool operator==(const gradient_fill &left, const gradient_fill &right);
 
     /// <summary>
     /// Returns true if left is not exactly equal to right.
     /// </summary>
-    friend bool operator!=(const gradient_fill &left, const gradient_fill &right) { return !(left == right); }
+    XLNT_API friend bool operator!=(const gradient_fill &left, const gradient_fill &right) { return !(left == right); }
 
 private:
     gradient_fill_type type_ = gradient_fill_type::linear;
@@ -221,12 +221,12 @@ public:
     /// <summary>
     /// Returns true if left is exactly equal to right.
     /// </summary>
-    friend bool operator==(const fill &left, const fill &right);
+    XLNT_API friend bool operator==(const fill &left, const fill &right);
 
     /// <summary>
     /// Returns true if left is not exactly equal to right.
     /// </summary>
-    friend bool operator!=(const fill &left, const fill &right) { return !(left == right); }
+    XLNT_API friend bool operator!=(const fill &left, const fill &right) { return !(left == right); }
 
 private:
     fill_type type_ = fill_type::pattern;

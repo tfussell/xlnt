@@ -818,6 +818,14 @@ worksheet workbook::create_sheet_with_rel(const std::string &title, const relati
     auto sheet_id = d_->worksheets_.size() + 1;
     d_->worksheets_.push_back(detail::worksheet_impl(this, sheet_id, title));
 
+    auto workbook_rel = d_->manifest_.get_relationship(path("/"), relationship::type::office_document);
+    auto sheet_absoulute_path = workbook_rel.get_target().get_path().parent().append(rel.get_target().get_path());
+    d_->manifest_.register_override_type(sheet_absoulute_path,
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
+    auto ws_rel = d_->manifest_.register_relationship(workbook_rel.get_target(),
+        relationship::type::worksheet, rel.get_target(), target_mode::internal);
+    d_->sheet_title_rel_id_map_[title] = ws_rel;
+
     return worksheet(&d_->worksheets_.back());
 }
 

@@ -2374,7 +2374,8 @@ void xlsx_producer::write_comments(const relationship &rel, worksheet ws,
 	serializer().end_element(xmlns, "comments");
 }
 
-void xlsx_producer::write_vml_drawings(const relationship &rel, worksheet ws, const std::vector<cell_reference> &cells)
+void xlsx_producer::write_vml_drawings(const relationship &rel, worksheet ws,
+    const std::vector<cell_reference> &cells)
 {
 	static const auto xmlns_o = std::string("urn:schemas-microsoft-com:vml");
 	static const auto xmlns_mv = std::string("http://macVmlSchemaUri");
@@ -2420,6 +2421,8 @@ void xlsx_producer::write_vml_drawings(const relationship &rel, worksheet ws, co
 
 	for (const auto &cell_ref : cells)
 	{
+        auto comment = ws.get_cell(cell_ref).comment();
+
 		serializer().start_element(xmlns_v, "shape");
 		serializer().attribute("id", "_x0000_s" + std::to_string(file_index) + "02" + std::to_string(comment_index));
 		serializer().attribute("type", "#_x0000_t202");

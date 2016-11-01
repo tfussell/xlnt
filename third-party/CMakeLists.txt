@@ -75,10 +75,6 @@ set(ZLIB ${CMAKE_CURRENT_SOURCE_DIR}/zlib/adler32.c
     ${CMAKE_CURRENT_SOURCE_DIR}/zlib/compress.c
     ${CMAKE_CURRENT_SOURCE_DIR}/zlib/crc32.c
     ${CMAKE_CURRENT_SOURCE_DIR}/zlib/deflate.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/gzclose.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/gzlib.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/gzread.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/gzwrite.c
     ${CMAKE_CURRENT_SOURCE_DIR}/zlib/infback.c
     ${CMAKE_CURRENT_SOURCE_DIR}/zlib/inffast.c
     ${CMAKE_CURRENT_SOURCE_DIR}/zlib/inflate.c
@@ -88,7 +84,6 @@ set(ZLIB ${CMAKE_CURRENT_SOURCE_DIR}/zlib/adler32.c
     ${CMAKE_CURRENT_SOURCE_DIR}/zlib/zutil.c
     ${CMAKE_CURRENT_SOURCE_DIR}/zlib/crc32.h
     ${CMAKE_CURRENT_SOURCE_DIR}/zlib/deflate.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/gzguts.h
     ${CMAKE_CURRENT_SOURCE_DIR}/zlib/inffast.h
     ${CMAKE_CURRENT_SOURCE_DIR}/zlib/inffixed.h
     ${CMAKE_CURRENT_SOURCE_DIR}/zlib/inflate.h

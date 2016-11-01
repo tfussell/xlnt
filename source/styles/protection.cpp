@@ -52,7 +52,7 @@ protection &protection::hidden(bool hidden)
 	return *this;
 }
 
-bool operator==(const protection &left, const protection &right)
+XLNT_API bool operator==(const protection &left, const protection &right)
 {
     return left.locked_ == right.locked_ && left.hidden_ == right.hidden_;
 }

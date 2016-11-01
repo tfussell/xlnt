@@ -64,12 +64,12 @@ public:
     /// <summary>
     /// Returns true if left is exactly equal to right.
     /// </summary>
-    friend bool operator==(const alignment &left, const alignment &right);
+    XLNT_API friend bool operator==(const alignment &left, const alignment &right);
 
     /// <summary>
     /// Returns true if left is not exactly equal to right.
     /// </summary>
-    friend bool operator!=(const alignment &left, const alignment &right) { return !(left == right); }
+    XLNT_API friend bool operator!=(const alignment &left, const alignment &right) { return !(left == right); }
 
 private:
 	optional<bool> shrink_to_fit_;

@@ -27,7 +27,6 @@
 #include <string>
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/utils/hashable.hpp>
 
 namespace xlnt {
 

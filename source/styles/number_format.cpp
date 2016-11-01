@@ -353,7 +353,7 @@ std::string number_format::format(long double number, calendar base_date) const
     return detail::number_formatter(format_string_, base_date).format_number(number);
 }
 
-bool operator==(const number_format &left, const number_format &right)
+XLNT_API bool operator==(const number_format &left, const number_format &right)
 {
     return left.id_set_ == right.id_set_
         && left.id_ == right.id_

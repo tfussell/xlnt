@@ -144,7 +144,7 @@ optional<diagonal_direction> border::diagonal() const
 	return diagonal_direction_;
 }
 
-bool operator==(const border &left, const border &right)
+XLNT_API bool operator==(const border &left, const border &right)
 {
     for (auto side : border::all_sides())
     {

@@ -38,11 +38,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <iterator> // for std::back_inserter
 #include <stdexcept>
 #include <cstring>
 #include <string>
 
-extern C {
+extern "C" {
 #include <zlib.h>
 }
 
