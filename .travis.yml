@@ -50,4 +50,4 @@ script:
   - cd bin && ./xlnt.test
   - cd ..
   - find source/CMakeFiles/xlnt.dir
-  - if [ "$COMPILER" = "g++4.9" ]; then coveralls --root source/CMakeFiles/xlnt.dir --verbose -x ".cpp" --gcov-options '\-p'
+  - if [ "$COMPILER" = "g++4.9" ]; then coveralls --root source/CMakeFiles/xlnt.dir --verbose -x ".cpp" --gcov-options '\-p' ; fi
