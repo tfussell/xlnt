@@ -42,7 +42,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 #include <cstring>
 #include <string>
 
+extern C {
 #include <zlib.h>
+}
 
 #include <detail/zip.hpp>
 
