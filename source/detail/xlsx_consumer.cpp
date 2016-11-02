@@ -1265,7 +1265,7 @@ void xlsx_consumer::read_stylesheet()
                 nf.set_format_string(format_string);
                 nf.set_id(string_to_size_t(parser().attribute("numFmtId")));
 
-                stylesheet.number_formats.push_back(nf);
+                stylesheet.number_formats[nf.get_id()] = nf;
                 parser().next_expect(xml::parser::event_type::end_element); // numFmt
             }
             
@@ -1510,9 +1510,9 @@ void xlsx_consumer::read_stylesheet()
         
         for (const auto &nf : stylesheet.number_formats)
         {
-            if (nf.get_id() == number_format_id)
+            if (nf.first == number_format_id)
             {
-                result = nf;
+                result = nf.second;
                 is_custom_number_format = true;
                 break;
             }
@@ -1552,7 +1552,7 @@ void xlsx_consumer::read_stylesheet()
     {
         auto &new_format = stylesheet.create_format();
         
-        new_format.style(stylesheet.styles.at(record.style_id.first).name());
+        new_format.d_->style = stylesheet.styles.at(record.style_id.first).name();
 
         new_format.alignment(record.alignment.first, record.alignment.second);
         new_format.border(stylesheet.borders.at(record.border_id.first), record.border_id.second);

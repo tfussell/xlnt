@@ -776,8 +776,8 @@ void xlsx_producer::write_styles(const relationship &rel)
 		for (const auto &num_fmt : number_formats)
 		{
 			serializer().start_element(xmlns, "numFmt");
-			serializer().attribute("numFmtId", num_fmt.get_id());
-			serializer().attribute("formatCode", num_fmt.get_format_string());
+			serializer().attribute("numFmtId", num_fmt.first);
+			serializer().attribute("formatCode", num_fmt.second.get_format_string());
 			serializer().end_element(xmlns, "numFmt");
 		}
         
@@ -1117,11 +1117,11 @@ void xlsx_producer::write_styles(const relationship &rel)
         if (current_format.alignment_applied()) serializer().attribute("applyAlignment", write_bool(true));
         if (current_format.protection_applied()) serializer().attribute("applyProtection", write_bool(true));
 
-		if (current_format.has_style())
+		if (current_format.d_->style.is_set())
 		{
 			serializer().attribute("xfId", std::distance(stylesheet.styles.begin(),
 				std::find_if(stylesheet.styles.begin(), stylesheet.styles.end(),
-					[&](const xlnt::style &s) { return s.name() == current_format.style().name(); })));
+					[&](const xlnt::style &s) { return s.name() == current_format.d_->style.get(); })));
 		}
 
 		if (current_format.alignment_applied())

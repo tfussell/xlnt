@@ -22,13 +22,14 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <detail/style_impl.hpp> // include order is important here
+#include <detail/stylesheet.hpp>
 #include <xlnt/styles/alignment.hpp>
 #include <xlnt/styles/border.hpp>
 #include <xlnt/styles/fill.hpp>
 #include <xlnt/styles/font.hpp>
 #include <xlnt/styles/number_format.hpp>
 #include <xlnt/styles/protection.hpp>
-#include <detail/style_impl.hpp> // include order is important here
 #include <xlnt/styles/style.hpp>
 
 namespace xlnt {
@@ -81,9 +82,171 @@ style &style::custom(bool value)
 	return *this;
 }
 
-bool style::operator==(const style &other)
+alignment &style::alignment()
 {
-	return d_ == other.d_;
+    return d_->parent->alignments.at(d_->alignment_id);
+}
+
+const alignment &style::alignment() const
+{
+    return d_->parent->alignments.at(d_->alignment_id);
+}
+
+void style::alignment(const xlnt::alignment &new_alignment, bool applied, bool update)
+{
+    if (update)
+    {
+        d_->alignment_id = 0;
+    }
+}
+
+xlnt::border &style::border()
+{
+    const auto &self = *this;
+    return const_cast<class border &>(self.border());
+}
+
+const xlnt::border &style::border() const
+{
+    if (!d_->border_id)
+    {
+        throw xlnt::exception("no border");
+    }
+
+	return d_->parent->borders.at(d_->border_id.get());
+}
+
+void style::border(const xlnt::border &new_border, bool applied, bool update)
+{
+    d_->border_id = d_->parent->add_border(new_border);
+}
+
+xlnt::fill &style::fill()
+{
+    const auto &self = *this;
+    return const_cast<class fill &>(self.fill());
+}
+
+const xlnt::fill &style::fill() const
+{
+    if (!d_->fill_id)
+    {
+        throw xlnt::exception("no border");
+    }
+
+	return d_->parent->fills.at(d_->fill_id.get());
+}
+
+void style::fill(const xlnt::fill &new_fill, bool applied, bool update)
+{
+    d_->fill_id = d_->parent->add_fill(new_fill);
+    d_->fill_applied = applied;
+}
+
+xlnt::font &style::font()
+{
+    const auto &self = *this;
+    return const_cast<class font &>(self.font());
+}
+
+const xlnt::font &style::font() const
+{
+    if (!d_->font_id)
+    {
+        throw xlnt::exception("no border");
+    }
+
+	return d_->parent->fonts.at(d_->font_id.get());
+}
+
+void style::font(const xlnt::font &new_font, bool applied, bool update)
+{
+    d_->font_id = d_->parent->add_font(new_font);
+    d_->font_applied = applied;
+}
+
+xlnt::number_format &style::number_format()
+{
+    const auto &self = *this;
+    return const_cast<class number_format &>(self.number_format());
+}
+
+const xlnt::number_format &style::number_format() const
+{
+    if (!d_->number_format_id)
+    {
+        throw xlnt::exception("no number format");
+    }
+
+	return d_->parent->number_formats.at(d_->number_format_id.get());
+}
+
+void style::number_format(const xlnt::number_format &new_number_format, bool applied, bool update)
+{
+	auto copy = new_number_format;
+
+	if (!copy.has_id())
+	{
+		copy.set_id(d_->parent->next_custom_number_format_id());
+		d_->parent->number_formats[copy.get_id()] = copy;
+	}
+
+    d_->number_format_id = copy.get_id();
+    d_->number_format_applied = applied;
+}
+
+protection &style::protection()
+{
+    return d_->parent->protections.at(d_->protection_id);
+}
+
+const protection &style::protection() const
+{
+    return d_->parent->protections.at(d_->protection_id);
+}
+
+void style::protection(const xlnt::protection &new_protection, bool applied, bool update)
+{
+    if (update)
+    {
+        d_->protection_id = 0;
+    }
+}
+
+
+bool style::alignment_applied() const
+{
+    return d_->alignment_applied;
+}
+
+bool style::border_applied() const
+{
+    return d_->border_applied;
+}
+
+bool style::fill_applied() const
+{
+    return d_->fill_applied;
+}
+
+bool style::font_applied() const
+{
+    return d_->font_applied;
+}
+
+bool style::number_format_applied() const
+{
+    return d_->number_format_applied;
+}
+
+bool style::protection_applied() const
+{
+    return d_->protection_applied;
+}
+
+XLNT_API bool operator==(const style &left, const style &right)
+{
+	return left.d_ == right.d_;
 }
 
 } // namespace xlnt

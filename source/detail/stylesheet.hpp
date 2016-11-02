@@ -25,6 +25,7 @@
 
 #include <list>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include <detail/format_impl.hpp>
@@ -38,22 +39,22 @@ namespace detail {
 
 struct stylesheet
 {
-    ~stylesheet() 
-	{
-	}
-
     format &create_format()
     {
-		format_impls.push_back(format_impl());
-		auto &impl = format_impls.back();
-		impl.parent = this;
-		impl.id = format_impls.size() - 1;
-		formats.push_back(format(&impl));
+	format_impls.push_back(format_impl());
+	auto &impl = format_impls.back();
+	impl.parent = this;
+	impl.id = format_impls.size() - 1;
+	formats.push_back(format(&impl));
         auto &format = formats.back();
-        
+
         if (!alignments.empty())
         {
             format.alignment(alignments.front(), false);
+        }
+        else
+        {
+            format.alignment(alignment(), false);
         }
         
         if (!borders.empty())
@@ -73,7 +74,7 @@ struct stylesheet
         
         if (!number_formats.empty())
         {
-            format.number_format(number_formats.front(), false);
+            format.number_format(number_formats.begin()->second, false);
         }
         
         if (!protections.empty())
@@ -84,10 +85,27 @@ struct stylesheet
         return format;
     }
 
-	format &get_format(std::size_t index)
-	{
-		return formats.at(index);
-	}
+    format &get_format(std::size_t index)
+    {
+        return formats.at(index);
+    }
+
+    std::pair<bool, std::size_t> find_format(format pattern)
+    {
+        std::size_t index = 0;
+
+        for (const format &f : formats)
+        {
+            if (f == pattern)
+            {
+                return {true, index};
+            }
+
+            ++index;
+        }
+
+        return {false, 0};
+    }
     
     style &create_style()
     {
@@ -130,14 +148,26 @@ struct stylesheet
 
 		for (const auto &nf : number_formats)
 		{
-			if (nf.get_id() >= id)
+			if (nf.second.get_id() >= id)
 			{
-				id = nf.get_id() + 1;
+				id = nf.second.get_id() + 1;
 			}
 		}
 
 		return id;
 	}
+
+    std::size_t add_alignment(const alignment &new_alignment)
+    {
+        auto match = std::find(alignments.begin(), alignments.end(), new_alignment);
+
+        if (match == alignments.end())
+        {
+            match = alignments.insert(alignments.end(), new_alignment);
+        }
+
+        return std::distance(alignments.begin(), match);
+    }
     
     std::size_t add_border(const border &new_border)
     {
@@ -196,6 +226,26 @@ struct stylesheet
         return index;
     }
     
+    std::size_t add_protection(const protection &new_protection)
+    {
+        std::size_t index = 0;
+        
+        for (const auto &p : protections)
+        {
+            if (p == new_protection)
+            {
+                return index;
+            }
+            
+            ++index;
+        }
+        
+        protections.push_back(new_protection);
+
+        return index;
+    }
+    
+    
     void clear()
     {
         format_impls.clear();
@@ -224,7 +274,7 @@ struct stylesheet
     std::vector<border> borders;
     std::vector<fill> fills;
     std::vector<font> fonts;
-    std::vector<number_format> number_formats;
+    std::unordered_map<std::size_t, number_format> number_formats;
 	std::vector<protection> protections;
     
     std::vector<color> colors;

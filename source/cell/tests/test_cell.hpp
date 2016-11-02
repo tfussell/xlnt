@@ -18,6 +18,19 @@ public:
         wb_guess_types.set_guess_types(true);
     }
 
+    void test_temp()
+    {
+        xlnt::workbook wb;
+        auto cell = wb[0].get_cell("A1");
+        cell.set_value("right");
+        cell.set_alignment(xlnt::alignment().horizontal(xlnt::horizontal_alignment::right));
+        cell.set_font(xlnt::font().size(20).color(xlnt::color::white()));
+        cell.set_fill(xlnt::fill::solid(xlnt::color::black()));
+        wb.create_style("yellow-fill").fill(xlnt::fill::solid(xlnt::color::yellow()), true);
+        cell.set_style("yellow-fill");
+        wb.save("temp.xlsx");
+    }
+
 	void test_infer_numeric()
 	{
 		auto ws = wb_guess_types.create_sheet();

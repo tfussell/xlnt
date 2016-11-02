@@ -36,6 +36,7 @@
 namespace xlnt {
 
 class alignment;
+class base_format;
 class border;
 class cell;
 class cell_style;
@@ -419,7 +420,9 @@ public:
     
     format &get_format(std::size_t format_index);
     const format &get_format(std::size_t format_index) const;
-	format &create_format();
+    format &create_format();
+    format &create_format(format pattern);
+    format &create_format(base_format pattern);
     void clear_formats();
 
     // styles

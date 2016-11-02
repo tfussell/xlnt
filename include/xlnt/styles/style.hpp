@@ -27,7 +27,6 @@
 #include <string>
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/styles/base_format.hpp>
 
 namespace xlnt {
 
@@ -40,7 +39,7 @@ struct stylesheet;
 /// Describes a style which has a name and can be applied to multiple individual
 /// formats. In Excel this is a "Cell Style".
 /// </summary>
-class XLNT_API style : public base_format
+class XLNT_API style
 {
 public:
     std::string name() const;
@@ -55,18 +54,152 @@ public:
     optional<std::size_t> builtin_id() const;
 	style &builtin_id(std::size_t builtin_id);
 
-	style &alignment_id(std::size_t id);
-	style &border_id(std::size_t id);
-	style &fill_id(std::size_t id);
-	style &font_id(std::size_t id);
-	style &number_format_id(std::size_t id);
-	style &protection_id(std::size_t id);
+    // Alignment
 
-	bool operator==(const style &other);
+    /// <summary>
+    /// Returns the alignment to be applied to contents of cells using this format.
+    /// </summary>
+    class alignment &alignment();
+
+    /// <summary>
+    /// Returns the alignment to be applied to contents of cells using this format.
+    /// </summary>
+    const class alignment &alignment() const;
+
+    /// <summary>
+    /// Sets the alignment of this format to new_alignment. If applied is true,
+    /// the alignment will be used when displaying the cell.
+    /// </summary>
+    void alignment(const xlnt::alignment &new_alignment, bool applied = true, bool update = true);
+
+    /// <summary>
+    /// Returns true if the alignment is being applied.
+    /// </summary>
+    bool alignment_applied() const;
+    
+    // Border
+    
+    /// <summary>
+    /// Returns the border properties to be applied to the outline of cells using this format.
+    /// </summary>
+    class border &border();
+
+    /// <summary>
+    /// Returns the border properties to be applied to the outline of cells using this format.
+    /// </summary>
+    const class border &border() const;
+
+    /// <summary>
+    /// Sets the border of this format to new_border. If applied is true,
+    /// the border will be used when displaying the cell.
+    /// </summary>
+    void border(const xlnt::border &new_border, bool applied = true, bool update = true);
+
+    /// <summary>
+    /// Returns true if the border is being applied.
+    /// </summary>
+    bool border_applied() const;
+    
+    // Fill
+
+    /// <summary>
+    /// Returns the fill to be applied to the background of cells using this format.
+    /// </summary>
+    class fill &fill();
+
+    /// <summary>
+    /// Returns the fill to be applied to the background of cells using this format.
+    /// </summary>
+    const class fill &fill() const;
+
+    /// <summary>
+    /// Sets the fill of this format to new_fill and applies it if applied is true.
+    /// </summary>
+    void fill(const xlnt::fill &new_fill, bool applied = true, bool update = true);
+
+    /// <summary>
+    /// Returns true if the fill is being applied.
+    /// </summary>
+    bool fill_applied() const;
+    
+    // Font
+
+    /// <summary>
+    /// Returns the font to be applied to contents of cells using this format.
+    /// </summary>
+    class font &font();
+
+    /// <summary>
+    /// Returns the font to be applied to contents of cells using this format.
+    /// </summary>
+    const class font &font() const;
+
+    /// <summary>
+    /// Sets the font of this format to new_font and applies it if applied is true.
+    /// </summary>
+    void font(const xlnt::font &new_font, bool applied = true, bool update = true);
+
+    /// <summary>
+    /// Returns true if the font is being applied.
+    /// </summary>
+    bool font_applied() const;
+    
+    // Number Format
+
+    /// <summary>
+    /// Returns the number format to be applied to text/numbers in cells using this format.
+    /// </summary>
+    class number_format &number_format();
+
+    /// <summary>
+    /// Returns the number format to be applied to text/numbers in cells using this format.
+    /// </summary>
+    const class number_format &number_format() const;
+
+    /// <summary>
+    /// Sets the number format applied to text/numbers in cells using this format
+    /// and applies it if applied is true.
+    /// </summary>
+    void number_format(const xlnt::number_format &new_number_format, bool applied = true, bool update = true);
+
+    /// <summary>
+    /// Returns true if the number format is being applied.
+    /// </summary>
+    bool number_format_applied() const;
+    
+    // Protection
+
+    /// <summary>
+    /// Returns the protection to be applied to the contents of cells using this format.
+    /// </summary>
+    class protection &protection();
+
+    /// <summary>
+    /// Returns the protection to be applied to the contents of cells using this format.
+    /// </summary>
+    const class protection &protection() const;
+
+    /// <summary>
+    /// Sets the protection of the contents of the cell using this format. Applies it if
+    /// applied is true.
+    /// </summary>
+    void protection(const xlnt::protection &new_protection, bool applied = true, bool update = true);
+
+    /// <summary>
+    /// Returns true if the protection is being applied.
+    /// </summary>
+    bool protection_applied() const;
+
+    /// <summary>
+    /// Returns true if the formats are identical.
+    /// </summary>
+    XLNT_API friend bool operator==(const style &left, const style &right);
 
 private:
 	friend struct detail::stylesheet;
+
 	style(detail::style_impl *d);
+
 	detail::style_impl *d_;
 };
 

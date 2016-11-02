@@ -36,7 +36,6 @@ namespace xlnt {
 enum class calendar;
 
 class alignment;
-class base_format;
 class border;
 class cell_reference;
 class comment;
@@ -177,41 +176,32 @@ public:
 	// computed format
 
 	/// <summary>
-	/// For each of alignment, border, fill, font, number format, and protection,
-	/// returns a format using the value from the cell format if that value is
-	/// applied, or else the value from the named style if that value is applied,
-	/// or else the default value. This is used to retreive the formatting of the cell
-	/// as it will be displayed in an editing application.
-	/// </summary>
-	base_format get_computed_format() const;
-
-	/// <summary>
-	/// Returns the result of get_computed_format().get_alignment().
+	///
 	/// </summary>
 	alignment get_computed_alignment() const;
 
 	/// <summary>
-	/// Returns the result of get_computed_format().get_border().
+	///
 	/// </summary>
 	border get_computed_border() const;
 
 	/// <summary>
-	/// Returns the result of get_computed_format().get_fill().
+	///
 	/// </summary>
 	fill get_computed_fill() const;
 
 	/// <summary>
-	/// Returns the result of get_computed_format().get_font().
+	///
 	/// </summary>
 	font get_computed_font() const;
 
 	/// <summary>
-	/// Returns the result of get_computed_format().get_number_format().
+	///
 	/// </summary>
 	number_format get_computed_number_format() const;
 
 	/// <summary>
-	/// Returns the result of get_computed_format().get_protection().
+	///
 	/// </summary>
 	protection get_computed_protection() const;
 
@@ -492,27 +482,21 @@ private:
     // make these friends so they can use the private constructor
     friend class style;
     friend class worksheet;
-	friend class detail::xlsx_consumer;
-	friend class detail::xlsx_producer;
+    friend class detail::xlsx_consumer;
+    friend class detail::xlsx_producer;
     friend struct detail::cell_impl;
 
-	/// <summary>
-	/// Helper function to guess the type of a string, convert it,
-	/// and then use the correct cell::get_value according to the type.
-	/// </summary>
-	void guess_type_and_set_value(const std::string &value);
-
-	/// <summary>
-	/// Returns a non-const reference to the format of this cell.
-	/// This is for internal use only.
-	/// </summary>
-	format &get_format_internal();
+    /// <summary>
+    /// Helper function to guess the type of a string, convert it,
+    /// and then use the correct cell::get_value according to the type.
+    /// </summary>
+    void guess_type_and_set_value(const std::string &value);
 
     /// <summary>
-    /// Use workbook::create_format() to create a new format then copy
-    /// this cell's formatting to that new format and return it.
+    /// Returns a non-const reference to the format of this cell.
+    /// This is for internal use only.
     /// </summary>
-    format &duplicate_format();
+    format &get_format_internal();
 
     /// <summary>
     /// Private constructor to create a cell from its implementation.
