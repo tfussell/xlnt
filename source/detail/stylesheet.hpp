@@ -29,9 +29,13 @@
 
 #include <detail/format_impl.hpp>
 #include <detail/style_impl.hpp>
+#include <xlnt/cell/cell.hpp>
 #include <xlnt/styles/format.hpp>
 #include <xlnt/styles/style.hpp>
 #include <xlnt/utils/exceptions.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
+#include <xlnt/workbook/workbook.hpp>
+#include <xlnt/workbook/worksheet_iterator.hpp>
 
 namespace xlnt {
 namespace detail {
@@ -46,40 +50,16 @@ struct stylesheet
     {
 		format_impls.push_back(format_impl());
 		auto &impl = format_impls.back();
+
 		impl.parent = this;
 		impl.id = format_impls.size() - 1;
+        impl.border_id = 0;
+        impl.fill_id = 0;
+        impl.font_id = 0;
+        impl.number_format_id = 0;
+
 		formats.push_back(format(&impl));
         auto &format = formats.back();
-        
-        if (!alignments.empty())
-        {
-            format.alignment(alignments.front(), false);
-        }
-        
-        if (!borders.empty())
-        {
-            format.border(borders.front(), false);
-        }
-        
-        if (!fills.empty())
-        {
-            format.fill(fills.front(), false);
-        }
-        
-        if (!fonts.empty())
-        {
-            format.font(fonts.front(), false);
-        }
-        
-        if (!number_formats.empty())
-        {
-            format.number_format(number_formats.front(), false);
-        }
-        
-        if (!protections.empty())
-        {
-            format.protection(protections.front(), false);
-        }
         
         return format;
     }
@@ -213,6 +193,58 @@ struct stylesheet
         
         colors.clear();
     }
+
+    format_impl *deduplicate(format_impl *f)
+    {
+        std::unordered_map<format_impl *, std::size_t> reference_counts;
+
+        for (auto ws : *parent)
+        {
+            auto dimension = ws.calculate_dimension();
+
+            for (auto row = dimension.get_top_left().get_row(); row <= dimension.get_bottom_right().get_row(); row++)
+            {
+                for (auto column = dimension.get_top_left().get_column(); column <= dimension.get_bottom_right().get_column(); column++)
+                {
+                    if (ws.has_cell(cell_reference(column, row)))
+                    {
+                        auto cell = ws.get_cell(cell_reference(column, row));
+
+                        if (cell.has_format())
+                        {
+                            reference_counts[formats.at(cell.get_format().id()).d_]++;
+                        }
+                    }
+                }
+            }
+        }
+
+        auto result = f;
+
+        for (auto &impl : format_impls)
+        {
+            if (reference_counts[&impl] == 0 && &impl != f)
+            {
+                result = &impl;
+                break;
+            }
+        }
+
+        /*
+        if (result != f)
+        {
+            auto impl_iter = std::find_if(format_impls.begin(), format_impls.end(),
+                [=](const format_impl &impl) { return &impl == f; });
+            auto index = std::distance(format_impls.begin(), impl_iter);
+            formats.erase(formats.begin() + index);
+            format_impls.erase(impl_iter);
+        }
+        */
+
+        return f;
+    }
+
+    workbook *parent;
 
     std::list<format_impl> format_impls;
 	std::vector<format> formats;

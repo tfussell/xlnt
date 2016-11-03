@@ -32,6 +32,7 @@ namespace xlnt {
 
 class alignment;
 class border;
+class cell;
 class fill;
 class font;
 class number_format;

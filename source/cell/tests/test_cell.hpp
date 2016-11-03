@@ -18,6 +18,18 @@ public:
         wb_guess_types.set_guess_types(true);
     }
 
+    void test_temp()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.get_active_sheet();
+        auto cell = ws.get_cell("A1");
+        cell.set_value(3.141592);
+        cell.set_font(xlnt::font().bold(true));
+        cell.set_font(xlnt::font().size(20));
+        wb.save("a.xlsx");
+        wb.load("a.xlsx");
+    }
+
 	void test_infer_numeric()
 	{
 		auto ws = wb_guess_types.create_sheet();

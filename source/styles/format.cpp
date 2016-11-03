@@ -123,6 +123,7 @@ void format::font(const xlnt::font &new_font, bool applied)
 {
     font_id(d_->parent->add_font(new_font));
 	base_format::font(new_font, applied);
+    d_ = d_->parent->deduplicate(d_);
 }
 
 xlnt::number_format &format::number_format()

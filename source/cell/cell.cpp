@@ -781,7 +781,7 @@ void cell::set_font(const font &font_)
 {
 	auto &format = duplicate_format();
 	format.font(font_, true);
-	d_->format_id_ = format.id();
+    d_->format_id_ = format.id();
 }
 
 void cell::set_number_format(const number_format &number_format_)

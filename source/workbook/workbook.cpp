@@ -343,6 +343,10 @@ workbook::workbook()
 
 workbook::workbook(detail::workbook_impl *impl) : d_(impl)
 {
+    if (impl != nullptr)
+    {
+        d_->stylesheet_.parent = this;
+    }
 }
 
 void workbook::register_app_properties_in_manifest()
@@ -913,6 +917,8 @@ void swap(workbook &left, workbook &right)
 		{
 			ws.set_parent(left);
 		}
+
+        left.d_->stylesheet_.parent = &left;
 	}
 
 	if (right.d_ != nullptr)
@@ -921,12 +927,15 @@ void swap(workbook &left, workbook &right)
 		{
 			ws.set_parent(right);
 		}
+
+        right.d_->stylesheet_.parent = &right;
 	}
 }
 
 workbook &workbook::operator=(workbook other)
 {
     swap(*this, other);
+    d_->stylesheet_.parent = this;
     return *this;
 }
 
@@ -943,6 +952,8 @@ workbook::workbook(const workbook &other) : workbook()
     {
         ws.set_parent(*this);
     }
+
+    d_->stylesheet_.parent = this;
 }
 
 workbook::~workbook()
