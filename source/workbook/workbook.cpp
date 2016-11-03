@@ -165,7 +165,7 @@ workbook workbook::empty_excel()
 	auto &default_format = wb.create_format();
 	default_format.font(default_font, false);
 	default_format.border(default_border, false);
-	default_format.d_->style.set("Normal");
+	default_format.style("Normal");
 
 	wb.set_theme(theme());
 
@@ -255,7 +255,7 @@ workbook workbook::empty_libre_office()
 	auto default_number_format = xlnt::number_format();
 	default_number_format.set_format_string("General");
 	default_number_format.set_id(164);
-	wb.d_->stylesheet_.number_formats[default_number_format.get_id()] = default_number_format;
+	wb.d_->stylesheet_.number_formats.push_back(default_number_format);
 
 	auto default_protection = xlnt::protection()
 		.locked(true)
@@ -314,7 +314,7 @@ workbook workbook::empty_libre_office()
 	format.number_format(default_number_format, true);
 	format.alignment(default_alignment, true);
 	format.protection(default_protection, true);
-	format.d_->style.set("Normal");
+	format.style("Normal");
 
 	wb.d_->has_file_version_ = true;
 	wb.d_->file_version_.app_name = "Calc";
@@ -993,30 +993,8 @@ std::vector<named_range> workbook::get_named_ranges() const
 
 format &workbook::create_format()
 {
-    register_stylesheet_in_manifest();
+	register_stylesheet_in_manifest();
     return d_->stylesheet_.create_format();
-}
-
-format &workbook::create_format(format pattern)
-{
-    register_stylesheet_in_manifest();
-
-    auto existing = d_->stylesheet_.find_format(pattern);
-
-    if (existing.first)
-    {
-        return d_->stylesheet_.get_format(existing.second);
-    }
-
-    auto &new_format = create_format();
-    new_format.alignment(pattern.alignment(), pattern.alignment_applied());
-    new_format.border(pattern.border(), pattern.border_applied());
-    new_format.fill(pattern.fill(), pattern.fill_applied());
-    new_format.font(pattern.font(), pattern.font_applied());
-    new_format.number_format(pattern.number_format(), pattern.number_format_applied());
-    new_format.protection(pattern.protection(), pattern.protection_applied());;
-    new_format.d_->style.set(pattern.d_->style.get());
-    return new_format;
 }
 
 bool workbook::has_style(const std::string &name) const
