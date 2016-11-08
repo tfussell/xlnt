@@ -24,10 +24,13 @@
 
 #include <algorithm>
 #include <array>
-#include <codecvt>
 #include <fstream>
 #include <functional>
 #include <set>
+
+#ifdef WIN32
+#include <codecvt> // utf-8 -> utf-16 conversion
+#endif
 
 #include <detail/cell_impl.hpp>
 #include <detail/constants.hpp>
