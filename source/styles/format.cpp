@@ -43,23 +43,16 @@ void format::clear_style()
     d_->style.clear();
 }
 
-void format::style(const xlnt::style &new_style)
+format format::style(const xlnt::style &new_style)
 {
 	d_->style = new_style.name();
+    return format(d_);
 }
 
-void format::style(const std::string &new_style)
+format format::style(const std::string &new_style)
 {
-	for (auto &style : d_->parent->styles)
-	{
-		if (style.name() == new_style)
-		{
-			d_->style = new_style;
-			return;
-		}
-	}
-
-	throw key_not_found();
+	d_->style = new_style;
+    return format(d_);
 }
 
 bool format::has_style() const
@@ -67,76 +60,91 @@ bool format::has_style() const
 	return d_->style;
 }
 
-const style &format::style() const
+const style format::style() const
 {
 	if (!has_style())
 	{
 		throw invalid_attribute();
 	}
 
-	return d_->parent->get_style(*d_->style);
+	return d_->parent->style(d_->style.get());
+}
+
+xlnt::alignment &format::alignment()
+{
+	return d_->parent->alignments.at(d_->alignment_id.get());
+}
+
+const xlnt::alignment &format::alignment() const
+{
+	return d_->parent->alignments.at(d_->alignment_id.get());
+}
+
+format format::alignment(const xlnt::alignment &new_alignment, bool applied)
+{
+    d_ = d_->parent->find_or_create_with(d_, new_alignment, applied);
+    return format(d_);
 }
 
 xlnt::border &format::border()
 {
-	return base_format::border();
+	return d_->parent->borders.at(d_->border_id.get());
 }
 
 const xlnt::border &format::border() const
 {
-	return base_format::border();
+	return d_->parent->borders.at(d_->border_id.get());
 }
 
-void format::border(const xlnt::border &new_border, bool applied)
+format format::border(const xlnt::border &new_border, bool applied)
 {
-    border_id(d_->parent->add_border(new_border));
-	base_format::border(new_border, applied);
+    d_ = d_->parent->find_or_create_with(d_, new_border, applied);
+    return format(d_);
 }
 
 xlnt::fill &format::fill()
 {
-	return base_format::fill();
+	return d_->parent->fills.at(d_->fill_id.get());
 }
 
 const xlnt::fill &format::fill() const
 {
-	return base_format::fill();
+	return d_->parent->fills.at(d_->fill_id.get());
 }
 
-void format::fill(const xlnt::fill &new_fill, bool applied)
+format format::fill(const xlnt::fill &new_fill, bool applied)
 {
-    fill_id(d_->parent->add_fill(new_fill));
-	base_format::fill(new_fill, applied);
+    d_ = d_->parent->find_or_create_with(d_, new_fill, applied);
+    return format(d_);
 }
 
 xlnt::font &format::font()
 {
-	return base_format::font();
+	return d_->parent->fonts.at(d_->font_id.get());
 }
 
 const xlnt::font &format::font() const
 {
-	return base_format::font();
+	return d_->parent->fonts.at(d_->font_id.get());
 }
 
-void format::font(const xlnt::font &new_font, bool applied)
+format format::font(const xlnt::font &new_font, bool applied)
 {
-    font_id(d_->parent->add_font(new_font));
-	base_format::font(new_font, applied);
-    d_ = d_->parent->deduplicate(d_);
+    d_ = d_->parent->find_or_create_with(d_, new_font, applied);
+    return format(d_);
 }
 
 xlnt::number_format &format::number_format()
 {
-	return base_format::number_format();
+	return d_->parent->number_formats.at(d_->number_format_id.get());
 }
 
 const xlnt::number_format &format::number_format() const
 {
-	return base_format::number_format();
+	return d_->parent->number_formats.at(d_->number_format_id.get());
 }
 
-void format::number_format(const xlnt::number_format &new_number_format, bool applied)
+format format::number_format(const xlnt::number_format &new_number_format, bool applied)
 {
 	auto copy = new_number_format;
 
@@ -146,25 +154,54 @@ void format::number_format(const xlnt::number_format &new_number_format, bool ap
 		d_->parent->number_formats.push_back(copy);
 	}
 
-	base_format::number_format(copy, applied);
+    d_ = d_->parent->find_or_create_with(d_, copy, applied);
+    return format(d_);
 }
 
-format &format::border_id(std::size_t id)
+xlnt::protection &format::protection()
 {
-    d_->border_id = id;
-    return *this;
+	return d_->parent->protections.at(d_->protection_id.get());
 }
 
-format &format::fill_id(std::size_t id)
+const xlnt::protection &format::protection() const
 {
-    d_->fill_id = id;
-    return *this;
+	return d_->parent->protections.at(d_->protection_id.get());
 }
 
-format &format::font_id(std::size_t id)
+format format::protection(const xlnt::protection &new_protection, bool applied)
 {
-    d_->font_id = id;
-    return *this;
+    d_ = d_->parent->find_or_create_with(d_, new_protection, applied);
+    return format(d_);
+}
+
+bool format::alignment_applied() const
+{
+    return d_->alignment_applied;
+}
+
+bool format::border_applied() const
+{
+    return d_->border_applied;
+}
+
+bool format::fill_applied() const
+{
+    return d_->fill_applied;
+}
+
+bool format::font_applied() const
+{
+    return d_->font_applied;
+}
+
+bool format::number_format_applied() const
+{
+    return d_->number_format_applied;
+}
+
+bool format::protection_applied() const
+{
+    return d_->protection_applied;
 }
 
 } // namespace xlnt

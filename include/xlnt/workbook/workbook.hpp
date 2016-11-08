@@ -278,6 +278,11 @@ public:
 	/// exception to be thrown.
 	/// </summary>
     const_iterator cend() const;
+    
+    /// <summary>
+    /// Apply the function "f" to every non-empty cell in every worksheet in this workbook.
+    /// </summary>
+    void apply_to_cells(std::function<void(cell)> f);
 
 	/// <summary>
 	/// Returns a temporary vector containing the titles of each sheet in the order
@@ -417,17 +422,17 @@ public:
 
     // formats
     
-    format &get_format(std::size_t format_index);
-    const format &get_format(std::size_t format_index) const;
-	format &create_format();
+    format get_format(std::size_t format_index);
+    const format get_format(std::size_t format_index) const;
+	format create_format();
     void clear_formats();
 
     // styles
 
     bool has_style(const std::string &name) const;
-    style &get_style(const std::string &name);
-    const style &get_style(const std::string &name) const;
-    style &create_style(const std::string &name);
+    class style style(const std::string &name);
+    const class style style(const std::string &name) const;
+    class style create_style(const std::string &name);
     void clear_styles();
 
     // manifest
@@ -487,11 +492,6 @@ private:
     detail::workbook_impl &impl();
 
     const detail::workbook_impl &impl() const;
-
-    /// <summary>
-    /// Apply the function "f" to every cell in every worksheet in this workbook.
-    /// </summary>
-    void apply_to_cells(std::function<void(cell)> f);
 
     void register_app_properties_in_manifest();
 

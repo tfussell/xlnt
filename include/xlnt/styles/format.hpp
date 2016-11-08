@@ -26,7 +26,6 @@
 #include <string>
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/styles/base_format.hpp>
 
 namespace xlnt {
 
@@ -46,42 +45,50 @@ struct stylesheet;
 /// <summary>
 /// Describes the formatting of a particular cell.
 /// </summary>
-class XLNT_API format : public base_format
+class XLNT_API format
 {
 public:
 	std::size_t id() const;
 
+	class alignment &alignment();
+	const class alignment &alignment() const;
+	format alignment(const xlnt::alignment &new_alignment, bool applied);
+    bool alignment_applied() const;
+
+	class border &border();
+	const class border &border() const;
+	format border(const xlnt::border &new_border, bool applied);
+    bool border_applied() const;
+
+	class fill &fill();
+	const class fill &fill() const;
+	format fill(const xlnt::fill &new_fill, bool applied);
+    bool fill_applied() const;
+    
+	class font &font();
+	const class font &font() const;
+	format font(const xlnt::font &new_font, bool applied);
+    bool font_applied() const;
+
+	class number_format &number_format();
+	const class number_format &number_format() const;
+	format number_format(const xlnt::number_format &new_number_format, bool applied);
+    bool number_format_applied() const;
+
+	class protection &protection();
+	const class protection &protection() const;
+	format protection(const xlnt::protection &new_protection, bool applied);
+    bool protection_applied() const;
+
 	bool has_style() const;
     void clear_style();
-	void style(const std::string &name);
-	void style(const xlnt::style &new_style);
-	const class style &style() const;
-
-	class border &border() override;
-	const class border &border() const override;
-	void border(const xlnt::border &new_border, bool applied) override;
-
-	class fill &fill() override;
-	const class fill &fill() const override;
-	void fill(const xlnt::fill &new_fill, bool applied) override;
-    
-	class font &font() override;
-	const class font &font() const override;
-	void font(const xlnt::font &new_font, bool applied) override;
-
-	class number_format &number_format() override;
-	const class number_format &number_format() const override;
-	void number_format(const xlnt::number_format &new_number_format, bool applied) override;
-
-	format &alignment_id(std::size_t id);
-	format &border_id(std::size_t id);
-	format &fill_id(std::size_t id);
-	format &font_id(std::size_t id);
-	format &number_format_id(std::size_t id);
-	format &protection_id(std::size_t id);
+	format style(const std::string &name);
+	format style(const xlnt::style &new_style);
+	const class style style() const;
 
 private:
 	friend struct detail::stylesheet;
+    friend class cell;
 	format(detail::format_impl *d);
 	detail::format_impl *d_;
 };

@@ -136,7 +136,6 @@ private:
 	const workbook &source_;
     
 	ZipFileWriter *archive_;
-    std::unique_ptr<std::ostream> current_part_stream_;
     std::unique_ptr<xml::serializer> current_part_serializer_;
 };
 

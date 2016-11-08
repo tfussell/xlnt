@@ -1296,13 +1296,16 @@ void xlsx_consumer::read_stylesheet()
                 auto &data = *style_datas.emplace(style_datas.end());
                 
                 parser().next_expect(xml::parser::event_type::start_element, xmlns, "cellStyle");
+
                 data.name = parser().attribute("name");
                 data.record_id = parser().attribute<std::size_t>("xfId");
                 data.builtin_id = parser().attribute<std::size_t>("builtinId");
+
                 if (parser().attribute_present("customBuiltin"))
                 {
-                    data.custom_builtin = parser().attribute("customBuiltin") == "1";
+                    data.custom_builtin = is_true(parser().attribute("customBuiltin"));
                 }
+
                 parser().next_expect(xml::parser::event_type::end_element, xmlns, "cellStyle");
             }
             
@@ -1530,14 +1533,13 @@ void xlsx_consumer::read_stylesheet()
     
     for (const auto &record : style_records)
     {
-        auto &new_style = stylesheet.create_style();
         auto style_data_iter = std::find_if(style_datas.begin(), style_datas.end(),
             [&xf_id](const style_data &s) { return s.record_id == xf_id; });
         ++xf_id;
         
         if (style_data_iter == style_datas.end()) continue;
 
-        new_style.name(style_data_iter->name);
+        auto new_style = stylesheet.create_style(style_data_iter->name);
         new_style.builtin_id(style_data_iter->builtin_id);
 
         new_style.alignment(record.alignment.first, record.alignment.second);
@@ -1548,18 +1550,33 @@ void xlsx_consumer::read_stylesheet()
         new_style.protection(record.protection.first, record.protection.second);
     }
     
+    std::size_t record_index = 0;
+
     for (const auto &record : format_records)
     {
-        auto &new_format = stylesheet.create_format();
+        stylesheet.format_impls.push_back(format_impl());
+        auto &new_format = stylesheet.format_impls.back();
         
-        new_format.style(stylesheet.styles.at(record.style_id.first).name());
+        new_format.id = record_index++;
+        new_format.parent = &stylesheet;
+        
+        if (record.style_id.second)
+        {
+            new_format.style = stylesheet.style_names[record.style_id.first];
+        }
 
-        new_format.alignment(record.alignment.first, record.alignment.second);
-        new_format.border(stylesheet.borders.at(record.border_id.first), record.border_id.second);
-        new_format.fill(stylesheet.fills.at(record.fill_id.first), record.fill_id.second);
-        new_format.font(stylesheet.fonts.at(record.font_id.first), record.font_id.second);
-        new_format.number_format(lookup_number_format(record.number_format_id.first), record.number_format_id.second);
-        new_format.protection(record.protection.first, record.protection.second);
+        new_format.alignment_id = stylesheet.find_or_add(stylesheet.alignments, record.alignment.first);
+        new_format.alignment_applied = record.alignment.second;
+        new_format.border_id = record.border_id.first;
+        new_format.border_applied = record.border_id.second;
+        new_format.fill_id = record.fill_id.first;
+        new_format.fill_applied = record.fill_id.second;
+        new_format.font_id = record.font_id.first;
+        new_format.font_applied = record.font_id.second;
+        new_format.number_format_id = record.number_format_id.first;
+        new_format.number_format_applied = record.number_format_id.second;
+        new_format.protection_id = stylesheet.find_or_add(stylesheet.protections, record.protection.first);
+        new_format.protection_applied = record.protection.second;
     }
 }
 
@@ -1845,7 +1862,7 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
 
                     if (has_format)
                     {
-                        cell.set_format(target_.get_format(format_id));
+                        cell.format(target_.get_format(format_id));
                     }
                     
                     parser().next_expect(xml::parser::event_type::end_element, xmlns, "c");

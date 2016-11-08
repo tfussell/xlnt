@@ -249,7 +249,7 @@ public:
         xlnt::workbook wb;
         xlnt::style s = wb.create_style("s");
         wb.get_active_sheet().get_cell("B2").set_value("B2");
-        wb.get_active_sheet().get_cell("B2").set_style(s);
+        wb.get_active_sheet().get_cell("B2").style(s);
         TS_ASSERT(wb.get_active_sheet().get_cell("B2").has_style());
         wb.clear_styles();
         TS_ASSERT(!wb.get_active_sheet().get_cell("B2").has_style());
@@ -257,7 +257,7 @@ public:
         xlnt::font font;
         font.size(41);
         format.font(font, true);
-        wb.get_active_sheet().get_cell("B2").set_format(format);
+        wb.get_active_sheet().get_cell("B2").format(format);
         TS_ASSERT(wb.get_active_sheet().get_cell("B2").has_format());
         wb.clear_formats();
         TS_ASSERT(!wb.get_active_sheet().get_cell("B2").has_format());
@@ -280,7 +280,7 @@ public:
         TS_ASSERT(wb.has_theme());
         
         wb.create_style("style1");
-        wb.get_style("style1");
-        wb_const.get_style("style1");
+        wb.style("style1");
+        wb_const.style("style1");
     }
 };

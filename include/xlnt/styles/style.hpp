@@ -27,42 +27,75 @@
 #include <string>
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/styles/base_format.hpp>
 
 namespace xlnt {
+
+class alignment;
+class border;
+class cell;
+class fill;
+class font;
+class number_format;
+class protection;
 
 namespace detail {
 struct style_impl;
 struct stylesheet;
-}
+} // namespace detail
 
 /// <summary>
 /// Describes a style which has a name and can be applied to multiple individual
 /// formats. In Excel this is a "Cell Style".
 /// </summary>
-class XLNT_API style : public base_format
+class XLNT_API style
 {
 public:
+    style() = delete;
+    style(const style &other) = default;
+
     std::string name() const;
-    style &name(const std::string &name);
+    style name(const std::string &name);
+
+    class alignment &alignment();
+	const class alignment &alignment() const;
+	style alignment(const xlnt::alignment &new_alignment, bool applied);
+    bool alignment_applied() const;
+
+	class border &border();
+	const class border &border() const;
+	style border(const xlnt::border &new_border, bool applied);
+    bool border_applied() const;
+
+	class fill &fill();
+	const class fill &fill() const;
+	style fill(const xlnt::fill &new_fill, bool applied);
+    bool fill_applied() const;
+    
+	class font &font();
+	const class font &font() const;
+	style font(const xlnt::font &new_font, bool applied);
+    bool font_applied() const;
+
+	class number_format &number_format();
+	const class number_format &number_format() const;
+	style number_format(const xlnt::number_format &new_number_format, bool applied);
+    bool number_format_applied() const;
+
+	class protection &protection();
+	const class protection &protection() const;
+	style protection(const xlnt::protection &new_protection, bool applied);
+    bool protection_applied() const;
     
     bool hidden() const;
-	style &hidden(bool value);
+	style hidden(bool value);
 
 	optional<bool> custom() const;
-	style &custom(bool value);
+	style custom(bool value);
     
     optional<std::size_t> builtin_id() const;
-	style &builtin_id(std::size_t builtin_id);
+	style builtin_id(std::size_t builtin_id);
 
-	style &alignment_id(std::size_t id);
-	style &border_id(std::size_t id);
-	style &fill_id(std::size_t id);
-	style &font_id(std::size_t id);
-	style &number_format_id(std::size_t id);
-	style &protection_id(std::size_t id);
-
-	bool operator==(const style &other);
+	bool operator==(const style &other) const;
 
 private:
 	friend struct detail::stylesheet;

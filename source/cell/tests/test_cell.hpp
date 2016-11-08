@@ -18,18 +18,6 @@ public:
         wb_guess_types.set_guess_types(true);
     }
 
-    void test_temp()
-    {
-        xlnt::workbook wb;
-        auto ws = wb.get_active_sheet();
-        auto cell = ws.get_cell("A1");
-        cell.set_value(3.141592);
-        cell.set_font(xlnt::font().bold(true));
-        cell.set_font(xlnt::font().size(20));
-        wb.save("a.xlsx");
-        wb.load("a.xlsx");
-    }
-
 	void test_infer_numeric()
 	{
 		auto ws = wb_guess_types.create_sheet();
@@ -325,7 +313,7 @@ public:
         cell.set_font(font);
         
         TS_ASSERT(cell.has_format());
-        TS_ASSERT(cell.get_format().font_applied());
+        TS_ASSERT(cell.format().font_applied());
         TS_ASSERT_EQUALS(cell.get_font(), font);
     }
     
@@ -340,7 +328,7 @@ public:
         cell.set_fill(fill);
         
         TS_ASSERT(cell.has_format());
-        TS_ASSERT(cell.get_format().fill_applied());
+        TS_ASSERT(cell.format().fill_applied());
         TS_ASSERT_EQUALS(cell.get_fill(), fill);
     }
     
@@ -354,7 +342,7 @@ public:
         cell.set_border(border);
         
         TS_ASSERT(cell.has_format());
-        TS_ASSERT(cell.get_format().border_applied());
+        TS_ASSERT(cell.format().border_applied());
         TS_ASSERT_EQUALS(cell.get_border(), border);
     }
     
@@ -367,7 +355,7 @@ public:
         cell.set_number_format(format);
         
         TS_ASSERT(cell.has_format());
-        TS_ASSERT(cell.get_format().number_format_applied());
+        TS_ASSERT(cell.format().number_format_applied());
         TS_ASSERT_EQUALS(cell.get_number_format().get_format_string(), "dd--hh--mm");
     }
     
@@ -382,7 +370,7 @@ public:
         cell.set_alignment(align);
         
         TS_ASSERT(cell.has_format());
-        TS_ASSERT(cell.get_format().alignment_applied());
+        TS_ASSERT(cell.format().alignment_applied());
         TS_ASSERT_EQUALS(cell.get_alignment(), align);
     }
     
@@ -397,7 +385,7 @@ public:
         cell.set_protection(protection);
         
         TS_ASSERT(cell.has_format());
-        TS_ASSERT(cell.get_format().protection_applied());
+        TS_ASSERT(cell.format().protection_applied());
         TS_ASSERT_EQUALS(cell.get_protection(), protection);
         
         TS_ASSERT(cell.has_format());
@@ -412,34 +400,34 @@ public:
         
         TS_ASSERT(!cell.has_style());
         
-        auto &test_style = wb.create_style("test_style");
+        auto test_style = wb.create_style("test_style");
         test_style.number_format(xlnt::number_format::date_ddmmyyyy(), true);
         
-        cell.set_style(test_style);
+        cell.style(test_style);
         TS_ASSERT(cell.has_style());
-        TS_ASSERT_EQUALS(cell.get_style().number_format(), xlnt::number_format::date_ddmmyyyy());
-        TS_ASSERT_EQUALS(cell.get_style(), test_style);
+        TS_ASSERT_EQUALS(cell.style().number_format(), xlnt::number_format::date_ddmmyyyy());
+        TS_ASSERT_EQUALS(cell.style(), test_style);
 
-        auto &other_style = wb.create_style("other_style");
+        auto other_style = wb.create_style("other_style");
         other_style.number_format(xlnt::number_format::date_time2(), true);
         
-        cell.set_style("other_style");
-        TS_ASSERT_EQUALS(cell.get_style().number_format(), xlnt::number_format::date_time2());
-        TS_ASSERT_EQUALS(cell.get_style(), other_style);
+        cell.style("other_style");
+        TS_ASSERT_EQUALS(cell.style().number_format(), xlnt::number_format::date_time2());
+        TS_ASSERT_EQUALS(cell.style(), other_style);
         
-		auto &last_style = wb.create_style("last_style");
+		auto last_style = wb.create_style("last_style");
         last_style.number_format(xlnt::number_format::percentage(), true);
         
-        cell.set_style(last_style);
-        TS_ASSERT_EQUALS(cell.get_style().number_format(), xlnt::number_format::percentage());
-        TS_ASSERT_EQUALS(cell.get_style(), last_style);
+        cell.style(last_style);
+        TS_ASSERT_EQUALS(cell.style().number_format(), xlnt::number_format::percentage());
+        TS_ASSERT_EQUALS(cell.style(), last_style);
         
-        TS_ASSERT_THROWS(cell.set_style("doesn't exist"), xlnt::key_not_found);
+        TS_ASSERT_THROWS(cell.style("doesn't exist"), xlnt::key_not_found);
         
         cell.clear_style();
         
         TS_ASSERT(!cell.has_style());
-        TS_ASSERT_THROWS(cell.get_style(), xlnt::invalid_attribute);
+        TS_ASSERT_THROWS(cell.style(), xlnt::invalid_attribute);
     }
     
     void test_print()

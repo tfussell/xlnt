@@ -174,46 +174,37 @@ public:
     /// </summary>
     bool has_hyperlink() const;
 
-	// computed format
-
-	/// <summary>
-	/// For each of alignment, border, fill, font, number format, and protection,
-	/// returns a format using the value from the cell format if that value is
-	/// applied, or else the value from the named style if that value is applied,
-	/// or else the default value. This is used to retreive the formatting of the cell
-	/// as it will be displayed in an editing application.
-	/// </summary>
-	base_format get_computed_format() const;
+	// computed formatting
 
 	/// <summary>
 	/// Returns the result of get_computed_format().get_alignment().
 	/// </summary>
-	alignment get_computed_alignment() const;
+	alignment computed_alignment() const;
 
 	/// <summary>
 	/// Returns the result of get_computed_format().get_border().
 	/// </summary>
-	border get_computed_border() const;
+	border computed_border() const;
 
 	/// <summary>
 	/// Returns the result of get_computed_format().get_fill().
 	/// </summary>
-	fill get_computed_fill() const;
+	fill computed_fill() const;
 
 	/// <summary>
 	/// Returns the result of get_computed_format().get_font().
 	/// </summary>
-	font get_computed_font() const;
+	font computed_font() const;
 
 	/// <summary>
 	/// Returns the result of get_computed_format().get_number_format().
 	/// </summary>
-	number_format get_computed_number_format() const;
+	number_format computed_number_format() const;
 
 	/// <summary>
 	/// Returns the result of get_computed_format().get_protection().
 	/// </summary>
-	protection get_computed_protection() const;
+	protection computed_protection() const;
 
     // format
 
@@ -226,12 +217,12 @@ public:
     /// Return a reference to the format applied to this cell.
 	/// If this cell has no format, an invalid_attribute exception will be thrown.
     /// </summary>
-    format get_format() const;
+    const format format() const;
     
 	/// <summary>
 	/// Applies the cell-level formatting of new_format to this cell.
 	/// </summary>
-    void set_format(const format &new_format);
+    void format(const class format new_format);
     
 	/// <summary>
 	/// Remove the cell-level formatting from this cell.
@@ -314,21 +305,21 @@ public:
 	bool has_style() const;
 
 	/// <summary>
-	/// Returns a reference to the named style applied to this cell.
+	/// Returns a wrapper pointing to the named style applied to this cell.
 	/// </summary>
-	style get_style() const;
+	const style style() const;
 
 	/// <summary>
-	/// Equivalent to set_style(new_style.name())
+	/// Equivalent to style(new_style.name())
 	/// </summary>
-	void set_style(const style &new_style);
+	void style(const class style &new_style);
 
 	/// <summary>
 	/// Sets the named style applied to this cell to a style named style_name.
 	/// If this style has not been previously created in the workbook, a
 	/// key_not_found exception will be thrown.
 	/// </summary>
-	void set_style(const std::string &style_name);
+	void style(const std::string &style_name);
 
 	/// <summary>
 	/// Removes the named style from this cell.
@@ -506,13 +497,7 @@ private:
 	/// Returns a non-const reference to the format of this cell.
 	/// This is for internal use only.
 	/// </summary>
-	format &get_format_internal();
-
-    /// <summary>
-    /// Use workbook::create_format() to create a new format then copy
-    /// this cell's formatting to that new format and return it.
-    /// </summary>
-    format &duplicate_format();
+	class format modifiable_format();
 
     /// <summary>
     /// Private constructor to create a cell from its implementation.

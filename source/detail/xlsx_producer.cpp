@@ -148,19 +148,14 @@ void xlsx_producer::end_part()
     {
         current_part_serializer_.reset();
     }
-
-    if (current_part_stream_)
-    {
-        current_part_stream_.reset();
-    }
+    
+    archive_->close();
 }
 
 void xlsx_producer::begin_part(const path &part)
 {
     end_part();
-
-    current_part_stream_.reset(archive_->open(part.string()));
-    current_part_serializer_.reset(new xml::serializer(*current_part_stream_, part.string()));
+    current_part_serializer_.reset(new xml::serializer(archive_->open(part.string()), part.string()));
 }
 
 // Package Parts
@@ -770,11 +765,15 @@ void xlsx_producer::write_styles(const relationship &rel)
 	{
         const auto &number_formats = stylesheet.number_formats;
 
+        auto num_custom = std::count_if(number_formats.begin(), number_formats.end(),
+            [](const number_format &nf) { return nf.get_id() >= 164; });
+
 		serializer().start_element(xmlns, "numFmts");
-		serializer().attribute("count", number_formats.size());
+		serializer().attribute("count", num_custom);
 
 		for (const auto &num_fmt : number_formats)
 		{
+            if (num_fmt.get_id() < 164) continue;
 			serializer().start_element(xmlns, "numFmt");
 			serializer().attribute("numFmtId", num_fmt.get_id());
 			serializer().attribute("formatCode", num_fmt.get_format_string());
@@ -1020,68 +1019,90 @@ void xlsx_producer::write_styles(const relationship &rel)
     // Style XFs
     
     serializer().start_element(xmlns, "cellStyleXfs");
-    serializer().attribute("count", stylesheet.styles.size());
+    serializer().attribute("count", stylesheet.style_impls.size());
 
-	for (auto &current_style : stylesheet.styles)
+	for (auto &current_style_name_impl : stylesheet.style_impls)
 	{
+        auto &current_style_impl = current_style_name_impl.second;
+
 		serializer().start_element(xmlns, "xf");
-        serializer().attribute("numFmtId", current_style.number_format().get_id());
-        serializer().attribute("fontId", std::distance(stylesheet.fonts.begin(),
-            std::find(stylesheet.fonts.begin(), stylesheet.fonts.end(), current_style.font())));
-		serializer().attribute("fillId", std::distance(stylesheet.fills.begin(),
-            std::find(stylesheet.fills.begin(), stylesheet.fills.end(), current_style.fill())));
-		serializer().attribute("borderId", std::distance(stylesheet.borders.begin(),
-            std::find(stylesheet.borders.begin(), stylesheet.borders.end(), current_style.border())));
+        serializer().attribute("numFmtId", current_style_impl.number_format_id.get());
+        serializer().attribute("fontId", current_style_impl.font_id.get());
+		serializer().attribute("fillId", current_style_impl.fill_id.get());
+		serializer().attribute("borderId", current_style_impl.border_id.get());
 
-		if (current_style.number_format_applied()) serializer().attribute("applyNumberFormat", write_bool(true));
-		if (current_style.fill_applied()) serializer().attribute("applyFill", write_bool(true));
-		if (current_style.font_applied()) serializer().attribute("applyFont", write_bool(true));
-		if (current_style.border_applied()) serializer().attribute("applyBorder", write_bool(true));
-        if (current_style.alignment_applied()) serializer().attribute("applyAlignment", write_bool(true));
-        if (current_style.protection_applied()) serializer().attribute("applyProtection", write_bool(true));
+		if (current_style_impl.number_format_applied)
+        {
+            serializer().attribute("applyNumberFormat", write_bool(true));
+        }
 
-		if (current_style.alignment_applied())
+		if (current_style_impl.fill_applied)
+        {
+            serializer().attribute("applyFill", write_bool(true));
+        }
+
+		if (current_style_impl.font_applied)
+        {
+            serializer().attribute("applyFont", write_bool(true));
+        }
+
+		if (current_style_impl.border_applied)
+        {
+            serializer().attribute("applyBorder", write_bool(true));
+        }
+
+        if (current_style_impl.alignment_applied)
+        {
+            serializer().attribute("applyAlignment", write_bool(true));
+        }
+
+        if (current_style_impl.protection_applied)
+        {
+            serializer().attribute("applyProtection", write_bool(true));
+        }
+
+		if (current_style_impl.alignment_applied)
 		{
-            const auto current_alignment = current_style.alignment();
+            const auto &current_alignment = stylesheet.alignments[current_style_impl.alignment_id.get()];
 
 			serializer().start_element(xmlns, "alignment");
 
 			if (current_alignment.vertical())
 			{
-				serializer().attribute("vertical", *current_alignment.vertical());
+				serializer().attribute("vertical", current_alignment.vertical().get());
 			}
 
 			if (current_alignment.horizontal())
 			{
-				serializer().attribute("horizontal", *current_alignment.horizontal());
+				serializer().attribute("horizontal", current_alignment.horizontal().get());
 			}
 
 			if (current_alignment.rotation())
 			{
-				serializer().attribute("textRotation", *current_alignment.rotation());
+				serializer().attribute("textRotation", current_alignment.rotation().get());
 			}
 
 			if (current_alignment.wrap())
 			{
-				serializer().attribute("wrapText", write_bool(*current_alignment.wrap()));
+				serializer().attribute("wrapText", write_bool(current_alignment.wrap().get()));
 			}
 
 			if (current_alignment.indent())
 			{
-				serializer().attribute("indent", *current_alignment.indent());
+				serializer().attribute("indent", current_alignment.indent().get());
 			}
 
 			if (current_alignment.shrink())
 			{
-				serializer().attribute("shrinkToFit", write_bool(*current_alignment.shrink()));
+				serializer().attribute("shrinkToFit", write_bool(current_alignment.shrink().get()));
 			}
             
 			serializer().end_element(xmlns, "alignment");
 		}
 
-		if (current_style.protection_applied())
+		if (current_style_impl.protection_applied)
 		{
-            const auto current_protection = current_style.protection();
+            const auto &current_protection = stylesheet.protections[current_style_impl.protection_id.get()];
 
 			serializer().start_element(xmlns, "protection");
 			serializer().attribute("locked", write_bool(current_protection.locked()));
@@ -1097,36 +1118,54 @@ void xlsx_producer::write_styles(const relationship &rel)
 	// Format XFs
 
 	serializer().start_element(xmlns, "cellXfs");
-	serializer().attribute("count", stylesheet.formats.size());
+	serializer().attribute("count", stylesheet.format_impls.size());
 
-	for (auto &current_format : stylesheet.formats)
+	for (auto &current_format_impl : stylesheet.format_impls)
 	{
-		serializer().start_element(xmlns, "xf");
-        serializer().attribute("numFmtId", current_format.number_format().get_id());
-        serializer().attribute("fontId", std::distance(stylesheet.fonts.begin(),
-            std::find(stylesheet.fonts.begin(), stylesheet.fonts.end(), current_format.font())));
-		serializer().attribute("fillId", std::distance(stylesheet.fills.begin(),
-            std::find(stylesheet.fills.begin(), stylesheet.fills.end(), current_format.fill())));
-		serializer().attribute("borderId", std::distance(stylesheet.borders.begin(),
-            std::find(stylesheet.borders.begin(), stylesheet.borders.end(), current_format.border())));
+        serializer().start_element(xmlns, "xf");
+        serializer().attribute("numFmtId", current_format_impl.number_format_id.get());
+        serializer().attribute("fontId", current_format_impl.font_id.get());
+		serializer().attribute("fillId", current_format_impl.fill_id.get());
+		serializer().attribute("borderId", current_format_impl.border_id.get());
 
-		if (current_format.number_format_applied()) serializer().attribute("applyNumberFormat", write_bool(true));
-		if (current_format.fill_applied()) serializer().attribute("applyFill", write_bool(true));
-		if (current_format.font_applied()) serializer().attribute("applyFont", write_bool(true));
-		if (current_format.border_applied()) serializer().attribute("applyBorder", write_bool(true));
-        if (current_format.alignment_applied()) serializer().attribute("applyAlignment", write_bool(true));
-        if (current_format.protection_applied()) serializer().attribute("applyProtection", write_bool(true));
+		if (current_format_impl.number_format_applied)
+        {
+            serializer().attribute("applyNumberFormat", write_bool(true));
+        }
 
-		if (current_format.has_style())
+		if (current_format_impl.fill_applied)
+        {
+            serializer().attribute("applyFill", write_bool(true));
+        }
+
+		if (current_format_impl.font_applied)
+        {
+            serializer().attribute("applyFont", write_bool(true));
+        }
+
+		if (current_format_impl.border_applied)
+        {
+            serializer().attribute("applyBorder", write_bool(true));
+        }
+
+        if (current_format_impl.alignment_applied)
+        {
+            serializer().attribute("applyAlignment", write_bool(true));
+        }
+
+        if (current_format_impl.protection_applied)
+        {
+            serializer().attribute("applyProtection", write_bool(true));
+        }
+
+		if (current_format_impl.style.is_set())
 		{
-			serializer().attribute("xfId", std::distance(stylesheet.styles.begin(),
-				std::find_if(stylesheet.styles.begin(), stylesheet.styles.end(),
-					[&](const xlnt::style &s) { return s.name() == current_format.style().name(); })));
+			serializer().attribute("xfId", stylesheet.style_index(current_format_impl.style.get()));
 		}
 
-		if (current_format.alignment_applied())
+		if (current_format_impl.alignment_applied)
 		{
-            const auto current_alignment = current_format.alignment();
+            const auto &current_alignment = stylesheet.alignments[current_format_impl.alignment_id.get()];
 
 			serializer().start_element(xmlns, "alignment");
 
@@ -1163,9 +1202,9 @@ void xlsx_producer::write_styles(const relationship &rel)
 			serializer().end_element(xmlns, "alignment");
 		}
 
-		if (current_format.protection_applied())
+		if (current_format_impl.protection_applied)
 		{
-            const auto current_protection = current_format.protection();
+            const auto &current_protection = stylesheet.protections[current_format_impl.protection_id.get()];
 
 			serializer().start_element(xmlns, "protection");
 			serializer().attribute("locked", write_bool(current_protection.locked()));
@@ -1181,29 +1220,31 @@ void xlsx_producer::write_styles(const relationship &rel)
 	// Styles
 
 	serializer().start_element(xmlns, "cellStyles");
-    serializer().attribute("count", stylesheet.styles.size());
+    serializer().attribute("count", stylesheet.style_impls.size());
 	std::size_t style_index = 0;
 
-	for (auto &current_style : stylesheet.styles)
+	for (auto &current_style_name : stylesheet.style_names)
 	{
+        const auto &current_style = stylesheet.style_impls.at(current_style_name);
+
 		serializer().start_element(xmlns, "cellStyle");
 
-		serializer().attribute("name", current_style.name());
+		serializer().attribute("name", current_style.name);
 		serializer().attribute("xfId", style_index++);
 
-		if (current_style.builtin_id())
+		if (current_style.builtin_id)
 		{
-			serializer().attribute("builtinId", *current_style.builtin_id());
+			serializer().attribute("builtinId", current_style.builtin_id.get());
 		}
 
-		if (current_style.hidden())
+		if (current_style.hidden_style)
 		{
 			serializer().attribute("hidden", write_bool(true));
 		}
 
-		if (current_style.custom())
+		if (current_style.custom_builtin)
 		{
-			serializer().attribute("customBuiltin", write_bool(*current_style.custom()));
+			serializer().attribute("customBuiltin", write_bool(current_style.custom_builtin.get()));
 		}
         
 		serializer().end_element(xmlns, "cellStyle");
@@ -1972,7 +2013,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             
 				if (cell.has_format())
 				{
-					serializer().attribute("s", cell.get_format().id());
+					serializer().attribute("s", cell.format().id());
 				}
 
 				if (cell.get_data_type() == cell::type::string)
@@ -2510,9 +2551,8 @@ void xlsx_producer::write_thumbnail(const relationship &rel)
     end_part();
     
     const auto &thumbnail = source_.get_thumbnail();
-    current_part_stream_.reset(archive_->open(rel.get_target().get_path().string()));
     vector_istreambuf thumbnail_buffer(thumbnail);
-    *current_part_stream_ << &thumbnail_buffer;
+    archive_->open(rel.get_target().get_path().string()) << &thumbnail_buffer;
 }
 
 xml::serializer &xlsx_producer::serializer()

@@ -101,7 +101,7 @@ struct crypto_helper
         auto decoded = pipe.read_all();
 
         return std::vector<std::uint8_t>(decoded.begin(), decoded.end());
-    };
+    }
 
     static std::vector<std::uint8_t> hash(hash_algorithm algorithm,
         const std::vector<std::uint8_t> &input)
@@ -112,7 +112,7 @@ struct crypto_helper
         auto hash = pipe.read_all();
 
         return std::vector<std::uint8_t>(hash.begin(), hash.end());
-    };
+    }
 
     static std::vector<std::uint8_t> get_file(POLE::Storage &storage, const std::string &name)
     {
@@ -130,7 +130,7 @@ struct crypto_helper
         index += sizeof(T);
 
         return result;
-    };
+    }
 
     struct standard_encryption_info
     {

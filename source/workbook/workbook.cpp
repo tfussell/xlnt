@@ -57,6 +57,48 @@
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
+namespace {
+
+#ifdef WIN32
+std::wstring utf8_to_utf16(const std::string &utf8_string)
+{
+    std::wstring_convert<std::codecvt_utf8<wchar_t> convert;
+    return convert.from_bytes(utf8_string);
+}
+
+void open_stream(std::ifstream &stream, const std::wstring &path)
+{
+    stream.open(path, std::ios::binary);
+}
+
+void open_stream(std::ofstream &stream, const std::wstring &path)
+{
+    stream.open(path, std::ios::binary);
+}
+
+void open_stream(std::ifstream &stream, const std::string &path)
+{
+    open_stream(stream, utf8_to_utf16(path));
+}
+
+void open_stream(std::ofstream &stream, const std::string &path)
+{
+    stream.open(path, utf8_to_utf16(path));
+}
+#else
+void open_stream(std::ifstream &stream, const std::string &path)
+{
+    stream.open(path, std::ios::binary);
+}
+
+void open_stream(std::ofstream &stream, const std::string &path)
+{
+    stream.open(path, std::ios::binary);
+}
+#endif
+
+} // namespace
+
 namespace xlnt {
 
 workbook workbook::minimal()
@@ -145,12 +187,6 @@ workbook workbook::empty_excel()
 	ws.d_->has_format_properties_ = true;
 	ws.d_->has_view_ = true;
 
-	wb.d_->stylesheet_.fills.push_back(pattern_fill().type(pattern_fill_type::none));
-	wb.d_->stylesheet_.fills.push_back(pattern_fill().type(pattern_fill_type::gray125));
-
-	auto default_font = font().name("Calibri").size(12).scheme("minor").family(2).color(theme_color(1));
-	wb.d_->stylesheet_.fonts.push_back(default_font);
-
 	auto default_border = border().side(border_side::bottom, border::border_property())
 		.side(border_side::top, border::border_property())
 		.side(border_side::start, border::border_property())
@@ -158,14 +194,31 @@ workbook workbook::empty_excel()
 		.side(border_side::diagonal, border::border_property());
 	wb.d_->stylesheet_.borders.push_back(default_border);
 
-	auto &normal_style = wb.create_style("Normal").builtin_id(0);
-	normal_style.font(default_font, false);
-	normal_style.border(default_border, false);
+    auto default_fill = fill(pattern_fill().type(pattern_fill_type::none));
+	wb.d_->stylesheet_.fills.push_back(default_fill);
+    auto gray125_fill = pattern_fill().type(pattern_fill_type::gray125);
+	wb.d_->stylesheet_.fills.push_back(gray125_fill);
 
-	auto &default_format = wb.create_format();
-	default_format.font(default_font, false);
-	default_format.border(default_border, false);
-	default_format.style("Normal");
+	auto default_font = font()
+        .name("Calibri")
+        .size(12)
+        .scheme("minor")
+        .family(2)
+        .color(theme_color(1));
+	wb.d_->stylesheet_.fonts.push_back(default_font);
+
+	wb.create_style("Normal").builtin_id(0)
+        .border(default_border, false)
+        .fill(default_fill, false)
+        .font(default_font, false)
+        .number_format(xlnt::number_format::general(), false);
+
+	wb.create_format()
+        .border(default_border, false)
+        .fill(default_fill, false)
+        .font(default_font, false)
+        .number_format(xlnt::number_format::general(), false)
+        .style("Normal");
 
 	wb.set_theme(theme());
 
@@ -262,59 +315,59 @@ workbook workbook::empty_libre_office()
 		.hidden(false);
 	wb.d_->stylesheet_.protections.push_back(default_protection);
 
-	auto &normal_style = wb.create_style("Normal").builtin_id(0).custom(false);
-	normal_style.alignment(default_alignment, false);
-	normal_style.border(default_border, true);
-	normal_style.fill(default_fill, true);
-	normal_style.font(default_font, true);
-	normal_style.number_format(default_number_format, false);
-	normal_style.protection(default_protection, false);
+	wb.create_style("Normal").builtin_id(0).custom(false)
+        .alignment(default_alignment, false)
+        .border(default_border, true)
+        .fill(default_fill, true)
+        .font(default_font, true)
+        .number_format(default_number_format, false)
+        .protection(default_protection, false);
 
-	auto &comma_style = wb.create_style("Comma").builtin_id(3).custom(false);
-	comma_style.alignment(default_alignment, false);
-	comma_style.border(default_border, true);
-	comma_style.fill(default_fill, true);
-	comma_style.font(second_font, true);
-	comma_style.number_format(number_format::from_builtin_id(43), false);
-	comma_style.protection(default_protection, false);
+    wb.create_style("Comma").builtin_id(3).custom(false)
+        .alignment(default_alignment, false)
+        .border(default_border, true)
+        .fill(default_fill, true)
+        .font(second_font, true)
+        .number_format(number_format::from_builtin_id(43), false)
+        .protection(default_protection, false);
 
-	auto &comma0_style = wb.create_style("Comma [0]").builtin_id(6).custom(false);
-	comma0_style.alignment(default_alignment, false);
-	comma0_style.border(default_border, true);
-	comma0_style.fill(default_fill, true);
-	comma0_style.font(second_font, true);
-	comma0_style.number_format(number_format::from_builtin_id(41), false);
-	comma0_style.protection(default_protection, false);
+    wb.create_style("Comma [0]").builtin_id(6).custom(false)
+        .alignment(default_alignment, false)
+        .border(default_border, true)
+        .fill(default_fill, true)
+        .font(second_font, true)
+        .number_format(number_format::from_builtin_id(41), false)
+        .protection(default_protection, false);
 
-	auto &currency_style = wb.create_style("Currency").builtin_id(4).custom(false);
-	currency_style.alignment(default_alignment, false);
-	currency_style.border(default_border, true);
-	currency_style.fill(default_fill, true);
-	currency_style.font(second_font, true);
-	currency_style.number_format(number_format::from_builtin_id(44), false);
-	currency_style.protection(default_protection, false);
+    wb.create_style("Currency").builtin_id(4).custom(false)
+        .alignment(default_alignment, false)
+        .border(default_border, true)
+        .fill(default_fill, true)
+        .font(second_font, true)
+        .number_format(number_format::from_builtin_id(44), false)
+        .protection(default_protection, false);
 
-	auto &currency0_style = wb.create_style("Currency [0]").builtin_id(7).custom(false);
-	currency0_style.alignment(default_alignment, false);
-	currency0_style.border(default_border, true);
-	currency0_style.fill(default_fill, true);
-	currency0_style.font(second_font, true);
-	currency0_style.number_format(number_format::from_builtin_id(42), false);
-	currency0_style.protection(default_protection, false);
+    wb.create_style("Currency [0]").builtin_id(7).custom(false)
+        .alignment(default_alignment, false)
+        .border(default_border, true)
+        .fill(default_fill, true)
+        .font(second_font, true)
+        .number_format(number_format::from_builtin_id(42), false)
+        .protection(default_protection, false);
 
-	auto &percent_style = wb.create_style("Percent").builtin_id(5).custom(false);
-	percent_style.alignment(default_alignment, false);
-	percent_style.border(default_border, true);
-	percent_style.fill(default_fill, false);
-	percent_style.font(second_font, true);
-	percent_style.number_format(number_format::percentage(), false);
-	percent_style.protection(default_protection, false);
+	wb.create_style("Percent").builtin_id(5).custom(false)
+        .alignment(default_alignment, false)
+        .border(default_border, true)
+        .fill(default_fill, false)
+        .font(second_font, true)
+        .number_format(number_format::percentage(), false)
+        .protection(default_protection, false);
 
-	auto &format = wb.create_format();
-	format.number_format(default_number_format, true);
-	format.alignment(default_alignment, true);
-	format.protection(default_protection, true);
-	format.style("Normal");
+	wb.create_format()
+        .number_format(default_number_format, true)
+        .alignment(default_alignment, true)
+        .protection(default_protection, true)
+        .style("Normal");
 
 	wb.d_->has_file_version_ = true;
 	wb.d_->file_version_.app_name = "Calc";
@@ -702,7 +755,8 @@ void workbook::load(const std::string &filename)
 
 void workbook::load(const path &filename)
 {
-	std::ifstream file_stream(filename.string(), std::ios::binary);
+	std::ifstream file_stream;
+    open_stream(file_stream, filename.string());
     load(file_stream);
 }
 
@@ -713,7 +767,8 @@ void workbook::load(const std::string &filename, const std::string &password)
 
 void workbook::load(const path &filename, const std::string &password)
 {
-	std::ifstream file_stream(filename.string(), std::iostream::binary);
+	std::ifstream file_stream;
+    open_stream(file_stream, filename.string());
 	return load(file_stream, password);
 }
 
@@ -745,7 +800,8 @@ void workbook::save(const std::string &filename) const
 
 void workbook::save(const path &filename) const
 {
-	std::ofstream file_stream(filename.string(), std::ios::binary);
+	std::ofstream file_stream;
+    open_stream(file_stream, filename.string());
 	save(file_stream);
 }
 
@@ -758,13 +814,29 @@ void workbook::save(std::ostream &stream) const
 #ifdef WIN32
 void workbook::save(const std::wstring &filename)
 {
-    std::ofstream file_stream(filename, std::ios::binary);
+    std::ofstream file_stream;
+    open_stream(file_stream, filename);
     save(file_stream);
+}
+
+void workbook::save(const std::wstring &filename, const std::string &password)
+{
+    std::ofstream file_stream;
+    open_stream(file_stream, filename);
+    save(file_stream, password);
 }
 
 void workbook::load(const std::wstring &filename)
 {
-    std::ifstream file_stream(filename, std::ios::binary);
+    std::ifstream file_stream;
+    open_stream(file_stream, filename);
+    load(file_stream);
+}
+
+void workbook::load(const std::wstring &filename, const std::string &password)
+{
+    std::ifstream file_stream;
+    open_stream(file_stream, filename);
     load(file_stream);
 }
 #endif
@@ -1002,7 +1074,7 @@ std::vector<named_range> workbook::get_named_ranges() const
     return named_ranges;
 }
 
-format &workbook::create_format()
+format workbook::create_format()
 {
 	register_stylesheet_in_manifest();
     return d_->stylesheet_.create_format();
@@ -1015,13 +1087,11 @@ bool workbook::has_style(const std::string &name) const
 
 void workbook::clear_styles()
 {
-    d_->stylesheet_.styles.clear();
     apply_to_cells([](cell c) { c.clear_style(); });
 }
 
 void workbook::clear_formats()
 {
-    d_->stylesheet_.formats.clear();
     apply_to_cells([](cell c) { c.clear_format(); });
 }
 
@@ -1029,22 +1099,25 @@ void workbook::apply_to_cells(std::function<void(cell)> f)
 {
     for (auto ws : *this)
     {
-        for (auto r : ws.iter_cells(true))
+        for (auto row = ws.get_lowest_row(); row <= ws.get_highest_row(); ++row)
         {
-            for (auto c : r)
+            for (auto column = ws.get_lowest_column(); column <= ws.get_highest_column(); ++column)
             {
-                f.operator()(c);
+                if (ws.has_cell(cell_reference(column, row)))
+                {
+                    f.operator()(ws.get_cell(cell_reference(column, row)));
+                }
             }
         }
     }
 }
 
-format &workbook::get_format(std::size_t format_index)
+format workbook::get_format(std::size_t format_index)
 {
 	return d_->stylesheet_.get_format(format_index);
 }
 
-const format &workbook::get_format(std::size_t format_index) const
+const format workbook::get_format(std::size_t format_index) const
 {
 	return d_->stylesheet_.get_format(format_index);
 }
@@ -1113,19 +1186,19 @@ const std::vector<std::uint8_t> &workbook::get_thumbnail() const
     return d_->thumbnail_;
 }
 
-style &workbook::create_style(const std::string &name)
+style workbook::create_style(const std::string &name)
 {
-	return d_->stylesheet_.create_style().name(name);
+	return d_->stylesheet_.create_style(name);
 }
 
-style &workbook::get_style(const std::string &name)
+style workbook::style(const std::string &name)
 {
-	return d_->stylesheet_.get_style(name);
+	return d_->stylesheet_.style(name);
 }
 
-const style &workbook::get_style(const std::string &name) const
+const style workbook::style(const std::string &name) const
 {
-	return d_->stylesheet_.get_style(name);
+	return d_->stylesheet_.style(name);
 }
 
 std::string workbook::get_application() const

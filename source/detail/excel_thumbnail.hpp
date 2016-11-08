@@ -427,6 +427,6 @@ const std::vector<std::uint8_t> &excel_thumbnail()
 	};
 
 	return *data;
-};
+}
 
 } // namespace xlnt

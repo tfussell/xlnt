@@ -34,6 +34,7 @@
 namespace xlnt {
 namespace detail {
 
+struct format_impl;
 struct worksheet_impl;
 
 struct cell_impl
@@ -54,7 +55,7 @@ struct cell_impl
 
     optional<std::string> formula_;
     optional<std::string> hyperlink_;
-    optional<std::size_t> format_id_;
+    optional<format_impl *> format_;
     optional<comment> comment_;
 };
 

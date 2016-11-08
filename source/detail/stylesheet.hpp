@@ -42,66 +42,54 @@ namespace detail {
 
 struct stylesheet
 {
-    ~stylesheet() 
-	{
-	}
-
-    format &create_format()
+    format create_format()
     {
 		format_impls.push_back(format_impl());
 		auto &impl = format_impls.back();
 
 		impl.parent = this;
 		impl.id = format_impls.size() - 1;
+        
+        impl.border_id = 0;
+        impl.fill_id = 0;
+        impl.font_id = 0;
+        impl.number_format_id = 0;
+        
+        return format(&impl);
+    }
+
+	format get_format(std::size_t index)
+	{
+        auto iter = format_impls.begin();
+        std::advance(iter, index);
+		return format(&*iter);
+	}
+    
+    class style create_style(const std::string &name)
+    {
+        auto &impl = style_impls.emplace(name, style_impl()).first->second;
+
+		impl.parent = this;
+        impl.name = name;
+
         impl.border_id = 0;
         impl.fill_id = 0;
         impl.font_id = 0;
         impl.number_format_id = 0;
 
-		formats.push_back(format(&impl));
-        auto &format = formats.back();
-        
-        return format;
+        style_names.push_back(name);
+        return xlnt::style(&impl);
     }
 
-	format &get_format(std::size_t index)
+    class style style(const std::string &name)
 	{
-		return formats.at(index);
-	}
-    
-    style &create_style()
-    {
-		style_impls.push_back(style_impl());
-		auto &impl = style_impls.back();
-		impl.parent = this;
-		styles.push_back(style(&impl));
-		return styles.back();
-    }
-
-	style &get_style(const std::string &name)
-	{
-		for (auto &s : styles)
-		{
-			if (s.name() == name)
-			{
-				return s;
-			}
-		}
-
-		throw key_not_found();
+        if (!has_style(name)) throw key_not_found();
+        return xlnt::style(&style_impls[name]);
 	}
 
 	bool has_style(const std::string &name)
 	{
-		for (auto &s : styles)
-		{
-			if (s.name() == name)
-			{
-				return true;
-			}
-		}
-
-		return false;
+		return style_impls.count(name) > 0;
 	}
 
 	std::size_t next_custom_number_format_id() const
@@ -119,70 +107,290 @@ struct stylesheet
 		return id;
 	}
     
-    std::size_t add_border(const border &new_border)
+    template<typename T, typename C>
+    std::size_t find_or_add(C &container, const T &item)
     {
-        std::size_t index = 0;
+        std::size_t i = 0;
         
-        for (const border &f : borders)
+        for (auto iter = container.begin(); iter != container.end(); ++iter)
         {
-            if (f == new_border)
+            if (*iter == item)
             {
-                return index;
+                return i;
             }
-            
-            ++index;
+
+            ++i;
         }
         
-        borders.push_back(new_border);
+        container.emplace(container.end(), item);
 
-        return index;
+        return container.size() - 1;
     }
     
-    std::size_t add_fill(const fill &new_fill)
+    template<typename T>
+    std::unordered_map<std::size_t, std::size_t> garbage_collect(
+        const std::unordered_map<std::size_t, std::size_t> &reference_counts,
+        std::vector<T> &container)
     {
-        std::size_t index = 0;
-        
-        for (const fill &f : fills)
-        {
-            if (f == new_fill)
-            {
-                return index;
-            }
-            
-            ++index;
-        }
-        
-        fills.push_back(new_fill);
+        std::unordered_map<std::size_t, std::size_t> id_map;
+        std::size_t unreferenced = 0;
+        const auto original_size = container.size();
 
-        return index;
+        for (std::size_t i = 0; i < original_size; ++i)
+        {
+            id_map[i] = i - unreferenced;
+
+            if (reference_counts.count(i) == 0 || reference_counts.at(i) == 0)
+            {
+                container.erase(container.begin() + i - unreferenced);
+                unreferenced++;
+            }
+        }
+
+        return id_map;
     }
     
-    std::size_t add_font(const font &new_font)
+    void garbage_collect(std::size_t new_format, std::size_t old_format)
     {
-        std::size_t index = 0;
+        if (!garbage_collection_enabled) return;
+
+        std::unordered_map<std::size_t, std::size_t> format_reference_counts;
         
-        for (const font &f : fonts)
+        for (const auto &impl : format_impls)
         {
-            if (f == new_font)
-            {
-                return index;
-            }
-            
-            ++index;
+            format_reference_counts[impl.id] = 0;
         }
         
-        fonts.push_back(new_font);
+        format_reference_counts[new_format]++;
+        
+        parent->apply_to_cells([&format_reference_counts](cell c)
+        {
+            if (c.has_format())
+            {
+                format_reference_counts[c.format().id()]++;
+            }
+        });
+        
+        if (format_reference_counts[old_format] > 0)
+        {
+            format_reference_counts[old_format]--;
+        }
+        
+        for (const auto &id_count_pair : format_reference_counts)
+        {
+            if (id_count_pair.second != 0) continue;
 
-        return index;
+            auto target_id = id_count_pair.first;
+            auto target = std::find_if(format_impls.begin(), format_impls.end(),
+                [=](const format_impl &impl) { return impl.id == target_id; });
+            format_impls.erase(target);
+        }
+        
+        std::size_t new_id = 0;
+
+        std::unordered_map<std::size_t, std::size_t> alignment_reference_counts;
+        std::unordered_map<std::size_t, std::size_t> border_reference_counts;
+        std::unordered_map<std::size_t, std::size_t> fill_reference_counts;
+        std::unordered_map<std::size_t, std::size_t> font_reference_counts;
+        std::unordered_map<std::size_t, std::size_t> number_format_reference_counts;
+        std::unordered_map<std::size_t, std::size_t> protection_reference_counts;
+        
+        for (auto &impl : format_impls)
+        {
+            impl.id = new_id++;
+            
+            if (impl.alignment_id.is_set())
+            {
+                alignment_reference_counts[impl.alignment_id.get()]++;
+            }
+            
+            if (impl.border_id.is_set())
+            {
+                border_reference_counts[impl.border_id.get()]++;
+            }
+            
+            if (impl.fill_id.is_set())
+            {
+                fill_reference_counts[impl.fill_id.get()]++;
+            }
+            
+            if (impl.font_id.is_set())
+            {
+                font_reference_counts[impl.font_id.get()]++;
+            }
+            
+            if (impl.number_format_id.is_set())
+            {
+                number_format_reference_counts[impl.number_format_id.get()]++;
+            }
+            
+            if (impl.protection_id.is_set())
+            {
+                protection_reference_counts[impl.protection_id.get()]++;
+            }
+        }
+        
+        for (auto &name_impl_pair : style_impls)
+        {
+            auto &impl = name_impl_pair.second;
+            
+            if (impl.alignment_id.is_set())
+            {
+                alignment_reference_counts[impl.alignment_id.get()]++;
+            }
+            
+            if (impl.border_id.is_set())
+            {
+                border_reference_counts[impl.border_id.get()]++;
+            }
+            
+            if (impl.fill_id.is_set())
+            {
+                fill_reference_counts[impl.fill_id.get()]++;
+            }
+            
+            if (impl.font_id.is_set())
+            {
+                font_reference_counts[impl.font_id.get()]++;
+            }
+            
+            if (impl.number_format_id.is_set())
+            {
+                number_format_reference_counts[impl.number_format_id.get()]++;
+            }
+            
+            if (impl.protection_id.is_set())
+            {
+                protection_reference_counts[impl.protection_id.get()]++;
+            }
+        }
+        
+        auto alignment_id_map = garbage_collect(alignment_reference_counts, alignments);
+        auto border_id_map = garbage_collect(border_reference_counts, borders);
+        auto fill_id_map = garbage_collect(fill_reference_counts, fills);
+        auto font_id_map = garbage_collect(font_reference_counts, fonts);
+        auto number_format_id_map = garbage_collect(number_format_reference_counts, number_formats);
+        auto protection_id_map = garbage_collect(protection_reference_counts, protections);
+
+        for (auto &impl : format_impls)
+        {
+            if (impl.alignment_id.is_set())
+            {
+                impl.alignment_id = alignment_id_map[impl.alignment_id.get()];
+            }
+            
+            if (impl.border_id.is_set())
+            {
+                impl.border_id = border_id_map[impl.border_id.get()];
+            }
+            
+            if (impl.fill_id.is_set())
+            {
+                impl.fill_id = fill_id_map[impl.fill_id.get()];
+            }
+            
+            if (impl.font_id.is_set())
+            {
+                impl.font_id = font_id_map[impl.font_id.get()];
+            }
+            
+            if (impl.number_format_id.is_set())
+            {
+                impl.number_format_id = number_format_id_map[impl.number_format_id.get()];
+            }
+            
+            if (impl.protection_id.is_set())
+            {
+                impl.protection_id = protection_id_map[impl.protection_id.get()];
+            }
+        }
+    }
+
+    format_impl *find_or_create(const format_impl &pattern)
+    {
+        auto iter = format_impls.begin();
+        auto id = find_or_add(format_impls, pattern);
+        std::advance(iter, id);
+        
+        auto &result = *iter;
+
+        result.parent = this;
+        result.id = id;
+        
+        if (id != pattern.id)
+        {
+            garbage_collect(id, pattern.id);
+        }
+
+        return &result;
+    }
+
+    format_impl *find_or_create_with(format_impl *pattern, const alignment &new_alignment, bool applied)
+    {
+        format_impl new_format = *pattern;
+        new_format.alignment_id = find_or_add(alignments, new_alignment);
+        new_format.alignment_applied = applied;
+        
+        return find_or_create(new_format);
+    }
+
+    format_impl *find_or_create_with(format_impl *pattern, const border &new_border, bool applied)
+    {
+        format_impl new_format = *pattern;
+        new_format.border_id = find_or_add(borders, new_border);
+        new_format.border_applied = applied;
+        
+        return find_or_create(new_format);
+    }
+    
+    format_impl *find_or_create_with(format_impl *pattern, const fill &new_fill, bool applied)
+    {
+        format_impl new_format = *pattern;
+        new_format.fill_id = find_or_add(fills, new_fill);
+        new_format.fill_applied = applied;
+        
+        return find_or_create(new_format);
+    }
+    
+    format_impl *find_or_create_with(format_impl *pattern, const font &new_font, bool applied)
+    {
+        format_impl new_format = *pattern;
+        new_format.font_id = find_or_add(fonts, new_font);
+        new_format.font_applied = applied;
+        
+        return find_or_create(new_format);
+    }
+    
+    format_impl *find_or_create_with(format_impl *pattern, const number_format &new_number_format, bool applied)
+    {
+        format_impl new_format = *pattern;
+        new_format.number_format_id = find_or_add(number_formats, new_number_format);
+        new_format.number_format_applied = applied;
+        
+        return find_or_create(new_format);
+    }
+    
+    format_impl *find_or_create_with(format_impl *pattern, const protection &new_protection, bool applied)
+    {
+        format_impl new_format = *pattern;
+        new_format.protection_id = find_or_add(protections, new_protection);
+        new_format.protection_applied = applied;
+        
+        return find_or_create(new_format);
+    }
+
+    std::size_t style_index(const std::string &name) const
+    {
+        return std::distance(style_names.begin(),
+            std::find(style_names.begin(), style_names.end(), name));
     }
     
     void clear()
     {
         format_impls.clear();
-        formats.clear();
         
         style_impls.clear();
-        styles.clear();
+        style_names.clear();
         
         alignments.clear();
         borders.clear();
@@ -193,64 +401,24 @@ struct stylesheet
         
         colors.clear();
     }
-
-    format_impl *deduplicate(format_impl *f)
+    
+    void enable_garbage_collection()
     {
-        std::unordered_map<format_impl *, std::size_t> reference_counts;
+        garbage_collection_enabled = true;
+    }
 
-        for (auto ws : *parent)
-        {
-            auto dimension = ws.calculate_dimension();
-
-            for (auto row = dimension.get_top_left().get_row(); row <= dimension.get_bottom_right().get_row(); row++)
-            {
-                for (auto column = dimension.get_top_left().get_column(); column <= dimension.get_bottom_right().get_column(); column++)
-                {
-                    if (ws.has_cell(cell_reference(column, row)))
-                    {
-                        auto cell = ws.get_cell(cell_reference(column, row));
-
-                        if (cell.has_format())
-                        {
-                            reference_counts[formats.at(cell.get_format().id()).d_]++;
-                        }
-                    }
-                }
-            }
-        }
-
-        auto result = f;
-
-        for (auto &impl : format_impls)
-        {
-            if (reference_counts[&impl] == 0 && &impl != f)
-            {
-                result = &impl;
-                break;
-            }
-        }
-
-        /*
-        if (result != f)
-        {
-            auto impl_iter = std::find_if(format_impls.begin(), format_impls.end(),
-                [=](const format_impl &impl) { return &impl == f; });
-            auto index = std::distance(format_impls.begin(), impl_iter);
-            formats.erase(formats.begin() + index);
-            format_impls.erase(impl_iter);
-        }
-        */
-
-        return f;
+    void disable_garbage_collection()
+    {
+        garbage_collection_enabled = false;
     }
 
     workbook *parent;
+    
+    bool garbage_collection_enabled = true;
 
     std::list<format_impl> format_impls;
-	std::vector<format> formats;
-
-    std::list<style_impl> style_impls;
-	std::vector<style> styles;
+    std::unordered_map<std::string, style_impl> style_impls;
+    std::vector<std::string> style_names;
 
 	std::vector<alignment> alignments;
     std::vector<border> borders;

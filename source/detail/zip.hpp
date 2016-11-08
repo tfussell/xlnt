@@ -59,8 +59,28 @@ struct zip_file_header
 
     zip_file_header();
 
-    bool read(std::istream& istream, const bool global);
-    void Write(std::ostream& ostream, const bool global) const;
+    bool read(std::istream &istream, const bool global);
+    void Write(std::ostream &ostream, const bool global) const;
+};
+
+class zip_file_istream : public std::istream
+{
+public:
+    zip_file_istream(std::unique_ptr<std::streambuf> &&buf);
+    virtual ~zip_file_istream();
+    
+private:
+    std::unique_ptr<std::streambuf> buf;
+};
+
+class zip_file_ostream : public std::ostream
+{
+public:
+    zip_file_ostream(std::unique_ptr<std::streambuf> &&buf);
+    virtual ~zip_file_ostream();
+
+private:
+    std::unique_ptr<std::streambuf> buf;
 };
 
 class ZipFileWriter
@@ -68,11 +88,12 @@ class ZipFileWriter
 public:
     ZipFileWriter(std::ostream &filename);
     virtual ~ZipFileWriter();
-    std::ostream* open(const std::string& filename);
-
+    std::ostream &open(const std::string &filename);
+    void close();
 private:
-    std::ostream &target_stream_;
     std::vector<zip_file_header> file_headers_;
+    std::ostream &target_stream_;
+    std::unique_ptr<std::ostream> write_stream_;
 };
 
 class ZipFileReader
@@ -82,7 +103,7 @@ public:
     virtual ~ZipFileReader();
     std::istream &open(const std::string &filename);
     std::vector<std::string> files() const;
-	bool has_file(const std::string &filename) const;
+    bool has_file(const std::string &filename) const;
 
 private:
     bool read_central_header();

@@ -20,12 +20,14 @@ public:
 	{
 		std::vector<std::uint8_t> original_buffer;
 		original.save(original_buffer);
+        original.save("b.xlsx");
 
 		xlnt::workbook resulting_workbook;
 		resulting_workbook.load(original_buffer);
         
         std::vector<std::uint8_t> resulting_buffer;
         resulting_workbook.save(resulting_buffer);
+        resulting_workbook.save("a.xlsx");
 
 		return xml_helper::xlsx_archives_match(original_buffer, resulting_buffer);
 	}
