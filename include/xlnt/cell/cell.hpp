@@ -217,7 +217,7 @@ public:
     /// Return a reference to the format applied to this cell.
 	/// If this cell has no format, an invalid_attribute exception will be thrown.
     /// </summary>
-    const format format() const;
+    const class format format() const;
     
 	/// <summary>
 	/// Applies the cell-level formatting of new_format to this cell.
@@ -307,7 +307,7 @@ public:
 	/// <summary>
 	/// Returns a wrapper pointing to the named style applied to this cell.
 	/// </summary>
-	const style style() const;
+	const class style style() const;
 
 	/// <summary>
 	/// Equivalent to style(new_style.name())
