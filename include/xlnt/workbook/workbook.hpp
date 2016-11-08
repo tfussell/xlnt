@@ -362,7 +362,7 @@ public:
 
 	void save(const std::string &filename, const std::string &password);
 	void save(const xlnt::path &filename, const std::string &password);
-	void save(std::istream &stream, const std::string &password);
+	void save(std::ostream &stream, const std::string &password);
 	void save(const std::vector<std::uint8_t> &data, const std::string &password);
 
 	void load(const std::vector<std::uint8_t> &data);

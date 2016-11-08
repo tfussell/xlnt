@@ -56,6 +56,8 @@ public:
 
 	void write(std::ostream &destination);
 
+    void write(std::ostream &destination, const std::string &password);
+
 private:
 	/// <summary>
 	/// Write all files needed to create a valid XLSX file which represents all

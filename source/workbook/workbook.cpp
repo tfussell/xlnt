@@ -21,8 +21,10 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #include <algorithm>
 #include <array>
+#include <codecvt>
 #include <fstream>
 #include <functional>
 #include <set>
@@ -62,7 +64,7 @@ namespace {
 #ifdef WIN32
 std::wstring utf8_to_utf16(const std::string &utf8_string)
 {
-    std::wstring_convert<std::codecvt_utf8<wchar_t> convert;
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> convert;
     return convert.from_bytes(utf8_string);
 }
 
@@ -83,7 +85,7 @@ void open_stream(std::ifstream &stream, const std::string &path)
 
 void open_stream(std::ofstream &stream, const std::string &path)
 {
-    stream.open(path, utf8_to_utf16(path));
+    open_stream(stream, utf8_to_utf16(path));
 }
 #else
 void open_stream(std::ifstream &stream, const std::string &path)
@@ -811,6 +813,12 @@ void workbook::save(std::ostream &stream) const
 	producer.write(stream);
 }
 
+void workbook::save(std::ostream &stream, const std::string &password)
+{
+    detail::xlsx_producer producer(*this);
+    producer.write(stream, password);
+}
+
 #ifdef WIN32
 void workbook::save(const std::wstring &filename)
 {
@@ -837,7 +845,7 @@ void workbook::load(const std::wstring &filename, const std::string &password)
 {
     std::ifstream file_stream;
     open_stream(file_stream, filename);
-    load(file_stream);
+    load(file_stream, password);
 }
 #endif
 

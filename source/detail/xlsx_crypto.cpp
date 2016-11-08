@@ -27,6 +27,7 @@
 
 #include <detail/vector_streambuf.hpp>
 #include <detail/xlsx_consumer.hpp>
+#include <detail/xlsx_producer.hpp>
 #include <xlnt/utils/exceptions.hpp>
 #include <xlnt/workbook/workbook.hpp>
 
@@ -576,6 +577,16 @@ struct crypto_helper
 
         return decrypt_xlsx_standard(encryption_info, password, encrypted_package);
     }
+
+    static std::vector<std::uint8_t> encrypt_xlsx(const std::vector<std::uint8_t> &bytes, const std::string &password)
+    {
+        if (bytes.empty())
+        {
+            throw xlnt::exception("empty file");
+        }
+
+        return {};
+    }
 };
 
 void xlsx_consumer::read(std::istream &source, const std::string &password)
@@ -586,6 +597,22 @@ void xlsx_consumer::read(std::istream &source, const std::string &password)
 	vector_istreambuf decrypted_buffer(decrypted);
 	std::istream decrypted_stream(&decrypted_buffer);
 	read(decrypted_stream);
+}
+
+void xlsx_producer::write(std::ostream &destination, const std::string &password)
+{
+    std::vector<std::uint8_t> decrypted;
+
+    {
+        vector_ostreambuf decrypted_buffer(decrypted);
+        std::ostream decrypted_stream(&decrypted_buffer);
+        write(decrypted_stream);
+    }
+
+    const auto encrypted = crypto_helper::encrypt_xlsx(decrypted, password);
+    vector_istreambuf encrypted_buffer(encrypted);
+    
+    destination << &encrypted_buffer;
 }
 
 } // namespace detail

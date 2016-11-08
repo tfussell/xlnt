@@ -1883,20 +1883,22 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
 
                 auto min = static_cast<column_t::index_t>(std::stoull(parser().attribute("min")));
                 auto max = static_cast<column_t::index_t>(std::stoull(parser().attribute("max")));
+
                 auto width = std::stold(parser().attribute("width"));
-                bool custom = parser().attribute("customWidth") == std::string("1");
-                auto column_style = static_cast<std::size_t>(parser().attribute_present("style") ? std::stoull(parser().attribute("style")) : 0);
+                auto column_style = parser().attribute_present("style") 
+                    ? parser().attribute<std::size_t>("style") : static_cast<std::size_t>(0);
+                auto custom = parser().attribute_present("customWidth")
+                    ? is_true(parser().attribute("customWidth")) : false;
 
                 for (auto column = min; column <= max; column++)
                 {
-                    if (!ws.has_column_properties(column))
-                    {
-                        ws.add_column_properties(column, column_properties());
-                    }
+                    column_properties props;
 
-                    ws.get_column_properties(min).width = width;
-                    ws.get_column_properties(min).style = column_style;
-                    ws.get_column_properties(min).custom = custom;
+                    props.width = width;
+                    props.style = column_style;
+                    props.custom = custom;
+
+                    ws.add_column_properties(column, props);
                 }
 
 				if (parser().attribute_present("bestFit"))
