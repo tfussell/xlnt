@@ -22,6 +22,8 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <cmath> // for std::fabs
+
 #include <xlnt/styles/fill.hpp>
 
 namespace xlnt {
