@@ -101,15 +101,15 @@ xlnt::color read_color(xml::parser &parser)
 
 std::vector<xlnt::relationship> read_relationships(const xlnt::path &part, xlnt::detail::ZipFileReader &archive)
 {
-	std::vector<xlnt::relationship> relationships;
-	if (!archive.has_file(part.string())) return relationships;
+    std::vector<xlnt::relationship> relationships;
+    if (!archive.has_file(part.string())) return relationships;
 
     auto &rels_stream = archive.open(part.string());
     xml::parser parser(rels_stream, part.string());
 
     xlnt::uri source(part.string());
 
-    const auto xmlns = xlnt::constants::get_namespace("relationships");
+    static const auto &xmlns = xlnt::constants::get_namespace("relationships");
     parser.next_expect(xml::parser::event_type::start_element, xmlns, "Relationships");
     parser.content(xml::content::complex);
 
@@ -221,8 +221,30 @@ void xlsx_consumer::populate_workbook()
 			read_volatile_dependencies();
 			break;
 
-        default:
-            break;
+        case relationship::type::thumbnail: break;
+        case relationship::type::calculation_chain: break;
+        case relationship::type::worksheet: break;
+        case relationship::type::shared_string_table: break;
+        case relationship::type::styles: break;
+        case relationship::type::theme: break;
+        case relationship::type::hyperlink: break;
+        case relationship::type::chartsheet: break;
+        case relationship::type::comments: break;
+        case relationship::type::vml_drawing: break;
+        case relationship::type::unknown: break;
+        case relationship::type::printer_settings: break;
+        case relationship::type::custom_property: break;
+        case relationship::type::dialogsheet: break;
+        case relationship::type::drawings: break;
+        case relationship::type::pivot_table_cache_definition: break;
+        case relationship::type::pivot_table_cache_records: break;
+        case relationship::type::query_table: break;
+        case relationship::type::shared_workbook: break;
+        case relationship::type::revision_log: break;
+        case relationship::type::shared_workbook_user_data: break;
+        case relationship::type::single_cell_table_definitions: break;
+        case relationship::type::table_definition: break;
+        case relationship::type::image: break;
 		}
 
 		parser_ = nullptr;
@@ -235,9 +257,12 @@ void xlsx_consumer::populate_workbook()
 	for (const auto &rel : manifest.get_relationships(workbook_rel.get_target().get_path()))
 	{
 		path part_path(rel.get_source().get_path().parent().append(rel.get_target().get_path()));
+        auto receive = xml::parser::receive_default;
         auto using_namespaces = rel.get_type() == relationship::type::styles;
-        auto receive = xml::parser::receive_default
-            | (using_namespaces ? xml::parser::receive_namespace_decls : 0);
+	if (using_namespaces)
+	{
+            receive |= xml::parser::receive_namespace_decls;
+	}
         xml::parser parser(archive_->open(part_path.string()), part_path.string(), receive);
 		parser_ = &parser;
 
@@ -255,8 +280,38 @@ void xlsx_consumer::populate_workbook()
             read_theme();
             break;
 
-        default:
-            break;
+        case relationship::type::office_document: break;
+        case relationship::type::thumbnail: break;
+        case relationship::type::calculation_chain: break;
+        case relationship::type::extended_properties: break;
+        case relationship::type::core_properties: break;
+        case relationship::type::worksheet: break;
+        case relationship::type::hyperlink: break;
+        case relationship::type::chartsheet: break;
+        case relationship::type::comments: break;
+        case relationship::type::vml_drawing: break;
+        case relationship::type::unknown: break;
+        case relationship::type::custom_properties: break;
+        case relationship::type::printer_settings: break;
+        case relationship::type::connections: break;
+        case relationship::type::custom_property: break;
+        case relationship::type::custom_xml_mappings: break;
+        case relationship::type::dialogsheet: break;
+        case relationship::type::drawings: break;
+        case relationship::type::external_workbook_references: break;
+        case relationship::type::metadata: break;
+        case relationship::type::pivot_table: break;
+        case relationship::type::pivot_table_cache_definition: break;
+        case relationship::type::pivot_table_cache_records: break;
+        case relationship::type::query_table: break;
+        case relationship::type::shared_workbook_revision_headers: break;
+        case relationship::type::shared_workbook: break;
+        case relationship::type::revision_log: break;
+        case relationship::type::shared_workbook_user_data: break;
+        case relationship::type::single_cell_table_definitions: break;
+        case relationship::type::table_definition: break;
+        case relationship::type::volatile_dependencies: break;
+        case relationship::type::image: break;
 		}
 
 		parser_ = nullptr;
@@ -265,11 +320,12 @@ void xlsx_consumer::populate_workbook()
     // Second pass, read sheets themselves
 
 	for (const auto &rel : manifest.get_relationships(workbook_rel.get_target().get_path()))
-    {
-		path part_path(rel.get_source().get_path().parent().append(rel.get_target().get_path()));
-        auto receive = xml::parser::receive_default | xml::parser::receive_namespace_decls;
-        xml::parser parser(archive_->open(part_path.string()), rel.get_target().get_path().string(), receive);
-		parser_ = &parser;
+	{
+	    path part_path(rel.get_source().get_path().parent().append(rel.get_target().get_path()));
+	    auto receive = xml::parser::receive_default;
+	    receive |= xml::parser::receive_namespace_decls;
+	    xml::parser parser(archive_->open(part_path.string()), rel.get_target().get_path().string(), receive);
+	    parser_ = &parser;
 
 		switch (rel.get_type())
 		{
@@ -285,8 +341,38 @@ void xlsx_consumer::populate_workbook()
 			read_worksheet(rel.get_id());
 			break;
 
-        default:
-            break;
+        case relationship::type::office_document: break;
+        case relationship::type::thumbnail: break;
+        case relationship::type::calculation_chain: break;
+        case relationship::type::extended_properties: break;
+        case relationship::type::core_properties: break;
+        case relationship::type::shared_string_table: break;
+        case relationship::type::styles: break;
+        case relationship::type::theme: break;
+        case relationship::type::hyperlink: break;
+        case relationship::type::comments: break;
+        case relationship::type::vml_drawing: break;
+        case relationship::type::unknown: break;
+        case relationship::type::custom_properties: break;
+        case relationship::type::printer_settings: break;
+        case relationship::type::connections: break;
+        case relationship::type::custom_property: break;
+        case relationship::type::custom_xml_mappings: break;
+        case relationship::type::drawings: break;
+        case relationship::type::external_workbook_references: break;
+        case relationship::type::metadata: break;
+        case relationship::type::pivot_table: break;
+        case relationship::type::pivot_table_cache_definition: break;
+        case relationship::type::pivot_table_cache_records: break;
+        case relationship::type::query_table: break;
+        case relationship::type::shared_workbook_revision_headers: break;
+        case relationship::type::shared_workbook: break;
+        case relationship::type::revision_log: break;
+        case relationship::type::shared_workbook_user_data: break;
+        case relationship::type::single_cell_table_definitions: break;
+        case relationship::type::table_definition: break;
+        case relationship::type::volatile_dependencies: break;
+        case relationship::type::image: break;
 		}
 
 		parser_ = nullptr;
@@ -312,7 +398,7 @@ void xlsx_consumer::read_manifest()
 	auto package_rels = read_relationships(package_rels_path, *archive_);
 	auto &manifest = target_.get_manifest();
 
-    static const auto xmlns = constants::get_namespace("content-types");
+    static const auto &xmlns = constants::get_namespace("content-types");
 
     xml::parser parser(archive_->open("[Content_Types].xml"), "[Content_Types].xml");
     parser.next_expect(xml::parser::event_type::start_element, xmlns, "Types");
@@ -364,7 +450,7 @@ void xlsx_consumer::read_manifest()
 
 		auto part_rels = read_relationships(relationship_source, *archive_);
 
-		for (const auto part_rel : part_rels)
+		for (const auto &part_rel : part_rels)
 		{
 			path target_path(source_directory.append(part_rel.get_target().get_path()));
 			manifest.register_relationship(source, part_rel.get_type(),
@@ -375,8 +461,8 @@ void xlsx_consumer::read_manifest()
 
 void xlsx_consumer::read_extended_properties()
 {
-    static const auto xmlns = constants::get_namespace("extended-properties");
-    static const auto xmlns_vt = constants::get_namespace("vt");
+    static const auto &xmlns = constants::get_namespace("extended-properties");
+    static const auto &xmlns_vt = constants::get_namespace("vt");
 
     parser().next_expect(xml::parser::event_type::start_element, xmlns, "Properties");
     parser().content(xml::parser::content_type::complex);
@@ -459,11 +545,10 @@ void xlsx_consumer::read_extended_properties()
 
 void xlsx_consumer::read_core_properties()
 {
-    static const auto xmlns_cp = constants::get_namespace("core-properties");
-    static const auto xmlns_dc = constants::get_namespace("dc");
-    static const auto xmlns_dcterms = constants::get_namespace("dcterms");
-    static const auto xmlns_dcmitype = constants::get_namespace("dcmitype");
-    static const auto xmlns_xsi = constants::get_namespace("xsi");
+    static const auto &xmlns_cp = constants::get_namespace("core-properties");
+    static const auto &xmlns_dc = constants::get_namespace("dc");
+    static const auto &xmlns_dcterms = constants::get_namespace("dcterms");
+    static const auto &xmlns_xsi = constants::get_namespace("xsi");
 
     parser().next_expect(xml::parser::event_type::start_element, xmlns_cp, "coreProperties");
     parser().content(xml::parser::content_type::complex);
@@ -514,13 +599,13 @@ void xlsx_consumer::read_custom_file_properties()
 
 void xlsx_consumer::read_workbook()
 {
-    static const auto xmlns = constants::get_namespace("workbook");
-    static const auto xmlns_mc = constants::get_namespace("mc");
-    static const auto xmlns_mx = constants::get_namespace("mx");
-    static const auto xmlns_r = constants::get_namespace("r");
-    static const auto xmlns_s = constants::get_namespace("worksheet");
-    static const auto xmlns_x15 = constants::get_namespace("x15");
-    static const auto xmlns_x15ac = constants::get_namespace("x15ac");
+    static const auto &xmlns = constants::get_namespace("workbook");
+    static const auto &xmlns_mc = constants::get_namespace("mc");
+    static const auto &xmlns_mx = constants::get_namespace("mx");
+    static const auto &xmlns_r = constants::get_namespace("r");
+    static const auto &xmlns_s = constants::get_namespace("worksheet");
+    static const auto &xmlns_x15 = constants::get_namespace("x15");
+    static const auto &xmlns_x15ac = constants::get_namespace("x15ac");
 
     parser().next_expect(xml::parser::event_type::start_element, xmlns, "workbook");
     parser().content(xml::parser::content_type::complex);
@@ -809,7 +894,7 @@ void xlsx_consumer::read_pivot_table()
 
 void xlsx_consumer::read_shared_string_table()
 {
-    static const auto xmlns = constants::get_namespace("worksheet");
+    static const auto &xmlns = constants::get_namespace("worksheet");
     
     parser().next_expect(xml::parser::event_type::start_element, xmlns, "sst");
 	parser().content(xml::content::complex);
@@ -916,11 +1001,11 @@ void xlsx_consumer::read_shared_workbook_user_data()
 
 void xlsx_consumer::read_stylesheet()
 {
-    static const auto xmlns = constants::get_namespace("worksheet");
-    static const auto xmlns_mc = constants::get_namespace("mc");
-    static const auto xmlns_x14 = constants::get_namespace("x14");
-    static const auto xmlns_x14ac = constants::get_namespace("x14ac");
-	static const auto xmlns_x15 = constants::get_namespace("x15");
+    static const auto &xmlns = constants::get_namespace("worksheet");
+    static const auto &xmlns_mc = constants::get_namespace("mc");
+    static const auto &xmlns_x14 = constants::get_namespace("x14");
+    static const auto &xmlns_x14ac = constants::get_namespace("x14ac");
+	static const auto &xmlns_x15 = constants::get_namespace("x15");
     
 	auto &stylesheet = target_.impl().stylesheet_;
 
@@ -1559,7 +1644,9 @@ void xlsx_consumer::read_stylesheet()
         
         new_format.id = record_index++;
         new_format.parent = &stylesheet;
-        
+
+        ++new_format.references;
+
         if (record.style_id.second)
         {
             new_format.style = stylesheet.style_names[record.style_id.first];
@@ -1591,10 +1678,10 @@ void xlsx_consumer::read_volatile_dependencies()
 
 void xlsx_consumer::read_worksheet(const std::string &rel_id)
 {
-    static const auto xmlns = constants::get_namespace("worksheet");
-    static const auto xmlns_mc = constants::get_namespace("mc");
-    static const auto xmlns_r = constants::get_namespace("r");
-    static const auto xmlns_x14ac = constants::get_namespace("x14ac");
+    static const auto &xmlns = constants::get_namespace("worksheet");
+    static const auto &xmlns_mc = constants::get_namespace("mc");
+    static const auto &xmlns_r = constants::get_namespace("r");
+    static const auto &xmlns_x14ac = constants::get_namespace("x14ac");
 
 	auto title = std::find_if(target_.d_->sheet_title_rel_id_map_.begin(),
 		target_.d_->sheet_title_rel_id_map_.end(),
@@ -2033,8 +2120,40 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
             read_comments(ws);
             break;
 
-        default:
-            break;
+        case relationship::type::office_document: break;
+        case relationship::type::thumbnail: break;
+        case relationship::type::calculation_chain: break;
+        case relationship::type::extended_properties: break;
+        case relationship::type::core_properties: break;
+        case relationship::type::worksheet: break;
+        case relationship::type::shared_string_table: break;
+        case relationship::type::styles: break;
+        case relationship::type::theme: break;
+        case relationship::type::hyperlink: break;
+        case relationship::type::chartsheet: break;
+        case relationship::type::vml_drawing: break;
+        case relationship::type::unknown: break;
+        case relationship::type::custom_properties: break;
+        case relationship::type::printer_settings: break;
+        case relationship::type::connections: break;
+        case relationship::type::custom_property: break;
+        case relationship::type::custom_xml_mappings: break;
+        case relationship::type::dialogsheet: break;
+        case relationship::type::drawings: break;
+        case relationship::type::external_workbook_references: break;
+        case relationship::type::metadata: break;
+        case relationship::type::pivot_table: break;
+        case relationship::type::pivot_table_cache_definition: break;
+        case relationship::type::pivot_table_cache_records: break;
+        case relationship::type::query_table: break;
+        case relationship::type::shared_workbook_revision_headers: break;
+        case relationship::type::shared_workbook: break;
+        case relationship::type::revision_log: break;
+        case relationship::type::shared_workbook_user_data: break;
+        case relationship::type::single_cell_table_definitions: break;
+        case relationship::type::table_definition: break;
+        case relationship::type::volatile_dependencies: break;
+        case relationship::type::image: break;
 	    }
 
         parser_ = nullptr;
@@ -2045,7 +2164,7 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
 
 void xlsx_consumer::read_comments(worksheet ws)
 {
-    static const auto xmlns = xlnt::constants::get_namespace("worksheet");
+    static const auto &xmlns = xlnt::constants::get_namespace("worksheet");
     
     std::vector<std::string> authors;
     

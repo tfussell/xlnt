@@ -111,8 +111,10 @@ optional<border::border_property> border::side(border_side s) const
 	case border_side::end: return end_;
 	case border_side::vertical: return vertical_;
 	case border_side::horizontal: return horizontal_;
-	default:
 	case border_side::diagonal: return diagonal_;
+#ifdef WIN32
+    default: throw xlnt::exception("unhandled");
+#endif
 	}
 }
 
@@ -126,7 +128,6 @@ border &border::side(border_side s, const border_property &prop)
 	case border_side::end: end_ = prop; break;
 	case border_side::vertical: vertical_ = prop; break;
 	case border_side::horizontal: horizontal_ = prop; break;
-	default:
 	case border_side::diagonal: diagonal_ = prop; break;
 	}
 

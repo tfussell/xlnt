@@ -82,6 +82,8 @@ public:
     /// Return a map of error strings such as \#DIV/0! and their associated indices.
     /// </summary>
     static const std::unordered_map<std::string, int> &error_codes();
+    
+    cell(const cell &) = default;
 
     // value
 
@@ -498,6 +500,8 @@ private:
 	/// This is for internal use only.
 	/// </summary>
 	class format modifiable_format();
+    
+    cell() = delete;
 
     /// <summary>
     /// Private constructor to create a cell from its implementation.

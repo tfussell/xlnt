@@ -179,6 +179,10 @@ bool format_condition::satisfied_by(long double number) const
         return std::fabs(number - value) >= std::numeric_limits<long double>::min();
 	case condition_type::equal:
         return std::fabs(number - value) < std::numeric_limits<long double>::min();
+#ifdef WIN32
+    default: 
+        throw xlnt::exception("unhandled");
+#endif
     }
 }
 
@@ -634,7 +638,7 @@ void number_format_parser::finalize()
             auto temp = code.parts[exponent_index].placeholders.type;
             code.parts[exponent_index].placeholders = next.placeholders;
             code.parts[exponent_index].placeholders.type = temp;
-            code.parts.erase(code.parts.begin() + exponent_index + 1);
+            code.parts.erase(code.parts.begin() + static_cast<typename std::vector<format_code>::difference_type>(exponent_index + 1));
 
             for (std::size_t i = 0; i < code.parts.size(); ++i)
             {
@@ -1261,7 +1265,7 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, lo
 
     if (p.thousands_scale > 0)
     {
-        number /= std::pow(1000, p.thousands_scale);
+        number /= std::pow(1000.L, p.thousands_scale);
     }
 
     auto integer_part = static_cast<int>(number);
@@ -1341,9 +1345,9 @@ std::string number_formatter::fill_scientific_placeholders(const format_placehol
 {
     std::size_t logarithm = 0;
     
-    if (number != 0)
+    if (number != 0.L)
     {
-        logarithm = static_cast<int>(std::log10(number));
+        logarithm = static_cast<std::size_t>(std::log10(number));
 
         if (integer_part.num_zeros + integer_part.num_optionals > 1)
         {
@@ -1351,14 +1355,14 @@ std::string number_formatter::fill_scientific_placeholders(const format_placehol
         }
     }
 
-    number /= std::pow(10, logarithm);
+    number /= std::pow(10.L, logarithm);
     
     auto integer = static_cast<int>(number);
     auto fraction = number - integer;
 
     std::string integer_string = std::to_string(integer);
 
-    if (number == 0)
+    if (number == 0.L)
     {
         integer_string = std::string(integer_part.num_zeros + integer_part.num_optionals, '0');
     }
@@ -1389,15 +1393,15 @@ std::string number_formatter::fill_scientific_placeholders(const format_placehol
     return integer_string + fractional_string + exponent_string;
 }
 
-std::string number_formatter::fill_fraction_placeholders(const format_placeholders &numerator,
-    const format_placeholders &denominator, long double number, bool improper)
+std::string number_formatter::fill_fraction_placeholders(const format_placeholders &/*numerator*/,
+    const format_placeholders &denominator, long double number, bool /*improper*/)
 {
     auto fractional_part = number - static_cast<int>(number);
     auto original_fractional_part = fractional_part;
     fractional_part *= 10;
 
-    while (std::abs(fractional_part - static_cast<int>(fractional_part)) > 0.000001
-        && std::abs(fractional_part - static_cast<int>(fractional_part)) < 0.999999)
+    while (std::abs(fractional_part - static_cast<int>(fractional_part)) > 0.000001L
+        && std::abs(fractional_part - static_cast<int>(fractional_part)) < 0.999999L)
     {
         fractional_part *= 10;
     }
@@ -1478,12 +1482,12 @@ std::string number_formatter::format_number(const format_code &format, long doub
 
     if (format.is_datetime)
     {
-        if (number != 0)
+        if (number != 0.L)
         {
             dt = xlnt::datetime::from_number(number, calendar_);
         }
 
-        hour = dt.hour;
+        hour = static_cast<std::size_t>(dt.hour);
 
         if (format.twelve_hour)
         {
@@ -1526,7 +1530,7 @@ std::string number_formatter::format_number(const format_code &format, long doub
             {
                 auto digits = std::min(static_cast<std::size_t>(6), part.placeholders.num_zeros + part.placeholders.num_optionals);
                 auto denominator = static_cast<int>(std::pow(10.0, digits));
-                auto fractional_seconds = dt.microsecond / 1.0E6 * denominator;
+                auto fractional_seconds = dt.microsecond / 1.0E6L * denominator;
                 fractional_seconds = std::round(fractional_seconds) / denominator;
                 result.append(fill_placeholders(part.placeholders, fractional_seconds));
                 break;
@@ -1541,7 +1545,7 @@ std::string number_formatter::format_number(const format_code &format, long doub
             {
                 i += 2;
 
-                if (number == 0)
+                if (number == 0.L)
                 {
                     result.pop_back();
                     break;
@@ -1576,10 +1580,10 @@ std::string number_formatter::format_number(const format_code &format, long doub
             result.append(std::to_string(dt.day));
             break;
         case template_part::template_type::month_abbreviation:
-            result.append(month_names->at(dt.month - 1).substr(0, 3));
+            result.append(month_names->at(static_cast<std::size_t>(dt.month) - 1).substr(0, 3));
             break;
         case template_part::template_type::month_name:
-            result.append(month_names->at(dt.month - 1));
+            result.append(month_names->at(static_cast<std::size_t>(dt.month) - 1));
             break;
         case template_part::template_type::month_number:
             result.append(std::to_string(dt.month));
@@ -1684,15 +1688,15 @@ std::string number_formatter::format_number(const format_code &format, long doub
             break;
 
         case template_part::template_type::month_letter:
-            result.append(month_names->at(dt.month - 1).substr(0, 1));
+            result.append(month_names->at(static_cast<std::size_t>(dt.month) - 1).substr(0, 1));
             break;
 
         case template_part::template_type::day_abbreviation:
-            result.append(day_names->at(dt.weekday() - 1).substr(0, 3));
+            result.append(day_names->at(static_cast<std::size_t>(dt.weekday()) - 1).substr(0, 3));
             break;
 
         case template_part::template_type::day_name:
-            result.append(day_names->at(dt.weekday() - 1));
+            result.append(day_names->at(static_cast<std::size_t>(dt.weekday()) - 1));
             break;
         }
     }
@@ -1736,8 +1740,32 @@ std::string number_formatter::format_text(const format_code &format, const std::
 
             break;
 
-        default:
-            break;
+        case template_part::template_type::fill: break;
+        case template_part::template_type::space: break;
+        case template_part::template_type::month_number: break;
+        case template_part::template_type::month_number_leading_zero: break;
+        case template_part::template_type::month_abbreviation: break;
+        case template_part::template_type::month_name: break;
+        case template_part::template_type::month_letter: break;
+        case template_part::template_type::day_number: break;
+        case template_part::template_type::day_number_leading_zero: break;
+        case template_part::template_type::day_abbreviation: break;
+        case template_part::template_type::day_name: break;
+        case template_part::template_type::year_short: break;
+        case template_part::template_type::year_long: break;
+        case template_part::template_type::hour: break;
+        case template_part::template_type::hour_leading_zero: break;
+        case template_part::template_type::minute: break;
+        case template_part::template_type::minute_leading_zero: break;
+        case template_part::template_type::second: break;
+        case template_part::template_type::second_fractional: break;
+        case template_part::template_type::second_leading_zero: break;
+        case template_part::template_type::second_leading_zero_fractional: break;
+        case template_part::template_type::am_pm: break;
+        case template_part::template_type::a_p: break;
+        case template_part::template_type::elapsed_hours: break;
+        case template_part::template_type::elapsed_minutes: break;
+        case template_part::template_type::elapsed_seconds: break;
         }
     }
 

@@ -42,8 +42,8 @@ cell_vector range_iterator::operator*() const
     return cell_vector(ws_, reference, order_);
 }
 
-range_iterator::range_iterator(worksheet &ws, const range_reference &start_cell, major_order order)
-    : ws_(ws.d_), current_cell_(start_cell.get_top_left()), range_(start_cell), order_(order)
+range_iterator::range_iterator(worksheet &ws, const range_reference &start_cell, const range_reference &limits, major_order order)
+    : ws_(ws), current_cell_(start_cell.get_top_left()), range_(limits), order_(order)
 {
 }
 
@@ -88,7 +88,21 @@ range_iterator &range_iterator::operator++()
 {
     if (order_ == major_order::row)
     {
-        current_cell_.set_row(current_cell_.get_row() + 1);
+        bool any_non_null = false;
+        do
+        {
+            current_cell_.set_row(current_cell_.get_row() + 1);
+            any_non_null = false;
+            for (auto column = current_cell_.get_column(); column <= range_.get_bottom_right().get_column(); column++)
+            {
+                if (ws_.has_cell(cell_reference(column, current_cell_.get_row())))
+                {
+                    any_non_null = true;
+                    break;
+                }
+            }
+        }
+        while (!any_non_null && current_cell_.get_row() <= range_.get_bottom_right().get_row());
     }
     else
     {

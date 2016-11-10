@@ -1,7 +1,6 @@
 #pragma once
 
-#include <xml/parser>
-#include <xml/serializer>
+#include <detail/include_libstudxml.hpp>
 
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/styles/border.hpp>

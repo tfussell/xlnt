@@ -66,7 +66,7 @@ const path constants::part_shared_strings() { return package_xl().append("shared
 
 const std::unordered_map<std::string, std::string> &constants::get_namespaces()
 {
-    const std::unordered_map<std::string, std::string> *namespaces =
+    static const std::unordered_map<std::string, std::string> *namespaces =
         new std::unordered_map<std::string, std::string>
         {
             { "worksheet", "http://schemas.openxmlformats.org/spreadsheetml/2006/main" },
@@ -76,6 +76,10 @@ const std::unordered_map<std::string, std::string> &constants::get_namespaces()
             { "workbook", "http://schemas.openxmlformats.org/spreadsheetml/2006/main" },
             { "core-properties", "http://schemas.openxmlformats.org/package/2006/metadata/core-properties" },
             { "extended-properties", "http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" },
+
+	    { "encryption", "http://schemas.microsoft.com/office/2006/encryption" },
+	    { "encryption-password", "http://schemas.microsoft.com/office/2006/keyEncryptor/password" },
+	    { "encryption-certificate", "http://schemas.microsoft.com/office/2006/keyEncryptor/certificate" },
             
             { "dc", "http://purl.org/dc/elements/1.1/" },
             { "dcterms", "http://purl.org/dc/terms/" },
@@ -96,7 +100,7 @@ const std::unordered_map<std::string, std::string> &constants::get_namespaces()
     return *namespaces;
 }
 
-const std::string constants::get_namespace(const std::string &id)
+const std::string &constants::get_namespace(const std::string &id)
 {
     return get_namespaces().find(id)->second;
 }

@@ -45,7 +45,7 @@ void format::clear_style()
 
 format format::style(const xlnt::style &new_style)
 {
-	d_->style = new_style.name();
+	d_ = d_->parent->find_or_create_with(d_, new_style.name());
     return format(d_);
 }
 

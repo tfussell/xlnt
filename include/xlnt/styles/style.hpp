@@ -58,32 +58,32 @@ public:
 
     class alignment &alignment();
 	const class alignment &alignment() const;
-	style alignment(const xlnt::alignment &new_alignment, bool applied);
+	style alignment(const xlnt::alignment &new_alignment, bool applied = true);
     bool alignment_applied() const;
 
 	class border &border();
 	const class border &border() const;
-	style border(const xlnt::border &new_border, bool applied);
+	style border(const xlnt::border &new_border, bool applied = true);
     bool border_applied() const;
 
 	class fill &fill();
 	const class fill &fill() const;
-	style fill(const xlnt::fill &new_fill, bool applied);
+	style fill(const xlnt::fill &new_fill, bool applied = true);
     bool fill_applied() const;
     
 	class font &font();
 	const class font &font() const;
-	style font(const xlnt::font &new_font, bool applied);
+	style font(const xlnt::font &new_font, bool applied = true);
     bool font_applied() const;
 
 	class number_format &number_format();
 	const class number_format &number_format() const;
-	style number_format(const xlnt::number_format &new_number_format, bool applied);
+	style number_format(const xlnt::number_format &new_number_format, bool applied = true);
     bool number_format_applied() const;
 
 	class protection &protection();
 	const class protection &protection() const;
-	style protection(const xlnt::protection &new_protection, bool applied);
+	style protection(const xlnt::protection &new_protection, bool applied = true);
     bool protection_applied() const;
     
     bool hidden() const;

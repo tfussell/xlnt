@@ -22,6 +22,7 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <cmath>
 #include <cstdlib>
 
 #include <xlnt/styles/color.hpp>
@@ -216,17 +217,22 @@ void color::assert_type(type t) const
 
 XLNT_API bool color::operator==(const xlnt::color &other) const
 {
-    if (type_ != other.type_ || tint_ != other.tint_) return false;
+    if (type_ != other.type_ || std::fabs(tint_ - other.tint_) != 0.)
+    {
+        return false;
+    }
+
     switch(type_)
     {
         case type::auto_:
-        case type::indexed :
+        case type::indexed:
             return indexed_.get_index() == other.indexed_.get_index();
         case type::theme:
             return theme_.get_index() == other.theme_.get_index();
         case type::rgb:
             return rgb_.get_hex_string() == other.rgb_.get_hex_string();
     }
+
     return false;
 }
 

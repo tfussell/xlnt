@@ -702,7 +702,8 @@ bool worksheet::compare(const worksheet &other, bool reference) const
                 return false;
             }
 
-            if (this_cell.get_data_type() == xlnt::cell::type::numeric && this_cell.get_value<long double>() != other_cell.get_value<long double>())
+            if (this_cell.get_data_type() == xlnt::cell::type::numeric
+                && std::fabs(this_cell.get_value<long double>() - other_cell.get_value<long double>()) > 0.L)
             {
                 return false;
             }
@@ -831,16 +832,16 @@ std::vector<std::string> worksheet::get_formula_attributes() const
 
 cell_reference worksheet::get_point_pos(int left, int top) const
 {
-    static const double DefaultColumnWidth = 51.85;
-    static const double DefaultRowHeight = 15.0;
+    static const auto DefaultColumnWidth = 51.85L;
+    static const auto DefaultRowHeight = 15.0L;
 
     auto points_to_pixels = [](long double value, long double dpi)
     {
         return static_cast<int>(std::ceil(value * dpi / 72));
     };
 
-    auto default_height = points_to_pixels(DefaultRowHeight, 96.0);
-    auto default_width = points_to_pixels(DefaultColumnWidth, 96.0);
+    auto default_height = points_to_pixels(DefaultRowHeight, 96.0L);
+    auto default_width = points_to_pixels(DefaultColumnWidth, 96.0L);
 
     column_t current_column = 1;
     row_t current_row = 1;
@@ -858,7 +859,7 @@ cell_reference worksheet::get_point_pos(int left, int top) const
 
             if (cdw >= 0)
             {
-                left_pos += points_to_pixels(cdw, 96.0);
+                left_pos += points_to_pixels(cdw, 96.0L);
                 continue;
             }
         }
@@ -876,7 +877,7 @@ cell_reference worksheet::get_point_pos(int left, int top) const
 
             if (cdh >= 0)
             {
-                top_pos += points_to_pixels(cdh, 96.0);
+                top_pos += points_to_pixels(cdh, 96.0L);
                 continue;
             }
         }
@@ -938,7 +939,7 @@ worksheet::iterator worksheet::begin()
     cell_reference top_right(dimensions.get_bottom_right().get_column_index(), dimensions.get_top_left().get_row());
     range_reference row_range(dimensions.get_top_left(), top_right);
     
-    return iterator(*this, row_range, major_order::row);
+    return iterator(*this, row_range, dimensions, major_order::row);
 }
 
 worksheet::iterator worksheet::end()
@@ -948,7 +949,7 @@ worksheet::iterator worksheet::end()
     cell_reference bottom_left(dimensions.get_top_left().get_column_index(), past_end_row_index);
     cell_reference bottom_right(dimensions.get_bottom_right().get_column_index(), past_end_row_index);
     
-    return iterator(*this, range_reference(bottom_left, bottom_right), major_order::row);
+    return iterator(*this, range_reference(bottom_left, bottom_right), dimensions, major_order::row);
 }
 
 worksheet::const_iterator worksheet::cbegin() const

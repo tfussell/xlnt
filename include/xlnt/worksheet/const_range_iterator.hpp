@@ -51,6 +51,8 @@ public:
     const_range_iterator(const const_range_iterator &other);
 
     const cell_vector operator*() const;
+    
+    const_range_iterator &operator=(const const_range_iterator &) = default;
 
     bool operator==(const const_range_iterator &other) const;
 

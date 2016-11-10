@@ -23,8 +23,7 @@
  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef POLE_H
-#define POLE_H
+#pragma once
 
 #include <string>
 #include <list>
@@ -36,7 +35,6 @@
 
 namespace POLE
 {
-    
     class StorageIO;
     class Stream;
     class StreamIO;
@@ -353,6 +351,3 @@ namespace POLE
     };
     
 } // namespace POLE
-
-
-#endif // POLE_H

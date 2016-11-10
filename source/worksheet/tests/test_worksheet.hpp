@@ -1124,4 +1124,46 @@ public:
 		TS_ASSERT_THROWS_NOTHING(ws.create_named_range("XFE1048576", "A2"));
 		TS_ASSERT_THROWS_NOTHING(ws.create_named_range("XFD1048577", "A2"));
 	}
+
+    void test_iteration_skip_empty()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.get_active_sheet();
+        ws.get_cell("A1").set_value("A1");
+        ws.get_cell("F6").set_value("F6");
+
+        {
+            std::vector<xlnt::cell> cells;
+
+            for (auto row : ws)
+            {
+                for (auto cell : row)
+                {
+                    cells.push_back(cell);
+                }
+            }
+
+            TS_ASSERT_EQUALS(cells.size(), 2);
+            TS_ASSERT_EQUALS(cells[0].get_value<std::string>(), "A1");
+            TS_ASSERT_EQUALS(cells[1].get_value<std::string>(), "F6");
+        }
+
+        const auto ws_const = ws;
+
+        {
+            std::vector<xlnt::cell> cells;
+
+            for (auto row : ws_const)
+            {
+                for (auto cell : row)
+                {
+                    cells.push_back(cell);
+                }
+            }
+
+            TS_ASSERT_EQUALS(cells.size(), 2);
+            TS_ASSERT_EQUALS(cells[0].get_value<std::string>(), "A1");
+            TS_ASSERT_EQUALS(cells[1].get_value<std::string>(), "F6");
+        }
+    }
 };

@@ -4,7 +4,6 @@ project(${LIBRARY_NAME}.third-party VERSION ${LIBRARY_VERSION} LANGUAGES CXX C)
 # Includes
 include_directories(libstudxml
     utfcpp/source
-    pole
     botan
     zlib
     ${LIBRARY_SOURCE_DIR}/detail)
@@ -47,17 +46,13 @@ set(GENX
     ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/genx/genx.c
     ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/genx/genx.h)
 
-set(POLE
-    ${CMAKE_CURRENT_SOURCE_DIR}/pole/pole.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/pole/pole.h)
-
 set(BOTAN
     ${CMAKE_CURRENT_SOURCE_DIR}/botan/botan_all.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/botan/botan_all_internal.h
     ${CMAKE_CURRENT_SOURCE_DIR}/botan/botan_all.h)
 
 if(MSVC)
-    set_source_files_properties(${BOTAN} PROPERTIES COMPILE_FLAGS "/wd\"4244\"")
+    set_source_files_properties(${BOTAN} PROPERTIES COMPILE_FLAGS "/wd\"4244\" /wd\"4267\"")
 endif()
 
 if (CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -95,9 +90,11 @@ set(ZLIB ${CMAKE_CURRENT_SOURCE_DIR}/zlib/adler32.c
 
 if(NOT MSVC)
     set_source_files_properties(${ZLIB} PROPERTIES COMPILE_FLAGS "-Wno-implicit-function-declaration")
+else()
+    set_source_files_properties(${ZLIB} PROPERTIES COMPILE_FLAGS "/wd\"4018\"")
 endif()
 
-add_library(xlnt.third-party OBJECT ${LIBSTUDXML} ${GENX} ${EXPAT} ${POLE} ${BOTAN} ${ZLIB})
+add_library(xlnt.third-party OBJECT ${LIBSTUDXML} ${GENX} ${EXPAT} ${BOTAN} ${ZLIB})
 target_compile_definitions(xlnt.third-party PRIVATE LIBSTUDXML_STATIC_LIB=1)
 
 if(NOT STATIC)
@@ -114,5 +111,4 @@ source_group(botan FILES ${BOTAN})
 source_group(libstudxml FILES ${LIBSTUDXML})
 source_group(libstudxml\\genx FILES ${GENX})
 source_group(libstudxml\\expat FILES ${EXPAT})
-source_group(pole FILES ${POLE})
 source_group(zlib FILES ${ZLIB})

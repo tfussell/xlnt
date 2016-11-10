@@ -28,6 +28,9 @@
 namespace xlnt {
 namespace detail {
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wweak-vtables"
+
 /// <summary>
 /// Allows a std::vector to be read through a std::istream.
 /// </summary>
@@ -160,7 +163,7 @@ private:
     {
         if (c != traits_type::eof())
         {
-            data_.push_back(c);
+            data_.push_back(static_cast<std::uint8_t>(c));
             position_ = data_.size() - 1;
         }
 
@@ -247,6 +250,8 @@ private:
     std::vector<std::uint8_t> &data_;
     std::size_t position_;
 };
+
+#pragma clang diagnostic pop
 
 } // namespace detail
 } // namespace xlnt

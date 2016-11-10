@@ -54,6 +54,8 @@ class XLNT_API invalid_parameter : public exception
 {
 public:
     invalid_parameter();
+    invalid_parameter(const invalid_parameter &) = default;
+    virtual ~invalid_parameter();
 };
 
 /// <summary>
@@ -63,6 +65,8 @@ class XLNT_API invalid_sheet_title : public exception
 {
 public:
     invalid_sheet_title(const std::string &title);
+    invalid_sheet_title(const invalid_sheet_title &) = default;
+    virtual ~invalid_sheet_title();
 };
 
 /// <summary>
@@ -72,6 +76,7 @@ class XLNT_API missing_number_format : public exception
 {
 public:
     missing_number_format();
+    virtual ~missing_number_format();
 };
 
 /// <summary>
@@ -81,6 +86,8 @@ class XLNT_API invalid_file : public exception
 {
 public:
     invalid_file(const std::string &filename);
+    invalid_file(const invalid_file &) = default;
+    virtual ~invalid_file();
 };
 
 /// <summary>
@@ -91,6 +98,8 @@ class XLNT_API illegal_character : public exception
 {
 public:
     illegal_character(char c);
+    illegal_character(const illegal_character &) = default;
+    virtual ~illegal_character();
 };
 
 /// <summary>
@@ -100,6 +109,8 @@ class XLNT_API invalid_data_type : public exception
 {
 public:
     invalid_data_type();
+    invalid_data_type(const invalid_data_type &) = default;
+    virtual ~invalid_data_type();
 };
 
 /// <summary>
@@ -143,6 +154,8 @@ class XLNT_API key_not_found : public exception
 {
 public:
     key_not_found();
+    key_not_found(const key_not_found &) = default;
+    virtual ~key_not_found();
 };
 
 /// <summary>
@@ -152,6 +165,8 @@ class XLNT_API no_visible_worksheets : public exception
 {
 public:
     no_visible_worksheets();
+    no_visible_worksheets(const no_visible_worksheets &) = default;
+    virtual ~no_visible_worksheets();
 };
 
 /// <summary>
@@ -161,6 +176,7 @@ class XLNT_API unhandled_switch_case : public exception
 {
 public:
     unhandled_switch_case();
+    virtual ~unhandled_switch_case();
 };
 
 /// <summary>
@@ -170,6 +186,8 @@ class XLNT_API unsupported : public exception
 {
 public:
 	unsupported(const std::string &message);
+    unsupported(const unsupported &) = default;
+    virtual ~unsupported();
 };
 
 } // namespace xlnt

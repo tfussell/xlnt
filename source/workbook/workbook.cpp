@@ -218,7 +218,7 @@ workbook workbook::empty_excel()
         .font(default_font, false)
         .number_format(xlnt::number_format::general(), false);
 
-	wb.create_format()
+    wb.create_format(true)
         .border(default_border, false)
         .fill(default_fill, false)
         .font(default_font, false)
@@ -1085,10 +1085,10 @@ std::vector<named_range> workbook::get_named_ranges() const
     return named_ranges;
 }
 
-format workbook::create_format()
+format workbook::create_format(bool default_format)
 {
 	register_stylesheet_in_manifest();
-    return d_->stylesheet_.create_format();
+    return d_->stylesheet_.create_format(default_format);
 }
 
 bool workbook::has_style(const std::string &name) const

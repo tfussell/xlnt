@@ -49,6 +49,8 @@ struct format_impl
 
 	optional<std::string> style;
     
+    std::size_t references = 0;
+    
     XLNT_API friend bool operator==(const format_impl &left, const format_impl &right)
     {
         return left.parent == right.parent

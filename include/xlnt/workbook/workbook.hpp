@@ -424,7 +424,7 @@ public:
     
     format get_format(std::size_t format_index);
     const format get_format(std::size_t format_index) const;
-	format create_format();
+	format create_format(bool default_format = false);
     void clear_formats();
 
     // styles

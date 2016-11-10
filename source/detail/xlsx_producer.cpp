@@ -52,7 +52,7 @@ const bool skip_unknown_elements = true;
 /// </summary>
 bool is_integral(long double d)
 {
-	return d == static_cast<long long int>(d);
+	return std::fabs(d - static_cast<long double>(static_cast<long long int>(d))) == 0.L;
 }
 
 std::string fill(const std::string &string, std::size_t length = 2)
@@ -129,8 +129,37 @@ void xlsx_producer::populate_archive()
 			write_workbook(rel);
 			break;
         
-        default:
-            break;
+        case relationship::type::thumbnail: break;
+        case relationship::type::calculation_chain: break;
+        case relationship::type::worksheet: break;
+        case relationship::type::shared_string_table: break;
+        case relationship::type::styles: break;
+        case relationship::type::theme: break;
+        case relationship::type::hyperlink: break;
+        case relationship::type::chartsheet: break;
+        case relationship::type::comments: break;
+        case relationship::type::vml_drawing: break;
+        case relationship::type::unknown: break;
+        case relationship::type::printer_settings: break;
+        case relationship::type::connections: break;
+        case relationship::type::custom_property: break;
+        case relationship::type::custom_xml_mappings: break;
+        case relationship::type::dialogsheet: break;
+        case relationship::type::drawings: break;
+        case relationship::type::external_workbook_references: break;
+        case relationship::type::metadata: break;
+        case relationship::type::pivot_table: break;
+        case relationship::type::pivot_table_cache_definition: break;
+        case relationship::type::pivot_table_cache_records: break;
+        case relationship::type::query_table: break;
+        case relationship::type::shared_workbook_revision_headers: break;
+        case relationship::type::shared_workbook: break;
+        case relationship::type::revision_log: break;
+        case relationship::type::shared_workbook_user_data: break;
+        case relationship::type::single_cell_table_definitions: break;
+        case relationship::type::table_definition: break;
+        case relationship::type::volatile_dependencies: break;
+        case relationship::type::image: break;
         }
 	}
 
@@ -191,7 +220,7 @@ void xlsx_producer::write_content_types()
 	serializer().end_element(xmlns, "Types");
 }
 
-void xlsx_producer::write_extended_properties(const relationship &rel)
+void xlsx_producer::write_extended_properties(const relationship &/*rel*/)
 {
     const auto xmlns = "http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"s;
     const auto xmlns_vt = "http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"s;
@@ -247,13 +276,13 @@ void xlsx_producer::write_extended_properties(const relationship &rel)
     serializer().end_element(xmlns, "Properties");
 }
 
-void xlsx_producer::write_core_properties(const relationship &rel)
+void xlsx_producer::write_core_properties(const relationship &/*rel*/)
 {
-    static const auto xmlns_cp = constants::get_namespace("core-properties");
-    static const auto xmlns_dc = constants::get_namespace("dc");
-    static const auto xmlns_dcterms = constants::get_namespace("dcterms");
-    static const auto xmlns_dcmitype = constants::get_namespace("dcmitype");
-    static const auto xmlns_xsi = constants::get_namespace("xsi");
+    static const auto &xmlns_cp = constants::get_namespace("core-properties");
+    static const auto &xmlns_dc = constants::get_namespace("dc");
+    static const auto &xmlns_dcterms = constants::get_namespace("dcterms");
+    static const auto &xmlns_dcmitype = constants::get_namespace("dcmitype");
+    static const auto &xmlns_xsi = constants::get_namespace("xsi");
     
 	serializer().start_element(xmlns_cp, "coreProperties");
     serializer().namespace_decl(xmlns_cp, "cp");
@@ -289,7 +318,7 @@ void xlsx_producer::write_core_properties(const relationship &rel)
     serializer().end_element(xmlns_cp, "coreProperties");
 }
 
-void xlsx_producer::write_custom_properties(const relationship &rel)
+void xlsx_producer::write_custom_properties(const relationship &/*rel*/)
 {
 	serializer().element("Properties");
 }
@@ -319,13 +348,13 @@ void xlsx_producer::write_workbook(const relationship &rel)
 		throw no_visible_worksheets();
 	}
 
-    static const auto xmlns = constants::get_namespace("workbook");
-    static const auto xmlns_mc = constants::get_namespace("mc");
-    static const auto xmlns_mx = constants::get_namespace("mx");
-    static const auto xmlns_r = constants::get_namespace("r");
-    static const auto xmlns_s = constants::get_namespace("worksheet");
-    static const auto xmlns_x15 = constants::get_namespace("x15");
-    static const auto xmlns_x15ac = constants::get_namespace("x15ac");
+    static const auto &xmlns = constants::get_namespace("workbook");
+    static const auto &xmlns_mc = constants::get_namespace("mc");
+    static const auto &xmlns_mx = constants::get_namespace("mx");
+    static const auto &xmlns_r = constants::get_namespace("r");
+    static const auto &xmlns_s = constants::get_namespace("worksheet");
+    static const auto &xmlns_x15 = constants::get_namespace("x15");
+    static const auto &xmlns_x15ac = constants::get_namespace("x15ac");
 
 	serializer().start_element(xmlns, "workbook");
     serializer().namespace_decl(xmlns, "");
@@ -422,6 +451,8 @@ void xlsx_producer::write_workbook(const relationship &rel)
 		serializer().element(xmlns, "definedNames", "");
 	}
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wrange-loop-analysis"
 	for (const auto ws : source_)
 	{
 		auto sheet_rel_id = source_.d_->sheet_title_rel_id_map_[ws.get_title()];
@@ -453,6 +484,7 @@ void xlsx_producer::write_workbook(const relationship &rel)
         
         serializer().end_element(xmlns, "sheet");
 	}
+#pragma clang diagnostic pop
     
     serializer().end_element(xmlns, "sheets");
 
@@ -570,57 +602,76 @@ void xlsx_producer::write_workbook(const relationship &rel)
 			write_worksheet(child_rel);
 			break;
             
-        default:
-            break;
+        case relationship::type::office_document: break;
+        case relationship::type::thumbnail: break;
+        case relationship::type::extended_properties: break;
+        case relationship::type::core_properties: break;
+        case relationship::type::hyperlink: break;
+        case relationship::type::comments: break;
+        case relationship::type::vml_drawing: break;
+        case relationship::type::unknown: break;
+        case relationship::type::custom_properties: break;
+        case relationship::type::printer_settings: break;
+        case relationship::type::custom_property: break;
+        case relationship::type::drawings: break;
+        case relationship::type::pivot_table_cache_definition: break;
+        case relationship::type::pivot_table_cache_records: break;
+        case relationship::type::query_table: break;
+        case relationship::type::shared_workbook: break;
+        case relationship::type::revision_log: break;
+        case relationship::type::shared_workbook_user_data: break;
+        case relationship::type::single_cell_table_definitions: break;
+        case relationship::type::table_definition: break;
+        case relationship::type::image: break;
 		}
     }
 }
 
 // Write Workbook Relationship Target Parts
 
-void xlsx_producer::write_calculation_chain(const relationship &rel)
+void xlsx_producer::write_calculation_chain(const relationship &/*rel*/)
 {
 	serializer().start_element("calcChain");
 }
 
-void xlsx_producer::write_chartsheet(const relationship &rel)
+void xlsx_producer::write_chartsheet(const relationship &/*rel*/)
 {
 	serializer().start_element("chartsheet");
 }
 
-void xlsx_producer::write_connections(const relationship &rel)
+void xlsx_producer::write_connections(const relationship &/*rel*/)
 {
 	serializer().start_element("connections");
 }
 
-void xlsx_producer::write_custom_xml_mappings(const relationship &rel)
+void xlsx_producer::write_custom_xml_mappings(const relationship &/*rel*/)
 {
 	serializer().start_element("MapInfo");
 }
 
-void xlsx_producer::write_dialogsheet(const relationship &rel)
+void xlsx_producer::write_dialogsheet(const relationship &/*rel*/)
 {
 	serializer().start_element("dialogsheet");
 }
 
-void xlsx_producer::write_external_workbook_references(const relationship &rel)
+void xlsx_producer::write_external_workbook_references(const relationship &/*rel*/)
 {
 	serializer().start_element("externalLink");
 }
 
-void xlsx_producer::write_metadata(const relationship &rel)
+void xlsx_producer::write_metadata(const relationship &/*rel*/)
 {
 	serializer().start_element("metadata");
 }
 
-void xlsx_producer::write_pivot_table(const relationship &rel)
+void xlsx_producer::write_pivot_table(const relationship &/*rel*/)
 {
 	serializer().start_element("pivotTableDefinition");
 }
 
-void xlsx_producer::write_shared_string_table(const relationship &rel)
+void xlsx_producer::write_shared_string_table(const relationship &/*rel*/)
 {
-    static const auto xmlns = constants::get_namespace("worksheet");
+    static const auto &xmlns = constants::get_namespace("worksheet");
 
 	serializer().start_element(xmlns, "sst");
     serializer().namespace_decl(xmlns, "");
@@ -628,6 +679,8 @@ void xlsx_producer::write_shared_string_table(const relationship &rel)
     // todo: is there a more elegant way to get this number?
     std::size_t string_count = 0;
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wrange-loop-analysis"
     for (const auto ws : source_)
     {
         auto dimension = ws.calculate_dimension();
@@ -646,6 +699,7 @@ void xlsx_producer::write_shared_string_table(const relationship &rel)
             }
         }
     }
+#pragma clang diagnostic pop
 
 	serializer().attribute("count", string_count);
 	serializer().attribute("uniqueCount", source_.get_shared_strings().size());
@@ -725,27 +779,27 @@ void xlsx_producer::write_shared_string_table(const relationship &rel)
     serializer().end_element(xmlns, "sst");
 }
 
-void xlsx_producer::write_shared_workbook_revision_headers(const relationship &rel)
+void xlsx_producer::write_shared_workbook_revision_headers(const relationship &/*rel*/)
 {
 	serializer().start_element("headers");
 }
 
-void xlsx_producer::write_shared_workbook(const relationship &rel)
+void xlsx_producer::write_shared_workbook(const relationship &/*rel*/)
 {
 	serializer().start_element("revisions");
 }
 
-void xlsx_producer::write_shared_workbook_user_data(const relationship &rel)
+void xlsx_producer::write_shared_workbook_user_data(const relationship &/*rel*/)
 {
 	serializer().start_element("users");
 }
 
-void xlsx_producer::write_styles(const relationship &rel)
+void xlsx_producer::write_styles(const relationship &/*rel*/)
 {
-    static const auto xmlns = constants::get_namespace("worksheet");
-    static const auto xmlns_mc = constants::get_namespace("mc");
-    static const auto xmlns_x14 = constants::get_namespace("x14");
-    static const auto xmlns_x14ac = constants::get_namespace("x14ac");
+    static const auto &xmlns = constants::get_namespace("worksheet");
+    static const auto &xmlns_mc = constants::get_namespace("mc");
+    static const auto &xmlns_x14 = constants::get_namespace("x14");
+    static const auto &xmlns_x14ac = constants::get_namespace("x14ac");
     
 	serializer().start_element(xmlns, "styleSheet");
 	serializer().namespace_decl(xmlns, "");
@@ -794,12 +848,12 @@ void xlsx_producer::write_styles(const relationship &rel)
 
 		auto num_known_fonts = std::count_if(fonts.begin(), fonts.end(), [](const xlnt::font &f)
 		{
-			static const auto known_fonts = std::vector<xlnt::font>
-			{
-				xlnt::font().color(xlnt::theme_color(1)).scheme("minor").family(2)
-			};
+		    static const auto known_fonts = new std::vector<xlnt::font>
+		    {
+			xlnt::font().color(xlnt::theme_color(1)).scheme("minor").family(2)
+		    };
 
-			return std::find(known_fonts.begin(), known_fonts.end(), f) != known_fonts.end();
+		    return std::find(known_fonts->begin(), known_fonts->end(), f) != known_fonts->end();
 		});
 
 		if (source_.x15_enabled())
@@ -917,27 +971,27 @@ void xlsx_producer::write_styles(const relationship &rel)
 				serializer().start_element(xmlns, "gradientFill");
 				serializer().attribute("gradientType", gradient.type());
 
-				if (gradient.degree() != 0)
+				if (gradient.degree() != 0.)
 				{
 					serializer().attribute("degree", gradient.degree());
 				}
 
-				if (gradient.left() != 0)
+				if (gradient.left() != 0.)
 				{
 					serializer().attribute("left", gradient.left());
 				}
 
-				if (gradient.right() != 0)
+				if (gradient.right() != 0.)
 				{
 					serializer().attribute("right", gradient.right());
 				}
 
-				if (gradient.top() != 0)
+				if (gradient.top() != 0.)
 				{
 					serializer().attribute("top", gradient.top());
 				}
 
-				if (gradient.bottom() != 0)
+				if (gradient.bottom() != 0.)
 				{
 					serializer().attribute("bottom", gradient.bottom());
 				}
@@ -1021,9 +1075,9 @@ void xlsx_producer::write_styles(const relationship &rel)
     serializer().start_element(xmlns, "cellStyleXfs");
     serializer().attribute("count", stylesheet.style_impls.size());
 
-	for (auto &current_style_name_impl : stylesheet.style_impls)
+	for (const auto &current_style_name : stylesheet.style_names)
 	{
-        auto &current_style_impl = current_style_name_impl.second;
+        const auto &current_style_impl = stylesheet.style_impls.at(current_style_name);
 
 		serializer().start_element(xmlns, "xf");
         serializer().attribute("numFmtId", current_style_impl.number_format_id.get());
@@ -1123,9 +1177,19 @@ void xlsx_producer::write_styles(const relationship &rel)
 	for (auto &current_format_impl : stylesheet.format_impls)
 	{
         serializer().start_element(xmlns, "xf");
+        
         serializer().attribute("numFmtId", current_format_impl.number_format_id.get());
         serializer().attribute("fontId", current_format_impl.font_id.get());
-		serializer().attribute("fillId", current_format_impl.fill_id.get());
+        
+        if (current_format_impl.style)
+        {
+            serializer().attribute("fillId", stylesheet.style_impls.at(current_format_impl.style.get()).fill_id.get());
+        }
+        else
+        {
+            serializer().attribute("fillId", current_format_impl.fill_id.get());
+        }
+        
 		serializer().attribute("borderId", current_format_impl.border_id.get());
 
 		if (current_format_impl.number_format_applied)
@@ -1289,10 +1353,10 @@ void xlsx_producer::write_styles(const relationship &rel)
     serializer().end_element(xmlns, "styleSheet");
 }
 
-void xlsx_producer::write_theme(const relationship &rel)
+void xlsx_producer::write_theme(const relationship &/*rel*/)
 {
-    static const auto xmlns_a = constants::get_namespace("drawingml");
-    static const auto xmlns_thm15 = constants::get_namespace("thm15");
+    static const auto &xmlns_a = constants::get_namespace("drawingml");
+    static const auto &xmlns_thm15 = constants::get_namespace("thm15");
     
 	serializer().start_element(xmlns_a, "theme");
     serializer().namespace_decl(xmlns_a, "a");
@@ -1353,7 +1417,7 @@ void xlsx_producer::write_theme(const relationship &rel)
 		std::string minor;
 	};
 
-	static const std::vector<font_scheme> font_schemes = {
+	static const auto font_schemes = new std::vector<font_scheme> {
 		{ true, "latin", "Calibri Light", "Calibri" },
 		{ true, "ea", "", "" },
 		{ true, "cs", "", "" },
@@ -1398,7 +1462,7 @@ void xlsx_producer::write_theme(const relationship &rel)
     {
         serializer().start_element(xmlns_a, major ? "majorFont" : "minorFont");
         
-        for (const auto scheme : font_schemes)
+        for (const auto &scheme : *font_schemes)
         {
             const auto scheme_value = major ? scheme.major : scheme.minor;
 
@@ -1759,17 +1823,17 @@ void xlsx_producer::write_theme(const relationship &rel)
     serializer().end_element(xmlns_a, "theme");
 }
 
-void xlsx_producer::write_volatile_dependencies(const relationship &rel)
+void xlsx_producer::write_volatile_dependencies(const relationship &/*rel*/)
 {
 	serializer().start_element("volTypes");
 }
 
 void xlsx_producer::write_worksheet(const relationship &rel)
 {
-	static const auto xmlns = constants::get_namespace("worksheet");
-	static const auto xmlns_r = constants::get_namespace("r");
-	static const auto xmlns_mc = constants::get_namespace("mc");
-	static const auto xmlns_x14ac = constants::get_namespace("x14ac");
+	static const auto &xmlns = constants::get_namespace("worksheet");
+	static const auto &xmlns_r = constants::get_namespace("r");
+	static const auto &xmlns_mc = constants::get_namespace("mc");
+	static const auto &xmlns_x14ac = constants::get_namespace("x14ac");
 
 	auto worksheet_part = rel.get_source().get_path().parent().append(rel.get_target().get_path());
 	auto worksheet_rels = source_.get_manifest().get_relationships(worksheet_part);
@@ -1984,7 +2048,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 			serializer().attribute("customHeight", "1");
 			auto height = ws.get_row_properties(row.front().get_row()).height;
 
-			if (height == std::floor(height))
+			if (std::fabs(height - std::floor(height)) == 0.L)
 			{
 				serializer().attribute("ht", std::to_string(static_cast<long long int>(height)) + ".0");
 			}
@@ -2227,17 +2291,17 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 	if (!ws.get_header_footer().is_default())
 	{
         // todo: this shouldn't be hardcoded
-        static const auto header_text =
+	    static const auto header_text = new std::string(
 			"&L&\"Calibri,Regular\"&K000000Left Header Text&C&\"Arial,Regular\"&6&K445566Center Header "
-			"Text&R&\"Arial,Bold\"&8&K112233Right Header Text"s;
-        static const auto footer_text =
+			"Text&R&\"Arial,Bold\"&8&K112233Right Header Text");
+	    static const auto footer_text = new std::string(
 			"&L&\"Times New Roman,Regular\"&10&K445566Left Footer Text_x000D_And &D and &T&C&\"Times New "
 			"Roman,Bold\"&12&K778899Center Footer Text &Z&F on &A&R&\"Times New Roman,Italic\"&14&KAABBCCRight Footer "
-			"Text &P of &N"s;
+			"Text &P of &N");
 
 		serializer().start_element(xmlns, "headerFooter");
-		serializer().element(xmlns, "oddHeader", header_text);
-		serializer().element(xmlns, "oddFooter", footer_text);
+		serializer().element(xmlns, "oddHeader", *header_text);
+		serializer().element(xmlns, "oddFooter", *footer_text);
 		serializer().end_element(xmlns, "headerFooter");
 	}
 
@@ -2293,8 +2357,39 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 				write_vml_drawings(child_rel, ws, cells_with_comments);
 				break;
 
-			default:
-				break;
+            case relationship::type::office_document: break;
+            case relationship::type::thumbnail: break;
+            case relationship::type::calculation_chain: break;
+            case relationship::type::extended_properties: break;
+            case relationship::type::core_properties: break;
+            case relationship::type::worksheet: break;
+            case relationship::type::shared_string_table: break;
+            case relationship::type::styles: break;
+            case relationship::type::theme: break;
+            case relationship::type::hyperlink: break;
+            case relationship::type::chartsheet: break;
+            case relationship::type::unknown: break;
+            case relationship::type::custom_properties: break;
+            case relationship::type::printer_settings: break;
+            case relationship::type::connections: break;
+            case relationship::type::custom_property: break;
+            case relationship::type::custom_xml_mappings: break;
+            case relationship::type::dialogsheet: break;
+            case relationship::type::drawings: break;
+            case relationship::type::external_workbook_references: break;
+            case relationship::type::metadata: break;
+            case relationship::type::pivot_table: break;
+            case relationship::type::pivot_table_cache_definition: break;
+            case relationship::type::pivot_table_cache_records: break;
+            case relationship::type::query_table: break;
+            case relationship::type::shared_workbook_revision_headers: break;
+            case relationship::type::shared_workbook: break;
+            case relationship::type::revision_log: break;
+            case relationship::type::shared_workbook_user_data: break;
+            case relationship::type::single_cell_table_definitions: break;
+            case relationship::type::table_definition: break;
+            case relationship::type::volatile_dependencies: break;
+            case relationship::type::image: break;
 			}
 		}
 	}
@@ -2302,10 +2397,10 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
 // Sheet Relationship Target Parts
 
-void xlsx_producer::write_comments(const relationship &rel, worksheet ws, 
+void xlsx_producer::write_comments(const relationship &/*rel*/, worksheet ws, 
 	const std::vector<cell_reference> &cells)
 {
-	static const auto xmlns = constants::get_namespace("worksheet");
+	static const auto &xmlns = constants::get_namespace("worksheet");
 
 	serializer().start_element(xmlns, "comments");
 	serializer().namespace_decl(xmlns, "");
@@ -2418,10 +2513,10 @@ void xlsx_producer::write_comments(const relationship &rel, worksheet ws,
 void xlsx_producer::write_vml_drawings(const relationship &rel, worksheet ws,
     const std::vector<cell_reference> &cells)
 {
-	static const auto xmlns_mv = std::string("http://macVmlSchemaUri");
-	static const auto xmlns_o = std::string("urn:schemas-microsoft-com:office:office");
-    static const auto xmlns_v = std::string("urn:schemas-microsoft-com:vml");
-	static const auto xmlns_x = std::string("urn:schemas-microsoft-com:office:excel");
+	static const auto &xmlns_mv = std::string("http://macVmlSchemaUri");
+	static const auto &xmlns_o = std::string("urn:schemas-microsoft-com:office:office");
+    static const auto &xmlns_v = std::string("urn:schemas-microsoft-com:vml");
+	static const auto &xmlns_x = std::string("urn:schemas-microsoft-com:office:excel");
 
 	serializer().start_element("xml");
 	serializer().namespace_decl(xmlns_v, "v");
@@ -2620,8 +2715,11 @@ void xlsx_producer::write_color(const xlnt::color &color)
         serializer().attribute("indexed", color.get_indexed().get_index());
 		break;
 
+	case xlnt::color::type::auto_:
+        serializer().attribute("auto", color.get_indexed().get_index());
+		break;
+
 	case xlnt::color::type::rgb:
-	default:
         serializer().attribute("rgb", color.get_rgb().get_hex_string());
 		break;
 	}

@@ -73,7 +73,7 @@ source_group(runner FILES ${RUNNER})
 target_link_libraries(${PROJECT_NAME} ${LIBRARY_NAME})
 
 if(MSVC)
-    set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\"")
+    set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\" /wd\"4068\"")
     # Needed for PathFileExists in path_helper
     target_link_libraries(${PROJECT_NAME} Shlwapi)
 else()

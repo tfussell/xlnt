@@ -41,8 +41,20 @@ void exception::set_message(const std::string &message)
     message_ = message;
 }
 
+missing_number_format::~missing_number_format()
+{
+}
+
+unhandled_switch_case::~unhandled_switch_case()
+{
+}
+
 invalid_sheet_title::invalid_sheet_title(const std::string &title)
     : exception(std::string("bad worksheet title: ") + title)
+{
+}
+
+invalid_sheet_title::~invalid_sheet_title()
 {
 }
 
@@ -60,8 +72,16 @@ invalid_data_type::invalid_data_type()
 {
 }
 
+invalid_data_type::~invalid_data_type()
+{
+}
+
 invalid_file::invalid_file(const std::string &filename)
     : exception(std::string("couldn't open file: (") + filename + ")")
+{
+}
+
+invalid_file::~invalid_file()
 {
 }
 
@@ -85,8 +105,16 @@ illegal_character::illegal_character(char c)
 {
 }
 
+illegal_character::~illegal_character()
+{
+}
+
 invalid_parameter::invalid_parameter()
     : exception("invalid parameter")
+{
+}
+
+invalid_parameter::~invalid_parameter()
 {
 }
 
@@ -104,13 +132,25 @@ key_not_found::key_not_found()
 {
 }
 
+key_not_found::~key_not_found()
+{
+}
+
 no_visible_worksheets::no_visible_worksheets()
     : exception("workbook needs at least one non-hidden worksheet to be saved")
 {
 }
 
+no_visible_worksheets::~no_visible_worksheets()
+{
+}
+
 unsupported::unsupported(const std::string &message)
 	: exception(message)
+{
+}
+
+unsupported::~unsupported()
 {
 }
 

@@ -42,7 +42,7 @@ namespace detail {
 
 struct stylesheet
 {
-    format create_format()
+    format create_format(bool default_format)
     {
 		format_impls.push_back(format_impl());
 		auto &impl = format_impls.back();
@@ -55,16 +55,18 @@ struct stylesheet
         impl.font_id = 0;
         impl.number_format_id = 0;
         
+        impl.references = default_format ? 1 : 0;
+        
         return format(&impl);
     }
 
-	format get_format(std::size_t index)
-	{
+    format get_format(std::size_t index)
+    {
         auto iter = format_impls.begin();
-        std::advance(iter, index);
-		return format(&*iter);
-	}
-    
+        std::advance(iter, static_cast<std::list<format_impl>::difference_type>(index));
+        return format(&*iter);
+    }
+
     class style create_style(const std::string &name)
     {
         auto &impl = style_impls.emplace(name, style_impl()).first->second;
@@ -142,7 +144,7 @@ struct stylesheet
 
             if (reference_counts.count(i) == 0 || reference_counts.at(i) == 0)
             {
-                container.erase(container.begin() + i - unreferenced);
+                container.erase(container.begin() + static_cast<typename std::vector<T>::difference_type>(i - unreferenced));
                 unreferenced++;
             }
         }
@@ -150,40 +152,24 @@ struct stylesheet
         return id_map;
     }
     
-    void garbage_collect(std::size_t new_format, std::size_t old_format)
+    void garbage_collect()
     {
         if (!garbage_collection_enabled) return;
+        
+        auto format_iter = format_impls.begin();
 
-        std::unordered_map<std::size_t, std::size_t> format_reference_counts;
-        
-        for (const auto &impl : format_impls)
+        while (format_iter != format_impls.end())
         {
-            format_reference_counts[impl.id] = 0;
-        }
-        
-        format_reference_counts[new_format]++;
-        
-        parent->apply_to_cells([&format_reference_counts](cell c)
-        {
-            if (c.has_format())
+            auto &impl = *format_iter;
+
+            if (impl.references != 0)
             {
-                format_reference_counts[c.format().id()]++;
+                ++format_iter;
             }
-        });
-        
-        if (format_reference_counts[old_format] > 0)
-        {
-            format_reference_counts[old_format]--;
-        }
-        
-        for (const auto &id_count_pair : format_reference_counts)
-        {
-            if (id_count_pair.second != 0) continue;
-
-            auto target_id = id_count_pair.first;
-            auto target = std::find_if(format_impls.begin(), format_impls.end(),
-                [=](const format_impl &impl) { return impl.id == target_id; });
-            format_impls.erase(target);
+            else
+            {
+                format_iter = format_impls.erase(format_iter);
+            }
         }
         
         std::size_t new_id = 0;
@@ -194,6 +180,9 @@ struct stylesheet
         std::unordered_map<std::size_t, std::size_t> font_reference_counts;
         std::unordered_map<std::size_t, std::size_t> number_format_reference_counts;
         std::unordered_map<std::size_t, std::size_t> protection_reference_counts;
+        
+        fill_reference_counts[0]++;
+        fill_reference_counts[1]++;
         
         for (auto &impl : format_impls)
         {
@@ -269,7 +258,6 @@ struct stylesheet
         auto border_id_map = garbage_collect(border_reference_counts, borders);
         auto fill_id_map = garbage_collect(fill_reference_counts, fills);
         auto font_id_map = garbage_collect(font_reference_counts, fonts);
-        auto number_format_id_map = garbage_collect(number_format_reference_counts, number_formats);
         auto protection_id_map = garbage_collect(protection_reference_counts, protections);
 
         for (auto &impl : format_impls)
@@ -294,9 +282,34 @@ struct stylesheet
                 impl.font_id = font_id_map[impl.font_id.get()];
             }
             
-            if (impl.number_format_id.is_set())
+            if (impl.protection_id.is_set())
             {
-                impl.number_format_id = number_format_id_map[impl.number_format_id.get()];
+                impl.protection_id = protection_id_map[impl.protection_id.get()];
+            }
+        }
+
+        for (auto &name_impl : style_impls)
+        {
+            auto &impl = name_impl.second;
+
+            if (impl.alignment_id.is_set())
+            {
+                impl.alignment_id = alignment_id_map[impl.alignment_id.get()];
+            }
+            
+            if (impl.border_id.is_set())
+            {
+                impl.border_id = border_id_map[impl.border_id.get()];
+            }
+            
+            if (impl.fill_id.is_set())
+            {
+                impl.fill_id = fill_id_map[impl.fill_id.get()];
+            }
+            
+            if (impl.font_id.is_set())
+            {
+                impl.font_id = font_id_map[impl.font_id.get()];
             }
             
             if (impl.protection_id.is_set())
@@ -306,11 +319,11 @@ struct stylesheet
         }
     }
 
-    format_impl *find_or_create(const format_impl &pattern)
+    format_impl *find_or_create(format_impl &pattern)
     {
         auto iter = format_impls.begin();
         auto id = find_or_add(format_impls, pattern);
-        std::advance(iter, id);
+        std::advance(iter, static_cast<std::list<format_impl>::difference_type>(id));
         
         auto &result = *iter;
 
@@ -319,10 +332,20 @@ struct stylesheet
         
         if (id != pattern.id)
         {
-            garbage_collect(id, pattern.id);
+            pattern.references -= pattern.references > 0 ? 1 : 0;
+            ++result.references;
+            garbage_collect();
         }
 
         return &result;
+    }
+
+    format_impl *find_or_create_with(format_impl *pattern, const std::string &style_name)
+    {
+        format_impl new_format = *pattern;
+        new_format.style = style_name;
+
+        return find_or_create(new_format);
     }
 
     format_impl *find_or_create_with(format_impl *pattern, const alignment &new_alignment, bool applied)
@@ -381,8 +404,8 @@ struct stylesheet
 
     std::size_t style_index(const std::string &name) const
     {
-        return std::distance(style_names.begin(),
-            std::find(style_names.begin(), style_names.end(), name));
+        return static_cast<std::size_t>(std::distance(style_names.begin(),
+	    std::find(style_names.begin(), style_names.end(), name)));
     }
     
     void clear()
@@ -400,16 +423,6 @@ struct stylesheet
         protections.clear();
         
         colors.clear();
-    }
-    
-    void enable_garbage_collection()
-    {
-        garbage_collection_enabled = true;
-    }
-
-    void disable_garbage_collection()
-    {
-        garbage_collection_enabled = false;
     }
 
     workbook *parent;

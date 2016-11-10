@@ -29,7 +29,7 @@ namespace xlnt {
 
 cell_vector::iterator cell_vector::begin()
 {
-    return iterator(ws_, ref_.get_top_left(), order_);
+    return iterator(ws_, ref_.get_top_left(), ref_, order_);
 }
 
 cell_vector::iterator cell_vector::end()
@@ -38,12 +38,12 @@ cell_vector::iterator cell_vector::end()
     {
         auto past_end = ref_.get_bottom_right();
         past_end.set_column_index(past_end.get_column_index() + 1);
-        return iterator(ws_, past_end, order_);
+        return iterator(ws_, past_end, ref_, order_);
     }
 
     auto past_end = ref_.get_bottom_right();
     past_end.set_row(past_end.get_row() + 1);
-    return iterator(ws_, past_end, order_);
+    return iterator(ws_, past_end, ref_, order_);
 }
 
 cell_vector::const_iterator cell_vector::cbegin() const
@@ -109,10 +109,10 @@ cell cell_vector::get_cell(std::size_t index)
 {
     if (order_ == major_order::row)
     {
-        return ws_.get_cell(ref_.get_top_left().make_offset((int)index, 0));
+        return ws_.get_cell(ref_.get_top_left().make_offset(static_cast<int>(index), 0));
     }
 
-    return ws_.get_cell(ref_.get_top_left().make_offset(0, (int)index));
+    return ws_.get_cell(ref_.get_top_left().make_offset(0, static_cast<int>(index)));
 }
 
 std::size_t cell_vector::length() const

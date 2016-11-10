@@ -205,27 +205,27 @@ XLNT_API bool operator==(const gradient_fill &left, const gradient_fill &right)
         return false;
     }
     
-    if (left.degree() != right.degree())
+    if (std::fabs(left.degree() - right.degree()) != 0.)
     {
         return false;
     }
     
-    if (left.bottom() != right.bottom())
+    if (std::fabs(left.bottom() - right.bottom()) != 0.)
     {
         return false;
     }
     
-    if (left.right() != right.right())
+    if (std::fabs(left.right() - right.right()) != 0.)
     {
         return false;
     }
     
-    if (left.top() != right.top())
+    if (std::fabs(left.top() - right.top()) != 0.)
     {
         return false;
     }
     
-    if (left.left() != right.left())
+    if (std::fabs(left.left() - right.left()) != 0.)
     {
         return false;
     }

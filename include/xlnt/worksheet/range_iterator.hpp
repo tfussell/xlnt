@@ -28,15 +28,11 @@
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/worksheet/major_order.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
 
 namespace xlnt {
 
 class cell_vector;
-class worksheet;
-
-namespace detail {
-struct worksheet_impl;
-}
 
 /// <summary>
 /// An iterator used by worksheet and range for traversing
@@ -45,11 +41,13 @@ struct worksheet_impl;
 class XLNT_API range_iterator : public std::iterator<std::bidirectional_iterator_tag, cell_vector, std::ptrdiff_t, cell_vector*, cell_vector>
 {
 public:
-    range_iterator(worksheet &ws, const range_reference &start_cell, major_order order = major_order::row);
+    range_iterator(worksheet &ws, const range_reference &start_cell, const range_reference &limits, major_order order = major_order::row);
 
     range_iterator(const range_iterator &other);
 
     cell_vector operator*() const;
+    
+    range_iterator &operator=(const range_iterator &) = default;
 
     bool operator==(const range_iterator &other) const;
 
@@ -64,7 +62,7 @@ public:
     range_iterator operator++(int);
 
 private:
-    detail::worksheet_impl *ws_;
+    worksheet ws_;
     cell_reference current_cell_;
     range_reference range_;
     major_order order_;

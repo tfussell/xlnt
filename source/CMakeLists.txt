@@ -56,7 +56,7 @@ if(MSVC)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unknown-pragmas")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-padded")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-padded -Werror")
 endif()
 
 if(APPLE)
@@ -117,7 +117,6 @@ if(NOT STATIC)
 
     if(MSVC)
         target_compile_definitions(xlnt PRIVATE XLNT_EXPORT=1 _CRT_SECURE_NO_WARNINGS=1)
-        set_target_properties(xlnt PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\" /MP")
     endif()
 
     install(TARGETS xlnt
@@ -148,7 +147,6 @@ else()
 
     if(MSVC)
         target_compile_definitions(xlnt PRIVATE _CRT_SECURE_NO_WARNINGS=1 NOMINMAX)
-		set_target_properties(xlnt PROPERTIES COMPILE_FLAGS "/MP")
     endif()
 
     install(TARGETS xlnt
@@ -159,6 +157,10 @@ else()
 endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE LIBSTUDXML_STATIC_LIB=1)
+
+if(MSVC)
+    set_target_properties(xlnt PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\" /wd\"4068\" /MP")
+endif()
 
 source_group(xlnt FILES ${ROOT_HEADERS})
 source_group(detail FILES ${DETAIL_HEADERS} ${DETAIL_SOURCES})

@@ -2,28 +2,34 @@
 	path = third-party/libstudxml
 	url = http://scm.codesynthesis.com/libstudxml/libstudxml.git
 	branch = master
+  ignore = dirty
 
 [submodule "third-party/cxxtest"]
 	path = third-party/cxxtest
 	url = https://github.com/CxxTest/cxxtest
 	branch = master
+  ignore = dirty
 
 [submodule "third-party/utfcpp"]
 	path = third-party/utfcpp
 	url = https://github.com/nemtrif/utfcpp
 	branch = master
+  ignore = dirty
 
 [submodule "third-party/pugixml"]
 	path = third-party/pugixml
 	url = https://github.com/zeux/pugixml
 	branch = master
+  ignore = dirty
 
 [submodule "third-party/botan"]
 	path = third-party/botan
 	url = https://github.com/randombit/botan
  	branch = master
+  ignore = dirty
 
 [submodule "third-party/zlib"]
 	path = third-party/zlib
 	url = https://github.com/madler/zlib.git
-        branch = develop
+  branch = develop
+  ignore = dirty

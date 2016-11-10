@@ -31,10 +31,48 @@
 #include <vector>
 #include <cassert>
 
-#include "pole.h"
+#include <detail/pole.hpp>
 
 // enable to activate debugging output
 // #define POLE_DEBUG
+
+namespace {
+
+// helper function: recursively find siblings of index
+void dirtree_find_siblings( POLE::DirTree* dirtree, std::vector<std::size_t>& result,
+                           std::size_t index )
+{
+    auto e = dirtree->entry( index );
+    if( !e ) return;
+    if( !e->valid ) return;
+    
+    // prevent infinite loop
+    for( std::size_t i = 0; i < result.size(); i++ )
+        if( result[i] == index ) return;
+    
+    // add myself
+    result.push_back( index );
+    
+    // visit previous sibling, don't go infinitely
+    std::size_t prev = e->prev;
+    if( ( prev > 0 ) && ( prev < dirtree->entryCount() ) )
+    {
+        for( std::size_t i = 0; i < result.size(); i++ )
+            if( result[i] == prev ) prev = 0;
+        if( prev ) dirtree_find_siblings( dirtree, result, prev );
+    }
+    
+    // visit next sibling, don't go infinitely
+    std::size_t next = e->next;
+    if( ( next > 0 ) && ( next < dirtree->entryCount() ) )
+    {
+        for( std::size_t i = 0; i < result.size(); i++ )
+            if( result[i] == next ) next = 0;
+        if( next ) dirtree_find_siblings( dirtree, result, next );
+    }
+}
+
+}
 
 namespace POLE
 {
@@ -44,28 +82,28 @@ namespace POLE
 
 using namespace POLE;
 
-static inline std::uint16_t readU16( const std::uint8_t* ptr )
+static inline std::uint16_t readU16(const std::uint8_t* ptr)
 {
-    return ptr[0]+(ptr[1]<<8);
+    return static_cast<std::uint16_t>(ptr[0] + (ptr[1] << 8));
 }
 
-static inline std::uint32_t readU32( const std::uint8_t* ptr )
+static inline std::uint32_t readU32(const std::uint8_t* ptr)
 {
-    return ptr[0]+(ptr[1]<<8)+(ptr[2]<<16)+(ptr[3]<<24);
+    return static_cast<std::uint32_t>(ptr[0] + (ptr[1] << 8) + (ptr[2] << 16) + (ptr[3] << 24));
 }
 
 static inline void writeU16( std::uint8_t* ptr, std::uint16_t data )
 {
-    ptr[0] = (std::uint8_t)(data & 0xff);
-    ptr[1] = (std::uint8_t)((data >> 8) & 0xff);
+    ptr[0] = static_cast<std::uint8_t>(data & 0xff);
+    ptr[1] = static_cast<std::uint8_t>((data >> 8) & 0xff);
 }
 
 static inline void writeU32( std::uint8_t* ptr, std::uint32_t data )
 {
-    ptr[0] = (std::uint8_t)(data & 0xff);
-    ptr[1] = (std::uint8_t)((data >> 8) & 0xff);
-    ptr[2] = (std::uint8_t)((data >> 16) & 0xff);
-    ptr[3] = (std::uint8_t)((data >> 24) & 0xff);
+    ptr[0] = static_cast<std::uint8_t>(data & 0xff);
+    ptr[1] = static_cast<std::uint8_t>((data >> 8) & 0xff);
+    ptr[2] = static_cast<std::uint8_t>((data >> 16) & 0xff);
+    ptr[3] = static_cast<std::uint8_t>((data >> 24) & 0xff);
 }
 
 static const std::uint8_t pole_magic[] =
@@ -243,9 +281,9 @@ std::vector<std::size_t> AllocTable::follow( std::size_t start )
     std::size_t p = start;
     while( p < count() )
     {
-        if( p == (std::size_t)Eof ) break;
-        if( p == (std::size_t)Bat ) break;
-        if( p == (std::size_t)MetaBat ) break;
+        if( p == static_cast<std::size_t>(Eof) ) break;
+        if( p == static_cast<std::size_t>(Bat) ) break;
+        if( p == static_cast<std::size_t>(MetaBat) ) break;
         if( already_exist(chain, p) ) break;
         chain.push_back(p);
         if( data[p] >= count() ) break;
@@ -332,14 +370,14 @@ std::size_t DirTree::entryCount()
 
 DirEntry* DirTree::entry( std::size_t index )
 {
-    if( index >= entryCount() ) return (DirEntry*) 0;
+    if( index >= entryCount() ) return nullptr;
     return &entries[ index ];
 }
 
 std::ptrdiff_t DirTree::indexOf( DirEntry* e )
 {
     for( std::size_t i = 0; i < entryCount(); i++ )
-        if( entry( i ) == e ) return i;
+        if( entry( i ) == e ) return static_cast<std::ptrdiff_t>(i);
     
     return -1;
 }
@@ -353,7 +391,7 @@ std::ptrdiff_t DirTree::parent( std::size_t index )
         std::vector<std::size_t> chi = children( j );
         for( std::size_t i=0; i<chi.size();i++ )
             if( chi[i] == index )
-                return j;
+                return static_cast<std::ptrdiff_t>(j);
     }
     
     return -1;
@@ -370,15 +408,15 @@ std::string DirTree::fullName( std::size_t index )
     DirEntry * _entry = 0;
     while( p > 0 )
     {
-        _entry = entry( p );
+        _entry = entry( static_cast<std::size_t>(p) );
         if (_entry->dir && _entry->valid)
         {
             result.insert( 0,  _entry->name);
             result.insert( 0,  "/" );
         }
         --p;
-        index = p;
-        if( index <= 0 ) break;
+        index = static_cast<std::size_t>(p);
+        if( p <= 0 ) break;
     }
     return result;
 }
@@ -388,7 +426,7 @@ std::string DirTree::fullName( std::size_t index )
 // if create is true, a new entry is returned
 DirEntry* DirTree::entry( const std::string& name, bool create )
 {
-    if( !name.length() ) return (DirEntry*)0;
+    if( !name.length() ) return nullptr;
     
     // quick check for "/" (that's root)
     if( name == "/" ) return entry( 0 );
@@ -423,15 +461,15 @@ DirEntry* DirTree::entry( const std::string& name, bool create )
             if( ce )
                 if( ce->valid && ( ce->name.length()>1 ) )
                     if( ce->name == *it )
-                        child = chi[i];
+                        child = static_cast<std::ptrdiff_t>(chi[i]);
         }
         
         // traverse to the child
-        if( child > 0 ) index = child;
+        if( child > 0 ) index = static_cast<std::size_t>(child);
         else
         {
             // not found among children
-            if( !create ) return (DirEntry*)0;
+            if( !create ) return nullptr;
             
             // create a new entry
             std::size_t parent = index;
@@ -451,40 +489,6 @@ DirEntry* DirTree::entry( const std::string& name, bool create )
     }
     
     return entry( index );
-}
-
-// helper function: recursively find siblings of index
-void dirtree_find_siblings( DirTree* dirtree, std::vector<std::size_t>& result,
-                           std::size_t index )
-{
-    DirEntry* e = dirtree->entry( index );
-    if( !e ) return;
-    if( !e->valid ) return;
-    
-    // prevent infinite loop
-    for( std::size_t i = 0; i < result.size(); i++ )
-        if( result[i] == index ) return;
-    
-    // add myself
-    result.push_back( index );
-    
-    // visit previous sibling, don't go infinitely
-    std::size_t prev = e->prev;
-    if( ( prev > 0 ) && ( prev < dirtree->entryCount() ) )
-    {
-        for( std::size_t i = 0; i < result.size(); i++ )
-            if( result[i] == prev ) prev = 0;
-        if( prev ) dirtree_find_siblings( dirtree, result, prev );
-    }
-    
-    // visit next sibling, don't go infinitely
-    std::size_t next = e->next;
-    if( ( next > 0 ) && ( next < dirtree->entryCount() ) )
-    {
-        for( std::size_t i = 0; i < result.size(); i++ )
-            if( result[i] == next ) next = 0;
-        if( next ) dirtree_find_siblings( dirtree, result, next );
-    }
 }
 
 std::vector<std::size_t> DirTree::children( std::size_t index )
@@ -511,10 +515,10 @@ void DirTree::load( std::uint8_t* buffer, std::size_t size )
         
         // parse name of this entry, which stored as Unicode 16-bit
         std::string name;
-        int name_len = readU16( buffer + 0x40+p );
+        auto name_len = static_cast<std::size_t>(readU16( buffer + 0x40+p ));
         if( name_len > 64 ) name_len = 64;
-        for( int j=0; ( buffer[j+p]) && (j<name_len); j+= 2 )
-            name.append( 1, buffer[j+p] );
+        for( std::size_t j=0; ( buffer[j+p]) && (j<name_len); j+= 2 )
+            name.append( 1, static_cast<char>(buffer[j+p]) );
         
         // first char isn't printable ? remove it...
         if( buffer[p] < 32 )
@@ -556,10 +560,10 @@ void DirTree::save( std::uint8_t* buffer )
     
     // root is fixed as "Root Entry"
     DirEntry* root = entry( 0 );
-    std::string name = "Root Entry";
-    for( std::size_t j = 0; j < name.length(); j++ )
-        buffer[ j*2 ] = name[j];
-    writeU16( buffer + 0x40, static_cast<std::uint16_t>(name.length()*2 + 2) );
+    std::string entry_name = "Root Entry";
+    for( std::size_t j = 0; j < entry_name.length(); j++ )
+        buffer[ j*2 ] = static_cast<std::uint8_t>(entry_name[j]);
+    writeU16( buffer + 0x40, static_cast<std::uint16_t>(entry_name.length()*2 + 2) );
     writeU32( buffer + 0x74, 0xffffffff );
     writeU32( buffer + 0x78, 0 );
     writeU32( buffer + 0x44, 0xffffffff );
@@ -579,15 +583,15 @@ void DirTree::save( std::uint8_t* buffer )
         }
         
         // max length for name is 32 chars
-        std::string name = e->name;
-        if( name.length() > 32 )
-            name.erase( 32, name.length() );
+        entry_name = e->name;
+        if( entry_name.length() > 32 )
+            entry_name.erase( 32, entry_name.length() );
         
         // write name as Unicode 16-bit
-        for( std::size_t j = 0; j < name.length(); j++ )
-            buffer[ i*128 + j*2 ] = name[j];
+        for( std::size_t j = 0; j < entry_name.length(); j++ )
+            buffer[ i*128 + j*2 ] = static_cast<std::uint8_t>(entry_name[j]);
         
-        writeU16( buffer + i*128 + 0x40, static_cast<std::uint16_t>(name.length()*2 + 2) );
+        writeU16( buffer + i*128 + 0x40, static_cast<std::uint16_t>(entry_name.length()*2 + 2) );
         writeU32( buffer + i*128 + 0x74, e->start );
         writeU32( buffer + i*128 + 0x78, e->size );
         writeU32( buffer + i*128 + 0x44, e->prev );
@@ -626,7 +630,7 @@ void DirTree::debug()
 
 StorageIO::StorageIO( Storage* st, char* bytes, std::size_t length ):
 storage( st ),
-filedata((std::uint8_t *)bytes),
+filedata(reinterpret_cast<std::uint8_t *>(bytes)),
 dataLength(length),
 result( Storage::Ok ),
 opened( false ),
@@ -818,19 +822,19 @@ void StorageIO::close()
 StreamIO* StorageIO::streamIO( const std::string& name )
 {
     // sanity check
-    if( !name.length() ) return (StreamIO*)0;
+    if( !name.length() ) return nullptr;
     
     // search in the entries
     DirEntry* entry = dirtree->entry( name );
     //if( entry) std::cout << "FOUND\n";
-    if( !entry ) return (StreamIO*)0;
+    if( !entry ) return nullptr;
     //if( !entry->dir ) std::cout << "  NOT DIR\n";
-    if( entry->dir ) return (StreamIO*)0;
+    if( entry->dir ) return nullptr;
     
-    StreamIO* result = new StreamIO( this, entry );
-    result->fullName = name;
+    StreamIO* stream = new StreamIO( this, entry );
+    stream->fullName = name;
     
-    return result;
+    return stream;
 }
 
 std::size_t StorageIO::loadBigBlocks( std::vector<std::size_t> blocks,
@@ -851,7 +855,7 @@ std::size_t StorageIO::loadBigBlocks( std::vector<std::size_t> blocks,
         if( pos + p > filesize ) p = filesize - pos;
         //FSTREAM file.seekg( pos );
         //FSTREAM file.read( (char*)data + bytes, p );
-        memcpy((char*)data + bytes, filedata + pos, p);
+        memcpy(reinterpret_cast<char *>(data) + bytes, filedata + pos, p);
         bytes += p;
     }
     
@@ -1094,8 +1098,8 @@ std::list<std::string> Storage::entries( const std::string& path )
     DirEntry* e = dt->entry( path, false );
     if( e  && e->dir )
     {
-        std::size_t parent = dt->indexOf( e );
-        std::vector<std::size_t> children = dt->children( parent );
+        auto parent = dt->indexOf( e );
+        std::vector<std::size_t> children = dt->children( static_cast<std::size_t>(parent) );
         for( std::size_t i = 0; i < children.size(); i++ )
             result.push_back( dt->entry( children[i] )->name );
     }
@@ -1127,8 +1131,8 @@ std::list<DirEntry*> Storage::dirEntries( const std::string& path )
     DirEntry* e = dt->entry( path, false );
     if( e  && e->dir )
     {
-        std::size_t parent = dt->indexOf( e );
-        std::vector<std::size_t> children = dt->children( parent );
+        auto parent = dt->indexOf( e );
+        std::vector<std::size_t> children = dt->children( static_cast<std::size_t>(parent) );
         for( std::size_t i = 0; i < children.size(); i++ )
             result.push_back( dt->entry( children[i] ) );
     }

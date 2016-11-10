@@ -7,11 +7,26 @@
 
 #include <xlnt/xlnt.hpp>
 
+#include <numeric>
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <random>
+#include <chrono>
+
+int random(int min, int max)
+{
+    static std::random_device device{};
+    static std::default_random_engine engine{ device() };
+    std::uniform_int_distribution<int> distribution{ min, max };
+    return distribution(engine);
+}
+
 class test_cell : public CxxTest::TestSuite
 {
 private:
     xlnt::workbook wb, wb_guess_types;
-    
+
 public:
     test_cell()
     {

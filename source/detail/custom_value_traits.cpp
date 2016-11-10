@@ -15,7 +15,9 @@ std::string to_string(font::underline_style style)
     case font::underline_style::single: return "single";
     case font::underline_style::single_accounting: return "singleAccounting";
     case font::underline_style::none: return "none";
-    default: return default_case("none");
+#ifdef WIN32
+    default: throw xlnt::exception("unhandled");
+#endif
     }
 }
 
@@ -53,8 +55,54 @@ std::string to_string(relationship::type t)
 		return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments";
 	case relationship::type::vml_drawing:
 		return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/vmlDrawing";
-	default:
-		return default_case("?");
+    case relationship::type::unknown:
+        return "unknown";
+    case relationship::type::custom_properties:
+        return "custom-properties";
+    case relationship::type::printer_settings:
+        return "printer-settings";
+    case relationship::type::connections:
+        return "connections";
+    case relationship::type::custom_property:
+        return "custom-property";
+    case relationship::type::custom_xml_mappings:
+        return "custom-xml-mappings";
+    case relationship::type::dialogsheet:
+        return "dialogsheet";
+    case relationship::type::drawings:
+        return "drawings";
+    case relationship::type::external_workbook_references:
+        return "external-workbook-references";
+    case relationship::type::metadata:
+        return "metadata";
+    case relationship::type::pivot_table:
+        return "pivot-table";
+    case relationship::type::pivot_table_cache_definition:
+        return "pivot-table-cache-definition";
+    case relationship::type::pivot_table_cache_records:
+        return "pivot-table-cache-records";
+    case relationship::type::query_table:
+        return "query-table";
+    case relationship::type::shared_workbook_revision_headers:
+        return "shared-workbook-revision-headers";
+    case relationship::type::shared_workbook:
+        return "shared-workbook";
+    case relationship::type::revision_log:
+        return "revision-log";
+    case relationship::type::shared_workbook_user_data:
+        return "shared-workbook-user-data";
+    case relationship::type::single_cell_table_definitions:
+        return "single-cell-table-definitions";
+    case relationship::type::table_definition:
+        return "table-definition";
+    case relationship::type::volatile_dependencies:
+        return "volatile-dependencies";
+    case relationship::type::image:
+        return "image";
+#ifdef WIN32
+    default:
+        throw xlnt::exception("unhandled");
+#endif
 	}
 }
 
@@ -81,7 +129,9 @@ std::string to_string(pattern_fill_type fill_type)
 	case pattern_fill_type::mediumgray: return "mediumgray";
 	case pattern_fill_type::solid: return "solid";
 	case pattern_fill_type::none: return "none";
-    default: return default_case("none");
+#ifdef WIN32
+    default: throw xlnt::exception("unhandled");
+#endif
 	}
 }
 
@@ -108,7 +158,9 @@ std::string to_string(border_style style)
 	case border_style::thick: return "thick";
 	case border_style::thin: return "thin";
 	case border_style::none: return "none";
-    default: return default_case("none");
+#ifdef WIN32
+    default: throw xlnt::exception("unhandled");
+#endif
 	}
 }
 
@@ -121,7 +173,9 @@ std::string to_string(vertical_alignment alignment)
 	case vertical_alignment::justify: return "justify";
 	case vertical_alignment::top: return "top";
 	case vertical_alignment::none: return "none";
-	default: return default_case("none");
+#ifdef WIN32
+    default: throw xlnt::exception("unhandled");
+#endif
 	}
 }
 
@@ -136,7 +190,9 @@ std::string to_string(horizontal_alignment alignment)
 	case horizontal_alignment::left: return "left";
 	case horizontal_alignment::right: return "right";
 	case horizontal_alignment::none: return "none";
-	default: return default_case("none");
+#ifdef WIN32
+    default: throw xlnt::exception("unhandled");
+#endif
 	}
 }
 
@@ -151,7 +207,9 @@ std::string to_string(border_side side)
 	case border_side::horizontal: return "horizontal";
 	case border_side::vertical: return "vertical";
 	case border_side::diagonal: return "diagonal";
-	default: return default_case("top");
+#ifdef WIN32
+    default: throw xlnt::exception("unhandled");
+#endif
 	}
 }
 

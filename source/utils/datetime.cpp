@@ -31,7 +31,7 @@ namespace xlnt {
 
 datetime datetime::from_number(long double raw_time, calendar base_date)
 {
-    auto date_part = date::from_number((int)raw_time, base_date);
+    auto date_part = date::from_number(static_cast<int>(raw_time), base_date);
     auto time_part = time::from_number(raw_time);
     
     return datetime(date_part.year, date_part.month, date_part.day, time_part.hour, time_part.minute, time_part.second,

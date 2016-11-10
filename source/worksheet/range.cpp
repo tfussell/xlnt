@@ -103,12 +103,12 @@ range::iterator range::begin()
     {
         cell_reference top_right(ref_.get_bottom_right().get_column_index(), ref_.get_top_left().get_row());
         range_reference row_range(ref_.get_top_left(), top_right);
-        return iterator(ws_, row_range, order_);
+        return iterator(ws_, row_range, ref_, order_);
     }
 
     cell_reference bottom_left(ref_.get_top_left().get_column_index(), ref_.get_bottom_right().get_row());
     range_reference row_range(ref_.get_top_left(), bottom_left);
-    return iterator(ws_, row_range, order_);
+    return iterator(ws_, row_range, ref_, order_);
 }
 
 range::iterator range::end()
@@ -118,13 +118,13 @@ range::iterator range::end()
         auto past_end_row_index = ref_.get_bottom_right().get_row() + 1;
         cell_reference bottom_left(ref_.get_top_left().get_column_index(), past_end_row_index);
         cell_reference bottom_right(ref_.get_bottom_right().get_column_index(), past_end_row_index);
-        return iterator(ws_, range_reference(bottom_left, bottom_right), order_);
+        return iterator(ws_, range_reference(bottom_left, bottom_right), ref_, order_);
     }
 
     auto past_end_column_index = ref_.get_bottom_right().get_column_index() + 1;
     cell_reference top_right(past_end_column_index, ref_.get_top_left().get_row());
     cell_reference bottom_right(past_end_column_index, ref_.get_bottom_right().get_row());
-    return iterator(ws_, range_reference(top_right, bottom_right), order_);
+    return iterator(ws_, range_reference(top_right, bottom_right), ref_, order_);
 }
 
 range::const_iterator range::cbegin() const

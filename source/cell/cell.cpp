@@ -25,6 +25,8 @@
 #include <cmath>
 #include <sstream>
 
+#include <detail/cell_impl.hpp>
+#include <detail/stylesheet.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/cell/comment.hpp>
@@ -48,8 +50,6 @@
 #include <xlnt/worksheet/column_properties.hpp>
 #include <xlnt/worksheet/row_properties.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
-
-#include <detail/cell_impl.hpp>
 
 namespace {
 
@@ -559,8 +559,8 @@ const workbook &cell::get_workbook() const
 //TODO: this shares a lot of code with worksheet::get_point_pos, try to reduce repetion
 std::pair<int, int> cell::get_anchor() const
 {
-    static const double DefaultColumnWidth = 51.85;
-    static const double DefaultRowHeight = 15.0;
+    static const auto DefaultColumnWidth = 51.85L;
+    static const auto DefaultRowHeight = 15.0L;
 
     auto points_to_pixels = [](long double value, long double dpi)
     {
@@ -569,7 +569,7 @@ std::pair<int, int> cell::get_anchor() const
     
     auto left_columns = d_->column_ - 1;
     int left_anchor = 0;
-    auto default_width = points_to_pixels(DefaultColumnWidth, 96.0);
+    auto default_width = points_to_pixels(DefaultColumnWidth, 96.0L);
 
     for (column_t column_index = 1; column_index <= left_columns; column_index++)
     {
@@ -579,7 +579,7 @@ std::pair<int, int> cell::get_anchor() const
 
             if (cdw > 0)
             {
-                left_anchor += points_to_pixels(cdw, 96.0);
+                left_anchor += points_to_pixels(cdw, 96.0L);
                 continue;
             }
         }
@@ -589,7 +589,7 @@ std::pair<int, int> cell::get_anchor() const
 
     auto top_rows = d_->row_ - 1;
     int top_anchor = 0;
-    auto default_height = points_to_pixels(DefaultRowHeight, 96.0);
+    auto default_height = points_to_pixels(DefaultRowHeight, 96.0L);
 
     for (row_t row_index = 1; row_index <= top_rows; row_index++)
     {
@@ -599,7 +599,7 @@ std::pair<int, int> cell::get_anchor() const
 
             if (rdh > 0)
             {
-                top_anchor += points_to_pixels(rdh, 96.0);
+                top_anchor += points_to_pixels(rdh, 96.0L);
                 continue;
             }
         }
@@ -836,9 +836,11 @@ std::string cell::to_string() const
     case cell::type::error:
         return nf.format(get_value<std::string>());
     case cell::type::boolean:
-        return get_value<long double>() == 0 ? "FALSE" : "TRUE";
+        return get_value<long double>() == 0.L ? "FALSE" : "TRUE";
+#ifdef WIN32
     default:
-        return "";
+        throw xlnt::exception("unhandled");
+#endif
     }
 }
 
@@ -849,6 +851,12 @@ bool cell::has_format() const
 
 void cell::format(const class format new_format)
 {
+    if (has_format())
+    {
+        format().d_->references -= format().d_->references > 0 ? 1 : 0;
+    }
+
+    ++new_format.d_->references;
 	d_->format_ = new_format.d_;
 }
 
@@ -897,6 +905,7 @@ void cell::guess_type_and_set_value(const std::string &value)
 
 void cell::clear_format()
 {
+    format().d_->references -= format().d_->references > 0 ? 1 : 0;
 	d_->format_.clear();
 }
 

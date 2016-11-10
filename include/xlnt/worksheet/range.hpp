@@ -54,6 +54,8 @@ public:
     range(worksheet ws, const range_reference &reference, major_order order = major_order::row, bool skip_null = false);
 
     ~range();
+    
+    range(const range &) = default;
 
     cell_vector operator[](std::size_t vector_index);
 

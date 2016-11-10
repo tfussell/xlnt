@@ -20,16 +20,78 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#include <array>
-#include <pole.h>
-#include <botan_all.h>
-#include <include_libstudxml.hpp>
 
+#include <array>
+
+#include <detail/constants.hpp>
+#include <detail/include_botan.hpp>
+#include <detail/include_libstudxml.hpp>
+#include <detail/pole.hpp>
 #include <detail/vector_streambuf.hpp>
 #include <detail/xlsx_consumer.hpp>
 #include <detail/xlsx_producer.hpp>
 #include <xlnt/utils/exceptions.hpp>
 #include <xlnt/workbook/workbook.hpp>
+
+namespace xlnt {
+namespace detail {
+
+enum class hash_algorithm
+{
+    sha1,
+    sha256,
+    sha384,
+    sha512,
+    md5,
+    md4,
+    md2,
+    ripemd128,
+    ripemd160,
+    whirlpool
+};
+
+} // namespace detail
+} // namespace xlnt
+
+namespace xml {
+
+template <>
+struct value_traits<xlnt::detail::hash_algorithm>
+{
+    static xlnt::detail::hash_algorithm parse(std::string hash_algorithm_string, const parser &)
+    {
+	if (hash_algorithm_string == "SHA1") return xlnt::detail::hash_algorithm::sha1;
+	else if (hash_algorithm_string == "SHA256") return xlnt::detail::hash_algorithm::sha256;
+	else if (hash_algorithm_string == "SHA384") return xlnt::detail::hash_algorithm::sha384;
+	else if (hash_algorithm_string == "SHA512") return xlnt::detail::hash_algorithm::sha512;
+	else if (hash_algorithm_string == "MD5") return xlnt::detail::hash_algorithm::md5;
+	else if (hash_algorithm_string == "MD4") return xlnt::detail::hash_algorithm::md4;
+	else if (hash_algorithm_string == "MD2") return xlnt::detail::hash_algorithm::md2;
+	else if (hash_algorithm_string == "Ripemd128") return xlnt::detail::hash_algorithm::ripemd128;
+	else if (hash_algorithm_string == "Ripemd160") return xlnt::detail::hash_algorithm::ripemd160;
+	else if (hash_algorithm_string == "Whirlpool") return xlnt::detail::hash_algorithm::whirlpool;
+	throw xlnt::exception(hash_algorithm_string);
+    }
+
+    static std::string serialize(xlnt::detail::hash_algorithm algorithm, const serializer &)
+    {
+	switch (algorithm)
+	{
+	case xlnt::detail::hash_algorithm::sha1: return "SHA1";
+	case xlnt::detail::hash_algorithm::sha256: return "SHA256";
+	case xlnt::detail::hash_algorithm::sha384: return "SHA384";
+	case xlnt::detail::hash_algorithm::sha512: return "SHA512";
+	case xlnt::detail::hash_algorithm::md5: return "MD5";
+	case xlnt::detail::hash_algorithm::md4: return "MD4";
+	case xlnt::detail::hash_algorithm::md2: return "MD2";
+	case xlnt::detail::hash_algorithm::ripemd128: return "Ripemd128";
+	case xlnt::detail::hash_algorithm::ripemd160: return "Ripemd160";
+	case xlnt::detail::hash_algorithm::whirlpool: return "Whirlpool";
+	}
+    }
+}; // struct value_traits<>
+
+} // namespace xml
 
 namespace xlnt {
 namespace detail {
@@ -62,20 +124,6 @@ struct crypto_helper
         decryption
     };
 
-    enum class hash_algorithm
-    {
-        sha1,
-        sha256,
-        sha384,
-        sha512,
-        md5,
-        md4,
-        md2,
-        ripemd128,
-        ripemd160,
-        whirlpool
-    };
-
     static std::vector<std::uint8_t> aes(const std::vector<std::uint8_t> &key,
         const std::vector<std::uint8_t> &iv,
         const std::vector<std::uint8_t> &encrypted,
@@ -102,6 +150,15 @@ struct crypto_helper
         auto decoded = pipe.read_all();
 
         return std::vector<std::uint8_t>(decoded.begin(), decoded.end());
+    }
+
+    static std::string encode_base64(const std::vector<std::uint8_t> &decoded)
+    {
+        Botan::Pipe pipe(new Botan::Base64_Encoder);
+        pipe.process_msg(decoded);
+        auto encoded = pipe.read_all();
+
+        return std::string(encoded.begin(), encoded.end());
     }
 
     static std::vector<std::uint8_t> hash(hash_algorithm algorithm,
@@ -276,7 +333,7 @@ struct crypto_helper
         //todo: verify here
 
         std::size_t package_offset = 0;
-        auto decrypted_size = read_int<std::uint64_t>(package_offset, encrypted_package);
+        auto decrypted_size = static_cast<std::size_t>(read_int<std::uint64_t>(package_offset, encrypted_package));
         auto decrypted = aes(key_derived, {}, std::vector<std::uint8_t>(
             encrypted_package.begin() + 8, encrypted_package.end()),
             cipher_chaining::ecb, cipher_direction::decryption);
@@ -323,12 +380,74 @@ struct crypto_helper
         } key_encryptor;
     };
 
+    static agile_encryption_info generate_agile_encryption_info(const std::string &password)
+    {
+	agile_encryption_info result;
+	result.key_data.salt_value.assign(password.begin(), password.end());
+	return result;
+    }
+
+    static std::vector<std::uint8_t> write_agile_encryption_info(const std::string &password)
+    {
+        static const auto &xmlns = xlnt::constants::get_namespace("encryption");
+        static const auto &xmlns_p = xlnt::constants::get_namespace("encryption-password");
+
+	std::vector<std::uint8_t> encryption_info;
+	xlnt::detail::vector_ostreambuf encryption_info_buffer(encryption_info);
+	std::ostream encryption_info_stream(&encryption_info_buffer);
+	xml::serializer serializer(encryption_info_stream, "EncryptionInfo");
+
+        agile_encryption_info result = generate_agile_encryption_info(password);
+
+        serializer.start_element(xmlns, "encryption");
+
+        serializer.start_element(xmlns, "keyData");
+	serializer.attribute("saltSize", result.key_data.salt_size);
+	serializer.attribute("blockSize", result.key_data.block_size);
+	serializer.attribute("keyBits", result.key_data.key_bits);
+	serializer.attribute("hashSize", result.key_data.hash_size);
+        serializer.attribute("cipherAlgorithm", result.key_data.cipher_algorithm);
+        serializer.attribute("cipherChaining", result.key_data.cipher_chaining);
+        serializer.attribute("hashAlgorithm", result.key_data.hash_algorithm);
+        serializer.attribute("saltValue", encode_base64(result.key_data.salt_value));
+        serializer.end_element(xmlns, "keyData");
+
+        serializer.start_element(xmlns, "dataIntegrity");
+        serializer.attribute("encryptedHmacKey", encode_base64(result.data_integrity.hmac_key));
+        serializer.attribute("encryptedHmacValue", encode_base64(result.data_integrity.hmac_value));
+        serializer.end_element(xmlns, "dataIntegrity");
+
+        serializer.start_element(xmlns, "keyEncryptors");
+        serializer.start_element(xmlns, "keyEncryptor");
+        serializer.attribute("uri", "");
+	serializer.start_element(xmlns_p, "encryptedKey");
+	serializer.attribute("spinCount", result.key_encryptor.spin_count);
+	serializer.attribute("saltSize", result.key_encryptor.salt_size);
+	serializer.attribute("blockSize", result.key_encryptor.block_size);
+	serializer.attribute("keyBits", result.key_encryptor.key_bits);
+	serializer.attribute("hashSize", result.key_encryptor.hash_size);
+	serializer.attribute("cipherAlgorithm", result.key_encryptor.cipher_algorithm);
+	serializer.attribute("cipherChaining", result.key_encryptor.cipher_chaining);
+	serializer.attribute("hashAlgorithm", result.key_encryptor.hash);
+	serializer.attribute("saltValue", encode_base64(result.key_encryptor.salt_value));
+	serializer.attribute("encryptedVerifierHashInput", encode_base64(result.key_encryptor.verifier_hash_input));
+	serializer.attribute("encryptedVerifierHashValue", encode_base64(result.key_encryptor.verifier_hash_value));
+	serializer.attribute("encryptedKeyValue", encode_base64(result.key_encryptor.encrypted_key_value));
+	serializer.end_element(xmlns_p, "encryptedKey");
+	serializer.end_element(xmlns, "keyEncryptor");
+	serializer.end_element(xmlns, "keyEncryptors");
+
+	serializer.end_element(xmlns, "encryption");
+
+	return encryption_info;
+    }
+
     static std::vector<std::uint8_t> decrypt_xlsx_agile(const std::vector<std::uint8_t> &encryption_info,
         const std::string &password, const std::vector<std::uint8_t> &encrypted_package)
     {
-        static const auto xmlns = std::string("http://schemas.microsoft.com/office/2006/encryption");
-        static const auto xmlns_p = std::string("http://schemas.microsoft.com/office/2006/keyEncryptor/password");
-        static const auto xmlns_c = std::string("http://schemas.microsoft.com/office/2006/keyEncryptor/certificate");
+        static const auto &xmlns = xlnt::constants::get_namespace("encryption");
+        static const auto &xmlns_p = xlnt::constants::get_namespace("encryption-password");
+        //static const auto &xmlns_c = xlnt::constants::get_namespace("encryption-certificate");
 
         agile_encryption_info result;
 
@@ -584,6 +703,8 @@ struct crypto_helper
         {
             throw xlnt::exception("empty file");
         }
+
+	generate_agile_encryption_info(password);
 
         return {};
     }
