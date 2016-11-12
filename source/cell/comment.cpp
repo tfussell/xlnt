@@ -57,6 +57,53 @@ std::string comment::author() const
     return author_;
 }
 
+void comment::hide()
+{
+    visible_ = false;
+}
+
+void comment::show()
+{
+    visible_ = true;
+}
+
+void comment::position(int left, int top)
+{
+    left_ = left;
+    top_ = top;
+}
+
+void comment::size(int width, int height)
+{
+    width_ = width;
+    height_ = height;
+}
+
+bool comment::visible() const
+{
+    return visible_;
+}
+
+int comment::left() const
+{
+    return left_;
+}
+    
+int comment::top() const
+{
+    return top_;
+}
+    
+int comment::width() const
+{
+    return width_;
+}
+   
+int comment::height() const
+{
+    return height_;
+}
+
 XLNT_API bool operator==(const comment &left, const comment &right)
 {
     return left.text_ == right.text_ && left.author_ == right.author_;

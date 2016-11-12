@@ -2513,118 +2513,138 @@ void xlsx_producer::write_comments(const relationship &/*rel*/, worksheet ws,
 void xlsx_producer::write_vml_drawings(const relationship &rel, worksheet ws,
     const std::vector<cell_reference> &cells)
 {
-	static const auto &xmlns_mv = std::string("http://macVmlSchemaUri");
-	static const auto &xmlns_o = std::string("urn:schemas-microsoft-com:office:office");
+    static const auto &xmlns_mv = std::string("http://macVmlSchemaUri");
+    static const auto &xmlns_o = std::string("urn:schemas-microsoft-com:office:office");
     static const auto &xmlns_v = std::string("urn:schemas-microsoft-com:vml");
-	static const auto &xmlns_x = std::string("urn:schemas-microsoft-com:office:excel");
+    static const auto &xmlns_x = std::string("urn:schemas-microsoft-com:office:excel");
 
-	serializer().start_element("xml");
-	serializer().namespace_decl(xmlns_v, "v");
-	serializer().namespace_decl(xmlns_o, "o");
-	serializer().namespace_decl(xmlns_x, "x");
-	serializer().namespace_decl(xmlns_mv, "mv");
+    serializer().start_element("xml");
+    serializer().namespace_decl(xmlns_v, "v");
+    serializer().namespace_decl(xmlns_o, "o");
+    serializer().namespace_decl(xmlns_x, "x");
+    serializer().namespace_decl(xmlns_mv, "mv");
+    
+    serializer().start_element(xmlns_o, "shapelayout");
+    serializer().attribute(xml::qname(xmlns_v, "ext"), "edit");
+    serializer().start_element(xmlns_o, "idmap");
+    serializer().attribute(xml::qname(xmlns_v, "ext"), "edit");
 
-	serializer().start_element(xmlns_o, "shapelayout");
-	serializer().attribute(xml::qname(xmlns_v, "ext"), "edit");
-	serializer().start_element(xmlns_o, "idmap");
-	serializer().attribute(xml::qname(xmlns_v, "ext"), "edit");
-	auto filename = rel.get_target().get_path().split_extension().first;
-	auto index_pos = filename.size() - 1;
-	while (filename[index_pos] >= '0' && filename[index_pos] <= '9')
-	{
-		index_pos--;
-	}
-	auto file_index = std::stoull(filename.substr(index_pos + 1));
-	serializer().attribute("data", file_index);
-	serializer().end_element(xmlns_o, "idmap");
-	serializer().end_element(xmlns_o, "shapelayout");
+    auto filename = rel.get_target().get_path().split_extension().first;
+    auto index_pos = filename.size() - 1;
 
-	serializer().start_element(xmlns_v, "shapetype");
-	serializer().attribute("id", "_x0000_t202");
-	serializer().attribute("coordsize", "21600,21600");
-	serializer().attribute(xml::qname(xmlns_o, "spt"), "202");
-	serializer().attribute("path", "m0,0l0,21600,21600,21600,21600,0xe");
-	serializer().start_element(xmlns_v, "stroke");
-	serializer().attribute("joinstyle", "miter");
-	serializer().end_element(xmlns_v, "stroke");
-	serializer().start_element(xmlns_v, "path");
-	serializer().attribute("gradientshapeok", "t");
-	serializer().attribute(xml::qname(xmlns_o, "connecttype"), "rect");
-	serializer().end_element(xmlns_v, "path");
-	serializer().end_element(xmlns_v, "shapetype");
+    while (filename[index_pos] >= '0' && filename[index_pos] <= '9')
+    {
+	index_pos--;
+    }
 
-	std::size_t comment_index = 0;
+    auto file_index = std::stoull(filename.substr(index_pos + 1));
 
-	for (const auto &cell_ref : cells)
-	{
+    serializer().attribute("data", file_index);
+    serializer().end_element(xmlns_o, "idmap");
+    serializer().end_element(xmlns_o, "shapelayout");
+
+    serializer().start_element(xmlns_v, "shapetype");
+    serializer().attribute("id", "_x0000_t202");
+    serializer().attribute("coordsize", "21600,21600");
+    serializer().attribute(xml::qname(xmlns_o, "spt"), "202");
+    serializer().attribute("path", "m0,0l0,21600,21600,21600,21600,0xe");
+    serializer().start_element(xmlns_v, "stroke");
+    serializer().attribute("joinstyle", "miter");
+    serializer().end_element(xmlns_v, "stroke");
+    serializer().start_element(xmlns_v, "path");
+    serializer().attribute("gradientshapeok", "t");
+    serializer().attribute(xml::qname(xmlns_o, "connecttype"), "rect");
+    serializer().end_element(xmlns_v, "path");
+    serializer().end_element(xmlns_v, "shapetype");
+
+    std::size_t comment_index = 0;
+
+    for (const auto &cell_ref : cells)
+    {
         auto comment = ws.get_cell(cell_ref).comment();
         auto shape_id = 1024 * file_index + 1 + comment_index * 2;
 
-		serializer().start_element(xmlns_v, "shape");
-		serializer().attribute("id", "_x0000_s" + std::to_string(shape_id));
-		serializer().attribute("type", "#_x0000_t202");
-		std::string style("position:absolute;margin-left:80pt;margin-top:");
-		style.append(std::to_string(2 + comment_index * 4));
-		style.append("pt;width:104pt;height:76pt;z-index:");
-		style.append(std::to_string(comment_index + 1));
-		style.append(";visibility:hidden");
-		serializer().attribute("style", style);
-		serializer().attribute("fillcolor", "#fbf6d6");
-		serializer().attribute("strokecolor", "#edeaa1");
+        serializer().start_element(xmlns_v, "shape");
+        serializer().attribute("id", "_x0000_s" + std::to_string(shape_id));
+        serializer().attribute("type", "#_x0000_t202");
 
-		serializer().start_element(xmlns_v, "fill");
-		serializer().attribute("color2", "#fbfe82");
-		serializer().attribute("angle", -180);
-		serializer().attribute("type", "gradient");
-		serializer().start_element(xmlns_o, "fill");
-		serializer().attribute(xml::qname(xmlns_v, "ext"), "view");
-		serializer().attribute("type", "gradientUnscaled");
-		serializer().end_element(xmlns_o, "fill");
-		serializer().end_element(xmlns_v, "fill");
+        std::vector<std::pair<std::string, std::string>> style;
 
-		serializer().start_element(xmlns_v, "shadow");
-		serializer().attribute("on", "t");
-		serializer().attribute("obscured", "t");
-		serializer().end_element(xmlns_v, "shadow");
+        style.push_back({"position", "absolute"});
+        style.push_back({"margin-left", std::to_string(comment.left())});
+        style.push_back({"margin-top", std::to_string(comment.top())});
+        style.push_back({"width", std::to_string(comment.width())});
+        style.push_back({"height", std::to_string(comment.height())});
+        style.push_back({"z-index", std::to_string(comment_index + 1)});
+        style.push_back({"visibility", comment.visible() ? "visible" : "hidden"});
 
-		serializer().start_element(xmlns_v, "path");
-		serializer().attribute(xml::qname(xmlns_o, "connecttype"), "none");
-		serializer().end_element(xmlns_v, "path");
+        std::string style_string;
 
-		serializer().start_element(xmlns_v, "textbox");
-		serializer().attribute("style", "mso-direction-alt:auto");
-		serializer().start_element("div");
-		serializer().attribute("style", "text-align:left");
-		serializer().characters("");
-		serializer().end_element("div");
-		serializer().end_element(xmlns_v, "textbox");
+        for (auto part : style)
+        {
+            style_string.append(part.first);
+            style_string.append(":");
+            style_string.append(part.second);
+            style_string.append(":");
+        }
 
-		serializer().start_element(xmlns_x, "ClientData");
-		serializer().attribute("ObjectType", "Note");
-		serializer().start_element(xmlns_x, "MoveWithCells");
-		serializer().end_element(xmlns_x, "MoveWithCells");
-		serializer().start_element(xmlns_x, "SizeWithCells");
-		serializer().end_element(xmlns_x, "SizeWithCells");
-		serializer().start_element(xmlns_x, "Anchor");
-		serializer().characters("1, 15, 0, " + std::to_string(2 + comment_index * 4) + ", 2, 54, 4, 14");
-		serializer().end_element(xmlns_x, "Anchor");
-		serializer().start_element(xmlns_x, "AutoFill");
-		serializer().characters("False");
-		serializer().end_element(xmlns_x, "AutoFill");
-		serializer().start_element(xmlns_x, "Row");
-		serializer().characters(cell_ref.get_row() - 1);
-		serializer().end_element(xmlns_x, "Row");
-		serializer().start_element(xmlns_x, "Column");
-		serializer().characters(cell_ref.get_column_index().index - 1);
-		serializer().end_element(xmlns_x, "Column");
-		serializer().end_element(xmlns_x, "ClientData");
+        serializer().attribute("style", style_string);
+        serializer().attribute("fillcolor", "#fbf6d6");
+        serializer().attribute("strokecolor", "#edeaa1");
 
-		serializer().end_element(xmlns_v, "shape");
+        serializer().start_element(xmlns_v, "fill");
+        serializer().attribute("color2", "#fbfe82");
+        serializer().attribute("angle", -180);
+        serializer().attribute("type", "gradient");
+        serializer().start_element(xmlns_o, "fill");
+        serializer().attribute(xml::qname(xmlns_v, "ext"), "view");
+        serializer().attribute("type", "gradientUnscaled");
+        serializer().end_element(xmlns_o, "fill");
+        serializer().end_element(xmlns_v, "fill");
 
-		++comment_index;
-	}
+        serializer().start_element(xmlns_v, "shadow");
+        serializer().attribute("on", "t");
+        serializer().attribute("obscured", "t");
+        serializer().end_element(xmlns_v, "shadow");
 
-	serializer().end_element("xml");
+        serializer().start_element(xmlns_v, "path");
+        serializer().attribute(xml::qname(xmlns_o, "connecttype"), "none");
+        serializer().end_element(xmlns_v, "path");
+
+        serializer().start_element(xmlns_v, "textbox");
+        serializer().attribute("style", "mso-direction-alt:auto");
+        serializer().start_element("div");
+        serializer().attribute("style", "text-align:left");
+        serializer().characters("");
+        serializer().end_element("div");
+        serializer().end_element(xmlns_v, "textbox");
+
+        serializer().start_element(xmlns_x, "ClientData");
+        serializer().attribute("ObjectType", "Note");
+        serializer().start_element(xmlns_x, "MoveWithCells");
+        serializer().end_element(xmlns_x, "MoveWithCells");
+        serializer().start_element(xmlns_x, "SizeWithCells");
+        serializer().end_element(xmlns_x, "SizeWithCells");
+        serializer().start_element(xmlns_x, "Anchor");
+        serializer().characters("1, 15, 0, " + std::to_string(2 + comment_index * 4) + ", 2, 54, 4, 14");
+        serializer().end_element(xmlns_x, "Anchor");
+        serializer().start_element(xmlns_x, "AutoFill");
+        serializer().characters("False");
+        serializer().end_element(xmlns_x, "AutoFill");
+        serializer().start_element(xmlns_x, "Row");
+        serializer().characters(cell_ref.get_row() - 1);
+        serializer().end_element(xmlns_x, "Row");
+        serializer().start_element(xmlns_x, "Column");
+        serializer().characters(cell_ref.get_column_index().index - 1);
+        serializer().end_element(xmlns_x, "Column");
+        serializer().end_element(xmlns_x, "ClientData");
+
+        serializer().end_element(xmlns_v, "shape");
+
+        ++comment_index;
+    }
+
+    serializer().end_element("xml");
 }
 
 // Other Parts

@@ -446,7 +446,12 @@ public:
     class comment comment();
 
     /// <summary>
-    /// Apply the comment provided as the ony argument to the cell.
+    /// Create a new comment with the given text and optional author and apply it to the cell.
+    /// </summary>
+    void comment(const std::string &text, const std::string &author = "Microsoft Office User");
+
+    /// <summary>
+    /// Apply the comment provided as the only argument to the cell.
     /// </summary>
     void comment(const class comment &new_comment);
 

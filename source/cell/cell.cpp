@@ -1020,9 +1020,41 @@ class comment cell::comment()
     return d_->comment_.get();
 }
 
+void cell::comment(const std::string &text, const std::string &author)
+{
+    comment(xlnt::comment(text, author));
+}
+
 void cell::comment(const class comment &new_comment)
 {
     d_->comment_.set(new_comment);
+
+    // offset comment 5 pixels down and 5 pixels right of the top right corner of the cell
+    auto cell_position = get_anchor();
+    
+    // todo: make this cell_position.first += get_width() instead
+    if (get_worksheet().has_column_properties(get_column()))
+    {
+        cell_position.first += get_worksheet().get_column_properties(get_column()).width;
+    }
+    else
+    {
+        static const auto DefaultColumnWidth = 51.85L;
+
+        auto points_to_pixels = [](long double value, long double dpi)
+        {
+            return static_cast<int>(std::ceil(value * dpi / 72));
+        };
+
+        cell_position.first += points_to_pixels(DefaultColumnWidth, 96.0L);
+    }
+
+    cell_position.first += 5;
+    cell_position.second += 5;
+    
+    d_->comment_.get().position(cell_position.first, cell_position.second);
+    d_->comment_.get().size(200, 100);
+
 	get_worksheet().register_comments_in_manifest();
 }
 

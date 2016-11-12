@@ -65,6 +65,24 @@ public:
     /// </summary>
     std::string author() const;
 
+    void hide();
+
+    void show();
+    
+    bool visible() const;
+
+    void position(int left, int top);
+    
+    int left() const;
+    
+    int top() const;
+
+    void size(int width, int height);
+    
+    int width() const;
+    
+    int height() const;
+
     /// <summary>
     /// Return true if both comments are equivalent.
     /// </summary>
@@ -73,6 +91,15 @@ public:
 private:
     formatted_text text_;
     std::string author_;
+    
+    bool visible_ = false;
+    std::string fill_;
+
+    int left_ = 0;
+    int top_ = 0;
+
+    int width_ = 0;
+    int height_ = 0;
 };
 
 } // namespace xlnt
