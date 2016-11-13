@@ -1750,8 +1750,6 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
                     break;
                 }
             }
-            
-            //parser().next_expect(xml::parser::event_type::end_element, xmlns, "sheetViews");
         }
         else if (parser().qname() == xml::qname(xmlns, "sheetFormatPr"))
         {
@@ -1766,8 +1764,6 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
                     break;
                 }
             }
-            
-            //parser().next_expect(xml::parser::event_type::end_element, xmlns, "sheetFormatPr");
         }
         else if (parser().qname() == xml::qname(xmlns, "mergeCells"))
         {
@@ -2092,75 +2088,37 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
     const auto sheet_rel = manifest.get_relationship(workbook_rel.get_target().get_path(), rel_id);
     path sheet_path(sheet_rel.get_source().get_path().parent().append(sheet_rel.get_target().get_path()));
 
-    for (const auto &rel : manifest.get_relationships(sheet_path))
+    if (manifest.has_relationship(sheet_path, xlnt::relationship::type::comments))
     {
-        path part_path(sheet_path.parent().append(rel.get_target().get_path()));
-        auto split_part_path = part_path.split();
-        auto part_path_iter = split_part_path.begin();
-        while (part_path_iter != split_part_path.end())
-        {
-            if (*part_path_iter == "..")
-            {
-                part_path_iter = split_part_path.erase(part_path_iter - 1, part_path_iter + 1);
-                continue;
-            }
-            
-            ++part_path_iter;
-        }
-        part_path = std::accumulate(split_part_path.begin(), split_part_path.end(), path(""),
-            [](const path &a, const std::string &b) { return a.append(b); });
+        auto comments_part = manifest.canonicalize({workbook_rel, sheet_rel,
+            manifest.get_relationship(sheet_path, xlnt::relationship::type::comments)});
 
         auto receive = xml::parser::receive_default;
-        xml::parser parser(archive_->open(part_path.string()), rel.get_target().get_path().string(), receive);
+        xml::parser parser(archive_->open(comments_part.string()), comments_part.string(), receive);
         parser_ = &parser;
-
-        switch (rel.get_type())
+        
+        read_comments(ws);
+        
+        if (manifest.has_relationship(sheet_path, xlnt::relationship::type::vml_drawing))
         {
-        case relationship::type::comments:
-            read_comments(ws);
-            break;
+            auto vml_drawings_part = manifest.canonicalize({workbook_rel, sheet_rel,
+                manifest.get_relationship(sheet_path, xlnt::relationship::type::vml_drawing)});
 
-        case relationship::type::office_document: break;
-        case relationship::type::thumbnail: break;
-        case relationship::type::calculation_chain: break;
-        case relationship::type::extended_properties: break;
-        case relationship::type::core_properties: break;
-        case relationship::type::worksheet: break;
-        case relationship::type::shared_string_table: break;
-        case relationship::type::styles: break;
-        case relationship::type::theme: break;
-        case relationship::type::hyperlink: break;
-        case relationship::type::chartsheet: break;
-        case relationship::type::vml_drawing: break;
-        case relationship::type::unknown: break;
-        case relationship::type::custom_properties: break;
-        case relationship::type::printer_settings: break;
-        case relationship::type::connections: break;
-        case relationship::type::custom_property: break;
-        case relationship::type::custom_xml_mappings: break;
-        case relationship::type::dialogsheet: break;
-        case relationship::type::drawings: break;
-        case relationship::type::external_workbook_references: break;
-        case relationship::type::metadata: break;
-        case relationship::type::pivot_table: break;
-        case relationship::type::pivot_table_cache_definition: break;
-        case relationship::type::pivot_table_cache_records: break;
-        case relationship::type::query_table: break;
-        case relationship::type::shared_workbook_revision_headers: break;
-        case relationship::type::shared_workbook: break;
-        case relationship::type::revision_log: break;
-        case relationship::type::shared_workbook_user_data: break;
-        case relationship::type::single_cell_table_definitions: break;
-        case relationship::type::table_definition: break;
-        case relationship::type::volatile_dependencies: break;
-        case relationship::type::image: break;
-	    }
-
-        parser_ = nullptr;
+            auto receive = xml::parser::receive_default;
+            xml::parser parser(archive_->open(vml_drawings_part.string()), vml_drawings_part.string(), receive);
+            parser_ = &parser;
+            
+            read_vml_drawings(ws);
+        }
     }
 }
 
 // Sheet Relationship Target Parts
+
+void xlsx_consumer::read_vml_drawings(worksheet ws)
+{
+
+}
 
 void xlsx_consumer::read_comments(worksheet ws)
 {

@@ -37,6 +37,47 @@ void manifest::clear()
     relationships_.clear();
 }
 
+path manifest::canonicalize(const std::vector<relationship> &rels)
+{
+    xlnt::path relative;
+
+    for (auto component : rels)
+    {
+        if (component == rels.back())
+        {
+            relative = relative.append(component.get_target().get_path());
+        }
+        else
+        {
+            relative = relative.append(component.get_target().get_path().parent());
+        }
+    }
+
+    std::vector<std::string> absolute_parts;
+
+    for (const auto &component : relative.split())
+    {
+        if (component == ".") continue;
+
+        if (component == "..")
+        {
+            absolute_parts.pop_back();
+            continue;
+        }
+        
+        absolute_parts.push_back(component);
+    }
+    
+    xlnt::path result;
+    
+    for (const auto &component : absolute_parts)
+    {
+        result = result.append(component);
+    }
+    
+    return result;
+}
+
 bool manifest::has_relationship(const path &part, relationship::type type) const
 {
     if (relationships_.find(part) == relationships_.end()) return false;

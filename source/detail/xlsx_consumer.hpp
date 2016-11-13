@@ -196,6 +196,11 @@ private:
 	/// 
 	/// </summary>
 	void read_comments(worksheet ws);
+    
+	/// <summary>
+	/// 
+	/// </summary>
+	void read_vml_drawings(worksheet ws);
 
 	/// <summary>
 	/// 
