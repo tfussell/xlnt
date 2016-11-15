@@ -2164,11 +2164,11 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 					}
 					else if (cell.has_formula())
 					{
-						serializer().element(xmlns, "f", cell.get_formula());
-						serializer().element(xmlns, "v", "");
+                        serializer().element(xmlns, "f", cell.get_formula());
+                        // todo (but probably not) could calculate the formula and set the value here
                         serializer().end_element(xmlns, "c");
 
-						continue;
+                        continue;
 					}
 				}
                 

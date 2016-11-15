@@ -1890,8 +1890,13 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
                         if (parser().qname() == xml::qname(xmlns, "v"))
                         {
                             has_value = true;
-							parser().next_expect(xml::parser::event_type::characters);
-                            value_string = parser().value();
+
+                            // <v> might be empty, check first
+                            if (parser().peek() == xml::parser::event_type::characters)
+                            {
+                                parser().next_expect(xml::parser::event_type::characters);
+                                value_string = parser().value();
+                            }
                         }
                         else if (parser().qname() == xml::qname(xmlns, "f"))
                         {
