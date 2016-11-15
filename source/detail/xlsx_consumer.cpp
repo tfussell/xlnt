@@ -739,7 +739,12 @@ void xlsx_consumer::read_workbook()
 			{
 				parser().attribute("showObjects");
 			}
-            
+
+            if (parser().attribute_present("filterPrivacy"))
+			{
+				parser().attribute("filterPrivacy");
+			}
+
             parser().next_expect(xml::parser::event_type::end_element, xmlns, "workbookPr");
         }
         else if (qname == xml::qname(xmlns, "sheets"))
@@ -1044,7 +1049,9 @@ void xlsx_consumer::read_stylesheet()
     {
         std::string name;
         std::size_t record_id;
-        std::size_t builtin_id;
+        std::pair<std::size_t, bool> builtin_id;
+        std::pair<std::size_t, bool> i_level;
+        std::pair<bool, bool> hidden;
         bool custom_builtin;
     };
 
@@ -1384,7 +1391,21 @@ void xlsx_consumer::read_stylesheet()
 
                 data.name = parser().attribute("name");
                 data.record_id = parser().attribute<std::size_t>("xfId");
-                data.builtin_id = parser().attribute<std::size_t>("builtinId");
+                
+                if (parser().attribute_present("builtinId"))
+                {
+                    data.builtin_id = {parser().attribute<std::size_t>("builtinId"), true};
+                }
+
+                if (parser().attribute_present("iLevel"))
+                {
+                    data.i_level = {parser().attribute<std::size_t>("iLevel"), true};
+                }
+
+                if (parser().attribute_present("hidden"))
+                {
+                    data.hidden = {is_true(parser().attribute("hidden")), true};
+                }
 
                 if (parser().attribute_present("customBuiltin"))
                 {
@@ -1625,7 +1646,16 @@ void xlsx_consumer::read_stylesheet()
         if (style_data_iter == style_datas.end()) continue;
 
         auto new_style = stylesheet.create_style(style_data_iter->name);
-        new_style.builtin_id(style_data_iter->builtin_id);
+        
+        if (style_data_iter->builtin_id.second)
+        {
+            new_style.builtin_id(style_data_iter->builtin_id.first);
+        }
+
+        if (style_data_iter->hidden.second)
+        {
+            new_style.hidden(style_data_iter->hidden.first);
+        }
 
         new_style.alignment(record.alignment.first, record.alignment.second);
         new_style.border(stylesheet.borders.at(record.border_id.first), record.border_id.second);
@@ -2081,9 +2111,24 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
         }
         else if (parser().qname() == xml::qname(xmlns, "legacyDrawing"))
         {
-	    parser().attribute(xml::qname(xmlns_r, "id"));
+            parser().attribute(xml::qname(xmlns_r, "id"));
             parser().next_expect(xml::parser::event_type::end_element, xmlns, "legacyDrawing");
-	}
+        }
+        else if (parser().qname() == xml::qname(xmlns, "protectedRanges"))
+        {
+            parser().attribute_map();
+
+            while (parser().peek() != xml::parser::event_type::end_element
+                || parser().qname() != xml::qname(xmlns, "protectedRanges"))
+            {
+                if (parser().next() == xml::parser::event_type::start_element)
+                {
+                    parser().attribute_map();
+                }
+            }
+            
+            parser().next();
+        }
     }
     
     parser().next_expect(xml::parser::event_type::end_element, xmlns, "worksheet");
