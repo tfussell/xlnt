@@ -43,7 +43,7 @@ std::string to_string(relationship::type t)
 		return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet";
 	case relationship::type::shared_string_table:
 		return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings";
-	case relationship::type::styles:
+	case relationship::type::stylesheet:
 		return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles";
 	case relationship::type::theme:
 		return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme";

@@ -83,7 +83,7 @@ enum class XLNT_API relationship_type
 	revision_log,
 	shared_workbook_user_data,
 	single_cell_table_definitions,
-	styles,
+	stylesheet,
 	table_definition,
     vml_drawing,
 	volatile_dependencies,

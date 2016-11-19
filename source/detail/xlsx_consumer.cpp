@@ -36,6 +36,20 @@
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
+namespace std {
+
+template <>
+struct hash<xml::qname>
+{
+    std::size_t operator()(const xml::qname& k) const
+    {
+        static std::hash<std::string> hasher;
+        return hasher(k.string());
+    }
+};
+
+} // namespace std
+
 namespace {
 
 bool is_true(const std::string &bool_string)
@@ -161,21 +175,34 @@ xml::parser &xlsx_consumer::parser()
 	return *parser_;
 }
 
-void xlsx_consumer::populate_workbook()
+void xlsx_consumer::read_part(const std::vector<relationship> &rel_chain)
 {
-	target_.clear();
+    const auto using_namespaces = std::vector<relationship::type>
+    {
+        relationship::type::office_document,
+        relationship::type::stylesheet,
+        relationship::type::chartsheet,
+		relationship::type::dialogsheet,
+		relationship::type::worksheet
+    };
+    
+    auto receive = xml::parser::receive_default;
+    auto receive_namespaces = std::find(using_namespaces.begin(), using_namespaces.end(),
+        rel_chain.back().get_type()) != using_namespaces.end();
+    
+    if (receive_namespaces)
+    {
+        receive |= xml::parser::receive_namespace_decls;
+    }
 
-	auto &manifest = target_.get_manifest();
-	read_manifest();
-
-	for (const auto &rel : manifest.get_relationships(path("/")))
-	{
-        xml::parser parser(archive_->open(rel.get_target().get_path().string()),
-            rel.get_target().get_path().string());
-		parser_ = &parser;
-
-		switch (rel.get_type())
-		{
+    const auto &manifest = target_.get_manifest();
+    auto part_path = manifest.canonicalize(rel_chain);
+    auto &stream = archive_->open(part_path.string());
+    xml::parser parser(stream, part_path.string(), receive);
+    parser_ = &parser;
+    
+    switch (rel_chain.back().get_type())
+    {
 		case relationship::type::core_properties:
 			read_core_properties();
 			break;
@@ -189,7 +216,7 @@ void xlsx_consumer::populate_workbook()
 			break;
 
 		case relationship::type::office_document:
-            check_document_type(manifest.get_content_type(rel.get_target().get_path()));
+            check_document_type(manifest.get_content_type(part_path));
 			read_workbook();
 			break;
 
@@ -221,58 +248,11 @@ void xlsx_consumer::populate_workbook()
 			read_volatile_dependencies();
 			break;
 
-        case relationship::type::thumbnail: break;
-        case relationship::type::calculation_chain: break;
-        case relationship::type::worksheet: break;
-        case relationship::type::shared_string_table: break;
-        case relationship::type::styles: break;
-        case relationship::type::theme: break;
-        case relationship::type::hyperlink: break;
-        case relationship::type::chartsheet: break;
-        case relationship::type::comments: break;
-        case relationship::type::vml_drawing: break;
-        case relationship::type::unknown: break;
-        case relationship::type::printer_settings: break;
-        case relationship::type::custom_property: break;
-        case relationship::type::dialogsheet: break;
-        case relationship::type::drawings: break;
-        case relationship::type::pivot_table_cache_definition: break;
-        case relationship::type::pivot_table_cache_records: break;
-        case relationship::type::query_table: break;
-        case relationship::type::shared_workbook: break;
-        case relationship::type::revision_log: break;
-        case relationship::type::shared_workbook_user_data: break;
-        case relationship::type::single_cell_table_definitions: break;
-        case relationship::type::table_definition: break;
-        case relationship::type::image: break;
-		}
-
-		parser_ = nullptr;
-	}
-
-    const auto workbook_rel = manifest.get_relationship(path("/"), relationship::type::office_document);
-
-    // First pass of workbook relationship parts which must be read before sheets (e.g. shared strings)
-    
-	for (const auto &rel : manifest.get_relationships(workbook_rel.get_target().get_path()))
-	{
-		path part_path(rel.get_source().get_path().parent().append(rel.get_target().get_path()));
-        auto receive = xml::parser::receive_default;
-        auto using_namespaces = rel.get_type() == relationship::type::styles;
-	if (using_namespaces)
-	{
-            receive |= xml::parser::receive_namespace_decls;
-	}
-        xml::parser parser(archive_->open(part_path.string()), part_path.string(), receive);
-		parser_ = &parser;
-
-		switch (rel.get_type())
-		{
         case relationship::type::shared_string_table:
             read_shared_string_table();
             break;
 
-        case relationship::type::styles:
+        case relationship::type::stylesheet:
             read_stylesheet();
             break;
 
@@ -280,108 +260,108 @@ void xlsx_consumer::populate_workbook()
             read_theme();
             break;
 
-        case relationship::type::office_document: break;
-        case relationship::type::thumbnail: break;
-        case relationship::type::calculation_chain: break;
-        case relationship::type::extended_properties: break;
-        case relationship::type::core_properties: break;
-        case relationship::type::worksheet: break;
-        case relationship::type::hyperlink: break;
-        case relationship::type::chartsheet: break;
-        case relationship::type::comments: break;
-        case relationship::type::vml_drawing: break;
-        case relationship::type::unknown: break;
-        case relationship::type::custom_properties: break;
-        case relationship::type::printer_settings: break;
-        case relationship::type::connections: break;
-        case relationship::type::custom_property: break;
-        case relationship::type::custom_xml_mappings: break;
-        case relationship::type::dialogsheet: break;
-        case relationship::type::drawings: break;
-        case relationship::type::external_workbook_references: break;
-        case relationship::type::metadata: break;
-        case relationship::type::pivot_table: break;
-        case relationship::type::pivot_table_cache_definition: break;
-        case relationship::type::pivot_table_cache_records: break;
-        case relationship::type::query_table: break;
-        case relationship::type::shared_workbook_revision_headers: break;
-        case relationship::type::shared_workbook: break;
-        case relationship::type::revision_log: break;
-        case relationship::type::shared_workbook_user_data: break;
-        case relationship::type::single_cell_table_definitions: break;
-        case relationship::type::table_definition: break;
-        case relationship::type::volatile_dependencies: break;
-        case relationship::type::image: break;
-		}
-
-		parser_ = nullptr;
-	}
-    
-    // Second pass, read sheets themselves
-
-	for (const auto &rel : manifest.get_relationships(workbook_rel.get_target().get_path()))
-	{
-	    path part_path(rel.get_source().get_path().parent().append(rel.get_target().get_path()));
-	    auto receive = xml::parser::receive_default;
-	    receive |= xml::parser::receive_namespace_decls;
-	    xml::parser parser(archive_->open(part_path.string()), rel.get_target().get_path().string(), receive);
-	    parser_ = &parser;
-
-		switch (rel.get_type())
-		{
 		case relationship::type::chartsheet:
-			read_chartsheet(rel.get_id());
+			read_chartsheet(rel_chain.back().get_id());
 			break;
 
 		case relationship::type::dialogsheet:
-			read_dialogsheet(rel.get_id());
+			read_dialogsheet(rel_chain.back().get_id());
 			break;
 
 		case relationship::type::worksheet:
-			read_worksheet(rel.get_id());
+			read_worksheet(rel_chain.back().get_id());
 			break;
 
-        case relationship::type::office_document: break;
         case relationship::type::thumbnail: break;
         case relationship::type::calculation_chain: break;
-        case relationship::type::extended_properties: break;
-        case relationship::type::core_properties: break;
-        case relationship::type::shared_string_table: break;
-        case relationship::type::styles: break;
-        case relationship::type::theme: break;
         case relationship::type::hyperlink: break;
         case relationship::type::comments: break;
         case relationship::type::vml_drawing: break;
         case relationship::type::unknown: break;
-        case relationship::type::custom_properties: break;
         case relationship::type::printer_settings: break;
-        case relationship::type::connections: break;
         case relationship::type::custom_property: break;
-        case relationship::type::custom_xml_mappings: break;
         case relationship::type::drawings: break;
-        case relationship::type::external_workbook_references: break;
-        case relationship::type::metadata: break;
-        case relationship::type::pivot_table: break;
         case relationship::type::pivot_table_cache_definition: break;
         case relationship::type::pivot_table_cache_records: break;
         case relationship::type::query_table: break;
-        case relationship::type::shared_workbook_revision_headers: break;
         case relationship::type::shared_workbook: break;
         case relationship::type::revision_log: break;
         case relationship::type::shared_workbook_user_data: break;
         case relationship::type::single_cell_table_definitions: break;
         case relationship::type::table_definition: break;
-        case relationship::type::volatile_dependencies: break;
         case relationship::type::image: break;
-		}
+    }
+    
+    parser_ = nullptr;
+}
 
-		parser_ = nullptr;
+void xlsx_consumer::populate_workbook()
+{
+	target_.clear();
+
+	read_manifest();
+	auto &manifest = target_.get_manifest();
+    
+    auto package_parts = std::vector<relationship::type>
+    {
+        relationship::type::core_properties,
+		relationship::type::extended_properties,
+		relationship::type::custom_properties,
+		relationship::type::office_document,
+		relationship::type::connections,
+		relationship::type::custom_xml_mappings,
+		relationship::type::external_workbook_references,
+		relationship::type::metadata,
+		relationship::type::pivot_table,
+		relationship::type::shared_workbook_revision_headers,
+		relationship::type::volatile_dependencies
+    };
+    
+    auto root_path = path("/");
+
+    for (auto rel_type : package_parts)
+    {
+        if (manifest.has_relationship(root_path, rel_type))
+        {
+            read_part({ manifest.get_relationship(root_path, rel_type) });
+        }
 	}
 
-	// Unknown Parts
+    const auto workbook_rel = manifest.get_relationship(root_path,
+        relationship::type::office_document);
 
-	void read_unknown_parts();
-	void read_unknown_relationships();
+    const auto workbook_parts_first = std::vector<relationship::type>
+    {
+        relationship::type::shared_string_table,
+        relationship::type::stylesheet,
+        relationship::type::theme
+    };
+
+    for (auto rel_type : workbook_parts_first)
+    {
+        if (manifest.has_relationship(workbook_rel.get_target().get_path(), rel_type))
+        {
+            read_part({ workbook_rel, manifest.get_relationship(workbook_rel.get_target().get_path(), rel_type) });
+        }
+    }
+
+    const auto workbook_parts_second = std::vector<relationship::type>
+    {
+        relationship::type::worksheet,
+        relationship::type::chartsheet,
+        relationship::type::dialogsheet
+    };
+
+    for (auto rel_type : workbook_parts_second)
+    {
+        if (manifest.has_relationship(workbook_rel.get_target().get_path(), rel_type))
+        {
+            for (auto rel : manifest.get_relationships(workbook_rel.get_target().get_path(), rel_type))
+            {
+                read_part({ workbook_rel, rel });
+            }
+        }
+    }
 }
 
 // Package Parts
@@ -467,80 +447,128 @@ void xlsx_consumer::read_extended_properties()
     parser().next_expect(xml::parser::event_type::start_element, xmlns, "Properties");
     parser().content(xml::parser::content_type::complex);
     
-    while (true)
-	{
-        if (parser().peek() == xml::parser::event_type::end_element) break;
-        
-        parser().next_expect(xml::parser::event_type::start_element);
-
-        auto name = parser().name();
-        auto text = std::string();
-
-        while (parser().peek() == xml::parser::event_type::characters)
+    read_block(
+    {
         {
-            parser().next_expect(xml::parser::event_type::characters);
-            text.append(parser().value());
-        }
-        
-        if (name == "Application") target_.set_application(text);
-        else if (name == "DocSecurity") target_.set_doc_security(std::stoi(text));
-        else if (name == "ScaleCrop") target_.set_scale_crop(is_true(text));
-        else if (name == "Company") target_.set_company(text);
-        else if (name == "SharedDoc") target_.set_shared_doc(is_true(text));
-        else if (name == "HyperlinksChanged") target_.set_hyperlinks_changed(is_true(text));
-        else if (name == "AppVersion") target_.set_app_version(text);
-        else if (name == "Application") target_.set_application(text);
-        else if (name == "HeadingPairs")
-        {
-            parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "vector");
-            parser().content(xml::parser::content_type::complex);
-
-            parser().attribute("size");
-            parser().attribute("baseType");
-
-            parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "variant");
-            parser().content(xml::parser::content_type::complex);
-            parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "lpstr");
-            parser().next_expect(xml::parser::event_type::characters);
-            parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "lpstr");
-            parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "variant");
-            parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "variant");
-            parser().content(xml::parser::content_type::complex);
-            parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "i4");
-            parser().next_expect(xml::parser::event_type::characters);
-            parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "i4");
-            parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "variant");
-            
-            parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "vector");
-        }
-        else if (name == "TitlesOfParts")
-        {
-            parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "vector");
-            parser().content(xml::parser::content_type::complex);
-
-            parser().attribute("size");
-            parser().attribute("baseType");
-            
-            while (true)
+            xml::qname(xmlns, "Application"),
+            [](xlsx_consumer &c)
             {
-                if (parser().peek() == xml::parser::event_type::end_element) break;
-
-                parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "lpstr");
-                parser().content(xml::parser::content_type::simple);
-                parser().next_expect(xml::parser::event_type::characters);
-                parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "lpstr");
+                c.target_.set_application(c.read_text());
             }
-            
-            parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "vector");
-        }
-        
-        while (parser().peek() == xml::parser::event_type::characters)
+        },
         {
-            parser().next_expect(xml::parser::event_type::characters);
-        }
-        
-        parser().next_expect(xml::parser::event_type::end_element);
-	}
+            xml::qname(xmlns, "DocSecurity"),
+            [](xlsx_consumer &c)
+            {
+                c.target_.set_doc_security(std::stoi(c.read_text()));
+            }
+        },
+        {
+            xml::qname(xmlns, "ScaleCrop"),
+            [](xlsx_consumer &c)
+            {
+                c.target_.set_scale_crop(is_true(c.read_text()));
+            }
+        },
+        {
+            xml::qname(xmlns, "Company"),
+            [](xlsx_consumer &c)
+            {
+                c.target_.set_company(c.read_text());
+            }
+        },
+        {
+            xml::qname(xmlns, "SharedDoc"),
+            [](xlsx_consumer &c)
+            {
+                c.target_.set_shared_doc(is_true(c.read_text()));
+            }
+        },
+        {
+            xml::qname(xmlns, "HyperlinksChanged"),
+            [](xlsx_consumer &c)
+            {
+                c.target_.set_hyperlinks_changed(is_true(c.read_text()));
+            }
+        },
+        {
+            xml::qname(xmlns, "AppVersion"),
+            [](xlsx_consumer &c)
+            {
+                c.target_.set_app_version(c.read_text());
+            }
+        },
+        {
+            xml::qname(xmlns, "LinksUpToDate"),
+            [](xlsx_consumer &c)
+            {
+                c.target_.set_links_up_to_date(is_true(c.read_text()));
+            }
+        },
+        {
+            xml::qname(xmlns, "Template"),
+            [](xlsx_consumer &c)
+            {
+                c.read_text();
+            }
+        },
+        {
+            xml::qname(xmlns, "TotalTime"),
+            [](xlsx_consumer &c)
+            {
+                c.read_text();
+            }
+        },
+        {
+            xml::qname(xmlns, "HeadingPairs"),
+            [](xlsx_consumer &c)
+            {
+                c.parser().content(xml::parser::content_type::complex);
+                c.parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "vector");
+                c.parser().content(xml::parser::content_type::complex);
+
+                c.parser().attribute("size");
+                c.parser().attribute("baseType");
+
+                c.parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "variant");
+                c.parser().content(xml::parser::content_type::complex);
+                c.parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "lpstr");
+                c.parser().next_expect(xml::parser::event_type::characters);
+                c.parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "lpstr");
+                c.parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "variant");
+                c.parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "variant");
+                c.parser().content(xml::parser::content_type::complex);
+                c.parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "i4");
+                c.parser().next_expect(xml::parser::event_type::characters);
+                c.parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "i4");
+                c.parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "variant");
+
+                c.parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "vector");
+            }
+        },
+        {
+            xml::qname(xmlns, "TitlesOfParts"),
+            [](xlsx_consumer &c)
+            {
+                c.parser().content(xml::parser::content_type::complex);
+                c.parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "vector");
+                c.parser().content(xml::parser::content_type::complex);
+
+                auto size = c.parser().attribute<std::size_t>("size");
+                c.parser().attribute("baseType");
+                
+                for (auto i = std::size_t(0); i < size; ++i)
+                {
+                    c.parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "lpstr");
+                    c.parser().content(xml::parser::content_type::simple);
+                    c.parser().next_expect(xml::parser::event_type::characters);
+                    c.parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "lpstr");
+                }
+
+                c.parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "vector");
+            }
+        },
+    });
 }
 
 void xlsx_consumer::read_core_properties()
@@ -613,8 +641,11 @@ void xlsx_consumer::read_workbook()
 	while (parser().peek() == xml::parser::event_type::start_namespace_decl)
 	{
         parser().next_expect(xml::parser::event_type::start_namespace_decl);
-        if (parser().name() == "x15") target_.enable_x15();
-        parser().next_expect(xml::parser::event_type::end_namespace_decl);
+
+        if (parser().namespace_() == xmlns_x15)
+        {
+            target_.enable_x15();
+        }
 	}
     
     if (parser().attribute_present(xml::qname(xmlns_mc, "Ignorable")))
@@ -624,7 +655,8 @@ void xlsx_consumer::read_workbook()
 
     while (true)
     {
-        if (parser().peek() == xml::parser::event_type::end_element) break;
+        if (parser().peek() == xml::parser::event_type::end_element
+            || parser().peek() == xml::parser::event_type::end_namespace_decl) break;
         
         parser().next_expect(xml::parser::event_type::start_element);
         parser().content(xml::parser::content_type::complex);
@@ -652,14 +684,31 @@ void xlsx_consumer::read_workbook()
         }
         else if (qname == xml::qname(xmlns_mc, "AlternateContent"))
         {
+            if (parser().peek() == xml::parser::event_type::start_namespace_decl)
+            {
+                parser().next_expect(xml::parser::event_type::start_namespace_decl);
+            }
+
             parser().next_expect(xml::parser::event_type::start_element, xmlns_mc, "Choice");
             parser().content(xml::parser::content_type::complex);
             parser().attribute("Requires");
             parser().next_expect(xml::parser::event_type::start_element, xmlns_x15ac, "absPath");
             target_.set_absolute_path(path(parser().attribute("url")));
+
+            if (parser().peek() == xml::parser::event_type::start_namespace_decl)
+            {
+                parser().next_expect(xml::parser::event_type::start_namespace_decl);
+                parser().next_expect(xml::parser::event_type::end_namespace_decl);
+            }
+
             parser().next_expect(xml::parser::event_type::end_element, xmlns_x15ac, "absPath");
             parser().next_expect(xml::parser::event_type::end_element, xmlns_mc, "Choice");
             parser().next_expect(xml::parser::event_type::end_element, xmlns_mc, "AlternateContent");
+
+            if (parser().peek() == xml::parser::event_type::end_namespace_decl)
+            {
+                parser().next_expect(xml::parser::event_type::end_namespace_decl);
+            }
         }
         else if (qname == xml::qname(xmlns, "bookViews"))
         {
@@ -821,6 +870,7 @@ void xlsx_consumer::read_workbook()
 			{
 				if (parser().peek() == xml::parser::event_type::end_element) break;
 
+				parser().next_expect(xml::parser::event_type::start_namespace_decl);
 				parser().next_expect(xml::parser::event_type::start_element);
 
 				if (parser().qname() == xml::qname(xmlns_mx, "ArchID"))
@@ -842,6 +892,7 @@ void xlsx_consumer::read_workbook()
 			}
 
             parser().next_expect(xml::parser::event_type::end_element, xmlns, "ext");
+            parser().next_expect(xml::parser::event_type::end_namespace_decl);
             parser().next_expect(xml::parser::event_type::end_element, xmlns, "extLst");
         }
         else if (qname == xml::qname(xmlns, "workbookProtection"))
@@ -855,7 +906,7 @@ void xlsx_consumer::read_workbook()
             parser().next();
         }
     }
-    
+
     parser().next_expect(xml::parser::event_type::end_element, xmlns, "workbook");
 }
 
@@ -2300,6 +2351,41 @@ void xlsx_consumer::read_unknown_parts()
 
 void xlsx_consumer::read_unknown_relationships()
 {
+}
+
+std::string xlsx_consumer::read_text()
+{
+    auto text = std::string();
+
+    while (parser().peek() == xml::parser::event_type::characters)
+    {
+        parser().next_expect(xml::parser::event_type::characters);
+        text.append(parser().value());
+    }
+
+    return text;
+}
+
+void xlsx_consumer::read_block(const std::unordered_map<xml::qname, std::function<void(xlsx_consumer &)>> &handlers)
+{
+    auto parent_block = parser().qname();
+
+    while (parser().peek() != xml::parser::event_type::end_element)
+    {
+        parser().next_expect(xml::parser::event_type::start_element);
+        auto block = parser().qname();
+
+        if (handlers.count(block) == 0)
+        {
+            throw xlnt::key_not_found();
+        }
+
+        const auto &handler = handlers.at(block);
+        handler(*this);
+        parser().next_expect(xml::parser::event_type::end_element, block);
+    }
+
+    parser().next_expect(xml::parser::event_type::end_element, parent_block);
 }
 
 } // namespace detail

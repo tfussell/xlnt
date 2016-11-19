@@ -37,7 +37,7 @@ void manifest::clear()
     relationships_.clear();
 }
 
-path manifest::canonicalize(const std::vector<relationship> &rels)
+path manifest::canonicalize(const std::vector<relationship> &rels) const
 {
     xlnt::path relative;
 

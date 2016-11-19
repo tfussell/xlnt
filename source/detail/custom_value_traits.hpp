@@ -118,7 +118,7 @@ struct value_traits<xlnt::relationship_type>
             relationship_type::shared_workbook_revision_headers,
             relationship_type::shared_workbook_user_data,
             relationship_type::single_cell_table_definitions,
-            relationship_type::styles,
+            relationship_type::stylesheet,
             relationship_type::table_definition,
             relationship_type::theme,
             relationship_type::thumbnail,

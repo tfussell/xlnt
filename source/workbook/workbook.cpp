@@ -450,12 +450,12 @@ void workbook::register_stylesheet_in_manifest()
 {
 	auto wb_rel = get_manifest().get_relationship(path("/"), relationship_type::office_document);
 
-	if (!get_manifest().has_relationship(wb_rel.get_target().get_path(), relationship_type::styles))
+	if (!get_manifest().has_relationship(wb_rel.get_target().get_path(), relationship_type::stylesheet))
 	{
 		get_manifest().register_override_type(constants::part_styles(),
 			"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml");
 		get_manifest().register_relationship(wb_rel.get_target(),
-			relationship::type::styles, uri("styles.xml"), target_mode::internal);
+			relationship::type::stylesheet, uri("styles.xml"), target_mode::internal);
 	}
 }
 

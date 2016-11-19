@@ -77,10 +77,10 @@ const std::unordered_map<std::string, std::string> &constants::get_namespaces()
             { "core-properties", "http://schemas.openxmlformats.org/package/2006/metadata/core-properties" },
             { "extended-properties", "http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" },
 
-	    { "encryption", "http://schemas.microsoft.com/office/2006/encryption" },
-	    { "encryption-password", "http://schemas.microsoft.com/office/2006/keyEncryptor/password" },
-	    { "encryption-certificate", "http://schemas.microsoft.com/office/2006/keyEncryptor/certificate" },
-            
+            { "encryption", "http://schemas.microsoft.com/office/2006/encryption" },
+            { "encryption-password", "http://schemas.microsoft.com/office/2006/keyEncryptor/password" },
+            { "encryption-certificate", "http://schemas.microsoft.com/office/2006/keyEncryptor/certificate" },
+
             { "dc", "http://purl.org/dc/elements/1.1/" },
             { "dcterms", "http://purl.org/dc/terms/" },
             { "dcmitype", "http://purl.org/dc/dcmitype/" },

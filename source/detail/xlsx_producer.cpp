@@ -133,7 +133,7 @@ void xlsx_producer::populate_archive()
         case relationship::type::calculation_chain: break;
         case relationship::type::worksheet: break;
         case relationship::type::shared_string_table: break;
-        case relationship::type::styles: break;
+        case relationship::type::stylesheet: break;
         case relationship::type::theme: break;
         case relationship::type::hyperlink: break;
         case relationship::type::chartsheet: break;
@@ -408,8 +408,8 @@ void xlsx_producer::write_workbook(const relationship &rel)
 		serializer().start_element(xmlns_x15ac, "absPath");
         serializer().namespace_decl(xmlns_x15ac, "x15ac");
         serializer().attribute("url", source_.get_absolute_path().string());
-        
 		serializer().end_element(xmlns_x15ac, "absPath");
+
 		serializer().end_element(xmlns_mc, "Choice");
 		serializer().end_element(xmlns_mc, "AlternateContent");
 	}
@@ -586,7 +586,7 @@ void xlsx_producer::write_workbook(const relationship &rel)
 			write_shared_workbook_revision_headers(child_rel);
 			break;
             
-		case relationship::type::styles:
+		case relationship::type::stylesheet:
 			write_styles(child_rel);
 			break;
             
@@ -2364,7 +2364,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             case relationship::type::core_properties: break;
             case relationship::type::worksheet: break;
             case relationship::type::shared_string_table: break;
-            case relationship::type::styles: break;
+            case relationship::type::stylesheet: break;
             case relationship::type::theme: break;
             case relationship::type::hyperlink: break;
             case relationship::type::chartsheet: break;

@@ -88,7 +88,7 @@ public:
     /// Returns the canonical path of the chain of relationships by traversing through rels
     /// and forming the absolute combined path.
     /// </summary>
-    path canonicalize(const std::vector<relationship> &rels);
+    path canonicalize(const std::vector<relationship> &rels) const;
 
 	/// <summary>
 	/// 

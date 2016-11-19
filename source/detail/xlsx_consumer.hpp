@@ -218,6 +218,12 @@ private:
 	/// 
 	/// </summary>
 	void read_unknown_relationships();
+    
+    std::string read_text();
+    
+    void read_block(const std::unordered_map<xml::qname, std::function<void(xlsx_consumer &)>> &handlers);
+    
+    void read_part(const std::vector<relationship> &rel_chain);
 
 	/// <summary>
 	/// The ZIP file containing the files that make up the OOXML package.
