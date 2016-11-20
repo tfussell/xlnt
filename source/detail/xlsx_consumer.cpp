@@ -2222,9 +2222,8 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
             auto vml_drawings_part = manifest.canonicalize({workbook_rel, sheet_rel,
                 manifest.get_relationship(sheet_path, xlnt::relationship::type::vml_drawing)});
 
-            auto receive = xml::parser::receive_default;
-            xml::parser parser(archive_->open(vml_drawings_part.string()), vml_drawings_part.string(), receive);
-            parser_ = &parser;
+            xml::parser vml_parser(archive_->open(vml_drawings_part.string()), vml_drawings_part.string(), receive);
+            parser_ = &vml_parser;
 
             read_vml_drawings(ws);
         }
@@ -2233,7 +2232,7 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
 
 // Sheet Relationship Target Parts
 
-void xlsx_consumer::read_vml_drawings(worksheet ws)
+void xlsx_consumer::read_vml_drawings(worksheet/*ws*/)
 {
 }
 

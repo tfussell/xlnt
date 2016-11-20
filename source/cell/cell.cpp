@@ -862,7 +862,7 @@ calendar cell::get_base_date() const
     return get_workbook().get_base_date();
 }
 
-std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)
+XLNT_API std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)
 {
     return stream << cell.to_string();
 }

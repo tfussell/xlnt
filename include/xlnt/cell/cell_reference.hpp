@@ -40,6 +40,9 @@ class range_reference;
 /// </summary>
 struct XLNT_API cell_reference_hash
 {
+    /// <summary>
+    /// 
+    /// </summary>
     std::size_t operator()(const cell_reference &k) const;
 };
 

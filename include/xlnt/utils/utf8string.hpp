@@ -29,6 +29,9 @@
 
 namespace xlnt {
 
+/// <summary>
+/// 
+/// </summary>
 class XLNT_API utf8string
 {
 public:

@@ -100,6 +100,9 @@ enum class XLNT_API relationship_type
 class XLNT_API relationship
 {
 public:
+    /// <summary>
+    /// 
+    /// </summary>
     using type = relationship_type;
 
     /// <summary>

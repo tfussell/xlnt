@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <iterator>
@@ -113,7 +114,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-	const workbook &get_workbook() const;
+    const workbook &get_workbook() const;
 
     /// <summary>
     ///
@@ -699,7 +700,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-	bool has_view() const;
+    bool has_view() const;
 
     /// <summary>
     ///
@@ -709,30 +710,30 @@ public:
     /// <summary>
     ///
     /// </summary>
-	bool x14ac_enabled() const;
+    bool x14ac_enabled() const;
 
     /// <summary>
     ///
     /// </summary>
-	void enable_x14ac();
+    void enable_x14ac();
 
     /// <summary>
     ///
     /// </summary>
-	void disable_x14ac();
+    void disable_x14ac();
 
 private:
     friend class cell;
     friend class const_range_iterator;
     friend class range_iterator;
     friend class workbook;
-	friend class detail::xlsx_consumer;
-	friend class detail::xlsx_producer;
+    friend class detail::xlsx_consumer;
+    friend class detail::xlsx_producer;
 
     /// <summary>
     ///
     /// </summary>
-	void register_comments_in_manifest();
+    void register_comments_in_manifest();
 
     /// <summary>
     ///

@@ -26,13 +26,10 @@ Worksheet Module
 	:members:
 
 .. doxygenenum:: xlnt::major_order
-	:members:
 
 .. doxygenenum:: xlnt::orientation
-	:members:
 
 .. doxygenenum:: xlnt::page_break
-	:members:
 
 .. doxygenclass:: xlnt::page_margins
 	:members:
@@ -44,7 +41,6 @@ Worksheet Module
 	:members:
 
 .. doxygenenum:: xlnt::paper_size
-	:members:
 
 .. doxygenclass:: xlnt::range_iterator
 	:members:
@@ -65,7 +61,6 @@ Worksheet Module
 	:members:
 
 .. doxygenenum:: xlnt::sheet_state
-	:members:
 
 .. doxygenclass:: xlnt::sheet_view
 	:members:

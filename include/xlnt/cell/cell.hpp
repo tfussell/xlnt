@@ -415,15 +415,15 @@ public:
     /// </summary>
     const worksheet get_worksheet() const;
 
-	/// <summary>
-	/// Return the workbook of the worksheet that owns this cell.
-	/// </summary>
-	workbook &get_workbook();
+    /// <summary>
+    /// Return the workbook of the worksheet that owns this cell.
+    /// </summary>
+    workbook &get_workbook();
 
-	/// <summary>
-	/// Return the workbook of the worksheet that owns this cell.
-	/// </summary>
-	const workbook &get_workbook() const;
+    /// <summary>
+    /// Return the workbook of the worksheet that owns this cell.
+    /// </summary>
+    const workbook &get_workbook() const;
 
     /// <summary>
     /// Shortcut to return the base date of the parent workbook.
@@ -481,19 +481,6 @@ public:
     /// </summary>
     bool operator==(std::nullptr_t) const;
 
-    // friend operators, so we can put cell on either side of comparisons with other types
-
-    /// <summary>
-    /// Return true if this cell is uninitialized.
-    /// </summary>
-    friend XLNT_API bool operator==(std::nullptr_t, const cell &cell);
-
-    /// <summary>
-    /// Convenience function for writing cell to an ostream.
-    /// Uses cell::to_string() internally.
-    /// </summary>
-    friend XLNT_API std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell);
-
 private:
     // make these friends so they can use the private constructor
     friend class style;
@@ -529,5 +516,16 @@ private:
     /// </summary>
     detail::cell_impl *d_;
 };
+
+/// <summary>
+/// Return true if this cell is uninitialized.
+/// </summary>
+XLNT_API bool operator==(std::nullptr_t, const cell &cell);
+
+/// <summary>
+/// Convenience function for writing cell to an ostream.
+/// Uses cell::to_string() internally.
+/// </summary>
+XLNT_API std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell);
 
 } // namespace xlnt

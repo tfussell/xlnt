@@ -124,13 +124,13 @@ Summary of Features
 Sample code:
 ++++++++++++
 
-.. literalinclude:: /samples/sample.cpp
+.. literalinclude:: ../samples/sample.cpp
 
 
 How to Contribute Code
 ----------------------
 
-See :ref:`development`
+See `Information For Developers`_
 
 Installation
 ------------

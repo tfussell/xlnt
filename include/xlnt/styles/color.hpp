@@ -36,13 +36,25 @@ namespace xlnt {
 class XLNT_API indexed_color
 {
 public:
+    /// <summary>
+    /// 
+    /// </summary>
 	indexed_color(std::size_t index);
 
+    /// <summary>
+    /// 
+    /// </summary>
 	std::size_t get_index() const;
 
+    /// <summary>
+    /// 
+    /// </summary>
 	void set_index(std::size_t index);
 
 private:
+    /// <summary>
+    /// 
+    /// </summary>
 	std::size_t index_;
 };
 
@@ -52,13 +64,25 @@ private:
 class XLNT_API theme_color
 {
 public:
+    /// <summary>
+    /// 
+    /// </summary>
 	theme_color(std::size_t index);
 
+    /// <summary>
+    /// 
+    /// </summary>
 	std::size_t get_index() const;
 
+    /// <summary>
+    /// 
+    /// </summary>
 	void set_index(std::size_t index);
 
 private:
+    /// <summary>
+    /// 
+    /// </summary>
 	std::size_t index_;
 };
 
@@ -68,27 +92,60 @@ private:
 class XLNT_API rgb_color
 {
 public:
+    /// <summary>
+    /// 
+    /// </summary>
 	rgb_color(const std::string &hex_string);
 
+    /// <summary>
+    /// 
+    /// </summary>
 	rgb_color(std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint8_t a = 255);
 
+    /// <summary>
+    /// 
+    /// </summary>
 	std::string get_hex_string() const;
 
+    /// <summary>
+    /// 
+    /// </summary>
 	std::uint8_t get_red() const;
 
+    /// <summary>
+    /// 
+    /// </summary>
 	std::uint8_t get_green() const;
 
+    /// <summary>
+    /// 
+    /// </summary>
 	std::uint8_t get_blue() const;
 
+    /// <summary>
+    /// 
+    /// </summary>
 	std::uint8_t get_alpha() const;
 
+    /// <summary>
+    /// 
+    /// </summary>
 	std::array<std::uint8_t, 3> get_rgb() const;
 
+    /// <summary>
+    /// 
+    /// </summary>
 	std::array<std::uint8_t, 4> get_rgba() const;
 
 private:
+    /// <summary>
+    /// 
+    /// </summary>
 	static std::array<std::uint8_t, 4> decode_hex_string(const std::string &hex_string);
 
+    /// <summary>
+    /// 
+    /// </summary>
 	std::array<std::uint8_t, 4> rgba_;
 };
 
@@ -106,7 +163,7 @@ public:
         indexed,
         theme,
         rgb,
-		auto_
+        auto_
     };
 
     /// <summary>

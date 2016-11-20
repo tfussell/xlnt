@@ -45,6 +45,7 @@ extensions = [
 # Breathe extension variables
 breathe_projects = { "xlnt" : "doxyxml/" }
 breathe_default_project = "xlnt"
+breathe_doxygen_config_options = {'EXCLUDE_SYMBOLS': 'XLNT_API'}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

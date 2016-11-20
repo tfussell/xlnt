@@ -181,15 +181,20 @@ private:
 
 namespace std {
 
+/// <summary>
+/// Template specialization to allow xlnt:path to be used as a key in a std container.
+/// </summary>
 template <>
 struct hash<xlnt::path>
 {
+    /// <summary>
+    /// 
+    /// </summary>
     size_t operator()(const xlnt::path &p) const
     {
+	static hash<string> hasher;
         return hasher(p.string());
     }
-
-    hash<string> hasher;
 };
 
 } // namespace std

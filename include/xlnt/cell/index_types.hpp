@@ -41,11 +41,14 @@ using row_t = std::uint32_t;
 /// <summary>
 /// Columns can be referred to as a string A,B,...Z,AA,AB,..,ZZ,AAA,...,ZZZ
 /// or as a 1-indexed index. This class encapsulates both of these forms of
-/// column referencing and allows for convertions between them.
+/// column referencing and allows for conversions between them.
 /// </summary>
 class XLNT_API column_t
 {
 public:
+    /// <summary>
+    /// 
+    /// </summary>
     using index_t = std::uint32_t;
 
     /// <summary>
@@ -315,6 +318,9 @@ public:
 /// </summary>
 struct XLNT_API column_hash
 {
+    /// <summary>
+    /// 
+    /// </summary>
     std::size_t operator()(const column_t &k) const;
 };
 
@@ -322,15 +328,20 @@ struct XLNT_API column_hash
 
 namespace std {
 
+/// <summary>
+/// Template specialization to allow xlnt::column_t to be used as a key in a std container.
+/// </summary>
 template <>
 struct hash<xlnt::column_t>
 {
+    /// <summary>
+    ///
+    /// </summary>
     size_t operator()(const xlnt::column_t &k) const
     {
+	static xlnt::column_hash hasher;
         return hasher(k);
     }
-
-    xlnt::column_hash hasher;
 };
 
 } // namespace std

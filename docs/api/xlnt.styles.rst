@@ -4,11 +4,7 @@ Styles Module
 .. doxygenclass:: xlnt::alignment
 	:members:
 
-.. doxygenclass:: xlnt::base_format
-	:members:
-
 .. doxygenenum:: xlnt::border_style
-	:members:
 
 .. doxygenclass:: xlnt::border
 	:members:
@@ -17,7 +13,6 @@ Styles Module
 	:members:
 
 .. doxygenenum:: xlnt::diagonal_direction
-	:members:
 
 .. doxygenclass:: xlnt::fill
 	:members:
@@ -29,7 +24,6 @@ Styles Module
 	:members:
 
 .. doxygenenum:: xlnt::horizontal_alignment
-	:members:
 
 .. doxygenclass:: xlnt::number_format
 	:members:
@@ -37,11 +31,7 @@ Styles Module
 .. doxygenclass:: xlnt::protection
 	:members:
 
-.. doxygenclass:: xlnt::side
-	:members:
-
 .. doxygenclass:: xlnt::style
 	:members:
 
 .. doxygenenum:: xlnt::vertical_alignment
-	:members:

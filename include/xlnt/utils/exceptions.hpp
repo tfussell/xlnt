@@ -333,7 +333,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-	unsupported(const std::string &message);
+    unsupported(const std::string &message);
 
     /// <summary>
     ///
