@@ -33,10 +33,29 @@ namespace xlnt {
 class XLNT_API row_properties
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     long double height;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool visible;
+
+    /// <summary>
+    ///
+    /// </summary>
     int outline_level;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool collapsed;
+
+    /// <summary>
+    ///
+    /// </summary>
     int style_index;
 };
 

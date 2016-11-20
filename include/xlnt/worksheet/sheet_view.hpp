@@ -36,13 +36,35 @@ namespace xlnt {
 class XLNT_API sheet_view
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     pane &get_pane() { return pane_; }
+
+    /// <summary>
+    ///
+    /// </summary>
     const pane &get_pane() const { return pane_; }
+
+    /// <summary>
+    ///
+    /// </summary>
     std::vector<selection> &get_selections() { return selections_; }
+
+    /// <summary>
+    ///
+    /// </summary>
     const std::vector<selection> &get_selections() const { return selections_; }
     
 private:
+    /// <summary>
+    ///
+    /// </summary>
     pane pane_;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::vector<selection> selections_;
 };
 

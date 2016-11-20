@@ -27,6 +27,9 @@
 
 namespace xlnt {
 
+/// <summary>
+///
+/// </summary>
 enum class XLNT_API border_style
 {
     none,

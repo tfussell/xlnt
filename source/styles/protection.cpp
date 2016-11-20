@@ -21,8 +21,8 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #include <xlnt/styles/protection.hpp>
-#include <xlnt/utils/hash_combine.hpp>
 
 namespace xlnt {
 

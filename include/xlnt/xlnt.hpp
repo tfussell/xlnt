@@ -40,7 +40,6 @@
 
 // styles
 #include <xlnt/styles/alignment.hpp>
-#include <xlnt/styles/base_format.hpp>
 #include <xlnt/styles/border.hpp>
 #include <xlnt/styles/border_style.hpp>
 #include <xlnt/styles/color.hpp>
@@ -51,7 +50,6 @@
 #include <xlnt/styles/horizontal_alignment.hpp>
 #include <xlnt/styles/number_format.hpp>
 #include <xlnt/styles/protection.hpp>
-#include <xlnt/styles/side.hpp>
 #include <xlnt/styles/style.hpp>
 #include <xlnt/styles/vertical_alignment.hpp>
 

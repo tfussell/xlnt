@@ -30,49 +30,163 @@
 
 namespace xlnt {
 
+//todo: should this just be a struct?
+
+/// <summary>
+/// A formatted string
+/// </summary>
 class XLNT_API text_run 
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
 	text_run();
-	text_run(const std::string &string);
-    
-    bool has_formatting() const;
 
+    /// <summary>
+    ///
+    /// </summary>
+	text_run(const std::string &string);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_formatting() const;
+    
+    /// <summary>
+    ///
+    /// </summary>
 	std::string get_string() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	void set_string(const std::string &string);
 
+    /// <summary>
+    ///
+    /// </summary>
     bool has_size() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::size_t get_size() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     void set_size(std::size_t size);
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     bool has_color() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     color get_color() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     void set_color(const color &new_color);
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     bool has_font() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::string get_font() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     void set_font(const std::string &font);
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     bool has_family() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::size_t get_family() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     void set_family(std::size_t family);
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     bool has_scheme() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::string get_scheme() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     void set_scheme(const std::string &scheme);
 
+    /// <summary>
+    ///
+    /// </summary>
     bool bold_set() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool is_bold() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     void set_bold(bool bold);
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
 	std::string string_;
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     optional<std::size_t> size_;
+
+    /// <summary>
+    ///
+    /// </summary>
     optional<color> color_;
+
+    /// <summary>
+    ///
+    /// </summary>
     optional<std::string> font_;
+
+    /// <summary>
+    ///
+    /// </summary>
     optional<std::size_t> family_;
+
+    /// <summary>
+    ///
+    /// </summary>
     optional<std::string> scheme_;
+
+    /// <summary>
+    ///
+    /// </summary>
     optional<bool> bold_;
 };
 

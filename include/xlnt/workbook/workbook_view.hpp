@@ -35,19 +35,69 @@ namespace xlnt {
 class XLNT_API workbook_view
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
 	bool auto_filter_date_grouping = false;
+
+    /// <summary>
+    ///
+    /// </summary>
 	bool minimized = false;
+
+    /// <summary>
+    ///
+    /// </summary>
 	bool show_horizontal_scroll = false;
+
+    /// <summary>
+    ///
+    /// </summary>
 	bool show_sheet_tabs = false;
+
+    /// <summary>
+    ///
+    /// </summary>
 	bool show_vertical_scroll = false;
+
+    /// <summary>
+    ///
+    /// </summary>
 	bool visible = true;
 
+    /// <summary>
+    ///
+    /// </summary>
 	std::size_t active_tab = 0;
+
+    /// <summary>
+    ///
+    /// </summary>
 	std::size_t first_sheet = 0;
+
+    /// <summary>
+    ///
+    /// </summary>
 	std::size_t tab_ratio = 500;
+
+    /// <summary>
+    ///
+    /// </summary>
 	std::size_t window_width = 28800;
+
+    /// <summary>
+    ///
+    /// </summary>
 	std::size_t window_height = 17460;
+
+    /// <summary>
+    ///
+    /// </summary>
 	std::size_t x_window = 0;
+
+    /// <summary>
+    ///
+    /// </summary>
 	std::size_t y_window = 460;
 };
 

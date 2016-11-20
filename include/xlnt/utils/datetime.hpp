@@ -55,21 +55,69 @@ struct XLNT_API datetime
     /// </summary>
     static datetime from_number(long double number, calendar base_date);
 
+    /// <summary>
+    ///
+    /// </summary>
 	datetime(const date &d, const time &t);
+
+    /// <summary>
+    ///
+    /// </summary>
     datetime(int year_, int month_, int day_, int hour_ = 0, int minute_ = 0, int second_ = 0, int microsecond_ = 0);
 
+    /// <summary>
+    ///
+    /// </summary>
     std::string to_string() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     long double to_number(calendar base_date) const;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool operator==(const datetime &comparand) const;
 
+    /// <summary>
+    ///
+    /// </summary>
     int weekday() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     int year;
+
+    /// <summary>
+    ///
+    /// </summary>
     int month;
+
+    /// <summary>
+    ///
+    /// </summary>
     int day;
+
+    /// <summary>
+    ///
+    /// </summary>
     int hour;
+
+    /// <summary>
+    ///
+    /// </summary>
     int minute;
+
+    /// <summary>
+    ///
+    /// </summary>
     int second;
+
+    /// <summary>
+    ///
+    /// </summary>
     int microsecond;
 };
 

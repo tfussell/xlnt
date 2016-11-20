@@ -24,7 +24,6 @@
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/utils/hash_combine.hpp>
 #include <xlnt/styles/horizontal_alignment.hpp>
 #include <xlnt/styles/vertical_alignment.hpp>
 #include <xlnt/utils/optional.hpp>
@@ -37,28 +36,64 @@ namespace xlnt {
 class XLNT_API alignment
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
 	optional<bool> shrink() const;
 
+    /// <summary>
+    ///
+    /// </summary>
 	alignment &shrink(bool shrink_to_fit);
 
+    /// <summary>
+    ///
+    /// </summary>
     optional<bool> wrap() const;
 
+    /// <summary>
+    ///
+    /// </summary>
 	alignment &wrap(bool wrap_text);
 
+    /// <summary>
+    ///
+    /// </summary>
 	optional<int> indent() const;
 
+    /// <summary>
+    ///
+    /// </summary>
 	alignment &indent(int indent_size);
 
+    /// <summary>
+    ///
+    /// </summary>
 	optional<int> rotation() const;
 
+    /// <summary>
+    ///
+    /// </summary>
 	alignment &rotation(int text_rotation);
 
+    /// <summary>
+    ///
+    /// </summary>
     optional<horizontal_alignment> horizontal() const;
 
+    /// <summary>
+    ///
+    /// </summary>
 	alignment &horizontal(horizontal_alignment horizontal);
 
+    /// <summary>
+    ///
+    /// </summary>
     optional<vertical_alignment> vertical() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     alignment &vertical(vertical_alignment vertical);
 
     /// <summary>

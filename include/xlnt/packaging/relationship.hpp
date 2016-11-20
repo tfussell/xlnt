@@ -102,8 +102,14 @@ class XLNT_API relationship
 public:
     using type = relationship_type;
 
+    /// <summary>
+    ///
+    /// </summary>
     relationship();
 
+    /// <summary>
+    ///
+    /// </summary>
     relationship(const std::string &id, type t, const uri &source, const uri &target, target_mode mode);
 
     /// <summary>
@@ -142,10 +148,29 @@ public:
 	bool operator!=(const relationship &rhs) const;
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
 	std::string id_;
+
+    /// <summary>
+    ///
+    /// </summary>
     type type_;
+
+    /// <summary>
+    ///
+    /// </summary>
     uri source_;
+
+    /// <summary>
+    ///
+    /// </summary>
     uri target_;
+
+    /// <summary>
+    ///
+    /// </summary>
     target_mode mode_;
 };
 

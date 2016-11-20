@@ -41,30 +41,75 @@ class cell_vector;
 class XLNT_API range_iterator : public std::iterator<std::bidirectional_iterator_tag, cell_vector, std::ptrdiff_t, cell_vector*, cell_vector>
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     range_iterator(worksheet &ws, const range_reference &start_cell, const range_reference &limits, major_order order = major_order::row);
 
+    /// <summary>
+    ///
+    /// </summary>
     range_iterator(const range_iterator &other);
 
+    /// <summary>
+    ///
+    /// </summary>
     cell_vector operator*() const;
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     range_iterator &operator=(const range_iterator &) = default;
 
+    /// <summary>
+    ///
+    /// </summary>
     bool operator==(const range_iterator &other) const;
 
+    /// <summary>
+    ///
+    /// </summary>
     bool operator!=(const range_iterator &other) const;
 
+    /// <summary>
+    ///
+    /// </summary>
     range_iterator &operator--();
 
+    /// <summary>
+    ///
+    /// </summary>
     range_iterator operator--(int);
 
+    /// <summary>
+    ///
+    /// </summary>
     range_iterator &operator++();
 
+    /// <summary>
+    ///
+    /// </summary>
     range_iterator operator++(int);
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
     worksheet ws_;
+
+    /// <summary>
+    ///
+    /// </summary>
     cell_reference current_cell_;
+
+    /// <summary>
+    ///
+    /// </summary>
     range_reference range_;
+
+    /// <summary>
+    ///
+    /// </summary>
     major_order order_;
 };
 

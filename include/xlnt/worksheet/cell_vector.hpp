@@ -46,54 +46,155 @@ class range_reference;
 class XLNT_API cell_vector
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     using iterator = cell_iterator;
+
+    /// <summary>
+    ///
+    /// </summary>
     using const_iterator = const_cell_iterator;
+
+    /// <summary>
+    ///
+    /// </summary>
     using reverse_iterator = std::reverse_iterator<iterator>;
+
+    /// <summary>
+    ///
+    /// </summary>
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     cell_vector(worksheet ws, const range_reference &ref, major_order order = major_order::row);
 
+    /// <summary>
+    ///
+    /// </summary>
     std::size_t num_cells() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     cell front();
 
+    /// <summary>
+    ///
+    /// </summary>
     const cell front() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     cell back();
 
+    /// <summary>
+    ///
+    /// </summary>
     const cell back() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     cell operator[](std::size_t column_index);
 
+    /// <summary>
+    ///
+    /// </summary>
     const cell operator[](std::size_t column_index) const;
 
+    /// <summary>
+    ///
+    /// </summary>
     cell get_cell(std::size_t column_index);
 
+    /// <summary>
+    ///
+    /// </summary>
     const cell get_cell(std::size_t column_index) const;
 
+    /// <summary>
+    ///
+    /// </summary>
     std::size_t length() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     iterator begin();
+
+    /// <summary>
+    ///
+    /// </summary>
     iterator end();
 
+    /// <summary>
+    ///
+    /// </summary>
     const_iterator begin() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     const_iterator cbegin() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     const_iterator end() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     const_iterator cend() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     reverse_iterator rbegin();
+
+    /// <summary>
+    ///
+    /// </summary>
     reverse_iterator rend();
 
+    /// <summary>
+    ///
+    /// </summary>
     const_reverse_iterator rbegin() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     const_reverse_iterator rend() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     const_reverse_iterator crbegin() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     const_reverse_iterator crend() const;
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
     worksheet ws_;
+
+    /// <summary>
+    ///
+    /// </summary>
     range_reference ref_;
+
+    /// <summary>
+    ///
+    /// </summary>
     major_order order_;
 };
 

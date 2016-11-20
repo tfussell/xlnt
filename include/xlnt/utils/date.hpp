@@ -47,6 +47,9 @@ struct XLNT_API date
     /// </summary>
     static date from_number(int days_since_base_year, calendar base_date);
 
+    /// <summary>
+    ///
+    /// </summary>
     date(int year_, int month_, int day_);
 
     /// <summary>
@@ -55,14 +58,28 @@ struct XLNT_API date
     int to_number(calendar base_date) const;
 
     /// <summary>
+    ///
+    /// </summary>
+    int weekday() const;
+
+    /// <summary>
     /// Return true if this date is equal to comparand.
     /// </summary>
     bool operator==(const date &comparand) const;
 
-    int weekday() const;
-
+    /// <summary>
+    ///
+    /// </summary>
     int year;
+
+    /// <summary>
+    ///
+    /// </summary>
     int month;
+
+    /// <summary>
+    ///
+    /// </summary>
     int day;
 };
 

@@ -39,6 +39,9 @@ class style;
 class XLNT_API font
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     enum class underline_style
     {
         none,
@@ -47,49 +50,115 @@ public:
         single,
         single_accounting
     };
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     font();
 
+    /// <summary>
+    ///
+    /// </summary>
     font &bold(bool bold);
 
+    /// <summary>
+    ///
+    /// </summary>
     bool bold() const;
 
+    /// <summary>
+    ///
+    /// </summary>
 	font &superscript(bool superscript);
 
+    /// <summary>
+    ///
+    /// </summary>
 	bool superscript() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     font &italic(bool italic);
 
+    /// <summary>
+    ///
+    /// </summary>
     bool italic() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     font &strikethrough(bool strikethrough);
 
+    /// <summary>
+    ///
+    /// </summary>
     bool strikethrough() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     font &underline(underline_style new_underline);
 
+    /// <summary>
+    ///
+    /// </summary>
     bool underlined() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     underline_style underline() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     font &size(std::size_t size);
 
+    /// <summary>
+    ///
+    /// </summary>
     std::size_t size() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     font &name(const std::string &name);
 
+    /// <summary>
+    ///
+    /// </summary>
     std::string name() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     font &color(const color &c);
 
+    /// <summary>
+    ///
+    /// </summary>
 	optional<xlnt::color> color() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     font &family(std::size_t family);
 
+    /// <summary>
+    ///
+    /// </summary>
 	optional<std::size_t> family() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     font &scheme(const std::string &scheme);
 
+    /// <summary>
+    ///
+    /// </summary>
     optional<std::string> scheme() const;
     
     /// <summary>
@@ -105,16 +174,59 @@ public:
 private:
     friend class style;
 
+    /// <summary>
+    ///
+    /// </summary>
     std::string name_ = "Calibri";
+
+    /// <summary>
+    ///
+    /// </summary>
     std::size_t size_ = 12;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool bold_ = false;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool italic_ = false;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool superscript_ = false;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool subscript_ = false;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool strikethrough_ = false;
+
+    /// <summary>
+    ///
+    /// </summary>
 	underline_style underline_ = underline_style::none;
+
+    /// <summary>
+    ///
+    /// </summary>
 	optional<xlnt::color> color_;
+
+    /// <summary>
+    ///
+    /// </summary>
 	optional<std::size_t> family_;
+
+    /// <summary>
+    ///
+    /// </summary>
 	optional<std::string> scheme_;
 };
 

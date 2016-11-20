@@ -55,10 +55,29 @@ enum class XLNT_API pane_corner
 class XLNT_API pane
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     cell_reference top_left_cell;
+
+    /// <summary>
+    ///
+    /// </summary>
     pane_state state;
+
+    /// <summary>
+    ///
+    /// </summary>
     pane_corner active_pane;
+
+    /// <summary>
+    ///
+    /// </summary>
     row_t y_split;
+
+    /// <summary>
+    ///
+    /// </summary>
     column_t x_split;
 };
 

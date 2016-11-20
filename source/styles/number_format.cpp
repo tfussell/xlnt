@@ -21,16 +21,16 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #include <algorithm>
 #include <cctype>
 #include <unordered_map>
 #include <vector>
 
 #include <detail/number_formatter.hpp>
+#include <xlnt/styles/number_format.hpp>
 #include <xlnt/utils/datetime.hpp>
 #include <xlnt/utils/exceptions.hpp>
-#include <xlnt/utils/hash_combine.hpp>
-#include <xlnt/styles/number_format.hpp>
 
 namespace {
 

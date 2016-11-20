@@ -35,12 +35,25 @@ namespace xlnt {
 class XLNT_API sheet_protection
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     static std::string hash_password(const std::string &password);
 
+    /// <summary>
+    ///
+    /// </summary>
     void set_password(const std::string &password);
+
+    /// <summary>
+    ///
+    /// </summary>
     std::string get_hashed_password() const;
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
     std::string hashed_password_;
 };
 

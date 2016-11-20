@@ -34,18 +34,49 @@ namespace xlnt {
 /// </summary>
 struct XLNT_API timedelta
 {
+    /// <summary>
+    ///
+    /// </summary>
     static timedelta from_number(long double number);
 
+    /// <summary>
+    ///
+    /// </summary>
     timedelta();
 
+    /// <summary>
+    ///
+    /// </summary>
     timedelta(int days_, int hours_, int minutes_, int seconds_, int microseconds_);
 
+    /// <summary>
+    ///
+    /// </summary>
     long double to_number() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     int days;
+
+    /// <summary>
+    ///
+    /// </summary>
     int hours;
+
+    /// <summary>
+    ///
+    /// </summary>
     int minutes;
+
+    /// <summary>
+    ///
+    /// </summary>
     int seconds;
+
+    /// <summary>
+    ///
+    /// </summary>
     int microseconds;
 };
 

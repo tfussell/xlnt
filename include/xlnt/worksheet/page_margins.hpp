@@ -33,32 +33,100 @@ namespace xlnt {
 class XLNT_API page_margins
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     page_margins();
 
+    /// <summary>
+    ///
+    /// </summary>
     double get_top() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     void set_top(double top);
 
+    /// <summary>
+    ///
+    /// </summary>
     double get_left() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     void set_left(double left);
 
+    /// <summary>
+    ///
+    /// </summary>
     double get_bottom() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     void set_bottom(double bottom);
 
+    /// <summary>
+    ///
+    /// </summary>
     double get_right() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     void set_right(double right);
 
+    /// <summary>
+    ///
+    /// </summary>
     double get_header() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     void set_header(double header);
 
+    /// <summary>
+    ///
+    /// </summary>
     double get_footer() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     void set_footer(double footer);
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
     double top_ = 1;
+
+    /// <summary>
+    ///
+    /// </summary>
     double left_ = 0.75;
+
+    /// <summary>
+    ///
+    /// </summary>
     double bottom_ = 1;
+
+    /// <summary>
+    ///
+    /// </summary>
     double right_ = 0.75;
+
+    /// <summary>
+    ///
+    /// </summary>
     double header_ = 0.5;
+
+    /// <summary>
+    ///
+    /// </summary>
     double footer_ = 0.5;
 };
 

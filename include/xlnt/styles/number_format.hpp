@@ -38,55 +38,205 @@ enum class calendar;
 class XLNT_API number_format
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format general();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format text();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format number();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format number_00();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format number_comma_separated1();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format percentage();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format percentage_00();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format date_yyyymmdd2();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format date_yymmdd();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format date_ddmmyyyy();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format date_dmyslash();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format date_dmyminus();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format date_dmminus();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format date_myminus();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format date_xlsx14();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format date_xlsx15();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format date_xlsx16();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format date_xlsx17();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format date_xlsx22();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format date_datetime();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format date_time1();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format date_time2();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format date_time3();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format date_time4();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format date_time5();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const number_format date_time6();
 
+    /// <summary>
+    ///
+    /// </summary>
     static number_format from_builtin_id(std::size_t builtin_id);
 
+    /// <summary>
+    ///
+    /// </summary>
     number_format();
+
+    /// <summary>
+    ///
+    /// </summary>
     number_format(std::size_t builtin_id);
+
+    /// <summary>
+    ///
+    /// </summary>
     number_format(const std::string &code);
+
+    /// <summary>
+    ///
+    /// </summary>
     number_format(const std::string &code, std::size_t custom_id);
 
+    /// <summary>
+    ///
+    /// </summary>
     void set_format_string(const std::string &format_code);
+
+    /// <summary>
+    ///
+    /// </summary>
     void set_format_string(const std::string &format_code, std::size_t custom_id);
 
+    /// <summary>
+    ///
+    /// </summary>
     std::string get_format_string() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     bool has_id() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     void set_id(std::size_t id);
 
+    /// <summary>
+    ///
+    /// </summary>
     std::size_t get_id() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     std::string format(const std::string &text) const;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::string format(long double number, calendar base_date) const;
 
+    /// <summary>
+    ///
+    /// </summary>
     bool is_date_format() const;
-
 
     /// <summary>
     /// Returns true if left is exactly equal to right.
@@ -99,8 +249,19 @@ public:
     XLNT_API friend bool operator!=(const number_format &left, const number_format &right) { return !(left == right); }
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
     bool id_set_;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::size_t id_;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::string format_string_;
 };
 

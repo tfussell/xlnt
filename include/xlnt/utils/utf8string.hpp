@@ -20,11 +20,10 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #include <cstdint>
 #include <string>
 #include <vector>
-
-#include <xlnt/xlnt_config.hpp> // for XLNT_API
 
 #include <xlnt/xlnt_config.hpp>
 
@@ -33,14 +32,35 @@ namespace xlnt {
 class XLNT_API utf8string
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     static utf8string from_utf8(const std::string &s);
+
+    /// <summary>
+    ///
+    /// </summary>
     static utf8string from_latin1(const std::string &s);
+
+    /// <summary>
+    ///
+    /// </summary>
     static utf8string from_utf16(const std::vector<std::uint16_t> &s);
+
+    /// <summary>
+    ///
+    /// </summary>
     static utf8string from_utf32(const std::vector<std::uint32_t> &s);
 
+    /// <summary>
+    ///
+    /// </summary>
     bool is_valid() const;
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
     std::vector<std::uint8_t> bytes_;
 };
 

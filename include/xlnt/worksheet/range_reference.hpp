@@ -39,53 +39,140 @@ public:
     /// </summary>
     static range_reference make_absolute(const range_reference &relative_reference);
 
+    /// <summary>
+    ///
+    /// </summary>
     range_reference();
+
+    /// <summary>
+    ///
+    /// </summary>
     explicit range_reference(const std::string &range_string);
+
+    /// <summary>
+    ///
+    /// </summary>
     explicit range_reference(const char *range_string);
+
+    /// <summary>
+    ///
+    /// </summary>
     explicit range_reference(const std::pair<cell_reference, cell_reference> &reference_pair);
+
+    /// <summary>
+    ///
+    /// </summary>
     range_reference(const cell_reference &start, const cell_reference &end);
+
+    /// <summary>
+    ///
+    /// </summary>
     range_reference(column_t column_index_start, row_t row_index_start, column_t column_index_end, row_t row_index_end);
 
+    /// <summary>
+    ///
+    /// </summary>
     bool is_single_cell() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     std::size_t get_width() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     std::size_t get_height() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     cell_reference get_top_left() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     cell_reference get_bottom_right() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     cell_reference &get_top_left();
 
+    /// <summary>
+    ///
+    /// </summary>
     cell_reference &get_bottom_right();
 
+    /// <summary>
+    ///
+    /// </summary>
     range_reference make_offset(int column_offset, int row_offset) const;
 
+    /// <summary>
+    ///
+    /// </summary>
     std::string to_string() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     bool operator==(const range_reference &comparand) const;
 
+    /// <summary>
+    ///
+    /// </summary>
     bool operator==(const std::string &reference_string) const;
 
+    /// <summary>
+    ///
+    /// </summary>
     bool operator==(const char *reference_string) const;
 
+    /// <summary>
+    ///
+    /// </summary>
     bool operator!=(const range_reference &comparand) const;
 
+    /// <summary>
+    ///
+    /// </summary>
     bool operator!=(const std::string &reference_string) const;
 
+    /// <summary>
+    ///
+    /// </summary>
     bool operator!=(const char *reference_string) const;
 
+    /// <summary>
+    ///
+    /// </summary>
     XLNT_API friend bool operator==(const std::string &reference_string, const range_reference &ref);
 
+    /// <summary>
+    ///
+    /// </summary>
     XLNT_API friend bool operator==(const char *reference_string, const range_reference &ref);
 
+    /// <summary>
+    ///
+    /// </summary>
     XLNT_API friend bool operator!=(const std::string &reference_string, const range_reference &ref);
 
+    /// <summary>
+    ///
+    /// </summary>
     XLNT_API friend bool operator!=(const char *reference_string, const range_reference &ref);
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
     cell_reference top_left_;
+
+    /// <summary>
+    ///
+    /// </summary>
     cell_reference bottom_right_;
 };
 

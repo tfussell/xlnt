@@ -32,11 +32,13 @@
 #include <xlnt/styles/border_style.hpp>
 #include <xlnt/styles/color.hpp>
 #include <xlnt/styles/diagonal_direction.hpp>
-#include <xlnt/styles/side.hpp>
 #include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 
+/// <summary>
+///
+/// </summary>
 enum class XLNT_API border_side
 {
 	start,
@@ -58,13 +60,30 @@ namespace xlnt {
 class XLNT_API border
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
 	class XLNT_API border_property
 	{
 	public:
+        /// <summary>
+        ///
+        /// </summary>
 		optional<class color> color() const;
+
+        /// <summary>
+        ///
+        /// </summary>
 		border_property &color(const xlnt::color &c);
 
+        /// <summary>
+        ///
+        /// </summary>
 		optional<border_style> style() const;
+
+        /// <summary>
+        ///
+        /// </summary>
 		border_property &style(border_style style);
 
         /// <summary>
@@ -78,40 +97,98 @@ public:
         friend bool operator!=(const border_property &left, const border_property &right) { return !(left == right); }
 
 	private:
+        /// <summary>
+        ///
+        /// </summary>
 		optional<class color> color_;
+
+        /// <summary>
+        ///
+        /// </summary>
 		optional<border_style> style_;
 	};
 
+    /// <summary>
+    ///
+    /// </summary>
 	static const std::vector<border_side> &all_sides();
 
+    /// <summary>
+    ///
+    /// </summary>
 	border();
 
+    /// <summary>
+    ///
+    /// </summary>
 	optional<border_property> side(border_side s) const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	border &side(border_side s, const border_property &prop);
 
+    /// <summary>
+    ///
+    /// </summary>
 	optional<diagonal_direction> diagonal() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	border &diagonal(diagonal_direction dir);
-    
+
     /// <summary>
     /// Returns true if left is exactly equal to right.
     /// </summary>
-    XLNT_API  friend bool operator==(const border &left, const border &right);
-    
+    XLNT_API friend bool operator==(const border &left, const border &right);
+
     /// <summary>
     /// Returns true if left is not exactly equal to right.
     /// </summary>
     XLNT_API friend bool operator!=(const border &left, const border &right) { return !(left == right); }
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
 	optional<border_property> start_;
+
+    /// <summary>
+    ///
+    /// </summary>
 	optional<border_property> end_;
+
+    /// <summary>
+    ///
+    /// </summary>
 	optional<border_property> top_;
+
+    /// <summary>
+    ///
+    /// </summary>
 	optional<border_property> bottom_;
+
+    /// <summary>
+    ///
+    /// </summary>
 	optional<border_property> vertical_;
+
+    /// <summary>
+    ///
+    /// </summary>
 	optional<border_property> horizontal_;
+
+    /// <summary>
+    ///
+    /// </summary>
 	optional<border_property> diagonal_;
 
     //bool outline_ = true;
+
+    /// <summary>
+    ///
+    /// </summary>
 	optional<diagonal_direction> diagonal_direction_;
 };
 

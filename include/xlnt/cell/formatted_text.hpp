@@ -30,21 +30,53 @@
 
 namespace xlnt {
 
+/// <summary>
+/// Encapsulates zero or more formatted text runs where a text run
+/// is a string of text with the same defined formatting.
+/// </summary>
 class XLNT_API formatted_text
 {
 public:
+    /// <summary>
+    /// Remove all text runs from this text.
+    /// </summary>
     void clear();
 
+    /// <summary>
+    /// Clear any runs in this text and add a single run with default formatting and
+    /// the given string as its textual content.
+    /// </summary>
     void plain_text(const std::string &s);
+
+    /// <summary>
+    /// Combine the textual content of each text run in order and return the result.
+    /// </summary>
     std::string plain_text() const;
 
+    /// <summary>
+    /// Returns a copy of the individual runs that comprise this text.
+    /// </summary>
     std::vector<text_run> runs() const;
-    void runs(const std::vector<text_run> &new_runs);
-    void add_run(const text_run &t);
     
+    /// <summary>
+    /// Set the runs of this text all at once.
+    /// </summary>
+    void runs(const std::vector<text_run> &new_runs);
+
+    /// <summary>
+    /// Add a new run to the end of the set of runs.
+    /// </summary>
+    void add_run(const text_run &t);
+
+    /// <summary>
+    /// Returns true if the runs that make up this text are identical to those in rhs.
+    /// </summary>
     bool operator==(const formatted_text &rhs) const;
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
     std::vector<text_run> runs_;
 };
 

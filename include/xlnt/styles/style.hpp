@@ -39,8 +39,10 @@ class number_format;
 class protection;
 
 namespace detail {
+
 struct style_impl;
 struct stylesheet;
+
 } // namespace detail
 
 /// <summary>
@@ -50,56 +52,194 @@ struct stylesheet;
 class XLNT_API style
 {
 public:
+    /// <summary>
+    /// Delete zero-argument constructor
+    /// </summary>
     style() = delete;
+
+    /// <summary>
+    /// Default copy constructor
+    /// </summary>
     style(const style &other) = default;
 
+    /// <summary>
+    /// Return the name of this style.
+    /// </summary>
     std::string name() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     style name(const std::string &name);
 
-    class alignment &alignment();
-	const class alignment &alignment() const;
-	style alignment(const xlnt::alignment &new_alignment, bool applied = true);
-    bool alignment_applied() const;
-
-	class border &border();
-	const class border &border() const;
-	style border(const xlnt::border &new_border, bool applied = true);
-    bool border_applied() const;
-
-	class fill &fill();
-	const class fill &fill() const;
-	style fill(const xlnt::fill &new_fill, bool applied = true);
-    bool fill_applied() const;
-    
-	class font &font();
-	const class font &font() const;
-	style font(const xlnt::font &new_font, bool applied = true);
-    bool font_applied() const;
-
-	class number_format &number_format();
-	const class number_format &number_format() const;
-	style number_format(const xlnt::number_format &new_number_format, bool applied = true);
-    bool number_format_applied() const;
-
-	class protection &protection();
-	const class protection &protection() const;
-	style protection(const xlnt::protection &new_protection, bool applied = true);
-    bool protection_applied() const;
-    
+    /// <summary>
+    ///
+    /// </summary>
     bool hidden() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	style hidden(bool value);
 
+    /// <summary>
+    ///
+    /// </summary>
 	optional<bool> custom() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	style custom(bool value);
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     optional<std::size_t> builtin_id() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	style builtin_id(std::size_t builtin_id);
 
+    // Formatting components
+
+    /// <summary>
+    ///
+    /// </summary>
+    class alignment &alignment();
+
+    /// <summary>
+    ///
+    /// </summary>
+	const class alignment &alignment() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+	style alignment(const xlnt::alignment &new_alignment, bool applied = true);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool alignment_applied() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+	class border &border();
+
+    /// <summary>
+    ///
+    /// </summary>
+	const class border &border() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+	style border(const xlnt::border &new_border, bool applied = true);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool border_applied() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+	class fill &fill();
+
+    /// <summary>
+    ///
+    /// </summary>
+	const class fill &fill() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+	style fill(const xlnt::fill &new_fill, bool applied = true);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool fill_applied() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+	class font &font();
+
+    /// <summary>
+    ///
+    /// </summary>
+	const class font &font() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+	style font(const xlnt::font &new_font, bool applied = true);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool font_applied() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+	class number_format &number_format();
+
+    /// <summary>
+    ///
+    /// </summary>
+	const class number_format &number_format() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+	style number_format(const xlnt::number_format &new_number_format, bool applied = true);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool number_format_applied() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+	class protection &protection();
+
+    /// <summary>
+    ///
+    /// </summary>
+	const class protection &protection() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+	style protection(const xlnt::protection &new_protection, bool applied = true);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool protection_applied() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	bool operator==(const style &other) const;
 
 private:
 	friend struct detail::stylesheet;
+
+    /// <summary>
+    ///
+    /// </summary>
 	style(detail::style_impl *d);
+
+    /// <summary>
+    ///
+    /// </summary>
 	detail::style_impl *d_;
 };
 

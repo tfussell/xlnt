@@ -33,40 +33,92 @@
 
 namespace xlnt {
 
+enum class major_order;
+
 class cell;
 class cell_reference;
 class range_reference;
-enum class major_order;
 
+/// <summary>
+///
+/// </summary>
 class XLNT_API cell_iterator : public std::iterator<std::bidirectional_iterator_tag, cell, std::ptrdiff_t, cell *, cell>
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     cell_iterator(worksheet ws, const cell_reference &start_cell, const range_reference &limits);
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     cell_iterator(worksheet ws, const cell_reference &start_cell, const range_reference &limits, major_order order);
 
+    /// <summary>
+    ///
+    /// </summary>
     cell_iterator(const cell_iterator &other);
 
+    /// <summary>
+    ///
+    /// </summary>
     cell operator*();
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     cell_iterator &operator=(const cell_iterator &) = default;
 
+    /// <summary>
+    ///
+    /// </summary>
     bool operator==(const cell_iterator &other) const;
 
+    /// <summary>
+    ///
+    /// </summary>
     bool operator!=(const cell_iterator &other) const;
 
+    /// <summary>
+    ///
+    /// </summary>
     cell_iterator &operator--();
 
+    /// <summary>
+    ///
+    /// </summary>
     cell_iterator operator--(int);
 
+    /// <summary>
+    ///
+    /// </summary>
     cell_iterator &operator++();
 
+    /// <summary>
+    ///
+    /// </summary>
     cell_iterator operator++(int);
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
     worksheet ws_;
+
+    /// <summary>
+    ///
+    /// </summary>
     cell_reference current_cell_;
+
+    /// <summary>
+    ///
+    /// </summary>
     range_reference range_;
+
+    /// <summary>
+    ///
+    /// </summary>
     major_order order_;
 };
 

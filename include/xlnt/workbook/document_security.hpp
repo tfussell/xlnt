@@ -35,13 +35,34 @@ namespace xlnt {
 class XLNT_API document_security
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     document_security();
 
+    /// <summary>
+    ///
+    /// </summary>
     bool lock_revision;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool lock_structure;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool lock_windows;
 
+    /// <summary>
+    ///
+    /// </summary>
     std::string revision_password;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::string workbook_password;
 };
 

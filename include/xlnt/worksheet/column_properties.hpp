@@ -34,8 +34,19 @@ namespace xlnt {
 class XLNT_API column_properties
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     long double width;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::size_t style;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool custom;
 };
 

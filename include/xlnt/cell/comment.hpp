@@ -65,22 +65,49 @@ public:
     /// </summary>
     std::string author() const;
 
+    /// <summary>
+    /// Make this comment only visible when the associated cell is hovered.
+    /// </summary>
     void hide();
 
+    /// <summary>
+    /// Make this comment always visible.
+    /// </summary>
     void show();
     
+    /// <summary>
+    /// Returns true if this comment is not hidden.
+    /// </summary>
     bool visible() const;
 
+    /// <summary>
+    /// Set the absolute position of this cell to the given coordinates.
+    /// </summary>
     void position(int left, int top);
     
+    /// <summary>
+    /// Returns the distance from the left side of the sheet to the left side of the comment.
+    /// </summary>
     int left() const;
     
+    /// <summary>
+    /// Returns the distance from the top of the sheet to the top of the comment.
+    /// </summary>
     int top() const;
 
+    /// <summary>
+    /// Set the size of the comment.
+    /// </summary>
     void size(int width, int height);
     
+    /// <summary>
+    /// Returns the width of this comment.
+    /// </summary>
     int width() const;
     
+    /// <summary>
+    /// Returns the height of this comment.
+    /// </summary>
     int height() const;
 
     /// <summary>
@@ -89,16 +116,44 @@ public:
     friend XLNT_API bool operator==(const comment &left, const comment &right);
 
 private:
+    /// <summary>
+    /// The formatted textual content in this cell displayed directly after the author.
+    /// </summary>
     formatted_text text_;
+    
+    /// <summary>
+    /// The name of the person that created this comment.
+    /// </summary>
     std::string author_;
     
+    /// <summary>
+    /// True if this comment is not hidden.
+    /// </summary>
     bool visible_ = false;
+    
+    /// <summary>
+    /// The fill color
+    /// </summary>
     std::string fill_;
 
+    /// <summary>
+    /// Distance from the left side of the sheet.
+    /// </summary>
     int left_ = 0;
+    
+    /// <summary>
+    /// Distance from the top of the sheet.
+    /// </summary>
     int top_ = 0;
 
+    /// <summary>
+    /// Width of the comment box.
+    /// </summary>
     int width_ = 0;
+    
+    /// <summary>
+    /// Height of the comment box.
+    /// </summary>
     int height_ = 0;
 };
 

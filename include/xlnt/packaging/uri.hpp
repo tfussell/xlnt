@@ -35,49 +35,190 @@ namespace xlnt {
 class XLNT_API uri
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     uri();
+
+    /// <summary>
+    ///
+    /// </summary>
     uri(const uri &base, const uri &relative);
+
+    /// <summary>
+    ///
+    /// </summary>
     uri(const uri &base, const path &relative);
+
+    /// <summary>
+    ///
+    /// </summary>
     uri(const std::string &uri_string);
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     bool is_relative() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool is_absolute() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     std::string get_scheme() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::string get_authority() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool has_authentication() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::string get_authentication() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::string get_username() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::string get_password() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::string get_host() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool has_port() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::size_t get_port() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     path get_path() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool has_query() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::string get_query() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool has_fragment() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::string get_fragment() const;
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     std::string to_string() const;
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     uri make_absolute(const uri &base);
+
+    /// <summary>
+    ///
+    /// </summary>
     uri make_reference(const uri &base);
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     friend XLNT_API bool operator==(const uri &left, const uri &right);
     
 private:
-    bool absolute_;
+    /// <summary>
+    ///
+    /// </summary>
+    bool absolute_ = false;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::string scheme_;
-    bool has_authentication_;
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_authentication_ = false;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::string username_;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::string password_;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::string host_;
-    bool has_port_;
-    std::size_t port_;
-    bool has_query_;
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_port_ = false;
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::size_t port_ = 0;
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_query_ = false;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::string query_;
-    bool has_fragment_;
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_fragment_ = false;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::string fragment_;
+
+    /// <summary>
+    ///
+    /// </summary>
     path path_;
 };
 

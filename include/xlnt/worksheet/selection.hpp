@@ -35,16 +35,50 @@ namespace xlnt {
 class XLNT_API selection
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
 	bool has_active_cell() const { return has_active_cell_; }
+
+    /// <summary>
+    ///
+    /// </summary>
     cell_reference get_active_cell() const { return active_cell_; }
+
+    /// <summary>
+    ///
+    /// </summary>
     range_reference get_sqref() const { return sqref_; }
+
+    /// <summary>
+    ///
+    /// </summary>
     pane_corner get_pane() const { return pane_; }
+
+    /// <summary>
+    ///
+    /// </summary>
     void set_pane(pane_corner corner) { pane_ = corner; }
     
 private:
+    /// <summary>
+    ///
+    /// </summary>
 	bool has_active_cell_ = false;
+
+    /// <summary>
+    ///
+    /// </summary>
     cell_reference active_cell_;
+
+    /// <summary>
+    ///
+    /// </summary>
     range_reference sqref_;
+
+    /// <summary>
+    ///
+    /// </summary>
     pane_corner pane_;
 };
 

@@ -38,22 +38,65 @@ namespace xlnt {
 class XLNT_API header_footer
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     header_footer();
 
+    /// <summary>
+    ///
+    /// </summary>
     header &get_left_header();
+
+    /// <summary>
+    ///
+    /// </summary>
     header &get_center_header();
+
+    /// <summary>
+    ///
+    /// </summary>
     header &get_right_header();
 
+    /// <summary>
+    ///
+    /// </summary>
     footer &get_left_footer();
+
+    /// <summary>
+    ///
+    /// </summary>
     footer &get_center_footer();
+
+    /// <summary>
+    ///
+    /// </summary>
     footer &get_right_footer();
 
+    /// <summary>
+    ///
+    /// </summary>
     bool is_default_header() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool is_default_footer() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool is_default() const;
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
     header left_header_, right_header_, center_header_;
+
+    /// <summary>
+    ///
+    /// </summary>
     footer left_footer_, right_footer_, center_footer_;
 };
 

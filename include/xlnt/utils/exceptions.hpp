@@ -37,13 +37,30 @@ namespace xlnt {
 class XLNT_API exception : public std::runtime_error
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     exception(const std::string &message);
+
+    /// <summary>
+    ///
+    /// </summary>
     exception(const exception &) = default;
+
+    /// <summary>
+    ///
+    /// </summary>
     virtual ~exception();
 
+    /// <summary>
+    ///
+    /// </summary>
     void set_message(const std::string &message);
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
     std::string message_;
 };
 
@@ -53,8 +70,19 @@ private:
 class XLNT_API invalid_parameter : public exception
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     invalid_parameter();
+
+    /// <summary>
+    ///
+    /// </summary>
     invalid_parameter(const invalid_parameter &) = default;
+
+    /// <summary>
+    ///
+    /// </summary>
     virtual ~invalid_parameter();
 };
 
@@ -64,8 +92,19 @@ public:
 class XLNT_API invalid_sheet_title : public exception
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     invalid_sheet_title(const std::string &title);
+
+    /// <summary>
+    ///
+    /// </summary>
     invalid_sheet_title(const invalid_sheet_title &) = default;
+
+    /// <summary>
+    ///
+    /// </summary>
     virtual ~invalid_sheet_title();
 };
 
@@ -75,7 +114,14 @@ public:
 class XLNT_API missing_number_format : public exception
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     missing_number_format();
+
+    /// <summary>
+    ///
+    /// </summary>
     virtual ~missing_number_format();
 };
 
@@ -85,8 +131,19 @@ public:
 class XLNT_API invalid_file : public exception
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     invalid_file(const std::string &filename);
+
+    /// <summary>
+    ///
+    /// </summary>
     invalid_file(const invalid_file &) = default;
+
+    /// <summary>
+    ///
+    /// </summary>
     virtual ~invalid_file();
 };
 
@@ -97,8 +154,19 @@ public:
 class XLNT_API illegal_character : public exception
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     illegal_character(char c);
+
+    /// <summary>
+    ///
+    /// </summary>
     illegal_character(const illegal_character &) = default;
+
+    /// <summary>
+    ///
+    /// </summary>
     virtual ~illegal_character();
 };
 
@@ -108,8 +176,19 @@ public:
 class XLNT_API invalid_data_type : public exception
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     invalid_data_type();
+
+    /// <summary>
+    ///
+    /// </summary>
     invalid_data_type(const invalid_data_type &) = default;
+
+    /// <summary>
+    ///
+    /// </summary>
     virtual ~invalid_data_type();
 };
 
@@ -119,9 +198,20 @@ public:
 class XLNT_API invalid_column_string_index : public exception
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     invalid_column_string_index();
+
+    /// <summary>
+    ///
+    /// </summary>
     invalid_column_string_index(const invalid_column_string_index &) = default;
-    ~invalid_column_string_index();
+
+    /// <summary>
+    ///
+    /// </summary>
+    virtual ~invalid_column_string_index();
 };
 
 /// <summary>
@@ -130,10 +220,25 @@ public:
 class XLNT_API invalid_cell_reference : public exception
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     invalid_cell_reference(column_t column, row_t row);
+
+    /// <summary>
+    ///
+    /// </summary>
     invalid_cell_reference(const std::string &reference_string);
+
+    /// <summary>
+    ///
+    /// </summary>
     invalid_cell_reference(const invalid_cell_reference &) = default;
-    ~invalid_cell_reference();
+
+    /// <summary>
+    ///
+    /// </summary>
+    virtual ~invalid_cell_reference();
 };
 
 /// <summary>
@@ -142,8 +247,19 @@ public:
 class XLNT_API invalid_attribute : public exception
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     invalid_attribute();
+
+    /// <summary>
+    ///
+    /// </summary>
     invalid_attribute(const invalid_attribute &) = default;
+
+    /// <summary>
+    ///
+    /// </summary>
     virtual ~invalid_attribute();
 };
 
@@ -153,8 +269,19 @@ public:
 class XLNT_API key_not_found : public exception
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     key_not_found();
+
+    /// <summary>
+    ///
+    /// </summary>
     key_not_found(const key_not_found &) = default;
+
+    /// <summary>
+    ///
+    /// </summary>
     virtual ~key_not_found();
 };
 
@@ -164,8 +291,19 @@ public:
 class XLNT_API no_visible_worksheets : public exception
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     no_visible_worksheets();
+
+    /// <summary>
+    ///
+    /// </summary>
     no_visible_worksheets(const no_visible_worksheets &) = default;
+
+    /// <summary>
+    ///
+    /// </summary>
     virtual ~no_visible_worksheets();
 };
 
@@ -175,7 +313,14 @@ public:
 class XLNT_API unhandled_switch_case : public exception
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     unhandled_switch_case();
+
+    /// <summary>
+    ///
+    /// </summary>
     virtual ~unhandled_switch_case();
 };
 
@@ -185,8 +330,19 @@ public:
 class XLNT_API unsupported : public exception
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
 	unsupported(const std::string &message);
+
+    /// <summary>
+    ///
+    /// </summary>
     unsupported(const unsupported &) = default;
+
+    /// <summary>
+    ///
+    /// </summary>
     virtual ~unsupported();
 };
 

@@ -33,23 +33,64 @@ namespace xlnt {
 class workbook;
 class worksheet;
 
+/// <summary>
+///
+/// </summary>
 class XLNT_API worksheet_iterator : public std::iterator<std::bidirectional_iterator_tag, worksheet, std::ptrdiff_t, worksheet*, worksheet>
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     worksheet_iterator(workbook &wb, std::size_t index);
+
+    /// <summary>
+    ///
+    /// </summary>
     worksheet_iterator(const worksheet_iterator &);
+
+    /// <summary>
+    ///
+    /// </summary>
     worksheet_iterator &operator=(const worksheet_iterator &);
+
+    /// <summary>
+    ///
+    /// </summary>
     worksheet operator*();
+
+    /// <summary>
+    ///
+    /// </summary>
     bool operator==(const worksheet_iterator &comparand) const;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool operator!=(const worksheet_iterator &comparand) const
     {
         return !(*this == comparand);
     }
+
+    /// <summary>
+    ///
+    /// </summary>
     worksheet_iterator operator++(int);
+
+    /// <summary>
+    ///
+    /// </summary>
     worksheet_iterator &operator++();
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
     workbook &wb_;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::size_t index_;
 };
 

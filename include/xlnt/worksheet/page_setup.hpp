@@ -37,58 +37,160 @@ namespace xlnt {
 struct XLNT_API page_setup
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     page_setup();
 
+    /// <summary>
+    ///
+    /// </summary>
     page_break get_break() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     void set_break(page_break b);
 
+    /// <summary>
+    ///
+    /// </summary>
     sheet_state get_sheet_state() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     void set_sheet_state(sheet_state sheet_state);
 
+    /// <summary>
+    ///
+    /// </summary>
     paper_size get_paper_size() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     void set_paper_size(paper_size paper_size);
 
+    /// <summary>
+    ///
+    /// </summary>
     orientation get_orientation() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     void set_orientation(orientation orientation);
 
+    /// <summary>
+    ///
+    /// </summary>
     bool fit_to_page() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     void set_fit_to_page(bool fit_to_page);
 
+    /// <summary>
+    ///
+    /// </summary>
     bool fit_to_height() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     void set_fit_to_height(bool fit_to_height);
 
+    /// <summary>
+    ///
+    /// </summary>
     bool fit_to_width() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     void set_fit_to_width(bool fit_to_width);
 
+    /// <summary>
+    ///
+    /// </summary>
     void set_horizontal_centered(bool horizontal_centered);
 
+    /// <summary>
+    ///
+    /// </summary>
     bool get_horizontal_centered() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     void set_vertical_centered(bool vertical_centered);
 
+    /// <summary>
+    ///
+    /// </summary>
     bool get_vertical_centered() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     void set_scale(double scale);
 
+    /// <summary>
+    ///
+    /// </summary>
     double get_scale() const;
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
     page_break break_;
+
+    /// <summary>
+    ///
+    /// </summary>
     sheet_state sheet_state_;
+
+    /// <summary>
+    ///
+    /// </summary>
     paper_size paper_size_;
+
+    /// <summary>
+    ///
+    /// </summary>
     orientation orientation_;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool fit_to_page_;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool fit_to_height_;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool fit_to_width_;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool horizontal_centered_;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool vertical_centered_;
+
+    /// <summary>
+    ///
+    /// </summary>
     double scale_;
 };
 

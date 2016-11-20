@@ -30,6 +30,9 @@
 
 namespace xlnt {
 
+/// <summary>
+///
+/// </summary>
 class XLNT_API indexed_color
 {
 public:
@@ -43,6 +46,9 @@ private:
 	std::size_t index_;
 };
 
+/// <summary>
+///
+/// </summary>
 class XLNT_API theme_color
 {
 public:
@@ -56,6 +62,9 @@ private:
 	std::size_t index_;
 };
 
+/// <summary>
+///
+/// </summary>
 class XLNT_API rgb_color
 {
 public:
@@ -100,48 +109,155 @@ public:
 		auto_
     };
 
+    /// <summary>
+    ///
+    /// </summary>
     static const color black();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const color white();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const color red();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const color darkred();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const color blue();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const color darkblue();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const color green();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const color darkgreen();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const color yellow();
+
+    /// <summary>
+    ///
+    /// </summary>
     static const color darkyellow();
 
+    /// <summary>
+    ///
+    /// </summary>
 	color();
+
+    /// <summary>
+    ///
+    /// </summary>
 	color(const rgb_color &rgb);
+
+    /// <summary>
+    ///
+    /// </summary>
 	color(const indexed_color &indexed);
+
+    /// <summary>
+    ///
+    /// </summary>
 	color(const theme_color &theme);
 
+    /// <summary>
+    ///
+    /// </summary>
 	type get_type() const;
 
+    /// <summary>
+    ///
+    /// </summary>
 	bool is_auto() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     void set_auto(bool value);
 
+    /// <summary>
+    ///
+    /// </summary>
 	const rgb_color &get_rgb() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     const indexed_color &get_indexed() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     const theme_color &get_theme() const;
 
+    /// <summary>
+    ///
+    /// </summary>
 	double get_tint() const;
 
+    /// <summary>
+    ///
+    /// </summary>
 	void set_tint(double tint);
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     bool operator==(const color &other) const;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool operator!=(const color &other) const { return !(*this == other); }
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
 	void assert_type(type t) const;
 
+    /// <summary>
+    ///
+    /// </summary>
 	type type_;
+
+    /// <summary>
+    ///
+    /// </summary>
 	rgb_color rgb_;
+
+    /// <summary>
+    ///
+    /// </summary>
 	indexed_color indexed_;
+
+    /// <summary>
+    ///
+    /// </summary>
 	theme_color theme_;
+
+    /// <summary>
+    ///
+    /// </summary>
 	double tint_;
 };
 

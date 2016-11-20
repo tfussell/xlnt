@@ -43,19 +43,50 @@ std::vector<std::pair<std::string, std::string>> XLNT_API split_named_range(cons
 class XLNT_API named_range
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     using target = std::pair<worksheet, range_reference>;
 
+    /// <summary>
+    ///
+    /// </summary>
     named_range();
+
+    /// <summary>
+    ///
+    /// </summary>
     named_range(const named_range &other);
+
+    /// <summary>
+    ///
+    /// </summary>
     named_range(const std::string &name, const std::vector<target> &targets);
 
+    /// <summary>
+    ///
+    /// </summary>
     std::string get_name() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     const std::vector<target> &get_targets() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     named_range &operator=(const named_range &other);
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
     std::string name_;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::vector<target> targets_;
 };
 

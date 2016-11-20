@@ -31,6 +31,9 @@
 
 namespace xlnt {
 
+/// <summary>
+///
+/// </summary>
 enum class XLNT_API pattern_fill_type
 {
 	none,
@@ -54,21 +57,45 @@ enum class XLNT_API pattern_fill_type
 	gray0625
 };
 
+/// <summary>
+///
+/// </summary>
 class XLNT_API pattern_fill
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     pattern_fill();
 
+    /// <summary>
+    ///
+    /// </summary>
 	pattern_fill_type type() const;
 
+    /// <summary>
+    ///
+    /// </summary>
 	pattern_fill &type(pattern_fill_type new_type);
 
+    /// <summary>
+    ///
+    /// </summary>
 	optional<color> foreground() const;
 
+    /// <summary>
+    ///
+    /// </summary>
 	pattern_fill &foreground(const color &foreground);
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     optional<color> background() const;
 
+    /// <summary>
+    ///
+    /// </summary>
 	pattern_fill &background(const color &background);
 
     /// <summary>
@@ -82,64 +109,129 @@ public:
     XLNT_API friend bool operator!=(const pattern_fill &left, const pattern_fill &right) { return !(left == right); }
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
 	pattern_fill_type type_ = pattern_fill_type::none;
 
+    /// <summary>
+    ///
+    /// </summary>
     optional<color> foreground_;
+
+    /// <summary>
+    ///
+    /// </summary>
     optional<color> background_;
 };
 
+/// <summary>
+///
+/// </summary>
 enum class XLNT_API gradient_fill_type
 {
 	linear,
 	path
 };
 
+/// <summary>
+///
+/// </summary>
 class XLNT_API gradient_fill
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     gradient_fill();
 
+    /// <summary>
+    ///
+    /// </summary>
     gradient_fill_type type() const;
 
 	// Type
+
+    /// <summary>
+    ///
+    /// </summary>
     gradient_fill &type(gradient_fill_type new_type);
 
 	// Degree
 
+    /// <summary>
+    ///
+    /// </summary>
     gradient_fill &degree(double degree);
 
+    /// <summary>
+    ///
+    /// </summary>
     double degree() const;
 
 	// Left
 
+    /// <summary>
+    ///
+    /// </summary>
     double left() const;
 
+    /// <summary>
+    ///
+    /// </summary>
 	gradient_fill &left(double value);
 
 	// Right
 
+    /// <summary>
+    ///
+    /// </summary>
     double right() const;
 
+    /// <summary>
+    ///
+    /// </summary>
 	gradient_fill &right(double value);
 
 	// Top
 
+    /// <summary>
+    ///
+    /// </summary>
     double top() const;
 
+    /// <summary>
+    ///
+    /// </summary>
 	gradient_fill &top(double value);
 
 	// Bottom
 
+    /// <summary>
+    ///
+    /// </summary>
     double bottom() const;
 
+    /// <summary>
+    ///
+    /// </summary>
 	gradient_fill &bottom(double value);
 
 	// Stops
 
+    /// <summary>
+    ///
+    /// </summary>
 	gradient_fill &add_stop(double position, color stop_color);
 
+    /// <summary>
+    ///
+    /// </summary>
 	gradient_fill &clear_stops();
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     std::unordered_map<double, color> stops() const;
     
     /// <summary>
@@ -153,18 +245,45 @@ public:
     XLNT_API friend bool operator!=(const gradient_fill &left, const gradient_fill &right) { return !(left == right); }
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
     gradient_fill_type type_ = gradient_fill_type::linear;
 
+    /// <summary>
+    ///
+    /// </summary>
     double degree_ = 0;
 
+    /// <summary>
+    ///
+    /// </summary>
     double left_ = 0;
+
+    /// <summary>
+    ///
+    /// </summary>
     double right_ = 0;
+
+    /// <summary>
+    ///
+    /// </summary>
     double top_ = 0;
+
+    /// <summary>
+    ///
+    /// </summary>
     double bottom_ = 0;
 
+    /// <summary>
+    ///
+    /// </summary>
 	std::unordered_map<double, color> stops_;
 };
 
+/// <summary>
+///
+/// </summary>
 enum class XLNT_API fill_type
 {
 	pattern,
@@ -229,8 +348,19 @@ public:
     XLNT_API friend bool operator!=(const fill &left, const fill &right) { return !(left == right); }
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
     fill_type type_ = fill_type::pattern;
+
+    /// <summary>
+    ///
+    /// </summary>
     xlnt::gradient_fill gradient_;
+
+    /// <summary>
+    ///
+    /// </summary>
     xlnt::pattern_fill pattern_;
 };
 

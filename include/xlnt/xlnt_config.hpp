@@ -20,11 +20,8 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
-
-// Change these values for programs using this library.
-
-namespace xlnt {
 
 #ifndef XLNT_API
 #if !defined(XLNT_STATIC) && defined(_MSC_VER)
@@ -40,5 +37,3 @@ namespace xlnt {
 #define XLNT_API
 #endif
 #endif
-
-} // namespace xlnt

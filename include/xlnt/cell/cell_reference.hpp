@@ -91,7 +91,7 @@ public:
     /// </summary>
     cell_reference(column_t column, row_t row);
 
-    // absoluateness
+    // absoluteness
 
     /// <summary>
     /// Convert a coordinate to an absolute coordinate string (e.g. B12 -> $B$12)

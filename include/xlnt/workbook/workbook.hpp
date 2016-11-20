@@ -35,6 +35,9 @@
 
 namespace xlnt {
 
+enum class calendar;
+enum class relationship_type;
+
 class alignment;
 class border;
 class cell;
@@ -65,14 +68,13 @@ class zip_file;
 
 struct datetime;
 
-enum class calendar;
-enum class relationship_type;
-
 namespace detail {
+
 struct stylesheet;
 struct workbook_impl;
 class xlsx_consumer;
 class xlsx_producer;
+
 } // namespace detail
 
 /// <summary>
@@ -81,9 +83,24 @@ class xlsx_producer;
 class XLNT_API workbook
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     using iterator = worksheet_iterator;
+
+    /// <summary>
+    ///
+    /// </summary>
     using const_iterator = const_worksheet_iterator;
+
+    /// <summary>
+    ///
+    /// </summary>
     using reverse_iterator = std::reverse_iterator<iterator>;
+
+    /// <summary>
+    ///
+    /// </summary>
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     /// <summary>
@@ -91,12 +108,24 @@ public:
     /// </summary>
     friend void swap(workbook &left, workbook &right);
 
+    /// <summary>
+    ///
+    /// </summary>
 	static workbook minimal();
 
+    /// <summary>
+    ///
+    /// </summary>
 	static workbook empty_excel();
 
+    /// <summary>
+    ///
+    /// </summary>
 	static workbook empty_libre_office();
 
+    /// <summary>
+    ///
+    /// </summary>
 	static workbook empty_numbers();
 
     // constructors
@@ -305,151 +334,485 @@ public:
 	/// </summary>
 	void set_application(const std::string &application);
 
+    /// <summary>
+    ///
+    /// </summary>
 	calendar get_base_date() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	void set_base_date(calendar base_date);
 
+    /// <summary>
+    ///
+    /// </summary>
 	std::string get_creator() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	void set_creator(const std::string &creator);
 
+    /// <summary>
+    ///
+    /// </summary>
 	std::string get_last_modified_by() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	void set_last_modified_by(const std::string &last_modified_by);
 
+    /// <summary>
+    ///
+    /// </summary>
 	datetime get_created() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	void set_created(const datetime &when);
 
+    /// <summary>
+    ///
+    /// </summary>
 	datetime get_modified() const;
+    
+    /// <summary>
+    ///
+    /// </summary>
 	void set_modified(const datetime &when);
 
+    /// <summary>
+    ///
+    /// </summary>
 	int get_doc_security() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	void set_doc_security(int doc_security);
 
+    /// <summary>
+    ///
+    /// </summary>
 	bool get_scale_crop() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	void set_scale_crop(bool scale_crop);
 
+    /// <summary>
+    ///
+    /// </summary>
 	std::string get_company() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	void set_company(const std::string &company);
 
+    /// <summary>
+    ///
+    /// </summary>
 	bool links_up_to_date() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	void set_links_up_to_date(bool links_up_to_date);
 
+    /// <summary>
+    ///
+    /// </summary>
 	bool is_shared_doc() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	void set_shared_doc(bool shared_doc);
 
+    /// <summary>
+    ///
+    /// </summary>
 	bool hyperlinks_changed() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	void set_hyperlinks_changed(bool hyperlinks_changed);
 
+    /// <summary>
+    ///
+    /// </summary>
 	std::string get_app_version() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	void set_app_version(const std::string &version);
 
+    /// <summary>
+    ///
+    /// </summary>
 	std::string get_title() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	void set_title(const std::string &title);
 
     // named ranges
 
+    /// <summary>
+    ///
+    /// </summary>
     std::vector<named_range> get_named_ranges() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     void create_named_range(const std::string &name, worksheet worksheet, const range_reference &reference);
+
+    /// <summary>
+    ///
+    /// </summary>
     void create_named_range(const std::string &name, worksheet worksheet, const std::string &reference_string);
+
+    /// <summary>
+    ///
+    /// </summary>
     bool has_named_range(const std::string &name) const;
+
+    /// <summary>
+    ///
+    /// </summary>
     range get_named_range(const std::string &name);
+
+    /// <summary>
+    ///
+    /// </summary>
     void remove_named_range(const std::string &name);
 
     // serialization
 
+    /// <summary>
+    ///
+    /// </summary>
 	void save(std::vector<std::uint8_t> &data) const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	void save(const std::string &filename) const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	void save(const xlnt::path &filename) const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	void save(std::ostream &stream) const;
 
+    /// <summary>
+    ///
+    /// </summary>
 	void save(const std::string &filename, const std::string &password);
+
+    /// <summary>
+    ///
+    /// </summary>
 	void save(const xlnt::path &filename, const std::string &password);
+
+    /// <summary>
+    ///
+    /// </summary>
 	void save(std::ostream &stream, const std::string &password);
+
+    /// <summary>
+    ///
+    /// </summary>
 	void save(const std::vector<std::uint8_t> &data, const std::string &password);
 
+    /// <summary>
+    ///
+    /// </summary>
 	void load(const std::vector<std::uint8_t> &data);
+
+    /// <summary>
+    ///
+    /// </summary>
 	void load(const std::string &filename);
+
+    /// <summary>
+    ///
+    /// </summary>
 	void load(const xlnt::path &filename);
+
+    /// <summary>
+    ///
+    /// </summary>
 	void load(std::istream &stream);
 
+    /// <summary>
+    ///
+    /// </summary>
     void load(const std::string &filename, const std::string &password);
+
+    /// <summary>
+    ///
+    /// </summary>
 	void load(const xlnt::path &filename, const std::string &password);
+
+    /// <summary>
+    ///
+    /// </summary>
 	void load(std::istream &stream, const std::string &password);
+
+    /// <summary>
+    ///
+    /// </summary>
 	void load(const std::vector<std::uint8_t> &data, const std::string &password);
 
 #ifdef _MSC_VER
+    /// <summary>
+    ///
+    /// </summary>
     void save(const std::wstring &filename);
+
+    /// <summary>
+    ///
+    /// </summary>
     void save(const std::wstring &filename, const std::string &password);
 
+    /// <summary>
+    ///
+    /// </summary>
     void load(const std::wstring &filename);
+
+    /// <summary>
+    ///
+    /// </summary>
     void load(const std::wstring &filename, const std::string &password);
 #endif
 
+    /// <summary>
+    ///
+    /// </summary>
 	bool has_view() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	workbook_view get_view() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	void set_view(const workbook_view &view);
 
+    /// <summary>
+    ///
+    /// </summary>
 	bool has_code_name() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	std::string get_code_name() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     void set_code_name(const std::string &code_name);
 
+    /// <summary>
+    ///
+    /// </summary>
 	bool x15_enabled() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	void enable_x15();
+
+    /// <summary>
+    ///
+    /// </summary>
 	void disable_x15();
 
+    /// <summary>
+    ///
+    /// </summary>
 	bool has_absolute_path() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	path get_absolute_path() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	void set_absolute_path(const path &absolute_path);
+
+    /// <summary>
+    ///
+    /// </summary>
 	void clear_absolute_path();
 
+    /// <summary>
+    ///
+    /// </summary>
 	bool has_properties() const;
 
+    /// <summary>
+    ///
+    /// </summary>
 	bool has_file_version() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	std::string get_app_name() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	std::size_t get_last_edited() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	std::size_t get_lowest_edited() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	std::size_t get_rup_build() const;
 
+    /// <summary>
+    ///
+    /// </summary>
 	bool has_arch_id() const;
 
 	// calculation
 
+    /// <summary>
+    ///
+    /// </summary>
 	bool has_calculation_properties() const;
 
     // theme
 
+    /// <summary>
+    ///
+    /// </summary>
     bool has_theme() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     const theme &get_theme() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	void set_theme(const theme &value);
 
     // formats
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     format get_format(std::size_t format_index);
+
+    /// <summary>
+    ///
+    /// </summary>
     const format get_format(std::size_t format_index) const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	format create_format(bool default_format = false);
+
+    /// <summary>
+    ///
+    /// </summary>
     void clear_formats();
 
     // styles
 
+    /// <summary>
+    ///
+    /// </summary>
     bool has_style(const std::string &name) const;
+
+    /// <summary>
+    ///
+    /// </summary>
     class style style(const std::string &name);
+
+    /// <summary>
+    ///
+    /// </summary>
     const class style style(const std::string &name) const;
+
+    /// <summary>
+    ///
+    /// </summary>
     class style create_style(const std::string &name);
+
+    /// <summary>
+    ///
+    /// </summary>
     void clear_styles();
 
     // manifest
 
+    /// <summary>
+    ///
+    /// </summary>
     manifest &get_manifest();
+
+    /// <summary>
+    ///
+    /// </summary>
     const manifest &get_manifest() const;
 
     // shared strings
 
+    /// <summary>
+    ///
+    /// </summary>
     void add_shared_string(const formatted_text &shared, bool allow_duplicates=false);
+
+    /// <summary>
+    ///
+    /// </summary>
     std::vector<formatted_text> &get_shared_strings();
+
+    /// <summary>
+    ///
+    /// </summary>
     const std::vector<formatted_text> &get_shared_strings() const;
 
     // thumbnail
 
+    /// <summary>
+    ///
+    /// </summary>
     void set_thumbnail(const std::vector<std::uint8_t> &thumbnail, 
 		const std::string &extension, const std::string &content_type);
+
+    /// <summary>
+    ///
+    /// </summary>
     const std::vector<std::uint8_t> &get_thumbnail() const;
 
     // operators
@@ -487,22 +850,49 @@ private:
     friend class detail::xlsx_consumer;
     friend class detail::xlsx_producer;
 
+    /// <summary>
+    ///
+    /// </summary>
     workbook(detail::workbook_impl *impl);
 
+    /// <summary>
+    ///
+    /// </summary>
     detail::workbook_impl &impl();
 
+    /// <summary>
+    ///
+    /// </summary>
     const detail::workbook_impl &impl() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     void register_app_properties_in_manifest();
 
+    /// <summary>
+    ///
+    /// </summary>
     void register_core_properties_in_manifest();
 
+    /// <summary>
+    ///
+    /// </summary>
     void register_shared_string_table_in_manifest();
 
+    /// <summary>
+    ///
+    /// </summary>
     void register_stylesheet_in_manifest();
 
+    /// <summary>
+    ///
+    /// </summary>
     void register_theme_in_manifest();
 
+    /// <summary>
+    ///
+    /// </summary>
 	void register_comments_in_manifest(worksheet ws);
     
     /// <summary>

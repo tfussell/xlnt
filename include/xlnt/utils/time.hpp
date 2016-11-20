@@ -47,15 +47,44 @@ struct XLNT_API time
     /// </summary>
     static time from_number(long double number);
 
+    /// <summary>
+    ///
+    /// </summary>
     explicit time(int hour_ = 0, int minute_ = 0, int second_ = 0, int microsecond_ = 0);
+
+    /// <summary>
+    ///
+    /// </summary>
     explicit time(const std::string &time_string);
 
+    /// <summary>
+    ///
+    /// </summary>
     long double to_number() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool operator==(const time &comparand) const;
 
+    /// <summary>
+    ///
+    /// </summary>
     int hour;
+
+    /// <summary>
+    ///
+    /// </summary>
     int minute;
+
+    /// <summary>
+    ///
+    /// </summary>
     int second;
+
+    /// <summary>
+    ///
+    /// </summary>
     int microsecond;
 };
 

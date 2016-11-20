@@ -36,23 +36,60 @@ namespace xlnt {
 class XLNT_API footer
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     footer();
 
+    /// <summary>
+    ///
+    /// </summary>
     void set_text(const std::string &text);
 
+    /// <summary>
+    ///
+    /// </summary>
     void set_font_name(const std::string &font_name);
 
+    /// <summary>
+    ///
+    /// </summary>
     void set_font_size(std::size_t font_size);
 
+    /// <summary>
+    ///
+    /// </summary>
     void set_font_color(const std::string &font_color);
 
+    /// <summary>
+    ///
+    /// </summary>
     bool is_default() const;
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
     bool default_;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::string text_;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::string font_name_;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::size_t font_size_;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::string font_color_;
 };
 

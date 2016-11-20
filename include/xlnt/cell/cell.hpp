@@ -21,15 +21,16 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <memory>
 #include <string>
 #include <unordered_map>
 
-#include <xlnt/xlnt_config.hpp> // for XLNT_API, XLNT_API
-#include <xlnt/cell/cell_type.hpp> // for cell_type
-#include <xlnt/cell/index_types.hpp> // for column_t, row_t
+#include <xlnt/xlnt_config.hpp>
+#include <xlnt/cell/cell_type.hpp>
+#include <xlnt/cell/index_types.hpp>
 
 namespace xlnt {
 
@@ -60,6 +61,7 @@ namespace detail {
 
 class xlsx_consumer;
 class xlsx_producer;
+
 struct cell_impl; 
 
 } // namespace detail
@@ -76,6 +78,9 @@ struct cell_impl;
 class XLNT_API cell
 {
 public:
+    /// <summary>
+    /// Alias xlnt::cell_type to xlnt::cell::type since it looks nicer.
+    /// </summary>
     using type = cell_type;
 
     /// <summary>
@@ -83,6 +88,9 @@ public:
     /// </summary>
     static const std::unordered_map<std::string, int> &error_codes();
     
+    /// <summary>
+    /// Default copy constructor.
+    /// </summary>
     cell(const cell &) = default;
 
     // value
@@ -506,6 +514,9 @@ private:
 	/// </summary>
 	class format modifiable_format();
     
+    /// <summary>
+    /// Delete default zero-argument constructor.
+    /// </summary>
     cell() = delete;
 
     /// <summary>

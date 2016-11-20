@@ -36,17 +36,49 @@ namespace xlnt {
 class XLNT_API protection
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
 	static protection unlocked_and_visible();
+
+    /// <summary>
+    ///
+    /// </summary>
 	static protection locked_and_visible();
+
+    /// <summary>
+    ///
+    /// </summary>
 	static protection unlocked_and_hidden();
+
+    /// <summary>
+    ///
+    /// </summary>
 	static protection locked_and_hidden();
 
+    /// <summary>
+    ///
+    /// </summary>
     protection();
 
+    /// <summary>
+    ///
+    /// </summary>
     bool locked() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     protection &locked(bool locked);
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     bool hidden() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     protection &hidden(bool hidden);
     
     /// <summary>
@@ -60,7 +92,14 @@ public:
     XLNT_API friend bool operator!=(const protection &left, const protection &right) { return !(left == right); }
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
     bool locked_;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool hidden_;
 };
 

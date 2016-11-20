@@ -38,8 +38,10 @@ class number_format;
 class protection;
 
 namespace detail {
+
 struct format_impl;
 struct stylesheet;
+
 } // namespace detail
 
 /// <summary>
@@ -48,48 +50,182 @@ struct stylesheet;
 class XLNT_API format
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
 	std::size_t id() const;
 
+    // Alignment
+
+    /// <summary>
+    ///
+    /// </summary>
 	class alignment &alignment();
+
+    /// <summary>
+    ///
+    /// </summary>
 	const class alignment &alignment() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	format alignment(const xlnt::alignment &new_alignment, bool applied);
+
+    /// <summary>
+    ///
+    /// </summary>
     bool alignment_applied() const;
 
+    // Border
+
+    /// <summary>
+    ///
+    /// </summary>
 	class border &border();
+
+    /// <summary>
+    ///
+    /// </summary>
 	const class border &border() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	format border(const xlnt::border &new_border, bool applied);
+
+    /// <summary>
+    ///
+    /// </summary>
     bool border_applied() const;
 
+    // Fill
+
+    /// <summary>
+    ///
+    /// </summary>
 	class fill &fill();
+
+    /// <summary>
+    ///
+    /// </summary>
 	const class fill &fill() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	format fill(const xlnt::fill &new_fill, bool applied);
+
+    /// <summary>
+    ///
+    /// </summary>
     bool fill_applied() const;
-    
+
+    // Font
+
+    /// <summary>
+    ///
+    /// </summary>
 	class font &font();
+
+    /// <summary>
+    ///
+    /// </summary>
 	const class font &font() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	format font(const xlnt::font &new_font, bool applied);
+
+    /// <summary>
+    ///
+    /// </summary>
     bool font_applied() const;
 
+    // Number Format
+
+    /// <summary>
+    ///
+    /// </summary>
 	class number_format &number_format();
+
+    /// <summary>
+    ///
+    /// </summary>
 	const class number_format &number_format() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	format number_format(const xlnt::number_format &new_number_format, bool applied);
+
+    /// <summary>
+    ///
+    /// </summary>
     bool number_format_applied() const;
 
+    // Protection
+
+    /// <summary>
+    ///
+    /// </summary>
 	class protection &protection();
+
+    /// <summary>
+    ///
+    /// </summary>
 	const class protection &protection() const;
+
+    /// <summary>
+    ///
+    /// </summary>
 	format protection(const xlnt::protection &new_protection, bool applied);
+
+    /// <summary>
+    ///
+    /// </summary>
     bool protection_applied() const;
 
+    // Style
+
+    /// <summary>
+    ///
+    /// </summary>
 	bool has_style() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     void clear_style();
+
+    /// <summary>
+    ///
+    /// </summary>
 	format style(const std::string &name);
+
+    /// <summary>
+    ///
+    /// </summary>
 	format style(const xlnt::style &new_style);
+
+    /// <summary>
+    ///
+    /// </summary>
 	const class style style() const;
 
 private:
 	friend struct detail::stylesheet;
     friend class cell;
+
+    /// <summary>
+    /// 
+    /// </summary>
 	format(detail::format_impl *d);
+
+    /// <summary>
+    ///
+    /// </summary>
 	detail::format_impl *d_;
 };
 

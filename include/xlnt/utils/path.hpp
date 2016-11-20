@@ -154,7 +154,10 @@ public:
 	/// Append the provided part to this path and return the result.
 	/// </summary>
 	path append(const path &to_append) const;
-    
+
+    /// <summary>
+    /// Returns true if left path is equal to right path.
+    /// </summary>
     friend XLNT_API bool operator==(const path &left, const path &right);
 
 private:

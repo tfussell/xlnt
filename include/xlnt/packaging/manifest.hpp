@@ -169,12 +169,24 @@ public:
 	void unregister_override_type(const path &part);
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
 	std::string next_relationship_id(const path &part) const;
 
+    /// <summary>
+    ///
+    /// </summary>
 	std::unordered_map<std::string, std::string> default_content_types_;
-    
+
+    /// <summary>
+    ///
+    /// </summary>
 	std::unordered_map<path, std::string> override_content_types_;
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     std::unordered_map<path, std::unordered_map<std::string, relationship>> relationships_;
 };
 
