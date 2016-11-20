@@ -67,13 +67,15 @@ public:
 
     void test_read_unicode_filename()
     {
-#ifdef WIN32
+#ifdef _MSC_VER
         xlnt::workbook wb;
         wb.load(L"data\\19_unicode_Λ.xlsx");
         TS_ASSERT_EQUALS(wb.get_active_sheet().get_cell("A1").get_value<std::string>(), "unicode!");
 #endif
+#ifndef __MINGW32__
         xlnt::workbook wb2;
         wb2.load(u8"data/19_unicode_Λ.xlsx");
         TS_ASSERT_EQUALS(wb2.get_active_sheet().get_cell("A1").get_value<std::string>(), "unicode!");
+#endif
     }
 };

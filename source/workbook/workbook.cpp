@@ -64,7 +64,7 @@
 
 namespace {
 
-#ifdef WIN32
+#ifdef _MSC_VER
 std::wstring utf8_to_utf16(const std::string &utf8_string)
 {
     std::wstring_convert<std::codecvt_utf8<wchar_t>> convert;
@@ -822,7 +822,7 @@ void workbook::save(std::ostream &stream, const std::string &password)
     producer.write(stream, password);
 }
 
-#ifdef WIN32
+#ifdef _MSC_VER
 void workbook::save(const std::wstring &filename)
 {
     std::ofstream file_stream;

@@ -59,10 +59,8 @@ timedelta timedelta::from_number(long double raw_time)
 {
     timedelta result;
 
-    long double integer_part;
-    long double fractional_part = std::modf(raw_time, &integer_part);
-
-    result.days = static_cast<int>(integer_part);
+    result.days = static_cast<int>(raw_time);
+    long double fractional_part = raw_time - result.days;
 
     fractional_part *= 24;
     result.hours = static_cast<int>(fractional_part);

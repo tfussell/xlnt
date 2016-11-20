@@ -11,24 +11,7 @@ namespace {
 
 static std::string create_temporary_filename()
 {
-#ifdef _MSC_VER
-	std::array<TCHAR, MAX_PATH> buffer;
-	DWORD result = GetTempPath(static_cast<DWORD>(buffer.size()), buffer.data());
-
-	if (result > MAX_PATH)
-	{
-		throw std::runtime_error("buffer is too small");
-	}
-
-	if (result == 0)
-	{
-		throw std::runtime_error("GetTempPath failed");
-	}
-
-	return std::string(buffer.begin(), buffer.begin() + result) + "xlnt.xlsx";
-#else
-	return "/tmp/xlnt.xlsx";
-#endif
+    return "temp.xlsx";
 }
 
 } // namespace 

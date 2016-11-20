@@ -37,7 +37,7 @@
 
 namespace {
 
-#ifdef _MSC_VER
+#ifdef WIN32
 
 char system_separator()
 {

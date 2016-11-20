@@ -375,7 +375,7 @@ public:
 	void load(std::istream &stream, const std::string &password);
 	void load(const std::vector<std::uint8_t> &data, const std::string &password);
 
-#ifdef WIN32
+#ifdef _MSC_VER
     void save(const std::wstring &filename);
     void save(const std::wstring &filename, const std::string &password);
 
