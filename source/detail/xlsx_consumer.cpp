@@ -792,26 +792,11 @@ void xlsx_consumer::read_workbook()
                 }
             }
 
-            if (parser().attribute_present("defaultThemeVersion"))
-            {
-                parser().attribute("defaultThemeVersion");
-            }
-
-            // todo: turn these structures into a method like skip_attribute(string name, bool optional)
-            if (parser().attribute_present("backupFile"))
-            {
-                parser().attribute("backupFile");
-            }
-
-            if (parser().attribute_present("showObjects"))
-            {
-                parser().attribute("showObjects");
-            }
-
-            if (parser().attribute_present("filterPrivacy"))
-            {
-                parser().attribute("filterPrivacy");
-            }
+            skip_attribute("codeName");
+            skip_attribute("defaultThemeVersion");
+            skip_attribute("backupFile");
+            skip_attribute("showObjects");
+            skip_attribute("filterPrivacy");
 
             parser().next_expect(xml::parser::event_type::end_element, xmlns, "workbookPr");
         }
@@ -2401,6 +2386,14 @@ void xlsx_consumer::read_block(const std::unordered_map<xml::qname, std::functio
     }
 
     parser().next_expect(xml::parser::event_type::end_element, parent_block);
+}
+
+void xlsx_consumer::skip_attribute(const std::string &name)
+{
+    if (parser().attribute_present(name))
+    {
+        parser().attribute(name);
+    }
 }
 
 } // namespace detail

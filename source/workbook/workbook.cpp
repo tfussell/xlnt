@@ -28,7 +28,7 @@
 #include <functional>
 #include <set>
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #include <codecvt> // utf-8 -> utf-16 conversion
 #endif
 

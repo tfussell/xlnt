@@ -1032,7 +1032,7 @@ void cell::comment(const class comment &new_comment)
     // todo: make this cell_position.first += get_width() instead
     if (get_worksheet().has_column_properties(get_column()))
     {
-        cell_position.first += get_worksheet().get_column_properties(get_column()).width;
+        cell_position.first += static_cast<int>(get_worksheet().get_column_properties(get_column()).width);
     }
     else
     {

@@ -226,6 +226,8 @@ private:
     
     void read_part(const std::vector<relationship> &rel_chain);
 
+    void skip_attribute(const std::string &name);
+
 	/// <summary>
 	/// The ZIP file containing the files that make up the OOXML package.
 	/// </summary>
