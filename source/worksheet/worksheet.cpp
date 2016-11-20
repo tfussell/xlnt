@@ -338,6 +338,16 @@ void worksheet::unfreeze_panes()
     d_->view_.get_pane().state = pane_state::normal;
 }
 
+cell worksheet::get_cell(column_t column, row_t row)
+{
+    return get_cell(cell_reference(column, row));
+}
+
+const cell worksheet::get_cell(column_t column, row_t row) const
+{
+    return get_cell(cell_reference(column, row));
+}
+
 cell worksheet::get_cell(const cell_reference &reference)
 {
     if (d_->cell_map_.find(reference.get_row()) == d_->cell_map_.end())

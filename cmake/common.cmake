@@ -4,8 +4,6 @@ set(LIBRARY_VERSION 0.9.0)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-
 # Global platform-specific definitions
 if(MSVC)
     add_definitions(-DUNICODE -D_UNICODE)

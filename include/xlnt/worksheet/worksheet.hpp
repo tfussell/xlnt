@@ -95,6 +95,8 @@ public:
     bool has_frozen_panes() const;
 
     // container
+    cell get_cell(column_t column, row_t row);
+    const cell get_cell(column_t column, row_t row) const;
     cell get_cell(const cell_reference &reference);
     const cell get_cell(const cell_reference &reference) const;
     bool has_cell(const cell_reference &reference) const;
