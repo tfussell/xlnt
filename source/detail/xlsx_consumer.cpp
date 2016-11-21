@@ -2172,6 +2172,21 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
 
             parser().next();
         }
+        else if (parser().qname() == xml::qname(xmlns, "sortState"))
+        {
+            parser().attribute_map();
+
+            while (parser().peek() != xml::parser::event_type::end_element ||
+                   parser().qname() != xml::qname(xmlns, "sortState"))
+            {
+                if (parser().next() == xml::parser::event_type::start_element)
+                {
+                    parser().attribute_map();
+                }
+            }
+
+            parser().next();
+        }
     }
 
     parser().next_expect(xml::parser::event_type::end_element, xmlns, "worksheet");
