@@ -982,8 +982,7 @@ void xlsx_consumer::read_shared_string_table()
 
         if (parser().name() == "t")
         {
-            parser().next_expect(xml::parser::event_type::characters);
-            t.plain_text(parser().value());
+            t.plain_text(read_text());
         }
         else if (parser().name() == "r") // possible multiple text entities.
         {
@@ -992,9 +991,8 @@ void xlsx_consumer::read_shared_string_table()
                 if (parser().peek() == xml::parser::event_type::end_element) break;
 
                 parser().next_expect(xml::parser::event_type::start_element, xmlns, "t");
-                parser().next_expect(xml::parser::event_type::characters);
                 text_run run;
-                run.set_string(parser().value());
+                run.set_string(read_text());
 
                 if (parser().peek() == xml::parser::event_type::start_element)
                 {
@@ -1974,26 +1972,18 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
                         if (parser().qname() == xml::qname(xmlns, "v"))
                         {
                             has_value = true;
-
-                            // <v> might be empty, check first
-                            if (parser().peek() == xml::parser::event_type::characters)
-                            {
-                                parser().next_expect(xml::parser::event_type::characters);
-                                value_string = parser().value();
-                            }
+                            value_string = read_text();
                         }
                         else if (parser().qname() == xml::qname(xmlns, "f"))
                         {
                             has_formula = true;
                             has_shared_formula = parser().attribute_present("t") && parser().attribute("t") == "shared";
-                            parser().next_expect(xml::parser::event_type::characters);
-                            formula_value_string = parser().value();
+                            formula_value_string = read_text();
                         }
                         else if (parser().qname() == xml::qname(xmlns, "is"))
                         {
                             parser().next_expect(xml::parser::event_type::start_element, xmlns, "t");
-                            parser().next_expect(xml::parser::event_type::characters);
-                            value_string = parser().value();
+                            value_string = read_text();
                             parser().next_expect(xml::parser::event_type::end_element, xmlns, "t");
                         }
 
