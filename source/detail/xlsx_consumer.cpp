@@ -1470,7 +1470,7 @@ void xlsx_consumer::read_stylesheet()
         }
         else if (current_style_element == xml::qname(xmlns, "tableStyles"))
         {
-            skip_attributes({"defaultTableStyle", "defaultPivotStyle"});
+            skip_attributes(std::vector<std::string>{"defaultTableStyle", "defaultPivotStyle"});
 
             auto count = parser().attribute<std::size_t>("count");
             std::size_t processed = 0;
