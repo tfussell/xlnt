@@ -38,6 +38,9 @@
 
 namespace std {
 
+/// <summary>
+/// Allows xml::qname to be used as a key in a std::unordered_map.
+/// </summary>
 template <>
 struct hash<xml::qname>
 {
@@ -52,9 +55,28 @@ struct hash<xml::qname>
 
 namespace {
 
+#define THROW_ON_INVALID_XML
+
+/// <summary>
+/// Returns true if bool_string represents a true xsd:boolean.
+/// </summary>
 bool is_true(const std::string &bool_string)
 {
-    return bool_string == "1" || bool_string == "true";
+    if (bool_string == "1" || bool_string == "true")
+    {
+        return true;
+    }
+
+#ifdef THROW_ON_INVALID_XML
+    if (bool_string == "0" || bool_string == "false")
+    {
+        return false;
+    }
+
+    throw xlnt::exception("xsd:boolean should be one of: 0, 1, true, or false, found " + bool_string);
+#else
+    return false;
+#endif
 }
 
 std::size_t string_to_size_t(const std::string &s)
@@ -113,37 +135,6 @@ xlnt::color read_color(xml::parser &parser)
     return result;
 }
 
-std::vector<xlnt::relationship> read_relationships(const xlnt::path &part, xlnt::detail::ZipFileReader &archive)
-{
-    std::vector<xlnt::relationship> relationships;
-    if (!archive.has_file(part.string())) return relationships;
-
-    auto &rels_stream = archive.open(part.string());
-    xml::parser parser(rels_stream, part.string());
-
-    xlnt::uri source(part.string());
-
-    static const auto &xmlns = xlnt::constants::get_namespace("relationships");
-    parser.next_expect(xml::parser::event_type::start_element, xmlns, "Relationships");
-    parser.content(xml::content::complex);
-
-    while (true)
-    {
-        if (parser.peek() == xml::parser::event_type::end_element) break;
-
-        parser.next_expect(xml::parser::event_type::start_element, xmlns, "Relationship");
-        relationships.emplace_back(parser.attribute("Id"),
-            parser.attribute<xlnt::relationship::type>("Type"), source,
-            xlnt::uri(parser.attribute("Target")),
-            xlnt::target_mode::internal);
-        parser.next_expect(xml::parser::event_type::end_element, xmlns, "Relationship");
-    }
-
-    parser.next_expect(xml::parser::event_type::end_element, xmlns, "Relationships");
-
-    return relationships;
-}
-
 void check_document_type(const std::string &document_content_type)
 {
     if (document_content_type != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml" &&
@@ -151,6 +142,18 @@ void check_document_type(const std::string &document_content_type)
     {
         throw xlnt::invalid_file(document_content_type);
     }
+}
+
+#ifdef THROW_ON_INVALID_XML
+#define unexpected_element(element) throw xlnt::exception(element.string());
+#else
+#define unexpected_element(element) skip_remaining_content(element);
+#endif
+
+template<typename T>
+bool contains(const std::vector<T> &strings, const T &element)
+{
+    return std::find(strings.begin(), strings.end(), element) != strings.end();
 }
 
 } // namespace
@@ -175,6 +178,40 @@ xml::parser &xlsx_consumer::parser()
     return *parser_;
 }
 
+
+std::vector<relationship> xlsx_consumer::read_relationships(const path &part)
+{
+    std::vector<xlnt::relationship> relationships;
+    if (!archive_->has_file(part.string())) return relationships;
+
+    auto &rels_stream = archive_->open(part.string());
+    xml::parser parser(rels_stream, part.string());
+    parser_ = &parser;
+
+    xlnt::uri source(part.string());
+
+    static const auto &xmlns = xlnt::constants::get_namespace("relationships");
+
+    expect_start_element(xml::qname(xmlns, "Relationships"), xml::content::complex);
+
+    while (in_element(xml::qname(xmlns, "Relationships")))
+    {
+        expect_start_element(xml::qname(xmlns, "Relationship"), xml::content::simple);
+        relationships.emplace_back(parser.attribute("Id"),
+            parser.attribute<xlnt::relationship::type>("Type"), source,
+            xlnt::uri(parser.attribute("Target")),
+            xlnt::target_mode::internal);
+        expect_end_element(xml::qname(xmlns, "Relationship"));
+    }
+
+    expect_end_element(xml::qname(xmlns, "Relationships"));
+    
+    parser_ = nullptr;
+
+    return relationships;
+}
+
+
 void xlsx_consumer::read_part(const std::vector<relationship> &rel_chain)
 {
     // ignore namespace declarations except in parts of these types
@@ -188,10 +225,8 @@ void xlsx_consumer::read_part(const std::vector<relationship> &rel_chain)
     };
 
     auto receive = xml::parser::receive_default;
-    auto receive_namespaces = std::find(using_namespaces.begin(), using_namespaces.end(),
-        rel_chain.back().get_type()) != using_namespaces.end();
 
-    if (receive_namespaces)
+    if (contains(using_namespaces, rel_chain.back().get_type()))
     {
         receive |= xml::parser::receive_namespace_decls;
     }
@@ -410,40 +445,42 @@ void xlsx_consumer::read_manifest()
         throw invalid_file("missing package rels");
     }
 
-    auto package_rels = read_relationships(package_rels_path, *archive_);
+    auto package_rels = read_relationships(package_rels_path);
     auto &manifest = target_.get_manifest();
 
     static const auto &xmlns = constants::get_namespace("content-types");
 
     xml::parser parser(archive_->open("[Content_Types].xml"), "[Content_Types].xml");
+    parser_ = &parser;
+
     parser.next_expect(xml::parser::event_type::start_element, xmlns, "Types");
     parser.content(xml::content::complex);
 
-    while (true)
+    while (in_element(xml::qname(xmlns, "Types")))
     {
-        if (parser.peek() == xml::parser::event_type::end_element) break;
+        auto current_element = expect_start_element(xml::content::complex);
 
-        parser.next_expect(xml::parser::event_type::start_element);
-
-        if (parser.name() == "Default")
+        if (current_element == xml::qname(xmlns, "Default"))
         {
             auto extension = parser.attribute("Extension");
             auto content_type = parser.attribute("ContentType");
             manifest.register_default_type(extension, content_type);
-
-            parser.next_expect(xml::parser::event_type::end_element, xmlns, "Default");
         }
-        else if (parser.name() == "Override")
+        else if (current_element == xml::qname(xmlns, "Override"))
         {
             auto part_name = parser.attribute("PartName");
             auto content_type = parser.attribute("ContentType");
             manifest.register_override_type(path(part_name), content_type);
-
-            parser.next_expect(xml::parser::event_type::end_element, xmlns, "Override");
         }
+        else
+        {
+            unexpected_element(current_element);
+        }
+
+        expect_end_element(current_element);
     }
 
-    parser.next_expect(xml::parser::event_type::end_element, xmlns, "Types");
+    expect_end_element(xml::qname(xmlns, "Types"));
 
     for (const auto &package_rel : package_rels)
     {
@@ -472,7 +509,7 @@ void xlsx_consumer::read_manifest()
 
         path source_directory = part.parent();
 
-        auto part_rels = read_relationships(relationship_source, *archive_);
+        auto part_rels = read_relationships(relationship_source);
 
         for (const auto &part_rel : part_rels)
         {
@@ -494,98 +531,102 @@ void xlsx_consumer::read_extended_properties()
     parser().next_expect(xml::parser::event_type::start_element, xmlns, "Properties");
     parser().content(xml::parser::content_type::complex);
 
-    read_block(
+    while (in_element(xml::qname(xmlns, "Properties")))
     {
-        {
-            xml::qname(xmlns, "Application"),
-            [](xlsx_consumer &c) { c.target_.set_application(c.read_text()); }
-        },
-        {
-            xml::qname(xmlns, "DocSecurity"),
-            [](xlsx_consumer &c) { c.target_.set_doc_security(std::stoi(c.read_text())); }
-        },
-        {
-            xml::qname(xmlns, "ScaleCrop"),
-            [](xlsx_consumer &c) { c.target_.set_scale_crop(is_true(c.read_text())); }
-        },
-        {
-            xml::qname(xmlns, "Company"),
-            [](xlsx_consumer &c) { c.target_.set_company(c.read_text()); }
-        },
-        {
-            xml::qname(xmlns, "SharedDoc"),
-            [](xlsx_consumer &c) { c.target_.set_shared_doc(is_true(c.read_text())); }
-        },
-        {
-            xml::qname(xmlns, "HyperlinksChanged"),
-            [](xlsx_consumer &c) { c.target_.set_hyperlinks_changed(is_true(c.read_text())); }
-        },
-        {
-            xml::qname(xmlns, "AppVersion"),
-            [](xlsx_consumer &c) { c.target_.set_app_version(c.read_text()); }
-        },
-        {
-            xml::qname(xmlns, "LinksUpToDate"),
-            [](xlsx_consumer &c) { c.target_.set_links_up_to_date(is_true(c.read_text())); }
-        },
-        {
-            xml::qname(xmlns, "Template"),
-            [](xlsx_consumer &c) { c.read_text(); }
-        },
-        {
-            xml::qname(xmlns, "TotalTime"),
-            [](xlsx_consumer &c) { c.read_text(); }
-        },
-        {
-            xml::qname(xmlns, "HeadingPairs"),
-            [](xlsx_consumer &c)
-            {
-                c.parser().content(xml::parser::content_type::complex);
-                c.parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "vector");
-                c.parser().content(xml::parser::content_type::complex);
+        auto current_property_element = expect_start_element(xml::content::mixed);
 
-                c.parser().attribute("size");
-                c.parser().attribute("baseType");
-
-                c.parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "variant");
-                c.parser().content(xml::parser::content_type::complex);
-                c.parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "lpstr");
-                c.parser().next_expect(xml::parser::event_type::characters);
-                c.parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "lpstr");
-                c.parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "variant");
-                c.parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "variant");
-                c.parser().content(xml::parser::content_type::complex);
-                c.parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "i4");
-                c.parser().next_expect(xml::parser::event_type::characters);
-                c.parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "i4");
-                c.parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "variant");
-
-                c.parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "vector");
-            }
-        },
+        if (current_property_element == xml::qname(xmlns, "Application"))
         {
-            xml::qname(xmlns, "TitlesOfParts"),
-            [](xlsx_consumer &c)
-            {
-                c.parser().content(xml::parser::content_type::complex);
-                c.parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "vector");
-                c.parser().content(xml::parser::content_type::complex);
-
-                auto size = c.parser().attribute<std::size_t>("size");
-                c.parser().attribute("baseType");
-
-                for (auto i = std::size_t(0); i < size; ++i)
-                {
-                    c.parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "lpstr");
-                    c.parser().content(xml::parser::content_type::simple);
-                    c.parser().next_expect(xml::parser::event_type::characters);
-                    c.parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "lpstr");
-                }
-
-                c.parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "vector");
-            }
+            target_.set_application(read_text());
         }
-    });
+        else if (current_property_element == xml::qname(xmlns, "DocSecurity"))
+        {
+            target_.set_doc_security(std::stoi(read_text()));
+        }
+        else if (current_property_element == xml::qname(xmlns, "ScaleCrop"))
+        {
+            target_.set_scale_crop(is_true(read_text()));
+        }
+        else if (current_property_element == xml::qname(xmlns, "Company"))
+        {
+            target_.set_company(read_text());
+        }
+        else if (current_property_element == xml::qname(xmlns, "SharedDoc"))
+        {
+            target_.set_shared_doc(is_true(read_text()));
+        }
+        else if (current_property_element == xml::qname(xmlns, "HyperlinksChanged"))
+        {
+            target_.set_hyperlinks_changed(is_true(read_text()));
+        }
+        else if (current_property_element == xml::qname(xmlns, "AppVersion"))
+        {
+            target_.set_app_version(read_text());
+        }
+        else if (current_property_element == xml::qname(xmlns, "LinksUpToDate"))
+        {
+            target_.set_links_up_to_date(is_true(read_text()));
+        }
+        else if (current_property_element == xml::qname(xmlns, "Template"))
+        {
+            read_text();
+        }
+        else if (current_property_element == xml::qname(xmlns, "TotalTime"))
+        {
+            read_text();
+        }
+        else if (current_property_element == xml::qname(xmlns, "HeadingPairs"))
+        {
+            parser().content(xml::parser::content_type::complex);
+            parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "vector");
+            parser().content(xml::parser::content_type::complex);
+
+            parser().attribute("size");
+            parser().attribute("baseType");
+
+            parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "variant");
+            parser().content(xml::parser::content_type::complex);
+            parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "lpstr");
+            parser().next_expect(xml::parser::event_type::characters);
+            parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "lpstr");
+            parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "variant");
+            parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "variant");
+            parser().content(xml::parser::content_type::complex);
+            parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "i4");
+            parser().next_expect(xml::parser::event_type::characters);
+            parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "i4");
+            parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "variant");
+
+            parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "vector");
+        }
+        else if (current_property_element == xml::qname(xmlns, "TitlesOfParts"))
+        {
+            parser().content(xml::parser::content_type::complex);
+            parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "vector");
+            parser().content(xml::parser::content_type::complex);
+
+            auto size = parser().attribute<std::size_t>("size");
+            parser().attribute("baseType");
+
+            for (auto i = std::size_t(0); i < size; ++i)
+            {
+                parser().next_expect(xml::parser::event_type::start_element, xmlns_vt, "lpstr");
+                parser().content(xml::parser::content_type::simple);
+                parser().next_expect(xml::parser::event_type::characters);
+                parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "lpstr");
+            }
+
+            parser().next_expect(xml::parser::event_type::end_element, xmlns_vt, "vector");
+        }
+        else
+        {
+            unexpected_element(current_property_element);
+        }
+
+        parser().next_expect(xml::parser::event_type::end_element, current_property_element);
+    }
+    
+    expect_end_element(xml::qname(xmlns, "Properties"));
 }
 
 void xlsx_consumer::read_core_properties()
@@ -598,42 +639,63 @@ void xlsx_consumer::read_core_properties()
     parser().next_expect(xml::parser::event_type::start_element, xmlns_cp, "coreProperties");
     parser().content(xml::parser::content_type::complex);
 
-    while (true)
+    while (in_element(xml::qname(xmlns_cp, "coreProperties")))
     {
-        if (parser().peek() == xml::parser::event_type::end_element) break;
+        auto property_element = expect_start_element(xml::content::simple);
+        auto property_value = std::string();
 
-        parser().next_expect(xml::parser::event_type::start_element);
-
-        std::string characters;
-        if (parser().peek() == xml::parser::event_type::characters)
+        if (in_element(property_element))
         {
-            parser().next_expect(xml::parser::event_type::characters);
-            characters = parser().value();
+            property_value = read_text();
         }
 
-        if (parser().namespace_() == xmlns_dc && parser().name() == "creator")
+        if (property_element == xml::qname(xmlns_dc, "creator"))
         {
-            target_.set_creator(characters);
+            target_.set_creator(property_value);
         }
-        else if (parser().namespace_() == xmlns_cp && parser().name() == "lastModifiedBy")
+        else if (property_element == xml::qname(xmlns_cp, "lastModifiedBy"))
         {
-            target_.set_last_modified_by(characters);
+            target_.set_last_modified_by(property_value);
         }
-        else if (parser().namespace_() == xmlns_dcterms && parser().name() == "created")
+        else if (property_element == xml::qname(xmlns_dcterms, "created"))
         {
-            parser().attribute(xml::qname(xmlns_xsi, "type"));
-            target_.set_created(w3cdtf_to_datetime(characters));
+            skip_attributes({xml::qname(xmlns_xsi, "type")});
+            target_.set_created(w3cdtf_to_datetime(property_value));
         }
-        else if (parser().namespace_() == xmlns_dcterms && parser().name() == "modified")
+        else if (property_element == xml::qname(xmlns_dcterms, "modified"))
         {
-            parser().attribute(xml::qname(xmlns_xsi, "type"));
-            target_.set_modified(w3cdtf_to_datetime(characters));
+            skip_attributes({xml::qname(xmlns_xsi, "type")});
+            target_.set_modified(w3cdtf_to_datetime(property_value));
+        }
+        else if (property_element == xml::qname(xmlns_dc, "description"))
+        {
+            // ignore
+        }
+        else if (property_element == xml::qname(xmlns_dc, "language"))
+        {
+            // ignore
+        }
+        else if (property_element == xml::qname(xmlns_dc, "subject"))
+        {
+            // ignore
+        }
+        else if (property_element == xml::qname(xmlns_dc, "title"))
+        {
+            // ignore
+        }
+        else if (property_element == xml::qname(xmlns_cp, "revision"))
+        {
+            // ignore
+        }
+        else
+        {
+            unexpected_element(property_element);
         }
 
-        parser().next_expect(xml::parser::event_type::end_element);
+        expect_end_element(property_element);
     }
 
-    parser().next_expect(xml::parser::event_type::end_element, xmlns_cp, "coreProperties");
+    expect_end_element(xml::qname(xmlns_cp, "coreProperties"));
 }
 
 void xlsx_consumer::read_custom_file_properties()
@@ -648,40 +710,24 @@ void xlsx_consumer::read_workbook()
     static const auto &xmlns_mc = constants::get_namespace("mc");
     static const auto &xmlns_mx = constants::get_namespace("mx");
     static const auto &xmlns_r = constants::get_namespace("r");
-    static const auto &xmlns_s = constants::get_namespace("worksheet");
+    static const auto &xmlns_s = constants::get_namespace("spreadsheetml");
     static const auto &xmlns_x15 = constants::get_namespace("x15");
     static const auto &xmlns_x15ac = constants::get_namespace("x15ac");
 
-    parser().next_expect(xml::parser::event_type::start_element, xmlns, "workbook");
-    parser().content(xml::parser::content_type::complex);
+    expect_start_element(xml::qname(xmlns, "workbook"), xml::content::complex);
 
-    while (parser().peek() == xml::parser::event_type::start_namespace_decl)
+    if (contains(read_namespaces(), xmlns_x15))
     {
-        parser().next_expect(xml::parser::event_type::start_namespace_decl);
-
-        if (parser().namespace_() == xmlns_x15)
-        {
-            target_.enable_x15();
-        }
+        target_.enable_x15();
     }
 
-    if (parser().attribute_present(xml::qname(xmlns_mc, "Ignorable")))
+    skip_attributes({xml::qname(xmlns_mc, "Ignorable")});
+
+    while (in_element(xml::qname(xmlns, "workbook")))
     {
-        parser().attribute(xml::qname(xmlns_mc, "Ignorable"));
-    }
+        auto current_workbook_element = expect_start_element(xml::content::complex);
 
-    while (true)
-    {
-        if (parser().peek() == xml::parser::event_type::end_element ||
-            parser().peek() == xml::parser::event_type::end_namespace_decl)
-            break;
-
-        parser().next_expect(xml::parser::event_type::start_element);
-        parser().content(xml::parser::content_type::complex);
-
-        auto qname = parser().qname();
-
-        if (qname == xml::qname(xmlns, "fileVersion"))
+        if (current_workbook_element == xml::qname(xmlns, "fileVersion"))
         {
             target_.d_->has_file_version_ = true;
             target_.d_->file_version_.app_name = parser().attribute("appName");
@@ -690,18 +736,18 @@ void xlsx_consumer::read_workbook()
             {
                 target_.d_->file_version_.last_edited = string_to_size_t(parser().attribute("lastEdited"));
             }
+
             if (parser().attribute_present("lowestEdited"))
             {
                 target_.d_->file_version_.lowest_edited = string_to_size_t(parser().attribute("lowestEdited"));
             }
+
             if (parser().attribute_present("lowestEdited"))
             {
                 target_.d_->file_version_.rup_build = string_to_size_t(parser().attribute("rupBuild"));
             }
-
-            parser().next_expect(xml::parser::event_type::end_element);
         }
-        else if (qname == xml::qname(xmlns_mc, "AlternateContent"))
+        else if (current_workbook_element == xml::qname(xmlns_mc, "AlternateContent"))
         {
             if (parser().peek() == xml::parser::event_type::start_namespace_decl)
             {
@@ -710,7 +756,7 @@ void xlsx_consumer::read_workbook()
 
             parser().next_expect(xml::parser::event_type::start_element, xmlns_mc, "Choice");
             parser().content(xml::parser::content_type::complex);
-            parser().attribute("Requires");
+            skip_attributes({"Requires"});
             parser().next_expect(xml::parser::event_type::start_element, xmlns_x15ac, "absPath");
             target_.set_absolute_path(path(parser().attribute("url")));
 
@@ -722,18 +768,15 @@ void xlsx_consumer::read_workbook()
 
             parser().next_expect(xml::parser::event_type::end_element, xmlns_x15ac, "absPath");
             parser().next_expect(xml::parser::event_type::end_element, xmlns_mc, "Choice");
-            parser().next_expect(xml::parser::event_type::end_element, xmlns_mc, "AlternateContent");
-
-            if (parser().peek() == xml::parser::event_type::end_namespace_decl)
-            {
-                parser().next_expect(xml::parser::event_type::end_namespace_decl);
-            }
         }
-        else if (qname == xml::qname(xmlns, "bookViews"))
+        else if (current_workbook_element == xml::qname(xmlns, "bookViews"))
         {
-            if (parser().peek() == xml::parser::event_type::start_element)
+            while (in_element(xml::qname(xmlns, "bookViews")))
             {
-                parser().next_expect(xml::parser::event_type::start_element, xmlns, "workbookView");
+                expect_start_element(xml::qname(xmlns, "workbookView"), xml::content::simple);
+
+                skip_attributes({"activeTab", "firstSheet", "showHorizontalScroll",
+                    "showSheetTabs", "showVerticalScroll"});
 
                 workbook_view view;
                 view.x_window = string_to_size_t(parser().attribute("xWindow"));
@@ -746,172 +789,89 @@ void xlsx_consumer::read_workbook()
                     view.tab_ratio = string_to_size_t(parser().attribute("tabRatio"));
                 }
 
-                if (parser().attribute_present("activeTab"))
-                {
-                    parser().attribute("activeTab");
-                }
-
-                if (parser().attribute_present("firstSheet"))
-                {
-                    parser().attribute("firstSheet");
-                }
-
-                if (parser().attribute_present("showHorizontalScroll"))
-                {
-                    parser().attribute("showHorizontalScroll");
-                }
-
-                if (parser().attribute_present("showSheetTabs"))
-                {
-                    parser().attribute("showSheetTabs");
-                }
-
-                if (parser().attribute_present("showVerticalScroll"))
-                {
-                    parser().attribute("showVerticalScroll");
-                }
+                expect_end_element(xml::qname(xmlns, "workbookView"));
 
                 target_.set_view(view);
-
-                parser().next_expect(xml::parser::event_type::end_element, xmlns, "workbookView");
             }
-
-            parser().next_expect(xml::parser::event_type::end_element, xmlns, "bookViews");
         }
-        else if (qname == xml::qname(xmlns, "workbookPr"))
+        else if (current_workbook_element == xml::qname(xmlns, "workbookPr"))
         {
             target_.d_->has_properties_ = true;
 
             if (parser().attribute_present("date1904"))
             {
-                const auto value = parser().attribute("date1904");
-
-                if (value == "1" || value == "true")
-                {
-                    target_.set_base_date(xlnt::calendar::mac_1904);
-                }
+                target_.set_base_date(is_true(parser().attribute("date1904"))
+                    ? calendar::mac_1904 : calendar::windows_1900);
             }
 
-            skip_attribute("codeName");
-            skip_attribute("defaultThemeVersion");
-            skip_attribute("backupFile");
-            skip_attribute("showObjects");
-            skip_attribute("filterPrivacy");
-
-            parser().next_expect(xml::parser::event_type::end_element, xmlns, "workbookPr");
+            skip_attributes({"codeName", "defaultThemeVersion",
+                "backupFile", "showObjects", "filterPrivacy", "dateCompatibility"});
         }
-        else if (qname == xml::qname(xmlns, "sheets"))
+        else if (current_workbook_element == xml::qname(xmlns, "sheets"))
         {
             std::size_t index = 0;
 
-            while (true)
+            while (in_element(xml::qname(xmlns, "sheets")))
             {
-                if (parser().peek() == xml::parser::event_type::end_element) break;
+                expect_start_element(xml::qname(xmlns_s, "sheet"), xml::content::simple);
 
-                parser().next_expect(xml::parser::event_type::start_element, xmlns_s, "sheet");
+                auto title = parser().attribute("name");
+                skip_attributes({"state"});
 
-                std::string rel_id(parser().attribute(xml::qname(xmlns_r, "id")));
-                std::string title(parser().attribute("name"));
-                auto id = string_to_size_t(parser().attribute("sheetId"));
-
-                sheet_title_id_map_[title] = id;
                 sheet_title_index_map_[title] = index++;
-                target_.d_->sheet_title_rel_id_map_[title] = rel_id;
+                sheet_title_id_map_[title] = string_to_size_t(parser().attribute("sheetId"));
+                target_.d_->sheet_title_rel_id_map_[title] = parser().attribute(xml::qname(xmlns_r, "id"));
 
-                if (parser().attribute_present("state"))
-                {
-                    parser().attribute("state");
-                }
-
-                parser().next_expect(xml::parser::event_type::end_element, xmlns_s, "sheet");
+                expect_end_element(xml::qname(xmlns_s, "sheet"));
             }
-
-            parser().next_expect(xml::parser::event_type::end_element, xmlns, "sheets");
         }
-        else if (qname == xml::qname(xmlns, "calcPr"))
+        else if (current_workbook_element == xml::qname(xmlns, "calcPr"))
         {
             target_.d_->has_calculation_properties_ = true;
-
-            if (parser().attribute_present("calcId"))
-            {
-                parser().attribute("calcId");
-            }
-
-            if (parser().attribute_present("concurrentCalc"))
-            {
-                parser().attribute("concurrentCalc");
-            }
-
-            if (parser().attribute_present("iterate"))
-            {
-                parser().attribute("iterate");
-            }
-
-            if (parser().attribute_present("iterateCount"))
-            {
-                parser().attribute("iterateCount");
-            }
-
-            if (parser().attribute_present("iterateDelta"))
-            {
-                parser().attribute("iterateDelta");
-            }
-
-            if (parser().attribute_present("refMode"))
-            {
-                parser().attribute("refMode");
-            }
-
-            parser().next_expect(xml::parser::event_type::end_element, xmlns, "calcPr");
+            skip_attributes();
         }
-        else if (qname == xml::qname(xmlns, "extLst"))
+        else if (current_workbook_element == xml::qname(xmlns, "extLst"))
         {
-            parser().next_expect(xml::parser::event_type::start_element, xmlns, "ext");
-            parser().content(xml::parser::content_type::complex);
-            parser().attribute("uri");
-
-            for (;;)
+            while (in_element(xml::qname(xmlns, "extLst")))
             {
-                if (parser().peek() == xml::parser::event_type::end_element) break;
-
+                parser().next_expect(xml::parser::event_type::start_element, xmlns, "ext");
+                parser().content(xml::parser::content_type::complex);
+                parser().attribute("uri");
                 parser().next_expect(xml::parser::event_type::start_namespace_decl);
+
                 parser().next_expect(xml::parser::event_type::start_element);
+
+                skip_attributes({"stringRefSyntax"});
 
                 if (parser().qname() == xml::qname(xmlns_mx, "ArchID"))
                 {
                     target_.d_->has_arch_id_ = true;
-                    parser().attribute("Flags");
+                    skip_attributes({"Flags"});
                 }
                 else if (parser().qname() == xml::qname(xmlns_x15, "workbookPr"))
                 {
-                    parser().attribute("chartTrackingRefBase");
-                }
-
-                if (parser().attribute_present("stringRefSyntax"))
-                {
-                    parser().attribute("stringRefSyntax");
+                    skip_attributes({"chartTrackingRefBase"});
                 }
 
                 parser().next_expect(xml::parser::event_type::end_element);
-            }
 
-            parser().next_expect(xml::parser::event_type::end_element, xmlns, "ext");
-            parser().next_expect(xml::parser::event_type::end_namespace_decl);
-            parser().next_expect(xml::parser::event_type::end_element, xmlns, "extLst");
+                parser().next_expect(xml::parser::event_type::end_element, xmlns, "ext");
+                parser().next_expect(xml::parser::event_type::end_namespace_decl);
+            }
         }
-        else if (qname == xml::qname(xmlns, "workbookProtection"))
+        else if (current_workbook_element == xml::qname(xmlns, "workbookProtection"))
         {
-            while (parser().peek() != xml::parser::event_type::end_element ||
-                   parser().qname() != xml::qname(xmlns, "workbookProtection"))
-            {
-                parser().next();
-            }
-
-            parser().next();
+            skip_remaining_content(xml::qname(xmlns, "workbookProtection"));
         }
+        else
+        {
+            unexpected_element(current_workbook_element);
+        }
+
+        expect_end_element(current_workbook_element);
     }
 
-    parser().next_expect(xml::parser::event_type::end_element, xmlns, "workbook");
+    expect_end_element(xml::qname(xmlns, "workbook"));
 }
 
 // Write Workbook Relationship Target Parts
@@ -954,10 +914,12 @@ void xlsx_consumer::read_pivot_table()
 
 void xlsx_consumer::read_shared_string_table()
 {
-    static const auto &xmlns = constants::get_namespace("worksheet");
+    static const auto &xmlns = constants::get_namespace("spreadsheetml");
 
     parser().next_expect(xml::parser::event_type::start_element, xmlns, "sst");
     parser().content(xml::content::complex);
+
+    skip_attributes({"count"});
 
     std::size_t unique_count = 0;
 
@@ -968,76 +930,14 @@ void xlsx_consumer::read_shared_string_table()
 
     auto &strings = target_.get_shared_strings();
 
-    while (true)
+    while (in_element(xml::qname(xmlns, "sst")))
     {
-        if (parser().peek() == xml::parser::event_type::end_element) break;
-
-        parser().next_expect(xml::parser::event_type::start_element, xmlns, "si");
-        parser().content(xml::content::complex);
-        parser().next_expect(xml::parser::event_type::start_element);
-
-        formatted_text t;
-
-        parser().attribute_map();
-
-        if (parser().name() == "t")
-        {
-            t.plain_text(read_text());
-        }
-        else if (parser().name() == "r") // possible multiple text entities.
-        {
-            while (true)
-            {
-                if (parser().peek() == xml::parser::event_type::end_element) break;
-
-                parser().next_expect(xml::parser::event_type::start_element, xmlns, "t");
-                text_run run;
-                run.set_string(read_text());
-
-                if (parser().peek() == xml::parser::event_type::start_element)
-                {
-                    parser().next_expect(xml::parser::event_type::start_element, xmlns, "rPr");
-
-                    while (true)
-                    {
-                        if (parser().peek() == xml::parser::event_type::end_element) break;
-
-                        parser().next_expect(xml::parser::event_type::start_element);
-
-                        if (parser().qname() == xml::qname(xmlns, "sz"))
-                        {
-                            run.set_size(string_to_size_t(parser().attribute("val")));
-                        }
-                        else if (parser().qname() == xml::qname(xmlns, "rFont"))
-                        {
-                            run.set_font(parser().attribute("val"));
-                        }
-                        else if (parser().qname() == xml::qname(xmlns, "color"))
-                        {
-                            run.set_color(read_color(parser()));
-                        }
-                        else if (parser().qname() == xml::qname(xmlns, "family"))
-                        {
-                            run.set_family(string_to_size_t(parser().attribute("val")));
-                        }
-                        else if (parser().qname() == xml::qname(xmlns, "scheme"))
-                        {
-                            run.set_scheme(parser().attribute("val"));
-                        }
-
-                        parser().next_expect(xml::parser::event_type::end_element);
-                    }
-                }
-
-                t.add_run(run);
-            }
-        }
-
-        parser().next_expect(xml::parser::event_type::end_element);
-        parser().next_expect(xml::parser::event_type::end_element);
-
-        strings.push_back(t);
+        expect_start_element(xml::qname(xmlns, "si"), xml::content::complex);
+        strings.push_back(read_formatted_text(xmlns));
+        expect_end_element(xml::qname(xmlns, "si"));
     }
+
+    expect_end_element(xml::qname(xmlns, "sst"));
 
     if (unique_count != strings.size())
     {
@@ -1059,34 +959,16 @@ void xlsx_consumer::read_shared_workbook_user_data()
 
 void xlsx_consumer::read_stylesheet()
 {
-    static const auto &xmlns = constants::get_namespace("worksheet");
+    static const auto &xmlns = constants::get_namespace("spreadsheetml");
     static const auto &xmlns_mc = constants::get_namespace("mc");
-    static const auto &xmlns_x14 = constants::get_namespace("x14");
+    //static const auto &xmlns_x14 = constants::get_namespace("x14");
     static const auto &xmlns_x14ac = constants::get_namespace("x14ac");
-    static const auto &xmlns_x15 = constants::get_namespace("x15");
+    //static const auto &xmlns_x15 = constants::get_namespace("x15");
 
     auto &stylesheet = target_.impl().stylesheet_;
-
-    parser().next_expect(xml::parser::event_type::start_element, xmlns, "styleSheet");
-    parser().content(xml::parser::content_type::complex);
-
-    while (true)
-    {
-        if (parser().peek() != xml::parser::event_type::start_namespace_decl) break;
-
-        parser().next_expect(xml::parser::event_type::start_namespace_decl);
-
-        if (parser().namespace_() == xmlns_x14ac)
-        {
-            target_.enable_x15();
-        }
-    }
-
-    if (parser().attribute_present(xml::qname(xmlns_mc, "Ignorable")))
-    {
-        parser().attribute(xml::qname(xmlns_mc, "Ignorable"));
-    }
-
+    
+    //todo: should this really be defined here?
+    //todo: maybe xlnt::style and xlnt::format can be used here instead now
     struct formatting_record
     {
         std::pair<class alignment, bool> alignment = {{}, 0};
@@ -1112,28 +994,33 @@ void xlsx_consumer::read_stylesheet()
     std::vector<formatting_record> style_records;
     std::vector<formatting_record> format_records;
 
-    while (true)
+    parser().next_expect(xml::parser::event_type::start_element, xmlns, "styleSheet");
+    parser().content(xml::parser::content_type::complex);
+
+    if (contains(read_namespaces(), xmlns_x14ac))
     {
-        if (parser().peek() == xml::parser::event_type::end_element) break;
+        //todo: not enable_x14ac?
+        target_.enable_x15();
+    }
 
-        parser().next_expect(xml::parser::event_type::start_element);
-        parser().content(xml::parser::content_type::complex);
+    skip_attributes({xml::qname(xmlns_mc, "Ignorable")});
 
-        if (parser().qname() == xml::qname(xmlns, "borders"))
+    while (in_element(xml::qname(xmlns, "styleSheet")))
+    {
+        auto current_style_element = expect_start_element(xml::content::complex);
+
+        if (current_style_element == xml::qname(xmlns, "borders"))
         {
             stylesheet.borders.clear();
 
             auto count = parser().attribute<std::size_t>("count");
 
-            while (true)
+            while (in_element(xml::qname(xmlns, "borders")))
             {
-                if (parser().peek() == xml::parser::event_type::end_element) break;
-
                 stylesheet.borders.push_back(xlnt::border());
                 auto &border = stylesheet.borders.back();
 
-                parser().next_expect(xml::parser::event_type::start_element); // <border>
-                parser().content(xml::parser::content_type::complex);
+                expect_start_element(xml::qname(xmlns, "border"), xml::content::complex);
 
                 auto diagonal = diagonal_direction::neither;
 
@@ -1152,12 +1039,10 @@ void xlsx_consumer::read_stylesheet()
                     border.diagonal(diagonal);
                 }
 
-                while (true)
+                while (in_element(xml::qname(xmlns, "border")))
                 {
-                    if (parser().peek() == xml::parser::event_type::end_element) break;
-                    parser().next_expect(xml::parser::event_type::start_element);
+                    auto current_side_element = expect_start_element(xml::content::complex);
 
-                    auto side_type = xml::value_traits<xlnt::border_side>::parse(parser().name(), parser());
                     xlnt::border::border_property side;
 
                     if (parser().attribute_present("style"))
@@ -1165,35 +1050,35 @@ void xlsx_consumer::read_stylesheet()
                         side.style(parser().attribute<xlnt::border_style>("style"));
                     }
 
-                    if (parser().peek() == xml::parser::event_type::start_element)
+                    if (in_element(current_side_element))
                     {
-                        parser().next_expect(xml::parser::event_type::start_element, "color");
+                        expect_start_element(xml::qname(xmlns, "color"), xml::content::complex);
                         side.color(read_color(parser()));
-                        parser().next_expect(xml::parser::event_type::end_element, "color");
+                        expect_end_element(xml::qname(xmlns, "color"));
                     }
 
+                    expect_end_element(current_side_element);
+
+                    auto side_type = xml::value_traits<xlnt::border_side>::parse(current_side_element.name(), parser());
                     border.side(side_type, side);
-                    parser().next_expect(xml::parser::event_type::end_element);
                 }
 
-                parser().next_expect(xml::parser::event_type::end_element); // </border>
+                expect_end_element(xml::qname(xmlns, "border"));
             }
 
             if (count != stylesheet.borders.size())
             {
-                throw xlnt::exception("counts don't match");
+                throw xlnt::exception("border counts don't match");
             }
         }
-        else if (parser().qname() == xml::qname(xmlns, "fills"))
+        else if (current_style_element == xml::qname(xmlns, "fills"))
         {
             stylesheet.fills.clear();
 
             auto count = parser().attribute<std::size_t>("count");
 
-            while (true)
+            while (in_element(xml::qname(xmlns, "fills")))
             {
-                if (parser().peek() == xml::parser::event_type::end_element) break;
-
                 stylesheet.fills.push_back(xlnt::fill());
                 auto &new_fill = stylesheet.fills.back();
 
@@ -1209,13 +1094,8 @@ void xlsx_consumer::read_stylesheet()
                     {
                         pattern.type(parser().attribute<xlnt::pattern_fill_type>("patternType"));
 
-                        while (true)
+                        while (in_element(xml::qname(xmlns, "patternType")))
                         {
-                            if (parser().peek() == xml::parser::event_type::end_element)
-                            {
-                                break;
-                            }
-
                             parser().next_expect(xml::parser::event_type::start_element);
 
                             if (parser().name() == "fgColor")
@@ -1246,10 +1126,8 @@ void xlsx_consumer::read_stylesheet()
                         gradient.type(xlnt::gradient_fill_type::linear);
                     }
 
-                    while (true)
+                    while (in_element(xml::qname(xmlns, "gradientFill")))
                     {
-                        if (parser().peek() == xml::parser::event_type::end_element) break;
-
                         parser().next_expect(xml::parser::event_type::start_element, "stop");
                         auto position = parser().attribute<double>("position");
                         parser().next_expect(xml::parser::event_type::start_element, "color");
@@ -1272,31 +1150,23 @@ void xlsx_consumer::read_stylesheet()
                 throw xlnt::exception("counts don't match");
             }
         }
-        else if (parser().qname() == xml::qname(xmlns, "fonts"))
+        else if (current_style_element == xml::qname(xmlns, "fonts"))
         {
             stylesheet.fonts.clear();
 
             auto count = parser().attribute<std::size_t>("count");
+            skip_attributes({xml::qname(xmlns_x14ac, "knownFonts")});
 
-            if (parser().attribute_present(xml::qname(xmlns_x14ac, "knownFonts")))
+            while (in_element(xml::qname(xmlns, "fonts")))
             {
-                parser().attribute(xml::qname(xmlns_x14ac, "knownFonts"));
-            }
-
-            while (true)
-            {
-                if (parser().peek() == xml::parser::event_type::end_element) break;
-
                 stylesheet.fonts.push_back(xlnt::font());
                 auto &new_font = stylesheet.fonts.back();
 
                 parser().next_expect(xml::parser::event_type::start_element, xmlns, "font");
                 parser().content(xml::parser::content_type::complex);
 
-                while (true)
+                while (in_element(xml::qname(xmlns, "font")))
                 {
-                    if (parser().peek() == xml::parser::event_type::end_element) break;
-
                     parser().next_expect(xml::parser::event_type::start_element);
                     parser().content(xml::parser::content_type::simple);
 
@@ -1387,15 +1257,14 @@ void xlsx_consumer::read_stylesheet()
                 throw xlnt::exception("counts don't match");
             }
         }
-        else if (parser().qname() == xml::qname(xmlns, "numFmts"))
+        else if (current_style_element == xml::qname(xmlns, "numFmts"))
         {
             stylesheet.number_formats.clear();
 
             auto count = parser().attribute<std::size_t>("count");
 
-            while (true)
+            while (in_element(xml::qname(xmlns, "numFmts")))
             {
-                if (parser().peek() == xml::parser::event_type::end_element) break;
                 parser().next_expect(xml::parser::event_type::start_element, xmlns, "numFmt");
 
                 auto format_string = parser().attribute("formatCode");
@@ -1419,25 +1288,16 @@ void xlsx_consumer::read_stylesheet()
                 throw xlnt::exception("counts don't match");
             }
         }
-        else if (parser().qname() == xml::qname(xmlns, "colors"))
+        else if (current_style_element == xml::qname(xmlns, "colors"))
         {
-            while (parser().peek() != xml::parser::event_type::end_element ||
-                   parser().qname() != xml::qname(xmlns, "colors"))
-            {
-                if (parser().next() == xml::parser::event_type::start_element)
-                {
-                    parser().attribute_map();
-                }
-            }
+            skip_remaining_content(xml::qname(xmlns, "colors"));
         }
-        else if (parser().qname() == xml::qname(xmlns, "cellStyles"))
+        else if (current_style_element == xml::qname(xmlns, "cellStyles"))
         {
             auto count = parser().attribute<std::size_t>("count");
 
-            while (true)
+            while (in_element(xml::qname(xmlns, "cellStyles")))
             {
-                if (parser().peek() == xml::parser::event_type::end_element) break;
-
                 auto &data = *style_datas.emplace(style_datas.end());
 
                 parser().next_expect(xml::parser::event_type::start_element, xmlns, "cellStyle");
@@ -1473,16 +1333,14 @@ void xlsx_consumer::read_stylesheet()
                 throw xlnt::exception("counts don't match");
             }
         }
-        else if (parser().qname() == xml::qname(xmlns, "cellStyleXfs") ||
-                 parser().qname() == xml::qname(xmlns, "cellXfs"))
+        else if (current_style_element == xml::qname(xmlns, "cellStyleXfs") ||
+                 current_style_element == xml::qname(xmlns, "cellXfs"))
         {
-            auto in_style_records = parser().name() == "cellStyleXfs";
+            auto in_style_records = current_style_element.name() == "cellStyleXfs";
             auto count = parser().attribute<std::size_t>("count");
 
-            while (true)
+            while (in_element(current_style_element))
             {
-                if (parser().peek() == xml::parser::event_type::end_element) break;
-
                 parser().next_expect(xml::parser::event_type::start_element, xmlns, "xf");
                 parser().content(xml::content::complex);
 
@@ -1491,7 +1349,8 @@ void xlsx_consumer::read_stylesheet()
                     : style_records.emplace(style_records.end()));
 
                 auto apply_alignment_present = parser().attribute_present("applyAlignment");
-                auto alignment_applied = apply_alignment_present && is_true(parser().attribute("applyAlignment"));
+                auto alignment_applied = apply_alignment_present
+                    && is_true(parser().attribute("applyAlignment"));
                 record.alignment.second = alignment_applied;
 
                 auto border_applied = parser().attribute_present("applyBorder")
@@ -1528,10 +1387,8 @@ void xlsx_consumer::read_stylesheet()
                     record.style_id = {parser().attribute<std::size_t>("xfId"), true};
                 }
 
-                while (true)
+                while (in_element(xml::qname(xmlns, "xf")))
                 {
-                    if (parser().peek() == xml::parser::event_type::end_element) break;
-
                     parser().next_expect(xml::parser::event_type::start_element);
 
                     if (parser().qname() == xml::qname(xmlns, "alignment"))
@@ -1593,16 +1450,17 @@ void xlsx_consumer::read_stylesheet()
                 throw xlnt::exception("counts don't match");
             }
         }
-        else if (parser().qname() == xml::qname(xmlns, "dxfs"))
+        else if (current_style_element == xml::qname(xmlns, "dxfs"))
         {
             auto count = parser().attribute<std::size_t>("count");
             std::size_t processed = 0;
 
-            while (true)
+            while (in_element(xml::qname(xmlns, "dxfs")))
             {
-                if (parser().peek() == xml::parser::event_type::end_element) break;
-                parser().next_expect(xml::parser::event_type::start_element);
-                parser().next_expect(xml::parser::event_type::end_element);
+                auto current_element = expect_start_element(xml::content::complex);
+                skip_remaining_content(current_element);
+		
+                ++processed;
             }
 
             if (count != processed)
@@ -1610,18 +1468,19 @@ void xlsx_consumer::read_stylesheet()
                 throw xlnt::exception("counts don't match");
             }
         }
-        else if (parser().qname() == xml::qname(xmlns, "tableStyles"))
+        else if (current_style_element == xml::qname(xmlns, "tableStyles"))
         {
-            auto default_table_style = parser().attribute("defaultTableStyle");
-            auto default_pivot_style = parser().attribute("defaultPivotStyle");
+            skip_attributes({"defaultTableStyle", "defaultPivotStyle"});
+
             auto count = parser().attribute<std::size_t>("count");
             std::size_t processed = 0;
 
-            while (true)
+            while (in_element(xml::qname(xmlns, "tableStyles")))
             {
-                if (parser().peek() == xml::parser::event_type::end_element) break;
-                parser().next_expect(xml::parser::event_type::start_element);
-                parser().next_expect(xml::parser::event_type::end_element);
+                auto current_element = expect_start_element(xml::content::complex);
+                skip_remaining_content(current_element);
+
+                ++processed;
             }
 
             if (count != processed)
@@ -1629,43 +1488,36 @@ void xlsx_consumer::read_stylesheet()
                 throw xlnt::exception("counts don't match");
             }
         }
-        else if (parser().qname() == xml::qname(xmlns, "extLst"))
+        else if (current_style_element == xml::qname(xmlns, "extLst"))
         {
-            for (;;)
+            while (in_element(xml::qname(xmlns, "extLst")))
             {
-                if (parser().peek() == xml::parser::event_type::end_element) break;
-
                 parser().next_expect(xml::parser::event_type::start_element, xmlns, "ext");
                 parser().content(xml::parser::content_type::complex);
-                parser().attribute("uri");
+                skip_attributes({"uri"});
                 parser().next_expect(xml::parser::event_type::start_namespace_decl);
 
                 parser().next_expect(xml::parser::event_type::start_element);
-
-                if (parser().qname() == xml::qname(xmlns_x14, "slicerStyles"))
-                {
-                    parser().attribute("defaultSlicerStyle");
-                }
-                else if (parser().qname() == xml::qname(xmlns_x15, "timelineStyles"))
-                {
-                    parser().attribute("defaultTimelineStyle");
-                }
-
+                skip_attributes();
                 parser().next_expect(xml::parser::event_type::end_element);
 
                 parser().next_expect(xml::parser::event_type::end_element, xmlns, "ext");
                 parser().next_expect(xml::parser::event_type::end_namespace_decl);
             }
         }
-        else if (parser().qname() == xml::qname(xmlns, "indexedColors"))
+        else if (current_style_element == xml::qname(xmlns, "indexedColors"))
         {
-            parser().next_expect(xml::parser::event_type::end_element, xmlns, "indexedColors");
+            skip_remaining_content(current_style_element);
+        }
+        else
+        {
+            unexpected_element(current_style_element);
         }
 
-        parser().next_expect(xml::parser::event_type::end_element);
+        expect_end_element(current_style_element);
     }
 
-    parser().next_expect(xml::parser::event_type::end_element);
+    expect_end_element(xml::qname(xmlns, "styleSheet"));
 
     auto lookup_number_format = [&](std::size_t number_format_id)
     {
@@ -1761,11 +1613,11 @@ void xlsx_consumer::read_volatile_dependencies()
 {
 }
 
+// CT_Worksheet
 void xlsx_consumer::read_worksheet(const std::string &rel_id)
 {
-    static const auto &xmlns = constants::get_namespace("worksheet");
+    static const auto &xmlns = constants::get_namespace("spreadsheetml");
     static const auto &xmlns_mc = constants::get_namespace("mc");
-    static const auto &xmlns_r = constants::get_namespace("r");
     static const auto &xmlns_x14ac = constants::get_namespace("x14ac");
 
     auto title = std::find_if(target_.d_->sheet_title_rel_id_map_.begin(),
@@ -1786,98 +1638,80 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
 
     auto ws = target_.get_sheet_by_id(id);
 
+    // begin CT_Worksheet
+
     parser().next_expect(xml::parser::event_type::start_element, xmlns, "worksheet");
     parser().content(xml::parser::content_type::complex);
 
-    while (parser().peek() == xml::parser::event_type::start_namespace_decl)
+    if (contains(read_namespaces(), xmlns_x14ac))
     {
-        parser().next_expect(xml::parser::event_type::start_namespace_decl);
-
-        if (parser().namespace_() == xmlns_x14ac)
-        {
-            ws.enable_x14ac();
-        }
+        ws.enable_x14ac();
     }
 
-    if (parser().attribute_present(xml::qname(xmlns_mc, "Ignorable")))
-    {
-        parser().attribute(xml::qname(xmlns_mc, "Ignorable"));
-    }
+    skip_attributes({xml::qname(xmlns_mc, "Ignorable")});
 
     xlnt::range_reference full_range;
+    const auto &shared_strings = target_.get_shared_strings();
 
-    while (true)
+    while (in_element(xml::qname(xmlns, "worksheet")))
     {
-        if (parser().peek() == xml::parser::event_type::end_element) break;
+        auto current_worksheet_element = expect_start_element(xml::content::complex);
 
-        parser().next_expect(xml::parser::event_type::start_element);
-        parser().content(xml::parser::content_type::complex);
-
-        if (parser().qname() == xml::qname(xmlns, "dimension"))
+        if (current_worksheet_element == xml::qname(xmlns, "sheetPr")) // CT_SheetPr 0-1
+        {
+            skip_remaining_content(current_worksheet_element);
+        }
+        else if (current_worksheet_element == xml::qname(xmlns, "dimension")) // CT_SheetDimension 0-1
         {
             full_range = xlnt::range_reference(parser().attribute("ref"));
             ws.d_->has_dimension_ = true;
-            parser().next_expect(xml::parser::event_type::end_element, xmlns, "dimension");
         }
-        else if (parser().qname() == xml::qname(xmlns, "sheetViews"))
+        else if (current_worksheet_element == xml::qname(xmlns, "sheetViews")) // CT_SheetViews 0-1
         {
             ws.d_->has_view_ = true;
-
-            while (true)
-            {
-                parser().attribute_map();
-
-                if (parser().next() == xml::parser::event_type::end_element && parser().name() == "sheetViews")
-                {
-                    break;
-                }
-            }
+            skip_remaining_content(current_worksheet_element);
         }
-        else if (parser().qname() == xml::qname(xmlns, "sheetFormatPr"))
+        else if (current_worksheet_element == xml::qname(xmlns, "sheetFormatPr")) // CT_SheetFormatPr 0-1
         {
             ws.d_->has_format_properties_ = true;
-
-            while (true)
+            skip_remaining_content(current_worksheet_element);
+        }
+        else if (current_worksheet_element == xml::qname(xmlns, "cols")) // CT_Cols 0+
+        {
+            while (in_element(xml::qname(xmlns, "cols")))
             {
-                parser().attribute_map();
+                parser().next_expect(xml::parser::event_type::start_element, xmlns, "col");
 
-                if (parser().next() == xml::parser::event_type::end_element && parser().name() == "sheetFormatPr")
+                skip_attributes({"bestFit", "collapsed", "hidden", "outlineLevel"});
+
+                auto min = static_cast<column_t::index_t>(std::stoull(parser().attribute("min")));
+                auto max = static_cast<column_t::index_t>(std::stoull(parser().attribute("max")));
+
+                auto width = std::stold(parser().attribute("width"));
+                auto column_style = parser().attribute_present("style")
+                    ? parser().attribute<std::size_t>("style") : static_cast<std::size_t>(0);
+                auto custom = parser().attribute_present("customWidth")
+                    ? is_true(parser().attribute("customWidth")) : false;
+
+                parser().next_expect(xml::parser::event_type::end_element, xmlns, "col");
+
+                for (auto column = min; column <= max; column++)
                 {
-                    break;
+                    column_properties props;
+
+                    props.width = width;
+                    props.style = column_style;
+                    props.custom = custom;
+
+                    ws.add_column_properties(column, props);
                 }
             }
         }
-        else if (parser().qname() == xml::qname(xmlns, "mergeCells"))
+        else if (current_worksheet_element == xml::qname(xmlns, "sheetData")) // CT_SheetData 1
         {
-            auto count = std::stoull(parser().attribute("count"));
-
-            while (true)
+            while (in_element(xml::qname(xmlns, "sheetData")))
             {
-                if (parser().peek() == xml::parser::event_type::end_element) break;
-
-                parser().next_expect(xml::parser::event_type::start_element, xmlns, "mergeCell");
-                ws.merge_cells(range_reference(parser().attribute("ref")));
-                parser().next_expect(xml::parser::event_type::start_element, xmlns, "mergeCell");
-
-                count--;
-            }
-
-            if (count != 0)
-            {
-                throw invalid_file("sizes don't match");
-            }
-
-            parser().next_expect(xml::parser::event_type::end_element, xmlns, "mergeCells");
-        }
-        else if (parser().qname() == xml::qname(xmlns, "sheetData"))
-        {
-            auto &shared_strings = target_.get_shared_strings();
-
-            while (true)
-            {
-                if (parser().peek() == xml::parser::event_type::end_element) break;
-
-                parser().next_expect(xml::parser::event_type::start_element, xmlns, "row");
+                parser().next_expect(xml::parser::event_type::start_element, xmlns, "row"); // CT_Row
                 parser().content(xml::content::complex);
 
                 auto row_index = static_cast<row_t>(std::stoull(parser().attribute("r")));
@@ -1897,11 +1731,6 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
                     }
                 }
 
-                if (parser().attribute_present(xml::qname(xmlns_x14ac, "dyDescent")))
-                {
-                    parser().attribute(xml::qname(xmlns_x14ac, "dyDescent"));
-                }
-
                 auto min_column = full_range.get_top_left().get_column_index();
                 auto max_column = full_range.get_bottom_right().get_column_index();
 
@@ -1917,37 +1746,15 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
                     }
                 }
 
-                if (parser().attribute_present("customFormat"))
-                {
-                    parser().attribute("customFormat");
-                }
+                skip_attributes({xml::qname(xmlns_x14ac, "dyDescent")});
+                skip_attributes({"customFormat", "s", "customFont", "hidden",
+                    "outlineLevel", "collapsed", "thickTop", "thickBot", "ph"});
 
-                if (parser().attribute_present("s"))
+                while (in_element(xml::qname(xmlns, "row")))
                 {
-                    parser().attribute("s");
-                }
-
-                if (parser().attribute_present("collapsed"))
-                {
-                    parser().attribute("collapsed");
-                }
-
-                if (parser().attribute_present("hidden"))
-                {
-                    parser().attribute("hidden");
-                }
-
-                if (parser().attribute_present("outlineLevel"))
-                {
-                    parser().attribute("outlineLevel");
-                }
-
-                while (true)
-                {
-                    if (parser().peek() == xml::parser::event_type::end_element) break;
-
                     parser().next_expect(xml::parser::event_type::start_element, xmlns, "c");
                     parser().content(xml::content::complex);
+
                     auto cell = ws.get_cell(cell_reference(parser().attribute("r")));
 
                     auto has_type = parser().attribute_present("t");
@@ -1963,32 +1770,36 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
                     auto has_shared_formula = false;
                     auto formula_value_string = std::string();
 
-                    while (true)
+                    while (in_element(xml::qname(xmlns, "c")))
                     {
-                        if (parser().peek() == xml::parser::event_type::end_element) break;
-
-                        parser().next_expect(xml::parser::event_type::start_element);
-
-                        if (parser().qname() == xml::qname(xmlns, "v"))
+                        auto current_element = expect_start_element(xml::content::mixed);
+                        
+                        if (current_element == xml::qname(xmlns, "v"))
                         {
                             has_value = true;
                             value_string = read_text();
                         }
-                        else if (parser().qname() == xml::qname(xmlns, "f"))
+                        else if (current_element == xml::qname(xmlns, "f"))
                         {
                             has_formula = true;
                             has_shared_formula = parser().attribute_present("t") && parser().attribute("t") == "shared";
                             formula_value_string = read_text();
                         }
-                        else if (parser().qname() == xml::qname(xmlns, "is"))
+                        else if (current_element == xml::qname(xmlns, "is"))
                         {
                             parser().next_expect(xml::parser::event_type::start_element, xmlns, "t");
                             value_string = read_text();
                             parser().next_expect(xml::parser::event_type::end_element, xmlns, "t");
                         }
+                        else
+                        {
+                            unexpected_element(current_element);
+                        }
 
-                        parser().next_expect(xml::parser::event_type::end_element);
+                        parser().next_expect(xml::parser::event_type::end_element, current_element);
                     }
+
+                    parser().next_expect(xml::parser::event_type::end_element, xmlns, "c");
 
                     if (has_formula && !has_shared_formula && !ws.get_workbook().get_data_only())
                     {
@@ -2025,74 +1836,82 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
                     {
                         cell.format(target_.get_format(format_id));
                     }
-
-                    parser().next_expect(xml::parser::event_type::end_element, xmlns, "c");
                 }
 
-                parser().next_expect(xml::parser::event_type::end_element, xmlns, "row");
+                expect_end_element(xml::qname(xmlns, "row"));
             }
-
-            parser().next_expect(xml::parser::event_type::end_element, xmlns, "sheetData");
         }
-        else if (parser().qname() == xml::qname(xmlns, "cols"))
+        else if (current_worksheet_element == xml::qname(xmlns, "sheetCalcPr")) // CT_SheetCalcPr 0-1
         {
-            while (true)
-            {
-                if (parser().peek() == xml::parser::event_type::end_element) break;
-
-                parser().next_expect(xml::parser::event_type::start_element, xmlns, "col");
-
-                auto min = static_cast<column_t::index_t>(std::stoull(parser().attribute("min")));
-                auto max = static_cast<column_t::index_t>(std::stoull(parser().attribute("max")));
-
-                auto width = std::stold(parser().attribute("width"));
-                auto column_style = parser().attribute_present("style")
-                    ? parser().attribute<std::size_t>("style") : static_cast<std::size_t>(0);
-                auto custom = parser().attribute_present("customWidth")
-                    ? is_true(parser().attribute("customWidth")) : false;
-
-                for (auto column = min; column <= max; column++)
-                {
-                    column_properties props;
-
-                    props.width = width;
-                    props.style = column_style;
-                    props.custom = custom;
-
-                    ws.add_column_properties(column, props);
-                }
-
-                if (parser().attribute_present("bestFit"))
-                {
-                    parser().attribute("bestFit");
-                }
-
-                if (parser().attribute_present("collapsed"))
-                {
-                    parser().attribute("collapsed");
-                }
-
-                if (parser().attribute_present("hidden"))
-                {
-                    parser().attribute("hidden");
-                }
-
-                if (parser().attribute_present("outlineLevel"))
-                {
-                    parser().attribute("outlineLevel");
-                }
-
-                parser().next_expect(xml::parser::event_type::end_element, xmlns, "col");
-            }
-
-            parser().next_expect(xml::parser::event_type::end_element, xmlns, "cols");
+            skip_remaining_content(current_worksheet_element);
         }
-        else if (parser().qname() == xml::qname(xmlns, "autoFilter"))
+        else if (current_worksheet_element == xml::qname(xmlns, "sheetProtection")) // CT_SheetProtection 0-1
+        {
+            skip_remaining_content(current_worksheet_element);
+        }
+        else if (current_worksheet_element == xml::qname(xmlns, "protectedRanges")) // CT_ProtectedRanges 0-1
+        {
+            skip_remaining_content(current_worksheet_element);
+        }
+        else if (current_worksheet_element == xml::qname(xmlns, "scenarios")) // CT_Scenarios 0-1
+        {
+            skip_remaining_content(current_worksheet_element);
+        }
+        else if (current_worksheet_element == xml::qname(xmlns, "autoFilter")) // CT_AutoFilter 0-1
         {
             ws.auto_filter(xlnt::range_reference(parser().attribute("ref")));
-            parser().next_expect(xml::parser::event_type::end_element, xmlns, "autoFilter");
         }
-        else if (parser().qname() == xml::qname(xmlns, "pageMargins"))
+        else if (current_worksheet_element == xml::qname(xmlns, "sortState")) // CT_SortState 0-1
+        {
+            skip_remaining_content(current_worksheet_element);
+        }
+        else if (current_worksheet_element == xml::qname(xmlns, "dataConsolidate")) // CT_DataConsolidate 0-1
+        {
+            skip_remaining_content(current_worksheet_element);
+        }
+        else if (current_worksheet_element == xml::qname(xmlns, "customSheetViews")) // CT_CustomSheetViews 0-1
+        {
+            skip_remaining_content(current_worksheet_element);
+        }
+        else if (current_worksheet_element == xml::qname(xmlns, "mergeCells")) // CT_MergeCells 0-1
+        {
+            auto count = std::stoull(parser().attribute("count"));
+
+            while (in_element(xml::qname(xmlns, "mergeCells")))
+            {
+                parser().next_expect(xml::parser::event_type::start_element, xmlns, "mergeCell");
+                ws.merge_cells(range_reference(parser().attribute("ref")));
+                parser().next_expect(xml::parser::event_type::end_element, xmlns, "mergeCell");
+
+                count--;
+            }
+
+            if (count != 0)
+            {
+                throw invalid_file("sizes don't match");
+            }
+        }
+        else if (current_worksheet_element == xml::qname(xmlns, "phoneticPr")) // CT_PhoneticPr 0-1
+        {
+            skip_remaining_content(current_worksheet_element);
+        }
+        else if (current_worksheet_element == xml::qname(xmlns, "conditionalFormatting")) // CT_ConditionalFormatting 0+
+        {
+            skip_remaining_content(current_worksheet_element);
+        }
+        else if (current_worksheet_element == xml::qname(xmlns, "dataValidations")) // CT_DataValidations 0-1
+        {
+            skip_remaining_content(current_worksheet_element);
+        }
+        else if (current_worksheet_element == xml::qname(xmlns, "hyperlinks")) // CT_Hyperlinks 0-1
+        {
+            skip_remaining_content(current_worksheet_element);
+        }
+        else if (current_worksheet_element == xml::qname(xmlns, "printOptions")) // CT_PrintOptions 0-1
+        {
+            skip_remaining_content(current_worksheet_element);
+        }
+        else if (current_worksheet_element == xml::qname(xmlns, "pageMargins")) // CT_PageMargins 0-1
         {
             page_margins margins;
 
@@ -2104,89 +1923,53 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
             margins.set_footer(parser().attribute<double>("footer"));
 
             ws.set_page_margins(margins);
-
-            parser().next_expect(xml::parser::event_type::end_element, xmlns, "pageMargins");
         }
-        else if (parser().qname() == xml::qname(xmlns, "pageSetUpPr"))
+        else if (current_worksheet_element == xml::qname(xmlns, "pageSetup")) // CT_PageSetup 0-1
         {
-            parser().attribute_map();
-            parser().next_expect(xml::parser::event_type::end_element, xmlns, "pageSetUpPr");
+            skip_remaining_content(current_worksheet_element);
         }
-        else if (parser().qname() == xml::qname(xmlns, "printOptions"))
+        else if (current_worksheet_element == xml::qname(xmlns, "headerFooter")) // CT_HeaderFooter 0-1
         {
-            parser().attribute_map();
-            parser().next_expect(xml::parser::event_type::end_element, xmlns, "printOptions");
+            skip_remaining_content(current_worksheet_element);
         }
-        else if (parser().qname() == xml::qname(xmlns, "pageSetup"))
+        else if (current_worksheet_element == xml::qname(xmlns, "rowBreaks")) // CT_PageBreak 0-1
         {
-            parser().attribute_map();
-            parser().next_expect(xml::parser::event_type::end_element, xmlns, "pageSetup");
+            skip_remaining_content(current_worksheet_element);
         }
-        else if (parser().qname() == xml::qname(xmlns, "sheetPr"))
+        else if (current_worksheet_element == xml::qname(xmlns, "colBreaks")) // CT_PageBreak 0-1
         {
-            parser().attribute_map();
-
-            while (parser().peek() != xml::parser::event_type::end_element ||
-                   parser().qname() != xml::qname(xmlns, "sheetPr"))
-            {
-                if (parser().next() == xml::parser::event_type::start_element)
-                {
-                    parser().attribute_map();
-                }
-            }
-
-            parser().next();
+            skip_remaining_content(current_worksheet_element);
         }
-        else if (parser().qname() == xml::qname(xmlns, "headerFooter"))
+        else if (current_worksheet_element == xml::qname(xmlns, "customProperties")) // CT_CustomProperties 0-1
         {
-            parser().attribute_map();
-
-            while (parser().peek() != xml::parser::event_type::end_element ||
-                   parser().qname() != xml::qname(xmlns, "headerFooter"))
-            {
-                if (parser().next() == xml::parser::event_type::start_element)
-                {
-                    parser().attribute_map();
-                }
-            }
-
-            parser().next();
+            skip_remaining_content(current_worksheet_element);
         }
-        else if (parser().qname() == xml::qname(xmlns, "legacyDrawing"))
+        else if (current_worksheet_element == xml::qname(xmlns, "cellWatches")) // CT_CellWatches 0-1
         {
-            parser().attribute(xml::qname(xmlns_r, "id"));
-            parser().next_expect(xml::parser::event_type::end_element, xmlns, "legacyDrawing");
+            skip_remaining_content(current_worksheet_element);
         }
-        else if (parser().qname() == xml::qname(xmlns, "protectedRanges"))
+        else if (current_worksheet_element == xml::qname(xmlns, "ignoredErrors")) // CT_IgnoredErrors 0-1
         {
-            parser().attribute_map();
-
-            while (parser().peek() != xml::parser::event_type::end_element ||
-                   parser().qname() != xml::qname(xmlns, "protectedRanges"))
-            {
-                if (parser().next() == xml::parser::event_type::start_element)
-                {
-                    parser().attribute_map();
-                }
-            }
-
-            parser().next();
+            skip_remaining_content(current_worksheet_element);
         }
-        else if (parser().qname() == xml::qname(xmlns, "sortState"))
+        else if (current_worksheet_element == xml::qname(xmlns, "smartTags")) // CT_SmartTags 0-1
         {
-            parser().attribute_map();
-
-            while (parser().peek() != xml::parser::event_type::end_element ||
-                   parser().qname() != xml::qname(xmlns, "sortState"))
-            {
-                if (parser().next() == xml::parser::event_type::start_element)
-                {
-                    parser().attribute_map();
-                }
-            }
-
-            parser().next();
+            skip_remaining_content(current_worksheet_element);
         }
+        else if (current_worksheet_element == xml::qname(xmlns, "drawing")) // CT_Drawing 0-1
+        {
+            skip_remaining_content(current_worksheet_element);
+        }
+        else if (current_worksheet_element == xml::qname(xmlns, "legacyDrawing"))
+        {
+            skip_remaining_content(current_worksheet_element);
+        }
+        else
+        {
+            unexpected_element(current_worksheet_element);
+        }
+
+        parser().next_expect(xml::parser::event_type::end_element, current_worksheet_element);
     }
 
     parser().next_expect(xml::parser::event_type::end_element, xmlns, "worksheet");
@@ -2228,7 +2011,7 @@ void xlsx_consumer::read_vml_drawings(worksheet/*ws*/)
 
 void xlsx_consumer::read_comments(worksheet ws)
 {
-    static const auto &xmlns = xlnt::constants::get_namespace("worksheet");
+    static const auto &xmlns = xlnt::constants::get_namespace("spreadsheetml");
 
     std::vector<std::string> authors;
 
@@ -2237,13 +2020,10 @@ void xlsx_consumer::read_comments(worksheet ws)
     parser().next_expect(xml::parser::event_type::start_element, xmlns, "authors");
     parser().content(xml::content::complex);
 
-    for (;;)
+    while (in_element(xml::qname(xmlns, "authors")))
     {
-        if (parser().peek() == xml::parser::event_type::end_element) break;
-
         parser().next_expect(xml::parser::event_type::start_element, xmlns, "author");
-        parser().next_expect(xml::parser::event_type::characters);
-        authors.push_back(parser().value());
+        authors.push_back(read_text());
         parser().next_expect(xml::parser::event_type::end_element, xmlns, "author");
     }
 
@@ -2252,10 +2032,8 @@ void xlsx_consumer::read_comments(worksheet ws)
     parser().next_expect(xml::parser::event_type::start_element, xmlns, "commentList");
     parser().content(xml::content::complex);
 
-    for (;;)
+    while (in_element(xml::qname(xmlns, "commentList")))
     {
-        if (parser().peek() == xml::parser::event_type::end_element) break;
-
         parser().next_expect(xml::parser::event_type::start_element, xmlns, "comment");
         parser().content(xml::content::complex);
 
@@ -2265,77 +2043,8 @@ void xlsx_consumer::read_comments(worksheet ws)
         parser().next_expect(xml::parser::event_type::start_element, xmlns, "text");
         parser().content(xml::content::complex);
 
-        // todo: this is duplicated from shared strings
-        formatted_text text;
+        ws.get_cell(cell_ref).comment(comment(read_formatted_text(xmlns), authors.at(author_id)));
 
-        for (;;)
-        {
-            if (parser().peek() == xml::parser::event_type::end_element) break;
-
-            parser().next_expect(xml::parser::event_type::start_element, xmlns, "r");
-            parser().content(xml::content::complex);
-
-            text_run run;
-
-            for (;;)
-            {
-                if (parser().peek() == xml::parser::event_type::end_element) break;
-
-                parser().next_expect(xml::parser::event_type::start_element);
-
-                if (parser().name() == "t")
-                {
-                    parser().next_expect(xml::parser::event_type::characters);
-                    run.set_string(parser().value());
-                    parser().next_expect(xml::parser::event_type::end_element, xmlns, "t");
-                }
-                else if (parser().name() == "rPr")
-                {
-                    parser().content(xml::content::complex);
-
-                    for (;;)
-                    {
-                        if (parser().peek() == xml::parser::event_type::end_element) break;
-
-                        parser().next_expect(xml::parser::event_type::start_element);
-
-                        if (parser().qname() == xml::qname(xmlns, "sz"))
-                        {
-                            run.set_size(string_to_size_t(parser().attribute("val")));
-                        }
-                        else if (parser().qname() == xml::qname(xmlns, "rFont"))
-                        {
-                            run.set_font(parser().attribute("val"));
-                        }
-                        else if (parser().qname() == xml::qname(xmlns, "color"))
-                        {
-                            run.set_color(read_color(parser()));
-                        }
-                        else if (parser().qname() == xml::qname(xmlns, "family"))
-                        {
-                            run.set_family(string_to_size_t(parser().attribute("val")));
-                        }
-                        else if (parser().qname() == xml::qname(xmlns, "scheme"))
-                        {
-                            run.set_scheme(parser().attribute("val"));
-                        }
-                        else if (parser().qname() == xml::qname(xmlns, "b"))
-                        {
-                            run.set_bold(true);
-                        }
-
-                        parser().next_expect(xml::parser::event_type::end_element);
-                    }
-
-                    parser().next_expect(xml::parser::event_type::end_element, xmlns, "rPr");
-                }
-            }
-
-            text.add_run(run);
-            parser().next_expect(xml::parser::event_type::end_element, xmlns, "r");
-        }
-
-        ws.get_cell(cell_ref).comment(comment(text, authors.at(author_id)));
         parser().next_expect(xml::parser::event_type::end_element, xmlns, "text");
         parser().next_expect(xml::parser::event_type::end_element, xmlns, "comment");
     }
@@ -2371,34 +2080,168 @@ std::string xlsx_consumer::read_text()
     return text;
 }
 
-void xlsx_consumer::read_block(const std::unordered_map<xml::qname, std::function<void(xlsx_consumer &)>> &handlers)
+void xlsx_consumer::skip_attributes(const std::vector<std::string> &names)
 {
-    auto parent_block = parser().qname();
-
-    while (parser().peek() != xml::parser::event_type::end_element)
+    for (const auto &name : names)
     {
-        parser().next_expect(xml::parser::event_type::start_element);
-        auto block = parser().qname();
-
-        if (handlers.count(block) == 0)
+        if (parser().attribute_present(name))
         {
-            throw xlnt::key_not_found();
+            parser().attribute(name);
         }
-
-        const auto &handler = handlers.at(block);
-        handler(*this);
-        parser().next_expect(xml::parser::event_type::end_element, block);
     }
-
-    parser().next_expect(xml::parser::event_type::end_element, parent_block);
 }
 
-void xlsx_consumer::skip_attribute(const std::string &name)
+void xlsx_consumer::skip_attributes(const std::vector<xml::qname> &names)
 {
-    if (parser().attribute_present(name))
+    for (const auto &name : names)
     {
-        parser().attribute(name);
+        if (parser().attribute_present(name))
+        {
+            parser().attribute(name);
+        }
     }
+}
+
+void xlsx_consumer::skip_attributes()
+{
+    parser().attribute_map();
+}
+
+void xlsx_consumer::skip_remaining_content(const xml::qname &name)
+{
+    // start by assuming we've already parsed the opening tag
+
+    // skip attributes on the opening tag
+    skip_attributes();
+    read_text();
+
+    // continue until the closing tag is reached
+    while (in_element(name))
+    {
+        auto current_element = expect_start_element(xml::content::mixed);
+        skip_remaining_content(current_element);
+        expect_end_element(current_element);
+    }
+}
+
+std::vector<std::string> xlsx_consumer::read_namespaces()
+{
+    std::vector<std::string> namespaces;
+
+    while (parser().peek() == xml::parser::event_type::start_namespace_decl)
+    {
+        parser().next_expect(xml::parser::event_type::start_namespace_decl);
+	namespaces.push_back(parser().namespace_());
+    }
+
+    return namespaces;
+}
+
+bool xlsx_consumer::in_element(const xml::qname &name)
+{
+    if (parser().peek() == xml::parser::event_type::end_element)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+xml::qname xlsx_consumer::expect_start_element(xml::content content)
+{
+    parser().next_expect(xml::parser::event_type::start_element);
+    parser().content(content);
+
+    return parser().qname();
+}
+
+void xlsx_consumer::expect_start_element(const xml::qname &name, xml::content content)
+{
+    parser().next_expect(xml::parser::event_type::start_element, name);
+    parser().content(content);
+}
+
+void xlsx_consumer::expect_end_element(const xml::qname &name)
+{
+    parser().next_expect(xml::parser::event_type::end_element, name);
+
+    while (parser().peek() == xml::parser::event_type::end_namespace_decl)
+    {
+        parser().next_expect(xml::parser::event_type::end_namespace_decl);
+    }
+}
+
+formatted_text xlsx_consumer::read_formatted_text(const std::string &xmlns)
+{
+    formatted_text t;
+
+    auto text_element = expect_start_element(xml::content::mixed);
+    skip_attributes();
+
+    if (text_element == xml::qname(xmlns, "t"))
+    {
+        t.plain_text(read_text());
+    }
+    else if (text_element == xml::qname(xmlns, "r"))
+    {
+        parser().content(xml::content::complex);
+
+        text_run run;
+
+        while (in_element(xml::qname(xmlns, "r")))
+        {
+            auto run_element = expect_start_element(xml::content::mixed);
+            
+            if (run_element == xml::qname(xmlns, "rPr"))
+            {
+                parser().content(xml::content::complex);
+
+                while (in_element(xml::qname(xmlns, "rPr")))
+                {
+                    auto current_run_property_element = expect_start_element(xml::content::simple);
+
+                    if (current_run_property_element == xml::qname(xmlns, "sz"))
+                    {
+                        run.set_size(string_to_size_t(parser().attribute("val")));
+                    }
+                    else if (current_run_property_element == xml::qname(xmlns, "rFont"))
+                    {
+                        run.set_font(parser().attribute("val"));
+                    }
+                    else if (current_run_property_element == xml::qname(xmlns, "color"))
+                    {
+                        run.set_color(read_color(parser()));
+                    }
+                    else if (current_run_property_element == xml::qname(xmlns, "family"))
+                    {
+                        run.set_family(string_to_size_t(parser().attribute("val")));
+                    }
+                    else if (current_run_property_element == xml::qname(xmlns, "scheme"))
+                    {
+                        run.set_scheme(parser().attribute("val"));
+                    }
+
+                    expect_end_element(current_run_property_element);
+                }
+            }
+            else if (run_element == xml::qname(xmlns, "t"))
+            {
+                run.set_string(read_text());
+            }
+            
+            expect_end_element(run_element);
+        }
+        
+        t.add_run(run);
+    }
+    else
+    {
+        unexpected_element(text_element);
+    }
+
+    expect_end_element(text_element);
+
+    return t;
 }
 
 } // namespace detail

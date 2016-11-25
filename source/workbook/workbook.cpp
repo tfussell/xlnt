@@ -483,15 +483,16 @@ void workbook::register_comments_in_manifest(worksheet ws)
 	{
 		std::size_t file_number = 1;
 		path filename("vmlDrawing1.vml");
+        bool filename_exists = true;
 
-		while (true)
+		while (filename_exists)
 		{
-			bool filename_exists = false;
+            filename_exists = false;
 
 			for (auto current_ws_rel : get_manifest().get_relationships(wb_rel.get_target().get_path(), xlnt::relationship_type::worksheet))
 			{
 				path current_ws_path(current_ws_rel.get_source().get_path().parent().append(current_ws_rel.get_target().get_path()));
-				if (!get_manifest().has_relationship(current_ws_path, xlnt::relationship_type::vml_drawing)) break;
+				if (!get_manifest().has_relationship(current_ws_path, xlnt::relationship_type::vml_drawing)) continue;
 
 				for (auto current_ws_child_rel : get_manifest().get_relationships(current_ws_path, xlnt::relationship_type::vml_drawing))
 				{
@@ -501,17 +502,13 @@ void workbook::register_comments_in_manifest(worksheet ws)
 						break;
 					}
 				}
-
-				if (filename_exists)
-				{
-					break;
-				}
 			}
 
-			if (!filename_exists) break;
-
-			file_number++;
-			filename = path("vmlDrawing" + std::to_string(file_number) + ".vml");
+            if (filename_exists)
+            {
+                file_number++;
+                filename = path("vmlDrawing" + std::to_string(file_number) + ".vml");
+            }
 		}
 
 		get_manifest().register_default_type("vml",

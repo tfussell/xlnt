@@ -43,7 +43,6 @@ public:
 
 	void test_produce_default_libre_office()
 	{
-        TS_SKIP("");
 		xlnt::workbook wb = xlnt::workbook::empty_libre_office();
 		TS_ASSERT(workbook_matches_file(wb, path_helper::get_data_directory("10_default-libre-office.xlsx")));
 	}
@@ -185,6 +184,6 @@ public:
 
 		wb.save("debug.xlsx");
 
-		//TS_ASSERT(workbook_matches_file(wb, xlnt::path("data/18_basic_comments.xlsx")));
+		TS_ASSERT(workbook_matches_file(wb, xlnt::path("data/18_basic_comments.xlsx")));
 	}
 };

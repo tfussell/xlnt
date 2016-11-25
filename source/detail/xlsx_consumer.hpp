@@ -35,6 +35,7 @@
 
 namespace xlnt {
 
+class formatted_text;
 class path;
 class relationship;
 class workbook;
@@ -220,13 +221,31 @@ private:
 	/// </summary>
 	void read_unknown_relationships();
     
+    std::vector<relationship> read_relationships(const path &part);
+    
     std::string read_text();
     
-    void read_block(const std::unordered_map<xml::qname, std::function<void(xlsx_consumer &)>> &handlers);
+    formatted_text read_formatted_text(const std::string &xmlns);
     
     void read_part(const std::vector<relationship> &rel_chain);
 
-    void skip_attribute(const std::string &name);
+    void skip_attributes();
+
+    void skip_attributes(const std::vector<xml::qname> &names);
+
+    void skip_attributes(const std::vector<std::string> &names);
+
+    void skip_remaining_content(const xml::qname &name);
+
+    xml::qname expect_start_element(xml::content content);
+
+    void expect_start_element(const xml::qname &name, xml::content content);
+    
+    void expect_end_element(const xml::qname &name);
+    
+    bool in_element(const xml::qname &name);
+
+    std::vector<std::string> read_namespaces();
 
 	/// <summary>
 	/// The ZIP file containing the files that make up the OOXML package.
@@ -255,6 +274,8 @@ private:
 	/// to access the object.
 	/// </summary>
 	xml::parser *parser_;
+    
+    std::vector<xml::qname> stack_;
 };
 
 } // namespace detail

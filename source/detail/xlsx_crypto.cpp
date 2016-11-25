@@ -586,6 +586,7 @@ struct crypto_helper
             = { {0xd7, 0xaa, 0x0f, 0x6d, 0x30, 0x61, 0x34, 0x4e} };
         auto expected_verifier = calculate_block(h_n, verifier_block_key,
             result.key_encryptor.verifier_hash_value);
+        expected_verifier.resize(calculated_verifier.size());
 
         if (calculated_verifier.size() != expected_verifier.size()
             || std::mismatch(calculated_verifier.begin(), calculated_verifier.end(),

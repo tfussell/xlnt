@@ -199,7 +199,8 @@ public:
         auto is_xml = (content_type.substr(0, 12) == "application/"
             && content_type.substr(content_type.size() - 4) == "+xml")
             || content_type == "application/xml"
-            || content_type == "[Content_Types].xml";
+            || content_type == "[Content_Types].xml"
+            || content_type == "application/vnd.openxmlformats-officedocument.vmlDrawing";
         
         if (is_xml)
         {

@@ -352,7 +352,7 @@ void xlsx_producer::write_workbook(const relationship &rel)
     static const auto &xmlns_mc = constants::get_namespace("mc");
     static const auto &xmlns_mx = constants::get_namespace("mx");
     static const auto &xmlns_r = constants::get_namespace("r");
-    static const auto &xmlns_s = constants::get_namespace("worksheet");
+    static const auto &xmlns_s = constants::get_namespace("spreadsheetml");
     static const auto &xmlns_x15 = constants::get_namespace("x15");
     static const auto &xmlns_x15ac = constants::get_namespace("x15ac");
 
@@ -671,7 +671,7 @@ void xlsx_producer::write_pivot_table(const relationship &/*rel*/)
 
 void xlsx_producer::write_shared_string_table(const relationship &/*rel*/)
 {
-    static const auto &xmlns = constants::get_namespace("worksheet");
+    static const auto &xmlns = constants::get_namespace("spreadsheetml");
 
 	serializer().start_element(xmlns, "sst");
     serializer().namespace_decl(xmlns, "");
@@ -796,7 +796,7 @@ void xlsx_producer::write_shared_workbook_user_data(const relationship &/*rel*/)
 
 void xlsx_producer::write_styles(const relationship &/*rel*/)
 {
-    static const auto &xmlns = constants::get_namespace("worksheet");
+    static const auto &xmlns = constants::get_namespace("spreadsheetml");
     static const auto &xmlns_mc = constants::get_namespace("mc");
     static const auto &xmlns_x14 = constants::get_namespace("x14");
     static const auto &xmlns_x14ac = constants::get_namespace("x14ac");
@@ -1830,7 +1830,7 @@ void xlsx_producer::write_volatile_dependencies(const relationship &/*rel*/)
 
 void xlsx_producer::write_worksheet(const relationship &rel)
 {
-	static const auto &xmlns = constants::get_namespace("worksheet");
+	static const auto &xmlns = constants::get_namespace("spreadsheetml");
 	static const auto &xmlns_r = constants::get_namespace("r");
 	static const auto &xmlns_mc = constants::get_namespace("mc");
 	static const auto &xmlns_x14ac = constants::get_namespace("x14ac");
@@ -2400,7 +2400,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 void xlsx_producer::write_comments(const relationship &/*rel*/, worksheet ws, 
 	const std::vector<cell_reference> &cells)
 {
-	static const auto &xmlns = constants::get_namespace("worksheet");
+	static const auto &xmlns = constants::get_namespace("spreadsheetml");
 
 	serializer().start_element(xmlns, "comments");
 	serializer().namespace_decl(xmlns, "");

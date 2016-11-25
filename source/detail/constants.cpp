@@ -24,6 +24,7 @@
 
 #include <detail/constants.hpp>
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/utils/exceptions.hpp>
 
 namespace xlnt {
 
@@ -69,7 +70,7 @@ const std::unordered_map<std::string, std::string> &constants::get_namespaces()
     static const std::unordered_map<std::string, std::string> *namespaces =
         new std::unordered_map<std::string, std::string>
         {
-            { "worksheet", "http://schemas.openxmlformats.org/spreadsheetml/2006/main" },
+            { "spreadsheetml", "http://schemas.openxmlformats.org/spreadsheetml/2006/main" },
             { "content-types", "http://schemas.openxmlformats.org/package/2006/content-types" },
             { "relationships", "http://schemas.openxmlformats.org/package/2006/relationships" },
             { "drawingml", "http://schemas.openxmlformats.org/drawingml/2006/main" },
@@ -102,7 +103,14 @@ const std::unordered_map<std::string, std::string> &constants::get_namespaces()
 
 const std::string &constants::get_namespace(const std::string &id)
 {
-    return get_namespaces().find(id)->second;
+    auto match = get_namespaces().find(id);
+
+    if (match == get_namespaces().end())
+    {
+        throw xlnt::exception("bad namespace");
+    }
+
+    return match->second;
 }
 
 }

@@ -7,6 +7,8 @@
 #include <helpers/path_helper.hpp>
 #include <xlnt/workbook/workbook.hpp>
 
+// Cryptographic key generation can take a few seconds, particularly in unoptomized builds.
+// Set this to false to skip those tests that use cryptography.
 #define TEST_CRYPTO true
 
 #ifndef TEST_CRYPTO
@@ -42,7 +44,6 @@ public:
 
     void test_decrypt_numbers()
     {
-        TS_SKIP("");
         xlnt::workbook wb;
 #if TEST_CRYPTO
         wb.load(path_helper::get_data_directory("17_encrypted_numbers.xlsx"), "secret");

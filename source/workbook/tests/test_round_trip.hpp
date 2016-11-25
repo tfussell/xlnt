@@ -70,14 +70,13 @@ public:
 
 	void test_round_trip_empty_libre_office_wrw()
 	{
-		TS_SKIP("");
 		xlnt::workbook wb = xlnt::workbook::empty_libre_office();
 		TS_ASSERT(round_trip_matches_wrw(wb));
 	}
 
-	void test_round_trip_empty_pages_wrw()
+	void test_round_trip_empty_numbers_wrw()
 	{
-		TS_SKIP("");
+        TS_SKIP("");
 		xlnt::workbook wb = xlnt::workbook::empty_numbers();
 		TS_ASSERT(round_trip_matches_wrw(wb));
 	}
@@ -96,8 +95,14 @@ public:
 
 	void test_round_trip_empty_libre_rw()
 	{
-		TS_SKIP("");
 		auto path = path_helper::get_data_directory("10_default-libre-office.xlsx");
+		TS_ASSERT(round_trip_matches_rw(path));
+	}
+
+	void test_round_trip_empty_numbers_rw()
+	{
+		TS_SKIP("");
+		auto path = path_helper::get_data_directory("10_default-numbers.xlsx");
 		TS_ASSERT(round_trip_matches_rw(path));
 	}
 
@@ -109,6 +114,6 @@ public:
         
         std::vector<std::uint8_t> buffer;
         original_workbook.save(buffer);
-		//TS_ASSERT(round_trip_matches_rw(path));
+		TS_ASSERT(round_trip_matches_rw(path));
 	}
 };
