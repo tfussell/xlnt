@@ -183,6 +183,7 @@ public:
 		sheet2.get_cell("A2").comment(xlnt::comment(comment_text, "Microsoft Office User"));
 
 		wb.save("debug.xlsx");
+		wb.load("debug.xlsx");
 
 		TS_ASSERT(workbook_matches_file(wb, xlnt::path("data/18_basic_comments.xlsx")));
 	}
