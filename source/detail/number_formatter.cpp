@@ -638,7 +638,7 @@ void number_format_parser::finalize()
             auto temp = code.parts[exponent_index].placeholders.type;
             code.parts[exponent_index].placeholders = next.placeholders;
             code.parts[exponent_index].placeholders.type = temp;
-            code.parts.erase(code.parts.begin() + static_cast<typename std::vector<format_code>::difference_type>(exponent_index + 1));
+            code.parts.erase(code.parts.begin() + static_cast<std::ptrdiff_t>(exponent_index + 1));
 
             for (std::size_t i = 0; i < code.parts.size(); ++i)
             {
