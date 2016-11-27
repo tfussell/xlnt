@@ -1774,18 +1774,25 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
                     {
                         auto current_element = expect_start_element(xml::content::mixed);
                         
-                        if (current_element == xml::qname(xmlns, "v"))
+                        if (current_element == xml::qname(xmlns, "v")) // s:ST_Xstring
                         {
                             has_value = true;
                             value_string = read_text();
                         }
-                        else if (current_element == xml::qname(xmlns, "f"))
+                        else if (current_element == xml::qname(xmlns, "f")) // CT_CellFormula
                         {
                             has_formula = true;
-                            has_shared_formula = parser().attribute_present("t") && parser().attribute("t") == "shared";
+
+                            if (parser().attribute_present("t"))
+                            {
+                                has_shared_formula = parser().attribute("t") == "shared";
+                            }
+
+                            skip_attributes({"aca", "ref", "dt2D", "dtr", "del1", "del2", "r1", "r2", "ca", "si", "bx"});
+
                             formula_value_string = read_text();
                         }
-                        else if (current_element == xml::qname(xmlns, "is"))
+                        else if (current_element == xml::qname(xmlns, "is")) // CT_Rst
                         {
                             parser().next_expect(xml::parser::event_type::start_element, xmlns, "t");
                             value_string = read_text();
