@@ -2585,7 +2585,7 @@ void xlsx_producer::write_vml_drawings(const relationship &rel, worksheet ws,
             style_string.append(part.first);
             style_string.append(":");
             style_string.append(part.second);
-            style_string.append(":");
+            style_string.append(";");
         }
 
         serializer().attribute("style", style_string);
