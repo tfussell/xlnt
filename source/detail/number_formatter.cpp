@@ -176,9 +176,9 @@ bool format_condition::satisfied_by(long double number) const
     case condition_type::less_than:
         return number < value;
     case condition_type::not_equal:
-        return std::fabs(number - value) >= std::numeric_limits<long double>::min();
+        return std::fabs(number - value) != 0.0L;
 	case condition_type::equal:
-        return std::fabs(number - value) < std::numeric_limits<long double>::min();
+        return std::fabs(number - value) == 0.0L;
 #ifdef WIN32
     default: 
         throw xlnt::exception("unhandled");
