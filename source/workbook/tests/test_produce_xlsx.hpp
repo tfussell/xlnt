@@ -162,12 +162,13 @@ public:
 		formatted_run.set_string("Sheet1 comment");
 		comment_text.add_run(formatted_run);
 		sheet1.get_cell("A1").comment(xlnt::comment(comment_text, "Microsoft Office User"));
-
+/*
 		sheet1.get_cell("A2").set_value("Sheet1!A2");
 		formatted_run.set_string("Sheet1 comment2");
 		comment_text.clear();
 		comment_text.add_run(formatted_run);
 		sheet1.get_cell("A2").comment(xlnt::comment(comment_text, "Microsoft Office User"));
+*/
 /*
 		auto sheet2 = wb.create_sheet();
 		sheet2.get_cell("A1").set_value("Sheet2!A1");
