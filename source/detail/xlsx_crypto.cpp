@@ -617,10 +617,14 @@ struct crypto_helper
             auto iv = hash(result.key_encryptor.hash, salt_with_block_key);
             iv.resize(16);
 
-            auto decrypted_segment = aes(key, iv, std::vector<std::uint8_t>(
-                encrypted_package.begin() + static_cast<std::ptrdiff_t>(i),
-                encrypted_package.begin() + static_cast<std::ptrdiff_t>(i) + segment_length),
+            auto segment_begin = encrypted_package.begin() + static_cast<std::ptrdiff_t>(i);
+            auto current_segment_length = static_cast<std::ptrdiff_t>(
+                std::min(segment_length, encrypted_package.size() - i));
+            auto segment_end = encrypted_package.begin() + i + current_segment_length;
+            encrypted_segment.assign(segment_begin, segment_end);
+            auto decrypted_segment = aes(key, iv, encrypted_segment,
                 cipher_chaining::cbc, cipher_direction::decryption);
+            decrypted_segment.resize(current_segment_length);
 
             decrypted_package.insert(decrypted_package.end(), 
                 decrypted_segment.begin(), decrypted_segment.end());
