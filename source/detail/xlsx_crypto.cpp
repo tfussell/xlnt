@@ -98,7 +98,7 @@ namespace detail {
 
 struct crypto_helper
 {
-    static const std::size_t segment_length = 4096;
+    static const std::size_t segment_length;
 
     enum class cipher_algorithm
     {
@@ -714,6 +714,8 @@ struct crypto_helper
         return {};
     }
 };
+
+const std::size_t crypto_helper::segment_length = 4096;
 
 void xlsx_consumer::read(std::istream &source, const std::string &password)
 {
