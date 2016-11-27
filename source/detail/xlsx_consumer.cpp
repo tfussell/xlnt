@@ -2015,42 +2015,36 @@ void xlsx_consumer::read_comments(worksheet ws)
 
     std::vector<std::string> authors;
 
-    parser().next_expect(xml::parser::event_type::start_element, xmlns, "comments");
-    parser().content(xml::content::complex);
-    parser().next_expect(xml::parser::event_type::start_element, xmlns, "authors");
-    parser().content(xml::content::complex);
+    expect_start_element(xml::qname(xmlns, "comments"), xml::content::complex);
+    expect_start_element(xml::qname(xmlns, "authors"), xml::content::complex);
 
     while (in_element(xml::qname(xmlns, "authors")))
     {
-        parser().next_expect(xml::parser::event_type::start_element, xmlns, "author");
+        expect_start_element(xml::qname(xmlns, "author"), xml::content::simple);
         authors.push_back(read_text());
-        parser().next_expect(xml::parser::event_type::end_element, xmlns, "author");
+        expect_end_element(xml::qname(xmlns, "author"));
     }
 
-    parser().next_expect(xml::parser::event_type::end_element, xmlns, "authors");
-
-    parser().next_expect(xml::parser::event_type::start_element, xmlns, "commentList");
-    parser().content(xml::content::complex);
+    expect_end_element(xml::qname(xmlns, "authors"));
+    expect_start_element(xml::qname(xmlns, "commentList"), xml::content::complex);
 
     while (in_element(xml::qname(xmlns, "commentList")))
     {
-        parser().next_expect(xml::parser::event_type::start_element, xmlns, "comment");
-        parser().content(xml::content::complex);
+        expect_start_element(xml::qname(xmlns, "comment"), xml::content::complex);
 
         auto cell_ref = parser().attribute("ref");
         auto author_id = parser().attribute<std::size_t>("authorId");
 
-        parser().next_expect(xml::parser::event_type::start_element, xmlns, "text");
-        parser().content(xml::content::complex);
+        expect_start_element(xml::qname(xmlns, "text"), xml::content::complex);
 
         ws.get_cell(cell_ref).comment(comment(read_formatted_text(xmlns), authors.at(author_id)));
 
-        parser().next_expect(xml::parser::event_type::end_element, xmlns, "text");
-        parser().next_expect(xml::parser::event_type::end_element, xmlns, "comment");
+        expect_end_element(xml::qname(xmlns, "text"));
+        expect_end_element(xml::qname(xmlns, "comment"));
     }
 
-    parser().next_expect(xml::parser::event_type::end_element, xmlns, "commentList");
-    parser().next_expect(xml::parser::event_type::end_element, xmlns, "comments");
+    expect_end_element(xml::qname(xmlns, "commentList"));
+    expect_end_element(xml::qname(xmlns, "comments"));
 }
 
 void xlsx_consumer::read_drawings()

@@ -2534,7 +2534,7 @@ void xlsx_producer::write_vml_drawings(const relationship &rel, worksheet ws,
 
     while (filename[index_pos] >= '0' && filename[index_pos] <= '9')
     {
-	index_pos--;
+        index_pos--;
     }
 
     auto file_index = std::stoull(filename.substr(index_pos + 1));
