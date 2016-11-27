@@ -332,7 +332,7 @@ class ZipStreambufCompress : public std::streambuf
 
 public:
     ZipStreambufCompress(zip_file_header *central_header, std::ostream &stream)
-        : ostream(stream), header(central_header), valid(true)
+        : ostream(stream), strm({}), header(central_header), valid(true)
     {
         strm.zalloc = Z_NULL;
         strm.zfree = Z_NULL;

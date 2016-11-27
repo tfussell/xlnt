@@ -2138,7 +2138,7 @@ std::vector<std::string> xlsx_consumer::read_namespaces()
     return namespaces;
 }
 
-bool xlsx_consumer::in_element(const xml::qname &name)
+bool xlsx_consumer::in_element(const xml::qname &/*name*/)
 {
     if (parser().peek() == xml::parser::event_type::end_element)
     {

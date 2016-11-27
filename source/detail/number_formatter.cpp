@@ -31,7 +31,7 @@ namespace {
 
 const std::unordered_map<int, std::string> known_locales()
 {
-    const std::unordered_map<int, std::string> *all =
+    static const std::unordered_map<int, std::string> *all =
         new std::unordered_map<int, std::string>(
         {
              { 0x401, "Arabic - Saudi Arabia" },
