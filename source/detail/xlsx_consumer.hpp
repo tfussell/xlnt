@@ -35,6 +35,7 @@
 
 namespace xlnt {
 
+class color;
 class formatted_text;
 class path;
 class relationship;
@@ -244,6 +245,10 @@ private:
     void expect_end_element(const xml::qname &name);
     
     bool in_element(const xml::qname &name);
+
+    color read_color();
+
+    void check_document_type(const std::string &document_content_type);
 
     std::vector<std::string> read_namespaces();
 
