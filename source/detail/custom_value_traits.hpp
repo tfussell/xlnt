@@ -368,6 +368,20 @@ struct value_traits<xlnt::border_side>
     }
 }; // struct value_traits<xlnt::border_side>
 
+template <>
+struct value_traits<xlnt::target_mode>
+{
+    static xlnt::target_mode parse(std::string mode_string, const parser &)
+    {
+        return mode_string == "Internal" ? xlnt::target_mode::internal : xlnt::target_mode::external;
+    }
+
+    static std::string serialize (xlnt::target_mode mode, const serializer &)
+    {
+        return mode == xlnt::target_mode::internal ? "Internal" : "External";
+    }
+}; // struct value_traits<xlnt::target_mode>
+
 }
 
 

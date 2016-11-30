@@ -79,4 +79,13 @@ public:
         TS_ASSERT_EQUALS(wb2.get_active_sheet().get_cell("A1").get_value<std::string>(), "unicode!");
 #endif
     }
+
+    void test_read_hyperlink()
+    {
+        xlnt::workbook wb;
+        wb.load("data/20_with_hyperlink.xlsx");
+        TS_ASSERT(wb.get_active_sheet().get_cell("A1").has_hyperlink());
+        TS_ASSERT_EQUALS(wb.get_active_sheet().get_cell("A1").get_hyperlink(),
+            "https://fr.wikipedia.org/wiki/Ille-et-Vilaine");
+    }
 };

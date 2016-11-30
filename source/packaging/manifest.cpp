@@ -106,11 +106,14 @@ std::vector<relationship> manifest::get_relationships(const path &part, relation
 {
 	std::vector<relationship> matches;
 
-    for (const auto &rel : relationships_.at(part))
+    if (has_relationship(part, type))
     {
-        if (rel.second.get_type() == type)
+        for (const auto &rel : relationships_.at(part))
         {
-            matches.push_back(rel.second);
+            if (rel.second.get_type() == type)
+            {
+                matches.push_back(rel.second);
+            }
         }
     }
 

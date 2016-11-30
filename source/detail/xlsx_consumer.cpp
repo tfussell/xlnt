@@ -56,7 +56,6 @@ struct hash<xml::qname>
 namespace {
 
 #ifndef NDEBUG
-#error NDEBUG
 #define THROW_ON_INVALID_XML
 #endif
 
@@ -160,10 +159,15 @@ std::vector<relationship> xlsx_consumer::read_relationships(const path &part)
     while (in_element(xml::qname(xmlns, "Relationships")))
     {
         expect_start_element(xml::qname(xmlns, "Relationship"), xml::content::simple);
+
+        auto mode = parser.attribute_present("TargetMode")
+            ? parser.attribute<xlnt::target_mode>("TargetMode")
+            : target_mode::internal;
         relationships.emplace_back(parser.attribute("Id"),
             parser.attribute<xlnt::relationship::type>("Type"), source,
             xlnt::uri(parser.attribute("Target")),
-            xlnt::target_mode::internal);
+            mode);
+
         expect_end_element(xml::qname(xmlns, "Relationship"));
     }
 
@@ -1567,6 +1571,7 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
     static const auto &xmlns = constants::get_namespace("spreadsheetml");
     static const auto &xmlns_mc = constants::get_namespace("mc");
     static const auto &xmlns_x14ac = constants::get_namespace("x14ac");
+    static const auto &xmlns_r = constants::get_namespace("r");
 
     auto title = std::find_if(target_.d_->sheet_title_rel_id_map_.begin(),
         target_.d_->sheet_title_rel_id_map_.end(),
@@ -1596,7 +1601,14 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
     skip_attributes({xml::qname(xmlns_mc, "Ignorable")});
 
     xlnt::range_reference full_range;
+
     const auto &shared_strings = target_.get_shared_strings();
+    auto &manifest = target_.get_manifest();
+
+    const auto workbook_rel = manifest.get_relationship(path("/"), relationship::type::office_document);
+    const auto sheet_rel = manifest.get_relationship(workbook_rel.get_target().get_path(), rel_id);
+    path sheet_path(sheet_rel.get_source().get_path().parent().append(sheet_rel.get_target().get_path()));
+    auto hyperlinks = manifest.get_relationships(sheet_path, xlnt::relationship::type::hyperlink);
 
     while (in_element(xml::qname(xmlns, "worksheet")))
     {
@@ -1853,7 +1865,22 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
         }
         else if (current_worksheet_element == xml::qname(xmlns, "hyperlinks")) // CT_Hyperlinks 0-1
         {
-            skip_remaining_content(current_worksheet_element);
+            while (in_element(xml::qname(xmlns, "hyperlinks")))
+            {
+                expect_start_element(xml::qname(xmlns, "hyperlink"), xml::content::simple);
+
+                auto cell = ws.get_cell(parser().attribute("ref"));
+                auto hyperlink_rel_id = parser().attribute(xml::qname(xmlns_r, "id"));
+                auto hyperlink_rel = std::find_if(hyperlinks.begin(), hyperlinks.end(),
+                    [&](const relationship &r) { return r.get_id() == hyperlink_rel_id; });
+
+                if (hyperlink_rel != hyperlinks.end())
+                {
+                    cell.set_hyperlink(hyperlink_rel->get_target().get_path().string());
+                }
+
+                expect_end_element(xml::qname(xmlns, "hyperlink"));
+            }
         }
         else if (current_worksheet_element == xml::qname(xmlns, "printOptions")) // CT_PrintOptions 0-1
         {
@@ -1921,11 +1948,6 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
     }
 
     expect_end_element(xml::qname(xmlns, "worksheet"));
-
-    auto &manifest = target_.get_manifest();
-    const auto workbook_rel = manifest.get_relationship(path("/"), relationship::type::office_document);
-    const auto sheet_rel = manifest.get_relationship(workbook_rel.get_target().get_path(), rel_id);
-    path sheet_path(sheet_rel.get_source().get_path().parent().append(sheet_rel.get_target().get_path()));
 
     if (manifest.has_relationship(sheet_path, xlnt::relationship::type::comments))
     {
