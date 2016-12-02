@@ -74,11 +74,6 @@ public:
     /// <summary>
     ///
     /// </summary>
-    std::size_t num_cells() const;
-
-    /// <summary>
-    ///
-    /// </summary>
     cell front();
 
     /// <summary>
@@ -109,12 +104,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-    cell get_cell(std::size_t column_index);
+    cell cell(std::size_t column_index);
 
     /// <summary>
     ///
     /// </summary>
-    const cell get_cell(std::size_t column_index) const;
+    const class cell cell(std::size_t column_index) const;
 
     /// <summary>
     ///

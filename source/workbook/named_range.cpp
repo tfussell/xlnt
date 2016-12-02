@@ -58,12 +58,12 @@ std::vector<std::string> split_string(const std::string &string, char delim)
 
 namespace xlnt {
 
-std::string named_range::get_name() const
+std::string named_range::name() const
 {
     return name_;
 }
 
-const std::vector<named_range::target> &named_range::get_targets() const
+const std::vector<named_range::target> &named_range::targets() const
 {
     return targets_;
 }

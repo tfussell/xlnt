@@ -55,7 +55,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void set_message(const std::string &message);
+    void message(const std::string &message);
 
 private:
     /// <summary>

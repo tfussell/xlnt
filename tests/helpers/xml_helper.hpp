@@ -368,14 +368,14 @@ public:
         
         bool match = true;
 
-        xlnt::workbook right_workbook;
-        right_workbook.load(right);
-
         xlnt::workbook left_workbook;
         left_workbook.load(left);
+
+        xlnt::workbook right_workbook;
+        right_workbook.load(right);
         
-        auto &left_manifest = left_workbook.get_manifest();
-        auto &right_manifest = right_workbook.get_manifest();
+        auto &left_manifest = left_workbook.manifest();
+        auto &right_manifest = right_workbook.manifest();
 
 		for (auto left_member : left_info)
 		{
@@ -404,8 +404,8 @@ public:
             
             if (left_member != "[Content_Types].xml")
             {
-                left_content_type = left_manifest.get_content_type(xlnt::path(left_member));
-                right_content_type = right_manifest.get_content_type(xlnt::path(left_member));
+                left_content_type = left_manifest.content_type(xlnt::path(left_member));
+                right_content_type = right_manifest.content_type(xlnt::path(left_member));
             }
             else
             {

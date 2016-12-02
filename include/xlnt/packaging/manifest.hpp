@@ -48,14 +48,14 @@ public:
     /// Returns the path to all internal package parts registered as a source
     /// or target of a relationship.
     /// </summary>
-	std::vector<path> get_parts() const;
+	std::vector<path> parts() const;
     
     // Relationships
     
 	/// <summary>
 	/// Returns true if the manifest contains a relationship with the given type with part as the source.
 	/// </summary>
-	bool has_relationship(const path &source, relationship::type type) const;
+	bool has_relationship(const path &source, relationship_type type) const;
 
 	/// <summary>
 	/// Returns true if the manifest contains a relationship with the given type with part as the source.
@@ -66,39 +66,39 @@ public:
     /// Returns the relationship with "source" as the source and with a type of "type".
     /// Throws a key_not_found exception if no such relationship is found.
     /// </summary>
-	relationship get_relationship(const path &source, relationship::type type) const;
+	relationship relationship(const path &source, relationship_type type) const;
 
     /// <summary>
     /// Returns the relationship with "source" as the source and with an ID of "rel_id".
     /// Throws a key_not_found exception if no such relationship is found.
     /// </summary>
-	relationship get_relationship(const path &source, const std::string &rel_id) const;
+	class relationship relationship(const path &source, const std::string &rel_id) const;
 
     /// <summary>
     /// Returns all relationship with "source" as the source.
     /// </summary>
-	std::vector<relationship> get_relationships(const path &source) const;
+	std::vector<xlnt::relationship> relationships(const path &source) const;
 
     /// <summary>
     /// Returns all relationships with "source" as the source and with a type of "type".
     /// </summary>
-	std::vector<relationship> get_relationships(const path &source, relationship::type type) const;
+	std::vector<xlnt::relationship> relationships(const path &source, relationship_type type) const;
     
     /// <summary>
     /// Returns the canonical path of the chain of relationships by traversing through rels
     /// and forming the absolute combined path.
     /// </summary>
-    path canonicalize(const std::vector<relationship> &rels) const;
+    path canonicalize(const std::vector<xlnt::relationship> &rels) const;
 
 	/// <summary>
 	/// 
 	/// </summary>
-	std::string register_relationship(const uri &source, relationship::type type, const uri &target, target_mode mode);
+	std::string register_relationship(const uri &source, relationship_type type, const uri &target, target_mode mode);
 
 	/// <summary>
 	/// 
 	/// </summary>
-	std::string register_relationship(const uri &source, relationship::type type, const uri &target, target_mode mode, const std::string &rel_id);
+	std::string register_relationship(const uri &source, relationship_type type, const uri &target, target_mode mode, const std::string &rel_id);
 
 	/// <summary>
 	/// 
@@ -110,7 +110,7 @@ public:
 	/// <summary>
 	/// Given the path to a part, returns the content type of the part as a string.
 	/// </summary>
-	std::string get_content_type(const path &part) const;
+	std::string content_type(const path &part) const;
 
     // Default Content Types
     
@@ -122,12 +122,12 @@ public:
 	/// <summary>
 	/// Returns a vector of all extensions with registered default content types.
 	/// </summary>
-	std::vector<std::string> get_extensions_with_default_types() const;
+	std::vector<std::string> extensions_with_default_types() const;
 
 	/// <summary>
 	/// Returns the registered default content type for parts of the given extension.
 	/// </summary>
-	std::string get_default_type(const std::string &extension) const;
+	std::string default_type(const std::string &extension) const;
 
 	/// <summary>
 	/// Associates the given extension with the given content type.
@@ -151,12 +151,12 @@ public:
     /// Returns the override content type registered for the given part.
     /// Throws key_not_found exception if no override type was found.
     /// </summary>
-    std::string get_override_type(const path &part) const;
+    std::string override_type(const path &part) const;
     
     /// <summary>
     /// Returns the path of every part in this manifest with an overriden content type.
     /// </summary>
-	std::vector<path> get_parts_with_overriden_types() const;
+	std::vector<path> parts_with_overriden_types() const;
 
     /// <summary>
     /// Overrides any default type registered for the part's extension with the given content type.
@@ -187,7 +187,7 @@ private:
     /// <summary>
     ///
     /// </summary>
-    std::unordered_map<path, std::unordered_map<std::string, relationship>> relationships_;
+    std::unordered_map<path, std::unordered_map<std::string, xlnt::relationship>> relationships_;
 };
 
 } // namespace xlnt

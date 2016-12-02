@@ -56,6 +56,11 @@ struct XLNT_API datetime
     static datetime from_number(long double number, calendar base_date);
 
     /// <summary>
+    /// 
+    /// </summary>
+    static datetime from_iso_string(const std::string &iso_string);
+
+    /// <summary>
     ///
     /// </summary>
 	datetime(const date &d, const time &t);
@@ -69,6 +74,11 @@ struct XLNT_API datetime
     ///
     /// </summary>
     std::string to_string() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::string to_iso_string() const;
 
     /// <summary>
     ///

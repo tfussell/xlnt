@@ -104,27 +104,27 @@ public:
     /// <summary>
     ///
     /// </summary>
-    cell_vector get_vector(std::size_t vector_index);
+    cell_vector vector(std::size_t vector_index);
 
     /// <summary>
     ///
     /// </summary>
-    const cell_vector get_vector(std::size_t vector_index) const;
+    const cell_vector vector(std::size_t vector_index) const;
 
     /// <summary>
     ///
     /// </summary>
-    cell get_cell(const cell_reference &ref);
+    cell cell(const cell_reference &ref);
 
     /// <summary>
     ///
     /// </summary>
-    const cell get_cell(const cell_reference &ref) const;
+    const class cell cell(const cell_reference &ref) const;
 
     /// <summary>
     ///
     /// </summary>
-    range_reference get_reference() const;
+    range_reference reference() const;
 
     /// <summary>
     ///

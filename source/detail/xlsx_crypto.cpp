@@ -172,7 +172,7 @@ struct crypto_helper
         return std::vector<std::uint8_t>(hash.begin(), hash.end());
     }
 
-    static std::vector<std::uint8_t> get_file(POLE::Storage &storage, const std::string &name)
+    static std::vector<std::uint8_t> file(POLE::Storage &storage, const std::string &name)
     {
         POLE::Stream stream(&storage, name.c_str());
         if (stream.fail()) return {};
@@ -389,8 +389,8 @@ struct crypto_helper
 
     static std::vector<std::uint8_t> write_agile_encryption_info(const std::string &password)
     {
-        static const auto &xmlns = xlnt::constants::get_namespace("encryption");
-        static const auto &xmlns_p = xlnt::constants::get_namespace("encryption-password");
+        static const auto &xmlns = xlnt::constants::namespace_("encryption");
+        static const auto &xmlns_p = xlnt::constants::namespace_("encryption-password");
 
 	std::vector<std::uint8_t> encryption_info;
 	xlnt::detail::vector_ostreambuf encryption_info_buffer(encryption_info);
@@ -445,9 +445,9 @@ struct crypto_helper
     static std::vector<std::uint8_t> decrypt_xlsx_agile(const std::vector<std::uint8_t> &encryption_info,
         const std::string &password, const std::vector<std::uint8_t> &encrypted_package)
     {
-        static const auto &xmlns = xlnt::constants::get_namespace("encryption");
-        static const auto &xmlns_p = xlnt::constants::get_namespace("encryption-password");
-        //static const auto &xmlns_c = xlnt::constants::get_namespace("encryption-certificate");
+        static const auto &xmlns = xlnt::constants::namespace_("encryption");
+        static const auto &xmlns_p = xlnt::constants::namespace_("encryption-password");
+        //static const auto &xmlns_c = xlnt::constants::namespace_("encryption-certificate");
 
         agile_encryption_info result;
 
@@ -652,8 +652,8 @@ struct crypto_helper
             throw xlnt::exception("not an ole compound file");
         }
 
-        auto encrypted_package = get_file(storage, "EncryptedPackage");
-        auto encryption_info = get_file(storage, "EncryptionInfo");
+        auto encrypted_package = file(storage, "EncryptedPackage");
+        auto encryption_info = file(storage, "EncryptionInfo");
 
         std::size_t index = 0;
 

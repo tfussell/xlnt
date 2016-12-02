@@ -50,75 +50,75 @@ public:
 	void test_produce_simple_excel()
 	{
 		xlnt::workbook wb = xlnt::workbook::empty_excel();
-		auto ws = wb.get_active_sheet();
+		auto ws = wb.active_sheet();
 
 		auto bold_font = xlnt::font().bold(true);
 
-		ws.get_cell("A1").set_value("Type");
-		ws.get_cell("A1").set_font(bold_font);
+		ws.cell("A1").value("Type");
+		ws.cell("A1").font(bold_font);
 
-		ws.get_cell("B1").set_value("Value");
-		ws.get_cell("B1").set_font(bold_font);
+		ws.cell("B1").value("Value");
+		ws.cell("B1").font(bold_font);
 
-		ws.get_cell("A2").set_value("null");
-		ws.get_cell("B2").set_value(nullptr);
+		ws.cell("A2").value("null");
+		ws.cell("B2").value(nullptr);
 
-		ws.get_cell("A3").set_value("bool (true)");
-		ws.get_cell("B3").set_value(true);
+		ws.cell("A3").value("bool (true)");
+		ws.cell("B3").value(true);
 
-		ws.get_cell("A4").set_value("bool (false)");
-		ws.get_cell("B4").set_value(false);
+		ws.cell("A4").value("bool (false)");
+		ws.cell("B4").value(false);
 
-		ws.get_cell("A5").set_value("number (std::int8_t)");
-		ws.get_cell("B5").set_value(std::numeric_limits<std::int8_t>::max());
+		ws.cell("A5").value("number (std::int8_t)");
+		ws.cell("B5").value(std::numeric_limits<std::int8_t>::max());
 
-		ws.get_cell("A6").set_value("number (std::uint8_t)");
-		ws.get_cell("B6").set_value(std::numeric_limits<std::uint8_t>::max());
+		ws.cell("A6").value("number (std::uint8_t)");
+		ws.cell("B6").value(std::numeric_limits<std::uint8_t>::max());
 
-		ws.get_cell("A7").set_value("number (std::uint16_t)");
-		ws.get_cell("B7").set_value(std::numeric_limits<std::int16_t>::max());
+		ws.cell("A7").value("number (std::uint16_t)");
+		ws.cell("B7").value(std::numeric_limits<std::int16_t>::max());
 
-		ws.get_cell("A8").set_value("number (std::uint16_t)");
-		ws.get_cell("B8").set_value(std::numeric_limits<std::uint16_t>::max());
+		ws.cell("A8").value("number (std::uint16_t)");
+		ws.cell("B8").value(std::numeric_limits<std::uint16_t>::max());
 
-		ws.get_cell("A9").set_value("number (std::uint32_t)");
-		ws.get_cell("B9").set_value(std::numeric_limits<std::int32_t>::max());
+		ws.cell("A9").value("number (std::uint32_t)");
+		ws.cell("B9").value(std::numeric_limits<std::int32_t>::max());
 
-		ws.get_cell("A10").set_value("number (std::uint32_t)");
-		ws.get_cell("B10").set_value(std::numeric_limits<std::uint32_t>::max());
+		ws.cell("A10").value("number (std::uint32_t)");
+		ws.cell("B10").value(std::numeric_limits<std::uint32_t>::max());
 
-		ws.get_cell("A11").set_value("number (std::uint64_t)");
-		ws.get_cell("B11").set_value(std::numeric_limits<std::int64_t>::max());
+		ws.cell("A11").value("number (std::uint64_t)");
+		ws.cell("B11").value(std::numeric_limits<std::int64_t>::max());
 
-		ws.get_cell("A12").set_value("number (std::uint64_t)");
-		ws.get_cell("B12").set_value(std::numeric_limits<std::uint64_t>::max());
+		ws.cell("A12").value("number (std::uint64_t)");
+		ws.cell("B12").value(std::numeric_limits<std::uint64_t>::max());
 
-		ws.get_cell("A13").set_value("number (float)");
-		ws.get_cell("B13").set_value(std::numeric_limits<float>::max());
+		ws.cell("A13").value("number (float)");
+		ws.cell("B13").value(std::numeric_limits<float>::max());
 
-		ws.get_cell("A14").set_value("number (double)");
-		ws.get_cell("B14").set_value(std::numeric_limits<double>::max());
+		ws.cell("A14").value("number (double)");
+		ws.cell("B14").value(std::numeric_limits<double>::max());
 
-		ws.get_cell("A15").set_value("number (long double)");
-		ws.get_cell("B15").set_value(std::numeric_limits<long double>::max());
+		ws.cell("A15").value("number (long double)");
+		ws.cell("B15").value(std::numeric_limits<long double>::max());
 
-		ws.get_cell("A16").set_value("text (char *)");
-		ws.get_cell("B16").set_value("string");
+		ws.cell("A16").value("text (char *)");
+		ws.cell("B16").value("string");
 
-		ws.get_cell("A17").set_value("text (std::string)");
-		ws.get_cell("B17").set_value(std::string("string"));
+		ws.cell("A17").value("text (std::string)");
+		ws.cell("B17").value(std::string("string"));
 
-		ws.get_cell("A18").set_value("date");
-		ws.get_cell("B18").set_value(xlnt::date(2016, 2, 3));
+		ws.cell("A18").value("date");
+		ws.cell("B18").value(xlnt::date(2016, 2, 3));
 
-		ws.get_cell("A19").set_value("time");
-		ws.get_cell("B19").set_value(xlnt::time(1, 2, 3, 4));
+		ws.cell("A19").value("time");
+		ws.cell("B19").value(xlnt::time(1, 2, 3, 4));
 
-		ws.get_cell("A20").set_value("datetime");
-		ws.get_cell("B20").set_value(xlnt::datetime(2016, 2, 3, 1, 2, 3, 4));
+		ws.cell("A20").value("datetime");
+		ws.cell("B20").value(xlnt::datetime(2016, 2, 3, 1, 2, 3, 4));
 
-		ws.get_cell("A21").set_value("timedelta");
-		ws.get_cell("B21").set_value(xlnt::timedelta(1, 2, 3, 4, 5));
+		ws.cell("A21").value("timedelta");
+		ws.cell("B21").value(xlnt::timedelta(1, 2, 3, 4, 5));
 
 		ws.freeze_panes("B2");
 
@@ -131,14 +131,14 @@ public:
 	{
 		xlnt::workbook workbook;
 
-		TS_ASSERT_EQUALS(workbook.get_sheet_titles().size(), 1);
+		TS_ASSERT_EQUALS(workbook.sheet_titles().size(), 1);
 
 		auto sheet = workbook.create_sheet();
-		sheet.set_title("XXX1");
-		TS_ASSERT_EQUALS(workbook.get_sheet_titles().size(), 2);
+		sheet.title("XXX1");
+		TS_ASSERT_EQUALS(workbook.sheet_titles().size(), 2);
 
-		workbook.remove_sheet(workbook.get_sheet_by_title("XXX1"));
-		TS_ASSERT_EQUALS(workbook.get_sheet_titles().size(), 1);
+		workbook.remove_sheet(workbook.sheet_by_title("XXX1"));
+		TS_ASSERT_EQUALS(workbook.sheet_titles().size(), 1);
 
 		std::vector<std::uint8_t> temp_buffer;
 		TS_ASSERT_THROWS_NOTHING(workbook.save(temp_buffer));
@@ -151,37 +151,37 @@ public:
 
 		xlnt::formatted_text comment_text;
 		xlnt::text_run formatted_run;;
-		formatted_run.set_bold(true);
-		formatted_run.set_size(10);
-		formatted_run.set_color(xlnt::indexed_color(81));
-		formatted_run.set_font("Calibri");
+		formatted_run.bold(true);
+		formatted_run.size(10);
+		formatted_run.color(xlnt::indexed_color(81));
+		formatted_run.font("Calibri");
 
-		auto sheet1 = wb.get_active_sheet();
+		auto sheet1 = wb.active_sheet();
 
-		sheet1.get_cell("A1").set_value("Sheet1!A1");
-		formatted_run.set_string("Sheet1 comment");
+		sheet1.cell("A1").value("Sheet1!A1");
+		formatted_run.string("Sheet1 comment");
 		comment_text.add_run(formatted_run);
-		sheet1.get_cell("A1").comment(xlnt::comment(comment_text, "Microsoft Office User"));
-		sheet1.get_cell("A1").comment("Sheet1 comment");
+		sheet1.cell("A1").comment(xlnt::comment(comment_text, "Microsoft Office User"));
+		sheet1.cell("A1").comment("Sheet1 comment");
 
-		sheet1.get_cell("A2").set_value("Sheet1!A2");
-		formatted_run.set_string("Sheet1 comment2");
+		sheet1.cell("A2").value("Sheet1!A2");
+		formatted_run.string("Sheet1 comment2");
 		comment_text.clear();
 		comment_text.add_run(formatted_run);
-		sheet1.get_cell("A2").comment(xlnt::comment(comment_text, "Microsoft Office User"));
+		sheet1.cell("A2").comment(xlnt::comment(comment_text, "Microsoft Office User"));
 
 		auto sheet2 = wb.create_sheet();
-		sheet2.get_cell("A1").set_value("Sheet2!A1");
-		formatted_run.set_string("Sheet2 comment");
+		sheet2.cell("A1").value("Sheet2!A1");
+		formatted_run.string("Sheet2 comment");
 		comment_text.clear();
 		comment_text.add_run(formatted_run);
-		sheet2.get_cell("A1").comment(xlnt::comment(comment_text, "Microsoft Office User"));
+		sheet2.cell("A1").comment(xlnt::comment(comment_text, "Microsoft Office User"));
 
-		sheet2.get_cell("A2").set_value("Sheet2!A2");
-		formatted_run.set_string("Sheet2 comment2");
+		sheet2.cell("A2").value("Sheet2!A2");
+		formatted_run.string("Sheet2 comment2");
 		comment_text.clear();
 		comment_text.add_run(formatted_run);
-		sheet2.get_cell("A2").comment(xlnt::comment(comment_text, "Microsoft Office User"));
+		sheet2.cell("A2").comment(xlnt::comment(comment_text, "Microsoft Office User"));
 
 //		TS_ASSERT(workbook_matches_file(wb, xlnt::path("data/18_basic_comments.xlsx")));
 	}

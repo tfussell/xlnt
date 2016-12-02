@@ -45,42 +45,42 @@ public:
     /// <summary>
     ///
     /// </summary>
-    page_break get_break() const;
+    page_break page_break() const;
 
     /// <summary>
     ///
     /// </summary>
-    void set_break(page_break b);
+    void page_break(enum page_break b);
 
     /// <summary>
     ///
     /// </summary>
-    sheet_state get_sheet_state() const;
+    sheet_state sheet_state() const;
 
     /// <summary>
     ///
     /// </summary>
-    void set_sheet_state(sheet_state sheet_state);
+    void sheet_state(enum sheet_state sheet_state);
 
     /// <summary>
     ///
     /// </summary>
-    paper_size get_paper_size() const;
+    paper_size paper_size() const;
 
     /// <summary>
     ///
     /// </summary>
-    void set_paper_size(paper_size paper_size);
+    void paper_size(enum paper_size paper_size);
 
     /// <summary>
     ///
     /// </summary>
-    orientation get_orientation() const;
+    orientation orientation() const;
 
     /// <summary>
     ///
     /// </summary>
-    void set_orientation(orientation orientation);
+    void orientation(enum orientation orientation);
 
     /// <summary>
     ///
@@ -90,7 +90,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void set_fit_to_page(bool fit_to_page);
+    void fit_to_page(bool fit_to_page);
 
     /// <summary>
     ///
@@ -100,7 +100,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void set_fit_to_height(bool fit_to_height);
+    void fit_to_height(bool fit_to_height);
 
     /// <summary>
     ///
@@ -110,58 +110,58 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void set_fit_to_width(bool fit_to_width);
+    void fit_to_width(bool fit_to_width);
 
     /// <summary>
     ///
     /// </summary>
-    void set_horizontal_centered(bool horizontal_centered);
+    void horizontal_centered(bool horizontal_centered);
 
     /// <summary>
     ///
     /// </summary>
-    bool get_horizontal_centered() const;
+    bool horizontal_centered() const;
 
     /// <summary>
     ///
     /// </summary>
-    void set_vertical_centered(bool vertical_centered);
+    void vertical_centered(bool vertical_centered);
 
     /// <summary>
     ///
     /// </summary>
-    bool get_vertical_centered() const;
+    bool vertical_centered() const;
 
     /// <summary>
     ///
     /// </summary>
-    void set_scale(double scale);
+    void scale(double scale);
 
     /// <summary>
     ///
     /// </summary>
-    double get_scale() const;
+    double scale() const;
 
 private:
     /// <summary>
     ///
     /// </summary>
-    page_break break_;
+    enum page_break break_;
 
     /// <summary>
     ///
     /// </summary>
-    sheet_state sheet_state_;
+    enum sheet_state sheet_state_;
 
     /// <summary>
     ///
     /// </summary>
-    paper_size paper_size_;
+    enum paper_size paper_size_;
 
     /// <summary>
     ///
     /// </summary>
-    orientation orientation_;
+    enum orientation orientation_;
 
     /// <summary>
     ///

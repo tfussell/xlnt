@@ -26,6 +26,7 @@
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/styles/color.hpp>
+#include <xlnt/styles/font.hpp>
 #include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
@@ -56,12 +57,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-	std::string get_string() const;
+	std::string string() const;
 
     /// <summary>
     ///
     /// </summary>
-	void set_string(const std::string &string);
+	void string(const std::string &string);
 
     /// <summary>
     ///
@@ -71,12 +72,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-    std::size_t get_size() const;
+    std::size_t size() const;
 
     /// <summary>
     ///
     /// </summary>
-    void set_size(std::size_t size);
+    void size(std::size_t size);
 
     /// <summary>
     ///
@@ -86,12 +87,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-    color get_color() const;
+    color color() const;
 
     /// <summary>
     ///
     /// </summary>
-    void set_color(const color &new_color);
+    void color(const class color &new_color);
 
     /// <summary>
     ///
@@ -101,12 +102,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-    std::string get_font() const;
+    std::string font() const;
 
     /// <summary>
     ///
     /// </summary>
-    void set_font(const std::string &font);
+    void font(const std::string &font);
 
     /// <summary>
     ///
@@ -116,12 +117,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-    std::size_t get_family() const;
+    std::size_t family() const;
 
     /// <summary>
     ///
     /// </summary>
-    void set_family(std::size_t family);
+    void family(std::size_t family);
 
     /// <summary>
     ///
@@ -131,27 +132,42 @@ public:
     /// <summary>
     ///
     /// </summary>
-    std::string get_scheme() const;
+    std::string scheme() const;
 
     /// <summary>
     ///
     /// </summary>
-    void set_scheme(const std::string &scheme);
+    void scheme(const std::string &scheme);
 
     /// <summary>
     ///
     /// </summary>
-    bool bold_set() const;
+    bool bold() const;
 
     /// <summary>
     ///
     /// </summary>
-    bool is_bold() const;
+    void bold(bool bold);
 
     /// <summary>
     ///
     /// </summary>
-    void set_bold(bool bold);
+    bool underline_set() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool underlined() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    font::underline_style underline() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void underline(font::underline_style style);
 
 private:
     /// <summary>
@@ -162,32 +178,7 @@ private:
     /// <summary>
     ///
     /// </summary>
-    optional<std::size_t> size_;
-
-    /// <summary>
-    ///
-    /// </summary>
-    optional<color> color_;
-
-    /// <summary>
-    ///
-    /// </summary>
-    optional<std::string> font_;
-
-    /// <summary>
-    ///
-    /// </summary>
-    optional<std::size_t> family_;
-
-    /// <summary>
-    ///
-    /// </summary>
-    optional<std::string> scheme_;
-
-    /// <summary>
-    ///
-    /// </summary>
-    optional<bool> bold_;
+    optional<xlnt::font> font_;
 };
 
 } // namespace xlnt

@@ -156,16 +156,16 @@ style style::font(const xlnt::font &new_font, bool applied)
 
 xlnt::number_format &style::number_format()
 {
-    auto target_id = d_->number_format_id.get();
+    auto tarid = d_->number_format_id.get();
 	return *std::find_if(d_->parent->number_formats.begin(), d_->parent->number_formats.end(),
-        [=](const class number_format &nf) { return nf.get_id() == target_id; });
+        [=](const class number_format &nf) { return nf.id() == tarid; });
 }
 
 const xlnt::number_format &style::number_format() const
 {
-    auto target_id = d_->number_format_id.get();
+    auto tarid = d_->number_format_id.get();
 	return *std::find_if(d_->parent->number_formats.begin(), d_->parent->number_formats.end(),
-        [=](const class number_format &nf) { return nf.get_id() == target_id; });
+        [=](const class number_format &nf) { return nf.id() == tarid; });
 }
 
 style style::number_format(const xlnt::number_format &new_number_format, bool applied)
@@ -174,18 +174,18 @@ style style::number_format(const xlnt::number_format &new_number_format, bool ap
 
 	if (!copy.has_id())
 	{
-		copy.set_id(d_->parent->next_custom_number_format_id());
+		copy.id(d_->parent->next_custom_number_format_id());
         d_->parent->number_formats.push_back(copy);
 	}
     else if (std::find_if(d_->parent->number_formats.begin(),
         d_->parent->number_formats.end(),
-        [&copy](const class number_format &nf) { return nf.get_id() == copy.get_id(); })
+        [&copy](const class number_format &nf) { return nf.id() == copy.id(); })
         == d_->parent->number_formats.end())
     {
         d_->parent->number_formats.push_back(copy);
     }
     
-    d_->number_format_id = copy.get_id();
+    d_->number_format_id = copy.id();
     d_->number_format_applied = applied;
 
     return style(d_);

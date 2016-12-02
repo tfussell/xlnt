@@ -114,12 +114,22 @@ public:
     /// <summary>
     ///
     /// </summary>
+    bool has_size() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     font &size(std::size_t size);
 
     /// <summary>
     ///
     /// </summary>
     std::size_t size() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_name() const;
 
     /// <summary>
     ///
@@ -134,12 +144,22 @@ public:
     /// <summary>
     ///
     /// </summary>
+    bool has_color() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     font &color(const color &c);
 
     /// <summary>
     ///
     /// </summary>
-	optional<xlnt::color> color() const;
+	xlnt::color color() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_family() const;
 
     /// <summary>
     ///
@@ -149,7 +169,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-	optional<std::size_t> family() const;
+	std::size_t family() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_scheme() const;
 
     /// <summary>
     ///
@@ -159,7 +184,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    optional<std::string> scheme() const;
+    std::string scheme() const;
     
     /// <summary>
     /// Returns true if left is exactly equal to right.
@@ -177,12 +202,12 @@ private:
     /// <summary>
     ///
     /// </summary>
-    std::string name_ = "Calibri";
+    optional<std::string> name_;
 
     /// <summary>
     ///
     /// </summary>
-    std::size_t size_ = 12;
+    optional<std::size_t> size_;
 
     /// <summary>
     ///

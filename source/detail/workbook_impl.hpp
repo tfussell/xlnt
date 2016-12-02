@@ -44,32 +44,7 @@ struct worksheet_impl;
 
 struct workbook_impl
 {
-	workbook_impl()
-		: active_sheet_index_(0),
-		guess_types_(false),
-		data_only_(false),
-		has_theme_(false),
-		write_core_properties_(false),
-		created_(xlnt::datetime::now()),
-		modified_(xlnt::datetime::now()),
-		base_date_(calendar::windows_1900),
-		write_app_properties_(false),
-		application_("libxlnt"),
-		doc_security_(0),
-		scale_crop_(false),
-		links_up_to_date_(false),
-		shared_doc_(false),
-		hyperlinks_changed_(false),
-		app_version_("0.9"),
-		x15_(false),
-		has_properties_(false),
-		has_absolute_path_(false),
-		has_view_(false),
-		has_code_name_(false),
-		has_file_version_(false),
-		has_calculation_properties_(false),
-		has_arch_id_(false),
-		short_bools_(true)
+	workbook_impl() : active_sheet_index_(0)
 	{
 	}
 
@@ -77,46 +52,12 @@ struct workbook_impl
         : active_sheet_index_(other.active_sheet_index_),
           worksheets_(other.worksheets_),
           shared_strings_(other.shared_strings_),
-          guess_types_(other.guess_types_),
-          data_only_(other.data_only_),
           stylesheet_(other.stylesheet_),
           manifest_(other.manifest_),
-		  has_theme_(other.has_theme_),
 		  theme_(other.theme_),
-		  write_core_properties_(other.write_core_properties_),
-		  creator_(other.creator_),
-		  last_modified_by_(other.last_modified_by_),
-		  created_(other.created_),
-		  modified_(other.modified_),
-		  title_(other.title_),
-		  subject_(other.subject_),
-		  description_(other.description_),
-		  keywords_(other.keywords_),
-		  category_(other.category_),
-		  company_(other.company_),
-		  base_date_(other.base_date_),
-		  write_app_properties_(other.write_app_properties_),
-		  application_(other.application_),
-		  doc_security_(other.doc_security_),
-		  scale_crop_(other.scale_crop_),
-		  links_up_to_date_(other.links_up_to_date_),
-		  shared_doc_(other.shared_doc_),
-		  hyperlinks_changed_(other.hyperlinks_changed_),
-		  app_version_(other.app_version_),
-		  sheet_title_rel_id_map_(other.sheet_title_rel_id_map_),
-		  x15_(other.x15_),
-		  has_properties_(other.has_properties_),
-		  has_absolute_path_(other.has_absolute_path_),
-		  absolute_path_(other.absolute_path_),
-		  has_view_(other.has_view_),
 		  view_(other.view_),
-		  has_code_name_(other.has_code_name_),
 		  code_name_(other.code_name_),
-		  has_file_version_(other.has_file_version_),
-		  file_version_(other.file_version_),
-		  has_calculation_properties_(other.has_calculation_properties_),
-		  has_arch_id_(other.has_arch_id_),
-		  short_bools_(other.short_bools_)
+		  file_version_(other.file_version_)
     {
     }
 
@@ -127,120 +68,49 @@ struct workbook_impl
         std::copy(other.worksheets_.begin(), other.worksheets_.end(), back_inserter(worksheets_));
         shared_strings_.clear();
         std::copy(other.shared_strings_.begin(), other.shared_strings_.end(), std::back_inserter(shared_strings_));
-        guess_types_ = other.guess_types_;
-        data_only_ = other.data_only_;
-		has_theme_ = other.has_theme_;
 		theme_ = other.theme_;
         manifest_ = other.manifest_;
 
-		write_core_properties_ = other.write_core_properties_;
-		creator_ = other.creator_;
-		last_modified_by_ = other.last_modified_by_;
-		created_ = other.created_;
-		modified_ = other.modified_;
-		title_ = other.title_;
-		subject_ = other.subject_;
-		description_ = other.description_;
-		keywords_ = other.keywords_;
-		category_ = other.category_;
-		company_ = other.company_;
-		base_date_ = other.base_date_;
-
-		write_app_properties_ = other.write_app_properties_;
-		application_ = other.application_;
-		doc_security_ = other.doc_security_;
-		scale_crop_ = other.scale_crop_;
-		links_up_to_date_ = other.links_up_to_date_;
-		shared_doc_ = other.shared_doc_;
-		hyperlinks_changed_ = other.hyperlinks_changed_;
-		app_version_ = other.app_version_;
-
 		sheet_title_rel_id_map_ = other.sheet_title_rel_id_map_;
-
-		x15_ = other.x15_;
-		has_properties_ = other.has_properties_;
-		has_absolute_path_ = other.has_absolute_path_;
-		absolute_path_ = other.absolute_path_;
-		has_view_ = other.has_view_;
 		view_ = other.view_;
-		has_code_name_ = other.has_code_name_;
 		code_name_ = other.code_name_;
-
-		has_file_version_ = other.has_file_version_;
 		file_version_ = other.file_version_;
-
-		has_calculation_properties_ = other.has_calculation_properties_;
-		has_arch_id_ = other.has_arch_id_;
-
-		short_bools_ = other.short_bools_;
 
         return *this;
     }
 
-    std::size_t active_sheet_index_;
+    optional<std::size_t> active_sheet_index_;
+
     std::list<worksheet_impl> worksheets_;
     std::vector<formatted_text> shared_strings_;
 
-    bool guess_types_;
-    bool data_only_;
+    optional<stylesheet> stylesheet_;
 
-    stylesheet stylesheet_;
+    calendar base_date_;
+    optional<std::string> title_;
     
     manifest manifest_;
-	bool has_theme_;
-    theme theme_;
-    std::vector<std::uint8_t> thumbnail_;
+    optional<theme> theme_;
+    std::unordered_map<std::string, std::vector<std::uint8_t>> images_;
 
-	// core properties
-
-	bool write_core_properties_;
-	std::string creator_;
-	std::string last_modified_by_;
-	datetime created_;
-	datetime modified_;
-	std::string title_;
-	std::string subject_;
-	std::string description_;
-	std::string keywords_;
-	std::string category_;
-	std::string company_;
-	calendar base_date_;
-
-	// application properties
-
-	bool write_app_properties_;
-	std::string application_;
-	int doc_security_;
-	bool scale_crop_;
-	bool links_up_to_date_;
-	bool shared_doc_;
-	bool hyperlinks_changed_;
-	std::string app_version_;
+    std::unordered_map<std::string, std::string> core_properties_;
+    std::unordered_map<std::string, std::string> extended_properties_;
+    std::unordered_map<std::string, std::string> custom_properties_;
 
 	std::unordered_map<std::string, std::string> sheet_title_rel_id_map_;
 
-	bool x15_;
-	bool has_properties_;
-	bool has_absolute_path_;
-	path absolute_path_;
-	bool has_view_;
-	workbook_view view_;
-	bool has_code_name_;
-	std::string code_name_;
+    optional<workbook_view> view_;
+    optional<std::string> code_name_;
 
-	bool has_file_version_;
 	struct file_version_t
 	{
 		std::string app_name;
 		std::size_t last_edited;
 		std::size_t lowest_edited;
 		std::size_t rup_build;
-	} file_version_;
-
-	bool has_calculation_properties_;
-	bool has_arch_id_;
-
-	bool short_bools_;
+	};
+    
+    optional<file_version_t> file_version_;
 };
 
 } // namespace detail

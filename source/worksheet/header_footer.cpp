@@ -25,27 +25,27 @@
 
 namespace xlnt {
 
-header &header_footer::get_left_header()
+header &header_footer::left_header()
 {
     return left_header_;
 }
-header &header_footer::get_center_header()
+header &header_footer::center_header()
 {
     return center_header_;
 }
-header &header_footer::get_right_header()
+header &header_footer::right_header()
 {
     return right_header_;
 }
-footer &header_footer::get_left_footer()
+footer &header_footer::left_footer()
 {
     return left_footer_;
 }
-footer &header_footer::get_center_footer()
+footer &header_footer::center_footer()
 {
     return center_footer_;
 }
-footer &header_footer::get_right_footer()
+footer &header_footer::right_footer()
 {
     return right_footer_;
 }

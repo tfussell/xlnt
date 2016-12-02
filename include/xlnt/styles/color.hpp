@@ -44,12 +44,12 @@ public:
     /// <summary>
     /// 
     /// </summary>
-	std::size_t get_index() const;
+	std::size_t index() const;
 
     /// <summary>
     /// 
     /// </summary>
-	void set_index(std::size_t index);
+	void index(std::size_t index);
 
 private:
     /// <summary>
@@ -72,12 +72,12 @@ public:
     /// <summary>
     /// 
     /// </summary>
-	std::size_t get_index() const;
+	std::size_t index() const;
 
     /// <summary>
     /// 
     /// </summary>
-	void set_index(std::size_t index);
+	void index(std::size_t index);
 
 private:
     /// <summary>
@@ -105,37 +105,37 @@ public:
     /// <summary>
     /// 
     /// </summary>
-	std::string get_hex_string() const;
+	std::string hex_string() const;
 
     /// <summary>
     /// 
     /// </summary>
-	std::uint8_t get_red() const;
+	std::uint8_t red() const;
 
     /// <summary>
     /// 
     /// </summary>
-	std::uint8_t get_green() const;
+	std::uint8_t green() const;
 
     /// <summary>
     /// 
     /// </summary>
-	std::uint8_t get_blue() const;
+	std::uint8_t blue() const;
 
     /// <summary>
     /// 
     /// </summary>
-	std::uint8_t get_alpha() const;
+	std::uint8_t alpha() const;
 
     /// <summary>
     /// 
     /// </summary>
-	std::array<std::uint8_t, 3> get_rgb() const;
+	std::array<std::uint8_t, 3> rgb() const;
 
     /// <summary>
     /// 
     /// </summary>
-	std::array<std::uint8_t, 4> get_rgba() const;
+	std::array<std::uint8_t, 4> rgba() const;
 
 private:
     /// <summary>
@@ -150,22 +150,21 @@ private:
 };
 
 /// <summary>
+/// Some colors are references to colors rather than having a particular RGB value.
+/// </summary>
+enum class color_type
+{
+    indexed,
+    theme,
+    rgb
+};
+
+/// <summary>
 /// Colors can be applied to many parts of a cell's style.
 /// </summary>
 class XLNT_API color
 {
 public:
-    /// <summary>
-    /// Some colors are references to colors rather than having a particular RGB value.
-    /// </summary>
-    enum class type
-    {
-        indexed,
-        theme,
-        rgb,
-        auto_
-    };
-
     /// <summary>
     ///
     /// </summary>
@@ -239,7 +238,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-	type get_type() const;
+	color_type type() const;
 
     /// <summary>
     ///
@@ -249,32 +248,32 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void set_auto(bool value);
+    void auto_(bool value);
 
     /// <summary>
     ///
     /// </summary>
-	const rgb_color &get_rgb() const;
+	const rgb_color &rgb() const;
 
     /// <summary>
     ///
     /// </summary>
-    const indexed_color &get_indexed() const;
+    const indexed_color &indexed() const;
 
     /// <summary>
     ///
     /// </summary>
-    const theme_color &get_theme() const;
+    const theme_color &theme() const;
 
     /// <summary>
     ///
     /// </summary>
-	double get_tint() const;
+	double tint() const;
 
     /// <summary>
     ///
     /// </summary>
-	void set_tint(double tint);
+	void tint(double tint);
 
     /// <summary>
     ///
@@ -290,12 +289,12 @@ private:
     /// <summary>
     ///
     /// </summary>
-	void assert_type(type t) const;
+	void assert_type(color_type t) const;
 
     /// <summary>
     ///
     /// </summary>
-	type type_;
+	color_type type_;
 
     /// <summary>
     ///
@@ -316,6 +315,11 @@ private:
     ///
     /// </summary>
 	double tint_;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    bool auto__;
 };
 
 } // namespace xlnt

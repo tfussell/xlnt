@@ -249,12 +249,12 @@ number_format::number_format(std::size_t id) : number_format(from_builtin_id(id)
 
 number_format::number_format(const std::string &format_string) : id_set_(false), id_(0)
 {
-    set_format_string(format_string);
+    this->format_string(format_string);
 }
 
 number_format::number_format(const std::string &format_string, std::size_t id) : id_set_(false), id_(0)
 {
-    set_format_string(format_string, id);
+    this->format_string(format_string, id);
 }
 
 number_format number_format::from_builtin_id(std::size_t builtin_id)
@@ -268,12 +268,12 @@ number_format number_format::from_builtin_id(std::size_t builtin_id)
     return number_format(format_string, builtin_id);
 }
 
-std::string number_format::get_format_string() const
+std::string number_format::format_string() const
 {
     return format_string_;
 }
 
-void number_format::set_format_string(const std::string &format_string)
+void number_format::format_string(const std::string &format_string)
 {
     format_string_ = format_string;
     id_ = 0;
@@ -290,7 +290,7 @@ void number_format::set_format_string(const std::string &format_string)
     }
 }
 
-void number_format::set_format_string(const std::string &format_string, std::size_t id)
+void number_format::format_string(const std::string &format_string, std::size_t id)
 {
     format_string_ = format_string;
     id_ = id;
@@ -299,16 +299,16 @@ void number_format::set_format_string(const std::string &format_string, std::siz
 
 bool number_format::has_id() const
 {
-    return id_set_;
+    return id_;
 }
 
-void number_format::set_id(std::size_t id)
+void number_format::id(std::size_t id)
 {
     id_ = id;
     id_set_ = true;
 }
 
-std::size_t number_format::get_id() const
+std::size_t number_format::id() const
 {
     if(!id_set_)
     {
@@ -322,7 +322,7 @@ bool number_format::is_date_format() const
 {
     detail::number_format_parser p(format_string_);
     p.parse();
-    auto parsed = p.get_result();
+    auto parsed = p.result();
 
     bool any_datetime = false;
     bool any_timedelta = false;

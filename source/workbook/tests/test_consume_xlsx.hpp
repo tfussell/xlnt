@@ -56,14 +56,14 @@ public:
         wb.load("data/18_basic_comments.xlsx");
 
         auto sheet1 = wb[0];
-        TS_ASSERT_EQUALS(sheet1.get_cell("A1").get_value<std::string>(), "Sheet1!A1");
-        TS_ASSERT_EQUALS(sheet1.get_cell("A1").comment().plain_text(), "Sheet1 comment");
-        TS_ASSERT_EQUALS(sheet1.get_cell("A1").comment().author(), "Microsoft Office User");
+        TS_ASSERT_EQUALS(sheet1.cell("A1").value<std::string>(), "Sheet1!A1");
+        TS_ASSERT_EQUALS(sheet1.cell("A1").comment().plain_text(), "Sheet1 comment");
+        TS_ASSERT_EQUALS(sheet1.cell("A1").comment().author(), "Microsoft Office User");
 
         auto sheet2 = wb[1];
-        TS_ASSERT_EQUALS(sheet2.get_cell("A1").get_value<std::string>(), "Sheet2!A1");
-        TS_ASSERT_EQUALS(sheet2.get_cell("A1").comment().plain_text(), "Sheet2 comment");
-        TS_ASSERT_EQUALS(sheet2.get_cell("A1").comment().author(), "Microsoft Office User");
+        TS_ASSERT_EQUALS(sheet2.cell("A1").value<std::string>(), "Sheet2!A1");
+        TS_ASSERT_EQUALS(sheet2.cell("A1").comment().plain_text(), "Sheet2 comment");
+        TS_ASSERT_EQUALS(sheet2.cell("A1").comment().author(), "Microsoft Office User");
     }
 
     void test_read_unicode_filename()
@@ -71,12 +71,12 @@ public:
 #ifdef _MSC_VER
         xlnt::workbook wb;
         wb.load(L"data\\19_unicode_Λ.xlsx");
-        TS_ASSERT_EQUALS(wb.get_active_sheet().get_cell("A1").get_value<std::string>(), "unicode!");
+        TS_ASSERT_EQUALS(wb.active_sheet().cell("A1").value<std::string>(), "unicode!");
 #endif
 #ifndef __MINGW32__
         xlnt::workbook wb2;
         wb2.load(u8"data/19_unicode_Λ.xlsx");
-        TS_ASSERT_EQUALS(wb2.get_active_sheet().get_cell("A1").get_value<std::string>(), "unicode!");
+        TS_ASSERT_EQUALS(wb2.active_sheet().cell("A1").value<std::string>(), "unicode!");
 #endif
     }
 
@@ -84,8 +84,8 @@ public:
     {
         xlnt::workbook wb;
         wb.load("data/20_with_hyperlink.xlsx");
-        TS_ASSERT(wb.get_active_sheet().get_cell("A1").has_hyperlink());
-        TS_ASSERT_EQUALS(wb.get_active_sheet().get_cell("A1").get_hyperlink(),
+        TS_ASSERT(wb.active_sheet().cell("A1").has_hyperlink());
+        TS_ASSERT_EQUALS(wb.active_sheet().cell("A1").hyperlink(),
             "https://fr.wikipedia.org/wiki/Ille-et-Vilaine");
     }
 };

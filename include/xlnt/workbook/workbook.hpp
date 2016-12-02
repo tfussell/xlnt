@@ -150,31 +150,6 @@ public:
     /// </summary>
     ~workbook();
 
-    // general properties
-
-	/// <summary>
-	/// Returns true if guess_types is enabled for this workbook.
-	/// </summary>
-    bool get_guess_types() const;
-
-	/// <summary>
-	/// Set to true to guess the type represented by a string set as the value
-	/// for a cell and then set the actual value of the cell to that type.
-	/// For example, cell.set_value("1") with guess_types enabled will set
-	/// type of the cell to numeric and it's value to the number 1.
-	/// </summary>
-    void set_guess_types(bool guess);
-
-	/// <summary>
-	/// ?
-	/// </summary>
-    bool get_data_only() const;
-
-	/// <summary>
-	/// ?
-	/// </summary>
-    void set_data_only(bool data_only);
-
     // add worksheets
 
 	/// <summary>
@@ -209,41 +184,41 @@ public:
     /// This is also the sheet that will be shown when the workbook is opened
     /// in the spreadsheet editor program.
     /// </summary>
-    worksheet get_active_sheet();
+    worksheet active_sheet();
 
     /// <summary>
     /// Return the worksheet with the given name.
     /// This may throw an exception if the sheet isn't found.
     /// Use workbook::contains(const std::string &) to make sure the sheet exists.
     /// </summary>
-    worksheet get_sheet_by_title(const std::string &sheet_name);
+    worksheet sheet_by_title(const std::string &sheet_name);
     
     /// <summary>
     /// Return the const worksheet with the given name.
     /// This may throw an exception if the sheet isn't found.
     /// Use workbook::contains(const std::string &) to make sure the sheet exists.
     /// </summary>
-    const worksheet get_sheet_by_title(const std::string &sheet_name) const;
+    const worksheet sheet_by_title(const std::string &sheet_name) const;
 
     /// <summary>
     /// Return the worksheet at the given index.
     /// </summary>
-    worksheet get_sheet_by_index(std::size_t index);
+    worksheet sheet_by_index(std::size_t index);
 
     /// <summary>
     /// Return the const worksheet at the given index.
     /// </summary>
-    const worksheet get_sheet_by_index(std::size_t index) const;
+    const worksheet sheet_by_index(std::size_t index) const;
 
 	/// <summary>
 	/// Return the worksheet with a sheetId of id.
 	/// </summary>
-	worksheet get_sheet_by_id(std::size_t id);
+	worksheet sheet_by_id(std::size_t id);
 
 	/// <summary>
 	/// Return the const worksheet with a sheetId of id.
 	/// </summary>
-	const worksheet get_sheet_by_id(std::size_t id) const;
+	const worksheet sheet_by_id(std::size_t id) const;
 
     /// <summary>
     /// Return true if this workbook contains a sheet with the given name.
@@ -254,7 +229,7 @@ public:
     /// Return the index of the given worksheet.
     /// The worksheet must be owned by this workbook.
     /// </summary>
-    std::size_t get_index(worksheet worksheet);
+    std::size_t index(worksheet worksheet);
 
     // remove worksheets
 
@@ -317,159 +292,61 @@ public:
 	/// Returns a temporary vector containing the titles of each sheet in the order
 	/// of the sheets in the workbook.
 	/// </summary>
-    std::vector<std::string> get_sheet_titles() const;
+    std::vector<std::string> sheet_titles() const;
 
 	/// <summary>
 	/// Returns the number of sheets in this workbook.
 	/// </summary>
-	std::size_t get_sheet_count() const;
+	std::size_t sheet_count() const;
 
-	/// <summary>
-	/// Returns the name of the application that created this workbook.
-	/// </summary>
-	std::string get_application() const;
-
-	/// <summary>
-	/// Sets the name of the application that created this workbook to "application".
-	/// </summary>
-	void set_application(const std::string &application);
+    /// <summary>
+    /// Returns true if the workbook has the core property with the given name.
+    /// </summary>
+    bool has_core_property(const std::string &property_name) const;
 
     /// <summary>
     ///
     /// </summary>
-	calendar get_base_date() const;
+    template<typename T = std::string>
+    T core_property(const std::string &property_name) const;
 
     /// <summary>
     ///
     /// </summary>
-	void set_base_date(calendar base_date);
+    template<typename T = std::string>
+    void core_property(const std::string &property_name, const T value);
 
     /// <summary>
     ///
     /// </summary>
-	std::string get_creator() const;
+	calendar base_date() const;
 
     /// <summary>
     ///
     /// </summary>
-	void set_creator(const std::string &creator);
+	void base_date(calendar base_date);
 
     /// <summary>
     ///
     /// </summary>
-	std::string get_last_modified_by() const;
+	bool has_title() const;
 
     /// <summary>
     ///
     /// </summary>
-	void set_last_modified_by(const std::string &last_modified_by);
+	std::string title() const;
 
     /// <summary>
     ///
     /// </summary>
-	datetime get_created() const;
-
-    /// <summary>
-    ///
-    /// </summary>
-	void set_created(const datetime &when);
-
-    /// <summary>
-    ///
-    /// </summary>
-	datetime get_modified() const;
-    
-    /// <summary>
-    ///
-    /// </summary>
-	void set_modified(const datetime &when);
-
-    /// <summary>
-    ///
-    /// </summary>
-	int get_doc_security() const;
-
-    /// <summary>
-    ///
-    /// </summary>
-	void set_doc_security(int doc_security);
-
-    /// <summary>
-    ///
-    /// </summary>
-	bool get_scale_crop() const;
-
-    /// <summary>
-    ///
-    /// </summary>
-	void set_scale_crop(bool scale_crop);
-
-    /// <summary>
-    ///
-    /// </summary>
-	std::string get_company() const;
-
-    /// <summary>
-    ///
-    /// </summary>
-	void set_company(const std::string &company);
-
-    /// <summary>
-    ///
-    /// </summary>
-	bool links_up_to_date() const;
-
-    /// <summary>
-    ///
-    /// </summary>
-	void set_links_up_to_date(bool links_up_to_date);
-
-    /// <summary>
-    ///
-    /// </summary>
-	bool is_shared_doc() const;
-
-    /// <summary>
-    ///
-    /// </summary>
-	void set_shared_doc(bool shared_doc);
-
-    /// <summary>
-    ///
-    /// </summary>
-	bool hyperlinks_changed() const;
-
-    /// <summary>
-    ///
-    /// </summary>
-	void set_hyperlinks_changed(bool hyperlinks_changed);
-
-    /// <summary>
-    ///
-    /// </summary>
-	std::string get_app_version() const;
-
-    /// <summary>
-    ///
-    /// </summary>
-	void set_app_version(const std::string &version);
-
-    /// <summary>
-    ///
-    /// </summary>
-	std::string get_title() const;
-
-    /// <summary>
-    ///
-    /// </summary>
-	void set_title(const std::string &title);
+	void title(const std::string &title);
 
     // named ranges
 
     /// <summary>
     ///
     /// </summary>
-    std::vector<named_range> get_named_ranges() const;
+    std::vector<named_range> named_ranges() const;
 
     /// <summary>
     ///
@@ -489,7 +366,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    range get_named_range(const std::string &name);
+    range named_range(const std::string &name);
 
     /// <summary>
     ///
@@ -608,12 +485,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-	workbook_view get_view() const;
+	workbook_view view() const;
 
     /// <summary>
     ///
     /// </summary>
-	void set_view(const workbook_view &view);
+	void view(const workbook_view &view);
 
     /// <summary>
     ///
@@ -623,52 +500,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-	std::string get_code_name() const;
+	std::string code_name() const;
 
     /// <summary>
     ///
     /// </summary>
-    void set_code_name(const std::string &code_name);
-
-    /// <summary>
-    ///
-    /// </summary>
-	bool x15_enabled() const;
-
-    /// <summary>
-    ///
-    /// </summary>
-	void enable_x15();
-
-    /// <summary>
-    ///
-    /// </summary>
-	void disable_x15();
-
-    /// <summary>
-    ///
-    /// </summary>
-	bool has_absolute_path() const;
-
-    /// <summary>
-    ///
-    /// </summary>
-	path get_absolute_path() const;
-
-    /// <summary>
-    ///
-    /// </summary>
-	void set_absolute_path(const path &absolute_path);
-
-    /// <summary>
-    ///
-    /// </summary>
-	void clear_absolute_path();
-
-    /// <summary>
-    ///
-    /// </summary>
-	bool has_properties() const;
+    void code_name(const std::string &code_name);
 
     /// <summary>
     ///
@@ -678,34 +515,22 @@ public:
     /// <summary>
     ///
     /// </summary>
-	std::string get_app_name() const;
+	std::string app_name() const;
 
     /// <summary>
     ///
     /// </summary>
-	std::size_t get_last_edited() const;
+	std::size_t last_edited() const;
 
     /// <summary>
     ///
     /// </summary>
-	std::size_t get_lowest_edited() const;
+	std::size_t lowest_edited() const;
 
     /// <summary>
     ///
     /// </summary>
-	std::size_t get_rup_build() const;
-
-    /// <summary>
-    ///
-    /// </summary>
-	bool has_arch_id() const;
-
-	// calculation
-
-    /// <summary>
-    ///
-    /// </summary>
-	bool has_calculation_properties() const;
+	std::size_t rup_build() const;
 
     // theme
 
@@ -717,29 +542,29 @@ public:
     /// <summary>
     ///
     /// </summary>
-    const theme &get_theme() const;
+    const theme &theme() const;
 
     /// <summary>
     ///
     /// </summary>
-	void set_theme(const theme &value);
+	void theme(const class theme &value);
 
     // formats
 
     /// <summary>
     ///
     /// </summary>
-    format get_format(std::size_t format_index);
+    format format(std::size_t format_index);
 
     /// <summary>
     ///
     /// </summary>
-    const format get_format(std::size_t format_index) const;
+    const class format format(std::size_t format_index) const;
 
     /// <summary>
     ///
     /// </summary>
-	format create_format(bool default_format = false);
+	class format create_format(bool default_format = false);
 
     /// <summary>
     ///
@@ -778,12 +603,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-    manifest &get_manifest();
+    manifest &manifest();
 
     /// <summary>
     ///
     /// </summary>
-    const manifest &get_manifest() const;
+    const class manifest &manifest() const;
 
     // shared strings
 
@@ -795,25 +620,25 @@ public:
     /// <summary>
     ///
     /// </summary>
-    std::vector<formatted_text> &get_shared_strings();
+    std::vector<formatted_text> &shared_strings();
 
     /// <summary>
     ///
     /// </summary>
-    const std::vector<formatted_text> &get_shared_strings() const;
+    const std::vector<formatted_text> &shared_strings() const;
 
     // thumbnail
 
     /// <summary>
     ///
     /// </summary>
-    void set_thumbnail(const std::vector<std::uint8_t> &thumbnail, 
+    void thumbnail(const std::vector<std::uint8_t> &thumbnail, 
 		const std::string &extension, const std::string &content_type);
 
     /// <summary>
     ///
     /// </summary>
-    const std::vector<std::uint8_t> &get_thumbnail() const;
+    const std::vector<std::uint8_t> &thumbnail() const;
 
     // operators
 

@@ -77,32 +77,32 @@ public:
     /// <summary>
     ///
     /// </summary>
-    std::size_t get_width() const;
+    std::size_t width() const;
 
     /// <summary>
     ///
     /// </summary>
-    std::size_t get_height() const;
+    std::size_t height() const;
 
     /// <summary>
     ///
     /// </summary>
-    cell_reference get_top_left() const;
+    cell_reference top_left() const;
 
     /// <summary>
     ///
     /// </summary>
-    cell_reference get_bottom_right() const;
+    cell_reference bottom_right() const;
 
     /// <summary>
     ///
     /// </summary>
-    cell_reference &get_top_left();
+    cell_reference &top_left();
 
     /// <summary>
     ///
     /// </summary>
-    cell_reference &get_bottom_right();
+    cell_reference &bottom_right();
 
     /// <summary>
     ///

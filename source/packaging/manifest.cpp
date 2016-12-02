@@ -37,7 +37,7 @@ void manifest::clear()
     relationships_.clear();
 }
 
-path manifest::canonicalize(const std::vector<relationship> &rels) const
+path manifest::canonicalize(const std::vector<xlnt::relationship> &rels) const
 {
     xlnt::path relative;
 
@@ -45,11 +45,11 @@ path manifest::canonicalize(const std::vector<relationship> &rels) const
     {
         if (component == rels.back())
         {
-            relative = relative.append(component.get_target().get_path());
+            relative = relative.append(component.target().path());
         }
         else
         {
-            relative = relative.append(component.get_target().get_path().parent());
+            relative = relative.append(component.target().path().parent());
         }
     }
 
@@ -78,39 +78,39 @@ path manifest::canonicalize(const std::vector<relationship> &rels) const
     return result;
 }
 
-bool manifest::has_relationship(const path &part, relationship::type type) const
+bool manifest::has_relationship(const path &part, relationship_type type) const
 {
     if (relationships_.find(part) == relationships_.end()) return false;
 
     for (const auto &rel : relationships_.at(part))
     {
-        if (rel.second.get_type() == type) return true;
+        if (rel.second.type() == type) return true;
     }
     
     return false;
 }
 
-relationship manifest::get_relationship(const path &part, relationship::type type) const
+relationship manifest::relationship(const path &part, relationship_type type) const
 {
     if (relationships_.find(part) == relationships_.end()) throw key_not_found();
 
     for (const auto &rel : relationships_.at(part))
     {
-        if (rel.second.get_type() == type) return rel.second;
+        if (rel.second.type() == type) return rel.second;
     }
     
 	throw key_not_found();
 }
 
-std::vector<relationship> manifest::get_relationships(const path &part, relationship::type type) const
+std::vector<xlnt::relationship> manifest::relationships(const path &part, relationship_type type) const
 {
-	std::vector<relationship> matches;
+	std::vector<xlnt::relationship> matches;
 
     if (has_relationship(part, type))
     {
         for (const auto &rel : relationships_.at(part))
         {
-            if (rel.second.get_type() == type)
+            if (rel.second.type() == type)
             {
                 matches.push_back(rel.second);
             }
@@ -120,18 +120,18 @@ std::vector<relationship> manifest::get_relationships(const path &part, relation
 	return matches;
 }
 
-std::string manifest::get_content_type(const path &part) const
+std::string manifest::content_type(const path &part) const
 {
 	auto absolute = part.resolve(path("/"));
 
     if (has_override_type(absolute))
     {
-        return get_override_type(absolute);
+        return override_type(absolute);
     }
     
     if (has_default_type(part.extension()))
     {
-        return get_default_type(part.extension());
+        return default_type(part.extension());
     }
     
     throw key_not_found();
@@ -147,7 +147,7 @@ void manifest::unregister_override_type(const path &part)
 	override_content_types_.erase(part);
 }
 
-std::vector<path> manifest::get_parts_with_overriden_types() const
+std::vector<path> manifest::parts_with_overriden_types() const
 {
 	std::vector<path> overriden;
 
@@ -159,14 +159,14 @@ std::vector<path> manifest::get_parts_with_overriden_types() const
 	return overriden;
 }
 
-std::vector<relationship> manifest::get_relationships(const path &part) const
+std::vector<relationship> manifest::relationships(const path &part) const
 {
 	if (relationships_.find(part) == relationships_.end())
 	{
 		return {};
 	}
 
-    std::vector<relationship> relationships;
+    std::vector<xlnt::relationship> relationships;
 
     for (const auto &rel : relationships_.at(part))
     {
@@ -176,7 +176,7 @@ std::vector<relationship> manifest::get_relationships(const path &part) const
 	return relationships;
 }
 
-relationship manifest::get_relationship(const path &part, const std::string &rel_id) const
+relationship manifest::relationship(const path &part, const std::string &rel_id) const
 {
 	if (relationships_.find(part) == relationships_.end())
 	{
@@ -185,7 +185,7 @@ relationship manifest::get_relationship(const path &part, const std::string &rel
 
 	for (const auto &rel : relationships_.at(part))
 	{
-		if (rel.second.get_id() == rel_id)
+		if (rel.second.id() == rel_id)
 		{
 			return rel.second;
 		}
@@ -194,7 +194,7 @@ relationship manifest::get_relationship(const path &part, const std::string &rel
 	throw key_not_found();
 }
 
-std::vector<path> manifest::get_parts() const
+std::vector<path> manifest::parts() const
 {
 	std::unordered_set<path> parts;
 
@@ -204,9 +204,9 @@ std::vector<path> manifest::get_parts() const
         
         for (const auto &rel : part_rels.second)
         {
-            if (rel.second.get_target_mode() == target_mode::internal)
+            if (rel.second.target_mode() == target_mode::internal)
             {
-                parts.insert(rel.second.get_target().get_path());
+                parts.insert(rel.second.target().path());
             }
         }
 	}
@@ -214,20 +214,20 @@ std::vector<path> manifest::get_parts() const
 	return std::vector<path>(parts.begin(), parts.end());
 }
 
-std::string manifest::register_relationship(const uri &source, relationship::type type, const uri &target, target_mode mode)
+std::string manifest::register_relationship(const uri &source, relationship_type type, const uri &target, target_mode mode)
 {
-	return register_relationship(source, type, target, mode, next_relationship_id(source.get_path()));
+	return register_relationship(source, type, target, mode, next_relationship_id(source.path()));
 }
 
-std::string manifest::register_relationship(const uri &source, relationship::type type, const uri &target, target_mode mode, const std::string &rel_id)
+std::string manifest::register_relationship(const uri &source, relationship_type type, const uri &target, target_mode mode, const std::string &rel_id)
 {
-    relationships_[source.get_path()][rel_id] = relationship(rel_id, type, source, target, mode);
+    relationships_[source.path()][rel_id] = xlnt::relationship(rel_id, type, source, target, mode);
 	return rel_id;
 }
 
 void manifest::unregister_relationship(const uri &source, const std::string &rel_id)
 {
-	relationships_.at(source.get_path()).erase(rel_id);
+	relationships_.at(source.path()).erase(rel_id);
 }
 
 bool manifest::has_default_type(const std::string &extension) const
@@ -235,7 +235,7 @@ bool manifest::has_default_type(const std::string &extension) const
 	return default_content_types_.find(extension) != default_content_types_.end();
 }
 
-std::vector<std::string> manifest::get_extensions_with_default_types() const
+std::vector<std::string> manifest::extensions_with_default_types() const
 {
 	std::vector<std::string> extensions;
 
@@ -247,7 +247,7 @@ std::vector<std::string> manifest::get_extensions_with_default_types() const
 	return extensions;
 }
 
-std::string manifest::get_default_type(const std::string &extension) const
+std::string manifest::default_type(const std::string &extension) const
 {
 	if (default_content_types_.find(extension) == default_content_types_.end())
 	{
@@ -287,7 +287,7 @@ bool manifest::has_override_type(const xlnt::path &part) const
     return override_content_types_.find(part) != override_content_types_.end();
 }
 
-std::string manifest::get_override_type(const xlnt::path &part) const
+std::string manifest::override_type(const xlnt::path &part) const
 {
     if (!has_override_type(part))
     {

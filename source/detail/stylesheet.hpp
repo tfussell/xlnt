@@ -57,14 +57,14 @@ struct stylesheet
         
         impl.references = default_format ? 1 : 0;
         
-        return format(&impl);
+        return xlnt::format(&impl);
     }
 
-    format get_format(std::size_t index)
+    format format(std::size_t index)
     {
         auto iter = format_impls.begin();
         std::advance(iter, static_cast<std::list<format_impl>::difference_type>(index));
-        return format(&*iter);
+        return xlnt::format(&*iter);
     }
 
     class style create_style(const std::string &name)
@@ -100,9 +100,9 @@ struct stylesheet
 
 		for (const auto &nf : number_formats)
 		{
-			if (nf.get_id() >= id)
+			if (nf.id() >= id)
 			{
-				id = nf.get_id() + 1;
+				id = nf.id() + 1;
 			}
 		}
 

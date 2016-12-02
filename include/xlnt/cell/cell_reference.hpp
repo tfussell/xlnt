@@ -139,32 +139,32 @@ public:
     /// Return a string that identifies the column of this reference
     /// (e.g. second column from left is "B")
     /// </summary>
-    column_t get_column() const;
+    column_t column() const;
 
     /// <summary>
     /// Set the column of this reference from a string that identifies a particular column.
     /// </summary>
-    void set_column(const std::string &column_string);
+    void column(const std::string &column_string);
 
     /// <summary>
     /// Return a 1-indexed numeric index of the column of this reference.
     /// </summary>
-    column_t get_column_index() const;
+    column_t::index_t column_index() const;
 
     /// <summary>
     /// Set the column of this reference from a 1-indexed number that identifies a particular column.
     /// </summary>
-    void set_column_index(column_t column);
+    void column_index(column_t column);
 
     /// <summary>
     /// Return a 1-indexed numeric index of the row of this reference.
     /// </summary>
-    row_t get_row() const;
+    row_t row() const;
 
     /// <summary>
     /// Set the row of this reference from a 1-indexed number that identifies a particular row.
     /// </summary>
-    void set_row(row_t row);
+    void row(row_t row);
 
     /// <summary>
     /// Return a cell_reference offset from this cell_reference by

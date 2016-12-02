@@ -68,12 +68,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-    std::string get_scheme() const;
+    std::string scheme() const;
 
     /// <summary>
     ///
     /// </summary>
-    std::string get_authority() const;
+    std::string authority() const;
 
     /// <summary>
     ///
@@ -83,22 +83,22 @@ public:
     /// <summary>
     ///
     /// </summary>
-    std::string get_authentication() const;
+    std::string authentication() const;
 
     /// <summary>
     ///
     /// </summary>
-    std::string get_username() const;
+    std::string username() const;
 
     /// <summary>
     ///
     /// </summary>
-    std::string get_password() const;
+    std::string password() const;
 
     /// <summary>
     ///
     /// </summary>
-    std::string get_host() const;
+    std::string host() const;
 
     /// <summary>
     ///
@@ -108,12 +108,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-    std::size_t get_port() const;
+    std::size_t port() const;
 
     /// <summary>
     ///
     /// </summary>
-    path get_path() const;
+    path path() const;
 
     /// <summary>
     ///
@@ -123,7 +123,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    std::string get_query() const;
+    std::string query() const;
 
     /// <summary>
     ///
@@ -133,7 +133,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    std::string get_fragment() const;
+    std::string fragment() const;
 
     /// <summary>
     ///
@@ -219,7 +219,7 @@ private:
     /// <summary>
     ///
     /// </summary>
-    path path_;
+    class path path_;
 };
 
 } // namespace xlnt

@@ -42,7 +42,7 @@ void formatted_text::plain_text(const std::string &s)
 std::string formatted_text::plain_text() const
 {
     return std::accumulate(runs_.begin(), runs_.end(), std::string(),
-        [](const std::string &a, const text_run &run) { return a + run.get_string(); });
+        [](const std::string &a, const text_run &run) { return a + run.string(); });
 }
 
 std::vector<text_run> formatted_text::runs() const
@@ -61,42 +61,42 @@ bool formatted_text::operator==(const formatted_text &rhs) const
     
     for (std::size_t i = 0; i < runs_.size(); i++)
     {
-        if (runs_[i].get_string() != rhs.runs_[i].get_string()) return false;
+        if (runs_[i].string() != rhs.runs_[i].string()) return false;
         if (runs_[i].has_formatting() != rhs.runs_[i].has_formatting()) return false;
         
         if (runs_[i].has_formatting())
         {
             if (runs_[i].has_color() != rhs.runs_[i].has_color()
                 || (runs_[i].has_color()
-                && runs_[i].get_color() != rhs.runs_[i].get_color()))
+                && runs_[i].color() != rhs.runs_[i].color()))
             {
                 return false;
             }
             
             if (runs_[i].has_family() != rhs.runs_[i].has_family()
                 || (runs_[i].has_family()
-                && runs_[i].get_family() != rhs.runs_[i].get_family()))
+                && runs_[i].family() != rhs.runs_[i].family()))
             {
                 return false;
             }
             
             if (runs_[i].has_font() != rhs.runs_[i].has_font()
                 || (runs_[i].has_font()
-                && runs_[i].get_font() != rhs.runs_[i].get_font()))
+                && runs_[i].font() != rhs.runs_[i].font()))
             {
                 return false;
             }
             
             if (runs_[i].has_scheme() != rhs.runs_[i].has_scheme()
                 || (runs_[i].has_scheme()
-                && runs_[i].get_scheme() != rhs.runs_[i].get_scheme()))
+                && runs_[i].scheme() != rhs.runs_[i].scheme()))
             {
                 return false;
             }
             
             if (runs_[i].has_size() != rhs.runs_[i].has_size()
                 || (runs_[i].has_size()
-                && runs_[i].get_size() != rhs.runs_[i].get_size()))
+                && runs_[i].size() != rhs.runs_[i].size()))
             {
                 return false;
             }

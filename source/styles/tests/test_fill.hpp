@@ -32,11 +32,11 @@ public:
 
         fill = fill.pattern_fill().foreground(xlnt::color::black());
         TS_ASSERT(fill.pattern_fill().foreground());
-        TS_ASSERT_EQUALS((*fill.pattern_fill().foreground()).get_rgb().get_hex_string(), xlnt::color::black().get_rgb().get_hex_string());
+        TS_ASSERT_EQUALS((*fill.pattern_fill().foreground()).rgb().hex_string(), xlnt::color::black().rgb().hex_string());
 
         fill = fill.pattern_fill().background(xlnt::color::green());
         TS_ASSERT(fill.pattern_fill().background());
-        TS_ASSERT_EQUALS((*fill.pattern_fill().background()).get_rgb().get_hex_string(), xlnt::color::green().get_rgb().get_hex_string());
+        TS_ASSERT_EQUALS((*fill.pattern_fill().background()).rgb().hex_string(), xlnt::color::green().rgb().hex_string());
         
         const auto &const_fill = fill;
         TS_ASSERT(const_fill.pattern_fill().foreground());
@@ -57,18 +57,18 @@ public:
     void test_two_fills()
     {
         xlnt::workbook wb;
-        auto ws1 = wb.get_active_sheet();
+        auto ws1 = wb.active_sheet();
 
-        auto cell1 = ws1.get_cell("A10");
-        auto cell2 = ws1.get_cell("A11");
+        auto cell1 = ws1.cell("A10");
+        auto cell2 = ws1.cell("A11");
 
-        cell1.set_fill(xlnt::fill::solid(xlnt::color::yellow()));
-        cell1.set_value("Fill Yellow");
+        cell1.fill(xlnt::fill::solid(xlnt::color::yellow()));
+        cell1.value("Fill Yellow");
 
-        cell2.set_fill(xlnt::fill::solid(xlnt::color::green()));
-        cell2.set_value(xlnt::date(2010, 7, 13));
+        cell2.fill(xlnt::fill::solid(xlnt::color::green()));
+        cell2.value(xlnt::date(2010, 7, 13));
 
-        TS_ASSERT_EQUALS(cell1.get_fill(), xlnt::fill::solid(xlnt::color::yellow()));
-        TS_ASSERT_EQUALS(cell2.get_fill(), xlnt::fill::solid(xlnt::color::green()));
+        TS_ASSERT_EQUALS(cell1.fill(), xlnt::fill::solid(xlnt::color::yellow()));
+        TS_ASSERT_EQUALS(cell2.fill(), xlnt::fill::solid(xlnt::color::green()));
     }
 };

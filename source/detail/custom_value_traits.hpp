@@ -9,6 +9,7 @@
 #include <xlnt/styles/horizontal_alignment.hpp>
 #include <xlnt/styles/vertical_alignment.hpp>
 #include <xlnt/utils/exceptions.hpp>
+#include <xlnt/worksheet/pane.hpp>
 
 namespace xlnt {
 namespace detail {
@@ -30,7 +31,7 @@ std::string to_string(font::underline_style underline_style);
 /// <summary>
 /// Returns the string representation of the relationship type.
 /// </summary>
-std::string to_string(relationship::type t);
+std::string to_string(relationship_type t);
 
 std::string to_string(pattern_fill_type fill_type);
 
@@ -381,6 +382,52 @@ struct value_traits<xlnt::target_mode>
         return mode == xlnt::target_mode::internal ? "Internal" : "External";
     }
 }; // struct value_traits<xlnt::target_mode>
+
+template <>
+struct value_traits<xlnt::pane_state>
+{
+    static xlnt::pane_state parse(std::string string, const parser &)
+    {
+        if (string == "frozen") return xlnt::pane_state::frozen;
+        else if (string == "frozenSplit") return xlnt::pane_state::frozen_split;
+        else if (string == "split") return xlnt::pane_state::split;
+        return xlnt::pane_state::split;
+    }
+
+    static std::string serialize (xlnt::pane_state state, const serializer &)
+    {
+        switch (state)
+        {
+        case xlnt::pane_state::frozen: return "frozen";
+        case xlnt::pane_state::frozen_split: return "frozenSplit";
+        case xlnt::pane_state::split: return "split";
+        }
+    }
+}; // struct value_traits<xlnt::pane_state>
+
+template <>
+struct value_traits<xlnt::pane_corner>
+{
+    static xlnt::pane_corner parse(std::string string, const parser &)
+    {
+        if (string == "bottomLeft") return xlnt::pane_corner::bottom_left;
+        else if (string == "bottomRight") return xlnt::pane_corner::bottom_right;
+        else if (string == "topLeft") return xlnt::pane_corner::top_left;
+        else if (string == "topRight") return xlnt::pane_corner::top_right;
+        return xlnt::pane_corner::top_left;
+    }
+
+    static std::string serialize (xlnt::pane_corner corner, const serializer &)
+    {
+        switch (corner)
+        {
+        case xlnt::pane_corner::bottom_left: return "bottomLeft";
+        case xlnt::pane_corner::bottom_right: return "bottomRight";
+        case xlnt::pane_corner::top_left: return "topLeft";
+        case xlnt::pane_corner::top_right: return "topRight";
+        }
+    }
+}; // struct value_traits<xlnt::pane_corner>
 
 }
 

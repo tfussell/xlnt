@@ -29,14 +29,14 @@ namespace xlnt {
 exception::exception(const std::string &message)
     : std::runtime_error("xlnt::error : " + message)
 {
-    set_message(message);
+    this->message(message);
 }
 
 exception::~exception()
 {
 }
 
-void exception::set_message(const std::string &message)
+void exception::message(const std::string &message)
 {
     message_ = message;
 }

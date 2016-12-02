@@ -30,7 +30,7 @@ relationship::relationship()
 {
 }
 
-relationship::relationship(const std::string &id, type t, const uri &source, const uri &target, target_mode mode)
+relationship::relationship(const std::string &id, relationship_type t, const uri &source, const uri &target, enum target_mode mode)
 	: id_(id),
 	type_(t),
 	source_(source),
@@ -39,27 +39,27 @@ relationship::relationship(const std::string &id, type t, const uri &source, con
 {
 }
 
-std::string relationship::get_id() const
+std::string relationship::id() const
 {
     return id_;
 }
 
-target_mode relationship::get_target_mode() const
+target_mode relationship::target_mode() const
 {
     return mode_;
 }
 
-uri relationship::get_source() const
+uri relationship::source() const
 {
     return source_;
 }
 
-uri relationship::get_target() const
+uri relationship::target() const
 {
     return target_;
 }
 
-relationship::type relationship::get_type() const
+relationship_type relationship::type() const
 {
     return type_;
 }

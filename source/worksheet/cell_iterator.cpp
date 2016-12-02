@@ -55,20 +55,20 @@ cell_iterator &cell_iterator::operator--()
 {
     if (order_ == major_order::row)
     {
-        current_cell_.set_column_index(current_cell_.get_column_index() - 1);
+        current_cell_.column_index(current_cell_.column_index() - 1);
         
-        while (!ws_.has_cell(current_cell_) && current_cell_.get_column() > range_.get_top_left().get_column())
+        while (!ws_.has_cell(current_cell_) && current_cell_.column() > range_.top_left().column())
         {
-            current_cell_.set_column_index(current_cell_.get_column_index() - 1);
+            current_cell_.column_index(current_cell_.column_index() - 1);
         }
     }
     else
     {
-        current_cell_.set_row(current_cell_.get_row() - 1);
+        current_cell_.row(current_cell_.row() - 1);
 
-        while (!ws_.has_cell(current_cell_) && current_cell_.get_row() > range_.get_top_left().get_row())
+        while (!ws_.has_cell(current_cell_) && current_cell_.row() > range_.top_left().row())
         {
-            current_cell_.set_row(current_cell_.get_row() - 1);
+            current_cell_.row(current_cell_.row() - 1);
         }
     }
 
@@ -86,26 +86,26 @@ cell_iterator &cell_iterator::operator++()
 {
     if (order_ == major_order::row)
     {
-        if (current_cell_.get_column() <= range_.get_bottom_right().get_column())
+        if (current_cell_.column() <= range_.bottom_right().column())
         {
-            current_cell_.set_column_index(current_cell_.get_column_index() + 1);
+            current_cell_.column_index(current_cell_.column_index() + 1);
         }
         
-        while (!ws_.has_cell(current_cell_) && current_cell_.get_column() <= range_.get_bottom_right().get_column())
+        while (!ws_.has_cell(current_cell_) && current_cell_.column() <= range_.bottom_right().column())
         {
-            current_cell_.set_column_index(current_cell_.get_column_index() + 1);
+            current_cell_.column_index(current_cell_.column_index() + 1);
         }
     }
     else
     {
-        if (current_cell_.get_row() <= range_.get_bottom_right().get_row())
+        if (current_cell_.row() <= range_.bottom_right().row())
         {
-            current_cell_.set_row(current_cell_.get_row() + 1);
+            current_cell_.row(current_cell_.row() + 1);
         }
 
-        while (!ws_.has_cell(current_cell_) && current_cell_.get_row() <= range_.get_bottom_right().get_row())
+        while (!ws_.has_cell(current_cell_) && current_cell_.row() <= range_.bottom_right().row())
         {
-            current_cell_.set_row(current_cell_.get_row() + 1);
+            current_cell_.row(current_cell_.row() + 1);
         }
     }
 

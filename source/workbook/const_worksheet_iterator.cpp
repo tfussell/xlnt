@@ -37,7 +37,7 @@ const_worksheet_iterator::const_worksheet_iterator(const const_worksheet_iterato
 
 const worksheet const_worksheet_iterator::operator*()
 {
-    return wb_.get_sheet_by_index(index_);
+    return wb_.sheet_by_index(index_);
 }
 
 const_worksheet_iterator &const_worksheet_iterator::operator++()

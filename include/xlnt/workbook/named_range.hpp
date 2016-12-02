@@ -38,7 +38,7 @@ std::vector<std::pair<std::string, std::string>> XLNT_API split_named_range(cons
 
 /// <summary>
 /// A 2D range of cells in a worksheet that is referred to by name.
-/// ws->get_range("A1:B2") could be replaced by ws->get_range("range1")
+/// ws->range("A1:B2") could be replaced by ws->range("range1")
 /// </summary>
 class XLNT_API named_range
 {
@@ -66,12 +66,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-    std::string get_name() const;
+    std::string name() const;
 
     /// <summary>
     ///
     /// </summary>
-    const std::vector<target> &get_targets() const;
+    const std::vector<target> &targets() const;
 
     /// <summary>
     ///

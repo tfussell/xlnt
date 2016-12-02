@@ -84,8 +84,7 @@ struct worksheet_impl
         print_title_cols_ = other.print_title_cols_;
         print_title_rows_ = other.print_title_rows_;
         print_area_ = other.print_area_;
-        view_ = other.view_;
-		x14ac_ = other.x14ac_;
+        views_ = other.views_;
 		has_dimension_ = other.has_dimension_;
 		has_format_properties_ = other.has_format_properties_;
     }
@@ -109,9 +108,7 @@ struct worksheet_impl
     std::string print_title_cols_;
     std::string print_title_rows_;
     range_reference print_area_;
-	bool has_view_ = false;
-    sheet_view view_;
-	bool x14ac_ = false;
+    std::vector<sheet_view> views_;
 	bool has_dimension_ = false;
 	bool has_format_properties_ = false;
 };

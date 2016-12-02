@@ -44,22 +44,22 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void set_text(const std::string &text);
+    void text(const std::string &text);
 
     /// <summary>
     ///
     /// </summary>
-    void set_font_name(const std::string &font_name);
+    void font_name(const std::string &font_name);
 
     /// <summary>
     ///
     /// </summary>
-    void set_font_size(std::size_t font_size);
+    void font_size(std::size_t font_size);
 
     /// <summary>
     ///
     /// </summary>
-    void set_font_color(const std::string &font_color);
+    void font_color(const std::string &font_color);
 
     /// <summary>
     ///

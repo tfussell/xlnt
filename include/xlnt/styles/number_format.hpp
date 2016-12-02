@@ -196,17 +196,17 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void set_format_string(const std::string &format_code);
+    void format_string(const std::string &format_code);
 
     /// <summary>
     ///
     /// </summary>
-    void set_format_string(const std::string &format_code, std::size_t custom_id);
+    void format_string(const std::string &format_code, std::size_t custom_id);
 
     /// <summary>
     ///
     /// </summary>
-    std::string get_format_string() const;
+    std::string format_string() const;
 
     /// <summary>
     ///
@@ -216,12 +216,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void set_id(std::size_t id);
+    void id(std::size_t id);
 
     /// <summary>
     ///
     /// </summary>
-    std::size_t get_id() const;
+    std::size_t id() const;
 
     /// <summary>
     ///

@@ -46,32 +46,32 @@ public:
     /// <summary>
     ///
     /// </summary>
-    header &get_left_header();
+    header &left_header();
 
     /// <summary>
     ///
     /// </summary>
-    header &get_center_header();
+    header &center_header();
 
     /// <summary>
     ///
     /// </summary>
-    header &get_right_header();
+    header &right_header();
 
     /// <summary>
     ///
     /// </summary>
-    footer &get_left_footer();
+    footer &left_footer();
 
     /// <summary>
     ///
     /// </summary>
-    footer &get_center_footer();
+    footer &center_footer();
 
     /// <summary>
     ///
     /// </summary>
-    footer &get_right_footer();
+    footer &right_footer();
 
     /// <summary>
     ///

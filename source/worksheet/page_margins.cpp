@@ -29,62 +29,62 @@ page_margins::page_margins()
 {
 }
 
-double page_margins::get_top() const
+double page_margins::top() const
 {
     return top_;
 }
 
-void page_margins::set_top(double top)
+void page_margins::top(double top)
 {
     top_ = top;
 }
 
-double page_margins::get_left() const
+double page_margins::left() const
 {
     return left_;
 }
 
-void page_margins::set_left(double left)
+void page_margins::left(double left)
 {
     left_ = left;
 }
 
-double page_margins::get_bottom() const
+double page_margins::bottom() const
 {
     return bottom_;
 }
 
-void page_margins::set_bottom(double bottom)
+void page_margins::bottom(double bottom)
 {
     bottom_ = bottom;
 }
 
-double page_margins::get_right() const
+double page_margins::right() const
 {
     return right_;
 }
 
-void page_margins::set_right(double right)
+void page_margins::right(double right)
 {
     right_ = right;
 }
 
-double page_margins::get_header() const
+double page_margins::header() const
 {
     return header_;
 }
 
-void page_margins::set_header(double header)
+void page_margins::header(double header)
 {
     header_ = header;
 }
 
-double page_margins::get_footer() const
+double page_margins::footer() const
 {
     return footer_;
 }
 
-void page_margins::set_footer(double footer)
+void page_margins::footer(double footer)
 {
     footer_ = footer;
 }

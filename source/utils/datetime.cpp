@@ -27,6 +27,20 @@
 #include <xlnt/utils/date.hpp>
 #include <xlnt/utils/time.hpp>
 
+namespace {
+
+std::string fill(const std::string &string, std::size_t length = 2)
+{
+	if (string.size() >= length)
+	{
+		return string;
+	}
+
+	return std::string(length - string.size(), '0') + string;
+}
+
+} // namespace
+
 namespace xlnt {
 
 datetime datetime::from_number(long double raw_time, calendar base_date)
@@ -90,6 +104,35 @@ datetime::datetime(const date &d, const time &t)
 int datetime::weekday() const
 {
     return date(year, month, day).weekday();
+}
+
+datetime datetime::from_iso_string(const std::string &string)
+{
+    xlnt::datetime result(1900, 1, 1);
+
+    auto separator_index = string.find('-');
+    result.year = std::stoi(string.substr(0, separator_index));
+    result.month = std::stoi(string.substr(separator_index + 1, string.find('-', separator_index + 1)));
+    separator_index = string.find('-', separator_index + 1);
+    result.day = std::stoi(string.substr(separator_index + 1, string.find('T', separator_index + 1)));
+    separator_index = string.find('T', separator_index + 1);
+    result.hour = std::stoi(string.substr(separator_index + 1, string.find(':', separator_index + 1)));
+    separator_index = string.find(':', separator_index + 1);
+    result.minute = std::stoi(string.substr(separator_index + 1, string.find(':', separator_index + 1)));
+    separator_index = string.find(':', separator_index + 1);
+    result.second = std::stoi(string.substr(separator_index + 1, string.find('Z', separator_index + 1)));
+
+    return result;
+}
+
+std::string datetime::to_iso_string() const
+{
+	return std::to_string(year) + "-"
+        + fill(std::to_string(month)) + "-"
+        + fill(std::to_string(day)) + "T"
+        + fill(std::to_string(hour)) + ":"
+        + fill(std::to_string(minute)) + ":"
+        + fill(std::to_string(second)) + "Z";
 }
 
 } // namespace xlnt

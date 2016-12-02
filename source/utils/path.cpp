@@ -293,6 +293,29 @@ char path::guess_separator() const
     return internal_.find('\\') != std::string::npos ? '\\' : '/';
 }
 
+path path::relative_to(const path &base_path) const
+{
+    if (is_relative()) return *this;
+
+    auto base_split = base_path.split();
+    auto this_split = split();
+    auto index = std::size_t(0);
+
+    while (index < base_split.size() && index < this_split.size() && base_split[index] == this_split[index])
+    {
+        index++;
+    }
+
+    auto result = path();
+
+    for (auto i = index; i < this_split.size(); i++)
+    {
+        result = result.append(this_split[i]);
+    }
+
+    return result;
+}
+
 bool operator==(const path &left, const path &right)
 {
     return left.internal_ == right.internal_;

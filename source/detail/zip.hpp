@@ -92,7 +92,7 @@ public:
     void close();
 private:
     std::vector<zip_file_header> file_headers_;
-    std::ostream &target_stream_;
+    std::ostream &tarstream_;
     std::unique_ptr<std::ostream> write_stream_;
 };
 

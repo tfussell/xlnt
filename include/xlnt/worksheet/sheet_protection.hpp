@@ -43,12 +43,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void set_password(const std::string &password);
+    void password(const std::string &password);
 
     /// <summary>
     ///
     /// </summary>
-    std::string get_hashed_password() const;
+    std::string hashed_password() const;
 
 private:
     /// <summary>

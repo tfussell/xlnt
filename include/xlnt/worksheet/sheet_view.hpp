@@ -24,6 +24,7 @@
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/utils/optional.hpp>
 #include <xlnt/worksheet/pane.hpp>
 #include <xlnt/worksheet/selection.hpp>
 
@@ -39,33 +40,117 @@ public:
     /// <summary>
     ///
     /// </summary>
-    pane &get_pane() { return pane_; }
+    void id(std::size_t new_id) { id_ = new_id; }
 
     /// <summary>
     ///
     /// </summary>
-    const pane &get_pane() const { return pane_; }
+    std::size_t id() const { return id_; }
 
     /// <summary>
     ///
     /// </summary>
-    std::vector<selection> &get_selections() { return selections_; }
+    bool has_pane() const { return pane_.is_set(); }
 
     /// <summary>
     ///
     /// </summary>
-    const std::vector<selection> &get_selections() const { return selections_; }
+    pane &pane() { return pane_.get(); }
+
+    /// <summary>
+    ///
+    /// </summary>
+    const struct pane &pane() const { return pane_.get(); }
+
+    /// <summary>
+    ///
+    /// </summary>
+    void clear_pane() { pane_.clear(); }
+
+    /// <summary>
+    ///
+    /// </summary>
+    void pane(const struct pane &new_pane) { pane_ = new_pane; }
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_selections() const { return !selections_.empty(); }
+
+    /// <summary>
+    ///
+    /// </summary>
+    void add_selection(const selection &new_selection) { selections_.push_back(new_selection); }
+
+    /// <summary>
+    ///
+    /// </summary>
+    void clear_selections() { selections_.clear(); }
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::vector<selection> selections() const { return selections_; }
+
+    /// <summary>
+    ///
+    /// </summary>
+    class selection &selection(std::size_t index) { return selections_.at(index); }
+
+    /// <summary>
+    ///
+    /// </summary>
+    void show_grid_lines(bool show) { show_grid_lines_ = show; }
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool show_grid_lines() const { return show_grid_lines_; }
+
+    /// <summary>
+    ///
+    /// </summary>
+    void default_grid_color(bool is_default) { default_grid_color_ = is_default; }
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool default_grid_color() const { return default_grid_color_; }
+
+    bool operator==(const sheet_view &rhs) const
+    {
+        return id_ == rhs.id_
+            && show_grid_lines_ == rhs.show_grid_lines_
+            && default_grid_color_ == rhs.default_grid_color_
+            && pane_ == rhs.pane_
+            && selections_ == rhs.selections_;
+    }
     
 private:
     /// <summary>
     ///
     /// </summary>
-    pane pane_;
+    std::size_t id_ = 0;
 
     /// <summary>
     ///
     /// </summary>
-    std::vector<selection> selections_;
+    bool show_grid_lines_ = true;
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool default_grid_color_ = true;
+
+    /// <summary>
+    ///
+    /// </summary>
+    optional<xlnt::pane> pane_;
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::vector<xlnt::selection> selections_;
 };
 
 } // namespace xlnt

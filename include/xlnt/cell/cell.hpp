@@ -106,7 +106,7 @@ public:
     /// as for std::string and xlnt datetime types: date, time, datetime, and timedelta.
     /// </summary>
     template <typename T>
-    T get_value() const;
+    T value() const;
 
     /// <summary>
     /// Make this cell have a value of type null.
@@ -120,17 +120,23 @@ public:
     /// as for std::string and xlnt datetime types: date, time, datetime, and timedelta.
 	/// </summary>
     template <typename T>
-    void set_value(T value);
+    void value(T value);
+
+    /// <summary>
+    /// Analyze string_value to determine its type, convert it to that type,
+    /// and set the value of this cell to that converted value.
+    /// </summary>
+    void value(const std::string &string_value, bool infer_type);
 
     /// <summary>
     /// Return the type of this cell.
     /// </summary>
-    type get_data_type() const;
+    type data_type() const;
 
     /// <summary>
     /// Set the type of this cell.
     /// </summary>
-    void set_data_type(type t);
+    void data_type(type t);
 
     // properties
 
@@ -150,34 +156,34 @@ public:
     /// <summary>
     /// Return a cell_reference that points to the location of this cell.
     /// </summary>
-    cell_reference get_reference() const;
+    cell_reference reference() const;
 
     /// <summary>
     /// Return the column of this cell.
     /// </summary>
-    column_t get_column() const;
+    column_t column() const;
 
     /// <summary>
     /// Return the row of this cell.
     /// </summary>
-    row_t get_row() const;
+    row_t row() const;
 
     /// <summary>
     /// Return the location of this cell as an ordered pair.
     /// </summary>
-    std::pair<int, int> get_anchor() const;
+    std::pair<int, int> anchor() const;
 
     // hyperlink
 
     /// <summary>
     /// Return the URL of this cell's hyperlink.
     /// </summary>
-    std::string get_hyperlink() const;
+    std::string hyperlink() const;
 
     /// <summary>
     /// Add a hyperlink to this cell pointing to the URI of the given value.
     /// </summary>
-    void set_hyperlink(const std::string &value);
+    void hyperlink(const std::string &value);
 
     /// <summary>
     /// Return true if this cell has a hyperlink set.
@@ -187,32 +193,32 @@ public:
 	// computed formatting
 
 	/// <summary>
-	/// Returns the result of get_computed_format().get_alignment().
+	/// Returns the result of computed_format().alignment().
 	/// </summary>
 	alignment computed_alignment() const;
 
 	/// <summary>
-	/// Returns the result of get_computed_format().get_border().
+	/// Returns the result of computed_format().border().
 	/// </summary>
 	border computed_border() const;
 
 	/// <summary>
-	/// Returns the result of get_computed_format().get_fill().
+	/// Returns the result of computed_format().fill().
 	/// </summary>
 	fill computed_fill() const;
 
 	/// <summary>
-	/// Returns the result of get_computed_format().get_font().
+	/// Returns the result of computed_format().font().
 	/// </summary>
 	font computed_font() const;
 
 	/// <summary>
-	/// Returns the result of get_computed_format().get_number_format().
+	/// Returns the result of computed_format().number_format().
 	/// </summary>
 	number_format computed_number_format() const;
 
 	/// <summary>
-	/// Returns the result of get_computed_format().get_protection().
+	/// Returns the result of computed_format().protection().
 	/// </summary>
 	protection computed_protection() const;
 
@@ -244,68 +250,68 @@ public:
     /// <summary>
     /// Returns the number format of this cell.
     /// </summary>
-    number_format get_number_format() const;
+    number_format number_format() const;
     
 	/// <summary>
 	/// Creates a new format in the workbook, sets its number_format
 	/// to the given format, and applies the format to this cell.
 	/// </summary>
-    void set_number_format(const number_format &format);
+    void number_format(const class number_format &format);
 
     /// <summary>
     /// Returns the font applied to the text in this cell.
     /// </summary>
-    font get_font() const;
+    font font() const;
 
 	/// <summary>
 	/// Creates a new format in the workbook, sets its font
 	/// to the given font, and applies the format to this cell.
 	/// </summary>
-    void set_font(const font &font_);
+    void font(const class font &font_);
 
     /// <summary>
     /// Returns the fill applied to this cell.
     /// </summary>
-    fill get_fill() const;
+    fill fill() const;
 
 	/// <summary>
 	/// Creates a new format in the workbook, sets its fill
 	/// to the given fill, and applies the format to this cell.
 	/// </summary>
-    void set_fill(const fill &fill_);
+    void fill(const class fill &fill_);
 
     /// <summary>
     /// Returns the border of this cell.
     /// </summary>
-    border get_border() const;
+    border border() const;
 
 	/// <summary>
 	/// Creates a new format in the workbook, sets its border
 	/// to the given border, and applies the format to this cell.
 	/// </summary>
-    void set_border(const border &border_);
+    void border(const class border &border_);
 
     /// <summary>
     /// Returns the alignment of the text in this cell.
     /// </summary>
-    alignment get_alignment() const;
+    alignment alignment() const;
 
 	/// <summary>
 	/// Creates a new format in the workbook, sets its alignment
 	/// to the given alignment, and applies the format to this cell.
 	/// </summary>
-    void set_alignment(const alignment &alignment_);
+    void alignment(const class alignment &alignment_);
 
     /// <summary>
     /// Returns the protection of this cell.
     /// </summary>
-    protection get_protection() const;
+    protection protection() const;
 
 	/// <summary>
 	/// Creates a new format in the workbook, sets its protection
 	/// to the given protection, and applies the format to this cell.
 	/// </summary>
-    void set_protection(const protection &protection_);
+    void protection(const class protection &protection_);
 
 	// style
 
@@ -343,13 +349,13 @@ public:
 	/// <summary>
 	/// Returns the string representation of the formula applied to this cell.
 	/// </summary>
-    std::string get_formula() const;
+    std::string formula() const;
 
 	/// <summary>
 	/// Sets the formula of this cell to the given value.
 	/// This formula string should begin with '='.
 	/// </summary>
-    void set_formula(const std::string &formula);
+    void formula(const std::string &formula);
 
 	/// <summary>
 	/// Removes the formula from this cell. After this is called, has_formula() will return false.
@@ -387,17 +393,17 @@ public:
     /// Generally, this shouldn't be called directly. Instead,
     /// use worksheet::merge_cells on its parent worksheet.
     /// </summary>
-    void set_merged(bool merged);
+    void merged(bool merged);
 
     /// <summary>
     /// Return the error string that is stored in this cell.
     /// </summary>
-    std::string get_error() const;
+    std::string error() const;
 
     /// <summary>
     /// Directly assign the value of this cell to be the given error.
     /// </summary>
-    void set_error(const std::string &error);
+    void error(const std::string &error);
 
     /// <summary>
     /// Return a cell from this cell's parent workbook at
@@ -408,28 +414,28 @@ public:
     /// <summary>
     /// Return the worksheet that owns this cell.
     /// </summary>
-    worksheet get_worksheet();
+    worksheet worksheet();
 
     /// <summary>
     /// Return the worksheet that owns this cell.
     /// </summary>
-    const worksheet get_worksheet() const;
+    const class worksheet worksheet() const;
 
     /// <summary>
     /// Return the workbook of the worksheet that owns this cell.
     /// </summary>
-    workbook &get_workbook();
+    workbook &workbook();
 
     /// <summary>
     /// Return the workbook of the worksheet that owns this cell.
     /// </summary>
-    const workbook &get_workbook() const;
+    const class workbook &workbook() const;
 
     /// <summary>
     /// Shortcut to return the base date of the parent workbook.
-    /// Equivalent to get_workbook().get_properties().excel_base_date
+    /// Equivalent to workbook().properties().excel_base_date
     /// </summary>
-    calendar get_base_date() const;
+    calendar base_date() const;
 
     /// <summary>
     /// Return to_check after checking encoding, size, and illegal characters.
@@ -488,12 +494,6 @@ private:
 	friend class detail::xlsx_consumer;
 	friend class detail::xlsx_producer;
     friend struct detail::cell_impl;
-
-	/// <summary>
-	/// Helper function to guess the type of a string, convert it,
-	/// and then use the correct cell::get_value according to the type.
-	/// </summary>
-	void guess_type_and_set_value(const std::string &value);
 
 	/// <summary>
 	/// Returns a non-const reference to the format of this cell.

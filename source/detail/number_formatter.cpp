@@ -191,7 +191,7 @@ number_format_parser::number_format_parser(const std::string &format_string)
     reset(format_string);
 }
 
-const std::vector<format_code> &number_format_parser::get_result() const
+const std::vector<format_code> &number_format_parser::result() const
 {
     return codes_;
 }
@@ -1153,7 +1153,7 @@ number_formatter::number_formatter(const std::string &format_string, xlnt::calen
       calendar_(calendar)
 {
     parser_.parse();
-    format_ = parser_.get_result();
+    format_ = parser_.result();
 }
 
 std::string number_formatter::format_number(long double number)

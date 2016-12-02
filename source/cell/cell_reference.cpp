@@ -33,7 +33,7 @@ namespace xlnt {
 
 std::size_t cell_reference_hash::operator()(const cell_reference &k) const
 {
-    return k.get_row() * constants::max_column().index + k.get_column_index().index;
+    return k.row() * constants::max_column().index + k.column_index();
 }
 
 cell_reference &cell_reference::make_absolute(bool absolute_column, bool absolute_row)
@@ -52,8 +52,8 @@ cell_reference::cell_reference(const std::string &string)
 {
     auto split = split_reference(string, absolute_column_, absolute_row_);
     
-    set_column(split.first);
-    set_row(split.second);
+    column(split.first);
+    row(split.second);
 }
 
 cell_reference::cell_reference(const char *reference_string)
@@ -205,32 +205,32 @@ void cell_reference::row_absolute(bool absolute_row)
     absolute_row_ = absolute_row;
 }
 
-column_t cell_reference::get_column() const
+column_t cell_reference::column() const
 {
     return column_;
 }
 
-void cell_reference::set_column(const std::string &column_string)
+void cell_reference::column(const std::string &column_string)
 {
     column_ = column_t(column_string);
 }
 
-column_t cell_reference::get_column_index() const
+column_t::index_t cell_reference::column_index() const
 {
-    return column_;
+    return column_.index;
 }
 
-void cell_reference::set_column_index(column_t column)
+void cell_reference::column_index(column_t column)
 {
     column_ = column;
 }
 
-row_t cell_reference::get_row() const
+row_t cell_reference::row() const
 {
     return row_;
 }
 
-void cell_reference::set_row(row_t row)
+void cell_reference::row(row_t row)
 {
     row_ = row;
 }

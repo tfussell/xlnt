@@ -34,109 +34,144 @@ text_run::text_run(const std::string &string) : string_(string)
 {
 }
 
-std::string text_run::get_string() const
+std::string text_run::string() const
 {
 	return string_;
 }
 
-void text_run::set_string(const std::string &string)
+void text_run::string(const std::string &string)
 {
 	string_ = string;
 }
 
 bool text_run::has_formatting() const
 {
-    return has_size() || has_color() || has_font() || has_family() || has_scheme();
+    return font_.is_set();
 }
 
 bool text_run::has_size() const
 {
-    return size_.is_set();
+    return font_.is_set() && font_.get().has_size();
 }
 
-std::size_t text_run::get_size() const
+std::size_t text_run::size() const
 {
-    return *size_;
+    return font_.get().size();
 }
 
-void text_run::set_size(std::size_t size)
+void text_run::size(std::size_t size)
 {
-    size_ = size;
+    if (!font_.is_set())
+    {
+        font_ = xlnt::font();
+    }
+
+    font_.get().size(size);
 }
 
 bool text_run::has_color() const
 {
-    return color_.is_set();
+    return font_.is_set() && font_.get().has_color();
 }
 
-color text_run::get_color() const
+color text_run::color() const
 {
-    return *color_;
+    return font_.get().color();
 }
 
-void text_run::set_color(const color &new_color)
+void text_run::color(const class color &new_color)
 {
-    color_ = new_color;
+    if (!font_.is_set())
+    {
+        font_ = xlnt::font();
+    }
+
+    font_.get().color(new_color);
 }
 
 bool text_run::has_font() const
 {
-    return font_.is_set();
+    return font_.is_set() && font_.get().has_name();
 }
 
-std::string text_run::get_font() const
+std::string text_run::font() const
 {
-    return *font_;
+    return font_.get().name();
 }
 
-void text_run::set_font(const std::string &font)
+void text_run::font(const std::string &font)
 {
-    font_ = font;
+    if (!font_.is_set())
+    {
+        font_ = xlnt::font();
+    }
+
+    font_.get().name(font);
 }
 
 bool text_run::has_family() const
 {
-    return family_.is_set();
+    return font_.is_set() && font_.get().has_family();
 }
 
-std::size_t text_run::get_family() const
+std::size_t text_run::family() const
 {
-    return *family_;
+    return font_.get().family();
 }
 
-void text_run::set_family(std::size_t family)
+void text_run::family(std::size_t family)
 {
-    family_ = family;
+    if (!font_.is_set())
+    {
+        font_ = xlnt::font();
+    }
+
+    font_.get().family(family);
 }
 
 bool text_run::has_scheme() const
 {
-    return scheme_.is_set();
+    return font_.is_set() && font_.get().has_scheme();
 }
 
-std::string text_run::get_scheme() const
+std::string text_run::scheme() const
 {
-    return *scheme_;
+    return font_.get().scheme();
 }
 
-void text_run::set_scheme(const std::string &scheme)
+void text_run::scheme(const std::string &scheme)
 {
-    scheme_ = scheme;
+    if (!font_.is_set())
+    {
+        font_ = xlnt::font();
+    }
+
+    font_.get().scheme(scheme);
 }
 
-bool text_run::bold_set() const
+bool text_run::bold() const
 {
-    return bold_.is_set();
+    return font_.is_set() && font_.get().bold();
 }
 
-bool text_run::is_bold() const
+void text_run::bold(bool bold)
 {
-    return *bold_;
+    if (!font_.is_set())
+    {
+        font_ = xlnt::font();
+    }
+
+    font_.get().bold(bold);
 }
 
-void text_run::set_bold(bool bold)
+void text_run::underline(font::underline_style style)
 {
-    bold_ = bold;
+    if (!font_.is_set())
+    {
+        font_ = xlnt::font();
+    }
+
+    font_.get().underline(style);
 }
 
 } // namespace xlnt

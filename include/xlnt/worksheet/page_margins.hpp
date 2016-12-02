@@ -41,62 +41,62 @@ public:
     /// <summary>
     ///
     /// </summary>
-    double get_top() const;
+    double top() const;
 
     /// <summary>
     ///
     /// </summary>
-    void set_top(double top);
+    void top(double top);
 
     /// <summary>
     ///
     /// </summary>
-    double get_left() const;
+    double left() const;
 
     /// <summary>
     ///
     /// </summary>
-    void set_left(double left);
+    void left(double left);
 
     /// <summary>
     ///
     /// </summary>
-    double get_bottom() const;
+    double bottom() const;
 
     /// <summary>
     ///
     /// </summary>
-    void set_bottom(double bottom);
+    void bottom(double bottom);
 
     /// <summary>
     ///
     /// </summary>
-    double get_right() const;
+    double right() const;
 
     /// <summary>
     ///
     /// </summary>
-    void set_right(double right);
+    void right(double right);
 
     /// <summary>
     ///
     /// </summary>
-    double get_header() const;
+    double header() const;
 
     /// <summary>
     ///
     /// </summary>
-    void set_header(double header);
+    void header(double header);
 
     /// <summary>
     ///
     /// </summary>
-    double get_footer() const;
+    double footer() const;
 
     /// <summary>
     ///
     /// </summary>
-    void set_footer(double footer);
+    void footer(double footer);
 
 private:
     /// <summary>

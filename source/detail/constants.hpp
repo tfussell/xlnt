@@ -125,12 +125,12 @@ struct XLNT_API constants
     /// <summary>
     /// Returns an unordered_map mapping namespace names to namespaces.
     /// </summary>
-    static const std::unordered_map<std::string, std::string> &get_namespaces();
+    static const std::unordered_map<std::string, std::string> &namespaces();
 
     /// <summary>
     /// Returns the namespace URI from a namespace name.
     /// </summary>
-    static const std::string &get_namespace(const std::string &id);
+    static const std::string &namespace_(const std::string &id);
 };
 
 } // namespace xlnt

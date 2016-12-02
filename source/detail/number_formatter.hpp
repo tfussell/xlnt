@@ -331,7 +331,7 @@ class number_format_parser
 {
 public:
     number_format_parser(const std::string &format_string);
-    const std::vector<format_code> &get_result() const;
+    const std::vector<format_code> &result() const;
     void reset(const std::string &format_string);
     void parse();
 

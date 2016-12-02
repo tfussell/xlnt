@@ -89,64 +89,73 @@ const color color::darkyellow()
 }
 
 color::color()
-    : type_(type::auto_),
+    : type_(color_type::indexed),
       rgb_(rgb_color(0, 0, 0, 0)),
       indexed_(0),
       theme_(0),
-	  tint_(0)
+      tint_(0),
+      auto__(false)
 {
 }
 
 color::color(const rgb_color &rgb)
-	: type_(type::rgb),
-	  rgb_(rgb),
-	  indexed_(0),
-	  theme_(0),
-	  tint_(0)
+    : type_(color_type::rgb),
+      rgb_(rgb),
+      indexed_(0),
+      theme_(0),
+      tint_(0),
+      auto__(false)
 {
 }
 
 color::color(const indexed_color &indexed)
-	: type_(type::indexed),
+    : type_(color_type::indexed),
       rgb_(rgb_color(0, 0, 0, 0)),
       indexed_(indexed),
       theme_(0),
-	  tint_(0)
+      tint_(0),
+      auto__(false)
 {
 }
 
 color::color(const theme_color &theme)
-	: type_(type::theme),
+    : type_(color_type::theme),
       rgb_(rgb_color(0, 0, 0, 0)),
       indexed_(0),
       theme_(theme),
-	  tint_(0)
+      tint_(0),
+      auto__(false)
 {
 }
 
-color::type color::get_type() const
+color_type color::type() const
 {
     return type_;
 }
 
 bool color::is_auto() const
 {
-	return type_ == type::auto_;
+	return auto__;
 }
 
-const indexed_color &color::get_indexed() const
+void color::auto_(bool value)
 {
-	assert_type(type::indexed);
+    auto__ = value;
+}
+
+const indexed_color &color::indexed() const
+{
+	assert_type(color_type::indexed);
 	return indexed_;
 }
 
-const theme_color &color::get_theme() const
+const theme_color &color::theme() const
 {
-	assert_type(type::theme);
+	assert_type(color_type::theme);
 	return theme_;
 }
 
-std::string rgb_color::get_hex_string() const
+std::string rgb_color::hex_string() const
 {
 	static const char* digits = "0123456789abcdef";
 	std::string hex_string(8, '0');
@@ -186,28 +195,28 @@ rgb_color::rgb_color(std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint8_
 {
 }
 
-std::size_t indexed_color::get_index() const
+std::size_t indexed_color::index() const
 {
 	return index_;
 }
 
-std::size_t theme_color::get_index() const
+std::size_t theme_color::index() const
 {
 	return index_;
 }
 
-const rgb_color &color::get_rgb() const
+const rgb_color &color::rgb() const
 {
-	assert_type(type::rgb);
+	assert_type(color_type::rgb);
 	return rgb_;
 }
 
-void color::set_tint(double tint)
+void color::tint(double tint)
 {
 	tint_ = tint;
 }
 
-void color::assert_type(type t) const
+void color::assert_type(color_type t) const
 {
 	if (t != type_)
 	{
@@ -217,20 +226,21 @@ void color::assert_type(type t) const
 
 XLNT_API bool color::operator==(const xlnt::color &other) const
 {
-    if (type_ != other.type_ || std::fabs(tint_ - other.tint_) != 0.)
+    if (type_ != other.type_
+        || std::fabs(tint_ - other.tint_) != 0.0
+        || auto__ != other.auto__)
     {
         return false;
     }
 
     switch(type_)
     {
-        case type::auto_:
-        case type::indexed:
-            return indexed_.get_index() == other.indexed_.get_index();
-        case type::theme:
-            return theme_.get_index() == other.theme_.get_index();
-        case type::rgb:
-            return rgb_.get_hex_string() == other.rgb_.get_hex_string();
+        case color_type::indexed:
+            return indexed_.index() == other.indexed_.index();
+        case color_type::theme:
+            return theme_.index() == other.theme_.index();
+        case color_type::rgb:
+            return rgb_.hex_string() == other.rgb_.hex_string();
     }
 
     return false;

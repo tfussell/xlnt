@@ -109,12 +109,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-    workbook &get_workbook();
+    workbook &workbook();
 
     /// <summary>
     ///
     /// </summary>
-    const workbook &get_workbook() const;
+    const class workbook &workbook() const;
 
     /// <summary>
     ///
@@ -126,29 +126,29 @@ public:
     /// <summary>
     ///
     /// </summary>
-    std::size_t get_id() const;
+    std::size_t id() const;
 
     /// <summary>
     ///
     /// </summary>
-    void set_id(std::size_t id);
+    void id(std::size_t id);
 
     /// <summary>
     ///
     /// </summary>
-    std::string get_title() const;
+    std::string title() const;
 
     /// <summary>
     ///
     /// </summary>
-    void set_title(const std::string &title);
+    void title(const std::string &title);
 
     // freeze panes
 
     /// <summary>
     ///
     /// </summary>
-    cell_reference get_frozen_panes() const;
+    cell_reference frozen_panes() const;
 
     /// <summary>
     ///
@@ -158,7 +158,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void freeze_panes(const std::string &top_left_coordinate);
+    void freeze_panes(const cell_reference &top_left_coordinate);
 
     /// <summary>
     ///
@@ -175,22 +175,22 @@ public:
     /// <summary>
     ///
     /// </summary>
-    cell get_cell(column_t column, row_t row);
+    cell cell(column_t column, row_t row);
 
     /// <summary>
     ///
     /// </summary>
-    const cell get_cell(column_t column, row_t row) const;
+    const class cell cell(column_t column, row_t row) const;
 
     /// <summary>
     ///
     /// </summary>
-    cell get_cell(const cell_reference &reference);
+    class cell cell(const cell_reference &reference);
 
     /// <summary>
     ///
     /// </summary>
-    const cell get_cell(const cell_reference &reference) const;
+    const class cell cell(const cell_reference &reference) const;
 
     /// <summary>
     ///
@@ -200,59 +200,59 @@ public:
     /// <summary>
     ///
     /// </summary>
-    range get_range(const std::string &reference_string);
+    range range(const std::string &reference_string);
 
     /// <summary>
     ///
     /// </summary>
-    range get_range(const range_reference &reference);
+    class range range(const range_reference &reference);
 
     /// <summary>
     ///
     /// </summary>
-    const range get_range(const std::string &reference_string) const;
+    const class range range(const std::string &reference_string) const;
 
     /// <summary>
     ///
     /// </summary>
-    const range get_range(const range_reference &reference) const;
+    const class range range(const range_reference &reference) const;
 
     /// <summary>
     ///
     /// </summary>
-    range rows() const;
+    class range rows() const;
 
     /// <summary>
     ///
     /// </summary>
-    range rows(const std::string &range_string) const;
+    class range rows(const std::string &range_string) const;
 
     /// <summary>
     ///
     /// </summary>
-    range rows(int row_offset, int column_offset) const;
+    class range rows(int row_offset, int column_offset) const;
 
     /// <summary>
     ///
     /// </summary>
-    range rows(const std::string &range_string, int row_offset, int column_offset) const;
+    class range rows(const std::string &range_string, int row_offset, int column_offset) const;
 
     /// <summary>
     ///
     /// </summary>
-    range columns() const;
+    class range columns() const;
 
     // properties
 
     /// <summary>
     ///
     /// </summary>
-    column_properties &get_column_properties(column_t column);
+    column_properties &column_properties(column_t column);
 
     /// <summary>
     ///
     /// </summary>
-    const column_properties &get_column_properties(column_t column) const;
+    const class column_properties &column_properties(column_t column) const;
 
     /// <summary>
     ///
@@ -262,17 +262,17 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void add_column_properties(column_t column, const column_properties &props);
+    void add_column_properties(column_t column, const class column_properties &props);
 
     /// <summary>
     ///
     /// </summary>
-    row_properties &get_row_properties(row_t row);
+    row_properties &row_properties(row_t row);
 
     /// <summary>
     ///
     /// </summary>
-    const row_properties &get_row_properties(row_t row) const;
+    const class row_properties &row_properties(row_t row) const;
 
     /// <summary>
     ///
@@ -282,19 +282,19 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void add_row_properties(row_t row, const row_properties &props);
+    void add_row_properties(row_t row, const class row_properties &props);
 
     // positioning
 
     /// <summary>
     ///
     /// </summary>
-    cell_reference get_point_pos(int left, int top) const;
+    cell_reference point_pos(int left, int top) const;
 
     /// <summary>
     ///
     /// </summary>
-    cell_reference get_point_pos(const std::pair<int, int> &point) const;
+    cell_reference point_pos(const std::pair<int, int> &point) const;
 
     /// <summary>
     ///
@@ -321,7 +321,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    range get_named_range(const std::string &name);
+    class range named_range(const std::string &name);
 
     /// <summary>
     ///
@@ -333,27 +333,27 @@ public:
     /// <summary>
     ///
     /// </summary>
-    row_t get_lowest_row() const;
+    row_t lowest_row() const;
 
     /// <summary>
     ///
     /// </summary>
-    row_t get_highest_row() const;
+    row_t highest_row() const;
 
     /// <summary>
     ///
     /// </summary>
-    row_t get_next_row() const;
+    row_t next_row() const;
 
     /// <summary>
     ///
     /// </summary>
-    column_t get_lowest_column() const;
+    column_t lowest_column() const;
 
     /// <summary>
     ///
     /// </summary>
-    column_t get_highest_column() const;
+    column_t highest_column() const;
 
     /// <summary>
     ///
@@ -400,7 +400,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    std::vector<range_reference> get_merged_ranges() const;
+    std::vector<range_reference> merged_ranges() const;
 
     // append
 
@@ -464,42 +464,42 @@ public:
     /// <summary>
     ///
     /// </summary>
-    cell operator[](const cell_reference &reference);
+    class cell operator[](const cell_reference &reference);
 
     /// <summary>
     ///
     /// </summary>
-    const cell operator[](const cell_reference &reference) const;
+    const class cell operator[](const cell_reference &reference) const;
 
     /// <summary>
     ///
     /// </summary>
-    range operator[](const range_reference &reference);
+    class range operator[](const range_reference &reference);
 
     /// <summary>
     ///
     /// </summary>
-    const range operator[](const range_reference &reference) const;
+    const class range operator[](const range_reference &reference) const;
 
     /// <summary>
     ///
     /// </summary>
-    range operator[](const std::string &range_string);
+    class range operator[](const std::string &range_string);
 
     /// <summary>
     ///
     /// </summary>
-    const range operator[](const std::string &range_string) const;
+    const class range operator[](const std::string &range_string) const;
 
     /// <summary>
     ///
     /// </summary>
-    range operator()(const cell_reference &top_left, const cell_reference &bottom_right);
+    class range operator()(const cell_reference &top_left, const cell_reference &bottom_right);
 
     /// <summary>
     ///
     /// </summary>
-    const range operator()(const cell_reference &top_left, const cell_reference &bottom_right) const;
+    const class range operator()(const cell_reference &top_left, const cell_reference &bottom_right) const;
 
     /// <summary>
     ///
@@ -516,12 +516,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-    page_setup get_page_setup() const;
+    page_setup page_setup() const;
 
     /// <summary>
     ///
     /// </summary>
-	void set_page_setup(const page_setup &setup);
+	void page_setup(const struct page_setup &setup);
 
     /// <summary>
     ///
@@ -531,12 +531,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-    page_margins get_page_margins() const;
+    page_margins page_margins() const;
 
     /// <summary>
     ///
     /// </summary>
-    void set_page_margins(const page_margins &margins);
+    void page_margins(const class page_margins &margins);
 
     /// <summary>
     ///
@@ -548,7 +548,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    range_reference get_auto_filter() const;
+    range_reference auto_filter() const;
 
     /// <summary>
     ///
@@ -568,7 +568,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void unset_auto_filter();
+    void clear_auto_filter();
 
     /// <summary>
     ///
@@ -590,7 +590,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    std::size_t get_comment_count() const;
+    std::size_t comment_count() const;
 
     /// <summary>
     ///
@@ -600,32 +600,32 @@ public:
     /// <summary>
     ///
     /// </summary>
-    header_footer &get_header_footer();
+    header_footer &header_footer();
 
     /// <summary>
     ///
     /// </summary>
-    const header_footer &get_header_footer() const;
+    const class header_footer &header_footer() const;
 
     /// <summary>
     ///
     /// </summary>
-    void set_parent(workbook &wb);
+    void parent(class workbook &wb);
 
     /// <summary>
     ///
     /// </summary>
-    std::vector<std::string> get_formula_attributes() const;
+    std::vector<std::string> formula_attributes() const;
 
     /// <summary>
     ///
     /// </summary>
-    sheet_state get_sheet_state() const;
+    sheet_state sheet_state() const;
 
     /// <summary>
     ///
     /// </summary>
-    void set_sheet_state(sheet_state state);
+    void sheet_state(enum sheet_state state);
 
     /// <summary>
     ///
@@ -660,42 +660,42 @@ public:
     /// <summary>
     ///
     /// </summary>
-    range iter_cells(bool skip_null);
+    class range iter_cells(bool skip_null);
 
     /// <summary>
     ///
     /// </summary>
-    void set_print_title_rows(row_t first_row, row_t last_row);
+    void print_title_rows(row_t first_row, row_t last_row);
 
     /// <summary>
     ///
     /// </summary>
-    void set_print_title_rows(row_t last_row);
+    void print_title_rows(row_t last_row);
 
     /// <summary>
     ///
     /// </summary>
-    void set_print_title_cols(column_t first_column, column_t last_column);
+    void print_title_cols(column_t first_column, column_t last_column);
 
     /// <summary>
     ///
     /// </summary>
-    void set_print_title_cols(column_t last_column);
+    void print_title_cols(column_t last_column);
 
     /// <summary>
     ///
     /// </summary>
-    std::string get_print_titles() const;
+    std::string print_titles() const;
 
     /// <summary>
     ///
     /// </summary>
-    void set_print_area(const std::string &print_area);
+    void print_area(const std::string &print_area);
 
     /// <summary>
     ///
     /// </summary>
-    range_reference get_print_area() const;
+    range_reference print_area() const;
 
     /// <summary>
     ///
@@ -705,22 +705,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-    sheet_view get_view() const;
+    sheet_view view(std::size_t index = 0) const;
 
     /// <summary>
     ///
     /// </summary>
-    bool x14ac_enabled() const;
-
-    /// <summary>
-    ///
-    /// </summary>
-    void enable_x14ac();
-
-    /// <summary>
-    ///
-    /// </summary>
-    void disable_x14ac();
+    void add_view(const sheet_view &new_view);
 
 private:
     friend class cell;

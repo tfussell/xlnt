@@ -75,19 +75,19 @@ range_reference range_reference::make_offset(int column_offset, int row_offset) 
                            bottom_right_.make_offset(column_offset, row_offset));
 }
 
-std::size_t range_reference::get_height() const
+std::size_t range_reference::height() const
 {
-    return bottom_right_.get_row() - top_left_.get_row();
+    return bottom_right_.row() - top_left_.row();
 }
 
-std::size_t range_reference::get_width() const
+std::size_t range_reference::width() const
 {
-    return (bottom_right_.get_column() - top_left_.get_column()).index;
+    return (bottom_right_.column() - top_left_.column()).index;
 }
 
 bool range_reference::is_single_cell() const
 {
-    return get_width() == 0 && get_height() == 0;
+    return width() == 0 && height() == 0;
 }
 
 std::string range_reference::to_string() const
@@ -105,19 +105,19 @@ bool range_reference::operator!=(const range_reference &comparand) const
     return comparand.top_left_ != top_left_ || comparand.bottom_right_ != bottom_right_;
 }
 
-cell_reference range_reference::get_top_left() const
+cell_reference range_reference::top_left() const
 {
     return top_left_;
 }
-cell_reference range_reference::get_bottom_right() const
+cell_reference range_reference::bottom_right() const
 {
     return bottom_right_;
 }
-cell_reference &range_reference::get_top_left()
+cell_reference &range_reference::top_left()
 {
     return top_left_;
 }
-cell_reference &range_reference::get_bottom_right()
+cell_reference &range_reference::bottom_right()
 {
     return bottom_right_;
 }

@@ -470,32 +470,32 @@ zip_file_ostream::~zip_file_ostream()
 {
 }
 
-ZipFileWriter::ZipFileWriter(std::ostream &stream) : target_stream_(stream)
+ZipFileWriter::ZipFileWriter(std::ostream &stream) : tarstream_(stream)
 {
-    if (!target_stream_) throw std::runtime_error("ZIP: Invalid file handle");
+    if (!tarstream_) throw std::runtime_error("ZIP: Invalid file handle");
 }
 
 ZipFileWriter::~ZipFileWriter()
 {
     // Write all file headers
-    std::ios::streampos final_position = target_stream_.tellp();
+    std::ios::streampos final_position = tarstream_.tellp();
 
     for (unsigned int i = 0; i < file_headers_.size(); i++)
     {
-        file_headers_[i].Write(target_stream_, true);
+        file_headers_[i].Write(tarstream_, true);
     }
 
-    std::ios::streampos central_end = target_stream_.tellp();
+    std::ios::streampos central_end = tarstream_.tellp();
 
     // Write end of central
-    write_int(target_stream_, static_cast<std::uint32_t>(0x06054b50)); // end of central
-    write_int(target_stream_, static_cast<std::uint16_t>(0)); // this disk number
-    write_int(target_stream_, static_cast<std::uint16_t>(0)); // this disk number
-    write_int(target_stream_, static_cast<std::uint16_t>(file_headers_.size())); // one entry in center in this disk
-    write_int(target_stream_, static_cast<std::uint16_t>(file_headers_.size())); // one entry in center
-    write_int(target_stream_, static_cast<std::uint32_t>(central_end - final_position)); // size of header
-    write_int(target_stream_, static_cast<std::uint32_t>(final_position)); // offset to header
-    write_int(target_stream_, static_cast<std::uint16_t>(0)); // zip comment
+    write_int(tarstream_, static_cast<std::uint32_t>(0x06054b50)); // end of central
+    write_int(tarstream_, static_cast<std::uint16_t>(0)); // this disk number
+    write_int(tarstream_, static_cast<std::uint16_t>(0)); // this disk number
+    write_int(tarstream_, static_cast<std::uint16_t>(file_headers_.size())); // one entry in center in this disk
+    write_int(tarstream_, static_cast<std::uint16_t>(file_headers_.size())); // one entry in center
+    write_int(tarstream_, static_cast<std::uint32_t>(central_end - final_position)); // size of header
+    write_int(tarstream_, static_cast<std::uint32_t>(final_position)); // offset to header
+    write_int(tarstream_, static_cast<std::uint16_t>(0)); // zip comment
 }
 
 std::ostream &ZipFileWriter::open(const std::string &filename)
@@ -503,7 +503,7 @@ std::ostream &ZipFileWriter::open(const std::string &filename)
     zip_file_header header;
     header.filename = filename;
     file_headers_.push_back(header);
-    auto streambuf = std::make_unique<ZipStreambufCompress>(&file_headers_.back(), target_stream_);
+    auto streambuf = std::make_unique<ZipStreambufCompress>(&file_headers_.back(), tarstream_);
     auto stream = new zip_file_ostream(std::move(streambuf));
     write_stream_.reset(stream);
     return *write_stream_;

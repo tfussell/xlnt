@@ -25,80 +25,80 @@ std::string to_string(font::underline_style style)
 /// <summary>
 /// Returns the string representation of the relationship type.
 /// </summary>
-std::string to_string(relationship::type t)
+std::string to_string(relationship_type t)
 {
 	switch (t)
 	{
-	case relationship::type::office_document:
+	case relationship_type::office_document:
 		return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument";
-	case relationship::type::thumbnail:
+	case relationship_type::thumbnail:
 		return "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail";
-	case relationship::type::calculation_chain:
+	case relationship_type::calculation_chain:
 		return "http://purl.oclc.org/ooxml/officeDocument/relationships/calcChain";
-	case relationship::type::extended_properties:
+	case relationship_type::extended_properties:
 		return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties";
-	case relationship::type::core_properties:
+	case relationship_type::core_properties:
 		return "http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties";
-	case relationship::type::worksheet:
+	case relationship_type::worksheet:
 		return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet";
-	case relationship::type::shared_string_table:
+	case relationship_type::shared_string_table:
 		return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings";
-	case relationship::type::stylesheet:
+	case relationship_type::stylesheet:
 		return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles";
-	case relationship::type::theme:
+	case relationship_type::theme:
 		return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme";
-	case relationship::type::hyperlink:
+	case relationship_type::hyperlink:
 		return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";
-	case relationship::type::chartsheet:
+	case relationship_type::chartsheet:
 		return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/chartsheet";
-	case relationship::type::comments:
+	case relationship_type::comments:
 		return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments";
-	case relationship::type::vml_drawing:
+	case relationship_type::vml_drawing:
 		return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/vmlDrawing";
-    case relationship::type::unknown:
+    case relationship_type::unknown:
         return "unknown";
-    case relationship::type::custom_properties:
+    case relationship_type::custom_properties:
         return "custom-properties";
-    case relationship::type::printer_settings:
+    case relationship_type::printer_settings:
         return "printer-settings";
-    case relationship::type::connections:
+    case relationship_type::connections:
         return "connections";
-    case relationship::type::custom_property:
+    case relationship_type::custom_property:
         return "custom-property";
-    case relationship::type::custom_xml_mappings:
+    case relationship_type::custom_xml_mappings:
         return "custom-xml-mappings";
-    case relationship::type::dialogsheet:
+    case relationship_type::dialogsheet:
         return "dialogsheet";
-    case relationship::type::drawings:
+    case relationship_type::drawings:
         return "drawings";
-    case relationship::type::external_workbook_references:
+    case relationship_type::external_workbook_references:
         return "external-workbook-references";
-    case relationship::type::metadata:
+    case relationship_type::metadata:
         return "metadata";
-    case relationship::type::pivot_table:
+    case relationship_type::pivot_table:
         return "pivot-table";
-    case relationship::type::pivot_table_cache_definition:
+    case relationship_type::pivot_table_cache_definition:
         return "pivot-table-cache-definition";
-    case relationship::type::pivot_table_cache_records:
+    case relationship_type::pivot_table_cache_records:
         return "pivot-table-cache-records";
-    case relationship::type::query_table:
+    case relationship_type::query_table:
         return "query-table";
-    case relationship::type::shared_workbook_revision_headers:
+    case relationship_type::shared_workbook_revision_headers:
         return "shared-workbook-revision-headers";
-    case relationship::type::shared_workbook:
+    case relationship_type::shared_workbook:
         return "shared-workbook";
-    case relationship::type::revision_log:
+    case relationship_type::revision_log:
         return "revision-log";
-    case relationship::type::shared_workbook_user_data:
+    case relationship_type::shared_workbook_user_data:
         return "shared-workbook-user-data";
-    case relationship::type::single_cell_table_definitions:
+    case relationship_type::single_cell_table_definitions:
         return "single-cell-table-definitions";
-    case relationship::type::table_definition:
+    case relationship_type::table_definition:
         return "table-definition";
-    case relationship::type::volatile_dependencies:
+    case relationship_type::volatile_dependencies:
         return "volatile-dependencies";
-    case relationship::type::image:
-        return "image";
+    case relationship_type::image:
+        return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image";
 #ifdef WIN32
     default:
         throw xlnt::exception("unhandled");

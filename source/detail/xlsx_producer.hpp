@@ -74,7 +74,7 @@ private:
 	void write_core_properties(const relationship &rel);
 	void write_extended_properties(const relationship &rel);
 	void write_custom_properties(const relationship &rel);
-    void write_thumbnail(const relationship &rel);
+    void write_image(const path &image_path);
 
 	// SpreadsheetML-Specific Package Parts
 

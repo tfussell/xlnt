@@ -35,7 +35,8 @@ namespace xlnt {
 enum class XLNT_API pane_state
 {
     frozen,
-    normal
+    frozen_split,
+    split
 };
 
 /// <summary>
@@ -52,33 +53,41 @@ enum class XLNT_API pane_corner
 /// <summary>
 /// A fixed portion of a worksheet.
 /// </summary>
-class XLNT_API pane
+struct XLNT_API pane
 {
-public:
     /// <summary>
     ///
     /// </summary>
-    cell_reference top_left_cell;
+    optional<cell_reference> top_left_cell;
 
     /// <summary>
     ///
     /// </summary>
-    pane_state state;
+    pane_state state = pane_state::split;
 
     /// <summary>
     ///
     /// </summary>
-    pane_corner active_pane;
+    pane_corner active_pane = pane_corner::top_left;
 
     /// <summary>
     ///
     /// </summary>
-    row_t y_split;
+    row_t y_split = 1;
 
     /// <summary>
     ///
     /// </summary>
-    column_t x_split;
+    column_t x_split = 1;
+
+    bool operator==(const pane &rhs) const
+    {
+        return top_left_cell == rhs.top_left_cell
+            && state == rhs.state
+            && active_pane == rhs.active_pane
+            && y_split == rhs.y_split
+            && x_split == rhs.x_split;
+    }
 };
 
 } // namespace xlnt

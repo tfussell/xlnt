@@ -101,11 +101,6 @@ class XLNT_API relationship
 {
 public:
     /// <summary>
-    /// 
-    /// </summary>
-    using type = relationship_type;
-
-    /// <summary>
     ///
     /// </summary>
     relationship();
@@ -113,32 +108,32 @@ public:
     /// <summary>
     ///
     /// </summary>
-    relationship(const std::string &id, type t, const uri &source, const uri &target, target_mode mode);
+    relationship(const std::string &id, relationship_type t, const uri &source, const uri &target, target_mode mode);
 
     /// <summary>
     /// Returns a string of the form rId# that identifies the relationship.
     /// </summary>
-    std::string get_id() const;
+    std::string id() const;
 
 	/// <summary>
 	/// Returns the type of this relationship.
 	/// </summary>
-	type get_type() const;
+	relationship_type type() const;
 
     /// <summary>
     /// Returns whether the target of the relationship is internal or external to the package.
     /// </summary>
-    target_mode get_target_mode() const;
+    target_mode target_mode() const;
 
     /// <summary>
     /// Returns the URI of the package part this relationship points to.
     /// </summary>
-    uri get_source() const;
+    uri source() const;
 
     /// <summary>
     /// Returns the URI of the package part this relationship points to.
     /// </summary>
-    uri get_target() const;
+    uri target() const;
 
 	/// <summary>
 	/// Returns true if and only if rhs is equal to this relationship.
@@ -159,7 +154,7 @@ private:
     /// <summary>
     ///
     /// </summary>
-    type type_;
+    relationship_type type_;
 
     /// <summary>
     ///
@@ -174,7 +169,7 @@ private:
     /// <summary>
     ///
     /// </summary>
-    target_mode mode_;
+    enum target_mode mode_;
 };
 
 } // namespace xlnt

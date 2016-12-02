@@ -99,6 +99,11 @@ font::underline_style font::underline() const
     return underline_;
 }
 
+bool font::has_size() const
+{
+    return size_.is_set();
+}
+
 font &font::size(std::size_t size)
 {
     size_ = size;
@@ -107,7 +112,12 @@ font &font::size(std::size_t size)
 
 std::size_t font::size() const
 {
-    return size_;
+    return size_.get();
+}
+
+bool font::has_name() const
+{
+    return name_.is_set();
 }
 
 font &font::name(const std::string &name)
@@ -115,9 +125,15 @@ font &font::name(const std::string &name)
     name_ = name;
 	return *this;
 }
+
 std::string font::name() const
 {
-    return name_;
+    return name_.get();
+}
+
+bool font::has_color() const
+{
+    return color_.is_set();
 }
 
 font &font::color(const xlnt::color &c)
@@ -126,10 +142,20 @@ font &font::color(const xlnt::color &c)
 	return *this;
 }
 
+bool font::has_family() const
+{
+    return family_.is_set();
+}
+
 font &font::family(std::size_t family)
 {
     family_ = family;
 	return *this;
+}
+
+bool font::has_scheme() const
+{
+    return scheme_.is_set();
 }
 
 font &font::scheme(const std::string &scheme)
@@ -138,19 +164,19 @@ font &font::scheme(const std::string &scheme)
 	return *this;
 }
 
-optional<color> font::color() const
+color font::color() const
 {
-    return color_;
+    return color_.get();
 }
 
-optional<std::size_t> font::family() const
+std::size_t font::family() const
 {
-    return family_;
+    return family_.get();
 }
 
-optional<std::string> font::scheme() const
+std::string font::scheme() const
 {
-    return scheme_;
+    return scheme_.get();
 }
 
 XLNT_API bool operator==(const font &left, const font &right)
@@ -160,27 +186,27 @@ XLNT_API bool operator==(const font &left, const font &right)
         return false;
     }
 
-    if (left.color().is_set() != right.color().is_set())
+    if (left.has_color() != right.has_color())
     {
         return false;
     }
     
-    if (left.color().is_set())
+    if (left.has_color())
     {
-        if (left.color().get() != right.color().get())
+        if (left.color() != right.color())
         {
             return false;
         }
     }
 
-    if (left.family().is_set() != right.family().is_set())
+    if (left.has_family() != right.has_family())
     {
         return false;
     }
     
-    if (left.family().is_set())
+    if (left.has_family())
     {
-        if (left.family().get() != right.family().get())
+        if (left.family() != right.family())
         {
             return false;
         }
@@ -196,14 +222,14 @@ XLNT_API bool operator==(const font &left, const font &right)
         return false;
     }
     
-    if (left.scheme().is_set() != right.scheme().is_set())
+    if (left.has_scheme() != right.has_scheme())
     {
         return false;
     }
     
-    if (left.scheme().is_set())
+    if (left.has_scheme())
     {
-        if (left.scheme().get() != right.scheme().get())
+        if (left.scheme() != right.scheme())
         {
             return false;
         }

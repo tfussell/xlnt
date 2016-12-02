@@ -115,6 +115,13 @@ public:
 	/// </summary>
 	path resolve(const path &base_path) const;
 
+    /// <summary>
+    /// The inverse of path::resolve. Creates a relative path from an absolute
+    /// path by removing the common root between base_path and this path.
+    /// If the current path is already relative, return it unchanged.
+    /// </summary>
+    path relative_to(const path &base_path) const;
+
 	// filesystem attributes
 
 	/// <summary>

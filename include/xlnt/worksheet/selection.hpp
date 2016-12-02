@@ -38,38 +38,46 @@ public:
     /// <summary>
     ///
     /// </summary>
-	bool has_active_cell() const { return has_active_cell_; }
+	bool has_active_cell() const { return active_cell_.is_set(); }
 
     /// <summary>
     ///
     /// </summary>
-    cell_reference get_active_cell() const { return active_cell_; }
+    cell_reference active_cell() const { return active_cell_.get(); }
 
     /// <summary>
     ///
     /// </summary>
-    range_reference get_sqref() const { return sqref_; }
+    void active_cell(const cell_reference &ref) { active_cell_ = ref; }
 
     /// <summary>
     ///
     /// </summary>
-    pane_corner get_pane() const { return pane_; }
+    range_reference sqref() const { return sqref_; }
 
     /// <summary>
     ///
     /// </summary>
-    void set_pane(pane_corner corner) { pane_ = corner; }
+    pane_corner pane() const { return pane_; }
+
+    /// <summary>
+    ///
+    /// </summary>
+    void pane(pane_corner corner) { pane_ = corner; }
+
+
+    bool operator==(const selection &rhs) const
+    {
+        return active_cell_ == rhs.active_cell_
+            && sqref_ == rhs.sqref_
+            && pane_ == rhs.pane_;
+    }
     
 private:
     /// <summary>
     ///
     /// </summary>
-	bool has_active_cell_ = false;
-
-    /// <summary>
-    ///
-    /// </summary>
-    cell_reference active_cell_;
+    optional<cell_reference> active_cell_;
 
     /// <summary>
     ///

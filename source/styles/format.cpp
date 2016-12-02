@@ -150,7 +150,7 @@ format format::number_format(const xlnt::number_format &new_number_format, bool 
 
 	if (!copy.has_id())
 	{
-		copy.set_id(d_->parent->next_custom_number_format_id());
+		copy.id(d_->parent->next_custom_number_format_id());
 		d_->parent->number_formats.push_back(copy);
 	}
 

@@ -65,7 +65,7 @@ const path constants::part_styles() { return package_xl().append("styles.xml"); 
 const path constants::part_theme() { return package_theme().append("theme1.xml"); }
 const path constants::part_shared_strings() { return package_xl().append("sharedStrings.xml"); }
 
-const std::unordered_map<std::string, std::string> &constants::get_namespaces()
+const std::unordered_map<std::string, std::string> &constants::namespaces()
 {
     static const std::unordered_map<std::string, std::string> *namespaces =
         new std::unordered_map<std::string, std::string>
@@ -77,6 +77,7 @@ const std::unordered_map<std::string, std::string> &constants::get_namespaces()
             { "workbook", "http://schemas.openxmlformats.org/spreadsheetml/2006/main" },
             { "core-properties", "http://schemas.openxmlformats.org/package/2006/metadata/core-properties" },
             { "extended-properties", "http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" },
+            { "custom-properties", "http://schemas.openxmlformats.org/officeDocument/2006/customProperties" },
 
             { "encryption", "http://schemas.microsoft.com/office/2006/encryption" },
             { "encryption-password", "http://schemas.microsoft.com/office/2006/keyEncryptor/password" },
@@ -103,11 +104,11 @@ const std::unordered_map<std::string, std::string> &constants::get_namespaces()
     return *namespaces;
 }
 
-const std::string &constants::get_namespace(const std::string &id)
+const std::string &constants::namespace_(const std::string &id)
 {
-    auto match = get_namespaces().find(id);
+    auto match = namespaces().find(id);
 
-    if (match == get_namespaces().end())
+    if (match == namespaces().end())
     {
         throw xlnt::exception("bad namespace");
     }

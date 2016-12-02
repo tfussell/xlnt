@@ -51,11 +51,11 @@ const_cell_iterator &const_cell_iterator::operator--()
 {
     if (order_ == major_order::row)
     {
-        current_cell_.set_column_index(current_cell_.get_column_index() - 1);
+        current_cell_.column_index(current_cell_.column_index() - 1);
     }
     else
     {
-        current_cell_.set_row(current_cell_.get_row() - 1);
+        current_cell_.row(current_cell_.row() - 1);
     }
 
     return *this;
@@ -72,11 +72,11 @@ const_cell_iterator &const_cell_iterator::operator++()
 {
     if (order_ == major_order::row)
     {
-        current_cell_.set_column_index(current_cell_.get_column_index() + 1);
+        current_cell_.column_index(current_cell_.column_index() + 1);
     }
     else
     {
-        current_cell_.set_row(current_cell_.get_row() + 1);
+        current_cell_.row(current_cell_.row() + 1);
     }
 
     return *this;
@@ -91,7 +91,7 @@ const_cell_iterator const_cell_iterator::operator++(int)
 
 const cell const_cell_iterator::operator*() const
 {
-    return ws_.get_cell(current_cell_);
+    return ws_.cell(current_cell_);
 }
 
 } // namespace xlnt

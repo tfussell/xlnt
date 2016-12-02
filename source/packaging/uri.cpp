@@ -15,7 +15,7 @@ std::string uri::to_string() const
     return path_.string();
 }
 
-path uri::get_path() const
+path uri::path() const
 {
     return path_;
 }
