@@ -299,7 +299,7 @@ void number_format::format_string(const std::string &format_string, std::size_t 
 
 bool number_format::has_id() const
 {
-    return id_;
+    return id_set_;
 }
 
 void number_format::id(std::size_t id)
