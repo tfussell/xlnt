@@ -39,8 +39,6 @@ class cell_iterator;
 class const_cell_iterator;
 class range_reference;
 
-using cell_ = cell;
-
 /// <summary>
 /// A cell vector is a linear (1D) range of cells, either vertical or horizontal
 /// depending on the major order specified in the constructor.
@@ -102,16 +100,6 @@ public:
     ///
     /// </summary>
     const cell operator[](std::size_t column_index) const;
-
-    /// <summary>
-    ///
-    /// </summary>
-    cell_ cell(std::size_t column_index);
-
-    /// <summary>
-    ///
-    /// </summary>
-    const class cell cell(std::size_t column_index) const;
 
     /// <summary>
     ///

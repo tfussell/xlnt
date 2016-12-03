@@ -67,7 +67,12 @@ cell_vector::const_iterator cell_vector::cend() const
 
 cell cell_vector::operator[](std::size_t cell_index)
 {
-    return cell(cell_index);
+    if (order_ == major_order::row)
+    {
+        return ws_.cell(ref_.top_left().make_offset(static_cast<int>(cell_index), 0));
+    }
+
+    return ws_.cell(ref_.top_left().make_offset(0, static_cast<int>(cell_index)));
 }
 
 cell_vector::cell_vector(worksheet ws, const range_reference &reference, major_order order)
@@ -93,16 +98,6 @@ cell cell_vector::back()
     }
 
     return ws_.cell(ref_.bottom_right());
-}
-
-cell cell_vector::cell(std::size_t index)
-{
-    if (order_ == major_order::row)
-    {
-        return ws_.cell(ref_.top_left().make_offset(static_cast<int>(index), 0));
-    }
-
-    return ws_.cell(ref_.top_left().make_offset(0, static_cast<int>(index)));
 }
 
 std::size_t cell_vector::length() const
