@@ -26,10 +26,10 @@
 namespace xlnt {
 
 page_setup::page_setup()
-    : break_(page_break::none),
-      sheet_state_(sheet_state::visible),
-      paper_size_(paper_size::letter),
-      orientation_(orientation::portrait),
+    : break_(xlnt::page_break::none),
+      sheet_state_(xlnt::sheet_state::visible),
+      paper_size_(xlnt::paper_size::letter),
+      orientation_(xlnt::orientation::portrait),
       fit_to_page_(false),
       fit_to_height_(false),
       fit_to_width_(false),
