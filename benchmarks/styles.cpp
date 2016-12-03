@@ -1,19 +1,19 @@
+#include <iostream>
 #include <iterator>
 #include <random>
 #include <xlnt/xlnt.hpp>
 
-template<typename Iter>
-Iter random_choice(Iter start, Iter end) {
+std::size_t random_index(std::size_t max)
+{
     static std::random_device rd;
     static std::mt19937 gen(rd());
 
-    std::uniform_int_distribution<> dis(0, std::distance(start, end) - 1);
-    std::advance(start, dis(gen));
+    std::uniform_int_distribution<> dis(0, max);
 
-    return start;
+    return dis(gen);
 }
 
-std::vector<xlnt::style> generate_all_styles()
+std::vector<xlnt::style> generate_all_styles(xlnt::workbook &wb)
 {
     std::vector<xlnt::style> styles;
 
@@ -24,6 +24,7 @@ std::vector<xlnt::style> generate_all_styles()
     std::vector<bool> bold_options = {true, false};
     std::vector<xlnt::font::underline_style> underline_options = {xlnt::font::underline_style::single, xlnt::font::underline_style::none};
     std::vector<bool> italic_options = {true, false};
+    std::size_t index = 0;
     
     for(auto vertical_alignment : vertical_alignments)
     {
@@ -39,20 +40,20 @@ std::vector<xlnt::style> generate_all_styles()
                         {
                             for(auto italic : italic_options)
                             {
-                                xlnt::style s;
+				auto s = wb.create_style(std::to_string(index++));
 
                                 xlnt::font f;
-                                f.set_name(name);
-                                f.set_size(size);
-                                f.set_italic(italic);
-                                f.set_underline(underline);
-                                f.set_bold(bold);
-                                s.set_font(f);
+                                f.name(name);
+                                f.size(size);
+                                f.italic(italic);
+                                f.underline(underline);
+                                f.bold(bold);
+                                s.font(f);
 
                                 xlnt::alignment a;
-                                a.set_vertical(vertical_alignment);
-                                a.set_horizontal(horizontal_alignment);
-                                s.set_alignment(a);
+                                a.vertical(vertical_alignment);
+                                a.horizontal(horizontal_alignment);
+                                s.alignment(a);
 
                                 styles.push_back(s);
                             }
@@ -66,31 +67,17 @@ std::vector<xlnt::style> generate_all_styles()
     return styles;
 }
 
-xlnt::workbook optimized_workbook(const std::vector<xlnt::style> &styles, int n)
+xlnt::workbook non_optimized_workbook(int n)
 {
     xlnt::workbook wb;
-    wb.set_optimized_write(true);
-    auto worksheet = wb.create_sheet();
-
-    for(int i = 1; i < n; i++)
-    {
-        auto style = *random_choice(styles.begin(), styles.end());
-        worksheet.append({{0, style}});
-    }
-
-    return wb;
-}
-
-xlnt::workbook non_optimized_workbook(const std::vector<xlnt::style> &styles, int n)
-{
-    xlnt::workbook wb;
+    auto styles = generate_all_styles(wb);
 
     for(int idx = 1; idx < n; idx++)
     {
-        auto worksheet = *random_choice(wb.begin(), wb.end());
-        auto cell = worksheet.get_cell({1, (xlnt::row_t)idx + 1});
-        cell.set_value(0);
-        cell.set_style(*random_choice(styles.begin(), styles.end()));
+	auto worksheet = wb[random_index(wb.sheet_count())];
+        auto cell = worksheet.cell(1, (xlnt::row_t)idx);
+        cell.value(0);
+	cell.style(styles.at(random_index(styles.size())));
     }
 
     return wb;
@@ -105,14 +92,8 @@ void to_profile(xlnt::workbook &wb, const std::string &f, int n)
 
 int main()
 {
-    auto styles = generate_all_styles();
     int n = 10000;
-
-    for(auto func : {&optimized_workbook, &non_optimized_workbook})
-    {
-	std::cout << (func == &optimized_workbook ? "optimized_workbook" : "non_optimized_workbook") << std::endl;
-	auto wb = func(styles, n);
-	std::string f = "/tmp/xlnt.xlsx";
-	to_profile(wb, f, n);
-    }
+    auto wb = non_optimized_workbook(n);
+    std::string f = "temp.xlsx";
+    to_profile(wb, f, n);
 }

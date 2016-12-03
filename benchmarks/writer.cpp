@@ -1,6 +1,6 @@
 #include <chrono>
+#include <iostream>
 #include <xlnt/xlnt.hpp>
-#include "path_helper.hpp"
 
 int current_time()
 {
@@ -13,8 +13,6 @@ int current_time()
 void writer(bool optimized, int cols, int rows)
 {
     xlnt::workbook wb;
-//    wb.set_optimized_write(optimized);
-
     auto ws = wb.create_sheet();
 
     std::vector<int> row;
@@ -38,7 +36,7 @@ void writer(bool optimized, int cols, int rows)
 
     std::cout << std::endl;
 
-    auto filename = PathHelper::GetExecutableDirectory() + "s/files/large.xlsx";
+    auto filename = "data/large.xlsx";
     wb.save(filename);
 }
 
