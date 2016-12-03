@@ -87,7 +87,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    color color() const;
+    xlnt::color color() const;
 
     /// <summary>
     ///
