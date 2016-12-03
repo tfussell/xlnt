@@ -346,7 +346,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    std::vector<named_range> named_ranges() const;
+    std::vector<xlnt::named_range> named_ranges() const;
 
     /// <summary>
     ///
@@ -366,7 +366,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    xlnt::range named_range(const std::string &name);
+    class range named_range(const std::string &name);
 
     /// <summary>
     ///
@@ -603,7 +603,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    manifest &manifest();
+    class manifest &manifest();
 
     /// <summary>
     ///

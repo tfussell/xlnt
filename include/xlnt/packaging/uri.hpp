@@ -113,7 +113,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    path path() const;
+    class path path() const;
 
     /// <summary>
     ///

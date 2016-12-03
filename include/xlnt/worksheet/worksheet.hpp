@@ -109,7 +109,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    workbook &workbook();
+    class workbook &workbook();
 
     /// <summary>
     ///
@@ -200,7 +200,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    xlnt::range range(const std::string &reference_string);
+    class range range(const std::string &reference_string);
 
     /// <summary>
     ///

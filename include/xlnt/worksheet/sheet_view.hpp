@@ -90,12 +90,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-    std::vector<selection> selections() const { return selections_; }
+    std::vector<xlnt::selection> selections() const { return selections_; }
 
     /// <summary>
     ///
     /// </summary>
-    class selection &selection(std::size_t index) { return selections_.at(index); }
+    class xlnt::selection &selection(std::size_t index) { return selections_.at(index); }
 
     /// <summary>
     ///

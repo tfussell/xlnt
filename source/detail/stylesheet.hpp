@@ -60,7 +60,7 @@ struct stylesheet
         return xlnt::format(&impl);
     }
 
-    format format(std::size_t index)
+    class format format(std::size_t index)
     {
         auto iter = format_impls.begin();
         std::advance(iter, static_cast<std::list<format_impl>::difference_type>(index));
