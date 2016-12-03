@@ -66,7 +66,7 @@ public:
     /// Returns the relationship with "source" as the source and with a type of "type".
     /// Throws a key_not_found exception if no such relationship is found.
     /// </summary>
-	relationship relationship(const path &source, relationship_type type) const;
+	class relationship relationship(const path &source, relationship_type type) const;
 
     /// <summary>
     /// Returns the relationship with "source" as the source and with an ID of "rel_id".
