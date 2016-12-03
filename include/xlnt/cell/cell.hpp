@@ -190,37 +190,37 @@ public:
     /// </summary>
     bool has_hyperlink() const;
 
-	// computed formatting
+    // computed formatting
 
-	/// <summary>
-	/// Returns the result of computed_format().alignment().
-	/// </summary>
-	alignment computed_alignment() const;
+    /// <summary>
+    /// Returns the result of computed_format().alignment().
+    /// </summary>
+    class alignment computed_alignment() const;
 
-	/// <summary>
-	/// Returns the result of computed_format().border().
-	/// </summary>
-	border computed_border() const;
+    /// <summary>
+    /// Returns the result of computed_format().border().
+    /// </summary>
+    class border computed_border() const;
 
-	/// <summary>
-	/// Returns the result of computed_format().fill().
-	/// </summary>
-	fill computed_fill() const;
+    /// <summary>
+    /// Returns the result of computed_format().fill().
+    /// </summary>
+    class fill computed_fill() const;
 
-	/// <summary>
-	/// Returns the result of computed_format().font().
-	/// </summary>
-	font computed_font() const;
+    /// <summary>
+    /// Returns the result of computed_format().font().
+    /// </summary>
+    class font computed_font() const;
 
-	/// <summary>
-	/// Returns the result of computed_format().number_format().
-	/// </summary>
-	number_format computed_number_format() const;
+    /// <summary>
+    /// Returns the result of computed_format().number_format().
+    /// </summary>
+    class number_format computed_number_format() const;
 
-	/// <summary>
-	/// Returns the result of computed_format().protection().
-	/// </summary>
-	protection computed_protection() const;
+    /// <summary>
+    /// Returns the result of computed_format().protection().
+    /// </summary>
+    class protection computed_protection() const;
 
     // format
 
@@ -250,7 +250,7 @@ public:
     /// <summary>
     /// Returns the number format of this cell.
     /// </summary>
-    xlnt::number_format number_format() const;
+    class number_format number_format() const;
 
 	/// <summary>
 	/// Creates a new format in the workbook, sets its number_format
@@ -261,7 +261,7 @@ public:
     /// <summary>
     /// Returns the font applied to the text in this cell.
     /// </summary>
-    xlnt::font font() const;
+    class font font() const;
 
 	/// <summary>
 	/// Creates a new format in the workbook, sets its font
@@ -272,7 +272,7 @@ public:
     /// <summary>
     /// Returns the fill applied to this cell.
     /// </summary>
-    xlnt::fill fill() const;
+    class fill fill() const;
 
 	/// <summary>
 	/// Creates a new format in the workbook, sets its fill
@@ -283,7 +283,7 @@ public:
     /// <summary>
     /// Returns the border of this cell.
     /// </summary>
-    xlnt::border border() const;
+    class border border() const;
 
 	/// <summary>
 	/// Creates a new format in the workbook, sets its border
@@ -294,7 +294,7 @@ public:
     /// <summary>
     /// Returns the alignment of the text in this cell.
     /// </summary>
-    xlnt::alignment alignment() const;
+    class alignment alignment() const;
 
 	/// <summary>
 	/// Creates a new format in the workbook, sets its alignment
@@ -305,12 +305,12 @@ public:
     /// <summary>
     /// Returns the protection of this cell.
     /// </summary>
-    xlnt::protection protection() const;
+    class protection protection() const;
 
-	/// <summary>
-	/// Creates a new format in the workbook, sets its protection
-	/// to the given protection, and applies the format to this cell.
-	/// </summary>
+    /// <summary>
+    /// Creates a new format in the workbook, sets its protection
+    /// to the given protection, and applies the format to this cell.
+    /// </summary>
     void protection(const class protection &protection_);
 
 	// style
