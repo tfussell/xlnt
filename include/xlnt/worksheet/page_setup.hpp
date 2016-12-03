@@ -45,7 +45,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    page_break page_break() const;
+    xlnt::page_break page_break() const;
 
     /// <summary>
     ///
@@ -55,7 +55,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    sheet_state sheet_state() const;
+    xlnt::sheet_state sheet_state() const;
 
     /// <summary>
     ///
@@ -65,7 +65,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    paper_size paper_size() const;
+    xlnt::paper_size paper_size() const;
 
     /// <summary>
     ///
@@ -75,7 +75,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    orientation orientation() const;
+    xlnt::orientation orientation() const;
 
     /// <summary>
     ///

@@ -250,8 +250,8 @@ public:
     /// <summary>
     /// Returns the number format of this cell.
     /// </summary>
-    number_format number_format() const;
-    
+    xlnt::number_format number_format() const;
+
 	/// <summary>
 	/// Creates a new format in the workbook, sets its number_format
 	/// to the given format, and applies the format to this cell.
@@ -261,7 +261,7 @@ public:
     /// <summary>
     /// Returns the font applied to the text in this cell.
     /// </summary>
-    font font() const;
+    xlnt::font font() const;
 
 	/// <summary>
 	/// Creates a new format in the workbook, sets its font
@@ -272,7 +272,7 @@ public:
     /// <summary>
     /// Returns the fill applied to this cell.
     /// </summary>
-    fill fill() const;
+    xlnt::fill fill() const;
 
 	/// <summary>
 	/// Creates a new format in the workbook, sets its fill
@@ -283,7 +283,7 @@ public:
     /// <summary>
     /// Returns the border of this cell.
     /// </summary>
-    border border() const;
+    xlnt::border border() const;
 
 	/// <summary>
 	/// Creates a new format in the workbook, sets its border
@@ -294,7 +294,7 @@ public:
     /// <summary>
     /// Returns the alignment of the text in this cell.
     /// </summary>
-    alignment alignment() const;
+    xlnt::alignment alignment() const;
 
 	/// <summary>
 	/// Creates a new format in the workbook, sets its alignment
@@ -305,7 +305,7 @@ public:
     /// <summary>
     /// Returns the protection of this cell.
     /// </summary>
-    protection protection() const;
+    xlnt::protection protection() const;
 
 	/// <summary>
 	/// Creates a new format in the workbook, sets its protection
@@ -414,7 +414,7 @@ public:
     /// <summary>
     /// Return the worksheet that owns this cell.
     /// </summary>
-    worksheet worksheet();
+    class worksheet worksheet();
 
     /// <summary>
     /// Return the worksheet that owns this cell.
@@ -424,7 +424,7 @@ public:
     /// <summary>
     /// Return the workbook of the worksheet that owns this cell.
     /// </summary>
-    workbook &workbook();
+    class workbook &workbook();
 
     /// <summary>
     /// Return the workbook of the worksheet that owns this cell.

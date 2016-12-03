@@ -108,7 +108,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    relationship(const std::string &id, relationship_type t, const uri &source, const uri &target, target_mode mode);
+    relationship(const std::string &id, relationship_type t, const uri &source, const uri &target, xlnt::target_mode mode);
 
     /// <summary>
     /// Returns a string of the form rId# that identifies the relationship.
@@ -123,7 +123,7 @@ public:
     /// <summary>
     /// Returns whether the target of the relationship is internal or external to the package.
     /// </summary>
-    target_mode target_mode() const;
+    xlnt::target_mode target_mode() const;
 
     /// <summary>
     /// Returns the URI of the package part this relationship points to.

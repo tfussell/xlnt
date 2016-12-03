@@ -366,7 +366,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    range named_range(const std::string &name);
+    xlnt::range named_range(const std::string &name);
 
     /// <summary>
     ///
@@ -542,29 +542,29 @@ public:
     /// <summary>
     ///
     /// </summary>
-    const theme &theme() const;
+    const xlnt::theme &theme() const;
 
     /// <summary>
     ///
     /// </summary>
-	void theme(const class theme &value);
+    void theme(const class theme &value);
 
     // formats
 
     /// <summary>
     ///
     /// </summary>
-    format format(std::size_t format_index);
+    xlnt::format format(std::size_t format_index);
 
     /// <summary>
     ///
     /// </summary>
-    const class format format(std::size_t format_index) const;
+    const xlnt::format format(std::size_t format_index) const;
 
     /// <summary>
     ///
     /// </summary>
-	class format create_format(bool default_format = false);
+    xlnt::format create_format(bool default_format = false);
 
     /// <summary>
     ///

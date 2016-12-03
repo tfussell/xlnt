@@ -55,7 +55,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    pane &pane() { return pane_.get(); }
+    struct pane &pane() { return pane_.get(); }
 
     /// <summary>
     ///
@@ -80,7 +80,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void add_selection(const selection &new_selection) { selections_.push_back(new_selection); }
+    void add_selection(const class selection &new_selection) { selections_.push_back(new_selection); }
 
     /// <summary>
     ///

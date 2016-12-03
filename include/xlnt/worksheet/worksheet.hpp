@@ -175,7 +175,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    cell cell(column_t column, row_t row);
+    class cell cell(column_t column, row_t row);
 
     /// <summary>
     ///
@@ -200,7 +200,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    range range(const std::string &reference_string);
+    xlnt::range range(const std::string &reference_string);
 
     /// <summary>
     ///
@@ -247,12 +247,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-    column_properties &column_properties(column_t column);
+    xlnt::column_properties &column_properties(column_t column);
 
     /// <summary>
     ///
     /// </summary>
-    const class column_properties &column_properties(column_t column) const;
+    const xlnt::column_properties &column_properties(column_t column) const;
 
     /// <summary>
     ///
@@ -267,12 +267,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-    row_properties &row_properties(row_t row);
+    xlnt::row_properties &row_properties(row_t row);
 
     /// <summary>
     ///
     /// </summary>
-    const class row_properties &row_properties(row_t row) const;
+    const xlnt::row_properties &row_properties(row_t row) const;
 
     /// <summary>
     ///
@@ -516,7 +516,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    page_setup page_setup() const;
+    xlnt::page_setup page_setup() const;
 
     /// <summary>
     ///
@@ -531,7 +531,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    page_margins page_margins() const;
+    xlnt::page_margins page_margins() const;
 
     /// <summary>
     ///
@@ -600,12 +600,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-    header_footer &header_footer();
+    xlnt::header_footer &header_footer();
 
     /// <summary>
     ///
     /// </summary>
-    const class header_footer &header_footer() const;
+    const xlnt::header_footer &header_footer() const;
 
     /// <summary>
     ///
@@ -620,7 +620,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    sheet_state sheet_state() const;
+    xlnt::sheet_state sheet_state() const;
 
     /// <summary>
     ///
