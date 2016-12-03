@@ -42,7 +42,7 @@ namespace detail {
 
 struct stylesheet
 {
-    format create_format(bool default_format)
+    class format create_format(bool default_format)
     {
 		format_impls.push_back(format_impl());
 		auto &impl = format_impls.back();
@@ -60,7 +60,7 @@ struct stylesheet
         return xlnt::format(&impl);
     }
 
-    class format format(std::size_t index)
+    class xlnt::format format(std::size_t index)
     {
         auto iter = format_impls.begin();
         std::advance(iter, static_cast<std::list<format_impl>::difference_type>(index));
