@@ -114,7 +114,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    cell cell(const cell_reference &ref);
+    class cell cell(const cell_reference &ref);
 
     /// <summary>
     ///

@@ -26,6 +26,7 @@ matrix:
         - COVERAGE=ON
         - STATIC=ON
         - SAMPLES=OFF
+        - BENCHMARKS=OFF
 
     - os: linux
       compiler: gcc
@@ -41,11 +42,12 @@ matrix:
         - COVERAGE=OFF
         - STATIC=OFF
         - SAMPLES=ON
+        - BENCHMARKS=ON
 
 script:
   - mkdir build
   - cd build
-  - cmake -D STATIC=$STATIC -D SAMPLES=$SAMPLES -D COVERAGE=$COVERAGE -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=Debug ..
+  - cmake -D STATIC=$STATIC -D BENCHMARKS=$BENCHMARKS -D SAMPLES=$SAMPLES -D COVERAGE=$COVERAGE -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=Debug ..
   - cmake --build .
   - cd bin && ./xlnt.test
   - cd ..

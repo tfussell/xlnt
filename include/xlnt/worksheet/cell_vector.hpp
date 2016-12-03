@@ -104,7 +104,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    cell cell(std::size_t column_index);
+    class cell cell(std::size_t column_index);
 
     /// <summary>
     ///

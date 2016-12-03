@@ -333,7 +333,7 @@ private:
     /// <summary>
     /// Convenience method to access the target workbook's manifest.
     /// </summary>
-    manifest &manifest();
+    class manifest &manifest();
 
 	/// <summary>
 	/// The ZIP file containing the files that make up the OOXML package.
