@@ -144,7 +144,7 @@ std::vector<relationship> xlsx_consumer::read_relationships(const path &part)
     {
         expect_start_element(xml::qname(xmlns, "Relationship"), xml::content::simple);
 
-        auto target_mode = target_mode::internal;
+        auto target_mode = xlnt::target_mode::internal;
 
         if (parser.attribute_present("TargetMode"))
         {
