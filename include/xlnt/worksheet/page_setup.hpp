@@ -50,7 +50,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void page_break(enum page_break b);
+    void page_break(xlnt::page_break b);
 
     /// <summary>
     ///
@@ -60,7 +60,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void sheet_state(enum sheet_state sheet_state);
+    void sheet_state(xlnt::sheet_state sheet_state);
 
     /// <summary>
     ///
@@ -70,7 +70,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void paper_size(enum paper_size paper_size);
+    void paper_size(xlnt::paper_size paper_size);
 
     /// <summary>
     ///
@@ -80,7 +80,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void orientation(enum orientation orientation);
+    void orientation(xlnt::orientation orientation);
 
     /// <summary>
     ///
@@ -146,22 +146,22 @@ private:
     /// <summary>
     ///
     /// </summary>
-    enum page_break break_;
+    xlnt::page_break break_;
 
     /// <summary>
     ///
     /// </summary>
-    enum sheet_state sheet_state_;
+    xlnt::sheet_state sheet_state_;
 
     /// <summary>
     ///
     /// </summary>
-    enum paper_size paper_size_;
+    xlnt::paper_size paper_size_;
 
     /// <summary>
     ///
     /// </summary>
-    enum orientation orientation_;
+    xlnt::orientation orientation_;
 
     /// <summary>
     ///

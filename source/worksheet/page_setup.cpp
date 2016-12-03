@@ -44,7 +44,7 @@ page_break page_setup::page_break() const
     return break_;
 }
 
-void page_setup::page_break(enum page_break b)
+void page_setup::page_break(xlnt::page_break b)
 {
     break_ = b;
 }
@@ -54,7 +54,7 @@ sheet_state page_setup::sheet_state() const
     return sheet_state_;
 }
 
-void page_setup::sheet_state(enum sheet_state sheet_state)
+void page_setup::sheet_state(xlnt::sheet_state sheet_state)
 {
     sheet_state_ = sheet_state;
 }
@@ -64,7 +64,7 @@ paper_size page_setup::paper_size() const
     return paper_size_;
 }
 
-void page_setup::paper_size(enum paper_size paper_size)
+void page_setup::paper_size(xlnt::paper_size paper_size)
 {
     paper_size_ = paper_size;
 }
@@ -74,7 +74,7 @@ orientation page_setup::orientation() const
     return orientation_;
 }
 
-void page_setup::orientation(enum orientation orientation)
+void page_setup::orientation(xlnt::orientation orientation)
 {
     orientation_ = orientation;
 }

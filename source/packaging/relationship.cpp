@@ -30,7 +30,7 @@ relationship::relationship()
 {
 }
 
-relationship::relationship(const std::string &id, relationship_type t, const uri &source, const uri &target, enum target_mode mode)
+relationship::relationship(const std::string &id, relationship_type t, const uri &source, const uri &target, xlnt::target_mode mode)
 	: id_(id),
 	type_(t),
 	source_(source),

@@ -169,7 +169,7 @@ private:
     /// <summary>
     ///
     /// </summary>
-    enum target_mode mode_;
+    xlnt::target_mode mode_;
 };
 
 } // namespace xlnt

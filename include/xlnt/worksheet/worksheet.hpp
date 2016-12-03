@@ -625,7 +625,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void sheet_state(enum sheet_state state);
+    void sheet_state(xlnt::sheet_state state);
 
     /// <summary>
     ///

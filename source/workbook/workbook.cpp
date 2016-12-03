@@ -1012,7 +1012,10 @@ void swap(workbook &left, workbook &right)
 			ws.parent(left);
 		}
 
-        left.d_->stylesheet_->parent = &left;
+		if (left.d_->stylesheet_.is_set())
+		{
+			left.d_->stylesheet_->parent = &left;
+		}
 	}
 
 	if (right.d_ != nullptr)
@@ -1022,7 +1025,10 @@ void swap(workbook &left, workbook &right)
 			ws.parent(right);
 		}
 
-        right.d_->stylesheet_->parent = &right;
+		if (left.d_->stylesheet_.is_set())
+		{
+			right.d_->stylesheet_->parent = &right;
+		}
 	}
 }
 

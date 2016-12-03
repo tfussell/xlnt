@@ -926,7 +926,7 @@ cell_reference worksheet::point_pos(const std::pair<int, int> &point) const
     return point_pos(point.first, point.second);
 }
 
-void worksheet::sheet_state(enum sheet_state state)
+void worksheet::sheet_state(xlnt::sheet_state state)
 {
     page_setup().sheet_state(state);
 }
