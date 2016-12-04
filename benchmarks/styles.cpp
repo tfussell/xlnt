@@ -1,14 +1,20 @@
+#include <chrono>
 #include <iostream>
 #include <iterator>
 #include <random>
 #include <xlnt/xlnt.hpp>
+
+std::size_t current_time()
+{
+    return std::chrono::duration<double, std::milli>(std::chrono::system_clock::now().time_since_epoch()).count();
+}
 
 std::size_t random_index(std::size_t max)
 {
     static std::random_device rd;
     static std::mt19937 gen(rd());
 
-    std::uniform_int_distribution<> dis(0, max);
+    std::uniform_int_distribution<> dis(0, max - 1);
 
     return dis(gen);
 }
@@ -40,7 +46,7 @@ std::vector<xlnt::style> generate_all_styles(xlnt::workbook &wb)
                         {
                             for(auto italic : italic_options)
                             {
-				auto s = wb.create_style(std::to_string(index++));
+                                auto s = wb.create_style(std::to_string(index++));
 
                                 xlnt::font f;
                                 f.name(name);
@@ -74,10 +80,10 @@ xlnt::workbook non_optimized_workbook(int n)
 
     for(int idx = 1; idx < n; idx++)
     {
-	auto worksheet = wb[random_index(wb.sheet_count())];
+        auto worksheet = wb[random_index(wb.sheet_count())];
         auto cell = worksheet.cell(1, (xlnt::row_t)idx);
         cell.value(0);
-	cell.style(styles.at(random_index(styles.size())));
+        cell.style(styles.at(random_index(styles.size())));
     }
 
     return wb;
@@ -85,9 +91,10 @@ xlnt::workbook non_optimized_workbook(int n)
 
 void to_profile(xlnt::workbook &wb, const std::string &f, int n)
 {
-    auto t = 0;//-time.time();
+    auto start = current_time();
     wb.save(f);
-    std::cout << "took " << t << "s for " << n << " styles";
+    auto elapsed = current_time() - start;
+    std::cout << "took " << elapsed / 1000.0 << "s for " << n << " styles" << std::endl;
 }
 
 int main()
@@ -96,4 +103,6 @@ int main()
     auto wb = non_optimized_workbook(n);
     std::string f = "temp.xlsx";
     to_profile(wb, f, n);
+
+    return 0;
 }
