@@ -62,7 +62,7 @@ class xlsx_producer;
 
 struct worksheet_impl;
 
-}
+} // namespace detail
 
 /// <summary>
 /// A worksheet is a 2D array of cells starting with cell A1 in the top-left corner
@@ -363,7 +363,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-	bool has_dimension() const;
+    bool has_dimension() const;
 
     // cell merge
 
@@ -511,7 +511,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-	bool has_page_setup() const;
+    bool has_page_setup() const;
 
     /// <summary>
     ///
@@ -521,12 +521,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-	void page_setup(const struct page_setup &setup);
+    void page_setup(const struct page_setup &setup);
 
     /// <summary>
     ///
     /// </summary>
-	bool has_page_margins() const;
+    bool has_page_margins() const;
 
     /// <summary>
     ///
@@ -541,7 +541,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-	bool has_format_properties() const;
+    bool has_format_properties() const;
 
     // auto filter
 

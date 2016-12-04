@@ -332,11 +332,7 @@ void xlsx_consumer::populate_workbook()
 
     for (const auto &package_rel : read_relationships(root_path))
     {
-        manifest().register_relationship(uri(root_path.string()),
-            package_rel.type(),
-            package_rel.target(),
-            package_rel.target_mode(),
-            package_rel.id());
+        manifest().register_relationship(package_rel);
     }
 
     for (auto package_rel : manifest().relationships(root_path))
@@ -354,11 +350,7 @@ void xlsx_consumer::populate_workbook()
     {
         for (const auto &part_rel : read_relationships(path(relationship_source_string)))
         {
-            manifest().register_relationship(part_rel.source(),
-                part_rel.type(),
-                part_rel.target(),
-                part_rel.target_mode(),
-                part_rel.id());
+            manifest().register_relationship(part_rel);
         }
     }
 

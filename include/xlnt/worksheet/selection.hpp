@@ -20,6 +20,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
@@ -38,41 +39,56 @@ public:
     /// <summary>
     ///
     /// </summary>
-	bool has_active_cell() const { return active_cell_.is_set(); }
+    bool has_active_cell() const
+    {
+        return active_cell_.is_set();
+    }
 
     /// <summary>
     ///
     /// </summary>
-    cell_reference active_cell() const { return active_cell_.get(); }
+    cell_reference active_cell() const
+    {
+        return active_cell_.get();
+    }
 
     /// <summary>
     ///
     /// </summary>
-    void active_cell(const cell_reference &ref) { active_cell_ = ref; }
+    void active_cell(const cell_reference &ref)
+    {
+        active_cell_ = ref;
+    }
 
     /// <summary>
     ///
     /// </summary>
-    range_reference sqref() const { return sqref_; }
+    range_reference sqref() const
+    {
+        return sqref_;
+    }
 
     /// <summary>
     ///
     /// </summary>
-    pane_corner pane() const { return pane_; }
+    pane_corner pane() const
+    {
+        return pane_;
+    }
 
     /// <summary>
     ///
     /// </summary>
-    void pane(pane_corner corner) { pane_ = corner; }
-
+    void pane(pane_corner corner)
+    {
+        pane_ = corner;
+    }
 
     bool operator==(const selection &rhs) const
     {
-        return active_cell_ == rhs.active_cell_
-            && sqref_ == rhs.sqref_
-            && pane_ == rhs.pane_;
+        return active_cell_ == rhs.active_cell_ && sqref_ == rhs.sqref_ && pane_ == rhs.pane_;
     }
-    
+
 private:
     /// <summary>
     ///

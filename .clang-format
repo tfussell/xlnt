@@ -2,9 +2,13 @@
 BasedOnStyle: LLVM
 AccessModifierOffset: -4
 AlignAfterOpenBracket: DontAlign
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignOperands: false
 AlignTrailingComments: false
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: true
 AllowShortLoopsOnASingleLine: false
@@ -21,12 +25,24 @@ BraceWrapping:
   AfterUnion: true
   BeforeCatch: true
   BeforeElse: true
+BreakBeforeBinaryOperators: NonAssignment
 BreakBeforeBraces: Custom
 ColumnLimit: 120
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 Cpp11BracedListStyle: true
 DerivePointerAlignment: false
 DisableFormat: false
+IncludeCategories:
+  - Regex:           '^<xlnt/xlnt_config.hpp>$'
+    Priority:        2
+  - Regex:           '^<xlnt/'
+    Priority:        3
+  - Regex:           '^<detail/'
+    Priority:        4
+  - Regex:           '^<.*>&'
+    Priority:        1
+  - Regex:           '^".*"'
+    Priority:        5
 IndentCaseLabels: false
 IndentWidth: 4
 KeepEmptyLinesAtTheStartOfBlocks: false
@@ -35,6 +51,7 @@ NamespaceIndentation: None
 MaxEmptyLinesToKeep: 1
 PenaltyBreakComment: 1000
 PointerAlignment: Right
+SortIncludes: true
 SpaceAfterCStyleCast: false
 SpaceBeforeParens: ControlStatements
 SpaceInEmptyParentheses: false

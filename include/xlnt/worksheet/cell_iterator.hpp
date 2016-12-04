@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <cstddef> // std::ptrdiff_t
@@ -39,10 +40,13 @@ class cell;
 class cell_reference;
 class range_reference;
 
+using c_iter_type = std::iterator<std::bidirectional_iterator_tag,
+    cell, std::ptrdiff_t, cell *, cell>;
+
 /// <summary>
 ///
 /// </summary>
-class XLNT_API cell_iterator : public std::iterator<std::bidirectional_iterator_tag, cell, std::ptrdiff_t, cell *, cell>
+class XLNT_API cell_iterator : public c_iter_type
 {
 public:
     /// <summary>

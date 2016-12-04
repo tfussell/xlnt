@@ -20,6 +20,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <iterator>
@@ -29,8 +30,8 @@
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/worksheet/cell_vector.hpp>
-#include <xlnt/worksheet/major_order.hpp>
 #include <xlnt/worksheet/const_range_iterator.hpp>
+#include <xlnt/worksheet/major_order.hpp>
 #include <xlnt/worksheet/range_iterator.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/worksheet.hpp>

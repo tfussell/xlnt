@@ -20,6 +20,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <string>
@@ -154,7 +155,7 @@ public:
     ///
     /// </summary>
     friend XLNT_API bool operator==(const uri &left, const uri &right);
-    
+
 private:
     /// <summary>
     ///

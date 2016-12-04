@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <cstdint>
@@ -246,7 +247,10 @@ public:
     /// <summary>
     /// Returns true if left is not exactly equal to right.
     /// </summary>
-    XLNT_API friend bool operator!=(const number_format &left, const number_format &right) { return !(left == right); }
+    XLNT_API friend bool operator!=(const number_format &left, const number_format &right)
+    {
+        return !(left == right);
+    }
 
 private:
     /// <summary>

@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <string>
@@ -69,12 +70,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-	font &superscript(bool superscript);
+    font &superscript(bool superscript);
 
     /// <summary>
     ///
     /// </summary>
-	bool superscript() const;
+    bool superscript() const;
 
     /// <summary>
     ///
@@ -154,7 +155,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-	xlnt::color color() const;
+    xlnt::color color() const;
 
     /// <summary>
     ///
@@ -169,7 +170,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-	std::size_t family() const;
+    std::size_t family() const;
 
     /// <summary>
     ///
@@ -185,16 +186,19 @@ public:
     ///
     /// </summary>
     std::string scheme() const;
-    
+
     /// <summary>
     /// Returns true if left is exactly equal to right.
     /// </summary>
     XLNT_API friend bool operator==(const font &left, const font &right);
-    
+
     /// <summary>
     /// Returns true if left is not exactly equal to right.
     /// </summary>
-    XLNT_API friend bool operator!=(const font &left, const font &right) { return !(left == right); }
+    XLNT_API friend bool operator!=(const font &left, const font &right)
+    {
+        return !(left == right);
+    }
 
 private:
     friend class style;
@@ -237,22 +241,22 @@ private:
     /// <summary>
     ///
     /// </summary>
-	underline_style underline_ = underline_style::none;
+    underline_style underline_ = underline_style::none;
 
     /// <summary>
     ///
     /// </summary>
-	optional<xlnt::color> color_;
+    optional<xlnt::color> color_;
 
     /// <summary>
     ///
     /// </summary>
-	optional<std::size_t> family_;
+    optional<std::size_t> family_;
 
     /// <summary>
     ///
     /// </summary>
-	optional<std::string> scheme_;
+    optional<std::string> scheme_;
 };
 
 } // namespace xlnt

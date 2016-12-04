@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <cstddef>
@@ -39,22 +40,22 @@ public:
     /// <summary>
     ///
     /// </summary>
-	static protection unlocked_and_visible();
+    static protection unlocked_and_visible();
 
     /// <summary>
     ///
     /// </summary>
-	static protection locked_and_visible();
+    static protection locked_and_visible();
 
     /// <summary>
     ///
     /// </summary>
-	static protection unlocked_and_hidden();
+    static protection unlocked_and_hidden();
 
     /// <summary>
     ///
     /// </summary>
-	static protection locked_and_hidden();
+    static protection locked_and_hidden();
 
     /// <summary>
     ///
@@ -80,7 +81,7 @@ public:
     ///
     /// </summary>
     protection &hidden(bool hidden);
-    
+
     /// <summary>
     /// Returns true if left is exactly equal to right.
     /// </summary>
@@ -89,7 +90,10 @@ public:
     /// <summary>
     /// Returns true if left is not exactly equal to right.
     /// </summary>
-    XLNT_API friend bool operator!=(const protection &left, const protection &right) { return !(left == right); }
+    XLNT_API friend bool operator!=(const protection &left, const protection &right)
+    {
+        return !(left == right);
+    }
 
 private:
     /// <summary>

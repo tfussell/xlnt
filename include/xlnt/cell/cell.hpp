@@ -57,12 +57,12 @@ struct datetime;
 struct time;
 struct timedelta;
 
-namespace detail { 
+namespace detail {
 
 class xlsx_consumer;
 class xlsx_producer;
 
-struct cell_impl; 
+struct cell_impl;
 
 } // namespace detail
 
@@ -87,7 +87,7 @@ public:
     /// Return a map of error strings such as \#DIV/0! and their associated indices.
     /// </summary>
     static const std::unordered_map<std::string, int> &error_codes();
-    
+
     /// <summary>
     /// Default copy constructor.
     /// </summary>
@@ -118,7 +118,7 @@ public:
     /// Set the value of this cell to the given value.
     /// Overloads exist for most C++ fundamental types like bool, int, etc. as well
     /// as for std::string and xlnt datetime types: date, time, datetime, and timedelta.
-	/// </summary>
+    /// </summary>
     template <typename T>
     void value(T value);
 
@@ -231,20 +231,20 @@ public:
 
     /// <summary>
     /// Return a reference to the format applied to this cell.
-	/// If this cell has no format, an invalid_attribute exception will be thrown.
+    /// If this cell has no format, an invalid_attribute exception will be thrown.
     /// </summary>
     const class format format() const;
-    
-	/// <summary>
-	/// Applies the cell-level formatting of new_format to this cell.
-	/// </summary>
+
+    /// <summary>
+    /// Applies the cell-level formatting of new_format to this cell.
+    /// </summary>
     void format(const class format new_format);
-    
-	/// <summary>
-	/// Remove the cell-level formatting from this cell.
-	/// This doesn't affect the style that may also be applied to the cell.
-	/// Throws an invalid_attribute exception if no format is applied.
-	/// </summary>
+
+    /// <summary>
+    /// Remove the cell-level formatting from this cell.
+    /// This doesn't affect the style that may also be applied to the cell.
+    /// Throws an invalid_attribute exception if no format is applied.
+    /// </summary>
     void clear_format();
 
     /// <summary>
@@ -252,10 +252,10 @@ public:
     /// </summary>
     class number_format number_format() const;
 
-	/// <summary>
-	/// Creates a new format in the workbook, sets its number_format
-	/// to the given format, and applies the format to this cell.
-	/// </summary>
+    /// <summary>
+    /// Creates a new format in the workbook, sets its number_format
+    /// to the given format, and applies the format to this cell.
+    /// </summary>
     void number_format(const class number_format &format);
 
     /// <summary>
@@ -263,10 +263,10 @@ public:
     /// </summary>
     class font font() const;
 
-	/// <summary>
-	/// Creates a new format in the workbook, sets its font
-	/// to the given font, and applies the format to this cell.
-	/// </summary>
+    /// <summary>
+    /// Creates a new format in the workbook, sets its font
+    /// to the given font, and applies the format to this cell.
+    /// </summary>
     void font(const class font &font_);
 
     /// <summary>
@@ -274,10 +274,10 @@ public:
     /// </summary>
     class fill fill() const;
 
-	/// <summary>
-	/// Creates a new format in the workbook, sets its fill
-	/// to the given fill, and applies the format to this cell.
-	/// </summary>
+    /// <summary>
+    /// Creates a new format in the workbook, sets its fill
+    /// to the given fill, and applies the format to this cell.
+    /// </summary>
     void fill(const class fill &fill_);
 
     /// <summary>
@@ -285,10 +285,10 @@ public:
     /// </summary>
     class border border() const;
 
-	/// <summary>
-	/// Creates a new format in the workbook, sets its border
-	/// to the given border, and applies the format to this cell.
-	/// </summary>
+    /// <summary>
+    /// Creates a new format in the workbook, sets its border
+    /// to the given border, and applies the format to this cell.
+    /// </summary>
     void border(const class border &border_);
 
     /// <summary>
@@ -296,10 +296,10 @@ public:
     /// </summary>
     class alignment alignment() const;
 
-	/// <summary>
-	/// Creates a new format in the workbook, sets its alignment
-	/// to the given alignment, and applies the format to this cell.
-	/// </summary>
+    /// <summary>
+    /// Creates a new format in the workbook, sets its alignment
+    /// to the given alignment, and applies the format to this cell.
+    /// </summary>
     void alignment(const class alignment &alignment_);
 
     /// <summary>
@@ -313,58 +313,58 @@ public:
     /// </summary>
     void protection(const class protection &protection_);
 
-	// style
+    // style
 
-	/// <summary>
-	/// Returns true if this cell has had a style applied to it.
-	/// </summary>
-	bool has_style() const;
+    /// <summary>
+    /// Returns true if this cell has had a style applied to it.
+    /// </summary>
+    bool has_style() const;
 
-	/// <summary>
-	/// Returns a wrapper pointing to the named style applied to this cell.
-	/// </summary>
-	const class style style() const;
+    /// <summary>
+    /// Returns a wrapper pointing to the named style applied to this cell.
+    /// </summary>
+    const class style style() const;
 
-	/// <summary>
-	/// Equivalent to style(new_style.name())
-	/// </summary>
-	void style(const class style &new_style);
+    /// <summary>
+    /// Equivalent to style(new_style.name())
+    /// </summary>
+    void style(const class style &new_style);
 
-	/// <summary>
-	/// Sets the named style applied to this cell to a style named style_name.
-	/// If this style has not been previously created in the workbook, a
-	/// key_not_found exception will be thrown.
-	/// </summary>
-	void style(const std::string &style_name);
+    /// <summary>
+    /// Sets the named style applied to this cell to a style named style_name.
+    /// If this style has not been previously created in the workbook, a
+    /// key_not_found exception will be thrown.
+    /// </summary>
+    void style(const std::string &style_name);
 
-	/// <summary>
-	/// Removes the named style from this cell.
-	/// An invalid_attribute exception will be thrown if this cell has no style.
-	/// This will not affect the cell format of the cell.
-	/// </summary>
-	void clear_style();
+    /// <summary>
+    /// Removes the named style from this cell.
+    /// An invalid_attribute exception will be thrown if this cell has no style.
+    /// This will not affect the cell format of the cell.
+    /// </summary>
+    void clear_style();
 
     // formula
 
-	/// <summary>
-	/// Returns the string representation of the formula applied to this cell.
-	/// </summary>
+    /// <summary>
+    /// Returns the string representation of the formula applied to this cell.
+    /// </summary>
     std::string formula() const;
 
-	/// <summary>
-	/// Sets the formula of this cell to the given value.
-	/// This formula string should begin with '='.
-	/// </summary>
+    /// <summary>
+    /// Sets the formula of this cell to the given value.
+    /// This formula string should begin with '='.
+    /// </summary>
     void formula(const std::string &formula);
 
-	/// <summary>
-	/// Removes the formula from this cell. After this is called, has_formula() will return false.
-	/// </summary>
+    /// <summary>
+    /// Removes the formula from this cell. After this is called, has_formula() will return false.
+    /// </summary>
     void clear_formula();
 
-	/// <summary>
-	/// Returns true if this cell has had a formula applied to it.
-	/// </summary>
+    /// <summary>
+    /// Returns true if this cell has had a formula applied to it.
+    /// </summary>
     bool has_formula() const;
 
     // printing
@@ -491,16 +491,16 @@ private:
     // make these friends so they can use the private constructor
     friend class style;
     friend class worksheet;
-	friend class detail::xlsx_consumer;
-	friend class detail::xlsx_producer;
+    friend class detail::xlsx_consumer;
+    friend class detail::xlsx_producer;
     friend struct detail::cell_impl;
 
-	/// <summary>
-	/// Returns a non-const reference to the format of this cell.
-	/// This is for internal use only.
-	/// </summary>
-	class format modifiable_format();
-    
+    /// <summary>
+    /// Returns a non-const reference to the format of this cell.
+    /// This is for internal use only.
+    /// </summary>
+    class format modifiable_format();
+
     /// <summary>
     /// Delete default zero-argument constructor.
     /// </summary>

@@ -20,6 +20,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <string>
@@ -31,38 +32,38 @@
 
 namespace xlnt {
 
-//todo: should this just be a struct?
+// todo: should this just be a struct?
 
 /// <summary>
 /// A formatted string
 /// </summary>
-class XLNT_API text_run 
+class XLNT_API text_run
 {
 public:
     /// <summary>
     ///
     /// </summary>
-	text_run();
+    text_run();
 
     /// <summary>
     ///
     /// </summary>
-	text_run(const std::string &string);
+    text_run(const std::string &string);
 
     /// <summary>
     ///
     /// </summary>
     bool has_formatting() const;
-    
-    /// <summary>
-    ///
-    /// </summary>
-	std::string string() const;
 
     /// <summary>
     ///
     /// </summary>
-	void string(const std::string &string);
+    std::string string() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void string(const std::string &string);
 
     /// <summary>
     ///
@@ -173,7 +174,7 @@ private:
     /// <summary>
     ///
     /// </summary>
-	std::string string_;
+    std::string string_;
 
     /// <summary>
     ///

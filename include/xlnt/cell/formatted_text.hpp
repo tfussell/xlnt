@@ -20,6 +20,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <string>
@@ -57,7 +58,7 @@ public:
     /// Returns a copy of the individual runs that comprise this text.
     /// </summary>
     std::vector<text_run> runs() const;
-    
+
     /// <summary>
     /// Set the runs of this text all at once.
     /// </summary>

@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <string>
@@ -36,10 +37,10 @@ namespace xlnt {
 /// </summary>
 enum class XLNT_API target_mode
 {
-	/// <summary>
-	/// The relationship references a resource that is external to the package.
-	/// </summary>
-	internal,
+    /// <summary>
+    /// The relationship references a resource that is external to the package.
+    /// </summary>
+    internal,
     /// <summary>
     /// The relationship references a part that is inside the package.
     /// </summary>
@@ -53,44 +54,44 @@ enum class XLNT_API relationship_type
 {
     unknown,
 
-	// Package
-	core_properties,
-	extended_properties,
-	custom_properties,
-	office_document,
-	thumbnail,
-	printer_settings,
+    // Package
+    core_properties,
+    extended_properties,
+    custom_properties,
+    office_document,
+    thumbnail,
+    printer_settings,
 
-	// SpreadsheetML
-	calculation_chain,
-	chartsheet,
-	comments,
-	connections,
-	custom_property,
-	custom_xml_mappings,
-	dialogsheet,
-	drawings,
-	external_workbook_references,
-	metadata,
-	pivot_table,
-	pivot_table_cache_definition,
-	pivot_table_cache_records,
-	query_table,
-	shared_string_table,
-	shared_workbook_revision_headers,
-	shared_workbook,
-	theme,
-	revision_log,
-	shared_workbook_user_data,
-	single_cell_table_definitions,
-	stylesheet,
-	table_definition,
+    // SpreadsheetML
+    calculation_chain,
+    chartsheet,
+    comments,
+    connections,
+    custom_property,
+    custom_xml_mappings,
+    dialogsheet,
+    drawings,
+    external_workbook_references,
+    metadata,
+    pivot_table,
+    pivot_table_cache_definition,
+    pivot_table_cache_records,
+    query_table,
+    shared_string_table,
+    shared_workbook_revision_headers,
+    shared_workbook,
+    theme,
+    revision_log,
+    shared_workbook_user_data,
+    single_cell_table_definitions,
+    stylesheet,
+    table_definition,
     vml_drawing,
-	volatile_dependencies,
-	worksheet,
+    volatile_dependencies,
+    worksheet,
 
-	hyperlink,
-	image
+    hyperlink,
+    image
 };
 
 /// <summary>
@@ -108,17 +109,18 @@ public:
     /// <summary>
     ///
     /// </summary>
-    relationship(const std::string &id, relationship_type t, const uri &source, const uri &target, xlnt::target_mode mode);
+    relationship(
+        const std::string &id, relationship_type t, const uri &source, const uri &target, xlnt::target_mode mode);
 
     /// <summary>
     /// Returns a string of the form rId# that identifies the relationship.
     /// </summary>
     std::string id() const;
 
-	/// <summary>
-	/// Returns the type of this relationship.
-	/// </summary>
-	relationship_type type() const;
+    /// <summary>
+    /// Returns the type of this relationship.
+    /// </summary>
+    relationship_type type() const;
 
     /// <summary>
     /// Returns whether the target of the relationship is internal or external to the package.
@@ -135,21 +137,21 @@ public:
     /// </summary>
     uri target() const;
 
-	/// <summary>
-	/// Returns true if and only if rhs is equal to this relationship.
-	/// </summary>
+    /// <summary>
+    /// Returns true if and only if rhs is equal to this relationship.
+    /// </summary>
     bool operator==(const relationship &rhs) const;
 
-	/// <summary>
-	/// Returns true if and only if rhs is not equal to this relationship.
-	/// </summary>
-	bool operator!=(const relationship &rhs) const;
+    /// <summary>
+    /// Returns true if and only if rhs is not equal to this relationship.
+    /// </summary>
+    bool operator!=(const relationship &rhs) const;
 
 private:
     /// <summary>
     ///
     /// </summary>
-	std::string id_;
+    std::string id_;
 
     /// <summary>
     ///

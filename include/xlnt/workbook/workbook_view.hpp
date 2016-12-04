@@ -38,67 +38,67 @@ public:
     /// <summary>
     ///
     /// </summary>
-	bool auto_filter_date_grouping = false;
+    bool auto_filter_date_grouping = false;
 
     /// <summary>
     ///
     /// </summary>
-	bool minimized = false;
+    bool minimized = false;
 
     /// <summary>
     ///
     /// </summary>
-	bool show_horizontal_scroll = false;
+    bool show_horizontal_scroll = false;
 
     /// <summary>
     ///
     /// </summary>
-	bool show_sheet_tabs = false;
+    bool show_sheet_tabs = false;
 
     /// <summary>
     ///
     /// </summary>
-	bool show_vertical_scroll = false;
+    bool show_vertical_scroll = false;
 
     /// <summary>
     ///
     /// </summary>
-	bool visible = true;
+    bool visible = true;
 
     /// <summary>
     ///
     /// </summary>
-	std::size_t active_tab = 0;
+    std::size_t active_tab = 0;
 
     /// <summary>
     ///
     /// </summary>
-	std::size_t first_sheet = 0;
+    std::size_t first_sheet = 0;
 
     /// <summary>
     ///
     /// </summary>
-	std::size_t tab_ratio = 500;
+    std::size_t tab_ratio = 500;
 
     /// <summary>
     ///
     /// </summary>
-	std::size_t window_width = 28800;
+    std::size_t window_width = 28800;
 
     /// <summary>
     ///
     /// </summary>
-	std::size_t window_height = 17460;
+    std::size_t window_height = 17460;
 
     /// <summary>
     ///
     /// </summary>
-	std::size_t x_window = 0;
+    std::size_t x_window = 0;
 
     /// <summary>
     ///
     /// </summary>
-	std::size_t y_window = 460;
+    std::size_t y_window = 460;
 };
 
 } // namespace xlnt

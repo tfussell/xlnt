@@ -20,6 +20,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <cstdint>
@@ -41,7 +42,7 @@ class range_reference;
 struct XLNT_API cell_reference_hash
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     std::size_t operator()(const cell_reference &k) const;
 };
@@ -191,7 +192,7 @@ public:
     /// cell_reference("A", 1), cell_reference("B", 1) will return
     /// range_reference(cell_reference("A", 1), cell_reference("B", 1))
     /// </summary>
-    range_reference operator, (const cell_reference &other) const;
+    range_reference operator,(const cell_reference &other) const;
 
     /// <summary>
     /// Return true if this reference is identical to comparand including

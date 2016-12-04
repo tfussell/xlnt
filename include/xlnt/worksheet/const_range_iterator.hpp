@@ -38,18 +38,20 @@ namespace detail {
 struct worksheet_impl;
 }
 
+using cr_iter_type = std::iterator<std::bidirectional_iterator_tag,
+    const cell_vector, std::ptrdiff_t, const cell_vector *, const cell_vector>;
+
 /// <summary>
 /// A const version of range_iterator which does not allow modification
 /// to the dereferenced cell_vector.
 /// </summary>
-class XLNT_API const_range_iterator : public std::iterator<std::bidirectional_iterator_tag, const cell_vector, std::ptrdiff_t, const cell_vector*, const cell_vector>
+class XLNT_API const_range_iterator : public cr_iter_type
 {
 public:
     /// <summary>
     ///
     /// </summary>
-    const_range_iterator(
-        const worksheet &ws, const range_reference &start_cell, major_order order = major_order::row);
+    const_range_iterator(const worksheet &ws, const range_reference &start_cell, major_order order = major_order::row);
 
     /// <summary>
     ///

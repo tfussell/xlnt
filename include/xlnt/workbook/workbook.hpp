@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <functional>
@@ -111,22 +112,22 @@ public:
     /// <summary>
     ///
     /// </summary>
-	static workbook minimal();
+    static workbook minimal();
 
     /// <summary>
     ///
     /// </summary>
-	static workbook empty_excel();
+    static workbook empty_excel();
 
     /// <summary>
     ///
     /// </summary>
-	static workbook empty_libre_office();
+    static workbook empty_libre_office();
 
     /// <summary>
     ///
     /// </summary>
-	static workbook empty_numbers();
+    static workbook empty_numbers();
 
     // constructors
 
@@ -152,29 +153,29 @@ public:
 
     // add worksheets
 
-	/// <summary>
-	/// Create a sheet after the last sheet in this workbook and return it.
-	/// </summary>
+    /// <summary>
+    /// Create a sheet after the last sheet in this workbook and return it.
+    /// </summary>
     worksheet create_sheet();
 
-	/// <summary>
-	/// Create a sheet at the specified index and return it.
-	/// </summary>
+    /// <summary>
+    /// Create a sheet at the specified index and return it.
+    /// </summary>
     worksheet create_sheet(std::size_t index);
 
-	/// <summary>
-	/// This should be private...
-	/// </summary>
+    /// <summary>
+    /// This should be private...
+    /// </summary>
     worksheet create_sheet_with_rel(const std::string &title, const relationship &rel);
 
-	/// <summary>
-	/// Create a new sheet initializing it with all of the data from the provided worksheet.
-	/// </summary>
+    /// <summary>
+    /// Create a new sheet initializing it with all of the data from the provided worksheet.
+    /// </summary>
     void copy_sheet(worksheet worksheet);
 
-	/// <summary>
-	/// Create a new sheet at the specified index initializing it with all of the data
-	/// from the provided worksheet.
+    /// <summary>
+    /// Create a new sheet at the specified index initializing it with all of the data
+    /// from the provided worksheet.
     void copy_sheet(worksheet worksheet, std::size_t index);
 
     // get worksheets
@@ -192,7 +193,7 @@ public:
     /// Use workbook::contains(const std::string &) to make sure the sheet exists.
     /// </summary>
     worksheet sheet_by_title(const std::string &sheet_name);
-    
+
     /// <summary>
     /// Return the const worksheet with the given name.
     /// This may throw an exception if the sheet isn't found.
@@ -210,15 +211,15 @@ public:
     /// </summary>
     const worksheet sheet_by_index(std::size_t index) const;
 
-	/// <summary>
-	/// Return the worksheet with a sheetId of id.
-	/// </summary>
-	worksheet sheet_by_id(std::size_t id);
+    /// <summary>
+    /// Return the worksheet with a sheetId of id.
+    /// </summary>
+    worksheet sheet_by_id(std::size_t id);
 
-	/// <summary>
-	/// Return the const worksheet with a sheetId of id.
-	/// </summary>
-	const worksheet sheet_by_id(std::size_t id) const;
+    /// <summary>
+    /// Return the const worksheet with a sheetId of id.
+    /// </summary>
+    const worksheet sheet_by_id(std::size_t id) const;
 
     /// <summary>
     /// Return true if this workbook contains a sheet with the given name.
@@ -233,71 +234,71 @@ public:
 
     // remove worksheets
 
-	/// <summary>
-	/// Remove the given worksheet from this workbook.
-	/// </summary>
+    /// <summary>
+    /// Remove the given worksheet from this workbook.
+    /// </summary>
     void remove_sheet(worksheet worksheet);
 
-	/// <summary>
-	/// Delete every cell in this worksheet. After this is called, the
-	/// worksheet will be equivalent to a newly created sheet at the same
-	/// index and with the same title.
-	/// </summary>
+    /// <summary>
+    /// Delete every cell in this worksheet. After this is called, the
+    /// worksheet will be equivalent to a newly created sheet at the same
+    /// index and with the same title.
+    /// </summary>
     void clear();
 
     // iterators
 
-	/// <summary>
-	/// Returns an iterator to the first worksheet in this workbook.
-	/// </summary>
+    /// <summary>
+    /// Returns an iterator to the first worksheet in this workbook.
+    /// </summary>
     iterator begin();
 
-	/// <summary>
-	/// Returns an iterator to the worksheet following the last worksheet of the workbook.
-	/// This worksheet acts as a placeholder; attempting to access it will cause an 
-	/// exception to be thrown.
-	/// </summary>
+    /// <summary>
+    /// Returns an iterator to the worksheet following the last worksheet of the workbook.
+    /// This worksheet acts as a placeholder; attempting to access it will cause an
+    /// exception to be thrown.
+    /// </summary>
     iterator end();
 
-	/// <summary>
-	/// Returns a const iterator to the first worksheet in this workbook.
-	/// </summary>
+    /// <summary>
+    /// Returns a const iterator to the first worksheet in this workbook.
+    /// </summary>
     const_iterator begin() const;
 
-	/// <summary>
-	/// Returns a const iterator to the worksheet following the last worksheet of the workbook.
-	/// This worksheet acts as a placeholder; attempting to access it will cause an 
-	/// exception to be thrown.
-	/// </summary>
+    /// <summary>
+    /// Returns a const iterator to the worksheet following the last worksheet of the workbook.
+    /// This worksheet acts as a placeholder; attempting to access it will cause an
+    /// exception to be thrown.
+    /// </summary>
     const_iterator end() const;
 
-	/// <summary>
-	/// Returns an iterator to the first worksheet in this workbook.
-	/// </summary>
+    /// <summary>
+    /// Returns an iterator to the first worksheet in this workbook.
+    /// </summary>
     const_iterator cbegin() const;
 
-	/// <summary>
-	/// Returns a const iterator to the worksheet following the last worksheet of the workbook.
-	/// This worksheet acts as a placeholder; attempting to access it will cause an 
-	/// exception to be thrown.
-	/// </summary>
+    /// <summary>
+    /// Returns a const iterator to the worksheet following the last worksheet of the workbook.
+    /// This worksheet acts as a placeholder; attempting to access it will cause an
+    /// exception to be thrown.
+    /// </summary>
     const_iterator cend() const;
-    
+
     /// <summary>
     /// Apply the function "f" to every non-empty cell in every worksheet in this workbook.
     /// </summary>
     void apply_to_cells(std::function<void(cell)> f);
 
-	/// <summary>
-	/// Returns a temporary vector containing the titles of each sheet in the order
-	/// of the sheets in the workbook.
-	/// </summary>
+    /// <summary>
+    /// Returns a temporary vector containing the titles of each sheet in the order
+    /// of the sheets in the workbook.
+    /// </summary>
     std::vector<std::string> sheet_titles() const;
 
-	/// <summary>
-	/// Returns the number of sheets in this workbook.
-	/// </summary>
-	std::size_t sheet_count() const;
+    /// <summary>
+    /// Returns the number of sheets in this workbook.
+    /// </summary>
+    std::size_t sheet_count() const;
 
     /// <summary>
     /// Returns true if the workbook has the core property with the given name.
@@ -307,39 +308,39 @@ public:
     /// <summary>
     ///
     /// </summary>
-    template<typename T = std::string>
+    template <typename T = std::string>
     T core_property(const std::string &property_name) const;
 
     /// <summary>
     ///
     /// </summary>
-    template<typename T = std::string>
+    template <typename T = std::string>
     void core_property(const std::string &property_name, const T value);
 
     /// <summary>
     ///
     /// </summary>
-	calendar base_date() const;
+    calendar base_date() const;
 
     /// <summary>
     ///
     /// </summary>
-	void base_date(calendar base_date);
+    void base_date(calendar base_date);
 
     /// <summary>
     ///
     /// </summary>
-	bool has_title() const;
+    bool has_title() const;
 
     /// <summary>
     ///
     /// </summary>
-	std::string title() const;
+    std::string title() const;
 
     /// <summary>
     ///
     /// </summary>
-	void title(const std::string &title);
+    void title(const std::string &title);
 
     // named ranges
 
@@ -378,62 +379,62 @@ public:
     /// <summary>
     ///
     /// </summary>
-	void save(std::vector<std::uint8_t> &data) const;
+    void save(std::vector<std::uint8_t> &data) const;
 
     /// <summary>
     ///
     /// </summary>
-	void save(const std::string &filename) const;
+    void save(const std::string &filename) const;
 
     /// <summary>
     ///
     /// </summary>
-	void save(const xlnt::path &filename) const;
+    void save(const xlnt::path &filename) const;
 
     /// <summary>
     ///
     /// </summary>
-	void save(std::ostream &stream) const;
+    void save(std::ostream &stream) const;
 
     /// <summary>
     ///
     /// </summary>
-	void save(const std::string &filename, const std::string &password);
+    void save(const std::string &filename, const std::string &password);
 
     /// <summary>
     ///
     /// </summary>
-	void save(const xlnt::path &filename, const std::string &password);
+    void save(const xlnt::path &filename, const std::string &password);
 
     /// <summary>
     ///
     /// </summary>
-	void save(std::ostream &stream, const std::string &password);
+    void save(std::ostream &stream, const std::string &password);
 
     /// <summary>
     ///
     /// </summary>
-	void save(const std::vector<std::uint8_t> &data, const std::string &password);
+    void save(const std::vector<std::uint8_t> &data, const std::string &password);
 
     /// <summary>
     ///
     /// </summary>
-	void load(const std::vector<std::uint8_t> &data);
+    void load(const std::vector<std::uint8_t> &data);
 
     /// <summary>
     ///
     /// </summary>
-	void load(const std::string &filename);
+    void load(const std::string &filename);
 
     /// <summary>
     ///
     /// </summary>
-	void load(const xlnt::path &filename);
+    void load(const xlnt::path &filename);
 
     /// <summary>
     ///
     /// </summary>
-	void load(std::istream &stream);
+    void load(std::istream &stream);
 
     /// <summary>
     ///
@@ -443,17 +444,17 @@ public:
     /// <summary>
     ///
     /// </summary>
-	void load(const xlnt::path &filename, const std::string &password);
+    void load(const xlnt::path &filename, const std::string &password);
 
     /// <summary>
     ///
     /// </summary>
-	void load(std::istream &stream, const std::string &password);
+    void load(std::istream &stream, const std::string &password);
 
     /// <summary>
     ///
     /// </summary>
-	void load(const std::vector<std::uint8_t> &data, const std::string &password);
+    void load(const std::vector<std::uint8_t> &data, const std::string &password);
 
 #ifdef _MSC_VER
     /// <summary>
@@ -480,27 +481,27 @@ public:
     /// <summary>
     ///
     /// </summary>
-	bool has_view() const;
+    bool has_view() const;
 
     /// <summary>
     ///
     /// </summary>
-	workbook_view view() const;
+    workbook_view view() const;
 
     /// <summary>
     ///
     /// </summary>
-	void view(const workbook_view &view);
+    void view(const workbook_view &view);
 
     /// <summary>
     ///
     /// </summary>
-	bool has_code_name() const;
+    bool has_code_name() const;
 
     /// <summary>
     ///
     /// </summary>
-	std::string code_name() const;
+    std::string code_name() const;
 
     /// <summary>
     ///
@@ -510,27 +511,27 @@ public:
     /// <summary>
     ///
     /// </summary>
-	bool has_file_version() const;
+    bool has_file_version() const;
 
     /// <summary>
     ///
     /// </summary>
-	std::string app_name() const;
+    std::string app_name() const;
 
     /// <summary>
     ///
     /// </summary>
-	std::size_t last_edited() const;
+    std::size_t last_edited() const;
 
     /// <summary>
     ///
     /// </summary>
-	std::size_t lowest_edited() const;
+    std::size_t lowest_edited() const;
 
     /// <summary>
     ///
     /// </summary>
-	std::size_t rup_build() const;
+    std::size_t rup_build() const;
 
     // theme
 
@@ -615,7 +616,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void add_shared_string(const formatted_text &shared, bool allow_duplicates=false);
+    void add_shared_string(const formatted_text &shared, bool allow_duplicates = false);
 
     /// <summary>
     ///
@@ -632,8 +633,8 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void thumbnail(const std::vector<std::uint8_t> &thumbnail, 
-		const std::string &extension, const std::string &content_type);
+    void thumbnail(
+        const std::vector<std::uint8_t> &thumbnail, const std::string &extension, const std::string &content_type);
 
     /// <summary>
     ///
@@ -718,8 +719,8 @@ private:
     /// <summary>
     ///
     /// </summary>
-	void register_comments_in_manifest(worksheet ws);
-    
+    void register_comments_in_manifest(worksheet ws);
+
     /// <summary>
     /// An opaque pointer to a structure that holds all of the data relating to this workbook.
     /// </summary>

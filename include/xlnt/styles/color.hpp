@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <array>
@@ -37,25 +38,25 @@ class XLNT_API indexed_color
 {
 public:
     /// <summary>
-    /// 
+    ///
     /// </summary>
-	indexed_color(std::size_t index);
+    indexed_color(std::size_t index);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
-	std::size_t index() const;
+    std::size_t index() const;
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
-	void index(std::size_t index);
+    void index(std::size_t index);
 
 private:
     /// <summary>
-    /// 
+    ///
     /// </summary>
-	std::size_t index_;
+    std::size_t index_;
 };
 
 /// <summary>
@@ -65,25 +66,25 @@ class XLNT_API theme_color
 {
 public:
     /// <summary>
-    /// 
+    ///
     /// </summary>
-	theme_color(std::size_t index);
+    theme_color(std::size_t index);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
-	std::size_t index() const;
+    std::size_t index() const;
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
-	void index(std::size_t index);
+    void index(std::size_t index);
 
 private:
     /// <summary>
-    /// 
+    ///
     /// </summary>
-	std::size_t index_;
+    std::size_t index_;
 };
 
 /// <summary>
@@ -93,60 +94,60 @@ class XLNT_API rgb_color
 {
 public:
     /// <summary>
-    /// 
+    ///
     /// </summary>
-	rgb_color(const std::string &hex_string);
+    rgb_color(const std::string &hex_string);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
-	rgb_color(std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint8_t a = 255);
+    rgb_color(std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint8_t a = 255);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
-	std::string hex_string() const;
+    std::string hex_string() const;
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
-	std::uint8_t red() const;
+    std::uint8_t red() const;
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
-	std::uint8_t green() const;
+    std::uint8_t green() const;
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
-	std::uint8_t blue() const;
+    std::uint8_t blue() const;
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
-	std::uint8_t alpha() const;
+    std::uint8_t alpha() const;
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
-	std::array<std::uint8_t, 3> rgb() const;
+    std::array<std::uint8_t, 3> rgb() const;
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
-	std::array<std::uint8_t, 4> rgba() const;
+    std::array<std::uint8_t, 4> rgba() const;
 
 private:
     /// <summary>
-    /// 
+    ///
     /// </summary>
-	static std::array<std::uint8_t, 4> decode_hex_string(const std::string &hex_string);
+    static std::array<std::uint8_t, 4> decode_hex_string(const std::string &hex_string);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
-	std::array<std::uint8_t, 4> rgba_;
+    std::array<std::uint8_t, 4> rgba_;
 };
 
 /// <summary>
@@ -218,32 +219,32 @@ public:
     /// <summary>
     ///
     /// </summary>
-	color();
+    color();
 
     /// <summary>
     ///
     /// </summary>
-	color(const rgb_color &rgb);
+    color(const rgb_color &rgb);
 
     /// <summary>
     ///
     /// </summary>
-	color(const indexed_color &indexed);
+    color(const indexed_color &indexed);
 
     /// <summary>
     ///
     /// </summary>
-	color(const theme_color &theme);
+    color(const theme_color &theme);
 
     /// <summary>
     ///
     /// </summary>
-	color_type type() const;
+    color_type type() const;
 
     /// <summary>
     ///
     /// </summary>
-	bool is_auto() const;
+    bool is_auto() const;
 
     /// <summary>
     ///
@@ -253,7 +254,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-	const rgb_color &rgb() const;
+    const rgb_color &rgb() const;
 
     /// <summary>
     ///
@@ -268,12 +269,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-	double tint() const;
+    double tint() const;
 
     /// <summary>
     ///
     /// </summary>
-	void tint(double tint);
+    void tint(double tint);
 
     /// <summary>
     ///
@@ -283,41 +284,44 @@ public:
     /// <summary>
     ///
     /// </summary>
-    bool operator!=(const color &other) const { return !(*this == other); }
+    bool operator!=(const color &other) const
+    {
+        return !(*this == other);
+    }
 
 private:
     /// <summary>
     ///
     /// </summary>
-	void assert_type(color_type t) const;
+    void assert_type(color_type t) const;
 
     /// <summary>
     ///
     /// </summary>
-	color_type type_;
+    color_type type_;
 
     /// <summary>
     ///
     /// </summary>
-	rgb_color rgb_;
+    rgb_color rgb_;
 
     /// <summary>
     ///
     /// </summary>
-	indexed_color indexed_;
+    indexed_color indexed_;
 
     /// <summary>
     ///
     /// </summary>
-	theme_color theme_;
+    theme_color theme_;
 
     /// <summary>
     ///
     /// </summary>
-	double tint_;
+    double tint_;
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     bool auto__;
 };

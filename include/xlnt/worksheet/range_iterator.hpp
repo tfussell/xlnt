@@ -20,6 +20,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <cstddef> // std::ptrdiff_t
@@ -34,17 +35,21 @@ namespace xlnt {
 
 class cell_vector;
 
+using r_iter_type = std::iterator<std::bidirectional_iterator_tag,
+    cell_vector, std::ptrdiff_t, cell_vector *, cell_vector>;
+
 /// <summary>
 /// An iterator used by worksheet and range for traversing
 /// a 2D grid of cells by row/column then across that row/column.
 /// </summary>
-class XLNT_API range_iterator : public std::iterator<std::bidirectional_iterator_tag, cell_vector, std::ptrdiff_t, cell_vector*, cell_vector>
+class XLNT_API range_iterator : public r_iter_type
 {
 public:
     /// <summary>
     ///
     /// </summary>
-    range_iterator(worksheet &ws, const range_reference &start_cell, const range_reference &limits, major_order order = major_order::row);
+    range_iterator(worksheet &ws, const range_reference &start_cell, const range_reference &limits,
+        major_order order = major_order::row);
 
     /// <summary>
     ///

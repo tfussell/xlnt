@@ -20,6 +20,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <algorithm>
@@ -47,7 +48,7 @@ class XLNT_API column_t
 {
 public:
     /// <summary>
-    /// 
+    ///
     /// </summary>
     using index_t = std::uint32_t;
 
@@ -234,27 +235,27 @@ public:
     /// <summary>
     /// Return the result of adding rhs to this column.
     /// </summary>
-    friend XLNT_API column_t operator+(column_t lhs, const column_t& rhs);
+    friend XLNT_API column_t operator+(column_t lhs, const column_t &rhs);
 
     /// <summary>
     /// Return the result of subtracing lhs by rhs column.
     /// </summary>
-    friend XLNT_API column_t operator-(column_t lhs, const column_t& rhs);
+    friend XLNT_API column_t operator-(column_t lhs, const column_t &rhs);
 
     /// <summary>
     /// Return the result of multiply lhs by rhs column.
     /// </summary>
-    friend XLNT_API column_t operator*(column_t lhs, const column_t& rhs);
+    friend XLNT_API column_t operator*(column_t lhs, const column_t &rhs);
 
     /// <summary>
     /// Return the result of divide lhs by rhs column.
     /// </summary>
-    friend XLNT_API column_t operator/(column_t lhs, const column_t& rhs);
+    friend XLNT_API column_t operator/(column_t lhs, const column_t &rhs);
 
     /// <summary>
     /// Return the result of mod lhs by rhs column.
     /// </summary>
-    friend XLNT_API column_t operator%(column_t lhs, const column_t& rhs);
+    friend XLNT_API column_t operator%(column_t lhs, const column_t &rhs);
 
     /// <summary>
     /// Add rhs to this column and return a reference to this column.
@@ -319,7 +320,7 @@ public:
 struct XLNT_API column_hash
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     std::size_t operator()(const column_t &k) const;
 };
@@ -339,7 +340,7 @@ struct hash<xlnt::column_t>
     /// </summary>
     size_t operator()(const xlnt::column_t &k) const
     {
-	static xlnt::column_hash hasher;
+        static xlnt::column_hash hasher;
         return hasher(k);
     }
 };

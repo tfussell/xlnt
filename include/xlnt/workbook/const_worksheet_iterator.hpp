@@ -34,10 +34,13 @@ namespace xlnt {
 class workbook;
 class worksheet;
 
+using c_ws_iter_type = std::iterator<std::bidirectional_iterator_tag,
+    const worksheet, std::ptrdiff_t, const worksheet *, const worksheet>;
+
 /// <summary>
 ///
 /// </summary>
-class XLNT_API const_worksheet_iterator : public std::iterator<std::bidirectional_iterator_tag, const worksheet, std::ptrdiff_t, const worksheet*, const worksheet>
+class XLNT_API const_worksheet_iterator : public c_ws_iter_type
 {
 public:
     /// <summary>

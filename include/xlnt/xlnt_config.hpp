@@ -29,8 +29,8 @@
 #define XLNT_API __declspec(dllexport)
 #else
 // For clients of the library, supress warnings about DLL interfaces for standard library classes
-#pragma warning(disable: 4251)
-#pragma warning(disable: 4275)
+#pragma warning(disable : 4251)
+#pragma warning(disable : 4275)
 #define XLNT_API __declspec(dllimport)
 #endif
 #else

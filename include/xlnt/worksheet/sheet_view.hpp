@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
@@ -40,92 +41,138 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void id(std::size_t new_id) { id_ = new_id; }
+    void id(std::size_t new_id)
+    {
+        id_ = new_id;
+    }
 
     /// <summary>
     ///
     /// </summary>
-    std::size_t id() const { return id_; }
+    std::size_t id() const
+    {
+        return id_;
+    }
 
     /// <summary>
     ///
     /// </summary>
-    bool has_pane() const { return pane_.is_set(); }
+    bool has_pane() const
+    {
+        return pane_.is_set();
+    }
 
     /// <summary>
     ///
     /// </summary>
-    struct pane &pane() { return pane_.get(); }
+    struct pane &pane()
+    {
+        return pane_.get();
+    }
 
     /// <summary>
     ///
     /// </summary>
-    const struct pane &pane() const { return pane_.get(); }
+    const struct pane &pane() const
+    {
+        return pane_.get();
+    }
 
     /// <summary>
     ///
     /// </summary>
-    void clear_pane() { pane_.clear(); }
+    void clear_pane()
+    {
+        pane_.clear();
+    }
 
     /// <summary>
     ///
     /// </summary>
-    void pane(const struct pane &new_pane) { pane_ = new_pane; }
+    void pane(const struct pane &new_pane)
+    {
+        pane_ = new_pane;
+    }
 
     /// <summary>
     ///
     /// </summary>
-    bool has_selections() const { return !selections_.empty(); }
+    bool has_selections() const
+    {
+        return !selections_.empty();
+    }
 
     /// <summary>
     ///
     /// </summary>
-    void add_selection(const class selection &new_selection) { selections_.push_back(new_selection); }
+    void add_selection(const class selection &new_selection)
+    {
+        selections_.push_back(new_selection);
+    }
 
     /// <summary>
     ///
     /// </summary>
-    void clear_selections() { selections_.clear(); }
+    void clear_selections()
+    {
+        selections_.clear();
+    }
 
     /// <summary>
     ///
     /// </summary>
-    std::vector<xlnt::selection> selections() const { return selections_; }
+    std::vector<xlnt::selection> selections() const
+    {
+        return selections_;
+    }
 
     /// <summary>
     ///
     /// </summary>
-    class xlnt::selection &selection(std::size_t index) { return selections_.at(index); }
+    class xlnt::selection &selection(std::size_t index)
+    {
+        return selections_.at(index);
+    }
 
     /// <summary>
     ///
     /// </summary>
-    void show_grid_lines(bool show) { show_grid_lines_ = show; }
+    void show_grid_lines(bool show)
+    {
+        show_grid_lines_ = show;
+    }
 
     /// <summary>
     ///
     /// </summary>
-    bool show_grid_lines() const { return show_grid_lines_; }
+    bool show_grid_lines() const
+    {
+        return show_grid_lines_;
+    }
 
     /// <summary>
     ///
     /// </summary>
-    void default_grid_color(bool is_default) { default_grid_color_ = is_default; }
+    void default_grid_color(bool is_default)
+    {
+        default_grid_color_ = is_default;
+    }
 
     /// <summary>
     ///
     /// </summary>
-    bool default_grid_color() const { return default_grid_color_; }
+    bool default_grid_color() const
+    {
+        return default_grid_color_;
+    }
 
     bool operator==(const sheet_view &rhs) const
     {
-        return id_ == rhs.id_
-            && show_grid_lines_ == rhs.show_grid_lines_
+        return id_ == rhs.id_ && show_grid_lines_ == rhs.show_grid_lines_
             && default_grid_color_ == rhs.default_grid_color_
-            && pane_ == rhs.pane_
-            && selections_ == rhs.selections_;
+            && pane_ == rhs.pane_ && selections_ == rhs.selections_;
     }
-    
+
 private:
     /// <summary>
     ///

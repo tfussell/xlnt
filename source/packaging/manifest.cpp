@@ -216,13 +216,14 @@ std::vector<path> manifest::parts() const
 
 std::string manifest::register_relationship(const uri &source, relationship_type type, const uri &target, target_mode mode)
 {
-	return register_relationship(source, type, target, mode, next_relationship_id(source.path()));
+    xlnt::relationship rel(next_relationship_id(source.path()), type, source, target, mode);
+	return register_relationship(rel);
 }
 
-std::string manifest::register_relationship(const uri &source, relationship_type type, const uri &target, target_mode mode, const std::string &rel_id)
+std::string manifest::register_relationship(const class relationship &rel)
 {
-    relationships_[source.path()][rel_id] = xlnt::relationship(rel_id, type, source, target, mode);
-	return rel_id;
+    relationships_[rel.source().path()][rel.id()] = rel;
+	return rel.id();
 }
 
 void manifest::unregister_relationship(const uri &source, const std::string &rel_id)

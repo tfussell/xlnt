@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
@@ -39,12 +40,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-	optional<bool> shrink() const;
+    optional<bool> shrink() const;
 
     /// <summary>
     ///
     /// </summary>
-	alignment &shrink(bool shrink_to_fit);
+    alignment &shrink(bool shrink_to_fit);
 
     /// <summary>
     ///
@@ -54,27 +55,27 @@ public:
     /// <summary>
     ///
     /// </summary>
-	alignment &wrap(bool wrap_text);
+    alignment &wrap(bool wrap_text);
 
     /// <summary>
     ///
     /// </summary>
-	optional<int> indent() const;
+    optional<int> indent() const;
 
     /// <summary>
     ///
     /// </summary>
-	alignment &indent(int indent_size);
+    alignment &indent(int indent_size);
 
     /// <summary>
     ///
     /// </summary>
-	optional<int> rotation() const;
+    optional<int> rotation() const;
 
     /// <summary>
     ///
     /// </summary>
-	alignment &rotation(int text_rotation);
+    alignment &rotation(int text_rotation);
 
     /// <summary>
     ///
@@ -84,7 +85,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-	alignment &horizontal(horizontal_alignment horizontal);
+    alignment &horizontal(horizontal_alignment horizontal);
 
     /// <summary>
     ///
@@ -104,15 +105,18 @@ public:
     /// <summary>
     /// Returns true if left is not exactly equal to right.
     /// </summary>
-    XLNT_API friend bool operator!=(const alignment &left, const alignment &right) { return !(left == right); }
+    XLNT_API friend bool operator!=(const alignment &left, const alignment &right)
+    {
+        return !(left == right);
+    }
 
 private:
-	optional<bool> shrink_to_fit_;
-	optional<bool> wrap_text_;
-	optional<int> indent_;
-	optional<int> text_rotation_;
-	optional<horizontal_alignment> horizontal_ = horizontal_alignment::general;
-	optional<vertical_alignment> vertical_ = vertical_alignment::bottom;
+    optional<bool> shrink_to_fit_;
+    optional<bool> wrap_text_;
+    optional<int> indent_;
+    optional<int> text_rotation_;
+    optional<horizontal_alignment> horizontal_ = horizontal_alignment::general;
+    optional<vertical_alignment> vertical_ = vertical_alignment::bottom;
 };
 
 } // namespace xlnt

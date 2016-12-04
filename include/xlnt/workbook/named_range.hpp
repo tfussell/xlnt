@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <string>
@@ -32,9 +33,6 @@ namespace xlnt {
 
 class range_reference;
 class worksheet;
-
-// TODO: why is this not in a class?
-std::vector<std::pair<std::string, std::string>> XLNT_API split_named_range(const std::string &named_range_string);
 
 /// <summary>
 /// A 2D range of cells in a worksheet that is referred to by name.

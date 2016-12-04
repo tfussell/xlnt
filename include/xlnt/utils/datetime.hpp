@@ -20,6 +20,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <string>
@@ -56,14 +57,14 @@ struct XLNT_API datetime
     static datetime from_number(long double number, calendar base_date);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     static datetime from_iso_string(const std::string &iso_string);
 
     /// <summary>
     ///
     /// </summary>
-	datetime(const date &d, const time &t);
+    datetime(const date &d, const time &t);
 
     /// <summary>
     ///

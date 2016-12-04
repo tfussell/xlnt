@@ -20,6 +20,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <cstddef>
@@ -53,24 +54,24 @@ public:
     /// <summary>
     ///
     /// </summary>
-	std::size_t id() const;
+    std::size_t id() const;
 
     // Alignment
 
     /// <summary>
     ///
     /// </summary>
-	class alignment &alignment();
+    class alignment &alignment();
 
     /// <summary>
     ///
     /// </summary>
-	const class alignment &alignment() const;
+    const class alignment &alignment() const;
 
     /// <summary>
     ///
     /// </summary>
-	format alignment(const xlnt::alignment &new_alignment, bool applied);
+    format alignment(const xlnt::alignment &new_alignment, bool applied);
 
     /// <summary>
     ///
@@ -82,17 +83,17 @@ public:
     /// <summary>
     ///
     /// </summary>
-	class border &border();
+    class border &border();
 
     /// <summary>
     ///
     /// </summary>
-	const class border &border() const;
+    const class border &border() const;
 
     /// <summary>
     ///
     /// </summary>
-	format border(const xlnt::border &new_border, bool applied);
+    format border(const xlnt::border &new_border, bool applied);
 
     /// <summary>
     ///
@@ -104,17 +105,17 @@ public:
     /// <summary>
     ///
     /// </summary>
-	class fill &fill();
+    class fill &fill();
 
     /// <summary>
     ///
     /// </summary>
-	const class fill &fill() const;
+    const class fill &fill() const;
 
     /// <summary>
     ///
     /// </summary>
-	format fill(const xlnt::fill &new_fill, bool applied);
+    format fill(const xlnt::fill &new_fill, bool applied);
 
     /// <summary>
     ///
@@ -126,17 +127,17 @@ public:
     /// <summary>
     ///
     /// </summary>
-	class font &font();
+    class font &font();
 
     /// <summary>
     ///
     /// </summary>
-	const class font &font() const;
+    const class font &font() const;
 
     /// <summary>
     ///
     /// </summary>
-	format font(const xlnt::font &new_font, bool applied);
+    format font(const xlnt::font &new_font, bool applied);
 
     /// <summary>
     ///
@@ -148,17 +149,17 @@ public:
     /// <summary>
     ///
     /// </summary>
-	class number_format &number_format();
+    class number_format &number_format();
 
     /// <summary>
     ///
     /// </summary>
-	const class number_format &number_format() const;
+    const class number_format &number_format() const;
 
     /// <summary>
     ///
     /// </summary>
-	format number_format(const xlnt::number_format &new_number_format, bool applied);
+    format number_format(const xlnt::number_format &new_number_format, bool applied);
 
     /// <summary>
     ///
@@ -170,17 +171,17 @@ public:
     /// <summary>
     ///
     /// </summary>
-	class protection &protection();
+    class protection &protection();
 
     /// <summary>
     ///
     /// </summary>
-	const class protection &protection() const;
+    const class protection &protection() const;
 
     /// <summary>
     ///
     /// </summary>
-	format protection(const xlnt::protection &new_protection, bool applied);
+    format protection(const xlnt::protection &new_protection, bool applied);
 
     /// <summary>
     ///
@@ -192,7 +193,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-	bool has_style() const;
+    bool has_style() const;
 
     /// <summary>
     ///
@@ -202,31 +203,31 @@ public:
     /// <summary>
     ///
     /// </summary>
-	format style(const std::string &name);
+    format style(const std::string &name);
 
     /// <summary>
     ///
     /// </summary>
-	format style(const xlnt::style &new_style);
+    format style(const xlnt::style &new_style);
 
     /// <summary>
     ///
     /// </summary>
-	const class style style() const;
+    const class style style() const;
 
 private:
-	friend struct detail::stylesheet;
+    friend struct detail::stylesheet;
     friend class cell;
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
-	format(detail::format_impl *d);
+    format(detail::format_impl *d);
 
     /// <summary>
     ///
     /// </summary>
-	detail::format_impl *d_;
+    detail::format_impl *d_;
 };
 
 } // namespace xlnt
