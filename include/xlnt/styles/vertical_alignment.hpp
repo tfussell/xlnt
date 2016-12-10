@@ -33,11 +33,11 @@ namespace xlnt {
 /// </summary>
 enum class XLNT_API vertical_alignment
 {
-    none,
-    bottom,
     top,
     center,
-    justify
+    bottom,
+    justify,
+    distributed
 };
 
 } // namespace xlnt

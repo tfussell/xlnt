@@ -14,14 +14,13 @@
 namespace xlnt {
 namespace detail {
 
-template<typename T>
-T default_case(T default_return_value)
-{
+#define EXCEPT_ON_UNHANDLED_SWITCH_CASE
+
 #ifdef EXCEPT_ON_UNHANDLED_SWITCH_CASE
-    throw unhandled_switch_case();
+#define default_case(default_value) throw xlnt::exception("unhandled case");
+#else
+#define default_case(default_value) return default_value;
 #endif
-    return default_return_value;
-}
 
 /// <summary>
 /// Returns the string representation of the underline style.
@@ -74,7 +73,7 @@ struct value_traits<xlnt::font::underline_style>
             }
         }
         
-        return xlnt::detail::default_case(font::underline_style::none);
+        default_case(font::underline_style::none);
     }
 
     static std::string serialize(xlnt::font::underline_style underline_style, const serializer &)
@@ -92,42 +91,53 @@ struct value_traits<xlnt::relationship_type>
         
         static auto *relationship_types = new std::vector<relationship_type>
         {
+            // Package parts
+            relationship_type::core_properties,
+            relationship_type::extended_properties,
+            relationship_type::custom_properties,
+            relationship_type::office_document,
+            relationship_type::thumbnail,
+            relationship_type::printer_settings,
+
+            // SpreadsheetML parts
             relationship_type::calculation_chain,
             relationship_type::chartsheet,
             relationship_type::comments,
             relationship_type::connections,
-            relationship_type::core_properties,
-            relationship_type::custom_properties,
             relationship_type::custom_property,
             relationship_type::custom_xml_mappings,
             relationship_type::dialogsheet,
             relationship_type::drawings,
-            relationship_type::extended_properties,
             relationship_type::external_workbook_references,
-            relationship_type::hyperlink,
-            relationship_type::image,
             relationship_type::metadata,
-            relationship_type::office_document,
             relationship_type::pivot_table,
             relationship_type::pivot_table_cache_definition,
             relationship_type::pivot_table_cache_records,
-            relationship_type::printer_settings,
             relationship_type::query_table,
-            relationship_type::revision_log,
             relationship_type::shared_string_table,
-            relationship_type::shared_workbook,
             relationship_type::shared_workbook_revision_headers,
+            relationship_type::shared_workbook,
+            relationship_type::theme,
+            relationship_type::revision_log,
             relationship_type::shared_workbook_user_data,
             relationship_type::single_cell_table_definitions,
             relationship_type::stylesheet,
             relationship_type::table_definition,
-            relationship_type::theme,
-            relationship_type::thumbnail,
-            relationship_type::unknown,
             relationship_type::vml_drawing,
             relationship_type::volatile_dependencies,
-            relationship_type::worksheet
+            relationship_type::worksheet,
+
+            // Worksheet parts
+            relationship_type::hyperlink,
+            relationship_type::image
         };
+
+        // Core properties relationships can have two different type strings
+        if (relationship_type_string
+            == "http://schemas.openxmlformats.org/officedocument/2006/relationships/metadata/core-properties")
+        {
+            return relationship_type::core_properties;
+        }
 
         for (auto type : *relationship_types)
         {
@@ -137,7 +147,7 @@ struct value_traits<xlnt::relationship_type>
             }
         }
         
-        return xlnt::detail::default_case(relationship_type::unknown);
+        default_case(relationship_type::unknown);
     }
 
     static std::string serialize(xlnt::relationship_type type, const serializer &)
@@ -184,7 +194,7 @@ struct value_traits<xlnt::pattern_fill_type>
             }
         }
         
-        return xlnt::detail::default_case(pattern_fill_type::none);
+        default_case(pattern_fill_type::none);
     }
 
     static std::string serialize(xlnt::pattern_fill_type fill_type, const serializer &)
@@ -214,7 +224,7 @@ struct value_traits<xlnt::gradient_fill_type>
             }
         }
         
-        return xlnt::detail::default_case(gradient_fill_type::linear);
+        default_case(gradient_fill_type::linear);
     }
 
     static std::string serialize(xlnt::gradient_fill_type fill_type, const serializer &)
@@ -256,7 +266,7 @@ struct value_traits<xlnt::border_style>
             }
         }
         
-        return xlnt::detail::default_case(border_style::none);
+        default_case(border_style::none);
     }
 
     static std::string
@@ -275,11 +285,11 @@ struct value_traits<xlnt::vertical_alignment>
         
         static auto *vertical_alignments = new std::vector<vertical_alignment>
         {
-            vertical_alignment::bottom,
+            vertical_alignment::top,
             vertical_alignment::center,
+            vertical_alignment::bottom,
             vertical_alignment::justify,
-            vertical_alignment::none,
-            vertical_alignment::top
+            vertical_alignment::distributed
         };
 
         for (auto alignment : *vertical_alignments)
@@ -290,7 +300,7 @@ struct value_traits<xlnt::vertical_alignment>
             }
         }
         
-        return xlnt::detail::default_case(vertical_alignment::none);
+        default_case(vertical_alignment::none);
     }
 
     static std::string serialize (xlnt::vertical_alignment alignment, const serializer &)
@@ -308,13 +318,14 @@ struct value_traits<xlnt::horizontal_alignment>
         
         static auto *horizontal_alignments = new std::vector<horizontal_alignment>
         {
-            horizontal_alignment::center,
-            horizontal_alignment::center_continuous,
             horizontal_alignment::general,
-            horizontal_alignment::justify,
             horizontal_alignment::left,
+            horizontal_alignment::center,
             horizontal_alignment::right,
-            horizontal_alignment::none
+            horizontal_alignment::fill,
+            horizontal_alignment::justify,
+            horizontal_alignment::center_continuous,
+            horizontal_alignment::distributed
         };
 
         for (auto alignment : *horizontal_alignments)
@@ -325,7 +336,7 @@ struct value_traits<xlnt::horizontal_alignment>
             }
         }
         
-        return xlnt::detail::default_case(horizontal_alignment::none);
+        default_case(horizontal_alignment::none);
     }
 
     static std::string serialize(xlnt::horizontal_alignment alignment, const serializer &)
@@ -359,11 +370,11 @@ struct value_traits<xlnt::border_side>
                 return side;
             }
         }
-        
-        return border_side::top;
+
+        default_case(xlnt::border_side::top);
     }
 
-    static std::string serialize (xlnt::border_side side, const serializer &)
+    static std::string serialize(xlnt::border_side side, const serializer &)
     {
         return xlnt::detail::to_string(side);
     }
@@ -377,7 +388,7 @@ struct value_traits<xlnt::target_mode>
         return mode_string == "Internal" ? xlnt::target_mode::internal : xlnt::target_mode::external;
     }
 
-    static std::string serialize (xlnt::target_mode mode, const serializer &)
+    static std::string serialize(xlnt::target_mode mode, const serializer &)
     {
         return mode == xlnt::target_mode::internal ? "Internal" : "External";
     }
@@ -391,10 +402,11 @@ struct value_traits<xlnt::pane_state>
         if (string == "frozen") return xlnt::pane_state::frozen;
         else if (string == "frozenSplit") return xlnt::pane_state::frozen_split;
         else if (string == "split") return xlnt::pane_state::split;
-        return xlnt::pane_state::split;
+
+        default_case(xlnt::pane_state::frozen);
     }
 
-    static std::string serialize (xlnt::pane_state state, const serializer &)
+    static std::string serialize(xlnt::pane_state state, const serializer &)
     {
         switch (state)
         {
@@ -402,6 +414,8 @@ struct value_traits<xlnt::pane_state>
         case xlnt::pane_state::frozen_split: return "frozenSplit";
         case xlnt::pane_state::split: return "split";
         }
+
+        default_case("frozen");
     }
 }; // struct value_traits<xlnt::pane_state>
 
@@ -414,10 +428,11 @@ struct value_traits<xlnt::pane_corner>
         else if (string == "bottomRight") return xlnt::pane_corner::bottom_right;
         else if (string == "topLeft") return xlnt::pane_corner::top_left;
         else if (string == "topRight") return xlnt::pane_corner::top_right;
-        return xlnt::pane_corner::top_left;
+
+        default_case(xlnt::pane_corner::top_left);
     }
 
-    static std::string serialize (xlnt::pane_corner corner, const serializer &)
+    static std::string serialize(xlnt::pane_corner corner, const serializer &)
     {
         switch (corner)
         {
@@ -426,6 +441,8 @@ struct value_traits<xlnt::pane_corner>
         case xlnt::pane_corner::top_left: return "topLeft";
         case xlnt::pane_corner::top_right: return "topRight";
         }
+
+        default_case("topLeft");
     }
 }; // struct value_traits<xlnt::pane_corner>
 

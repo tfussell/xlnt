@@ -15,10 +15,9 @@ std::string to_string(font::underline_style style)
     case font::underline_style::single: return "single";
     case font::underline_style::single_accounting: return "singleAccounting";
     case font::underline_style::none: return "none";
-#ifdef WIN32
-    default: throw xlnt::exception("unhandled");
-#endif
     }
+
+    default_case("single");
 }
 
 
@@ -99,11 +98,9 @@ std::string to_string(relationship_type t)
         return "volatile-dependencies";
     case relationship_type::image:
         return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image";
-#ifdef WIN32
-    default:
-        throw xlnt::exception("unhandled");
-#endif
 	}
+
+    default_case("unknown");
 }
 
 std::string to_string(pattern_fill_type fill_type)
@@ -129,10 +126,9 @@ std::string to_string(pattern_fill_type fill_type)
 	case pattern_fill_type::mediumgray: return "mediumgray";
 	case pattern_fill_type::solid: return "solid";
 	case pattern_fill_type::none: return "none";
-#ifdef WIN32
-    default: throw xlnt::exception("unhandled");
-#endif
 	}
+
+    default_case("none");
 }
 
 std::string to_string(gradient_fill_type fill_type)
@@ -158,42 +154,40 @@ std::string to_string(border_style style)
 	case border_style::thick: return "thick";
 	case border_style::thin: return "thin";
 	case border_style::none: return "none";
-#ifdef WIN32
-    default: throw xlnt::exception("unhandled");
-#endif
 	}
+
+    default_case("none");
 }
 
 std::string to_string(vertical_alignment alignment)
 {
 	switch (alignment)
 	{
-	case vertical_alignment::bottom: return "bottom";
-	case vertical_alignment::center: return "center";
-	case vertical_alignment::justify: return "justify";
 	case vertical_alignment::top: return "top";
-	case vertical_alignment::none: return "none";
-#ifdef WIN32
-    default: throw xlnt::exception("unhandled");
-#endif
+	case vertical_alignment::center: return "center";
+	case vertical_alignment::bottom: return "bottom";
+	case vertical_alignment::justify: return "justify";
+	case vertical_alignment::distributed: return "distributed";
 	}
+
+    default_case("top");
 }
 
 std::string to_string(horizontal_alignment alignment)
 {
 	switch (alignment)
 	{
-	case horizontal_alignment::center: return "center";
-	case horizontal_alignment::center_continuous: return "center-continous";
 	case horizontal_alignment::general: return "general";
-	case horizontal_alignment::justify: return "justify";
 	case horizontal_alignment::left: return "left";
+	case horizontal_alignment::center: return "center";
 	case horizontal_alignment::right: return "right";
-	case horizontal_alignment::none: return "none";
-#ifdef WIN32
-    default: throw xlnt::exception("unhandled");
-#endif
+	case horizontal_alignment::fill: return "fill";
+	case horizontal_alignment::justify: return "justify";
+	case horizontal_alignment::center_continuous: return "centerContinuous";
+	case horizontal_alignment::distributed: return "distributed";
 	}
+
+    default_case("general");
 }
 
 std::string to_string(border_side side)
@@ -207,10 +201,9 @@ std::string to_string(border_side side)
 	case border_side::horizontal: return "horizontal";
 	case border_side::vertical: return "vertical";
 	case border_side::diagonal: return "diagonal";
-#ifdef WIN32
-    default: throw xlnt::exception("unhandled");
-#endif
 	}
+
+    default_case("top");
 }
 
 } // namespace detail

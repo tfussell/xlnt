@@ -33,13 +33,14 @@ namespace xlnt {
 /// </summary>
 enum class XLNT_API horizontal_alignment
 {
-    none,
     general,
     left,
-    right,
     center,
+    right,
+    fill,
+    justify,
     center_continuous,
-    justify
+    distributed
 };
 
 } // namespace xlnt

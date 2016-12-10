@@ -54,7 +54,7 @@ enum class XLNT_API relationship_type
 {
     unknown,
 
-    // Package
+    // Package parts
     core_properties,
     extended_properties,
     custom_properties,
@@ -62,7 +62,7 @@ enum class XLNT_API relationship_type
     thumbnail,
     printer_settings,
 
-    // SpreadsheetML
+    // SpreadsheetML parts
     calculation_chain,
     chartsheet,
     comments,
@@ -90,6 +90,7 @@ enum class XLNT_API relationship_type
     volatile_dependencies,
     worksheet,
 
+    // Worksheet parts
     hyperlink,
     image
 };
