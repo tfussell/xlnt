@@ -100,6 +100,23 @@ bool contains(const std::vector<T> &container, const T &element)
 
 } // namespace
 
+/*
+class parsing_context
+{
+public:
+    parsing_context(xlnt::detail::ZipFileReader &archive, const std::string &filename)
+        : parser_(stream_, filename)
+    {
+    }
+
+    xml::parser &parser();
+
+private:
+    std::istream stream_;
+    xml::parser parser_;
+};
+*/
+
 namespace xlnt {
 namespace detail {
 
@@ -421,7 +438,7 @@ void xlsx_consumer::read_properties(const path &part, const xml::qname &root)
     expect_end_element(root);
 }
 
-void xlsx_consumer::read_office_document(const std::string &content_type)
+void xlsx_consumer::read_office_document(const std::string &content_type) // CT_Workbook
 {
     static const auto &xmlns = constants::namespace_("workbook");
     static const auto &xmlns_mc = constants::namespace_("mc");
@@ -442,7 +459,7 @@ void xlsx_consumer::read_office_document(const std::string &content_type)
     {
         auto current_workbook_element = expect_start_element(xml::content::complex);
 
-        if (current_workbook_element == xml::qname(xmlns, "fileVersion"))
+        if (current_workbook_element == xml::qname(xmlns, "fileVersion")) // CT_FileVersion 0-1
         {
             detail::workbook_impl::file_version_t file_version;
 
@@ -470,11 +487,26 @@ void xlsx_consumer::read_office_document(const std::string &content_type)
 
             target_.d_->file_version_ = file_version;
         }
-        else if (current_workbook_element == xml::qname(xmlns_mc, "AlternateContent"))
+        else if (current_workbook_element == xml::qname(xmlns, "fileSharing")) // CT_FileSharing 0-1
         {
-            skip_remaining_content(xml::qname(xmlns_mc, "AlternateContent"));
+            skip_remaining_content(current_workbook_element);
         }
-        else if (current_workbook_element == xml::qname(xmlns, "bookViews"))
+        else if (current_workbook_element == xml::qname(xmlns, "workbookPr")) // CT_WorkbookPr 0-1
+        {
+            if (parser().attribute_present("date1904"))
+            {
+                target_.base_date(is_true(parser().attribute("date1904"))
+                    ? calendar::mac_1904 : calendar::windows_1900);
+            }
+
+            skip_attributes({"codeName", "defaultThemeVersion",
+                "backupFile", "showObjects", "filterPrivacy", "dateCompatibility"});
+        }
+        else if (current_workbook_element == xml::qname(xmlns, "workbookProtection")) // CT_WorkbookProtection 0-1
+        {
+            skip_remaining_content(current_workbook_element);
+        }
+        else if (current_workbook_element == xml::qname(xmlns, "bookViews")) // CT_BookViews 0-1
         {
             while (in_element(xml::qname(xmlns, "bookViews")))
             {
@@ -501,18 +533,7 @@ void xlsx_consumer::read_office_document(const std::string &content_type)
                 target_.view(view);
             }
         }
-        else if (current_workbook_element == xml::qname(xmlns, "workbookPr"))
-        {
-            if (parser().attribute_present("date1904"))
-            {
-                target_.base_date(is_true(parser().attribute("date1904"))
-                    ? calendar::mac_1904 : calendar::windows_1900);
-            }
-
-            skip_attributes({"codeName", "defaultThemeVersion",
-                "backupFile", "showObjects", "filterPrivacy", "dateCompatibility"});
-        }
-        else if (current_workbook_element == xml::qname(xmlns, "sheets"))
+        else if (current_workbook_element == xml::qname(xmlns, "sheets")) // CT_Sheets 1
         {
             std::size_t index = 0;
 
@@ -530,17 +551,61 @@ void xlsx_consumer::read_office_document(const std::string &content_type)
                 expect_end_element(xml::qname(xmlns_s, "sheet"));
             }
         }
-        else if (current_workbook_element == xml::qname(xmlns, "calcPr"))
+        else if (current_workbook_element == xml::qname(xmlns, "functionGroups")) // CT_FunctionGroups 0-1
         {
             skip_remaining_content(current_workbook_element);
         }
-        else if (current_workbook_element == xml::qname(xmlns, "extLst"))
+        else if (current_workbook_element == xml::qname(xmlns, "externalReferences")) // CT_ExternalReferences 0-1
         {
             skip_remaining_content(current_workbook_element);
         }
-        else if (current_workbook_element == xml::qname(xmlns, "workbookProtection"))
+        else if (current_workbook_element == xml::qname(xmlns, "definedNames")) // CT_DefinedNames 0-1
         {
             skip_remaining_content(current_workbook_element);
+        }
+        else if (current_workbook_element == xml::qname(xmlns, "calcPr")) // CT_CalcPr 0-1
+        {
+            skip_remaining_content(current_workbook_element);
+        }
+        else if (current_workbook_element == xml::qname(xmlns, "oleSize")) // CT_OleSize 0-1
+        {
+            skip_remaining_content(current_workbook_element);
+        }
+        else if (current_workbook_element == xml::qname(xmlns, "customWorkbookViews")) // CT_CustomWorkbookViews 0-1
+        {
+            skip_remaining_content(current_workbook_element);
+        }
+        else if (current_workbook_element == xml::qname(xmlns, "pivotCaches")) // CT_PivotCaches 0-1
+        {
+            skip_remaining_content(current_workbook_element);
+        }
+        else if (current_workbook_element == xml::qname(xmlns, "smartTagPr")) // CT_SmartTagPr 0-1
+        {
+            skip_remaining_content(current_workbook_element);
+        }
+        else if (current_workbook_element == xml::qname(xmlns, "smartTagTypes")) // CT_SmartTagTypes 0-1
+        {
+            skip_remaining_content(current_workbook_element);
+        }
+        else if (current_workbook_element == xml::qname(xmlns, "webPublishing")) // CT_WebPublishing 0-1
+        {
+            skip_remaining_content(current_workbook_element);
+        }
+        else if (current_workbook_element == xml::qname(xmlns, "fileRecoveryPr")) // CT_FileRecoveryPr 0+
+        {
+            skip_remaining_content(current_workbook_element);
+        }
+        else if (current_workbook_element == xml::qname(xmlns, "webPublishObjects")) // CT_WebPublishObjects 0-1
+        {
+            skip_remaining_content(current_workbook_element);
+        }
+        else if (current_workbook_element == xml::qname(xmlns, "extLst")) // CT_ExtensionList 0-1
+        {
+            skip_remaining_content(current_workbook_element);
+        }
+        else if (current_workbook_element == xml::qname(xmlns_mc, "AlternateContent"))
+        {
+            skip_remaining_content(xml::qname(xmlns_mc, "AlternateContent"));
         }
         else
         {
