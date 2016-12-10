@@ -1725,6 +1725,8 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
                 auto hyperlink_rel = std::find_if(hyperlinks.begin(), hyperlinks.end(),
                     [&](const relationship &r) { return r.id() == hyperlink_rel_id; });
 
+                skip_attributes({"location", "tooltip", "display"});
+
                 if (hyperlink_rel != hyperlinks.end())
                 {
                     cell.hyperlink(hyperlink_rel->target().path().string());
