@@ -1592,7 +1592,8 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
                                 has_shared_formula = parser().attribute("t") == "shared";
                             }
 
-                            skip_attributes({"aca", "ref", "dt2D", "dtr", "del1", "del2", "r1", "r2", "ca", "si", "bx"});
+                            skip_attributes({"aca", "ref", "dt2D", "dtr", "del1", "del2",
+                                "r1", "r2", "ca", "si", "bx"});
 
                             formula_value_string = read_text();
                         }
