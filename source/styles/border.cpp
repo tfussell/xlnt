@@ -25,6 +25,14 @@
 #include <xlnt/utils/exceptions.hpp>
 #include <xlnt/styles/border.hpp>
 
+#define EXCEPT_ON_UNHANDLED_SWITCH_CASE
+
+#ifdef EXCEPT_ON_UNHANDLED_SWITCH_CASE
+#define default_case(default_value) throw xlnt::exception("unhandled case");
+#else
+#define default_case(default_value) return default_value;
+#endif
+
 namespace xlnt {
 
 optional<xlnt::color> border::border_property::color() const
@@ -112,10 +120,9 @@ optional<border::border_property> border::side(border_side s) const
 	case border_side::vertical: return vertical_;
 	case border_side::horizontal: return horizontal_;
 	case border_side::diagonal: return diagonal_;
-#ifdef WIN32
-    default: throw xlnt::exception("unhandled");
-#endif
 	}
+
+    default_case(start_);
 }
 
 border &border::side(border_side s, const border_property &prop)

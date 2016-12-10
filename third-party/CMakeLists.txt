@@ -53,6 +53,8 @@ set(BOTAN
 
 if(MSVC)
     set_source_files_properties(${BOTAN} PROPERTIES COMPILE_FLAGS "/wd\"4244\" /wd\"4267\"")
+else()
+    set_source_files_properties(${BOTAN} PROPERTIES COMPILE_FLAGS "-Wno-deprecated-declarations")
 endif()
 
 if (CMAKE_SIZEOF_VOID_P EQUAL 8)

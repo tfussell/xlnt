@@ -825,11 +825,9 @@ std::string cell::to_string() const
         return nf.format(value<std::string>());
     case cell::type::boolean:
         return value<long double>() == 0.L ? "FALSE" : "TRUE";
-#ifdef WIN32
-    default:
-        throw xlnt::exception("unhandled");
-#endif
     }
+
+    return "";
 }
 
 bool cell::has_format() const

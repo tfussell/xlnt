@@ -1551,26 +1551,10 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
                     ws.row_properties(row_index).height = parser().attribute<long double>("ht");
                 }
 
-                skip_attribute("customHeight");
-
-                auto min_column = full_range.top_left().column_index();
-                auto max_column = full_range.bottom_right().column_index();
-
-                if (parser().attribute_present("spans"))
-                {
-                    std::string span_string = parser().attribute("spans");
-                    auto colon_index = span_string.find(':');
-
-                    if (colon_index != std::string::npos)
-                    {
-                        min_column = static_cast<column_t::index_t>(std::stoll(span_string.substr(0, colon_index)));
-                        max_column = static_cast<column_t::index_t>(std::stoll(span_string.substr(colon_index + 1)));
-                    }
-                }
-
                 skip_attributes({xml::qname(xmlns_x14ac, "dyDescent")});
                 skip_attributes({"customFormat", "s", "customFont", "hidden",
-                    "outlineLevel", "collapsed", "thickTop", "thickBot", "ph"});
+                    "outlineLevel", "collapsed", "thickTop", "thickBot", "ph",
+                    "spans", "customHeight"});
 
                 while (in_element(xml::qname(xmlns, "row")))
                 {
