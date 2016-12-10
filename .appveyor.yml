@@ -12,7 +12,7 @@ environment:
 init: []
 install: []
 before_build:
-- git submodule update --init --recursive --remote
+- git submodule update --init
 - cmake -H. -Bbuild -G"Visual Studio 14 2015 Win64" -DSTATIC=%STATIC% -DSAMPLES=ON -DBENCHMARKS=ON
 
 build:
