@@ -19,7 +19,7 @@
 [submodule "third-party/botan"]
     path = third-party/botan
     url = https://github.com/randombit/botan
-    branch = 7c9d431d11fe2f3e7e43f2f8585e9be4495135c5
+    branch = master
     ignore = dirty
 
 [submodule "third-party/zlib"]
