@@ -39,9 +39,10 @@ std::string text_run::string() const
 	return string_;
 }
 
-void text_run::string(const std::string &string)
+text_run &text_run::string(const std::string &string)
 {
 	string_ = string;
+    return *this;
 }
 
 bool text_run::has_formatting() const
@@ -59,7 +60,7 @@ std::size_t text_run::size() const
     return font_.get().size();
 }
 
-void text_run::size(std::size_t size)
+text_run &text_run::size(std::size_t size)
 {
     if (!font_.is_set())
     {
@@ -67,6 +68,8 @@ void text_run::size(std::size_t size)
     }
 
     font_.get().size(size);
+
+    return *this;
 }
 
 bool text_run::has_color() const
@@ -79,7 +82,7 @@ color text_run::color() const
     return font_.get().color();
 }
 
-void text_run::color(const class color &new_color)
+text_run &text_run::color(const class color &new_color)
 {
     if (!font_.is_set())
     {
@@ -87,6 +90,8 @@ void text_run::color(const class color &new_color)
     }
 
     font_.get().color(new_color);
+
+    return *this;
 }
 
 bool text_run::has_font() const
@@ -99,7 +104,7 @@ std::string text_run::font() const
     return font_.get().name();
 }
 
-void text_run::font(const std::string &font)
+text_run &text_run::font(const std::string &font)
 {
     if (!font_.is_set())
     {
@@ -107,6 +112,8 @@ void text_run::font(const std::string &font)
     }
 
     font_.get().name(font);
+
+    return *this;
 }
 
 bool text_run::has_family() const
@@ -119,7 +126,7 @@ std::size_t text_run::family() const
     return font_.get().family();
 }
 
-void text_run::family(std::size_t family)
+text_run &text_run::family(std::size_t family)
 {
     if (!font_.is_set())
     {
@@ -127,6 +134,8 @@ void text_run::family(std::size_t family)
     }
 
     font_.get().family(family);
+
+    return *this;
 }
 
 bool text_run::has_scheme() const
@@ -139,7 +148,7 @@ std::string text_run::scheme() const
     return font_.get().scheme();
 }
 
-void text_run::scheme(const std::string &scheme)
+text_run &text_run::scheme(const std::string &scheme)
 {
     if (!font_.is_set())
     {
@@ -147,6 +156,8 @@ void text_run::scheme(const std::string &scheme)
     }
 
     font_.get().scheme(scheme);
+
+    return *this;
 }
 
 bool text_run::bold() const
@@ -154,7 +165,7 @@ bool text_run::bold() const
     return font_.is_set() && font_.get().bold();
 }
 
-void text_run::bold(bool bold)
+text_run &text_run::bold(bool bold)
 {
     if (!font_.is_set())
     {
@@ -162,9 +173,11 @@ void text_run::bold(bool bold)
     }
 
     font_.get().bold(bold);
+
+    return *this;
 }
 
-void text_run::underline(font::underline_style style)
+text_run &text_run::underline(font::underline_style style)
 {
     if (!font_.is_set())
     {
@@ -172,6 +185,8 @@ void text_run::underline(font::underline_style style)
     }
 
     font_.get().underline(style);
+
+    return *this;
 }
 
 } // namespace xlnt

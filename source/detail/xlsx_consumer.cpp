@@ -1378,12 +1378,47 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
 
         if (current_worksheet_element == xml::qname(xmlns, "sheetPr")) // CT_SheetPr 0-1
         {
-            skip_remaining_content(current_worksheet_element);
+            while (in_element(current_worksheet_element))
+            {
+                auto sheet_pr_child_element = expect_start_element(xml::content::simple);
+
+                if (sheet_pr_child_element == xml::qname(xmlns, "tabColor")) // CT_Color 0-1
+                {
+                    read_color();
+                }
+                else if (sheet_pr_child_element == xml::qname(xmlns, "outlinePr")) // CT_OutlinePr 0-1
+                {
+                    skip_attribute("applyStyles"); // optional, boolean, false
+                    skip_attribute("summaryBelow"); // optional, boolean, true
+                    skip_attribute("summaryRight"); // optional, boolean, true
+                    skip_attribute("showOutlineSymbols"); // optional, boolean, true
+                }
+                else if (sheet_pr_child_element == xml::qname(xmlns, "pageSetUpPr")) // CT_PageSetUpPr 0-1
+                {
+                    skip_attribute("autoPageBreaks"); // optional, boolean, true
+                    skip_attribute("fitToPage"); // optional, boolean, false
+                }
+                else
+                {
+                    unexpected_element(sheet_pr_child_element);
+                }
+
+                expect_end_element(sheet_pr_child_element);
+            }
+
+            skip_attribute("syncHorizontal"); // optional, boolean, false
+            skip_attribute("syncVertical"); // optional, boolean, false
+            skip_attribute("syncRef"); // optional, ST_Ref, false
+            skip_attribute("transitionEvaluation"); // optional, boolean, false
+            skip_attribute("transitionEntry"); // optional, boolean, false
+            skip_attribute("published"); // optional, boolean, true
+            skip_attribute("codeName"); // optional, string
+            skip_attribute("filterMode"); // optional, boolean, false
+            skip_attribute("enableFormatConditionsCalculation"); // optional, boolean, true
         }
         else if (current_worksheet_element == xml::qname(xmlns, "dimension")) // CT_SheetDimension 0-1
         {
             full_range = xlnt::range_reference(parser().attribute("ref"));
-            ws.d_->has_dimension_ = true;
         }
         else if (current_worksheet_element == xml::qname(xmlns, "sheetViews")) // CT_SheetViews 0-1
         {
@@ -1471,7 +1506,6 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
         }
         else if (current_worksheet_element == xml::qname(xmlns, "sheetFormatPr")) // CT_SheetFormatPr 0-1
         {
-            ws.d_->has_format_properties_ = true;
             skip_remaining_content(current_worksheet_element);
         }
         else if (current_worksheet_element == xml::qname(xmlns, "cols")) // CT_Cols 0+

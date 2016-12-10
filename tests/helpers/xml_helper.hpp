@@ -1,8 +1,9 @@
 #pragma once
 
 #include <sstream>
-#include <pugixml.hpp>
 
+#include <detail/include_libstudxml.hpp>
+#include <detail/vector_streambuf.hpp>
 #include <detail/zip.hpp>
 #include <helpers/path_helper.hpp>
 #include <xlnt/packaging/manifest.hpp>
@@ -34,165 +35,6 @@ public:
         }
     };
 
-    static bool compare_content_types(const pugi::xml_document &left, const pugi::xml_document &right)
-    {
-        auto left_types_node = left.child("Types");
-        auto right_types_node = right.child("Types");
-        
-        if (!left_types_node || !right_types_node)
-        {
-            return false;
-        }
-        
-        auto left_children = left_types_node.children();
-        auto left_length = std::distance(left_children.begin(), left_children.end());
-
-        auto right_children = right_types_node.children();
-        auto right_length = std::distance(right_children.begin(), right_children.end());
-        
-        if (left_length != right_length)
-        {
-            return false;
-        }
-
-        for (const auto left_child : left_children)
-        {
-            std::string associated_attribute_name;
-            
-            if (std::string(left_child.name()) == "Default")
-            {
-                associated_attribute_name = "Extension";
-            }
-            else if (std::string(left_child.name()) == "Override")
-            {
-                associated_attribute_name = "PartName";
-            }
-            else
-            {
-                throw std::runtime_error("invalid xml");
-            }
-            
-            std::string left_attribute_value(left_child.attribute(associated_attribute_name.c_str()).value());
-            pugi::xml_node matching_right_child;
-            
-            for (const auto right_child : right_types_node.children(left_child.name()))
-            {
-                std::string right_attribute_value(right_child.attribute(associated_attribute_name.c_str()).value());
-                
-                if (left_attribute_value == right_attribute_value)
-                {
-                    matching_right_child = right_child;
-                    break;
-                }
-            }
-            
-            if (!matching_right_child
-                || !left_child.attribute("ContentType")
-                || !matching_right_child.attribute("ContentType"))
-            {
-                return false;
-            }
-            
-            std::string left_child_type(left_child.attribute("ContentType").value());
-            std::string right_child_type(matching_right_child.attribute("ContentType").value());
-
-            if (left_child_type != right_child_type)
-            {
-                return false;
-            }
-        }
-        
-        return true;
-    }
-    
-    static bool compare_relationships_xml(const pugi::xml_document &left, const pugi::xml_document &right)
-    {
-        auto left_relationships_node = left.child("Relationships");
-        auto right_relationships_node = right.child("Relationships");
-        
-        if (!left_relationships_node || !right_relationships_node)
-        {
-            return false;
-        }
-        
-        auto left_children = left_relationships_node.children();
-        auto left_length = std::distance(left_children.begin(), left_children.end());
-
-        auto right_children = right_relationships_node.children();
-        auto right_length = std::distance(right_children.begin(), right_children.end());
-        
-        if (left_length != right_length)
-        {
-            return false;
-        }
-
-        for (const auto left_child : left_children)
-        {
-            std::string left_rel_id(left_child.attribute("Id").value());
-            pugi::xml_node matching_right_child;
-            
-            for (const auto right_child : right_children)
-            {
-                std::string right_rel_id(right_child.attribute("Id").value());
-                
-                if (left_rel_id == right_rel_id)
-                {
-                    matching_right_child = right_child;
-                    break;
-                }
-            }
-            
-            if (!matching_right_child
-                || !left_child.attribute("Type")
-                || !left_child.attribute("Target")
-                || !matching_right_child.attribute("Type")
-                || !matching_right_child.attribute("Target"))
-            {
-                return false;
-            }
-            
-            if ((std::string(left_child.attribute("Type").value())
-                    != std::string(left_child.attribute("Type").value()))
-                || (std::string(left_child.attribute("Target").value())
-                    != std::string(left_child.attribute("Target").value())))
-            {
-                return false;
-            }
-        }
-        
-        return true;
-    }
-    
-    static bool compare_theme_xml(const pugi::xml_document &left, const pugi::xml_document &right)
-    {
-        return compare_xml_exact(left, right);
-    }
-    
-    static bool compare_styles_xml(const pugi::xml_document &left, const pugi::xml_document &right)
-    {
-        return compare_xml_exact(left, right);
-    }
-    
-    static bool compare_workbook_xml(const pugi::xml_document &left, const pugi::xml_document &right)
-    {
-        return compare_xml_exact(left, right);
-    }
-    
-    static bool compare_worksheet_xml(const pugi::xml_document &left, const pugi::xml_document &right)
-    {
-        return compare_xml_exact(left, right);
-    }
-    
-    static bool compare_core_properties_xml(const pugi::xml_document &left, const pugi::xml_document &right)
-    {
-        return compare_xml_exact(left, right);
-    }
-    
-    static bool compare_extended_properties_xml(const pugi::xml_document &left, const pugi::xml_document &right)
-    {
-        return compare_xml_exact(left, right);
-    }
-    
     static bool compare_files(const std::string &left,
 		const std::string &right, const std::string &content_type)
     {
@@ -204,71 +46,124 @@ public:
         
         if (is_xml)
         {
-            pugi::xml_document left_document;
-            left_document.load(left.c_str());
-
-            pugi::xml_document right_document;
-            right_document.load(right.c_str());
-            
-            if (content_type == "[Content_Types].xml")
-            {
-                return compare_content_types(left_document, right_document);
-            }
-            else if (content_type == "application/vnd.openxmlformats-package.relationships+xml")
-            {
-                return compare_relationships_xml(left_document, right_document);
-            }
-            else if (content_type == "application/vnd.openxmlformats-officedocument.theme+xml")
-            {
-                return compare_theme_xml(left_document, right_document);
-            }
-            else if (content_type == "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml")
-            {
-                return compare_styles_xml(left_document, right_document);
-            }
-            else if (content_type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml")
-            {
-                return compare_workbook_xml(left_document, right_document);
-            }
-            else if (content_type == "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml")
-            {
-                return compare_worksheet_xml(left_document, right_document);
-            }
-            else if (content_type == "application/vnd.openxmlformats-package.core-properties+xml")
-            {
-                return compare_core_properties_xml(left_document, right_document);
-            }
-            else if (content_type == "application/vnd.openxmlformats-officedocument.extended-properties+xml")
-            {
-                return compare_extended_properties_xml(left_document, right_document);
-            }
-            
-            return compare_xml_exact(left_document, right_document);
+            return compare_xml_exact(left, right);
         }
         
         return left == right;
     }
 
-    static bool compare_xml_exact(const pugi::xml_document &left, const pugi::xml_document &right)
+    static bool compare_xml_exact(const std::string &left, const std::string &right, bool suppress_debug_info = false)
     {
-        auto result = compare_xml_nodes(left, right);
+        xml::parser left_parser(left.data(), left.size(), "left");
+        xml::parser right_parser(right.data(), right.size(), "right");
 
-		if (!result)
+        bool difference = false;
+        auto right_iter = right_parser.begin();
+
+        auto is_whitespace = [](const std::string &v)
+        {
+            return v.find_first_not_of("\n ") == std::string::npos;
+        };
+
+        for (auto left_event : left_parser)
+        {
+            if (left_event == xml::parser::event_type::characters
+                && is_whitespace(left_parser.value())) continue;
+
+            if (right_iter == right_parser.end())
+            {
+                difference = true;
+                break;
+            }
+
+            auto right_event = *right_iter;
+
+            while (right_iter != right_parser.end()
+                && right_event == xml::parser::event_type::characters
+                && is_whitespace(right_parser.value()))
+            {
+                ++right_iter;
+                right_event = *right_iter;
+            }
+
+            if (left_event != right_event)
+            {
+                difference = true;
+                break;
+            }
+
+            if (left_event == xml::parser::event_type::start_element)
+            {
+                auto left_attr_map = left_parser.attribute_map();
+                auto right_attr_map = right_parser.attribute_map();
+
+                for (auto attr : left_attr_map)
+                {
+                    if (right_attr_map.find(attr.first) == right_attr_map.end())
+                    {
+                        difference = true;
+                        break;
+                    }
+
+                    if (attr.second.value != right_attr_map.at(attr.first).value)
+                    {
+                        difference = true;
+                        break;
+                    }
+                }
+
+                for (auto attr : right_attr_map)
+                {
+                    if (left_attr_map.find(attr.first) == left_attr_map.end())
+                    {
+                        difference = true;
+                        break;
+                    }
+
+                    if (attr.second.value != left_attr_map.at(attr.first).value)
+                    {
+                        difference = true;
+                        break;
+                    }
+                }
+
+                if (difference)
+                {
+                    break;
+                }
+                
+                if (left_parser.qname() != right_parser.qname())
+                {
+                    difference = true;
+                    break;
+                }
+            }
+            else if (left_event == xml::parser::event_type::characters)
+            {
+                if (left_parser.value() != right_parser.value())
+                {
+                    difference = true;
+                    break;
+                }
+            }
+
+            ++right_iter;
+        }
+
+		if (difference && !suppress_debug_info)
 		{
 			std::cout << "documents don't match" << std::endl;
 
 			std::cout << "left:" << std::endl;
-			left.save(std::cout);
+            std::cout << left;
 			std::cout << std::endl;
 
 			std::cout << "right:" << std::endl;
-			right.save(std::cout);
+            std::cout << right;
 			std::cout << std::endl;
-
-			return false;
 		}
 
-		return true;
+		return !difference;
     }
 
 	static bool string_matches_workbook_part(const std::string &expected,
@@ -317,21 +212,6 @@ public:
 		std::string contents(member_data.begin(), member_data.end());
 		return compare_files(file.read_contents(), contents, content_type);
 	}
-
-	static bool file_matches_document(const xlnt::path &expected, 
-		const pugi::xml_document &observed, const std::string &content_type)
-	{
-		return string_matches_document(expected.read_contents(), observed, content_type);
-	}
-
-    static bool string_matches_document(const std::string &string,
-		const pugi::xml_document &document, const std::string &content_type)
-    {        
-        std::ostringstream ss;
-        document.save(ss);
-
-        return compare_files(string, ss.str(), content_type);
-    }
 
 	static bool xlsx_archives_match(const std::vector<std::uint8_t> &left, const std::vector<std::uint8_t> &right)
 	{
@@ -432,112 +312,4 @@ public:
 
 		return match;
 	}
-    
-    static comparison_result compare_xml_nodes(const pugi::xml_node &left, const pugi::xml_node &right)
-    {
-        std::string left_name(left.name());
-        std::string right_name(right.name());
-        
-        if(left_name != right_name)
-        {
-            return {difference_type::names_differ, left_name, right_name};
-        }
-        
-        for(const auto &left_attribute : left.attributes())
-        {
-            std::string attribute_name(left_attribute.name());
-            auto right_attribute = right.attribute(attribute_name.c_str());
-            
-            // pugixml doesn't handle namespaces correctly
-            bool special_exception = left_name == "mc:AlternateContent"
-                && attribute_name == "xmlns:mc";
-
-            if(!right_attribute && !special_exception)
-            {
-                return {difference_type::missing_attribute, attribute_name, "((empty))"};
-            }
-            
-            std::string left_attribute_value(left_attribute.value());
-            std::string right_attribute_value(right_attribute.value());
-            
-            if(left_attribute_value != right_attribute_value && !special_exception)
-            {
-                return {difference_type::attribute_values_differ, left_attribute_value, right_attribute_value};
-            }
-        }
-
-        for(const auto &right_attribute : right.attributes())
-        {
-            std::string attribute_name(right_attribute.name());
-            auto left_attribute = left.attribute(attribute_name.c_str());
-
-            // pugixml doesn't handle namespaces correctly
-            bool special_exception = left_name == "mc:AlternateContent"
-                && attribute_name == "xmlns:mc";
-
-            if(!left_attribute && !special_exception)
-            {
-                return {difference_type::missing_attribute, "((empty))", attribute_name};
-            }
-            
-            std::string left_attribute_value(left_attribute.value());
-            std::string right_attribute_value(right_attribute.value());
-            
-            if(left_attribute_value != right_attribute_value && !special_exception)
-            {
-                return {difference_type::attribute_values_differ, left_attribute_value, right_attribute_value};
-            }
-        }
-        
-        if(left.text())
-        {
-            std::string left_text(left.text().get());
-            
-            if(!right.text())
-            {
-                return {difference_type::missing_text, left_text, "((empty))"};
-            }
-            
-            std::string right_text(right.text().get());
-            
-            if(left_text != right_text)
-            {
-                return {difference_type::text_values_differ, left_text, right_text};
-            }
-        }
-        else if(right.text())
-        {
-            return {difference_type::text_values_differ, "((empty))", right.text().get()};
-        }
-        
-        auto right_children = right.children();
-        auto right_child_iter = right_children.begin();
-        
-        for(auto left_child : left.children())
-        {
-            std::string left_child_name(left_child.name());
-            
-            if(right_child_iter == right_children.end())
-            {
-                return {difference_type::child_order_differs, left_child_name, "((end))"};
-            }
-            
-            auto right_child = *right_child_iter;
-            right_child_iter++;
-            
-            auto child_comparison_result = compare_xml_nodes(left_child, right_child);
-            
-            if(!child_comparison_result)
-            {
-                return child_comparison_result;
-            }
-        }
-        
-        if(right_child_iter != right_children.end())
-        {
-            return {difference_type::child_order_differs, "((end))", right_child_iter->name()};
-        }
-        
-        return {difference_type::equivalent, "", ""};
-    }
 };

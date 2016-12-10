@@ -59,6 +59,7 @@
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/workbook/workbook_view.hpp>
 #include <xlnt/workbook/worksheet_iterator.hpp>
+#include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
@@ -200,8 +201,6 @@ workbook workbook::empty_excel()
     margins.header(0.3);
     margins.footer(0.3);
 	ws.page_margins(margins);
-	ws.d_->has_dimension_ = true;
-	ws.d_->has_format_properties_ = true;
 
     sheet_view view;
     ws.add_view(view);
@@ -282,12 +281,10 @@ workbook workbook::empty_libre_office()
 	wb.d_->sheet_title_rel_id_map_[title] = ws_rel;
 
 	auto ws = wb.sheet_by_index(0);
-	ws.d_->has_format_properties_ = true;
     
     sheet_view view;
     ws.add_view(view);
 
-	ws.d_->has_dimension_ = true;
 	page_margins margins;
 	margins.left(0.7875);
 	margins.right(0.7875);
@@ -297,8 +294,11 @@ workbook workbook::empty_libre_office()
 	margins.footer(0.7875);
 	ws.page_margins(margins);
 	ws.page_setup(page_setup());
-	ws.header_footer().center_header().font_name("&C&\"Times New Roman\"&12&A");
-	ws.header_footer().center_footer().font_name("&C&\"Times New Roman\"&12Page &B");
+	ws.header_footer(xlnt::header_footer()
+        .header(header_footer::location::center,
+            formatted_text(text_run("&A").font("Times New Roman").size(12)))
+        .footer(header_footer::location::center,
+            formatted_text(text_run("Page &B").font("Times New Roman").size(12))));
 	ws.add_column_properties(1, column_properties());
 
     wb.d_->stylesheet_ = detail::stylesheet();
@@ -769,6 +769,11 @@ void workbook::load(std::istream &stream)
 
 void workbook::load(const std::vector<std::uint8_t> &data)
 {
+    if (data.size() < 22) // the shortest ZIP file is 22 bytes
+    {
+        throw xlnt::exception("file is empty or malformed");
+    }
+
     xlnt::detail::vector_istreambuf data_buffer(data);
     std::istream data_stream(&data_buffer);
     load(data_stream);
@@ -783,6 +788,12 @@ void workbook::load(const path &filename)
 {
 	std::ifstream file_stream;
     open_stream(file_stream, filename.string());
+
+    if (!file_stream.good())
+    {
+        throw xlnt::exception("file not found " + filename.string());
+    }
+
     load(file_stream);
 }
 
@@ -795,11 +806,22 @@ void workbook::load(const path &filename, const std::string &password)
 {
 	std::ifstream file_stream;
     open_stream(file_stream, filename.string());
+
+    if (!file_stream.good())
+    {
+        throw xlnt::exception("file not found " + filename.string());
+    }
+
 	return load(file_stream, password);
 }
 
 void workbook::load(const std::vector<std::uint8_t> &data, const std::string &password)
 {
+    if (data.size() < 22) // the shortest ZIP file is 22 bytes
+    {
+        throw xlnt::exception("file is empty or malformed");
+    }
+
     xlnt::detail::vector_istreambuf data_buffer(data);
     std::istream data_stream(&data_buffer);
     load(data_stream, password);

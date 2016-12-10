@@ -314,16 +314,7 @@ public:
         TS_ASSERT(!cell.is_date());
         TS_ASSERT(cell.number_format().format_string() == "[hh]:mm:ss");
     }
-    
-    void test_repr()
-    {
-        xlnt::workbook wb;
-        auto ws = wb.active_sheet();
-        auto cell = ws.cell(xlnt::cell_reference(1, 1));
-        
-        TS_ASSERT(cell.to_repr() == "<Cell Sheet1.A1>");
-    }
-    
+
     void test_cell_offset()
     {
         xlnt::workbook wb;

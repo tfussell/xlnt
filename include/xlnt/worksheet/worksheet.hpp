@@ -33,7 +33,6 @@
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/cell/index_types.hpp>
 #include <xlnt/packaging/relationship.hpp>
-#include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/page_margins.hpp>
 #include <xlnt/worksheet/page_setup.hpp>
 #include <xlnt/worksheet/sheet_view.hpp>
@@ -46,6 +45,8 @@ class cell_vector;
 class column_properties;
 class comment;
 class const_range_iterator;
+class footer;
+class header;
 class range;
 class range_iterator;
 class range_reference;
@@ -100,11 +101,6 @@ public:
     ///
     /// </summary>
     worksheet(const worksheet &rhs);
-
-    /// <summary>
-    ///
-    /// </summary>
-    std::string to_string() const;
 
     /// <summary>
     ///
@@ -360,11 +356,6 @@ public:
     /// </summary>
     range_reference calculate_dimension() const;
 
-    /// <summary>
-    ///
-    /// </summary>
-    bool has_dimension() const;
-
     // cell merge
 
     /// <summary>
@@ -538,11 +529,6 @@ public:
     /// </summary>
     void page_margins(const class page_margins &margins);
 
-    /// <summary>
-    ///
-    /// </summary>
-    bool has_format_properties() const;
-
     // auto filter
 
     /// <summary>
@@ -575,23 +561,6 @@ public:
     /// </summary>
     bool has_auto_filter() const;
 
-    // comments
-
-    /// <summary>
-    ///
-    /// </summary>
-    void increment_comments();
-
-    /// <summary>
-    ///
-    /// </summary>
-    void decrement_comments();
-
-    /// <summary>
-    ///
-    /// </summary>
-    std::size_t comment_count() const;
-
     /// <summary>
     ///
     /// </summary>
@@ -600,12 +569,17 @@ public:
     /// <summary>
     ///
     /// </summary>
-    xlnt::header_footer &header_footer();
+    bool has_header_footer() const;
 
     /// <summary>
     ///
     /// </summary>
-    const xlnt::header_footer &header_footer() const;
+    class header_footer header_footer() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void header_footer(const class header_footer &new_header_footer);
 
     /// <summary>
     ///

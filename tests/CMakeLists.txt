@@ -9,10 +9,11 @@ endif()
 
 include_directories(${LIBRARY_INCLUDE_DIR})
 include_directories(${LIBRARY_SOURCE_DIR})
+include_directories(${LIBRARY_SOURCE_DIR}/detail)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${THIRD_PARTY_DIR}/cxxtest)
+include_directories(${THIRD_PARTY_DIR}/libstudxml)
 include_directories(${THIRD_PARTY_DIR}/utfcpp/source)
-include_directories(${THIRD_PARTY_DIR}/pugixml/src)
 include_directories(${THIRD_PARTY_DIR}/zlib)
 
 file(GLOB CELL_TESTS ${LIBRARY_SOURCE_DIR}/cell/tests/test_*.hpp)
@@ -34,11 +35,6 @@ set(TESTS ${CELL_TESTS} ${CHARTS_TESTS} ${CHARTSHEET_TESTS} ${DRAWING_TESTS}
     ${FORMULA_TESTS} ${PACKAGING_TESTS} ${STYLES_TESTS} ${UTILS_TESTS} 
 	${WORKBOOK_TESTS} ${WORKSHEET_TESTS})
 
-set(PUGIXML
-    ${THIRD_PARTY_DIR}/pugixml/src/pugixml.cpp
-    ${THIRD_PARTY_DIR}/pugixml/src/pugixml.hpp
-    ${THIRD_PARTY_DIR}/pugixml/src/pugiconfig.hpp)
-
 file(GLOB TEST_HELPERS_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/helpers/*.hpp)
 file(GLOB TEST_HELPERS_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/helpers/*.cpp)
 
@@ -52,11 +48,10 @@ if(COVERAGE)
     SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -lgcov --coverage")
 endif()
 
-add_executable(${PROJECT_NAME} ${TEST_HELPERS} ${TESTS} ${RUNNER} ${PUGIXML} $<TARGET_OBJECTS:xlnt.third-party> ${XLNT_ZIP})
+add_executable(${PROJECT_NAME} ${TEST_HELPERS} ${TESTS} ${RUNNER} $<TARGET_OBJECTS:xlnt.third-party> ${XLNT_ZIP})
 
 source_group(helpers FILES ${TEST_HELPERS})
 source_group(xlnt\\detail FILES ${XLNT_ZIP})
-source_group(third-party\\pugixml FILES ${PUGIXML})
 source_group(tests\\cell FILES ${CELL_TESTS})
 source_group(tests\\charts FILES ${CHARTS_TESTS})
 source_group(tests\\chartsheet FILES ${CHARTSHEET_TESTS})

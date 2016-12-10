@@ -458,11 +458,6 @@ cell &cell::operator=(const cell &rhs)
     return *this;
 }
 
-std::string cell::to_repr() const
-{
-    return "<Cell " + worksheet().title() + "." + reference().to_string() + ">";
-}
-
 std::string cell::hyperlink() const
 {
     return d_->hyperlink_.get();

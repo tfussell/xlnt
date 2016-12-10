@@ -77,8 +77,7 @@
 #include <xlnt/worksheet/column_properties.hpp>
 #include <xlnt/worksheet/const_cell_iterator.hpp>
 #include <xlnt/worksheet/const_range_iterator.hpp>
-#include <xlnt/worksheet/footer.hpp>
-#include <xlnt/worksheet/header.hpp>
+#include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/major_order.hpp>
 #include <xlnt/worksheet/orientation.hpp>

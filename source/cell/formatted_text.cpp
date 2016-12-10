@@ -28,6 +28,16 @@
 
 namespace xlnt {
 
+formatted_text::formatted_text(const std::string &plain_text)
+    : formatted_text(text_run(plain_text))
+{
+}
+
+formatted_text::formatted_text(const text_run &single_run)
+{
+    add_run(single_run);
+}
+
 void formatted_text::clear()
 {
     runs_.clear();
@@ -104,6 +114,11 @@ bool formatted_text::operator==(const formatted_text &rhs) const
     }
     
     return true;
+}
+
+bool formatted_text::operator==(const std::string &rhs) const
+{
+    return *this == formatted_text(rhs);
 }
 
 } // namespace xlnt

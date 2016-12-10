@@ -370,11 +370,6 @@ public:
     // printing
 
     /// <summary>
-    /// Returns a string describing this cell like <Cell Sheet.A1>.
-    /// </summary>
-    std::string to_repr() const;
-
-    /// <summary>
     /// Returns a string representing the value of this cell. If the data type is not a string,
     /// it will be converted according to the number format.
     /// </summary>

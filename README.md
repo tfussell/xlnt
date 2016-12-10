@@ -62,9 +62,8 @@ xlnt requires the following libraries which are all distributed under permissive
 - [pole v0.5](https://github.com/catlan/pole) (BSD 2-Clause License)
 - [partio v1.1.0](https://github.com/wdas/partio) (BSD 3-Clause License with specific non-attribution clause)
 
-Additionally, the xlnt test suite (bin/xlnt.test) requires two extra libraries. This test executable is separate from the main xlnt library assembly so the terms of these libraries' licenses should not apply to users of solely the xlnt library:
+Additionally, the xlnt test suite (bin/xlnt.test) requires an extra testing library. This test executable is separate from the main xlnt library assembly so the terms of this library's license should not apply to users of solely the xlnt library:
 - [cxxtest v4.4](http://cxxtest.com/) (LGPLv3 License)
-- [pugixml v1.7](http://pugixml.org/) (MIT License)
 
 Initialize the submodules from the HEAD of their respective Git repositories with this command called from the xlnt root directory:
 ```bash

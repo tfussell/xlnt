@@ -39,6 +39,21 @@ class XLNT_API formatted_text
 {
 public:
     /// <summary>
+    ///
+    /// </summary>
+    formatted_text() = default;
+
+    /// <summary>
+    ///
+    /// </summary>
+    formatted_text(const std::string &plain_text);
+
+    /// <summary>
+    ///
+    /// </summary>
+    formatted_text(const text_run &single_run);
+
+    /// <summary>
     /// Remove all text runs from this text.
     /// </summary>
     void clear();
@@ -73,6 +88,11 @@ public:
     /// Returns true if the runs that make up this text are identical to those in rhs.
     /// </summary>
     bool operator==(const formatted_text &rhs) const;
+
+    /// <summary>
+    /// Returns true if this text has a single unformatted run with text equal to rhs.
+    /// </summary>
+    bool operator==(const std::string &rhs) const;
 
 private:
     /// <summary>

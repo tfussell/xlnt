@@ -36,6 +36,7 @@
 #include <xlnt/workbook/const_worksheet_iterator.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/workbook/workbook_view.hpp>
+#include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
 using namespace std::string_literals;
@@ -1820,14 +1821,11 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 		serializer().end_element(xmlns, "sheetPr");
 	}
 
-	if (ws.has_dimension())
-	{
-		serializer().start_element(xmlns, "dimension");
-        const auto dimension = ws.calculate_dimension();
-		serializer().attribute("ref", dimension.is_single_cell()
-            ? dimension.top_left().to_string() : dimension.to_string());
-		serializer().end_element(xmlns, "dimension");
-	}
+    serializer().start_element(xmlns, "dimension");
+    const auto dimension = ws.calculate_dimension();
+    serializer().attribute("ref", dimension.is_single_cell()
+        ? dimension.top_left().to_string() : dimension.to_string());
+    serializer().end_element(xmlns, "dimension");
 
 	if (ws.has_view())
 	{
@@ -1892,13 +1890,10 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         serializer().end_element(xmlns, "sheetViews");
 	}
 
-	if (ws.has_format_properties())
-	{
-		serializer().start_element(xmlns, "sheetFormatPr");
-		serializer().attribute("baseColWidth", "10");
-		serializer().attribute("defaultRowHeight", "16");
-		serializer().end_element(xmlns, "sheetFormatPr");
-	}
+    serializer().start_element(xmlns, "sheetFormatPr");
+    serializer().attribute("baseColWidth", "10");
+    serializer().attribute("defaultRowHeight", "16");
+    serializer().end_element(xmlns, "sheetFormatPr");
 
 	bool has_column_properties = false;
 
@@ -2205,20 +2200,111 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 		serializer().end_element(xmlns, "pageSetup");
 	}
 
-	if (!ws.header_footer().is_default())
+	if (ws.has_header_footer())
 	{
-        // todo: this shouldn't be hardcoded
-	    static const auto header_text = new std::string(
-			"&L&\"Calibri,Regular\"&K000000Left Header Text&C&\"Arial,Regular\"&6&K445566Center Header "
-			"Text&R&\"Arial,Bold\"&8&K112233Right Header Text");
-	    static const auto footer_text = new std::string(
-			"&L&\"Times New Roman,Regular\"&10&K445566Left Footer Text_x000D_And &D and &T&C&\"Times New "
-			"Roman,Bold\"&12&K778899Center Footer Text &Z&F on &A&R&\"Times New Roman,Italic\"&14&KAABBCCRight Footer "
-			"Text &P of &N");
+        const auto hf = ws.header_footer();
 
 		serializer().start_element(xmlns, "headerFooter");
-		serializer().element(xmlns, "oddHeader", *header_text);
-		serializer().element(xmlns, "oddFooter", *footer_text);
+
+        auto odd_header = std::string();
+        auto odd_footer = std::string();
+        auto even_header = std::string();
+        auto even_footer = std::string();
+        auto first_header = std::string();
+        auto first_footer = std::string();
+
+        const auto encode_text = [](const formatted_text &t, header_footer::location where)
+        {
+            const auto location_code_map = std::unordered_map<xlnt::header_footer::location, std::string>
+            {
+                { xlnt::header_footer::location::left, "&L" },
+                { xlnt::header_footer::location::center, "&C" },
+                { xlnt::header_footer::location::right, "&R" },
+            };
+            
+            return location_code_map.at(where) + t.plain_text();
+        };
+
+        const auto locations =
+        {
+            header_footer::location::left,
+            header_footer::location::center,
+            header_footer::location::right
+        };
+
+        for (auto location : locations)
+        {
+            if (hf.different_odd_even())
+            {
+                if (hf.has_odd_even_header(location))
+                {
+                    odd_header.append(encode_text(hf.odd_header(location), location));
+                    even_header.append(encode_text(hf.even_header(location), location));
+                }
+
+                if (hf.has_odd_even_footer(location))
+                {
+                    odd_footer.append(encode_text(hf.odd_footer(location), location));
+                    even_footer.append(encode_text(hf.even_footer(location), location));
+                }
+            }
+            else
+            {
+                if (hf.has_header(location))
+                {
+                    odd_header.append(encode_text(hf.header(location), location));
+                }
+
+                if (hf.has_footer(location))
+                {
+                    odd_footer.append(encode_text(hf.footer(location), location));
+                }
+            }
+
+            if (hf.different_first())
+            {
+                if (hf.has_first_page_header(location))
+                {
+                    first_header.append(encode_text(hf.first_page_header(location), location));
+                }
+
+                if (hf.has_first_page_footer(location))
+                {
+                    first_footer.append(encode_text(hf.first_page_footer(location), location));
+                }
+            }
+        }
+
+        if (!odd_header.empty())
+        {
+            serializer().element(xmlns, "oddHeader", odd_header);
+        }
+
+        if (!odd_footer.empty())
+        {
+            serializer().element(xmlns, "oddFooter", odd_footer);
+        }
+
+        if (!even_header.empty())
+        {
+            serializer().element(xmlns, "evenHeader", even_header);
+        }
+
+        if (!even_footer.empty())
+        {
+            serializer().element(xmlns, "evenFooter", even_footer);
+        }
+
+        if (!first_header.empty())
+        {
+            serializer().element(xmlns, "firstHeader", first_header);
+        }
+
+        if (!first_footer.empty())
+        {
+            serializer().element(xmlns, "firstFooter", first_footer);
+        }
+
 		serializer().end_element(xmlns, "headerFooter");
 	}
 

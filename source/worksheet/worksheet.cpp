@@ -41,6 +41,7 @@
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/range_iterator.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
+#include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
 #include <detail/cell_impl.hpp>
@@ -132,23 +133,22 @@ std::vector<range_reference> worksheet::merged_ranges() const
 
 bool worksheet::has_page_margins() const
 {
-	return d_->has_page_margins_;
+	return d_->page_margins_.is_set();
 }
 
 bool worksheet::has_page_setup() const
 {
-	return d_->has_page_setup_;
+	return d_->page_setup_.is_set();
 }
 
 page_margins worksheet::page_margins() const
 {
-    return d_->page_margins_;
+    return d_->page_margins_.get();
 }
 
 void worksheet::page_margins(const class page_margins &margins)
 {
 	d_->page_margins_ = margins;
-	d_->has_page_margins_ = true;
 }
 
 void worksheet::auto_filter(const std::string &reference_string)
@@ -168,38 +168,32 @@ void worksheet::auto_filter(const xlnt::range &range)
 
 range_reference worksheet::auto_filter() const
 {
-    return d_->auto_filter_;
+    return d_->auto_filter_.get();
 }
 
 bool worksheet::has_auto_filter() const
 {
-    return d_->auto_filter_.width() > 0;
+    return d_->auto_filter_.is_set();
 }
 
 void worksheet::clear_auto_filter()
 {
-    d_->auto_filter_ = range_reference(1, 1, 1, 1);
+    d_->auto_filter_.clear();
 }
 
 void worksheet::page_setup(const struct page_setup &setup)
 {
-	d_->has_page_setup_ = true;
 	d_->page_setup_ = setup;
 }
 
 page_setup worksheet::page_setup() const
 {
-	if (!d_->has_page_setup_)
+	if (!has_page_setup())
 	{
 		throw invalid_attribute();
 	}
 
-    return d_->page_setup_;
-}
-
-std::string worksheet::to_string() const
-{
-    return "<Worksheet \"" + d_->title_ + "\">";
+    return d_->page_setup_.get();
 }
 
 workbook &worksheet::workbook()
@@ -499,16 +493,6 @@ column_t worksheet::highest_column() const
     return highest;
 }
 
-bool worksheet::has_dimension() const
-{
-	return d_->has_dimension_;
-}
-
-bool worksheet::has_format_properties() const
-{
-	return d_->has_format_properties_;
-}
-
 range_reference worksheet::calculate_dimension() const
 {
     return range_reference(lowest_column(), lowest_row(), highest_column(), highest_row());
@@ -746,10 +730,8 @@ bool worksheet::compare(const worksheet &other, bool reference) const
     // todo: missing some comparisons
     
     if(d_->auto_filter_ == other.d_->auto_filter_
-        && d_->comment_count_ == other.d_->comment_count_
         && d_->views_ == other.d_->views_
-        && d_->merged_cells_ == other.d_->merged_cells_
-        && d_->relationships_ == other.d_->relationships_)
+        && d_->merged_cells_ == other.d_->merged_cells_)
     {
         return true;
     }
@@ -816,41 +798,9 @@ void worksheet::reserve(std::size_t n)
     d_->cell_map_.reserve(n);
 }
 
-void worksheet::increment_comments()
+class header_footer worksheet::header_footer() const
 {
-    d_->comment_count_++;
-}
-
-void worksheet::decrement_comments()
-{
-    d_->comment_count_--;
-}
-
-std::size_t worksheet::comment_count() const
-{
-    return d_->comment_count_;
-}
-
-header_footer &worksheet::header_footer()
-{
-    return d_->header_footer_;
-}
-
-const header_footer &worksheet::header_footer() const
-{
-    return d_->header_footer_;
-}
-
-header_footer::header_footer()
-{
-}
-
-header::header() : default_(true), font_size_(12)
-{
-}
-
-footer::footer() : default_(true), font_size_(12)
-{
+    return d_->header_footer_.get();
 }
 
 void worksheet::parent(xlnt::workbook &wb)
@@ -1062,7 +1012,7 @@ void worksheet::print_area(const std::string &print_area)
 
 range_reference worksheet::print_area() const
 {
-    return d_->print_area_;
+    return d_->print_area_.get();
 }
 
 bool worksheet::has_view() const
@@ -1083,6 +1033,16 @@ void worksheet::add_view(const sheet_view &new_view)
 void worksheet::register_comments_in_manifest()
 {
 	workbook().register_comments_in_manifest(*this);
+}
+
+bool worksheet::has_header_footer() const
+{
+    return d_->header_footer_.is_set();
+}
+
+void worksheet::header_footer(const class header_footer &hf)
+{
+    d_->header_footer_ = hf;
 }
 
 } // namespace xlnt

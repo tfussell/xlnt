@@ -63,7 +63,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void string(const std::string &string);
+    text_run &string(const std::string &string);
 
     /// <summary>
     ///
@@ -78,7 +78,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void size(std::size_t size);
+    text_run &size(std::size_t size);
 
     /// <summary>
     ///
@@ -93,7 +93,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void color(const class color &new_color);
+    text_run &color(const class color &new_color);
 
     /// <summary>
     ///
@@ -108,7 +108,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void font(const std::string &font);
+    text_run &font(const std::string &font);
 
     /// <summary>
     ///
@@ -123,7 +123,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void family(std::size_t family);
+    text_run &family(std::size_t family);
 
     /// <summary>
     ///
@@ -138,7 +138,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void scheme(const std::string &scheme);
+    text_run &scheme(const std::string &scheme);
 
     /// <summary>
     ///
@@ -148,7 +148,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void bold(bool bold);
+    text_run &bold(bool bold);
 
     /// <summary>
     ///
@@ -168,7 +168,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void underline(font::underline_style style);
+    text_run &underline(font::underline_style style);
 
 private:
     /// <summary>

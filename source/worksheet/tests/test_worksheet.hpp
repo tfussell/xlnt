@@ -3,8 +3,6 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
-#include <xlnt/worksheet/footer.hpp>
-#include <xlnt/worksheet/header.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 #include <xlnt/workbook/workbook.hpp>
@@ -392,7 +390,7 @@ public:
         TS_ASSERT_EQUALS(ws.auto_filter(), "A1:F1");
         
         ws.clear_auto_filter();
-        TS_ASSERT_EQUALS(ws.has_auto_filter(), false);
+        TS_ASSERT(!ws.has_auto_filter());
         
         ws.auto_filter("c1:g9");
         TS_ASSERT_EQUALS(ws.auto_filter(), "C1:G9");
@@ -869,43 +867,51 @@ public:
     
     void test_header()
     {
-        xlnt::workbook wb;
-        auto ws = wb.active_sheet();
+        xlnt::header_footer hf;
+        using hf_loc = xlnt::header_footer::location;
 
-        auto &header_footer = ws.header_footer();
-
-        for (auto header_pointer : { &header_footer.left_header(),
-            &header_footer.center_header(), &header_footer.right_header() })
+        for (auto location : { hf_loc::left, hf_loc::center, hf_loc::right })
         {
-            auto &header = *header_pointer;
+            TS_ASSERT(!hf.has_header(location));
+            TS_ASSERT(!hf.has_odd_even_header(location));
+            TS_ASSERT(!hf.has_first_page_header(location));
+            
+            hf.header(location, "abc");
 
-            TS_ASSERT(header.is_default());
-            header.text("abc");
-            header.font_name("def");
-            header.font_size(121);
-            header.font_color("ghi");
-            TS_ASSERT(!header.is_default());
+            TS_ASSERT(hf.has_header(location));
+            TS_ASSERT(!hf.has_odd_even_header(location));
+            TS_ASSERT(!hf.has_first_page_header(location));
+
+            TS_ASSERT_EQUALS(hf.header(location), "abc");
+
+            hf.clear_header(location);
+
+            TS_ASSERT(!hf.has_header(location));
         }
     }
     
     void test_footer()
     {
-        xlnt::workbook wb;
-        auto ws = wb.active_sheet();
+        xlnt::header_footer hf;
+        using hf_loc = xlnt::header_footer::location;
 
-        auto &header_footer = ws.header_footer();
-
-        for (auto header_pointer : { &header_footer.left_footer(),
-            &header_footer.center_footer(), &header_footer.right_footer() })
+        for (auto location : { hf_loc::left, hf_loc::center, hf_loc::right })
         {
-            auto &header = *header_pointer;
+            TS_ASSERT(!hf.has_footer(location));
+            TS_ASSERT(!hf.has_odd_even_footer(location));
+            TS_ASSERT(!hf.has_first_page_footer(location));
+            
+            hf.footer(location, "abc");
 
-            TS_ASSERT(header.is_default());
-            header.text("abc");
-            header.font_name("def");
-            header.font_size(121);
-            header.font_color("ghi");
-            TS_ASSERT(!header.is_default());
+            TS_ASSERT(hf.has_footer(location));
+            TS_ASSERT(!hf.has_odd_even_footer(location));
+            TS_ASSERT(!hf.has_first_page_footer(location));
+
+            TS_ASSERT_EQUALS(hf.footer(location), "abc");
+
+            hf.clear_footer(location);
+
+            TS_ASSERT(!hf.has_footer(location));
         }
     }
     
@@ -941,14 +947,6 @@ public:
         margins.footer(3);
         margins.left(4);
         margins.right(5);
-    }
-
-    void test_to_string()
-    {
-        xlnt::workbook wb;
-        auto ws = wb.active_sheet();
-        auto ws_string = ws.to_string();
-        TS_ASSERT_EQUALS(ws_string, "<Worksheet \"Sheet1\">");
     }
 
     void test_garbage_collect()
