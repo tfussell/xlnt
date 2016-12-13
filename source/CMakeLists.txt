@@ -4,6 +4,15 @@ project(${LIBRARY_NAME} VERSION ${LIBRARY_VERSION} LANGUAGES CXX C)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../third-party ${CMAKE_CURRENT_BINARY_DIR}/third-party)
 
+include(ExternalProject)
+ExternalProject_Add(cryptopp
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cryptopp
+    PREFIX ${CMAKE_CURRENT_BINARY_DIR}/cryptopp
+    INSTALL_COMMAND ""
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND "")
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cryptopp ${CMAKE_CURRENT_BINARY_DIR}/cryptopp EXCLUDE_FROM_ALL)
+
 if(APPLE)
     option(FRAMEWORK "Set to ON to package dylib and headers into a .framework, OSX only" OFF)
 endif()
@@ -75,8 +84,8 @@ include_directories(${XLNT_INCLUDE_DIR}
     ${THIRD_PARTY_DIR}/libstudxml
     ${THIRD_PARTY_DIR}/utfcpp/source
     ${THIRD_PARTY_DIR}/pole
-    ${THIRD_PARTY_DIR}/botan
-    ${THIRD_PARTY_DIR}/zlib)
+    ${THIRD_PARTY_DIR}/zlib
+    ${THIRD_PARTY_DIR}/cryptopp)
 
 file(GLOB ROOT_HEADERS ${XLNT_INCLUDE_DIR}/xlnt/*.hpp)
 file(GLOB CELL_HEADERS ${XLNT_INCLUDE_DIR}/xlnt/cell/*.hpp)
@@ -112,7 +121,7 @@ set(XLNT_SOURCES ${CELL_SOURCES} ${CHARTS_SOURCES} ${CHARTSHEET_SOURCES}
 	${WORKSHEET_SOURCES} ${DETAIL_SOURCES})
 
 if(NOT STATIC)
-    add_library(xlnt SHARED ${XLNT_HEADERS} ${XLNT_SOURCES} $<TARGET_OBJECTS:xlnt.third-party>)
+    add_library(xlnt SHARED ${XLNT_HEADERS} ${XLNT_SOURCES} $<TARGET_OBJECTS:xlnt.third-party> $<TARGET_OBJECTS:cryptopp-object>)
     target_compile_definitions(xlnt PRIVATE XLNT_SHARED=1)
 
     if(MSVC)
@@ -142,7 +151,7 @@ if(NOT STATIC)
         )
     endif()
 else()
-    add_library(xlnt STATIC ${XLNT_HEADERS} ${XLNT_SOURCES} $<TARGET_OBJECTS:xlnt.third-party>)
+    add_library(xlnt STATIC ${XLNT_HEADERS} ${XLNT_SOURCES} $<TARGET_OBJECTS:xlnt.third-party> $<TARGET_OBJECTS:cryptopp-object>)
     target_compile_definitions(xlnt PUBLIC XLNT_STATIC=1)
 
     if(MSVC)

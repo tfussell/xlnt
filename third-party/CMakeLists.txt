@@ -1,11 +1,12 @@
+cmake_minimum_required(VERSION 3.1)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/common.cmake)
 project(${LIBRARY_NAME}.third-party VERSION ${LIBRARY_VERSION} LANGUAGES CXX C)
 
 # Includes
 include_directories(libstudxml
     utfcpp/source
-    botan
     zlib
+    cryptopp
     ${LIBRARY_SOURCE_DIR}/detail)
 
 set(LIBSTUDXML 
@@ -46,28 +47,6 @@ set(GENX
     ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/genx/genx.c
     ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/genx/genx.h)
 
-set(BOTAN
-    ${CMAKE_CURRENT_SOURCE_DIR}/botan/botan_all.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/botan/botan_all_internal.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/botan/botan_all.h)
-
-if(MSVC)
-    set_source_files_properties(${BOTAN} PROPERTIES COMPILE_FLAGS "/wd\"4244\" /wd\"4267\"")
-else()
-    set_source_files_properties(${BOTAN} PROPERTIES COMPILE_FLAGS "-Wno-deprecated-declarations")
-endif()
-
-if (CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(CPU "x64")
-else()
-    set(CPU "x86")
-endif()
-
-add_custom_command(OUTPUT ${BOTAN}
-    COMMAND python configure.py --minimized-build --enable-modules=sha1,aes,filters,codec_filt,cbc,ecb,sha2_32,sha2_64 --without-sphinx --disable-shared --amalgamation --cpu=${CPU}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/botan
-    COMMENT "Generating botan amalgamation")
-
 set(ZLIB ${CMAKE_CURRENT_SOURCE_DIR}/zlib/adler32.c
     ${CMAKE_CURRENT_SOURCE_DIR}/zlib/compress.c
     ${CMAKE_CURRENT_SOURCE_DIR}/zlib/crc32.c
@@ -96,7 +75,7 @@ else()
     set_source_files_properties(${ZLIB} PROPERTIES COMPILE_FLAGS "/wd\"4018\"")
 endif()
 
-add_library(xlnt.third-party OBJECT ${LIBSTUDXML} ${GENX} ${EXPAT} ${BOTAN} ${ZLIB})
+add_library(xlnt.third-party OBJECT ${LIBSTUDXML} ${GENX} ${EXPAT} ${ZLIB})
 target_compile_definitions(xlnt.third-party PRIVATE LIBSTUDXML_STATIC_LIB=1)
 
 if(NOT STATIC)
@@ -109,7 +88,6 @@ if(MSVC)
     set_target_properties(xlnt.third-party PROPERTIES COMPILE_FLAGS "/MP")
 endif()
 
-source_group(botan FILES ${BOTAN})
 source_group(libstudxml FILES ${LIBSTUDXML})
 source_group(libstudxml\\genx FILES ${GENX})
 source_group(libstudxml\\expat FILES ${EXPAT})

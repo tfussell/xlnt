@@ -24,7 +24,7 @@
 #include <array>
 
 #include <detail/constants.hpp>
-#include <detail/include_botan.hpp>
+#include <detail/include_cryptopp.hpp>
 #include <detail/include_libstudxml.hpp>
 #include <detail/pole.hpp>
 #include <detail/vector_streambuf.hpp>
@@ -129,34 +129,68 @@ struct crypto_helper
         const std::vector<std::uint8_t> &encrypted,
         cipher_chaining chaining, cipher_direction direction)
     {
-        std::string cipher_name("AES-");
-        cipher_name.append(std::to_string(key.size() * 8));
-        cipher_name.append(chaining == cipher_chaining::ecb
-            ? "/ECB/NoPadding" : "/CBC/NoPadding");
+        std::vector<std::uint8_t> destination(encrypted.size(), 0);
 
-        auto botan_direction = direction == cipher_direction::decryption
-            ? Botan::DECRYPTION : Botan::ENCRYPTION;
-        Botan::Pipe pipe(Botan::get_cipher(cipher_name, key, iv, botan_direction));
-        pipe.process_msg(encrypted);
-        auto decrypted = pipe.read_all();
+        if (direction == cipher_direction::encryption && chaining == cipher_chaining::cbc)
+        {
+            CryptoPP::AES::Decryption aesEncryption(key.data(), key.size());
+            CryptoPP::CBC_Mode_ExternalCipher::Encryption cbcEncryption(aesEncryption, iv.data());
 
-        return std::vector<std::uint8_t>(decrypted.begin(), decrypted.end());
+            CryptoPP::StreamTransformationFilter stfEncryptor(cbcEncryption, new CryptoPP::ArraySink(destination.data(), destination.size()));
+            stfEncryptor.Put(reinterpret_cast<const unsigned char*>(encrypted.data()), encrypted.size());
+            stfEncryptor.MessageEnd();
+        }
+        else if (direction == cipher_direction::decryption && chaining == cipher_chaining::cbc)
+        {
+            CryptoPP::AES::Encryption aesEncryption(key.data(), key.size());
+            CryptoPP::CBC_Mode_ExternalCipher::Encryption cbcEncryption(aesEncryption, iv.data());
+
+            CryptoPP::StreamTransformationFilter stfEncryptor(cbcEncryption, new CryptoPP::ArraySink(destination.data(), destination.size()));
+            stfEncryptor.Put(reinterpret_cast<const unsigned char*>(encrypted.data()), encrypted.size());
+            stfEncryptor.MessageEnd();
+        }
+        else if (direction == cipher_direction::encryption && chaining == cipher_chaining::ecb)
+        {
+            CryptoPP::AES::Encryption aesEncryption(key.data(), key.size());
+            CryptoPP::ECB_Mode_ExternalCipher::Encryption cbcEncryption(aesEncryption, iv.data());
+
+            CryptoPP::StreamTransformationFilter stfEncryptor(cbcEncryption, new CryptoPP::ArraySink(destination.data(), destination.size()));
+            stfEncryptor.Put(reinterpret_cast<const unsigned char*>(encrypted.data()), encrypted.size());
+            stfEncryptor.MessageEnd();
+        }
+        else if (direction == cipher_direction::decryption && chaining == cipher_chaining::ecb)
+        {
+            CryptoPP::AES::Encryption aesEncryption(key.data(), key.size());
+            CryptoPP::ECB_Mode_ExternalCipher::Decryption cbcEncryption(aesEncryption, iv.data());
+
+            CryptoPP::StreamTransformationFilter stfEncryptor(cbcEncryption, new CryptoPP::ArraySink(destination.data(), destination.size()));
+            stfEncryptor.Put(reinterpret_cast<const unsigned char*>(encrypted.data()), encrypted.size());
+            stfEncryptor.MessageEnd();
+        }
+
+        return destination;
     }
 
     static std::vector<std::uint8_t> decode_base64(const std::string &encoded)
     {
-        Botan::Pipe pipe(new Botan::Base64_Decoder);
-        pipe.process_msg(encoded);
-        auto decoded = pipe.read_all();
+        CryptoPP::Base64Decoder decoder;
+        decoder.Put(reinterpret_cast<const std::uint8_t *>(encoded.data()), encoded.size());
+        decoder.MessageEnd();
+        
+        std::vector<std::uint8_t> decoded(decoder.MaxRetrievable(), 0);
+        decoder.Get(decoded.data(), decoded.size());
 
-        return std::vector<std::uint8_t>(decoded.begin(), decoded.end());
+        return decoded;
     }
 
     static std::string encode_base64(const std::vector<std::uint8_t> &decoded)
     {
-        Botan::Pipe pipe(new Botan::Base64_Encoder);
-        pipe.process_msg(decoded);
-        auto encoded = pipe.read_all();
+        CryptoPP::Base64Decoder encoder;
+        encoder.Put(reinterpret_cast<const std::uint8_t *>(decoded.data()), decoded.size());
+        encoder.MessageEnd();
+        
+        std::vector<std::uint8_t> encoded(encoder.MaxRetrievable(), 0);
+        encoder.Get(encoded.data(), encoded.size());
 
         return std::string(encoded.begin(), encoded.end());
     }
@@ -164,12 +198,22 @@ struct crypto_helper
     static std::vector<std::uint8_t> hash(hash_algorithm algorithm,
         const std::vector<std::uint8_t> &input)
     {
-        Botan::Pipe pipe(new Botan::Hash_Filter(
-            algorithm == hash_algorithm::sha512 ? "SHA-512" : "SHA-1"));
-        pipe.process_msg(input);
-        auto hash = pipe.read_all();
-
-        return std::vector<std::uint8_t>(hash.begin(), hash.end());
+        std::vector<std::uint8_t> digest;
+        
+        if (algorithm == hash_algorithm::sha512)
+        {
+            CryptoPP::SHA512 sha512;
+            digest.resize(CryptoPP::SHA512::DIGESTSIZE, 0);
+            sha512.CalculateDigest(digest.data(), input.data(), input.size());
+        }
+        else if (algorithm == hash_algorithm::sha1)
+        {
+            CryptoPP::SHA1 sha1;
+            digest.resize(CryptoPP::SHA1::DIGESTSIZE, 0);
+            sha1.CalculateDigest(digest.data(), input.data(), input.size());
+        }
+        
+        return digest;
     }
 
     static std::vector<std::uint8_t> file(POLE::Storage &storage, const std::string &name)
