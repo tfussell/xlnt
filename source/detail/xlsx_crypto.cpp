@@ -126,46 +126,50 @@ struct crypto_helper
 
     static std::vector<std::uint8_t> aes(const std::vector<std::uint8_t> &key,
         const std::vector<std::uint8_t> &iv,
-        const std::vector<std::uint8_t> &encrypted,
+        const std::vector<std::uint8_t> &source,
         cipher_chaining chaining, cipher_direction direction)
     {
-        std::vector<std::uint8_t> destination(encrypted.size(), 0);
+        std::vector<std::uint8_t> destination(source.size(), 0);
 
         if (direction == cipher_direction::encryption && chaining == cipher_chaining::cbc)
-        {
-            CryptoPP::AES::Decryption aesEncryption(key.data(), key.size());
-            CryptoPP::CBC_Mode_ExternalCipher::Encryption cbcEncryption(aesEncryption, iv.data());
-
-            CryptoPP::StreamTransformationFilter stfEncryptor(cbcEncryption, new CryptoPP::ArraySink(destination.data(), destination.size()));
-            stfEncryptor.Put(reinterpret_cast<const unsigned char*>(encrypted.data()), encrypted.size());
-            stfEncryptor.MessageEnd();
-        }
-        else if (direction == cipher_direction::decryption && chaining == cipher_chaining::cbc)
         {
             CryptoPP::AES::Encryption aesEncryption(key.data(), key.size());
             CryptoPP::CBC_Mode_ExternalCipher::Encryption cbcEncryption(aesEncryption, iv.data());
 
-            CryptoPP::StreamTransformationFilter stfEncryptor(cbcEncryption, new CryptoPP::ArraySink(destination.data(), destination.size()));
-            stfEncryptor.Put(reinterpret_cast<const unsigned char*>(encrypted.data()), encrypted.size());
-            stfEncryptor.MessageEnd();
+            CryptoPP::ArraySource as(source.data(), source.size(), true,
+                new CryptoPP::StreamTransformationFilter(cbcEncryption,
+                    new CryptoPP::ArraySink(destination.data(), destination.size()),
+                    CryptoPP::BlockPaddingSchemeDef::NO_PADDING));
+        }
+        else if (direction == cipher_direction::decryption && chaining == cipher_chaining::cbc)
+        {
+            CryptoPP::AES::Decryption aesDecryption(key.data(), key.size());
+            CryptoPP::CBC_Mode_ExternalCipher::Decryption cbcDecryption(aesDecryption, iv.data());
+
+            CryptoPP::ArraySource as(source.data(), source.size(), true,
+                new CryptoPP::StreamTransformationFilter(cbcDecryption,
+                    new CryptoPP::ArraySink(destination.data(), destination.size()),
+                    CryptoPP::BlockPaddingSchemeDef::NO_PADDING));
         }
         else if (direction == cipher_direction::encryption && chaining == cipher_chaining::ecb)
         {
             CryptoPP::AES::Encryption aesEncryption(key.data(), key.size());
             CryptoPP::ECB_Mode_ExternalCipher::Encryption cbcEncryption(aesEncryption, iv.data());
 
-            CryptoPP::StreamTransformationFilter stfEncryptor(cbcEncryption, new CryptoPP::ArraySink(destination.data(), destination.size()));
-            stfEncryptor.Put(reinterpret_cast<const unsigned char*>(encrypted.data()), encrypted.size());
-            stfEncryptor.MessageEnd();
+            CryptoPP::ArraySource as(source.data(), source.size(), true,
+                new CryptoPP::StreamTransformationFilter(cbcEncryption,
+                    new CryptoPP::ArraySink(destination.data(), destination.size()),
+                    CryptoPP::BlockPaddingSchemeDef::NO_PADDING));
         }
         else if (direction == cipher_direction::decryption && chaining == cipher_chaining::ecb)
         {
-            CryptoPP::AES::Encryption aesEncryption(key.data(), key.size());
-            CryptoPP::ECB_Mode_ExternalCipher::Decryption cbcEncryption(aesEncryption, iv.data());
+            CryptoPP::AES::Decryption aesDecryption(key.data(), key.size());
+            CryptoPP::ECB_Mode_ExternalCipher::Decryption cbcDecryption(aesDecryption, iv.data());
 
-            CryptoPP::StreamTransformationFilter stfEncryptor(cbcEncryption, new CryptoPP::ArraySink(destination.data(), destination.size()));
-            stfEncryptor.Put(reinterpret_cast<const unsigned char*>(encrypted.data()), encrypted.size());
-            stfEncryptor.MessageEnd();
+            CryptoPP::ArraySource as(source.data(), source.size(), true,
+                new CryptoPP::StreamTransformationFilter(cbcDecryption,
+                    new CryptoPP::ArraySink(destination.data(), destination.size()),
+                    CryptoPP::BlockPaddingSchemeDef::NO_PADDING));
         }
 
         return destination;
@@ -176,7 +180,7 @@ struct crypto_helper
         CryptoPP::Base64Decoder decoder;
         decoder.Put(reinterpret_cast<const std::uint8_t *>(encoded.data()), encoded.size());
         decoder.MessageEnd();
-        
+
         std::vector<std::uint8_t> decoded(decoder.MaxRetrievable(), 0);
         decoder.Get(decoded.data(), decoded.size());
 
@@ -188,7 +192,7 @@ struct crypto_helper
         CryptoPP::Base64Decoder encoder;
         encoder.Put(reinterpret_cast<const std::uint8_t *>(decoded.data()), decoded.size());
         encoder.MessageEnd();
-        
+
         std::vector<std::uint8_t> encoded(encoder.MaxRetrievable(), 0);
         encoder.Get(encoded.data(), encoded.size());
 
@@ -199,7 +203,7 @@ struct crypto_helper
         const std::vector<std::uint8_t> &input)
     {
         std::vector<std::uint8_t> digest;
-        
+
         if (algorithm == hash_algorithm::sha512)
         {
             CryptoPP::SHA512 sha512;
@@ -212,7 +216,7 @@ struct crypto_helper
             digest.resize(CryptoPP::SHA1::DIGESTSIZE, 0);
             sha1.CalculateDigest(digest.data(), input.data(), input.size());
         }
-        
+
         return digest;
     }
 
