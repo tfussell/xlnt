@@ -30,6 +30,7 @@
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/cell/formatted_text.hpp>
+#include <xlnt/utils/scoped_enum_hash.hpp>
 
 namespace xlnt {
 
@@ -311,12 +312,14 @@ private:
     bool different_odd_even_ = false;
     bool scale_with_doc_ = false;
 
-    std::unordered_map<location, formatted_text> odd_headers_;
-    std::unordered_map<location, formatted_text> even_headers_;
-    std::unordered_map<location, formatted_text> first_headers_;
-    std::unordered_map<location, formatted_text> odd_footers_;
-    std::unordered_map<location, formatted_text> even_footers_;
-    std::unordered_map<location, formatted_text> first_footers_;
+    using container = std::unordered_map<location, formatted_text, scoped_enum_hash<location>>;
+
+    container odd_headers_;
+    container even_headers_;
+    container first_headers_;
+    container odd_footers_;
+    container even_footers_;
+    container first_footers_;
 };
 
 } // namespace xlnt

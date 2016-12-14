@@ -23,10 +23,22 @@
 
 #pragma once
 
-#define EXCEPT_ON_UNHANDLED_SWITCH_CASE
+#include <utility> // for std::hash
 
-#ifdef EXCEPT_ON_UNHANDLED_SWITCH_CASE
-#define default_case(default_value) throw xlnt::exception("unhandled case");
-#else
-#define default_case(default_value) return default_value;
-#endif
+namespace xlnt {
+
+/// <summary>
+/// Allows a scoped enum (aka "enum class") to be used as a key
+/// in a std::unordered_map.
+/// </summary>
+template<typename Enum>
+struct scoped_enum_hash
+{
+    std::size_t operator()(Enum e) const
+    {
+	static std::hash<std::size_t> hasher;
+	return hasher(static_cast<std::size_t>(e));
+    }
+};
+
+} // namespace xlnt
