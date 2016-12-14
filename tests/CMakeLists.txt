@@ -77,8 +77,10 @@ else()
     target_link_libraries(${PROJECT_NAME} Threads::Threads)
 endif()
 
+find_package(PythonInterp)
+
 add_custom_command(OUTPUT ${RUNNER}
-    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cxxtest/bin/cxxtestgen --runner=ErrorPrinter -o ${RUNNER} ${TESTS} 
+    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cxxtest/bin/cxxtestgen --runner=ErrorPrinter -o ${RUNNER} ${TESTS}
     DEPENDS ${TESTS}
     COMMENT "Generating test runner ${RUNNER}")
 

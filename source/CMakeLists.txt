@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.1)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/common.cmake)
 project(${LIBRARY_NAME} VERSION ${LIBRARY_VERSION} LANGUAGES CXX C)
 
+if(NOT DEFINED CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
+  set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE INTERNAL "No dev warnings")
+endif()
+
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../third-party ${CMAKE_CURRENT_BINARY_DIR}/third-party)
 
 include(ExternalProject)

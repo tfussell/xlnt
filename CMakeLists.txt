@@ -26,5 +26,12 @@ if(BENCHMARKS)
     add_subdirectory(benchmarks)
 endif()
 
-add_subdirectory(tests)
+find_package(PythonInterp)
+
+if(PYTHONINTERP_FOUND)
+    add_subdirectory(tests)
+else()
+    message("Python couldn't be found in the current PATH but is required for building tests. Tests will be skipped for now.")
+endif()
+
 add_subdirectory(source)
