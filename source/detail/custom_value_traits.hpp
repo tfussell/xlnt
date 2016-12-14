@@ -1,7 +1,7 @@
 #pragma once
 
+#include <detail/default_case.hpp>
 #include <detail/include_libstudxml.hpp>
-
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/styles/border.hpp>
 #include <xlnt/styles/font.hpp>
@@ -13,14 +13,6 @@
 
 namespace xlnt {
 namespace detail {
-
-#define EXCEPT_ON_UNHANDLED_SWITCH_CASE
-
-#ifdef EXCEPT_ON_UNHANDLED_SWITCH_CASE
-#define default_case(default_value) throw xlnt::exception("unhandled case");
-#else
-#define default_case(default_value) return default_value;
-#endif
 
 /// <summary>
 /// Returns the string representation of the underline style.

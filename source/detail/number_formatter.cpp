@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include <detail/default_case.hpp>
 #include <detail/number_formatter.hpp>
 #include <xlnt/utils/exceptions.hpp>
 
@@ -179,11 +180,9 @@ bool format_condition::satisfied_by(long double number) const
         return std::fabs(number - value) != 0.0L;
 	case condition_type::equal:
         return std::fabs(number - value) == 0.0L;
-#ifdef WIN32
-    default: 
-        throw xlnt::exception("unhandled");
-#endif
     }
+
+    default_case(false);
 }
 
 number_format_parser::number_format_parser(const std::string &format_string)
