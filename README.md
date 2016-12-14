@@ -58,7 +58,7 @@ xlnt requires the following libraries which are all distributed under permissive
 - [zlib v1.2.8](http://zlib.net/) (zlib License)
 - [libstudxml v1.1.0](http://www.codesynthesis.com/projects/libstudxml/) (MIT license)
 - [utfcpp v2.3.4](http://utfcpp.sourceforge.net/) (Boost Software License, Version 1.0)
-- [botan v1.11](https://botan.randombit.net/) (BSD 2-Clause License)
+- [Crypto++ v5.6.5](https://www.cryptopp.com/) (Boost Software License, Version 1.0)
 - [pole v0.5](https://github.com/catlan/pole) (BSD 2-Clause License)
 - [partio v1.1.0](https://github.com/wdas/partio) (BSD 3-Clause License with specific non-attribution clause)
 
