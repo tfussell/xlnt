@@ -510,9 +510,6 @@ void DirTree::load( std::uint8_t* buffer, std::size_t size )
     {
         std::size_t p = i * 128;
         
-        // would be < 32 if first char in the name isn't printable
-        std::size_t prefix = 32;
-        
         // parse name of this entry, which stored as Unicode 16-bit
         std::string name;
         auto name_len = static_cast<std::size_t>(readU16( buffer + 0x40+p ));
@@ -523,7 +520,6 @@ void DirTree::load( std::uint8_t* buffer, std::size_t size )
         // first char isn't printable ? remove it...
         if( buffer[p] < 32 )
         {
-            prefix = buffer[0];
             name.erase( 0,1 );
         }
         
