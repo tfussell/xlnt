@@ -6,11 +6,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 cmake_policy(SET CMP0048 NEW)
 
-# Global platform-specific definitions
-if(MSVC)
-    add_definitions(-DUNICODE -D_UNICODE)
-endif()
-
 # Global library directories
 set(LIBRARY_INCLUDE_DIR ${CMAKE_CURRENT_LIST_DIR}/../include)
 set(LIBRARY_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/../source)
