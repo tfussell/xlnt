@@ -364,6 +364,8 @@ private:
 	xml::parser *parser_;
     
     std::vector<xml::qname> stack_;
+
+    bool preserve_space_ = false;
 };
 
 } // namespace detail

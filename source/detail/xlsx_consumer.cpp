@@ -2066,6 +2066,10 @@ xml::qname xlsx_consumer::expect_start_element(xml::content content)
     parser().content(content);
     stack_.push_back(parser().qname());
 
+    const auto xml_space = xml::qname(constants::namespace_("xml"), "space");
+    preserve_space_ = parser().attribute_present(xml_space)
+	? parser().attribute(xml_space) == "preserve" : false;
+
     return stack_.back();
 }
 
@@ -2074,6 +2078,10 @@ void xlsx_consumer::expect_start_element(const xml::qname &name, xml::content co
     parser().next_expect(xml::parser::event_type::start_element, name);
     parser().content(content);
     stack_.push_back(name);
+
+    const auto xml_space = xml::qname(constants::namespace_("xml"), "space");
+    preserve_space_ = parser().attribute_present(xml_space)
+	? parser().attribute(xml_space) == "preserve" : false;
 }
 
 void xlsx_consumer::expect_end_element(const xml::qname &name)
