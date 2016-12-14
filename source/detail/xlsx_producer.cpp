@@ -2215,13 +2215,13 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
         const auto encode_text = [](const formatted_text &t, header_footer::location where)
         {
-            const auto location_code_map = std::unordered_map<xlnt::header_footer::location, std::string>
+            const auto location_code_map = std::unordered_map<header_footer::location, std::string, scoped_enum_hash<header_footer::location>>
             {
-                { xlnt::header_footer::location::left, "&L" },
-                { xlnt::header_footer::location::center, "&C" },
-                { xlnt::header_footer::location::right, "&R" },
+                { header_footer::location::left, "&L" },
+                { header_footer::location::center, "&C" },
+                { header_footer::location::right, "&R" },
             };
-            
+
             return location_code_map.at(where) + t.plain_text();
         };
 
