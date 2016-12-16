@@ -15,7 +15,9 @@ ExternalProject_Add(cryptopp
     INSTALL_COMMAND ""
     CONFIGURE_COMMAND ""
     BUILD_COMMAND "")
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cryptopp ${CMAKE_CURRENT_BINARY_DIR}/cryptopp EXCLUDE_FROM_ALL)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cryptopp ${CMAKE_CURRENT_BINARY_DIR}/cryptopp)
+set_target_properties(cryptopp-shared PROPERTIES EXCLUDE_FROM_ALL True)
+set_target_properties(cryptest PROPERTIES EXCLUDE_FROM_ALL True)
 
 if(APPLE)
     option(FRAMEWORK "Set to ON to package dylib and headers into a .framework, OSX only" OFF)
