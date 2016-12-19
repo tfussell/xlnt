@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <string>
@@ -33,29 +34,57 @@ namespace xlnt {
 class range_reference;
 class worksheet;
 
-// TODO: why is this not in a class?
-std::vector<std::pair<std::string, std::string>> XLNT_FUNCTION split_named_range(const std::string &named_range_string);
-
 /// <summary>
 /// A 2D range of cells in a worksheet that is referred to by name.
-/// ws->get_range("A1:B2") could be replaced by ws->get_range("range1")
+/// ws->range("A1:B2") could be replaced by ws->range("range1")
 /// </summary>
-class XLNT_CLASS named_range
+class XLNT_API named_range
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     using target = std::pair<worksheet, range_reference>;
 
+    /// <summary>
+    ///
+    /// </summary>
     named_range();
+
+    /// <summary>
+    ///
+    /// </summary>
     named_range(const named_range &other);
+
+    /// <summary>
+    ///
+    /// </summary>
     named_range(const std::string &name, const std::vector<target> &targets);
 
-    std::string get_name() const;
-    const std::vector<target> &get_targets() const;
+    /// <summary>
+    ///
+    /// </summary>
+    std::string name() const;
 
+    /// <summary>
+    ///
+    /// </summary>
+    const std::vector<target> &targets() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     named_range &operator=(const named_range &other);
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
     std::string name_;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::vector<target> targets_;
 };
 

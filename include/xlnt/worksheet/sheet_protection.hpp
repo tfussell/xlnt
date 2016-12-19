@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <string>
@@ -32,15 +33,28 @@ namespace xlnt {
 /// <summary>
 /// Protection applied to a particular worksheet to prevent it from being modified.
 /// </summary>
-class XLNT_CLASS sheet_protection
+class XLNT_API sheet_protection
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     static std::string hash_password(const std::string &password);
 
-    void set_password(const std::string &password);
-    std::string get_hashed_password() const;
+    /// <summary>
+    ///
+    /// </summary>
+    void password(const std::string &password);
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::string hashed_password() const;
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
     std::string hashed_password_;
 };
 

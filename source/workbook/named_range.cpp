@@ -34,6 +34,7 @@ namespace {
 /// <remark>
 /// This should maybe be in a utility header so it can be used elsewhere.
 /// </remarks>
+/*
 std::vector<std::string> split_string(const std::string &string, char delim)
 {
     std::vector<std::string> split;
@@ -53,24 +54,12 @@ std::vector<std::string> split_string(const std::string &string, char delim)
 
     return split;
 }
+*/
 
-} // namespace
-
-namespace xlnt {
-
-std::string named_range::get_name() const
-{
-    return name_;
-}
-
-const std::vector<named_range::target> &named_range::get_targets() const
-{
-    return targets_;
-}
-
+/*
 std::vector<std::pair<std::string, std::string>> split_named_range(const std::string &named_range_string)
 {
-    std::vector<std::pair<std::string, std::string>> final;
+    std::vector<std::pair<std::string, std::string>> result;
 
     for (auto part : split_string(named_range_string, ','))
     {
@@ -86,15 +75,30 @@ std::vector<std::pair<std::string, std::string>> split_named_range(const std::st
         {
             xlnt::range_reference ref(split[1]);
         }
-        catch (xlnt::cell_coordinates_error)
+        catch (xlnt::invalid_cell_reference)
         {
             split[1] = "";
         }
 
-        final.push_back({ split[0], split[1] });
+        result.push_back({ split[0], split[1] });
     }
 
-    return final;
+    return result;
+}
+*/
+
+} // namespace
+
+namespace xlnt {
+
+std::string named_range::name() const
+{
+    return name_;
+}
+
+const std::vector<named_range::target> &named_range::targets() const
+{
+    return targets_;
 }
 
 named_range::named_range()

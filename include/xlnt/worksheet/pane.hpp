@@ -21,26 +21,29 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/cell/cell_reference.hpp>
+#include <xlnt/cell/index_types.hpp>
 
 namespace xlnt {
 
 /// <summary>
 ///
 /// </summary>
-enum class XLNT_CLASS pane_state
+enum class XLNT_API pane_state
 {
     frozen,
-    normal
+    frozen_split,
+    split
 };
 
 /// <summary>
 ///
 /// </summary>
-enum class XLNT_CLASS pane_corner
+enum class XLNT_API pane_corner
 {
     top_left,
     top_right,
@@ -51,14 +54,38 @@ enum class XLNT_CLASS pane_corner
 /// <summary>
 /// A fixed portion of a worksheet.
 /// </summary>
-class XLNT_CLASS pane
+struct XLNT_API pane
 {
-public:
-    cell_reference top_left_cell;
-    pane_state state;
-    pane_corner active_pane;
-    int y_split;
-    int x_split;
+    /// <summary>
+    ///
+    /// </summary>
+    optional<cell_reference> top_left_cell;
+
+    /// <summary>
+    ///
+    /// </summary>
+    pane_state state = pane_state::split;
+
+    /// <summary>
+    ///
+    /// </summary>
+    pane_corner active_pane = pane_corner::top_left;
+
+    /// <summary>
+    ///
+    /// </summary>
+    row_t y_split = 1;
+
+    /// <summary>
+    ///
+    /// </summary>
+    column_t x_split = 1;
+
+    bool operator==(const pane &rhs) const
+    {
+        return top_left_cell == rhs.top_left_cell && state == rhs.state && active_pane == rhs.active_pane
+            && y_split == rhs.y_split && x_split == rhs.x_split;
+    }
 };
 
 } // namespace xlnt

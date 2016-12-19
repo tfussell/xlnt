@@ -1,5 +1,4 @@
 // Copyright (c) 2014-2016 Thomas Fussell
-// Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,27 +20,214 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
-#include <xlnt/styles/base_format.hpp>
+#include <cstddef>
+#include <string>
+
+#include <xlnt/xlnt_config.hpp>
 
 namespace xlnt {
 
-class style;
-namespace detail { struct workbook_impl; }
+class alignment;
+class border;
+class cell;
+class fill;
+class font;
+class number_format;
+class protection;
+
+namespace detail {
+
+struct format_impl;
+struct stylesheet;
+
+} // namespace detail
 
 /// <summary>
 /// Describes the formatting of a particular cell.
 /// </summary>
-class XLNT_CLASS format : public base_format
+class XLNT_API format
 {
 public:
-    format();
-    format(const format &other);
-    format &operator=(const format &other);
-    
-protected:
-    std::string to_hash_string() const override;
+    /// <summary>
+    ///
+    /// </summary>
+    std::size_t id() const;
+
+    // Alignment
+
+    /// <summary>
+    ///
+    /// </summary>
+    class alignment &alignment();
+
+    /// <summary>
+    ///
+    /// </summary>
+    const class alignment &alignment() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    format alignment(const xlnt::alignment &new_alignment, bool applied);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool alignment_applied() const;
+
+    // Border
+
+    /// <summary>
+    ///
+    /// </summary>
+    class border &border();
+
+    /// <summary>
+    ///
+    /// </summary>
+    const class border &border() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    format border(const xlnt::border &new_border, bool applied);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool border_applied() const;
+
+    // Fill
+
+    /// <summary>
+    ///
+    /// </summary>
+    class fill &fill();
+
+    /// <summary>
+    ///
+    /// </summary>
+    const class fill &fill() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    format fill(const xlnt::fill &new_fill, bool applied);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool fill_applied() const;
+
+    // Font
+
+    /// <summary>
+    ///
+    /// </summary>
+    class font &font();
+
+    /// <summary>
+    ///
+    /// </summary>
+    const class font &font() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    format font(const xlnt::font &new_font, bool applied);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool font_applied() const;
+
+    // Number Format
+
+    /// <summary>
+    ///
+    /// </summary>
+    class number_format &number_format();
+
+    /// <summary>
+    ///
+    /// </summary>
+    const class number_format &number_format() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    format number_format(const xlnt::number_format &new_number_format, bool applied);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool number_format_applied() const;
+
+    // Protection
+
+    /// <summary>
+    ///
+    /// </summary>
+    class protection &protection();
+
+    /// <summary>
+    ///
+    /// </summary>
+    const class protection &protection() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    format protection(const xlnt::protection &new_protection, bool applied);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool protection_applied() const;
+
+    // Style
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_style() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void clear_style();
+
+    /// <summary>
+    ///
+    /// </summary>
+    format style(const std::string &name);
+
+    /// <summary>
+    ///
+    /// </summary>
+    format style(const xlnt::style &new_style);
+
+    /// <summary>
+    ///
+    /// </summary>
+    const class style style() const;
+
+private:
+    friend struct detail::stylesheet;
+    friend class cell;
+
+    /// <summary>
+    ///
+    /// </summary>
+    format(detail::format_impl *d);
+
+    /// <summary>
+    ///
+    /// </summary>
+    detail::format_impl *d_;
 };
 
 } // namespace xlnt

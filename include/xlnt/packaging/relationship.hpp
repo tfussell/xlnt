@@ -21,100 +21,158 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <string>
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/packaging/uri.hpp>
+#include <xlnt/utils/path.hpp>
 
 namespace xlnt {
 
 /// <summary>
 /// Specifies whether the target of a relationship is inside or outside the Package.
 /// </summary>
-enum class XLNT_CLASS target_mode
+enum class XLNT_API target_mode
 {
-    /// <summary>
-    /// The relationship references a part that is inside the package.
-    /// </summary>
-    external,
     /// <summary>
     /// The relationship references a resource that is external to the package.
     /// </summary>
-    internal
+    internal,
+    /// <summary>
+    /// The relationship references a part that is inside the package.
+    /// </summary>
+    external
 };
 
 /// <summary>
 /// All package relationships must be one of these defined types.
 /// </summary>
-enum class relationship_type
+enum class XLNT_API relationship_type
 {
-    invalid,
-    hyperlink,
-    drawing,
-    worksheet,
-    chartsheet,
-    shared_strings,
-    styles,
-    theme,
-    extended_properties,
+    unknown,
+
+    // Package parts
     core_properties,
+    extended_properties,
+    custom_properties,
     office_document,
-    custom_xml,
-    thumbnail
+    thumbnail,
+    printer_settings,
+
+    // SpreadsheetML parts
+    calculation_chain,
+    chartsheet,
+    comments,
+    connections,
+    custom_property,
+    custom_xml_mappings,
+    dialogsheet,
+    drawings,
+    external_workbook_references,
+    metadata,
+    pivot_table,
+    pivot_table_cache_definition,
+    pivot_table_cache_records,
+    query_table,
+    shared_string_table,
+    shared_workbook_revision_headers,
+    shared_workbook,
+    theme,
+    revision_log,
+    shared_workbook_user_data,
+    single_cell_table_definitions,
+    stylesheet,
+    table_definition,
+    vml_drawing,
+    volatile_dependencies,
+    worksheet,
+
+    // Worksheet parts
+    hyperlink,
+    image
 };
 
 /// <summary>
 /// Represents an association between a source Package or part, and a target object which can be a part or external
 /// resource.
 /// </summary>
-class XLNT_CLASS relationship
+class XLNT_API relationship
 {
 public:
-    using type = relationship_type;
-
-    static type type_from_string(const std::string &type_string);
-
-    static std::string type_to_string(type t);
-
+    /// <summary>
+    ///
+    /// </summary>
     relationship();
 
-    relationship(const std::string &t, const std::string &r_id = "", const std::string &target_uri = "");
-
-    relationship(type t, const std::string &r_id = "", const std::string &target_uri = "");
+    /// <summary>
+    ///
+    /// </summary>
+    relationship(
+        const std::string &id, relationship_type t, const uri &source, const uri &target, xlnt::target_mode mode);
 
     /// <summary>
-    /// gets a string that identifies the relationship.
+    /// Returns a string of the form rId# that identifies the relationship.
     /// </summary>
-    std::string get_id() const;
+    std::string id() const;
 
     /// <summary>
-    /// gets the URI of the package or part that owns the relationship.
+    /// Returns the type of this relationship.
     /// </summary>
-    std::string get_source_uri() const;
+    relationship_type type() const;
 
     /// <summary>
-    /// gets a value that indicates whether the target of the relationship is or External to the Package.
+    /// Returns whether the target of the relationship is internal or external to the package.
     /// </summary>
-    target_mode get_target_mode() const;
+    xlnt::target_mode target_mode() const;
 
     /// <summary>
-    /// gets the URI of the target resource of the relationship.
+    /// Returns the URI of the package part this relationship points to.
     /// </summary>
-    std::string get_target_uri() const;
+    uri source() const;
 
-    type get_type() const;
+    /// <summary>
+    /// Returns the URI of the package part this relationship points to.
+    /// </summary>
+    uri target() const;
 
-    std::string get_type_string() const;
-
+    /// <summary>
+    /// Returns true if and only if rhs is equal to this relationship.
+    /// </summary>
     bool operator==(const relationship &rhs) const;
 
+    /// <summary>
+    /// Returns true if and only if rhs is not equal to this relationship.
+    /// </summary>
+    bool operator!=(const relationship &rhs) const;
+
 private:
-    type type_;
+    /// <summary>
+    ///
+    /// </summary>
     std::string id_;
-    std::string source_uri_;
-    std::string target_uri_;
-    target_mode target_mode_;
+
+    /// <summary>
+    ///
+    /// </summary>
+    relationship_type type_;
+
+    /// <summary>
+    ///
+    /// </summary>
+    uri source_;
+
+    /// <summary>
+    ///
+    /// </summary>
+    uri target_;
+
+    /// <summary>
+    ///
+    /// </summary>
+    xlnt::target_mode mode_;
 };
 
 } // namespace xlnt

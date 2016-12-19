@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <cstddef>
@@ -33,23 +34,67 @@ namespace xlnt {
 class workbook;
 class worksheet;
 
-class XLNT_CLASS const_worksheet_iterator : public std::iterator<std::bidirectional_iterator_tag, const worksheet, std::ptrdiff_t, const worksheet*, const worksheet>
+using c_ws_iter_type = std::iterator<std::bidirectional_iterator_tag,
+    const worksheet, std::ptrdiff_t, const worksheet *, const worksheet>;
+
+/// <summary>
+///
+/// </summary>
+class XLNT_API const_worksheet_iterator : public c_ws_iter_type
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     const_worksheet_iterator(const workbook &wb, std::size_t index);
+
+    /// <summary>
+    ///
+    /// </summary>
     const_worksheet_iterator(const const_worksheet_iterator &);
+
+    /// <summary>
+    ///
+    /// </summary>
     const_worksheet_iterator &operator=(const const_worksheet_iterator &);
+
+    /// <summary>
+    ///
+    /// </summary>
     const worksheet operator*();
+
+    /// <summary>
+    ///
+    /// </summary>
     bool operator==(const const_worksheet_iterator &comparand) const;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool operator!=(const const_worksheet_iterator &comparand) const
     {
         return !(*this == comparand);
     }
+
+    /// <summary>
+    ///
+    /// </summary>
     const_worksheet_iterator operator++(int);
+
+    /// <summary>
+    ///
+    /// </summary>
     const_worksheet_iterator &operator++();
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
     const workbook &wb_;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::size_t index_;
 };
 

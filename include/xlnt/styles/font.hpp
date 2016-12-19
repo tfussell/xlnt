@@ -21,13 +21,14 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <string>
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/styles/color.hpp>
-#include <xlnt/utils/hash_combine.hpp>
+#include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 
@@ -36,9 +37,12 @@ class style;
 /// <summary>
 /// Describes the font style of a particular cell.
 /// </summary>
-class XLNT_CLASS font : public hashable
+class XLNT_API font
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     enum class underline_style
     {
         none,
@@ -47,70 +51,212 @@ public:
         single,
         single_accounting
     };
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     font();
 
-    void set_bold(bool bold);
+    /// <summary>
+    ///
+    /// </summary>
+    font &bold(bool bold);
 
-    bool is_bold() const;
+    /// <summary>
+    ///
+    /// </summary>
+    bool bold() const;
 
-    void set_italic(bool italic);
+    /// <summary>
+    ///
+    /// </summary>
+    font &superscript(bool superscript);
 
-    bool is_italic() const;
+    /// <summary>
+    ///
+    /// </summary>
+    bool superscript() const;
 
-    void set_strikethrough(bool strikethrough);
+    /// <summary>
+    ///
+    /// </summary>
+    font &italic(bool italic);
 
-    bool is_strikethrough() const;
+    /// <summary>
+    ///
+    /// </summary>
+    bool italic() const;
 
-    void set_underline(underline_style new_underline);
+    /// <summary>
+    ///
+    /// </summary>
+    font &strikethrough(bool strikethrough);
 
-    bool is_underline() const;
+    /// <summary>
+    ///
+    /// </summary>
+    bool strikethrough() const;
 
-    underline_style get_underline() const;
+    /// <summary>
+    ///
+    /// </summary>
+    font &underline(underline_style new_underline);
 
-    void set_size(std::size_t size);
+    /// <summary>
+    ///
+    /// </summary>
+    bool underlined() const;
 
-    std::size_t get_size() const;
+    /// <summary>
+    ///
+    /// </summary>
+    underline_style underline() const;
 
-    void set_name(const std::string &name);
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_size() const;
 
-    std::string get_name() const;
+    /// <summary>
+    ///
+    /// </summary>
+    font &size(std::size_t size);
 
-    void set_color(color c);
+    /// <summary>
+    ///
+    /// </summary>
+    std::size_t size() const;
 
-    void set_family(std::size_t family);
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_name() const;
 
-    bool has_scheme() const;
+    /// <summary>
+    ///
+    /// </summary>
+    font &name(const std::string &name);
 
-    void set_scheme(const std::string &scheme);
+    /// <summary>
+    ///
+    /// </summary>
+    std::string name() const;
 
-    std::string get_scheme() const;
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_color() const;
 
-    color get_color() const;
+    /// <summary>
+    ///
+    /// </summary>
+    font &color(const color &c);
 
+    /// <summary>
+    ///
+    /// </summary>
+    xlnt::color color() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool has_family() const;
 
-    std::size_t get_family() const;
+    /// <summary>
+    ///
+    /// </summary>
+    font &family(std::size_t family);
 
-protected:
-    std::string to_hash_string() const override;
+    /// <summary>
+    ///
+    /// </summary>
+    std::size_t family() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_scheme() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    font &scheme(const std::string &scheme);
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::string scheme() const;
+
+    /// <summary>
+    /// Returns true if left is exactly equal to right.
+    /// </summary>
+    XLNT_API friend bool operator==(const font &left, const font &right);
+
+    /// <summary>
+    /// Returns true if left is not exactly equal to right.
+    /// </summary>
+    XLNT_API friend bool operator!=(const font &left, const font &right)
+    {
+        return !(left == right);
+    }
 
 private:
     friend class style;
 
-    std::string name_ = "Calibri";
-    std::size_t size_ = 12;
+    /// <summary>
+    ///
+    /// </summary>
+    optional<std::string> name_;
+
+    /// <summary>
+    ///
+    /// </summary>
+    optional<std::size_t> size_;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool bold_ = false;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool italic_ = false;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool superscript_ = false;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool subscript_ = false;
-    underline_style underline_ = underline_style::none;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool strikethrough_ = false;
-    color color_ = color(xlnt::color::type::theme, 1);
-    bool has_family_ = true;
-    std::size_t family_ = 2;
-    bool has_scheme_ = true;
-    std::string scheme_ = "minor";
+
+    /// <summary>
+    ///
+    /// </summary>
+    underline_style underline_ = underline_style::none;
+
+    /// <summary>
+    ///
+    /// </summary>
+    optional<xlnt::color> color_;
+
+    /// <summary>
+    ///
+    /// </summary>
+    optional<std::size_t> family_;
+
+    /// <summary>
+    ///
+    /// </summary>
+    optional<std::string> scheme_;
 };
 
 } // namespace xlnt

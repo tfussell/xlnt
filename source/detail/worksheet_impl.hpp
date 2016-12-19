@@ -31,6 +31,7 @@
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/sheet_view.hpp>
 #include <xlnt/worksheet/column_properties.hpp>
+#include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/row_properties.hpp>
 
 #include <detail/cell_impl.hpp>
@@ -43,10 +44,10 @@ namespace detail {
 
 struct worksheet_impl
 {
-    worksheet_impl(workbook *parent_workbook, const std::string &title)
+    worksheet_impl(workbook *parent_workbook, std::size_t id, const std::string &title)
         : parent_(parent_workbook),
-          title_(title),
-          comment_count_(0)
+          id_(id),
+          title_(title)
     {
     }
 
@@ -58,10 +59,13 @@ struct worksheet_impl
     void operator=(const worksheet_impl &other)
     {
         parent_ = other.parent_;
+
+        id_ = other.id_;
+        title_ = other.title_;
         column_properties_ = other.column_properties_;
         row_properties_ = other.row_properties_;
-        title_ = other.title_;
         cell_map_ = other.cell_map_;
+
         for (auto &row : cell_map_)
         {
             for (auto &cell : row.second)
@@ -69,37 +73,43 @@ struct worksheet_impl
                 cell.second.parent_ = this;
             }
         }
-        relationships_ = other.relationships_;
+
         page_setup_ = other.page_setup_;
         auto_filter_ = other.auto_filter_;
         page_margins_ = other.page_margins_;
         merged_cells_ = other.merged_cells_;
         named_ranges_ = other.named_ranges_;
-        comment_count_ = other.comment_count_;
         header_footer_ = other.header_footer_;
         print_title_cols_ = other.print_title_cols_;
         print_title_rows_ = other.print_title_rows_;
         print_area_ = other.print_area_;
-        view_ = other.view_;
+        views_ = other.views_;
     }
 
     workbook *parent_;
+
+    std::size_t id_;
+    std::string title_;
+
     std::unordered_map<column_t, column_properties> column_properties_;
     std::unordered_map<row_t, row_properties> row_properties_;
-    std::string title_;
+
     std::unordered_map<row_t, std::unordered_map<column_t, cell_impl>> cell_map_;
-    std::vector<relationship> relationships_;
-    page_setup page_setup_;
-    range_reference auto_filter_;
-    page_margins page_margins_;
+
+    optional<page_setup> page_setup_;
+    optional<range_reference> auto_filter_;
+    optional<page_margins> page_margins_;
     std::vector<range_reference> merged_cells_;
     std::unordered_map<std::string, named_range> named_ranges_;
-    std::size_t comment_count_;
-    header_footer header_footer_;
+
+    optional<header_footer> header_footer_;
+
     std::string print_title_cols_;
     std::string print_title_rows_;
-    range_reference print_area_;
-    sheet_view view_;
+
+    optional<range_reference> print_area_;
+
+    std::vector<sheet_view> views_;
 };
 
 } // namespace detail

@@ -20,6 +20,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
@@ -32,17 +33,76 @@ namespace xlnt {
 /// <summary>
 /// The selected area of a worksheet.
 /// </summary>
-class XLNT_CLASS selection
+class XLNT_API selection
 {
 public:
-    cell_reference get_active_cell() const { return active_cell_; }
-    range_reference get_sqref() const { return sqref_; }
-    pane_corner get_pane() const { return pane_; }
-    void set_pane(pane_corner corner) { pane_ = corner; }
-    
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_active_cell() const
+    {
+        return active_cell_.is_set();
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    cell_reference active_cell() const
+    {
+        return active_cell_.get();
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    void active_cell(const cell_reference &ref)
+    {
+        active_cell_ = ref;
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    range_reference sqref() const
+    {
+        return sqref_;
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    pane_corner pane() const
+    {
+        return pane_;
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    void pane(pane_corner corner)
+    {
+        pane_ = corner;
+    }
+
+    bool operator==(const selection &rhs) const
+    {
+        return active_cell_ == rhs.active_cell_ && sqref_ == rhs.sqref_ && pane_ == rhs.pane_;
+    }
+
 private:
-    cell_reference active_cell_;
+    /// <summary>
+    ///
+    /// </summary>
+    optional<cell_reference> active_cell_;
+
+    /// <summary>
+    ///
+    /// </summary>
     range_reference sqref_;
+
+    /// <summary>
+    ///
+    /// </summary>
     pane_corner pane_;
 };
 

@@ -21,65 +21,182 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <cstddef>
 #include <functional>
+#include <unordered_map>
+#include <vector>
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/styles/border_style.hpp>
+#include <xlnt/styles/color.hpp>
 #include <xlnt/styles/diagonal_direction.hpp>
-#include <xlnt/styles/side.hpp>
-#include <xlnt/utils/hashable.hpp>
 #include <xlnt/utils/optional.hpp>
+
+namespace xlnt {
+
+/// <summary>
+///
+/// </summary>
+enum class XLNT_API border_side
+{
+    start,
+    end,
+    top,
+    bottom,
+    diagonal,
+    vertical,
+    horizontal
+};
+
+} // namespace xlnt
 
 namespace xlnt {
 
 /// <summary>
 /// Describes the border style of a particular cell.
 /// </summary>
-class XLNT_CLASS border : public hashable
+class XLNT_API border
 {
 public:
-    static border default_border();
+    /// <summary>
+    ///
+    /// </summary>
+    class XLNT_API border_property
+    {
+    public:
+        /// <summary>
+        ///
+        /// </summary>
+        optional<class color> color() const;
 
-    std::experimental::optional<side> &get_start();
-    const std::experimental::optional<side> &get_start() const;
-    std::experimental::optional<side> &get_end();
-    const std::experimental::optional<side> &get_end() const;
-    std::experimental::optional<side> &get_left();
-    const std::experimental::optional<side> &get_left() const;
-    std::experimental::optional<side> &get_right();
-    const std::experimental::optional<side> &get_right() const;
-    std::experimental::optional<side> &get_top();
-    const std::experimental::optional<side> &get_top() const;
-    std::experimental::optional<side> &get_bottom();
-    const std::experimental::optional<side> &get_bottom() const;
-    std::experimental::optional<side> &get_diagonal();
-    const std::experimental::optional<side> &get_diagonal() const;
-    std::experimental::optional<side> &get_vertical();
-    const std::experimental::optional<side> &get_vertical() const;
-    std::experimental::optional<side> &get_horizontal();
-    const std::experimental::optional<side> &get_horizontal() const;
+        /// <summary>
+        ///
+        /// </summary>
+        border_property &color(const xlnt::color &c);
 
-protected:
-    std::string to_hash_string() const override;
+        /// <summary>
+        ///
+        /// </summary>
+        optional<border_style> style() const;
+
+        /// <summary>
+        ///
+        /// </summary>
+        border_property &style(border_style style);
+
+        /// <summary>
+        /// Returns true if left is exactly equal to right.
+        /// </summary>
+        friend bool operator==(const border_property &left, const border_property &right);
+
+        /// <summary>
+        /// Returns true if left is not exactly equal to right.
+        /// </summary>
+        friend bool operator!=(const border_property &left, const border_property &right)
+        {
+            return !(left == right);
+        }
+
+    private:
+        /// <summary>
+        ///
+        /// </summary>
+        optional<class color> color_;
+
+        /// <summary>
+        ///
+        /// </summary>
+        optional<border_style> style_;
+    };
+
+    /// <summary>
+    ///
+    /// </summary>
+    static const std::vector<border_side> &all_sides();
+
+    /// <summary>
+    ///
+    /// </summary>
+    border();
+
+    /// <summary>
+    ///
+    /// </summary>
+    optional<border_property> side(border_side s) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    border &side(border_side s, const border_property &prop);
+
+    /// <summary>
+    ///
+    /// </summary>
+    optional<diagonal_direction> diagonal() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    border &diagonal(diagonal_direction dir);
+
+    /// <summary>
+    /// Returns true if left is exactly equal to right.
+    /// </summary>
+    XLNT_API friend bool operator==(const border &left, const border &right);
+
+    /// <summary>
+    /// Returns true if left is not exactly equal to right.
+    /// </summary>
+    XLNT_API friend bool operator!=(const border &left, const border &right)
+    {
+        return !(left == right);
+    }
 
 private:
-    std::experimental::optional<side> start_;
-    std::experimental::optional<side> end_;
-    std::experimental::optional<side> left_ = side();
-    std::experimental::optional<side> right_ = side();
-    std::experimental::optional<side> top_ = side();
-    std::experimental::optional<side> bottom_ = side();
-    std::experimental::optional<side> diagonal_ = side();
-    std::experimental::optional<side> vertical_;
-    std::experimental::optional<side> horizontal_;
+    /// <summary>
+    ///
+    /// </summary>
+    optional<border_property> start_;
 
-    bool outline_ = false;
-    bool diagonal_up_ = false;
-    bool diagonal_down_ = false;
+    /// <summary>
+    ///
+    /// </summary>
+    optional<border_property> end_;
 
-    diagonal_direction diagonal_direction_ = diagonal_direction::none;
+    /// <summary>
+    ///
+    /// </summary>
+    optional<border_property> top_;
+
+    /// <summary>
+    ///
+    /// </summary>
+    optional<border_property> bottom_;
+
+    /// <summary>
+    ///
+    /// </summary>
+    optional<border_property> vertical_;
+
+    /// <summary>
+    ///
+    /// </summary>
+    optional<border_property> horizontal_;
+
+    /// <summary>
+    ///
+    /// </summary>
+    optional<border_property> diagonal_;
+
+    // bool outline_ = true;
+
+    /// <summary>
+    ///
+    /// </summary>
+    optional<diagonal_direction> diagonal_direction_;
 };
 
 } // namespace xlnt

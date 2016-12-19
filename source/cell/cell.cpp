@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #include <algorithm>
 #include <cmath>
 #include <sstream>
@@ -28,92 +29,118 @@
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/cell/comment.hpp>
-#include <xlnt/cell/text.hpp>
-#include <xlnt/packaging/document_properties.hpp>
+#include <xlnt/cell/formatted_text.hpp>
 #include <xlnt/packaging/relationship.hpp>
+#include <xlnt/styles/alignment.hpp>
+#include <xlnt/styles/border.hpp>
 #include <xlnt/styles/color.hpp>
+#include <xlnt/styles/fill.hpp>
+#include <xlnt/styles/font.hpp>
 #include <xlnt/styles/format.hpp>
+#include <xlnt/styles/number_format.hpp>
+#include <xlnt/styles/protection.hpp>
 #include <xlnt/styles/style.hpp>
 #include <xlnt/utils/date.hpp>
 #include <xlnt/utils/datetime.hpp>
+#include <xlnt/utils/exceptions.hpp>
 #include <xlnt/utils/time.hpp>
 #include <xlnt/utils/timedelta.hpp>
-#include <xlnt/utils/exceptions.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/column_properties.hpp>
 #include <xlnt/worksheet/row_properties.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
 #include <detail/cell_impl.hpp>
-#include <detail/comment_impl.hpp>
-
+#include <detail/stylesheet.hpp>
 
 namespace {
 
 std::pair<bool, long double> cast_numeric(const std::string &s)
 {
-	const char *str = s.c_str();
-	char *str_end = nullptr;
-	auto result = std::strtold(str, &str_end);
-	if (str_end != str + s.size()) return{ false, 0 };
-	return{ true, result };
+    const char *str = s.c_str();
+    char *str_end = nullptr;
+    auto result = std::strtold(str, &str_end);
+    if (str_end != str + s.size()) return {false, 0};
+    return {true, result};
 }
 
 std::pair<bool, long double> cast_percentage(const std::string &s)
 {
-	if (s.back() == '%')
-	{
-		auto number = cast_numeric(s.substr(0, s.size() - 1));
+    if (s.back() == '%')
+    {
+        auto number = cast_numeric(s.substr(0, s.size() - 1));
 
-		if (number.first)
-		{
-			return{ true, number.second / 100 };
-		}
-	}
+        if (number.first)
+        {
+            return {true, number.second / 100};
+        }
+    }
 
-	return{ false, 0 };
+    return {false, 0};
 }
 
 std::pair<bool, xlnt::time> cast_time(const std::string &s)
 {
-	xlnt::time result;
+    xlnt::time result;
 
-	try
-	{
-		auto last_colon = s.find_last_of(':');
-		if (last_colon == std::string::npos) return{ false, result };
-		double seconds = std::stod(s.substr(last_colon + 1));
-		result.second = static_cast<int>(seconds);
-		result.microsecond = static_cast<int>((seconds - static_cast<double>(result.second)) * 1e6);
+    std::vector<std::string> time_components;
+    std::size_t prev = 0;
+    auto colon_index = s.find(':');
 
-		auto first_colon = s.find_first_of(':');
+    while (colon_index != std::string::npos)
+    {
+        time_components.push_back(s.substr(prev, colon_index - prev));
+        prev = colon_index + 1;
+        colon_index = s.find(':', colon_index + 1);
+    }
 
-		if (first_colon == last_colon)
-		{
-			auto decimal_pos = s.find('.');
-			if (decimal_pos != std::string::npos)
-			{
-				result.minute = std::stoi(s.substr(0, first_colon));
-			}
-			else
-			{
-				result.hour = std::stoi(s.substr(0, first_colon));
-				result.minute = result.second;
-				result.second = 0;
-			}
-		}
-		else
-		{
-			result.hour = std::stoi(s.substr(0, first_colon));
-			result.minute = std::stoi(s.substr(first_colon + 1, last_colon - first_colon - 1));
-		}
-	}
-	catch (std::invalid_argument)
-	{
-		return{ false, result };
-	}
+    time_components.push_back(s.substr(prev, colon_index - prev));
 
-	return{ true, result };
+    if (time_components.size() < 2 || time_components.size() > 3)
+    {
+        return {false, result};
+    }
+
+    std::vector<double> numeric_components;
+
+    for (auto component : time_components)
+    {
+        if (component.empty() || (component.substr(0, component.find('.')).size() > 2))
+        {
+            return {false, result};
+        }
+
+        for (auto d : component)
+        {
+            if (!(d >= '0' && d <= '9') && d != '.')
+            {
+                return {false, result};
+            }
+        }
+
+        auto without_leading_zero = component.front() == '0' ? component.substr(1) : component;
+        auto numeric = std::stod(without_leading_zero);
+
+        numeric_components.push_back(numeric);
+    }
+
+    result.hour = static_cast<int>(numeric_components[0]);
+    result.minute = static_cast<int>(numeric_components[1]);
+
+    if (std::fabs(static_cast<double>(result.minute) - numeric_components[1]) > std::numeric_limits<double>::epsilon())
+    {
+        result.minute = result.hour;
+        result.hour = 0;
+        result.second = static_cast<int>(numeric_components[1]);
+        result.microsecond = static_cast<int>((numeric_components[1] - result.second) * 1E6);
+    }
+    else if (numeric_components.size() > 2)
+    {
+        result.second = static_cast<int>(numeric_components[2]);
+        result.microsecond = static_cast<int>((numeric_components[2] - result.second) * 1E6);
+    }
+
+    return {true, result};
 }
 
 } // namespace
@@ -122,13 +149,19 @@ namespace xlnt {
 
 const std::unordered_map<std::string, int> &cell::error_codes()
 {
-    static const std::unordered_map<std::string, int> *codes =
-    new std::unordered_map<std::string, int>({ { "#NULL!", 0 }, { "#DIV/0!", 1 }, { "#VALUE!", 2 },
-                                                                { "#REF!", 3 },  { "#NAME?", 4 },  { "#NUM!", 5 },
-                                                                { "#N/A!", 6 } });
+    static const auto *codes = new std::unordered_map<std::string, int>
+    {
+        {"#NULL!", 0},
+        {"#DIV/0!", 1},
+        {"#VALUE!", 2},
+        {"#REF!", 3},
+        {"#NAME?", 4},
+        {"#NUM!", 5},
+        {"#N/A!", 6}
+    };
 
     return *codes;
-};
+}
 
 std::string cell::check_string(const std::string &to_check)
 {
@@ -148,96 +181,86 @@ std::string cell::check_string(const std::string &to_check)
     {
         if (c >= 0 && (c <= 8 || c == 11 || c == 12 || (c >= 14 && c <= 31)))
         {
-            throw xlnt::illegal_character_error(c);
+            throw illegal_character(c);
         }
     }
 
     return s;
 }
 
-cell::cell() : d_(nullptr)
-{
-}
-
 cell::cell(detail::cell_impl *d) : d_(d)
 {
 }
 
-cell::cell(worksheet worksheet, const cell_reference &reference) : d_(nullptr)
-{
-    cell self = worksheet.get_cell(reference);
-    d_ = self.d_;
-}
-
-template <typename T>
-cell::cell(worksheet worksheet, const cell_reference &reference, const T &initial_value) : cell(worksheet, reference)
-{
-    set_value(initial_value);
-}
-
 bool cell::garbage_collectible() const
 {
-    return !(get_data_type() != type::null || is_merged() || has_comment() || has_formula() || has_format());
+    return !(data_type() != type::null || is_merged() || has_formula() || has_format());
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(bool b)
+XLNT_API void cell::value(std::nullptr_t)
+{
+    d_->type_ = type::null;
+}
+
+template <>
+XLNT_API void cell::value(bool b)
 {
     d_->value_numeric_ = b ? 1 : 0;
     d_->type_ = type::boolean;
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(std::int8_t i)
+XLNT_API void cell::value(std::int8_t i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(std::int16_t i)
+XLNT_API void cell::value(std::int16_t i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(std::int32_t i)
+XLNT_API void cell::value(std::int32_t i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(std::int64_t i)
+XLNT_API void cell::value(std::int64_t i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(std::uint8_t i)
+XLNT_API void cell::value(std::uint8_t i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(std::uint16_t i)
+XLNT_API void cell::value(std::uint16_t i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(std::uint32_t i)
+XLNT_API void cell::value(std::uint32_t i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(std::uint64_t i)
+XLNT_API void cell::value(std::uint64_t i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
@@ -245,7 +268,7 @@ XLNT_FUNCTION void cell::set_value(std::uint64_t i)
 
 #ifdef _MSC_VER
 template <>
-XLNT_FUNCTION void cell::set_value(unsigned long i)
+XLNT_API void cell::value(unsigned long i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
@@ -254,14 +277,14 @@ XLNT_FUNCTION void cell::set_value(unsigned long i)
 
 #ifdef __linux
 template <>
-XLNT_FUNCTION void cell::set_value(long long i)
+XLNT_API void cell::value(long long i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(unsigned long long i)
+XLNT_API void cell::value(unsigned long long i)
 {
     d_->value_numeric_ = static_cast<long double>(i);
     d_->type_ = type::numeric;
@@ -269,134 +292,127 @@ XLNT_FUNCTION void cell::set_value(unsigned long long i)
 #endif
 
 template <>
-XLNT_FUNCTION void cell::set_value(float f)
+XLNT_API void cell::value(float f)
 {
     d_->value_numeric_ = static_cast<long double>(f);
     d_->type_ = type::numeric;
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(double d)
+XLNT_API void cell::value(double d)
 {
     d_->value_numeric_ = static_cast<long double>(d);
     d_->type_ = type::numeric;
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(long double d)
+XLNT_API void cell::value(long double d)
 {
     d_->value_numeric_ = static_cast<long double>(d);
     d_->type_ = type::numeric;
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(std::string s)
+XLNT_API void cell::value(std::string s)
 {
-	s = check_string(s);
+    s = check_string(s);
 
-	if (s.size() > 1 && s.front() == '=')
-	{
-		d_->type_ = type::formula;
-		set_formula(s);
-	}
-	else if (cell::error_codes().find(s) != cell::error_codes().end())
-	{
-		set_error(s);
-	}
-	else
-	{
-		d_->type_ = type::string;
-        d_->value_text_.set_plain_string(s);
-        
-        if (s.size() > 0)
-        {
-            get_workbook().add_shared_string(d_->value_text_);
-        }
-	}
-
-	if (get_workbook().get_guess_types())
-	{
-		guess_type_and_set_value(s);
-	}
-}
-
-template <>
-XLNT_FUNCTION void cell::set_value(text t)
-{
-    if (t.get_runs().size() == 1 && !t.get_runs().front().has_formatting())
+    if (s.size() > 1 && s.front() == '=')
     {
-        set_value(t.get_plain_string());
+        d_->type_ = type::formula;
+        formula(s);
+    }
+    else if (cell::error_codes().find(s) != cell::error_codes().end())
+    {
+        error(s);
     }
     else
     {
         d_->type_ = type::string;
-        d_->value_text_ = t;
-        get_workbook().add_shared_string(t);
+        d_->value_text_.plain_text(s);
+
+        if (s.size() > 0)
+        {
+            workbook().add_shared_string(d_->value_text_);
+        }
     }
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(char const *c)
+XLNT_API void cell::value(formatted_text text)
 {
-    set_value(std::string(c));
+    if (text.runs().size() == 1 && !text.runs().front().has_formatting())
+    {
+        value(text.plain_text());
+    }
+    else
+    {
+        d_->type_ = type::string;
+        d_->value_text_ = text;
+        workbook().add_shared_string(text);
+    }
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(cell c)
+XLNT_API void cell::value(char const *c)
+{
+    value(std::string(c));
+}
+
+template <>
+XLNT_API void cell::value(cell c)
 {
     d_->type_ = c.d_->type_;
     d_->value_numeric_ = c.d_->value_numeric_;
     d_->value_text_ = c.d_->value_text_;
     d_->hyperlink_ = c.d_->hyperlink_;
-    d_->has_hyperlink_ = c.d_->has_hyperlink_;
     d_->formula_ = c.d_->formula_;
-    d_->format_id_ = c.d_->format_id_;
-    if (c.has_comment()) set_comment(c.get_comment());
+    d_->format_ = c.d_->format_;
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(date d)
+XLNT_API void cell::value(date d)
 {
     d_->type_ = type::numeric;
-    d_->value_numeric_ = d.to_number(get_base_date());
-    set_number_format(number_format::date_yyyymmdd2());
+    d_->value_numeric_ = d.to_number(base_date());
+    number_format(number_format::date_yyyymmdd2());
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(datetime d)
+XLNT_API void cell::value(datetime d)
 {
     d_->type_ = type::numeric;
-    d_->value_numeric_ = d.to_number(get_base_date());
-    set_number_format(number_format::date_datetime());
+    d_->value_numeric_ = d.to_number(base_date());
+    number_format(number_format::date_datetime());
 }
 
 template <>
-XLNT_FUNCTION void cell::set_value(time t)
-{
-    d_->type_ = type::numeric;
-    d_->value_numeric_ = t.to_number();
-    set_number_format(number_format::date_time6());
-}
-
-template <>
-XLNT_FUNCTION void cell::set_value(timedelta t)
+XLNT_API void cell::value(time t)
 {
     d_->type_ = type::numeric;
     d_->value_numeric_ = t.to_number();
-    set_number_format(number_format("[hh]:mm:ss"));
+    number_format(number_format::date_time6());
 }
 
-row_t cell::get_row() const
+template <>
+XLNT_API void cell::value(timedelta t)
+{
+    d_->type_ = type::numeric;
+    d_->value_numeric_ = t.to_number();
+    number_format(xlnt::number_format("[hh]:mm:ss"));
+}
+
+row_t cell::row() const
 {
     return d_->row_;
 }
 
-column_t cell::get_column() const
+column_t cell::column() const
 {
     return d_->column_;
 }
 
-void cell::set_merged(bool merged)
+void cell::merged(bool merged)
 {
     d_->is_merged_ = merged;
 }
@@ -408,12 +424,12 @@ bool cell::is_merged() const
 
 bool cell::is_date() const
 {
-    return get_data_type() == type::numeric && get_number_format().is_date_format();
+    return data_type() == type::numeric && has_format() && number_format().is_date_format();
 }
 
-cell_reference cell::get_reference() const
+cell_reference cell::reference() const
 {
-    return { d_->column_, d_->row_ };
+    return {d_->column_, d_->row_};
 }
 
 bool cell::operator==(std::nullptr_t) const
@@ -428,51 +444,45 @@ bool cell::operator==(const cell &comparand) const
 
 cell &cell::operator=(const cell &rhs)
 {
-    *d_ = *rhs.d_;
+    d_->column_ = rhs.d_->column_;
+    d_->format_ = rhs.d_->format_;
+    d_->formula_ = rhs.d_->formula_;
+    d_->hyperlink_ = rhs.d_->hyperlink_;
+    d_->is_merged_ = rhs.d_->is_merged_;
+    d_->parent_ = rhs.d_->parent_;
+    d_->row_ = rhs.d_->row_;
+    d_->type_ = rhs.d_->type_;
+    d_->value_numeric_ = rhs.d_->value_numeric_;
+    d_->value_text_ = rhs.d_->value_text_;
+
     return *this;
 }
 
-std::string cell::to_repr() const
+std::string cell::hyperlink() const
 {
-    return "<Cell " + worksheet(d_->parent_).get_title() + "." + get_reference().to_string() + ">";
+    return d_->hyperlink_.get();
 }
 
-relationship cell::get_hyperlink() const
-{
-    if (!d_->has_hyperlink_)
-    {
-        throw std::runtime_error("no hyperlink set");
-    }
-
-    return d_->hyperlink_;
-}
-
-bool cell::has_hyperlink() const
-{
-    return d_->has_hyperlink_;
-}
-
-void cell::set_hyperlink(const std::string &hyperlink)
+void cell::hyperlink(const std::string &hyperlink)
 {
     if (hyperlink.length() == 0 || std::find(hyperlink.begin(), hyperlink.end(), ':') == hyperlink.end())
     {
-        throw data_type_error();
+        throw invalid_parameter();
     }
 
-    d_->has_hyperlink_ = true;
-    d_->hyperlink_ = worksheet(d_->parent_).create_relationship(relationship::type::hyperlink, hyperlink);
+    d_->hyperlink_ = hyperlink;
 
-    if (get_data_type() == type::null)
+    if (data_type() == type::null)
     {
-        set_value(hyperlink);
+        value(hyperlink);
     }
 }
 
-void cell::set_formula(const std::string &formula)
+void cell::formula(const std::string &formula)
 {
-    if (formula.length() == 0)
+    if (formula.empty())
     {
-        throw data_type_error();
+        throw invalid_parameter();
     }
 
     if (formula[0] == '=')
@@ -487,17 +497,12 @@ void cell::set_formula(const std::string &formula)
 
 bool cell::has_formula() const
 {
-    return !d_->formula_.empty();
+    return d_->formula_.is_set();
 }
 
-std::string cell::get_formula() const
+std::string cell::formula() const
 {
-    if (d_->formula_.empty())
-    {
-        throw data_type_error();
-    }
-
-    return d_->formula_;
+    return d_->formula_.get();
 }
 
 void cell::clear_formula()
@@ -505,106 +510,64 @@ void cell::clear_formula()
     d_->formula_.clear();
 }
 
-void cell::set_comment(const xlnt::comment &c)
-{
-    if (c.d_ != d_->comment_.get())
-    {
-        throw xlnt::attribute_error();
-    }
-
-    if (!has_comment())
-    {
-        get_worksheet().increment_comments();
-    }
-
-    *get_comment().d_ = *c.d_;
-}
-
-void cell::clear_comment()
-{
-    if (has_comment())
-    {
-        get_worksheet().decrement_comments();
-    }
-
-    d_->comment_ = nullptr;
-}
-
-bool cell::has_comment() const
-{
-    return d_->comment_ != nullptr;
-}
-
-void cell::set_error(const std::string &error)
+void cell::error(const std::string &error)
 {
     if (error.length() == 0 || error[0] != '#')
     {
-        throw data_type_error();
+        throw invalid_data_type();
     }
 
-    d_->value_text_.set_plain_string(error);
+    d_->value_text_.plain_text(error);
     d_->type_ = type::error;
 }
 
 cell cell::offset(int column, int row)
 {
-    return get_worksheet().get_cell(cell_reference(d_->column_ + column, d_->row_ + row));
+    return worksheet().cell(reference().make_offset(column, row));
 }
 
-worksheet cell::get_worksheet()
+worksheet cell::worksheet()
 {
-    return worksheet(d_->parent_);
+    return xlnt::worksheet(d_->parent_);
 }
 
-const worksheet cell::get_worksheet() const
+const worksheet cell::worksheet() const
 {
-    return worksheet(d_->parent_);
+    return xlnt::worksheet(d_->parent_);
 }
 
-workbook &cell::get_workbook()
+workbook &cell::workbook()
 {
-	return get_worksheet().get_workbook();
+    return worksheet().workbook();
 }
 
-const workbook &cell::get_workbook() const
+const workbook &cell::workbook() const
 {
-	return get_worksheet().get_workbook();
-}
-comment cell::get_comment()
-{
-    if (d_->comment_ == nullptr)
-    {
-        d_->comment_.reset(new detail::comment_impl());
-        get_worksheet().increment_comments();
-    }
-
-    return comment(d_->comment_.get());
+    return worksheet().workbook();
 }
 
-//TODO: this shares a lot of code with worksheet::get_point_pos, try to reduce repition
-std::pair<int, int> cell::get_anchor() const
+// TODO: this shares a lot of code with worksheet::point_pos, try to reduce repetion
+std::pair<int, int> cell::anchor() const
 {
-    static const double DefaultColumnWidth = 51.85;
-    static const double DefaultRowHeight = 15.0;
+    static const auto DefaultColumnWidth = 51.85L;
+    static const auto DefaultRowHeight = 15.0L;
 
-    auto points_to_pixels = [](long double value, long double dpi)
-    {
-        return static_cast<int>(std::ceil(value * dpi / 72));
-    };
-    
+    auto points_to_pixels = [](
+        long double value, long double dpi) { return static_cast<int>(std::ceil(value * dpi / 72)); };
+
     auto left_columns = d_->column_ - 1;
     int left_anchor = 0;
-    auto default_width = points_to_pixels(DefaultColumnWidth, 96.0);
+    auto default_width = points_to_pixels(DefaultColumnWidth, 96.0L);
 
     for (column_t column_index = 1; column_index <= left_columns; column_index++)
     {
-        if (get_worksheet().has_column_properties(column_index))
+        if (worksheet().has_column_properties(column_index))
         {
-            auto cdw = get_worksheet().get_column_properties(column_index).width;
+            auto cdw = worksheet().column_properties(column_index).width;
 
             if (cdw > 0)
             {
-                left_anchor += points_to_pixels(cdw, 96.0);
+                left_anchor += points_to_pixels(cdw, 96.0L);
                 continue;
             }
         }
@@ -614,17 +577,17 @@ std::pair<int, int> cell::get_anchor() const
 
     auto top_rows = d_->row_ - 1;
     int top_anchor = 0;
-    auto default_height = points_to_pixels(DefaultRowHeight, 96.0);
+    auto default_height = points_to_pixels(DefaultRowHeight, 96.0L);
 
     for (row_t row_index = 1; row_index <= top_rows; row_index++)
     {
-        if (get_worksheet().has_row_properties(row_index))
+        if (worksheet().has_row_properties(row_index))
         {
-            auto rdh = get_worksheet().get_row_properties(row_index).height;
+            auto rdh = worksheet().row_properties(row_index).height;
 
             if (rdh > 0)
             {
-                top_anchor += points_to_pixels(rdh, 96.0);
+                top_anchor += points_to_pixels(rdh, 96.0L);
                 continue;
             }
         }
@@ -632,89 +595,47 @@ std::pair<int, int> cell::get_anchor() const
         top_anchor += default_height;
     }
 
-    return { left_anchor, top_anchor };
+    return {left_anchor, top_anchor};
 }
 
-cell::type cell::get_data_type() const
+cell::type cell::data_type() const
 {
     return d_->type_;
 }
 
-void cell::set_data_type(type t)
+void cell::data_type(type t)
 {
     d_->type_ = t;
 }
 
-const number_format &cell::get_number_format() const
+number_format cell::computed_number_format() const
 {
-    if (d_->has_format_)
-    {
-        return get_workbook().get_format(d_->format_id_).get_number_format();
-    }
-    else
-    {
-        return get_workbook().get_format(0).get_number_format();
-    }
+    return xlnt::number_format();
 }
 
-const font &cell::get_font() const
+font cell::computed_font() const
 {
-    if (d_->has_format_)
-    {
-        return get_workbook().get_format(d_->format_id_).get_font();
-    }
-    else
-    {
-        return get_workbook().get_format(0).get_font();
-    }
+    return xlnt::font();
 }
 
-const fill &cell::get_fill() const
+fill cell::computed_fill() const
 {
-    if (d_->has_format_)
-    {
-        return get_workbook().get_format(d_->format_id_).get_fill();
-    }
-    else
-    {
-        return get_workbook().get_format(0).get_fill();
-    }
+    return xlnt::fill();
 }
 
-const border &cell::get_border() const
+border cell::computed_border() const
 {
-    if (d_->has_format_)
-    {
-        return get_workbook().get_format(d_->format_id_).get_border();
-    }
-    else
-    {
-        return get_workbook().get_format(0).get_border();
-    }
+    return xlnt::border();
 }
 
-const alignment &cell::get_alignment() const
+alignment cell::computed_alignment() const
 {
-    if (d_->has_format_)
-    {
-        return get_workbook().get_format(d_->format_id_).get_alignment();
-    }
-    else
-    {
-        return get_workbook().get_format(0).get_alignment();
-    }
+    return xlnt::alignment();
 }
 
-const protection &cell::get_protection() const
+protection cell::computed_protection() const
 {
-    if (d_->has_format_)
-    {
-        return get_workbook().get_format(d_->format_id_).get_protection();
-    }
-    else
-    {
-        return get_workbook().get_format(0).get_protection();
-    }
+    return xlnt::protection();
 }
 
 void cell::clear_value()
@@ -726,185 +647,159 @@ void cell::clear_value()
 }
 
 template <>
-XLNT_FUNCTION bool cell::get_value() const
+XLNT_API bool cell::value() const
 {
-    return d_->value_numeric_ != 0;
+    return d_->value_numeric_ != 0.L;
 }
 
 template <>
-XLNT_FUNCTION std::int8_t cell::get_value() const
+XLNT_API std::int8_t cell::value() const
 {
     return static_cast<std::int8_t>(d_->value_numeric_);
 }
 
 template <>
-XLNT_FUNCTION std::int16_t cell::get_value() const
+XLNT_API std::int16_t cell::value() const
 {
     return static_cast<std::int16_t>(d_->value_numeric_);
 }
 
 template <>
-XLNT_FUNCTION std::int32_t cell::get_value() const
+XLNT_API std::int32_t cell::value() const
 {
     return static_cast<std::int32_t>(d_->value_numeric_);
 }
 
 template <>
-XLNT_FUNCTION std::int64_t cell::get_value() const
+XLNT_API std::int64_t cell::value() const
 {
     return static_cast<std::int64_t>(d_->value_numeric_);
 }
 
 template <>
-XLNT_FUNCTION std::uint8_t cell::get_value() const
+XLNT_API std::uint8_t cell::value() const
 {
     return static_cast<std::uint8_t>(d_->value_numeric_);
 }
 
 template <>
-XLNT_FUNCTION std::uint16_t cell::get_value() const
+XLNT_API std::uint16_t cell::value() const
 {
     return static_cast<std::uint16_t>(d_->value_numeric_);
 }
 
 template <>
-XLNT_FUNCTION std::uint32_t cell::get_value() const
+XLNT_API std::uint32_t cell::value() const
 {
     return static_cast<std::uint32_t>(d_->value_numeric_);
 }
 
 template <>
-XLNT_FUNCTION std::uint64_t cell::get_value() const
+XLNT_API std::uint64_t cell::value() const
 {
     return static_cast<std::uint64_t>(d_->value_numeric_);
 }
 
 #ifdef __linux
 template <>
-XLNT_FUNCTION long long cell::get_value() const
+XLNT_API long long cell::value() const
 {
     return static_cast<long long>(d_->value_numeric_);
 }
 
 template <>
-XLNT_FUNCTION unsigned long long cell::get_value() const
+XLNT_API unsigned long long cell::value() const
 {
     return static_cast<unsigned long long>(d_->value_numeric_);
 }
 #endif
 
 template <>
-XLNT_FUNCTION float cell::get_value() const
+XLNT_API float cell::value() const
 {
     return static_cast<float>(d_->value_numeric_);
 }
 
 template <>
-XLNT_FUNCTION double cell::get_value() const
+XLNT_API double cell::value() const
 {
     return static_cast<double>(d_->value_numeric_);
 }
 
 template <>
-XLNT_FUNCTION long double cell::get_value() const
+XLNT_API long double cell::value() const
 {
     return d_->value_numeric_;
 }
 
 template <>
-XLNT_FUNCTION time cell::get_value() const
+XLNT_API time cell::value() const
 {
     return time::from_number(d_->value_numeric_);
 }
 
 template <>
-XLNT_FUNCTION datetime cell::get_value() const
+XLNT_API datetime cell::value() const
 {
-    return datetime::from_number(d_->value_numeric_, get_base_date());
+    return datetime::from_number(d_->value_numeric_, base_date());
 }
 
 template <>
-XLNT_FUNCTION date cell::get_value() const
+XLNT_API date cell::value() const
 {
-    return date::from_number(static_cast<int>(d_->value_numeric_), get_base_date());
+    return date::from_number(static_cast<int>(d_->value_numeric_), base_date());
 }
 
 template <>
-XLNT_FUNCTION timedelta cell::get_value() const
+XLNT_API timedelta cell::value() const
 {
     return timedelta::from_number(d_->value_numeric_);
 }
 
-void cell::set_border(const xlnt::border &border_)
+void cell::alignment(const class alignment &alignment_)
 {
-    d_->has_format_ = true;
-    auto format_copy = get_workbook().get_format(d_->format_id_);
-    format_copy.set_border(border_);
-    d_->format_id_ = get_workbook().add_format(format_copy);
+    auto new_format = has_format() ? modifiable_format() : workbook().create_format();
+    format(new_format.alignment(alignment_, true));
 }
 
-void cell::set_fill(const xlnt::fill &fill_)
+void cell::border(const class border &border_)
 {
-    d_->has_format_ = true;
-    auto format_copy = get_workbook().get_format(d_->format_id_);
-    format_copy.set_fill(fill_);
-    d_->format_id_ = get_workbook().add_format(format_copy);
+    auto new_format = has_format() ? modifiable_format() : workbook().create_format();
+    format(new_format.border(border_, true));
 }
 
-void cell::set_font(const font &font_)
+void cell::fill(const class fill &fill_)
 {
-    d_->has_format_ = true;
-    auto format_copy = get_workbook().get_format(d_->format_id_);
-    format_copy.set_font(font_);
-    d_->format_id_ = get_workbook().add_format(format_copy);
+    auto new_format = has_format() ? modifiable_format() : workbook().create_format();
+    format(new_format.fill(fill_, true));
 }
 
-void cell::set_number_format(const number_format &number_format_)
+void cell::font(const class font &font_)
 {
-    format new_format;
-    
-    if (d_->has_format_)
-    {
-        new_format = get_workbook().get_format(d_->format_id_);
-    }
-    
-    auto number_format_with_id = number_format_;
-    
-    if (!number_format_with_id.has_id())
-    {
-        number_format_with_id.set_id(get_worksheet().next_custom_number_format_id());
-    }
-    
-    new_format.set_number_format(number_format_with_id);
-    
-    d_->has_format_ = true;
-    d_->format_id_ = get_workbook().add_format(new_format);
+    auto new_format = has_format() ? modifiable_format() : workbook().create_format();
+    format(new_format.font(font_, true));
 }
 
-void cell::set_alignment(const xlnt::alignment &alignment_)
+void cell::number_format(const class number_format &number_format_)
 {
-    d_->has_format_ = true;
-    auto format_copy = get_workbook().get_format(d_->format_id_);
-    format_copy.set_alignment(alignment_);
-    d_->format_id_ = get_workbook().add_format(format_copy);
+    auto new_format = has_format() ? modifiable_format() : workbook().create_format();
+    format(new_format.number_format(number_format_, true));
 }
 
-void cell::set_protection(const xlnt::protection &protection_)
+void cell::protection(const class protection &protection_)
 {
-    d_->has_format_ = true;
-    auto format_copy = get_workbook().get_format(d_->format_id_);
-    format_copy.set_protection(protection_);
-    d_->format_id_ = get_workbook().add_format(format_copy);
+    auto new_format = has_format() ? modifiable_format() : workbook().create_format();
+    format(new_format.protection(protection_, true));
 }
 
 template <>
-XLNT_FUNCTION std::string cell::get_value() const
+XLNT_API std::string cell::value() const
 {
-    return d_->value_text_.get_plain_string();
+    return d_->value_text_.plain_text();
 }
 
 template <>
-XLNT_FUNCTION text cell::get_value() const
+XLNT_API formatted_text cell::value() const
 {
     return d_->value_text_;
 }
@@ -916,140 +811,244 @@ bool cell::has_value() const
 
 std::string cell::to_string() const
 {
-    auto nf = get_number_format();
+    auto nf = computed_number_format();
 
-    switch (get_data_type())
+    switch (data_type())
     {
     case cell::type::null:
         return "";
     case cell::type::numeric:
-        return get_number_format().format(get_value<long double>(), get_base_date());
+        return nf.format(value<long double>(), base_date());
     case cell::type::string:
     case cell::type::formula:
     case cell::type::error:
-        return get_number_format().format(get_value<std::string>());
+        return nf.format(value<std::string>());
     case cell::type::boolean:
-        return get_value<long double>() == 0 ? "FALSE" : "TRUE";
-    default:
-        return "";
+        return value<long double>() == 0.L ? "FALSE" : "TRUE";
     }
-}
 
-format &cell::get_format()
-{
-    return get_workbook().get_format(d_->format_id_);
+    return "";
 }
 
 bool cell::has_format() const
 {
-    return d_->has_format_;
+    return d_->format_.is_set();
 }
 
-void cell::set_format(const format &new_format)
+void cell::format(const class format new_format)
 {
-    d_->format_id_ = get_workbook().add_format(new_format);
-    d_->has_format_ = true;
+    if (has_format())
+    {
+        format().d_->references -= format().d_->references > 0 ? 1 : 0;
+    }
+
+    ++new_format.d_->references;
+    d_->format_ = new_format.d_;
 }
 
-calendar cell::get_base_date() const
+calendar cell::base_date() const
 {
-    return get_workbook().get_properties().excel_base_date;
+    return workbook().base_date();
 }
 
-std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)
+XLNT_API std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)
 {
     return stream << cell.to_string();
 }
 
-std::size_t cell::get_format_id() const
+void cell::value(const std::string &value_string, bool infer_type)
 {
-    return d_->format_id_;
-}
+    value(value_string);
 
-void cell::guess_type_and_set_value(const std::string &value)
-{
-	auto percentage = cast_percentage(value);
+    if (!infer_type)
+    {
+        return;
+    }
 
-	if (percentage.first)
-	{
-		d_->value_numeric_ = percentage.second;
-		d_->type_ = cell::type::numeric;
-		set_number_format(xlnt::number_format::percentage());
-	}
-	else
-	{
-		auto time = cast_time(value);
+    auto percentage = cast_percentage(value_string);
 
-		if (time.first)
-		{
-			d_->type_ = cell::type::numeric;
-			set_number_format(number_format::date_time6());
-			d_->value_numeric_ = time.second.to_number();
-		}
-		else
-		{
-			auto numeric = cast_numeric(value);
+    if (percentage.first)
+    {
+        d_->value_numeric_ = percentage.second;
+        d_->type_ = cell::type::numeric;
+        number_format(xlnt::number_format::percentage());
+    }
+    else
+    {
+        auto time = cast_time(value_string);
 
-			if (numeric.first)
-			{
-				d_->value_numeric_ = numeric.second;
-				d_->type_ = cell::type::numeric;
-			}
-		}
-	}
+        if (time.first)
+        {
+            d_->type_ = cell::type::numeric;
+            number_format(number_format::date_time6());
+            d_->value_numeric_ = time.second.to_number();
+        }
+        else
+        {
+            auto numeric = cast_numeric(value_string);
+
+            if (numeric.first)
+            {
+                d_->value_numeric_ = numeric.second;
+                d_->type_ = cell::type::numeric;
+            }
+        }
+    }
 }
 
 void cell::clear_format()
 {
-    d_->format_id_ = 0;
-    d_->has_format_ = false;
+    format().d_->references -= format().d_->references > 0 ? 1 : 0;
+    d_->format_.clear();
 }
 
 void cell::clear_style()
 {
-    d_->style_id_ = 0;
-    d_->has_style_ = false;
-}
-
-void cell::set_style(const style &new_style)
-{
-    d_->has_style_ = true;
-
-    if (get_workbook().has_style(new_style.get_name()))
+    if (has_format())
     {
-        d_->style_id_ = get_workbook().get_style_id(new_style.get_name());
-    }
-    else
-    {
-        d_->style_id_ = get_workbook().add_style(new_style);
+        modifiable_format().clear_style();
     }
 }
 
-void cell::set_style(const std::string &style_name)
+void cell::style(const class style &new_style)
 {
-    d_->has_style_ = true;
-    
-    if (!get_workbook().has_style(style_name))
-    {
-        throw std::runtime_error("style " + style_name + " doesn't exist in workbook");
-    }
-    
-    d_->style_id_ = get_workbook().get_style_id(style_name);
+    auto new_format = has_format() ? format() : workbook().create_format();
+    format(new_format.style(new_style));
 }
 
-const style &cell::get_style() const
+void cell::style(const std::string &style_name)
 {
-    if (!d_->has_style_)
+    style(workbook().style(style_name));
+}
+
+const style cell::style() const
+{
+    if (!has_format() || !format().has_style())
     {
-        throw std::runtime_error("cell has no style");
+        throw invalid_attribute();
     }
 
-    return get_workbook().get_style_by_id(d_->style_id_);
+    return format().style();
 }
 
 bool cell::has_style() const
 {
-    return d_->has_style_;
+    return has_format() && format().has_style();
+}
+
+format cell::modifiable_format()
+{
+    if (!d_->format_)
+    {
+        throw invalid_attribute();
+    }
+
+    return xlnt::format(*d_->format_);
+}
+
+const format cell::format() const
+{
+    if (!d_->format_)
+    {
+        throw invalid_attribute();
+    }
+
+    return xlnt::format(*d_->format_);
+}
+
+alignment cell::alignment() const
+{
+    return format().alignment();
+}
+
+border cell::border() const
+{
+    return format().border();
+}
+
+fill cell::fill() const
+{
+    return format().fill();
+}
+
+font cell::font() const
+{
+    return format().font();
+}
+
+number_format cell::number_format() const
+{
+    return format().number_format();
+}
+
+protection cell::protection() const
+{
+    return format().protection();
+}
+
+bool cell::has_hyperlink() const
+{
+    return d_->hyperlink_;
+}
+
+// comment
+
+bool cell::has_comment()
+{
+    return d_->comment_.is_set();
+}
+
+void cell::clear_comment()
+{
+    d_->comment_.clear();
+}
+
+class comment cell::comment()
+{
+    if (!has_comment())
+    {
+        throw xlnt::exception("cell has no comment");
+    }
+
+    return d_->comment_.get();
+}
+
+void cell::comment(const std::string &text, const std::string &author)
+{
+    comment(xlnt::comment(text, author));
+}
+
+void cell::comment(const class comment &new_comment)
+{
+    d_->comment_.set(new_comment);
+
+    // offset comment 5 pixels down and 5 pixels right of the top right corner of the cell
+    auto cell_position = anchor();
+
+    // todo: make this cell_position.first += width() instead
+    if (worksheet().has_column_properties(column()))
+    {
+        cell_position.first += static_cast<int>(worksheet().column_properties(column()).width);
+    }
+    else
+    {
+        static const auto DefaultColumnWidth = 51.85L;
+
+        auto points_to_pixels = [](long double value, long double dpi)
+        {
+            return static_cast<int>(std::ceil(value * dpi / 72));
+        };
+
+        cell_position.first += points_to_pixels(DefaultColumnWidth, 96.0L);
+    }
+
+    cell_position.first += 5;
+    cell_position.second += 5;
+
+    d_->comment_.get().position(cell_position.first, cell_position.second);
+    d_->comment_.get().size(200, 100);
+
+    worksheet().register_comments_in_manifest();
 }
 
 } // namespace xlnt

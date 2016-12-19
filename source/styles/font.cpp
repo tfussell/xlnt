@@ -34,139 +34,228 @@ font::font()
       italic_(false),
       superscript_(false),
       subscript_(false),
-      underline_(underline_style::none),
       strikethrough_(false),
-      color_(xlnt::color::type::theme, 1),
-      has_family_(true),
-      family_(2),
-      has_scheme_(true),
-      scheme_("minor")
+      underline_(underline_style::none)
 {
 }
 
-void font::set_bold(bool bold)
+font &font::bold(bool bold)
 {
     bold_ = bold;
+	return *this;
 }
 
-bool font::is_bold() const
+bool font::bold() const
 {
     return bold_;
 }
 
-void font::set_italic(bool italic)
+font &font::superscript(bool superscript)
 {
-    italic_ = italic;
+	superscript_ = superscript;
+	return *this;
 }
 
-bool font::is_italic() const
+bool font::superscript() const
+{
+	return superscript_;
+}
+
+font &font::italic(bool italic)
+{
+    italic_ = italic;
+	return *this;
+}
+
+bool font::italic() const
 {
     return italic_;
 }
 
-void font::set_strikethrough(bool strikethrough)
+font &font::strikethrough(bool strikethrough)
 {
     strikethrough_ = strikethrough;
+	return *this;
 }
 
-bool font::is_strikethrough() const
+bool font::strikethrough() const
 {
     return strikethrough_;
 }
 
-void font::set_underline(underline_style new_underline)
+font &font::underline(underline_style new_underline)
 {
     underline_ = new_underline;
+	return *this;
 }
 
-bool font::is_underline() const
+bool font::underlined() const
 {
     return underline_ != underline_style::none;
 }
 
-font::underline_style font::get_underline() const
+font::underline_style font::underline() const
 {
     return underline_;
 }
 
-void font::set_size(std::size_t size)
+bool font::has_size() const
+{
+    return size_.is_set();
+}
+
+font &font::size(std::size_t size)
 {
     size_ = size;
+	return *this;
 }
 
-std::size_t font::get_size() const
+std::size_t font::size() const
 {
-    return size_;
+    return size_.get();
 }
 
-void font::set_name(const std::string &name)
+bool font::has_name() const
+{
+    return name_.is_set();
+}
+
+font &font::name(const std::string &name)
 {
     name_ = name;
-}
-std::string font::get_name() const
-{
-    return name_;
+	return *this;
 }
 
-void font::set_color(color c)
+std::string font::name() const
+{
+    return name_.get();
+}
+
+bool font::has_color() const
+{
+    return color_.is_set();
+}
+
+font &font::color(const xlnt::color &c)
 {
     color_ = c;
-}
-
-void font::set_family(std::size_t family)
-{
-    has_family_ = true;
-    family_ = family;
-}
-
-void font::set_scheme(const std::string &scheme)
-{
-    has_scheme_ = true;
-    scheme_ = scheme;
-}
-
-color font::get_color() const
-{
-    return color_;
+	return *this;
 }
 
 bool font::has_family() const
 {
-    return has_family_;
+    return family_.is_set();
 }
 
-std::size_t font::get_family() const
+font &font::family(std::size_t family)
 {
-    return family_;
+    family_ = family;
+	return *this;
 }
 
 bool font::has_scheme() const
 {
-    return has_scheme_;
+    return scheme_.is_set();
 }
 
-std::string font::get_scheme() const
+font &font::scheme(const std::string &scheme)
 {
-    return scheme_;
+    scheme_ = scheme;
+	return *this;
 }
 
-std::string font::to_hash_string() const
+color font::color() const
 {
-    std::string hash_string = "font";
+    return color_.get();
+}
 
-    hash_string.append(std::to_string(bold_));
-    hash_string.append(std::to_string(italic_));
-    hash_string.append(std::to_string(superscript_));
-    hash_string.append(std::to_string(subscript_));
-    hash_string.append(std::to_string(strikethrough_));
-    hash_string.append(name_);
-    hash_string.append(std::to_string(size_));
-    hash_string.append(std::to_string(static_cast<std::size_t>(underline_)));
-    hash_string.append(std::to_string(color_.hash()));
-    hash_string.append(std::to_string(family_));
-    hash_string.append(scheme_);
+std::size_t font::family() const
+{
+    return family_.get();
+}
 
-    return hash_string;
+std::string font::scheme() const
+{
+    return scheme_.get();
+}
+
+XLNT_API bool operator==(const font &left, const font &right)
+{
+    if (left.bold() != right.bold())
+    {
+        return false;
+    }
+
+    if (left.has_color() != right.has_color())
+    {
+        return false;
+    }
+    
+    if (left.has_color())
+    {
+        if (left.color() != right.color())
+        {
+            return false;
+        }
+    }
+
+    if (left.has_family() != right.has_family())
+    {
+        return false;
+    }
+    
+    if (left.has_family())
+    {
+        if (left.family() != right.family())
+        {
+            return false;
+        }
+    }
+    
+    if (left.italic() != right.italic())
+    {
+        return false;
+    }
+    
+    if (left.name() != right.name())
+    {
+        return false;
+    }
+    
+    if (left.has_scheme() != right.has_scheme())
+    {
+        return false;
+    }
+    
+    if (left.has_scheme())
+    {
+        if (left.scheme() != right.scheme())
+        {
+            return false;
+        }
+    }
+    
+    if (left.size() != right.size())
+    {
+        return false;
+    }
+    
+    if (left.strikethrough() != right.strikethrough())
+    {
+        return false;
+    }
+    
+    if (left.superscript() != right.superscript())
+    {
+        return false;
+    }
+    
+    if (left.underline() != right.underline())
+    {
+        return false;
+    }
+    
+    return true;
 }
 
 } // namespace xlnt

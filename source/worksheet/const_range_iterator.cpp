@@ -29,7 +29,7 @@
 namespace xlnt {
 
 const_range_iterator::const_range_iterator(const worksheet &ws, const range_reference &start_cell, major_order order)
-    : ws_(ws.d_), current_cell_(start_cell.get_top_left()), range_(start_cell), order_(order)
+    : ws_(ws.d_), current_cell_(start_cell.top_left()), range_(start_cell), order_(order)
 {
 }
 
@@ -52,11 +52,11 @@ const_range_iterator &const_range_iterator::operator--()
 {
     if (order_ == major_order::row)
     {
-        current_cell_.set_row(current_cell_.get_row() - 1);
+        current_cell_.row(current_cell_.row() - 1);
     }
     else
     {
-        current_cell_.set_column_index(current_cell_.get_column_index() - 1);
+        current_cell_.column_index(current_cell_.column_index() - 1);
     }
 
     return *this;
@@ -74,11 +74,11 @@ const_range_iterator &const_range_iterator::operator++()
 {
     if (order_ == major_order::row)
     {
-        current_cell_.set_row(current_cell_.get_row() + 1);
+        current_cell_.row(current_cell_.row() + 1);
     }
     else
     {
-        current_cell_.set_column_index(current_cell_.get_column_index() + 1);
+        current_cell_.column_index(current_cell_.column_index() + 1);
     }
 
     return *this;
@@ -96,13 +96,13 @@ const cell_vector const_range_iterator::operator*() const
 {
     if (order_ == major_order::row)
     {
-        range_reference reference(range_.get_top_left().get_column_index(), current_cell_.get_row(),
-                                  range_.get_bottom_right().get_column_index(), current_cell_.get_row());
+        range_reference reference(range_.top_left().column_index(), current_cell_.row(),
+                                  range_.bottom_right().column_index(), current_cell_.row());
         return cell_vector(ws_, reference, order_);
     }
 
-    range_reference reference(current_cell_.get_column_index(), range_.get_top_left().get_row(),
-                              current_cell_.get_column_index(), range_.get_bottom_right().get_row());
+    range_reference reference(current_cell_.column_index(), range_.top_left().row(),
+                              current_cell_.column_index(), range_.bottom_right().row());
     return cell_vector(ws_, reference, order_);
 }
 

@@ -20,6 +20,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <string>
@@ -32,20 +33,51 @@ namespace xlnt {
 /// Represents a span of time between two datetimes. This is
 /// not fully supported yet.
 /// </summary>
-struct XLNT_CLASS timedelta
+struct XLNT_API timedelta
 {
+    /// <summary>
+    ///
+    /// </summary>
     static timedelta from_number(long double number);
 
+    /// <summary>
+    ///
+    /// </summary>
     timedelta();
 
+    /// <summary>
+    ///
+    /// </summary>
     timedelta(int days_, int hours_, int minutes_, int seconds_, int microseconds_);
 
+    /// <summary>
+    ///
+    /// </summary>
     long double to_number() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     int days;
+
+    /// <summary>
+    ///
+    /// </summary>
     int hours;
+
+    /// <summary>
+    ///
+    /// </summary>
     int minutes;
+
+    /// <summary>
+    ///
+    /// </summary>
     int seconds;
+
+    /// <summary>
+    ///
+    /// </summary>
     int microseconds;
 };
 

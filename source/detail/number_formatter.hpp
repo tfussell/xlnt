@@ -36,7 +36,6 @@ namespace detail {
 
 enum class format_color
 {
-    none,
     black,
     blue,
     cyan,
@@ -105,7 +104,6 @@ enum class format_color
 
 enum class format_locale
 {
-    none = 0,
     arabic_saudi_arabia = 0x401,
     bulgarian = 0x402,
     catalan = 0x403,
@@ -214,18 +212,17 @@ enum class format_locale
 };
 
 // TODO this really shouldn't be exported...
-struct XLNT_CLASS format_condition
+struct XLNT_API format_condition
 {
     enum class condition_type
     {
-        none,
         less_than,
         less_or_equal,
         equal,
         not_equal,
         greater_than,
         greater_or_equal
-    } type = condition_type::none;
+    } type = condition_type::not_equal;
 
     long double value = 0;
 
@@ -236,7 +233,6 @@ struct format_placeholders
 {
     enum class placeholders_type
     {
-        bad,
         general,
         text,
         integer_only,
@@ -248,7 +244,7 @@ struct format_placeholders
         scientific_significand,
         scientific_exponent_plus,
         scientific_exponent_minus
-    } type = placeholders_type::bad;
+    } type = placeholders_type::general;
 
     bool use_comma_separator = false;
     bool percentage = false;
@@ -264,7 +260,6 @@ struct number_format_token
 {
     enum class token_type
     {
-        bad,
         color,
         locale,
         condition,
@@ -275,7 +270,7 @@ struct number_format_token
         datetime,
         end_section,
         end
-    } type = token_type::bad;
+    } type = token_type::end;
 
     std::string string;
 };
@@ -284,7 +279,6 @@ struct template_part
 {
     enum class template_type
     {
-        bad,
         text,
         fill,
         space,
@@ -313,7 +307,7 @@ struct template_part
         elapsed_hours,
         elapsed_minutes,
         elapsed_seconds
-    } type = template_type::bad;
+    } type = template_type::general;
 
     std::string string;
     format_placeholders placeholders;
@@ -321,8 +315,11 @@ struct template_part
 
 struct format_code
 {
-    format_color color = format_color::none;
-    format_locale locale = format_locale::none;
+    bool has_color = false;
+    format_color color = format_color::black;
+    bool has_locale = false;
+    format_locale locale = format_locale::english_united_states;
+    bool has_condition = false;
     format_condition condition;
     bool is_datetime = false;
     bool is_timedelta = false;
@@ -334,7 +331,7 @@ class number_format_parser
 {
 public:
     number_format_parser(const std::string &format_string);
-    const std::vector<format_code> &get_result() const;
+    const std::vector<format_code> &result() const;
     void reset(const std::string &format_string);
     void parse();
 
@@ -353,7 +350,7 @@ private:
     std::vector<format_code> codes_;
 };
 
-class XLNT_CLASS number_formatter
+class XLNT_API number_formatter
 {
 public:
     number_formatter(const std::string &format_string, xlnt::calendar calendar);

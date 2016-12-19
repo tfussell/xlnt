@@ -20,54 +20,20 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
-
-// Change these values for programs using this library.
-
-namespace xlnt {
-
-/// <summary>
-/// Enumeration of possible limit styles.
-/// Excel places limitations on the number of rows and columns,
-/// but we may wish to change those limits in some cases. Values
-/// other than excel might prevent the file from being opened in Excel.
-/// </summary>
-enum class limit_style
-{
-    /// <summary>
-    /// limits used in openpyxl
-    /// </summary>
-    openpyxl,
-    /// <summary>
-    /// limits as determined by Excel
-    /// </summary>
-    excel,
-    /// <summary>
-    /// limits as high as possible based on system (i.e. 32-bit or 64-bit)
-    /// </summary>
-    maximum
-};
 
 #ifndef XLNT_API
 #if !defined(XLNT_STATIC) && defined(_MSC_VER)
 #ifdef XLNT_EXPORT
 #define XLNT_API __declspec(dllexport)
 #else
+// For clients of the library, supress warnings about DLL interfaces for standard library classes
+#pragma warning(disable : 4251)
+#pragma warning(disable : 4275)
 #define XLNT_API __declspec(dllimport)
 #endif
 #else
 #define XLNT_API
 #endif
 #endif
-
-// If no API for classes is defined, assume default
-#ifndef XLNT_CLASS
-#define XLNT_CLASS XLNT_API
-#endif
-
-// If no API for functions is defined, assume default
-#ifndef XLNT_FUNCTION
-#define XLNT_FUNCTION XLNT_API
-#endif
-
-} // namespace xlnt

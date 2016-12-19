@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
@@ -32,9 +33,9 @@ namespace xlnt {
 /// or from the top-right to bottom-left, or both, or neither.
 /// Used by style->border.
 /// </summary>
-enum class XLNT_CLASS diagonal_direction
+enum class XLNT_API diagonal_direction
 {
-    none,
+    neither,
     up,
     down,
     both

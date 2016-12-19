@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
@@ -31,7 +32,7 @@ namespace xlnt {
 /// Defines how a worksheet appears in the workbook.
 /// A workbook must have at least one sheet which is visible at all times.
 /// </summary>
-enum class XLNT_CLASS sheet_state
+enum class XLNT_API sheet_state
 {
     visible,
     hidden,

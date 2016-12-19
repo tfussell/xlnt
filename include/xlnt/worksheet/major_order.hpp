@@ -20,6 +20,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
@@ -29,7 +30,7 @@ namespace xlnt {
 /// <summary>
 /// Defines whether iterating a range returns columns or rows sequentially.
 /// </summary>
-enum class XLNT_CLASS major_order
+enum class XLNT_API major_order
 {
     column,
     row

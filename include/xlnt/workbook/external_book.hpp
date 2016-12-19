@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
@@ -30,7 +31,7 @@ namespace xlnt {
 /// <summary>
 /// A reference to an external workbook for use in formulae.
 /// </summary>
-class XLNT_CLASS external_book
+class XLNT_API external_book
 {
 };
 

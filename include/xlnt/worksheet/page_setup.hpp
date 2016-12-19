@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
@@ -34,64 +35,163 @@ namespace xlnt {
 /// <summary>
 /// Describes how a worksheet will be converted into a page during printing.
 /// </summary>
-struct XLNT_CLASS page_setup
+struct XLNT_API page_setup
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     page_setup();
 
-    bool is_default() const;
+    /// <summary>
+    ///
+    /// </summary>
+    xlnt::page_break page_break() const;
 
-    page_break get_break() const;
+    /// <summary>
+    ///
+    /// </summary>
+    void page_break(xlnt::page_break b);
 
-    void set_break(page_break b);
+    /// <summary>
+    ///
+    /// </summary>
+    xlnt::sheet_state sheet_state() const;
 
-    sheet_state get_sheet_state() const;
+    /// <summary>
+    ///
+    /// </summary>
+    void sheet_state(xlnt::sheet_state sheet_state);
 
-    void set_sheet_state(sheet_state sheet_state);
+    /// <summary>
+    ///
+    /// </summary>
+    xlnt::paper_size paper_size() const;
 
-    paper_size get_paper_size() const;
+    /// <summary>
+    ///
+    /// </summary>
+    void paper_size(xlnt::paper_size paper_size);
 
-    void set_paper_size(paper_size paper_size);
+    /// <summary>
+    ///
+    /// </summary>
+    xlnt::orientation orientation() const;
 
-    orientation get_orientation() const;
+    /// <summary>
+    ///
+    /// </summary>
+    void orientation(xlnt::orientation orientation);
 
-    void set_orientation(orientation orientation);
-
+    /// <summary>
+    ///
+    /// </summary>
     bool fit_to_page() const;
 
-    void set_fit_to_page(bool fit_to_page);
+    /// <summary>
+    ///
+    /// </summary>
+    void fit_to_page(bool fit_to_page);
 
+    /// <summary>
+    ///
+    /// </summary>
     bool fit_to_height() const;
 
-    void set_fit_to_height(bool fit_to_height);
+    /// <summary>
+    ///
+    /// </summary>
+    void fit_to_height(bool fit_to_height);
 
+    /// <summary>
+    ///
+    /// </summary>
     bool fit_to_width() const;
 
-    void set_fit_to_width(bool fit_to_width);
+    /// <summary>
+    ///
+    /// </summary>
+    void fit_to_width(bool fit_to_width);
 
-    void set_horizontal_centered(bool horizontal_centered);
+    /// <summary>
+    ///
+    /// </summary>
+    void horizontal_centered(bool horizontal_centered);
 
-    bool get_horizontal_centered() const;
+    /// <summary>
+    ///
+    /// </summary>
+    bool horizontal_centered() const;
 
-    void set_vertical_centered(bool vertical_centered);
+    /// <summary>
+    ///
+    /// </summary>
+    void vertical_centered(bool vertical_centered);
 
-    bool get_vertical_centered() const;
+    /// <summary>
+    ///
+    /// </summary>
+    bool vertical_centered() const;
 
-    void set_scale(double scale);
+    /// <summary>
+    ///
+    /// </summary>
+    void scale(double scale);
 
-    double get_scale() const;
+    /// <summary>
+    ///
+    /// </summary>
+    double scale() const;
 
 private:
-    bool default_;
-    page_break break_;
-    sheet_state sheet_state_;
-    paper_size paper_size_;
-    orientation orientation_;
+    /// <summary>
+    ///
+    /// </summary>
+    xlnt::page_break break_;
+
+    /// <summary>
+    ///
+    /// </summary>
+    xlnt::sheet_state sheet_state_;
+
+    /// <summary>
+    ///
+    /// </summary>
+    xlnt::paper_size paper_size_;
+
+    /// <summary>
+    ///
+    /// </summary>
+    xlnt::orientation orientation_;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool fit_to_page_;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool fit_to_height_;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool fit_to_width_;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool horizontal_centered_;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool vertical_centered_;
+
+    /// <summary>
+    ///
+    /// </summary>
     double scale_;
 };
 

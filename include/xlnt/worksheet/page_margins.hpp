@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
@@ -30,39 +31,103 @@ namespace xlnt {
 /// <summary>
 /// Describes the margins around a worksheet for printing.
 /// </summary>
-class XLNT_CLASS page_margins
+class XLNT_API page_margins
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     page_margins();
 
-    bool is_default() const;
+    /// <summary>
+    ///
+    /// </summary>
+    double top() const;
 
-    double get_top() const;
-    void set_top(double top);
+    /// <summary>
+    ///
+    /// </summary>
+    void top(double top);
 
-    double get_left() const;
-    void set_left(double left);
+    /// <summary>
+    ///
+    /// </summary>
+    double left() const;
 
-    double get_bottom() const;
-    void set_bottom(double bottom);
+    /// <summary>
+    ///
+    /// </summary>
+    void left(double left);
 
-    double get_right() const;
-    void set_right(double right);
+    /// <summary>
+    ///
+    /// </summary>
+    double bottom() const;
 
-    double get_header() const;
-    void set_header(double header);
+    /// <summary>
+    ///
+    /// </summary>
+    void bottom(double bottom);
 
-    double get_footer() const;
-    void set_footer(double footer);
+    /// <summary>
+    ///
+    /// </summary>
+    double right() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void right(double right);
+
+    /// <summary>
+    ///
+    /// </summary>
+    double header() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void header(double header);
+
+    /// <summary>
+    ///
+    /// </summary>
+    double footer() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void footer(double footer);
 
 private:
-    bool default_ = true;
-
+    /// <summary>
+    ///
+    /// </summary>
     double top_ = 1;
+
+    /// <summary>
+    ///
+    /// </summary>
     double left_ = 0.75;
+
+    /// <summary>
+    ///
+    /// </summary>
     double bottom_ = 1;
+
+    /// <summary>
+    ///
+    /// </summary>
     double right_ = 0.75;
+
+    /// <summary>
+    ///
+    /// </summary>
     double header_ = 0.5;
+
+    /// <summary>
+    ///
+    /// </summary>
     double footer_ = 0.5;
 };
 

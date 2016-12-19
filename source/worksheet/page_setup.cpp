@@ -26,11 +26,10 @@
 namespace xlnt {
 
 page_setup::page_setup()
-    : default_(true),
-      break_(page_break::none),
-      sheet_state_(sheet_state::visible),
-      paper_size_(paper_size::letter),
-      orientation_(orientation::portrait),
+    : break_(xlnt::page_break::none),
+      sheet_state_(xlnt::sheet_state::visible),
+      paper_size_(xlnt::paper_size::letter),
+      orientation_(xlnt::orientation::portrait),
       fit_to_page_(false),
       fit_to_height_(false),
       fit_to_width_(false),
@@ -40,51 +39,43 @@ page_setup::page_setup()
 {
 }
 
-bool page_setup::is_default() const
-{
-    return default_;
-}
-
-page_break page_setup::get_break() const
+page_break page_setup::page_break() const
 {
     return break_;
 }
 
-void page_setup::set_break(page_break b)
+void page_setup::page_break(xlnt::page_break b)
 {
-    default_ = false;
     break_ = b;
 }
 
-sheet_state page_setup::get_sheet_state() const
+sheet_state page_setup::sheet_state() const
 {
     return sheet_state_;
 }
 
-void page_setup::set_sheet_state(sheet_state sheet_state)
+void page_setup::sheet_state(xlnt::sheet_state sheet_state)
 {
     sheet_state_ = sheet_state;
 }
 
-paper_size page_setup::get_paper_size() const
+paper_size page_setup::paper_size() const
 {
     return paper_size_;
 }
 
-void page_setup::set_paper_size(paper_size paper_size)
+void page_setup::paper_size(xlnt::paper_size paper_size)
 {
-    default_ = false;
     paper_size_ = paper_size;
 }
 
-orientation page_setup::get_orientation() const
+orientation page_setup::orientation() const
 {
     return orientation_;
 }
 
-void page_setup::set_orientation(orientation orientation)
+void page_setup::orientation(xlnt::orientation orientation)
 {
-    default_ = false;
     orientation_ = orientation;
 }
 
@@ -93,9 +84,8 @@ bool page_setup::fit_to_page() const
     return fit_to_page_;
 }
 
-void page_setup::set_fit_to_page(bool fit_to_page)
+void page_setup::fit_to_page(bool fit_to_page)
 {
-    default_ = false;
     fit_to_page_ = fit_to_page;
 }
 
@@ -104,9 +94,8 @@ bool page_setup::fit_to_height() const
     return fit_to_height_;
 }
 
-void page_setup::set_fit_to_height(bool fit_to_height)
+void page_setup::fit_to_height(bool fit_to_height)
 {
-    default_ = false;
     fit_to_height_ = fit_to_height;
 }
 
@@ -115,41 +104,37 @@ bool page_setup::fit_to_width() const
     return fit_to_width_;
 }
 
-void page_setup::set_fit_to_width(bool fit_to_width)
+void page_setup::fit_to_width(bool fit_to_width)
 {
-    default_ = false;
     fit_to_width_ = fit_to_width;
 }
 
-void page_setup::set_horizontal_centered(bool horizontal_centered)
+void page_setup::horizontal_centered(bool horizontal_centered)
 {
-    default_ = false;
     horizontal_centered_ = horizontal_centered;
 }
 
-bool page_setup::get_horizontal_centered() const
+bool page_setup::horizontal_centered() const
 {
     return horizontal_centered_;
 }
 
-void page_setup::set_vertical_centered(bool vertical_centered)
+void page_setup::vertical_centered(bool vertical_centered)
 {
-    default_ = false;
     vertical_centered_ = vertical_centered;
 }
 
-bool page_setup::get_vertical_centered() const
+bool page_setup::vertical_centered() const
 {
     return vertical_centered_;
 }
 
-void page_setup::set_scale(double scale)
+void page_setup::scale(double scale)
 {
-    default_ = false;
     scale_ = scale;
 }
 
-double page_setup::get_scale() const
+double page_setup::scale() const
 {
     return scale_;
 }

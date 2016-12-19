@@ -26,68 +26,153 @@
 
 namespace xlnt {
 
-bool alignment::get_wrap_text() const
+optional<bool> alignment::wrap() const
 {
     return wrap_text_;
 }
 
-void alignment::set_shrink_to_fit(bool shrink_to_fit)
+alignment &alignment::wrap(bool wrap_text)
+{
+	wrap_text_ = wrap_text;
+	return *this;
+}
+
+optional<bool> alignment::shrink() const
+{
+	return shrink_to_fit_;
+}
+
+alignment &alignment::shrink(bool shrink_to_fit)
 {
     shrink_to_fit_ = shrink_to_fit;
+	return *this;
 }
 
-bool alignment::get_shrink_to_fit() const
-{
-    return shrink_to_fit_;
-}
-
-void alignment::set_wrap_text(bool wrap_text)
-{
-    wrap_text_ = wrap_text;
-}
-
-bool alignment::has_horizontal() const
-{
-    return horizontal_ != horizontal_alignment::none;
-}
-
-horizontal_alignment alignment::get_horizontal() const
+optional<horizontal_alignment> alignment::horizontal() const
 {
     return horizontal_;
 }
 
-void alignment::set_horizontal(horizontal_alignment horizontal)
+alignment &alignment::horizontal(horizontal_alignment horizontal)
 {
     horizontal_ = horizontal;
+	return *this;
 }
 
-bool alignment::has_vertical() const
-{
-    return vertical_ != vertical_alignment::none;
-}
-
-vertical_alignment alignment::get_vertical() const
+optional<vertical_alignment> alignment::vertical() const
 {
     return vertical_;
 }
 
-void alignment::set_vertical(vertical_alignment vertical)
+alignment &alignment::vertical(vertical_alignment vertical)
 {
     vertical_ = vertical;
+	return *this;
 }
 
-std::string alignment::to_hash_string() const
+alignment &alignment::indent(int value)
 {
-    std::string hash_string;
+	indent_ = value;
+	return *this;
+}
 
-    hash_string.append(wrap_text_ ? "1" : "0");
-    hash_string.append(shrink_to_fit_ ? "1" : "0");
-    hash_string.append(std::to_string(static_cast<std::size_t>(horizontal_)));
-    hash_string.append(std::to_string(static_cast<std::size_t>(vertical_)));
-    hash_string.append(std::to_string(text_rotation_));
-    hash_string.append(std::to_string(indent_));
+optional<int> alignment::indent() const
+{
+	return indent_;
+}
+
+alignment &alignment::rotation(int value)
+{
+	text_rotation_ = value;
+	return *this;
+}
+
+optional<int> alignment::rotation() const
+{
+	return text_rotation_;
+}
+
+XLNT_API bool operator==(const alignment &left, const alignment &right)
+{
+    if (left.horizontal().is_set() != right.horizontal().is_set())
+    {
+        return false;
+    }
     
-    return hash_string;
+    if (left.horizontal().is_set())
+    {
+        if (left.horizontal().get() != right.horizontal().get())
+        {
+            return false;
+        }
+    }
+
+    if (left.indent().is_set() != right.indent().is_set())
+    {
+        return false;
+    }
+    
+    if (left.indent().is_set())
+    {
+        if (left.indent().get() != right.indent().get())
+        {
+            return false;
+        }
+    }
+
+    if (left.rotation().is_set() != right.rotation().is_set())
+    {
+        return false;
+    }
+    
+    if (left.rotation().is_set())
+    {
+        if (left.rotation().get() != right.rotation().get())
+        {
+            return false;
+        }
+    }
+    
+    if (left.shrink().is_set() != right.shrink().is_set())
+    {
+        return false;
+    }
+    
+    if (left.shrink().is_set())
+    {
+        if (left.shrink().get() != right.shrink().get())
+        {
+            return false;
+        }
+    }
+    
+    if (left.vertical().is_set() != right.vertical().is_set())
+    {
+        return false;
+    }
+    
+    if (left.vertical().is_set())
+    {
+        if (left.vertical().get() != right.vertical().get())
+        {
+            return false;
+        }
+    }
+    
+    if (left.wrap().is_set() != right.wrap().is_set())
+    {
+        return false;
+    }
+    
+    if (left.wrap().is_set())
+    {
+        if (left.wrap().get() != right.wrap().get())
+        {
+            return false;
+        }
+    }
+    
+    return true;
 }
 
 } // namespace xlnt

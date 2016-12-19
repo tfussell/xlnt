@@ -20,6 +20,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <string>
@@ -34,7 +35,7 @@ namespace xlnt {
 /// It can also be initialized as a number of days since a base date
 /// using date::from_number.
 /// </summary>
-struct XLNT_CLASS date
+struct XLNT_API date
 {
     /// <summary>
     /// Return the current date according to the system time.
@@ -47,6 +48,9 @@ struct XLNT_CLASS date
     /// </summary>
     static date from_number(int days_since_base_year, calendar base_date);
 
+    /// <summary>
+    ///
+    /// </summary>
     date(int year_, int month_, int day_);
 
     /// <summary>
@@ -55,14 +59,28 @@ struct XLNT_CLASS date
     int to_number(calendar base_date) const;
 
     /// <summary>
+    ///
+    /// </summary>
+    int weekday() const;
+
+    /// <summary>
     /// Return true if this date is equal to comparand.
     /// </summary>
     bool operator==(const date &comparand) const;
 
-    int weekday() const;
-
+    /// <summary>
+    ///
+    /// </summary>
     int year;
+
+    /// <summary>
+    ///
+    /// </summary>
     int month;
+
+    /// <summary>
+    ///
+    /// </summary>
     int day;
 };
 

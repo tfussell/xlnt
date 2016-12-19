@@ -20,6 +20,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <string>
@@ -33,7 +34,7 @@ namespace xlnt {
 /// minute, second, and microsecond (0-999999).
 /// It can also be initialized as a fraction of a day using time::from_number.
 /// </summary>
-struct XLNT_CLASS time
+struct XLNT_API time
 {
     /// <summary>
     /// Return the current time according to the system time.
@@ -47,15 +48,44 @@ struct XLNT_CLASS time
     /// </summary>
     static time from_number(long double number);
 
+    /// <summary>
+    ///
+    /// </summary>
     explicit time(int hour_ = 0, int minute_ = 0, int second_ = 0, int microsecond_ = 0);
+
+    /// <summary>
+    ///
+    /// </summary>
     explicit time(const std::string &time_string);
 
+    /// <summary>
+    ///
+    /// </summary>
     long double to_number() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool operator==(const time &comparand) const;
 
+    /// <summary>
+    ///
+    /// </summary>
     int hour;
+
+    /// <summary>
+    ///
+    /// </summary>
     int minute;
+
+    /// <summary>
+    ///
+    /// </summary>
     int second;
+
+    /// <summary>
+    ///
+    /// </summary>
     int microsecond;
 };
 

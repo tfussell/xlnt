@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
@@ -30,7 +31,7 @@ namespace xlnt {
 /// <summary>
 /// The orientation of the worksheet when it is printed.
 /// </summary>
-enum class XLNT_CLASS orientation
+enum class XLNT_API orientation
 {
     portrait,
     landscape

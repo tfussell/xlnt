@@ -22,268 +22,288 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <cmath> // for std::fabs
+
 #include <xlnt/styles/fill.hpp>
 
 namespace xlnt {
 
-fill::type fill::get_type() const
+// pattern_fill
+
+pattern_fill::pattern_fill()
 {
-    return type_;
+
 }
 
-pattern_fill::type pattern_fill::get_type() const
+pattern_fill_type pattern_fill::type() const
 {
-    return type_;
+	return type_;
 }
 
-void pattern_fill::set_type(pattern_fill::type t)
+pattern_fill &pattern_fill::type(pattern_fill_type type)
 {
-    type_ = t;
+	type_ = type;
+	return *this;
 }
 
-gradient_fill::type gradient_fill::get_type() const
+optional<color> pattern_fill::foreground() const
 {
-    return type_;
+	return foreground_;
 }
 
-void gradient_fill::set_type(gradient_fill::type t)
+pattern_fill &pattern_fill::foreground(const color &new_foreground)
 {
-    type_ = t;
+	foreground_ = new_foreground;
+
+	if (!background_)
+	{
+		background_.set(indexed_color(64));
+	}
+
+	return *this;
 }
 
-void pattern_fill::set_foreground_color(const color &c)
+optional<color> pattern_fill::background() const
 {
-    foreground_color_ = c;
+	return background_;
 }
 
-std::experimental::optional<color> &pattern_fill::get_foreground_color()
+pattern_fill &pattern_fill::background(const color &new_background)
 {
-    return foreground_color_;
+	background_ = new_background;
+	return *this;
 }
 
-const std::experimental::optional<color> &pattern_fill::get_foreground_color() const
+XLNT_API bool operator==(const pattern_fill &left, const pattern_fill &right)
 {
-    return foreground_color_;
-}
-
-void pattern_fill::set_background_color(const color &c)
-{
-    background_color_ = c;
-}
-
-std::experimental::optional<color> &pattern_fill::get_background_color()
-{
-    return background_color_;
-}
-
-const std::experimental::optional<color> &pattern_fill::get_background_color() const
-{
-    return background_color_;
-}
-
-void gradient_fill::set_degree(double degree)
-{
-    degree_ = degree;
-}
-
-double gradient_fill::get_degree() const
-{
-    return degree_;
-}
-
-std::string pattern_fill::to_hash_string() const
-{
-    std::string hash_string = "pattern_fill";
-
-    hash_string.append(background_color_ ? "1" : "0");
-
-    if (background_color_)
+    if (left.background().is_set() != right.background().is_set())
     {
-        hash_string.append(std::to_string(background_color_->hash()));
-    }
-
-    hash_string.append(background_color_ ? "1" : "0");
-
-    if (background_color_)
-    {
-        hash_string.append(std::to_string(background_color_->hash()));
+        return false;
     }
     
-    return hash_string;
-}
-
-std::string gradient_fill::to_hash_string() const
-{
-    std::string hash_string = "gradient_fill";
-
-    hash_string.append(std::to_string(static_cast<std::size_t>(type_)));
-    hash_string.append(std::to_string(stops_.size()));
-    hash_string.append(std::to_string(degree_));
-    hash_string.append(std::to_string(left_));
-    hash_string.append(std::to_string(right_));
-    hash_string.append(std::to_string(top_));
-    hash_string.append(std::to_string(bottom_));
-    
-    return hash_string;
-}
-
-std::string fill::to_hash_string() const
-{
-    std::string hash_string = "fill";
-    
-    hash_string.append(std::to_string(static_cast<std::size_t>(type_)));
-
-    switch (type_)
+    if (left.background().is_set())
     {
-    case type::pattern:
-        hash_string.append(std::to_string(pattern_.hash()));
-        break;
+        if (left.background().get() != right.background().get())
+        {
+            return false;
+        }
+    }
 
-    case type::gradient:
-        hash_string.append(std::to_string(gradient_.hash()));
-        break;
-
-    default:
-        break;
-    } // switch (type_)
-
-    return hash_string;
-}
-
-double gradient_fill::get_gradient_left() const
-{
-    return left_;
-}
-
-void gradient_fill::set_gradient_left(double value)
-{
-    left_ = value;
-}
-
-double gradient_fill::get_gradient_right() const
-{
-    return right_;
-}
-
-void gradient_fill::set_gradient_right(double value)
-{
-    right_ = value;
-}
-
-double gradient_fill::get_gradient_top() const
-{
-    return top_;
-}
-
-void gradient_fill::set_gradient_top(double value)
-{
-    top_ = value;
-}
-
-double gradient_fill::get_gradient_bottom() const
-{
-    return bottom_;
-}
-
-void gradient_fill::set_gradient_bottom(double value)
-{
-    bottom_ = value;
-}
-
-fill fill::pattern(pattern_fill::type pattern_type)
-{
-    fill f;
-    f.type_ = type::pattern;
-    f.pattern_ = pattern_fill(pattern_type);
-    return f;
-}
-
-fill fill::gradient(gradient_fill::type gradient_type)
-{
-    fill f;
-    f.type_ = type::gradient;
-    f.gradient_ = gradient_fill(gradient_type);
-    return f;
-}
-
-pattern_fill::pattern_fill(type pattern_type) : type_(pattern_type)
-{
-
-}
-
-pattern_fill::pattern_fill() : pattern_fill(type::none)
-{
-
-}
-
-gradient_fill::gradient_fill(type gradient_type) : type_(gradient_type)
-{
-
-}
-
-gradient_fill::gradient_fill() : gradient_fill(type::linear)
-{
-
-}
-
-gradient_fill &fill::get_gradient_fill()
-{
-    if (type_ != fill::type::gradient)
+    if (left.foreground().is_set() != right.foreground().is_set())
     {
-        throw std::runtime_error("not gradient");
+        return false;
+    }
+    
+    if (left.foreground().is_set())
+    {
+        if (left.foreground().get() != right.foreground().get())
+        {
+            return false;
+        }
+    }
+    
+    if (left.type() != right.type())
+    {
+        return false;
+    }
+    
+    return true;
+}
+
+// gradient_fill
+
+gradient_fill::gradient_fill() : type_(gradient_fill_type::linear)
+{
+}
+
+gradient_fill_type gradient_fill::type() const
+{
+	return type_;
+}
+
+gradient_fill &gradient_fill::type(gradient_fill_type t)
+{
+	type_ = t;
+	return *this;
+}
+
+gradient_fill &gradient_fill::degree(double degree)
+{
+	degree_ = degree;
+	return *this;
+}
+
+double gradient_fill::degree() const
+{
+	return degree_;
+}
+
+
+double gradient_fill::left() const
+{
+	return left_;
+}
+
+gradient_fill &gradient_fill::left(double value)
+{
+	left_ = value;
+	return *this;
+}
+
+double gradient_fill::right() const
+{
+	return right_;
+}
+
+gradient_fill &gradient_fill::right(double value)
+{
+	right_ = value;
+	return *this;
+}
+
+double gradient_fill::top() const
+{
+	return top_;
+}
+
+gradient_fill &gradient_fill::top(double value)
+{
+	top_ = value;
+	return *this;
+}
+
+double gradient_fill::bottom() const
+{
+	return bottom_;
+}
+
+gradient_fill &gradient_fill::bottom(double value)
+{
+	bottom_ = value;
+	return *this;
+}
+
+gradient_fill &gradient_fill::add_stop(double position, color stop_color)
+{
+	stops_[position] = stop_color;
+	return *this;
+}
+
+gradient_fill &gradient_fill::clear_stops()
+{
+	stops_.clear();
+	return *this;
+}
+
+std::unordered_map<double, color> gradient_fill::stops() const
+{
+	return stops_;
+}
+
+XLNT_API bool operator==(const gradient_fill &left, const gradient_fill &right)
+{
+    if (left.type() != right.type())
+    {
+        return false;
+    }
+    
+    if (std::fabs(left.degree() - right.degree()) != 0.)
+    {
+        return false;
+    }
+    
+    if (std::fabs(left.bottom() - right.bottom()) != 0.)
+    {
+        return false;
+    }
+    
+    if (std::fabs(left.right() - right.right()) != 0.)
+    {
+        return false;
+    }
+    
+    if (std::fabs(left.top() - right.top()) != 0.)
+    {
+        return false;
+    }
+    
+    if (std::fabs(left.left() - right.left()) != 0.)
+    {
+        return false;
+    }
+    
+    if (left.stops() != right.stops())
+    {
+        return false;
+    }
+    
+    return true;
+}
+
+// fill
+
+fill fill::solid(const color &fill_color)
+{
+	return fill(xlnt::pattern_fill()
+		.type(xlnt::pattern_fill_type::solid)
+		.foreground(fill_color)
+		.background(indexed_color(64)));
+}
+
+fill::fill() : type_(fill_type::pattern)
+{
+}
+
+fill::fill(const xlnt::pattern_fill &pattern) 
+	: type_(fill_type::pattern),
+	  pattern_(pattern)
+{
+}
+
+fill::fill(const xlnt::gradient_fill &gradient) 
+	: type_(fill_type::gradient),
+	  gradient_(gradient)
+{
+}
+
+fill_type fill::type() const
+{
+    return type_;
+}
+
+gradient_fill fill::gradient_fill() const
+{
+    if (type_ != fill_type::gradient)
+    {
+		throw invalid_attribute();
     }
 
     return gradient_;
 }
 
-const gradient_fill &fill::get_gradient_fill() const
+pattern_fill fill::pattern_fill() const
 {
-    if (type_ != fill::type::gradient)
+    if (type_ != fill_type::pattern)
     {
-        throw std::runtime_error("not gradient");
-    }
-
-    return gradient_;
-}
-
-pattern_fill &fill::get_pattern_fill()
-{
-    if (type_ != fill::type::pattern)
-    {
-        throw std::runtime_error("not pattern");
+		throw invalid_attribute();
     }
 
     return pattern_;
 }
 
-const pattern_fill &fill::get_pattern_fill() const
+XLNT_API bool operator==(const fill &left, const fill &right)
 {
-    if (type_ != fill::type::pattern)
+    if (left.type() != right.type())
     {
-        throw std::runtime_error("not pattern");
+        return false;
+    }
+    
+    if (left.type() == fill_type::gradient)
+    {
+        return left.gradient_fill() == right.gradient_fill();
     }
 
-    return pattern_;
-}
-
-void gradient_fill::add_stop(double position, color stop_color)
-{
-    stops_[position] = stop_color;
-}
-
-void gradient_fill::delete_stop(double position)
-{
-    stops_.erase(stops_.find(position));
-}
-
-void gradient_fill::clear_stops()
-{
-    stops_.clear();
-}
-
-const std::unordered_map<double, color> &gradient_fill::get_stops() const
-{
-    return stops_;
+    return left.pattern_fill() == right.pattern_fill();
 }
 
 } // namespace xlnt

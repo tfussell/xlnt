@@ -21,132 +21,149 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
+#include <detail/default_case.hpp>
+#include <xlnt/utils/exceptions.hpp>
 #include <xlnt/styles/border.hpp>
 
 namespace xlnt {
 
-std::experimental::optional<side> &border::get_start()
+optional<xlnt::color> border::border_property::color() const
 {
-    return start_;
+	return color_;
 }
 
-const std::experimental::optional<side> &border::get_start() const
+border::border_property &border::border_property::color(const xlnt::color &c)
 {
-    return start_;
+	color_ = c;
+	return *this;
 }
 
-std::experimental::optional<side> &border::get_end()
+optional<border_style> border::border_property::style() const
 {
-    return end_;
+	return style_;
 }
 
-const std::experimental::optional<side> &border::get_end() const
+border::border_property &border::border_property::style(border_style s)
 {
-    return end_;
+	style_ = s;
+	return *this;
 }
 
-std::experimental::optional<side> &border::get_left()
+bool operator==(const border::border_property &left,
+    const border::border_property &right)
 {
-    return left_;
-}
-
-const std::experimental::optional<side> &border::get_left() const
-{
-    return left_;
-}
-
-std::experimental::optional<side> &border::get_right()
-{
-    return right_;
-}
-
-const std::experimental::optional<side> &border::get_right() const
-{
-    return right_;
-}
-
-std::experimental::optional<side> &border::get_top()
-{
-    return top_;
-}
-
-const std::experimental::optional<side> &border::get_top() const
-{
-    return top_;
-}
-
-std::experimental::optional<side> &border::get_bottom()
-{
-    return bottom_;
-}
-
-const std::experimental::optional<side> &border::get_bottom() const
-{
-    return bottom_;
-}
-
-std::experimental::optional<side> &border::get_diagonal()
-{
-    return diagonal_;
-}
-
-const std::experimental::optional<side> &border::get_diagonal() const
-{
-    return diagonal_;
-}
-
-std::experimental::optional<side> &border::get_vertical()
-{
-    return vertical_;
-}
-
-const std::experimental::optional<side> &border::get_vertical() const
-{
-    return vertical_;
-}
-
-std::experimental::optional<side> &border::get_horizontal()
-{
-    return horizontal_;
-}
-
-const std::experimental::optional<side> &border::get_horizontal() const
-{
-    return horizontal_;
-}
-
-std::string border::to_hash_string() const
-{
-    std::string hash_string;
-
-    hash_string.append(start_ ? "1" : "0");
-    if (start_) hash_string.append(std::to_string(start_->hash()));
+    if (left.style().is_set() != right.style().is_set())
+    {
+        return false;
+    }
     
-    hash_string.append(end_ ? "1" : "0");
-    if (end_) hash_string.append(std::to_string(end_->hash()));
+    if (left.style().is_set())
+    {
+        if (left.style().get() != right.style().get())
+        {
+            return false;
+        }
+    }
     
-    hash_string.append(left_ ? "1" : "0");
-    if (left_) hash_string.append(std::to_string(left_->hash()));
+    if (left.color().is_set() != right.color().is_set())
+    {
+        return false;
+    }
     
-    hash_string.append(right_ ? "1" : "0");
-    if (right_) hash_string.append(std::to_string(right_->hash()));
+    if (left.color().is_set())
+    {
+        if (left.color().get() != right.color().get())
+        {
+            return false;
+        }
+    }
     
-    hash_string.append(top_ ? "1" : "0");
-    if (top_) hash_string.append(std::to_string(top_->hash()));
-    
-    hash_string.append(bottom_ ? "1" : "0");
-    if (bottom_) hash_string.append(std::to_string(bottom_->hash()));
-    
-    hash_string.append(diagonal_ ? "1" : "0");
-    if (diagonal_) hash_string.append(std::to_string(diagonal_->hash()));
-    
-    hash_string.append(vertical_ ? "1" : "0");
-    if (vertical_) hash_string.append(std::to_string(vertical_->hash()));
-    
-    hash_string.append(horizontal_ ? "1" : "0");
-    if (horizontal_) hash_string.append(std::to_string(horizontal_->hash()));
+    return true;
+}
 
-    return hash_string;
+border::border()
+{
+}
+
+const std::vector<xlnt::border_side> &border::all_sides()
+{
+	static auto *sides = new std::vector<xlnt::border_side>
+	{
+		xlnt::border_side::start,
+		xlnt::border_side::end,
+		xlnt::border_side::top,
+		xlnt::border_side::bottom,
+		xlnt::border_side::diagonal,
+		xlnt::border_side::vertical,
+		xlnt::border_side::horizontal
+	};
+
+	return *sides;
+}
+
+optional<border::border_property> border::side(border_side s) const
+{
+	switch (s)
+	{
+	case border_side::bottom: return bottom_;
+	case border_side::top: return top_;
+	case border_side::start: return start_;
+	case border_side::end: return end_;
+	case border_side::vertical: return vertical_;
+	case border_side::horizontal: return horizontal_;
+	case border_side::diagonal: return diagonal_;
+	}
+
+    default_case(start_);
+}
+
+border &border::side(border_side s, const border_property &prop)
+{
+	switch (s)
+	{
+	case border_side::bottom: bottom_ = prop; break;
+	case border_side::top: top_ = prop; break;
+	case border_side::start: start_ = prop; break;
+	case border_side::end: end_ = prop; break;
+	case border_side::vertical: vertical_ = prop; break;
+	case border_side::horizontal: horizontal_ = prop; break;
+	case border_side::diagonal: diagonal_ = prop; break;
+	}
+
+	return *this;
+}
+
+border &border::diagonal(diagonal_direction direction)
+{
+	diagonal_direction_ = direction;
+	return *this;
+}
+
+optional<diagonal_direction> border::diagonal() const
+{
+	return diagonal_direction_;
+}
+
+XLNT_API bool operator==(const border &left, const border &right)
+{
+    for (auto side : border::all_sides())
+    {
+        if (left.side(side).is_set() != right.side(side).is_set())
+        {
+            return false;
+        }
+        
+        if (left.side(side).is_set())
+        {
+            if (left.side(side).get() != right.side(side).get())
+            {
+                return false;
+            }
+        }
+    }
+    
+    return true;
 }
 
 } // namespace xlnt

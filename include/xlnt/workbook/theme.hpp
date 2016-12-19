@@ -20,6 +20,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
@@ -30,7 +31,7 @@ namespace xlnt {
 /// A theme is a combination of fonts, colors, and effects.
 /// This isn't really supported yet.
 /// </summary>
-class XLNT_CLASS theme
+class XLNT_API theme
 {
 };
 

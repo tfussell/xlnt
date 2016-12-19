@@ -21,52 +21,102 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/utils/hash_combine.hpp>
 #include <xlnt/styles/horizontal_alignment.hpp>
 #include <xlnt/styles/vertical_alignment.hpp>
-#include <xlnt/utils/hashable.hpp>
+#include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 
 /// <summary>
 /// Alignment options for use in cell formats.
 /// </summary>
-class XLNT_CLASS alignment : public hashable
+class XLNT_API alignment
 {
 public:
-    bool get_wrap_text() const;
+    /// <summary>
+    ///
+    /// </summary>
+    optional<bool> shrink() const;
 
-    void set_wrap_text(bool wrap_text);
+    /// <summary>
+    ///
+    /// </summary>
+    alignment &shrink(bool shrink_to_fit);
 
-    bool has_horizontal() const;
+    /// <summary>
+    ///
+    /// </summary>
+    optional<bool> wrap() const;
 
-    horizontal_alignment get_horizontal() const;
+    /// <summary>
+    ///
+    /// </summary>
+    alignment &wrap(bool wrap_text);
 
-    void set_horizontal(horizontal_alignment horizontal);
+    /// <summary>
+    ///
+    /// </summary>
+    optional<int> indent() const;
 
-    bool has_vertical() const;
+    /// <summary>
+    ///
+    /// </summary>
+    alignment &indent(int indent_size);
 
-    vertical_alignment get_vertical() const;
+    /// <summary>
+    ///
+    /// </summary>
+    optional<int> rotation() const;
 
-    void set_vertical(vertical_alignment vertical);
-    
-    void set_shrink_to_fit(bool shrink_to_fit);
-    
-    bool get_shrink_to_fit() const;
+    /// <summary>
+    ///
+    /// </summary>
+    alignment &rotation(int text_rotation);
 
-protected:
-    std::string to_hash_string() const override;
+    /// <summary>
+    ///
+    /// </summary>
+    optional<horizontal_alignment> horizontal() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    alignment &horizontal(horizontal_alignment horizontal);
+
+    /// <summary>
+    ///
+    /// </summary>
+    optional<vertical_alignment> vertical() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    alignment &vertical(vertical_alignment vertical);
+
+    /// <summary>
+    /// Returns true if left is exactly equal to right.
+    /// </summary>
+    XLNT_API friend bool operator==(const alignment &left, const alignment &right);
+
+    /// <summary>
+    /// Returns true if left is not exactly equal to right.
+    /// </summary>
+    XLNT_API friend bool operator!=(const alignment &left, const alignment &right)
+    {
+        return !(left == right);
+    }
 
 private:
-    horizontal_alignment horizontal_ = horizontal_alignment::general;
-    vertical_alignment vertical_ = vertical_alignment::bottom;
-    int text_rotation_ = 0;
-    bool wrap_text_ = false;
-    bool shrink_to_fit_ = false;
-    int indent_ = 0;
+    optional<bool> shrink_to_fit_;
+    optional<bool> wrap_text_;
+    optional<int> indent_;
+    optional<int> text_rotation_;
+    optional<horizontal_alignment> horizontal_ = horizontal_alignment::general;
+    optional<vertical_alignment> vertical_ = vertical_alignment::bottom;
 };
 
 } // namespace xlnt

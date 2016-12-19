@@ -21,44 +21,227 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <cstdint>
 #include <string>
 
-#include <xlnt/styles/base_format.hpp>
+#include <xlnt/xlnt_config.hpp>
 
 namespace xlnt {
 
-class workbook;
+class alignment;
+class border;
+class cell;
+class fill;
+class font;
+class number_format;
+class protection;
+
+namespace detail {
+
+struct style_impl;
+struct stylesheet;
+
+} // namespace detail
 
 /// <summary>
 /// Describes a style which has a name and can be applied to multiple individual
 /// formats. In Excel this is a "Cell Style".
 /// </summary>
-class XLNT_CLASS style : public base_format
+class XLNT_API style
 {
 public:
-    style();
-    style(const style &other);
-    style &operator=(const style &other);
+    /// <summary>
+    /// Delete zero-argument constructor
+    /// </summary>
+    style() = delete;
 
-    std::string get_name() const;
-    void set_name(const std::string &name);
-    
-    bool get_hidden() const;
-    void set_hidden(bool value);
-    
-    std::size_t get_builtin_id() const;
-    void set_builtin_id(std::size_t builtin_id);
+    /// <summary>
+    /// Default copy constructor
+    /// </summary>
+    style(const style &other) = default;
 
-protected:
-    std::string to_hash_string() const override;
+    /// <summary>
+    /// Return the name of this style.
+    /// </summary>
+    std::string name() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    style name(const std::string &name);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool hidden() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    style hidden(bool value);
+
+    /// <summary>
+    ///
+    /// </summary>
+    optional<bool> custom() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    style custom(bool value);
+
+    /// <summary>
+    ///
+    /// </summary>
+    optional<std::size_t> builtin_id() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    style builtin_id(std::size_t builtin_id);
+
+    // Formatting components
+
+    /// <summary>
+    ///
+    /// </summary>
+    class alignment &alignment();
+
+    /// <summary>
+    ///
+    /// </summary>
+    const class alignment &alignment() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    style alignment(const xlnt::alignment &new_alignment, bool applied = true);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool alignment_applied() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    class border &border();
+
+    /// <summary>
+    ///
+    /// </summary>
+    const class border &border() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    style border(const xlnt::border &new_border, bool applied = true);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool border_applied() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    class fill &fill();
+
+    /// <summary>
+    ///
+    /// </summary>
+    const class fill &fill() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    style fill(const xlnt::fill &new_fill, bool applied = true);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool fill_applied() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    class font &font();
+
+    /// <summary>
+    ///
+    /// </summary>
+    const class font &font() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    style font(const xlnt::font &new_font, bool applied = true);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool font_applied() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    class number_format &number_format();
+
+    /// <summary>
+    ///
+    /// </summary>
+    const class number_format &number_format() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    style number_format(const xlnt::number_format &new_number_format, bool applied = true);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool number_format_applied() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    class protection &protection();
+
+    /// <summary>
+    ///
+    /// </summary>
+    const class protection &protection() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    style protection(const xlnt::protection &new_protection, bool applied = true);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool protection_applied() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool operator==(const style &other) const;
 
 private:
-    std::string name_;
-    bool hidden_;
-    std::size_t builtin_id_;
+    friend struct detail::stylesheet;
+
+    /// <summary>
+    ///
+    /// </summary>
+    style(detail::style_impl *d);
+
+    /// <summary>
+    ///
+    /// </summary>
+    detail::style_impl *d_;
 };
 
 } // namespace xlnt

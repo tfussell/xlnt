@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
@@ -30,13 +31,32 @@ namespace xlnt {
 /// <summary>
 /// The properties of a row in a worksheet.
 /// </summary>
-class XLNT_CLASS row_properties
+class XLNT_API row_properties
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     long double height;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool visible;
+
+    /// <summary>
+    ///
+    /// </summary>
     int outline_level;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool collapsed;
+
+    /// <summary>
+    ///
+    /// </summary>
     int style_index;
 };
 

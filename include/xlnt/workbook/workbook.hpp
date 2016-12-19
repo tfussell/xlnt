@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <functional>
@@ -35,21 +36,24 @@
 
 namespace xlnt {
 
+enum class calendar;
+enum class relationship_type;
+
 class alignment;
-class app_properties;
 class border;
 class cell;
 class cell_style;
 class color;
 class const_worksheet_iterator;
-class document_properties;
 class drawing;
 class fill;
 class font;
 class format;
+class formatted_text;
 class manifest;
 class named_range;
 class number_format;
+class path;
 class pattern_fill;
 class protection;
 class range;
@@ -57,33 +61,73 @@ class range_reference;
 class relationship;
 class style;
 class style_serializer;
-class text;
 class theme;
+class workbook_view;
 class worksheet;
 class worksheet_iterator;
 class zip_file;
 
-enum class relationship_type;
+struct datetime;
 
 namespace detail {
+
+struct stylesheet;
 struct workbook_impl;
+class xlsx_consumer;
+class xlsx_producer;
+
 } // namespace detail
 
 /// <summary>
 /// workbook is the container for all other parts of the document.
 /// </summary>
-class XLNT_CLASS workbook
+class XLNT_API workbook
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     using iterator = worksheet_iterator;
+
+    /// <summary>
+    ///
+    /// </summary>
     using const_iterator = const_worksheet_iterator;
+
+    /// <summary>
+    ///
+    /// </summary>
     using reverse_iterator = std::reverse_iterator<iterator>;
+
+    /// <summary>
+    ///
+    /// </summary>
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     /// <summary>
     /// Swap the data held in workbooks "left" and "right".
     /// </summary>
     friend void swap(workbook &left, workbook &right);
+
+    /// <summary>
+    ///
+    /// </summary>
+    static workbook minimal();
+
+    /// <summary>
+    ///
+    /// </summary>
+    static workbook empty_excel();
+
+    /// <summary>
+    ///
+    /// </summary>
+    static workbook empty_libre_office();
+
+    /// <summary>
+    ///
+    /// </summary>
+    static workbook empty_numbers();
 
     // constructors
 
@@ -107,25 +151,31 @@ public:
     /// </summary>
     ~workbook();
 
-    // general properties
-
-    bool get_guess_types() const;
-    void set_guess_types(bool guess);
-
-    bool get_data_only() const;
-    void set_data_only(bool data_only);
-    
-    bool get_read_only() const;
-    void set_read_only(bool read_only);
-
     // add worksheets
 
+    /// <summary>
+    /// Create a sheet after the last sheet in this workbook and return it.
+    /// </summary>
     worksheet create_sheet();
-    worksheet create_sheet(std::size_t index);
-    worksheet create_sheet(const std::string &title);
-    worksheet create_sheet(std::size_t index, const std::string &title);
 
+    /// <summary>
+    /// Create a sheet at the specified index and return it.
+    /// </summary>
+    worksheet create_sheet(std::size_t index);
+
+    /// <summary>
+    /// This should be private...
+    /// </summary>
+    worksheet create_sheet_with_rel(const std::string &title, const relationship &rel);
+
+    /// <summary>
+    /// Create a new sheet initializing it with all of the data from the provided worksheet.
+    /// </summary>
     void copy_sheet(worksheet worksheet);
+
+    /// <summary>
+    /// Create a new sheet at the specified index initializing it with all of the data
+    /// from the provided worksheet.
     void copy_sheet(worksheet worksheet, std::size_t index);
 
     // get worksheets
@@ -135,31 +185,41 @@ public:
     /// This is also the sheet that will be shown when the workbook is opened
     /// in the spreadsheet editor program.
     /// </summary>
-    worksheet get_active_sheet();
+    worksheet active_sheet();
 
     /// <summary>
     /// Return the worksheet with the given name.
     /// This may throw an exception if the sheet isn't found.
     /// Use workbook::contains(const std::string &) to make sure the sheet exists.
     /// </summary>
-    worksheet get_sheet_by_name(const std::string &sheet_name);
-    
+    worksheet sheet_by_title(const std::string &sheet_name);
+
     /// <summary>
     /// Return the const worksheet with the given name.
     /// This may throw an exception if the sheet isn't found.
     /// Use workbook::contains(const std::string &) to make sure the sheet exists.
     /// </summary>
-    const worksheet get_sheet_by_name(const std::string &sheet_name) const;
+    const worksheet sheet_by_title(const std::string &sheet_name) const;
 
     /// <summary>
     /// Return the worksheet at the given index.
     /// </summary>
-    worksheet get_sheet_by_index(std::size_t index);
+    worksheet sheet_by_index(std::size_t index);
 
     /// <summary>
     /// Return the const worksheet at the given index.
     /// </summary>
-    const worksheet get_sheet_by_index(std::size_t index) const;
+    const worksheet sheet_by_index(std::size_t index) const;
+
+    /// <summary>
+    /// Return the worksheet with a sheetId of id.
+    /// </summary>
+    worksheet sheet_by_id(std::size_t id);
+
+    /// <summary>
+    /// Return the const worksheet with a sheetId of id.
+    /// </summary>
+    const worksheet sheet_by_id(std::size_t id) const;
 
     /// <summary>
     /// Return true if this workbook contains a sheet with the given name.
@@ -170,110 +230,416 @@ public:
     /// Return the index of the given worksheet.
     /// The worksheet must be owned by this workbook.
     /// </summary>
-    std::size_t get_index(worksheet worksheet);
+    std::size_t index(worksheet worksheet);
 
     // remove worksheets
 
+    /// <summary>
+    /// Remove the given worksheet from this workbook.
+    /// </summary>
     void remove_sheet(worksheet worksheet);
+
+    /// <summary>
+    /// Delete every cell in this worksheet. After this is called, the
+    /// worksheet will be equivalent to a newly created sheet at the same
+    /// index and with the same title.
+    /// </summary>
     void clear();
 
     // iterators
 
+    /// <summary>
+    /// Returns an iterator to the first worksheet in this workbook.
+    /// </summary>
     iterator begin();
+
+    /// <summary>
+    /// Returns an iterator to the worksheet following the last worksheet of the workbook.
+    /// This worksheet acts as a placeholder; attempting to access it will cause an
+    /// exception to be thrown.
+    /// </summary>
     iterator end();
 
+    /// <summary>
+    /// Returns a const iterator to the first worksheet in this workbook.
+    /// </summary>
     const_iterator begin() const;
+
+    /// <summary>
+    /// Returns a const iterator to the worksheet following the last worksheet of the workbook.
+    /// This worksheet acts as a placeholder; attempting to access it will cause an
+    /// exception to be thrown.
+    /// </summary>
     const_iterator end() const;
 
+    /// <summary>
+    /// Returns an iterator to the first worksheet in this workbook.
+    /// </summary>
     const_iterator cbegin() const;
+
+    /// <summary>
+    /// Returns a const iterator to the worksheet following the last worksheet of the workbook.
+    /// This worksheet acts as a placeholder; attempting to access it will cause an
+    /// exception to be thrown.
+    /// </summary>
     const_iterator cend() const;
-    
-    reverse_iterator rbegin();
-    reverse_iterator rend();
 
-    const_reverse_iterator rbegin() const;
-    const_reverse_iterator rend() const;
+    /// <summary>
+    /// Apply the function "f" to every non-empty cell in every worksheet in this workbook.
+    /// </summary>
+    void apply_to_cells(std::function<void(cell)> f);
 
-    const_reverse_iterator crbegin() const;
-    const_reverse_iterator crend() const;
+    /// <summary>
+    /// Returns a temporary vector containing the titles of each sheet in the order
+    /// of the sheets in the workbook.
+    /// </summary>
+    std::vector<std::string> sheet_titles() const;
 
-    std::vector<std::string> get_sheet_names() const;
+    /// <summary>
+    /// Returns the number of sheets in this workbook.
+    /// </summary>
+    std::size_t sheet_count() const;
 
-    document_properties &get_properties();
-    const document_properties &get_properties() const;
+    /// <summary>
+    /// Returns true if the workbook has the core property with the given name.
+    /// </summary>
+    bool has_core_property(const std::string &property_name) const;
 
-    app_properties &get_app_properties();
-    const app_properties &get_app_properties() const;
+    /// <summary>
+    ///
+    /// </summary>
+    template <typename T = std::string>
+    T core_property(const std::string &property_name) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    template <typename T = std::string>
+    void core_property(const std::string &property_name, const T value);
+
+    /// <summary>
+    ///
+    /// </summary>
+    calendar base_date() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void base_date(calendar base_date);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_title() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::string title() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void title(const std::string &title);
 
     // named ranges
 
-    std::vector<named_range> get_named_ranges() const;
+    /// <summary>
+    ///
+    /// </summary>
+    std::vector<xlnt::named_range> named_ranges() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     void create_named_range(const std::string &name, worksheet worksheet, const range_reference &reference);
+
+    /// <summary>
+    ///
+    /// </summary>
     void create_named_range(const std::string &name, worksheet worksheet, const std::string &reference_string);
+
+    /// <summary>
+    ///
+    /// </summary>
     bool has_named_range(const std::string &name) const;
-    range get_named_range(const std::string &name);
+
+    /// <summary>
+    ///
+    /// </summary>
+    class range named_range(const std::string &name);
+
+    /// <summary>
+    ///
+    /// </summary>
     void remove_named_range(const std::string &name);
 
     // serialization
 
-    bool save(std::vector<unsigned char> &data);
-    bool save(const std::string &filename);
-    bool load(const std::vector<unsigned char> &data);
-    bool load(const std::string &filename);
-    bool load(std::istream &stream);
-    bool load(zip_file &archive);
+    /// <summary>
+    ///
+    /// </summary>
+    void save(std::vector<std::uint8_t> &data) const;
 
-    void set_code_name(const std::string &code_name);
+    /// <summary>
+    ///
+    /// </summary>
+    void save(const std::string &filename) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void save(const xlnt::path &filename) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void save(std::ostream &stream) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void save(const std::string &filename, const std::string &password);
+
+    /// <summary>
+    ///
+    /// </summary>
+    void save(const xlnt::path &filename, const std::string &password);
+
+    /// <summary>
+    ///
+    /// </summary>
+    void save(std::ostream &stream, const std::string &password);
+
+    /// <summary>
+    ///
+    /// </summary>
+    void save(const std::vector<std::uint8_t> &data, const std::string &password);
+
+    /// <summary>
+    ///
+    /// </summary>
+    void load(const std::vector<std::uint8_t> &data);
+
+    /// <summary>
+    ///
+    /// </summary>
+    void load(const std::string &filename);
+
+    /// <summary>
+    ///
+    /// </summary>
+    void load(const xlnt::path &filename);
+
+    /// <summary>
+    ///
+    /// </summary>
+    void load(std::istream &stream);
+
+    /// <summary>
+    ///
+    /// </summary>
+    void load(const std::string &filename, const std::string &password);
+
+    /// <summary>
+    ///
+    /// </summary>
+    void load(const xlnt::path &filename, const std::string &password);
+
+    /// <summary>
+    ///
+    /// </summary>
+    void load(std::istream &stream, const std::string &password);
+
+    /// <summary>
+    ///
+    /// </summary>
+    void load(const std::vector<std::uint8_t> &data, const std::string &password);
+
+#ifdef _MSC_VER
+    /// <summary>
+    ///
+    /// </summary>
+    void save(const std::wstring &filename);
+
+    /// <summary>
+    ///
+    /// </summary>
+    void save(const std::wstring &filename, const std::string &password);
+
+    /// <summary>
+    ///
+    /// </summary>
+    void load(const std::wstring &filename);
+
+    /// <summary>
+    ///
+    /// </summary>
+    void load(const std::wstring &filename, const std::string &password);
+#endif
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_view() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    workbook_view view() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void view(const workbook_view &view);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_code_name() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::string code_name() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void code_name(const std::string &code_name);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_file_version() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::string app_name() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::size_t last_edited() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::size_t lowest_edited() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::size_t rup_build() const;
 
     // theme
 
-    bool has_loaded_theme() const;
-    const theme &get_loaded_theme() const;
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_theme() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    const xlnt::theme &theme() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void theme(const class theme &value);
 
     // formats
-    
-    format &get_format(std::size_t format_index);
-    const format &get_format(std::size_t format_index) const;
-    std::size_t add_format(const format &new_format);
+
+    /// <summary>
+    ///
+    /// </summary>
+    xlnt::format format(std::size_t format_index);
+
+    /// <summary>
+    ///
+    /// </summary>
+    const xlnt::format format(std::size_t format_index) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    xlnt::format create_format(bool default_format = false);
+
+    /// <summary>
+    ///
+    /// </summary>
     void clear_formats();
 
     // styles
 
+    /// <summary>
+    ///
+    /// </summary>
     bool has_style(const std::string &name) const;
-    style &get_style(const std::string &name);
-    const style &get_style(const std::string &name) const;
-    style &get_style_by_id(std::size_t style_id);
-    const style &get_style_by_id(std::size_t style_id) const;
-    std::size_t get_style_id(const std::string &name) const;
-    style &create_style(const std::string &name);
-    std::size_t add_style(const style &new_style);
+
+    /// <summary>
+    ///
+    /// </summary>
+    class style style(const std::string &name);
+
+    /// <summary>
+    ///
+    /// </summary>
+    const class style style(const std::string &name) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    class style create_style(const std::string &name);
+
+    /// <summary>
+    ///
+    /// </summary>
     void clear_styles();
-    const std::vector<style> &get_styles() const;
 
     // manifest
 
-    manifest &get_manifest();
-    const manifest &get_manifest() const;
+    /// <summary>
+    ///
+    /// </summary>
+    class manifest &manifest();
 
-    // relationships
-
-    void create_relationship(const std::string &id, const std::string &target, relationship_type type);
-    relationship get_relationship(const std::string &id) const;
-    const std::vector<relationship> &get_relationships() const;
-
-    void create_root_relationship(const std::string &id, const std::string &target, relationship_type type);
-    const std::vector<relationship> &get_root_relationships() const;
+    /// <summary>
+    ///
+    /// </summary>
+    const class manifest &manifest() const;
 
     // shared strings
 
-    void add_shared_string(const text &shared, bool allow_duplicates=false);
-    std::vector<text> &get_shared_strings();
-    const std::vector<text> &get_shared_strings() const;
-    
+    /// <summary>
+    ///
+    /// </summary>
+    void add_shared_string(const formatted_text &shared, bool allow_duplicates = false);
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::vector<formatted_text> &shared_strings();
+
+    /// <summary>
+    ///
+    /// </summary>
+    const std::vector<formatted_text> &shared_strings() const;
+
     // thumbnail
 
-    void set_thumbnail(const std::vector<std::uint8_t> &thumbnail);
-    const std::vector<std::uint8_t> &get_thumbnail() const;
+    /// <summary>
+    ///
+    /// </summary>
+    void thumbnail(
+        const std::vector<std::uint8_t> &thumbnail, const std::string &extension, const std::string &content_type);
+
+    /// <summary>
+    ///
+    /// </summary>
+    const std::vector<std::uint8_t> &thumbnail() const;
 
     // operators
 
@@ -306,24 +672,55 @@ public:
     bool operator!=(const workbook &rhs) const;
 
 private:
-    friend class excel_serializer;
     friend class worksheet;
+    friend class detail::xlsx_consumer;
+    friend class detail::xlsx_producer;
 
     /// <summary>
-    /// Helper function to calculate an index from a worksheet filename.
+    ///
     /// </summary>
-    static std::size_t index_from_ws_filename(const std::string &filename);
+    workbook(detail::workbook_impl *impl);
 
     /// <summary>
-    /// Get the name of the next unused relationship.
+    ///
     /// </summary>
-    std::string next_relationship_id() const;
+    detail::workbook_impl &impl();
 
     /// <summary>
-    /// Apply the function "f" to every cell in every worksheet in this workbook.
+    ///
     /// </summary>
-    void apply_to_cells(std::function<void(cell)> f);
-    
+    const detail::workbook_impl &impl() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void register_app_properties_in_manifest();
+
+    /// <summary>
+    ///
+    /// </summary>
+    void register_core_properties_in_manifest();
+
+    /// <summary>
+    ///
+    /// </summary>
+    void register_shared_string_table_in_manifest();
+
+    /// <summary>
+    ///
+    /// </summary>
+    void register_stylesheet_in_manifest();
+
+    /// <summary>
+    ///
+    /// </summary>
+    void register_theme_in_manifest();
+
+    /// <summary>
+    ///
+    /// </summary>
+    void register_comments_in_manifest(worksheet ws);
+
     /// <summary>
     /// An opaque pointer to a structure that holds all of the data relating to this workbook.
     /// </summary>

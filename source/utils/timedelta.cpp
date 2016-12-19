@@ -59,21 +59,19 @@ timedelta timedelta::from_number(long double raw_time)
 {
     timedelta result;
 
-    long double integer_part;
-    long double fractional_part = std::modf(raw_time, &integer_part);
-
-    result.days = static_cast<int>(integer_part);
+    result.days = static_cast<int>(raw_time);
+    long double fractional_part = raw_time - result.days;
 
     fractional_part *= 24;
-    result.hours = (int)fractional_part;
+    result.hours = static_cast<int>(fractional_part);
     fractional_part = 60 * (fractional_part - result.hours);
-    result.minutes = (int)fractional_part;
+    result.minutes = static_cast<int>(fractional_part);
     fractional_part = 60 * (fractional_part - result.minutes);
-    result.seconds = (int)fractional_part;
+    result.seconds = static_cast<int>(fractional_part);
     fractional_part = 1000000 * (fractional_part - result.seconds);
-    result.microseconds = (int)fractional_part;
+    result.microseconds = static_cast<int>(fractional_part);
     
-    if (result.microseconds == 999999 && fractional_part - result.microseconds > 0.5)
+    if (result.microseconds == 999999 && fractional_part - result.microseconds > 0.5L)
     {
         result.microseconds = 0;
         result.seconds += 1;

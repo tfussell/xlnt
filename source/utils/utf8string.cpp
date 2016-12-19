@@ -20,6 +20,14 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshadow"
+#pragma clang diagnostic ignored "-Wdeprecated"
+#pragma clang diagnostic ignored "-Wweak-vtables"
+#include <utf8.h>
+#pragma clang diagnostic pop
+
 #include <xlnt/utils/utf8string.hpp>
 
 namespace xlnt {

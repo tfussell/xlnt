@@ -21,72 +21,309 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
+#include <array>
 #include <string>
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/utils/hashable.hpp>
 
 namespace xlnt {
 
 /// <summary>
-/// Colors can be applied to many parts of a cell's style.
+///
 /// </summary>
-class XLNT_CLASS color : public hashable
+class XLNT_API indexed_color
 {
 public:
     /// <summary>
-    /// Some colors are references to colors rather than having a particular RGB value.
+    ///
     /// </summary>
-    enum class type
-    {
-        indexed,
-        theme,
-        auto_,
-        rgb
-    };
+    indexed_color(std::size_t index);
 
-    static const color black();
-    static const color white();
-    static const color red();
-    static const color darkred();
-    static const color blue();
-    static const color darkblue();
-    static const color green();
-    static const color darkgreen();
-    static const color yellow();
-    static const color darkyellow();
+    /// <summary>
+    ///
+    /// </summary>
+    std::size_t index() const;
 
-    color();
-
-    color(type t, std::size_t v);
-
-    color(type t, const std::string &v);
-
-    void set_auto(std::size_t auto_index);
-
-    void set_index(std::size_t index);
-
-    void set_theme(std::size_t theme);
-
-    type get_type() const;
-
-    std::size_t get_auto() const;
-
-    std::size_t get_index() const;
-
-    std::size_t get_theme() const;
-
-    std::string get_rgb_string() const;
-
-protected:
-    std::string to_hash_string() const override;
+    /// <summary>
+    ///
+    /// </summary>
+    void index(std::size_t index);
 
 private:
-    type type_ = type::indexed;
-    std::size_t index_ = 0;
-    std::string rgb_string_;
+    /// <summary>
+    ///
+    /// </summary>
+    std::size_t index_;
+};
+
+/// <summary>
+///
+/// </summary>
+class XLNT_API theme_color
+{
+public:
+    /// <summary>
+    ///
+    /// </summary>
+    theme_color(std::size_t index);
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::size_t index() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void index(std::size_t index);
+
+private:
+    /// <summary>
+    ///
+    /// </summary>
+    std::size_t index_;
+};
+
+/// <summary>
+///
+/// </summary>
+class XLNT_API rgb_color
+{
+public:
+    /// <summary>
+    ///
+    /// </summary>
+    rgb_color(const std::string &hex_string);
+
+    /// <summary>
+    ///
+    /// </summary>
+    rgb_color(std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint8_t a = 255);
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::string hex_string() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::uint8_t red() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::uint8_t green() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::uint8_t blue() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::uint8_t alpha() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::array<std::uint8_t, 3> rgb() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::array<std::uint8_t, 4> rgba() const;
+
+private:
+    /// <summary>
+    ///
+    /// </summary>
+    static std::array<std::uint8_t, 4> decode_hex_string(const std::string &hex_string);
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::array<std::uint8_t, 4> rgba_;
+};
+
+/// <summary>
+/// Some colors are references to colors rather than having a particular RGB value.
+/// </summary>
+enum class color_type
+{
+    indexed,
+    theme,
+    rgb
+};
+
+/// <summary>
+/// Colors can be applied to many parts of a cell's style.
+/// </summary>
+class XLNT_API color
+{
+public:
+    /// <summary>
+    ///
+    /// </summary>
+    static const color black();
+
+    /// <summary>
+    ///
+    /// </summary>
+    static const color white();
+
+    /// <summary>
+    ///
+    /// </summary>
+    static const color red();
+
+    /// <summary>
+    ///
+    /// </summary>
+    static const color darkred();
+
+    /// <summary>
+    ///
+    /// </summary>
+    static const color blue();
+
+    /// <summary>
+    ///
+    /// </summary>
+    static const color darkblue();
+
+    /// <summary>
+    ///
+    /// </summary>
+    static const color green();
+
+    /// <summary>
+    ///
+    /// </summary>
+    static const color darkgreen();
+
+    /// <summary>
+    ///
+    /// </summary>
+    static const color yellow();
+
+    /// <summary>
+    ///
+    /// </summary>
+    static const color darkyellow();
+
+    /// <summary>
+    ///
+    /// </summary>
+    color();
+
+    /// <summary>
+    ///
+    /// </summary>
+    color(const rgb_color &rgb);
+
+    /// <summary>
+    ///
+    /// </summary>
+    color(const indexed_color &indexed);
+
+    /// <summary>
+    ///
+    /// </summary>
+    color(const theme_color &theme);
+
+    /// <summary>
+    ///
+    /// </summary>
+    color_type type() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool is_auto() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void auto_(bool value);
+
+    /// <summary>
+    ///
+    /// </summary>
+    const rgb_color &rgb() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    const indexed_color &indexed() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    const theme_color &theme() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    double tint() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void tint(double tint);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool operator==(const color &other) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool operator!=(const color &other) const
+    {
+        return !(*this == other);
+    }
+
+private:
+    /// <summary>
+    ///
+    /// </summary>
+    void assert_type(color_type t) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    color_type type_;
+
+    /// <summary>
+    ///
+    /// </summary>
+    rgb_color rgb_;
+
+    /// <summary>
+    ///
+    /// </summary>
+    indexed_color indexed_;
+
+    /// <summary>
+    ///
+    /// </summary>
+    theme_color theme_;
+
+    /// <summary>
+    ///
+    /// </summary>
+    double tint_;
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool auto__;
 };
 
 } // namespace xlnt

@@ -10,14 +10,14 @@ class test_index_types : public CxxTest::TestSuite
 public:
     void test_bad_string()
     {
-        TS_ASSERT_THROWS(xlnt::column_t::column_index_from_string(""), xlnt::column_string_index_error);
-        TS_ASSERT_THROWS(xlnt::column_t::column_index_from_string("ABCD"), xlnt::column_string_index_error);
-        TS_ASSERT_THROWS(xlnt::column_t::column_index_from_string("123"), xlnt::column_string_index_error);
+        TS_ASSERT_THROWS(xlnt::column_t::column_index_from_string(""), xlnt::invalid_column_string_index);
+        TS_ASSERT_THROWS(xlnt::column_t::column_index_from_string("ABCD"), xlnt::invalid_column_string_index);
+        TS_ASSERT_THROWS(xlnt::column_t::column_index_from_string("123"), xlnt::invalid_column_string_index);
     }
     
     void test_bad_column()
     {
-        TS_ASSERT_THROWS(xlnt::column_t::column_string_from_index(0), xlnt::column_string_index_error);
+        TS_ASSERT_THROWS(xlnt::column_t::column_string_from_index(0), xlnt::invalid_column_string_index);
     }
 
     void test_column_operators()

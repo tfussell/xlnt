@@ -21,16 +21,16 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #include <algorithm>
 #include <cctype>
 #include <unordered_map>
 #include <vector>
 
-#include <xlnt/utils/datetime.hpp>
-#include <xlnt/utils/hash_combine.hpp>
-#include <xlnt/styles/number_format.hpp>
-
 #include <detail/number_formatter.hpp>
+#include <xlnt/styles/number_format.hpp>
+#include <xlnt/utils/datetime.hpp>
+#include <xlnt/utils/exceptions.hpp>
 
 namespace {
 
@@ -61,7 +61,14 @@ const std::unordered_map<std::size_t, std::string> &builtin_formats()
             { 37, "#,##0 ;(#,##0)" },
             { 38, "#,##0 ;[Red](#,##0)" },
             { 39, "#,##0.00;(#,##0.00)" },
-            { 40, "#,##0.00;[Red](#,##0.00)" },
+			{ 40, "#,##0.00;[Red](#,##0.00)" },
+
+			// 41-44 aren't in the ECMA 376 v4 standard, but Libre Office uses them
+			{ 41, "_(* #,##0_);_(* \\(#,##0\\);_(* \"-\"_);_(@_)" },
+			{ 42, "_(\"$\"* #,##0_);_(\"$\"* \\(#,##0\\);_(\"$\"* \"-\"_);_(@_)" },
+			{ 43, "_(* #,##0.00_);_(* \\(#,##0.00\\);_(* \"-\"??_);_(@_)" },
+			{ 44, "_(\"$\"* #,##0.00_)_(\"$\"* \\(#,##0.00\\)_(\"$\"* \"-\"??_)_(@_)" },
+
             { 45, "mm:ss" },
             { 46, "[h]:mm:ss" },
             { 47, "mmss.0" },
@@ -242,42 +249,31 @@ number_format::number_format(std::size_t id) : number_format(from_builtin_id(id)
 
 number_format::number_format(const std::string &format_string) : id_set_(false), id_(0)
 {
-    set_format_string(format_string);
+    this->format_string(format_string);
 }
 
 number_format::number_format(const std::string &format_string, std::size_t id) : id_set_(false), id_(0)
 {
-    set_format_string(format_string, id);
+    this->format_string(format_string, id);
 }
 
 number_format number_format::from_builtin_id(std::size_t builtin_id)
 {
     if (builtin_formats().find(builtin_id) == builtin_formats().end())
     {
-        throw std::runtime_error("unknown id: " + std::to_string(builtin_id));
+		throw invalid_parameter(); //("unknown id: " + std::to_string(builtin_id));
     }
 
     auto format_string = builtin_formats().at(builtin_id);
     return number_format(format_string, builtin_id);
 }
 
-std::string number_format::get_format_string() const
+std::string number_format::format_string() const
 {
     return format_string_;
 }
 
-std::string number_format::to_hash_string() const
-{
-    std::string hash_string("number_format");
-    hash_string.append(format_string_);
-    hash_string.append("|||");
-    hash_string.append(std::to_string(id_));
-
-    return hash_string;
-}
-
-
-void number_format::set_format_string(const std::string &format_string)
+void number_format::format_string(const std::string &format_string)
 {
     format_string_ = format_string;
     id_ = 0;
@@ -294,7 +290,7 @@ void number_format::set_format_string(const std::string &format_string)
     }
 }
 
-void number_format::set_format_string(const std::string &format_string, std::size_t id)
+void number_format::format_string(const std::string &format_string, std::size_t id)
 {
     format_string_ = format_string;
     id_ = id;
@@ -306,17 +302,17 @@ bool number_format::has_id() const
     return id_set_;
 }
 
-void number_format::set_id(std::size_t id)
+void number_format::id(std::size_t id)
 {
     id_ = id;
     id_set_ = true;
 }
 
-std::size_t number_format::get_id() const
+std::size_t number_format::id() const
 {
     if(!id_set_)
     {
-        throw std::runtime_error("number format doesn't have an id");
+		throw invalid_attribute();
     }
     
     return id_;
@@ -326,7 +322,7 @@ bool number_format::is_date_format() const
 {
     detail::number_format_parser p(format_string_);
     p.parse();
-    auto parsed = p.get_result();
+    auto parsed = p.result();
 
     bool any_datetime = false;
     bool any_timedelta = false;
@@ -355,6 +351,11 @@ std::string number_format::format(const std::string &text) const
 std::string number_format::format(long double number, calendar base_date) const
 {
     return detail::number_formatter(format_string_, base_date).format_number(number);
+}
+
+XLNT_API bool operator==(const number_format &left, const number_format &right)
+{
+    return left.format_string_ == right.format_string_;
 }
 
 } // namespace xlnt

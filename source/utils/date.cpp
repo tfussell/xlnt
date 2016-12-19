@@ -115,7 +115,6 @@ int date::to_number(calendar base_date) const
 date date::today()
 {
     std::tm now = safe_localtime(std::time(0));
-
     return date(1900 + now.tm_year, now.tm_mon + 1, now.tm_mday);
 }
 

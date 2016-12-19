@@ -16,15 +16,17 @@ matrix:
         apt:
           sources: 
             - ubuntu-toolchain-r-test
-            - george-edison55/cmake-3.x
           packages:
             - g++-4.9
-            - valgrind
             - python-pip
       before_script:
         - pip install --user git+git://github.com/eddyxu/cpp-coveralls.git
       env: 
         - COMPILER=g++-4.9
+        - COVERAGE=ON
+        - STATIC=ON
+        - SAMPLES=OFF
+        - BENCHMARKS=OFF
 
     - os: linux
       compiler: gcc
@@ -37,23 +39,17 @@ matrix:
             - valgrind
       env:
         - COMPILER=g++-5
+        - COVERAGE=OFF
+        - STATIC=OFF
+        - SAMPLES=ON
+        - BENCHMARKS=ON
 
 script:
-  - cmake --version
   - mkdir build
   - cd build
-  - cmake -D SHARED=1 -D STATIC=0 -D TESTS=1 -D CMAKE_CXX_COMPILER=$COMPILER ..
-  - cmake --build . --target xlnt.test
-  - bin/xlnt.test
-
-after_success:
-  - if [ "$COMPILER" = "g++-4.9" ]; then sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 90 ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 90 ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-4.9 90 ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then rm -rf ./* ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then cmake -G "Unix Makefiles" -D DEBUG=1 -D COVERAGE=1 -D SHARED=0 -D STATIC=1 -D TESTS=1 .. ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then make VERBOSE=1 ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then cd .. && ./build/bin/xlnt.test ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then export OLDWD=$(pwd) ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then cd "build/CMakeFiles/xlnt.static.dir$(pwd)" ; pwd ; fi
-  - if [ "$COMPILER" = "g++-4.9" ]; then coveralls --root $OLDWD --verbose -x ".cpp" --gcov-options '\-p' --exclude include --exclude third-party --exclude tests --exclude samples --exclude benchmarks -E ".*/source/.*/tests/.*" -E ".*/build/tests/runner-autogen.cpp.*" -E ".*CompilerIdCXX/.*" ; fi
+  - cmake -D STATIC=$STATIC -D BENCHMARKS=$BENCHMARKS -D SAMPLES=$SAMPLES -D COVERAGE=$COVERAGE -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=Debug ..
+  - cmake --build .
+  - cd bin && ./xlnt.test
+  - cd ..
+  - find source/CMakeFiles/xlnt.dir
+  - if [ "$COMPILER" = "g++4.9" ]; then coveralls --root source/CMakeFiles/xlnt.dir --verbose -x ".cpp" --gcov-options '\-p' ; fi

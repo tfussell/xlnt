@@ -21,49 +21,40 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #include <xlnt/styles/protection.hpp>
-#include <xlnt/utils/hash_combine.hpp>
 
 namespace xlnt {
 
-protection::protection() : protection(true, false)
+protection::protection() : locked_(false), hidden_(false)
 {
 }
 
-protection::protection(bool locked, bool hidden)
-    : locked_(locked),
-      hidden_(hidden)
-{
-}
-
-bool protection::get_locked() const
+bool protection::locked() const
 {
     return locked_;
 }
 
-void protection::set_locked(bool locked)
+protection &protection::locked(bool locked)
 {
     locked_ = locked;
+	return *this;
 }
 
-bool protection::get_hidden() const
+bool protection::hidden() const
 {
     return hidden_;
 }
 
-void protection::set_hidden(bool hidden)
+protection &protection::hidden(bool hidden)
 {
     hidden_ = hidden;
+	return *this;
 }
 
-std::string protection::to_hash_string() const
+XLNT_API bool operator==(const protection &left, const protection &right)
 {
-    std::string hash_string = "protection";
-    
-    hash_string.append(locked_ ? "1" : "0");
-    hash_string.append(hidden_ ? "1" : "0");
-
-    return hash_string;
+    return left.locked_ == right.locked_ && left.hidden_ == right.hidden_;
 }
 
 } // namespace xlnt

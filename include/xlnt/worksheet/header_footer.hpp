@@ -21,40 +21,305 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <cstdint>
 #include <string>
+#include <unordered_map>
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/worksheet/footer.hpp>
-#include <xlnt/worksheet/header.hpp>
+#include <xlnt/cell/formatted_text.hpp>
+#include <xlnt/utils/scoped_enum_hash.hpp>
 
 namespace xlnt {
 
-/// <summary>
-/// Worksheet header and footer for all six possible positions.
-/// </summary>
-class XLNT_CLASS header_footer
+class XLNT_API header_footer
 {
 public:
-    header_footer();
+    enum class location
+    {
+        left,
+        center,
+        right
+    };
 
-    header &get_left_header();
-    header &get_center_header();
-    header &get_right_header();
+    // General Properties
 
-    footer &get_left_footer();
-    footer &get_center_footer();
-    footer &get_right_footer();
+    /// <summary>
+    /// True if any text has been added for a header at any location on any page.
+    /// </summary>
+    bool has_header() const;
 
-    bool is_default_header() const;
-    bool is_default_footer() const;
-    bool is_default() const;
+    /// <summary>
+    /// True if any text has been added for a footer at any location on any page.
+    /// </summary>
+    bool has_footer() const;
+
+    /// <summary>
+    /// True if headers and footers should align to the page margins.
+    /// </summary>
+    bool align_with_margins() const;
+
+    /// <summary>
+    /// Set to true if headers and footers should align to the page margins.
+    /// Set to false if headers and footers should align to the edge of the page.
+    /// </summary>
+    header_footer &align_with_margins(bool align);
+
+    /// <summary>
+    /// True if headers and footers differ based on page number.
+    /// </summary>
+    bool different_odd_even() const;
+
+    /// <summary>
+    /// True if headers and footers are different on the first page.
+    /// </summary>
+    bool different_first() const;
+
+    /// <summary>
+    /// True if headers and footers should scale to match the worksheet.
+    /// </summary>
+    bool scale_with_doc() const;
+
+    /// <summary>
+    /// Set to true if headers and footers should scale to match the worksheet.
+    /// </summary>
+    header_footer &scale_with_doc(bool scale);
+
+
+    // Normal Header
+
+    /// <summary>
+    /// True if any text has been added at the given location on any page.
+    /// </summary>
+    bool has_header(location where) const;
+
+    /// <summary>
+    /// Remove all headers from all pages.
+    /// </summary>
+    void clear_header();
+
+    /// <summary>
+    /// Remove header at the given location on any page.
+    /// </summary>
+    void clear_header(location where);
+
+    /// <summary>
+    /// Add a header at the given location with the given text.
+    /// </summary>
+    header_footer &header(location where, const std::string &text);
+
+    /// <summary>
+    /// Add a header at the given location with the given text.
+    /// </summary>
+    header_footer &header(location where, const formatted_text &text);
+
+    /// <summary>
+    /// Get the text of the  header at the given location. If headers are
+    /// different on odd and even pages, the odd header will be returned.
+    /// </summary>
+    formatted_text header(location where) const;
+
+    // First Page Header
+
+    /// <summary>
+    /// True if a header has been set for the first page at any location.
+    /// </summary>
+    bool has_first_page_header() const;
+
+    /// <summary>
+    /// True if a header has been set for the first page at the given location.
+    /// </summary>
+    bool has_first_page_header(location where) const;
+
+    /// <summary>
+    /// Remove all headers from the first page.
+    /// </summary>
+    void clear_first_page_header();
+
+    /// <summary>
+    /// Remove header from the first page at the given location.
+    /// </summary>
+    void clear_first_page_header(location where);
+
+    /// <summary>
+    /// Add a header on the first page at the given location with the given text.
+    /// </summary>
+    header_footer &first_page_header(location where, const formatted_text &text);
+
+    /// <summary>
+    /// Get the text of the first page header at the given location. If no first
+    /// page header has been set, the general header for that location will
+    /// be returned.
+    /// </summary>
+    formatted_text first_page_header(location where) const;
+
+
+    // Odd/Even Header
+
+    /// <summary>
+    /// True if different headers have been set for odd and even pages.
+    /// </summary>
+    bool has_odd_even_header() const;
+
+    /// <summary>
+    /// True if different headers have been set for odd and even pages at the given location.
+    /// </summary>
+    bool has_odd_even_header(location where) const;
+
+    /// <summary>
+    /// Remove odd/even headers at all locations.
+    /// </summary>
+    void clear_odd_even_header();
+
+    /// <summary>
+    /// Remove odd/even headers at the given location.
+    /// </summary>
+    void clear_odd_even_header(location where);
+
+    /// <summary>
+    /// Add a header for odd pages at the given location with the given text.
+    /// </summary>
+    header_footer &odd_even_header(location where, const formatted_text &odd, const formatted_text &even);
+
+    /// <summary>
+    /// Get the text of the odd page header at the given location. If no odd
+    /// page header has been set, the general header for that location will
+    /// be returned.
+    /// </summary>
+    formatted_text odd_header(location where) const;
+
+    /// <summary>
+    /// Get the text of the even page header at the given location. If no even
+    /// page header has been set, the general header for that location will
+    /// be returned.
+    /// </summary>
+    formatted_text even_header(location where) const;
+
+
+    // Normal Footer
+
+    /// <summary>
+    /// True if any text has been added at the given location on any page.
+    /// </summary>
+    bool has_footer(location where) const;
+
+    /// <summary>
+    /// Remove all footers from all pages.
+    /// </summary>
+    void clear_footer();
+
+    /// <summary>
+    /// Remove footer at the given location on any page.
+    /// </summary>
+    void clear_footer(location where);
+
+    /// <summary>
+    /// Add a footer at the given location with the given text.
+    /// </summary>
+    header_footer &footer(location where, const std::string &text);
+
+    /// <summary>
+    /// Add a footer at the given location with the given text.
+    /// </summary>
+    header_footer &footer(location where, const formatted_text &text);
+
+    /// <summary>
+    /// Get the text of the  footer at the given location. If footers are
+    /// different on odd and even pages, the odd footer will be returned.
+    /// </summary>
+    formatted_text footer(location where) const;
+
+    // First Page footer
+
+    /// <summary>
+    /// True if a footer has been set for the first page at any location.
+    /// </summary>
+    bool has_first_page_footer() const;
+
+    /// <summary>
+    /// True if a footer has been set for the first page at the given location.
+    /// </summary>
+    bool has_first_page_footer(location where) const;
+
+    /// <summary>
+    /// Remove all footers from the first page.
+    /// </summary>
+    void clear_first_page_footer();
+
+    /// <summary>
+    /// Remove footer from the first page at the given location.
+    /// </summary>
+    void clear_first_page_footer(location where);
+
+    /// <summary>
+    /// Add a footer on the first page at the given location with the given text.
+    /// </summary>
+    header_footer &first_page_footer(location where, const formatted_text &text);
+
+    /// <summary>
+    /// Get the text of the first page footer at the given location. If no first
+    /// page footer has been set, the general footer for that location will
+    /// be returned.
+    /// </summary>
+    formatted_text first_page_footer(location where) const;
+
+
+    // Odd/Even Footer
+
+    /// <summary>
+    /// True if different footers have been set for odd and even pages.
+    /// </summary>
+    bool has_odd_even_footer() const;
+
+    /// <summary>
+    /// True if different footers have been set for odd and even pages at the given location.
+    /// </summary>
+    bool has_odd_even_footer(location where) const;
+
+    /// <summary>
+    /// Remove odd/even footers at all locations.
+    /// </summary>
+    void clear_odd_even_footer();
+
+    /// <summary>
+    /// Remove odd/even footers at the given location.
+    /// </summary>
+    void clear_odd_even_footer(location where);
+
+    /// <summary>
+    /// Add a footer for odd pages at the given location with the given text.
+    /// </summary>
+    header_footer &odd_even_footer(location where, const formatted_text &odd, const formatted_text &even);
+
+    /// <summary>
+    /// Get the text of the odd page footer at the given location. If no odd
+    /// page footer has been set, the general footer for that location will
+    /// be returned.
+    /// </summary>
+    formatted_text odd_footer(location where) const;
+
+    /// <summary>
+    /// Get the text of the even page footer at the given location. If no even
+    /// page footer has been set, the general footer for that location will
+    /// be returned.
+    /// </summary>
+    formatted_text even_footer(location where) const;
 
 private:
-    header left_header_, right_header_, center_header_;
-    footer left_footer_, right_footer_, center_footer_;
+    bool align_with_margins_ = false;
+    bool different_odd_even_ = false;
+    bool scale_with_doc_ = false;
+
+    using container = std::unordered_map<location, formatted_text, scoped_enum_hash<location>>;
+
+    container odd_headers_;
+    container even_headers_;
+    container first_headers_;
+    container odd_footers_;
+    container even_footers_;
+    container first_footers_;
 };
 
 } // namespace xlnt

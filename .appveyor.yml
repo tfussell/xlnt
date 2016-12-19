@@ -1,0 +1,25 @@
+version: '{build}'
+os: Previous Visual Studio 2015
+
+configuration:
+- Debug
+
+environment:
+  matrix:
+  - STATIC: OFF
+  - STATIC: ON
+
+init: []
+install: []
+before_build:
+- git submodule update --init
+- cmake -H. -Bbuild -G"Visual Studio 14 2015 Win64" -DSTATIC=%STATIC% -DSAMPLES=ON -DBENCHMARKS=ON
+
+build:
+  project: build/tests/xlnt.test.sln
+  parallel: true
+  verbosity: minimal
+
+test_script:
+- cd build/bin
+- xlnt.test.exe

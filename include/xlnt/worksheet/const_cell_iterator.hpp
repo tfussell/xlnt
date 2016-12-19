@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <cstddef> // std::ptrdiff_t
@@ -33,38 +34,95 @@
 
 namespace xlnt {
 
+enum class major_order;
+
 class cell;
 class cell_reference;
 class range_reference;
-enum class major_order;
 
-class XLNT_CLASS const_cell_iterator : public std::iterator<std::bidirectional_iterator_tag, const cell, std::ptrdiff_t, const cell*, const cell>
+using cc_iter_type = std::iterator<std::bidirectional_iterator_tag,
+    const cell, std::ptrdiff_t, const cell *, const cell>;
+
+/// <summary>
+///
+/// </summary>
+class XLNT_API const_cell_iterator : public cc_iter_type
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     const_cell_iterator(worksheet ws, const cell_reference &start_cell);
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     const_cell_iterator(worksheet ws, const cell_reference &start_cell, major_order order);
 
+    /// <summary>
+    ///
+    /// </summary>
     const_cell_iterator(const const_cell_iterator &other);
 
+    /// <summary>
+    ///
+    /// </summary>
+    const_cell_iterator &operator=(const const_cell_iterator &) = default;
+
+    /// <summary>
+    ///
+    /// </summary>
     const cell operator*() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     bool operator==(const const_cell_iterator &other) const;
 
+    /// <summary>
+    ///
+    /// </summary>
     bool operator!=(const const_cell_iterator &other) const;
 
+    /// <summary>
+    ///
+    /// </summary>
     const_cell_iterator &operator--();
 
+    /// <summary>
+    ///
+    /// </summary>
     const_cell_iterator operator--(int);
 
+    /// <summary>
+    ///
+    /// </summary>
     const_cell_iterator &operator++();
 
+    /// <summary>
+    ///
+    /// </summary>
     const_cell_iterator operator++(int);
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
     worksheet ws_;
+
+    /// <summary>
+    ///
+    /// </summary>
     cell_reference current_cell_;
+
+    /// <summary>
+    ///
+    /// </summary>
     range_reference range_;
+
+    /// <summary>
+    ///
+    /// </summary>
     major_order order_;
 };
 

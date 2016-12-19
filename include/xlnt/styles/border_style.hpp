@@ -21,13 +21,17 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
 
 namespace xlnt {
 
-enum class XLNT_CLASS border_style
+/// <summary>
+///
+/// </summary>
+enum class XLNT_API border_style
 {
     none,
     dashdot,

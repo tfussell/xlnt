@@ -20,6 +20,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <cstddef> // std::ptrdiff_t
@@ -28,45 +29,92 @@
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/worksheet/major_order.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
 
 namespace xlnt {
 
 class cell_vector;
-class worksheet;
 
-namespace detail {
-struct worksheet_impl;
-}
+using r_iter_type = std::iterator<std::bidirectional_iterator_tag,
+    cell_vector, std::ptrdiff_t, cell_vector *, cell_vector>;
 
 /// <summary>
 /// An iterator used by worksheet and range for traversing
 /// a 2D grid of cells by row/column then across that row/column.
 /// </summary>
-class XLNT_CLASS range_iterator : public std::iterator<std::bidirectional_iterator_tag, cell_vector, std::ptrdiff_t, cell_vector*, cell_vector>
+class XLNT_API range_iterator : public r_iter_type
 {
 public:
-    range_iterator(worksheet &ws, const range_reference &start_cell, major_order order = major_order::row);
+    /// <summary>
+    ///
+    /// </summary>
+    range_iterator(worksheet &ws, const range_reference &start_cell, const range_reference &limits,
+        major_order order = major_order::row);
 
+    /// <summary>
+    ///
+    /// </summary>
     range_iterator(const range_iterator &other);
 
+    /// <summary>
+    ///
+    /// </summary>
     cell_vector operator*() const;
 
+    /// <summary>
+    ///
+    /// </summary>
+    range_iterator &operator=(const range_iterator &) = default;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool operator==(const range_iterator &other) const;
 
+    /// <summary>
+    ///
+    /// </summary>
     bool operator!=(const range_iterator &other) const;
 
+    /// <summary>
+    ///
+    /// </summary>
     range_iterator &operator--();
 
+    /// <summary>
+    ///
+    /// </summary>
     range_iterator operator--(int);
 
+    /// <summary>
+    ///
+    /// </summary>
     range_iterator &operator++();
 
+    /// <summary>
+    ///
+    /// </summary>
     range_iterator operator++(int);
 
 private:
-    detail::worksheet_impl *ws_;
+    /// <summary>
+    ///
+    /// </summary>
+    worksheet ws_;
+
+    /// <summary>
+    ///
+    /// </summary>
     cell_reference current_cell_;
+
+    /// <summary>
+    ///
+    /// </summary>
     range_reference range_;
+
+    /// <summary>
+    ///
+    /// </summary>
     major_order order_;
 };
 

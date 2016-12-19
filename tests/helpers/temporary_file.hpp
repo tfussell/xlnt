@@ -7,47 +7,33 @@
 #include <detail/include_windows.hpp>
 #include <helpers/path_helper.hpp>
 
+namespace {
+
+static std::string create_temporary_filename()
+{
+    return "temp.xlsx";
+}
+
+} // namespace 
+
 class temporary_file
 {
 public:
-    static std::string create()
+    temporary_file() : path_(create_temporary_filename())
     {
-#ifdef _MSC_VER
-	std::array<TCHAR, MAX_PATH> buffer;
-	DWORD result = GetTempPath(static_cast<DWORD>(buffer.size()), buffer.data());
-    
-	if(result > MAX_PATH)
-	{
-	    throw std::runtime_error("buffer is too small");
-	}
-    
-	if(result == 0)
-	{
-	    throw std::runtime_error("GetTempPath failed");
-	}
-    
-	std::string directory(buffer.begin(), buffer.begin() + result);
-    return path_helper::windows_to_universal_path(directory + "xlnt.xlsx");
-#else
-	return "/tmp/xlnt.xlsx";
-#endif
-}
-
-    temporary_file() : filename_(create())
-    {
-        if(path_helper::file_exists(get_filename()))
+        if(path_.exists())
         {
-            std::remove(filename_.c_str());
+            std::remove(path_.string().c_str());
         }
     }
 
     ~temporary_file()
     {
-        std::remove(filename_.c_str());
+        std::remove(path_.string().c_str());
     }
 
-    std::string get_filename() const { return filename_; }
+    xlnt::path get_path() const { return path_; }
 
 private:
-    const std::string filename_;
+    const xlnt::path path_;
 };

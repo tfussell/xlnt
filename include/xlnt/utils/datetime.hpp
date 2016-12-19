@@ -20,6 +20,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <string>
@@ -29,10 +30,13 @@
 
 namespace xlnt {
 
+struct date;
+struct time;
+
 /// <summary>
 /// A datetime is a combination of a date and a time.
 /// </summary>
-struct XLNT_CLASS datetime
+struct XLNT_API datetime
 {
     /// <summary>
     /// Return the current date and time according to the system time.
@@ -52,20 +56,79 @@ struct XLNT_CLASS datetime
     /// </summary>
     static datetime from_number(long double number, calendar base_date);
 
+    /// <summary>
+    ///
+    /// </summary>
+    static datetime from_iso_string(const std::string &iso_string);
+
+    /// <summary>
+    ///
+    /// </summary>
+    datetime(const date &d, const time &t);
+
+    /// <summary>
+    ///
+    /// </summary>
     datetime(int year_, int month_, int day_, int hour_ = 0, int minute_ = 0, int second_ = 0, int microsecond_ = 0);
 
+    /// <summary>
+    ///
+    /// </summary>
     std::string to_string() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::string to_iso_string() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     long double to_number(calendar base_date) const;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool operator==(const datetime &comparand) const;
 
+    /// <summary>
+    ///
+    /// </summary>
     int weekday() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     int year;
+
+    /// <summary>
+    ///
+    /// </summary>
     int month;
+
+    /// <summary>
+    ///
+    /// </summary>
     int day;
+
+    /// <summary>
+    ///
+    /// </summary>
     int hour;
+
+    /// <summary>
+    ///
+    /// </summary>
     int minute;
+
+    /// <summary>
+    ///
+    /// </summary>
     int second;
+
+    /// <summary>
+    ///
+    /// </summary>
     int microsecond;
 };
 

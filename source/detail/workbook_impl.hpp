@@ -22,15 +22,17 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <iterator>
+#include <list>
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 #include <detail/stylesheet.hpp>
 #include <detail/worksheet_impl.hpp>
-#include <xlnt/packaging/app_properties.hpp>
-#include <xlnt/packaging/document_properties.hpp>
 #include <xlnt/packaging/manifest.hpp>
+#include <xlnt/utils/datetime.hpp>
 #include <xlnt/workbook/theme.hpp>
+#include <xlnt/workbook/workbook_view.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/sheet_view.hpp>
@@ -42,21 +44,20 @@ struct worksheet_impl;
 
 struct workbook_impl
 {
-    workbook_impl();
+	workbook_impl() : active_sheet_index_(0)
+	{
+	}
 
     workbook_impl(const workbook_impl &other)
         : active_sheet_index_(other.active_sheet_index_),
           worksheets_(other.worksheets_),
-          relationships_(other.relationships_),
-          root_relationships_(other.root_relationships_),
           shared_strings_(other.shared_strings_),
-          properties_(other.properties_),
-          app_properties_(other.app_properties_),
-          guess_types_(other.guess_types_),
-          data_only_(other.data_only_),
-          read_only_(other.read_only_),
           stylesheet_(other.stylesheet_),
-          manifest_(other.manifest_)
+          manifest_(other.manifest_),
+		  theme_(other.theme_),
+		  view_(other.view_),
+		  code_name_(other.code_name_),
+		  file_version_(other.file_version_)
     {
     }
 
@@ -65,41 +66,51 @@ struct workbook_impl
         active_sheet_index_ = other.active_sheet_index_;
         worksheets_.clear();
         std::copy(other.worksheets_.begin(), other.worksheets_.end(), back_inserter(worksheets_));
-        relationships_.clear();
-        std::copy(other.relationships_.begin(), other.relationships_.end(), std::back_inserter(relationships_));
-        root_relationships_.clear();
-        std::copy(other.root_relationships_.begin(), other.root_relationships_.end(),
-                  std::back_inserter(root_relationships_));
         shared_strings_.clear();
         std::copy(other.shared_strings_.begin(), other.shared_strings_.end(), std::back_inserter(shared_strings_));
-        properties_ = other.properties_;
-        app_properties_ = other.app_properties_;
-        guess_types_ = other.guess_types_;
-        data_only_ = other.data_only_;
-        read_only_ = other.read_only_;
+		theme_ = other.theme_;
         manifest_ = other.manifest_;
+
+		sheet_title_rel_id_map_ = other.sheet_title_rel_id_map_;
+		view_ = other.view_;
+		code_name_ = other.code_name_;
+		file_version_ = other.file_version_;
 
         return *this;
     }
 
-    std::size_t active_sheet_index_;
-    std::vector<worksheet_impl> worksheets_;
-    std::vector<relationship> relationships_;
-    std::vector<relationship> root_relationships_;
-    std::vector<text> shared_strings_;
+    optional<std::size_t> active_sheet_index_;
 
-    document_properties properties_;
-    app_properties app_properties_;
+    std::list<worksheet_impl> worksheets_;
+    std::vector<formatted_text> shared_strings_;
 
-    bool guess_types_;
-    bool data_only_;
-    bool read_only_;
+    optional<stylesheet> stylesheet_;
 
-    stylesheet stylesheet_;
+    calendar base_date_;
+    optional<std::string> title_;
     
     manifest manifest_;
-    theme theme_;
-    std::vector<std::uint8_t> thumbnail_;
+    optional<theme> theme_;
+    std::unordered_map<std::string, std::vector<std::uint8_t>> images_;
+
+    std::unordered_map<std::string, std::string> core_properties_;
+    std::unordered_map<std::string, std::string> extended_properties_;
+    std::unordered_map<std::string, std::string> custom_properties_;
+
+	std::unordered_map<std::string, std::string> sheet_title_rel_id_map_;
+
+    optional<workbook_view> view_;
+    optional<std::string> code_name_;
+
+	struct file_version_t
+	{
+		std::string app_name;
+		std::size_t last_edited;
+		std::size_t lowest_edited;
+		std::size_t rup_build;
+	};
+    
+    optional<file_version_t> file_version_;
 };
 
 } // namespace detail

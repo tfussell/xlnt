@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
@@ -30,7 +31,7 @@ namespace xlnt {
 /// <summary>
 /// The possible paper sizes for printing.
 /// </summary>
-enum class XLNT_CLASS paper_size
+enum class XLNT_API paper_size
 {
     letter = 1,
     letter_small = 2,

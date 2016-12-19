@@ -26,89 +26,131 @@
 
 namespace xlnt {
 
-error::error() : std::runtime_error("xlnt::error")
-{
-}
-
-error::error(const std::string &message)
+exception::exception(const std::string &message)
     : std::runtime_error("xlnt::error : " + message)
 {
-    set_message(message);
+    this->message(message);
 }
 
-void error::set_message(const std::string &message)
+exception::~exception()
+{
+}
+
+void exception::message(const std::string &message)
 {
     message_ = message;
 }
 
-sheet_title_error::sheet_title_error(const std::string &title)
-    : error(std::string("bad worksheet title: ") + title)
+missing_number_format::~missing_number_format()
 {
 }
 
-column_string_index_error::column_string_index_error()
-    : error("column string index error")
+unhandled_switch_case::~unhandled_switch_case()
 {
 }
 
-data_type_error::data_type_error()
-    : error("data type error")
+invalid_sheet_title::invalid_sheet_title(const std::string &title)
+    : exception(std::string("bad worksheet title: ") + title)
 {
 }
 
-named_range_error::named_range_error()
-    : error("named range not found or not owned by this worksheet")
+invalid_sheet_title::~invalid_sheet_title()
 {
 }
 
-invalid_file_error::invalid_file_error(const std::string &filename)
-    : error(std::string("couldn't open file: (") + filename + ")")
+invalid_column_string_index::invalid_column_string_index()
+    : exception("column string index error")
 {
 }
 
-cell_coordinates_error::cell_coordinates_error(column_t column, row_t row)
-    : error(std::string("bad cell coordinates: (") + std::to_string(column.index) + ", " + std::to_string(row) +
+invalid_column_string_index::~invalid_column_string_index()
+{
+}
+
+invalid_data_type::invalid_data_type()
+    : exception("data type error")
+{
+}
+
+invalid_data_type::~invalid_data_type()
+{
+}
+
+invalid_file::invalid_file(const std::string &filename)
+    : exception(std::string("couldn't open file: (") + filename + ")")
+{
+}
+
+invalid_file::~invalid_file()
+{
+}
+
+invalid_cell_reference::invalid_cell_reference(column_t column, row_t row)
+    : exception(std::string("bad cell coordinates: (") + std::to_string(column.index) + ", " + std::to_string(row) +
                          ")")
 {
 }
 
-cell_coordinates_error::cell_coordinates_error(const std::string &coord_string)
-    : error(std::string("bad cell coordinates: (") + (coord_string.empty() ? "<empty>" : coord_string) + ")")
+invalid_cell_reference::invalid_cell_reference(const std::string &coord_string)
+    : exception(std::string("bad cell coordinates: (") + (coord_string.empty() ? "<empty>" : coord_string) + ")")
 {
 }
 
-illegal_character_error::illegal_character_error(char c)
-    : error(std::string("illegal character: (") + std::to_string(static_cast<unsigned char>(c)) + ")")
+invalid_cell_reference::~invalid_cell_reference()
 {
 }
 
-unicode_decode_error::unicode_decode_error()
-    : error("unicode decode error")
+illegal_character::illegal_character(char c)
+    : exception(std::string("illegal character: (") + std::to_string(static_cast<unsigned char>(c)) + ")")
 {
 }
 
-unicode_decode_error::unicode_decode_error(char)
-    : error("unicode decode error")
+illegal_character::~illegal_character()
 {
 }
 
-value_error::value_error()
-    : error("value error")
+invalid_parameter::invalid_parameter()
+    : exception("invalid parameter")
 {
 }
 
-read_only_workbook_error::read_only_workbook_error()
-    : error("workbook is read-only")
+invalid_parameter::~invalid_parameter()
 {
 }
 
-attribute_error::attribute_error()
-    : error("bad attribute")
+invalid_attribute::invalid_attribute()
+    : exception("bad attribute")
 {
 }
 
-key_error::key_error()
-    : error("key not found in container")
+invalid_attribute::~invalid_attribute()
+{
+}
+
+key_not_found::key_not_found()
+    : exception("key not found in container")
+{
+}
+
+key_not_found::~key_not_found()
+{
+}
+
+no_visible_worksheets::no_visible_worksheets()
+    : exception("workbook needs at least one non-hidden worksheet to be saved")
+{
+}
+
+no_visible_worksheets::~no_visible_worksheets()
+{
+}
+
+unsupported::unsupported(const std::string &message)
+	: exception(message)
+{
+}
+
+unsupported::~unsupported()
 {
 }
 

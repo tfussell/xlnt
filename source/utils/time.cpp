@@ -25,6 +25,22 @@
 
 #include <xlnt/utils/time.hpp>
 
+namespace {
+
+std::tm safe_localtime(std::time_t raw_time)
+{
+#ifdef _MSC_VER
+	std::tm result;
+	localtime_s(&result, &raw_time);
+
+	return result;
+#else
+	return *localtime(&raw_time);
+#endif
+}
+
+} // namespace
+
 namespace xlnt {
 
 time time::from_number(long double raw_time)
@@ -32,16 +48,16 @@ time time::from_number(long double raw_time)
     time result;
 
     double integer_part;
-    double fractional_part = std::modf((double)raw_time, &integer_part);
+    double fractional_part = std::modf(static_cast<double>(raw_time), &integer_part);
 
     fractional_part *= 24;
-    result.hour = (int)fractional_part;
+    result.hour = static_cast<int>(fractional_part);
     fractional_part = 60 * (fractional_part - result.hour);
-    result.minute = (int)fractional_part;
+    result.minute = static_cast<int>(fractional_part);
     fractional_part = 60 * (fractional_part - result.minute);
-    result.second = (int)fractional_part;
+    result.second = static_cast<int>(fractional_part);
     fractional_part = 1000000 * (fractional_part - result.second);
-    result.microsecond = (int)fractional_part;
+    result.microsecond = static_cast<int>(fractional_part);
     
     if (result.microsecond == 999999 && fractional_part - result.microsecond > 0.5)
     {
@@ -105,6 +121,12 @@ long double time::to_number() const
     number = std::floor(number * hundred_billion + 0.5L) / hundred_billion;
     
     return number;
+}
+
+time time::now()
+{
+	std::tm now = safe_localtime(std::time(0));
+	return time(now.tm_hour, now.tm_min, now.tm_sec);
 }
 
 } // namespace xlnt

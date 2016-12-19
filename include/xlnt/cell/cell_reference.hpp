@@ -20,6 +20,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <cstdint>
@@ -38,8 +39,11 @@ class range_reference;
 /// Functor for hashing a cell reference.
 /// Allows for use of std::unordered_set<cell_reference, cel_reference_hash> and similar.
 /// </summary>
-struct XLNT_CLASS cell_reference_hash
+struct XLNT_API cell_reference_hash
 {
+    /// <summary>
+    ///
+    /// </summary>
     std::size_t operator()(const cell_reference &k) const;
 };
 
@@ -50,7 +54,7 @@ struct XLNT_CLASS cell_reference_hash
 /// can be initialized from a string of this form or a 1-indexed ordered pair of the form
 /// column, row.
 /// </summary>
-class XLNT_CLASS cell_reference
+class XLNT_API cell_reference
 {
 public:
     /// <summary>
@@ -87,17 +91,11 @@ public:
     cell_reference(const std::string &reference_string);
 
     /// <summary>
-    /// Constructs a cell_reference from a string reprenting a column (e.g. A) and
-    /// a 1-indexed row.
-    /// </summary>
-    cell_reference(const std::string &column, row_t row);
-
-    /// <summary>
     /// Constructs a cell_reference from a 1-indexed column index and row index.
     /// </summary>
     cell_reference(column_t column, row_t row);
 
-    // absoluateness
+    // absoluteness
 
     /// <summary>
     /// Convert a coordinate to an absolute coordinate string (e.g. B12 -> $B$12)
@@ -142,32 +140,32 @@ public:
     /// Return a string that identifies the column of this reference
     /// (e.g. second column from left is "B")
     /// </summary>
-    column_t get_column() const;
+    column_t column() const;
 
     /// <summary>
     /// Set the column of this reference from a string that identifies a particular column.
     /// </summary>
-    void set_column(const std::string &column_string);
+    void column(const std::string &column_string);
 
     /// <summary>
     /// Return a 1-indexed numeric index of the column of this reference.
     /// </summary>
-    column_t get_column_index() const;
+    column_t::index_t column_index() const;
 
     /// <summary>
     /// Set the column of this reference from a 1-indexed number that identifies a particular column.
     /// </summary>
-    void set_column_index(column_t column);
+    void column_index(column_t column);
 
     /// <summary>
     /// Return a 1-indexed numeric index of the row of this reference.
     /// </summary>
-    row_t get_row() const;
+    row_t row() const;
 
     /// <summary>
     /// Set the row of this reference from a 1-indexed number that identifies a particular row.
     /// </summary>
-    void set_row(row_t row);
+    void row(row_t row);
 
     /// <summary>
     /// Return a cell_reference offset from this cell_reference by
@@ -194,7 +192,7 @@ public:
     /// cell_reference("A", 1), cell_reference("B", 1) will return
     /// range_reference(cell_reference("A", 1), cell_reference("B", 1))
     /// </summary>
-    range_reference operator, (const cell_reference &other) const;
+    range_reference operator,(const cell_reference &other) const;
 
     /// <summary>
     /// Return true if this reference is identical to comparand including

@@ -21,21 +21,23 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <memory>
 #include <string>
 #include <unordered_map>
 
-#include <xlnt/xlnt_config.hpp> // for XLNT_CLASS, XLNT_FUNCTION
-#include <xlnt/cell/cell_type.hpp> // for cell_type
-#include <xlnt/cell/index_types.hpp> // for column_t, row_t
+#include <xlnt/xlnt_config.hpp>
+#include <xlnt/cell/cell_type.hpp>
+#include <xlnt/cell/index_types.hpp>
 
 namespace xlnt {
 
 enum class calendar;
 
 class alignment;
+class base_format;
 class border;
 class cell_reference;
 class comment;
@@ -44,17 +46,25 @@ class font;
 class format;
 class number_format;
 class protection;
-class relationship;
 class style;
 class workbook;
 class worksheet;
+class xlsx_consumer;
+class xlsx_producer;
 
 struct date;
 struct datetime;
 struct time;
 struct timedelta;
 
-namespace detail { struct cell_impl; }
+namespace detail {
+
+class xlsx_consumer;
+class xlsx_producer;
+
+struct cell_impl;
+
+} // namespace detail
 
 /// <summary>
 /// Describes cell associated properties.
@@ -65,9 +75,12 @@ namespace detail { struct cell_impl; }
 /// and any other features of an Excel cell.Utilities for referencing
 /// cells using Excel's 'A1' column/row nomenclature are also provided.
 /// </remarks>
-class XLNT_CLASS cell
+class XLNT_API cell
 {
 public:
+    /// <summary>
+    /// Alias xlnt::cell_type to xlnt::cell::type since it looks nicer.
+    /// </summary>
     using type = cell_type;
 
     /// <summary>
@@ -75,27 +88,10 @@ public:
     /// </summary>
     static const std::unordered_map<std::string, int> &error_codes();
 
-    // TODO: Should it be possible to construct and use a cell without a parent worksheet?
-    //(cont'd) If so, it would need to be responsible for allocating and deleting its PIMPL.
-
     /// <summary>
-    /// Construct a null cell without a parent.
-    /// Most methods will throw an exception if this cell is not further initialized.
+    /// Default copy constructor.
     /// </summary>
-    cell();
-
-    /// <summary>
-    /// Construct a cell in worksheet, sheet, at the given reference location (e.g. A1).
-    /// </summary>
-    cell(worksheet sheet, const cell_reference &reference);
-
-    /// <summary>
-    /// This constructor, provided for convenience, is equivalent to calling:
-    /// cell c(sheet, reference);
-    /// c.set_value(initial_value);
-    /// </summary>
-    template <typename T>
-    cell(worksheet sheet, const cell_reference &reference, const T &initial_value);
+    cell(const cell &) = default;
 
     // value
 
@@ -110,7 +106,7 @@ public:
     /// as for std::string and xlnt datetime types: date, time, datetime, and timedelta.
     /// </summary>
     template <typename T>
-    T get_value() const;
+    T value() const;
 
     /// <summary>
     /// Make this cell have a value of type null.
@@ -122,18 +118,25 @@ public:
     /// Set the value of this cell to the given value.
     /// Overloads exist for most C++ fundamental types like bool, int, etc. as well
     /// as for std::string and xlnt datetime types: date, time, datetime, and timedelta.
+    /// </summary>
     template <typename T>
-    void set_value(T value);
+    void value(T value);
+
+    /// <summary>
+    /// Analyze string_value to determine its type, convert it to that type,
+    /// and set the value of this cell to that converted value.
+    /// </summary>
+    void value(const std::string &string_value, bool infer_type);
 
     /// <summary>
     /// Return the type of this cell.
     /// </summary>
-    type get_data_type() const;
+    type data_type() const;
 
     /// <summary>
     /// Set the type of this cell.
     /// </summary>
-    void set_data_type(type t);
+    void data_type(type t);
 
     // properties
 
@@ -153,41 +156,73 @@ public:
     /// <summary>
     /// Return a cell_reference that points to the location of this cell.
     /// </summary>
-    cell_reference get_reference() const;
+    cell_reference reference() const;
 
     /// <summary>
     /// Return the column of this cell.
     /// </summary>
-    column_t get_column() const;
+    column_t column() const;
 
     /// <summary>
     /// Return the row of this cell.
     /// </summary>
-    row_t get_row() const;
+    row_t row() const;
 
     /// <summary>
     /// Return the location of this cell as an ordered pair.
     /// </summary>
-    std::pair<int, int> get_anchor() const;
+    std::pair<int, int> anchor() const;
 
     // hyperlink
 
     /// <summary>
-    /// Return a relationship representing this cell's hyperlink.
+    /// Return the URL of this cell's hyperlink.
     /// </summary>
-    relationship get_hyperlink() const;
+    std::string hyperlink() const;
 
     /// <summary>
     /// Add a hyperlink to this cell pointing to the URI of the given value.
     /// </summary>
-    void set_hyperlink(const std::string &value);
+    void hyperlink(const std::string &value);
 
     /// <summary>
     /// Return true if this cell has a hyperlink set.
     /// </summary>
     bool has_hyperlink() const;
 
-    // style
+    // computed formatting
+
+    /// <summary>
+    /// Returns the result of computed_format().alignment().
+    /// </summary>
+    class alignment computed_alignment() const;
+
+    /// <summary>
+    /// Returns the result of computed_format().border().
+    /// </summary>
+    class border computed_border() const;
+
+    /// <summary>
+    /// Returns the result of computed_format().fill().
+    /// </summary>
+    class fill computed_fill() const;
+
+    /// <summary>
+    /// Returns the result of computed_format().font().
+    /// </summary>
+    class font computed_font() const;
+
+    /// <summary>
+    /// Returns the result of computed_format().number_format().
+    /// </summary>
+    class number_format computed_number_format() const;
+
+    /// <summary>
+    /// Returns the result of computed_format().protection().
+    /// </summary>
+    class protection computed_protection() const;
+
+    // format
 
     /// <summary>
     /// Return true if this cell has had a format applied to it.
@@ -196,106 +231,143 @@ public:
 
     /// <summary>
     /// Return a reference to the format applied to this cell.
+    /// If this cell has no format, an invalid_attribute exception will be thrown.
     /// </summary>
-    format &get_format();
+    const class format format() const;
 
     /// <summary>
-    /// Return a reference to the format applied to this cell.
+    /// Applies the cell-level formatting of new_format to this cell.
     /// </summary>
-    const format &get_format() const;
-    
-    void set_format(const format &new_format);
-    
+    void format(const class format new_format);
+
+    /// <summary>
+    /// Remove the cell-level formatting from this cell.
+    /// This doesn't affect the style that may also be applied to the cell.
+    /// Throws an invalid_attribute exception if no format is applied.
+    /// </summary>
     void clear_format();
-    
+
+    /// <summary>
+    /// Returns the number format of this cell.
+    /// </summary>
+    class number_format number_format() const;
+
+    /// <summary>
+    /// Creates a new format in the workbook, sets its number_format
+    /// to the given format, and applies the format to this cell.
+    /// </summary>
+    void number_format(const class number_format &format);
+
+    /// <summary>
+    /// Returns the font applied to the text in this cell.
+    /// </summary>
+    class font font() const;
+
+    /// <summary>
+    /// Creates a new format in the workbook, sets its font
+    /// to the given font, and applies the format to this cell.
+    /// </summary>
+    void font(const class font &font_);
+
+    /// <summary>
+    /// Returns the fill applied to this cell.
+    /// </summary>
+    class fill fill() const;
+
+    /// <summary>
+    /// Creates a new format in the workbook, sets its fill
+    /// to the given fill, and applies the format to this cell.
+    /// </summary>
+    void fill(const class fill &fill_);
+
+    /// <summary>
+    /// Returns the border of this cell.
+    /// </summary>
+    class border border() const;
+
+    /// <summary>
+    /// Creates a new format in the workbook, sets its border
+    /// to the given border, and applies the format to this cell.
+    /// </summary>
+    void border(const class border &border_);
+
+    /// <summary>
+    /// Returns the alignment of the text in this cell.
+    /// </summary>
+    class alignment alignment() const;
+
+    /// <summary>
+    /// Creates a new format in the workbook, sets its alignment
+    /// to the given alignment, and applies the format to this cell.
+    /// </summary>
+    void alignment(const class alignment &alignment_);
+
+    /// <summary>
+    /// Returns the protection of this cell.
+    /// </summary>
+    class protection protection() const;
+
+    /// <summary>
+    /// Creates a new format in the workbook, sets its protection
+    /// to the given protection, and applies the format to this cell.
+    /// </summary>
+    void protection(const class protection &protection_);
+
     // style
 
     /// <summary>
-    /// Return true if this cell has had a format applied to it.
+    /// Returns true if this cell has had a style applied to it.
     /// </summary>
     bool has_style() const;
 
     /// <summary>
-    /// Return a reference to the format applied to this cell.
+    /// Returns a wrapper pointing to the named style applied to this cell.
     /// </summary>
-    const style &get_style() const;
-    
-    void set_style(const style &new_style);
-    
-    void set_style(const std::string &style_name);
-    
+    const class style style() const;
+
+    /// <summary>
+    /// Equivalent to style(new_style.name())
+    /// </summary>
+    void style(const class style &new_style);
+
+    /// <summary>
+    /// Sets the named style applied to this cell to a style named style_name.
+    /// If this style has not been previously created in the workbook, a
+    /// key_not_found exception will be thrown.
+    /// </summary>
+    void style(const std::string &style_name);
+
+    /// <summary>
+    /// Removes the named style from this cell.
+    /// An invalid_attribute exception will be thrown if this cell has no style.
+    /// This will not affect the cell format of the cell.
+    /// </summary>
     void clear_style();
 
-    /// <summary>
-    /// Return the number format of this cell.
-    /// </summary>
-    const number_format &get_number_format() const;
-    
-    void set_number_format(const number_format &format);
-
-    /// <summary>
-    /// Return the font applied to the text in this cell.
-    /// </summary>
-    const font &get_font() const;
-
-    void set_font(const font &font_);
-
-    /// <summary>
-    /// Return the fill applied to this cell.
-    /// </summary>
-    const fill &get_fill() const;
-
-    void set_fill(const fill &fill_);
-
-    /// <summary>
-    /// Return the border of this cell.
-    /// </summary>
-    const border &get_border() const;
-
-    void set_border(const border &border_);
-
-    /// <summary>
-    /// Return the alignment of the text in this cell.
-    /// </summary>
-    const alignment &get_alignment() const;
-
-    void set_alignment(const alignment &alignment_);
-
-    /// <summary>
-    /// Return the protection of this cell.
-    /// </summary>
-    const protection &get_protection() const;
-
-    void set_protection(const protection &protection_);
-
-    // comment
-
-    /// <summary>
-    /// Return the comment of this cell.
-    /// </summary>
-    comment get_comment();
-
-    /// <summary>
-    /// Return the comment of this cell.
-    /// </summary>
-    const comment get_comment() const;
-
-    void set_comment(const comment &comment);
-    void clear_comment();
-    bool has_comment() const;
-
     // formula
-    std::string get_formula() const;
-    void set_formula(const std::string &formula);
+
+    /// <summary>
+    /// Returns the string representation of the formula applied to this cell.
+    /// </summary>
+    std::string formula() const;
+
+    /// <summary>
+    /// Sets the formula of this cell to the given value.
+    /// This formula string should begin with '='.
+    /// </summary>
+    void formula(const std::string &formula);
+
+    /// <summary>
+    /// Removes the formula from this cell. After this is called, has_formula() will return false.
+    /// </summary>
     void clear_formula();
+
+    /// <summary>
+    /// Returns true if this cell has had a formula applied to it.
+    /// </summary>
     bool has_formula() const;
 
     // printing
-
-    /// <summary>
-    /// Returns a string describing this cell like <Cell Sheet.A1>.
-    /// </summary>
-    std::string to_repr() const;
 
     /// <summary>
     /// Returns a string representing the value of this cell. If the data type is not a string,
@@ -316,17 +388,17 @@ public:
     /// Generally, this shouldn't be called directly. Instead,
     /// use worksheet::merge_cells on its parent worksheet.
     /// </summary>
-    void set_merged(bool merged);
+    void merged(bool merged);
 
     /// <summary>
     /// Return the error string that is stored in this cell.
     /// </summary>
-    std::string get_error() const;
+    std::string error() const;
 
     /// <summary>
     /// Directly assign the value of this cell to be the given error.
     /// </summary>
-    void set_error(const std::string &error);
+    void error(const std::string &error);
 
     /// <summary>
     /// Return a cell from this cell's parent workbook at
@@ -337,33 +409,60 @@ public:
     /// <summary>
     /// Return the worksheet that owns this cell.
     /// </summary>
-    worksheet get_worksheet();
+    class worksheet worksheet();
 
     /// <summary>
     /// Return the worksheet that owns this cell.
     /// </summary>
-    const worksheet get_worksheet() const;
+    const class worksheet worksheet() const;
 
-	/// <summary>
-	/// Return the workbook of the worksheet that owns this cell.
-	/// </summary>
-	workbook &get_workbook();
+    /// <summary>
+    /// Return the workbook of the worksheet that owns this cell.
+    /// </summary>
+    class workbook &workbook();
 
-	/// <summary>
-	/// Return the workbook of the worksheet that owns this cell.
-	/// </summary>
-	const workbook &get_workbook() const;
+    /// <summary>
+    /// Return the workbook of the worksheet that owns this cell.
+    /// </summary>
+    const class workbook &workbook() const;
 
     /// <summary>
     /// Shortcut to return the base date of the parent workbook.
-    /// Equivalent to get_workbook().get_properties().excel_base_date
+    /// Equivalent to workbook().properties().excel_base_date
     /// </summary>
-    calendar get_base_date() const;
+    calendar base_date() const;
 
     /// <summary>
     /// Return to_check after checking encoding, size, and illegal characters.
     /// </summary>
     std::string check_string(const std::string &to_check);
+
+    // comment
+
+    /// <summary>
+    /// Return true if this cell has a comment applied.
+    /// </summary>
+    bool has_comment();
+
+    /// <summary>
+    /// Delete the comment applied to this cell if it exists.
+    /// </summary>
+    void clear_comment();
+
+    /// <summary>
+    /// Get the comment applied to this cell.
+    /// </summary>
+    class comment comment();
+
+    /// <summary>
+    /// Create a new comment with the given text and optional author and apply it to the cell.
+    /// </summary>
+    void comment(const std::string &text, const std::string &author = "Microsoft Office User");
+
+    /// <summary>
+    /// Apply the comment provided as the only argument to the cell.
+    /// </summary>
+    void comment(const class comment &new_comment);
 
     // operators
 
@@ -383,29 +482,24 @@ public:
     /// </summary>
     bool operator==(std::nullptr_t) const;
 
-    // friend operators, so we can put cell on either side of comparisons with other types
-
-    /// <summary>
-    /// Return true if this cell is uninitialized.
-    /// </summary>
-    friend XLNT_FUNCTION bool operator==(std::nullptr_t, const cell &cell);
-
-    /// <summary>
-    /// Convenience function for writing cell to an ostream.
-    /// Uses cell::to_string() internally.
-    /// </summary>
-    friend XLNT_FUNCTION std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell);
-
 private:
-    std::size_t get_format_id() const;
-    
     // make these friends so they can use the private constructor
     friend class style;
     friend class worksheet;
-    friend class worksheet_serializer;
+    friend class detail::xlsx_consumer;
+    friend class detail::xlsx_producer;
     friend struct detail::cell_impl;
 
-	void guess_type_and_set_value(const std::string &value);
+    /// <summary>
+    /// Returns a non-const reference to the format of this cell.
+    /// This is for internal use only.
+    /// </summary>
+    class format modifiable_format();
+
+    /// <summary>
+    /// Delete default zero-argument constructor.
+    /// </summary>
+    cell() = delete;
 
     /// <summary>
     /// Private constructor to create a cell from its implementation.
@@ -417,5 +511,16 @@ private:
     /// </summary>
     detail::cell_impl *d_;
 };
+
+/// <summary>
+/// Return true if this cell is uninitialized.
+/// </summary>
+XLNT_API bool operator==(std::nullptr_t, const cell &cell);
+
+/// <summary>
+/// Convenience function for writing cell to an ostream.
+/// Uses cell::to_string() internally.
+/// </summary>
+XLNT_API std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell);
 
 } // namespace xlnt

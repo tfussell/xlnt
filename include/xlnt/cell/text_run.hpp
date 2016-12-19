@@ -20,54 +20,166 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <string>
 
-#include <xlnt/xlnt_config.hpp> // for XLNT_CLASS, XLNT_FUNCTION
+#include <xlnt/xlnt_config.hpp>
+#include <xlnt/styles/color.hpp>
+#include <xlnt/styles/font.hpp>
 #include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 
-class XLNT_CLASS text_run 
+// todo: should this just be a struct?
+
+/// <summary>
+/// A formatted string
+/// </summary>
+class XLNT_API text_run
 {
 public:
-	text_run();
-	text_run(const std::string &string);
-    
+    /// <summary>
+    ///
+    /// </summary>
+    text_run();
+
+    /// <summary>
+    ///
+    /// </summary>
+    text_run(const std::string &string);
+
+    /// <summary>
+    ///
+    /// </summary>
     bool has_formatting() const;
 
-	std::string get_string() const;
-	void set_string(const std::string &string);
+    /// <summary>
+    ///
+    /// </summary>
+    std::string string() const;
 
+    /// <summary>
+    ///
+    /// </summary>
+    text_run &string(const std::string &string);
+
+    /// <summary>
+    ///
+    /// </summary>
     bool has_size() const;
-    std::size_t get_size() const;
-    void set_size(std::size_t size);
-    
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::size_t size() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    text_run &size(std::size_t size);
+
+    /// <summary>
+    ///
+    /// </summary>
     bool has_color() const;
-    std::string get_color() const;
-    void set_color(const std::string &color);
-    
+
+    /// <summary>
+    ///
+    /// </summary>
+    xlnt::color color() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    text_run &color(const class color &new_color);
+
+    /// <summary>
+    ///
+    /// </summary>
     bool has_font() const;
-    std::string get_font() const;
-    void set_font(const std::string &font);
-    
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::string font() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    text_run &font(const std::string &font);
+
+    /// <summary>
+    ///
+    /// </summary>
     bool has_family() const;
-    std::size_t get_family() const;
-    void set_family(std::size_t family);
-    
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::size_t family() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    text_run &family(std::size_t family);
+
+    /// <summary>
+    ///
+    /// </summary>
     bool has_scheme() const;
-    std::string get_scheme() const;
-    void set_scheme(const std::string &scheme);
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::string scheme() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    text_run &scheme(const std::string &scheme);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool bold() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    text_run &bold(bool bold);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool underline_set() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool underlined() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    font::underline_style underline() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    text_run &underline(font::underline_style style);
 
 private:
-	std::string string_;
-    
-    std::experimental::optional<std::size_t> size_;
-    std::experimental::optional<std::string> color_;
-    std::experimental::optional<std::string> font_;
-    std::experimental::optional<std::size_t> family_;
-    std::experimental::optional<std::string> scheme_;
+    /// <summary>
+    ///
+    /// </summary>
+    std::string string_;
+
+    /// <summary>
+    ///
+    /// </summary>
+    optional<xlnt::font> font_;
 };
 
 } // namespace xlnt

@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
@@ -30,7 +31,7 @@ namespace xlnt {
 /// <summary>
 /// ?
 /// </summary>
-class XLNT_CLASS worksheet_properties
+class XLNT_API worksheet_properties
 {
 };
 

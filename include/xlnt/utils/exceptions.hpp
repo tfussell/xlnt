@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <cstdint>
@@ -34,134 +35,316 @@ namespace xlnt {
 /// <summary>
 /// Parent type of all custom exceptions thrown in this library.
 /// </summary>
-class XLNT_CLASS error : public std::runtime_error
+class XLNT_API exception : public std::runtime_error
 {
 public:
-    error();
-    error(const std::string &message);
+    /// <summary>
+    ///
+    /// </summary>
+    exception(const std::string &message);
 
-    void set_message(const std::string &message);
+    /// <summary>
+    ///
+    /// </summary>
+    exception(const exception &) = default;
+
+    /// <summary>
+    ///
+    /// </summary>
+    virtual ~exception();
+
+    /// <summary>
+    ///
+    /// </summary>
+    void message(const std::string &message);
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
     std::string message_;
 };
 
-class XLNT_CLASS value_error : public error
+/// <summary>
+/// Exception for a bad parameter value
+/// </summary>
+class XLNT_API invalid_parameter : public exception
 {
 public:
-    value_error();
+    /// <summary>
+    ///
+    /// </summary>
+    invalid_parameter();
+
+    /// <summary>
+    ///
+    /// </summary>
+    invalid_parameter(const invalid_parameter &) = default;
+
+    /// <summary>
+    ///
+    /// </summary>
+    virtual ~invalid_parameter();
 };
 
 /// <summary>
-/// Error for string encoding not matching workbook encoding
+/// Exception for bad sheet names.
 /// </summary>
-class XLNT_CLASS unicode_decode_error : public error
+class XLNT_API invalid_sheet_title : public exception
 {
 public:
-    unicode_decode_error();
-    unicode_decode_error(char c);
-    unicode_decode_error(std::uint8_t b);
+    /// <summary>
+    ///
+    /// </summary>
+    invalid_sheet_title(const std::string &title);
+
+    /// <summary>
+    ///
+    /// </summary>
+    invalid_sheet_title(const invalid_sheet_title &) = default;
+
+    /// <summary>
+    ///
+    /// </summary>
+    virtual ~invalid_sheet_title();
 };
 
 /// <summary>
-/// Error for bad sheet names.
+/// Exception when a referenced number format is not in the stylesheet.
 /// </summary>
-class XLNT_CLASS sheet_title_error : public error
+class XLNT_API missing_number_format : public exception
 {
 public:
-    sheet_title_error(const std::string &title);
-};
-
-/// <summary>
-/// Error for trying to modify a read-only workbook.
-/// </summary>
-class XLNT_CLASS read_only_workbook_error : public error
-{
-public:
-    read_only_workbook_error();
-};
-
-/// <summary>
-/// Error for incorrectly formatted named ranges.
-/// </summary>
-class XLNT_CLASS named_range_error : public error
-{
-public:
-    named_range_error();
-};
-
-/// <summary>
-/// Error when a referenced number format is not in the stylesheet.
-/// </summary>
-class XLNT_CLASS missing_number_format : public error
-{
-public:
+    /// <summary>
+    ///
+    /// </summary>
     missing_number_format();
+
+    /// <summary>
+    ///
+    /// </summary>
+    virtual ~missing_number_format();
 };
 
 /// <summary>
-/// Error for trying to open a non-OOXML file.
+/// Exception for trying to open a non-XLSX file.
 /// </summary>
-class XLNT_CLASS invalid_file_error : public error
+class XLNT_API invalid_file : public exception
 {
 public:
-    invalid_file_error(const std::string &filename);
+    /// <summary>
+    ///
+    /// </summary>
+    invalid_file(const std::string &filename);
+
+    /// <summary>
+    ///
+    /// </summary>
+    invalid_file(const invalid_file &) = default;
+
+    /// <summary>
+    ///
+    /// </summary>
+    virtual ~invalid_file();
 };
 
 /// <summary>
 /// The data submitted which cannot be used directly in Excel files. It
 /// must be removed or escaped.
 /// </summary>
-class XLNT_CLASS illegal_character_error : public error
+class XLNT_API illegal_character : public exception
 {
 public:
-    illegal_character_error(char c);
+    /// <summary>
+    ///
+    /// </summary>
+    illegal_character(char c);
+
+    /// <summary>
+    ///
+    /// </summary>
+    illegal_character(const illegal_character &) = default;
+
+    /// <summary>
+    ///
+    /// </summary>
+    virtual ~illegal_character();
 };
 
 /// <summary>
-/// Error for any data type inconsistencies.
+/// Exception for any data type inconsistencies.
 /// </summary>
-class XLNT_CLASS data_type_error : public error
+class XLNT_API invalid_data_type : public exception
 {
 public:
-    data_type_error();
+    /// <summary>
+    ///
+    /// </summary>
+    invalid_data_type();
+
+    /// <summary>
+    ///
+    /// </summary>
+    invalid_data_type(const invalid_data_type &) = default;
+
+    /// <summary>
+    ///
+    /// </summary>
+    virtual ~invalid_data_type();
 };
 
 /// <summary>
-/// Error for bad column names in A1-style cell references.
+/// Exception for bad column names in A1-style cell references.
 /// </summary>
-class XLNT_CLASS column_string_index_error : public error
+class XLNT_API invalid_column_string_index : public exception
 {
 public:
-    column_string_index_error();
+    /// <summary>
+    ///
+    /// </summary>
+    invalid_column_string_index();
+
+    /// <summary>
+    ///
+    /// </summary>
+    invalid_column_string_index(const invalid_column_string_index &) = default;
+
+    /// <summary>
+    ///
+    /// </summary>
+    virtual ~invalid_column_string_index();
 };
 
 /// <summary>
-/// Error for converting between numeric and A1-style cell references.
+/// Exception for converting between numeric and A1-style cell references.
 /// </summary>
-class XLNT_CLASS cell_coordinates_error : public error
+class XLNT_API invalid_cell_reference : public exception
 {
 public:
-    cell_coordinates_error(column_t column, row_t row);
-    cell_coordinates_error(const std::string &coord_string);
+    /// <summary>
+    ///
+    /// </summary>
+    invalid_cell_reference(column_t column, row_t row);
+
+    /// <summary>
+    ///
+    /// </summary>
+    invalid_cell_reference(const std::string &reference_string);
+
+    /// <summary>
+    ///
+    /// </summary>
+    invalid_cell_reference(const invalid_cell_reference &) = default;
+
+    /// <summary>
+    ///
+    /// </summary>
+    virtual ~invalid_cell_reference();
 };
 
 /// <summary>
-/// Error when an attribute value is invalid.
+/// Exception when setting a class's attribute to an invalid value
 /// </summary>
-class XLNT_CLASS attribute_error : public error
+class XLNT_API invalid_attribute : public exception
 {
 public:
-    attribute_error();
+    /// <summary>
+    ///
+    /// </summary>
+    invalid_attribute();
+
+    /// <summary>
+    ///
+    /// </summary>
+    invalid_attribute(const invalid_attribute &) = default;
+
+    /// <summary>
+    ///
+    /// </summary>
+    virtual ~invalid_attribute();
 };
 
 /// <summary>
-/// key_error
+/// Exception for a key that doesn't exist in a container
 /// </summary>
-class XLNT_CLASS key_error : public error
+class XLNT_API key_not_found : public exception
 {
 public:
-    key_error();
+    /// <summary>
+    ///
+    /// </summary>
+    key_not_found();
+
+    /// <summary>
+    ///
+    /// </summary>
+    key_not_found(const key_not_found &) = default;
+
+    /// <summary>
+    ///
+    /// </summary>
+    virtual ~key_not_found();
+};
+
+/// <summary>
+/// Exception for a workbook with no visible worksheets
+/// </summary>
+class XLNT_API no_visible_worksheets : public exception
+{
+public:
+    /// <summary>
+    ///
+    /// </summary>
+    no_visible_worksheets();
+
+    /// <summary>
+    ///
+    /// </summary>
+    no_visible_worksheets(const no_visible_worksheets &) = default;
+
+    /// <summary>
+    ///
+    /// </summary>
+    virtual ~no_visible_worksheets();
+};
+
+/// <summary>
+/// Debug exception for a switch that fell through to the default case
+/// </summary>
+class XLNT_API unhandled_switch_case : public exception
+{
+public:
+    /// <summary>
+    ///
+    /// </summary>
+    unhandled_switch_case();
+
+    /// <summary>
+    ///
+    /// </summary>
+    virtual ~unhandled_switch_case();
+};
+
+/// <summary>
+/// Exception for attempting to use a feature which is not supported
+/// </summary>
+class XLNT_API unsupported : public exception
+{
+public:
+    /// <summary>
+    ///
+    /// </summary>
+    unsupported(const std::string &message);
+
+    /// <summary>
+    ///
+    /// </summary>
+    unsupported(const unsupported &) = default;
+
+    /// <summary>
+    ///
+    /// </summary>
+    virtual ~unsupported();
 };
 
 } // namespace xlnt

@@ -20,6 +20,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <algorithm>
@@ -41,11 +42,14 @@ using row_t = std::uint32_t;
 /// <summary>
 /// Columns can be referred to as a string A,B,...Z,AA,AB,..,ZZ,AAA,...,ZZZ
 /// or as a 1-indexed index. This class encapsulates both of these forms of
-/// column referencing and allows for convertions between them.
+/// column referencing and allows for conversions between them.
 /// </summary>
-class XLNT_CLASS column_t
+class XLNT_API column_t
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     using index_t = std::uint32_t;
 
     /// <summary>
@@ -54,7 +58,7 @@ public:
     /// <remarks>
     /// Excel only supports 1 - 3 letter column names from A->ZZZ, so we
     /// restrict our column names to 1 - 3 characters, each in the range A - Z.
-    /// Strings outside this range and malformed strings will throw xlnt::column_string_index_exception.
+    /// Strings outside this range and malformed strings will throw column_string_index_exception.
     /// </remarks>
     static index_t column_index_from_string(const std::string &column_string);
 
@@ -81,12 +85,12 @@ public:
     /// <summary>
     /// Construct a column from a string.
     /// </summary>
-    explicit column_t(const std::string &column_string);
+    column_t(const std::string &column_string);
 
     /// <summary>
     /// Construct a column from a string.
     /// </summary>
-    explicit column_t(const char *column_string);
+    column_t(const char *column_string);
 
     /// <summary>
     /// Copy constructor
@@ -231,27 +235,27 @@ public:
     /// <summary>
     /// Return the result of adding rhs to this column.
     /// </summary>
-    friend XLNT_FUNCTION column_t operator+(column_t lhs, const column_t& rhs);
+    friend XLNT_API column_t operator+(column_t lhs, const column_t &rhs);
 
     /// <summary>
     /// Return the result of subtracing lhs by rhs column.
     /// </summary>
-    friend XLNT_FUNCTION column_t operator-(column_t lhs, const column_t& rhs);
+    friend XLNT_API column_t operator-(column_t lhs, const column_t &rhs);
 
     /// <summary>
     /// Return the result of multiply lhs by rhs column.
     /// </summary>
-    friend XLNT_FUNCTION column_t operator*(column_t lhs, const column_t& rhs);
+    friend XLNT_API column_t operator*(column_t lhs, const column_t &rhs);
 
     /// <summary>
     /// Return the result of divide lhs by rhs column.
     /// </summary>
-    friend XLNT_FUNCTION column_t operator/(column_t lhs, const column_t& rhs);
+    friend XLNT_API column_t operator/(column_t lhs, const column_t &rhs);
 
     /// <summary>
     /// Return the result of mod lhs by rhs column.
     /// </summary>
-    friend XLNT_FUNCTION column_t operator%(column_t lhs, const column_t& rhs);
+    friend XLNT_API column_t operator%(column_t lhs, const column_t &rhs);
 
     /// <summary>
     /// Add rhs to this column and return a reference to this column.
@@ -281,27 +285,27 @@ public:
     /// <summary>
     /// Return true if other is to the right of this column.
     /// </summary>
-    friend XLNT_FUNCTION bool operator>(const column_t::index_t &left, const column_t &right);
+    friend XLNT_API bool operator>(const column_t::index_t &left, const column_t &right);
 
     /// <summary>
     /// Return true if other is to the right of or equal to this column.
     /// </summary>
-    friend XLNT_FUNCTION bool operator>=(const column_t::index_t &left, const column_t &right);
+    friend XLNT_API bool operator>=(const column_t::index_t &left, const column_t &right);
 
     /// <summary>
     /// Return true if other is to the left of this column.
     /// </summary>
-    friend XLNT_FUNCTION bool operator<(const column_t::index_t &left, const column_t &right);
+    friend XLNT_API bool operator<(const column_t::index_t &left, const column_t &right);
 
     /// <summary>
     /// Return true if other is to the left of or equal to this column.
     /// </summary>
-    friend XLNT_FUNCTION bool operator<=(const column_t::index_t &left, const column_t &right);
+    friend XLNT_API bool operator<=(const column_t::index_t &left, const column_t &right);
 
     /// <summary>
     /// Swap the columns that left and right refer to.
     /// </summary>
-    friend XLNT_FUNCTION void swap(column_t &left, column_t &right);
+    friend XLNT_API void swap(column_t &left, column_t &right);
 
     /// <summary>
     /// Internal numeric value of this column index.
@@ -313,8 +317,11 @@ public:
 /// Functor for hashing a column.
 /// Allows for use of std::unordered_set<column, column_hash> and similar.
 /// </summary>
-struct XLNT_CLASS column_hash
+struct XLNT_API column_hash
 {
+    /// <summary>
+    ///
+    /// </summary>
     std::size_t operator()(const column_t &k) const;
 };
 
@@ -322,15 +329,20 @@ struct XLNT_CLASS column_hash
 
 namespace std {
 
+/// <summary>
+/// Template specialization to allow xlnt::column_t to be used as a key in a std container.
+/// </summary>
 template <>
 struct hash<xlnt::column_t>
 {
+    /// <summary>
+    ///
+    /// </summary>
     size_t operator()(const xlnt::column_t &k) const
     {
+        static xlnt::column_hash hasher;
         return hasher(k);
     }
-
-    xlnt::column_hash hasher;
 };
 
 } // namespace std

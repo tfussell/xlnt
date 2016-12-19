@@ -1,5 +1,4 @@
 // Copyright (c) 2014-2016 Thomas Fussell
-// Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,69 +20,142 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <string>
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/cell/formatted_text.hpp>
 
 namespace xlnt {
 
-class cell;
-namespace detail {
-struct comment_impl;
-}
-
 /// <summary>
-/// A comment can be applied to a cell to provide extra information.
+/// A comment can be applied to a cell to provide extra information about its contents.
 /// </summary>
-class XLNT_CLASS comment
+class XLNT_API comment
 {
 public:
     /// <summary>
-    /// The default constructor makes an invalid comment without a parent cell.
+    /// Constructs a new blank comment.
     /// </summary>
     comment();
 
     /// <summary>
-    /// Constructs a comment applied to the given cell, parent, and with the comment
-    /// text and author set to the provided respective values.
-    comment(cell parent, const std::string &text, const std::string &auth);
+    /// Constructs a new comment with the given text and author.
+    /// </summary>
+    comment(const formatted_text &text, const std::string &author);
 
-    ~comment();
+    /// <summary>
+    /// Constructs a new comment with the given unformatted text and author.
+    /// </summary>
+    comment(const std::string &text, const std::string &author);
 
     /// <summary>
     /// Return the text that will be displayed for this comment.
     /// </summary>
-    std::string get_text() const;
+    formatted_text text() const;
+
+    /// <summary>
+    /// Return the plain text that will be displayed for this comment without formatting information.
+    /// </summary>
+    std::string plain_text() const;
 
     /// <summary>
     /// Return the author of this comment.
     /// </summary>
-    std::string get_author() const;
+    std::string author() const;
 
     /// <summary>
-    /// True if the comments point to the same sell (false if
-    /// they are different cells but identical comments). Note
-    /// that a cell can only have one comment and a comment
-    /// can only be applied to one cell.
+    /// Make this comment only visible when the associated cell is hovered.
     /// </summary>
-    bool operator==(const comment &other) const;
+    void hide();
+
+    /// <summary>
+    /// Make this comment always visible.
+    /// </summary>
+    void show();
+
+    /// <summary>
+    /// Returns true if this comment is not hidden.
+    /// </summary>
+    bool visible() const;
+
+    /// <summary>
+    /// Set the absolute position of this cell to the given coordinates.
+    /// </summary>
+    void position(int left, int top);
+
+    /// <summary>
+    /// Returns the distance from the left side of the sheet to the left side of the comment.
+    /// </summary>
+    int left() const;
+
+    /// <summary>
+    /// Returns the distance from the top of the sheet to the top of the comment.
+    /// </summary>
+    int top() const;
+
+    /// <summary>
+    /// Set the size of the comment.
+    /// </summary>
+    void size(int width, int height);
+
+    /// <summary>
+    /// Returns the width of this comment.
+    /// </summary>
+    int width() const;
+
+    /// <summary>
+    /// Returns the height of this comment.
+    /// </summary>
+    int height() const;
+
+    /// <summary>
+    /// Return true if both comments are equivalent.
+    /// </summary>
+    friend XLNT_API bool operator==(const comment &left, const comment &right);
 
 private:
-    friend class cell; // cell needs access to private constructor
+    /// <summary>
+    /// The formatted textual content in this cell displayed directly after the author.
+    /// </summary>
+    formatted_text text_;
 
     /// <summary>
-    /// Construct a comment from an implementation of a comment.
+    /// The name of the person that created this comment.
     /// </summary>
-    comment(detail::comment_impl *d);
+    std::string author_;
 
     /// <summary>
-    /// Pointer to the implementation of this comment.
-    /// This allows comments to be passed by value while
-    /// retaining the ability to modify the parent cell.
+    /// True if this comment is not hidden.
     /// </summary>
-    detail::comment_impl *d_;
+    bool visible_ = false;
+
+    /// <summary>
+    /// The fill color
+    /// </summary>
+    std::string fill_;
+
+    /// <summary>
+    /// Distance from the left side of the sheet.
+    /// </summary>
+    int left_ = 0;
+
+    /// <summary>
+    /// Distance from the top of the sheet.
+    /// </summary>
+    int top_ = 0;
+
+    /// <summary>
+    /// Width of the comment box.
+    /// </summary>
+    int width_ = 0;
+
+    /// <summary>
+    /// Height of the comment box.
+    /// </summary>
+    int height_ = 0;
 };
 
 } // namespace xlnt

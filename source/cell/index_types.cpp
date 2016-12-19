@@ -33,7 +33,7 @@ column_t::index_t column_t::column_index_from_string(const std::string &column_s
 {
     if (column_string.length() > 3 || column_string.empty())
     {
-        throw column_string_index_error();
+        throw invalid_column_string_index();
     }
 
     column_t::index_t column_index = 0;
@@ -43,7 +43,7 @@ column_t::index_t column_t::column_index_from_string(const std::string &column_s
     {
         if (!std::isalpha(column_string[static_cast<std::size_t>(i)], std::locale::classic()))
         {
-            throw column_string_index_error();
+            throw invalid_column_string_index();
         }
 
         auto char_index = std::toupper(column_string[static_cast<std::size_t>(i)], std::locale::classic()) - 'A';
@@ -65,8 +65,7 @@ std::string column_t::column_string_from_index(column_t::index_t column_index)
     // columns
     if (column_index < constants::min_column() || column_index > constants::max_column())
     {
-        //        auto msg = "Column index out of bounds: " + std::to_string(column_index);
-        throw column_string_index_error();
+        throw invalid_column_string_index();
     }
 
     int temp = static_cast<int>(column_index);
@@ -115,7 +114,7 @@ bool column_t::operator==(const column_t &other) const { return index == other.i
 
 bool column_t::operator!=(const column_t &other) const { return !(*this == other); }
 
-bool column_t::operator==(int other) const { return *this == column_t(other); }
+bool column_t::operator==(int other) const { return *this == column_t(static_cast<index_t>(other)); }
 
 bool column_t::operator==(index_t other) const { return *this == column_t(other); }
 

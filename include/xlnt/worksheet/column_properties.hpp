@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
@@ -31,11 +32,22 @@ namespace xlnt {
 /// Properties applied to a column in a worksheet.
 /// Columns can have a size and a style.
 /// </summary>
-class XLNT_CLASS column_properties
+class XLNT_API column_properties
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     long double width;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::size_t style;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool custom;
 };
 

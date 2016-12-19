@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <string>
@@ -32,16 +33,37 @@ namespace xlnt {
 /// <summary>
 /// Security information about the OOXML document.
 /// </summary>
-class XLNT_CLASS document_security
+class XLNT_API document_security
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     document_security();
 
+    /// <summary>
+    ///
+    /// </summary>
     bool lock_revision;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool lock_structure;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool lock_windows;
 
+    /// <summary>
+    ///
+    /// </summary>
     std::string revision_password;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::string workbook_password;
 };
 

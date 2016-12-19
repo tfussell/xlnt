@@ -29,16 +29,14 @@
 
 namespace {
 
-std::tm safe_localtime(std::time_t raw_time)
+std::string fill(const std::string &string, std::size_t length = 2)
 {
-#ifdef _MSC_VER
-	std::tm result;
-	localtime_s(&result, &raw_time);
+	if (string.size() >= length)
+	{
+		return string;
+	}
 
-	return result;
-#else
-	return *localtime(&raw_time);
-#endif
+	return std::string(length - string.size(), '0') + string;
 }
 
 } // namespace
@@ -47,7 +45,7 @@ namespace xlnt {
 
 datetime datetime::from_number(long double raw_time, calendar base_date)
 {
-    auto date_part = date::from_number((int)raw_time, base_date);
+    auto date_part = date::from_number(static_cast<int>(raw_time), base_date);
     auto time_part = time::from_number(raw_time);
     
     return datetime(date_part.year, date_part.month, date_part.day, time_part.hour, time_part.minute, time_part.second,
@@ -73,14 +71,12 @@ std::string datetime::to_string() const
 
 datetime datetime::now()
 {
-	std::tm now = safe_localtime(std::time(0));
-
-    return datetime(1900 + now.tm_year, now.tm_mon + 1, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec);
+	return datetime(date::today(), time::now());
 }
 
 datetime datetime::today()
 {
-    return now();
+	return datetime(date::today(), time(0, 0, 0, 0));
 }
 
 datetime::datetime(int year_, int month_, int day_, int hour_, int minute_, int second_, int microsecond_)
@@ -94,9 +90,49 @@ datetime::datetime(int year_, int month_, int day_, int hour_, int minute_, int 
 {
 }
 
+datetime::datetime(const date &d, const time &t)
+	: year(d.year),
+	  month(d.month),
+	  day(d.day),
+	  hour(t.hour),
+	  minute(t.minute),
+	  second(t.second),
+	  microsecond(t.microsecond)
+{
+}
+
 int datetime::weekday() const
 {
     return date(year, month, day).weekday();
+}
+
+datetime datetime::from_iso_string(const std::string &string)
+{
+    xlnt::datetime result(1900, 1, 1);
+
+    auto separator_index = string.find('-');
+    result.year = std::stoi(string.substr(0, separator_index));
+    result.month = std::stoi(string.substr(separator_index + 1, string.find('-', separator_index + 1)));
+    separator_index = string.find('-', separator_index + 1);
+    result.day = std::stoi(string.substr(separator_index + 1, string.find('T', separator_index + 1)));
+    separator_index = string.find('T', separator_index + 1);
+    result.hour = std::stoi(string.substr(separator_index + 1, string.find(':', separator_index + 1)));
+    separator_index = string.find(':', separator_index + 1);
+    result.minute = std::stoi(string.substr(separator_index + 1, string.find(':', separator_index + 1)));
+    separator_index = string.find(':', separator_index + 1);
+    result.second = std::stoi(string.substr(separator_index + 1, string.find('Z', separator_index + 1)));
+
+    return result;
+}
+
+std::string datetime::to_iso_string() const
+{
+	return std::to_string(year) + "-"
+        + fill(std::to_string(month)) + "-"
+        + fill(std::to_string(day)) + "T"
+        + fill(std::to_string(hour)) + ":"
+        + fill(std::to_string(minute)) + ":"
+        + fill(std::to_string(second)) + "Z";
 }
 
 } // namespace xlnt

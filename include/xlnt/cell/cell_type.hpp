@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
@@ -30,7 +31,7 @@ namespace xlnt {
 /// <summary>
 /// Enumerates the possible types a cell can be determined by it's current value.
 /// </summary>
-enum class XLNT_CLASS cell_type
+enum class XLNT_API cell_type
 {
     /// no value. note: this is different from an empty string value or 0 numeric value
     null,

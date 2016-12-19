@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <iterator>
@@ -32,7 +33,6 @@
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/cell/index_types.hpp>
 #include <xlnt/packaging/relationship.hpp>
-#include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/page_margins.hpp>
 #include <xlnt/worksheet/page_setup.hpp>
 #include <xlnt/worksheet/sheet_view.hpp>
@@ -45,6 +45,8 @@ class cell_vector;
 class column_properties;
 class comment;
 class const_range_iterator;
+class footer;
+class header;
 class range;
 class range_iterator;
 class range_reference;
@@ -55,202 +57,656 @@ class workbook;
 struct date;
 
 namespace detail {
+
+class xlsx_consumer;
+class xlsx_producer;
+
 struct worksheet_impl;
-}
+
+} // namespace detail
 
 /// <summary>
 /// A worksheet is a 2D array of cells starting with cell A1 in the top-left corner
 /// and extending indefinitely down and right as needed.
 /// </summary>
-class XLNT_CLASS worksheet
+class XLNT_API worksheet
 {
 public:
+    /// <summary>
+    ///
+    /// </summary>
     using iterator = range_iterator;
+
+    /// <summary>
+    ///
+    /// </summary>
     using const_iterator = const_range_iterator;
+
+    /// <summary>
+    ///
+    /// </summary>
     using reverse_iterator = std::reverse_iterator<iterator>;
+
+    /// <summary>
+    ///
+    /// </summary>
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
+    /// <summary>
+    ///
+    /// </summary>
     worksheet();
-    worksheet(const worksheet &rhs);
-    worksheet(workbook &parent_workbook, const std::string &title = std::string());
 
-    std::string to_string() const;
-    workbook &get_workbook();
-	const workbook &get_workbook() const;
+    /// <summary>
+    ///
+    /// </summary>
+    worksheet(const worksheet &rhs);
+
+    /// <summary>
+    ///
+    /// </summary>
+    class workbook &workbook();
+
+    /// <summary>
+    ///
+    /// </summary>
+    const class workbook &workbook() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     void garbage_collect();
 
-    // title
-    std::string get_title() const;
-    void set_title(const std::string &title);
-    std::string make_unique_sheet_name(const std::string &value);
+    // identification
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::size_t id() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void id(std::size_t id);
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::string title() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void title(const std::string &title);
 
     // freeze panes
-    cell_reference get_frozen_panes() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    cell_reference frozen_panes() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     void freeze_panes(cell top_left_cell);
-    void freeze_panes(const std::string &top_left_coordinate);
+
+    /// <summary>
+    ///
+    /// </summary>
+    void freeze_panes(const cell_reference &top_left_coordinate);
+
+    /// <summary>
+    ///
+    /// </summary>
     void unfreeze_panes();
+
+    /// <summary>
+    ///
+    /// </summary>
     bool has_frozen_panes() const;
 
     // container
-    cell get_cell(const cell_reference &reference);
-    const cell get_cell(const cell_reference &reference) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    class cell cell(column_t column, row_t row);
+
+    /// <summary>
+    ///
+    /// </summary>
+    const class cell cell(column_t column, row_t row) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    class cell cell(const cell_reference &reference);
+
+    /// <summary>
+    ///
+    /// </summary>
+    const class cell cell(const cell_reference &reference) const;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool has_cell(const cell_reference &reference) const;
-    range get_range(const std::string &reference_string);
-    range get_range(const range_reference &reference);
-    const range get_range(const std::string &reference_string) const;
-    const range get_range(const range_reference &reference) const;
-    range get_squared_range(column_t min_col, row_t min_row, column_t max_col, row_t max_row);
-    const range get_squared_range(column_t min_col, row_t min_row, column_t max_col, row_t max_row) const;
-    range rows() const;
-    range rows(const std::string &range_string) const;
-    range rows(int row_offset, int column_offset) const;
-    range rows(const std::string &range_string, int row_offset, int column_offset) const;
-    range columns() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    class range range(const std::string &reference_string);
+
+    /// <summary>
+    ///
+    /// </summary>
+    class range range(const range_reference &reference);
+
+    /// <summary>
+    ///
+    /// </summary>
+    const class range range(const std::string &reference_string) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    const class range range(const range_reference &reference) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    class range rows() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    class range rows(const std::string &range_string) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    class range rows(int row_offset, int column_offset) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    class range rows(const std::string &range_string, int row_offset, int column_offset) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    class range columns() const;
 
     // properties
-    column_properties &get_column_properties(column_t column);
-    const column_properties &get_column_properties(column_t column) const;
-    bool has_column_properties(column_t column) const;
-    void add_column_properties(column_t column, const column_properties &props);
 
-    row_properties &get_row_properties(row_t row);
-    const row_properties &get_row_properties(row_t row) const;
+    /// <summary>
+    ///
+    /// </summary>
+    xlnt::column_properties &column_properties(column_t column);
+
+    /// <summary>
+    ///
+    /// </summary>
+    const xlnt::column_properties &column_properties(column_t column) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_column_properties(column_t column) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void add_column_properties(column_t column, const class column_properties &props);
+
+    /// <summary>
+    ///
+    /// </summary>
+    xlnt::row_properties &row_properties(row_t row);
+
+    /// <summary>
+    ///
+    /// </summary>
+    const xlnt::row_properties &row_properties(row_t row) const;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool has_row_properties(row_t row) const;
-    void add_row_properties(row_t row, const row_properties &props);
+
+    /// <summary>
+    ///
+    /// </summary>
+    void add_row_properties(row_t row, const class row_properties &props);
 
     // positioning
-    cell_reference get_point_pos(int left, int top) const;
-    cell_reference get_point_pos(const std::pair<int, int> &point) const;
 
+    /// <summary>
+    ///
+    /// </summary>
+    cell_reference point_pos(int left, int top) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    cell_reference point_pos(const std::pair<int, int> &point) const;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::string unique_sheet_name(const std::string &value) const;
 
     // named range
+
+    /// <summary>
+    ///
+    /// </summary>
     void create_named_range(const std::string &name, const std::string &reference_string);
+
+    /// <summary>
+    ///
+    /// </summary>
     void create_named_range(const std::string &name, const range_reference &reference);
+
+    /// <summary>
+    ///
+    /// </summary>
     bool has_named_range(const std::string &name);
-    range get_named_range(const std::string &name);
+
+    /// <summary>
+    ///
+    /// </summary>
+    class range named_range(const std::string &name);
+
+    /// <summary>
+    ///
+    /// </summary>
     void remove_named_range(const std::string &name);
 
     // extents
-    row_t get_lowest_row() const;
-    row_t get_highest_row() const;
-    row_t get_next_row() const;
-    column_t get_lowest_column() const;
-    column_t get_highest_column() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    row_t lowest_row() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    row_t highest_row() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    row_t next_row() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    column_t lowest_column() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    column_t highest_column() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     range_reference calculate_dimension() const;
 
-    // relationships
-    relationship create_relationship(relationship::type type, const std::string &target_uri);
-    const std::vector<relationship> &get_relationships() const;
-
-    // charts
-    // void add_chart(chart chart);
-
     // cell merge
+
+    /// <summary>
+    ///
+    /// </summary>
     void merge_cells(const std::string &reference_string);
+
+    /// <summary>
+    ///
+    /// </summary>
     void merge_cells(const range_reference &reference);
+
+    /// <summary>
+    ///
+    /// </summary>
     void merge_cells(column_t start_column, row_t start_row, column_t end_column, row_t end_row);
+
+    /// <summary>
+    ///
+    /// </summary>
     void unmerge_cells(const std::string &reference_string);
+
+    /// <summary>
+    ///
+    /// </summary>
     void unmerge_cells(const range_reference &reference);
+
+    /// <summary>
+    ///
+    /// </summary>
     void unmerge_cells(column_t start_column, row_t start_row, column_t end_column, row_t end_row);
-    std::vector<range_reference> get_merged_ranges() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::vector<range_reference> merged_ranges() const;
 
     // append
+
+    /// <summary>
+    ///
+    /// </summary>
     void append();
+
+    /// <summary>
+    ///
+    /// </summary>
     void append(const std::vector<std::string> &cells);
+
+    /// <summary>
+    ///
+    /// </summary>
     void append(const std::vector<int> &cells);
+
+    /// <summary>
+    ///
+    /// </summary>
     void append(const std::unordered_map<std::string, std::string> &cells);
+
+    /// <summary>
+    ///
+    /// </summary>
     void append(const std::unordered_map<int, std::string> &cells);
 
+    /// <summary>
+    ///
+    /// </summary>
     void append(const std::vector<int>::const_iterator begin, const std::vector<int>::const_iterator end);
 
     // operators
+
+    /// <summary>
+    ///
+    /// </summary>
     bool operator==(const worksheet &other) const;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool operator!=(const worksheet &other) const;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool operator==(std::nullptr_t) const;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool operator!=(std::nullptr_t) const;
+
+    /// <summary>
+    ///
+    /// </summary>
     void operator=(const worksheet &other);
-    cell operator[](const cell_reference &reference);
-    const cell operator[](const cell_reference &reference) const;
-    range operator[](const range_reference &reference);
-    const range operator[](const range_reference &reference) const;
-    range operator[](const std::string &range_string);
-    const range operator[](const std::string &range_string) const;
-    range operator()(const cell_reference &top_left, const cell_reference &bottom_right);
-    const range operator()(const cell_reference &top_left, const cell_reference &bottom_right) const;
-    
+
+    /// <summary>
+    ///
+    /// </summary>
+    class cell operator[](const cell_reference &reference);
+
+    /// <summary>
+    ///
+    /// </summary>
+    const class cell operator[](const cell_reference &reference) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    class range operator[](const range_reference &reference);
+
+    /// <summary>
+    ///
+    /// </summary>
+    const class range operator[](const range_reference &reference) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    class range operator[](const std::string &range_string);
+
+    /// <summary>
+    ///
+    /// </summary>
+    const class range operator[](const std::string &range_string) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    class range operator()(const cell_reference &top_left, const cell_reference &bottom_right);
+
+    /// <summary>
+    ///
+    /// </summary>
+    const class range operator()(const cell_reference &top_left, const cell_reference &bottom_right) const;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool compare(const worksheet &other, bool reference) const;
 
     // page
-    page_setup &get_page_setup();
-    const page_setup &get_page_setup() const;
-    page_margins &get_page_margins();
-    const page_margins &get_page_margins() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_page_setup() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    xlnt::page_setup page_setup() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void page_setup(const struct page_setup &setup);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_page_margins() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    xlnt::page_margins page_margins() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void page_margins(const class page_margins &margins);
 
     // auto filter
-    range_reference get_auto_filter() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    range_reference auto_filter() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     void auto_filter(const std::string &range_string);
+
+    /// <summary>
+    ///
+    /// </summary>
     void auto_filter(const xlnt::range &range);
+
+    /// <summary>
+    ///
+    /// </summary>
     void auto_filter(const range_reference &reference);
-    void unset_auto_filter();
+
+    /// <summary>
+    ///
+    /// </summary>
+    void clear_auto_filter();
+
+    /// <summary>
+    ///
+    /// </summary>
     bool has_auto_filter() const;
 
-    // comments
-    void increment_comments();
-    void decrement_comments();
-    std::size_t get_comment_count() const;
-
+    /// <summary>
+    ///
+    /// </summary>
     void reserve(std::size_t n);
 
-    header_footer &get_header_footer();
-    const header_footer &get_header_footer() const;
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_header_footer() const;
 
-    void set_parent(workbook &wb);
+    /// <summary>
+    ///
+    /// </summary>
+    class header_footer header_footer() const;
 
-    std::vector<std::string> get_formula_attributes() const;
+    /// <summary>
+    ///
+    /// </summary>
+    void header_footer(const class header_footer &new_header_footer);
 
-    void set_sheet_state(sheet_state state);
+    /// <summary>
+    ///
+    /// </summary>
+    void parent(class workbook &wb);
 
+    /// <summary>
+    ///
+    /// </summary>
+    std::vector<std::string> formula_attributes() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    xlnt::sheet_state sheet_state() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void sheet_state(xlnt::sheet_state state);
+
+    /// <summary>
+    ///
+    /// </summary>
     iterator begin();
+
+    /// <summary>
+    ///
+    /// </summary>
     iterator end();
 
+    /// <summary>
+    ///
+    /// </summary>
     const_iterator begin() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     const_iterator end() const;
 
+    /// <summary>
+    ///
+    /// </summary>
     const_iterator cbegin() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     const_iterator cend() const;
-    
-    reverse_iterator rbegin();
-    reverse_iterator rend();
 
-    const_reverse_iterator rbegin() const;
-    const_reverse_iterator rend() const;
+    /// <summary>
+    ///
+    /// </summary>
+    class range iter_cells(bool skip_null);
 
-    const_reverse_iterator crbegin() const;
-    const_reverse_iterator crend() const;
+    /// <summary>
+    ///
+    /// </summary>
+    void print_title_rows(row_t first_row, row_t last_row);
 
-    range iter_cells(bool skip_null);
-    
-    void add_print_title(int i);
-    void add_print_title(int i, const std::string &rows_or_cols);
-    void set_print_title_rows(const std::string &rows);
-    void set_print_title_cols(const std::string &rows);
-    std::string get_print_titles() const;
-    
-    void set_print_area(const std::string &print_area);
-    range_reference get_print_area() const;
-    
-    sheet_view get_sheet_view() const;
+    /// <summary>
+    ///
+    /// </summary>
+    void print_title_rows(row_t last_row);
+
+    /// <summary>
+    ///
+    /// </summary>
+    void print_title_cols(column_t first_column, column_t last_column);
+
+    /// <summary>
+    ///
+    /// </summary>
+    void print_title_cols(column_t last_column);
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::string print_titles() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void print_area(const std::string &print_area);
+
+    /// <summary>
+    ///
+    /// </summary>
+    range_reference print_area() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_view() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    sheet_view view(std::size_t index = 0) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void add_view(const sheet_view &new_view);
 
 private:
-    friend class workbook;
     friend class cell;
-    friend class range_iterator;
     friend class const_range_iterator;
-    
-    std::size_t next_custom_number_format_id();
+    friend class range_iterator;
+    friend class workbook;
+    friend class detail::xlsx_consumer;
+    friend class detail::xlsx_producer;
 
+    /// <summary>
+    ///
+    /// </summary>
+    void register_comments_in_manifest();
+
+    /// <summary>
+    ///
+    /// </summary>
     worksheet(detail::worksheet_impl *d);
+
+    /// <summary>
+    ///
+    /// </summary>
     detail::worksheet_impl *d_;
 };
 

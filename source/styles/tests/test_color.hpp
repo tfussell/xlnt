@@ -26,31 +26,22 @@ public:
         
         for (auto pair : known_colors)
         {
-            TS_ASSERT_EQUALS(pair.first.get_rgb_string(), pair.second);
+            TS_ASSERT_EQUALS(pair.first.rgb().hex_string(), pair.second);
         }
     }
     
     void test_non_rgb_colors()
     {
-        xlnt::color indexed;
-        indexed.set_index(1);
-        TS_ASSERT_EQUALS(indexed.get_index(), 1);
-        TS_ASSERT_THROWS(indexed.get_auto(), std::runtime_error);
-        TS_ASSERT_THROWS(indexed.get_theme(), std::runtime_error);
-        TS_ASSERT_THROWS(indexed.get_rgb_string(), std::runtime_error);
+		xlnt::color indexed = xlnt::indexed_color(1);
+		TS_ASSERT(!indexed.is_auto());
+        TS_ASSERT_EQUALS(indexed.indexed().index(), 1);
+        TS_ASSERT_THROWS(indexed.theme(), xlnt::invalid_attribute);
+        TS_ASSERT_THROWS(indexed.rgb(), xlnt::invalid_attribute);
 
-        xlnt::color auto_;
-        auto_.set_auto(2);
-        TS_ASSERT_EQUALS(auto_.get_auto(), 2);
-        TS_ASSERT_THROWS(auto_.get_theme(), std::runtime_error);
-        TS_ASSERT_THROWS(auto_.get_index(), std::runtime_error);
-        TS_ASSERT_THROWS(auto_.get_rgb_string(), std::runtime_error);
-
-        xlnt::color theme;
-        theme.set_theme(3);
-        TS_ASSERT_EQUALS(theme.get_theme(), 3);
-        TS_ASSERT_THROWS(theme.get_auto(), std::runtime_error);
-        TS_ASSERT_THROWS(theme.get_index(), std::runtime_error);
-        TS_ASSERT_THROWS(theme.get_rgb_string(), std::runtime_error);
+		xlnt::color theme = xlnt::theme_color(3);
+		TS_ASSERT(!theme.is_auto());
+        TS_ASSERT_EQUALS(theme.theme().index(), 3);
+        TS_ASSERT_THROWS(theme.indexed(), xlnt::invalid_attribute);
+        TS_ASSERT_THROWS(theme.rgb(), xlnt::invalid_attribute);
     }
 };

@@ -41,12 +41,12 @@ std::string int_to_hex(T i)
 
 namespace xlnt {
 
-void sheet_protection::set_password(const std::string &password)
+void sheet_protection::password(const std::string &password)
 {
     hashed_password_ = hash_password(password);
 }
 
-std::string sheet_protection::get_hashed_password() const
+std::string sheet_protection::hashed_password() const
 {
     return hashed_password_;
 }
