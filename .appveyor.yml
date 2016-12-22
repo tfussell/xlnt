@@ -16,7 +16,7 @@ before_build:
 - cmake -H. -Bbuild -G"Visual Studio 14 2015 Win64" -DSTATIC=%STATIC% -DSAMPLES=ON -DBENCHMARKS=ON
 
 build:
-  project: build/xlnt_all.sln
+  project: build/tests/xlnt.test.sln
   parallel: true
   verbosity: minimal
 
