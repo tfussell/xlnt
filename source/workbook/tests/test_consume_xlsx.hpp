@@ -88,4 +88,36 @@ public:
         TS_ASSERT_EQUALS(wb.active_sheet().cell("A1").hyperlink(),
             "https://fr.wikipedia.org/wiki/Ille-et-Vilaine");
     }
+
+    void test_read_headers_and_footers()
+    {
+        xlnt::workbook wb;
+        wb.load("data/21_headers_and_footers.xlsx");
+        auto ws = wb.active_sheet();
+
+        TS_ASSERT_EQUALS(ws.cell("A1").value<std::string>(), "header");
+        TS_ASSERT_EQUALS(ws.cell("A2").value<std::string>(), "and");
+        TS_ASSERT_EQUALS(ws.cell("A3").value<std::string>(), "footer");
+        TS_ASSERT_EQUALS(ws.cell("A4").value<std::string>(), "page1");
+        TS_ASSERT_EQUALS(ws.cell("A43").value<std::string>(), "page2");
+
+        TS_ASSERT(ws.has_header_footer());
+        TS_ASSERT(ws.header_footer().align_with_margins());
+        TS_ASSERT(ws.header_footer().scale_with_doc());
+        TS_ASSERT(!ws.header_footer().different_first());
+        TS_ASSERT(!ws.header_footer().different_odd_even());
+
+        TS_ASSERT(ws.header_footer().has_header(xlnt::header_footer::location::left));
+        TS_ASSERT_EQUALS(ws.header_footer().header(xlnt::header_footer::location::left).plain_text(), "left header");
+        TS_ASSERT(ws.header_footer().has_header(xlnt::header_footer::location::center));
+        TS_ASSERT_EQUALS(ws.header_footer().header(xlnt::header_footer::location::center).plain_text(), "center header");
+        TS_ASSERT(ws.header_footer().has_header(xlnt::header_footer::location::right));
+        TS_ASSERT_EQUALS(ws.header_footer().header(xlnt::header_footer::location::right).plain_text(), "right header");
+        TS_ASSERT(ws.header_footer().has_footer(xlnt::header_footer::location::left));
+        TS_ASSERT_EQUALS(ws.header_footer().footer(xlnt::header_footer::location::left).plain_text(), "left && footer");
+        TS_ASSERT(ws.header_footer().has_footer(xlnt::header_footer::location::center));
+        TS_ASSERT_EQUALS(ws.header_footer().footer(xlnt::header_footer::location::center).plain_text(), "center footer");
+        TS_ASSERT(ws.header_footer().has_footer(xlnt::header_footer::location::right));
+        TS_ASSERT_EQUALS(ws.header_footer().footer(xlnt::header_footer::location::right).plain_text(), "right footer");
+    }
 };

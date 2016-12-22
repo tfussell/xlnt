@@ -32,6 +32,16 @@
 namespace xlnt {
 
 /// <summary>
+///
+/// </summary>
+enum class sheet_view_type
+{
+    normal,
+    page_break_preview,
+    page_layout
+};
+
+/// <summary>
 /// Describes a view of a worksheet.
 /// Worksheets can have multiple views which show the data differently.
 /// </summary>
@@ -166,6 +176,16 @@ public:
         return default_grid_color_;
     }
 
+    void type(sheet_view_type new_type)
+    {
+        type_ = new_type;
+    }
+
+    sheet_view_type type() const
+    {
+        return type_;
+    }
+
     bool operator==(const sheet_view &rhs) const
     {
         return id_ == rhs.id_ && show_grid_lines_ == rhs.show_grid_lines_
@@ -188,6 +208,11 @@ private:
     ///
     /// </summary>
     bool default_grid_color_ = true;
+
+    /// <summary>
+    ///
+    /// </summary>
+    sheet_view_type type_ = sheet_view_type::normal;
 
     /// <summary>
     ///

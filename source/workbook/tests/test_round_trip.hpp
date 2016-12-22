@@ -20,14 +20,14 @@ public:
 	{
 		std::vector<std::uint8_t> original_buffer;
 		original.save(original_buffer);
-        original.save("b.xlsx");
+        original.save("round_trip_in.xlsx");
 
 		xlnt::workbook resulting_workbook;
 		resulting_workbook.load(original_buffer);
         
         std::vector<std::uint8_t> resulting_buffer;
         resulting_workbook.save(resulting_buffer);
-        resulting_workbook.save("a.xlsx");
+        resulting_workbook.save("round_trip_out.xlsx");
 
 		return xml_helper::xlsx_archives_match(original_buffer, resulting_buffer);
 	}
@@ -52,7 +52,7 @@ public:
         
         std::vector<std::uint8_t> buffer;
         original_workbook.save(buffer);
-        original_workbook.save("a.xlsx");
+        original_workbook.save("round_trip_out.xlsx");
 
 		return xml_helper::xlsx_archives_match(original_data, buffer);
 	}
@@ -108,11 +108,24 @@ public:
 	void test_round_trip_all_styles_rw()
 	{
 		auto path = path_helper::get_data_directory("13_all_styles.xlsx");
-		xlnt::workbook original_workbook;
-		original_workbook.load(path);
-        
-        std::vector<std::uint8_t> buffer;
-        original_workbook.save(buffer);
 		TS_ASSERT(round_trip_matches_rw(path));
 	}
+
+    void test_round_trip_headers_footers()
+    {
+		auto path = path_helper::get_data_directory("21_headers_and_footers.xlsx");
+		TS_ASSERT(round_trip_matches_rw(path));
+    }
+
+    void test_round_trip_row_and_col_props()
+    {
+		auto path = path_helper::get_data_directory("22_row_and_col_properties.xlsx");
+		TS_ASSERT(round_trip_matches_rw(path));
+    }
+
+    void test_round_trip_page_breaks()
+    {
+		auto path = path_helper::get_data_directory("23_page_breaks.xlsx");
+		TS_ASSERT(round_trip_matches_rw(path));
+    }
 };

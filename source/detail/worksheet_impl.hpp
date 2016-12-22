@@ -84,6 +84,8 @@ struct worksheet_impl
         print_title_rows_ = other.print_title_rows_;
         print_area_ = other.print_area_;
         views_ = other.views_;
+        column_breaks_ = other.column_breaks_;
+        row_breaks_ = other.row_breaks_;
     }
 
     workbook *parent_;
@@ -110,6 +112,9 @@ struct worksheet_impl
     optional<range_reference> print_area_;
 
     std::vector<sheet_view> views_;
+
+    std::vector<column_t> column_breaks_;
+    std::vector<row_t> row_breaks_;
 };
 
 } // namespace detail

@@ -1837,6 +1837,11 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 		serializer().attribute("tabSelected", write_bool(view.id() == 0));
 		serializer().attribute("workbookViewId", view.id());
 
+        if (view.type() != sheet_view_type::normal)
+        {
+            serializer().attribute("view", view.type() == sheet_view_type::page_break_preview ? "pageBreakPreview" : "pageLayout");
+        }
+
 		if (view.has_pane())
 		{
             const auto &current_pane = view.pane();
@@ -1919,9 +1924,27 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             serializer().start_element(xmlns, "col");
 			serializer().attribute("min", column.index);
 			serializer().attribute("max", column.index);
-			serializer().attribute("width", props.width);
-			serializer().attribute("style", props.style);
-			serializer().attribute("customWidth", write_bool(props.custom));
+
+            if (props.width.is_set())
+            {
+                serializer().attribute("width", props.width.get());
+            }
+
+            if (props.custom_width)
+            {
+                serializer().attribute("customWidth", write_bool(true));
+            }
+
+            if (props.style.is_set())
+            {
+                serializer().attribute("style", props.style.get());
+            }
+            
+            if (props.hidden)
+            {
+                serializer().attribute("hidden", write_bool(true));
+            }
+
             serializer().end_element(xmlns, "col");
 		}
         
@@ -1971,17 +1994,31 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
 		if (ws.has_row_properties(row.front().row()))
 		{
-			serializer().attribute("customHeight", "1");
-			auto height = ws.row_properties(row.front().row()).height;
+            const auto &props = ws.row_properties(row.front().row());
+            
+            if (props.custom_height)
+            {
+                serializer().attribute("customHeight", write_bool(true));
+            }
 
-			if (std::fabs(height - std::floor(height)) == 0.L)
-			{
-				serializer().attribute("ht", std::to_string(static_cast<long long int>(height)) + ".0");
-			}
-			else
-			{
-				serializer().attribute("ht", height);
-			}
+            if (props.height.is_set())
+            {
+                auto height = props.height.get();
+
+                if (std::fabs(height - std::floor(height)) == 0.0)
+                {
+                    serializer().attribute("ht", std::to_string(static_cast<int>(height)) + ".0");
+                }
+                else
+                {
+                    serializer().attribute("ht", height);
+                }
+            }
+
+            if (props.hidden)
+            {
+                serializer().attribute("hidden", write_bool(true));
+            }
 		}
 
 		for (auto cell : row)
@@ -2222,7 +2259,56 @@ void xlsx_producer::write_worksheet(const relationship &rel)
                 { header_footer::location::right, "&R" },
             };
 
-            return location_code_map.at(where) + t.plain_text();
+            auto encoded = location_code_map.at(where);
+
+            for (const auto &run : t.runs())
+            {
+                if (run.string().empty()) continue;
+
+                if (run.has_formatting())
+                {
+                    if (run.has_font())
+                    {
+                        encoded.push_back('&');
+                        encoded.push_back('"');
+                        encoded.append(run.font());
+                        encoded.push_back(',');
+
+                        if (run.bold())
+                        {
+                            encoded.append("Bold");
+                        }
+                        else
+                        {
+                            encoded.append("Regular");
+                        }
+                        //todo: BoldItalic?
+
+                        encoded.push_back('"');
+                    }
+                    else if (run.bold())
+                    {
+                        encoded.append("&B");
+                    }
+                    
+                    if (run.has_size())
+                    {
+                        encoded.push_back('&');
+                        encoded.append(std::to_string(run.size()));
+                    }
+
+                    if (run.has_color())
+                    {
+                        encoded.push_back('&');
+                        encoded.push_back('K');
+                        encoded.append(run.color().rgb().hex_string().substr(2));
+                    }
+                }
+
+                encoded.append(run.string());
+            }
+
+            return encoded;
         };
 
         const auto locations =
@@ -2306,6 +2392,44 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         }
 
 		serializer().end_element(xmlns, "headerFooter");
+	}
+
+	if (!ws.row_breaks().empty())
+	{
+		serializer().start_element(xmlns, "rowBreaks");
+
+        serializer().attribute("count", ws.row_breaks().size());
+        serializer().attribute("manualBreakCount", ws.row_breaks().size());
+
+        for (auto break_id : ws.row_breaks())
+        {
+            serializer().start_element(xmlns, "brk");
+            serializer().attribute("id", break_id);
+            serializer().attribute("max", 16383);
+            serializer().attribute("man", 1);
+            serializer().end_element(xmlns, "brk");
+        }
+
+		serializer().end_element(xmlns, "rowBreaks");
+	}
+
+	if (!ws.column_breaks().empty())
+	{
+		serializer().start_element(xmlns, "colBreaks");
+
+        serializer().attribute("count", ws.column_breaks().size());
+        serializer().attribute("manualBreakCount", ws.column_breaks().size());
+
+        for (auto break_id : ws.column_breaks())
+        {
+            serializer().start_element(xmlns, "brk");
+            serializer().attribute("id", break_id.index);
+            serializer().attribute("max", 1048575);
+            serializer().attribute("man", 1);
+            serializer().end_element(xmlns, "brk");
+        }
+
+		serializer().end_element(xmlns, "colBreaks");
 	}
 
 	if (!worksheet_rels.empty())

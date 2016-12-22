@@ -38,17 +38,22 @@ public:
     /// <summary>
     ///
     /// </summary>
-    long double width;
+    optional<double> width;
 
     /// <summary>
     ///
     /// </summary>
-    std::size_t style;
+    bool custom_width = false;
 
     /// <summary>
     ///
     /// </summary>
-    bool custom;
+    optional<std::size_t> style;
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool hidden = false;
 };
 
 } // namespace xlnt

@@ -37,27 +37,22 @@ public:
     /// <summary>
     ///
     /// </summary>
-    long double height;
+    optional<double> height;
 
     /// <summary>
     ///
     /// </summary>
-    bool visible;
+    bool custom_height = false;
 
     /// <summary>
     ///
     /// </summary>
-    int outline_level;
+    bool hidden = false;
 
     /// <summary>
     ///
     /// </summary>
-    bool collapsed;
-
-    /// <summary>
-    ///
-    /// </summary>
-    int style_index;
+    optional<std::size_t> style;
 };
 
 } // namespace xlnt

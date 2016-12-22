@@ -815,16 +815,16 @@ std::vector<std::string> worksheet::formula_attributes() const
 
 cell_reference worksheet::point_pos(int left, int top) const
 {
-    static const auto DefaultColumnWidth = 51.85L;
-    static const auto DefaultRowHeight = 15.0L;
+    static const auto DefaultColumnWidth = 51.85;
+    static const auto DefaultRowHeight = 15.0;
 
-    auto points_to_pixels = [](long double value, long double dpi)
+    auto points_to_pixels = [](double value, double dpi)
     {
         return static_cast<int>(std::ceil(value * dpi / 72));
     };
 
-    auto default_height = points_to_pixels(DefaultRowHeight, 96.0L);
-    auto default_width = points_to_pixels(DefaultColumnWidth, 96.0L);
+    auto default_height = points_to_pixels(DefaultRowHeight, 96.0);
+    auto default_width = points_to_pixels(DefaultColumnWidth, 96.0);
 
     column_t current_column = 1;
     row_t current_row = 1;
@@ -836,13 +836,13 @@ cell_reference worksheet::point_pos(int left, int top) const
     {
         current_column++;
 
-        if (has_column_properties(current_column))
+        if (has_column_properties(current_column) && column_properties(current_column).width.is_set())
         {
-            auto cdw = column_properties(current_column).width;
+            auto cdw = column_properties(current_column).width.get();
 
             if (cdw >= 0)
             {
-                left_pos += points_to_pixels(cdw, 96.0L);
+                left_pos += points_to_pixels(cdw, 96.0);
                 continue;
             }
         }
@@ -854,13 +854,13 @@ cell_reference worksheet::point_pos(int left, int top) const
     {
         current_row++;
 
-        if (has_row_properties(current_row))
+        if (has_row_properties(current_row) && row_properties(current_row).height.is_set())
         {
-            auto cdh = row_properties(current_row).height;
+            auto cdh = row_properties(current_row).height.get();
 
             if (cdh >= 0)
             {
-                top_pos += points_to_pixels(cdh, 96.0L);
+                top_pos += points_to_pixels(cdh, 96.0);
                 continue;
             }
         }
@@ -1043,6 +1043,26 @@ bool worksheet::has_header_footer() const
 void worksheet::header_footer(const class header_footer &hf)
 {
     d_->header_footer_ = hf;
+}
+
+std::vector<row_t> &worksheet::row_breaks()
+{
+    return d_->row_breaks_;
+}
+
+const std::vector<row_t> &worksheet::row_breaks() const
+{
+    return d_->row_breaks_;
+}
+
+std::vector<column_t> &worksheet::column_breaks()
+{
+    return d_->column_breaks_;
+}
+
+const std::vector<column_t> &worksheet::column_breaks() const
+{
+    return d_->column_breaks_;
 }
 
 } // namespace xlnt

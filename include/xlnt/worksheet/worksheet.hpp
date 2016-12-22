@@ -686,6 +686,11 @@ public:
     /// </summary>
     void add_view(const sheet_view &new_view);
 
+    std::vector<row_t> &row_breaks();
+    const std::vector<row_t> &row_breaks() const;
+    std::vector<column_t> &column_breaks();
+    const std::vector<column_t> &column_breaks() const;
+
 private:
     friend class cell;
     friend class const_range_iterator;

@@ -54,7 +54,7 @@ bool header_footer::different_odd_even() const
 
 bool header_footer::different_first() const
 {
-    return first_headers_.empty() || !first_footers_.empty();
+    return !first_headers_.empty() || !first_footers_.empty();
 }
 
 bool header_footer::scale_with_doc() const

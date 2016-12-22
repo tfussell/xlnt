@@ -56,6 +56,398 @@ struct hash<xml::qname>
 
 namespace {
 
+std::array<xlnt::optional<xlnt::formatted_text>, 3> parse_header_footer(const std::string &hf_string)
+{
+    std::array<xlnt::optional<xlnt::formatted_text>, 3> result;
+
+    if (hf_string.empty())
+    {
+        return result;
+    }
+
+    enum class hf_code
+    {
+        left_section, // &L
+        center_section, // &C
+        right_section, // &R
+        current_page_number, // &P
+        total_page_number, // &N
+        font_size, // &#
+        text_font_color, // &KRRGGBB or &KTTSNN
+        text_strikethrough, // &S
+        text_superscript, // &X
+        text_subscript, // &Y
+        date, // &D
+        time, // &T
+        picture_as_background, // &G
+        text_single_underline, // &U
+        text_double_underline, // &E
+        workbook_file_path, // &Z
+        workbook_file_name, // &F
+        sheet_tab_name, // &A
+        add_to_page_number, // &+
+        subtract_from_page_number, // &-
+        text_font_name, // &"font name,font type"
+        bold_font_style, // &B
+        italic_font_style, // &I
+        outline_style, // &O
+        shadow_style, // &H
+        text // everything else
+    };
+
+    struct hf_token
+    {
+        hf_code code = hf_code::text;
+        std::string value;
+    };
+
+    std::vector<hf_token> tokens;
+    std::size_t position = 0;
+
+    while (position < hf_string.size())
+    {
+        hf_token token;
+
+        auto next_ampersand = hf_string.find('&', position + 1);
+        token.value = hf_string.substr(position, next_ampersand - position);
+        auto next_position = next_ampersand;
+
+        if (hf_string[position] == '&')
+        {
+            token.value.clear();
+            next_position = position + 2;
+            auto first_code_char = hf_string[position + 1];
+
+            if (first_code_char == '"')
+            {
+                auto end_quote_index = hf_string.find('"', position + 2);
+                next_position = end_quote_index + 1;
+
+                token.value = hf_string.substr(position + 2, end_quote_index - position - 2); // remove quotes
+                token.code = hf_code::text_font_name;
+            }
+            else if (first_code_char == '&')
+            {
+                token.value = "&&"; // escaped ampersand
+            }
+            else if (first_code_char == 'L')
+            {
+                token.code = hf_code::left_section;
+            }
+            else if (first_code_char == 'C')
+            {
+                token.code = hf_code::center_section;
+            }
+            else if (first_code_char == 'R')
+            {
+                token.code = hf_code::right_section;
+            }
+            else if (first_code_char == 'P')
+            {
+                token.code = hf_code::current_page_number;
+            }
+            else if (first_code_char == 'N')
+            {
+                token.code = hf_code::total_page_number;
+            }
+            else if (std::string("0123456789").find(hf_string[position + 1]) != std::string::npos)
+            {
+                token.code = hf_code::font_size;
+                next_position = hf_string.find_first_not_of("0123456789", position + 1);
+                token.value = hf_string.substr(position + 1, next_position - position - 1);
+            }
+            else if (first_code_char == 'K')
+            {
+                if (hf_string[position + 4] == '+' || hf_string[position + 4] == '-')
+                {
+                    token.value = hf_string.substr(position + 2, 5);
+                    next_position = position + 7;
+                }
+                else
+                {
+                    token.value = hf_string.substr(position + 2, 6);
+                    next_position = position + 8;
+                }
+
+                token.code = hf_code::text_font_color;
+            }
+            else if (first_code_char == 'S')
+            {
+                token.code = hf_code::text_strikethrough;
+            }
+            else if (first_code_char == 'X')
+            {
+                token.code = hf_code::text_superscript;
+            }
+            else if (first_code_char == 'Y')
+            {
+                token.code = hf_code::text_subscript;
+            }
+            else if (first_code_char == 'D')
+            {
+                token.code = hf_code::date;
+            }
+            else if (first_code_char == 'T')
+            {
+                token.code = hf_code::time;
+            }
+            else if (first_code_char == 'G')
+            {
+                token.code = hf_code::picture_as_background;
+            }
+            else if (first_code_char == 'U')
+            {
+                token.code = hf_code::text_single_underline;
+            }
+            else if (first_code_char == 'E')
+            {
+                token.code = hf_code::text_double_underline;
+            }
+            else if (first_code_char == 'Z')
+            {
+                token.code = hf_code::workbook_file_path;
+            }
+            else if (first_code_char == 'F')
+            {
+                token.code = hf_code::workbook_file_name;
+            }
+            else if (first_code_char == 'A')
+            {
+                token.code = hf_code::sheet_tab_name;
+            }
+            else if (first_code_char == '+')
+            {
+                token.code = hf_code::add_to_page_number;
+            }
+            else if (first_code_char == '-')
+            {
+                token.code = hf_code::subtract_from_page_number;
+            }
+            else if (first_code_char == 'B')
+            {
+                token.code = hf_code::bold_font_style;
+            }
+            else if (first_code_char == 'I')
+            {
+                token.code = hf_code::italic_font_style;
+            }
+            else if (first_code_char == 'O')
+            {
+                token.code = hf_code::outline_style;
+            }
+            else if (first_code_char == 'H')
+            {
+                token.code = hf_code::shadow_style;
+            }
+        }
+
+        position = next_position;
+        tokens.push_back(token);
+    }
+
+    const auto parse_section = [&tokens,&result](hf_code code)
+    {
+        std::vector<hf_code> end_codes
+        {
+            hf_code::left_section,
+            hf_code::center_section,
+            hf_code::right_section
+        };
+
+        end_codes.erase(std::find(end_codes.begin(), end_codes.end(), code));
+
+        std::size_t start_index = 0;
+
+        while (start_index < tokens.size() && tokens[start_index].code != code)
+        {
+            ++start_index;
+        }
+
+        if (start_index == tokens.size())
+        {
+            return;
+        }
+
+        ++start_index; // skip the section code
+        std::size_t end_index = start_index;
+
+        while (end_index < tokens.size()
+            && std::find(end_codes.begin(), end_codes.end(), tokens[end_index].code) == end_codes.end())
+        {
+            ++end_index;
+        }
+
+        xlnt::formatted_text current_text;
+        xlnt::text_run current_run;
+
+        // todo: all this nice parsing and the codes are just being turned back into text representations
+        // It would be nice to create an interface for the library to read and write these codes
+
+        for (auto i = start_index; i < end_index; ++i)
+        {
+            const auto &current_token = tokens[i];
+
+            if (current_token.code == hf_code::text)
+            {
+                current_run.string(current_run.string() + current_token.value);
+                continue;
+            }
+
+            if (!current_run.string().empty())
+            {
+                current_text.add_run(current_run);
+                current_run = xlnt::text_run();
+            }
+
+            switch (current_token.code)
+            {
+            case hf_code::text:
+                break; // already handled above
+
+            case hf_code::left_section:
+                break; // used below
+
+            case hf_code::center_section:
+                break; // used below
+
+            case hf_code::right_section:
+                break; // used below
+
+            case hf_code::current_page_number:
+                current_run.string(current_run.string() + "&P");
+                break;
+
+            case hf_code::total_page_number:
+                current_run.string(current_run.string() + "&N");
+                break;
+
+            case hf_code::font_size:
+                current_run.size(static_cast<std::size_t>(std::stoi(current_token.value)));
+                break;
+
+            case hf_code::text_font_color:
+                if (current_token.value.size() == 6)
+                {
+                    current_run.color(xlnt::rgb_color(current_token.value));
+                }
+
+                break;
+
+            case hf_code::text_strikethrough:
+                break;
+
+            case hf_code::text_superscript:
+                break;
+
+            case hf_code::text_subscript:
+                break;
+
+            case hf_code::date:
+                current_run.string(current_run.string() + "&D");
+                break;
+
+            case hf_code::time:
+                current_run.string(current_run.string() + "&T");
+                break;
+
+            case hf_code::picture_as_background:
+                current_run.string(current_run.string() + "&G");
+                break;
+
+            case hf_code::text_single_underline:
+                break;
+
+            case hf_code::text_double_underline:
+                break;
+
+            case hf_code::workbook_file_path:
+                current_run.string(current_run.string() + "&Z");
+                break;
+
+            case hf_code::workbook_file_name:
+                current_run.string(current_run.string() + "&F");
+                break;
+
+            case hf_code::sheet_tab_name:
+                current_run.string(current_run.string() + "&A");
+                break;
+
+            case hf_code::add_to_page_number:
+                break;
+
+            case hf_code::subtract_from_page_number:
+                break;
+
+            case hf_code::text_font_name:
+                {
+                    auto comma_index = current_token.value.find(',');
+                    auto font_name = current_token.value.substr(0, comma_index);
+
+                    if (font_name != "-")
+                    {
+                        current_run.font(font_name);
+                    }
+
+                    if (comma_index != std::string::npos)
+                    {
+                        auto font_type = current_token.value.substr(comma_index + 1);
+
+                        if (font_type == "Bold")
+                        {
+                            current_run.bold(true);
+                        }
+                        else if (font_type == "Italic")
+                        {
+                        }
+                        else if (font_type == "BoldItalic")
+                        {
+                            current_run.bold(true);
+                        }
+                    }
+                }
+
+                break;
+
+            case hf_code::bold_font_style:
+                current_run.bold(true);
+                break;
+
+            case hf_code::italic_font_style:
+                break;
+
+            case hf_code::outline_style:
+                break;
+
+            case hf_code::shadow_style:
+                break;
+            }
+        }
+
+        if (!current_run.string().empty())
+        {
+            current_text.add_run(current_run);
+        }
+
+        auto location_index = static_cast<std::size_t>(code == hf_code::left_section ? 0
+            : code == hf_code::center_section ? 1 : 2);
+
+        if (!current_text.plain_text().empty())
+        {
+            result[location_index] = current_text;
+        }
+    };
+
+    parse_section(hf_code::left_section);
+    parse_section(hf_code::center_section);
+    parse_section(hf_code::right_section);
+
+    return result;
+}
+
+} // namespace
+
+namespace {
+
 #ifndef NDEBUG
 #define THROW_ON_INVALID_XML
 #endif
@@ -1504,6 +1896,11 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
                     new_view.default_grid_color(is_true(parser().attribute("defaultGridColor")));
                 }
 
+                if (parser().attribute_present("view") && parser().attribute("view") != "normal")
+                {
+                    new_view.type(parser().attribute("view") == "pageBreakPreview" ?sheet_view_type::page_break_preview : sheet_view_type::page_layout);
+                }
+
                 skip_attributes({"windowProtection", "showFormulas", "showRowColHeaders", "showZeros",
                     "rightToLeft", "tabSelected", "showRuler", "showOutlineSymbols", "showWhiteSpace", "view",
                     "topLeftCell", "colorId", "zoomScale", "zoomScaleNormal", "zoomScaleSheetLayoutView",
@@ -1579,16 +1976,29 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
             {
                 expect_start_element(xml::qname(xmlns, "col"), xml::content::simple);
 
-                skip_attributes({"bestFit", "collapsed", "hidden", "outlineLevel"});
+                skip_attributes({"bestFit", "collapsed", "outlineLevel"});
 
                 auto min = static_cast<column_t::index_t>(std::stoull(parser().attribute("min")));
                 auto max = static_cast<column_t::index_t>(std::stoull(parser().attribute("max")));
 
-                auto width = std::stold(parser().attribute("width"));
-                auto column_style = parser().attribute_present("style")
-                    ? parser().attribute<std::size_t>("style") : static_cast<std::size_t>(0);
+                optional<double> width;
+
+                if (parser().attribute_present("width"))
+                {
+                    width = parser().attribute<double>("width");
+                }
+
+                optional<std::size_t> column_style;
+                
+                if (parser().attribute_present("style"))
+                {
+                    column_style = parser().attribute<std::size_t>("style");
+                }
+                
                 auto custom = parser().attribute_present("customWidth")
                     ? is_true(parser().attribute("customWidth")) : false;
+                auto hidden = parser().attribute_present("hidden")
+                    ? is_true(parser().attribute("hidden")) : false;
 
                 expect_end_element(xml::qname(xmlns, "col"));
 
@@ -1596,10 +2006,18 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
                 {
                     column_properties props;
 
-                    props.width = width;
-                    props.style = column_style;
-                    props.custom = custom;
+                    if (width.is_set())
+                    {
+                        props.width = width.get();
+                    }
 
+                    if (column_style.is_set())
+                    {
+                        props.style = column_style.get();
+                    }
+
+                    props.hidden = hidden;
+                    props.custom_width = custom;
                     ws.add_column_properties(column, props);
                 }
             }
@@ -1613,13 +2031,22 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
 
                 if (parser().attribute_present("ht"))
                 {
-                    ws.row_properties(row_index).height = parser().attribute<long double>("ht");
+                    ws.row_properties(row_index).height = parser().attribute<double>("ht");
+                }
+
+                if (parser().attribute_present("customHeight"))
+                {
+                    ws.row_properties(row_index).custom_height = is_true(parser().attribute("customHeight"));
+                }
+
+                if (parser().attribute_present("hidden") && is_true(parser().attribute("hidden")))
+                {
+                    ws.row_properties(row_index).hidden = true;
                 }
 
                 skip_attributes({xml::qname(xmlns_x14ac, "dyDescent")});
-                skip_attributes({"customFormat", "s", "customFont", "hidden",
-                    "outlineLevel", "collapsed", "thickTop", "thickBot", "ph",
-                    "spans", "customHeight"});
+                skip_attributes({"customFormat", "s", "customFont", "outlineLevel",
+                    "collapsed", "thickTop", "thickBot", "ph", "spans"});
 
                 while (in_element(xml::qname(xmlns, "row")))
                 {
@@ -1824,15 +2251,148 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
         }
         else if (current_worksheet_element == xml::qname(xmlns, "headerFooter")) // CT_HeaderFooter 0-1
         {
-            skip_remaining_content(current_worksheet_element);
+            header_footer hf;
+
+            hf.align_with_margins(!parser().attribute_present("alignWithMargins")
+                || is_true(parser().attribute("alignWithMargins")));
+            hf.scale_with_doc(!parser().attribute_present("alignWithMargins")
+                || is_true(parser().attribute("alignWithMargins")));
+            auto different_odd_even = parser().attribute_present("differentOddEven")
+                && is_true(parser().attribute("differentOddEven"));
+            auto different_first = parser().attribute_present("differentFirst")
+                && is_true(parser().attribute("differentFirst"));
+
+            optional<std::array<optional<formatted_text>, 3>> odd_header;
+            optional<std::array<optional<formatted_text>, 3>> odd_footer;
+            optional<std::array<optional<formatted_text>, 3>> even_header;
+            optional<std::array<optional<formatted_text>, 3>> even_footer;
+            optional<std::array<optional<formatted_text>, 3>> first_header;
+            optional<std::array<optional<formatted_text>, 3>> first_footer;
+
+            while (in_element(current_worksheet_element))
+            {
+                auto current_hf_element = expect_start_element(xml::content::simple);
+
+                if (current_hf_element == xml::qname(xmlns, "oddHeader"))
+                {
+                    odd_header = parse_header_footer(read_text());
+                }
+                else if (current_hf_element == xml::qname(xmlns, "oddFooter"))
+                {
+                    odd_footer = parse_header_footer(read_text());
+                }
+                else if (current_hf_element == xml::qname(xmlns, "evenHeader"))
+                {
+                    even_header = parse_header_footer(read_text());
+                }
+                else if (current_hf_element == xml::qname(xmlns, "evenFooter"))
+                {
+                    even_footer = parse_header_footer(read_text());
+                }
+                else if (current_hf_element == xml::qname(xmlns, "firstHeader"))
+                {
+                    first_header = parse_header_footer(read_text());
+                }
+                else if (current_hf_element == xml::qname(xmlns, "firstFooter"))
+                {
+                    first_footer = parse_header_footer(read_text());
+                }
+                else
+                {
+                    unexpected_element(current_hf_element);
+                }
+
+                expect_end_element(current_hf_element);
+            }
+
+            for (std::size_t i = 0; i < 3; ++i)
+            {
+                auto loc = i == 0 ? header_footer::location::left
+                    : i == 1 ? header_footer::location::center
+                    : header_footer::location::right;
+
+                if (different_odd_even)
+                {
+                    if (odd_header.is_set() && odd_header.get().at(i).is_set()
+                        && even_header.is_set() && even_header.get().at(i).is_set())
+                    {
+                        hf.odd_even_header(loc, odd_header.get().at(i).get(), even_header.get().at(i).get());
+                    }
+
+                    if (odd_footer.is_set() && odd_footer.get().at(i).is_set()
+                        && even_footer.is_set() && even_footer.get().at(i).is_set())
+                    {
+                        hf.odd_even_footer(loc, odd_footer.get().at(i).get(), even_footer.get().at(i).get());
+                    }
+                }
+                else
+                {
+                    if (odd_header.is_set() && odd_header.get().at(i).is_set())
+                    {
+                        hf.header(loc, odd_header.get().at(i).get());
+                    }
+
+                    if (odd_footer.is_set() && odd_footer.get().at(i).is_set())
+                    {
+                        hf.footer(loc, odd_footer.get().at(i).get());
+                    }
+                }
+
+                if (different_first)
+                {
+
+                }
+            }
+
+            ws.header_footer(hf);
         }
         else if (current_worksheet_element == xml::qname(xmlns, "rowBreaks")) // CT_PageBreak 0-1
         {
-            skip_remaining_content(current_worksheet_element);
+            auto count = parser().attribute_present("count") ? parser().attribute<std::size_t>("count") : 0;
+            auto manual_break_count = parser().attribute_present("manualBreakCount") ? parser().attribute<std::size_t>("manualBreakCount") : 0;
+
+            while (in_element(xml::qname(xmlns, "rowBreaks")))
+            {
+                expect_start_element(xml::qname(xmlns, "brk"), xml::content::simple);
+
+                if (parser().attribute_present("id"))
+                {
+                    ws.row_breaks().push_back(parser().attribute<row_t>("id"));
+                    --count;
+                }
+
+                if (parser().attribute_present("man") && is_true(parser().attribute("man")))
+                {
+                    --manual_break_count;
+                }
+                
+                skip_attributes({"min", "max", "pt"});
+                expect_end_element(xml::qname(xmlns, "brk"));
+            }
         }
         else if (current_worksheet_element == xml::qname(xmlns, "colBreaks")) // CT_PageBreak 0-1
         {
-            skip_remaining_content(current_worksheet_element);
+            auto count = parser().attribute_present("count") ? parser().attribute<std::size_t>("count") : 0;
+            auto manual_break_count = parser().attribute_present("manualBreakCount") ? parser().attribute<std::size_t>("manualBreakCount") : 0;
+
+            while (in_element(xml::qname(xmlns, "colBreaks")))
+            {
+                expect_start_element(xml::qname(xmlns, "brk"), xml::content::simple);
+
+                if (parser().attribute_present("id"))
+                {
+                    ws.column_breaks().push_back(parser().attribute<column_t::index_t>("id"));
+                    --count;
+                }
+
+                if (parser().attribute_present("man") && is_true(parser().attribute("man")))
+                {
+                    --manual_break_count;
+                }
+
+                skip_attributes({"min", "max", "pt"});
+                expect_end_element(xml::qname(xmlns, "brk"));
+            }
         }
         else if (current_worksheet_element == xml::qname(xmlns, "customProperties")) // CT_CustomProperties 0-1
         {
@@ -1855,6 +2415,10 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
             skip_remaining_content(current_worksheet_element);
         }
         else if (current_worksheet_element == xml::qname(xmlns, "legacyDrawing"))
+        {
+            skip_remaining_content(current_worksheet_element);
+        }
+        else if (current_worksheet_element == xml::qname(xmlns, "extLst"))
         {
             skip_remaining_content(current_worksheet_element);
         }
