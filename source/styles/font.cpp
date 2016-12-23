@@ -22,6 +22,8 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <cmath>
+
 #include <xlnt/styles/font.hpp>
 
 namespace xlnt {
@@ -29,7 +31,7 @@ namespace xlnt {
 
 font::font()
     : name_("Calibri"),
-      size_(12),
+      size_(12.0),
       bold_(false),
       italic_(false),
       superscript_(false),
@@ -104,13 +106,13 @@ bool font::has_size() const
     return size_.is_set();
 }
 
-font &font::size(std::size_t size)
+font &font::size(double size)
 {
     size_ = size;
 	return *this;
 }
 
-std::size_t font::size() const
+double font::size() const
 {
     return size_.get();
 }
@@ -235,7 +237,7 @@ XLNT_API bool operator==(const font &left, const font &right)
         }
     }
     
-    if (left.size() != right.size())
+    if (std::fabs(left.size() - right.size()) != 0.0)
     {
         return false;
     }

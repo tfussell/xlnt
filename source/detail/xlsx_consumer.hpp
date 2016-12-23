@@ -36,7 +36,7 @@
 namespace xlnt {
 
 class color;
-class formatted_text;
+class rich_text;
 class manifest;
 class path;
 class relationship;
@@ -228,7 +228,7 @@ private:
     /// <summary>
     /// Read a rich text CT_RElt from the document currently being parsed.
     /// </summary>
-    formatted_text read_formatted_text(const xml::qname &parent);
+    rich_text read_rich_text(const xml::qname &parent);
 
     /// <summary>
     /// Returns true if the givent document type represents an XLSX file.

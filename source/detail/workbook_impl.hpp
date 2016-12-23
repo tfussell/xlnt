@@ -82,7 +82,7 @@ struct workbook_impl
     optional<std::size_t> active_sheet_index_;
 
     std::list<worksheet_impl> worksheets_;
-    std::vector<formatted_text> shared_strings_;
+    std::vector<rich_text> shared_strings_;
 
     optional<stylesheet> stylesheet_;
 

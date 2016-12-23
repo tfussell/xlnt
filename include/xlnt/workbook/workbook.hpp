@@ -49,7 +49,7 @@ class drawing;
 class fill;
 class font;
 class format;
-class formatted_text;
+class rich_text;
 class manifest;
 class named_range;
 class number_format;
@@ -616,17 +616,17 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void add_shared_string(const formatted_text &shared, bool allow_duplicates = false);
+    void add_shared_string(const rich_text &shared, bool allow_duplicates = false);
 
     /// <summary>
     ///
     /// </summary>
-    std::vector<formatted_text> &shared_strings();
+    std::vector<rich_text> &shared_strings();
 
     /// <summary>
     ///
     /// </summary>
-    const std::vector<formatted_text> &shared_strings() const;
+    const std::vector<rich_text> &shared_strings() const;
 
     // thumbnail
 

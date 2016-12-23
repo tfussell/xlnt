@@ -91,16 +91,16 @@ void header_footer::clear_header(location where)
 
 header_footer &header_footer::header(location where, const std::string &text)
 {
-    return header(where, formatted_text(text));
+    return header(where, rich_text(text));
 }
 
-header_footer &header_footer::header(location where, const formatted_text &text)
+header_footer &header_footer::header(location where, const rich_text &text)
 {
     odd_headers_[where] = text;
     return *this;
 }
 
-formatted_text header_footer::header(location where) const
+rich_text header_footer::header(location where) const
 {
     return odd_headers_.at(where);
 }
@@ -127,13 +127,13 @@ void header_footer::clear_first_page_header(location where)
     first_headers_.erase(where);
 }
 
-header_footer &header_footer::first_page_header(location where, const formatted_text &text)
+header_footer &header_footer::first_page_header(location where, const rich_text &text)
 {
     first_headers_[where] = text;
     return *this;
 }
 
-formatted_text header_footer::first_page_header(location where) const
+rich_text header_footer::first_page_header(location where) const
 {
     return first_headers_.at(where);
 }
@@ -163,7 +163,7 @@ void header_footer::clear_odd_even_header(location where)
     even_headers_.erase(where);
 }
 
-header_footer &header_footer::odd_even_header(location where, const formatted_text &odd, const formatted_text &even)
+header_footer &header_footer::odd_even_header(location where, const rich_text &odd, const rich_text &even)
 {
     odd_headers_[where] = odd;
     even_headers_[where] = even;
@@ -172,12 +172,12 @@ header_footer &header_footer::odd_even_header(location where, const formatted_te
     return *this;
 }
 
-formatted_text header_footer::odd_header(location where) const
+rich_text header_footer::odd_header(location where) const
 {
     return odd_headers_.at(where);
 }
 
-formatted_text header_footer::even_header(location where) const
+rich_text header_footer::even_header(location where) const
 {
     return even_headers_.at(where);
 }
@@ -205,16 +205,16 @@ void header_footer::clear_footer(location where)
 
 header_footer &header_footer::footer(location where, const std::string &text)
 {
-    return footer(where, formatted_text(text));
+    return footer(where, rich_text(text));
 }
 
-header_footer &header_footer::footer(location where, const formatted_text &text)
+header_footer &header_footer::footer(location where, const rich_text &text)
 {
     odd_footers_[where] = text;
     return *this;
 }
 
-formatted_text header_footer::footer(location where) const
+rich_text header_footer::footer(location where) const
 {
     return odd_footers_.at(where);
 }
@@ -241,13 +241,13 @@ void header_footer::clear_first_page_footer(location where)
     first_footers_.erase(where);
 }
 
-header_footer &header_footer::first_page_footer(location where, const formatted_text &text)
+header_footer &header_footer::first_page_footer(location where, const rich_text &text)
 {
     first_footers_[where] = text;
     return *this;
 }
 
-formatted_text header_footer::first_page_footer(location where) const
+rich_text header_footer::first_page_footer(location where) const
 {
     return first_footers_.at(where);
 }
@@ -276,7 +276,7 @@ void header_footer::clear_odd_even_footer(location where)
     even_footers_.erase(where);
 }
 
-header_footer &header_footer::odd_even_footer(location where, const formatted_text &odd, const formatted_text &even)
+header_footer &header_footer::odd_even_footer(location where, const rich_text &odd, const rich_text &even)
 {
     odd_footers_[where] = odd;
     even_footers_[where] = even;
@@ -285,12 +285,12 @@ header_footer &header_footer::odd_even_footer(location where, const formatted_te
     return *this;
 }
 
-formatted_text header_footer::odd_footer(location where) const
+rich_text header_footer::odd_footer(location where) const
 {
     return odd_footers_.at(where);
 }
 
-formatted_text header_footer::even_footer(location where) const
+rich_text header_footer::even_footer(location where) const
 {
     return even_footers_.at(where);
 }

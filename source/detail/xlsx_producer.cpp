@@ -677,7 +677,7 @@ void xlsx_producer::write_shared_string_table(const relationship &/*rel*/)
 
 	for (const auto &string : source_.shared_strings())
 	{
-		if (string.runs().size() == 1 && !string.runs().at(0).has_formatting())
+		if (string.runs().size() == 1 && !string.runs().at(0).second.is_set())
 		{
             serializer().start_element(xmlns, "si");
             serializer().element(xmlns, "t", string.plain_text());
@@ -692,46 +692,46 @@ void xlsx_producer::write_shared_string_table(const relationship &/*rel*/)
         {
             serializer().start_element(xmlns, "r");
 
-            if (run.has_formatting())
+            if (run.second.is_set())
             {
                 serializer().start_element(xmlns, "rPr");
 
-                if (run.has_size())
+                if (run.second.get().has_size())
                 {
                     serializer().start_element(xmlns, "sz");
-                    serializer().attribute("val", run.size());
+                    serializer().attribute("val", run.second.get().size());
                     serializer().end_element(xmlns, "sz");
                 }
 
-                if (run.has_color())
+                if (run.second.get().has_color())
                 {
                     serializer().start_element(xmlns, "color");
-                    write_color(run.color());
+                    write_color(run.second.get().color());
                     serializer().end_element(xmlns, "color");
                 }
 
-                if (run.has_font())
+                if (run.second.get().has_name())
                 {
                     serializer().start_element(xmlns, "rFont");
-                    serializer().attribute("val", run.font());
+                    serializer().attribute("val", run.second.get().name());
                     serializer().end_element(xmlns, "rFont");
                 }
 
-                if (run.has_family())
+                if (run.second.get().has_family())
                 {
                     serializer().start_element(xmlns, "family");
-                    serializer().attribute("val", run.family());
+                    serializer().attribute("val", run.second.get().family());
                     serializer().end_element(xmlns, "family");
                 }
 
-                if (run.has_scheme())
+                if (run.second.get().has_scheme())
                 {
                     serializer().start_element(xmlns, "scheme");
-                    serializer().attribute("val", run.scheme());
+                    serializer().attribute("val", run.second.get().scheme());
                     serializer().end_element(xmlns, "scheme");
                 }
 
-				if (run.bold())
+				if (run.second.get().bold())
 				{
 					serializer().start_element(xmlns, "b");
 					serializer().end_element(xmlns, "b");
@@ -740,7 +740,7 @@ void xlsx_producer::write_shared_string_table(const relationship &/*rel*/)
                 serializer().end_element(xmlns, "rPr");
             }
 
-            serializer().element(xmlns, "t", run.string());
+            serializer().element(xmlns, "t", run.first);
             serializer().end_element(xmlns, "r");
         }
         
@@ -2059,7 +2059,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
 					for (std::size_t i = 0; i < shared_strings.size(); i++)
 					{
-						if (shared_strings[i] == cell.value<formatted_text>())
+						if (shared_strings[i] == cell.value<rich_text>())
 						{
 							match_index = static_cast<int>(i);
 							break;
@@ -2250,7 +2250,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         auto first_header = std::string();
         auto first_footer = std::string();
 
-        const auto encode_text = [](const formatted_text &t, header_footer::location where)
+        const auto encode_text = [](const rich_text &t, header_footer::location where)
         {
             const auto location_code_map = std::unordered_map<header_footer::location, std::string, scoped_enum_hash<header_footer::location>>
             {
@@ -2263,18 +2263,18 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
             for (const auto &run : t.runs())
             {
-                if (run.string().empty()) continue;
+                if (run.first.empty()) continue;
 
-                if (run.has_formatting())
+                if (run.second.is_set())
                 {
-                    if (run.has_font())
+                    if (run.second.get().has_name())
                     {
                         encoded.push_back('&');
                         encoded.push_back('"');
-                        encoded.append(run.font());
+                        encoded.append(run.second.get().name());
                         encoded.push_back(',');
 
-                        if (run.bold())
+                        if (run.second.get().bold())
                         {
                             encoded.append("Bold");
                         }
@@ -2286,26 +2286,26 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
                         encoded.push_back('"');
                     }
-                    else if (run.bold())
+                    else if (run.second.get().bold())
                     {
                         encoded.append("&B");
                     }
                     
-                    if (run.has_size())
+                    if (run.second.get().has_size())
                     {
                         encoded.push_back('&');
-                        encoded.append(std::to_string(run.size()));
+                        encoded.append(std::to_string(run.second.get().size()));
                     }
 
-                    if (run.has_color())
+                    if (run.second.get().has_color())
                     {
                         encoded.push_back('&');
                         encoded.push_back('K');
-                        encoded.append(run.color().rgb().hex_string().substr(2));
+                        encoded.append(run.second.get().color().rgb().hex_string().substr(2));
                     }
                 }
 
-                encoded.append(run.string());
+                encoded.append(run.first);
             }
 
             return encoded;
@@ -2578,46 +2578,46 @@ void xlsx_producer::write_comments(const relationship &/*rel*/, worksheet ws,
 			{
 				serializer().start_element(xmlns, "r");
 
-				if (run.has_formatting())
+				if (run.second.is_set())
 				{
 					serializer().start_element(xmlns, "rPr");
 
-					if (run.has_size())
+					if (run.second.get().has_size())
 					{
 						serializer().start_element(xmlns, "sz");
-						serializer().attribute("val", run.size());
+						serializer().attribute("val", run.second.get().size());
 						serializer().end_element(xmlns, "sz");
 					}
 
-					if (run.has_color())
+					if (run.second.get().has_color())
 					{
 						serializer().start_element(xmlns, "color");
-						write_color(run.color());
+						write_color(run.second.get().color());
 						serializer().end_element(xmlns, "color");
 					}
 
-					if (run.has_font())
+					if (run.second.get().has_name())
 					{
 						serializer().start_element(xmlns, "rFont");
-						serializer().attribute("val", run.font());
+						serializer().attribute("val", run.second.get().name());
 						serializer().end_element(xmlns, "rFont");
 					}
 
-					if (run.has_family())
+					if (run.second.get().has_family())
 					{
 						serializer().start_element(xmlns, "family");
-						serializer().attribute("val", run.family());
+						serializer().attribute("val", run.second.get().family());
 						serializer().end_element(xmlns, "family");
 					}
 
-					if (run.has_scheme())
+					if (run.second.get().has_scheme())
 					{
 						serializer().start_element(xmlns, "scheme");
-						serializer().attribute("val", run.scheme());
+						serializer().attribute("val", run.second.get().scheme());
 						serializer().end_element(xmlns, "scheme");
 					}
 
-					if (run.bold())
+					if (run.second.get().bold())
 					{
 						serializer().start_element(xmlns, "b");
 						serializer().end_element(xmlns, "b");
@@ -2626,7 +2626,7 @@ void xlsx_producer::write_comments(const relationship &/*rel*/, worksheet ws,
 					serializer().end_element(xmlns, "rPr");
 				}
 
-				serializer().element(xmlns, "t", run.string());
+				serializer().element(xmlns, "t", run.first);
 				serializer().end_element(xmlns, "r");
 			}
 

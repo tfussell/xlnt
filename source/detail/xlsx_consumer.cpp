@@ -56,9 +56,9 @@ struct hash<xml::qname>
 
 namespace {
 
-std::array<xlnt::optional<xlnt::formatted_text>, 3> parse_header_footer(const std::string &hf_string)
+std::array<xlnt::optional<xlnt::rich_text>, 3> parse_header_footer(const std::string &hf_string)
 {
-    std::array<xlnt::optional<xlnt::formatted_text>, 3> result;
+    std::array<xlnt::optional<xlnt::rich_text>, 3> result;
 
     if (hf_string.empty())
     {
@@ -277,8 +277,8 @@ std::array<xlnt::optional<xlnt::formatted_text>, 3> parse_header_footer(const st
             ++end_index;
         }
 
-        xlnt::formatted_text current_text;
-        xlnt::text_run current_run;
+        xlnt::rich_text current_text;
+        xlnt::rich_text_run current_run;
 
         // todo: all this nice parsing and the codes are just being turned back into text representations
         // It would be nice to create an interface for the library to read and write these codes
@@ -289,14 +289,14 @@ std::array<xlnt::optional<xlnt::formatted_text>, 3> parse_header_footer(const st
 
             if (current_token.code == hf_code::text)
             {
-                current_run.string(current_run.string() + current_token.value);
+                current_run.first = current_run.first + current_token.value;
                 continue;
             }
 
-            if (!current_run.string().empty())
+            if (!current_run.first.empty())
             {
                 current_text.add_run(current_run);
-                current_run = xlnt::text_run();
+                current_run = xlnt::rich_text_run();
             }
 
             switch (current_token.code)
@@ -314,21 +314,29 @@ std::array<xlnt::optional<xlnt::formatted_text>, 3> parse_header_footer(const st
                 break; // used below
 
             case hf_code::current_page_number:
-                current_run.string(current_run.string() + "&P");
+                current_run.first = current_run.first + "&P";
                 break;
 
             case hf_code::total_page_number:
-                current_run.string(current_run.string() + "&N");
+                current_run.first = current_run.first + "&N";
                 break;
 
             case hf_code::font_size:
-                current_run.size(static_cast<std::size_t>(std::stoi(current_token.value)));
+                if (!current_run.second.is_set())
+                {
+                    current_run.second = xlnt::font();
+                }
+                current_run.second.get().size(static_cast<std::size_t>(std::stoi(current_token.value)));
                 break;
 
             case hf_code::text_font_color:
                 if (current_token.value.size() == 6)
                 {
-                    current_run.color(xlnt::rgb_color(current_token.value));
+                    if (!current_run.second.is_set())
+                    {
+                        current_run.second = xlnt::font();
+                    }
+                    current_run.second.get().color(xlnt::rgb_color(current_token.value));
                 }
 
                 break;
@@ -343,15 +351,15 @@ std::array<xlnt::optional<xlnt::formatted_text>, 3> parse_header_footer(const st
                 break;
 
             case hf_code::date:
-                current_run.string(current_run.string() + "&D");
+                current_run.first = current_run.first + "&D";
                 break;
 
             case hf_code::time:
-                current_run.string(current_run.string() + "&T");
+                current_run.first = current_run.first + "&T";
                 break;
 
             case hf_code::picture_as_background:
-                current_run.string(current_run.string() + "&G");
+                current_run.first = current_run.first + "&G";
                 break;
 
             case hf_code::text_single_underline:
@@ -361,15 +369,15 @@ std::array<xlnt::optional<xlnt::formatted_text>, 3> parse_header_footer(const st
                 break;
 
             case hf_code::workbook_file_path:
-                current_run.string(current_run.string() + "&Z");
+                current_run.first = current_run.first + "&Z";
                 break;
 
             case hf_code::workbook_file_name:
-                current_run.string(current_run.string() + "&F");
+                current_run.first = current_run.first + "&F";
                 break;
 
             case hf_code::sheet_tab_name:
-                current_run.string(current_run.string() + "&A");
+                current_run.first = current_run.first + "&A";
                 break;
 
             case hf_code::add_to_page_number:
@@ -383,9 +391,14 @@ std::array<xlnt::optional<xlnt::formatted_text>, 3> parse_header_footer(const st
                     auto comma_index = current_token.value.find(',');
                     auto font_name = current_token.value.substr(0, comma_index);
 
+                    if (!current_run.second.is_set())
+                    {
+                        current_run.second = xlnt::font();
+                    }
+
                     if (font_name != "-")
                     {
-                        current_run.font(font_name);
+                        current_run.second.get().name(font_name);
                     }
 
                     if (comma_index != std::string::npos)
@@ -394,14 +407,14 @@ std::array<xlnt::optional<xlnt::formatted_text>, 3> parse_header_footer(const st
 
                         if (font_type == "Bold")
                         {
-                            current_run.bold(true);
+                            current_run.second.get().bold(true);
                         }
                         else if (font_type == "Italic")
                         {
                         }
                         else if (font_type == "BoldItalic")
                         {
-                            current_run.bold(true);
+                            current_run.second.get().bold(true);
                         }
                     }
                 }
@@ -409,7 +422,11 @@ std::array<xlnt::optional<xlnt::formatted_text>, 3> parse_header_footer(const st
                 break;
 
             case hf_code::bold_font_style:
-                current_run.bold(true);
+                if (!current_run.second.is_set())
+                {
+                    current_run.second = xlnt::font();
+                }
+                current_run.second.get().bold(true);
                 break;
 
             case hf_code::italic_font_style:
@@ -423,7 +440,7 @@ std::array<xlnt::optional<xlnt::formatted_text>, 3> parse_header_footer(const st
             }
         }
 
-        if (!current_run.string().empty())
+        if (!current_run.first.empty())
         {
             current_text.add_run(current_run);
         }
@@ -1092,7 +1109,7 @@ void xlsx_consumer::read_shared_string_table()
     while (in_element(xml::qname(xmlns, "sst")))
     {
         expect_start_element(xml::qname(xmlns, "si"), xml::content::complex);
-        strings.push_back(read_formatted_text(xml::qname(xmlns, "si")));
+        strings.push_back(read_rich_text(xml::qname(xmlns, "si")));
         expect_end_element(xml::qname(xmlns, "si"));
     }
 
@@ -2262,12 +2279,12 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
             auto different_first = parser().attribute_present("differentFirst")
                 && is_true(parser().attribute("differentFirst"));
 
-            optional<std::array<optional<formatted_text>, 3>> odd_header;
-            optional<std::array<optional<formatted_text>, 3>> odd_footer;
-            optional<std::array<optional<formatted_text>, 3>> even_header;
-            optional<std::array<optional<formatted_text>, 3>> even_footer;
-            optional<std::array<optional<formatted_text>, 3>> first_header;
-            optional<std::array<optional<formatted_text>, 3>> first_footer;
+            optional<std::array<optional<rich_text>, 3>> odd_header;
+            optional<std::array<optional<rich_text>, 3>> odd_footer;
+            optional<std::array<optional<rich_text>, 3>> even_header;
+            optional<std::array<optional<rich_text>, 3>> even_footer;
+            optional<std::array<optional<rich_text>, 3>> first_header;
+            optional<std::array<optional<rich_text>, 3>> first_footer;
 
             while (in_element(current_worksheet_element))
             {
@@ -2490,7 +2507,7 @@ void xlsx_consumer::read_comments(worksheet ws)
 
         expect_start_element(xml::qname(xmlns, "text"), xml::content::complex);
 
-        ws.cell(cell_ref).comment(comment(read_formatted_text(xml::qname(xmlns, "text")), authors.at(author_id)));
+        ws.cell(cell_ref).comment(comment(read_rich_text(xml::qname(xmlns, "text")), authors.at(author_id)));
 
         expect_end_element(xml::qname(xmlns, "text"));
         expect_end_element(xml::qname(xmlns, "comment"));
@@ -2660,10 +2677,10 @@ void xlsx_consumer::expect_end_element(const xml::qname &name)
     stack_.pop_back();
 }
 
-formatted_text xlsx_consumer::read_formatted_text(const xml::qname &parent)
+rich_text xlsx_consumer::read_rich_text(const xml::qname &parent)
 {
     const auto &xmlns = parent.namespace_();
-    formatted_text t;
+    rich_text t;
 
     while (in_element(parent))
     {
@@ -2677,7 +2694,7 @@ formatted_text xlsx_consumer::read_formatted_text(const xml::qname &parent)
         }
         else if (text_element == xml::qname(xmlns, "r"))
         {
-            text_run run;
+            rich_text_run run;
 
             while (in_element(xml::qname(xmlns, "r")))
             {
@@ -2690,39 +2707,41 @@ formatted_text xlsx_consumer::read_formatted_text(const xml::qname &parent)
                     {
                         auto current_run_property_element = expect_start_element(xml::content::simple);
 
+                        run.second = xlnt::font();
+
                         if (current_run_property_element == xml::qname(xmlns, "sz"))
                         {
-                            run.size(parser().attribute<std::size_t>("val"));
+                            run.second.get().size(parser().attribute<std::size_t>("val"));
                         }
                         else if (current_run_property_element == xml::qname(xmlns, "rFont"))
                         {
-                            run.font(parser().attribute("val"));
+                            run.second.get().name(parser().attribute("val"));
                         }
                         else if (current_run_property_element == xml::qname(xmlns, "color"))
                         {
-                            run.color(read_color());
+                            run.second.get().color(read_color());
                         }
                         else if (current_run_property_element == xml::qname(xmlns, "family"))
                         {
-                            run.family(parser().attribute<std::size_t>("val"));
+                            run.second.get().family(parser().attribute<std::size_t>("val"));
                         }
                         else if (current_run_property_element == xml::qname(xmlns, "scheme"))
                         {
-                            run.scheme(parser().attribute("val"));
+                            run.second.get().scheme(parser().attribute("val"));
                         }
                         else if (current_run_property_element == xml::qname(xmlns, "b"))
                         {
-                            run.bold(parser().attribute_present("val") ? is_true(parser().attribute("val")) : true);
+                            run.second.get().bold(parser().attribute_present("val") ? is_true(parser().attribute("val")) : true);
                         }
                         else if (current_run_property_element == xml::qname(xmlns, "u"))
                         {
                             if (parser().attribute_present("val"))
                             {
-                                run.underline(parser().attribute<font::underline_style>("val"));
+                                run.second.get().underline(parser().attribute<font::underline_style>("val"));
                             }
                             else
                             {
-                                run.underline(font::underline_style::single);
+                                run.second.get().underline(font::underline_style::single);
                             }
                         }
                         else
@@ -2736,7 +2755,7 @@ formatted_text xlsx_consumer::read_formatted_text(const xml::qname &parent)
                 }
                 else if (run_element == xml::qname(xmlns, "t"))
                 {
-                    run.string(run_text);
+                    run.first = run_text;
                 }
                 else
                 {

@@ -295,10 +295,10 @@ workbook workbook::empty_libre_office()
 	ws.page_margins(margins);
 	ws.page_setup(page_setup());
 	ws.header_footer(xlnt::header_footer()
-        .header(header_footer::location::center,
-            formatted_text(text_run("&A").font("Times New Roman").size(12)))
-        .footer(header_footer::location::center,
-            formatted_text(text_run("Page &B").font("Times New Roman").size(12))));
+            .header(header_footer::location::center,
+                rich_text(rich_text_run{"&A",font().name("Times New Roman").size(12)}))
+            .footer(header_footer::location::center,
+                rich_text(rich_text_run{"Page &B",font().name("Times New Roman").size(12)})));
 	ws.add_column_properties(1, column_properties());
 
     wb.d_->stylesheet_ = detail::stylesheet();
@@ -1172,17 +1172,17 @@ const manifest &workbook::manifest() const
     return d_->manifest_;
 }
 
-std::vector<formatted_text> &workbook::shared_strings()
+std::vector<rich_text> &workbook::shared_strings()
 {
     return d_->shared_strings_;
 }
 
-const std::vector<formatted_text> &workbook::shared_strings() const
+const std::vector<rich_text> &workbook::shared_strings() const
 {
     return d_->shared_strings_;
 }
 
-void workbook::add_shared_string(const formatted_text &shared, bool allow_duplicates)
+void workbook::add_shared_string(const rich_text &shared, bool allow_duplicates)
 {
 	register_shared_string_table_in_manifest();
 

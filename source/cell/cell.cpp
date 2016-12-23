@@ -29,7 +29,7 @@
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/cell/comment.hpp>
-#include <xlnt/cell/formatted_text.hpp>
+#include <xlnt/cell/rich_text.hpp>
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/styles/alignment.hpp>
 #include <xlnt/styles/border.hpp>
@@ -339,9 +339,9 @@ XLNT_API void cell::value(std::string s)
 }
 
 template <>
-XLNT_API void cell::value(formatted_text text)
+XLNT_API void cell::value(rich_text text)
 {
-    if (text.runs().size() == 1 && !text.runs().front().has_formatting())
+    if (text.runs().size() == 1 && !text.runs().front().second.is_set())
     {
         value(text.plain_text());
     }
@@ -799,7 +799,7 @@ XLNT_API std::string cell::value() const
 }
 
 template <>
-XLNT_API formatted_text cell::value() const
+XLNT_API rich_text cell::value() const
 {
     return d_->value_text_;
 }
@@ -1017,6 +1017,13 @@ void cell::comment(const std::string &text, const std::string &author)
 {
     comment(xlnt::comment(text, author));
 }
+
+void cell::comment(const std::string &text, const class font &comment_font, const std::string &author)
+{
+    xlnt::rich_text rich_comment_text(text, comment_font);
+    comment(xlnt::comment(rich_comment_text, author));
+}
+
 
 void cell::comment(const class comment &new_comment)
 {

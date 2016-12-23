@@ -27,7 +27,7 @@
 
 #include <xlnt/cell/cell_type.hpp>
 #include <xlnt/cell/comment.hpp>
-#include <xlnt/cell/formatted_text.hpp>
+#include <xlnt/cell/rich_text.hpp>
 #include <xlnt/cell/index_types.hpp>
 #include <xlnt/utils/optional.hpp>
 
@@ -50,7 +50,7 @@ struct cell_impl
 
     bool is_merged_;
 
-    formatted_text value_text_;
+    rich_text value_text_;
     long double value_numeric_;
 
     optional<std::string> formula_;

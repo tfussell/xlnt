@@ -29,7 +29,7 @@ comment::comment() : comment("", "")
 {
 }
 
-comment::comment(const formatted_text &text, const std::string &author)
+comment::comment(const rich_text &text, const std::string &author)
     : text_(text),
       author_(author)
 {
@@ -42,7 +42,7 @@ comment::comment(const std::string &text, const std::string &author)
     text_.plain_text(text);
 }
 
-formatted_text comment::text() const
+rich_text comment::text() const
 {
     return text_;
 }

@@ -148,41 +148,22 @@ public:
 	void test_write_comments()
 	{
 		xlnt::workbook wb;
-
-		xlnt::formatted_text comment_text;
-		xlnt::text_run formatted_run;;
-		formatted_run.bold(true);
-		formatted_run.size(10);
-		formatted_run.color(xlnt::indexed_color(81));
-		formatted_run.font("Calibri");
-
 		auto sheet1 = wb.active_sheet();
+        auto comment_font = xlnt::font().bold(true).size(10).color(xlnt::indexed_color(81)).name("Calibri");
 
 		sheet1.cell("A1").value("Sheet1!A1");
-		formatted_run.string("Sheet1 comment");
-		comment_text.add_run(formatted_run);
-		sheet1.cell("A1").comment(xlnt::comment(comment_text, "Microsoft Office User"));
-		sheet1.cell("A1").comment("Sheet1 comment");
+		sheet1.cell("A1").comment("Sheet1 comment", comment_font, "Microsoft Office User");
 
 		sheet1.cell("A2").value("Sheet1!A2");
-		formatted_run.string("Sheet1 comment2");
-		comment_text.clear();
-		comment_text.add_run(formatted_run);
-		sheet1.cell("A2").comment(xlnt::comment(comment_text, "Microsoft Office User"));
+		sheet1.cell("A2").comment("Sheet1 comment2", comment_font, "Microsoft Office User");
 
 		auto sheet2 = wb.create_sheet();
 		sheet2.cell("A1").value("Sheet2!A1");
-		formatted_run.string("Sheet2 comment");
-		comment_text.clear();
-		comment_text.add_run(formatted_run);
-		sheet2.cell("A1").comment(xlnt::comment(comment_text, "Microsoft Office User"));
+		sheet2.cell("A2").comment("Sheet2 comment", comment_font, "Microsoft Office User");
 
 		sheet2.cell("A2").value("Sheet2!A2");
-		formatted_run.string("Sheet2 comment2");
-		comment_text.clear();
-		comment_text.add_run(formatted_run);
-		sheet2.cell("A2").comment(xlnt::comment(comment_text, "Microsoft Office User"));
+		sheet2.cell("A2").comment("Sheet2 comment2", comment_font, "Microsoft Office User");
 
-//		TS_ASSERT(workbook_matches_file(wb, xlnt::path("data/18_basic_comments.xlsx")));
+		TS_ASSERT(workbook_matches_file(wb, xlnt::path("data/18_basic_comments.xlsx")));
 	}
 };
