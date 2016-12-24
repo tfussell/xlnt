@@ -27,11 +27,13 @@
 
 namespace xlnt {
 
-worksheet_iterator::worksheet_iterator(workbook &wb, std::size_t index) : wb_(wb), index_(index)
+worksheet_iterator::worksheet_iterator(workbook &wb, std::size_t index)
+    : wb_(wb), index_(index)
 {
 }
 
-worksheet_iterator::worksheet_iterator(const worksheet_iterator &rhs) : wb_(rhs.wb_), index_(rhs.index_)
+worksheet_iterator::worksheet_iterator(const worksheet_iterator &rhs)
+    : wb_(rhs.wb_), index_(rhs.index_)
 {
 }
 

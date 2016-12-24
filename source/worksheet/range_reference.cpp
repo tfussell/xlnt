@@ -26,23 +26,28 @@
 
 namespace xlnt {
 
-range_reference range_reference::make_absolute(const xlnt::range_reference &relative_reference)
+range_reference range_reference::make_absolute(const xlnt::range_reference &relative)
 {
-    range_reference copy = relative_reference;
+    range_reference copy = relative;
+
     copy.top_left_.make_absolute(true, true);
     copy.bottom_right_.make_absolute(true, true);
+
     return copy;
 }
 
-range_reference::range_reference() : range_reference("A1")
+range_reference::range_reference()
+    : range_reference("A1")
 {
 }
 
-range_reference::range_reference(const char *range_string) : range_reference(std::string(range_string))
+range_reference::range_reference(const char *range_string)
+    : range_reference(std::string(range_string))
 {
 }
 
-range_reference::range_reference(const std::string &range_string) : top_left_("A1"), bottom_right_("A1")
+range_reference::range_reference(const std::string &range_string)
+    : top_left_("A1"), bottom_right_("A1")
 {
     auto colon_index = range_string.find(':');
 
@@ -63,16 +68,19 @@ range_reference::range_reference(const cell_reference &top_left, const cell_refe
 {
 }
 
-range_reference::range_reference(column_t column_index_start, row_t row_index_start, column_t column_index_end,
-                                 row_t row_index_end)
+range_reference::range_reference(
+    column_t column_index_start, row_t row_index_start, column_t column_index_end, row_t row_index_end)
     : top_left_(column_index_start, row_index_start), bottom_right_(column_index_end, row_index_end)
 {
 }
 
 range_reference range_reference::make_offset(int column_offset, int row_offset) const
 {
-    return range_reference(top_left_.make_offset(column_offset, row_offset),
-                           bottom_right_.make_offset(column_offset, row_offset));
+    auto top_left = top_left_.make_offset(column_offset, row_offset);
+    auto bottom_right = bottom_right_.make_offset(column_offset, row_offset);
+
+    return top_left, bottom_right; // lol
+        
 }
 
 std::size_t range_reference::height() const

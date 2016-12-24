@@ -31,6 +31,7 @@
 #include <detail/worksheet_impl.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/utils/datetime.hpp>
+#include <xlnt/workbook/calculation_properties.hpp>
 #include <xlnt/workbook/theme.hpp>
 #include <xlnt/workbook/workbook_view.hpp>
 #include <xlnt/worksheet/range.hpp>
@@ -44,7 +45,7 @@ struct worksheet_impl;
 
 struct workbook_impl
 {
-	workbook_impl() : active_sheet_index_(0)
+	workbook_impl() : base_date_(calendar::windows_1900)
 	{
 	}
 
@@ -111,6 +112,7 @@ struct workbook_impl
 	};
     
     optional<file_version_t> file_version_;
+    optional<calculation_properties> calculation_properties_;
 };
 
 } // namespace detail

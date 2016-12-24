@@ -30,12 +30,12 @@ namespace {
 std::tm safe_localtime(std::time_t raw_time)
 {
 #ifdef _MSC_VER
-	std::tm result;
-	localtime_s(&result, &raw_time);
+    std::tm result;
+    localtime_s(&result, &raw_time);
 
-	return result;
+    return result;
 #else
-	return *localtime(&raw_time);
+    return *localtime(&raw_time);
 #endif
 }
 
@@ -43,7 +43,8 @@ std::tm safe_localtime(std::time_t raw_time)
 
 namespace xlnt {
 
-date::date(int year_, int month_, int day_) : year(year_), month(month_), day(day_)
+date::date(int year_, int month_, int day_)
+    : year(year_), month(month_), day(day_)
 {
 }
 
@@ -95,9 +96,9 @@ int date::to_number(calendar base_date) const
         return 60;
     }
 
-    int days_since_1900 = int((1461 * (year + 4800 + int((month - 14) / 12))) / 4) +
-                          int((367 * (month - 2 - 12 * ((month - 14) / 12))) / 12) -
-                          int((3 * (int((year + 4900 + int((month - 14) / 12)) / 100))) / 4) + day - 2415019 - 32075;
+    int days_since_1900 = int((1461 * (year + 4800 + int((month - 14) / 12))) / 4)
+        + int((367 * (month - 2 - 12 * ((month - 14) / 12))) / 12)
+        - int((3 * (int((year + 4900 + int((month - 14) / 12)) / 100))) / 4) + day - 2415019 - 32075;
 
     if (days_since_1900 <= 60)
     {
@@ -124,8 +125,8 @@ int date::weekday() const
     auto month_temp = month == 1 ? 13 : month == 2 ? 14 : month;
     auto day_temp = day + 1;
 
-    auto days = day_temp + static_cast<int>(13 * (month_temp + 1) / 5.0)
-        + (year_temp % 100) + static_cast<int>((year_temp % 100) / 4.0);
+    auto days = day_temp + static_cast<int>(13 * (month_temp + 1) / 5.0) + (year_temp % 100)
+        + static_cast<int>((year_temp % 100) / 4.0);
     auto gregorian = days + static_cast<int>(year_temp / 400.0) - 2 * year_temp / 100;
     auto julian = days + 5 - year_temp / 100;
 

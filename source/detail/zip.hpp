@@ -40,9 +40,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 #include <unordered_map>
 #include <vector>
 
+#include <xlnt/utils/path.hpp>
+
 namespace xlnt {
 namespace detail {
 
+/// <summary>
+/// A structure representing the header that occurs before each compressed file in a ZIP
+/// archive and again at the end of the file with more information.
+/// </summary>
 struct zip_file_header
 {
     std::uint16_t version = 20;
@@ -56,61 +62,82 @@ struct zip_file_header
     std::string comment;
     std::vector<std::uint8_t> extra;
     std::uint32_t header_offset = 0;
-
-    zip_file_header();
-
-    bool read(std::istream &istream, const bool global);
-    void Write(std::ostream &ostream, const bool global) const;
 };
 
-class zip_file_istream : public std::istream
+/// <summary>
+/// Writes a series of uncompressed binary file data as ostreams into another ostream
+/// according to the ZIP format.
+/// </summary>
+class zip_file_writer
 {
 public:
-    zip_file_istream(std::unique_ptr<std::streambuf> &&buf);
-    virtual ~zip_file_istream();
-    
-private:
-    std::unique_ptr<std::streambuf> buf;
-};
+    /// <summary>
+    /// Construct a new zip_file_writer which writes a ZIP archive to the given stream.
+    /// </summary>
+    zip_file_writer(std::ostream &stream);
 
-class zip_file_ostream : public std::ostream
-{
-public:
-    zip_file_ostream(std::unique_ptr<std::streambuf> &&buf);
-    virtual ~zip_file_ostream();
+    /// <summary>
+    /// Destructor.
+    /// </summary>
+    virtual ~zip_file_writer();
 
-private:
-    std::unique_ptr<std::streambuf> buf;
-};
+    /// <summary>
+    /// Returns a pointer to a streambuf which compresses the data it receives.
+    /// </summary>
+    std::unique_ptr<std::streambuf> open(const path &file);
 
-class ZipFileWriter
-{
-public:
-    ZipFileWriter(std::ostream &filename);
-    virtual ~ZipFileWriter();
-    std::ostream &open(const std::string &filename);
-    void close();
 private:
     std::vector<zip_file_header> file_headers_;
-    std::ostream &tarstream_;
-    std::unique_ptr<std::ostream> write_stream_;
+    std::ostream &destination_stream_;
 };
 
-class ZipFileReader
+/// <summary>
+/// Reads an archive containing a number of files from an istream and allows them
+/// to be decompressed into an istream.
+/// </summary>
+class zip_file_reader
 {
 public:
-    ZipFileReader(std::istream &stream);
-    virtual ~ZipFileReader();
-    std::istream &open(const std::string &filename);
-    std::vector<std::string> files() const;
-    bool has_file(const std::string &filename) const;
+    /// <summary>
+    /// Construct a new zip_file_reader which reads a ZIP archive from the given stream.
+    /// </summary>
+    zip_file_reader(std::istream &stream);
+
+    /// <summary>
+    /// Destructor.
+    /// </summary>
+    virtual ~zip_file_reader();
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::unique_ptr<std::streambuf> open(const path &file);
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::vector<path> files() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_file(const path &filename) const;
 
 private:
+    /// <summary>
+    ///
+    /// </summary>
     bool read_central_header();
 
+    /// <summary>
+    ///
+    /// </summary>
     std::unordered_map<std::string, zip_file_header> file_headers_;
+
+    /// <summary>
+    ///
+    /// </summary>
     std::istream &source_stream_;
-    std::unique_ptr<std::istream> read_stream_;
 };
 
 } // namespace detail

@@ -23,9 +23,9 @@
 // @author: see AUTHORS file
 #include <locale>
 
-#include <detail/constants.hpp>
 #include <xlnt/cell/index_types.hpp>
 #include <xlnt/utils/exceptions.hpp>
+#include <detail/constants.hpp>
 
 namespace xlnt {
 
@@ -89,98 +89,252 @@ std::string column_t::column_string_from_index(column_t::index_t column_index)
     return column_letter;
 }
 
+column_t::column_t()
+    : index(1)
+{
+}
 
-column_t::column_t() : index(1) {}
+column_t::column_t(index_t column_index)
+    : index(column_index)
+{
+}
 
-column_t::column_t(index_t column_index) : index(column_index) {}
+column_t::column_t(const std::string &column_string)
+    : index(column_index_from_string(column_string))
+{
+}
 
-column_t::column_t(const std::string &column_string) : index(column_index_from_string(column_string)) {}
+column_t::column_t(const char *column_string)
+    : column_t(std::string(column_string))
+{
+}
 
-column_t::column_t(const char *column_string) : column_t(std::string(column_string)) {}
+column_t::column_t(const column_t &other)
+    : column_t(other.index)
+{
+}
 
-column_t::column_t(const column_t &other) : column_t(other.index) {}
+column_t::column_t(column_t &&other)
+{
+    swap(*this, other);
+}
 
-column_t::column_t(column_t &&other) { swap(*this, other); }
+std::string column_t::column_string() const
+{
+    return column_string_from_index(index);
+}
 
-std::string column_t::column_string() const { return column_string_from_index(index); }
+column_t &column_t::operator=(column_t rhs)
+{
+    swap(*this, rhs);
+    return *this;
+}
 
-column_t &column_t::operator=(column_t rhs) { swap(*this, rhs); return *this; }
+column_t &column_t::operator=(const std::string &rhs)
+{
+    return *this = column_t(rhs);
+}
 
-column_t &column_t::operator=(const std::string &rhs) { return *this = column_t(rhs); }
+column_t &column_t::operator=(const char *rhs)
+{
+    return *this = column_t(rhs);
+}
 
-column_t &column_t::operator=(const char *rhs) { return *this = column_t(rhs); }
+bool column_t::operator==(const column_t &other) const
+{
+    return index == other.index;
+}
 
-bool column_t::operator==(const column_t &other) const { return index == other.index; }
+bool column_t::operator!=(const column_t &other) const
+{
+    return !(*this == other);
+}
 
-bool column_t::operator!=(const column_t &other) const { return !(*this == other); }
+bool column_t::operator==(int other) const
+{
+    return *this == column_t(static_cast<index_t>(other));
+}
 
-bool column_t::operator==(int other) const { return *this == column_t(static_cast<index_t>(other)); }
+bool column_t::operator==(index_t other) const
+{
+    return *this == column_t(other);
+}
 
-bool column_t::operator==(index_t other) const { return *this == column_t(other); }
+bool column_t::operator==(const std::string &other) const
+{
+    return *this == column_t(other);
+}
 
-bool column_t::operator==(const std::string &other) const { return *this == column_t(other); }
+bool column_t::operator==(const char *other) const
+{
+    return *this == column_t(other);
+}
 
-bool column_t::operator==(const char *other) const { return *this == column_t(other); }
+bool column_t::operator!=(int other) const
+{
+    return !(*this == other);
+}
 
-bool column_t::operator!=(int other) const { return !(*this == other); }
+bool column_t::operator!=(index_t other) const
+{
+    return !(*this == other);
+}
 
-bool column_t::operator!=(index_t other) const { return !(*this == other); }
+bool column_t::operator!=(const std::string &other) const
+{
+    return !(*this == other);
+}
 
-bool column_t::operator!=(const std::string &other) const { return !(*this == other); }
+bool column_t::operator!=(const char *other) const
+{
+    return !(*this == other);
+}
 
-bool column_t::operator!=(const char *other) const { return !(*this == other); }
+bool column_t::operator>(const column_t &other) const
+{
+    return index > other.index;
+}
 
-bool column_t::operator>(const column_t &other) const { return index > other.index; }
+bool column_t::operator>=(const column_t &other) const
+{
+    return index >= other.index;
+}
 
-bool column_t::operator>=(const column_t &other) const { return index >= other.index; }
+bool column_t::operator<(const column_t &other) const
+{
+    return index < other.index;
+}
 
-bool column_t::operator<(const column_t &other) const { return index < other.index; }
+bool column_t::operator<=(const column_t &other) const
+{
+    return index <= other.index;
+}
 
-bool column_t::operator<=(const column_t &other) const { return index <= other.index; }
+bool column_t::operator>(const column_t::index_t &other) const
+{
+    return index > other;
+}
 
-bool column_t::operator>(const column_t::index_t &other) const { return index > other; }
+bool column_t::operator>=(const column_t::index_t &other) const
+{
+    return index >= other;
+}
 
-bool column_t::operator>=(const column_t::index_t &other) const { return index >= other; }
+bool column_t::operator<(const column_t::index_t &other) const
+{
+    return index < other;
+}
 
-bool column_t::operator<(const column_t::index_t &other) const { return index < other; }
+bool column_t::operator<=(const column_t::index_t &other) const
+{
+    return index <= other;
+}
 
-bool column_t::operator<=(const column_t::index_t &other) const { return index <= other; }
+column_t &column_t::operator++()
+{
+    index++;
+    return *this;
+}
 
-column_t &column_t::operator++() { index++; return *this; }
+column_t &column_t::operator--()
+{
+    index--;
+    return *this;
+}
 
-column_t &column_t::operator--() { index--; return *this; }
+column_t column_t::operator++(int)
+{
+    column_t copy(index);
+    ++(*this);
+    return copy;
+}
 
-column_t column_t::operator++(int) { column_t copy(index); ++(*this); return copy; }
+column_t column_t::operator--(int)
+{
+    column_t copy(index);
+    --(*this);
+    return copy;
+}
 
-column_t column_t::operator--(int) { column_t copy(index); --(*this); return copy; }
+column_t operator+(column_t lhs, const column_t &rhs)
+{
+    lhs += rhs;
+    return lhs;
+}
 
-column_t operator+(column_t lhs, const column_t& rhs) { lhs += rhs; return lhs; }
+column_t operator-(column_t lhs, const column_t &rhs)
+{
+    lhs -= rhs;
+    return lhs;
+}
 
-column_t operator-(column_t lhs, const column_t& rhs) { lhs -= rhs; return lhs; }
+column_t operator*(column_t lhs, const column_t &rhs)
+{
+    lhs *= rhs;
+    return lhs;
+}
 
-column_t operator*(column_t lhs, const column_t& rhs) { lhs *= rhs; return lhs; }
+column_t operator/(column_t lhs, const column_t &rhs)
+{
+    lhs /= rhs;
+    return lhs;
+}
 
-column_t operator/(column_t lhs, const column_t& rhs) { lhs /= rhs; return lhs; }
+column_t operator%(column_t lhs, const column_t &rhs)
+{
+    lhs %= rhs;
+    return lhs;
+}
 
-column_t operator%(column_t lhs, const column_t& rhs) { lhs %= rhs; return lhs; }
+column_t &column_t::operator+=(const column_t &rhs)
+{
+    index += rhs.index;
+    return *this;
+}
 
-column_t &column_t::operator+=(const column_t &rhs) { index += rhs.index; return *this; }
+column_t &column_t::operator-=(const column_t &rhs)
+{
+    index -= rhs.index;
+    return *this;
+}
 
-column_t &column_t::operator-=(const column_t &rhs) { index -= rhs.index; return *this; }
+column_t &column_t::operator*=(const column_t &rhs)
+{
+    index *= rhs.index;
+    return *this;
+}
 
-column_t &column_t::operator*=(const column_t &rhs) { index *= rhs.index; return *this; }
+column_t &column_t::operator/=(const column_t &rhs)
+{
+    index /= rhs.index;
+    return *this;
+}
 
-column_t &column_t::operator/=(const column_t &rhs) { index /= rhs.index; return *this; }
+column_t &column_t::operator%=(const column_t &rhs)
+{
+    index %= rhs.index;
+    return *this;
+}
 
-column_t &column_t::operator%=(const column_t &rhs) { index %= rhs.index; return *this; }
+bool operator>(const column_t::index_t &left, const column_t &right)
+{
+    return column_t(left) > right;
+}
 
-bool operator>(const column_t::index_t &left, const column_t &right) { return column_t(left) > right; }
+bool operator>=(const column_t::index_t &left, const column_t &right)
+{
+    return column_t(left) >= right;
+}
 
-bool operator>=(const column_t::index_t &left, const column_t &right) { return column_t(left) >= right; }
+bool operator<(const column_t::index_t &left, const column_t &right)
+{
+    return column_t(left) < right;
+}
 
-bool operator<(const column_t::index_t &left, const column_t &right) { return column_t(left) < right; }
-
-bool operator<=(const column_t::index_t &left, const column_t &right) { return column_t(left) <= right; }
+bool operator<=(const column_t::index_t &left, const column_t &right)
+{
+    return column_t(left) <= right;
+}
 
 void swap(column_t &left, column_t &right)
 {

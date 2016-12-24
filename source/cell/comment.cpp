@@ -25,19 +25,18 @@
 
 namespace xlnt {
 
-comment::comment() : comment("", "")
+comment::comment()
+    : comment("", "")
 {
 }
 
 comment::comment(const rich_text &text, const std::string &author)
-    : text_(text),
-      author_(author)
+    : text_(text), author_(author)
 {
 }
 
 comment::comment(const std::string &text, const std::string &author)
-    : text_(),
-      author_(author)
+    : text_(), author_(author)
 {
     text_.plain_text(text);
 }
@@ -88,17 +87,17 @@ int comment::left() const
 {
     return left_;
 }
-    
+
 int comment::top() const
 {
     return top_;
 }
-    
+
 int comment::width() const
 {
     return width_;
 }
-   
+
 int comment::height() const
 {
     return height_;

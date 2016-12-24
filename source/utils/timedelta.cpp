@@ -27,18 +27,15 @@
 
 namespace xlnt {
 
-timedelta::timedelta() : timedelta(0, 0, 0, 0, 0)
+timedelta::timedelta()
+    : timedelta(0, 0, 0, 0, 0)
 {
 }
 
 timedelta::timedelta(int days_, int hours_, int minutes_, int seconds_, int microseconds_)
-        : days(days_), 
-          hours(hours_), 
-          minutes(minutes_), 
-          seconds(seconds_), 
-          microseconds(microseconds_)
-    {
-    }
+    : days(days_), hours(hours_), minutes(minutes_), seconds(seconds_), microseconds(microseconds_)
+{
+}
 
 long double timedelta::to_number() const
 {
@@ -51,7 +48,7 @@ long double timedelta::to_number() const
     auto hundred_billion = static_cast<std::uint64_t>(1e9) * 100;
     number = std::floor(number * hundred_billion + 0.5L) / hundred_billion;
     number += days;
-    
+
     return number;
 }
 
@@ -70,23 +67,23 @@ timedelta timedelta::from_number(long double raw_time)
     result.seconds = static_cast<int>(fractional_part);
     fractional_part = 1000000 * (fractional_part - result.seconds);
     result.microseconds = static_cast<int>(fractional_part);
-    
+
     if (result.microseconds == 999999 && fractional_part - result.microseconds > 0.5L)
     {
         result.microseconds = 0;
         result.seconds += 1;
-        
+
         if (result.seconds == 60)
         {
             result.seconds = 0;
             result.minutes += 1;
-            
-            //TODO: too much nesting
+
+            // TODO: too much nesting
             if (result.minutes == 60)
             {
                 result.minutes = 0;
                 result.hours += 1;
-                
+
                 if (result.hours == 24)
                 {
                     result.hours = 0;
@@ -95,7 +92,7 @@ timedelta timedelta::from_number(long double raw_time)
             }
         }
     }
-    
+
     return result;
 }
 

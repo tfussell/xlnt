@@ -41,6 +41,7 @@ enum class relationship_type;
 
 class alignment;
 class border;
+class calculation_properties;
 class cell;
 class cell_style;
 class color;
@@ -633,13 +634,30 @@ public:
     /// <summary>
     ///
     /// </summary>
-    void thumbnail(
-        const std::vector<std::uint8_t> &thumbnail, const std::string &extension, const std::string &content_type);
+    void thumbnail(const std::vector<std::uint8_t> &thumbnail,
+        const std::string &extension, const std::string &content_type);
 
     /// <summary>
     ///
     /// </summary>
     const std::vector<std::uint8_t> &thumbnail() const;
+
+    // calculation properties
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_calculation_properties() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    class calculation_properties calculation_properties() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void calculation_properties(const class calculation_properties &props);
 
     // operators
 

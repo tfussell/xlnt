@@ -469,6 +469,9 @@ public:
     /// </summary>
     void comment(const class comment &new_comment);
 
+    double width() const;
+    double height() const;
+
     // operators
 
     /// <summary>

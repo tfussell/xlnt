@@ -86,8 +86,8 @@ invalid_file::~invalid_file()
 }
 
 invalid_cell_reference::invalid_cell_reference(column_t column, row_t row)
-    : exception(std::string("bad cell coordinates: (") + std::to_string(column.index) + ", " + std::to_string(row) +
-                         ")")
+    : exception(
+          std::string("bad cell coordinates: (") + std::to_string(column.index) + ", " + std::to_string(row) + ")")
 {
 }
 
@@ -146,7 +146,7 @@ no_visible_worksheets::~no_visible_worksheets()
 }
 
 unsupported::unsupported(const std::string &message)
-	: exception(message)
+    : exception(message)
 {
 }
 

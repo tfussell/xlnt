@@ -24,129 +24,48 @@
 #include <algorithm>
 #include <cmath>
 
+#include <xlnt/utils/exceptions.hpp>
 #include <detail/default_case.hpp>
 #include <detail/number_formatter.hpp>
-#include <xlnt/utils/exceptions.hpp>
 
 namespace {
 
 const std::unordered_map<int, std::string> known_locales()
 {
-    static const std::unordered_map<int, std::string> *all =
-        new std::unordered_map<int, std::string>(
-        {
-             { 0x401, "Arabic - Saudi Arabia" },
-             { 0x402, "Bulgarian" },
-             { 0x403, "Catalan" },
-             { 0x404, "Chinese - Taiwan" },
-             { 0x405, "Czech" },
-             { 0x406, "Danish" },
-             { 0x407, "German - Germany" },
-             { 0x408, "Greek" },
-             { 0x409, "English - United States" },
-             { 0x410, "Italian - Italy" },
-             { 0x411, "Japanese" },
-             { 0x412, "Korean" },
-             { 0x413, "Dutch - Netherlands" },
-             { 0x414, "Norwegian - Bokml" },
-             { 0x415, "Polish" },
-             { 0x416, "Portuguese - Brazil" },
-             { 0x417, "Raeto-Romance" },
-             { 0x418, "Romanian - Romania" },
-             { 0x419, "Russian" },
-             { 0x420, "Urdu" },
-             { 0x421, "Indonesian" },
-             { 0x422, "Ukrainian" },
-             { 0x423, "Belarusian" },
-             { 0x424, "Slovenian" },
-             { 0x425, "Estonian" },
-             { 0x426, "Latvian" },
-             { 0x427, "Lithuanian" },
-             { 0x428, "Tajik" },
-             { 0x429, "Farsi - Persian" },
-             { 0x430, "Sesotho (Sutu)" },
-             { 0x431, "Tsonga" },
-             { 0x432, "Setsuana" },
-             { 0x433, "Venda" },
-             { 0x434, "Xhosa" },
-             { 0x435, "Zulu" },
-             { 0x436, "Afrikaans" },
-             { 0x437, "Georgian" },
-             { 0x438, "Faroese" },
-             { 0x439, "Hindi" },
-             { 0x440, "Kyrgyz - Cyrillic" },
-             { 0x441, "Swahili" },
-             { 0x442, "Turkmen" },
-             { 0x443, "Uzbek - Latin" },
-             { 0x444, "Tatar" },
-             { 0x445, "Bengali - India" },
-             { 0x446, "Punjabi" },
-             { 0x447, "Gujarati" },
-             { 0x448, "Oriya" },
-             { 0x449, "Tamil" },
-             { 0x450, "Mongolian" },
-             { 0x451, "Tibetan" },
-             { 0x452, "Welsh" },
-             { 0x453, "Khmer" },
-             { 0x454, "Lao" },
-             { 0x455, "Burmese" },
-             { 0x456, "Galician" },
-             { 0x457, "Konkani" },
-             { 0x458, "Manipuri" },
-             { 0x459, "Sindhi" },
-             { 0x460, "Kashmiri" },
-             { 0x461, "Nepali" },
-             { 0x462, "Frisian - Netherlands" },
-             { 0x464, "Filipino" },
-             { 0x465, "Divehi; Dhivehi; Maldivian" },
-             { 0x466, "Edo" },
-             { 0x470, "Igbo - Nigeria" },
-             { 0x474, "Guarani - Paraguay" },
-             { 0x476, "Latin" },
-             { 0x477, "Somali" },
-             { 0x481, "Maori" },
-             { 0x801, "Arabic - Iraq" },
-             { 0x804, "Chinese - China" },
-             { 0x807, "German - Switzerland" },
-             { 0x809, "English - Great Britain" },
-             { 0x810, "Italian - Switzerland" },
-             { 0x813, "Dutch - Belgium" },
-             { 0x814, "Norwegian - Nynorsk" },
-             { 0x816, "Portuguese - Portugal" },
-             { 0x818, "Romanian - Moldova" },
-             { 0x819, "Russian - Moldova" },
-             { 0x843, "Uzbek - Cyrillic" },
-             { 0x845, "Bengali - Bangladesh" },
-             { 0x850, "Mongolian" },
-             { 0x1001, "Arabic - Libya" },
-             { 0x1004, "Chinese - Singapore" },
-             { 0x1007, "German - Luxembourg" },
-             { 0x1009, "English - Canada" },
-             { 0x1401, "Arabic - Algeria" },
-             { 0x1404, "Chinese - Macau SAR" },
-             { 0x1407, "German - Liechtenstein" },
-             { 0x1409, "English - New Zealand" },
-             { 0x1801, "Arabic - Morocco" },
-             { 0x1809, "English - Ireland" },
-             { 0x2001, "Arabic - Oman" },
-             { 0x2009, "English - Jamaica" },
-             { 0x2401, "Arabic - Yemen" },
-             { 0x2409, "English - Caribbean" },
-             { 0x2801, "Arabic - Syria" },
-             { 0x2809, "English - Belize" },
-             { 0x3001, "Arabic - Lebanon" },
-             { 0x3009, "English - Zimbabwe" },
-             { 0x3401, "Arabic - Kuwait" },
-             { 0x3409, "English - Phillippines" },
-             { 0x3801, "Arabic - United Arab Emirates" },
-             { 0x4001, "Arabic - Qatar" }
-        }
-    );
-    
+    static const std::unordered_map<int, std::string> *all = new std::unordered_map<int, std::string>(
+        {{0x401, "Arabic - Saudi Arabia"}, {0x402, "Bulgarian"}, {0x403, "Catalan"}, {0x404, "Chinese - Taiwan"},
+            {0x405, "Czech"}, {0x406, "Danish"}, {0x407, "German - Germany"}, {0x408, "Greek"},
+            {0x409, "English - United States"}, {0x410, "Italian - Italy"}, {0x411, "Japanese"}, {0x412, "Korean"},
+            {0x413, "Dutch - Netherlands"}, {0x414, "Norwegian - Bokml"}, {0x415, "Polish"},
+            {0x416, "Portuguese - Brazil"}, {0x417, "Raeto-Romance"}, {0x418, "Romanian - Romania"}, {0x419, "Russian"},
+            {0x420, "Urdu"}, {0x421, "Indonesian"}, {0x422, "Ukrainian"}, {0x423, "Belarusian"}, {0x424, "Slovenian"},
+            {0x425, "Estonian"}, {0x426, "Latvian"}, {0x427, "Lithuanian"}, {0x428, "Tajik"},
+            {0x429, "Farsi - Persian"}, {0x430, "Sesotho (Sutu)"}, {0x431, "Tsonga"}, {0x432, "Setsuana"},
+            {0x433, "Venda"}, {0x434, "Xhosa"}, {0x435, "Zulu"}, {0x436, "Afrikaans"}, {0x437, "Georgian"},
+            {0x438, "Faroese"}, {0x439, "Hindi"}, {0x440, "Kyrgyz - Cyrillic"}, {0x441, "Swahili"}, {0x442, "Turkmen"},
+            {0x443, "Uzbek - Latin"}, {0x444, "Tatar"}, {0x445, "Bengali - India"}, {0x446, "Punjabi"},
+            {0x447, "Gujarati"}, {0x448, "Oriya"}, {0x449, "Tamil"}, {0x450, "Mongolian"}, {0x451, "Tibetan"},
+            {0x452, "Welsh"}, {0x453, "Khmer"}, {0x454, "Lao"}, {0x455, "Burmese"}, {0x456, "Galician"},
+            {0x457, "Konkani"}, {0x458, "Manipuri"}, {0x459, "Sindhi"}, {0x460, "Kashmiri"}, {0x461, "Nepali"},
+            {0x462, "Frisian - Netherlands"}, {0x464, "Filipino"}, {0x465, "Divehi; Dhivehi; Maldivian"},
+            {0x466, "Edo"}, {0x470, "Igbo - Nigeria"}, {0x474, "Guarani - Paraguay"}, {0x476, "Latin"},
+            {0x477, "Somali"}, {0x481, "Maori"}, {0x801, "Arabic - Iraq"}, {0x804, "Chinese - China"},
+            {0x807, "German - Switzerland"}, {0x809, "English - Great Britain"}, {0x810, "Italian - Switzerland"},
+            {0x813, "Dutch - Belgium"}, {0x814, "Norwegian - Nynorsk"}, {0x816, "Portuguese - Portugal"},
+            {0x818, "Romanian - Moldova"}, {0x819, "Russian - Moldova"}, {0x843, "Uzbek - Cyrillic"},
+            {0x845, "Bengali - Bangladesh"}, {0x850, "Mongolian"}, {0x1001, "Arabic - Libya"},
+            {0x1004, "Chinese - Singapore"}, {0x1007, "German - Luxembourg"}, {0x1009, "English - Canada"},
+            {0x1401, "Arabic - Algeria"}, {0x1404, "Chinese - Macau SAR"}, {0x1407, "German - Liechtenstein"},
+            {0x1409, "English - New Zealand"}, {0x1801, "Arabic - Morocco"}, {0x1809, "English - Ireland"},
+            {0x2001, "Arabic - Oman"}, {0x2009, "English - Jamaica"}, {0x2401, "Arabic - Yemen"},
+            {0x2409, "English - Caribbean"}, {0x2801, "Arabic - Syria"}, {0x2809, "English - Belize"},
+            {0x3001, "Arabic - Lebanon"}, {0x3009, "English - Zimbabwe"}, {0x3401, "Arabic - Kuwait"},
+            {0x3409, "English - Phillippines"}, {0x3801, "Arabic - United Arab Emirates"}, {0x4001, "Arabic - Qatar"}});
+
     return *all;
 }
 
-[[ noreturn ]] void unhandled_case_error()
+[[noreturn]] void unhandled_case_error()
 {
     throw xlnt::exception("unhandled");
 }
@@ -178,7 +97,7 @@ bool format_condition::satisfied_by(long double number) const
         return number < value;
     case condition_type::not_equal:
         return std::fabs(number - value) != 0.0L;
-	case condition_type::equal:
+    case condition_type::equal:
         return std::fabs(number - value) == 0.0L;
     }
 
@@ -219,10 +138,7 @@ void number_format_parser::parse()
             break;
 
         case number_format_token::token_type::color:
-            if (section.has_color
-                || section.has_condition
-                || section.has_locale
-                || !section.parts.empty())
+            if (section.has_color || section.has_condition || section.has_locale || !section.parts.empty())
             {
                 throw std::runtime_error("color should be the first part of a format");
             }
@@ -249,7 +165,7 @@ void number_format_parser::parse()
                 section.parts.push_back(part);
                 part = template_part();
             }
-            
+
             break;
         }
 
@@ -299,7 +215,7 @@ void number_format_parser::parse()
                 section.condition.type = format_condition::condition_type::equal;
                 value = token.string.substr(1);
             }
-            
+
             section.condition.value = std::stold(value);
             break;
         }
@@ -311,7 +227,7 @@ void number_format_parser::parse()
             part = template_part();
 
             break;
-            
+
         case number_format_token::token_type::fill:
             part.type = template_part::template_type::fill;
             part.string = token.string;
@@ -387,7 +303,7 @@ void number_format_parser::parse()
                     part.type = template_part::template_type::month_letter;
                     break;
                 }
-                
+
                 unhandled_case(true);
                 break;
 
@@ -412,7 +328,7 @@ void number_format_parser::parse()
                     part.type = template_part::template_type::day_name;
                     break;
                 }
-                
+
                 unhandled_case(true);
                 break;
 
@@ -427,7 +343,7 @@ void number_format_parser::parse()
                     part.type = template_part::template_type::year_long;
                     break;
                 }
-                
+
                 unhandled_case(true);
                 break;
 
@@ -442,7 +358,7 @@ void number_format_parser::parse()
                     part.type = template_part::template_type::hour_leading_zero;
                     break;
                 }
-                
+
                 unhandled_case(true);
                 break;
 
@@ -457,7 +373,7 @@ void number_format_parser::parse()
                     part.type = template_part::template_type::second_leading_zero;
                     break;
                 }
-                
+
                 unhandled_case(true);
                 break;
 
@@ -474,7 +390,7 @@ void number_format_parser::parse()
                     part.type = template_part::template_type::a_p;
                     break;
                 }
-                
+
                 unhandled_case(true);
                 break;
 
@@ -485,9 +401,9 @@ void number_format_parser::parse()
 
             section.parts.push_back(part);
             part = template_part();
-            
+
             break;
-            
+
         case number_format_token::token_type::end:
             codes_.push_back(section);
             finalize();
@@ -519,7 +435,7 @@ void number_format_parser::finalize()
         bool fraction = false;
         std::size_t fraction_denominator_index = 0;
         std::size_t fraction_numerator_index = 0;
-        
+
         bool seconds = false;
         bool fractional_seconds = false;
         std::size_t seconds_index = 0;
@@ -527,10 +443,8 @@ void number_format_parser::finalize()
         for (std::size_t i = 0; i < code.parts.size(); ++i)
         {
             const auto &part = code.parts[i];
-            
-            if (i > 0
-                && i + 1 < code.parts.size()
-                && part.type == template_part::template_type::text
+
+            if (i > 0 && i + 1 < code.parts.size() && part.type == template_part::template_type::text
                 && part.string == "/"
                 && code.parts[i - 1].placeholders.type == format_placeholders::placeholders_type::integer_part
                 && code.parts[i + 1].placeholders.type == format_placeholders::placeholders_type::integer_part)
@@ -560,7 +474,7 @@ void number_format_parser::finalize()
             {
                 percentage = true;
             }
-            
+
             if (part.type == template_part::template_type::second
                 || part.type == template_part::template_type::second_leading_zero)
             {
@@ -573,7 +487,7 @@ void number_format_parser::finalize()
                 fractional_seconds = true;
             }
 
-            //TODO this block needs improvement
+            // TODO this block needs improvement
             if (part.type == template_part::template_type::month_number
                 || part.type == template_part::template_type::month_number_leading_zero)
             {
@@ -583,11 +497,10 @@ void number_format_parser::finalize()
                     const auto &after_next = code.parts[i + 2];
 
                     if ((next.type == template_part::template_type::second
-                        || next.type == template_part::template_type::second_leading_zero)
-                        || (next.type == template_part::template_type::text
-                        && next.string == ":"
-                        && (after_next.type == template_part::template_type::second ||
-                            after_next.type == template_part::template_type::second_leading_zero)))
+                            || next.type == template_part::template_type::second_leading_zero)
+                        || (next.type == template_part::template_type::text && next.string == ":"
+                               && (after_next.type == template_part::template_type::second
+                                      || after_next.type == template_part::template_type::second_leading_zero)))
                     {
                         fix = true;
                         leading_zero = part.type == template_part::template_type::month_number_leading_zero;
@@ -600,10 +513,9 @@ void number_format_parser::finalize()
                     const auto &previous = code.parts[i - 1];
                     const auto &before_previous = code.parts[i - 2];
 
-                    if (previous.type == template_part::template_type::text
-                        && previous.string == ":"
+                    if (previous.type == template_part::template_type::text && previous.string == ":"
                         && (before_previous.type == template_part::template_type::hour_leading_zero
-                        || before_previous.type == template_part::template_type::hour))
+                               || before_previous.type == template_part::template_type::hour))
                     {
                         fix = true;
                         leading_zero = part.type == template_part::template_type::month_number_leading_zero;
@@ -612,25 +524,23 @@ void number_format_parser::finalize()
                 }
             }
         }
-        
+
         if (fix)
         {
-            code.parts[minutes_index].type = leading_zero ?
-                template_part::template_type::minute_leading_zero :
-                template_part::template_type::minute;
+            code.parts[minutes_index].type =
+                leading_zero ? template_part::template_type::minute_leading_zero : template_part::template_type::minute;
         }
 
         if (integer_part && !fractional_part)
         {
-            code.parts[integer_part_index].placeholders.type =
-                format_placeholders::placeholders_type::integer_only;
+            code.parts[integer_part_index].placeholders.type = format_placeholders::placeholders_type::integer_only;
         }
 
         if (integer_part && fractional_part && percentage)
         {
             code.parts[integer_part_index].placeholders.percentage = true;
         }
-        
+
         if (exponent)
         {
             const auto &next = code.parts[exponent_index + 1];
@@ -644,25 +554,23 @@ void number_format_parser::finalize()
                 code.parts[i].placeholders.scientific = true;
             }
         }
-        
+
         if (fraction)
         {
             code.parts[fraction_numerator_index].placeholders.type =
                 format_placeholders::placeholders_type::fraction_numerator;
             code.parts[fraction_denominator_index].placeholders.type =
                 format_placeholders::placeholders_type::fraction_denominator;
-            
+
             for (std::size_t i = 0; i < code.parts.size(); ++i)
             {
-                if (code.parts[i].placeholders.type ==
-                    format_placeholders::placeholders_type::integer_part)
+                if (code.parts[i].placeholders.type == format_placeholders::placeholders_type::integer_part)
                 {
-                    code.parts[i].placeholders.type =
-                        format_placeholders::placeholders_type::fraction_integer;
+                    code.parts[i].placeholders.type = format_placeholders::placeholders_type::fraction_integer;
                 }
             }
         }
-        
+
         if (fractional_seconds)
         {
             if (code.parts[seconds_index].type == template_part::template_type::second)
@@ -707,8 +615,7 @@ number_format_token number_format_parser::parse_next_token()
         do
         {
             token.string.push_back(format_string_[position_++]);
-        }
-        while (position_ < format_string_.size() && format_string_[position_] != ']');
+        } while (position_ < format_string_.size() && format_string_[position_] != ']');
 
         if (token.string[0] == '<' || token.string[0] == '>' || token.string[0] == '=')
         {
@@ -718,10 +625,9 @@ number_format_token number_format_parser::parse_next_token()
         {
             token.type = number_format_token::token_type::locale;
         }
-        else if (token.string.size() <= 2 &&
-            ((token.string == "h" || token.string == "hh") ||
-            (token.string == "m" || token.string == "mm") ||
-            (token.string == "s" || token.string == "ss")))
+        else if (token.string.size() <= 2
+            && ((token.string == "h" || token.string == "hh") || (token.string == "m" || token.string == "mm")
+                   || (token.string == "s" || token.string == "ss")))
         {
             token.type = number_format_token::token_type::datetime;
             token.string = "[" + token.string + "]";
@@ -776,8 +682,7 @@ number_format_token number_format_parser::parse_next_token()
         {
             token.string.push_back(current_char);
             current_char = format_string_[position_++];
-        }
-        while (current_char == '0' || current_char == '#' || current_char == '?' || current_char == ',');
+        } while (current_char == '0' || current_char == '#' || current_char == '?' || current_char == ',');
 
         --position_;
 
@@ -788,7 +693,7 @@ number_format_token number_format_parser::parse_next_token()
         }
 
         break;
-        
+
     case 'y':
     case 'm':
     case 'd':
@@ -796,7 +701,7 @@ number_format_token number_format_parser::parse_next_token()
     case 's':
         token.type = number_format_token::token_type::datetime;
         token.string.push_back(current_char);
-        
+
         while (format_string_[position_] == current_char)
         {
             token.string.push_back(current_char);
@@ -853,7 +758,7 @@ number_format_token number_format_parser::parse_next_token()
     case ';':
         token.type = number_format_token::token_type::end_section;
         break;
-        
+
     case '(':
         token.type = number_format_token::token_type::text;
         token.string.push_back(current_char);
@@ -895,17 +800,17 @@ number_format_token number_format_parser::parse_next_token()
         token.string.push_back(current_char);
 
         break;
-        
+
     case '@':
         token.type = number_format_token::token_type::number;
         token.string.push_back(current_char);
         break;
-        
+
     case 'E':
         token.type = number_format_token::token_type::number;
         token.string.push_back(current_char);
         current_char = format_string_[position_++];
-        
+
         if (current_char == '+' || current_char == '-')
         {
             token.string.push_back(current_char);
@@ -930,9 +835,7 @@ void number_format_parser::validate()
 
     if (codes_.size() > 2)
     {
-        if (codes_[0].has_condition
-            && codes_[1].has_condition
-            && codes_[2].has_condition)
+        if (codes_[0].has_condition && codes_[1].has_condition && codes_[2].has_condition)
         {
             throw std::runtime_error("format should have a maximum of two codes with conditions");
         }
@@ -959,9 +862,8 @@ format_placeholders number_format_parser::parse_placeholders(const std::string &
     }
     else if (placeholders_string.front() == 'E')
     {
-        p.type = placeholders_string[1] == '+'
-            ? format_placeholders::placeholders_type::scientific_exponent_plus
-            : format_placeholders::placeholders_type::scientific_exponent_minus;
+        p.type = placeholders_string[1] == '+' ? format_placeholders::placeholders_type::scientific_exponent_plus
+                                               : format_placeholders::placeholders_type::scientific_exponent_minus;
         return p;
     }
     else
@@ -997,7 +899,7 @@ format_placeholders number_format_parser::parse_placeholders(const std::string &
             comma_indices.push_back(i);
         }
     }
-    
+
     if (!comma_indices.empty())
     {
         std::size_t i = placeholders_string.size() - 1;
@@ -1008,10 +910,10 @@ format_placeholders number_format_parser::parse_placeholders(const std::string &
             --i;
             comma_indices.pop_back();
         }
-        
+
         p.use_comma_separator = !comma_indices.empty();
     }
-    
+
     return p;
 }
 
@@ -1046,7 +948,7 @@ format_color number_format_parser::color_from_string(const std::string &color)
         {
             return format_color::blue;
         }
-        
+
         unhandled_case(true);
         break;
 
@@ -1055,7 +957,7 @@ format_color number_format_parser::color_from_string(const std::string &color)
         {
             return format_color::green;
         }
-        
+
         unhandled_case(true);
         break;
 
@@ -1064,7 +966,7 @@ format_color number_format_parser::color_from_string(const std::string &color)
         {
             return format_color::white;
         }
-        
+
         unhandled_case(true);
         break;
 
@@ -1073,7 +975,7 @@ format_color number_format_parser::color_from_string(const std::string &color)
         {
             return format_color::magenta;
         }
-        
+
         unhandled_case(true);
         break;
 
@@ -1082,7 +984,7 @@ format_color number_format_parser::color_from_string(const std::string &color)
         {
             return format_color::yellow;
         }
-        
+
         unhandled_case(true);
         break;
 
@@ -1091,14 +993,14 @@ format_color number_format_parser::color_from_string(const std::string &color)
         {
             return format_color::red;
         }
-        
+
         unhandled_case(true);
         break;
 
     default:
         unhandled_case(true);
     }
-    
+
     unhandled_case_error();
 }
 
@@ -1124,7 +1026,7 @@ std::pair<format_locale, std::string> number_format_parser::locale_from_string(c
     {
         throw std::runtime_error("bad locale: " + locale_string);
     }
-    
+
     for (auto c : country_code_string)
     {
         if (!((c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f') || (c >= '0' && c <= '9')))
@@ -1148,8 +1050,7 @@ std::pair<format_locale, std::string> number_format_parser::locale_from_string(c
 }
 
 number_formatter::number_formatter(const std::string &format_string, xlnt::calendar calendar)
-    : parser_(format_string),
-      calendar_(calendar)
+    : parser_(format_string), calendar_(calendar)
 {
     parser_.parse();
     format_ = parser_.result();
@@ -1168,21 +1069,20 @@ std::string number_formatter::format_number(long double number)
         {
             return std::string(11, '#');
         }
-        
-        if (!format_[1].has_condition
-            || format_[1].condition.satisfied_by(number))
+
+        if (!format_[1].has_condition || format_[1].condition.satisfied_by(number))
         {
             return format_number(format_[1], number);
         }
-        
+
         if (format_.size() == 2)
         {
             return std::string(11, '#');
         }
-        
+
         return format_number(format_[2], number);
     }
-    
+
     // no conditions, format based on sign:
 
     // 1 section, use for all
@@ -1274,22 +1174,22 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, lo
         || p.type == format_placeholders::placeholders_type::fraction_integer)
     {
         result = std::to_string(integer_part);
-        
+
         while (result.size() < p.num_zeros)
         {
             result = "0" + result;
         }
-        
+
         while (result.size() < p.num_zeros + p.num_spaces)
         {
             result = " " + result;
         }
-        
+
         if (p.use_comma_separator)
         {
             std::vector<char> digits(result.rbegin(), result.rend());
             std::string temp;
-            
+
             for (std::size_t i = 0; i < digits.size(); i++)
             {
                 temp.push_back(digits[i]);
@@ -1299,7 +1199,7 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, lo
                     temp.push_back(',');
                 }
             }
-            
+
             result = std::string(temp.rbegin(), temp.rend());
         }
 
@@ -1312,7 +1212,8 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, lo
     {
         auto fractional_part = number - integer_part;
         result = std::fabs(fractional_part) < std::numeric_limits<long double>::min()
-            ? std::string(".") : std::to_string(fractional_part).substr(1);
+            ? std::string(".")
+            : std::to_string(fractional_part).substr(1);
 
         while (result.back() == '0' || result.size() > (p.num_zeros + p.num_optionals + p.num_spaces + 1))
         {
@@ -1339,11 +1240,10 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, lo
 }
 
 std::string number_formatter::fill_scientific_placeholders(const format_placeholders &integer_part,
-        const format_placeholders &fractional_part, const format_placeholders &exponent_part,
-        long double number)
+    const format_placeholders &fractional_part, const format_placeholders &exponent_part, long double number)
 {
     std::size_t logarithm = 0;
-    
+
     if (number != 0.L)
     {
         logarithm = static_cast<std::size_t>(std::log10(number));
@@ -1355,7 +1255,7 @@ std::string number_formatter::fill_scientific_placeholders(const format_placehol
     }
 
     number /= std::pow(10.L, logarithm);
-    
+
     auto integer = static_cast<int>(number);
     auto fraction = number - integer;
 
@@ -1392,7 +1292,7 @@ std::string number_formatter::fill_scientific_placeholders(const format_placehol
     return integer_string + fractional_string + exponent_string;
 }
 
-std::string number_formatter::fill_fraction_placeholders(const format_placeholders &/*numerator*/,
+std::string number_formatter::fill_fraction_placeholders(const format_placeholders & /*numerator*/,
     const format_placeholders &denominator, long double number, bool /*improper*/)
 {
     auto fractional_part = number - static_cast<int>(number);
@@ -1407,7 +1307,7 @@ std::string number_formatter::fill_fraction_placeholders(const format_placeholde
 
     fractional_part = static_cast<int>(fractional_part);
     auto denominator_digits = denominator.num_zeros + denominator.num_optionals + denominator.num_spaces;
-//    auto denominator_digits = static_cast<std::size_t>(std::ceil(std::log10(fractional_part)));
+    //    auto denominator_digits = static_cast<std::size_t>(std::ceil(std::log10(fractional_part)));
 
     auto lower = static_cast<int>(std::pow(10, denominator_digits - 1));
     auto upper = static_cast<int>(std::pow(10, denominator_digits));
@@ -1419,7 +1319,7 @@ std::string number_formatter::fill_fraction_placeholders(const format_placeholde
         auto numerator_full = original_fractional_part * i;
         auto numerator_rounded = static_cast<int>(std::round(numerator_full));
         auto difference = std::fabs(original_fractional_part - (numerator_rounded / static_cast<long double>(i)));
-        
+
         if (difference < best_difference)
         {
             best_difference = difference;
@@ -1433,35 +1333,12 @@ std::string number_formatter::fill_fraction_placeholders(const format_placeholde
 
 std::string number_formatter::format_number(const format_code &format, long double number)
 {
-    static const std::vector<std::string> *month_names =
-    new std::vector<std::string>
-    {
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December"
-    };
+    static const std::vector<std::string> *month_names = new std::vector<std::string>{"January", "February", "March",
+        "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
     static const std::vector<std::string> *day_names =
-    new std::vector<std::string>
-    {
-        "Sunday",
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday"
-    };
-    
+        new std::vector<std::string>{"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+
     std::string result;
 
     if (number < 0)
@@ -1498,7 +1375,7 @@ std::string number_formatter::format_number(const format_code &format, long doub
             }
         }
     }
-    
+
     bool improper_fraction = true;
     std::size_t fill_index = 0;
     bool fill = false;
@@ -1527,7 +1404,8 @@ std::string number_formatter::format_number(const format_code &format, long doub
             if (part.placeholders.type == format_placeholders::placeholders_type::fractional_part
                 && (format.is_datetime || format.is_timedelta))
             {
-                auto digits = std::min(static_cast<std::size_t>(6), part.placeholders.num_zeros + part.placeholders.num_optionals);
+                auto digits = std::min(
+                    static_cast<std::size_t>(6), part.placeholders.num_zeros + part.placeholders.num_optionals);
                 auto denominator = static_cast<int>(std::pow(10.0, digits));
                 auto fractional_seconds = dt.microsecond / 1.0E6L * denominator;
                 fractional_seconds = std::round(fractional_seconds) / denominator;
@@ -1550,9 +1428,11 @@ std::string number_formatter::format_number(const format_code &format, long doub
                     break;
                 }
 
-                result.append(fill_fraction_placeholders(part.placeholders, format.parts[i].placeholders, number, improper_fraction));
+                result.append(fill_fraction_placeholders(
+                    part.placeholders, format.parts[i].placeholders, number, improper_fraction));
             }
-            else if (part.placeholders.scientific && part.placeholders.type == format_placeholders::placeholders_type::integer_part)
+            else if (part.placeholders.scientific
+                && part.placeholders.type == format_placeholders::placeholders_type::integer_part)
             {
                 auto integer_part = part.placeholders;
                 ++i;
@@ -1683,7 +1563,8 @@ std::string number_formatter::format_number(const format_code &format, long doub
             break;
 
         case template_part::template_type::elapsed_seconds:
-            result.append(std::to_string(24 * 60 * 60 * static_cast<int>(number) + (60 * 60 * dt.hour) + (60 * dt.minute) + dt.second));
+            result.append(std::to_string(
+                24 * 60 * 60 * static_cast<int>(number) + (60 * 60 * dt.hour) + (60 * dt.minute) + dt.second));
             break;
 
         case template_part::template_type::month_letter:
@@ -1699,9 +1580,9 @@ std::string number_formatter::format_number(const format_code &format, long doub
             break;
         }
     }
-    
+
     const std::size_t width = 11;
-    
+
     if (fill && result.size() < width)
     {
         auto remaining = width - result.size();
@@ -1739,32 +1620,58 @@ std::string number_formatter::format_text(const format_code &format, const std::
 
             break;
 
-        case template_part::template_type::fill: break;
-        case template_part::template_type::space: break;
-        case template_part::template_type::month_number: break;
-        case template_part::template_type::month_number_leading_zero: break;
-        case template_part::template_type::month_abbreviation: break;
-        case template_part::template_type::month_name: break;
-        case template_part::template_type::month_letter: break;
-        case template_part::template_type::day_number: break;
-        case template_part::template_type::day_number_leading_zero: break;
-        case template_part::template_type::day_abbreviation: break;
-        case template_part::template_type::day_name: break;
-        case template_part::template_type::year_short: break;
-        case template_part::template_type::year_long: break;
-        case template_part::template_type::hour: break;
-        case template_part::template_type::hour_leading_zero: break;
-        case template_part::template_type::minute: break;
-        case template_part::template_type::minute_leading_zero: break;
-        case template_part::template_type::second: break;
-        case template_part::template_type::second_fractional: break;
-        case template_part::template_type::second_leading_zero: break;
-        case template_part::template_type::second_leading_zero_fractional: break;
-        case template_part::template_type::am_pm: break;
-        case template_part::template_type::a_p: break;
-        case template_part::template_type::elapsed_hours: break;
-        case template_part::template_type::elapsed_minutes: break;
-        case template_part::template_type::elapsed_seconds: break;
+        case template_part::template_type::fill:
+            break;
+        case template_part::template_type::space:
+            break;
+        case template_part::template_type::month_number:
+            break;
+        case template_part::template_type::month_number_leading_zero:
+            break;
+        case template_part::template_type::month_abbreviation:
+            break;
+        case template_part::template_type::month_name:
+            break;
+        case template_part::template_type::month_letter:
+            break;
+        case template_part::template_type::day_number:
+            break;
+        case template_part::template_type::day_number_leading_zero:
+            break;
+        case template_part::template_type::day_abbreviation:
+            break;
+        case template_part::template_type::day_name:
+            break;
+        case template_part::template_type::year_short:
+            break;
+        case template_part::template_type::year_long:
+            break;
+        case template_part::template_type::hour:
+            break;
+        case template_part::template_type::hour_leading_zero:
+            break;
+        case template_part::template_type::minute:
+            break;
+        case template_part::template_type::minute_leading_zero:
+            break;
+        case template_part::template_type::second:
+            break;
+        case template_part::template_type::second_fractional:
+            break;
+        case template_part::template_type::second_leading_zero:
+            break;
+        case template_part::template_type::second_leading_zero_fractional:
+            break;
+        case template_part::template_type::am_pm:
+            break;
+        case template_part::template_type::a_p:
+            break;
+        case template_part::template_type::elapsed_hours:
+            break;
+        case template_part::template_type::elapsed_minutes:
+            break;
+        case template_part::template_type::elapsed_seconds:
+            break;
         }
     }
 

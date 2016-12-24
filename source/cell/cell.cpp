@@ -57,11 +57,12 @@ namespace {
 
 std::pair<bool, long double> cast_numeric(const std::string &s)
 {
-    const char *str = s.c_str();
-    char *str_end = nullptr;
-    auto result = std::strtold(str, &str_end);
-    if (str_end != str + s.size()) return {false, 0};
-    return {true, result};
+    auto str_end = static_cast<char *>(nullptr);
+    auto result = std::strtold(s.c_str(), &str_end);
+
+    return (str_end != s.c_str() + s.size())
+        ? std::make_pair(false, 0.0L)
+        : std::make_pair(true, result);
 }
 
 std::pair<bool, long double> cast_percentage(const std::string &s)
@@ -149,16 +150,14 @@ namespace xlnt {
 
 const std::unordered_map<std::string, int> &cell::error_codes()
 {
-    static const auto *codes = new std::unordered_map<std::string, int>
-    {
+    static const auto *codes = new std::unordered_map<std::string, int>{
         {"#NULL!", 0},
         {"#DIV/0!", 1},
         {"#VALUE!", 2},
         {"#REF!", 3},
         {"#NAME?", 4},
         {"#NUM!", 5},
-        {"#N/A!", 6}
-    };
+        {"#N/A!", 6}};
 
     return *codes;
 }
@@ -188,7 +187,8 @@ std::string cell::check_string(const std::string &to_check)
     return s;
 }
 
-cell::cell(detail::cell_impl *d) : d_(d)
+cell::cell(detail::cell_impl *d)
+    : d_(d)
 {
 }
 
@@ -546,56 +546,23 @@ const workbook &cell::workbook() const
     return worksheet().workbook();
 }
 
-// TODO: this shares a lot of code with worksheet::point_pos, try to reduce repetion
 std::pair<int, int> cell::anchor() const
 {
-    static const auto DefaultColumnWidth = 51.85L;
-    static const auto DefaultRowHeight = 15.0L;
+    int left = 0;
 
-    auto points_to_pixels = [](
-        long double value, long double dpi) { return static_cast<int>(std::ceil(value * dpi / 72)); };
-
-    auto left_columns = d_->column_ - 1;
-    int left_anchor = 0;
-    auto default_width = points_to_pixels(DefaultColumnWidth, 96.0L);
-
-    for (column_t column_index = 1; column_index <= left_columns; column_index++)
+    for (column_t column_index = 1; column_index <= d_->column_ - 1; column_index++)
     {
-        if (worksheet().has_column_properties(column_index))
-        {
-            auto cdw = worksheet().column_properties(column_index).width;
-
-            if (cdw > 0)
-            {
-                left_anchor += points_to_pixels(cdw, 96.0L);
-                continue;
-            }
-        }
-
-        left_anchor += default_width;
+        left += worksheet().cell(column_index, row()).width();
     }
 
-    auto top_rows = d_->row_ - 1;
-    int top_anchor = 0;
-    auto default_height = points_to_pixels(DefaultRowHeight, 96.0L);
+    int top = 0;
 
-    for (row_t row_index = 1; row_index <= top_rows; row_index++)
+    for (row_t row_index = 1; row_index <= d_->row_ - 1; row_index++)
     {
-        if (worksheet().has_row_properties(row_index))
-        {
-            auto rdh = worksheet().row_properties(row_index).height;
-
-            if (rdh > 0)
-            {
-                top_anchor += points_to_pixels(rdh, 96.0L);
-                continue;
-            }
-        }
-
-        top_anchor += default_height;
+        top += worksheet().cell(column(), row_index).height();
     }
 
-    return {left_anchor, top_anchor};
+    return {left, top};
 }
 
 cell::type cell::data_type() const
@@ -1024,38 +991,29 @@ void cell::comment(const std::string &text, const class font &comment_font, cons
     comment(xlnt::comment(rich_comment_text, author));
 }
 
-
 void cell::comment(const class comment &new_comment)
 {
     d_->comment_.set(new_comment);
 
     // offset comment 5 pixels down and 5 pixels right of the top right corner of the cell
     auto cell_position = anchor();
-
-    // todo: make this cell_position.first += width() instead
-    if (worksheet().has_column_properties(column()))
-    {
-        cell_position.first += static_cast<int>(worksheet().column_properties(column()).width);
-    }
-    else
-    {
-        static const auto DefaultColumnWidth = 51.85L;
-
-        auto points_to_pixels = [](long double value, long double dpi)
-        {
-            return static_cast<int>(std::ceil(value * dpi / 72));
-        };
-
-        cell_position.first += points_to_pixels(DefaultColumnWidth, 96.0L);
-    }
-
-    cell_position.first += 5;
+    cell_position.first += width() + 5;
     cell_position.second += 5;
 
     d_->comment_.get().position(cell_position.first, cell_position.second);
     d_->comment_.get().size(200, 100);
 
     worksheet().register_comments_in_manifest();
+}
+
+double cell::width() const
+{
+    return worksheet().column_width(column());
+}
+
+double cell::height() const
+{
+    return worksheet().row_height(row());
 }
 
 } // namespace xlnt

@@ -6,7 +6,8 @@ uri::uri()
 {
 }
 
-uri::uri(const std::string &uri_string) : path_(uri_string)
+uri::uri(const std::string &uri_string)
+    : path_(uri_string)
 {
 }
 

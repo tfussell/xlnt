@@ -29,12 +29,12 @@
 namespace xlnt {
 
 rich_text::rich_text(const std::string &plain_text)
-    : rich_text(rich_text_run{plain_text,{}})
+    : rich_text(rich_text_run{plain_text, {}})
 {
 }
 
 rich_text::rich_text(const std::string &plain_text, const class font &text_font)
-    : rich_text(rich_text_run{plain_text,text_font})
+    : rich_text(rich_text_run{plain_text, text_font})
 {
 }
 
@@ -51,7 +51,7 @@ void rich_text::clear()
 void rich_text::plain_text(const std::string &s)
 {
     clear();
-    add_run(rich_text_run{s,{}});
+    add_run(rich_text_run{s, {}});
 }
 
 std::string rich_text::plain_text() const
@@ -73,12 +73,12 @@ void rich_text::add_run(const rich_text_run &t)
 bool rich_text::operator==(const rich_text &rhs) const
 {
     if (runs_.size() != rhs.runs_.size()) return false;
-    
+
     for (std::size_t i = 0; i < runs_.size(); i++)
     {
-        if (runs_[i]!= rhs.runs_[i]) return false;
+        if (runs_[i] != rhs.runs_[i]) return false;
     }
-    
+
     return true;
 }
 

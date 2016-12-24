@@ -45,7 +45,7 @@ class worksheet;
 
 namespace detail {
 
-class ZipFileReader;
+class zip_file_reader;
 
 /// <summary>
 /// Handles writing a workbook into an XLSX file.
@@ -338,7 +338,7 @@ private:
 	/// <summary>
 	/// The ZIP file containing the files that make up the OOXML package.
 	/// </summary>
-	std::unique_ptr<ZipFileReader> archive_;
+	std::unique_ptr<zip_file_reader> archive_;
 
 	/// <summary>
 	/// Map of sheet titles to relationship IDs.

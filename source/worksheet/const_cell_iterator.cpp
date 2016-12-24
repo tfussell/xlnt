@@ -28,7 +28,10 @@
 namespace xlnt {
 
 const_cell_iterator::const_cell_iterator(worksheet ws, const cell_reference &start_cell, major_order order)
-    : ws_(ws), current_cell_(start_cell), range_(start_cell.to_range()), order_(order)
+    : ws_(ws),
+      current_cell_(start_cell),
+      range_(start_cell.to_range()),
+      order_(order)
 {
 }
 
@@ -65,6 +68,7 @@ const_cell_iterator const_cell_iterator::operator--(int)
 {
     const_cell_iterator old = *this;
     --*this;
+
     return old;
 }
 
@@ -86,6 +90,7 @@ const_cell_iterator const_cell_iterator::operator++(int)
 {
     const_cell_iterator old = *this;
     ++*this;
+
     return old;
 }
 

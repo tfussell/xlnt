@@ -73,96 +73,99 @@ class XLNT_API worksheet
 {
 public:
     /// <summary>
-    ///
+    /// Iterate over a non-const worksheet with an iterator of this type.
     /// </summary>
     using iterator = range_iterator;
 
     /// <summary>
-    ///
+    /// Iterate over a non-const worksheet with an iterator of this type.
     /// </summary>
     using const_iterator = const_range_iterator;
 
     /// <summary>
-    ///
+    /// Iterate in reverse over a non-const worksheet with an iterator of this type.
     /// </summary>
     using reverse_iterator = std::reverse_iterator<iterator>;
 
     /// <summary>
-    ///
+    /// Iterate in reverse order over a const worksheet with an iterator of this type.
     /// </summary>
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     /// <summary>
-    ///
+    /// Construct a null worksheet. No methods should be called on such a worksheet.
     /// </summary>
     worksheet();
 
     /// <summary>
-    ///
+    /// Copy constructor. This worksheet will point to the same memory as rhs's worksheet.
     /// </summary>
     worksheet(const worksheet &rhs);
 
     /// <summary>
-    ///
+    /// Returns a reference to the workbook this worksheet is owned by.
     /// </summary>
     class workbook &workbook();
 
     /// <summary>
-    ///
+    /// Returns a reference to the workbook this worksheet is owned by.
     /// </summary>
     const class workbook &workbook() const;
 
     /// <summary>
-    ///
+    /// Deletes data held in the worksheet that does not affect the internal data or display.
+    /// For example, unreference styles and empty cells will be removed.
     /// </summary>
     void garbage_collect();
 
     // identification
 
     /// <summary>
-    ///
+    /// Returns the unique numeric identifier of this worksheet. This will sometimes but not necessarily
+    /// be the index of the worksheet in the workbook.
     /// </summary>
     std::size_t id() const;
 
     /// <summary>
-    ///
+    /// Set the unique numeric identifier. The id defaults to the lowest unused id in the workbook
+    /// so this should not be called without a good reason.
     /// </summary>
     void id(std::size_t id);
 
     /// <summary>
-    ///
+    /// Returns the title of this sheet.
     /// </summary>
     std::string title() const;
 
     /// <summary>
-    ///
+    /// Sets the title of this sheet.
     /// </summary>
     void title(const std::string &title);
 
     // freeze panes
 
     /// <summary>
-    ///
+    /// Returns the top left corner of the region above and to the left of which panes are frozen.
     /// </summary>
     cell_reference frozen_panes() const;
 
     /// <summary>
-    ///
+    /// Freeze panes above and to the left of top_left_cell.
     /// </summary>
     void freeze_panes(cell top_left_cell);
 
     /// <summary>
-    ///
+    /// Freeze panes above and to the left of top_left_coordinate.
     /// </summary>
     void freeze_panes(const cell_reference &top_left_coordinate);
 
     /// <summary>
-    ///
+    /// Remove frozen panes. The data in those panes will be unaffected--this affects only the view.
     /// </summary>
     void unfreeze_panes();
 
     /// <summary>
-    ///
+    /// Returns true if this sheet has a frozen row, frozen column, or both.
     /// </summary>
     bool has_frozen_panes() const;
 
@@ -261,6 +264,12 @@ public:
     void add_column_properties(column_t column, const class column_properties &props);
 
     /// <summary>
+    /// Calculate the width of the given column. This will be the default column width if
+    /// a custom width is not set on this column's column_properties.
+    /// </summary>
+    double column_width(column_t column) const;
+
+    /// <summary>
     ///
     /// </summary>
     xlnt::row_properties &row_properties(row_t row);
@@ -279,6 +288,12 @@ public:
     ///
     /// </summary>
     void add_row_properties(row_t row, const class row_properties &props);
+
+    /// <summary>
+    /// Calculate the height of the given row. This will be the default row height if
+    /// a custom height is not set on this row's row_properties.
+    /// </summary>
+    double row_height(row_t row) const;
 
     // positioning
 
@@ -686,10 +701,33 @@ public:
     /// </summary>
     void add_view(const sheet_view &new_view);
 
-    std::vector<row_t> &row_breaks();
-    const std::vector<row_t> &row_breaks() const;
-    std::vector<column_t> &column_breaks();
-    const std::vector<column_t> &column_breaks() const;
+    // page breaks
+
+    /// <summary>
+    /// Remove all manual column and row page breaks (represented as dashed
+    /// blue lines in the page view in Excel).
+    /// </summary>
+    void clear_page_breaks();
+
+    /// <summary>
+    /// Returns vector where each element represents a row which will break a page below it.
+    /// </summary>
+    const std::vector<row_t> &page_break_rows() const;
+
+    /// <summary>
+    /// Add a page break at the given row.
+    /// </summary>
+    void page_break_at_row(row_t row);
+
+    /// <summary>
+    /// Returns vector where each element represents a column which will break a page to the right.
+    /// </summary>
+    const std::vector<column_t> &page_break_columns() const;
+
+    /// <summary>
+    /// Add a page break at the given column.
+    /// </summary>
+    void page_break_at_column(column_t column);
 
 private:
     friend class cell;

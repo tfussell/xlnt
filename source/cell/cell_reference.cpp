@@ -41,18 +41,19 @@ cell_reference &cell_reference::make_absolute(bool absolute_column, bool absolut
 {
     column_absolute(absolute_column);
     row_absolute(absolute_row);
-    
+
     return *this;
 }
 
-cell_reference::cell_reference() : cell_reference(1, 1)
+cell_reference::cell_reference()
+    : cell_reference(1, 1)
 {
 }
 
 cell_reference::cell_reference(const std::string &string)
 {
     auto split = split_reference(string, absolute_column_, absolute_row_);
-    
+
     column(split.first);
     row(split.second);
 }
@@ -65,16 +66,13 @@ cell_reference::cell_reference(const char *reference_string)
 cell_reference::cell_reference(column_t column_index, row_t row)
     : column_(column_index), row_(row), absolute_row_(false), absolute_column_(false)
 {
-    if (row_ == 0
-        || column_ == 0
-        || !(row_ <= constants::max_row())
-        || !(column_ <= constants::max_column()))
+    if (row_ == 0 || column_ == 0 || !(row_ <= constants::max_row()) || !(column_ <= constants::max_column()))
     {
         throw invalid_cell_reference(column_, row_);
     }
 }
 
-range_reference cell_reference::operator, (const xlnt::cell_reference &other) const
+range_reference cell_reference::operator,(const xlnt::cell_reference &other) const
 {
     return range_reference(*this, other);
 }
@@ -82,19 +80,19 @@ range_reference cell_reference::operator, (const xlnt::cell_reference &other) co
 std::string cell_reference::to_string() const
 {
     std::string string_representation;
-    
+
     if (absolute_column_)
     {
         string_representation.append("$");
     }
-    
+
     string_representation.append(column_.column_string());
-    
+
     if (absolute_row_)
     {
         string_representation.append("$");
     }
-    
+
     string_representation.append(std::to_string(row_));
 
     return string_representation;
@@ -111,8 +109,8 @@ std::pair<std::string, row_t> cell_reference::split_reference(const std::string 
     return split_reference(reference_string, ignore1, ignore2);
 }
 
-std::pair<std::string, row_t> cell_reference::split_reference(const std::string &reference_string,
-                                                              bool &absolute_column, bool &absolute_row)
+std::pair<std::string, row_t> cell_reference::split_reference(
+    const std::string &reference_string, bool &absolute_column, bool &absolute_row)
 {
     absolute_column = false;
     absolute_row = false;
@@ -183,7 +181,7 @@ std::pair<std::string, row_t> cell_reference::split_reference(const std::string 
         row_string = row_string.substr(1);
     }
 
-    return { column_string, std::stoi(row_string) };
+    return {column_string, std::stoi(row_string)};
 }
 
 bool cell_reference::column_absolute() const
@@ -263,19 +261,16 @@ bool cell_reference::operator!=(const char *reference_string) const
 
 cell_reference cell_reference::make_offset(int column_offset, int row_offset) const
 {
-    //TODO: check for overflow/underflow
+    // TODO: check for overflow/underflow
     auto relative_column = static_cast<column_t::index_t>(static_cast<int>(column_.index) + column_offset);
     auto relative_row = static_cast<row_t>(static_cast<int>(row_) + row_offset);
     return cell_reference(relative_column, relative_row);
-                          
 }
 
 bool cell_reference::operator==(const cell_reference &comparand) const
 {
-    return comparand.column_ == column_ &&
-        comparand.row_ == row_ &&
-        absolute_column_ == comparand.absolute_column_ &&
-        absolute_row_ == comparand.absolute_row_;
+    return comparand.column_ == column_ && comparand.row_ == row_ && absolute_column_ == comparand.absolute_column_
+        && absolute_row_ == comparand.absolute_row_;
 }
 
 } // namespace xlnt

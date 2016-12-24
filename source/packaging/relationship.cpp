@@ -30,12 +30,9 @@ relationship::relationship()
 {
 }
 
-relationship::relationship(const std::string &id, relationship_type t, const uri &source, const uri &target, xlnt::target_mode mode)
-	: id_(id),
-	type_(t),
-	source_(source),
-	target_(target),
-	mode_(mode)
+relationship::relationship(
+    const std::string &id, relationship_type t, const uri &source, const uri &target, xlnt::target_mode mode)
+    : id_(id), type_(t), source_(source), target_(target), mode_(mode)
 {
 }
 
@@ -66,11 +63,8 @@ relationship_type relationship::type() const
 
 bool relationship::operator==(const relationship &rhs) const
 {
-    return type_ == rhs.type_ 
-		&& id_ == rhs.id_ 
-		&& source_ == rhs.source_
-		&& target_ == rhs.target_
-		&& mode_ == rhs.mode_;
+    return type_ == rhs.type_ && id_ == rhs.id_ && source_ == rhs.source_ && target_ == rhs.target_
+        && mode_ == rhs.mode_;
 }
 
 } // namespace xlnt

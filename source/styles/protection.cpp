@@ -26,7 +26,8 @@
 
 namespace xlnt {
 
-protection::protection() : locked_(false), hidden_(false)
+protection::protection()
+    : locked_(false), hidden_(false)
 {
 }
 
@@ -38,7 +39,7 @@ bool protection::locked() const
 protection &protection::locked(bool locked)
 {
     locked_ = locked;
-	return *this;
+    return *this;
 }
 
 bool protection::hidden() const
@@ -49,7 +50,7 @@ bool protection::hidden() const
 protection &protection::hidden(bool hidden)
 {
     hidden_ = hidden;
-	return *this;
+    return *this;
 }
 
 XLNT_API bool operator==(const protection &left, const protection &right)

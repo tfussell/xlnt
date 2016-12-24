@@ -27,13 +27,13 @@
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
 #elif defined(__linux)
-#include <unistd.h>
 #include <linux/limits.h>
 #include <sys/types.h>
+#include <unistd.h>
 #endif
 
-#include <detail/include_windows.hpp>
 #include <xlnt/utils/path.hpp>
+#include <detail/include_windows.hpp>
 
 namespace {
 
@@ -41,43 +41,41 @@ namespace {
 
 char system_separator()
 {
-	return '\\';
+    return '\\';
 }
 
 bool is_drive_letter(char letter)
 {
-	return letter >= 'A' && letter <= 'Z';
+    return letter >= 'A' && letter <= 'Z';
 }
 
 bool is_root(const std::string &part)
 {
-	if (part.size() == 1 && part[0] == '/') return true;
-	if (part.size() != 3) return false;
+    if (part.size() == 1 && part[0] == '/') return true;
+    if (part.size() != 3) return false;
 
-	return is_drive_letter(part[0]) && part[1] == ':'
-		&& (part[2] == '\\' || part[2] == '/');
+    return is_drive_letter(part[0]) && part[1] == ':' && (part[2] == '\\' || part[2] == '/');
 }
 
 bool is_absolute(const std::string &part)
 {
-	if (!part.empty() && part[0] == '/') return true;
-	if (part.size() < 3) return false;
+    if (!part.empty() && part[0] == '/') return true;
+    if (part.size() < 3) return false;
 
-	return is_root(part.substr(0, 3));
+    return is_root(part.substr(0, 3));
 }
 
 #else
 
 char system_separator()
 {
-	return '/';
+    return '/';
 }
 
 bool is_root(const std::string &part)
 {
-	return part == "/";
+    return part == "/";
 }
-
 
 bool is_absolute(const std::string &part)
 {
@@ -88,38 +86,38 @@ bool is_absolute(const std::string &part)
 
 std::vector<std::string> split_path(const std::string &path, char delim)
 {
-	std::vector<std::string> split;
-	std::string::size_type previous_index = 0;
-	auto separator_index = path.find(delim);
+    std::vector<std::string> split;
+    std::string::size_type previous_index = 0;
+    auto separator_index = path.find(delim);
 
-	while (separator_index != std::string::npos)
-	{
-		auto part = path.substr(previous_index, separator_index - previous_index);
-		split.push_back(part);
+    while (separator_index != std::string::npos)
+    {
+        auto part = path.substr(previous_index, separator_index - previous_index);
+        split.push_back(part);
 
-		previous_index = separator_index + 1;
-		separator_index = path.find(delim, previous_index);
-	}	
+        previous_index = separator_index + 1;
+        separator_index = path.find(delim, previous_index);
+    }
 
-	// Don't add trailing slash
-	if (previous_index < path.size())
-	{
-		split.push_back(path.substr(previous_index));
-	}
+    // Don't add trailing slash
+    if (previous_index < path.size())
+    {
+        split.push_back(path.substr(previous_index));
+    }
 
-	return split;
+    return split;
 }
 
 bool file_exists(const std::string &path)
 {
-	struct stat info;
-	return stat(path.c_str(), &info) == 0 && (info.st_mode & S_IFREG);
+    struct stat info;
+    return stat(path.c_str(), &info) == 0 && (info.st_mode & S_IFREG);
 }
 
 bool directory_exists(const std::string path)
 {
-	struct stat info;
-	return stat(path.c_str(), &info) == 0 && (info.st_mode & S_IFDIR);
+    struct stat info;
+    return stat(path.c_str(), &info) == 0 && (info.st_mode & S_IFDIR);
 }
 
 } // namespace
@@ -128,27 +126,28 @@ namespace xlnt {
 
 char path::system_separator()
 {
-	return ::system_separator();
+    return ::system_separator();
 }
 
 path::path()
 {
 }
 
-path::path(const std::string &path_string) : internal_(path_string)
+path::path(const std::string &path_string)
+    : internal_(path_string)
 {
 }
 
-// general attributes 
+// general attributes
 
 bool path::is_relative() const
 {
-	return !is_absolute();
+    return !is_absolute();
 }
 
 bool path::is_absolute() const
 {
-	return ::is_absolute(internal_);
+    return ::is_absolute(internal_);
 }
 
 bool path::is_root() const
@@ -161,44 +160,44 @@ path path::parent() const
     if (is_root()) return *this;
 
     auto split_path = split();
-    
+
     split_path.pop_back();
-    
+
     if (split_path.empty())
     {
         return path("");
     }
-    
+
     path result;
-    
+
     for (const auto &component : split_path)
     {
         result = result.append(component);
     }
-    
-	return result;
+
+    return result;
 }
 
 std::string path::filename() const
 {
     auto split_path = split();
-	return split_path.empty() ? "" : split_path.back();
+    return split_path.empty() ? "" : split_path.back();
 }
 
 std::string path::extension() const
 {
-	auto base = filename();
-	auto last_dot = base.find_last_of('.');
-	
-	return last_dot == std::string::npos ? "" : base.substr(last_dot + 1);
+    auto base = filename();
+    auto last_dot = base.find_last_of('.');
+
+    return last_dot == std::string::npos ? "" : base.substr(last_dot + 1);
 }
 
 std::pair<std::string, std::string> path::split_extension() const
 {
-	auto base = filename();
-	auto last_dot = base.find_last_of('.');
+    auto base = filename();
+    auto last_dot = base.find_last_of('.');
 
-	return{ base.substr(0, last_dot), base.substr(last_dot + 1) };
+    return {base.substr(0, last_dot), base.substr(last_dot + 1)};
 }
 
 // conversion
@@ -215,18 +214,18 @@ std::vector<std::string> path::split() const
 
 path path::resolve(const path &base_path) const
 {
-	if (is_absolute())
-	{
-		return *this;
-	}
+    if (is_absolute())
+    {
+        return *this;
+    }
 
-	path copy(base_path.internal_);
+    path copy(base_path.internal_);
 
-	for (const auto &part : split())
-	{
+    for (const auto &part : split())
+    {
         copy = copy.append(part);
-	}
-    
+    }
+
     return copy;
 }
 
@@ -234,28 +233,28 @@ path path::resolve(const path &base_path) const
 
 bool path::exists() const
 {
-	return is_file() || is_directory();
+    return is_file() || is_directory();
 }
 
 bool path::is_directory() const
 {
-	return directory_exists(string());
+    return directory_exists(string());
 }
 
 bool path::is_file() const
 {
-	return file_exists(string());
+    return file_exists(string());
 }
 
 // filesystem
 
 std::string path::read_contents() const
 {
-	std::ifstream f(string());
-	std::ostringstream ss;
-	ss << f.rdbuf();
+    std::ifstream f(string());
+    std::ostringstream ss;
+    ss << f.rdbuf();
 
-	return ss.str();
+    return ss.str();
 }
 
 // append
@@ -263,27 +262,27 @@ std::string path::read_contents() const
 path path::append(const std::string &to_append) const
 {
     path copy(internal_);
-    
+
     if (!internal_.empty() && internal_.back() != guess_separator())
     {
         copy.internal_.push_back(guess_separator());
     }
-    
+
     copy.internal_.append(to_append);
-    
+
     return copy;
 }
 
 path path::append(const path &to_append) const
 {
-	path copy(internal_);
+    path copy(internal_);
 
-	for (const auto &component : to_append.split())
-	{
-		copy = copy.append(component);
-	}
+    for (const auto &component : to_append.split())
+    {
+        copy = copy.append(component);
+    }
 
-	return copy;
+    return copy;
 }
 
 char path::guess_separator() const
