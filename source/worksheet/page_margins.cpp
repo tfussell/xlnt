@@ -88,5 +88,5 @@ void page_margins::footer(double footer)
 {
     footer_ = footer;
 }
-    
+
 } // namespace xlnt

@@ -120,12 +120,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-    font &size(std::size_t size);
+    font &size(double size);
 
     /// <summary>
     ///
     /// </summary>
-    std::size_t size() const;
+    double size() const;
 
     /// <summary>
     ///
@@ -211,7 +211,7 @@ private:
     /// <summary>
     ///
     /// </summary>
-    optional<std::size_t> size_;
+    optional<double> size_;
 
     /// <summary>
     ///

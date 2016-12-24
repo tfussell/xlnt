@@ -44,7 +44,7 @@ class worksheet;
 
 namespace detail {
 
-class ZipFileWriter;
+class zip_file_writer;
 
 /// <summary>
 /// Handles writing a workbook into an XLSX file.
@@ -137,8 +137,10 @@ private:
 	/// </summary>
 	const workbook &source_;
     
-	ZipFileWriter *archive_;
+	zip_file_writer *archive_;
     std::unique_ptr<xml::serializer> current_part_serializer_;
+    std::unique_ptr<std::streambuf> current_part_streambuf_;
+    std::ostream current_part_stream_;
 };
 
 } // namespace detail

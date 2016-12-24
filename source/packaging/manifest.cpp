@@ -64,17 +64,17 @@ path manifest::canonicalize(const std::vector<xlnt::relationship> &rels) const
             absolute_parts.pop_back();
             continue;
         }
-        
+
         absolute_parts.push_back(component);
     }
-    
+
     xlnt::path result;
-    
+
     for (const auto &component : absolute_parts)
     {
         result = result.append(component);
     }
-    
+
     return result;
 }
 
@@ -86,7 +86,7 @@ bool manifest::has_relationship(const path &part, relationship_type type) const
     {
         if (rel.second.type() == type) return true;
     }
-    
+
     return false;
 }
 
@@ -98,13 +98,13 @@ relationship manifest::relationship(const path &part, relationship_type type) co
     {
         if (rel.second.type() == type) return rel.second;
     }
-    
-	throw key_not_found();
+
+    throw key_not_found();
 }
 
 std::vector<xlnt::relationship> manifest::relationships(const path &part, relationship_type type) const
 {
-	std::vector<xlnt::relationship> matches;
+    std::vector<xlnt::relationship> matches;
 
     if (has_relationship(part, type))
     {
@@ -117,23 +117,23 @@ std::vector<xlnt::relationship> manifest::relationships(const path &part, relati
         }
     }
 
-	return matches;
+    return matches;
 }
 
 std::string manifest::content_type(const path &part) const
 {
-	auto absolute = part.resolve(path("/"));
+    auto absolute = part.resolve(path("/"));
 
     if (has_override_type(absolute))
     {
         return override_type(absolute);
     }
-    
+
     if (has_default_type(part.extension()))
     {
         return default_type(part.extension());
     }
-    
+
     throw key_not_found();
 }
 
@@ -144,27 +144,27 @@ void manifest::register_override_type(const path &part, const std::string &conte
 
 void manifest::unregister_override_type(const path &part)
 {
-	override_content_types_.erase(part);
+    override_content_types_.erase(part);
 }
 
 std::vector<path> manifest::parts_with_overriden_types() const
 {
-	std::vector<path> overriden;
+    std::vector<path> overriden;
 
-	for (const auto &part : override_content_types_)
-	{
+    for (const auto &part : override_content_types_)
+    {
         overriden.push_back(part.first);
-	}
+    }
 
-	return overriden;
+    return overriden;
 }
 
 std::vector<relationship> manifest::relationships(const path &part) const
 {
-	if (relationships_.find(part) == relationships_.end())
-	{
-		return {};
-	}
+    if (relationships_.find(part) == relationships_.end())
+    {
+        return {};
+    }
 
     std::vector<xlnt::relationship> relationships;
 
@@ -172,36 +172,36 @@ std::vector<relationship> manifest::relationships(const path &part) const
     {
         relationships.push_back(rel.second);
     }
-    
-	return relationships;
+
+    return relationships;
 }
 
 relationship manifest::relationship(const path &part, const std::string &rel_id) const
 {
-	if (relationships_.find(part) == relationships_.end())
-	{
-		throw key_not_found();
-	}
+    if (relationships_.find(part) == relationships_.end())
+    {
+        throw key_not_found();
+    }
 
-	for (const auto &rel : relationships_.at(part))
-	{
-		if (rel.second.id() == rel_id)
-		{
-			return rel.second;
-		}
-	}
+    for (const auto &rel : relationships_.at(part))
+    {
+        if (rel.second.id() == rel_id)
+        {
+            return rel.second;
+        }
+    }
 
-	throw key_not_found();
+    throw key_not_found();
 }
 
 std::vector<path> manifest::parts() const
 {
-	std::unordered_set<path> parts;
+    std::unordered_set<path> parts;
 
-	for (const auto &part_rels : relationships_)
-	{
+    for (const auto &part_rels : relationships_)
+    {
         parts.insert(part_rels.first);
-        
+
         for (const auto &rel : part_rels.second)
         {
             if (rel.second.target_mode() == target_mode::internal)
@@ -209,78 +209,79 @@ std::vector<path> manifest::parts() const
                 parts.insert(rel.second.target().path());
             }
         }
-	}
+    }
 
-	return std::vector<path>(parts.begin(), parts.end());
+    return std::vector<path>(parts.begin(), parts.end());
 }
 
-std::string manifest::register_relationship(const uri &source, relationship_type type, const uri &target, target_mode mode)
+std::string manifest::register_relationship(
+    const uri &source, relationship_type type, const uri &target, target_mode mode)
 {
     xlnt::relationship rel(next_relationship_id(source.path()), type, source, target, mode);
-	return register_relationship(rel);
+    return register_relationship(rel);
 }
 
 std::string manifest::register_relationship(const class relationship &rel)
 {
     relationships_[rel.source().path()][rel.id()] = rel;
-	return rel.id();
+    return rel.id();
 }
 
 void manifest::unregister_relationship(const uri &source, const std::string &rel_id)
 {
-	relationships_.at(source.path()).erase(rel_id);
+    relationships_.at(source.path()).erase(rel_id);
 }
 
 bool manifest::has_default_type(const std::string &extension) const
 {
-	return default_content_types_.find(extension) != default_content_types_.end();
+    return default_content_types_.find(extension) != default_content_types_.end();
 }
 
 std::vector<std::string> manifest::extensions_with_default_types() const
 {
-	std::vector<std::string> extensions;
+    std::vector<std::string> extensions;
 
-	for (const auto &extension_type_pair : default_content_types_)
-	{
-		extensions.push_back(extension_type_pair.first);
-	}
+    for (const auto &extension_type_pair : default_content_types_)
+    {
+        extensions.push_back(extension_type_pair.first);
+    }
 
-	return extensions;
+    return extensions;
 }
 
 std::string manifest::default_type(const std::string &extension) const
 {
-	if (default_content_types_.find(extension) == default_content_types_.end())
-	{
-		throw key_not_found();
-	}
+    if (default_content_types_.find(extension) == default_content_types_.end())
+    {
+        throw key_not_found();
+    }
 
-	return default_content_types_.at(extension);
+    return default_content_types_.at(extension);
 }
 
 void manifest::register_default_type(const std::string &extension, const std::string &content_type)
 {
-	default_content_types_[extension] = content_type;
+    default_content_types_[extension] = content_type;
 }
 
 void manifest::unregister_default_type(const std::string &extension)
 {
-	default_content_types_.erase(extension);
+    default_content_types_.erase(extension);
 }
 
 std::string manifest::next_relationship_id(const path &part) const
 {
     if (relationships_.find(part) == relationships_.end()) return "rId1";
 
-	std::size_t index = 1;
-	const auto &part_rels = relationships_.at(part);
+    std::size_t index = 1;
+    const auto &part_rels = relationships_.at(part);
 
-	while (part_rels.find("rId" + std::to_string(index)) != part_rels.end())
-	{
-		++index;
-	}
+    while (part_rels.find("rId" + std::to_string(index)) != part_rels.end())
+    {
+        ++index;
+    }
 
-	return "rId" + std::to_string(index);
+    return "rId" + std::to_string(index);
 }
 
 bool manifest::has_override_type(const xlnt::path &part) const
@@ -294,7 +295,7 @@ std::string manifest::override_type(const xlnt::path &part) const
     {
         throw key_not_found();
     }
-    
+
     return override_content_types_.at(part);
 }
 

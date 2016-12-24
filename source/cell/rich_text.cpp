@@ -21,43 +21,70 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#include <xlnt/workbook/const_worksheet_iterator.hpp>
-#include <xlnt/workbook/workbook.hpp>
-#include <xlnt/worksheet/worksheet.hpp>
+#include <numeric>
+
+#include <xlnt/cell/rich_text.hpp>
+#include <xlnt/cell/rich_text_run.hpp>
 
 namespace xlnt {
 
-const_worksheet_iterator::const_worksheet_iterator(const workbook &wb, std::size_t index)
-    : wb_(wb), index_(index)
+rich_text::rich_text(const std::string &plain_text)
+    : rich_text(rich_text_run{plain_text, {}})
 {
 }
 
-const_worksheet_iterator::const_worksheet_iterator(const const_worksheet_iterator &rhs)
-    : wb_(rhs.wb_), index_(rhs.index_)
+rich_text::rich_text(const std::string &plain_text, const class font &text_font)
+    : rich_text(rich_text_run{plain_text, text_font})
 {
 }
 
-const worksheet const_worksheet_iterator::operator*()
+rich_text::rich_text(const rich_text_run &single_run)
 {
-    return wb_.sheet_by_index(index_);
+    add_run(single_run);
 }
 
-const_worksheet_iterator &const_worksheet_iterator::operator++()
+void rich_text::clear()
 {
-    index_++;
-    return *this;
+    runs_.clear();
 }
 
-const_worksheet_iterator const_worksheet_iterator::operator++(int)
+void rich_text::plain_text(const std::string &s)
 {
-    const_worksheet_iterator old(wb_, index_);
-    ++*this;
-    return old;
+    clear();
+    add_run(rich_text_run{s, {}});
 }
 
-bool const_worksheet_iterator::operator==(const const_worksheet_iterator &comparand) const
+std::string rich_text::plain_text() const
 {
-    return index_ == comparand.index_ && wb_ == comparand.wb_;
+    return std::accumulate(runs_.begin(), runs_.end(), std::string(),
+        [](const std::string &a, const rich_text_run &run) { return a + run.first; });
+}
+
+std::vector<rich_text_run> rich_text::runs() const
+{
+    return runs_;
+}
+
+void rich_text::add_run(const rich_text_run &t)
+{
+    runs_.push_back(t);
+}
+
+bool rich_text::operator==(const rich_text &rhs) const
+{
+    if (runs_.size() != rhs.runs_.size()) return false;
+
+    for (std::size_t i = 0; i < runs_.size(); i++)
+    {
+        if (runs_[i] != rhs.runs_[i]) return false;
+    }
+
+    return true;
+}
+
+bool rich_text::operator==(const std::string &rhs) const
+{
+    return *this == rich_text(rhs);
 }
 
 } // namespace xlnt

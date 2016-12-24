@@ -20,16 +20,20 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#include <xlnt/worksheet/range.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/worksheet/const_range_iterator.hpp>
+#include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
 namespace xlnt {
 
-const_range_iterator::const_range_iterator(const worksheet &ws, const range_reference &start_cell, major_order order)
-    : ws_(ws.d_), current_cell_(start_cell.top_left()), range_(start_cell), order_(order)
+const_range_iterator::const_range_iterator(const worksheet &ws,
+    const range_reference &start_cell, major_order order)
+    : ws_(ws.d_),
+      current_cell_(start_cell.top_left()),
+      range_(start_cell),
+      order_(order)
 {
 }
 
@@ -40,7 +44,9 @@ const_range_iterator::const_range_iterator(const const_range_iterator &other)
 
 bool const_range_iterator::operator==(const const_range_iterator &other) const
 {
-    return ws_ == other.ws_ && current_cell_ == other.current_cell_ && order_ == other.order_;
+    return ws_ == other.ws_
+        && current_cell_ == other.current_cell_
+        && order_ == other.order_;
 }
 
 bool const_range_iterator::operator!=(const const_range_iterator &other) const
@@ -66,7 +72,7 @@ const_range_iterator const_range_iterator::operator--(int)
 {
     const_range_iterator old = *this;
     --*this;
-    
+
     return old;
 }
 
@@ -88,7 +94,7 @@ const_range_iterator const_range_iterator::operator++(int)
 {
     const_range_iterator old = *this;
     ++*this;
-    
+
     return old;
 }
 
@@ -97,12 +103,12 @@ const cell_vector const_range_iterator::operator*() const
     if (order_ == major_order::row)
     {
         range_reference reference(range_.top_left().column_index(), current_cell_.row(),
-                                  range_.bottom_right().column_index(), current_cell_.row());
+            range_.bottom_right().column_index(), current_cell_.row());
         return cell_vector(ws_, reference, order_);
     }
 
     range_reference reference(current_cell_.column_index(), range_.top_left().row(),
-                              current_cell_.column_index(), range_.bottom_right().row());
+        current_cell_.column_index(), range_.bottom_right().row());
     return cell_vector(ws_, reference, order_);
 }
 

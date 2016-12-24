@@ -20,9 +20,9 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#include <xlnt/worksheet/range.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/worksheet/const_range_iterator.hpp>
+#include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/range_iterator.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
@@ -30,7 +30,10 @@
 namespace xlnt {
 
 range::range(worksheet ws, const range_reference &reference, major_order order, bool skip_null)
-    : ws_(ws), ref_(reference), order_(order), skip_null_(skip_null)
+    : ws_(ws),
+      ref_(reference),
+      order_(order),
+      skip_null_(skip_null)
 {
 }
 
@@ -60,36 +63,37 @@ std::size_t range::length() const
 
 bool range::operator==(const range &comparand) const
 {
-    return ref_ == comparand.ref_ && ws_ == comparand.ws_ && order_ == comparand.order_;
+    return ref_ == comparand.ref_
+        && ws_ == comparand.ws_
+        && order_ == comparand.order_;
 }
 
 cell_vector range::vector(std::size_t vector_index)
 {
+    range_reference vector_ref = ref_;
+
     if (order_ == major_order::row)
     {
-        range_reference reference(
-            ref_.top_left().column_index(),
-            static_cast<row_t>(static_cast<std::size_t>(ref_.top_left().row()) + vector_index),
-            ref_.bottom_right().column_index(),
-            static_cast<row_t>(static_cast<std::size_t>(ref_.top_left().row()) + vector_index));
-
-        return cell_vector(ws_, reference, order_);
+        auto row = ref_.top_left().row() + static_cast<row_t>(vector_index);
+        vector_ref.top_left().row(row);
+        vector_ref.bottom_right().row(row);
+    }
+    else
+    {
+        auto column = ref_.top_left().column() + static_cast<column_t::index_t>(vector_index);
+        vector_ref.top_left().column_index(column);
+        vector_ref.bottom_right().column_index(column);
     }
 
-    range_reference reference(
-        static_cast<column_t::index_t>(static_cast<std::size_t>(ref_.top_left().column().index) + vector_index),
-        ref_.top_left().row(),
-        static_cast<column_t::index_t>(static_cast<std::size_t>(ref_.top_left().column().index) + vector_index),
-        ref_.bottom_right().row());
-
-    return cell_vector(ws_, reference, order_);
+    return cell_vector(ws_, vector_ref, order_);
 }
 
 bool range::contains(const cell_reference &ref)
 {
-    return ref_.top_left().column_index() <= ref.column_index() &&
-           ref_.bottom_right().column_index() >= ref.column_index() &&
-           ref_.top_left().row() <= ref.row() && ref_.bottom_right().row() >= ref.row();
+    return ref_.top_left().column_index() <= ref.column_index()
+        && ref_.bottom_right().column_index() >= ref.column_index()
+        && ref_.top_left().row() <= ref.row()
+        && ref_.bottom_right().row() >= ref.row();
 }
 
 cell range::cell(const cell_reference &ref)

@@ -29,12 +29,7 @@ namespace xlnt {
 namespace detail {
 
 cell_impl::cell_impl()
-    : type_(cell_type::null),
-      parent_(nullptr),
-      column_(1),
-      row_(1),
-      is_merged_(false),
-      value_numeric_(0)
+    : type_(cell_type::null), parent_(nullptr), column_(1), row_(1), is_merged_(false), value_numeric_(0)
 {
 }
 

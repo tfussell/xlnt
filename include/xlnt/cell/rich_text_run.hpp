@@ -1,5 +1,4 @@
-// Copyright (c) 2014-2016 Thomas Fussell
-// Copyright (c) 2010-2015 openpyxl
+// Copyright (c) 2016 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,43 +20,17 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#include <xlnt/workbook/const_worksheet_iterator.hpp>
-#include <xlnt/workbook/workbook.hpp>
-#include <xlnt/worksheet/worksheet.hpp>
+
+#pragma once
+
+#include <string>
+
+#include <xlnt/xlnt_config.hpp>
+#include <xlnt/styles/font.hpp>
+#include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 
-const_worksheet_iterator::const_worksheet_iterator(const workbook &wb, std::size_t index)
-    : wb_(wb), index_(index)
-{
-}
-
-const_worksheet_iterator::const_worksheet_iterator(const const_worksheet_iterator &rhs)
-    : wb_(rhs.wb_), index_(rhs.index_)
-{
-}
-
-const worksheet const_worksheet_iterator::operator*()
-{
-    return wb_.sheet_by_index(index_);
-}
-
-const_worksheet_iterator &const_worksheet_iterator::operator++()
-{
-    index_++;
-    return *this;
-}
-
-const_worksheet_iterator const_worksheet_iterator::operator++(int)
-{
-    const_worksheet_iterator old(wb_, index_);
-    ++*this;
-    return old;
-}
-
-bool const_worksheet_iterator::operator==(const const_worksheet_iterator &comparand) const
-{
-    return index_ == comparand.index_ && wb_ == comparand.wb_;
-}
+using rich_text_run = std::pair<std::string, optional<font>>;
 
 } // namespace xlnt

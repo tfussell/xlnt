@@ -37,6 +37,7 @@ class fill;
 class font;
 class number_format;
 class protection;
+class style;
 
 namespace detail {
 
@@ -208,7 +209,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    format style(const xlnt::style &new_style);
+    format style(const class style &new_style);
 
     /// <summary>
     ///

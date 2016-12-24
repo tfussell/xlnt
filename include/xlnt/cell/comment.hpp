@@ -26,7 +26,7 @@
 #include <string>
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/cell/formatted_text.hpp>
+#include <xlnt/cell/rich_text.hpp>
 
 namespace xlnt {
 
@@ -44,7 +44,7 @@ public:
     /// <summary>
     /// Constructs a new comment with the given text and author.
     /// </summary>
-    comment(const formatted_text &text, const std::string &author);
+    comment(const rich_text &text, const std::string &author);
 
     /// <summary>
     /// Constructs a new comment with the given unformatted text and author.
@@ -54,7 +54,7 @@ public:
     /// <summary>
     /// Return the text that will be displayed for this comment.
     /// </summary>
-    formatted_text text() const;
+    rich_text text() const;
 
     /// <summary>
     /// Return the plain text that will be displayed for this comment without formatting information.
@@ -120,7 +120,7 @@ private:
     /// <summary>
     /// The formatted textual content in this cell displayed directly after the author.
     /// </summary>
-    formatted_text text_;
+    rich_text text_;
 
     /// <summary>
     /// The name of the person that created this comment.

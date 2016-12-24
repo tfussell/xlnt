@@ -27,12 +27,16 @@
 
 namespace xlnt {
 
-cell_iterator::cell_iterator(worksheet ws, const cell_reference &start_cell, const range_reference &limits, major_order order)
-    : ws_(ws), current_cell_(start_cell), range_(limits), order_(order)
+cell_iterator::cell_iterator(worksheet ws, const cell_reference &start_cell,
+    const range_reference &limits, major_order order)
+    : ws_(ws),
+      current_cell_(start_cell),
+      range_(limits),
+      order_(order)
 {
     if (!ws.has_cell(current_cell_))
     {
-        (*this)++;
+        (*this)++; // move to the next non-empty cell or one past the end if none exists
     }
 }
 
@@ -43,7 +47,9 @@ cell_iterator::cell_iterator(const cell_iterator &other)
 
 bool cell_iterator::operator==(const cell_iterator &other) const
 {
-    return ws_ == other.ws_ && current_cell_ == other.current_cell_ && order_ == other.order_;
+    return ws_ == other.ws_
+        && current_cell_ == other.current_cell_
+        && order_ == other.order_;
 }
 
 bool cell_iterator::operator!=(const cell_iterator &other) const
@@ -56,7 +62,7 @@ cell_iterator &cell_iterator::operator--()
     if (order_ == major_order::row)
     {
         current_cell_.column_index(current_cell_.column_index() - 1);
-        
+
         while (!ws_.has_cell(current_cell_) && current_cell_.column() > range_.top_left().column())
         {
             current_cell_.column_index(current_cell_.column_index() - 1);
@@ -90,7 +96,7 @@ cell_iterator &cell_iterator::operator++()
         {
             current_cell_.column_index(current_cell_.column_index() + 1);
         }
-        
+
         while (!ws_.has_cell(current_cell_) && current_cell_.column() <= range_.bottom_right().column())
         {
             current_cell_.column_index(current_cell_.column_index() + 1);
@@ -116,6 +122,7 @@ cell_iterator cell_iterator::operator++(int)
 {
     cell_iterator old = *this;
     ++*this;
+
     return old;
 }
 

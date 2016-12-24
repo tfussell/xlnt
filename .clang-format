@@ -27,7 +27,7 @@ BraceWrapping:
   BeforeElse: true
 BreakBeforeBinaryOperators: NonAssignment
 BreakBeforeBraces: Custom
-ColumnLimit: 120
+ColumnLimit: 0
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 Cpp11BracedListStyle: true
 DerivePointerAlignment: false

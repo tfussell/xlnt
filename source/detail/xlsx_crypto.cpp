@@ -23,6 +23,8 @@
 
 #include <array>
 
+#include <xlnt/utils/exceptions.hpp>
+#include <xlnt/workbook/workbook.hpp>
 #include <detail/constants.hpp>
 #include <detail/include_cryptopp.hpp>
 #include <detail/include_libstudxml.hpp>
@@ -30,8 +32,6 @@
 #include <detail/vector_streambuf.hpp>
 #include <detail/xlsx_consumer.hpp>
 #include <detail/xlsx_producer.hpp>
-#include <xlnt/utils/exceptions.hpp>
-#include <xlnt/workbook/workbook.hpp>
 
 namespace xlnt {
 namespace detail {
@@ -60,34 +60,54 @@ struct value_traits<xlnt::detail::hash_algorithm>
 {
     static xlnt::detail::hash_algorithm parse(std::string hash_algorithm_string, const parser &)
     {
-	if (hash_algorithm_string == "SHA1") return xlnt::detail::hash_algorithm::sha1;
-	else if (hash_algorithm_string == "SHA256") return xlnt::detail::hash_algorithm::sha256;
-	else if (hash_algorithm_string == "SHA384") return xlnt::detail::hash_algorithm::sha384;
-	else if (hash_algorithm_string == "SHA512") return xlnt::detail::hash_algorithm::sha512;
-	else if (hash_algorithm_string == "MD5") return xlnt::detail::hash_algorithm::md5;
-	else if (hash_algorithm_string == "MD4") return xlnt::detail::hash_algorithm::md4;
-	else if (hash_algorithm_string == "MD2") return xlnt::detail::hash_algorithm::md2;
-	else if (hash_algorithm_string == "Ripemd128") return xlnt::detail::hash_algorithm::ripemd128;
-	else if (hash_algorithm_string == "Ripemd160") return xlnt::detail::hash_algorithm::ripemd160;
-	else if (hash_algorithm_string == "Whirlpool") return xlnt::detail::hash_algorithm::whirlpool;
-	throw xlnt::exception(hash_algorithm_string);
+        if (hash_algorithm_string == "SHA1")
+            return xlnt::detail::hash_algorithm::sha1;
+        else if (hash_algorithm_string == "SHA256")
+            return xlnt::detail::hash_algorithm::sha256;
+        else if (hash_algorithm_string == "SHA384")
+            return xlnt::detail::hash_algorithm::sha384;
+        else if (hash_algorithm_string == "SHA512")
+            return xlnt::detail::hash_algorithm::sha512;
+        else if (hash_algorithm_string == "MD5")
+            return xlnt::detail::hash_algorithm::md5;
+        else if (hash_algorithm_string == "MD4")
+            return xlnt::detail::hash_algorithm::md4;
+        else if (hash_algorithm_string == "MD2")
+            return xlnt::detail::hash_algorithm::md2;
+        else if (hash_algorithm_string == "Ripemd128")
+            return xlnt::detail::hash_algorithm::ripemd128;
+        else if (hash_algorithm_string == "Ripemd160")
+            return xlnt::detail::hash_algorithm::ripemd160;
+        else if (hash_algorithm_string == "Whirlpool")
+            return xlnt::detail::hash_algorithm::whirlpool;
+        throw xlnt::exception(hash_algorithm_string);
     }
 
     static std::string serialize(xlnt::detail::hash_algorithm algorithm, const serializer &)
     {
-	switch (algorithm)
-	{
-	case xlnt::detail::hash_algorithm::sha1: return "SHA1";
-	case xlnt::detail::hash_algorithm::sha256: return "SHA256";
-	case xlnt::detail::hash_algorithm::sha384: return "SHA384";
-	case xlnt::detail::hash_algorithm::sha512: return "SHA512";
-	case xlnt::detail::hash_algorithm::md5: return "MD5";
-	case xlnt::detail::hash_algorithm::md4: return "MD4";
-	case xlnt::detail::hash_algorithm::md2: return "MD2";
-	case xlnt::detail::hash_algorithm::ripemd128: return "Ripemd128";
-	case xlnt::detail::hash_algorithm::ripemd160: return "Ripemd160";
-	case xlnt::detail::hash_algorithm::whirlpool: return "Whirlpool";
-	}
+        switch (algorithm)
+        {
+        case xlnt::detail::hash_algorithm::sha1:
+            return "SHA1";
+        case xlnt::detail::hash_algorithm::sha256:
+            return "SHA256";
+        case xlnt::detail::hash_algorithm::sha384:
+            return "SHA384";
+        case xlnt::detail::hash_algorithm::sha512:
+            return "SHA512";
+        case xlnt::detail::hash_algorithm::md5:
+            return "MD5";
+        case xlnt::detail::hash_algorithm::md4:
+            return "MD4";
+        case xlnt::detail::hash_algorithm::md2:
+            return "MD2";
+        case xlnt::detail::hash_algorithm::ripemd128:
+            return "Ripemd128";
+        case xlnt::detail::hash_algorithm::ripemd160:
+            return "Ripemd160";
+        case xlnt::detail::hash_algorithm::whirlpool:
+            return "Whirlpool";
+        }
     }
 }; // struct value_traits<>
 
@@ -124,10 +144,8 @@ struct crypto_helper
         decryption
     };
 
-    static std::vector<std::uint8_t> aes(const std::vector<std::uint8_t> &key,
-        const std::vector<std::uint8_t> &iv,
-        const std::vector<std::uint8_t> &source,
-        cipher_chaining chaining, cipher_direction direction)
+    static std::vector<std::uint8_t> aes(const std::vector<std::uint8_t> &key, const std::vector<std::uint8_t> &iv,
+        const std::vector<std::uint8_t> &source, cipher_chaining chaining, cipher_direction direction)
     {
         std::vector<std::uint8_t> destination(source.size(), 0);
 
@@ -136,40 +154,40 @@ struct crypto_helper
             CryptoPP::AES::Encryption aesEncryption(key.data(), key.size());
             CryptoPP::CBC_Mode_ExternalCipher::Encryption cbcEncryption(aesEncryption, iv.data());
 
-            CryptoPP::ArraySource as(source.data(), source.size(), true,
-                new CryptoPP::StreamTransformationFilter(cbcEncryption,
-                    new CryptoPP::ArraySink(destination.data(), destination.size()),
-                    CryptoPP::BlockPaddingSchemeDef::NO_PADDING));
+            CryptoPP::ArraySource as(
+                source.data(), source.size(), true, new CryptoPP::StreamTransformationFilter(cbcEncryption,
+                                                        new CryptoPP::ArraySink(destination.data(), destination.size()),
+                                                        CryptoPP::BlockPaddingSchemeDef::NO_PADDING));
         }
         else if (direction == cipher_direction::decryption && chaining == cipher_chaining::cbc)
         {
             CryptoPP::AES::Decryption aesDecryption(key.data(), key.size());
             CryptoPP::CBC_Mode_ExternalCipher::Decryption cbcDecryption(aesDecryption, iv.data());
 
-            CryptoPP::ArraySource as(source.data(), source.size(), true,
-                new CryptoPP::StreamTransformationFilter(cbcDecryption,
-                    new CryptoPP::ArraySink(destination.data(), destination.size()),
-                    CryptoPP::BlockPaddingSchemeDef::NO_PADDING));
+            CryptoPP::ArraySource as(
+                source.data(), source.size(), true, new CryptoPP::StreamTransformationFilter(cbcDecryption,
+                                                        new CryptoPP::ArraySink(destination.data(), destination.size()),
+                                                        CryptoPP::BlockPaddingSchemeDef::NO_PADDING));
         }
         else if (direction == cipher_direction::encryption && chaining == cipher_chaining::ecb)
         {
             CryptoPP::AES::Encryption aesEncryption(key.data(), key.size());
             CryptoPP::ECB_Mode_ExternalCipher::Encryption cbcEncryption(aesEncryption, iv.data());
 
-            CryptoPP::ArraySource as(source.data(), source.size(), true,
-                new CryptoPP::StreamTransformationFilter(cbcEncryption,
-                    new CryptoPP::ArraySink(destination.data(), destination.size()),
-                    CryptoPP::BlockPaddingSchemeDef::NO_PADDING));
+            CryptoPP::ArraySource as(
+                source.data(), source.size(), true, new CryptoPP::StreamTransformationFilter(cbcEncryption,
+                                                        new CryptoPP::ArraySink(destination.data(), destination.size()),
+                                                        CryptoPP::BlockPaddingSchemeDef::NO_PADDING));
         }
         else if (direction == cipher_direction::decryption && chaining == cipher_chaining::ecb)
         {
             CryptoPP::AES::Decryption aesDecryption(key.data(), key.size());
             CryptoPP::ECB_Mode_ExternalCipher::Decryption cbcDecryption(aesDecryption, iv.data());
 
-            CryptoPP::ArraySource as(source.data(), source.size(), true,
-                new CryptoPP::StreamTransformationFilter(cbcDecryption,
-                    new CryptoPP::ArraySink(destination.data(), destination.size()),
-                    CryptoPP::BlockPaddingSchemeDef::NO_PADDING));
+            CryptoPP::ArraySource as(
+                source.data(), source.size(), true, new CryptoPP::StreamTransformationFilter(cbcDecryption,
+                                                        new CryptoPP::ArraySink(destination.data(), destination.size()),
+                                                        CryptoPP::BlockPaddingSchemeDef::NO_PADDING));
         }
 
         return destination;
@@ -199,8 +217,7 @@ struct crypto_helper
         return std::string(encoded.begin(), encoded.end());
     }
 
-    static std::vector<std::uint8_t> hash(hash_algorithm algorithm,
-        const std::vector<std::uint8_t> &input)
+    static std::vector<std::uint8_t> hash(hash_algorithm algorithm, const std::vector<std::uint8_t> &input)
     {
         std::vector<std::uint8_t> digest;
 
@@ -229,7 +246,7 @@ struct crypto_helper
         return bytes;
     }
 
-    template<typename T>
+    template <typename T>
     static auto read_int(std::size_t &index, const std::vector<std::uint8_t> &raw_data)
     {
         auto result = *reinterpret_cast<const T *>(&raw_data[index]);
@@ -263,8 +280,8 @@ struct crypto_helper
 
         auto header_length = read_int<std::uint32_t>(offset, encryption_info);
         auto index_at_start = offset;
-        /*auto skip_flags = */read_int<std::uint32_t>(offset, encryption_info);
-        /*auto size_extra = */read_int<std::uint32_t>(offset, encryption_info);
+        /*auto skip_flags = */ read_int<std::uint32_t>(offset, encryption_info);
+        /*auto size_extra = */ read_int<std::uint32_t>(offset, encryption_info);
         auto alg_id = read_int<std::uint32_t>(offset, encryption_info);
 
         if (alg_id == 0 || alg_id == 0x0000660E || alg_id == 0x0000660F || alg_id == 0x00006610)
@@ -281,7 +298,7 @@ struct crypto_helper
         {
             throw xlnt::exception("invalid hash algorithm");
         }
-        
+
         info.key_bits = read_int<std::uint32_t>(offset, encryption_info);
         info.key_bytes = info.key_bits / 8;
 
@@ -300,7 +317,8 @@ struct crypto_helper
         const auto csp_name_length = header_length - (offset - index_at_start);
         std::vector<std::uint16_t> csp_name_wide(
             reinterpret_cast<const std::uint16_t *>(&*(encryption_info.begin() + static_cast<std::ptrdiff_t>(offset))),
-            reinterpret_cast<const std::uint16_t *>(&*(encryption_info.begin() + static_cast<std::ptrdiff_t>(offset + csp_name_length))));
+            reinterpret_cast<const std::uint16_t *>(
+                &*(encryption_info.begin() + static_cast<std::ptrdiff_t>(offset + csp_name_length))));
         std::string csp_name(csp_name_wide.begin(), csp_name_wide.end() - 1); // without trailing null
         if (csp_name != "Microsoft Enhanced RSA and AES Cryptographic Provider (Prototype)"
             && csp_name != "Microsoft Enhanced RSA and AES Cryptographic Provider")
@@ -329,11 +347,8 @@ struct crypto_helper
         // H_0 = H(salt + password)
         auto salt_plus_password = salt;
         std::vector<std::uint16_t> password_wide(password.begin(), password.end());
-        std::for_each(password_wide.begin(), password_wide.end(), 
-            [&salt_plus_password](std::uint16_t c)
-        {
-            salt_plus_password.insert(salt_plus_password.end(), 
-                reinterpret_cast<char *>(&c), 
+        std::for_each(password_wide.begin(), password_wide.end(), [&salt_plus_password](std::uint16_t c) {
+            salt_plus_password.insert(salt_plus_password.end(), reinterpret_cast<char *>(&c),
                 reinterpret_cast<char *>(&c) + sizeof(std::uint16_t));
         });
         std::vector<std::uint8_t> h_0 = hash(info.hash, salt_plus_password);
@@ -352,8 +367,7 @@ struct crypto_helper
         // H_final = H(H_n + block)
         auto h_n_plus_block = h_n;
         const std::uint32_t block_number = 0;
-        h_n_plus_block.insert(h_n_plus_block.end(),
-            reinterpret_cast<const std::uint8_t *>(&block_number),
+        h_n_plus_block.insert(h_n_plus_block.end(), reinterpret_cast<const std::uint8_t *>(&block_number),
             reinterpret_cast<const std::uint8_t *>(&block_number) + sizeof(std::uint32_t));
         auto h_final = hash(info.hash, h_n_plus_block);
 
@@ -375,16 +389,17 @@ struct crypto_helper
 
         auto X3 = X1;
         X3.insert(X3.end(), X2.begin(), X2.end());
-        
-        auto key_derived = std::vector<std::uint8_t>(X3.begin(), X3.begin() + static_cast<std::ptrdiff_t>(info.key_bytes));
 
-        //todo: verify here
+        auto key_derived =
+            std::vector<std::uint8_t>(X3.begin(), X3.begin() + static_cast<std::ptrdiff_t>(info.key_bytes));
+
+        // todo: verify here
 
         std::size_t package_offset = 0;
         auto decrypted_size = static_cast<std::size_t>(read_int<std::uint64_t>(package_offset, encrypted_package));
-        auto decrypted = aes(key_derived, {}, std::vector<std::uint8_t>(
-            encrypted_package.begin() + 8, encrypted_package.end()),
-            cipher_chaining::ecb, cipher_direction::decryption);
+        auto decrypted =
+            aes(key_derived, {}, std::vector<std::uint8_t>(encrypted_package.begin() + 8, encrypted_package.end()),
+                cipher_chaining::ecb, cipher_direction::decryption);
         decrypted.resize(decrypted_size);
 
         return decrypted;
@@ -420,7 +435,7 @@ struct crypto_helper
             std::size_t hash_size;
             std::string cipher_algorithm;
             std::string cipher_chaining;
-                hash_algorithm hash;
+            hash_algorithm hash;
             std::vector<std::uint8_t> salt_value;
             std::vector<std::uint8_t> verifier_hash_input;
             std::vector<std::uint8_t> verifier_hash_value;
@@ -430,9 +445,9 @@ struct crypto_helper
 
     static agile_encryption_info generate_agile_encryption_info(const std::string &password)
     {
-	agile_encryption_info result;
-	result.key_data.salt_value.assign(password.begin(), password.end());
-	return result;
+        agile_encryption_info result;
+        result.key_data.salt_value.assign(password.begin(), password.end());
+        return result;
     }
 
     static std::vector<std::uint8_t> write_agile_encryption_info(const std::string &password)
@@ -440,20 +455,20 @@ struct crypto_helper
         static const auto &xmlns = xlnt::constants::namespace_("encryption");
         static const auto &xmlns_p = xlnt::constants::namespace_("encryption-password");
 
-	std::vector<std::uint8_t> encryption_info;
-	xlnt::detail::vector_ostreambuf encryption_info_buffer(encryption_info);
-	std::ostream encryption_info_stream(&encryption_info_buffer);
-	xml::serializer serializer(encryption_info_stream, "EncryptionInfo");
+        std::vector<std::uint8_t> encryption_info;
+        xlnt::detail::vector_ostreambuf encryption_info_buffer(encryption_info);
+        std::ostream encryption_info_stream(&encryption_info_buffer);
+        xml::serializer serializer(encryption_info_stream, "EncryptionInfo");
 
         agile_encryption_info result = generate_agile_encryption_info(password);
 
         serializer.start_element(xmlns, "encryption");
 
         serializer.start_element(xmlns, "keyData");
-	serializer.attribute("saltSize", result.key_data.salt_size);
-	serializer.attribute("blockSize", result.key_data.block_size);
-	serializer.attribute("keyBits", result.key_data.key_bits);
-	serializer.attribute("hashSize", result.key_data.hash_size);
+        serializer.attribute("saltSize", result.key_data.salt_size);
+        serializer.attribute("blockSize", result.key_data.block_size);
+        serializer.attribute("keyBits", result.key_data.key_bits);
+        serializer.attribute("hashSize", result.key_data.hash_size);
         serializer.attribute("cipherAlgorithm", result.key_data.cipher_algorithm);
         serializer.attribute("cipherChaining", result.key_data.cipher_chaining);
         serializer.attribute("hashAlgorithm", result.key_data.hash_algorithm);
@@ -468,26 +483,26 @@ struct crypto_helper
         serializer.start_element(xmlns, "keyEncryptors");
         serializer.start_element(xmlns, "keyEncryptor");
         serializer.attribute("uri", "");
-	serializer.start_element(xmlns_p, "encryptedKey");
-	serializer.attribute("spinCount", result.key_encryptor.spin_count);
-	serializer.attribute("saltSize", result.key_encryptor.salt_size);
-	serializer.attribute("blockSize", result.key_encryptor.block_size);
-	serializer.attribute("keyBits", result.key_encryptor.key_bits);
-	serializer.attribute("hashSize", result.key_encryptor.hash_size);
-	serializer.attribute("cipherAlgorithm", result.key_encryptor.cipher_algorithm);
-	serializer.attribute("cipherChaining", result.key_encryptor.cipher_chaining);
-	serializer.attribute("hashAlgorithm", result.key_encryptor.hash);
-	serializer.attribute("saltValue", encode_base64(result.key_encryptor.salt_value));
-	serializer.attribute("encryptedVerifierHashInput", encode_base64(result.key_encryptor.verifier_hash_input));
-	serializer.attribute("encryptedVerifierHashValue", encode_base64(result.key_encryptor.verifier_hash_value));
-	serializer.attribute("encryptedKeyValue", encode_base64(result.key_encryptor.encrypted_key_value));
-	serializer.end_element(xmlns_p, "encryptedKey");
-	serializer.end_element(xmlns, "keyEncryptor");
-	serializer.end_element(xmlns, "keyEncryptors");
+        serializer.start_element(xmlns_p, "encryptedKey");
+        serializer.attribute("spinCount", result.key_encryptor.spin_count);
+        serializer.attribute("saltSize", result.key_encryptor.salt_size);
+        serializer.attribute("blockSize", result.key_encryptor.block_size);
+        serializer.attribute("keyBits", result.key_encryptor.key_bits);
+        serializer.attribute("hashSize", result.key_encryptor.hash_size);
+        serializer.attribute("cipherAlgorithm", result.key_encryptor.cipher_algorithm);
+        serializer.attribute("cipherChaining", result.key_encryptor.cipher_chaining);
+        serializer.attribute("hashAlgorithm", result.key_encryptor.hash);
+        serializer.attribute("saltValue", encode_base64(result.key_encryptor.salt_value));
+        serializer.attribute("encryptedVerifierHashInput", encode_base64(result.key_encryptor.verifier_hash_input));
+        serializer.attribute("encryptedVerifierHashValue", encode_base64(result.key_encryptor.verifier_hash_value));
+        serializer.attribute("encryptedKeyValue", encode_base64(result.key_encryptor.encrypted_key_value));
+        serializer.end_element(xmlns_p, "encryptedKey");
+        serializer.end_element(xmlns, "keyEncryptor");
+        serializer.end_element(xmlns, "keyEncryptors");
 
-	serializer.end_element(xmlns, "encryption");
+        serializer.end_element(xmlns, "encryption");
 
-	return encryption_info;
+        return encryption_info;
     }
 
     static std::vector<std::uint8_t> decrypt_xlsx_agile(const std::vector<std::uint8_t> &encryption_info,
@@ -495,7 +510,7 @@ struct crypto_helper
     {
         static const auto &xmlns = xlnt::constants::namespace_("encryption");
         static const auto &xmlns_p = xlnt::constants::namespace_("encryption-password");
-        //static const auto &xmlns_c = xlnt::constants::namespace_("encryption-certificate");
+        // static const auto &xmlns_c = xlnt::constants::namespace_("encryption-certificate");
 
         agile_encryption_info result;
 
@@ -558,8 +573,10 @@ struct crypto_helper
                 }
 
                 result.key_encryptor.salt_value = decode_base64(parser.attribute("saltValue"));
-                result.key_encryptor.verifier_hash_input = decode_base64(parser.attribute("encryptedVerifierHashInput"));
-                result.key_encryptor.verifier_hash_value = decode_base64(parser.attribute("encryptedVerifierHashValue"));
+                result.key_encryptor.verifier_hash_input =
+                    decode_base64(parser.attribute("encryptedVerifierHashInput"));
+                result.key_encryptor.verifier_hash_value =
+                    decode_base64(parser.attribute("encryptedVerifierHashValue"));
                 result.key_encryptor.encrypted_key_value = decode_base64(parser.attribute("encryptedKeyValue"));
             }
             else
@@ -580,18 +597,14 @@ struct crypto_helper
 
         parser.next_expect(xml::parser::event_type::end_element, xmlns, "encryption");
 
-
         // begin key generation algorithm
 
         // H_0 = H(salt + password)
         auto salt_plus_password = result.key_encryptor.salt_value;
         std::vector<std::uint16_t> password_wide(password.begin(), password.end());
 
-        std::for_each(password_wide.begin(), password_wide.end(),
-            [&salt_plus_password](std::uint16_t c)
-        {
-            salt_plus_password.insert(salt_plus_password.end(),
-                reinterpret_cast<char *>(&c),
+        std::for_each(password_wide.begin(), password_wide.end(), [&salt_plus_password](std::uint16_t c) {
+            salt_plus_password.insert(salt_plus_password.end(), reinterpret_cast<char *>(&c),
                 reinterpret_cast<char *>(&c) + sizeof(std::uint16_t));
         });
 
@@ -608,46 +621,39 @@ struct crypto_helper
             h_n = hash(result.key_encryptor.hash, iterator_plus_h_n);
             std::copy(h_n.begin(), h_n.end(), iterator_plus_h_n.begin() + 4);
         }
-        
+
         static const std::size_t block_size = 8;
 
-        auto calculate_block = [&result](
-            const std::vector<std::uint8_t> &raw_key,
-            const std::array<std::uint8_t, block_size> &block,
-            const std::vector<std::uint8_t> &encrypted)
-        {
+        auto calculate_block = [&result](const std::vector<std::uint8_t> &raw_key,
+            const std::array<std::uint8_t, block_size> &block, const std::vector<std::uint8_t> &encrypted) {
             auto combined = raw_key;
             combined.insert(combined.end(), block.begin(), block.end());
             auto key = hash(result.key_encryptor.hash, combined);
             key.resize(result.key_encryptor.key_bits / 8);
-            return aes(key, result.key_encryptor.salt_value, encrypted,
-                cipher_chaining::cbc, cipher_direction::decryption);
+            return aes(
+                key, result.key_encryptor.salt_value, encrypted, cipher_chaining::cbc, cipher_direction::decryption);
         };
 
-        const std::array<std::uint8_t, block_size> input_block_key 
-            = { {0xfe, 0xa7, 0xd2, 0x76, 0x3b, 0x4b, 0x9e, 0x79} };
-        auto hash_input = calculate_block(h_n, input_block_key,
-            result.key_encryptor.verifier_hash_input);
+        const std::array<std::uint8_t, block_size> input_block_key = {{0xfe, 0xa7, 0xd2, 0x76, 0x3b, 0x4b, 0x9e, 0x79}};
+        auto hash_input = calculate_block(h_n, input_block_key, result.key_encryptor.verifier_hash_input);
         auto calculated_verifier = hash(result.key_encryptor.hash, hash_input);
 
-        const std::array<std::uint8_t, block_size> verifier_block_key 
-            = { {0xd7, 0xaa, 0x0f, 0x6d, 0x30, 0x61, 0x34, 0x4e} };
-        auto expected_verifier = calculate_block(h_n, verifier_block_key,
-            result.key_encryptor.verifier_hash_value);
+        const std::array<std::uint8_t, block_size> verifier_block_key = {
+            {0xd7, 0xaa, 0x0f, 0x6d, 0x30, 0x61, 0x34, 0x4e}};
+        auto expected_verifier = calculate_block(h_n, verifier_block_key, result.key_encryptor.verifier_hash_value);
         expected_verifier.resize(calculated_verifier.size());
 
         if (calculated_verifier.size() != expected_verifier.size()
-            || std::mismatch(calculated_verifier.begin(), calculated_verifier.end(),
-                expected_verifier.begin(), expected_verifier.end())
+            || std::mismatch(calculated_verifier.begin(), calculated_verifier.end(), expected_verifier.begin(),
+                   expected_verifier.end())
                 != std::make_pair(calculated_verifier.end(), expected_verifier.end()))
         {
             throw xlnt::exception("bad password");
         }
 
-        const std::array<std::uint8_t, block_size> key_value_block_key 
-            = { {0x14, 0x6e, 0x0b, 0xe7, 0xab, 0xac, 0xd0, 0xd6} };
-        auto key = calculate_block(h_n, key_value_block_key, 
-            result.key_encryptor.encrypted_key_value);
+        const std::array<std::uint8_t, block_size> key_value_block_key = {
+            {0x14, 0x6e, 0x0b, 0xe7, 0xab, 0xac, 0xd0, 0xd6}};
+        auto key = calculate_block(h_n, key_value_block_key, result.key_encryptor.encrypted_key_value);
 
         auto salt_size = result.key_data.salt_size;
         auto salt_with_block_key = result.key_data.salt_value;
@@ -667,15 +673,13 @@ struct crypto_helper
 
             auto segment_begin = encrypted_package.begin() + static_cast<std::ptrdiff_t>(i);
             auto current_segment_length = std::min(segment_length, encrypted_package.size() - i);
-            auto segment_end = encrypted_package.begin() 
-                + static_cast<std::ptrdiff_t>(i + current_segment_length);
+            auto segment_end = encrypted_package.begin() + static_cast<std::ptrdiff_t>(i + current_segment_length);
             encrypted_segment.assign(segment_begin, segment_end);
-            auto decrypted_segment = aes(key, iv, encrypted_segment,
-                cipher_chaining::cbc, cipher_direction::decryption);
+            auto decrypted_segment =
+                aes(key, iv, encrypted_segment, cipher_chaining::cbc, cipher_direction::decryption);
             decrypted_segment.resize(current_segment_length);
 
-            decrypted_package.insert(decrypted_package.end(), 
-                decrypted_segment.begin(), decrypted_segment.end());
+            decrypted_package.insert(decrypted_package.end(), decrypted_segment.begin(), decrypted_segment.end());
 
             ++segment;
         }
@@ -710,8 +714,7 @@ struct crypto_helper
         auto encryption_flags = read_int<std::uint32_t>(index, encryption_info);
 
         // get rid of header
-        encryption_info.erase(encryption_info.begin(),
-            encryption_info.begin() + static_cast<std::ptrdiff_t>(index));
+        encryption_info.erase(encryption_info.begin(), encryption_info.begin() + static_cast<std::ptrdiff_t>(index));
 
         // version 4.4 is agile
         if (version_major == 4 && version_minor == 4)
@@ -725,8 +728,7 @@ struct crypto_helper
         }
 
         // not agile, only try to decrypt versions 3.2 and 4.2
-        if (version_minor != 2
-            || (version_major != 2 && version_major != 3 && version_major != 4))
+        if (version_minor != 2 || (version_major != 2 && version_major != 3 && version_major != 4))
         {
             throw xlnt::exception("unsupported encryption version");
         }
@@ -757,7 +759,7 @@ struct crypto_helper
             throw xlnt::exception("empty file");
         }
 
-	generate_agile_encryption_info(password);
+        generate_agile_encryption_info(password);
 
         return {};
     }
@@ -767,12 +769,11 @@ const std::size_t crypto_helper::segment_length = 4096;
 
 void xlsx_consumer::read(std::istream &source, const std::string &password)
 {
-	std::vector<std::uint8_t> data((std::istreambuf_iterator<char>(source)),
-		(std::istreambuf_iterator<char>()));
-	const auto decrypted = crypto_helper::decrypt_xlsx(data, password);
-	vector_istreambuf decrypted_buffer(decrypted);
-	std::istream decrypted_stream(&decrypted_buffer);
-	read(decrypted_stream);
+    std::vector<std::uint8_t> data((std::istreambuf_iterator<char>(source)), (std::istreambuf_iterator<char>()));
+    const auto decrypted = crypto_helper::decrypt_xlsx(data, password);
+    vector_istreambuf decrypted_buffer(decrypted);
+    std::istream decrypted_stream(&decrypted_buffer);
+    read(decrypted_stream);
 }
 
 void xlsx_producer::write(std::ostream &destination, const std::string &password)
@@ -787,7 +788,7 @@ void xlsx_producer::write(std::ostream &destination, const std::string &password
 
     const auto encrypted = crypto_helper::encrypt_xlsx(decrypted, password);
     vector_istreambuf encrypted_buffer(encrypted);
-    
+
     destination << &encrypted_buffer;
 }
 

@@ -27,54 +27,30 @@
 #include <unordered_map>
 #include <vector>
 
-#include <detail/number_formatter.hpp>
 #include <xlnt/styles/number_format.hpp>
 #include <xlnt/utils/datetime.hpp>
 #include <xlnt/utils/exceptions.hpp>
+#include <detail/number_formatter.hpp>
 
 namespace {
 
 const std::unordered_map<std::size_t, std::string> &builtin_formats()
 {
     static const std::unordered_map<std::size_t, std::string> *formats =
-        new std::unordered_map<std::size_t, std::string>
-        ({
-            { 0, "General" },
-            { 1, "0" },
-            { 2, "0.00" },
-            { 3, "#,##0" },
-            { 4, "#,##0.00" },
-            { 9, "0%" },
-            { 10, "0.00%" },
-            { 11, "0.00E+00" },
-            { 12, "# ?/?" },
-            { 13, "# \?\?/??" }, // escape trigraph
-            { 14, "mm-dd-yy" },
-            { 15, "d-mmm-yy" },
-            { 16, "d-mmm" },
-            { 17, "mmm-yy" },
-            { 18, "h:mm AM/PM" },
-            { 19, "h:mm:ss AM/PM" },
-            { 20, "h:mm" },
-            { 21, "h:mm:ss" },
-            { 22, "m/d/yy h:mm" },
-            { 37, "#,##0 ;(#,##0)" },
-            { 38, "#,##0 ;[Red](#,##0)" },
-            { 39, "#,##0.00;(#,##0.00)" },
-			{ 40, "#,##0.00;[Red](#,##0.00)" },
+        new std::unordered_map<std::size_t, std::string>(
+            {{0, "General"}, {1, "0"}, {2, "0.00"}, {3, "#,##0"}, {4, "#,##0.00"}, {9, "0%"}, {10, "0.00%"},
+                {11, "0.00E+00"}, {12, "# ?/?"}, {13, "# \?\?/??"}, // escape trigraph
+                {14, "mm-dd-yy"}, {15, "d-mmm-yy"}, {16, "d-mmm"}, {17, "mmm-yy"}, {18, "h:mm AM/PM"},
+                {19, "h:mm:ss AM/PM"}, {20, "h:mm"}, {21, "h:mm:ss"}, {22, "m/d/yy h:mm"}, {37, "#,##0 ;(#,##0)"},
+                {38, "#,##0 ;[Red](#,##0)"}, {39, "#,##0.00;(#,##0.00)"}, {40, "#,##0.00;[Red](#,##0.00)"},
 
-			// 41-44 aren't in the ECMA 376 v4 standard, but Libre Office uses them
-			{ 41, "_(* #,##0_);_(* \\(#,##0\\);_(* \"-\"_);_(@_)" },
-			{ 42, "_(\"$\"* #,##0_);_(\"$\"* \\(#,##0\\);_(\"$\"* \"-\"_);_(@_)" },
-			{ 43, "_(* #,##0.00_);_(* \\(#,##0.00\\);_(* \"-\"??_);_(@_)" },
-			{ 44, "_(\"$\"* #,##0.00_)_(\"$\"* \\(#,##0.00\\)_(\"$\"* \"-\"??_)_(@_)" },
+                // 41-44 aren't in the ECMA 376 v4 standard, but Libre Office uses them
+                {41, "_(* #,##0_);_(* \\(#,##0\\);_(* \"-\"_);_(@_)"},
+                {42, "_(\"$\"* #,##0_);_(\"$\"* \\(#,##0\\);_(\"$\"* \"-\"_);_(@_)"},
+                {43, "_(* #,##0.00_);_(* \\(#,##0.00\\);_(* \"-\"??_);_(@_)"},
+                {44, "_(\"$\"* #,##0.00_)_(\"$\"* \\(#,##0.00\\)_(\"$\"* \"-\"??_)_(@_)"},
 
-            { 45, "mm:ss" },
-            { 46, "[h]:mm:ss" },
-            { 47, "mmss.0" },
-            { 48, "##0.0E+0" },
-            { 49, "@" }
-        });
+                {45, "mm:ss"}, {46, "[h]:mm:ss"}, {47, "mmss.0"}, {48, "##0.0E+0"}, {49, "@"}});
 
     return *formats;
 }
@@ -239,20 +215,24 @@ const number_format number_format::date_time6()
     return *format;
 }
 
-number_format::number_format() : number_format(general())
+number_format::number_format()
+    : number_format(general())
 {
 }
 
-number_format::number_format(std::size_t id) : number_format(from_builtin_id(id))
+number_format::number_format(std::size_t id)
+    : number_format(from_builtin_id(id))
 {
 }
 
-number_format::number_format(const std::string &format_string) : id_set_(false), id_(0)
+number_format::number_format(const std::string &format_string)
+    : id_set_(false), id_(0)
 {
     this->format_string(format_string);
 }
 
-number_format::number_format(const std::string &format_string, std::size_t id) : id_set_(false), id_(0)
+number_format::number_format(const std::string &format_string, std::size_t id)
+    : id_set_(false), id_(0)
 {
     this->format_string(format_string, id);
 }
@@ -261,7 +241,7 @@ number_format number_format::from_builtin_id(std::size_t builtin_id)
 {
     if (builtin_formats().find(builtin_id) == builtin_formats().end())
     {
-		throw invalid_parameter(); //("unknown id: " + std::to_string(builtin_id));
+        throw invalid_parameter(); //("unknown id: " + std::to_string(builtin_id));
     }
 
     auto format_string = builtin_formats().at(builtin_id);
@@ -310,11 +290,11 @@ void number_format::id(std::size_t id)
 
 std::size_t number_format::id() const
 {
-    if(!id_set_)
+    if (!id_set_)
     {
-		throw invalid_attribute();
+        throw invalid_attribute();
     }
-    
+
     return id_;
 }
 

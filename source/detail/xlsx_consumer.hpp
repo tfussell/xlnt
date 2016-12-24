@@ -36,7 +36,7 @@
 namespace xlnt {
 
 class color;
-class formatted_text;
+class rich_text;
 class manifest;
 class path;
 class relationship;
@@ -45,7 +45,7 @@ class worksheet;
 
 namespace detail {
 
-class ZipFileReader;
+class zip_file_reader;
 
 /// <summary>
 /// Handles writing a workbook into an XLSX file.
@@ -228,7 +228,7 @@ private:
     /// <summary>
     /// Read a rich text CT_RElt from the document currently being parsed.
     /// </summary>
-    formatted_text read_formatted_text(const xml::qname &parent);
+    rich_text read_rich_text(const xml::qname &parent);
 
     /// <summary>
     /// Returns true if the givent document type represents an XLSX file.
@@ -338,7 +338,7 @@ private:
 	/// <summary>
 	/// The ZIP file containing the files that make up the OOXML package.
 	/// </summary>
-	std::unique_ptr<ZipFileReader> archive_;
+	std::unique_ptr<zip_file_reader> archive_;
 
 	/// <summary>
 	/// Map of sheet titles to relationship IDs.

@@ -22,14 +22,15 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <cmath>
+
 #include <xlnt/styles/font.hpp>
 
 namespace xlnt {
 
-
 font::font()
     : name_("Calibri"),
-      size_(12),
+      size_(12.0),
       bold_(false),
       italic_(false),
       superscript_(false),
@@ -42,7 +43,7 @@ font::font()
 font &font::bold(bool bold)
 {
     bold_ = bold;
-	return *this;
+    return *this;
 }
 
 bool font::bold() const
@@ -52,19 +53,19 @@ bool font::bold() const
 
 font &font::superscript(bool superscript)
 {
-	superscript_ = superscript;
-	return *this;
+    superscript_ = superscript;
+    return *this;
 }
 
 bool font::superscript() const
 {
-	return superscript_;
+    return superscript_;
 }
 
 font &font::italic(bool italic)
 {
     italic_ = italic;
-	return *this;
+    return *this;
 }
 
 bool font::italic() const
@@ -75,7 +76,7 @@ bool font::italic() const
 font &font::strikethrough(bool strikethrough)
 {
     strikethrough_ = strikethrough;
-	return *this;
+    return *this;
 }
 
 bool font::strikethrough() const
@@ -86,7 +87,7 @@ bool font::strikethrough() const
 font &font::underline(underline_style new_underline)
 {
     underline_ = new_underline;
-	return *this;
+    return *this;
 }
 
 bool font::underlined() const
@@ -104,13 +105,13 @@ bool font::has_size() const
     return size_.is_set();
 }
 
-font &font::size(std::size_t size)
+font &font::size(double size)
 {
     size_ = size;
-	return *this;
+    return *this;
 }
 
-std::size_t font::size() const
+double font::size() const
 {
     return size_.get();
 }
@@ -123,7 +124,7 @@ bool font::has_name() const
 font &font::name(const std::string &name)
 {
     name_ = name;
-	return *this;
+    return *this;
 }
 
 std::string font::name() const
@@ -139,7 +140,7 @@ bool font::has_color() const
 font &font::color(const xlnt::color &c)
 {
     color_ = c;
-	return *this;
+    return *this;
 }
 
 bool font::has_family() const
@@ -150,7 +151,7 @@ bool font::has_family() const
 font &font::family(std::size_t family)
 {
     family_ = family;
-	return *this;
+    return *this;
 }
 
 bool font::has_scheme() const
@@ -161,7 +162,7 @@ bool font::has_scheme() const
 font &font::scheme(const std::string &scheme)
 {
     scheme_ = scheme;
-	return *this;
+    return *this;
 }
 
 color font::color() const
@@ -190,7 +191,7 @@ XLNT_API bool operator==(const font &left, const font &right)
     {
         return false;
     }
-    
+
     if (left.has_color())
     {
         if (left.color() != right.color())
@@ -203,7 +204,7 @@ XLNT_API bool operator==(const font &left, const font &right)
     {
         return false;
     }
-    
+
     if (left.has_family())
     {
         if (left.family() != right.family())
@@ -211,22 +212,22 @@ XLNT_API bool operator==(const font &left, const font &right)
             return false;
         }
     }
-    
+
     if (left.italic() != right.italic())
     {
         return false;
     }
-    
+
     if (left.name() != right.name())
     {
         return false;
     }
-    
+
     if (left.has_scheme() != right.has_scheme())
     {
         return false;
     }
-    
+
     if (left.has_scheme())
     {
         if (left.scheme() != right.scheme())
@@ -234,27 +235,27 @@ XLNT_API bool operator==(const font &left, const font &right)
             return false;
         }
     }
-    
-    if (left.size() != right.size())
+
+    if (std::fabs(left.size() - right.size()) != 0.0)
     {
         return false;
     }
-    
+
     if (left.strikethrough() != right.strikethrough())
     {
         return false;
     }
-    
+
     if (left.superscript() != right.superscript())
     {
         return false;
     }
-    
+
     if (left.underline() != right.underline())
     {
         return false;
     }
-    
+
     return true;
 }
 

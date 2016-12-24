@@ -34,6 +34,7 @@ std::string int_to_hex(T i)
 {
     std::stringstream stream;
     stream << std::hex << i;
+
     return stream.str();
 }
 
@@ -70,7 +71,8 @@ std::string sheet_protection::hash_password(const std::string &plaintext_passwor
 
     std::string hashed = int_to_hex(password);
     std::transform(hashed.begin(), hashed.end(), hashed.begin(),
-                   [](char c) { return std::toupper(c, std::locale::classic()); });
+        [](char c) { return std::toupper(c, std::locale::classic()); });
+
     return hashed;
 }
 }

@@ -460,9 +460,17 @@ public:
     void comment(const std::string &text, const std::string &author = "Microsoft Office User");
 
     /// <summary>
+    /// Create a new comment with the given text, formatting, and optional author and apply it to the cell.
+    /// </summary>
+    void comment(const std::string &comment_text, const class font &comment_font, const std::string &author = "Microsoft Office User");
+
+    /// <summary>
     /// Apply the comment provided as the only argument to the cell.
     /// </summary>
     void comment(const class comment &new_comment);
+
+    double width() const;
+    double height() const;
 
     // operators
 

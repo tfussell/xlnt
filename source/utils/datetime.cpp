@@ -23,20 +23,20 @@
 #include <cmath>
 #include <ctime>
 
-#include <xlnt/utils/datetime.hpp>
 #include <xlnt/utils/date.hpp>
+#include <xlnt/utils/datetime.hpp>
 #include <xlnt/utils/time.hpp>
 
 namespace {
 
 std::string fill(const std::string &string, std::size_t length = 2)
 {
-	if (string.size() >= length)
-	{
-		return string;
-	}
+    if (string.size() >= length)
+    {
+        return string;
+    }
 
-	return std::string(length - string.size(), '0') + string;
+    return std::string(length - string.size(), '0') + string;
 }
 
 } // namespace
@@ -47,15 +47,15 @@ datetime datetime::from_number(long double raw_time, calendar base_date)
 {
     auto date_part = date::from_number(static_cast<int>(raw_time), base_date);
     auto time_part = time::from_number(raw_time);
-    
+
     return datetime(date_part.year, date_part.month, date_part.day, time_part.hour, time_part.minute, time_part.second,
-                    time_part.microsecond);
+        time_part.microsecond);
 }
 
 bool datetime::operator==(const datetime &comparand) const
 {
-    return year == comparand.year && month == comparand.month && day == comparand.day && hour == comparand.hour &&
-           minute == comparand.minute && second == comparand.second && microsecond == comparand.microsecond;
+    return year == comparand.year && month == comparand.month && day == comparand.day && hour == comparand.hour
+        && minute == comparand.minute && second == comparand.second && microsecond == comparand.microsecond;
 }
 
 long double datetime::to_number(calendar base_date) const
@@ -65,39 +65,33 @@ long double datetime::to_number(calendar base_date) const
 
 std::string datetime::to_string() const
 {
-    return std::to_string(year) + "/" + std::to_string(month) + "/" + std::to_string(day) + " " + std::to_string(hour) +
-           ":" + std::to_string(minute) + ":" + std::to_string(second) + ":" + std::to_string(microsecond);
+    return std::to_string(year) + "/" + std::to_string(month) + "/" + std::to_string(day) + " " + std::to_string(hour)
+        + ":" + std::to_string(minute) + ":" + std::to_string(second) + ":" + std::to_string(microsecond);
 }
 
 datetime datetime::now()
 {
-	return datetime(date::today(), time::now());
+    return datetime(date::today(), time::now());
 }
 
 datetime datetime::today()
 {
-	return datetime(date::today(), time(0, 0, 0, 0));
+    return datetime(date::today(), time(0, 0, 0, 0));
 }
 
 datetime::datetime(int year_, int month_, int day_, int hour_, int minute_, int second_, int microsecond_)
-    : year(year_),
-      month(month_),
-      day(day_),
-      hour(hour_),
-      minute(minute_),
-      second(second_),
-      microsecond(microsecond_)
+    : year(year_), month(month_), day(day_), hour(hour_), minute(minute_), second(second_), microsecond(microsecond_)
 {
 }
 
 datetime::datetime(const date &d, const time &t)
-	: year(d.year),
-	  month(d.month),
-	  day(d.day),
-	  hour(t.hour),
-	  minute(t.minute),
-	  second(t.second),
-	  microsecond(t.microsecond)
+    : year(d.year),
+      month(d.month),
+      day(d.day),
+      hour(t.hour),
+      minute(t.minute),
+      second(t.second),
+      microsecond(t.microsecond)
 {
 }
 
@@ -127,12 +121,8 @@ datetime datetime::from_iso_string(const std::string &string)
 
 std::string datetime::to_iso_string() const
 {
-	return std::to_string(year) + "-"
-        + fill(std::to_string(month)) + "-"
-        + fill(std::to_string(day)) + "T"
-        + fill(std::to_string(hour)) + ":"
-        + fill(std::to_string(minute)) + ":"
-        + fill(std::to_string(second)) + "Z";
+    return std::to_string(year) + "-" + fill(std::to_string(month)) + "-" + fill(std::to_string(day)) + "T"
+        + fill(std::to_string(hour)) + ":" + fill(std::to_string(minute)) + ":" + fill(std::to_string(second)) + "Z";
 }
 
 } // namespace xlnt

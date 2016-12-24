@@ -38,10 +38,10 @@
 #include <xlnt/worksheet/cell_iterator.hpp>
 #include <xlnt/worksheet/const_cell_iterator.hpp>
 #include <xlnt/worksheet/const_range_iterator.hpp>
+#include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/range_iterator.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
-#include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
 #include <detail/cell_impl.hpp>
@@ -49,26 +49,37 @@
 #include <detail/workbook_impl.hpp>
 #include <detail/worksheet_impl.hpp>
 
+namespace {
+
+int points_to_pixels(double points, double dpi)
+{
+    return static_cast<int>(std::ceil(points * dpi / 72));
+};
+
+} // namespace
+
 namespace xlnt {
 
-worksheet::worksheet() : d_(nullptr)
+worksheet::worksheet()
+    : d_(nullptr)
 {
 }
 
-worksheet::worksheet(detail::worksheet_impl *d) : d_(d)
+worksheet::worksheet(detail::worksheet_impl *d)
+    : d_(d)
 {
 }
 
-worksheet::worksheet(const worksheet &rhs) : d_(rhs.d_)
+worksheet::worksheet(const worksheet &rhs)
+    : d_(rhs.d_)
 {
 }
 
 bool worksheet::has_frozen_panes() const
 {
-    return !d_->views_.empty()
-        && d_->views_.front().has_pane()
+    return !d_->views_.empty() && d_->views_.front().has_pane()
         && (d_->views_.front().pane().state == pane_state::frozen
-        || d_->views_.front().pane().state == pane_state::frozen_split);
+               || d_->views_.front().pane().state == pane_state::frozen_split);
 }
 
 std::string worksheet::unique_sheet_name(const std::string &value) const
@@ -94,24 +105,24 @@ void worksheet::create_named_range(const std::string &name, const std::string &r
 
 void worksheet::create_named_range(const std::string &name, const range_reference &reference)
 {
-	try
-	{
-		auto temp = cell_reference::split_reference(name);
+    try
+    {
+        auto temp = cell_reference::split_reference(name);
 
-		// name is a valid reference, make sure it's outside the allowed range
+        // name is a valid reference, make sure it's outside the allowed range
 
-		if (column_t(temp.first).index <= column_t("XFD").index && temp.second <= 1048576)
-		{
-			throw invalid_parameter(); //("named range name must be outside the range A1-XFD1048576");
-		}
-	}
-	catch (xlnt::invalid_cell_reference)
-	{
-		// name is not a valid reference, that's good
-	}
+        if (column_t(temp.first).index <= column_t("XFD").index && temp.second <= 1048576)
+        {
+            throw invalid_parameter(); //("named range name must be outside the range A1-XFD1048576");
+        }
+    }
+    catch (xlnt::invalid_cell_reference)
+    {
+        // name is not a valid reference, that's good
+    }
 
     std::vector<named_range::target> targets;
-    targets.push_back({ *this, reference }); 
+    targets.push_back({*this, reference});
 
     d_->named_ranges_[name] = xlnt::named_range(name, targets);
 }
@@ -133,12 +144,12 @@ std::vector<range_reference> worksheet::merged_ranges() const
 
 bool worksheet::has_page_margins() const
 {
-	return d_->page_margins_.is_set();
+    return d_->page_margins_.is_set();
 }
 
 bool worksheet::has_page_setup() const
 {
-	return d_->page_setup_.is_set();
+    return d_->page_setup_.is_set();
 }
 
 page_margins worksheet::page_margins() const
@@ -148,7 +159,7 @@ page_margins worksheet::page_margins() const
 
 void worksheet::page_margins(const class page_margins &margins)
 {
-	d_->page_margins_ = margins;
+    d_->page_margins_ = margins;
 }
 
 void worksheet::auto_filter(const std::string &reference_string)
@@ -183,15 +194,15 @@ void worksheet::clear_auto_filter()
 
 void worksheet::page_setup(const struct page_setup &setup)
 {
-	d_->page_setup_ = setup;
+    d_->page_setup_ = setup;
 }
 
 page_setup worksheet::page_setup() const
 {
-	if (!has_page_setup())
-	{
-		throw invalid_attribute();
-	}
+    if (!has_page_setup())
+    {
+        throw invalid_attribute();
+    }
 
     return d_->page_setup_.get();
 }
@@ -203,7 +214,7 @@ workbook &worksheet::workbook()
 
 const workbook &worksheet::workbook() const
 {
-	return *d_->parent_;
+    return *d_->parent_;
 }
 
 void worksheet::garbage_collect()
@@ -254,28 +265,27 @@ std::string worksheet::title() const
 
 void worksheet::title(const std::string &title)
 {
-	if (title.length() > 31)
-	{
-		throw invalid_sheet_title(title);
-	}
+    if (title.length() > 31)
+    {
+        throw invalid_sheet_title(title);
+    }
 
-	if (title.find_first_of("*:/\\?[]") != std::string::npos)
-	{
-		throw invalid_sheet_title(title);
-	}
+    if (title.find_first_of("*:/\\?[]") != std::string::npos)
+    {
+        throw invalid_sheet_title(title);
+    }
 
-	auto same_title = std::find_if(workbook().begin(), workbook().end(), 
-		[&](worksheet ws) { return ws.title() == title; });
+    auto same_title =
+        std::find_if(workbook().begin(), workbook().end(), [&](worksheet ws) { return ws.title() == title; });
 
-	if (same_title != workbook().end() && *same_title != *this)
-	{
-		throw invalid_sheet_title(title);
-	}
+    if (same_title != workbook().end() && *same_title != *this)
+    {
+        throw invalid_sheet_title(title);
+    }
 
-	workbook().d_->sheet_title_rel_id_map_[title] = 
-		workbook().d_->sheet_title_rel_id_map_[d_->title_];
-	workbook().d_->sheet_title_rel_id_map_.erase(d_->title_);
-	d_->title_ = title;
+    workbook().d_->sheet_title_rel_id_map_[title] = workbook().d_->sheet_title_rel_id_map_[d_->title_];
+    workbook().d_->sheet_title_rel_id_map_.erase(d_->title_);
+    d_->title_ = title;
 }
 
 cell_reference worksheet::frozen_panes() const
@@ -312,7 +322,7 @@ void worksheet::freeze_panes(const cell_reference &ref)
 
     primary_view.clear_selections();
     primary_view.add_selection(selection());
-    
+
     if (ref == "A1")
     {
         unfreeze_panes();
@@ -383,9 +393,9 @@ cell worksheet::cell(const cell_reference &reference)
     if (row.find(reference.column_index()) == row.end())
     {
         auto &impl = row[reference.column_index()] = detail::cell_impl();
-		impl.parent_ = d_;
-		impl.column_ = reference.column_index();
-		impl.row_ = reference.row();
+        impl.parent_ = d_;
+        impl.column_ = reference.column_index();
+        impl.row_ = reference.row();
     }
 
     return xlnt::cell(&row[reference.column_index()]);
@@ -399,13 +409,11 @@ const cell worksheet::cell(const cell_reference &reference) const
 bool worksheet::has_cell(const cell_reference &reference) const
 {
     const auto row = d_->cell_map_.find(reference.row());
-    if(row == d_->cell_map_.cend())
-        return false;
-    
+    if (row == d_->cell_map_.cend()) return false;
+
     const auto col = row->second.find(reference.column_index());
-    if(col == row->second.cend())
-        return false;
-    
+    if (col == row->second.cend()) return false;
+
     return true;
 }
 
@@ -420,7 +428,7 @@ range worksheet::named_range(const std::string &name)
     {
         throw key_not_found();
     }
-    
+
     if (!has_named_range(name))
     {
         throw key_not_found();
@@ -567,7 +575,7 @@ void worksheet::unmerge_cells(const range_reference &reference)
 
     if (match == d_->merged_cells_.end())
     {
-		throw invalid_parameter();
+        throw invalid_parameter();
     }
 
     d_->merged_cells_.erase(match);
@@ -690,29 +698,29 @@ bool worksheet::operator==(const worksheet &other) const
 
 bool worksheet::compare(const worksheet &other, bool reference) const
 {
-    if(reference)
+    if (reference)
     {
         return d_ == other.d_;
     }
-    
-    if(d_->parent_ != other.d_->parent_) return false;
-    
-    for(auto &row : d_->cell_map_)
+
+    if (d_->parent_ != other.d_->parent_) return false;
+
+    for (auto &row : d_->cell_map_)
     {
-        if(other.d_->cell_map_.find(row.first) == other.d_->cell_map_.end())
+        if (other.d_->cell_map_.find(row.first) == other.d_->cell_map_.end())
         {
             return false;
         }
-        
-        for(auto &cell : row.second)
+
+        for (auto &cell : row.second)
         {
-            if(other.d_->cell_map_[row.first].find(cell.first) == other.d_->cell_map_[row.first].end())
+            if (other.d_->cell_map_[row.first].find(cell.first) == other.d_->cell_map_[row.first].end())
             {
                 return false;
             }
-            
+
             xlnt::cell this_cell(&cell.second);
-			xlnt::cell other_cell(&other.d_->cell_map_[row.first][cell.first]);
+            xlnt::cell other_cell(&other.d_->cell_map_[row.first][cell.first]);
 
             if (this_cell.data_type() != other_cell.data_type())
             {
@@ -726,16 +734,15 @@ bool worksheet::compare(const worksheet &other, bool reference) const
             }
         }
     }
-    
+
     // todo: missing some comparisons
-    
-    if(d_->auto_filter_ == other.d_->auto_filter_
-        && d_->views_ == other.d_->views_
+
+    if (d_->auto_filter_ == other.d_->auto_filter_ && d_->views_ == other.d_->views_
         && d_->merged_cells_ == other.d_->merged_cells_)
     {
         return true;
     }
-    
+
     return false;
 }
 
@@ -787,7 +794,7 @@ void worksheet::remove_named_range(const std::string &name)
 {
     if (!has_named_range(name))
     {
-		throw key_not_found();
+        throw key_not_found();
     }
 
     d_->named_ranges_.erase(name);
@@ -815,17 +822,6 @@ std::vector<std::string> worksheet::formula_attributes() const
 
 cell_reference worksheet::point_pos(int left, int top) const
 {
-    static const auto DefaultColumnWidth = 51.85L;
-    static const auto DefaultRowHeight = 15.0L;
-
-    auto points_to_pixels = [](long double value, long double dpi)
-    {
-        return static_cast<int>(std::ceil(value * dpi / 72));
-    };
-
-    auto default_height = points_to_pixels(DefaultRowHeight, 96.0L);
-    auto default_width = points_to_pixels(DefaultColumnWidth, 96.0L);
-
     column_t current_column = 1;
     row_t current_row = 1;
 
@@ -834,41 +830,15 @@ cell_reference worksheet::point_pos(int left, int top) const
 
     while (left_pos <= left)
     {
-        current_column++;
-
-        if (has_column_properties(current_column))
-        {
-            auto cdw = column_properties(current_column).width;
-
-            if (cdw >= 0)
-            {
-                left_pos += points_to_pixels(cdw, 96.0L);
-                continue;
-            }
-        }
-
-        left_pos += default_width;
+        left_pos += column_width(current_column++);
     }
 
     while (top_pos <= top)
     {
-        current_row++;
-
-        if (has_row_properties(current_row))
-        {
-            auto cdh = row_properties(current_row).height;
-
-            if (cdh >= 0)
-            {
-                top_pos += points_to_pixels(cdh, 96.0L);
-                continue;
-            }
-        }
-
-        top_pos += default_height;
+        top_pos += row_height(current_row++);
     }
 
-    return { current_column - 1, current_row - 1 };
+    return {current_column - 1, current_row - 1};
 }
 
 cell_reference worksheet::point_pos(const std::pair<int, int> &point) const
@@ -921,7 +891,7 @@ worksheet::iterator worksheet::begin()
     auto dimensions = calculate_dimension();
     cell_reference top_right(dimensions.bottom_right().column_index(), dimensions.top_left().row());
     range_reference row_range(dimensions.top_left(), top_right);
-    
+
     return iterator(*this, row_range, dimensions, major_order::row);
 }
 
@@ -931,7 +901,7 @@ worksheet::iterator worksheet::end()
     auto past_end_row_index = dimensions.bottom_right().row() + 1;
     cell_reference bottom_left(dimensions.top_left().column_index(), past_end_row_index);
     cell_reference bottom_right(dimensions.bottom_right().column_index(), past_end_row_index);
-    
+
     return iterator(*this, range_reference(bottom_left, bottom_right), dimensions, major_order::row);
 }
 
@@ -940,7 +910,7 @@ worksheet::const_iterator worksheet::cbegin() const
     auto dimensions = calculate_dimension();
     cell_reference top_right(dimensions.bottom_right().column_index(), dimensions.top_left().row());
     range_reference row_range(dimensions.top_left(), top_right);
-    
+
     return const_iterator(*this, row_range, major_order::row);
 }
 
@@ -950,7 +920,7 @@ worksheet::const_iterator worksheet::cend() const
     auto past_end_row_index = dimensions.bottom_right().row() + 1;
     cell_reference bottom_left(dimensions.top_left().column_index(), past_end_row_index);
     cell_reference bottom_right(dimensions.bottom_right().column_index(), past_end_row_index);
-    
+
     return const_iterator(*this, range_reference(bottom_left, bottom_right), major_order::row);
 }
 
@@ -1017,7 +987,7 @@ range_reference worksheet::print_area() const
 
 bool worksheet::has_view() const
 {
-	return !d_->views_.empty();
+    return !d_->views_.empty();
 }
 
 sheet_view worksheet::view(std::size_t index) const
@@ -1032,7 +1002,7 @@ void worksheet::add_view(const sheet_view &new_view)
 
 void worksheet::register_comments_in_manifest()
 {
-	workbook().register_comments_in_manifest(*this);
+    workbook().register_comments_in_manifest(*this);
 }
 
 bool worksheet::has_header_footer() const
@@ -1043,6 +1013,54 @@ bool worksheet::has_header_footer() const
 void worksheet::header_footer(const class header_footer &hf)
 {
     d_->header_footer_ = hf;
+}
+
+void worksheet::page_break_at_row(row_t row)
+{
+    d_->row_breaks_.push_back(row);
+}
+
+const std::vector<row_t> &worksheet::page_break_rows() const
+{
+    return d_->row_breaks_;
+}
+
+void worksheet::page_break_at_column(xlnt::column_t column)
+{
+    d_->column_breaks_.push_back(column);
+}
+
+const std::vector<column_t> &worksheet::page_break_columns() const
+{
+    return d_->column_breaks_;
+}
+
+double worksheet::column_width(column_t column) const
+{
+    static const auto DefaultColumnWidth = 51.85;
+
+    if (has_column_properties(column))
+    {
+        return column_properties(column).width.get();
+    }
+    else
+    {
+        return points_to_pixels(DefaultColumnWidth, 96.0);
+    }
+}
+
+double worksheet::row_height(row_t row) const
+{
+    static const auto DefaultRowHeight = 15.0;
+
+    if (has_row_properties(row))
+    {
+        return row_properties(row).height.get();
+    }
+    else
+    {
+        return points_to_pixels(DefaultRowHeight, 96.0);
+    }
 }
 
 } // namespace xlnt

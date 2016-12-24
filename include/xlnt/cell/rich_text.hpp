@@ -27,7 +27,7 @@
 #include <vector>
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/cell/text_run.hpp>
+#include <xlnt/cell/rich_text_run.hpp>
 
 namespace xlnt {
 
@@ -35,23 +35,28 @@ namespace xlnt {
 /// Encapsulates zero or more formatted text runs where a text run
 /// is a string of text with the same defined formatting.
 /// </summary>
-class XLNT_API formatted_text
+class XLNT_API rich_text
 {
 public:
     /// <summary>
     ///
     /// </summary>
-    formatted_text() = default;
+    rich_text() = default;
 
     /// <summary>
     ///
     /// </summary>
-    formatted_text(const std::string &plain_text);
+    rich_text(const std::string &plain_text);
 
     /// <summary>
     ///
     /// </summary>
-    formatted_text(const text_run &single_run);
+    rich_text(const std::string &plain_text, const class font &text_font);
+
+    /// <summary>
+    ///
+    /// </summary>
+    rich_text(const rich_text_run &single_run);
 
     /// <summary>
     /// Remove all text runs from this text.
@@ -72,22 +77,22 @@ public:
     /// <summary>
     /// Returns a copy of the individual runs that comprise this text.
     /// </summary>
-    std::vector<text_run> runs() const;
+    std::vector<rich_text_run> runs() const;
 
     /// <summary>
     /// Set the runs of this text all at once.
     /// </summary>
-    void runs(const std::vector<text_run> &new_runs);
+    void runs(const std::vector<rich_text_run> &new_runs);
 
     /// <summary>
     /// Add a new run to the end of the set of runs.
     /// </summary>
-    void add_run(const text_run &t);
+    void add_run(const rich_text_run &t);
 
     /// <summary>
     /// Returns true if the runs that make up this text are identical to those in rhs.
     /// </summary>
-    bool operator==(const formatted_text &rhs) const;
+    bool operator==(const rich_text &rhs) const;
 
     /// <summary>
     /// Returns true if this text has a single unformatted run with text equal to rhs.
@@ -98,7 +103,7 @@ private:
     /// <summary>
     ///
     /// </summary>
-    std::vector<text_run> runs_;
+    std::vector<rich_text_run> runs_;
 };
 
 } // namespace xlnt

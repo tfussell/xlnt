@@ -38,11 +38,13 @@ cell_vector::iterator cell_vector::end()
     {
         auto past_end = ref_.bottom_right();
         past_end.column_index(past_end.column_index() + 1);
+
         return iterator(ws_, past_end, ref_, order_);
     }
 
     auto past_end = ref_.bottom_right();
     past_end.row(past_end.row() + 1);
+
     return iterator(ws_, past_end, ref_, order_);
 }
 
@@ -57,11 +59,13 @@ cell_vector::const_iterator cell_vector::cend() const
     {
         auto past_end = ref_.bottom_right();
         past_end.column_index(past_end.column_index() + 1);
+
         return const_iterator(ws_, past_end, order_);
     }
 
     auto past_end = ref_.bottom_right();
     past_end.row(past_end.row() + 1);
+
     return const_iterator(ws_, past_end, order_);
 }
 
@@ -102,9 +106,7 @@ cell cell_vector::back()
 
 std::size_t cell_vector::length() const
 {
-    return order_ == major_order::row
-        ? ref_.width() + 1
-        : ref_.height() + 1;
+    return order_ == major_order::row ? ref_.width() + 1 : ref_.height() + 1;
 }
 
 cell_vector::const_iterator cell_vector::begin() const

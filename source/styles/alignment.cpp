@@ -33,19 +33,19 @@ optional<bool> alignment::wrap() const
 
 alignment &alignment::wrap(bool wrap_text)
 {
-	wrap_text_ = wrap_text;
-	return *this;
+    wrap_text_ = wrap_text;
+    return *this;
 }
 
 optional<bool> alignment::shrink() const
 {
-	return shrink_to_fit_;
+    return shrink_to_fit_;
 }
 
 alignment &alignment::shrink(bool shrink_to_fit)
 {
     shrink_to_fit_ = shrink_to_fit;
-	return *this;
+    return *this;
 }
 
 optional<horizontal_alignment> alignment::horizontal() const
@@ -56,7 +56,7 @@ optional<horizontal_alignment> alignment::horizontal() const
 alignment &alignment::horizontal(horizontal_alignment horizontal)
 {
     horizontal_ = horizontal;
-	return *this;
+    return *this;
 }
 
 optional<vertical_alignment> alignment::vertical() const
@@ -67,29 +67,29 @@ optional<vertical_alignment> alignment::vertical() const
 alignment &alignment::vertical(vertical_alignment vertical)
 {
     vertical_ = vertical;
-	return *this;
+    return *this;
 }
 
 alignment &alignment::indent(int value)
 {
-	indent_ = value;
-	return *this;
+    indent_ = value;
+    return *this;
 }
 
 optional<int> alignment::indent() const
 {
-	return indent_;
+    return indent_;
 }
 
 alignment &alignment::rotation(int value)
 {
-	text_rotation_ = value;
-	return *this;
+    text_rotation_ = value;
+    return *this;
 }
 
 optional<int> alignment::rotation() const
 {
-	return text_rotation_;
+    return text_rotation_;
 }
 
 XLNT_API bool operator==(const alignment &left, const alignment &right)
@@ -98,7 +98,7 @@ XLNT_API bool operator==(const alignment &left, const alignment &right)
     {
         return false;
     }
-    
+
     if (left.horizontal().is_set())
     {
         if (left.horizontal().get() != right.horizontal().get())
@@ -111,7 +111,7 @@ XLNT_API bool operator==(const alignment &left, const alignment &right)
     {
         return false;
     }
-    
+
     if (left.indent().is_set())
     {
         if (left.indent().get() != right.indent().get())
@@ -124,7 +124,7 @@ XLNT_API bool operator==(const alignment &left, const alignment &right)
     {
         return false;
     }
-    
+
     if (left.rotation().is_set())
     {
         if (left.rotation().get() != right.rotation().get())
@@ -132,12 +132,12 @@ XLNT_API bool operator==(const alignment &left, const alignment &right)
             return false;
         }
     }
-    
+
     if (left.shrink().is_set() != right.shrink().is_set())
     {
         return false;
     }
-    
+
     if (left.shrink().is_set())
     {
         if (left.shrink().get() != right.shrink().get())
@@ -145,12 +145,12 @@ XLNT_API bool operator==(const alignment &left, const alignment &right)
             return false;
         }
     }
-    
+
     if (left.vertical().is_set() != right.vertical().is_set())
     {
         return false;
     }
-    
+
     if (left.vertical().is_set())
     {
         if (left.vertical().get() != right.vertical().get())
@@ -158,12 +158,12 @@ XLNT_API bool operator==(const alignment &left, const alignment &right)
             return false;
         }
     }
-    
+
     if (left.wrap().is_set() != right.wrap().is_set())
     {
         return false;
     }
-    
+
     if (left.wrap().is_set())
     {
         if (left.wrap().get() != right.wrap().get())
@@ -171,7 +171,7 @@ XLNT_API bool operator==(const alignment &left, const alignment &right)
             return false;
         }
     }
-    
+
     return true;
 }
 
