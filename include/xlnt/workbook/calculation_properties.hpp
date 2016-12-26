@@ -32,6 +32,9 @@ namespace xlnt {
 /// </summary>
 class XLNT_API calculation_properties
 {
+public:
+    std::size_t calc_id;
+    bool concurrent_calc;
 };
 
 } // namespace xlnt

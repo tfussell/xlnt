@@ -825,8 +825,8 @@ cell_reference worksheet::point_pos(int left, int top) const
     column_t current_column = 1;
     row_t current_row = 1;
 
-    int left_pos = 0;
-    int top_pos = 0;
+    double left_pos = 0;
+    double top_pos = 0;
 
     while (left_pos <= left)
     {

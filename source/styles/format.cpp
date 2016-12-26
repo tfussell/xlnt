@@ -58,7 +58,7 @@ format format::style(const std::string &new_style)
 
 bool format::has_style() const
 {
-    return d_->style;
+    return d_->style.is_set();
 }
 
 const style format::style() const

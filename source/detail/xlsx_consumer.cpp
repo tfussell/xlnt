@@ -320,7 +320,7 @@ std::array<xlnt::optional<xlnt::rich_text>, 3> parse_header_footer(const std::st
                 {
                     current_run.second = xlnt::font();
                 }
-                current_run.second.get().size(static_cast<std::size_t>(std::stoi(current_token.value)));
+                current_run.second.get().size(std::stod(current_token.value));
                 break;
 
             case hf_code::text_font_color:
@@ -1328,7 +1328,7 @@ void xlsx_consumer::read_stylesheet()
 
                     if (font_property_element == xml::qname(xmlns, "sz"))
                     {
-                        new_font.size(parser().attribute<std::size_t>("val"));
+                        new_font.size(parser().attribute<double>("val"));
                     }
                     else if (font_property_element == xml::qname(xmlns, "name"))
                     {
@@ -2692,7 +2692,7 @@ rich_text xlsx_consumer::read_rich_text(const xml::qname &parent)
 
                         if (current_run_property_element == xml::qname(xmlns, "sz"))
                         {
-                            run.second.get().size(parser().attribute<std::size_t>("val"));
+                            run.second.get().size(parser().attribute<double>("val"));
                         }
                         else if (current_run_property_element == xml::qname(xmlns, "rFont"))
                         {

@@ -25,6 +25,7 @@
 #include <cstddef>
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 
@@ -68,37 +69,37 @@ public:
     /// <summary>
     ///
     /// </summary>
-    std::size_t active_tab = 0;
+    optional<std::size_t> active_tab;
 
     /// <summary>
     ///
     /// </summary>
-    std::size_t first_sheet = 0;
+    optional<std::size_t> first_sheet;
 
     /// <summary>
     ///
     /// </summary>
-    std::size_t tab_ratio = 500;
+    optional<std::size_t> tab_ratio;
 
     /// <summary>
     ///
     /// </summary>
-    std::size_t window_width = 28800;
+    optional<std::size_t> window_width;
 
     /// <summary>
     ///
     /// </summary>
-    std::size_t window_height = 17460;
+    optional<std::size_t> window_height;
 
     /// <summary>
     ///
     /// </summary>
-    std::size_t x_window = 0;
+    optional<std::size_t> x_window;
 
     /// <summary>
     ///
     /// </summary>
-    std::size_t y_window = 460;
+    optional<std::size_t> y_window;
 };
 
 } // namespace xlnt

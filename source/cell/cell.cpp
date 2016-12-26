@@ -548,21 +548,21 @@ const workbook &cell::workbook() const
 
 std::pair<int, int> cell::anchor() const
 {
-    int left = 0;
+    double left = 0;
 
     for (column_t column_index = 1; column_index <= d_->column_ - 1; column_index++)
     {
         left += worksheet().cell(column_index, row()).width();
     }
 
-    int top = 0;
+    double top = 0;
 
     for (row_t row_index = 1; row_index <= d_->row_ - 1; row_index++)
     {
         top += worksheet().cell(column(), row_index).height();
     }
 
-    return {left, top};
+    return {static_cast<int>(left), static_cast<int>(top)};
 }
 
 cell::type cell::data_type() const
@@ -955,7 +955,7 @@ protection cell::protection() const
 
 bool cell::has_hyperlink() const
 {
-    return d_->hyperlink_;
+    return d_->hyperlink_.is_set();
 }
 
 // comment
@@ -997,7 +997,7 @@ void cell::comment(const class comment &new_comment)
 
     // offset comment 5 pixels down and 5 pixels right of the top right corner of the cell
     auto cell_position = anchor();
-    cell_position.first += width() + 5;
+    cell_position.first += static_cast<int>(width()) + 5;
     cell_position.second += 5;
 
     d_->comment_.get().position(cell_position.first, cell_position.second);

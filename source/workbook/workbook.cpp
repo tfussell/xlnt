@@ -113,6 +113,12 @@ bool workbook::has_core_property(const std::string &property_name) const
 }
 
 template <>
+std::string workbook::core_property(const std::string &property_name) const
+{
+    return d_->core_properties_.at(property_name);
+}
+
+template <>
 void workbook::core_property(const std::string &property_name, const std::string value)
 {
     d_->core_properties_[property_name] = value;
@@ -130,26 +136,55 @@ void workbook::core_property(const std::string &property_name, const datetime va
     d_->core_properties_[property_name] = value.to_iso_string();
 }
 
+bool workbook::has_extended_property(const std::string &property_name) const
+{
+    return d_->extended_properties_.count(property_name) > 0;
+}
+
+template <>
+void workbook::extended_property(const std::string &property_name, const std::string value)
+{
+    d_->extended_properties_[property_name] = value;
+}
+
+template <>
+void workbook::extended_property(const std::string &property_name, const char *value)
+{
+    d_->extended_properties_[property_name] = value;
+}
+
+template <>
+void workbook::extended_property(const std::string &property_name, const datetime value)
+{
+    d_->extended_properties_[property_name] = value.to_iso_string();
+}
+
+template <>
+std::string workbook::extended_property(const std::string &property_name) const
+{
+    return d_->extended_properties_.at(property_name);
+}
+
 workbook workbook::minimal()
 {
     auto impl = new detail::workbook_impl();
     workbook wb(impl);
 
     wb.d_->manifest_.register_default_type("rels", "application/vnd.openxmlformats-package.relationships+xml");
+    wb.d_->manifest_.register_relationship(uri("/"),
+        relationship_type::office_document, uri("workbook.xml"), target_mode::internal);
 
-    wb.d_->manifest_.register_override_type(
-        path("/workbook.xml"), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml");
-    wb.d_->manifest_.register_relationship(
-        uri("/"), relationship_type::office_document, uri("workbook.xml"), target_mode::internal);
-
-    std::string title("1");
+    auto title = std::string("1");
     wb.d_->worksheets_.push_back(detail::worksheet_impl(&wb, 1, title));
 
-    wb.d_->manifest_.register_override_type(
-        path("/sheet1.xml"), "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
-    auto ws_rel = wb.d_->manifest_.register_relationship(
-        uri("workbook.xml"), relationship_type::worksheet, uri("sheet1.xml"), target_mode::internal);
+    auto ws_rel = wb.d_->manifest_.register_relationship(uri("workbook.xml"),
+        relationship_type::worksheet, uri("sheet1.xml"), target_mode::internal);
     wb.d_->sheet_title_rel_id_map_[title] = ws_rel;
+
+    wb.d_->manifest_.register_override_type(path("/workbook.xml"),
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml");
+    wb.d_->manifest_.register_override_type(path("/sheet1.xml"),
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
 
     return wb;
 }
@@ -179,15 +214,30 @@ workbook workbook::empty_excel()
     wb.d_->manifest_.register_relationship(
         uri("/"), relationship_type::extended_properties, uri("docProps/app.xml"), target_mode::internal);
 
-    wb.core_property("Creator", "Microsoft Office User");
-    wb.core_property("LastModifiedBy", "Microsoft Office User");
-    wb.core_property("Created", datetime(2016, 8, 12, 3, 16, 56));
-    wb.core_property("Modified", datetime(2016, 8, 12, 3, 17, 16));
-    wb.core_property("Application", "Microsoft Macintosh Excel");
-    wb.core_property("AppVersion", "15.0300");
+    wb.core_property("creator", "Microsoft Office User");
+    wb.core_property("lastModifiedBy", "Microsoft Office User");
+    wb.core_property("created", datetime(2016, 8, 12, 3, 16, 56));
+    wb.core_property("modified", datetime(2016, 8, 12, 3, 17, 16));
+
+    wb.extended_property("Application", "Microsoft Macintosh Excel");
+    wb.extended_property("DocSecurity", "0");
+    wb.extended_property("ScaleCrop", "false");
+    wb.extended_property("Company", "");
+    wb.extended_property("LinksUpToDate", "false");
+    wb.extended_property("SharedDoc", "false");
+    wb.extended_property("HyperlinksChanged", "false");
+    wb.extended_property("AppVersion", "15.0300");
 
     auto file_version = detail::workbook_impl::file_version_t{"xl", 6, 6, 26709};
     wb.d_->file_version_ = file_version;
+
+    xlnt::workbook_view wb_view;
+    wb_view.x_window = 0;
+    wb_view.y_window = 460;
+    wb_view.window_width = 28800;
+    wb_view.window_height = 17460;
+    wb_view.tab_ratio = 500;
+    wb.view(wb_view);
 
     auto ws = wb.create_sheet();
 
@@ -202,6 +252,8 @@ workbook workbook::empty_excel()
 
     sheet_view view;
     ws.add_view(view);
+
+    wb.theme(xlnt::theme());
 
     wb.d_->stylesheet_ = detail::stylesheet();
     auto &stylesheet = wb.d_->stylesheet_.get();
@@ -236,7 +288,10 @@ workbook workbook::empty_excel()
         .number_format(xlnt::number_format::general(), false)
         .style("Normal");
 
-    wb.theme(xlnt::theme());
+    xlnt::calculation_properties calc_props;
+    calc_props.calc_id = 150000;
+    calc_props.concurrent_calc = false;
+    wb.calculation_properties(calc_props);
 
     return wb;
 }
@@ -269,10 +324,10 @@ workbook workbook::empty_libre_office()
     std::string title("Sheet1");
     wb.d_->worksheets_.push_back(detail::worksheet_impl(&wb, 1, title));
 
-    wb.d_->manifest_.register_override_type(
-        path("xl/worksheets/sheet1.xml"), "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
-    auto ws_rel = wb.d_->manifest_.register_relationship(
-        uri("xl/workbook.xml"), relationship_type::worksheet, uri("worksheets/sheet1.xml"), target_mode::internal);
+    wb.d_->manifest_.register_override_type(path("xl/worksheets/sheet1.xml"),
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
+    auto ws_rel = wb.d_->manifest_.register_relationship(uri("xl/workbook.xml"),
+        relationship_type::worksheet, uri("worksheets/sheet1.xml"), target_mode::internal);
     wb.d_->sheet_title_rel_id_map_[title] = ws_rel;
 
     auto ws = wb.sheet_by_index(0);
@@ -403,8 +458,8 @@ workbook workbook::empty_libre_office()
         .protection(default_protection, true)
         .style("Normal");
 
-    wb.core_property(
-        "Application", "LibreOffice/5.1.4.2$Windows_x86 LibreOffice_project/f99d75f39f1c57ebdd7ffc5f42867c12031db97a");
+    wb.extended_property("Application",
+        "LibreOffice/5.1.4.2$Windows_x86 LibreOffice_project/f99d75f39f1c57ebdd7ffc5f42867c12031db97a");
 
     return wb;
 }
@@ -1351,12 +1406,6 @@ std::size_t workbook::lowest_edited() const
 std::size_t workbook::rup_build() const
 {
     return d_->file_version_.get().rup_build;
-}
-
-template <>
-std::string workbook::core_property(const std::string &property_name) const
-{
-    return d_->core_properties_.at(property_name);
 }
 
 /// <summary>

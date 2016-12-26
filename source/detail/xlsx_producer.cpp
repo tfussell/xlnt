@@ -238,19 +238,19 @@ void xlsx_producer::write_extended_properties(const relationship & /*rel*/)
     serializer().namespace_decl(xmlns, "");
     serializer().namespace_decl(xmlns_vt, "vt");
 
-    if (source_.has_core_property("Application"))
+    if (source_.has_extended_property("Application"))
     {
-        serializer().element(xmlns, "Application", source_.core_property("Application"));
+        serializer().element(xmlns, "Application", source_.extended_property("Application"));
     }
 
-    if (source_.has_core_property("DocSecurity"))
+    if (source_.has_extended_property("DocSecurity"))
     {
-        serializer().element(xmlns, "DocSecurity", source_.core_property("DocSecurity"));
+        serializer().element(xmlns, "DocSecurity", source_.extended_property("DocSecurity"));
     }
 
-    if (source_.has_core_property("ScaleCrop"))
+    if (source_.has_extended_property("ScaleCrop"))
     {
-        serializer().element(xmlns, "ScaleCrop", source_.core_property("ScaleCrop"));
+        serializer().element(xmlns, "ScaleCrop", source_.extended_property("ScaleCrop"));
     }
 
     serializer().start_element(xmlns, "HeadingPairs");
@@ -279,29 +279,29 @@ void xlsx_producer::write_extended_properties(const relationship & /*rel*/)
     serializer().end_element(xmlns_vt, "vector");
     serializer().end_element(xmlns, "TitlesOfParts");
 
-    if (source_.has_core_property("Company"))
+    if (source_.has_extended_property("Company"))
     {
-        serializer().element(xmlns, "Company", source_.core_property("Company"));
+        serializer().element(xmlns, "Company", source_.extended_property("Company"));
     }
 
-    if (source_.has_core_property("LinksUpToDate"))
+    if (source_.has_extended_property("LinksUpToDate"))
     {
-        serializer().element(xmlns, "LinksUpToDate", source_.core_property("LinksUpToDate"));
+        serializer().element(xmlns, "LinksUpToDate", source_.extended_property("LinksUpToDate"));
     }
 
-    if (source_.has_core_property("LinksUpToDate"))
+    if (source_.has_extended_property("SharedDoc"))
     {
-        serializer().element(xmlns, "SharedDoc", source_.core_property("SharedDoc"));
+        serializer().element(xmlns, "SharedDoc", source_.extended_property("SharedDoc"));
     }
 
-    if (source_.has_core_property("LinksUpToDate"))
+    if (source_.has_extended_property("HyperlinksChanged"))
     {
-        serializer().element(xmlns, "HyperlinksChanged", source_.core_property("HyperlinksChanged"));
+        serializer().element(xmlns, "HyperlinksChanged", source_.extended_property("HyperlinksChanged"));
     }
 
-    if (source_.has_core_property("LinksUpToDate"))
+    if (source_.has_extended_property("AppVersion"))
     {
-        serializer().element(xmlns, "AppVersion", source_.core_property("AppVersion"));
+        serializer().element(xmlns, "AppVersion", source_.extended_property("AppVersion"));
     }
 
     serializer().end_element(xmlns, "Properties");
@@ -426,22 +426,19 @@ void xlsx_producer::write_workbook(const relationship &rel)
         serializer().end_element(xmlns, "fileVersion");
     }
 
-    if (source_.has_code_name() || source_.base_date() == calendar::mac_1904)
+    serializer().start_element(xmlns, "workbookPr");
+
+    if (source_.has_code_name())
     {
-        serializer().start_element(xmlns, "workbookPr");
-
-        if (source_.has_code_name())
-        {
-            serializer().attribute("codeName", source_.code_name());
-        }
-
-        if (source_.base_date() == calendar::mac_1904)
-        {
-            serializer().attribute("date1904", "1");
-        }
-
-        serializer().end_element(xmlns, "workbookPr");
+        serializer().attribute("codeName", source_.code_name());
     }
+
+    if (source_.base_date() == calendar::mac_1904)
+    {
+        serializer().attribute("date1904", "1");
+    }
+
+    serializer().end_element(xmlns, "workbookPr");
 
     if (source_.has_view())
     {
@@ -450,20 +447,70 @@ void xlsx_producer::write_workbook(const relationship &rel)
 
         const auto &view = source_.view();
 
-        serializer().attribute("activeTab", "0");
-        serializer().attribute("autoFilterDateGrouping", "1");
-        serializer().attribute("firstSheet", "0");
-        serializer().attribute("minimized", "0");
-        serializer().attribute("showHorizontalScroll", "1");
-        serializer().attribute("showSheetTabs", "1");
-        serializer().attribute("showVerticalScroll", "1");
-        serializer().attribute("visibility", "visible");
+        if (view.active_tab.is_set())
+        {
+            serializer().attribute("activeTab", view.active_tab.get());
+        }
 
-        serializer().attribute("xWindow", view.x_window);
-        serializer().attribute("yWindow", view.y_window);
-        serializer().attribute("windowWidth", view.window_width);
-        serializer().attribute("windowHeight", view.window_height);
-        serializer().attribute("tabRatio", view.tab_ratio);
+        if (view.auto_filter_date_grouping)
+        {
+            serializer().attribute("autoFilterDateGrouping", write_bool(view.auto_filter_date_grouping));
+        }
+
+        if (view.first_sheet.is_set())
+        {
+            serializer().attribute("firstSheet", view.first_sheet.get());
+        }
+
+        if (view.minimized)
+        {
+            serializer().attribute("minimized", write_bool(view.minimized));
+        }
+
+        if (view.show_horizontal_scroll)
+        {
+            serializer().attribute("showHorizontalScroll", write_bool(view.show_horizontal_scroll));
+        }
+
+        if (view.show_sheet_tabs)
+        {
+            serializer().attribute("showSheetTabs", write_bool(view.show_sheet_tabs));
+        }
+
+        if (view.show_vertical_scroll)
+        {
+            serializer().attribute("showVerticalScroll", write_bool(view.show_vertical_scroll));
+        }
+
+        if (!view.visible)
+        {
+            serializer().attribute("visibility", write_bool(view.visible));
+        }
+
+        if (view.x_window.is_set())
+        {
+            serializer().attribute("xWindow", view.x_window.get());
+        }
+
+        if (view.y_window.is_set())
+        {
+            serializer().attribute("yWindow", view.y_window.get());
+        }
+
+        if (view.window_width.is_set())
+        {
+            serializer().attribute("windowWidth", view.window_width.get());
+        }
+
+        if (view.window_height.is_set())
+        {
+            serializer().attribute("windowHeight", view.window_height.get());
+        }
+
+        if (view.tab_ratio.is_set())
+        {
+            serializer().attribute("tabRatio", view.tab_ratio.get());
+        }
 
         serializer().end_element(xmlns, "workbookView");
         serializer().end_element(xmlns, "bookViews");
@@ -516,10 +563,10 @@ void xlsx_producer::write_workbook(const relationship &rel)
     if (source_.has_calculation_properties())
     {
         serializer().start_element(xmlns, "calcPr");
-        serializer().attribute("calcId", 150000);
-        serializer().attribute("calcMode", "auto");
-        serializer().attribute("fullCalcOnLoad", "1");
-        serializer().attribute("concurrentCalc", "0");
+        serializer().attribute("calcId", source_.calculation_properties().calc_id);
+        //serializer().attribute("calcMode", "auto");
+        //serializer().attribute("fullCalcOnLoad", "1");
+        serializer().attribute("concurrentCalc", write_bool(source_.calculation_properties().concurrent_calc));
         serializer().end_element(xmlns, "calcPr");
     }
 
@@ -2862,7 +2909,7 @@ xml::serializer &xlsx_producer::serializer()
 
 std::string xlsx_producer::write_bool(bool boolean) const
 {
-    return boolean ? "true" : "false";
+    return boolean ? "1" : "0";
 }
 
 void xlsx_producer::write_relationships(const std::vector<xlnt::relationship> &relationships, const path &part)
