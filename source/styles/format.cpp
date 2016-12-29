@@ -142,7 +142,13 @@ xlnt::number_format &format::number_format()
 
 const xlnt::number_format &format::number_format() const
 {
-    return d_->parent->number_formats.at(d_->number_format_id.get());
+    if (number_format::is_builtin_format(d_->number_format_id.get()))
+    {
+        return number_format::from_builtin_id(d_->number_format_id.get());
+    }
+
+    return *std::find_if(d_->parent->number_formats.begin(), d_->parent->number_formats.end(),
+        [&](const xlnt::number_format nf) { return nf.id() == d_->number_format_id.get(); });
 }
 
 format format::number_format(const xlnt::number_format &new_number_format, bool applied)

@@ -29,27 +29,15 @@ public:
 		return xml_helper::xlsx_archives_match(wb_data, file_data);
 	}
 
-	void test_produce_minimal()
+	void test_produce_empty()
 	{
-		xlnt::workbook wb = xlnt::workbook::minimal();
-		TS_ASSERT(workbook_matches_file(wb, path_helper::get_data_directory("8_minimal.xlsx")));
-	}
-
-	void test_produce_default_excel()
-	{
-		xlnt::workbook wb = xlnt::workbook::empty_excel();
+		xlnt::workbook wb = xlnt::workbook::empty();
 		TS_ASSERT(workbook_matches_file(wb, path_helper::get_data_directory("9_default-excel.xlsx")));
-	}
-
-	void test_produce_default_libre_office()
-	{
-		xlnt::workbook wb = xlnt::workbook::empty_libre_office();
-		TS_ASSERT(workbook_matches_file(wb, path_helper::get_data_directory("10_default-libre-office.xlsx")));
 	}
 
 	void test_produce_simple_excel()
 	{
-		xlnt::workbook wb = xlnt::workbook::empty_excel();
+		xlnt::workbook wb;
 		auto ws = wb.active_sheet();
 
 		auto bold_font = xlnt::font().bold(true);
@@ -164,6 +152,6 @@ public:
 		sheet2.cell("A2").value("Sheet2!A2");
 		sheet2.cell("A2").comment("Sheet2 comment2", comment_font, "Microsoft Office User");
 
-		TS_ASSERT(workbook_matches_file(wb, xlnt::path("data/18_basic_comments.xlsx")));
+		TS_ASSERT(workbook_matches_file(wb, xlnt::path("data/15_basic_comments.xlsx")));
 	}
 };

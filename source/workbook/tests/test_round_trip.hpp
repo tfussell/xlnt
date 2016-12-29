@@ -57,51 +57,15 @@ public:
 		return xml_helper::xlsx_archives_match(original_data, buffer);
 	}
 
-	void test_round_trip_minimal_wrw()
+	void test_round_trip_empty_wrw()
 	{
-		xlnt::workbook wb = xlnt::workbook::minimal();
+		xlnt::workbook wb = xlnt::workbook::empty();
 		TS_ASSERT(round_trip_matches_wrw(wb));
-	}
-
-	void test_round_trip_empty_excel_wrw()
-	{
-		xlnt::workbook wb = xlnt::workbook::empty_excel();
-		TS_ASSERT(round_trip_matches_wrw(wb));
-	}
-
-	void test_round_trip_empty_libre_office_wrw()
-	{
-		xlnt::workbook wb = xlnt::workbook::empty_libre_office();
-		TS_ASSERT(round_trip_matches_wrw(wb));
-	}
-
-	void test_round_trip_empty_numbers_wrw()
-	{
-		xlnt::workbook wb = xlnt::workbook::empty_numbers();
-		TS_ASSERT(round_trip_matches_wrw(wb));
-	}
-
-	void test_round_trip_minimal_rw()
-	{
-		auto path = path_helper::get_data_directory("8_minimal.xlsx");
-		TS_ASSERT(round_trip_matches_rw(path));
 	}
 
 	void test_round_trip_empty_excel_rw()
 	{
 		auto path = path_helper::get_data_directory("9_default-excel.xlsx");
-		TS_ASSERT(round_trip_matches_rw(path));
-	}
-
-	void test_round_trip_empty_libre_rw()
-	{
-		auto path = path_helper::get_data_directory("10_default-libre-office.xlsx");
-		TS_ASSERT(round_trip_matches_rw(path));
-	}
-
-	void test_round_trip_empty_numbers_rw()
-	{
-		auto path = path_helper::get_data_directory("11_default-numbers.xlsx");
 		TS_ASSERT(round_trip_matches_rw(path));
 	}
 

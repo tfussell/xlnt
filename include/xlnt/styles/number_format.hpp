@@ -172,7 +172,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-    static number_format from_builtin_id(std::size_t builtin_id);
+    static bool is_builtin_format(std::size_t builtin_id);
+
+    /// <summary>
+    ///
+    /// </summary>
+    static const number_format &from_builtin_id(std::size_t builtin_id);
 
     /// <summary>
     ///

@@ -798,6 +798,12 @@ void xlsx_producer::write_shared_string_table(const relationship & /*rel*/)
             {
                 serializer().start_element(xmlns, "rPr");
 
+                if (run.second.get().bold())
+                {
+                    serializer().start_element(xmlns, "b");
+                    serializer().end_element(xmlns, "b");
+                }
+
                 if (run.second.get().has_size())
                 {
                     serializer().start_element(xmlns, "sz");
@@ -831,12 +837,6 @@ void xlsx_producer::write_shared_string_table(const relationship & /*rel*/)
                     serializer().start_element(xmlns, "scheme");
                     serializer().attribute("val", run.second.get().scheme());
                     serializer().end_element(xmlns, "scheme");
-                }
-
-                if (run.second.get().bold())
-                {
-                    serializer().start_element(xmlns, "b");
-                    serializer().end_element(xmlns, "b");
                 }
 
                 serializer().end_element(xmlns, "rPr");
@@ -1083,11 +1083,11 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
             {
                 auto up = *current_border.diagonal() == diagonal_direction::both
                     || *current_border.diagonal() == diagonal_direction::up;
-                serializer().attribute("diagonalUp", up ? "true" : "false");
+                serializer().attribute("diagonalUp", write_bool(up));
 
                 auto down = *current_border.diagonal() == diagonal_direction::both
                     || *current_border.diagonal() == diagonal_direction::down;
-                serializer().attribute("diagonalDown", down ? "true" : "false");
+                serializer().attribute("diagonalDown", write_bool(down));
             }
 
             for (const auto &side : xlnt::border::all_sides())
@@ -1166,7 +1166,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
             serializer().attribute("applyProtection", write_bool(true));
         }
 
-        if (current_style_impl.alignment_applied)
+        if (current_style_impl.alignment_id.is_set())
         {
             const auto &current_alignment = stylesheet.alignments[current_style_impl.alignment_id.get()];
 
@@ -1205,7 +1205,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
             serializer().end_element(xmlns, "alignment");
         }
 
-        if (current_style_impl.protection_applied)
+        if (current_style_impl.protection_id.is_set())
         {
             const auto &current_protection = stylesheet.protections[current_style_impl.protection_id.get()];
 
@@ -1278,7 +1278,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
             serializer().attribute("xfId", stylesheet.style_index(current_format_impl.style.get()));
         }
 
-        if (current_format_impl.alignment_applied)
+        if (current_format_impl.alignment_id.is_set())
         {
             const auto &current_alignment = stylesheet.alignments[current_format_impl.alignment_id.get()];
 
@@ -1286,38 +1286,38 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
 
             if (current_alignment.vertical())
             {
-                serializer().attribute("vertical", *current_alignment.vertical());
+                serializer().attribute("vertical", current_alignment.vertical().get());
             }
 
             if (current_alignment.horizontal())
             {
-                serializer().attribute("horizontal", *current_alignment.horizontal());
+                serializer().attribute("horizontal", current_alignment.horizontal().get());
             }
 
             if (current_alignment.rotation())
             {
-                serializer().attribute("textRotation", *current_alignment.rotation());
+                serializer().attribute("textRotation", current_alignment.rotation().get());
             }
 
             if (current_alignment.wrap())
             {
-                serializer().attribute("wrapText", write_bool(*current_alignment.wrap()));
+                serializer().attribute("wrapText", write_bool(current_alignment.wrap().get()));
             }
 
             if (current_alignment.indent())
             {
-                serializer().attribute("indent", *current_alignment.indent());
+                serializer().attribute("indent", current_alignment.indent().get());
             }
 
             if (current_alignment.shrink())
             {
-                serializer().attribute("shrinkToFit", write_bool(*current_alignment.shrink()));
+                serializer().attribute("shrinkToFit", write_bool(current_alignment.shrink().get()));
             }
 
             serializer().end_element(xmlns, "alignment");
         }
 
-        if (current_format_impl.protection_applied)
+        if (current_format_impl.protection_id.is_set())
         {
             const auto &current_protection = stylesheet.protections[current_format_impl.protection_id.get()];
 
@@ -2685,6 +2685,12 @@ void xlsx_producer::write_comments(const relationship & /*rel*/, worksheet ws, c
                 {
                     serializer().start_element(xmlns, "rPr");
 
+                    if (run.second.get().bold())
+                    {
+                        serializer().start_element(xmlns, "b");
+                        serializer().end_element(xmlns, "b");
+                    }
+
                     if (run.second.get().has_size())
                     {
                         serializer().start_element(xmlns, "sz");
@@ -2718,12 +2724,6 @@ void xlsx_producer::write_comments(const relationship & /*rel*/, worksheet ws, c
                         serializer().start_element(xmlns, "scheme");
                         serializer().attribute("val", run.second.get().scheme());
                         serializer().end_element(xmlns, "scheme");
-                    }
-
-                    if (run.second.get().bold())
-                    {
-                        serializer().start_element(xmlns, "b");
-                        serializer().end_element(xmlns, "b");
                     }
 
                     serializer().end_element(xmlns, "rPr");
@@ -2929,8 +2929,12 @@ void xlsx_producer::write_relationships(const std::vector<xlnt::relationship> &r
     serializer().start_element(xmlns, "Relationships");
     serializer().namespace_decl(xmlns, "");
 
-    for (const auto &relationship : relationships)
+    for (std::size_t i = 1; i <= relationships.size(); ++i)
     {
+        auto rel_iter = std::find_if(relationships.begin(), relationships.end(),
+            [&i](const relationship &r) { return r.id() == "rId" + std::to_string(i); });
+        auto relationship = *rel_iter;
+
         serializer().start_element(xmlns, "Relationship");
 
         serializer().attribute("Id", relationship.id());

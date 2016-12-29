@@ -165,31 +165,7 @@ std::string workbook::extended_property(const std::string &property_name) const
     return d_->extended_properties_.at(property_name);
 }
 
-workbook workbook::minimal()
-{
-    auto impl = new detail::workbook_impl();
-    workbook wb(impl);
-
-    wb.d_->manifest_.register_default_type("rels", "application/vnd.openxmlformats-package.relationships+xml");
-    wb.d_->manifest_.register_relationship(uri("/"),
-        relationship_type::office_document, uri("workbook.xml"), target_mode::internal);
-
-    auto title = std::string("1");
-    wb.d_->worksheets_.push_back(detail::worksheet_impl(&wb, 1, title));
-
-    auto ws_rel = wb.d_->manifest_.register_relationship(uri("workbook.xml"),
-        relationship_type::worksheet, uri("sheet1.xml"), target_mode::internal);
-    wb.d_->sheet_title_rel_id_map_[title] = ws_rel;
-
-    wb.d_->manifest_.register_override_type(path("/workbook.xml"),
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml");
-    wb.d_->manifest_.register_override_type(path("/sheet1.xml"),
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
-
-    return wb;
-}
-
-workbook workbook::empty_excel()
+workbook workbook::empty()
 {
     auto impl = new detail::workbook_impl();
     workbook wb(impl);
@@ -257,13 +233,14 @@ workbook workbook::empty_excel()
 
     wb.d_->stylesheet_ = detail::stylesheet();
     auto &stylesheet = wb.d_->stylesheet_.get();
+    stylesheet.parent = &wb;
 
     auto default_border = border()
-                              .side(border_side::bottom, border::border_property())
-                              .side(border_side::top, border::border_property())
-                              .side(border_side::start, border::border_property())
-                              .side(border_side::end, border::border_property())
-                              .side(border_side::diagonal, border::border_property());
+        .side(border_side::bottom, border::border_property())
+        .side(border_side::top, border::border_property())
+        .side(border_side::start, border::border_property())
+        .side(border_side::end, border::border_property())
+        .side(border_side::diagonal, border::border_property());
     wb.d_->stylesheet_.get().borders.push_back(default_border);
 
     auto default_fill = fill(pattern_fill().type(pattern_fill_type::none));
@@ -296,182 +273,9 @@ workbook workbook::empty_excel()
     return wb;
 }
 
-workbook workbook::empty_libre_office()
-{
-    auto impl = new detail::workbook_impl();
-    workbook wb(impl);
-
-    wb.d_->manifest_.register_override_type(
-        path("xl/workbook.xml"), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml");
-    wb.d_->manifest_.register_relationship(
-        uri("/"), relationship_type::office_document, uri("xl/workbook.xml"), target_mode::internal);
-
-    wb.d_->manifest_.register_override_type(
-        path("docProps/core.xml"), "application/vnd.openxmlformats-package.core-properties+xml");
-    wb.d_->manifest_.register_relationship(
-        uri("/"), relationship_type::core_properties, uri("docProps/core.xml"), target_mode::internal);
-
-    wb.d_->manifest_.register_override_type(
-        path("docProps/app.xml"), "application/vnd.openxmlformats-officedocument.extended-properties+xml");
-    wb.d_->manifest_.register_relationship(
-        uri("/"), relationship_type::extended_properties, uri("docProps/app.xml"), target_mode::internal);
-
-    wb.d_->manifest_.register_override_type(
-        path("_rels/.rels"), "application/vnd.openxmlformats-package.relationships+xml");
-    wb.d_->manifest_.register_override_type(
-        path("xl/_rels/workbook.xml.rels"), "application/vnd.openxmlformats-package.relationships+xml");
-
-    std::string title("Sheet1");
-    wb.d_->worksheets_.push_back(detail::worksheet_impl(&wb, 1, title));
-
-    wb.d_->manifest_.register_override_type(path("xl/worksheets/sheet1.xml"),
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
-    auto ws_rel = wb.d_->manifest_.register_relationship(uri("xl/workbook.xml"),
-        relationship_type::worksheet, uri("worksheets/sheet1.xml"), target_mode::internal);
-    wb.d_->sheet_title_rel_id_map_[title] = ws_rel;
-
-    auto ws = wb.sheet_by_index(0);
-
-    sheet_view view;
-    ws.add_view(view);
-
-    page_margins margins;
-    margins.left(0.7875);
-    margins.right(0.7875);
-    margins.top(1.05277777777778);
-    margins.bottom(1.05277777777778);
-    margins.header(0.7875);
-    margins.footer(0.7875);
-    ws.page_margins(margins);
-    ws.page_setup(page_setup());
-    ws.header_footer(xlnt::header_footer()
-                         .header(header_footer::location::center,
-                             rich_text(rich_text_run{"&A", font().name("Times New Roman").size(12)}))
-                         .footer(header_footer::location::center,
-                             rich_text(rich_text_run{"Page &B", font().name("Times New Roman").size(12)})));
-    ws.add_column_properties(1, column_properties());
-
-    wb.d_->stylesheet_ = detail::stylesheet();
-    auto &stylesheet = wb.d_->stylesheet_.get();
-
-    auto default_alignment = xlnt::alignment()
-                                 .horizontal(horizontal_alignment::general)
-                                 .vertical(vertical_alignment::bottom)
-                                 .rotation(0)
-                                 .wrap(false)
-                                 .indent(0)
-                                 .shrink(false);
-    stylesheet.alignments.push_back(default_alignment);
-
-    auto default_border = border()
-                              .side(border_side::bottom, border::border_property())
-                              .side(border_side::top, border::border_property())
-                              .side(border_side::start, border::border_property())
-                              .side(border_side::end, border::border_property())
-                              .side(border_side::diagonal, border::border_property())
-                              .diagonal(diagonal_direction::neither);
-    stylesheet.borders.push_back(default_border);
-
-    auto default_fill = xlnt::fill(xlnt::pattern_fill().type(pattern_fill_type::none));
-    stylesheet.fills.push_back(default_fill);
-
-    auto gray125_fill = xlnt::fill(xlnt::pattern_fill().type(pattern_fill_type::gray125));
-    stylesheet.fills.push_back(gray125_fill);
-
-    auto default_font = font().name("Arial").size(10).family(2);
-    stylesheet.fonts.push_back(default_font);
-
-    auto second_font = font().name("Arial").size(10).family(0);
-    stylesheet.fonts.push_back(second_font);
-
-    auto default_number_format = xlnt::number_format();
-    default_number_format.format_string("General");
-    default_number_format.id(164);
-    stylesheet.number_formats.push_back(default_number_format);
-
-    auto default_protection = xlnt::protection().locked(true).hidden(false);
-    stylesheet.protections.push_back(default_protection);
-
-    wb.create_style("Normal")
-        .builtin_id(0)
-        .custom(false)
-        .alignment(default_alignment, false)
-        .border(default_border, true)
-        .fill(default_fill, true)
-        .font(default_font, true)
-        .number_format(default_number_format, false)
-        .protection(default_protection, false);
-
-    wb.create_style("Comma")
-        .builtin_id(3)
-        .custom(false)
-        .alignment(default_alignment, false)
-        .border(default_border, true)
-        .fill(default_fill, true)
-        .font(second_font, true)
-        .number_format(number_format::from_builtin_id(43), false)
-        .protection(default_protection, false);
-
-    wb.create_style("Comma [0]")
-        .builtin_id(6)
-        .custom(false)
-        .alignment(default_alignment, false)
-        .border(default_border, true)
-        .fill(default_fill, true)
-        .font(second_font, true)
-        .number_format(number_format::from_builtin_id(41), false)
-        .protection(default_protection, false);
-
-    wb.create_style("Currency")
-        .builtin_id(4)
-        .custom(false)
-        .alignment(default_alignment, false)
-        .border(default_border, true)
-        .fill(default_fill, true)
-        .font(second_font, true)
-        .number_format(number_format::from_builtin_id(44), false)
-        .protection(default_protection, false);
-
-    wb.create_style("Currency [0]")
-        .builtin_id(7)
-        .custom(false)
-        .alignment(default_alignment, false)
-        .border(default_border, true)
-        .fill(default_fill, true)
-        .font(second_font, true)
-        .number_format(number_format::from_builtin_id(42), false)
-        .protection(default_protection, false);
-
-    wb.create_style("Percent")
-        .builtin_id(5)
-        .custom(false)
-        .alignment(default_alignment, false)
-        .border(default_border, true)
-        .fill(default_fill, false)
-        .font(second_font, true)
-        .number_format(number_format::percentage(), false)
-        .protection(default_protection, false);
-
-    wb.create_format()
-        .number_format(default_number_format, true)
-        .alignment(default_alignment, true)
-        .protection(default_protection, true)
-        .style("Normal");
-
-    wb.extended_property("Application",
-        "LibreOffice/5.1.4.2$Windows_x86 LibreOffice_project/f99d75f39f1c57ebdd7ffc5f42867c12031db97a");
-
-    return wb;
-}
-
-workbook workbook::empty_numbers()
-{
-    return empty_excel();
-}
-
 workbook::workbook()
 {
-    auto wb_template = empty_excel();
+    auto wb_template = empty();
     swap(*this, wb_template);
 }
 
@@ -1110,7 +914,7 @@ void swap(workbook &left, workbook &right)
             ws.parent(right);
         }
 
-        if (left.d_->stylesheet_.is_set())
+        if (right.d_->stylesheet_.is_set())
         {
             right.d_->stylesheet_->parent = &right;
         }

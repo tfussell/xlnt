@@ -216,8 +216,7 @@ public:
         else
         {
             compressed_data = false;
-            std::cerr << "ZIP: got unrecognized compressed data (Supported deflate/uncompressed)" << std::endl;
-            valid = false;
+            throw xlnt::exception("unsupported compression type, should be DEFLATE or uncompressed");
         }
 
         // initialize the inflate
@@ -230,8 +229,7 @@ public:
 
             if (result != Z_OK)
             {
-                std::cerr << "gzip: inflateInit2 did not return Z_OK" << std::endl;
-                valid = false;
+                throw xlnt::exception("couldn't inflate ZIP, possibly corrupted");
             }
         }
 
@@ -272,15 +270,10 @@ public:
                 switch (ret)
                 {
                 case Z_STREAM_ERROR:
-                    std::cerr << "libz error Z_STREAM_ERROR" << std::endl;
-                    valid = false;
-                    return -1;
                 case Z_NEED_DICT:
                 case Z_DATA_ERROR:
                 case Z_MEM_ERROR:
-                    std::cerr << "gzip error " << strm.msg << std::endl;
-                    valid = false;
-                    return -1;
+                    throw xlnt::exception("couldn't inflate ZIP, possibly corrupted");
                 }
 
                 if (ret == Z_STREAM_END) break;

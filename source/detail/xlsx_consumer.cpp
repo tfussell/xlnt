@@ -1499,8 +1499,9 @@ void xlsx_consumer::read_stylesheet()
             {
                 expect_start_element(xml::qname(xmlns, "xf"), xml::content::complex);
 
-                auto &record = *(!in_style_records ? format_records.emplace(format_records.end())
-                                                   : style_records.emplace(style_records.end()));
+                auto &record = *(!in_style_records
+                    ? format_records.emplace(format_records.end())
+                    : style_records.emplace(style_records.end()));
 
                 auto apply_alignment_present = parser().attribute_present("applyAlignment");
                 auto alignment_applied = apply_alignment_present && is_true(parser().attribute("applyAlignment"));

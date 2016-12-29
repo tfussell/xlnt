@@ -110,8 +110,13 @@ struct stylesheet
 	}
     
     template<typename T, typename C>
-    std::size_t find_or_add(C &container, const T &item)
+    std::size_t find_or_add(C &container, const T &item, bool *added = nullptr)
     {
+        if (added != nullptr)
+        {
+            *added = false;
+        }
+
         std::size_t i = 0;
         
         for (auto iter = container.begin(); iter != container.end(); ++iter)
@@ -123,7 +128,12 @@ struct stylesheet
 
             ++i;
         }
-        
+
+        if (added != nullptr)
+        {
+            *added = true;
+        }
+
         container.emplace(container.end(), item);
 
         return container.size() - 1;
@@ -322,18 +332,24 @@ struct stylesheet
     format_impl *find_or_create(format_impl &pattern)
     {
         auto iter = format_impls.begin();
-        auto id = find_or_add(format_impls, pattern);
+        bool added = false;
+        auto id = find_or_add(format_impls, pattern, &added);
         std::advance(iter, static_cast<std::list<format_impl>::difference_type>(id));
         
         auto &result = *iter;
 
+        if (added)
+        {
+            result.references = 0;
+        }
+
         result.parent = this;
         result.id = id;
+        result.references++;
         
         if (id != pattern.id)
         {
             pattern.references -= pattern.references > 0 ? 1 : 0;
-            ++result.references;
             garbage_collect();
         }
 
@@ -387,7 +403,11 @@ struct stylesheet
     format_impl *find_or_create_with(format_impl *pattern, const number_format &new_number_format, bool applied)
     {
         format_impl new_format = *pattern;
-        new_format.number_format_id = find_or_add(number_formats, new_number_format);
+        if (new_number_format.id() >= 164)
+        {
+            find_or_add(number_formats, new_number_format);
+        }
+        new_format.number_format_id = new_number_format.id();
         new_format.number_format_applied = applied;
         
         return find_or_create(new_format);

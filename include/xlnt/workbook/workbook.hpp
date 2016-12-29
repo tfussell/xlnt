@@ -113,22 +113,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    static workbook minimal();
-
-    /// <summary>
-    ///
-    /// </summary>
-    static workbook empty_excel();
-
-    /// <summary>
-    ///
-    /// </summary>
-    static workbook empty_libre_office();
-
-    /// <summary>
-    ///
-    /// </summary>
-    static workbook empty_numbers();
+    static workbook empty();
 
     // constructors
 
