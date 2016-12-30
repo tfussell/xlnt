@@ -47,7 +47,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    optional(const T &value) : has_value_(true), value_(value)
+    explicit optional(const T &value) : has_value_(true), value_(value)
     {
     }
 
@@ -74,38 +74,6 @@ public:
     {
         has_value_ = true;
         value_ = value;
-    }
-
-    /// <summary>
-    ///
-    /// </summary>
-    T &operator*()
-    {
-        return get();
-    }
-
-    /// <summary>
-    ///
-    /// </summary>
-    const T &operator*() const
-    {
-        return get();
-    }
-
-    /// <summary>
-    ///
-    /// </summary>
-    T *operator->()
-    {
-        return &get();
-    }
-
-    /// <summary>
-    ///
-    /// </summary>
-    const T *operator->() const
-    {
-        return &get();
     }
 
     /// <summary>
@@ -141,6 +109,14 @@ public:
     {
         has_value_ = false;
         value_ = T();
+    }
+
+    optional &operator=(const T &rhs)
+    {
+        has_value_ = true;
+        value_ = rhs;
+
+        return *this;
     }
 
     /// <summary>

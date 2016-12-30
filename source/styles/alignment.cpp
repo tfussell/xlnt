@@ -26,7 +26,7 @@
 
 namespace xlnt {
 
-optional<bool> alignment::wrap() const
+bool alignment::wrap() const
 {
     return wrap_text_;
 }
@@ -37,7 +37,7 @@ alignment &alignment::wrap(bool wrap_text)
     return *this;
 }
 
-optional<bool> alignment::shrink() const
+bool alignment::shrink() const
 {
     return shrink_to_fit_;
 }
@@ -133,17 +133,9 @@ XLNT_API bool operator==(const alignment &left, const alignment &right)
         }
     }
 
-    if (left.shrink().is_set() != right.shrink().is_set())
+    if (left.shrink() != right.shrink())
     {
         return false;
-    }
-
-    if (left.shrink().is_set())
-    {
-        if (left.shrink().get() != right.shrink().get())
-        {
-            return false;
-        }
     }
 
     if (left.vertical().is_set() != right.vertical().is_set())
@@ -159,17 +151,9 @@ XLNT_API bool operator==(const alignment &left, const alignment &right)
         }
     }
 
-    if (left.wrap().is_set() != right.wrap().is_set())
+    if (left.wrap() != right.wrap())
     {
         return false;
-    }
-
-    if (left.wrap().is_set())
-    {
-        if (left.wrap().get() != right.wrap().get())
-        {
-            return false;
-        }
     }
 
     return true;

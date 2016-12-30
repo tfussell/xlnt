@@ -40,7 +40,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    optional<bool> shrink() const;
+    bool shrink() const;
 
     /// <summary>
     ///
@@ -50,7 +50,7 @@ public:
     /// <summary>
     ///
     /// </summary>
-    optional<bool> wrap() const;
+    bool wrap() const;
 
     /// <summary>
     ///
@@ -111,12 +111,12 @@ public:
     }
 
 private:
-    optional<bool> shrink_to_fit_;
-    optional<bool> wrap_text_;
+    bool shrink_to_fit_ = false;
+    bool wrap_text_ = false;
     optional<int> indent_;
     optional<int> text_rotation_;
-    optional<horizontal_alignment> horizontal_ = horizontal_alignment::general;
-    optional<vertical_alignment> vertical_ = vertical_alignment::bottom;
+    optional<horizontal_alignment> horizontal_;
+    optional<vertical_alignment> vertical_;
 };
 
 } // namespace xlnt

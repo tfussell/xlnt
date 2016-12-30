@@ -286,7 +286,7 @@ workbook::workbook(detail::workbook_impl *impl)
     {
         if (d_->stylesheet_.is_set())
         {
-            d_->stylesheet_->parent = this;
+            d_->stylesheet_.get().parent = this;
         }
     }
 }
@@ -903,7 +903,7 @@ void swap(workbook &left, workbook &right)
 
         if (left.d_->stylesheet_.is_set())
         {
-            left.d_->stylesheet_->parent = &left;
+            left.d_->stylesheet_.get().parent = &left;
         }
     }
 
@@ -916,7 +916,7 @@ void swap(workbook &left, workbook &right)
 
         if (right.d_->stylesheet_.is_set())
         {
-            right.d_->stylesheet_->parent = &right;
+            right.d_->stylesheet_.get().parent = &right;
         }
     }
 }
@@ -924,7 +924,7 @@ void swap(workbook &left, workbook &right)
 workbook &workbook::operator=(workbook other)
 {
     swap(*this, other);
-    d_->stylesheet_->parent = this;
+    d_->stylesheet_.get().parent = this;
 
     return *this;
 }
@@ -945,7 +945,7 @@ workbook::workbook(const workbook &other)
         ws.parent(*this);
     }
 
-    d_->stylesheet_->parent = this;
+    d_->stylesheet_.get().parent = this;
 }
 
 workbook::~workbook()
@@ -986,12 +986,12 @@ std::vector<named_range> workbook::named_ranges() const
 format workbook::create_format(bool default_format)
 {
     register_stylesheet_in_manifest();
-    return d_->stylesheet_->create_format(default_format);
+    return d_->stylesheet_.get().create_format(default_format);
 }
 
 bool workbook::has_style(const std::string &name) const
 {
-    return d_->stylesheet_->has_style(name);
+    return d_->stylesheet_.get().has_style(name);
 }
 
 void workbook::clear_styles()
@@ -1023,12 +1023,12 @@ void workbook::apply_to_cells(std::function<void(cell)> f)
 
 format workbook::format(std::size_t format_index)
 {
-    return d_->stylesheet_->format(format_index);
+    return d_->stylesheet_.get().format(format_index);
 }
 
 const format workbook::format(std::size_t format_index) const
 {
-    return d_->stylesheet_->format(format_index);
+    return d_->stylesheet_.get().format(format_index);
 }
 
 manifest &workbook::manifest()
@@ -1099,17 +1099,17 @@ const std::vector<std::uint8_t> &workbook::thumbnail() const
 
 style workbook::create_style(const std::string &name)
 {
-    return d_->stylesheet_->create_style(name);
+    return d_->stylesheet_.get().create_style(name);
 }
 
 style workbook::style(const std::string &name)
 {
-    return d_->stylesheet_->style(name);
+    return d_->stylesheet_.get().style(name);
 }
 
 const style workbook::style(const std::string &name) const
 {
-    return d_->stylesheet_->style(name);
+    return d_->stylesheet_.get().style(name);
 }
 
 calendar workbook::base_date() const

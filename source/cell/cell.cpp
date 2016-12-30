@@ -910,7 +910,7 @@ format cell::modifiable_format()
         throw invalid_attribute();
     }
 
-    return xlnt::format(*d_->format_);
+    return xlnt::format(d_->format_.get());
 }
 
 const format cell::format() const
@@ -920,7 +920,7 @@ const format cell::format() const
         throw invalid_attribute();
     }
 
-    return xlnt::format(*d_->format_);
+    return xlnt::format(d_->format_.get());
 }
 
 alignment cell::alignment() const

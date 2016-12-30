@@ -12,10 +12,8 @@ public:
     {
         xlnt::alignment alignment;
 
-        TS_ASSERT(alignment.horizontal());
-        TS_ASSERT_EQUALS(*alignment.horizontal(), xlnt::horizontal_alignment::general);
-        TS_ASSERT(alignment.vertical());
-        TS_ASSERT_EQUALS(*alignment.vertical(), xlnt::vertical_alignment::bottom);
+        TS_ASSERT(!alignment.horizontal().is_set());
+        TS_ASSERT(!alignment.vertical().is_set());
         TS_ASSERT(!alignment.shrink());
         TS_ASSERT(!alignment.wrap());
     }

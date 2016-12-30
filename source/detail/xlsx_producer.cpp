@@ -1002,14 +1002,14 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
                 if (pattern.foreground())
                 {
                     serializer().start_element(xmlns, "fgColor");
-                    write_color(*pattern.foreground());
+                    write_color(pattern.foreground().get());
                     serializer().end_element(xmlns, "fgColor");
                 }
 
                 if (pattern.background())
                 {
                     serializer().start_element(xmlns, "bgColor");
-                    write_color(*pattern.background());
+                    write_color(pattern.background().get());
                     serializer().end_element(xmlns, "bgColor");
                 }
 
@@ -1081,12 +1081,12 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
 
             if (current_border.diagonal())
             {
-                auto up = *current_border.diagonal() == diagonal_direction::both
-                    || *current_border.diagonal() == diagonal_direction::up;
+                auto up = current_border.diagonal().get() == diagonal_direction::both
+                    || current_border.diagonal().get() == diagonal_direction::up;
                 serializer().attribute("diagonalUp", write_bool(up));
 
-                auto down = *current_border.diagonal() == diagonal_direction::both
-                    || *current_border.diagonal() == diagonal_direction::down;
+                auto down = current_border.diagonal().get() == diagonal_direction::both
+                    || current_border.diagonal().get() == diagonal_direction::down;
                 serializer().attribute("diagonalDown", write_bool(down));
             }
 
@@ -1094,20 +1094,20 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
             {
                 if (current_border.side(side))
                 {
-                    const auto current_side = *current_border.side(side);
+                    const auto current_side = current_border.side(side).get();
 
                     auto side_name = to_string(side);
                     serializer().start_element(xmlns, side_name);
 
                     if (current_side.style())
                     {
-                        serializer().attribute("style", *current_side.style());
+                        serializer().attribute("style", current_side.style().get());
                     }
 
                     if (current_side.color())
                     {
                         serializer().start_element(xmlns, "color");
-                        write_color(*current_side.color());
+                        write_color(current_side.color().get());
                         serializer().end_element(xmlns, "color");
                     }
 
@@ -1189,7 +1189,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
 
             if (current_alignment.wrap())
             {
-                serializer().attribute("wrapText", write_bool(current_alignment.wrap().get()));
+                serializer().attribute("wrapText", write_bool(current_alignment.wrap()));
             }
 
             if (current_alignment.indent())
@@ -1199,7 +1199,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
 
             if (current_alignment.shrink())
             {
-                serializer().attribute("shrinkToFit", write_bool(current_alignment.shrink().get()));
+                serializer().attribute("shrinkToFit", write_bool(current_alignment.shrink()));
             }
 
             serializer().end_element(xmlns, "alignment");
@@ -1301,7 +1301,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
 
             if (current_alignment.wrap())
             {
-                serializer().attribute("wrapText", write_bool(current_alignment.wrap().get()));
+                serializer().attribute("wrapText", write_bool(current_alignment.wrap()));
             }
 
             if (current_alignment.indent())
@@ -1311,7 +1311,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
 
             if (current_alignment.shrink())
             {
-                serializer().attribute("shrinkToFit", write_bool(current_alignment.shrink().get()));
+                serializer().attribute("shrinkToFit", write_bool(current_alignment.shrink()));
             }
 
             serializer().end_element(xmlns, "alignment");
