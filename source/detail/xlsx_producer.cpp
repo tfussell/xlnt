@@ -2649,7 +2649,8 @@ void xlsx_producer::write_comments(const relationship & /*rel*/, worksheet ws, c
 
             if (authors.find(author) == authors.end())
             {
-                authors[author] = authors.size();
+                auto author_index = authors.size();
+                authors[author] = author_index;
             }
         }
 
