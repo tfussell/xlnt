@@ -29,7 +29,7 @@
 namespace xlnt {
 
 rich_text::rich_text(const std::string &plain_text)
-    : rich_text(rich_text_run{plain_text, {}})
+    : rich_text(std::make_pair(plain_text, optional<font>()))
 {
 }
 
