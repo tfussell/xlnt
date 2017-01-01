@@ -2,26 +2,12 @@
 
 #include <cmath>
 #include <ctime>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <cxxtest/TestSuite.h>
 
 #include <xlnt/xlnt.hpp>
-
-#include <numeric>
-#include <iostream>
-#include <string>
-#include <fstream>
-#include <random>
-#include <chrono>
-
-int random(int min, int max)
-{
-    static std::random_device device{};
-    static std::default_random_engine engine{ device() };
-    std::uniform_int_distribution<int> distribution{ min, max };
-    return distribution(engine);
-}
 
 class test_cell : public CxxTest::TestSuite
 {

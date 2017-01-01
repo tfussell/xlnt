@@ -132,12 +132,12 @@ void write_header(const xlnt::detail::zip_file_header &header, std::ostream &ost
 {
     if (global)
     {
-        write_int(ostream, static_cast<unsigned int>(0x02014b50)); // header sig
-        write_int(ostream, static_cast<unsigned short>(0)); // version made by
+        write_int(ostream, static_cast<std::uint32_t>(0x02014b50)); // header sig
+        write_int(ostream, static_cast<std::uint16_t>(20)); // version made by
     }
     else
     {
-        write_int(ostream, static_cast<unsigned int>(0x04034b50));
+        write_int(ostream, static_cast<std::uint32_t>(0x04034b50));
     }
 
     write_int(ostream, header.version);
@@ -148,16 +148,16 @@ void write_header(const xlnt::detail::zip_file_header &header, std::ostream &ost
     write_int(ostream, header.crc);
     write_int(ostream, header.compressed_size);
     write_int(ostream, header.uncompressed_size);
-    write_int(ostream, static_cast<unsigned short>(header.filename.length()));
-    write_int(ostream, static_cast<unsigned short>(0)); // extra lengthx
+    write_int(ostream, static_cast<std::uint16_t>(header.filename.length()));
+    write_int(ostream, static_cast<std::uint16_t>(0)); // extra lengthx
 
     if (global)
     {
-        write_int(ostream, static_cast<unsigned short>(0)); // filecomment
-        write_int(ostream, static_cast<unsigned short>(0)); // disk# start
-        write_int(ostream, static_cast<unsigned short>(0)); // internal file
-        write_int(ostream, static_cast<unsigned int>(0)); // ext final
-        write_int(ostream, static_cast<unsigned int>(header.header_offset)); // rel offset
+        write_int(ostream, static_cast<std::uint16_t>(0)); // filecomment
+        write_int(ostream, static_cast<std::uint16_t>(0)); // disk# start
+        write_int(ostream, static_cast<std::uint16_t>(0)); // internal file
+        write_int(ostream, static_cast<std::uint32_t>(0)); // ext final
+        write_int(ostream, static_cast<std::uint32_t>(header.header_offset)); // rel offset
     }
 
     for (auto c : header.filename)
@@ -323,8 +323,8 @@ class zip_streambuf_compress : public std::streambuf
     std::array<char, buffer_size> out;
 
     zip_file_header *header;
-    unsigned int uncompressed_size;
-    unsigned int crc;
+    std::uint32_t uncompressed_size;
+    std::uint32_t crc;
 
     bool valid;
 
@@ -410,14 +410,14 @@ protected:
 
             auto generated_output = static_cast<int>(strm.next_out - reinterpret_cast<std::uint8_t *>(out.data()));
             ostream.write(out.data(), generated_output);
-            if (header) header->compressed_size += static_cast<unsigned int>(generated_output);
+            if (header) header->compressed_size += static_cast<std::uint32_t>(generated_output);
             if (ret == Z_STREAM_END) break;
         }
 
         // update counts, crc's and buffers
-        auto consumed_input = static_cast<unsigned int>(pptr() - pbase());
+        auto consumed_input = static_cast<std::uint32_t>(pptr() - pbase());
         uncompressed_size += consumed_input;
-        crc = static_cast<unsigned int>(crc32(crc, reinterpret_cast<Bytef *>(in.data()), consumed_input));
+        crc = static_cast<std::uint32_t>(crc32(crc, reinterpret_cast<Bytef *>(in.data()), consumed_input));
         setp(pbase(), pbase() + buffer_size - 4);
 
         return 1;

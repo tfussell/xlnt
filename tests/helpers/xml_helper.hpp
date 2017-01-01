@@ -285,7 +285,7 @@ public:
             left_contents_stream << left_member_stream.rdbuf();
             std::string left_member_contents(left_contents_raw.begin(), left_contents_raw.end());
 
-            auto right_member_streambuf = right_archive.open(left_member);
+            auto right_member_streambuf = left_archive.open(left_member);
             std::istream right_member_stream(right_member_streambuf.get());
             std::vector<std::uint8_t> right_contents_raw;
             xlnt::detail::vector_ostreambuf right_contents_buffer(right_contents_raw);
