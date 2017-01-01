@@ -2049,7 +2049,7 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
                     auto cell = ws.cell(cell_reference(parser().attribute("r")));
 
                     auto has_type = parser().attribute_present("t");
-                    auto type = has_type ? parser().attribute("t") : "";
+                    auto type = has_type ? parser().attribute("t") : "n";
 
                     auto has_format = parser().attribute_present("s");
                     auto format_id = static_cast<std::size_t>(has_format ? std::stoull(parser().attribute("s")) : 0LL);
@@ -2105,29 +2105,29 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
                         cell.formula(formula_value_string);
                     }
 
-                    if (has_type && (type == "inlineStr" || type == "str"))
+                    if (has_value)
                     {
-                        cell.value(value_string);
-                    }
-                    else if (has_type && type == "s" && !has_formula)
-                    {
-                        auto shared_string_index = static_cast<std::size_t>(std::stoull(value_string));
-                        auto shared_string = shared_strings.at(shared_string_index);
-                        cell.value(shared_string);
-                    }
-                    else if (has_type && type == "b") // boolean
-                    {
-                        cell.value(value_string != "0");
-                    }
-                    else if (has_value && !value_string.empty())
-                    {
-                        if (!value_string.empty() && value_string[0] == '#')
+                        if (type == "inlineStr" || type == "str")
                         {
-                            cell.error(value_string);
+                            cell.value(value_string);
                         }
-                        else
+                        else if (type == "s" && !has_formula)
+                        {
+                            auto shared_string_index = static_cast<std::size_t>(std::stoull(value_string));
+                            auto shared_string = shared_strings.at(shared_string_index);
+                            cell.value(shared_string);
+                        }
+                        else if (type == "b") // boolean
+                        {
+                            cell.value(is_true(value_string));
+                        }
+                        else if (type == "n") // numeric
                         {
                             cell.value(std::stold(value_string));
+                        }
+                        else if (!value_string.empty() && value_string[0] == '#')
+                        {
+                            cell.error(value_string);
                         }
                     }
 
