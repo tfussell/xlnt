@@ -886,6 +886,11 @@ const row_properties &worksheet::row_properties(row_t row) const
     return d_->row_properties_.at(row);
 }
 
+void worksheet::add_row_properties(row_t row, const xlnt::row_properties &props)
+{
+    d_->row_properties_[row] = props;
+}
+
 worksheet::iterator worksheet::begin()
 {
     auto dimensions = calculate_dimension();
