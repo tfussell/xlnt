@@ -113,25 +113,25 @@ bool workbook::has_core_property(const std::string &property_name) const
 }
 
 template <>
-std::string workbook::core_property(const std::string &property_name) const
+XLNT_API std::string workbook::core_property(const std::string &property_name) const
 {
     return d_->core_properties_.at(property_name);
 }
 
 template <>
-void workbook::core_property(const std::string &property_name, const std::string value)
+XLNT_API void workbook::core_property(const std::string &property_name, const std::string value)
 {
     d_->core_properties_[property_name] = value;
 }
 
 template <>
-void workbook::core_property(const std::string &property_name, const char *value)
+XLNT_API void workbook::core_property(const std::string &property_name, const char *value)
 {
     d_->core_properties_[property_name] = value;
 }
 
 template <>
-void workbook::core_property(const std::string &property_name, const datetime value)
+XLNT_API void workbook::core_property(const std::string &property_name, const datetime value)
 {
     d_->core_properties_[property_name] = value.to_iso_string();
 }
@@ -142,25 +142,25 @@ bool workbook::has_extended_property(const std::string &property_name) const
 }
 
 template <>
-void workbook::extended_property(const std::string &property_name, const std::string value)
+XLNT_API void workbook::extended_property(const std::string &property_name, const std::string value)
 {
     d_->extended_properties_[property_name] = value;
 }
 
 template <>
-void workbook::extended_property(const std::string &property_name, const char *value)
+XLNT_API void workbook::extended_property(const std::string &property_name, const char *value)
 {
     d_->extended_properties_[property_name] = value;
 }
 
 template <>
-void workbook::extended_property(const std::string &property_name, const datetime value)
+XLNT_API void workbook::extended_property(const std::string &property_name, const datetime value)
 {
     d_->extended_properties_[property_name] = value.to_iso_string();
 }
 
 template <>
-std::string workbook::extended_property(const std::string &property_name) const
+XLNT_API std::string workbook::extended_property(const std::string &property_name) const
 {
     return d_->extended_properties_.at(property_name);
 }
@@ -172,19 +172,19 @@ bool workbook::has_custom_property(const std::string &property_name) const
 }
 
 template <>
-void workbook::custom_property(const std::string &property_name, const std::string value)
+XLNT_API void workbook::custom_property(const std::string &property_name, const std::string value)
 {
     d_->custom_properties_[property_name] = value;
 }
 
 template <>
-void workbook::custom_property(const std::string &property_name, const char *value)
+XLNT_API void workbook::custom_property(const std::string &property_name, const char *value)
 {
     d_->custom_properties_[property_name] = value;
 }
 
 template <>
-std::string workbook::custom_property(const std::string &property_name) const
+XLNT_API std::string workbook::custom_property(const std::string &property_name) const
 {
     return d_->custom_properties_.at(property_name);
 }
