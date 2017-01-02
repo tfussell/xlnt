@@ -146,7 +146,7 @@ if(NOT STATIC)
         )
     endif()
 else()
-    add_library(xlnt STATIC ${XLNT_HEADERS} ${XLNT_SOURCES} $<TARGET_OBJECTS:xlnt.third-party> $<TARGET_OBJECTS:cryptopp-object>)
+    add_library(xlnt STATIC ${XLNT_HEADERS} ${XLNT_SOURCES} $<TARGET_OBJECTS:xlnt.third-party>)
     target_compile_definitions(xlnt PUBLIC XLNT_STATIC=1)
 
     if(MSVC)
