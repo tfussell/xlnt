@@ -812,7 +812,7 @@ void xlsx_consumer::read_content_types()
 
 void xlsx_consumer::read_properties(const path &part, const xml::qname &root)
 {
-    static const auto xmlns_vt = constants::namespace_("vt");
+    static const auto &xmlns_vt = constants::namespace_("vt");
 
     auto content_type = manifest().content_type(part);
 
@@ -1604,8 +1604,10 @@ void xlsx_consumer::read_stylesheet()
                     }
                     else if (xf_child_element == xml::qname(xmlns, "protection"))
                     {
-                        record.protection.first.locked(is_true(parser().attribute("locked")));
-                        record.protection.first.hidden(is_true(parser().attribute("hidden")));
+                        record.protection.first.locked(parser().attribute_present("locked")
+                            && is_true(parser().attribute("locked")));
+                        record.protection.first.hidden(parser().attribute_present("hidden")
+                            && is_true(parser().attribute("hidden")));
                         record.protection.second = !apply_protection_present || protection_applied;
                     }
                     else
