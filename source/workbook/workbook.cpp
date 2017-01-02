@@ -165,6 +165,30 @@ std::string workbook::extended_property(const std::string &property_name) const
     return d_->extended_properties_.at(property_name);
 }
 
+
+bool workbook::has_custom_property(const std::string &property_name) const
+{
+    return d_->custom_properties_.count(property_name) > 0;
+}
+
+template <>
+void workbook::custom_property(const std::string &property_name, const std::string value)
+{
+    d_->custom_properties_[property_name] = value;
+}
+
+template <>
+void workbook::custom_property(const std::string &property_name, const char *value)
+{
+    d_->custom_properties_[property_name] = value;
+}
+
+template <>
+std::string workbook::custom_property(const std::string &property_name) const
+{
+    return d_->custom_properties_.at(property_name);
+}
+
 workbook workbook::empty()
 {
     auto impl = new detail::workbook_impl();

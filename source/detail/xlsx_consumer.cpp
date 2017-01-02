@@ -812,6 +812,8 @@ void xlsx_consumer::read_content_types()
 
 void xlsx_consumer::read_properties(const path &part, const xml::qname &root)
 {
+    static const auto xmlns_vt = constants::namespace_("vt");
+
     auto content_type = manifest().content_type(part);
 
     std::unordered_map<std::string, std::string> properties;
@@ -821,9 +823,21 @@ void xlsx_consumer::read_properties(const path &part, const xml::qname &root)
     {
         auto property_element = expect_start_element(xml::content::mixed);
 
-        if (property_element.name() != "Property")
+        if (property_element.name() != "property")
         {
             properties[property_element.name()] = read_text();
+        }
+        else
+        {
+            auto property_name = parser().attribute("name");
+            auto variant_child_element = expect_start_element(xml::content::simple);
+            
+            if (variant_child_element == xml::qname(xmlns_vt, "lpwstr"))
+            {
+                properties[property_name] = read_text();
+            }
+            
+            expect_end_element(variant_child_element);
         }
 
         skip_remaining_content(property_element);
@@ -831,6 +845,14 @@ void xlsx_consumer::read_properties(const path &part, const xml::qname &root)
     }
 
     expect_end_element(root);
+
+    if (content_type == "application/vnd.openxmlformats-officedocument.custom-properties+xml")
+    {
+        for (const auto &prop : properties)
+        {
+            target_.custom_property(prop.first, prop.second);
+        }
+    }
 }
 
 void xlsx_consumer::read_office_document(const std::string &content_type) // CT_Workbook

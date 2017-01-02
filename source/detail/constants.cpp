@@ -118,7 +118,7 @@ const std::unordered_map<std::string, std::string> &constants::namespaces()
             {"workbook", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"},
             {"core-properties", "http://schemas.openxmlformats.org/package/2006/metadata/core-properties"},
             {"extended-properties", "http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"},
-            {"custom-properties", "http://schemas.openxmlformats.org/officeDocument/2006/customProperties"},
+            {"custom-properties", "http://schemas.openxmlformats.org/officeDocument/2006/custom-properties"},
 
             {"encryption", "http://schemas.microsoft.com/office/2006/encryption"},
             {"encryption-password", "http://schemas.microsoft.com/office/2006/keyEncryptor/password"},

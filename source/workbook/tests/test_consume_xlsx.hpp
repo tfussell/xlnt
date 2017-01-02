@@ -104,4 +104,12 @@ public:
         TS_ASSERT(ws.header_footer().has_footer(xlnt::header_footer::location::right));
         TS_ASSERT_EQUALS(ws.header_footer().footer(xlnt::header_footer::location::right).plain_text(), "right footer");
     }
+
+    void test_read_custom_properties()
+    {
+        xlnt::workbook wb;
+        wb.load("data/21_custom_properties.xlsx");
+        TS_ASSERT(wb.has_custom_property("Client"));
+        TS_ASSERT_EQUALS(wb.custom_property("Client"), "me!");
+    }
 };

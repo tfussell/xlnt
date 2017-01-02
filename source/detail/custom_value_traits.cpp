@@ -61,7 +61,7 @@ std::string to_string(relationship_type t)
     case relationship_type::unknown:
         return "unknown";
     case relationship_type::custom_properties:
-        return "custom-properties";
+        return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/custom-properties";
     case relationship_type::printer_settings:
         return "printer-settings";
     case relationship_type::connections:

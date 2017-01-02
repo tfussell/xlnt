@@ -321,6 +321,23 @@ public:
     void extended_property(const std::string &property_name, const T value);
 
     /// <summary>
+    /// Returns true if the workbook has the custom property with the given name.
+    /// </summary>
+    bool has_custom_property(const std::string &property_name) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    template <typename T = std::string>
+    T custom_property(const std::string &property_name) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    template <typename T = std::string>
+    void custom_property(const std::string &property_name, const T value);
+
+    /// <summary>
     ///
     /// </summary>
     calendar base_date() const;
