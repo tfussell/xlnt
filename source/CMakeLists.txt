@@ -146,7 +146,7 @@ if(NOT STATIC)
         )
     endif()
 else()
-    add_library(xlnt STATIC ${XLNT_HEADERS} ${XLNT_SOURCES} xlnt.third-party)
+    add_library(xlnt STATIC ${XLNT_HEADERS} ${XLNT_SOURCES})
     target_compile_definitions(xlnt PUBLIC XLNT_STATIC=1)
 
     if(MSVC)
