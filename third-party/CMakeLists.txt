@@ -71,8 +71,9 @@ set(ZLIB ${CMAKE_CURRENT_SOURCE_DIR}/zlib/adler32.c
 
 file(GLOB CRYPTOPP ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/*.cpp)
 list(REMOVE_ITEM CRYPTOPP
-    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/pch.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/simple.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/rdrand.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/pch.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/winpipes.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/cryplib_bds.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/test.cpp
