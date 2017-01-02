@@ -17,9 +17,9 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++
+            - g++-6
       env:
-        - COMPILER=g++
+        - COMPILER=g++-6
         - COVERAGE=OFF
         - STATIC=ON
         - SAMPLES=ON
