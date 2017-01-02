@@ -8,18 +8,6 @@ endif()
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../third-party ${CMAKE_CURRENT_BINARY_DIR}/third-party)
 
-include(ExternalProject)
-ExternalProject_Add(cryptopp
-    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cryptopp
-    PREFIX ${CMAKE_CURRENT_BINARY_DIR}/cryptopp
-    INSTALL_COMMAND ""
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND "")
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cryptopp ${CMAKE_CURRENT_BINARY_DIR}/cryptopp)
-set_target_properties(cryptopp-shared PROPERTIES EXCLUDE_FROM_ALL True)
-set_target_properties(cryptest PROPERTIES EXCLUDE_FROM_ALL True)
-target_compile_definitions(cryptopp-object PRIVATE NO_OS_DEPENDENCE=1)
-
 if(APPLE)
     option(FRAMEWORK "Set to ON to package dylib and headers into a .framework, OSX only" OFF)
 endif()
@@ -128,7 +116,7 @@ set(XLNT_SOURCES ${CELL_SOURCES} ${CHARTS_SOURCES} ${CHARTSHEET_SOURCES}
 	${WORKSHEET_SOURCES} ${DETAIL_SOURCES})
 
 if(NOT STATIC)
-    add_library(xlnt SHARED ${XLNT_HEADERS} ${XLNT_SOURCES} $<TARGET_OBJECTS:xlnt.third-party> $<TARGET_OBJECTS:cryptopp-object>)
+    add_library(xlnt SHARED ${XLNT_HEADERS} ${XLNT_SOURCES} $<TARGET_OBJECTS:xlnt.third-party>)
     target_compile_definitions(xlnt PRIVATE XLNT_SHARED=1)
 
     if(MSVC)
@@ -172,7 +160,10 @@ else()
     )
 endif()
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE LIBSTUDXML_STATIC_LIB=1)
+target_compile_definitions(${PROJECT_NAME}
+    PRIVATE LIBSTUDXML_STATIC_LIB=1
+    PRIVATE NO_OS_DEPENDENCE=1
+    PRIVATE CRYPTOPP_DISABLE_ASM=1)
 
 if(MSVC)
     set_target_properties(xlnt PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\" /wd\"4068\" /MP")
@@ -199,9 +190,11 @@ set(PKG_CONFIG_INCLUDEDIR ${INC_DEST_DIR})
 set(PKG_CONFIG_LIBS "-L\${libdir} -lxlnt")
 set(PKG_CONFIG_CFLAGS "-I\${includedir}")
 
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/pkg-config.pc.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc")
+if(NOT MSVC)
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/pkg-config.pc.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc")
+endif()
 
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/cmake_uninstall.cmake.in"
@@ -213,9 +206,11 @@ install(
     DESTINATION include
     PATTERN ".DS_Store" EXCLUDE)
 
-install(
-    FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc"
-    DESTINATION ${LIB_DEST_DIR}/pkgconfig)
+if(NOT MSVC)
+    install(
+        FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc"
+        DESTINATION ${LIB_DEST_DIR}/pkgconfig)
+endif()
 
 add_custom_target(
     uninstall

@@ -69,22 +69,54 @@ set(ZLIB ${CMAKE_CURRENT_SOURCE_DIR}/zlib/adler32.c
     ${CMAKE_CURRENT_SOURCE_DIR}/zlib/zlib.h
     ${CMAKE_CURRENT_SOURCE_DIR}/zlib/zutil.h)
 
+file(GLOB CRYPTOPP ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/*.cpp)
+list(REMOVE_ITEM CRYPTOPP
+    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/pch.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/simple.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/winpipes.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/cryplib_bds.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/test.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/bench1.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/bench2.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/validat0.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/validat1.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/validat2.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/validat3.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/adhoc.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/datatest.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/regtest.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/fipsalgt.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/dlltest.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/fipstest.cpp)
+if(MINGW OR WIN32)
+    list(APPEND CRYPTOPP ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/winpipes.cpp)
+endif()
+
 if(NOT MSVC)
     set_source_files_properties(${ZLIB} PROPERTIES COMPILE_FLAGS "-Wno-implicit-function-declaration")
 else()
     set_source_files_properties(${ZLIB} PROPERTIES COMPILE_FLAGS "/wd\"4018\"")
 endif()
 
-add_library(xlnt.third-party OBJECT ${LIBSTUDXML} ${GENX} ${EXPAT} ${ZLIB})
-target_compile_definitions(xlnt.third-party PRIVATE LIBSTUDXML_STATIC_LIB=1)
+add_library(xlnt.third-party OBJECT
+    ${LIBSTUDXML}
+    ${GENX}
+    ${EXPAT}
+    ${ZLIB}
+    ${CRYPTOPP})
+target_compile_definitions(xlnt.third-party
+    PRIVATE LIBSTUDXML_STATIC_LIB=1
+    PRIVATE NO_OS_DEPENDENCE=1
+    PRIVATE CRYPTOPP_DISABLE_ASM=1)
 
 if(NOT STATIC)
-    set_target_properties(xlnt.third-party
-        PROPERTIES POSITION_INDEPENDENT_CODE 1)
+    set_target_properties(xlnt.third-party PROPERTIES POSITION_INDEPENDENT_CODE 1)
 endif()
 
 if(MSVC)
-    target_compile_definitions(xlnt.third-party PRIVATE _CRT_SECURE_NO_WARNINGS=1 NOMINMAX)
+    target_compile_definitions(xlnt.third-party PRIVATE
+        _CRT_SECURE_NO_WARNINGS=1
+        NOMINMAX)
     set_target_properties(xlnt.third-party PROPERTIES COMPILE_FLAGS "/MP")
 endif()
 
