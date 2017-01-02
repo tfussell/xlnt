@@ -48,8 +48,9 @@ if(COVERAGE)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lgcov --coverage")
 endif()
 
-add_executable(${PROJECT_NAME} ${TEST_HELPERS} ${TESTS} ${RUNNER} $<TARGET_OBJECTS:xlnt.third-party> ${XLNT_ZIP})
+add_executable(${PROJECT_NAME} ${TEST_HELPERS} ${TESTS} ${RUNNER} ${XLNT_ZIP})
 target_compile_definitions(${PROJECT_NAME} PRIVATE LIBSTUDXML_STATIC_LIB=1)
+target_link_libraries(${PROJECT_NAME} xlnt.third-party)
 
 source_group(helpers FILES ${TEST_HELPERS})
 source_group(xlnt\\detail FILES ${XLNT_ZIP})

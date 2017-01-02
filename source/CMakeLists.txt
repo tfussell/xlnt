@@ -116,7 +116,7 @@ set(XLNT_SOURCES ${CELL_SOURCES} ${CHARTS_SOURCES} ${CHARTSHEET_SOURCES}
 	${WORKSHEET_SOURCES} ${DETAIL_SOURCES})
 
 if(NOT STATIC)
-    add_library(xlnt SHARED ${XLNT_HEADERS} ${XLNT_SOURCES} $<TARGET_OBJECTS:xlnt.third-party>)
+    add_library(xlnt SHARED ${XLNT_HEADERS} ${XLNT_SOURCES})
     target_compile_definitions(xlnt PRIVATE XLNT_SHARED=1)
 
     if(MSVC)
@@ -146,7 +146,7 @@ if(NOT STATIC)
         )
     endif()
 else()
-    add_library(xlnt STATIC ${XLNT_HEADERS} ${XLNT_SOURCES} $<TARGET_OBJECTS:xlnt.third-party>)
+    add_library(xlnt STATIC ${XLNT_HEADERS} ${XLNT_SOURCES} xlnt.third-party)
     target_compile_definitions(xlnt PUBLIC XLNT_STATIC=1)
 
     if(MSVC)
@@ -164,6 +164,7 @@ target_compile_definitions(${PROJECT_NAME}
     PRIVATE LIBSTUDXML_STATIC_LIB=1
     PRIVATE NO_OS_DEPENDENCE=1
     PRIVATE CRYPTOPP_DISABLE_ASM=1)
+target_link_libraries(${PROJECT_NAME} xlnt.third-party)
 
 if(MSVC)
     set_target_properties(xlnt PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\" /wd\"4068\" /MP")

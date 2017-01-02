@@ -94,12 +94,21 @@ if(MINGW OR WIN32)
 endif()
 
 if(NOT MSVC)
+    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/basecode.cpp PROPERTIES
+        COMPILE_FLAGS "-Wno-unused-private-field")
+    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/rw.cpp PROPERTIES
+        COMPILE_FLAGS "-Wno-unused-const-variable")
+    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/filters.cpp PROPERTIES
+        COMPILE_FLAGS "-Wno-reorder")
+endif()
+
+if(NOT MSVC)
     set_source_files_properties(${ZLIB} PROPERTIES COMPILE_FLAGS "-Wno-implicit-function-declaration")
 else()
     set_source_files_properties(${ZLIB} PROPERTIES COMPILE_FLAGS "/wd\"4018\"")
 endif()
 
-add_library(xlnt.third-party OBJECT
+add_library(xlnt.third-party STATIC
     ${LIBSTUDXML}
     ${GENX}
     ${EXPAT}
