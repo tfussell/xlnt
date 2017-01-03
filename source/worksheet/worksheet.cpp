@@ -1068,4 +1068,9 @@ double worksheet::row_height(row_t row) const
     }
 }
 
+void worksheet::garbage_collect_formulae()
+{
+    workbook().garbage_collect_formulae();
+}
+
 } // namespace xlnt

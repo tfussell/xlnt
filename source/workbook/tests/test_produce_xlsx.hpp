@@ -154,4 +154,15 @@ public:
 
 		TS_ASSERT(workbook_matches_file(wb, xlnt::path("data/15_basic_comments.xlsx")));
 	}
+
+    void test_save_after_clear_all_formulae()
+    {
+        xlnt::workbook wb;
+        wb.load("data/22_formulae.xlsx");
+        auto ws = wb.active_sheet();
+        TS_ASSERT(ws.cell("A1").has_formula());
+        TS_ASSERT_EQUALS(ws.cell("A1").formula(), "A2*A3");
+        ws.cell("A1").clear_formula();
+        wb.save("clear_formulae.xlsx");
+    }
 };

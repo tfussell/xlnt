@@ -743,6 +743,11 @@ private:
     void register_comments_in_manifest();
 
     /// <summary>
+    /// Removes calcChain part from manifest if no formulae remain in workbook.
+    /// </summary>
+    void garbage_collect_formulae();
+
+    /// <summary>
     ///
     /// </summary>
     worksheet(detail::worksheet_impl *d);

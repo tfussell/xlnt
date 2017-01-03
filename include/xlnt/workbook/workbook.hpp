@@ -759,6 +759,11 @@ private:
     void register_comments_in_manifest(worksheet ws);
 
     /// <summary>
+    /// Removes calcChain part from manifest if no formulae remain in workbook.
+    /// </summary>
+    void garbage_collect_formulae();
+
+    /// <summary>
     /// An opaque pointer to a structure that holds all of the data relating to this workbook.
     /// </summary>
     std::unique_ptr<detail::workbook_impl> d_;

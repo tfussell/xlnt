@@ -112,4 +112,16 @@ public:
         TS_ASSERT(wb.has_custom_property("Client"));
         TS_ASSERT_EQUALS(wb.custom_property("Client"), "me!");
     }
+
+    void test_read_formulae()
+    {
+        xlnt::workbook wb;
+        wb.load("data/22_formulae.xlsx");
+        auto ws = wb.active_sheet();
+        TS_ASSERT_EQUALS(ws.cell("A1").value<int>(), 6);
+        TS_ASSERT(ws.cell("A1").has_formula());
+        TS_ASSERT_EQUALS(ws.cell("A1").formula(), "A2*A3");
+        TS_ASSERT_EQUALS(ws.cell("A2").value<int>(), 2);
+        TS_ASSERT_EQUALS(ws.cell("A3").value<int>(), 3);
+    }
 };

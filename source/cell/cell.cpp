@@ -508,6 +508,7 @@ std::string cell::formula() const
 void cell::clear_formula()
 {
     d_->formula_.clear();
+    worksheet().garbage_collect_formulae();
 }
 
 void cell::error(const std::string &error)
@@ -609,8 +610,8 @@ void cell::clear_value()
 {
     d_->value_numeric_ = 0;
     d_->value_text_.clear();
-    d_->formula_.clear();
     d_->type_ = cell::type::null;
+    clear_formula();
 }
 
 template <>

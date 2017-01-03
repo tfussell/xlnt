@@ -1260,4 +1260,38 @@ void workbook::calculation_properties(const class calculation_properties &props)
     d_->calculation_properties_ = props;
 }
 
+/// <summary>
+/// Removes calcChain part from manifest if no formulae remain in workbook.
+/// </summary>
+void workbook::garbage_collect_formulae()
+{
+    auto any_with_formula = false;
+
+    for (auto ws : *this)
+    {
+        for (auto row : ws.iter_cells(true))
+        {
+            for (auto cell : row)
+            {
+                if (cell.has_formula())
+                {
+                    any_with_formula = true;
+                }
+            }
+        }
+    }
+
+    if (any_with_formula) return;
+
+    auto wb_rel = manifest().relationship(path("/"), relationship_type::office_document);
+
+    if (manifest().has_relationship(wb_rel.target().path(), relationship_type::calculation_chain))
+    {
+        auto calc_chain_rel = manifest().relationship(wb_rel.target().path(), relationship_type::calculation_chain);
+        auto calc_chain_part = manifest().canonicalize({wb_rel, calc_chain_rel});
+        manifest().unregister_override_type(calc_chain_part);
+        manifest().unregister_relationship(wb_rel.target(), calc_chain_rel.id());
+    }
+}
+
 } // namespace xlnt

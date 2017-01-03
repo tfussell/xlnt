@@ -37,7 +37,7 @@ std::string to_string(relationship_type t)
     case relationship_type::thumbnail:
         return "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail";
     case relationship_type::calculation_chain:
-        return "http://purl.oclc.org/ooxml/officeDocument/relationships/calcChain";
+        return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/calcChain";
     case relationship_type::extended_properties:
         return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties";
     case relationship_type::core_properties:
