@@ -560,17 +560,6 @@ public:
         cell.value(static_cast<std::uint64_t>(3));
         TS_ASSERT_EQUALS(cell.value<std::uint64_t>(), 3);
 
-#ifdef __linux
-        cell.value(static_cast<long long>(3));
-        TS_ASSERT_EQUALS(cell.value<long long>(), 3);
-
-        cell.value(static_cast<unsigned long long>(3));
-        TS_ASSERT_EQUALS(cell.value<unsigned long long>(), 3);
-#endif
-
-        cell.value(static_cast<std::uint64_t>(3));
-        TS_ASSERT_EQUALS(cell.value<std::uint64_t>(), 3);
-
         cell.value(static_cast<float>(3.14));
         TS_ASSERT_DELTA(cell.value<float>(), 3.14, 0.001);
 
