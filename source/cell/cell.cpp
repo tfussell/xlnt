@@ -643,20 +643,6 @@ XLNT_API std::uint64_t cell::value() const
     return static_cast<std::uint64_t>(d_->value_numeric_);
 }
 
-#ifdef __linux
-template <>
-XLNT_API long long cell::value() const
-{
-    return static_cast<long long>(d_->value_numeric_);
-}
-
-template <>
-XLNT_API unsigned long long cell::value() const
-{
-    return static_cast<unsigned long long>(d_->value_numeric_);
-}
-#endif
-
 template <>
 XLNT_API float cell::value() const
 {

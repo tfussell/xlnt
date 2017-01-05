@@ -2190,7 +2190,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
                             if (is_integral(cell.value<long double>()))
                             {
-                                serializer().characters(cell.value<long long>());
+                                serializer().characters(cell.value<std::int64_t>());
                             }
                             else
                             {
