@@ -28,8 +28,8 @@ file(GLOB WORKBOOK_TESTS ${LIBRARY_SOURCE_DIR}/workbook/tests/test_*.hpp)
 file(GLOB WORKSHEET_TESTS ${LIBRARY_SOURCE_DIR}/worksheet/tests/test_*.hpp)
 
 set(XLNT_ZIP
-    ${LIBRARY_SOURCE_DIR}/detail/zip.cpp
-    ${LIBRARY_SOURCE_DIR}/detail/zip.hpp)
+    ${LIBRARY_SOURCE_DIR}/detail/zstream.cpp
+    ${LIBRARY_SOURCE_DIR}/detail/zstream.hpp)
 
 set(TESTS ${CELL_TESTS} ${CHARTS_TESTS} ${CHARTSHEET_TESTS} ${DRAWING_TESTS} 
     ${FORMULA_TESTS} ${PACKAGING_TESTS} ${STYLES_TESTS} ${UTILS_TESTS} 
