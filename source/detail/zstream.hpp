@@ -49,7 +49,7 @@ namespace detail {
 /// A structure representing the header that occurs before each compressed file in a ZIP
 /// archive and again at the end of the file with more information.
 /// </summary>
-struct zip_file_header
+struct zheader
 {
     std::uint16_t version = 20;
     std::uint16_t flags = 0;
@@ -69,18 +69,18 @@ struct zip_file_header
 /// Writes a series of uncompressed binary file data as ostreams into another ostream
 /// according to the ZIP format.
 /// </summary>
-class zip_file_writer
+class ozstream
 {
 public:
     /// <summary>
     /// Construct a new zip_file_writer which writes a ZIP archive to the given stream.
     /// </summary>
-    zip_file_writer(std::ostream &stream);
+    ozstream(std::ostream &stream);
 
     /// <summary>
     /// Destructor.
     /// </summary>
-    virtual ~zip_file_writer();
+    virtual ~ozstream();
 
     /// <summary>
     /// Returns a pointer to a streambuf which compresses the data it receives.
@@ -88,7 +88,7 @@ public:
     std::unique_ptr<std::streambuf> open(const path &file);
 
 private:
-    std::vector<zip_file_header> file_headers_;
+    std::vector<zheader> file_headers_;
     std::ostream &destination_stream_;
 };
 
@@ -96,23 +96,28 @@ private:
 /// Reads an archive containing a number of files from an istream and allows them
 /// to be decompressed into an istream.
 /// </summary>
-class zip_file_reader
+class izstream
 {
 public:
     /// <summary>
     /// Construct a new zip_file_reader which reads a ZIP archive from the given stream.
     /// </summary>
-    zip_file_reader(std::istream &stream);
+    izstream(std::istream &stream);
 
     /// <summary>
     /// Destructor.
     /// </summary>
-    virtual ~zip_file_reader();
+    virtual ~izstream();
 
     /// <summary>
     ///
     /// </summary>
-    std::unique_ptr<std::streambuf> open(const path &file);
+    std::unique_ptr<std::streambuf> open(const path &file) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::string read(const path &file) const;
 
     /// <summary>
     ///
@@ -133,7 +138,7 @@ private:
     /// <summary>
     ///
     /// </summary>
-    std::unordered_map<std::string, zip_file_header> file_headers_;
+    std::unordered_map<std::string, zheader> file_headers_;
 
     /// <summary>
     ///

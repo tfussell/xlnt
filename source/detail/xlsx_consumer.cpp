@@ -35,7 +35,7 @@
 #include <detail/vector_streambuf.hpp>
 #include <detail/workbook_impl.hpp>
 #include <detail/xlsx_consumer.hpp>
-#include <detail/zip.hpp>
+#include <detail/zstream.hpp>
 
 namespace std {
 
@@ -530,7 +530,7 @@ xlsx_consumer::xlsx_consumer(workbook &target)
 
 void xlsx_consumer::read(std::istream &source)
 {
-    archive_.reset(new zip_file_reader(source));
+    archive_.reset(new izstream(source));
     populate_workbook();
 }
 

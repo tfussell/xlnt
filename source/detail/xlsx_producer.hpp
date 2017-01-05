@@ -44,7 +44,7 @@ class worksheet;
 
 namespace detail {
 
-class zip_file_writer;
+class ozstream;
 
 /// <summary>
 /// Handles writing a workbook into an XLSX file.
@@ -137,7 +137,7 @@ private:
 	/// </summary>
 	const workbook &source_;
     
-	zip_file_writer *archive_;
+	ozstream *archive_;
     std::unique_ptr<xml::serializer> current_part_serializer_;
     std::unique_ptr<std::streambuf> current_part_streambuf_;
     std::ostream current_part_stream_;

@@ -251,6 +251,36 @@ private:
     std::size_t position_;
 };
 
+/// <summary>
+/// Helper function to read all data from in_stream and store them in a vector.
+/// </summary>
+XLNT_API inline std::vector<std::uint8_t> to_vector(std::istream &in_stream)
+{
+    std::vector<std::uint8_t> bytes;
+    vector_ostreambuf buffer(bytes);
+    std::ostream out_stream(&buffer);
+    out_stream << in_stream.rdbuf();
+    return bytes;
+}
+
+/// <summary>
+/// Helper function to write all data from bytes into out_stream.
+/// </summary>
+XLNT_API inline void to_stream(const std::vector<std::uint8_t> &bytes, std::ostream &out_stream)
+{
+    vector_istreambuf buffer(bytes);
+    out_stream << &buffer;
+}
+
+/// <summary>
+/// Shortcut function to stream a vector of bytes into a std::ostream.
+/// </summary>
+XLNT_API inline std::ostream &operator<<(std::ostream &out_stream, const std::vector<std::uint8_t> &bytes)
+{
+    to_stream(bytes, out_stream);
+    return out_stream;
+}
+
 #pragma clang diagnostic pop
 
 } // namespace detail

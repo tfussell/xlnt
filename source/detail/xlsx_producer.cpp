@@ -37,7 +37,7 @@
 #include <detail/vector_streambuf.hpp>
 #include <detail/workbook_impl.hpp>
 #include <detail/xlsx_producer.hpp>
-#include <detail/zip.hpp>
+#include <detail/zstream.hpp>
 
 using namespace std::string_literals;
 
@@ -64,7 +64,7 @@ xlsx_producer::xlsx_producer(const workbook &target)
 
 void xlsx_producer::write(std::ostream &destination)
 {
-    zip_file_writer archive(destination);
+    ozstream archive(destination);
     archive_ = &archive;
     populate_archive();
 }

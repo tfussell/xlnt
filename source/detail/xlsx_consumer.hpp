@@ -31,7 +31,7 @@
 #include <vector>
 
 #include <detail/include_libstudxml.hpp>
-#include <detail/zip.hpp>
+#include <detail/zstream.hpp>
 
 namespace xlnt {
 
@@ -45,7 +45,7 @@ class worksheet;
 
 namespace detail {
 
-class zip_file_reader;
+class izstream;
 
 /// <summary>
 /// Handles writing a workbook into an XLSX file.
@@ -338,7 +338,7 @@ private:
 	/// <summary>
 	/// The ZIP file containing the files that make up the OOXML package.
 	/// </summary>
-	std::unique_ptr<zip_file_reader> archive_;
+	std::unique_ptr<izstream> archive_;
 
 	/// <summary>
 	/// Map of sheet titles to relationship IDs.
