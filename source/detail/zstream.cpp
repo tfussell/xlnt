@@ -49,7 +49,8 @@ extern "C" {
 }
 
 #include <xlnt/utils/exceptions.hpp>
-#include <detail/zip.hpp>
+#include <detail/vector_streambuf.hpp>
+#include <detail/zstream.hpp>
 
 namespace {
 
@@ -68,9 +69,9 @@ void write_int(std::ostream &stream, T value)
     stream.write(reinterpret_cast<char *>(&value), sizeof(T));
 }
 
-xlnt::detail::zip_file_header read_header(std::istream &istream, const bool global)
+xlnt::detail::zheader read_header(std::istream &istream, const bool global)
 {
-    xlnt::detail::zip_file_header header;
+    xlnt::detail::zheader header;
 
     auto sig = read_int<std::uint32_t>(istream);
 
@@ -128,7 +129,7 @@ xlnt::detail::zip_file_header read_header(std::istream &istream, const bool glob
     return header;
 }
 
-void write_header(const xlnt::detail::zip_file_header &header, std::ostream &ostream, const bool global)
+void write_header(const xlnt::detail::zheader &header, std::ostream &ostream, const bool global)
 {
     if (global)
     {
@@ -180,7 +181,7 @@ class zip_streambuf_decompress : public std::streambuf
     z_stream strm;
     std::array<char, buffer_size> in;
     std::array<char, buffer_size> out;
-    zip_file_header header;
+    zheader header;
     std::size_t total_read;
     std::size_t total_uncompressed;
     bool valid;
@@ -190,7 +191,7 @@ class zip_streambuf_decompress : public std::streambuf
     static const unsigned short UNCOMPRESSED = 0;
 
 public:
-    zip_streambuf_decompress(std::istream &stream, zip_file_header central_header)
+    zip_streambuf_decompress(std::istream &stream, zheader central_header)
         : istream(stream), header(central_header), total_read(0), total_uncompressed(0), valid(true)
     {
         strm.zalloc = Z_NULL;
@@ -322,14 +323,14 @@ class zip_streambuf_compress : public std::streambuf
     std::array<char, buffer_size> in;
     std::array<char, buffer_size> out;
 
-    zip_file_header *header;
+    zheader *header;
     std::uint32_t uncompressed_size;
     std::uint32_t crc;
 
     bool valid;
 
 public:
-    zip_streambuf_compress(zip_file_header *central_header, std::ostream &stream)
+    zip_streambuf_compress(zheader *central_header, std::ostream &stream)
         : ostream(stream), header(central_header), valid(true)
     {
         strm.zalloc = Z_NULL;
@@ -448,7 +449,7 @@ int zip_streambuf_compress::overflow(int c)
     return c;
 }
 
-zip_file_writer::zip_file_writer(std::ostream &stream)
+ozstream::ozstream(std::ostream &stream)
     : destination_stream_(stream)
 {
     if (!destination_stream_)
@@ -457,7 +458,7 @@ zip_file_writer::zip_file_writer(std::ostream &stream)
     }
 }
 
-zip_file_writer::~zip_file_writer()
+ozstream::~ozstream()
 {
     // Write all file headers
     std::ios::streampos final_position = destination_stream_.tellp();
@@ -480,15 +481,15 @@ zip_file_writer::~zip_file_writer()
     write_int(destination_stream_, static_cast<std::uint16_t>(0)); // zip comment
 }
 
-std::unique_ptr<std::streambuf> zip_file_writer::open(const path &filename)
+std::unique_ptr<std::streambuf> ozstream::open(const path &filename)
 {
-    zip_file_header header;
+    zheader header;
     header.filename = filename.string();
     file_headers_.push_back(header);
     return std::make_unique<zip_streambuf_compress>(&file_headers_.back(), destination_stream_);
 }
 
-zip_file_reader::zip_file_reader(std::istream &stream)
+izstream::izstream(std::istream &stream)
     : source_stream_(stream)
 {
     if (!stream)
@@ -499,11 +500,11 @@ zip_file_reader::zip_file_reader(std::istream &stream)
     read_central_header();
 }
 
-zip_file_reader::~zip_file_reader()
+izstream::~izstream()
 {
 }
 
-bool zip_file_reader::read_central_header()
+bool izstream::read_central_header()
 {
     // Find the header
     // NOTE: this assumes the zip file header is the last thing written to file...
@@ -587,7 +588,7 @@ bool zip_file_reader::read_central_header()
     return true;
 }
 
-std::unique_ptr<std::streambuf> zip_file_reader::open(const path &filename)
+std::unique_ptr<std::streambuf> izstream::open(const path &filename) const
 {
     if (!has_file(filename))
     {
@@ -599,16 +600,25 @@ std::unique_ptr<std::streambuf> zip_file_reader::open(const path &filename)
     return std::make_unique<zip_streambuf_decompress>(source_stream_, header);
 }
 
-std::vector<path> zip_file_reader::files() const
+std::string izstream::read(const path &filename) const
+{
+    auto buffer = open(filename);
+    std::istream stream(buffer.get());
+    auto bytes = to_vector(stream);
+
+    return std::string(bytes.begin(), bytes.end());
+}
+
+std::vector<path> izstream::files() const
 {
     std::vector<path> filenames;
     std::transform(file_headers_.begin(), file_headers_.end(), std::back_inserter(filenames),
-        [](const std::pair<std::string, zip_file_header> &h) { return path(h.first); });
+        [](const std::pair<std::string, zheader> &h) { return path(h.first); });
 
     return filenames;
 }
 
-bool zip_file_reader::has_file(const path &filename) const
+bool izstream::has_file(const path &filename) const
 {
     return file_headers_.count(filename.string()) != 0;
 }
