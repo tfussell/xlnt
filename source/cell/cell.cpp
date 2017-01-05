@@ -266,31 +266,6 @@ XLNT_API void cell::value(std::uint64_t i)
     d_->type_ = type::numeric;
 }
 
-#ifdef _MSC_VER
-template <>
-XLNT_API void cell::value(unsigned long i)
-{
-    d_->value_numeric_ = static_cast<long double>(i);
-    d_->type_ = type::numeric;
-}
-#endif
-
-#ifdef __linux
-template <>
-XLNT_API void cell::value(long long i)
-{
-    d_->value_numeric_ = static_cast<long double>(i);
-    d_->type_ = type::numeric;
-}
-
-template <>
-XLNT_API void cell::value(unsigned long long i)
-{
-    d_->value_numeric_ = static_cast<long double>(i);
-    d_->type_ = type::numeric;
-}
-#endif
-
 template <>
 XLNT_API void cell::value(float f)
 {
