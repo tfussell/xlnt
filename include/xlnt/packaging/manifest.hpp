@@ -102,9 +102,12 @@ public:
     std::string register_relationship(const class relationship &rel);
 
     /// <summary>
-    ///
+    /// Delete the relationship with the given id from source part. Returns a mapping
+    /// of relationship IDs since IDs are shifted down. For example, if there are three
+    /// relationships for part a.xml like [rId1, rId2, rId3] and rId2 is deleted, the
+    /// resulting map would look like [rId3->rId2].
     /// </summary>
-    void unregister_relationship(const uri &source, const std::string &rel_id);
+    std::unordered_map<std::string, std::string> unregister_relationship(const uri &source, const std::string &rel_id);
 
     // Content Types
 

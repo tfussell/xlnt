@@ -799,10 +799,16 @@ void workbook::remove_sheet(worksheet ws)
     auto wb_rel = d_->manifest_.relationship(xlnt::path("/"), xlnt::relationship_type::office_document);
     auto ws_rel = d_->manifest_.relationship(wb_rel.target().path(), ws_rel_id);
     d_->manifest_.unregister_override_type(ws_rel.target().path());
-    d_->manifest_.unregister_relationship(wb_rel.target(), ws_rel_id);
-    ;
+    auto rel_id_map = d_->manifest_.unregister_relationship(wb_rel.target(), ws_rel_id);
     d_->sheet_title_rel_id_map_.erase(ws.title());
     d_->worksheets_.erase(match_iter);
+
+    // Shift sheet title->ID mappings down as a result of manifest::unregister_relationship above.
+    for (auto &title_rel_id_pair : d_->sheet_title_rel_id_map_)
+    {
+        title_rel_id_pair.second = rel_id_map.count(title_rel_id_pair.second) > 0
+            ? rel_id_map[title_rel_id_pair.second] : title_rel_id_pair.second;
+    }
 }
 
 worksheet workbook::create_sheet(std::size_t index)

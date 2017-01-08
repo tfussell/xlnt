@@ -227,9 +227,38 @@ std::string manifest::register_relationship(const class relationship &rel)
     return rel.id();
 }
 
-void manifest::unregister_relationship(const uri &source, const std::string &rel_id)
+std::unordered_map<std::string, std::string> manifest::unregister_relationship(const uri &source, const std::string &rel_id)
 {
-    relationships_.at(source.path()).erase(rel_id);
+    // This shouldn't happen, but just in case...
+    if (rel_id.substr(0, 3) != "rId" || rel_id.size() < 4)
+    {
+        throw xlnt::invalid_parameter();
+    }
+
+    std::unordered_map<std::string, std::string> id_map;
+    auto rel_index = static_cast<std::size_t>(std::stoull(rel_id.substr(3)));
+    auto &part_rels = relationships_.at(source.path());
+
+    for (auto i = rel_index; i <= part_rels.size() + 1; ++i)
+    {
+        auto old_id = "rId" + std::to_string(i);
+
+        // Don't re-add the relationship to be deleted
+        if (i > rel_index)
+        {
+            // Shift all relationships with IDs greater than the deleted one
+            // down by one (e.g. rId7->rId6).
+            auto new_id = "rId" + std::to_string(i - 1);
+            const auto &old_rel = part_rels.at(old_id);
+            register_relationship(xlnt::relationship(new_id, old_rel.type(),
+                old_rel.source(), old_rel.target(), old_rel.target_mode()));
+            id_map[old_id] = new_id;
+        }
+
+        part_rels.erase(old_id);
+    }
+
+    return id_map;
 }
 
 bool manifest::has_default_type(const std::string &extension) const
