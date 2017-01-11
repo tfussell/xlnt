@@ -452,8 +452,8 @@ struct crypto_helper
 
     static std::vector<std::uint8_t> write_agile_encryption_info(const std::string &password)
     {
-        static const auto &xmlns = xlnt::constants::namespace_("encryption");
-        static const auto &xmlns_p = xlnt::constants::namespace_("encryption-password");
+        static const auto &xmlns = xlnt::constants::ns("encryption");
+        static const auto &xmlns_p = xlnt::constants::ns("encryption-password");
 
         std::vector<std::uint8_t> encryption_info;
         xlnt::detail::vector_ostreambuf encryption_info_buffer(encryption_info);
@@ -508,8 +508,8 @@ struct crypto_helper
     static std::vector<std::uint8_t> decrypt_xlsx_agile(const std::vector<std::uint8_t> &encryption_info,
         const std::string &password, const std::vector<std::uint8_t> &encrypted_package)
     {
-        static const auto &xmlns = xlnt::constants::namespace_("encryption");
-        static const auto &xmlns_p = xlnt::constants::namespace_("encryption-password");
+        static const auto &xmlns = xlnt::constants::ns("encryption");
+        static const auto &xmlns_p = xlnt::constants::ns("encryption-password");
         // static const auto &xmlns_c = xlnt::constants::namespace_("encryption-certificate");
 
         agile_encryption_info result;

@@ -142,7 +142,7 @@ const std::unordered_map<std::string, std::string> &constants::namespaces()
     return *namespaces;
 }
 
-const std::string &constants::namespace_(const std::string &id)
+const std::string &constants::ns(const std::string &id)
 {
     auto match = namespaces().find(id);
 

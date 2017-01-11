@@ -121,11 +121,6 @@ private:
 	/// <summary>
 	/// 
 	/// </summary>
-	void read_metadata();
-
-	/// <summary>
-	/// 
-	/// </summary>
 	void read_pivot_table();
 
 	/// <summary>

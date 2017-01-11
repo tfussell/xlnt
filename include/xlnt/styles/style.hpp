@@ -44,6 +44,7 @@ namespace detail {
 
 struct style_impl;
 struct stylesheet;
+class xlsx_consumer;
 
 } // namespace detail
 
@@ -233,6 +234,7 @@ public:
 
 private:
     friend struct detail::stylesheet;
+    friend class detail::xlsx_consumer;
 
     /// <summary>
     ///

@@ -72,7 +72,6 @@ enum class XLNT_API relationship_type
     dialogsheet,
     drawings,
     external_workbook_references,
-    metadata,
     pivot_table,
     pivot_table_cache_definition,
     pivot_table_cache_records,

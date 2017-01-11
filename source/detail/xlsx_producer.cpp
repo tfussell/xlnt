@@ -89,86 +89,21 @@ void xlsx_producer::populate_archive()
 
         begin_part(rel.target().path());
 
-        switch (rel.type())
+        if (rel.type() == relationship_type::core_properties)
         {
-        case relationship_type::core_properties:
             write_core_properties(rel);
-            break;
-
-        case relationship_type::extended_properties:
+        }
+        else if (rel.type() == relationship_type::extended_properties)
+        {
             write_extended_properties(rel);
-            break;
-
-        case relationship_type::custom_properties:
+        }
+        else if (rel.type() == relationship_type::custom_properties)
+        {
             write_custom_properties(rel);
-            break;
-
-        case relationship_type::office_document:
+        }
+        else if (rel.type() == relationship_type::office_document)
+        {
             write_workbook(rel);
-            break;
-
-        case relationship_type::thumbnail:
-            break;
-        case relationship_type::calculation_chain:
-            break;
-        case relationship_type::worksheet:
-            break;
-        case relationship_type::shared_string_table:
-            break;
-        case relationship_type::stylesheet:
-            break;
-        case relationship_type::theme:
-            break;
-        case relationship_type::hyperlink:
-            break;
-        case relationship_type::chartsheet:
-            break;
-        case relationship_type::comments:
-            break;
-        case relationship_type::vml_drawing:
-            break;
-        case relationship_type::unknown:
-            break;
-        case relationship_type::printer_settings:
-            break;
-        case relationship_type::connections:
-            break;
-        case relationship_type::custom_property:
-            break;
-        case relationship_type::custom_xml_mappings:
-            break;
-        case relationship_type::dialogsheet:
-            break;
-        case relationship_type::drawings:
-            break;
-        case relationship_type::external_workbook_references:
-            break;
-        case relationship_type::metadata:
-            break;
-        case relationship_type::pivot_table:
-            break;
-        case relationship_type::pivot_table_cache_definition:
-            break;
-        case relationship_type::pivot_table_cache_records:
-            break;
-        case relationship_type::query_table:
-            break;
-        case relationship_type::shared_workbook_revision_headers:
-            break;
-        case relationship_type::shared_workbook:
-            break;
-        case relationship_type::revision_log:
-            break;
-        case relationship_type::shared_workbook_user_data:
-            break;
-        case relationship_type::single_cell_table_definitions:
-            break;
-        case relationship_type::table_definition:
-            break;
-        case relationship_type::volatile_dependencies:
-            break;
-        case relationship_type::image:
-            break;
         }
     }
 
@@ -309,11 +244,11 @@ void xlsx_producer::write_extended_properties(const relationship & /*rel*/)
 
 void xlsx_producer::write_core_properties(const relationship & /*rel*/)
 {
-    static const auto &xmlns_cp = constants::namespace_("core-properties");
-    static const auto &xmlns_dc = constants::namespace_("dc");
-    static const auto &xmlns_dcterms = constants::namespace_("dcterms");
-    static const auto &xmlns_dcmitype = constants::namespace_("dcmitype");
-    static const auto &xmlns_xsi = constants::namespace_("xsi");
+    static const auto &xmlns_cp = constants::ns("core-properties");
+    static const auto &xmlns_dc = constants::ns("dc");
+    static const auto &xmlns_dcterms = constants::ns("dcterms");
+    static const auto &xmlns_dcmitype = constants::ns("dcmitype");
+    static const auto &xmlns_xsi = constants::ns("xsi");
 
     serializer().start_element(xmlns_cp, "coreProperties");
     serializer().namespace_decl(xmlns_cp, "cp");
@@ -406,9 +341,9 @@ void xlsx_producer::write_workbook(const relationship &rel)
         throw no_visible_worksheets();
     }
 
-    static const auto &xmlns = constants::namespace_("workbook");
-    static const auto &xmlns_r = constants::namespace_("r");
-    static const auto &xmlns_s = constants::namespace_("spreadsheetml");
+    static const auto &xmlns = constants::ns("workbook");
+    static const auto &xmlns_r = constants::ns("r");
+    static const auto &xmlns_s = constants::ns("spreadsheetml");
 
     serializer().start_element(xmlns, "workbook");
     serializer().namespace_decl(xmlns, "");
@@ -623,10 +558,6 @@ void xlsx_producer::write_workbook(const relationship &rel)
             write_external_workbook_references(child_rel);
             break;
 
-        case relationship_type::metadata:
-            write_metadata(child_rel);
-            break;
-
         case relationship_type::pivot_table:
             write_pivot_table(child_rel);
             break;
@@ -733,11 +664,6 @@ void xlsx_producer::write_external_workbook_references(const relationship & /*re
     serializer().start_element("externalLink");
 }
 
-void xlsx_producer::write_metadata(const relationship & /*rel*/)
-{
-    serializer().start_element("metadata");
-}
-
 void xlsx_producer::write_pivot_table(const relationship & /*rel*/)
 {
     serializer().start_element("pivotTableDefinition");
@@ -745,7 +671,7 @@ void xlsx_producer::write_pivot_table(const relationship & /*rel*/)
 
 void xlsx_producer::write_shared_string_table(const relationship & /*rel*/)
 {
-    static const auto &xmlns = constants::namespace_("spreadsheetml");
+    static const auto &xmlns = constants::ns("spreadsheetml");
 
     serializer().start_element(xmlns, "sst");
     serializer().namespace_decl(xmlns, "");
@@ -869,7 +795,7 @@ void xlsx_producer::write_shared_workbook_user_data(const relationship & /*rel*/
 
 void xlsx_producer::write_styles(const relationship & /*rel*/)
 {
-    static const auto &xmlns = constants::namespace_("spreadsheetml");
+    static const auto &xmlns = constants::ns("spreadsheetml");
 
     serializer().start_element(xmlns, "styleSheet");
     serializer().namespace_decl(xmlns, "");
@@ -1398,8 +1324,8 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
 
 void xlsx_producer::write_theme(const relationship &theme_rel)
 {
-    static const auto &xmlns_a = constants::namespace_("drawingml");
-    static const auto &xmlns_thm15 = constants::namespace_("thm15");
+    static const auto &xmlns_a = constants::ns("drawingml");
+    static const auto &xmlns_thm15 = constants::ns("thm15");
 
     serializer().start_element(xmlns_a, "theme");
     serializer().namespace_decl(xmlns_a, "a");
@@ -1866,8 +1792,8 @@ void xlsx_producer::write_volatile_dependencies(const relationship & /*rel*/)
 
 void xlsx_producer::write_worksheet(const relationship &rel)
 {
-    static const auto &xmlns = constants::namespace_("spreadsheetml");
-    static const auto &xmlns_r = constants::namespace_("r");
+    static const auto &xmlns = constants::ns("spreadsheetml");
+    static const auto &xmlns_r = constants::ns("r");
 
     auto worksheet_part = rel.source().path().parent().append(rel.target().path());
     auto worksheet_rels = source_.manifest().relationships(worksheet_part);
@@ -2598,8 +2524,6 @@ void xlsx_producer::write_worksheet(const relationship &rel)
                 break;
             case relationship_type::external_workbook_references:
                 break;
-            case relationship_type::metadata:
-                break;
             case relationship_type::pivot_table:
                 break;
             case relationship_type::pivot_table_cache_definition:
@@ -2633,7 +2557,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
 void xlsx_producer::write_comments(const relationship & /*rel*/, worksheet ws, const std::vector<cell_reference> &cells)
 {
-    static const auto &xmlns = constants::namespace_("spreadsheetml");
+    static const auto &xmlns = constants::ns("spreadsheetml");
 
     serializer().start_element(xmlns, "comments");
     serializer().namespace_decl(xmlns, "");
@@ -2925,7 +2849,7 @@ void xlsx_producer::write_relationships(const std::vector<xlnt::relationship> &r
     path rels_path(parent.append("_rels").append(part.filename() + ".rels").string());
     begin_part(rels_path);
 
-    const auto xmlns = xlnt::constants::namespace_("relationships");
+    const auto xmlns = xlnt::constants::ns("relationships");
 
     serializer().start_element(xmlns, "Relationships");
     serializer().namespace_decl(xmlns, "");

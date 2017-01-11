@@ -86,7 +86,6 @@ private:
 	void write_connections(const relationship &rel);
 	void write_custom_xml_mappings(const relationship &rel);
 	void write_external_workbook_references(const relationship &rel);
-	void write_metadata(const relationship &rel);
 	void write_pivot_table(const relationship &rel);
 	void write_shared_string_table(const relationship &rel);
 	void write_shared_workbook_revision_headers(const relationship &rel);
