@@ -808,12 +808,7 @@ void xlsx_consumer::read_properties(const path &part, const xml::qname &root)
         {
             auto property_name = parser().attribute("name");
             auto variant_child_element = expect_start_element(xml::content::simple);
-
-            if (variant_child_element == qn("vt", "lpwstr"))
-            {
-                properties[property_name] = read_text();
-            }
-
+            properties[property_name] = read_text();
             expect_end_element(variant_child_element);
         }
 
