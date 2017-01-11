@@ -58,53 +58,52 @@ std::string to_string(relationship_type t)
         return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments";
     case relationship_type::vml_drawing:
         return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/vmlDrawing";
-    case relationship_type::unknown:
-        return "unknown";
     case relationship_type::custom_properties:
         return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/custom-properties";
     case relationship_type::printer_settings:
-        return "printer-settings";
+        return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/printerSettings";
     case relationship_type::connections:
-        return "connections";
+        return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/connections";
     case relationship_type::custom_property:
-        return "custom-property";
+        return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/customProperty";
     case relationship_type::custom_xml_mappings:
-        return "custom-xml-mappings";
+        return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXmlMappings";
     case relationship_type::dialogsheet:
-        return "dialogsheet";
+        return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/dialogsheet";
     case relationship_type::drawings:
-        return "drawings";
+        return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing";
     case relationship_type::external_workbook_references:
-        return "external-workbook-references";
-    case relationship_type::metadata:
-        return "metadata";
+        return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/externalLinkPath";
     case relationship_type::pivot_table:
-        return "pivot-table";
+        return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotTable";
     case relationship_type::pivot_table_cache_definition:
-        return "pivot-table-cache-definition";
+        return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotCacheDefinition";
     case relationship_type::pivot_table_cache_records:
-        return "pivot-table-cache-records";
+        return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotCacheRecords";
     case relationship_type::query_table:
-        return "query-table";
+        return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/queryTable";
     case relationship_type::shared_workbook_revision_headers:
-        return "shared-workbook-revision-headers";
+        return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/revisionHeaders";
     case relationship_type::shared_workbook:
-        return "shared-workbook";
+        return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedWorkbook";
     case relationship_type::revision_log:
-        return "revision-log";
+        return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/revisionLog";
     case relationship_type::shared_workbook_user_data:
-        return "shared-workbook-user-data";
+        return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/usernames";
     case relationship_type::single_cell_table_definitions:
-        return "single-cell-table-definitions";
+        return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/tableSingleCells";
     case relationship_type::table_definition:
-        return "table-definition";
+        return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/table";
     case relationship_type::volatile_dependencies:
-        return "volatile-dependencies";
+        return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/volatileDependencies";
     case relationship_type::image:
         return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image";
+    case relationship_type::unknown:
+#ifndef __clang__
+    default:
+#endif
+        return "unknown";
     }
-
-    default_case("unknown");
 }
 
 std::string to_string(pattern_fill_type fill_type)

@@ -101,7 +101,6 @@ struct value_traits<xlnt::relationship_type>
             relationship_type::dialogsheet,
             relationship_type::drawings,
             relationship_type::external_workbook_references,
-            relationship_type::metadata,
             relationship_type::pivot_table,
             relationship_type::pivot_table_cache_definition,
             relationship_type::pivot_table_cache_records,
@@ -125,8 +124,8 @@ struct value_traits<xlnt::relationship_type>
         };
 
         // Core properties relationships can have two different type strings
-        if (relationship_type_string
-            == "http://schemas.openxmlformats.org/officedocument/2006/relationships/metadata/core-properties")
+        if (relationship_type_string == "http://schemas.openxmlformats.org/"
+            "officedocument/2006/relationships/metadata/core-properties")
         {
             return relationship_type::core_properties;
         }
@@ -139,7 +138,9 @@ struct value_traits<xlnt::relationship_type>
             }
         }
         
-        default_case(relationship_type::unknown);
+        // ECMA 376-4 Part 1 Section 9.1.7 says consumers shall not fail to load
+        // a document with unknown relationships.
+        return relationship_type::unknown;
     }
 
     static std::string serialize(xlnt::relationship_type type, const serializer &)
@@ -292,7 +293,7 @@ struct value_traits<xlnt::vertical_alignment>
             }
         }
         
-        default_case(vertical_alignment::none);
+        default_case(vertical_alignment::top);
     }
 
     static std::string serialize (xlnt::vertical_alignment alignment, const serializer &)
@@ -328,7 +329,7 @@ struct value_traits<xlnt::horizontal_alignment>
             }
         }
         
-        default_case(horizontal_alignment::none);
+        default_case(horizontal_alignment::general);
     }
 
     static std::string serialize(xlnt::horizontal_alignment alignment, const serializer &)
