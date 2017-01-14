@@ -1656,24 +1656,23 @@ void xlsx_consumer::read_stylesheet()
         return result;
     };
 */
-
-    //std::size_t xf_id = 0;
-
+    /*
+    std::size_t xf_id = 0;
+    
     for (const auto &record : style_records)
     {
-    /*
         auto style_iter = std::find_if(styles.begin(), styles.end(),
-            [&xf_id](const std::pair<style, std::size_t> &s) { return s.second == xf_id; });
+            [&xf_id](const std::pair<style_impl, std::size_t> &s) { return s.second == xf_id; });
         ++xf_id;
 
         if (style_iter == styles.end()) continue;
 
         auto new_style = stylesheet.create_style(style_iter->first.name);
         *new_style.d_ = style_iter->first;
-    */
+
         (void)record;
     }
-
+    */
     std::size_t record_index = 0;
 
     for (const auto &record : format_records)

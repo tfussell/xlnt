@@ -124,7 +124,8 @@ const std::unordered_map<std::string, std::string> &constants::namespaces()
             {"encryption-password", "http://schemas.microsoft.com/office/2006/keyEncryptor/password"},
             {"encryption-certificate", "http://schemas.microsoft.com/office/2006/keyEncryptor/certificate"},
 
-            {"dc", "http://purl.org/dc/elements/1.1/"}, {"dcterms", "http://purl.org/dc/terms/"},
+            {"dc", "http://purl.org/dc/elements/1.1/"},
+            {"dcterms", "http://purl.org/dc/terms/"},
             {"dcmitype", "http://purl.org/dc/dcmitype/"},
             {"mc", "http://schemas.openxmlformats.org/markup-compatibility/2006"},
             {"mx", "http://schemas.microsoft.com/office/mac/excel/2008/main"},

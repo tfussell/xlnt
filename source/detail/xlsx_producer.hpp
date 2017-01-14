@@ -71,9 +71,7 @@ private:
 	// Package Parts
 
 	void write_content_types();
-	void write_core_properties(const relationship &rel);
-	void write_extended_properties(const relationship &rel);
-	void write_custom_properties(const relationship &rel);
+	void write_properties(const relationship &rel);
     void write_image(const path &image_path);
 
 	// SpreadsheetML-Specific Package Parts
@@ -124,12 +122,42 @@ private:
     void write_dxfs();
     void write_table_styles();
     void write_colors(const std::vector<xlnt::color> &colors);
-    
-    /// <summary>
-    /// Dereference serializer_ pointer and return a reference to the object.
-    /// This is called by internal methods so that we can use . instead of ->.
-    /// </summary>
-    xml::serializer &serializer();
+
+    template<typename T>
+    void write_element(const std::string &ns, const std::string &name, T value)
+    {
+        write_start_element(ns, name);
+        write_characters(value);
+        write_end_element(ns, name);
+    }
+
+    void write_start_element(const std::string &name);
+
+    void write_start_element(const std::string &ns, const std::string &name);
+
+    void write_end_element(const std::string &name);
+
+    void write_end_element(const std::string &ns, const std::string &name);
+
+    void write_namespace(const std::string &ns, const std::string &prefix);
+
+    template<typename T>
+    void write_attribute(const std::string &name, T value)
+    {
+        current_part_serializer_->attribute(name, value);
+    }
+
+    template<typename T>
+    void write_attribute(const xml::qname &name, T value)
+    {
+        current_part_serializer_->attribute(name, value);
+    }
+
+    template<typename T>
+    void write_characters(T characters)
+    {
+        current_part_serializer_->characters(characters);
+    }
 
 	/// <summary>
 	/// A reference to the workbook which is the object of read/write operations.

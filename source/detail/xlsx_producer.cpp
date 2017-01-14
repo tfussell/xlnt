@@ -91,15 +91,15 @@ void xlsx_producer::populate_archive()
 
         if (rel.type() == relationship_type::core_properties)
         {
-            write_core_properties(rel);
+            write_properties(rel);
         }
         else if (rel.type() == relationship_type::extended_properties)
         {
-            write_extended_properties(rel);
+            write_properties(rel);
         }
         else if (rel.type() == relationship_type::custom_properties)
         {
-            write_custom_properties(rel);
+            write_properties(rel);
         }
         else if (rel.type() == relationship_type::office_document)
         {
@@ -142,178 +142,199 @@ void xlsx_producer::write_content_types()
 
     const auto xmlns = "http://schemas.openxmlformats.org/package/2006/content-types"s;
 
-    serializer().start_element(xmlns, "Types");
-    serializer().namespace_decl(xmlns, "");
+    write_start_element(xmlns, "Types");
+    write_namespace(xmlns, "");
 
     for (const auto &extension : source_.manifest().extensions_with_default_types())
     {
-        serializer().start_element(xmlns, "Default");
-        serializer().attribute("Extension", extension);
-        serializer().attribute("ContentType", source_.manifest().default_type(extension));
-        serializer().end_element(xmlns, "Default");
+        write_start_element(xmlns, "Default");
+        write_attribute("Extension", extension);
+        write_attribute("ContentType", source_.manifest().default_type(extension));
+        write_end_element(xmlns, "Default");
     }
 
     for (const auto &part : source_.manifest().parts_with_overriden_types())
     {
-        serializer().start_element(xmlns, "Override");
-        serializer().attribute("PartName", part.resolve(path("/")).string());
-        serializer().attribute("ContentType", source_.manifest().override_type(part));
-        serializer().end_element(xmlns, "Override");
+        write_start_element(xmlns, "Override");
+        write_attribute("PartName", part.resolve(path("/")).string());
+        write_attribute("ContentType", source_.manifest().override_type(part));
+        write_end_element(xmlns, "Override");
     }
 
-    serializer().end_element(xmlns, "Types");
+    write_end_element(xmlns, "Types");
 }
 
-void xlsx_producer::write_extended_properties(const relationship & /*rel*/)
+/*
+Core Properties:
+- category
+- contentStatus
+- dcterms:created
+- dc:creator
+- dc:description
+- dc:identifier
+- keywords
+- dc:language
+- lastModifiedBy
+- lastPrinted
+- dcterms:modified
+- revision
+- dc:subject
+- dc:title
+- version
+
+Extended Properties (SpreadsheetML):
+
+
+Custom Properties:
+
+*/
+void xlsx_producer::write_properties(const relationship &rel)
 {
-    const auto xmlns = "http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"s;
-    const auto xmlns_vt = "http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"s;
+    std::vector<std::pair<std::string, std::string>> properties;
+    std::unordered_map<std::string, std::string> namespaces;
 
-    serializer().start_element(xmlns, "Properties");
-    serializer().namespace_decl(xmlns, "");
-    serializer().namespace_decl(xmlns_vt, "vt");
+    xml::qname root_element;
+    auto xmlns = ""s;
 
-    if (source_.has_extended_property("Application"))
+    if (rel.type() == relationship_type::core_properties)
     {
-        serializer().element(xmlns, "Application", source_.extended_property("Application"));
+        xmlns = "http://schemas.openxmlformats.org/officeDocument/2006/core-properties";
+        root_element = xml::qname(constants::ns("core-properties"), "coreProperties");
+
+        for (const auto &property_name : source_.core_properties())
+        {
+            properties.emplace_back(property_name, source_.core_property(property_name));
+
+            if (property_name == "created" || property_name == "modified")
+            {
+                namespaces.emplace(constants::ns("dcterms"), "dcterms");
+                namespaces.emplace(constants::ns("xsi"), "xsi");
+            }
+            else if (property_name == "creator" || property_name == "description"
+                || property_name == "identifier" || property_name == "language"
+                || property_name == "subject" || property_name == "title")
+            {
+                namespaces.emplace(constants::ns("dc"), "dc");
+            }
+        }
+    }
+    else if (rel.type() == relationship_type::extended_properties)
+    {
+        xmlns = "http://schemas.openxmlformats.org/officeDocument/2006/extended-properties";
+        root_element = xml::qname(xmlns, "Properties");
+
+        namespaces.emplace(xmlns, "");
+
+        for (const auto &property_name : source_.extended_properties())
+        {
+            properties.emplace_back(property_name, source_.extended_property(property_name));
+
+            if (property_name == "HeadingsOfParts" || property_name == "TitlesOfParts")
+            {
+                namespaces.emplace(constants::ns("vt"), "vt");
+            }
+        }
+    }
+    else if (rel.type() == relationship_type::custom_properties)
+    {
+        xmlns = "http://schemas.openxmlformats.org/officeDocument/2006/custom-properties";
+        root_element = xml::qname(xmlns, "Properties");
+
+        namespaces.emplace(xmlns, "");
+        namespaces.emplace(constants::ns("vt"), "vt");
+
+        for (const auto &property_name : source_.custom_properties())
+        {
+            properties.emplace_back(property_name, source_.custom_property(property_name));
+        }
     }
 
-    if (source_.has_extended_property("DocSecurity"))
+    write_start_element(root_element.namespace_(), root_element.name());
+
+    for (const auto &ns : namespaces)
     {
-        serializer().element(xmlns, "DocSecurity", source_.extended_property("DocSecurity"));
+        write_namespace(ns.first, ns.second);
     }
 
-    if (source_.has_extended_property("ScaleCrop"))
+    for (const auto &prop : properties)
     {
-        serializer().element(xmlns, "ScaleCrop", source_.extended_property("ScaleCrop"));
+        auto property_type = "normal"s;
+        auto property_ns = xmlns;
+
+        if (rel.type() == relationship_type::core_properties)
+        {
+            if (prop.first == "keywords")
+            {
+                property_type = "keywords";
+            }
+            else if (prop.first == "modified" || prop.first == "created")
+            {
+                property_type = "w3cdtf";
+                property_ns = constants::ns("dcterms");
+            }
+            else if (prop.first == "creator" || prop.first == "description"
+                || prop.first == "identifier" || prop.first == "language"
+                || prop.first == "subject" || prop.first == "title")
+            {
+                property_ns = constants::ns("dc");
+            }
+        }
+        else if (rel.type() == relationship_type::extended_properties)
+        {
+            if (prop.first == "HeadingsOfParts" || prop.first == "TitlesOfParts")
+            {
+                property_type = "vt:vector";
+            }
+        }
+
+        write_start_element(property_ns, prop.first);
+
+        if (property_type == "vt:vector")
+        {
+            write_start_element(constants::ns("vt"), "vector");
+
+            auto split = std::vector<std::string>();
+            auto delim = ' ';
+            auto previous_index = std::size_t(0);
+            auto delim_index = prop.second.find(delim);
+
+            while (delim_index != std::string::npos)
+            {
+                split.push_back(prop.second.substr(previous_index, delim_index - previous_index));
+                previous_index = delim_index;
+                delim_index = prop.second.find(delim);
+            }
+
+            split.push_back(prop.second.substr(previous_index));
+
+            write_attribute("size", split.size() / 2);
+            write_attribute("baseType", "variant");
+
+            for (std::size_t i = 0; i < split.size() / 2; ++i)
+            {
+                auto vt_type = split[i * 2];
+                auto vt_value = split[i * 2 + 1];
+                write_start_element(constants::ns("vt"), "variant");
+                write_element(constants::ns("vt"), vt_type, vt_value);
+                write_end_element(constants::ns("vt"), "variant");
+            }
+
+            write_end_element(constants::ns("vt"), "vector");
+        }
+        else if (property_type == "w3cdtf")
+        {
+            write_attribute(xml::qname(constants::ns("xsi"), "type"), "dcterms:W3CDTF");
+            write_characters(prop.second);
+        }
+        else
+        {
+            write_characters(prop.second);
+        }
+
+        write_end_element(property_ns, prop.first);
     }
 
-    serializer().start_element(xmlns, "HeadingPairs");
-    serializer().start_element(xmlns_vt, "vector");
-    serializer().attribute("size", "2");
-    serializer().attribute("baseType", "variant");
-    serializer().start_element(xmlns_vt, "variant");
-    serializer().element(xmlns_vt, "lpstr", "Worksheets");
-    serializer().end_element(xmlns_vt, "variant");
-    serializer().start_element(xmlns_vt, "variant");
-    serializer().element(xmlns_vt, "i4", source_.sheet_titles().size());
-    serializer().end_element(xmlns_vt, "variant");
-    serializer().end_element(xmlns_vt, "vector");
-    serializer().end_element(xmlns, "HeadingPairs");
-
-    serializer().start_element(xmlns, "TitlesOfParts");
-    serializer().start_element(xmlns_vt, "vector");
-    serializer().attribute("size", source_.sheet_titles().size());
-    serializer().attribute("baseType", "lpstr");
-
-    for (auto ws : source_)
-    {
-        serializer().element(xmlns_vt, "lpstr", ws.title());
-    }
-
-    serializer().end_element(xmlns_vt, "vector");
-    serializer().end_element(xmlns, "TitlesOfParts");
-
-    if (source_.has_extended_property("Company"))
-    {
-        serializer().element(xmlns, "Company", source_.extended_property("Company"));
-    }
-
-    if (source_.has_extended_property("LinksUpToDate"))
-    {
-        serializer().element(xmlns, "LinksUpToDate", source_.extended_property("LinksUpToDate"));
-    }
-
-    if (source_.has_extended_property("SharedDoc"))
-    {
-        serializer().element(xmlns, "SharedDoc", source_.extended_property("SharedDoc"));
-    }
-
-    if (source_.has_extended_property("HyperlinksChanged"))
-    {
-        serializer().element(xmlns, "HyperlinksChanged", source_.extended_property("HyperlinksChanged"));
-    }
-
-    if (source_.has_extended_property("AppVersion"))
-    {
-        serializer().element(xmlns, "AppVersion", source_.extended_property("AppVersion"));
-    }
-
-    serializer().end_element(xmlns, "Properties");
-}
-
-void xlsx_producer::write_core_properties(const relationship & /*rel*/)
-{
-    static const auto &xmlns_cp = constants::ns("core-properties");
-    static const auto &xmlns_dc = constants::ns("dc");
-    static const auto &xmlns_dcterms = constants::ns("dcterms");
-    static const auto &xmlns_dcmitype = constants::ns("dcmitype");
-    static const auto &xmlns_xsi = constants::ns("xsi");
-
-    serializer().start_element(xmlns_cp, "coreProperties");
-    serializer().namespace_decl(xmlns_cp, "cp");
-    serializer().namespace_decl(xmlns_dc, "dc");
-    serializer().namespace_decl(xmlns_dcterms, "dcterms");
-    serializer().namespace_decl(xmlns_dcmitype, "dcmitype");
-    serializer().namespace_decl(xmlns_xsi, "xsi");
-
-    if (source_.has_core_property("creator"))
-    {
-        serializer().element(xmlns_dc, "creator", source_.core_property("creator"));
-    }
-
-    if (source_.has_core_property("lastModifiedBy"))
-    {
-        serializer().element(xmlns_cp, "lastModifiedBy", source_.core_property("lastModifiedBy"));
-    }
-
-    if (source_.has_core_property("created"))
-    {
-        serializer().start_element(xmlns_dcterms, "created");
-        serializer().attribute(xmlns_xsi, "type", "dcterms:W3CDTF");
-        serializer().characters(source_.core_property("created"));
-        serializer().end_element(xmlns_dcterms, "created");
-    }
-
-    if (source_.has_core_property("modified"))
-    {
-        serializer().start_element(xmlns_dcterms, "modified");
-        serializer().attribute(xmlns_xsi, "type", "dcterms:W3CDTF");
-        serializer().characters(source_.core_property("modified"));
-        serializer().end_element(xmlns_dcterms, "modified");
-    }
-
-    if (source_.has_title())
-    {
-        serializer().element(xmlns_dc, "title", source_.title());
-    }
-
-    if (source_.has_core_property("description"))
-    {
-        serializer().element(xmlns_dc, "description", source_.core_property("description"));
-    }
-
-    if (source_.has_core_property("subject"))
-    {
-        serializer().element(xmlns_dc, "subject", source_.core_property("subject"));
-    }
-
-    if (source_.has_core_property("keywords"))
-    {
-        serializer().element(xmlns_cp, "keywords", source_.core_property("keywords"));
-    }
-
-    if (source_.has_core_property("category"))
-    {
-        serializer().element(xmlns_cp, "category", source_.core_property("category"));
-    }
-
-    serializer().end_element(xmlns_cp, "coreProperties");
-}
-
-void xlsx_producer::write_custom_properties(const relationship & /*rel*/)
-{
-    serializer().element("Properties");
+    write_end_element(root_element.namespace_(), root_element.name());
 }
 
 // Write SpreadsheetML-Specific Package Parts
@@ -345,117 +366,117 @@ void xlsx_producer::write_workbook(const relationship &rel)
     static const auto &xmlns_r = constants::ns("r");
     static const auto &xmlns_s = constants::ns("spreadsheetml");
 
-    serializer().start_element(xmlns, "workbook");
-    serializer().namespace_decl(xmlns, "");
-    serializer().namespace_decl(xmlns_r, "r");
+    write_start_element(xmlns, "workbook");
+    write_namespace(xmlns, "");
+    write_namespace(xmlns_r, "r");
 
     if (source_.has_file_version())
     {
-        serializer().start_element(xmlns, "fileVersion");
+        write_start_element(xmlns, "fileVersion");
 
-        serializer().attribute("appName", source_.app_name());
-        serializer().attribute("lastEdited", source_.last_edited());
-        serializer().attribute("lowestEdited", source_.lowest_edited());
-        serializer().attribute("rupBuild", source_.rup_build());
+        write_attribute("appName", source_.app_name());
+        write_attribute("lastEdited", source_.last_edited());
+        write_attribute("lowestEdited", source_.lowest_edited());
+        write_attribute("rupBuild", source_.rup_build());
 
-        serializer().end_element(xmlns, "fileVersion");
+        write_end_element(xmlns, "fileVersion");
     }
 
-    serializer().start_element(xmlns, "workbookPr");
+    write_start_element(xmlns, "workbookPr");
 
     if (source_.has_code_name())
     {
-        serializer().attribute("codeName", source_.code_name());
+        write_attribute("codeName", source_.code_name());
     }
 
     if (source_.base_date() == calendar::mac_1904)
     {
-        serializer().attribute("date1904", "1");
+        write_attribute("date1904", "1");
     }
 
-    serializer().end_element(xmlns, "workbookPr");
+    write_end_element(xmlns, "workbookPr");
 
     if (source_.has_view())
     {
-        serializer().start_element(xmlns, "bookViews");
-        serializer().start_element(xmlns, "workbookView");
+        write_start_element(xmlns, "bookViews");
+        write_start_element(xmlns, "workbookView");
 
         const auto &view = source_.view();
 
         if (view.active_tab.is_set())
         {
-            serializer().attribute("activeTab", view.active_tab.get());
+            write_attribute("activeTab", view.active_tab.get());
         }
 
         if (view.auto_filter_date_grouping)
         {
-            serializer().attribute("autoFilterDateGrouping", write_bool(view.auto_filter_date_grouping));
+            write_attribute("autoFilterDateGrouping", write_bool(view.auto_filter_date_grouping));
         }
 
         if (view.first_sheet.is_set())
         {
-            serializer().attribute("firstSheet", view.first_sheet.get());
+            write_attribute("firstSheet", view.first_sheet.get());
         }
 
         if (view.minimized)
         {
-            serializer().attribute("minimized", write_bool(view.minimized));
+            write_attribute("minimized", write_bool(view.minimized));
         }
 
         if (view.show_horizontal_scroll)
         {
-            serializer().attribute("showHorizontalScroll", write_bool(view.show_horizontal_scroll));
+            write_attribute("showHorizontalScroll", write_bool(view.show_horizontal_scroll));
         }
 
         if (view.show_sheet_tabs)
         {
-            serializer().attribute("showSheetTabs", write_bool(view.show_sheet_tabs));
+            write_attribute("showSheetTabs", write_bool(view.show_sheet_tabs));
         }
 
         if (view.show_vertical_scroll)
         {
-            serializer().attribute("showVerticalScroll", write_bool(view.show_vertical_scroll));
+            write_attribute("showVerticalScroll", write_bool(view.show_vertical_scroll));
         }
 
         if (!view.visible)
         {
-            serializer().attribute("visibility", write_bool(view.visible));
+            write_attribute("visibility", write_bool(view.visible));
         }
 
         if (view.x_window.is_set())
         {
-            serializer().attribute("xWindow", view.x_window.get());
+            write_attribute("xWindow", view.x_window.get());
         }
 
         if (view.y_window.is_set())
         {
-            serializer().attribute("yWindow", view.y_window.get());
+            write_attribute("yWindow", view.y_window.get());
         }
 
         if (view.window_width.is_set())
         {
-            serializer().attribute("windowWidth", view.window_width.get());
+            write_attribute("windowWidth", view.window_width.get());
         }
 
         if (view.window_height.is_set())
         {
-            serializer().attribute("windowHeight", view.window_height.get());
+            write_attribute("windowHeight", view.window_height.get());
         }
 
         if (view.tab_ratio.is_set())
         {
-            serializer().attribute("tabRatio", view.tab_ratio.get());
+            write_attribute("tabRatio", view.tab_ratio.get());
         }
 
-        serializer().end_element(xmlns, "workbookView");
-        serializer().end_element(xmlns, "bookViews");
+        write_end_element(xmlns, "workbookView");
+        write_end_element(xmlns, "bookViews");
     }
 
-    serializer().start_element(xmlns, "sheets");
+    write_start_element(xmlns, "sheets");
 
     if (any_defined_names)
     {
-        serializer().element(xmlns, "definedNames", "");
+        write_element(xmlns, "definedNames", "");
     }
 
 #pragma clang diagnostic push
@@ -465,64 +486,64 @@ void xlsx_producer::write_workbook(const relationship &rel)
         auto sheet_rel_id = source_.d_->sheet_title_rel_id_map_[ws.title()];
         auto sheet_rel = source_.d_->manifest_.relationship(rel.target().path(), sheet_rel_id);
 
-        serializer().start_element(xmlns, "sheet");
-        serializer().attribute("name", ws.title());
-        serializer().attribute("sheetId", ws.id());
+        write_start_element(xmlns, "sheet");
+        write_attribute("name", ws.title());
+        write_attribute("sheetId", ws.id());
 
         if (ws.has_page_setup() && ws.sheet_state() == xlnt::sheet_state::hidden)
         {
-            serializer().attribute("state", "hidden");
+            write_attribute("state", "hidden");
         }
 
-        serializer().attribute(xmlns_r, "id", sheet_rel_id);
+        write_attribute(xml::qname(xmlns_r, "id"), sheet_rel_id);
 
         if (ws.has_auto_filter())
         {
-            serializer().start_element(xmlns, "definedName");
+            write_start_element(xmlns, "definedName");
 
-            serializer().attribute("name", "_xlnm._FilterDatabase");
-            serializer().attribute("hidden", write_bool(true));
-            serializer().attribute("localSheetId", "0");
-            serializer().characters(
+            write_attribute("name", "_xlnm._FilterDatabase");
+            write_attribute("hidden", write_bool(true));
+            write_attribute("localSheetId", "0");
+            write_characters(
                 "'" + ws.title() + "'!" + range_reference::make_absolute(ws.auto_filter()).to_string());
 
-            serializer().end_element(xmlns, "definedName");
+            write_end_element(xmlns, "definedName");
         }
 
-        serializer().end_element(xmlns, "sheet");
+        write_end_element(xmlns, "sheet");
     }
 #pragma clang diagnostic pop
 
-    serializer().end_element(xmlns, "sheets");
+    write_end_element(xmlns, "sheets");
 
     if (source_.has_calculation_properties())
     {
-        serializer().start_element(xmlns, "calcPr");
-        serializer().attribute("calcId", source_.calculation_properties().calc_id);
-        //serializer().attribute("calcMode", "auto");
-        //serializer().attribute("fullCalcOnLoad", "1");
-        serializer().attribute("concurrentCalc", write_bool(source_.calculation_properties().concurrent_calc));
-        serializer().end_element(xmlns, "calcPr");
+        write_start_element(xmlns, "calcPr");
+        write_attribute("calcId", source_.calculation_properties().calc_id);
+        //write_attribute("calcMode", "auto");
+        //write_attribute("fullCalcOnLoad", "1");
+        write_attribute("concurrentCalc", write_bool(source_.calculation_properties().concurrent_calc));
+        write_end_element(xmlns, "calcPr");
     }
 
     if (!source_.named_ranges().empty())
     {
-        serializer().start_element(xmlns, "definedNames");
+        write_start_element(xmlns, "definedNames");
 
         for (auto &named_range : source_.named_ranges())
         {
-            serializer().start_element(xmlns_s, "definedName");
-            serializer().namespace_decl(xmlns_s, "s");
-            serializer().attribute("name", named_range.name());
+            write_start_element(xmlns_s, "definedName");
+            write_namespace(xmlns_s, "s");
+            write_attribute("name", named_range.name());
             const auto &target = named_range.targets().front();
-            serializer().characters("'" + target.first.title() + "\'!" + target.second.to_string());
-            serializer().end_element(xmlns_s, "definedName");
+            write_characters("'" + target.first.title() + "\'!" + target.second.to_string());
+            write_end_element(xmlns_s, "definedName");
         }
 
-        serializer().end_element(xmlns, "definedNames");
+        write_end_element(xmlns, "definedNames");
     }
 
-    serializer().end_element(xmlns, "workbook");
+    write_end_element(xmlns, "workbook");
 
     auto workbook_rels = source_.manifest().relationships(rel.target().path());
     write_relationships(workbook_rels, rel.target().path());
@@ -636,45 +657,52 @@ void xlsx_producer::write_workbook(const relationship &rel)
 
 void xlsx_producer::write_calculation_chain(const relationship & /*rel*/)
 {
-    serializer().start_element("calcChain");
+    write_start_element(constants::ns("spreadsheetml"), "calcChain");
+    write_end_element(constants::ns("spreadsheetml"), "calcChain");
 }
 
 void xlsx_producer::write_chartsheet(const relationship & /*rel*/)
 {
-    serializer().start_element("chartsheet");
+    write_start_element(constants::ns("spreadsheetml"), "chartsheet");
+    write_start_element(constants::ns("spreadsheetml"), "chartsheet");
 }
 
 void xlsx_producer::write_connections(const relationship & /*rel*/)
 {
-    serializer().start_element("connections");
+    write_start_element(constants::ns("spreadsheetml"), "connections");
+    write_end_element(constants::ns("spreadsheetml"), "connections");
 }
 
 void xlsx_producer::write_custom_xml_mappings(const relationship & /*rel*/)
 {
-    serializer().start_element("MapInfo");
+    write_start_element(constants::ns("spreadsheetml"), "MapInfo");
+    write_end_element(constants::ns("spreadsheetml"), "MapInfo");
 }
 
 void xlsx_producer::write_dialogsheet(const relationship & /*rel*/)
 {
-    serializer().start_element("dialogsheet");
+    write_start_element(constants::ns("spreadsheetml"), "dialogsheet");
+    write_end_element(constants::ns("spreadsheetml"), "dialogsheet");
 }
 
 void xlsx_producer::write_external_workbook_references(const relationship & /*rel*/)
 {
-    serializer().start_element("externalLink");
+    write_start_element(constants::ns("spreadsheetml"), "externalLink");
+    write_end_element(constants::ns("spreadsheetml"), "externalLink");
 }
 
 void xlsx_producer::write_pivot_table(const relationship & /*rel*/)
 {
-    serializer().start_element("pivotTableDefinition");
+    write_start_element(constants::ns("spreadsheetml"), "pivotTableDefinition");
+    write_end_element(constants::ns("spreadsheetml"), "pivotTableDefinition");
 }
 
 void xlsx_producer::write_shared_string_table(const relationship & /*rel*/)
 {
     static const auto &xmlns = constants::ns("spreadsheetml");
 
-    serializer().start_element(xmlns, "sst");
-    serializer().namespace_decl(xmlns, "");
+    write_start_element(xmlns, "sst");
+    write_namespace(xmlns, "");
 
     // todo: is there a more elegant way to get this number?
     std::size_t string_count = 0;
@@ -700,105 +728,108 @@ void xlsx_producer::write_shared_string_table(const relationship & /*rel*/)
     }
 #pragma clang diagnostic pop
 
-    serializer().attribute("count", string_count);
-    serializer().attribute("uniqueCount", source_.shared_strings().size());
+    write_attribute("count", string_count);
+    write_attribute("uniqueCount", source_.shared_strings().size());
 
     for (const auto &string : source_.shared_strings())
     {
         if (string.runs().size() == 1 && !string.runs().at(0).second.is_set())
         {
-            serializer().start_element(xmlns, "si");
-            serializer().element(xmlns, "t", string.plain_text());
-            serializer().end_element(xmlns, "si");
+            write_start_element(xmlns, "si");
+            write_element(xmlns, "t", string.plain_text());
+            write_end_element(xmlns, "si");
 
             continue;
         }
 
-        serializer().start_element(xmlns, "si");
+        write_start_element(xmlns, "si");
 
         for (const auto &run : string.runs())
         {
-            serializer().start_element(xmlns, "r");
+            write_start_element(xmlns, "r");
 
             if (run.second.is_set())
             {
-                serializer().start_element(xmlns, "rPr");
+                write_start_element(xmlns, "rPr");
 
                 if (run.second.get().bold())
                 {
-                    serializer().start_element(xmlns, "b");
-                    serializer().end_element(xmlns, "b");
+                    write_start_element(xmlns, "b");
+                    write_end_element(xmlns, "b");
                 }
 
                 if (run.second.get().has_size())
                 {
-                    serializer().start_element(xmlns, "sz");
-                    serializer().attribute("val", run.second.get().size());
-                    serializer().end_element(xmlns, "sz");
+                    write_start_element(xmlns, "sz");
+                    write_attribute("val", run.second.get().size());
+                    write_end_element(xmlns, "sz");
                 }
 
                 if (run.second.get().has_color())
                 {
-                    serializer().start_element(xmlns, "color");
+                    write_start_element(xmlns, "color");
                     write_color(run.second.get().color());
-                    serializer().end_element(xmlns, "color");
+                    write_end_element(xmlns, "color");
                 }
 
                 if (run.second.get().has_name())
                 {
-                    serializer().start_element(xmlns, "rFont");
-                    serializer().attribute("val", run.second.get().name());
-                    serializer().end_element(xmlns, "rFont");
+                    write_start_element(xmlns, "rFont");
+                    write_attribute("val", run.second.get().name());
+                    write_end_element(xmlns, "rFont");
                 }
 
                 if (run.second.get().has_family())
                 {
-                    serializer().start_element(xmlns, "family");
-                    serializer().attribute("val", run.second.get().family());
-                    serializer().end_element(xmlns, "family");
+                    write_start_element(xmlns, "family");
+                    write_attribute("val", run.second.get().family());
+                    write_end_element(xmlns, "family");
                 }
 
                 if (run.second.get().has_scheme())
                 {
-                    serializer().start_element(xmlns, "scheme");
-                    serializer().attribute("val", run.second.get().scheme());
-                    serializer().end_element(xmlns, "scheme");
+                    write_start_element(xmlns, "scheme");
+                    write_attribute("val", run.second.get().scheme());
+                    write_end_element(xmlns, "scheme");
                 }
 
-                serializer().end_element(xmlns, "rPr");
+                write_end_element(xmlns, "rPr");
             }
 
-            serializer().element(xmlns, "t", run.first);
-            serializer().end_element(xmlns, "r");
+            write_element(xmlns, "t", run.first);
+            write_end_element(xmlns, "r");
         }
 
-        serializer().end_element(xmlns, "si");
+        write_end_element(xmlns, "si");
     }
 
-    serializer().end_element(xmlns, "sst");
+    write_end_element(xmlns, "sst");
 }
 
 void xlsx_producer::write_shared_workbook_revision_headers(const relationship & /*rel*/)
 {
-    serializer().start_element("headers");
+    write_start_element(constants::ns("spreadsheetml"), "headers");
+    write_end_element(constants::ns("spreadsheetml"), "headers");
 }
 
 void xlsx_producer::write_shared_workbook(const relationship & /*rel*/)
 {
-    serializer().start_element("revisions");
+    write_start_element(constants::ns("spreadsheetml"), "revisions");
+    write_end_element(constants::ns("spreadsheetml"), "revisions");
 }
 
 void xlsx_producer::write_shared_workbook_user_data(const relationship & /*rel*/)
 {
-    serializer().start_element("users");
+    write_start_element(constants::ns("spreadsheetml"), "users");
+    write_end_element(constants::ns("spreadsheetml"), "users");
 }
 
 void xlsx_producer::write_styles(const relationship & /*rel*/)
 {
     static const auto &xmlns = constants::ns("spreadsheetml");
 
-    serializer().start_element(xmlns, "styleSheet");
-    serializer().namespace_decl(xmlns, "");
+    write_start_element(xmlns, "styleSheet");
+    write_namespace(xmlns, "");
 
     const auto &stylesheet = source_.impl().stylesheet_.get();
 
@@ -813,19 +844,19 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
 
         if (num_custom > 0)
         {
-            serializer().start_element(xmlns, "numFmts");
-            serializer().attribute("count", num_custom);
+            write_start_element(xmlns, "numFmts");
+            write_attribute("count", num_custom);
 
             for (const auto &num_fmt : number_formats)
             {
                 if (num_fmt.id() < 164) continue;
-                serializer().start_element(xmlns, "numFmt");
-                serializer().attribute("numFmtId", num_fmt.id());
-                serializer().attribute("formatCode", num_fmt.format_string());
-                serializer().end_element(xmlns, "numFmt");
+                write_start_element(xmlns, "numFmt");
+                write_attribute("numFmtId", num_fmt.id());
+                write_attribute("formatCode", num_fmt.format_string());
+                write_end_element(xmlns, "numFmt");
             }
 
-            serializer().end_element(xmlns, "numFmts");
+            write_end_element(xmlns, "numFmts");
         }
     }
 
@@ -835,74 +866,74 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
     {
         const auto &fonts = stylesheet.fonts;
 
-        serializer().start_element(xmlns, "fonts");
-        serializer().attribute("count", fonts.size());
+        write_start_element(xmlns, "fonts");
+        write_attribute("count", fonts.size());
 
         for (const auto &current_font : fonts)
         {
-            serializer().start_element(xmlns, "font");
+            write_start_element(xmlns, "font");
 
             if (current_font.bold())
             {
-                serializer().start_element(xmlns, "b");
-                serializer().attribute("val", write_bool(true));
-                serializer().end_element(xmlns, "b");
+                write_start_element(xmlns, "b");
+                write_attribute("val", write_bool(true));
+                write_end_element(xmlns, "b");
             }
 
             if (current_font.italic())
             {
-                serializer().start_element(xmlns, "i");
-                serializer().attribute("val", write_bool(true));
-                serializer().end_element(xmlns, "i");
+                write_start_element(xmlns, "i");
+                write_attribute("val", write_bool(true));
+                write_end_element(xmlns, "i");
             }
 
             if (current_font.underlined())
             {
-                serializer().start_element(xmlns, "u");
-                serializer().attribute("val", current_font.underline());
-                serializer().end_element(xmlns, "u");
+                write_start_element(xmlns, "u");
+                write_attribute("val", current_font.underline());
+                write_end_element(xmlns, "u");
             }
 
             if (current_font.strikethrough())
             {
-                serializer().start_element(xmlns, "strike");
-                serializer().attribute("val", write_bool(true));
-                serializer().end_element(xmlns, "strike");
+                write_start_element(xmlns, "strike");
+                write_attribute("val", write_bool(true));
+                write_end_element(xmlns, "strike");
             }
 
-            serializer().start_element(xmlns, "sz");
-            serializer().attribute("val", current_font.size());
-            serializer().end_element(xmlns, "sz");
+            write_start_element(xmlns, "sz");
+            write_attribute("val", current_font.size());
+            write_end_element(xmlns, "sz");
 
             if (current_font.has_color())
             {
-                serializer().start_element(xmlns, "color");
+                write_start_element(xmlns, "color");
                 write_color(current_font.color());
-                serializer().end_element(xmlns, "color");
+                write_end_element(xmlns, "color");
             }
 
-            serializer().start_element(xmlns, "name");
-            serializer().attribute("val", current_font.name());
-            serializer().end_element(xmlns, "name");
+            write_start_element(xmlns, "name");
+            write_attribute("val", current_font.name());
+            write_end_element(xmlns, "name");
 
             if (current_font.has_family())
             {
-                serializer().start_element(xmlns, "family");
-                serializer().attribute("val", current_font.family());
-                serializer().end_element(xmlns, "family");
+                write_start_element(xmlns, "family");
+                write_attribute("val", current_font.family());
+                write_end_element(xmlns, "family");
             }
 
             if (current_font.has_scheme())
             {
-                serializer().start_element(xmlns, "scheme");
-                serializer().attribute("val", current_font.scheme());
-                serializer().end_element(xmlns, "scheme");
+                write_start_element(xmlns, "scheme");
+                write_attribute("val", current_font.scheme());
+                write_end_element(xmlns, "scheme");
             }
 
-            serializer().end_element(xmlns, "font");
+            write_end_element(xmlns, "font");
         }
 
-        serializer().end_element(xmlns, "fonts");
+        write_end_element(xmlns, "fonts");
     }
 
     // Fills
@@ -911,85 +942,85 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
     {
         const auto &fills = stylesheet.fills;
 
-        serializer().start_element(xmlns, "fills");
-        serializer().attribute("count", fills.size());
+        write_start_element(xmlns, "fills");
+        write_attribute("count", fills.size());
 
         for (auto &fill_ : fills)
         {
-            serializer().start_element(xmlns, "fill");
+            write_start_element(xmlns, "fill");
 
             if (fill_.type() == xlnt::fill_type::pattern)
             {
                 const auto &pattern = fill_.pattern_fill();
 
-                serializer().start_element(xmlns, "patternFill");
-                serializer().attribute("patternType", pattern.type());
+                write_start_element(xmlns, "patternFill");
+                write_attribute("patternType", pattern.type());
 
                 if (pattern.foreground())
                 {
-                    serializer().start_element(xmlns, "fgColor");
+                    write_start_element(xmlns, "fgColor");
                     write_color(pattern.foreground().get());
-                    serializer().end_element(xmlns, "fgColor");
+                    write_end_element(xmlns, "fgColor");
                 }
 
                 if (pattern.background())
                 {
-                    serializer().start_element(xmlns, "bgColor");
+                    write_start_element(xmlns, "bgColor");
                     write_color(pattern.background().get());
-                    serializer().end_element(xmlns, "bgColor");
+                    write_end_element(xmlns, "bgColor");
                 }
 
-                serializer().end_element(xmlns, "patternFill");
+                write_end_element(xmlns, "patternFill");
             }
             else if (fill_.type() == xlnt::fill_type::gradient)
             {
                 const auto &gradient = fill_.gradient_fill();
 
-                serializer().start_element(xmlns, "gradientFill");
-                serializer().attribute("gradientType", gradient.type());
+                write_start_element(xmlns, "gradientFill");
+                write_attribute("gradientType", gradient.type());
 
                 if (gradient.degree() != 0.)
                 {
-                    serializer().attribute("degree", gradient.degree());
+                    write_attribute("degree", gradient.degree());
                 }
 
                 if (gradient.left() != 0.)
                 {
-                    serializer().attribute("left", gradient.left());
+                    write_attribute("left", gradient.left());
                 }
 
                 if (gradient.right() != 0.)
                 {
-                    serializer().attribute("right", gradient.right());
+                    write_attribute("right", gradient.right());
                 }
 
                 if (gradient.top() != 0.)
                 {
-                    serializer().attribute("top", gradient.top());
+                    write_attribute("top", gradient.top());
                 }
 
                 if (gradient.bottom() != 0.)
                 {
-                    serializer().attribute("bottom", gradient.bottom());
+                    write_attribute("bottom", gradient.bottom());
                 }
 
                 for (const auto &stop : gradient.stops())
                 {
-                    serializer().start_element(xmlns, "stop");
-                    serializer().attribute("position", stop.first);
-                    serializer().start_element(xmlns, "color");
+                    write_start_element(xmlns, "stop");
+                    write_attribute("position", stop.first);
+                    write_start_element(xmlns, "color");
                     write_color(stop.second);
-                    serializer().end_element(xmlns, "color");
-                    serializer().end_element(xmlns, "stop");
+                    write_end_element(xmlns, "color");
+                    write_end_element(xmlns, "stop");
                 }
 
-                serializer().end_element(xmlns, "gradientFill");
+                write_end_element(xmlns, "gradientFill");
             }
 
-            serializer().end_element(xmlns, "fill");
+            write_end_element(xmlns, "fill");
         }
 
-        serializer().end_element(xmlns, "fills");
+        write_end_element(xmlns, "fills");
     }
 
     // Borders
@@ -998,22 +1029,22 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
     {
         const auto &borders = stylesheet.borders;
 
-        serializer().start_element(xmlns, "borders");
-        serializer().attribute("count", borders.size());
+        write_start_element(xmlns, "borders");
+        write_attribute("count", borders.size());
 
         for (const auto &current_border : borders)
         {
-            serializer().start_element(xmlns, "border");
+            write_start_element(xmlns, "border");
 
             if (current_border.diagonal())
             {
                 auto up = current_border.diagonal().get() == diagonal_direction::both
                     || current_border.diagonal().get() == diagonal_direction::up;
-                serializer().attribute("diagonalUp", write_bool(up));
+                write_attribute("diagonalUp", write_bool(up));
 
                 auto down = current_border.diagonal().get() == diagonal_direction::both
                     || current_border.diagonal().get() == diagonal_direction::down;
-                serializer().attribute("diagonalDown", write_bool(down));
+                write_attribute("diagonalDown", write_bool(down));
             }
 
             for (const auto &side : xlnt::border::all_sides())
@@ -1023,303 +1054,303 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
                     const auto current_side = current_border.side(side).get();
 
                     auto side_name = to_string(side);
-                    serializer().start_element(xmlns, side_name);
+                    write_start_element(xmlns, side_name);
 
                     if (current_side.style())
                     {
-                        serializer().attribute("style", current_side.style().get());
+                        write_attribute("style", current_side.style().get());
                     }
 
                     if (current_side.color())
                     {
-                        serializer().start_element(xmlns, "color");
+                        write_start_element(xmlns, "color");
                         write_color(current_side.color().get());
-                        serializer().end_element(xmlns, "color");
+                        write_end_element(xmlns, "color");
                     }
 
-                    serializer().end_element(xmlns, side_name);
+                    write_end_element(xmlns, side_name);
                 }
             }
 
-            serializer().end_element(xmlns, "border");
+            write_end_element(xmlns, "border");
         }
 
-        serializer().end_element(xmlns, "borders");
+        write_end_element(xmlns, "borders");
     }
 
     // Style XFs
 
-    serializer().start_element(xmlns, "cellStyleXfs");
-    serializer().attribute("count", stylesheet.style_impls.size());
+    write_start_element(xmlns, "cellStyleXfs");
+    write_attribute("count", stylesheet.style_impls.size());
 
     for (const auto &current_style_name : stylesheet.style_names)
     {
         const auto &current_style_impl = stylesheet.style_impls.at(current_style_name);
 
-        serializer().start_element(xmlns, "xf");
-        serializer().attribute("numFmtId", current_style_impl.number_format_id.get());
-        serializer().attribute("fontId", current_style_impl.font_id.get());
-        serializer().attribute("fillId", current_style_impl.fill_id.get());
-        serializer().attribute("borderId", current_style_impl.border_id.get());
+        write_start_element(xmlns, "xf");
+        write_attribute("numFmtId", current_style_impl.number_format_id.get());
+        write_attribute("fontId", current_style_impl.font_id.get());
+        write_attribute("fillId", current_style_impl.fill_id.get());
+        write_attribute("borderId", current_style_impl.border_id.get());
 
         if (current_style_impl.number_format_applied)
         {
-            serializer().attribute("applyNumberFormat", write_bool(true));
+            write_attribute("applyNumberFormat", write_bool(true));
         }
 
         if (current_style_impl.fill_applied)
         {
-            serializer().attribute("applyFill", write_bool(true));
+            write_attribute("applyFill", write_bool(true));
         }
 
         if (current_style_impl.font_applied)
         {
-            serializer().attribute("applyFont", write_bool(true));
+            write_attribute("applyFont", write_bool(true));
         }
 
         if (current_style_impl.border_applied)
         {
-            serializer().attribute("applyBorder", write_bool(true));
+            write_attribute("applyBorder", write_bool(true));
         }
 
         if (current_style_impl.alignment_applied)
         {
-            serializer().attribute("applyAlignment", write_bool(true));
+            write_attribute("applyAlignment", write_bool(true));
         }
 
         if (current_style_impl.protection_applied)
         {
-            serializer().attribute("applyProtection", write_bool(true));
+            write_attribute("applyProtection", write_bool(true));
         }
 
         if (current_style_impl.alignment_id.is_set())
         {
             const auto &current_alignment = stylesheet.alignments[current_style_impl.alignment_id.get()];
 
-            serializer().start_element(xmlns, "alignment");
+            write_start_element(xmlns, "alignment");
 
             if (current_alignment.vertical())
             {
-                serializer().attribute("vertical", current_alignment.vertical().get());
+                write_attribute("vertical", current_alignment.vertical().get());
             }
 
             if (current_alignment.horizontal())
             {
-                serializer().attribute("horizontal", current_alignment.horizontal().get());
+                write_attribute("horizontal", current_alignment.horizontal().get());
             }
 
             if (current_alignment.rotation())
             {
-                serializer().attribute("textRotation", current_alignment.rotation().get());
+                write_attribute("textRotation", current_alignment.rotation().get());
             }
 
             if (current_alignment.wrap())
             {
-                serializer().attribute("wrapText", write_bool(current_alignment.wrap()));
+                write_attribute("wrapText", write_bool(current_alignment.wrap()));
             }
 
             if (current_alignment.indent())
             {
-                serializer().attribute("indent", current_alignment.indent().get());
+                write_attribute("indent", current_alignment.indent().get());
             }
 
             if (current_alignment.shrink())
             {
-                serializer().attribute("shrinkToFit", write_bool(current_alignment.shrink()));
+                write_attribute("shrinkToFit", write_bool(current_alignment.shrink()));
             }
 
-            serializer().end_element(xmlns, "alignment");
+            write_end_element(xmlns, "alignment");
         }
 
         if (current_style_impl.protection_id.is_set())
         {
             const auto &current_protection = stylesheet.protections[current_style_impl.protection_id.get()];
 
-            serializer().start_element(xmlns, "protection");
-            serializer().attribute("locked", write_bool(current_protection.locked()));
-            serializer().attribute("hidden", write_bool(current_protection.hidden()));
-            serializer().end_element(xmlns, "protection");
+            write_start_element(xmlns, "protection");
+            write_attribute("locked", write_bool(current_protection.locked()));
+            write_attribute("hidden", write_bool(current_protection.hidden()));
+            write_end_element(xmlns, "protection");
         }
 
-        serializer().end_element(xmlns, "xf");
+        write_end_element(xmlns, "xf");
     }
 
-    serializer().end_element(xmlns, "cellStyleXfs");
+    write_end_element(xmlns, "cellStyleXfs");
 
     // Format XFs
 
-    serializer().start_element(xmlns, "cellXfs");
-    serializer().attribute("count", stylesheet.format_impls.size());
+    write_start_element(xmlns, "cellXfs");
+    write_attribute("count", stylesheet.format_impls.size());
 
     for (auto &current_format_impl : stylesheet.format_impls)
     {
-        serializer().start_element(xmlns, "xf");
+        write_start_element(xmlns, "xf");
 
-        serializer().attribute("numFmtId", current_format_impl.number_format_id.get());
-        serializer().attribute("fontId", current_format_impl.font_id.get());
+        write_attribute("numFmtId", current_format_impl.number_format_id.get());
+        write_attribute("fontId", current_format_impl.font_id.get());
 
         if (current_format_impl.style)
         {
-            serializer().attribute("fillId", stylesheet.style_impls.at(current_format_impl.style.get()).fill_id.get());
+            write_attribute("fillId", stylesheet.style_impls.at(current_format_impl.style.get()).fill_id.get());
         }
         else
         {
-            serializer().attribute("fillId", current_format_impl.fill_id.get());
+            write_attribute("fillId", current_format_impl.fill_id.get());
         }
 
-        serializer().attribute("borderId", current_format_impl.border_id.get());
+        write_attribute("borderId", current_format_impl.border_id.get());
 
         if (current_format_impl.number_format_applied)
         {
-            serializer().attribute("applyNumberFormat", write_bool(true));
+            write_attribute("applyNumberFormat", write_bool(true));
         }
 
         if (current_format_impl.fill_applied)
         {
-            serializer().attribute("applyFill", write_bool(true));
+            write_attribute("applyFill", write_bool(true));
         }
 
         if (current_format_impl.font_applied)
         {
-            serializer().attribute("applyFont", write_bool(true));
+            write_attribute("applyFont", write_bool(true));
         }
 
         if (current_format_impl.border_applied)
         {
-            serializer().attribute("applyBorder", write_bool(true));
+            write_attribute("applyBorder", write_bool(true));
         }
 
         if (current_format_impl.alignment_applied)
         {
-            serializer().attribute("applyAlignment", write_bool(true));
+            write_attribute("applyAlignment", write_bool(true));
         }
 
         if (current_format_impl.protection_applied)
         {
-            serializer().attribute("applyProtection", write_bool(true));
+            write_attribute("applyProtection", write_bool(true));
         }
 
         if (current_format_impl.style.is_set())
         {
-            serializer().attribute("xfId", stylesheet.style_index(current_format_impl.style.get()));
+            write_attribute("xfId", stylesheet.style_index(current_format_impl.style.get()));
         }
 
         if (current_format_impl.alignment_id.is_set())
         {
             const auto &current_alignment = stylesheet.alignments[current_format_impl.alignment_id.get()];
 
-            serializer().start_element(xmlns, "alignment");
+            write_start_element(xmlns, "alignment");
 
             if (current_alignment.vertical())
             {
-                serializer().attribute("vertical", current_alignment.vertical().get());
+                write_attribute("vertical", current_alignment.vertical().get());
             }
 
             if (current_alignment.horizontal())
             {
-                serializer().attribute("horizontal", current_alignment.horizontal().get());
+                write_attribute("horizontal", current_alignment.horizontal().get());
             }
 
             if (current_alignment.rotation())
             {
-                serializer().attribute("textRotation", current_alignment.rotation().get());
+                write_attribute("textRotation", current_alignment.rotation().get());
             }
 
             if (current_alignment.wrap())
             {
-                serializer().attribute("wrapText", write_bool(current_alignment.wrap()));
+                write_attribute("wrapText", write_bool(current_alignment.wrap()));
             }
 
             if (current_alignment.indent())
             {
-                serializer().attribute("indent", current_alignment.indent().get());
+                write_attribute("indent", current_alignment.indent().get());
             }
 
             if (current_alignment.shrink())
             {
-                serializer().attribute("shrinkToFit", write_bool(current_alignment.shrink()));
+                write_attribute("shrinkToFit", write_bool(current_alignment.shrink()));
             }
 
-            serializer().end_element(xmlns, "alignment");
+            write_end_element(xmlns, "alignment");
         }
 
         if (current_format_impl.protection_id.is_set())
         {
             const auto &current_protection = stylesheet.protections[current_format_impl.protection_id.get()];
 
-            serializer().start_element(xmlns, "protection");
-            serializer().attribute("locked", write_bool(current_protection.locked()));
-            serializer().attribute("hidden", write_bool(current_protection.hidden()));
-            serializer().end_element(xmlns, "protection");
+            write_start_element(xmlns, "protection");
+            write_attribute("locked", write_bool(current_protection.locked()));
+            write_attribute("hidden", write_bool(current_protection.hidden()));
+            write_end_element(xmlns, "protection");
         }
 
-        serializer().end_element(xmlns, "xf");
+        write_end_element(xmlns, "xf");
     }
 
-    serializer().end_element(xmlns, "cellXfs");
+    write_end_element(xmlns, "cellXfs");
 
     // Styles
 
-    serializer().start_element(xmlns, "cellStyles");
-    serializer().attribute("count", stylesheet.style_impls.size());
+    write_start_element(xmlns, "cellStyles");
+    write_attribute("count", stylesheet.style_impls.size());
     std::size_t style_index = 0;
 
     for (auto &current_style_name : stylesheet.style_names)
     {
         const auto &current_style = stylesheet.style_impls.at(current_style_name);
 
-        serializer().start_element(xmlns, "cellStyle");
+        write_start_element(xmlns, "cellStyle");
 
-        serializer().attribute("name", current_style.name);
-        serializer().attribute("xfId", style_index++);
+        write_attribute("name", current_style.name);
+        write_attribute("xfId", style_index++);
 
         if (current_style.builtin_id)
         {
-            serializer().attribute("builtinId", current_style.builtin_id.get());
+            write_attribute("builtinId", current_style.builtin_id.get());
         }
 
         if (current_style.hidden_style)
         {
-            serializer().attribute("hidden", write_bool(true));
+            write_attribute("hidden", write_bool(true));
         }
 
         if (current_style.custom_builtin)
         {
-            serializer().attribute("customBuiltin", write_bool(current_style.custom_builtin.get()));
+            write_attribute("customBuiltin", write_bool(current_style.custom_builtin.get()));
         }
 
-        serializer().end_element(xmlns, "cellStyle");
+        write_end_element(xmlns, "cellStyle");
     }
 
-    serializer().end_element(xmlns, "cellStyles");
+    write_end_element(xmlns, "cellStyles");
 
-    serializer().start_element(xmlns, "dxfs");
-    serializer().attribute("count", "0");
-    serializer().end_element(xmlns, "dxfs");
+    write_start_element(xmlns, "dxfs");
+    write_attribute("count", "0");
+    write_end_element(xmlns, "dxfs");
 
-    serializer().start_element(xmlns, "tableStyles");
-    serializer().attribute("count", "0");
-    serializer().attribute("defaultTableStyle", "TableStyleMedium9");
-    serializer().attribute("defaultPivotStyle", "PivotStyleMedium7");
-    serializer().end_element(xmlns, "tableStyles");
+    write_start_element(xmlns, "tableStyles");
+    write_attribute("count", "0");
+    write_attribute("defaultTableStyle", "TableStyleMedium9");
+    write_attribute("defaultPivotStyle", "PivotStyleMedium7");
+    write_end_element(xmlns, "tableStyles");
 
     if (!stylesheet.colors.empty())
     {
-        serializer().start_element(xmlns, "colors");
-        serializer().start_element(xmlns, "indexedColors");
+        write_start_element(xmlns, "colors");
+        write_start_element(xmlns, "indexedColors");
 
         for (auto &c : stylesheet.colors)
         {
-            serializer().start_element(xmlns, "rgbColor");
-            serializer().attribute("rgb", c.rgb().hex_string());
-            serializer().end_element(xmlns, "rgbColor");
+            write_start_element(xmlns, "rgbColor");
+            write_attribute("rgb", c.rgb().hex_string());
+            write_end_element(xmlns, "rgbColor");
         }
 
-        serializer().end_element(xmlns, "indexedColors");
-        serializer().end_element(xmlns, "colors");
+        write_end_element(xmlns, "indexedColors");
+        write_end_element(xmlns, "colors");
     }
 
-    serializer().end_element(xmlns, "styleSheet");
+    write_end_element(xmlns, "styleSheet");
 }
 
 void xlsx_producer::write_theme(const relationship &theme_rel)
@@ -1327,13 +1358,13 @@ void xlsx_producer::write_theme(const relationship &theme_rel)
     static const auto &xmlns_a = constants::ns("drawingml");
     static const auto &xmlns_thm15 = constants::ns("thm15");
 
-    serializer().start_element(xmlns_a, "theme");
-    serializer().namespace_decl(xmlns_a, "a");
-    serializer().attribute("name", "Office Theme");
+    write_start_element(xmlns_a, "theme");
+    write_namespace(xmlns_a, "a");
+    write_attribute("name", "Office Theme");
 
-    serializer().start_element(xmlns_a, "themeElements");
-    serializer().start_element(xmlns_a, "clrScheme");
-    serializer().attribute("name", "Office");
+    write_start_element(xmlns_a, "themeElements");
+    write_start_element(xmlns_a, "clrScheme");
+    write_attribute("name", "Office");
 
     struct scheme_element
     {
@@ -1351,24 +1382,24 @@ void xlsx_producer::write_theme(const relationship &theme_rel)
 
     for (auto element : scheme_elements)
     {
-        serializer().start_element(xmlns_a, element.name);
-        serializer().start_element(xmlns_a, element.sub_element_name);
-        serializer().attribute("val", element.val);
+        write_start_element(xmlns_a, element.name);
+        write_start_element(xmlns_a, element.sub_element_name);
+        write_attribute("val", element.val);
 
         if (element.name == "dk1")
         {
-            serializer().attribute("lastClr", "000000");
+            write_attribute("lastClr", "000000");
         }
         else if (element.name == "lt1")
         {
-            serializer().attribute("lastClr", "FFFFFF");
+            write_attribute("lastClr", "FFFFFF");
         }
 
-        serializer().end_element(xmlns_a, element.sub_element_name);
-        serializer().end_element(xmlns_a, element.name);
+        write_end_element(xmlns_a, element.sub_element_name);
+        write_end_element(xmlns_a, element.name);
     }
 
-    serializer().end_element(xmlns_a, "clrScheme");
+    write_end_element(xmlns_a, "clrScheme");
 
     struct font_scheme
     {
@@ -1399,12 +1430,12 @@ void xlsx_producer::write_theme(const relationship &theme_rel)
         {false, "Viet", "Times New Roman", "Arial"}, {false, "Uigh", "Microsoft Uighur", "Microsoft Uighur"},
         {false, "Geor", "Sylfaen", "Sylfaen"}};
 
-    serializer().start_element(xmlns_a, "fontScheme");
-    serializer().attribute("name", "Office");
+    write_start_element(xmlns_a, "fontScheme");
+    write_attribute("name", "Office");
 
     for (auto major : {true, false})
     {
-        serializer().start_element(xmlns_a, major ? "majorFont" : "minorFont");
+        write_start_element(xmlns_a, major ? "majorFont" : "minorFont");
 
         for (const auto &scheme : *font_schemes)
         {
@@ -1412,359 +1443,359 @@ void xlsx_producer::write_theme(const relationship &theme_rel)
 
             if (scheme.typeface)
             {
-                serializer().start_element(xmlns_a, scheme.script);
-                serializer().attribute("typeface", scheme_value);
+                write_start_element(xmlns_a, scheme.script);
+                write_attribute("typeface", scheme_value);
 
                 if (scheme_value == "Calibri Light")
                 {
-                    serializer().attribute("panose", "020F0302020204030204");
+                    write_attribute("panose", "020F0302020204030204");
                 }
                 else if (scheme_value == "Calibri")
                 {
-                    serializer().attribute("panose", "020F0502020204030204");
+                    write_attribute("panose", "020F0502020204030204");
                 }
 
-                serializer().end_element(xmlns_a, scheme.script);
+                write_end_element(xmlns_a, scheme.script);
             }
             else
             {
-                serializer().start_element(xmlns_a, "font");
-                serializer().attribute("script", scheme.script);
-                serializer().attribute("typeface", scheme_value);
-                serializer().end_element(xmlns_a, "font");
+                write_start_element(xmlns_a, "font");
+                write_attribute("script", scheme.script);
+                write_attribute("typeface", scheme_value);
+                write_end_element(xmlns_a, "font");
             }
         }
 
-        serializer().end_element(xmlns_a, major ? "majorFont" : "minorFont");
+        write_end_element(xmlns_a, major ? "majorFont" : "minorFont");
     }
 
-    serializer().end_element(xmlns_a, "fontScheme");
+    write_end_element(xmlns_a, "fontScheme");
 
-    serializer().start_element(xmlns_a, "fmtScheme");
-    serializer().attribute("name", "Office");
+    write_start_element(xmlns_a, "fmtScheme");
+    write_attribute("name", "Office");
 
-    serializer().start_element(xmlns_a, "fillStyleLst");
-    serializer().start_element(xmlns_a, "solidFill");
-    serializer().start_element(xmlns_a, "schemeClr");
-    serializer().attribute("val", "phClr");
-    serializer().end_element(xmlns_a, "schemeClr");
-    serializer().end_element(xmlns_a, "solidFill");
+    write_start_element(xmlns_a, "fillStyleLst");
+    write_start_element(xmlns_a, "solidFill");
+    write_start_element(xmlns_a, "schemeClr");
+    write_attribute("val", "phClr");
+    write_end_element(xmlns_a, "schemeClr");
+    write_end_element(xmlns_a, "solidFill");
 
-    serializer().start_element(xmlns_a, "gradFill");
-    serializer().attribute("rotWithShape", "1");
-    serializer().start_element(xmlns_a, "gsLst");
+    write_start_element(xmlns_a, "gradFill");
+    write_attribute("rotWithShape", "1");
+    write_start_element(xmlns_a, "gsLst");
 
-    serializer().start_element(xmlns_a, "gs");
-    serializer().attribute("pos", "0");
-    serializer().start_element(xmlns_a, "schemeClr");
-    serializer().attribute("val", "phClr");
-    serializer().start_element(xmlns_a, "lumMod");
-    serializer().attribute("val", "110000");
-    serializer().end_element(xmlns_a, "lumMod");
-    serializer().start_element(xmlns_a, "satMod");
-    serializer().attribute("val", "105000");
-    serializer().end_element(xmlns_a, "satMod");
-    serializer().start_element(xmlns_a, "tint");
-    serializer().attribute("val", "67000");
-    serializer().end_element(xmlns_a, "tint");
-    serializer().end_element(xmlns_a, "schemeClr");
-    serializer().end_element(xmlns_a, "gs");
+    write_start_element(xmlns_a, "gs");
+    write_attribute("pos", "0");
+    write_start_element(xmlns_a, "schemeClr");
+    write_attribute("val", "phClr");
+    write_start_element(xmlns_a, "lumMod");
+    write_attribute("val", "110000");
+    write_end_element(xmlns_a, "lumMod");
+    write_start_element(xmlns_a, "satMod");
+    write_attribute("val", "105000");
+    write_end_element(xmlns_a, "satMod");
+    write_start_element(xmlns_a, "tint");
+    write_attribute("val", "67000");
+    write_end_element(xmlns_a, "tint");
+    write_end_element(xmlns_a, "schemeClr");
+    write_end_element(xmlns_a, "gs");
 
-    serializer().start_element(xmlns_a, "gs");
-    serializer().attribute("pos", "50000");
-    serializer().start_element(xmlns_a, "schemeClr");
-    serializer().attribute("val", "phClr");
-    serializer().start_element(xmlns_a, "lumMod");
-    serializer().attribute("val", "105000");
-    serializer().end_element(xmlns_a, "lumMod");
-    serializer().start_element(xmlns_a, "satMod");
-    serializer().attribute("val", "103000");
-    serializer().end_element(xmlns_a, "satMod");
-    serializer().start_element(xmlns_a, "tint");
-    serializer().attribute("val", "73000");
-    serializer().end_element(xmlns_a, "tint");
-    serializer().end_element(xmlns_a, "schemeClr");
-    serializer().end_element(xmlns_a, "gs");
+    write_start_element(xmlns_a, "gs");
+    write_attribute("pos", "50000");
+    write_start_element(xmlns_a, "schemeClr");
+    write_attribute("val", "phClr");
+    write_start_element(xmlns_a, "lumMod");
+    write_attribute("val", "105000");
+    write_end_element(xmlns_a, "lumMod");
+    write_start_element(xmlns_a, "satMod");
+    write_attribute("val", "103000");
+    write_end_element(xmlns_a, "satMod");
+    write_start_element(xmlns_a, "tint");
+    write_attribute("val", "73000");
+    write_end_element(xmlns_a, "tint");
+    write_end_element(xmlns_a, "schemeClr");
+    write_end_element(xmlns_a, "gs");
 
-    serializer().start_element(xmlns_a, "gs");
-    serializer().attribute("pos", "100000");
-    serializer().start_element(xmlns_a, "schemeClr");
-    serializer().attribute("val", "phClr");
-    serializer().start_element(xmlns_a, "lumMod");
-    serializer().attribute("val", "105000");
-    serializer().end_element(xmlns_a, "lumMod");
-    serializer().start_element(xmlns_a, "satMod");
-    serializer().attribute("val", "109000");
-    serializer().end_element(xmlns_a, "satMod");
-    serializer().start_element(xmlns_a, "tint");
-    serializer().attribute("val", "81000");
-    serializer().end_element(xmlns_a, "tint");
-    serializer().end_element(xmlns_a, "schemeClr");
-    serializer().end_element(xmlns_a, "gs");
+    write_start_element(xmlns_a, "gs");
+    write_attribute("pos", "100000");
+    write_start_element(xmlns_a, "schemeClr");
+    write_attribute("val", "phClr");
+    write_start_element(xmlns_a, "lumMod");
+    write_attribute("val", "105000");
+    write_end_element(xmlns_a, "lumMod");
+    write_start_element(xmlns_a, "satMod");
+    write_attribute("val", "109000");
+    write_end_element(xmlns_a, "satMod");
+    write_start_element(xmlns_a, "tint");
+    write_attribute("val", "81000");
+    write_end_element(xmlns_a, "tint");
+    write_end_element(xmlns_a, "schemeClr");
+    write_end_element(xmlns_a, "gs");
 
-    serializer().end_element(xmlns_a, "gsLst");
+    write_end_element(xmlns_a, "gsLst");
 
-    serializer().start_element(xmlns_a, "lin");
-    serializer().attribute("ang", "5400000");
-    serializer().attribute("scaled", "0");
-    serializer().end_element(xmlns_a, "lin");
+    write_start_element(xmlns_a, "lin");
+    write_attribute("ang", "5400000");
+    write_attribute("scaled", "0");
+    write_end_element(xmlns_a, "lin");
 
-    serializer().end_element(xmlns_a, "gradFill");
+    write_end_element(xmlns_a, "gradFill");
 
-    serializer().start_element(xmlns_a, "gradFill");
-    serializer().attribute("rotWithShape", "1");
-    serializer().start_element(xmlns_a, "gsLst");
+    write_start_element(xmlns_a, "gradFill");
+    write_attribute("rotWithShape", "1");
+    write_start_element(xmlns_a, "gsLst");
 
-    serializer().start_element(xmlns_a, "gs");
-    serializer().attribute("pos", "0");
-    serializer().start_element(xmlns_a, "schemeClr");
-    serializer().attribute("val", "phClr");
-    serializer().start_element(xmlns_a, "satMod");
-    serializer().attribute("val", "103000");
-    serializer().end_element(xmlns_a, "satMod");
-    serializer().start_element(xmlns_a, "lumMod");
-    serializer().attribute("val", "102000");
-    serializer().end_element(xmlns_a, "lumMod");
-    serializer().start_element(xmlns_a, "tint");
-    serializer().attribute("val", "94000");
-    serializer().end_element(xmlns_a, "tint");
-    serializer().end_element(xmlns_a, "schemeClr");
-    serializer().end_element(xmlns_a, "gs");
+    write_start_element(xmlns_a, "gs");
+    write_attribute("pos", "0");
+    write_start_element(xmlns_a, "schemeClr");
+    write_attribute("val", "phClr");
+    write_start_element(xmlns_a, "satMod");
+    write_attribute("val", "103000");
+    write_end_element(xmlns_a, "satMod");
+    write_start_element(xmlns_a, "lumMod");
+    write_attribute("val", "102000");
+    write_end_element(xmlns_a, "lumMod");
+    write_start_element(xmlns_a, "tint");
+    write_attribute("val", "94000");
+    write_end_element(xmlns_a, "tint");
+    write_end_element(xmlns_a, "schemeClr");
+    write_end_element(xmlns_a, "gs");
 
-    serializer().start_element(xmlns_a, "gs");
-    serializer().attribute("pos", "50000");
-    serializer().start_element(xmlns_a, "schemeClr");
-    serializer().attribute("val", "phClr");
-    serializer().start_element(xmlns_a, "satMod");
-    serializer().attribute("val", "110000");
-    serializer().end_element(xmlns_a, "satMod");
-    serializer().start_element(xmlns_a, "lumMod");
-    serializer().attribute("val", "100000");
-    serializer().end_element(xmlns_a, "lumMod");
-    serializer().start_element(xmlns_a, "shade");
-    serializer().attribute("val", "100000");
-    serializer().end_element(xmlns_a, "shade");
-    serializer().end_element(xmlns_a, "schemeClr");
-    serializer().end_element(xmlns_a, "gs");
+    write_start_element(xmlns_a, "gs");
+    write_attribute("pos", "50000");
+    write_start_element(xmlns_a, "schemeClr");
+    write_attribute("val", "phClr");
+    write_start_element(xmlns_a, "satMod");
+    write_attribute("val", "110000");
+    write_end_element(xmlns_a, "satMod");
+    write_start_element(xmlns_a, "lumMod");
+    write_attribute("val", "100000");
+    write_end_element(xmlns_a, "lumMod");
+    write_start_element(xmlns_a, "shade");
+    write_attribute("val", "100000");
+    write_end_element(xmlns_a, "shade");
+    write_end_element(xmlns_a, "schemeClr");
+    write_end_element(xmlns_a, "gs");
 
-    serializer().start_element(xmlns_a, "gs");
-    serializer().attribute("pos", "100000");
-    serializer().start_element(xmlns_a, "schemeClr");
-    serializer().attribute("val", "phClr");
-    serializer().start_element(xmlns_a, "lumMod");
-    serializer().attribute("val", "99000");
-    serializer().end_element(xmlns_a, "lumMod");
-    serializer().start_element(xmlns_a, "satMod");
-    serializer().attribute("val", "120000");
-    serializer().end_element(xmlns_a, "satMod");
-    serializer().start_element(xmlns_a, "shade");
-    serializer().attribute("val", "78000");
-    serializer().end_element(xmlns_a, "shade");
-    serializer().end_element(xmlns_a, "schemeClr");
-    serializer().end_element(xmlns_a, "gs");
+    write_start_element(xmlns_a, "gs");
+    write_attribute("pos", "100000");
+    write_start_element(xmlns_a, "schemeClr");
+    write_attribute("val", "phClr");
+    write_start_element(xmlns_a, "lumMod");
+    write_attribute("val", "99000");
+    write_end_element(xmlns_a, "lumMod");
+    write_start_element(xmlns_a, "satMod");
+    write_attribute("val", "120000");
+    write_end_element(xmlns_a, "satMod");
+    write_start_element(xmlns_a, "shade");
+    write_attribute("val", "78000");
+    write_end_element(xmlns_a, "shade");
+    write_end_element(xmlns_a, "schemeClr");
+    write_end_element(xmlns_a, "gs");
 
-    serializer().end_element(xmlns_a, "gsLst");
+    write_end_element(xmlns_a, "gsLst");
 
-    serializer().start_element(xmlns_a, "lin");
-    serializer().attribute("ang", "5400000");
-    serializer().attribute("scaled", "0");
-    serializer().end_element(xmlns_a, "lin");
+    write_start_element(xmlns_a, "lin");
+    write_attribute("ang", "5400000");
+    write_attribute("scaled", "0");
+    write_end_element(xmlns_a, "lin");
 
-    serializer().end_element(xmlns_a, "gradFill");
-    serializer().end_element(xmlns_a, "fillStyleLst");
+    write_end_element(xmlns_a, "gradFill");
+    write_end_element(xmlns_a, "fillStyleLst");
 
-    serializer().start_element(xmlns_a, "lnStyleLst");
+    write_start_element(xmlns_a, "lnStyleLst");
 
-    serializer().start_element(xmlns_a, "ln");
-    serializer().attribute("w", "6350");
-    serializer().attribute("cap", "flat");
-    serializer().attribute("cmpd", "sng");
-    serializer().attribute("algn", "ctr");
-    serializer().start_element(xmlns_a, "solidFill");
-    serializer().start_element(xmlns_a, "schemeClr");
-    serializer().attribute("val", "phClr");
-    serializer().end_element(xmlns_a, "schemeClr");
-    serializer().end_element(xmlns_a, "solidFill");
-    serializer().start_element(xmlns_a, "prstDash");
-    serializer().attribute("val", "solid");
-    serializer().end_element(xmlns_a, "prstDash");
-    serializer().start_element(xmlns_a, "miter");
-    serializer().attribute("lim", "800000");
-    serializer().end_element(xmlns_a, "miter");
-    serializer().end_element(xmlns_a, "ln");
+    write_start_element(xmlns_a, "ln");
+    write_attribute("w", "6350");
+    write_attribute("cap", "flat");
+    write_attribute("cmpd", "sng");
+    write_attribute("algn", "ctr");
+    write_start_element(xmlns_a, "solidFill");
+    write_start_element(xmlns_a, "schemeClr");
+    write_attribute("val", "phClr");
+    write_end_element(xmlns_a, "schemeClr");
+    write_end_element(xmlns_a, "solidFill");
+    write_start_element(xmlns_a, "prstDash");
+    write_attribute("val", "solid");
+    write_end_element(xmlns_a, "prstDash");
+    write_start_element(xmlns_a, "miter");
+    write_attribute("lim", "800000");
+    write_end_element(xmlns_a, "miter");
+    write_end_element(xmlns_a, "ln");
 
-    serializer().start_element(xmlns_a, "ln");
-    serializer().attribute("w", "12700");
-    serializer().attribute("cap", "flat");
-    serializer().attribute("cmpd", "sng");
-    serializer().attribute("algn", "ctr");
-    serializer().start_element(xmlns_a, "solidFill");
-    serializer().start_element(xmlns_a, "schemeClr");
-    serializer().attribute("val", "phClr");
-    serializer().end_element(xmlns_a, "schemeClr");
-    serializer().end_element(xmlns_a, "solidFill");
-    serializer().start_element(xmlns_a, "prstDash");
-    serializer().attribute("val", "solid");
-    serializer().end_element(xmlns_a, "prstDash");
-    serializer().start_element(xmlns_a, "miter");
-    serializer().attribute("lim", "800000");
-    serializer().end_element(xmlns_a, "miter");
-    serializer().end_element(xmlns_a, "ln");
+    write_start_element(xmlns_a, "ln");
+    write_attribute("w", "12700");
+    write_attribute("cap", "flat");
+    write_attribute("cmpd", "sng");
+    write_attribute("algn", "ctr");
+    write_start_element(xmlns_a, "solidFill");
+    write_start_element(xmlns_a, "schemeClr");
+    write_attribute("val", "phClr");
+    write_end_element(xmlns_a, "schemeClr");
+    write_end_element(xmlns_a, "solidFill");
+    write_start_element(xmlns_a, "prstDash");
+    write_attribute("val", "solid");
+    write_end_element(xmlns_a, "prstDash");
+    write_start_element(xmlns_a, "miter");
+    write_attribute("lim", "800000");
+    write_end_element(xmlns_a, "miter");
+    write_end_element(xmlns_a, "ln");
 
-    serializer().start_element(xmlns_a, "ln");
-    serializer().attribute("w", "19050");
-    serializer().attribute("cap", "flat");
-    serializer().attribute("cmpd", "sng");
-    serializer().attribute("algn", "ctr");
-    serializer().start_element(xmlns_a, "solidFill");
-    serializer().start_element(xmlns_a, "schemeClr");
-    serializer().attribute("val", "phClr");
-    serializer().end_element(xmlns_a, "schemeClr");
-    serializer().end_element(xmlns_a, "solidFill");
-    serializer().start_element(xmlns_a, "prstDash");
-    serializer().attribute("val", "solid");
-    serializer().end_element(xmlns_a, "prstDash");
-    serializer().start_element(xmlns_a, "miter");
-    serializer().attribute("lim", "800000");
-    serializer().end_element(xmlns_a, "miter");
-    serializer().end_element(xmlns_a, "ln");
+    write_start_element(xmlns_a, "ln");
+    write_attribute("w", "19050");
+    write_attribute("cap", "flat");
+    write_attribute("cmpd", "sng");
+    write_attribute("algn", "ctr");
+    write_start_element(xmlns_a, "solidFill");
+    write_start_element(xmlns_a, "schemeClr");
+    write_attribute("val", "phClr");
+    write_end_element(xmlns_a, "schemeClr");
+    write_end_element(xmlns_a, "solidFill");
+    write_start_element(xmlns_a, "prstDash");
+    write_attribute("val", "solid");
+    write_end_element(xmlns_a, "prstDash");
+    write_start_element(xmlns_a, "miter");
+    write_attribute("lim", "800000");
+    write_end_element(xmlns_a, "miter");
+    write_end_element(xmlns_a, "ln");
 
-    serializer().end_element(xmlns_a, "lnStyleLst");
+    write_end_element(xmlns_a, "lnStyleLst");
 
-    serializer().start_element(xmlns_a, "effectStyleLst");
+    write_start_element(xmlns_a, "effectStyleLst");
 
-    serializer().start_element(xmlns_a, "effectStyle");
-    serializer().element(xmlns_a, "effectLst", "");
-    serializer().end_element(xmlns_a, "effectStyle");
+    write_start_element(xmlns_a, "effectStyle");
+    write_element(xmlns_a, "effectLst", "");
+    write_end_element(xmlns_a, "effectStyle");
 
-    serializer().start_element(xmlns_a, "effectStyle");
-    serializer().element(xmlns_a, "effectLst", "");
-    serializer().end_element(xmlns_a, "effectStyle");
+    write_start_element(xmlns_a, "effectStyle");
+    write_element(xmlns_a, "effectLst", "");
+    write_end_element(xmlns_a, "effectStyle");
 
-    serializer().start_element(xmlns_a, "effectStyle");
-    serializer().start_element(xmlns_a, "effectLst");
-    serializer().start_element(xmlns_a, "outerShdw");
-    serializer().attribute("blurRad", "57150");
-    serializer().attribute("dist", "19050");
-    serializer().attribute("dir", "5400000");
-    serializer().attribute("algn", "ctr");
-    serializer().attribute("rotWithShape", "0");
-    serializer().start_element(xmlns_a, "srgbClr");
-    serializer().attribute("val", "000000");
-    serializer().start_element(xmlns_a, "alpha");
-    serializer().attribute("val", "63000");
-    serializer().end_element(xmlns_a, "alpha");
-    serializer().end_element(xmlns_a, "srgbClr");
-    serializer().end_element(xmlns_a, "outerShdw");
-    serializer().end_element(xmlns_a, "effectLst");
-    serializer().end_element(xmlns_a, "effectStyle");
+    write_start_element(xmlns_a, "effectStyle");
+    write_start_element(xmlns_a, "effectLst");
+    write_start_element(xmlns_a, "outerShdw");
+    write_attribute("blurRad", "57150");
+    write_attribute("dist", "19050");
+    write_attribute("dir", "5400000");
+    write_attribute("algn", "ctr");
+    write_attribute("rotWithShape", "0");
+    write_start_element(xmlns_a, "srgbClr");
+    write_attribute("val", "000000");
+    write_start_element(xmlns_a, "alpha");
+    write_attribute("val", "63000");
+    write_end_element(xmlns_a, "alpha");
+    write_end_element(xmlns_a, "srgbClr");
+    write_end_element(xmlns_a, "outerShdw");
+    write_end_element(xmlns_a, "effectLst");
+    write_end_element(xmlns_a, "effectStyle");
 
-    serializer().end_element(xmlns_a, "effectStyleLst");
+    write_end_element(xmlns_a, "effectStyleLst");
 
-    serializer().start_element(xmlns_a, "bgFillStyleLst");
+    write_start_element(xmlns_a, "bgFillStyleLst");
 
-    serializer().start_element(xmlns_a, "solidFill");
-    serializer().start_element(xmlns_a, "schemeClr");
-    serializer().attribute("val", "phClr");
-    serializer().end_element(xmlns_a, "schemeClr");
-    serializer().end_element(xmlns_a, "solidFill");
+    write_start_element(xmlns_a, "solidFill");
+    write_start_element(xmlns_a, "schemeClr");
+    write_attribute("val", "phClr");
+    write_end_element(xmlns_a, "schemeClr");
+    write_end_element(xmlns_a, "solidFill");
 
-    serializer().start_element(xmlns_a, "solidFill");
-    serializer().start_element(xmlns_a, "schemeClr");
-    serializer().attribute("val", "phClr");
-    serializer().start_element(xmlns_a, "tint");
-    serializer().attribute("val", "95000");
-    serializer().end_element(xmlns_a, "tint");
-    serializer().start_element(xmlns_a, "satMod");
-    serializer().attribute("val", "170000");
-    serializer().end_element(xmlns_a, "satMod");
-    serializer().end_element(xmlns_a, "schemeClr");
-    serializer().end_element(xmlns_a, "solidFill");
+    write_start_element(xmlns_a, "solidFill");
+    write_start_element(xmlns_a, "schemeClr");
+    write_attribute("val", "phClr");
+    write_start_element(xmlns_a, "tint");
+    write_attribute("val", "95000");
+    write_end_element(xmlns_a, "tint");
+    write_start_element(xmlns_a, "satMod");
+    write_attribute("val", "170000");
+    write_end_element(xmlns_a, "satMod");
+    write_end_element(xmlns_a, "schemeClr");
+    write_end_element(xmlns_a, "solidFill");
 
-    serializer().start_element(xmlns_a, "gradFill");
-    serializer().attribute("rotWithShape", "1");
-    serializer().start_element(xmlns_a, "gsLst");
+    write_start_element(xmlns_a, "gradFill");
+    write_attribute("rotWithShape", "1");
+    write_start_element(xmlns_a, "gsLst");
 
-    serializer().start_element(xmlns_a, "gs");
-    serializer().attribute("pos", "0");
-    serializer().start_element(xmlns_a, "schemeClr");
-    serializer().attribute("val", "phClr");
-    serializer().start_element(xmlns_a, "tint");
-    serializer().attribute("val", "93000");
-    serializer().end_element(xmlns_a, "tint");
-    serializer().start_element(xmlns_a, "satMod");
-    serializer().attribute("val", "150000");
-    serializer().end_element(xmlns_a, "satMod");
-    serializer().start_element(xmlns_a, "shade");
-    serializer().attribute("val", "98000");
-    serializer().end_element(xmlns_a, "shade");
-    serializer().start_element(xmlns_a, "lumMod");
-    serializer().attribute("val", "102000");
-    serializer().end_element(xmlns_a, "lumMod");
-    serializer().end_element(xmlns_a, "schemeClr");
-    serializer().end_element(xmlns_a, "gs");
+    write_start_element(xmlns_a, "gs");
+    write_attribute("pos", "0");
+    write_start_element(xmlns_a, "schemeClr");
+    write_attribute("val", "phClr");
+    write_start_element(xmlns_a, "tint");
+    write_attribute("val", "93000");
+    write_end_element(xmlns_a, "tint");
+    write_start_element(xmlns_a, "satMod");
+    write_attribute("val", "150000");
+    write_end_element(xmlns_a, "satMod");
+    write_start_element(xmlns_a, "shade");
+    write_attribute("val", "98000");
+    write_end_element(xmlns_a, "shade");
+    write_start_element(xmlns_a, "lumMod");
+    write_attribute("val", "102000");
+    write_end_element(xmlns_a, "lumMod");
+    write_end_element(xmlns_a, "schemeClr");
+    write_end_element(xmlns_a, "gs");
 
-    serializer().start_element(xmlns_a, "gs");
-    serializer().attribute("pos", "50000");
-    serializer().start_element(xmlns_a, "schemeClr");
-    serializer().attribute("val", "phClr");
-    serializer().start_element(xmlns_a, "tint");
-    serializer().attribute("val", "98000");
-    serializer().end_element(xmlns_a, "tint");
-    serializer().start_element(xmlns_a, "satMod");
-    serializer().attribute("val", "130000");
-    serializer().end_element(xmlns_a, "satMod");
-    serializer().start_element(xmlns_a, "shade");
-    serializer().attribute("val", "90000");
-    serializer().end_element(xmlns_a, "shade");
-    serializer().start_element(xmlns_a, "lumMod");
-    serializer().attribute("val", "103000");
-    serializer().end_element(xmlns_a, "lumMod");
-    serializer().end_element(xmlns_a, "schemeClr");
-    serializer().end_element(xmlns_a, "gs");
+    write_start_element(xmlns_a, "gs");
+    write_attribute("pos", "50000");
+    write_start_element(xmlns_a, "schemeClr");
+    write_attribute("val", "phClr");
+    write_start_element(xmlns_a, "tint");
+    write_attribute("val", "98000");
+    write_end_element(xmlns_a, "tint");
+    write_start_element(xmlns_a, "satMod");
+    write_attribute("val", "130000");
+    write_end_element(xmlns_a, "satMod");
+    write_start_element(xmlns_a, "shade");
+    write_attribute("val", "90000");
+    write_end_element(xmlns_a, "shade");
+    write_start_element(xmlns_a, "lumMod");
+    write_attribute("val", "103000");
+    write_end_element(xmlns_a, "lumMod");
+    write_end_element(xmlns_a, "schemeClr");
+    write_end_element(xmlns_a, "gs");
 
-    serializer().start_element(xmlns_a, "gs");
-    serializer().attribute("pos", "100000");
-    serializer().start_element(xmlns_a, "schemeClr");
-    serializer().attribute("val", "phClr");
-    serializer().start_element(xmlns_a, "shade");
-    serializer().attribute("val", "63000");
-    serializer().end_element(xmlns_a, "shade");
-    serializer().start_element(xmlns_a, "satMod");
-    serializer().attribute("val", "120000");
-    serializer().end_element(xmlns_a, "satMod");
-    serializer().end_element(xmlns_a, "schemeClr");
-    serializer().end_element(xmlns_a, "gs");
+    write_start_element(xmlns_a, "gs");
+    write_attribute("pos", "100000");
+    write_start_element(xmlns_a, "schemeClr");
+    write_attribute("val", "phClr");
+    write_start_element(xmlns_a, "shade");
+    write_attribute("val", "63000");
+    write_end_element(xmlns_a, "shade");
+    write_start_element(xmlns_a, "satMod");
+    write_attribute("val", "120000");
+    write_end_element(xmlns_a, "satMod");
+    write_end_element(xmlns_a, "schemeClr");
+    write_end_element(xmlns_a, "gs");
 
-    serializer().end_element(xmlns_a, "gsLst");
+    write_end_element(xmlns_a, "gsLst");
 
-    serializer().start_element(xmlns_a, "lin");
-    serializer().attribute("ang", "5400000");
-    serializer().attribute("scaled", "0");
-    serializer().end_element(xmlns_a, "lin");
+    write_start_element(xmlns_a, "lin");
+    write_attribute("ang", "5400000");
+    write_attribute("scaled", "0");
+    write_end_element(xmlns_a, "lin");
 
-    serializer().end_element(xmlns_a, "gradFill");
+    write_end_element(xmlns_a, "gradFill");
 
-    serializer().end_element(xmlns_a, "bgFillStyleLst");
-    serializer().end_element(xmlns_a, "fmtScheme");
-    serializer().end_element(xmlns_a, "themeElements");
+    write_end_element(xmlns_a, "bgFillStyleLst");
+    write_end_element(xmlns_a, "fmtScheme");
+    write_end_element(xmlns_a, "themeElements");
 
-    serializer().element(xmlns_a, "objectDefaults", "");
-    serializer().element(xmlns_a, "extraClrSchemeLst", "");
+    write_element(xmlns_a, "objectDefaults", "");
+    write_element(xmlns_a, "extraClrSchemeLst", "");
 
-    serializer().start_element(xmlns_a, "extLst");
-    serializer().start_element(xmlns_a, "ext");
-    serializer().attribute("uri", "{05A4C25C-085E-4340-85A3-A5531E510DB2}");
-    serializer().start_element(xmlns_thm15, "themeFamily");
-    serializer().namespace_decl(xmlns_thm15, "thm15");
-    serializer().attribute("name", "Office Theme");
-    serializer().attribute("id", "{62F939B6-93AF-4DB8-9C6B-D6C7DFDC589F}");
-    serializer().attribute("vid", "{4A3C46E8-61CC-4603-A589-7422A47A8E4A}");
-    serializer().end_element(xmlns_thm15, "themeFamily");
-    serializer().end_element(xmlns_a, "ext");
-    serializer().end_element(xmlns_a, "extLst");
+    write_start_element(xmlns_a, "extLst");
+    write_start_element(xmlns_a, "ext");
+    write_attribute("uri", "{05A4C25C-085E-4340-85A3-A5531E510DB2}");
+    write_start_element(xmlns_thm15, "themeFamily");
+    write_namespace(xmlns_thm15, "thm15");
+    write_attribute("name", "Office Theme");
+    write_attribute("id", "{62F939B6-93AF-4DB8-9C6B-D6C7DFDC589F}");
+    write_attribute("vid", "{4A3C46E8-61CC-4603-A589-7422A47A8E4A}");
+    write_end_element(xmlns_thm15, "themeFamily");
+    write_end_element(xmlns_a, "ext");
+    write_end_element(xmlns_a, "extLst");
 
-    serializer().end_element(xmlns_a, "theme");
+    write_end_element(xmlns_a, "theme");
 
     const auto workbook_rel = source_.manifest().relationship(path("/"), relationship_type::office_document);
     const auto theme_part = source_.manifest().canonicalize({workbook_rel, theme_rel});
@@ -1787,7 +1818,8 @@ void xlsx_producer::write_theme(const relationship &theme_rel)
 
 void xlsx_producer::write_volatile_dependencies(const relationship & /*rel*/)
 {
-    serializer().start_element("volTypes");
+    write_start_element(constants::ns("spreadsheetml"), "volTypes");
+    write_end_element(constants::ns("spreadsheetml"), "volTypes");
 }
 
 void xlsx_producer::write_worksheet(const relationship &rel)
@@ -1805,105 +1837,105 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
     auto ws = source_.sheet_by_title(title);
 
-    serializer().start_element(xmlns, "worksheet");
-    serializer().namespace_decl(xmlns, "");
-    serializer().namespace_decl(xmlns_r, "r");
+    write_start_element(xmlns, "worksheet");
+    write_namespace(xmlns, "");
+    write_namespace(xmlns_r, "r");
 
     if (ws.has_page_setup())
     {
-        serializer().start_element(xmlns, "sheetPr");
+        write_start_element(xmlns, "sheetPr");
 
-        serializer().start_element(xmlns, "outlinePr");
-        serializer().attribute("summaryBelow", "1");
-        serializer().attribute("summaryRight", "1");
-        serializer().end_element(xmlns, "outlinePr");
+        write_start_element(xmlns, "outlinePr");
+        write_attribute("summaryBelow", "1");
+        write_attribute("summaryRight", "1");
+        write_end_element(xmlns, "outlinePr");
 
-        serializer().start_element(xmlns, "pageSetUpPr");
-        serializer().attribute("fitToPage", write_bool(ws.page_setup().fit_to_page()));
-        serializer().end_element(xmlns, "pageSetUpPr");
+        write_start_element(xmlns, "pageSetUpPr");
+        write_attribute("fitToPage", write_bool(ws.page_setup().fit_to_page()));
+        write_end_element(xmlns, "pageSetUpPr");
 
-        serializer().end_element(xmlns, "sheetPr");
+        write_end_element(xmlns, "sheetPr");
     }
 
-    serializer().start_element(xmlns, "dimension");
+    write_start_element(xmlns, "dimension");
     const auto dimension = ws.calculate_dimension();
-    serializer().attribute(
+    write_attribute(
         "ref", dimension.is_single_cell() ? dimension.top_left().to_string() : dimension.to_string());
-    serializer().end_element(xmlns, "dimension");
+    write_end_element(xmlns, "dimension");
 
     if (ws.has_view())
     {
-        serializer().start_element(xmlns, "sheetViews");
-        serializer().start_element(xmlns, "sheetView");
+        write_start_element(xmlns, "sheetViews");
+        write_start_element(xmlns, "sheetView");
 
         const auto view = ws.view();
 
-        serializer().attribute("tabSelected", write_bool(view.id() == 0));
-        serializer().attribute("workbookViewId", view.id());
+        write_attribute("tabSelected", write_bool(view.id() == 0));
+        write_attribute("workbookViewId", view.id());
 
         if (view.type() != sheet_view_type::normal)
         {
-            serializer().attribute(
+            write_attribute(
                 "view", view.type() == sheet_view_type::page_break_preview ? "pageBreakPreview" : "pageLayout");
         }
 
         if (view.has_pane())
         {
             const auto &current_pane = view.pane();
-            serializer().start_element(xmlns, "pane"); // CT_Pane
+            write_start_element(xmlns, "pane"); // CT_Pane
 
             if (current_pane.top_left_cell.is_set())
             {
-                serializer().attribute("topLeftCell", current_pane.top_left_cell.get().to_string());
+                write_attribute("topLeftCell", current_pane.top_left_cell.get().to_string());
             }
 
-            serializer().attribute("xSplit", current_pane.x_split.index);
-            serializer().attribute("ySplit", current_pane.y_split);
+            write_attribute("xSplit", current_pane.x_split.index);
+            write_attribute("ySplit", current_pane.y_split);
 
             if (current_pane.active_pane != pane_corner::top_left)
             {
-                serializer().attribute("activePane", current_pane.active_pane);
+                write_attribute("activePane", current_pane.active_pane);
             }
 
             if (current_pane.state != pane_state::split)
             {
-                serializer().attribute("state", current_pane.state);
+                write_attribute("state", current_pane.state);
             }
 
-            serializer().end_element(xmlns, "pane");
+            write_end_element(xmlns, "pane");
         }
 
         for (const auto &current_selection : view.selections())
         {
-            serializer().start_element(xmlns, "selection"); // CT_Selection
+            write_start_element(xmlns, "selection"); // CT_Selection
 
             if (current_selection.has_active_cell())
             {
-                serializer().attribute("activeCell", current_selection.active_cell().to_string());
-                serializer().attribute("sqref", current_selection.active_cell().to_string());
+                write_attribute("activeCell", current_selection.active_cell().to_string());
+                write_attribute("sqref", current_selection.active_cell().to_string());
             }
             /*
                         if (current_selection.sqref() != "A1:A1")
                         {
-                            serializer().attribute("sqref", current_selection.sqref().to_string());
+                            write_attribute("sqref", current_selection.sqref().to_string());
                         }
             */
             if (current_selection.pane() != pane_corner::top_left)
             {
-                serializer().attribute("pane", current_selection.pane());
+                write_attribute("pane", current_selection.pane());
             }
 
-            serializer().end_element(xmlns, "selection");
+            write_end_element(xmlns, "selection");
         }
 
-        serializer().end_element(xmlns, "sheetView");
-        serializer().end_element(xmlns, "sheetViews");
+        write_end_element(xmlns, "sheetView");
+        write_end_element(xmlns, "sheetViews");
     }
 
-    serializer().start_element(xmlns, "sheetFormatPr");
-    serializer().attribute("baseColWidth", "10");
-    serializer().attribute("defaultRowHeight", "16");
-    serializer().end_element(xmlns, "sheetFormatPr");
+    write_start_element(xmlns, "sheetFormatPr");
+    write_attribute("baseColWidth", "10");
+    write_attribute("defaultRowHeight", "16");
+    write_end_element(xmlns, "sheetFormatPr");
 
     bool has_column_properties = false;
 
@@ -1918,7 +1950,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
     if (has_column_properties)
     {
-        serializer().start_element(xmlns, "cols");
+        write_start_element(xmlns, "cols");
 
         for (auto column = ws.lowest_column(); column <= ws.highest_column(); column++)
         {
@@ -1926,34 +1958,34 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
             const auto &props = ws.column_properties(column);
 
-            serializer().start_element(xmlns, "col");
-            serializer().attribute("min", column.index);
-            serializer().attribute("max", column.index);
+            write_start_element(xmlns, "col");
+            write_attribute("min", column.index);
+            write_attribute("max", column.index);
 
             if (props.width.is_set())
             {
-                serializer().attribute("width", props.width.get());
+                write_attribute("width", props.width.get());
             }
 
             if (props.custom_width)
             {
-                serializer().attribute("customWidth", write_bool(true));
+                write_attribute("customWidth", write_bool(true));
             }
 
             if (props.style.is_set())
             {
-                serializer().attribute("style", props.style.get());
+                write_attribute("style", props.style.get());
             }
 
             if (props.hidden)
             {
-                serializer().attribute("hidden", write_bool(true));
+                write_attribute("hidden", write_bool(true));
             }
 
-            serializer().end_element(xmlns, "col");
+            write_end_element(xmlns, "col");
         }
 
-        serializer().end_element(xmlns, "cols");
+        write_end_element(xmlns, "cols");
     }
 
     const auto hyperlink_rels = source_.manifest().relationships(worksheet_part, relationship_type::hyperlink);
@@ -1966,7 +1998,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
     std::unordered_map<std::string, std::string> hyperlink_references;
 
-    serializer().start_element(xmlns, "sheetData");
+    write_start_element(xmlns, "sheetData");
     const auto &shared_strings = ws.workbook().shared_strings();
     std::vector<cell_reference> cells_with_comments;
 
@@ -1992,10 +2024,10 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             continue;
         }
 
-        serializer().start_element(xmlns, "row");
+        write_start_element(xmlns, "row");
 
-        serializer().attribute("r", row.front().row());
-        serializer().attribute("spans", std::to_string(min) + ":" + std::to_string(max));
+        write_attribute("r", row.front().row());
+        write_attribute("spans", std::to_string(min) + ":" + std::to_string(max));
 
         if (ws.has_row_properties(row.front().row()))
         {
@@ -2003,7 +2035,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
             if (props.custom_height)
             {
-                serializer().attribute("customHeight", write_bool(true));
+                write_attribute("customHeight", write_bool(true));
             }
 
             if (props.height.is_set())
@@ -2012,17 +2044,17 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
                 if (std::fabs(height - std::floor(height)) == 0.0)
                 {
-                    serializer().attribute("ht", std::to_string(static_cast<int>(height)) + ".0");
+                    write_attribute("ht", std::to_string(static_cast<int>(height)) + ".0");
                 }
                 else
                 {
-                    serializer().attribute("ht", height);
+                    write_attribute("ht", height);
                 }
             }
 
             if (props.hidden)
             {
-                serializer().attribute("hidden", write_bool(true));
+                write_attribute("hidden", write_bool(true));
             }
         }
 
@@ -2035,12 +2067,12 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
             if (!cell.garbage_collectible())
             {
-                serializer().start_element(xmlns, "c");
-                serializer().attribute("r", cell.reference().to_string());
+                write_start_element(xmlns, "c");
+                write_attribute("r", cell.reference().to_string());
 
                 if (cell.has_format())
                 {
-                    serializer().attribute("s", cell.format().id());
+                    write_attribute("s", cell.format().id());
                 }
 
                 if (cell.has_hyperlink())
@@ -2052,10 +2084,10 @@ void xlsx_producer::write_worksheet(const relationship &rel)
                 {
                     if (cell.has_formula())
                     {
-                        serializer().attribute("t", "str");
-                        serializer().element(xmlns, "f", cell.formula());
-                        serializer().element(xmlns, "v", cell.to_string());
-                        serializer().end_element(xmlns, "c");
+                        write_attribute("t", "str");
+                        write_element(xmlns, "f", cell.formula());
+                        write_element(xmlns, "v", cell.to_string());
+                        write_end_element(xmlns, "c");
 
                         continue;
                     }
@@ -2075,20 +2107,20 @@ void xlsx_producer::write_worksheet(const relationship &rel)
                     {
                         if (cell.value<std::string>().empty())
                         {
-                            serializer().attribute("t", "s");
+                            write_attribute("t", "s");
                         }
                         else
                         {
-                            serializer().attribute("t", "inlineStr");
-                            serializer().start_element(xmlns, "is");
-                            serializer().element(xmlns, "t", cell.value<std::string>());
-                            serializer().end_element(xmlns, "is");
+                            write_attribute("t", "inlineStr");
+                            write_start_element(xmlns, "is");
+                            write_element(xmlns, "t", cell.value<std::string>());
+                            write_end_element(xmlns, "is");
                         }
                     }
                     else
                     {
-                        serializer().attribute("t", "s");
-                        serializer().element(xmlns, "v", match_index);
+                        write_attribute("t", "s");
+                        write_element(xmlns, "v", match_index);
                     }
                 }
                 else
@@ -2097,26 +2129,26 @@ void xlsx_producer::write_worksheet(const relationship &rel)
                     {
                         if (cell.data_type() == cell::type::boolean)
                         {
-                            serializer().attribute("t", "b");
-                            serializer().element(xmlns, "v", write_bool(cell.value<bool>()));
+                            write_attribute("t", "b");
+                            write_element(xmlns, "v", write_bool(cell.value<bool>()));
                         }
                         else if (cell.data_type() == cell::type::numeric)
                         {
                             if (cell.has_formula())
                             {
-                                serializer().element(xmlns, "f", cell.formula());
-                                serializer().element(xmlns, "v", cell.to_string());
-                                serializer().end_element(xmlns, "c");
+                                write_element(xmlns, "f", cell.formula());
+                                write_element(xmlns, "v", cell.to_string());
+                                write_end_element(xmlns, "c");
 
                                 continue;
                             }
 
-                            serializer().attribute("t", "n");
-                            serializer().start_element(xmlns, "v");
+                            write_attribute("t", "n");
+                            write_start_element(xmlns, "v");
 
                             if (is_integral(cell.value<long double>()))
                             {
-                                serializer().characters(cell.value<std::int64_t>());
+                                write_characters(cell.value<std::int64_t>());
                             }
                             else
                             {
@@ -2124,79 +2156,79 @@ void xlsx_producer::write_worksheet(const relationship &rel)
                                 ss.precision(20);
                                 ss << cell.value<long double>();
                                 ss.str();
-                                serializer().characters(ss.str());
+                                write_characters(ss.str());
                             }
 
-                            serializer().end_element(xmlns, "v");
+                            write_end_element(xmlns, "v");
                         }
                     }
                     else if (cell.has_formula())
                     {
-                        serializer().element(xmlns, "f", cell.formula());
+                        write_element(xmlns, "f", cell.formula());
                         // todo (but probably not) could calculate the formula and set the value here
-                        serializer().end_element(xmlns, "c");
+                        write_end_element(xmlns, "c");
 
                         continue;
                     }
                 }
 
-                serializer().end_element(xmlns, "c");
+                write_end_element(xmlns, "c");
             }
         }
 
-        serializer().end_element(xmlns, "row");
+        write_end_element(xmlns, "row");
     }
 
-    serializer().end_element(xmlns, "sheetData");
+    write_end_element(xmlns, "sheetData");
 
     if (ws.has_auto_filter())
     {
-        serializer().start_element(xmlns, "autoFilter");
-        serializer().attribute("ref", ws.auto_filter().to_string());
-        serializer().end_element(xmlns, "autoFilter");
+        write_start_element(xmlns, "autoFilter");
+        write_attribute("ref", ws.auto_filter().to_string());
+        write_end_element(xmlns, "autoFilter");
     }
 
     if (!ws.merged_ranges().empty())
     {
-        serializer().start_element(xmlns, "mergeCells");
-        serializer().attribute("count", ws.merged_ranges().size());
+        write_start_element(xmlns, "mergeCells");
+        write_attribute("count", ws.merged_ranges().size());
 
         for (auto merged_range : ws.merged_ranges())
         {
-            serializer().start_element(xmlns, "mergeCell");
-            serializer().attribute("ref", merged_range.to_string());
-            serializer().end_element(xmlns, "mergeCell");
+            write_start_element(xmlns, "mergeCell");
+            write_attribute("ref", merged_range.to_string());
+            write_end_element(xmlns, "mergeCell");
         }
 
-        serializer().end_element(xmlns, "mergeCells");
+        write_end_element(xmlns, "mergeCells");
     }
 
     if (!hyperlink_rels.empty())
     {
-        serializer().start_element(xmlns, "hyperlinks");
+        write_start_element(xmlns, "hyperlinks");
 
         for (const auto &hyperlink : hyperlink_references)
         {
-            serializer().start_element(xmlns, "hyperlink");
-            serializer().attribute("ref", hyperlink.first);
-            serializer().attribute(xmlns_r, "id", hyperlink.second);
-            serializer().end_element(xmlns, "hyperlink");
+            write_start_element(xmlns, "hyperlink");
+            write_attribute("ref", hyperlink.first);
+            write_attribute(xml::qname(xmlns_r, "id"), hyperlink.second);
+            write_end_element(xmlns, "hyperlink");
         }
 
-        serializer().end_element(xmlns, "hyperlinks");
+        write_end_element(xmlns, "hyperlinks");
     }
 
     if (ws.has_page_setup())
     {
-        serializer().start_element(xmlns, "printOptions");
-        serializer().attribute("horizontalCentered", write_bool(ws.page_setup().horizontal_centered()));
-        serializer().attribute("verticalCentered", write_bool(ws.page_setup().vertical_centered()));
-        serializer().end_element(xmlns, "printOptions");
+        write_start_element(xmlns, "printOptions");
+        write_attribute("horizontalCentered", write_bool(ws.page_setup().horizontal_centered()));
+        write_attribute("verticalCentered", write_bool(ws.page_setup().vertical_centered()));
+        write_end_element(xmlns, "printOptions");
     }
 
     if (ws.has_page_margins())
     {
-        serializer().start_element(xmlns, "pageMargins");
+        write_start_element(xmlns, "pageMargins");
 
         // TODO: there must be a better way to do this
         auto remove_trailing_zeros = [](const std::string &n) {
@@ -2219,32 +2251,32 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             return n.substr(0, index + 1);
         };
 
-        serializer().attribute("left", remove_trailing_zeros(std::to_string(ws.page_margins().left())));
-        serializer().attribute("right", remove_trailing_zeros(std::to_string(ws.page_margins().right())));
-        serializer().attribute("top", remove_trailing_zeros(std::to_string(ws.page_margins().top())));
-        serializer().attribute("bottom", remove_trailing_zeros(std::to_string(ws.page_margins().bottom())));
-        serializer().attribute("header", remove_trailing_zeros(std::to_string(ws.page_margins().header())));
-        serializer().attribute("footer", remove_trailing_zeros(std::to_string(ws.page_margins().footer())));
+        write_attribute("left", remove_trailing_zeros(std::to_string(ws.page_margins().left())));
+        write_attribute("right", remove_trailing_zeros(std::to_string(ws.page_margins().right())));
+        write_attribute("top", remove_trailing_zeros(std::to_string(ws.page_margins().top())));
+        write_attribute("bottom", remove_trailing_zeros(std::to_string(ws.page_margins().bottom())));
+        write_attribute("header", remove_trailing_zeros(std::to_string(ws.page_margins().header())));
+        write_attribute("footer", remove_trailing_zeros(std::to_string(ws.page_margins().footer())));
 
-        serializer().end_element(xmlns, "pageMargins");
+        write_end_element(xmlns, "pageMargins");
     }
 
     if (ws.has_page_setup())
     {
-        serializer().start_element(xmlns, "pageSetup");
-        serializer().attribute(
+        write_start_element(xmlns, "pageSetup");
+        write_attribute(
             "orientation", ws.page_setup().orientation() == xlnt::orientation::landscape ? "landscape" : "portrait");
-        serializer().attribute("paperSize", static_cast<std::size_t>(ws.page_setup().paper_size()));
-        serializer().attribute("fitToHeight", write_bool(ws.page_setup().fit_to_height()));
-        serializer().attribute("fitToWidth", write_bool(ws.page_setup().fit_to_width()));
-        serializer().end_element(xmlns, "pageSetup");
+        write_attribute("paperSize", static_cast<std::size_t>(ws.page_setup().paper_size()));
+        write_attribute("fitToHeight", write_bool(ws.page_setup().fit_to_height()));
+        write_attribute("fitToWidth", write_bool(ws.page_setup().fit_to_width()));
+        write_end_element(xmlns, "pageSetup");
     }
 
     if (ws.has_header_footer())
     {
         const auto hf = ws.header_footer();
 
-        serializer().start_element(xmlns, "headerFooter");
+        write_start_element(xmlns, "headerFooter");
 
         auto odd_header = std::string();
         auto odd_footer = std::string();
@@ -2360,73 +2392,73 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
         if (!odd_header.empty())
         {
-            serializer().element(xmlns, "oddHeader", odd_header);
+            write_element(xmlns, "oddHeader", odd_header);
         }
 
         if (!odd_footer.empty())
         {
-            serializer().element(xmlns, "oddFooter", odd_footer);
+            write_element(xmlns, "oddFooter", odd_footer);
         }
 
         if (!even_header.empty())
         {
-            serializer().element(xmlns, "evenHeader", even_header);
+            write_element(xmlns, "evenHeader", even_header);
         }
 
         if (!even_footer.empty())
         {
-            serializer().element(xmlns, "evenFooter", even_footer);
+            write_element(xmlns, "evenFooter", even_footer);
         }
 
         if (!first_header.empty())
         {
-            serializer().element(xmlns, "firstHeader", first_header);
+            write_element(xmlns, "firstHeader", first_header);
         }
 
         if (!first_footer.empty())
         {
-            serializer().element(xmlns, "firstFooter", first_footer);
+            write_element(xmlns, "firstFooter", first_footer);
         }
 
-        serializer().end_element(xmlns, "headerFooter");
+        write_end_element(xmlns, "headerFooter");
     }
 
     if (!ws.page_break_rows().empty())
     {
-        serializer().start_element(xmlns, "rowBreaks");
+        write_start_element(xmlns, "rowBreaks");
 
-        serializer().attribute("count", ws.page_break_rows().size());
-        serializer().attribute("manualBreakCount", ws.page_break_rows().size());
+        write_attribute("count", ws.page_break_rows().size());
+        write_attribute("manualBreakCount", ws.page_break_rows().size());
 
         for (auto break_id : ws.page_break_rows())
         {
-            serializer().start_element(xmlns, "brk");
-            serializer().attribute("id", break_id);
-            serializer().attribute("max", 16383);
-            serializer().attribute("man", 1);
-            serializer().end_element(xmlns, "brk");
+            write_start_element(xmlns, "brk");
+            write_attribute("id", break_id);
+            write_attribute("max", 16383);
+            write_attribute("man", 1);
+            write_end_element(xmlns, "brk");
         }
 
-        serializer().end_element(xmlns, "rowBreaks");
+        write_end_element(xmlns, "rowBreaks");
     }
 
     if (!ws.page_break_columns().empty())
     {
-        serializer().start_element(xmlns, "colBreaks");
+        write_start_element(xmlns, "colBreaks");
 
-        serializer().attribute("count", ws.page_break_columns().size());
-        serializer().attribute("manualBreakCount", ws.page_break_columns().size());
+        write_attribute("count", ws.page_break_columns().size());
+        write_attribute("manualBreakCount", ws.page_break_columns().size());
 
         for (auto break_id : ws.page_break_columns())
         {
-            serializer().start_element(xmlns, "brk");
-            serializer().attribute("id", break_id.index);
-            serializer().attribute("max", 1048575);
-            serializer().attribute("man", 1);
-            serializer().end_element(xmlns, "brk");
+            write_start_element(xmlns, "brk");
+            write_attribute("id", break_id.index);
+            write_attribute("max", 1048575);
+            write_attribute("man", 1);
+            write_end_element(xmlns, "brk");
         }
 
-        serializer().end_element(xmlns, "colBreaks");
+        write_end_element(xmlns, "colBreaks");
     }
 
     if (!worksheet_rels.empty())
@@ -2435,9 +2467,9 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         {
             if (child_rel.type() == xlnt::relationship_type::vml_drawing)
             {
-                serializer().start_element(xmlns, "legacyDrawing");
-                serializer().attribute(xml::qname(xmlns_r, "id"), child_rel.id());
-                serializer().end_element(xmlns, "legacyDrawing");
+                write_start_element(xmlns, "legacyDrawing");
+                write_attribute(xml::qname(xmlns_r, "id"), child_rel.id());
+                write_end_element(xmlns, "legacyDrawing");
 
                 // todo: there's only one of these per sheet, right?
                 break;
@@ -2445,7 +2477,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         }
     }
 
-    serializer().end_element(xmlns, "worksheet");
+    write_end_element(xmlns, "worksheet");
 
     if (!worksheet_rels.empty())
     {
@@ -2559,8 +2591,8 @@ void xlsx_producer::write_comments(const relationship & /*rel*/, worksheet ws, c
 {
     static const auto &xmlns = constants::ns("spreadsheetml");
 
-    serializer().start_element(xmlns, "comments");
-    serializer().namespace_decl(xmlns, "");
+    write_start_element(xmlns, "comments");
+    write_namespace(xmlns, "");
 
     if (!cells.empty())
     {
@@ -2578,94 +2610,94 @@ void xlsx_producer::write_comments(const relationship & /*rel*/, worksheet ws, c
             }
         }
 
-        serializer().start_element(xmlns, "authors");
+        write_start_element(xmlns, "authors");
 
         for (const auto &author : authors)
         {
-            serializer().start_element(xmlns, "author");
-            serializer().characters(author.first);
-            serializer().end_element(xmlns, "author");
+            write_start_element(xmlns, "author");
+            write_characters(author.first);
+            write_end_element(xmlns, "author");
         }
 
-        serializer().end_element(xmlns, "authors");
-        serializer().start_element(xmlns, "commentList");
+        write_end_element(xmlns, "authors");
+        write_start_element(xmlns, "commentList");
 
         for (const auto &cell_ref : cells)
         {
-            serializer().start_element(xmlns, "comment");
+            write_start_element(xmlns, "comment");
 
             auto cell = ws.cell(cell_ref);
             auto cell_comment = cell.comment();
 
-            serializer().attribute("ref", cell_ref.to_string());
+            write_attribute("ref", cell_ref.to_string());
             auto author_id = authors.at(cell_comment.author());
-            serializer().attribute("authorId", author_id);
-            serializer().start_element(xmlns, "text");
+            write_attribute("authorId", author_id);
+            write_start_element(xmlns, "text");
 
             for (const auto &run : cell_comment.text().runs())
             {
-                serializer().start_element(xmlns, "r");
+                write_start_element(xmlns, "r");
 
                 if (run.second.is_set())
                 {
-                    serializer().start_element(xmlns, "rPr");
+                    write_start_element(xmlns, "rPr");
 
                     if (run.second.get().bold())
                     {
-                        serializer().start_element(xmlns, "b");
-                        serializer().end_element(xmlns, "b");
+                        write_start_element(xmlns, "b");
+                        write_end_element(xmlns, "b");
                     }
 
                     if (run.second.get().has_size())
                     {
-                        serializer().start_element(xmlns, "sz");
-                        serializer().attribute("val", run.second.get().size());
-                        serializer().end_element(xmlns, "sz");
+                        write_start_element(xmlns, "sz");
+                        write_attribute("val", run.second.get().size());
+                        write_end_element(xmlns, "sz");
                     }
 
                     if (run.second.get().has_color())
                     {
-                        serializer().start_element(xmlns, "color");
+                        write_start_element(xmlns, "color");
                         write_color(run.second.get().color());
-                        serializer().end_element(xmlns, "color");
+                        write_end_element(xmlns, "color");
                     }
 
                     if (run.second.get().has_name())
                     {
-                        serializer().start_element(xmlns, "rFont");
-                        serializer().attribute("val", run.second.get().name());
-                        serializer().end_element(xmlns, "rFont");
+                        write_start_element(xmlns, "rFont");
+                        write_attribute("val", run.second.get().name());
+                        write_end_element(xmlns, "rFont");
                     }
 
                     if (run.second.get().has_family())
                     {
-                        serializer().start_element(xmlns, "family");
-                        serializer().attribute("val", run.second.get().family());
-                        serializer().end_element(xmlns, "family");
+                        write_start_element(xmlns, "family");
+                        write_attribute("val", run.second.get().family());
+                        write_end_element(xmlns, "family");
                     }
 
                     if (run.second.get().has_scheme())
                     {
-                        serializer().start_element(xmlns, "scheme");
-                        serializer().attribute("val", run.second.get().scheme());
-                        serializer().end_element(xmlns, "scheme");
+                        write_start_element(xmlns, "scheme");
+                        write_attribute("val", run.second.get().scheme());
+                        write_end_element(xmlns, "scheme");
                     }
 
-                    serializer().end_element(xmlns, "rPr");
+                    write_end_element(xmlns, "rPr");
                 }
 
-                serializer().element(xmlns, "t", run.first);
-                serializer().end_element(xmlns, "r");
+                write_element(xmlns, "t", run.first);
+                write_end_element(xmlns, "r");
             }
 
-            serializer().end_element(xmlns, "text");
-            serializer().end_element(xmlns, "comment");
+            write_end_element(xmlns, "text");
+            write_end_element(xmlns, "comment");
         }
 
-        serializer().end_element(xmlns, "commentList");
+        write_end_element(xmlns, "commentList");
     }
 
-    serializer().end_element(xmlns, "comments");
+    write_end_element(xmlns, "comments");
 }
 
 void xlsx_producer::write_vml_drawings(const relationship &rel, worksheet ws, const std::vector<cell_reference> &cells)
@@ -2675,16 +2707,16 @@ void xlsx_producer::write_vml_drawings(const relationship &rel, worksheet ws, co
     static const auto &xmlns_v = std::string("urn:schemas-microsoft-com:vml");
     static const auto &xmlns_x = std::string("urn:schemas-microsoft-com:office:excel");
 
-    serializer().start_element("xml");
-    serializer().namespace_decl(xmlns_v, "v");
-    serializer().namespace_decl(xmlns_o, "o");
-    serializer().namespace_decl(xmlns_x, "x");
-    serializer().namespace_decl(xmlns_mv, "mv");
+    write_start_element("xml");
+    write_namespace(xmlns_v, "v");
+    write_namespace(xmlns_o, "o");
+    write_namespace(xmlns_x, "x");
+    write_namespace(xmlns_mv, "mv");
 
-    serializer().start_element(xmlns_o, "shapelayout");
-    serializer().attribute(xml::qname(xmlns_v, "ext"), "edit");
-    serializer().start_element(xmlns_o, "idmap");
-    serializer().attribute(xml::qname(xmlns_v, "ext"), "edit");
+    write_start_element(xmlns_o, "shapelayout");
+    write_attribute(xml::qname(xmlns_v, "ext"), "edit");
+    write_start_element(xmlns_o, "idmap");
+    write_attribute(xml::qname(xmlns_v, "ext"), "edit");
 
     auto filename = rel.target().path().split_extension().first;
     auto index_pos = filename.size() - 1;
@@ -2696,23 +2728,23 @@ void xlsx_producer::write_vml_drawings(const relationship &rel, worksheet ws, co
 
     auto file_index = std::stoull(filename.substr(index_pos + 1));
 
-    serializer().attribute("data", file_index);
-    serializer().end_element(xmlns_o, "idmap");
-    serializer().end_element(xmlns_o, "shapelayout");
+    write_attribute("data", file_index);
+    write_end_element(xmlns_o, "idmap");
+    write_end_element(xmlns_o, "shapelayout");
 
-    serializer().start_element(xmlns_v, "shapetype");
-    serializer().attribute("id", "_x0000_t202");
-    serializer().attribute("coordsize", "21600,21600");
-    serializer().attribute(xml::qname(xmlns_o, "spt"), "202");
-    serializer().attribute("path", "m0,0l0,21600,21600,21600,21600,0xe");
-    serializer().start_element(xmlns_v, "stroke");
-    serializer().attribute("joinstyle", "miter");
-    serializer().end_element(xmlns_v, "stroke");
-    serializer().start_element(xmlns_v, "path");
-    serializer().attribute("gradientshapeok", "t");
-    serializer().attribute(xml::qname(xmlns_o, "connecttype"), "rect");
-    serializer().end_element(xmlns_v, "path");
-    serializer().end_element(xmlns_v, "shapetype");
+    write_start_element(xmlns_v, "shapetype");
+    write_attribute("id", "_x0000_t202");
+    write_attribute("coordsize", "21600,21600");
+    write_attribute(xml::qname(xmlns_o, "spt"), "202");
+    write_attribute("path", "m0,0l0,21600,21600,21600,21600,0xe");
+    write_start_element(xmlns_v, "stroke");
+    write_attribute("joinstyle", "miter");
+    write_end_element(xmlns_v, "stroke");
+    write_start_element(xmlns_v, "path");
+    write_attribute("gradientshapeok", "t");
+    write_attribute(xml::qname(xmlns_o, "connecttype"), "rect");
+    write_end_element(xmlns_v, "path");
+    write_end_element(xmlns_v, "shapetype");
 
     std::size_t comment_index = 0;
 
@@ -2721,9 +2753,9 @@ void xlsx_producer::write_vml_drawings(const relationship &rel, worksheet ws, co
         auto comment = ws.cell(cell_ref).comment();
         auto shape_id = 1024 * file_index + 1 + comment_index * 2;
 
-        serializer().start_element(xmlns_v, "shape");
-        serializer().attribute("id", "_x0000_s" + std::to_string(shape_id));
-        serializer().attribute("type", "#_x0000_t202");
+        write_start_element(xmlns_v, "shape");
+        write_attribute("id", "_x0000_s" + std::to_string(shape_id));
+        write_attribute("type", "#_x0000_t202");
 
         std::vector<std::pair<std::string, std::string>> style;
 
@@ -2745,63 +2777,63 @@ void xlsx_producer::write_vml_drawings(const relationship &rel, worksheet ws, co
             style_string.append(";");
         }
 
-        serializer().attribute("style", style_string);
-        serializer().attribute("fillcolor", "#fbf6d6");
-        serializer().attribute("strokecolor", "#edeaa1");
+        write_attribute("style", style_string);
+        write_attribute("fillcolor", "#fbf6d6");
+        write_attribute("strokecolor", "#edeaa1");
 
-        serializer().start_element(xmlns_v, "fill");
-        serializer().attribute("color2", "#fbfe82");
-        serializer().attribute("angle", -180);
-        serializer().attribute("type", "gradient");
-        serializer().start_element(xmlns_o, "fill");
-        serializer().attribute(xml::qname(xmlns_v, "ext"), "view");
-        serializer().attribute("type", "gradientUnscaled");
-        serializer().end_element(xmlns_o, "fill");
-        serializer().end_element(xmlns_v, "fill");
+        write_start_element(xmlns_v, "fill");
+        write_attribute("color2", "#fbfe82");
+        write_attribute("angle", -180);
+        write_attribute("type", "gradient");
+        write_start_element(xmlns_o, "fill");
+        write_attribute(xml::qname(xmlns_v, "ext"), "view");
+        write_attribute("type", "gradientUnscaled");
+        write_end_element(xmlns_o, "fill");
+        write_end_element(xmlns_v, "fill");
 
-        serializer().start_element(xmlns_v, "shadow");
-        serializer().attribute("on", "t");
-        serializer().attribute("obscured", "t");
-        serializer().end_element(xmlns_v, "shadow");
+        write_start_element(xmlns_v, "shadow");
+        write_attribute("on", "t");
+        write_attribute("obscured", "t");
+        write_end_element(xmlns_v, "shadow");
 
-        serializer().start_element(xmlns_v, "path");
-        serializer().attribute(xml::qname(xmlns_o, "connecttype"), "none");
-        serializer().end_element(xmlns_v, "path");
+        write_start_element(xmlns_v, "path");
+        write_attribute(xml::qname(xmlns_o, "connecttype"), "none");
+        write_end_element(xmlns_v, "path");
 
-        serializer().start_element(xmlns_v, "textbox");
-        serializer().attribute("style", "mso-direction-alt:auto");
-        serializer().start_element("div");
-        serializer().attribute("style", "text-align:left");
-        serializer().characters("");
-        serializer().end_element("div");
-        serializer().end_element(xmlns_v, "textbox");
+        write_start_element(xmlns_v, "textbox");
+        write_attribute("style", "mso-direction-alt:auto");
+        write_start_element("div");
+        write_attribute("style", "text-align:left");
+        write_characters("");
+        write_end_element("div");
+        write_end_element(xmlns_v, "textbox");
 
-        serializer().start_element(xmlns_x, "ClientData");
-        serializer().attribute("ObjectType", "Note");
-        serializer().start_element(xmlns_x, "MoveWithCells");
-        serializer().end_element(xmlns_x, "MoveWithCells");
-        serializer().start_element(xmlns_x, "SizeWithCells");
-        serializer().end_element(xmlns_x, "SizeWithCells");
-        serializer().start_element(xmlns_x, "Anchor");
-        serializer().characters("1, 15, 0, " + std::to_string(2 + comment_index * 4) + ", 2, 54, 4, 14");
-        serializer().end_element(xmlns_x, "Anchor");
-        serializer().start_element(xmlns_x, "AutoFill");
-        serializer().characters("False");
-        serializer().end_element(xmlns_x, "AutoFill");
-        serializer().start_element(xmlns_x, "Row");
-        serializer().characters(cell_ref.row() - 1);
-        serializer().end_element(xmlns_x, "Row");
-        serializer().start_element(xmlns_x, "Column");
-        serializer().characters(cell_ref.column_index() - 1);
-        serializer().end_element(xmlns_x, "Column");
-        serializer().end_element(xmlns_x, "ClientData");
+        write_start_element(xmlns_x, "ClientData");
+        write_attribute("ObjectType", "Note");
+        write_start_element(xmlns_x, "MoveWithCells");
+        write_end_element(xmlns_x, "MoveWithCells");
+        write_start_element(xmlns_x, "SizeWithCells");
+        write_end_element(xmlns_x, "SizeWithCells");
+        write_start_element(xmlns_x, "Anchor");
+        write_characters("1, 15, 0, " + std::to_string(2 + comment_index * 4) + ", 2, 54, 4, 14");
+        write_end_element(xmlns_x, "Anchor");
+        write_start_element(xmlns_x, "AutoFill");
+        write_characters("False");
+        write_end_element(xmlns_x, "AutoFill");
+        write_start_element(xmlns_x, "Row");
+        write_characters(cell_ref.row() - 1);
+        write_end_element(xmlns_x, "Row");
+        write_start_element(xmlns_x, "Column");
+        write_characters(cell_ref.column_index() - 1);
+        write_end_element(xmlns_x, "Column");
+        write_end_element(xmlns_x, "ClientData");
 
-        serializer().end_element(xmlns_v, "shape");
+        write_end_element(xmlns_v, "shape");
 
         ++comment_index;
     }
 
-    serializer().end_element("xml");
+    write_end_element("xml");
 }
 
 // Other Parts
@@ -2827,11 +2859,6 @@ void xlsx_producer::write_image(const path &image_path)
     std::ostream(image_streambuf.get()) << &buffer;
 }
 
-xml::serializer &xlsx_producer::serializer()
-{
-    return *current_part_serializer_;
-}
-
 std::string xlsx_producer::write_bool(bool boolean) const
 {
     return boolean ? "1" : "0";
@@ -2851,8 +2878,8 @@ void xlsx_producer::write_relationships(const std::vector<xlnt::relationship> &r
 
     const auto xmlns = xlnt::constants::ns("relationships");
 
-    serializer().start_element(xmlns, "Relationships");
-    serializer().namespace_decl(xmlns, "");
+    write_start_element(xmlns, "Relationships");
+    write_namespace(xmlns, "");
 
     for (std::size_t i = 1; i <= relationships.size(); ++i)
     {
@@ -2860,45 +2887,70 @@ void xlsx_producer::write_relationships(const std::vector<xlnt::relationship> &r
             [&i](const relationship &r) { return r.id() == "rId" + std::to_string(i); });
         auto relationship = *rel_iter;
 
-        serializer().start_element(xmlns, "Relationship");
+        write_start_element(xmlns, "Relationship");
 
-        serializer().attribute("Id", relationship.id());
-        serializer().attribute("Type", relationship.type());
-        serializer().attribute("Target", relationship.target().path().string());
+        write_attribute("Id", relationship.id());
+        write_attribute("Type", relationship.type());
+        write_attribute("Target", relationship.target().path().string());
 
         if (relationship.target_mode() == xlnt::target_mode::external)
         {
-            serializer().attribute("TargetMode", "External");
+            write_attribute("TargetMode", "External");
         }
 
-        serializer().end_element(xmlns, "Relationship");
+        write_end_element(xmlns, "Relationship");
     }
 
-    serializer().end_element(xmlns, "Relationships");
+    write_end_element(xmlns, "Relationships");
 }
 
 void xlsx_producer::write_color(const xlnt::color &color)
 {
     if (color.is_auto())
     {
-        serializer().attribute("auto", write_bool(true));
+        write_attribute("auto", write_bool(true));
         return;
     }
 
     switch (color.type())
     {
     case xlnt::color_type::theme:
-        serializer().attribute("theme", color.theme().index());
+        write_attribute("theme", color.theme().index());
         break;
 
     case xlnt::color_type::indexed:
-        serializer().attribute("indexed", color.indexed().index());
+        write_attribute("indexed", color.indexed().index());
         break;
 
     case xlnt::color_type::rgb:
-        serializer().attribute("rgb", color.rgb().hex_string());
+        write_attribute("rgb", color.rgb().hex_string());
         break;
     }
+}
+
+void xlsx_producer::write_start_element(const std::string &name)
+{
+    current_part_serializer_->start_element(name);
+}
+
+void xlsx_producer::write_start_element(const std::string &ns, const std::string &name)
+{
+    current_part_serializer_->start_element(ns, name);
+}
+
+void xlsx_producer::write_end_element(const std::string &name)
+{
+    current_part_serializer_->end_element(name);
+}
+
+void xlsx_producer::write_end_element(const std::string &ns, const std::string &name)
+{
+    current_part_serializer_->end_element(ns, name);
+}
+
+void xlsx_producer::write_namespace(const std::string &ns, const std::string &prefix)
+{
+    current_part_serializer_->namespace_decl(ns, prefix);
 }
 
 } // namespace detail

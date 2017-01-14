@@ -294,6 +294,11 @@ public:
     /// <summary>
     ///
     /// </summary>
+    std::vector<std::string> core_properties() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     template <typename T = std::string>
     T core_property(const std::string &property_name) const;
 
@@ -311,6 +316,11 @@ public:
     /// <summary>
     ///
     /// </summary>
+    std::vector<std::string> extended_properties() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     template <typename T = std::string>
     T extended_property(const std::string &property_name) const;
 
@@ -324,6 +334,11 @@ public:
     /// Returns true if the workbook has the custom property with the given name.
     /// </summary>
     bool has_custom_property(const std::string &property_name) const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::vector<std::string> custom_properties() const;
 
     /// <summary>
     ///
