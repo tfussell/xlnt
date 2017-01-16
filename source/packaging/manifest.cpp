@@ -214,8 +214,8 @@ std::vector<path> manifest::parts() const
     return std::vector<path>(parts.begin(), parts.end());
 }
 
-std::string manifest::register_relationship(
-    const uri &source, relationship_type type, const uri &target, target_mode mode)
+std::string manifest::register_relationship(const uri &source,
+    relationship_type type, const uri &target, target_mode mode)
 {
     xlnt::relationship rel(next_relationship_id(source.path()), type, source, target, mode);
     return register_relationship(rel);

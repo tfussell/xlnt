@@ -9,7 +9,9 @@
 #include <xlnt/styles/horizontal_alignment.hpp>
 #include <xlnt/styles/vertical_alignment.hpp>
 #include <xlnt/utils/exceptions.hpp>
+#include <xlnt/utils/variant.hpp>
 #include <xlnt/worksheet/pane.hpp>
+#include <xlnt/workbook/metadata_property.hpp>
 
 namespace xlnt {
 namespace detail {
@@ -35,6 +37,12 @@ std::string to_string(vertical_alignment vertical_alignment);
 std::string to_string(horizontal_alignment horizontal_alignment);
 
 std::string to_string(border_side side);
+
+std::string to_string(core_property prop);
+
+std::string to_string(extended_property prop);
+
+std::string to_string(variant::type type);
 
 } // namespace detail
 } // namespace xlnt

@@ -110,7 +110,7 @@ public:
         xlnt::workbook wb;
         wb.load("data/21_custom_properties.xlsx");
         TS_ASSERT(wb.has_custom_property("Client"));
-        TS_ASSERT_EQUALS(wb.custom_property("Client"), "me!");
+        TS_ASSERT_EQUALS(wb.custom_property("Client").get<std::string>(), "me!");
     }
 
     void test_read_formulae()

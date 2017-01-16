@@ -45,7 +45,9 @@
 #include <xlnt/styles/style.hpp>
 #include <xlnt/utils/exceptions.hpp>
 #include <xlnt/utils/path.hpp>
+#include <xlnt/utils/variant.hpp>
 #include <xlnt/workbook/const_worksheet_iterator.hpp>
+#include <xlnt/workbook/metadata_property.hpp>
 #include <xlnt/workbook/named_range.hpp>
 #include <xlnt/workbook/theme.hpp>
 #include <xlnt/workbook/workbook.hpp>
@@ -104,9 +106,9 @@ void open_stream(std::ofstream &stream, const std::string &path)
 #endif
 
 template<typename T>
-std::vector<std::string> keys(const T &container)
+std::vector<typename T::key_type> keys(const T &container)
 {
-    auto result = std::vector<std::string>();
+    auto result = std::vector<typename T::key_type>();
     auto iter = container.begin();
 
     while (iter != container.end())
@@ -121,72 +123,46 @@ std::vector<std::string> keys(const T &container)
 
 namespace xlnt {
 
-bool workbook::has_core_property(const std::string &property_name) const
+bool workbook::has_core_property(xlnt::core_property type) const
 {
-    return d_->core_properties_.count(property_name) > 0;
+    return d_->core_properties_.count(type) > 0;
 }
 
-std::vector<std::string> workbook::core_properties() const
+std::vector<xlnt::core_property> workbook::core_properties() const
 {
     return keys(d_->core_properties_);
 }
 
-template <>
-XLNT_API std::string workbook::core_property(const std::string &property_name) const
+variant workbook::core_property(xlnt::core_property type) const
 {
-    return d_->core_properties_.at(property_name);
+    return d_->core_properties_.at(type);
 }
 
-template <>
-XLNT_API void workbook::core_property(const std::string &property_name, const std::string value)
+void workbook::core_property(xlnt::core_property type, const variant &value)
 {
-    d_->core_properties_[property_name] = value;
+    register_package_part(relationship_type::core_properties);
+    d_->core_properties_[type] = value;
 }
 
-template <>
-XLNT_API void workbook::core_property(const std::string &property_name, const char *value)
+bool workbook::has_extended_property(xlnt::extended_property type) const
 {
-    d_->core_properties_[property_name] = value;
+    return d_->extended_properties_.count(type) > 0;
 }
 
-template <>
-XLNT_API void workbook::core_property(const std::string &property_name, const datetime value)
-{
-    d_->core_properties_[property_name] = value.to_iso_string();
-}
-
-bool workbook::has_extended_property(const std::string &property_name) const
-{
-    return d_->extended_properties_.count(property_name) > 0;
-}
-
-std::vector<std::string> workbook::extended_properties() const
+std::vector<xlnt::extended_property> workbook::extended_properties() const
 {
     return keys(d_->extended_properties_);
 }
 
-template <>
-XLNT_API void workbook::extended_property(const std::string &property_name, const std::string value)
+void workbook::extended_property(xlnt::extended_property type, const variant &value)
 {
-    d_->extended_properties_[property_name] = value;
+    register_package_part(relationship_type::extended_properties);
+    d_->extended_properties_[type] = value;
 }
 
-template <>
-XLNT_API void workbook::extended_property(const std::string &property_name, const char *value)
+variant workbook::extended_property(xlnt::extended_property type) const
 {
-    d_->extended_properties_[property_name] = value;
-}
-
-template <>
-XLNT_API void workbook::extended_property(const std::string &property_name, const datetime value)
-{
-    d_->extended_properties_[property_name] = value.to_iso_string();
-}
-
-template <>
-XLNT_API std::string workbook::extended_property(const std::string &property_name) const
-{
-    return d_->extended_properties_.at(property_name);
+    return d_->extended_properties_.at(type);
 }
 
 bool workbook::has_custom_property(const std::string &property_name) const
@@ -199,20 +175,13 @@ std::vector<std::string> workbook::custom_properties() const
     return keys(d_->custom_properties_);
 }
 
-template <>
-XLNT_API void workbook::custom_property(const std::string &property_name, const std::string value)
+void workbook::custom_property(const std::string &property_name, const variant &value)
 {
+    register_package_part(relationship_type::custom_properties);
     d_->custom_properties_[property_name] = value;
 }
 
-template <>
-XLNT_API void workbook::custom_property(const std::string &property_name, const char *value)
-{
-    d_->custom_properties_[property_name] = value;
-}
-
-template <>
-XLNT_API std::string workbook::custom_property(const std::string &property_name) const
+variant workbook::custom_property(const std::string &property_name) const
 {
     return d_->custom_properties_.at(property_name);
 }
@@ -222,10 +191,7 @@ workbook workbook::empty()
     auto impl = new detail::workbook_impl();
     workbook wb(impl);
 
-    wb.d_->manifest_.register_override_type(path("/xl/workbook.xml"),
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml");
-    wb.d_->manifest_.register_relationship(uri("/"), relationship_type::office_document,
-        uri("xl/workbook.xml"), target_mode::internal);
+    wb.register_package_part(relationship_type::office_document);
 
     wb.d_->manifest_.register_default_type("rels",
         "application/vnd.openxmlformats-package.relationships+xml");
@@ -234,29 +200,19 @@ workbook workbook::empty()
 
     wb.thumbnail(excel_thumbnail(), "jpeg", "image/jpeg");
 
-    wb.d_->manifest_.register_override_type(path("/docProps/core.xml"),
-        "application/vnd.openxmlformats-package.core-properties+xml");
-    wb.d_->manifest_.register_relationship(uri("/"), relationship_type::core_properties,
-        uri("docProps/core.xml"), target_mode::internal);
+    wb.core_property(xlnt::core_property::creator, "Microsoft Office User");
+    wb.core_property(xlnt::core_property::last_modified_by, "Microsoft Office User");
+    wb.core_property(xlnt::core_property::created, datetime(2016, 8, 12, 3, 16, 56));
+    wb.core_property(xlnt::core_property::modified, datetime(2016, 8, 12, 3, 17, 16));
 
-    wb.d_->manifest_.register_override_type(path("/docProps/app.xml"),
-        "application/vnd.openxmlformats-officedocument.extended-properties+xml");
-    wb.d_->manifest_.register_relationship(uri("/"), relationship_type::extended_properties,
-        uri("docProps/app.xml"), target_mode::internal);
-
-    wb.core_property("creator", "Microsoft Office User");
-    wb.core_property("lastModifiedBy", "Microsoft Office User");
-    wb.core_property("created", datetime(2016, 8, 12, 3, 16, 56));
-    wb.core_property("modified", datetime(2016, 8, 12, 3, 17, 16));
-
-    wb.extended_property("Application", "Microsoft Macintosh Excel");
-    wb.extended_property("DocSecurity", "0");
-    wb.extended_property("ScaleCrop", "false");
-    wb.extended_property("Company", "");
-    wb.extended_property("LinksUpToDate", "false");
-    wb.extended_property("SharedDoc", "false");
-    wb.extended_property("HyperlinksChanged", "false");
-    wb.extended_property("AppVersion", "15.0300");
+    wb.extended_property(xlnt::extended_property::application, "Microsoft Macintosh Excel");
+    wb.extended_property(xlnt::extended_property::doc_security, 0);
+    wb.extended_property(xlnt::extended_property::scale_crop, "false");
+    wb.extended_property(xlnt::extended_property::company, "");
+    wb.extended_property(xlnt::extended_property::links_up_to_date, false);
+    wb.extended_property(xlnt::extended_property::shared_doc, false);
+    wb.extended_property(xlnt::extended_property::hyperlinks_changed, false);
+    wb.extended_property(xlnt::extended_property::app_version, "15.0300");
 
     auto file_version = detail::workbook_impl::file_version_t{"xl", 6, 6, 26709};
     wb.d_->file_version_ = file_version;
@@ -352,150 +308,253 @@ workbook::workbook(detail::workbook_impl *impl)
     }
 }
 
-void workbook::register_app_properties_in_manifest()
+path default_path(relationship_type type, std::size_t index = 0)
 {
-    auto wb_rel = manifest().relationship(path("/"), 
-        relationship_type::office_document);
-
-    if (!manifest().has_relationship(wb_rel.target().path(), 
-        relationship_type::extended_properties))
+    switch (type)
     {
-        manifest().register_override_type(path("/docProps/app.xml"),
-            "application/vnd.openxmlformats-officedocument.extended-properties+xml");
-        manifest().register_relationship(uri("/"), relationship_type::extended_properties,
-            uri("docProps/app.xml"), target_mode::internal);
+    case relationship_type::calculation_chain:
+        return path("/xl/calcChain.xml");
+    case relationship_type::chartsheet:
+        return path("/xl/sheets/.xml");
+    case relationship_type::comments:
+        return path("/xl/comments.xml");
+    case relationship_type::connections:
+        return path("/xl/connections.xml");
+    case relationship_type::core_properties:
+        return path("/docProps/core.xml");
+    case relationship_type::custom_properties:
+        return path("/docProps/custom.xml");
+    case relationship_type::custom_property:
+        return path("/xl/customProperty.xml");
+    case relationship_type::custom_xml_mappings:
+        return path("/xl/customXmlMappings.xml");
+    case relationship_type::dialogsheet:
+        return path("/xl/dialogsheets/sheet.xml");
+    case relationship_type::drawings:
+        return path("/xl/drawings/drawing.xml");
+    case relationship_type::extended_properties:
+        return path("/docProps/app.xml");
+    case relationship_type::external_workbook_references:
+        return path("/xl/external.xml");
+    case relationship_type::hyperlink:
+        return path("/xl/hyperlink.xml");
+    case relationship_type::image:
+        return path("?");
+    case relationship_type::office_document:
+        return path("/xl/workbook.xml");
+    case relationship_type::pivot_table:
+        return path("/xl/pivotTable.xml");
+    case relationship_type::pivot_table_cache_definition:
+        return path("?");
+    case relationship_type::pivot_table_cache_records:
+        return path("?");
+    case relationship_type::printer_settings:
+        return path("/xl/printerSettings.xml");
+    case relationship_type::query_table:
+        return path("/xl/queryTable.xml");
+    case relationship_type::revision_log:
+        return path("/xl/revisionLog.xml");
+    case relationship_type::shared_string_table:
+        return path("/xl/sharedStrings.xml");
+    case relationship_type::shared_workbook:
+        return path("/xl/sharedWorkbook.xml");
+    case relationship_type::shared_workbook_revision_headers:
+        return path("?");
+    case relationship_type::shared_workbook_user_data:
+        return path("?");
+    case relationship_type::single_cell_table_definitions:
+        return path("?");
+    case relationship_type::stylesheet:
+        return path("/xl/styles.xml");
+    case relationship_type::table_definition:
+        return path("/xl/tableDefinition.xml");
+    case relationship_type::theme:
+        return path("/xl/theme/theme1.xml");
+    case relationship_type::thumbnail:
+        return path("/docProps/thumbnail.jpg");
+    case relationship_type::unknown:
+        return path("/xl/unknown.xml");
+    case relationship_type::vml_drawing:
+        return path("/xl/vmlDrawing.xml");
+    case relationship_type::volatile_dependencies:
+        return path("/xl/volatileDependencies.xml");
+    case relationship_type::worksheet:
+        return path("/xl/worksheets/sheet" + std::to_string(index) + ".xml");
     }
 }
 
-void workbook::register_core_properties_in_manifest()
+std::string content_type(relationship_type type)
+{
+    switch (type)
+    {
+    case relationship_type::calculation_chain:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.calcChain+xml";
+    case relationship_type::chartsheet:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.chartsheet+xml";
+    case relationship_type::comments:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml";
+    case relationship_type::connections:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.connections+xml";
+    case relationship_type::core_properties:
+        return "application/vnd.openxmlformats-package.core-properties+xml";
+    case relationship_type::custom_properties:
+        return "application/vnd.openxmlformats-officedocument.custom-properties+xml";
+    case relationship_type::custom_property:
+        return "";
+    case relationship_type::custom_xml_mappings:
+        return "application/xml";
+    case relationship_type::dialogsheet:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.dialogsheet+xml";
+    case relationship_type::drawings:
+        return "application/vnd.openxmlformats-officedocument.drawing+xml";
+    case relationship_type::extended_properties:
+        return "application/vnd.openxmlformats-officedocument.extended-properties+xml";
+    case relationship_type::external_workbook_references:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.externalLink+xml";
+    case relationship_type::hyperlink:
+        return "";
+    case relationship_type::image:
+        return "";
+    case relationship_type::office_document:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml";
+    case relationship_type::pivot_table:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.pivotTable+xml";
+    case relationship_type::pivot_table_cache_definition:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheDefinition+xml";
+    case relationship_type::pivot_table_cache_records:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheRecords+xml";
+    case relationship_type::printer_settings:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.printerSettings";
+    case relationship_type::query_table:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.queryTable+xml";
+    case relationship_type::revision_log:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.revisionLog+xml";
+    case relationship_type::shared_string_table:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml";
+    case relationship_type::shared_workbook:
+        return "";
+    case relationship_type::shared_workbook_revision_headers:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.revisionHeaders+xml";
+    case relationship_type::shared_workbook_user_data:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.userNames+xml";
+    case relationship_type::single_cell_table_definitions:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.tableSingleCells+xml";
+    case relationship_type::stylesheet:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml";
+    case relationship_type::table_definition:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml";
+    case relationship_type::theme:
+        return "application/vnd.openxmlformats-officedocument.theme+xml";
+    case relationship_type::thumbnail:
+        return "image/jpeg";
+    case relationship_type::unknown:
+        return "";
+    case relationship_type::vml_drawing:
+        return "application/vnd.openxmlformats-officedocument.vmlDrawing";
+    case relationship_type::volatile_dependencies:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.volatileDependencies+xml";
+    case relationship_type::worksheet:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml";
+    }
+}
+
+void workbook::register_package_part(relationship_type type)
+{
+    if (!manifest().has_relationship(path("/"), type))
+    {
+        manifest().register_override_type(default_path(type), content_type(type));
+        manifest().register_relationship(uri("/"), type,
+            uri(default_path(type).relative_to(path("/")).string()), 
+            target_mode::internal);
+    }
+}
+
+void workbook::register_workbook_part(relationship_type type)
+{
+    auto wb_rel = manifest().relationship(path("/"), relationship_type::office_document);
+    auto wb_path = manifest().canonicalize({ wb_rel });
+
+    if (!manifest().has_relationship(wb_path, type))
+    {
+        manifest().register_override_type(default_path(type), content_type(type));
+        manifest().register_relationship(uri(wb_path.string()), type,
+            uri(default_path(type).relative_to(wb_path.resolve(path("/"))).string()),
+            target_mode::internal);
+    }
+}
+
+void workbook::register_worksheet_part(worksheet ws, relationship_type type)
 {
     auto wb_rel = manifest().relationship(path("/"),
         relationship_type::office_document);
-
-    if (!manifest().has_relationship(wb_rel.target().path(),
-        relationship_type::core_properties))
-    {
-        manifest().register_override_type(path("/docProps/core.xml"),
-            "application/vnd.openxmlformats-package.core-properties+xml");
-        manifest().register_relationship(uri("/"), relationship_type::core_properties,
-            uri("docProps/core.xml"), target_mode::internal);
-    }
-}
-
-void workbook::register_shared_string_table_in_manifest()
-{
-    auto wb_rel = manifest().relationship(path("/"),
-        relationship_type::office_document);
-
-    if (!manifest().has_relationship(wb_rel.target().path(),
-        relationship_type::shared_string_table))
-    {
-        manifest().register_override_type(constants::part_shared_strings(),
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml");
-        manifest().register_relationship(wb_rel.target(), relationship_type::shared_string_table,
-            uri("sharedStrings.xml"), target_mode::internal);
-    }
-}
-
-void workbook::register_stylesheet_in_manifest()
-{
-    auto wb_rel = manifest().relationship(path("/"),
-        relationship_type::office_document);
-
-    if (!manifest().has_relationship(wb_rel.target().path(),
-        relationship_type::stylesheet))
-    {
-        manifest().register_override_type(constants::part_styles(),
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml");
-        manifest().register_relationship(wb_rel.target(), relationship_type::stylesheet,
-            uri("styles.xml"), target_mode::internal);
-    }
-}
-
-void workbook::register_theme_in_manifest()
-{
-    auto wb_rel = manifest().relationship(path("/"),
-        relationship_type::office_document);
-
-    if (!manifest().has_relationship(wb_rel.target().path(),
-        relationship_type::theme))
-    {
-        manifest().register_override_type(constants::part_theme(),
-            "application/vnd.openxmlformats-officedocument.theme+xml");
-        manifest().register_relationship(wb_rel.target(), relationship_type::theme,
-            uri("theme/theme1.xml"), target_mode::internal);
-    }
-}
-
-void workbook::register_comments_in_manifest(worksheet ws)
-{
-    auto wb_rel = manifest().relationship(path("/"), 
-        relationship_type::office_document);
-    auto ws_rel = manifest().relationship(wb_rel.target().path(), 
+    auto ws_rel = manifest().relationship(wb_rel.target().path(),
         d_->sheet_title_rel_id_map_.at(ws.title()));
     path ws_path(ws_rel.source().path().parent().append(ws_rel.target().path()));
 
-    if (!manifest().has_relationship(ws_path, relationship_type::vml_drawing))
+    if (type == relationship_type::comments)
     {
-        std::size_t file_number = 1;
-        path filename("vmlDrawing1.vml");
-        bool filename_exists = true;
-
-        while (filename_exists)
+        if (!manifest().has_relationship(ws_path, relationship_type::vml_drawing))
         {
-            filename_exists = false;
+            std::size_t file_number = 1;
+            path filename("vmlDrawing1.vml");
+            bool filename_exists = true;
 
-            for (auto current_ws_rel :
-                manifest().relationships(wb_rel.target().path(), xlnt::relationship_type::worksheet))
+            while (filename_exists)
             {
-                path current_ws_path(current_ws_rel.source().path().parent().append(current_ws_rel.target().path()));
-                if (!manifest().has_relationship(current_ws_path, xlnt::relationship_type::vml_drawing)) continue;
+                filename_exists = false;
 
-                for (auto current_ws_child_rel :
-                    manifest().relationships(current_ws_path, xlnt::relationship_type::vml_drawing))
+                for (auto current_ws_rel :
+                    manifest().relationships(wb_rel.target().path(), xlnt::relationship_type::worksheet))
                 {
-                    if (current_ws_child_rel.target().path() == path("../drawings").append(filename))
+                    path current_ws_path(current_ws_rel.source().path().parent().append(current_ws_rel.target().path()));
+                    if (!manifest().has_relationship(current_ws_path, xlnt::relationship_type::vml_drawing)) continue;
+
+                    for (auto current_ws_child_rel :
+                        manifest().relationships(current_ws_path, xlnt::relationship_type::vml_drawing))
                     {
-                        filename_exists = true;
-                        break;
+                        if (current_ws_child_rel.target().path() == path("../drawings").append(filename))
+                        {
+                            filename_exists = true;
+                            break;
+                        }
                     }
+                }
+
+                if (filename_exists)
+                {
+                    file_number++;
+                    filename = path("vmlDrawing" + std::to_string(file_number) + ".vml");
                 }
             }
 
-            if (filename_exists)
-            {
-                file_number++;
-                filename = path("vmlDrawing" + std::to_string(file_number) + ".vml");
-            }
+            manifest().register_default_type("vml", "application/vnd.openxmlformats-officedocument.vmlDrawing");
+
+            const path relative_path(path("../drawings").append(filename));
+            manifest().register_relationship(
+                uri(ws_path.string()), relationship_type::vml_drawing, uri(relative_path.string()), target_mode::internal);
         }
 
-        manifest().register_default_type("vml", "application/vnd.openxmlformats-officedocument.vmlDrawing");
-
-        const path relative_path(path("../drawings").append(filename));
-        manifest().register_relationship(
-            uri(ws_path.string()), relationship_type::vml_drawing, uri(relative_path.string()), target_mode::internal);
-    }
-
-    if (!manifest().has_relationship(ws_path, relationship_type::comments))
-    {
-        std::size_t file_number = 1;
-        path filename("comments1.xml");
-
-        while (true)
+        if (!manifest().has_relationship(ws_path, relationship_type::comments))
         {
-            if (!manifest().has_override_type(constants::package_xl().append(filename))) break;
+            std::size_t file_number = 1;
+            path filename("comments1.xml");
 
-            file_number++;
-            filename = path("comments" + std::to_string(file_number) + ".xml");
+            while (true)
+            {
+                if (!manifest().has_override_type(constants::package_xl().append(filename))) break;
+
+                file_number++;
+                filename = path("comments" + std::to_string(file_number) + ".xml");
+            }
+
+            const path absolute_path(constants::package_xl().append(filename));
+            manifest().register_override_type(
+                absolute_path, "application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml");
+
+            const path relative_path(path("..").append(filename));
+            manifest().register_relationship(
+                uri(ws_path.string()), relationship_type::comments, uri(relative_path.string()), target_mode::internal);
         }
-
-        const path absolute_path(constants::package_xl().append(filename));
-        manifest().register_override_type(
-            absolute_path, "application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml");
-
-        const path relative_path(path("..").append(filename));
-        manifest().register_relationship(
-            uri(ws_path.string()), relationship_type::comments, uri(relative_path.string()), target_mode::internal);
     }
 }
 
@@ -1043,8 +1102,8 @@ const theme &workbook::theme() const
 
 void workbook::theme(const class theme &value)
 {
-    register_theme_in_manifest();
     d_->theme_ = value;
+    register_workbook_part(relationship_type::theme);
 }
 
 std::vector<named_range> workbook::named_ranges() const
@@ -1064,7 +1123,7 @@ std::vector<named_range> workbook::named_ranges() const
 
 format workbook::create_format(bool default_format)
 {
-    register_stylesheet_in_manifest();
+    register_workbook_part(relationship_type::stylesheet);
     return d_->stylesheet_.get().create_format(default_format);
 }
 
@@ -1132,7 +1191,7 @@ const std::vector<rich_text> &workbook::shared_strings() const
 
 void workbook::add_shared_string(const rich_text &shared, bool allow_duplicates)
 {
-    register_shared_string_table_in_manifest();
+    register_workbook_part(relationship_type::shared_string_table);
 
     if (!allow_duplicates)
     {
@@ -1156,8 +1215,8 @@ bool workbook::contains(const std::string &sheet_title) const
     return false;
 }
 
-void workbook::thumbnail(
-    const std::vector<std::uint8_t> &thumbnail, const std::string &extension, const std::string &content_type)
+void workbook::thumbnail(const std::vector<std::uint8_t> &thumbnail, 
+    const std::string &extension, const std::string &content_type)
 {
     if (!d_->manifest_.has_relationship(path("/"), relationship_type::thumbnail))
     {

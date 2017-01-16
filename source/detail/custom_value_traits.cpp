@@ -262,5 +262,128 @@ std::string to_string(border_side side)
     default_case("top");
 }
 
+std::string to_string(core_property prop)
+{
+    switch (prop)
+    {
+    case core_property::category:
+        return "category";
+    case core_property::content_status:
+        return "contentStatus";
+    case core_property::created:
+        return "created";
+    case core_property::creator:
+        return "creator";
+    case core_property::description:
+        return "description";
+    case core_property::identifier:
+        return "identifier";
+    case core_property::keywords:
+        return "keywords";
+    case core_property::language:
+        return "language";
+    case core_property::last_modified_by:
+        return "lastModifiedBy";
+    case core_property::last_printed:
+        return "lastPrinted";
+    case core_property::modified:
+        return "modified";
+    case core_property::revision:
+        return "revision";
+    case core_property::subject:
+        return "subject";
+    case core_property::title:
+        return "title";
+    case core_property::version:
+        return "version";
+    }
+
+    default_case("category");
+}
+
+std::string to_string(extended_property prop)
+{
+    switch (prop)
+    {
+    case extended_property::application:
+        return "Application";
+    case extended_property::app_version:
+        return "AppVersion";
+    case extended_property::characters:
+        return "Characters";
+    case extended_property::characters_with_spaces:
+        return "CharactersWithSpaces";
+    case extended_property::company:
+        return "Company";
+    case extended_property::dig_sig:
+        return "DigSig";
+    case extended_property::doc_security:
+        return "DocSecurity";
+    case extended_property::heading_pairs:
+        return "HeadingPairs";
+    case extended_property::hidden_slides:
+        return "HiddenSlides";
+    case extended_property::hyperlinks_changed:
+        return "HyperlinksChanged";
+    case extended_property::hyperlink_base:
+        return "HyperlinkBase";
+    case extended_property::h_links:
+        return "HLinks";
+    case extended_property::lines:
+        return "Lines";
+    case extended_property::links_up_to_date:
+        return "LinksUpToDate";
+    case extended_property::manager:
+        return "Manager";
+    case extended_property::m_m_clips:
+        return "MMClips";
+    case extended_property::notes:
+        return "Notes";
+    case extended_property::pages:
+        return "Pages";
+    case extended_property::paragraphs:
+        return "Paragraphs";
+    case extended_property::presentation_format:
+        return "PresentationFormat";
+    case extended_property::scale_crop:
+        return "ScaleCrop";
+    case extended_property::shared_doc:
+        return "SharedDoc";
+    case extended_property::slides:
+        return "Slides";
+    case extended_property::template_:
+        return "Template";
+    case extended_property::titles_of_parts:
+        return "TitlesOfParts";
+    case extended_property::total_time:
+        return "TotalTime";
+    case extended_property::words:
+        return "Words";
+    }
+
+    default_case("Application");
+}
+
+std::string to_string(variant::type type)
+{
+    switch (type)
+    {
+    case variant::type::boolean:
+        return "bool";
+    case variant::type::date:
+        return "date";
+    case variant::type::i4:
+        return "i4";
+    case variant::type::lpstr:
+        return "lpstr";
+    case variant::type::null:
+        return "null";
+    case variant::type::vector:
+        return "vector";
+    }
+
+    default_case("null");
+}
+
 } // namespace detail
 } // namespace xlnt

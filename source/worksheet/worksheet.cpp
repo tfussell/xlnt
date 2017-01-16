@@ -1007,7 +1007,7 @@ void worksheet::add_view(const sheet_view &new_view)
 
 void worksheet::register_comments_in_manifest()
 {
-    workbook().register_comments_in_manifest(*this);
+    workbook().register_worksheet_part(*this, relationship_type::comments);
 }
 
 bool worksheet::has_header_footer() const

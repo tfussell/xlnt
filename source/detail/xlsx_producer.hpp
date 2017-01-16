@@ -71,7 +71,10 @@ private:
 	// Package Parts
 
 	void write_content_types();
-	void write_properties(const relationship &rel);
+    void write_property(const std::string &name, const variant &value, const std::string &ns, bool custom);
+	void write_core_properties(const relationship &rel);
+    void write_extended_properties(const relationship &rel);
+    void write_custom_properties(const relationship &rel);
     void write_image(const path &image_path);
 
 	// SpreadsheetML-Specific Package Parts

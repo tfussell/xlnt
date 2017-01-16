@@ -37,6 +37,8 @@
 namespace xlnt {
 
 enum class calendar;
+enum class core_property;
+enum class extended_property;
 enum class relationship_type;
 
 class alignment;
@@ -52,6 +54,7 @@ class font;
 class format;
 class rich_text;
 class manifest;
+class metadata_property;
 class named_range;
 class number_format;
 class path;
@@ -63,6 +66,7 @@ class relationship;
 class style;
 class style_serializer;
 class theme;
+class variant;
 class workbook_view;
 class worksheet;
 class worksheet_iterator;
@@ -289,46 +293,42 @@ public:
     /// <summary>
     /// Returns true if the workbook has the core property with the given name.
     /// </summary>
-    bool has_core_property(const std::string &property_name) const;
+    bool has_core_property(xlnt::core_property type) const;
 
     /// <summary>
     ///
     /// </summary>
-    std::vector<std::string> core_properties() const;
+    std::vector<xlnt::core_property> core_properties() const;
 
     /// <summary>
     ///
     /// </summary>
-    template <typename T = std::string>
-    T core_property(const std::string &property_name) const;
+    variant core_property(xlnt::core_property type) const;
 
     /// <summary>
     ///
     /// </summary>
-    template <typename T = std::string>
-    void core_property(const std::string &property_name, const T value);
+    void core_property(xlnt::core_property type, const variant &value);
 
     /// <summary>
     /// Returns true if the workbook has the extended property with the given name.
     /// </summary>
-    bool has_extended_property(const std::string &property_name) const;
+    bool has_extended_property(xlnt::extended_property type) const;
 
     /// <summary>
     ///
     /// </summary>
-    std::vector<std::string> extended_properties() const;
+    std::vector<xlnt::extended_property> extended_properties() const;
 
     /// <summary>
     ///
     /// </summary>
-    template <typename T = std::string>
-    T extended_property(const std::string &property_name) const;
+    variant extended_property(xlnt::extended_property type) const;
 
     /// <summary>
     ///
     /// </summary>
-    template <typename T = std::string>
-    void extended_property(const std::string &property_name, const T value);
+    void extended_property(xlnt::extended_property type, const variant &value);
 
     /// <summary>
     /// Returns true if the workbook has the custom property with the given name.
@@ -343,14 +343,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-    template <typename T = std::string>
-    T custom_property(const std::string &property_name) const;
+    variant custom_property(const std::string &property_name) const;
 
     /// <summary>
     ///
     /// </summary>
-    template <typename T = std::string>
-    void custom_property(const std::string &property_name, const T value);
+    void custom_property(const std::string &property_name, const variant &value);
 
     /// <summary>
     ///
@@ -746,32 +744,17 @@ private:
     /// <summary>
     ///
     /// </summary>
-    void register_app_properties_in_manifest();
+    void register_package_part(relationship_type type);
 
     /// <summary>
     ///
     /// </summary>
-    void register_core_properties_in_manifest();
+    void register_workbook_part(relationship_type type);
 
     /// <summary>
     ///
     /// </summary>
-    void register_shared_string_table_in_manifest();
-
-    /// <summary>
-    ///
-    /// </summary>
-    void register_stylesheet_in_manifest();
-
-    /// <summary>
-    ///
-    /// </summary>
-    void register_theme_in_manifest();
-
-    /// <summary>
-    ///
-    /// </summary>
-    void register_comments_in_manifest(worksheet ws);
+    void register_worksheet_part(worksheet ws, relationship_type type);
 
     /// <summary>
     /// Removes calcChain part from manifest if no formulae remain in workbook.

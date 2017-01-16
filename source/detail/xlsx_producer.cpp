@@ -20,9 +20,11 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #include <cmath>
 #include <numeric> // for std::accumulate
 #include <string>
+#include <unordered_set>
 
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/packaging/manifest.hpp>
@@ -91,15 +93,15 @@ void xlsx_producer::populate_archive()
 
         if (rel.type() == relationship_type::core_properties)
         {
-            write_properties(rel);
+            write_core_properties(rel);
         }
         else if (rel.type() == relationship_type::extended_properties)
         {
-            write_properties(rel);
+            write_extended_properties(rel);
         }
         else if (rel.type() == relationship_type::custom_properties)
         {
-            write_properties(rel);
+            write_custom_properties(rel);
         }
         else if (rel.type() == relationship_type::office_document)
         {
@@ -164,177 +166,207 @@ void xlsx_producer::write_content_types()
     write_end_element(xmlns, "Types");
 }
 
-/*
-Core Properties:
-- category
-- contentStatus
-- dcterms:created
-- dc:creator
-- dc:description
-- dc:identifier
-- keywords
-- dc:language
-- lastModifiedBy
-- lastPrinted
-- dcterms:modified
-- revision
-- dc:subject
-- dc:title
-- version
-
-Extended Properties (SpreadsheetML):
-
-
-Custom Properties:
-
-*/
-void xlsx_producer::write_properties(const relationship &rel)
+void xlsx_producer::write_property(const std::string &name, const variant &value, const std::string &ns, bool custom)
 {
-    std::vector<std::pair<std::string, std::string>> properties;
-    std::unordered_map<std::string, std::string> namespaces;
-
-    xml::qname root_element;
-    auto xmlns = ""s;
-
-    if (rel.type() == relationship_type::core_properties)
+    if (custom)
     {
-        xmlns = "http://schemas.openxmlformats.org/officeDocument/2006/core-properties";
-        root_element = xml::qname(constants::ns("core-properties"), "coreProperties");
-
-        for (const auto &property_name : source_.core_properties())
-        {
-            properties.emplace_back(property_name, source_.core_property(property_name));
-
-            if (property_name == "created" || property_name == "modified")
-            {
-                namespaces.emplace(constants::ns("dcterms"), "dcterms");
-                namespaces.emplace(constants::ns("xsi"), "xsi");
-            }
-            else if (property_name == "creator" || property_name == "description"
-                || property_name == "identifier" || property_name == "language"
-                || property_name == "subject" || property_name == "title")
-            {
-                namespaces.emplace(constants::ns("dc"), "dc");
-            }
-        }
+        write_start_element(ns, "property");
+        write_attribute("name", name);
     }
-    else if (rel.type() == relationship_type::extended_properties)
+    else
     {
-        xmlns = "http://schemas.openxmlformats.org/officeDocument/2006/extended-properties";
-        root_element = xml::qname(xmlns, "Properties");
-
-        namespaces.emplace(xmlns, "");
-
-        for (const auto &property_name : source_.extended_properties())
-        {
-            properties.emplace_back(property_name, source_.extended_property(property_name));
-
-            if (property_name == "HeadingsOfParts" || property_name == "TitlesOfParts")
-            {
-                namespaces.emplace(constants::ns("vt"), "vt");
-            }
-        }
-    }
-    else if (rel.type() == relationship_type::custom_properties)
-    {
-        xmlns = "http://schemas.openxmlformats.org/officeDocument/2006/custom-properties";
-        root_element = xml::qname(xmlns, "Properties");
-
-        namespaces.emplace(xmlns, "");
-        namespaces.emplace(constants::ns("vt"), "vt");
-
-        for (const auto &property_name : source_.custom_properties())
-        {
-            properties.emplace_back(property_name, source_.custom_property(property_name));
-        }
+        write_start_element(ns, name);
     }
 
-    write_start_element(root_element.namespace_(), root_element.name());
-
-    for (const auto &ns : namespaces)
+    switch (value.value_type())
     {
-        write_namespace(ns.first, ns.second);
-    }
+    case variant::type::null:
+        break;
 
-    for (const auto &prop : properties)
-    {
-        auto property_type = "normal"s;
-        auto property_ns = xmlns;
-
-        if (rel.type() == relationship_type::core_properties)
+    case variant::type::boolean:
+        if (custom)
         {
-            if (prop.first == "keywords")
-            {
-                property_type = "keywords";
-            }
-            else if (prop.first == "modified" || prop.first == "created")
-            {
-                property_type = "w3cdtf";
-                property_ns = constants::ns("dcterms");
-            }
-            else if (prop.first == "creator" || prop.first == "description"
-                || prop.first == "identifier" || prop.first == "language"
-                || prop.first == "subject" || prop.first == "title")
-            {
-                property_ns = constants::ns("dc");
-            }
-        }
-        else if (rel.type() == relationship_type::extended_properties)
-        {
-            if (prop.first == "HeadingsOfParts" || prop.first == "TitlesOfParts")
-            {
-                property_type = "vt:vector";
-            }
+            write_attribute("fmtid", "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
+            write_attribute("pid", 2);
         }
 
-        write_start_element(property_ns, prop.first);
+        write_characters(write_bool(value.get<bool>()));
+        break;
 
-        if (property_type == "vt:vector")
+    case variant::type::i4:
+        if (custom)
         {
-            write_start_element(constants::ns("vt"), "vector");
+            write_attribute("fmtid", "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
+            write_attribute("pid", 2);
+        }
 
-            auto split = std::vector<std::string>();
-            auto delim = ' ';
-            auto previous_index = std::size_t(0);
-            auto delim_index = prop.second.find(delim);
+        write_characters(value.get<std::int32_t>());
+        break;
 
-            while (delim_index != std::string::npos)
+    case variant::type::lpstr:
+        if (custom)
+        {
+            write_attribute("fmtid", "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
+            write_attribute("pid", 2);
+            write_start_element(constants::ns("vt"), "lpwstr");
+        }
+
+        write_characters(value.get<std::string>());
+
+        if (custom)
+        {
+            write_end_element(constants::ns("vt"), "lpwstr");
+        }
+
+        break;
+
+    case variant::type::date:
+        write_attribute(xml::qname(constants::ns("xsi"), "type"), "dcterms:W3CDTF");
+        write_characters(value.get<datetime>().to_iso_string());
+        break;
+
+    case variant::type::vector:
+    {
+        write_start_element(constants::ns("vt"), "vector");
+
+        auto vector = value.get<std::vector<variant>>();
+        std::unordered_set<variant::type> types;
+
+        for (const auto &element : vector)
+        {
+            types.insert(element.value_type());
+        }
+
+        const auto is_mixed = types.size() > 1;
+        const auto vector_type = !is_mixed ? to_string(*types.begin()) : "variant";
+
+        write_attribute("size", vector.size());
+        write_attribute("baseType", vector_type);
+
+        for (std::size_t i = 0; i < vector.size(); ++i)
+        {
+            const auto &vector_element = vector.at(i);
+
+            if (is_mixed)
             {
-                split.push_back(prop.second.substr(previous_index, delim_index - previous_index));
-                previous_index = delim_index;
-                delim_index = prop.second.find(delim);
-            }
-
-            split.push_back(prop.second.substr(previous_index));
-
-            write_attribute("size", split.size() / 2);
-            write_attribute("baseType", "variant");
-
-            for (std::size_t i = 0; i < split.size() / 2; ++i)
-            {
-                auto vt_type = split[i * 2];
-                auto vt_value = split[i * 2 + 1];
                 write_start_element(constants::ns("vt"), "variant");
-                write_element(constants::ns("vt"), vt_type, vt_value);
+            }
+
+            switch (vector_element.value_type())
+            {
+            case variant::type::lpstr:
+                write_element(constants::ns("vt"), "lpstr", vector_element.get<std::string>());
+                break;
+            case variant::type::i4:
+                write_element(constants::ns("vt"), "i4", vector_element.get<std::int32_t>());
+                break;
+            }
+
+            if (is_mixed)
+            {
                 write_end_element(constants::ns("vt"), "variant");
             }
-
-            write_end_element(constants::ns("vt"), "vector");
-        }
-        else if (property_type == "w3cdtf")
-        {
-            write_attribute(xml::qname(constants::ns("xsi"), "type"), "dcterms:W3CDTF");
-            write_characters(prop.second);
-        }
-        else
-        {
-            write_characters(prop.second);
         }
 
-        write_end_element(property_ns, prop.first);
+        write_end_element(constants::ns("vt"), "vector");
     }
 
-    write_end_element(root_element.namespace_(), root_element.name());
+    break;
+    }
+
+    if (custom)
+    {
+        write_end_element(ns, "property");
+    }
+    else
+    {
+        write_end_element(ns, name);
+    }
+}
+
+std::vector<std::pair<std::string, std::string>> core_property_namespace(core_property type)
+{
+    if (type == core_property::created 
+        || type == core_property::modified)
+    {
+        return {{constants::ns("dcterms"), "dcterms"},
+            {constants::ns("xsi"), "xsi"}};
+    }
+    else if (type == core_property::title 
+        || type == core_property::subject 
+        || type == core_property::creator 
+        || type == core_property::description)
+    {
+        return {{constants::ns("dc"), "dc"}};
+    }
+    else if (type == core_property::keywords)
+    {
+        return {{constants::ns("core-properties"), "cp"},
+            {constants::ns("vt"), "vt"}};
+    }
+
+    return {{constants::ns("core-properties"), "cp"}};
+}
+
+void xlsx_producer::write_core_properties(const relationship &/*rel*/)
+{
+    write_start_element(constants::ns("core-properties"), "coreProperties");
+
+    auto core_properties = source_.core_properties();
+    std::unordered_map<std::string, std::string> namespaces;
+
+    for (const auto &prop : core_properties)
+    {
+        for (const auto &ns : core_property_namespace(prop))
+        {
+            if (namespaces.count(ns.first) > 0) continue;
+            write_namespace(ns.first, ns.second);
+            namespaces.emplace(ns);
+        }
+    }
+
+    for (const auto &prop : core_properties)
+    {
+        write_property(to_string(prop), source_.core_property(prop),
+            core_property_namespace(prop).front().first, false);
+    }
+
+    write_end_element(constants::ns("core-properties"), "coreProperties");
+}
+
+void xlsx_producer::write_extended_properties(const relationship &/*rel*/)
+{
+    write_start_element(constants::ns("extended-properties"), "Properties");
+    write_namespace(constants::ns("extended-properties"), "");
+
+    if (source_.has_extended_property(extended_property::heading_pairs)
+        || source_.has_extended_property(extended_property::titles_of_parts))
+    {
+        write_namespace(constants::ns("vt"), "vt");
+    }
+
+    for (const auto &prop : source_.extended_properties())
+    {
+        write_property(to_string(prop), source_.extended_property(prop), 
+            constants::ns("extended-properties"), false);
+    }
+
+    write_end_element(constants::ns("extended-properties"), "Properties");
+}
+
+void xlsx_producer::write_custom_properties(const relationship &/*rel*/)
+{
+    write_start_element(constants::ns("custom-properties"), "Properties");
+    write_namespace(constants::ns("custom-properties"), "");
+    write_namespace(constants::ns("vt"), "vt");
+
+    for (const auto &prop : source_.custom_properties())
+    {
+        write_property(prop, source_.custom_property(prop),
+            constants::ns("custom-properties"), true);
+    }
+
+    write_end_element(constants::ns("custom-properties"), "Properties");
 }
 
 // Write SpreadsheetML-Specific Package Parts

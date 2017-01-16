@@ -31,6 +31,7 @@
 #include <detail/worksheet_impl.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/utils/datetime.hpp>
+#include <xlnt/utils/variant.hpp>
 #include <xlnt/workbook/calculation_properties.hpp>
 #include <xlnt/workbook/theme.hpp>
 #include <xlnt/workbook/workbook_view.hpp>
@@ -94,9 +95,9 @@ struct workbook_impl
     optional<theme> theme_;
     std::unordered_map<std::string, std::vector<std::uint8_t>> images_;
 
-    std::unordered_map<std::string, std::string> core_properties_;
-    std::unordered_map<std::string, std::string> extended_properties_;
-    std::unordered_map<std::string, std::string> custom_properties_;
+    std::unordered_map<xlnt::core_property, variant, xlnt::scoped_enum_hash<xlnt::core_property>> core_properties_;
+    std::unordered_map<xlnt::extended_property, variant, xlnt::scoped_enum_hash<xlnt::extended_property>> extended_properties_;
+    std::unordered_map<std::string, variant> custom_properties_;
 
 	std::unordered_map<std::string, std::string> sheet_title_rel_id_map_;
 

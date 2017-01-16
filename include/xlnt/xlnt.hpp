@@ -61,11 +61,13 @@
 #include <xlnt/utils/path.hpp>
 #include <xlnt/utils/time.hpp>
 #include <xlnt/utils/timedelta.hpp>
+#include <xlnt/utils/variant.hpp>
 
 // workbook
 #include <xlnt/workbook/const_worksheet_iterator.hpp>
 #include <xlnt/workbook/document_security.hpp>
 #include <xlnt/workbook/external_book.hpp>
+#include <xlnt/workbook/metadata_property.hpp>
 #include <xlnt/workbook/named_range.hpp>
 #include <xlnt/workbook/theme.hpp>
 #include <xlnt/workbook/workbook.hpp>
