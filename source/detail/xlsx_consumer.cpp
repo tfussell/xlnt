@@ -593,15 +593,15 @@ void xlsx_consumer::read_part(const std::vector<relationship> &rel_chain)
     switch (rel_chain.back().type())
     {
     case relationship_type::core_properties:
-        read_properties(part_path, qn("core-properties", "coreProperties"));
+        read_core_properties();
         break;
 
     case relationship_type::extended_properties:
-        read_properties(part_path, qn("extended-properties", "Properties"));
+        read_extended_properties();
         break;
 
     case relationship_type::custom_properties:
-        read_properties(part_path, qn("custom-properties", "Properties"));
+        read_custom_properties();
         break;
 
     case relationship_type::office_document:
@@ -791,41 +791,57 @@ void xlsx_consumer::read_content_types()
     expect_end_element(qn("content-types", "Types"));
 }
 
-void xlsx_consumer::read_properties(const path &part, const xml::qname &root)
+void xlsx_consumer::read_core_properties()
 {
-    std::unordered_map<std::string, std::string> properties;
-    expect_start_element(root, xml::content::complex);
+    //qn("extended-properties", "Properties");
+    //qn("custom-properties", "Properties");
+    expect_start_element(qn("core-properties", "coreProperties"), xml::content::complex);
 
-    while (in_element(root))
+    while (in_element(qn("core-properties", "coreProperties")))
     {
-        auto property_element = expect_start_element(xml::content::mixed);
-
-        if (property_element.name() != "property")
+        const auto property_element = expect_start_element(xml::content::simple);
+        const auto prop = detail::from_string<core_property>(property_element.name());
+        if (prop == core_property::created || prop == core_property::modified)
         {
-            properties[property_element.name()] = read_text();
+            skip_attribute(qn("xsi", "type"));
         }
-        else
-        {
-            auto property_name = parser().attribute("name");
-            auto variant_child_element = expect_start_element(xml::content::simple);
-            properties[property_name] = read_text();
-            expect_end_element(variant_child_element);
-        }
-
-        skip_remaining_content(property_element);
+        target_.core_property(prop, read_text());
         expect_end_element(property_element);
     }
 
-    expect_end_element(root);
+    expect_end_element(qn("core-properties", "coreProperties"));
+}
 
-    if (manifest().content_type(part) == "application/vnd."
-        "openxmlformats-officedocument.custom-properties+xml")
+void xlsx_consumer::read_extended_properties()
+{
+    expect_start_element(qn("extended-properties", "Properties"), xml::content::complex);
+
+    while (in_element(qn("extended-properties", "Properties")))
     {
-        for (const auto &prop : properties)
-        {
-            target_.custom_property(prop.first, prop.second);
-        }
+        const auto property_element = expect_start_element(xml::content::mixed);
+        const auto prop = detail::from_string<extended_property>(property_element.name());
+        target_.extended_property(prop, read_variant());
+        expect_end_element(property_element);
     }
+
+    expect_end_element(qn("extended-properties", "Properties"));
+}
+
+void xlsx_consumer::read_custom_properties()
+{
+    expect_start_element(qn("custom-properties", "Properties"), xml::content::complex);
+
+    while (in_element(qn("custom-properties", "Properties")))
+    {
+        const auto property_element = expect_start_element(xml::content::complex);
+        const auto prop = parser().attribute("name");
+        const auto format_id = parser().attribute("fmtid");
+        const auto property_id = parser().attribute("pid");
+        target_.custom_property(prop, read_variant());
+        expect_end_element(property_element);
+    }
+
+    expect_end_element(qn("custom-properties", "Properties"));
 }
 
 void xlsx_consumer::read_office_document(const std::string &content_type) // CT_Workbook
@@ -2467,6 +2483,56 @@ std::string xlsx_consumer::read_text()
     }
 
     return text;
+}
+
+variant xlsx_consumer::read_variant()
+{
+    auto value = variant(read_text());
+
+    if (in_element(stack_.back()))
+    {
+        auto element = expect_start_element(xml::content::mixed);
+        auto text = read_text();
+
+        if (element == qn("vt", "lpwstr") || element == qn("vt", "lpstr"))
+        {
+            value = variant(text);
+        }
+        if (element == qn("vt", "i4"))
+        {
+            value = variant(std::stoi(text));
+        }
+        else if (element == qn("vt", "vector"))
+        {
+            auto size = parser().attribute<std::size_t>("size");
+            auto base_type = parser().attribute("baseType");
+
+            std::vector<variant> vector;
+
+            for (auto i = std::size_t(0); i < size; ++i)
+            {
+                if (base_type == "variant")
+                {
+                    expect_start_element(qn("vt", "variant"), xml::content::complex);
+                }
+
+                vector.push_back(read_variant());
+
+                if (base_type == "variant")
+                {
+                    expect_end_element(qn("vt", "variant"));
+                    read_text();
+                }
+            }
+
+            value = variant(vector);
+        }
+
+        expect_end_element(element);
+        read_text();
+    }
+
+    return value;
 }
 
 void xlsx_consumer::skip_attributes(const std::vector<std::string> &names)

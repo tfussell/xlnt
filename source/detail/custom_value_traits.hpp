@@ -44,6 +44,300 @@ std::string to_string(extended_property prop);
 
 std::string to_string(variant::type type);
 
+std::string to_string(pane_corner corner);
+
+std::string to_string(target_mode mode);
+
+std::string to_string(pane_state state);
+
+template<typename T>
+static T from_string(const std::string &string_value);
+
+template<>
+font::underline_style from_string(const std::string &string)
+{
+    if (string == "double") return font::underline_style::double_;
+    if (string == "doubleAccounting") return font::underline_style::double_accounting;
+    if (string == "single") return font::underline_style::single;
+    if (string == "singleAccounting") return font::underline_style::single_accounting;
+    if (string == "none") return font::underline_style::none;
+
+    default_case(font::underline_style::none);
+}
+
+template<>
+relationship_type from_string(const std::string &string)
+{
+    if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument")
+        return relationship_type::office_document;
+    else if (string == "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail")
+        return relationship_type::thumbnail;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/calcChain")
+        return relationship_type::calculation_chain;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties")
+        return relationship_type::extended_properties;
+    else if (string == "http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties"
+        || string == "http://schemas.openxmlformats.org/officedocument/2006/relationships/metadata/core-properties")
+        return relationship_type::core_properties;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet")
+        return relationship_type::worksheet;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings")
+        return relationship_type::shared_string_table;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles")
+        return relationship_type::stylesheet;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme")
+        return relationship_type::theme;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink")
+        return relationship_type::hyperlink;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/chartsheet")
+        return relationship_type::chartsheet;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments")
+        return relationship_type::comments;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/vmlDrawing")
+        return relationship_type::vml_drawing;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/custom-properties")
+        return relationship_type::custom_properties;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/printerSettings")
+        return relationship_type::printer_settings;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/connections")
+        return relationship_type::connections;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/customProperty")
+        return relationship_type::custom_property;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXmlMappings")
+        return relationship_type::custom_xml_mappings;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/dialogsheet")
+        return relationship_type::dialogsheet;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing")
+        return relationship_type::drawings;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/externalLinkPath")
+        return relationship_type::external_workbook_references;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotTable")
+        return relationship_type::pivot_table;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotCacheDefinition")
+        return relationship_type::pivot_table_cache_definition;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotCacheRecords")
+        return relationship_type::pivot_table_cache_records;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/queryTable")
+        return relationship_type::query_table;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/revisionHeaders")
+        return relationship_type::shared_workbook_revision_headers;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedWorkbook")
+        return relationship_type::shared_workbook;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/revisionLog")
+        return relationship_type::revision_log;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/usernames")
+        return relationship_type::shared_workbook_user_data;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/tableSingleCells")
+        return relationship_type::single_cell_table_definitions;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/table")
+        return relationship_type::table_definition;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/volatileDependencies")
+        return relationship_type::volatile_dependencies;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image")
+        return relationship_type::image;
+
+    // ECMA 376-4 Part 1 Section 9.1.7 says consumers shall not fail to load
+    // a document with unknown relationships.
+    return relationship_type::unknown;
+}
+
+template<>
+pattern_fill_type from_string(const std::string &string)
+{
+    if (string == "darkdown") return pattern_fill_type::darkdown;
+    else if (string == "darkgray") return pattern_fill_type::darkgray;
+    else if (string == "darkgrid") return pattern_fill_type::darkgrid;
+    else if (string == "darkhorizontal") return pattern_fill_type::darkhorizontal;
+    else if (string == "darktrellis") return pattern_fill_type::darktrellis;
+    else if (string == "darkup") return pattern_fill_type::darkup;
+    else if (string == "darkvertical") return pattern_fill_type::darkvertical;
+    else if (string == "gray0625") return pattern_fill_type::gray0625;
+    else if (string == "gray125") return pattern_fill_type::gray125;
+    else if (string == "lightdown") return pattern_fill_type::lightdown;
+    else if (string == "lightgray") return pattern_fill_type::lightgray;
+    else if (string == "lightgrid") return pattern_fill_type::lightgrid;
+    else if (string == "lighthorizontal") return pattern_fill_type::lighthorizontal;
+    else if (string == "lighttrellis") return pattern_fill_type::lighttrellis;
+    else if (string == "lightup") return pattern_fill_type::lightup;
+    else if (string == "lightvertical") return pattern_fill_type::lightvertical;
+    else if (string == "mediumgray") return pattern_fill_type::mediumgray;
+    else if (string == "none") return pattern_fill_type::none;
+    else if (string == "solid") return pattern_fill_type::solid;
+
+    default_case(pattern_fill_type::none);
+}
+
+template<>
+gradient_fill_type from_string(const std::string &string)
+{
+    if (string == "linear") return gradient_fill_type::linear;
+    else if (string == "path") return gradient_fill_type::path;
+
+    default_case(gradient_fill_type::linear);
+}
+
+template<>
+border_style from_string(const std::string &string)
+{
+    if (string == "dashdot") return border_style::dashdot;
+    else if (string == "dashdotdot") return border_style::dashdotdot;
+    else if (string == "dashed") return border_style::dashed;
+    else if (string == "dotted") return border_style::dotted;
+    else if (string == "double") return border_style::double_;
+    else if (string == "hair") return border_style::hair;
+    else if (string == "medium") return border_style::medium;
+    else if (string == "mediumdashdot") return border_style::mediumdashdot;
+    else if (string == "mediumdashdotdot") return border_style::mediumdashdotdot;
+    else if (string == "mediumdashed") return border_style::mediumdashed;
+    else if (string == "none") return border_style::none;
+    else if (string == "slantdashdot") return border_style::slantdashdot;
+    else if (string == "thick") return border_style::thick;
+    else if (string == "thin") return border_style::thin;
+
+    default_case(border_style::dashdot);
+}
+
+template<>
+vertical_alignment from_string(const std::string &string)
+{
+    if (string == "bottom") return vertical_alignment::bottom;
+    else if (string == "center") return vertical_alignment::center;
+    else if (string == "distributed") return vertical_alignment::distributed;
+    else if (string == "justify") return vertical_alignment::justify;
+    else if (string == "top") return vertical_alignment::top;
+
+    default_case(vertical_alignment::top);
+}
+
+template<>
+horizontal_alignment from_string(const std::string &string)
+{
+    if (string == "center") return horizontal_alignment::center;
+    else if (string == "centerContinuous") return horizontal_alignment::center_continuous;
+    else if (string == "distributed") return horizontal_alignment::distributed;
+    else if (string == "fill") return horizontal_alignment::fill;
+    else if (string == "general") return horizontal_alignment::general;
+    else if (string == "justify") return horizontal_alignment::justify;
+    else if (string == "left") return horizontal_alignment::left;
+    else if (string == "right") return horizontal_alignment::right;
+
+    default_case(horizontal_alignment::general);
+}
+template<>
+border_side from_string(const std::string &string)
+{
+    if (string == "bottom") return border_side::bottom;
+    else if (string == "diagonal") return border_side::diagonal;
+    else if (string == "right") return border_side::end;
+    else if (string == "horizontal") return border_side::horizontal;
+    else if (string == "left") return border_side::start;
+    else if (string == "top") return border_side::top;
+    else if (string == "vertical") return border_side::vertical;
+
+    default_case(border_side::bottom);
+}
+
+template<>
+core_property from_string(const std::string &string)
+{
+    if (string == "category") return core_property::category;
+    else if (string == "contentStatus") return core_property::content_status;
+    else if (string == "created") return core_property::created;
+    else if (string == "creator") return core_property::creator;
+    else if (string == "description") return core_property::description;
+    else if (string == "identifier") return core_property::identifier;
+    else if (string == "keywords") return core_property::keywords;
+    else if (string == "language") return core_property::language;
+    else if (string == "lastModifiedBy") return core_property::last_modified_by;
+    else if (string == "lastPrinted") return core_property::last_printed;
+    else if (string == "modified") return core_property::modified;
+    else if (string == "revision") return core_property::revision;
+    else if (string == "subject") return core_property::subject;
+    else if (string == "title") return core_property::title;
+    else if (string == "version") return core_property::version;
+
+    default_case(core_property::category);
+}
+
+template<>
+extended_property from_string(const std::string &string)
+{
+    if (string == "Application") return extended_property::application;
+    else if (string == "AppVersion") return extended_property::app_version;
+    else if (string == "Characters") return extended_property::characters;
+    else if (string == "CharactersWithSpaces") return extended_property::characters_with_spaces;
+    else if (string == "Company") return extended_property::company;
+    else if (string == "DigSig") return extended_property::dig_sig;
+    else if (string == "DocSecurity") return extended_property::doc_security;
+    else if (string == "HeadingPairs") return extended_property::heading_pairs;
+    else if (string == "HiddenSlides") return extended_property::hidden_slides;
+    else if (string == "HyperlinksChanged") return extended_property::hyperlinks_changed;
+    else if (string == "HyperlinkBase") return extended_property::hyperlink_base;
+    else if (string == "HLinks") return extended_property::h_links;
+    else if (string == "Lines") return extended_property::lines;
+    else if (string == "LinksUpToDate") return extended_property::links_up_to_date;
+    else if (string == "Manager") return extended_property::manager;
+    else if (string == "MMClips") return extended_property::m_m_clips;
+    else if (string == "Notes") return extended_property::notes;
+    else if (string == "Pages") return extended_property::pages;
+    else if (string == "Paragraphs") return extended_property::paragraphs;
+    else if (string == "PresentationFormat") return extended_property::presentation_format;
+    else if (string == "ScaleCrop") return extended_property::scale_crop;
+    else if (string == "SharedDoc") return extended_property::shared_doc;
+    else if (string == "Slides") return extended_property::slides;
+    else if (string == "Template") return extended_property::template_;
+    else if (string == "TitlesOfParts") return extended_property::titles_of_parts;
+    else if (string == "TotalTime") return extended_property::total_time;
+    else if (string == "Words") return extended_property::words;
+
+    default_case(extended_property::application);
+}
+
+/*
+template<>
+variant::type from_string(const std::string &string)
+{
+    if (string == "bool") return variant::type::boolean;
+    else if (string == "date") return variant::type::date;
+    else if (string == "i4") return variant::type::i4;
+    else if (string == "lpstr") return variant::type::lpstr;
+    else if (string == "null") return variant::type::null;
+    else if (string == "vector") return variant::type::vector;
+
+    default_case(variant::type::null);
+}
+*/
+
+template<>
+xlnt::pane_state from_string(const std::string &string)
+{
+    if (string == "frozen") return xlnt::pane_state::frozen;
+    else if (string == "frozenSplit") return xlnt::pane_state::frozen_split;
+    else if (string == "split") return xlnt::pane_state::split;
+
+    default_case(xlnt::pane_state::frozen);
+}
+
+template<>
+target_mode from_string(const std::string &string)
+{
+    if (string == "Internal") return target_mode::internal;
+    else if (string == "External") return target_mode::external;
+
+    default_case(target_mode::internal);
+}
+
+template<>
+pane_corner from_string(const std::string &string)
+{
+    if (string == "bottomLeft") return pane_corner::bottom_left;
+    else if (string == "bottomRight") return pane_corner::bottom_right;
+    else if (string == "topLeft") return pane_corner::top_left;
+    else if (string == "topRight") return pane_corner::top_right;
+
+    default_case(pane_corner::bottom_left);
+}
+
 } // namespace detail
 } // namespace xlnt
 
@@ -54,220 +348,63 @@ struct value_traits<xlnt::font::underline_style>
 {
     static xlnt::font::underline_style parse(std::string underline_string, const parser &)
     {
-        using xlnt::font;
-        
-        static auto *underline_styles = new std::vector<font::underline_style>
-        {
-            font::underline_style::double_,
-            font::underline_style::double_accounting,
-            font::underline_style::single,
-            font::underline_style::single_accounting,
-            font::underline_style::none
-        };
-
-        for (auto underline_style : *underline_styles)
-        {
-            if (xlnt::detail::to_string(underline_style) == underline_string)
-            {
-                return underline_style;
-            }
-        }
-        
-        default_case(font::underline_style::none);
+        return xlnt::detail::from_string<xlnt::font::underline_style>(underline_string);
     }
 
     static std::string serialize(xlnt::font::underline_style underline_style, const serializer &)
     {
         return xlnt::detail::to_string(underline_style);
     }
-}; // struct value_traits<xlnt::font::underline_style>
+};
 
 template <>
 struct value_traits<xlnt::relationship_type>
 {
     static xlnt::relationship_type parse(std::string relationship_type_string, const parser &)
     {
-        using xlnt::relationship_type;
-        
-        static auto *relationship_types = new std::vector<relationship_type>
-        {
-            // Package parts
-            relationship_type::core_properties,
-            relationship_type::extended_properties,
-            relationship_type::custom_properties,
-            relationship_type::office_document,
-            relationship_type::thumbnail,
-            relationship_type::printer_settings,
-
-            // SpreadsheetML parts
-            relationship_type::calculation_chain,
-            relationship_type::chartsheet,
-            relationship_type::comments,
-            relationship_type::connections,
-            relationship_type::custom_property,
-            relationship_type::custom_xml_mappings,
-            relationship_type::dialogsheet,
-            relationship_type::drawings,
-            relationship_type::external_workbook_references,
-            relationship_type::pivot_table,
-            relationship_type::pivot_table_cache_definition,
-            relationship_type::pivot_table_cache_records,
-            relationship_type::query_table,
-            relationship_type::shared_string_table,
-            relationship_type::shared_workbook_revision_headers,
-            relationship_type::shared_workbook,
-            relationship_type::theme,
-            relationship_type::revision_log,
-            relationship_type::shared_workbook_user_data,
-            relationship_type::single_cell_table_definitions,
-            relationship_type::stylesheet,
-            relationship_type::table_definition,
-            relationship_type::vml_drawing,
-            relationship_type::volatile_dependencies,
-            relationship_type::worksheet,
-
-            // Worksheet parts
-            relationship_type::hyperlink,
-            relationship_type::image
-        };
-
-        // Core properties relationships can have two different type strings
-        if (relationship_type_string == "http://schemas.openxmlformats.org/"
-            "officedocument/2006/relationships/metadata/core-properties")
-        {
-            return relationship_type::core_properties;
-        }
-
-        for (auto type : *relationship_types)
-        {
-            if (xlnt::detail::to_string(type) == relationship_type_string)
-            {
-                return type;
-            }
-        }
-        
-        // ECMA 376-4 Part 1 Section 9.1.7 says consumers shall not fail to load
-        // a document with unknown relationships.
-        return relationship_type::unknown;
+        return xlnt::detail::from_string<xlnt::relationship_type>(relationship_type_string);
     }
 
     static std::string serialize(xlnt::relationship_type type, const serializer &)
     {
         return xlnt::detail::to_string(type);
     }
-}; // struct value_traits<xlnt::relationship_type>
+};
 
 template <>
 struct value_traits<xlnt::pattern_fill_type>
 {
     static xlnt::pattern_fill_type parse(std::string fill_type_string, const parser &)
     {
-        using xlnt::pattern_fill_type;
-        
-        static auto *fill_types = new std::vector<pattern_fill_type>
-        {
-            pattern_fill_type::darkdown,
-            pattern_fill_type::darkgray,
-            pattern_fill_type::darkgrid,
-            pattern_fill_type::darkhorizontal,
-            pattern_fill_type::darktrellis,
-            pattern_fill_type::darkup,
-            pattern_fill_type::darkvertical,
-            pattern_fill_type::gray0625,
-            pattern_fill_type::gray125,
-            pattern_fill_type::lightdown,
-            pattern_fill_type::lightgray,
-            pattern_fill_type::lightgrid,
-            pattern_fill_type::lighthorizontal,
-            pattern_fill_type::lighttrellis,
-            pattern_fill_type::lightup,
-            pattern_fill_type::lightvertical,
-            pattern_fill_type::mediumgray,
-            pattern_fill_type::none,
-            pattern_fill_type::solid
-        };
-
-        for (auto fill_type : *fill_types)
-        {
-            if (xlnt::detail::to_string(fill_type) == fill_type_string)
-            {
-                return fill_type;
-            }
-        }
-        
-        default_case(pattern_fill_type::none);
+        return xlnt::detail::from_string<xlnt::pattern_fill_type>(fill_type_string);
     }
 
     static std::string serialize(xlnt::pattern_fill_type fill_type, const serializer &)
     {
         return xlnt::detail::to_string(fill_type);
     }
-}; // struct value_traits<xlnt::fill_type>
+};
 
 template <>
 struct value_traits<xlnt::gradient_fill_type>
 {
     static xlnt::gradient_fill_type parse(std::string fill_type_string, const parser &)
     {
-        using xlnt::gradient_fill_type;
-        
-        static auto *gradient_fill_types = new std::vector<gradient_fill_type>
-        {
-            gradient_fill_type::linear,
-            gradient_fill_type::path
-        };
-
-        for (auto fill_type : *gradient_fill_types)
-        {
-            if (xlnt::detail::to_string(fill_type) == fill_type_string)
-            {
-                return fill_type;
-            }
-        }
-        
-        default_case(gradient_fill_type::linear);
+        return xlnt::detail::from_string<xlnt::gradient_fill_type>(fill_type_string);
     }
 
     static std::string serialize(xlnt::gradient_fill_type fill_type, const serializer &)
     {
         return xlnt::detail::to_string(fill_type);
     }
-}; // struct value_traits<xlnt::gradient_fill_type>
+};
 
 template <>
 struct value_traits<xlnt::border_style>
 {
     static xlnt::border_style parse(std::string style_string, const parser &)
     {
-        using xlnt::border_style;
-        
-        static auto *border_styles = new std::vector<border_style>
-        {
-            border_style::dashdot,
-            border_style::dashdotdot,
-            border_style::dashed,
-            border_style::dotted,
-            border_style::double_,
-            border_style::hair,
-            border_style::medium,
-            border_style::mediumdashdot,
-            border_style::mediumdashdotdot,
-            border_style::mediumdashed,
-            border_style::none,
-            border_style::slantdashdot,
-            border_style::thick,
-            border_style::thin
-        };
-
-        for (auto style : *border_styles)
-        {
-            if (xlnt::detail::to_string(style) == style_string)
-            {
-                return style;
-            }
-        }
-        
-        default_case(border_style::none);
+        return xlnt::detail::from_string<xlnt::border_style>(style_string);
     }
 
     static std::string
@@ -275,177 +412,119 @@ struct value_traits<xlnt::border_style>
     {
         return xlnt::detail::to_string(style);
     }
-}; // struct value_traits<xlnt::border_style>
+};
 
 template <>
 struct value_traits<xlnt::vertical_alignment>
 {
     static xlnt::vertical_alignment parse(std::string alignment_string, const parser &)
     {
-        using xlnt::vertical_alignment;
-        
-        static auto *vertical_alignments = new std::vector<vertical_alignment>
-        {
-            vertical_alignment::top,
-            vertical_alignment::center,
-            vertical_alignment::bottom,
-            vertical_alignment::justify,
-            vertical_alignment::distributed
-        };
-
-        for (auto alignment : *vertical_alignments)
-        {
-            if (xlnt::detail::to_string(alignment) == alignment_string)
-            {
-                return alignment;
-            }
-        }
-        
-        default_case(vertical_alignment::top);
+        return xlnt::detail::from_string<xlnt::vertical_alignment>(alignment_string);
     }
 
     static std::string serialize (xlnt::vertical_alignment alignment, const serializer &)
     {
         return xlnt::detail::to_string(alignment);
     }
-}; // struct value_traits<xlnt::vertical_alignment>
+};
 
 template <>
 struct value_traits<xlnt::horizontal_alignment>
 {
     static xlnt::horizontal_alignment parse(std::string alignment_string, const parser &)
     {
-        using xlnt::horizontal_alignment;
-        
-        static auto *horizontal_alignments = new std::vector<horizontal_alignment>
-        {
-            horizontal_alignment::general,
-            horizontal_alignment::left,
-            horizontal_alignment::center,
-            horizontal_alignment::right,
-            horizontal_alignment::fill,
-            horizontal_alignment::justify,
-            horizontal_alignment::center_continuous,
-            horizontal_alignment::distributed
-        };
-
-        for (auto alignment : *horizontal_alignments)
-        {
-            if (xlnt::detail::to_string(alignment) == alignment_string)
-            {
-                return alignment;
-            }
-        }
-        
-        default_case(horizontal_alignment::general);
+        return xlnt::detail::from_string<xlnt::horizontal_alignment>(alignment_string);
     }
 
     static std::string serialize(xlnt::horizontal_alignment alignment, const serializer &)
     {
         return xlnt::detail::to_string(alignment);
     }
-}; // struct value_traits<xlnt::horizontal_alignment>
+};
 
 template <>
 struct value_traits<xlnt::border_side>
 {
     static xlnt::border_side parse(std::string side_string, const parser &)
     {
-        using xlnt::border_side;
-        
-        static auto *border_sides = new std::vector<border_side>
-        {
-            border_side::top,
-            border_side::bottom,
-            border_side::start,
-            border_side::end,
-            border_side::vertical,
-            border_side::horizontal,
-            border_side::diagonal
-        };
-
-        for (auto side : *border_sides)
-        {
-            if (xlnt::detail::to_string(side) == side_string)
-            {
-                return side;
-            }
-        }
-
-        default_case(xlnt::border_side::top);
+        return xlnt::detail::from_string<xlnt::border_side>(side_string);
     }
 
     static std::string serialize(xlnt::border_side side, const serializer &)
     {
         return xlnt::detail::to_string(side);
     }
-}; // struct value_traits<xlnt::border_side>
+};
 
 template <>
 struct value_traits<xlnt::target_mode>
 {
     static xlnt::target_mode parse(std::string mode_string, const parser &)
     {
-        return mode_string == "Internal" ? xlnt::target_mode::internal : xlnt::target_mode::external;
+        return xlnt::detail::from_string<xlnt::target_mode>(mode_string);
     }
 
     static std::string serialize(xlnt::target_mode mode, const serializer &)
     {
-        return mode == xlnt::target_mode::internal ? "Internal" : "External";
+        return xlnt::detail::to_string(mode);
     }
-}; // struct value_traits<xlnt::target_mode>
+};
 
 template <>
 struct value_traits<xlnt::pane_state>
 {
     static xlnt::pane_state parse(std::string string, const parser &)
     {
-        if (string == "frozen") return xlnt::pane_state::frozen;
-        else if (string == "frozenSplit") return xlnt::pane_state::frozen_split;
-        else if (string == "split") return xlnt::pane_state::split;
-
-        default_case(xlnt::pane_state::frozen);
+        return xlnt::detail::from_string<xlnt::pane_state>(string);
     }
 
     static std::string serialize(xlnt::pane_state state, const serializer &)
     {
-        switch (state)
-        {
-        case xlnt::pane_state::frozen: return "frozen";
-        case xlnt::pane_state::frozen_split: return "frozenSplit";
-        case xlnt::pane_state::split: return "split";
-        }
-
-        default_case("frozen");
+        return xlnt::detail::to_string(state);
     }
-}; // struct value_traits<xlnt::pane_state>
+};
 
 template <>
 struct value_traits<xlnt::pane_corner>
 {
     static xlnt::pane_corner parse(std::string string, const parser &)
     {
-        if (string == "bottomLeft") return xlnt::pane_corner::bottom_left;
-        else if (string == "bottomRight") return xlnt::pane_corner::bottom_right;
-        else if (string == "topLeft") return xlnt::pane_corner::top_left;
-        else if (string == "topRight") return xlnt::pane_corner::top_right;
-
-        default_case(xlnt::pane_corner::top_left);
+        return xlnt::detail::from_string<xlnt::pane_corner>(string);
     }
 
     static std::string serialize(xlnt::pane_corner corner, const serializer &)
     {
-        switch (corner)
-        {
-        case xlnt::pane_corner::bottom_left: return "bottomLeft";
-        case xlnt::pane_corner::bottom_right: return "bottomRight";
-        case xlnt::pane_corner::top_left: return "topLeft";
-        case xlnt::pane_corner::top_right: return "topRight";
-        }
-
-        default_case("topLeft");
+        return xlnt::detail::to_string(corner);
     }
-}; // struct value_traits<xlnt::pane_corner>
+};
+
+template <>
+struct value_traits<xlnt::core_property>
+{
+    static xlnt::core_property parse(std::string string, const parser &)
+    {
+        return xlnt::detail::from_string<xlnt::core_property>(string);
+    }
+
+    static std::string serialize(xlnt::core_property corner, const serializer &)
+    {
+        return xlnt::detail::to_string(corner);
+    }
+};
+
+template <>
+struct value_traits<xlnt::extended_property>
+{
+    static xlnt::extended_property parse(std::string string, const parser &)
+    {
+        return xlnt::detail::from_string<xlnt::extended_property>(string);
+    }
+
+    static std::string serialize(xlnt::extended_property corner, const serializer &)
+    {
+        return xlnt::detail::to_string(corner);
+    }
+};
 
 }
 

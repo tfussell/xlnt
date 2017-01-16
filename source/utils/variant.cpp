@@ -116,6 +116,15 @@ variant::variant(const std::vector<std::string> &value)
     }
 }
 
+variant::variant(const std::vector<variant> &value)
+    : type_(type::vector)
+{
+    for (const auto &v : value)
+    {
+        vector_value_.emplace_back(v);
+    }
+}
+
 bool variant::is(type t) const
 {
     return type_ == t;

@@ -84,6 +84,7 @@ public:
     variant(const std::vector<const char *> &value);
     variant(const std::initializer_list<std::string> &value);
     variant(const std::vector<std::string> &value);
+    variant(const std::vector<variant> &value);
 
     bool is(type t) const;
 

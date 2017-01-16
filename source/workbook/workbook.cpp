@@ -58,6 +58,7 @@
 #include <xlnt/worksheet/worksheet.hpp>
 #include <detail/cell_impl.hpp>
 #include <detail/constants.hpp>
+#include <detail/default_case.hpp>
 #include <detail/excel_thumbnail.hpp>
 #include <detail/vector_streambuf.hpp>
 #include <detail/workbook_impl.hpp>
@@ -381,6 +382,8 @@ path default_path(relationship_type type, std::size_t index = 0)
     case relationship_type::worksheet:
         return path("/xl/worksheets/sheet" + std::to_string(index) + ".xml");
     }
+
+    default_case(path("/xl/unknownPart.xml"));
 }
 
 std::string content_type(relationship_type type)
@@ -456,6 +459,8 @@ std::string content_type(relationship_type type)
     case relationship_type::worksheet:
         return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml";
     }
+
+    default_case("application/xml");
 }
 
 void workbook::register_package_part(relationship_type type)

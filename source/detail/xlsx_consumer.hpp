@@ -71,17 +71,22 @@ private:
     /// </summary>
     void read_content_types();
 
-    // Metadata Readers
-
-    /// <summary>
-    /// Read core, extended, and custom properties.
-    /// </summary>
-    void read_metadata_properties();
+    // Metadata Property Readers
 
 	/// <summary>
 	/// Parse the core properties about the current package.
 	/// </summary>
-	void read_properties(const path &part, const xml::qname &root);
+	void read_core_properties();
+
+    /// <summary>
+    /// Parse the core properties about the current package.
+    /// </summary>
+    void read_extended_properties();
+
+    /// <summary>
+    /// Parse the core properties about the current package.
+    /// </summary>
+    void read_custom_properties();
 
 	// SpreadsheetML-Specific Package Part Readers
 
@@ -242,6 +247,8 @@ private:
     /// tags.
     /// </summary>
     std::string read_text();
+
+    variant read_variant();
 
     /// <summary>
     /// Read the part from the archive and parse it as XML. After this is called,
