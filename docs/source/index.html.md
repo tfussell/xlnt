@@ -9,6 +9,7 @@ includes:
   - getting_started
   - memory_model
   - formatting
+  - properties
   - api_reference
   - license
 

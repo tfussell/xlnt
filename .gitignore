@@ -1,8 +1,9 @@
 bin/
 lib/
 build/
-docs/_*/
+docs/build/
 docs/doxyxml/
+node_modules/
 *.obj
 *.sdf
 *.suo
