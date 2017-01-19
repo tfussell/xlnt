@@ -1,2 +1,0 @@
-Testing on Windows
-==================
