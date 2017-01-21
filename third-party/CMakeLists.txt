@@ -56,3 +56,7 @@ add_custom_command(TARGET libstudxml-config PRE_BUILD
         copy ${CMAKE_CURRENT_SOURCE_DIR}/../source/detail/xml/details/config.h
         ${LIBSTUDXML_ROOT_DIR}/xml/details)
 add_dependencies(libstudxml libstudxml-config)
+
+if(NOT STATIC)
+    set_target_properties(libstudxml PROPERTIES POSITION_INDEPENDENT_CODE 1)
+endif()
