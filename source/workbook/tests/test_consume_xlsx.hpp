@@ -13,31 +13,31 @@ public:
     void test_decrypt_agile()
     {
         xlnt::workbook wb;
-        wb.load(path_helper::get_data_directory("11_encrypted_excel_2016.xlsx"), "secret");
+        wb.load(path_helper::data_directory("11_encrypted_excel_2016.xlsx"), "secret");
     }
 
     void test_decrypt_libre_office()
     {
         xlnt::workbook wb;
-        wb.load(path_helper::get_data_directory("12_encrypted_libre_office.xlsx"), "secret");
+        wb.load(path_helper::data_directory("12_encrypted_libre_office.xlsx"), "secret");
     }
 
     void test_decrypt_standard()
     {
         xlnt::workbook wb;
-        wb.load(path_helper::get_data_directory("13_encrypted_excel_2007.xlsx"), "password");
+        wb.load(path_helper::data_directory("13_encrypted_excel_2007.xlsx"), "password");
     }
 
     void test_decrypt_numbers()
     {
         xlnt::workbook wb;
-        wb.load(path_helper::get_data_directory("14_encrypted_numbers.xlsx"), "secret");
+        wb.load(path_helper::data_directory("14_encrypted_numbers.xlsx"), "secret");
     }
 
     void test_comments()
     {
         xlnt::workbook wb;
-        wb.load("data/15_basic_comments.xlsx");
+        wb.load(path_helper::data_directory("15_basic_comments.xlsx"));
 
         auto sheet1 = wb[0];
         TS_ASSERT_EQUALS(sheet1.cell("A1").value<std::string>(), "Sheet1!A1");
@@ -54,12 +54,13 @@ public:
     {
 #ifdef _MSC_VER
         xlnt::workbook wb;
+        static const std::string data_dir = STRING_LITERAL(XLNT_TEST_DATA_DIR);
         wb.load(L"data\\16_unicode_Λ.xlsx");
         TS_ASSERT_EQUALS(wb.active_sheet().cell("A1").value<std::string>(), "unicode!");
 #endif
 #ifndef __MINGW32__
         xlnt::workbook wb2;
-        wb2.load(u8"data/16_unicode_Λ.xlsx");
+        wb2.load(U8STRING_LITERAL(XLNT_TEST_DATA_DIR) u8"/16_unicode_Λ.xlsx");
         TS_ASSERT_EQUALS(wb2.active_sheet().cell("A1").value<std::string>(), "unicode!");
 #endif
     }
@@ -67,7 +68,7 @@ public:
     void test_read_hyperlink()
     {
         xlnt::workbook wb;
-        wb.load("data/17_with_hyperlink.xlsx");
+        wb.load(path_helper::data_directory("17_with_hyperlink.xlsx"));
         TS_ASSERT(wb.active_sheet().cell("A1").has_hyperlink());
         TS_ASSERT_EQUALS(wb.active_sheet().cell("A1").hyperlink(),
             "https://fr.wikipedia.org/wiki/Ille-et-Vilaine");
@@ -76,7 +77,7 @@ public:
     void test_read_headers_and_footers()
     {
         xlnt::workbook wb;
-        wb.load("data/18_headers_and_footers.xlsx");
+        wb.load(path_helper::data_directory("18_headers_and_footers.xlsx"));
         auto ws = wb.active_sheet();
 
         TS_ASSERT_EQUALS(ws.cell("A1").value<std::string>(), "header");
@@ -108,7 +109,7 @@ public:
     void test_read_custom_properties()
     {
         xlnt::workbook wb;
-        wb.load("data/21_custom_properties.xlsx");
+        wb.load(path_helper::data_directory("21_custom_properties.xlsx"));
         TS_ASSERT(wb.has_custom_property("Client"));
         TS_ASSERT_EQUALS(wb.custom_property("Client").get<std::string>(), "me!");
     }
@@ -116,7 +117,7 @@ public:
     void test_read_formulae()
     {
         xlnt::workbook wb;
-        wb.load("data/22_formulae.xlsx");
+        wb.load(path_helper::data_directory("22_formulae.xlsx"));
         auto ws = wb.active_sheet();
         TS_ASSERT_EQUALS(ws.cell("A1").value<int>(), 6);
         TS_ASSERT(ws.cell("A1").has_formula());

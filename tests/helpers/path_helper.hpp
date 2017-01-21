@@ -20,13 +20,20 @@
 #include <sys/stat.h>
 #endif
 
+#define STRING_LITERAL2(a) #a
+#define LSTRING_LITERAL2(a) L#a
+#define U8STRING_LITERAL2(a) u8#a
+#define STRING_LITERAL(a) STRING_LITERAL2(a)
+#define LSTRING_LITERAL(a) STRING_LITERAL2(a)
+#define U8STRING_LITERAL(a) STRING_LITERAL2(a)
+
 class path_helper
 {
 public:
-    static xlnt::path get_data_directory(const std::string &append = "")
+    static xlnt::path data_directory(const std::string &append = "")
     {
-        return xlnt::path("data")
-			.append(xlnt::path(append));
+        static const std::string data_dir = STRING_LITERAL(XLNT_TEST_DATA_DIR);
+        return xlnt::path(data_dir).append(xlnt::path(append));
     }
     
     static void copy_file(const xlnt::path &source, const xlnt::path &destination, bool overwrite)

@@ -32,7 +32,7 @@ public:
 	void test_produce_empty()
 	{
 		xlnt::workbook wb = xlnt::workbook::empty();
-		TS_ASSERT(workbook_matches_file(wb, path_helper::get_data_directory("9_default-excel.xlsx")));
+		TS_ASSERT(workbook_matches_file(wb, path_helper::data_directory("9_default-excel.xlsx")));
 	}
 
 	void test_produce_simple_excel()
@@ -152,13 +152,13 @@ public:
 		sheet2.cell("A2").value("Sheet2!A2");
 		sheet2.cell("A2").comment("Sheet2 comment2", comment_font, "Microsoft Office User");
 
-		TS_ASSERT(workbook_matches_file(wb, xlnt::path("data/15_basic_comments.xlsx")));
+		TS_ASSERT(workbook_matches_file(wb, path_helper::data_directory("15_basic_comments.xlsx")));
 	}
 
     void test_save_after_clear_all_formulae()
     {
         xlnt::workbook wb;
-        wb.load("data/22_formulae.xlsx");
+        wb.load(path_helper::data_directory("22_formulae.xlsx"));
         auto ws = wb.active_sheet();
         TS_ASSERT(ws.cell("A1").has_formula());
         TS_ASSERT_EQUALS(ws.cell("A1").formula(), "A2*A3");

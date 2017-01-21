@@ -1,43 +1,24 @@
 cmake_minimum_required(VERSION 3.1)
 project(xlnt VERSION 0.9.3)
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-if(NOT DEFINED CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
-  set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE INTERNAL "No dev warnings")
-endif()
-
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../third-party ${CMAKE_CURRENT_BINARY_DIR}/third-party)
-
-if(APPLE)
-    option(FRAMEWORK "Set to ON to package dylib and headers into a .framework, OSX only" OFF)
-endif()
-
 set(PROJECT_VENDOR "Thomas Fussell")
 set(PROJECT_CONTACT "thomas.fussell@gmail.com")
 set(PROJECT_URL "https://github.com/tfussell/xlnt")
 set(PROJECT_DESCRIPTION "cross-platform user-friendly xlsx library for C++14")
 
-set(XLNT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../include)
-set(XLNT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../third-party)
-
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/installed" CACHE PATH "default install path" FORCE)
+if(APPLE)
+    option(FRAMEWORK "Set to ON to package dylib and headers into a .framework, OSX only" OFF)
 endif()
 
-if(NOT INC_DEST_DIR)
-    set(INC_DEST_DIR ${CMAKE_INSTALL_PREFIX}/include)
-endif()
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if(NOT LIB_DEST_DIR)
-    set(LIB_DEST_DIR ${CMAKE_INSTALL_PREFIX}/lib)
-endif()
+set(XLNT_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
-if(NOT BIN_DEST_DIR)
-    set(BIN_DEST_DIR ${CMAKE_INSTALL_PREFIX}/bin)
-endif()
+set(XLNT_INCLUDE_DIR ${XLNT_ROOT_DIR}/include)
+set(XLNT_SOURCE_DIR ${XLNT_ROOT_DIR}/source)
+set(THIRD_PARTY_DIR ${XLNT_ROOT_DIR}/third-party)
+add_subdirectory(${THIRD_PARTY_DIR} ${CMAKE_CURRENT_BINARY_DIR}/third-party)
 
 if(COVERAGE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
@@ -57,15 +38,6 @@ if(APPLE)
                     OUTPUT_VARIABLE OSX_VERSION)
     set(CMAKE_OSX_DEPLOYMENT_TARGET ${OSX_VERSION})
 endif()
-
-# Includes
-include_directories(${XLNT_INCLUDE_DIR}
-    ${XLNT_INCLUDE_DIR}/xlnt
-    ${XLNT_SOURCE_DIR}
-    ${XLNT_SOURCE_DIR}/detail
-    ${LIBSTUDXML_INCLUDE_DIR}
-    ${ZLIB_INCLUDE_DIR}
-    ${CRYPTOPP_INCLUDE_DIR})
 
 file(GLOB ROOT_HEADERS ${XLNT_INCLUDE_DIR}/xlnt/*.hpp)
 file(GLOB CELL_HEADERS ${XLNT_INCLUDE_DIR}/xlnt/cell/*.hpp)
@@ -100,6 +72,23 @@ set(XLNT_SOURCES ${CELL_SOURCES} ${CHARTS_SOURCES} ${CHARTSHEET_SOURCES}
 	${STYLES_SOURCES} ${UTILS_SOURCES} ${WORKBOOK_SOURCES} 
 	${WORKSHEET_SOURCES} ${DETAIL_SOURCES})
 
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/installed" 
+        CACHE PATH "default install path" FORCE)
+endif()
+
+if(NOT INC_DEST_DIR)
+    set(INC_DEST_DIR ${CMAKE_INSTALL_PREFIX}/include)
+endif()
+
+if(NOT LIB_DEST_DIR)
+    set(LIB_DEST_DIR ${CMAKE_INSTALL_PREFIX}/lib)
+endif()
+
+if(NOT BIN_DEST_DIR)
+    set(BIN_DEST_DIR ${CMAKE_INSTALL_PREFIX}/bin)
+endif()
+
 if(NOT STATIC)
     add_library(xlnt SHARED ${XLNT_HEADERS} ${XLNT_SOURCES})
     target_compile_definitions(xlnt PRIVATE XLNT_SHARED=1)
@@ -108,23 +97,17 @@ if(NOT STATIC)
         target_compile_definitions(xlnt PRIVATE XLNT_EXPORT=1 _CRT_SECURE_NO_WARNINGS=1)
     endif()
 
-    install(TARGETS xlnt
-        LIBRARY DESTINATION ${LIB_DEST_DIR}
-        ARCHIVE DESTINATION ${LIB_DEST_DIR}
-        RUNTIME DESTINATION ${BIN_DEST_DIR})
-    set_target_properties(
-        xlnt
+    set_target_properties(xlnt
         PROPERTIES
         VERSION ${PROJECT_VERSION}
         SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
         INSTALL_NAME_DIR "${LIB_DEST_DIR}")
 
     if(FRAMEWORK)
-        add_custom_command(
-            TARGET xlnt
+        add_custom_command(TARGET xlnt
             POST_BUILD
             COMMAND mkdir -p "${CMAKE_CURRENT_BINARY_DIR}/xlnt.framework/Versions/${PROJECT_VERSION_FULL}/Headers"
-            COMMAND cp -R ../include/xlnt/* "${CMAKE_CURRENT_BINARY_DIR}/xlnt.framework/Versions/${PROJECT_VERSION_FULL}/Headers"
+            COMMAND cp -R ${XLNT_INCLUDE_DIR}/xlnt/* "${CMAKE_CURRENT_BINARY_DIR}/xlnt.framework/Versions/${PROJECT_VERSION_FULL}/Headers"
             COMMAND cp "lib/lib${PROJECT_NAME}.${PROJECT_VERSION_FULL}.dylib" "${CMAKE_CURRENT_BINARY_DIR}/xlnt.framework/Versions/${PROJECT_VERSION_FULL}/xlnt"
             COMMAND cd "${CMAKE_CURRENT_BINARY_DIR}/xlnt.framework/Versions" && ln -s "${PROJECT_VERSION_FULL}" Current
             COMMAND cd "${CMAKE_CURRENT_BINARY_DIR}/xlnt.framework" && ln -s Versions/Current/* ./
@@ -135,23 +118,17 @@ else()
     target_compile_definitions(xlnt PUBLIC XLNT_STATIC=1)
 
     if(MSVC)
-        target_compile_definitions(xlnt PRIVATE _CRT_SECURE_NO_WARNINGS=1 NOMINMAX)
+        target_compile_definitions(xlnt PRIVATE _CRT_SECURE_NO_WARNINGS=1)
     endif()
-
-    install(TARGETS xlnt
-        LIBRARY DESTINATION ${LIB_DEST_DIR}
-        ARCHIVE DESTINATION ${LIB_DEST_DIR}
-        RUNTIME DESTINATION ${BIN_DEST_DIR}
-    )
 endif()
 
-target_compile_definitions(xlnt
-    PRIVATE LIBSTUDXML_STATIC_LIB=1
-    PRIVATE NO_OS_DEPENDENCE=1
-    PRIVATE CRYPTOPP_DISABLE_ASM=1)
-target_link_libraries(xlnt ${CRYPTOPP_LIBRARY})
-target_link_libraries(xlnt ${ZLIB_LIBRARY_RELEASE})
-target_link_libraries(xlnt libstudxml)
+target_link_libraries(xlnt ${CRYPTOPP_LIBRARY} ${ZLIB_LIBRARY_RELEASE} libstudxml)
+
+target_include_directories(xlnt
+    PUBLIC ${XLNT_INCLUDE_DIR}
+    PRIVATE ${XLNT_SOURCE_DIR}
+    PRIVATE ${ZLIB_INCLUDE_DIR}
+    PRIVATE ${CRYPTOPP_INCLUDE_DIR})
 
 if(MSVC)
     set_target_properties(xlnt PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\" /wd\"4068\" /MP")
@@ -171,35 +148,31 @@ source_group(utils FILES ${UTILS_HEADERS} ${UTILS_SOURCES})
 source_group(workbook FILES ${WORKBOOK_HEADERS} ${WORKBOOK_SOURCES})
 source_group(worksheet FILES ${WORKSHEET_HEADERS} ${WORKSHEET_SOURCES})
 
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
 set(PKG_CONFIG_LIBDIR ${LIB_DEST_DIR})
 set(PKG_CONFIG_INCLUDEDIR ${INC_DEST_DIR})
 set(PKG_CONFIG_LIBS "-L\${libdir} -lxlnt")
 set(PKG_CONFIG_CFLAGS "-I\${includedir}")
 
+install(TARGETS xlnt
+    LIBRARY DESTINATION ${LIB_DEST_DIR}
+    ARCHIVE DESTINATION ${LIB_DEST_DIR}
+    RUNTIME DESTINATION ${BIN_DEST_DIR})
+
 if(NOT MSVC)
-    configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/pkg-config.pc.cmake"
+    configure_file("${XLNT_ROOT_DIR}/cmake/pkg-config.pc.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/xlnt.pc")
-endif()
-
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/cmake_uninstall.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-    IMMEDIATE @ONLY)
-
-install(
-    DIRECTORY ${XLNT_INCLUDE_DIR}/xlnt
-    DESTINATION include
-    PATTERN ".DS_Store" EXCLUDE)
-
-if(NOT MSVC)
-    install(
-        FILES "${CMAKE_CURRENT_BINARY_DIR}/xlnt.pc"
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/xlnt.pc"
         DESTINATION ${LIB_DEST_DIR}/pkgconfig)
 endif()
 
-add_custom_target(
-    uninstall
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+install(DIRECTORY ${XLNT_INCLUDE_DIR}/xlnt
+    DESTINATION include
+    PATTERN ".DS_Store" EXCLUDE)
+
+configure_file("${XLNT_ROOT_DIR}/cmake/cmake_uninstall.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+    IMMEDIATE @ONLY)
+
+add_custom_target(uninstall
+    COMMAND ${CMAKE_COMMAND} -P 
+        ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
