@@ -193,7 +193,7 @@ void xlsx_producer::write_content_types()
     write_end_element(xmlns, "Types");
 }
 
-void xlsx_producer::write_property(const std::string &name, const variant &value, const std::string &ns, bool custom)
+void xlsx_producer::write_property(const std::string &name, const variant &value, const std::string &ns, bool custom, std::size_t pid)
 {
     if (custom)
     {
@@ -214,27 +214,41 @@ void xlsx_producer::write_property(const std::string &name, const variant &value
         if (custom)
         {
             write_attribute("fmtid", "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
-            write_attribute("pid", 2);
+            write_attribute("pid", pid);
+            write_start_element(constants::ns("vt"), "bool");
         }
 
         write_characters(write_bool(value.get<bool>()));
+
+        if (custom)
+        {
+            write_end_element(constants::ns("vt"), "bool");
+        }
+
         break;
 
     case variant::type::i4:
         if (custom)
         {
             write_attribute("fmtid", "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
-            write_attribute("pid", 2);
+            write_attribute("pid", pid);
+            write_start_element(constants::ns("vt"), "i4");
         }
 
         write_characters(value.get<std::int32_t>());
+
+        if (custom)
+        {
+            write_end_element(constants::ns("vt"), "i4");
+        }
+
         break;
 
     case variant::type::lpstr:
         if (custom)
         {
             write_attribute("fmtid", "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
-            write_attribute("pid", 2);
+            write_attribute("pid", pid);
             write_start_element(constants::ns("vt"), "lpwstr");
         }
 
@@ -332,7 +346,7 @@ void xlsx_producer::write_core_properties(const relationship &/*rel*/)
     for (const auto &prop : core_properties)
     {
         write_property(to_string(prop), source_.core_property(prop),
-            core_property_namespace(prop).front().first, false);
+            core_property_namespace(prop).front().first, false, 0);
     }
 
     write_end_element(constants::ns("core-properties"), "coreProperties");
@@ -352,7 +366,7 @@ void xlsx_producer::write_extended_properties(const relationship &/*rel*/)
     for (const auto &prop : source_.extended_properties())
     {
         write_property(to_string(prop), source_.extended_property(prop), 
-            constants::ns("extended-properties"), false);
+            constants::ns("extended-properties"), false, 0);
     }
 
     write_end_element(constants::ns("extended-properties"), "Properties");
@@ -364,10 +378,12 @@ void xlsx_producer::write_custom_properties(const relationship &/*rel*/)
     write_namespace(constants::ns("custom-properties"), "");
     write_namespace(constants::ns("vt"), "vt");
 
+    auto pid = std::size_t(2); // why does this start at 2?
+
     for (const auto &prop : source_.custom_properties())
     {
         write_property(prop, source_.custom_property(prop),
-            constants::ns("custom-properties"), true);
+            constants::ns("custom-properties"), true, pid++);
     }
 
     write_end_element(constants::ns("custom-properties"), "Properties");

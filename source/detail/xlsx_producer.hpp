@@ -71,7 +71,7 @@ private:
 	// Package Parts
 
 	void write_content_types();
-    void write_property(const std::string &name, const variant &value, const std::string &ns, bool custom);
+    void write_property(const std::string &name, const variant &value, const std::string &ns, bool custom, std::size_t pid);
 	void write_core_properties(const relationship &rel);
     void write_extended_properties(const relationship &rel);
     void write_custom_properties(const relationship &rel);
