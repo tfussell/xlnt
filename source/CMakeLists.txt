@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.1)
-include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/common.cmake)
-project(${LIBRARY_NAME} VERSION ${LIBRARY_VERSION} LANGUAGES CXX C)
+project(xlnt VERSION 0.9.3)
+
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(NOT DEFINED CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
   set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE INTERNAL "No dev warnings")
@@ -37,20 +39,6 @@ if(NOT BIN_DEST_DIR)
     set(BIN_DEST_DIR ${CMAKE_INSTALL_PREFIX}/bin)
 endif()
 
-
-# Put all output files in the same directory
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
-foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
-    string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/lib)
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/lib)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/bin)
-endforeach()
-
-# Platform specific settings
 if(COVERAGE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
 endif()
@@ -75,12 +63,9 @@ include_directories(${XLNT_INCLUDE_DIR}
     ${XLNT_INCLUDE_DIR}/xlnt
     ${XLNT_SOURCE_DIR}
     ${XLNT_SOURCE_DIR}/detail
-    ${THIRD_PARTY_DIR}/miniz
-    ${THIRD_PARTY_DIR}/libstudxml
-    ${THIRD_PARTY_DIR}/utfcpp/source
-    ${THIRD_PARTY_DIR}/pole
-    ${THIRD_PARTY_DIR}/zlib
-    ${THIRD_PARTY_DIR}/cryptopp)
+    ${LIBSTUDXML_INCLUDE_DIR}
+    ${ZLIB_INCLUDE_DIR}
+    ${CRYPTOPP_INCLUDE_DIR})
 
 file(GLOB ROOT_HEADERS ${XLNT_INCLUDE_DIR}/xlnt/*.hpp)
 file(GLOB CELL_HEADERS ${XLNT_INCLUDE_DIR}/xlnt/cell/*.hpp)
@@ -138,11 +123,11 @@ if(NOT STATIC)
         add_custom_command(
             TARGET xlnt
             POST_BUILD
-            COMMAND mkdir -p "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.framework/Versions/${PROJECT_VERSION_FULL}/Headers"
-            COMMAND cp -R ../include/xlnt/* "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.framework/Versions/${PROJECT_VERSION_FULL}/Headers"
-            COMMAND cp "lib/lib${PROJECT_NAME}.${PROJECT_VERSION_FULL}.dylib" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.framework/Versions/${PROJECT_VERSION_FULL}/xlnt"
-            COMMAND cd "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.framework/Versions" && ln -s "${PROJECT_VERSION_FULL}" Current
-            COMMAND cd "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.framework" && ln -s Versions/Current/* ./
+            COMMAND mkdir -p "${CMAKE_CURRENT_BINARY_DIR}/xlnt.framework/Versions/${PROJECT_VERSION_FULL}/Headers"
+            COMMAND cp -R ../include/xlnt/* "${CMAKE_CURRENT_BINARY_DIR}/xlnt.framework/Versions/${PROJECT_VERSION_FULL}/Headers"
+            COMMAND cp "lib/lib${PROJECT_NAME}.${PROJECT_VERSION_FULL}.dylib" "${CMAKE_CURRENT_BINARY_DIR}/xlnt.framework/Versions/${PROJECT_VERSION_FULL}/xlnt"
+            COMMAND cd "${CMAKE_CURRENT_BINARY_DIR}/xlnt.framework/Versions" && ln -s "${PROJECT_VERSION_FULL}" Current
+            COMMAND cd "${CMAKE_CURRENT_BINARY_DIR}/xlnt.framework" && ln -s Versions/Current/* ./
         )
     endif()
 else()
@@ -160,11 +145,13 @@ else()
     )
 endif()
 
-target_compile_definitions(${PROJECT_NAME}
+target_compile_definitions(xlnt
     PRIVATE LIBSTUDXML_STATIC_LIB=1
     PRIVATE NO_OS_DEPENDENCE=1
     PRIVATE CRYPTOPP_DISABLE_ASM=1)
-target_link_libraries(${PROJECT_NAME} xlnt.third-party)
+target_link_libraries(xlnt ${CRYPTOPP_LIBRARY})
+target_link_libraries(xlnt ${ZLIB_LIBRARY_RELEASE})
+target_link_libraries(xlnt libstudxml)
 
 if(MSVC)
     set_target_properties(xlnt PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\" /wd\"4068\" /MP")
@@ -194,7 +181,7 @@ set(PKG_CONFIG_CFLAGS "-I\${includedir}")
 if(NOT MSVC)
     configure_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/pkg-config.pc.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc")
+        "${CMAKE_CURRENT_BINARY_DIR}/xlnt.pc")
 endif()
 
 configure_file(
@@ -209,7 +196,7 @@ install(
 
 if(NOT MSVC)
     install(
-        FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc"
+        FILES "${CMAKE_CURRENT_BINARY_DIR}/xlnt.pc"
         DESTINATION ${LIB_DEST_DIR}/pkgconfig)
 endif()
 

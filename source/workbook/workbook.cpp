@@ -120,6 +120,165 @@ std::vector<typename T::key_type> keys(const T &container)
     return result;
 }
 
+xlnt::path default_path(xlnt::relationship_type type, std::size_t index = 0)
+{
+    using xlnt::path;
+    using xlnt::relationship_type;
+
+    switch (type)
+    {
+    case relationship_type::calculation_chain:
+        return path("/xl/calcChain.xml");
+    case relationship_type::chartsheet:
+        return path("/xl/sheets/.xml");
+    case relationship_type::comments:
+        return path("/xl/comments.xml");
+    case relationship_type::connections:
+        return path("/xl/connections.xml");
+    case relationship_type::core_properties:
+        return path("/docProps/core.xml");
+    case relationship_type::custom_properties:
+        return path("/docProps/custom.xml");
+    case relationship_type::custom_property:
+        return path("/xl/customProperty.xml");
+    case relationship_type::custom_xml_mappings:
+        return path("/xl/customXmlMappings.xml");
+    case relationship_type::dialogsheet:
+        return path("/xl/dialogsheets/sheet.xml");
+    case relationship_type::drawings:
+        return path("/xl/drawings/drawing.xml");
+    case relationship_type::extended_properties:
+        return path("/docProps/app.xml");
+    case relationship_type::external_workbook_references:
+        return path("/xl/external.xml");
+    case relationship_type::hyperlink:
+        return path("/xl/hyperlink.xml");
+    case relationship_type::image:
+        return path("?");
+    case relationship_type::office_document:
+        return path("/xl/workbook.xml");
+    case relationship_type::pivot_table:
+        return path("/xl/pivotTable.xml");
+    case relationship_type::pivot_table_cache_definition:
+        return path("?");
+    case relationship_type::pivot_table_cache_records:
+        return path("?");
+    case relationship_type::printer_settings:
+        return path("/xl/printerSettings.xml");
+    case relationship_type::query_table:
+        return path("/xl/queryTable.xml");
+    case relationship_type::revision_log:
+        return path("/xl/revisionLog.xml");
+    case relationship_type::shared_string_table:
+        return path("/xl/sharedStrings.xml");
+    case relationship_type::shared_workbook:
+        return path("/xl/sharedWorkbook.xml");
+    case relationship_type::shared_workbook_revision_headers:
+        return path("?");
+    case relationship_type::shared_workbook_user_data:
+        return path("?");
+    case relationship_type::single_cell_table_definitions:
+        return path("?");
+    case relationship_type::stylesheet:
+        return path("/xl/styles.xml");
+    case relationship_type::table_definition:
+        return path("/xl/tableDefinition.xml");
+    case relationship_type::theme:
+        return path("/xl/theme/theme1.xml");
+    case relationship_type::thumbnail:
+        return path("/docProps/thumbnail.jpg");
+    case relationship_type::unknown:
+        return path("/xl/unknown.xml");
+    case relationship_type::vml_drawing:
+        return path("/xl/vmlDrawing.xml");
+    case relationship_type::volatile_dependencies:
+        return path("/xl/volatileDependencies.xml");
+    case relationship_type::worksheet:
+        return path("/xl/worksheets/sheet" + std::to_string(index) + ".xml");
+    }
+
+    default_case(path("/xl/unknownPart.xml"));
+}
+
+std::string content_type(xlnt::relationship_type type)
+{
+    using xlnt::relationship_type;
+
+    switch (type)
+    {
+    case relationship_type::calculation_chain:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.calcChain+xml";
+    case relationship_type::chartsheet:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.chartsheet+xml";
+    case relationship_type::comments:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml";
+    case relationship_type::connections:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.connections+xml";
+    case relationship_type::core_properties:
+        return "application/vnd.openxmlformats-package.core-properties+xml";
+    case relationship_type::custom_properties:
+        return "application/vnd.openxmlformats-officedocument.custom-properties+xml";
+    case relationship_type::custom_property:
+        return "";
+    case relationship_type::custom_xml_mappings:
+        return "application/xml";
+    case relationship_type::dialogsheet:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.dialogsheet+xml";
+    case relationship_type::drawings:
+        return "application/vnd.openxmlformats-officedocument.drawing+xml";
+    case relationship_type::extended_properties:
+        return "application/vnd.openxmlformats-officedocument.extended-properties+xml";
+    case relationship_type::external_workbook_references:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.externalLink+xml";
+    case relationship_type::hyperlink:
+        return "";
+    case relationship_type::image:
+        return "";
+    case relationship_type::office_document:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml";
+    case relationship_type::pivot_table:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.pivotTable+xml";
+    case relationship_type::pivot_table_cache_definition:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheDefinition+xml";
+    case relationship_type::pivot_table_cache_records:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheRecords+xml";
+    case relationship_type::printer_settings:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.printerSettings";
+    case relationship_type::query_table:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.queryTable+xml";
+    case relationship_type::revision_log:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.revisionLog+xml";
+    case relationship_type::shared_string_table:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml";
+    case relationship_type::shared_workbook:
+        return "";
+    case relationship_type::shared_workbook_revision_headers:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.revisionHeaders+xml";
+    case relationship_type::shared_workbook_user_data:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.userNames+xml";
+    case relationship_type::single_cell_table_definitions:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.tableSingleCells+xml";
+    case relationship_type::stylesheet:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml";
+    case relationship_type::table_definition:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml";
+    case relationship_type::theme:
+        return "application/vnd.openxmlformats-officedocument.theme+xml";
+    case relationship_type::thumbnail:
+        return "image/jpeg";
+    case relationship_type::unknown:
+        return "";
+    case relationship_type::vml_drawing:
+        return "application/vnd.openxmlformats-officedocument.vmlDrawing";
+    case relationship_type::volatile_dependencies:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.volatileDependencies+xml";
+    case relationship_type::worksheet:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml";
+    }
+
+    default_case("application/xml");
+}
+
 } // namespace
 
 namespace xlnt {
@@ -307,160 +466,6 @@ workbook::workbook(detail::workbook_impl *impl)
             d_->stylesheet_.get().parent = this;
         }
     }
-}
-
-path default_path(relationship_type type, std::size_t index = 0)
-{
-    switch (type)
-    {
-    case relationship_type::calculation_chain:
-        return path("/xl/calcChain.xml");
-    case relationship_type::chartsheet:
-        return path("/xl/sheets/.xml");
-    case relationship_type::comments:
-        return path("/xl/comments.xml");
-    case relationship_type::connections:
-        return path("/xl/connections.xml");
-    case relationship_type::core_properties:
-        return path("/docProps/core.xml");
-    case relationship_type::custom_properties:
-        return path("/docProps/custom.xml");
-    case relationship_type::custom_property:
-        return path("/xl/customProperty.xml");
-    case relationship_type::custom_xml_mappings:
-        return path("/xl/customXmlMappings.xml");
-    case relationship_type::dialogsheet:
-        return path("/xl/dialogsheets/sheet.xml");
-    case relationship_type::drawings:
-        return path("/xl/drawings/drawing.xml");
-    case relationship_type::extended_properties:
-        return path("/docProps/app.xml");
-    case relationship_type::external_workbook_references:
-        return path("/xl/external.xml");
-    case relationship_type::hyperlink:
-        return path("/xl/hyperlink.xml");
-    case relationship_type::image:
-        return path("?");
-    case relationship_type::office_document:
-        return path("/xl/workbook.xml");
-    case relationship_type::pivot_table:
-        return path("/xl/pivotTable.xml");
-    case relationship_type::pivot_table_cache_definition:
-        return path("?");
-    case relationship_type::pivot_table_cache_records:
-        return path("?");
-    case relationship_type::printer_settings:
-        return path("/xl/printerSettings.xml");
-    case relationship_type::query_table:
-        return path("/xl/queryTable.xml");
-    case relationship_type::revision_log:
-        return path("/xl/revisionLog.xml");
-    case relationship_type::shared_string_table:
-        return path("/xl/sharedStrings.xml");
-    case relationship_type::shared_workbook:
-        return path("/xl/sharedWorkbook.xml");
-    case relationship_type::shared_workbook_revision_headers:
-        return path("?");
-    case relationship_type::shared_workbook_user_data:
-        return path("?");
-    case relationship_type::single_cell_table_definitions:
-        return path("?");
-    case relationship_type::stylesheet:
-        return path("/xl/styles.xml");
-    case relationship_type::table_definition:
-        return path("/xl/tableDefinition.xml");
-    case relationship_type::theme:
-        return path("/xl/theme/theme1.xml");
-    case relationship_type::thumbnail:
-        return path("/docProps/thumbnail.jpg");
-    case relationship_type::unknown:
-        return path("/xl/unknown.xml");
-    case relationship_type::vml_drawing:
-        return path("/xl/vmlDrawing.xml");
-    case relationship_type::volatile_dependencies:
-        return path("/xl/volatileDependencies.xml");
-    case relationship_type::worksheet:
-        return path("/xl/worksheets/sheet" + std::to_string(index) + ".xml");
-    }
-
-    default_case(path("/xl/unknownPart.xml"));
-}
-
-std::string content_type(relationship_type type)
-{
-    switch (type)
-    {
-    case relationship_type::calculation_chain:
-        return "application/vnd.openxmlformats-officedocument.spreadsheetml.calcChain+xml";
-    case relationship_type::chartsheet:
-        return "application/vnd.openxmlformats-officedocument.spreadsheetml.chartsheet+xml";
-    case relationship_type::comments:
-        return "application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml";
-    case relationship_type::connections:
-        return "application/vnd.openxmlformats-officedocument.spreadsheetml.connections+xml";
-    case relationship_type::core_properties:
-        return "application/vnd.openxmlformats-package.core-properties+xml";
-    case relationship_type::custom_properties:
-        return "application/vnd.openxmlformats-officedocument.custom-properties+xml";
-    case relationship_type::custom_property:
-        return "";
-    case relationship_type::custom_xml_mappings:
-        return "application/xml";
-    case relationship_type::dialogsheet:
-        return "application/vnd.openxmlformats-officedocument.spreadsheetml.dialogsheet+xml";
-    case relationship_type::drawings:
-        return "application/vnd.openxmlformats-officedocument.drawing+xml";
-    case relationship_type::extended_properties:
-        return "application/vnd.openxmlformats-officedocument.extended-properties+xml";
-    case relationship_type::external_workbook_references:
-        return "application/vnd.openxmlformats-officedocument.spreadsheetml.externalLink+xml";
-    case relationship_type::hyperlink:
-        return "";
-    case relationship_type::image:
-        return "";
-    case relationship_type::office_document:
-        return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml";
-    case relationship_type::pivot_table:
-        return "application/vnd.openxmlformats-officedocument.spreadsheetml.pivotTable+xml";
-    case relationship_type::pivot_table_cache_definition:
-        return "application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheDefinition+xml";
-    case relationship_type::pivot_table_cache_records:
-        return "application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheRecords+xml";
-    case relationship_type::printer_settings:
-        return "application/vnd.openxmlformats-officedocument.spreadsheetml.printerSettings";
-    case relationship_type::query_table:
-        return "application/vnd.openxmlformats-officedocument.spreadsheetml.queryTable+xml";
-    case relationship_type::revision_log:
-        return "application/vnd.openxmlformats-officedocument.spreadsheetml.revisionLog+xml";
-    case relationship_type::shared_string_table:
-        return "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml";
-    case relationship_type::shared_workbook:
-        return "";
-    case relationship_type::shared_workbook_revision_headers:
-        return "application/vnd.openxmlformats-officedocument.spreadsheetml.revisionHeaders+xml";
-    case relationship_type::shared_workbook_user_data:
-        return "application/vnd.openxmlformats-officedocument.spreadsheetml.userNames+xml";
-    case relationship_type::single_cell_table_definitions:
-        return "application/vnd.openxmlformats-officedocument.spreadsheetml.tableSingleCells+xml";
-    case relationship_type::stylesheet:
-        return "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml";
-    case relationship_type::table_definition:
-        return "application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml";
-    case relationship_type::theme:
-        return "application/vnd.openxmlformats-officedocument.theme+xml";
-    case relationship_type::thumbnail:
-        return "image/jpeg";
-    case relationship_type::unknown:
-        return "";
-    case relationship_type::vml_drawing:
-        return "application/vnd.openxmlformats-officedocument.vmlDrawing";
-    case relationship_type::volatile_dependencies:
-        return "application/vnd.openxmlformats-officedocument.spreadsheetml.volatileDependencies+xml";
-    case relationship_type::worksheet:
-        return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml";
-    }
-
-    default_case("application/xml");
 }
 
 void workbook::register_package_part(relationship_type type)

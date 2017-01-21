@@ -165,4 +165,4 @@ variant::type variant::value_type() const
     return type_;
 }
 
-}
+} // namespace xlnt
