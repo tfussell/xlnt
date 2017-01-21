@@ -65,31 +65,31 @@ public:
 
 	void test_round_trip_empty_excel_rw()
 	{
-		auto path = path_helper::get_data_directory("9_default-excel.xlsx");
+		auto path = path_helper::data_directory("9_default-excel.xlsx");
 		TS_ASSERT(round_trip_matches_rw(path));
 	}
 
 	void test_round_trip_all_styles_rw()
 	{
-		auto path = path_helper::get_data_directory("10_all_styles.xlsx");
+		auto path = path_helper::data_directory("10_all_styles.xlsx");
 		TS_ASSERT(round_trip_matches_rw(path));
 	}
 
     void test_round_trip_headers_footers()
     {
-		auto path = path_helper::get_data_directory("18_headers_and_footers.xlsx");
+		auto path = path_helper::data_directory("18_headers_and_footers.xlsx");
 		TS_ASSERT(round_trip_matches_rw(path));
     }
 
     void test_round_trip_row_and_col_props()
     {
-		auto path = path_helper::get_data_directory("19_row_and_col_properties.xlsx");
+		auto path = path_helper::data_directory("19_row_and_col_properties.xlsx");
 		TS_ASSERT(round_trip_matches_rw(path));
     }
 
     void test_round_trip_page_breaks()
     {
-		auto path = path_helper::get_data_directory("20_page_breaks.xlsx");
+		auto path = path_helper::data_directory("20_page_breaks.xlsx");
 		TS_ASSERT(round_trip_matches_rw(path));
     }
 };

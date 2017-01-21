@@ -53,6 +53,33 @@ bool is_integral(long double d)
     return std::fabs(d - static_cast<long double>(static_cast<long long int>(d))) == 0.L;
 }
 
+std::vector<std::pair<std::string, std::string>> core_property_namespace(xlnt::core_property type)
+{
+    using xlnt::core_property;
+    using xlnt::constants;
+
+    if (type == core_property::created 
+        || type == core_property::modified)
+    {
+        return {{constants::ns("dcterms"), "dcterms"},
+            {constants::ns("xsi"), "xsi"}};
+    }
+    else if (type == core_property::title 
+        || type == core_property::subject 
+        || type == core_property::creator 
+        || type == core_property::description)
+    {
+        return {{constants::ns("dc"), "dc"}};
+    }
+    else if (type == core_property::keywords)
+    {
+        return {{constants::ns("core-properties"), "cp"},
+            {constants::ns("vt"), "vt"}};
+    }
+
+    return {{constants::ns("core-properties"), "cp"}};
+}
+
 } // namespace
 
 namespace xlnt {
@@ -266,12 +293,13 @@ void xlsx_producer::write_property(const std::string &name, const variant &value
                 write_start_element(constants::ns("vt"), "variant");
             }
 
-            switch (vector_element.value_type())
-            {
-            case variant::type::lpstr:
+            if (vector_element.value_type() == variant::type::lpstr)
+	    {
                 write_element(constants::ns("vt"), "lpstr", vector_element.get<std::string>());
                 break;
-            case variant::type::i4:
+	    }
+            else if (vector_element.value_type() == variant::type::i4)
+	    {
                 write_element(constants::ns("vt"), "i4", vector_element.get<std::int32_t>());
                 break;
             }
@@ -296,30 +324,6 @@ void xlsx_producer::write_property(const std::string &name, const variant &value
     {
         write_end_element(ns, name);
     }
-}
-
-std::vector<std::pair<std::string, std::string>> core_property_namespace(core_property type)
-{
-    if (type == core_property::created 
-        || type == core_property::modified)
-    {
-        return {{constants::ns("dcterms"), "dcterms"},
-            {constants::ns("xsi"), "xsi"}};
-    }
-    else if (type == core_property::title 
-        || type == core_property::subject 
-        || type == core_property::creator 
-        || type == core_property::description)
-    {
-        return {{constants::ns("dc"), "dc"}};
-    }
-    else if (type == core_property::keywords)
-    {
-        return {{constants::ns("core-properties"), "cp"},
-            {constants::ns("vt"), "vt"}};
-    }
-
-    return {{constants::ns("core-properties"), "cp"}};
 }
 
 void xlsx_producer::write_core_properties(const relationship &/*rel*/)

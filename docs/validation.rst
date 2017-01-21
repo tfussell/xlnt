@@ -1,2 +1,0 @@
-Validating cells
-================

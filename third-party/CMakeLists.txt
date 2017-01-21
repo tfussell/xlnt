@@ -1,136 +1,58 @@
-cmake_minimum_required(VERSION 3.1)
-include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/common.cmake)
-project(${LIBRARY_NAME}.third-party VERSION ${LIBRARY_VERSION} LANGUAGES CXX C)
+cmake_minimum_required(VERSION 3.2)
+project(xlnt.third-party)
 
-# Includes
-include_directories(libstudxml
-    utfcpp/source
-    zlib
-    cryptopp
-    ${LIBRARY_SOURCE_DIR}/detail)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
+find_package(ZLIB REQUIRED)
+find_package(CryptoPP REQUIRED)
+find_package(CxxTest REQUIRED)
+
+set(LIBSTUDXML_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml)
 
 set(LIBSTUDXML 
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/parser.cxx
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/qname.cxx 
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/serializer.cxx
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/value-traits.cxx
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/content
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/exception
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/forward
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/parser
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/qname
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/serializer
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/value-traits)
+    ${LIBSTUDXML_ROOT_DIR}/xml/parser.cxx
+    ${LIBSTUDXML_ROOT_DIR}/xml/qname.cxx 
+    ${LIBSTUDXML_ROOT_DIR}/xml/serializer.cxx
+    ${LIBSTUDXML_ROOT_DIR}/xml/value-traits.cxx
+    ${LIBSTUDXML_ROOT_DIR}/xml/content
+    ${LIBSTUDXML_ROOT_DIR}/xml/exception
+    ${LIBSTUDXML_ROOT_DIR}/xml/forward
+    ${LIBSTUDXML_ROOT_DIR}/xml/parser
+    ${LIBSTUDXML_ROOT_DIR}/xml/qname
+    ${LIBSTUDXML_ROOT_DIR}/xml/serializer
+    ${LIBSTUDXML_ROOT_DIR}/xml/value-traits)
 
 set(EXPAT
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/expat/xmlparse.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/expat/xmlrole.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/expat/xmltok_impl.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/expat/xmltok_ns.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/expat/xmltok.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/expat/ascii.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/expat/asciitab.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/expat/config.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/expat/expat_external.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/expat/expat.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/expat/iasciitab.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/expat/internal.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/expat/latin1tab.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/expat/nametab.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/expat/utf8tab.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/expat/xmlrole.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/expat/xmltok_impl.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/expat/xmltok.h)
+    ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/xmlparse.c
+    ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/xmlrole.c
+#    ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/xmltok_impl.c
+#    ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/xmltok_ns.c
+    ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/xmltok.c
+    ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/ascii.h
+    ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/asciitab.h
+    ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/config.h
+    ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/expat_external.h
+    ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/expat.h
+    ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/iasciitab.h
+    ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/internal.h
+    ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/latin1tab.h
+    ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/nametab.h
+    ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/utf8tab.h
+    ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/xmlrole.h
+    ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/xmltok_impl.h
+    ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/xmltok.h)
 
 set(GENX
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/genx/char-props.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/genx/genx.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/libstudxml/xml/details/genx/genx.h)
+    ${LIBSTUDXML_ROOT_DIR}/xml/details/genx/char-props.c
+    ${LIBSTUDXML_ROOT_DIR}/xml/details/genx/genx.c
+    ${LIBSTUDXML_ROOT_DIR}/xml/details/genx/genx.h)
 
-set(ZLIB ${CMAKE_CURRENT_SOURCE_DIR}/zlib/adler32.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/compress.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/crc32.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/deflate.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/infback.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/inffast.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/inflate.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/inftrees.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/trees.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/uncompr.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/zutil.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/crc32.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/deflate.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/inffast.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/inffixed.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/inflate.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/inftrees.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/trees.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/zconf.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/zlib.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/zlib/zutil.h)
+add_library(libstudxml STATIC ${LIBSTUDXML} ${EXPAT} ${GENX})
+target_compile_definitions(libstudxml PUBLIC LIBSTUDXML_STATIC_LIB=1)
+target_include_directories(libstudxml PUBLIC ${LIBSTUDXML_ROOT_DIR})
 
-file(GLOB CRYPTOPP ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/*.cpp)
-list(REMOVE_ITEM CRYPTOPP
-    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/simple.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/rdrand.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/pch.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/winpipes.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/cryplib_bds.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/test.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/bench1.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/bench2.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/validat0.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/validat1.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/validat2.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/validat3.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/adhoc.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/datatest.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/regtest.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/fipsalgt.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/dlltest.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/fipstest.cpp)
-if(MINGW OR WIN32)
-    list(APPEND CRYPTOPP ${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/winpipes.cpp)
-endif()
-
-if(NOT MSVC)
-    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/basecode.cpp PROPERTIES
-        COMPILE_FLAGS "-Wno-unused-private-field")
-    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/rw.cpp PROPERTIES
-        COMPILE_FLAGS "-Wno-unused-const-variable")
-    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/cryptopp/filters.cpp PROPERTIES
-        COMPILE_FLAGS "-Wno-reorder")
-endif()
-
-if(NOT MSVC)
-    set_source_files_properties(${ZLIB} PROPERTIES COMPILE_FLAGS "-Wno-implicit-function-declaration")
-else()
-    set_source_files_properties(${ZLIB} PROPERTIES COMPILE_FLAGS "/wd\"4018\"")
-endif()
-
-add_library(xlnt.third-party STATIC
-    ${LIBSTUDXML}
-    ${GENX}
-    ${EXPAT}
-    ${ZLIB}
-    ${CRYPTOPP})
-target_compile_definitions(xlnt.third-party
-    PRIVATE LIBSTUDXML_STATIC_LIB=1
-    PRIVATE NO_OS_DEPENDENCE=1
-    PRIVATE CRYPTOPP_DISABLE_ASM=1)
-
-if(NOT STATIC)
-    set_target_properties(xlnt.third-party PROPERTIES POSITION_INDEPENDENT_CODE 1)
-endif()
-
-if(MSVC)
-    target_compile_definitions(xlnt.third-party PRIVATE
-        _CRT_SECURE_NO_WARNINGS=1
-        NOMINMAX)
-    set_target_properties(xlnt.third-party PROPERTIES COMPILE_FLAGS "/MP")
-endif()
-
-source_group(libstudxml FILES ${LIBSTUDXML})
-source_group(libstudxml\\genx FILES ${GENX})
-source_group(libstudxml\\expat FILES ${EXPAT})
-source_group(zlib FILES ${ZLIB})
+add_custom_target(libstudxml-config)
+add_custom_command(TARGET libstudxml-config PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E
+        copy ${CMAKE_CURRENT_SOURCE_DIR}/../source/detail/xml/details/config.h
+        ${LIBSTUDXML_ROOT_DIR}/xml/details)
+add_dependencies(libstudxml libstudxml-config)

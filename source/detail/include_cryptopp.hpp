@@ -34,9 +34,9 @@
 #pragma clang diagnostic ignored "-Wextra-semi"
 #pragma clang diagnostic ignored "-Wexit-time-destructors"
 
-#include <aes.h>
-#include <base64.h>
-#include <modes.h>
-#include <sha.h>
+#include <cryptopp/aes.h>
+#include <cryptopp/base64.h>
+#include <cryptopp/modes.h>
+#include <cryptopp/sha.h>
 
 #pragma clang diagnostic pop
