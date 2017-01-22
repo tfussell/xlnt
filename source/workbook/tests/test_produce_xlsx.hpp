@@ -31,8 +31,9 @@ public:
 
 	void test_produce_empty()
 	{
-		xlnt::workbook wb = xlnt::workbook::empty();
-		TS_ASSERT(workbook_matches_file(wb, path_helper::data_directory("9_default-excel.xlsx")));
+		xlnt::workbook wb;
+        const auto path = path_helper::data_directory("3_default.xlsx");
+		TS_ASSERT(workbook_matches_file(wb, path));
 	}
 
 	void test_produce_simple_excel()
@@ -152,17 +153,26 @@ public:
 		sheet2.cell("A2").value("Sheet2!A2");
 		sheet2.cell("A2").comment("Sheet2 comment2", comment_font, "Microsoft Office User");
 
-		TS_ASSERT(workbook_matches_file(wb, path_helper::data_directory("15_basic_comments.xlsx")));
+        const auto path = path_helper::data_directory("10_comments_hyperlinks_formulae.xlsx");
+		TS_ASSERT(workbook_matches_file(wb, path));
 	}
 
     void test_save_after_clear_all_formulae()
     {
         xlnt::workbook wb;
-        wb.load(path_helper::data_directory("22_formulae.xlsx"));
-        auto ws = wb.active_sheet();
-        TS_ASSERT(ws.cell("A1").has_formula());
-        TS_ASSERT_EQUALS(ws.cell("A1").formula(), "A2*A3");
-        ws.cell("A1").clear_formula();
+        const auto path = path_helper::data_directory("10_comments_hyperlinks_formulae.xlsx");
+        wb.load(path);
+
+        auto ws1 = wb.sheet_by_index(0);
+        TS_ASSERT(ws1.cell("C1").has_formula());
+        TS_ASSERT_EQUALS(ws1.cell("C1").formula(), "CONCATENATE(C2,C3)");
+        ws1.cell("C1").clear_formula();
+
+        auto ws2 = wb.sheet_by_index(1);
+        TS_ASSERT(ws2.cell("C1").has_formula());
+        TS_ASSERT_EQUALS(ws2.cell("C1").formula(), "C2*C3");
+        ws2.cell("C1").clear_formula();
+
         wb.save("clear_formulae.xlsx");
     }
 };
