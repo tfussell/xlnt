@@ -13,26 +13,6 @@ class test_round_trip : public CxxTest::TestSuite
 {
 public:
     /// <summary>
-    /// Write original to a memory as an XLSX-formatted ZIP, read it from memory back to a workbook,
-    /// then ensure that the resulting workbook matches the original.
-    /// </summary>
-	bool round_trip_matches_wrw(const xlnt::workbook &original)
-	{
-		std::vector<std::uint8_t> original_buffer;
-		original.save(original_buffer);
-        original.save("round_trip_in.xlsx");
-
-		xlnt::workbook resulting_workbook;
-		resulting_workbook.load(original_buffer);
-        
-        std::vector<std::uint8_t> resulting_buffer;
-        resulting_workbook.save(resulting_buffer);
-        resulting_workbook.save("round_trip_out.xlsx");
-
-		return xml_helper::xlsx_archives_match(original_buffer, resulting_buffer);
-	}
-
-    /// <summary>
     /// Read file as an XLSX-formatted ZIP file in the filesystem to a workbook,
     /// write the workbook back to memory, then ensure that the contents of the two files are equivalent.
     /// </summary>
@@ -57,39 +37,26 @@ public:
 		return xml_helper::xlsx_archives_match(original_data, buffer);
 	}
 
-	void test_round_trip_empty_wrw()
-	{
-		xlnt::workbook wb = xlnt::workbook::empty();
-		TS_ASSERT(round_trip_matches_wrw(wb));
-	}
-
 	void test_round_trip_empty_excel_rw()
 	{
-		auto path = path_helper::data_directory("9_default-excel.xlsx");
-		TS_ASSERT(round_trip_matches_rw(path));
+        const auto files = std::vector<std::string>
+        {
+            "2_minimal",
+            "3_default",
+            "4_every_style",
+            "5_encrypted_agile",
+            "6_encrypted_libre",
+            "7_encrypted_standard",
+            "8_encrypted_numbers",
+            "10_comments_hyperlinks_formulae",
+            "11_print_settings",
+            "12_advanced_properties"
+        };
+
+        for (const auto file : files)
+        {
+            auto path = path_helper::data_directory(file + ".xlsx");
+            TS_ASSERT(round_trip_matches_rw(path));
+        }
 	}
-
-	void test_round_trip_all_styles_rw()
-	{
-		auto path = path_helper::data_directory("10_all_styles.xlsx");
-		TS_ASSERT(round_trip_matches_rw(path));
-	}
-
-    void test_round_trip_headers_footers()
-    {
-		auto path = path_helper::data_directory("18_headers_and_footers.xlsx");
-		TS_ASSERT(round_trip_matches_rw(path));
-    }
-
-    void test_round_trip_row_and_col_props()
-    {
-		auto path = path_helper::data_directory("19_row_and_col_properties.xlsx");
-		TS_ASSERT(round_trip_matches_rw(path));
-    }
-
-    void test_round_trip_page_breaks()
-    {
-		auto path = path_helper::data_directory("20_page_breaks.xlsx");
-		TS_ASSERT(round_trip_matches_rw(path));
-    }
 };

@@ -294,14 +294,12 @@ void xlsx_producer::write_property(const std::string &name, const variant &value
             }
 
             if (vector_element.value_type() == variant::type::lpstr)
-	    {
+            {
                 write_element(constants::ns("vt"), "lpstr", vector_element.get<std::string>());
-                break;
-	    }
+            }
             else if (vector_element.value_type() == variant::type::i4)
-	    {
+            {
                 write_element(constants::ns("vt"), "i4", vector_element.get<std::int32_t>());
-                break;
             }
 
             if (is_mixed)

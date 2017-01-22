@@ -126,7 +126,7 @@ public:
     void test_read_headers_and_footers()
     {
         xlnt::workbook wb;
-        wb.load(path_helper::data_directory("18_headers_and_footers.xlsx"));
+        wb.load(path_helper::data_directory("11_print_settings.xlsx"));
         auto ws = wb.active_sheet();
 
         TS_ASSERT_EQUALS(ws.cell("A1").value<std::string>(), "header");
@@ -158,7 +158,7 @@ public:
     void test_read_custom_properties()
     {
         xlnt::workbook wb;
-        wb.load(path_helper::data_directory("21_custom_properties.xlsx"));
+        wb.load(path_helper::data_directory("12_advanced_properties.xlsx"));
         TS_ASSERT(wb.has_custom_property("Client"));
         TS_ASSERT_EQUALS(wb.custom_property("Client").get<std::string>(), "me!");
     }
