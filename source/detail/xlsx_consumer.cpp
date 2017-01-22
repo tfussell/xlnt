@@ -2161,17 +2161,20 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
                 expect_start_element(qn("spreadsheetml", "hyperlink"), xml::content::simple);
 
                 auto cell = ws.cell(parser().attribute("ref"));
-                auto hyperlink_rel_id = parser().attribute(qn("r", "id"));
-                auto hyperlink_rel = std::find_if(hyperlinks.begin(), hyperlinks.end(),
-                    [&](const relationship &r) { return r.id() == hyperlink_rel_id; });
 
-                skip_attributes({"location", "tooltip", "display"});
-
-                if (hyperlink_rel != hyperlinks.end())
+                if (parser().attribute_present(qn("r", "id")))
                 {
-                    cell.hyperlink(hyperlink_rel->target().path().string());
+                    auto hyperlink_rel_id = parser().attribute(qn("r", "id"));
+                    auto hyperlink_rel = std::find_if(hyperlinks.begin(), hyperlinks.end(),
+                        [&](const relationship &r) { return r.id() == hyperlink_rel_id; });
+
+                    if (hyperlink_rel != hyperlinks.end())
+                    {
+                        cell.hyperlink(hyperlink_rel->target().path().string());
+                    }
                 }
 
+                skip_attributes({"location", "tooltip", "display"});
                 expect_end_element(qn("spreadsheetml", "hyperlink"));
             }
         }
