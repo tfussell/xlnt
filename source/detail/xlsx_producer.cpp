@@ -1129,7 +1129,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
     }
 
     // Style XFs
-    if (tylesheet.style_impls.size() > 0) {
+    if (stylesheet.style_impls.size() > 0) {
     write_start_element(xmlns, "cellStyleXfs");
     write_attribute("count", stylesheet.style_impls.size());
 
