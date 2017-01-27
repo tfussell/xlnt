@@ -1226,7 +1226,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
     }
 
     write_end_element(xmlns, "cellStyleXfs");
-
+    }
     else
         {
          // need minimun one style
