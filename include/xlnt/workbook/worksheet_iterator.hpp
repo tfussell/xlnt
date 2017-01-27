@@ -33,6 +33,9 @@ namespace xlnt {
 class workbook;
 class worksheet;
 
+/// <summary>
+/// Alias the parent class of this iterator to increase clarity.
+/// </summary>
 using ws_iter_type = std::iterator<std::bidirectional_iterator_tag,
     worksheet, std::ptrdiff_t, worksheet *, worksheet>;
 

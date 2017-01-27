@@ -176,16 +176,26 @@ public:
         return default_grid_color_;
     }
 
+    /// <summary>
+    /// Sets the type of this view.
+    /// </summary>
     void type(sheet_view_type new_type)
     {
         type_ = new_type;
     }
 
+    /// <summary>
+    /// Returns the type of this view.
+    /// </summary>
     sheet_view_type type() const
     {
         return type_;
     }
 
+    /// <summary>
+    /// Returns true if this view is requal to rhs based on its id, grid lines setting,
+    /// default grid color, pane, and selections.
+    /// </summary>
     bool operator==(const sheet_view &rhs) const
     {
         return id_ == rhs.id_ && show_grid_lines_ == rhs.show_grid_lines_

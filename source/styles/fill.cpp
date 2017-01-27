@@ -54,7 +54,7 @@ pattern_fill &pattern_fill::foreground(const color &new_foreground)
 {
     foreground_ = new_foreground;
 
-    if (!background_)
+    if (!background_.is_set())
     {
         background_.set(indexed_color(64));
     }

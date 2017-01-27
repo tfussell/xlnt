@@ -90,7 +90,7 @@ generate('doxyxml/', function(err, data) {
       console.log('###', _.last(class_.name.split('::')));
       for (var k = 0; k < class_.members.length; k++) {
 	var member = class_.members[k];
-	console.log('####', '```' + member.definition + '```');
+	console.log('####', '```' + member.definition + member.argsstring + '```');
 	if (member.briefdescription) {
 	  console.log(member.briefdescription);
 	}

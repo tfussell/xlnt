@@ -38,29 +38,22 @@ class XLNT_API optional
 {
 public:
     /// <summary>
-    ///
+    /// Default contructor. is_set() will be false initially.
     /// </summary>
     optional() : has_value_(false), value_(T())
     {
     }
 
     /// <summary>
-    ///
+    /// Constructs this optional with a value.
     /// </summary>
     explicit optional(const T &value) : has_value_(true), value_(value)
     {
     }
 
     /// <summary>
-    ///
-    /// </summary>
-    explicit operator bool() const
-    {
-        return is_set();
-    }
-
-    /// <summary>
-    ///
+    /// Returns true if this object currently has a value set. This should
+    /// be called before accessing the value with optional::get().
     /// </summary>
     bool is_set() const
     {
@@ -68,7 +61,7 @@ public:
     }
 
     /// <summary>
-    ///
+    /// Sets the value to value.
     /// </summary>
     void set(const T &value)
     {
@@ -77,7 +70,8 @@ public:
     }
 
     /// <summary>
-    ///
+    /// Gets the value. If no value has been initialized in this object,
+    /// an xlnt::invalid_attribute exception will be thrown.
     /// </summary>
     T &get()
     {
@@ -90,7 +84,8 @@ public:
     }
 
     /// <summary>
-    ///
+    /// Gets the value. If no value has been initialized in this object,
+    /// an xlnt::invalid_attribute exception will be thrown.
     /// </summary>
     const T &get() const
     {
@@ -103,7 +98,8 @@ public:
     }
 
     /// <summary>
-    ///
+    /// Resets the internal value using its default constructor. After this is
+    /// called, is_set() will return false until a new value is provided.
     /// </summary>
     void clear()
     {
@@ -111,6 +107,9 @@ public:
         value_ = T();
     }
 
+    /// <summary>
+    /// Assignment operator. Equivalent to setting the value using optional::set.
+    /// </summary>
     optional &operator=(const T &rhs)
     {
         has_value_ = true;
@@ -120,22 +119,18 @@ public:
     }
 
     /// <summary>
-    ///
+    /// Returns true if neither this nor other have a value
+    /// or both have a value and those values are equal according to
+    /// their equality operator.
     /// </summary>
     bool operator==(const optional<T> &other) const
     {
-        return has_value_ == other.has_value_ && (!has_value_ || (has_value_ && value_ == other.value_));
+        return has_value_ == other.has_value_
+            && (!has_value_ || (has_value_ && value_ == other.value_));
     }
 
 private:
-    /// <summary>
-    ///
-    /// </summary>
     bool has_value_;
-
-    /// <summary>
-    ///
-    /// </summary>
     T value_;
 };
 

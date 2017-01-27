@@ -84,9 +84,14 @@ public:
         pane_ = corner;
     }
 
+    /// <summary>
+    /// Returns true if this selection is equal to rhs based on its active cell,
+    /// sqref, and pane.
+    /// </summary>
     bool operator==(const selection &rhs) const
     {
-        return active_cell_ == rhs.active_cell_ && sqref_ == rhs.sqref_ && pane_ == rhs.pane_;
+        return active_cell_ == rhs.active_cell_
+            && sqref_ == rhs.sqref_ && pane_ == rhs.pane_;
     }
 
 private:

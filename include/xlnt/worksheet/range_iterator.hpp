@@ -35,6 +35,9 @@ namespace xlnt {
 
 class cell_vector;
 
+/// <summary>
+/// Alias the parent class of this iterator to increase clarity.
+/// </summary>
 using r_iter_type = std::iterator<std::bidirectional_iterator_tag,
     cell_vector, std::ptrdiff_t, cell_vector *, cell_vector>;
 

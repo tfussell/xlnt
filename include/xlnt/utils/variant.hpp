@@ -32,9 +32,17 @@ namespace xlnt {
 
 struct datetime;
 
+/// <summary>
+/// Represents an object that can have variable type.
+/// </summary>
 class XLNT_API variant
 {
 public:
+    // TODO: implement remaining types?
+
+    /// <summary>
+    /// The possible types a variant can hold.
+    /// </summary>
     enum class type
     {
         vector,
@@ -56,7 +64,7 @@ public:
         //r4,
         //r8,
         //decimal,
-        lpstr,
+        lpstr, // TODO: how does this differ from lpwstr?
         //lpwstr,
         //bstr,
         date,
@@ -72,25 +80,86 @@ public:
         //clsid
     };
 
+    /// <summary>
+    /// Default constructor. Creates a null-type variant.
+    /// </summary>
     variant();
+
+    /// <summary>
+    /// Creates a string-type variant with the given value.
+    /// </summary>
     variant(const std::string &value);
+
+    /// <summary>
+    /// Creates a string-type variant with the given value.
+    /// </summary>
     variant(const char *value);
+
+    /// <summary>
+    /// Creates a i4-type variant with the given value.
+    /// </summary>
     variant(int value);
+
+    /// <summary>
+    /// Creates a bool-type variant with the given value.
+    /// </summary>
     variant(bool value);
+
+    /// <summary>
+    /// Creates a date-type variant with the given value.
+    /// </summary>
     variant(const datetime &value);
+
+    /// <summary>
+    /// Creates a vector_i4-type variant with the given value.
+    /// </summary>
     variant(const std::initializer_list<int> &value);
+
+    /// <summary>
+    /// Creates a vector_i4-type variant with the given value.
+    /// </summary>
     variant(const std::vector<int> &value);
+
+    /// <summary>
+    /// Creates a vector_string-type variant with the given value.
+    /// </summary>
     variant(const std::initializer_list<const char *> &value);
+
+    /// <summary>
+    /// Creates a vector_string-type variant with the given value.
+    /// </summary>
     variant(const std::vector<const char *> &value);
+
+    /// <summary>
+    /// Creates a vector_string-type variant with the given value.
+    /// </summary>
     variant(const std::initializer_list<std::string> &value);
+
+    /// <summary>
+    /// Creates a vector_string-type variant with the given value.
+    /// </summary>
     variant(const std::vector<std::string> &value);
+
+    /// <summary>
+    /// Creates a vector_variant-type variant with the given value.
+    /// </summary>
     variant(const std::vector<variant> &value);
 
+    /// <summary>
+    /// Returns true if this variant is of type t.
+    /// </summary>
     bool is(type t) const;
 
+    /// <summary>
+    /// Returns the value of this variant as type T. An exception will
+    /// be thrown if the types are not convertible.
+    /// </summary>
     template<typename T>
     T get() const;
 
+    /// <summary>
+    /// Returns the type of this variant.
+    /// </summary>
     type value_type() const;
 
 private:

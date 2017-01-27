@@ -33,7 +33,14 @@ namespace xlnt {
 class XLNT_API calculation_properties
 {
 public:
+    /// <summary>
+    /// Uniquely identifies these calculation properties.
+    /// </summary>
     std::size_t calc_id;
+
+    /// <summary>
+    /// If this is true, concurrent calculation is enabled.
+    /// </summary>
     bool concurrent_calc;
 };
 

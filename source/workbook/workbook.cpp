@@ -692,7 +692,7 @@ worksheet workbook::create_sheet()
     return worksheet(&d_->worksheets_.back());
 }
 
-void workbook::copy_sheet(worksheet to_copy)
+worksheet workbook::copy_sheet(worksheet to_copy)
 {
     if (to_copy.d_->parent_ != this) throw invalid_parameter();
 
@@ -700,9 +700,11 @@ void workbook::copy_sheet(worksheet to_copy)
     auto new_sheet = create_sheet();
     impl.title_ = new_sheet.title();
     *new_sheet.d_ = impl;
+    
+    return new_sheet;
 }
 
-void workbook::copy_sheet(worksheet to_copy, std::size_t index)
+worksheet workbook::copy_sheet(worksheet to_copy, std::size_t index)
 {
     copy_sheet(to_copy);
 
@@ -717,6 +719,8 @@ void workbook::copy_sheet(worksheet to_copy, std::size_t index)
         d_->worksheets_.insert(iter, d_->worksheets_.back());
         d_->worksheets_.pop_back();
     }
+    
+    return sheet_by_index(index);
 }
 
 std::size_t workbook::index(worksheet ws)

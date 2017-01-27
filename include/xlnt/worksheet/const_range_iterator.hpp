@@ -38,6 +38,9 @@ namespace detail {
 struct worksheet_impl;
 }
 
+/// <summary>
+/// Alias the parent class of this iterator to increase clarity.
+/// </summary>
 using cr_iter_type = std::iterator<std::bidirectional_iterator_tag,
     const cell_vector, std::ptrdiff_t, const cell_vector *, const cell_vector>;
 

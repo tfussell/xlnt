@@ -34,9 +34,15 @@
 
 namespace xlnt {
 
+/// <summary>
+/// Represents the header and footer of a sheet in a workbook.
+/// </summary>
 class XLNT_API header_footer
 {
 public:
+    /// <summary>
+    /// Enumerates the three possible locations of a header or footer.
+    /// </summary>
     enum class location
     {
         left,
@@ -154,7 +160,6 @@ public:
     /// be returned.
     /// </summary>
     rich_text first_page_header(location where) const;
-
 
     // Odd/Even Header
 
