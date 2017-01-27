@@ -40,6 +40,9 @@ class cell;
 class cell_reference;
 class range_reference;
 
+/// <summary>
+/// Alias the parent class of this iterator to increase clarity.
+/// </summary>
 using c_iter_type = std::iterator<std::bidirectional_iterator_tag,
     cell, std::ptrdiff_t, cell *, cell>;
 

@@ -81,6 +81,10 @@ struct XLNT_API pane
     /// </summary>
     column_t x_split = 1;
 
+    /// <summary>
+    /// Returns true if this pane is equal to rhs based on its top-left cell, state,
+    /// active pane, and x/y split location.
+    /// </summary>
     bool operator==(const pane &rhs) const
     {
         return top_left_cell == rhs.top_left_cell && state == rhs.state && active_pane == rhs.active_pane

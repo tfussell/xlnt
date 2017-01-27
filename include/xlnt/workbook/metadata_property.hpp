@@ -27,6 +27,9 @@
 
 namespace xlnt {
 
+/// <summary>
+/// Every core property in a workbook must be one of these types.
+/// </summary>
 enum class core_property
 {
     category,
@@ -46,6 +49,9 @@ enum class core_property
     version
 };
 
+/// <summary>
+/// Every extended property in a workbook must be one of these types.
+/// </summary>
 enum class extended_property
 {
     application,

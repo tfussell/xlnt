@@ -1006,14 +1006,14 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
                 write_start_element(xmlns, "patternFill");
                 write_attribute("patternType", pattern.type());
 
-                if (pattern.foreground())
+                if (pattern.foreground().is_set())
                 {
                     write_start_element(xmlns, "fgColor");
                     write_color(pattern.foreground().get());
                     write_end_element(xmlns, "fgColor");
                 }
 
-                if (pattern.background())
+                if (pattern.background().is_set())
                 {
                     write_start_element(xmlns, "bgColor");
                     write_color(pattern.background().get());
@@ -1086,7 +1086,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
         {
             write_start_element(xmlns, "border");
 
-            if (current_border.diagonal())
+            if (current_border.diagonal().is_set())
             {
                 auto up = current_border.diagonal().get() == diagonal_direction::both
                     || current_border.diagonal().get() == diagonal_direction::up;
@@ -1099,19 +1099,19 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
 
             for (const auto &side : xlnt::border::all_sides())
             {
-                if (current_border.side(side))
+                if (current_border.side(side).is_set())
                 {
                     const auto current_side = current_border.side(side).get();
 
                     auto side_name = to_string(side);
                     write_start_element(xmlns, side_name);
 
-                    if (current_side.style())
+                    if (current_side.style().is_set())
                     {
                         write_attribute("style", current_side.style().get());
                     }
 
-                    if (current_side.color())
+                    if (current_side.color().is_set())
                     {
                         write_start_element(xmlns, "color");
                         write_color(current_side.color().get());
@@ -1179,17 +1179,17 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
 
             write_start_element(xmlns, "alignment");
 
-            if (current_alignment.vertical())
+            if (current_alignment.vertical().is_set())
             {
                 write_attribute("vertical", current_alignment.vertical().get());
             }
 
-            if (current_alignment.horizontal())
+            if (current_alignment.horizontal().is_set())
             {
                 write_attribute("horizontal", current_alignment.horizontal().get());
             }
 
-            if (current_alignment.rotation())
+            if (current_alignment.rotation().is_set())
             {
                 write_attribute("textRotation", current_alignment.rotation().get());
             }
@@ -1199,7 +1199,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
                 write_attribute("wrapText", write_bool(current_alignment.wrap()));
             }
 
-            if (current_alignment.indent())
+            if (current_alignment.indent().is_set())
             {
                 write_attribute("indent", current_alignment.indent().get());
             }
@@ -1239,7 +1239,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
         write_attribute("numFmtId", current_format_impl.number_format_id.get());
         write_attribute("fontId", current_format_impl.font_id.get());
 
-        if (current_format_impl.style)
+        if (current_format_impl.style.is_set())
         {
             write_attribute("fillId", stylesheet.style_impls.at(current_format_impl.style.get()).fill_id.get());
         }
@@ -1291,17 +1291,17 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
 
             write_start_element(xmlns, "alignment");
 
-            if (current_alignment.vertical())
+            if (current_alignment.vertical().is_set())
             {
                 write_attribute("vertical", current_alignment.vertical().get());
             }
 
-            if (current_alignment.horizontal())
+            if (current_alignment.horizontal().is_set())
             {
                 write_attribute("horizontal", current_alignment.horizontal().get());
             }
 
-            if (current_alignment.rotation())
+            if (current_alignment.rotation().is_set())
             {
                 write_attribute("textRotation", current_alignment.rotation().get());
             }
@@ -1311,7 +1311,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
                 write_attribute("wrapText", write_bool(current_alignment.wrap()));
             }
 
-            if (current_alignment.indent())
+            if (current_alignment.indent().is_set())
             {
                 write_attribute("indent", current_alignment.indent().get());
             }
@@ -1354,7 +1354,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
         write_attribute("name", current_style.name);
         write_attribute("xfId", style_index++);
 
-        if (current_style.builtin_id)
+        if (current_style.builtin_id.is_set())
         {
             write_attribute("builtinId", current_style.builtin_id.get());
         }
@@ -1364,7 +1364,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
             write_attribute("hidden", write_bool(true));
         }
 
-        if (current_style.custom_builtin)
+        if (current_style.custom_builtin.is_set())
         {
             write_attribute("customBuiltin", write_bool(current_style.custom_builtin.get()));
         }

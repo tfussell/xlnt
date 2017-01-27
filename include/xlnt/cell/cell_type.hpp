@@ -26,6 +26,10 @@
 
 #include <xlnt/xlnt_config.hpp>
 
+/// <summary>
+/// Enumerates the possible types a cell can be determined by it's current value.
+/// </summary>
+
 namespace xlnt {
 
 /// <summary>

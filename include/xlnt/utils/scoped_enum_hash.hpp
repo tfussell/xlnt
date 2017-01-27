@@ -34,10 +34,13 @@ namespace xlnt {
 template<typename Enum>
 struct scoped_enum_hash
 {
+    /// <summary>
+    /// Cast the enumeration e to a std::size_t and hash that value using std::hash.
+    /// </summary>
     std::size_t operator()(Enum e) const
     {
-	static std::hash<std::size_t> hasher;
-	return hasher(static_cast<std::size_t>(e));
+        static std::hash<std::size_t> hasher;
+        return hasher(static_cast<std::size_t>(e));
     }
 };
 

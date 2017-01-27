@@ -867,7 +867,7 @@ bool cell::has_style() const
 
 format cell::modifiable_format()
 {
-    if (!d_->format_)
+    if (!d_->format_.is_set())
     {
         throw invalid_attribute();
     }
@@ -877,7 +877,7 @@ format cell::modifiable_format()
 
 const format cell::format() const
 {
-    if (!d_->format_)
+    if (!d_->format_.is_set())
     {
         throw invalid_attribute();
     }
