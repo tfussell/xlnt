@@ -2507,8 +2507,11 @@ variant xlsx_consumer::read_variant()
         }
         if (element == qn("vt", "bool"))
         {
-            bool bvalue = std::stoi(text);
-            value = variant(bvalue);
+         // bool could be "0" or "false"
+		bool bvalue;
+		if (text[0] == '0' or text[0] == 'f' or text[0]=='F') bvalue = false;
+		else bvalue = true;	
+        value = variant(bvalue);
         }
         else if (element == qn("vt", "vector"))
         {
