@@ -1398,7 +1398,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
      write_attribute("builtinId", "0");
      write_attribute("name", "Normal");
      write_end_element(xmlns, "cellStyle");
-     write_end_element(xmlns, "CellStyles");
+     write_end_element(xmlns, "cellStyles");
     }
         
     write_start_element(xmlns, "dxfs");
