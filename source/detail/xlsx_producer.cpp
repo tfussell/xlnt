@@ -1129,117 +1129,105 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
     }
 
     // Style XFs
-    if (stylesheet.style_impls.size() > 0) {
-    write_start_element(xmlns, "cellStyleXfs");
-    write_attribute("count", stylesheet.style_impls.size());
-
-    for (const auto &current_style_name : stylesheet.style_names)
+    if (stylesheet.style_impls.size() > 0)
     {
-        const auto &current_style_impl = stylesheet.style_impls.at(current_style_name);
+        write_start_element(xmlns, "cellStyleXfs");
+        write_attribute("count", stylesheet.style_impls.size());
 
-        write_start_element(xmlns, "xf");
-        write_attribute("numFmtId", current_style_impl.number_format_id.get());
-        write_attribute("fontId", current_style_impl.font_id.get());
-        write_attribute("fillId", current_style_impl.fill_id.get());
-        write_attribute("borderId", current_style_impl.border_id.get());
-
-        if (current_style_impl.number_format_applied)
+        for (const auto &current_style_name : stylesheet.style_names)
         {
-            write_attribute("applyNumberFormat", write_bool(true));
-        }
+            const auto &current_style_impl = stylesheet.style_impls.at(current_style_name);
 
-        if (current_style_impl.fill_applied)
-        {
-            write_attribute("applyFill", write_bool(true));
-        }
-
-        if (current_style_impl.font_applied)
-        {
-            write_attribute("applyFont", write_bool(true));
-        }
-
-        if (current_style_impl.border_applied)
-        {
-            write_attribute("applyBorder", write_bool(true));
-        }
-
-        if (current_style_impl.alignment_applied)
-        {
-            write_attribute("applyAlignment", write_bool(true));
-        }
-
-        if (current_style_impl.protection_applied)
-        {
-            write_attribute("applyProtection", write_bool(true));
-        }
-
-        if (current_style_impl.alignment_id.is_set())
-        {
-            const auto &current_alignment = stylesheet.alignments[current_style_impl.alignment_id.get()];
-
-            write_start_element(xmlns, "alignment");
-
-            if (current_alignment.vertical().is_set())
-            {
-                write_attribute("vertical", current_alignment.vertical().get());
-            }
-
-            if (current_alignment.horizontal().is_set())
-            {
-                write_attribute("horizontal", current_alignment.horizontal().get());
-            }
-
-            if (current_alignment.rotation().is_set())
-            {
-                write_attribute("textRotation", current_alignment.rotation().get());
-            }
-
-            if (current_alignment.wrap())
-            {
-                write_attribute("wrapText", write_bool(current_alignment.wrap()));
-            }
-
-            if (current_alignment.indent().is_set())
-            {
-                write_attribute("indent", current_alignment.indent().get());
-            }
-
-            if (current_alignment.shrink())
-            {
-                write_attribute("shrinkToFit", write_bool(current_alignment.shrink()));
-            }
-
-            write_end_element(xmlns, "alignment");
-        }
-            
-        if (current_style_impl.protection_id.is_set())
-        {
-            const auto &current_protection = stylesheet.protections[current_style_impl.protection_id.get()];
-
-            write_start_element(xmlns, "protection");
-            write_attribute("locked", write_bool(current_protection.locked()));
-            write_attribute("hidden", write_bool(current_protection.hidden()));
-            write_end_element(xmlns, "protection");
-        }
-
-        write_end_element(xmlns, "xf");
-    }
-
-    write_end_element(xmlns, "cellStyleXfs");
-    }
-    else
-        {
-         // need minimun one style
-            write_start_element(xmlns, "cellStyleXfs");
-            write_attribute("count", "1");
             write_start_element(xmlns, "xf");
-            write_attribute("numFmtId", "0");
-            write_attribute("fontId", "0");
-            write_attribute("fillId", "0");
-            write_attribute("borderId", "0");
+            write_attribute("numFmtId", current_style_impl.number_format_id.get());
+            write_attribute("fontId", current_style_impl.font_id.get());
+            write_attribute("fillId", current_style_impl.fill_id.get());
+            write_attribute("borderId", current_style_impl.border_id.get());
+
+            if (current_style_impl.number_format_applied)
+            {
+                write_attribute("applyNumberFormat", write_bool(true));
+            }
+
+            if (current_style_impl.fill_applied)
+            {
+                write_attribute("applyFill", write_bool(true));
+            }
+
+            if (current_style_impl.font_applied)
+            {
+                write_attribute("applyFont", write_bool(true));
+            }
+
+            if (current_style_impl.border_applied)
+            {
+                write_attribute("applyBorder", write_bool(true));
+            }
+
+            if (current_style_impl.alignment_applied)
+            {
+                write_attribute("applyAlignment", write_bool(true));
+            }
+
+            if (current_style_impl.protection_applied)
+            {
+                write_attribute("applyProtection", write_bool(true));
+            }
+
+            if (current_style_impl.alignment_id.is_set())
+            {
+                const auto &current_alignment = stylesheet.alignments[current_style_impl.alignment_id.get()];
+
+                write_start_element(xmlns, "alignment");
+
+                if (current_alignment.vertical().is_set())
+                {
+                    write_attribute("vertical", current_alignment.vertical().get());
+                }
+
+                if (current_alignment.horizontal().is_set())
+                {
+                    write_attribute("horizontal", current_alignment.horizontal().get());
+                }
+
+                if (current_alignment.rotation().is_set())
+                {
+                    write_attribute("textRotation", current_alignment.rotation().get());
+                }
+
+                if (current_alignment.wrap())
+                {
+                    write_attribute("wrapText", write_bool(current_alignment.wrap()));
+                }
+
+                if (current_alignment.indent().is_set())
+                {
+                    write_attribute("indent", current_alignment.indent().get());
+                }
+
+                if (current_alignment.shrink())
+                {
+                    write_attribute("shrinkToFit", write_bool(current_alignment.shrink()));
+                }
+
+                write_end_element(xmlns, "alignment");
+            }
+
+            if (current_style_impl.protection_id.is_set())
+            {
+                const auto &current_protection = stylesheet.protections[current_style_impl.protection_id.get()];
+
+                write_start_element(xmlns, "protection");
+                write_attribute("locked", write_bool(current_protection.locked()));
+                write_attribute("hidden", write_bool(current_protection.hidden()));
+                write_end_element(xmlns, "protection");
+            }
+
             write_end_element(xmlns, "xf");
-            write_end_element(xmlns, "cellStyleXfs");
         }
+
+        write_end_element(xmlns, "cellStyleXfs");
+    }
         
     // Format XFs
 
@@ -1354,53 +1342,42 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
     write_end_element(xmlns, "cellXfs");
 
     // Styles
-    if ( stylesheet.style_impls.size() > 0) {
-    write_start_element(xmlns, "cellStyles");
-    write_attribute("count", stylesheet.style_impls.size());
-    std::size_t style_index = 0;
-
-    for (auto &current_style_name : stylesheet.style_names)
+    if (stylesheet.style_impls.size() > 0)
     {
-        const auto &current_style = stylesheet.style_impls.at(current_style_name);
+        write_start_element(xmlns, "cellStyles");
+        write_attribute("count", stylesheet.style_impls.size());
+        std::size_t style_index = 0;
 
-        write_start_element(xmlns, "cellStyle");
-
-        write_attribute("name", current_style.name);
-        write_attribute("xfId", style_index++);
-
-        if (current_style.builtin_id.is_set())
+        for (auto &current_style_name : stylesheet.style_names)
         {
-            write_attribute("builtinId", current_style.builtin_id.get());
+            const auto &current_style = stylesheet.style_impls.at(current_style_name);
+
+            write_start_element(xmlns, "cellStyle");
+
+            write_attribute("name", current_style.name);
+            write_attribute("xfId", style_index++);
+
+            if (current_style.builtin_id.is_set())
+            {
+                write_attribute("builtinId", current_style.builtin_id.get());
+            }
+
+            if (current_style.hidden_style)
+            {
+                write_attribute("hidden", write_bool(true));
+            }
+
+            if (current_style.custom_builtin.is_set())
+            {
+                write_attribute("customBuiltin", write_bool(current_style.custom_builtin.get()));
+            }
+
+            write_end_element(xmlns, "cellStyle");
         }
 
-        if (current_style.hidden_style)
-        {
-            write_attribute("hidden", write_bool(true));
-        }
-
-        if (current_style.custom_builtin.is_set())
-        {
-            write_attribute("customBuiltin", write_bool(current_style.custom_builtin.get()));
-        }
-
-        write_end_element(xmlns, "cellStyle");
+        write_end_element(xmlns, "cellStyles");
     }
 
-    write_end_element(xmlns, "cellStyles");
-    }
-    else
-    {
-     // one cell style  minimun
-     write_start_element(xmlns, "cellStyles");
-     write_attribute("count", "1");
-     write_start_element(xmlns, "cellStyle");
-     write_attribute("xfId", "0");
-     write_attribute("builtinId", "0");
-     write_attribute("name", "Normal");
-     write_end_element(xmlns, "cellStyle");
-     write_end_element(xmlns, "cellStyles");
-    }
-        
     write_start_element(xmlns, "dxfs");
     write_attribute("count", "0");
     write_end_element(xmlns, "dxfs");
