@@ -1129,7 +1129,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
     }
 
     // Style XFs
-
+    if (stylesheet.style_impls.size() > 0) {
     write_start_element(xmlns, "cellStyleXfs");
     write_attribute("count", stylesheet.style_impls.size());
 
@@ -1211,7 +1211,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
 
             write_end_element(xmlns, "alignment");
         }
-
+            
         if (current_style_impl.protection_id.is_set())
         {
             const auto &current_protection = stylesheet.protections[current_style_impl.protection_id.get()];
@@ -1226,7 +1226,21 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
     }
 
     write_end_element(xmlns, "cellStyleXfs");
-
+    }
+    else
+        {
+         // need minimun one style
+            write_start_element(xmlns, "cellStyleXfs");
+            write_attribute("count", "1");
+            write_start_element(xmlns, "xf");
+            write_attribute("numFmtId", "0");
+            write_attribute("fontId", "0");
+            write_attribute("fillId", "0");
+            write_attribute("borderId", "0");
+            write_end_element(xmlns, "xf");
+            write_end_element(xmlns, "cellStyleXfs");
+        }
+        
     // Format XFs
 
     write_start_element(xmlns, "cellXfs");
@@ -1340,7 +1354,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
     write_end_element(xmlns, "cellXfs");
 
     // Styles
-
+    if ( stylesheet.style_impls.size() > 0) {
     write_start_element(xmlns, "cellStyles");
     write_attribute("count", stylesheet.style_impls.size());
     std::size_t style_index = 0;
@@ -1373,7 +1387,20 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
     }
 
     write_end_element(xmlns, "cellStyles");
-
+    }
+    else
+    {
+     // one cell style  minimun
+     write_start_element(xmlns, "cellStyles");
+     write_attribute("count", "1");
+     write_start_element(xmlns, "cellStyle");
+     write_attribute("xfId", "0");
+     write_attribute("builtinId", "0");
+     write_attribute("name", "Normal");
+     write_end_element(xmlns, "cellStyle");
+     write_end_element(xmlns, "cellStyles");
+    }
+        
     write_start_element(xmlns, "dxfs");
     write_attribute("count", "0");
     write_end_element(xmlns, "dxfs");
