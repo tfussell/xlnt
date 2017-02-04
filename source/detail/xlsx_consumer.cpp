@@ -2505,6 +2505,14 @@ variant xlsx_consumer::read_variant()
         {
             value = variant(std::stoi(text));
         }
+        if (element == qn("vt", "bool"))
+        {
+         // bool could be "0" or "false"
+		bool bvalue;
+		if (text[0] == '0' or text[0] == 'f' or text[0]=='F') bvalue = false;
+		else bvalue = true;	
+        value = variant(bvalue);
+        }
         else if (element == qn("vt", "vector"))
         {
             auto size = parser().attribute<std::size_t>("size");
