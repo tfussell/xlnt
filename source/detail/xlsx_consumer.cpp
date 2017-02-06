@@ -1345,6 +1345,28 @@ void xlsx_consumer::read_stylesheet()
                             new_font.strikethrough(true);
                         }
                     }
+                    else if (font_property_element == qn("spreadsheetml", "outline"))
+                    {
+                        if (parser().attribute_present("val"))
+                        {
+                            new_font.outlinethrough(is_true(parser().attribute("val")));
+                        }
+                        else
+                        {
+                            new_font.outlinethrough(true);
+                        }
+                    }
+                    else if (font_property_element == qn("spreadsheetml", "shadow"))
+                    {
+                        if (parser().attribute_present("val"))
+                        {
+                            new_font.shadowthrough(is_true(parser().attribute("val")));
+                        }
+                        else
+                        {
+                            new_font.shadowthrough(true);
+                        }
+                    }
                     else if (font_property_element == qn("spreadsheetml", "i"))
                     {
                         if (parser().attribute_present("val"))
@@ -1575,11 +1597,11 @@ void xlsx_consumer::read_stylesheet()
             auto count = parser().attribute<std::size_t>("count");
             std::size_t processed = 0;
 
-            while (in_element(qn("spreadsheetml", "dxfs")))
+            while (in_element(current_style_element))
             {
-                auto current_element = expect_start_element(xml::content::complex);
+                auto current_element = expect_start_element(xml::content::mixed);
                 skip_remaining_content(current_element);
-
+                expect_end_element(current_element);
                 ++processed;
             }
 
@@ -1600,7 +1622,7 @@ void xlsx_consumer::read_stylesheet()
             {
                 auto current_element = expect_start_element(xml::content::complex);
                 skip_remaining_content(current_element);
-
+                expect_end_element(current_element);
                 ++processed;
             }
 
@@ -1674,7 +1696,7 @@ void xlsx_consumer::read_stylesheet()
 */
     /*
     std::size_t xf_id = 0;
-    
+
     for (const auto &record : style_records)
     {
         auto style_iter = std::find_if(styles.begin(), styles.end(),
@@ -2510,7 +2532,7 @@ variant xlsx_consumer::read_variant()
          // bool could be "0" or "false"
 		bool bvalue;
 		if (text[0] == '0' or text[0] == 'f' or text[0]=='F') bvalue = false;
-		else bvalue = true;	
+		else bvalue = true;
         value = variant(bvalue);
         }
         else if (element == qn("vt", "vector"))
@@ -2627,11 +2649,11 @@ std::vector<std::string> xlsx_consumer::read_namespaces()
 
 bool xlsx_consumer::in_element(const xml::qname &name)
 {
-    if (parser().peek() == xml::parser::event_type::end_element || stack_.back() != name)
+
+    if ((parser().peek() == xml::parser::event_type::end_element ) && (stack_.back() == name ))
     {
         return false;
     }
-
     return true;
 }
 
@@ -2717,11 +2739,20 @@ rich_text xlsx_consumer::read_rich_text(const xml::qname &parent)
                         {
                             run.second.get().family(parser().attribute<std::size_t>("val"));
                         }
+                        else if (current_run_property_element == xml::qname(xmlns, "charset"))
+                        {
+                            run.second.get().charset(parser().attribute<std::size_t>("val"));
+                        }
                         else if (current_run_property_element == xml::qname(xmlns, "scheme"))
                         {
                             run.second.get().scheme(parser().attribute("val"));
                         }
                         else if (current_run_property_element == xml::qname(xmlns, "b"))
+                        {
+                            run.second.get().bold(
+                                parser().attribute_present("val") ? is_true(parser().attribute("val")) : true);
+                        }
+                        else if (current_run_property_element == xml::qname(xmlns, "i"))
                         {
                             run.second.get().bold(
                                 parser().attribute_present("val") ? is_true(parser().attribute("val")) : true);
