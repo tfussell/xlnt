@@ -36,6 +36,8 @@ font::font()
       superscript_(false),
       subscript_(false),
       strikethrough_(false),
+      outlinethrough_(false),
+      shadowthrough_(false),
       underline_(underline_style::none)
 {
 }
@@ -82,6 +84,28 @@ font &font::strikethrough(bool strikethrough)
 bool font::strikethrough() const
 {
     return strikethrough_;
+}
+
+font &font::outlinethrough(bool outlinethrough)
+{
+    outlinethrough_ = outlinethrough;
+    return *this;
+}
+
+bool font::outlinethrough() const
+{
+    return outlinethrough_;
+}
+
+font &font::shadowthrough(bool shadowthrough)
+{
+    shadowthrough_ = shadowthrough;
+    return *this;
+}
+
+bool font::shadowthrough() const
+{
+    return shadowthrough_;
 }
 
 font &font::underline(underline_style new_underline)
@@ -151,6 +175,17 @@ bool font::has_family() const
 font &font::family(std::size_t family)
 {
     family_ = family;
+    return *this;
+}
+
+bool font::has_charset() const
+{
+    return charset_.is_set();
+}
+
+font &font::charset(std::size_t charset)
+{
+    charset_ = charset;
     return *this;
 }
 
