@@ -2460,7 +2460,8 @@ void xlsx_consumer::read_comments(worksheet ws)
     {
         expect_start_element(qn("spreadsheetml", "comment"), xml::content::complex);
 
-        auto cell_ref = parser().attribute("ref");
+        skip_attribute("shapeId");
+	auto cell_ref = parser().attribute("ref");
         auto author_id = parser().attribute<std::size_t>("authorId");
 
         expect_start_element(qn("spreadsheetml", "text"), xml::content::complex);
