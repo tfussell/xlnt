@@ -795,7 +795,7 @@ void workbook::load(const std::string &filename)
 {
     if (filename.find_last_of(".") != std::string::npos) // check extension
     {
-       std::string file_format = filename.substr(filename.find_last_of(".")+1);
+       std::string file_format = path(filename).extension();
 
        if (file_format == "xls") {
            throw xlnt::exception(" xlnt does not support the old .xls file format");
@@ -832,7 +832,7 @@ void workbook::load(const std::string &filename, const std::string &password)
 {
         if (filename.find_last_of(".") != std::string::npos) // check extension
     {
-       std::string file_format = filename.substr(filename.find_last_of(".")+1);
+       std::string file_format = path(filename).extension();
 
        if (file_format == "xls") {
            throw xlnt::exception(" xlnt does not support the old .xls file format");
