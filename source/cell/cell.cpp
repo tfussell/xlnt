@@ -528,15 +528,15 @@ std::pair<int, int> cell::anchor() const
 
     for (column_t column_index = 1; column_index <= d_->column_ - 1; column_index++)
     {
-        left += worksheet().cell(column_index, row()).width();
+        left += worksheet().column_width(column_index);
     }
 
     double top = 0;
 
     for (row_t row_index = 1; row_index <= d_->row_ - 1; row_index++)
     {
-        top += worksheet().cell(column(), row_index).height();
-    }
+         top += worksheet().row_height(row_index);
+     }
 
     return {static_cast<int>(left), static_cast<int>(top)};
 }

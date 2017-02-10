@@ -100,6 +100,26 @@ public:
     /// <summary>
     ///
     /// </summary>
+    font &outlinethrough(bool outlinethrough);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool outlinethrough() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    font &shadowthrough(bool shadowthrough);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool shadowthrough() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     font &underline(underline_style new_underline);
 
     /// <summary>
@@ -175,6 +195,21 @@ public:
     /// <summary>
     ///
     /// </summary>
+    bool has_charset() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    font &charset(std::size_t charset);
+
+    /// <summary>
+    ///
+    /// </summary>
+    std::size_t charset() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool has_scheme() const;
 
     /// <summary>
@@ -241,6 +276,16 @@ private:
     /// <summary>
     ///
     /// </summary>
+    bool outlinethrough_ = false;
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool shadowthrough_ = false;
+
+    /// <summary>
+    ///
+    /// </summary>
     underline_style underline_ = underline_style::none;
 
     /// <summary>
@@ -252,6 +297,12 @@ private:
     ///
     /// </summary>
     optional<std::size_t> family_;
+
+    /// <summary>
+    ///
+    /// </summary>
+    optional<std::size_t> charset_;
+
 
     /// <summary>
     ///

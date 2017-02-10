@@ -474,7 +474,7 @@ void workbook::register_package_part(relationship_type type)
     {
         manifest().register_override_type(default_path(type), content_type(type));
         manifest().register_relationship(uri("/"), type,
-            uri(default_path(type).relative_to(path("/")).string()), 
+            uri(default_path(type).relative_to(path("/")).string()),
             target_mode::internal);
     }
 }
@@ -700,7 +700,7 @@ worksheet workbook::copy_sheet(worksheet to_copy)
     auto new_sheet = create_sheet();
     impl.title_ = new_sheet.title();
     *new_sheet.d_ = impl;
-    
+
     return new_sheet;
 }
 
@@ -719,7 +719,7 @@ worksheet workbook::copy_sheet(worksheet to_copy, std::size_t index)
         d_->worksheets_.insert(iter, d_->worksheets_.back());
         d_->worksheets_.pop_back();
     }
-    
+
     return sheet_by_index(index);
 }
 
@@ -793,6 +793,25 @@ void workbook::load(const std::vector<std::uint8_t> &data)
 
 void workbook::load(const std::string &filename)
 {
+    if (filename.find_last_of(".") != std::string::npos) // check extension
+    {
+       std::string file_format = path(filename).extension();
+
+       if (file_format == "xls") {
+           throw xlnt::exception(" xlnt does not support the old .xls file format");
+       }
+       else if (file_format == "xlsb") {
+           throw xlnt::exception(" xlnt does not support the .xlsb file format");
+       }
+       else if (file_format != "xlsx") {
+           throw xlnt::exception(" xlnt does not support the ."+file_format+ " file format");
+       }
+    }
+    else
+    {
+        throw xlnt::exception("file has no extension .xlsx");
+    }
+
     return load(path(filename));
 }
 
@@ -811,6 +830,25 @@ void workbook::load(const path &filename)
 
 void workbook::load(const std::string &filename, const std::string &password)
 {
+        if (filename.find_last_of(".") != std::string::npos) // check extension
+    {
+       std::string file_format = path(filename).extension();
+
+       if (file_format == "xls") {
+           throw xlnt::exception(" xlnt does not support the old .xls file format");
+       }
+       else if (file_format == "xlsb") {
+           throw xlnt::exception(" xlnt does not support the .xlsb file format");
+       }
+       else if (file_format != "xlsx") {
+           throw xlnt::exception(" xlnt does not support the ."+file_format+ " file format");
+       }
+    }
+    else
+    {
+        throw xlnt::exception("file has no extension .xlsx");
+    }
+
     return load(path(filename), password);
 }
 
@@ -1229,13 +1267,13 @@ bool workbook::contains(const std::string &sheet_title) const
     return false;
 }
 
-void workbook::thumbnail(const std::vector<std::uint8_t> &thumbnail, 
+void workbook::thumbnail(const std::vector<std::uint8_t> &thumbnail,
     const std::string &extension, const std::string &content_type)
 {
     if (!d_->manifest_.has_relationship(path("/"), relationship_type::thumbnail))
     {
         d_->manifest_.register_default_type(extension, content_type);
-        d_->manifest_.register_relationship(uri("/"), relationship_type::thumbnail, 
+        d_->manifest_.register_relationship(uri("/"), relationship_type::thumbnail,
             uri("docProps/thumbnail.jpeg"), target_mode::internal);
     }
 
