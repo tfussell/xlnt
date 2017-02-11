@@ -30,15 +30,7 @@ namespace xlnt {
 
 font::font()
     : name_("Calibri"),
-      size_(12.0),
-      bold_(false),
-      italic_(false),
-      superscript_(false),
-      subscript_(false),
-      strikethrough_(false),
-      outlinethrough_(false),
-      shadowthrough_(false),
-      underline_(underline_style::none)
+      size_(12.0)
 {
 }
 
@@ -86,26 +78,26 @@ bool font::strikethrough() const
     return strikethrough_;
 }
 
-font &font::outlinethrough(bool outlinethrough)
+font &font::outline(bool outline)
 {
-    outlinethrough_ = outlinethrough;
+    outline_ = outline;
     return *this;
 }
 
-bool font::outlinethrough() const
+bool font::outline() const
 {
-    return outlinethrough_;
+    return outline_;
 }
 
-font &font::shadowthrough(bool shadowthrough)
+font &font::shadow(bool shadow)
 {
-    shadowthrough_ = shadowthrough;
+    shadow_ = shadow;
     return *this;
 }
 
-bool font::shadowthrough() const
+bool font::shadow() const
 {
-    return shadowthrough_;
+    return shadow_;
 }
 
 font &font::underline(underline_style new_underline)

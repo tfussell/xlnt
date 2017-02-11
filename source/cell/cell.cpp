@@ -535,8 +535,8 @@ std::pair<int, int> cell::anchor() const
 
     for (row_t row_index = 1; row_index <= d_->row_ - 1; row_index++)
     {
-         top += worksheet().row_height(row_index);
-     }
+        top += worksheet().row_height(row_index);
+    }
 
     return {static_cast<int>(left), static_cast<int>(top)};
 }

@@ -100,22 +100,22 @@ public:
     /// <summary>
     ///
     /// </summary>
-    font &outlinethrough(bool outlinethrough);
+    font &outline(bool outline);
 
     /// <summary>
     ///
     /// </summary>
-    bool outlinethrough() const;
+    bool outline() const;
 
     /// <summary>
     ///
     /// </summary>
-    font &shadowthrough(bool shadowthrough);
+    font &shadow(bool shadow);
 
     /// <summary>
     ///
     /// </summary>
-    bool shadowthrough() const;
+    bool shadow() const;
 
     /// <summary>
     ///
@@ -276,12 +276,12 @@ private:
     /// <summary>
     ///
     /// </summary>
-    bool outlinethrough_ = false;
+    bool outline_ = false;
 
     /// <summary>
     ///
     /// </summary>
-    bool shadowthrough_ = false;
+    bool shadow_ = false;
 
     /// <summary>
     ///
@@ -302,7 +302,6 @@ private:
     ///
     /// </summary>
     optional<std::size_t> charset_;
-
 
     /// <summary>
     ///

@@ -1349,22 +1349,22 @@ void xlsx_consumer::read_stylesheet()
                     {
                         if (parser().attribute_present("val"))
                         {
-                            new_font.outlinethrough(is_true(parser().attribute("val")));
+                            new_font.outline(is_true(parser().attribute("val")));
                         }
                         else
                         {
-                            new_font.outlinethrough(true);
+                            new_font.outline(true);
                         }
                     }
                     else if (font_property_element == qn("spreadsheetml", "shadow"))
                     {
                         if (parser().attribute_present("val"))
                         {
-                            new_font.shadowthrough(is_true(parser().attribute("val")));
+                            new_font.shadow(is_true(parser().attribute("val")));
                         }
                         else
                         {
-                            new_font.shadowthrough(true);
+                            new_font.shadow(true);
                         }
                     }
                     else if (font_property_element == qn("spreadsheetml", "i"))
@@ -2461,7 +2461,7 @@ void xlsx_consumer::read_comments(worksheet ws)
         expect_start_element(qn("spreadsheetml", "comment"), xml::content::complex);
 
         skip_attribute("shapeId");
-	auto cell_ref = parser().attribute("ref");
+        auto cell_ref = parser().attribute("ref");
         auto author_id = parser().attribute<std::size_t>("authorId");
 
         expect_start_element(qn("spreadsheetml", "text"), xml::content::complex);
@@ -2530,11 +2530,7 @@ variant xlsx_consumer::read_variant()
         }
         if (element == qn("vt", "bool"))
         {
-         // bool could be "0" or "false"
-		bool bvalue;
-		if (text[0] == '0' or text[0] == 'f' or text[0]=='F') bvalue = false;
-		else bvalue = true;
-        value = variant(bvalue);
+            value = variant(is_true(text));
         }
         else if (element == qn("vt", "vector"))
         {
@@ -2650,12 +2646,8 @@ std::vector<std::string> xlsx_consumer::read_namespaces()
 
 bool xlsx_consumer::in_element(const xml::qname &name)
 {
-
-    if ((parser().peek() == xml::parser::event_type::end_element ) && (stack_.back() == name ))
-    {
-        return false;
-    }
-    return true;
+    return parser().peek() != xml::parser::event_type::end_element
+        && stack_.back() == name;
 }
 
 xml::qname xlsx_consumer::expect_start_element(xml::content content)
@@ -2750,13 +2742,13 @@ rich_text xlsx_consumer::read_rich_text(const xml::qname &parent)
                         }
                         else if (current_run_property_element == xml::qname(xmlns, "b"))
                         {
-                            run.second.get().bold(
-                                parser().attribute_present("val") ? is_true(parser().attribute("val")) : true);
+                            run.second.get().bold(parser().attribute_present("val")
+                                ? is_true(parser().attribute("val")) : true);
                         }
                         else if (current_run_property_element == xml::qname(xmlns, "i"))
                         {
-                            run.second.get().bold(
-                                parser().attribute_present("val") ? is_true(parser().attribute("val")) : true);
+                            run.second.get().italic(parser().attribute_present("val")
+                                ? is_true(parser().attribute("val")) : true);
                         }
                         else if (current_run_property_element == xml::qname(xmlns, "u"))
                         {
