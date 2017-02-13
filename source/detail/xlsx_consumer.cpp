@@ -2133,6 +2133,8 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
         else if (current_worksheet_element == qn("spreadsheetml", "autoFilter")) // CT_AutoFilter 0-1
         {
             ws.auto_filter(xlnt::range_reference(parser().attribute("ref")));
+            // complex type
+            skip_remaining_content(current_worksheet_element);            
         }
         else if (current_worksheet_element == qn("spreadsheetml", "sortState")) // CT_SortState 0-1
         {
