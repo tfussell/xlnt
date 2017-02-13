@@ -1488,7 +1488,10 @@ void xlsx_consumer::read_stylesheet()
             while (in_element(current_style_element))
             {
                 expect_start_element(qn("spreadsheetml", "xf"), xml::content::complex);
-
+                // temporary to analyse
+                skip_attribute("pivotButton");
+                skip_attribute("quotePrefix");
+                
                 auto &record = *(!in_style_records
                     ? format_records.emplace(format_records.end())
                     : style_records.emplace(style_records.end()));
@@ -1529,8 +1532,6 @@ void xlsx_consumer::read_stylesheet()
                 while (in_element(qn("spreadsheetml", "xf")))
                 {
                     auto xf_child_element = expect_start_element(xml::content::simple);
-                    // temporary to analyse
-                    skip_attribute("quotePrefix");
 
                     if (xf_child_element == qn("spreadsheetml", "alignment"))
                     {
