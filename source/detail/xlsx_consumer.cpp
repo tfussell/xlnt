@@ -2759,7 +2759,7 @@ rich_text xlsx_consumer::read_rich_text(const xml::qname &parent)
                         }
                         else if (current_run_property_element == xml::qname(xmlns, "i"))
                         {
-                            run.second.get().bold(parser().attribute_present("val")
+                            run.second.get().italic(parser().attribute_present("val")
 				? is_true(parser().attribute("val")) : true);
                         }
                         else if (current_run_property_element == xml::qname(xmlns, "u"))
