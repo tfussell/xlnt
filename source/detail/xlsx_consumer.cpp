@@ -2143,19 +2143,8 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
         else if (current_worksheet_element == qn("spreadsheetml", "autoFilter")) // CT_AutoFilter 0-1
         {
             ws.auto_filter(xlnt::range_reference(parser().attribute("ref")));
-            //while (in_element(qn("spreadsheetml", "autoFilter")))
-            //{
-                skip_remaining_content(current_worksheet_element);
-            //}
-            //auto fste = expect_start_element(xml::content::simple);
-            //if (parser().element_present("filterColumn"))
-            //if(fste == qn("spreadsheetml", "filterColumn"))
-            //{
-                //skip_attributes({"colId", "showButton"});
-            //    skip_remaining_content(fste);
-                //expect_end_element(qn("spreadsheetml", "filterColumn"));
-            //}
-            //expect_end_element(qn("spreadsheetml", "autoFilter"));
+            // auto filter complex
+            skip_remaining_content(current_worksheet_element);
         }
         else if (current_worksheet_element == qn("spreadsheetml", "sortState")) // CT_SortState 0-1
         {
