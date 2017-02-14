@@ -2542,11 +2542,7 @@ variant xlsx_consumer::read_variant()
         }
         if (element == qn("vt", "bool"))
         {
-         // bool could be "0" or "false"
-		bool bvalue;
-		if (text[0] == '0' or text[0] == 'f' or text[0]=='F') bvalue = false;
-		else bvalue = true;
-        value = variant(bvalue);
+            value = variant(is_true(text));
         }
         else if (element == qn("vt", "vector"))
         {
@@ -2662,12 +2658,8 @@ std::vector<std::string> xlsx_consumer::read_namespaces()
 
 bool xlsx_consumer::in_element(const xml::qname &name)
 {
-
-    if ((parser().peek() == xml::parser::event_type::end_element ) && (stack_.back() == name ))
-    {
-        return false;
-    }
-    return true;
+    return parser().peek() != xml::parser::event_type::end_element
+        && stack_.back() == name;
 }
 
 xml::qname xlsx_consumer::expect_start_element(xml::content content)
@@ -2762,13 +2754,13 @@ rich_text xlsx_consumer::read_rich_text(const xml::qname &parent)
                         }
                         else if (current_run_property_element == xml::qname(xmlns, "b"))
                         {
-                            run.second.get().bold(
-                                parser().attribute_present("val") ? is_true(parser().attribute("val")) : true);
+                            run.second.get().bold(parser().attribute_present("val")
+				? is_true(parser().attribute("val")) : true);
                         }
                         else if (current_run_property_element == xml::qname(xmlns, "i"))
                         {
-                            run.second.get().bold(
-                                parser().attribute_present("val") ? is_true(parser().attribute("val")) : true);
+                            run.second.get().bold(parser().attribute_present("val")
+				? is_true(parser().attribute("val")) : true);
                         }
                         else if (current_run_property_element == xml::qname(xmlns, "u"))
                         {
