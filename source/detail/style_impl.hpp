@@ -48,6 +48,10 @@ struct style_impl
 
 	optional<std::size_t> protection_id;
     bool protection_applied = false;
+
+    bool pivot_button_applied = false;
+
+    bool quote_prefix_applied = false;
 };
 
 } // namespace detail

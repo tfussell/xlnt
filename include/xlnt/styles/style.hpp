@@ -230,6 +230,16 @@ public:
     /// <summary>
     ///
     /// </summary>
+    bool pivot_button_applied() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool quote_prefix_applied() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     bool operator==(const style &other) const;
 
 private:

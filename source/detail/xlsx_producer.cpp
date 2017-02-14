@@ -58,15 +58,15 @@ std::vector<std::pair<std::string, std::string>> core_property_namespace(xlnt::c
     using xlnt::core_property;
     using xlnt::constants;
 
-    if (type == core_property::created 
+    if (type == core_property::created
         || type == core_property::modified)
     {
         return {{constants::ns("dcterms"), "dcterms"},
             {constants::ns("xsi"), "xsi"}};
     }
-    else if (type == core_property::title 
-        || type == core_property::subject 
-        || type == core_property::creator 
+    else if (type == core_property::title
+        || type == core_property::subject
+        || type == core_property::creator
         || type == core_property::description)
     {
         return {{constants::ns("dc"), "dc"}};
@@ -363,7 +363,7 @@ void xlsx_producer::write_extended_properties(const relationship &/*rel*/)
 
     for (const auto &prop : source_.extended_properties())
     {
-        write_property(to_string(prop), source_.extended_property(prop), 
+        write_property(to_string(prop), source_.extended_property(prop),
             constants::ns("extended-properties"), false, 0);
     }
 
@@ -1174,6 +1174,16 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
                 write_attribute("applyProtection", write_bool(true));
             }
 
+            if (current_style_impl.pivot_button_applied)
+            {
+                write_attribute("pivotButton", write_bool(true));
+            }
+
+            if (current_style_impl.quote_prefix_applied)
+            {
+                write_attribute("quotePrefix", write_bool(true));
+            }
+
             if (current_style_impl.alignment_id.is_set())
             {
                 const auto &current_alignment = stylesheet.alignments[current_style_impl.alignment_id.get()];
@@ -1228,7 +1238,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
 
         write_end_element(xmlns, "cellStyleXfs");
     }
-        
+
     // Format XFs
 
     write_start_element(xmlns, "cellXfs");
@@ -1280,6 +1290,16 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
         if (current_format_impl.protection_applied)
         {
             write_attribute("applyProtection", write_bool(true));
+        }
+
+        if (current_format_impl.pivot_button_applied)
+        {
+            write_attribute("pivotButton", write_bool(true));
+        }
+
+        if (current_format_impl.quote_prefix_applied)
+        {
+            write_attribute("quotePrefix", write_bool(true));
         }
 
         if (current_format_impl.style.is_set())

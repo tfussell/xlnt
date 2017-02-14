@@ -189,6 +189,16 @@ public:
     /// </summary>
     bool protection_applied() const;
 
+    /// <summary>
+    ///
+    /// </summary>
+    bool pivot_button_applied() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool quote_prefix_applied() const;
+
     // Style
 
     /// <summary>

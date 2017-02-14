@@ -1488,10 +1488,7 @@ void xlsx_consumer::read_stylesheet()
             while (in_element(current_style_element))
             {
                 expect_start_element(qn("spreadsheetml", "xf"), xml::content::complex);
-                // temporary to analyse
-                skip_attribute("pivotButton");
-                skip_attribute("quotePrefix");
-                
+
                 auto &record = *(!in_style_records
                     ? format_records.emplace(format_records.end())
                     : style_records.emplace(style_records.end()));
@@ -1523,6 +1520,14 @@ void xlsx_consumer::read_stylesheet()
                 auto apply_protection_present = parser().attribute_present("applyProtection");
                 record.first.protection_applied = apply_protection_present
                     && is_true(parser().attribute("applyProtection"));
+
+                auto pivot_button_present = parser().attribute_present("pivotButton");
+                record.first.pivot_button_applied = pivot_button_present
+                    && is_true(parser().attribute("pivotButton"));
+
+                auto quote_prefix_present = parser().attribute_present("quotePrefix");
+                record.first.quote_prefix_applied = quote_prefix_present
+                    && is_true(parser().attribute("quotePrefix"));
 
                 if (parser().attribute_present("xfId") && parser().name() == "cellXfs")
                 {
@@ -1738,6 +1743,8 @@ void xlsx_consumer::read_stylesheet()
         new_format.number_format_applied = record.first.number_format_applied;
         new_format.protection_id = record.first.protection_id;
         new_format.protection_applied = record.first.protection_applied;
+        new_format.pivot_button_applied = record.first.pivot_button_applied;
+        new_format.quote_prefix_applied = record.first.quote_prefix_applied;
     }
 }
 
@@ -2136,8 +2143,19 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
         else if (current_worksheet_element == qn("spreadsheetml", "autoFilter")) // CT_AutoFilter 0-1
         {
             ws.auto_filter(xlnt::range_reference(parser().attribute("ref")));
-            // complex type
-            skip_remaining_content(current_worksheet_element);            
+            //while (in_element(qn("spreadsheetml", "autoFilter")))
+            //{
+                skip_remaining_content(current_worksheet_element);
+            //}
+            //auto fste = expect_start_element(xml::content::simple);
+            //if (parser().element_present("filterColumn"))
+            //if(fste == qn("spreadsheetml", "filterColumn"))
+            //{
+                //skip_attributes({"colId", "showButton"});
+            //    skip_remaining_content(fste);
+                //expect_end_element(qn("spreadsheetml", "filterColumn"));
+            //}
+            //expect_end_element(qn("spreadsheetml", "autoFilter"));
         }
         else if (current_worksheet_element == qn("spreadsheetml", "sortState")) // CT_SortState 0-1
         {
@@ -2466,7 +2484,7 @@ void xlsx_consumer::read_comments(worksheet ws)
         expect_start_element(qn("spreadsheetml", "comment"), xml::content::complex);
 
         skip_attribute("shapeId");
-        auto cell_ref = parser().attribute("ref");
+	auto cell_ref = parser().attribute("ref");
         auto author_id = parser().attribute<std::size_t>("authorId");
 
         expect_start_element(qn("spreadsheetml", "text"), xml::content::complex);
@@ -2535,7 +2553,11 @@ variant xlsx_consumer::read_variant()
         }
         if (element == qn("vt", "bool"))
         {
-            value = variant(is_true(text));
+         // bool could be "0" or "false"
+		bool bvalue;
+		if (text[0] == '0' or text[0] == 'f' or text[0]=='F') bvalue = false;
+		else bvalue = true;
+        value = variant(bvalue);
         }
         else if (element == qn("vt", "vector"))
         {
@@ -2651,8 +2673,12 @@ std::vector<std::string> xlsx_consumer::read_namespaces()
 
 bool xlsx_consumer::in_element(const xml::qname &name)
 {
-    return parser().peek() != xml::parser::event_type::end_element
-        && stack_.back() == name;
+
+    if ((parser().peek() == xml::parser::event_type::end_element ) && (stack_.back() == name ))
+    {
+        return false;
+    }
+    return true;
 }
 
 xml::qname xlsx_consumer::expect_start_element(xml::content content)
@@ -2747,13 +2773,13 @@ rich_text xlsx_consumer::read_rich_text(const xml::qname &parent)
                         }
                         else if (current_run_property_element == xml::qname(xmlns, "b"))
                         {
-                            run.second.get().bold(parser().attribute_present("val")
-                                ? is_true(parser().attribute("val")) : true);
+                            run.second.get().bold(
+                                parser().attribute_present("val") ? is_true(parser().attribute("val")) : true);
                         }
                         else if (current_run_property_element == xml::qname(xmlns, "i"))
                         {
-                            run.second.get().italic(parser().attribute_present("val")
-                                ? is_true(parser().attribute("val")) : true);
+                            run.second.get().bold(
+                                parser().attribute_present("val") ? is_true(parser().attribute("val")) : true);
                         }
                         else if (current_run_property_element == xml::qname(xmlns, "u"))
                         {
