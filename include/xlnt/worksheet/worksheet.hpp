@@ -743,6 +743,11 @@ private:
     void register_comments_in_manifest();
 
     /// <summary>
+    /// Add the calcChain part to the workbook if it doesn't already exist.
+    /// </summary>
+    void register_calc_chain_in_manifest();
+
+    /// <summary>
     /// Removes calcChain part from manifest if no formulae remain in workbook.
     /// </summary>
     void garbage_collect_formulae();

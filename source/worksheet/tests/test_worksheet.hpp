@@ -222,7 +222,8 @@ public:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         ws.cell("A1").hyperlink("http://test.com");
-        TS_ASSERT_EQUALS("http://test.com", ws.cell("A1").value<std::string>());
+        TS_ASSERT_EQUALS(ws.cell("A1").hyperlink(), "http://test.com");
+        TS_ASSERT_EQUALS(ws.cell("A1").value<std::string>(), "");
         ws.cell("A1").value("test");
         TS_ASSERT_EQUALS("test", ws.cell("A1").value<std::string>());
         TS_ASSERT_EQUALS(ws.cell("A1").hyperlink(), "http://test.com");

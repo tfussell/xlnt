@@ -134,7 +134,7 @@ public:
 		TS_ASSERT(!temp_buffer.empty());
 	}
 
-	void test_write_comments()
+	void test_write_comments_hyperlinks_formulae()
 	{
 		xlnt::workbook wb;
 		auto sheet1 = wb.active_sheet();
@@ -146,12 +146,27 @@ public:
 		sheet1.cell("A2").value("Sheet1!A2");
 		sheet1.cell("A2").comment("Sheet1 comment2", comment_font, "Microsoft Office User");
 
+        sheet1.cell("A4").hyperlink("https://microsoft.com", "hyperlink1");
+        sheet1.cell("A5").hyperlink("https://google.com");
+        sheet1.cell("A6").hyperlink(sheet1.cell("A1"));
+        sheet1.cell("A7").hyperlink("mailto:invalid@example.com?subject=important");
+
+        sheet1.cell("C1").formula("=CONCATENATE(C2,C3)");
+        sheet1.cell("C2").value("a");
+        sheet1.cell("C3").value("b");
+
 		auto sheet2 = wb.create_sheet();
 		sheet2.cell("A1").value("Sheet2!A1");
 		sheet2.cell("A2").comment("Sheet2 comment", comment_font, "Microsoft Office User");
 
 		sheet2.cell("A2").value("Sheet2!A2");
 		sheet2.cell("A2").comment("Sheet2 comment2", comment_font, "Microsoft Office User");
+
+        sheet2.cell("A4").hyperlink("https://apple.com", "hyperlink2");
+
+        sheet2.cell("C1").formula("=C2*C3");
+        sheet2.cell("C2").value(2);
+        sheet2.cell("C3").value(3);
 
         const auto path = path_helper::data_directory("10_comments_hyperlinks_formulae.xlsx");
 		TS_ASSERT(workbook_matches_file(wb, path));

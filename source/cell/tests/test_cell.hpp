@@ -140,7 +140,7 @@ public:
         auto cell = ws.cell(xlnt::cell_reference(1, 1));
 
         TS_ASSERT(!cell.has_formula());
-        TS_ASSERT_THROWS(cell.formula(""), xlnt::invalid_parameter);
+        TS_ASSERT_THROWS_NOTHING(cell.formula(""));
         TS_ASSERT(!cell.has_formula());
         cell.formula("=42");
         TS_ASSERT(cell.has_formula());
