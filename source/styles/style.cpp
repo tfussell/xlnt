@@ -238,4 +238,14 @@ bool style::protection_applied() const
     return d_->protection_applied;
 }
 
+bool style::pivot_button_applied() const
+{
+    return d_->pivot_button_applied;
+}
+
+bool style::quote_prefix_applied() const
+{
+    return d_->quote_prefix_applied;
+}
+
 } // namespace xlnt
