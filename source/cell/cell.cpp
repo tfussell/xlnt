@@ -446,18 +446,24 @@ void cell::hyperlink(const std::string &hyperlink)
     }
 
     d_->hyperlink_ = hyperlink;
+}
 
-    if (data_type() == type::null)
-    {
-        value(hyperlink);
-    }
+void cell::hyperlink(const std::string &url, const std::string &display)
+{
+    hyperlink(url);
+    value(display);
+}
+
+void cell::hyperlink(xlnt::cell /*target*/)
+{
+    //todo: implement
 }
 
 void cell::formula(const std::string &formula)
 {
     if (formula.empty())
     {
-        throw invalid_parameter();
+        return clear_formula();
     }
 
     if (formula[0] == '=')
@@ -468,6 +474,8 @@ void cell::formula(const std::string &formula)
     {
         d_->formula_ = formula;
     }
+    
+    worksheet().register_calc_chain_in_manifest();
 }
 
 bool cell::has_formula() const

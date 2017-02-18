@@ -95,9 +95,9 @@ struct workbook_impl
     optional<theme> theme_;
     std::unordered_map<std::string, std::vector<std::uint8_t>> images_;
 
-    std::unordered_map<xlnt::core_property, variant, xlnt::scoped_enum_hash<xlnt::core_property>> core_properties_;
-    std::unordered_map<xlnt::extended_property, variant, xlnt::scoped_enum_hash<xlnt::extended_property>> extended_properties_;
-    std::unordered_map<std::string, variant> custom_properties_;
+    std::vector<std::pair<xlnt::core_property, variant>> core_properties_;
+    std::vector<std::pair<xlnt::extended_property, variant>> extended_properties_;
+    std::vector<std::pair<std::string, variant>> custom_properties_;
 
 	std::unordered_map<std::string, std::string> sheet_title_rel_id_map_;
 

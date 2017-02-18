@@ -450,20 +450,20 @@ public:
     /// Serializes the workbook into an XLSX file encrypted with the given password
     /// and loads the bytes into a file named filename.
     /// </summary>
-    void save(const std::string &filename, const std::string &password);
+    void save(const std::string &filename, const std::string &password) const;
 
 #ifdef _MSC_VER
     /// <summary>
     /// Serializes the workbook into an XLSX file and saves the data into a file
     /// named filename.
     /// </summary>
-    void save(const std::wstring &filename);
+    void save(const std::wstring &filename) const;
 
     /// <summary>
     /// Serializes the workbook into an XLSX file encrypted with the given password
     /// and loads the bytes into a file named filename.
     /// </summary>
-    void save(const std::wstring &filename, const std::string &password);
+    void save(const std::wstring &filename, const std::string &password) const;
 #endif
 
     /// <summary>
@@ -476,7 +476,7 @@ public:
     /// Serializes the workbook into an XLSX file encrypted with the given password
     /// and loads the bytes into a file named filename.
     /// </summary>
-    void save(const xlnt::path &filename, const std::string &password);
+    void save(const xlnt::path &filename, const std::string &password) const;
 
     /// <summary>
     /// Serializes the workbook into an XLSX file and saves the data into stream.
@@ -487,7 +487,7 @@ public:
     /// Serializes the workbook into an XLSX file encrypted with the given password
     /// and loads the bytes into the given stream.
     /// </summary>
-    void save(std::ostream &stream, const std::string &password);
+    void save(std::ostream &stream, const std::string &password) const;
 
     /// <summary>
     /// Interprets byte vector data as an XLSX file and sets the content of this

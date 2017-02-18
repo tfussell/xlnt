@@ -107,9 +107,9 @@ void open_stream(std::ofstream &stream, const std::string &path)
 #endif
 
 template<typename T>
-std::vector<typename T::key_type> keys(const T &container)
+std::vector<T> keys(const std::vector<std::pair<T, xlnt::variant>> &container)
 {
-    auto result = std::vector<typename T::key_type>();
+    auto result = std::vector<T>();
     auto iter = container.begin();
 
     while (iter != container.end())
@@ -118,6 +118,20 @@ std::vector<typename T::key_type> keys(const T &container)
     }
 
     return result;
+}
+
+template<typename T>
+bool contains(const std::vector<std::pair<T, xlnt::variant>> &container, const T key)
+{
+    for (const auto &iter : container)
+    {
+        if (iter.first == key)
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 xlnt::path default_path(xlnt::relationship_type type, std::size_t index = 0)
@@ -285,7 +299,7 @@ namespace xlnt {
 
 bool workbook::has_core_property(xlnt::core_property type) const
 {
-    return d_->core_properties_.count(type) > 0;
+    return ::contains(d_->core_properties_, type);
 }
 
 std::vector<xlnt::core_property> workbook::core_properties() const
@@ -295,18 +309,36 @@ std::vector<xlnt::core_property> workbook::core_properties() const
 
 variant workbook::core_property(xlnt::core_property type) const
 {
-    return d_->core_properties_.at(type);
+    for (auto iter : d_->core_properties_)
+    {
+        if (iter.first == type)
+        {
+            return iter.second;
+        }
+    }
+    
+    throw xlnt::exception("workbook doesn't have core property");
 }
 
 void workbook::core_property(xlnt::core_property type, const variant &value)
 {
     register_package_part(relationship_type::core_properties);
-    d_->core_properties_[type] = value;
+
+    for (auto &iter : d_->core_properties_)
+    {
+        if (iter.first == type)
+        {
+            iter.second = value;
+            return;
+        }
+    }
+    
+    d_->core_properties_.push_back({type, value});
 }
 
 bool workbook::has_extended_property(xlnt::extended_property type) const
 {
-    return d_->extended_properties_.count(type) > 0;
+    return ::contains(d_->extended_properties_, type);
 }
 
 std::vector<xlnt::extended_property> workbook::extended_properties() const
@@ -317,17 +349,35 @@ std::vector<xlnt::extended_property> workbook::extended_properties() const
 void workbook::extended_property(xlnt::extended_property type, const variant &value)
 {
     register_package_part(relationship_type::extended_properties);
-    d_->extended_properties_[type] = value;
+
+    for (auto &iter : d_->extended_properties_)
+    {
+        if (iter.first == type)
+        {
+            iter.second = value;
+            return;
+        }
+    }
+    
+    d_->extended_properties_.push_back({type, value});
 }
 
 variant workbook::extended_property(xlnt::extended_property type) const
 {
-    return d_->extended_properties_.at(type);
+    for (auto iter : d_->extended_properties_)
+    {
+        if (iter.first == type)
+        {
+            return iter.second;
+        }
+    }
+    
+    throw xlnt::exception("workbook doesn't have extended property");
 }
 
 bool workbook::has_custom_property(const std::string &property_name) const
 {
-    return d_->custom_properties_.count(property_name) > 0;
+    return ::contains(d_->custom_properties_, property_name);
 }
 
 std::vector<std::string> workbook::custom_properties() const
@@ -338,12 +388,30 @@ std::vector<std::string> workbook::custom_properties() const
 void workbook::custom_property(const std::string &property_name, const variant &value)
 {
     register_package_part(relationship_type::custom_properties);
-    d_->custom_properties_[property_name] = value;
+
+    for (auto &iter : d_->custom_properties_)
+    {
+        if (iter.first == property_name)
+        {
+            iter.second = value;
+            return;
+        }
+    }
+    
+    d_->custom_properties_.push_back({property_name, value});
 }
 
 variant workbook::custom_property(const std::string &property_name) const
 {
-    return d_->custom_properties_.at(property_name);
+    for (auto iter : d_->custom_properties_)
+    {
+        if (iter.first == property_name)
+        {
+            return iter.second;
+        }
+    }
+    
+    throw xlnt::exception("workbook doesn't have custom property");
 }
 
 workbook workbook::empty()
@@ -367,7 +435,9 @@ workbook workbook::empty()
 
     wb.extended_property(xlnt::extended_property::application, "Microsoft Macintosh Excel");
     wb.extended_property(xlnt::extended_property::doc_security, 0);
-    wb.extended_property(xlnt::extended_property::scale_crop, "false");
+    wb.extended_property(xlnt::extended_property::scale_crop, false);
+    wb.extended_property(xlnt::extended_property::heading_pairs, std::vector<variant>{variant("Worksheets"), variant(1)});
+    wb.extended_property(xlnt::extended_property::titles_of_parts, {"Sheet1"});
     wb.extended_property(xlnt::extended_property::company, "");
     wb.extended_property(xlnt::extended_property::links_up_to_date, false);
     wb.extended_property(xlnt::extended_property::shared_doc, false);
@@ -793,25 +863,6 @@ void workbook::load(const std::vector<std::uint8_t> &data)
 
 void workbook::load(const std::string &filename)
 {
-    if (filename.find_last_of(".") != std::string::npos) // check extension
-    {
-       std::string file_format = path(filename).extension();
-
-       if (file_format == "xls") {
-           throw xlnt::exception(" xlnt does not support the old .xls file format");
-       }
-       else if (file_format == "xlsb") {
-           throw xlnt::exception(" xlnt does not support the .xlsb file format");
-       }
-       else if (file_format != "xlsx") {
-           throw xlnt::exception(" xlnt does not support the ."+file_format+ " file format");
-       }
-    }
-    else
-    {
-        throw xlnt::exception("file has no extension .xlsx");
-    }
-
     return load(path(filename));
 }
 
@@ -830,25 +881,6 @@ void workbook::load(const path &filename)
 
 void workbook::load(const std::string &filename, const std::string &password)
 {
-        if (filename.find_last_of(".") != std::string::npos) // check extension
-    {
-       std::string file_format = path(filename).extension();
-
-       if (file_format == "xls") {
-           throw xlnt::exception(" xlnt does not support the old .xls file format");
-       }
-       else if (file_format == "xlsb") {
-           throw xlnt::exception(" xlnt does not support the .xlsb file format");
-       }
-       else if (file_format != "xlsx") {
-           throw xlnt::exception(" xlnt does not support the ."+file_format+ " file format");
-       }
-    }
-    else
-    {
-        throw xlnt::exception("file has no extension .xlsx");
-    }
-
     return load(path(filename), password);
 }
 
@@ -891,9 +923,21 @@ void workbook::save(std::vector<std::uint8_t> &data) const
     save(data_stream);
 }
 
+void workbook::save(std::vector<std::uint8_t> &data, const std::string &password) const
+{
+    xlnt::detail::vector_ostreambuf data_buffer(data);
+    std::ostream data_stream(&data_buffer);
+    save(data_stream, password);
+}
+
 void workbook::save(const std::string &filename) const
 {
-    return save(path(filename));
+    save(path(filename));
+}
+
+void workbook::save(const std::string &filename, const std::string &password) const
+{
+    save(path(filename), password);
 }
 
 void workbook::save(const path &filename) const
@@ -903,27 +947,34 @@ void workbook::save(const path &filename) const
     save(file_stream);
 }
 
+void workbook::save(const path &filename, const std::string &password) const
+{
+    std::ofstream file_stream;
+    open_stream(file_stream, filename.string());
+    save(file_stream, password);
+}
+
 void workbook::save(std::ostream &stream) const
 {
     detail::xlsx_producer producer(*this);
     producer.write(stream);
 }
 
-void workbook::save(std::ostream &stream, const std::string &password)
+void workbook::save(std::ostream &stream, const std::string &password) const
 {
     detail::xlsx_producer producer(*this);
     producer.write(stream, password);
 }
 
 #ifdef _MSC_VER
-void workbook::save(const std::wstring &filename)
+void workbook::save(const std::wstring &filename) const
 {
     std::ofstream file_stream;
     open_stream(file_stream, filename);
     save(file_stream);
 }
 
-void workbook::save(const std::wstring &filename, const std::string &password)
+void workbook::save(const std::wstring &filename, const std::string &password) const
 {
     std::ofstream file_stream;
     open_stream(file_stream, filename);
@@ -1402,33 +1453,21 @@ std::size_t workbook::rup_build() const
     return d_->file_version_.get().rup_build;
 }
 
-/// <summary>
-///
-/// </summary>
 bool workbook::has_calculation_properties() const
 {
     return d_->calculation_properties_.is_set();
 }
 
-/// <summary>
-///
-/// </summary>
 class calculation_properties workbook::calculation_properties() const
 {
     return d_->calculation_properties_.get();
 }
 
-/// <summary>
-///
-/// </summary>
 void workbook::calculation_properties(const class calculation_properties &props)
 {
     d_->calculation_properties_ = props;
 }
 
-/// <summary>
-/// Removes calcChain part from manifest if no formulae remain in workbook.
-/// </summary>
 void workbook::garbage_collect_formulae()
 {
     auto any_with_formula = false;

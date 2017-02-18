@@ -1010,6 +1010,11 @@ void worksheet::register_comments_in_manifest()
     workbook().register_worksheet_part(*this, relationship_type::comments);
 }
 
+void worksheet::register_calc_chain_in_manifest()
+{
+    workbook().register_workbook_part(relationship_type::calculation_chain);
+}
+
 bool worksheet::has_header_footer() const
 {
     return d_->header_footer_.is_set();

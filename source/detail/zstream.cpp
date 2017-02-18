@@ -432,7 +432,7 @@ protected:
 
     virtual int underflow()
     {
-        throw std::runtime_error("Attempt to read write only ostream");
+        throw xlnt::exception("Attempt to read write only ostream");
     }
 
     virtual int overflow(int c = EOF);
@@ -494,7 +494,7 @@ izstream::izstream(std::istream &stream)
 {
     if (!stream)
     {
-        throw std::runtime_error("ZIP: Invalid file handle");
+        throw xlnt::exception("Invalid file handle");
     }
 
     read_central_header();
@@ -522,15 +522,20 @@ bool izstream::read_central_header()
     }
 
     source_stream_.seekg(end_position - read_start);
-    std::vector<char> buf(static_cast<std::size_t>(read_start), '\0');
+    std::vector<std::uint8_t> buf(static_cast<std::size_t>(read_start), '\0');
 
     if (read_start <= 0)
     {
-        std::cerr << "ZIP: Invalid read buffer size" << std::endl;
-        return false;
+        throw xlnt::exception("file is empty");
     }
 
-    source_stream_.read(buf.data(), read_start);
+    source_stream_.read(reinterpret_cast<char *>(buf.data()), read_start);
+    
+    if (buf[0] == 0xd0 && buf[1] == 0xcf && buf[2] == 0x11 && buf[3] == 0xe0
+        && buf[4] == 0xa1 && buf[5] == 0xb1 && buf[6] == 0x1a && buf[7] == 0xe1)
+    {
+        throw xlnt::exception("encrypted xlsx, password required");
+    }
 
     auto found_header = false;
     std::size_t header_index = 0;
@@ -547,8 +552,7 @@ bool izstream::read_central_header()
 
     if (!found_header)
     {
-        std::cerr << "ZIP: Failed to find zip header" << std::endl;
-        return false;
+        throw xlnt::exception("failed to find zip header");
     }
 
     // seek to end of central header and read
@@ -560,8 +564,7 @@ bool izstream::read_central_header()
 
     if (disk_number1 != disk_number2 || disk_number1 != 0)
     {
-        std::cerr << "ZIP: multiple disk zip files are not supported" << std::endl;
-        return false;
+        throw xlnt::exception("multiple disk zip files are not supported");
     }
 
     auto num_files = read_int<std::uint16_t>(source_stream_); // one entry in center in this disk
@@ -569,8 +572,7 @@ bool izstream::read_central_header()
 
     if (num_files != num_files_this_disk)
     {
-        std::cerr << "ZIP: multi disk zip files are not supported" << std::endl;
-        return false;
+        throw xlnt::exception("multi disk zip files are not supported");
     }
 
     /*auto size_of_header = */ read_int<std::uint32_t>(source_stream_); // size of header
@@ -592,7 +594,7 @@ std::unique_ptr<std::streambuf> izstream::open(const path &filename) const
 {
     if (!has_file(filename))
     {
-        throw "not found";
+        throw xlnt::exception("file not found");
     }
 
     auto header = file_headers_.at(filename.string());

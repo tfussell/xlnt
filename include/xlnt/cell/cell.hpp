@@ -183,9 +183,20 @@ public:
     std::string hyperlink() const;
 
     /// <summary>
-    /// Adds a hyperlink to this cell pointing to the URI of the given value.
+    /// Adds a hyperlink to this cell pointing to the URL of the given value.
     /// </summary>
-    void hyperlink(const std::string &value);
+    void hyperlink(const std::string &url);
+
+    /// <summary>
+    /// Adds a hyperlink to this cell pointing to the URI of the given value and sets
+    /// the text value of the cell to the given parameter.
+    /// </summary>
+    void hyperlink(const std::string &url, const std::string &display);
+
+    /// <summary>
+    /// Adds an internal hyperlink to this cell pointing to the given cell.
+    /// </summary>
+    void hyperlink(xlnt::cell target);
 
     /// <summary>
     /// Returns true if this cell has a hyperlink set.

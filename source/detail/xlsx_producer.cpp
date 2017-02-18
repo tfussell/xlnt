@@ -218,7 +218,7 @@ void xlsx_producer::write_property(const std::string &name, const variant &value
             write_start_element(constants::ns("vt"), "bool");
         }
 
-        write_characters(write_bool(value.get<bool>()));
+        write_characters(value.get<bool>() ? "true" : "false");
 
         if (custom)
         {
@@ -336,6 +336,7 @@ void xlsx_producer::write_core_properties(const relationship &/*rel*/)
         for (const auto &ns : core_property_namespace(prop))
         {
             if (namespaces.count(ns.first) > 0) continue;
+
             write_namespace(ns.first, ns.second);
             namespaces.emplace(ns);
         }

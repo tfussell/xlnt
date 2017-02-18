@@ -16,6 +16,8 @@ public:
     {
         // content types are stored in unordered maps, too complicated to compare
         if (content_type == "[Content_Types].xml") return true;
+        // calcChain is optional
+        if (content_type == "application/vnd.openxmlformats-officedocument.spreadsheetml.calcChain+xml") return true;
 
         auto is_xml = (content_type.substr(0, 12) == "application/"
             && content_type.substr(content_type.size() - 4) == "+xml")
@@ -200,7 +202,7 @@ public:
                 std::cout << "right is missing file: " << left_member.string() << std::endl;
                 break;
             }
-
+            
             auto left_content_type = left_member.string() == "[Content_Types].xml"
                 ? "[Content_Types].xml" : left_manifest.content_type(left_member);
             auto right_content_type = left_member.string() == "[Content_Types].xml"
