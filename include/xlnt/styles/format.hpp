@@ -192,12 +192,22 @@ public:
     /// <summary>
     ///
     /// </summary>
-    bool pivot_button_applied() const;
+    bool pivot_button() const;
 
     /// <summary>
     ///
     /// </summary>
-    bool quote_prefix_applied() const;
+    void pivot_button(bool show);
+
+    /// <summary>
+    ///
+    /// </summary>
+    bool quote_prefix() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void quote_prefix(bool quote);
 
     // Style
 

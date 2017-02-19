@@ -210,14 +210,26 @@ bool format::protection_applied() const
 {
     return d_->protection_applied;
 }
-bool format::pivot_button_applied() const
+
+bool format::pivot_button() const
 {
-    return d_->pivot_button_applied;
+    return d_->pivot_button_;
 }
 
-bool format::quote_prefix_applied() const
+void format::pivot_button(bool show)
 {
-    return d_->quote_prefix_applied;
+    d_->pivot_button_ = show;
 }
+
+bool format::quote_prefix() const
+{
+    return d_->quote_prefix_;
+}
+
+void format::quote_prefix(bool quote)
+{
+    d_->quote_prefix_ = quote;
+}
+
 
 } // namespace xlnt

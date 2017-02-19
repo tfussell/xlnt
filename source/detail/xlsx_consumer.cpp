@@ -1521,12 +1521,9 @@ void xlsx_consumer::read_stylesheet()
                 record.first.protection_applied = apply_protection_present
                     && is_true(parser().attribute("applyProtection"));
 
-                auto pivot_button_present = parser().attribute_present("pivotButton");
-                record.first.pivot_button_applied = pivot_button_present
+                record.first.pivot_button_ = parser().attribute_present("pivotButton")
                     && is_true(parser().attribute("pivotButton"));
-
-                auto quote_prefix_present = parser().attribute_present("quotePrefix");
-                record.first.quote_prefix_applied = quote_prefix_present
+                record.first.quote_prefix_ = parser().attribute_present("quotePrefix")
                     && is_true(parser().attribute("quotePrefix"));
 
                 if (parser().attribute_present("xfId") && parser().name() == "cellXfs")
@@ -1743,8 +1740,8 @@ void xlsx_consumer::read_stylesheet()
         new_format.number_format_applied = record.first.number_format_applied;
         new_format.protection_id = record.first.protection_id;
         new_format.protection_applied = record.first.protection_applied;
-        new_format.pivot_button_applied = record.first.pivot_button_applied;
-        new_format.quote_prefix_applied = record.first.quote_prefix_applied;
+        new_format.pivot_button_ = record.first.pivot_button_;
+        new_format.quote_prefix_ = record.first.quote_prefix_;
     }
 }
 
@@ -2473,7 +2470,7 @@ void xlsx_consumer::read_comments(worksheet ws)
         expect_start_element(qn("spreadsheetml", "comment"), xml::content::complex);
 
         skip_attribute("shapeId");
-	auto cell_ref = parser().attribute("ref");
+        auto cell_ref = parser().attribute("ref");
         auto author_id = parser().attribute<std::size_t>("authorId");
 
         expect_start_element(qn("spreadsheetml", "text"), xml::content::complex);
@@ -2755,12 +2752,12 @@ rich_text xlsx_consumer::read_rich_text(const xml::qname &parent)
                         else if (current_run_property_element == xml::qname(xmlns, "b"))
                         {
                             run.second.get().bold(parser().attribute_present("val")
-				? is_true(parser().attribute("val")) : true);
+                                ? is_true(parser().attribute("val")) : true);
                         }
                         else if (current_run_property_element == xml::qname(xmlns, "i"))
                         {
                             run.second.get().italic(parser().attribute_present("val")
-				? is_true(parser().attribute("val")) : true);
+                                ? is_true(parser().attribute("val")) : true);
                         }
                         else if (current_run_property_element == xml::qname(xmlns, "u"))
                         {

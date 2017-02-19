@@ -1175,12 +1175,12 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
                 write_attribute("applyProtection", write_bool(true));
             }
 
-            if (current_style_impl.pivot_button_applied)
+            if (current_style_impl.pivot_button_)
             {
                 write_attribute("pivotButton", write_bool(true));
             }
 
-            if (current_style_impl.quote_prefix_applied)
+            if (current_style_impl.quote_prefix_)
             {
                 write_attribute("quotePrefix", write_bool(true));
             }
@@ -1293,12 +1293,12 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
             write_attribute("applyProtection", write_bool(true));
         }
 
-        if (current_format_impl.pivot_button_applied)
+        if (current_format_impl.pivot_button_)
         {
             write_attribute("pivotButton", write_bool(true));
         }
 
-        if (current_format_impl.quote_prefix_applied)
+        if (current_format_impl.quote_prefix_)
         {
             write_attribute("quotePrefix", write_bool(true));
         }
