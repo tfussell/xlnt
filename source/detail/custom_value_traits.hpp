@@ -179,18 +179,18 @@ gradient_fill_type from_string(const std::string &string)
 template<>
 border_style from_string(const std::string &string)
 {
-    if (string == "dashdot") return border_style::dashdot;
-    else if (string == "dashdotdot") return border_style::dashdotdot;
+    if (string == "dashDot") return border_style::dashdot;
+    else if (string == "dashDotDot") return border_style::dashdotdot;
     else if (string == "dashed") return border_style::dashed;
     else if (string == "dotted") return border_style::dotted;
     else if (string == "double") return border_style::double_;
     else if (string == "hair") return border_style::hair;
     else if (string == "medium") return border_style::medium;
-    else if (string == "mediumdashdot") return border_style::mediumdashdot;
-    else if (string == "mediumdashdotdot") return border_style::mediumdashdotdot;
-    else if (string == "mediumdashed") return border_style::mediumdashed;
+    else if (string == "mediumDashdot") return border_style::mediumdashdot;
+    else if (string == "mediumDashDotDot") return border_style::mediumdashdotdot;
+    else if (string == "mediumDashed") return border_style::mediumdashed;
     else if (string == "none") return border_style::none;
-    else if (string == "slantdashdot") return border_style::slantdashdot;
+    else if (string == "slantDashDot") return border_style::slantdashdot;
     else if (string == "thick") return border_style::thick;
     else if (string == "thin") return border_style::thin;
 
