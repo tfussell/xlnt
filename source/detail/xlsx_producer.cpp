@@ -331,6 +331,8 @@ void xlsx_producer::write_core_properties(const relationship &/*rel*/)
     auto core_properties = source_.core_properties();
     std::unordered_map<std::string, std::string> namespaces;
 
+    write_namespace(constants::ns("core-properties"), "cp");
+
     for (const auto &prop : core_properties)
     {
         for (const auto &ns : core_property_namespace(prop))
@@ -525,11 +527,6 @@ void xlsx_producer::write_workbook(const relationship &rel)
 
     write_start_element(xmlns, "sheets");
 
-    if (any_defined_names)
-    {
-        write_element(xmlns, "definedNames", "");
-    }
-
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wrange-loop-analysis"
     for (const auto ws : source_)
@@ -547,25 +544,24 @@ void xlsx_producer::write_workbook(const relationship &rel)
         }
 
         write_attribute(xml::qname(xmlns_r, "id"), sheet_rel_id);
-
-        if (ws.has_auto_filter())
-        {
-            write_start_element(xmlns, "definedName");
-
-            write_attribute("name", "_xlnm._FilterDatabase");
-            write_attribute("hidden", write_bool(true));
-            write_attribute("localSheetId", "0");
-            write_characters(
-                "'" + ws.title() + "'!" + range_reference::make_absolute(ws.auto_filter()).to_string());
-
-            write_end_element(xmlns, "definedName");
-        }
-
         write_end_element(xmlns, "sheet");
     }
 #pragma clang diagnostic pop
 
     write_end_element(xmlns, "sheets");
+
+    if (any_defined_names)
+    {
+        write_start_element(xmlns, "definedNames");
+        /*
+        write_attribute("name", "_xlnm._FilterDatabase");
+        write_attribute("hidden", write_bool(true));
+        write_attribute("localSheetId", "0");
+        write_characters("'" + ws.title() + "'!" +
+            range_reference::make_absolute(ws.auto_filter()).to_string());
+        */
+        write_end_element(xmlns, "definedNames");
+    }
 
     if (source_.has_calculation_properties())
     {
@@ -709,6 +705,14 @@ void xlsx_producer::write_workbook(const relationship &rel)
 void xlsx_producer::write_calculation_chain(const relationship & /*rel*/)
 {
     write_start_element(constants::ns("spreadsheetml"), "calcChain");
+    write_namespace(constants::ns("spreadsheetml"), "");
+    /*
+    write_start_element(constants::ns("spreadsheetml"), "c");
+    write_attribute("r", "B2");
+    write_attribute("i", "1");
+    write_attribute("l", "1");
+    write_end_element(constants::ns("spreadsheetml"), "c");
+    */
     write_end_element(constants::ns("spreadsheetml"), "calcChain");
 }
 
@@ -2835,10 +2839,10 @@ void xlsx_producer::write_vml_drawings(const relationship &rel, worksheet ws, co
         std::vector<std::pair<std::string, std::string>> style;
 
         style.push_back({"position", "absolute"});
-        style.push_back({"margin-left", std::to_string(comment.left())});
-        style.push_back({"margin-top", std::to_string(comment.top())});
-        style.push_back({"width", std::to_string(comment.width())});
-        style.push_back({"height", std::to_string(comment.height())});
+        style.push_back({"margin-left", std::to_string(comment.left()) + "pt"});
+        style.push_back({"margin-top", std::to_string(comment.top()) + "pt"});
+        style.push_back({"width", std::to_string(comment.width()) + "pt"});
+        style.push_back({"height", std::to_string(comment.height()) + "pt"});
         style.push_back({"z-index", std::to_string(comment_index + 1)});
         style.push_back({"visibility", comment.visible() ? "visible" : "hidden"});
 

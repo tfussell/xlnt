@@ -56,10 +56,13 @@ struct workbook_impl
           shared_strings_(other.shared_strings_),
           stylesheet_(other.stylesheet_),
           manifest_(other.manifest_),
-		  theme_(other.theme_),
-		  view_(other.view_),
-		  code_name_(other.code_name_),
-		  file_version_(other.file_version_)
+          theme_(other.theme_),
+          core_properties_(other.core_properties_),
+          extended_properties_(other.extended_properties_),
+          custom_properties_(other.custom_properties_),
+          view_(other.view_),
+          code_name_(other.code_name_),
+          file_version_(other.file_version_)
     {
     }
 
@@ -77,6 +80,10 @@ struct workbook_impl
 		view_ = other.view_;
 		code_name_ = other.code_name_;
 		file_version_ = other.file_version_;
+
+        core_properties_ = other.core_properties_;
+        extended_properties_ = other.extended_properties_;
+        custom_properties_ = other.custom_properties_;
 
         return *this;
     }
