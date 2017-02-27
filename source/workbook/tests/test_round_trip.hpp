@@ -24,6 +24,7 @@ public:
 
         std::vector<std::uint8_t> destination;
         source_workbook.save(destination);
+        source_workbook.save("temp.xlsx");
 
         std::ifstream source_stream(source.string(), std::ios::binary);
 

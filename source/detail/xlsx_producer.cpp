@@ -252,6 +252,11 @@ void xlsx_producer::write_property(const std::string &name, const variant &value
             write_start_element(constants::ns("vt"), "lpwstr");
         }
 
+        if (!custom && ns == constants::ns("dcterms") && (name == "created" || name == "modified"))
+        {
+            write_attribute(xml::qname(constants::ns("xsi"), "type"), "dcterms:W3CDTF");
+        }
+
         write_characters(value.get<std::string>());
 
         if (custom)
