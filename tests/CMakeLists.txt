@@ -8,6 +8,10 @@ if(NOT COMBINED_PROJECT)
     add_subdirectory(${LIBRARY_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/source)
 endif()
 
+set(CXXTEST_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cxxtest)
+set(CXXTEST_PYTHON_TESTGEN_EXECUTABLE ${CXXTEST_ROOT_DIR}/bin/cxxtestgen)
+set(CXXTEST_INCLUDE_DIR ${CXXTEST_ROOT_DIR})
+
 file(GLOB CELL_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/../source/cell/tests/test_*.hpp)
 file(GLOB CHARTS_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/../source/charts/tests/test_*.hpp)
 file(GLOB CHARTSHEET_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/../source/chartsheet/tests/test_*.hpp)
@@ -73,10 +77,9 @@ else()
 endif()
 
 find_package(PythonInterp REQUIRED)
-find_package(CxxTest REQUIRED)
 
 add_custom_command(OUTPUT ${RUNNER}
-    COMMAND ${CXXTEST_PYTHON_TESTGEN_EXECUTABLE} --runner=ErrorPrinter -o ${RUNNER} ${TESTS}
+    COMMAND ${PYTHON_EXECUTABLE} ${CXXTEST_PYTHON_TESTGEN_EXECUTABLE} --runner=ErrorPrinter -o ${RUNNER} ${TESTS}
     DEPENDS ${TESTS}
     COMMENT "Generating test runner ${RUNNER}")
 

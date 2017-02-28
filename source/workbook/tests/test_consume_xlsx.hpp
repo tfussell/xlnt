@@ -56,8 +56,8 @@ public:
 
 #ifndef __MINGW32__
         xlnt::workbook wb2;
-        const auto path = U8STRING_LITERAL(XLNT_TEST_DATA_DIR) u8"/9_unicode_filename_Λ.xlsx";
-        wb2.load(path);
+        const auto path2 = U8STRING_LITERAL(XLNT_TEST_DATA_DIR) u8"/9_unicode_filename_Λ.xlsx";
+        wb2.load(path2);
         TS_ASSERT_EQUALS(wb2.active_sheet().cell("A1").value<std::string>(), "unicode!");
 #endif
     }

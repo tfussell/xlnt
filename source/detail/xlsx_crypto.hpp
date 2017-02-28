@@ -23,6 +23,7 @@
 
 #include <array>
 
+#include <xlnt/xlnt_config.hpp>
 #include <xlnt/utils/exceptions.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <detail/constants.hpp>
@@ -50,7 +51,7 @@ enum class hash_algorithm
     whirlpool
 };
 
-struct crypto_helper
+struct XLNT_API crypto_helper
 {
     static const std::size_t segment_length;
 
