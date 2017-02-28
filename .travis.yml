@@ -17,7 +17,7 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-6
+            - g++-6 zlib cryptopp
       env:
         - COMPILER=g++-6
         - COVERAGE=OFF
