@@ -490,8 +490,11 @@ std::string cell::formula() const
 
 void cell::clear_formula()
 {
-    d_->formula_.clear();
-    worksheet().garbage_collect_formulae();
+    if (has_formula())
+    {
+        d_->formula_.clear();
+        worksheet().garbage_collect_formulae();
+    }
 }
 
 void cell::error(const std::string &error)

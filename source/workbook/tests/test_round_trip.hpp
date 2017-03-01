@@ -24,6 +24,7 @@ public:
 
         std::vector<std::uint8_t> destination;
         source_workbook.save(destination);
+        source_workbook.save("temp.xlsx");
 
         std::ifstream source_stream(source.string(), std::ios::binary);
 
@@ -45,7 +46,7 @@ public:
 		return xml_helper::xlsx_archives_match(source_decrypted, destination);
     }
 
-	void test_round_trip_empty_excel_rw()
+	void test_round_trip_rw()
 	{
         const auto files = std::vector<std::string>
         {
@@ -64,7 +65,7 @@ public:
         }
 	}
 
-	void test_round_trip_empty_excel_rw_encrypted()
+	void test_round_trip_rw_encrypted()
 	{
         const auto files = std::vector<std::string>
         {

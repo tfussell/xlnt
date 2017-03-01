@@ -759,6 +759,8 @@ worksheet workbook::create_sheet()
         workbook_rel.target(), relationship_type::worksheet, relative_sheet_uri, target_mode::internal);
     d_->sheet_title_rel_id_map_[title] = ws_rel;
 
+    update_sheet_properties();
+
     return worksheet(&d_->worksheets_.back());
 }
 
@@ -1007,9 +1009,10 @@ void workbook::remove_sheet(worksheet ws)
     }
 
     auto ws_rel_id = d_->sheet_title_rel_id_map_.at(ws.title());
-    auto wb_rel = d_->manifest_.relationship(xlnt::path("/"), xlnt::relationship_type::office_document);
+    auto wb_rel = d_->manifest_.relationship(path("/"), xlnt::relationship_type::office_document);
     auto ws_rel = d_->manifest_.relationship(wb_rel.target().path(), ws_rel_id);
-    d_->manifest_.unregister_override_type(ws_rel.target().path());
+    auto ws_part = d_->manifest_.canonicalize({wb_rel, ws_rel}).resolve(path("/"));
+    d_->manifest_.unregister_override_type(ws_part);
     auto rel_id_map = d_->manifest_.unregister_relationship(wb_rel.target(), ws_rel_id);
     d_->sheet_title_rel_id_map_.erase(ws.title());
     d_->worksheets_.erase(match_iter);
@@ -1020,6 +1023,8 @@ void workbook::remove_sheet(worksheet ws)
         title_rel_id_pair.second = rel_id_map.count(title_rel_id_pair.second) > 0
             ? rel_id_map[title_rel_id_pair.second] : title_rel_id_pair.second;
     }
+
+    update_sheet_properties();
 }
 
 worksheet workbook::create_sheet(std::size_t index)
@@ -1053,6 +1058,8 @@ worksheet workbook::create_sheet_with_rel(const std::string &title, const relati
     auto ws_rel = d_->manifest_.register_relationship(
         workbook_rel.target(), relationship_type::worksheet, rel.target(), target_mode::internal);
     d_->sheet_title_rel_id_map_[title] = ws_rel;
+
+    update_sheet_properties();
 
     return worksheet(&d_->worksheets_.back());
 }
@@ -1496,6 +1503,20 @@ void workbook::garbage_collect_formulae()
         auto calc_chain_part = manifest().canonicalize({wb_rel, calc_chain_rel});
         manifest().unregister_override_type(calc_chain_part);
         manifest().unregister_relationship(wb_rel.target(), calc_chain_rel.id());
+    }
+}
+
+void workbook::update_sheet_properties()
+{
+    if (has_extended_property(extended_property::titles_of_parts))
+    {
+        extended_property(extended_property::titles_of_parts, sheet_titles());
+    }
+
+    if (has_extended_property(extended_property::heading_pairs))
+    {
+        extended_property(extended_property::heading_pairs,
+            std::vector<variant>{variant("Worksheets"), variant(static_cast<int>(sheet_count()))});
     }
 }
 

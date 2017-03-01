@@ -275,8 +275,8 @@ void worksheet::title(const std::string &title)
         throw invalid_sheet_title(title);
     }
 
-    auto same_title =
-        std::find_if(workbook().begin(), workbook().end(), [&](worksheet ws) { return ws.title() == title; });
+    auto same_title = std::find_if(workbook().begin(), workbook().end(),
+        [&](worksheet ws) { return ws.title() == title; });
 
     if (same_title != workbook().end() && *same_title != *this)
     {
@@ -286,6 +286,8 @@ void worksheet::title(const std::string &title)
     workbook().d_->sheet_title_rel_id_map_[title] = workbook().d_->sheet_title_rel_id_map_[d_->title_];
     workbook().d_->sheet_title_rel_id_map_.erase(d_->title_);
     d_->title_ = title;
+
+    workbook().update_sheet_properties();
 }
 
 cell_reference worksheet::frozen_panes() const
