@@ -6,6 +6,10 @@ set(PROJECT_CONTACT "thomas.fussell@gmail.com")
 set(PROJECT_URL "https://github.com/tfussell/xlnt")
 set(PROJECT_DESCRIPTION "cross-platform user-friendly xlsx library for C++14")
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../third-party")
+find_package(zlib)
+find_package(CryptoPP)
+
 if(APPLE)
     option(FRAMEWORK "Set to ON to package dylib and headers into a .framework, OSX only" OFF)
 endif()
@@ -122,7 +126,10 @@ else()
     endif()
 endif()
 
-target_link_libraries(xlnt ${CRYPTOPP_LIBRARY} ${ZLIB_LIBRARY_RELEASE} libstudxml)
+target_link_libraries(xlnt
+    PRIVATE ${CRYPTOPP_LIBRARY}
+    PRIVATE ${ZLIB_LIBRARY_RELEASE}
+    PRIVATE libstudxml)
 
 target_include_directories(xlnt
     PUBLIC ${XLNT_INCLUDE_DIR}

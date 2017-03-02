@@ -1,8 +1,0 @@
-[submodule "third-party/libstudxml"]
-    path = third-party/libstudxml
-    url = http://scm.codesynthesis.com/libstudxml/libstudxml.git
-    branch = master
-    ignore = dirty
-[submodule "third-party/cxxtest"]
-	path = third-party/cxxtest
-	url = https://github.com/CxxTest/cxxtest

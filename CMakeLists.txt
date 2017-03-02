@@ -4,6 +4,8 @@ project(xlnt_all)
 # This indicates to CMakeLists in subdirectories that they are part of a larger project
 set(COMBINED_PROJECT TRUE)
 
+option(BUILD_DEPS "Set to ON to build zlib and cryptopp from source otherwise system libraries will be used for these" OFF)
+
 # Library type
 option(STATIC "Set to ON to build ${PROJECT_NAME} as a static library instead of a shared library" OFF)
 

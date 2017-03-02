@@ -1,0 +1,22 @@
+// file      : xml/forward -*- C++ -*-
+// copyright : Copyright (c) 2013-2017 Code Synthesis Tools CC
+// license   : MIT; see accompanying LICENSE file
+
+#ifndef XML_FORWARD
+#define XML_FORWARD
+
+#include <xml/details/pre.hxx>
+
+#include <xml/version>
+
+namespace xml
+{
+  class qname;
+  class parser;
+  class serializer;
+  class exception;
+}
+
+#include <xml/details/post.hxx>
+
+#endif // XML_FORWARD

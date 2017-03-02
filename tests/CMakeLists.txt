@@ -8,9 +8,8 @@ if(NOT COMBINED_PROJECT)
     add_subdirectory(${LIBRARY_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/source)
 endif()
 
-set(CXXTEST_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cxxtest)
-set(CXXTEST_PYTHON_TESTGEN_EXECUTABLE ${CXXTEST_ROOT_DIR}/bin/cxxtestgen)
-set(CXXTEST_INCLUDE_DIR ${CXXTEST_ROOT_DIR})
+find_package(CxxTest)
+find_package(zlib)
 
 file(GLOB CELL_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/../source/cell/tests/test_*.hpp)
 file(GLOB CHARTS_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/../source/charts/tests/test_*.hpp)
@@ -25,7 +24,7 @@ file(GLOB WORKSHEET_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/../source/worksheet/tests/
 
 set(XLNT_ZIP
     ${CMAKE_CURRENT_SOURCE_DIR}/../source/detail/zstream.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../source//detail/zstream.hpp)
+    ${CMAKE_CURRENT_SOURCE_DIR}/../source/detail/zstream.hpp)
 
 set(TESTS ${CELL_TESTS} ${CHARTS_TESTS} ${CHARTSHEET_TESTS} ${DRAWING_TESTS} 
     ${FORMULA_TESTS} ${PACKAGING_TESTS} ${STYLES_TESTS} ${UTILS_TESTS} 
@@ -45,11 +44,14 @@ if(COVERAGE)
 endif()
 
 add_executable(xlnt.test ${TEST_HELPERS} ${TESTS} ${RUNNER} ${XLNT_ZIP})
-target_link_libraries(xlnt.test xlnt)
+target_link_libraries(xlnt.test
+    PRIVATE xlnt
+    PRIVATE ${ZLIB_LIBRARIES})
 target_include_directories(xlnt.test
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../source
-    PRIVATE ${CXXTEST_INCLUDE_DIR})
+    PRIVATE ${CXXTEST_INCLUDE_DIR}
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/libstudxml)
 set(XLNT_TEST_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/data)
 target_compile_definitions(xlnt.test PRIVATE XLNT_TEST_DATA_DIR=${XLNT_TEST_DATA_DIR})
 
@@ -73,13 +75,13 @@ if(MSVC)
 else()
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
-    target_link_libraries(xlnt.test Threads::Threads)
+    target_link_libraries(xlnt.test PRIVATE Threads::Threads)
 endif()
 
 find_package(PythonInterp REQUIRED)
 
 add_custom_command(OUTPUT ${RUNNER}
-    COMMAND ${PYTHON_EXECUTABLE} ${CXXTEST_PYTHON_TESTGEN_EXECUTABLE} --runner=ErrorPrinter -o ${RUNNER} ${TESTS}
+    COMMAND ${CXXTEST_PYTHON_TESTGEN_EXECUTABLE} --runner=ErrorPrinter -o ${RUNNER} ${TESTS}
     DEPENDS ${TESTS}
     COMMENT "Generating test runner ${RUNNER}")
 

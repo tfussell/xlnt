@@ -1,0 +1,87 @@
+# file      : xml/buildfile
+# copyright : Copyright (c) 2013-2017 Code Synthesis Tools CC
+# license   : MIT; see accompanying LICENSE file
+
+lib{studxml}:                                    \
+               {hxx            }{ content      } \
+               {hxx            }{ exception    } \
+               {hxx            }{ forward      } \
+               {hxx ixx txx cxx}{ parser       } \
+               {hxx         cxx}{ qname        } \
+               {hxx ixx     cxx}{ serializer   } \
+               {hxx     txx cxx}{ value-traits } \
+               {hxx            }{ version      } \
+       details/{hxx            }{ config.hxx   } \
+       details/{hxx            }{ export.hxx   } \
+       details/{hxx            }{ post.hxx     } \
+       details/{hxx            }{ pre.hxx      } \
+details/build2/{h              }{ config       } \
+details/build2/{h              }{ config-vc    }
+
+# Expat. Note that we treat a whole bunch of its sources as files since they
+# are private and #include's (including .c file).
+#
+lib{studxml}:                     \
+details/expat/h{ expat          } \
+details/expat/h{ expat_external } \
+details/expat/c{ xmlparse       } \
+details/expat/c{ xmlrole        } \
+details/expat/c{ xmltok         } \
+details/expat/file{ ascii.h asciitab.h config.h iasciitab.h internal.h \
+latin1tab.h nametab.h utf8tab.h xmlrole.h xmltok.h xmltok_impl.c \
+xmltok_impl.h xmltok_ns.c} \
+details/expat/doc{LICENSE README}
+
+details/expat/doc{README}@./: install = false
+details/expat/doc{LICENSE}@./: install = doc/EXPAT-LICENSE
+
+# Genx.
+#
+lib{studxml}:                \
+details/genx/c{ char-props } \
+details/genx/c{ genx       } \
+details/genx/h{ genx       } \
+details/genx/doc{LICENSE README}
+
+details/genx/doc{README}@./: install = false
+details/genx/doc{LICENSE}@./: install = doc/GENX-LICENSE
+
+# For pre-releases use the complete version to make sure they cannot be used
+# in place of another pre-release or the final version.
+#
+if $abi_prerelease
+  lib{studxml}: bin.lib.version = @-$version
+else
+  lib{studxml}: bin.lib.version = @-$abi_major.$abi_minor
+
+# We are a mixed C/C++ library, though C is implementatio-only, kind of: we
+# need headers but not symbols.
+#
+cc.poptions =+ "-I$src_root" -DLIBSTUDXML_BUILD2
+obja{*}: cc.poptions += -DLIBSTUDXML_STATIC_BUILD
+objs{*}: cc.poptions += -DLIBSTUDXML_SHARED_BUILD
+
+lib{studxml}: cc.export.poptions = "-I$src_root" -DLIBSTUDXML_BUILD2
+liba{studxml}: cc.export.poptions += -DLIBSTUDXML_STATIC
+libs{studxml}: cc.export.poptions += -DLIBSTUDXML_SHARED
+
+# Install into the xml/ subdirectory of, say, /usr/include/. Bold, I know.
+#
+install.include = $install.include/xml/
+install.include.subdirs = true # Recreate subdirectories.
+
+# We want these to be picked up even when LIBSTUDXML_BUILD2 is not defined.
+#
+details/build2/:
+{
+  if ($cxx.id == "msvc")
+  {
+    h{config}@./:    install = false
+    h{config-vc}@./: install = $install.include/details/
+  }
+  else
+  {
+    h{config}@./:    install = $install.include/details/
+    h{config-vc}@./: install = false
+  }
+}

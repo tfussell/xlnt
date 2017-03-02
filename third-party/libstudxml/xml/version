@@ -1,0 +1,27 @@
+// file      : xml/version -*- C++ -*-
+// copyright : Copyright (c) 2013-2017 Code Synthesis Tools CC
+// license   : MIT; see accompanying LICENSE file
+
+#ifndef LIBSTUDXML_VERSION // Note: using the version macro itself.
+
+// Version format is AABBCCDD where
+//
+// AA - major version number
+// BB - minor version number
+// CC - bugfix version number
+// DD - alpha / beta (DD + 50) version number
+//
+// When DD is not 00, 1 is subtracted from AABBCC. For example:
+//
+// Version     AABBCCDD
+// 2.0.0       02000000
+// 2.1.0       02010000
+// 2.1.1       02010100
+// 2.2.0-a1    02019901
+// 3.0.0-b2    02999952
+//
+
+#define LIBSTUDXML_VERSION 1009905
+#define LIBSTUDXML_VERSION_STR "1.1.0-a5"
+
+#endif // LIBSTUDXML_VERSION

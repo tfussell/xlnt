@@ -1,0 +1,19 @@
+// file      : xml/exception -*- C++ -*-
+// copyright : Copyright (c) 2013-2017 Code Synthesis Tools CC
+// license   : MIT; see accompanying LICENSE file
+
+#ifndef XML_EXCEPTION
+#define XML_EXCEPTION
+
+#include <xml/details/pre.hxx>
+
+#include <exception>
+
+namespace xml
+{
+  class exception: public std::exception {};
+}
+
+#include <xml/details/post.hxx>
+
+#endif // XML_EXCEPTION
