@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{51AEF41C-865B-40D5-89C8-151CE797B6C4}</UniqueIdentifier>
+      <Extensions>c;cxx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{06415D1D-41F6-4BA3-A026-126239CCD920}</UniqueIdentifier>
+      <Extensions>h;hxx;ixx;txx</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+__header_filter_entries__(headers)
+__header_filter_entries__(expat_headers)
+__header_filter_entries__(genx_headers)
+__header_filter_entry__(details\config-vc.h)
+  </ItemGroup>
+  <ItemGroup>
+__source_filter_entries__(sources)
+__source_filter_entries__(expat_sources)
+__source_filter_entries__(genx_sources)
+  </ItemGroup>
+</Project>
