@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.2)
 project(xlnt.test)
 
 set(CMAKE_CXX_STANDARD 14)
@@ -8,8 +8,8 @@ if(NOT COMBINED_PROJECT)
     add_subdirectory(${LIBRARY_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/source)
 endif()
 
-find_package(CxxTest)
-find_package(zlib)
+find_package(CxxTest REQUIRED)
+find_package(ZLIB REQUIRED)
 
 file(GLOB CELL_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/../source/cell/tests/test_*.hpp)
 file(GLOB CHARTS_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/../source/charts/tests/test_*.hpp)

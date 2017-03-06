@@ -17,7 +17,7 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-6 zlib1g libcrypto++9 libcrypto++9-dbg libcrypto++-dev
+            - g++-6 zlib1g libcrypto++9 libcrypto++9-dbg libcrypto++-dev cxxtest
       env:
         - COMPILER=g++-6
         - COVERAGE=OFF
@@ -30,4 +30,4 @@ script:
   - cd build
   - cmake -D STATIC=$STATIC -D BENCHMARKS=$BENCHMARKS -D SAMPLES=$SAMPLES -D COVERAGE=$COVERAGE -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=Debug ..
   - cmake --build .
-  - cd bin && ./xlnt.test
+  - cd tests && ./xlnt.test

@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.2)
 project(libstudxml)
 
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 set(LIBSTUDXML_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(LIBSTUDXML_INCLUDE_DIR ${LIBSTUDXML_ROOT_DIR})
 
@@ -48,9 +51,8 @@ add_library(libstudxml STATIC ${LIBSTUDXML} ${GENX} ${EXPAT})
 target_compile_definitions(libstudxml PUBLIC LIBSTUDXML_STATIC_LIB=1)
 target_include_directories(libstudxml PUBLIC ${LIBSTUDXML_ROOT_DIR})
 
-find_package(expat)
-
 if(NOT BUILD_DEPS)
+    find_package(EXPAT REQUIRED)
     target_compile_definitions(libstudxml PRIVATE LIBSTUDXML_EXTERNAL_EXPAT=1)
     target_link_libraries(libstudxml PRIVATE expat)
 endif()
