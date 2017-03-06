@@ -1,5 +1,8 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.2)
 project(xlnt VERSION 0.9.3)
+
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(PROJECT_VENDOR "Thomas Fussell")
 set(PROJECT_CONTACT "thomas.fussell@gmail.com")
@@ -7,15 +10,13 @@ set(PROJECT_URL "https://github.com/tfussell/xlnt")
 set(PROJECT_DESCRIPTION "cross-platform user-friendly xlsx library for C++14")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../third-party")
-find_package(zlib)
-find_package(CryptoPP)
+
+find_package(ZLIB REQUIRED)
+find_package(CryptoPP REQUIRED)
 
 if(APPLE)
     option(FRAMEWORK "Set to ON to package dylib and headers into a .framework, OSX only" OFF)
 endif()
-
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(XLNT_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 

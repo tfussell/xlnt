@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.2)
 project(xlnt_all)
 
 # This indicates to CMakeLists in subdirectories that they are part of a larger project
