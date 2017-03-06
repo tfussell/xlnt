@@ -17,7 +17,7 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-6 zlib1g libcrypto++9 libcrypto++9-dbg libcrypto++-dev
+            - g++-6 zlib1g libcrypto++9 libcrypto++9-dbg libcrypto++-dev cxxtest
       env:
         - COMPILER=g++-6
         - COVERAGE=OFF
