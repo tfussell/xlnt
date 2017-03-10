@@ -11,9 +11,6 @@ set(PROJECT_DESCRIPTION "cross-platform user-friendly xlsx library for C++14")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../third-party")
 
-find_package(ZLIB REQUIRED)
-find_package(CryptoPP REQUIRED)
-
 if(APPLE)
     option(FRAMEWORK "Set to ON to package dylib and headers into a .framework, OSX only" OFF)
 endif()
@@ -127,16 +124,25 @@ else()
     endif()
 endif()
 
-target_link_libraries(xlnt
-    PRIVATE ${CRYPTOPP_LIBRARY}
-    PRIVATE ${ZLIB_LIBRARY_RELEASE}
-    PRIVATE libstudxml)
+add_dependencies(xlnt xlnt.third-party)
 
-target_include_directories(xlnt
-    PUBLIC ${XLNT_INCLUDE_DIR}
-    PRIVATE ${XLNT_SOURCE_DIR}
-    PRIVATE ${ZLIB_INCLUDE_DIR}
-    PRIVATE ${CRYPTOPP_INCLUDE_DIR})
+target_link_libraries(xlnt PRIVATE libstudxml)
+target_include_directories(xlnt PUBLIC ${XLNT_INCLUDE_DIR})
+target_include_directories(xlnt PRIVATE ${XLNT_SOURCE_DIR})
+
+if(LOCAL_ZLIB OR LOCAL_DEPENDENCIES)
+    target_link_libraries(xlnt PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/third-party/zlib/zlib-download-prefix/src/zlib-download-build/libz.a)
+else()
+    target_link_libraries(xlnt PRIVATE ${ZLIB_LIBRARY_RELEASE})
+    target_include_directories(xlnt PRIVATE ${ZLIB_INCLUDE_DIR})
+endif()
+
+if(LOCAL_CRYPTOPP OR LOCAL_DEPENDENCIES)
+    target_link_libraries(xlnt PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/third-party/cryptopp/cryptopp-download-prefix/src/cryptopp-download-build/libcryptopp.a)
+else()
+    target_link_libraries(xlnt PRIVATE ${CRYPTOPP_LIBRARY_RELEASE})
+    target_include_directories(xlnt PRIVATE ${CRYPTOPP_INCLUDE_DIR})
+endif()
 
 if(MSVC)
     set_target_properties(xlnt PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\" /wd\"4068\" /MP")

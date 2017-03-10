@@ -8,9 +8,6 @@ if(NOT COMBINED_PROJECT)
     add_subdirectory(${LIBRARY_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/source)
 endif()
 
-find_package(CxxTest REQUIRED)
-find_package(ZLIB REQUIRED)
-
 file(GLOB CELL_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/../source/cell/tests/test_*.hpp)
 file(GLOB CHARTS_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/../source/charts/tests/test_*.hpp)
 file(GLOB CHARTSHEET_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/../source/chartsheet/tests/test_*.hpp)
@@ -21,10 +18,6 @@ file(GLOB STYLES_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/../source/styles/tests/test_*
 file(GLOB UTILS_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/../source/utils/tests/test_*.hpp)
 file(GLOB WORKBOOK_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/../source/workbook/tests/test_*.hpp)
 file(GLOB WORKSHEET_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/../source/worksheet/tests/test_*.hpp)
-
-set(XLNT_ZIP
-    ${CMAKE_CURRENT_SOURCE_DIR}/../source/detail/zstream.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../source/detail/zstream.hpp)
 
 set(TESTS ${CELL_TESTS} ${CHARTS_TESTS} ${CHARTSHEET_TESTS} ${DRAWING_TESTS} 
     ${FORMULA_TESTS} ${PACKAGING_TESTS} ${STYLES_TESTS} ${UTILS_TESTS} 
@@ -43,10 +36,9 @@ if(COVERAGE)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lgcov --coverage")
 endif()
 
-add_executable(xlnt.test ${TEST_HELPERS} ${TESTS} ${RUNNER} ${XLNT_ZIP})
+add_executable(xlnt.test ${TEST_HELPERS} ${TESTS} ${RUNNER})
 target_link_libraries(xlnt.test
-    PRIVATE xlnt
-    PRIVATE ${ZLIB_LIBRARIES})
+    PRIVATE xlnt)
 target_include_directories(xlnt.test
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../source
@@ -79,6 +71,7 @@ else()
 endif()
 
 find_package(PythonInterp REQUIRED)
+find_package(CxxTest REQUIRED)
 
 add_custom_command(OUTPUT ${RUNNER}
     COMMAND ${CXXTEST_PYTHON_TESTGEN_EXECUTABLE} --runner=ErrorPrinter -o ${RUNNER} ${TESTS}
