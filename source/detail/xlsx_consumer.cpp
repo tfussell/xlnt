@@ -2480,11 +2480,14 @@ void xlsx_consumer::read_comments(worksheet ws)
         ws.cell(cell_ref).comment(comment(read_rich_text(qn("spreadsheetml", "text")), authors.at(author_id)));
 
         expect_end_element(qn("spreadsheetml", "text"));
-        // specifc name space mc alternateContent element
-        expect_start_element(qn("mc", "AlternateContent"),xml::content::complex);
-        skip_remaining_content(qn("mc", "AlternateContent"));
-        expect_end_element(qn("mc", "AlternateContent"));
-        
+
+	if (in_element(xml::qname(qn("spreadsheetml", "comment"))))
+	{
+	    expect_start_element(qn("mc", "AlternateContent"), xml::content::complex);
+	    skip_remaining_content(qn("mc", "AlternateContent"));
+	    expect_end_element(qn("mc", "AlternateContent"));
+	}
+
         expect_end_element(qn("spreadsheetml", "comment"));
     }
 
