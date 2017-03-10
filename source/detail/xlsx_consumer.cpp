@@ -2453,6 +2453,8 @@ void xlsx_consumer::read_comments(worksheet ws)
     std::vector<std::string> authors;
 
     expect_start_element(qn("spreadsheetml", "comments"), xml::content::complex);
+    // name space can be ignored
+    skip_attribute(qn("mc","Ignorable"));
     expect_start_element(qn("spreadsheetml", "authors"), xml::content::complex);
 
     while (in_element(qn("spreadsheetml", "authors")))
@@ -2478,6 +2480,11 @@ void xlsx_consumer::read_comments(worksheet ws)
         ws.cell(cell_ref).comment(comment(read_rich_text(qn("spreadsheetml", "text")), authors.at(author_id)));
 
         expect_end_element(qn("spreadsheetml", "text"));
+        // specifc name space mc alternateContent element
+        expect_start_element(qn("mc", "AlternateContent"),xml::content::complex);
+        skip_remaining_content(qn("mc", "AlternateContent"));
+        expect_end_element(qn("mc", "AlternateContent"));
+        
         expect_end_element(qn("spreadsheetml", "comment"));
     }
 

@@ -144,17 +144,17 @@ std::string to_string(border_style style)
 {
     switch (style)
     {
-    case border_style::dashdot: return "dashdot";
-    case border_style::dashdotdot: return "dashdotdot";
+    case border_style::dashdot: return "dashDot";
+    case border_style::dashdotdot: return "dashDotDot";
     case border_style::dashed: return "dashed";
     case border_style::dotted: return "dotted";
     case border_style::double_: return "double";
     case border_style::hair: return "hair";
     case border_style::medium: return "medium";
-    case border_style::mediumdashdot: return "mediumdashdot";
-    case border_style::mediumdashdotdot: return "mediumdashdotdot";
-    case border_style::mediumdashed: return "mediumdashed";
-    case border_style::slantdashdot: return "slantdashdot";
+    case border_style::mediumdashdot: return "mediumDashDot";
+    case border_style::mediumdashdotdot: return "mediumDashDotDot";
+    case border_style::mediumdashed: return "mediumDashed";
+    case border_style::slantdashdot: return "slantDashDot";
     case border_style::thick: return "thick";
     case border_style::thin: return "thin";
     case border_style::none: return "none";
