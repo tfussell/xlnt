@@ -16,7 +16,7 @@ install:
 - mkdir downloads
 - type nul > downloads\AlwaysAllowDownloads
 - powershell -exec bypass scripts\bootstrap.ps1
-- vcpkg install cryptopp zlib
+- vcpkg install cryptopp zlib expat
 - vcpkg integrate install
 - cd ..
 
