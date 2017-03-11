@@ -47,7 +47,8 @@ target_link_libraries(xlnt.test PRIVATE ${ZLIB_LIBRARY_RELEASE})
 target_include_directories(xlnt.test
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../source
-    PRIVATE ${CXXTEST_INCLUDE_DIR})
+    PRIVATE ${CXXTEST_INCLUDE_DIR}
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/libstudxml)
 set(XLNT_TEST_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/data)
 target_compile_definitions(xlnt.test PRIVATE XLNT_TEST_DATA_DIR=${XLNT_TEST_DATA_DIR})
 
