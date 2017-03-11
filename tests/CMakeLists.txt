@@ -40,6 +40,10 @@ if(COVERAGE)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lgcov --coverage")
 endif()
 
+set(CXXTEST_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cxxtest)
+set(CXXTEST_INCLUDE_DIR ${CXXTEST_ROOT_DIR})
+set(CXXTEST_PYTHON_TESTGEN_EXECUTABLE ${CXXTEST_ROOT_DIR}/bin/cxxtestgen)
+
 add_executable(xlnt.test ${TEST_HELPERS} ${TESTS} ${RUNNER})
 target_link_libraries(xlnt.test
     PRIVATE xlnt
@@ -76,7 +80,6 @@ else()
 endif()
 
 find_package(PythonInterp REQUIRED)
-set(CXXTEST_PYTHON_TESTGEN_EXECUTABLE ${CMAKE_BINARY_DIR}/source/third-party/cxxtest/cxxtest-download-prefix/src/cxxtest-download/bin/cxxtestgen)
 
 add_custom_command(OUTPUT ${RUNNER}
     COMMAND ${CXXTEST_PYTHON_TESTGEN_EXECUTABLE} --runner=ErrorPrinter -o ${RUNNER} ${TESTS}

@@ -1,0 +1,5 @@
+.consign
+Makefile 
+*_runner*
+tests.cpp error_printer.cpp stdio_printer.cpp file_printer.cpp aborter.cpp only.cpp
+error_printer stdio_printer file_printer aborter only

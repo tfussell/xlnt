@@ -23,7 +23,8 @@ set(XLNT_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 set(XLNT_INCLUDE_DIR ${XLNT_ROOT_DIR}/include)
 set(XLNT_SOURCE_DIR ${XLNT_ROOT_DIR}/source)
 set(THIRD_PARTY_DIR ${XLNT_ROOT_DIR}/third-party)
-add_subdirectory(${THIRD_PARTY_DIR} ${CMAKE_CURRENT_BINARY_DIR}/third-party)
+
+add_subdirectory(${THIRD_PARTY_DIR}/libstudxml ${CMAKE_CURRENT_BINARY_DIR}/third-party/libstudxml)
 
 if(COVERAGE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
@@ -127,12 +128,10 @@ else()
     endif()
 endif()
 
-add_dependencies(xlnt xlnt.third-party)
-
 target_link_libraries(xlnt PRIVATE libstudxml)
 target_include_directories(xlnt PUBLIC ${XLNT_INCLUDE_DIR})
 target_include_directories(xlnt PRIVATE ${XLNT_SOURCE_DIR})
-target_link_libraries(xlnt PRIVATE ${ZLIB_LIBRARIRES})
+target_link_libraries(xlnt PRIVATE ${ZLIB_LIBRARIES})
 target_include_directories(xlnt PRIVATE ${ZLIB_INCLUDE_DIR})
 target_link_libraries(xlnt PRIVATE ${CRYPTOPP_LIBRARIES})
 target_include_directories(xlnt PRIVATE ${CRYPTOPP_INCLUDE_DIR})
