@@ -43,7 +43,7 @@ endif()
 add_executable(xlnt.test ${TEST_HELPERS} ${TESTS} ${RUNNER})
 target_link_libraries(xlnt.test
     PRIVATE xlnt
-    PRIVATE ${ZLIB_LIBRARY_RELEASE})
+    PRIVATE ${ZLIB_LIBRARIES})
 target_include_directories(xlnt.test
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../source
