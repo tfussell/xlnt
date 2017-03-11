@@ -8,6 +8,8 @@ if(NOT COMBINED_PROJECT)
     add_subdirectory(${LIBRARY_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/source)
 endif()
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../third-party")
+
 # Tests uses the private interface of xlnt (source/detail) so it needs to explicitly link zlib and cryptopp
 # as they are not part of xlnt's default link interface
 find_package(ZLIB REQUIRED)
