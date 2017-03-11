@@ -25,7 +25,7 @@ set(GENX
     ${LIBSTUDXML_ROOT_DIR}/xml/details/genx/genx.c
     ${LIBSTUDXML_ROOT_DIR}/xml/details/genx/genx.h)
 
-if(BUILD_DEPS)
+if(LOCAL_EXPAT OR LOCAL_DEPENDENCIES)
     set(EXPAT
         ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/xmlparse.c
         ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/xmlrole.c
@@ -51,11 +51,9 @@ add_library(libstudxml STATIC ${LIBSTUDXML} ${GENX} ${EXPAT})
 target_compile_definitions(libstudxml PUBLIC LIBSTUDXML_STATIC_LIB=1)
 target_include_directories(libstudxml PUBLIC ${LIBSTUDXML_ROOT_DIR})
 
-if(NOT BUILD_DEPS)
-    find_package(EXPAT REQUIRED)
-    target_compile_definitions(libstudxml PRIVATE LIBSTUDXML_EXTERNAL_EXPAT=1)
-    target_link_libraries(libstudxml PRIVATE expat)
-endif()
+find_package(EXPAT REQUIRED)
+target_compile_definitions(libstudxml PRIVATE LIBSTUDXML_EXTERNAL_EXPAT=1)
+target_link_libraries(libstudxml PRIVATE expat)
 
 if(NOT STATIC)
     set_target_properties(libstudxml PROPERTIES POSITION_INDEPENDENT_CODE 1)

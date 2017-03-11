@@ -127,16 +127,15 @@ else()
     endif()
 endif()
 
-target_link_libraries(xlnt
-    PRIVATE ${CRYPTOPP_LIBRARY}
-    PRIVATE ${ZLIB_LIBRARY_RELEASE}
-    PRIVATE libstudxml)
+add_dependencies(xlnt xlnt.third-party)
 
-target_include_directories(xlnt
-    PUBLIC ${XLNT_INCLUDE_DIR}
-    PRIVATE ${XLNT_SOURCE_DIR}
-    PRIVATE ${ZLIB_INCLUDE_DIR}
-    PRIVATE ${CRYPTOPP_INCLUDE_DIR})
+target_link_libraries(xlnt PRIVATE libstudxml)
+target_include_directories(xlnt PUBLIC ${XLNT_INCLUDE_DIR})
+target_include_directories(xlnt PRIVATE ${XLNT_SOURCE_DIR})
+target_link_libraries(xlnt PRIVATE ${ZLIB_LIBRARY_RELEASE})
+target_include_directories(xlnt PRIVATE ${ZLIB_INCLUDE_DIR})
+target_link_libraries(xlnt PRIVATE ${CRYPTOPP_LIBRARY_RELEASE})
+target_include_directories(xlnt PRIVATE ${CRYPTOPP_INCLUDE_DIR})
 
 if(MSVC)
     set_target_properties(xlnt PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\" /wd\"4068\" /MP")

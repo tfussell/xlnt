@@ -4,10 +4,8 @@ project(xlnt_all)
 # This indicates to CMakeLists in subdirectories that they are part of a larger project
 set(COMBINED_PROJECT TRUE)
 
-option(BUILD_DEPS "Set to ON to build zlib and cryptopp from source otherwise system libraries will be used for these" OFF)
-
 # Library type
-option(STATIC "Set to ON to build ${PROJECT_NAME} as a static library instead of a shared library" OFF)
+option(STATIC "Set to ON to build xlnt as a static library instead of a shared library" OFF)
 
 # Optional components
 option(SAMPLES "Set to ON to build executable code samples (in ./samples)" OFF)
@@ -31,7 +29,7 @@ find_package(PythonInterp)
 
 if(PYTHONINTERP_FOUND)
     add_subdirectory(tests)
-else()
+elseif(NOT PYTHONINTERP_FOUND)
     message("Python couldn't be found in the current PATH but is required for building tests. Tests will be skipped for now.")
 endif()
 
