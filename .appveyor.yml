@@ -30,5 +30,6 @@ build:
   verbosity: minimal
 
 test_script:
-- cd build/tests
+- cd build\tests\Debug
+- set PATH=C:\projects\xlnt\vcpkg\installed\x86-windows\debug\bin;%PATH%
 - xlnt.test.exe

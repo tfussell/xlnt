@@ -93,5 +93,12 @@ add_custom_command(OUTPUT ${RUNNER}
     DEPENDS ${TESTS}
     COMMENT "Generating test runner ${RUNNER}")
 
+if(NOT STATIC)
+    add_custom_command(TARGET xlnt.test POST_BUILD 
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:xlnt>
+        $<TARGET_FILE_DIR:xlnt.test>)
+endif()
+
 add_custom_target(generate-test-runner DEPENDS ${RUNNER})
 add_dependencies(xlnt.test generate-test-runner)
