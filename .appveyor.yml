@@ -22,7 +22,7 @@ install:
 - cd ..
 
 before_build:
-- cmake -H. -Bbuild -G"Visual Studio 14 2015" -DSTATIC=%STATIC% -DSAMPLES=ON -DBENCHMARKS=ON -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake -DCRYPTOPP_LIBRARY=vcpkg/installed/x86-windows/lib/cryptopp-static.lib
+- cmake -H. -Bbuild -G"Visual Studio 14 2015" -DSTATIC=%STATIC% -DSAMPLES=ON -DBENCHMARKS=ON -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
 
 build:
   project: build/tests/xlnt.test.sln
