@@ -13,5 +13,3 @@ ExternalProject_Add(cxxtest-download
 
 set(CXXTEST_ROOT_DIR ${CMAKE_CURRENT_BINARY_DIR}/cxxtest-download-prefix/src/cxxtest-download)
 set(CXXTEST_INCLUDE_DIR ${CXXTEST_ROOT_DIR})
-set(CXXTEST_PYTHON_TESTGEN_EXECUTABLE ${CXXTEST_ROOT_DIR}/bin/cxxtestgen CACHE INTERNAL "" FORCE)
-
