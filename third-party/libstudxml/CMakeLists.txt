@@ -32,9 +32,10 @@ target_compile_definitions(libstudxml
     PUBLIC LIBSTUDXML_STATIC_LIB=1
     PUBLIC LIBSTUDXML_EXTERNAL_EXPAT=1)
 target_include_directories(libstudxml
-    PUBLIC ${LIBSTUDXML_ROOT_DIR})
+    PUBLIC ${LIBSTUDXML_ROOT_DIR}
+    PUBLIC ${EXPAT_INCLUDE_DIRS})
 target_link_libraries(libstudxml
-    PRIVATE expat)
+    PRIVATE ${EXPAT_LIBRARIES})
 
 if(NOT STATIC)
     set_target_properties(libstudxml PROPERTIES POSITION_INDEPENDENT_CODE 1)
