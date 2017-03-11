@@ -13,15 +13,16 @@ init: []
 install:
 - git clone https://github.com/Microsoft/vcpkg
 - cd vcpkg
+- git checkout 47b53b9015deaa2f569d788447254c8bc3de96a9
 - mkdir downloads
 - type nul > downloads\AlwaysAllowDownloads
 - powershell -exec bypass scripts\bootstrap.ps1
 - vcpkg install cryptopp zlib expat
 - vcpkg integrate install
+- dir installed/x86-windows/lib
 - cd ..
 
 before_build:
-- git submodule update --init
 - cmake -H. -Bbuild -G"Visual Studio 14 2015" -DSTATIC=%STATIC% -DSAMPLES=ON -DBENCHMARKS=ON -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
 
 build:
