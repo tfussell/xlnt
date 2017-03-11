@@ -71,7 +71,7 @@ else()
 endif()
 
 find_package(PythonInterp REQUIRED)
-set(CXXTEST_PYTHON_TESTGEN_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/cxxtest-download-prefix/src/cxxtest-download/bin/cxxtestgen)
+set(CXXTEST_PYTHON_TESTGEN_EXECUTABLE ${CMAKE_BINARY_DIR}/source/cxxtest-download-prefix/src/cxxtest-download/bin/cxxtestgen)
 
 add_custom_command(OUTPUT ${RUNNER}
     COMMAND ${CXXTEST_PYTHON_TESTGEN_EXECUTABLE} --runner=ErrorPrinter -o ${RUNNER} ${TESTS}
