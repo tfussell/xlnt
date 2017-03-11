@@ -30,5 +30,5 @@ build:
   verbosity: minimal
 
 test_script:
-- cd tests
+- cd build/tests
 - xlnt.test.exe
