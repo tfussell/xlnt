@@ -71,7 +71,6 @@ else()
 endif()
 
 find_package(PythonInterp REQUIRED)
-find_package(CxxTest REQUIRED)
 
 add_custom_command(OUTPUT ${RUNNER}
     COMMAND ${CXXTEST_PYTHON_TESTGEN_EXECUTABLE} --runner=ErrorPrinter -o ${RUNNER} ${TESTS}

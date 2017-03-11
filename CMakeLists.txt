@@ -26,14 +26,11 @@ if(BENCHMARKS)
 endif()
 
 find_package(PythonInterp)
-find_package(CxxTest)
 
-if(PYTHONINTERP_FOUND AND CXXTEST_FOUND)
+if(PYTHONINTERP_FOUND)
     add_subdirectory(tests)
 elseif(NOT PYTHONINTERP_FOUND)
     message("Python couldn't be found in the current PATH but is required for building tests. Tests will be skipped for now.")
-else()
-    message("CxxTest couldn't be found in the current PATH but is required for building tests. Tests will be skipped for now.")
 endif()
 
 add_subdirectory(source)
