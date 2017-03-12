@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.2)
-project(xlnt VERSION 0.9.3)
+project(xlnt VERSION 0.9.4)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
