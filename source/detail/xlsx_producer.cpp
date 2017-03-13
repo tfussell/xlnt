@@ -711,13 +711,25 @@ void xlsx_producer::write_calculation_chain(const relationship & /*rel*/)
 {
     write_start_element(constants::ns("spreadsheetml"), "calcChain");
     write_namespace(constants::ns("spreadsheetml"), "");
-    /*
-    write_start_element(constants::ns("spreadsheetml"), "c");
-    write_attribute("r", "B2");
-    write_attribute("i", "1");
-    write_attribute("l", "1");
-    write_end_element(constants::ns("spreadsheetml"), "c");
-    */
+
+    std::size_t ws_index = 1;
+
+    for (auto ws : source_)
+    {
+        for (auto row : ws)
+        {
+            for (auto cell : row)
+            {
+		if (!cell.has_formula()) continue;
+
+                write_start_element(constants::ns("spreadsheetml"), "c");
+                write_attribute("r", cell.reference().to_string());
+                write_attribute("i", ws_index);
+                write_end_element(constants::ns("spreadsheetml"), "c");
+            }
+        }
+    }
+
     write_end_element(constants::ns("spreadsheetml"), "calcChain");
 }
 
