@@ -728,6 +728,8 @@ void xlsx_producer::write_calculation_chain(const relationship & /*rel*/)
                 write_end_element(constants::ns("spreadsheetml"), "c");
             }
         }
+
+        ws_index++;
     }
 
     write_end_element(constants::ns("spreadsheetml"), "calcChain");
