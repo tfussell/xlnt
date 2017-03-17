@@ -89,7 +89,7 @@ endif()
 find_package(PythonInterp REQUIRED)
 
 add_custom_command(OUTPUT ${RUNNER}
-    COMMAND ${CXXTEST_PYTHON_TESTGEN_EXECUTABLE} --runner=ErrorPrinter -o ${RUNNER} ${TESTS}
+    COMMAND ${PYTHON_EXECUTABLE} ${CXXTEST_PYTHON_TESTGEN_EXECUTABLE} --runner=ErrorPrinter -o ${RUNNER} ${TESTS}
     DEPENDS ${TESTS}
     COMMENT "Generating test runner ${RUNNER}")
 
