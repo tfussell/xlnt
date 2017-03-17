@@ -39,4 +39,6 @@ target_link_libraries(libstudxml
 
 if(NOT STATIC)
     set_target_properties(libstudxml PROPERTIES POSITION_INDEPENDENT_CODE 1)
+else()
+    target_compile_definitions(libstudxml PUBLIC XML_STATIC=1)
 endif()
