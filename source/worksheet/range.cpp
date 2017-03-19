@@ -20,7 +20,10 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #include <xlnt/cell/cell.hpp>
+#include <xlnt/styles/style.hpp>
+#include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/const_range_iterator.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/range_iterator.hpp>
@@ -94,6 +97,64 @@ bool range::contains(const cell_reference &ref)
         && ref_.bottom_right().column_index() >= ref.column_index()
         && ref_.top_left().row() <= ref.row()
         && ref_.bottom_right().row() >= ref.row();
+}
+
+range range::alignment(const xlnt::alignment &new_alignment)
+{
+    apply([&new_alignment](class cell c) { c.alignment(new_alignment); });
+    return *this;
+}
+
+range range::border(const xlnt::border &new_border)
+{
+    apply([&new_border](class cell c) { c.border(new_border); });
+    return *this;
+}
+
+range range::fill(const xlnt::fill &new_fill)
+{
+    apply([&new_fill](class cell c) { c.fill(new_fill); });
+    return *this;
+}
+
+range range::font(const xlnt::font &new_font)
+{
+    apply([&new_font](class cell c) { c.font(new_font); });
+    return *this;
+}
+
+range range::number_format(const xlnt::number_format &new_number_format)
+{
+    apply([&new_number_format](class cell c) { c.number_format(new_number_format); });
+    return *this;
+}
+
+range range::protection(const xlnt::protection &new_protection)
+{
+    apply([&new_protection](class cell c) { c.protection(new_protection); });
+    return *this;
+}
+
+range range::style(const class style &new_style)
+{
+    apply([&new_style](class cell c) { c.style(new_style); });
+    return *this;
+}
+
+range range::style(const std::string &style_name)
+{
+    return style(ws_.workbook().style(style_name));
+}
+
+void range::apply(std::function<void(class cell)> f)
+{
+    for (auto row : *this)
+    {
+        for (auto cell : row)
+        {
+            f(cell);
+        }
+    }
 }
 
 cell range::cell(const cell_reference &ref)

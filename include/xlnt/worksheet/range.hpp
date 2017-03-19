@@ -136,6 +136,48 @@ public:
     ///
     /// </summary>
     bool contains(const cell_reference &ref);
+    
+    /// <summary>
+    ///
+    /// </summary>
+    range alignment(const xlnt::alignment &new_alignment);
+
+    /// <summary>
+    ///
+    /// </summary>
+    range border(const xlnt::border &new_border);
+
+    /// <summary>
+    ///
+    /// </summary>
+    range fill(const xlnt::fill &new_fill);
+
+    /// <summary>
+    ///
+    /// </summary>
+    range font(const xlnt::font &new_font);
+
+    /// <summary>
+    ///
+    /// </summary>
+    range number_format(const xlnt::number_format &new_number_format);
+
+    /// <summary>
+    ///
+    /// </summary>
+    range protection(const xlnt::protection &new_protection);
+
+    /// <summary>
+    /// Sets the named style applied to all cells in this range to a style named style_name.
+    /// </summary>
+    range style(const class style &new_style);
+
+    /// <summary>
+    /// Sets the named style applied to all cells in this range to a style named style_name.
+    /// If this style has not been previously created in the workbook, a
+    /// key_not_found exception will be thrown.
+    /// </summary>
+    range style(const std::string &style_name);
 
     /// <summary>
     ///
@@ -196,6 +238,11 @@ public:
     ///
     /// </summary>
     const_reverse_iterator crend() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    void apply(std::function<void(class cell)> f);
 
 private:
     /// <summary>
