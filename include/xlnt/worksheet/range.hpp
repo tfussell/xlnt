@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include <functional>
 #include <iterator>
 #include <memory>
 #include <string>
