@@ -80,10 +80,6 @@ source_group(runner FILES ${RUNNER})
 
 if(MSVC)
     set_target_properties(xlnt.test PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\" /wd\"4068\"")
-else()
-    set(THREADS_PREFER_PTHREAD_FLAG ON)
-    find_package(Threads REQUIRED)
-    target_link_libraries(xlnt.test PRIVATE Threads::Threads)
 endif()
 
 find_package(PythonInterp REQUIRED)

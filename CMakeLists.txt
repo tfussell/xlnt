@@ -8,6 +8,7 @@ set(COMBINED_PROJECT TRUE)
 option(STATIC "Set to ON to build xlnt as a static library instead of a shared library" OFF)
 
 # Optional components
+option(TESTS "Set to OFF to skip building test executable (in ./tests)" ON)
 option(SAMPLES "Set to ON to build executable code samples (in ./samples)" OFF)
 option(BENCHMARKS "Set to ON to build performance benchmarks (in ./benchmarks)" OFF)
 
@@ -25,12 +26,8 @@ if(BENCHMARKS)
     add_subdirectory(benchmarks)
 endif()
 
-find_package(PythonInterp)
-
-if(PYTHONINTERP_FOUND)
+if(TESTS)
     add_subdirectory(tests)
-elseif(NOT PYTHONINTERP_FOUND)
-    message("Python couldn't be found in the current PATH but is required for building tests. Tests will be skipped for now.")
 endif()
 
 add_subdirectory(source)
