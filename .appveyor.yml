@@ -4,6 +4,9 @@ os: Visual Studio 2015
 configuration:
 - Debug
 
+cache:
+- vcpkg -> .appveyor.yml
+
 environment:
   matrix:
   - STATIC: OFF
@@ -13,7 +16,6 @@ init: []
 install:
 - git clone https://github.com/Microsoft/vcpkg
 - cd vcpkg
-- git checkout 47b53b9015deaa2f569d788447254c8bc3de96a9
 - mkdir downloads
 - type nul > downloads\AlwaysAllowDownloads
 - powershell -exec bypass scripts\bootstrap.ps1
