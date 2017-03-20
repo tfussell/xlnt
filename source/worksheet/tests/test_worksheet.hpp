@@ -1027,7 +1027,6 @@ public:
 
         ws1[xlnt::cell_reference("A2")].value(true);
 
-        const auto ws1_const = ws1;
         TS_ASSERT_EQUALS(ws1[xlnt::cell_reference("A2")].value<bool>(), true);
         TS_ASSERT_EQUALS((*(*ws1[xlnt::range_reference("A2:A2")].begin()).begin()).value<bool>(), true);
 
