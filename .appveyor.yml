@@ -14,10 +14,10 @@ environment:
 
 init: []
 install:
-- git clone https://github.com/Microsoft/vcpkg
+- if not exist vcpkg git clone https://github.com/Microsoft/vcpkg
 - cd vcpkg
-- mkdir downloads
-- type nul > downloads\AlwaysAllowDownloads
+- if not exist downloads mkdir downloads
+- if not exist downloads\AlwaysAllowDownloads type nul > downloads\AlwaysAllowDownloads
 - powershell -exec bypass scripts\bootstrap.ps1
 - vcpkg install cryptopp zlib expat
 - vcpkg integrate install
