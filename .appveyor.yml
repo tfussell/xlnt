@@ -19,12 +19,12 @@ install:
 - if not exist downloads mkdir downloads
 - if not exist downloads\AlwaysAllowDownloads type nul > downloads\AlwaysAllowDownloads
 - powershell -exec bypass scripts\bootstrap.ps1
-- vcpkg install cryptopp zlib expat
+- vcpkg install cryptopp:x64-windows zlib:x64-windows expat:x64-windows
 - vcpkg integrate install
 - cd ..
 
 before_build:
-- cmake -H. -Bbuild -G"Visual Studio 14 2015" -DSTATIC=%STATIC% -DSAMPLES=ON -DBENCHMARKS=ON -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
+- cmake -H. -Bbuild -G"Visual Studio 14 2015 Win64" -DSTATIC=%STATIC% -DSAMPLES=ON -DBENCHMARKS=ON -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
 
 build:
   project: build/tests/xlnt.test.sln
