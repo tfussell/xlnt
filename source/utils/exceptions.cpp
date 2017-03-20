@@ -45,6 +45,11 @@ missing_number_format::~missing_number_format()
 {
 }
 
+unhandled_switch_case::unhandled_switch_case()
+    : xlnt::exception("unhandled switch case")
+{
+}
+
 unhandled_switch_case::~unhandled_switch_case()
 {
 }

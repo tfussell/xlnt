@@ -322,6 +322,11 @@ public:
     /// <summary>
     ///
     /// </summary>
+    unhandled_switch_case(const unhandled_switch_case &) = default;
+
+    /// <summary>
+    ///
+    /// </summary>
     virtual ~unhandled_switch_case();
 };
 
