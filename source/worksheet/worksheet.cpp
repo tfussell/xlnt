@@ -54,7 +54,7 @@ namespace {
 int points_to_pixels(double points, double dpi)
 {
     return static_cast<int>(std::ceil(points * dpi / 72));
-};
+}
 
 } // namespace
 
@@ -630,7 +630,7 @@ void worksheet::append(const std::vector<int> &cells)
 
     for (auto cell : cells)
     {
-        this->cell(next).value(cell);
+        this->cell(next).value(static_cast<long double>(cell));
         next.column_index(next.column_index() + 1);
     }
 }
@@ -661,7 +661,7 @@ void worksheet::append(const std::vector<int>::const_iterator begin, const std::
 
     for (auto i = begin; i != end; i++)
     {
-        cell(next).value(*i);
+        cell(next).value(static_cast<long double>(*i));
         next.column_index(next.column_index() + 1);
     }
 }
