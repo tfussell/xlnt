@@ -21,6 +21,7 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <detail/default_case.hpp>
 #include <detail/xlsx_crypto.hpp>
 
 namespace {
@@ -63,7 +64,7 @@ struct value_traits<xlnt::detail::hash_algorithm>
             return xlnt::detail::hash_algorithm::ripemd160;
         else if (hash_algorithm_string == "Whirlpool")
             return xlnt::detail::hash_algorithm::whirlpool;
-        throw xlnt::exception(hash_algorithm_string);
+        default_case(xlnt::detail::hash_algorithm::sha1);
     }
 
     static std::string serialize(xlnt::detail::hash_algorithm algorithm, const serializer &)
@@ -91,6 +92,8 @@ struct value_traits<xlnt::detail::hash_algorithm>
         case xlnt::detail::hash_algorithm::whirlpool:
             return "Whirlpool";
         }
+
+        default_case("SHA1");
     }
 }; // struct value_traits<>
 
