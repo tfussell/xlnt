@@ -28,17 +28,29 @@ set(GENX
 find_package(EXPAT REQUIRED)
 
 add_library(libstudxml STATIC ${LIBSTUDXML} ${GENX})
+
 target_compile_definitions(libstudxml
     PUBLIC LIBSTUDXML_STATIC_LIB=1
     PUBLIC LIBSTUDXML_EXTERNAL_EXPAT=1)
 target_include_directories(libstudxml
     PUBLIC ${LIBSTUDXML_ROOT_DIR}
     PUBLIC ${EXPAT_INCLUDE_DIRS})
-target_link_libraries(libstudxml
-    PRIVATE ${EXPAT_LIBRARIES})
+target_link_libraries(libstudxml PRIVATE ${EXPAT_LIBRARIES})
 
+# Prevent warning C4996 caused by strcpy, strncpy, sprintf in genx
+# TODO: would it be better to define this only in genx.c?
+if(MSVC)
+    target_compile_definition(libstudxml PRIVATE _CRT_SECURE_NO_WARNINGS=1)
+endif()
+
+# Build with -fPIC when xlnt is a shared library
+# TODO: is this still necessary? try removing
 if(NOT STATIC)
     set_target_properties(libstudxml PROPERTIES POSITION_INDEPENDENT_CODE 1)
-else()
+endif()
+
+# When xlnt is a static library, assume expat will be linked statically too
+# TODO: is this a valid assumption?
+if(STATIC)
     target_compile_definitions(libstudxml PUBLIC XML_STATIC=1)
 endif()
