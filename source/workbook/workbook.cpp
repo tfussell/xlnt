@@ -233,7 +233,7 @@ std::string content_type(xlnt::relationship_type type)
     case relationship_type::custom_properties:
         return "application/vnd.openxmlformats-officedocument.custom-properties+xml";
     case relationship_type::custom_property:
-        return "";
+        throw xlnt::unhandled_switch_case();
     case relationship_type::custom_xml_mappings:
         return "application/xml";
     case relationship_type::dialogsheet:
@@ -245,9 +245,9 @@ std::string content_type(xlnt::relationship_type type)
     case relationship_type::external_workbook_references:
         return "application/vnd.openxmlformats-officedocument.spreadsheetml.externalLink+xml";
     case relationship_type::hyperlink:
-        return "";
+        throw xlnt::unhandled_switch_case();
     case relationship_type::image:
-        return "";
+        throw xlnt::unhandled_switch_case();
     case relationship_type::office_document:
         return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml";
     case relationship_type::pivot_table:
@@ -265,7 +265,7 @@ std::string content_type(xlnt::relationship_type type)
     case relationship_type::shared_string_table:
         return "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml";
     case relationship_type::shared_workbook:
-        return "";
+        throw xlnt::unhandled_switch_case();
     case relationship_type::shared_workbook_revision_headers:
         return "application/vnd.openxmlformats-officedocument.spreadsheetml.revisionHeaders+xml";
     case relationship_type::shared_workbook_user_data:

@@ -193,7 +193,8 @@ void xlsx_producer::write_content_types()
     write_end_element(xmlns, "Types");
 }
 
-void xlsx_producer::write_property(const std::string &name, const variant &value, const std::string &ns, bool custom, std::size_t pid)
+void xlsx_producer::write_property(const std::string &name, const variant &value,
+    const std::string &ns, bool custom, std::size_t pid)
 {
     if (custom)
     {
@@ -208,115 +209,126 @@ void xlsx_producer::write_property(const std::string &name, const variant &value
     switch (value.value_type())
     {
     case variant::type::null:
-        break;
+        {
+            break;
+        }
 
     case variant::type::boolean:
-        if (custom)
         {
-            write_attribute("fmtid", "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
-            write_attribute("pid", pid);
-            write_start_element(constants::ns("vt"), "bool");
+            if (custom)
+            {
+                write_attribute("fmtid", "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
+                write_attribute("pid", pid);
+                write_start_element(constants::ns("vt"), "bool");
+            }
+
+            write_characters(value.get<bool>() ? "true" : "false");
+
+            if (custom)
+            {
+                write_end_element(constants::ns("vt"), "bool");
+            }
+
+            break;
         }
-
-        write_characters(value.get<bool>() ? "true" : "false");
-
-        if (custom)
-        {
-            write_end_element(constants::ns("vt"), "bool");
-        }
-
-        break;
 
     case variant::type::i4:
-        if (custom)
         {
-            write_attribute("fmtid", "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
-            write_attribute("pid", pid);
-            write_start_element(constants::ns("vt"), "i4");
+            if (custom)
+            {
+                write_attribute("fmtid", "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
+                write_attribute("pid", pid);
+                write_start_element(constants::ns("vt"), "i4");
+            }
+
+            write_characters(value.get<std::int32_t>());
+
+            if (custom)
+            {
+                write_end_element(constants::ns("vt"), "i4");
+            }
+
+            break;
         }
-
-        write_characters(value.get<std::int32_t>());
-
-        if (custom)
-        {
-            write_end_element(constants::ns("vt"), "i4");
-        }
-
-        break;
 
     case variant::type::lpstr:
-        if (custom)
         {
-            write_attribute("fmtid", "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
-            write_attribute("pid", pid);
-            write_start_element(constants::ns("vt"), "lpwstr");
+            if (custom)
+            {
+                write_attribute("fmtid", "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
+                write_attribute("pid", pid);
+                write_start_element(constants::ns("vt"), "lpwstr");
+            }
+
+            if (!custom && ns == constants::ns("dcterms") && (name == "created" || name == "modified"))
+            {
+                write_attribute(xml::qname(constants::ns("xsi"), "type"), "dcterms:W3CDTF");
+            }
+
+            write_characters(value.get<std::string>());
+
+            if (custom)
+            {
+                write_end_element(constants::ns("vt"), "lpwstr");
+            }
+
+            break;
         }
-
-        if (!custom && ns == constants::ns("dcterms") && (name == "created" || name == "modified"))
-        {
-            write_attribute(xml::qname(constants::ns("xsi"), "type"), "dcterms:W3CDTF");
-        }
-
-        write_characters(value.get<std::string>());
-
-        if (custom)
-        {
-            write_end_element(constants::ns("vt"), "lpwstr");
-        }
-
-        break;
 
     case variant::type::date:
-        write_attribute(xml::qname(constants::ns("xsi"), "type"), "dcterms:W3CDTF");
-        write_characters(value.get<datetime>().to_iso_string());
-        break;
+        {
+            write_attribute(xml::qname(constants::ns("xsi"), "type"), "dcterms:W3CDTF");
+            write_characters(value.get<datetime>().to_iso_string());
+
+            break;
+        }
 
     case variant::type::vector:
-    {
-        write_start_element(constants::ns("vt"), "vector");
-
-        auto vector = value.get<std::vector<variant>>();
-        std::unordered_set<variant::type> types;
-
-        for (const auto &element : vector)
         {
-            types.insert(element.value_type());
+            write_start_element(constants::ns("vt"), "vector");
+
+            auto vector = value.get<std::vector<variant>>();
+            std::unordered_set<variant::type> types;
+
+            for (const auto &element : vector)
+            {
+                types.insert(element.value_type());
+            }
+
+            const auto is_mixed = types.size() > 1;
+            const auto vector_type = !is_mixed ? to_string(*types.begin()) : "variant";
+
+            write_attribute("size", vector.size());
+            write_attribute("baseType", vector_type);
+
+            for (std::size_t i = 0; i < vector.size(); ++i)
+            {
+                const auto &vector_element = vector.at(i);
+
+                if (is_mixed)
+                {
+                    write_start_element(constants::ns("vt"), "variant");
+                }
+
+                if (vector_element.value_type() == variant::type::lpstr)
+                {
+                    write_element(constants::ns("vt"), "lpstr", vector_element.get<std::string>());
+                }
+                else if (vector_element.value_type() == variant::type::i4)
+                {
+                    write_element(constants::ns("vt"), "i4", vector_element.get<std::int32_t>());
+                }
+
+                if (is_mixed)
+                {
+                    write_end_element(constants::ns("vt"), "variant");
+                }
+            }
+
+            write_end_element(constants::ns("vt"), "vector");
+
+            break;
         }
-
-        const auto is_mixed = types.size() > 1;
-        const auto vector_type = !is_mixed ? to_string(*types.begin()) : "variant";
-
-        write_attribute("size", vector.size());
-        write_attribute("baseType", vector_type);
-
-        for (std::size_t i = 0; i < vector.size(); ++i)
-        {
-            const auto &vector_element = vector.at(i);
-
-            if (is_mixed)
-            {
-                write_start_element(constants::ns("vt"), "variant");
-            }
-
-            if (vector_element.value_type() == variant::type::lpstr)
-            {
-                write_element(constants::ns("vt"), "lpstr", vector_element.get<std::string>());
-            }
-            else if (vector_element.value_type() == variant::type::i4)
-            {
-                write_element(constants::ns("vt"), "i4", vector_element.get<std::int32_t>());
-            }
-
-            if (is_mixed)
-            {
-                write_end_element(constants::ns("vt"), "variant");
-            }
-        }
-
-        write_end_element(constants::ns("vt"), "vector");
-    }
-
-    break;
     }
 
     if (custom)
@@ -2589,6 +2601,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             path archive_path(worksheet_part.parent().append(child_rel.target().path()));
             auto split_part_path = archive_path.split();
             auto part_path_iter = split_part_path.begin();
+
             while (part_path_iter != split_part_path.end())
             {
                 if (*part_path_iter == "..")
@@ -2599,85 +2612,19 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
                 ++part_path_iter;
             }
+
             archive_path = std::accumulate(split_part_path.begin(), split_part_path.end(), path(""),
                 [](const path &a, const std::string &b) { return a.append(b); });
 
             begin_part(archive_path);
 
-            switch (child_rel.type())
+            if (child_rel.type() == relationship_type::comments)
             {
-            case relationship_type::comments:
                 write_comments(child_rel, ws, cells_with_comments);
-                break;
-
-            case relationship_type::vml_drawing:
+            }
+            else if (child_rel.type() == relationship_type::vml_drawing)
+            {
                 write_vml_drawings(child_rel, ws, cells_with_comments);
-                break;
-
-            case relationship_type::office_document:
-                break;
-            case relationship_type::thumbnail:
-                break;
-            case relationship_type::calculation_chain:
-                break;
-            case relationship_type::extended_properties:
-                break;
-            case relationship_type::core_properties:
-                break;
-            case relationship_type::worksheet:
-                break;
-            case relationship_type::shared_string_table:
-                break;
-            case relationship_type::stylesheet:
-                break;
-            case relationship_type::theme:
-                break;
-            case relationship_type::hyperlink:
-                break;
-            case relationship_type::chartsheet:
-                break;
-            case relationship_type::unknown:
-                break;
-            case relationship_type::custom_properties:
-                break;
-            case relationship_type::printer_settings:
-                break;
-            case relationship_type::connections:
-                break;
-            case relationship_type::custom_property:
-                break;
-            case relationship_type::custom_xml_mappings:
-                break;
-            case relationship_type::dialogsheet:
-                break;
-            case relationship_type::drawings:
-                break;
-            case relationship_type::external_workbook_references:
-                break;
-            case relationship_type::pivot_table:
-                break;
-            case relationship_type::pivot_table_cache_definition:
-                break;
-            case relationship_type::pivot_table_cache_records:
-                break;
-            case relationship_type::query_table:
-                break;
-            case relationship_type::shared_workbook_revision_headers:
-                break;
-            case relationship_type::shared_workbook:
-                break;
-            case relationship_type::revision_log:
-                break;
-            case relationship_type::shared_workbook_user_data:
-                break;
-            case relationship_type::single_cell_table_definitions:
-                break;
-            case relationship_type::table_definition:
-                break;
-            case relationship_type::volatile_dependencies:
-                break;
-            case relationship_type::image:
-                break;
             }
         }
     }

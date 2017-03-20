@@ -94,11 +94,10 @@ std::string to_string(relationship_type t)
     case relationship_type::image:
         return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image";
     case relationship_type::unknown:
-#ifndef __clang__
-    default:
-#endif
         return "unknown";
     }
+
+    default_case("unknown");
 }
 
 std::string to_string(pattern_fill_type fill_type)

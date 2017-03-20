@@ -266,14 +266,10 @@ public:
                     strm.next_in = reinterpret_cast<Bytef *>(in.data());
                 }
 
-                int ret = inflate(&strm, Z_NO_FLUSH); // decompress
+                const auto ret = inflate(&strm, Z_NO_FLUSH); // decompress
 
-                switch (ret)
+                if (ret == Z_STREAM_ERROR || ret == Z_NEED_DICT || ret == Z_DATA_ERROR || ret == Z_MEM_ERROR)
                 {
-                case Z_STREAM_ERROR:
-                case Z_NEED_DICT:
-                case Z_DATA_ERROR:
-                case Z_MEM_ERROR:
                     throw xlnt::exception("couldn't inflate ZIP, possibly corrupted");
                 }
 

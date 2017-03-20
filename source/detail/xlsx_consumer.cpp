@@ -245,9 +245,9 @@ std::array<xlnt::optional<xlnt::rich_text>, 3> parse_header_footer(const std::st
         tokens.push_back(token);
     }
 
-    const auto parse_section = [&tokens, &result](hf_code code) {
+    const auto parse_section = [&tokens, &result](hf_code code)
+    {
         std::vector<hf_code> end_codes{hf_code::left_section, hf_code::center_section, hf_code::right_section};
-
         end_codes.erase(std::find(end_codes.begin(), end_codes.end(), code));
 
         std::size_t start_index = 0;
@@ -296,141 +296,197 @@ std::array<xlnt::optional<xlnt::rich_text>, 3> parse_header_footer(const std::st
             switch (current_token.code)
             {
             case hf_code::text:
-                break; // already handled above
+                {
+                    break; // already handled above
+                }
 
             case hf_code::left_section:
-                break; // used below
+                {
+                    break; // used below
+                }
 
             case hf_code::center_section:
-                break; // used below
+                {
+                    break; // used below
+                }
 
             case hf_code::right_section:
-                break; // used below
+                {
+                    break; // used below
+                }
 
             case hf_code::current_page_number:
-                current_run.first = current_run.first + "&P";
-                break;
+                {
+                    current_run.first = current_run.first + "&P";
+                    break;
+                }
 
             case hf_code::total_page_number:
-                current_run.first = current_run.first + "&N";
-                break;
+                {
+                    current_run.first = current_run.first + "&N";
+                    break;
+                }
 
             case hf_code::font_size:
-                if (!current_run.second.is_set())
-                {
-                    current_run.second = xlnt::font();
-                }
-                current_run.second.get().size(std::stod(current_token.value));
-                break;
-
-            case hf_code::text_font_color:
-                if (current_token.value.size() == 6)
                 {
                     if (!current_run.second.is_set())
                     {
                         current_run.second = xlnt::font();
                     }
-                    current_run.second.get().color(xlnt::rgb_color(current_token.value));
+
+                    current_run.second.get().size(std::stod(current_token.value));
+
+                    break;
                 }
 
-                break;
+            case hf_code::text_font_color:
+                {
+                    if (current_token.value.size() == 6)
+                    {
+                        if (!current_run.second.is_set())
+                        {
+                            current_run.second = xlnt::font();
+                        }
+
+                        current_run.second.get().color(xlnt::rgb_color(current_token.value));
+                    }
+
+                    break;
+                }
 
             case hf_code::text_strikethrough:
-                break;
+                {
+                    break;
+                }
 
             case hf_code::text_superscript:
-                break;
+                {
+                    break;
+                }
 
             case hf_code::text_subscript:
-                break;
+                {
+                    break;
+                }
 
             case hf_code::date:
-                current_run.first = current_run.first + "&D";
-                break;
+                {
+                    current_run.first = current_run.first + "&D";
+                    break;
+                }
 
             case hf_code::time:
-                current_run.first = current_run.first + "&T";
-                break;
+                {
+                    current_run.first = current_run.first + "&T";
+                    break;
+                }
 
             case hf_code::picture_as_background:
-                current_run.first = current_run.first + "&G";
-                break;
+                {
+                    current_run.first = current_run.first + "&G";
+                    break;
+                }
 
             case hf_code::text_single_underline:
-                break;
+                {
+                    break;
+                }
 
             case hf_code::text_double_underline:
-                break;
+                {
+                    break;
+                }
 
             case hf_code::workbook_file_path:
-                current_run.first = current_run.first + "&Z";
-                break;
+                {
+                    current_run.first = current_run.first + "&Z";
+                    break;
+                }
 
             case hf_code::workbook_file_name:
-                current_run.first = current_run.first + "&F";
-                break;
+                {
+                    current_run.first = current_run.first + "&F";
+                    break;
+                }
 
             case hf_code::sheet_tab_name:
-                current_run.first = current_run.first + "&A";
-                break;
+                {
+                    current_run.first = current_run.first + "&A";
+                    break;
+                }
 
             case hf_code::add_to_page_number:
-                break;
+                {
+                    break;
+                }
 
             case hf_code::subtract_from_page_number:
-                break;
+                {
+                    break;
+                }
 
             case hf_code::text_font_name:
-            {
-                auto comma_index = current_token.value.find(',');
-                auto font_name = current_token.value.substr(0, comma_index);
-
-                if (!current_run.second.is_set())
                 {
-                    current_run.second = xlnt::font();
-                }
+                    auto comma_index = current_token.value.find(',');
+                    auto font_name = current_token.value.substr(0, comma_index);
 
-                if (font_name != "-")
-                {
-                    current_run.second.get().name(font_name);
-                }
-
-                if (comma_index != std::string::npos)
-                {
-                    auto font_type = current_token.value.substr(comma_index + 1);
-
-                    if (font_type == "Bold")
+                    if (!current_run.second.is_set())
                     {
-                        current_run.second.get().bold(true);
+                        current_run.second = xlnt::font();
                     }
-                    else if (font_type == "Italic")
-                    {
-                    }
-                    else if (font_type == "BoldItalic")
-                    {
-                        current_run.second.get().bold(true);
-                    }
-                }
-            }
 
-            break;
+                    if (font_name != "-")
+                    {
+                        current_run.second.get().name(font_name);
+                    }
+
+                    if (comma_index != std::string::npos)
+                    {
+                        auto font_type = current_token.value.substr(comma_index + 1);
+
+                        if (font_type == "Bold")
+                        {
+                            current_run.second.get().bold(true);
+                        }
+                        else if (font_type == "Italic")
+                        {
+                            // TODO
+                        }
+                        else if (font_type == "BoldItalic")
+                        {
+                            current_run.second.get().bold(true);
+                        }
+                    }
+
+                    break;
+                }
 
             case hf_code::bold_font_style:
-                if (!current_run.second.is_set())
                 {
-                    current_run.second = xlnt::font();
+                    if (!current_run.second.is_set())
+                    {
+                        current_run.second = xlnt::font();
+                    }
+
+                    current_run.second.get().bold(true);
+
+                    break;
                 }
-                current_run.second.get().bold(true);
-                break;
 
             case hf_code::italic_font_style:
-                break;
+                {
+                    break;
+                }
 
             case hf_code::outline_style:
-                break;
+                {
+                    break;
+                }
 
             case hf_code::shadow_style:
-                break;
+                {
+                    break;
+                }
             }
         }
 

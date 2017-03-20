@@ -64,6 +64,7 @@ struct value_traits<xlnt::detail::hash_algorithm>
             return xlnt::detail::hash_algorithm::ripemd160;
         else if (hash_algorithm_string == "Whirlpool")
             return xlnt::detail::hash_algorithm::whirlpool;
+
         default_case(xlnt::detail::hash_algorithm::sha1);
     }
 
@@ -160,8 +161,9 @@ std::vector<std::uint8_t> crypto_helper::decode_base64(const std::string &encode
     decoder.Put(reinterpret_cast<const std::uint8_t *>(encoded.data()), encoded.size());
     decoder.MessageEnd();
 
-    std::vector<std::uint8_t> decoded(decoder.MaxRetrievable(), 0);
-    decoder.Get(decoded.data(), decoded.size());
+    const auto bytes_decoded = std::size_t(decoder.MaxRetrievable());
+    auto decoded = std::vector<std::uint8_t>(bytes_decoded, 0);
+    decoder.Get(decoded.data(), bytes_decoded);
 
     return decoded;
 }
@@ -172,8 +174,9 @@ std::string crypto_helper::encode_base64(const std::vector<std::uint8_t> &decode
     encoder.Put(reinterpret_cast<const std::uint8_t *>(decoded.data()), decoded.size());
     encoder.MessageEnd();
 
-    std::vector<std::uint8_t> encoded(encoder.MaxRetrievable(), 0);
-    encoder.Get(encoded.data(), encoded.size());
+    const auto bytes_encoded = std::size_t(encoder.MaxRetrievable());
+    auto encoded = std::vector<std::uint8_t>(bytes_encoded, 0);
+    encoder.Get(encoded.data(), bytes_encoded);
 
     return std::string(encoded.begin(), encoded.end());
 }
