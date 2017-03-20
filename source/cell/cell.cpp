@@ -197,124 +197,85 @@ bool cell::garbage_collectible() const
     return !(data_type() != type::null || is_merged() || has_formula() || has_format());
 }
 
-template <>
-XLNT_API void cell::value(std::nullptr_t)
+void cell::value(std::nullptr_t)
 {
     d_->type_ = type::null;
 }
 
-template <>
-XLNT_API void cell::value(bool b)
+void cell::value(bool boolean_value)
 {
-    d_->value_numeric_ = b ? 1 : 0;
     d_->type_ = type::boolean;
+    d_->value_numeric_ = boolean_value ? 1.0L : 0.0L;
 }
 
-template <>
-XLNT_API void cell::value(std::int8_t i)
+void cell::value(int int_value)
 {
-    d_->value_numeric_ = static_cast<long double>(i);
+    d_->value_numeric_ = static_cast<long double>(int_value);
     d_->type_ = type::numeric;
 }
 
-template <>
-XLNT_API void cell::value(std::int16_t i)
+void cell::value(unsigned int int_value)
 {
-    d_->value_numeric_ = static_cast<long double>(i);
+    d_->value_numeric_ = static_cast<long double>(int_value);
     d_->type_ = type::numeric;
 }
 
-template <>
-XLNT_API void cell::value(std::int32_t i)
+void cell::value(long long int int_value)
 {
-    d_->value_numeric_ = static_cast<long double>(i);
+    d_->value_numeric_ = static_cast<long double>(int_value);
     d_->type_ = type::numeric;
 }
 
-template <>
-XLNT_API void cell::value(std::int64_t i)
+void cell::value(unsigned long long int int_value)
 {
-    d_->value_numeric_ = static_cast<long double>(i);
+    d_->value_numeric_ = static_cast<long double>(int_value);
     d_->type_ = type::numeric;
 }
 
-template <>
-XLNT_API void cell::value(std::uint8_t i)
+void cell::value(float float_value)
 {
-    d_->value_numeric_ = static_cast<long double>(i);
+    d_->value_numeric_ = static_cast<long double>(float_value);
     d_->type_ = type::numeric;
 }
 
-template <>
-XLNT_API void cell::value(std::uint16_t i)
+void cell::value(double float_value)
 {
-    d_->value_numeric_ = static_cast<long double>(i);
+    d_->value_numeric_ = static_cast<long double>(float_value);
     d_->type_ = type::numeric;
 }
 
-template <>
-XLNT_API void cell::value(std::uint32_t i)
+void cell::value(long double d)
 {
-    d_->value_numeric_ = static_cast<long double>(i);
+    d_->value_numeric_ = d;
     d_->type_ = type::numeric;
 }
 
-template <>
-XLNT_API void cell::value(std::uint64_t i)
+void cell::value(const std::string &s)
 {
-    d_->value_numeric_ = static_cast<long double>(i);
-    d_->type_ = type::numeric;
-}
+    auto checked = check_string(s);
 
-template <>
-XLNT_API void cell::value(float f)
-{
-    d_->value_numeric_ = static_cast<long double>(f);
-    d_->type_ = type::numeric;
-}
-
-template <>
-XLNT_API void cell::value(double d)
-{
-    d_->value_numeric_ = static_cast<long double>(d);
-    d_->type_ = type::numeric;
-}
-
-template <>
-XLNT_API void cell::value(long double d)
-{
-    d_->value_numeric_ = static_cast<long double>(d);
-    d_->type_ = type::numeric;
-}
-
-template <>
-XLNT_API void cell::value(std::string s)
-{
-    s = check_string(s);
-
-    if (s.size() > 1 && s.front() == '=')
+    if (checked.size() > 1 && checked.front() == '=')
     {
         d_->type_ = type::formula;
-        formula(s);
+        formula(checked);
     }
-    else if (cell::error_codes().find(s) != cell::error_codes().end())
+    else if (cell::error_codes().find(checked) != cell::error_codes().end())
     {
-        error(s);
+        error(checked);
     }
     else
     {
         d_->type_ = type::string;
-        d_->value_text_.plain_text(s);
+        d_->value_text_.plain_text(checked);
 
-        if (s.size() > 0)
+        if (checked.size() > 0)
         {
             workbook().add_shared_string(d_->value_text_);
         }
     }
 }
 
-template <>
-XLNT_API void cell::value(rich_text text)
+void cell::value(const rich_text &text)
 {
     if (text.runs().size() == 1 && !text.runs().front().second.is_set())
     {
@@ -328,14 +289,12 @@ XLNT_API void cell::value(rich_text text)
     }
 }
 
-template <>
-XLNT_API void cell::value(char const *c)
+void cell::value(const char *c)
 {
     value(std::string(c));
 }
 
-template <>
-XLNT_API void cell::value(cell c)
+void cell::value(const cell c)
 {
     d_->type_ = c.d_->type_;
     d_->value_numeric_ = c.d_->value_numeric_;
@@ -345,32 +304,28 @@ XLNT_API void cell::value(cell c)
     d_->format_ = c.d_->format_;
 }
 
-template <>
-XLNT_API void cell::value(date d)
+void cell::value(const date &d)
 {
     d_->type_ = type::numeric;
     d_->value_numeric_ = d.to_number(base_date());
     number_format(number_format::date_yyyymmdd2());
 }
 
-template <>
-XLNT_API void cell::value(datetime d)
+void cell::value(const datetime &d)
 {
     d_->type_ = type::numeric;
     d_->value_numeric_ = d.to_number(base_date());
     number_format(number_format::date_datetime());
 }
 
-template <>
-XLNT_API void cell::value(time t)
+void cell::value(const time &t)
 {
     d_->type_ = type::numeric;
     d_->value_numeric_ = t.to_number();
     number_format(number_format::date_time6());
 }
 
-template <>
-XLNT_API void cell::value(timedelta t)
+void cell::value(const timedelta &t)
 {
     d_->type_ = type::numeric;
     d_->value_numeric_ = t.to_number();

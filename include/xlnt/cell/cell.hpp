@@ -31,6 +31,7 @@
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/cell/cell_type.hpp>
 #include <xlnt/cell/index_types.hpp>
+#include <xlnt/cell/rich_text.hpp>
 
 namespace xlnt {
 
@@ -116,12 +117,89 @@ public:
     void clear_value();
 
     /// <summary>
-    /// Sets the value of this cell to the given value.
-    /// Overloads exist for most C++ fundamental types like bool, int, etc. as well
-    /// as for std::string and xlnt datetime types: date, time, datetime, and timedelta.
+    /// Sets the type of this cell to null.
     /// </summary>
-    template <typename T>
-    void value(T value);
+    void value(std::nullptr_t);
+
+    /// <summary>
+    /// Sets the value of this cell to the given boolean value.
+    /// </summary>
+    void value(bool boolean_value);
+
+    /// <summary>
+    /// Sets the value of this cell to the given value.
+    /// </summary>
+    void value(int int_value);
+
+    /// <summary>
+    /// Sets the value of this cell to the given value.
+    /// </summary>
+    void value(unsigned int int_value);
+
+    /// <summary>
+    /// Sets the value of this cell to the given value.
+    /// </summary>
+    void value(long long int int_value);
+
+    /// <summary>
+    /// Sets the value of this cell to the given value.
+    /// </summary>
+    void value(unsigned long long int int_value);
+
+    /// <summary>
+    /// Sets the value of this cell to the given value.
+    /// </summary>
+    void value(float float_value);
+
+    /// <summary>
+    /// Sets the value of this cell to the given value.
+    /// </summary>
+    void value(double float_value);
+
+    /// <summary>
+    /// Sets the value of this cell to the given value.
+    /// </summary>
+    void value(long double float_value);
+
+    /// <summary>
+    /// Sets the value of this cell to the given value.
+    /// </summary>
+    void value(const date &date_value);
+
+    /// <summary>
+    /// Sets the value of this cell to the given value.
+    /// </summary>
+    void value(const time &time_value);
+
+    /// <summary>
+    /// Sets the value of this cell to the given value.
+    /// </summary>
+    void value(const datetime &datetime_value);
+
+    /// <summary>
+    /// Sets the value of this cell to the given value.
+    /// </summary>
+    void value(const timedelta &timedelta_value);
+
+    /// <summary>
+    /// Sets the value of this cell to the given value.
+    /// </summary>
+    void value(const std::string &string_value);
+
+    /// <summary>
+    /// Sets the value of this cell to the given value.
+    /// </summary>
+    void value(const char *string_value);
+
+    /// <summary>
+    /// Sets the value of this cell to the given value.
+    /// </summary>
+    void value(const rich_text &text_value);
+
+    /// <summary>
+    /// Sets the value and formatting of this cell to that of other_cell.
+    /// </summary>
+    void value(const cell other_cell);
 
     /// <summary>
     /// Analyzes string_value to determine its type, convert it to that type,
