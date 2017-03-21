@@ -562,51 +562,27 @@ XLNT_API bool cell::value() const
 }
 
 template <>
-XLNT_API std::int8_t cell::value() const
+XLNT_API int cell::value() const
 {
-    return static_cast<std::int8_t>(d_->value_numeric_);
+    return static_cast<int>(d_->value_numeric_);
 }
 
 template <>
-XLNT_API std::int16_t cell::value() const
+XLNT_API long long int cell::value() const
 {
-    return static_cast<std::int16_t>(d_->value_numeric_);
+    return static_cast<long long int>(d_->value_numeric_);
 }
 
 template <>
-XLNT_API std::int32_t cell::value() const
+XLNT_API unsigned int cell::value() const
 {
-    return static_cast<std::int32_t>(d_->value_numeric_);
+    return static_cast<unsigned int>(d_->value_numeric_);
 }
 
 template <>
-XLNT_API std::int64_t cell::value() const
+XLNT_API unsigned long long cell::value() const
 {
-    return static_cast<std::int64_t>(d_->value_numeric_);
-}
-
-template <>
-XLNT_API std::uint8_t cell::value() const
-{
-    return static_cast<std::uint8_t>(d_->value_numeric_);
-}
-
-template <>
-XLNT_API std::uint16_t cell::value() const
-{
-    return static_cast<std::uint16_t>(d_->value_numeric_);
-}
-
-template <>
-XLNT_API std::uint32_t cell::value() const
-{
-    return static_cast<std::uint32_t>(d_->value_numeric_);
-}
-
-template <>
-XLNT_API std::uint64_t cell::value() const
-{
-    return static_cast<std::uint64_t>(d_->value_numeric_);
+    return static_cast<unsigned long long>(d_->value_numeric_);
 }
 
 template <>
