@@ -535,30 +535,18 @@ public:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         auto cell = ws.cell("A1");
-        
-        cell.value(static_cast<std::int8_t>(4));
-        TS_ASSERT_EQUALS(cell.value<int8_t>(), 4);
 
-        cell.value(static_cast<std::uint8_t>(3));
-        TS_ASSERT_EQUALS(cell.value<std::uint8_t>(), 3);
+        cell.value(static_cast<int>(4));
+        TS_ASSERT_EQUALS(cell.value<int>(), 4);
 
-        cell.value(static_cast<std::int16_t>(4));
-        TS_ASSERT_EQUALS(cell.value<int16_t>(), 4);
+        cell.value(static_cast<unsigned int>(3));
+        TS_ASSERT_EQUALS(cell.value<unsigned>(), 3);
 
-        cell.value(static_cast<std::uint16_t>(3));
-        TS_ASSERT_EQUALS(cell.value<std::uint16_t>(), 3);
+        cell.value(static_cast<unsigned long long>(4));
+        TS_ASSERT_EQUALS(cell.value<unsigned long long>(), 4);
 
-        cell.value(static_cast<std::int32_t>(4));
-        TS_ASSERT_EQUALS(cell.value<int32_t>(), 4);
-
-        cell.value(static_cast<std::uint32_t>(3));
-        TS_ASSERT_EQUALS(cell.value<std::uint32_t>(), 3);
-
-        cell.value(static_cast<std::int64_t>(4));
-        TS_ASSERT_EQUALS(cell.value<int64_t>(), 4);
-
-        cell.value(static_cast<std::uint64_t>(3));
-        TS_ASSERT_EQUALS(cell.value<std::uint64_t>(), 3);
+        cell.value(static_cast<long long int>(3));
+        TS_ASSERT_EQUALS(cell.value<long long int>(), 3);
 
         cell.value(static_cast<float>(3.14));
         TS_ASSERT_DELTA(cell.value<float>(), 3.14, 0.001);
