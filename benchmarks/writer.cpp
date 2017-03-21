@@ -4,7 +4,7 @@
 
 std::size_t current_time()
 {
-    return std::chrono::duration<double, std::milli>(std::chrono::system_clock::now().time_since_epoch()).count();
+    return static_cast<std::size_t>(std::chrono::duration<double, std::milli>(std::chrono::system_clock::now().time_since_epoch()).count());
 }
 
 // Create a worksheet with variable width rows. Because data must be
@@ -15,13 +15,6 @@ void writer(int cols, int rows)
     xlnt::workbook wb;
     auto ws = wb.create_sheet();
 
-    std::vector<int> row;
-
-    for(int i = 0; i < cols; i++)
-    {
-        row.push_back(i);
-    }
-
     for(int index = 0; index < rows; index++)
     {
         if ((index + 1) % (rows / 10) == 0)
@@ -31,7 +24,10 @@ void writer(int cols, int rows)
             std::cout.flush();
         }
 
-        ws.append(row);
+		for (int i = 0; i < cols; i++)
+		{
+			ws.cell(xlnt::cell_reference(i + 1, index + 1)).value(i);
+		}
     }
 
     std::cout << std::endl;

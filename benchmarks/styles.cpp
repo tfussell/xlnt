@@ -6,7 +6,7 @@
 
 std::size_t current_time()
 {
-    return std::chrono::duration<double, std::milli>(std::chrono::system_clock::now().time_since_epoch()).count();
+    return static_cast<std::size_t>(std::chrono::duration<double, std::milli>(std::chrono::system_clock::now().time_since_epoch()).count());
 }
 
 std::size_t random_index(std::size_t max)
@@ -81,7 +81,7 @@ xlnt::workbook non_optimized_workbook(int n)
     for(int idx = 1; idx < n; idx++)
     {
         auto worksheet = wb[random_index(wb.sheet_count())];
-        auto cell = worksheet.cell(1, (xlnt::row_t)idx);
+        auto cell = worksheet.cell(xlnt::cell_reference(1, (xlnt::row_t)idx));
         cell.value(0);
         cell.style(styles.at(random_index(styles.size())));
     }
