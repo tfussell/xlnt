@@ -33,5 +33,5 @@ build:
 
 test_script:
 - cd build\tests\Debug
-- set PATH=C:\projects\xlnt\vcpkg\installed\x86-windows\debug\bin;%PATH%
+- set PATH=C:\projects\xlnt\vcpkg\installed\x64-windows\debug\bin;%PATH%
 - xlnt.test.exe
