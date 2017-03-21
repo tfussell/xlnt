@@ -40,7 +40,7 @@ target_link_libraries(libstudxml PRIVATE ${EXPAT_LIBRARIES})
 # Prevent warning C4996 caused by strcpy, strncpy, sprintf in genx
 # TODO: would it be better to define this only in genx.c?
 if(MSVC)
-    target_compile_definition(libstudxml PRIVATE _CRT_SECURE_NO_WARNINGS=1)
+    target_compile_definitions(libstudxml PRIVATE _CRT_SECURE_NO_WARNINGS=1)
 endif()
 
 # Build with -fPIC when xlnt is a shared library
