@@ -58,29 +58,17 @@ public:
 		ws.cell("A4").value("bool (false)");
 		ws.cell("B4").value(false);
 
-		ws.cell("A5").value("number (std::int8_t)");
-		ws.cell("B5").value(std::numeric_limits<std::int8_t>::max());
+		ws.cell("A5").value("number (int)");
+		ws.cell("B5").value(std::numeric_limits<int>::max());
 
-		ws.cell("A6").value("number (std::uint8_t)");
-		ws.cell("B6").value(std::numeric_limits<std::uint8_t>::max());
+		ws.cell("A5").value("number (unsigned int)");
+		ws.cell("B5").value(std::numeric_limits<unsigned int>::max());
 
-		ws.cell("A7").value("number (std::uint16_t)");
-		ws.cell("B7").value(std::numeric_limits<std::int16_t>::max());
+		ws.cell("A6").value("number (long long int)");
+		ws.cell("B6").value(std::numeric_limits<long long int>::max());
 
-		ws.cell("A8").value("number (std::uint16_t)");
-		ws.cell("B8").value(std::numeric_limits<std::uint16_t>::max());
-
-		ws.cell("A9").value("number (std::uint32_t)");
-		ws.cell("B9").value(std::numeric_limits<std::int32_t>::max());
-
-		ws.cell("A10").value("number (std::uint32_t)");
-		ws.cell("B10").value(std::numeric_limits<std::uint32_t>::max());
-
-		ws.cell("A11").value("number (std::uint64_t)");
-		ws.cell("B11").value(std::numeric_limits<std::int64_t>::max());
-
-		ws.cell("A12").value("number (std::uint64_t)");
-		ws.cell("B12").value(std::numeric_limits<std::uint64_t>::max());
+		ws.cell("A6").value("number (unsigned long long int)");
+		ws.cell("B6").value(std::numeric_limits<unsigned long long int>::max());
 
 		ws.cell("A13").value("number (float)");
 		ws.cell("B13").value(std::numeric_limits<float>::max());
