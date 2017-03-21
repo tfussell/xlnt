@@ -116,11 +116,6 @@ public:
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     /// <summary>
-    /// Swaps the data held in workbooks "left" and "right".
-    /// </summary>
-    friend void swap(workbook &left, workbook &right);
-
-    /// <summary>
     /// Constructs and returns an empty workbook similar to a default.
     /// Excel workbook
     /// </summary>
@@ -831,6 +826,11 @@ private:
     /// Update extended workbook properties titlesOfParts and headingPairs when sheets change.
     /// </summary>
     void update_sheet_properties();
+
+    /// <summary>
+    /// Swaps the data held in this workbook with workbook other.
+    /// </summary>
+    void swap(workbook &other);
 
     /// <summary>
     /// An opaque pointer to a structure that holds all of the data relating to this workbook.

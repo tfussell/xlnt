@@ -523,7 +523,7 @@ workbook workbook::empty()
 workbook::workbook()
 {
     auto wb_template = empty();
-    swap(*this, wb_template);
+    swap(wb_template);
 }
 
 workbook::workbook(detail::workbook_impl *impl)
@@ -1137,8 +1137,10 @@ bool workbook::operator!=(const workbook &rhs) const
     return d_.get() != rhs.d_.get();
 }
 
-void swap(workbook &left, workbook &right)
+void workbook::swap(workbook &right)
 {
+    auto &left = *this;
+
     using std::swap;
     swap(left.d_, right.d_);
 
@@ -1171,7 +1173,7 @@ void swap(workbook &left, workbook &right)
 
 workbook &workbook::operator=(workbook other)
 {
-    swap(*this, other);
+    swap(other);
     d_->stylesheet_.get().parent = this;
 
     return *this;
@@ -1180,7 +1182,7 @@ workbook &workbook::operator=(workbook other)
 workbook::workbook(workbook &&other)
     : workbook(nullptr)
 {
-    swap(*this, other);
+    swap(other);
 }
 
 workbook::workbook(const workbook &other)

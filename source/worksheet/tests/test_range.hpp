@@ -19,7 +19,8 @@ public:
         {
             for (auto column = 1; column <= 10; ++column)
             {
-                ws.cell(column, row).value(xlnt::cell_reference(column, row).to_string());
+                auto ref = xlnt::cell_reference(column, row);
+                ws[ref].value(ref.to_string());
             }
         }
 

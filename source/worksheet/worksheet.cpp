@@ -82,22 +82,6 @@ bool worksheet::has_frozen_panes() const
                || d_->views_.front().pane().state == pane_state::frozen_split);
 }
 
-std::string worksheet::unique_sheet_name(const std::string &value) const
-{
-    auto names = workbook().sheet_titles();
-    auto match = std::find(names.begin(), names.end(), value);
-
-    std::size_t append = 0;
-
-    while (match != names.end())
-    {
-        append++;
-        match = std::find(names.begin(), names.end(), value + std::to_string(append));
-    }
-
-    return append == 0 ? value : value + std::to_string(append);
-}
-
 void worksheet::create_named_range(const std::string &name, const std::string &reference_string)
 {
     create_named_range(name, range_reference(reference_string));
@@ -373,16 +357,6 @@ void worksheet::unfreeze_panes()
     primary_view.clear_pane();
 }
 
-cell worksheet::cell(column_t column, row_t row)
-{
-    return cell(cell_reference(column, row));
-}
-
-const cell worksheet::cell(column_t column, row_t row) const
-{
-    return cell(cell_reference(column, row));
-}
-
 cell worksheet::cell(const cell_reference &reference)
 {
     if (d_->cell_map_.find(reference.row()) == d_->cell_map_.end())
@@ -425,6 +399,21 @@ bool worksheet::has_row_properties(row_t row) const
 }
 
 range worksheet::named_range(const std::string &name)
+{
+    if (!workbook().has_named_range(name))
+    {
+        throw key_not_found();
+    }
+
+    if (!has_named_range(name))
+    {
+        throw key_not_found();
+    }
+
+    return range(d_->named_ranges_[name].targets()[0].second);
+}
+
+const range worksheet::named_range(const std::string &name) const
 {
     if (!workbook().has_named_range(name))
     {
@@ -510,17 +499,27 @@ range_reference worksheet::calculate_dimension() const
 
 range worksheet::range(const std::string &reference_string)
 {
+    if (has_named_range(reference_string))
+    {
+        return named_range(reference_string);
+    }
+
+    return range(range_reference(reference_string));
+}
+
+const range worksheet::range(const std::string &reference_string) const
+{
+    if (has_named_range(reference_string))
+    {
+        return named_range(reference_string);
+    }
+
     return range(range_reference(reference_string));
 }
 
 range worksheet::range(const range_reference &reference)
 {
     return xlnt::range(*this, reference);
-}
-
-const range worksheet::range(const std::string &reference_string) const
-{
-    return range(range_reference(reference_string));
 }
 
 const range worksheet::range(const range_reference &reference) const
@@ -773,21 +772,7 @@ const cell worksheet::operator[](const cell_reference &ref) const
     return cell(ref);
 }
 
-range worksheet::operator[](const range_reference &ref)
-{
-    return range(ref);
-}
-
-range worksheet::operator[](const std::string &name)
-{
-    if (has_named_range(name))
-    {
-        return named_range(name);
-    }
-    return range(range_reference(name));
-}
-
-bool worksheet::has_named_range(const std::string &name)
+bool worksheet::has_named_range(const std::string &name) const
 {
     return d_->named_ranges_.find(name) != d_->named_ranges_.end();
 }
@@ -812,16 +797,6 @@ class header_footer worksheet::header_footer() const
     return d_->header_footer_.get();
 }
 
-void worksheet::parent(xlnt::workbook &wb)
-{
-    d_->parent_ = &wb;
-}
-
-std::vector<std::string> worksheet::formula_attributes() const
-{
-    return {};
-}
-
 cell_reference worksheet::point_pos(int left, int top) const
 {
     column_t current_column = 1;
@@ -841,11 +816,6 @@ cell_reference worksheet::point_pos(int left, int top) const
     }
 
     return {current_column - 1, current_row - 1};
-}
-
-cell_reference worksheet::point_pos(const std::pair<int, int> &point) const
-{
-    return point_pos(point.first, point.second);
 }
 
 void worksheet::sheet_state(xlnt::sheet_state state)
@@ -1078,6 +1048,11 @@ double worksheet::row_height(row_t row) const
 void worksheet::garbage_collect_formulae()
 {
     workbook().garbage_collect_formulae();
+}
+
+void worksheet::parent(xlnt::workbook &wb)
+{
+    d_->parent_ = &wb;
 }
 
 } // namespace xlnt

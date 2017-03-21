@@ -928,17 +928,17 @@ public:
     void test_unique_sheet_name()
     {
         xlnt::workbook wb;
-        auto ws = wb.active_sheet();
 
-        auto active_name = ws.title();
-        auto next_name = ws.unique_sheet_name(active_name);
+        auto first_created = wb.create_sheet();
+        auto second_created = wb.create_sheet();
 
-        TS_ASSERT_DIFFERS(active_name, next_name);
+        TS_ASSERT_DIFFERS(first_created.title(), second_created.title());
     }
 
     void test_page_margins()
     {
         xlnt::workbook wb;
+
         auto ws = wb.active_sheet();
         auto margins = ws.page_margins();
 
@@ -948,6 +948,16 @@ public:
         margins.footer(3);
         margins.left(4);
         margins.right(5);
+
+        ws.page_margins(margins);
+        
+        TS_ASSERT(ws.has_page_margins());
+        TS_ASSERT_EQUALS(ws.page_margins().top(), 0);
+        TS_ASSERT_EQUALS(ws.page_margins().bottom(), 1);
+        TS_ASSERT_EQUALS(ws.page_margins().header(), 2);
+        TS_ASSERT_EQUALS(ws.page_margins().footer(), 3);
+        TS_ASSERT_EQUALS(ws.page_margins().left(), 4);
+        TS_ASSERT_EQUALS(ws.page_margins().right(), 5);
     }
 
     void test_garbage_collect()
@@ -1028,14 +1038,14 @@ public:
         ws1[xlnt::cell_reference("A2")].value(true);
 
         TS_ASSERT_EQUALS(ws1[xlnt::cell_reference("A2")].value<bool>(), true);
-        TS_ASSERT_EQUALS((*(*ws1[xlnt::range_reference("A2:A2")].begin()).begin()).value<bool>(), true);
+        TS_ASSERT_EQUALS((*(*ws1.range("A2:A2").begin()).begin()).value<bool>(), true);
 
         ws1.create_named_range("rangey", "A2:A2");
-        TS_ASSERT_EQUALS(ws1[std::string("rangey")], ws1.range("A2:A2"));
-        TS_ASSERT_EQUALS(ws1[std::string("A2:A2")], ws1.range("A2:A2"));
-        TS_ASSERT(ws1[std::string("rangey")] != ws1.range("A2:A3"));
+        TS_ASSERT_EQUALS(ws1.range("rangey"), ws1.range("A2:A2"));
+        TS_ASSERT_EQUALS(ws1.range("A2:A2"), ws1.range("A2:A2"));
+        TS_ASSERT(ws1.range("rangey") != ws1.range("A2:A3"));
 
-        TS_ASSERT_EQUALS(ws1[std::string("rangey")].cell("A1"), ws1.cell("A2"));
+        TS_ASSERT_EQUALS(ws1.range("rangey").cell("A1"), ws1.cell("A2"));
     }
 
     void test_reserve()
@@ -1110,7 +1120,7 @@ public:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
 
-        TS_ASSERT_EQUALS(ws.point_pos({0, 0}), "A1");
+        TS_ASSERT_EQUALS(ws.point_pos(0, 0), "A1");
     }
 
 	void test_named_range_named_cell_reference()

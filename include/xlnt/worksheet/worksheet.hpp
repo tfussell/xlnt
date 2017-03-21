@@ -172,47 +172,41 @@ public:
     // container
 
     /// <summary>
-    ///
-    /// </summary>
-    class cell cell(column_t column, row_t row);
-
-    /// <summary>
-    ///
-    /// </summary>
-    const class cell cell(column_t column, row_t row) const;
-
-    /// <summary>
-    ///
-    /// </summary>
-    class cell cell(const cell_reference &reference);
-
-    /// <summary>
-    ///
-    /// </summary>
-    const class cell cell(const cell_reference &reference) const;
-
-    /// <summary>
-    ///
+    /// Returns true if this sheet has an initialized cell at the given reference.
     /// </summary>
     bool has_cell(const cell_reference &reference) const;
 
     /// <summary>
-    ///
+    /// Returns the cell at the given reference. If the cell doesn't exist, it
+    /// will be initialized to null before being returned.
+    /// </summary>
+    class cell cell(const cell_reference &reference);
+
+    /// <summary>
+    /// Returns the cell at the given reference. If the cell doesn't exist, an
+    /// invalid_parameter exception will be thrown.
+    /// </summary>
+    const class cell cell(const cell_reference &reference) const;
+
+    /// <summary>
+    /// Returns the range defined by reference string. If reference string is the name of
+    /// a previously-defined named range in the sheet, it will be returned.
     /// </summary>
     class range range(const std::string &reference_string);
 
     /// <summary>
-    ///
-    /// </summary>
-    class range range(const range_reference &reference);
-
-    /// <summary>
-    ///
+    /// Returns the range defined by reference string. If reference string is the name of
+    /// a previously-defined named range in the sheet, it will be returned.
     /// </summary>
     const class range range(const std::string &reference_string) const;
 
     /// <summary>
-    ///
+    /// Returns the range defined by reference.
+    /// </summary>
+    class range range(const range_reference &reference);
+
+    /// <summary>
+    /// Returns the range defined by reference.
     /// </summary>
     const class range range(const range_reference &reference) const;
 
@@ -302,16 +296,6 @@ public:
     /// </summary>
     cell_reference point_pos(int left, int top) const;
 
-    /// <summary>
-    ///
-    /// </summary>
-    cell_reference point_pos(const std::pair<int, int> &point) const;
-
-    /// <summary>
-    ///
-    /// </summary>
-    std::string unique_sheet_name(const std::string &value) const;
-
     // named range
 
     /// <summary>
@@ -327,15 +311,22 @@ public:
     /// <summary>
     ///
     /// </summary>
-    bool has_named_range(const std::string &name);
+    bool has_named_range(const std::string &name) const;
 
     /// <summary>
-    ///
+    /// Returns the named range with the given name. Throws key_not_found
+    /// exception if the named range doesn't exist.
     /// </summary>
     class range named_range(const std::string &name);
 
     /// <summary>
-    ///
+    /// Returns the named range with the given name. Throws key_not_found
+    /// exception if the named range doesn't exist.
+    /// </summary>
+    const class range named_range(const std::string &name) const;
+
+    /// <summary>
+    /// Removes a named range with the given name.
     /// </summary>
     void remove_named_range(const std::string &name);
 
@@ -480,26 +471,6 @@ public:
     /// <summary>
     ///
     /// </summary>
-    class range operator[](const range_reference &reference);
-
-    /// <summary>
-    ///
-    /// </summary>
-    const class range operator[](const range_reference &reference) const;
-
-    /// <summary>
-    ///
-    /// </summary>
-    class range operator[](const std::string &range_string);
-
-    /// <summary>
-    ///
-    /// </summary>
-    const class range operator[](const std::string &range_string) const;
-
-    /// <summary>
-    ///
-    /// </summary>
     class range operator()(const cell_reference &top_left, const cell_reference &bottom_right);
 
     /// <summary>
@@ -515,189 +486,181 @@ public:
     // page
 
     /// <summary>
-    ///
+    /// Returns true if this worksheet has a page setup.
     /// </summary>
     bool has_page_setup() const;
 
     /// <summary>
-    ///
+    /// Returns the page setup for this sheet.
     /// </summary>
     xlnt::page_setup page_setup() const;
 
     /// <summary>
-    ///
+    /// Sets the page setup for this sheet to setup.
     /// </summary>
     void page_setup(const struct page_setup &setup);
 
     /// <summary>
-    ///
+    /// Returns true if this page has margins.
     /// </summary>
     bool has_page_margins() const;
 
     /// <summary>
-    ///
+    /// Returns the margins of this sheet.
     /// </summary>
     xlnt::page_margins page_margins() const;
 
     /// <summary>
-    ///
+    /// Sets the margins of this sheet to margins.
     /// </summary>
     void page_margins(const class page_margins &margins);
 
     // auto filter
 
     /// <summary>
-    ///
+    /// Returns the current auto-filter of this sheet.
     /// </summary>
     range_reference auto_filter() const;
 
     /// <summary>
-    ///
+    /// Sets the auto-filter of this sheet to the range defined by range_string.
     /// </summary>
     void auto_filter(const std::string &range_string);
 
     /// <summary>
-    ///
+    /// Sets the auto-filter of this sheet to the given range.
     /// </summary>
     void auto_filter(const xlnt::range &range);
 
     /// <summary>
-    ///
+    /// Sets the auto-filter of this sheet to the range defined by reference.
     /// </summary>
     void auto_filter(const range_reference &reference);
 
     /// <summary>
-    ///
+    /// Clear the auto-filter from this sheet.
     /// </summary>
     void clear_auto_filter();
 
     /// <summary>
-    ///
+    /// Returns true if this sheet has an auto-filter set.
     /// </summary>
     bool has_auto_filter() const;
 
     /// <summary>
-    ///
+    /// Reserve n rows. This can be optionally called before adding many rows
+    /// to improve performance.
     /// </summary>
     void reserve(std::size_t n);
 
     /// <summary>
-    ///
+    /// Returns true if this sheet has a header/footer.
     /// </summary>
     bool has_header_footer() const;
 
     /// <summary>
-    ///
+    /// Returns the header/footer of this sheet.
     /// </summary>
     class header_footer header_footer() const;
 
     /// <summary>
-    ///
+    /// Sets the header/footer of this sheet to new_header_footer.
     /// </summary>
     void header_footer(const class header_footer &new_header_footer);
 
     /// <summary>
-    ///
-    /// </summary>
-    void parent(class workbook &wb);
-
-    /// <summary>
-    ///
-    /// </summary>
-    std::vector<std::string> formula_attributes() const;
-
-    /// <summary>
-    ///
+    /// Returns the sheet state of this sheet.
     /// </summary>
     xlnt::sheet_state sheet_state() const;
 
     /// <summary>
-    ///
+    /// Sets the sheet state of this sheet.
     /// </summary>
     void sheet_state(xlnt::sheet_state state);
 
     /// <summary>
-    ///
+    /// Returns an iterator to the first row in this sheet.
     /// </summary>
     iterator begin();
 
     /// <summary>
-    ///
+    /// Returns an iterator one past the last row in this sheet.
     /// </summary>
     iterator end();
 
     /// <summary>
-    ///
+    /// Return a constant iterator to the first row in this sheet.
     /// </summary>
     const_iterator begin() const;
 
     /// <summary>
-    ///
+    /// Returns a constant iterator to one past the last row in this sheet.
     /// </summary>
     const_iterator end() const;
 
     /// <summary>
-    ///
+    /// Return a constant iterator to the first row in this sheet.
     /// </summary>
     const_iterator cbegin() const;
 
     /// <summary>
-    ///
+    /// Returns a constant iterator to one past the last row in this sheet.
     /// </summary>
     const_iterator cend() const;
 
     /// <summary>
-    ///
+    /// Returns a range containing all of the cells in this sheet. If skip_null is true,
+    /// iterating over the range will only return rows and cells that are non-null.
     /// </summary>
     class range iter_cells(bool skip_null);
 
     /// <summary>
-    ///
+    /// Sets rows to repeat at top during printing.
     /// </summary>
     void print_title_rows(row_t first_row, row_t last_row);
 
     /// <summary>
-    ///
+    /// Sets rows to repeat at top during printing.
     /// </summary>
     void print_title_rows(row_t last_row);
 
     /// <summary>
-    ///
+    /// Sets columns to repeat at left during printing.
     /// </summary>
     void print_title_cols(column_t first_column, column_t last_column);
 
     /// <summary>
-    ///
+    /// Sets columns to repeat at left during printing.
     /// </summary>
     void print_title_cols(column_t last_column);
 
     /// <summary>
-    ///
+    /// Returns a string representation of the defined print titles.
     /// </summary>
     std::string print_titles() const;
 
     /// <summary>
-    ///
+    /// Sets the print area of this sheet to print_area.
     /// </summary>
     void print_area(const std::string &print_area);
 
     /// <summary>
-    ///
+    /// Returns the print area defined for this sheet.
     /// </summary>
     range_reference print_area() const;
 
     /// <summary>
-    ///
+    /// Returns true if this sheet has any number of views defined.
     /// </summary>
     bool has_view() const;
 
     /// <summary>
-    ///
+    /// Returns the view at the given index.
     /// </summary>
     sheet_view view(std::size_t index = 0) const;
 
     /// <summary>
-    ///
+    /// Adds new_view to the set of available views for this sheet.
     /// </summary>
     void add_view(const sheet_view &new_view);
 
@@ -738,12 +701,17 @@ private:
     friend class detail::xlsx_producer;
 
     /// <summary>
-    ///
+    /// Constructs a worksheet impl wrapper from d.
+    /// </summary>
+    worksheet(detail::worksheet_impl *d);
+
+    /// <summary>
+    /// Creates a comments part in the manifest as a relationship target of this sheet.
     /// </summary>
     void register_comments_in_manifest();
 
     /// <summary>
-    /// Add the calcChain part to the workbook if it doesn't already exist.
+    /// Creates a calcChain part in the manifest if it doesn't already exist.
     /// </summary>
     void register_calc_chain_in_manifest();
 
@@ -751,14 +719,14 @@ private:
     /// Removes calcChain part from manifest if no formulae remain in workbook.
     /// </summary>
     void garbage_collect_formulae();
-
+    
     /// <summary>
-    ///
+    /// Sets the parent of this worksheet to wb.
     /// </summary>
-    worksheet(detail::worksheet_impl *d);
+    void parent(class workbook &wb);
 
     /// <summary>
-    ///
+    /// The pointer to this sheet's implementation.
     /// </summary>
     detail::worksheet_impl *d_;
 };
