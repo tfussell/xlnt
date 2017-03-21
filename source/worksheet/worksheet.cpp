@@ -111,11 +111,6 @@ void worksheet::create_named_range(const std::string &name, const range_referenc
     d_->named_ranges_[name] = xlnt::named_range(name, targets);
 }
 
-range worksheet::operator()(const xlnt::cell_reference &top_left, const xlnt::cell_reference &bottom_right)
-{
-    return range(range_reference(top_left, bottom_right));
-}
-
 cell worksheet::operator[](const cell_reference &ref)
 {
     return cell(ref);
@@ -595,22 +590,6 @@ void worksheet::unmerge_cells(column_t start_column, row_t start_row, column_t e
     unmerge_cells(xlnt::range_reference(start_column, start_row, end_column, end_row));
 }
 
-void worksheet::append()
-{
-    cell(cell_reference(1, next_row()));
-}
-
-void worksheet::append(const std::vector<std::string> &cells)
-{
-    xlnt::cell_reference next(1, next_row());
-
-    for (auto cell : cells)
-    {
-        this->cell(next).value(cell);
-        next.column_index(next.column_index() + 1);
-    }
-}
-
 row_t worksheet::next_row() const
 {
     auto row = highest_row() + 1;
@@ -623,68 +602,9 @@ row_t worksheet::next_row() const
     return row;
 }
 
-void worksheet::append(const std::vector<int> &cells)
-{
-    xlnt::cell_reference next(1, next_row());
-
-    for (auto cell : cells)
-    {
-        this->cell(next).value(static_cast<long double>(cell));
-        next.column_index(next.column_index() + 1);
-    }
-}
-
-void worksheet::append(const std::unordered_map<std::string, std::string> &cells)
-{
-    auto row = next_row();
-
-    for (auto cell : cells)
-    {
-        this->cell(cell_reference(cell.first, row)).value(cell.second);
-    }
-}
-
-void worksheet::append(const std::unordered_map<int, std::string> &cells)
-{
-    auto row = next_row();
-
-    for (auto cell : cells)
-    {
-        this->cell(cell_reference(static_cast<column_t::index_t>(cell.first), row)).value(cell.second);
-    }
-}
-
-void worksheet::append(const std::vector<int>::const_iterator begin, const std::vector<int>::const_iterator end)
-{
-    xlnt::cell_reference next(1, next_row());
-
-    for (auto i = begin; i != end; i++)
-    {
-        cell(next).value(static_cast<long double>(*i));
-        next.column_index(next.column_index() + 1);
-    }
-}
-
 xlnt::range worksheet::rows() const
 {
     return range(calculate_dimension());
-}
-
-xlnt::range worksheet::rows(const std::string &range_string) const
-{
-    return range(range_reference(range_string));
-}
-
-xlnt::range worksheet::rows(const std::string &range_string, int row_offset, int column_offset) const
-{
-    range_reference reference(range_string);
-    return range(reference.make_offset(column_offset, row_offset));
-}
-
-xlnt::range worksheet::rows(int row_offset, int column_offset) const
-{
-    range_reference reference(calculate_dimension());
-    return range(reference.make_offset(column_offset, row_offset));
 }
 
 xlnt::range worksheet::columns() const

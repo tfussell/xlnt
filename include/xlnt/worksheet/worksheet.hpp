@@ -211,75 +211,62 @@ public:
     const class range range(const range_reference &reference) const;
 
     /// <summary>
-    ///
+    /// Returns a range encompassing all cells in this sheet which will
+    /// be iterated upon in row-major order.
     /// </summary>
     class range rows() const;
 
     /// <summary>
-    ///
-    /// </summary>
-    class range rows(const std::string &range_string) const;
-
-    /// <summary>
-    ///
-    /// </summary>
-    class range rows(int row_offset, int column_offset) const;
-
-    /// <summary>
-    ///
-    /// </summary>
-    class range rows(const std::string &range_string, int row_offset, int column_offset) const;
-
-    /// <summary>
-    ///
+    /// Returns a range ecompassing all cells in this sheet which will
+    /// be iterated upon in column-major order.
     /// </summary>
     class range columns() const;
 
     // properties
 
     /// <summary>
-    ///
+    /// Returns the column properties for the given column.
     /// </summary>
     xlnt::column_properties &column_properties(column_t column);
 
     /// <summary>
-    ///
+    /// Returns the column properties for the given column.
     /// </summary>
     const xlnt::column_properties &column_properties(column_t column) const;
 
     /// <summary>
-    ///
+    /// Returns true if column properties have been set for the given column.
     /// </summary>
     bool has_column_properties(column_t column) const;
 
     /// <summary>
-    ///
+    /// Sets column properties for the given column to props.
     /// </summary>
     void add_column_properties(column_t column, const class column_properties &props);
 
     /// <summary>
-    /// Calculate the width of the given column. This will be the default column width if
+    /// Calculates the width of the given column. This will be the default column width if
     /// a custom width is not set on this column's column_properties.
     /// </summary>
     double column_width(column_t column) const;
 
     /// <summary>
-    ///
+    /// Returns the row properties for the given row.
     /// </summary>
     xlnt::row_properties &row_properties(row_t row);
 
     /// <summary>
-    ///
+    /// Returns the row properties for the given row.
     /// </summary>
     const xlnt::row_properties &row_properties(row_t row) const;
 
     /// <summary>
-    ///
+    /// Returns true if row properties have been set for the given row.
     /// </summary>
     bool has_row_properties(row_t row) const;
 
     /// <summary>
-    ///
+    /// Sets row properties for the given row to props.
     /// </summary>
     void add_row_properties(row_t row, const class row_properties &props);
 
@@ -292,7 +279,7 @@ public:
     // positioning
 
     /// <summary>
-    ///
+    /// Returns a reference to the cell at the given point coordinates.
     /// </summary>
     cell_reference point_pos(int left, int top) const;
 
@@ -399,38 +386,6 @@ public:
     /// </summary>
     std::vector<range_reference> merged_ranges() const;
 
-    // append
-
-    /// <summary>
-    ///
-    /// </summary>
-    void append();
-
-    /// <summary>
-    ///
-    /// </summary>
-    void append(const std::vector<std::string> &cells);
-
-    /// <summary>
-    ///
-    /// </summary>
-    void append(const std::vector<int> &cells);
-
-    /// <summary>
-    ///
-    /// </summary>
-    void append(const std::unordered_map<std::string, std::string> &cells);
-
-    /// <summary>
-    ///
-    /// </summary>
-    void append(const std::unordered_map<int, std::string> &cells);
-
-    /// <summary>
-    ///
-    /// </summary>
-    void append(const std::vector<int>::const_iterator begin, const std::vector<int>::const_iterator end);
-
     // operators
 
     /// <summary>
@@ -459,27 +414,18 @@ public:
     void operator=(const worksheet &other);
 
     /// <summary>
-    ///
+    /// Convenience method for worksheet::cell method.
     /// </summary>
     class cell operator[](const cell_reference &reference);
 
     /// <summary>
-    ///
+    /// Convenience method for worksheet::cell method.
     /// </summary>
     const class cell operator[](const cell_reference &reference) const;
 
     /// <summary>
-    ///
-    /// </summary>
-    class range operator()(const cell_reference &top_left, const cell_reference &bottom_right);
-
-    /// <summary>
-    ///
-    /// </summary>
-    const class range operator()(const cell_reference &top_left, const cell_reference &bottom_right) const;
-
-    /// <summary>
-    ///
+    /// Returns true if this worksheet is equal to other. If reference is true, the comparison
+    /// will only check that both worksheets point to the same sheet in the same workbook.
     /// </summary>
     bool compare(const worksheet &other, bool reference) const;
 

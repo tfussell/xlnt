@@ -62,97 +62,7 @@ public:
         
         TS_ASSERT_EQUALS(ws.rows()[row][column].reference(), coordinate);
     }
-    
-    void test_iter_rows()
-    {
-        xlnt::workbook wb;
-        auto ws = wb.active_sheet();
-        
-        const std::vector<std::vector<std::string>> expected =
-        {
-            { "A1", "B1", "C1" },
-            { "A2", "B2", "C2" },
-            { "A3", "B3", "C3" },
-            { "A4", "B4", "C4" }
-        };
-    
-        auto rows = ws.rows("A1:C4");
-        auto expected_row_iter = expected.begin();
-        
-        for(auto row : rows)
-        {
-            auto expected_cell_iter = (*expected_row_iter).begin();
-            
-            for(auto cell : row)
-            {
-                TS_ASSERT_EQUALS(cell.reference(), *expected_cell_iter);
-                expected_cell_iter++;
-            }
-            
-            expected_row_iter++;
-        }
-    }
-    
-    void test_iter_rows_offset()
-    {
-        xlnt::workbook wb;
-        auto ws = wb.active_sheet();
-        auto rows = ws.rows("A1:C4", 1, 3);
-        
-        const std::vector<std::vector<std::string>> expected =
-        {
-            { "D2", "E2", "F2" },
-            { "D3", "E3", "F3" },
-            { "D4", "E4", "F4" },
-            { "D5", "E5", "F5" }
-        };
-    
-        auto expected_row_iter = expected.begin();
-        
-        for(auto row : rows)
-        {
-            auto expected_cell_iter = (*expected_row_iter).begin();
-            
-            for(auto cell : row)
-            {
-                TS_ASSERT_EQUALS(cell.reference(), *expected_cell_iter);
-                expected_cell_iter++;
-            }
-            
-            expected_row_iter++;
-        }
-    }
 
-    void test_iter_rows_offset_int_int()
-    {
-        xlnt::workbook wb;
-        auto ws = wb.active_sheet();
-        auto rows = ws.rows(1, 3);
-
-        const std::vector<std::vector<std::string>> expected =
-        {
-            { "D2", "E2", "F2" },
-            { "D3", "E3", "F3" },
-            { "D4", "E4", "F4" },
-            { "D5", "E5", "F5" }
-        };
-
-        auto expected_row_iter = expected.begin();
-
-        for (auto row : rows)
-        {
-            auto expected_cell_iter = (*expected_row_iter).begin();
-
-            for (auto cell : row)
-            {
-                TS_ASSERT_EQUALS(cell.reference(), *expected_cell_iter);
-                expected_cell_iter++;
-            }
-
-            expected_row_iter++;
-        }
-    }
-    
     void test_get_named_range()
     {
         xlnt::workbook wb;
@@ -227,91 +137,6 @@ public:
         ws.cell("A1").value("test");
         TS_ASSERT_EQUALS("test", ws.cell("A1").value<std::string>());
         TS_ASSERT_EQUALS(ws.cell("A1").hyperlink(), "http://test.com");
-    }
-    
-    void test_append()
-    {
-        xlnt::workbook wb;
-		auto ws = wb.active_sheet();
-        ws.append(std::vector<std::string> {"value"});
-        TS_ASSERT_EQUALS("value", ws.cell("A1").value<std::string>());
-    }
-    
-    void test_append_list()
-    {
-        xlnt::workbook wb;
-		auto ws = wb.active_sheet();
-        
-        ws.append(std::vector<std::string> {"This is A1", "This is B1"});
-        
-        TS_ASSERT_EQUALS("This is A1", ws.cell("A1").value<std::string>());
-        TS_ASSERT_EQUALS("This is B1", ws.cell("B1").value<std::string>());
-    }
-    
-    void test_append_dict_letter()
-    {
-        xlnt::workbook wb;
-		auto ws = wb.active_sheet();
-        
-        const std::unordered_map<std::string, std::string> dict_letter =
-        {
-            { "A", "This is A1" },
-            { "C", "This is C1" }
-        };
-        
-        ws.append(dict_letter);
-        
-        TS_ASSERT_EQUALS("This is A1", ws.cell("A1").value<std::string>());
-        TS_ASSERT_EQUALS("This is C1", ws.cell("C1").value<std::string>());
-    }
-    
-    void test_append_dict_index()
-    {
-        xlnt::workbook wb;
-		auto ws = wb.active_sheet();
-        
-        const std::unordered_map<int, std::string> dict_index =
-        {
-            { 1, "This is A1" },
-            { 3, "This is C1" }
-        };
-        
-        ws.append(dict_index);
-        
-        TS_ASSERT_EQUALS("This is A1", ws.cell("A1").value<std::string>());
-        TS_ASSERT_EQUALS("This is C1", ws.cell("C1").value<std::string>());
-    }
-    
-    void test_append_iterator()
-    {
-        std::vector<int> range;
-        
-        for(int i = 0; i < 30; i++)
-        {
-            range.push_back(i);
-        }
-        
-        xlnt::workbook wb;
-		auto ws = wb.active_sheet();
-        ws.append(range.begin(), range.end());
-        
-        TS_ASSERT_EQUALS(ws[xlnt::cell_reference("AD1")].value<int>(), 29);
-    }
-    
-    void test_append_2d_list()
-    {
-        xlnt::workbook wb;
-		auto ws = wb.active_sheet();
-        
-        ws.append(std::vector<std::string> {"This is A1", "This is B1"});
-        ws.append(std::vector<std::string> {"This is A2", "This is B2"});
-        
-        auto vals = ws.range("A1:B2");
-        
-        TS_ASSERT_EQUALS(vals[0][0].value<std::string>(), "This is A1");
-        TS_ASSERT_EQUALS(vals[0][1].value<std::string>(), "This is B1");
-        TS_ASSERT_EQUALS(vals[1][0].value<std::string>(), "This is A2");
-        TS_ASSERT_EQUALS(vals[1][1].value<std::string>(), "This is B2");
     }
 
     void test_rows()
@@ -418,7 +243,7 @@ public:
     {
         xlnt::workbook wb;
 		auto ws = wb.active_sheet();
-        auto cell_range = ws("A1", "B2");
+        auto cell_range = ws.range("A1:B2");
         TS_ASSERT_EQUALS(cell_range[0][0], ws.cell("A1"));
         TS_ASSERT_EQUALS(cell_range[1][0], ws.cell("A2"));
         TS_ASSERT_EQUALS(cell_range[0][1], ws.cell("B1"));
@@ -637,10 +462,7 @@ public:
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
-        ws.append();
-        ws.append(std::vector<int> { 5 });
-        ws.append();
-        ws.append(std::vector<int> { 4 });
+        ws.cell("D4").value("D4");
         TS_ASSERT_EQUALS(ws.highest_row(), 4);
     }
     
@@ -649,8 +471,12 @@ public:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
 
-        ws.append({"A1", "B1", "C1"});
-        ws.append({"A2", "B2", "C2"});
+        ws.cell("A1").value("A1");
+        ws.cell("B1").value("B1");
+        ws.cell("C1").value("C1");
+        ws.cell("A2").value("A2");
+        ws.cell("B2").value("B2");
+        ws.cell("C2").value("C2");
 
         const xlnt::worksheet ws_const = ws;
         const auto rows = ws_const.rows();
@@ -677,8 +503,12 @@ public:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
 
-        ws.append({"A1", "B1", "C1"});
-        ws.append({"A2", "B2", "C2"});
+        ws.cell("A1").value("A1");
+        ws.cell("B1").value("B1");
+        ws.cell("C1").value("C1");
+        ws.cell("A2").value("A2");
+        ws.cell("B2").value("B2");
+        ws.cell("C2").value("C2");
 
         const xlnt::worksheet ws_const = ws;
         const auto rows = ws_const.rows();
@@ -712,8 +542,12 @@ public:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
 
-        ws.append({"A1", "B1", "C1"});
-        ws.append({"A2", "B2", "C2"});
+        ws.cell("A1").value("A1");
+        ws.cell("B1").value("B1");
+        ws.cell("C1").value("C1");
+        ws.cell("A2").value("A2");
+        ws.cell("B2").value("B2");
+        ws.cell("C2").value("C2");
 
         auto columns = ws.columns();
 
@@ -751,8 +585,12 @@ public:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
 
-        ws.append({"A1", "B1", "C1"});
-        ws.append({"A2", "B2", "C2"});
+        ws.cell("A1").value("A1");
+        ws.cell("B1").value("B1");
+        ws.cell("C1").value("C1");
+        ws.cell("A2").value("A2");
+        ws.cell("B2").value("B2");
+        ws.cell("C2").value("C2");
 
         auto columns = ws.columns();
 
@@ -793,8 +631,12 @@ public:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
 
-        ws.append({"A1", "B1", "C1"});
-        ws.append({"A2", "B2", "C2"});
+        ws.cell("A1").value("A1");
+        ws.cell("B1").value("B1");
+        ws.cell("C1").value("C1");
+        ws.cell("A2").value("A2");
+        ws.cell("B2").value("B2");
+        ws.cell("C2").value("C2");
 
         const xlnt::worksheet ws_const = ws;
         const auto columns = ws_const.columns();
@@ -830,8 +672,12 @@ public:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
 
-        ws.append({"A1", "B1", "C1"});
-        ws.append({"A2", "B2", "C2"});
+        ws.cell("A1").value("A1");
+        ws.cell("B1").value("B1");
+        ws.cell("C1").value("C1");
+        ws.cell("A2").value("A2");
+        ws.cell("B2").value("B2");
+        ws.cell("C2").value("C2");
 
         const xlnt::worksheet ws_const = ws;
         const auto columns = ws_const.columns();
