@@ -22,8 +22,8 @@ matrix:
         - COMPILER=g++-6
         - COVERAGE=ON
         - STATIC=ON
-        - SAMPLES=ON
-        - BENCHMARKS=ON
+        - SAMPLES=OFF
+        - BENCHMARKS=OFF
 
 install:
  - gem install coveralls-lcov
