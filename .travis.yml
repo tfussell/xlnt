@@ -1,8 +1,5 @@
-# from: https://github.com/nlohmann/json/blob/master/.travis.yml
-
 language: cpp
-
-sudo: required
+sudo: false
 dist: trusty
 
 notifications:
@@ -33,10 +30,9 @@ script:
  - cd build
  - cmake -D STATIC=$STATIC -D BENCHMARKS=$BENCHMARKS -D SAMPLES=$SAMPLES -D COVERAGE=$COVERAGE -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=Debug ..
  - make VERBOSE=1
- - ./tests/xlnt.test
+ - cd tests
+ - ./xlnt.test && find . -name "*.gcda"
 
 after_success:
- - find . -name "*.gcda"
- - pwd
  - lcov --compat-libtool --directory source/CMakeFiles/xlnt.dir --capture --output-file coverage.info --gcov-tool /usr/bin/gcov-6
  - coveralls-lcov coverage.info
