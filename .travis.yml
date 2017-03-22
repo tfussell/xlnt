@@ -8,7 +8,6 @@ notifications:
 matrix:
   include:
     - os: linux
-      compiler: gcc
       addons:
         apt:
           sources:
