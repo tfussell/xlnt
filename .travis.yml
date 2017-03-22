@@ -30,9 +30,11 @@ install:
 
 script:
  - mkdir build
- - cmake -B build -D STATIC=$STATIC -D BENCHMARKS=$BENCHMARKS -D SAMPLES=$SAMPLES -D COVERAGE=$COVERAGE -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=Debug .
- - cmake --build build
- - ./build/tests/xlnt.test
+ - cd build
+ - cmake -D STATIC=$STATIC -D BENCHMARKS=$BENCHMARKS -D SAMPLES=$SAMPLES -D COVERAGE=$COVERAGE -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=Debug ..
+ - cmake --build .
+ - ./tests/xlnt.test
+ - cd ..
 
 after_success:
  - lcov --compat-libtool --directory build --capture --output-file coverage.info
