@@ -29,6 +29,8 @@ install:
  - gem install coveralls-lcov
 
 script:
+ - ls
+ - cd xlnt
  - mkdir build
  - cmake . -B build -D STATIC=$STATIC -D BENCHMARKS=$BENCHMARKS -D SAMPLES=$SAMPLES -D COVERAGE=$COVERAGE -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=Debug ..
  - cmake --build build
