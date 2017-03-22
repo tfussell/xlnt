@@ -16,7 +16,8 @@ matrix:
           packages:
             - g++-6 zlib1g libcrypto++9 libcrypto++9-dbg libcrypto++-dev cxxtest lcov
       env:
-        - COMPILER=g++-6
+        - CC=gcc-6
+        - CXX=g++-6
         - COVERAGE=ON
         - STATIC=ON
         - SAMPLES=OFF
@@ -28,11 +29,11 @@ install:
 script:
  - mkdir build
  - cd build
- - cmake -D STATIC=$STATIC -D BENCHMARKS=$BENCHMARKS -D SAMPLES=$SAMPLES -D COVERAGE=$COVERAGE -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=Debug ..
+ - cmake -D STATIC=$STATIC -D BENCHMARKS=$BENCHMARKS -D SAMPLES=$SAMPLES -D COVERAGE=$COVERAGE -D CMAKE_BUILD_TYPE=Debug ..
  - make VERBOSE=1
- - cd tests
- - ./xlnt.test && find .. -name "*.gcda"
+ - ./tests/xlnt.test
 
 after_success:
+ - find .. -name "*.gcda"
  - lcov --compat-libtool --directory source/CMakeFiles/xlnt.dir --capture --output-file coverage.info --gcov-tool /usr/bin/gcov-6
  - coveralls-lcov coverage.info
