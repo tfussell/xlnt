@@ -17,7 +17,7 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-6 zlib1g libcrypto++9 libcrypto++9-dbg libcrypto++-dev cxxtest lcov ruby
+            - g++-6 zlib1g libcrypto++9 libcrypto++9-dbg libcrypto++-dev cxxtest lcov
       env:
         - COMPILER=g++-6
         - COVERAGE=ON
@@ -30,7 +30,7 @@ install:
 
 before_script:
  - mkdir build
- - cmake -H . -B build -D STATIC=$STATIC -D BENCHMARKS=$BENCHMARKS -D SAMPLES=$SAMPLES -D COVERAGE=$COVERAGE -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=Debug ..
+ - cmake . -B build -D STATIC=$STATIC -D BENCHMARKS=$BENCHMARKS -D SAMPLES=$SAMPLES -D COVERAGE=$COVERAGE -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=Debug ..
 
 script:
  - cmake --build build
