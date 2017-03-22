@@ -26,8 +26,6 @@ matrix:
         - BENCHMARKS=OFF
 
 install:
- - gcov --version
- - ls -al /usr/bin/gcov*
  - gem install coveralls-lcov
 
 script:
@@ -39,5 +37,5 @@ script:
 
 after_success:
  - ls source/CMakeFiles/xlnt.dir/cell
- - lcov --compat-libtool --directory source/CMakeFiles/xlnt.dir --capture --output-file coverage.info
+ - lcov --compat-libtool --directory source/CMakeFiles/xlnt.dir --capture --output-file coverage.info --gcov-tool /usr/bin/gcov-6
  - coveralls-lcov coverage.info
