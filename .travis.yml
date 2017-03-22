@@ -36,6 +36,6 @@ script:
  - ./tests/xlnt.test
 
 after_success:
- - ls source/CMakeFiles/xlnt.dir/cell
+ - find . -name "*.gcda"
  - lcov --compat-libtool --directory source/CMakeFiles/xlnt.dir --capture --output-file coverage.info --gcov-tool /usr/bin/gcov-6
  - coveralls-lcov coverage.info
