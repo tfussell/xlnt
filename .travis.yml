@@ -32,10 +32,11 @@ script:
  - mkdir build
  - cd build
  - cmake -D STATIC=$STATIC -D BENCHMARKS=$BENCHMARKS -D SAMPLES=$SAMPLES -D COVERAGE=$COVERAGE -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=Debug ..
- - cmake --build .
+ - make VERBOSE=1
  - ./tests/xlnt.test
 
 after_success:
- - strings tests/xlnt.test | grep gcda
+ - find . -name "*.gcda"
+ - pwd
  - lcov --compat-libtool --directory source/CMakeFiles/xlnt.dir --capture --output-file coverage.info --gcov-tool /usr/bin/gcov-6
  - coveralls-lcov coverage.info

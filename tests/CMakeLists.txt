@@ -40,7 +40,7 @@ set(RUNNER "${CMAKE_CURRENT_BINARY_DIR}/runner-autogen.cpp")
 set_source_files_properties(${RUNNER} PROPERTIES GENERATED TRUE)
 
 if(COVERAGE)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lgcov --coverage")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fprofile-arcs -ftest-coverage")
 endif()
 
 set(CXXTEST_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cxxtest)
