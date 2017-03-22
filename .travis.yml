@@ -15,14 +15,14 @@ matrix:
           packages:
             - g++-6 zlib1g libcrypto++9 libcrypto++9-dbg libcrypto++-dev cxxtest lcov
       env:
-        - CC=gcc-6
-        - CXX=g++-6
         - COVERAGE=ON
         - STATIC=ON
         - SAMPLES=OFF
         - BENCHMARKS=OFF
 
 install:
+ - export CC=gcc-6
+ - export CXX=g++-6
  - gem install coveralls-lcov
 
 script:
