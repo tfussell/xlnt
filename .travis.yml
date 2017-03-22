@@ -36,6 +36,6 @@ script:
  - cmake --build build
  - ./build/tests/xlnt.test
 
- after_success:
+after_success:
  - lcov --compat-libtool --directory build --capture --output-file coverage.info
  - coveralls-lcov coverage.info
