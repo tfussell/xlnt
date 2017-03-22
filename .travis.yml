@@ -17,17 +17,25 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-6 zlib1g libcrypto++9 libcrypto++9-dbg libcrypto++-dev cxxtest
+            - g++-6 zlib1g libcrypto++9 libcrypto++9-dbg libcrypto++-dev cxxtest lcov ruby
       env:
         - COMPILER=g++-6
-        - COVERAGE=OFF
+        - COVERAGE=ON
         - STATIC=ON
         - SAMPLES=ON
         - BENCHMARKS=ON
 
+install:
+ - gem install coveralls-lcov
+
+before_script:
+ - mkdir build
+ - cmake -H . -B build -D STATIC=$STATIC -D BENCHMARKS=$BENCHMARKS -D SAMPLES=$SAMPLES -D COVERAGE=$COVERAGE -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=Debug ..
+
 script:
-  - mkdir build
-  - cd build
-  - cmake -D STATIC=$STATIC -D BENCHMARKS=$BENCHMARKS -D SAMPLES=$SAMPLES -D COVERAGE=$COVERAGE -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=Debug ..
-  - cmake --build .
-  - cd tests && ./xlnt.test
+ - cmake --build build
+ - ./build/tests/xlnt.test
+
+ after_success:
+ - lcov --compat-libtool --directory build --capture --output-file coverage.info
+ - coveralls-lcov coverage.info
