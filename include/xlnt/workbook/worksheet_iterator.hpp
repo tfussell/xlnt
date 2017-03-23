@@ -33,6 +33,10 @@ namespace xlnt {
 class workbook;
 class worksheet;
 
+// Note: There are const and non-const implementations of this iterator
+// because one needs to point at a const workbook and the other needs
+// to point at a non-const workbook stored as a member variable, respectively.
+
 /// <summary>
 /// Alias the parent class of this iterator to increase clarity.
 /// </summary>
@@ -40,62 +44,132 @@ using ws_iter_type = std::iterator<std::bidirectional_iterator_tag,
     worksheet, std::ptrdiff_t, worksheet *, worksheet>;
 
 /// <summary>
-///
+/// An iterator which is used to iterate over the worksheets in a workbook.
 /// </summary>
 class XLNT_API worksheet_iterator : public ws_iter_type
 {
 public:
     /// <summary>
-    ///
+    /// Constructs a worksheet iterator from a workbook and sheet index.
     /// </summary>
     worksheet_iterator(workbook &wb, std::size_t index);
 
     /// <summary>
-    ///
+    /// Copy constructs a worksheet iterator from another iterator.
     /// </summary>
     worksheet_iterator(const worksheet_iterator &);
 
     /// <summary>
-    ///
+    /// Assigns the iterator so that it points to the same worksheet in the same workbook.
     /// </summary>
     worksheet_iterator &operator=(const worksheet_iterator &);
 
     /// <summary>
-    ///
+    /// Dereferences the iterator to return the worksheet it is pointing to.
+    /// If the iterator points to one-past-the-end of the workbook, an invalid_parameter
+    /// exception will be thrown.
     /// </summary>
     worksheet operator*();
 
     /// <summary>
-    ///
+    /// Returns true if this iterator points to the same worksheet as comparand.
     /// </summary>
     bool operator==(const worksheet_iterator &comparand) const;
 
     /// <summary>
-    ///
+    /// Returns true if this iterator doesn't point to the same worksheet as comparand.
     /// </summary>
-    bool operator!=(const worksheet_iterator &comparand) const
-    {
-        return !(*this == comparand);
-    }
+    bool operator!=(const worksheet_iterator &comparand) const;
 
     /// <summary>
-    ///
+    /// Post-increment the iterator's internal workseet index. Returns a copy of the
+    /// iterator as it was before being incremented.
     /// </summary>
     worksheet_iterator operator++(int);
 
     /// <summary>
-    ///
+    /// Pre-increment the iterator's internal workseet index. Returns a refernce
+    /// to the same iterator.
     /// </summary>
     worksheet_iterator &operator++();
 
 private:
     /// <summary>
-    ///
+    /// The target workbook of this iterator.
     /// </summary>
     workbook &wb_;
 
     /// <summary>
-    ///
+    /// The index of the worksheet in wb_ this iterator is currently pointing to.
+    /// </summary>
+    std::size_t index_;
+};
+
+
+/// <summary>
+/// Alias the parent class of this iterator to increase clarity.
+/// </summary>
+using c_ws_iter_type = std::iterator<std::bidirectional_iterator_tag,
+    const worksheet, std::ptrdiff_t, const worksheet *, const worksheet>;
+
+/// <summary>
+/// An iterator which is used to iterate over the worksheets in a const workbook.
+/// </summary>
+class XLNT_API const_worksheet_iterator : public c_ws_iter_type
+{
+public:
+    /// <summary>
+    /// Constructs a worksheet iterator from a workbook and sheet index.
+    /// </summary>
+    const_worksheet_iterator(const workbook &wb, std::size_t index);
+
+    /// <summary>
+    /// Copy constructs a worksheet iterator from another iterator.
+    /// </summary>
+    const_worksheet_iterator(const const_worksheet_iterator &);
+
+    /// <summary>
+    /// Assigns the iterator so that it points to the same worksheet in the same workbook.
+    /// </summary>
+    const_worksheet_iterator &operator=(const const_worksheet_iterator &);
+
+    /// <summary>
+    /// Dereferences the iterator to return the worksheet it is pointing to.
+    /// If the iterator points to one-past-the-end of the workbook, an invalid_parameter
+    /// exception will be thrown.
+    /// </summary>
+    const worksheet operator*();
+
+    /// <summary>
+    /// Returns true if this iterator points to the same worksheet as comparand.
+    /// </summary>
+    bool operator==(const const_worksheet_iterator &comparand) const;
+
+    /// <summary>
+    /// Returns true if this iterator doesn't point to the same worksheet as comparand.
+    /// </summary>
+    bool operator!=(const const_worksheet_iterator &comparand) const;
+
+    /// <summary>
+    /// Post-increment the iterator's internal workseet index. Returns a copy of the
+    /// iterator as it was before being incremented.
+    /// </summary>
+    const_worksheet_iterator operator++(int);
+
+    /// <summary>
+    /// Pre-increment the iterator's internal workseet index. Returns a refernce
+    /// to the same iterator.
+    /// </summary>
+    const_worksheet_iterator &operator++();
+
+private:
+    /// <summary>
+    /// The target workbook of this iterator.
+    /// </summary>
+    const workbook &wb_;
+
+    /// <summary>
+    /// The index of the worksheet in wb_ this iterator is currently pointing to.
     /// </summary>
     std::size_t index_;
 };

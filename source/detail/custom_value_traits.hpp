@@ -3,11 +3,10 @@
 #include <detail/default_case.hpp>
 #include <detail/include_libstudxml.hpp>
 #include <xlnt/packaging/relationship.hpp>
+#include <xlnt/styles/alignment.hpp>
 #include <xlnt/styles/border.hpp>
 #include <xlnt/styles/font.hpp>
 #include <xlnt/styles/fill.hpp>
-#include <xlnt/styles/horizontal_alignment.hpp>
-#include <xlnt/styles/vertical_alignment.hpp>
 #include <xlnt/utils/exceptions.hpp>
 #include <xlnt/utils/variant.hpp>
 #include <xlnt/worksheet/pane.hpp>

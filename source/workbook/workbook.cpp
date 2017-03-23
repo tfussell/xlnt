@@ -46,7 +46,6 @@
 #include <xlnt/utils/exceptions.hpp>
 #include <xlnt/utils/path.hpp>
 #include <xlnt/utils/variant.hpp>
-#include <xlnt/workbook/const_worksheet_iterator.hpp>
 #include <xlnt/workbook/metadata_property.hpp>
 #include <xlnt/workbook/named_range.hpp>
 #include <xlnt/workbook/theme.hpp>

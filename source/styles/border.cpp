@@ -50,8 +50,10 @@ border::border_property &border::border_property::style(border_style s)
     return *this;
 }
 
-bool operator==(const border::border_property &left, const border::border_property &right)
+bool border::border_property::operator==(const border::border_property &right) const
 {
+    auto &left = *this;
+
     if (left.style().is_set() != right.style().is_set())
     {
         return false;
@@ -79,6 +81,11 @@ bool operator==(const border::border_property &left, const border::border_proper
     }
 
     return true;
+}
+
+bool border::border_property::operator!=(const border::border_property &right) const
+{
+    return !(*this == right);
 }
 
 border::border()
@@ -158,8 +165,10 @@ optional<diagonal_direction> border::diagonal() const
     return diagonal_direction_;
 }
 
-XLNT_API bool operator==(const border &left, const border &right)
+bool border::operator==(const border &right) const
 {
+    auto &left = *this;
+
     for (auto side : border::all_sides())
     {
         if (left.side(side).is_set() != right.side(side).is_set())
@@ -177,6 +186,11 @@ XLNT_API bool operator==(const border &left, const border &right)
     }
 
     return true;
+}
+
+bool border::operator!=(const border &right) const
+{
+    return !(*this == right);
 }
 
 } // namespace xlnt

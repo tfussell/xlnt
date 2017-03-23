@@ -189,6 +189,18 @@ public:
     const class cell cell(const cell_reference &reference) const;
 
     /// <summary>
+    /// Returns the cell at the given column and row. If the cell doesn't exist, it
+    /// will be initialized to null before being returned.
+    /// </summary>
+    class cell cell(column_t column, row_t row);
+
+    /// <summary>
+    /// Returns the cell at the given column and row. If the cell doesn't exist, an
+    /// invalid_parameter exception will be thrown.
+    /// </summary>
+    const class cell cell(column_t column, row_t row) const;
+
+    /// <summary>
     /// Returns the range defined by reference string. If reference string is the name of
     /// a previously-defined named range in the sheet, it will be returned.
     /// </summary>

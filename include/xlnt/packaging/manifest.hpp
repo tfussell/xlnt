@@ -92,12 +92,12 @@ public:
     path canonicalize(const std::vector<xlnt::relationship> &rels) const;
 
     /// <summary>
-    ///
+    /// Registers a new relationship by specifying all of the relationship properties explicitly.
     /// </summary>
     std::string register_relationship(const uri &source, relationship_type type, const uri &target, target_mode mode);
 
     /// <summary>
-    ///
+    /// Registers a new relationship already constructed elsewhere.
     /// </summary>
     std::string register_relationship(const class relationship &rel);
 
@@ -174,22 +174,22 @@ public:
 
 private:
     /// <summary>
-    ///
+    /// Returns the lowest rId for the given part that hasn't already been registered.
     /// </summary>
     std::string next_relationship_id(const path &part) const;
 
     /// <summary>
-    ///
+    /// The map of extensions to default content types.
     /// </summary>
     std::unordered_map<std::string, std::string> default_content_types_;
 
     /// <summary>
-    ///
+    /// The map of package parts to overriding content types.
     /// </summary>
     std::unordered_map<path, std::string> override_content_types_;
 
     /// <summary>
-    ///
+    /// The map of package parts to their registered relationships.
     /// </summary>
     std::unordered_map<path, std::unordered_map<std::string, xlnt::relationship>> relationships_;
 };

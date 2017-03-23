@@ -25,11 +25,36 @@
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/styles/horizontal_alignment.hpp>
-#include <xlnt/styles/vertical_alignment.hpp>
 #include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
+
+/// <summary>
+/// Text can be aligned horizontally in these enumerated ways.
+/// </summary>
+enum class XLNT_API horizontal_alignment
+{
+    general,
+    left,
+    center,
+    right,
+    fill,
+    justify,
+    center_continuous,
+    distributed
+};
+
+/// <summary>
+/// Text can be aligned vertically in these enumerated ways.
+/// </summary>
+enum class XLNT_API vertical_alignment
+{
+    top,
+    center,
+    bottom,
+    justify,
+    distributed
+};
 
 /// <summary>
 /// Alignment options for use in cell formats.
@@ -98,17 +123,14 @@ public:
     alignment &vertical(vertical_alignment vertical);
 
     /// <summary>
-    /// Returns true if left is exactly equal to right.
+    /// Returns true if this alignment is equivalent to other.
     /// </summary>
-    XLNT_API friend bool operator==(const alignment &left, const alignment &right);
+    bool operator==(const alignment &other) const;
 
     /// <summary>
-    /// Returns true if left is not exactly equal to right.
+    /// Returns true if this alignment is not equivalent to other.
     /// </summary>
-    XLNT_API friend bool operator!=(const alignment &left, const alignment &right)
-    {
-        return !(left == right);
-    }
+    bool operator!=(const alignment &other) const;
 
 private:
     bool shrink_to_fit_ = false;

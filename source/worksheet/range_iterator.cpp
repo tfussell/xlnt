@@ -127,4 +127,89 @@ range_iterator range_iterator::operator++(int)
     return old;
 }
 
+
+const_range_iterator::const_range_iterator(const worksheet &ws,
+    const range_reference &start_cell, major_order order)
+    : ws_(ws.d_),
+      current_cell_(start_cell.top_left()),
+      range_(start_cell),
+      order_(order)
+{
+}
+
+const_range_iterator::const_range_iterator(const const_range_iterator &other)
+{
+    *this = other;
+}
+
+bool const_range_iterator::operator==(const const_range_iterator &other) const
+{
+    return ws_ == other.ws_
+        && current_cell_ == other.current_cell_
+        && order_ == other.order_;
+}
+
+bool const_range_iterator::operator!=(const const_range_iterator &other) const
+{
+    return !(*this == other);
+}
+
+const_range_iterator &const_range_iterator::operator--()
+{
+    if (order_ == major_order::row)
+    {
+        current_cell_.row(current_cell_.row() - 1);
+    }
+    else
+    {
+        current_cell_.column_index(current_cell_.column_index() - 1);
+    }
+
+    return *this;
+}
+
+const_range_iterator const_range_iterator::operator--(int)
+{
+    const_range_iterator old = *this;
+    --*this;
+
+    return old;
+}
+
+const_range_iterator &const_range_iterator::operator++()
+{
+    if (order_ == major_order::row)
+    {
+        current_cell_.row(current_cell_.row() + 1);
+    }
+    else
+    {
+        current_cell_.column_index(current_cell_.column_index() + 1);
+    }
+
+    return *this;
+}
+
+const_range_iterator const_range_iterator::operator++(int)
+{
+    const_range_iterator old = *this;
+    ++*this;
+
+    return old;
+}
+
+const cell_vector const_range_iterator::operator*() const
+{
+    if (order_ == major_order::row)
+    {
+        range_reference reference(range_.top_left().column_index(), current_cell_.row(),
+            range_.bottom_right().column_index(), current_cell_.row());
+        return cell_vector(ws_, reference, order_);
+    }
+
+    range_reference reference(current_cell_.column_index(), range_.top_left().row(),
+        current_cell_.column_index(), range_.bottom_right().row());
+    return cell_vector(ws_, reference, order_);
+}
+
 } // namespace xlnt

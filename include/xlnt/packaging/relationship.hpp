@@ -102,15 +102,15 @@ class XLNT_API relationship
 {
 public:
     /// <summary>
-    ///
+    /// Constructs a new empty relationship.
     /// </summary>
     relationship();
 
     /// <summary>
-    ///
+    /// Constructs a new relationship by specifying all of its properties.
     /// </summary>
-    relationship(
-        const std::string &id, relationship_type t, const uri &source, const uri &target, xlnt::target_mode mode);
+    relationship(const std::string &id, relationship_type t, const uri &source,
+        const uri &target, xlnt::target_mode mode);
 
     /// <summary>
     /// Returns a string of the form rId# that identifies the relationship.
@@ -149,27 +149,27 @@ public:
 
 private:
     /// <summary>
-    ///
+    /// The id of this relationship in the format "rId#"
     /// </summary>
     std::string id_;
 
     /// <summary>
-    ///
+    /// The type of this relationship.
     /// </summary>
     relationship_type type_;
 
     /// <summary>
-    ///
+    /// The URI of the source of this relationship.
     /// </summary>
     uri source_;
 
     /// <summary>
-    ///
+    /// The URI of the target of this relationshp.
     /// </summary>
     uri target_;
 
     /// <summary>
-    ///
+    /// Whether the target of this relationship is internal or external.
     /// </summary>
     xlnt::target_mode mode_;
 };

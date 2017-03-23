@@ -60,10 +60,53 @@ bool worksheet_iterator::operator==(const worksheet_iterator &comparand) const
     return index_ == comparand.index_ && wb_ == comparand.wb_;
 }
 
+bool worksheet_iterator::operator!=(const worksheet_iterator &comparand) const
+{
+    return !(*this == comparand);
+}
+
 worksheet_iterator &worksheet_iterator::operator=(const worksheet_iterator &other)
 {
     index_ = other.index_;
     return *this;
+}
+
+const_worksheet_iterator::const_worksheet_iterator(const workbook &wb, std::size_t index)
+    : wb_(wb), index_(index)
+{
+}
+
+const_worksheet_iterator::const_worksheet_iterator(const const_worksheet_iterator &rhs)
+    : wb_(rhs.wb_), index_(rhs.index_)
+{
+}
+
+const worksheet const_worksheet_iterator::operator*()
+{
+    return wb_.sheet_by_index(index_);
+}
+
+const_worksheet_iterator &const_worksheet_iterator::operator++()
+{
+    index_++;
+    return *this;
+}
+
+const_worksheet_iterator const_worksheet_iterator::operator++(int)
+{
+    const_worksheet_iterator old(wb_, index_);
+    ++*this;
+    return old;
+}
+
+bool const_worksheet_iterator::operator==(const const_worksheet_iterator &comparand) const
+{
+    return index_ == comparand.index_ && wb_ == comparand.wb_;
+}
+
+bool const_worksheet_iterator::operator!=(const const_worksheet_iterator &comparand) const
+{
+    return !(*this == comparand);
 }
 
 } // namespace xlnt

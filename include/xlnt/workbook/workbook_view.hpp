@@ -37,67 +37,67 @@ class XLNT_API workbook_view
 {
 public:
     /// <summary>
-    ///
+    /// If true, dates will be grouped when presenting the user with filtering options.
     /// </summary>
-    bool auto_filter_date_grouping = false;
+    bool auto_filter_date_grouping = true;
 
     /// <summary>
-    ///
+    /// If true, the view will be minimized.
     /// </summary>
     bool minimized = false;
 
     /// <summary>
-    ///
+    /// If true, the horizontal scroll bar will be displayed.
     /// </summary>
-    bool show_horizontal_scroll = false;
+    bool show_horizontal_scroll = true;
 
     /// <summary>
-    ///
+    /// If true, the sheet tabs will be displayed.
     /// </summary>
-    bool show_sheet_tabs = false;
+    bool show_sheet_tabs = true;
 
     /// <summary>
-    ///
+    /// If true, the vertical scroll bar will be displayed.
     /// </summary>
-    bool show_vertical_scroll = false;
+    bool show_vertical_scroll = true;
 
     /// <summary>
-    ///
+    /// If true, the workbook window will be visible.
     /// </summary>
     bool visible = true;
 
     /// <summary>
-    ///
+    /// The optional index to the active sheet in this view.
     /// </summary>
     optional<std::size_t> active_tab;
 
     /// <summary>
-    ///
+    /// The optional index to the first sheet in this view.
     /// </summary>
     optional<std::size_t> first_sheet;
 
     /// <summary>
-    ///
+    /// The optional ratio between the tabs bar and the horizontal scroll bar.
     /// </summary>
     optional<std::size_t> tab_ratio;
 
     /// <summary>
-    ///
+    /// The width of the workbook window in twips.
     /// </summary>
     optional<std::size_t> window_width;
 
     /// <summary>
-    ///
+    /// The height of the workbook window in twips.
     /// </summary>
     optional<std::size_t> window_height;
 
     /// <summary>
-    ///
+    /// The distance of the workbook window from the left side of the screen in twips.
     /// </summary>
     optional<std::size_t> x_window;
 
     /// <summary>
-    ///
+    /// The distance of the workbook window from the top of the screen in twips.
     /// </summary>
     optional<std::size_t> y_window;
 };

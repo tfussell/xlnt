@@ -31,40 +31,68 @@
 namespace xlnt {
 
 /// <summary>
-/// Security information about the OOXML document.
+/// Properties governing how the data in a workbook should be protected.
+/// These values can be ignored by consumers.
 /// </summary>
 class XLNT_API document_security
 {
 public:
     /// <summary>
-    ///
+    /// Holds data describing the verifier that locks revisions or a workbook.
+    /// </summary>
+    struct lock_verifier
+    {
+        /// <summary>
+        ///
+        /// </summary>
+        std::string hash_algorithm;
+
+        /// <summary>
+        ///
+        /// </summary>
+        std::string salt;
+
+        /// <summary>
+        ///
+        /// </summary>
+        std::string hash;
+
+        /// <summary>
+        ///
+        /// </summary>
+        std::size_t spin_count;
+    };
+
+    /// <summary>
+    /// Constructs a new document security object with default values.
     /// </summary>
     document_security();
 
     /// <summary>
-    ///
+    /// If true, the workbook is locked for revisions.
     /// </summary>
-    bool lock_revision;
+    bool lock_revision = false;
 
     /// <summary>
-    ///
+    /// If true, worksheets can't be moved, renamed, (un)hidden, inserted, or deleted.
     /// </summary>
-    bool lock_structure;
+    bool lock_structure = false;
 
     /// <summary>
-    ///
+    /// If true, workbook windows will be opened at the same position with the same size
+    /// every time they are loaded.
     /// </summary>
-    bool lock_windows;
+    bool lock_windows = false;
 
     /// <summary>
-    ///
+    /// The settings to allow the revision lock to be removed.
     /// </summary>
-    std::string revision_password;
+    lock_verifier revision_lock;
 
     /// <summary>
-    ///
+    /// The settings to allow the structure and windows lock to be removed.
     /// </summary>
-    std::string workbook_password;
+    lock_verifier workbook_lock;
 };
 
 } // namespace xlnt

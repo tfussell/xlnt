@@ -24,7 +24,6 @@
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/styles/style.hpp>
 #include <xlnt/workbook/workbook.hpp>
-#include <xlnt/worksheet/const_range_iterator.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/range_iterator.hpp>
 #include <xlnt/worksheet/range_reference.hpp>

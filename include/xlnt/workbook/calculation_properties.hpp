@@ -28,18 +28,20 @@
 namespace xlnt {
 
 /// <summary>
-///
+/// Workbook file properties relating to calculations.
 /// </summary>
 class XLNT_API calculation_properties
 {
 public:
     /// <summary>
-    /// Uniquely identifies these calculation properties.
+    /// The version of calculation engine used to calculate cell formula values.
+    /// If this is older than the version of the Excel calculation engine opening
+    /// the workbook, cell values will be recalculated.
     /// </summary>
     std::size_t calc_id;
 
     /// <summary>
-    /// If this is true, concurrent calculation is enabled.
+    /// If this is true, concurrent calculation will be enabled for the workbook.
     /// </summary>
     bool concurrent_calc;
 };

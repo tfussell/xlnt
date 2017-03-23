@@ -36,8 +36,6 @@
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/workbook/worksheet_iterator.hpp>
 #include <xlnt/worksheet/cell_iterator.hpp>
-#include <xlnt/worksheet/const_cell_iterator.hpp>
-#include <xlnt/worksheet/const_range_iterator.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/range_iterator.hpp>
@@ -375,6 +373,16 @@ cell worksheet::cell(const cell_reference &reference)
 const cell worksheet::cell(const cell_reference &reference) const
 {
     return xlnt::cell(&d_->cell_map_.at(reference.row()).at(reference.column_index()));
+}
+
+cell worksheet::cell(xlnt::column_t column, row_t row)
+{
+    return cell(cell_reference(column, row));
+}
+
+const cell worksheet::cell(xlnt::column_t column, row_t row) const
+{
+    return cell(cell_reference(column, row));
 }
 
 bool worksheet::has_cell(const cell_reference &reference) const

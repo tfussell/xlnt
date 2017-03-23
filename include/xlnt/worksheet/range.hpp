@@ -31,7 +31,6 @@
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/worksheet/cell_vector.hpp>
-#include <xlnt/worksheet/const_range_iterator.hpp>
 #include <xlnt/worksheet/major_order.hpp>
 #include <xlnt/worksheet/range_iterator.hpp>
 #include <xlnt/worksheet/range_reference.hpp>

@@ -20,10 +20,10 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/worksheet/cell_iterator.hpp>
 #include <xlnt/worksheet/cell_vector.hpp>
-#include <xlnt/worksheet/const_cell_iterator.hpp>
 
 namespace xlnt {
 

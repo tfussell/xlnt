@@ -28,7 +28,6 @@
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/worksheet/cell_iterator.hpp>
-#include <xlnt/worksheet/const_cell_iterator.hpp>
 #include <xlnt/worksheet/major_order.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/worksheet.hpp>

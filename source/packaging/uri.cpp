@@ -21,9 +21,9 @@ path uri::path() const
     return path_;
 }
 
-bool operator==(const uri &left, const uri &right)
+bool uri::operator==(const uri &other) const
 {
-    return left.to_string() == right.to_string();
+    return to_string() == other.to_string();
 }
 
 } // namespace xlnt

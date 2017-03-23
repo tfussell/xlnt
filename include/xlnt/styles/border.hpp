@@ -30,15 +30,13 @@
 #include <vector>
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/styles/border_style.hpp>
 #include <xlnt/styles/color.hpp>
-#include <xlnt/styles/diagonal_direction.hpp>
 #include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 
 /// <summary>
-///
+/// Enumerates the sides of a cell to which a border style can be applied.
 /// </summary>
 enum class XLNT_API border_side
 {
@@ -49,6 +47,40 @@ enum class XLNT_API border_side
     diagonal,
     vertical,
     horizontal
+};
+
+/// <summary>
+///
+/// </summary>
+enum class XLNT_API border_style
+{
+    none,
+    dashdot,
+    dashdotdot,
+    dashed,
+    dotted,
+    double_,
+    hair,
+    medium,
+    mediumdashdot,
+    mediumdashdotdot,
+    mediumdashed,
+    slantdashdot,
+    thick,
+    thin
+};
+
+/// <summary>
+/// Cells can have borders that go from the top-left to bottom-right
+/// or from the top-right to bottom-left, or both, or neither.
+/// Used by style->border.
+/// </summary>
+enum class XLNT_API diagonal_direction
+{
+    neither,
+    up,
+    down,
+    both
 };
 
 } // namespace xlnt
@@ -62,139 +94,132 @@ class XLNT_API border
 {
 public:
     /// <summary>
-    ///
+    /// Each side of a cell can have a border_property applied to it to change
+    /// how it is displayed.
     /// </summary>
     class XLNT_API border_property
     {
     public:
         /// <summary>
-        ///
+        /// Returns the color of the side.
         /// </summary>
         optional<class color> color() const;
 
         /// <summary>
-        ///
+        /// Sets the color of the side and returns a reference to the side properties.
         /// </summary>
         border_property &color(const xlnt::color &c);
 
         /// <summary>
-        ///
+        /// Returns the style of the side.
         /// </summary>
         optional<border_style> style() const;
 
         /// <summary>
-        ///
+        /// Sets the style of the side and returns a reference to the side properties.
         /// </summary>
         border_property &style(border_style style);
 
         /// <summary>
         /// Returns true if left is exactly equal to right.
         /// </summary>
-        friend bool operator==(const border_property &left, const border_property &right);
+        bool operator==(const border_property &right) const;
 
         /// <summary>
         /// Returns true if left is not exactly equal to right.
         /// </summary>
-        friend bool operator!=(const border_property &left, const border_property &right)
-        {
-            return !(left == right);
-        }
+        bool operator!=(const border_property &right) const;
 
     private:
         /// <summary>
-        ///
+        /// The color of the side
         /// </summary>
         optional<class color> color_;
 
         /// <summary>
-        ///
+        /// The style of the side
         /// </summary>
         optional<border_style> style_;
     };
 
     /// <summary>
-    ///
+    /// A vector to the all of the border sides for iteration.
     /// </summary>
     static const std::vector<border_side> &all_sides();
 
     /// <summary>
-    ///
+    /// Constructs a default border.
     /// </summary>
     border();
 
     /// <summary>
-    ///
+    /// Returns the border properties of the given side.
     /// </summary>
     optional<border_property> side(border_side s) const;
 
     /// <summary>
-    ///
+    /// Sets the border properties of the side s to prop.
     /// </summary>
     border &side(border_side s, const border_property &prop);
 
     /// <summary>
-    ///
+    /// Returns the diagonal direction of this border.
     /// </summary>
     optional<diagonal_direction> diagonal() const;
 
     /// <summary>
-    ///
+    /// Sets the diagonal direction of this border to dir.
     /// </summary>
     border &diagonal(diagonal_direction dir);
 
     /// <summary>
     /// Returns true if left is exactly equal to right.
     /// </summary>
-    XLNT_API friend bool operator==(const border &left, const border &right);
+    bool operator==(const border &right) const;
 
     /// <summary>
     /// Returns true if left is not exactly equal to right.
     /// </summary>
-    XLNT_API friend bool operator!=(const border &left, const border &right)
-    {
-        return !(left == right);
-    }
+    bool operator!=(const border &right) const;
 
 private:
     /// <summary>
-    ///
+    /// Start side (i.e. left) border properties
     /// </summary>
     optional<border_property> start_;
 
     /// <summary>
-    ///
+    /// End side (i.e. right) border properties
     /// </summary>
     optional<border_property> end_;
 
     /// <summary>
-    ///
+    /// Top side border properties
     /// </summary>
     optional<border_property> top_;
 
     /// <summary>
-    ///
+    /// Bottom side border properties
     /// </summary>
     optional<border_property> bottom_;
 
     /// <summary>
-    ///
+    /// Vertical border properties
     /// </summary>
     optional<border_property> vertical_;
 
     /// <summary>
-    ///
+    /// Horizontal border properties
     /// </summary>
     optional<border_property> horizontal_;
 
     /// <summary>
-    ///
+    /// Diagonal border properties
     /// </summary>
     optional<border_property> diagonal_;
 
-    // bool outline_ = true;
-
     /// <summary>
-    ///
+    /// Direction of diagonal border properties to be applied
     /// </summary>
     optional<diagonal_direction> diagonal_direction_;
 };

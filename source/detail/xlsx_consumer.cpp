@@ -27,7 +27,6 @@
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/utils/path.hpp>
-#include <xlnt/workbook/const_worksheet_iterator.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 #include <detail/constants.hpp>

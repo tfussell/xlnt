@@ -25,12 +25,56 @@
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/worksheet/orientation.hpp>
-#include <xlnt/worksheet/page_break.hpp>
-#include <xlnt/worksheet/paper_size.hpp>
-#include <xlnt/worksheet/sheet_state.hpp>
 
 namespace xlnt {
+
+/// <summary>
+/// The orientation of the worksheet when it is printed.
+/// </summary>
+enum class XLNT_API orientation
+{
+    portrait,
+    landscape
+};
+
+/// <summary>
+/// The types of page breaks.
+/// </summary>
+enum class XLNT_API page_break
+{
+    none = 0,
+    row = 1,
+    column = 2
+};
+
+/// <summary>
+/// The possible paper sizes for printing.
+/// </summary>
+enum class XLNT_API paper_size
+{
+    letter = 1,
+    letter_small = 2,
+    tabloid = 3,
+    ledger = 4,
+    legal = 5,
+    statement = 6,
+    executive = 7,
+    a3 = 8,
+    a4 = 9,
+    a4_small = 10,
+    a5 = 11
+};
+
+/// <summary>
+/// Defines how a worksheet appears in the workbook.
+/// A workbook must have at least one sheet which is visible at all times.
+/// </summary>
+enum class XLNT_API sheet_state
+{
+    visible,
+    hidden,
+    very_hidden
+};
 
 /// <summary>
 /// Describes how a worksheet will be converted into a page during printing.

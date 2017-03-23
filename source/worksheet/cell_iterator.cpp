@@ -131,4 +131,77 @@ cell cell_iterator::operator*()
     return ws_[current_cell_];
 }
 
+
+const_cell_iterator::const_cell_iterator(worksheet ws, const cell_reference &start_cell, major_order order)
+    : ws_(ws),
+      current_cell_(start_cell),
+      range_(start_cell.to_range()),
+      order_(order)
+{
+}
+
+const_cell_iterator::const_cell_iterator(const const_cell_iterator &other)
+{
+    *this = other;
+}
+
+bool const_cell_iterator::operator==(const const_cell_iterator &other) const
+{
+    return ws_ == other.ws_ && current_cell_ == other.current_cell_ && order_ == other.order_;
+}
+
+bool const_cell_iterator::operator!=(const const_cell_iterator &other) const
+{
+    return !(*this == other);
+}
+
+const_cell_iterator &const_cell_iterator::operator--()
+{
+    if (order_ == major_order::row)
+    {
+        current_cell_.column_index(current_cell_.column_index() - 1);
+    }
+    else
+    {
+        current_cell_.row(current_cell_.row() - 1);
+    }
+
+    return *this;
+}
+
+const_cell_iterator const_cell_iterator::operator--(int)
+{
+    const_cell_iterator old = *this;
+    --*this;
+
+    return old;
+}
+
+const_cell_iterator &const_cell_iterator::operator++()
+{
+    if (order_ == major_order::row)
+    {
+        current_cell_.column_index(current_cell_.column_index() + 1);
+    }
+    else
+    {
+        current_cell_.row(current_cell_.row() + 1);
+    }
+
+    return *this;
+}
+
+const_cell_iterator const_cell_iterator::operator++(int)
+{
+    const_cell_iterator old = *this;
+    ++*this;
+
+    return old;
+}
+
+const cell const_cell_iterator::operator*() const
+{
+    return ws_.cell(current_cell_);
+}
+
 } // namespace xlnt
