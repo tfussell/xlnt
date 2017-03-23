@@ -5,20 +5,19 @@ dist: trusty
 notifications:
   email: false
 
-matrix:
-  include:
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6 zlib1g libcrypto++9 libcrypto++9-dbg libcrypto++-dev cxxtest lcov
-      env:
-        - COVERAGE=ON
-        - STATIC=ON
-        - SAMPLES=OFF
-        - BENCHMARKS=OFF
+env:
+ - COVERAGE=ON STATIC=ON SAMPLES=OFF BENCHMARKS=OFF BUILD_TYPE=Debug
+ - COVERAGE=OFF STATIC=ON SAMPLES=ON BENCHMARKS=OFF BUILD_TYPE=Debug
+ - COVERAGE=OFF STATIC=OFF SAMPLES=ON BENCHMARKS=OFF BUILD_TYPE=Debug
+ - COVERAGE=OFF STATIC=ON SAMPLES=ON BENCHMARKS=ON BUILD_TYPE=Release
+ - COVERAGE=OFF STATIC=OFF SAMPLES=ON BENCHMARKS=ON BUILD_TYPE=Release
+
+addons:
+  apt:
+    sources:
+     - ubuntu-toolchain-r-test
+    packages:
+     - g++-6 zlib1g libcrypto++9 libcrypto++9-dbg libcrypto++-dev cxxtest lcov
 
 install:
  - export CC=gcc-6
@@ -28,11 +27,13 @@ install:
 script:
  - mkdir build
  - cd build
- - cmake -D STATIC=$STATIC -D BENCHMARKS=$BENCHMARKS -D SAMPLES=$SAMPLES -D COVERAGE=$COVERAGE -D CMAKE_BUILD_TYPE=Debug ..
- - make VERBOSE=1
+ - cmake -D STATIC=$STATIC -D BENCHMARKS=$BENCHMARKS -D SAMPLES=$SAMPLES -D COVERAGE=$COVERAGE -D CMAKE_BUILD_TYPE=$BUILD_TYPE ..
+ - cmake --build .
  - ./tests/xlnt.test
 
 after_success:
- - find .. -name "*.gcda"
- - lcov --compat-libtool --directory source/CMakeFiles/xlnt.dir --capture --output-file coverage.info --gcov-tool /usr/bin/gcov-6
- - coveralls-lcov coverage.info
+ - |
+   if [[ "${COVERAGE}" == "ON" ]]; then
+     lcov --directory source/CMakeFiles/xlnt.dir --capture --output-file coverage.info --base-directory ../source --no-external
+     coveralls-lcov coverage.info
+   fi
