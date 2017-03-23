@@ -16,8 +16,40 @@ Returns true if value has been set and has not been cleared using cell::clear_va
 Returns the value of this cell as an instance of type T. Overloads exist for most C++ fundamental types like bool, int, etc. as well as for std::string and xlnt datetime types: date, time, datetime, and timedelta.
 #### ```void xlnt::cell::clear_value()```
 Makes this cell have a value of type null. All other cell attributes are retained.
-#### ```void xlnt::cell::value(T value)```
-Sets the value of this cell to the given value. Overloads exist for most C++ fundamental types like bool, int, etc. as well as for std::string and xlnt datetime types: date, time, datetime, and timedelta.
+#### ```void xlnt::cell::value(std::nullptr_t)```
+Sets the type of this cell to null.
+#### ```void xlnt::cell::value(bool boolean_value)```
+Sets the value of this cell to the given boolean value.
+#### ```void xlnt::cell::value(int int_value)```
+Sets the value of this cell to the given value.
+#### ```void xlnt::cell::value(unsigned int int_value)```
+Sets the value of this cell to the given value.
+#### ```void xlnt::cell::value(long long int int_value)```
+Sets the value of this cell to the given value.
+#### ```void xlnt::cell::value(unsigned long long int int_value)```
+Sets the value of this cell to the given value.
+#### ```void xlnt::cell::value(float float_value)```
+Sets the value of this cell to the given value.
+#### ```void xlnt::cell::value(double float_value)```
+Sets the value of this cell to the given value.
+#### ```void xlnt::cell::value(long double float_value)```
+Sets the value of this cell to the given value.
+#### ```void xlnt::cell::value(const date &date_value)```
+Sets the value of this cell to the given value.
+#### ```void xlnt::cell::value(const time &time_value)```
+Sets the value of this cell to the given value.
+#### ```void xlnt::cell::value(const datetime &datetime_value)```
+Sets the value of this cell to the given value.
+#### ```void xlnt::cell::value(const timedelta &timedelta_value)```
+Sets the value of this cell to the given value.
+#### ```void xlnt::cell::value(const std::string &string_value)```
+Sets the value of this cell to the given value.
+#### ```void xlnt::cell::value(const char *string_value)```
+Sets the value of this cell to the given value.
+#### ```void xlnt::cell::value(const rich_text &text_value)```
+Sets the value of this cell to the given value.
+#### ```void xlnt::cell::value(const cell other_cell)```
+Sets the value and formatting of this cell to that of other_cell.
 #### ```void xlnt::cell::value(const std::string &string_value, bool infer_type)```
 Analyzes string_value to determine its type, convert it to that type, and set the value of this cell to that converted value.
 #### ```type xlnt::cell::data_type() const```
@@ -38,8 +70,12 @@ Returns the row of this cell.
 Returns the location of this cell as an ordered pair (left, top).
 #### ```std::string xlnt::cell::hyperlink() const```
 Returns the URL of this cell's hyperlink.
-#### ```void xlnt::cell::hyperlink(const std::string &value)```
-Adds a hyperlink to this cell pointing to the URI of the given value.
+#### ```void xlnt::cell::hyperlink(const std::string &url)```
+Adds a hyperlink to this cell pointing to the URL of the given value.
+#### ```void xlnt::cell::hyperlink(const std::string &url, const std::string &display)```
+Adds a hyperlink to this cell pointing to the URI of the given value and sets the text value of the cell to the given parameter.
+#### ```void xlnt::cell::hyperlink(xlnt::cell target)```
+Adds an internal hyperlink to this cell pointing to the given cell.
 #### ```bool xlnt::cell::has_hyperlink() const```
 Returns true if this cell has a hyperlink set.
 #### ```class alignment xlnt::cell::computed_alignment() const```
@@ -388,7 +424,9 @@ Returns all relationships with "source" as the source and with a type of "type".
 #### ```path xlnt::manifest::canonicalize(const std::vector< xlnt::relationship > &rels) const```
 Returns the canonical path of the chain of relationships by traversing through rels and forming the absolute combined path.
 #### ```std::string xlnt::manifest::register_relationship(const uri &source, relationship_type type, const uri &target, target_mode mode)```
+Registers a new relationship by specifying all of the relationship properties explicitly.
 #### ```std::string xlnt::manifest::register_relationship(const class relationship &rel)```
+Registers a new relationship already constructed elsewhere.
 #### ```std::unordered_map<std::string, std::string> xlnt::manifest::unregister_relationship(const uri &source, const std::string &rel_id)```
 Delete the relationship with the given id from source part. Returns a mapping of relationship IDs since IDs are shifted down. For example, if there are three relationships for part a.xml like [rId1, rId2, rId3] and rId2 is deleted, the resulting map would look like [rId3->rId2].
 #### ```std::string xlnt::manifest::content_type(const path &part) const```
@@ -415,7 +453,9 @@ Overrides any default type registered for the part's extension with the given co
 Unregisters the overriding content type of the given part.
 ### relationship
 #### ```xlnt::relationship::relationship()```
+Constructs a new empty relationship.
 #### ```xlnt::relationship::relationship(const std::string &id, relationship_type t, const uri &source, const uri &target, xlnt::target_mode mode)```
+Constructs a new relationship by specifying all of its properties.
 #### ```std::string xlnt::relationship::id() const```
 Returns a string of the form rId# that identifies the relationship.
 #### ```relationship_type xlnt::relationship::type() const```
@@ -432,29 +472,53 @@ Returns true if and only if rhs is equal to this relationship.
 Returns true if and only if rhs is not equal to this relationship.
 ### uri
 #### ```xlnt::uri::uri()```
+Constructs an empty URI.
 #### ```xlnt::uri::uri(const uri &base, const uri &relative)```
+Constructs a URI by combining base with relative.
 #### ```xlnt::uri::uri(const uri &base, const path &relative)```
+Constructs a URI by combining base with relative path.
 #### ```xlnt::uri::uri(const std::string &uri_string)```
+Constructs a URI by parsing the given uri_string.
 #### ```bool xlnt::uri::is_relative() const```
+Returns true if this URI is relative.
 #### ```bool xlnt::uri::is_absolute() const```
+Returns true if this URI is not relative (i.e. absolute).
 #### ```std::string xlnt::uri::scheme() const```
+Returns the scheme of this URI. E.g. the scheme of http://user:pass@example.com is "http"
 #### ```std::string xlnt::uri::authority() const```
+Returns the authority of this URI. E.g. the authority of http://user:pass@example.com:80/document is "user:pass@example.com:80"
 #### ```bool xlnt::uri::has_authentication() const```
+Returns true if an authentication section is specified for this URI.
 #### ```std::string xlnt::uri::authentication() const```
+Returns the authentication of this URI. E.g. the authentication of http://user:pass@example.com is "user:pass"
 #### ```std::string xlnt::uri::username() const```
+Returns the username of this URI. E.g. the username of http://user:pass@example.com is "user"
 #### ```std::string xlnt::uri::password() const```
+Returns the password of this URI. E.g. the password of http://user:pass@example.com is "pass"
 #### ```std::string xlnt::uri::host() const```
+Returns the host of this URI. E.g. the host of http://example.com:80/document is "example.com"
 #### ```bool xlnt::uri::has_port() const```
+Returns true if a non-default port is specified for this URI.
 #### ```std::size_t xlnt::uri::port() const```
+Returns the port of this URI. E.g. the port of https://example.com:443/document is "443"
 #### ```class path xlnt::uri::path() const```
+Returns the path of this URI. E.g. the path of http://example.com/document is "/document"
 #### ```bool xlnt::uri::has_query() const```
+Returns true if this URI has a non-null query string section.
 #### ```std::string xlnt::uri::query() const```
+Returns the query string of this URI. E.g. the query of http://example.com/document?v=1&x=3#abc is "v=1&x=3"
 #### ```bool xlnt::uri::has_fragment() const```
+Returns true if this URI has a non-empty fragment section.
 #### ```std::string xlnt::uri::fragment() const```
+Returns the fragment section of this URI. E.g. the fragment of http://example.com/document#abc is "abc"
 #### ```std::string xlnt::uri::to_string() const```
+Returns a string representation of this URI.
 #### ```uri xlnt::uri::make_absolute(const uri &base)```
+If this URI is relative, an absolute URI will be returned by appending the path to the given absolute base URI.
 #### ```uri xlnt::uri::make_reference(const uri &base)```
-#### ```bool operator==(const uri &left, const uri &right)```
+If this URI is absolute, a relative URI will be returned by removing the common base path from the given absolute base URI.
+#### ```bool xlnt::uri::operator==(const uri &other) const```
+Returns true if this URI is equivalent to other.
 ## Styles Module
 ### alignment
 #### ```bool xlnt::alignment::shrink() const```
@@ -469,29 +533,39 @@ Returns true if and only if rhs is not equal to this relationship.
 #### ```alignment& xlnt::alignment::horizontal(horizontal_alignment horizontal)```
 #### ```optional<vertical_alignment> xlnt::alignment::vertical() const```
 #### ```alignment& xlnt::alignment::vertical(vertical_alignment vertical)```
-#### ```bool operator==(const alignment &left, const alignment &right)```
-Returns true if left is exactly equal to right.
-#### ```bool operator!=(const alignment &left, const alignment &right)```
-Returns true if left is not exactly equal to right.
+#### ```bool xlnt::alignment::operator==(const alignment &other) const```
+Returns true if this alignment is equivalent to other.
+#### ```bool xlnt::alignment::operator!=(const alignment &other) const```
+Returns true if this alignment is not equivalent to other.
 ### border
 #### ```static const std::vector<border_side>& xlnt::border::all_sides()```
+A vector to the all of the border sides for iteration.
 #### ```xlnt::border::border()```
+Constructs a default border.
 #### ```optional<border_property> xlnt::border::side(border_side s) const```
+Returns the border properties of the given side.
 #### ```border& xlnt::border::side(border_side s, const border_property &prop)```
+Sets the border properties of the side s to prop.
 #### ```optional<diagonal_direction> xlnt::border::diagonal() const```
+Returns the diagonal direction of this border.
 #### ```border& xlnt::border::diagonal(diagonal_direction dir)```
-#### ```bool operator==(const border &left, const border &right)```
+Sets the diagonal direction of this border to dir.
+#### ```bool xlnt::border::operator==(const border &right) const```
 Returns true if left is exactly equal to right.
-#### ```bool operator!=(const border &left, const border &right)```
+#### ```bool xlnt::border::operator!=(const border &right) const```
 Returns true if left is not exactly equal to right.
 ### border_property
 #### ```optional<class color> xlnt::border::border_property::color() const```
+Returns the color of the side.
 #### ```border_property& xlnt::border::border_property::color(const xlnt::color &c)```
+Sets the color of the side and returns a reference to the side properties.
 #### ```optional<border_style> xlnt::border::border_property::style() const```
+Returns the style of the side.
 #### ```border_property& xlnt::border::border_property::style(border_style style)```
-#### ```bool operator==(const border_property &left, const border_property &right)```
+Sets the style of the side and returns a reference to the side properties.
+#### ```bool xlnt::border::border_property::operator==(const border_property &right) const```
 Returns true if left is exactly equal to right.
-#### ```bool operator!=(const border_property &left, const border_property &right)```
+#### ```bool xlnt::border::border_property::operator!=(const border_property &right) const```
 Returns true if left is not exactly equal to right.
 ### indexed_color
 #### ```xlnt::indexed_color::indexed_color(std::size_t index)```
@@ -603,6 +677,10 @@ Returns true if left is not exactly equal to right.
 #### ```bool xlnt::font::italic() const```
 #### ```font& xlnt::font::strikethrough(bool strikethrough)```
 #### ```bool xlnt::font::strikethrough() const```
+#### ```font& xlnt::font::outline(bool outline)```
+#### ```bool xlnt::font::outline() const```
+#### ```font& xlnt::font::shadow(bool shadow)```
+#### ```bool xlnt::font::shadow() const```
 #### ```font& xlnt::font::underline(underline_style new_underline)```
 #### ```bool xlnt::font::underlined() const```
 #### ```underline_style xlnt::font::underline() const```
@@ -618,6 +696,9 @@ Returns true if left is not exactly equal to right.
 #### ```bool xlnt::font::has_family() const```
 #### ```font& xlnt::font::family(std::size_t family)```
 #### ```std::size_t xlnt::font::family() const```
+#### ```bool xlnt::font::has_charset() const```
+#### ```font& xlnt::font::charset(std::size_t charset)```
+#### ```std::size_t xlnt::font::charset() const```
 #### ```bool xlnt::font::has_scheme() const```
 #### ```font& xlnt::font::scheme(const std::string &scheme)```
 #### ```std::string xlnt::font::scheme() const```
@@ -648,6 +729,10 @@ Returns true if left is not exactly equal to right.
 #### ```const class protection& xlnt::format::protection() const```
 #### ```format xlnt::format::protection(const xlnt::protection &new_protection, bool applied)```
 #### ```bool xlnt::format::protection_applied() const```
+#### ```bool xlnt::format::pivot_button() const```
+#### ```void xlnt::format::pivot_button(bool show)```
+#### ```bool xlnt::format::quote_prefix() const```
+#### ```void xlnt::format::quote_prefix(bool quote)```
 #### ```bool xlnt::format::has_style() const```
 #### ```void xlnt::format::clear_style()```
 #### ```format xlnt::format::style(const std::string &name)```
@@ -753,6 +838,10 @@ Return the name of this style.
 #### ```const class protection& xlnt::style::protection() const```
 #### ```style xlnt::style::protection(const xlnt::protection &new_protection, bool applied=true)```
 #### ```bool xlnt::style::protection_applied() const```
+#### ```bool xlnt::style::pivot_button() const```
+#### ```void xlnt::style::pivot_button(bool show)```
+#### ```bool xlnt::style::quote_prefix() const```
+#### ```void xlnt::style::quote_prefix(bool quote)```
 #### ```bool xlnt::style::operator==(const style &other) const```
 ## Utils Module
 ### date
@@ -842,6 +931,7 @@ Return a datetime from number by converting the integer part into a date and the
 #### ```virtual xlnt::no_visible_worksheets::~no_visible_worksheets()```
 ### unhandled_switch_case
 #### ```xlnt::unhandled_switch_case::unhandled_switch_case()```
+#### ```xlnt::unhandled_switch_case::unhandled_switch_case(const unhandled_switch_case &)=default```
 #### ```virtual xlnt::unhandled_switch_case::~unhandled_switch_case()```
 ### unsupported
 #### ```xlnt::unsupported::unsupported(const std::string &message)```
@@ -915,6 +1005,7 @@ Returns true if left path is equal to right path.
 #### ```size_t std::hash< xlnt::path >::operator()(const xlnt::path &p) const```
 ### scoped_enum_hash
 #### ```std::size_t xlnt::scoped_enum_hash< Enum >::operator()(Enum e) const```
+Cast the enumeration e to a std::size_t and hash that value using std::hash.
 ### time
 #### ```int xlnt::time::hourundefined```
 #### ```int xlnt::time::minuteundefined```
@@ -940,53 +1031,79 @@ Return a time from a number representing a fraction of a day. The integer part o
 #### ```long double xlnt::timedelta::to_number() const```
 ### variant
 #### ```undefinedundefined```
+The possible types a variant can hold.
 #### ```xlnt::variant::variant()```
+Default constructor. Creates a null-type variant.
 #### ```xlnt::variant::variant(const std::string &value)```
+Creates a string-type variant with the given value.
 #### ```xlnt::variant::variant(const char *value)```
+Creates a string-type variant with the given value.
 #### ```xlnt::variant::variant(int value)```
+Creates a i4-type variant with the given value.
 #### ```xlnt::variant::variant(bool value)```
+Creates a bool-type variant with the given value.
 #### ```xlnt::variant::variant(const datetime &value)```
+Creates a date-type variant with the given value.
 #### ```xlnt::variant::variant(const std::initializer_list< int > &value)```
+Creates a vector_i4-type variant with the given value.
 #### ```xlnt::variant::variant(const std::vector< int > &value)```
+Creates a vector_i4-type variant with the given value.
 #### ```xlnt::variant::variant(const std::initializer_list< const char *> &value)```
+Creates a vector_string-type variant with the given value.
 #### ```xlnt::variant::variant(const std::vector< const char *> &value)```
+Creates a vector_string-type variant with the given value.
 #### ```xlnt::variant::variant(const std::initializer_list< std::string > &value)```
+Creates a vector_string-type variant with the given value.
 #### ```xlnt::variant::variant(const std::vector< std::string > &value)```
+Creates a vector_string-type variant with the given value.
 #### ```xlnt::variant::variant(const std::vector< variant > &value)```
+Creates a vector_variant-type variant with the given value.
 #### ```bool xlnt::variant::is(type t) const```
+Returns true if this variant is of type t.
 #### ```T xlnt::variant::get() const```
+Returns the value of this variant as type T. An exception will be thrown if the types are not convertible.
 #### ```type xlnt::variant::value_type() const```
+Returns the type of this variant.
 ## Workbook Module
 ### calculation_properties
 #### ```std::size_t xlnt::calculation_properties::calc_idundefined```
-Uniquely identifies these calculation properties.
+The version of calculation engine used to calculate cell formula values. If this is older than the version of the Excel calculation engine opening the workbook, cell values will be recalculated.
 #### ```bool xlnt::calculation_properties::concurrent_calcundefined```
-If this is true, concurrent calculation is enabled.
-### const_worksheet_iterator
-#### ```xlnt::const_worksheet_iterator::const_worksheet_iterator(const workbook &wb, std::size_t index)```
-#### ```xlnt::const_worksheet_iterator::const_worksheet_iterator(const const_worksheet_iterator &)```
-#### ```const_worksheet_iterator& xlnt::const_worksheet_iterator::operator=(const const_worksheet_iterator &)```
-#### ```const worksheet xlnt::const_worksheet_iterator::operator*()```
-#### ```bool xlnt::const_worksheet_iterator::operator==(const const_worksheet_iterator &comparand) const```
-#### ```bool xlnt::const_worksheet_iterator::operator!=(const const_worksheet_iterator &comparand) const```
-#### ```const_worksheet_iterator xlnt::const_worksheet_iterator::operator++(int)```
-#### ```const_worksheet_iterator& xlnt::const_worksheet_iterator::operator++()```
+If this is true, concurrent calculation will be enabled for the workbook.
 ### document_security
 #### ```bool xlnt::document_security::lock_revisionundefined```
+If true, the workbook is locked for revisions.
 #### ```bool xlnt::document_security::lock_structureundefined```
+If true, worksheets can't be moved, renamed, (un)hidden, inserted, or deleted.
 #### ```bool xlnt::document_security::lock_windowsundefined```
-#### ```std::string xlnt::document_security::revision_passwordundefined```
-#### ```std::string xlnt::document_security::workbook_passwordundefined```
+If true, workbook windows will be opened at the same position with the same size every time they are loaded.
+#### ```lock_verifier xlnt::document_security::revision_lockundefined```
+The settings to allow the revision lock to be removed.
+#### ```lock_verifier xlnt::document_security::workbook_lockundefined```
+The settings to allow the structure and windows lock to be removed.
 #### ```xlnt::document_security::document_security()```
+Constructs a new document security object with default values.
+### lock_verifier
+#### ```std::string xlnt::document_security::lock_verifier::hash_algorithmundefined```
+#### ```std::string xlnt::document_security::lock_verifier::saltundefined```
+#### ```std::string xlnt::document_security::lock_verifier::hashundefined```
+#### ```std::size_t xlnt::document_security::lock_verifier::spin_countundefined```
 ### external_book
 ### named_range
 #### ```using xlnt::named_range::target =  std::pair<worksheet, range_reference>undefined```
+Type alias for the combination of sheet and range this named_range points to.
 #### ```xlnt::named_range::named_range()```
+Constructs a named range that has no name and has no targets.
 #### ```xlnt::named_range::named_range(const named_range &other)```
+Constructs a named range by copying its name and targets from other.
 #### ```xlnt::named_range::named_range(const std::string &name, const std::vector< target > &targets)```
+Constructs a named range with the given name and targets.
 #### ```std::string xlnt::named_range::name() const```
+Returns the name of this range.
 #### ```const std::vector<target>& xlnt::named_range::targets() const```
+Returns the set of targets of this named range as a vector.
 #### ```named_range& xlnt::named_range::operator=(const named_range &other)```
+Assigns the name and targets of this named_range to that of other.
 ### theme
 ### workbook
 #### ```using xlnt::workbook::iterator =  worksheet_iteratorundefined```
@@ -999,8 +1116,6 @@ typedef for the iterator used for iterating through this workbook (non-const) in
 typedef for the iterator used for iterating through this workbook (const) in a range-based for loop in reverse order using std::make_reverse_iterator.
 #### ```friend class detail::xlsx_consumerundefined```
 #### ```friend class detail::xlsx_producerundefined```
-#### ```void swap(workbook &left, workbook &right)```
-Swaps the data held in workbooks "left" and "right".
 #### ```static workbook xlnt::workbook::empty()```
 Constructs and returns an empty workbook similar to a default. Excel workbook
 #### ```xlnt::workbook::workbook()```
@@ -1113,15 +1228,15 @@ Serializes the workbook into an XLSX file and saves the bytes into byte vector d
 Serializes the workbook into an XLSX file encrypted with the given password and saves the bytes into byte vector data.
 #### ```void xlnt::workbook::save(const std::string &filename) const```
 Serializes the workbook into an XLSX file and saves the data into a file named filename.
-#### ```void xlnt::workbook::save(const std::string &filename, const std::string &password)```
+#### ```void xlnt::workbook::save(const std::string &filename, const std::string &password) const```
 Serializes the workbook into an XLSX file encrypted with the given password and loads the bytes into a file named filename.
 #### ```void xlnt::workbook::save(const xlnt::path &filename) const```
 Serializes the workbook into an XLSX file and saves the data into a file named filename.
-#### ```void xlnt::workbook::save(const xlnt::path &filename, const std::string &password)```
+#### ```void xlnt::workbook::save(const xlnt::path &filename, const std::string &password) const```
 Serializes the workbook into an XLSX file encrypted with the given password and loads the bytes into a file named filename.
 #### ```void xlnt::workbook::save(std::ostream &stream) const```
 Serializes the workbook into an XLSX file and saves the data into stream.
-#### ```void xlnt::workbook::save(std::ostream &stream, const std::string &password)```
+#### ```void xlnt::workbook::save(std::ostream &stream, const std::string &password) const```
 Serializes the workbook into an XLSX file encrypted with the given password and loads the bytes into the given stream.
 #### ```void xlnt::workbook::load(const std::vector< std::uint8_t > &data)```
 Interprets byte vector data as an XLSX file and sets the content of this workbook to match that file.
@@ -1217,27 +1332,65 @@ Return true if this workbook internal implementation points to the same memory a
 Return true if this workbook internal implementation doesn't point to the same memory as rhs's.
 ### workbook_view
 #### ```bool xlnt::workbook_view::auto_filter_date_groupingundefined```
+If true, dates will be grouped when presenting the user with filtering options.
 #### ```bool xlnt::workbook_view::minimizedundefined```
+If true, the view will be minimized.
 #### ```bool xlnt::workbook_view::show_horizontal_scrollundefined```
+If true, the horizontal scroll bar will be displayed.
 #### ```bool xlnt::workbook_view::show_sheet_tabsundefined```
+If true, the sheet tabs will be displayed.
 #### ```bool xlnt::workbook_view::show_vertical_scrollundefined```
+If true, the vertical scroll bar will be displayed.
 #### ```bool xlnt::workbook_view::visibleundefined```
+If true, the workbook window will be visible.
 #### ```optional<std::size_t> xlnt::workbook_view::active_tabundefined```
+The optional index to the active sheet in this view.
 #### ```optional<std::size_t> xlnt::workbook_view::first_sheetundefined```
+The optional index to the first sheet in this view.
 #### ```optional<std::size_t> xlnt::workbook_view::tab_ratioundefined```
+The optional ratio between the tabs bar and the horizontal scroll bar.
 #### ```optional<std::size_t> xlnt::workbook_view::window_widthundefined```
+The width of the workbook window in twips.
 #### ```optional<std::size_t> xlnt::workbook_view::window_heightundefined```
+The height of the workbook window in twips.
 #### ```optional<std::size_t> xlnt::workbook_view::x_windowundefined```
+The distance of the workbook window from the left side of the screen in twips.
 #### ```optional<std::size_t> xlnt::workbook_view::y_windowundefined```
+The distance of the workbook window from the top of the screen in twips.
 ### worksheet_iterator
 #### ```xlnt::worksheet_iterator::worksheet_iterator(workbook &wb, std::size_t index)```
+Constructs a worksheet iterator from a workbook and sheet index.
 #### ```xlnt::worksheet_iterator::worksheet_iterator(const worksheet_iterator &)```
+Copy constructs a worksheet iterator from another iterator.
 #### ```worksheet_iterator& xlnt::worksheet_iterator::operator=(const worksheet_iterator &)```
+Assigns the iterator so that it points to the same worksheet in the same workbook.
 #### ```worksheet xlnt::worksheet_iterator::operator*()```
+Dereferences the iterator to return the worksheet it is pointing to. If the iterator points to one-past-the-end of the workbook, an invalid_parameter exception will be thrown.
 #### ```bool xlnt::worksheet_iterator::operator==(const worksheet_iterator &comparand) const```
+Returns true if this iterator points to the same worksheet as comparand.
 #### ```bool xlnt::worksheet_iterator::operator!=(const worksheet_iterator &comparand) const```
+Returns true if this iterator doesn't point to the same worksheet as comparand.
 #### ```worksheet_iterator xlnt::worksheet_iterator::operator++(int)```
+Post-increment the iterator's internal workseet index. Returns a copy of the iterator as it was before being incremented.
 #### ```worksheet_iterator& xlnt::worksheet_iterator::operator++()```
+Pre-increment the iterator's internal workseet index. Returns a refernce to the same iterator.
+### const_worksheet_iterator
+#### ```xlnt::const_worksheet_iterator::const_worksheet_iterator(const workbook &wb, std::size_t index)```
+Constructs a worksheet iterator from a workbook and sheet index.
+#### ```xlnt::const_worksheet_iterator::const_worksheet_iterator(const const_worksheet_iterator &)```
+Copy constructs a worksheet iterator from another iterator.
+#### ```const_worksheet_iterator& xlnt::const_worksheet_iterator::operator=(const const_worksheet_iterator &)```
+Assigns the iterator so that it points to the same worksheet in the same workbook.
+#### ```const worksheet xlnt::const_worksheet_iterator::operator*()```
+Dereferences the iterator to return the worksheet it is pointing to. If the iterator points to one-past-the-end of the workbook, an invalid_parameter exception will be thrown.
+#### ```bool xlnt::const_worksheet_iterator::operator==(const const_worksheet_iterator &comparand) const```
+Returns true if this iterator points to the same worksheet as comparand.
+#### ```bool xlnt::const_worksheet_iterator::operator!=(const const_worksheet_iterator &comparand) const```
+Returns true if this iterator doesn't point to the same worksheet as comparand.
+#### ```const_worksheet_iterator xlnt::const_worksheet_iterator::operator++(int)```
+Post-increment the iterator's internal workseet index. Returns a copy of the iterator as it was before being incremented.
+#### ```const_worksheet_iterator& xlnt::const_worksheet_iterator::operator++()```
+Pre-increment the iterator's internal workseet index. Returns a refernce to the same iterator.
 ## Worksheet Module
 ### cell_iterator
 #### ```xlnt::cell_iterator::cell_iterator(worksheet ws, const cell_reference &start_cell, const range_reference &limits)```
@@ -1251,6 +1404,18 @@ Return true if this workbook internal implementation doesn't point to the same m
 #### ```cell_iterator xlnt::cell_iterator::operator--(int)```
 #### ```cell_iterator& xlnt::cell_iterator::operator++()```
 #### ```cell_iterator xlnt::cell_iterator::operator++(int)```
+### const_cell_iterator
+#### ```xlnt::const_cell_iterator::const_cell_iterator(worksheet ws, const cell_reference &start_cell)```
+#### ```xlnt::const_cell_iterator::const_cell_iterator(worksheet ws, const cell_reference &start_cell, major_order order)```
+#### ```xlnt::const_cell_iterator::const_cell_iterator(const const_cell_iterator &other)```
+#### ```const_cell_iterator& xlnt::const_cell_iterator::operator=(const const_cell_iterator &)=default```
+#### ```const cell xlnt::const_cell_iterator::operator*() const```
+#### ```bool xlnt::const_cell_iterator::operator==(const const_cell_iterator &other) const```
+#### ```bool xlnt::const_cell_iterator::operator!=(const const_cell_iterator &other) const```
+#### ```const_cell_iterator& xlnt::const_cell_iterator::operator--()```
+#### ```const_cell_iterator xlnt::const_cell_iterator::operator--(int)```
+#### ```const_cell_iterator& xlnt::const_cell_iterator::operator++()```
+#### ```const_cell_iterator xlnt::const_cell_iterator::operator++(int)```
 ### cell_vector
 #### ```using xlnt::cell_vector::iterator =  cell_iteratorundefined```
 #### ```using xlnt::cell_vector::const_iterator =  const_cell_iteratorundefined```
@@ -1281,29 +1446,6 @@ Return true if this workbook internal implementation doesn't point to the same m
 #### ```bool xlnt::column_properties::custom_widthundefined```
 #### ```optional<std::size_t> xlnt::column_properties::styleundefined```
 #### ```bool xlnt::column_properties::hiddenundefined```
-### const_cell_iterator
-#### ```xlnt::const_cell_iterator::const_cell_iterator(worksheet ws, const cell_reference &start_cell)```
-#### ```xlnt::const_cell_iterator::const_cell_iterator(worksheet ws, const cell_reference &start_cell, major_order order)```
-#### ```xlnt::const_cell_iterator::const_cell_iterator(const const_cell_iterator &other)```
-#### ```const_cell_iterator& xlnt::const_cell_iterator::operator=(const const_cell_iterator &)=default```
-#### ```const cell xlnt::const_cell_iterator::operator*() const```
-#### ```bool xlnt::const_cell_iterator::operator==(const const_cell_iterator &other) const```
-#### ```bool xlnt::const_cell_iterator::operator!=(const const_cell_iterator &other) const```
-#### ```const_cell_iterator& xlnt::const_cell_iterator::operator--()```
-#### ```const_cell_iterator xlnt::const_cell_iterator::operator--(int)```
-#### ```const_cell_iterator& xlnt::const_cell_iterator::operator++()```
-#### ```const_cell_iterator xlnt::const_cell_iterator::operator++(int)```
-### const_range_iterator
-#### ```xlnt::const_range_iterator::const_range_iterator(const worksheet &ws, const range_reference &start_cell, major_order order=major_order::row)```
-#### ```xlnt::const_range_iterator::const_range_iterator(const const_range_iterator &other)```
-#### ```const cell_vector xlnt::const_range_iterator::operator*() const```
-#### ```const_range_iterator& xlnt::const_range_iterator::operator=(const const_range_iterator &)=default```
-#### ```bool xlnt::const_range_iterator::operator==(const const_range_iterator &other) const```
-#### ```bool xlnt::const_range_iterator::operator!=(const const_range_iterator &other) const```
-#### ```const_range_iterator& xlnt::const_range_iterator::operator--()```
-#### ```const_range_iterator xlnt::const_range_iterator::operator--(int)```
-#### ```const_range_iterator& xlnt::const_range_iterator::operator++()```
-#### ```const_range_iterator xlnt::const_range_iterator::operator++(int)```
 ### header_footer
 #### ```undefinedundefined```
 Enumerates the three possible locations of a header or footer.
@@ -1442,6 +1584,7 @@ Get the text of the even page footer at the given location. If no even page foot
 #### ```row_t xlnt::pane::y_splitundefined```
 #### ```column_t xlnt::pane::x_splitundefined```
 #### ```bool xlnt::pane::operator==(const pane &rhs) const```
+Returns true if this pane is equal to rhs based on its top-left cell, state, active pane, and x/y split location.
 ### range
 #### ```using xlnt::range::iterator =  range_iteratorundefined```
 #### ```using xlnt::range::const_iterator =  const_range_iteratorundefined```
@@ -1461,6 +1604,16 @@ Get the text of the even page footer at the given location. If no even page foot
 #### ```range_reference xlnt::range::reference() const```
 #### ```std::size_t xlnt::range::length() const```
 #### ```bool xlnt::range::contains(const cell_reference &ref)```
+#### ```range xlnt::range::alignment(const xlnt::alignment &new_alignment)```
+#### ```range xlnt::range::border(const xlnt::border &new_border)```
+#### ```range xlnt::range::fill(const xlnt::fill &new_fill)```
+#### ```range xlnt::range::font(const xlnt::font &new_font)```
+#### ```range xlnt::range::number_format(const xlnt::number_format &new_number_format)```
+#### ```range xlnt::range::protection(const xlnt::protection &new_protection)```
+#### ```range xlnt::range::style(const class style &new_style)```
+Sets the named style applied to all cells in this range to a style named style_name.
+#### ```range xlnt::range::style(const std::string &style_name)```
+Sets the named style applied to all cells in this range to a style named style_name. If this style has not been previously created in the workbook, a key_not_found exception will be thrown.
 #### ```iterator xlnt::range::begin()```
 #### ```iterator xlnt::range::end()```
 #### ```const_iterator xlnt::range::begin() const```
@@ -1473,6 +1626,7 @@ Get the text of the even page footer at the given location. If no even page foot
 #### ```const_reverse_iterator xlnt::range::rend() const```
 #### ```const_reverse_iterator xlnt::range::crbegin() const```
 #### ```const_reverse_iterator xlnt::range::crend() const```
+#### ```void xlnt::range::apply(std::function< void(class cell)> f)```
 ### range_iterator
 #### ```xlnt::range_iterator::range_iterator(worksheet &ws, const range_reference &start_cell, const range_reference &limits, major_order order=major_order::row)```
 #### ```xlnt::range_iterator::range_iterator(const range_iterator &other)```
@@ -1484,6 +1638,17 @@ Get the text of the even page footer at the given location. If no even page foot
 #### ```range_iterator xlnt::range_iterator::operator--(int)```
 #### ```range_iterator& xlnt::range_iterator::operator++()```
 #### ```range_iterator xlnt::range_iterator::operator++(int)```
+### const_range_iterator
+#### ```xlnt::const_range_iterator::const_range_iterator(const worksheet &ws, const range_reference &start_cell, major_order order=major_order::row)```
+#### ```xlnt::const_range_iterator::const_range_iterator(const const_range_iterator &other)```
+#### ```const cell_vector xlnt::const_range_iterator::operator*() const```
+#### ```const_range_iterator& xlnt::const_range_iterator::operator=(const const_range_iterator &)=default```
+#### ```bool xlnt::const_range_iterator::operator==(const const_range_iterator &other) const```
+#### ```bool xlnt::const_range_iterator::operator!=(const const_range_iterator &other) const```
+#### ```const_range_iterator& xlnt::const_range_iterator::operator--()```
+#### ```const_range_iterator xlnt::const_range_iterator::operator--(int)```
+#### ```const_range_iterator& xlnt::const_range_iterator::operator++()```
+#### ```const_range_iterator xlnt::const_range_iterator::operator++(int)```
 ### range_reference
 #### ```static range_reference xlnt::range_reference::make_absolute(const range_reference &relative_reference)```
 Convert a coordinate to an absolute coordinate string (B12 -> $B$12)
@@ -1525,6 +1690,7 @@ Convert a coordinate to an absolute coordinate string (B12 -> $B$12)
 #### ```pane_corner xlnt::selection::pane() const```
 #### ```void xlnt::selection::pane(pane_corner corner)```
 #### ```bool xlnt::selection::operator==(const selection &rhs) const```
+Returns true if this selection is equal to rhs based on its active cell, sqref, and pane.
 ### sheet_protection
 #### ```static std::string xlnt::sheet_protection::hash_password(const std::string &password)```
 #### ```void xlnt::sheet_protection::password(const std::string &password)```
@@ -1547,8 +1713,11 @@ Convert a coordinate to an absolute coordinate string (B12 -> $B$12)
 #### ```void xlnt::sheet_view::default_grid_color(bool is_default)```
 #### ```bool xlnt::sheet_view::default_grid_color() const```
 #### ```void xlnt::sheet_view::type(sheet_view_type new_type)```
+Sets the type of this view.
 #### ```sheet_view_type xlnt::sheet_view::type() const```
+Returns the type of this view.
 #### ```bool xlnt::sheet_view::operator==(const sheet_view &rhs) const```
+Returns true if this view is requal to rhs based on its id, grid lines setting, default grid color, pane, and selections.
 ### worksheet
 #### ```using xlnt::worksheet::iterator =  range_iteratorundefined```
 Iterate over a non-const worksheet with an iterator of this type.
@@ -1558,8 +1727,6 @@ Iterate over a non-const worksheet with an iterator of this type.
 Iterate in reverse over a non-const worksheet with an iterator of this type.
 #### ```using xlnt::worksheet::const_reverse_iterator =  std::reverse_iterator<const_iterator>undefined```
 Iterate in reverse order over a const worksheet with an iterator of this type.
-#### ```class range const cell_reference& xlnt::worksheet::bottom_rightundefined```
-#### ```const class range const cell_reference& bottom_right xlnt::worksheet::constundefined```
 #### ```friend class detail::xlsx_consumerundefined```
 #### ```friend class detail::xlsx_producerundefined```
 #### ```xlnt::worksheet::worksheet()```
@@ -1590,40 +1757,59 @@ Freeze panes above and to the left of top_left_coordinate.
 Remove frozen panes. The data in those panes will be unaffectedthis affects only the view.
 #### ```bool xlnt::worksheet::has_frozen_panes() const```
 Returns true if this sheet has a frozen row, frozen column, or both.
-#### ```class cell xlnt::worksheet::cell(column_t column, row_t row)```
-#### ```const class cell xlnt::worksheet::cell(column_t column, row_t row) const```
-#### ```class cell xlnt::worksheet::cell(const cell_reference &reference)```
-#### ```const class cell xlnt::worksheet::cell(const cell_reference &reference) const```
 #### ```bool xlnt::worksheet::has_cell(const cell_reference &reference) const```
+Returns true if this sheet has an initialized cell at the given reference.
+#### ```class cell xlnt::worksheet::cell(const cell_reference &reference)```
+Returns the cell at the given reference. If the cell doesn't exist, it will be initialized to null before being returned.
+#### ```const class cell xlnt::worksheet::cell(const cell_reference &reference) const```
+Returns the cell at the given reference. If the cell doesn't exist, an invalid_parameter exception will be thrown.
+#### ```class cell xlnt::worksheet::cell(column_t column, row_t row)```
+Returns the cell at the given column and row. If the cell doesn't exist, it will be initialized to null before being returned.
+#### ```const class cell xlnt::worksheet::cell(column_t column, row_t row) const```
+Returns the cell at the given column and row. If the cell doesn't exist, an invalid_parameter exception will be thrown.
 #### ```class range xlnt::worksheet::range(const std::string &reference_string)```
-#### ```class range xlnt::worksheet::range(const range_reference &reference)```
+Returns the range defined by reference string. If reference string is the name of a previously-defined named range in the sheet, it will be returned.
 #### ```const class range xlnt::worksheet::range(const std::string &reference_string) const```
+Returns the range defined by reference string. If reference string is the name of a previously-defined named range in the sheet, it will be returned.
+#### ```class range xlnt::worksheet::range(const range_reference &reference)```
+Returns the range defined by reference.
 #### ```const class range xlnt::worksheet::range(const range_reference &reference) const```
+Returns the range defined by reference.
 #### ```class range xlnt::worksheet::rows() const```
-#### ```class range xlnt::worksheet::rows(const std::string &range_string) const```
-#### ```class range xlnt::worksheet::rows(int row_offset, int column_offset) const```
-#### ```class range xlnt::worksheet::rows(const std::string &range_string, int row_offset, int column_offset) const```
+Returns a range encompassing all cells in this sheet which will be iterated upon in row-major order.
 #### ```class range xlnt::worksheet::columns() const```
+Returns a range ecompassing all cells in this sheet which will be iterated upon in column-major order.
 #### ```xlnt::column_properties& xlnt::worksheet::column_properties(column_t column)```
+Returns the column properties for the given column.
 #### ```const xlnt::column_properties& xlnt::worksheet::column_properties(column_t column) const```
+Returns the column properties for the given column.
 #### ```bool xlnt::worksheet::has_column_properties(column_t column) const```
+Returns true if column properties have been set for the given column.
 #### ```void xlnt::worksheet::add_column_properties(column_t column, const class column_properties &props)```
+Sets column properties for the given column to props.
 #### ```double xlnt::worksheet::column_width(column_t column) const```
-Calculate the width of the given column. This will be the default column width if a custom width is not set on this column's column_properties.
+Calculates the width of the given column. This will be the default column width if a custom width is not set on this column's column_properties.
 #### ```xlnt::row_properties& xlnt::worksheet::row_properties(row_t row)```
+Returns the row properties for the given row.
 #### ```const xlnt::row_properties& xlnt::worksheet::row_properties(row_t row) const```
+Returns the row properties for the given row.
 #### ```bool xlnt::worksheet::has_row_properties(row_t row) const```
+Returns true if row properties have been set for the given row.
 #### ```void xlnt::worksheet::add_row_properties(row_t row, const class row_properties &props)```
+Sets row properties for the given row to props.
 #### ```double xlnt::worksheet::row_height(row_t row) const```
 Calculate the height of the given row. This will be the default row height if a custom height is not set on this row's row_properties.
 #### ```cell_reference xlnt::worksheet::point_pos(int left, int top) const```
-#### ```cell_reference xlnt::worksheet::point_pos(const std::pair< int, int > &point) const```
-#### ```std::string xlnt::worksheet::unique_sheet_name(const std::string &value) const```
+Returns a reference to the cell at the given point coordinates.
 #### ```void xlnt::worksheet::create_named_range(const std::string &name, const std::string &reference_string)```
 #### ```void xlnt::worksheet::create_named_range(const std::string &name, const range_reference &reference)```
-#### ```bool xlnt::worksheet::has_named_range(const std::string &name)```
+#### ```bool xlnt::worksheet::has_named_range(const std::string &name) const```
 #### ```class range xlnt::worksheet::named_range(const std::string &name)```
+Returns the named range with the given name. Throws key_not_found exception if the named range doesn't exist.
+#### ```const class range xlnt::worksheet::named_range(const std::string &name) const```
+Returns the named range with the given name. Throws key_not_found exception if the named range doesn't exist.
 #### ```void xlnt::worksheet::remove_named_range(const std::string &name)```
+Removes a named range with the given name.
 #### ```row_t xlnt::worksheet::lowest_row() const```
 #### ```row_t xlnt::worksheet::highest_row() const```
 #### ```row_t xlnt::worksheet::next_row() const```
@@ -1637,63 +1823,87 @@ Calculate the height of the given row. This will be the default row height if a 
 #### ```void xlnt::worksheet::unmerge_cells(const range_reference &reference)```
 #### ```void xlnt::worksheet::unmerge_cells(column_t start_column, row_t start_row, column_t end_column, row_t end_row)```
 #### ```std::vector<range_reference> xlnt::worksheet::merged_ranges() const```
-#### ```void xlnt::worksheet::append()```
-#### ```void xlnt::worksheet::append(const std::vector< std::string > &cells)```
-#### ```void xlnt::worksheet::append(const std::vector< int > &cells)```
-#### ```void xlnt::worksheet::append(const std::unordered_map< std::string, std::string > &cells)```
-#### ```void xlnt::worksheet::append(const std::unordered_map< int, std::string > &cells)```
-#### ```void xlnt::worksheet::append(const std::vector< int >::const_iterator begin, const std::vector< int >::const_iterator end)```
 #### ```bool xlnt::worksheet::operator==(const worksheet &other) const```
 #### ```bool xlnt::worksheet::operator!=(const worksheet &other) const```
 #### ```bool xlnt::worksheet::operator==(std::nullptr_t) const```
 #### ```bool xlnt::worksheet::operator!=(std::nullptr_t) const```
 #### ```void xlnt::worksheet::operator=(const worksheet &other)```
 #### ```class cell xlnt::worksheet::operator[](const cell_reference &reference)```
+Convenience method for worksheet::cell method.
 #### ```const class cell xlnt::worksheet::operator[](const cell_reference &reference) const```
-#### ```class range xlnt::worksheet::operator[](const range_reference &reference)```
-#### ```const class range xlnt::worksheet::operator[](const range_reference &reference) const```
-#### ```class range xlnt::worksheet::operator[](const std::string &range_string)```
-#### ```const class range xlnt::worksheet::operator[](const std::string &range_string) const```
-#### ```class range xlnt::worksheet::operator()(const cell_reference &top_left```
-#### ```const class range xlnt::worksheet::operator()(const cell_reference &top_left```
+Convenience method for worksheet::cell method.
 #### ```bool xlnt::worksheet::compare(const worksheet &other, bool reference) const```
+Returns true if this worksheet is equal to other. If reference is true, the comparison will only check that both worksheets point to the same sheet in the same workbook.
 #### ```bool xlnt::worksheet::has_page_setup() const```
+Returns true if this worksheet has a page setup.
 #### ```xlnt::page_setup xlnt::worksheet::page_setup() const```
+Returns the page setup for this sheet.
 #### ```void xlnt::worksheet::page_setup(const struct page_setup &setup)```
+Sets the page setup for this sheet to setup.
 #### ```bool xlnt::worksheet::has_page_margins() const```
+Returns true if this page has margins.
 #### ```xlnt::page_margins xlnt::worksheet::page_margins() const```
+Returns the margins of this sheet.
 #### ```void xlnt::worksheet::page_margins(const class page_margins &margins)```
+Sets the margins of this sheet to margins.
 #### ```range_reference xlnt::worksheet::auto_filter() const```
+Returns the current auto-filter of this sheet.
 #### ```void xlnt::worksheet::auto_filter(const std::string &range_string)```
+Sets the auto-filter of this sheet to the range defined by range_string.
 #### ```void xlnt::worksheet::auto_filter(const xlnt::range &range)```
+Sets the auto-filter of this sheet to the given range.
 #### ```void xlnt::worksheet::auto_filter(const range_reference &reference)```
+Sets the auto-filter of this sheet to the range defined by reference.
 #### ```void xlnt::worksheet::clear_auto_filter()```
+Clear the auto-filter from this sheet.
 #### ```bool xlnt::worksheet::has_auto_filter() const```
+Returns true if this sheet has an auto-filter set.
 #### ```void xlnt::worksheet::reserve(std::size_t n)```
+Reserve n rows. This can be optionally called before adding many rows to improve performance.
 #### ```bool xlnt::worksheet::has_header_footer() const```
+Returns true if this sheet has a header/footer.
 #### ```class header_footer xlnt::worksheet::header_footer() const```
+Returns the header/footer of this sheet.
 #### ```void xlnt::worksheet::header_footer(const class header_footer &new_header_footer)```
-#### ```void xlnt::worksheet::parent(class workbook &wb)```
-#### ```std::vector<std::string> xlnt::worksheet::formula_attributes() const```
+Sets the header/footer of this sheet to new_header_footer.
 #### ```xlnt::sheet_state xlnt::worksheet::sheet_state() const```
+Returns the sheet state of this sheet.
 #### ```void xlnt::worksheet::sheet_state(xlnt::sheet_state state)```
+Sets the sheet state of this sheet.
 #### ```iterator xlnt::worksheet::begin()```
+Returns an iterator to the first row in this sheet.
 #### ```iterator xlnt::worksheet::end()```
+Returns an iterator one past the last row in this sheet.
 #### ```const_iterator xlnt::worksheet::begin() const```
+Return a constant iterator to the first row in this sheet.
 #### ```const_iterator xlnt::worksheet::end() const```
+Returns a constant iterator to one past the last row in this sheet.
 #### ```const_iterator xlnt::worksheet::cbegin() const```
+Return a constant iterator to the first row in this sheet.
 #### ```const_iterator xlnt::worksheet::cend() const```
+Returns a constant iterator to one past the last row in this sheet.
 #### ```class range xlnt::worksheet::iter_cells(bool skip_null)```
+Returns a range containing all of the cells in this sheet. If skip_null is true, iterating over the range will only return rows and cells that are non-null.
 #### ```void xlnt::worksheet::print_title_rows(row_t first_row, row_t last_row)```
+Sets rows to repeat at top during printing.
 #### ```void xlnt::worksheet::print_title_rows(row_t last_row)```
+Sets rows to repeat at top during printing.
 #### ```void xlnt::worksheet::print_title_cols(column_t first_column, column_t last_column)```
+Sets columns to repeat at left during printing.
 #### ```void xlnt::worksheet::print_title_cols(column_t last_column)```
+Sets columns to repeat at left during printing.
 #### ```std::string xlnt::worksheet::print_titles() const```
+Returns a string representation of the defined print titles.
 #### ```void xlnt::worksheet::print_area(const std::string &print_area)```
+Sets the print area of this sheet to print_area.
 #### ```range_reference xlnt::worksheet::print_area() const```
+Returns the print area defined for this sheet.
 #### ```bool xlnt::worksheet::has_view() const```
+Returns true if this sheet has any number of views defined.
 #### ```sheet_view xlnt::worksheet::view(std::size_t index=0) const```
+Returns the view at the given index.
 #### ```void xlnt::worksheet::add_view(const sheet_view &new_view)```
+Adds new_view to the set of available views for this sheet.
 #### ```void xlnt::worksheet::clear_page_breaks()```
 Remove all manual column and row page breaks (represented as dashed blue lines in the page view in Excel).
 #### ```const std::vector<row_t>& xlnt::worksheet::page_break_rows() const```
@@ -1704,4 +1914,3 @@ Add a page break at the given row.
 Returns vector where each element represents a column which will break a page to the right.
 #### ```void xlnt::worksheet::page_break_at_column(column_t column)```
 Add a page break at the given column.
-### worksheet_properties
