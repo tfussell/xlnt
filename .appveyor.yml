@@ -7,26 +7,13 @@ configuration:
 cache:
 - vcpkg -> .appveyor.yml
 
-environment:
-  matrix:
-  - STATIC: OFF
-    PLATFORM: Win32
-    GENERATOR: "Visual Studio 14 2015"
-    BUILD_TYPE: Release
-  - STATIC: ON
-    PLATFORM: Win32
-    GENERATOR: "Visual Studio 14 2015"
-    BUILD_TYPE: Debug
-  - STATIC: ON
-    PLATFORM: x64
-    GENERATOR: "Visual Studio 14 2015 Win64"
-    BUILD_TYPE: Release
-  - STATIC: OFF
-    PLATFORM: x64
-    GENERATOR: "Visual Studio 14 2015 Win64"
-    BUILD_TYPE: Debug
+platform:
+  - x86
+  - x64
 
-configuration: %BUILD_TYPE%
+configuration:
+  - Debug
+  - Release
 
 init: []
 
@@ -41,7 +28,7 @@ install:
 - cd ..
 
 before_build:
-- cmake -H. -Bbuild -G%GENERATOR% -DSTATIC=%STATIC% -DSAMPLES=ON -DBENCHMARKS=ON -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
+- cmake -H. -Bbuild -DSTATIC=%STATIC% -DSAMPLES=ON -DBENCHMARKS=ON -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
 
 build:
   project: build/tests/xlnt.test.sln
@@ -49,6 +36,6 @@ build:
   verbosity: minimal
 
 test_script:
-- cd build\tests\%BUILD_TYPE%
-- set PATH=C:\projects\xlnt\vcpkg\installed\%PLATFORM%-windows\debug\bin;%PATH%
+- cd build\tests\${configuration}
+- set PATH=C:\projects\xlnt\vcpkg\installed\${platform}-windows\debug\bin;%PATH%
 - xlnt.test.exe
