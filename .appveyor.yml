@@ -20,19 +20,19 @@ environment:
 init: []
 
 install:
-- if not exist vcpkg git clone https://github.com/Microsoft/vcpkg
-- cd vcpkg
-- if not exist downloads mkdir downloads
-- if not exist downloads\AlwaysAllowDownloads type nul > downloads\AlwaysAllowDownloads
-- powershell -exec bypass scripts\bootstrap.ps1
-- vcpkg install cryptopp:x64-windows zlib:x64-windows expat:x64-windows cryptopp:x86-windows zlib:x86-windows expat:x86-windows
-- vcpkg integrate install
-- cd ..
+  - if not exist vcpkg git clone https://github.com/Microsoft/vcpkg
+  - cd vcpkg
+  - if not exist downloads mkdir downloads
+  - if not exist downloads\AlwaysAllowDownloads type nul > downloads\AlwaysAllowDownloads
+  - powershell -exec bypass scripts\bootstrap.ps1
+  - vcpkg install cryptopp:x64-windows zlib:x64-windows expat:x64-windows cryptopp:x86-windows zlib:x86-windows expat:x86-windows
+  - vcpkg integrate install
+  - cd ..
 
 before_build:
-- mkdir build
-- cd build
-- cmake -G "Visual Studio 14 2015" -D CMAKE_GENERATOR_PLATFORM=%platform% -D STATIC=%STATIC% -D SAMPLES=ON -D BENCHMARKS=ON -D CMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake ..
+  - mkdir build
+  - cd build
+  - cmake -G "Visual Studio 14 2015" -D CMAKE_GENERATOR_PLATFORM=%platform% -D STATIC=%STATIC% -D SAMPLES=ON -D BENCHMARKS=ON -D CMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake ..
 
 build:
   project: build/tests/xlnt.test.sln
@@ -40,6 +40,11 @@ build:
   verbosity: minimal
 
 test_script:
-- cd build\tests\%configuration%
-- set PATH=C:\projects\xlnt\vcpkg\installed\%platform%-windows\debug\bin;%PATH%
-- xlnt.test.exe
+  - dir tests
+  - cd tests\%configuration%
+  - if [%platform%]==[Win32] set VCPKG_PLATFORM=x86-windows
+  - if [%platform%]==[x64] set VCPKG_PLATFORM=x64-windows
+  - if [%configuration%]==[Debug] set VCPKG_PLATFORM=%VCPKG_PLATFORM%\debug
+  - set PATH=C:\projects\xlnt\vcpkg\installed\%VCPKG_PLATFORM%\bin;%PATH%
+  - echo %PATH%
+  - xlnt.test.exe
