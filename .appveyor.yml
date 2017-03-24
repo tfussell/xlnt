@@ -10,21 +10,38 @@ cache:
 environment:
   matrix:
   - STATIC: OFF
+    PLATFORM: Win32
+    GENERATOR: "Visual Studio 14 2015"
+    BUILD_TYPE: Release
   - STATIC: ON
+    PLATFORM: Win32
+    GENERATOR: "Visual Studio 14 2015"
+    BUILD_TYPE: Debug
+  - STATIC: ON
+    PLATFORM: x64
+    GENERATOR: "Visual Studio 14 2015 Win64"
+    BUILD_TYPE: Release
+  - STATIC: OFF
+    PLATFORM: x64
+    GENERATOR: "Visual Studio 14 2015 Win64"
+    BUILD_TYPE: Debug
+
+configuration: %BUILD_TYPE%
 
 init: []
+
 install:
 - if not exist vcpkg git clone https://github.com/Microsoft/vcpkg
 - cd vcpkg
 - if not exist downloads mkdir downloads
 - if not exist downloads\AlwaysAllowDownloads type nul > downloads\AlwaysAllowDownloads
 - powershell -exec bypass scripts\bootstrap.ps1
-- vcpkg install cryptopp:x64-windows zlib:x64-windows expat:x64-windows
+- vcpkg install cryptopp:x64-windows zlib:x64-windows expat:x64-windows cryptopp:x86-windows zlib:x86-windows expat:x86-windows
 - vcpkg integrate install
 - cd ..
 
 before_build:
-- cmake -H. -Bbuild -G"Visual Studio 14 2015 Win64" -DSTATIC=%STATIC% -DSAMPLES=ON -DBENCHMARKS=ON -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
+- cmake -H. -Bbuild -G%GENERATOR% -DSTATIC=%STATIC% -DSAMPLES=ON -DBENCHMARKS=ON -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
 
 build:
   project: build/tests/xlnt.test.sln
@@ -32,6 +49,6 @@ build:
   verbosity: minimal
 
 test_script:
-- cd build\tests\Debug
-- set PATH=C:\projects\xlnt\vcpkg\installed\x64-windows\debug\bin;%PATH%
+- cd build\tests\%BUILD_TYPE%
+- set PATH=C:\projects\xlnt\vcpkg\installed\%PLATFORM%-windows\debug\bin;%PATH%
 - xlnt.test.exe
