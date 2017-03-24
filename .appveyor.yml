@@ -1,9 +1,6 @@
 version: '{build}'
 os: Visual Studio 2015
 
-configuration:
-- Debug
-
 cache:
 - vcpkg -> .appveyor.yml
 
@@ -14,6 +11,11 @@ platform:
 configuration:
   - Debug
   - Release
+
+environment:
+  matrix:
+  - STATIC: OFF
+  - STATIC: ON
 
 init: []
 
