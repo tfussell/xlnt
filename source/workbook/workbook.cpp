@@ -1482,7 +1482,7 @@ void workbook::garbage_collect_formulae()
 
     for (auto ws : *this)
     {
-        for (auto row : ws.iter_cells(true))
+        for (auto row : ws.rows(true))
         {
             for (auto cell : row)
             {

@@ -20,6 +20,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/worksheet/cell_iterator.hpp>
@@ -27,14 +28,31 @@
 
 namespace xlnt {
 
-cell_iterator::cell_iterator(worksheet ws, const cell_reference &start_cell,
-    const range_reference &limits, major_order order)
+cell_iterator::cell_iterator(worksheet ws, const cell_reference &cursor,
+    const range_reference &bounds, major_order order, bool skip_null, bool wrap)
     : ws_(ws),
-      current_cell_(start_cell),
-      range_(limits),
-      order_(order)
+      cursor_(cursor),
+      bounds_(bounds),
+      order_(order),
+      skip_null_(skip_null),
+      wrap_(wrap)
 {
-    if (!ws.has_cell(current_cell_))
+    if (skip_null && !ws.has_cell(cursor_))
+    {
+        (*this)++; // move to the next non-empty cell or one past the end if none exists
+    }
+}
+
+const_cell_iterator::const_cell_iterator(worksheet ws, const cell_reference &cursor,
+    const range_reference &bounds, major_order order, bool skip_null, bool wrap)
+    : ws_(ws),
+      cursor_(cursor),
+      bounds_(bounds),
+      order_(order),
+      skip_null_(skip_null),
+      wrap_(wrap)
+{
+    if (skip_null && !ws.has_cell(cursor_))
     {
         (*this)++; // move to the next non-empty cell or one past the end if none exists
     }
@@ -45,14 +63,37 @@ cell_iterator::cell_iterator(const cell_iterator &other)
     *this = other;
 }
 
+const_cell_iterator::const_cell_iterator(const const_cell_iterator &other)
+{
+    *this = other;
+}
+
 bool cell_iterator::operator==(const cell_iterator &other) const
 {
     return ws_ == other.ws_
-        && current_cell_ == other.current_cell_
-        && order_ == other.order_;
+        && cursor_ == other.cursor_
+        && bounds_ == other.bounds_
+        && order_ == other.order_
+        && skip_null_ == other.skip_null_
+        && wrap_ == other.wrap_;
+}
+
+bool const_cell_iterator::operator==(const const_cell_iterator &other) const
+{
+    return ws_ == other.ws_
+        && cursor_ == other.cursor_
+        && bounds_ == other.bounds_
+        && order_ == other.order_
+        && skip_null_ == other.skip_null_
+        && wrap_ == other.wrap_;
 }
 
 bool cell_iterator::operator!=(const cell_iterator &other) const
+{
+    return !(*this == other);
+}
+
+bool const_cell_iterator::operator!=(const const_cell_iterator &other) const
 {
     return !(*this == other);
 }
@@ -61,20 +102,69 @@ cell_iterator &cell_iterator::operator--()
 {
     if (order_ == major_order::row)
     {
-        current_cell_.column_index(current_cell_.column_index() - 1);
-
-        while (!ws_.has_cell(current_cell_) && current_cell_.column() > range_.top_left().column())
+        if (cursor_.column() > bounds_.top_left().column())
         {
-            current_cell_.column_index(current_cell_.column_index() - 1);
+            cursor_.column_index(cursor_.column_index() - 1);
+        }
+
+        if (skip_null_)
+        {
+            while (!ws_.has_cell(cursor_) && cursor_.column() > bounds_.top_left().column())
+            {
+                cursor_.column_index(cursor_.column_index() - 1);
+            }
         }
     }
     else
     {
-        current_cell_.row(current_cell_.row() - 1);
-
-        while (!ws_.has_cell(current_cell_) && current_cell_.row() > range_.top_left().row())
+        if (cursor_.row() > bounds_.top_left().row())
         {
-            current_cell_.row(current_cell_.row() - 1);
+            cursor_.row(cursor_.row() - 1);
+        }
+
+        if (skip_null_)
+        {
+            while (!ws_.has_cell(cursor_) && cursor_.row() > bounds_.top_left().row())
+            {
+                cursor_.row(cursor_.row() - 1);
+            }
+        }
+    }
+
+    return *this;
+}
+
+
+const_cell_iterator &const_cell_iterator::operator--()
+{
+    if (order_ == major_order::row)
+    {
+        if (cursor_.column() > bounds_.top_left().column())
+        {
+            cursor_.column_index(cursor_.column_index() - 1);
+        }
+
+        if (skip_null_)
+        {
+            while (!ws_.has_cell(cursor_) && cursor_.column() > bounds_.top_left().column())
+            {
+                cursor_.column_index(cursor_.column_index() - 1);
+            }
+        }
+    }
+    else
+    {
+        if (cursor_.row() > bounds_.top_left().row())
+        {
+            cursor_.row(cursor_.row() - 1);
+        }
+
+        if (skip_null_)
+        {
+            while (!ws_.has_cell(cursor_) && cursor_.row() > bounds_.top_left().row())
+            {
+                cursor_.row(cursor_.row() - 1);
+            }
         }
     }
 
@@ -85,6 +175,15 @@ cell_iterator cell_iterator::operator--(int)
 {
     cell_iterator old = *this;
     --*this;
+
+    return old;
+}
+
+const_cell_iterator const_cell_iterator::operator--(int)
+{
+    const_cell_iterator old = *this;
+    --*this;
+
     return old;
 }
 
@@ -92,29 +191,71 @@ cell_iterator &cell_iterator::operator++()
 {
     if (order_ == major_order::row)
     {
-        if (current_cell_.column() <= range_.bottom_right().column())
+        if (cursor_.column() <= bounds_.bottom_right().column())
         {
-            current_cell_.column_index(current_cell_.column_index() + 1);
+            cursor_.column_index(cursor_.column_index() + 1);
         }
 
-        while (!ws_.has_cell(current_cell_) && current_cell_.column() <= range_.bottom_right().column())
+        if (skip_null_)
         {
-            current_cell_.column_index(current_cell_.column_index() + 1);
+            while (!ws_.has_cell(cursor_) && cursor_.column() <= bounds_.bottom_right().column())
+            {
+                cursor_.column_index(cursor_.column_index() + 1);
+            }
         }
     }
     else
     {
-        if (current_cell_.row() <= range_.bottom_right().row())
+        if (cursor_.row() <= bounds_.bottom_right().row())
         {
-            current_cell_.row(current_cell_.row() + 1);
+            cursor_.row(cursor_.row() + 1);
         }
 
-        while (!ws_.has_cell(current_cell_) && current_cell_.row() <= range_.bottom_right().row())
+        if (skip_null_)
         {
-            current_cell_.row(current_cell_.row() + 1);
+            while (!ws_.has_cell(cursor_) && cursor_.row() <= bounds_.bottom_right().row())
+            {
+                cursor_.row(cursor_.row() + 1);
+            }
         }
     }
 
+    return *this;
+}
+
+const_cell_iterator &const_cell_iterator::operator++()
+{
+    if (order_ == major_order::row)
+    {
+        if (cursor_.column() <= bounds_.bottom_right().column())
+        {
+            cursor_.column_index(cursor_.column_index() + 1);
+        }
+
+        if (skip_null_)
+        {
+            while (!ws_.has_cell(cursor_) && cursor_.column() <= bounds_.bottom_right().column())
+            {
+                cursor_.column_index(cursor_.column_index() + 1);
+            }
+        }
+    }
+    else
+    {
+        if (cursor_.row() <= bounds_.bottom_right().row())
+        {
+            cursor_.row(cursor_.row() + 1);
+        }
+
+        if (skip_null_)
+        {
+            while (!ws_.has_cell(cursor_) && cursor_.row() <= bounds_.bottom_right().row())
+            {
+                cursor_.row(cursor_.row() + 1);
+            }
+        }
+    }
+    
     return *this;
 }
 
@@ -126,71 +267,6 @@ cell_iterator cell_iterator::operator++(int)
     return old;
 }
 
-cell cell_iterator::operator*()
-{
-    return ws_[current_cell_];
-}
-
-
-const_cell_iterator::const_cell_iterator(worksheet ws, const cell_reference &start_cell, major_order order)
-    : ws_(ws),
-      current_cell_(start_cell),
-      range_(start_cell.to_range()),
-      order_(order)
-{
-}
-
-const_cell_iterator::const_cell_iterator(const const_cell_iterator &other)
-{
-    *this = other;
-}
-
-bool const_cell_iterator::operator==(const const_cell_iterator &other) const
-{
-    return ws_ == other.ws_ && current_cell_ == other.current_cell_ && order_ == other.order_;
-}
-
-bool const_cell_iterator::operator!=(const const_cell_iterator &other) const
-{
-    return !(*this == other);
-}
-
-const_cell_iterator &const_cell_iterator::operator--()
-{
-    if (order_ == major_order::row)
-    {
-        current_cell_.column_index(current_cell_.column_index() - 1);
-    }
-    else
-    {
-        current_cell_.row(current_cell_.row() - 1);
-    }
-
-    return *this;
-}
-
-const_cell_iterator const_cell_iterator::operator--(int)
-{
-    const_cell_iterator old = *this;
-    --*this;
-
-    return old;
-}
-
-const_cell_iterator &const_cell_iterator::operator++()
-{
-    if (order_ == major_order::row)
-    {
-        current_cell_.column_index(current_cell_.column_index() + 1);
-    }
-    else
-    {
-        current_cell_.row(current_cell_.row() + 1);
-    }
-
-    return *this;
-}
-
 const_cell_iterator const_cell_iterator::operator++(int)
 {
     const_cell_iterator old = *this;
@@ -199,9 +275,14 @@ const_cell_iterator const_cell_iterator::operator++(int)
     return old;
 }
 
+cell cell_iterator::operator*()
+{
+    return ws_.cell(cursor_);
+}
+
 const cell const_cell_iterator::operator*() const
 {
-    return ws_.cell(current_cell_);
+    return ws_.cell(cursor_);
 }
 
 } // namespace xlnt

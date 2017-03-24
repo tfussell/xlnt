@@ -30,25 +30,21 @@ namespace xlnt {
 
 cell_vector range_iterator::operator*() const
 {
-    if (order_ == major_order::row)
-    {
-        range_reference reference(range_.top_left().column_index(), current_cell_.row(),
-            range_.bottom_right().column_index(), current_cell_.row());
-        return cell_vector(ws_, reference, order_);
-    }
-
-    range_reference reference(current_cell_.column_index(), range_.top_left().row(),
-        current_cell_.column_index(), range_.bottom_right().row());
-    return cell_vector(ws_, reference, order_);
+    return cell_vector(ws_, cursor_, bounds_, order_, skip_null_, false);
 }
 
-range_iterator::range_iterator(worksheet &ws, const range_reference &start_cell,
-    const range_reference &limits, major_order order)
+range_iterator::range_iterator(worksheet &ws, const cell_reference &cursor,
+    const range_reference &bounds, major_order order, bool skip_null)
     : ws_(ws),
-      current_cell_(start_cell.top_left()),
-      range_(limits),
-      order_(order)
+      cursor_(cursor),
+      bounds_(bounds),
+      order_(order),
+      skip_null_(skip_null)
 {
+    if (skip_null_ && (**this).empty())
+    {
+        ++(*this);
+    }
 }
 
 range_iterator::range_iterator(const range_iterator &other)
@@ -59,8 +55,9 @@ range_iterator::range_iterator(const range_iterator &other)
 bool range_iterator::operator==(const range_iterator &other) const
 {
     return ws_ == other.ws_
-        && current_cell_ == other.current_cell_
-        && order_ == other.order_;
+        && cursor_ == other.cursor_
+        && order_ == other.order_
+        && skip_null_ == other.skip_null_;
 }
 
 bool range_iterator::operator!=(const range_iterator &other) const
@@ -72,11 +69,33 @@ range_iterator &range_iterator::operator--()
 {
     if (order_ == major_order::row)
     {
-        current_cell_.row(current_cell_.row() - 1);
+        if (cursor_.row() > bounds_.top_left().row())
+        {
+            cursor_.row(cursor_.row() - 1);
+        }
+
+        if (skip_null_)
+        {
+            while ((**this).empty() && cursor_.row() > bounds_.top_left().row())
+            {
+                cursor_.row(cursor_.row() - 1);
+            }
+        }
     }
     else
     {
-        current_cell_.column_index(current_cell_.column_index() - 1);
+        if (cursor_.column() > bounds_.top_left().column())
+        {
+            cursor_.column_index(cursor_.column_index() - 1);
+        }
+
+        if (skip_null_)
+        {
+            while ((**this).empty() && cursor_.row() > bounds_.top_left().column())
+            {
+                cursor_.column_index(cursor_.column_index() - 1);
+            }
+        }
     }
 
     return *this;
@@ -94,26 +113,33 @@ range_iterator &range_iterator::operator++()
 {
     if (order_ == major_order::row)
     {
-        bool any_non_null = false;
-
-        do
+        if (cursor_.row() <= bounds_.bottom_right().row())
         {
-            current_cell_.row(current_cell_.row() + 1);
-            any_non_null = false;
-
-            for (auto column = current_cell_.column(); column <= range_.bottom_right().column(); column++)
+            cursor_.row(cursor_.row() + 1);
+        }
+    
+        if (skip_null_)
+        {
+            while ((**this).empty() && cursor_.row() <= bounds_.bottom_right().row())
             {
-                if (ws_.has_cell(cell_reference(column, current_cell_.row())))
-                {
-                    any_non_null = true;
-                    break;
-                }
+                cursor_.row(cursor_.row() + 1);
             }
-        } while (!any_non_null && current_cell_.row() <= range_.bottom_right().row());
+        }
     }
     else
     {
-        current_cell_.column_index(current_cell_.column_index() + 1);
+        if (cursor_.column() <= bounds_.bottom_right().column())
+        {
+            cursor_.column_index(cursor_.column_index() + 1);
+        }
+
+        if (skip_null_)
+        {
+            while ((**this).empty() && cursor_.column() <= bounds_.bottom_right().column())
+            {
+                cursor_.column_index(cursor_.column_index() + 1);
+            }
+        }
     }
 
     return *this;
@@ -128,13 +154,18 @@ range_iterator range_iterator::operator++(int)
 }
 
 
-const_range_iterator::const_range_iterator(const worksheet &ws,
-    const range_reference &start_cell, major_order order)
+const_range_iterator::const_range_iterator(const worksheet &ws, const cell_reference &cursor,
+    const range_reference &bounds, major_order order, bool skip_null)
     : ws_(ws.d_),
-      current_cell_(start_cell.top_left()),
-      range_(start_cell),
-      order_(order)
+      cursor_(cursor),
+      bounds_(bounds),
+      order_(order),
+      skip_null_(skip_null)
 {
+    if (skip_null_ && (**this).empty())
+    {
+        ++(*this);
+    }
 }
 
 const_range_iterator::const_range_iterator(const const_range_iterator &other)
@@ -145,8 +176,9 @@ const_range_iterator::const_range_iterator(const const_range_iterator &other)
 bool const_range_iterator::operator==(const const_range_iterator &other) const
 {
     return ws_ == other.ws_
-        && current_cell_ == other.current_cell_
-        && order_ == other.order_;
+        && cursor_ == other.cursor_
+        && order_ == other.order_
+        && skip_null_ == other.skip_null_;
 }
 
 bool const_range_iterator::operator!=(const const_range_iterator &other) const
@@ -158,11 +190,33 @@ const_range_iterator &const_range_iterator::operator--()
 {
     if (order_ == major_order::row)
     {
-        current_cell_.row(current_cell_.row() - 1);
+        if (cursor_.row() > bounds_.top_left().row())
+        {
+            cursor_.row(cursor_.row() - 1);
+        }
+
+        if (skip_null_)
+        {
+            while ((**this).empty() && cursor_.row() > bounds_.top_left().row())
+            {
+                cursor_.row(cursor_.row() - 1);
+            }
+        }
     }
     else
     {
-        current_cell_.column_index(current_cell_.column_index() - 1);
+        if (cursor_.column() > bounds_.top_left().column())
+        {
+            cursor_.column_index(cursor_.column_index() - 1);
+        }
+
+        if (skip_null_)
+        {
+            while ((**this).empty() && cursor_.row() > bounds_.top_left().column())
+            {
+                cursor_.column_index(cursor_.column_index() - 1);
+            }
+        }
     }
 
     return *this;
@@ -180,11 +234,33 @@ const_range_iterator &const_range_iterator::operator++()
 {
     if (order_ == major_order::row)
     {
-        current_cell_.row(current_cell_.row() + 1);
+        if (cursor_.row() <= bounds_.bottom_right().row())
+        {
+            cursor_.row(cursor_.row() + 1);
+        }
+    
+        if (skip_null_)
+        {
+            while ((**this).empty() && cursor_.row() <= bounds_.bottom_right().row())
+            {
+                cursor_.row(cursor_.row() + 1);
+            }
+        }
     }
     else
     {
-        current_cell_.column_index(current_cell_.column_index() + 1);
+        if (cursor_.column() <= bounds_.bottom_right().column())
+        {
+            cursor_.column_index(cursor_.column_index() + 1);
+        }
+
+        if (skip_null_)
+        {
+            while ((**this).empty() && cursor_.column() <= bounds_.bottom_right().column())
+            {
+                cursor_.column_index(cursor_.column_index() + 1);
+            }
+        }
     }
 
     return *this;
@@ -200,16 +276,7 @@ const_range_iterator const_range_iterator::operator++(int)
 
 const cell_vector const_range_iterator::operator*() const
 {
-    if (order_ == major_order::row)
-    {
-        range_reference reference(range_.top_left().column_index(), current_cell_.row(),
-            range_.bottom_right().column_index(), current_cell_.row());
-        return cell_vector(ws_, reference, order_);
-    }
-
-    range_reference reference(current_cell_.column_index(), range_.top_left().row(),
-        current_cell_.column_index(), range_.bottom_right().row());
-    return cell_vector(ws_, reference, order_);
+    return cell_vector(ws_, cursor_, bounds_, order_, skip_null_, false);
 }
 
 } // namespace xlnt

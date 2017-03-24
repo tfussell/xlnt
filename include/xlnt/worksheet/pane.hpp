@@ -87,8 +87,11 @@ struct XLNT_API pane
     /// </summary>
     bool operator==(const pane &rhs) const
     {
-        return top_left_cell == rhs.top_left_cell && state == rhs.state && active_pane == rhs.active_pane
-            && y_split == rhs.y_split && x_split == rhs.x_split;
+        return top_left_cell == rhs.top_left_cell
+            && state == rhs.state
+            && active_pane == rhs.active_pane
+            && y_split == rhs.y_split
+            && x_split == rhs.x_split;
     }
 };
 

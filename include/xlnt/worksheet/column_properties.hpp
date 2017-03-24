@@ -36,22 +36,23 @@ class XLNT_API column_properties
 {
 public:
     /// <summary>
-    ///
+    /// The optional width of the column
     /// </summary>
     optional<double> width;
 
     /// <summary>
-    ///
+    /// If true, this is a custom width
     /// </summary>
     bool custom_width = false;
 
     /// <summary>
-    ///
+    /// The style index of this column. This shouldn't be used since style indices
+    /// aren't supposed to be used directly in xlnt. (TODO)
     /// </summary>
     optional<std::size_t> style;
 
     /// <summary>
-    ///
+    /// If true, this column will be hidden
     /// </summary>
     bool hidden = false;
 };

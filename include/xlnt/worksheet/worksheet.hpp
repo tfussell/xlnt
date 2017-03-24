@@ -224,15 +224,37 @@ public:
 
     /// <summary>
     /// Returns a range encompassing all cells in this sheet which will
-    /// be iterated upon in row-major order.
+    /// be iterated upon in row-major order. If skip_null is true (default),
+    /// empty rows and cells will be skipped during iteration of the range.
     /// </summary>
-    class range rows() const;
+    class range rows(bool skip_null = true);
+
+    /// <summary>
+    /// Returns a range encompassing all cells in this sheet which will
+    /// be iterated upon in row-major order. If skip_null is true (default),
+    /// empty rows and cells will be skipped during iteration of the range.
+    /// </summary>
+    const class range rows(bool skip_null = true) const;
 
     /// <summary>
     /// Returns a range ecompassing all cells in this sheet which will
-    /// be iterated upon in column-major order.
+    /// be iterated upon in column-major order. If skip_null is true (default),
+    /// empty columns and cells will be skipped during iteration of the range.
     /// </summary>
-    class range columns() const;
+    class range columns(bool skip_null = true);
+
+    /// <summary>
+    /// Returns a range ecompassing all cells in this sheet which will
+    /// be iterated upon in column-major order. If skip_null is true (default),
+    /// empty columns and cells will be skipped during iteration of the range.
+    /// </summary>
+    const class range columns(bool skip_null = true) const;
+
+    //TODO: finish implementing cell_iterator wrapping before uncommenting
+    //class cell_vector cells(bool skip_null = true);
+
+    //TODO: finish implementing cell_iterator wrapping before uncommenting
+    //const class cell_vector cells(bool skip_null = true) const;
 
     // properties
 
@@ -565,12 +587,6 @@ public:
     /// Returns a constant iterator to one past the last row in this sheet.
     /// </summary>
     const_iterator cend() const;
-
-    /// <summary>
-    /// Returns a range containing all of the cells in this sheet. If skip_null is true,
-    /// iterating over the range will only return rows and cells that are non-null.
-    /// </summary>
-    class range iter_cells(bool skip_null);
 
     /// <summary>
     /// Sets rows to repeat at top during printing.

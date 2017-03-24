@@ -54,13 +54,13 @@ public:
         ws.cell("C9").value("last");
         
         TS_ASSERT_EQUALS(ws.calculate_dimension(), "A1:C9");
-        TS_ASSERT_EQUALS(ws.rows()[row][column].reference(), coordinate);
+        TS_ASSERT_EQUALS(ws.rows(false)[row][column].reference(), coordinate);
         
         row = 8;
         column = 2;
         coordinate = "C9";
         
-        TS_ASSERT_EQUALS(ws.rows()[row][column].reference(), coordinate);
+        TS_ASSERT_EQUALS(ws.rows(false)[row][column].reference(), coordinate);
     }
 
     void test_get_named_range()
@@ -481,12 +481,14 @@ public:
         const xlnt::worksheet ws_const = ws;
         const auto rows = ws_const.rows();
 
-        const auto first_row = *rows.begin();
-        const auto first_cell = *first_row.begin();
+        const auto first_row = rows.front();
+        const auto first_cell = first_row.front();
+        TS_ASSERT_EQUALS(first_cell.reference(), "A1");
         TS_ASSERT_EQUALS(first_cell.value<std::string>(), "A1");
 
-        const auto last_row = *(--rows.end());
-        const auto last_cell = *(--last_row.end());
+        const auto last_row = rows.back();
+        const auto last_cell = last_row.back();
+        TS_ASSERT_EQUALS(last_cell.reference(), "C2");
         TS_ASSERT_EQUALS(last_cell.value<std::string>(), "C2");
 
         for (const auto row : rows)

@@ -21,92 +21,95 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <algorithm> // std::all_of
+
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/worksheet/cell_iterator.hpp>
 #include <xlnt/worksheet/cell_vector.hpp>
 
 namespace xlnt {
 
+cell_vector::cell_vector(worksheet ws, const cell_reference &cursor,
+    const range_reference &bounds, major_order order, bool skip_null, bool wrap)
+    : ws_(ws),
+      cursor_(cursor),
+      bounds_(bounds),
+      order_(order),
+      skip_null_(skip_null),
+      wrap_(wrap)
+{
+}
+
 cell_vector::iterator cell_vector::begin()
 {
-    return iterator(ws_, ref_.top_left(), ref_, order_);
+    return iterator(ws_, cursor_, bounds_, order_, skip_null_, wrap_);
 }
 
 cell_vector::iterator cell_vector::end()
 {
+    auto past_end = cursor_;
+    
     if (order_ == major_order::row)
     {
-        auto past_end = ref_.bottom_right();
-        past_end.column_index(past_end.column_index() + 1);
-
-        return iterator(ws_, past_end, ref_, order_);
+        past_end.column_index(bounds_.bottom_right().column_index() + 1);
+    }
+    else
+    {
+        past_end.row(bounds_.bottom_right().row() + 1);
     }
 
-    auto past_end = ref_.bottom_right();
-    past_end.row(past_end.row() + 1);
-
-    return iterator(ws_, past_end, ref_, order_);
+    return iterator(ws_, past_end, bounds_, order_, skip_null_, wrap_);
 }
 
 cell_vector::const_iterator cell_vector::cbegin() const
 {
-    return const_iterator(ws_, ref_.top_left(), order_);
+    return const_iterator(ws_, cursor_, bounds_, order_, skip_null_, wrap_);
 }
 
 cell_vector::const_iterator cell_vector::cend() const
 {
+    auto past_end = cursor_;
+    
     if (order_ == major_order::row)
     {
-        auto past_end = ref_.bottom_right();
-        past_end.column_index(past_end.column_index() + 1);
-
-        return const_iterator(ws_, past_end, order_);
+        past_end.column_index(bounds_.bottom_right().column_index() + 1);
     }
-
-    auto past_end = ref_.bottom_right();
-    past_end.row(past_end.row() + 1);
-
-    return const_iterator(ws_, past_end, order_);
-}
-
-cell cell_vector::operator[](std::size_t cell_index)
-{
-    if (order_ == major_order::row)
+    else
     {
-        return ws_.cell(ref_.top_left().make_offset(static_cast<int>(cell_index), 0));
+        past_end.row(bounds_.bottom_right().row() + 1);
     }
 
-    return ws_.cell(ref_.top_left().make_offset(0, static_cast<int>(cell_index)));
+    return const_iterator(ws_, past_end, bounds_, order_, skip_null_, wrap_);
 }
 
-cell_vector::cell_vector(worksheet ws, const range_reference &reference, major_order order)
-    : ws_(ws), ref_(reference), order_(order)
+bool cell_vector::empty() const
 {
+    return begin() == end();
 }
 
 cell cell_vector::front()
 {
-    if (order_ == major_order::row)
-    {
-        return ws_.cell(ref_.top_left());
-    }
+    return *begin();
+}
 
-    return ws_.cell(ref_.top_left());
+const cell cell_vector::front() const
+{
+    return *cbegin();
 }
 
 cell cell_vector::back()
 {
-    if (order_ == major_order::row)
-    {
-        return ws_.cell(ref_.bottom_right());
-    }
+    return *(--end());
+}
 
-    return ws_.cell(ref_.bottom_right());
+const cell cell_vector::back() const
+{
+    return *(--cend());
 }
 
 std::size_t cell_vector::length() const
 {
-    return order_ == major_order::row ? ref_.width() + 1 : ref_.height() + 1;
+    return order_ == major_order::row ? bounds_.width() + 1 : bounds_.height() + 1;
 }
 
 cell_vector::const_iterator cell_vector::begin() const
@@ -146,6 +149,16 @@ cell_vector::const_reverse_iterator cell_vector::crend() const
 cell_vector::const_reverse_iterator cell_vector::rend() const
 {
     return crend();
+}
+
+cell cell_vector::operator[](std::size_t cell_index)
+{
+    if (order_ == major_order::row)
+    {
+        return ws_.cell(cursor_.make_offset(static_cast<int>(cell_index), 0));
+    }
+
+    return ws_.cell(cursor_.make_offset(0, static_cast<int>(cell_index)));
 }
 
 } // namespace xlnt

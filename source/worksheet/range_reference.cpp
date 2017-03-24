@@ -63,14 +63,19 @@ range_reference::range_reference(const std::string &range_string)
     }
 }
 
-range_reference::range_reference(const cell_reference &top_left, const cell_reference &bottom_right)
-    : top_left_(top_left), bottom_right_(bottom_right)
+range_reference::range_reference(const cell_reference &top_left,
+    const cell_reference &bottom_right)
+    : top_left_(top_left),
+      bottom_right_(bottom_right)
 {
 }
 
-range_reference::range_reference(
-    column_t column_index_start, row_t row_index_start, column_t column_index_end, row_t row_index_end)
-    : top_left_(column_index_start, row_index_start), bottom_right_(column_index_end, row_index_end)
+range_reference::range_reference(column_t column_index_start,
+    row_t row_index_start,
+    column_t column_index_end,
+    row_t row_index_end)
+    : top_left_(column_index_start, row_index_start),
+      bottom_right_(column_index_end, row_index_end)
 {
 }
 
@@ -113,19 +118,42 @@ bool range_reference::operator!=(const range_reference &comparand) const
     return comparand.top_left_ != top_left_ || comparand.bottom_right_ != bottom_right_;
 }
 
+cell_reference range_reference::top_left()
+{
+    return top_left_;
+}
+
 cell_reference range_reference::top_left() const
 {
     return top_left_;
 }
-cell_reference range_reference::bottom_right() const
+
+cell_reference range_reference::top_right()
+{
+    return cell_reference(bottom_right_.column(), top_left_.row());
+}
+
+cell_reference range_reference::top_right() const
+{
+    return cell_reference(bottom_right_.column(), top_left_.row());
+}
+
+cell_reference range_reference::bottom_left()
+{
+    return cell_reference(top_left_.column(), bottom_right_.row());
+}
+
+cell_reference range_reference::bottom_left() const
+{
+    return cell_reference(top_left_.column(), bottom_right_.row());
+}
+
+cell_reference range_reference::bottom_right()
 {
     return bottom_right_;
 }
-cell_reference &range_reference::top_left()
-{
-    return top_left_;
-}
-cell_reference &range_reference::bottom_right()
+
+cell_reference range_reference::bottom_right() const
 {
     return bottom_right_;
 }

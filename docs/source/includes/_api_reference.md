@@ -1393,59 +1393,107 @@ Post-increment the iterator's internal workseet index. Returns a copy of the ite
 Pre-increment the iterator's internal workseet index. Returns a refernce to the same iterator.
 ## Worksheet Module
 ### cell_iterator
-#### ```xlnt::cell_iterator::cell_iterator(worksheet ws, const cell_reference &start_cell, const range_reference &limits)```
-#### ```xlnt::cell_iterator::cell_iterator(worksheet ws, const cell_reference &start_cell, const range_reference &limits, major_order order)```
+#### ```xlnt::cell_iterator::cell_iterator(worksheet ws, const cell_reference &start_cell, const range_reference &limits, major_order order, bool skip_null, bool wrap)```
+Constructs a cell_iterator from a worksheet, range, and iteration settings.
 #### ```xlnt::cell_iterator::cell_iterator(const cell_iterator &other)```
+Constructs a cell_iterator as a copy of an existing cell_iterator.
+#### ```cell_iterator& xlnt::cell_iterator::operator=(const cell_iterator &rhs)=default```
+Assigns this iterator to match the data in rhs.
 #### ```cell xlnt::cell_iterator::operator*()```
-#### ```cell_iterator& xlnt::cell_iterator::operator=(const cell_iterator &)=default```
+Dereferences this iterator to return the cell it points to.
 #### ```bool xlnt::cell_iterator::operator==(const cell_iterator &other) const```
+Returns true if this iterator is equivalent to other.
 #### ```bool xlnt::cell_iterator::operator!=(const cell_iterator &other) const```
+Returns true if this iterator isn't equivalent to other.
 #### ```cell_iterator& xlnt::cell_iterator::operator--()```
+Pre-decrements the iterator to point to the previous cell and returns a reference to the iterator.
 #### ```cell_iterator xlnt::cell_iterator::operator--(int)```
+Post-decrements the iterator to point to the previous cell and return a copy of the iterator before the decrement.
 #### ```cell_iterator& xlnt::cell_iterator::operator++()```
+Pre-increments the iterator to point to the previous cell and returns a reference to the iterator.
 #### ```cell_iterator xlnt::cell_iterator::operator++(int)```
+Post-increments the iterator to point to the previous cell and return a copy of the iterator before the decrement.
 ### const_cell_iterator
-#### ```xlnt::const_cell_iterator::const_cell_iterator(worksheet ws, const cell_reference &start_cell)```
-#### ```xlnt::const_cell_iterator::const_cell_iterator(worksheet ws, const cell_reference &start_cell, major_order order)```
+#### ```xlnt::const_cell_iterator::const_cell_iterator(worksheet ws, const cell_reference &start_cell, const range_reference &limits, major_order order, bool skip_null, bool wrap)```
+Constructs a cell_iterator from a worksheet, range, and iteration settings.
 #### ```xlnt::const_cell_iterator::const_cell_iterator(const const_cell_iterator &other)```
+Constructs a cell_iterator as a copy of an existing cell_iterator.
 #### ```const_cell_iterator& xlnt::const_cell_iterator::operator=(const const_cell_iterator &)=default```
+Assigns this iterator to match the data in rhs.
 #### ```const cell xlnt::const_cell_iterator::operator*() const```
+Dereferences this iterator to return the cell it points to.
 #### ```bool xlnt::const_cell_iterator::operator==(const const_cell_iterator &other) const```
+Returns true if this iterator is equivalent to other.
 #### ```bool xlnt::const_cell_iterator::operator!=(const const_cell_iterator &other) const```
+Returns true if this iterator isn't equivalent to other.
 #### ```const_cell_iterator& xlnt::const_cell_iterator::operator--()```
+Pre-decrements the iterator to point to the previous cell and returns a reference to the iterator.
 #### ```const_cell_iterator xlnt::const_cell_iterator::operator--(int)```
+Post-decrements the iterator to point to the previous cell and return a copy of the iterator before the decrement.
 #### ```const_cell_iterator& xlnt::const_cell_iterator::operator++()```
+Pre-increments the iterator to point to the previous cell and returns a reference to the iterator.
 #### ```const_cell_iterator xlnt::const_cell_iterator::operator++(int)```
+Post-increments the iterator to point to the previous cell and return a copy of the iterator before the decrement.
 ### cell_vector
 #### ```using xlnt::cell_vector::iterator =  cell_iteratorundefined```
+Iterate over cells in a cell_vector with an iterator of this type.
 #### ```using xlnt::cell_vector::const_iterator =  const_cell_iteratorundefined```
+Iterate over const cells in a const cell_vector with an iterator of this type.
 #### ```using xlnt::cell_vector::reverse_iterator =  std::reverse_iterator<iterator>undefined```
+Iterate over cells in a cell_vector in reverse oreder with an iterator of this type.
 #### ```using xlnt::cell_vector::const_reverse_iterator =  std::reverse_iterator<const_iterator>undefined```
-#### ```xlnt::cell_vector::cell_vector(worksheet ws, const range_reference &ref, major_order order=major_order::row)```
+Iterate over const cells in a const cell_vector in reverse order with an iterator of this type.
+#### ```xlnt::cell_vector::cell_vector(worksheet ws, const cell_reference &cursor, const range_reference &ref, major_order order, bool skip_null, bool wrap)```
+Constructs a cell vector pointing to a given range in a given worksheet. order determines whether this vector is a row or a column. If skip_null is true, iterating over this vector will skip empty cells.
+#### ```bool xlnt::cell_vector::empty() const```
+Returns true if every cell in this vector is null (i.e. the cell doesn't exist in the worksheet).
 #### ```cell xlnt::cell_vector::front()```
+Returns the first cell in this vector.
 #### ```const cell xlnt::cell_vector::front() const```
+Returns the first cell in this vector.
 #### ```cell xlnt::cell_vector::back()```
+Returns the last cell in this vector.
 #### ```const cell xlnt::cell_vector::back() const```
-#### ```cell xlnt::cell_vector::operator[](std::size_t column_index)```
-#### ```const cell xlnt::cell_vector::operator[](std::size_t column_index) const```
+Returns the last cell in this vector.
 #### ```std::size_t xlnt::cell_vector::length() const```
+Returns the distance between the first and last cells in this vector.
 #### ```iterator xlnt::cell_vector::begin()```
+Returns an iterator to the first cell in this vector.
 #### ```iterator xlnt::cell_vector::end()```
+Returns an iterator to a cell one-past-the-end of this vector.
 #### ```const_iterator xlnt::cell_vector::begin() const```
+Returns an iterator to the first cell in this vector.
 #### ```const_iterator xlnt::cell_vector::cbegin() const```
+Returns an iterator to the first cell in this vector.
 #### ```const_iterator xlnt::cell_vector::end() const```
+Returns an iterator to a cell one-past-the-end of this vector.
 #### ```const_iterator xlnt::cell_vector::cend() const```
+Returns an iterator to a cell one-past-the-end of this vector.
 #### ```reverse_iterator xlnt::cell_vector::rbegin()```
+Returns a reverse iterator to the first cell of this reversed vector.
 #### ```reverse_iterator xlnt::cell_vector::rend()```
+Returns a reverse iterator to to a cell one-past-the-end of this reversed vector.
 #### ```const_reverse_iterator xlnt::cell_vector::rbegin() const```
+Returns a reverse iterator to the first cell of this reversed vector.
 #### ```const_reverse_iterator xlnt::cell_vector::rend() const```
+Returns a reverse iterator to to a cell one-past-the-end of this reversed vector.
 #### ```const_reverse_iterator xlnt::cell_vector::crbegin() const```
+Returns a reverse iterator to the first cell of this reversed vector.
 #### ```const_reverse_iterator xlnt::cell_vector::crend() const```
+Returns a reverse iterator to to a cell one-past-the-end of this reversed vector.
+#### ```cell xlnt::cell_vector::operator[](std::size_t column_index)```
+Returns the cell column_index distance away from the first cell in this vector.
+#### ```const cell xlnt::cell_vector::operator[](std::size_t column_index) const```
+Returns the cell column_index distance away from the first cell in this vector.
 ### column_properties
 #### ```optional<double> xlnt::column_properties::widthundefined```
+The optional width of the column
 #### ```bool xlnt::column_properties::custom_widthundefined```
+If true, this is a custom width
 #### ```optional<std::size_t> xlnt::column_properties::styleundefined```
+The style index of this column. This shouldn't be used since style indices aren't supposed to be used directly in xlnt. (TODO)
 #### ```bool xlnt::column_properties::hiddenundefined```
+If true, this column will be hidden
 ### header_footer
 #### ```undefinedundefined```
 Enumerates the three possible locations of a header or footer.
@@ -1543,18 +1591,31 @@ Get the text of the odd page footer at the given location. If no odd page footer
 Get the text of the even page footer at the given location. If no even page footer has been set, the general footer for that location will be returned.
 ### page_margins
 #### ```xlnt::page_margins::page_margins()```
+Constructs a page margins objects with Excel-default margins.
 #### ```double xlnt::page_margins::top() const```
+Returns the top margin
 #### ```void xlnt::page_margins::top(double top)```
+Sets the top margin to top
 #### ```double xlnt::page_margins::left() const```
+Returns the left margin
 #### ```void xlnt::page_margins::left(double left)```
+Sets the left margin to left
 #### ```double xlnt::page_margins::bottom() const```
+Returns the bottom margin
 #### ```void xlnt::page_margins::bottom(double bottom)```
+Sets the bottom margin to bottom
 #### ```double xlnt::page_margins::right() const```
+Returns the right margin
 #### ```void xlnt::page_margins::right(double right)```
+Sets the right margin to right
 #### ```double xlnt::page_margins::header() const```
+Returns the header margin
 #### ```void xlnt::page_margins::header(double header)```
+Sets the header margin to header
 #### ```double xlnt::page_margins::footer() const```
+Returns the footer margin
 #### ```void xlnt::page_margins::footer(double footer)```
+Sets the footer margin to footer
 ### page_setup
 #### ```xlnt::page_setup::page_setup()```
 #### ```xlnt::page_break xlnt::page_setup::page_break() const```
@@ -1614,6 +1675,10 @@ Returns true if this pane is equal to rhs based on its top-left cell, state, act
 Sets the named style applied to all cells in this range to a style named style_name.
 #### ```range xlnt::range::style(const std::string &style_name)```
 Sets the named style applied to all cells in this range to a style named style_name. If this style has not been previously created in the workbook, a key_not_found exception will be thrown.
+#### ```cell_vector xlnt::range::front()```
+#### ```const cell_vector xlnt::range::front() const```
+#### ```cell_vector xlnt::range::back()```
+#### ```const cell_vector xlnt::range::back() const```
 #### ```iterator xlnt::range::begin()```
 #### ```iterator xlnt::range::end()```
 #### ```const_iterator xlnt::range::begin() const```
@@ -1628,7 +1693,7 @@ Sets the named style applied to all cells in this range to a style named style_n
 #### ```const_reverse_iterator xlnt::range::crend() const```
 #### ```void xlnt::range::apply(std::function< void(class cell)> f)```
 ### range_iterator
-#### ```xlnt::range_iterator::range_iterator(worksheet &ws, const range_reference &start_cell, const range_reference &limits, major_order order=major_order::row)```
+#### ```xlnt::range_iterator::range_iterator(worksheet &ws, const cell_reference &cursor, const range_reference &bounds, major_order order, bool skip_null)```
 #### ```xlnt::range_iterator::range_iterator(const range_iterator &other)```
 #### ```cell_vector xlnt::range_iterator::operator*() const```
 #### ```range_iterator& xlnt::range_iterator::operator=(const range_iterator &)=default```
@@ -1639,7 +1704,7 @@ Sets the named style applied to all cells in this range to a style named style_n
 #### ```range_iterator& xlnt::range_iterator::operator++()```
 #### ```range_iterator xlnt::range_iterator::operator++(int)```
 ### const_range_iterator
-#### ```xlnt::const_range_iterator::const_range_iterator(const worksheet &ws, const range_reference &start_cell, major_order order=major_order::row)```
+#### ```xlnt::const_range_iterator::const_range_iterator(const worksheet &ws, const cell_reference &cursor, const range_reference &bounds, major_order order, bool skip_null)```
 #### ```xlnt::const_range_iterator::const_range_iterator(const const_range_iterator &other)```
 #### ```const cell_vector xlnt::const_range_iterator::operator*() const```
 #### ```const_range_iterator& xlnt::const_range_iterator::operator=(const const_range_iterator &)=default```
@@ -1661,10 +1726,14 @@ Convert a coordinate to an absolute coordinate string (B12 -> $B$12)
 #### ```bool xlnt::range_reference::is_single_cell() const```
 #### ```std::size_t xlnt::range_reference::width() const```
 #### ```std::size_t xlnt::range_reference::height() const```
+#### ```cell_reference xlnt::range_reference::top_left()```
 #### ```cell_reference xlnt::range_reference::top_left() const```
+#### ```cell_reference xlnt::range_reference::top_right()```
+#### ```cell_reference xlnt::range_reference::top_right() const```
+#### ```cell_reference xlnt::range_reference::bottom_left()```
+#### ```cell_reference xlnt::range_reference::bottom_left() const```
+#### ```cell_reference xlnt::range_reference::bottom_right()```
 #### ```cell_reference xlnt::range_reference::bottom_right() const```
-#### ```cell_reference& xlnt::range_reference::top_left()```
-#### ```cell_reference& xlnt::range_reference::bottom_right()```
 #### ```range_reference xlnt::range_reference::make_offset(int column_offset, int row_offset) const```
 #### ```std::string xlnt::range_reference::to_string() const```
 #### ```bool xlnt::range_reference::operator==(const range_reference &comparand) const```
@@ -1775,10 +1844,14 @@ Returns the range defined by reference string. If reference string is the name o
 Returns the range defined by reference.
 #### ```const class range xlnt::worksheet::range(const range_reference &reference) const```
 Returns the range defined by reference.
-#### ```class range xlnt::worksheet::rows() const```
-Returns a range encompassing all cells in this sheet which will be iterated upon in row-major order.
-#### ```class range xlnt::worksheet::columns() const```
-Returns a range ecompassing all cells in this sheet which will be iterated upon in column-major order.
+#### ```class range xlnt::worksheet::rows(bool skip_null=true)```
+Returns a range encompassing all cells in this sheet which will be iterated upon in row-major order. If skip_null is true (default), empty rows and cells will be skipped during iteration of the range.
+#### ```const class range xlnt::worksheet::rows(bool skip_null=true) const```
+Returns a range encompassing all cells in this sheet which will be iterated upon in row-major order. If skip_null is true (default), empty rows and cells will be skipped during iteration of the range.
+#### ```class range xlnt::worksheet::columns(bool skip_null=true)```
+Returns a range ecompassing all cells in this sheet which will be iterated upon in column-major order. If skip_null is true (default), empty columns and cells will be skipped during iteration of the range.
+#### ```const class range xlnt::worksheet::columns(bool skip_null=true) const```
+Returns a range ecompassing all cells in this sheet which will be iterated upon in column-major order. If skip_null is true (default), empty columns and cells will be skipped during iteration of the range.
 #### ```xlnt::column_properties& xlnt::worksheet::column_properties(column_t column)```
 Returns the column properties for the given column.
 #### ```const xlnt::column_properties& xlnt::worksheet::column_properties(column_t column) const```
@@ -1882,8 +1955,6 @@ Returns a constant iterator to one past the last row in this sheet.
 Return a constant iterator to the first row in this sheet.
 #### ```const_iterator xlnt::worksheet::cend() const```
 Returns a constant iterator to one past the last row in this sheet.
-#### ```class range xlnt::worksheet::iter_cells(bool skip_null)```
-Returns a range containing all of the cells in this sheet. If skip_null is true, iterating over the range will only return rows and cells that are non-null.
 #### ```void xlnt::worksheet::print_title_rows(row_t first_row, row_t last_row)```
 Sets rows to repeat at top during printing.
 #### ```void xlnt::worksheet::print_title_rows(row_t last_row)```

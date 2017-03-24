@@ -35,98 +35,98 @@ class XLNT_API page_margins
 {
 public:
     /// <summary>
-    ///
+    /// Constructs a page margins objects with Excel-default margins.
     /// </summary>
     page_margins();
 
     /// <summary>
-    ///
+    /// Returns the top margin
     /// </summary>
     double top() const;
 
     /// <summary>
-    ///
+    /// Sets the top margin to top
     /// </summary>
     void top(double top);
 
     /// <summary>
-    ///
+    /// Returns the left margin
     /// </summary>
     double left() const;
 
     /// <summary>
-    ///
+    /// Sets the left margin to left
     /// </summary>
     void left(double left);
 
     /// <summary>
-    ///
+    /// Returns the bottom margin
     /// </summary>
     double bottom() const;
 
     /// <summary>
-    ///
+    /// Sets the bottom margin to bottom
     /// </summary>
     void bottom(double bottom);
 
     /// <summary>
-    ///
+    /// Returns the right margin
     /// </summary>
     double right() const;
 
     /// <summary>
-    ///
+    /// Sets the right margin to right
     /// </summary>
     void right(double right);
 
     /// <summary>
-    ///
+    /// Returns the header margin
     /// </summary>
     double header() const;
 
     /// <summary>
-    ///
+    /// Sets the header margin to header
     /// </summary>
     void header(double header);
 
     /// <summary>
-    ///
+    /// Returns the footer margin
     /// </summary>
     double footer() const;
 
     /// <summary>
-    ///
+    /// Sets the footer margin to footer
     /// </summary>
     void footer(double footer);
 
 private:
     /// <summary>
-    ///
+    /// The top margin
     /// </summary>
     double top_ = 1;
 
     /// <summary>
-    ///
+    /// The left margin
     /// </summary>
     double left_ = 0.75;
 
     /// <summary>
-    ///
+    /// The bottom margin
     /// </summary>
     double bottom_ = 1;
 
     /// <summary>
-    ///
+    /// The right margin
     /// </summary>
     double right_ = 0.75;
 
     /// <summary>
-    ///
+    /// The header margin
     /// </summary>
     double header_ = 0.5;
 
     /// <summary>
-    ///
+    /// The footer margin
     /// </summary>
     double footer_ = 0.5;
 };

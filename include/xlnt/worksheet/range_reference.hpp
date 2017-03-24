@@ -88,22 +88,42 @@ public:
     /// <summary>
     ///
     /// </summary>
+    cell_reference top_left();
+
+    /// <summary>
+    ///
+    /// </summary>
     cell_reference top_left() const;
 
     /// <summary>
     ///
     /// </summary>
+    cell_reference top_right();
+
+    /// <summary>
+    ///
+    /// </summary>
+    cell_reference top_right() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    cell_reference bottom_left();
+
+    /// <summary>
+    ///
+    /// </summary>
+    cell_reference bottom_left() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    cell_reference bottom_right();
+
+    /// <summary>
+    ///
+    /// </summary>
     cell_reference bottom_right() const;
-
-    /// <summary>
-    ///
-    /// </summary>
-    cell_reference &top_left();
-
-    /// <summary>
-    ///
-    /// </summary>
-    cell_reference &bottom_right();
 
     /// <summary>
     ///

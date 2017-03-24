@@ -182,6 +182,26 @@ public:
     /// <summary>
     ///
     /// </summary>
+    cell_vector front();
+
+    /// <summary>
+    ///
+    /// </summary>
+    const cell_vector front() const;
+
+    /// <summary>
+    ///
+    /// </summary>
+    cell_vector back();
+
+    /// <summary>
+    ///
+    /// </summary>
+    const cell_vector back() const;
+
+    /// <summary>
+    ///
+    /// </summary>
     iterator begin();
 
     /// <summary>

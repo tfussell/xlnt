@@ -610,15 +610,41 @@ row_t worksheet::next_row() const
     return row;
 }
 
-xlnt::range worksheet::rows() const
+xlnt::range worksheet::rows(bool skip_null)
 {
-    return range(calculate_dimension());
+    return xlnt::range(*this, calculate_dimension(), major_order::row, skip_null);
 }
 
-xlnt::range worksheet::columns() const
+const xlnt::range worksheet::rows(bool skip_null) const
 {
-    return xlnt::range(*this, calculate_dimension(), major_order::column);
+    return xlnt::range(*this, calculate_dimension(), major_order::row, skip_null);
 }
+
+xlnt::range worksheet::columns(bool skip_null)
+{
+    return xlnt::range(*this, calculate_dimension(), major_order::column, skip_null);
+}
+
+const xlnt::range worksheet::columns(bool skip_null) const
+{
+    return xlnt::range(*this, calculate_dimension(), major_order::column, skip_null);
+}
+
+/*
+//TODO: finish implementing cell_iterator wrapping before uncommenting
+
+cell_vector worksheet::cells(bool skip_null)
+{
+    const auto dimension = calculate_dimension();
+    return cell_vector(*this, dimension.top_left(), dimension, major_order::row, skip_null, true);
+}
+
+const cell_vector worksheet::cells(bool skip_null) const
+{
+    const auto dimension = calculate_dimension();
+    return cell_vector(*this, dimension.top_left(), dimension, major_order::row, skip_null, true);
+}
+*/
 
 bool worksheet::operator==(const worksheet &other) const
 {
@@ -793,40 +819,22 @@ void worksheet::add_row_properties(row_t row, const xlnt::row_properties &props)
 
 worksheet::iterator worksheet::begin()
 {
-    auto dimensions = calculate_dimension();
-    cell_reference top_right(dimensions.bottom_right().column_index(), dimensions.top_left().row());
-    range_reference row_range(dimensions.top_left(), top_right);
-
-    return iterator(*this, row_range, dimensions, major_order::row);
+    return rows().begin();
 }
 
 worksheet::iterator worksheet::end()
 {
-    auto dimensions = calculate_dimension();
-    auto past_end_row_index = dimensions.bottom_right().row() + 1;
-    cell_reference bottom_left(dimensions.top_left().column_index(), past_end_row_index);
-    cell_reference bottom_right(dimensions.bottom_right().column_index(), past_end_row_index);
-
-    return iterator(*this, range_reference(bottom_left, bottom_right), dimensions, major_order::row);
+    return rows().end();
 }
 
 worksheet::const_iterator worksheet::cbegin() const
 {
-    auto dimensions = calculate_dimension();
-    cell_reference top_right(dimensions.bottom_right().column_index(), dimensions.top_left().row());
-    range_reference row_range(dimensions.top_left(), top_right);
-
-    return const_iterator(*this, row_range, major_order::row);
+    return rows().cbegin();
 }
 
 worksheet::const_iterator worksheet::cend() const
 {
-    auto dimensions = calculate_dimension();
-    auto past_end_row_index = dimensions.bottom_right().row() + 1;
-    cell_reference bottom_left(dimensions.top_left().column_index(), past_end_row_index);
-    cell_reference bottom_right(dimensions.bottom_right().column_index(), past_end_row_index);
-
-    return const_iterator(*this, range_reference(bottom_left, bottom_right), major_order::row);
+    return rows().cend();
 }
 
 worksheet::const_iterator worksheet::begin() const
@@ -837,11 +845,6 @@ worksheet::const_iterator worksheet::begin() const
 worksheet::const_iterator worksheet::end() const
 {
     return cend();
-}
-
-range worksheet::iter_cells(bool skip_null)
-{
-    return xlnt::range(*this, calculate_dimension(), major_order::row, skip_null);
 }
 
 void worksheet::print_title_rows(row_t last_row)

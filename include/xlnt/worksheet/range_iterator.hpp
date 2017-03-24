@@ -51,8 +51,8 @@ public:
     /// <summary>
     ///
     /// </summary>
-    range_iterator(worksheet &ws, const range_reference &start_cell, const range_reference &limits,
-        major_order order = major_order::row);
+    range_iterator(worksheet &ws, const cell_reference &cursor,
+        const range_reference &bounds, major_order order, bool skip_null);
 
     /// <summary>
     ///
@@ -108,17 +108,22 @@ private:
     /// <summary>
     ///
     /// </summary>
-    cell_reference current_cell_;
+    cell_reference cursor_;
 
     /// <summary>
     ///
     /// </summary>
-    range_reference range_;
+    range_reference bounds_;
 
     /// <summary>
     ///
     /// </summary>
     major_order order_;
+
+    /// <summary>
+    /// If true, empty rows and cells will be skipped when iterating with this iterator
+    /// </summary>
+    bool skip_null_;
 };
 
 /// <summary>
@@ -137,7 +142,8 @@ public:
     /// <summary>
     ///
     /// </summary>
-    const_range_iterator(const worksheet &ws, const range_reference &start_cell, major_order order = major_order::row);
+    const_range_iterator(const worksheet &ws, const cell_reference &cursor,
+        const range_reference &bounds, major_order order, bool skip_null);
 
     /// <summary>
     ///
@@ -193,17 +199,22 @@ private:
     /// <summary>
     ///
     /// </summary>
-    cell_reference current_cell_;
+    cell_reference cursor_;
 
     /// <summary>
     ///
     /// </summary>
-    range_reference range_;
+    range_reference bounds_;
 
     /// <summary>
     ///
     /// </summary>
     major_order order_;
+
+    /// <summary>
+    /// If true, empty rows and cells will be skipped when iterating with this iterator
+    /// </summary>
+    bool skip_null_;
 };
 
 } // namespace xlnt

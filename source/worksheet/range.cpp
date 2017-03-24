@@ -72,22 +72,18 @@ bool range::operator==(const range &comparand) const
 
 cell_vector range::vector(std::size_t vector_index)
 {
-    range_reference vector_ref = ref_;
+    auto cursor = ref_.top_left();
 
     if (order_ == major_order::row)
     {
-        auto row = ref_.top_left().row() + static_cast<row_t>(vector_index);
-        vector_ref.top_left().row(row);
-        vector_ref.bottom_right().row(row);
+        cursor.row(cursor.row() + vector_index);
     }
     else
     {
-        auto column = ref_.top_left().column() + static_cast<column_t::index_t>(vector_index);
-        vector_ref.top_left().column_index(column);
-        vector_ref.bottom_right().column_index(column);
+        cursor.column_index(cursor.column_index() + vector_index);
     }
 
-    return cell_vector(ws_, vector_ref, order_);
+    return cell_vector(ws_, cursor, ref_, order_, skip_null_, false);
 }
 
 bool range::contains(const cell_reference &ref)
@@ -161,64 +157,66 @@ cell range::cell(const cell_reference &ref)
     return (*this)[ref.row() - 1][ref.column().index - 1];
 }
 
+cell_vector range::front()
+{
+    return *begin();
+}
+
+const cell_vector range::front() const
+{
+    return *cbegin();
+}
+
+cell_vector range::back()
+{
+    return *(--end());
+}
+
+const cell_vector range::back() const
+{
+    return *(--cend());
+}
+
 range::iterator range::begin()
 {
-    if (order_ == major_order::row)
-    {
-        cell_reference top_right(ref_.bottom_right().column_index(), ref_.top_left().row());
-        range_reference row_range(ref_.top_left(), top_right);
-        return iterator(ws_, row_range, ref_, order_);
-    }
-
-    cell_reference bottom_left(ref_.top_left().column_index(), ref_.bottom_right().row());
-    range_reference row_range(ref_.top_left(), bottom_left);
-    return iterator(ws_, row_range, ref_, order_);
+    return iterator(ws_, ref_.top_left(), ref_, order_, skip_null_);
 }
 
 range::iterator range::end()
 {
+    auto cursor = ref_.top_left();
+
     if (order_ == major_order::row)
     {
-        auto past_end_row_index = ref_.bottom_right().row() + 1;
-        cell_reference bottom_left(ref_.top_left().column_index(), past_end_row_index);
-        cell_reference bottom_right(ref_.bottom_right().column_index(), past_end_row_index);
-        return iterator(ws_, range_reference(bottom_left, bottom_right), ref_, order_);
+        cursor.row(ref_.bottom_right().row() + 1);
+    }
+    else
+    {
+        cursor.column_index(ref_.bottom_right().column_index() + 1);
     }
 
-    auto past_end_column_index = ref_.bottom_right().column_index() + 1;
-    cell_reference top_right(past_end_column_index, ref_.top_left().row());
-    cell_reference bottom_right(past_end_column_index, ref_.bottom_right().row());
-    return iterator(ws_, range_reference(top_right, bottom_right), ref_, order_);
+    return iterator(ws_, cursor, ref_, order_, skip_null_);
 }
 
 range::const_iterator range::cbegin() const
 {
-    if (order_ == major_order::row)
-    {
-        cell_reference top_right(ref_.bottom_right().column_index(), ref_.top_left().row());
-        range_reference row_range(ref_.top_left(), top_right);
-        return const_iterator(ws_, row_range, order_);
-    }
-
-    cell_reference bottom_left(ref_.top_left().column_index(), ref_.bottom_right().row());
-    range_reference row_range(ref_.top_left(), bottom_left);
-    return const_iterator(ws_, row_range, order_);
+    return const_iterator(ws_, ref_.top_left(), ref_, order_, skip_null_);
 }
 
 range::const_iterator range::cend() const
 {
+    auto cursor = ref_.top_left();
+
     if (order_ == major_order::row)
     {
-        auto past_end_row_index = ref_.bottom_right().row() + 1;
-        cell_reference bottom_left(ref_.top_left().column_index(), past_end_row_index);
-        cell_reference bottom_right(ref_.bottom_right().column_index(), past_end_row_index);
-        return const_iterator(ws_, range_reference(bottom_left, bottom_right), order_);
+        cursor.row(ref_.bottom_right().row() + 1);
+    }
+    else
+    {
+        cursor.column_index(ref_.bottom_right().column_index() + 1);
     }
 
-    auto past_end_column_index = ref_.bottom_right().column_index() + 1;
-    cell_reference top_right(past_end_column_index, ref_.top_left().row());
-    cell_reference bottom_right(past_end_column_index, ref_.bottom_right().row());
-    return const_iterator(ws_, range_reference(top_right, bottom_right), order_);
+    return const_iterator(ws_, cursor, ref_, order_, skip_null_);
 }
 
 bool range::operator!=(const range &comparand) const
