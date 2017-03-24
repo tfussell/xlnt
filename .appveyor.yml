@@ -5,7 +5,7 @@ cache:
 - vcpkg -> .appveyor.yml
 
 platform:
-  - x86
+  - Win32
   - x64
 
 configuration:
@@ -30,7 +30,9 @@ install:
 - cd ..
 
 before_build:
-- cmake -H. -Bbuild -DSTATIC=%STATIC% -DSAMPLES=ON -DBENCHMARKS=ON -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
+- mkdir build
+- cd build
+- cmake -G "Visual Studio 14 2015" -D CMAKE_GENERATOR_PLATFORM=%platform% -D STATIC=%STATIC% -D SAMPLES=ON -D BENCHMARKS=ON -D CMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake ..
 
 build:
   project: build/tests/xlnt.test.sln
