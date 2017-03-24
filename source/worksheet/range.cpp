@@ -76,11 +76,11 @@ cell_vector range::vector(std::size_t vector_index)
 
     if (order_ == major_order::row)
     {
-        cursor.row(cursor.row() + vector_index);
+        cursor.row(cursor.row() + static_cast<row_t>(vector_index));
     }
     else
     {
-        cursor.column_index(cursor.column_index() + vector_index);
+        cursor.column_index(cursor.column_index() + static_cast<column_t::index_t>(vector_index));
     }
 
     return cell_vector(ws_, cursor, ref_, order_, skip_null_, false);
