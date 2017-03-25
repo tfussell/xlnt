@@ -33,13 +33,13 @@ public:
     void test_non_rgb_colors()
     {
 		xlnt::color indexed = xlnt::indexed_color(1);
-		TS_ASSERT(!indexed.is_auto());
+		TS_ASSERT(!indexed.auto_());
         TS_ASSERT_EQUALS(indexed.indexed().index(), 1);
         TS_ASSERT_THROWS(indexed.theme(), xlnt::invalid_attribute);
         TS_ASSERT_THROWS(indexed.rgb(), xlnt::invalid_attribute);
 
 		xlnt::color theme = xlnt::theme_color(3);
-		TS_ASSERT(!theme.is_auto());
+		TS_ASSERT(!theme.auto_());
         TS_ASSERT_EQUALS(theme.theme().index(), 3);
         TS_ASSERT_THROWS(theme.indexed(), xlnt::invalid_attribute);
         TS_ASSERT_THROWS(theme.rgb(), xlnt::invalid_attribute);

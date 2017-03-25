@@ -73,35 +73,35 @@ pattern_fill &pattern_fill::background(const color &new_background)
     return *this;
 }
 
-XLNT_API bool operator==(const pattern_fill &left, const pattern_fill &right)
+bool pattern_fill::operator==(const pattern_fill &other) const
 {
-    if (left.background().is_set() != right.background().is_set())
+    if (background().is_set() != other.background().is_set())
     {
         return false;
     }
 
-    if (left.background().is_set())
+    if (background().is_set())
     {
-        if (left.background().get() != right.background().get())
+        if (background().get() != other.background().get())
         {
             return false;
         }
     }
 
-    if (left.foreground().is_set() != right.foreground().is_set())
+    if (foreground().is_set() != other.foreground().is_set())
     {
         return false;
     }
 
-    if (left.foreground().is_set())
+    if (foreground().is_set())
     {
-        if (left.foreground().get() != right.foreground().get())
+        if (foreground().get() != other.foreground().get())
         {
             return false;
         }
     }
 
-    if (left.type() != right.type())
+    if (type() != other.type())
     {
         return false;
     }
@@ -109,10 +109,14 @@ XLNT_API bool operator==(const pattern_fill &left, const pattern_fill &right)
     return true;
 }
 
+bool pattern_fill::operator!=(const pattern_fill &other) const
+{
+	return !(*this == other);
+}
+
 // gradient_fill
 
-gradient_fill::gradient_fill()
-    : type_(gradient_fill_type::linear)
+gradient_fill::gradient_fill() : type_(gradient_fill_type::linear)
 {
 }
 
@@ -199,44 +203,49 @@ std::unordered_map<double, color> gradient_fill::stops() const
     return stops_;
 }
 
-XLNT_API bool operator==(const gradient_fill &left, const gradient_fill &right)
+bool gradient_fill::operator==(const gradient_fill &other) const
 {
-    if (left.type() != right.type())
+    if (type() != other.type())
     {
         return false;
     }
 
-    if (std::fabs(left.degree() - right.degree()) != 0.)
+    if (std::fabs(degree() - other.degree()) != 0.)
     {
         return false;
     }
 
-    if (std::fabs(left.bottom() - right.bottom()) != 0.)
+    if (std::fabs(bottom() - other.bottom()) != 0.)
     {
         return false;
     }
 
-    if (std::fabs(left.right() - right.right()) != 0.)
+    if (std::fabs(right() - other.right()) != 0.)
     {
         return false;
     }
 
-    if (std::fabs(left.top() - right.top()) != 0.)
+    if (std::fabs(top() - other.top()) != 0.)
     {
         return false;
     }
 
-    if (std::fabs(left.left() - right.left()) != 0.)
+    if (std::fabs(left() - other.left()) != 0.)
     {
         return false;
     }
 
-    if (left.stops() != right.stops())
+    if (stops() != other.stops())
     {
         return false;
     }
 
     return true;
+}
+
+bool gradient_fill::operator!=(const gradient_fill &other) const
+{
+	return !(*this == other);
 }
 
 // fill
@@ -287,19 +296,24 @@ pattern_fill fill::pattern_fill() const
     return pattern_;
 }
 
-XLNT_API bool operator==(const fill &left, const fill &right)
+bool fill::operator==(const fill &other) const
 {
-    if (left.type() != right.type())
+    if (type() != other.type())
     {
         return false;
     }
 
-    if (left.type() == fill_type::gradient)
+    if (type() == fill_type::gradient)
     {
-        return left.gradient_fill() == right.gradient_fill();
+        return gradient_fill() == other.gradient_fill();
     }
 
-    return left.pattern_fill() == right.pattern_fill();
+    return pattern_fill() == other.pattern_fill();
+}
+
+bool fill::operator!=(const fill &other) const
+{
+	return !(*this == other);
 }
 
 } // namespace xlnt

@@ -28,114 +28,47 @@
 #include <xlnt/styles/color.hpp>
 #include <xlnt/utils/exceptions.hpp>
 
+namespace {
+
+std::array<std::uint8_t, 4> decode_hex_string(const std::string &hex_string)
+{
+	auto x = std::strtoul(hex_string.c_str(), NULL, 16);
+
+	auto a = static_cast<std::uint8_t>(x >> 24);
+	auto r = static_cast<std::uint8_t>((x >> 16) & 0xff);
+	auto g = static_cast<std::uint8_t>((x >> 8) & 0xff);
+	auto b = static_cast<std::uint8_t>(x & 0xff);
+
+	return { { r, g, b, a } };
+}
+
+} // namespace
+
 namespace xlnt {
 
-indexed_color::indexed_color(std::size_t index)
-    : index_(index)
+// indexed_color implementation
+
+indexed_color::indexed_color(std::size_t index) : index_(index)
 {
 }
 
-theme_color::theme_color(std::size_t index)
-    : index_(index)
+std::size_t indexed_color::index() const
+{
+	return index_;
+}
+
+// theme_color implementation
+
+theme_color::theme_color(std::size_t index) : index_(index)
 {
 }
 
-const color color::black()
+std::size_t theme_color::index() const
 {
-    return color(rgb_color("ff000000"));
+	return index_;
 }
 
-const color color::white()
-{
-    return color(rgb_color("ffffffff"));
-}
-
-const color color::red()
-{
-    return color(rgb_color("ffff0000"));
-}
-
-const color color::darkred()
-{
-    return color(rgb_color("ff8b0000"));
-}
-
-const color color::blue()
-{
-    return color(rgb_color("ff0000ff"));
-}
-
-const color color::darkblue()
-{
-    return color(rgb_color("ff00008b"));
-}
-
-const color color::green()
-{
-    return color(rgb_color("ff00ff00"));
-}
-
-const color color::darkgreen()
-{
-    return color(rgb_color("ff008b00"));
-}
-
-const color color::yellow()
-{
-    return color(rgb_color("ffffff00"));
-}
-
-const color color::darkyellow()
-{
-    return color(rgb_color("ffcccc00"));
-}
-
-color::color()
-    : type_(color_type::indexed), rgb_(rgb_color(0, 0, 0, 0)), indexed_(0), theme_(0), tint_(0), auto__(false)
-{
-}
-
-color::color(const rgb_color &rgb)
-    : type_(color_type::rgb), rgb_(rgb), indexed_(0), theme_(0), tint_(0), auto__(false)
-{
-}
-
-color::color(const indexed_color &indexed)
-    : type_(color_type::indexed), rgb_(rgb_color(0, 0, 0, 0)), indexed_(indexed), theme_(0), tint_(0), auto__(false)
-{
-}
-
-color::color(const theme_color &theme)
-    : type_(color_type::theme), rgb_(rgb_color(0, 0, 0, 0)), indexed_(0), theme_(theme), tint_(0), auto__(false)
-{
-}
-
-color_type color::type() const
-{
-    return type_;
-}
-
-bool color::is_auto() const
-{
-    return auto__;
-}
-
-void color::auto_(bool value)
-{
-    auto__ = value;
-}
-
-const indexed_color &color::indexed() const
-{
-    assert_type(color_type::indexed);
-    return indexed_;
-}
-
-const theme_color &color::theme() const
-{
-    assert_type(color_type::theme);
-    return theme_;
-}
+// rgb_color implementation
 
 std::string rgb_color::hex_string() const
 {
@@ -155,18 +88,6 @@ std::string rgb_color::hex_string() const
     return hex_string;
 }
 
-std::array<std::uint8_t, 4> rgb_color::decode_hex_string(const std::string &hex_string)
-{
-    auto x = std::strtoul(hex_string.c_str(), NULL, 16);
-
-    auto a = static_cast<std::uint8_t>(x >> 24);
-    auto r = static_cast<std::uint8_t>((x >> 16) & 0xff);
-    auto g = static_cast<std::uint8_t>((x >> 8) & 0xff);
-    auto b = static_cast<std::uint8_t>(x & 0xff);
-
-    return {{r, g, b, a}};
-}
-
 rgb_color::rgb_color(const std::string &hex_string)
     : rgba_(decode_hex_string(hex_string))
 {
@@ -177,17 +98,144 @@ rgb_color::rgb_color(std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint8_
 {
 }
 
-std::size_t indexed_color::index() const
+std::uint8_t rgb_color::red() const
 {
-    return index_;
+	return rgba_[0];
 }
 
-std::size_t theme_color::index() const
+std::uint8_t rgb_color::green() const
 {
-    return index_;
+	return rgba_[1];
 }
 
-const rgb_color &color::rgb() const
+std::uint8_t rgb_color::blue() const
+{
+	return rgba_[2];
+}
+
+std::uint8_t rgb_color::alpha() const
+{
+	return rgba_[3];
+}
+
+std::array<std::uint8_t, 3> rgb_color::rgb() const
+{
+	return { red(), green(), blue() };
+}
+
+std::array<std::uint8_t, 4> rgb_color::rgba() const
+{
+	return rgba_;
+}
+
+// color implementation
+
+const color color::black()
+{
+	return color(rgb_color("ff000000"));
+}
+
+const color color::white()
+{
+	return color(rgb_color("ffffffff"));
+}
+
+const color color::red()
+{
+	return color(rgb_color("ffff0000"));
+}
+
+const color color::darkred()
+{
+	return color(rgb_color("ff8b0000"));
+}
+
+const color color::blue()
+{
+	return color(rgb_color("ff0000ff"));
+}
+
+const color color::darkblue()
+{
+	return color(rgb_color("ff00008b"));
+}
+
+const color color::green()
+{
+	return color(rgb_color("ff00ff00"));
+}
+
+const color color::darkgreen()
+{
+	return color(rgb_color("ff008b00"));
+}
+
+const color color::yellow()
+{
+	return color(rgb_color("ffffff00"));
+}
+
+const color color::darkyellow()
+{
+	return color(rgb_color("ffcccc00"));
+}
+
+color::color() : color(indexed_color(0))
+{
+}
+
+color::color(const rgb_color &rgb)
+	: type_(color_type::rgb),
+	  rgb_(rgb),
+	  indexed_(0),
+	  theme_(0)
+{
+}
+
+color::color(const indexed_color &indexed)
+	: type_(color_type::indexed),
+	  rgb_(rgb_color(0, 0, 0, 0)),
+	  indexed_(indexed),
+	  theme_(0)
+{
+}
+
+color::color(const theme_color &theme)
+	: type_(color_type::theme),
+	  rgb_(rgb_color(0, 0, 0, 0)),
+	  indexed_(0),
+	  theme_(theme)
+{
+}
+
+color_type color::type() const
+{
+	return type_;
+}
+
+bool color::auto_() const
+{
+	return auto__;
+}
+
+void color::auto_(bool value)
+{
+	auto__ = value;
+}
+
+indexed_color color::indexed() const
+{
+	assert_type(color_type::indexed);
+	return indexed_;
+}
+
+theme_color color::theme() const
+{
+	assert_type(color_type::theme);
+	return theme_;
+}
+
+rgb_color color::rgb() const
 {
     assert_type(color_type::rgb);
     return rgb_;
@@ -198,6 +246,11 @@ void color::tint(double tint)
     tint_ = tint;
 }
 
+double color::tint() const
+{
+	return tint_;
+}
+
 void color::assert_type(color_type t) const
 {
     if (t != type_)
@@ -206,7 +259,7 @@ void color::assert_type(color_type t) const
     }
 }
 
-XLNT_API bool color::operator==(const xlnt::color &other) const
+bool color::operator==(const xlnt::color &other) const
 {
     if (type_ != other.type_ || std::fabs(tint_ - other.tint_) != 0.0 || auto__ != other.auto__)
     {
@@ -224,6 +277,11 @@ XLNT_API bool color::operator==(const xlnt::color &other) const
     }
 
     return false;
+}
+
+bool color::operator!=(const color &other) const
+{
+	return !(*this == other);
 }
 
 } // namespace xlnt

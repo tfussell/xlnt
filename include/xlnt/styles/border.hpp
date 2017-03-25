@@ -50,7 +50,7 @@ enum class XLNT_API border_side
 };
 
 /// <summary>
-///
+/// Enumerates the pattern of the border lines on a particular side.
 /// </summary>
 enum class XLNT_API border_style
 {

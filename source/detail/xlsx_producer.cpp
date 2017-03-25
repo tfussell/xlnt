@@ -2950,7 +2950,7 @@ void xlsx_producer::write_relationships(const std::vector<xlnt::relationship> &r
 
 void xlsx_producer::write_color(const xlnt::color &color)
 {
-    if (color.is_auto())
+    if (color.auto_())
     {
         write_attribute("auto", write_bool(true));
         return;

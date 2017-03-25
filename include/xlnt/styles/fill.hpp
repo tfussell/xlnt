@@ -33,7 +33,7 @@
 namespace xlnt {
 
 /// <summary>
-///
+/// The pattern of pixels upon which the corresponding pattern fill will be displayed
 /// </summary>
 enum class XLNT_API pattern_fill_type
 {
@@ -59,58 +59,56 @@ enum class XLNT_API pattern_fill_type
 };
 
 /// <summary>
-///
+/// Represents a fill which colors the cell based on a foreground and 
+/// background color and a pattern.
 /// </summary>
 class XLNT_API pattern_fill
 {
 public:
     /// <summary>
-    ///
+    /// Constructs a default pattern fill with a none pattern and no colors.
     /// </summary>
     pattern_fill();
 
     /// <summary>
-    ///
+    /// Returns the pattern used by this fill
     /// </summary>
     pattern_fill_type type() const;
 
     /// <summary>
-    ///
+    /// Sets the pattern of this fill and returns a reference to it.
     /// </summary>
     pattern_fill &type(pattern_fill_type new_type);
 
     /// <summary>
-    ///
+    /// Returns the optional foreground color of this fill
     /// </summary>
     optional<color> foreground() const;
 
     /// <summary>
-    ///
+    /// Sets the foreground color and returns a reference to this pattern.
     /// </summary>
     pattern_fill &foreground(const color &foreground);
 
     /// <summary>
-    ///
+	/// Returns the optional background color of this fill
     /// </summary>
     optional<color> background() const;
 
     /// <summary>
-    ///
+	/// Sets the foreground color and returns a reference to this pattern.
     /// </summary>
     pattern_fill &background(const color &background);
 
     /// <summary>
-    /// Returns true if left is exactly equal to right.
+    /// Returns true if this pattern fill is equivalent to other.
     /// </summary>
-    XLNT_API friend bool operator==(const pattern_fill &left, const pattern_fill &right);
+    bool operator==(const pattern_fill &other) const;
 
     /// <summary>
-    /// Returns true if left is not exactly equal to right.
+    /// Returns true if this pattern fill is not equivalent to other.
     /// </summary>
-    XLNT_API friend bool operator!=(const pattern_fill &left, const pattern_fill &right)
-    {
-        return !(left == right);
-    }
+	bool operator!=(const pattern_fill &other) const;
 
 private:
     /// <summary>
@@ -139,37 +137,37 @@ enum class XLNT_API gradient_fill_type
 };
 
 /// <summary>
-///
+/// Encapsulates a fill which transitions between colors at particular "stops".
 /// </summary>
 class XLNT_API gradient_fill
 {
 public:
     /// <summary>
-    ///
+    /// Constructs a default linear fill
     /// </summary>
     gradient_fill();
 
     /// <summary>
-    ///
+    /// Returns the type of this gradient fill
     /// </summary>
     gradient_fill_type type() const;
 
     // Type
 
     /// <summary>
-    ///
+    /// Sets the type of this gradient fill
     /// </summary>
     gradient_fill &type(gradient_fill_type new_type);
 
     // Degree
 
     /// <summary>
-    ///
+    /// Sets the angle of the gradient in degrees
     /// </summary>
     gradient_fill &degree(double degree);
 
     /// <summary>
-    ///
+    /// Returns the angle of the gradient
     /// </summary>
     double degree() const;
 
@@ -241,15 +239,12 @@ public:
     /// <summary>
     /// Returns true if left is exactly equal to right.
     /// </summary>
-    XLNT_API friend bool operator==(const gradient_fill &left, const gradient_fill &right);
+    bool operator==(const gradient_fill &other) const;
 
     /// <summary>
     /// Returns true if left is not exactly equal to right.
     /// </summary>
-    XLNT_API friend bool operator!=(const gradient_fill &left, const gradient_fill &right)
-    {
-        return !(left == right);
-    }
+	bool operator!=(const gradient_fill &right) const;
 
 private:
     /// <summary>
@@ -347,29 +342,26 @@ public:
     /// <summary>
     /// Returns true if left is exactly equal to right.
     /// </summary>
-    XLNT_API friend bool operator==(const fill &left, const fill &right);
+    bool operator==(const fill &other) const;
 
     /// <summary>
     /// Returns true if left is not exactly equal to right.
     /// </summary>
-    XLNT_API friend bool operator!=(const fill &left, const fill &right)
-    {
-        return !(left == right);
-    }
+	bool operator!=(const fill &other) const;
 
 private:
     /// <summary>
-    ///
+    /// The type of this fill
     /// </summary>
     fill_type type_ = fill_type::pattern;
 
     /// <summary>
-    ///
+    /// The internal gradient fill if this is a gradient fill type
     /// </summary>
     xlnt::gradient_fill gradient_;
 
     /// <summary>
-    ///
+    /// The internal pattern fill if this is a pattern fill type
     /// </summary>
     xlnt::pattern_fill pattern_;
 };
