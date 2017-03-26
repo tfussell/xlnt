@@ -792,14 +792,26 @@ void cell::style(const std::string &style_name)
     style(workbook().style(style_name));
 }
 
-const style cell::style() const
+style cell::style()
 {
     if (!has_format() || !format().has_style())
     {
         throw invalid_attribute();
     }
 
-    return format().style();
+	auto f = format();
+
+    return f.style();
+}
+
+const style cell::style() const
+{
+	if (!has_format() || !format().has_style())
+	{
+		throw invalid_attribute();
+	}
+
+	return format().style();
 }
 
 bool cell::has_style() const

@@ -83,6 +83,71 @@ struct stylesheet
         return xlnt::style(&impl);
     }
 
+	class style create_builtin_style(const std::size_t builtin_id)
+	{
+		// From Annex G.2
+		static const auto *names = new std::unordered_map<std::size_t , std::string>
+		{
+			{ 0, "Normal" },
+			{ 1, "RowLevel_1" },
+			{ 2, "ColLevel_1" },
+			{ 3, "Comma" },
+			{ 4, "Currency" },
+			{ 5, "Percent" },
+			{ 6, "Comma [0]" },
+			{ 7, "Currency [0]" },
+			{ 8, "Hyperlink" },
+			{ 9, "Followed Hyperlink" },
+			{ 10, "Note" },
+			{ 11, "Warning Text" },
+			{ 15, "Title" },
+			{ 16, "Heading 1" },
+			{ 17, "Heading 2" },
+			{ 18, "Heading 3" },
+			{ 19, "Heading 4" },
+			{ 20, "Input" },
+			{ 21, "Output"},
+			{ 22, "Calculation"},
+			{ 22, "Calculation" },
+			{ 23, "Check Cell" },
+			{ 24, "Linked Cell" },
+			{ 25, "Total" },
+			{ 26, "Good" },
+			{ 27, "Bad" },
+			{ 28, "Neutral" },
+			{ 29, "Accent1" },
+			{ 30, "20% - Accent1" },
+			{ 31, "40% - Accent1" },
+			{ 32, "60% - Accent1" },
+			{ 33, "Accent2" },
+			{ 34, "20% - Accent2" },
+			{ 35, "40% - Accent2" },
+			{ 36, "60% - Accent2" },
+			{ 37, "Accent3" },
+			{ 38, "20% - Accent3" },
+			{ 39, "40% - Accent3" },
+			{ 40, "60% - Accent3" },
+			{ 41, "Accent4" },
+			{ 42, "20% - Accent4" },
+			{ 43, "40% - Accent4" },
+			{ 44, "60% - Accent4" },
+			{ 45, "Accent5" },
+			{ 46, "20% - Accent5" },
+			{ 47, "40% - Accent5" },
+			{ 48, "60% - Accent5" },
+			{ 49, "Accent6" },
+			{ 50, "20% - Accent6" },
+			{ 51, "40% - Accent6" },
+			{ 52, "60% - Accent6" },
+			{ 53, "Explanatory Text" }
+		};
+
+		auto new_style = create_style(names->at(builtin_id));
+		new_style.d_->builtin_id = builtin_id;
+
+		return new_style;
+	}
+
     class style style(const std::string &name)
 	{
         if (!has_style(name)) throw key_not_found();

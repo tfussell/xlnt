@@ -497,12 +497,7 @@ workbook workbook::empty()
         .color(theme_color(1));
     stylesheet.fonts.push_back(default_font);
 
-    wb.create_style("Normal")
-        .builtin_id(0)
-        .border(default_border, false)
-        .fill(default_fill, false)
-        .font(default_font, false)
-        .number_format(xlnt::number_format::general(), false);
+	wb.create_builtin_style(0);
 
     wb.create_format(true)
         .border(default_border, false)
@@ -1349,6 +1344,11 @@ const std::vector<std::uint8_t> &workbook::thumbnail() const
 style workbook::create_style(const std::string &name)
 {
     return d_->stylesheet_.get().create_style(name);
+}
+
+style workbook::create_builtin_style(const std::size_t builtin_id)
+{
+	return d_->stylesheet_.get().create_builtin_style(builtin_id);
 }
 
 style workbook::style(const std::string &name)

@@ -43,6 +43,7 @@ namespace detail {
 
 struct format_impl;
 struct stylesheet;
+class xlsx_producer;
 
 } // namespace detail
 
@@ -52,11 +53,6 @@ struct stylesheet;
 class XLNT_API format
 {
 public:
-    /// <summary>
-    ///
-    /// </summary>
-    std::size_t id() const;
-
     // Alignment
 
     /// <summary>
@@ -234,16 +230,27 @@ public:
     /// <summary>
     ///
     /// </summary>
-    const class style style() const;
+    class style style();
+
+	/// <summary>
+	///
+	/// </summary>
+	const class style style() const;
 
 private:
     friend struct detail::stylesheet;
+	friend class detail::xlsx_producer;
     friend class cell;
 
     /// <summary>
     ///
     /// </summary>
     format(detail::format_impl *d);
+
+	/// <summary>
+	///
+	/// </summary>
+	std::size_t id() const;
 
     /// <summary>
     ///

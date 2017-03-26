@@ -61,81 +61,79 @@ public:
     style() = delete;
 
     /// <summary>
-    /// Default copy constructor
+    /// Default copy constructor. Constructs a style using the same PIMPL as other.
     /// </summary>
     style(const style &other) = default;
 
     /// <summary>
-    /// Return the name of this style.
+    /// Returns the name of this style.
     /// </summary>
     std::string name() const;
 
     /// <summary>
-    ///
+    /// Sets the name of this style to name.
     /// </summary>
     style name(const std::string &name);
 
     /// <summary>
-    ///
+    /// Returns true if this style is hidden.
     /// </summary>
     bool hidden() const;
 
     /// <summary>
-    ///
+    /// Sets the hidden state of this style to value. A hidden style will not 
+	/// be shown in the list of selectable styles in the UI, but will still 
+	/// apply its formatting to cells using it.
     /// </summary>
     style hidden(bool value);
 
     /// <summary>
-    ///
+    /// Returns true if this is a builtin style that has been customized and
+	/// should therefore be persisted in the workbook.
     /// </summary>
-    optional<bool> custom() const;
+    bool custom_builtin() const;
 
     /// <summary>
-    ///
+    /// Returns the index of the builtin style that this style is an instance 
+	/// of or is a customized version thereof. If style::builtin() is false,
+	/// this will throw an invalid_attribute exception.
     /// </summary>
-    style custom(bool value);
+    std::size_t builtin_id() const;
+
+	/// <summary>
+	/// Returns true if this is a builtin style.
+	/// </summary>
+	bool builtin() const;
+
+    // Formatting (xf) components
 
     /// <summary>
-    ///
+    /// Returns the alignment of this style.
     /// </summary>
-    optional<std::size_t> builtin_id() const;
+    class alignment alignment() const;
+
+	/// <summary>
+	/// Returns true if the alignment of this style should be applied to cells
+	/// using it.
+	/// </summary>
+	bool alignment_applied() const;
 
     /// <summary>
-    ///
-    /// </summary>
-    style builtin_id(std::size_t builtin_id);
-
-    // Formatting components
-
-    /// <summary>
-    ///
-    /// </summary>
-    class alignment &alignment();
-
-    /// <summary>
-    ///
-    /// </summary>
-    const class alignment &alignment() const;
-
-    /// <summary>
-    ///
+    /// Sets the alignment of this style to new_alignment. Applied, which defaults
+	/// to true, determines whether the alignment should be enabled for cells using
+	/// this style.
     /// </summary>
     style alignment(const xlnt::alignment &new_alignment, bool applied = true);
 
     /// <summary>
     ///
     /// </summary>
-    bool alignment_applied() const;
+    class border border() const;
 
-    /// <summary>
-    ///
-    /// </summary>
-    class border &border();
-
-    /// <summary>
-    ///
-    /// </summary>
-    const class border &border() const;
+	/// <summary>
+	///
+	/// </summary>
+	bool border_applied() const;
 
     /// <summary>
     ///
@@ -145,17 +143,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-    bool border_applied() const;
+    class fill fill() const;
 
-    /// <summary>
-    ///
-    /// </summary>
-    class fill &fill();
-
-    /// <summary>
-    ///
-    /// </summary>
-    const class fill &fill() const;
+	/// <summary>
+	///
+	/// </summary>
+	bool fill_applied() const;
 
     /// <summary>
     ///
@@ -165,17 +158,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-    bool fill_applied() const;
+    class font font() const;
 
-    /// <summary>
-    ///
-    /// </summary>
-    class font &font();
-
-    /// <summary>
-    ///
-    /// </summary>
-    const class font &font() const;
+	/// <summary>
+	///
+	/// </summary>
+	bool font_applied() const;
 
     /// <summary>
     ///
@@ -185,17 +173,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-    bool font_applied() const;
+    class number_format number_format() const;
 
-    /// <summary>
-    ///
-    /// </summary>
-    class number_format &number_format();
-
-    /// <summary>
-    ///
-    /// </summary>
-    const class number_format &number_format() const;
+	/// <summary>
+	///
+	/// </summary>
+	bool number_format_applied() const;
 
     /// <summary>
     ///
@@ -205,52 +188,50 @@ public:
     /// <summary>
     ///
     /// </summary>
-    bool number_format_applied() const;
+    class protection protection() const;
+
+	/// <summary>
+	/// 
+	/// </summary>
+	bool protection_applied() const;
 
     /// <summary>
-    ///
-    /// </summary>
-    class protection &protection();
-
-    /// <summary>
-    ///
-    /// </summary>
-    const class protection &protection() const;
-
-    /// <summary>
-    ///
+    /// 
     /// </summary>
     style protection(const xlnt::protection &new_protection, bool applied = true);
 
     /// <summary>
-    ///
-    /// </summary>
-    bool protection_applied() const;
-
-    /// <summary>
-    ///
+    /// Returns true if the pivot table interface is enabled for this style.
     /// </summary>
     bool pivot_button() const;
 
     /// <summary>
-    ///
+    /// If show is true, a pivot table interface will be displayed for cells using
+	/// this style.
     /// </summary>
     void pivot_button(bool show);
 
     /// <summary>
-    ///
+    /// Returns true if this style should add a single-quote prefix for all text values.
     /// </summary>
     bool quote_prefix() const;
 
     /// <summary>
-    ///
+    /// If quote is true, enables a single-quote prefix for all text values in cells
+	/// using this style (e.g. "abc" will appear as "'abc"). The text will also not
+	/// be stored in sharedStrings when this is enabled.
     /// </summary>
     void quote_prefix(bool quote);
 
     /// <summary>
-    ///
+    /// Returns true if this style is equivalent to other.
     /// </summary>
     bool operator==(const style &other) const;
+
+	/// <summary>
+	/// Returns true if this style is not equivalent to other.
+	/// </summary>
+	bool operator!=(const style &other) const;
 
 private:
     friend struct detail::stylesheet;

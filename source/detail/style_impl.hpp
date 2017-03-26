@@ -25,7 +25,7 @@ struct style_impl
 	std::string name;
 	std::size_t formatting_record_id;
 
-	optional<bool> custom_builtin;
+	bool custom_builtin;
 	bool hidden_style;
 
 	optional<std::size_t> builtin_id;

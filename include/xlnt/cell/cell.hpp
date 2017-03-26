@@ -426,7 +426,12 @@ public:
     /// <summary>
     /// Returns a wrapper pointing to the named style applied to this cell.
     /// </summary>
-    const class style style() const;
+    class style style();
+
+	/// <summary>
+	/// Returns a wrapper pointing to the named style applied to this cell.
+	/// </summary>
+	const class style style() const;
 
     /// <summary>
     /// Sets the named style applied to this cell to a style named style_name.

@@ -1422,10 +1422,10 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
                 write_attribute("hidden", write_bool(true));
             }
 
-            if (current_style.custom_builtin.is_set())
-            {
-                write_attribute("customBuiltin", write_bool(current_style.custom_builtin.get()));
-            }
+			if (current_style.builtin_id.is_set() && current_style.custom_builtin)
+			{
+				write_attribute("customBuiltin", write_bool(current_style.custom_builtin));
+			}
 
             write_end_element(xmlns, "cellStyle");
         }

@@ -61,7 +61,7 @@ bool format::has_style() const
     return d_->style.is_set();
 }
 
-const style format::style() const
+style format::style()
 {
     if (!has_style())
     {
@@ -69,6 +69,16 @@ const style format::style() const
     }
 
     return d_->parent->style(d_->style.get());
+}
+
+const style format::style() const
+{
+	if (!has_style())
+	{
+		throw invalid_attribute();
+	}
+
+	return d_->parent->style(d_->style.get());
 }
 
 xlnt::alignment &format::alignment()

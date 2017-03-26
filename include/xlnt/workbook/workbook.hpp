@@ -669,6 +669,11 @@ public:
     /// </summary>
     class style create_style(const std::string &name);
 
+	/// <summary>
+	/// Creates a new style and returns it.
+	/// </summary>
+	class style create_builtin_style(std::size_t builtin_id);
+
     /// <summary>
     /// Clear all named styles from cells and remove the styles from
     /// from the styelsheet. This leaves all other styling in place
