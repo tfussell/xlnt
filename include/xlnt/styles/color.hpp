@@ -37,24 +37,25 @@ namespace xlnt {
 class XLNT_API indexed_color
 {
 public:
+    //TODO: should this be explicit?
     /// <summary>
-    ///
+    /// Constructs an indexed_color from an index.
     /// </summary>
     indexed_color(std::size_t index);
 
     /// <summary>
-    ///
+    /// Returns the index this color points to.
     /// </summary>
     std::size_t index() const;
 
     /// <summary>
-    ///
+    /// Sets the index to index.
     /// </summary>
     void index(std::size_t index);
 
 private:
     /// <summary>
-    ///
+    /// The index of this color
     /// </summary>
     std::size_t index_;
 };
@@ -66,23 +67,23 @@ class XLNT_API theme_color
 {
 public:
     /// <summary>
-    ///
+    /// Constructs a theme_color from an index.
     /// </summary>
     theme_color(std::size_t index);
 
     /// <summary>
-    ///
+    /// Returns the index of the color in the theme this points to.
     /// </summary>
     std::size_t index() const;
 
     /// <summary>
-    ///
+    /// Sets the index of this color to index.
     /// </summary>
     void index(std::size_t index);
 
 private:
     /// <summary>
-    ///
+    /// The index of the color
     /// </summary>
     std::size_t index_;
 };

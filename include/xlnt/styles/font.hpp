@@ -41,7 +41,7 @@ class XLNT_API font
 {
 public:
     /// <summary>
-    ///
+    /// Text can be underlined in the enumerated ways
     /// </summary>
     enum class underline_style
     {
@@ -53,258 +53,257 @@ public:
     };
 
     /// <summary>
-    ///
+    /// Constructs a default font. Calibri, size 12
     /// </summary>
     font();
 
     /// <summary>
-    ///
+    /// Sets the bold state of the font to bold and returns a reference to the font.
     /// </summary>
     font &bold(bool bold);
 
     /// <summary>
-    ///
+    /// Returns the bold state of the font.
     /// </summary>
     bool bold() const;
 
     /// <summary>
-    ///
+    /// Sets the bold state of the font to bold and returns a reference to the font.
     /// </summary>
     font &superscript(bool superscript);
 
     /// <summary>
-    ///
+    /// Returns true if this font has a superscript applied.
     /// </summary>
     bool superscript() const;
 
     /// <summary>
-    ///
+    /// Sets the bold state of the font to bold and returns a reference to the font.
     /// </summary>
     font &italic(bool italic);
 
     /// <summary>
-    ///
+    /// Returns true if this font has italics applied.
     /// </summary>
     bool italic() const;
 
     /// <summary>
-    ///
+    /// Sets the bold state of the font to bold and returns a reference to the font.
     /// </summary>
     font &strikethrough(bool strikethrough);
 
     /// <summary>
-    ///
+    /// Returns true if this font has a strikethrough applied.
     /// </summary>
     bool strikethrough() const;
 
     /// <summary>
-    ///
+    /// Sets the bold state of the font to bold and returns a reference to the font.
     /// </summary>
     font &outline(bool outline);
 
     /// <summary>
-    ///
+    /// Returns true if this font has an outline applied.
     /// </summary>
     bool outline() const;
 
     /// <summary>
-    ///
+    /// Sets the shadow state of the font to shadow and returns a reference to the font.
     /// </summary>
     font &shadow(bool shadow);
 
     /// <summary>
-    ///
+    /// Returns true if this font has a shadow applied.
     /// </summary>
     bool shadow() const;
 
     /// <summary>
-    ///
+    /// Sets the underline state of the font to new_underline and returns a reference to the font.
     /// </summary>
     font &underline(underline_style new_underline);
 
     /// <summary>
-    ///
+    /// Returns true if this font has any type of underline applied.
     /// </summary>
     bool underlined() const;
 
     /// <summary>
-    ///
+    /// Returns the particular style of underline this font has applied.
     /// </summary>
     underline_style underline() const;
 
     /// <summary>
-    ///
+    /// Returns true if this font has a defined size.
     /// </summary>
     bool has_size() const;
 
     /// <summary>
-    ///
+    /// Sets the size of the font to size and returns a reference to the font.
     /// </summary>
     font &size(double size);
 
     /// <summary>
-    ///
+    /// Returns the size of the font.
     /// </summary>
     double size() const;
 
     /// <summary>
-    ///
+    /// Returns true if this font has a particular face applied (e.g. "Comic Sans").
     /// </summary>
     bool has_name() const;
 
     /// <summary>
-    ///
+    /// Sets the font face to name and returns a reference to the font.
     /// </summary>
     font &name(const std::string &name);
 
     /// <summary>
-    ///
+    /// Returns the name of the font face.
     /// </summary>
     std::string name() const;
 
     /// <summary>
-    ///
+    /// Returns true if this font has a color applied.
     /// </summary>
     bool has_color() const;
 
     /// <summary>
-    ///
+    /// Sets the color of the font to c and returns a reference to the font.
     /// </summary>
     font &color(const color &c);
 
     /// <summary>
-    ///
+    /// Returns the color that this font is using.
     /// </summary>
     xlnt::color color() const;
 
     /// <summary>
-    ///
+    /// Returns true if this font has a family defined.
     /// </summary>
     bool has_family() const;
 
     /// <summary>
-    ///
+    /// Sets the family index of the font to family and returns a reference to the font.
     /// </summary>
     font &family(std::size_t family);
 
     /// <summary>
-    ///
+    /// Returns the family index for the font.
     /// </summary>
     std::size_t family() const;
 
     /// <summary>
-    ///
+    /// Returns true if this font has a charset defined.
     /// </summary>
     bool has_charset() const;
 
+    // TODO: charset should be an enum, not a number
+
     /// <summary>
-    ///
+    /// Sets the charset of the font to charset and returns a reference to the font.
     /// </summary>
     font &charset(std::size_t charset);
 
     /// <summary>
-    ///
+    /// Returns the charset of the font.
     /// </summary>
     std::size_t charset() const;
 
     /// <summary>
-    ///
+    /// Returns true if this font has a scheme.
     /// </summary>
     bool has_scheme() const;
 
     /// <summary>
-    ///
+    /// Sets the scheme of the font to scheme and returns a reference to the font.
     /// </summary>
     font &scheme(const std::string &scheme);
 
     /// <summary>
-    ///
+    /// Returns the scheme of this font.
     /// </summary>
     std::string scheme() const;
 
     /// <summary>
     /// Returns true if left is exactly equal to right.
     /// </summary>
-    XLNT_API friend bool operator==(const font &left, const font &right);
+    bool operator==(const font &other) const;
 
     /// <summary>
     /// Returns true if left is not exactly equal to right.
     /// </summary>
-    XLNT_API friend bool operator!=(const font &left, const font &right)
-    {
-        return !(left == right);
-    }
+    bool operator!=(const font &other) const;
 
 private:
     friend class style;
 
     /// <summary>
-    ///
+    /// The name of the font
     /// </summary>
     optional<std::string> name_;
 
     /// <summary>
-    ///
+    /// size
     /// </summary>
     optional<double> size_;
 
     /// <summary>
-    ///
+    /// bold
     /// </summary>
     bool bold_ = false;
 
     /// <summary>
-    ///
+    /// italic
     /// </summary>
     bool italic_ = false;
 
     /// <summary>
-    ///
+    /// superscript
     /// </summary>
     bool superscript_ = false;
 
     /// <summary>
-    ///
+    /// subscript
     /// </summary>
     bool subscript_ = false;
 
     /// <summary>
-    ///
+    /// strikethrough
     /// </summary>
     bool strikethrough_ = false;
 
     /// <summary>
-    ///
+    /// outline
     /// </summary>
     bool outline_ = false;
 
     /// <summary>
-    ///
+    /// shadow
     /// </summary>
     bool shadow_ = false;
 
     /// <summary>
-    ///
+    /// underline style
     /// </summary>
     underline_style underline_ = underline_style::none;
 
     /// <summary>
-    ///
+    /// color
     /// </summary>
     optional<xlnt::color> color_;
 
     /// <summary>
-    ///
+    /// family
     /// </summary>
     optional<std::size_t> family_;
 
     /// <summary>
-    ///
+    /// charset
     /// </summary>
     optional<std::size_t> charset_;
 
     /// <summary>
-    ///
+    /// scheme
     /// </summary>
     optional<std::string> scheme_;
 };

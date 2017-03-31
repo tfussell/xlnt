@@ -33,7 +33,7 @@ column_t::index_t column_t::column_index_from_string(const std::string &column_s
 {
     if (column_string.length() > 3 || column_string.empty())
     {
-        throw invalid_column_string_index();
+        throw invalid_column_index();
     }
 
     column_t::index_t column_index = 0;
@@ -43,7 +43,7 @@ column_t::index_t column_t::column_index_from_string(const std::string &column_s
     {
         if (!std::isalpha(column_string[static_cast<std::size_t>(i)], std::locale::classic()))
         {
-            throw invalid_column_string_index();
+            throw invalid_column_index();
         }
 
         auto char_index = std::toupper(column_string[static_cast<std::size_t>(i)], std::locale::classic()) - 'A';
@@ -65,7 +65,7 @@ std::string column_t::column_string_from_index(column_t::index_t column_index)
     // columns
     if (column_index < constants::min_column() || column_index > constants::max_column())
     {
-        throw invalid_column_string_index();
+        throw invalid_column_index();
     }
 
     int temp = static_cast<int>(column_index);
@@ -268,24 +268,6 @@ column_t operator-(column_t lhs, const column_t &rhs)
     return lhs;
 }
 
-column_t operator*(column_t lhs, const column_t &rhs)
-{
-    lhs *= rhs;
-    return lhs;
-}
-
-column_t operator/(column_t lhs, const column_t &rhs)
-{
-    lhs /= rhs;
-    return lhs;
-}
-
-column_t operator%(column_t lhs, const column_t &rhs)
-{
-    lhs %= rhs;
-    return lhs;
-}
-
 column_t &column_t::operator+=(const column_t &rhs)
 {
     index += rhs.index;
@@ -295,24 +277,6 @@ column_t &column_t::operator+=(const column_t &rhs)
 column_t &column_t::operator-=(const column_t &rhs)
 {
     index -= rhs.index;
-    return *this;
-}
-
-column_t &column_t::operator*=(const column_t &rhs)
-{
-    index *= rhs.index;
-    return *this;
-}
-
-column_t &column_t::operator/=(const column_t &rhs)
-{
-    index /= rhs.index;
-    return *this;
-}
-
-column_t &column_t::operator%=(const column_t &rhs)
-{
-    index %= rhs.index;
     return *this;
 }
 

@@ -27,7 +27,7 @@
 namespace xlnt {
 
 exception::exception(const std::string &message)
-    : std::runtime_error("xlnt::error : " + message)
+    : std::runtime_error("xlnt::exception : " + message)
 {
     this->message(message);
 }
@@ -63,12 +63,12 @@ invalid_sheet_title::~invalid_sheet_title()
 {
 }
 
-invalid_column_string_index::invalid_column_string_index()
+invalid_column_index::invalid_column_index()
     : exception("column string index error")
 {
 }
 
-invalid_column_string_index::~invalid_column_string_index()
+invalid_column_index::~invalid_column_index()
 {
 }
 

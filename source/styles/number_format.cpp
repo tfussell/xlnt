@@ -244,15 +244,13 @@ number_format::number_format(std::size_t id)
 }
 
 number_format::number_format(const std::string &format_string)
-    : id_set_(false), id_(0)
+    : format_string_(format_string)
 {
-    this->format_string(format_string);
 }
 
-number_format::number_format(const std::string &format_string, std::size_t id)
-    : id_set_(false), id_(0)
+number_format::number_format(const std::string &format, std::size_t id)
 {
-    this->format_string(format_string, id);
+    format_string(format, id);
 }
 
 bool number_format::is_builtin_format(std::size_t builtin_id)
@@ -279,14 +277,12 @@ void number_format::format_string(const std::string &format_string)
 {
     format_string_ = format_string;
     id_ = 0;
-    id_set_ = false;
 
     for (const auto &pair : builtin_formats())
     {
         if (pair.second.format_string() == format_string)
         {
             id_ = pair.first;
-            id_set_ = true;
             break;
         }
     }
@@ -296,28 +292,26 @@ void number_format::format_string(const std::string &format_string, std::size_t 
 {
     format_string_ = format_string;
     id_ = id;
-    id_set_ = true;
 }
 
 bool number_format::has_id() const
 {
-    return id_set_;
+    return id_.is_set();
 }
 
 void number_format::id(std::size_t id)
 {
     id_ = id;
-    id_set_ = true;
 }
 
 std::size_t number_format::id() const
 {
-    if (!id_set_)
+    if (!has_id())
     {
         throw invalid_attribute();
     }
 
-    return id_;
+    return id_.get();
 }
 
 bool number_format::is_date_format() const
@@ -355,9 +349,14 @@ std::string number_format::format(long double number, calendar base_date) const
     return detail::number_formatter(format_string_, base_date).format_number(number);
 }
 
-XLNT_API bool operator==(const number_format &left, const number_format &right)
+bool number_format::operator==(const number_format &other) const
 {
-    return left.format_string_ == right.format_string_;
+    return format_string_ == other.format_string_;
+}
+
+bool number_format::operator!=(const number_format &other) const
+{
+    return !(*this == other);
 }
 
 } // namespace xlnt

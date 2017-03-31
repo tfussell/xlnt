@@ -49,7 +49,7 @@ struct XLNT_API date
     static date from_number(int days_since_base_year, calendar base_date);
 
     /// <summary>
-    ///
+    /// Constructs a data from a given year, month, and day.
     /// </summary>
     date(int year_, int month_, int day_);
 
@@ -59,7 +59,8 @@ struct XLNT_API date
     int to_number(calendar base_date) const;
 
     /// <summary>
-    ///
+    /// Calculates and returns the day of the week that this date represents in the range
+    /// 0 to 6 where 0 represents Sunday.
     /// </summary>
     int weekday() const;
 
@@ -69,17 +70,17 @@ struct XLNT_API date
     bool operator==(const date &comparand) const;
 
     /// <summary>
-    ///
+    /// The year
     /// </summary>
     int year;
 
     /// <summary>
-    ///
+    /// The month
     /// </summary>
     int month;
 
     /// <summary>
-    ///
+    /// The day
     /// </summary>
     int day;
 };

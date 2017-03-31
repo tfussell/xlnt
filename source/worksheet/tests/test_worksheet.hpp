@@ -303,15 +303,6 @@ public:
         TS_ASSERT(!ws.cell("D4").has_value());
     }
     
-    void test_merge_coordinate()
-    {
-        xlnt::workbook wb;
-        auto ws = wb.active_sheet();
-        ws.merge_cells(1, 1, 4, 4);
-        std::vector<xlnt::range_reference> expected = { xlnt::range_reference("A1:D4") };
-        TS_ASSERT_EQUALS(ws.merged_ranges(), expected);
-    }
-    
     void test_unmerge_bad()
     {
         xlnt::workbook wb;
@@ -327,16 +318,6 @@ public:
         ws.merge_cells("A1:D4");
         TS_ASSERT_EQUALS(ws.merged_ranges().size(), 1);
         ws.unmerge_cells("A1:D4");
-        TS_ASSERT_EQUALS(ws.merged_ranges().size(), 0);
-    }
-
-    void test_unmerge_coordinate()
-    {
-        xlnt::workbook wb;
-        auto ws = wb.active_sheet();
-        ws.merge_cells("A1:D4");
-        TS_ASSERT_EQUALS(ws.merged_ranges().size(), 1);
-        ws.unmerge_cells(1, 1, 4, 4);
         TS_ASSERT_EQUALS(ws.merged_ranges().size(), 0);
     }
 

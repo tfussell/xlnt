@@ -124,6 +124,8 @@ Returns the protection of this cell.
 Creates a new format in the workbook, sets its protection to the given protection, and applies the format to this cell.
 #### ```bool xlnt::cell::has_style() const```
 Returns true if this cell has had a style applied to it.
+#### ```class style xlnt::cell::style()```
+Returns a wrapper pointing to the named style applied to this cell.
 #### ```const class style xlnt::cell::style() const```
 Returns a wrapper pointing to the named style applied to this cell.
 #### ```void xlnt::cell::style(const class style &new_style)```
@@ -188,11 +190,12 @@ Returns true if this cell the same cell as comparand (compared by reference).
 Returns true if this cell is uninitialized.
 ### cell_reference_hash
 #### ```std::size_t xlnt::cell_reference_hash::operator()(const cell_reference &k) const```
+Returns a hash representing a particular cell_reference.
 ### cell_reference
 #### ```static std::pair<std::string, row_t> xlnt::cell_reference::split_reference(const std::string &reference_string)```
-Split a coordinate string like "A1" into an equivalent pair like {"A", 1}.
+Splits a coordinate string like "A1" into an equivalent pair like {"A", 1}.
 #### ```static std::pair<std::string, row_t> xlnt::cell_reference::split_reference(const std::string &reference_string, bool &absolute_column, bool &absolute_row)```
-Split a coordinate string like "A1" into an equivalent pair like {"A", 1}. Reference parameters absolute_column and absolute_row will be set to true if column part or row part are prefixed by a dollar-sign indicating they are absolute, otherwise false.
+Splits a coordinate string like "A1" into an equivalent pair like {"A", 1}. Reference parameters absolute_column and absolute_row will be set to true if column part or row part are prefixed by a dollar-sign indicating they are absolute, otherwise false.
 #### ```xlnt::cell_reference::cell_reference()```
 Default constructor makes a reference to the top-left-most cell, "A1".
 #### ```xlnt::cell_reference::cell_reference(const char *reference_string)```
@@ -202,47 +205,47 @@ Constructs a cell_reference from a string reprenting a cell coordinate (e.g. $B1
 #### ```xlnt::cell_reference::cell_reference(column_t column, row_t row)```
 Constructs a cell_reference from a 1-indexed column index and row index.
 #### ```cell_reference& xlnt::cell_reference::make_absolute(bool absolute_column=true, bool absolute_row=true)```
-Convert a coordinate to an absolute coordinate string (e.g. B12 -> $B$12) Defaulting to true, absolute_column and absolute_row can optionally control whether the resulting cell_reference has an absolute column (e.g. B12 -> $B12) and absolute row (e.g. B12 -> B$12) respectively.
+Converts a coordinate to an absolute coordinate string (e.g. B12 -> $B$12) Defaulting to true, absolute_column and absolute_row can optionally control whether the resulting cell_reference has an absolute column (e.g. B12 -> $B12) and absolute row (e.g. B12 -> B$12) respectively.
 #### ```bool xlnt::cell_reference::column_absolute() const```
-Return true if the reference refers to an absolute column, otherwise false.
+Returns true if the reference refers to an absolute column, otherwise false.
 #### ```void xlnt::cell_reference::column_absolute(bool absolute_column)```
-Make this reference have an absolute column if absolute_column is true, otherwise not absolute.
+Makes this reference have an absolute column if absolute_column is true, otherwise not absolute.
 #### ```bool xlnt::cell_reference::row_absolute() const```
-Return true if the reference refers to an absolute row, otherwise false.
+Returns true if the reference refers to an absolute row, otherwise false.
 #### ```void xlnt::cell_reference::row_absolute(bool absolute_row)```
-Make this reference have an absolute row if absolute_row is true, otherwise not absolute.
+Makes this reference have an absolute row if absolute_row is true, otherwise not absolute.
 #### ```column_t xlnt::cell_reference::column() const```
-Return a string that identifies the column of this reference (e.g. second column from left is "B")
+Returns a string that identifies the column of this reference (e.g. second column from left is "B")
 #### ```void xlnt::cell_reference::column(const std::string &column_string)```
-Set the column of this reference from a string that identifies a particular column.
+Sets the column of this reference from a string that identifies a particular column.
 #### ```column_t::index_t xlnt::cell_reference::column_index() const```
-Return a 1-indexed numeric index of the column of this reference.
+Returns a 1-indexed numeric index of the column of this reference.
 #### ```void xlnt::cell_reference::column_index(column_t column)```
-Set the column of this reference from a 1-indexed number that identifies a particular column.
+Sets the column of this reference from a 1-indexed number that identifies a particular column.
 #### ```row_t xlnt::cell_reference::row() const```
-Return a 1-indexed numeric index of the row of this reference.
+Returns a 1-indexed numeric index of the row of this reference.
 #### ```void xlnt::cell_reference::row(row_t row)```
-Set the row of this reference from a 1-indexed number that identifies a particular row.
+Sets the row of this reference from a 1-indexed number that identifies a particular row.
 #### ```cell_reference xlnt::cell_reference::make_offset(int column_offset, int row_offset) const```
-Return a cell_reference offset from this cell_reference by the number of columns and rows specified by the parameters. A negative value for column_offset or row_offset results in a reference above or left of this cell_reference, respectively.
+Returns a cell_reference offset from this cell_reference by the number of columns and rows specified by the parameters. A negative value for column_offset or row_offset results in a reference above or left of this cell_reference, respectively.
 #### ```std::string xlnt::cell_reference::to_string() const```
-Return a string like "A1" for cell_reference(1, 1).
+Returns a string like "A1" for cell_reference(1, 1).
 #### ```range_reference xlnt::cell_reference::to_range() const```
-Return a 1x1 range_reference containing only this cell_reference.
+Returns a 1x1 range_reference containing only this cell_reference.
 #### ```range_reference xlnt::cell_reference::operator,(const cell_reference &other) const```
 I've always wanted to overload the comma operator. cell_reference("A", 1), cell_reference("B", 1) will return range_reference(cell_reference("A", 1), cell_reference("B", 1))
 #### ```bool xlnt::cell_reference::operator==(const cell_reference &comparand) const```
-Return true if this reference is identical to comparand including in absoluteness of column and row.
+Returns true if this reference is identical to comparand including in absoluteness of column and row.
 #### ```bool xlnt::cell_reference::operator==(const std::string &reference_string) const```
-Construct a cell_reference from reference_string and return the result of their comparison.
+Constructs a cell_reference from reference_string and return the result of their comparison.
 #### ```bool xlnt::cell_reference::operator==(const char *reference_string) const```
-Construct a cell_reference from reference_string and return the result of their comparison.
+Constructs a cell_reference from reference_string and return the result of their comparison.
 #### ```bool xlnt::cell_reference::operator!=(const cell_reference &comparand) const```
-Return true if this reference is not identical to comparand including in absoluteness of column and row.
+Returns true if this reference is not identical to comparand including in absoluteness of column and row.
 #### ```bool xlnt::cell_reference::operator!=(const std::string &reference_string) const```
-Construct a cell_reference from reference_string and return the result of their comparison.
+Constructs a cell_reference from reference_string and return the result of their comparison.
 #### ```bool xlnt::cell_reference::operator!=(const char *reference_string) const```
-Construct a cell_reference from reference_string and return the result of their comparison.
+Constructs a cell_reference from reference_string and return the result of their comparison.
 ### comment
 #### ```xlnt::comment::comment()```
 Constructs a new blank comment.
@@ -251,33 +254,36 @@ Constructs a new comment with the given text and author.
 #### ```xlnt::comment::comment(const std::string &text, const std::string &author)```
 Constructs a new comment with the given unformatted text and author.
 #### ```rich_text xlnt::comment::text() const```
-Return the text that will be displayed for this comment.
+Returns the text that will be displayed for this comment.
 #### ```std::string xlnt::comment::plain_text() const```
-Return the plain text that will be displayed for this comment without formatting information.
+Returns the plain text that will be displayed for this comment without formatting information.
 #### ```std::string xlnt::comment::author() const```
-Return the author of this comment.
+Returns the author of this comment.
 #### ```void xlnt::comment::hide()```
-Make this comment only visible when the associated cell is hovered.
+Makes this comment only visible when the associated cell is hovered.
 #### ```void xlnt::comment::show()```
-Make this comment always visible.
+Makes this comment always visible.
 #### ```bool xlnt::comment::visible() const```
 Returns true if this comment is not hidden.
 #### ```void xlnt::comment::position(int left, int top)```
-Set the absolute position of this cell to the given coordinates.
+Sets the absolute position of this cell to the given coordinates.
 #### ```int xlnt::comment::left() const```
 Returns the distance from the left side of the sheet to the left side of the comment.
 #### ```int xlnt::comment::top() const```
 Returns the distance from the top of the sheet to the top of the comment.
 #### ```void xlnt::comment::size(int width, int height)```
-Set the size of the comment.
+Sets the size of the comment.
 #### ```int xlnt::comment::width() const```
 Returns the width of this comment.
 #### ```int xlnt::comment::height() const```
 Returns the height of this comment.
-#### ```bool operator==(const comment &left, const comment &right)```
-Return true if both comments are equivalent.
+#### ```bool xlnt::comment::operator==(const comment &other) const```
+Return true if this comment is equivalent to other.
+#### ```bool xlnt::comment::operator!=(const comment &other) const```
+Returns true if this comment is not equivalent to other.
 ### column_t
 #### ```using xlnt::column_t::index_t =  std::uint32_tundefined```
+Alias declaration for the internal numeric type of this column.
 #### ```index_t xlnt::column_t::indexundefined```
 Internal numeric value of this column index.
 #### ```static index_t xlnt::column_t::column_index_from_string(const std::string &column_string)```
@@ -285,120 +291,114 @@ Convert a column letter into a column number (e.g. B -> 2)
 #### ```static std::string xlnt::column_t::column_string_from_index(index_t column_index)```
 Convert a column number into a column letter (3 -> 'C')
 #### ```xlnt::column_t::column_t()```
-Default column_t is the first (left-most) column.
+Default constructor. The column points to the "A" column.
 #### ```xlnt::column_t::column_t(index_t column_index)```
-Construct a column from a number.
+Constructs a column from a number.
 #### ```xlnt::column_t::column_t(const std::string &column_string)```
-Construct a column from a string.
+Constructs a column from a string.
 #### ```xlnt::column_t::column_t(const char *column_string)```
-Construct a column from a string.
+Constructs a column from a string.
 #### ```xlnt::column_t::column_t(const column_t &other)```
-Copy constructor
+Copy constructor. Constructs a column by copying it from other.
 #### ```xlnt::column_t::column_t(column_t &&other)```
-Move constructor
+Move constructor. Constructs a column by moving it from other.
 #### ```std::string xlnt::column_t::column_string() const```
-Return a string representation of this column index.
+Returns a string representation of this column index.
 #### ```column_t& xlnt::column_t::operator=(column_t rhs)```
-Set this column to be the same as rhs's and return reference to self.
+Sets this column to be the same as rhs's and return reference to self.
 #### ```column_t& xlnt::column_t::operator=(const std::string &rhs)```
-Set this column to be equal to rhs and return reference to self.
+Sets this column to be equal to rhs and return reference to self.
 #### ```column_t& xlnt::column_t::operator=(const char *rhs)```
-Set this column to be equal to rhs and return reference to self.
+Sets this column to be equal to rhs and return reference to self.
 #### ```bool xlnt::column_t::operator==(const column_t &other) const```
-Return true if this column refers to the same column as other.
+Returns true if this column refers to the same column as other.
 #### ```bool xlnt::column_t::operator!=(const column_t &other) const```
-Return true if this column doesn't refer to the same column as other.
+Returns true if this column doesn't refer to the same column as other.
 #### ```bool xlnt::column_t::operator==(int other) const```
-Return true if this column refers to the same column as other.
+Returns true if this column refers to the same column as other.
 #### ```bool xlnt::column_t::operator==(index_t other) const```
-Return true if this column refers to the same column as other.
+Returns true if this column refers to the same column as other.
 #### ```bool xlnt::column_t::operator==(const std::string &other) const```
-Return true if this column refers to the same column as other.
+Returns true if this column refers to the same column as other.
 #### ```bool xlnt::column_t::operator==(const char *other) const```
-Return true if this column refers to the same column as other.
+Returns true if this column refers to the same column as other.
 #### ```bool xlnt::column_t::operator!=(int other) const```
-Return true if this column doesn't refer to the same column as other.
+Returns true if this column doesn't refer to the same column as other.
 #### ```bool xlnt::column_t::operator!=(index_t other) const```
-Return true if this column doesn't refer to the same column as other.
+Returns true if this column doesn't refer to the same column as other.
 #### ```bool xlnt::column_t::operator!=(const std::string &other) const```
-Return true if this column doesn't refer to the same column as other.
+Returns true if this column doesn't refer to the same column as other.
 #### ```bool xlnt::column_t::operator!=(const char *other) const```
-Return true if this column doesn't refer to the same column as other.
+Returns true if this column doesn't refer to the same column as other.
 #### ```bool xlnt::column_t::operator>(const column_t &other) const```
-Return true if other is to the right of this column.
+Returns true if other is to the right of this column.
 #### ```bool xlnt::column_t::operator>=(const column_t &other) const```
-Return true if other is to the right of or equal to this column.
+Returns true if other is to the right of or equal to this column.
 #### ```bool xlnt::column_t::operator<(const column_t &other) const```
-Return true if other is to the left of this column.
+Returns true if other is to the left of this column.
 #### ```bool xlnt::column_t::operator<=(const column_t &other) const```
-Return true if other is to the left of or equal to this column.
+Returns true if other is to the left of or equal to this column.
 #### ```bool xlnt::column_t::operator>(const column_t::index_t &other) const```
-Return true if other is to the right of this column.
+Returns true if other is to the right of this column.
 #### ```bool xlnt::column_t::operator>=(const column_t::index_t &other) const```
-Return true if other is to the right of or equal to this column.
+Returns true if other is to the right of or equal to this column.
 #### ```bool xlnt::column_t::operator<(const column_t::index_t &other) const```
-Return true if other is to the left of this column.
+Returns true if other is to the left of this column.
 #### ```bool xlnt::column_t::operator<=(const column_t::index_t &other) const```
-Return true if other is to the left of or equal to this column.
+Returns true if other is to the left of or equal to this column.
 #### ```column_t& xlnt::column_t::operator++()```
-Pre-increment this column, making it point to the column one to the right.
+Pre-increments this column, making it point to the column one to the right and returning a reference to it.
 #### ```column_t& xlnt::column_t::operator--()```
-Pre-deccrement this column, making it point to the column one to the left.
+Pre-deccrements this column, making it point to the column one to the left and returning a reference to it.
 #### ```column_t xlnt::column_t::operator++(int)```
-Post-increment this column, making it point to the column one to the right and returning the old column.
+Post-increments this column, making it point to the column one to the right and returning the old column.
 #### ```column_t xlnt::column_t::operator--(int)```
-Post-decrement this column, making it point to the column one to the left and returning the old column.
+Post-decrements this column, making it point to the column one to the left and returning the old column.
 #### ```column_t& xlnt::column_t::operator+=(const column_t &rhs)```
-Add rhs to this column and return a reference to this column.
+Adds rhs to this column and returns a reference to this column.
 #### ```column_t& xlnt::column_t::operator-=(const column_t &rhs)```
-Subtrac rhs from this column and return a reference to this column.
-#### ```column_t& xlnt::column_t::operator*=(const column_t &rhs)```
-Multiply this column by rhs and return a reference to this column.
-#### ```column_t& xlnt::column_t::operator/=(const column_t &rhs)```
-Divide this column by rhs and return a reference to this column.
-#### ```column_t& xlnt::column_t::operator%=(const column_t &rhs)```
-Mod this column by rhs and return a reference to this column.
+Subtracts rhs from this column and returns a reference to this column.
 #### ```column_t operator+(column_t lhs, const column_t &rhs)```
-Return the result of adding rhs to this column.
+Returns the result of adding rhs to this column.
 #### ```column_t operator-(column_t lhs, const column_t &rhs)```
-Return the result of subtracing lhs by rhs column.
-#### ```column_t operator*(column_t lhs, const column_t &rhs)```
-Return the result of multiply lhs by rhs column.
-#### ```column_t operator/(column_t lhs, const column_t &rhs)```
-Return the result of divide lhs by rhs column.
-#### ```column_t operator%(column_t lhs, const column_t &rhs)```
-Return the result of mod lhs by rhs column.
+Returns the result of subtracing lhs by rhs column.
 #### ```bool operator>(const column_t::index_t &left, const column_t &right)```
-Return true if other is to the right of this column.
+Returns true if other is to the right of this column.
 #### ```bool operator>=(const column_t::index_t &left, const column_t &right)```
-Return true if other is to the right of or equal to this column.
+Returns true if other is to the right of or equal to this column.
 #### ```bool operator<(const column_t::index_t &left, const column_t &right)```
-Return true if other is to the left of this column.
+Returns true if other is to the left of this column.
 #### ```bool operator<=(const column_t::index_t &left, const column_t &right)```
-Return true if other is to the left of or equal to this column.
+Returns true if other is to the left of or equal to this column.
 #### ```void swap(column_t &left, column_t &right)```
-Swap the columns that left and right refer to.
+Swaps the columns that left and right refer to.
 ### column_hash
 #### ```std::size_t xlnt::column_hash::operator()(const column_t &k) const```
+Returns the result of hashing column k.
 ### column_t >
 #### ```size_t std::hash< xlnt::column_t >::operator()(const xlnt::column_t &k) const```
+Returns the result of hashing column k.
 ### rich_text
 #### ```xlnt::rich_text::rich_text()=default```
+Constructs an empty rich text object with no font and empty text.
 #### ```xlnt::rich_text::rich_text(const std::string &plain_text)```
+Constructs a rich text object with the given text and no font.
 #### ```xlnt::rich_text::rich_text(const std::string &plain_text, const class font &text_font)```
+Constructs a rich text object with the given text and font.
 #### ```xlnt::rich_text::rich_text(const rich_text_run &single_run)```
+Copy constructor.
 #### ```void xlnt::rich_text::clear()```
-Remove all text runs from this text.
+Removes all text runs from this text.
 #### ```void xlnt::rich_text::plain_text(const std::string &s)```
-Clear any runs in this text and add a single run with default formatting and the given string as its textual content.
+Clears any runs in this text and adds a single run with default formatting and the given string as its textual content.
 #### ```std::string xlnt::rich_text::plain_text() const```
-Combine the textual content of each text run in order and return the result.
+Combines the textual content of each text run in order and returns the result.
 #### ```std::vector<rich_text_run> xlnt::rich_text::runs() const```
 Returns a copy of the individual runs that comprise this text.
 #### ```void xlnt::rich_text::runs(const std::vector< rich_text_run > &new_runs)```
-Set the runs of this text all at once.
+Sets the runs of this text all at once.
 #### ```void xlnt::rich_text::add_run(const rich_text_run &t)```
-Add a new run to the end of the set of runs.
+Adds a new run to the end of the set of runs.
 #### ```bool xlnt::rich_text::operator==(const rich_text &rhs) const```
 Returns true if the runs that make up this text are identical to those in rhs.
 #### ```bool xlnt::rich_text::operator==(const std::string &rhs) const```
@@ -522,24 +522,36 @@ Returns true if this URI is equivalent to other.
 ## Styles Module
 ### alignment
 #### ```bool xlnt::alignment::shrink() const```
+Returns true if shrink-to-fit has been enabled.
 #### ```alignment& xlnt::alignment::shrink(bool shrink_to_fit)```
+Sets whether the font size should be reduced until all of the text fits in a cell without wrapping.
 #### ```bool xlnt::alignment::wrap() const```
+Returns true if text-wrapping has been enabled.
 #### ```alignment& xlnt::alignment::wrap(bool wrap_text)```
+Sets whether text in a cell should continue to multiple lines if it doesn't fit in one line.
 #### ```optional<int> xlnt::alignment::indent() const```
+Returns the optional value of indentation width in number of spaces.
 #### ```alignment& xlnt::alignment::indent(int indent_size)```
+Sets the indent size in number of spaces from the side of the cell. This will only take effect when left or right horizontal alignment has also been set.
 #### ```optional<int> xlnt::alignment::rotation() const```
+Returns the optional value of rotation for text in the cell in degrees.
 #### ```alignment& xlnt::alignment::rotation(int text_rotation)```
+Sets the rotation for text in the cell in degrees.
 #### ```optional<horizontal_alignment> xlnt::alignment::horizontal() const```
+Returns the optional horizontal alignment.
 #### ```alignment& xlnt::alignment::horizontal(horizontal_alignment horizontal)```
+Sets the horizontal alignment.
 #### ```optional<vertical_alignment> xlnt::alignment::vertical() const```
+Returns the optional vertical alignment.
 #### ```alignment& xlnt::alignment::vertical(vertical_alignment vertical)```
+Sets the vertical alignment.
 #### ```bool xlnt::alignment::operator==(const alignment &other) const```
 Returns true if this alignment is equivalent to other.
 #### ```bool xlnt::alignment::operator!=(const alignment &other) const```
 Returns true if this alignment is not equivalent to other.
 ### border
 #### ```static const std::vector<border_side>& xlnt::border::all_sides()```
-A vector to the all of the border sides for iteration.
+Returns a vector containing all of the border sides to be used for iteration.
 #### ```xlnt::border::border()```
 Constructs a default border.
 #### ```optional<border_property> xlnt::border::side(border_side s) const```
@@ -569,80 +581,142 @@ Returns true if left is exactly equal to right.
 Returns true if left is not exactly equal to right.
 ### indexed_color
 #### ```xlnt::indexed_color::indexed_color(std::size_t index)```
+Constructs an indexed_color from an index.
 #### ```std::size_t xlnt::indexed_color::index() const```
+Returns the index this color points to.
 #### ```void xlnt::indexed_color::index(std::size_t index)```
+Sets the index to index.
 ### theme_color
 #### ```xlnt::theme_color::theme_color(std::size_t index)```
+Constructs a theme_color from an index.
 #### ```std::size_t xlnt::theme_color::index() const```
+Returns the index of the color in the theme this points to.
 #### ```void xlnt::theme_color::index(std::size_t index)```
+Sets the index of this color to index.
 ### rgb_color
 #### ```xlnt::rgb_color::rgb_color(const std::string &hex_string)```
+Constructs an RGB color from a string in the form #[aa]rrggbb
 #### ```xlnt::rgb_color::rgb_color(std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint8_t a=255)```
+Constructs an RGB color from red, green, and blue values in the range 0 to 255 plus an optional alpha which defaults to fully opaque.
 #### ```std::string xlnt::rgb_color::hex_string() const```
+Returns a string representation of this color in the form #aarrggbb
 #### ```std::uint8_t xlnt::rgb_color::red() const```
+Returns a byte representing the red component of this color
 #### ```std::uint8_t xlnt::rgb_color::green() const```
+Returns a byte representing the red component of this color
 #### ```std::uint8_t xlnt::rgb_color::blue() const```
+Returns a byte representing the blue component of this color
 #### ```std::uint8_t xlnt::rgb_color::alpha() const```
+Returns a byte representing the alpha component of this color
 #### ```std::array<std::uint8_t, 3> xlnt::rgb_color::rgb() const```
+Returns the red, green, and blue components of this color separately in an array in that order.
 #### ```std::array<std::uint8_t, 4> xlnt::rgb_color::rgba() const```
+Returns the red, green, blue, and alpha components of this color separately in an array in that order.
 ### color
 #### ```static const color xlnt::color::black()```
+Returns the color #000000
 #### ```static const color xlnt::color::white()```
+Returns the color #ffffff
 #### ```static const color xlnt::color::red()```
+Returns the color #ff0000
 #### ```static const color xlnt::color::darkred()```
+Returns the color #8b0000
 #### ```static const color xlnt::color::blue()```
+Returns the color #00ff00
 #### ```static const color xlnt::color::darkblue()```
+Returns the color #008b00
 #### ```static const color xlnt::color::green()```
+Returns the color #0000ff
 #### ```static const color xlnt::color::darkgreen()```
+Returns the color #00008b
 #### ```static const color xlnt::color::yellow()```
+Returns the color #ffff00
 #### ```static const color xlnt::color::darkyellow()```
+Returns the color #cccc00
 #### ```xlnt::color::color()```
+Constructs a default color
 #### ```xlnt::color::color(const rgb_color &rgb)```
+Constructs a color from a given RGB color
 #### ```xlnt::color::color(const indexed_color &indexed)```
+Constructs a color from a given indexed color
 #### ```xlnt::color::color(const theme_color &theme)```
+Constructs a color from a given theme color
 #### ```color_type xlnt::color::type() const```
-#### ```bool xlnt::color::is_auto() const```
+Returns the type of this color
+#### ```bool xlnt::color::auto_() const```
+Returns true if this color has been set to auto
 #### ```void xlnt::color::auto_(bool value)```
-#### ```const rgb_color& xlnt::color::rgb() const```
-#### ```const indexed_color& xlnt::color::indexed() const```
-#### ```const theme_color& xlnt::color::theme() const```
+Sets the auto property of this color to value
+#### ```rgb_color xlnt::color::rgb() const```
+Returns the internal indexed color representing this color. If this is not an RGB color, an invalid_attribute exception will be thrown.
+#### ```indexed_color xlnt::color::indexed() const```
+Returns the internal indexed color representing this color. If this is not an indexed color, an invalid_attribute exception will be thrown.
+#### ```theme_color xlnt::color::theme() const```
+Returns the internal indexed color representing this color. If this is not a theme color, an invalid_attribute exception will be thrown.
 #### ```double xlnt::color::tint() const```
+Returns the tint of this color.
 #### ```void xlnt::color::tint(double tint)```
+Sets the tint of this color to tint. Tints lighten or darken an existing color by multiplying the color with the tint.
 #### ```bool xlnt::color::operator==(const color &other) const```
+Returns true if this color is equivalent to other
 #### ```bool xlnt::color::operator!=(const color &other) const```
+Returns true if this color is not equivalent to other
 ### pattern_fill
 #### ```xlnt::pattern_fill::pattern_fill()```
+Constructs a default pattern fill with a none pattern and no colors.
 #### ```pattern_fill_type xlnt::pattern_fill::type() const```
+Returns the pattern used by this fill
 #### ```pattern_fill& xlnt::pattern_fill::type(pattern_fill_type new_type)```
+Sets the pattern of this fill and returns a reference to it.
 #### ```optional<color> xlnt::pattern_fill::foreground() const```
+Returns the optional foreground color of this fill
 #### ```pattern_fill& xlnt::pattern_fill::foreground(const color &foreground)```
+Sets the foreground color and returns a reference to this pattern.
 #### ```optional<color> xlnt::pattern_fill::background() const```
+Returns the optional background color of this fill
 #### ```pattern_fill& xlnt::pattern_fill::background(const color &background)```
-#### ```bool operator==(const pattern_fill &left, const pattern_fill &right)```
-Returns true if left is exactly equal to right.
-#### ```bool operator!=(const pattern_fill &left, const pattern_fill &right)```
-Returns true if left is not exactly equal to right.
+Sets the foreground color and returns a reference to this pattern.
+#### ```bool xlnt::pattern_fill::operator==(const pattern_fill &other) const```
+Returns true if this pattern fill is equivalent to other.
+#### ```bool xlnt::pattern_fill::operator!=(const pattern_fill &other) const```
+Returns true if this pattern fill is not equivalent to other.
 ### gradient_fill
 #### ```xlnt::gradient_fill::gradient_fill()```
+Constructs a default linear fill
 #### ```gradient_fill_type xlnt::gradient_fill::type() const```
+Returns the type of this gradient fill
 #### ```gradient_fill& xlnt::gradient_fill::type(gradient_fill_type new_type)```
+Sets the type of this gradient fill
 #### ```gradient_fill& xlnt::gradient_fill::degree(double degree)```
+Sets the angle of the gradient in degrees
 #### ```double xlnt::gradient_fill::degree() const```
+Returns the angle of the gradient
 #### ```double xlnt::gradient_fill::left() const```
+Returns the distance from the left where the gradient starts.
 #### ```gradient_fill& xlnt::gradient_fill::left(double value)```
+Sets the distance from the left where the gradient starts.
 #### ```double xlnt::gradient_fill::right() const```
+Returns the distance from the right where the gradient starts.
 #### ```gradient_fill& xlnt::gradient_fill::right(double value)```
+Sets the distance from the right where the gradient starts.
 #### ```double xlnt::gradient_fill::top() const```
+Returns the distance from the top where the gradient starts.
 #### ```gradient_fill& xlnt::gradient_fill::top(double value)```
+Sets the distance from the top where the gradient starts.
 #### ```double xlnt::gradient_fill::bottom() const```
+Returns the distance from the bottom where the gradient starts.
 #### ```gradient_fill& xlnt::gradient_fill::bottom(double value)```
+Sets the distance from the bottom where the gradient starts.
 #### ```gradient_fill& xlnt::gradient_fill::add_stop(double position, color stop_color)```
+Adds a gradient stop at position with the given color.
 #### ```gradient_fill& xlnt::gradient_fill::clear_stops()```
+Deletes all stops from the gradient.
 #### ```std::unordered_map<double, color> xlnt::gradient_fill::stops() const```
-#### ```bool operator==(const gradient_fill &left, const gradient_fill &right)```
-Returns true if left is exactly equal to right.
-#### ```bool operator!=(const gradient_fill &left, const gradient_fill &right)```
-Returns true if left is not exactly equal to right.
+Returns all of the gradient stops.
+#### ```bool xlnt::gradient_fill::operator==(const gradient_fill &other) const```
+Returns true if the gradient is equivalent to other.
+#### ```bool xlnt::gradient_fill::operator!=(const gradient_fill &right) const```
+Returns true if the gradient is not equivalent to other.
 ### fill
 #### ```static fill xlnt::fill::solid(const color &fill_color)```
 Helper method for the most common use case, setting the fill color of a cell to a single solid color. The foreground and background colors of a fill are not the same as the foreground and background colors of a cell. When setting a fill color in Excel, a new fill is created with the given color as the fill's fgColor and index color number 64 as the bgColor. This method creates a fill in the same way.
@@ -658,285 +732,482 @@ Returns the fill_type of this fill depending on how it was constructed.
 Returns the gradient fill represented by this fill. Throws an invalid_attribute exception if this is not a gradient fill.
 #### ```class pattern_fill xlnt::fill::pattern_fill() const```
 Returns the pattern fill represented by this fill. Throws an invalid_attribute exception if this is not a pattern fill.
-#### ```bool operator==(const fill &left, const fill &right)```
+#### ```bool xlnt::fill::operator==(const fill &other) const```
 Returns true if left is exactly equal to right.
-#### ```bool operator!=(const fill &left, const fill &right)```
+#### ```bool xlnt::fill::operator!=(const fill &other) const```
 Returns true if left is not exactly equal to right.
 ### font
 #### ```undefinedundefined```
-#### ```bool operator==(const font &left, const font &right)```
-Returns true if left is exactly equal to right.
-#### ```bool operator!=(const font &left, const font &right)```
-Returns true if left is not exactly equal to right.
+Text can be underlined in the enumerated ways
 #### ```xlnt::font::font()```
+Constructs a default font. Calibri, size 12
 #### ```font& xlnt::font::bold(bool bold)```
+Sets the bold state of the font to bold and returns a reference to the font.
 #### ```bool xlnt::font::bold() const```
+Returns the bold state of the font.
 #### ```font& xlnt::font::superscript(bool superscript)```
+Sets the bold state of the font to bold and returns a reference to the font.
 #### ```bool xlnt::font::superscript() const```
+Returns true if this font has a superscript applied.
 #### ```font& xlnt::font::italic(bool italic)```
+Sets the bold state of the font to bold and returns a reference to the font.
 #### ```bool xlnt::font::italic() const```
+Returns true if this font has italics applied.
 #### ```font& xlnt::font::strikethrough(bool strikethrough)```
+Sets the bold state of the font to bold and returns a reference to the font.
 #### ```bool xlnt::font::strikethrough() const```
+Returns true if this font has a strikethrough applied.
 #### ```font& xlnt::font::outline(bool outline)```
+Sets the bold state of the font to bold and returns a reference to the font.
 #### ```bool xlnt::font::outline() const```
+Returns true if this font has an outline applied.
 #### ```font& xlnt::font::shadow(bool shadow)```
+Sets the shadow state of the font to shadow and returns a reference to the font.
 #### ```bool xlnt::font::shadow() const```
+Returns true if this font has a shadow applied.
 #### ```font& xlnt::font::underline(underline_style new_underline)```
+Sets the underline state of the font to new_underline and returns a reference to the font.
 #### ```bool xlnt::font::underlined() const```
+Returns true if this font has any type of underline applied.
 #### ```underline_style xlnt::font::underline() const```
+Returns the particular style of underline this font has applied.
 #### ```bool xlnt::font::has_size() const```
+Returns true if this font has a defined size.
 #### ```font& xlnt::font::size(double size)```
+Sets the size of the font to size and returns a reference to the font.
 #### ```double xlnt::font::size() const```
+Returns the size of the font.
 #### ```bool xlnt::font::has_name() const```
+Returns true if this font has a particular face applied (e.g. "Comic Sans").
 #### ```font& xlnt::font::name(const std::string &name)```
+Sets the font face to name and returns a reference to the font.
 #### ```std::string xlnt::font::name() const```
+Returns the name of the font face.
 #### ```bool xlnt::font::has_color() const```
+Returns true if this font has a color applied.
 #### ```font& xlnt::font::color(const color &c)```
+Sets the color of the font to c and returns a reference to the font.
 #### ```xlnt::color xlnt::font::color() const```
+Returns the color that this font is using.
 #### ```bool xlnt::font::has_family() const```
+Returns true if this font has a family defined.
 #### ```font& xlnt::font::family(std::size_t family)```
+Sets the family index of the font to family and returns a reference to the font.
 #### ```std::size_t xlnt::font::family() const```
+Returns the family index for the font.
 #### ```bool xlnt::font::has_charset() const```
+Returns true if this font has a charset defined.
 #### ```font& xlnt::font::charset(std::size_t charset)```
+Sets the charset of the font to charset and returns a reference to the font.
 #### ```std::size_t xlnt::font::charset() const```
+Returns the charset of the font.
 #### ```bool xlnt::font::has_scheme() const```
+Returns true if this font has a scheme.
 #### ```font& xlnt::font::scheme(const std::string &scheme)```
+Sets the scheme of the font to scheme and returns a reference to the font.
 #### ```std::string xlnt::font::scheme() const```
+Returns the scheme of this font.
+#### ```bool xlnt::font::operator==(const font &other) const```
+Returns true if left is exactly equal to right.
+#### ```bool xlnt::font::operator!=(const font &other) const```
+Returns true if left is not exactly equal to right.
 ### format
 #### ```friend struct detail::stylesheetundefined```
-#### ```std::size_t xlnt::format::id() const```
-#### ```class alignment& xlnt::format::alignment()```
-#### ```const class alignment& xlnt::format::alignment() const```
-#### ```format xlnt::format::alignment(const xlnt::alignment &new_alignment, bool applied)```
+#### ```friend class detail::xlsx_producerundefined```
+#### ```class alignment xlnt::format::alignment() const```
+Returns the alignment of this format.
+#### ```format xlnt::format::alignment(const xlnt::alignment &new_alignment, bool applied=true)```
+Sets the alignment of this format to new_alignment. Applied, which defaults to true, determines whether the alignment should be enabled for cells using this format.
 #### ```bool xlnt::format::alignment_applied() const```
-#### ```class border& xlnt::format::border()```
-#### ```const class border& xlnt::format::border() const```
-#### ```format xlnt::format::border(const xlnt::border &new_border, bool applied)```
+Returns true if the alignment of this format should be applied to cells using it.
+#### ```class border xlnt::format::border() const```
+Returns the border of this format.
+#### ```format xlnt::format::border(const xlnt::border &new_border, bool applied=true)```
+Sets the border of this format to new_border. Applied, which defaults to true, determines whether the border should be enabled for cells using this format.
 #### ```bool xlnt::format::border_applied() const```
-#### ```class fill& xlnt::format::fill()```
-#### ```const class fill& xlnt::format::fill() const```
-#### ```format xlnt::format::fill(const xlnt::fill &new_fill, bool applied)```
+Returns true if the border set for this format should be applied to cells using the format.
+#### ```class fill xlnt::format::fill() const```
+Returns the fill of this format.
+#### ```format xlnt::format::fill(const xlnt::fill &new_fill, bool applied=true)```
+Sets the fill of this format to new_fill. Applied, which defaults to true, determines whether the border should be enabled for cells using this format.
 #### ```bool xlnt::format::fill_applied() const```
-#### ```class font& xlnt::format::font()```
-#### ```const class font& xlnt::format::font() const```
-#### ```format xlnt::format::font(const xlnt::font &new_font, bool applied)```
+Returns true if the fill set for this format should be applied to cells using the format.
+#### ```class font xlnt::format::font() const```
+Returns the font of this format.
+#### ```format xlnt::format::font(const xlnt::font &new_font, bool applied=true)```
+Sets the font of this format to new_font. Applied, which defaults to true, determines whether the font should be enabled for cells using this format.
 #### ```bool xlnt::format::font_applied() const```
-#### ```class number_format& xlnt::format::number_format()```
-#### ```const class number_format& xlnt::format::number_format() const```
-#### ```format xlnt::format::number_format(const xlnt::number_format &new_number_format, bool applied)```
+Returns true if the font set for this format should be applied to cells using the format.
+#### ```class number_format xlnt::format::number_format() const```
+Returns the number format of this format.
+#### ```format xlnt::format::number_format(const xlnt::number_format &new_number_format, bool applied=true)```
+Sets the number format of this format to new_number_format. Applied, which defaults to true, determines whether the number format should be enabled for cells using this format.
 #### ```bool xlnt::format::number_format_applied() const```
-#### ```class protection& xlnt::format::protection()```
-#### ```const class protection& xlnt::format::protection() const```
-#### ```format xlnt::format::protection(const xlnt::protection &new_protection, bool applied)```
+Returns true if the number_format set for this format should be applied to cells using the format.
+#### ```class protection xlnt::format::protection() const```
+Returns the protection of this format.
 #### ```bool xlnt::format::protection_applied() const```
+Returns true if the protection set for this format should be applied to cells using the format.
+#### ```format xlnt::format::protection(const xlnt::protection &new_protection, bool applied=true)```
+Sets the protection of this format to new_protection. Applied, which defaults to true, determines whether the protection should be enabled for cells using this format.
 #### ```bool xlnt::format::pivot_button() const```
+Returns true if the pivot table interface is enabled for this format.
 #### ```void xlnt::format::pivot_button(bool show)```
+If show is true, a pivot table interface will be displayed for cells using this format.
 #### ```bool xlnt::format::quote_prefix() const```
+Returns true if this format should add a single-quote prefix for all text values.
 #### ```void xlnt::format::quote_prefix(bool quote)```
+If quote is true, enables a single-quote prefix for all text values in cells using this format (e.g. "abc" will appear as "'abc"). The text will also not be stored in sharedStrings when this is enabled.
 #### ```bool xlnt::format::has_style() const```
+Returns true if this format has a corresponding style applied.
 #### ```void xlnt::format::clear_style()```
+Removes the style from this format if it exists.
 #### ```format xlnt::format::style(const std::string &name)```
+Sets the style of this format to a style with the given name.
 #### ```format xlnt::format::style(const class style &new_style)```
+Sets the style of this format to new_style.
+#### ```class style xlnt::format::style()```
+Returns the style of this format. If it has no style, an invalid_parameter exception will be thrown.
 #### ```const class style xlnt::format::style() const```
+Returns the style of this format. If it has no style, an invalid_parameters exception will be thrown.
 ### number_format
 #### ```static const number_format xlnt::number_format::general()```
+Number format "General"
 #### ```static const number_format xlnt::number_format::text()```
+Number format "@"
 #### ```static const number_format xlnt::number_format::number()```
+Number format "0"
 #### ```static const number_format xlnt::number_format::number_00()```
+Number format "00"
 #### ```static const number_format xlnt::number_format::number_comma_separated1()```
+Number format "#,##0.00"
 #### ```static const number_format xlnt::number_format::percentage()```
+Number format "0%"
 #### ```static const number_format xlnt::number_format::percentage_00()```
+Number format "0.00%"
 #### ```static const number_format xlnt::number_format::date_yyyymmdd2()```
+Number format "yyyy-mm-dd"
 #### ```static const number_format xlnt::number_format::date_yymmdd()```
+Number format "yy-mm-dd"
 #### ```static const number_format xlnt::number_format::date_ddmmyyyy()```
+Number format "dd/mm/yy"
 #### ```static const number_format xlnt::number_format::date_dmyslash()```
+Number format "d/m/yy"
 #### ```static const number_format xlnt::number_format::date_dmyminus()```
+Number format "d-m-yy"
 #### ```static const number_format xlnt::number_format::date_dmminus()```
+Number format "d-m"
 #### ```static const number_format xlnt::number_format::date_myminus()```
+Number format "m-yy"
 #### ```static const number_format xlnt::number_format::date_xlsx14()```
+Number format "mm-dd-yy"
 #### ```static const number_format xlnt::number_format::date_xlsx15()```
+Number format "d-mmm-yy"
 #### ```static const number_format xlnt::number_format::date_xlsx16()```
+Number format "d-mmm"
 #### ```static const number_format xlnt::number_format::date_xlsx17()```
+Number format "mmm-yy"
 #### ```static const number_format xlnt::number_format::date_xlsx22()```
+Number format "m/d/yy h:mm"
 #### ```static const number_format xlnt::number_format::date_datetime()```
+Number format "yyyy-mm-dd h:mm:ss"
 #### ```static const number_format xlnt::number_format::date_time1()```
+Number format "h:mm AM/PM"
 #### ```static const number_format xlnt::number_format::date_time2()```
+Number format "h:mm:ss AM/PM"
 #### ```static const number_format xlnt::number_format::date_time3()```
+Number format "h:mm"
 #### ```static const number_format xlnt::number_format::date_time4()```
+Number format "h:mm:ss"
 #### ```static const number_format xlnt::number_format::date_time5()```
+Number format "mm:ss"
 #### ```static const number_format xlnt::number_format::date_time6()```
+Number format "h:mm:ss"
 #### ```static bool xlnt::number_format::is_builtin_format(std::size_t builtin_id)```
+Returns true if the given format ID corresponds to a known builtin format.
 #### ```static const number_format& xlnt::number_format::from_builtin_id(std::size_t builtin_id)```
+Returns the format with the given ID. Thows an invalid_parameter exception if builtin_id is not a valid ID.
 #### ```xlnt::number_format::number_format()```
+Constructs a default number_format equivalent to "General"
 #### ```xlnt::number_format::number_format(std::size_t builtin_id)```
+Constructs a number format equivalent to that returned from number_format::from_builtin_id(builtin_id).
 #### ```xlnt::number_format::number_format(const std::string &code)```
+Constructs a number format from a code string. If the string matches a builtin ID, its ID will also be set to match the builtin ID.
 #### ```xlnt::number_format::number_format(const std::string &code, std::size_t custom_id)```
+Constructs a number format from a code string and custom ID. Custom ID should generally be >= 164.
 #### ```void xlnt::number_format::format_string(const std::string &format_code)```
+Sets the format code of this number format to format_code.
 #### ```void xlnt::number_format::format_string(const std::string &format_code, std::size_t custom_id)```
+Sets the format code of this number format to format_code and the ID to custom_id.
 #### ```std::string xlnt::number_format::format_string() const```
+Returns the format code this number format uses.
 #### ```bool xlnt::number_format::has_id() const```
+Returns true if this number format has an ID.
 #### ```void xlnt::number_format::id(std::size_t id)```
+Sets the ID of this number format to id.
 #### ```std::size_t xlnt::number_format::id() const```
+Returns the ID of this format.
 #### ```std::string xlnt::number_format::format(const std::string &text) const```
+Returns text formatted according to this number format's format code.
 #### ```std::string xlnt::number_format::format(long double number, calendar base_date) const```
+Returns number formatted according to this number format's format code with the given base date.
 #### ```bool xlnt::number_format::is_date_format() const```
-#### ```bool operator==(const number_format &left, const number_format &right)```
-Returns true if left is exactly equal to right.
-#### ```bool operator!=(const number_format &left, const number_format &right)```
-Returns true if left is not exactly equal to right.
+Returns true if this format code returns a number formatted as a date.
+#### ```bool xlnt::number_format::operator==(const number_format &other) const```
+Returns true if this format is equivalent to other.
+#### ```bool xlnt::number_format::operator!=(const number_format &other) const```
+Returns true if this format is not equivalent to other.
 ### protection
 #### ```static protection xlnt::protection::unlocked_and_visible()```
+Returns an unlocked and unhidden protection object.
 #### ```static protection xlnt::protection::locked_and_visible()```
+Returns a locked and unhidden protection object.
 #### ```static protection xlnt::protection::unlocked_and_hidden()```
+Returns an unlocked and hidden protection object.
 #### ```static protection xlnt::protection::locked_and_hidden()```
+Returns a locked and hidden protection object.
 #### ```xlnt::protection::protection()```
+Constructs a default unlocked unhidden protection object.
 #### ```bool xlnt::protection::locked() const```
+Returns true if cells using this protection should be locked.
 #### ```protection& xlnt::protection::locked(bool locked)```
+Sets the locked state of the protection to locked and returns a reference to the protection.
 #### ```bool xlnt::protection::hidden() const```
+Returns true if cells using this protection should be hidden.
 #### ```protection& xlnt::protection::hidden(bool hidden)```
-#### ```bool operator==(const protection &left, const protection &right)```
-Returns true if left is exactly equal to right.
-#### ```bool operator!=(const protection &left, const protection &right)```
-Returns true if left is not exactly equal to right.
+Sets the hidden state of the protection to hidden and returns a reference to the protection.
+#### ```bool xlnt::protection::operator==(const protection &other) const```
+Returns true if this protections is equivalent to right.
+#### ```bool xlnt::protection::operator!=(const protection &other) const```
+Returns true if this protection is not equivalent to right.
 ### style
 #### ```friend struct detail::stylesheetundefined```
 #### ```friend class detail::xlsx_consumerundefined```
 #### ```xlnt::style::style()=delete```
 Delete zero-argument constructor
 #### ```xlnt::style::style(const style &other)=default```
-Default copy constructor
+Default copy constructor. Constructs a style using the same PIMPL as other.
 #### ```std::string xlnt::style::name() const```
-Return the name of this style.
+Returns the name of this style.
 #### ```style xlnt::style::name(const std::string &name)```
+Sets the name of this style to name.
 #### ```bool xlnt::style::hidden() const```
+Returns true if this style is hidden.
 #### ```style xlnt::style::hidden(bool value)```
-#### ```optional<bool> xlnt::style::custom() const```
-#### ```style xlnt::style::custom(bool value)```
-#### ```optional<std::size_t> xlnt::style::builtin_id() const```
-#### ```style xlnt::style::builtin_id(std::size_t builtin_id)```
-#### ```class alignment& xlnt::style::alignment()```
-#### ```const class alignment& xlnt::style::alignment() const```
-#### ```style xlnt::style::alignment(const xlnt::alignment &new_alignment, bool applied=true)```
+Sets the hidden state of this style to value. A hidden style will not be shown in the list of selectable styles in the UI, but will still apply its formatting to cells using it.
+#### ```bool xlnt::style::custom_builtin() const```
+Returns true if this is a builtin style that has been customized and should therefore be persisted in the workbook.
+#### ```std::size_t xlnt::style::builtin_id() const```
+Returns the index of the builtin style that this style is an instance of or is a customized version thereof. If style::builtin() is false, this will throw an invalid_attribute exception.
+#### ```bool xlnt::style::builtin() const```
+Returns true if this is a builtin style.
+#### ```class alignment xlnt::style::alignment() const```
+Returns the alignment of this style.
 #### ```bool xlnt::style::alignment_applied() const```
-#### ```class border& xlnt::style::border()```
-#### ```const class border& xlnt::style::border() const```
-#### ```style xlnt::style::border(const xlnt::border &new_border, bool applied=true)```
+Returns true if the alignment of this style should be applied to cells using it.
+#### ```style xlnt::style::alignment(const xlnt::alignment &new_alignment, bool applied=true)```
+Sets the alignment of this style to new_alignment. Applied, which defaults to true, determines whether the alignment should be enabled for cells using this style.
+#### ```class border xlnt::style::border() const```
+Returns the border of this style.
 #### ```bool xlnt::style::border_applied() const```
-#### ```class fill& xlnt::style::fill()```
-#### ```const class fill& xlnt::style::fill() const```
-#### ```style xlnt::style::fill(const xlnt::fill &new_fill, bool applied=true)```
+Returns true if the border set for this style should be applied to cells using the style.
+#### ```style xlnt::style::border(const xlnt::border &new_border, bool applied=true)```
+Sets the border of this style to new_border. Applied, which defaults to true, determines whether the border should be enabled for cells using this style.
+#### ```class fill xlnt::style::fill() const```
+Returns the fill of this style.
 #### ```bool xlnt::style::fill_applied() const```
-#### ```class font& xlnt::style::font()```
-#### ```const class font& xlnt::style::font() const```
-#### ```style xlnt::style::font(const xlnt::font &new_font, bool applied=true)```
+Returns true if the fill set for this style should be applied to cells using the style.
+#### ```style xlnt::style::fill(const xlnt::fill &new_fill, bool applied=true)```
+Sets the fill of this style to new_fill. Applied, which defaults to true, determines whether the border should be enabled for cells using this style.
+#### ```class font xlnt::style::font() const```
+Returns the font of this style.
 #### ```bool xlnt::style::font_applied() const```
-#### ```class number_format& xlnt::style::number_format()```
-#### ```const class number_format& xlnt::style::number_format() const```
-#### ```style xlnt::style::number_format(const xlnt::number_format &new_number_format, bool applied=true)```
+Returns true if the font set for this style should be applied to cells using the style.
+#### ```style xlnt::style::font(const xlnt::font &new_font, bool applied=true)```
+Sets the font of this style to new_font. Applied, which defaults to true, determines whether the font should be enabled for cells using this style.
+#### ```class number_format xlnt::style::number_format() const```
+Returns the number_format of this style.
 #### ```bool xlnt::style::number_format_applied() const```
-#### ```class protection& xlnt::style::protection()```
-#### ```const class protection& xlnt::style::protection() const```
-#### ```style xlnt::style::protection(const xlnt::protection &new_protection, bool applied=true)```
+Returns true if the number_format set for this style should be applied to cells using the style.
+#### ```style xlnt::style::number_format(const xlnt::number_format &new_number_format, bool applied=true)```
+Sets the number format of this style to new_number_format. Applied, which defaults to true, determines whether the number format should be enabled for cells using this style.
+#### ```class protection xlnt::style::protection() const```
+Returns the protection of this style.
 #### ```bool xlnt::style::protection_applied() const```
+Returns true if the protection set for this style should be applied to cells using the style.
+#### ```style xlnt::style::protection(const xlnt::protection &new_protection, bool applied=true)```
+Sets the border of this style to new_protection. Applied, which defaults to true, determines whether the protection should be enabled for cells using this style.
 #### ```bool xlnt::style::pivot_button() const```
+Returns true if the pivot table interface is enabled for this style.
 #### ```void xlnt::style::pivot_button(bool show)```
+If show is true, a pivot table interface will be displayed for cells using this style.
 #### ```bool xlnt::style::quote_prefix() const```
+Returns true if this style should add a single-quote prefix for all text values.
 #### ```void xlnt::style::quote_prefix(bool quote)```
+If quote is true, enables a single-quote prefix for all text values in cells using this style (e.g. "abc" will appear as "'abc"). The text will also not be stored in sharedStrings when this is enabled.
 #### ```bool xlnt::style::operator==(const style &other) const```
+Returns true if this style is equivalent to other.
+#### ```bool xlnt::style::operator!=(const style &other) const```
+Returns true if this style is not equivalent to other.
 ## Utils Module
 ### date
 #### ```int xlnt::date::yearundefined```
+The year
 #### ```int xlnt::date::monthundefined```
+The month
 #### ```int xlnt::date::dayundefined```
+The day
 #### ```static date xlnt::date::today()```
 Return the current date according to the system time.
 #### ```static date xlnt::date::from_number(int days_since_base_year, calendar base_date)```
 Return a date by adding days_since_base_year to base_date. This includes leap years.
 #### ```xlnt::date::date(int year_, int month_, int day_)```
+Constructs a data from a given year, month, and day.
 #### ```int xlnt::date::to_number(calendar base_date) const```
 Return the number of days between this date and base_date.
 #### ```int xlnt::date::weekday() const```
+Calculates and returns the day of the week that this date represents in the range 0 to 6 where 0 represents Sunday.
 #### ```bool xlnt::date::operator==(const date &comparand) const```
 Return true if this date is equal to comparand.
 ### datetime
 #### ```int xlnt::datetime::yearundefined```
+The year
 #### ```int xlnt::datetime::monthundefined```
+The month
 #### ```int xlnt::datetime::dayundefined```
+The day
 #### ```int xlnt::datetime::hourundefined```
+The hour
 #### ```int xlnt::datetime::minuteundefined```
+The minute
 #### ```int xlnt::datetime::secondundefined```
+The second
 #### ```int xlnt::datetime::microsecondundefined```
+The microsecond
 #### ```static datetime xlnt::datetime::now()```
-Return the current date and time according to the system time.
+Returns the current date and time according to the system time.
 #### ```static datetime xlnt::datetime::today()```
-Return the current date and time according to the system time. This is equivalent to datetime::now().
+Returns the current date and time according to the system time. This is equivalent to datetime::now().
 #### ```static datetime xlnt::datetime::from_number(long double number, calendar base_date)```
-Return a datetime from number by converting the integer part into a date and the fractional part into a time according to date::from_number and time::from_number.
+Returns a datetime from number by converting the integer part into a date and the fractional part into a time according to date::from_number and time::from_number.
 #### ```static datetime xlnt::datetime::from_iso_string(const std::string &iso_string)```
+Returns a datetime equivalent to the ISO-formatted string iso_string.
 #### ```xlnt::datetime::datetime(const date &d, const time &t)```
+Constructs a datetime from a date and a time.
 #### ```xlnt::datetime::datetime(int year_, int month_, int day_, int hour_=0, int minute_=0, int second_=0, int microsecond_=0)```
+Constructs a datetime from a year, month, and day plus optional hour, minute, second, and microsecond.
 #### ```std::string xlnt::datetime::to_string() const```
+Returns a string represenation of this date and time.
 #### ```std::string xlnt::datetime::to_iso_string() const```
+Returns an ISO-formatted string representation of this date and time.
 #### ```long double xlnt::datetime::to_number(calendar base_date) const```
+Returns this datetime as a number of seconds since 1900 or 1904 (depending on base_date provided).
 #### ```bool xlnt::datetime::operator==(const datetime &comparand) const```
+Returns true if this datetime is equivalent to comparand.
 #### ```int xlnt::datetime::weekday() const```
+Calculates and returns the day of the week that this date represents in the range 0 to 6 where 0 represents Sunday.
 ### exception
 #### ```xlnt::exception::exception(const std::string &message)```
+Constructs an exception with a message. This message will be returned by std::exception::what(), an inherited member of this class.
 #### ```xlnt::exception::exception(const exception &)=default```
+Default copy constructor.
 #### ```virtual xlnt::exception::~exception()```
+Destructor
 #### ```void xlnt::exception::message(const std::string &message)```
+Sets the message after the xlnt::exception is constructed. This can show more specific information than std::exception::what().
 ### invalid_parameter
 #### ```xlnt::invalid_parameter::invalid_parameter()```
+Default constructor.
 #### ```xlnt::invalid_parameter::invalid_parameter(const invalid_parameter &)=default```
+Default copy constructor.
 #### ```virtual xlnt::invalid_parameter::~invalid_parameter()```
+Destructor
 ### invalid_sheet_title
 #### ```xlnt::invalid_sheet_title::invalid_sheet_title(const std::string &title)```
+Default constructor.
 #### ```xlnt::invalid_sheet_title::invalid_sheet_title(const invalid_sheet_title &)=default```
+Default copy constructor.
 #### ```virtual xlnt::invalid_sheet_title::~invalid_sheet_title()```
+Destructor
 ### missing_number_format
 #### ```xlnt::missing_number_format::missing_number_format()```
+Default constructor.
+#### ```xlnt::missing_number_format::missing_number_format(const missing_number_format &)=default```
+Default copy constructor.
 #### ```virtual xlnt::missing_number_format::~missing_number_format()```
+Destructor
 ### invalid_file
 #### ```xlnt::invalid_file::invalid_file(const std::string &filename)```
+Constructs an invalid_file exception thrown when attempt to access the given filename.
 #### ```xlnt::invalid_file::invalid_file(const invalid_file &)=default```
+Default copy constructor.
 #### ```virtual xlnt::invalid_file::~invalid_file()```
+Destructor
 ### illegal_character
 #### ```xlnt::illegal_character::illegal_character(char c)```
+Constructs an illegal_character exception thrown as a result of the given character.
 #### ```xlnt::illegal_character::illegal_character(const illegal_character &)=default```
+Default copy constructor.
 #### ```virtual xlnt::illegal_character::~illegal_character()```
+Destructor
 ### invalid_data_type
 #### ```xlnt::invalid_data_type::invalid_data_type()```
+Default constructor.
 #### ```xlnt::invalid_data_type::invalid_data_type(const invalid_data_type &)=default```
+Default copy constructor.
 #### ```virtual xlnt::invalid_data_type::~invalid_data_type()```
-### invalid_column_string_index
-#### ```xlnt::invalid_column_string_index::invalid_column_string_index()```
-#### ```xlnt::invalid_column_string_index::invalid_column_string_index(const invalid_column_string_index &)=default```
-#### ```virtual xlnt::invalid_column_string_index::~invalid_column_string_index()```
+Destructor
+### invalid_column_index
+#### ```xlnt::invalid_column_index::invalid_column_index()```
+Default constructor.
+#### ```xlnt::invalid_column_index::invalid_column_index(const invalid_column_index &)=default```
+Default copy constructor.
+#### ```virtual xlnt::invalid_column_index::~invalid_column_index()```
+Destructor
 ### invalid_cell_reference
 #### ```xlnt::invalid_cell_reference::invalid_cell_reference(column_t column, row_t row)```
+Constructs an invalid_cell_reference exception for the given column and row.
 #### ```xlnt::invalid_cell_reference::invalid_cell_reference(const std::string &reference_string)```
+Constructs an invalid_cell_reference exception for the given string.
 #### ```xlnt::invalid_cell_reference::invalid_cell_reference(const invalid_cell_reference &)=default```
+Default copy constructor.
 #### ```virtual xlnt::invalid_cell_reference::~invalid_cell_reference()```
+Destructor
 ### invalid_attribute
 #### ```xlnt::invalid_attribute::invalid_attribute()```
+Default constructor.
 #### ```xlnt::invalid_attribute::invalid_attribute(const invalid_attribute &)=default```
+Default copy constructor.
 #### ```virtual xlnt::invalid_attribute::~invalid_attribute()```
+Destructor
 ### key_not_found
 #### ```xlnt::key_not_found::key_not_found()```
+Default constructor.
 #### ```xlnt::key_not_found::key_not_found(const key_not_found &)=default```
+Default copy constructor.
 #### ```virtual xlnt::key_not_found::~key_not_found()```
+Destructor
 ### no_visible_worksheets
 #### ```xlnt::no_visible_worksheets::no_visible_worksheets()```
+Default constructor.
 #### ```xlnt::no_visible_worksheets::no_visible_worksheets(const no_visible_worksheets &)=default```
+Default copy constructor.
 #### ```virtual xlnt::no_visible_worksheets::~no_visible_worksheets()```
+Destructor
 ### unhandled_switch_case
 #### ```xlnt::unhandled_switch_case::unhandled_switch_case()```
+Default constructor.
 #### ```xlnt::unhandled_switch_case::unhandled_switch_case(const unhandled_switch_case &)=default```
+Default copy constructor.
 #### ```virtual xlnt::unhandled_switch_case::~unhandled_switch_case()```
+Destructor
 ### unsupported
 #### ```xlnt::unsupported::unsupported(const std::string &message)```
+Constructs an unsupported exception with a message describing the unsupported feature.
 #### ```xlnt::unsupported::unsupported(const unsupported &)=default```
+Default copy constructor.
 #### ```virtual xlnt::unsupported::~unsupported()```
+Destructor
 ### optional
 #### ```xlnt::optional< T >::optional()```
 Default contructor. is_set() will be false initially.
@@ -999,36 +1270,54 @@ Open the file pointed to by this path and return a string containing the files c
 Append the provided part to this path and return the result.
 #### ```path xlnt::path::append(const path &to_append) const```
 Append the provided part to this path and return the result.
-#### ```bool operator==(const path &left, const path &right)```
+#### ```bool xlnt::path::operator==(const path &other) const```
 Returns true if left path is equal to right path.
 ### path >
 #### ```size_t std::hash< xlnt::path >::operator()(const xlnt::path &p) const```
+Returns a hashed represenation of the given path.
 ### scoped_enum_hash
 #### ```std::size_t xlnt::scoped_enum_hash< Enum >::operator()(Enum e) const```
 Cast the enumeration e to a std::size_t and hash that value using std::hash.
 ### time
 #### ```int xlnt::time::hourundefined```
+The hour
 #### ```int xlnt::time::minuteundefined```
+The minute
 #### ```int xlnt::time::secondundefined```
+The second
 #### ```int xlnt::time::microsecondundefined```
+The microsecond
 #### ```static time xlnt::time::now()```
 Return the current time according to the system time.
 #### ```static time xlnt::time::from_number(long double number)```
 Return a time from a number representing a fraction of a day. The integer part of number will be ignored. 0.5 would return time(12, 0, 0, 0) or noon, halfway through the day.
 #### ```xlnt::time::time(int hour_=0, int minute_=0, int second_=0, int microsecond_=0)```
+Constructs a time object from an optional hour, minute, second, and microsecond.
 #### ```xlnt::time::time(const std::string &time_string)```
+Constructs a time object from a string representing the time.
 #### ```long double xlnt::time::to_number() const```
+Returns a numeric representation of the time in the range 0-1 where the value is equal to the fraction of the day elapsed.
 #### ```bool xlnt::time::operator==(const time &comparand) const```
+Returns true if this time is equivalent to comparand.
 ### timedelta
 #### ```int xlnt::timedelta::daysundefined```
+The days
 #### ```int xlnt::timedelta::hoursundefined```
+The hours
 #### ```int xlnt::timedelta::minutesundefined```
+The minutes
 #### ```int xlnt::timedelta::secondsundefined```
+The seconds
 #### ```int xlnt::timedelta::microsecondsundefined```
+The microseconds
 #### ```static timedelta xlnt::timedelta::from_number(long double number)```
+Returns a timedelta from a number representing the factional number of days elapsed.
 #### ```xlnt::timedelta::timedelta()```
+Constructs a timedelta equal to zero.
 #### ```xlnt::timedelta::timedelta(int days_, int hours_, int minutes_, int seconds_, int microseconds_)```
+Constructs a timedelta from a number of days, hours, minutes, seconds, and microseconds.
 #### ```long double xlnt::timedelta::to_number() const```
+Returns a numeric representation of this timedelta as a fractional number of days.
 ### variant
 #### ```undefinedundefined```
 The possible types a variant can hold.
@@ -1085,9 +1374,13 @@ The settings to allow the structure and windows lock to be removed.
 Constructs a new document security object with default values.
 ### lock_verifier
 #### ```std::string xlnt::document_security::lock_verifier::hash_algorithmundefined```
+The algorithm used to create and verify this lock.
 #### ```std::string xlnt::document_security::lock_verifier::saltundefined```
+The initial salt combined with the password used to prevent rainbow table attacks
 #### ```std::string xlnt::document_security::lock_verifier::hashundefined```
+The actual hash value represented as a string
 #### ```std::size_t xlnt::document_security::lock_verifier::spin_countundefined```
+The number of times the hash should be applied to the password combined with the salt. This allows the difficulty of the hash to be increased as computing power increases.
 ### external_book
 ### named_range
 #### ```using xlnt::named_range::target =  std::pair<worksheet, range_reference>undefined```
@@ -1297,6 +1590,8 @@ Returns the named style with the given name.
 #### ```const class style xlnt::workbook::style(const std::string &name) const```
 Returns the named style with the given name.
 #### ```class style xlnt::workbook::create_style(const std::string &name)```
+Creates a new style and returns it.
+#### ```class style xlnt::workbook::create_builtin_style(std::size_t builtin_id)```
 Creates a new style and returns it.
 #### ```void xlnt::workbook::clear_styles()```
 Clear all named styles from cells and remove the styles from from the styelsheet. This leaves all other styling in place (e.g. cell formats).
@@ -1618,169 +1913,298 @@ Returns the footer margin
 Sets the footer margin to footer
 ### page_setup
 #### ```xlnt::page_setup::page_setup()```
+Default constructor.
 #### ```xlnt::page_break xlnt::page_setup::page_break() const```
+Returns the page break.
 #### ```void xlnt::page_setup::page_break(xlnt::page_break b)```
+Sets the page break to b.
 #### ```xlnt::sheet_state xlnt::page_setup::sheet_state() const```
+Returns the current sheet state of this page setup.
 #### ```void xlnt::page_setup::sheet_state(xlnt::sheet_state sheet_state)```
+Sets the sheet state to sheet_state.
 #### ```xlnt::paper_size xlnt::page_setup::paper_size() const```
+Returns the paper size which should be used to print the worksheet using this page setup.
 #### ```void xlnt::page_setup::paper_size(xlnt::paper_size paper_size)```
+Sets the paper size of this page setup.
 #### ```xlnt::orientation xlnt::page_setup::orientation() const```
+Returns the orientation of the worksheet using this page setup.
 #### ```void xlnt::page_setup::orientation(xlnt::orientation orientation)```
+Sets the orientation of the page.
 #### ```bool xlnt::page_setup::fit_to_page() const```
+Returns true if this worksheet should be scaled to fit on a single page during printing.
 #### ```void xlnt::page_setup::fit_to_page(bool fit_to_page)```
+If true, forces the worksheet to be scaled to fit on a single page during printing.
 #### ```bool xlnt::page_setup::fit_to_height() const```
+Returns true if the height of this worksheet should be scaled to fit on a printed page.
 #### ```void xlnt::page_setup::fit_to_height(bool fit_to_height)```
+Sets whether the height of the page should be scaled to fit on a printed page.
 #### ```bool xlnt::page_setup::fit_to_width() const```
+Returns true if the width of this worksheet should be scaled to fit on a printed page.
 #### ```void xlnt::page_setup::fit_to_width(bool fit_to_width)```
+Sets whether the width of the page should be scaled to fit on a printed page.
 #### ```void xlnt::page_setup::horizontal_centered(bool horizontal_centered)```
+Sets whether the worksheet should be centered horizontall on the page if it takes up less than a full page.
 #### ```bool xlnt::page_setup::horizontal_centered() const```
+Returns whether horizontal centering has been enabled.
 #### ```void xlnt::page_setup::vertical_centered(bool vertical_centered)```
+Sets whether the worksheet should be vertically centered on the page if it takes up less than a full page.
 #### ```bool xlnt::page_setup::vertical_centered() const```
+Returns whether vertical centering has been enabled.
 #### ```void xlnt::page_setup::scale(double scale)```
+Sets the factor by which the page should be scaled during printing.
 #### ```double xlnt::page_setup::scale() const```
+Returns the factor by which the page should be scaled during printing.
 ### pane
 #### ```optional<cell_reference> xlnt::pane::top_left_cellundefined```
+The optional top left cell
 #### ```pane_state xlnt::pane::stateundefined```
+The state of the pane
 #### ```pane_corner xlnt::pane::active_paneundefined```
+The pane which contains the active cell
 #### ```row_t xlnt::pane::y_splitundefined```
+The row where the split should take place
 #### ```column_t xlnt::pane::x_splitundefined```
+The column where the split should take place
 #### ```bool xlnt::pane::operator==(const pane &rhs) const```
 Returns true if this pane is equal to rhs based on its top-left cell, state, active pane, and x/y split location.
 ### range
 #### ```using xlnt::range::iterator =  range_iteratorundefined```
+Alias for the iterator type
 #### ```using xlnt::range::const_iterator =  const_range_iteratorundefined```
+Alias for the const iterator type
 #### ```using xlnt::range::reverse_iterator =  std::reverse_iterator<iterator>undefined```
+Alias for the reverse iterator type
 #### ```using xlnt::range::const_reverse_iterator =  std::reverse_iterator<const_iterator>undefined```
+Alias for the const reverse iterator type
 #### ```xlnt::range::range(worksheet ws, const range_reference &reference, major_order order=major_order::row, bool skip_null=false)```
+Constructs a range on the given worksheet.
 #### ```xlnt::range::~range()```
+Desctructor
 #### ```xlnt::range::range(const range &)=default```
-#### ```cell_vector xlnt::range::operator[](std::size_t vector_index)```
-#### ```const cell_vector xlnt::range::operator[](std::size_t vector_index) const```
-#### ```bool xlnt::range::operator==(const range &comparand) const```
-#### ```bool xlnt::range::operator!=(const range &comparand) const```
-#### ```cell_vector xlnt::range::vector(std::size_t vector_index)```
-#### ```const cell_vector xlnt::range::vector(std::size_t vector_index) const```
+Default copy constructor.
+#### ```cell_vector xlnt::range::vector(std::size_t n)```
+Returns a vector pointing to the n-th row or column in this range (depending on major order).
+#### ```const cell_vector xlnt::range::vector(std::size_t n) const```
+Returns a vector pointing to the n-th row or column in this range (depending on major order).
 #### ```class cell xlnt::range::cell(const cell_reference &ref)```
+Returns a cell in the range relative to its top left cell.
 #### ```const class cell xlnt::range::cell(const cell_reference &ref) const```
+Returns a cell in the range relative to its top left cell.
 #### ```range_reference xlnt::range::reference() const```
+Returns the reference defining the bounds of this range.
 #### ```std::size_t xlnt::range::length() const```
+Returns the number of rows or columns in this range (depending on major order).
 #### ```bool xlnt::range::contains(const cell_reference &ref)```
+Returns true if the given cell exists in the parent worksheet of this range.
 #### ```range xlnt::range::alignment(const xlnt::alignment &new_alignment)```
+Sets the alignment of all cells in the range to new_alignment and returns the range.
 #### ```range xlnt::range::border(const xlnt::border &new_border)```
+Sets the border of all cells in the range to new_border and returns the range.
 #### ```range xlnt::range::fill(const xlnt::fill &new_fill)```
+Sets the fill of all cells in the range to new_fill and returns the range.
 #### ```range xlnt::range::font(const xlnt::font &new_font)```
+Sets the font of all cells in the range to new_font and returns the range.
 #### ```range xlnt::range::number_format(const xlnt::number_format &new_number_format)```
+Sets the number format of all cells in the range to new_number_format and returns the range.
 #### ```range xlnt::range::protection(const xlnt::protection &new_protection)```
+Sets the protection of all cells in the range to new_protection and returns the range.
 #### ```range xlnt::range::style(const class style &new_style)```
 Sets the named style applied to all cells in this range to a style named style_name.
 #### ```range xlnt::range::style(const std::string &style_name)```
 Sets the named style applied to all cells in this range to a style named style_name. If this style has not been previously created in the workbook, a key_not_found exception will be thrown.
 #### ```cell_vector xlnt::range::front()```
+Returns the first row or column in this range.
 #### ```const cell_vector xlnt::range::front() const```
+Returns the first row or column in this range.
 #### ```cell_vector xlnt::range::back()```
+Returns the last row or column in this range.
 #### ```const cell_vector xlnt::range::back() const```
+Returns the last row or column in this range.
 #### ```iterator xlnt::range::begin()```
+Returns an iterator to the first row or column in this range.
 #### ```iterator xlnt::range::end()```
+Returns an iterator to one past the last row or column in this range.
 #### ```const_iterator xlnt::range::begin() const```
+Returns an iterator to the first row or column in this range.
 #### ```const_iterator xlnt::range::end() const```
+Returns an iterator to one past the last row or column in this range.
 #### ```const_iterator xlnt::range::cbegin() const```
+Returns an iterator to the first row or column in this range.
 #### ```const_iterator xlnt::range::cend() const```
+Returns an iterator to one past the last row or column in this range.
 #### ```reverse_iterator xlnt::range::rbegin()```
+Returns a reverse iterator to the first row or column in this range.
 #### ```reverse_iterator xlnt::range::rend()```
+Returns a reverse iterator to one past the last row or column in this range.
 #### ```const_reverse_iterator xlnt::range::rbegin() const```
+Returns a reverse iterator to the first row or column in this range.
 #### ```const_reverse_iterator xlnt::range::rend() const```
+Returns a reverse iterator to one past the last row or column in this range.
 #### ```const_reverse_iterator xlnt::range::crbegin() const```
+Returns a reverse iterator to the first row or column in this range.
 #### ```const_reverse_iterator xlnt::range::crend() const```
+Returns a reverse iterator to one past the last row or column in this range.
 #### ```void xlnt::range::apply(std::function< void(class cell)> f)```
+Applies function f to all cells in the range
+#### ```cell_vector xlnt::range::operator[](std::size_t n)```
+Returns the n-th row or column in this range.
+#### ```const cell_vector xlnt::range::operator[](std::size_t n) const```
+Returns the n-th row or column in this range.
+#### ```bool xlnt::range::operator==(const range &comparand) const```
+Returns true if this range is equivalent to comparand.
+#### ```bool xlnt::range::operator!=(const range &comparand) const```
+Returns true if this range is not equivalent to comparand.
 ### range_iterator
 #### ```xlnt::range_iterator::range_iterator(worksheet &ws, const cell_reference &cursor, const range_reference &bounds, major_order order, bool skip_null)```
+Constructs a range iterator on a worksheet, cell pointing to the current row or column, range bounds, an order, and whether or not to skip null column/rows.
 #### ```xlnt::range_iterator::range_iterator(const range_iterator &other)```
+Copy constructor.
 #### ```cell_vector xlnt::range_iterator::operator*() const```
+Dereference the iterator to return a column or row.
 #### ```range_iterator& xlnt::range_iterator::operator=(const range_iterator &)=default```
+Default assignment operator.
 #### ```bool xlnt::range_iterator::operator==(const range_iterator &other) const```
+Returns true if this iterator is equivalent to other.
 #### ```bool xlnt::range_iterator::operator!=(const range_iterator &other) const```
+Returns true if this iterator is not equivalent to other.
 #### ```range_iterator& xlnt::range_iterator::operator--()```
+Pre-decrement the iterator to point to the previous row/column.
 #### ```range_iterator xlnt::range_iterator::operator--(int)```
+Post-decrement the iterator to point to the previous row/column.
 #### ```range_iterator& xlnt::range_iterator::operator++()```
+Pre-increment the iterator to point to the next row/column.
 #### ```range_iterator xlnt::range_iterator::operator++(int)```
+Post-increment the iterator to point to the next row/column.
 ### const_range_iterator
 #### ```xlnt::const_range_iterator::const_range_iterator(const worksheet &ws, const cell_reference &cursor, const range_reference &bounds, major_order order, bool skip_null)```
+Constructs a range iterator on a worksheet, cell pointing to the current row or column, range bounds, an order, and whether or not to skip null column/rows.
 #### ```xlnt::const_range_iterator::const_range_iterator(const const_range_iterator &other)```
+Copy constructor.
 #### ```const cell_vector xlnt::const_range_iterator::operator*() const```
+Dereferennce the iterator to return the current column/row.
 #### ```const_range_iterator& xlnt::const_range_iterator::operator=(const const_range_iterator &)=default```
+Default assignment operator.
 #### ```bool xlnt::const_range_iterator::operator==(const const_range_iterator &other) const```
+Returns true if this iterator is equivalent to other.
 #### ```bool xlnt::const_range_iterator::operator!=(const const_range_iterator &other) const```
+Returns true if this iterator is not equivalent to other.
 #### ```const_range_iterator& xlnt::const_range_iterator::operator--()```
+Pre-decrement the iterator to point to the next row/column.
 #### ```const_range_iterator xlnt::const_range_iterator::operator--(int)```
+Post-decrement the iterator to point to the next row/column.
 #### ```const_range_iterator& xlnt::const_range_iterator::operator++()```
+Pre-increment the iterator to point to the next row/column.
 #### ```const_range_iterator xlnt::const_range_iterator::operator++(int)```
+Post-increment the iterator to point to the next row/column.
 ### range_reference
 #### ```static range_reference xlnt::range_reference::make_absolute(const range_reference &relative_reference)```
-Convert a coordinate to an absolute coordinate string (B12 -> $B$12)
+Converts relative reference coordinates to absolute coordinates (B12 -> $B$12)
 #### ```xlnt::range_reference::range_reference()```
+Constructs a range reference equal to A1:A1
 #### ```xlnt::range_reference::range_reference(const std::string &range_string)```
+Constructs a range reference equivalent to the provided range_string in the form <top_left>:<bottom_right>.
 #### ```xlnt::range_reference::range_reference(const char *range_string)```
+Constructs a range reference equivalent to the provided range_string in the form <top_left>:<bottom_right>.
 #### ```xlnt::range_reference::range_reference(const std::pair< cell_reference, cell_reference > &reference_pair)```
+Constructs a range reference from a pair of cell references.
 #### ```xlnt::range_reference::range_reference(const cell_reference &start, const cell_reference &end)```
+Constructs a range reference from cell references indicating top left and bottom right coordinates of the range.
 #### ```xlnt::range_reference::range_reference(column_t column_index_start, row_t row_index_start, column_t column_index_end, row_t row_index_end)```
+Constructs a range reference from column and row indices.
 #### ```bool xlnt::range_reference::is_single_cell() const```
+Returns true if the range has a width and height of 1 cell.
 #### ```std::size_t xlnt::range_reference::width() const```
+Returns the number of columns encompassed by this range.
 #### ```std::size_t xlnt::range_reference::height() const```
-#### ```cell_reference xlnt::range_reference::top_left()```
+Returns the number of rows encompassed by this range.
 #### ```cell_reference xlnt::range_reference::top_left() const```
-#### ```cell_reference xlnt::range_reference::top_right()```
+Returns the coordinate of the top left cell of this range.
 #### ```cell_reference xlnt::range_reference::top_right() const```
-#### ```cell_reference xlnt::range_reference::bottom_left()```
+Returns the coordinate of the top right cell of this range.
 #### ```cell_reference xlnt::range_reference::bottom_left() const```
-#### ```cell_reference xlnt::range_reference::bottom_right()```
+Returns the coordinate of the bottom left cell of this range.
 #### ```cell_reference xlnt::range_reference::bottom_right() const```
+Returns the coordinate of the bottom right cell of this range.
 #### ```range_reference xlnt::range_reference::make_offset(int column_offset, int row_offset) const```
+Returns a new range reference with the same width and height as this range but shifted by the given number of columns and rows.
 #### ```std::string xlnt::range_reference::to_string() const```
+Returns a string representation of this range.
 #### ```bool xlnt::range_reference::operator==(const range_reference &comparand) const```
+Returns true if this range is equivalent to the other range.
 #### ```bool xlnt::range_reference::operator==(const std::string &reference_string) const```
+Returns true if this range is equivalent to the string representation of the other range.
 #### ```bool xlnt::range_reference::operator==(const char *reference_string) const```
+Returns true if this range is equivalent to the string representation of the other range.
 #### ```bool xlnt::range_reference::operator!=(const range_reference &comparand) const```
+Returns true if this range is not equivalent to the other range.
 #### ```bool xlnt::range_reference::operator!=(const std::string &reference_string) const```
+Returns true if this range is not equivalent to the string representation of the other range.
 #### ```bool xlnt::range_reference::operator!=(const char *reference_string) const```
-#### ```bool operator==(const std::string &reference_string, const range_reference &ref)```
-#### ```bool operator==(const char *reference_string, const range_reference &ref)```
-#### ```bool operator!=(const std::string &reference_string, const range_reference &ref)```
-#### ```bool operator!=(const char *reference_string, const range_reference &ref)```
+Returns true if this range is not equivalent to the string representation of the other range.
 ### row_properties
 #### ```optional<double> xlnt::row_properties::heightundefined```
+Optional height
 #### ```bool xlnt::row_properties::custom_heightundefined```
+Whether or not the height is different from the default
 #### ```bool xlnt::row_properties::hiddenundefined```
+Whether or not the row should be hidden
 #### ```optional<std::size_t> xlnt::row_properties::styleundefined```
+The index to the style used by all cells in this row
 ### selection
 #### ```bool xlnt::selection::has_active_cell() const```
+Returns true if this selection has a defined active cell.
 #### ```cell_reference xlnt::selection::active_cell() const```
+Returns the cell reference of the active cell.
 #### ```void xlnt::selection::active_cell(const cell_reference &ref)```
+Sets the active cell to that pointed to by ref.
 #### ```range_reference xlnt::selection::sqref() const```
+Returns the range encompassed by this selection.
 #### ```pane_corner xlnt::selection::pane() const```
+Returns the sheet quadrant of this selection.
 #### ```void xlnt::selection::pane(pane_corner corner)```
+Sets the sheet quadrant of this selection to corner.
 #### ```bool xlnt::selection::operator==(const selection &rhs) const```
 Returns true if this selection is equal to rhs based on its active cell, sqref, and pane.
 ### sheet_protection
 #### ```static std::string xlnt::sheet_protection::hash_password(const std::string &password)```
+Calculates and returns the hash of the given protection password.
 #### ```void xlnt::sheet_protection::password(const std::string &password)```
+Sets the protection password to password.
 #### ```std::string xlnt::sheet_protection::hashed_password() const```
+Returns the hash of the password set for this sheet protection.
 ### sheet_view
 #### ```void xlnt::sheet_view::id(std::size_t new_id)```
+Sets the ID of this view to new_id.
 #### ```std::size_t xlnt::sheet_view::id() const```
+Returns the ID of this view.
 #### ```bool xlnt::sheet_view::has_pane() const```
+Returns true if this view has a pane defined.
 #### ```struct pane& xlnt::sheet_view::pane()```
+Returns a reference to this view's pane.
 #### ```const struct pane& xlnt::sheet_view::pane() const```
+Returns a reference to this view's pane.
 #### ```void xlnt::sheet_view::clear_pane()```
+Removes the defined pane from this view.
 #### ```void xlnt::sheet_view::pane(const struct pane &new_pane)```
+Sets the pane of this view to new_pane.
 #### ```bool xlnt::sheet_view::has_selections() const```
+Returns true if this view has any selections.
 #### ```void xlnt::sheet_view::add_selection(const class selection &new_selection)```
+Adds the given selection to the collection of selections.
 #### ```void xlnt::sheet_view::clear_selections()```
+Removes all selections.
 #### ```std::vector<xlnt::selection> xlnt::sheet_view::selections() const```
+Returns the collection of selections as a vector.
 #### ```class xlnt::selection& xlnt::sheet_view::selection(std::size_t index)```
+Returns the selection at the given index.
 #### ```void xlnt::sheet_view::show_grid_lines(bool show)```
+If show is true, grid lines will be shown for sheets using this view.
 #### ```bool xlnt::sheet_view::show_grid_lines() const```
+Returns true if grid lines will be shown for sheets using this view.
 #### ```void xlnt::sheet_view::default_grid_color(bool is_default)```
+If is_default is true, the default grid color will be used.
 #### ```bool xlnt::sheet_view::default_grid_color() const```
+Returns true if the default grid color will be used.
 #### ```void xlnt::sheet_view::type(sheet_view_type new_type)```
 Sets the type of this view.
 #### ```sheet_view_type xlnt::sheet_view::type() const```
@@ -1875,8 +2299,11 @@ Calculate the height of the given row. This will be the default row height if a 
 #### ```cell_reference xlnt::worksheet::point_pos(int left, int top) const```
 Returns a reference to the cell at the given point coordinates.
 #### ```void xlnt::worksheet::create_named_range(const std::string &name, const std::string &reference_string)```
+Creates a new named range with the given name encompassing the string representing a range.
 #### ```void xlnt::worksheet::create_named_range(const std::string &name, const range_reference &reference)```
+Creates a new named range with the given name encompassing the given range reference.
 #### ```bool xlnt::worksheet::has_named_range(const std::string &name) const```
+Returns true if this worksheet contains a named range with the given name.
 #### ```class range xlnt::worksheet::named_range(const std::string &name)```
 Returns the named range with the given name. Throws key_not_found exception if the named range doesn't exist.
 #### ```const class range xlnt::worksheet::named_range(const std::string &name) const```
@@ -1884,23 +2311,37 @@ Returns the named range with the given name. Throws key_not_found exception if t
 #### ```void xlnt::worksheet::remove_named_range(const std::string &name)```
 Removes a named range with the given name.
 #### ```row_t xlnt::worksheet::lowest_row() const```
+Returns the row of the first non-empty cell in the worksheet.
 #### ```row_t xlnt::worksheet::highest_row() const```
+Returns the row of the last non-empty cell in the worksheet.
 #### ```row_t xlnt::worksheet::next_row() const```
+Returns the row directly below the last non-empty cell in the worksheet.
 #### ```column_t xlnt::worksheet::lowest_column() const```
+Returns the column of the first non-empty cell in the worksheet.
 #### ```column_t xlnt::worksheet::highest_column() const```
+Returns the column of the last non-empty cell in the worksheet.
 #### ```range_reference xlnt::worksheet::calculate_dimension() const```
+Returns a range_reference pointing to the full range of non-empty cells in the worksheet.
 #### ```void xlnt::worksheet::merge_cells(const std::string &reference_string)```
+Merges the cells within the range represented by the given string.
 #### ```void xlnt::worksheet::merge_cells(const range_reference &reference)```
-#### ```void xlnt::worksheet::merge_cells(column_t start_column, row_t start_row, column_t end_column, row_t end_row)```
+Merges the cells within the given range.
 #### ```void xlnt::worksheet::unmerge_cells(const std::string &reference_string)```
+Removes the merging of the cells in the range represented by the given string.
 #### ```void xlnt::worksheet::unmerge_cells(const range_reference &reference)```
-#### ```void xlnt::worksheet::unmerge_cells(column_t start_column, row_t start_row, column_t end_column, row_t end_row)```
+Removes the merging of the cells in the given range.
 #### ```std::vector<range_reference> xlnt::worksheet::merged_ranges() const```
+Returns a vector of references of all merged ranges in the worksheet.
 #### ```bool xlnt::worksheet::operator==(const worksheet &other) const```
+Returns true if this worksheet refers to the same worksheet as other.
 #### ```bool xlnt::worksheet::operator!=(const worksheet &other) const```
+Returns true if this worksheet doesn't refer to the same worksheet as other.
 #### ```bool xlnt::worksheet::operator==(std::nullptr_t) const```
+Returns true if this worksheet is null.
 #### ```bool xlnt::worksheet::operator!=(std::nullptr_t) const```
+Returns true if this worksheet is not null.
 #### ```void xlnt::worksheet::operator=(const worksheet &other)```
+Sets the internal pointer of this worksheet object to point to other.
 #### ```class cell xlnt::worksheet::operator[](const cell_reference &reference)```
 Convenience method for worksheet::cell method.
 #### ```const class cell xlnt::worksheet::operator[](const cell_reference &reference) const```

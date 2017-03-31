@@ -315,9 +315,9 @@ path path::relative_to(const path &base_path) const
     return result;
 }
 
-bool operator==(const path &left, const path &right)
+bool path::operator==(const path &other) const
 {
-    return left.internal_ == right.internal_;
+    return internal_ == other.internal_;
 }
 
 } // namespace xlnt

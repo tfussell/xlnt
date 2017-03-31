@@ -49,74 +49,75 @@ class XLNT_API range_iterator : public r_iter_type
 {
 public:
     /// <summary>
-    ///
+    /// Constructs a range iterator on a worksheet, cell pointing to the current
+    /// row or column, range bounds, an order, and whether or not to skip null column/rows.
     /// </summary>
     range_iterator(worksheet &ws, const cell_reference &cursor,
         const range_reference &bounds, major_order order, bool skip_null);
 
     /// <summary>
-    ///
+    /// Copy constructor.
     /// </summary>
     range_iterator(const range_iterator &other);
 
     /// <summary>
-    ///
+    /// Dereference the iterator to return a column or row.
     /// </summary>
     cell_vector operator*() const;
 
     /// <summary>
-    ///
+    /// Default assignment operator.
     /// </summary>
     range_iterator &operator=(const range_iterator &) = default;
 
     /// <summary>
-    ///
+    /// Returns true if this iterator is equivalent to other.
     /// </summary>
     bool operator==(const range_iterator &other) const;
 
     /// <summary>
-    ///
+    /// Returns true if this iterator is not equivalent to other.
     /// </summary>
     bool operator!=(const range_iterator &other) const;
 
     /// <summary>
-    ///
+    /// Pre-decrement the iterator to point to the previous row/column.
     /// </summary>
     range_iterator &operator--();
 
     /// <summary>
-    ///
+    /// Post-decrement the iterator to point to the previous row/column.
     /// </summary>
     range_iterator operator--(int);
 
     /// <summary>
-    ///
+    /// Pre-increment the iterator to point to the next row/column.
     /// </summary>
     range_iterator &operator++();
 
     /// <summary>
-    ///
+    /// Post-increment the iterator to point to the next row/column.
     /// </summary>
     range_iterator operator++(int);
 
 private:
     /// <summary>
-    ///
+    /// The worksheet
     /// </summary>
     worksheet ws_;
 
     /// <summary>
-    ///
+    /// The first cell in the current row/column
     /// </summary>
     cell_reference cursor_;
 
     /// <summary>
-    ///
+    /// The bounds of the range
     /// </summary>
     range_reference bounds_;
 
     /// <summary>
-    ///
+    /// Whether rows or columns should be iterated over first
     /// </summary>
     major_order order_;
 
@@ -140,74 +141,75 @@ class XLNT_API const_range_iterator : public cr_iter_type
 {
 public:
     /// <summary>
-    ///
+    /// Constructs a range iterator on a worksheet, cell pointing to the current
+    /// row or column, range bounds, an order, and whether or not to skip null column/rows.
     /// </summary>
     const_range_iterator(const worksheet &ws, const cell_reference &cursor,
         const range_reference &bounds, major_order order, bool skip_null);
 
     /// <summary>
-    ///
+    /// Copy constructor.
     /// </summary>
     const_range_iterator(const const_range_iterator &other);
 
     /// <summary>
-    ///
+    /// Dereferennce the iterator to return the current column/row.
     /// </summary>
     const cell_vector operator*() const;
 
     /// <summary>
-    ///
+    /// Default assignment operator.
     /// </summary>
     const_range_iterator &operator=(const const_range_iterator &) = default;
 
     /// <summary>
-    ///
+    /// Returns true if this iterator is equivalent to other.
     /// </summary>
     bool operator==(const const_range_iterator &other) const;
 
     /// <summary>
-    ///
+    /// Returns true if this iterator is not equivalent to other.
     /// </summary>
     bool operator!=(const const_range_iterator &other) const;
 
     /// <summary>
-    ///
+    /// Pre-decrement the iterator to point to the next row/column.
     /// </summary>
     const_range_iterator &operator--();
 
     /// <summary>
-    ///
+    /// Post-decrement the iterator to point to the next row/column.
     /// </summary>
     const_range_iterator operator--(int);
 
     /// <summary>
-    ///
+    /// Pre-increment the iterator to point to the next row/column.
     /// </summary>
     const_range_iterator &operator++();
 
     /// <summary>
-    ///
+    /// Post-increment the iterator to point to the next row/column.
     /// </summary>
     const_range_iterator operator++(int);
 
 private:
     /// <summary>
-    ///
+    /// The implementation of the worksheet this iterator points to
     /// </summary>
     detail::worksheet_impl *ws_;
 
     /// <summary>
-    ///
+    /// The first cell in the current row or column this iterator points to
     /// </summary>
     cell_reference cursor_;
 
     /// <summary>
-    ///
+    /// The range this iterator starts and ends in
     /// </summary>
     range_reference bounds_;
 
     /// <summary>
-    ///
+    /// Determines whether iteration should move through rows or columns first
     /// </summary>
     major_order order_;
 

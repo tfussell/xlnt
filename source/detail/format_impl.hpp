@@ -58,11 +58,19 @@ struct format_impl
     {
         return left.parent == right.parent
             && left.alignment_id == right.alignment_id
+            && left.alignment_applied == right.alignment_applied
             && left.border_id == right.border_id
+            && left.border_applied == right.border_applied
             && left.fill_id == right.fill_id
+            && left.fill_applied == right.fill_applied
             && left.font_id == right.font_id
+            && left.font_applied == right.font_applied
             && left.number_format_id == right.number_format_id
+            && left.number_format_applied == right.number_format_applied
             && left.protection_id == right.protection_id
+            && left.protection_applied == right.protection_applied
+            && left.pivot_button_ == right.pivot_button_
+            && left.quote_prefix_ == right.quote_prefix_
             && left.style == right.style;
     }
 };

@@ -31,7 +31,7 @@
 namespace xlnt {
 
 /// <summary>
-///
+/// Enumeration of possible states of a pane
 /// </summary>
 enum class XLNT_API pane_state
 {
@@ -41,7 +41,7 @@ enum class XLNT_API pane_state
 };
 
 /// <summary>
-///
+/// Enumeration of the four quadrants of a worksheet
 /// </summary>
 enum class XLNT_API pane_corner
 {
@@ -57,27 +57,27 @@ enum class XLNT_API pane_corner
 struct XLNT_API pane
 {
     /// <summary>
-    ///
+    /// The optional top left cell
     /// </summary>
     optional<cell_reference> top_left_cell;
 
     /// <summary>
-    ///
+    /// The state of the pane
     /// </summary>
     pane_state state = pane_state::split;
 
     /// <summary>
-    ///
+    /// The pane which contains the active cell
     /// </summary>
     pane_corner active_pane = pane_corner::top_left;
 
     /// <summary>
-    ///
+    /// The row where the split should take place
     /// </summary>
     row_t y_split = 1;
 
     /// <summary>
-    ///
+    /// The column where the split should take place
     /// </summary>
     column_t x_split = 1;
 

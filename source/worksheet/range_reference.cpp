@@ -118,19 +118,9 @@ bool range_reference::operator!=(const range_reference &comparand) const
     return comparand.top_left_ != top_left_ || comparand.bottom_right_ != bottom_right_;
 }
 
-cell_reference range_reference::top_left()
-{
-    return top_left_;
-}
-
 cell_reference range_reference::top_left() const
 {
     return top_left_;
-}
-
-cell_reference range_reference::top_right()
-{
-    return cell_reference(bottom_right_.column(), top_left_.row());
 }
 
 cell_reference range_reference::top_right() const
@@ -138,19 +128,9 @@ cell_reference range_reference::top_right() const
     return cell_reference(bottom_right_.column(), top_left_.row());
 }
 
-cell_reference range_reference::bottom_left()
-{
-    return cell_reference(top_left_.column(), bottom_right_.row());
-}
-
 cell_reference range_reference::bottom_left() const
 {
     return cell_reference(top_left_.column(), bottom_right_.row());
-}
-
-cell_reference range_reference::bottom_right()
-{
-    return bottom_right_;
 }
 
 cell_reference range_reference::bottom_right() const

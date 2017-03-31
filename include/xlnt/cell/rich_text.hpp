@@ -39,38 +39,38 @@ class XLNT_API rich_text
 {
 public:
     /// <summary>
-    ///
+    /// Constructs an empty rich text object with no font and empty text.
     /// </summary>
     rich_text() = default;
 
     /// <summary>
-    ///
+    /// Constructs a rich text object with the given text and no font.
     /// </summary>
     rich_text(const std::string &plain_text);
 
     /// <summary>
-    ///
+    /// Constructs a rich text object with the given text and font.
     /// </summary>
     rich_text(const std::string &plain_text, const class font &text_font);
 
     /// <summary>
-    ///
+    /// Copy constructor.
     /// </summary>
     rich_text(const rich_text_run &single_run);
 
     /// <summary>
-    /// Remove all text runs from this text.
+    /// Removes all text runs from this text.
     /// </summary>
     void clear();
 
     /// <summary>
-    /// Clear any runs in this text and add a single run with default formatting and
+    /// Clears any runs in this text and adds a single run with default formatting and
     /// the given string as its textual content.
     /// </summary>
     void plain_text(const std::string &s);
 
     /// <summary>
-    /// Combine the textual content of each text run in order and return the result.
+    /// Combines the textual content of each text run in order and returns the result.
     /// </summary>
     std::string plain_text() const;
 
@@ -80,12 +80,12 @@ public:
     std::vector<rich_text_run> runs() const;
 
     /// <summary>
-    /// Set the runs of this text all at once.
+    /// Sets the runs of this text all at once.
     /// </summary>
     void runs(const std::vector<rich_text_run> &new_runs);
 
     /// <summary>
-    /// Add a new run to the end of the set of runs.
+    /// Adds a new run to the end of the set of runs.
     /// </summary>
     void add_run(const rich_text_run &t);
 
@@ -101,7 +101,7 @@ public:
 
 private:
     /// <summary>
-    ///
+    /// The runs that make up this rich text.
     /// </summary>
     std::vector<rich_text_run> runs_;
 };

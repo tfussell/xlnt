@@ -58,7 +58,7 @@ public:
         TS_ASSERT(cell.value<xlnt::time>() == xlnt::time(0, 30, 33, 865633));
 	}
 
-    void test_ctor()
+    void test_constructor()
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
@@ -195,6 +195,7 @@ public:
         auto cell = ws.cell(xlnt::cell_reference(1, 1));
         
         cell.value(xlnt::datetime(2010, 7, 13, 6, 37, 41));
+
         TS_ASSERT(cell.data_type() == xlnt::cell::type::numeric);
         TS_ASSERT(cell.value<long double>() == 40372.27616898148L);
         TS_ASSERT(cell.is_date());
@@ -270,7 +271,8 @@ public:
         auto cell = ws.cell(xlnt::cell_reference(1, 1));
     
         // The bytes 0x00 through 0x1F inclusive must be manually escaped in values.
-        auto illegal_chrs = {0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
+        auto illegal_chrs = {0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 14, 15, 16, 17, 18,
+            19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
         
         for(auto i : illegal_chrs)
         {

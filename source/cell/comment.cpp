@@ -103,9 +103,14 @@ int comment::height() const
     return height_;
 }
 
-XLNT_API bool operator==(const comment &left, const comment &right)
+bool comment::operator==(const comment &other) const
 {
-    return left.text_ == right.text_ && left.author_ == right.author_;
+    return text_ == other.text_ && author_ == other.author_;
+}
+
+bool comment::operator!=(const comment &other) const
+{
+    return !(*this == other);
 }
 
 } // namespace xlnt

@@ -30,6 +30,8 @@
 
 namespace xlnt {
 
+// TOOD: does this really need its own class?
+
 /// <summary>
 /// Protection applied to a particular worksheet to prevent it from being modified.
 /// </summary>
@@ -37,23 +39,23 @@ class XLNT_API sheet_protection
 {
 public:
     /// <summary>
-    ///
+    /// Calculates and returns the hash of the given protection password.
     /// </summary>
     static std::string hash_password(const std::string &password);
 
     /// <summary>
-    ///
+    /// Sets the protection password to password.
     /// </summary>
     void password(const std::string &password);
 
     /// <summary>
-    ///
+    /// Returns the hash of the password set for this sheet protection.
     /// </summary>
     std::string hashed_password() const;
 
 private:
     /// <summary>
-    ///
+    /// The hash of the password.
     /// </summary>
     std::string hashed_password_;
 };

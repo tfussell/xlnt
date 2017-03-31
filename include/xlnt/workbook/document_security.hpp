@@ -43,22 +43,23 @@ public:
     struct lock_verifier
     {
         /// <summary>
-        ///
+        /// The algorithm used to create and verify this lock.
         /// </summary>
         std::string hash_algorithm;
 
         /// <summary>
-        ///
+        /// The initial salt combined with the password used to prevent rainbow table attacks
         /// </summary>
         std::string salt;
 
         /// <summary>
-        ///
+        /// The actual hash value represented as a string
         /// </summary>
         std::string hash;
 
         /// <summary>
-        ///
+        /// The number of times the hash should be applied to the password combined with the salt.
+        /// This allows the difficulty of the hash to be increased as computing power increases.
         /// </summary>
         std::size_t spin_count;
     };

@@ -83,158 +83,160 @@ struct XLNT_API page_setup
 {
 public:
     /// <summary>
-    ///
+    /// Default constructor.
     /// </summary>
     page_setup();
 
     /// <summary>
-    ///
+    /// Returns the page break.
     /// </summary>
     xlnt::page_break page_break() const;
 
     /// <summary>
-    ///
+    /// Sets the page break to b.
     /// </summary>
     void page_break(xlnt::page_break b);
 
     /// <summary>
-    ///
+    /// Returns the current sheet state of this page setup.
     /// </summary>
     xlnt::sheet_state sheet_state() const;
 
     /// <summary>
-    ///
+    /// Sets the sheet state to sheet_state.
     /// </summary>
     void sheet_state(xlnt::sheet_state sheet_state);
 
     /// <summary>
-    ///
+    /// Returns the paper size which should be used to print the worksheet using this page setup.
     /// </summary>
     xlnt::paper_size paper_size() const;
 
     /// <summary>
-    ///
+    /// Sets the paper size of this page setup.
     /// </summary>
     void paper_size(xlnt::paper_size paper_size);
 
     /// <summary>
-    ///
+    /// Returns the orientation of the worksheet using this page setup.
     /// </summary>
     xlnt::orientation orientation() const;
 
     /// <summary>
-    ///
+    /// Sets the orientation of the page.
     /// </summary>
     void orientation(xlnt::orientation orientation);
 
     /// <summary>
-    ///
+    /// Returns true if this worksheet should be scaled to fit on a single page during printing.
     /// </summary>
     bool fit_to_page() const;
 
     /// <summary>
-    ///
+    /// If true, forces the worksheet to be scaled to fit on a single page during printing.
     /// </summary>
     void fit_to_page(bool fit_to_page);
 
     /// <summary>
-    ///
+    /// Returns true if the height of this worksheet should be scaled to fit on a printed page.
     /// </summary>
     bool fit_to_height() const;
 
     /// <summary>
-    ///
+    /// Sets whether the height of the page should be scaled to fit on a printed page.
     /// </summary>
     void fit_to_height(bool fit_to_height);
 
     /// <summary>
-    ///
+    /// Returns true if the width of this worksheet should be scaled to fit on a printed page.
     /// </summary>
     bool fit_to_width() const;
 
     /// <summary>
-    ///
+    /// Sets whether the width of the page should be scaled to fit on a printed page.
     /// </summary>
     void fit_to_width(bool fit_to_width);
 
     /// <summary>
-    ///
+    /// Sets whether the worksheet should be centered horizontall on the page if it takes
+    /// up less than a full page.
     /// </summary>
     void horizontal_centered(bool horizontal_centered);
 
     /// <summary>
-    ///
+    /// Returns whether horizontal centering has been enabled.
     /// </summary>
     bool horizontal_centered() const;
 
     /// <summary>
-    ///
+    /// Sets whether the worksheet should be vertically centered on the page if it takes
+    /// up less than a full page.
     /// </summary>
     void vertical_centered(bool vertical_centered);
 
     /// <summary>
-    ///
+    /// Returns whether vertical centering has been enabled.
     /// </summary>
     bool vertical_centered() const;
 
     /// <summary>
-    ///
+    /// Sets the factor by which the page should be scaled during printing.
     /// </summary>
     void scale(double scale);
 
     /// <summary>
-    ///
+    /// Returns the factor by which the page should be scaled during printing.
     /// </summary>
     double scale() const;
 
 private:
     /// <summary>
-    ///
+    /// The break
     /// </summary>
     xlnt::page_break break_;
 
     /// <summary>
-    ///
+    /// The sheet state
     /// </summary>
     xlnt::sheet_state sheet_state_;
 
     /// <summary>
-    ///
+    /// The paper size
     /// </summary>
     xlnt::paper_size paper_size_;
 
     /// <summary>
-    ///
+    /// The orientation
     /// </summary>
     xlnt::orientation orientation_;
 
     /// <summary>
-    ///
+    /// Whether or not to fit to page
     /// </summary>
     bool fit_to_page_;
 
     /// <summary>
-    ///
+    /// Whether or not to fit to height
     /// </summary>
     bool fit_to_height_;
 
     /// <summary>
-    ///
+    /// Whether or not to fit to width
     /// </summary>
     bool fit_to_width_;
 
     /// <summary>
-    ///
+    /// Whether or not to center the content horizontally
     /// </summary>
     bool horizontal_centered_;
 
     /// <summary>
-    ///
+    /// Whether or not to center the conent vertically
     /// </summary>
     bool vertical_centered_;
 
     /// <summary>
-    ///
+    /// The amount to scale the worksheet
     /// </summary>
     double scale_;
 };

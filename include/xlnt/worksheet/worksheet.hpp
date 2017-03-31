@@ -320,17 +320,17 @@ public:
     // named range
 
     /// <summary>
-    ///
+    /// Creates a new named range with the given name encompassing the string representing a range.
     /// </summary>
     void create_named_range(const std::string &name, const std::string &reference_string);
 
     /// <summary>
-    ///
+    /// Creates a new named range with the given name encompassing the given range reference.
     /// </summary>
     void create_named_range(const std::string &name, const range_reference &reference);
 
     /// <summary>
-    ///
+    /// Returns true if this worksheet contains a named range with the given name.
     /// </summary>
     bool has_named_range(const std::string &name) const;
 
@@ -354,96 +354,86 @@ public:
     // extents
 
     /// <summary>
-    ///
+    /// Returns the row of the first non-empty cell in the worksheet.
     /// </summary>
     row_t lowest_row() const;
 
     /// <summary>
-    ///
+    /// Returns the row of the last non-empty cell in the worksheet.
     /// </summary>
     row_t highest_row() const;
 
     /// <summary>
-    ///
+    /// Returns the row directly below the last non-empty cell in the worksheet.
     /// </summary>
     row_t next_row() const;
 
     /// <summary>
-    ///
+    /// Returns the column of the first non-empty cell in the worksheet.
     /// </summary>
     column_t lowest_column() const;
 
     /// <summary>
-    ///
+    /// Returns the column of the last non-empty cell in the worksheet.
     /// </summary>
     column_t highest_column() const;
 
     /// <summary>
-    ///
+    /// Returns a range_reference pointing to the full range of non-empty cells in the worksheet.
     /// </summary>
     range_reference calculate_dimension() const;
 
     // cell merge
 
     /// <summary>
-    ///
+    /// Merges the cells within the range represented by the given string.
     /// </summary>
     void merge_cells(const std::string &reference_string);
 
     /// <summary>
-    ///
+    /// Merges the cells within the given range.
     /// </summary>
     void merge_cells(const range_reference &reference);
 
     /// <summary>
-    ///
-    /// </summary>
-    void merge_cells(column_t start_column, row_t start_row, column_t end_column, row_t end_row);
-
-    /// <summary>
-    ///
+    /// Removes the merging of the cells in the range represented by the given string.
     /// </summary>
     void unmerge_cells(const std::string &reference_string);
 
     /// <summary>
-    ///
+    /// Removes the merging of the cells in the given range.
     /// </summary>
     void unmerge_cells(const range_reference &reference);
 
     /// <summary>
-    ///
-    /// </summary>
-    void unmerge_cells(column_t start_column, row_t start_row, column_t end_column, row_t end_row);
-
-    /// <summary>
-    ///
+    /// Returns a vector of references of all merged ranges in the worksheet.
     /// </summary>
     std::vector<range_reference> merged_ranges() const;
 
     // operators
 
     /// <summary>
-    ///
+    /// Returns true if this worksheet refers to the same worksheet as other.
     /// </summary>
     bool operator==(const worksheet &other) const;
 
     /// <summary>
-    ///
+    /// Returns true if this worksheet doesn't refer to the same worksheet as other.
     /// </summary>
     bool operator!=(const worksheet &other) const;
 
     /// <summary>
-    ///
+    /// Returns true if this worksheet is null.
     /// </summary>
     bool operator==(std::nullptr_t) const;
 
     /// <summary>
-    ///
+    /// Returns true if this worksheet is not null.
     /// </summary>
     bool operator!=(std::nullptr_t) const;
 
     /// <summary>
-    ///
+    /// Sets the internal pointer of this worksheet object to point to other.
     /// </summary>
     void operator=(const worksheet &other);
 
