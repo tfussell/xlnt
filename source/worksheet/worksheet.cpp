@@ -986,4 +986,9 @@ void worksheet::parent(xlnt::workbook &wb)
     d_->parent_ = &wb;
 }
 
+conditional_format worksheet::conditional_format(const range_reference &ref, const condition &when)
+{
+	return workbook().d_->stylesheet_.get().add_conditional_format_rule(d_, ref, when);
+}
+
 } // namespace xlnt

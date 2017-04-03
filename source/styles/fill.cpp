@@ -252,8 +252,10 @@ bool gradient_fill::operator!=(const gradient_fill &other) const
 
 fill fill::solid(const color &fill_color)
 {
-    return fill(
-        xlnt::pattern_fill().type(xlnt::pattern_fill_type::solid).foreground(fill_color).background(indexed_color(64)));
+    return fill(xlnt::pattern_fill()
+		.type(xlnt::pattern_fill_type::solid)
+		.foreground(fill_color)
+		.background(indexed_color(64)));
 }
 
 fill::fill()

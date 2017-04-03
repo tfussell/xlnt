@@ -27,15 +27,17 @@
 #include <string>
 #include <vector>
 
+#include <detail/conditional_format_impl.hpp>
 #include <detail/format_impl.hpp>
 #include <detail/style_impl.hpp>
 #include <xlnt/cell/cell.hpp>
+#include <xlnt/styles/conditional_format.hpp>
 #include <xlnt/styles/format.hpp>
 #include <xlnt/styles/style.hpp>
 #include <xlnt/utils/exceptions.hpp>
-#include <xlnt/worksheet/worksheet.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/workbook/worksheet_iterator.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
 
 namespace xlnt {
 namespace detail {
@@ -510,10 +512,25 @@ struct stylesheet
         colors.clear();
     }
 
+	conditional_format add_conditional_format_rule(worksheet_impl *ws, const range_reference &ref, const condition &when)
+	{
+		conditional_format_impls.push_back(conditional_format_impl());
+
+		auto &impl = conditional_format_impls.back();
+		impl.when = when;
+		impl.parent = this;
+		impl.target_sheet = ws;
+		impl.target_range = ref;
+		impl.differential_format_id = conditional_format_impls.size() - 1;
+
+		return xlnt::conditional_format(&impl);
+	}
+
     workbook *parent;
     
-    bool garbage_collection_enabled = true;
+    bool garbage_collection_enabled = false;
 
+	std::list<conditional_format_impl> conditional_format_impls;
     std::list<format_impl> format_impls;
     std::unordered_map<std::string, style_impl> style_impls;
     std::vector<std::string> style_names;

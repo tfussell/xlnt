@@ -122,7 +122,9 @@ private:
     
     void write_relationships(const std::vector<xlnt::relationship> &relationships, const path &part);
     void write_color(const xlnt::color &color);
-    void write_dxfs();
+    void write_border(const xlnt::border &b);
+	void write_fill(const xlnt::fill &f);
+	void write_font(const xlnt::font &f);
     void write_table_styles();
     void write_colors(const std::vector<xlnt::color> &colors);
 

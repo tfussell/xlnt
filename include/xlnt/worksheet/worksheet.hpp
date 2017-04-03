@@ -44,6 +44,8 @@ class cell_reference;
 class cell_vector;
 class column_properties;
 class comment;
+class condition;
+class conditional_format;
 class const_range_iterator;
 class footer;
 class header;
@@ -665,6 +667,11 @@ public:
     /// Add a page break at the given column.
     /// </summary>
     void page_break_at_column(column_t column);
+
+	/// <summary>
+	/// Creates a conditional format for the given range with the given condition.
+	/// </summary>
+	conditional_format conditional_format(const range_reference &ref, const condition &when);
 
 private:
     friend class cell;

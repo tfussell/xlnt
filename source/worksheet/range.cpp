@@ -141,6 +141,11 @@ range range::style(const std::string &style_name)
     return style(ws_.workbook().style(style_name));
 }
 
+conditional_format range::conditional_format(const condition &when)
+{
+	return ws_.conditional_format(ref_, when);
+}
+
 void range::apply(std::function<void(class cell)> f)
 {
     for (auto row : *this)
