@@ -661,7 +661,7 @@ public:
 	/// <summary>
 	/// Creates a conditional format for the given range with the given condition.
 	/// </summary>
-	conditional_format conditional_format(const range_reference &ref, const condition &when);
+	xlnt::conditional_format conditional_format(const range_reference &ref, const condition &when);
 
 private:
     friend class cell;

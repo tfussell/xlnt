@@ -173,7 +173,7 @@ public:
 	/// <summary>
 	/// 
 	/// </summary>
-	conditional_format conditional_format(const condition &when);
+	xlnt::conditional_format conditional_format(const condition &when);
 
     /// <summary>
     /// Returns the first row or column in this range.

@@ -2364,7 +2364,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         write_end_element(xmlns, "mergeCells");
     }
 
-	// scope for conditional formatting production logic
+	if (source_.impl().stylesheet_.is_set())
 	{
 		const auto &stylesheet = source_.impl().stylesheet_.get();
 		const auto &cf_impls = stylesheet.conditional_format_impls;

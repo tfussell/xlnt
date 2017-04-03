@@ -66,6 +66,7 @@ struct stylesheet
     {
         auto iter = format_impls.begin();
         std::advance(iter, static_cast<std::list<format_impl>::difference_type>(index));
+
         return xlnt::format(&*iter);
     }
 
@@ -497,6 +498,7 @@ struct stylesheet
     
     void clear()
     {
+		conditional_format_impls.clear();
         format_impls.clear();
         
         style_impls.clear();
