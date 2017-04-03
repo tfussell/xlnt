@@ -37,7 +37,7 @@ class XLNT_API selection
 {
 public:
     /// <summary>
-    ///
+    /// Returns true if this selection has a defined active cell.
     /// </summary>
     bool has_active_cell() const
     {
@@ -45,7 +45,7 @@ public:
     }
 
     /// <summary>
-    ///
+    /// Returns the cell reference of the active cell.
     /// </summary>
     cell_reference active_cell() const
     {
@@ -53,7 +53,7 @@ public:
     }
 
     /// <summary>
-    ///
+    /// Sets the active cell to that pointed to by ref.
     /// </summary>
     void active_cell(const cell_reference &ref)
     {
@@ -61,7 +61,7 @@ public:
     }
 
     /// <summary>
-    ///
+    /// Returns the range encompassed by this selection.
     /// </summary>
     range_reference sqref() const
     {
@@ -69,7 +69,7 @@ public:
     }
 
     /// <summary>
-    ///
+    /// Returns the sheet quadrant of this selection.
     /// </summary>
     pane_corner pane() const
     {
@@ -77,7 +77,7 @@ public:
     }
 
     /// <summary>
-    ///
+    /// Sets the sheet quadrant of this selection to corner.
     /// </summary>
     void pane(pane_corner corner)
     {
@@ -91,22 +91,23 @@ public:
     bool operator==(const selection &rhs) const
     {
         return active_cell_ == rhs.active_cell_
-            && sqref_ == rhs.sqref_ && pane_ == rhs.pane_;
+            && sqref_ == rhs.sqref_
+            && pane_ == rhs.pane_;
     }
 
 private:
     /// <summary>
-    ///
+    /// The active cell
     /// </summary>
     optional<cell_reference> active_cell_;
 
     /// <summary>
-    ///
+    /// The range
     /// </summary>
     range_reference sqref_;
 
     /// <summary>
-    ///
+    /// The quadrant
     /// </summary>
     pane_corner pane_;
 };

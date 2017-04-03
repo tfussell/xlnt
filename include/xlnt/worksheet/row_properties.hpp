@@ -35,22 +35,22 @@ class XLNT_API row_properties
 {
 public:
     /// <summary>
-    ///
+    /// Optional height
     /// </summary>
     optional<double> height;
 
     /// <summary>
-    ///
+    /// Whether or not the height is different from the default
     /// </summary>
     bool custom_height = false;
 
     /// <summary>
-    ///
+    /// Whether or not the row should be hidden
     /// </summary>
     bool hidden = false;
 
     /// <summary>
-    ///
+    /// The index to the style used by all cells in this row
     /// </summary>
     optional<std::size_t> style;
 };

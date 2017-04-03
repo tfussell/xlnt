@@ -112,91 +112,101 @@ public:
     /// </summary>
     class alignment alignment() const;
 
-	/// <summary>
-	/// Returns true if the alignment of this style should be applied to cells
-	/// using it.
-	/// </summary>
-	bool alignment_applied() const;
+    /// <summary>
+    /// Returns true if the alignment of this style should be applied to cells
+    /// using it.
+    /// </summary>
+    bool alignment_applied() const;
 
     /// <summary>
     /// Sets the alignment of this style to new_alignment. Applied, which defaults
-	/// to true, determines whether the alignment should be enabled for cells using
-	/// this style.
+    /// to true, determines whether the alignment should be enabled for cells using
+    /// this style.
     /// </summary>
     style alignment(const xlnt::alignment &new_alignment, bool applied = true);
 
     /// <summary>
-    ///
+    /// Returns the border of this style.
     /// </summary>
     class border border() const;
 
-	/// <summary>
-	///
-	/// </summary>
-	bool border_applied() const;
+    /// <summary>
+    /// Returns true if the border set for this style should be applied to cells using the style.        
+    /// </summary>
+    bool border_applied() const;
 
     /// <summary>
-    ///
+    /// Sets the border of this style to new_border. Applied, which defaults
+    /// to true, determines whether the border should be enabled for cells using
+    /// this style.
     /// </summary>
     style border(const xlnt::border &new_border, bool applied = true);
 
     /// <summary>
-    ///
+    /// Returns the fill of this style.
     /// </summary>
     class fill fill() const;
 
-	/// <summary>
-	///
-	/// </summary>
-	bool fill_applied() const;
+    /// <summary>
+    /// Returns true if the fill set for this style should be applied to cells using the style.        
+    /// </summary>
+    bool fill_applied() const;
 
     /// <summary>
-    ///
+    /// Sets the fill of this style to new_fill. Applied, which defaults
+    /// to true, determines whether the border should be enabled for cells using
+    /// this style.
     /// </summary>
     style fill(const xlnt::fill &new_fill, bool applied = true);
 
     /// <summary>
-    ///
+    /// Returns the font of this style.
     /// </summary>
     class font font() const;
 
-	/// <summary>
-	///
-	/// </summary>
-	bool font_applied() const;
+    /// <summary>
+    /// Returns true if the font set for this style should be applied to cells using the style.        
+    /// </summary>
+    bool font_applied() const;
 
     /// <summary>
-    ///
+    /// Sets the font of this style to new_font. Applied, which defaults
+    /// to true, determines whether the font should be enabled for cells using
+    /// this style.
     /// </summary>
     style font(const xlnt::font &new_font, bool applied = true);
 
     /// <summary>
-    ///
+    /// Returns the number_format of this style.
     /// </summary>
     class number_format number_format() const;
 
-	/// <summary>
-	///
-	/// </summary>
-	bool number_format_applied() const;
+    /// <summary>
+    /// Returns true if the number_format set for this style should be applied to cells using the style.    
+    /// </summary>
+    bool number_format_applied() const;
 
     /// <summary>
-    ///
+    /// Sets the number format of this style to new_number_format. Applied, which defaults
+    /// to true, determines whether the number format should be enabled for cells using
+    /// this style.
     /// </summary>
     style number_format(const xlnt::number_format &new_number_format, bool applied = true);
 
     /// <summary>
-    ///
+    /// Returns the protection of this style.
     /// </summary>
     class protection protection() const;
 
-	/// <summary>
-	/// 
-	/// </summary>
-	bool protection_applied() const;
+    /// <summary>
+    /// Returns true if the protection set for this style should be applied to cells using the style.
+    /// </summary>
+    bool protection_applied() const;
 
     /// <summary>
-    /// 
+    /// Sets the border of this style to new_protection. Applied, which defaults
+    /// to true, determines whether the protection should be enabled for cells using
+    /// this style.
     /// </summary>
     style protection(const xlnt::protection &new_protection, bool applied = true);
 
@@ -238,12 +248,12 @@ private:
     friend class detail::xlsx_consumer;
 
     /// <summary>
-    ///
+    /// Constructs a style from an impl pointer.
     /// </summary>
     style(detail::style_impl *d);
 
     /// <summary>
-    ///
+    /// The internal implementation of this style
     /// </summary>
     detail::style_impl *d_;
 };

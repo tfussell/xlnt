@@ -143,7 +143,7 @@ public:
     };
 
     /// <summary>
-    /// A vector to the all of the border sides for iteration.
+    /// Returns a vector containing all of the border sides to be used for iteration.
     /// </summary>
     static const std::vector<border_side> &all_sides();
 

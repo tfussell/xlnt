@@ -8,25 +8,39 @@
 class test_index_types : public CxxTest::TestSuite
 {
 public:
-    void test_bad_string()
+    void test_bad_string_empty()
     {
-        TS_ASSERT_THROWS(xlnt::column_t::column_index_from_string(""), xlnt::invalid_column_string_index);
-        TS_ASSERT_THROWS(xlnt::column_t::column_index_from_string("ABCD"), xlnt::invalid_column_string_index);
-        TS_ASSERT_THROWS(xlnt::column_t::column_index_from_string("123"), xlnt::invalid_column_string_index);
+        TS_ASSERT_THROWS(xlnt::column_t::column_index_from_string(""),
+            xlnt::invalid_column_index);
     }
     
-    void test_bad_column()
+    void test_bad_string_too_long()
     {
-        TS_ASSERT_THROWS(xlnt::column_t::column_string_from_index(0), xlnt::invalid_column_string_index);
+        TS_ASSERT_THROWS(xlnt::column_t::column_index_from_string("ABCD"),
+            xlnt::invalid_column_index);
+    }
+    
+    void test_bad_string_numbers()
+    {
+        TS_ASSERT_THROWS(xlnt::column_t::column_index_from_string("123"),
+            xlnt::invalid_column_index);
+    }
+
+    void test_bad_index_zero()
+    {
+        TS_ASSERT_THROWS(xlnt::column_t::column_string_from_index(0),
+            xlnt::invalid_column_index);
     }
 
     void test_column_operators()
     {
-        xlnt::column_t c1;
+        auto c1 = xlnt::column_t();
         c1 = "B";
-        xlnt::column_t c2;
-        std::string d = "D";
+
+        auto c2 = xlnt::column_t();
+        const auto d = std::string("D");
         c2 = d;
+
         TS_ASSERT(c1 != c2);
         TS_ASSERT(c1 == static_cast<xlnt::column_t::index_t>(2));
         TS_ASSERT(c2 == d);
@@ -44,18 +58,7 @@ public:
         TS_ASSERT_EQUALS(c2, 2);
         
         c2 = 4;
-        
-        TS_ASSERT_EQUALS(c1 * c2, 8);
-        TS_ASSERT_EQUALS(c2 / c1, 2);
-        TS_ASSERT_EQUALS(c2 % c1, 0);
-        
-        c1 *= c2;
-        TS_ASSERT_EQUALS(c1, 8);
-        c1 /= c2;
-        TS_ASSERT_EQUALS(c1, 2);
         c1 = 3;
-        c1 %= c2;
-        TS_ASSERT_EQUALS(c1, 3);
         
         TS_ASSERT(c2 <= 4);
         TS_ASSERT(!(c2 < 3));

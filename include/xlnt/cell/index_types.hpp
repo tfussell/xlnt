@@ -48,7 +48,7 @@ class XLNT_API column_t
 {
 public:
     /// <summary>
-    ///
+    /// Alias declaration for the internal numeric type of this column.
     /// </summary>
     using index_t = std::uint32_t;
 
@@ -73,237 +73,207 @@ public:
     static std::string column_string_from_index(index_t column_index);
 
     /// <summary>
-    /// Default column_t is the first (left-most) column.
+    /// Default constructor. The column points to the "A" column.
     /// </summary>
     column_t();
 
     /// <summary>
-    /// Construct a column from a number.
+    /// Constructs a column from a number.
     /// </summary>
     column_t(index_t column_index);
 
     /// <summary>
-    /// Construct a column from a string.
+    /// Constructs a column from a string.
     /// </summary>
     column_t(const std::string &column_string);
 
     /// <summary>
-    /// Construct a column from a string.
+    /// Constructs a column from a string.
     /// </summary>
     column_t(const char *column_string);
 
     /// <summary>
-    /// Copy constructor
+    /// Copy constructor. Constructs a column by copying it from other.
     /// </summary>
     column_t(const column_t &other);
 
     /// <summary>
-    /// Move constructor
+    /// Move constructor. Constructs a column by moving it from other.
     /// </summary>
     column_t(column_t &&other);
 
     /// <summary>
-    /// Return a string representation of this column index.
+    /// Returns a string representation of this column index.
     /// </summary>
     std::string column_string() const;
 
     /// <summary>
-    /// Set this column to be the same as rhs's and return reference to self.
+    /// Sets this column to be the same as rhs's and return reference to self.
     /// </summary>
     column_t &operator=(column_t rhs);
 
     /// <summary>
-    /// Set this column to be equal to rhs and return reference to self.
+    /// Sets this column to be equal to rhs and return reference to self.
     /// </summary>
     column_t &operator=(const std::string &rhs);
 
     /// <summary>
-    /// Set this column to be equal to rhs and return reference to self.
+    /// Sets this column to be equal to rhs and return reference to self.
     /// </summary>
     column_t &operator=(const char *rhs);
 
     /// <summary>
-    /// Return true if this column refers to the same column as other.
+    /// Returns true if this column refers to the same column as other.
     /// </summary>
     bool operator==(const column_t &other) const;
 
     /// <summary>
-    /// Return true if this column doesn't refer to the same column as other.
+    /// Returns true if this column doesn't refer to the same column as other.
     /// </summary>
     bool operator!=(const column_t &other) const;
 
     /// <summary>
-    /// Return true if this column refers to the same column as other.
+    /// Returns true if this column refers to the same column as other.
     /// </summary>
     bool operator==(int other) const;
 
     /// <summary>
-    /// Return true if this column refers to the same column as other.
+    /// Returns true if this column refers to the same column as other.
     /// </summary>
     bool operator==(index_t other) const;
 
     /// <summary>
-    /// Return true if this column refers to the same column as other.
+    /// Returns true if this column refers to the same column as other.
     /// </summary>
     bool operator==(const std::string &other) const;
 
     /// <summary>
-    /// Return true if this column refers to the same column as other.
+    /// Returns true if this column refers to the same column as other.
     /// </summary>
     bool operator==(const char *other) const;
 
     /// <summary>
-    /// Return true if this column doesn't refer to the same column as other.
+    /// Returns true if this column doesn't refer to the same column as other.
     /// </summary>
     bool operator!=(int other) const;
 
     /// <summary>
-    /// Return true if this column doesn't refer to the same column as other.
+    /// Returns true if this column doesn't refer to the same column as other.
     /// </summary>
     bool operator!=(index_t other) const;
 
     /// <summary>
-    /// Return true if this column doesn't refer to the same column as other.
+    /// Returns true if this column doesn't refer to the same column as other.
     /// </summary>
     bool operator!=(const std::string &other) const;
 
     /// <summary>
-    /// Return true if this column doesn't refer to the same column as other.
+    /// Returns true if this column doesn't refer to the same column as other.
     /// </summary>
     bool operator!=(const char *other) const;
 
     /// <summary>
-    /// Return true if other is to the right of this column.
+    /// Returns true if other is to the right of this column.
     /// </summary>
     bool operator>(const column_t &other) const;
 
     /// <summary>
-    /// Return true if other is to the right of or equal to this column.
+    /// Returns true if other is to the right of or equal to this column.
     /// </summary>
     bool operator>=(const column_t &other) const;
 
     /// <summary>
-    /// Return true if other is to the left of this column.
+    /// Returns true if other is to the left of this column.
     /// </summary>
     bool operator<(const column_t &other) const;
 
     /// <summary>
-    /// Return true if other is to the left of or equal to this column.
+    /// Returns true if other is to the left of or equal to this column.
     /// </summary>
     bool operator<=(const column_t &other) const;
 
     /// <summary>
-    /// Return true if other is to the right of this column.
+    /// Returns true if other is to the right of this column.
     /// </summary>
     bool operator>(const column_t::index_t &other) const;
 
     /// <summary>
-    /// Return true if other is to the right of or equal to this column.
+    /// Returns true if other is to the right of or equal to this column.
     /// </summary>
     bool operator>=(const column_t::index_t &other) const;
 
     /// <summary>
-    /// Return true if other is to the left of this column.
+    /// Returns true if other is to the left of this column.
     /// </summary>
     bool operator<(const column_t::index_t &other) const;
 
     /// <summary>
-    /// Return true if other is to the left of or equal to this column.
+    /// Returns true if other is to the left of or equal to this column.
     /// </summary>
     bool operator<=(const column_t::index_t &other) const;
 
     /// <summary>
-    /// Pre-increment this column, making it point to the column one to the right.
+    /// Pre-increments this column, making it point to the column one to the right and returning a reference to it.
     /// </summary>
     column_t &operator++();
 
     /// <summary>
-    /// Pre-deccrement this column, making it point to the column one to the left.
+    /// Pre-deccrements this column, making it point to the column one to the left and returning a reference to it.
     /// </summary>
     column_t &operator--();
 
     /// <summary>
-    /// Post-increment this column, making it point to the column one to the right and returning the old column.
+    /// Post-increments this column, making it point to the column one to the right and returning the old column.
     /// </summary>
     column_t operator++(int);
 
     /// <summary>
-    /// Post-decrement this column, making it point to the column one to the left and returning the old column.
+    /// Post-decrements this column, making it point to the column one to the left and returning the old column.
     /// </summary>
     column_t operator--(int);
 
     /// <summary>
-    /// Return the result of adding rhs to this column.
+    /// Returns the result of adding rhs to this column.
     /// </summary>
     friend XLNT_API column_t operator+(column_t lhs, const column_t &rhs);
 
     /// <summary>
-    /// Return the result of subtracing lhs by rhs column.
+    /// Returns the result of subtracing lhs by rhs column.
     /// </summary>
     friend XLNT_API column_t operator-(column_t lhs, const column_t &rhs);
 
     /// <summary>
-    /// Return the result of multiply lhs by rhs column.
-    /// </summary>
-    friend XLNT_API column_t operator*(column_t lhs, const column_t &rhs);
-
-    /// <summary>
-    /// Return the result of divide lhs by rhs column.
-    /// </summary>
-    friend XLNT_API column_t operator/(column_t lhs, const column_t &rhs);
-
-    /// <summary>
-    /// Return the result of mod lhs by rhs column.
-    /// </summary>
-    friend XLNT_API column_t operator%(column_t lhs, const column_t &rhs);
-
-    /// <summary>
-    /// Add rhs to this column and return a reference to this column.
+    /// Adds rhs to this column and returns a reference to this column.
     /// </summary>
     column_t &operator+=(const column_t &rhs);
 
     /// <summary>
-    /// Subtrac rhs from this column and return a reference to this column.
+    /// Subtracts rhs from this column and returns a reference to this column.
     /// </summary>
     column_t &operator-=(const column_t &rhs);
 
     /// <summary>
-    /// Multiply this column by rhs and return a reference to this column.
-    /// </summary>
-    column_t &operator*=(const column_t &rhs);
-
-    /// <summary>
-    /// Divide this column by rhs and return a reference to this column.
-    /// </summary>
-    column_t &operator/=(const column_t &rhs);
-
-    /// <summary>
-    /// Mod this column by rhs and return a reference to this column.
-    /// </summary>
-    column_t &operator%=(const column_t &rhs);
-
-    /// <summary>
-    /// Return true if other is to the right of this column.
+    /// Returns true if other is to the right of this column.
     /// </summary>
     friend XLNT_API bool operator>(const column_t::index_t &left, const column_t &right);
 
     /// <summary>
-    /// Return true if other is to the right of or equal to this column.
+    /// Returns true if other is to the right of or equal to this column.
     /// </summary>
     friend XLNT_API bool operator>=(const column_t::index_t &left, const column_t &right);
 
     /// <summary>
-    /// Return true if other is to the left of this column.
+    /// Returns true if other is to the left of this column.
     /// </summary>
     friend XLNT_API bool operator<(const column_t::index_t &left, const column_t &right);
 
     /// <summary>
-    /// Return true if other is to the left of or equal to this column.
+    /// Returns true if other is to the left of or equal to this column.
     /// </summary>
     friend XLNT_API bool operator<=(const column_t::index_t &left, const column_t &right);
 
     /// <summary>
-    /// Swap the columns that left and right refer to.
+    /// Swaps the columns that left and right refer to.
     /// </summary>
     friend XLNT_API void swap(column_t &left, column_t &right);
 
@@ -315,12 +285,12 @@ public:
 
 /// <summary>
 /// Functor for hashing a column.
-/// Allows for use of std::unordered_set<column, column_hash> and similar.
+/// Allows for use of std::unordered_set<column_t, column_hash> and similar.
 /// </summary>
 struct XLNT_API column_hash
 {
     /// <summary>
-    ///
+    /// Returns the result of hashing column k.
     /// </summary>
     std::size_t operator()(const column_t &k) const;
 };
@@ -336,7 +306,7 @@ template <>
 struct hash<xlnt::column_t>
 {
     /// <summary>
-    ///
+    /// Returns the result of hashing column k.
     /// </summary>
     size_t operator()(const xlnt::column_t &k) const
     {

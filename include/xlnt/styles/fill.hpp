@@ -59,7 +59,7 @@ enum class XLNT_API pattern_fill_type
 };
 
 /// <summary>
-/// Represents a fill which colors the cell based on a foreground and 
+/// Represents a fill which colors the cell based on a foreground and
 /// background color and a pattern.
 /// </summary>
 class XLNT_API pattern_fill
@@ -112,23 +112,23 @@ public:
 
 private:
     /// <summary>
-    ///
+    /// The type of this pattern_fill
     /// </summary>
     pattern_fill_type type_ = pattern_fill_type::none;
 
     /// <summary>
-    ///
+    /// The optional foreground color
     /// </summary>
     optional<color> foreground_;
 
     /// <summary>
-    ///
+    /// THe optional background color
     /// </summary>
     optional<color> background_;
 };
 
 /// <summary>
-///
+/// Enumerates the types of gradient fills
 /// </summary>
 enum class XLNT_API gradient_fill_type
 {
@@ -174,117 +174,117 @@ public:
     // Left
 
     /// <summary>
-    ///
+    /// Returns the distance from the left where the gradient starts.
     /// </summary>
     double left() const;
 
     /// <summary>
-    ///
+    /// Sets the distance from the left where the gradient starts.
     /// </summary>
     gradient_fill &left(double value);
 
     // Right
 
     /// <summary>
-    ///
+    /// Returns the distance from the right where the gradient starts.
     /// </summary>
     double right() const;
 
     /// <summary>
-    ///
+    /// Sets the distance from the right where the gradient starts.
     /// </summary>
     gradient_fill &right(double value);
 
     // Top
 
     /// <summary>
-    ///
+    /// Returns the distance from the top where the gradient starts.
     /// </summary>
     double top() const;
 
     /// <summary>
-    ///
+    /// Sets the distance from the top where the gradient starts.
     /// </summary>
     gradient_fill &top(double value);
 
     // Bottom
 
     /// <summary>
-    ///
+    /// Returns the distance from the bottom where the gradient starts.
     /// </summary>
     double bottom() const;
 
     /// <summary>
-    ///
+    /// Sets the distance from the bottom where the gradient starts.
     /// </summary>
     gradient_fill &bottom(double value);
 
     // Stops
 
     /// <summary>
-    ///
+    /// Adds a gradient stop at position with the given color.
     /// </summary>
     gradient_fill &add_stop(double position, color stop_color);
 
     /// <summary>
-    ///
+    /// Deletes all stops from the gradient.
     /// </summary>
     gradient_fill &clear_stops();
 
     /// <summary>
-    ///
+    /// Returns all of the gradient stops.
     /// </summary>
     std::unordered_map<double, color> stops() const;
 
     /// <summary>
-    /// Returns true if left is exactly equal to right.
+    /// Returns true if the gradient is equivalent to other.
     /// </summary>
     bool operator==(const gradient_fill &other) const;
 
     /// <summary>
-    /// Returns true if left is not exactly equal to right.
+    /// Returns true if the gradient is not equivalent to other.
     /// </summary>
 	bool operator!=(const gradient_fill &right) const;
 
 private:
     /// <summary>
-    ///
+    /// The type of gradient
     /// </summary>
     gradient_fill_type type_ = gradient_fill_type::linear;
 
     /// <summary>
-    ///
+    /// The angle of the gradient
     /// </summary>
     double degree_ = 0;
 
     /// <summary>
-    ///
+    /// THe left distance
     /// </summary>
     double left_ = 0;
 
     /// <summary>
-    ///
+    /// THe right distance
     /// </summary>
     double right_ = 0;
 
     /// <summary>
-    ///
+    /// The top distance
     /// </summary>
     double top_ = 0;
 
     /// <summary>
-    ///
+    /// The bottom distance
     /// </summary>
     double bottom_ = 0;
 
     /// <summary>
-    ///
+    /// The gradient stops and colors
     /// </summary>
     std::unordered_map<double, color> stops_;
 };
 
 /// <summary>
-///
+/// Enumerates the possible fill types
 /// </summary>
 enum class XLNT_API fill_type
 {

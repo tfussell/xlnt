@@ -207,78 +207,78 @@ std::string font::scheme() const
     return scheme_.get();
 }
 
-XLNT_API bool operator==(const font &left, const font &right)
+bool font::operator==(const font &other) const
 {
-    if (left.bold() != right.bold())
+    if (bold() != other.bold())
     {
         return false;
     }
 
-    if (left.has_color() != right.has_color())
+    if (has_color() != other.has_color())
     {
         return false;
     }
 
-    if (left.has_color())
+    if (has_color())
     {
-        if (left.color() != right.color())
+        if (color() != other.color())
         {
             return false;
         }
     }
 
-    if (left.has_family() != right.has_family())
+    if (has_family() != other.has_family())
     {
         return false;
     }
 
-    if (left.has_family())
+    if (has_family())
     {
-        if (left.family() != right.family())
+        if (family() != other.family())
         {
             return false;
         }
     }
 
-    if (left.italic() != right.italic())
+    if (italic() != other.italic())
     {
         return false;
     }
 
-    if (left.name() != right.name())
+    if (name() != other.name())
     {
         return false;
     }
 
-    if (left.has_scheme() != right.has_scheme())
+    if (has_scheme() != other.has_scheme())
     {
         return false;
     }
 
-    if (left.has_scheme())
+    if (has_scheme())
     {
-        if (left.scheme() != right.scheme())
+        if (scheme() != other.scheme())
         {
             return false;
         }
     }
 
-    if (std::fabs(left.size() - right.size()) != 0.0)
+    if (std::fabs(size() - other.size()) != 0.0)
     {
         return false;
     }
 
-    if (left.strikethrough() != right.strikethrough())
+    if (strikethrough() != other.strikethrough())
     {
         return false;
     }
 
-    if (left.superscript() != right.superscript())
+    if (superscript() != other.superscript())
     {
         return false;
     }
 
-    if (left.underline() != right.underline())
+    if (underline() != other.underline())
     {
         return false;
     }

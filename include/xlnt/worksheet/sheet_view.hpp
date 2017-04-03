@@ -32,7 +32,7 @@
 namespace xlnt {
 
 /// <summary>
-///
+/// Enumeration of possible types of sheet views
 /// </summary>
 enum class sheet_view_type
 {
@@ -49,7 +49,7 @@ class XLNT_API sheet_view
 {
 public:
     /// <summary>
-    ///
+    /// Sets the ID of this view to new_id.
     /// </summary>
     void id(std::size_t new_id)
     {
@@ -57,7 +57,7 @@ public:
     }
 
     /// <summary>
-    ///
+    /// Returns the ID of this view.
     /// </summary>
     std::size_t id() const
     {
@@ -65,7 +65,7 @@ public:
     }
 
     /// <summary>
-    ///
+    /// Returns true if this view has a pane defined.
     /// </summary>
     bool has_pane() const
     {
@@ -73,7 +73,7 @@ public:
     }
 
     /// <summary>
-    ///
+    /// Returns a reference to this view's pane.
     /// </summary>
     struct pane &pane()
     {
@@ -81,7 +81,7 @@ public:
     }
 
     /// <summary>
-    ///
+    /// Returns a reference to this view's pane.
     /// </summary>
     const struct pane &pane() const
     {
@@ -89,7 +89,7 @@ public:
     }
 
     /// <summary>
-    ///
+    /// Removes the defined pane from this view.
     /// </summary>
     void clear_pane()
     {
@@ -97,7 +97,7 @@ public:
     }
 
     /// <summary>
-    ///
+    /// Sets the pane of this view to new_pane.
     /// </summary>
     void pane(const struct pane &new_pane)
     {
@@ -105,7 +105,7 @@ public:
     }
 
     /// <summary>
-    ///
+    /// Returns true if this view has any selections.
     /// </summary>
     bool has_selections() const
     {
@@ -113,7 +113,7 @@ public:
     }
 
     /// <summary>
-    ///
+    /// Adds the given selection to the collection of selections.
     /// </summary>
     void add_selection(const class selection &new_selection)
     {
@@ -121,7 +121,7 @@ public:
     }
 
     /// <summary>
-    ///
+    /// Removes all selections.
     /// </summary>
     void clear_selections()
     {
@@ -129,7 +129,7 @@ public:
     }
 
     /// <summary>
-    ///
+    /// Returns the collection of selections as a vector.
     /// </summary>
     std::vector<xlnt::selection> selections() const
     {
@@ -137,7 +137,7 @@ public:
     }
 
     /// <summary>
-    ///
+    /// Returns the selection at the given index.
     /// </summary>
     class xlnt::selection &selection(std::size_t index)
     {
@@ -145,7 +145,7 @@ public:
     }
 
     /// <summary>
-    ///
+    /// If show is true, grid lines will be shown for sheets using this view.
     /// </summary>
     void show_grid_lines(bool show)
     {
@@ -153,7 +153,7 @@ public:
     }
 
     /// <summary>
-    ///
+    /// Returns true if grid lines will be shown for sheets using this view.
     /// </summary>
     bool show_grid_lines() const
     {
@@ -161,7 +161,7 @@ public:
     }
 
     /// <summary>
-    ///
+    /// If is_default is true, the default grid color will be used.
     /// </summary>
     void default_grid_color(bool is_default)
     {
@@ -169,7 +169,7 @@ public:
     }
 
     /// <summary>
-    ///
+    /// Returns true if the default grid color will be used.
     /// </summary>
     bool default_grid_color() const
     {
@@ -205,32 +205,32 @@ public:
 
 private:
     /// <summary>
-    ///
+    /// The id
     /// </summary>
     std::size_t id_ = 0;
 
     /// <summary>
-    ///
+    /// Whether or not to show grid lines
     /// </summary>
     bool show_grid_lines_ = true;
 
     /// <summary>
-    ///
+    /// Whether or not to use the default grid color
     /// </summary>
     bool default_grid_color_ = true;
 
     /// <summary>
-    ///
+    /// The type of this view
     /// </summary>
     sheet_view_type type_ = sheet_view_type::normal;
 
     /// <summary>
-    ///
+    /// The optional pane
     /// </summary>
     optional<xlnt::pane> pane_;
 
     /// <summary>
-    ///
+    /// The collection of selections
     /// </summary>
     std::vector<xlnt::selection> selections_;
 };

@@ -568,11 +568,6 @@ void worksheet::merge_cells(const range_reference &reference)
     }
 }
 
-void worksheet::merge_cells(column_t start_column, row_t start_row, column_t end_column, row_t end_row)
-{
-    merge_cells(xlnt::range_reference(start_column, start_row, end_column, end_row));
-}
-
 void worksheet::unmerge_cells(const range_reference &reference)
 {
     auto match = std::find(d_->merged_cells_.begin(), d_->merged_cells_.end(), reference);
@@ -591,11 +586,6 @@ void worksheet::unmerge_cells(const range_reference &reference)
             cell.merged(false);
         }
     }
-}
-
-void worksheet::unmerge_cells(column_t start_column, row_t start_row, column_t end_column, row_t end_row)
-{
-    unmerge_cells(xlnt::range_reference(start_column, start_row, end_column, end_row));
 }
 
 row_t worksheet::next_row() const

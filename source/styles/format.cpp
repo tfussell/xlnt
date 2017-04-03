@@ -34,11 +34,6 @@ format::format(detail::format_impl *d)
 {
 }
 
-std::size_t format::id() const
-{
-    return d_->id;
-}
-
 void format::clear_style()
 {
     d_->style.clear();
@@ -81,12 +76,7 @@ const style format::style() const
 	return d_->parent->style(d_->style.get());
 }
 
-xlnt::alignment &format::alignment()
-{
-    return d_->parent->alignments.at(d_->alignment_id.get());
-}
-
-const xlnt::alignment &format::alignment() const
+xlnt::alignment format::alignment() const
 {
     return d_->parent->alignments.at(d_->alignment_id.get());
 }
@@ -97,12 +87,7 @@ format format::alignment(const xlnt::alignment &new_alignment, bool applied)
     return format(d_);
 }
 
-xlnt::border &format::border()
-{
-    return d_->parent->borders.at(d_->border_id.get());
-}
-
-const xlnt::border &format::border() const
+xlnt::border format::border() const
 {
     return d_->parent->borders.at(d_->border_id.get());
 }
@@ -113,12 +98,7 @@ format format::border(const xlnt::border &new_border, bool applied)
     return format(d_);
 }
 
-xlnt::fill &format::fill()
-{
-    return d_->parent->fills.at(d_->fill_id.get());
-}
-
-const xlnt::fill &format::fill() const
+xlnt::fill format::fill() const
 {
     return d_->parent->fills.at(d_->fill_id.get());
 }
@@ -129,12 +109,7 @@ format format::fill(const xlnt::fill &new_fill, bool applied)
     return format(d_);
 }
 
-xlnt::font &format::font()
-{
-    return d_->parent->fonts.at(d_->font_id.get());
-}
-
-const xlnt::font &format::font() const
+xlnt::font format::font() const
 {
     return d_->parent->fonts.at(d_->font_id.get());
 }
@@ -145,12 +120,7 @@ format format::font(const xlnt::font &new_font, bool applied)
     return format(d_);
 }
 
-xlnt::number_format &format::number_format()
-{
-    return d_->parent->number_formats.at(d_->number_format_id.get());
-}
-
-const xlnt::number_format &format::number_format() const
+xlnt::number_format format::number_format() const
 {
     if (number_format::is_builtin_format(d_->number_format_id.get()))
     {
@@ -175,12 +145,7 @@ format format::number_format(const xlnt::number_format &new_number_format, bool 
     return format(d_);
 }
 
-xlnt::protection &format::protection()
-{
-    return d_->parent->protections.at(d_->protection_id.get());
-}
-
-const xlnt::protection &format::protection() const
+xlnt::protection format::protection() const
 {
     return d_->parent->protections.at(d_->protection_id.get());
 }

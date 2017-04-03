@@ -53,9 +53,14 @@ protection &protection::hidden(bool hidden)
     return *this;
 }
 
-XLNT_API bool operator==(const protection &left, const protection &right)
+bool protection::operator==(const protection &other) const
 {
-    return left.locked_ == right.locked_ && left.hidden_ == right.hidden_;
+    return locked_ == other.locked_ && hidden_ == other.hidden_;
+}
+
+bool protection::operator!=(const protection &other) const
+{
+    return !(*this == other);
 }
 
 } // namespace xlnt

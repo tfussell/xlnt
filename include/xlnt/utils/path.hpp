@@ -166,7 +166,7 @@ public:
     /// <summary>
     /// Returns true if left path is equal to right path.
     /// </summary>
-    friend XLNT_API bool operator==(const path &left, const path &right);
+    bool operator==(const path &other) const;
 
 private:
     /// <summary>
@@ -196,7 +196,7 @@ template <>
 struct hash<xlnt::path>
 {
     /// <summary>
-    ///
+    /// Returns a hashed represenation of the given path.
     /// </summary>
     size_t operator()(const xlnt::path &p) const
     {

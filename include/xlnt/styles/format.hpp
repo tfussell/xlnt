@@ -53,207 +53,176 @@ class xlsx_producer;
 class XLNT_API format
 {
 public:
-    // Alignment
-
     /// <summary>
-    ///
+    /// Returns the alignment of this format.
     /// </summary>
-    class alignment &alignment();
+    class alignment alignment() const;
 
     /// <summary>
-    ///
+    /// Sets the alignment of this format to new_alignment. Applied, which defaults
+    /// to true, determines whether the alignment should be enabled for cells using
+    /// this format.
     /// </summary>
-    const class alignment &alignment() const;
+    format alignment(const xlnt::alignment &new_alignment, bool applied = true);
 
     /// <summary>
-    ///
-    /// </summary>
-    format alignment(const xlnt::alignment &new_alignment, bool applied);
-
-    /// <summary>
-    ///
+    /// Returns true if the alignment of this format should be applied to cells
+    /// using it.
     /// </summary>
     bool alignment_applied() const;
 
-    // Border
-
     /// <summary>
-    ///
+    /// Returns the border of this format.
     /// </summary>
-    class border &border();
+    class border border() const;
 
     /// <summary>
-    ///
+    /// Sets the border of this format to new_border. Applied, which defaults
+    /// to true, determines whether the border should be enabled for cells using
+    /// this format.
     /// </summary>
-    const class border &border() const;
+    format border(const xlnt::border &new_border, bool applied = true);
 
     /// <summary>
-    ///
-    /// </summary>
-    format border(const xlnt::border &new_border, bool applied);
-
-    /// <summary>
-    ///
+    /// Returns true if the border set for this format should be applied to cells using the format.        
     /// </summary>
     bool border_applied() const;
 
-    // Fill
-
     /// <summary>
-    ///
+    /// Returns the fill of this format.
     /// </summary>
-    class fill &fill();
+    class fill fill() const;
 
     /// <summary>
-    ///
+    /// Sets the fill of this format to new_fill. Applied, which defaults
+    /// to true, determines whether the border should be enabled for cells using
+    /// this format.
     /// </summary>
-    const class fill &fill() const;
+    format fill(const xlnt::fill &new_fill, bool applied = true);
 
     /// <summary>
-    ///
-    /// </summary>
-    format fill(const xlnt::fill &new_fill, bool applied);
-
-    /// <summary>
-    ///
+    /// Returns true if the fill set for this format should be applied to cells using the format.        
     /// </summary>
     bool fill_applied() const;
 
-    // Font
-
     /// <summary>
-    ///
+    /// Returns the font of this format.
     /// </summary>
-    class font &font();
+    class font font() const;
 
     /// <summary>
-    ///
+    /// Sets the font of this format to new_font. Applied, which defaults
+    /// to true, determines whether the font should be enabled for cells using
+    /// this format.
     /// </summary>
-    const class font &font() const;
+    format font(const xlnt::font &new_font, bool applied = true);
 
     /// <summary>
-    ///
-    /// </summary>
-    format font(const xlnt::font &new_font, bool applied);
-
-    /// <summary>
-    ///
+    /// Returns true if the font set for this format should be applied to cells using the format.        
     /// </summary>
     bool font_applied() const;
 
-    // Number Format
-
     /// <summary>
-    ///
+    /// Returns the number format of this format.
     /// </summary>
-    class number_format &number_format();
+    class number_format number_format() const;
 
     /// <summary>
-    ///
+    /// Sets the number format of this format to new_number_format. Applied, which defaults
+    /// to true, determines whether the number format should be enabled for cells using
+    /// this format.
     /// </summary>
-    const class number_format &number_format() const;
+    format number_format(const xlnt::number_format &new_number_format, bool applied = true);
 
     /// <summary>
-    ///
-    /// </summary>
-    format number_format(const xlnt::number_format &new_number_format, bool applied);
-
-    /// <summary>
-    ///
+    /// Returns true if the number_format set for this format should be applied to cells using the format.    
     /// </summary>
     bool number_format_applied() const;
 
-    // Protection
-
     /// <summary>
-    ///
+    /// Returns the protection of this format.
     /// </summary>
-    class protection &protection();
+    class protection protection() const;
 
     /// <summary>
-    ///
-    /// </summary>
-    const class protection &protection() const;
-
-    /// <summary>
-    ///
-    /// </summary>
-    format protection(const xlnt::protection &new_protection, bool applied);
-
-    /// <summary>
-    ///
+    /// Returns true if the protection set for this format should be applied to cells using the format.
     /// </summary>
     bool protection_applied() const;
 
     /// <summary>
-    ///
+    /// Sets the protection of this format to new_protection. Applied, which defaults
+    /// to true, determines whether the protection should be enabled for cells using
+    /// this format.
+    /// </summary>
+    format protection(const xlnt::protection &new_protection, bool applied = true);
+
+    /// <summary>
+    /// Returns true if the pivot table interface is enabled for this format.
     /// </summary>
     bool pivot_button() const;
 
     /// <summary>
-    ///
+    /// If show is true, a pivot table interface will be displayed for cells using
+	/// this format.
     /// </summary>
     void pivot_button(bool show);
 
     /// <summary>
-    ///
+    /// Returns true if this format should add a single-quote prefix for all text values.
     /// </summary>
     bool quote_prefix() const;
 
     /// <summary>
-    ///
+    /// If quote is true, enables a single-quote prefix for all text values in cells
+	/// using this format (e.g. "abc" will appear as "'abc"). The text will also not
+	/// be stored in sharedStrings when this is enabled.
     /// </summary>
     void quote_prefix(bool quote);
 
-    // Style
-
     /// <summary>
-    ///
+    /// Returns true if this format has a corresponding style applied.
     /// </summary>
     bool has_style() const;
 
     /// <summary>
-    ///
+    /// Removes the style from this format if it exists.
     /// </summary>
     void clear_style();
 
     /// <summary>
-    ///
+    /// Sets the style of this format to a style with the given name.
     /// </summary>
     format style(const std::string &name);
 
     /// <summary>
-    ///
+    /// Sets the style of this format to new_style.
     /// </summary>
     format style(const class style &new_style);
 
     /// <summary>
-    ///
+    /// Returns the style of this format. If it has no style, an invalid_parameter
+    /// exception will be thrown.
     /// </summary>
     class style style();
 
-	/// <summary>
-	///
-	/// </summary>
-	const class style style() const;
+    /// <summary>
+    /// Returns the style of this format. If it has no style, an invalid_parameters
+    /// exception will be thrown.
+    /// </summary>
+    const class style style() const;
 
 private:
     friend struct detail::stylesheet;
-	friend class detail::xlsx_producer;
+    friend class detail::xlsx_producer;
     friend class cell;
 
     /// <summary>
-    ///
+    /// Constructs a format from an impl pointer.
     /// </summary>
     format(detail::format_impl *d);
 
-	/// <summary>
-	///
-	/// </summary>
-	std::size_t id() const;
-
     /// <summary>
-    ///
+    /// The internal implementation of this format
     /// </summary>
     detail::format_impl *d_;
 };

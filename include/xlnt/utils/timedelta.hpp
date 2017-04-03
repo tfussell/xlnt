@@ -31,52 +31,52 @@ namespace xlnt {
 
 /// <summary>
 /// Represents a span of time between two datetimes. This is
-/// not fully supported yet.
+/// not fully supported yet throughout the library.
 /// </summary>
 struct XLNT_API timedelta
 {
     /// <summary>
-    ///
+    /// Returns a timedelta from a number representing the factional number of days elapsed.
     /// </summary>
     static timedelta from_number(long double number);
 
     /// <summary>
-    ///
+    /// Constructs a timedelta equal to zero.
     /// </summary>
     timedelta();
 
     /// <summary>
-    ///
+    /// Constructs a timedelta from a number of days, hours, minutes, seconds, and microseconds.
     /// </summary>
     timedelta(int days_, int hours_, int minutes_, int seconds_, int microseconds_);
 
     /// <summary>
-    ///
+    /// Returns a numeric representation of this timedelta as a fractional number of days.
     /// </summary>
     long double to_number() const;
 
     /// <summary>
-    ///
+    /// The days
     /// </summary>
     int days;
 
     /// <summary>
-    ///
+    /// The hours
     /// </summary>
     int hours;
 
     /// <summary>
-    ///
+    /// The minutes
     /// </summary>
     int minutes;
 
     /// <summary>
-    ///
+    /// The seconds
     /// </summary>
     int seconds;
 
     /// <summary>
-    ///
+    /// The microseconds
     /// </summary>
     int microseconds;
 };

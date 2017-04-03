@@ -2233,7 +2233,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
                 if (cell.has_format())
                 {
-                    write_attribute("s", cell.format().id());
+                    write_attribute("s", cell.format().d_->id);
                 }
 
                 if (cell.has_hyperlink())

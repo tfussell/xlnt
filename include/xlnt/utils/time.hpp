@@ -49,42 +49,43 @@ struct XLNT_API time
     static time from_number(long double number);
 
     /// <summary>
-    ///
+    /// Constructs a time object from an optional hour, minute, second, and microsecond.
     /// </summary>
     explicit time(int hour_ = 0, int minute_ = 0, int second_ = 0, int microsecond_ = 0);
 
     /// <summary>
-    ///
+    /// Constructs a time object from a string representing the time.
     /// </summary>
     explicit time(const std::string &time_string);
 
     /// <summary>
-    ///
+    /// Returns a numeric representation of the time in the range 0-1 where the value
+    /// is equal to the fraction of the day elapsed.
     /// </summary>
     long double to_number() const;
 
     /// <summary>
-    ///
+    /// Returns true if this time is equivalent to comparand.
     /// </summary>
     bool operator==(const time &comparand) const;
 
     /// <summary>
-    ///
+    /// The hour
     /// </summary>
     int hour;
 
     /// <summary>
-    ///
+    /// The minute
     /// </summary>
     int minute;
 
     /// <summary>
-    ///
+    /// The second
     /// </summary>
     int second;
 
     /// <summary>
-    ///
+    /// The microsecond
     /// </summary>
     int microsecond;
 };

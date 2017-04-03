@@ -52,27 +52,27 @@ public:
     comment(const std::string &text, const std::string &author);
 
     /// <summary>
-    /// Return the text that will be displayed for this comment.
+    /// Returns the text that will be displayed for this comment.
     /// </summary>
     rich_text text() const;
 
     /// <summary>
-    /// Return the plain text that will be displayed for this comment without formatting information.
+    /// Returns the plain text that will be displayed for this comment without formatting information.
     /// </summary>
     std::string plain_text() const;
 
     /// <summary>
-    /// Return the author of this comment.
+    /// Returns the author of this comment.
     /// </summary>
     std::string author() const;
 
     /// <summary>
-    /// Make this comment only visible when the associated cell is hovered.
+    /// Makes this comment only visible when the associated cell is hovered.
     /// </summary>
     void hide();
 
     /// <summary>
-    /// Make this comment always visible.
+    /// Makes this comment always visible.
     /// </summary>
     void show();
 
@@ -82,7 +82,7 @@ public:
     bool visible() const;
 
     /// <summary>
-    /// Set the absolute position of this cell to the given coordinates.
+    /// Sets the absolute position of this cell to the given coordinates.
     /// </summary>
     void position(int left, int top);
 
@@ -97,7 +97,7 @@ public:
     int top() const;
 
     /// <summary>
-    /// Set the size of the comment.
+    /// Sets the size of the comment.
     /// </summary>
     void size(int width, int height);
 
@@ -112,9 +112,14 @@ public:
     int height() const;
 
     /// <summary>
-    /// Return true if both comments are equivalent.
+    /// Return true if this comment is equivalent to other.
     /// </summary>
-    friend XLNT_API bool operator==(const comment &left, const comment &right);
+    bool operator==(const comment &other) const;
+
+    /// <summary>
+    /// Returns true if this comment is not equivalent to other.
+    /// </summary>
+    bool operator!=(const comment &other) const;
 
 private:
     /// <summary>

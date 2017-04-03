@@ -120,7 +120,7 @@ std::uint8_t rgb_color::alpha() const
 
 std::array<std::uint8_t, 3> rgb_color::rgb() const
 {
-	return { red(), green(), blue() };
+	return {{red(), green(), blue()}};
 }
 
 std::array<std::uint8_t, 4> rgb_color::rgba() const

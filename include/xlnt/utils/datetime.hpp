@@ -39,95 +39,96 @@ struct time;
 struct XLNT_API datetime
 {
     /// <summary>
-    /// Return the current date and time according to the system time.
+    /// Returns the current date and time according to the system time.
     /// </summary>
     static datetime now();
 
     /// <summary>
-    /// Return the current date and time according to the system time.
+    /// Returns the current date and time according to the system time.
     /// This is equivalent to datetime::now().
     /// </summary>
     static datetime today();
 
     /// <summary>
-    /// Return a datetime from number by converting the integer part into
+    /// Returns a datetime from number by converting the integer part into
     /// a date and the fractional part into a time according to date::from_number
     /// and time::from_number.
     /// </summary>
     static datetime from_number(long double number, calendar base_date);
 
     /// <summary>
-    ///
+    /// Returns a datetime equivalent to the ISO-formatted string iso_string.
     /// </summary>
     static datetime from_iso_string(const std::string &iso_string);
 
     /// <summary>
-    ///
+    /// Constructs a datetime from a date and a time.
     /// </summary>
     datetime(const date &d, const time &t);
 
     /// <summary>
-    ///
+    /// Constructs a datetime from a year, month, and day plus optional hour, minute, second, and microsecond.
     /// </summary>
     datetime(int year_, int month_, int day_, int hour_ = 0, int minute_ = 0, int second_ = 0, int microsecond_ = 0);
 
     /// <summary>
-    ///
+    /// Returns a string represenation of this date and time.
     /// </summary>
     std::string to_string() const;
 
     /// <summary>
-    ///
+    /// Returns an ISO-formatted string representation of this date and time.
     /// </summary>
     std::string to_iso_string() const;
 
     /// <summary>
-    ///
+    /// Returns this datetime as a number of seconds since 1900 or 1904 (depending on base_date provided).
     /// </summary>
     long double to_number(calendar base_date) const;
 
     /// <summary>
-    ///
+    /// Returns true if this datetime is equivalent to comparand.
     /// </summary>
     bool operator==(const datetime &comparand) const;
 
     /// <summary>
-    ///
+    /// Calculates and returns the day of the week that this date represents in the range
+    /// 0 to 6 where 0 represents Sunday.
     /// </summary>
     int weekday() const;
 
     /// <summary>
-    ///
+    /// The year
     /// </summary>
     int year;
 
     /// <summary>
-    ///
+    /// The month
     /// </summary>
     int month;
 
     /// <summary>
-    ///
+    /// The day
     /// </summary>
     int day;
 
     /// <summary>
-    ///
+    /// The hour
     /// </summary>
     int hour;
 
     /// <summary>
-    ///
+    /// The minute
     /// </summary>
     int minute;
 
     /// <summary>
-    ///
+    /// The second
     /// </summary>
     int second;
 
     /// <summary>
-    ///
+    /// The microsecond
     /// </summary>
     int microsecond;
 };
