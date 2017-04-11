@@ -24,6 +24,7 @@
 #include <array>
 
 #include <detail/crypto/aes.hpp>
+#include <detail/crypto/base64.hpp>
 #include <detail/crypto/sha.hpp>
 #include <detail/crypto/xlsx_crypto.hpp>
 #include <detail/pole.hpp>
@@ -132,148 +133,6 @@ auto read_int(std::size_t &index, const std::vector<std::uint8_t> &raw_data)
     index += sizeof(T);
 
     return result;
-}
-
-/*
-static std::string encode_base64(const std::vector<std::uint8_t> &input)
-{
-    auto encoded_length = (input.size() + 2 - ((input.size() + 2) % 3)) / 3 * 4;
-    auto output = std::string(encoded_length, '\0');
-    auto input_iterator = input.begin();
-    auto output_iterator = output.begin();
-    
-    int i = 0, j = 0;
-    unsigned char a3[3];
-    unsigned char a4[4];
-    
-    const char kBase64Alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    "abcdefghijklmnopqrstuvwxyz"
-    "0123456789+/";
-    
-    while (input_iterator != input.end())
-    {
-        a3[i++] = *input_iterator++;
-
-        if (i == 3)
-        {
-            a4[0] = (a3[0] & 0xfc) >> 2;
-            a4[1] = ((a3[0] & 0x03) << 4) + ((a3[1] & 0xf0) >> 4);
-            a4[2] = ((a3[1] & 0x0f) << 2) + ((a3[2] & 0xc0) >> 6);
-            a4[3] = (a3[2] & 0x3f);
-            
-            for (i = 0; i < 4; i++)
-            {
-                *output_iterator++ = kBase64Alphabet[a4[i]];
-            }
-            
-            i = 0;
-        }
-    }
-    
-    if (i)
-    {
-        for (j = i; j < 3; j++)
-        {
-            a3[j] = '\0';
-        }
-        
-        a4[0] = (a3[0] & 0xfc) >> 2;
-        a4[1] = ((a3[0] & 0x03) << 4) + ((a3[1] & 0xf0) >> 4);
-        a4[2] = ((a3[1] & 0x0f) << 2) + ((a3[2] & 0xc0) >> 6);
-        a4[3] = (a3[2] & 0x3f);
-        
-        for (j = 0; j < i + 1; j++)
-        {
-            *output_iterator++ = kBase64Alphabet[a4[j]];
-        }
-        
-        while ((i++ < 3))
-        {
-            *output_iterator++ = '=';
-        }
-    }
-    
-    return output;
-}
-*/
-
-static std::vector<std::uint8_t> decode_base64(const std::string &input)
-{
-    std::size_t numEq = 0;
-    auto in_end = input.data() + input.size();
-    while (*--in_end == '=') ++numEq;
-    auto decoded_length = ((6 * input.size()) / 8) - numEq;
-    auto output = std::vector<std::uint8_t>(decoded_length);
-    
-    auto input_iterator = input.begin();
-    auto output_iterator = output.begin();
-    
-    int i = 0, j = 0;
-    std::uint8_t a3[3];
-    std::uint8_t a4[4];
-    
-    auto b64_lookup = [](std::uint8_t c) -> std::uint8_t
-    {
-        if(c >='A' && c <='Z') return c - 'A';
-        if(c >='a' && c <='z') return c - 71;
-        if(c >='0' && c <='9') return c + 4;
-        if(c == '+') return 62;
-        if(c == '/') return 63;
-        return 255;
-    };
-    
-    while (input_iterator != input.end())
-    {
-        if (*input_iterator == '=')
-        {
-            break;
-        }
-        
-        a4[i++] = static_cast<std::uint8_t>(*(input_iterator++));
-
-        if (i == 4)
-        {
-            for (i = 0; i <4; i++)
-            {
-                a4[i] = b64_lookup(a4[i]);
-            }
-            
-            a3[0] = static_cast<std::uint8_t>(a4[0] << 2) + static_cast<std::uint8_t>((a4[1] & 0x30) >> 4);
-            a3[1] = static_cast<std::uint8_t>((a4[1] & 0xf) << 4) + static_cast<std::uint8_t>((a4[2] & 0x3c) >> 2);
-            a3[2] = static_cast<std::uint8_t>((a4[2] & 0x3) << 6) + static_cast<std::uint8_t>(a4[3]);
-            
-            for (i = 0; i < 3; i++)
-            {
-                *output_iterator++ = a3[i];
-            }
-            
-            i = 0;
-        }
-    }
-    
-    if (i)
-    {
-        for (j = i; j < 4; j++)
-        {
-            a4[j] = '\0';
-        }
-        
-        for (j = 0; j < 4; j++)
-        {
-            a4[j] = b64_lookup(a4[j]);
-        }
-        
-        a3[0] = static_cast<std::uint8_t>(a4[0] << 2) + static_cast<std::uint8_t>((a4[1] & 0x30) >> 4);
-        a3[1] = static_cast<std::uint8_t>((a4[1] & 0xf) << 4) + static_cast<std::uint8_t>((a4[2] & 0x3c) >> 2);
-        a3[2] = static_cast<std::uint8_t>((a4[2] & 0x3) << 6) + static_cast<std::uint8_t>(a4[3]);
-        
-        for (j = 0; j < i - 1; j++)
-        {
-            *output_iterator++ = a3[j];
-        }
-    }
-    
-    return output;
 }
 
 std::vector<std::uint8_t> hash(hash_algorithm algorithm, const std::vector<std::uint8_t> &input)
@@ -507,6 +366,8 @@ std::vector<std::uint8_t> decrypt_xlsx_agile(
     const std::string &password,
     const std::vector<std::uint8_t> &encrypted_package)
 {
+    using xlnt::detail::decode_base64;
+
     static const auto &xmlns = xlnt::constants::ns("encryption");
     static const auto &xmlns_p = xlnt::constants::ns("encryption-password");
     // static const auto &xmlns_c = xlnt::constants::namespace_("encryption-certificate");
