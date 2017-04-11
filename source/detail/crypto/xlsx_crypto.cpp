@@ -36,52 +36,40 @@
 
 namespace {
 
+const std::size_t ole_segment_length = 4096;
+
 enum class hash_algorithm
 {
     sha1,
-    sha256,
-    sha384,
-    sha512,
-    md5,
-    md4,
-    md2,
-    ripemd128,
-    ripemd160,
-    whirlpool
+    sha512
 };
 
-struct XLNT_API crypto_helper
+enum class cipher_algorithm
 {
-    static const std::size_t segment_length;
+    aes,
+    rc2,
+    rc4,
+    des,
+    desx,
+    triple_des,
+    triple_des_112
+};
 
-    enum class cipher_algorithm
-    {
-        aes,
-        rc2,
-        rc4,
-        des,
-        desx,
-        triple_des,
-        triple_des_112
-    };
+enum class cipher_chaining
+{
+    ecb, // electronic code book
+    cbc // cipher block chaining
+};
 
-    enum class cipher_chaining
-    {
-        ecb, // electronic code book
-        cbc, // cipher block chaining
-        cfb // cipher feedback chaining
-    };
+enum class cipher_direction
+{
+    encryption,
+    decryption
+};
 
-    enum class cipher_direction
-    {
-        encryption,
-        decryption
-    };
 
-    static std::vector<std::uint8_t> hash(hash_algorithm algorithm, const std::vector<std::uint8_t> &input);
-
-    static std::vector<std::uint8_t> file(POLE::Storage &storage, const std::string &name);
-
+struct encryption_info
+{
     struct standard_encryption_info
     {
         const std::size_t spin_count = 50000;
@@ -96,10 +84,7 @@ struct XLNT_API crypto_helper
         std::vector<std::uint8_t> verifier_hash_input;
         std::vector<std::uint8_t> verifier_hash_value;
         std::vector<std::uint8_t> encrypted_key_value;
-    };
-
-    static std::vector<std::uint8_t> decrypt_xlsx_standard(const std::vector<std::uint8_t> &encryption_info,
-        const std::string &password, const std::vector<std::uint8_t> &encrypted_package);
+    } standard;
 
     struct agile_encryption_info
     {
@@ -137,18 +122,7 @@ struct XLNT_API crypto_helper
             std::vector<std::uint8_t> verifier_hash_value;
             std::vector<std::uint8_t> encrypted_key_value;
         } key_encryptor;
-    };
-
-    static agile_encryption_info generate_agile_encryption_info(const std::string &password);
-
-    //static std::vector<std::uint8_t> write_agile_encryption_info(const std::string &password);
-
-    static std::vector<std::uint8_t> decrypt_xlsx_agile(const std::vector<std::uint8_t> &encryption_info,
-        const std::string &password, const std::vector<std::uint8_t> &encrypted_package);
-
-    static std::vector<std::uint8_t> decrypt_xlsx(const std::vector<std::uint8_t> &bytes, const std::string &password);
-
-    static std::vector<std::uint8_t> encrypt_xlsx(const std::vector<std::uint8_t> &bytes, const std::string &password);
+    } agile;
 };
 
 template <typename T>
@@ -302,7 +276,7 @@ static std::vector<std::uint8_t> decode_base64(const std::string &input)
     return output;
 }
 
-std::vector<std::uint8_t> crypto_helper::hash(hash_algorithm algorithm, const std::vector<std::uint8_t> &input)
+std::vector<std::uint8_t> hash(hash_algorithm algorithm, const std::vector<std::uint8_t> &input)
 {
     if (algorithm == hash_algorithm::sha512)
     {
@@ -316,7 +290,7 @@ std::vector<std::uint8_t> crypto_helper::hash(hash_algorithm algorithm, const st
     throw xlnt::exception("unsupported hash algorithm");
 }
 
-std::vector<std::uint8_t> crypto_helper::file(POLE::Storage &storage, const std::string &name)
+std::vector<std::uint8_t> file(POLE::Storage &storage, const std::string &name)
 {
     POLE::Stream stream(&storage, name.c_str());
     if (stream.fail()) return {};
@@ -325,14 +299,14 @@ std::vector<std::uint8_t> crypto_helper::file(POLE::Storage &storage, const std:
     return bytes;
 }
 
-std::vector<std::uint8_t> crypto_helper::decrypt_xlsx_standard(
+std::vector<std::uint8_t> decrypt_xlsx_standard(
     const std::vector<std::uint8_t> &encryption_info,
     const std::string &password,
     const std::vector<std::uint8_t> &encrypted_package)
 {
     std::size_t offset = 0;
 
-    standard_encryption_info info;
+    encryption_info::standard_encryption_info info;
 
     auto header_length = read_int<std::uint32_t>(offset, encryption_info);
     auto index_at_start = offset;
@@ -463,15 +437,16 @@ std::vector<std::uint8_t> crypto_helper::decrypt_xlsx_standard(
     return decrypted;
 }
 
-crypto_helper::agile_encryption_info crypto_helper::generate_agile_encryption_info(const std::string &password)
+encryption_info generate_encryption_info(const std::string &password)
 {
-    agile_encryption_info result;
-    result.key_data.salt_value.assign(password.begin(), password.end());
+    encryption_info result;
+    result.agile.key_data.salt_value.assign(password.begin(), password.end());
+
     return result;
 }
 
 /*
-std::vector<std::uint8_t> crypto_helper::write_agile_encryption_info(const std::string &password)
+std::vector<std::uint8_t> write_agile_encryption_info(const std::string &password)
 {
     static const auto &xmlns = xlnt::constants::ns("encryption");
     static const auto &xmlns_p = xlnt::constants::ns("encryption-password");
@@ -527,7 +502,7 @@ std::vector<std::uint8_t> crypto_helper::write_agile_encryption_info(const std::
 }
 */
 
-std::vector<std::uint8_t> crypto_helper::decrypt_xlsx_agile(
+std::vector<std::uint8_t> decrypt_xlsx_agile(
     const std::vector<std::uint8_t> &encryption_info,
     const std::string &password,
     const std::vector<std::uint8_t> &encrypted_package)
@@ -536,7 +511,7 @@ std::vector<std::uint8_t> crypto_helper::decrypt_xlsx_agile(
     static const auto &xmlns_p = xlnt::constants::ns("encryption-password");
     // static const auto &xmlns_c = xlnt::constants::namespace_("encryption-certificate");
 
-    agile_encryption_info result;
+    encryption_info::agile_encryption_info result;
 
     xml::parser parser(encryption_info.data(), encryption_info.size(), "EncryptionInfo");
 
@@ -579,6 +554,7 @@ std::vector<std::uint8_t> crypto_helper::decrypt_xlsx_agile(
             result.key_encryptor.cipher_chaining = parser.attribute("cipherChaining");
 
             auto hash_algorithm_string = parser.attribute("hashAlgorithm");
+
             if (hash_algorithm_string == "SHA512")
             {
                 result.key_encryptor.hash = hash_algorithm::sha512;
@@ -587,13 +563,9 @@ std::vector<std::uint8_t> crypto_helper::decrypt_xlsx_agile(
             {
                 result.key_encryptor.hash = hash_algorithm::sha1;
             }
-            else if (hash_algorithm_string == "SHA256")
+            else
             {
-                result.key_encryptor.hash = hash_algorithm::sha256;
-            }
-            else if (hash_algorithm_string == "SHA384")
-            {
-                result.key_encryptor.hash = hash_algorithm::sha384;
+                throw xlnt::unsupported("hash");
             }
 
             result.key_encryptor.salt_value = decode_base64(parser.attribute("saltValue"));
@@ -692,17 +664,17 @@ std::vector<std::uint8_t> crypto_helper::decrypt_xlsx_agile(
     auto &segment = *reinterpret_cast<std::uint32_t *>(salt_with_block_key.data() + salt_size);
     auto total_size = static_cast<std::size_t>(*reinterpret_cast<const std::uint64_t *>(encrypted_package.data()));
 
-    std::vector<std::uint8_t> encrypted_segment(segment_length, 0);
+    std::vector<std::uint8_t> encrypted_segment(ole_segment_length, 0);
     std::vector<std::uint8_t> decrypted_package;
     decrypted_package.reserve(encrypted_package.size() - 8);
 
-    for (std::size_t i = 8; i < encrypted_package.size(); i += segment_length)
+    for (std::size_t i = 8; i < encrypted_package.size(); i += ole_segment_length)
     {
         auto iv = hash(result.key_encryptor.hash, salt_with_block_key);
         iv.resize(16);
 
         auto segment_begin = encrypted_package.begin() + static_cast<std::ptrdiff_t>(i);
-        auto current_segment_length = std::min(segment_length, encrypted_package.size() - i);
+        auto current_segment_length = std::min(ole_segment_length, encrypted_package.size() - i);
         auto segment_end = encrypted_package.begin() + static_cast<std::ptrdiff_t>(i + current_segment_length);
         encrypted_segment.assign(segment_begin, segment_end);
         auto decrypted_segment = xlnt::detail::aes_cbc_decrypt(encrypted_segment, key, iv);
@@ -718,8 +690,9 @@ std::vector<std::uint8_t> crypto_helper::decrypt_xlsx_agile(
     return decrypted_package;
 }
 
-std::vector<std::uint8_t> crypto_helper::decrypt_xlsx(
-    const std::vector<std::uint8_t> &bytes, const std::string &password)
+std::vector<std::uint8_t> decrypt_xlsx(
+    const std::vector<std::uint8_t> &bytes,
+    const std::string &password)
 {
     if (bytes.empty())
     {
@@ -782,20 +755,19 @@ std::vector<std::uint8_t> crypto_helper::decrypt_xlsx(
     return decrypt_xlsx_standard(encryption_info, password, encrypted_package);
 }
 
-std::vector<std::uint8_t> crypto_helper::encrypt_xlsx(
-    const std::vector<std::uint8_t> &bytes, const std::string &password)
+std::vector<std::uint8_t> encrypt_xlsx(
+    const std::vector<std::uint8_t> &bytes,
+    const std::string &password)
 {
     if (bytes.empty())
     {
         throw xlnt::exception("empty file");
     }
 
-    generate_agile_encryption_info(password);
+    generate_encryption_info(password);
 
     return {};
 }
-
-const std::size_t crypto_helper::segment_length = 4096;
 
 } // namespace
 
@@ -869,13 +841,13 @@ namespace detail {
 
 std::vector<std::uint8_t> XLNT_API decrypt_xlsx(const std::vector<std::uint8_t> &data, const std::string &password)
 {
-    return crypto_helper::decrypt_xlsx(data, password);
+    return ::decrypt_xlsx(data, password);
 }
 
 void xlsx_consumer::read(std::istream &source, const std::string &password)
 {
     std::vector<std::uint8_t> data((std::istreambuf_iterator<char>(source)), (std::istreambuf_iterator<char>()));
-    const auto decrypted = crypto_helper::decrypt_xlsx(data, password);
+    const auto decrypted = decrypt_xlsx(data, password);
     vector_istreambuf decrypted_buffer(decrypted);
     std::istream decrypted_stream(&decrypted_buffer);
     read(decrypted_stream);
@@ -891,7 +863,7 @@ void xlsx_producer::write(std::ostream &destination, const std::string &password
         write(decrypted_stream);
     }
 
-    const auto encrypted = crypto_helper::encrypt_xlsx(decrypted, password);
+    const auto encrypted = encrypt_xlsx(decrypted, password);
     vector_istreambuf encrypted_buffer(encrypted);
 
     destination << &encrypted_buffer;
