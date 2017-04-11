@@ -44,24 +44,6 @@ namespace {
 #define LTC_NO_ROLC
 #include "tomcrypt.h"
 
-#if (ARGTYPE == 0)
-void crypt_argchk(char *v, char *s, int d)
-{
- fprintf(stderr, "LTC_ARGCHK '%s' failure on line %d of file %s\n",
-         v, d, s);
- abort();
-}
-#endif
-
-void zeromem(volatile void *out, size_t outlen)
-{
-   volatile char *mem = (char *)out;
-   LTC_ARGCHKVD(out != NULL);
-   while (outlen-- > 0) {
-      *mem++ = '\0';
-   }
-}
-
 #define SETUP    rijndael_setup
 #define ECB_ENC  rijndael_ecb_encrypt
 #define ECB_DEC  rijndael_ecb_decrypt
@@ -1007,8 +989,6 @@ int SETUP(const unsigned char *key, int keylen, int num_rounds, symmetric_key *s
 #ifndef ENCRYPT_ONLY
     ulong32 *rrk;
 #endif
-    LTC_ARGCHK(key  != NULL);
-    LTC_ARGCHK(skey != NULL);
 
     if (keylen != 16 && keylen != 24 && keylen != 32) {
        return CRYPT_INVALID_KEYSIZE;
@@ -1168,10 +1148,6 @@ int ECB_ENC(const unsigned char *pt, unsigned char *ct, symmetric_key *skey)
     ulong32 s0, s1, s2, s3, t0, t1, t2, t3, *rk;
     int Nr, r;
 
-    LTC_ARGCHK(pt != NULL);
-    LTC_ARGCHK(ct != NULL);
-    LTC_ARGCHK(skey != NULL);
-
     Nr = skey->rijndael.Nr;
     rk = skey->rijndael.eK;
 
@@ -1292,10 +1268,6 @@ int ECB_DEC(const unsigned char *ct, unsigned char *pt, symmetric_key *skey)
 {
     ulong32 s0, s1, s2, s3, t0, t1, t2, t3, *rk;
     int Nr, r;
-
-    LTC_ARGCHK(pt != NULL);
-    LTC_ARGCHK(ct != NULL);
-    LTC_ARGCHK(skey != NULL);
 
     Nr = skey->rijndael.Nr;
     rk = skey->rijndael.dK;
@@ -1423,8 +1395,6 @@ void ECB_DONE(symmetric_key *skey)
 */
 int ECB_KS(int *keysize)
 {
-   LTC_ARGCHK(keysize != NULL);
-
    if (*keysize < 16)
       return CRYPT_INVALID_KEYSIZE;
    if (*keysize < 24) {
@@ -1448,10 +1418,6 @@ int cbc_decrypt(const unsigned char *ct, unsigned char *pt, unsigned long len, s
 #else
    unsigned char tmpy;
 #endif
-
-   LTC_ARGCHK(pt  != NULL);
-   LTC_ARGCHK(ct  != NULL);
-   LTC_ARGCHK(cbc != NULL);
 
    if ((err = cipher_is_valid(cbc->cipher)) != CRYPT_OK) {
        return err;
@@ -1506,7 +1472,6 @@ int cbc_decrypt(const unsigned char *ct, unsigned char *pt, unsigned long len, s
 int cbc_done(symmetric_CBC *cbc)
 {
    int err;
-   LTC_ARGCHK(cbc != NULL);
 
    if ((err = cipher_is_valid(cbc->cipher)) != CRYPT_OK) {
       return err;
@@ -1518,10 +1483,6 @@ int cbc_done(symmetric_CBC *cbc)
 int cbc_encrypt(const unsigned char *pt, unsigned char *ct, unsigned long len, symmetric_CBC *cbc)
 {
    int x, err;
-
-   LTC_ARGCHK(pt != NULL);
-   LTC_ARGCHK(ct != NULL);
-   LTC_ARGCHK(cbc != NULL);
 
    if ((err = cipher_is_valid(cbc->cipher)) != CRYPT_OK) {
        return err;
@@ -1585,10 +1546,6 @@ int cbc_start(int cipher, const unsigned char *IV, const unsigned char *key,
 {
    int x, err;
 
-   LTC_ARGCHK(IV != NULL);
-   LTC_ARGCHK(key != NULL);
-   LTC_ARGCHK(cbc != NULL);
-
    /* bad param? */
    if ((err = cipher_is_valid(cipher)) != CRYPT_OK) {
       return err;
@@ -1611,8 +1568,6 @@ int cbc_start(int cipher, const unsigned char *IV, const unsigned char *key,
 int register_cipher(const struct ltc_cipher_descriptor *cipher)
 {
    int x;
-
-   LTC_ARGCHK(cipher != NULL);
 
    /* is it already registered? */
    LTC_MUTEX_LOCK(&ltc_cipher_mutex);
@@ -1657,9 +1612,7 @@ int cipher_is_valid(int idx)
 int ecb_decrypt(const unsigned char *ct, unsigned char *pt, unsigned long len, symmetric_ECB *ecb)
 {
    int err;
-   LTC_ARGCHK(pt != NULL);
-   LTC_ARGCHK(ct != NULL);
-   LTC_ARGCHK(ecb != NULL);
+
    if ((err = cipher_is_valid(ecb->cipher)) != CRYPT_OK) {
        return err;
    }
@@ -1686,7 +1639,6 @@ int ecb_decrypt(const unsigned char *ct, unsigned char *pt, unsigned long len, s
 int ecb_done(symmetric_ECB *ecb)
 {
    int err;
-   LTC_ARGCHK(ecb != NULL);
 
    if ((err = cipher_is_valid(ecb->cipher)) != CRYPT_OK) {
       return err;
@@ -1698,9 +1650,7 @@ int ecb_done(symmetric_ECB *ecb)
 int ecb_encrypt(const unsigned char *pt, unsigned char *ct, unsigned long len, symmetric_ECB *ecb)
 {
    int err;
-   LTC_ARGCHK(pt != NULL);
-   LTC_ARGCHK(ct != NULL);
-   LTC_ARGCHK(ecb != NULL);
+
    if ((err = cipher_is_valid(ecb->cipher)) != CRYPT_OK) {
        return err;
    }
@@ -1727,8 +1677,6 @@ int ecb_encrypt(const unsigned char *pt, unsigned char *ct, unsigned long len, s
 int ecb_start(int cipher, const unsigned char *key, int keylen, int num_rounds, symmetric_ECB *ecb)
 {
    int err;
-   LTC_ARGCHK(key != NULL);
-   LTC_ARGCHK(ecb != NULL);
 
    if ((err = cipher_is_valid(cipher)) != CRYPT_OK) {
       return err;
@@ -1741,8 +1689,9 @@ int ecb_start(int cipher, const unsigned char *key, int keylen, int num_rounds, 
 } // namespace
 
 namespace xlnt {
+namespace detail {
 
-std::vector<std::uint8_t> xaes_ecb_encrypt(
+std::vector<std::uint8_t> aes_ecb_encrypt(
     const std::vector<std::uint8_t> &input,
     const std::vector<std::uint8_t> &key)
 {
@@ -1760,7 +1709,7 @@ std::vector<std::uint8_t> xaes_ecb_encrypt(
     return output;
 }
 
-std::vector<std::uint8_t> xaes_ecb_decrypt(
+std::vector<std::uint8_t> aes_ecb_decrypt(
     const std::vector<std::uint8_t> &input,
     const std::vector<std::uint8_t> &key)
 {
@@ -1778,7 +1727,7 @@ std::vector<std::uint8_t> xaes_ecb_decrypt(
     return output;
 }
 
-std::vector<std::uint8_t> xaes_cbc_encrypt(
+std::vector<std::uint8_t> aes_cbc_encrypt(
     const std::vector<std::uint8_t> &input,
     const std::vector<std::uint8_t> &key,
     const std::vector<std::uint8_t> &iv)
@@ -1797,7 +1746,7 @@ std::vector<std::uint8_t> xaes_cbc_encrypt(
     return output;
 }
 
-std::vector<std::uint8_t> xaes_cbc_decrypt(
+std::vector<std::uint8_t> aes_cbc_decrypt(
     const std::vector<std::uint8_t> &input,
     const std::vector<std::uint8_t> &key,
     const std::vector<std::uint8_t> &iv)
@@ -1816,6 +1765,7 @@ std::vector<std::uint8_t> xaes_cbc_decrypt(
     return output;
 }
 
+} // namespace detail
 } // namespace xlnt
 
 #pragma clang diagnostic pop

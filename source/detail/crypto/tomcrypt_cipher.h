@@ -654,18 +654,6 @@ extern const struct ltc_cipher_descriptor safer_k64_desc, safer_k128_desc, safer
 
 #ifdef LTC_RIJNDAEL
 
-/* make aes an alias */
-#define aes_setup           rijndael_setup
-#define aes_ecb_encrypt     rijndael_ecb_encrypt
-#define aes_ecb_decrypt     rijndael_ecb_decrypt
-#define aes_test            rijndael_test
-#define aes_done            rijndael_done
-#define aes_keysize         rijndael_keysize
-
-#define aes_enc_setup           rijndael_enc_setup
-#define aes_enc_ecb_encrypt     rijndael_enc_ecb_encrypt
-#define aes_enc_keysize         rijndael_enc_keysize
-
 int rijndael_setup(const unsigned char *key, int keylen, int num_rounds, symmetric_key *skey);
 int rijndael_ecb_encrypt(const unsigned char *pt, unsigned char *ct, symmetric_key *skey);
 int rijndael_ecb_decrypt(const unsigned char *ct, unsigned char *pt, symmetric_key *skey);

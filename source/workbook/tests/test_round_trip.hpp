@@ -40,7 +40,7 @@ public:
         source_workbook.save(destination);
 
         std::ifstream source_stream(source.string(), std::ios::binary);
-        const auto source_decrypted = xlnt::detail::crypto_helper::decrypt_xlsx(
+        const auto source_decrypted = xlnt::detail::decrypt_xlsx(
             xlnt::detail::to_vector(source_stream), password);
 
 		return xml_helper::xlsx_archives_match(source_decrypted, destination);

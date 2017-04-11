@@ -21,13 +21,138 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <array>
+
 #include <detail/crypto/aes.hpp>
 #include <detail/crypto/base64.hpp>
 #include <detail/crypto/sha.hpp>
+#include <detail/pole.hpp>
+#include <detail/xlsx_consumer.hpp>
+#include <detail/xlsx_producer.hpp>
+#include <detail/constants.hpp>
+#include <detail/vector_streambuf.hpp>
 #include <detail/default_case.hpp>
-#include <detail/crypto/xlsx_crypto.hpp>
+#include <detail/include_libstudxml.hpp>
 
 namespace {
+
+enum class hash_algorithm
+{
+    sha1,
+    sha256,
+    sha384,
+    sha512,
+    md5,
+    md4,
+    md2,
+    ripemd128,
+    ripemd160,
+    whirlpool
+};
+
+struct XLNT_API crypto_helper
+{
+    static const std::size_t segment_length;
+
+    enum class cipher_algorithm
+    {
+        aes,
+        rc2,
+        rc4,
+        des,
+        desx,
+        triple_des,
+        triple_des_112
+    };
+
+    enum class cipher_chaining
+    {
+        ecb, // electronic code book
+        cbc, // cipher block chaining
+        cfb // cipher feedback chaining
+    };
+
+    enum class cipher_direction
+    {
+        encryption,
+        decryption
+    };
+
+    static std::vector<std::uint8_t> aes(const std::vector<std::uint8_t> &key, const std::vector<std::uint8_t> &iv,
+        const std::vector<std::uint8_t> &source, cipher_chaining chaining, cipher_direction direction);
+
+    static std::vector<std::uint8_t> hash(hash_algorithm algorithm, const std::vector<std::uint8_t> &input);
+
+    static std::vector<std::uint8_t> file(POLE::Storage &storage, const std::string &name);
+
+    struct standard_encryption_info
+    {
+        const std::size_t spin_count = 50000;
+        std::size_t block_size;
+        std::size_t key_bits;
+        std::size_t key_bytes;
+        std::size_t hash_size;
+        cipher_algorithm cipher;
+        cipher_chaining chaining;
+        const hash_algorithm hash = hash_algorithm::sha1;
+        std::vector<std::uint8_t> salt_value;
+        std::vector<std::uint8_t> verifier_hash_input;
+        std::vector<std::uint8_t> verifier_hash_value;
+        std::vector<std::uint8_t> encrypted_key_value;
+    };
+
+    static std::vector<std::uint8_t> decrypt_xlsx_standard(const std::vector<std::uint8_t> &encryption_info,
+        const std::string &password, const std::vector<std::uint8_t> &encrypted_package);
+
+    struct agile_encryption_info
+    {
+        // key data
+        struct
+        {
+            std::size_t salt_size;
+            std::size_t block_size;
+            std::size_t key_bits;
+            std::size_t hash_size;
+            std::string cipher_algorithm;
+            std::string cipher_chaining;
+            std::string hash_algorithm;
+            std::vector<std::uint8_t> salt_value;
+        } key_data;
+
+        struct
+        {
+            std::vector<std::uint8_t> hmac_key;
+            std::vector<std::uint8_t> hmac_value;
+        } data_integrity;
+
+        struct
+        {
+            std::size_t spin_count;
+            std::size_t salt_size;
+            std::size_t block_size;
+            std::size_t key_bits;
+            std::size_t hash_size;
+            std::string cipher_algorithm;
+            std::string cipher_chaining;
+            hash_algorithm hash;
+            std::vector<std::uint8_t> salt_value;
+            std::vector<std::uint8_t> verifier_hash_input;
+            std::vector<std::uint8_t> verifier_hash_value;
+            std::vector<std::uint8_t> encrypted_key_value;
+        } key_encryptor;
+    };
+
+    static agile_encryption_info generate_agile_encryption_info(const std::string &password);
+
+    //static std::vector<std::uint8_t> write_agile_encryption_info(const std::string &password);
+
+    static std::vector<std::uint8_t> decrypt_xlsx_agile(const std::vector<std::uint8_t> &encryption_info,
+        const std::string &password, const std::vector<std::uint8_t> &encrypted_package);
+
+    static std::vector<std::uint8_t> decrypt_xlsx(const std::vector<std::uint8_t> &bytes, const std::string &password);
+
+    static std::vector<std::uint8_t> encrypt_xlsx(const std::vector<std::uint8_t> &bytes, const std::string &password);
+};
 
 template <typename T>
 auto read_int(std::size_t &index, const std::vector<std::uint8_t> &raw_data)
@@ -56,6 +181,7 @@ std::vector<std::uint8_t> decode_base64(const std::string &encoded)
     return decoded;
 }
 
+/*
 std::string encode_base64(const std::vector<std::uint8_t> &decoded)
 {
     std::string encoded(static_cast<std::size_t>(Base64::EncodedLength(decoded.size())), 0);
@@ -63,74 +189,8 @@ std::string encode_base64(const std::vector<std::uint8_t> &decoded)
 
     return encoded;
 }
+*/
 
-} // namespace
-
-namespace xml {
-
-template <>
-struct value_traits<xlnt::detail::hash_algorithm>
-{
-    static xlnt::detail::hash_algorithm parse(std::string hash_algorithm_string, const parser &)
-    {
-        if (hash_algorithm_string == "SHA1")
-            return xlnt::detail::hash_algorithm::sha1;
-        else if (hash_algorithm_string == "SHA256")
-            return xlnt::detail::hash_algorithm::sha256;
-        else if (hash_algorithm_string == "SHA384")
-            return xlnt::detail::hash_algorithm::sha384;
-        else if (hash_algorithm_string == "SHA512")
-            return xlnt::detail::hash_algorithm::sha512;
-        else if (hash_algorithm_string == "MD5")
-            return xlnt::detail::hash_algorithm::md5;
-        else if (hash_algorithm_string == "MD4")
-            return xlnt::detail::hash_algorithm::md4;
-        else if (hash_algorithm_string == "MD2")
-            return xlnt::detail::hash_algorithm::md2;
-        else if (hash_algorithm_string == "Ripemd128")
-            return xlnt::detail::hash_algorithm::ripemd128;
-        else if (hash_algorithm_string == "Ripemd160")
-            return xlnt::detail::hash_algorithm::ripemd160;
-        else if (hash_algorithm_string == "Whirlpool")
-            return xlnt::detail::hash_algorithm::whirlpool;
-
-        default_case(xlnt::detail::hash_algorithm::sha1);
-    }
-
-    static std::string serialize(xlnt::detail::hash_algorithm algorithm, const serializer &)
-    {
-        switch (algorithm)
-        {
-        case xlnt::detail::hash_algorithm::sha1:
-            return "SHA1";
-        case xlnt::detail::hash_algorithm::sha256:
-            return "SHA256";
-        case xlnt::detail::hash_algorithm::sha384:
-            return "SHA384";
-        case xlnt::detail::hash_algorithm::sha512:
-            return "SHA512";
-        case xlnt::detail::hash_algorithm::md5:
-            return "MD5";
-        case xlnt::detail::hash_algorithm::md4:
-            return "MD4";
-        case xlnt::detail::hash_algorithm::md2:
-            return "MD2";
-        case xlnt::detail::hash_algorithm::ripemd128:
-            return "Ripemd128";
-        case xlnt::detail::hash_algorithm::ripemd160:
-            return "Ripemd160";
-        case xlnt::detail::hash_algorithm::whirlpool:
-            return "Whirlpool";
-        }
-
-        default_case("SHA1");
-    }
-}; // struct value_traits<>
-
-} // namespace xml
-
-namespace xlnt {
-namespace detail {
 
 std::vector<std::uint8_t> crypto_helper::aes(
     const std::vector<std::uint8_t> &key,
@@ -140,19 +200,19 @@ std::vector<std::uint8_t> crypto_helper::aes(
 {
     if (direction == cipher_direction::encryption && chaining == cipher_chaining::cbc)
     {
-	return xaes_cbc_encrypt(source, key, iv);
+	return xlnt::detail::aes_cbc_encrypt(source, key, iv);
     }
     else if (direction == cipher_direction::decryption && chaining == cipher_chaining::cbc)
     {
-	return xaes_cbc_decrypt(source, key, iv);
+	return xlnt::detail::aes_cbc_decrypt(source, key, iv);
     }
     else if (direction == cipher_direction::encryption && chaining == cipher_chaining::ecb)
     {
-	return xaes_ecb_encrypt(source, key);
+	return xlnt::detail::aes_ecb_encrypt(source, key);
     }
     else if (direction == cipher_direction::decryption && chaining == cipher_chaining::ecb)
     {
-	return xaes_ecb_decrypt(source, key);
+	return xlnt::detail::aes_ecb_decrypt(source, key);
     }
 
     throw xlnt::exception("unsupported encryption algorithm");
@@ -324,6 +384,7 @@ crypto_helper::agile_encryption_info crypto_helper::generate_agile_encryption_in
     return result;
 }
 
+/*
 std::vector<std::uint8_t> crypto_helper::write_agile_encryption_info(const std::string &password)
 {
     static const auto &xmlns = xlnt::constants::ns("encryption");
@@ -378,6 +439,7 @@ std::vector<std::uint8_t> crypto_helper::write_agile_encryption_info(const std::
 
     return encryption_info;
 }
+*/
 
 std::vector<std::uint8_t> crypto_helper::decrypt_xlsx_agile(
     const std::vector<std::uint8_t> &encryption_info,
@@ -643,6 +705,81 @@ std::vector<std::uint8_t> crypto_helper::encrypt_xlsx(
 }
 
 const std::size_t crypto_helper::segment_length = 4096;
+
+} // namespace
+
+namespace xml {
+
+template <>
+struct value_traits<hash_algorithm>
+{
+/*
+    static hash_algorithm parse(std::string hash_algorithm_string, const parser &)
+    {
+        if (hash_algorithm_string == "SHA1")
+            return hash_algorithm::sha1;
+        else if (hash_algorithm_string == "SHA256")
+            return hash_algorithm::sha256;
+        else if (hash_algorithm_string == "SHA384")
+            return hash_algorithm::sha384;
+        else if (hash_algorithm_string == "SHA512")
+            return hash_algorithm::sha512;
+        else if (hash_algorithm_string == "MD5")
+            return hash_algorithm::md5;
+        else if (hash_algorithm_string == "MD4")
+            return hash_algorithm::md4;
+        else if (hash_algorithm_string == "MD2")
+            return hash_algorithm::md2;
+        else if (hash_algorithm_string == "Ripemd128")
+            return hash_algorithm::ripemd128;
+        else if (hash_algorithm_string == "Ripemd160")
+            return hash_algorithm::ripemd160;
+        else if (hash_algorithm_string == "Whirlpool")
+            return hash_algorithm::whirlpool;
+
+        default_case(hash_algorithm::sha1);
+    }
+
+    static std::string serialize(hash_algorithm algorithm, const serializer &)
+    {
+        switch (algorithm)
+        {
+        case hash_algorithm::sha1:
+            return "SHA1";
+        case hash_algorithm::sha256:
+            return "SHA256";
+        case hash_algorithm::sha384:
+            return "SHA384";
+        case hash_algorithm::sha512:
+            return "SHA512";
+        case hash_algorithm::md5:
+            return "MD5";
+        case hash_algorithm::md4:
+            return "MD4";
+        case hash_algorithm::md2:
+            return "MD2";
+        case hash_algorithm::ripemd128:
+            return "Ripemd128";
+        case hash_algorithm::ripemd160:
+            return "Ripemd160";
+        case hash_algorithm::whirlpool:
+            return "Whirlpool";
+        }
+
+        default_case("SHA1");
+    }
+*/
+}; // struct value_traits<>
+
+} // namespace xml
+
+namespace xlnt {
+namespace detail {
+
+std::vector<std::uint8_t> XLNT_API decrypt_xlsx(const std::vector<std::uint8_t> &data, const std::string &password)
+{
+    return crypto_helper::decrypt_xlsx(data, password);
+}
 
 void xlsx_consumer::read(std::istream &source, const std::string &password)
 {

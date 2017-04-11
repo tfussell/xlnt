@@ -40,6 +40,7 @@ class rich_text;
 class manifest;
 class path;
 class relationship;
+class variant;
 class workbook;
 class worksheet;
 

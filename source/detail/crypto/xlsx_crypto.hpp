@@ -21,138 +21,18 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#include <array>
+#include <cstdint>
+#include <string>
+#include <vector>
 
 #include <xlnt/xlnt_config.hpp>
-#include <xlnt/utils/exceptions.hpp>
-#include <xlnt/workbook/workbook.hpp>
-#include <detail/constants.hpp>
-#include <detail/include_libstudxml.hpp>
-#include <detail/pole.hpp>
-#include <detail/vector_streambuf.hpp>
-#include <detail/xlsx_consumer.hpp>
-#include <detail/xlsx_producer.hpp>
 
 namespace xlnt {
 namespace detail {
 
-enum class hash_algorithm
-{
-    sha1,
-    sha256,
-    sha384,
-    sha512,
-    md5,
-    md4,
-    md2,
-    ripemd128,
-    ripemd160,
-    whirlpool
-};
+std::vector<std::uint8_t> XLNT_API decrypt_xlsx(const std::vector<std::uint8_t> &bytes, const std::string &password);
 
-struct XLNT_API crypto_helper
-{
-    static const std::size_t segment_length;
-
-    enum class cipher_algorithm
-    {
-        aes,
-        rc2,
-        rc4,
-        des,
-        desx,
-        triple_des,
-        triple_des_112
-    };
-
-    enum class cipher_chaining
-    {
-        ecb, // electronic code book
-        cbc, // cipher block chaining
-        cfb // cipher feedback chaining
-    };
-
-    enum class cipher_direction
-    {
-        encryption,
-        decryption
-    };
-
-    static std::vector<std::uint8_t> aes(const std::vector<std::uint8_t> &key, const std::vector<std::uint8_t> &iv,
-        const std::vector<std::uint8_t> &source, cipher_chaining chaining, cipher_direction direction);
-
-    static std::vector<std::uint8_t> hash(hash_algorithm algorithm, const std::vector<std::uint8_t> &input);
-
-    static std::vector<std::uint8_t> file(POLE::Storage &storage, const std::string &name);
-
-    struct standard_encryption_info
-    {
-        const std::size_t spin_count = 50000;
-        std::size_t block_size;
-        std::size_t key_bits;
-        std::size_t key_bytes;
-        std::size_t hash_size;
-        cipher_algorithm cipher;
-        cipher_chaining chaining;
-        const hash_algorithm hash = hash_algorithm::sha1;
-        std::vector<std::uint8_t> salt_value;
-        std::vector<std::uint8_t> verifier_hash_input;
-        std::vector<std::uint8_t> verifier_hash_value;
-        std::vector<std::uint8_t> encrypted_key_value;
-    };
-
-    static std::vector<std::uint8_t> decrypt_xlsx_standard(const std::vector<std::uint8_t> &encryption_info,
-        const std::string &password, const std::vector<std::uint8_t> &encrypted_package);
-
-    struct agile_encryption_info
-    {
-        // key data
-        struct
-        {
-            std::size_t salt_size;
-            std::size_t block_size;
-            std::size_t key_bits;
-            std::size_t hash_size;
-            std::string cipher_algorithm;
-            std::string cipher_chaining;
-            std::string hash_algorithm;
-            std::vector<std::uint8_t> salt_value;
-        } key_data;
-
-        struct
-        {
-            std::vector<std::uint8_t> hmac_key;
-            std::vector<std::uint8_t> hmac_value;
-        } data_integrity;
-
-        struct
-        {
-            std::size_t spin_count;
-            std::size_t salt_size;
-            std::size_t block_size;
-            std::size_t key_bits;
-            std::size_t hash_size;
-            std::string cipher_algorithm;
-            std::string cipher_chaining;
-            hash_algorithm hash;
-            std::vector<std::uint8_t> salt_value;
-            std::vector<std::uint8_t> verifier_hash_input;
-            std::vector<std::uint8_t> verifier_hash_value;
-            std::vector<std::uint8_t> encrypted_key_value;
-        } key_encryptor;
-    };
-
-    static agile_encryption_info generate_agile_encryption_info(const std::string &password);
-
-    static std::vector<std::uint8_t> write_agile_encryption_info(const std::string &password);
-
-    static std::vector<std::uint8_t> decrypt_xlsx_agile(const std::vector<std::uint8_t> &encryption_info,
-        const std::string &password, const std::vector<std::uint8_t> &encrypted_package);
-
-    static std::vector<std::uint8_t> decrypt_xlsx(const std::vector<std::uint8_t> &bytes, const std::string &password);
-
-    static std::vector<std::uint8_t> encrypt_xlsx(const std::vector<std::uint8_t> &bytes, const std::string &password);
-};
+//static std::vector<std::uint8_t> encrypt_xlsx(const std::vector<std::uint8_t> &bytes, const std::string &password);
 
 } // namespace detail
 } // namespace xlnt
