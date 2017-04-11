@@ -28,8 +28,6 @@ set(GENX
 set(EXPAT
     ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/xmlparse.c
     ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/xmlrole.c
-    ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/xmltok_impl.c
-    ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/xmltok_ns.c
     ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/xmltok.c
     ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/ascii.h
     ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/asciitab.h

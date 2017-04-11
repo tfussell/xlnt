@@ -32,12 +32,14 @@
 
 #include "aes.hpp"
 
-namespace {
-
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wold-style-cast"
 #pragma clang diagnostic ignored "-Wdocumentation"
 #pragma clang diagnostic ignored "-Wwritable-strings"
+#pragma clang diagnostic ignored "-Wsign-conversion"
+#pragma clang diagnostic ignored "-Wshorten-64-to-32"
+
+namespace {
 
 #define LTC_NO_ROLC
 #include "tomcrypt.h"
@@ -1736,8 +1738,6 @@ int ecb_start(int cipher, const unsigned char *key, int keylen, int num_rounds, 
    return cipher_descriptor[cipher].setup(key, keylen, num_rounds, &ecb->key);
 }
 
-#pragma clang diagnostic pop
-
 } // namespace
 
 namespace xlnt {
@@ -1818,3 +1818,4 @@ std::vector<std::uint8_t> xaes_cbc_decrypt(
 
 } // namespace xlnt
 
+#pragma clang diagnostic pop

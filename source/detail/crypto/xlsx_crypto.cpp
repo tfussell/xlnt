@@ -21,11 +21,11 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#include <detail/aes.hpp>
-#include <detail/base64.hpp>
-#include <detail/sha.hpp>
+#include <detail/crypto/aes.hpp>
+#include <detail/crypto/base64.hpp>
+#include <detail/crypto/sha.hpp>
 #include <detail/default_case.hpp>
-#include <detail/xlsx_crypto.hpp>
+#include <detail/crypto/xlsx_crypto.hpp>
 
 namespace {
 

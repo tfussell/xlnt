@@ -6,6 +6,10 @@
 
 #include "sha.hpp"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wsign-conversion"
+#pragma clang diagnostic ignored "-Wshorten-64-to-32"
+
 namespace SHA1 {
 
 class SHA1
@@ -519,3 +523,5 @@ std::vector<std::uint8_t> SHA::sha512(const std::vector<std::uint8_t> &data)
 {
     return SHA512::digest(data);
 }
+
+#pragma clang diagnostic pop

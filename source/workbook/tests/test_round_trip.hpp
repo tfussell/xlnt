@@ -5,7 +5,7 @@
 #include <cxxtest/TestSuite.h>
 
 #include <detail/vector_streambuf.hpp>
-#include <detail/xlsx_crypto.hpp>
+#include <detail/crypto/xlsx_crypto.hpp>
 #include <helpers/path_helper.hpp>
 #include <helpers/xml_helper.hpp>
 #include <xlnt/workbook/workbook.hpp>
