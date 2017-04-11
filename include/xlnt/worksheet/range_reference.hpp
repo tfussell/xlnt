@@ -47,13 +47,13 @@ public:
 
     /// <summary>
     /// Constructs a range reference equivalent to the provided range_string in the form
-    /// <top_left>:<bottom_right>.
+    /// top_left:bottom_right.
     /// </summary>
     explicit range_reference(const std::string &range_string);
 
     /// <summary>
     /// Constructs a range reference equivalent to the provided range_string in the form
-    /// <top_left>:<bottom_right>.
+    /// top_left:bottom_right.
     /// </summary>
     explicit range_reference(const char *range_string);
 

@@ -2102,9 +2102,9 @@ Converts relative reference coordinates to absolute coordinates (B12 -> $B$12)
 #### ```xlnt::range_reference::range_reference()```
 Constructs a range reference equal to A1:A1
 #### ```xlnt::range_reference::range_reference(const std::string &range_string)```
-Constructs a range reference equivalent to the provided range_string in the form <top_left>:<bottom_right>.
+Constructs a range reference equivalent to the provided range_string in the form top_left:bottom_right.
 #### ```xlnt::range_reference::range_reference(const char *range_string)```
-Constructs a range reference equivalent to the provided range_string in the form <top_left>:<bottom_right>.
+Constructs a range reference equivalent to the provided range_string in the form top_left:bottom_right.
 #### ```xlnt::range_reference::range_reference(const std::pair< cell_reference, cell_reference > &reference_pair)```
 Constructs a range reference from a pair of cell references.
 #### ```xlnt::range_reference::range_reference(const cell_reference &start, const cell_reference &end)```

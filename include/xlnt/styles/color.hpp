@@ -95,7 +95,7 @@ class XLNT_API rgb_color
 {
 public:
     /// <summary>
-    /// Constructs an RGB color from a string in the form #[aa]rrggbb
+    /// Constructs an RGB color from a string in the form \#[aa]rrggbb
     /// </summary>
     rgb_color(const std::string &hex_string);
 
@@ -106,7 +106,7 @@ public:
     rgb_color(std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint8_t a = 255);
 
     /// <summary>
-    /// Returns a string representation of this color in the form #aarrggbb
+    /// Returns a string representation of this color in the form \#aarrggbb
     /// </summary>
     std::string hex_string() const;
 
@@ -164,52 +164,52 @@ class XLNT_API color
 {
 public:
     /// <summary>
-    /// Returns the color #000000
+    /// Returns the color \#000000
     /// </summary>
     static const color black();
 
     /// <summary>
-	/// Returns the color #ffffff
+    /// Returns the color \#ffffff
     /// </summary>
     static const color white();
 
     /// <summary>
-	/// Returns the color #ff0000
+	/// Returns the color \#ff0000
     /// </summary>
     static const color red();
 
     /// <summary>
-	/// Returns the color #8b0000
+	/// Returns the color \#8b0000
     /// </summary>
     static const color darkred();
 
     /// <summary>
-	/// Returns the color #00ff00
+	/// Returns the color \#00ff00
     /// </summary>
     static const color blue();
 
     /// <summary>
-	/// Returns the color #008b00
+	/// Returns the color \#008b00
     /// </summary>
     static const color darkblue();
 
     /// <summary>
-	/// Returns the color #0000ff
+	/// Returns the color \#0000ff
     /// </summary>
     static const color green();
 
     /// <summary>
-	/// Returns the color #00008b
+	/// Returns the color \#00008b
     /// </summary>
     static const color darkgreen();
 
     /// <summary>
-	/// Returns the color #ffff00
+	/// Returns the color \#ffff00
     /// </summary>
     static const color yellow();
 
     /// <summary>
-	/// Returns the color #cccc00
+	/// Returns the color \#cccc00
     /// </summary>
     static const color darkyellow();
 
