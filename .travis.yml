@@ -17,7 +17,7 @@ addons:
     sources:
      - ubuntu-toolchain-r-test
     packages:
-     - g++-6 zlib1g libcrypto++9 libcrypto++9-dbg libcrypto++-dev cxxtest lcov
+     - g++-6 lcov
 
 install:
  - export CC=gcc-6

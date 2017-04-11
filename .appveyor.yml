@@ -17,22 +17,10 @@ environment:
 
 init: []
 
-install:
-  - if [%platform%]==[Win32] set VCPKG_PLATFORM=x86-windows
-  - if [%platform%]==[x64] set VCPKG_PLATFORM=x64-windows
-  - if not exist vcpkg git clone https://github.com/Microsoft/vcpkg
-  - cd vcpkg
-  - if not exist downloads mkdir downloads
-  - if not exist downloads\AlwaysAllowDownloads type nul > downloads\AlwaysAllowDownloads
-  - powershell -exec bypass scripts\bootstrap.ps1
-  - vcpkg install cryptopp:%VCPKG_PLATFORM% zlib:%VCPKG_PLATFORM% expat:%VCPKG_PLATFORM%
-  - vcpkg integrate install
-  - cd ..
-
 before_build:
   - mkdir build
   - cd build
-  - cmake -G "Visual Studio 14 2015" -D CMAKE_GENERATOR_PLATFORM=%platform% -D STATIC=%STATIC% -D SAMPLES=ON -D BENCHMARKS=ON -D CMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake ..
+  - cmake -G "Visual Studio 14 2015" -D CMAKE_GENERATOR_PLATFORM=%platform% -D STATIC=%STATIC% -D SAMPLES=ON -D BENCHMARKS=ON ..
 
 build:
   project: build/tests/xlnt.test.sln
@@ -41,7 +29,4 @@ build:
 
 test_script:
   - cd tests\%configuration%
-  - set VCPKG_DIR=%VCPKG_PLATFORM%
-  - if [%configuration%]==[Debug] set VCPKG_DIR=%VCPKG_DIR%\debug
-  - set PATH=C:\projects\xlnt\vcpkg\installed\%VCPKG_DIR%\bin;%PATH%
   - xlnt.test.exe
