@@ -235,16 +235,6 @@ static const std::uint32_t Td4[256] = {
     0x55555555UL, 0x21212121UL, 0x0c0c0c0cUL, 0x7d7d7d7dUL,
 };
 
-#define Te0(x) TE0[x]
-#define Te1(x) TE1[x]
-#define Te2(x) TE2[x]
-#define Te3(x) TE3[x]
-
-#define Td0(x) TD0[x]
-#define Td1(x) TD1[x]
-#define Td2(x) TD2[x]
-#define Td3(x) TD3[x]
-
 static const std::uint32_t TE1[256] = {
     0xa5c66363UL, 0x84f87c7cUL, 0x99ee7777UL, 0x8df67b7bUL,
     0x0dfff2f2UL, 0xbdd66b6bUL, 0xb1de6f6fUL, 0x5491c5c5UL,
@@ -445,7 +435,6 @@ static const std::uint32_t TE3[256] = {
     0xb0b0cb7bUL, 0x5454fca8UL, 0xbbbbd66dUL, 0x16163a2cUL,
 };
 
-#ifndef PELI_TAB
 static const std::uint32_t Te4_0[] = {
     0x00000063UL, 0x0000007cUL, 0x00000077UL, 0x0000007bUL, 0x000000f2UL, 0x0000006bUL, 0x0000006fUL, 0x000000c5UL,
     0x00000030UL, 0x00000001UL, 0x00000067UL, 0x0000002bUL, 0x000000feUL, 0x000000d7UL, 0x000000abUL, 0x00000076UL,
@@ -585,7 +574,6 @@ static const std::uint32_t Te4_3[] = {
     0x8c000000UL, 0xa1000000UL, 0x89000000UL, 0x0d000000UL, 0xbf000000UL, 0xe6000000UL, 0x42000000UL, 0x68000000UL,
     0x41000000UL, 0x99000000UL, 0x2d000000UL, 0x0f000000UL, 0xb0000000UL, 0x54000000UL, 0xbb000000UL, 0x16000000UL
 };
-#endif /* pelimac */
 
 static const std::uint32_t TD1[256] = {
     0x5051f4a7UL, 0x537e4165UL, 0xc31a17a4UL, 0x963a275eUL,
@@ -960,7 +948,7 @@ struct rijndael_key {
     int Nr;
 };
 
-rijndael_key rijndael_setup(const std::vector<std::uint8_t> &key)
+rijndael_key rijndael_setup(const std::vector<std::uint8_t> &key_data)
 {
     rijndael_key skey;
     
@@ -968,12 +956,13 @@ rijndael_key rijndael_setup(const std::vector<std::uint8_t> &key)
     std::uint32_t temp, *rk;
     std::uint32_t *rrk;
     
-    if (key.size() != 16 && key.size() != 24 && key.size() != 32)
+    if (key_data.size() != 16 && key_data.size() != 24 && key_data.size() != 32)
     {
         throw std::runtime_error("");
     }
     
-    skey.Nr = 10 + ((key.size()/8)-2)*2;
+    skey.Nr = 10 + ((key_data.size()/8)-2)*2;
+    auto key = key_data.data();
     
     /* setup the forward key */
     i                 = 0;
@@ -982,7 +971,7 @@ rijndael_key rijndael_setup(const std::vector<std::uint8_t> &key)
     LOAD32H(rk[1], key +  4);
     LOAD32H(rk[2], key +  8);
     LOAD32H(rk[3], key + 12);
-    if (keylen == 16) {
+    if (key_data.size() == 16) {
         for (;;) {
             temp  = rk[3];
             rk[4] = rk[0] ^ setup_mix(temp) ^ rcon[i];
@@ -994,7 +983,7 @@ rijndael_key rijndael_setup(const std::vector<std::uint8_t> &key)
             }
             rk += 4;
         }
-    } else if (keylen == 24) {
+    } else if (key_data.size() == 24) {
         LOAD32H(rk[4], key + 16);
         LOAD32H(rk[5], key + 20);
         for (;;) {
@@ -1014,7 +1003,7 @@ rijndael_key rijndael_setup(const std::vector<std::uint8_t> &key)
             rk[11] = rk[ 5] ^ rk[10];
             rk += 6;
         }
-    } else if (keylen == 32) {
+    } else if (key_data.size() == 32) {
         LOAD32H(rk[4], key + 16);
         LOAD32H(rk[5], key + 20);
         LOAD32H(rk[6], key + 24);
@@ -1045,7 +1034,7 @@ rijndael_key rijndael_setup(const std::vector<std::uint8_t> &key)
     
     /* setup the inverse key now */
     rk   = skey.dK;
-    rrk  = skey.eK + (28 + keylen) - 4;
+    rrk  = skey.eK + (28 + key_data.size()) - 4;
     
     /* apply the inverse MixColumn transform to all round keys but the first and the last: */
     /* copy first */
@@ -1099,6 +1088,16 @@ rijndael_key rijndael_setup(const std::vector<std::uint8_t> &key)
 #define STORE32H(x, y)                                                                     \
 do { (y)[0] = static_cast<std::uint8_t>(((x)>>24)&255); (y)[1] = static_cast<std::uint8_t>(((x)>>16)&255);   \
 (y)[2] = static_cast<std::uint8_t>(((x)>>8)&255); (y)[3] = static_cast<std::uint8_t>((x)&255); } while(0)
+
+#define Te0(x) TE0[x]
+#define Te1(x) TE1[x]
+#define Te2(x) TE2[x]
+#define Te3(x) TE3[x]
+
+#define Td0(x) TD0[x]
+#define Td1(x) TD1[x]
+#define Td2(x) TD2[x]
+#define Td3(x) TD3[x]
 
 void rijndael_ecb_encrypt(const unsigned char *pt, unsigned char *ct, rijndael_key &skey)
 {
@@ -1348,7 +1347,7 @@ std::vector<std::uint8_t> aes_ecb_encrypt(
     }
 
     auto ciphertext = std::vector<std::uint8_t>(plaintext.size());
-    auto expanded_key = rijndael_setup(key.data(), key.size());
+    auto expanded_key = rijndael_setup(key);
     auto len = plaintext.size();
     auto pt = plaintext.data();
     auto ct = ciphertext.data();
@@ -1377,7 +1376,7 @@ std::vector<std::uint8_t> aes_ecb_decrypt(
     }
     
     auto plaintext = std::vector<std::uint8_t>(ciphertext.size());
-    auto expanded_key = rijndael_setup(key.data(), key.size());
+    auto expanded_key = rijndael_setup(key);
     auto len = ciphertext.size();
     auto ct = ciphertext.data();
     auto pt = plaintext.data();
@@ -1407,7 +1406,7 @@ std::vector<std::uint8_t> aes_cbc_encrypt(
     }
     
     auto ciphertext = std::vector<std::uint8_t>(plaintext.size());
-    auto expanded_key = rijndael_setup(key.data(), key.size());
+    auto expanded_key = rijndael_setup(key);
     auto len = plaintext.size();
     auto ct = ciphertext.data();
     auto pt = plaintext.data();
@@ -1451,7 +1450,7 @@ std::vector<std::uint8_t> aes_cbc_decrypt(
     std::array<std::uint8_t, 16> temporary{{0}};
 
     auto plaintext = std::vector<std::uint8_t>(ciphertext.size());
-    auto expanded_key = rijndael_setup(key.data(), key.size());
+    auto expanded_key = rijndael_setup(key);
     auto len = ciphertext.size();
     auto ct = ciphertext.data();
     auto pt = plaintext.data();

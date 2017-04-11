@@ -369,9 +369,11 @@ std::vector<std::uint8_t> crypto_helper::decrypt_xlsx_standard(
 
     std::size_t package_offset = 0;
     auto decrypted_size = static_cast<std::size_t>(read_int<std::uint64_t>(package_offset, encrypted_package));
-    auto decrypted = aes(key_derived, {},
+
+    using xlnt::detail::aes_ecb_decrypt;
+    auto decrypted = aes_ecb_decrypt(
         std::vector<std::uint8_t>(encrypted_package.begin() + 8, encrypted_package.end()),
-        cipher_chaining::ecb, cipher_direction::decryption);
+        key_derived);
     decrypted.resize(decrypted_size);
 
     return decrypted;
@@ -562,14 +564,20 @@ std::vector<std::uint8_t> crypto_helper::decrypt_xlsx_agile(
 
     static const std::size_t block_size = 8;
 
-    auto calculate_block = [&result](const std::vector<std::uint8_t> &raw_key,
-        const std::array<std::uint8_t, block_size> &block, const std::vector<std::uint8_t> &encrypted) {
+    auto calculate_block = [&result](
+        const std::vector<std::uint8_t> &raw_key,
+        const std::array<std::uint8_t, block_size> &block,
+        const std::vector<std::uint8_t> &encrypted)
+    {
         auto combined = raw_key;
         combined.insert(combined.end(), block.begin(), block.end());
+
         auto key = hash(result.key_encryptor.hash, combined);
         key.resize(result.key_encryptor.key_bits / 8);
-        return aes(key, result.key_encryptor.salt_value, encrypted,
-            cipher_chaining::cbc, cipher_direction::decryption);
+
+        using xlnt::detail::aes_cbc_decrypt;
+
+        return aes_cbc_decrypt(encrypted, key, result.key_encryptor.salt_value);
     };
 
     const std::array<std::uint8_t, block_size> input_block_key = {{0xfe, 0xa7, 0xd2, 0x76, 0x3b, 0x4b, 0x9e, 0x79}};
