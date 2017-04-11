@@ -44,30 +44,6 @@ namespace {
 #define LTC_NO_ROLC
 #include "tomcrypt.h"
 
-#define SETUP    rijndael_setup
-#define ECB_ENC  rijndael_ecb_encrypt
-#define ECB_DEC  rijndael_ecb_decrypt
-#define ECB_DONE rijndael_done
-#define ECB_KS   rijndael_keysize
-
-const struct ltc_cipher_descriptor rijndael_desc =
-{
-    "rijndael",
-    6,
-    16, 32, 16, 10,
-    SETUP, ECB_ENC, ECB_DEC, NULL, ECB_DONE, ECB_KS,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
-};
-
-const struct ltc_cipher_descriptor aes_desc =
-{
-    "aes",
-    6,
-    16, 32, 16, 10,
-    SETUP, ECB_ENC, ECB_DEC, NULL, ECB_DONE, ECB_KS,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
-};
-
 static const ulong32 TE0[256] = {
     0xc66363a5UL, 0xf87c7c84UL, 0xee777799UL, 0xf67b7b8dUL,
     0xfff2f20dUL, 0xd66b6bbdUL, 0xde6f6fb1UL, 0x91c5c554UL,
@@ -982,27 +958,25 @@ static ulong32 setup_mix(ulong32 temp)
     @param skey The key in as scheduled by this function.
     @return CRYPT_OK if successful
  */
-int SETUP(const unsigned char *key, int keylen, int num_rounds, symmetric_key *skey)
+void rijndael_setup(const unsigned char *key, int keylen, int num_rounds, rijndael_key &skey)
 {
     int i;
     ulong32 temp, *rk;
-#ifndef ENCRYPT_ONLY
     ulong32 *rrk;
-#endif
 
     if (keylen != 16 && keylen != 24 && keylen != 32) {
-       return CRYPT_INVALID_KEYSIZE;
+       throw std::runtime_error("");
     }
 
     if (num_rounds != 0 && num_rounds != (10 + ((keylen/8)-2)*2)) {
-       return CRYPT_INVALID_ROUNDS;
+       throw std::runtime_error("");
     }
 
-    skey->rijndael.Nr = 10 + ((keylen/8)-2)*2;
+    skey.Nr = 10 + ((keylen/8)-2)*2;
 
     /* setup the forward key */
     i                 = 0;
-    rk                = skey->rijndael.eK;
+    rk                = skey.eK;
     LOAD32H(rk[0], key     );
     LOAD32H(rk[1], key +  4);
     LOAD32H(rk[2], key +  8);
@@ -1065,12 +1039,9 @@ int SETUP(const unsigned char *key, int keylen, int num_rounds, symmetric_key *s
             rk += 8;
         }
     } else {
-       /* this can't happen */
-       /* coverity[dead_error_line] */
-       return CRYPT_ERROR;
+       throw std::runtime_error("");
     }
 
-#ifndef ENCRYPT_ONLY
     /* setup the inverse key now */
     rk   = skey->rijndael.dK;
     rrk  = skey->rijndael.eK + (28 + keylen) - 4;
@@ -1086,16 +1057,7 @@ int SETUP(const unsigned char *key, int keylen, int num_rounds, symmetric_key *s
     for (i = 1; i < skey->rijndael.Nr; i++) {
         rrk -= 4;
         rk  += 4;
-    #ifdef LTC_SMALL_CODE
-        temp = rrk[0];
-        rk[0] = setup_mix2(temp);
-        temp = rrk[1];
-        rk[1] = setup_mix2(temp);
-        temp = rrk[2];
-        rk[2] = setup_mix2(temp);
-        temp = rrk[3];
-        rk[3] = setup_mix2(temp);
-     #else
+
         temp = rrk[0];
         rk[0] =
             Tks0[byte(temp, 3)] ^
@@ -1120,8 +1082,6 @@ int SETUP(const unsigned char *key, int keylen, int num_rounds, symmetric_key *s
             Tks1[byte(temp, 2)] ^
             Tks2[byte(temp, 1)] ^
             Tks3[byte(temp, 0)];
-      #endif
-
     }
 
     /* copy last */
@@ -1131,9 +1091,6 @@ int SETUP(const unsigned char *key, int keylen, int num_rounds, symmetric_key *s
     *rk++ = *rrk++;
     *rk++ = *rrk++;
     *rk   = *rrk;
-#endif /* ENCRYPT_ONLY */
-
-    return CRYPT_OK;
 }
 
 /**
@@ -1143,7 +1100,7 @@ int SETUP(const unsigned char *key, int keylen, int num_rounds, symmetric_key *s
   @param skey The key as scheduled
   @return CRYPT_OK if successful
 */
-int ECB_ENC(const unsigned char *pt, unsigned char *ct, symmetric_key *skey)
+void rijndael_ecb_encrypt(const unsigned char *pt, unsigned char *ct, symmetric_key *skey)
 {
     ulong32 s0, s1, s2, s3, t0, t1, t2, t3, *rk;
     int Nr, r;
@@ -1253,8 +1210,6 @@ int ECB_ENC(const unsigned char *pt, unsigned char *ct, symmetric_key *skey)
         (Te4_0[byte(t2, 0)]) ^
         rk[3];
     STORE32H(s3, ct+12);
-
-    return CRYPT_OK;
 }
 
 /**
@@ -1264,7 +1219,7 @@ int ECB_ENC(const unsigned char *pt, unsigned char *ct, symmetric_key *skey)
   @param skey The key as scheduled
   @return CRYPT_OK if successful
 */
-int ECB_DEC(const unsigned char *ct, unsigned char *pt, symmetric_key *skey)
+void rijndael_ecb_decrypt(const unsigned char *ct, unsigned char *pt, symmetric_key *skey)
 {
     ulong32 s0, s1, s2, s3, t0, t1, t2, t3, *rk;
     int Nr, r;
@@ -1376,14 +1331,12 @@ int ECB_DEC(const unsigned char *ct, unsigned char *pt, symmetric_key *skey)
         (Td4[byte(t0, 0)] & 0x000000ff) ^
         rk[3];
     STORE32H(s3, pt+12);
-
-    return CRYPT_OK;
 }
 
 /** Terminate the context
    @param skey    The scheduled key
 */
-void ECB_DONE(symmetric_key *skey)
+void rijndael_done(symmetric_key *skey)
 {
   LTC_UNUSED_PARAM(skey);
 }
@@ -1393,25 +1346,22 @@ void ECB_DONE(symmetric_key *skey)
   @param keysize [in/out] The length of the recommended key (in bytes).  This function will store the suitable size back in this variable.
   @return CRYPT_OK if the input key size is acceptable.
 */
-int ECB_KS(int *keysize)
+void rijndael_keysize(int *keysize)
 {
    if (*keysize < 16)
-      return CRYPT_INVALID_KEYSIZE;
+      throw std::runtime_error("");
    if (*keysize < 24) {
       *keysize = 16;
-      return CRYPT_OK;
    } else if (*keysize < 32) {
       *keysize = 24;
-      return CRYPT_OK;
    } else {
       *keysize = 32;
-      return CRYPT_OK;
    }
 }
 
-int cbc_decrypt(const unsigned char *ct, unsigned char *pt, unsigned long len, symmetric_CBC *cbc)
+void cbc_decrypt(const unsigned char *ct, unsigned char *pt, unsigned long len, symmetric_CBC *cbc)
 {
-   int x, err;
+   int x;
    unsigned char tmp[16];
 #ifdef LTC_FAST
    LTC_FAST_TYPE tmpy;
@@ -1419,32 +1369,27 @@ int cbc_decrypt(const unsigned char *ct, unsigned char *pt, unsigned long len, s
    unsigned char tmpy;
 #endif
 
-   if ((err = cipher_is_valid(cbc->cipher)) != CRYPT_OK) {
-       return err;
+   if (!cipher_is_valid(cbc->cipher)) {
+       throw std::runtime_error("");
    }
 
    /* is blocklen valid? */
    if (cbc->blocklen < 1 || cbc->blocklen > (int)sizeof(cbc->IV) || cbc->blocklen > (int)sizeof(tmp)) {
-      return CRYPT_INVALID_ARG;
+      throw std::runtime_error("");
    }
 
    if (len % cbc->blocklen) {
-      return CRYPT_INVALID_ARG;
+      throw std::runtime_error("");
    }
 #ifdef LTC_FAST
    if (cbc->blocklen % sizeof(LTC_FAST_TYPE)) {
-      return CRYPT_INVALID_ARG;
+      throw std::runtime_error("");
    }
 #endif
 
-   if (cipher_descriptor[cbc->cipher].accel_cbc_decrypt != NULL) {
-      return cipher_descriptor[cbc->cipher].accel_cbc_decrypt(ct, pt, len / cbc->blocklen, cbc->IV, &cbc->key);
-   } else {
       while (len) {
          /* decrypt */
-         if ((err = cipher_descriptor[cbc->cipher].ecb_decrypt(ct, tmp, &cbc->key)) != CRYPT_OK) {
-            return err;
-         }
+         cipher_descriptor[cbc->cipher].ecb_decrypt(ct, tmp, &cbc->key);
 
          /* xor IV against plaintext */
          #if defined(LTC_FAST)
@@ -1464,47 +1409,39 @@ int cbc_decrypt(const unsigned char *ct, unsigned char *pt, unsigned long len, s
          ct  += cbc->blocklen;
          pt  += cbc->blocklen;
          len -= cbc->blocklen;
-      }
    }
-   return CRYPT_OK;
 }
 
-int cbc_done(symmetric_CBC *cbc)
+void cbc_done(symmetric_CBC *cbc)
 {
-   int err;
-
-   if ((err = cipher_is_valid(cbc->cipher)) != CRYPT_OK) {
-      return err;
+   if (!cipher_is_valid(cbc->cipher)) {
+      throw std::runtime_error("");
    }
    cipher_descriptor[cbc->cipher].done(&cbc->key);
-   return CRYPT_OK;
 }
 
-int cbc_encrypt(const unsigned char *pt, unsigned char *ct, unsigned long len, symmetric_CBC *cbc)
+void cbc_encrypt(const unsigned char *pt, unsigned char *ct, unsigned long len, symmetric_CBC *cbc)
 {
-   int x, err;
+   int x;
 
-   if ((err = cipher_is_valid(cbc->cipher)) != CRYPT_OK) {
-       return err;
+   if (!cipher_is_valid(cbc->cipher)) {
+       throw std::runtime_error("");
    }
 
    // is blocklen valid?
    if (cbc->blocklen < 1 || cbc->blocklen > (int)sizeof(cbc->IV)) {
-      return CRYPT_INVALID_ARG;
+      throw std::runtime_error("");
    }
 
    if (len % cbc->blocklen) {
-      return CRYPT_INVALID_ARG;
+      throw std::runtime_error("");
    }
 #ifdef LTC_FAST
    if (cbc->blocklen % sizeof(LTC_FAST_TYPE)) {
-      return CRYPT_INVALID_ARG;
+      throw std::runtime_error("");
    }
 #endif
 
-   if (cipher_descriptor[cbc->cipher].accel_cbc_encrypt != NULL) {
-      return cipher_descriptor[cbc->cipher].accel_cbc_encrypt(pt, ct, len / cbc->blocklen, cbc->IV, &cbc->key);
-   } else {
       while (len) {
          // xor IV against plaintext
          #if defined(LTC_FAST)
@@ -1518,9 +1455,7 @@ int cbc_encrypt(const unsigned char *pt, unsigned char *ct, unsigned long len, s
     #endif
 
          // encrypt
-         if ((err = cipher_descriptor[cbc->cipher].ecb_encrypt(cbc->IV, ct, &cbc->key)) != CRYPT_OK) {
-            return err;
-         }
+         cipher_descriptor[cbc->cipher].ecb_encrypt(cbc->IV, ct, &cbc->key);
 
          // store IV [ciphertext] for a future block
          #if defined(LTC_FAST)
@@ -1537,24 +1472,20 @@ int cbc_encrypt(const unsigned char *pt, unsigned char *ct, unsigned long len, s
          pt  += cbc->blocklen;
          len -= cbc->blocklen;
       }
-   }
-   return CRYPT_OK;
 }
 
-int cbc_start(int cipher, const unsigned char *IV, const unsigned char *key,
+void cbc_start(int cipher, const unsigned char *IV, const unsigned char *key,
               int keylen, int num_rounds, symmetric_CBC *cbc)
 {
-   int x, err;
+   int x;
 
    /* bad param? */
-   if ((err = cipher_is_valid(cipher)) != CRYPT_OK) {
-      return err;
+   if (!cipher_is_valid(cipher)) {
+      throw std::runtime_error("");
    }
 
    /* setup cipher */
-   if ((err = cipher_descriptor[cipher].setup(key, keylen, num_rounds, &cbc->key)) != CRYPT_OK) {
-      return err;
-   }
+   cipher_descriptor[cipher].setup(key, keylen, num_rounds, &cbc->key);
 
    /* copy IV */
    cbc->blocklen = cipher_descriptor[cipher].block_length;
@@ -1562,7 +1493,6 @@ int cbc_start(int cipher, const unsigned char *IV, const unsigned char *key,
    for (x = 0; x < cbc->blocklen; x++) {
        cbc->IV[x] = IV[x];
    }
-   return CRYPT_OK;
 }
 
 int register_cipher(const struct ltc_cipher_descriptor *cipher)
@@ -1593,97 +1523,65 @@ int register_cipher(const struct ltc_cipher_descriptor *cipher)
 }
 
 struct ltc_cipher_descriptor cipher_descriptor[TAB_SIZE] = {
-{ NULL, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
+{ NULL, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL }
  };
 
 LTC_MUTEX_GLOBAL(ltc_cipher_mutex)
 
-int cipher_is_valid(int idx)
+bool cipher_is_valid(int idx)
 {
    LTC_MUTEX_LOCK(&ltc_cipher_mutex);
    if (idx < 0 || idx >= TAB_SIZE || cipher_descriptor[idx].name == NULL) {
       LTC_MUTEX_UNLOCK(&ltc_cipher_mutex);
-      return CRYPT_INVALID_CIPHER;
+      return false;
    }
    LTC_MUTEX_UNLOCK(&ltc_cipher_mutex);
-   return CRYPT_OK;
+   return true;
 }
 
-int ecb_decrypt(const unsigned char *ct, unsigned char *pt, unsigned long len, symmetric_ECB *ecb)
+void ecb_decrypt(const unsigned char *ct, unsigned char *pt, unsigned long len, symmetric_ECB *ecb)
 {
-   int err;
-
-   if ((err = cipher_is_valid(ecb->cipher)) != CRYPT_OK) {
-       return err;
+   if (!cipher_is_valid(ecb->cipher)) {
+       throw std::runtime_error("");
    }
+
    if (len % cipher_descriptor[ecb->cipher].block_length) {
-      return CRYPT_INVALID_ARG;
+      throw std::runtime_error("");
    }
 
-   /* check for accel */
-   if (cipher_descriptor[ecb->cipher].accel_ecb_decrypt != NULL) {
-      return cipher_descriptor[ecb->cipher].accel_ecb_decrypt(ct, pt, len / cipher_descriptor[ecb->cipher].block_length, &ecb->key);
-   } else {
       while (len) {
-         if ((err = cipher_descriptor[ecb->cipher].ecb_decrypt(ct, pt, &ecb->key)) != CRYPT_OK) {
-            return err;
-         }
+         cipher_descriptor[ecb->cipher].ecb_decrypt(ct, pt, &ecb->key);
+
          pt  += cipher_descriptor[ecb->cipher].block_length;
          ct  += cipher_descriptor[ecb->cipher].block_length;
          len -= cipher_descriptor[ecb->cipher].block_length;
       }
-   }
-   return CRYPT_OK;
 }
 
-int ecb_done(symmetric_ECB *ecb)
+void ecb_done(symmetric_ECB *ecb)
 {
-   int err;
-
-   if ((err = cipher_is_valid(ecb->cipher)) != CRYPT_OK) {
-      return err;
+   if (!cipher_is_valid(ecb->cipher)) {
+      throw std::runtime_error("");
    }
    cipher_descriptor[ecb->cipher].done(&ecb->key);
-   return CRYPT_OK;
 }
 
-int ecb_encrypt(const unsigned char *pt, unsigned char *ct, unsigned long len, symmetric_ECB *ecb)
+void ecb_encrypt(const unsigned char *pt, unsigned char *ct, unsigned long len, symmetric_ECB *ecb)
 {
-   int err;
-
-   if ((err = cipher_is_valid(ecb->cipher)) != CRYPT_OK) {
-       return err;
+   if (!cipher_is_valid(ecb->cipher)) {
+       throw std::runtime_error("");
    }
    if (len % cipher_descriptor[ecb->cipher].block_length) {
-      return CRYPT_INVALID_ARG;
+      throw std::runtime_error("");
    }
 
-   /* check for accel */
-   if (cipher_descriptor[ecb->cipher].accel_ecb_encrypt != NULL) {
-      return cipher_descriptor[ecb->cipher].accel_ecb_encrypt(pt, ct, len / cipher_descriptor[ecb->cipher].block_length, &ecb->key);
-   } else {
       while (len) {
-         if ((err = cipher_descriptor[ecb->cipher].ecb_encrypt(pt, ct, &ecb->key)) != CRYPT_OK) {
-            return err;
-         }
+         cipher_descriptor[ecb->cipher].ecb_encrypt(pt, ct, &ecb->key);
+
          pt  += cipher_descriptor[ecb->cipher].block_length;
          ct  += cipher_descriptor[ecb->cipher].block_length;
          len -= cipher_descriptor[ecb->cipher].block_length;
       }
-   }
-   return CRYPT_OK;
-}
-
-int ecb_start(int cipher, const unsigned char *key, int keylen, int num_rounds, symmetric_ECB *ecb)
-{
-   int err;
-
-   if ((err = cipher_is_valid(cipher)) != CRYPT_OK) {
-      return err;
-   }
-   ecb->cipher = cipher;
-   ecb->blocklen = cipher_descriptor[cipher].block_length;
-   return cipher_descriptor[cipher].setup(key, keylen, num_rounds, &ecb->key);
 }
 
 } // namespace
@@ -1697,9 +1595,8 @@ std::vector<std::uint8_t> aes_ecb_encrypt(
 {
     if (input.empty()) return {};
 
-    symmetric_ECB ecb;
-    auto cipher = register_cipher(&aes_desc);
-    ecb_start(cipher, key.data(), key.size(), 0, &ecb);
+    rijndael_key rkey;
+    rijndael_setup(key.data(), key.size(), 0, rkey);
     std::vector<std::uint8_t> output(input.size());
     ecb_encrypt(input.data(), output.data(), input.size(), &ecb);
     ecb_done(&ecb);
@@ -1716,7 +1613,7 @@ std::vector<std::uint8_t> aes_ecb_decrypt(
     if (input.empty()) return {};
 
     symmetric_ECB ecb;
-    auto cipher = register_cipher(&aes_desc);
+    auto cipher = register_cipher(&rijndael_desc);
     ecb_start(cipher, key.data(), key.size(), 0, &ecb);
     std::vector<std::uint8_t> output(input.size());
     ecb_decrypt(input.data(), output.data(), input.size(), &ecb);
@@ -1735,7 +1632,7 @@ std::vector<std::uint8_t> aes_cbc_encrypt(
     if (input.empty()) return {};
 
     symmetric_CBC cbc;
-    auto cipher = register_cipher(&aes_desc);
+    auto cipher = register_cipher(&rijndael_desc);
     cbc_start(cipher, iv.data(), key.data(), key.size(), 0, &cbc);
     std::vector<std::uint8_t> output(input.size());
     cbc_encrypt(input.data(), output.data(), input.size(), &cbc);
@@ -1754,7 +1651,7 @@ std::vector<std::uint8_t> aes_cbc_decrypt(
     if (input.empty()) return {};
 
     symmetric_CBC cbc;
-    auto cipher = register_cipher(&aes_desc);
+    auto cipher = register_cipher(&rijndael_desc);
     cbc_start(cipher, iv.data(), key.data(), key.size(), 0, &cbc);
     std::vector<std::uint8_t> output(input.size());
     cbc_decrypt(input.data(), output.data(), input.size(), &cbc);
