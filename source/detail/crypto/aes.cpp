@@ -41,10 +41,7 @@
 
 namespace {
 
-#define LTC_NO_ROLC
-#include "tomcrypt.h"
-
-static const ulong32 TE0[256] = {
+static const std::uint32_t TE0[256] = {
     0xc66363a5UL, 0xf87c7c84UL, 0xee777799UL, 0xf67b7b8dUL,
     0xfff2f20dUL, 0xd66b6bbdUL, 0xde6f6fb1UL, 0x91c5c554UL,
     0x60303050UL, 0x02010103UL, 0xce6767a9UL, 0x562b2b7dUL,
@@ -111,7 +108,7 @@ static const ulong32 TE0[256] = {
     0x7bb0b0cbUL, 0xa85454fcUL, 0x6dbbbbd6UL, 0x2c16163aUL,
 };
 
-static const ulong32 TD0[256] = {
+static const std::uint32_t TD0[256] = {
     0x51f4a750UL, 0x7e416553UL, 0x1a17a4c3UL, 0x3a275e96UL,
     0x3bab6bcbUL, 0x1f9d45f1UL, 0xacfa58abUL, 0x4be30393UL,
     0x2030fa55UL, 0xad766df6UL, 0x88cc7691UL, 0xf5024c25UL,
@@ -178,7 +175,7 @@ static const ulong32 TD0[256] = {
     0x7bcb8461UL, 0xd532b670UL, 0x486c5c74UL, 0xd0b85742UL,
 };
 
-static const ulong32 Td4[256] = {
+static const std::uint32_t Td4[256] = {
     0x52525252UL, 0x09090909UL, 0x6a6a6a6aUL, 0xd5d5d5d5UL,
     0x30303030UL, 0x36363636UL, 0xa5a5a5a5UL, 0x38383838UL,
     0xbfbfbfbfUL, 0x40404040UL, 0xa3a3a3a3UL, 0x9e9e9e9eUL,
@@ -255,7 +252,7 @@ static const ulong32 Td4[256] = {
 #define Td2(x) TD2[x]
 #define Td3(x) TD3[x]
 
-static const ulong32 TE1[256] = {
+static const std::uint32_t TE1[256] = {
     0xa5c66363UL, 0x84f87c7cUL, 0x99ee7777UL, 0x8df67b7bUL,
     0x0dfff2f2UL, 0xbdd66b6bUL, 0xb1de6f6fUL, 0x5491c5c5UL,
     0x50603030UL, 0x03020101UL, 0xa9ce6767UL, 0x7d562b2bUL,
@@ -321,7 +318,7 @@ static const ulong32 TE1[256] = {
     0xc3824141UL, 0xb0299999UL, 0x775a2d2dUL, 0x111e0f0fUL,
     0xcb7bb0b0UL, 0xfca85454UL, 0xd66dbbbbUL, 0x3a2c1616UL,
 };
-static const ulong32 TE2[256] = {
+static const std::uint32_t TE2[256] = {
     0x63a5c663UL, 0x7c84f87cUL, 0x7799ee77UL, 0x7b8df67bUL,
     0xf20dfff2UL, 0x6bbdd66bUL, 0x6fb1de6fUL, 0xc55491c5UL,
     0x30506030UL, 0x01030201UL, 0x67a9ce67UL, 0x2b7d562bUL,
@@ -387,7 +384,7 @@ static const ulong32 TE2[256] = {
     0x41c38241UL, 0x99b02999UL, 0x2d775a2dUL, 0x0f111e0fUL,
     0xb0cb7bb0UL, 0x54fca854UL, 0xbbd66dbbUL, 0x163a2c16UL,
 };
-static const ulong32 TE3[256] = {
+static const std::uint32_t TE3[256] = {
 
     0x6363a5c6UL, 0x7c7c84f8UL, 0x777799eeUL, 0x7b7b8df6UL,
     0xf2f20dffUL, 0x6b6bbdd6UL, 0x6f6fb1deUL, 0xc5c55491UL,
@@ -456,7 +453,7 @@ static const ulong32 TE3[256] = {
 };
 
 #ifndef PELI_TAB
-static const ulong32 Te4_0[] = {
+static const std::uint32_t Te4_0[] = {
 0x00000063UL, 0x0000007cUL, 0x00000077UL, 0x0000007bUL, 0x000000f2UL, 0x0000006bUL, 0x0000006fUL, 0x000000c5UL,
 0x00000030UL, 0x00000001UL, 0x00000067UL, 0x0000002bUL, 0x000000feUL, 0x000000d7UL, 0x000000abUL, 0x00000076UL,
 0x000000caUL, 0x00000082UL, 0x000000c9UL, 0x0000007dUL, 0x000000faUL, 0x00000059UL, 0x00000047UL, 0x000000f0UL,
@@ -491,7 +488,7 @@ static const ulong32 Te4_0[] = {
 0x00000041UL, 0x00000099UL, 0x0000002dUL, 0x0000000fUL, 0x000000b0UL, 0x00000054UL, 0x000000bbUL, 0x00000016UL
 };
 
-static const ulong32 Te4_1[] = {
+static const std::uint32_t Te4_1[] = {
 0x00006300UL, 0x00007c00UL, 0x00007700UL, 0x00007b00UL, 0x0000f200UL, 0x00006b00UL, 0x00006f00UL, 0x0000c500UL,
 0x00003000UL, 0x00000100UL, 0x00006700UL, 0x00002b00UL, 0x0000fe00UL, 0x0000d700UL, 0x0000ab00UL, 0x00007600UL,
 0x0000ca00UL, 0x00008200UL, 0x0000c900UL, 0x00007d00UL, 0x0000fa00UL, 0x00005900UL, 0x00004700UL, 0x0000f000UL,
@@ -526,7 +523,7 @@ static const ulong32 Te4_1[] = {
 0x00004100UL, 0x00009900UL, 0x00002d00UL, 0x00000f00UL, 0x0000b000UL, 0x00005400UL, 0x0000bb00UL, 0x00001600UL
 };
 
-static const ulong32 Te4_2[] = {
+static const std::uint32_t Te4_2[] = {
 0x00630000UL, 0x007c0000UL, 0x00770000UL, 0x007b0000UL, 0x00f20000UL, 0x006b0000UL, 0x006f0000UL, 0x00c50000UL,
 0x00300000UL, 0x00010000UL, 0x00670000UL, 0x002b0000UL, 0x00fe0000UL, 0x00d70000UL, 0x00ab0000UL, 0x00760000UL,
 0x00ca0000UL, 0x00820000UL, 0x00c90000UL, 0x007d0000UL, 0x00fa0000UL, 0x00590000UL, 0x00470000UL, 0x00f00000UL,
@@ -561,7 +558,7 @@ static const ulong32 Te4_2[] = {
 0x00410000UL, 0x00990000UL, 0x002d0000UL, 0x000f0000UL, 0x00b00000UL, 0x00540000UL, 0x00bb0000UL, 0x00160000UL
 };
 
-static const ulong32 Te4_3[] = {
+static const std::uint32_t Te4_3[] = {
 0x63000000UL, 0x7c000000UL, 0x77000000UL, 0x7b000000UL, 0xf2000000UL, 0x6b000000UL, 0x6f000000UL, 0xc5000000UL,
 0x30000000UL, 0x01000000UL, 0x67000000UL, 0x2b000000UL, 0xfe000000UL, 0xd7000000UL, 0xab000000UL, 0x76000000UL,
 0xca000000UL, 0x82000000UL, 0xc9000000UL, 0x7d000000UL, 0xfa000000UL, 0x59000000UL, 0x47000000UL, 0xf0000000UL,
@@ -597,7 +594,7 @@ static const ulong32 Te4_3[] = {
 };
 #endif /* pelimac */
 
-static const ulong32 TD1[256] = {
+static const std::uint32_t TD1[256] = {
     0x5051f4a7UL, 0x537e4165UL, 0xc31a17a4UL, 0x963a275eUL,
     0xcb3bab6bUL, 0xf11f9d45UL, 0xabacfa58UL, 0x934be303UL,
     0x552030faUL, 0xf6ad766dUL, 0x9188cc76UL, 0x25f5024cUL,
@@ -663,7 +660,7 @@ static const ulong32 TD1[256] = {
     0x7139a801UL, 0xde080cb3UL, 0x9cd8b4e4UL, 0x906456c1UL,
     0x617bcb84UL, 0x70d532b6UL, 0x74486c5cUL, 0x42d0b857UL,
 };
-static const ulong32 TD2[256] = {
+static const std::uint32_t TD2[256] = {
     0xa75051f4UL, 0x65537e41UL, 0xa4c31a17UL, 0x5e963a27UL,
     0x6bcb3babUL, 0x45f11f9dUL, 0x58abacfaUL, 0x03934be3UL,
     0xfa552030UL, 0x6df6ad76UL, 0x769188ccUL, 0x4c25f502UL,
@@ -729,7 +726,7 @@ static const ulong32 TD2[256] = {
     0x017139a8UL, 0xb3de080cUL, 0xe49cd8b4UL, 0xc1906456UL,
     0x84617bcbUL, 0xb670d532UL, 0x5c74486cUL, 0x5742d0b8UL,
 };
-static const ulong32 TD3[256] = {
+static const std::uint32_t TD3[256] = {
     0xf4a75051UL, 0x4165537eUL, 0x17a4c31aUL, 0x275e963aUL,
     0xab6bcb3bUL, 0x9d45f11fUL, 0xfa58abacUL, 0xe303934bUL,
     0x30fa5520UL, 0x766df6adUL, 0xcc769188UL, 0x024c25f5UL,
@@ -796,7 +793,7 @@ static const ulong32 TD3[256] = {
     0xcb84617bUL, 0x32b670d5UL, 0x6c5c7448UL, 0xb85742d0UL,
 };
 
-static const ulong32 Tks0[] = {
+static const std::uint32_t Tks0[] = {
 0x00000000UL, 0x0e090d0bUL, 0x1c121a16UL, 0x121b171dUL, 0x3824342cUL, 0x362d3927UL, 0x24362e3aUL, 0x2a3f2331UL,
 0x70486858UL, 0x7e416553UL, 0x6c5a724eUL, 0x62537f45UL, 0x486c5c74UL, 0x4665517fUL, 0x547e4662UL, 0x5a774b69UL,
 0xe090d0b0UL, 0xee99ddbbUL, 0xfc82caa6UL, 0xf28bc7adUL, 0xd8b4e49cUL, 0xd6bde997UL, 0xc4a6fe8aUL, 0xcaaff381UL,
@@ -831,7 +828,7 @@ static const ulong32 Tks0[] = {
 0xa779b492UL, 0xa970b999UL, 0xbb6bae84UL, 0xb562a38fUL, 0x9f5d80beUL, 0x91548db5UL, 0x834f9aa8UL, 0x8d4697a3UL
 };
 
-static const ulong32 Tks1[] = {
+static const std::uint32_t Tks1[] = {
 0x00000000UL, 0x0b0e090dUL, 0x161c121aUL, 0x1d121b17UL, 0x2c382434UL, 0x27362d39UL, 0x3a24362eUL, 0x312a3f23UL,
 0x58704868UL, 0x537e4165UL, 0x4e6c5a72UL, 0x4562537fUL, 0x74486c5cUL, 0x7f466551UL, 0x62547e46UL, 0x695a774bUL,
 0xb0e090d0UL, 0xbbee99ddUL, 0xa6fc82caUL, 0xadf28bc7UL, 0x9cd8b4e4UL, 0x97d6bde9UL, 0x8ac4a6feUL, 0x81caaff3UL,
@@ -866,7 +863,7 @@ static const ulong32 Tks1[] = {
 0x92a779b4UL, 0x99a970b9UL, 0x84bb6baeUL, 0x8fb562a3UL, 0xbe9f5d80UL, 0xb591548dUL, 0xa8834f9aUL, 0xa38d4697UL
 };
 
-static const ulong32 Tks2[] = {
+static const std::uint32_t Tks2[] = {
 0x00000000UL, 0x0d0b0e09UL, 0x1a161c12UL, 0x171d121bUL, 0x342c3824UL, 0x3927362dUL, 0x2e3a2436UL, 0x23312a3fUL,
 0x68587048UL, 0x65537e41UL, 0x724e6c5aUL, 0x7f456253UL, 0x5c74486cUL, 0x517f4665UL, 0x4662547eUL, 0x4b695a77UL,
 0xd0b0e090UL, 0xddbbee99UL, 0xcaa6fc82UL, 0xc7adf28bUL, 0xe49cd8b4UL, 0xe997d6bdUL, 0xfe8ac4a6UL, 0xf381caafUL,
@@ -901,7 +898,7 @@ static const ulong32 Tks2[] = {
 0xb492a779UL, 0xb999a970UL, 0xae84bb6bUL, 0xa38fb562UL, 0x80be9f5dUL, 0x8db59154UL, 0x9aa8834fUL, 0x97a38d46UL
 };
 
-static const ulong32 Tks3[] = {
+static const std::uint32_t Tks3[] = {
 0x00000000UL, 0x090d0b0eUL, 0x121a161cUL, 0x1b171d12UL, 0x24342c38UL, 0x2d392736UL, 0x362e3a24UL, 0x3f23312aUL,
 0x48685870UL, 0x4165537eUL, 0x5a724e6cUL, 0x537f4562UL, 0x6c5c7448UL, 0x65517f46UL, 0x7e466254UL, 0x774b695aUL,
 0x90d0b0e0UL, 0x99ddbbeeUL, 0x82caa6fcUL, 0x8bc7adf2UL, 0xb4e49cd8UL, 0xbde997d6UL, 0xa6fe8ac4UL, 0xaff381caUL,
@@ -936,19 +933,43 @@ static const ulong32 Tks3[] = {
 0x79b492a7UL, 0x70b999a9UL, 0x6bae84bbUL, 0x62a38fb5UL, 0x5d80be9fUL, 0x548db591UL, 0x4f9aa883UL, 0x4697a38dUL
 };
 
-static const ulong32 rcon[] = {
+static const std::uint32_t rcon[] = {
     0x01000000UL, 0x02000000UL, 0x04000000UL, 0x08000000UL,
     0x10000000UL, 0x20000000UL, 0x40000000UL, 0x80000000UL,
     0x1B000000UL, 0x36000000UL, /* for 128-bit blocks, Rijndael never uses more than 10 rcon values */
 };
 
-static ulong32 setup_mix(ulong32 temp)
+/* extract a byte portably */
+#ifdef _MSC_VER
+   #define byte(x, n) ((unsigned char)((x) >> (8 * (n))))
+#else
+   #define byte(x, n) (((x) >> (8 * (n))) & 255)
+#endif
+
+static std::uint32_t setup_mix(std::uint32_t temp)
 {
    return (Te4_3[byte(temp, 2)]) ^
           (Te4_2[byte(temp, 1)]) ^
           (Te4_1[byte(temp, 0)]) ^
           (Te4_0[byte(temp, 3)]);
 }
+
+#define STORE32H(x, y)                                                                     \
+  do { (y)[0] = (unsigned char)(((x)>>24)&255); (y)[1] = (unsigned char)(((x)>>16)&255);   \
+       (y)[2] = (unsigned char)(((x)>>8)&255); (y)[3] = (unsigned char)((x)&255); } while(0)
+
+#define LOAD32H(x, y)                            \
+  do { x = ((std::uint32_t)((y)[0] & 255)<<24) | \
+           ((std::uint32_t)((y)[1] & 255)<<16) | \
+           ((std::uint32_t)((y)[2] & 255)<<8)  | \
+           ((std::uint32_t)((y)[3] & 255)); } while(0)
+    
+#define RORc(x, y) ( ((((std::uint32_t)(x)&0xFFFFFFFFUL)>>(std::uint32_t)((y)&31)) | ((std::uint32_t)(x)<<(std::uint32_t)((32-((y)&31))&31))) & 0xFFFFFFFFUL)
+
+struct rijndael_key {
+   std::uint32_t eK[60], dK[60];
+   int Nr;
+};
 
  /**
     Initialize the AES (Rijndael) block cipher
@@ -958,11 +979,13 @@ static ulong32 setup_mix(ulong32 temp)
     @param skey The key in as scheduled by this function.
     @return CRYPT_OK if successful
  */
-void rijndael_setup(const unsigned char *key, int keylen, int num_rounds, rijndael_key &skey)
+rijndael_key rijndael_setup(const unsigned char *key, int keylen, int num_rounds)
 {
+    rijndael_key skey;
+
     int i;
-    ulong32 temp, *rk;
-    ulong32 *rrk;
+    std::uint32_t temp, *rk;
+    std::uint32_t *rrk;
 
     if (keylen != 16 && keylen != 24 && keylen != 32) {
        throw std::runtime_error("");
@@ -1043,8 +1066,8 @@ void rijndael_setup(const unsigned char *key, int keylen, int num_rounds, rijnda
     }
 
     /* setup the inverse key now */
-    rk   = skey->rijndael.dK;
-    rrk  = skey->rijndael.eK + (28 + keylen) - 4;
+    rk   = skey.dK;
+    rrk  = skey.eK + (28 + keylen) - 4;
 
     /* apply the inverse MixColumn transform to all round keys but the first and the last: */
     /* copy first */
@@ -1054,7 +1077,7 @@ void rijndael_setup(const unsigned char *key, int keylen, int num_rounds, rijnda
     *rk   = *rrk;
     rk -= 3; rrk -= 3;
 
-    for (i = 1; i < skey->rijndael.Nr; i++) {
+    for (i = 1; i < skey.Nr; i++) {
         rrk -= 4;
         rk  += 4;
 
@@ -1091,6 +1114,8 @@ void rijndael_setup(const unsigned char *key, int keylen, int num_rounds, rijnda
     *rk++ = *rrk++;
     *rk++ = *rrk++;
     *rk   = *rrk;
+    
+    return skey;
 }
 
 /**
@@ -1100,13 +1125,13 @@ void rijndael_setup(const unsigned char *key, int keylen, int num_rounds, rijnda
   @param skey The key as scheduled
   @return CRYPT_OK if successful
 */
-void rijndael_ecb_encrypt(const unsigned char *pt, unsigned char *ct, symmetric_key *skey)
+void rijndael_ecb_encrypt(const unsigned char *pt, unsigned char *ct, rijndael_key &skey)
 {
-    ulong32 s0, s1, s2, s3, t0, t1, t2, t3, *rk;
+    std::uint32_t s0, s1, s2, s3, t0, t1, t2, t3, *rk;
     int Nr, r;
 
-    Nr = skey->rijndael.Nr;
-    rk = skey->rijndael.eK;
+    Nr = skey.Nr;
+    rk = skey.eK;
 
     /*
      * map byte array block to cipher state
@@ -1219,13 +1244,13 @@ void rijndael_ecb_encrypt(const unsigned char *pt, unsigned char *ct, symmetric_
   @param skey The key as scheduled
   @return CRYPT_OK if successful
 */
-void rijndael_ecb_decrypt(const unsigned char *ct, unsigned char *pt, symmetric_key *skey)
+void rijndael_ecb_decrypt(const unsigned char *ct, unsigned char *pt, rijndael_key &skey)
 {
-    ulong32 s0, s1, s2, s3, t0, t1, t2, t3, *rk;
+    std::uint32_t s0, s1, s2, s3, t0, t1, t2, t3, *rk;
     int Nr, r;
 
-    Nr = skey->rijndael.Nr;
-    rk = skey->rijndael.dK;
+    Nr = skey.Nr;
+    rk = skey.dK;
 
     /*
      * map byte array block to cipher state
@@ -1333,35 +1358,139 @@ void rijndael_ecb_decrypt(const unsigned char *ct, unsigned char *pt, symmetric_
     STORE32H(s3, pt+12);
 }
 
-/** Terminate the context
-   @param skey    The scheduled key
-*/
-void rijndael_done(symmetric_key *skey)
+} // namespace
+
+namespace xlnt {
+namespace detail {
+
+std::vector<std::uint8_t> aes_ecb_encrypt(
+    const std::vector<std::uint8_t> &plaintext,
+    const std::vector<std::uint8_t> &key)
 {
-  LTC_UNUSED_PARAM(skey);
+    if (plaintext.empty()) return {};
+
+    auto expanded_key = rijndael_setup(key.data(), key.size(), 0);
+
+    std::vector<std::uint8_t> ciphertext(plaintext.size());
+
+    auto len = plaintext.size();
+    auto pt = plaintext.data();
+    auto ct = ciphertext.data();
+
+      while (len) {
+         rijndael_ecb_encrypt(pt, ct, expanded_key);
+
+         pt  += 16;
+         ct  += 16;
+         len -= 16;
+      }
+
+    return ciphertext;
 }
 
-/**
-  Gets suitable key size
-  @param keysize [in/out] The length of the recommended key (in bytes).  This function will store the suitable size back in this variable.
-  @return CRYPT_OK if the input key size is acceptable.
-*/
-void rijndael_keysize(int *keysize)
+std::vector<std::uint8_t> aes_ecb_decrypt(
+    const std::vector<std::uint8_t> &ciphertext,
+    const std::vector<std::uint8_t> &key)
 {
-   if (*keysize < 16)
-      throw std::runtime_error("");
-   if (*keysize < 24) {
-      *keysize = 16;
-   } else if (*keysize < 32) {
-      *keysize = 24;
-   } else {
-      *keysize = 32;
-   }
+    if (ciphertext.empty()) return {};
+
+    auto expanded_key = rijndael_setup(key.data(), key.size(), 0);
+
+    std::vector<std::uint8_t> plaintext(ciphertext.size());
+    
+    auto len = ciphertext.size();
+    auto ct = ciphertext.data();
+    auto pt = plaintext.data();
+
+      while (len) {
+         rijndael_ecb_decrypt(ct, pt, expanded_key);
+
+         pt  += 16;
+         ct  += 16;
+         len -= 16;
+      }
+    
+    return plaintext;
 }
 
-void cbc_decrypt(const unsigned char *ct, unsigned char *pt, unsigned long len, symmetric_CBC *cbc)
+std::vector<std::uint8_t> aes_cbc_encrypt(
+    const std::vector<std::uint8_t> &plaintext,
+    const std::vector<std::uint8_t> &key,
+    const std::vector<std::uint8_t> &original_iv)
 {
-   int x;
+    if (plaintext.empty()) return {};
+
+    auto expanded_key = rijndael_setup(key.data(), key.size(), 0);
+
+    std::vector<std::uint8_t> ciphertext(plaintext.size());
+    
+    auto len = plaintext.size();
+    auto ct = ciphertext.data();
+    auto pt = plaintext.data();
+    auto iv_vec = original_iv;
+    auto iv = iv_vec.data();
+
+    if (len % 16) {
+        throw std::runtime_error("");
+    }
+
+#ifdef LTC_FAST
+    if (16 % sizeof(LTC_FAST_TYPE)) {
+        throw std::runtime_error("");
+    }
+#endif
+
+    while (len) {
+         // xor IV against plaintext
+         #if defined(LTC_FAST)
+         for (auto x = 0; x < 16; x += sizeof(LTC_FAST_TYPE)) {
+            *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)iv + x)) ^= *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)pt + x));
+         }
+    #else
+         for (auto x = 0; x < 16; x++) {
+            iv[x] ^= pt[x];
+         }
+    #endif
+
+         // encrypt
+         rijndael_ecb_encrypt(iv, ct, expanded_key);
+
+         // store IV [ciphertext] for a future block
+         #if defined(LTC_FAST)
+         for (auto x = 0; x < 16; x += sizeof(LTC_FAST_TYPE)) {
+            *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)iv + x)) = *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)ct + x));
+         }
+    #else
+         for (auto x = 0; x < 16; x++) {
+            iv[x] = ct[x];
+         }
+    #endif
+
+         pt  += 16;
+         ct  += 16;
+         len -= 16;
+      }
+    
+    return ciphertext;
+}
+
+std::vector<std::uint8_t> aes_cbc_decrypt(
+    const std::vector<std::uint8_t> &ciphertext,
+    const std::vector<std::uint8_t> &key,
+    const std::vector<std::uint8_t> &original_iv)
+{
+    if (ciphertext.empty()) return {};
+
+    auto expanded_key = rijndael_setup(key.data(), key.size(), 0);
+
+    std::vector<std::uint8_t> plaintext(ciphertext.size());
+    
+    auto len = ciphertext.size();
+    auto ct = ciphertext.data();
+    auto pt = plaintext.data();
+    auto iv_vec = original_iv;
+    auto iv = iv_vec.data();
+
    unsigned char tmp[16];
 #ifdef LTC_FAST
    LTC_FAST_TYPE tmpy;
@@ -1369,297 +1498,41 @@ void cbc_decrypt(const unsigned char *ct, unsigned char *pt, unsigned long len, 
    unsigned char tmpy;
 #endif
 
-   if (!cipher_is_valid(cbc->cipher)) {
-       throw std::runtime_error("");
-   }
-
-   /* is blocklen valid? */
-   if (cbc->blocklen < 1 || cbc->blocklen > (int)sizeof(cbc->IV) || cbc->blocklen > (int)sizeof(tmp)) {
+   if (len % 16 != 0) {
       throw std::runtime_error("");
    }
 
-   if (len % cbc->blocklen) {
-      throw std::runtime_error("");
-   }
 #ifdef LTC_FAST
-   if (cbc->blocklen % sizeof(LTC_FAST_TYPE)) {
+   if (16 % sizeof(LTC_FAST_TYPE)) {
       throw std::runtime_error("");
    }
 #endif
 
       while (len) {
          /* decrypt */
-         cipher_descriptor[cbc->cipher].ecb_decrypt(ct, tmp, &cbc->key);
+         rijndael_ecb_decrypt(ct, tmp, expanded_key);
 
          /* xor IV against plaintext */
          #if defined(LTC_FAST)
-         for (x = 0; x < cbc->blocklen; x += sizeof(LTC_FAST_TYPE)) {
-            tmpy = *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)cbc->IV + x)) ^ *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)tmp + x));
-            *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)cbc->IV + x)) = *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)ct + x));
+         for (auto x = 0; x < 16; x += sizeof(LTC_FAST_TYPE)) {
+            tmpy = *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)iv + x)) ^ *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)tmp + x));
+            *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)iv + x)) = *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)ct + x));
             *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)pt + x)) = tmpy;
          }
     #else
-         for (x = 0; x < cbc->blocklen; x++) {
-            tmpy       = tmp[x] ^ cbc->IV[x];
-            cbc->IV[x] = ct[x];
+         for (auto x = 0; x < 16; x++) {
+            tmpy       = tmp[x] ^ iv[x];
+            iv[x] = ct[x];
             pt[x]      = tmpy;
          }
     #endif
 
-         ct  += cbc->blocklen;
-         pt  += cbc->blocklen;
-         len -= cbc->blocklen;
+         pt  += 16;
+         ct  += 16;
+         len -= 16;
    }
-}
-
-void cbc_done(symmetric_CBC *cbc)
-{
-   if (!cipher_is_valid(cbc->cipher)) {
-      throw std::runtime_error("");
-   }
-   cipher_descriptor[cbc->cipher].done(&cbc->key);
-}
-
-void cbc_encrypt(const unsigned char *pt, unsigned char *ct, unsigned long len, symmetric_CBC *cbc)
-{
-   int x;
-
-   if (!cipher_is_valid(cbc->cipher)) {
-       throw std::runtime_error("");
-   }
-
-   // is blocklen valid?
-   if (cbc->blocklen < 1 || cbc->blocklen > (int)sizeof(cbc->IV)) {
-      throw std::runtime_error("");
-   }
-
-   if (len % cbc->blocklen) {
-      throw std::runtime_error("");
-   }
-#ifdef LTC_FAST
-   if (cbc->blocklen % sizeof(LTC_FAST_TYPE)) {
-      throw std::runtime_error("");
-   }
-#endif
-
-      while (len) {
-         // xor IV against plaintext
-         #if defined(LTC_FAST)
-         for (x = 0; x < cbc->blocklen; x += sizeof(LTC_FAST_TYPE)) {
-            *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)cbc->IV + x)) ^= *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)pt + x));
-         }
-    #else
-         for (x = 0; x < cbc->blocklen; x++) {
-            cbc->IV[x] ^= pt[x];
-         }
-    #endif
-
-         // encrypt
-         cipher_descriptor[cbc->cipher].ecb_encrypt(cbc->IV, ct, &cbc->key);
-
-         // store IV [ciphertext] for a future block
-         #if defined(LTC_FAST)
-         for (x = 0; x < cbc->blocklen; x += sizeof(LTC_FAST_TYPE)) {
-            *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)cbc->IV + x)) = *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)ct + x));
-         }
-    #else
-         for (x = 0; x < cbc->blocklen; x++) {
-            cbc->IV[x] = ct[x];
-         }
-    #endif
-
-         ct  += cbc->blocklen;
-         pt  += cbc->blocklen;
-         len -= cbc->blocklen;
-      }
-}
-
-void cbc_start(int cipher, const unsigned char *IV, const unsigned char *key,
-              int keylen, int num_rounds, symmetric_CBC *cbc)
-{
-   int x;
-
-   /* bad param? */
-   if (!cipher_is_valid(cipher)) {
-      throw std::runtime_error("");
-   }
-
-   /* setup cipher */
-   cipher_descriptor[cipher].setup(key, keylen, num_rounds, &cbc->key);
-
-   /* copy IV */
-   cbc->blocklen = cipher_descriptor[cipher].block_length;
-   cbc->cipher   = cipher;
-   for (x = 0; x < cbc->blocklen; x++) {
-       cbc->IV[x] = IV[x];
-   }
-}
-
-int register_cipher(const struct ltc_cipher_descriptor *cipher)
-{
-   int x;
-
-   /* is it already registered? */
-   LTC_MUTEX_LOCK(&ltc_cipher_mutex);
-   for (x = 0; x < TAB_SIZE; x++) {
-       if (cipher_descriptor[x].name != NULL && cipher_descriptor[x].ID == cipher->ID) {
-          LTC_MUTEX_UNLOCK(&ltc_cipher_mutex);
-          return x;
-       }
-   }
-
-   /* find a blank spot */
-   for (x = 0; x < TAB_SIZE; x++) {
-       if (cipher_descriptor[x].name == NULL) {
-          XMEMCPY(&cipher_descriptor[x], cipher, sizeof(struct ltc_cipher_descriptor));
-          LTC_MUTEX_UNLOCK(&ltc_cipher_mutex);
-          return x;
-       }
-   }
-
-   /* no spot */
-   LTC_MUTEX_UNLOCK(&ltc_cipher_mutex);
-   return -1;
-}
-
-struct ltc_cipher_descriptor cipher_descriptor[TAB_SIZE] = {
-{ NULL, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL }
- };
-
-LTC_MUTEX_GLOBAL(ltc_cipher_mutex)
-
-bool cipher_is_valid(int idx)
-{
-   LTC_MUTEX_LOCK(&ltc_cipher_mutex);
-   if (idx < 0 || idx >= TAB_SIZE || cipher_descriptor[idx].name == NULL) {
-      LTC_MUTEX_UNLOCK(&ltc_cipher_mutex);
-      return false;
-   }
-   LTC_MUTEX_UNLOCK(&ltc_cipher_mutex);
-   return true;
-}
-
-void ecb_decrypt(const unsigned char *ct, unsigned char *pt, unsigned long len, symmetric_ECB *ecb)
-{
-   if (!cipher_is_valid(ecb->cipher)) {
-       throw std::runtime_error("");
-   }
-
-   if (len % cipher_descriptor[ecb->cipher].block_length) {
-      throw std::runtime_error("");
-   }
-
-      while (len) {
-         cipher_descriptor[ecb->cipher].ecb_decrypt(ct, pt, &ecb->key);
-
-         pt  += cipher_descriptor[ecb->cipher].block_length;
-         ct  += cipher_descriptor[ecb->cipher].block_length;
-         len -= cipher_descriptor[ecb->cipher].block_length;
-      }
-}
-
-void ecb_done(symmetric_ECB *ecb)
-{
-   if (!cipher_is_valid(ecb->cipher)) {
-      throw std::runtime_error("");
-   }
-   cipher_descriptor[ecb->cipher].done(&ecb->key);
-}
-
-void ecb_encrypt(const unsigned char *pt, unsigned char *ct, unsigned long len, symmetric_ECB *ecb)
-{
-   if (!cipher_is_valid(ecb->cipher)) {
-       throw std::runtime_error("");
-   }
-   if (len % cipher_descriptor[ecb->cipher].block_length) {
-      throw std::runtime_error("");
-   }
-
-      while (len) {
-         cipher_descriptor[ecb->cipher].ecb_encrypt(pt, ct, &ecb->key);
-
-         pt  += cipher_descriptor[ecb->cipher].block_length;
-         ct  += cipher_descriptor[ecb->cipher].block_length;
-         len -= cipher_descriptor[ecb->cipher].block_length;
-      }
-}
-
-} // namespace
-
-namespace xlnt {
-namespace detail {
-
-std::vector<std::uint8_t> aes_ecb_encrypt(
-    const std::vector<std::uint8_t> &input,
-    const std::vector<std::uint8_t> &key)
-{
-    if (input.empty()) return {};
-
-    rijndael_key rkey;
-    rijndael_setup(key.data(), key.size(), 0, rkey);
-    std::vector<std::uint8_t> output(input.size());
-    ecb_encrypt(input.data(), output.data(), input.size(), &ecb);
-    ecb_done(&ecb);
     
-    output.resize(input.size());
-    
-    return output;
-}
-
-std::vector<std::uint8_t> aes_ecb_decrypt(
-    const std::vector<std::uint8_t> &input,
-    const std::vector<std::uint8_t> &key)
-{
-    if (input.empty()) return {};
-
-    symmetric_ECB ecb;
-    auto cipher = register_cipher(&rijndael_desc);
-    ecb_start(cipher, key.data(), key.size(), 0, &ecb);
-    std::vector<std::uint8_t> output(input.size());
-    ecb_decrypt(input.data(), output.data(), input.size(), &ecb);
-    ecb_done(&ecb);
-    
-    output.resize(input.size());
-    
-    return output;
-}
-
-std::vector<std::uint8_t> aes_cbc_encrypt(
-    const std::vector<std::uint8_t> &input,
-    const std::vector<std::uint8_t> &key,
-    const std::vector<std::uint8_t> &iv)
-{
-    if (input.empty()) return {};
-
-    symmetric_CBC cbc;
-    auto cipher = register_cipher(&rijndael_desc);
-    cbc_start(cipher, iv.data(), key.data(), key.size(), 0, &cbc);
-    std::vector<std::uint8_t> output(input.size());
-    cbc_encrypt(input.data(), output.data(), input.size(), &cbc);
-    cbc_done(&cbc);
-    
-    output.resize(input.size());
-    
-    return output;
-}
-
-std::vector<std::uint8_t> aes_cbc_decrypt(
-    const std::vector<std::uint8_t> &input,
-    const std::vector<std::uint8_t> &key,
-    const std::vector<std::uint8_t> &iv)
-{
-    if (input.empty()) return {};
-
-    symmetric_CBC cbc;
-    auto cipher = register_cipher(&rijndael_desc);
-    cbc_start(cipher, iv.data(), key.data(), key.size(), 0, &cbc);
-    std::vector<std::uint8_t> output(input.size());
-    cbc_decrypt(input.data(), output.data(), input.size(), &cbc);
-    cbc_done(&cbc);
-    
-    output.resize(input.size());
-    
-    return output;
+    return plaintext;
 }
 
 } // namespace detail
