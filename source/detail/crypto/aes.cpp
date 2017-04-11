@@ -365,7 +365,7 @@ static const std::uint32_t TE2[256] = {
     0xb0cb7bb0UL, 0x54fca854UL, 0xbbd66dbbUL, 0x163a2c16UL,
 };
 static const std::uint32_t TE3[256] = {
-    
+
     0x6363a5c6UL, 0x7c7c84f8UL, 0x777799eeUL, 0x7b7b8df6UL,
     0xf2f20dffUL, 0x6b6bbdd6UL, 0x6f6fb1deUL, 0xc5c55491UL,
     0x30305060UL, 0x01010302UL, 0x6767a9ceUL, 0x2b2b7d56UL,
@@ -948,19 +948,19 @@ struct rijndael_key {
 rijndael_key rijndael_setup(const std::vector<std::uint8_t> &key_data)
 {
     rijndael_key skey;
-    
+
     int i;
     std::uint32_t temp, *rk;
     std::uint32_t *rrk;
-    
+
     if (key_data.size() != 16 && key_data.size() != 24 && key_data.size() != 32)
     {
         throw std::runtime_error("");
     }
-    
+
     skey.Nr = 10 + ((static_cast<int>(key_data.size())/8)-2)*2;
     auto key = key_data.data();
-    
+
     /* setup the forward key */
     i                 = 0;
     rk                = skey.eK;
@@ -985,7 +985,7 @@ rijndael_key rijndael_setup(const std::vector<std::uint8_t> &key_data)
         LOAD32H(rk[5], key + 20);
         for (;;) {
 #ifdef _MSC_VER
-            temp = skey->rijndael.eK[rk - skey->rijndael.eK + 5];
+            temp = skey.eK[rk - skey.eK + 5];
 #else
             temp = rk[5];
 #endif
@@ -1007,7 +1007,7 @@ rijndael_key rijndael_setup(const std::vector<std::uint8_t> &key_data)
         LOAD32H(rk[7], key + 28);
         for (;;) {
 #ifdef _MSC_VER
-            temp = skey->rijndael.eK[rk - skey->rijndael.eK + 7];
+            temp = skey.eK[rk - skey.eK + 7];
 #else
             temp = rk[7];
 #endif
@@ -1028,11 +1028,11 @@ rijndael_key rijndael_setup(const std::vector<std::uint8_t> &key_data)
     } else {
         throw std::runtime_error("");
     }
-    
+
     /* setup the inverse key now */
     rk   = skey.dK;
     rrk  = skey.eK + (28 + key_data.size()) - 4;
-    
+
     /* apply the inverse MixColumn transform to all round keys but the first and the last: */
     /* copy first */
     *rk++ = *rrk++;
@@ -1040,11 +1040,11 @@ rijndael_key rijndael_setup(const std::vector<std::uint8_t> &key_data)
     *rk++ = *rrk++;
     *rk   = *rrk;
     rk -= 3; rrk -= 3;
-    
+
     for (i = 1; i < skey.Nr; i++) {
         rrk -= 4;
         rk  += 4;
-        
+
         temp = rrk[0];
         rk[0] =
         Tks0[byte(temp, 3)] ^
@@ -1070,7 +1070,7 @@ rijndael_key rijndael_setup(const std::vector<std::uint8_t> &key_data)
         Tks2[byte(temp, 1)] ^
         Tks3[byte(temp, 0)];
     }
-    
+
     /* copy last */
     rrk -= 4;
     rk  += 4;
@@ -1078,7 +1078,7 @@ rijndael_key rijndael_setup(const std::vector<std::uint8_t> &key_data)
     *rk++ = *rrk++;
     *rk++ = *rrk++;
     *rk   = *rrk;
-    
+
     return skey;
 }
 
@@ -1100,10 +1100,10 @@ void rijndael_ecb_encrypt(const unsigned char *pt, unsigned char *ct, rijndael_k
 {
     std::uint32_t s0, s1, s2, s3, t0, t1, t2, t3, *rk;
     int Nr, r;
-    
+
     Nr = skey.Nr;
     rk = skey.eK;
-    
+
     /*
      * map byte array block to cipher state
      * and add initial round key:
@@ -1112,7 +1112,7 @@ void rijndael_ecb_encrypt(const unsigned char *pt, unsigned char *ct, rijndael_k
     LOAD32H(s1, pt  +  4); s1 ^= rk[1];
     LOAD32H(s2, pt  +  8); s2 ^= rk[2];
     LOAD32H(s3, pt  + 12); s3 ^= rk[3];
-    
+
     /*
      * Nr - 1 full rounds:
      */
@@ -1142,12 +1142,12 @@ void rijndael_ecb_encrypt(const unsigned char *pt, unsigned char *ct, rijndael_k
         Te2(byte(s1, 1)) ^
         Te3(byte(s2, 0)) ^
         rk[7];
-        
+
         rk += 8;
         if (--r == 0) {
             break;
         }
-        
+
         s0 =
         Te0(byte(t0, 3)) ^
         Te1(byte(t1, 2)) ^
@@ -1173,7 +1173,7 @@ void rijndael_ecb_encrypt(const unsigned char *pt, unsigned char *ct, rijndael_k
         Te3(byte(t2, 0)) ^
         rk[3];
     }
-    
+
     /*
      * apply last round and
      * map cipher state to byte array block:
@@ -1211,7 +1211,7 @@ void rijndael_ecb_encrypt(const unsigned char *pt, unsigned char *ct, rijndael_k
 void rijndael_ecb_decrypt(const unsigned char *ct, unsigned char *pt, rijndael_key &skey)
 {
     std::uint32_t s0, s1, s2, s3, t0, t1, t2, t3;
-    
+
     auto Nr = skey.Nr;
     auto rk = skey.dK;
 
@@ -1223,14 +1223,14 @@ void rijndael_ecb_decrypt(const unsigned char *ct, unsigned char *pt, rijndael_k
     LOAD32H(s1, ct  +  4); s1 ^= rk[1];
     LOAD32H(s2, ct  +  8); s2 ^= rk[2];
     LOAD32H(s3, ct  + 12); s3 ^= rk[3];
-    
+
     /*
      * Nr - 1 full rounds:
      */
     auto r = Nr >> 1;
 
     for (;;) {
-        
+
         t0 =
         Td0(byte(s0, 3)) ^
         Td1(byte(s3, 2)) ^
@@ -1255,13 +1255,13 @@ void rijndael_ecb_decrypt(const unsigned char *ct, unsigned char *pt, rijndael_k
         Td2(byte(s1, 1)) ^
         Td3(byte(s0, 0)) ^
         rk[7];
-        
+
         rk += 8;
         if (--r == 0) {
             break;
         }
-        
-        
+
+
         s0 =
         Td0(byte(t0, 3)) ^
         Td1(byte(t3, 2)) ^
@@ -1287,7 +1287,7 @@ void rijndael_ecb_decrypt(const unsigned char *ct, unsigned char *pt, rijndael_k
         Td3(byte(t0, 0)) ^
         rk[3];
     }
-    
+
     /*
      * apply last round and
      * map cipher state to byte array block:
@@ -1337,7 +1337,7 @@ std::vector<std::uint8_t> aes_ecb_encrypt(
     const std::vector<std::uint8_t> &key)
 {
     if (plaintext.empty()) return {};
-    
+
     if (plaintext.size() % 16 != 0)
     {
         throw std::runtime_error("");
@@ -1348,7 +1348,7 @@ std::vector<std::uint8_t> aes_ecb_encrypt(
     auto len = plaintext.size();
     auto pt = plaintext.data();
     auto ct = ciphertext.data();
-    
+
     while (len)
     {
         rijndael_ecb_encrypt(pt, ct, expanded_key);
@@ -1357,7 +1357,7 @@ std::vector<std::uint8_t> aes_ecb_encrypt(
         ct  += 16;
         len -= 16;
     }
-    
+
     return ciphertext;
 }
 
@@ -1371,22 +1371,22 @@ std::vector<std::uint8_t> aes_ecb_decrypt(
     {
         throw std::runtime_error("");
     }
-    
+
     auto plaintext = std::vector<std::uint8_t>(ciphertext.size());
     auto expanded_key = rijndael_setup(key);
     auto len = ciphertext.size();
     auto ct = ciphertext.data();
     auto pt = plaintext.data();
-    
+
     while (len)
     {
         rijndael_ecb_decrypt(ct, pt, expanded_key);
-        
+
         pt  += 16;
         ct  += 16;
         len -= 16;
     }
-    
+
     return plaintext;
 }
 
@@ -1401,7 +1401,7 @@ std::vector<std::uint8_t> aes_cbc_encrypt(
     {
         throw std::runtime_error("");
     }
-    
+
     auto ciphertext = std::vector<std::uint8_t>(plaintext.size());
     auto expanded_key = rijndael_setup(key);
     auto len = plaintext.size();
@@ -1409,16 +1409,16 @@ std::vector<std::uint8_t> aes_cbc_encrypt(
     auto pt = plaintext.data();
     auto iv_vec = original_iv;
     auto iv = iv_vec.data();
-    
+
     while (len)
     {
         for (auto x = 0; x < 16; x++)
         {
             iv[x] ^= pt[x];
         }
-        
+
         rijndael_ecb_encrypt(iv, ct, expanded_key);
-        
+
         for (auto x = 0; x < 16; x++)
         {
             iv[x] = ct[x];
@@ -1428,7 +1428,7 @@ std::vector<std::uint8_t> aes_cbc_encrypt(
         ct  += 16;
         len -= 16;
     }
-    
+
     return ciphertext;
 }
 
@@ -1453,7 +1453,7 @@ std::vector<std::uint8_t> aes_cbc_decrypt(
     auto pt = plaintext.data();
     auto iv_vec = original_iv;
     auto iv = iv_vec.data();
-    
+
     while (len)
     {
         rijndael_ecb_decrypt(ct, temporary.data(), expanded_key);
@@ -1469,7 +1469,7 @@ std::vector<std::uint8_t> aes_cbc_decrypt(
         ct  += 16;
         len -= 16;
     }
-    
+
     return plaintext;
 }
 
