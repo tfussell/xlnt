@@ -43,7 +43,7 @@ set(EXPAT
     ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/xmltok_impl.h
     ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/xmltok.h)
 
-add_library(libstudxml STATIC ${LIBSTUDXML} ${GENX} ${EXPAT})
+add_library(libstudxml OBJECT ${LIBSTUDXML} ${GENX} ${EXPAT})
 
 target_compile_definitions(libstudxml
     PUBLIC LIBSTUDXML_STATIC_LIB=1
@@ -51,7 +51,6 @@ target_compile_definitions(libstudxml
 target_include_directories(libstudxml
     PUBLIC ${LIBSTUDXML_ROOT_DIR}
     PUBLIC ${EXPAT_INCLUDE_DIRS})
-target_link_libraries(libstudxml PRIVATE ${EXPAT_LIBRARIES})
 
 # Prevent warning C4996 caused by strcpy, strncpy, sprintf in genx
 # TODO: would it be better to define this only in genx.c?

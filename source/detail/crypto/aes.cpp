@@ -961,7 +961,7 @@ rijndael_key rijndael_setup(const std::vector<std::uint8_t> &key_data)
         throw std::runtime_error("");
     }
     
-    skey.Nr = 10 + ((key_data.size()/8)-2)*2;
+    skey.Nr = 10 + ((static_cast<int>(key_data.size())/8)-2)*2;
     auto key = key_data.data();
     
     /* setup the forward key */
@@ -1461,9 +1461,9 @@ std::vector<std::uint8_t> aes_cbc_decrypt(
     {
         rijndael_ecb_decrypt(ct, temporary.data(), expanded_key);
 
-        for (auto x = 0; x < 16; x++)
+        for (auto x = std::size_t(0); x < 16; x++)
         {
-            auto tmpy = temporary[x] ^ iv[x];
+            auto tmpy = static_cast<std::uint8_t>(temporary[x] ^ iv[x]);
             iv[x] = ct[x];
             pt[x] = tmpy;
         }

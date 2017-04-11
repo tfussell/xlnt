@@ -26,6 +26,7 @@
 #include <detail/crypto/aes.hpp>
 #include <detail/crypto/base64.hpp>
 #include <detail/crypto/sha.hpp>
+#include <detail/crypto/xlsx_crypto.hpp>
 #include <detail/pole.hpp>
 #include <detail/xlsx_consumer.hpp>
 #include <detail/xlsx_producer.hpp>
@@ -199,7 +200,7 @@ static std::string encode_base64(const std::vector<std::uint8_t> &input)
 
 static std::vector<std::uint8_t> decode_base64(const std::string &input)
 {
-    int numEq = 0;
+    std::size_t numEq = 0;
     auto in_end = input.data() + input.size();
     while (*--in_end == '=') ++numEq;
     auto decoded_length = ((6 * input.size()) / 8) - numEq;
@@ -209,10 +210,10 @@ static std::vector<std::uint8_t> decode_base64(const std::string &input)
     auto output_iterator = output.begin();
     
     int i = 0, j = 0;
-    unsigned char a3[3];
-    unsigned char a4[4];
+    std::uint8_t a3[3];
+    std::uint8_t a4[4];
     
-    auto b64_lookup = [](unsigned char c)
+    auto b64_lookup = [](std::uint8_t c) -> std::uint8_t
     {
         if(c >='A' && c <='Z') return c - 'A';
         if(c >='a' && c <='z') return c - 71;
@@ -229,7 +230,7 @@ static std::vector<std::uint8_t> decode_base64(const std::string &input)
             break;
         }
         
-        a4[i++] = *(input_iterator++);
+        a4[i++] = static_cast<std::uint8_t>(*(input_iterator++));
 
         if (i == 4)
         {
@@ -238,9 +239,9 @@ static std::vector<std::uint8_t> decode_base64(const std::string &input)
                 a4[i] = b64_lookup(a4[i]);
             }
             
-            a3[0] = (a4[0] << 2) + ((a4[1] & 0x30) >> 4);
-            a3[1] = ((a4[1] & 0xf) << 4) + ((a4[2] & 0x3c) >> 2);
-            a3[2] = ((a4[2] & 0x3) << 6) + a4[3];
+            a3[0] = static_cast<std::uint8_t>(a4[0] << 2) + static_cast<std::uint8_t>((a4[1] & 0x30) >> 4);
+            a3[1] = static_cast<std::uint8_t>((a4[1] & 0xf) << 4) + static_cast<std::uint8_t>((a4[2] & 0x3c) >> 2);
+            a3[2] = static_cast<std::uint8_t>((a4[2] & 0x3) << 6) + static_cast<std::uint8_t>(a4[3]);
             
             for (i = 0; i < 3; i++)
             {
@@ -263,9 +264,9 @@ static std::vector<std::uint8_t> decode_base64(const std::string &input)
             a4[j] = b64_lookup(a4[j]);
         }
         
-        a3[0] = (a4[0] << 2) + ((a4[1] & 0x30) >> 4);
-        a3[1] = ((a4[1] & 0xf) << 4) + ((a4[2] & 0x3c) >> 2);
-        a3[2] = ((a4[2] & 0x3) << 6) + a4[3];
+        a3[0] = static_cast<std::uint8_t>(a4[0] << 2) + static_cast<std::uint8_t>((a4[1] & 0x30) >> 4);
+        a3[1] = static_cast<std::uint8_t>((a4[1] & 0xf) << 4) + static_cast<std::uint8_t>((a4[2] & 0x3c) >> 2);
+        a3[2] = static_cast<std::uint8_t>((a4[2] & 0x3) << 6) + static_cast<std::uint8_t>(a4[3]);
         
         for (j = 0; j < i - 1; j++)
         {

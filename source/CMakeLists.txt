@@ -95,7 +95,7 @@ if(NOT BIN_DEST_DIR)
 endif()
 
 if(NOT STATIC)
-    add_library(xlnt SHARED ${XLNT_HEADERS} ${XLNT_SOURCES})
+    add_library(xlnt SHARED ${XLNT_HEADERS} ${XLNT_SOURCES} $<TARGET_OBJECTS:libstudxml>)
     target_compile_definitions(xlnt PRIVATE XLNT_SHARED=1)
 
     if(MSVC)
@@ -119,7 +119,7 @@ if(NOT STATIC)
         )
     endif()
 else()
-    add_library(xlnt STATIC ${XLNT_HEADERS} ${XLNT_SOURCES})
+    add_library(xlnt STATIC ${XLNT_HEADERS} ${XLNT_SOURCES} $<TARGET_OBJECTS:libstudxml>)
     target_compile_definitions(xlnt PUBLIC XLNT_STATIC=1)
 
     if(MSVC)
@@ -127,9 +127,9 @@ else()
     endif()
 endif()
 
-target_link_libraries(xlnt PRIVATE libstudxml)
 target_include_directories(xlnt PUBLIC ${XLNT_INCLUDE_DIR})
 target_include_directories(xlnt PRIVATE ${XLNT_SOURCE_DIR})
+target_include_directories(xlnt PRIVATE ${XLNT_SOURCE_DIR}/../third-party/libstudxml)
 
 if(MSVC)
     set_target_properties(xlnt PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\" /wd\"4068\" /MP")
