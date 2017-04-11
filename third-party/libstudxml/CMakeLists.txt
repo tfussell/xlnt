@@ -45,12 +45,14 @@ set(EXPAT
 
 add_library(libstudxml OBJECT ${LIBSTUDXML} ${GENX} ${EXPAT})
 
-target_compile_definitions(libstudxml
-    PUBLIC LIBSTUDXML_STATIC_LIB=1
-    PUBLIC XML_STATIC=1)
+target_compile_definitions(libstudxml PUBLIC LIBSTUDXML_STATIC_LIB=1)
 target_include_directories(libstudxml
     PUBLIC ${LIBSTUDXML_ROOT_DIR}
     PUBLIC ${EXPAT_INCLUDE_DIRS})
+
+if(STATIC)
+    target_compile_definitions(libstudxml PUBLIC XML_STATIC=1)
+endif()
 
 # Prevent warning C4996 caused by strcpy, strncpy, sprintf in genx
 # TODO: would it be better to define this only in genx.c?
