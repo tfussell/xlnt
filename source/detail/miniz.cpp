@@ -24,7 +24,7 @@
  *
  **************************************************************************/
 
-#include  "miniz.hpp"
+#include  <detail/miniz.hpp>
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wold-style-cast"

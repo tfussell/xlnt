@@ -280,11 +280,11 @@ std::vector<std::uint8_t> hash(hash_algorithm algorithm, const std::vector<std::
 {
     if (algorithm == hash_algorithm::sha512)
     {
-        return SHA::sha512(input);
+        return xlnt::detail::sha512(input);
     }
     else if (algorithm == hash_algorithm::sha1)
     {
-        return SHA::sha1(input);
+        return xlnt::detail::sha1(input);
     }
 
     throw xlnt::exception("unsupported hash algorithm");
