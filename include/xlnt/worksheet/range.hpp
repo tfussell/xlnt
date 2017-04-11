@@ -30,6 +30,13 @@
 #include <vector>
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/styles/alignment.hpp>
+#include <xlnt/styles/border.hpp>
+#include <xlnt/styles/conditional_format.hpp>
+#include <xlnt/styles/fill.hpp>
+#include <xlnt/styles/font.hpp>
+#include <xlnt/styles/number_format.hpp>
+#include <xlnt/styles/protection.hpp>
 #include <xlnt/worksheet/cell_vector.hpp>
 #include <xlnt/worksheet/major_order.hpp>
 #include <xlnt/worksheet/range_iterator.hpp>
@@ -162,6 +169,11 @@ public:
     /// key_not_found exception will be thrown.
     /// </summary>
     range style(const std::string &style_name);
+
+	/// <summary>
+	/// 
+	/// </summary>
+	xlnt::conditional_format conditional_format(const condition &when);
 
     /// <summary>
     /// Returns the first row or column in this range.

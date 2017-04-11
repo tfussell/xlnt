@@ -17,4 +17,10 @@ foreach(SAMPLE_SOURCE IN ITEMS ${SAMPLE_SOURCES})
     set(SAMPLE_EXECUTABLE benchmark-${SAMPLE_NAME})
     add_executable(${SAMPLE_EXECUTABLE} ${SAMPLE_SOURCE})
     target_link_libraries(${SAMPLE_EXECUTABLE} PRIVATE xlnt)
+    if(NOT STATIC)
+        add_custom_command(TARGET ${SAMPLE_EXECUTABLE} POST_BUILD 
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE:xlnt>
+            $<TARGET_FILE_DIR:${SAMPLE_EXECUTABLE}>)
+    endif()    
 endforeach()

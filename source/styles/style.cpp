@@ -29,6 +29,7 @@
 #include <xlnt/styles/number_format.hpp>
 #include <xlnt/styles/protection.hpp>
 #include <xlnt/styles/style.hpp>
+#include <detail/style_impl.hpp>
 #include <detail/stylesheet.hpp>
 
 namespace {
