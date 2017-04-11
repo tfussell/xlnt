@@ -17,6 +17,12 @@ if(NOT MSVC)
     option(COVERAGE "Generate coverage data using gcov" OFF)
 endif()
 
+if(STATIC)
+    set(ZLIB_LIBRARY libz.a)
+    set(CRYPTOPP_LIBRARY libcryptopp.a)
+    set(EXPAT_LIBRARY libexpat.a)
+endif()
+
 # Add components according to selected options
 if(SAMPLES)
     add_subdirectory(samples)

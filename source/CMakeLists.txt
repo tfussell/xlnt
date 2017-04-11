@@ -11,9 +11,6 @@ set(PROJECT_DESCRIPTION "cross-platform user-friendly xlsx library for C++14")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../third-party")
 
-find_package(ZLIB REQUIRED)
-find_package(CryptoPP REQUIRED)
-
 if(APPLE)
     option(FRAMEWORK "Set to ON to package dylib and headers into a .framework, OSX only" OFF)
 endif()
@@ -131,10 +128,6 @@ endif()
 target_link_libraries(xlnt PRIVATE libstudxml)
 target_include_directories(xlnt PUBLIC ${XLNT_INCLUDE_DIR})
 target_include_directories(xlnt PRIVATE ${XLNT_SOURCE_DIR})
-target_link_libraries(xlnt PRIVATE ${ZLIB_LIBRARIES})
-target_include_directories(xlnt PRIVATE ${ZLIB_INCLUDE_DIR})
-target_link_libraries(xlnt PRIVATE ${CRYPTOPP_LIBRARIES})
-target_include_directories(xlnt PRIVATE ${CRYPTOPP_INCLUDE_DIR})
 
 if(MSVC)
     set_target_properties(xlnt PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\" /wd\"4068\" /MP")

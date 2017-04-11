@@ -27,7 +27,6 @@
 #include <xlnt/utils/exceptions.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <detail/constants.hpp>
-#include <detail/include_cryptopp.hpp>
 #include <detail/include_libstudxml.hpp>
 #include <detail/pole.hpp>
 #include <detail/vector_streambuf.hpp>
@@ -81,10 +80,6 @@ struct XLNT_API crypto_helper
 
     static std::vector<std::uint8_t> aes(const std::vector<std::uint8_t> &key, const std::vector<std::uint8_t> &iv,
         const std::vector<std::uint8_t> &source, cipher_chaining chaining, cipher_direction direction);
-
-    static std::vector<std::uint8_t> decode_base64(const std::string &encoded);
-
-    static std::string encode_base64(const std::vector<std::uint8_t> &decoded);
 
     static std::vector<std::uint8_t> hash(hash_algorithm algorithm, const std::vector<std::uint8_t> &input);
 

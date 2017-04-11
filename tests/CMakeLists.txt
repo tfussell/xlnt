@@ -10,11 +10,6 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../third-party")
 
-# Tests uses the private interface of xlnt (source/detail) so it needs to explicitly link zlib and cryptopp
-# as they are not part of xlnt's default link interface
-find_package(ZLIB REQUIRED)
-find_package(CryptoPP REQUIRED)
-
 file(GLOB CELL_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/../source/cell/tests/test_*.hpp)
 file(GLOB CHARTS_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/../source/charts/tests/test_*.hpp)
 file(GLOB CHARTSHEET_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/../source/chartsheet/tests/test_*.hpp)
@@ -50,14 +45,10 @@ set(CXXTEST_PYTHON_TESTGEN_EXECUTABLE ${CXXTEST_ROOT_DIR}/bin/cxxtestgen)
 add_executable(xlnt.test ${TEST_HELPERS} ${TESTS} ${RUNNER})
 target_link_libraries(xlnt.test
     PRIVATE xlnt
-    PRIVATE libstudxml
-    PRIVATE ${ZLIB_LIBRARIES}
-    PRIVATE ${CRYPTOPP_LIBRARIES})
+    PRIVATE libstudxml)
 target_include_directories(xlnt.test
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../source
-    PRIVATE ${ZLIB_INCLUDE_DIR}
-    PRIVATE ${CRYPTOPP_INCLUDE_DIR}
     PRIVATE ${CXXTEST_INCLUDE_DIR}
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/libstudxml)
 set(XLNT_TEST_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/data)

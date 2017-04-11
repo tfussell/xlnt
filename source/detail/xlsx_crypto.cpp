@@ -21,6 +21,9 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <detail/aes.hpp>
+#include <detail/base64.hpp>
+#include <detail/sha.hpp>
 #include <detail/default_case.hpp>
 #include <detail/xlsx_crypto.hpp>
 
@@ -33,6 +36,32 @@ auto read_int(std::size_t &index, const std::vector<std::uint8_t> &raw_data)
     index += sizeof(T);
 
     return result;
+}
+
+std::vector<std::uint8_t> hash_sha1(const std::vector<std::uint8_t> &input)
+{
+    return SHA::sha1(input);
+}
+
+std::vector<std::uint8_t> hash_sha512(const std::vector<std::uint8_t> &input)
+{
+    return SHA::sha512(input);
+}
+
+std::vector<std::uint8_t> decode_base64(const std::string &encoded)
+{
+    std::vector<std::uint8_t> decoded(static_cast<std::size_t>(Base64::DecodedLength(encoded)), 0);
+    Base64::Decode(encoded.data(), encoded.size(), reinterpret_cast<char *>(&decoded.data()[0]), decoded.size());
+
+    return decoded;
+}
+
+std::string encode_base64(const std::vector<std::uint8_t> &decoded)
+{
+    std::string encoded(static_cast<std::size_t>(Base64::EncodedLength(decoded.size())), 0);
+    Base64::Encode(reinterpret_cast<const char *>(decoded.data()), decoded.size(), &encoded[0], encoded.size());
+
+    return encoded;
 }
 
 } // namespace
@@ -109,96 +138,38 @@ std::vector<std::uint8_t> crypto_helper::aes(
     const std::vector<std::uint8_t> &source,
     cipher_chaining chaining, cipher_direction direction)
 {
-    std::vector<std::uint8_t> destination(source.size(), 0);
-
     if (direction == cipher_direction::encryption && chaining == cipher_chaining::cbc)
     {
-        CryptoPP::AES::Encryption aesEncryption(key.data(), key.size());
-        CryptoPP::CBC_Mode_ExternalCipher::Encryption cbcEncryption(aesEncryption, iv.data());
-
-        CryptoPP::ArraySource as(
-            source.data(), source.size(), true, new CryptoPP::StreamTransformationFilter(cbcEncryption,
-                                                    new CryptoPP::ArraySink(destination.data(), destination.size()),
-                                                    CryptoPP::BlockPaddingSchemeDef::NO_PADDING));
+	return xaes_cbc_encrypt(source, key, iv);
     }
     else if (direction == cipher_direction::decryption && chaining == cipher_chaining::cbc)
     {
-        CryptoPP::AES::Decryption aesDecryption(key.data(), key.size());
-        CryptoPP::CBC_Mode_ExternalCipher::Decryption cbcDecryption(aesDecryption, iv.data());
-
-        CryptoPP::ArraySource as(
-            source.data(), source.size(), true, new CryptoPP::StreamTransformationFilter(cbcDecryption,
-                                                    new CryptoPP::ArraySink(destination.data(), destination.size()),
-                                                    CryptoPP::BlockPaddingSchemeDef::NO_PADDING));
+	return xaes_cbc_decrypt(source, key, iv);
     }
     else if (direction == cipher_direction::encryption && chaining == cipher_chaining::ecb)
     {
-        CryptoPP::AES::Encryption aesEncryption(key.data(), key.size());
-        CryptoPP::ECB_Mode_ExternalCipher::Encryption cbcEncryption(aesEncryption, iv.data());
-
-        CryptoPP::ArraySource as(
-            source.data(), source.size(), true, new CryptoPP::StreamTransformationFilter(cbcEncryption,
-                                                    new CryptoPP::ArraySink(destination.data(), destination.size()),
-                                                    CryptoPP::BlockPaddingSchemeDef::NO_PADDING));
+	return xaes_ecb_encrypt(source, key);
     }
     else if (direction == cipher_direction::decryption && chaining == cipher_chaining::ecb)
     {
-        CryptoPP::AES::Decryption aesDecryption(key.data(), key.size());
-        CryptoPP::ECB_Mode_ExternalCipher::Decryption cbcDecryption(aesDecryption, iv.data());
-
-        CryptoPP::ArraySource as(
-            source.data(), source.size(), true, new CryptoPP::StreamTransformationFilter(cbcDecryption,
-                                                    new CryptoPP::ArraySink(destination.data(), destination.size()),
-                                                    CryptoPP::BlockPaddingSchemeDef::NO_PADDING));
+	return xaes_ecb_decrypt(source, key);
     }
 
-    return destination;
-}
-
-std::vector<std::uint8_t> crypto_helper::decode_base64(const std::string &encoded)
-{
-    CryptoPP::Base64Decoder decoder;
-    decoder.Put(reinterpret_cast<const std::uint8_t *>(encoded.data()), encoded.size());
-    decoder.MessageEnd();
-
-    const auto bytes_decoded = std::size_t(decoder.MaxRetrievable());
-    auto decoded = std::vector<std::uint8_t>(bytes_decoded, 0);
-    decoder.Get(decoded.data(), bytes_decoded);
-
-    return decoded;
-}
-
-std::string crypto_helper::encode_base64(const std::vector<std::uint8_t> &decoded)
-{
-    CryptoPP::Base64Decoder encoder;
-    encoder.Put(reinterpret_cast<const std::uint8_t *>(decoded.data()), decoded.size());
-    encoder.MessageEnd();
-
-    const auto bytes_encoded = std::size_t(encoder.MaxRetrievable());
-    auto encoded = std::vector<std::uint8_t>(bytes_encoded, 0);
-    encoder.Get(encoded.data(), bytes_encoded);
-
-    return std::string(encoded.begin(), encoded.end());
+    throw xlnt::exception("unsupported encryption algorithm");
 }
 
 std::vector<std::uint8_t> crypto_helper::hash(hash_algorithm algorithm, const std::vector<std::uint8_t> &input)
 {
-    std::vector<std::uint8_t> digest;
-
     if (algorithm == hash_algorithm::sha512)
     {
-        CryptoPP::SHA512 sha512;
-        digest.resize(CryptoPP::SHA512::DIGESTSIZE, 0);
-        sha512.CalculateDigest(digest.data(), input.data(), input.size());
+	return hash_sha512(input);
     }
     else if (algorithm == hash_algorithm::sha1)
     {
-        CryptoPP::SHA1 sha1;
-        digest.resize(CryptoPP::SHA1::DIGESTSIZE, 0);
-        sha1.CalculateDigest(digest.data(), input.data(), input.size());
+	return hash_sha1(input);
     }
 
-    return digest;
+    throw xlnt::exception("unsupported hash algorithm");
 }
 
 std::vector<std::uint8_t> crypto_helper::file(POLE::Storage &storage, const std::string &name)
