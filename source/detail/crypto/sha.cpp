@@ -22,6 +22,7 @@
 // @author: see AUTHORS file
 
 #include <array>
+#include <cstring>
 #include <iomanip>
 #include <string>
 #include <sstream>

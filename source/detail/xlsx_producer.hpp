@@ -35,8 +35,11 @@ class serializer;
 
 namespace xlnt {
 
+class border;
 class cell_reference;
 class color;
+class fill;
+class font;
 class path;
 class relationship;
 class workbook;
