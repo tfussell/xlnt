@@ -24,7 +24,6 @@
 #include <array>
 
 #include <detail/crypto/aes.hpp>
-#include <detail/crypto/base64.hpp>
 #include <detail/crypto/sha.hpp>
 #include <detail/crypto/xlsx_crypto.hpp>
 #include <detail/pole.hpp>
