@@ -28,7 +28,7 @@ public:
     {
         xlnt::workbook wb;
         const auto path = path_helper::data_directory("6_encrypted_libre.xlsx");
-        TS_ASSERT_THROWS_NOTHING(wb.load(path, "secret"));
+        TS_ASSERT_THROWS_NOTHING(wb.load(path, u8"пароль"));
     }
 
     void test_decrypt_standard()

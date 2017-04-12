@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <fstream>
 #include <iostream>
@@ -78,8 +78,10 @@ public:
         for (const auto file : files)
         {
             auto path = path_helper::data_directory(file + ".xlsx");
-            TS_ASSERT(round_trip_matches_rw(path, file
-                == "7_encrypted_standard" ? "password" : "secret"));
+            auto password = std::string(file == "7_encrypted_standard" ? "password"
+                : file == "6_encrypted_libre" ? u8"пароль"
+                : "secret");
+            TS_ASSERT(round_trip_matches_rw(path, password));
         }
 	}
 };

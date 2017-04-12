@@ -22,6 +22,7 @@
 // @author: see AUTHORS file
 
 #include <array>
+#include <codecvt>
 
 #include <detail/crypto/aes.hpp>
 #include <detail/crypto/base64.hpp>
@@ -160,7 +161,7 @@ std::vector<std::uint8_t> file(POLE::Storage &storage, const std::string &name)
 
 std::vector<std::uint8_t> decrypt_xlsx_standard(
     const std::vector<std::uint8_t> &encryption_info,
-    const std::string &password,
+    const std::u16string &password,
     const std::vector<std::uint8_t> &encrypted_package)
 {
     std::size_t offset = 0;
@@ -296,7 +297,7 @@ std::vector<std::uint8_t> decrypt_xlsx_standard(
     return decrypted;
 }
 
-encryption_info generate_encryption_info(const std::string &password)
+encryption_info generate_encryption_info(const std::u16string &password)
 {
     encryption_info result;
     result.agile.key_data.salt_value.assign(password.begin(), password.end());
@@ -363,7 +364,7 @@ std::vector<std::uint8_t> write_agile_encryption_info(const std::string &passwor
 
 std::vector<std::uint8_t> decrypt_xlsx_agile(
     const std::vector<std::uint8_t> &encryption_info,
-    const std::string &password,
+    const std::u16string &password,
     const std::vector<std::uint8_t> &encrypted_package)
 {
     using xlnt::detail::decode_base64;
@@ -458,9 +459,8 @@ std::vector<std::uint8_t> decrypt_xlsx_agile(
 
     // H_0 = H(salt + password)
     auto salt_plus_password = result.key_encryptor.salt_value;
-    std::vector<std::uint16_t> password_wide(password.begin(), password.end());
 
-    std::for_each(password_wide.begin(), password_wide.end(), [&salt_plus_password](std::uint16_t c) {
+    std::for_each(password.begin(), password.end(), [&salt_plus_password](std::uint16_t c) {
         salt_plus_password.insert(salt_plus_password.end(), reinterpret_cast<char *>(&c),
             reinterpret_cast<char *>(&c) + sizeof(std::uint16_t));
     });
@@ -553,7 +553,7 @@ std::vector<std::uint8_t> decrypt_xlsx_agile(
 
 std::vector<std::uint8_t> decrypt_xlsx(
     const std::vector<std::uint8_t> &bytes,
-    const std::string &password)
+    const std::u16string &password)
 {
     if (bytes.empty())
     {
@@ -618,7 +618,7 @@ std::vector<std::uint8_t> decrypt_xlsx(
 
 std::vector<std::uint8_t> encrypt_xlsx(
     const std::vector<std::uint8_t> &bytes,
-    const std::string &password)
+    const std::u16string &password)
 {
     if (bytes.empty())
     {
@@ -628,6 +628,17 @@ std::vector<std::uint8_t> encrypt_xlsx(
     generate_encryption_info(password);
 
     return {};
+}
+
+std::u16string utf8_to_utf16(const std::string &utf8_string)
+{
+	// use std::int16_t instead of char16_t because of a bug in MSVC
+	// error LNK2001: unresolved external symbol std::codecvt::id
+	// https://connect.microsoft.com/VisualStudio/Feedback/Details/1403302
+	auto converted = std::wstring_convert<std::codecvt_utf8_utf16<std::int16_t>, 
+		std::int16_t>{}.from_bytes(utf8_string);
+
+	return std::u16string(converted.begin(), converted.end());
 }
 
 } // namespace
@@ -702,7 +713,7 @@ namespace detail {
 
 std::vector<std::uint8_t> XLNT_API decrypt_xlsx(const std::vector<std::uint8_t> &data, const std::string &password)
 {
-    return ::decrypt_xlsx(data, password);
+    return ::decrypt_xlsx(data, utf8_to_utf16(password));
 }
 
 void xlsx_consumer::read(std::istream &source, const std::string &password)
@@ -724,7 +735,7 @@ void xlsx_producer::write(std::ostream &destination, const std::string &password
         write(decrypted_stream);
     }
 
-    const auto encrypted = encrypt_xlsx(decrypted, password);
+    const auto encrypted = encrypt_xlsx(decrypted, utf8_to_utf16(password));
     vector_istreambuf encrypted_buffer(encrypted);
 
     destination << &encrypted_buffer;
