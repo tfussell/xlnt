@@ -23,6 +23,7 @@
 
 #include <array>
 #include <codecvt>
+#include <locale>
 
 #include <detail/crypto/aes.hpp>
 #include <detail/crypto/base64.hpp>
