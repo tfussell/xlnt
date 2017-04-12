@@ -42,7 +42,7 @@ set(CXXTEST_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cxxtest)
 set(CXXTEST_INCLUDE_DIR ${CXXTEST_ROOT_DIR})
 set(CXXTEST_PYTHON_TESTGEN_EXECUTABLE ${CXXTEST_ROOT_DIR}/bin/cxxtestgen)
 
-add_executable(xlnt.test ${TEST_HELPERS} ${TESTS} ${RUNNER})
+add_executable(xlnt.test ${TEST_HELPERS} ${TESTS} ${RUNNER} $<TARGET_OBJECTS:libstudxml>)
 target_link_libraries(xlnt.test
     PRIVATE xlnt)
 target_include_directories(xlnt.test
