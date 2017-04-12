@@ -632,12 +632,16 @@ std::vector<std::uint8_t> encrypt_xlsx(
 
 std::u16string utf8_to_utf16(const std::string &utf8_string)
 {
-	// use std::int16_t instead of char16_t because of a bug in MSVC
+#ifdef _MSC_VER
+	// use wchar_t instead of char16_t on Windows because of a bug in MSVC
 	// error LNK2001: unresolved external symbol std::codecvt::id
 	// https://connect.microsoft.com/VisualStudio/Feedback/Details/1403302
-	auto converted = std::wstring_convert<std::codecvt_utf8_utf16<std::int16_t>, 
-		std::int16_t>{}.from_bytes(utf8_string);
-
+	auto converted = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>,
+		wchar_t>{}.from_bytes(utf8_string);
+#else
+	auto converted = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>,
+		char16_t>{}.from_bytes(utf8_string);
+#endif
 	return std::u16string(converted.begin(), converted.end());
 }
 
