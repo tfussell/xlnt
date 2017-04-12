@@ -1,6 +1,9 @@
-This software is distributed under the MIT Licence
-==================================================
+# License
 
+## [xlnt](https://github.com/tfussell/xlnt)
+>[MIT License](https://github.com/tfussell/xlnt/blob/master/LICENSE.md)
+
+```
 Copyright (c) 2014-2017 Thomas Fussell
 
 Permission is hereby granted, free of charge, to any person obtaining a
@@ -21,14 +24,12 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```
 
+## [POLE](http://www.dimin.net/software/pole/)
+>[BSD 2-Clause License](https://bitbucket.org/dimin/pole/src/c15e513bdce4c3a52b3dbc925d4d2bb520dc71d8/pole/LICENSE)
 
-Third-party licenses
-====================
-
-Pole is distributed under the BSD 2-Clause License
-==================================================
-
+```
 POLE - Portable C++ library to access OLE Storage
 Copyright (C) 2002-2007 Ariya Hidayat (ariya@kde.org). All rights reserved.
 
@@ -52,11 +53,12 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```
 
+## [libstudxml](http://www.codesynthesis.com/projects/libstudxml/)
+>[MIT License](http://www.codesynthesis.com/licenses/mit.txt)
 
-libstudxml is distributed under the MIT License
-===============================================
-
+```
 Summary: Everything is licensed under the MIT License (text below).
 
 Code found in the xml/details/expat/ directory is distributed under
@@ -88,11 +90,12 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```
 
+## [CxxTest](http://cxxtest.com/)
+>[LGPL License](https://github.com/CxxTest/cxxtest/blob/master/COPYING)
 
-CxxTest is distributed under the LGPL License
-=============================================
-
+```
                    GNU LESSER GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
@@ -258,11 +261,12 @@ whether future versions of the GNU Lesser General Public License shall
 apply, that proxy's public statement of acceptance of any version is
 permanent authorization for you to choose that version for the
 Library.
+```
 
+## [PartIO](https://www.disneyanimation.com/technology/partio.html)
+>[BSD 3-Clause License (with specific non-attribution clause)](https://github.com/wdas/partio/blob/master/src/lib/io/ZIP.h)
 
-partio is distributed under the BSD 3-Clause License (with specific non-attribution clause)
-===========================================================================================
-
+```
 Copyright 2010 Disney Enterprises, Inc. All rights reserved
 
 Redistribution and use in source and binary forms, with or without
@@ -294,10 +298,36 @@ PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND BASED ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+```
 
+## [miniz](https://github.com/richgel999/miniz)
+>[Public Domain/MIT License](https://github.com/richgel999/miniz/blob/master/LICENSE)
 
-miniz is in the public domain while portions are distributed under the MIT License
-==================================================================================
+```
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
+
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <http://unlicense.org/>
 
 Copyright 2013-2014 RAD Game Tools and Valve Software
 Copyright 2010-2014 Rich Geldreich and Tenacious Software LLC
@@ -320,29 +350,4 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-
-
-base64 is distributed under the MIT License
-===========================================
-
-Copyright (C) 2017 Thomas Fussell
-Copyright (C) 2013 Tomas Kislan
-Copyright (C) 2013 Adam Rudd
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+```

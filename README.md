@@ -8,7 +8,7 @@
 [![License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](http://opensource.org/licenses/MIT)
 
 ## Introduction
-xlnt is a modern C++ library for manipulating spreadsheets in memory and reading/writing them from/to XLSX files as described in [ECMA 376 4th edition](http://www.ecma-international.org/publications/standards/Ecma-376.htm). xlnt is currently under active feature development and is on track for the version 1.0 release in the next few weeks. Until then, the API could have significant changes. For a high-level summary of what you can do with this library, see [here](https://thomas.fussell.io/xlnt/#features).
+xlnt is a modern C++ library for manipulating spreadsheets in memory and reading/writing them from/to XLSX files as described in [ECMA 376 4th edition](http://www.ecma-international.org/publications/standards/Ecma-376.htm). xlnt is currently under active feature development and is on track for the version 1.0 release in the next few weeks. Until then, the API could have significant changes. For a high-level summary of what you can do with this library, see [here](https://tfussell.github.io/xlnt/docs/introduction/Features.html).
 
 ## Example
 
@@ -34,7 +34,7 @@ int main()
 
 ## Documentation
 
-Documentation for the current release of xlnt is available [here](https://thomas.fussell.io/xlnt).
+Documentation for the current release of xlnt is available [here](https://tfussell.github.io/xlnt).
 
 ## License
 xlnt is released to the public for free under the terms of the MIT License. See [LICENSE.md](https://github.com/tfussell/xlnt/blob/master/LICENCE.md) for the full text of the license and the licenses of xlnt's third-party dependencies. [LICENSE.md](https://github.com/tfussell/xlnt/blob/master/LICENCE.md) should be distributed alongside any assemblies that use xlnt in source or compiled form.
