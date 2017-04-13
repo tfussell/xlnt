@@ -26,7 +26,11 @@ public:
         source_workbook.save(destination);
         source_workbook.save("temp.xlsx");
 
-        std::ifstream source_stream(source.string(), std::ios::binary);
+#ifdef _MSC_VER
+        std::ifstream source_stream(source.wstring(), std::ios::binary);
+#else
+		std::ifstream source_stream(source.string(), std::ios::binary);
+#endif
 
 		return xml_helper::xlsx_archives_match(xlnt::detail::to_vector(source_stream), destination);
 	}
@@ -39,7 +43,12 @@ public:
         std::vector<std::uint8_t> destination;
         source_workbook.save(destination);
 
+#ifdef _MSC_VER
+        std::ifstream source_stream(source.wstring(), std::ios::binary);
+#else
         std::ifstream source_stream(source.string(), std::ios::binary);
+#endif
+
         const auto source_decrypted = xlnt::detail::decrypt_xlsx(
             xlnt::detail::to_vector(source_stream), password);
 
@@ -53,6 +62,7 @@ public:
             "2_minimal",
             "3_default",
             "4_every_style",
+            u8"9_unicode_Λ",
             "10_comments_hyperlinks_formulae",
             "11_print_settings",
             "12_advanced_properties"

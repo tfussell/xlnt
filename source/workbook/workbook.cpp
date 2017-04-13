@@ -68,12 +68,6 @@
 namespace {
 
 #ifdef _MSC_VER
-std::wstring utf8_to_utf16(const std::string &utf8_string)
-{
-    std::wstring_convert<std::codecvt_utf8<wchar_t>> convert;
-    return convert.from_bytes(utf8_string);
-}
-
 void open_stream(std::ifstream &stream, const std::wstring &path)
 {
     stream.open(path, std::ios::binary);
@@ -86,12 +80,12 @@ void open_stream(std::ofstream &stream, const std::wstring &path)
 
 void open_stream(std::ifstream &stream, const std::string &path)
 {
-    open_stream(stream, utf8_to_utf16(path));
+    open_stream(stream, xlnt::path(path).wstring());
 }
 
 void open_stream(std::ofstream &stream, const std::string &path)
 {
-    open_stream(stream, utf8_to_utf16(path));
+    open_stream(stream, xlnt::path(path).wstring());
 }
 #else
 void open_stream(std::ifstream &stream, const std::string &path)

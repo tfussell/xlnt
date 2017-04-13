@@ -49,16 +49,16 @@ public:
     {
 #ifdef _MSC_VER
         xlnt::workbook wb;
-        const auto path = LSTRING_LITERAL(XLNT_TEST_DATA_DIR) L"/9_unicode_filename_Λ.xlsx";
+        const auto path = LSTRING_LITERAL(XLNT_TEST_DATA_DIR) L"/9_unicode_Λ.xlsx";
         wb.load(path);
-        TS_ASSERT_EQUALS(wb.active_sheet().cell("A1").value<std::string>(), "unicode!");
+        TS_ASSERT_EQUALS(wb.active_sheet().cell("A1").value<std::string>(), u8"unicodê!");
 #endif
 
 #ifndef __MINGW32__
         xlnt::workbook wb2;
-        const auto path2 = U8STRING_LITERAL(XLNT_TEST_DATA_DIR) u8"/9_unicode_filename_Λ.xlsx";
+        const auto path2 = U8STRING_LITERAL(XLNT_TEST_DATA_DIR) u8"/9_unicode_Λ.xlsx";
         wb2.load(path2);
-        TS_ASSERT_EQUALS(wb2.active_sheet().cell("A1").value<std::string>(), "unicode!");
+        TS_ASSERT_EQUALS(wb2.active_sheet().cell("A1").value<std::string>(), u8"unicodê!");
 #endif
     }
 

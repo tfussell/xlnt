@@ -109,6 +109,14 @@ public:
     /// </summary>
     std::string string() const;
 
+#ifdef _MSC_VER
+    /// <summary>
+    /// Create a wstring representing this path separated by the provided
+    /// separator or the system-default separator if not provided.
+    /// </summary>
+    std::wstring wstring() const;
+#endif
+
     /// <summary>
     /// If this path is relative, append each component of this path
     /// to base_path and return the resulting absolute path. Otherwise,

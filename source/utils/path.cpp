@@ -20,6 +20,8 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
+#include <codecvt>
 #include <fstream>
 #include <sstream>
 #include <sys/stat.h>
@@ -206,6 +208,14 @@ std::string path::string() const
 {
     return internal_;
 }
+
+#ifdef _MSC_VER
+std::wstring path::wstring() const
+{
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> convert;
+    return convert.from_bytes(string());
+}
+#endif
 
 std::vector<std::string> path::split() const
 {
