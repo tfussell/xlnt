@@ -39,15 +39,9 @@ struct rich_text_run
     std::string first;
     optional<font> second;
 
-    bool operator==(const rich_text_run &other) const
-    {
-	return first == other.first && second == other.second;
-    }
+    bool operator==(const rich_text_run &other) const;
 
-    bool operator!=(const rich_text_run &other) const
-    {
-	return !(*this == other);
-    }    
+    bool operator!=(const rich_text_run &other) const;
 };
 
 } // namespace xlnt
