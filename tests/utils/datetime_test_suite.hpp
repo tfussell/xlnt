@@ -24,13 +24,24 @@
 #pragma once
 
 #include <iostream>
-#include <helpers/test_suite.hpp>
 
+#include <helpers/test_suite.hpp>
 #include <xlnt/xlnt.hpp>
 
 class datetime_test_suite : public test_suite
 {
 public:
+    datetime_test_suite()
+    {
+        register_test(test_from_string);
+        register_test(test_to_string);
+        register_test(test_carry);
+        register_test(test_leap_year_bug);
+        register_test(test_early_date);
+        register_test(test_mac_calendar);
+        register_test(test_operators);
+    }
+
     void test_from_string()
     {
         xlnt::time t("10:35:45");

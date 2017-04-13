@@ -24,8 +24,8 @@
 #pragma once
 
 #include <iostream>
-#include <helpers/test_suite.hpp>
 
+#include <helpers/test_suite.hpp>
 #include <xlnt/xlnt.hpp>
 
 class fill_test_suite : public test_suite

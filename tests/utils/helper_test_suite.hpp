@@ -24,13 +24,18 @@
 #pragma once
 
 #include <iostream>
-#include <helpers/test_suite.hpp>
 
+#include <helpers/test_suite.hpp>
 #include <helpers/xml_helper.hpp>
 
 class helper_test_suite : public test_suite
 {
 public:
+    helper_test_suite()
+    {
+        register_test(test_compare);
+    }
+
     void test_compare()
     {
         assert(!xml_helper::compare_xml_exact("<a/>", "<b/>", true));

@@ -27,7 +27,6 @@
 
 #include <helpers/test_suite.hpp>
 #include <helpers/assertions.hpp>
-
 #include <xlnt/xlnt.hpp>
 
 class cell_test_suite : public test_suite
@@ -72,8 +71,6 @@ public:
 private:
     void test_infer_numeric()
     {
-        assert(1 == 0);
-
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         auto cell = ws.cell("A1");

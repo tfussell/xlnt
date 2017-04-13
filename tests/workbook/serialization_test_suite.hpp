@@ -36,6 +36,28 @@
 class serialization_test_suite : public test_suite
 {
 public:
+    serialization_test_suite()
+    {
+        register_test(test_produce_empty);
+        register_test(test_produce_simple_excel);
+        register_test(test_save_after_sheet_deletion);
+        register_test(test_write_comments_hyperlinks_formulae);
+        register_test(test_save_after_clear_all_formulae);
+        register_test(test_load_non_xlsx);
+        register_test(test_decrypt_agile);
+        register_test(test_decrypt_libre_office);
+        register_test(test_decrypt_standard);
+        register_test(test_decrypt_numbers);
+        register_test(test_read_unicode_filename);
+        register_test(test_comments);
+        register_test(test_read_hyperlink);
+        register_test(test_read_formulae);
+        register_test(test_read_headers_and_footers);
+        register_test(test_read_custom_properties);
+        register_test(test_round_trip_rw);
+        register_test(test_round_trip_rw_encrypted);
+    }
+
 	bool workbook_matches_file(xlnt::workbook &wb, const xlnt::path &file)
 	{
         std::vector<std::uint8_t> wb_data;
@@ -203,7 +225,7 @@ public:
         wb.save("clear_formulae.xlsx");
     }
 
-    void test_non_xlsx()
+    void test_load_non_xlsx()
     {
         xlnt::workbook wb;
         const auto path = path_helper::data_directory("1_powerpoint_presentation.xlsx");

@@ -25,10 +25,10 @@
 
 #include <algorithm>
 #include <iostream>
-#include <helpers/test_suite.hpp>
 
+#include <helpers/temporary_file.hpp>
+#include <helpers/test_suite.hpp>
 #include <xlnt/xlnt.hpp>
-#include "helpers/temporary_file.hpp"
 
 class workbook_test_suite : public test_suite
 {
@@ -36,6 +36,26 @@ public:
     workbook_test_suite()
     {
         register_test(test_active_sheet);
+        register_test(test_create_sheet);
+        register_test(test_add_correct_sheet);
+        register_test(test_add_sheet_from_other_workbook);
+        register_test(test_add_sheet_at_index);
+        register_test(test_get_sheet_by_title);
+        register_test(test_get_sheet_by_title_const);
+        register_test(test_index_operator);
+        register_test(test_contains);
+        register_test(test_iter);
+        register_test(test_get_index);
+        register_test(test_get_sheet_names);
+        register_test(test_add_named_range);
+        register_test(test_get_named_range);
+        register_test(test_remove_named_range);
+        register_test(test_post_increment_iterator);
+        register_test(test_copy_iterator);
+        register_test(test_manifest);
+        register_test(test_memory);
+        register_test(test_clear);
+        register_test(test_comparison);
     }
 
     void test_active_sheet()
@@ -124,9 +144,7 @@ public:
         assert_throws_nothing(wb["Sheet1"]);
         assert_throws(wb["NotThere"], xlnt::key_not_found);
     }
-    
-    // void test_delitem() {} doesn't make sense in c++
-    
+
     void test_contains()
     {
         xlnt::workbook wb;

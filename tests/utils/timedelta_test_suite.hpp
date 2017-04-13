@@ -24,11 +24,20 @@
 #pragma once
 
 #include <iostream>
+
 #include <helpers/test_suite.hpp>
 
 class timedelta_test_suite : public test_suite
 {
 public:
+    timedelta_test_suite()
+    {
+        register_test(test_from_number);
+        register_test(test_round_trip);
+        register_test(test_to_number);
+        register_test(test_carry);
+    }
+
     void test_from_number()
     {
         auto td = xlnt::timedelta::from_number(1.0423726852L);

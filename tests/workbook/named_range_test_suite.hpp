@@ -24,8 +24,8 @@
 #pragma once
 
 #include <iostream>
-#include <helpers/test_suite.hpp>
 
+#include <helpers/test_suite.hpp>
 #include <xlnt/workbook/named_range.hpp>
 
 class named_range_test_suite : public test_suite

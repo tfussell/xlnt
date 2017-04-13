@@ -24,11 +24,11 @@
 #pragma once
 
 #include <iostream>
-#include <helpers/test_suite.hpp>
 
+#include <helpers/test_suite.hpp>
+#include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
-#include <xlnt/workbook/workbook.hpp>
 
 class worksheet_test_suite : public test_suite
 {

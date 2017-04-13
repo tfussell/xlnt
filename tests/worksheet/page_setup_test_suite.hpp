@@ -24,13 +24,18 @@
 #pragma once
 
 #include <iostream>
-#include <helpers/test_suite.hpp>
 
+#include <helpers/test_suite.hpp>
 #include <xlnt/xlnt.hpp>
 
 class page_setup_test_suite : public test_suite
 {
 public:
+    page_setup_test_suite()
+    {
+        register_test(test_properties);
+    }
+
     void test_properties()
     {
         xlnt::page_setup ps;

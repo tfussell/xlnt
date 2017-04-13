@@ -89,6 +89,11 @@ bool date::operator==(const date &comparand) const
     return year == comparand.year && month == comparand.month && day == comparand.day;
 }
 
+bool date::operator!=(const date &comparand) const
+{
+    return !(*this == comparand);
+}
+
 int date::to_number(calendar base_date) const
 {
     if (day == 29 && month == 2 && year == 1900)
