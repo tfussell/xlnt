@@ -1,13 +1,119 @@
-﻿#pragma once
+﻿// Copyright (c) 2014-2017 Thomas Fussell
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, WRISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE
+//
+// @license: http://www.opensource.org/licenses/mit-license.php
+// @author: see AUTHORS file
+
+#pragma once
 
 #include <iostream>
 #include <helpers/test_suite.hpp>
 
 #include <xlnt/xlnt.hpp>
 
-class test_number_format : public test_suite
+class number_format_test_suite : public test_suite
 {
 public:
+    number_format_test_suite()
+    {
+        register_test(test_basic);
+        register_test(test_simple_format);
+        register_test(test_simple_date);
+        register_test(test_short_month);
+        register_test(test_month_abbreviation);
+        register_test(test_month_name);
+        register_test(test_basic);
+        register_test(test_simple_format);
+        register_test(test_simple_date);
+        register_test(test_short_day);
+        register_test(test_long_day);
+        register_test(test_long_year);
+        register_test(test_day_name);
+        register_test(test_day_abbreviation);
+        register_test(test_month_letter);
+        register_test(test_time_24_hour);
+        register_test(test_elapsed_minutes);
+        register_test(test_second_fractional_leading_zero);
+        register_test(test_second_fractional);
+        register_test(test_elapsed_seconds);
+        register_test(test_time_12_hour_am);
+        register_test(test_time_12_hour_pm);
+        register_test(test_long_hour_12_hour);
+        register_test(test_long_hour_12_hour_ap);
+        register_test(test_long_hour_24_hour);
+        register_test(test_short_minute);
+        register_test(test_long_minute);
+        register_test(test_short_second);
+        register_test(test_long_second);
+        register_test(test_trailing_space);
+        register_test(test_text_section_string);
+        register_test(test_text_section_no_string);
+        register_test(test_text_section_no_text);
+        register_test(test_conditional_format);
+        register_test(test_space);
+        register_test(test_fill);
+        register_test(test_placeholders_zero);
+        register_test(test_placeholders_space);
+        register_test(test_scientific);
+        register_test(test_locale_currency);
+        register_test(test_bad_country);
+        register_test(test_duplicate_bracket_sections);
+        register_test(test_escaped_quote_string);
+        register_test(test_thousands_scale);
+        register_test(test_colors);
+        register_test(test_bad_format);
+        register_test(test_builtin_format_0);
+        register_test(test_builtin_format_1);
+        register_test(test_builtin_format_2);
+        register_test(test_builtin_format_3);
+        register_test(test_builtin_format_4);
+        register_test(test_builtin_format_9);
+        register_test(test_builtin_format_10);
+        register_test(test_builtin_format_11);
+        register_test(test_builtin_format_12);
+        register_test(test_builtin_format_13);
+        register_test(test_builtin_format_14);
+        register_test(test_builtin_format_15);
+        register_test(test_builtin_format_16);
+        register_test(test_builtin_format_17);
+        register_test(test_builtin_format_18);
+        register_test(test_builtin_format_19);
+        register_test(test_builtin_format_20);
+        register_test(test_builtin_format_21);
+        register_test(test_builtin_format_22);
+        register_test(test_builtin_format_37);
+        register_test(test_builtin_format_38);
+        register_test(test_builtin_format_39);
+        register_test(test_builtin_format_40);
+        register_test(test_builtin_format_45);
+        register_test(test_builtin_format_46);
+        register_test(test_builtin_format_47);
+        register_test(test_builtin_format_48);
+        register_test(test_builtin_format_49);
+        register_test(test_builtin_format_date_yyyymmdd);
+        register_test(test_builtin_format_date_dmyslash);
+        register_test(test_builtin_format_date_dmyminus);
+        register_test(test_builtin_format_date_dmminus);
+        register_test(test_builtin_format_date_myminus);
+    }
+
     void test_basic()
     {
         xlnt::number_format no_id("#\\x\\y\\z");

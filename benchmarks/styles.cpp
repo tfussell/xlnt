@@ -14,7 +14,7 @@ std::size_t random_index(std::size_t max)
     static std::random_device rd;
     static std::mt19937 gen(rd());
 
-    std::uniform_int_distribution<> dis(0, max - 1);
+    std::uniform_int_distribution<> dis(0, static_cast<int>(max - 1));
 
     return dis(gen);
 }

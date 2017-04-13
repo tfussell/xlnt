@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2014-2017 Thomas Fussell
+// Copyright (c) 2014-2017 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,11 @@
 
 #pragma once
 
-#include <fstream>
 #include <iostream>
 #include <helpers/test_suite.hpp>
 
-#include <helpers/path_helper.hpp>
-#include <xlnt/workbook/workbook.hpp>
+#include <xlnt/xlnt.hpp>
 
-class test_consume_xlsx : public test_suite
+class units_test_suite : public test_suite
 {
-public:
-
 };

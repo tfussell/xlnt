@@ -274,11 +274,12 @@ std::string SHA1::final_()
     uint64_t total_bits = (transforms*BLOCK_BYTES + buffer.size()) * 8;
 
     /* Padding */
-    buffer += static_cast<char>(0x80);
-    size_t orig_size = buffer.size();
+    buffer.append(1, static_cast<char>(0x80u));
+    auto  orig_size = buffer.size();
+
     while (buffer.size() < BLOCK_BYTES)
     {
-        buffer += static_cast<char>(0x00);
+        buffer.append(1, '\0');
     }
 
     uint32_t block[BLOCK_INTS];

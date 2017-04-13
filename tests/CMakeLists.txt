@@ -8,12 +8,12 @@ if(NOT COMBINED_PROJECT)
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../source ${CMAKE_CURRENT_BINARY_DIR}/source)
 endif()
 
-file(GLOB CELL_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/cell/test_*.hpp)
-file(GLOB PACKAGING_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/packaging/test_*.hpp)
-file(GLOB STYLES_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/styles/test_*.hpp)
-file(GLOB UTILS_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/utils/test_*.hpp)
-file(GLOB WORKBOOK_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/workbook/test_*.hpp)
-file(GLOB WORKSHEET_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/worksheet/test_*.hpp)
+file(GLOB CELL_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/cell/*.hpp)
+file(GLOB PACKAGING_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/packaging/*.hpp)
+file(GLOB STYLES_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/styles/*.hpp)
+file(GLOB UTILS_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/utils/*.hpp)
+file(GLOB WORKBOOK_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/workbook/*.hpp)
+file(GLOB WORKSHEET_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/worksheet/*.hpp)
 
 set(TESTS
     ${CELL_TESTS}
@@ -33,17 +33,22 @@ if(COVERAGE)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fprofile-arcs -ftest-coverage")
 endif()
 
-add_executable(xlnt.test ${RUNNER} ${HELPERS} $<TARGET_OBJECTS:libstudxml>)
+add_executable(xlnt.test ${RUNNER} ${TESTS} ${HELPERS})
 target_link_libraries(xlnt.test PRIVATE xlnt)
 target_include_directories(xlnt.test
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../source
-    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/libstudxml)
+	PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/libstudxml)
 
 set(XLNT_TEST_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/data)
 target_compile_definitions(xlnt.test PRIVATE XLNT_TEST_DATA_DIR=${XLNT_TEST_DATA_DIR})
 
+if(MSVC)
+    set_target_properties(xlnt.test PROPERTIES COMPILE_FLAGS "/wd\"4068\" /bigobj")
+endif()
+
 source_group(helpers FILES ${HELPERS})
+source_group(runner FILES ${RUNNER})
 source_group(tests\\cell FILES ${CELL_TESTS})
 source_group(tests\\packaging FILES ${PACKAGING_TESTS})
 source_group(tests\\serialization FILES ${SERIALIZATION_TESTS})

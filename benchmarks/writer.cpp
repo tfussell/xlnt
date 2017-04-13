@@ -39,7 +39,7 @@ void writer(int cols, int rows)
 // Create a timeit call to a function and pass in keyword arguments.
 // The function is called twice, once using the standard workbook, then with the optimised one.
 // Time from the best of three is taken.
-int timer(std::function<void(int, int)> fn, int cols, int rows)
+void timer(std::function<void(int, int)> fn, int cols, int rows)
 {
     const auto repeat = std::size_t(3);
     auto time = std::numeric_limits<std::size_t>::max();
@@ -54,8 +54,6 @@ int timer(std::function<void(int, int)> fn, int cols, int rows)
     }
 
     std::cout << time / 1000.0 << std::endl;
-
-    return time;
 }
 
 int main()

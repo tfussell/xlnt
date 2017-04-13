@@ -87,4 +87,14 @@ bool rich_text::operator==(const std::string &rhs) const
     return *this == rich_text(rhs);
 }
 
+bool rich_text::operator!=(const rich_text &rhs) const
+{
+    return !(*this == rhs);
+}
+
+bool rich_text::operator!=(const std::string &rhs) const
+{
+    return !(*this == rhs);
+}
+
 } // namespace xlnt

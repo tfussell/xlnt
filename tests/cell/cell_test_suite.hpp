@@ -1,3 +1,28 @@
+// Copyright (c) 2014-2017 Thomas Fussell
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, WRISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE
+//
+// @license: http://www.opensource.org/licenses/mit-license.php
+// @author: see AUTHORS file
+
+#pragma once
+
 #include <sstream>
 
 #include <helpers/test_suite.hpp>
@@ -10,86 +35,86 @@ class cell_test_suite : public test_suite
 public:
     cell_test_suite()
     {
-	register_test(test_infer_numeric);
-	register_test(test_constructor);
-	register_test(test_null);
-	register_test(test_string);
-	register_test(test_formula1);
-	register_test(test_formula2);
-	register_test(test_formula3);
-	register_test(test_not_formula);
-	register_test(test_boolean);
-	register_test(test_error_codes);
-	register_test(test_insert_datetime);
-	register_test(test_insert_date);
-	register_test(test_insert_time);
-	register_test(test_cell_formatted_as_date1);
-	register_test(test_cell_formatted_as_date2);
-	register_test(test_cell_formatted_as_date3);
-	register_test(test_illegal_characters);
-	register_test(test_timedelta);
-	register_test(test_cell_offset);
-	register_test(test_font);
-	register_test(test_fill);
-	register_test(test_border);
-	register_test(test_number_format);
-	register_test(test_alignment);
-	register_test(test_protection);
-	register_test(test_style);
-	register_test(test_print);
-	register_test(test_values);
-	register_test(test_reference);
-	register_test(test_anchor);
-	register_test(test_hyperlink);
-	register_test(test_comment);
+        register_test(test_infer_numeric);
+        register_test(test_constructor);
+        register_test(test_null);
+        register_test(test_string);
+        register_test(test_formula1);
+        register_test(test_formula2);
+        register_test(test_formula3);
+        register_test(test_not_formula);
+        register_test(test_boolean);
+        register_test(test_error_codes);
+        register_test(test_insert_datetime);
+        register_test(test_insert_date);
+        register_test(test_insert_time);
+        register_test(test_cell_formatted_as_date1);
+        register_test(test_cell_formatted_as_date2);
+        register_test(test_cell_formatted_as_date3);
+        register_test(test_illegal_characters);
+        register_test(test_timedelta);
+        register_test(test_cell_offset);
+        register_test(test_font);
+        register_test(test_fill);
+        register_test(test_border);
+        register_test(test_number_format);
+        register_test(test_alignment);
+        register_test(test_protection);
+        register_test(test_style);
+        register_test(test_print);
+        register_test(test_values);
+        register_test(test_reference);
+        register_test(test_anchor);
+        register_test(test_hyperlink);
+        register_test(test_comment);
     }
 
 private:
     void test_infer_numeric()
     {
-	assert(1 == 0);
-	
+        assert(1 == 0);
+
         xlnt::workbook wb;
-	auto ws = wb.active_sheet();
+        auto ws = wb.active_sheet();
         auto cell = ws.cell("A1");
 
-	cell.value("4.2", true);
-	assert(cell.value<long double>() == 4.2L);
+        cell.value("4.2", true);
+        assert(cell.value<long double>() == 4.2L);
 
-	cell.value("-42.000", true);
-	assert(cell.value<int>() == -42);
+        cell.value("-42.000", true);
+        assert(cell.value<int>() == -42);
 
-	cell.value("0", true);
-	assert(cell.value<int>() == 0);
+        cell.value("0", true);
+        assert(cell.value<int>() == 0);
 
-	cell.value("0.9999", true);
-	assert(cell.value<long double>() == 0.9999L);
+        cell.value("0.9999", true);
+        assert(cell.value<long double>() == 0.9999L);
 
-	cell.value("99E-02", true);
-	assert(cell.value<long double>() == 0.99L);
+        cell.value("99E-02", true);
+        assert(cell.value<long double>() == 0.99L);
 
-	cell.value("4", true);
-	assert(cell.value<int>() == 4);
+        cell.value("4", true);
+        assert(cell.value<int>() == 4);
 
-	cell.value("-1E3", true);
-	assert(cell.value<int>() == -1000);
+        cell.value("-1E3", true);
+        assert(cell.value<int>() == -1000);
 
-	cell.value("2e+2", true);
-	assert(cell.value<int>() == 200);
+        cell.value("2e+2", true);
+        assert(cell.value<int>() == 200);
 
-	cell.value("3.1%", true);
-	assert(cell.value<long double>() == 0.031L);
+        cell.value("3.1%", true);
+        assert(cell.value<long double>() == 0.031L);
 
-	cell.value("03:40:16", true);
+        cell.value("03:40:16", true);
         assert(cell.value<xlnt::time>() == xlnt::time(3, 40, 16));
 
-	cell.value("03:", true);
+        cell.value("03:", true);
         assert_equals(cell.value<std::string>(), "03:");
 
-	cell.value("03:40", true);
+        cell.value("03:40", true);
         assert(cell.value<xlnt::time>() == xlnt::time(3, 40));
 
-	cell.value("30:33.865633336", true);
+        cell.value("30:33.865633336", true);
         assert(cell.value<xlnt::time>() == xlnt::time(0, 30, 33, 865633));
     }
 
@@ -98,7 +123,7 @@ private:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         auto cell = ws.cell(xlnt::cell_reference("A", 1));
-        
+
         assert(cell.data_type() == xlnt::cell::type::null);
         assert(cell.column() == "A");
         assert(cell.row() == 1);
@@ -111,43 +136,43 @@ private:
         xlnt::workbook wb;
 
         const auto datatypes =
-	    {
-		xlnt::cell::type::null,
-		xlnt::cell::type::boolean,
-		xlnt::cell::type::error,
-		xlnt::cell::type::formula,
-		xlnt::cell::type::numeric,
-		xlnt::cell::type::string
-	    };
-        
-        for(const auto &datatype : datatypes)
+        {
+            xlnt::cell::type::null,
+            xlnt::cell::type::boolean,
+            xlnt::cell::type::error,
+            xlnt::cell::type::formula,
+            xlnt::cell::type::numeric,
+            xlnt::cell::type::string
+        };
+
+        for (const auto &datatype : datatypes)
         {
             auto ws = wb.active_sheet();
             auto cell = ws.cell(xlnt::cell_reference(1, 1));
-            
+
             cell.data_type(datatype);
             assert(cell.data_type() == datatype);
             cell.clear_value();
             assert(cell.data_type() == xlnt::cell::type::null);
         }
     }
-    
+
     void test_string()
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         auto cell = ws.cell(xlnt::cell_reference(1, 1));
-        
+
         cell.value("hello");
         assert(cell.data_type() == xlnt::cell::type::string);
-        
+
         cell.value(".");
         assert(cell.data_type() == xlnt::cell::type::string);
-        
+
         cell.value("0800");
         assert(cell.data_type() == xlnt::cell::type::string);
     }
-    
+
     void test_formula1()
     {
         xlnt::workbook wb;
@@ -157,13 +182,13 @@ private:
         cell.value("=42", true);
         assert(cell.data_type() == xlnt::cell::type::formula);
     }
-    
+
     void test_formula2()
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         auto cell = ws.cell(xlnt::cell_reference(1, 1));
-        
+
         cell.value("=if(A1<4;-1;1)", true);
         assert(cell.data_type() == xlnt::cell::type::formula);
     }
@@ -184,39 +209,39 @@ private:
         assert(!cell.has_formula());
     }
 
-    
+
     void test_not_formula()
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         auto cell = ws.cell(xlnt::cell_reference(1, 1));
-        
+
         cell.value("=");
         assert(cell.data_type() == xlnt::cell::type::string);
         assert(cell.value<std::string>() == "=");
         assert(!cell.has_formula());
     }
-    
+
     void test_boolean()
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         auto cell = ws.cell(xlnt::cell_reference(1, 1));
-        
-        for(auto value : {true, false})
+
+        for (auto value : { true, false })
         {
             cell.value(value);
             assert(cell.data_type() == xlnt::cell::type::boolean);
         }
     }
-    
+
     void test_error_codes()
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         auto cell = ws.cell(xlnt::cell_reference(1, 1));
-        
-        for(auto error_code : xlnt::cell::error_codes())
+
+        for (auto error_code : xlnt::cell::error_codes())
         {
             cell.value(error_code.first, true);
             assert(cell.data_type() == xlnt::cell::type::error);
@@ -228,7 +253,7 @@ private:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         auto cell = ws.cell(xlnt::cell_reference(1, 1));
-        
+
         cell.value(xlnt::datetime(2010, 7, 13, 6, 37, 41));
 
         assert(cell.data_type() == xlnt::cell::type::numeric);
@@ -236,100 +261,100 @@ private:
         assert(cell.is_date());
         assert(cell.number_format().format_string() == "yyyy-mm-dd h:mm:ss");
     }
-    
+
     void test_insert_date()
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         auto cell = ws.cell(xlnt::cell_reference(1, 1));
-        
+
         cell.value(xlnt::date(2010, 7, 13));
         assert(cell.data_type() == xlnt::cell::type::numeric);
         assert(cell.value<long double>() == 40372.L);
         assert(cell.is_date());
         assert(cell.number_format().format_string() == "yyyy-mm-dd");
     }
-    
+
     void test_insert_time()
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         auto cell = ws.cell(xlnt::cell_reference(1, 1));
-        
+
         cell.value(xlnt::time(1, 3));
         assert(cell.data_type() == xlnt::cell::type::numeric);
         assert(cell.value<long double>() == 0.04375L);
         assert(cell.is_date());
         assert(cell.number_format().format_string() == "h:mm:ss");
     }
-    
+
     void test_cell_formatted_as_date1()
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         auto cell = ws.cell(xlnt::cell_reference(1, 1));
-        
+
         cell.value(xlnt::datetime::today());
         cell.clear_value();
         assert(!cell.is_date()); // disagree with openpyxl
         assert(!cell.has_value());
     }
-    
+
     void test_cell_formatted_as_date2()
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         auto cell = ws.cell(xlnt::cell_reference(1, 1));
-        
+
         cell.value(xlnt::datetime::today());
         cell.value("testme");
         assert(!cell.is_date());
         assert(cell.value<std::string>() == "testme");
     }
-    
+
     void test_cell_formatted_as_date3()
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         auto cell = ws.cell(xlnt::cell_reference(1, 1));
-        
+
         cell.value(xlnt::datetime::today());
         cell.value(true);
         assert(!cell.is_date());
         assert(cell.value<bool>() == true);
     }
-    
+
     void test_illegal_characters()
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         auto cell = ws.cell(xlnt::cell_reference(1, 1));
-    
+
         // The bytes 0x00 through 0x1F inclusive must be manually escaped in values.
-        auto illegal_chrs = {0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 14, 15, 16, 17, 18,
-			     19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
-        
-        for(auto i : illegal_chrs)
+        auto illegal_chrs = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 14, 15, 16, 17, 18,
+                 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
+
+        for (auto i : illegal_chrs)
         {
             std::string str(1, i);
             assert_throws(cell.value(str), xlnt::illegal_character);
         }
-        
+
         cell.value(std::string(1, 33));
         cell.value(std::string(1, 9));  // Tab
         cell.value(std::string(1, 10));  // Newline
         cell.value(std::string(1, 13));  // Carriage return
         cell.value(" Leading and trailing spaces are legal ");
     }
-    
+
     // void test_time_regex() {}
-    
+
     void test_timedelta()
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         auto cell = ws.cell(xlnt::cell_reference(1, 1));
-        
+
         cell.value(xlnt::timedelta(1, 3, 0, 0, 0));
 
         assert(cell.value<long double>() == 1.125);
@@ -345,82 +370,82 @@ private:
         auto cell = ws.cell(xlnt::cell_reference(1, 1));
         assert(cell.offset(1, 2).reference() == "B3");
     }
-    
+
     void test_font()
     {
         xlnt::workbook wb;
-        auto ws = wb.active_sheet();    
+        auto ws = wb.active_sheet();
         auto cell = ws.cell("A1");
 
-	auto font = xlnt::font().bold(true);
-        
+        auto font = xlnt::font().bold(true);
+
         cell.font(font);
-        
+
         assert(cell.has_format());
         assert(cell.format().font_applied());
         assert_equals(cell.font(), font);
     }
-    
+
     void test_fill()
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         auto cell = ws.cell("A1");
-        
-	xlnt::fill fill(xlnt::pattern_fill()
-			.type(xlnt::pattern_fill_type::solid)
-			.foreground(xlnt::color::red()));
+
+        xlnt::fill fill(xlnt::pattern_fill()
+            .type(xlnt::pattern_fill_type::solid)
+            .foreground(xlnt::color::red()));
         cell.fill(fill);
-        
+
         assert(cell.has_format());
         assert(cell.format().fill_applied());
         assert_equals(cell.fill(), fill);
     }
-    
+
     void test_border()
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         auto cell = ws.cell("A1");
-        
+
         xlnt::border border;
         cell.border(border);
-        
+
         assert(cell.has_format());
         assert(cell.format().border_applied());
         assert_equals(cell.border(), border);
     }
-    
+
     void test_number_format()
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         auto cell = ws.cell("A1");
-        
+
         xlnt::number_format format("dd--hh--mm");
         cell.number_format(format);
-        
+
         assert(cell.has_format());
         assert(cell.format().number_format_applied());
         assert_equals(cell.number_format().format_string(), "dd--hh--mm");
     }
-    
+
     void test_alignment()
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         auto cell = ws.cell("A1");
-        
+
         xlnt::alignment align;
         align.wrap(true);
-    
+
         cell.alignment(align);
-        
+
         assert(cell.has_format());
         assert(cell.format().alignment_applied());
         assert_equals(cell.alignment(), align);
     }
-    
+
     void test_protection()
     {
         xlnt::workbook wb;
@@ -429,29 +454,29 @@ private:
 
         assert(!cell.has_format());
 
-	auto protection = xlnt::protection().locked(false).hidden(true);
+        auto protection = xlnt::protection().locked(false).hidden(true);
         cell.protection(protection);
-        
+
         assert(cell.has_format());
         assert(cell.format().protection_applied());
         assert_equals(cell.protection(), protection);
-        
+
         assert(cell.has_format());
         cell.clear_format();
         assert(!cell.has_format());
     }
-    
+
     void test_style()
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         auto cell = ws.cell("A1");
-        
+
         assert(!cell.has_style());
-        
+
         auto test_style = wb.create_style("test_style");
         test_style.number_format(xlnt::number_format::date_ddmmyyyy(), true);
-        
+
         cell.style(test_style);
         assert(cell.has_style());
         assert_equals(cell.style().number_format(), xlnt::number_format::date_ddmmyyyy());
@@ -459,26 +484,26 @@ private:
 
         auto other_style = wb.create_style("other_style");
         other_style.number_format(xlnt::number_format::date_time2(), true);
-        
+
         cell.style("other_style");
         assert_equals(cell.style().number_format(), xlnt::number_format::date_time2());
         assert_equals(cell.style(), other_style);
-        
-	auto last_style = wb.create_style("last_style");
+
+        auto last_style = wb.create_style("last_style");
         last_style.number_format(xlnt::number_format::percentage(), true);
-        
+
         cell.style(last_style);
         assert_equals(cell.style().number_format(), xlnt::number_format::percentage());
         assert_equals(cell.style(), last_style);
-        
+
         assert_throws(cell.style("doesn't exist"), xlnt::key_not_found);
-        
+
         cell.clear_style();
-        
+
         assert(!cell.has_style());
         assert_throws(cell.style(), xlnt::invalid_attribute);
     }
-    
+
     void test_print()
     {
         xlnt::workbook wb;
@@ -509,7 +534,7 @@ private:
             assert_equals(cell.to_string(), stream_string);
             assert_equals(stream_string, "FALSE");
         }
-        
+
         {
             auto cell = ws.cell("A3");
 
@@ -523,7 +548,7 @@ private:
             assert_equals(cell.to_string(), stream_string);
             assert_equals(stream_string, "TRUE");
         }
-        
+
         {
             auto cell = ws.cell("A4");
 
@@ -537,7 +562,7 @@ private:
             assert_equals(cell.to_string(), stream_string);
             assert_equals(stream_string, "1.234");
         }
-        
+
         {
             auto cell = ws.cell("A5");
 
@@ -551,7 +576,7 @@ private:
             assert_equals(cell.to_string(), stream_string);
             assert_equals(stream_string, "#REF");
         }
-        
+
         {
             auto cell = ws.cell("A6");
 
@@ -622,7 +647,7 @@ private:
     void test_anchor()
     {
         xlnt::workbook wb;
-	auto cell = wb.active_sheet().cell("A1");
+        auto cell = wb.active_sheet().cell("A1");
         auto anchor = cell.anchor();
         assert_equals(anchor.first, 0);
         assert_equals(anchor.second, 0);
@@ -631,7 +656,7 @@ private:
     void test_hyperlink()
     {
         xlnt::workbook wb;
-	auto cell = wb.active_sheet().cell("A1");
+        auto cell = wb.active_sheet().cell("A1");
         assert(!cell.has_hyperlink());
         assert_throws(cell.hyperlink(), xlnt::invalid_attribute);
         assert_throws(cell.hyperlink("notaurl"), xlnt::invalid_parameter);

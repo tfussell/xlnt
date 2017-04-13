@@ -74,7 +74,9 @@ xlnt::workbook build_workbook_cf(const pixmap &image)
 	// The reference to the cell which is being operated upon
 	auto current_cell = xlnt::cell_reference("A1");
 	// The range of cells which will be modified. This is required for conditional formats
-	auto range = ws.range(xlnt::range_reference(1, 1, image[0].size(), image.size()));
+	auto range = ws.range(xlnt::range_reference(1, 1, 
+        static_cast<xlnt::column_t::index_t>(image[0].size()), 
+        static_cast<xlnt::row_t>(image.size())));
 
 	// Track the previously created conditonal formats so they are only created once
 	std::unordered_set<std::string> defined_colors;

@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2014-2017 Thomas Fussell
+// Copyright (c) 2014-2017 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,25 @@
 
 #pragma once
 
-#include <fstream>
 #include <iostream>
 #include <helpers/test_suite.hpp>
 
-#include <helpers/path_helper.hpp>
-#include <xlnt/workbook/workbook.hpp>
+#include <helpers/xml_helper.hpp>
 
-class test_consume_xlsx : public test_suite
+class helper_test_suite : public test_suite
 {
 public:
-
+    void test_compare()
+    {
+        assert(!xml_helper::compare_xml_exact("<a/>", "<b/>", true));
+        assert(!xml_helper::compare_xml_exact("<a/>", "<a b=\"4\"/>", true));
+        assert(!xml_helper::compare_xml_exact("<a b=\"3\"/>", "<a/>", true));
+        assert(!xml_helper::compare_xml_exact("<a c=\"4\"/>", "<a b=\"4\"/>", true));
+        assert(!xml_helper::compare_xml_exact("<a b=\"3\"/>", "<a b=\"4\"/>", true));
+        assert(!xml_helper::compare_xml_exact("<a>text</a>", "<a>txet</a>", true));
+        assert(!xml_helper::compare_xml_exact("<a>text</a>", "<a><b>txet</b></a>", true));
+        assert(xml_helper::compare_xml_exact("<a/>", "<a> </a>", true));
+        assert(xml_helper::compare_xml_exact("<a b=\"3\"/>", "<a b=\"3\"></a>", true));
+        assert(xml_helper::compare_xml_exact("<a>text</a>", "<a>text</a>", true));
+    }
 };

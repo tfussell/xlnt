@@ -301,7 +301,10 @@ std::vector<std::uint8_t> decrypt_xlsx_standard(
 encryption_info generate_encryption_info(const std::u16string &password)
 {
     encryption_info result;
-    result.agile.key_data.salt_value.assign(password.begin(), password.end());
+
+    result.agile.key_data.salt_value.assign(
+        reinterpret_cast<const std::uint8_t *>(password.data()),
+        reinterpret_cast<const std::uint8_t *>(password.data() + password.size()));
 
     return result;
 }

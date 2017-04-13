@@ -27,10 +27,13 @@
 #include <iostream>
 #include <helpers/test_suite.hpp>
 
+#include <detail/vector_streambuf.hpp>
+#include <detail/crypto/xlsx_crypto.hpp>
 #include <helpers/path_helper.hpp>
+#include <helpers/xml_helper.hpp>
 #include <xlnt/workbook/workbook.hpp>
 
-class test_consume_xlsx : public test_suite
+class test_round_trip : public test_suite
 {
 public:
 
