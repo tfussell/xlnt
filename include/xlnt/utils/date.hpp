@@ -70,6 +70,11 @@ struct XLNT_API date
     bool operator==(const date &comparand) const;
 
     /// <summary>
+    /// Return true if this date is equal to comparand.
+    /// </summary>
+    bool operator!=(const date &comparand) const;
+
+    /// <summary>
     /// The year
     /// </summary>
     int year;

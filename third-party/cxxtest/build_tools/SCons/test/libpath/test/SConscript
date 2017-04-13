@@ -1,2 +1,0 @@
-Import('env')
-env.CxxTest('test.t.h', LIBS = ['foo'], CXXTEST_LIBPATH = ['../src'])

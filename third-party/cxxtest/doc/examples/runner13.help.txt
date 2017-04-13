@@ -1,6 +1,0 @@
-./runner <suitename>
-./runner <suitename> <testname>
-./runner -h
-./runner --help
-./runner --help-tests
-./runner -v             Enable tracing output.

@@ -31,11 +31,23 @@
 
 namespace xlnt {
 
-// TODO: make this a real object?
-
 /// <summary>
 /// Typedef a rich_text_run as a pair of string and optional font.
 /// </summary>
-using rich_text_run = std::pair<std::string, optional<font>>;
+struct rich_text_run
+{
+    std::string first;
+    optional<font> second;
+
+    bool operator==(const rich_text_run &other) const
+    {
+	return first == other.first && second == other.second;
+    }
+
+    bool operator!=(const rich_text_run &other) const
+    {
+	return !(*this == other);
+    }    
+};
 
 } // namespace xlnt

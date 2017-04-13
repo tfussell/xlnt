@@ -1,9 +1,0 @@
-
-env = Environment(
-    toolpath=['../../'],
-    tools=['default','cxxtest'],
-    CXXTEST_INSTALL_DIR = '../../../../',
-    CPPPATH = 'src/cpppathdir/'
-    )
-
-env.CxxTest(['src/cpppath.t.h'])

@@ -1,3 +1,0 @@
-Tests whether expanding '#' to the top-level directory works as intended in
-scons.
-by: Gašper Ažman

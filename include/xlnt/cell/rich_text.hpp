@@ -95,9 +95,19 @@ public:
     bool operator==(const rich_text &rhs) const;
 
     /// <summary>
+    /// Returns true if the runs that make up this text are identical to those in rhs.
+    /// </summary>
+    bool operator!=(const rich_text &rhs) const;    
+
+    /// <summary>
     /// Returns true if this text has a single unformatted run with text equal to rhs.
     /// </summary>
     bool operator==(const std::string &rhs) const;
+
+    /// <summary>
+    /// Returns true if this text has a single unformatted run with text equal to rhs.
+    /// </summary>
+    bool operator!=(const std::string &rhs) const;
 
 private:
     /// <summary>

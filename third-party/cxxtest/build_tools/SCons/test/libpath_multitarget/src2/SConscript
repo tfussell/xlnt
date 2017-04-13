@@ -1,3 +1,0 @@
-Import('env')
-
-env.SharedLibrary('bar', 'bar.cpp')

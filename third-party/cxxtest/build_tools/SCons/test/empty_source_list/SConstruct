@@ -1,4 +1,0 @@
-env = Environment(toolpath=['../../'],tools=['default','cxxtest'])
-
-env.CxxTest('test_bar')
-env.CxxTest('test_foo')

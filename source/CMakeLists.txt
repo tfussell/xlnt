@@ -9,8 +9,6 @@ set(PROJECT_CONTACT "thomas.fussell@gmail.com")
 set(PROJECT_URL "https://github.com/tfussell/xlnt")
 set(PROJECT_DESCRIPTION "cross-platform user-friendly xlsx library for C++14")
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../third-party")
-
 if(APPLE)
     option(FRAMEWORK "Set to ON to package dylib and headers into a .framework, OSX only" OFF)
 endif()

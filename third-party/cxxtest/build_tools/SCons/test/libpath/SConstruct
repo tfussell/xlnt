@@ -1,3 +1,0 @@
-env = Environment(toolpath=['../../'],tools=['default','cxxtest'])
-
-SConscript(['src/SConscript', 'test/SConscript'], exports =  ['env'])

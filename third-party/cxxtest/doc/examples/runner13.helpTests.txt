@@ -1,6 +1,0 @@
-Suite/Test Names
----------------------------------------------------------------------------
-MyTestSuite1 testAddition
-MyTestSuite2 testAddition
-MyTestSuite2 testMultiplication
-MyTestSuite4 testAddition
