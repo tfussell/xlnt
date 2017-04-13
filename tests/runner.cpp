@@ -13,10 +13,7 @@
 #include <utils/timedelta_test_suite.hpp>
 
 #include <workbook/named_range_test_suite.hpp>
-#include <workbook/protection_test_suite.hpp>
 #include <workbook/serialization_test_suite.hpp>
-#include <workbook/theme_test_suite.hpp>
-#include <workbook/vba_test_suite.hpp>
 #include <workbook/workbook_test_suite.hpp>
 
 #include <worksheet/page_setup_test_suite.hpp>
