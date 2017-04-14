@@ -36,6 +36,31 @@ extern void sha512_hash(const uint8_t *message, size_t len, uint64_t hash[8]);
 
 }
 
+namespace {
+
+#ifdef _MSC_VER
+inline std::uint32_t byteswap(std::uint32_t i)
+{
+    return _byteswap_ulong(i);
+}
+
+inline std::uint64_t byteswap(std::uint64_t i)
+{
+    return _byteswap_uint64(i);
+}
+#else
+inline std::uint32_t byteswap(std::uint32_t i)
+{
+    return __builtin_bswap32(i);
+}
+
+inline std::uint64_t byteswap(std::uint64_t i)
+{
+    return __builtin_bswap64(i);
+}
+#endif
+}
+
 namespace xlnt {
 namespace detail {
 
@@ -49,7 +74,7 @@ std::vector<std::uint8_t> sha1(const std::vector<std::uint8_t> &data)
 
     for (auto i : hash)
     {
-        auto swapped = _byteswap_ulong(i);
+        auto swapped = byteswap(i);
         std::copy(
             reinterpret_cast<std::uint8_t *>(&swapped),
             reinterpret_cast<std::uint8_t *>(&swapped + 1),
@@ -70,7 +95,7 @@ std::vector<std::uint8_t> sha512(const std::vector<std::uint8_t> &data)
 
     for (auto i : hash)
     {
-        auto swapped = _byteswap_uint64(i);
+        auto swapped = byteswap(i);
         std::copy(
             reinterpret_cast<std::uint8_t *>(&swapped),
             reinterpret_cast<std::uint8_t *>(&swapped + 1),
