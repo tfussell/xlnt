@@ -22,7 +22,9 @@
  *   Software.
  */
 
+#include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 
 void sha1_compress(uint32_t state[5], const uint8_t block[64]) {

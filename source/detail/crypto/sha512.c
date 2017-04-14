@@ -22,7 +22,9 @@
  *   Software.
  */
 
+#include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 
 void sha512_compress(uint64_t state[8], const uint8_t block[128]) {
