@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <exception>
 
 #define assert(expression) do\
