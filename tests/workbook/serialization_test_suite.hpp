@@ -78,7 +78,7 @@ public:
 	void test_produce_empty()
 	{
 		xlnt::workbook wb;
-        const auto path = path_helper::data_directory("3_default.xlsx");
+        const auto path = path_helper::test_file("3_default.xlsx");
 		assert(workbook_matches_file(wb, path));
 	}
 
@@ -202,14 +202,14 @@ public:
         sheet2.cell("C2").value(2);
         sheet2.cell("C3").value(3);
 
-        const auto path = path_helper::data_directory("10_comments_hyperlinks_formulae.xlsx");
+        const auto path = path_helper::test_file("10_comments_hyperlinks_formulae.xlsx");
 		assert(workbook_matches_file(wb, path));
 	}
 
     void test_save_after_clear_all_formulae()
     {
         xlnt::workbook wb;
-        const auto path = path_helper::data_directory("10_comments_hyperlinks_formulae.xlsx");
+        const auto path = path_helper::test_file("10_comments_hyperlinks_formulae.xlsx");
         wb.load(path);
 
         auto ws1 = wb.sheet_by_index(0);
@@ -228,35 +228,35 @@ public:
     void test_load_non_xlsx()
     {
         xlnt::workbook wb;
-        const auto path = path_helper::data_directory("1_powerpoint_presentation.xlsx");
+        const auto path = path_helper::test_file("1_powerpoint_presentation.xlsx");
         assert_throws(wb.load(path), xlnt::invalid_file);
     }
 
     void test_decrypt_agile()
     {
         xlnt::workbook wb;
-        const auto path = path_helper::data_directory("5_encrypted_agile.xlsx");
+        const auto path = path_helper::test_file("5_encrypted_agile.xlsx");
         assert_throws_nothing(wb.load(path, "secret"));
     }
 
     void test_decrypt_libre_office()
     {
         xlnt::workbook wb;
-        const auto path = path_helper::data_directory("6_encrypted_libre.xlsx");
+        const auto path = path_helper::test_file("6_encrypted_libre.xlsx");
         assert_throws_nothing(wb.load(path, u8"пароль"));
     }
 
     void test_decrypt_standard()
     {
         xlnt::workbook wb;
-        const auto path = path_helper::data_directory("7_encrypted_standard.xlsx");
+        const auto path = path_helper::test_file("7_encrypted_standard.xlsx");
         assert_throws_nothing(wb.load(path, "password"));
     }
 
     void test_decrypt_numbers()
     {
         xlnt::workbook wb;
-        const auto path = path_helper::data_directory("8_encrypted_numbers.xlsx");
+        const auto path = path_helper::test_file("8_encrypted_numbers.xlsx");
         assert_throws_nothing(wb.load(path, "secret"));
     }
 
@@ -280,7 +280,7 @@ public:
     void test_comments()
     {
         xlnt::workbook wb;
-        const auto path = path_helper::data_directory("10_comments_hyperlinks_formulae.xlsx");
+        const auto path = path_helper::test_file("10_comments_hyperlinks_formulae.xlsx");
         wb.load(path);
 
         auto sheet1 = wb[0];
@@ -297,7 +297,7 @@ public:
     void test_read_hyperlink()
     {
         xlnt::workbook wb;
-        const auto path = path_helper::data_directory("10_comments_hyperlinks_formulae.xlsx");
+        const auto path = path_helper::test_file("10_comments_hyperlinks_formulae.xlsx");
         wb.load(path);
 
         auto ws1 = wb.sheet_by_index(0);
@@ -320,7 +320,7 @@ public:
     void test_read_formulae()
     {
         xlnt::workbook wb;
-        const auto path = path_helper::data_directory("10_comments_hyperlinks_formulae.xlsx");
+        const auto path = path_helper::test_file("10_comments_hyperlinks_formulae.xlsx");
         wb.load(path);
 
         auto ws1 = wb.sheet_by_index(0);
@@ -341,7 +341,7 @@ public:
     void test_read_headers_and_footers()
     {
         xlnt::workbook wb;
-        wb.load(path_helper::data_directory("11_print_settings.xlsx"));
+        wb.load(path_helper::test_file("11_print_settings.xlsx"));
         auto ws = wb.active_sheet();
 
         assert_equals(ws.cell("A1").value<std::string>(), "header");
@@ -373,7 +373,7 @@ public:
     void test_read_custom_properties()
     {
         xlnt::workbook wb;
-        wb.load(path_helper::data_directory("12_advanced_properties.xlsx"));
+        wb.load(path_helper::test_file("12_advanced_properties.xlsx"));
         assert(wb.has_custom_property("Client"));
         assert_equals(wb.custom_property("Client").get<std::string>(), "me!");
     }
@@ -435,7 +435,7 @@ public:
 
         for (const auto file : files)
         {
-            auto path = path_helper::data_directory(file + ".xlsx");
+            auto path = path_helper::test_file(file + ".xlsx");
             assert(round_trip_matches_rw(path));
         }
     }
@@ -452,7 +452,7 @@ public:
 
         for (const auto file : files)
         {
-            auto path = path_helper::data_directory(file + ".xlsx");
+            auto path = path_helper::test_file(file + ".xlsx");
             auto password = std::string(file == "7_encrypted_standard" ? "password"
                 : file == "6_encrypted_libre" ? u8"пароль"
                 : "secret");

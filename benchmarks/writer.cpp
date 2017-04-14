@@ -1,11 +1,33 @@
+// Copyright (c) 2017 Thomas Fussell
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, WRISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE
+//
+// @license: http://www.opensource.org/licenses/mit-license.php
+// @author: see AUTHORS file
+
 #include <chrono>
 #include <iostream>
+
+#include <helpers/timing.hpp>
 #include <xlnt/xlnt.hpp>
 
-std::size_t current_time()
-{
-    return static_cast<std::size_t>(std::chrono::duration<double, std::milli>(std::chrono::system_clock::now().time_since_epoch()).count());
-}
+namespace {
 
 // Create a worksheet with variable width rows. Because data must be
 // serialised row by row it is often the width of the rows which is most
@@ -32,7 +54,7 @@ void writer(int cols, int rows)
 
     std::cout << std::endl;
 
-    auto filename = "data/benchmark.xlsx";
+    auto filename = "benchmark.xlsx";
     wb.save(filename);
 }
 
@@ -41,6 +63,8 @@ void writer(int cols, int rows)
 // Time from the best of three is taken.
 void timer(std::function<void(int, int)> fn, int cols, int rows)
 {
+    using xlnt::benchmarks::current_time;
+
     const auto repeat = std::size_t(3);
     auto time = std::numeric_limits<std::size_t>::max();
 
@@ -55,6 +79,8 @@ void timer(std::function<void(int, int)> fn, int cols, int rows)
 
     std::cout << time / 1000.0 << std::endl;
 }
+
+} // namespace
 
 int main()
 {

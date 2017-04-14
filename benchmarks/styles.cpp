@@ -1,13 +1,35 @@
+// Copyright (c) 2017 Thomas Fussell
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, WRISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE
+//
+// @license: http://www.opensource.org/licenses/mit-license.php
+// @author: see AUTHORS file
+
 #include <chrono>
 #include <iostream>
 #include <iterator>
 #include <random>
+
+#include <helpers/timing.hpp>
 #include <xlnt/xlnt.hpp>
 
-std::size_t current_time()
-{
-    return static_cast<std::size_t>(std::chrono::duration<double, std::milli>(std::chrono::system_clock::now().time_since_epoch()).count());
-}
+namespace {
 
 std::size_t random_index(std::size_t max)
 {
@@ -23,28 +45,70 @@ std::vector<xlnt::style> generate_all_styles(xlnt::workbook &wb)
 {
     std::vector<xlnt::style> styles;
 
-    std::vector<xlnt::vertical_alignment> vertical_alignments = {xlnt::vertical_alignment::center, xlnt::vertical_alignment::justify, xlnt::vertical_alignment::top, xlnt::vertical_alignment::bottom};
-    std::vector<xlnt::horizontal_alignment> horizontal_alignments = {xlnt::horizontal_alignment::center, xlnt::horizontal_alignment::center_continuous, xlnt::horizontal_alignment::general, xlnt::horizontal_alignment::justify, xlnt::horizontal_alignment::left, xlnt::horizontal_alignment::right};
-    std::vector<std::string> font_names = {"Calibri", "Tahoma", "Arial", "Times New Roman"};
-    std::vector<int> font_sizes = {11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35};
-    std::vector<bool> bold_options = {true, false};
-    std::vector<xlnt::font::underline_style> underline_options = {xlnt::font::underline_style::single, xlnt::font::underline_style::none};
-    std::vector<bool> italic_options = {true, false};
-    std::size_t index = 0;
-    
-    for(auto vertical_alignment : vertical_alignments)
+    const auto vertical_alignments = std::vector<xlnt::vertical_alignment>
     {
-        for(auto horizontal_alignment : horizontal_alignments)
+        xlnt::vertical_alignment::center,
+        xlnt::vertical_alignment::justify,
+        xlnt::vertical_alignment::top,
+        xlnt::vertical_alignment::bottom
+    };
+
+    const auto horizontal_alignments = std::vector<xlnt::horizontal_alignment>
+    {
+        xlnt::horizontal_alignment::center,
+        xlnt::horizontal_alignment::center_continuous,
+        xlnt::horizontal_alignment::general,
+        xlnt::horizontal_alignment::justify,
+        xlnt::horizontal_alignment::left,
+        xlnt::horizontal_alignment::right
+    };
+
+    const auto font_names = std::vector<std::string>
+    {
+        "Calibri",
+        "Tahoma",
+        "Arial",
+        "Times New Roman"
+    };
+
+    const auto font_sizes = std::vector<double>
+    {
+        11.,
+        13.,
+        15.,
+        17.,
+        19.,
+        21.,
+        23.,
+        25.,
+        27.,
+        29.,
+        31.,
+        33.,
+        35.
+    };
+
+    const auto underline_options = std::vector<xlnt::font::underline_style>
+    {
+        xlnt::font::underline_style::single,
+        xlnt::font::underline_style::none
+    };
+
+    std::size_t index = 0;
+
+    for (auto vertical_alignment : vertical_alignments)
+    {
+        for (auto horizontal_alignment : horizontal_alignments)
         {
-            for(auto name : font_names)
+            for (auto name : font_names)
             {
-                for(auto size : font_sizes)
+                for (auto size : font_sizes)
                 {
-                    for(auto bold : bold_options)
+                    for (auto bold : { true, false })
                     {
-                        for(auto underline : underline_options)
+                        for (auto underline : underline_options)
                         {
-                            for(auto italic : italic_options)
+                            for (auto italic : { true, false })
                             {
                                 auto s = wb.create_style(std::to_string(index++));
 
@@ -91,11 +155,16 @@ xlnt::workbook non_optimized_workbook(int n)
 
 void to_profile(xlnt::workbook &wb, const std::string &f, int n)
 {
+    using xlnt::benchmarks::current_time;
+
     auto start = current_time();
     wb.save(f);
     auto elapsed = current_time() - start;
+
     std::cout << "took " << elapsed / 1000.0 << "s for " << n << " styles" << std::endl;
 }
+
+} // namespace
 
 int main()
 {

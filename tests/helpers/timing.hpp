@@ -21,21 +21,19 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#include <xlnt/xlnt.hpp>
+#include <chrono>
 
-int main()
+namespace xlnt {
+namespace benchmarks {
+
+std::size_t current_time()
 {
-    xlnt::workbook wb;
-    xlnt::worksheet ws = wb.active_sheet();
+    auto now = std::chrono::system_clock::now();
+    auto time_since_epoch = now.time_since_epoch();
+    auto duration = std::chrono::duration<double, std::milli>(time_since_epoch);
 
-    ws.cell("A1").value(5);
-    ws.cell("B2").value("string data");
-    ws.cell("C3").formula("=RAND()");
-
-    ws.merge_cells("C3:C4");
-    ws.freeze_panes("B2");
-
-    wb.save("sample.xlsx");
-
-    return 0;
+    return static_cast<std::size_t>(duration.count());
 }
+
+} // namespace benchmarks
+} // namespace xlnt
