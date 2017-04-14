@@ -33,7 +33,7 @@ if(COVERAGE)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fprofile-arcs -ftest-coverage")
 endif()
 
-add_executable(xlnt.test ${RUNNER} ${TESTS} ${HELPERS})
+add_executable(xlnt.test ${RUNNER} ${TESTS} ${HELPERS} $<TARGET_OBJECTS:libstudxml>)
 target_link_libraries(xlnt.test PRIVATE xlnt)
 target_include_directories(xlnt.test
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
