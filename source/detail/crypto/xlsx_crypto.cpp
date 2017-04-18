@@ -167,6 +167,7 @@ std::vector<std::uint8_t> file(POLE::Storage &storage, const std::string &name)
     if (stream.fail()) return {};
     std::vector<std::uint8_t> bytes(stream.size(), 0);
     stream.read(bytes.data(), static_cast<unsigned long>(bytes.size()));
+
     return bytes;
 }
 
@@ -234,12 +235,12 @@ std::vector<std::uint8_t> decrypt_xlsx_standard(
     offset += salt_size;
 
     static const auto verifier_size = std::size_t(16);
-    std::vector<std::uint8_t> verifier_hash_input(encryption_info.begin() + static_cast<std::ptrdiff_t>(offset),
+    std::vector<std::uint8_t> encrypted_verifier(encryption_info.begin() + static_cast<std::ptrdiff_t>(offset),
         encryption_info.begin() + static_cast<std::ptrdiff_t>(offset + verifier_size));
     offset += verifier_size;
 
     const auto verifier_hash_size = read_int<std::uint32_t>(offset, encryption_info);
-    std::vector<std::uint8_t> verifier_hash_value(encryption_info.begin() + static_cast<std::ptrdiff_t>(offset),
+    std::vector<std::uint8_t> encrypted_verifier_hash(encryption_info.begin() + static_cast<std::ptrdiff_t>(offset),
         encryption_info.begin() + static_cast<std::ptrdiff_t>(offset + verifier_hash_size));
     offset += verifier_hash_size;
 
@@ -268,7 +269,9 @@ std::vector<std::uint8_t> decrypt_xlsx_standard(
     // H_final = H(H_n + block)
     auto h_n_plus_block = h_n;
     const std::uint32_t block_number = 0;
-    h_n_plus_block.insert(h_n_plus_block.end(), reinterpret_cast<const std::uint8_t *>(&block_number),
+    h_n_plus_block.insert(
+        h_n_plus_block.end(),
+        reinterpret_cast<const std::uint8_t *>(&block_number),
         reinterpret_cast<const std::uint8_t *>(&block_number) + sizeof(std::uint32_t));
     auto h_final = hash(info.hash, h_n_plus_block);
 
@@ -291,18 +294,38 @@ std::vector<std::uint8_t> decrypt_xlsx_standard(
     auto X3 = X1;
     X3.insert(X3.end(), X2.begin(), X2.end());
 
-    auto key_derived =
-        std::vector<std::uint8_t>(X3.begin(), X3.begin() + static_cast<std::ptrdiff_t>(info.key_bytes));
-
-    // todo: verify here
-
-    std::size_t package_offset = 0;
-    auto decrypted_size = static_cast<std::size_t>(read_int<std::uint64_t>(package_offset, encrypted_package));
+    auto key = std::vector<std::uint8_t>(X3.begin(), 
+        X3.begin() + static_cast<std::ptrdiff_t>(info.key_bytes));
 
     using xlnt::detail::aes_ecb_decrypt;
-    auto decrypted = aes_ecb_decrypt(
-        std::vector<std::uint8_t>(encrypted_package.begin() + 8, encrypted_package.end()),
-        key_derived);
+
+    auto calculated_verifier_hash = hash(info.hash,
+        aes_ecb_decrypt(encrypted_verifier, key));
+
+    // TODO: I can't figure out how to pad encrypted_verifier_hash to 32 bytes
+    // so that it matches calculated_verifier_hash after decryption so we'll just 
+    // compare the first block (16 bytes) for now.
+    calculated_verifier_hash.resize(16);
+    encrypted_verifier_hash.resize(16);
+
+    auto decrypted_verifier_hash = aes_ecb_decrypt(
+        encrypted_verifier_hash, key);
+
+    if (calculated_verifier_hash != decrypted_verifier_hash)
+    {
+        throw xlnt::exception("bad password");
+    }
+
+    std::size_t ignore = 0;
+    auto decrypted_size = static_cast<std::size_t>(
+        read_int<std::uint64_t>(ignore, encrypted_package));
+
+    // TODO: don't copy encrypted package just to cut off the first 8 bytes
+    auto encrypted_data = std::vector<std::uint8_t>(
+        encrypted_package.begin() + 8, 
+        encrypted_package.end());
+    auto decrypted = aes_ecb_decrypt(encrypted_data, key);
+
     decrypted.resize(decrypted_size);
 
     return decrypted;
@@ -461,7 +484,7 @@ std::vector<std::uint8_t> decrypt_xlsx_agile(
 
     if (!any_password_key)
     {
-        throw "no password key in keyEncryptors";
+        throw xlnt::exception("no password key in keyEncryptors");
     }
 
     parser.next_expect(xml::parser::event_type::end_element, xmlns, "keyEncryptor");
@@ -519,16 +542,15 @@ std::vector<std::uint8_t> decrypt_xlsx_agile(
     auto expected_verifier = calculate_block(h_n, verifier_block_key, result.key_encryptor.verifier_hash_value);
     expected_verifier.resize(calculated_verifier.size());
 
-    if (calculated_verifier.size() != expected_verifier.size()
-        || std::mismatch(calculated_verifier.begin(), calculated_verifier.end(), expected_verifier.begin(),
-               expected_verifier.end())
-            != std::make_pair(calculated_verifier.end(), expected_verifier.end()))
+    if (calculated_verifier != expected_verifier)
     {
         throw xlnt::exception("bad password");
     }
 
-    const std::array<std::uint8_t, block_size> key_value_block_key = {
-        {0x14, 0x6e, 0x0b, 0xe7, 0xab, 0xac, 0xd0, 0xd6}};
+    const std::array<std::uint8_t, block_size> key_value_block_key = 
+    {
+        {0x14, 0x6e, 0x0b, 0xe7, 0xab, 0xac, 0xd0, 0xd6}
+    };
     auto key = calculate_block(h_n, key_value_block_key, result.key_encryptor.encrypted_key_value);
 
     auto salt_size = result.key_data.salt_size;
@@ -554,7 +576,10 @@ std::vector<std::uint8_t> decrypt_xlsx_agile(
         auto decrypted_segment = xlnt::detail::aes_cbc_decrypt(encrypted_segment, key, iv);
         decrypted_segment.resize(current_segment_length);
 
-        decrypted_package.insert(decrypted_package.end(), decrypted_segment.begin(), decrypted_segment.end());
+        decrypted_package.insert(
+            decrypted_package.end(),
+            decrypted_segment.begin(),
+            decrypted_segment.end());
 
         ++segment;
     }
@@ -591,7 +616,9 @@ std::vector<std::uint8_t> decrypt_xlsx(
     auto encryption_flags = read_int<std::uint32_t>(index, encryption_info);
 
     // get rid of header
-    encryption_info.erase(encryption_info.begin(), encryption_info.begin() + static_cast<std::ptrdiff_t>(index));
+    encryption_info.erase(
+        encryption_info.begin(),
+        encryption_info.begin() + static_cast<std::ptrdiff_t>(index));
 
     // version 4.4 is agile
     if (version_major == 4 && version_minor == 4)
