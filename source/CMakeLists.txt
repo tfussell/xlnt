@@ -132,6 +132,7 @@ target_include_directories(xlnt PRIVATE ${XLNT_SOURCE_DIR}/../third-party/libstu
 if(MSVC)
     set_target_properties(xlnt PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\" /wd\"4068\" /MP")
 	set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/detail/miniz.cpp PROPERTIES COMPILE_FLAGS "/wd\"4244\" /wd\"4334\" /wd\"4127\"")
+	set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/detail/crypto/aes.cpp PROPERTIES COMPILE_FLAGS "/wd\"4996\"")
 endif()
 
 source_group(xlnt FILES ${ROOT_HEADERS})

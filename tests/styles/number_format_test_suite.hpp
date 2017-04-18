@@ -117,16 +117,16 @@ public:
     void test_basic()
     {
         xlnt::number_format no_id("#\\x\\y\\z");
-        assert_throws(no_id.id(), std::runtime_error);
+        xlnt_assert_throws(no_id.id(), std::runtime_error);
 
         xlnt::number_format id("General", 200);
-        assert_equals(id.id(), 200);
-        assert_equals(id.format_string(), "General");
+        xlnt_assert_equals(id.id(), 200);
+        xlnt_assert_equals(id.format_string(), "General");
         
         xlnt::number_format general(0);
-        assert_equals(general, xlnt::number_format::general());
-        assert_equals(general.id(), 0);
-        assert_equals(general.format_string(), "General");
+        xlnt_assert_equals(general, xlnt::number_format::general());
+        xlnt_assert_equals(general.id(), 0);
+        xlnt_assert_equals(general.format_string(), "General");
     }
 
     void test_simple_format()
@@ -135,21 +135,21 @@ public:
 
         nf.format_string("\"positive\"General;\"negative\"General");
         auto formatted = nf.format(3.14, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "positive3.14");
+        xlnt_assert_equals(formatted, "positive3.14");
         formatted = nf.format(-3.14, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "negative3.14");
+        xlnt_assert_equals(formatted, "negative3.14");
 
         nf.format_string("\"any\"General");
         formatted = nf.format(-3.14, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "-any3.14");
+        xlnt_assert_equals(formatted, "-any3.14");
 
         nf.format_string("\"positive\"General;\"negative\"General;\"zero\"General");
         formatted = nf.format(3.14, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "positive3.14");
+        xlnt_assert_equals(formatted, "positive3.14");
         formatted = nf.format(-3.14, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "negative3.14");
+        xlnt_assert_equals(formatted, "negative3.14");
         formatted = nf.format(0, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "zero0");
+        xlnt_assert_equals(formatted, "zero0");
     }
 
     void test_simple_date()
@@ -160,7 +160,7 @@ public:
         xlnt::number_format nf = xlnt::number_format::date_ddmmyyyy();
         auto formatted = nf.format(date_number, xlnt::calendar::windows_1900);
 
-        assert_equals(formatted, "18/06/16");
+        xlnt_assert_equals(formatted, "18/06/16");
     }
 
     void test_short_month()
@@ -172,7 +172,7 @@ public:
         nf.format_string("m");
         auto formatted = nf.format(date_number, xlnt::calendar::windows_1900);
 
-        assert_equals(formatted, "6");
+        xlnt_assert_equals(formatted, "6");
     }
 
     void test_month_abbreviation()
@@ -184,7 +184,7 @@ public:
         nf.format_string("mmm");
         auto formatted = nf.format(date_number, xlnt::calendar::windows_1900);
 
-        assert_equals(formatted, "Jun");
+        xlnt_assert_equals(formatted, "Jun");
     }
 
     void test_month_name()
@@ -196,7 +196,7 @@ public:
         nf.format_string("mmmm");
         auto formatted = nf.format(date_number, xlnt::calendar::windows_1900);
 
-        assert_equals(formatted, "June");
+        xlnt_assert_equals(formatted, "June");
     }
 
     void test_short_day()
@@ -208,7 +208,7 @@ public:
         nf.format_string("d");
         auto formatted = nf.format(date_number, xlnt::calendar::windows_1900);
 
-        assert_equals(formatted, "8");
+        xlnt_assert_equals(formatted, "8");
     }
 
     void test_long_day()
@@ -220,7 +220,7 @@ public:
         nf.format_string("dd");
         auto formatted = nf.format(date_number, xlnt::calendar::windows_1900);
 
-        assert_equals(formatted, "08");
+        xlnt_assert_equals(formatted, "08");
     }
 
     void test_long_year()
@@ -232,7 +232,7 @@ public:
         nf.format_string("yyyy");
         auto formatted = nf.format(date_number, xlnt::calendar::windows_1900);
 
-        assert_equals(formatted, "2016");
+        xlnt_assert_equals(formatted, "2016");
     }
 
     void test_day_name()
@@ -244,7 +244,7 @@ public:
         nf.format_string("dddd");
         auto formatted = nf.format(date_number, xlnt::calendar::windows_1900);
 
-        assert_equals(formatted, "Sunday");
+        xlnt_assert_equals(formatted, "Sunday");
     }
 
     void test_day_abbreviation()
@@ -256,7 +256,7 @@ public:
         nf.format_string("ddd");
         auto formatted = nf.format(date_number, xlnt::calendar::windows_1900);
 
-        assert_equals(formatted, "Sun");
+        xlnt_assert_equals(formatted, "Sun");
     }
 
     void test_month_letter()
@@ -268,7 +268,7 @@ public:
         nf.format_string("mmmmm");
         auto formatted = nf.format(date_number, xlnt::calendar::windows_1900);
 
-        assert_equals(formatted, "J");
+        xlnt_assert_equals(formatted, "J");
     }
 
     void test_time_24_hour()
@@ -279,7 +279,7 @@ public:
         xlnt::number_format nf = xlnt::number_format::date_time4();
         auto formatted = nf.format(time_number, xlnt::calendar::windows_1900);
 
-        assert_equals(formatted, "20:15:10");
+        xlnt_assert_equals(formatted, "20:15:10");
     }
 
     void test_elapsed_minutes()
@@ -290,7 +290,7 @@ public:
         xlnt::number_format nf("[mm]:ss");
         auto formatted = nf.format(period_number, xlnt::calendar::windows_1900);
 
-        assert_equals(formatted, "1563:04");
+        xlnt_assert_equals(formatted, "1563:04");
     }
 
     void test_second_fractional_leading_zero()
@@ -301,7 +301,7 @@ public:
         xlnt::number_format nf("ss.0");
         auto formatted = nf.format(time_number, xlnt::calendar::windows_1900);
 
-        assert_equals(formatted, "03.4");
+        xlnt_assert_equals(formatted, "03.4");
     }
     
     void test_second_fractional()
@@ -312,7 +312,7 @@ public:
         xlnt::number_format nf("s.0");
         auto formatted = nf.format(time_number, xlnt::calendar::windows_1900);
 
-        assert_equals(formatted, "3.4");
+        xlnt_assert_equals(formatted, "3.4");
     }
 
     void test_elapsed_seconds()
@@ -323,7 +323,7 @@ public:
         xlnt::number_format nf("[ss]");
         auto formatted = nf.format(period_number, xlnt::calendar::windows_1900);
 
-        assert_equals(formatted, "93784");
+        xlnt_assert_equals(formatted, "93784");
     }
 
     void test_time_12_hour_am()
@@ -334,7 +334,7 @@ public:
         xlnt::number_format nf = xlnt::number_format::date_time2();
         auto formatted = nf.format(time_number, xlnt::calendar::windows_1900);
 
-        assert_equals(formatted, "8:15:10 AM");
+        xlnt_assert_equals(formatted, "8:15:10 AM");
     }
 
     void test_time_12_hour_pm()
@@ -345,7 +345,7 @@ public:
         xlnt::number_format nf = xlnt::number_format::date_time2();
         auto formatted = nf.format(time_number, xlnt::calendar::windows_1900);
 
-        assert_equals(formatted, "8:15:10 PM");
+        xlnt_assert_equals(formatted, "8:15:10 PM");
     }
 
     void test_long_hour_12_hour()
@@ -357,7 +357,7 @@ public:
         nf.format_string("hh AM/PM");
         auto formatted = nf.format(time_number, xlnt::calendar::windows_1900);
 
-        assert_equals(formatted, "08 PM");
+        xlnt_assert_equals(formatted, "08 PM");
     }
 
     void test_long_hour_12_hour_ap()
@@ -371,10 +371,10 @@ public:
         xlnt::number_format nf("hh A/P");
 
         auto formatted = nf.format(time1_number, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "08 P");
+        xlnt_assert_equals(formatted, "08 P");
 
         formatted = nf.format(time2_number, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "08 A");
+        xlnt_assert_equals(formatted, "08 A");
     }
 
     void test_long_hour_24_hour()
@@ -386,7 +386,7 @@ public:
         nf.format_string("hh");
         auto formatted = nf.format(time_number, xlnt::calendar::windows_1900);
 
-        assert_equals(formatted, "20");
+        xlnt_assert_equals(formatted, "20");
     }
 
     void test_short_minute()
@@ -398,7 +398,7 @@ public:
         nf.format_string("h:m");
         auto formatted = nf.format(time_number, xlnt::calendar::windows_1900);
 
-        assert_equals(formatted, "20:5");
+        xlnt_assert_equals(formatted, "20:5");
     }
 
     void test_long_minute()
@@ -410,7 +410,7 @@ public:
         nf.format_string("h:mm");
         auto formatted = nf.format(time_number, xlnt::calendar::windows_1900);
 
-        assert_equals(formatted, "20:05");
+        xlnt_assert_equals(formatted, "20:05");
     }
 
     void test_short_second()
@@ -422,7 +422,7 @@ public:
         nf.format_string("h:m:s");
         auto formatted = nf.format(time_number, xlnt::calendar::windows_1900);
 
-        assert_equals(formatted, "20:15:1");
+        xlnt_assert_equals(formatted, "20:15:1");
     }
 
     void test_long_second()
@@ -434,7 +434,7 @@ public:
         nf.format_string("h:m:ss");
         auto formatted = nf.format(time_number, xlnt::calendar::windows_1900);
 
-        assert_equals(formatted, "20:15:01");
+        xlnt_assert_equals(formatted, "20:15:01");
     }
 
     void test_trailing_space()
@@ -446,7 +446,7 @@ public:
         nf.format_string("h:m:ss ");
         auto formatted = nf.format(time_number, xlnt::calendar::windows_1900);
 
-        assert_equals(formatted, "20:15:01 ");
+        xlnt_assert_equals(formatted, "20:15:01 ");
     }
 
     void test_text_section_string()
@@ -456,7 +456,7 @@ public:
 
         auto formatted = nf.format("text");
 
-        assert_equals(formatted, "atextb");
+        xlnt_assert_equals(formatted, "atextb");
     }
 
     void test_text_section_no_string()
@@ -466,7 +466,7 @@ public:
 
         auto formatted = nf.format("text");
 
-        assert_equals(formatted, "ab");
+        xlnt_assert_equals(formatted, "ab");
     }
 
     void test_text_section_no_text()
@@ -476,7 +476,7 @@ public:
 
         auto formatted = nf.format("text");
 
-        assert_equals(formatted, "text");
+        xlnt_assert_equals(formatted, "text");
     }
 
     void test_conditional_format()
@@ -485,77 +485,77 @@ public:
 
         nf.format_string("[>5]General\"first\";[>3]\"second\"General;\"third\"General");
         auto formatted = nf.format(6, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "6first");
+        xlnt_assert_equals(formatted, "6first");
         formatted = nf.format(4, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "second4");
+        xlnt_assert_equals(formatted, "second4");
         formatted = nf.format(5, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "second5");
+        xlnt_assert_equals(formatted, "second5");
         formatted = nf.format(3, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "third3");
+        xlnt_assert_equals(formatted, "third3");
         formatted = nf.format(2, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "third2");
+        xlnt_assert_equals(formatted, "third2");
 
         nf.format_string("[>=5]\"first\"General;[>=3]\"second\"General;\"third\"General");
         formatted = nf.format(5, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "first5");
+        xlnt_assert_equals(formatted, "first5");
         formatted = nf.format(6, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "first6");
+        xlnt_assert_equals(formatted, "first6");
         formatted = nf.format(4, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "second4");
+        xlnt_assert_equals(formatted, "second4");
         formatted = nf.format(3, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "second3");
+        xlnt_assert_equals(formatted, "second3");
         formatted = nf.format(2, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "third2");
+        xlnt_assert_equals(formatted, "third2");
 
         nf.format_string("[>=5]\"first\"General");
         formatted = nf.format(4, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "###########");
+        xlnt_assert_equals(formatted, "###########");
 
         nf.format_string("[>=5]\"first\"General;[>=4]\"second\"General");
         formatted = nf.format(3, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "###########");
+        xlnt_assert_equals(formatted, "###########");
 
         nf.format_string("[<1]\"first\"General;[<5]\"second\"General;\"third\"General");
         formatted = nf.format(0, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "first0");
+        xlnt_assert_equals(formatted, "first0");
         formatted = nf.format(1, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "second1");
+        xlnt_assert_equals(formatted, "second1");
         formatted = nf.format(5, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "third5");
+        xlnt_assert_equals(formatted, "third5");
         formatted = nf.format(6, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "third6");
+        xlnt_assert_equals(formatted, "third6");
 
         nf.format_string("[<=1]\"first\"General;[<=5]\"second\"General;\"third\"General");
         formatted = nf.format(-1000, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "-first1000");
+        xlnt_assert_equals(formatted, "-first1000");
         formatted = nf.format(0, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "first0");
+        xlnt_assert_equals(formatted, "first0");
         formatted = nf.format(1, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "first1");
+        xlnt_assert_equals(formatted, "first1");
         formatted = nf.format(4, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "second4");
+        xlnt_assert_equals(formatted, "second4");
         formatted = nf.format(5, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "second5");
+        xlnt_assert_equals(formatted, "second5");
         formatted = nf.format(6, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "third6");
+        xlnt_assert_equals(formatted, "third6");
         formatted = nf.format(1000, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "third1000");
+        xlnt_assert_equals(formatted, "third1000");
 
         nf.format_string("[=1]\"first\"General;[=2]\"second\"General;\"third\"General");
         formatted = nf.format(1, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "first1");
+        xlnt_assert_equals(formatted, "first1");
         formatted = nf.format(2, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "second2");
+        xlnt_assert_equals(formatted, "second2");
         formatted = nf.format(3, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "third3");
+        xlnt_assert_equals(formatted, "third3");
         formatted = nf.format(0, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "third0");
+        xlnt_assert_equals(formatted, "third0");
 
         nf.format_string("[<>1]\"first\"General;[<>2]\"second\"General");
         formatted = nf.format(2, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "first2");
+        xlnt_assert_equals(formatted, "first2");
         formatted = nf.format(1, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "second1");
+        xlnt_assert_equals(formatted, "second1");
     }
 
     void test_space()
@@ -563,7 +563,7 @@ public:
         xlnt::number_format nf;
         nf.format_string("_(General_)");
         auto formatted = nf.format(6, xlnt::calendar::windows_1900);
-        assert_equals(formatted, " 6 ");
+        xlnt_assert_equals(formatted, " 6 ");
     }
     
     void test_fill()
@@ -571,15 +571,15 @@ public:
         xlnt::number_format nf;
         nf.format_string("*-General");
         auto formatted = nf.format(6, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "----------6");
+        xlnt_assert_equals(formatted, "----------6");
 
         nf.format_string("General*-");
         formatted = nf.format(6, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "6----------");
+        xlnt_assert_equals(formatted, "6----------");
 
         nf.format_string("\\a*-\\b");
         formatted = nf.format(6, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "a---------b");
+        xlnt_assert_equals(formatted, "a---------b");
     }
 
     void test_placeholders_zero()
@@ -587,11 +587,11 @@ public:
         xlnt::number_format nf;
         nf.format_string("00");
         auto formatted = nf.format(6, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "06");
+        xlnt_assert_equals(formatted, "06");
 
         nf.format_string("00");
         formatted = nf.format(63, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "63");
+        xlnt_assert_equals(formatted, "63");
     }
 
     void test_placeholders_space()
@@ -599,25 +599,25 @@ public:
         xlnt::number_format nf;
         nf.format_string("?0");
         auto formatted = nf.format(6, xlnt::calendar::windows_1900);
-        assert_equals(formatted, " 6");
+        xlnt_assert_equals(formatted, " 6");
 
         nf.format_string("?0");
         formatted = nf.format(63, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "63");
+        xlnt_assert_equals(formatted, "63");
 
         nf.format_string("?0");
         formatted = nf.format(637, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "637");
+        xlnt_assert_equals(formatted, "637");
 
         nf.format_string("0.?");
         formatted = nf.format(6, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "6. ");
+        xlnt_assert_equals(formatted, "6. ");
 
         nf.format_string("0.0?");
         formatted = nf.format(6.3, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "6.3 ");
+        xlnt_assert_equals(formatted, "6.3 ");
         formatted = nf.format(6.34, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "6.34");
+        xlnt_assert_equals(formatted, "6.34");
     }
 
     void test_scientific()
@@ -625,7 +625,7 @@ public:
         xlnt::number_format nf;
         nf.format_string("0.0E-0");
         auto formatted = nf.format(6.1, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "6.1E0");
+        xlnt_assert_equals(formatted, "6.1E0");
     }
 
     void test_locale_currency()
@@ -634,11 +634,11 @@ public:
 
         nf.format_string("[$€-407]#,##0.00");
         auto formatted = nf.format(-45000.1, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "-€45,000.10");
+        xlnt_assert_equals(formatted, "-€45,000.10");
 
         nf.format_string("[$$-1009]#,##0.00");
         formatted = nf.format(-45000.1, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "-$45,000.10");
+        xlnt_assert_equals(formatted, "-$45,000.10");
     }
     
     void test_bad_country()
@@ -646,16 +646,16 @@ public:
         xlnt::number_format nf;
 
         nf.format_string("[$-]#,##0.00");
-        assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+        xlnt_assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
 
         nf.format_string("[$-G]#,##0.00");
-        assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+        xlnt_assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
 
         nf.format_string("[$-4002]#,##0.00");
-        assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+        xlnt_assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
 
         nf.format_string("[-4001]#,##0.00");
-        assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+        xlnt_assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
     }
 
     void test_duplicate_bracket_sections()
@@ -663,13 +663,13 @@ public:
         xlnt::number_format nf;
 
         nf.format_string("[Red][Green]#,##0.00");
-        assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+        xlnt_assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
 
         nf.format_string("[$-403][$-4001]#,##0.00");
-        assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+        xlnt_assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
 
         nf.format_string("[>3][>4]#,##0.00");
-        assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+        xlnt_assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
     }
 
     void test_escaped_quote_string()
@@ -678,7 +678,7 @@ public:
 
         nf.format_string("\"\\\"\"General");
         auto formatted = nf.format(6, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "\"6");
+        xlnt_assert_equals(formatted, "\"6");
     }
 
     void test_thousands_scale()
@@ -687,7 +687,7 @@ public:
 
         nf.format_string("#,");
         auto formatted = nf.format(61234, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "61");
+        xlnt_assert_equals(formatted, "61");
     }
 
     void test_colors()
@@ -696,43 +696,43 @@ public:
 
         nf.format_string("[Black]#");
         auto formatted = nf.format(6, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "6");
+        xlnt_assert_equals(formatted, "6");
 
         nf.format_string("[Black]#");
         formatted = nf.format(6, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "6");
+        xlnt_assert_equals(formatted, "6");
 
         nf.format_string("[Blue]#");
         formatted = nf.format(6, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "6");
+        xlnt_assert_equals(formatted, "6");
 
         nf.format_string("[Green]#");
         formatted = nf.format(6, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "6");
+        xlnt_assert_equals(formatted, "6");
 
         nf.format_string("[Red]#");
         formatted = nf.format(6, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "6");
+        xlnt_assert_equals(formatted, "6");
 
         nf.format_string("[Cyan]#");
         formatted = nf.format(6, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "6");
+        xlnt_assert_equals(formatted, "6");
 
         nf.format_string("[Magenta]#");
         formatted = nf.format(6, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "6");
+        xlnt_assert_equals(formatted, "6");
 
         nf.format_string("[Yellow]#");
         formatted = nf.format(6, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "6");
+        xlnt_assert_equals(formatted, "6");
 
         nf.format_string("[White]#");
         formatted = nf.format(6, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "6");
+        xlnt_assert_equals(formatted, "6");
         
         nf.format_string("[Color15]#");
         formatted = nf.format(6, xlnt::calendar::windows_1900);
-        assert_equals(formatted, "6");
+        xlnt_assert_equals(formatted, "6");
     }
     
     void test_bad_format()
@@ -740,31 +740,31 @@ public:
         xlnt::number_format nf;
 
         nf.format_string("[=1]\"first\"General;[=2]\"second\"General;[=3]\"third\"General");
-        assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+        xlnt_assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
 
         nf.format_string("\"first\"General;\"second\"General;\"third\"General;\"fourth\"General;\"fifth\"General");
-        assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+        xlnt_assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
 
         nf.format_string("[");
-        assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+        xlnt_assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
 
         nf.format_string("[]");
-        assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+        xlnt_assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
 
         nf.format_string("[Redd]");
-        assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+        xlnt_assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
 
         nf.format_string("[$1]#");
-        assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+        xlnt_assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
 
         nf.format_string("Gee");
-        assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+        xlnt_assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
 
         nf.format_string("!");
-        assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+        xlnt_assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
 
         nf.format_string("A/");
-        assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
+        xlnt_assert_throws(nf.format(1.2, xlnt::calendar::windows_1900), std::runtime_error);
     }
 
     void format_and_test(const xlnt::number_format &nf, const std::array<std::string, 4> &expect)
@@ -775,10 +775,10 @@ public:
         const std::string text = "text";
         xlnt::calendar calendar = xlnt::calendar::windows_1900;
 
-        assert_equals(nf.format(positive, calendar), expect[0]);
-        assert_equals(nf.format(negative, calendar), expect[1]);
-        assert_equals(nf.format(zero, calendar), expect[2]);
-        assert_equals(nf.format(text), expect[3]);
+        xlnt_assert_equals(nf.format(positive, calendar), expect[0]);
+        xlnt_assert_equals(nf.format(negative, calendar), expect[1]);
+        xlnt_assert_equals(nf.format(zero, calendar), expect[2]);
+        xlnt_assert_equals(nf.format(text), expect[3]);
     }
 
     // General

@@ -42,37 +42,37 @@ public:
     {
         xlnt::fill fill;
         
-        assert_equals(fill.type(), xlnt::fill_type::pattern);
+        xlnt_assert_equals(fill.type(), xlnt::fill_type::pattern);
         fill = xlnt::fill(xlnt::gradient_fill());
-        assert_equals(fill.type(), xlnt::fill_type::gradient);
-        assert_equals(fill.gradient_fill().type(), xlnt::gradient_fill_type::linear);
+        xlnt_assert_equals(fill.type(), xlnt::fill_type::gradient);
+        xlnt_assert_equals(fill.gradient_fill().type(), xlnt::gradient_fill_type::linear);
 
-        assert_equals(fill.gradient_fill().left(), 0);
-        assert_equals(fill.gradient_fill().right(), 0);
-        assert_equals(fill.gradient_fill().top(), 0);
-        assert_equals(fill.gradient_fill().bottom(), 0);
+        xlnt_assert_equals(fill.gradient_fill().left(), 0);
+        xlnt_assert_equals(fill.gradient_fill().right(), 0);
+        xlnt_assert_equals(fill.gradient_fill().top(), 0);
+        xlnt_assert_equals(fill.gradient_fill().bottom(), 0);
 
-        assert_throws(fill.pattern_fill(), xlnt::invalid_attribute);
+        xlnt_assert_throws(fill.pattern_fill(), xlnt::invalid_attribute);
 
-        assert_equals(fill.gradient_fill().degree(), 0);
+        xlnt_assert_equals(fill.gradient_fill().degree(), 0);
 		fill = fill.gradient_fill().degree(1);
-        assert_equals(fill.gradient_fill().degree(), 1);
+        xlnt_assert_equals(fill.gradient_fill().degree(), 1);
 
         fill = xlnt::pattern_fill().type(xlnt::pattern_fill_type::solid);
 
         fill = fill.pattern_fill().foreground(xlnt::color::black());
-        assert(fill.pattern_fill().foreground().is_set());
-        assert_equals(fill.pattern_fill().foreground().get().rgb().hex_string(),
+        xlnt_assert(fill.pattern_fill().foreground().is_set());
+        xlnt_assert_equals(fill.pattern_fill().foreground().get().rgb().hex_string(),
             xlnt::color::black().rgb().hex_string());
 
         fill = fill.pattern_fill().background(xlnt::color::green());
-        assert(fill.pattern_fill().background().is_set());
-        assert_equals(fill.pattern_fill().background().get().rgb().hex_string(),
+        xlnt_assert(fill.pattern_fill().background().is_set());
+        xlnt_assert_equals(fill.pattern_fill().background().get().rgb().hex_string(),
             xlnt::color::green().rgb().hex_string());
         
         const auto &const_fill = fill;
-        assert(const_fill.pattern_fill().foreground().is_set());
-        assert(const_fill.pattern_fill().background().is_set());
+        xlnt_assert(const_fill.pattern_fill().foreground().is_set());
+        xlnt_assert(const_fill.pattern_fill().background().is_set());
     }
     
     void test_comparison()
@@ -81,9 +81,9 @@ public:
         xlnt::fill gradient_fill_linear = xlnt::gradient_fill().type(xlnt::gradient_fill_type::linear);
         xlnt::fill gradient_fill_path = xlnt::gradient_fill().type(xlnt::gradient_fill_type::path);
 
-        assert_differs(pattern_fill, gradient_fill_linear);
-        assert_differs(gradient_fill_linear, gradient_fill_path);
-        assert_differs(gradient_fill_path, pattern_fill);
+        xlnt_assert_differs(pattern_fill, gradient_fill_linear);
+        xlnt_assert_differs(gradient_fill_linear, gradient_fill_path);
+        xlnt_assert_differs(gradient_fill_path, pattern_fill);
     }
 
     void test_two_fills()
@@ -100,7 +100,7 @@ public:
         cell2.fill(xlnt::fill::solid(xlnt::color::green()));
         cell2.value(xlnt::date(2010, 7, 13));
 
-        assert_equals(cell1.fill(), xlnt::fill::solid(xlnt::color::yellow()));
-        assert_equals(cell2.fill(), xlnt::fill::solid(xlnt::color::green()));
+        xlnt_assert_equals(cell1.fill(), xlnt::fill::solid(xlnt::color::yellow()));
+        xlnt_assert_equals(cell2.fill(), xlnt::fill::solid(xlnt::color::green()));
     }
 };

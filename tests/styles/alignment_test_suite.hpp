@@ -40,9 +40,9 @@ public:
     {
         xlnt::alignment alignment;
 
-        assert(!alignment.horizontal().is_set());
-        assert(!alignment.vertical().is_set());
-        assert(!alignment.shrink());
-        assert(!alignment.wrap());
+        xlnt_assert(!alignment.horizontal().is_set());
+        xlnt_assert(!alignment.vertical().is_set());
+        xlnt_assert(!alignment.shrink());
+        xlnt_assert(!alignment.wrap());
     }
 };

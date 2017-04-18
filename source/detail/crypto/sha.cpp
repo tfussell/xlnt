@@ -39,22 +39,22 @@ extern void sha512_hash(const uint8_t *message, size_t len, uint64_t hash[8]);
 namespace {
 
 #ifdef _MSC_VER
-inline std::uint32_t byteswap(std::uint32_t i)
+inline std::uint32_t byteswap32(std::uint32_t i)
 {
     return _byteswap_ulong(i);
 }
 
-inline std::uint64_t byteswap(std::uint64_t i)
+inline std::uint64_t byteswap64(std::uint64_t i)
 {
     return _byteswap_uint64(i);
 }
 #else
-inline std::uint32_t byteswap(std::uint32_t i)
+inline std::uint32_t byteswap32(std::uint32_t i)
 {
     return __builtin_bswap32(i);
 }
 
-inline std::uint64_t byteswap(std::uint64_t i)
+inline std::uint64_t byteswap64(std::uint64_t i)
 {
     return __builtin_bswap64(i);
 }
@@ -64,46 +64,40 @@ inline std::uint64_t byteswap(std::uint64_t i)
 namespace xlnt {
 namespace detail {
 
-std::vector<std::uint8_t> sha1(const std::vector<std::uint8_t> &data)
+void sha1(const std::vector<std::uint8_t> &input, std::vector<std::uint8_t> &output)
 {
-    std::array<std::uint32_t, 5> hash;
-    sha1_hash(data.data(), data.size(), hash.data());
+    static const auto sha1_bytes = 20;
 
-    std::vector<std::uint8_t> result(20, 0);
-    auto result_iterator = result.begin();
+    output.resize(sha1_bytes);
+    auto output_pointer_u32 = reinterpret_cast<std::uint32_t *>(output.data());
 
-    for (auto i : hash)
-    {
-        auto swapped = byteswap(i);
-        std::copy(
-            reinterpret_cast<std::uint8_t *>(&swapped),
-            reinterpret_cast<std::uint8_t *>(&swapped + 1),
-            &*result_iterator);
-        result_iterator += 4;
-    }
+    sha1_hash(input.data(), input.size(), output_pointer_u32);
 
-    return result;
+    // change hash output from big-endian to little-endian
+    // TODO (harder): try to change the algorithm itself so this isn't necessary
+    // TODO (easier): check platform endianness before doing this
+    std::transform(output_pointer_u32, 
+        output_pointer_u32 + sha1_bytes / sizeof(std::uint32_t),
+        output_pointer_u32,
+        byteswap32);
 }
 
-std::vector<std::uint8_t> sha512(const std::vector<std::uint8_t> &data)
+void sha512(const std::vector<std::uint8_t> &input, std::vector<std::uint8_t> &output)
 {
-    std::array<std::uint64_t, 8> hash;
-    sha512_hash(data.data(), data.size(), hash.data());
+    static const auto sha512_bytes = 64;
 
-    std::vector<std::uint8_t> result(64, 0);
-    auto result_iterator = result.begin();
+    output.resize(sha512_bytes);
+    auto output_pointer_u64 = reinterpret_cast<std::uint64_t *>(output.data());
 
-    for (auto i : hash)
-    {
-        auto swapped = byteswap(i);
-        std::copy(
-            reinterpret_cast<std::uint8_t *>(&swapped),
-            reinterpret_cast<std::uint8_t *>(&swapped + 1),
-            &*result_iterator);
-        result_iterator += 8;
-    }
+    sha512_hash(input.data(), input.size(), output_pointer_u64);
 
-    return result;
+    // change hash output from big-endian to little-endian
+    // TODO (harder): try to change the algorithm itself so this isn't necessary
+    // TODO (easier): check platform endianness before doing this
+    std::transform(output_pointer_u64,
+        output_pointer_u64 + sha512_bytes / sizeof(std::uint64_t),
+        output_pointer_u64,
+        byteswap64);
 }
 
 } // namespace detail

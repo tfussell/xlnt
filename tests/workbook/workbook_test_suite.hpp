@@ -61,7 +61,7 @@ public:
     void test_active_sheet()
     {
         xlnt::workbook wb;
-        assert_equals(wb.active_sheet(), wb[0]);
+        xlnt_assert_equals(wb.active_sheet(), wb[0]);
     }
 
     void test_create_sheet()
@@ -69,7 +69,7 @@ public:
         xlnt::workbook wb;
         auto new_sheet = wb.create_sheet();
         auto last = std::distance(wb.begin(), wb.end()) - 1;
-        assert_equals(new_sheet, wb[last]);
+        xlnt_assert_equals(new_sheet, wb[last]);
     }
 
     void test_add_correct_sheet()
@@ -78,17 +78,17 @@ public:
         auto new_sheet = wb.create_sheet();
         new_sheet.cell("A6").value(1.498);
         wb.copy_sheet(new_sheet);
-        assert(wb[1].compare(wb[2], false));
+        xlnt_assert(wb[1].compare(wb[2], false));
         wb.create_sheet().cell("A6").value(1.497);
-        assert(!wb[1].compare(wb[3], false));
+        xlnt_assert(!wb[1].compare(wb[3], false));
     }
 
     void test_add_sheet_from_other_workbook()
     {
         xlnt::workbook wb1, wb2;
         auto new_sheet = wb1.active_sheet();
-        assert_throws(wb2.copy_sheet(new_sheet), xlnt::invalid_parameter);
-        assert_throws(wb2.index(new_sheet), std::runtime_error);
+        xlnt_assert_throws(wb2.copy_sheet(new_sheet), xlnt::invalid_parameter);
+        xlnt_assert_throws(wb2.index(new_sheet), std::runtime_error);
     }
 
     void test_add_sheet_at_index()
@@ -98,10 +98,10 @@ public:
         ws.cell("B3").value(2);
         ws.title("Active");
         wb.copy_sheet(ws, 0);
-        assert_equals(wb.sheet_titles().at(0), "Sheet1");
-        assert_equals(wb.sheet_by_index(0).cell("B3").value<int>(), 2);
-        assert_equals(wb.sheet_titles().at(1), "Active");
-        assert_equals(wb.sheet_by_index(1).cell("B3").value<int>(), 2);
+        xlnt_assert_equals(wb.sheet_titles().at(0), "Sheet1");
+        xlnt_assert_equals(wb.sheet_by_index(0).cell("B3").value<int>(), 2);
+        xlnt_assert_equals(wb.sheet_titles().at(1), "Active");
+        xlnt_assert_equals(wb.sheet_by_index(1).cell("B3").value<int>(), 2);
     }
     
     void test_remove_sheet()
@@ -110,8 +110,8 @@ public:
         auto new_sheet = wb.create_sheet(0);
 		new_sheet.title("removed");
         wb.remove_sheet(new_sheet);
-        assert(!wb.contains("removed"));
-        assert_throws(wb.remove_sheet(wb2.active_sheet()), std::runtime_error);
+        xlnt_assert(!wb.contains("removed"));
+        xlnt_assert_throws(wb.remove_sheet(wb2.active_sheet()), std::runtime_error);
     }
 
     void test_get_sheet_by_title()
@@ -121,10 +121,10 @@ public:
         std::string title = "my sheet";
         new_sheet.title(title);
         auto found_sheet = wb.sheet_by_title(title);
-        assert_equals(new_sheet, found_sheet);
-        assert_throws(wb.sheet_by_title("error"), xlnt::key_not_found);
+        xlnt_assert_equals(new_sheet, found_sheet);
+        xlnt_assert_throws(wb.sheet_by_title("error"), xlnt::key_not_found);
         const auto &wb_const = wb;
-        assert_throws(wb_const.sheet_by_title("error"), xlnt::key_not_found);
+        xlnt_assert_throws(wb_const.sheet_by_title("error"), xlnt::key_not_found);
     }
     
     void test_get_sheet_by_title_const()
@@ -135,21 +135,21 @@ public:
         new_sheet.title(title);
         const xlnt::workbook& wbconst = wb;
         auto found_sheet = wbconst.sheet_by_title(title);
-        assert_equals(new_sheet, found_sheet);
+        xlnt_assert_equals(new_sheet, found_sheet);
     }
 
     void test_index_operator() // test_getitem
     {
         xlnt::workbook wb;
-        assert_throws_nothing(wb["Sheet1"]);
-        assert_throws(wb["NotThere"], xlnt::key_not_found);
+        xlnt_assert_throws_nothing(wb["Sheet1"]);
+        xlnt_assert_throws(wb["NotThere"], xlnt::key_not_found);
     }
 
     void test_contains()
     {
         xlnt::workbook wb;
-        assert(wb.contains("Sheet1"));
-        assert(!wb.contains("NotThere"));
+        xlnt_assert(wb.contains("Sheet1"));
+        xlnt_assert(!wb.contains("NotThere"));
     }
     
     void test_iter()
@@ -158,7 +158,7 @@ public:
         
         for(auto ws : wb)
         {
-            assert_equals(ws.title(), "Sheet1");
+            xlnt_assert_equals(ws.title(), "Sheet1");
         }
     }
     
@@ -169,10 +169,10 @@ public:
         wb.create_sheet().title("2");
 
         auto sheet_index = wb.index(wb.sheet_by_title("1"));
-        assert_equals(sheet_index, 1);
+        xlnt_assert_equals(sheet_index, 1);
 
         sheet_index = wb.index(wb.sheet_by_title("2"));
-        assert_equals(sheet_index, 2);
+        xlnt_assert_equals(sheet_index, 2);
     }
 
     void test_get_sheet_names()
@@ -182,7 +182,7 @@ public:
 
 		const std::vector<std::string> expected_titles = { "Sheet1", "test_get_sheet_titles" };
 
-		assert_equals(wb.sheet_titles(), expected_titles);
+		xlnt_assert_equals(wb.sheet_titles(), expected_titles);
     }
     
     void test_add_named_range()
@@ -190,9 +190,9 @@ public:
         xlnt::workbook wb, wb2;
         auto new_sheet = wb.create_sheet();
         wb.create_named_range("test_nr", new_sheet, "A1");
-        assert(new_sheet.has_named_range("test_nr"));
-        assert(wb.has_named_range("test_nr"));
-        assert_throws(wb2.create_named_range("test_nr", new_sheet, "A1"), std::runtime_error);
+        xlnt_assert(new_sheet.has_named_range("test_nr"));
+        xlnt_assert(wb.has_named_range("test_nr"));
+        xlnt_assert_throws(wb2.create_named_range("test_nr", new_sheet, "A1"), std::runtime_error);
     }
     
     void test_get_named_range()
@@ -202,8 +202,8 @@ public:
         wb.create_named_range("test_nr", new_sheet, "A1");
         auto found_range = wb.named_range("test_nr");
         auto expected_range = new_sheet.range("A1");
-        assert_equals(expected_range, found_range);
-        assert_throws(wb.named_range("test_nr2"), std::runtime_error);
+        xlnt_assert_equals(expected_range, found_range);
+        xlnt_assert_throws(wb.named_range("test_nr2"), std::runtime_error);
     }
 
     void test_remove_named_range()
@@ -212,9 +212,9 @@ public:
         auto new_sheet = wb.create_sheet();
         wb.create_named_range("test_nr", new_sheet, "A1");
         wb.remove_named_range("test_nr");
-        assert(!new_sheet.has_named_range("test_nr"));
-        assert(!wb.has_named_range("test_nr"));
-        assert_throws(wb.remove_named_range("test_nr2"), std::runtime_error);
+        xlnt_assert(!new_sheet.has_named_range("test_nr"));
+        xlnt_assert(!wb.has_named_range("test_nr"));
+        xlnt_assert_throws(wb.remove_named_range("test_nr2"), std::runtime_error);
     }
 
     void test_post_increment_iterator()
@@ -226,19 +226,19 @@ public:
 
         auto iter = wb.begin();
 
-        assert_equals((*(iter++)).title(), "Sheet1");
-        assert_equals((*(iter++)).title(), "Sheet2");
-        assert_equals((*(iter++)).title(), "Sheet3");
-        assert_equals(iter, wb.end());
+        xlnt_assert_equals((*(iter++)).title(), "Sheet1");
+        xlnt_assert_equals((*(iter++)).title(), "Sheet2");
+        xlnt_assert_equals((*(iter++)).title(), "Sheet3");
+        xlnt_assert_equals(iter, wb.end());
 
         const auto wb_const = wb;
 
         auto const_iter = wb_const.begin();
 
-        assert_equals((*(const_iter++)).title(), "Sheet1");
-        assert_equals((*(const_iter++)).title(), "Sheet2");
-        assert_equals((*(const_iter++)).title(), "Sheet3");
-        assert_equals(const_iter, wb_const.end());
+        xlnt_assert_equals((*(const_iter++)).title(), "Sheet1");
+        xlnt_assert_equals((*(const_iter++)).title(), "Sheet2");
+        xlnt_assert_equals((*(const_iter++)).title(), "Sheet3");
+        xlnt_assert_equals(const_iter, wb_const.end());
     }
 
     void test_copy_iterator()
@@ -249,32 +249,32 @@ public:
         wb.create_sheet().title("Sheet3");
 
         auto iter = wb.begin();
-		assert_equals((*iter).title(), "Sheet1");
+		xlnt_assert_equals((*iter).title(), "Sheet1");
 
         iter++;
-        assert_equals((*iter).title(), "Sheet2");
+        xlnt_assert_equals((*iter).title(), "Sheet2");
 
         auto copy = wb.begin();
         copy = iter;
-        assert_equals((*iter).title(), "Sheet2");
-        assert_equals(iter, copy);
+        xlnt_assert_equals((*iter).title(), "Sheet2");
+        xlnt_assert_equals(iter, copy);
 
         iter++;
-        assert_equals((*iter).title(), "Sheet3");
-        assert_differs(iter, copy);
+        xlnt_assert_equals((*iter).title(), "Sheet3");
+        xlnt_assert_differs(iter, copy);
 
         copy++;
-        assert_equals((*iter).title(), "Sheet3");
-        assert_equals(iter, copy);
+        xlnt_assert_equals((*iter).title(), "Sheet3");
+        xlnt_assert_equals(iter, copy);
     }
     
     void test_manifest()
     {
 		xlnt::manifest m;
-        assert(!m.has_default_type("xml"));
-        assert_throws(m.default_type("xml"), xlnt::key_not_found);
-        assert(!m.has_relationship(xlnt::path("/"), xlnt::relationship_type::office_document));
-        assert(m.relationships(xlnt::path("xl/workbook.xml")).empty());
+        xlnt_assert(!m.has_default_type("xml"));
+        xlnt_assert_throws(m.default_type("xml"), xlnt::key_not_found);
+        xlnt_assert(!m.has_relationship(xlnt::path("/"), xlnt::relationship_type::office_document));
+        xlnt_assert(m.relationships(xlnt::path("xl/workbook.xml")).empty());
     }
 
     void test_memory()
@@ -282,10 +282,10 @@ public:
         xlnt::workbook wb, wb2;
         wb.active_sheet().title("swap");
         std::swap(wb, wb2);
-        assert_equals(wb.active_sheet().title(), "Sheet1");
-        assert_equals(wb2.active_sheet().title(), "swap");
+        xlnt_assert_equals(wb.active_sheet().title(), "Sheet1");
+        xlnt_assert_equals(wb2.active_sheet().title(), "swap");
         wb = wb2;
-        assert_equals(wb.active_sheet().title(), "swap");
+        xlnt_assert_equals(wb.active_sheet().title(), "swap");
     }
 
     void test_clear()
@@ -294,34 +294,34 @@ public:
         xlnt::style s = wb.create_style("s");
         wb.active_sheet().cell("B2").value("B2");
         wb.active_sheet().cell("B2").style(s);
-        assert(wb.active_sheet().cell("B2").has_style());
+        xlnt_assert(wb.active_sheet().cell("B2").has_style());
         wb.clear_styles();
-        assert(!wb.active_sheet().cell("B2").has_style());
+        xlnt_assert(!wb.active_sheet().cell("B2").has_style());
 		xlnt::format format = wb.create_format();
         xlnt::font font;
         font.size(41);
         format.font(font, true);
         wb.active_sheet().cell("B2").format(format);
-        assert(wb.active_sheet().cell("B2").has_format());
+        xlnt_assert(wb.active_sheet().cell("B2").has_format());
         wb.clear_formats();
-        assert(!wb.active_sheet().cell("B2").has_format());
+        xlnt_assert(!wb.active_sheet().cell("B2").has_format());
         wb.clear();
-        assert(wb.sheet_titles().empty());
+        xlnt_assert(wb.sheet_titles().empty());
     }
 
     void test_comparison()
     {
         xlnt::workbook wb, wb2;
-        assert(wb == wb);
-        assert(!(wb != wb));
-        assert(!(wb == wb2));
-        assert(wb != wb2);
+        xlnt_assert(wb == wb);
+        xlnt_assert(!(wb != wb));
+        xlnt_assert(!(wb == wb2));
+        xlnt_assert(wb != wb2);
         
         const auto &wb_const = wb;
         //TODO these aren't tests...
         wb_const.manifest();
         
-        assert(wb.has_theme());
+        xlnt_assert(wb.has_theme());
         
         wb.create_style("style1");
         wb.style("style1");

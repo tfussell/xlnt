@@ -137,18 +137,28 @@ auto read_int(std::size_t &index, const std::vector<std::uint8_t> &raw_data)
     return result;
 }
 
-std::vector<std::uint8_t> hash(hash_algorithm algorithm, const std::vector<std::uint8_t> &input)
+void hash(hash_algorithm algorithm, const std::vector<std::uint8_t> &input, std::vector<std::uint8_t> &output)
 {
     if (algorithm == hash_algorithm::sha512)
     {
-        return xlnt::detail::sha512(input);
+        xlnt::detail::sha512(input, output);
     }
     else if (algorithm == hash_algorithm::sha1)
     {
-        return xlnt::detail::sha1(input);
+        xlnt::detail::sha1(input, output);
     }
+    else
+    {
+        throw xlnt::exception("unsupported hash algorithm");
+    }
+}
 
-    throw xlnt::exception("unsupported hash algorithm");
+std::vector<std::uint8_t> hash(hash_algorithm algorithm, const std::vector<std::uint8_t> &input)
+{
+    auto output = std::vector<std::uint8_t>();
+    hash(algorithm, input, output);
+
+    return output;
 }
 
 std::vector<std::uint8_t> file(POLE::Storage &storage, const std::string &name)
@@ -242,7 +252,7 @@ std::vector<std::uint8_t> decrypt_xlsx_standard(
         salt_plus_password.insert(salt_plus_password.end(), reinterpret_cast<char *>(&c),
             reinterpret_cast<char *>(&c) + sizeof(std::uint16_t));
     });
-    std::vector<std::uint8_t> h_0 = hash(info.hash, salt_plus_password);
+    auto h_0 = hash(info.hash, salt_plus_password);
 
     // H_n = H(iterator + H_n-1)
     std::vector<std::uint8_t> iterator_plus_h_n(4, 0);
@@ -251,7 +261,7 @@ std::vector<std::uint8_t> decrypt_xlsx_standard(
     std::vector<std::uint8_t> h_n;
     for (iterator = 0; iterator < info.spin_count; ++iterator)
     {
-        h_n = hash(info.hash, iterator_plus_h_n);
+        hash(info.hash, iterator_plus_h_n, h_n);
         std::copy(h_n.begin(), h_n.end(), iterator_plus_h_n.begin() + 4);
     }
 
@@ -476,10 +486,9 @@ std::vector<std::uint8_t> decrypt_xlsx_agile(
     iterator_plus_h_n.insert(iterator_plus_h_n.end(), h_0.begin(), h_0.end());
     std::uint32_t &iterator = *reinterpret_cast<std::uint32_t *>(iterator_plus_h_n.data());
     std::vector<std::uint8_t> h_n;
-
     for (iterator = 0; iterator < result.key_encryptor.spin_count; ++iterator)
     {
-        h_n = hash(result.key_encryptor.hash, iterator_plus_h_n);
+        hash(result.key_encryptor.hash, iterator_plus_h_n, h_n);
         std::copy(h_n.begin(), h_n.end(), iterator_plus_h_n.begin() + 4);
     }
 

@@ -47,8 +47,8 @@ public:
 			path_helper::delete_file(temp.get_path());
 		}
 
-		assert(!temp.get_path().exists());
+		xlnt_assert(!temp.get_path().exists());
 		std::ofstream stream(temp.get_path().string());
-		assert(temp.get_path().exists());
+		xlnt_assert(temp.get_path().exists());
 	}
 };

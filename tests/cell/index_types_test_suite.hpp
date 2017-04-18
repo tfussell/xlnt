@@ -42,25 +42,25 @@ public:
 
     void test_bad_string_empty()
     {
-        assert_throws(xlnt::column_t::column_index_from_string(""),
+        xlnt_assert_throws(xlnt::column_t::column_index_from_string(""),
             xlnt::invalid_column_index);
     }
 
     void test_bad_string_too_long()
     {
-        assert_throws(xlnt::column_t::column_index_from_string("ABCD"),
+        xlnt_assert_throws(xlnt::column_t::column_index_from_string("ABCD"),
             xlnt::invalid_column_index);
     }
 
     void test_bad_string_numbers()
     {
-        assert_throws(xlnt::column_t::column_index_from_string("123"),
+        xlnt_assert_throws(xlnt::column_t::column_index_from_string("123"),
             xlnt::invalid_column_index);
     }
 
     void test_bad_index_zero()
     {
-        assert_throws(xlnt::column_t::column_string_from_index(0),
+        xlnt_assert_throws(xlnt::column_t::column_string_from_index(0),
             xlnt::invalid_column_index);
     }
 
@@ -73,33 +73,33 @@ public:
         const auto d = std::string("D");
         c2 = d;
 
-        assert(c1 != c2);
-        assert(c1 == static_cast<xlnt::column_t::index_t>(2));
-        assert(c2 == d);
-        assert(c1 != 3);
-        assert(c1 != static_cast<xlnt::column_t::index_t>(5));
-        assert(c1 != "D");
-        assert(c1 != d);
-        assert(c2 >= c1);
-        assert(c2 > c1);
-        assert(c1 < c2);
-        assert(c1 <= c2);
+        xlnt_assert(c1 != c2);
+        xlnt_assert(c1 == static_cast<xlnt::column_t::index_t>(2));
+        xlnt_assert(c2 == d);
+        xlnt_assert(c1 != 3);
+        xlnt_assert(c1 != static_cast<xlnt::column_t::index_t>(5));
+        xlnt_assert(c1 != "D");
+        xlnt_assert(c1 != d);
+        xlnt_assert(c2 >= c1);
+        xlnt_assert(c2 > c1);
+        xlnt_assert(c1 < c2);
+        xlnt_assert(c1 <= c2);
 
-        assert_equals(--c2, 3);
-        assert_equals(c2--, 3);
-        assert_equals(c2, 2);
+        xlnt_assert_equals(--c2, 3);
+        xlnt_assert_equals(c2--, 3);
+        xlnt_assert_equals(c2, 2);
 
         c2 = 4;
         c1 = 3;
 
-        assert(c2 <= 4);
-        assert(!(c2 < 3));
-        assert(c1 >= 3);
-        assert(!(c1 > 4));
+        xlnt_assert(c2 <= 4);
+        xlnt_assert(!(c2 < 3));
+        xlnt_assert(c1 >= 3);
+        xlnt_assert(!(c1 > 4));
 
-        assert(4 >= c2);
-        assert(!(3 >= c2));
-        assert(3 <= c1);
-        assert(!(4 <= c1));
+        xlnt_assert(4 >= c2);
+        xlnt_assert(!(3 >= c2));
+        xlnt_assert(3 <= c1);
+        xlnt_assert(!(4 <= c1));
     }
 };

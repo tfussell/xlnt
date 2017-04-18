@@ -55,22 +55,22 @@ public:
         
         for (auto pair : known_colors)
         {
-            assert_equals(pair.first.rgb().hex_string(), pair.second);
+            xlnt_assert_equals(pair.first.rgb().hex_string(), pair.second);
         }
     }
     
     void test_non_rgb_colors()
     {
 		xlnt::color indexed = xlnt::indexed_color(1);
-		assert(!indexed.auto_());
-        assert_equals(indexed.indexed().index(), 1);
-        assert_throws(indexed.theme(), xlnt::invalid_attribute);
-        assert_throws(indexed.rgb(), xlnt::invalid_attribute);
+		xlnt_assert(!indexed.auto_());
+        xlnt_assert_equals(indexed.indexed().index(), 1);
+        xlnt_assert_throws(indexed.theme(), xlnt::invalid_attribute);
+        xlnt_assert_throws(indexed.rgb(), xlnt::invalid_attribute);
 
 		xlnt::color theme = xlnt::theme_color(3);
-		assert(!theme.auto_());
-        assert_equals(theme.theme().index(), 3);
-        assert_throws(theme.indexed(), xlnt::invalid_attribute);
-        assert_throws(theme.rgb(), xlnt::invalid_attribute);
+		xlnt_assert(!theme.auto_());
+        xlnt_assert_equals(theme.theme().index(), 3);
+        xlnt_assert_throws(theme.indexed(), xlnt::invalid_attribute);
+        xlnt_assert_throws(theme.rgb(), xlnt::invalid_attribute);
     }
 };

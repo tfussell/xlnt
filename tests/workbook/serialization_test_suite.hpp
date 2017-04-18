@@ -79,7 +79,7 @@ public:
 	{
 		xlnt::workbook wb;
         const auto path = path_helper::test_file("3_default.xlsx");
-		assert(workbook_matches_file(wb, path));
+		xlnt_assert(workbook_matches_file(wb, path));
 	}
 
 	void test_produce_simple_excel()
@@ -147,25 +147,25 @@ public:
 
 		std::vector<std::uint8_t> temp_buffer;
 		wb.save(temp_buffer);
-		assert(!temp_buffer.empty());
+		xlnt_assert(!temp_buffer.empty());
 	}
 
 	void test_save_after_sheet_deletion()
 	{
 		xlnt::workbook workbook;
 
-		assert_equals(workbook.sheet_titles().size(), 1);
+		xlnt_assert_equals(workbook.sheet_titles().size(), 1);
 
 		auto sheet = workbook.create_sheet();
 		sheet.title("XXX1");
-		assert_equals(workbook.sheet_titles().size(), 2);
+		xlnt_assert_equals(workbook.sheet_titles().size(), 2);
 
 		workbook.remove_sheet(workbook.sheet_by_title("XXX1"));
-		assert_equals(workbook.sheet_titles().size(), 1);
+		xlnt_assert_equals(workbook.sheet_titles().size(), 1);
 
 		std::vector<std::uint8_t> temp_buffer;
-		assert_throws_nothing(workbook.save(temp_buffer));
-		assert(!temp_buffer.empty());
+		xlnt_assert_throws_nothing(workbook.save(temp_buffer));
+		xlnt_assert(!temp_buffer.empty());
 	}
 
 	void test_write_comments_hyperlinks_formulae()
@@ -203,7 +203,7 @@ public:
         sheet2.cell("C3").value(3);
 
         const auto path = path_helper::test_file("10_comments_hyperlinks_formulae.xlsx");
-		assert(workbook_matches_file(wb, path));
+		xlnt_assert(workbook_matches_file(wb, path));
 	}
 
     void test_save_after_clear_all_formulae()
@@ -213,13 +213,13 @@ public:
         wb.load(path);
 
         auto ws1 = wb.sheet_by_index(0);
-        assert(ws1.cell("C1").has_formula());
-        assert_equals(ws1.cell("C1").formula(), "CONCATENATE(C2,C3)");
+        xlnt_assert(ws1.cell("C1").has_formula());
+        xlnt_assert_equals(ws1.cell("C1").formula(), "CONCATENATE(C2,C3)");
         ws1.cell("C1").clear_formula();
 
         auto ws2 = wb.sheet_by_index(1);
-        assert(ws2.cell("C1").has_formula());
-        assert_equals(ws2.cell("C1").formula(), "C2*C3");
+        xlnt_assert(ws2.cell("C1").has_formula());
+        xlnt_assert_equals(ws2.cell("C1").formula(), "C2*C3");
         ws2.cell("C1").clear_formula();
 
         wb.save("clear_formulae.xlsx");
@@ -229,35 +229,39 @@ public:
     {
         xlnt::workbook wb;
         const auto path = path_helper::test_file("1_powerpoint_presentation.xlsx");
-        assert_throws(wb.load(path), xlnt::invalid_file);
+        xlnt_assert_throws(wb.load(path), xlnt::invalid_file);
     }
 
     void test_decrypt_agile()
     {
         xlnt::workbook wb;
         const auto path = path_helper::test_file("5_encrypted_agile.xlsx");
-        assert_throws_nothing(wb.load(path, "secret"));
+        xlnt_assert_throws(wb.load(path, "incorrect"), xlnt::exception);
+        xlnt_assert_throws_nothing(wb.load(path, "secret"));
     }
 
     void test_decrypt_libre_office()
     {
         xlnt::workbook wb;
         const auto path = path_helper::test_file("6_encrypted_libre.xlsx");
-        assert_throws_nothing(wb.load(path, u8"пароль"));
+        xlnt_assert_throws(wb.load(path, "incorrect"), xlnt::exception);
+        xlnt_assert_throws_nothing(wb.load(path, u8"пароль"));
     }
 
     void test_decrypt_standard()
     {
         xlnt::workbook wb;
         const auto path = path_helper::test_file("7_encrypted_standard.xlsx");
-        assert_throws_nothing(wb.load(path, "password"));
+        xlnt_assert_throws(wb.load(path, "incorrect"), xlnt::exception);
+        xlnt_assert_throws_nothing(wb.load(path, "password"));
     }
 
     void test_decrypt_numbers()
     {
         xlnt::workbook wb;
         const auto path = path_helper::test_file("8_encrypted_numbers.xlsx");
-        assert_throws_nothing(wb.load(path, "secret"));
+        xlnt_assert_throws(wb.load(path, "incorrect"), xlnt::exception);
+        xlnt_assert_throws_nothing(wb.load(path, "secret"));
     }
 
     void test_read_unicode_filename()
@@ -266,14 +270,14 @@ public:
         xlnt::workbook wb;
         const auto path = LSTRING_LITERAL(XLNT_TEST_DATA_DIR) L"/9_unicode_Λ.xlsx";
         wb.load(path);
-        assert_equals(wb.active_sheet().cell("A1").value<std::string>(), u8"unicodê!");
+        xlnt_assert_equals(wb.active_sheet().cell("A1").value<std::string>(), u8"unicodê!");
 #endif
 
 #ifndef __MINGW32__
         xlnt::workbook wb2;
         const auto path2 = U8STRING_LITERAL(XLNT_TEST_DATA_DIR) u8"/9_unicode_Λ.xlsx";
         wb2.load(path2);
-        assert_equals(wb2.active_sheet().cell("A1").value<std::string>(), u8"unicodê!");
+        xlnt_assert_equals(wb2.active_sheet().cell("A1").value<std::string>(), u8"unicodê!");
 #endif
     }
 
@@ -284,14 +288,14 @@ public:
         wb.load(path);
 
         auto sheet1 = wb[0];
-        assert_equals(sheet1.cell("A1").value<std::string>(), "Sheet1!A1");
-        assert_equals(sheet1.cell("A1").comment().plain_text(), "Sheet1 comment");
-        assert_equals(sheet1.cell("A1").comment().author(), "Microsoft Office User");
+        xlnt_assert_equals(sheet1.cell("A1").value<std::string>(), "Sheet1!A1");
+        xlnt_assert_equals(sheet1.cell("A1").comment().plain_text(), "Sheet1 comment");
+        xlnt_assert_equals(sheet1.cell("A1").comment().author(), "Microsoft Office User");
 
         auto sheet2 = wb[1];
-        assert_equals(sheet2.cell("A1").value<std::string>(), "Sheet2!A1");
-        assert_equals(sheet2.cell("A1").comment().plain_text(), "Sheet2 comment");
-        assert_equals(sheet2.cell("A1").comment().author(), "Microsoft Office User");
+        xlnt_assert_equals(sheet2.cell("A1").value<std::string>(), "Sheet2!A1");
+        xlnt_assert_equals(sheet2.cell("A1").comment().plain_text(), "Sheet2 comment");
+        xlnt_assert_equals(sheet2.cell("A1").comment().author(), "Microsoft Office User");
     }
 
     void test_read_hyperlink()
@@ -301,19 +305,19 @@ public:
         wb.load(path);
 
         auto ws1 = wb.sheet_by_index(0);
-        assert_equals(ws1.title(), "Sheet1");
-        assert(ws1.cell("A4").has_hyperlink());
-        assert_equals(ws1.cell("A4").value<std::string>(), "hyperlink1");
-        assert_equals(ws1.cell("A4").hyperlink(), "https://microsoft.com/");
-        assert(ws1.cell("A5").has_hyperlink());
-        assert_equals(ws1.cell("A5").value<std::string>(), "https://google.com/");
-        assert_equals(ws1.cell("A5").hyperlink(), "https://google.com/");
-        //assert(ws1.cell("A6").has_hyperlink());
-        assert_equals(ws1.cell("A6").value<std::string>(), "Sheet1!A1");
-        //assert_equals(ws1.cell("A6").hyperlink(), "Sheet1!A1");
-        assert(ws1.cell("A7").has_hyperlink());
-        assert_equals(ws1.cell("A7").value<std::string>(), "mailto:invalid@example.com?subject=important");
-        assert_equals(ws1.cell("A7").hyperlink(), "mailto:invalid@example.com?subject=important");
+        xlnt_assert_equals(ws1.title(), "Sheet1");
+        xlnt_assert(ws1.cell("A4").has_hyperlink());
+        xlnt_assert_equals(ws1.cell("A4").value<std::string>(), "hyperlink1");
+        xlnt_assert_equals(ws1.cell("A4").hyperlink(), "https://microsoft.com/");
+        xlnt_assert(ws1.cell("A5").has_hyperlink());
+        xlnt_assert_equals(ws1.cell("A5").value<std::string>(), "https://google.com/");
+        xlnt_assert_equals(ws1.cell("A5").hyperlink(), "https://google.com/");
+        //xlnt_assert(ws1.cell("A6").has_hyperlink());
+        xlnt_assert_equals(ws1.cell("A6").value<std::string>(), "Sheet1!A1");
+        //xlnt_assert_equals(ws1.cell("A6").hyperlink(), "Sheet1!A1");
+        xlnt_assert(ws1.cell("A7").has_hyperlink());
+        xlnt_assert_equals(ws1.cell("A7").value<std::string>(), "mailto:invalid@example.com?subject=important");
+        xlnt_assert_equals(ws1.cell("A7").hyperlink(), "mailto:invalid@example.com?subject=important");
 
     }
 
@@ -324,18 +328,18 @@ public:
         wb.load(path);
 
         auto ws1 = wb.sheet_by_index(0);
-        assert_equals(ws1.cell("C1").value<std::string>(), "ab");
-        assert(ws1.cell("C1").has_formula());
-        assert_equals(ws1.cell("C1").formula(), "CONCATENATE(C2,C3)");
-        assert_equals(ws1.cell("C2").value<std::string>(), "a");
-        assert_equals(ws1.cell("C3").value<std::string>(), "b");
+        xlnt_assert_equals(ws1.cell("C1").value<std::string>(), "ab");
+        xlnt_assert(ws1.cell("C1").has_formula());
+        xlnt_assert_equals(ws1.cell("C1").formula(), "CONCATENATE(C2,C3)");
+        xlnt_assert_equals(ws1.cell("C2").value<std::string>(), "a");
+        xlnt_assert_equals(ws1.cell("C3").value<std::string>(), "b");
 
         auto ws2 = wb.sheet_by_index(1);
-        assert_equals(ws2.cell("C1").value<int>(), 6);
-        assert(ws2.cell("C1").has_formula());
-        assert_equals(ws2.cell("C1").formula(), "C2*C3");
-        assert_equals(ws2.cell("C2").value<int>(), 2);
-        assert_equals(ws2.cell("C3").value<int>(), 3);
+        xlnt_assert_equals(ws2.cell("C1").value<int>(), 6);
+        xlnt_assert(ws2.cell("C1").has_formula());
+        xlnt_assert_equals(ws2.cell("C1").formula(), "C2*C3");
+        xlnt_assert_equals(ws2.cell("C2").value<int>(), 2);
+        xlnt_assert_equals(ws2.cell("C3").value<int>(), 3);
     }
 
     void test_read_headers_and_footers()
@@ -344,38 +348,38 @@ public:
         wb.load(path_helper::test_file("11_print_settings.xlsx"));
         auto ws = wb.active_sheet();
 
-        assert_equals(ws.cell("A1").value<std::string>(), "header");
-        assert_equals(ws.cell("A2").value<std::string>(), "and");
-        assert_equals(ws.cell("A3").value<std::string>(), "footer");
-        assert_equals(ws.cell("A4").value<std::string>(), "page1");
-        assert_equals(ws.cell("A43").value<std::string>(), "page2");
+        xlnt_assert_equals(ws.cell("A1").value<std::string>(), "header");
+        xlnt_assert_equals(ws.cell("A2").value<std::string>(), "and");
+        xlnt_assert_equals(ws.cell("A3").value<std::string>(), "footer");
+        xlnt_assert_equals(ws.cell("A4").value<std::string>(), "page1");
+        xlnt_assert_equals(ws.cell("A43").value<std::string>(), "page2");
 
-        assert(ws.has_header_footer());
-        assert(ws.header_footer().align_with_margins());
-        assert(ws.header_footer().scale_with_doc());
-        assert(!ws.header_footer().different_first());
-        assert(!ws.header_footer().different_odd_even());
+        xlnt_assert(ws.has_header_footer());
+        xlnt_assert(ws.header_footer().align_with_margins());
+        xlnt_assert(ws.header_footer().scale_with_doc());
+        xlnt_assert(!ws.header_footer().different_first());
+        xlnt_assert(!ws.header_footer().different_odd_even());
 
-        assert(ws.header_footer().has_header(xlnt::header_footer::location::left));
-        assert_equals(ws.header_footer().header(xlnt::header_footer::location::left).plain_text(), "left header");
-        assert(ws.header_footer().has_header(xlnt::header_footer::location::center));
-        assert_equals(ws.header_footer().header(xlnt::header_footer::location::center).plain_text(), "center header");
-        assert(ws.header_footer().has_header(xlnt::header_footer::location::right));
-        assert_equals(ws.header_footer().header(xlnt::header_footer::location::right).plain_text(), "right header");
-        assert(ws.header_footer().has_footer(xlnt::header_footer::location::left));
-        assert_equals(ws.header_footer().footer(xlnt::header_footer::location::left).plain_text(), "left && footer");
-        assert(ws.header_footer().has_footer(xlnt::header_footer::location::center));
-        assert_equals(ws.header_footer().footer(xlnt::header_footer::location::center).plain_text(), "center footer");
-        assert(ws.header_footer().has_footer(xlnt::header_footer::location::right));
-        assert_equals(ws.header_footer().footer(xlnt::header_footer::location::right).plain_text(), "right footer");
+        xlnt_assert(ws.header_footer().has_header(xlnt::header_footer::location::left));
+        xlnt_assert_equals(ws.header_footer().header(xlnt::header_footer::location::left).plain_text(), "left header");
+        xlnt_assert(ws.header_footer().has_header(xlnt::header_footer::location::center));
+        xlnt_assert_equals(ws.header_footer().header(xlnt::header_footer::location::center).plain_text(), "center header");
+        xlnt_assert(ws.header_footer().has_header(xlnt::header_footer::location::right));
+        xlnt_assert_equals(ws.header_footer().header(xlnt::header_footer::location::right).plain_text(), "right header");
+        xlnt_assert(ws.header_footer().has_footer(xlnt::header_footer::location::left));
+        xlnt_assert_equals(ws.header_footer().footer(xlnt::header_footer::location::left).plain_text(), "left && footer");
+        xlnt_assert(ws.header_footer().has_footer(xlnt::header_footer::location::center));
+        xlnt_assert_equals(ws.header_footer().footer(xlnt::header_footer::location::center).plain_text(), "center footer");
+        xlnt_assert(ws.header_footer().has_footer(xlnt::header_footer::location::right));
+        xlnt_assert_equals(ws.header_footer().footer(xlnt::header_footer::location::right).plain_text(), "right footer");
     }
 
     void test_read_custom_properties()
     {
         xlnt::workbook wb;
         wb.load(path_helper::test_file("12_advanced_properties.xlsx"));
-        assert(wb.has_custom_property("Client"));
-        assert_equals(wb.custom_property("Client").get<std::string>(), "me!");
+        xlnt_assert(wb.has_custom_property("Client"));
+        xlnt_assert_equals(wb.custom_property("Client").get<std::string>(), "me!");
     }
 
     /// <summary>
@@ -436,7 +440,7 @@ public:
         for (const auto file : files)
         {
             auto path = path_helper::test_file(file + ".xlsx");
-            assert(round_trip_matches_rw(path));
+            xlnt_assert(round_trip_matches_rw(path));
         }
     }
 
@@ -456,7 +460,7 @@ public:
             auto password = std::string(file == "7_encrypted_standard" ? "password"
                 : file == "6_encrypted_libre" ? u8"пароль"
                 : "secret");
-            assert(round_trip_matches_rw(path, password));
+            xlnt_assert(round_trip_matches_rw(path, password));
         }
     }
 };

@@ -57,19 +57,19 @@ public:
 
         for(auto pair : expected_pairs)
         {
-            assert_equals(xlnt::split_named_range(pair.first), pair.second);
+            xlnt_assert_equals(xlnt::split_named_range(pair.first), pair.second);
         }
         */
     }
 
     void test_split_no_quotes()
     {
-        /*assert_equals([("HYPOTHESES", "$B$3:$L$3"), ], split_named_range("HYPOTHESES!$B$3:$L$3"))*/
+        /*xlnt_assert_equals([("HYPOTHESES", "$B$3:$L$3"), ], split_named_range("HYPOTHESES!$B$3:$L$3"))*/
     }
 
     void test_bad_range_name()
     {
-        /*assert_raises(NamedRangeException, split_named_range, "HYPOTHESES$B$3")*/
+        /*xlnt_assert_raises(NamedRangeException, split_named_range, "HYPOTHESES$B$3")*/
     }
 
     void test_range_name_worksheet_special_chars()
@@ -100,9 +100,9 @@ public:
         {
             content = handle.read()
                 named_ranges = read_named_ranges(content, DummyWB())
-                assert_equals(1, len(named_ranges))
+                xlnt_assert_equals(1, len(named_ranges))
                 ok_(isinstance(named_ranges[0], NamedRange))
-                assert_equals([(ws, "$U$16:$U$24"), (ws, "$V$28:$V$36")], named_ranges[0].destinations)
+                xlnt_assert_equals([(ws, "$U$16:$U$24"), (ws, "$V$28:$V$36")], named_ranges[0].destinations)
         }
         finally
         {
@@ -135,7 +135,7 @@ public:
             try :
             content = handle.read()
             named_ranges = read_named_ranges(content, DummyWB())
-            assert_equals(["My Sheeet!$D$8"], [str(range) for range in named_ranges])
+            xlnt_assert_equals(["My Sheeet!$D$8"], [str(range) for range in named_ranges])
             finally :
             handle.close()*/
     }
@@ -149,7 +149,7 @@ public:
 
     //void check_ranges(ws, count, range_name)
     //{
-    //    /*assert_equals(count, len(ws.range(range_name)))
+    //    /*xlnt_assert_equals(count, len(ws.range(range_name)))
 
     //        wb = load_workbook(os.path.join(DATADIR, "genuine", "merge_range.xlsx"),
     //        use_iterators = False)
@@ -172,9 +172,9 @@ public:
 
             cell = ws.range("TRAP_3")
 
-            assert_equals("B15", cell.get_coordinate())
+            xlnt_assert_equals("B15", cell.get_coordinate())
 
-            assert_equals(10, cell.value)*/
+            xlnt_assert_equals(10, cell.value)*/
     }
 
     void setUp()
@@ -192,20 +192,20 @@ public:
     void test_has_ranges()
     {
         /*ranges = wb.get_named_ranges()
-            assert_equals(["MyRef", "MySheetRef", "MySheetRef", "MySheetValue", "MySheetValue", "MyValue"], [range.name for range in ranges])*/
+            xlnt_assert_equals(["MyRef", "MySheetRef", "MySheetRef", "MySheetValue", "MySheetValue", "MyValue"], [range.name for range in ranges])*/
     }
 
     void test_workbook_has_normal_range()
     {
         /*normal_range = wb.get_named_range("MyRef")
-            assert_equals("MyRef", normal_range.name)*/
+            xlnt_assert_equals("MyRef", normal_range.name)*/
     }
 
     void test_workbook_has_value_range()
     {
         /*value_range = wb.get_named_range("MyValue")
-            assert_equals("MyValue", value_range.name)
-            assert_equals("9.99", value_range.value)*/
+            xlnt_assert_equals("MyValue", value_range.name)
+            xlnt_assert_equals("9.99", value_range.value)*/
     }
 
     void test_worksheet_range()
@@ -215,7 +215,7 @@ public:
 
     void test_worksheet_range_error_on_value_range()
     {
-        /*assert_raises(NamedRangeException, ws.range, "MyValue")*/
+        /*xlnt_assert_raises(NamedRangeException, ws.range, "MyValue")*/
     }
 
     //void range_as_string(self, range, include_value = False)
@@ -243,7 +243,7 @@ public:
     void test_handles_scope()
     {
         /*ranges = wb.get_named_ranges()
-            assert_equals(["MyRef: Workbook", "MySheetRef: Sheet1", "MySheetRef: Sheet2", "MySheetValue: Sheet1", "MySheetValue: Sheet2", "MyValue: Workbook"],
+            xlnt_assert_equals(["MyRef: Workbook", "MySheetRef: Sheet1", "MySheetRef: Sheet2", "MySheetValue: Sheet1", "MySheetValue: Sheet2", "MyValue: Workbook"],
             [range_as_string(range) for range in ranges])*/
     }
 
@@ -253,7 +253,7 @@ public:
             wb.save(FNAME)
 
             wbcopy = load_workbook(FNAME)
-            assert_equals(["MyRef: Workbook=[range]", "MySheetRef: Sheet1=[range]", "MySheetRef: Sheet2=[range]", "MySheetValue: Sheet1=3.33", "MySheetValue: Sheet2=14.4", "MyValue: Workbook=9.99"],
+            xlnt_assert_equals(["MyRef: Workbook=[range]", "MySheetRef: Sheet1=[range]", "MySheetRef: Sheet2=[range]", "MySheetValue: Sheet1=3.33", "MySheetValue: Sheet2=14.4", "MyValue: Workbook=9.99"],
             [range_as_string(range, include_value = True) for range in wbcopy.get_named_ranges()])*/
     }
 };

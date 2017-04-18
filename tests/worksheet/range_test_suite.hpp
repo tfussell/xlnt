@@ -55,15 +55,15 @@ public:
         ws.range("A1:A10").font(xlnt::font().name("Arial"));
         ws.range("A1:J1").font(xlnt::font().bold(true));
 
-        assert_equals(ws.cell("A1").font().name(), "Calibri");
-        assert(ws.cell("A1").font().bold());
+        xlnt_assert_equals(ws.cell("A1").font().name(), "Calibri");
+        xlnt_assert(ws.cell("A1").font().bold());
 
-        assert_equals(ws.cell("A2").font().name(), "Arial");
-        assert(!ws.cell("A2").font().bold());
+        xlnt_assert_equals(ws.cell("A2").font().name(), "Arial");
+        xlnt_assert(!ws.cell("A2").font().bold());
 
-        assert_equals(ws.cell("B1").font().name(), "Calibri");
-        assert(ws.cell("B1").font().bold());
+        xlnt_assert_equals(ws.cell("B1").font().name(), "Calibri");
+        xlnt_assert(ws.cell("B1").font().bold());
 
-        assert(!ws.cell("B2").has_format());
+        xlnt_assert(!ws.cell("B2").has_format());
     }
 };

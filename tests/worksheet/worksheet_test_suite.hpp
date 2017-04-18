@@ -99,7 +99,7 @@ public:
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
-        assert(ws.workbook() == wb);
+        xlnt_assert(ws.workbook() == wb);
     }
 
     void test_cell()
@@ -107,12 +107,12 @@ public:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         auto cell = ws.cell(xlnt::cell_reference(1, 1));
-        assert_equals(cell.reference(), "A1");
+        xlnt_assert_equals(cell.reference(), "A1");
     }
 
     void test_invalid_cell()
     {
-        assert_throws(xlnt::cell_reference(xlnt::column_t((xlnt::column_t::index_t)0), 0),
+        xlnt_assert_throws(xlnt::cell_reference(xlnt::column_t((xlnt::column_t::index_t)0), 0),
             xlnt::invalid_cell_reference);
     }
 
@@ -121,9 +121,9 @@ public:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
 
-        assert_equals("A1:A1", ws.calculate_dimension());
+        xlnt_assert_equals("A1:A1", ws.calculate_dimension());
         ws.cell("B12").value("AAA");
-        assert_equals("B12:B12", ws.calculate_dimension());
+        xlnt_assert_equals("B12:B12", ws.calculate_dimension());
     }
 
     void test_fill_rows()
@@ -138,14 +138,14 @@ public:
         ws.cell("A1").value("first");
         ws.cell("C9").value("last");
 
-        assert_equals(ws.calculate_dimension(), "A1:C9");
-        assert_equals(ws.rows(false)[row][column].reference(), coordinate);
+        xlnt_assert_equals(ws.calculate_dimension(), "A1:C9");
+        xlnt_assert_equals(ws.rows(false)[row][column].reference(), coordinate);
 
         row = 8;
         column = 2;
         coordinate = "C9";
 
-        assert_equals(ws.rows(false)[row][column].reference(), coordinate);
+        xlnt_assert_equals(ws.rows(false)[row][column].reference(), coordinate);
     }
 
     void test_get_named_range()
@@ -154,22 +154,22 @@ public:
         auto ws = wb.active_sheet();
         wb.create_named_range("test_range", ws, "C5");
         auto xlrange = ws.named_range("test_range");
-        assert_equals(1, xlrange.length());
-        assert_equals(1, xlrange[0].length());
-        assert_equals(5, xlrange[0][0].row());
+        xlnt_assert_equals(1, xlrange.length());
+        xlnt_assert_equals(1, xlrange[0].length());
+        xlnt_assert_equals(5, xlrange[0][0].row());
 
         ws.create_named_range("test_range2", "C6");
         auto xlrange2 = ws.named_range("test_range2");
-        assert_equals(1, xlrange2.length());
-        assert_equals(1, xlrange2[0].length());
-        assert_equals(6, xlrange2[0][0].row());
+        xlnt_assert_equals(1, xlrange2.length());
+        xlnt_assert_equals(1, xlrange2[0].length());
+        xlnt_assert_equals(6, xlrange2[0][0].row());
     }
 
     void test_get_bad_named_range()
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
-        assert_throws(ws.named_range("bad_range"), xlnt::key_not_found);
+        xlnt_assert_throws(ws.named_range("bad_range"), xlnt::key_not_found);
     }
 
     void test_get_named_range_wrong_sheet()
@@ -180,14 +180,14 @@ public:
         auto ws1 = wb[0];
         auto ws2 = wb[1];
         wb.create_named_range("wrong_sheet_range", ws1, "C5");
-        assert_throws(ws2.named_range("wrong_sheet_range"), xlnt::key_not_found);
+        xlnt_assert_throws(ws2.named_range("wrong_sheet_range"), xlnt::key_not_found);
     }
 
     void test_remove_named_range_bad()
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
-        assert_throws(ws.remove_named_range("bad_range"), std::runtime_error);
+        xlnt_assert_throws(ws.remove_named_range("bad_range"), std::runtime_error);
     }
 
     void test_cell_alternate_coordinates()
@@ -195,7 +195,7 @@ public:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         auto cell = ws.cell(xlnt::cell_reference(4, 8));
-        assert_equals(cell.reference(), "D8");
+        xlnt_assert_equals(cell.reference(), "D8");
     }
 
     // void test_cell_insufficient_coordinates() {}
@@ -208,8 +208,8 @@ public:
         auto c_range_name = ws.named_range("test_range_single");
         auto c_range_coord = ws.range("B12");
         auto c_cell = ws.cell("B12");
-        assert_equals(c_range_coord, c_range_name);
-        assert(c_range_coord[0][0] == c_cell);
+        xlnt_assert_equals(c_range_coord, c_range_name);
+        xlnt_assert(c_range_coord[0][0] == c_cell);
     }
 
     void test_hyperlink_value()
@@ -217,11 +217,11 @@ public:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         ws.cell("A1").hyperlink("http://test.com");
-        assert_equals(ws.cell("A1").hyperlink(), "http://test.com");
-        assert_equals(ws.cell("A1").value<std::string>(), "");
+        xlnt_assert_equals(ws.cell("A1").hyperlink(), "http://test.com");
+        xlnt_assert_equals(ws.cell("A1").value<std::string>(), "");
         ws.cell("A1").value("test");
-        assert_equals("test", ws.cell("A1").value<std::string>());
-        assert_equals(ws.cell("A1").hyperlink(), "http://test.com");
+        xlnt_assert_equals("test", ws.cell("A1").value<std::string>());
+        xlnt_assert_equals(ws.cell("A1").hyperlink(), "http://test.com");
     }
 
     void test_rows()
@@ -234,14 +234,14 @@ public:
 
         auto rows = ws.rows();
 
-        assert_equals(rows.length(), 9);
+        xlnt_assert_equals(rows.length(), 9);
 
         auto first_row = rows[0];
         auto last_row = rows[8];
 
-        assert_equals(first_row[0].value<std::string>(), "first");
-        assert_equals(first_row[0].reference(), "A1");
-        assert_equals(last_row[2].value<std::string>(), "last");
+        xlnt_assert_equals(first_row[0].value<std::string>(), "first");
+        xlnt_assert_equals(first_row[0].reference(), "A1");
+        xlnt_assert_equals(last_row[2].value<std::string>(), "last");
     }
 
     void test_no_rows()
@@ -249,8 +249,8 @@ public:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
 
-        assert_equals(ws.rows().length(), 1);
-        assert_equals(ws.rows()[0].length(), 1);
+        xlnt_assert_equals(ws.rows().length(), 1);
+        xlnt_assert_equals(ws.rows()[0].length(), 1);
     }
 
     void test_no_cols()
@@ -258,8 +258,8 @@ public:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
 
-        assert_equals(ws.columns().length(), 1);
-        assert_equals(ws.columns()[0].length(), 1);
+        xlnt_assert_equals(ws.columns().length(), 1);
+        xlnt_assert_equals(ws.columns()[0].length(), 1);
     }
 
     void test_one_cell()
@@ -269,9 +269,9 @@ public:
 
         auto cell = ws.cell("A1");
 
-        assert_equals(ws.columns().length(), 1);
-        assert_equals(ws.columns()[0].length(), 1);
-        assert_equals(ws.columns()[0][0], cell);
+        xlnt_assert_equals(ws.columns().length(), 1);
+        xlnt_assert_equals(ws.columns()[0].length(), 1);
+        xlnt_assert_equals(ws.columns()[0][0], cell);
     }
 
     // void test_by_col() {}
@@ -286,10 +286,10 @@ public:
 
         auto cols = ws.columns();
 
-        assert_equals(cols.length(), 3);
+        xlnt_assert_equals(cols.length(), 3);
 
-        assert_equals(cols[0][0].value<std::string>(), "first");
-        assert_equals(cols[2][8].value<std::string>(), "last");
+        xlnt_assert_equals(cols[0][0].value<std::string>(), "first");
+        xlnt_assert_equals(cols[2][8].value<std::string>(), "last");
     }
 
     void test_auto_filter()
@@ -298,13 +298,13 @@ public:
         auto ws = wb.active_sheet();
 
         ws.auto_filter(ws.range("a1:f1"));
-        assert_equals(ws.auto_filter(), "A1:F1");
+        xlnt_assert_equals(ws.auto_filter(), "A1:F1");
 
         ws.clear_auto_filter();
-        assert(!ws.has_auto_filter());
+        xlnt_assert(!ws.has_auto_filter());
 
         ws.auto_filter("c1:g9");
-        assert_equals(ws.auto_filter(), "C1:G9");
+        xlnt_assert_equals(ws.auto_filter(), "C1:G9");
     }
 
     void test_getitem()
@@ -312,8 +312,8 @@ public:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         xlnt::cell cell = ws[xlnt::cell_reference("A1")];
-        assert_equals(cell.reference().to_string(), "A1");
-        assert_equals(cell.data_type(), xlnt::cell::type::null);
+        xlnt_assert_equals(cell.reference().to_string(), "A1");
+        xlnt_assert_equals(cell.data_type(), xlnt::cell::type::null);
     }
 
     void test_setitem()
@@ -321,7 +321,7 @@ public:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         ws[xlnt::cell_reference("A12")].value(5);
-        assert(ws[xlnt::cell_reference("A12")].value<int>() == 5);
+        xlnt_assert(ws[xlnt::cell_reference("A12")].value<int>() == 5);
     }
 
     void test_getslice()
@@ -329,10 +329,10 @@ public:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         auto cell_range = ws.range("A1:B2");
-        assert_equals(cell_range[0][0], ws.cell("A1"));
-        assert_equals(cell_range[1][0], ws.cell("A2"));
-        assert_equals(cell_range[0][1], ws.cell("B1"));
-        assert_equals(cell_range[1][1], ws.cell("B2"));
+        xlnt_assert_equals(cell_range[0][0], ws.cell("A1"));
+        xlnt_assert_equals(cell_range[1][0], ws.cell("A2"));
+        xlnt_assert_equals(cell_range[0][1], ws.cell("B1"));
+        xlnt_assert_equals(cell_range[1][1], ws.cell("B2"));
     }
 
     void test_freeze()
@@ -341,16 +341,16 @@ public:
         auto ws = wb.active_sheet();
 
         ws.freeze_panes(ws.cell("b2"));
-        assert_equals(ws.frozen_panes(), "B2");
+        xlnt_assert_equals(ws.frozen_panes(), "B2");
 
         ws.unfreeze_panes();
-        assert(!ws.has_frozen_panes());
+        xlnt_assert(!ws.has_frozen_panes());
 
         ws.freeze_panes("c5");
-        assert_equals(ws.frozen_panes(), "C5");
+        xlnt_assert_equals(ws.frozen_panes(), "C5");
 
         ws.freeze_panes(ws.cell("A1"));
-        assert(!ws.has_frozen_panes());
+        xlnt_assert(!ws.has_frozen_panes());
     }
 
     void test_merged_cells_lookup()
@@ -360,12 +360,12 @@ public:
         ws.cell("A2").value("test");
         ws.merge_cells("A1:N50");
         auto all_merged = ws.merged_ranges();
-        assert_equals(all_merged.size(), 1);
+        xlnt_assert_equals(all_merged.size(), 1);
         auto merged = ws.range(all_merged[0]);
-        assert(merged.contains("A1"));
-        assert(merged.contains("N50"));
-        assert(!merged.contains("A51"));
-        assert(!merged.contains("O1"));
+        xlnt_assert(merged.contains("A1"));
+        xlnt_assert(merged.contains("N50"));
+        xlnt_assert(!merged.contains("A51"));
+        xlnt_assert(!merged.contains("O1"));
     }
 
 
@@ -373,7 +373,7 @@ public:
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
-        assert_equals(ws.merged_ranges().size(), 0);
+        xlnt_assert_equals(ws.merged_ranges().size(), 0);
     }
 
     void test_merge_range_string()
@@ -384,8 +384,8 @@ public:
         ws.cell("D4").value(16);
         ws.merge_cells("A1:D4");
         std::vector<xlnt::range_reference> expected = { xlnt::range_reference("A1:D4") };
-        assert_equals(ws.merged_ranges(), expected);
-        assert(!ws.cell("D4").has_value());
+        xlnt_assert_equals(ws.merged_ranges(), expected);
+        xlnt_assert(!ws.cell("D4").has_value());
     }
 
     void test_unmerge_bad()
@@ -393,7 +393,7 @@ public:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
 
-        assert_throws(ws.unmerge_cells("A1:D3"), std::runtime_error);
+        xlnt_assert_throws(ws.unmerge_cells("A1:D3"), std::runtime_error);
     }
 
     void test_unmerge_range_string()
@@ -401,9 +401,9 @@ public:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         ws.merge_cells("A1:D4");
-        assert_equals(ws.merged_ranges().size(), 1);
+        xlnt_assert_equals(ws.merged_ranges().size(), 1);
         ws.unmerge_cells("A1:D4");
-        assert_equals(ws.merged_ranges().size(), 0);
+        xlnt_assert_equals(ws.merged_ranges().size(), 0);
     }
 
     void test_print_titles_old()
@@ -412,11 +412,11 @@ public:
 
         auto ws = wb.active_sheet();
         ws.print_title_rows(3);
-        assert_equals(ws.print_titles(), "Sheet1!1:3");
+        xlnt_assert_equals(ws.print_titles(), "Sheet1!1:3");
 
         auto ws2 = wb.create_sheet();
         ws2.print_title_cols(4);
-        assert_equals(ws2.print_titles(), "Sheet2!A:D");
+        xlnt_assert_equals(ws2.print_titles(), "Sheet2!A:D");
     }
 
     void test_print_titles_new()
@@ -425,16 +425,16 @@ public:
 
         auto ws = wb.active_sheet();
         ws.print_title_rows(4);
-        assert_equals(ws.print_titles(), "Sheet1!1:4");
+        xlnt_assert_equals(ws.print_titles(), "Sheet1!1:4");
 
         auto ws2 = wb.create_sheet();
         ws2.print_title_cols("F");
-        assert_equals(ws2.print_titles(), "Sheet2!A:F");
+        xlnt_assert_equals(ws2.print_titles(), "Sheet2!A:F");
 
         auto ws3 = wb.create_sheet();
         ws3.print_title_rows(2, 3);
         ws3.print_title_cols("C", "D");
-        assert_equals(ws3.print_titles(), "Sheet3!2:3,Sheet3!C:D");
+        xlnt_assert_equals(ws3.print_titles(), "Sheet3!2:3,Sheet3!C:D");
     }
 
     void test_print_area()
@@ -442,7 +442,7 @@ public:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         ws.print_area("A1:F5");
-        assert_equals(ws.print_area(), "$A$1:$F$5");
+        xlnt_assert_equals(ws.print_area(), "$A$1:$F$5");
     }
 
     void test_freeze_panes_horiz()
@@ -452,14 +452,14 @@ public:
         ws.freeze_panes("A4");
 
         auto view = ws.view();
-        assert_equals(view.selections().size(), 2);
-        assert_equals(view.selections()[0].active_cell(), "A3");
-        assert_equals(view.selections()[0].pane(), xlnt::pane_corner::bottom_left);
-        assert_equals(view.selections()[0].sqref(), "A1");
-        assert_equals(view.pane().active_pane, xlnt::pane_corner::bottom_left);
-        assert_equals(view.pane().state, xlnt::pane_state::frozen);
-        assert_equals(view.pane().top_left_cell.get(), "A4");
-        assert_equals(view.pane().y_split, 3);
+        xlnt_assert_equals(view.selections().size(), 2);
+        xlnt_assert_equals(view.selections()[0].active_cell(), "A3");
+        xlnt_assert_equals(view.selections()[0].pane(), xlnt::pane_corner::bottom_left);
+        xlnt_assert_equals(view.selections()[0].sqref(), "A1");
+        xlnt_assert_equals(view.pane().active_pane, xlnt::pane_corner::bottom_left);
+        xlnt_assert_equals(view.pane().state, xlnt::pane_state::frozen);
+        xlnt_assert_equals(view.pane().top_left_cell.get(), "A4");
+        xlnt_assert_equals(view.pane().y_split, 3);
     }
 
     void test_freeze_panes_vert()
@@ -469,14 +469,14 @@ public:
         ws.freeze_panes("D1");
 
         auto view = ws.view();
-        assert_equals(view.selections().size(), 2);
-        assert_equals(view.selections()[0].active_cell(), "C1");
-        assert_equals(view.selections()[0].pane(), xlnt::pane_corner::top_right);
-        assert_equals(view.selections()[0].sqref(), "A1");
-        assert_equals(view.pane().active_pane, xlnt::pane_corner::top_right);
-        assert_equals(view.pane().state, xlnt::pane_state::frozen);
-        assert_equals(view.pane().top_left_cell.get(), "D1");
-        assert_equals(view.pane().x_split, 3);
+        xlnt_assert_equals(view.selections().size(), 2);
+        xlnt_assert_equals(view.selections()[0].active_cell(), "C1");
+        xlnt_assert_equals(view.selections()[0].pane(), xlnt::pane_corner::top_right);
+        xlnt_assert_equals(view.selections()[0].sqref(), "A1");
+        xlnt_assert_equals(view.pane().active_pane, xlnt::pane_corner::top_right);
+        xlnt_assert_equals(view.pane().state, xlnt::pane_state::frozen);
+        xlnt_assert_equals(view.pane().top_left_cell.get(), "D1");
+        xlnt_assert_equals(view.pane().x_split, 3);
     }
 
     void test_freeze_panes_both()
@@ -486,24 +486,24 @@ public:
         ws.freeze_panes("D4");
 
         auto view = ws.view();
-        assert_equals(view.selections().size(), 3);
-        assert_equals(view.selections()[0].pane(), xlnt::pane_corner::top_right);
-        assert_equals(view.selections()[1].pane(), xlnt::pane_corner::bottom_left);
-        assert_equals(view.selections()[2].active_cell(), "D4");
-        assert_equals(view.selections()[2].pane(), xlnt::pane_corner::bottom_right);
-        assert_equals(view.selections()[2].sqref(), "A1");
-        assert_equals(view.pane().active_pane, xlnt::pane_corner::bottom_right);
-        assert_equals(view.pane().state, xlnt::pane_state::frozen);
-        assert_equals(view.pane().top_left_cell.get(), "D4");
-        assert_equals(view.pane().x_split, 3);
-        assert_equals(view.pane().y_split, 3);
+        xlnt_assert_equals(view.selections().size(), 3);
+        xlnt_assert_equals(view.selections()[0].pane(), xlnt::pane_corner::top_right);
+        xlnt_assert_equals(view.selections()[1].pane(), xlnt::pane_corner::bottom_left);
+        xlnt_assert_equals(view.selections()[2].active_cell(), "D4");
+        xlnt_assert_equals(view.selections()[2].pane(), xlnt::pane_corner::bottom_right);
+        xlnt_assert_equals(view.selections()[2].sqref(), "A1");
+        xlnt_assert_equals(view.pane().active_pane, xlnt::pane_corner::bottom_right);
+        xlnt_assert_equals(view.pane().state, xlnt::pane_state::frozen);
+        xlnt_assert_equals(view.pane().top_left_cell.get(), "D4");
+        xlnt_assert_equals(view.pane().x_split, 3);
+        xlnt_assert_equals(view.pane().y_split, 3);
     }
 
     void test_min_column()
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
-        assert_equals(ws.lowest_column(), 1);
+        xlnt_assert_equals(ws.lowest_column(), 1);
     }
 
     void test_max_column()
@@ -514,14 +514,14 @@ public:
         ws[xlnt::cell_reference("F2")].value(32);
         ws[xlnt::cell_reference("F3")].formula("=F1+F2");
         ws[xlnt::cell_reference("A4")].formula("=A1+A2+A3");
-        assert_equals(ws.highest_column(), 6);
+        xlnt_assert_equals(ws.highest_column(), 6);
     }
 
     void test_min_row()
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
-        assert_equals(ws.lowest_row(), 1);
+        xlnt_assert_equals(ws.lowest_row(), 1);
     }
 
     void test_max_row()
@@ -529,7 +529,7 @@ public:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         ws.cell("D4").value("D4");
-        assert_equals(ws.highest_row(), 4);
+        xlnt_assert_equals(ws.highest_row(), 4);
     }
 
     void test_const_iterators()
@@ -549,19 +549,19 @@ public:
 
         const auto first_row = rows.front();
         const auto first_cell = first_row.front();
-        assert_equals(first_cell.reference(), "A1");
-        assert_equals(first_cell.value<std::string>(), "A1");
+        xlnt_assert_equals(first_cell.reference(), "A1");
+        xlnt_assert_equals(first_cell.value<std::string>(), "A1");
 
         const auto last_row = rows.back();
         const auto last_cell = last_row.back();
-        assert_equals(last_cell.reference(), "C2");
-        assert_equals(last_cell.value<std::string>(), "C2");
+        xlnt_assert_equals(last_cell.reference(), "C2");
+        xlnt_assert_equals(last_cell.value<std::string>(), "C2");
 
         for (const auto row : rows)
         {
             for (const auto cell : row)
             {
-                assert_equals(cell.value<std::string>(), cell.reference().to_string());
+                xlnt_assert_equals(cell.value<std::string>(), cell.reference().to_string());
             }
         }
     }
@@ -583,7 +583,7 @@ public:
 
         const auto first_row = *rows.rbegin();
         const auto first_cell = *first_row.rbegin();
-        assert_equals(first_cell.value<std::string>(), "C2");
+        xlnt_assert_equals(first_cell.value<std::string>(), "C2");
 
         auto row_iter = rows.rend();
         row_iter--;
@@ -591,7 +591,7 @@ public:
         auto cell_iter = last_row.rend();
         cell_iter--;
         const auto last_cell = *cell_iter;
-        assert_equals(last_cell.value<std::string>(), "A1");
+        xlnt_assert_equals(last_cell.value<std::string>(), "A1");
 
         for (auto ws_iter = rows.rbegin(); ws_iter != rows.rend(); ws_iter++)
         {
@@ -600,7 +600,7 @@ public:
             for (auto row_iter = row.rbegin(); row_iter != row.rend(); row_iter++)
             {
                 const auto cell = *row_iter;
-                assert_equals(cell.value<std::string>(), cell.reference().to_string());
+                xlnt_assert_equals(cell.value<std::string>(), cell.reference().to_string());
             }
         }
     }
@@ -622,28 +622,28 @@ public:
         auto first_column = *columns.begin();
         auto first_column_iter = first_column.begin();
         auto first_cell = *first_column_iter;
-        assert_equals(first_cell.value<std::string>(), "A1");
+        xlnt_assert_equals(first_cell.value<std::string>(), "A1");
         first_column_iter++;
         auto second_cell = *first_column_iter;
-        assert_equals(second_cell.value<std::string>(), "A2");
+        xlnt_assert_equals(second_cell.value<std::string>(), "A2");
 
-        assert_equals(first_cell, first_column.front());
-        assert_equals(second_cell, first_column.back());
+        xlnt_assert_equals(first_cell, first_column.front());
+        xlnt_assert_equals(second_cell, first_column.back());
 
         auto last_column = *(--columns.end());
         auto last_column_iter = last_column.end();
         last_column_iter--;
         auto last_cell = *last_column_iter;
-        assert_equals(last_cell.value<std::string>(), "C2");
+        xlnt_assert_equals(last_cell.value<std::string>(), "C2");
         last_column_iter--;
         auto penultimate_cell = *last_column_iter;
-        assert_equals(penultimate_cell.value<std::string>(), "C1");
+        xlnt_assert_equals(penultimate_cell.value<std::string>(), "C1");
 
         for (auto column : columns)
         {
             for (auto cell : column)
             {
-                assert_equals(cell.value<std::string>(), cell.reference().to_string());
+                xlnt_assert_equals(cell.value<std::string>(), cell.reference().to_string());
             }
         }
     }
@@ -667,19 +667,19 @@ public:
 
         auto first_column_iter = first_column.rbegin();
         auto first_cell = *first_column_iter;
-        assert_equals(first_cell.value<std::string>(), "C2");
+        xlnt_assert_equals(first_cell.value<std::string>(), "C2");
         first_column_iter++;
         auto second_cell = *first_column_iter;
-        assert_equals(second_cell.value<std::string>(), "C1");
+        xlnt_assert_equals(second_cell.value<std::string>(), "C1");
 
         auto last_column = *(--columns.rend());
         auto last_column_iter = last_column.rend();
         last_column_iter--;
         auto last_cell = *last_column_iter;
-        assert_equals(last_cell.value<std::string>(), "A1");
+        xlnt_assert_equals(last_cell.value<std::string>(), "A1");
         last_column_iter--;
         auto penultimate_cell = *last_column_iter;
-        assert_equals(penultimate_cell.value<std::string>(), "A2");
+        xlnt_assert_equals(penultimate_cell.value<std::string>(), "A2");
 
         for (auto column_iter = columns.rbegin(); column_iter != columns.rend(); ++column_iter)
         {
@@ -689,7 +689,7 @@ public:
             {
                 auto cell = *cell_iter;
 
-                assert_equals(cell.value<std::string>(), cell.reference().to_string());
+                xlnt_assert_equals(cell.value<std::string>(), cell.reference().to_string());
             }
         }
     }
@@ -712,25 +712,25 @@ public:
         const auto first_column = *columns.begin();
         auto first_column_iter = first_column.begin();
         const auto first_cell = *first_column_iter;
-        assert_equals(first_cell.value<std::string>(), "A1");
+        xlnt_assert_equals(first_cell.value<std::string>(), "A1");
         first_column_iter++;
         const auto second_cell = *first_column_iter;
-        assert_equals(second_cell.value<std::string>(), "A2");
+        xlnt_assert_equals(second_cell.value<std::string>(), "A2");
 
         const auto last_column = *(--columns.end());
         auto last_column_iter = last_column.end();
         last_column_iter--;
         const auto last_cell = *last_column_iter;
-        assert_equals(last_cell.value<std::string>(), "C2");
+        xlnt_assert_equals(last_cell.value<std::string>(), "C2");
         last_column_iter--;
         const auto penultimate_cell = *last_column_iter;
-        assert_equals(penultimate_cell.value<std::string>(), "C1");
+        xlnt_assert_equals(penultimate_cell.value<std::string>(), "C1");
 
         for (const auto column : columns)
         {
             for (const auto cell : column)
             {
-                assert_equals(cell.value<std::string>(), cell.reference().to_string());
+                xlnt_assert_equals(cell.value<std::string>(), cell.reference().to_string());
             }
         }
     }
@@ -753,19 +753,19 @@ public:
         const auto first_column = *columns.crbegin();
         auto first_column_iter = first_column.crbegin();
         const auto first_cell = *first_column_iter;
-        assert_equals(first_cell.value<std::string>(), "C2");
+        xlnt_assert_equals(first_cell.value<std::string>(), "C2");
         first_column_iter++;
         const auto second_cell = *first_column_iter;
-        assert_equals(second_cell.value<std::string>(), "C1");
+        xlnt_assert_equals(second_cell.value<std::string>(), "C1");
 
         const auto last_column = *(--columns.crend());
         auto last_column_iter = last_column.crend();
         last_column_iter--;
         const auto last_cell = *last_column_iter;
-        assert_equals(last_cell.value<std::string>(), "A1");
+        xlnt_assert_equals(last_cell.value<std::string>(), "A1");
         last_column_iter--;
         const auto penultimate_cell = *last_column_iter;
-        assert_equals(penultimate_cell.value<std::string>(), "A2");
+        xlnt_assert_equals(penultimate_cell.value<std::string>(), "A2");
 
         for (auto column_iter = columns.crbegin(); column_iter != columns.crend(); ++column_iter)
         {
@@ -775,7 +775,7 @@ public:
             {
                 const auto cell = *cell_iter;
 
-                assert_equals(cell.value<std::string>(), cell.reference().to_string());
+                xlnt_assert_equals(cell.value<std::string>(), cell.reference().to_string());
             }
         }
     }
@@ -787,21 +787,21 @@ public:
 
         for (auto location : { hf_loc::left, hf_loc::center, hf_loc::right })
         {
-            assert(!hf.has_header(location));
-            assert(!hf.has_odd_even_header(location));
-            assert(!hf.has_first_page_header(location));
+            xlnt_assert(!hf.has_header(location));
+            xlnt_assert(!hf.has_odd_even_header(location));
+            xlnt_assert(!hf.has_first_page_header(location));
 
             hf.header(location, "abc");
 
-            assert(hf.has_header(location));
-            assert(!hf.has_odd_even_header(location));
-            assert(!hf.has_first_page_header(location));
+            xlnt_assert(hf.has_header(location));
+            xlnt_assert(!hf.has_odd_even_header(location));
+            xlnt_assert(!hf.has_first_page_header(location));
 
-            assert_equals(hf.header(location), "abc");
+            xlnt_assert_equals(hf.header(location), "abc");
 
             hf.clear_header(location);
 
-            assert(!hf.has_header(location));
+            xlnt_assert(!hf.has_header(location));
         }
     }
 
@@ -812,21 +812,21 @@ public:
 
         for (auto location : { hf_loc::left, hf_loc::center, hf_loc::right })
         {
-            assert(!hf.has_footer(location));
-            assert(!hf.has_odd_even_footer(location));
-            assert(!hf.has_first_page_footer(location));
+            xlnt_assert(!hf.has_footer(location));
+            xlnt_assert(!hf.has_odd_even_footer(location));
+            xlnt_assert(!hf.has_first_page_footer(location));
 
             hf.footer(location, "abc");
 
-            assert(hf.has_footer(location));
-            assert(!hf.has_odd_even_footer(location));
-            assert(!hf.has_first_page_footer(location));
+            xlnt_assert(hf.has_footer(location));
+            xlnt_assert(!hf.has_odd_even_footer(location));
+            xlnt_assert(!hf.has_first_page_footer(location));
 
-            assert_equals(hf.footer(location), "abc");
+            xlnt_assert_equals(hf.footer(location), "abc");
 
             hf.clear_footer(location);
 
-            assert(!hf.has_footer(location));
+            xlnt_assert(!hf.has_footer(location));
         }
     }
 
@@ -834,9 +834,9 @@ public:
     {
         xlnt::page_setup setup;
         setup.page_break(xlnt::page_break::column);
-        assert_equals(setup.page_break(), xlnt::page_break::column);
+        xlnt_assert_equals(setup.page_break(), xlnt::page_break::column);
         setup.scale(1.23);
-        assert_equals(setup.scale(), 1.23);
+        xlnt_assert_equals(setup.scale(), 1.23);
     }
 
     void test_unique_sheet_name()
@@ -846,7 +846,7 @@ public:
         auto first_created = wb.create_sheet();
         auto second_created = wb.create_sheet();
 
-        assert_differs(first_created.title(), second_created.title());
+        xlnt_assert_differs(first_created.title(), second_created.title());
     }
 
     void test_page_margins()
@@ -865,13 +865,13 @@ public:
 
         ws.page_margins(margins);
 
-        assert(ws.has_page_margins());
-        assert_equals(ws.page_margins().top(), 0);
-        assert_equals(ws.page_margins().bottom(), 1);
-        assert_equals(ws.page_margins().header(), 2);
-        assert_equals(ws.page_margins().footer(), 3);
-        assert_equals(ws.page_margins().left(), 4);
-        assert_equals(ws.page_margins().right(), 5);
+        xlnt_assert(ws.has_page_margins());
+        xlnt_assert_equals(ws.page_margins().top(), 0);
+        xlnt_assert_equals(ws.page_margins().bottom(), 1);
+        xlnt_assert_equals(ws.page_margins().header(), 2);
+        xlnt_assert_equals(ws.page_margins().footer(), 3);
+        xlnt_assert_equals(ws.page_margins().left(), 4);
+        xlnt_assert_equals(ws.page_margins().right(), 5);
     }
 
     void test_garbage_collect()
@@ -880,13 +880,13 @@ public:
         auto ws = wb.active_sheet();
 
         auto dimensions = ws.calculate_dimension();
-        assert_equals(dimensions, xlnt::range_reference("A1", "A1"));
+        xlnt_assert_equals(dimensions, xlnt::range_reference("A1", "A1"));
 
         ws.cell("B2").value("text");
         ws.garbage_collect();
 
         dimensions = ws.calculate_dimension();
-        assert_equals(dimensions, xlnt::range_reference("B2", "B2"));
+        xlnt_assert_equals(dimensions, xlnt::range_reference("B2", "B2"));
     }
 
     void test_has_cell()
@@ -896,8 +896,8 @@ public:
 
         ws.cell("A3").value("test");
 
-        assert(!ws.has_cell("A2"));
-        assert(ws.has_cell("A3"));
+        xlnt_assert(!ws.has_cell("A2"));
+        xlnt_assert(ws.has_cell("A3"));
     }
 
     void test_get_range_by_string()
@@ -914,27 +914,27 @@ public:
         auto range_iter = range.begin();
         auto row = *range_iter;
         auto row_iter = row.begin();
-        assert_equals((*row_iter).value<double>(), 3.14);
-        assert_equals((*row_iter).reference(), "A2");
-        assert_equals((*row_iter), row.front());
+        xlnt_assert_equals((*row_iter).value<double>(), 3.14);
+        xlnt_assert_equals((*row_iter).reference(), "A2");
+        xlnt_assert_equals((*row_iter), row.front());
 
         row_iter++;
-        assert_equals((*row_iter).value<std::string>(), "text");
-        assert_equals((*row_iter).reference(), "B2");
-        assert_equals((*row_iter), row.back());
+        xlnt_assert_equals((*row_iter).value<std::string>(), "text");
+        xlnt_assert_equals((*row_iter).reference(), "B2");
+        xlnt_assert_equals((*row_iter), row.back());
 
         range_iter++;
         row = *range_iter;
         row_iter = row.begin();
-        assert_equals((*row_iter).value<bool>(), true);
-        assert_equals((*row_iter).reference(), "A3");
+        xlnt_assert_equals((*row_iter).value<bool>(), true);
+        xlnt_assert_equals((*row_iter).reference(), "A3");
 
         range_iter = range.end();
         range_iter--;
         row = *range_iter;
         row_iter = row.end();
         row_iter--;
-        assert_equals((*row_iter).value<bool>(), false);
+        xlnt_assert_equals((*row_iter).value<bool>(), false);
     }
 
     void test_operators()
@@ -947,19 +947,19 @@ public:
         auto ws1 = wb[1];
         auto ws2 = wb[2];
 
-        assert_differs(ws1, ws2);
+        xlnt_assert_differs(ws1, ws2);
 
         ws1[xlnt::cell_reference("A2")].value(true);
 
-        assert_equals(ws1[xlnt::cell_reference("A2")].value<bool>(), true);
-        assert_equals((*(*ws1.range("A2:A2").begin()).begin()).value<bool>(), true);
+        xlnt_assert_equals(ws1[xlnt::cell_reference("A2")].value<bool>(), true);
+        xlnt_assert_equals((*(*ws1.range("A2:A2").begin()).begin()).value<bool>(), true);
 
         ws1.create_named_range("rangey", "A2:A2");
-        assert_equals(ws1.range("rangey"), ws1.range("A2:A2"));
-        assert_equals(ws1.range("A2:A2"), ws1.range("A2:A2"));
-        assert(ws1.range("rangey") != ws1.range("A2:A3"));
+        xlnt_assert_equals(ws1.range("rangey"), ws1.range("A2:A2"));
+        xlnt_assert_equals(ws1.range("A2:A2"), ws1.range("A2:A2"));
+        xlnt_assert(ws1.range("rangey") != ws1.range("A2:A3"));
 
-        assert_equals(ws1.range("rangey").cell("A1"), ws1.cell("A2"));
+        xlnt_assert_equals(ws1.range("rangey").cell("A1"), ws1.cell("A2"));
     }
 
     void test_reserve()
@@ -985,7 +985,7 @@ public:
             {
                 if (cell.has_value())
                 {
-                    assert_equals(cell.reference().to_string(), cell.value<std::string>());
+                    xlnt_assert_equals(cell.reference().to_string(), cell.value<std::string>());
                 }
             }
         }
@@ -998,7 +998,7 @@ public:
             {
                 if (cell.has_value())
                 {
-                    assert_equals(cell.reference().to_string(), cell.value<std::string>());
+                    xlnt_assert_equals(cell.reference().to_string(), cell.value<std::string>());
                 }
             }
         }
@@ -1007,26 +1007,26 @@ public:
         auto const_range_iter = const_range.cbegin();
         const_range_iter++;
         const_range_iter--;
-        assert_equals(const_range_iter, const_range.begin());
+        xlnt_assert_equals(const_range_iter, const_range.begin());
     }
 
     void test_range_reference()
     {
         xlnt::range_reference ref1("A1:A1");
-        assert(ref1.is_single_cell());
+        xlnt_assert(ref1.is_single_cell());
         xlnt::range_reference ref2("A1:B2");
 
-        assert(!ref2.is_single_cell());
-        assert(ref1 == xlnt::range_reference("A1:A1"));
-        assert(ref1 != ref2);
-        assert(ref1 == "A1:A1");
-        assert(ref1 == std::string("A1:A1"));
-        assert(std::string("A1:A1") == ref1);
-        assert("A1:A1" == ref1);
-        assert(ref1 != "A1:B2");
-        assert(ref1 != std::string("A1:B2"));
-        assert(std::string("A1:B2") != ref1);
-        assert("A1:B2" != ref1);
+        xlnt_assert(!ref2.is_single_cell());
+        xlnt_assert(ref1 == xlnt::range_reference("A1:A1"));
+        xlnt_assert(ref1 != ref2);
+        xlnt_assert(ref1 == "A1:A1");
+        xlnt_assert(ref1 == std::string("A1:A1"));
+        xlnt_assert(std::string("A1:A1") == ref1);
+        xlnt_assert("A1:A1" == ref1);
+        xlnt_assert(ref1 != "A1:B2");
+        xlnt_assert(ref1 != std::string("A1:B2"));
+        xlnt_assert(std::string("A1:B2") != ref1);
+        xlnt_assert("A1:B2" != ref1);
     }
 
     void test_get_point_pos()
@@ -1034,17 +1034,17 @@ public:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
 
-        assert_equals(ws.point_pos(0, 0), "A1");
+        xlnt_assert_equals(ws.point_pos(0, 0), "A1");
     }
 
     void test_named_range_named_cell_reference()
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
-        assert_throws(ws.create_named_range("A1", "A2"), xlnt::invalid_parameter);
-        assert_throws(ws.create_named_range("XFD1048576", "A2"), xlnt::invalid_parameter);
-        assert_throws_nothing(ws.create_named_range("XFE1048576", "A2"));
-        assert_throws_nothing(ws.create_named_range("XFD1048577", "A2"));
+        xlnt_assert_throws(ws.create_named_range("A1", "A2"), xlnt::invalid_parameter);
+        xlnt_assert_throws(ws.create_named_range("XFD1048576", "A2"), xlnt::invalid_parameter);
+        xlnt_assert_throws_nothing(ws.create_named_range("XFE1048576", "A2"));
+        xlnt_assert_throws_nothing(ws.create_named_range("XFD1048577", "A2"));
     }
 
     void test_iteration_skip_empty()
@@ -1065,9 +1065,9 @@ public:
                 }
             }
 
-            assert_equals(cells.size(), 2);
-            assert_equals(cells[0].value<std::string>(), "A1");
-            assert_equals(cells[1].value<std::string>(), "F6");
+            xlnt_assert_equals(cells.size(), 2);
+            xlnt_assert_equals(cells[0].value<std::string>(), "A1");
+            xlnt_assert_equals(cells[1].value<std::string>(), "F6");
         }
 
         const auto ws_const = ws;
@@ -1083,9 +1083,9 @@ public:
                 }
             }
 
-            assert_equals(cells.size(), 2);
-            assert_equals(cells[0].value<std::string>(), "A1");
-            assert_equals(cells[1].value<std::string>(), "F6");
+            xlnt_assert_equals(cells.size(), 2);
+            xlnt_assert_equals(cells[0].value<std::string>(), "A1");
+            xlnt_assert_equals(cells[1].value<std::string>(), "F6");
         }
     }
 };
