@@ -4,7 +4,9 @@ It was initially inspired by the openpyxl library: https://openpyxl.readthedocs.
 
 Thanks to everyone who has contributed to this project (in alphabetical order):
 
+* adam-nielsen
 * Malvineous
+* sukoi26
 * xpol
 
 Project logo designed by Thomas Fussell.
