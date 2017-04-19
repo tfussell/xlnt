@@ -60,7 +60,24 @@ inline std::uint64_t byteswap64(std::uint64_t i)
     return __builtin_bswap64(i);
 }
 #endif
+
+void byteswap(std::uint32_t *arr, std::size_t len)
+{
+    for (auto i = std::size_t(0); i < len; ++i)
+    {
+        arr[i] = byteswap32(arr[i]);
+    }
 }
+
+void byteswap(std::uint64_t *arr, std::size_t len)
+{
+    for (auto i = std::size_t(0); i < len; ++i)
+    {
+        arr[i] = byteswap64(arr[i]);
+    }
+}
+
+} // namespace
 
 namespace xlnt {
 namespace detail {
@@ -74,13 +91,7 @@ void sha1(const std::vector<std::uint8_t> &input, std::vector<std::uint8_t> &out
 
     sha1_hash(input.data(), input.size(), output_pointer_u32);
 
-    // change hash output from big-endian to little-endian
-    // TODO (harder): try to change the algorithm itself so this isn't necessary
-    // TODO (easier): check platform endianness before doing this
-    std::transform(output_pointer_u32, 
-        output_pointer_u32 + sha1_bytes / sizeof(std::uint32_t),
-        output_pointer_u32,
-        byteswap32);
+    byteswap(output_pointer_u32, sha1_bytes / sizeof(std::uint32_t));
 }
 
 void sha512(const std::vector<std::uint8_t> &input, std::vector<std::uint8_t> &output)
@@ -92,13 +103,7 @@ void sha512(const std::vector<std::uint8_t> &input, std::vector<std::uint8_t> &o
 
     sha512_hash(input.data(), input.size(), output_pointer_u64);
 
-    // change hash output from big-endian to little-endian
-    // TODO (harder): try to change the algorithm itself so this isn't necessary
-    // TODO (easier): check platform endianness before doing this
-    std::transform(output_pointer_u64,
-        output_pointer_u64 + sha512_bytes / sizeof(std::uint64_t),
-        output_pointer_u64,
-        byteswap64);
+    byteswap(output_pointer_u64, sha512_bytes / sizeof(std::uint64_t));
 }
 
 } // namespace detail
