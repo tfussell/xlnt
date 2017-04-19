@@ -31,21 +31,25 @@ namespace detail {
 
 std::vector<std::uint8_t> aes_ecb_encrypt(
     const std::vector<std::uint8_t> &input,
-    const std::vector<std::uint8_t> &key);
+    const std::vector<std::uint8_t> &key,
+    const std::size_t offset = 0);
 
 std::vector<std::uint8_t> aes_ecb_decrypt(
     const std::vector<std::uint8_t> &input,
-    const std::vector<std::uint8_t> &key);
+    const std::vector<std::uint8_t> &key,
+    const std::size_t offset = 0);
 
 std::vector<std::uint8_t> aes_cbc_encrypt(
     const std::vector<std::uint8_t> &input,
     const std::vector<std::uint8_t> &key,
-    const std::vector<std::uint8_t> &iv);
+    const std::vector<std::uint8_t> &iv,
+    const std::size_t offset = 0);
 
 std::vector<std::uint8_t> aes_cbc_decrypt(
     const std::vector<std::uint8_t> &input,
     const std::vector<std::uint8_t> &key,
-    const std::vector<std::uint8_t> &iv);
+    const std::vector<std::uint8_t> &iv,
+    const std::size_t offset = 0);
 
 } // namespace detail
 } // namespace xlnt

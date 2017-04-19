@@ -1334,19 +1334,21 @@ namespace detail {
 
 std::vector<std::uint8_t> aes_ecb_encrypt(
     const std::vector<std::uint8_t> &plaintext,
-    const std::vector<std::uint8_t> &key)
+    const std::vector<std::uint8_t> &key,
+    const std::size_t offset)
 {
     if (plaintext.empty()) return {};
 
-    if (plaintext.size() % 16 != 0)
+    auto len = plaintext.size() - offset;
+
+    if (len % 16 != 0)
     {
         throw std::runtime_error("");
     }
 
-    auto ciphertext = std::vector<std::uint8_t>(plaintext.size());
+    auto ciphertext = std::vector<std::uint8_t>(len);
     auto expanded_key = rijndael_setup(key);
-    auto len = plaintext.size();
-    auto pt = plaintext.data();
+    auto pt = plaintext.data() + offset;
     auto ct = ciphertext.data();
 
     while (len)
@@ -1363,19 +1365,21 @@ std::vector<std::uint8_t> aes_ecb_encrypt(
 
 std::vector<std::uint8_t> aes_ecb_decrypt(
     const std::vector<std::uint8_t> &ciphertext,
-    const std::vector<std::uint8_t> &key)
+    const std::vector<std::uint8_t> &key,
+    const std::size_t offset)
 {
     if (ciphertext.empty()) return {};
 
-    if (ciphertext.size() % 16 != 0)
+    auto len = ciphertext.size() - offset;
+
+    if (len % 16 != 0)
     {
         throw std::runtime_error("");
     }
 
-    auto plaintext = std::vector<std::uint8_t>(ciphertext.size());
+    auto plaintext = std::vector<std::uint8_t>(len);
     auto expanded_key = rijndael_setup(key);
-    auto len = ciphertext.size();
-    auto ct = ciphertext.data();
+    auto ct = ciphertext.data() + offset;
     auto pt = plaintext.data();
 
     while (len)
@@ -1393,20 +1397,22 @@ std::vector<std::uint8_t> aes_ecb_decrypt(
 std::vector<std::uint8_t> aes_cbc_encrypt(
     const std::vector<std::uint8_t> &plaintext,
     const std::vector<std::uint8_t> &key,
-    const std::vector<std::uint8_t> &original_iv)
+    const std::vector<std::uint8_t> &original_iv,
+    const std::size_t offset)
 {
     if (plaintext.empty()) return {};
 
-    if (plaintext.size() % 16 != 0)
+    auto len = plaintext.size() - offset;
+
+    if (len % 16 != 0)
     {
         throw std::runtime_error("");
     }
 
-    auto ciphertext = std::vector<std::uint8_t>(plaintext.size());
+    auto ciphertext = std::vector<std::uint8_t>(len);
     auto expanded_key = rijndael_setup(key);
-    auto len = plaintext.size();
     auto ct = ciphertext.data();
-    auto pt = plaintext.data();
+    auto pt = plaintext.data() + offset;
     auto iv_vec = original_iv;
     auto iv = iv_vec.data();
 
@@ -1435,9 +1441,12 @@ std::vector<std::uint8_t> aes_cbc_encrypt(
 std::vector<std::uint8_t> aes_cbc_decrypt(
     const std::vector<std::uint8_t> &ciphertext,
     const std::vector<std::uint8_t> &key,
-    const std::vector<std::uint8_t> &original_iv)
+    const std::vector<std::uint8_t> &original_iv,
+    const std::size_t offset)
 {
     if (ciphertext.empty()) return {};
+
+    auto len = ciphertext.size() - offset;
 
     if (ciphertext.size() % 16 != 0)
     {
@@ -1446,10 +1455,9 @@ std::vector<std::uint8_t> aes_cbc_decrypt(
 
     std::array<std::uint8_t, 16> temporary{{0}};
 
-    auto plaintext = std::vector<std::uint8_t>(ciphertext.size());
+    auto plaintext = std::vector<std::uint8_t>(len);
     auto expanded_key = rijndael_setup(key);
-    auto len = ciphertext.size();
-    auto ct = ciphertext.data();
+    auto ct = ciphertext.data() + offset;
     auto pt = plaintext.data();
     auto iv_vec = original_iv;
     auto iv = iv_vec.data();

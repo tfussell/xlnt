@@ -240,9 +240,15 @@ std::vector<std::uint8_t> decrypt_xlsx_standard(
     offset += verifier_size;
 
     const auto verifier_hash_size = read_int<std::uint32_t>(offset, encryption_info);
+    const auto encrypted_verifier_hash_size = std::size_t(32);
     std::vector<std::uint8_t> encrypted_verifier_hash(encryption_info.begin() + static_cast<std::ptrdiff_t>(offset),
-        encryption_info.begin() + static_cast<std::ptrdiff_t>(offset + verifier_hash_size));
-    offset += verifier_hash_size;
+        encryption_info.begin() + static_cast<std::ptrdiff_t>(offset + encrypted_verifier_hash_size));
+    offset += encrypted_verifier_hash_size;
+
+    if (offset != encryption_info.size())
+    {
+        throw xlnt::exception("extra data after encryption info");
+    }
 
     // begin key generation algorithm
 
@@ -301,32 +307,19 @@ std::vector<std::uint8_t> decrypt_xlsx_standard(
 
     auto calculated_verifier_hash = hash(info.hash,
         aes_ecb_decrypt(encrypted_verifier, key));
-
-    // TODO: I can't figure out how to pad encrypted_verifier_hash to 32 bytes
-    // so that it matches calculated_verifier_hash after decryption so we'll just 
-    // compare the first block (16 bytes) for now.
-    calculated_verifier_hash.resize(16);
-    encrypted_verifier_hash.resize(16);
-
     auto decrypted_verifier_hash = aes_ecb_decrypt(
         encrypted_verifier_hash, key);
+    decrypted_verifier_hash.resize(verifier_hash_size);
 
     if (calculated_verifier_hash != decrypted_verifier_hash)
     {
         throw xlnt::exception("bad password");
     }
 
-    std::size_t ignore = 0;
-    auto decrypted_size = static_cast<std::size_t>(
-        read_int<std::uint64_t>(ignore, encrypted_package));
-
-    // TODO: don't copy encrypted package just to cut off the first 8 bytes
-    auto encrypted_data = std::vector<std::uint8_t>(
-        encrypted_package.begin() + 8, 
-        encrypted_package.end());
-    auto decrypted = aes_ecb_decrypt(encrypted_data, key);
-
-    decrypted.resize(decrypted_size);
+    offset = 0;
+    auto decrypted_size = read_int<std::uint64_t>(offset, encrypted_package);
+    auto decrypted = aes_ecb_decrypt(encrypted_package, key, offset);
+    decrypted.resize(static_cast<std::size_t>(decrypted_size));
 
     return decrypted;
 }
