@@ -35,8 +35,9 @@ after_success:
  - |
    if [[ "${COVERAGE}" == "ON" ]]; then
      lcov --directory source/CMakeFiles/xlnt.dir --capture --output-file coverage.info --base-directory ../source --no-external --gcov-tool /usr/bin/gcov-6
-     lcov --remove coverage.info source/detail/miniz.cpp
+     lcov --output-file coverage.info --remove coverage.info source/detail/miniz.cpp
      i=$(dirname $(pwd))
      sed -i "s|$i/||" coverage.info
-     coveralls-lcov coverage.info
+     cd ..
+     coveralls-lcov build/coverage.info
    fi
