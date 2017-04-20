@@ -20,12 +20,14 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <string>
 #include <unordered_map>
 #include <vector>
 
+#include <detail/implementations/cell_impl.hpp>
 #include <xlnt/workbook/named_range.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
@@ -33,8 +35,6 @@
 #include <xlnt/worksheet/column_properties.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/row_properties.hpp>
-
-#include <detail/cell_impl.hpp>
 
 namespace xlnt {
 

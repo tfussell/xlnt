@@ -26,6 +26,13 @@
 #include <string>
 #include <unordered_set>
 
+#include <detail/constants.hpp>
+#include <detail/implementations/workbook_impl.hpp>
+#include <detail/header_footer/header_footer_code.hpp>
+#include <detail/serialization/custom_value_traits.hpp>
+#include <detail/serialization/vector_streambuf.hpp>
+#include <detail/serialization/xlsx_producer.hpp>
+#include <detail/serialization/zstream.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/utils/path.hpp>
@@ -33,12 +40,6 @@
 #include <xlnt/workbook/workbook_view.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
-#include <detail/constants.hpp>
-#include <detail/custom_value_traits.hpp>
-#include <detail/vector_streambuf.hpp>
-#include <detail/workbook_impl.hpp>
-#include <detail/xlsx_producer.hpp>
-#include <detail/zstream.hpp>
 
 using namespace std::string_literals;
 
@@ -2489,67 +2490,14 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         auto first_header = std::string();
         auto first_footer = std::string();
 
-        const auto encode_text = [](const rich_text &t, header_footer::location where) {
-            const auto location_code_map =
-                std::unordered_map<header_footer::location, std::string, scoped_enum_hash<header_footer::location>>{
-                    {header_footer::location::left, "&L"}, {header_footer::location::center, "&C"},
-                    {header_footer::location::right, "&R"},
-                };
-
-            auto encoded = location_code_map.at(where);
-
-            for (const auto &run : t.runs())
-            {
-                if (run.first.empty()) continue;
-
-                if (run.second.is_set())
-                {
-                    if (run.second.get().has_name())
-                    {
-                        encoded.push_back('&');
-                        encoded.push_back('"');
-                        encoded.append(run.second.get().name());
-                        encoded.push_back(',');
-
-                        if (run.second.get().bold())
-                        {
-                            encoded.append("Bold");
-                        }
-                        else
-                        {
-                            encoded.append("Regular");
-                        }
-                        // todo: BoldItalic?
-
-                        encoded.push_back('"');
-                    }
-                    else if (run.second.get().bold())
-                    {
-                        encoded.append("&B");
-                    }
-
-                    if (run.second.get().has_size())
-                    {
-                        encoded.push_back('&');
-                        encoded.append(std::to_string(run.second.get().size()));
-                    }
-
-                    if (run.second.get().has_color())
-                    {
-                        encoded.push_back('&');
-                        encoded.push_back('K');
-                        encoded.append(run.second.get().color().rgb().hex_string().substr(2));
-                    }
-                }
-
-                encoded.append(run.first);
-            }
-
-            return encoded;
+        const auto locations = 
+        {
+            header_footer::location::left, 
+            header_footer::location::center,
+            header_footer::location::right
         };
 
-        const auto locations = {
-            header_footer::location::left, header_footer::location::center, header_footer::location::right};
+        using xlnt::detail::encode_header_footer;
 
         for (auto location : locations)
         {
@@ -2557,26 +2505,26 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             {
                 if (hf.has_odd_even_header(location))
                 {
-                    odd_header.append(encode_text(hf.odd_header(location), location));
-                    even_header.append(encode_text(hf.even_header(location), location));
+                    odd_header.append(encode_header_footer(hf.odd_header(location), location));
+                    even_header.append(encode_header_footer(hf.even_header(location), location));
                 }
 
                 if (hf.has_odd_even_footer(location))
                 {
-                    odd_footer.append(encode_text(hf.odd_footer(location), location));
-                    even_footer.append(encode_text(hf.even_footer(location), location));
+                    odd_footer.append(encode_header_footer(hf.odd_footer(location), location));
+                    even_footer.append(encode_header_footer(hf.even_footer(location), location));
                 }
             }
             else
             {
                 if (hf.has_header(location))
                 {
-                    odd_header.append(encode_text(hf.header(location), location));
+                    odd_header.append(encode_header_footer(hf.header(location), location));
                 }
 
                 if (hf.has_footer(location))
                 {
-                    odd_footer.append(encode_text(hf.footer(location), location));
+                    odd_footer.append(encode_header_footer(hf.footer(location), location));
                 }
             }
 
@@ -2584,12 +2532,12 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             {
                 if (hf.has_first_page_header(location))
                 {
-                    first_header.append(encode_text(hf.first_page_header(location), location));
+                    first_header.append(encode_header_footer(hf.first_page_header(location), location));
                 }
 
                 if (hf.has_first_page_footer(location))
                 {
-                    first_footer.append(encode_text(hf.first_page_footer(location), location));
+                    first_footer.append(encode_header_footer(hf.first_page_footer(location), location));
                 }
             }
         }

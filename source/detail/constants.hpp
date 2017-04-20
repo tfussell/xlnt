@@ -20,11 +20,13 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <string>
 #include <unordered_map>
 
+#include <xlnt/xlnt_config.hpp>
 #include <xlnt/cell/index_types.hpp>
 #include <xlnt/utils/path.hpp>
 

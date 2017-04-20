@@ -45,9 +45,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 #include <string>
 
 #include <xlnt/utils/exceptions.hpp>
-#include <detail/miniz.hpp>
-#include <detail/vector_streambuf.hpp>
-#include <detail/zstream.hpp>
+#include <detail/serialization/miniz.hpp>
+#include <detail/serialization/vector_streambuf.hpp>
+#include <detail/serialization/zstream.hpp>
 
 namespace {
 

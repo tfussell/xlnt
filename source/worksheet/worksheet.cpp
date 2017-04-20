@@ -21,10 +21,15 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #include <algorithm>
 #include <cmath>
 #include <limits>
 
+#include <detail/constants.hpp>
+#include <detail/implementations/cell_impl.hpp>
+#include <detail/implementations/workbook_impl.hpp>
+#include <detail/implementations/worksheet_impl.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/cell/index_types.hpp>
@@ -41,11 +46,6 @@
 #include <xlnt/worksheet/range_iterator.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
-
-#include <detail/cell_impl.hpp>
-#include <detail/constants.hpp>
-#include <detail/workbook_impl.hpp>
-#include <detail/worksheet_impl.hpp>
 
 namespace {
 

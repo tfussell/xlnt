@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <cstdint>
@@ -30,8 +31,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include <detail/include_libstudxml.hpp>
-#include <detail/zstream.hpp>
+#include <detail/external/include_libstudxml.hpp>
+#include <detail/serialization/zstream.hpp>
 
 namespace xlnt {
 

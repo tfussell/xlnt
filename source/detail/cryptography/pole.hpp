@@ -25,16 +25,18 @@
 
 #pragma once
 
-#include <string>
-#include <list>
-#include <fstream>
+#include <cstdint>
 #include <iostream>
 #include <list>
+#include <string>
+#include <fstream>
 #include <string>
 #include <vector>
 
 namespace POLE
 {
+    const std::size_t OleSegmentLength = 4096;
+
     class StorageIO;
     class Stream;
     class StreamIO;
@@ -92,18 +94,7 @@ namespace POLE
         
         std::list<DirEntry *> dirEntries( const std::string& path = "/" );
         
-        /**
-         * Finds and returns a stream with the specified name.
-         * If reuse is true, this function returns the already created stream
-         * (if any). Otherwise it will create the stream.
-         *
-         * When errors occur, this function returns NULL.
-         *
-         * You do not need to delete the created stream, it will be handled
-         * automatically.
-         **/
-        Stream* stream( const std::string& name, bool reuse = true );
-        //Stream* stream( const std::string& name, int mode = Stream::ReadOnly, bool reuse = true );
+        std::vector<std::uint8_t> file(const std::string &name);
         
     private:
         StorageIO* io;

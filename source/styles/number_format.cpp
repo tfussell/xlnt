@@ -27,10 +27,10 @@
 #include <unordered_map>
 #include <vector>
 
+#include <detail/number_format/number_formatter.hpp>
 #include <xlnt/styles/number_format.hpp>
 #include <xlnt/utils/datetime.hpp>
 #include <xlnt/utils/exceptions.hpp>
-#include <detail/number_formatter.hpp>
 
 namespace {
 

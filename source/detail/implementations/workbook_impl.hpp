@@ -27,8 +27,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include <detail/stylesheet.hpp>
-#include <detail/worksheet_impl.hpp>
+#include <detail/implementations/stylesheet.hpp>
+#include <detail/implementations/worksheet_impl.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/utils/datetime.hpp>
 #include <xlnt/utils/variant.hpp>

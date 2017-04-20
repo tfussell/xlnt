@@ -22,12 +22,12 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <detail/implementations/conditional_format_impl.hpp>
+#include <detail/implementations/stylesheet.hpp>
 #include <xlnt/styles/border.hpp>
 #include <xlnt/styles/fill.hpp>
 #include <xlnt/styles/font.hpp>
 #include <xlnt/styles/conditional_format.hpp>
-#include <detail/conditional_format_impl.hpp>
-#include <detail/stylesheet.hpp>
 
 namespace xlnt {
 

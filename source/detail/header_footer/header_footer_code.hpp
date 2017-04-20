@@ -21,18 +21,18 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#include <cstdint>
+#include <array>
 #include <string>
-#include <vector>
 
-#include <xlnt/xlnt_config.hpp>
+#include <xlnt/cell/rich_text.hpp>
+#include <xlnt/utils/optional.hpp>
+#include <xlnt/worksheet/header_footer.hpp>
 
 namespace xlnt {
 namespace detail {
 
-std::vector<std::uint8_t> XLNT_API decrypt_xlsx(const std::vector<std::uint8_t> &bytes, const std::string &password);
-
-//static std::vector<std::uint8_t> encrypt_xlsx(const std::vector<std::uint8_t> &bytes, const std::string &password);
+std::array<xlnt::optional<xlnt::rich_text>, 3> decode_header_footer(const std::string &hf_string);
+std::string encode_header_footer(const rich_text &t, header_footer::location where);
 
 } // namespace detail
 } // namespace xlnt

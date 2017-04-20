@@ -29,8 +29,6 @@
 
 #include <xlnt/utils/datetime.hpp>
 
-class test_number_format;
-
 namespace xlnt {
 namespace detail {
 
@@ -358,8 +356,6 @@ public:
     std::string format_text(const std::string &text);
 
 private:
-    friend class ::test_number_format;
-
     std::string fill_placeholders(const format_placeholders &p, long double number);
     std::string fill_fraction_placeholders(const format_placeholders &numerator,
         const format_placeholders &denominator, long double number, bool improper);

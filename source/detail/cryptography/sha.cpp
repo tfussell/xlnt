@@ -28,7 +28,7 @@
 #include <string>
 #include <sstream>
 
-#include <detail/crypto/sha.hpp>
+#include <detail/cryptography/sha.hpp>
 
 extern "C" {
 

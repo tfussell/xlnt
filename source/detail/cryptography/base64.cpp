@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <detail/crypto/base64.hpp>
+#include <detail/cryptography/base64.hpp>
 
 namespace xlnt {
 namespace detail {

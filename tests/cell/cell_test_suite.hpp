@@ -76,7 +76,7 @@ private:
         auto cell = ws.cell("A1");
 
         cell.value("4.2", true);
-        xlnt_assert(cell.value<long double>() == 4.2L);
+        xlnt_assert_delta(cell.value<long double>(), 4.2L, 1E-9);
 
         cell.value("-42.000", true);
         xlnt_assert(cell.value<int>() == -42);
@@ -100,7 +100,7 @@ private:
         xlnt_assert(cell.value<int>() == 200);
 
         cell.value("3.1%", true);
-        xlnt_assert(cell.value<long double>() == 0.031L);
+        xlnt_assert_delta(cell.value<long double>(), 0.031L, 1E-9);
 
         cell.value("03:40:16", true);
         xlnt_assert(cell.value<xlnt::time>() == xlnt::time(3, 40, 16));
@@ -254,7 +254,7 @@ private:
         cell.value(xlnt::datetime(2010, 7, 13, 6, 37, 41));
 
         xlnt_assert(cell.data_type() == xlnt::cell::type::numeric);
-        xlnt_assert(cell.value<long double>() == 40372.27616898148L);
+        xlnt_assert_delta(cell.value<long double>(), 40372.27616898148L, 1E-9);
         xlnt_assert(cell.is_date());
         xlnt_assert(cell.number_format().format_string() == "yyyy-mm-dd h:mm:ss");
     }
@@ -280,7 +280,7 @@ private:
 
         cell.value(xlnt::time(1, 3));
         xlnt_assert(cell.data_type() == xlnt::cell::type::numeric);
-        xlnt_assert(cell.value<long double>() == 0.04375L);
+        xlnt_assert_delta(cell.value<long double>(), 0.04375L, 1E-9);
         xlnt_assert(cell.is_date());
         xlnt_assert(cell.number_format().format_string() == "h:mm:ss");
     }

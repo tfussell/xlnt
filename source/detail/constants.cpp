@@ -20,11 +20,12 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #include <limits>
 
+#include <detail/constants.hpp>
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/utils/exceptions.hpp>
-#include <detail/constants.hpp>
 
 namespace xlnt {
 

@@ -2,9 +2,9 @@
 
 #include <sstream>
 
-#include <detail/include_libstudxml.hpp>
-#include <detail/vector_streambuf.hpp>
-#include <detail/zstream.hpp>
+#include <detail/external/include_libstudxml.hpp>
+#include <detail/serialization/vector_streambuf.hpp>
+#include <detail/serialization/zstream.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/workbook/workbook.hpp>
 

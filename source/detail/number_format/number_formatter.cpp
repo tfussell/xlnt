@@ -24,9 +24,9 @@
 #include <algorithm>
 #include <cmath>
 
-#include <xlnt/utils/exceptions.hpp>
 #include <detail/default_case.hpp>
-#include <detail/number_formatter.hpp>
+#include <detail/number_format/number_formatter.hpp>
+#include <xlnt/utils/exceptions.hpp>
 
 namespace {
 

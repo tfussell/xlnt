@@ -31,7 +31,7 @@
 #include <string>
 #include <vector>
 
-#include <detail/pole.hpp>
+#include <detail/cryptography/pole.hpp>
 
 // enable to activate debugging output
 // #define POLE_DEBUG
@@ -1119,6 +1119,16 @@ DirTree *Storage::dirTree()
 StorageIO *Storage::storageIO()
 {
     return io;
+}
+
+std::vector<std::uint8_t> Storage::file(const std::string &name)
+{
+    POLE::Stream stream(this, name.c_str());
+    if (stream.fail()) return {};
+    std::vector<std::uint8_t> bytes(stream.size(), 0);
+    stream.read(bytes.data(), static_cast<unsigned long>(bytes.size()));
+
+    return bytes;
 }
 
 std::list<DirEntry *> Storage::dirEntries(const std::string &path)

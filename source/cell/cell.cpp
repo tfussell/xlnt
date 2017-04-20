@@ -26,6 +26,9 @@
 #include <cmath>
 #include <sstream>
 
+#include <detail/implementations/cell_impl.hpp>
+#include <detail/implementations/format_impl.hpp>
+#include <detail/implementations/stylesheet.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/cell/comment.hpp>
@@ -49,9 +52,6 @@
 #include <xlnt/worksheet/column_properties.hpp>
 #include <xlnt/worksheet/row_properties.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
-
-#include <detail/cell_impl.hpp>
-#include <detail/stylesheet.hpp>
 
 namespace {
 

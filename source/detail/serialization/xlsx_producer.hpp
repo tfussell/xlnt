@@ -20,6 +20,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
 #include <cstdint>
@@ -27,7 +28,7 @@
 #include <memory>
 #include <vector>
 
-#include <detail/include_libstudxml.hpp>
+#include <detail/external/include_libstudxml.hpp>
 
 namespace xml {
 class serializer;
@@ -42,6 +43,7 @@ class fill;
 class font;
 class path;
 class relationship;
+class variant;
 class workbook;
 class worksheet;
 

@@ -27,9 +27,9 @@
 #include <string>
 #include <vector>
 
-#include <detail/conditional_format_impl.hpp>
-#include <detail/format_impl.hpp>
-#include <detail/style_impl.hpp>
+#include <detail/implementations/conditional_format_impl.hpp>
+#include <detail/implementations/format_impl.hpp>
+#include <detail/implementations/style_impl.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/styles/conditional_format.hpp>
 #include <xlnt/styles/format.hpp>

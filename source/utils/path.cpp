@@ -34,8 +34,8 @@
 #include <unistd.h>
 #endif
 
+#include <detail/external/include_windows.hpp>
 #include <xlnt/utils/path.hpp>
-#include <detail/include_windows.hpp>
 
 namespace {
 

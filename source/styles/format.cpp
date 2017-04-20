@@ -22,10 +22,10 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <detail/implementations/format_impl.hpp>
+#include <detail/implementations/stylesheet.hpp>
 #include <xlnt/styles/format.hpp>
 #include <xlnt/styles/style.hpp>
-#include <detail/format_impl.hpp>
-#include <detail/stylesheet.hpp>
 
 namespace xlnt {
 

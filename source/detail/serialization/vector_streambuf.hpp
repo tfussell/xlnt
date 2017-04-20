@@ -20,10 +20,14 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
+#include <algorithm>
 #include <iostream>
 #include <vector>
+
+#include <xlnt/xlnt_config.hpp>
 
 namespace xlnt {
 namespace detail {
@@ -250,6 +254,8 @@ private:
     std::vector<std::uint8_t> &data_;
     std::size_t position_;
 };
+
+//TODO: detail headers shouldn't be exporting such functions
 
 /// <summary>
 /// Helper function to read all data from in_stream and store them in a vector.

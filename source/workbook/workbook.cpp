@@ -28,10 +28,15 @@
 #include <functional>
 #include <set>
 
-#ifdef _MSC_VER
-#include <codecvt> // for std::wstring_convert
-#endif
-
+#include <detail/constants.hpp>
+#include <detail/default_case.hpp>
+#include <detail/implementations/cell_impl.hpp>
+#include <detail/implementations/workbook_impl.hpp>
+#include <detail/implementations/worksheet_impl.hpp>
+#include <detail/serialization/excel_thumbnail.hpp>
+#include <detail/serialization/vector_streambuf.hpp>
+#include <detail/serialization/xlsx_consumer.hpp>
+#include <detail/serialization/xlsx_producer.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/packaging/relationship.hpp>
@@ -55,15 +60,6 @@
 #include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
-#include <detail/cell_impl.hpp>
-#include <detail/constants.hpp>
-#include <detail/default_case.hpp>
-#include <detail/excel_thumbnail.hpp>
-#include <detail/vector_streambuf.hpp>
-#include <detail/workbook_impl.hpp>
-#include <detail/worksheet_impl.hpp>
-#include <detail/xlsx_consumer.hpp>
-#include <detail/xlsx_producer.hpp>
 
 namespace {
 

@@ -22,6 +22,8 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <detail/implementations/style_impl.hpp>
+#include <detail/implementations/stylesheet.hpp>
 #include <xlnt/styles/alignment.hpp>
 #include <xlnt/styles/border.hpp>
 #include <xlnt/styles/fill.hpp>
@@ -29,8 +31,6 @@
 #include <xlnt/styles/number_format.hpp>
 #include <xlnt/styles/protection.hpp>
 #include <xlnt/styles/style.hpp>
-#include <detail/style_impl.hpp>
-#include <detail/stylesheet.hpp>
 
 namespace {
 
@@ -41,7 +41,7 @@ std::vector<xlnt::number_format>::iterator find_number_format(
 		[=](const xlnt::number_format &nf) { return nf.id() == id; });
 }
 
-}
+} // namespace
 
 namespace xlnt {
 
