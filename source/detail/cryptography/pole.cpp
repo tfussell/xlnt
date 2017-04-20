@@ -632,9 +632,9 @@ void DirTree::debug()
 
 // =========== StorageIO ==========
 
-StorageIO::StorageIO(Storage *st, char *bytes, std::size_t length)
+StorageIO::StorageIO(Storage *st, std::uint8_t *bytes, std::size_t length)
     : storage(st),
-      filedata(reinterpret_cast<std::uint8_t *>(bytes)),
+      filedata(bytes),
       dataLength(length),
       result(Storage::Ok),
       opened(false),
@@ -1064,7 +1064,7 @@ void StreamIO::updateCache()
 
 // =========== Storage ==========
 
-Storage::Storage(char *bytes, std::size_t length)
+Storage::Storage(std::uint8_t *bytes, std::size_t length)
     : io(new StorageIO(this, bytes, length))
 {
 }

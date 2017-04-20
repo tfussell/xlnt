@@ -386,8 +386,7 @@ std::vector<std::uint8_t> decrypt_xlsx(
         throw xlnt::exception("empty file");
     }
 
-    std::vector<char> as_chars(bytes.begin(), bytes.end());
-    POLE::Storage storage(as_chars.data(), static_cast<unsigned long>(bytes.size()));
+    POLE::Storage storage(const_cast<std::uint8_t *>(bytes.data()), bytes.size());
 
     if (!storage.open())
     {

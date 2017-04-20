@@ -39,6 +39,35 @@ encryption_info generate_encryption_info(const std::u16string &password)
 {
     encryption_info result;
 
+    result.is_agile = true;
+
+    result.agile = encryption_info::agile_encryption_info{};
+
+    result.agile.key_data.block_size = 16;
+    result.agile.key_data.cipher_algorithm = "AES";
+    result.agile.key_data.cipher_chaining = "CBC";
+    result.agile.key_data.hash_algorithm = "SHA512";
+    result.agile.key_data.hash_size = 64;
+    result.agile.key_data.key_bits = 128;
+    result.agile.key_data.salt_size = 10;
+    result.agile.key_data.salt_value = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+
+    result.agile.data_integrity.hmac_key = { 1, 2, 3 };
+    result.agile.data_integrity.hmac_value = { 3, 4, 5 };
+
+    result.agile.key_encryptor.spin_count = 100000;
+    result.agile.key_encryptor.block_size = 16;
+    result.agile.key_encryptor.cipher_algorithm = "AES";
+    result.agile.key_encryptor.cipher_chaining = "CBC";
+    result.agile.key_encryptor.hash = xlnt::detail::hash_algorithm::sha512;
+    result.agile.key_encryptor.hash_size = 64;
+    result.agile.key_encryptor.key_bits = 128;
+    result.agile.key_encryptor.salt_size = 10;
+    result.agile.key_encryptor.salt_value = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+    result.agile.key_encryptor.verifier_hash_input = { 1, 2, 3 };
+    result.agile.key_encryptor.verifier_hash_value = { 1, 2, 3 };
+    result.agile.key_encryptor.encrypted_key_value = { 3, 4, 5 };
+
     result.agile.key_data.salt_value.assign(
         reinterpret_cast<const std::uint8_t *>(password.data()),
         reinterpret_cast<const std::uint8_t *>(password.data() + password.size()));

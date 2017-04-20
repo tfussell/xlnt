@@ -56,7 +56,7 @@ namespace POLE
         /**
          * Constructs a storage with name filename.
          **/
-        Storage( char* bytes, std::size_t length );
+        Storage(std::uint8_t *bytes, std::size_t length);
         
         /**
          * Destroys the storage.
@@ -279,7 +279,7 @@ namespace POLE
         
         std::list<Stream*> streams;
         
-        StorageIO( Storage* storage, char* bytes, std::size_t length );
+        StorageIO( Storage* storage, std::uint8_t *bytes, std::size_t length );
         ~StorageIO();
         
         bool open();
