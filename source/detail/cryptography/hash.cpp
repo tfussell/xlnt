@@ -21,9 +21,8 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#pragma once
-
 #include <detail/cryptography/hash.hpp>
+#include <detail/cryptography/sha.hpp>
 
 namespace xlnt {
 namespace detail {

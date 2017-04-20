@@ -127,7 +127,7 @@ std::vector<std::uint8_t> encrypt_xlsx(
         throw xlnt::exception("empty file");
     }
 
-    generate_encryption_info(password);
+    write_encryption_info(password);
 
     return {};
 }

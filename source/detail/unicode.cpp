@@ -59,7 +59,7 @@ std::u16string utf8_to_utf16(const std::string &utf8_string)
 std::string utf16_to_utf8(const std::u16string &utf16_string)
 {
     return std::wstring_convert<std::codecvt_utf8_utf16<char16_t>,
-        char16_t>{}.to_bytes(utf8_string);
+        char16_t>{}.to_bytes(utf16_string);
 }
 #endif
 
