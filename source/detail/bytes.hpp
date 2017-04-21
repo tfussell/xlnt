@@ -21,6 +21,8 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#pragma once
+
 #include <cstdint>
 #include <vector>
 
@@ -31,13 +33,35 @@ using byte = std::uint8_t;
 using byte_vector = std::vector<byte>;
 
 template <typename T>
-auto read_int(const byte_vector &raw_data, std::size_t &index)
+T read_int(const byte_vector &raw_data, std::size_t &index)
 {
     auto result = *reinterpret_cast<const T *>(&raw_data[index]);
     index += sizeof(T);
 
     return result;
 }
+
+template <typename T>
+void write_int(T value, byte_vector &raw_data, std::size_t &index)
+{
+    *reinterpret_cast<T *>(&raw_data[index]) = value;
+    index += sizeof(T);
+}
+
+static inline void writeU16(std::uint8_t *ptr, std::uint16_t data)
+{
+    ptr[0] = static_cast<std::uint8_t>(data & 0xff);
+    ptr[1] = static_cast<std::uint8_t>((data >> 8) & 0xff);
+}
+
+static inline void writeU32(std::uint8_t *ptr, std::uint32_t data)
+{
+    ptr[0] = static_cast<std::uint8_t>(data & 0xff);
+    ptr[1] = static_cast<std::uint8_t>((data >> 8) & 0xff);
+    ptr[2] = static_cast<std::uint8_t>((data >> 16) & 0xff);
+    ptr[3] = static_cast<std::uint8_t>((data >> 24) & 0xff);
+}
+
 
 template <typename T>
 byte *vector_byte(std::vector<T> &v, std::size_t offset)
@@ -55,6 +79,23 @@ template <typename T>
 byte *last_byte(std::vector<T> &v)
 {
     return vector_byte(v, v.size());
+}
+
+template <typename InIt>
+byte_vector to_bytes(InIt begin, InIt end)
+{
+    byte_vector bytes;
+
+    for (auto i = begin; i != end; ++i)
+    {
+        auto c = *i;
+        bytes.insert(
+            bytes.end(),
+            reinterpret_cast<char *>(&c),
+            reinterpret_cast<char *>(&c) + sizeof(c));
+    }
+
+    return bytes;
 }
 
 } // namespace detail

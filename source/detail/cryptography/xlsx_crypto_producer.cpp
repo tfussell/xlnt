@@ -23,7 +23,9 @@
 
 #include <detail/constants.hpp>
 #include <detail/unicode.hpp>
+#include <detail/cryptography/aes.hpp>
 #include <detail/cryptography/base64.hpp>
+#include <detail/cryptography/compound_document.hpp>
 #include <detail/cryptography/encryption_info.hpp>
 #include <detail/cryptography/value_traits.hpp>
 #include <detail/external/include_libstudxml.hpp>
@@ -76,7 +78,7 @@ encryption_info generate_encryption_info(const std::u16string &password)
 }
 
 std::vector<std::uint8_t> write_agile_encryption_info(
-    const encryption_info::agile_encryption_info &info)
+    const encryption_info &info)
 {
     static const auto &xmlns = xlnt::constants::ns("encryption");
     static const auto &xmlns_p = xlnt::constants::ns("encryption-password");
@@ -88,38 +90,48 @@ std::vector<std::uint8_t> write_agile_encryption_info(
 
     serializer.start_element(xmlns, "encryption");
 
+    const auto key_data = info.agile.key_data;
     serializer.start_element(xmlns, "keyData");
-    serializer.attribute("saltSize", info.key_data.salt_size);
-    serializer.attribute("blockSize", info.key_data.block_size);
-    serializer.attribute("keyBits", info.key_data.key_bits);
-    serializer.attribute("hashSize", info.key_data.hash_size);
-    serializer.attribute("cipherAlgorithm", info.key_data.cipher_algorithm);
-    serializer.attribute("cipherChaining", info.key_data.cipher_chaining);
-    serializer.attribute("hashAlgorithm", info.key_data.hash_algorithm);
-    serializer.attribute("saltValue", xlnt::detail::encode_base64(info.key_data.salt_value));
+    serializer.attribute("saltSize", key_data.salt_size);
+    serializer.attribute("blockSize", key_data.block_size);
+    serializer.attribute("keyBits", key_data.key_bits);
+    serializer.attribute("hashSize", key_data.hash_size);
+    serializer.attribute("cipherAlgorithm", key_data.cipher_algorithm);
+    serializer.attribute("cipherChaining", key_data.cipher_chaining);
+    serializer.attribute("hashAlgorithm", key_data.hash_algorithm);
+    serializer.attribute("saltValue",
+        xlnt::detail::encode_base64(key_data.salt_value));
     serializer.end_element(xmlns, "keyData");
 
+    const auto data_integrity = info.agile.data_integrity;
     serializer.start_element(xmlns, "dataIntegrity");
-    serializer.attribute("encryptedHmacKey", xlnt::detail::encode_base64(info.data_integrity.hmac_key));
-    serializer.attribute("encryptedHmacValue", xlnt::detail::encode_base64(info.data_integrity.hmac_value));
+    serializer.attribute("encryptedHmacKey",
+        xlnt::detail::encode_base64(data_integrity.hmac_key));
+    serializer.attribute("encryptedHmacValue",
+        xlnt::detail::encode_base64(data_integrity.hmac_value));
     serializer.end_element(xmlns, "dataIntegrity");
 
+    const auto key_encryptor = info.agile.key_encryptor;
     serializer.start_element(xmlns, "keyEncryptors");
     serializer.start_element(xmlns, "keyEncryptor");
     serializer.attribute("uri", "");
     serializer.start_element(xmlns_p, "encryptedKey");
-    serializer.attribute("spinCount", info.key_encryptor.spin_count);
-    serializer.attribute("saltSize", info.key_encryptor.salt_size);
-    serializer.attribute("blockSize", info.key_encryptor.block_size);
-    serializer.attribute("keyBits", info.key_encryptor.key_bits);
-    serializer.attribute("hashSize", info.key_encryptor.hash_size);
-    serializer.attribute("cipherAlgorithm", info.key_encryptor.cipher_algorithm);
-    serializer.attribute("cipherChaining", info.key_encryptor.cipher_chaining);
-    serializer.attribute("hashAlgorithm", info.key_encryptor.hash);
-    serializer.attribute("saltValue", xlnt::detail::encode_base64(info.key_encryptor.salt_value));
-    serializer.attribute("encryptedVerifierHashInput", xlnt::detail::encode_base64(info.key_encryptor.verifier_hash_input));
-    serializer.attribute("encryptedVerifierHashValue", xlnt::detail::encode_base64(info.key_encryptor.verifier_hash_value));
-    serializer.attribute("encryptedKeyValue", xlnt::detail::encode_base64(info.key_encryptor.encrypted_key_value));
+    serializer.attribute("spinCount", key_encryptor.spin_count);
+    serializer.attribute("saltSize", key_encryptor.salt_size);
+    serializer.attribute("blockSize", key_encryptor.block_size);
+    serializer.attribute("keyBits", key_encryptor.key_bits);
+    serializer.attribute("hashSize", key_encryptor.hash_size);
+    serializer.attribute("cipherAlgorithm", key_encryptor.cipher_algorithm);
+    serializer.attribute("cipherChaining", key_encryptor.cipher_chaining);
+    serializer.attribute("hashAlgorithm", key_encryptor.hash);
+    serializer.attribute("saltValue",
+        xlnt::detail::encode_base64(key_encryptor.salt_value));
+    serializer.attribute("encryptedVerifierHashInput",
+        xlnt::detail::encode_base64(key_encryptor.verifier_hash_input));
+    serializer.attribute("encryptedVerifierHashValue",
+        xlnt::detail::encode_base64(key_encryptor.verifier_hash_value));
+    serializer.attribute("encryptedKeyValue",
+        xlnt::detail::encode_base64(key_encryptor.encrypted_key_value));
     serializer.end_element(xmlns_p, "encryptedKey");
     serializer.end_element(xmlns, "keyEncryptor");
     serializer.end_element(xmlns, "keyEncryptors");
@@ -130,35 +142,43 @@ std::vector<std::uint8_t> write_agile_encryption_info(
 }
 
 std::vector<std::uint8_t> write_standard_encryption_info(
-    const encryption_info::standard_encryption_info &/*info*/)
+    const encryption_info &/*info*/)
 {
     return {};
 }
 
-std::vector<std::uint8_t> write_encryption_info(const encryption_info &info)
+std::vector<std::uint8_t> encrypt_xlsx_agile(
+    const encryption_info &/*info*/,
+    const std::vector<std::uint8_t> &/*plaintext*/)
 {
-    return (info.is_agile)
-        ? write_agile_encryption_info(info.agile)
-        : write_standard_encryption_info(info.standard);
+    return {};
 }
 
-std::vector<std::uint8_t> write_encryption_info(const std::u16string &password)
+std::vector<std::uint8_t> encrypt_xlsx_standard(
+    const encryption_info &/*info*/,
+    const std::vector<std::uint8_t> &/*plaintext*/)
 {
-    return write_encryption_info(generate_encryption_info(password));
+    //auto key = info.calculate_key();
+
+    return {};
 }
 
 std::vector<std::uint8_t> encrypt_xlsx(
-    const std::vector<std::uint8_t> &bytes,
+    const std::vector<std::uint8_t> &plaintext,
     const std::u16string &password)
 {
-    if (bytes.empty())
-    {
-        throw xlnt::exception("empty file");
-    }
+    auto encryption_info = generate_encryption_info(password);
 
-    write_encryption_info(password);
+    xlnt::detail::compound_document document;
 
-    return {};
+    document.add_stream("EncryptionInfo", encryption_info.is_agile
+        ? write_agile_encryption_info(encryption_info)
+        : write_standard_encryption_info(encryption_info));
+    document.add_stream("EncryptedPackage", encryption_info.is_agile
+        ? encrypt_xlsx_agile(encryption_info, plaintext)
+        : encrypt_xlsx_standard(encryption_info, plaintext));
+
+    return document.save();
 }
 
 } // namespace
@@ -167,24 +187,21 @@ namespace xlnt {
 namespace detail {
 
 std::vector<std::uint8_t> XLNT_API encrypt_xlsx(
-    const std::vector<std::uint8_t> &data,
+    const std::vector<std::uint8_t> &plaintext,
     const std::string &password)
 {
-    return ::encrypt_xlsx(data, utf8_to_utf16(password));
+    return ::encrypt_xlsx(plaintext, utf8_to_utf16(password));
 }
 
 void xlsx_producer::write(std::ostream &destination, const std::string &password)
 {
-    std::vector<std::uint8_t> decrypted;
+    std::vector<std::uint8_t> plaintext;
+    vector_ostreambuf plaintext_buffer(plaintext);
+    std::ostream decrypted_stream(&plaintext_buffer);
+    write(decrypted_stream);
 
-    {
-        vector_ostreambuf decrypted_buffer(decrypted);
-        std::ostream decrypted_stream(&decrypted_buffer);
-        write(decrypted_stream);
-    }
-
-    const auto encrypted = ::encrypt_xlsx(decrypted, utf8_to_utf16(password));
-    vector_istreambuf encrypted_buffer(encrypted);
+    const auto ciphertext = ::encrypt_xlsx(plaintext, utf8_to_utf16(password));
+    vector_istreambuf encrypted_buffer(ciphertext);
 
     destination << &encrypted_buffer;
 }

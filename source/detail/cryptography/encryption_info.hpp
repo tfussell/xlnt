@@ -90,6 +90,8 @@ struct encryption_info
             std::vector<std::uint8_t> encrypted_key_value;
         } key_encryptor;
     } agile;
+
+    std::vector<std::uint8_t> calculate_key() const;
 };
 
 } // namespace detail
