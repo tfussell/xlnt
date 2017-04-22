@@ -1,28 +1,27 @@
-/*  POLE - Portable C++ library to access OLE Storage
- Copyright (C) 2002-2007 Ariya Hidayat (ariya@kde.org).
-
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions
- are met:
-
- 1. Redistributions of source code must retain the above copyright
- notice, this list of conditions and the following disclaimer.
- 2. Redistributions in binary form must reproduce the above copyright
- notice, this list of conditions and the following disclaimer in the
- documentation and/or other materials provided with the distribution.
-
- THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
+// Copyright (C) 2016-2017 Thomas Fussell
+// Copyright (C) 2002-2007 Ariya Hidayat (ariya@kde.org).
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions
+// are met:
+//
+// 1. Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+// 2. Redistributions in binary form must reproduce the above copyright
+// notice, this list of conditions and the following disclaimer in the
+// documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+// IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+// OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+// IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+// INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+// NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+// THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ 
 #include <array>
 #include <algorithm>
 #include <cstring>
@@ -64,16 +63,14 @@ public:
     void clear();
     std::size_t count();
     void resize(std::size_t newsize);
-    void preserve(std::size_t n);
-    void set(std::size_t index, std::uint32_t val);
-    std::size_t unused();
-    void setChain(std::vector<std::uint32_t>);
-    std::vector<std::size_t> follow(std::size_t start);
-    std::size_t operator[](std::size_t index);
+    //void preserve(std::size_t n);
+    //void set(std::size_t index, std::uint32_t val);
+    //std::size_t unused();
+    //void setChain(std::vector<std::uint32_t>);
+    std::vector<std::uint32_t> follow(std::uint32_t start);
     void load(const std::vector<std::uint8_t> &data);
-    void save(std::vector<std::uint8_t> &data);
-    std::size_t size();
-    void debug();
+    //void save(std::vector<std::uint8_t> &data);
+    //std::size_t size();
 private:
     std::vector<std::uint32_t> data_;
 };
@@ -105,9 +102,8 @@ public:
     std::string fullName(std::size_t index);
     std::vector<std::size_t> children(std::size_t index);
     void load(const std::vector<std::uint8_t> &data);
-    void save(std::vector<std::uint8_t> &data);
-    std::size_t size();
-    void debug();
+    //void save(std::vector<std::uint8_t> &data);
+    //std::size_t size();
 private:
     std::vector<directory_entry> entries;
 };
@@ -135,26 +131,24 @@ void allocation_table::resize(std::size_t newsize)
 }
 
 // make sure there're still free blocks
+/*
 void allocation_table::preserve(std::size_t n)
 {
     std::vector<std::size_t> pre;
     for (std::size_t i = 0; i < n; i++)
         pre.push_back(unused());
 }
+*/
 
-std::size_t allocation_table::operator[](std::size_t index)
-{
-    std::size_t result;
-    result = data_[index];
-    return result;
-}
-
+/*
 void allocation_table::set(std::size_t index, std::uint32_t value)
 {
     if (index >= count()) resize(index + 1);
     data_[index] = value;
 }
+*/
 
+/*
 void allocation_table::setChain(std::vector<std::uint32_t> chain)
 {
     if (chain.size())
@@ -164,9 +158,10 @@ void allocation_table::setChain(std::vector<std::uint32_t> chain)
         set(chain[chain.size() - 1], allocation_table::Eof);
     }
 }
+*/
 
 // TODO: optimize this with better search
-static bool already_exist(const std::vector<std::size_t> &chain, std::size_t item)
+static bool already_exist(const std::vector<std::uint32_t> &chain, std::uint32_t item)
 {
     for (std::size_t i = 0; i < chain.size(); i++)
         if (chain[i] == item) return true;
@@ -175,13 +170,13 @@ static bool already_exist(const std::vector<std::size_t> &chain, std::size_t ite
 }
 
 // follow
-std::vector<std::size_t> allocation_table::follow(std::size_t start)
+std::vector<std::uint32_t> allocation_table::follow(std::uint32_t start)
 {
-    std::vector<std::size_t> chain;
-
+    auto chain = std::vector<std::uint32_t>();
     if (start >= count()) return chain;
 
-    std::size_t p = start;
+    auto p = start;
+
     while (p < count())
     {
         if (p == static_cast<std::size_t>(Eof)) break;
@@ -196,6 +191,7 @@ std::vector<std::size_t> allocation_table::follow(std::size_t start)
     return chain;
 }
 
+/*
 std::size_t allocation_table::unused()
 {
     // find first available block
@@ -207,6 +203,7 @@ std::size_t allocation_table::unused()
     resize(data_.size() + 10);
     return block;
 }
+*/
 
 void allocation_table::load(const std::vector<std::uint8_t> &data)
 {
@@ -218,11 +215,14 @@ void allocation_table::load(const std::vector<std::uint8_t> &data)
 }
 
 // return space required to save this dirtree
+/*
 std::size_t allocation_table::size()
 {
     return count() * 4;
 }
+*/
 
+/*
 void allocation_table::save(std::vector<std::uint8_t> &data)
 {
     auto offset = std::size_t(0);
@@ -232,6 +232,7 @@ void allocation_table::save(std::vector<std::uint8_t> &data)
         xlnt::detail::write_int(data_[i], data, offset);
     }
 }
+*/
 
 const std::uint32_t directory_tree::End = 0xffffffff;
 
@@ -266,6 +267,7 @@ directory_entry *directory_tree::entry(std::size_t index)
     return &entries[index];
 }
 
+/*
 std::ptrdiff_t directory_tree::indexOf(directory_entry *e)
 {
     for (std::size_t i = 0; i < entryCount(); i++)
@@ -273,7 +275,9 @@ std::ptrdiff_t directory_tree::indexOf(directory_entry *e)
 
     return -1;
 }
+*/
 
+/*
 std::ptrdiff_t directory_tree::parent(std::size_t index)
 {
     // brute-force, basically we iterate for each entries, find its children
@@ -287,7 +291,9 @@ std::ptrdiff_t directory_tree::parent(std::size_t index)
 
     return -1;
 }
+*/
 
+/*
 std::string directory_tree::fullName(std::size_t index)
 {
     // don't use root name ("Root Entry"), just give "/"
@@ -311,6 +317,7 @@ std::string directory_tree::fullName(std::size_t index)
     }
     return result;
 }
+*/
 
 // given a fullname (e.g "/ObjectPool/_1020961869"), find the entry
 // if not found and create is false, return 0
@@ -477,11 +484,14 @@ void directory_tree::load(const std::vector<std::uint8_t> &data)
 }
 
 // return space required to save this dirtree
+/*
 std::size_t directory_tree::size()
 {
     return entryCount() * 128;
 }
+*/
 
+/*
 void directory_tree::save(std::vector<std::uint8_t> &data)
 {
     std::fill(data.begin(), data.begin() + size(), std::uint8_t(0));
@@ -499,9 +509,9 @@ void directory_tree::save(std::vector<std::uint8_t> &data)
     xlnt::detail::write_int(static_cast<std::uint16_t>(entry_name.length() * 2 + 2), data, offset);
     data[0x42] = 5;
     data[0x43] = 1;
-    xlnt::detail::write_int(0xffffffff, data, offset);
-    xlnt::detail::write_int(0xffffffff, data, offset);
-    xlnt::detail::write_int(0xffffffff, data, root->child);
+    xlnt::detail::write_int(static_cast<std::uint32_t>(0xffffffff), data, offset);
+    xlnt::detail::write_int(static_cast<std::uint32_t>(0xffffffff), data, offset);
+    xlnt::detail::write_int(static_cast<std::uint32_t>(root->child), data, offset);
 
     offset = 0x74;
     xlnt::detail::write_int(0xffffffff, data, offset);
@@ -542,6 +552,7 @@ void directory_tree::save(std::vector<std::uint8_t> &data)
         data[i * 128 + 0x43] = 1; // always black
     }
 }
+*/
 
 static const std::array<std::uint8_t, 8> pole_magic = {0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1};
 
@@ -613,6 +624,7 @@ header load_header(const std::vector<std::uint8_t> &data)
     return h;
 }
 
+/*
 void save_header(const header &h, std::vector<std::uint8_t> &out)
 {
     std::fill(out.begin(), out.begin() + 0x4c, std::uint8_t(0));
@@ -647,6 +659,7 @@ void save_header(const header &h, std::vector<std::uint8_t> &out)
         xlnt::detail::write_int(h.bb_blocks[i], out, offset);
     }
 }
+*/
 
 } // namespace
 
@@ -655,39 +668,13 @@ namespace detail {
 
 struct compound_document_impl
 {
-    std::size_t segment_length_;
     byte_vector buffer_;
     directory_tree directory_;
     header header_;
     allocation_table small_block_table_;
     allocation_table big_block_table_;
-    std::vector<std::size_t> blocks_;
-    std::vector<std::size_t> sb_blocks_;
+    std::vector<std::uint32_t> small_blocks_;
 };
-
-std::vector<std::uint8_t> load_small_blocks(compound_document_impl &d)
-{
-    auto bytes = std::size_t(0);
-    std::vector<std::uint8_t> result;
-
-    for (std::size_t i = 0; i < d.blocks_.size(); i++)
-    {
-        std::size_t block = d.blocks_[i];
-        const auto block_size = d.small_block_table_.blockSize;
-        std::size_t pos = block_size * (block + 1);
-        std::size_t p = block_size;
-
-        if (pos + p > d.buffer_.size())
-        {
-            p = d.buffer_.size() - pos;
-        }
-
-        std::copy(d.buffer_.begin() + 0, d.buffer_.begin() + p, std::back_inserter(result));
-        bytes += p;
-    }
-
-    return result;
-}
 
 std::vector<std::uint8_t> load_big_blocks(const std::vector<std::uint32_t> &blocks, compound_document_impl &d)
 {
@@ -703,8 +690,8 @@ std::vector<std::uint8_t> load_big_blocks(const std::vector<std::uint32_t> &bloc
         result.resize(result.size() + block_length);
 
         std::copy(
-            d.buffer_.begin() + position, 
-            d.buffer_.begin() + position + block_length, 
+            d.buffer_.begin() + position,
+            d.buffer_.begin() + position + block_length,
             result.begin() + current_size);
 
         bytes_loaded += block_length;
@@ -713,9 +700,35 @@ std::vector<std::uint8_t> load_big_blocks(const std::vector<std::uint32_t> &bloc
     return result;
 }
 
-std::vector<std::uint8_t> load_big_block(std::uint32_t block, compound_document_impl &d)
+std::vector<std::uint8_t> load_small_blocks(const std::vector<std::uint32_t> &blocks, compound_document_impl &d)
 {
-    return load_big_blocks({ block }, d);
+    std::vector<std::uint8_t> result;
+    auto bytes_loaded = std::size_t(0);
+    const auto small_block_size = d.small_block_table_.blockSize;
+    const auto big_block_size = d.big_block_table_.blockSize;
+
+    for (auto block : blocks)
+    {
+        auto position = block * small_block_size;
+        auto bbindex = position / big_block_size;
+
+        if (bbindex >= d.small_blocks_.size()) break;
+
+        auto block_data = load_big_blocks({ d.small_blocks_[bbindex] }, d);
+
+        auto offset = position % big_block_size;
+        auto current_size = result.size();
+        result.resize(result.size() + small_block_size);
+
+        std::copy(
+            block_data.begin() + offset,
+            block_data.begin() + offset + small_block_size,
+            result.begin() + current_size);
+
+        bytes_loaded += small_block_size;
+    }
+
+    return result;
 }
 
 compound_document::compound_document()
@@ -764,7 +777,7 @@ void compound_document::load(const std::vector<std::uint8_t> &data)
     // find blocks allocated to store big bat
     // the first 109 blocks are in header, the rest in meta bat
     auto num_header_blocks = std::min(std::uint32_t(109), d_->header_.num_big_blocks);
-    auto blocks = std::vector<std::size_t>(
+    auto blocks = std::vector<std::uint32_t>(
         d_->header_.bb_blocks.begin(), 
         d_->header_.bb_blocks.begin() + num_header_blocks);
     auto buffer = byte_vector();
@@ -774,7 +787,6 @@ void compound_document::load(const std::vector<std::uint8_t> &data)
         buffer.resize(big_block_size);
 
         std::size_t k = 109;
-        std::size_t mblock = d_->header_.meta_start;
 
         for (std::size_t r = 0; r < d_->header_.num_meta_blocks; r++)
         {
@@ -788,7 +800,7 @@ void compound_document::load(const std::vector<std::uint8_t> &data)
             }
 
             auto offset = big_block_size - 4;
-            mblock = xlnt::detail::read_int<std::uint32_t>(buffer, offset);
+            xlnt::detail::read_int<std::uint32_t>(buffer, offset);
         }
     }
 
@@ -799,30 +811,23 @@ void compound_document::load(const std::vector<std::uint8_t> &data)
     }
 
     // load small bat
-    blocks.clear();
     blocks = d_->big_block_table_.follow(d_->header_.small_start);
-    auto buflen = blocks.size() * big_block_size;
 
-    if (buflen > 0)
+    if (!blocks.empty())
     {
-        buffer.resize(buflen);
-        load_big_blocks(blocks, *d_);
-        d_->small_block_table_.load(buffer);
+        d_->small_block_table_.load(load_big_blocks(blocks, *d_));
     }
 
     // load directory tree
-    blocks.clear();
     blocks = d_->big_block_table_.follow(d_->header_.directory_start);
-    buflen = blocks.size() * big_block_size;
-    buffer.resize(buflen);
-    load_big_blocks(blocks, *d_);
-    d_->directory_.load(buffer);
+    auto directory_data = load_big_blocks(blocks, *d_);
+    d_->directory_.load(directory_data);
 
     auto offset = std::size_t(0x74);
-    auto sb_start = xlnt::detail::read_int<std::uint32_t>(buffer, offset);
+    auto sb_start = xlnt::detail::read_int<std::uint32_t>(directory_data, offset);
 
     // fetch block chain as data for small-files
-    d_->sb_blocks_ = d_->big_block_table_.follow(sb_start); // small files
+    d_->small_blocks_ = d_->big_block_table_.follow(sb_start); // small files
 }
 
 std::vector<std::uint8_t> compound_document::save() const
@@ -830,9 +835,9 @@ std::vector<std::uint8_t> compound_document::save() const
     return d_->buffer_;
 }
 
-bool compound_document::has_stream(const std::string &/*filename*/) const
+bool compound_document::has_stream(const std::string &filename) const
 {
-    return false;
+    return d_->directory_.entry(filename, false) != nullptr;
 }
 
 void compound_document::add_stream(
@@ -850,56 +855,20 @@ std::vector<std::uint8_t> compound_document::stream(const std::string &name) con
     }
 
     auto entry = d_->directory_.entry(name);
-    auto total_bytes = std::size_t(0);
-    auto pos = std::size_t(0);
-
     byte_vector result;
 
     if (entry->size < d_->header_.threshold)
     {
-        // small file
-        auto block_size = d_->small_block_table_.blockSize;
-        auto index = pos / block_size;
-
-        auto buf = byte_vector(block_size, 0);
-        std::size_t offset = pos % block_size;
-
-        while (index < d_->blocks_.size())
-        {
-            load_small_blocks(*d_);
-            auto count = block_size - offset;
-            std::copy(d_->buffer_.begin() + total_bytes, d_->buffer_.begin() + count, buf.begin() + offset);
-            total_bytes += count;
-            offset = 0;
-            index++;
-        }
+        result = load_small_blocks(d_->small_block_table_.follow(entry->start), *d_);
+        result.resize(entry->size);
     }
     else
     {
-        // big file
-        auto block_size = d_->small_block_table_.blockSize;
-        auto index = pos / block_size;
-
-        auto buf = byte_vector(block_size, 0);
-        std::size_t offset = pos % block_size;
-
-        while (index < d_->blocks_.size())
-        {
-            load_big_block(d_->blocks_[index], *d_);
-            auto count = block_size - offset;
-            std::copy(d_->buffer_.begin() + total_bytes, d_->buffer_.begin() + count, buf.begin() + offset);
-            total_bytes += count;
-            index++;
-            offset = 0;
-        }
+        result = load_big_blocks(d_->big_block_table_.follow(entry->start), *d_);
+        result.resize(entry->size);
     }
 
     return result;
-}
-
-std::size_t compound_document::segment_length() const
-{
-    return d_->segment_length_;
 }
 
 } // namespace detail

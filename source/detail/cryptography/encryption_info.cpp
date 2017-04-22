@@ -36,7 +36,7 @@ std::vector<std::uint8_t> calculate_standard_key(
     const std::u16string &password)
 {
     // H_0 = H(salt + password)
-    auto salt_plus_password = info.salt_value;
+    auto salt_plus_password = info.salt;
     auto password_bytes = xlnt::detail::to_bytes(password.begin(), password.end());
     std::copy(password_bytes.begin(), 
         password_bytes.end(), 
@@ -87,12 +87,11 @@ std::vector<std::uint8_t> calculate_standard_key(
 
     using xlnt::detail::aes_ecb_decrypt;
 
-    //TODO: check these variables
     auto calculated_verifier_hash = hash(info.hash,
-        aes_ecb_decrypt(info.verifier_hash_input, key));
+        aes_ecb_decrypt(info.encrypted_verifier, key));
     auto decrypted_verifier_hash = aes_ecb_decrypt(
-        info.verifier_hash_value, key);
-    decrypted_verifier_hash.resize(info.verifier_hash_input.size());
+        info.encrypted_verifier_hash, key);
+    decrypted_verifier_hash.resize(calculated_verifier_hash.size());
 
     if (calculated_verifier_hash != decrypted_verifier_hash)
     {

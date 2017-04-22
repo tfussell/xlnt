@@ -48,8 +48,6 @@ public:
     void add_stream(const std::string &filename, const std::vector<std::uint8_t> &data);
     std::vector<std::uint8_t> stream(const std::string &filename) const;
 
-    std::size_t segment_length() const;
-
 private:
     std::unique_ptr<compound_document_impl> d_;
 };

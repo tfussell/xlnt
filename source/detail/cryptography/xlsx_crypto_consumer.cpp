@@ -60,9 +60,10 @@ std::vector<std::uint8_t> decrypt_xlsx_standard(
 
 std::vector<std::uint8_t> decrypt_xlsx_agile(
     const encryption_info &info,
-    const std::vector<std::uint8_t> &encrypted_package,
-    const std::size_t segment_length)
+    const std::vector<std::uint8_t> &encrypted_package)
 {
+    static const auto segment_length = std::size_t(4096);
+
     const auto key = info.calculate_key();
 
     auto salt_size = info.agile.key_data.salt_size;
@@ -108,7 +109,7 @@ encryption_info read_standard_encryption_info(const std::vector<std::uint8_t> &i
     auto &standard_info = result.standard;
 
     using xlnt::detail::read_int;
-    auto offset = std::size_t(0);
+    auto offset = std::size_t(8); // skip version info
 
     auto header_length = read_int<std::uint32_t>(info_bytes, offset);
     auto index_at_start = offset;
@@ -160,18 +161,21 @@ encryption_info read_standard_encryption_info(const std::vector<std::uint8_t> &i
     offset += csp_name_length;
 
     const auto salt_size = read_int<std::uint32_t>(info_bytes, offset);
-    std::vector<std::uint8_t> salt(info_bytes.begin() + static_cast<std::ptrdiff_t>(offset),
+    standard_info.salt = std::vector<std::uint8_t>(
+        info_bytes.begin() + static_cast<std::ptrdiff_t>(offset),
         info_bytes.begin() + static_cast<std::ptrdiff_t>(offset + salt_size));
     offset += salt_size;
 
     static const auto verifier_size = std::size_t(16);
-    std::vector<std::uint8_t> encrypted_verifier(info_bytes.begin() + static_cast<std::ptrdiff_t>(offset),
+    standard_info.encrypted_verifier = std::vector<std::uint8_t>(
+        info_bytes.begin() + static_cast<std::ptrdiff_t>(offset),
         info_bytes.begin() + static_cast<std::ptrdiff_t>(offset + verifier_size));
     offset += verifier_size;
 
     const auto verifier_hash_size = read_int<std::uint32_t>(info_bytes, offset);
     const auto encrypted_verifier_hash_size = std::size_t(32);
-    std::vector<std::uint8_t> encrypted_verifier_hash(info_bytes.begin() + static_cast<std::ptrdiff_t>(offset),
+    standard_info.encrypted_verifier_hash = std::vector<std::uint8_t>(
+        info_bytes.begin() + static_cast<std::ptrdiff_t>(offset),
         info_bytes.begin() + static_cast<std::ptrdiff_t>(offset + encrypted_verifier_hash_size));
     offset += encrypted_verifier_hash_size;
 
@@ -195,7 +199,8 @@ encryption_info read_agile_encryption_info(const std::vector<std::uint8_t> &info
     result.is_agile = true;
     auto &agile_info = result.agile;
 
-    xml::parser parser(info_bytes.data(), info_bytes.size(), "EncryptionInfo");
+    auto header_size = std::size_t(8);
+    xml::parser parser(info_bytes.data() + header_size, info_bytes.size() - header_size, "EncryptionInfo");
 
     parser.next_expect(xml::parser::event_type::start_element, xmlns, "encryption");
 
@@ -327,10 +332,9 @@ std::vector<std::uint8_t> decrypt_xlsx(
     auto encryption_info = read_encryption_info(document.stream("EncryptionInfo"));
     encryption_info.password = password;
     auto encrypted_package = document.stream("EncryptedPackage");
-    auto segment_length = document.segment_length();
 
     return encryption_info.is_agile
-        ? decrypt_xlsx_agile(encryption_info, encrypted_package, segment_length)
+        ? decrypt_xlsx_agile(encryption_info, encrypted_package)
         : decrypt_xlsx_standard(encryption_info, encrypted_package);
 }
 

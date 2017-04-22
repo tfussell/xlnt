@@ -47,10 +47,9 @@ struct encryption_info
         cipher_algorithm cipher;
         cipher_chaining chaining;
         const hash_algorithm hash = hash_algorithm::sha1;
-        std::vector<std::uint8_t> salt_value;
-        std::vector<std::uint8_t> verifier_hash_input;
-        std::vector<std::uint8_t> verifier_hash_value;
-        std::vector<std::uint8_t> encrypted_key_value;
+        std::vector<std::uint8_t> salt;
+        std::vector<std::uint8_t> encrypted_verifier;
+        std::vector<std::uint8_t> encrypted_verifier_hash;
     } standard;
 
     struct agile_encryption_info
