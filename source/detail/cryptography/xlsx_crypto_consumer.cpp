@@ -46,13 +46,13 @@ using xlnt::detail::encryption_info;
 
 std::vector<std::uint8_t> decrypt_xlsx_standard(
     encryption_info info,
-    const byte_vector &encrypted_package)
+    const std::vector<std::uint8_t> &encrypted_package)
 {
     const auto key = info.calculate_key();
 
-    auto offset = std::size_t(0);
-    auto decrypted_size = xlnt::detail::read_int<std::uint64_t>(encrypted_package, offset);
-    auto decrypted = xlnt::detail::aes_ecb_decrypt(encrypted_package, key, offset);
+    auto reader = xlnt::detail::byte_reader(encrypted_package);
+    auto decrypted_size = reader.read<std::uint64_t>();
+    auto decrypted = xlnt::detail::aes_ecb_decrypt(encrypted_package, key, reader.offset());
     decrypted.resize(static_cast<std::size_t>(decrypted_size));
 
     return decrypted;
@@ -108,14 +108,17 @@ encryption_info read_standard_encryption_info(const std::vector<std::uint8_t> &i
     result.is_agile = false;
     auto &standard_info = result.standard;
 
-    using xlnt::detail::read_int;
-    auto offset = std::size_t(8); // skip version info
+    auto reader = xlnt::detail::byte_reader(info_bytes);
 
-    auto header_length = read_int<std::uint32_t>(info_bytes, offset);
-    auto index_at_start = offset;
-    /*auto skip_flags = */ read_int<std::uint32_t>(info_bytes, offset);
-    /*auto size_extra = */ read_int<std::uint32_t>(info_bytes, offset);
-    auto alg_id = read_int<std::uint32_t>(info_bytes, offset);
+    // skip version info
+    reader.read<std::uint32_t>();
+    reader.read<std::uint32_t>();
+
+    auto header_length = reader.read<std::uint32_t>();
+    auto index_at_start = reader.offset();
+    /*auto skip_flags = */ reader.read<std::uint32_t>();
+    /*auto size_extra = */ reader.read<std::uint32_t>();
+    auto alg_id = reader.read<std::uint32_t>();
 
     if (alg_id == 0 || alg_id == 0x0000660E || alg_id == 0x0000660F || alg_id == 0x00006610)
     {
@@ -126,60 +129,59 @@ encryption_info read_standard_encryption_info(const std::vector<std::uint8_t> &i
         throw xlnt::exception("invalid cipher algorithm");
     }
 
-    auto alg_id_hash = read_int<std::uint32_t>(info_bytes, offset);
+    auto alg_id_hash = reader.read<std::uint32_t>();
     if (alg_id_hash != 0x00008004 && alg_id_hash == 0)
     {
         throw xlnt::exception("invalid hash algorithm");
     }
 
-    standard_info.key_bits = read_int<std::uint32_t>(info_bytes, offset);
+    standard_info.key_bits = reader.read<std::uint32_t>();
     standard_info.key_bytes = standard_info.key_bits / 8;
 
-    auto provider_type = read_int<std::uint32_t>(info_bytes, offset);
+    auto provider_type = reader.read<std::uint32_t>();
     if (provider_type != 0 && provider_type != 0x00000018)
     {
         throw xlnt::exception("invalid provider type");
     }
 
-    read_int<std::uint32_t>(info_bytes, offset); // reserved 1
-    if (read_int<std::uint32_t>(info_bytes, offset) != 0) // reserved 2
+    reader.read<std::uint32_t>(); // reserved 1
+    if (reader.read<std::uint32_t>() != 0) // reserved 2
     {
         throw xlnt::exception("invalid header");
     }
 
-    const auto csp_name_length = header_length - (offset - index_at_start);
+    const auto csp_name_length = header_length - (reader.offset() - index_at_start);
     std::vector<std::uint16_t> csp_name_wide(
-        reinterpret_cast<const std::uint16_t *>(&*(info_bytes.begin() + static_cast<std::ptrdiff_t>(offset))),
+        reinterpret_cast<const std::uint16_t *>(&*(info_bytes.begin() + static_cast<std::ptrdiff_t>(reader.offset()))),
         reinterpret_cast<const std::uint16_t *>(
-            &*(info_bytes.begin() + static_cast<std::ptrdiff_t>(offset + csp_name_length))));
+            &*(info_bytes.begin() + static_cast<std::ptrdiff_t>(reader.offset() + csp_name_length))));
     std::string csp_name(csp_name_wide.begin(), csp_name_wide.end() - 1); // without trailing null
     if (csp_name != "Microsoft Enhanced RSA and AES Cryptographic Provider (Prototype)"
         && csp_name != "Microsoft Enhanced RSA and AES Cryptographic Provider")
     {
         throw xlnt::exception("invalid cryptographic provider");
     }
-    offset += csp_name_length;
 
-    const auto salt_size = read_int<std::uint32_t>(info_bytes, offset);
+    const auto salt_size = reader.read<std::uint32_t>();
     standard_info.salt = std::vector<std::uint8_t>(
-        info_bytes.begin() + static_cast<std::ptrdiff_t>(offset),
-        info_bytes.begin() + static_cast<std::ptrdiff_t>(offset + salt_size));
-    offset += salt_size;
+        info_bytes.begin() + static_cast<std::ptrdiff_t>(reader.offset()),
+        info_bytes.begin() + static_cast<std::ptrdiff_t>(reader.offset() + salt_size));
+    reader.offset(reader.offset() + salt_size);
 
     static const auto verifier_size = std::size_t(16);
     standard_info.encrypted_verifier = std::vector<std::uint8_t>(
-        info_bytes.begin() + static_cast<std::ptrdiff_t>(offset),
-        info_bytes.begin() + static_cast<std::ptrdiff_t>(offset + verifier_size));
-    offset += verifier_size;
+        info_bytes.begin() + static_cast<std::ptrdiff_t>(reader.offset()),
+        info_bytes.begin() + static_cast<std::ptrdiff_t>(reader.offset() + verifier_size));
+    reader.offset(reader.offset() + verifier_size);
 
-    const auto verifier_hash_size = read_int<std::uint32_t>(info_bytes, offset);
+    const auto verifier_hash_size = reader.read<std::uint32_t>();
     const auto encrypted_verifier_hash_size = std::size_t(32);
     standard_info.encrypted_verifier_hash = std::vector<std::uint8_t>(
-        info_bytes.begin() + static_cast<std::ptrdiff_t>(offset),
-        info_bytes.begin() + static_cast<std::ptrdiff_t>(offset + encrypted_verifier_hash_size));
-    offset += encrypted_verifier_hash_size;
+        info_bytes.begin() + static_cast<std::ptrdiff_t>(reader.offset()),
+        info_bytes.begin() + static_cast<std::ptrdiff_t>(reader.offset() + encrypted_verifier_hash_size));
+    reader.offset(reader.offset() + encrypted_verifier_hash_size);
 
-    if (offset != info_bytes.size())
+    if (reader.offset() != info_bytes.size())
     {
         throw xlnt::exception("extra data after encryption info");
     }
@@ -274,12 +276,11 @@ encryption_info read_encryption_info(const std::vector<std::uint8_t> &info_bytes
 {
     encryption_info info;
 
-    using xlnt::detail::read_int;
-    std::size_t offset = 0;
+    auto reader = xlnt::detail::byte_reader(info_bytes);
 
-    auto version_major = read_int<std::uint16_t>(info_bytes, offset);
-    auto version_minor = read_int<std::uint16_t>(info_bytes, offset);
-    auto encryption_flags = read_int<std::uint32_t>(info_bytes, offset);
+    auto version_major = reader.read<std::uint16_t>();
+    auto version_minor = reader.read<std::uint16_t>();
+    auto encryption_flags = reader.read<std::uint32_t>();
 
     // version 4.4 is agile
     if (version_major == 4 && version_minor == 4)
@@ -327,11 +328,11 @@ std::vector<std::uint8_t> decrypt_xlsx(
     }
 
     xlnt::detail::compound_document document;
-    document.load(bytes);
+    document.load(const_cast<std::vector<std::uint8_t> &>(bytes));
 
-    auto encryption_info = read_encryption_info(document.stream("EncryptionInfo"));
+    auto encryption_info = read_encryption_info(document.stream(u"EncryptionInfo"));
     encryption_info.password = password;
-    auto encrypted_package = document.stream("EncryptedPackage");
+    auto encrypted_package = document.stream(u"EncryptedPackage");
 
     return encryption_info.is_agile
         ? decrypt_xlsx_agile(encryption_info, encrypted_package)

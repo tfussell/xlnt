@@ -171,10 +171,10 @@ std::vector<std::uint8_t> encrypt_xlsx(
 
     xlnt::detail::compound_document document;
 
-    document.add_stream("EncryptionInfo", encryption_info.is_agile
+    document.add_stream(u"EncryptionInfo", encryption_info.is_agile
         ? write_agile_encryption_info(encryption_info)
         : write_standard_encryption_info(encryption_info));
-    document.add_stream("EncryptedPackage", encryption_info.is_agile
+    document.add_stream(u"EncryptedPackage", encryption_info.is_agile
         ? encrypt_xlsx_agile(encryption_info, plaintext)
         : encrypt_xlsx_standard(encryption_info, plaintext));
 

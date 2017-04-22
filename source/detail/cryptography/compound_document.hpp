@@ -33,7 +33,7 @@
 namespace xlnt {
 namespace detail {
 
-struct compound_document_impl;
+class compound_document_impl;
 
 class compound_document
 {
@@ -41,14 +41,17 @@ public:
     compound_document();
     ~compound_document();
 
-    void load(const std::vector<std::uint8_t> &data);
+    void load(std::vector<std::uint8_t> &data);
     std::vector<std::uint8_t> save() const;
 
-    bool has_stream(const std::string &filename) const;
-    void add_stream(const std::string &filename, const std::vector<std::uint8_t> &data);
-    std::vector<std::uint8_t> stream(const std::string &filename) const;
+    bool has_stream(const std::u16string &filename) const;
+    void add_stream(const std::u16string &filename, const std::vector<std::uint8_t> &data);
+    std::vector<std::uint8_t> stream(const std::u16string &filename) const;
 
 private:
+    compound_document_impl &impl();
+    //TODO: can this return a const reference?
+    compound_document_impl &impl() const;
     std::unique_ptr<compound_document_impl> d_;
 };
 

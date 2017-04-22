@@ -37,7 +37,7 @@ std::vector<std::uint8_t> calculate_standard_key(
 {
     // H_0 = H(salt + password)
     auto salt_plus_password = info.salt;
-    auto password_bytes = xlnt::detail::to_bytes(password.begin(), password.end());
+    auto password_bytes = xlnt::detail::byte_vector::from(password).data();
     std::copy(password_bytes.begin(), 
         password_bytes.end(), 
         std::back_inserter(salt_plus_password));
@@ -107,7 +107,7 @@ std::vector<std::uint8_t> calculate_agile_key(
 {
     // H_0 = H(salt + password)
     auto salt_plus_password = info.key_encryptor.salt_value;
-    auto password_bytes = xlnt::detail::to_bytes(password.begin(), password.end());
+    auto password_bytes = xlnt::detail::byte_vector::from(password).data();
     std::copy(password_bytes.begin(),
         password_bytes.end(),
         std::back_inserter(salt_plus_password));
