@@ -33,26 +33,31 @@
 namespace xlnt {
 namespace detail {
 
-class compound_document_impl;
+class compound_document_reader_impl;
+class compound_document_writer_impl;
 
-class compound_document
+class compound_document_reader
 {
 public:
-    compound_document();
-    ~compound_document();
+    compound_document_reader(const std::vector<std::uint8_t> &data);
+    ~compound_document_reader();
 
-    void load(std::vector<std::uint8_t> &data);
-    std::vector<std::uint8_t> save() const;
-
-    bool has_stream(const std::u16string &filename) const;
-    void add_stream(const std::u16string &filename, const std::vector<std::uint8_t> &data);
-    std::vector<std::uint8_t> stream(const std::u16string &filename) const;
+    std::vector<std::uint8_t> read_stream(const std::u16string &filename) const;
 
 private:
-    compound_document_impl &impl();
-    //TODO: can this return a const reference?
-    compound_document_impl &impl() const;
-    std::unique_ptr<compound_document_impl> d_;
+    std::unique_ptr<compound_document_reader_impl> d_;
+};
+
+class compound_document_writer
+{
+public:
+    compound_document_writer(std::vector<std::uint8_t> &data);
+    ~compound_document_writer();
+
+    void write_stream(const std::u16string &filename, const std::vector<std::uint8_t> &data);
+
+private:
+    std::unique_ptr<compound_document_writer_impl> d_;
 };
 
 } // namespace detail

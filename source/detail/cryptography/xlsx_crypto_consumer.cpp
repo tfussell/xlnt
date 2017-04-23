@@ -103,11 +103,9 @@ std::vector<std::uint8_t> decrypt_xlsx_agile(
     return decrypted_package;
 }
 
-encryption_info read_standard_encryption_info(const std::vector<std::uint8_t> &info_bytes)
+encryption_info::standard_encryption_info read_standard_encryption_info(const std::vector<std::uint8_t> &info_bytes)
 {
-    encryption_info result;
-    result.is_agile = false;
-    auto &standard_info = result.standard;
+    encryption_info::standard_encryption_info result;
 
     auto reader = xlnt::detail::byte_reader(info_bytes);
 
@@ -123,7 +121,7 @@ encryption_info read_standard_encryption_info(const std::vector<std::uint8_t> &i
 
     if (alg_id == 0 || alg_id == 0x0000660E || alg_id == 0x0000660F || alg_id == 0x00006610)
     {
-        standard_info.cipher = xlnt::detail::cipher_algorithm::aes;
+        result.cipher = xlnt::detail::cipher_algorithm::aes;
     }
     else
     {
@@ -136,8 +134,8 @@ encryption_info read_standard_encryption_info(const std::vector<std::uint8_t> &i
         throw xlnt::exception("invalid hash algorithm");
     }
 
-    standard_info.key_bits = reader.read<std::uint32_t>();
-    standard_info.key_bytes = standard_info.key_bits / 8;
+    result.key_bits = reader.read<std::uint32_t>();
+    result.key_bytes = result.key_bits / 8;
 
     auto provider_type = reader.read<std::uint32_t>();
     if (provider_type != 0 && provider_type != 0x00000018)
@@ -165,20 +163,20 @@ encryption_info read_standard_encryption_info(const std::vector<std::uint8_t> &i
     reader.offset(reader.offset() + csp_name_length);
 
     const auto salt_size = reader.read<std::uint32_t>();
-    standard_info.salt = std::vector<std::uint8_t>(
+    result.salt = std::vector<std::uint8_t>(
         info_bytes.begin() + static_cast<std::ptrdiff_t>(reader.offset()),
         info_bytes.begin() + static_cast<std::ptrdiff_t>(reader.offset() + salt_size));
     reader.offset(reader.offset() + salt_size);
 
     static const auto verifier_size = std::size_t(16);
-    standard_info.encrypted_verifier = std::vector<std::uint8_t>(
+    result.encrypted_verifier = std::vector<std::uint8_t>(
         info_bytes.begin() + static_cast<std::ptrdiff_t>(reader.offset()),
         info_bytes.begin() + static_cast<std::ptrdiff_t>(reader.offset() + verifier_size));
     reader.offset(reader.offset() + verifier_size);
 
     /*const auto verifier_hash_size = */reader.read<std::uint32_t>();
     const auto encrypted_verifier_hash_size = std::size_t(32);
-    standard_info.encrypted_verifier_hash = std::vector<std::uint8_t>(
+    result.encrypted_verifier_hash = std::vector<std::uint8_t>(
         info_bytes.begin() + static_cast<std::ptrdiff_t>(reader.offset()),
         info_bytes.begin() + static_cast<std::ptrdiff_t>(reader.offset() + encrypted_verifier_hash_size));
     reader.offset(reader.offset() + encrypted_verifier_hash_size);
@@ -191,7 +189,7 @@ encryption_info read_standard_encryption_info(const std::vector<std::uint8_t> &i
     return result;
 }
 
-encryption_info read_agile_encryption_info(const std::vector<std::uint8_t> &info_bytes)
+encryption_info::agile_encryption_info read_agile_encryption_info(const std::vector<std::uint8_t> &info_bytes)
 {
     using xlnt::detail::decode_base64;
 
@@ -199,31 +197,32 @@ encryption_info read_agile_encryption_info(const std::vector<std::uint8_t> &info
     static const auto &xmlns_p = xlnt::constants::ns("encryption-password");
     // static const auto &xmlns_c = xlnt::constants::namespace_("encryption-certificate");
 
-    encryption_info result;
-    result.is_agile = true;
-    auto &agile_info = result.agile;
+    encryption_info::agile_encryption_info result;
 
     auto header_size = std::size_t(8);
     xml::parser parser(info_bytes.data() + header_size, info_bytes.size() - header_size, "EncryptionInfo");
 
     parser.next_expect(xml::parser::event_type::start_element, xmlns, "encryption");
 
+    auto &key_data = result.key_data;
     parser.next_expect(xml::parser::event_type::start_element, xmlns, "keyData");
-    agile_info.key_data.salt_size = parser.attribute<std::size_t>("saltSize");
-    agile_info.key_data.block_size = parser.attribute<std::size_t>("blockSize");
-    agile_info.key_data.key_bits = parser.attribute<std::size_t>("keyBits");
-    agile_info.key_data.hash_size = parser.attribute<std::size_t>("hashSize");
-    agile_info.key_data.cipher_algorithm = parser.attribute("cipherAlgorithm");
-    agile_info.key_data.cipher_chaining = parser.attribute("cipherChaining");
-    agile_info.key_data.hash_algorithm = parser.attribute("hashAlgorithm");
-    agile_info.key_data.salt_value = decode_base64(parser.attribute("saltValue"));
+    key_data.salt_size = parser.attribute<std::size_t>("saltSize");
+    key_data.block_size = parser.attribute<std::size_t>("blockSize");
+    key_data.key_bits = parser.attribute<std::size_t>("keyBits");
+    key_data.hash_size = parser.attribute<std::size_t>("hashSize");
+    key_data.cipher_algorithm = parser.attribute("cipherAlgorithm");
+    key_data.cipher_chaining = parser.attribute("cipherChaining");
+    key_data.hash_algorithm = parser.attribute("hashAlgorithm");
+    key_data.salt_value = decode_base64(parser.attribute("saltValue"));
     parser.next_expect(xml::parser::event_type::end_element, xmlns, "keyData");
 
+    auto &data_integrity = result.data_integrity;
     parser.next_expect(xml::parser::event_type::start_element, xmlns, "dataIntegrity");
-    agile_info.data_integrity.hmac_key = decode_base64(parser.attribute("encryptedHmacKey"));
-    agile_info.data_integrity.hmac_value = decode_base64(parser.attribute("encryptedHmacValue"));
+    data_integrity.hmac_key = decode_base64(parser.attribute("encryptedHmacKey"));
+    data_integrity.hmac_value = decode_base64(parser.attribute("encryptedHmacValue"));
     parser.next_expect(xml::parser::event_type::end_element, xmlns, "dataIntegrity");
 
+    auto &key_encryptor = result.key_encryptor;
     parser.next_expect(xml::parser::event_type::start_element, xmlns, "keyEncryptors");
     parser.next_expect(xml::parser::event_type::start_element, xmlns, "keyEncryptor");
     parser.attribute("uri");
@@ -236,22 +235,18 @@ encryption_info read_agile_encryption_info(const std::vector<std::uint8_t> &info
         if (parser.namespace_() == xmlns_p && parser.name() == "encryptedKey")
         {
             any_password_key = true;
-            agile_info.key_encryptor.spin_count = parser.attribute<std::size_t>("spinCount");
-            agile_info.key_encryptor.salt_size = parser.attribute<std::size_t>("saltSize");
-            agile_info.key_encryptor.block_size = parser.attribute<std::size_t>("blockSize");
-            agile_info.key_encryptor.key_bits = parser.attribute<std::size_t>("keyBits");
-            agile_info.key_encryptor.hash_size = parser.attribute<std::size_t>("hashSize");
-            agile_info.key_encryptor.cipher_algorithm = parser.attribute("cipherAlgorithm");
-            agile_info.key_encryptor.cipher_chaining = parser.attribute("cipherChaining");
-            agile_info.key_encryptor.hash = parser.attribute<xlnt::detail::hash_algorithm>("hashAlgorithm");
-            agile_info.key_encryptor.salt_value =
-                decode_base64(parser.attribute("saltValue"));
-            agile_info.key_encryptor.verifier_hash_input =
-                decode_base64(parser.attribute("encryptedVerifierHashInput"));
-            agile_info.key_encryptor.verifier_hash_value =
-                decode_base64(parser.attribute("encryptedVerifierHashValue"));
-            agile_info.key_encryptor.encrypted_key_value =
-                decode_base64(parser.attribute("encryptedKeyValue"));
+            key_encryptor.spin_count = parser.attribute<std::size_t>("spinCount");
+            key_encryptor.salt_size = parser.attribute<std::size_t>("saltSize");
+            key_encryptor.block_size = parser.attribute<std::size_t>("blockSize");
+            key_encryptor.key_bits = parser.attribute<std::size_t>("keyBits");
+            key_encryptor.hash_size = parser.attribute<std::size_t>("hashSize");
+            key_encryptor.cipher_algorithm = parser.attribute("cipherAlgorithm");
+            key_encryptor.cipher_chaining = parser.attribute("cipherChaining");
+            key_encryptor.hash = parser.attribute<xlnt::detail::hash_algorithm>("hashAlgorithm");
+            key_encryptor.salt_value = decode_base64(parser.attribute("saltValue"));
+            key_encryptor.verifier_hash_input = decode_base64(parser.attribute("encryptedVerifierHashInput"));
+            key_encryptor.verifier_hash_value = decode_base64(parser.attribute("encryptedVerifierHashValue"));
+            key_encryptor.encrypted_key_value = decode_base64(parser.attribute("encryptedKeyValue"));
         }
         else
         {
@@ -274,50 +269,56 @@ encryption_info read_agile_encryption_info(const std::vector<std::uint8_t> &info
     return result;
 }
 
-encryption_info read_encryption_info(const std::vector<std::uint8_t> &info_bytes)
+encryption_info read_encryption_info(const std::vector<std::uint8_t> &info_bytes, const std::u16string &password)
 {
     encryption_info info;
+    
+    info.password = password;
 
     auto reader = xlnt::detail::byte_reader(info_bytes);
 
     auto version_major = reader.read<std::uint16_t>();
     auto version_minor = reader.read<std::uint16_t>();
     auto encryption_flags = reader.read<std::uint32_t>();
+    
+    info.is_agile = version_major == 4 && version_minor == 4;
 
-    // version 4.4 is agile
-    if (version_major == 4 && version_minor == 4)
+    if (info.is_agile)
     {
         if (encryption_flags != 0x40)
         {
             throw xlnt::exception("bad header");
         }
 
-        return read_agile_encryption_info(info_bytes);
+        info.agile = read_agile_encryption_info(info_bytes);
     }
-
-    // not agile, only try to decrypt versions 3.2 and 4.2
-    if (version_minor != 2 || (version_major != 2 && version_major != 3 && version_major != 4))
+    else
     {
-        throw xlnt::exception("unsupported encryption version");
-    }
+        if (version_minor != 2 || (version_major != 2 && version_major != 3 && version_major != 4))
+        {
+            throw xlnt::exception("unsupported encryption version");
+        }
 
-    if ((encryption_flags & 0b00000011) != 0) // Reserved1 and Reserved2, MUST be 0
-    {
-        throw xlnt::exception("bad header");
-    }
+        if ((encryption_flags & 0b00000011) != 0) // Reserved1 and Reserved2, MUST be 0
+        {
+            throw xlnt::exception("bad header");
+        }
 
-    if ((encryption_flags & 0b00000100) == 0 // fCryptoAPI
-        || (encryption_flags & 0b00010000) != 0) // fExternal
-    {
-        throw xlnt::exception("extensible encryption is not supported");
-    }
+        if ((encryption_flags & 0b00000100) == 0 // fCryptoAPI
+            || (encryption_flags & 0b00010000) != 0) // fExternal
+        {
+            throw xlnt::exception("extensible encryption is not supported");
+        }
 
-    if ((encryption_flags & 0b00100000) == 0) // fAES
-    {
-        throw xlnt::exception("not an OOXML document");
-    }
+        if ((encryption_flags & 0b00100000) == 0) // fAES
+        {
+            throw xlnt::exception("not an OOXML document");
+        }
 
-    return read_standard_encryption_info(info_bytes);
+        info.standard = read_standard_encryption_info(info_bytes);
+    }
+    
+    return info;
 }
 
 std::vector<std::uint8_t> decrypt_xlsx(
@@ -329,12 +330,11 @@ std::vector<std::uint8_t> decrypt_xlsx(
         throw xlnt::exception("empty file");
     }
 
-    xlnt::detail::compound_document document;
-    document.load(const_cast<std::vector<std::uint8_t> &>(bytes));
+    xlnt::detail::compound_document_reader document(bytes);
 
-    auto encryption_info = read_encryption_info(document.stream(u"EncryptionInfo"));
-    encryption_info.password = password;
-    auto encrypted_package = document.stream(u"EncryptedPackage");
+    auto encryption_info = read_encryption_info(
+        document.read_stream(u"EncryptionInfo"), password);
+    auto encrypted_package = document.read_stream(u"EncryptedPackage");
 
     return encryption_info.is_agile
         ? decrypt_xlsx_agile(encryption_info, encrypted_package)

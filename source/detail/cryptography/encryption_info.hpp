@@ -39,14 +39,14 @@ struct encryption_info
 
     struct standard_encryption_info
     {
-        const std::size_t spin_count = 50000;
+        std::size_t spin_count = 50000;
         std::size_t block_size;
         std::size_t key_bits;
         std::size_t key_bytes;
         std::size_t hash_size;
         cipher_algorithm cipher;
         cipher_chaining chaining;
-        const hash_algorithm hash = hash_algorithm::sha1;
+        hash_algorithm hash = hash_algorithm::sha1;
         std::vector<std::uint8_t> salt;
         std::vector<std::uint8_t> encrypted_verifier;
         std::vector<std::uint8_t> encrypted_verifier_hash;

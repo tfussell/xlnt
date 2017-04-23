@@ -162,7 +162,7 @@ if(MSVC)
 endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/detail/serialization/miniz.cpp PROPERTIES COMPILE_FLAGS "-Wno-comma -Wno-undef")
+    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/detail/serialization/miniz.cpp PROPERTIES COMPILE_FLAGS "-Wno-undef")
     set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/detail/serialization/zstream.cpp PROPERTIES COMPILE_FLAGS "-Wno-undef -Wno-shorten-64-to-32")
 endif()
 

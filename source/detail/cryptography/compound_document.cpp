@@ -133,12 +133,7 @@ public:
     {
         return byte_vector::from(data_);
     }
-/*
-    std::size_t size_in_bytes()
-    {
-        return count() * 4;
-    }
-*/
+
     std::size_t sector_size() const
     {
         return sector_size_;
@@ -480,13 +475,6 @@ public:
         return result;
     }
 
-    /*
-    std::size_t size()
-    {
-        return entry_count() * sizeof(directory_entry);
-    }
-    */
-
     directory_entry create_root_entry() const
     {
         directory_entry root;
@@ -497,11 +485,6 @@ public:
         root.size = 0;
 
         return root;
-    }
-
-    bool contains(const std::u16string &name) const
-    {
-        return find_entry(name).second;
     }
 
 private:
@@ -620,13 +603,26 @@ private:
 namespace xlnt {
 namespace detail {
 
-class compound_document_impl
+class compound_document_reader_impl
 {
 public:
-    compound_document_impl()
+    compound_document_reader_impl(const std::vector<std::uint8_t> &data)
     {
+        auto reader = byte_vector(data);
+        header_.load(reader);
+
         sector_table_.sector_size(header_.sector_size());
         short_sector_table_.sector_size(header_.short_sector_size());
+
+        sectors_.append(data, 512, data.size() - 512);
+
+        sector_table_.load(load_sectors(load_msat(reader)));
+        short_sector_table_.load(load_sectors(sector_table_.follow(header_.short_table_start())));
+        auto directory_data = load_sectors(sector_table_.follow(header_.directory_start()));
+        directory_.load(directory_data);
+
+        auto first_short_sector = directory_.entry(u"/Root Entry", false).first;
+        short_container_stream_ = sector_table_.follow(first_short_sector);
     }
 
     byte_vector load_sectors(const std::vector<sector_id> &sectors) const
@@ -641,32 +637,6 @@ public:
         }
 
         return result;
-    }
-
-    void write_sectors(const byte_vector &data, directory_entry &/*entry*/)
-    {
-        const auto sector_size = sector_table_.sector_size();
-        const auto num_sectors = data.size() / sector_size;
-
-        for (auto i = std::size_t(0); i < num_sectors; ++i)
-        {
-            auto position = sector_size * i;
-            auto current_sector_size = data.size() % sector_size;
-            sectors_.append(data.data(), position, current_sector_size);
-        }
-    }
-
-    void write_short_sectors(const byte_vector &data, directory_entry &/*entry*/)
-    {
-        const auto sector_size = sector_table_.sector_size();
-        const auto num_sectors = data.size() / sector_size;
-
-        for (auto i = std::size_t(0); i < num_sectors; ++i)
-        {
-            auto position = sector_size * i;
-            auto current_sector_size = data.size() % sector_size;
-            sectors_.append(data.data(), position, current_sector_size);
-        }
     }
 
     byte_vector load_short_sectors(const std::vector<sector_id> &sectors) const
@@ -715,67 +685,9 @@ public:
         return master_sectors;
     }
 
-    void load(byte_vector &data)
+    byte_vector read_stream(const std::u16string &name) const
     {
-        header_.load(data);
-
-        const auto sector_size = header_.sector_size();
-        const auto short_sector_size = header_.short_sector_size();
-
-        sector_table_.sector_size(sector_size);
-        short_sector_table_.sector_size(short_sector_size);
-
-        sectors_.append(data.data(), 512, data.size() - 512);
-
-        sector_table_.load(load_sectors(load_msat(data)));
-        short_sector_table_.load(load_sectors(sector_table_.follow(header_.short_table_start())));
-        auto directory_data = load_sectors(sector_table_.follow(header_.directory_start()));
-        directory_.load(directory_data);
-
-        auto first_short_sector = directory_.entry(u"/Root Entry", false).first;
-        short_container_stream_ = sector_table_.follow(first_short_sector);
-    }
-
-    byte_vector save() const
-    {
-        auto result = byte_vector();
-
-        result.append(header_.save().data());
-        result.append(sector_table_.save().data());
-        result.append(short_sector_table_.save().data());
-        result.append(directory_.save().data());
-        result.append(sectors_.data());
-
-        return result;
-    }
-
-    bool has_stream(const std::u16string &filename) const
-    {
-        return directory_.contains(filename);
-    }
-
-    void add_stream(const std::u16string &name, const byte_vector &data)
-    {
-        auto entry = directory_.entry(name, !has_stream(name));
-        
-        if (entry.size < header_.threshold())
-        {
-            write_short_sectors(data, entry);
-        }
-        else
-        {
-            write_sectors(data, entry);
-        }
-    }
-
-    byte_vector stream(const std::u16string &name) const
-    {
-        if (!has_stream(name))
-        {
-            throw xlnt::exception("document doesn't contain stream with the given name");
-        }
-
-        auto entry = directory_.entry(name);
+        const auto entry = directory_.entry(name);
         byte_vector result;
 
         if (entry.size < header_.threshold())
@@ -802,51 +714,106 @@ private:
     std::vector<sector_id> short_container_stream_;
 };
 
-compound_document::compound_document()
-    : d_(new compound_document_impl())
+class compound_document_writer_impl
+{
+public:
+    compound_document_writer_impl(std::vector<std::uint8_t> &data)
+    {
+        sector_table_.sector_size(header_.sector_size());
+        short_sector_table_.sector_size(header_.short_sector_size());
+    }
+
+    void write_sectors(const byte_vector &data, directory_entry &/*entry*/)
+    {
+        const auto sector_size = sector_table_.sector_size();
+        const auto num_sectors = data.size() / sector_size;
+
+        for (auto i = std::size_t(0); i < num_sectors; ++i)
+        {
+            auto position = sector_size * i;
+            auto current_sector_size = data.size() % sector_size;
+            sectors_.append(data.data(), position, current_sector_size);
+        }
+    }
+
+    void write_short_sectors(const byte_vector &data, directory_entry &/*entry*/)
+    {
+        const auto sector_size = sector_table_.sector_size();
+        const auto num_sectors = data.size() / sector_size;
+
+        for (auto i = std::size_t(0); i < num_sectors; ++i)
+        {
+            auto position = sector_size * i;
+            auto current_sector_size = data.size() % sector_size;
+            sectors_.append(data.data(), position, current_sector_size);
+        }
+    }
+
+    byte_vector save() const
+    {
+        auto result = byte_vector();
+
+        result.append(header_.save().data());
+        result.append(sector_table_.save().data());
+        result.append(short_sector_table_.save().data());
+        result.append(directory_.save().data());
+        result.append(sectors_.data());
+
+        return result;
+    }
+
+    void write_stream(const std::u16string &name, const byte_vector &data)
+    {
+        auto &entry = directory_.entry(name, true);
+        
+        if (entry.size < header_.threshold())
+        {
+            write_short_sectors(data, entry);
+        }
+        else
+        {
+            write_sectors(data, entry);
+        }
+    }
+
+private:
+    directory_tree directory_;
+    header header_;
+    allocation_table sector_table_;
+    byte_vector sectors_;
+    allocation_table short_sector_table_;
+    byte_vector short_sectors_;
+    std::vector<sector_id> short_container_stream_;
+};
+
+compound_document_reader::compound_document_reader(const std::vector<std::uint8_t> &data)
+    : d_(new compound_document_reader_impl(data))
 {
 }
 
-compound_document::~compound_document()
+compound_document_reader::~compound_document_reader()
 {
 }
 
-compound_document_impl &compound_document::impl()
+std::vector<std::uint8_t> compound_document_reader::read_stream(const std::u16string &name) const
 {
-    return *d_;
+    return d_->read_stream(name).data();
 }
 
-compound_document_impl &compound_document::impl() const
+compound_document_writer::compound_document_writer(std::vector<std::uint8_t> &data)
+    : d_(new compound_document_writer_impl(data))
 {
-    return *d_;
 }
 
-
-void compound_document::load(std::vector<std::uint8_t> &data)
+compound_document_writer::~compound_document_writer()
 {
-    byte_vector vec(data);
-    return impl().load(vec);
 }
 
-std::vector<std::uint8_t> compound_document::save() const
+void compound_document_writer::write_stream(const std::u16string &name, const std::vector<std::uint8_t> &data)
 {
-    return impl().save().data();
+    d_->write_stream(name, data);
 }
 
-bool compound_document::has_stream(const std::u16string &filename) const
-{
-    return impl().has_stream(filename);
-}
-
-void compound_document::add_stream(const std::u16string &name, const std::vector<std::uint8_t> &data)
-{
-    return impl().add_stream(name, data);
-}
-
-std::vector<std::uint8_t> compound_document::stream(const std::u16string &name) const
-{
-    return impl().stream(name).data();
-}
 
 } // namespace detail
 } // namespace xlnt

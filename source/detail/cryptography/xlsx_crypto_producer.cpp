@@ -248,16 +248,17 @@ std::vector<std::uint8_t> encrypt_xlsx(
     auto encryption_info = generate_encryption_info(password);
     encryption_info.password = u"secret";
 
-    xlnt::detail::compound_document document;
+    auto ciphertext = std::vector<std::uint8_t>();
+    xlnt::detail::compound_document_writer document(ciphertext);
 
-    document.add_stream(u"EncryptionInfo", encryption_info.is_agile
+    document.write_stream(u"EncryptionInfo", encryption_info.is_agile
         ? write_agile_encryption_info(encryption_info)
         : write_standard_encryption_info(encryption_info));
-    document.add_stream(u"EncryptedPackage", encryption_info.is_agile
+    document.write_stream(u"EncryptedPackage", encryption_info.is_agile
         ? encrypt_xlsx_agile(encryption_info, plaintext)
         : encrypt_xlsx_standard(encryption_info, plaintext));
 
-    return document.save();
+    return ciphertext;
 }
 
 } // namespace
