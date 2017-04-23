@@ -37,7 +37,7 @@ namespace {
 
 using xlnt::detail::encryption_info;
 
-encryption_info generate_encryption_info(const std::u16string &password)
+encryption_info generate_encryption_info(const std::u16string &/*password*/)
 {
     encryption_info result;
 
@@ -47,32 +47,59 @@ encryption_info generate_encryption_info(const std::u16string &password)
 
     result.agile.key_data.block_size = 16;
     result.agile.key_data.cipher_algorithm = "AES";
-    result.agile.key_data.cipher_chaining = "CBC";
+    result.agile.key_data.cipher_chaining = "ChainingModeCBC";
     result.agile.key_data.hash_algorithm = "SHA512";
     result.agile.key_data.hash_size = 64;
-    result.agile.key_data.key_bits = 128;
-    result.agile.key_data.salt_size = 10;
-    result.agile.key_data.salt_value = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+    result.agile.key_data.key_bits = 256;
+    result.agile.key_data.salt_size = 16;
+    result.agile.key_data.salt_value = 
+    { 
+        { 40, 183, 193, 64, 115, 97, 10, 177, 122, 50, 243, 123, 229, 145, 162, 247 }
+    };
 
-    result.agile.data_integrity.hmac_key = { 1, 2, 3 };
-    result.agile.data_integrity.hmac_value = { 3, 4, 5 };
+    result.agile.data_integrity.hmac_key = 
+    {
+        { 90, 206, 203, 147, 102, 81, 82, 14, 118, 94, 168, 38, 200, 79, 13, 147, 60,
+        123, 167, 220, 17, 165, 124, 188, 206, 74, 98, 33, 156, 63, 220, 152, 180, 201,
+        167, 183, 141, 252, 182, 55, 90, 189, 187, 167, 230, 186, 61, 239, 80, 49, 54,
+        208, 52, 133, 232, 187, 117, 136, 213, 48, 133, 15, 7, 126 }
+    };
+    result.agile.data_integrity.hmac_value = 
+    {
+        { 49, 128, 174, 178, 161, 48, 1, 82, 241, 103, 72, 223, 103, 111, 204, 73,
+        210, 70, 254, 43, 12, 134, 180, 201, 124, 153, 214, 115, 82, 184, 78, 2,
+        166, 106, 69, 18, 173, 177, 40, 238, 243, 240, 3, 86, 145, 218, 223, 177,
+        36, 34, 44, 159, 104, 163, 217, 42, 203, 135, 173, 14, 218, 172, 72, 224 }
+    };
 
     result.agile.key_encryptor.spin_count = 100000;
     result.agile.key_encryptor.block_size = 16;
     result.agile.key_encryptor.cipher_algorithm = "AES";
-    result.agile.key_encryptor.cipher_chaining = "CBC";
+    result.agile.key_encryptor.cipher_chaining = "ChainingModeCBC";
     result.agile.key_encryptor.hash = xlnt::detail::hash_algorithm::sha512;
     result.agile.key_encryptor.hash_size = 64;
-    result.agile.key_encryptor.key_bits = 128;
-    result.agile.key_encryptor.salt_size = 10;
-    result.agile.key_encryptor.salt_value = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-    result.agile.key_encryptor.verifier_hash_input = { 1, 2, 3 };
-    result.agile.key_encryptor.verifier_hash_value = { 1, 2, 3 };
-    result.agile.key_encryptor.encrypted_key_value = { 3, 4, 5 };
-
-    result.agile.key_data.salt_value.assign(
-        reinterpret_cast<const std::uint8_t *>(password.data()),
-        reinterpret_cast<const std::uint8_t *>(password.data() + password.size()));
+    result.agile.key_encryptor.key_bits = 256;
+    result.agile.key_encryptor.salt_size = 16;
+    result.agile.key_encryptor.salt_value = 
+    {
+        { 98, 169, 85, 224, 173, 253, 2, 52, 199, 108, 195, 73, 116, 112, 72, 165 }
+    };
+    result.agile.key_encryptor.verifier_hash_input =
+    {
+        { 179, 105, 118, 193, 217, 180, 248, 7, 174, 45, 186, 17, 202, 101, 178, 12 }
+    };
+    result.agile.key_encryptor.verifier_hash_value =
+    {
+        { 82, 190, 235, 102, 30, 33, 103, 191, 3, 160, 153, 30, 127, 117, 8, 195, 65,
+        245, 77, 219, 85, 28, 206, 236, 55, 86, 243, 49, 104, 128, 243, 138, 227, 113,
+        82, 88, 88, 73, 243, 108, 193, 11, 84, 162, 235, 189, 9, 137, 151, 97, 43,
+        137, 197, 72, 164, 192, 65, 252, 253, 227, 236, 242, 252, 179 }
+    };
+    result.agile.key_encryptor.encrypted_key_value =
+    {
+        { 220, 6, 106, 218, 31, 210, 9, 75, 28, 154, 173, 232, 190, 109, 112, 203, 25,
+        5, 45, 152,75, 131, 122, 17, 166, 95, 117, 124, 121, 123, 32, 133 }
+    };
 
     return result;
 }
@@ -141,26 +168,76 @@ std::vector<std::uint8_t> write_agile_encryption_info(
     return encryption_info;
 }
 
-std::vector<std::uint8_t> write_standard_encryption_info(
-    const encryption_info &/*info*/)
+std::vector<std::uint8_t> write_standard_encryption_info(const encryption_info &info)
 {
-    return {};
+    xlnt::detail::byte_vector result;
+
+    const auto version_major = std::uint16_t(4);
+    const auto version_minor = std::uint16_t(2);
+    const auto encryption_flags = std::uint32_t(0b00010000 & 0b00100000);
+
+    result.write(version_major);
+    result.write(version_minor);
+    result.write(encryption_flags);
+
+    const auto header_length = std::uint32_t(32); // calculate this!
+
+    result.write(header_length);
+    result.write(std::uint32_t(0)); // skip_flags
+    result.write(std::uint32_t(0)); // size_extra
+    result.write(std::uint32_t(0x0000660E));
+    result.write(std::uint32_t(0x00008004));
+    result.write(std::uint32_t(info.standard.key_bits));
+    result.write(std::uint32_t(0x00000018));
+    result.write(std::uint32_t(0));
+    result.write(std::uint32_t(0));
+
+    const auto provider = u"Microsoft Enhanced RSA and AES Cryptographic Provider";
+    result.append(xlnt::detail::byte_vector::from(std::u16string(provider)).data());
+
+    result.write(std::uint32_t(info.standard.salt.size()));
+    result.append(info.standard.salt);
+
+    result.append(info.standard.encrypted_verifier);
+
+    result.write(std::uint32_t(20));
+    result.append(info.standard.encrypted_verifier_hash);
+
+    return result.data();
 }
 
 std::vector<std::uint8_t> encrypt_xlsx_agile(
-    const encryption_info &/*info*/,
-    const std::vector<std::uint8_t> &/*plaintext*/)
+    const encryption_info &info,
+    const std::vector<std::uint8_t> &plaintext)
 {
-    return {};
+    auto key = info.calculate_key();
+
+    auto padded = plaintext;
+    padded.resize((plaintext.size() / 16 + (plaintext.size() % 16 == 0 ? 0 : 1)) * 16);
+    auto ciphertext = xlnt::detail::aes_ecb_encrypt(padded, key);
+    const auto length = static_cast<std::uint64_t>(plaintext.size());
+    ciphertext.insert(ciphertext.begin(),
+        reinterpret_cast<const std::uint8_t *>(&length),
+        reinterpret_cast<const std::uint8_t *>(&length + sizeof(std::uint64_t)));
+
+    return ciphertext;
 }
 
 std::vector<std::uint8_t> encrypt_xlsx_standard(
-    const encryption_info &/*info*/,
-    const std::vector<std::uint8_t> &/*plaintext*/)
+    const encryption_info &info,
+    const std::vector<std::uint8_t> &plaintext)
 {
-    //auto key = info.calculate_key();
+    auto key = info.calculate_key();
 
-    return {};
+    auto padded = plaintext;
+    padded.resize((plaintext.size() / 16 + (plaintext.size() % 16 == 0 ? 0 : 1)) * 16);
+    auto ciphertext = xlnt::detail::aes_ecb_encrypt(padded, key);
+    const auto length = static_cast<std::uint64_t>(plaintext.size());
+    ciphertext.insert(ciphertext.begin(),
+        reinterpret_cast<const std::uint8_t *>(&length),
+        reinterpret_cast<const std::uint8_t *>(&length + sizeof(std::uint64_t)));
+
+    return ciphertext;
 }
 
 std::vector<std::uint8_t> encrypt_xlsx(
@@ -168,6 +245,7 @@ std::vector<std::uint8_t> encrypt_xlsx(
     const std::u16string &password)
 {
     auto encryption_info = generate_encryption_info(password);
+    encryption_info.password = u"secret";
 
     xlnt::detail::compound_document document;
 

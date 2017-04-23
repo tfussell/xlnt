@@ -24,6 +24,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstring>
 #include <vector>
 
 namespace xlnt {
@@ -78,6 +79,7 @@ public:
     {
         T result;
         std::memcpy(&result, bytes_->data() + offset_, sizeof(T));
+        offset_ += sizeof(T);
 
         return result;
     }
@@ -109,7 +111,7 @@ public:
     {
         byte_vector result;
 
-        result.resize(ints.size() / sizeof(T));
+        result.resize(ints.size() * sizeof(T));
         std::memcpy(result.bytes_.data(), ints.data(), result.bytes_.size());
 
         return result;
@@ -120,7 +122,7 @@ public:
     {
         byte_vector result;
 
-        result.resize(string.size() / sizeof(T));
+        result.resize(string.size() * sizeof(T));
         std::memcpy(result.bytes_.data(), string.data(), result.bytes_.size());
 
         return result;
@@ -241,8 +243,9 @@ public:
 
     void append(const std::vector<std::uint8_t> &data, std::size_t offset, std::size_t count)
     {
+        auto end_index = size();
         extend(count);
-        std::memcpy(bytes_.data(), data.data() + offset, count);
+        std::memcpy(bytes_.data() + end_index, data.data() + offset, count);
     }
 
     void append(const std::vector<std::uint8_t> &data)

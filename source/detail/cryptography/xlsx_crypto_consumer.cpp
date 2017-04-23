@@ -161,6 +161,7 @@ encryption_info read_standard_encryption_info(const std::vector<std::uint8_t> &i
     {
         throw xlnt::exception("invalid cryptographic provider");
     }
+    reader.offset(reader.offset() + csp_name_length);
 
     const auto salt_size = reader.read<std::uint32_t>();
     standard_info.salt = std::vector<std::uint8_t>(
@@ -174,7 +175,7 @@ encryption_info read_standard_encryption_info(const std::vector<std::uint8_t> &i
         info_bytes.begin() + static_cast<std::ptrdiff_t>(reader.offset() + verifier_size));
     reader.offset(reader.offset() + verifier_size);
 
-    const auto verifier_hash_size = reader.read<std::uint32_t>();
+    /*const auto verifier_hash_size = */reader.read<std::uint32_t>();
     const auto encrypted_verifier_hash_size = std::size_t(32);
     standard_info.encrypted_verifier_hash = std::vector<std::uint8_t>(
         info_bytes.begin() + static_cast<std::ptrdiff_t>(reader.offset()),
