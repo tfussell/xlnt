@@ -28,6 +28,7 @@
 #include <detail/cryptography/compound_document.hpp>
 #include <detail/cryptography/encryption_info.hpp>
 #include <detail/cryptography/value_traits.hpp>
+#include <detail/cryptography/xlsx_crypto_producer.hpp>
 #include <detail/external/include_libstudxml.hpp>
 #include <detail/serialization/vector_streambuf.hpp>
 #include <detail/serialization/xlsx_producer.hpp>

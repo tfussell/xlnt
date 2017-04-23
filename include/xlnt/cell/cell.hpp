@@ -650,4 +650,46 @@ XLNT_API bool operator==(std::nullptr_t, const cell &cell);
 /// </summary>
 XLNT_API std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell);
 
+template<>
+bool cell::value<bool>() const;
+
+template<>
+int cell::value<int>() const;
+
+template<>
+unsigned int cell::value<unsigned int>() const;
+
+template<>
+long long int cell::value<long long int>() const;
+
+template<>
+unsigned long long cell::value<unsigned long long int>() const;
+
+template<>
+float cell::value<float>() const;
+
+template<>
+double cell::value<double>() const;
+
+template<>
+long double cell::value<long double>() const;
+
+template<>
+date cell::value<date>() const;
+
+template<>
+time cell::value<time>() const;
+
+template<>
+datetime cell::value<datetime>() const;
+
+template<>
+timedelta cell::value<timedelta>() const;
+
+template<>
+std::string cell::value<std::string>() const;
+
+template<>
+rich_text cell::value<rich_text>() const;
+
 } // namespace xlnt

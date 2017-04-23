@@ -42,6 +42,8 @@ public:
     {
     }
 
+    byte_reader(const byte_reader &other) = default;
+
     byte_reader &operator=(const byte_reader &other)
     {
         offset_ = other.offset_;
@@ -238,7 +240,7 @@ public:
 
     std::vector<byte>::iterator iterator()
     {
-        return bytes_.begin() + offset();
+        return bytes_.begin() + static_cast<std::ptrdiff_t>(offset());
     }
 
     void append(const std::vector<std::uint8_t> &data, std::size_t offset, std::size_t count)

@@ -98,7 +98,7 @@ public:
     /// <summary>
     /// Creates a i4-type variant with the given value.
     /// </summary>
-    variant(int value);
+    variant(std::int32_t value);
 
     /// <summary>
     /// Creates a bool-type variant with the given value.
@@ -113,12 +113,12 @@ public:
     /// <summary>
     /// Creates a vector_i4-type variant with the given value.
     /// </summary>
-    variant(const std::initializer_list<int> &value);
+    variant(const std::initializer_list<std::int32_t> &value);
 
     /// <summary>
     /// Creates a vector_i4-type variant with the given value.
     /// </summary>
-    variant(const std::vector<int> &value);
+    variant(const std::vector<std::int32_t> &value);
 
     /// <summary>
     /// Creates a vector_string-type variant with the given value.
@@ -168,5 +168,26 @@ private:
     std::int32_t i4_value_;
     std::string lpstr_value_;
 };
+
+template<>
+bool variant::get() const;
+
+template<>
+std::int32_t variant::get() const;
+
+template<>
+std::string variant::get() const;
+
+template<>
+datetime variant::get() const;
+
+template<>
+std::vector<std::int32_t> variant::get() const;
+
+template<>
+std::vector<std::string> variant::get() const;
+
+template<>
+std::vector<variant> variant::get() const;
 
 } // namespace xlnt

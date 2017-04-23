@@ -64,13 +64,18 @@ public:
     {
         data_.resize(newsize, FreeSector);
     }
-
-    void set(std::size_t index, sector_id value)
+/*
+    void set(sector_id index, sector_id value)
     {
-        if (index >= count()) resize(index + 1);
-        data_[index] = value;
-    }
+        if (static_cast<std::size_t>(index) >= count())
+        {
+            resize(static_cast<std::size_t>(index + 1));
+        }
 
+        data_[static_cast<std::size_t>(index)] = value;
+    }
+*/
+/*
     void setChain(std::vector<sector_id> chain)
     {
         if (chain.size())
@@ -83,7 +88,7 @@ public:
             set(chain[chain.size() - 1], EndOfChainSector);
         }
     }
-
+*/
     std::vector<sector_id> follow(sector_id start) const
     {
         auto chain = std::vector<sector_id>();
@@ -95,11 +100,11 @@ public:
 
         auto p = start;
 
-        auto already_exists = [](const std::vector<sector_id> &chain, sector_id item)
+        auto already_exists = [](const std::vector<sector_id> &check, sector_id item)
         {
-            for (std::size_t i = 0; i < chain.size(); i++)
+            for (std::size_t i = 0; i < check.size(); i++)
             {
-                if (chain[i] == item) return true;
+                if (check[i] == item) return true;
             }
 
             return false;
@@ -112,8 +117,8 @@ public:
             if (p == MasterAllocationTableSector) break;
             if (already_exists(chain, p)) break;
             chain.push_back(p);
-            if (data_[p] >= static_cast<sector_id>(count())) break;
-            p = data_[p];
+            if (data_[static_cast<std::size_t>(p)] >= static_cast<sector_id>(count())) break;
+            p = data_[static_cast<std::size_t>(p)];
         }
 
         return chain;
@@ -128,12 +133,12 @@ public:
     {
         return byte_vector::from(data_);
     }
-
+/*
     std::size_t size_in_bytes()
     {
         return count() * 4;
     }
-
+*/
     std::size_t sector_size() const
     {
         return sector_size_;
@@ -157,8 +162,6 @@ const sector_id allocation_table::MasterAllocationTableSector = -4;
 class header
 {
 public:
-    static const std::uint64_t magic;
-
     header()
     {
     }
@@ -264,7 +267,7 @@ private:
     std::uint32_t num_short_sectors_ = 0;
     sector_id master_start_ = 0;
     std::uint32_t num_master_sectors_ = 0;
-    std::array<sector_id, 109> first_master_table = { allocation_table::FreeSector };
+    std::array<sector_id, 109> first_master_table = {{allocation_table::FreeSector}};
 };
 
 struct directory_entry
@@ -304,7 +307,7 @@ struct directory_entry
 class directory_tree
 {
 public:
-    static const directory_id End = -1;
+    //static const directory_id End = -1;
 
     static void entry_name(directory_entry &entry, std::u16string name)
     {
@@ -336,12 +339,12 @@ public:
 
     directory_entry &entry(directory_id index)
     {
-        return entries[index];
+        return entries[static_cast<std::size_t>(index)];
     }
 
     const directory_entry &entry(directory_id index) const
     {
-        return entries[index];
+        return entries[static_cast<std::size_t>(index)];
     }
 
     const directory_entry &entry(const std::u16string &name) const
@@ -374,7 +377,7 @@ public:
 
         return entry(index);
     }
-
+/*
     directory_id parent(directory_id index)
     {
         // brute-force, basically we iterate for each entries, find its children
@@ -394,7 +397,8 @@ public:
 
         return -1;
     }
-
+*/
+/*
     std::u16string path(directory_id index)
     {
         // don't use root name ("Root Entry"), just give "/"
@@ -422,7 +426,7 @@ public:
 
         return result;
     }
-
+*/
     std::vector<directory_id> children(directory_id index) const
     {
         auto result = std::vector<directory_id>();
@@ -476,11 +480,12 @@ public:
         return result;
     }
 
-    // return space required to save this dirtree
+    /*
     std::size_t size()
     {
         return entry_count() * sizeof(directory_entry);
     }
+    */
 
     directory_entry create_root_entry() const
     {
@@ -631,7 +636,7 @@ public:
 
         for (auto sector : sectors)
         {
-            auto position = sector_size * sector;
+            auto position = sector_size * static_cast<std::size_t>(sector);
             result.append(sectors_.data(), position, sector_size);
         }
 
@@ -672,7 +677,7 @@ public:
 
         for (auto sector : sectors)
         {
-            auto position = sector * short_sector_size;
+            auto position = short_sector_size * static_cast<std::size_t>(sector);
             auto master_allocation_table_index = position / sector_size;
 
             auto sector_data = load_sectors({ short_container_stream_[master_allocation_table_index] });

@@ -23,8 +23,9 @@
 
 #include <codecvt>
 #include <locale>
-
 #include <string>
+
+#include <detail/unicode.hpp>
 
 namespace xlnt {
 namespace detail {
@@ -75,8 +76,8 @@ std::string latin1_to_utf8(const std::string &latin1)
         }
         else
         {
-            utf8.push_back(0xc0 | static_cast<std::uint8_t>(character) >> 6);
-            utf8.push_back(0x80 | (static_cast<std::uint8_t>(character) & 0x3f));
+            utf8.push_back(static_cast<char>(0xc0 + (character >> 6)));
+            utf8.push_back(static_cast<char>(0x80 + (character & 0x3f)));
         }
     }
 
