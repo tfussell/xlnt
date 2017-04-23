@@ -27,24 +27,26 @@
 #include <cstring>
 #include <vector>
 
+#include <xlnt/utils/exceptions.hpp>
+
 namespace xlnt {
 namespace detail {
 
 using byte = std::uint8_t;
 
-class byte_reader
+class binary_reader
 {
 public:
-    byte_reader() = delete;
+    binary_reader() = delete;
 
-    byte_reader(const std::vector<byte> &bytes)
+    binary_reader(const std::vector<byte> &bytes)
         : bytes_(&bytes)
     {
     }
 
-    byte_reader(const byte_reader &other) = default;
+    binary_reader(const binary_reader &other) = default;
 
-    byte_reader &operator=(const byte_reader &other)
+    binary_reader &operator=(const binary_reader &other)
     {
         offset_ = other.offset_;
         bytes_ = other.bytes_;
@@ -52,7 +54,7 @@ public:
         return *this;
     }
 
-    ~byte_reader()
+    ~binary_reader()
     {
     }
 
@@ -89,7 +91,7 @@ public:
     template<typename T>
     std::vector<T> as_vector_of() const
     {
-        auto result = std::vector<T>(size() / sizeof(T), 0);
+        auto result = std::vector<T>(size() / sizeof(T), T());
         std::memcpy(result.data(), bytes_->data(), size());
 
         return result;
@@ -105,108 +107,59 @@ private:
     const std::vector<std::uint8_t> *bytes_;
 };
 
-class byte_vector
+class binary_writer
 {
 public:
-    template<typename T>
-    static byte_vector from(const std::vector<T> &ints)
-    {
-        byte_vector result;
-
-        result.resize(ints.size() * sizeof(T));
-        std::memcpy(result.bytes_.data(), ints.data(), result.bytes_.size());
-
-        return result;
-    }
-
-    template<typename T>
-    static byte_vector from(const std::basic_string<T> &string)
-    {
-        byte_vector result;
-
-        result.resize(string.size() * sizeof(T));
-        std::memcpy(result.bytes_.data(), string.data(), result.bytes_.size());
-
-        return result;
-    }
-
-    byte_vector()
-        : reader_(bytes_)
+    binary_writer(std::vector<byte> &bytes)
+        : bytes_(&bytes)
     {
     }
 
-    byte_vector(std::vector<byte> &bytes)
-        : bytes_(bytes),
-          reader_(bytes_)
-    {
-    }
-
-    template<typename T>
-    byte_vector(const std::vector<T> &ints)
-        : byte_vector()
-    {
-        bytes_ = from(ints).data();
-    }
-
-    byte_vector(const byte_vector &other)
-        : byte_vector()
+    binary_writer(const binary_writer &other)
     {
         *this = other;
     }
 
-    ~byte_vector()
+    ~binary_writer()
     {
     }
 
-    byte_vector &operator=(const byte_vector &other)
+    binary_writer &operator=(const binary_writer &other)
     {
         bytes_ = other.bytes_;
-        reader_ = byte_reader(bytes_);
+        offset_ = other.offset_;
 
         return *this;
     }
-
-    const std::vector<byte> &data() const
+    
+    template<typename T>
+    void assign(const std::vector<T> &ints)
     {
-        return bytes_;
+        resize(ints.size() * sizeof(T));
+        std::memcpy(bytes_->data(), ints.data(), bytes_->size());
     }
 
-    std::vector<byte> data()
+    template<typename T>
+    void assign(const std::basic_string<T> &string)
     {
-        return bytes_;
+        resize(string.size() * sizeof(T));
+        std::memcpy(bytes_->data(), string.data(), bytes_->size());
     }
 
-    void data(std::vector<byte> &bytes)
+    void offset(std::size_t new_offset)
     {
-        bytes_ = bytes;
-    }
-
-    void offset(std::size_t offset)
-    {
-        reader_.offset(offset);
+        offset_ = new_offset;
     }
 
     std::size_t offset() const
     {
-        return reader_.offset();
+        return offset_;
     }
 
     void reset()
     {
-        reader_.reset();
-        bytes_.clear();
-    }
-
-    template<typename T>
-    T read()
-    {
-        return reader_.read<T>();
-    }
-
-    template<typename T>
-    std::vector<T> as_vector_of() const
-    {
-        return reader_.as_vector_of<T>();
+        offset_ = 0;
+        bytes_->clear();
     }
 
     template<typename T>
@@ -219,35 +172,47 @@ public:
             extend(offset() + num_bytes - size());
         }
 
-        std::memcpy(bytes_.data() + offset(), &value, num_bytes);
-        reader_.offset(reader_.offset() + num_bytes);
+        std::memcpy(bytes_->data() + offset(), &value, num_bytes);
+        offset_ += num_bytes;
     }
 
     std::size_t size() const
     {
-        return bytes_.size();
+        return bytes_->size();
     }
 
     void resize(std::size_t new_size, byte fill = 0)
     {
-        bytes_.resize(new_size, fill);
+        bytes_->resize(new_size, fill);
     }
 
     void extend(std::size_t amount, byte fill = 0)
     {
-        bytes_.resize(size() + amount, fill);
+        bytes_->resize(size() + amount, fill);
     }
 
     std::vector<byte>::iterator iterator()
     {
-        return bytes_.begin() + static_cast<std::ptrdiff_t>(offset());
+        return bytes_->begin() + static_cast<std::ptrdiff_t>(offset());
     }
 
     void append(const std::vector<std::uint8_t> &data, std::size_t offset, std::size_t count)
     {
         auto end_index = size();
         extend(count);
-        std::memcpy(bytes_.data() + end_index, data.data() + offset, count);
+        std::memcpy(bytes_->data() + end_index, data.data() + offset, count);
+    }
+
+    void append(const byte *data, const std::size_t data_size, std::size_t offset, std::size_t count)
+    {
+        if (offset + count > data_size)
+        {
+            throw xlnt::exception("out of bounds read");
+        }
+
+        const auto end_index = size();
+        extend(count);
+        std::memcpy(bytes_->data() + end_index, data + offset, count);
     }
 
     void append(const std::vector<std::uint8_t> &data)
@@ -256,9 +221,19 @@ public:
     }
 
 private:
-    std::vector<byte> bytes_;
-    byte_reader reader_;
+    std::vector<byte> *bytes_;
+    std::size_t offset_ = 0;
 };
+
+template<typename T>
+std::vector<byte> string_to_bytes(const std::basic_string<T> &string)
+{
+    std::vector<byte> bytes;
+    binary_writer writer(bytes);
+    writer.assign(string);
+    
+    return bytes;
+}
 
 } // namespace detail
 } // namespace xlnt

@@ -171,40 +171,41 @@ std::vector<std::uint8_t> write_agile_encryption_info(
 
 std::vector<std::uint8_t> write_standard_encryption_info(const encryption_info &info)
 {
-    xlnt::detail::byte_vector result;
+    auto result = std::vector<std::uint8_t>();
+    auto writer = xlnt::detail::binary_writer(result);
 
     const auto version_major = std::uint16_t(4);
     const auto version_minor = std::uint16_t(2);
     const auto encryption_flags = std::uint32_t(0b00010000 & 0b00100000);
 
-    result.write(version_major);
-    result.write(version_minor);
-    result.write(encryption_flags);
+    writer.write(version_major);
+    writer.write(version_minor);
+    writer.write(encryption_flags);
 
     const auto header_length = std::uint32_t(32); // calculate this!
 
-    result.write(header_length);
-    result.write(std::uint32_t(0)); // skip_flags
-    result.write(std::uint32_t(0)); // size_extra
-    result.write(std::uint32_t(0x0000660E));
-    result.write(std::uint32_t(0x00008004));
-    result.write(std::uint32_t(info.standard.key_bits));
-    result.write(std::uint32_t(0x00000018));
-    result.write(std::uint32_t(0));
-    result.write(std::uint32_t(0));
+    writer.write(header_length);
+    writer.write(std::uint32_t(0)); // skip_flags
+    writer.write(std::uint32_t(0)); // size_extra
+    writer.write(std::uint32_t(0x0000660E));
+    writer.write(std::uint32_t(0x00008004));
+    writer.write(std::uint32_t(info.standard.key_bits));
+    writer.write(std::uint32_t(0x00000018));
+    writer.write(std::uint32_t(0));
+    writer.write(std::uint32_t(0));
 
-    const auto provider = u"Microsoft Enhanced RSA and AES Cryptographic Provider";
-    result.append(xlnt::detail::byte_vector::from(std::u16string(provider)).data());
+    const auto provider = std::u16string(u"Microsoft Enhanced RSA and AES Cryptographic Provider");
+    writer.append(xlnt::detail::string_to_bytes(provider));
 
-    result.write(std::uint32_t(info.standard.salt.size()));
-    result.append(info.standard.salt);
+    writer.write(std::uint32_t(info.standard.salt.size()));
+    writer.append(info.standard.salt);
 
-    result.append(info.standard.encrypted_verifier);
+    writer.append(info.standard.encrypted_verifier);
 
-    result.write(std::uint32_t(20));
-    result.append(info.standard.encrypted_verifier_hash);
+    writer.write(std::uint32_t(20));
+    writer.append(info.standard.encrypted_verifier_hash);
 
-    return result.data();
+    return result;
 }
 
 std::vector<std::uint8_t> encrypt_xlsx_agile(

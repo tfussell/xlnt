@@ -25,7 +25,7 @@
 #include <cstdint>
 #include <vector>
 
-#include <detail/bytes.hpp>
+#include <detail/binary.hpp>
 #include <detail/constants.hpp>
 #include <detail/unicode.hpp>
 #include <detail/cryptography/encryption_info.hpp>
@@ -42,7 +42,7 @@
 namespace {
 
 using xlnt::detail::byte;
-using xlnt::detail::byte_vector;
+using xlnt::detail::binary_reader;
 using xlnt::detail::encryption_info;
 
 std::vector<std::uint8_t> decrypt_xlsx_standard(
@@ -51,7 +51,7 @@ std::vector<std::uint8_t> decrypt_xlsx_standard(
 {
     const auto key = info.calculate_key();
 
-    auto reader = xlnt::detail::byte_reader(encrypted_package);
+    auto reader = binary_reader(encrypted_package);
     auto decrypted_size = reader.read<std::uint64_t>();
     auto decrypted = xlnt::detail::aes_ecb_decrypt(encrypted_package, key, reader.offset());
     decrypted.resize(static_cast<std::size_t>(decrypted_size));
@@ -107,7 +107,7 @@ encryption_info::standard_encryption_info read_standard_encryption_info(const st
 {
     encryption_info::standard_encryption_info result;
 
-    auto reader = xlnt::detail::byte_reader(info_bytes);
+    auto reader = binary_reader(info_bytes);
 
     // skip version info
     reader.read<std::uint32_t>();
@@ -275,7 +275,7 @@ encryption_info read_encryption_info(const std::vector<std::uint8_t> &info_bytes
     
     info.password = password;
 
-    auto reader = xlnt::detail::byte_reader(info_bytes);
+    auto reader = binary_reader(info_bytes);
 
     auto version_major = reader.read<std::uint16_t>();
     auto version_minor = reader.read<std::uint16_t>();

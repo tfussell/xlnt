@@ -31,13 +31,15 @@
 #include <string>
 #include <vector>
 
-#include <detail/bytes.hpp>
+#include <detail/binary.hpp>
 #include <detail/cryptography/compound_document.hpp>
 #include <xlnt/utils/exceptions.hpp>
 
 namespace {
 
-using xlnt::detail::byte_vector;
+using xlnt::detail::byte;
+using xlnt::detail::binary_reader;
+using xlnt::detail::binary_writer;
 
 using directory_id = std::int32_t;
 using sector_id = std::int32_t;
@@ -124,14 +126,11 @@ public:
         return chain;
     }
 
-    void load(const byte_vector &data)
+    void load(std::size_t new_sector_size, const std::vector<byte> &sectors)
     {
-        data_ = data.as_vector_of<sector_id>();
-    }
-
-    byte_vector save() const
-    {
-        return byte_vector::from(data_);
+        sector_size(new_sector_size);
+        auto reader = binary_reader(sectors);
+        data_ = reader.as_vector_of<sector_id>();
     }
 
     std::size_t sector_size() const
@@ -174,14 +173,14 @@ public:
         return true;
     }
 
-    void load(byte_vector &data)
+    void load(binary_reader &reader)
     {
-        if (data.size() < 512)
+        if (reader.size() < 512)
         {
             throw xlnt::exception("bad header");
         }
 
-        *this = data.read<header>();
+        *this = reader.read<header>();
 
         if (file_id_ != 0xe11ab1a1e011cfd0)
         {
@@ -192,14 +191,6 @@ public:
         {
             throw xlnt::exception("bad ole");
         }
-    }
-
-    byte_vector save() const
-    {
-        byte_vector out;
-        out.write(*this);
-
-        return out;
     }
 
     std::size_t sector_size() const
@@ -436,43 +427,17 @@ public:
     }
 
 
-    void load(byte_vector &data)
+    void load(const std::vector<byte> &data)
     {
-        entries.clear();
-
-        auto num_entries = data.size() / sizeof(directory_entry);
-
-        for (auto i = std::size_t(0); i < num_entries; ++i)
+        auto reader = binary_reader(data);
+        entries = reader.as_vector_of<directory_entry>();
+        
+        auto is_empty = [](const directory_entry &entry)
         {
-            auto e = data.read<directory_entry>();
+            return entry.type == directory_entry::entry_type::Empty;
+        };
 
-            if (e.type == directory_entry::entry_type::Empty)
-            {
-                continue;
-            }
-
-            if ((e.type != directory_entry::entry_type::UserStream) 
-                && (e.type != directory_entry::entry_type::UserStorage)
-                && (e.type != directory_entry::entry_type::RootStorage))
-            {
-                throw xlnt::exception("invalid entry");
-            }
-
-            entries.push_back(e);
-        }
-    }
-
-
-    byte_vector save() const
-    {
-        auto result = byte_vector();
-
-        for (auto &entry : entries)
-        {
-            result.write(entry);
-        }
-
-        return result;
+        entries.erase(std::remove_if(entries.begin(), entries.end(), is_empty));
     }
 
     directory_entry create_root_entry() const
@@ -606,62 +571,72 @@ namespace detail {
 class compound_document_reader_impl
 {
 public:
-    compound_document_reader_impl(const std::vector<std::uint8_t> &data)
+    compound_document_reader_impl(const std::vector<byte> &bytes)
+        : sectors_(bytes.data() + sizeof(header)),
+          sectors_size_(bytes.size())
     {
-        auto reader = byte_vector(data);
+        auto reader = binary_reader(bytes);
+
         header_.load(reader);
 
-        sector_table_.sector_size(header_.sector_size());
-        short_sector_table_.sector_size(header_.short_sector_size());
+        const auto sector_size = header_.sector_size();
+        const auto master_table_chain = load_master_table();
+        const auto master_sectors = read(master_table_chain);
+        sector_table_.load(sector_size, master_sectors);
 
-        sectors_.append(data, 512, data.size() - 512);
+        const auto short_sector_size = header_.short_sector_size();
+        const auto short_start = header_.short_table_start();
+        const auto short_table_chain = sector_table_.follow(short_start);
+        const auto short_sectors = read(short_table_chain);
+        short_sector_table_.load(short_sector_size, short_sectors);
 
-        sector_table_.load(load_sectors(load_msat(reader)));
-        short_sector_table_.load(load_sectors(sector_table_.follow(header_.short_table_start())));
-        auto directory_data = load_sectors(sector_table_.follow(header_.directory_start()));
-        directory_.load(directory_data);
+        const auto directory_start = header_.directory_start();
+        const auto directory_chain = sector_table_.follow(directory_start);
+        const auto directory_sectors = read(directory_chain);
+        directory_.load(directory_sectors);
 
         auto first_short_sector = directory_.entry(u"/Root Entry", false).first;
         short_container_stream_ = sector_table_.follow(first_short_sector);
     }
 
-    byte_vector load_sectors(const std::vector<sector_id> &sectors) const
+    std::vector<byte> read(const std::vector<sector_id> &sectors) const
     {
-        auto result = byte_vector();
         const auto sector_size = sector_table_.sector_size();
+        auto result = std::vector<byte>();
+        auto writer = binary_writer(result);
 
         for (auto sector : sectors)
         {
-            auto position = sector_size * static_cast<std::size_t>(sector);
-            result.append(sectors_.data(), position, sector_size);
+            auto position = sizeof(header) + sector_size * static_cast<std::size_t>(sector);
+            writer.append(sectors_, sectors_size_, position, sector_size);
         }
-
+        
         return result;
     }
 
-    byte_vector load_short_sectors(const std::vector<sector_id> &sectors) const
+    std::vector<byte> read_short(const std::vector<sector_id> &sectors) const
     {
-        auto result = byte_vector();
         const auto short_sector_size = short_sector_table_.sector_size();
         const auto sector_size = sector_table_.sector_size();
+        auto result = std::vector<byte>();
+        auto writer = binary_writer(result);
 
         for (auto sector : sectors)
         {
             auto position = short_sector_size * static_cast<std::size_t>(sector);
             auto master_allocation_table_index = position / sector_size;
 
-            auto sector_data = load_sectors({ short_container_stream_[master_allocation_table_index] });
+            auto sector_data = read({ short_container_stream_[master_allocation_table_index] });
 
             auto offset = position % sector_size;
-            result.append(sector_data.data(), offset, short_sector_size);
+            writer.append(sector_data, offset, short_sector_size);
         }
 
         return result;
     }
 
-    std::vector<sector_id> load_msat(byte_vector &/*data*/)
+    std::vector<sector_id> load_master_table()
     {
-        const auto sector_size = header_.sector_size();
         auto master_sectors = header_.sectors();
 
         if (header_.num_master_sectors() > 109)
@@ -670,60 +645,56 @@ public:
 
             for (auto r = std::size_t(0); r < header_.num_master_sectors(); ++r)
             {
-                auto msat = load_sectors({ current_sector });
-                auto index = sector_id(0);
-
-                while (index < static_cast<sector_id>((sector_size - 1) / sizeof(sector_id)))
-                {
-                    master_sectors.push_back(msat.read<sector_id>());
-                }
-
-                current_sector = msat.read<sector_id>();
+                auto current_sector_data = read({ current_sector });
+                auto current_sector_reader = binary_reader(current_sector_data);
+                auto current_sector_sectors = current_sector_reader.as_vector_of<sector_id>();
+                
+                current_sector = current_sector_sectors.back();
+                current_sector_sectors.pop_back();
+                
+                master_sectors.insert(
+                    current_sector_sectors.begin(),
+                    current_sector_sectors.end(),
+                    master_sectors.end());
             }
         }
 
         return master_sectors;
     }
 
-    byte_vector read_stream(const std::u16string &name) const
+    std::vector<byte> read_stream(const std::u16string &name) const
     {
         const auto entry = directory_.entry(name);
-        byte_vector result;
 
-        if (entry.size < header_.threshold())
-        {
-            result = load_short_sectors(short_sector_table_.follow(entry.first));
-            result.resize(entry.size);
-        }
-        else
-        {
-            result = load_sectors(sector_table_.follow(entry.first));
-            result.resize(entry.size);
-        }
+        auto result = entry.size < header_.threshold()
+            ? read_short(short_sector_table_.follow(entry.first))
+            : read(sector_table_.follow(entry.first));
+        result.resize(entry.size);
 
         return result;
     }
 
 private:
+    const byte *sectors_;
+    const std::size_t sectors_size_;
     directory_tree directory_;
     header header_;
     allocation_table sector_table_;
-    byte_vector sectors_;
     allocation_table short_sector_table_;
-    byte_vector short_sectors_;
     std::vector<sector_id> short_container_stream_;
 };
 
 class compound_document_writer_impl
 {
 public:
-    compound_document_writer_impl(std::vector<std::uint8_t> &data)
+    compound_document_writer_impl(std::vector<byte> &bytes)
+        : writer_(bytes)
     {
         sector_table_.sector_size(header_.sector_size());
         short_sector_table_.sector_size(header_.short_sector_size());
     }
 
-    void write_sectors(const byte_vector &data, directory_entry &/*entry*/)
+    void write_sectors(const std::vector<byte> &data, directory_entry &/*entry*/)
     {
         const auto sector_size = sector_table_.sector_size();
         const auto num_sectors = data.size() / sector_size;
@@ -732,11 +703,11 @@ public:
         {
             auto position = sector_size * i;
             auto current_sector_size = data.size() % sector_size;
-            sectors_.append(data.data(), position, current_sector_size);
+            writer_.append(data, position, current_sector_size);
         }
     }
 
-    void write_short_sectors(const byte_vector &data, directory_entry &/*entry*/)
+    void write_short_sectors(const std::vector<byte> &data, directory_entry &/*entry*/)
     {
         const auto sector_size = sector_table_.sector_size();
         const auto num_sectors = data.size() / sector_size;
@@ -745,24 +716,11 @@ public:
         {
             auto position = sector_size * i;
             auto current_sector_size = data.size() % sector_size;
-            sectors_.append(data.data(), position, current_sector_size);
+            writer_.append(data, position, current_sector_size);
         }
     }
 
-    byte_vector save() const
-    {
-        auto result = byte_vector();
-
-        result.append(header_.save().data());
-        result.append(sector_table_.save().data());
-        result.append(short_sector_table_.save().data());
-        result.append(directory_.save().data());
-        result.append(sectors_.data());
-
-        return result;
-    }
-
-    void write_stream(const std::u16string &name, const byte_vector &data)
+    void write_stream(const std::u16string &name, const std::vector<byte> &data)
     {
         auto &entry = directory_.entry(name, true);
         
@@ -777,12 +735,11 @@ public:
     }
 
 private:
+    binary_writer writer_;
     directory_tree directory_;
     header header_;
     allocation_table sector_table_;
-    byte_vector sectors_;
     allocation_table short_sector_table_;
-    byte_vector short_sectors_;
     std::vector<sector_id> short_container_stream_;
 };
 
@@ -797,7 +754,7 @@ compound_document_reader::~compound_document_reader()
 
 std::vector<std::uint8_t> compound_document_reader::read_stream(const std::u16string &name) const
 {
-    return d_->read_stream(name).data();
+    return d_->read_stream(name);
 }
 
 compound_document_writer::compound_document_writer(std::vector<std::uint8_t> &data)

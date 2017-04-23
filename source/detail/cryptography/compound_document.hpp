@@ -28,7 +28,7 @@
 #include <memory>
 #include <string>
 
-#include <detail/bytes.hpp>
+#include <detail/binary.hpp>
 
 namespace xlnt {
 namespace detail {
