@@ -126,9 +126,8 @@ public:
         return chain;
     }
 
-    void load(std::size_t new_sector_size, const std::vector<byte> &sectors)
+    void load(const std::vector<byte> &sectors)
     {
-        sector_size(new_sector_size);
         auto reader = binary_reader(sectors);
         data_ = reader.as_vector_of<sector_id>();
     }
@@ -580,15 +579,17 @@ public:
         header_.load(reader);
 
         const auto sector_size = header_.sector_size();
+        sector_table_.sector_size(sector_size);
         const auto master_table_chain = load_master_table();
         const auto master_sectors = read(master_table_chain);
-        sector_table_.load(sector_size, master_sectors);
+        sector_table_.load(master_sectors);
 
         const auto short_sector_size = header_.short_sector_size();
+        short_sector_table_.sector_size(short_sector_size);
         const auto short_start = header_.short_table_start();
         const auto short_table_chain = sector_table_.follow(short_start);
         const auto short_sectors = read(short_table_chain);
-        short_sector_table_.load(short_sector_size, short_sectors);
+        short_sector_table_.load(short_sectors);
 
         const auto directory_start = header_.directory_start();
         const auto directory_chain = sector_table_.follow(directory_start);
@@ -607,7 +608,7 @@ public:
 
         for (auto sector : sectors)
         {
-            auto position = sizeof(header) + sector_size * static_cast<std::size_t>(sector);
+            auto position = sector_size * static_cast<std::size_t>(sector);
             writer.append(sectors_, sectors_size_, position, sector_size);
         }
         
