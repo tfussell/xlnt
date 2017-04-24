@@ -28,6 +28,7 @@
 #include <array>
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include <detail/binary.hpp>
 
@@ -46,16 +47,6 @@ struct compound_document_header
         little_endian = 0xFEFF
     };
 
-    std::size_t sector_size() const
-    {
-        return static_cast<std::size_t>(1) << sector_size_power;
-    }
-
-    std::size_t short_sector_size() const
-    {
-        return static_cast<std::size_t>(1) << short_sector_size_power;
-    }
-
     std::uint64_t file_id = 0xe11ab1a1e011cfd0;
     std::array<std::uint8_t, 16> ignore1 = { { 0 } };
     std::uint16_t revision = 0x003E;
@@ -70,7 +61,7 @@ struct compound_document_header
     std::uint32_t threshold = 4096;
     sector_id short_table_start = -1;
     std::uint32_t num_short_sectors = 0;
-    sector_id sector_table_start = -1;
+    sector_id extra_msat_start = -2;
     std::uint32_t num_extra_msat_sectors = 0;
     std::array<sector_id, 109> msat = { 0 };
 };
@@ -109,13 +100,13 @@ struct compound_document_entry
 
     std::array<char16_t, 32> name_array = { { 0 } };
     std::uint16_t name_length = 0;
-    entry_type type;
-    entry_color color;
+    entry_type type = entry_type::Empty;
+    entry_color color = entry_color::Red;
     directory_id prev = -1;
     directory_id next = -1;
     directory_id child = -1;
     std::array<std::uint8_t, 36> ignore;
-    sector_id start = 0;
+    sector_id start = -1;
     std::uint32_t size = 0;
     std::uint32_t ignore2;
 };
@@ -131,7 +122,12 @@ public:
     void write_stream(const std::u16string &filename, const std::vector<std::uint8_t> &data);
 
 private:
-    compound_document_header &header();
+    std::size_t sector_size();
+    std::size_t short_sector_size();
+    std::size_t sector_data_start();
+
+    bool contains_entry(const std::u16string &path);
+    compound_document_entry &find_entry(const std::u16string &path);
 
     std::vector<byte> read(sector_id start);
     std::vector<byte> read_short(sector_id start);
@@ -139,25 +135,33 @@ private:
     void read_msat();
     void read_sat();
     void read_ssat();
+    void read_header();
+    void read_directory_tree();
 
     void write(const std::vector<byte> &data, sector_id start);
     void write_short(const std::vector<byte> &data, sector_id start);
 
-    compound_document_entry &insert_entry(const std::u16string &name);
-    compound_document_entry &find_entry(const std::u16string &name);
-    compound_document_entry &find_entry(directory_id id);
-    bool contains_entry(const std::u16string &name);
-    std::vector<directory_id> find_siblings(directory_id entry);
-    std::vector<directory_id> children(directory_id entry);
+    void write_msat();
+    void write_sat();
+    void write_ssat();
+    void write_header();
+    void write_directory_tree();
 
-    sector_id allocate_sector(std::size_t count = 1);
+    sector_id allocate_sectors(std::size_t sectors);
+
+    compound_document_entry &insert_entry(const std::u16string &path, 
+        compound_document_entry::entry_type type);
 
     std::unique_ptr<binary_reader> reader_;
     std::unique_ptr<binary_writer> writer_;
 
+    compound_document_header header_;
+
     sector_chain msat_;
     sector_chain sat_;
     sector_chain ssat_;
+
+    std::vector<compound_document_entry> entries_;
 };
 
 } // namespace detail
