@@ -47,9 +47,6 @@ using sector_id = std::int32_t;
 using sector_chain = std::vector<sector_id>;
 
 const sector_id FreeSector = -1;
-const sector_id EndOfChainSector = -2;
-const sector_id AllocationTableSector = -3;
-const sector_id MasterAllocationTableSector = -4;
 
 sector_chain follow_sector_chain(const sector_chain &table, sector_id start)
 {
@@ -459,16 +456,19 @@ public:
         auto reader = binary_reader(bytes);
 
         header_ = reader.read<header>();
+        
+        if(!header_is_valid(header_))
+        {
+            throw xlnt::exception("bad ole");
+        }
 
         // Master allocation table
-        const auto sector_size = 1 << header_.sector_size_power;
         const auto sector_table_sectors = load_master_sector_allocation_table();
         const auto sector_table_bytes = read(sector_table_sectors);
         auto sector_table_reader = binary_reader(sector_table_bytes);
         sector_table_ = sector_table_reader.as_vector_of<sector_id>();
 
         // Short sector allocation table
-        const auto short_sector_size = 1 << header_.short_sector_size_power;
         const auto short_table_chain = follow_sector_chain(sector_table_, header_.short_table_start);
         const auto short_table_bytes = read(short_table_chain);
         auto short_sector_table_reader = binary_reader(short_table_bytes);
