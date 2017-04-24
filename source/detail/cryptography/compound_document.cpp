@@ -29,6 +29,7 @@
 #include <iostream>
 #include <list>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include <detail/binary.hpp>
@@ -43,223 +44,95 @@ using xlnt::detail::binary_writer;
 
 using directory_id = std::int32_t;
 using sector_id = std::int32_t;
+using sector_chain = std::vector<sector_id>;
 
-class allocation_table
+const sector_id FreeSector = -1;
+const sector_id EndOfChainSector = -2;
+const sector_id AllocationTableSector = -3;
+const sector_id MasterAllocationTableSector = -4;
+
+sector_chain follow_sector_chain(const sector_chain &table, sector_id start)
 {
-public:
-    static const sector_id FreeSector;
-    static const sector_id EndOfChainSector;
-    static const sector_id AllocationTableSector;
-    static const sector_id MasterAllocationTableSector;
+    auto chain = sector_chain();
+    auto added = std::unordered_set<sector_id>();
+    auto last_sector = static_cast<sector_id>(table.size());
 
-    allocation_table()
+    if (start >= last_sector)
     {
-        resize(128);
-    }
-
-    std::size_t count() const
-    {
-        return data_.size();
-    }
-
-    void resize(std::size_t newsize)
-    {
-        data_.resize(newsize, FreeSector);
-    }
-/*
-    void set(sector_id index, sector_id value)
-    {
-        if (static_cast<std::size_t>(index) >= count())
-        {
-            resize(static_cast<std::size_t>(index + 1));
-        }
-
-        data_[static_cast<std::size_t>(index)] = value;
-    }
-*/
-/*
-    void setChain(std::vector<sector_id> chain)
-    {
-        if (chain.size())
-        {
-            for (std::size_t i = 0; i < chain.size() - 1; i++)
-            {
-                set(chain[i], chain[i + 1]);
-            }
-
-            set(chain[chain.size() - 1], EndOfChainSector);
-        }
-    }
-*/
-    std::vector<sector_id> follow(sector_id start) const
-    {
-        auto chain = std::vector<sector_id>();
-
-        if (start >= static_cast<sector_id>(count()))
-        {
-            return chain;
-        }
-
-        auto p = start;
-
-        auto already_exists = [](const std::vector<sector_id> &check, sector_id item)
-        {
-            for (std::size_t i = 0; i < check.size(); i++)
-            {
-                if (check[i] == item) return true;
-            }
-
-            return false;
-        };
-
-        while (p < static_cast<sector_id>(count()))
-        {
-            if (p == EndOfChainSector) break;
-            if (p == AllocationTableSector) break;
-            if (p == MasterAllocationTableSector) break;
-            if (already_exists(chain, p)) break;
-            chain.push_back(p);
-            if (data_[static_cast<std::size_t>(p)] >= static_cast<sector_id>(count())) break;
-            p = data_[static_cast<std::size_t>(p)];
-        }
-
         return chain;
     }
 
-    void load(const std::vector<byte> &sectors)
+    auto current = start;
+
+    while (current < last_sector && current >= 0)
     {
-        auto reader = binary_reader(sectors);
-        data_ = reader.as_vector_of<sector_id>();
+        if (added.find(current) != added.end())
+        {
+            break;
+        }
+
+        chain.push_back(current);
+        added.insert(current); //TODO: why would there be a repeat?
+
+        current = table[current];
     }
 
-    std::size_t sector_size() const
-    {
-        return sector_size_;
-    }
+    return chain;
+}
 
-    void sector_size(std::size_t size)
-    {
-        sector_size_ = size;
-    }
-
-private:
-    std::size_t sector_size_ = 4096;
-    std::vector<sector_id> data_;
-};
-
-const sector_id allocation_table::FreeSector = -1;
-const sector_id allocation_table::EndOfChainSector = -2;
-const sector_id allocation_table::AllocationTableSector = -3;
-const sector_id allocation_table::MasterAllocationTableSector = -4;
-
-class header
+struct header
 {
-public:
-    header()
+    enum class byte_order_type : uint16_t
     {
-    }
+        big_endian = 0xFFFE,
+        little_endian = 0xFEFF
+    };
 
-    bool is_valid() const
-    {
-        if (threshold_ != 4096) return false;
-        if (num_sectors_ == 0) return false;
-        if ((num_sectors_ > 109) && (num_sectors_ > (num_master_sectors_ * 127) + 109)) return false;
-        if ((num_sectors_ < 109) && (num_master_sectors_ != 0)) return false;
-        if (short_sector_size_power_ > sector_size_power_) return false;
-        if (sector_size_power_ <= 6) return false;
-        if (sector_size_power_ >= 31) return false;
-
-        return true;
-    }
-
-    void load(binary_reader &reader)
-    {
-        if (reader.size() < 512)
-        {
-            throw xlnt::exception("bad header");
-        }
-
-        *this = reader.read<header>();
-
-        if (file_id_ != 0xe11ab1a1e011cfd0)
-        {
-            throw xlnt::exception("not ole");
-        }
-
-        if (!is_valid())
-        {
-            throw xlnt::exception("bad ole");
-        }
-    }
-
-    std::size_t sector_size() const
-    {
-        return std::size_t(1) << sector_size_power_;
-    }
-
-    std::size_t short_sector_size() const
-    {
-        return std::size_t(1) << short_sector_size_power_;
-    }
-
-    std::vector<sector_id> sectors() const
-    {
-        const auto num_header_sectors = std::min(num_sectors_, std::uint32_t(109));
-        return std::vector<sector_id>(
-            first_master_table.begin(), 
-            first_master_table.begin() + num_header_sectors);
-    }
-
-    std::size_t num_master_sectors() const
-    {
-        return static_cast<std::size_t>(num_master_sectors_);
-    }
-
-    sector_id master_table_start() const
-    {
-        return master_start_;
-    }
-
-    sector_id short_table_start() const
-    {
-        return short_start_;
-    }
-
-    sector_id directory_start() const
-    {
-        return directory_start_;
-    }
-
-    std::size_t threshold() const
-    {
-        return threshold_;
-    }
-
-private:
-    std::uint64_t file_id_ = 0xe11ab1a1e011cfd0;
+    std::uint64_t file_id = 0xe11ab1a1e011cfd0;
     std::array<std::uint8_t, 16> ignore1 = {{0}};
-    std::uint16_t revision_ = 0x003E;
-    std::uint16_t version_ = 0x0003;
-    std::uint16_t byte_order_ = 0xFEFF;
-    std::uint16_t sector_size_power_ = 9;
-    std::uint16_t short_sector_size_power_ = 6;
+    std::uint16_t revision = 0x003E;
+    std::uint16_t version = 0x0003;
+    byte_order_type byte_order = byte_order_type::little_endian;
+    std::uint16_t sector_size_power = 9;
+    std::uint16_t short_sector_size_power = 6;
     std::array<std::uint8_t, 10> ignore2 = {{0}};
-    std::uint32_t num_sectors_ = 0;
-    sector_id directory_start_ = 0;
+    std::uint32_t num_sectors = 0;
+    sector_id directory_start = 0;
     std::array<std::uint8_t, 4> ignore3 = {{0}};
-    std::uint32_t threshold_ = 4096;
-    sector_id short_start_ = 0;
-    std::uint32_t num_short_sectors_ = 0;
-    sector_id master_start_ = 0;
-    std::uint32_t num_master_sectors_ = 0;
-    std::array<sector_id, 109> first_master_table = {{allocation_table::FreeSector}};
+    std::uint32_t threshold = 4096;
+    sector_id short_table_start = 0;
+    std::uint32_t num_short_sectors = 0;
+    sector_id sector_table_start = 0;
+    std::uint32_t num_master_alloc_table_sectors = 0;
+    std::array<sector_id, 109> master_sector_alloc_table = {{FreeSector}};
 };
+
+bool header_is_valid(const header &h)
+{
+    if (h.threshold != 4096)
+    {
+        return false;
+    }
+
+    if (h.num_sectors == 0
+        || (h.num_sectors > 109 && h.num_sectors > (h.num_master_alloc_table_sectors * 127) + 109)
+        || ((h.num_sectors < 109) && (h.num_master_alloc_table_sectors != 0)))
+    {
+        return false;
+    }
+
+    if (h.short_sector_size_power > h.sector_size_power
+        || h.sector_size_power <= 6
+        || h.sector_size_power >= 31)
+    {
+        return false;
+    }
+
+    return true;
+}
 
 struct directory_entry
 {
-    std::array<char16_t, 32> name = {{0}};
-    std::uint16_t name_length = 0;
-
     enum class entry_type : std::uint8_t
     {
         Empty = 0,
@@ -268,32 +141,30 @@ struct directory_entry
         LockBytes = 3,
         Property = 4,
         RootStorage = 5
-    } type;
+    };
 
     enum class entry_color : std::uint8_t
     {
         Red = 0,
         Black = 1
-    } color;
+    };
 
+    std::array<char16_t, 32> name = {{0}};
+    std::uint16_t name_length = 0;
+    entry_type type;
+    entry_color color;
     directory_id prev = -1;
     directory_id next = -1;
     directory_id child = -1;
-
     std::array<std::uint8_t, 36> ignore;
-
     sector_id first = 0;
-
     std::uint32_t size = 0;
-
     std::uint32_t ignore2;
 };
 
 class directory_tree
 {
 public:
-    //static const directory_id End = -1;
-
     static void entry_name(directory_entry &entry, std::u16string name)
     {
         if (name.size() > 31)
@@ -307,7 +178,6 @@ public:
     }
 
     directory_tree()
-        : entries()
     {
         clear();
     }
@@ -576,55 +446,57 @@ public:
     {
         auto reader = binary_reader(bytes);
 
-        header_.load(reader);
+        header_ = reader.read<header>();
 
-        const auto sector_size = header_.sector_size();
-        sector_table_.sector_size(sector_size);
-        const auto master_table_chain = load_master_table();
-        const auto master_sectors = read(master_table_chain);
-        sector_table_.load(master_sectors);
+        // Master allocation table
+        const auto sector_size = 1 << header_.sector_size_power;
+        const auto sector_table_sectors = load_master_sector_allocation_table();
+        const auto sector_table_bytes = read(sector_table_sectors);
+        auto sector_table_reader = binary_reader(sector_table_bytes);
+        sector_table_ = sector_table_reader.as_vector_of<sector_id>();
 
-        const auto short_sector_size = header_.short_sector_size();
-        short_sector_table_.sector_size(short_sector_size);
-        const auto short_start = header_.short_table_start();
-        const auto short_table_chain = sector_table_.follow(short_start);
-        const auto short_sectors = read(short_table_chain);
-        short_sector_table_.load(short_sectors);
+        // Short sector allocation table
+        const auto short_sector_size = 1 << header_.short_sector_size_power;
+        const auto short_table_chain = follow_sector_chain(sector_table_, header_.short_table_start);
+        const auto short_table_bytes = read(short_table_chain);
+        auto short_sector_table_reader = binary_reader(short_table_bytes);
+        short_sector_table_ = short_sector_table_reader.as_vector_of<sector_id>();
 
-        const auto directory_start = header_.directory_start();
-        const auto directory_chain = sector_table_.follow(directory_start);
+        // Directory
+        const auto directory_chain = follow_sector_chain(sector_table_, header_.directory_start);
         const auto directory_sectors = read(directory_chain);
         directory_.load(directory_sectors);
 
+        // Short stream container
         auto first_short_sector = directory_.entry(u"/Root Entry", false).first;
-        short_container_stream_ = sector_table_.follow(first_short_sector);
+        short_container_stream_ = follow_sector_chain(sector_table_, first_short_sector);
     }
 
-    std::vector<byte> read(const std::vector<sector_id> &sectors) const
+    std::vector<byte> read(const sector_chain &sectors) const
     {
-        const auto sector_size = sector_table_.sector_size();
+        const auto sector_size = 1 << header_.sector_size_power;
         auto result = std::vector<byte>();
         auto writer = binary_writer(result);
 
         for (auto sector : sectors)
         {
-            auto position = sector_size * static_cast<std::size_t>(sector);
+            auto position = static_cast<std::size_t>(sector_size * sector);
             writer.append(sectors_, sectors_size_, position, sector_size);
         }
         
         return result;
     }
 
-    std::vector<byte> read_short(const std::vector<sector_id> &sectors) const
+    std::vector<byte> read_short(const sector_chain &sectors) const
     {
-        const auto short_sector_size = short_sector_table_.sector_size();
-        const auto sector_size = sector_table_.sector_size();
+        const auto short_sector_size = 1 << header_.short_sector_size_power;
+        const auto sector_size = 1 << header_.sector_size_power;
         auto result = std::vector<byte>();
         auto writer = binary_writer(result);
 
         for (auto sector : sectors)
         {
-            auto position = short_sector_size * static_cast<std::size_t>(sector);
+            auto position = static_cast<std::size_t>(short_sector_size * sector);
             auto master_allocation_table_index = position / sector_size;
 
             auto sector_data = read({ short_container_stream_[master_allocation_table_index] });
@@ -636,15 +508,19 @@ public:
         return result;
     }
 
-    std::vector<sector_id> load_master_table()
+    sector_chain load_master_sector_allocation_table() const
     {
-        auto master_sectors = header_.sectors();
+        auto sectors = sector_chain(
+            header_.master_sector_alloc_table.begin(),
+            header_.master_sector_alloc_table.begin()
+                + std::min(header_.master_sector_alloc_table.size(),
+                    static_cast<std::size_t>(header_.num_sectors)));
 
-        if (header_.num_master_sectors() > 109)
+        if (header_.num_sectors > std::uint32_t(109))
         {
-            auto current_sector = header_.master_table_start();
+            auto current_sector = header_.sector_table_start;
 
-            for (auto r = std::size_t(0); r < header_.num_master_sectors(); ++r)
+            for (auto r = std::uint32_t(0); r < header_.num_master_alloc_table_sectors; ++r)
             {
                 auto current_sector_data = read({ current_sector });
                 auto current_sector_reader = binary_reader(current_sector_data);
@@ -653,23 +529,26 @@ public:
                 current_sector = current_sector_sectors.back();
                 current_sector_sectors.pop_back();
                 
-                master_sectors.insert(
+                sectors.insert(
                     current_sector_sectors.begin(),
                     current_sector_sectors.end(),
-                    master_sectors.end());
+                    sectors.end());
             }
         }
 
-        return master_sectors;
+        return sectors;
     }
 
     std::vector<byte> read_stream(const std::u16string &name) const
     {
         const auto entry = directory_.entry(name);
 
-        auto result = entry.size < header_.threshold()
-            ? read_short(short_sector_table_.follow(entry.first))
-            : read(sector_table_.follow(entry.first));
+        const auto entry_sectors = entry.size < header_.threshold
+            ? follow_sector_chain(short_sector_table_, entry.first)
+            : follow_sector_chain(sector_table_, entry.first);
+        auto result = entry.size < header_.threshold
+            ? read_short(entry_sectors)
+            : read(entry_sectors);
         result.resize(entry.size);
 
         return result;
@@ -680,8 +559,8 @@ private:
     const std::size_t sectors_size_;
     directory_tree directory_;
     header header_;
-    allocation_table sector_table_;
-    allocation_table short_sector_table_;
+    std::vector<sector_id> sector_table_;
+    std::vector<sector_id> short_sector_table_;
     std::vector<sector_id> short_container_stream_;
 };
 
@@ -689,15 +568,15 @@ class compound_document_writer_impl
 {
 public:
     compound_document_writer_impl(std::vector<byte> &bytes)
-        : writer_(bytes)
+        : writer_(bytes),
+          sector_table_(128, FreeSector),
+          short_sector_table_(128, FreeSector)
     {
-        sector_table_.sector_size(header_.sector_size());
-        short_sector_table_.sector_size(header_.short_sector_size());
     }
 
     void write_sectors(const std::vector<byte> &data, directory_entry &/*entry*/)
     {
-        const auto sector_size = sector_table_.sector_size();
+        const auto sector_size = 1 << header_.sector_size_power;
         const auto num_sectors = data.size() / sector_size;
 
         for (auto i = std::size_t(0); i < num_sectors; ++i)
@@ -710,7 +589,7 @@ public:
 
     void write_short_sectors(const std::vector<byte> &data, directory_entry &/*entry*/)
     {
-        const auto sector_size = sector_table_.sector_size();
+        const auto sector_size = 1 << header_.sector_size_power;
         const auto num_sectors = data.size() / sector_size;
 
         for (auto i = std::size_t(0); i < num_sectors; ++i)
@@ -725,7 +604,7 @@ public:
     {
         auto &entry = directory_.entry(name, true);
         
-        if (entry.size < header_.threshold())
+        if (entry.size < header_.threshold)
         {
             write_short_sectors(data, entry);
         }
@@ -739,8 +618,8 @@ private:
     binary_writer writer_;
     directory_tree directory_;
     header header_;
-    allocation_table sector_table_;
-    allocation_table short_sector_table_;
+    std::vector<sector_id> sector_table_;
+    std::vector<sector_id> short_sector_table_;
     std::vector<sector_id> short_container_stream_;
 };
 
