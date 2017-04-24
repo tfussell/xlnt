@@ -250,7 +250,7 @@ std::vector<std::uint8_t> encrypt_xlsx(
     encryption_info.password = u"secret";
 
     auto ciphertext = std::vector<std::uint8_t>();
-    xlnt::detail::compound_document_writer document(ciphertext);
+    xlnt::detail::compound_document document(ciphertext);
 
     document.write_stream(u"EncryptionInfo", encryption_info.is_agile
         ? write_agile_encryption_info(encryption_info)

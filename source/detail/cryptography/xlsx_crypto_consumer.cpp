@@ -330,7 +330,7 @@ std::vector<std::uint8_t> decrypt_xlsx(
         throw xlnt::exception("empty file");
     }
 
-    xlnt::detail::compound_document_reader document(bytes);
+    xlnt::detail::compound_document document(bytes);
 
     auto encryption_info = read_encryption_info(
         document.read_stream(u"EncryptionInfo"), password);

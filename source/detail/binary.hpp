@@ -81,18 +81,33 @@ public:
     template<typename T>
     T read()
     {
-        T result;
-        std::memcpy(&result, bytes_->data() + offset_, sizeof(T));
+        return read_reference<T>();
+    }
+
+    template<typename T>
+    const T &read_reference()
+    {
+        const auto &result = *reinterpret_cast<const T *>(bytes_->data() + offset_);
         offset_ += sizeof(T);
 
         return result;
     }
 
     template<typename T>
-    std::vector<T> as_vector_of() const
+    std::vector<T> to_vector() const
     {
         auto result = std::vector<T>(size() / sizeof(T), T());
         std::memcpy(result.data(), bytes_->data(), size());
+
+        return result;
+    }
+
+    template<typename T>
+    std::vector<T> read_vector(std::size_t count)
+    {
+        auto result = std::vector<T>(count, T());
+        std::memcpy(result.data(), bytes_->data() + offset_, count * sizeof(T));
+        offset_ += count * sizeof(T);
 
         return result;
     }
@@ -130,6 +145,11 @@ public:
         offset_ = other.offset_;
 
         return *this;
+    }
+
+    std::vector<byte> &data()
+    {
+        return *bytes_;
     }
     
     template<typename T>
@@ -196,13 +216,7 @@ public:
         return bytes_->begin() + static_cast<std::ptrdiff_t>(offset());
     }
 
-    void append(const std::vector<std::uint8_t> &data, std::size_t offset, std::size_t count)
-    {
-        auto end_index = size();
-        extend(count);
-        std::memcpy(bytes_->data() + end_index, data.data() + offset, count);
-    }
-
+    /*
     void append(const byte *data, const std::size_t data_size, std::size_t offset, std::size_t count)
     {
         if (offset + count > data_size)
@@ -214,10 +228,26 @@ public:
         extend(count);
         std::memcpy(bytes_->data() + end_index, data + offset, count);
     }
+    */
 
-    void append(const std::vector<std::uint8_t> &data)
+    template<typename T>
+    void append(const std::vector<T> &data)
     {
         append(data, 0, data.size());
+    }
+
+    template<typename T>
+    void append(const std::vector<T> &data, std::size_t offset, std::size_t count)
+    {
+        const auto byte_count = count * sizeof(T);
+
+        if (offset_ + byte_count > size())
+        {
+            extend(offset_ + byte_count - size());
+        }
+
+        std::memcpy(bytes_->data() + offset_, data.data() + offset, byte_count);
+        offset_ += byte_count;
     }
 
 private:

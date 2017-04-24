@@ -25,6 +25,7 @@
 
 #pragma once
 
+#include <array>
 #include <memory>
 #include <string>
 
@@ -33,31 +34,130 @@
 namespace xlnt {
 namespace detail {
 
-class compound_document_reader_impl;
-class compound_document_writer_impl;
+using directory_id = std::int32_t;
+using sector_id = std::int32_t;
+using sector_chain = std::vector<sector_id>;
 
-class compound_document_reader
+struct compound_document_header
 {
-public:
-    compound_document_reader(const std::vector<std::uint8_t> &data);
-    ~compound_document_reader();
+    enum class byte_order_type : uint16_t
+    {
+        big_endian = 0xFFFE,
+        little_endian = 0xFEFF
+    };
 
-    std::vector<std::uint8_t> read_stream(const std::u16string &filename) const;
+    std::size_t sector_size() const
+    {
+        return static_cast<std::size_t>(1) << sector_size_power;
+    }
 
-private:
-    std::unique_ptr<compound_document_reader_impl> d_;
+    std::size_t short_sector_size() const
+    {
+        return static_cast<std::size_t>(1) << short_sector_size_power;
+    }
+
+    std::uint64_t file_id = 0xe11ab1a1e011cfd0;
+    std::array<std::uint8_t, 16> ignore1 = { { 0 } };
+    std::uint16_t revision = 0x003E;
+    std::uint16_t version = 0x0003;
+    byte_order_type byte_order = byte_order_type::little_endian;
+    std::uint16_t sector_size_power = 9;
+    std::uint16_t short_sector_size_power = 6;
+    std::array<std::uint8_t, 10> ignore2 = { { 0 } };
+    std::uint32_t num_msat_sectors = 0;
+    sector_id directory_start = -1;
+    std::array<std::uint8_t, 4> ignore3 = { { 0 } };
+    std::uint32_t threshold = 4096;
+    sector_id short_table_start = -1;
+    std::uint32_t num_short_sectors = 0;
+    sector_id sector_table_start = -1;
+    std::uint32_t num_extra_msat_sectors = 0;
+    std::array<sector_id, 109> msat = { 0 };
 };
 
-class compound_document_writer
+struct compound_document_entry
+{
+    void name(const std::u16string &new_name)
+    {
+        name_length = std::min(static_cast<std::uint16_t>(new_name.size()), std::uint16_t(31));
+        std::copy(new_name.begin(), new_name.begin() + name_length, name_array.begin());
+        name_array[name_length] = 0;
+        name_length = (name_length + 1) * 2;
+    }
+
+    std::u16string name() const
+    {
+        return std::u16string(name_array.begin(),
+            name_array.begin() + (name_length - 1) / 2);
+    }
+
+    enum class entry_type : std::uint8_t
+    {
+        Empty = 0,
+        UserStorage = 1,
+        UserStream = 2,
+        LockBytes = 3,
+        Property = 4,
+        RootStorage = 5
+    };
+
+    enum class entry_color : std::uint8_t
+    {
+        Red = 0,
+        Black = 1
+    };
+
+    std::array<char16_t, 32> name_array = { { 0 } };
+    std::uint16_t name_length = 0;
+    entry_type type;
+    entry_color color;
+    directory_id prev = -1;
+    directory_id next = -1;
+    directory_id child = -1;
+    std::array<std::uint8_t, 36> ignore;
+    sector_id start = 0;
+    std::uint32_t size = 0;
+    std::uint32_t ignore2;
+};
+
+class compound_document
 {
 public:
-    compound_document_writer(std::vector<std::uint8_t> &data);
-    ~compound_document_writer();
+    compound_document(std::vector<std::uint8_t> &data);
+    compound_document(const std::vector<std::uint8_t> &data);
+    ~compound_document();
 
+    std::vector<std::uint8_t> read_stream(const std::u16string &filename);
     void write_stream(const std::u16string &filename, const std::vector<std::uint8_t> &data);
 
 private:
-    std::unique_ptr<compound_document_writer_impl> d_;
+    compound_document_header &header();
+
+    std::vector<byte> read(sector_id start);
+    std::vector<byte> read_short(sector_id start);
+
+    void read_msat();
+    void read_sat();
+    void read_ssat();
+
+    void write(const std::vector<byte> &data, sector_id start);
+    void write_short(const std::vector<byte> &data, sector_id start);
+
+    compound_document_entry &insert_entry(const std::u16string &name);
+    compound_document_entry &find_entry(const std::u16string &name);
+    compound_document_entry &find_entry(directory_id id);
+    bool contains_entry(const std::u16string &name);
+    std::vector<directory_id> find_siblings(directory_id entry);
+    std::vector<directory_id> children(directory_id entry);
+
+    sector_id allocate_sector(std::size_t count = 1);
+
+    std::unique_ptr<binary_reader> reader_;
+    std::unique_ptr<binary_writer> writer_;
+
+    sector_chain msat_;
+    sector_chain sat_;
+    sector_chain ssat_;
 };
 
 } // namespace detail

@@ -21,6 +21,8 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <iostream>
+
 #include <cell/cell_test_suite.hpp>
 #include <cell/index_types_test_suite.hpp>
 #include <cell/rich_text_test_suite.hpp>
