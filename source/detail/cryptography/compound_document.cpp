@@ -133,6 +133,20 @@ bool header_is_valid(const header &h)
 
 struct directory_entry
 {
+    void name(const std::u16string &new_name)
+    {
+        name_length = std::min(static_cast<std::uint16_t>(new_name.size()), std::uint16_t(31));
+        std::copy(new_name.begin(), new_name.begin() + name_length, name_array.begin());
+        name_array[name_length] = 0;
+        name_length = (name_length + 1) * 2;
+    }
+
+    std::u16string name() const
+    {
+        return std::u16string(name_array.begin(), 
+            name_array.begin() + (name_length - 1) / 2);
+    }
+
     enum class entry_type : std::uint8_t
     {
         Empty = 0,
@@ -149,7 +163,7 @@ struct directory_entry
         Black = 1
     };
 
-    std::array<char16_t, 32> name = {{0}};
+    std::array<char16_t, 32> name_array = {{0}};
     std::uint16_t name_length = 0;
     entry_type type;
     entry_color color;
@@ -165,17 +179,7 @@ struct directory_entry
 class directory_tree
 {
 public:
-    static void entry_name(directory_entry &entry, std::u16string name)
-    {
-        if (name.size() > 31)
-        {
-            name.resize(31);
-        }
-
-        std::copy(name.begin(), name.end(), entry.name.begin());
-        entry.name[name.size()] = 0;
-        entry.name_length = static_cast<std::uint16_t>((name.size() + 1) * 2);
-    }
+    static const directory_id End;
 
     directory_tree()
     {
@@ -226,8 +230,14 @@ public:
             entries.push_back(directory_entry());
             index = static_cast<directory_id>(entry_count() - 1);
             auto &e = entry(index);
+            e.name(name);
+            e.type = directory_entry::entry_type::UserStream;
+            e.size = 0;
             e.first = 0;
-            entry(parent).prev = index;
+            e.child = End;
+            e.prev = End;
+            e.next = entry(parent).child;
+            entry(parent).child = index;
         }
 
         return entry(index);
@@ -313,7 +323,7 @@ public:
     {
         directory_entry root;
 
-        entry_name(root, u"Root Entry");
+        root.name(u"Root Entry");
         root.type = directory_entry::entry_type::RootStorage;
         root.color = directory_entry::entry_color::Black;
         root.size = 0;
@@ -399,7 +409,7 @@ private:
         // start from root
         auto index = directory_id(0);
 
-        for (auto it = names.begin(); it != names.end(); ++it)
+        for (auto &name : names)
         {
             // find among the children of index
             auto chi = children(index);
@@ -409,7 +419,7 @@ private:
             {
                 auto ce = entry(chi[i]);
 
-                if (std::u16string(ce.name.data()) == *it)
+                if (ce.name() == name)
                 {
                     child = static_cast<std::ptrdiff_t>(chi[i]);
                 }
@@ -431,6 +441,8 @@ private:
 
     std::vector<directory_entry> entries;
 };
+
+const directory_id directory_tree::End = -1;
 
 } // namespace
 
