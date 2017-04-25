@@ -111,6 +111,8 @@ struct compound_document_entry
     std::uint32_t ignore2;
 };
 
+class red_black_tree;
+
 class compound_document
 {
 public:
@@ -147,7 +149,11 @@ private:
     void write_header();
     void write_directory_tree();
 
+    void print_directory();
+
     sector_id allocate_sectors(std::size_t sectors);
+    void reallocate_sectors(sector_id start, std::size_t sectors);
+    std::size_t allocated_sectors(sector_id start);
 
     compound_document_entry &insert_entry(const std::u16string &path, 
         compound_document_entry::entry_type type);
@@ -162,6 +168,8 @@ private:
     sector_chain ssat_;
 
     std::vector<compound_document_entry> entries_;
+
+    std::unique_ptr<red_black_tree> rb_tree_;
 };
 
 } // namespace detail

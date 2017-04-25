@@ -418,6 +418,7 @@ public:
 
         std::vector<std::uint8_t> destination_data;
         source_workbook.save(destination_data, password);
+        source_workbook.save("encrypted.xlsx", password);
 
         //TODO: finish implementing encryption and uncomment this
         //return source_data == destination_data;

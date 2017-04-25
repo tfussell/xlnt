@@ -25,6 +25,7 @@
 #include <array>
 #include <algorithm>
 #include <cstring>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -37,20 +38,16 @@ namespace {
 
 using namespace xlnt::detail;
 
-const sector_id FreeSector = -1;
-
-// TODO: I don't think this is Unicode-aware...
-std::u16string to_lower(std::u16string string)
+int compare_keys(const std::u16string &left, const std::u16string &right)
 {
-    for (auto &c : string)
+    auto to_lower = [](std::u16string s)
     {
-        if (c <= 255)
-        {
-            c = static_cast<std::uint16_t>(::tolower(c));
-        }
-    }
+        static const auto locale = std::locale();
+        std::use_facet<std::ctype<char16_t>>(locale).tolower(&s[0], &s[0] + s.size());
+        return s;
+    };
 
-    return string;
+    return to_lower(left).compare(to_lower(right));
 }
 
 bool header_is_valid(const compound_document_header &h)
@@ -77,56 +74,6 @@ bool header_is_valid(const compound_document_header &h)
     return true;
 }
 
-const directory_id End = -1;
-
-void visit(compound_document_entry *entry)
-{
-}
-
-void traverse_storages(std::vector<compound_document_entry> &entries, compound_document_entry *storage);
-
-void traverse_storage(std::vector<compound_document_entry> &entries, compound_document_entry *entry)
-{
-    if (entry->prev >= 0)
-    {
-        traverse_storage(entries, &entries[entry->prev]);
-    }
-
-    visit(entry);
-
-    if (entry->type == compound_document_entry::entry_type::UserStorage
-        || entry->type == compound_document_entry::entry_type::RootStorage)
-    {
-        traverse_storages(entries, entry);
-    }
-
-    if (entry->next >= 0)
-    {
-        traverse_storage(entries, &entries[entry->next]);
-    }
-}
-
-void traverse_storages(std::vector<compound_document_entry> &entries, compound_document_entry *storage)
-{
-    visit(storage);
-
-    if (storage->child >= 0)
-    {
-        traverse_storage(entries, &entries[storage->child]);
-    }
-}
-
-void update_red_black_tree(std::vector<compound_document_entry> &entries)
-{
-    using entry_type = compound_document_entry::entry_type;
-
-    if (entries.empty()) return;
-
-    traverse_storages(entries, &entries[0]);
-
-    return;
-}
-
 std::vector<std::u16string> split_path(const std::u16string &path_string)
 {
     auto sep = path_string.find(u'/');
@@ -143,16 +90,337 @@ std::vector<std::u16string> split_path(const std::u16string &path_string)
     return split;
 }
 
-
+const sector_id FreeSector = -1;
+const directory_id End = -1;
 
 } // namespace
 
 namespace xlnt {
 namespace detail {
 
+class red_black_tree
+{
+public:
+    using entry_color = compound_document_entry::entry_color;
+
+    red_black_tree(std::vector<compound_document_entry> &entries)
+        : entries_(entries)
+    {
+        initialize_tree();
+    }
+
+    void initialize_tree()
+    {
+        if (entries_.empty()) return;
+
+        auto stack = std::vector<directory_id>();
+        auto storage_siblings = std::vector<directory_id>();
+        auto stream_siblings = std::vector<directory_id>();
+
+        auto directory_stack = std::vector<directory_id>();
+        directory_stack.push_back(directory_id(0));
+
+        while (!directory_stack.empty())
+        {
+            auto current_storage_id = directory_stack.back();
+            directory_stack.pop_back();
+
+            if (entries_[current_storage_id].child < 0) continue;
+
+            auto storage_stack = std::vector<directory_id>();
+            auto storage_root_id = entries_[current_storage_id].child;
+            parent_[storage_root_id] = End;
+            storage_stack.push_back(storage_root_id);
+
+            while (!storage_stack.empty())
+            {
+                auto current_entry_id = storage_stack.back();
+                auto &current_entry = entries_[current_entry_id];
+                storage_stack.pop_back();
+
+                parent_storage_[current_entry_id] = current_storage_id;
+
+                if (current_entry.type == compound_document_entry::entry_type::UserStorage)
+                {
+                    directory_stack.push_back(current_entry_id);
+                }
+
+                if (current_entry.prev >= 0)
+                {
+                    storage_stack.push_back(current_entry.prev);
+                    parent_[current_entry.prev] = current_entry_id;
+                }
+
+                if (current_entry.next >= 0)
+                {
+                    storage_stack.push_back(entries_[current_entry_id].next);
+                    parent_[entries_[current_entry_id].next] = current_entry_id;
+                }
+            }
+        }
+    }
+
+    void insert(directory_id new_id, directory_id storage_id)
+    {
+        parent_storage_[new_id] = storage_id;
+
+        left(new_id) = End;
+        right(new_id) = End;
+
+        if (root(new_id) == End)
+        {
+            if (new_id != 0)
+            {
+                root(new_id) = new_id;
+            }
+
+            color(new_id, entry_color::Black);
+            parent(new_id) = End;
+
+            return;
+        }
+
+        // normal tree insert
+        // (will probably unbalance the tree, fix after)
+        auto x = root(new_id);
+        auto y = End;
+
+        while (x >= 0)
+        {
+            y = x;
+
+            if (compare_keys(key(x), key(new_id)) > 0)
+            {
+                x = right(x);
+            }
+            else
+            {
+                x = left(x);
+            }
+        }
+
+        parent(new_id) = y;
+
+        if (compare_keys(key(y), key(new_id)) > 0)
+        {
+            right(y) = new_id;
+        }
+        else
+        {
+            left(y) = new_id;
+        }
+
+        insert_fixup(new_id);
+    }
+
+    std::vector<directory_id> path(directory_id id)
+    {
+        auto storage_id = parent_storage_[id];
+        auto storages = std::vector<directory_id>();
+        storages.push_back(storage_id);
+        
+        while (storage_id > 0)
+        {
+            storage_id = parent_storage_[storage_id];
+            storages.push_back(storage_id);
+        }
+
+        return storages;
+    }
+
+private:
+    void rotate_left(directory_id x)
+    {
+        auto y = right(x);
+
+        // turn y's left subtree into x's right subtree
+        right(x) = left(y);
+
+        if (left(y) != End)
+        {
+            parent(left(y)) = x;
+        }
+
+        // link x's parent to y
+        parent(y) = parent(x);
+
+        if (parent(x) == End)
+        {
+            root(x) = y;
+        }
+        else if (x == left(parent(x)))
+        {
+            left(parent(x)) = y;
+        }
+        else
+        {
+            right(parent(x)) = y;
+        }
+
+        // put x on y's left
+        left(y) = x;
+        parent(x) = y;
+    }
+
+    void rotate_right(directory_id y)
+    {
+        auto x = left(y);
+
+        // turn x's right subtree into y's left subtree
+        left(y) = right(x);
+
+        if (right(x) != End)
+        {
+            parent(right(x)) = y;
+        }
+
+        // link y's parent to x
+        parent(x) = parent(y);
+
+        if (parent(y) == End)
+        {
+            root(y) = x;
+        }
+        else if (y == left(parent(y)))
+        {
+            left(parent(y)) = x;
+        }
+        else
+        {
+            right(parent(y)) = x;
+        }
+
+        // put y on x's right
+        right(x) = y;
+        parent(y) = x;
+    }
+
+    void insert_fixup(directory_id x)
+    {
+        color(x, entry_color::Red);
+
+        while (x != root(x) && color(parent(x)) == entry_color::Red)
+        {
+            if (parent(x) == left(parent(parent(x))))
+            {
+                auto y = right(parent(parent(x)));
+
+                if (color(y) == entry_color::Red)
+                {
+                    // case 1
+                    color(parent(x), entry_color::Black);
+                    color(y, entry_color::Black);
+                    color(parent(parent(x)), entry_color::Red);
+                    x = parent(parent(x));
+                }
+                else
+                {
+                    if (x == right(parent(x)))
+                    {
+                        // case 2
+                        x = parent(x);
+                        rotate_left(x);
+                    }
+
+                    // case 3
+                    color(parent(x), entry_color::Black);
+                    color(parent(parent(x)), entry_color::Red);
+                    rotate_right(parent(parent(x)));
+                }
+            }
+            else // same as above with left and right switched
+            {
+                auto y = left(parent(parent(x)));
+
+                if (color(y) == entry_color::Red)
+                {
+                    //case 1
+                    color(parent(x), entry_color::Black);
+                    color(y, entry_color::Black);
+                    color(parent(parent(x)), entry_color::Red);
+                    x = parent(parent(x));
+                }
+                else
+                {
+                    if (x == left(parent(x)))
+                    {
+                        // case 2
+                        x = parent(x);
+                        rotate_right(x);
+                    }
+
+                    // case 3
+                    color(parent(x), entry_color::Black);
+                    color(parent(parent(x)), entry_color::Red);
+                    rotate_left(parent(parent(x)));
+                }
+            }
+        }
+
+        color(root(x), entry_color::Black);
+    }
+
+    void color(directory_id id, entry_color c)
+    {
+        entries_.at(id).color = c;
+    }
+
+    entry_color color(directory_id id)
+    {
+        return entries_.at(id).color;
+    }
+
+    directory_id &parent(directory_id id)
+    {
+        if (parent_.find(id) == parent_.end())
+        {
+            parent_[id] = End;
+        }
+
+        return parent_[id];
+    }
+
+    directory_id &parent_storage(directory_id id)
+    {
+        if (parent_storage_.find(id) == parent_storage_.end())
+        {
+            throw xlnt::exception("not found");
+        }
+
+        return parent_storage_[id];
+    }
+
+    directory_id &root(directory_id id)
+    {
+        return entries_[parent_storage(id)].child;
+    }
+
+    directory_id &left(directory_id id)
+    {
+        return entries_.at(id).prev;
+    }
+
+    directory_id &right(directory_id id)
+    {
+        return entries_.at(id).next;
+    }
+
+    std::u16string key(directory_id id)
+    {
+        return entries_.at(id).name();
+    }
+
+private:
+    std::vector<compound_document_entry> &entries_;
+    std::unordered_map<directory_id, directory_id> parent_storage_;
+    std::unordered_map<directory_id, directory_id> parent_;
+};
+
+
 compound_document::compound_document(std::vector<std::uint8_t> &data)
     : writer_(new binary_writer(data)),
-      reader_(new binary_reader(data))
+      reader_(new binary_reader(data)),
+      rb_tree_(new red_black_tree(entries_))
 {
     header_ = compound_document_header();
     header_.directory_start = allocate_sectors(1);
@@ -257,8 +525,8 @@ std::vector<byte> compound_document::read(sector_id current)
     while (current >= 0)
     {
         reader_->offset(header_size + sector_size() * current);
-        auto sector_data = reader_->read_vector<byte>(sector_size());
-        sector_data_writer.append(sector_data);
+        auto current_sector_data = reader_->read_vector<byte>(sector_size());
+        sector_data_writer.append(current_sector_data);
         current = sat_[current];
     }
 
@@ -286,8 +554,8 @@ std::vector<byte> compound_document::read_short(sector_id current_short)
 
         auto offset = short_position % sector_size();
         reader_->offset(header_size + sector_size() * current_sector + offset);
-        auto sector_data = reader_->read_vector<byte>(short_sector_size());
-        sector_data_writer.append(sector_data);
+        auto current_sector_data = reader_->read_vector<byte>(short_sector_size());
+        sector_data_writer.append(current_sector_data);
 
         current_short = ssat_[current_short];
     }
@@ -363,7 +631,7 @@ sector_id compound_document::allocate_sectors(std::size_t count)
 {
     const auto sector_data_start = sizeof(compound_document_header);
     const auto sectors_per_sector = sector_size() / sizeof(sector_id);
-    auto num_free = std::count(sat_.begin(), sat_.end(), FreeSector);
+    auto num_free = static_cast<std::size_t>(std::count(sat_.begin(), sat_.end(), FreeSector));
 
     if (num_free < count)
     {
@@ -418,56 +686,58 @@ sector_id compound_document::allocate_sectors(std::size_t count)
     return start;
 }
 
+void compound_document::reallocate_sectors(sector_id start, std::size_t count)
+{
+    auto current_sector = start;
+
+    for (auto i = std::size_t(0); i < count; ++i)
+    {
+        if (current_sector == -2)
+        {
+            sat_[current_sector] = allocate_sectors(count - i);
+        }
+
+        current_sector = sat_[current_sector];
+    }
+}
+
 compound_document_entry &compound_document::insert_entry(
     const std::u16string &name,
     compound_document_entry::entry_type type)
 {
-    auto entry_id = directory_id(entries_.size());
-    entries_.push_back(compound_document_entry());
-    auto &entry = entries_.back();
+    auto any_empty_entry = false;
+    auto entry_id = directory_id(0);
+
+    for (auto &entry : entries_)
+    {
+        if (entry.type == compound_document_entry::entry_type::Empty)
+        {
+            any_empty_entry = true;
+            break;
+        }
+
+        ++entry_id;
+    }
+
+    if (!any_empty_entry)
+    {
+        const auto entries_per_sector = static_cast<directory_id>(sector_size()
+            / sizeof(compound_document_entry));
+
+        for (auto i = std::size_t(0); i < entries_per_sector; ++i)
+        {
+            auto empty_entry = compound_document_entry();
+            empty_entry.type = compound_document_entry::entry_type::Empty;
+            entries_.push_back(empty_entry);
+        }
+    }
+
+    auto &entry = entries_[entry_id];
 
     entry.name(name);
     entry.type = type;
 
-    if (entry_id != 0)
-    {
-        auto &root_entry = entries_.at(0);
-
-        if (root_entry.child == -1)
-        {
-            root_entry.child = entry_id;
-        }
-        else
-        {
-            auto parent = 0;
-            auto current = root_entry.child;
-
-            while (current >= 0)
-            {
-                if (name > entries_[current].name())
-                {
-                    parent = current;
-                    current = entries_[current].next;
-                }
-                else
-                {
-                    parent = current;
-                    current = entries_[current].prev;
-                }
-            }
-
-            if (name > entries_[parent].name())
-            {
-                entries_[parent].next = entry_id;
-            }
-            else
-            {
-                entries_[parent].prev = entry_id;
-            }
-        }
-    }
-
-    update_red_black_tree(entries_);
+    rb_tree_->insert(entry_id, 0);
     write_directory_tree();
 
     return entry;
@@ -477,10 +747,11 @@ void compound_document::write_directory_tree()
 {
     const auto entries_per_sector = static_cast<directory_id>(sector_size() 
         / sizeof(compound_document_entry));
-    const auto required_sectors = entries_.size() / entries_per_sector
-        + (entries_.size() % entries_per_sector) ? 1 : 0;
+    const auto required_sectors = entries_.size() / entries_per_sector;
     auto current_sector_id = header_.directory_start;
     auto entry_index = directory_id(0);
+
+    reallocate_sectors(header_.directory_start, required_sectors);
 
     for (auto &e : entries_)
     {
@@ -542,9 +813,7 @@ compound_document_entry &compound_document::find_entry(const std::u16string &nam
 void compound_document::read_directory_tree()
 {
     entries_.clear();
-
     auto current_sector_id = header_.directory_start;
-    auto current_id = directory_id(0);
 
     while (current_sector_id >= 0)
     {
@@ -556,6 +825,28 @@ void compound_document::read_directory_tree()
         }
 
         current_sector_id = sat_[current_sector_id];
+    }
+}
+
+void compound_document::print_directory()
+{
+    red_black_tree rb_tree(entries_);
+
+    for (auto entry_id = directory_id(0); entry_id < directory_id(entries_.size()); ++entry_id)
+    {
+        if (entries_[entry_id].type != compound_document_entry::entry_type::UserStream) continue;
+
+        auto path = std::string("/");
+
+        for (auto part : rb_tree.path(entry_id))
+        {
+            if (part > 0)
+            {
+                path.append(utf16_to_utf8(entries_[part].name()) + "/");
+            }
+        }
+
+        std::cout << path << utf16_to_utf8(entries_[entry_id].name()) << std::endl;
     }
 }
 
