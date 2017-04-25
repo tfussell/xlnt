@@ -29,6 +29,7 @@
 #include <vector>
 
 #include <detail/binary.hpp>
+#include <detail/unicode.hpp>
 #include <detail/cryptography/compound_document.hpp>
 #include <xlnt/utils/exceptions.hpp>
 
@@ -78,10 +79,71 @@ bool header_is_valid(const compound_document_header &h)
 
 const directory_id End = -1;
 
-void recolor_entries(std::vector<compound_document_entry> &entries)
+void visit(compound_document_entry *entry)
+{
+}
+
+void traverse_storages(std::vector<compound_document_entry> &entries, compound_document_entry *storage);
+
+void traverse_storage(std::vector<compound_document_entry> &entries, compound_document_entry *entry)
+{
+    if (entry->prev >= 0)
+    {
+        traverse_storage(entries, &entries[entry->prev]);
+    }
+
+    visit(entry);
+
+    if (entry->type == compound_document_entry::entry_type::UserStorage
+        || entry->type == compound_document_entry::entry_type::RootStorage)
+    {
+        traverse_storages(entries, entry);
+    }
+
+    if (entry->next >= 0)
+    {
+        traverse_storage(entries, &entries[entry->next]);
+    }
+}
+
+void traverse_storages(std::vector<compound_document_entry> &entries, compound_document_entry *storage)
+{
+    visit(storage);
+
+    if (storage->child >= 0)
+    {
+        traverse_storage(entries, &entries[storage->child]);
+    }
+}
+
+void update_red_black_tree(std::vector<compound_document_entry> &entries)
 {
     using entry_type = compound_document_entry::entry_type;
+
+    if (entries.empty()) return;
+
+    traverse_storages(entries, &entries[0]);
+
+    return;
 }
+
+std::vector<std::u16string> split_path(const std::u16string &path_string)
+{
+    auto sep = path_string.find(u'/');
+    auto prev = std::size_t(0);
+    auto split = std::vector<std::u16string>();
+
+    while (sep != std::u16string::npos)
+    {
+        split.push_back(path_string.substr(prev, sep - prev));
+        prev = sep;
+        sep = path_string.find(u'/');
+    }
+
+    return split;
+}
+
+
 
 } // namespace
 
@@ -360,10 +422,52 @@ compound_document_entry &compound_document::insert_entry(
     const std::u16string &name,
     compound_document_entry::entry_type type)
 {
+    auto entry_id = directory_id(entries_.size());
     entries_.push_back(compound_document_entry());
     auto &entry = entries_.back();
-    entry.name(name);
 
+    entry.name(name);
+    entry.type = type;
+
+    if (entry_id != 0)
+    {
+        auto &root_entry = entries_.at(0);
+
+        if (root_entry.child == -1)
+        {
+            root_entry.child = entry_id;
+        }
+        else
+        {
+            auto parent = 0;
+            auto current = root_entry.child;
+
+            while (current >= 0)
+            {
+                if (name > entries_[current].name())
+                {
+                    parent = current;
+                    current = entries_[current].next;
+                }
+                else
+                {
+                    parent = current;
+                    current = entries_[current].prev;
+                }
+            }
+
+            if (name > entries_[parent].name())
+            {
+                entries_[parent].next = entry_id;
+            }
+            else
+            {
+                entries_[parent].prev = entry_id;
+            }
+        }
+    }
+
+    update_red_black_tree(entries_);
     write_directory_tree();
 
     return entry;
@@ -377,8 +481,6 @@ void compound_document::write_directory_tree()
         + (entries_.size() % entries_per_sector) ? 1 : 0;
     auto current_sector_id = header_.directory_start;
     auto entry_index = directory_id(0);
-
-    recolor_entries(entries_);
 
     for (auto &e : entries_)
     {
