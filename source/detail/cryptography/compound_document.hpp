@@ -47,7 +47,7 @@ struct compound_document_header
         little_endian = 0xFEFF
     };
 
-    std::uint64_t file_id = 0xe11ab1a1e011cfd0;
+    std::uint64_t file_id = 0xE11AB1A1E011CFD0;
     std::array<std::uint8_t, 16> ignore1 = { { 0 } };
     std::uint16_t revision = 0x003E;
     std::uint16_t version = 0x0003;
@@ -59,7 +59,7 @@ struct compound_document_header
     sector_id directory_start = -1;
     std::array<std::uint8_t, 4> ignore3 = { { 0 } };
     std::uint32_t threshold = 4096;
-    sector_id short_table_start = -1;
+    sector_id ssat_start = -2;
     std::uint32_t num_short_sectors = 0;
     sector_id extra_msat_start = -2;
     std::uint32_t num_extra_msat_sectors = 0;
@@ -99,14 +99,14 @@ struct compound_document_entry
     };
 
     std::array<char16_t, 32> name_array = { { 0 } };
-    std::uint16_t name_length = 0;
+    std::uint16_t name_length = 2;
     entry_type type = entry_type::Empty;
-    entry_color color = entry_color::Red;
+    entry_color color = entry_color::Black;
     directory_id prev = -1;
     directory_id next = -1;
     directory_id child = -1;
     std::array<std::uint8_t, 36> ignore;
-    sector_id start = -1;
+    sector_id start = -2;
     std::uint32_t size = 0;
     std::uint32_t ignore2;
 };
@@ -134,6 +134,8 @@ private:
     std::vector<byte> read(sector_id start);
     std::vector<byte> read_short(sector_id start);
 
+    sector_chain follow_chain(sector_id start);
+
     void read_msat();
     void read_sat();
     void read_ssat();
@@ -143,9 +145,6 @@ private:
     void write(const std::vector<byte> &data, sector_id start);
     void write_short(const std::vector<byte> &data, sector_id start);
 
-    void write_msat();
-    void write_sat();
-    void write_ssat();
     void write_header();
     void write_directory_tree();
 
@@ -153,7 +152,7 @@ private:
 
     sector_id allocate_sectors(std::size_t sectors);
     void reallocate_sectors(sector_id start, std::size_t sectors);
-    std::size_t allocated_sectors(sector_id start);
+    sector_id allocate_short_sectors(std::size_t sectors);
 
     compound_document_entry &insert_entry(const std::u16string &path, 
         compound_document_entry::entry_type type);

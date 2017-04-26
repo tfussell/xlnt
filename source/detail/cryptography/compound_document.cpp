@@ -91,6 +91,10 @@ std::vector<std::u16string> split_path(const std::u16string &path_string)
 }
 
 const sector_id FreeSector = -1;
+const sector_id EndOfChain = -2;
+const sector_id SATSector = -3;
+const sector_id MSATSector = -4;
+
 const directory_id End = -1;
 
 } // namespace
@@ -423,6 +427,8 @@ compound_document::compound_document(std::vector<std::uint8_t> &data)
       rb_tree_(new red_black_tree(entries_))
 {
     header_ = compound_document_header();
+    header_.msat.fill(FreeSector);
+    msat_.resize(109, FreeSector);
     header_.directory_start = allocate_sectors(1);
 
     write_header();
@@ -460,7 +466,6 @@ std::size_t compound_document::short_sector_size()
     return static_cast<std::size_t>(1) << header_.short_sector_size_power;
 }
 
-
 std::vector<std::uint8_t> compound_document::read_stream(const std::u16string &name)
 {
     const auto &entry = find_entry(name);
@@ -475,14 +480,24 @@ std::vector<std::uint8_t> compound_document::read_stream(const std::u16string &n
 
 void compound_document::write_stream(const std::u16string &name, const std::vector<std::uint8_t> &data)
 {
-    const auto num_sectors = data.size() / sector_size() + (data.size() % sector_size() ? 1 : 0);
-
     auto &entry = contains_entry(name)
         ? find_entry(name)
         : insert_entry(name, compound_document_entry::entry_type::UserStream);
-    entry.start = allocate_sectors(num_sectors);
+    entry.size = data.size();
 
-    write(data, entry.start);
+    if (entry.size < header_.threshold)
+    {
+        const auto num_sectors = data.size() / short_sector_size() + (data.size() % short_sector_size() ? 1 : 0);
+        entry.start = allocate_short_sectors(num_sectors);
+        write_short(data, entry.start);
+    }
+    else
+    {
+        const auto num_sectors = data.size() / sector_size() + (data.size() % sector_size() ? 1 : 0);
+        entry.start = allocate_sectors(num_sectors);
+        write(data, entry.start);
+    }
+
     write_directory_tree();
 }
 
@@ -502,17 +517,29 @@ void compound_document::write(const std::vector<byte> &data, sector_id start)
     }
 }
 
-void compound_document::write_short(const std::vector<byte> &data, sector_id start)
+void compound_document::write_short(const std::vector<byte> &data, sector_id current_short)
 {
-    const auto num_sectors = data.size() / sector_size() + (data.size() % sector_size() ? 1 : 0);
-    auto current_sector = start;
+    const auto header_size = sizeof(compound_document_header);
+    auto sector_data_reader = binary_reader(data);
+    auto first_short_sector = find_entry(u"Root Entry").start;
 
-    for (auto i = std::size_t(0); i < num_sectors; ++i)
+    while (current_short >= 0)
     {
-        auto position = sector_size() * current_sector;
-        auto current_sector_size = data.size() % sector_size();
-        writer_->append(data, position, current_sector_size);
-        current_sector = ssat_[current_sector];
+        auto short_position = static_cast<std::size_t>(short_sector_size() * current_short);
+        auto current_sector_index = 0;
+        auto current_sector = first_short_sector;
+
+        while (current_sector_index < short_position / sector_size())
+        {
+            current_sector = sat_[current_sector];
+            ++current_sector_index;
+        }
+
+        auto offset = short_position % sector_size();
+        writer_->offset(header_size + sector_size() * current_sector + offset);
+        writer_->append(data, offset, short_sector_size());
+
+        current_short = ssat_[current_short];
     }
 }
 
@@ -611,7 +638,7 @@ void compound_document::read_sat()
 void compound_document::read_ssat()
 {
     ssat_.clear();
-    auto current = header_.short_table_start;
+    auto current = header_.ssat_start;
 
     while (current >= 0)
     {
@@ -629,38 +656,29 @@ void compound_document::read_ssat()
 
 sector_id compound_document::allocate_sectors(std::size_t count)
 {
-    const auto sector_data_start = sizeof(compound_document_header);
     const auto sectors_per_sector = sector_size() / sizeof(sector_id);
     auto num_free = static_cast<std::size_t>(std::count(sat_.begin(), sat_.end(), FreeSector));
 
-    if (num_free < count)
+    while (num_free < count)
     {
-        // increase size of allocation table, plus extra sector for sat table
-        auto new_size = sat_.size() + count - num_free + 1;
-        new_size = (new_size / sectors_per_sector 
-            + (new_size % sectors_per_sector != 0 ? 1 : 0)) * sectors_per_sector;
-        sat_.resize(new_size, FreeSector);
+        const auto sat_index = sat_.size() / sectors_per_sector;
+        const auto msat_index = std::find(msat_.begin(), msat_.end(), FreeSector) - msat_.begin();
 
-        // allocate new sat sector
-        auto new_sat_sector = allocate_sectors(1);
-        msat_.push_back(new_sat_sector);
+        msat_[msat_index] = sat_index;
+        header_.msat[msat_index] = sat_index;
+
         ++header_.num_msat_sectors;
 
-        writer_->offset(sector_data_start + new_sat_sector * sector_size());
-        writer_->append(sat_, sat_.size() - sectors_per_sector, sectors_per_sector);
+        write_header();
 
-        if (msat_.size() > std::size_t(109))
-        {
-            // allocate extra msat sector
-            ++header_.num_extra_msat_sectors;
-            auto new_msat_sector = allocate_sectors(1);
-            writer_->offset(sector_data_start + new_msat_sector * sector_size());
-            writer_->write(new_msat_sector);
-        }
-        else
-        {
-            header_.msat.at(msat_.size() - 1) = new_sat_sector;
-        }
+        auto previous_size = sat_.size();
+        sat_.resize(sat_.size() + sectors_per_sector, FreeSector);
+        sat_[sat_index] = SATSector;
+
+        writer_->offset(sector_data_start() + msat_index * sectors_per_sector);
+        writer_->append(sat_, previous_size, sectors_per_sector);
+
+        num_free = static_cast<std::size_t>(std::count(sat_.begin(), sat_.end(), FreeSector));
     }
 
     auto allocated = 0;
@@ -672,9 +690,14 @@ sector_id compound_document::allocate_sectors(std::size_t count)
     {
         const auto next_iter = std::find(sat_.begin() + current + 1, sat_.end(), FreeSector);
         const auto next = sector_id(next_iter - sat_.begin());
-        sat_[current] = (allocated == count - 1) ? -2 : next;
 
-        if (sector_data_start + (current + 1) * sector_size() > writer_->size())
+        sat_[current] = (allocated == count - 1) ? EndOfChain : next;
+
+        auto msat_index = current / sectors_per_sector;
+        writer_->offset(sector_data_start() + msat_index * sector_size() + current * sizeof(sector_id));
+        writer_->write(sat_[current]);
+
+        if (sector_data_start() + (current + 1) * sector_size() > writer_->size())
         {
             writer_->extend(sector_size());
         }
@@ -692,13 +715,74 @@ void compound_document::reallocate_sectors(sector_id start, std::size_t count)
 
     for (auto i = std::size_t(0); i < count; ++i)
     {
-        if (current_sector == -2)
+        if (current_sector == EndOfChain)
         {
             sat_[current_sector] = allocate_sectors(count - i);
         }
 
         current_sector = sat_[current_sector];
     }
+}
+
+sector_chain compound_document::follow_chain(sector_id start)
+{
+    auto chain = sector_chain();
+    chain.push_back(start);
+
+    while (start != EndOfChain)
+    {
+        start = sat_[start];
+    }
+
+    return chain;
+}
+
+sector_id compound_document::allocate_short_sectors(std::size_t count)
+{
+    const auto sectors_per_sector = sector_size() / sizeof(sector_id);
+    const auto num_free = std::count(ssat_.begin(), ssat_.end(), FreeSector);
+    auto next_sat = EndOfChain;
+
+    if (num_free < count)
+    {
+        const auto num_to_allocate = (count - num_free) / sectors_per_sector + (count - num_free ? 1 : 0);
+        next_sat = allocate_sectors(num_to_allocate);
+
+        if (header_.num_short_sectors == 0)
+        {
+            header_.ssat_start = next_sat;
+        }
+
+        ssat_.resize(ssat_.size() + sectors_per_sector * num_to_allocate, FreeSector);
+    }
+
+    header_.num_short_sectors += count;
+    write_header();
+
+    const auto start_iter = std::find(ssat_.begin(), ssat_.end(), FreeSector);
+    const auto start = sector_id(start_iter - ssat_.begin());
+    auto current = start;
+    auto allocated = std::size_t(0);
+    auto current_sat = header_.ssat_start;
+
+    while (allocated < count)
+    {
+        const auto next_iter = std::find(ssat_.begin() + current + 1, ssat_.end(), FreeSector);
+        const auto next = sector_id(next_iter - ssat_.begin());
+
+        ssat_[current] = (allocated == count - 1) ? EndOfChain : next;
+
+        current = next;
+        ++allocated;
+    }
+
+    if (find_entry(u"Root Entry").start < 0)
+    {
+        find_entry(u"Root Entry").start = start;
+    }
+
+    return start;
+
 }
 
 compound_document_entry &compound_document::insert_entry(
@@ -752,10 +836,10 @@ void compound_document::write_directory_tree()
     auto entry_index = directory_id(0);
 
     reallocate_sectors(header_.directory_start, required_sectors);
+    writer_->offset(sector_data_start() + current_sector_id * sector_size());
 
     for (auto &e : entries_)
     {
-        writer_->offset(sector_data_start() + current_sector_id * sector_size());
         writer_->write(e);
 
         ++entry_index;
@@ -763,6 +847,7 @@ void compound_document::write_directory_tree()
         if (entry_index % entries_per_sector == 0)
         {
             current_sector_id = sat_[current_sector_id];
+            writer_->offset(sector_data_start() + current_sector_id * sector_size());
         }        
     }
 }

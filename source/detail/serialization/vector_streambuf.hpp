@@ -262,10 +262,11 @@ private:
 /// </summary>
 XLNT_API inline std::vector<std::uint8_t> to_vector(std::istream &in_stream)
 {
-    std::vector<std::uint8_t> bytes;
-    vector_ostreambuf buffer(bytes);
-    std::ostream out_stream(&buffer);
-    out_stream << in_stream.rdbuf();
+    in_stream.seekg(0, std::ios::end);
+    std::vector<std::uint8_t> bytes(in_stream.tellg(), 0);
+    in_stream.seekg(0, std::ios::beg);
+    in_stream.read(reinterpret_cast<char *>(bytes.data()), bytes.size());
+
     return bytes;
 }
 
@@ -274,8 +275,7 @@ XLNT_API inline std::vector<std::uint8_t> to_vector(std::istream &in_stream)
 /// </summary>
 XLNT_API inline void to_stream(const std::vector<std::uint8_t> &bytes, std::ostream &out_stream)
 {
-    vector_istreambuf buffer(bytes);
-    out_stream << &buffer;
+    out_stream.write(reinterpret_cast<const char *>(bytes.data()), bytes.size());
 }
 
 /// <summary>

@@ -45,6 +45,8 @@
 #include <worksheet/range_test_suite.hpp>
 #include <worksheet/worksheet_test_suite.hpp>
 
+#include <detail/cryptography/compound_document.hpp>
+
 test_status overall_status;
 
 template<typename T>
@@ -71,6 +73,13 @@ void print_summary()
 
 int main()
 {
+    std::vector<std::uint8_t> bytes;
+    xlnt::detail::compound_document doc(bytes);
+    doc.write_stream(u"aaa", std::vector<std::uint8_t>(4095, 'a'));
+    doc.write_stream(u"bbb", std::vector<std::uint8_t>(4095, 'b'));
+    doc.write_stream(u"ccc", std::vector<std::uint8_t>(4095, 'c'));
+    xlnt::detail::to_stream(bytes, std::ofstream("cd.xlsx", std::ios::binary));
+
     // cell
     run_tests<cell_test_suite>();
     run_tests<index_types_test_suite>();
