@@ -172,7 +172,7 @@ std::vector<std::uint8_t> write_agile_encryption_info(
 std::vector<std::uint8_t> write_standard_encryption_info(const encryption_info &info)
 {
     auto result = std::vector<std::uint8_t>();
-    auto writer = xlnt::detail::binary_writer(result);
+    auto writer = xlnt::detail::binary_writer<std::uint8_t>(result);
 
     const auto version_major = std::uint16_t(4);
     const auto version_minor = std::uint16_t(2);
@@ -252,10 +252,10 @@ std::vector<std::uint8_t> encrypt_xlsx(
     auto ciphertext = std::vector<std::uint8_t>();
     xlnt::detail::compound_document document(ciphertext);
 
-    document.write_stream(u"EncryptionInfo", encryption_info.is_agile
+    document.write_stream("EncryptionInfo", encryption_info.is_agile
         ? write_agile_encryption_info(encryption_info)
         : write_standard_encryption_info(encryption_info));
-    document.write_stream(u"EncryptedPackage", encryption_info.is_agile
+    document.write_stream("EncryptedPackage", encryption_info.is_agile
         ? encrypt_xlsx_agile(encryption_info, plaintext)
         : encrypt_xlsx_standard(encryption_info, plaintext));
 

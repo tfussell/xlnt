@@ -51,7 +51,7 @@ std::vector<std::uint8_t> decrypt_xlsx_standard(
 {
     const auto key = info.calculate_key();
 
-    auto reader = binary_reader(encrypted_package);
+    auto reader = binary_reader<byte>(encrypted_package);
     auto decrypted_size = reader.read<std::uint64_t>();
     auto decrypted = xlnt::detail::aes_ecb_decrypt(encrypted_package, key, reader.offset());
     decrypted.resize(static_cast<std::size_t>(decrypted_size));
@@ -107,7 +107,7 @@ encryption_info::standard_encryption_info read_standard_encryption_info(const st
 {
     encryption_info::standard_encryption_info result;
 
-    auto reader = binary_reader(info_bytes);
+    auto reader = binary_reader<byte>(info_bytes);
 
     // skip version info
     reader.read<std::uint32_t>();
@@ -275,7 +275,7 @@ encryption_info read_encryption_info(const std::vector<std::uint8_t> &info_bytes
     
     info.password = password;
 
-    auto reader = binary_reader(info_bytes);
+    auto reader = binary_reader<byte>(info_bytes);
 
     auto version_major = reader.read<std::uint16_t>();
     auto version_minor = reader.read<std::uint16_t>();
@@ -333,8 +333,8 @@ std::vector<std::uint8_t> decrypt_xlsx(
     xlnt::detail::compound_document document(bytes);
 
     auto encryption_info = read_encryption_info(
-        document.read_stream(u"EncryptionInfo"), password);
-    auto encrypted_package = document.read_stream(u"EncryptedPackage");
+        document.read_stream("EncryptionInfo"), password);
+    auto encrypted_package = document.read_stream("EncryptedPackage");
 
     return encryption_info.is_agile
         ? decrypt_xlsx_agile(encryption_info, encrypted_package)

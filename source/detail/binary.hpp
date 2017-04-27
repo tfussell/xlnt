@@ -34,13 +34,23 @@ namespace detail {
 
 using byte = std::uint8_t;
 
+template<typename T>
 class binary_reader
 {
 public:
     binary_reader() = delete;
 
-    binary_reader(const std::vector<byte> &bytes)
-        : bytes_(&bytes)
+    binary_reader(const std::vector<T> &vector)
+        : vector_(&vector),
+          data_(nullptr),
+          size_(0)
+    {
+    }
+
+    binary_reader(const T *source_data, std::size_t size)
+        : vector_(nullptr),
+          data_(source_data),
+          size_(size)
     {
     }
 
@@ -48,8 +58,9 @@ public:
 
     binary_reader &operator=(const binary_reader &other)
     {
+        vector_ = other.vector_;
         offset_ = other.offset_;
-        bytes_ = other.bytes_;
+        data_ = other.data_;
 
         return *this;
     }
@@ -58,9 +69,9 @@ public:
     {
     }
 
-    const std::vector<std::uint8_t> &data() const
+    const T *data() const
     {
-        return *bytes_;
+        return vector_ == nullptr ? data_ : vector_->data();
     }
 
     void offset(std::size_t offset)
@@ -78,55 +89,69 @@ public:
         offset_ = 0;
     }
 
-    template<typename T>
-    T read()
+    template<typename U>
+    U read()
     {
-        return read_reference<T>();
+        return read_reference<U>();
     }
 
-    template<typename T>
-    const T &read_reference()
+    template<typename U>
+    const U *read_pointer()
     {
-        const auto &result = *reinterpret_cast<const T *>(bytes_->data() + offset_);
-        offset_ += sizeof(T);
+        const auto result = reinterpret_cast<const U *>(data() + offset_);
+        offset_ += sizeof(U) / sizeof(T);
 
         return result;
     }
 
-    template<typename T>
-    std::vector<T> to_vector() const
+    template<typename U>
+    const U &read_reference()
     {
-        auto result = std::vector<T>(size() / sizeof(T), T());
-        std::memcpy(result.data(), bytes_->data(), size());
+        return *read_pointer<U>();
+    }
+
+    template<typename U>
+    std::vector<U> as_vector() const
+    {
+        auto result = std::vector<T>(bytes() / sizeof(U), U());
+        std::memcpy(result.data(), data(), bytes());
 
         return result;
     }
 
-    template<typename T>
-    std::vector<T> read_vector(std::size_t count)
+    template<typename U>
+    std::vector<U> read_vector(std::size_t count)
     {
-        auto result = std::vector<T>(count, T());
-        std::memcpy(result.data(), bytes_->data() + offset_, count * sizeof(T));
-        offset_ += count * sizeof(T);
+        auto result = std::vector<U>(count, U());
+        std::memcpy(result.data(), data() + offset_, count * sizeof(U));
+        offset_ += count * sizeof(T) / sizeof(U);
 
         return result;
     }
 
-    std::size_t size() const
+    std::size_t count() const
     {
-        return bytes_->size();
+        return vector_ != nullptr ? vector_->size() : size_;
+    }
+
+    std::size_t bytes() const
+    {
+        return count() * sizeof(T);
     }
 
 private:
     std::size_t offset_ = 0;
-    const std::vector<std::uint8_t> *bytes_;
+    const std::vector<T> *vector_;
+    const T *data_;
+    const std::size_t size_;
 };
 
+template<typename T>
 class binary_writer
 {
 public:
-    binary_writer(std::vector<byte> &bytes)
-        : bytes_(&bytes)
+    binary_writer(std::vector<T> &bytes)
+        : data_(&bytes)
     {
     }
 
@@ -141,29 +166,33 @@ public:
 
     binary_writer &operator=(const binary_writer &other)
     {
-        bytes_ = other.bytes_;
+        data_ = other.data_;
         offset_ = other.offset_;
 
         return *this;
     }
 
-    std::vector<byte> &data()
+    std::vector<T> &data()
     {
-        return *bytes_;
+        return *data_;
     }
     
-    template<typename T>
-    void assign(const std::vector<T> &ints)
+    // Make the bytes of the data pointed to by this writer equivalent to those in the given vector
+    // sizeof(U) should be a multiple of sizeof(T)
+    template<typename U>
+    void assign(const std::vector<U> &ints)
     {
-        resize(ints.size() * sizeof(T));
-        std::memcpy(bytes_->data(), ints.data(), bytes_->size());
+        resize(ints.size() * sizeof(U));
+        std::memcpy(data_->data(), ints.data(), bytes());
     }
 
-    template<typename T>
-    void assign(const std::basic_string<T> &string)
+    // Make the bytes of the data pointed to by this writer equivalent to those in the given string
+    // sizeof(U) should be a multiple of sizeof(T)
+    template<typename U>
+    void assign(const std::basic_string<U> &string)
     {
-        resize(string.size() * sizeof(T));
-        std::memcpy(bytes_->data(), string.data(), bytes_->size());
+        resize(string.size() * sizeof(U));
+        std::memcpy(data_->data(), string.data(), bytes());
     }
 
     void offset(std::size_t new_offset)
@@ -179,79 +208,78 @@ public:
     void reset()
     {
         offset_ = 0;
-        bytes_->clear();
+        data_->clear();
     }
 
-    template<typename T>
-    void write(T value)
+    template<typename U>
+    void write(U value)
     {
-        const auto num_bytes = sizeof(T);
+        const auto num_bytes = sizeof(U);
+        const auto remaining_bytes = bytes() - offset() * sizeof(T);
 
-        if (offset() + num_bytes > size())
+        if (remaining_bytes < num_bytes)
         {
-            extend(offset() + num_bytes - size());
+            extend((num_bytes - remaining_bytes) / sizeof(T));
         }
 
-        std::memcpy(bytes_->data() + offset(), &value, num_bytes);
-        offset_ += num_bytes;
+        std::memcpy(data_->data() + offset(), &value, num_bytes);
+        offset_ += num_bytes / sizeof(T);
     }
 
-    std::size_t size() const
+    std::size_t count() const
     {
-        return bytes_->size();
+        return data_->size();
+    }
+
+    std::size_t bytes() const
+    {
+        return count() * sizeof(T);
     }
 
     void resize(std::size_t new_size, byte fill = 0)
     {
-        bytes_->resize(new_size, fill);
+        data_->resize(new_size, fill);
     }
 
     void extend(std::size_t amount, byte fill = 0)
     {
-        bytes_->resize(size() + amount, fill);
+        data_->resize(count() + amount, fill);
     }
 
     std::vector<byte>::iterator iterator()
     {
-        return bytes_->begin() + static_cast<std::ptrdiff_t>(offset());
+        return data_->begin() + static_cast<std::ptrdiff_t>(offset());
     }
 
-    /*
-    void append(const byte *data, const std::size_t data_size, std::size_t offset, std::size_t count)
+    template<typename U>
+    void append(const std::vector<U> &data)
     {
-        if (offset + count > data_size)
+        binary_reader<U> reader(data);
+        append(reader, data.size() * sizeof(U));
+    }
+
+    template<typename U>
+    void append(binary_reader<U> &reader, std::size_t reader_element_count)
+    {
+        const auto num_bytes = sizeof(U) * reader_element_count;
+        const auto remaining_bytes = bytes() - offset() * sizeof(T);
+
+        if (remaining_bytes < num_bytes)
         {
-            throw xlnt::exception("out of bounds read");
+            extend((num_bytes - remaining_bytes) / sizeof(T));
         }
 
-        const auto end_index = size();
-        extend(count);
-        std::memcpy(bytes_->data() + end_index, data + offset, count);
-    }
-    */
-
-    template<typename T>
-    void append(const std::vector<T> &data)
-    {
-        append(data, 0, data.size());
-    }
-
-    template<typename T>
-    void append(const std::vector<T> &data, std::size_t offset, std::size_t count)
-    {
-        const auto byte_count = count * sizeof(T);
-
-        if (offset_ + byte_count > size())
+        if ((reader.offset() + reader_element_count) * sizeof(U) > reader.bytes())
         {
-            extend(offset_ + byte_count - size());
+            throw xlnt::exception("reading past end");
         }
 
-        std::memcpy(bytes_->data() + offset_, data.data() + offset, byte_count);
-        offset_ += byte_count;
+        std::memcpy(data_->data() + offset_, reader.data() + reader.offset(), reader_element_count * sizeof(U));
+        offset_ += reader_element_count * sizeof(U) / sizeof(T);
     }
 
 private:
-    std::vector<byte> *bytes_;
+    std::vector<T> *data_;
     std::size_t offset_ = 0;
 };
 
@@ -259,7 +287,7 @@ template<typename T>
 std::vector<byte> string_to_bytes(const std::basic_string<T> &string)
 {
     std::vector<byte> bytes;
-    binary_writer writer(bytes);
+    binary_writer<byte> writer(bytes);
     writer.assign(string);
     
     return bytes;

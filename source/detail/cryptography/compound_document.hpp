@@ -111,8 +111,6 @@ struct compound_document_entry
     std::uint32_t ignore2;
 };
 
-class red_black_tree;
-
 class compound_document
 {
 public:
@@ -120,55 +118,70 @@ public:
     compound_document(const std::vector<std::uint8_t> &data);
     ~compound_document();
 
-    std::vector<std::uint8_t> read_stream(const std::u16string &filename);
-    void write_stream(const std::u16string &filename, const std::vector<std::uint8_t> &data);
+    std::vector<std::uint8_t> read_stream(const std::string &filename);
+    void write_stream(const std::string &filename, const std::vector<std::uint8_t> &data);
 
 private:
+    template<typename T>
+    void read_sector(sector_id id, binary_writer<T> &writer);
+    template<typename T>
+    void read_short_sector(sector_id id, binary_writer<T> &writer);
+
+    template<typename T>
+    void write_sector(binary_reader<T> &reader, sector_id id);
+    template<typename T>
+    void write_short_sector(binary_reader<T> &reader, sector_id id);
+
     std::size_t sector_size();
     std::size_t short_sector_size();
     std::size_t sector_data_start();
 
-    bool contains_entry(const std::u16string &path);
-    compound_document_entry &find_entry(const std::u16string &path);
+    sector_chain follow_sat_chain(sector_id start);
+    sector_chain follow_ssat_chain(sector_id start);
 
-    std::vector<byte> read(sector_id start);
-    std::vector<byte> read_short(sector_id start);
-
-    sector_chain follow_chain(sector_id start);
-
-    void read_msat();
-    void read_sat();
-    void read_ssat();
-    void read_header();
-    void read_directory_tree();
-
-    void write(const std::vector<byte> &data, sector_id start);
-    void write_short(const std::vector<byte> &data, sector_id start);
-
-    void write_header();
-    void write_directory_tree();
+    sector_id msat(sector_id id);
+    sector_id sat(sector_id id);
 
     void print_directory();
 
-    sector_id allocate_sectors(std::size_t sectors);
-    void reallocate_sectors(sector_id start, std::size_t sectors);
-    sector_id allocate_short_sectors(std::size_t sectors);
+    sector_id allocate_msat_sector();
+    sector_id allocate_sat_sector();
+    sector_id allocate_ssat_sector();
 
-    compound_document_entry &insert_entry(const std::u16string &path, 
+    sector_id allocate_sector();
+    sector_chain allocate_sectors(std::size_t sectors);
+    sector_id allocate_short_sector();
+    sector_chain allocate_short_sectors(std::size_t sectors);
+
+    compound_document_header &header();
+
+    bool contains_entry(const std::u16string &path);
+    directory_id find_entry(const std::u16string &path);
+    directory_id next_empty_entry();
+    directory_id insert_entry(const std::u16string &path, 
         compound_document_entry::entry_type type);
 
-    std::unique_ptr<binary_reader> reader_;
-    std::unique_ptr<binary_writer> writer_;
+    // Red black tree helper functions
+    void tree_initialize_parent_maps();
+    void tree_insert(directory_id new_id, directory_id storage_id);
+    void tree_insert_fixup(directory_id x);
+    std::u16string tree_path(directory_id id);
+    void tree_rotate_left(directory_id x);
+    void tree_rotate_right(directory_id y);
+    directory_id &tree_left(directory_id id);
+    directory_id &tree_right(directory_id id);
+    directory_id &tree_parent(directory_id id);
+    directory_id &tree_root(directory_id id);
+    directory_id &tree_child(directory_id id);
+    std::u16string tree_key(directory_id id);
+    compound_document_entry::entry_color &tree_color(directory_id id);
 
-    compound_document_header header_;
+    std::unique_ptr<binary_reader<byte>> reader_;
+    std::unique_ptr<binary_writer<byte>> writer_;
 
-    sector_chain msat_;
-    sector_chain sat_;
-    sector_chain ssat_;
-
-    std::vector<compound_document_entry> entries_;
-
-    std::unique_ptr<red_black_tree> rb_tree_;
+    std::unordered_map<directory_id, directory_id> parent_storage_;
+    std::unordered_map<directory_id, directory_id> parent_;
+    std::unordered_map<directory_id, compound_document_entry *> entry_cache_;
 };
 
 } // namespace detail

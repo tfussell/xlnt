@@ -50,30 +50,6 @@ int compare_keys(const std::u16string &left, const std::u16string &right)
     return to_lower(left).compare(to_lower(right));
 }
 
-bool header_is_valid(const compound_document_header &h)
-{
-    if (h.threshold != 4096)
-    {
-        return false;
-    }
-
-    if (h.num_msat_sectors == 0
-        || (h.num_msat_sectors > 109 && h.num_msat_sectors > (h.num_extra_msat_sectors * 127) + 109)
-        || ((h.num_msat_sectors < 109) && (h.num_extra_msat_sectors != 0)))
-    {
-        return false;
-    }
-
-    if (h.short_sector_size_power > h.sector_size_power
-        || h.sector_size_power <= 6
-        || h.sector_size_power >= 31)
-    {
-        return false;
-    }
-
-    return true;
-}
-
 std::vector<std::u16string> split_path(const std::u16string &path_string)
 {
     auto sep = path_string.find(u'/');
@@ -90,6 +66,19 @@ std::vector<std::u16string> split_path(const std::u16string &path_string)
     return split;
 }
 
+std::u16string join_path(const std::vector<std::u16string> &path)
+{
+    auto joined = std::u16string();
+
+    for (auto part : path)
+    {
+        joined.append(part);
+        joined.push_back(u'/');
+    }
+
+    return joined;
+}
+
 const sector_id FreeSector = -1;
 const sector_id EndOfChain = -2;
 const sector_id SATSector = -3;
@@ -102,354 +91,20 @@ const directory_id End = -1;
 namespace xlnt {
 namespace detail {
 
-class red_black_tree
-{
-public:
-    using entry_color = compound_document_entry::entry_color;
-
-    red_black_tree(std::vector<compound_document_entry> &entries)
-        : entries_(entries)
-    {
-        initialize_tree();
-    }
-
-    void initialize_tree()
-    {
-        if (entries_.empty()) return;
-
-        auto stack = std::vector<directory_id>();
-        auto storage_siblings = std::vector<directory_id>();
-        auto stream_siblings = std::vector<directory_id>();
-
-        auto directory_stack = std::vector<directory_id>();
-        directory_stack.push_back(directory_id(0));
-
-        while (!directory_stack.empty())
-        {
-            auto current_storage_id = directory_stack.back();
-            directory_stack.pop_back();
-
-            if (entries_[current_storage_id].child < 0) continue;
-
-            auto storage_stack = std::vector<directory_id>();
-            auto storage_root_id = entries_[current_storage_id].child;
-            parent_[storage_root_id] = End;
-            storage_stack.push_back(storage_root_id);
-
-            while (!storage_stack.empty())
-            {
-                auto current_entry_id = storage_stack.back();
-                auto &current_entry = entries_[current_entry_id];
-                storage_stack.pop_back();
-
-                parent_storage_[current_entry_id] = current_storage_id;
-
-                if (current_entry.type == compound_document_entry::entry_type::UserStorage)
-                {
-                    directory_stack.push_back(current_entry_id);
-                }
-
-                if (current_entry.prev >= 0)
-                {
-                    storage_stack.push_back(current_entry.prev);
-                    parent_[current_entry.prev] = current_entry_id;
-                }
-
-                if (current_entry.next >= 0)
-                {
-                    storage_stack.push_back(entries_[current_entry_id].next);
-                    parent_[entries_[current_entry_id].next] = current_entry_id;
-                }
-            }
-        }
-    }
-
-    void insert(directory_id new_id, directory_id storage_id)
-    {
-        parent_storage_[new_id] = storage_id;
-
-        left(new_id) = End;
-        right(new_id) = End;
-
-        if (root(new_id) == End)
-        {
-            if (new_id != 0)
-            {
-                root(new_id) = new_id;
-            }
-
-            color(new_id, entry_color::Black);
-            parent(new_id) = End;
-
-            return;
-        }
-
-        // normal tree insert
-        // (will probably unbalance the tree, fix after)
-        auto x = root(new_id);
-        auto y = End;
-
-        while (x >= 0)
-        {
-            y = x;
-
-            if (compare_keys(key(x), key(new_id)) > 0)
-            {
-                x = right(x);
-            }
-            else
-            {
-                x = left(x);
-            }
-        }
-
-        parent(new_id) = y;
-
-        if (compare_keys(key(y), key(new_id)) > 0)
-        {
-            right(y) = new_id;
-        }
-        else
-        {
-            left(y) = new_id;
-        }
-
-        insert_fixup(new_id);
-    }
-
-    std::vector<directory_id> path(directory_id id)
-    {
-        auto storage_id = parent_storage_[id];
-        auto storages = std::vector<directory_id>();
-        storages.push_back(storage_id);
-        
-        while (storage_id > 0)
-        {
-            storage_id = parent_storage_[storage_id];
-            storages.push_back(storage_id);
-        }
-
-        return storages;
-    }
-
-private:
-    void rotate_left(directory_id x)
-    {
-        auto y = right(x);
-
-        // turn y's left subtree into x's right subtree
-        right(x) = left(y);
-
-        if (left(y) != End)
-        {
-            parent(left(y)) = x;
-        }
-
-        // link x's parent to y
-        parent(y) = parent(x);
-
-        if (parent(x) == End)
-        {
-            root(x) = y;
-        }
-        else if (x == left(parent(x)))
-        {
-            left(parent(x)) = y;
-        }
-        else
-        {
-            right(parent(x)) = y;
-        }
-
-        // put x on y's left
-        left(y) = x;
-        parent(x) = y;
-    }
-
-    void rotate_right(directory_id y)
-    {
-        auto x = left(y);
-
-        // turn x's right subtree into y's left subtree
-        left(y) = right(x);
-
-        if (right(x) != End)
-        {
-            parent(right(x)) = y;
-        }
-
-        // link y's parent to x
-        parent(x) = parent(y);
-
-        if (parent(y) == End)
-        {
-            root(y) = x;
-        }
-        else if (y == left(parent(y)))
-        {
-            left(parent(y)) = x;
-        }
-        else
-        {
-            right(parent(y)) = x;
-        }
-
-        // put y on x's right
-        right(x) = y;
-        parent(y) = x;
-    }
-
-    void insert_fixup(directory_id x)
-    {
-        color(x, entry_color::Red);
-
-        while (x != root(x) && color(parent(x)) == entry_color::Red)
-        {
-            if (parent(x) == left(parent(parent(x))))
-            {
-                auto y = right(parent(parent(x)));
-
-                if (color(y) == entry_color::Red)
-                {
-                    // case 1
-                    color(parent(x), entry_color::Black);
-                    color(y, entry_color::Black);
-                    color(parent(parent(x)), entry_color::Red);
-                    x = parent(parent(x));
-                }
-                else
-                {
-                    if (x == right(parent(x)))
-                    {
-                        // case 2
-                        x = parent(x);
-                        rotate_left(x);
-                    }
-
-                    // case 3
-                    color(parent(x), entry_color::Black);
-                    color(parent(parent(x)), entry_color::Red);
-                    rotate_right(parent(parent(x)));
-                }
-            }
-            else // same as above with left and right switched
-            {
-                auto y = left(parent(parent(x)));
-
-                if (color(y) == entry_color::Red)
-                {
-                    //case 1
-                    color(parent(x), entry_color::Black);
-                    color(y, entry_color::Black);
-                    color(parent(parent(x)), entry_color::Red);
-                    x = parent(parent(x));
-                }
-                else
-                {
-                    if (x == left(parent(x)))
-                    {
-                        // case 2
-                        x = parent(x);
-                        rotate_right(x);
-                    }
-
-                    // case 3
-                    color(parent(x), entry_color::Black);
-                    color(parent(parent(x)), entry_color::Red);
-                    rotate_left(parent(parent(x)));
-                }
-            }
-        }
-
-        color(root(x), entry_color::Black);
-    }
-
-    void color(directory_id id, entry_color c)
-    {
-        entries_.at(id).color = c;
-    }
-
-    entry_color color(directory_id id)
-    {
-        return entries_.at(id).color;
-    }
-
-    directory_id &parent(directory_id id)
-    {
-        if (parent_.find(id) == parent_.end())
-        {
-            parent_[id] = End;
-        }
-
-        return parent_[id];
-    }
-
-    directory_id &parent_storage(directory_id id)
-    {
-        if (parent_storage_.find(id) == parent_storage_.end())
-        {
-            throw xlnt::exception("not found");
-        }
-
-        return parent_storage_[id];
-    }
-
-    directory_id &root(directory_id id)
-    {
-        return entries_[parent_storage(id)].child;
-    }
-
-    directory_id &left(directory_id id)
-    {
-        return entries_.at(id).prev;
-    }
-
-    directory_id &right(directory_id id)
-    {
-        return entries_.at(id).next;
-    }
-
-    std::u16string key(directory_id id)
-    {
-        return entries_.at(id).name();
-    }
-
-private:
-    std::vector<compound_document_entry> &entries_;
-    std::unordered_map<directory_id, directory_id> parent_storage_;
-    std::unordered_map<directory_id, directory_id> parent_;
-};
-
-
 compound_document::compound_document(std::vector<std::uint8_t> &data)
-    : writer_(new binary_writer(data)),
-      reader_(new binary_reader(data)),
-      rb_tree_(new red_black_tree(entries_))
+    : writer_(new binary_writer<byte>(data)),
+      reader_(new binary_reader<byte>(data))
 {
-    header_ = compound_document_header();
-    header_.msat.fill(FreeSector);
-    msat_.resize(109, FreeSector);
-    header_.directory_start = allocate_sectors(1);
-
-    write_header();
+    header().msat.fill(FreeSector);
+    header().directory_start = allocate_sector();
 
     insert_entry(u"Root Entry", compound_document_entry::entry_type::RootStorage);
 }
 
 compound_document::compound_document(const std::vector<std::uint8_t> &data)
-    : reader_(new binary_reader(data))
+    : reader_(new binary_reader<byte>(data))
 {
-    read_header();
-
-    if (!header_is_valid(header_))
-    {
-        throw xlnt::exception("bad ole");
-    }
-
-    read_msat();
-    read_sat();
-    read_ssat();
-    read_directory_tree();
+    tree_initialize_parent_maps();
 }
 
 compound_document::~compound_document()
@@ -458,398 +113,302 @@ compound_document::~compound_document()
 
 std::size_t compound_document::sector_size()
 {
-    return static_cast<std::size_t>(1) << header_.sector_size_power;
+    return static_cast<std::size_t>(1) << header().sector_size_power;
 }
 
 std::size_t compound_document::short_sector_size()
 {
-    return static_cast<std::size_t>(1) << header_.short_sector_size_power;
+    return static_cast<std::size_t>(1) << header().short_sector_size_power;
 }
 
-std::vector<std::uint8_t> compound_document::read_stream(const std::u16string &name)
+std::vector<byte> compound_document::read_stream(const std::string &name)
 {
-    const auto &entry = find_entry(name);
+    const auto entry_id = find_entry(utf8_to_utf16(name));
+    const auto entry = entry_cache_.at(entry_id);
 
-    auto stream_data = (entry.size < header_.threshold)
-        ? read_short(entry.start)
-        : read(entry.start);
-    stream_data.resize(entry.size);
+    auto stream_data = std::vector<byte>();
+    auto stream_data_writer = binary_writer<byte>(stream_data);
+
+    if (entry->size < header().threshold)
+    {
+        for (auto sector : follow_ssat_chain(entry->start))
+        {
+            read_short_sector<byte>(sector, stream_data_writer);
+        }
+    }
+    else
+    {
+        for (auto sector : follow_sat_chain(entry->start))
+        {
+            read_sector<byte>(sector, stream_data_writer);
+        }
+    }
+    stream_data.resize(entry->size);
 
     return stream_data;
 }
 
-void compound_document::write_stream(const std::u16string &name, const std::vector<std::uint8_t> &data)
+void compound_document::write_stream(const std::string &name, const std::vector<std::uint8_t> &data)
 {
-    auto &entry = contains_entry(name)
-        ? find_entry(name)
-        : insert_entry(name, compound_document_entry::entry_type::UserStream);
-    entry.size = data.size();
+    auto entry_id = contains_entry(utf8_to_utf16(name))
+        ? find_entry(utf8_to_utf16(name))
+        : insert_entry(utf8_to_utf16(name), compound_document_entry::entry_type::UserStream);
+    auto entry = entry_cache_.at(entry_id);
+    entry->size = static_cast<std::uint32_t>(data.size());
 
-    if (entry.size < header_.threshold)
+    auto stream_data_reader = binary_reader<byte>(data);
+
+    if (entry->size < header().threshold)
     {
-        const auto num_sectors = data.size() / short_sector_size() + (data.size() % short_sector_size() ? 1 : 0);
-        entry.start = allocate_short_sectors(num_sectors);
-        write_short(data, entry.start);
+        const auto num_sectors = data.size() / short_sector_size()
+            + (data.size() % short_sector_size() ? 1 : 0);
+
+        auto chain = allocate_short_sectors(num_sectors);
+        entry->start = chain.front();
+
+        for (auto sector : follow_ssat_chain(entry->start))
+        {
+            write_short_sector(stream_data_reader, sector);
+        }
     }
     else
     {
-        const auto num_sectors = data.size() / sector_size() + (data.size() % sector_size() ? 1 : 0);
-        entry.start = allocate_sectors(num_sectors);
-        write(data, entry.start);
-    }
+        const auto num_sectors = data.size() / short_sector_size()
+            + (data.size() % short_sector_size() ? 1 : 0);
 
-    write_directory_tree();
-}
+        auto chain = allocate_sectors(num_sectors);
+        entry->start = chain.front();
 
-void compound_document::write(const std::vector<byte> &data, sector_id start)
-{
-    const auto header_size = sizeof(compound_document_header);
-    const auto num_sectors = data.size() / sector_size() + (data.size() % sector_size() ? 1 : 0);
-    auto current_sector = start;
-
-    for (auto i = std::size_t(0); i < num_sectors; ++i)
-    {
-        auto stream_position = i * sector_size();
-        auto stream_size = std::min(sector_size(), data.size() - stream_position);
-        writer_->offset(header_size + sector_size() * current_sector);
-        writer_->append(data, stream_position, stream_size);
-        current_sector = sat_[current_sector];
-    }
-}
-
-void compound_document::write_short(const std::vector<byte> &data, sector_id current_short)
-{
-    const auto header_size = sizeof(compound_document_header);
-    auto sector_data_reader = binary_reader(data);
-    auto first_short_sector = find_entry(u"Root Entry").start;
-
-    while (current_short >= 0)
-    {
-        auto short_position = static_cast<std::size_t>(short_sector_size() * current_short);
-        auto current_sector_index = 0;
-        auto current_sector = first_short_sector;
-
-        while (current_sector_index < short_position / sector_size())
+        for (auto sector : follow_sat_chain(entry->start))
         {
-            current_sector = sat_[current_sector];
-            ++current_sector_index;
+            write_sector(stream_data_reader, sector);
         }
-
-        auto offset = short_position % sector_size();
-        writer_->offset(header_size + sector_size() * current_sector + offset);
-        writer_->append(data, offset, short_sector_size());
-
-        current_short = ssat_[current_short];
     }
 }
 
-std::vector<byte> compound_document::read(sector_id current)
+template<typename T>
+void compound_document::write_sector(binary_reader<T> &reader, sector_id id)
+{
+    writer_->offset(sector_data_start() + sector_size() * id);
+    writer_->append(reader, std::min(sector_size(), reader.bytes()) / sizeof(T));
+}
+
+template<typename T>
+void compound_document::write_short_sector(binary_reader<T> &reader, sector_id id)
 {
     const auto header_size = sizeof(compound_document_header);
-    auto sector_data = std::vector<byte>();
-    auto sector_data_writer = binary_writer(sector_data);
+    auto first_short_sector = entry_cache_.at(find_entry(u"Root Entry"))->start;
 
-    while (current >= 0)
+    auto short_position = static_cast<std::size_t>(short_sector_size() * id);
+    auto current_sector_index = 0;
+    auto current_sector = first_short_sector;
+
+    while (current_sector_index < short_position / sector_size())
     {
-        reader_->offset(header_size + sector_size() * current);
-        auto current_sector_data = reader_->read_vector<byte>(sector_size());
-        sector_data_writer.append(current_sector_data);
-        current = sat_[current];
+        current_sector = sat(current_sector);
+        ++current_sector_index;
     }
 
-    return sector_data;
+    auto offset = short_position % sector_size();
+    writer_->offset(header_size + sector_size() * current_sector + offset);
+    writer_->append(reader, short_sector_size());
 }
 
-std::vector<byte> compound_document::read_short(sector_id current_short)
+template<typename T>
+void compound_document::read_sector(sector_id current, binary_writer<T> &writer)
+{
+    reader_->offset(sector_data_start() + sector_size() * current);
+    writer.append<byte>(*reader_, sector_size());
+}
+
+template<typename T>
+void compound_document::read_short_sector(sector_id current_short, binary_writer<T> &writer)
 {
     const auto header_size = sizeof(compound_document_header);
     auto sector_data = std::vector<byte>();
-    auto sector_data_writer = binary_writer(sector_data);
-    auto first_short_sector = find_entry(u"Root Entry").start;
+    auto sector_data_writer = binary_writer<byte>(sector_data);
+    auto first_short_sector = entry_cache_.at(find_entry(u"Root Entry"))->start;
 
-    while (current_short >= 0)
+    auto short_position = static_cast<std::size_t>(short_sector_size() * current_short);
+    auto current_sector_index = 0;
+    auto current_sector = first_short_sector;
+
+    while (current_sector_index < short_position / sector_size())
     {
-        auto short_position = static_cast<std::size_t>(short_sector_size() * current_short);
-        auto current_sector_index = 0;
-        auto current_sector = first_short_sector;
+        current_sector = sat(current_sector);
+        ++current_sector_index;
+    }
 
-        while (current_sector_index < short_position / sector_size())
+    auto offset = short_position % sector_size();
+    reader_->offset(header_size + sector_size() * current_sector + offset);
+    sector_data_writer.append(*reader_, short_sector_size());
+}
+
+sector_id compound_document::allocate_sector()
+{
+    auto msat_index = std::size_t(0);
+    auto sat_index = sector_id(0);
+
+    while (true)
+    {
+        if (header().msat[msat_index] == FreeSector)
         {
-            current_sector = sat_[current_sector];
-            ++current_sector_index;
+            // allocate msat sector
+            header().msat[msat_index] = sat_index;
+
+            auto sector_data = std::vector<sector_id>(sector_size() / sizeof(sector_id), FreeSector);
+            sector_data.front() = SATSector;
+            auto sector_data_reader = binary_reader<sector_id>(sector_data);
+            write_sector(sector_data_reader, sat_index);
         }
 
-        auto offset = short_position % sector_size();
-        reader_->offset(header_size + sector_size() * current_sector + offset);
-        auto current_sector_data = reader_->read_vector<byte>(short_sector_size());
-        sector_data_writer.append(current_sector_data);
+        // load the current sector
+        // could read one at a time, but this is easier for debugging for now
+        sat_index = header().msat[msat_index];
+        auto sat_sector_data = std::vector<sector_id>();
+        auto sat_sector_data_writer = binary_writer<sector_id>(sat_sector_data);
+        read_sector<sector_id>(sat_index, sat_sector_data_writer);
 
-        current_short = ssat_[current_short];
-    }
+        auto next_free_iter = std::find(sat_sector_data.begin(), sat_sector_data.end(), FreeSector);
 
-    return sector_data;
-}
-
-void compound_document::read_msat()
-{
-    msat_ = sector_chain(
-        header_.msat.begin(),
-        header_.msat.begin()
-        + std::min(header_.msat.size(),
-            static_cast<std::size_t>(header_.num_msat_sectors)));
-
-    if (header_.num_msat_sectors > std::uint32_t(109))
-    {
-        auto current_sector = header_.extra_msat_start;
-
-        for (auto r = std::uint32_t(0); r < header_.num_extra_msat_sectors; ++r)
+        if (next_free_iter != sat_sector_data.end()) // found a free sector
         {
-            auto current_sector_data = read({ current_sector });
-            auto current_sector_reader = binary_reader(current_sector_data);
-            auto current_sector_sectors = current_sector_reader.to_vector<sector_id>();
+            auto next_free = static_cast<sector_id>(next_free_iter - sat_sector_data.begin());
 
-            current_sector = current_sector_sectors.back();
-            current_sector_sectors.pop_back();
+            // write empty sector
+            auto sector_data = std::vector<sector_id>(sector_size() / sizeof(sector_id), 0);
+            auto sector_data_reader = binary_reader<sector_id>(sector_data);
+            write_sector(sector_data_reader, next_free);
 
-            std::copy(
-                current_sector_sectors.begin(),
-                current_sector_sectors.end(),
-                std::back_inserter(msat_));
-        }
-    }
-}
+            // update sat
+            writer_->offset(sector_data_start() + sat_index * sector_size() + next_free * sizeof(sector_id));
+            writer_->write(EndOfChain);
 
-void compound_document::read_sat()
-{
-    sat_.clear();
-
-    for (auto msat_sector : msat_)
-    {
-        reader_->offset(sector_data_start() + sector_size() * msat_sector);
-        auto sat_sectors = reader_->read_vector<sector_id>(sector_size() / sizeof(sector_id));
-
-        std::copy(
-            sat_sectors.begin(),
-            sat_sectors.end(),
-            std::back_inserter(sat_));
-    }
-}
-
-void compound_document::read_ssat()
-{
-    ssat_.clear();
-    auto current = header_.ssat_start;
-
-    while (current >= 0)
-    {
-        reader_->offset(sector_data_start() + sector_size() * current);
-        auto ssat_sectors = reader_->read_vector<sector_id>(sector_size() / sizeof(sector_id));
-
-        std::copy(
-            ssat_sectors.begin(),
-            ssat_sectors.end(),
-            std::back_inserter(ssat_));
-
-        current = sat_[current];
-    }
-}
-
-sector_id compound_document::allocate_sectors(std::size_t count)
-{
-    const auto sectors_per_sector = sector_size() / sizeof(sector_id);
-    auto num_free = static_cast<std::size_t>(std::count(sat_.begin(), sat_.end(), FreeSector));
-
-    while (num_free < count)
-    {
-        const auto sat_index = sat_.size() / sectors_per_sector;
-        const auto msat_index = std::find(msat_.begin(), msat_.end(), FreeSector) - msat_.begin();
-
-        msat_[msat_index] = sat_index;
-        header_.msat[msat_index] = sat_index;
-
-        ++header_.num_msat_sectors;
-
-        write_header();
-
-        auto previous_size = sat_.size();
-        sat_.resize(sat_.size() + sectors_per_sector, FreeSector);
-        sat_[sat_index] = SATSector;
-
-        writer_->offset(sector_data_start() + msat_index * sectors_per_sector);
-        writer_->append(sat_, previous_size, sectors_per_sector);
-
-        num_free = static_cast<std::size_t>(std::count(sat_.begin(), sat_.end(), FreeSector));
-    }
-
-    auto allocated = 0;
-    const auto start_iter = std::find(sat_.begin(), sat_.end(), FreeSector);
-    const auto start = sector_id(start_iter - sat_.begin());
-    auto current = start;
-
-    while (allocated < count)
-    {
-        const auto next_iter = std::find(sat_.begin() + current + 1, sat_.end(), FreeSector);
-        const auto next = sector_id(next_iter - sat_.begin());
-
-        sat_[current] = (allocated == count - 1) ? EndOfChain : next;
-
-        auto msat_index = current / sectors_per_sector;
-        writer_->offset(sector_data_start() + msat_index * sector_size() + current * sizeof(sector_id));
-        writer_->write(sat_[current]);
-
-        if (sector_data_start() + (current + 1) * sector_size() > writer_->size())
-        {
-            writer_->extend(sector_size());
+            return next_free;
         }
 
-        current = next;
-        ++allocated;
+        ++msat_index;
     }
-
-    return start;
 }
 
-void compound_document::reallocate_sectors(sector_id start, std::size_t count)
+sector_chain compound_document::allocate_sectors(std::size_t count)
 {
-    auto current_sector = start;
+    auto chain = sector_chain();
 
     for (auto i = std::size_t(0); i < count; ++i)
     {
-        if (current_sector == EndOfChain)
-        {
-            sat_[current_sector] = allocate_sectors(count - i);
-        }
-
-        current_sector = sat_[current_sector];
-    }
-}
-
-sector_chain compound_document::follow_chain(sector_id start)
-{
-    auto chain = sector_chain();
-    chain.push_back(start);
-
-    while (start != EndOfChain)
-    {
-        start = sat_[start];
+        chain.push_back(allocate_sector());
     }
 
     return chain;
 }
 
-sector_id compound_document::allocate_short_sectors(std::size_t count)
+sector_chain compound_document::follow_sat_chain(sector_id start)
 {
+    auto chain = sector_chain();
     const auto sectors_per_sector = sector_size() / sizeof(sector_id);
-    const auto num_free = std::count(ssat_.begin(), ssat_.end(), FreeSector);
-    auto next_sat = EndOfChain;
+    const auto msat_index = start / sectors_per_sector;
+    auto sector = start;
 
-    if (num_free < count)
+    while (sector >= 0)
     {
-        const auto num_to_allocate = (count - num_free) / sectors_per_sector + (count - num_free ? 1 : 0);
-        next_sat = allocate_sectors(num_to_allocate);
-
-        if (header_.num_short_sectors == 0)
-        {
-            header_.ssat_start = next_sat;
-        }
-
-        ssat_.resize(ssat_.size() + sectors_per_sector * num_to_allocate, FreeSector);
+        chain.push_back(sector);
+        auto sat_index = header().msat[msat_index];
+        reader_->offset(sector_data_start() + sat_index * sector_size() + (sector * sizeof(sector_id) % sector_size()));
+        sector = reader_->read<sector_id>();
     }
 
-    header_.num_short_sectors += count;
-    write_header();
-
-    const auto start_iter = std::find(ssat_.begin(), ssat_.end(), FreeSector);
-    const auto start = sector_id(start_iter - ssat_.begin());
-    auto current = start;
-    auto allocated = std::size_t(0);
-    auto current_sat = header_.ssat_start;
-
-    while (allocated < count)
-    {
-        const auto next_iter = std::find(ssat_.begin() + current + 1, ssat_.end(), FreeSector);
-        const auto next = sector_id(next_iter - ssat_.begin());
-
-        ssat_[current] = (allocated == count - 1) ? EndOfChain : next;
-
-        current = next;
-        ++allocated;
-    }
-
-    if (find_entry(u"Root Entry").start < 0)
-    {
-        find_entry(u"Root Entry").start = start;
-    }
-
-    return start;
-
+    return chain;
 }
 
-compound_document_entry &compound_document::insert_entry(
+sector_chain compound_document::follow_ssat_chain(sector_id start)
+{
+    auto chain = sector_chain();
+    return chain;
+}
+
+sector_id compound_document::msat(sector_id id)
+{
+    if (id < sector_id(109))
+    {
+        return header().msat.at(id);
+    }
+
+    auto current = msat(108);
+
+    while (current < id)
+    {
+        reader_->offset(sector_data_start() + current * sector_size() - sizeof(sector_id));
+        current = reader_->read<sector_id>();
+    }
+
+    return current;
+}
+
+sector_id compound_document::sat(sector_id id)
+{
+    auto sectors_per_sector = sector_size() / sizeof(sector_id);
+    auto msat_sector_index = msat(sector_id(id / sectors_per_sector));
+
+    reader_->offset(sector_data_start() + msat_sector_index * sector_size() + id % sectors_per_sector);
+
+    return reader_->read<sector_id>();
+}
+
+sector_chain compound_document::allocate_short_sectors(std::size_t count)
+{
+    return { EndOfChain };
+}
+
+directory_id compound_document::next_empty_entry()
+{
+    auto entry_id = directory_id(0);
+
+    for (auto entry : entry_cache_)
+    {
+        if (entry.second->type == compound_document_entry::entry_type::Empty)
+        {
+            return entry.first;
+        }
+
+        entry_id = std::max(entry.first, entry_id);
+    }
+
+    const auto entries_per_sector = sector_size() 
+        / sizeof(compound_document_entry);
+    auto new_sector = allocate_sector();
+    // TODO: connect chains here
+    writer_->offset(sector_data_start() + new_sector * sector_size());
+    reader_->offset(sector_data_start() + new_sector * sector_size());
+
+    for (auto i = std::size_t(0); i < entries_per_sector; ++i)
+    {
+        auto empty_entry = compound_document_entry();
+        empty_entry.type = compound_document_entry::entry_type::Empty;
+
+        writer_->write(empty_entry);
+
+        entry_cache_[entry_id + i] = const_cast<compound_document_entry *>(
+            reader_->read_pointer<compound_document_entry>());
+    }
+
+    return entry_id;
+}
+
+directory_id compound_document::insert_entry(
     const std::u16string &name,
     compound_document_entry::entry_type type)
 {
-    auto any_empty_entry = false;
-    auto entry_id = directory_id(0);
+    auto entry_id = next_empty_entry();
+    auto entry = entry_cache_.at(entry_id);
 
-    for (auto &entry : entries_)
-    {
-        if (entry.type == compound_document_entry::entry_type::Empty)
-        {
-            any_empty_entry = true;
-            break;
-        }
+    entry->name(name);
+    entry->type = type;
 
-        ++entry_id;
-    }
+    // TODO: parse path from name and use correct parent storage instead of 0
+    tree_insert(entry_id, 0);
 
-    if (!any_empty_entry)
-    {
-        const auto entries_per_sector = static_cast<directory_id>(sector_size()
-            / sizeof(compound_document_entry));
-
-        for (auto i = std::size_t(0); i < entries_per_sector; ++i)
-        {
-            auto empty_entry = compound_document_entry();
-            empty_entry.type = compound_document_entry::entry_type::Empty;
-            entries_.push_back(empty_entry);
-        }
-    }
-
-    auto &entry = entries_[entry_id];
-
-    entry.name(name);
-    entry.type = type;
-
-    rb_tree_->insert(entry_id, 0);
-    write_directory_tree();
-
-    return entry;
-}
-
-void compound_document::write_directory_tree()
-{
-    const auto entries_per_sector = static_cast<directory_id>(sector_size() 
-        / sizeof(compound_document_entry));
-    const auto required_sectors = entries_.size() / entries_per_sector;
-    auto current_sector_id = header_.directory_start;
-    auto entry_index = directory_id(0);
-
-    reallocate_sectors(header_.directory_start, required_sectors);
-    writer_->offset(sector_data_start() + current_sector_id * sector_size());
-
-    for (auto &e : entries_)
-    {
-        writer_->write(e);
-
-        ++entry_index;
-
-        if (entry_index % entries_per_sector == 0)
-        {
-            current_sector_id = sat_[current_sector_id];
-            writer_->offset(sector_data_start() + current_sector_id * sector_size());
-        }        
-    }
+    return entry_id;
 }
 
 std::size_t compound_document::sector_data_start()
@@ -859,80 +418,349 @@ std::size_t compound_document::sector_data_start()
 
 bool compound_document::contains_entry(const std::u16string &path)
 {
-    for (auto &e : entries_)
-    {
-        if (e.name() == path)
-        {
-            return true;
-        }
-    }
-
-    return false;
+    return find_entry(path) >= 0;
 }
 
-void compound_document::write_header()
-{
-    writer_->offset(0);
-    writer_->write(header_);
-}
-
-void compound_document::read_header()
+compound_document_header &compound_document::header()
 {
     reader_->offset(0);
-    header_ = reader_->read<compound_document_header>();
-}
 
-compound_document_entry &compound_document::find_entry(const std::u16string &name)
-{
-    for (auto &e : entries_)
+    if (reader_->bytes() < sizeof(compound_document_header))
     {
-        if (e.name() == name)
+        if (writer_ != nullptr)
         {
-            return e;
+            writer_->resize(sizeof(compound_document_header), 0);
+            writer_->write(compound_document_header());
+        }
+        else
+        {
+            throw xlnt::exception("missing header");
         }
     }
 
-    throw xlnt::exception("not found");
+    return const_cast<compound_document_header &>(
+        reader_->read_reference<compound_document_header>());
 }
 
-void compound_document::read_directory_tree()
+directory_id compound_document::find_entry(const std::u16string &name)
 {
-    entries_.clear();
-    auto current_sector_id = header_.directory_start;
-
-    while (current_sector_id >= 0)
+    for (auto entry : entry_cache_)
     {
-        reader_->offset(sector_data_start() + current_sector_id * sector_size());
-
-        for (auto i = std::size_t(0); i < sector_size() / sizeof(compound_document_entry); ++i)
-        {
-            entries_.push_back(reader_->read<compound_document_entry>());
-        }
-
-        current_sector_id = sat_[current_sector_id];
+        if (entry.second->type == compound_document_entry::entry_type::Empty) continue;
+        if (tree_path(entry.first) == name) return entry.first;
     }
+
+    return End;
 }
 
 void compound_document::print_directory()
 {
-    red_black_tree rb_tree(entries_);
-
-    for (auto entry_id = directory_id(0); entry_id < directory_id(entries_.size()); ++entry_id)
+    for (auto entry : entry_cache_)
     {
-        if (entries_[entry_id].type != compound_document_entry::entry_type::UserStream) continue;
+        if (entry.second->type != compound_document_entry::entry_type::UserStream) continue;
+        std::cout << utf16_to_utf8(tree_path(entry.first)) << std::endl;
+    }
+}
 
-        auto path = std::string("/");
+void compound_document::tree_initialize_parent_maps()
+{
+    const auto entries_per_sector = static_cast<directory_id>(sector_size()
+        / sizeof(compound_document_entry));
+    auto entry_id = directory_id(0);
 
-        for (auto part : rb_tree.path(entry_id))
+    for (auto sector : follow_sat_chain(header().directory_start))
+    {
+        reader_->offset(sector_data_start() + sector * sector_size());
+
+        for (auto i = std::size_t(0); i < entries_per_sector; ++i)
         {
-            if (part > 0)
+            entry_cache_[entry_id++] = const_cast<compound_document_entry *>(
+                &reader_->read_reference<compound_document_entry>());
+        }
+    }
+
+    auto stack = std::vector<directory_id>();
+    auto storage_siblings = std::vector<directory_id>();
+    auto stream_siblings = std::vector<directory_id>();
+
+    auto directory_stack = std::vector<directory_id>();
+    directory_stack.push_back(directory_id(0));
+
+    while (!directory_stack.empty())
+    {
+        auto current_storage_id = directory_stack.back();
+        directory_stack.pop_back();
+
+        if (tree_child(current_storage_id) < 0) continue;
+
+        auto storage_stack = std::vector<directory_id>();
+        auto storage_root_id = tree_child(current_storage_id);
+        parent_[storage_root_id] = End;
+        storage_stack.push_back(storage_root_id);
+
+        while (!storage_stack.empty())
+        {
+            auto current_entry_id = storage_stack.back();
+            auto current_entry = entry_cache_.at(current_entry_id);
+            storage_stack.pop_back();
+
+            parent_storage_[current_entry_id] = current_storage_id;
+
+            if (current_entry->type == compound_document_entry::entry_type::UserStorage)
             {
-                path.append(utf16_to_utf8(entries_[part].name()) + "/");
+                directory_stack.push_back(current_entry_id);
+            }
+
+            if (current_entry->prev >= 0)
+            {
+                storage_stack.push_back(current_entry->prev);
+                tree_parent(tree_left(current_entry_id)) = current_entry_id;
+            }
+
+            if (current_entry->next >= 0)
+            {
+                storage_stack.push_back(tree_right(current_entry_id));
+                tree_parent(tree_right(current_entry_id)) = current_entry_id;
             }
         }
-
-        std::cout << path << utf16_to_utf8(entries_[entry_id].name()) << std::endl;
     }
+}
+
+void compound_document::tree_insert(directory_id new_id, directory_id storage_id)
+{
+    using entry_color = compound_document_entry::entry_color;
+
+    parent_storage_[new_id] = storage_id;
+
+    tree_left(new_id) = End;
+    tree_right(new_id) = End;
+
+    if (tree_root(new_id) == End)
+    {
+        if (new_id != 0)
+        {
+            tree_root(new_id) = new_id;
+        }
+
+        tree_color(new_id) = entry_color::Black;
+        tree_parent(new_id) = End;
+
+        return;
+    }
+
+    // normal tree insert
+    // (will probably unbalance the tree, fix after)
+    auto x = tree_root(new_id);
+    auto y = End;
+
+    while (x >= 0)
+    {
+        y = x;
+
+        if (compare_keys(tree_key(x), tree_key(new_id)) > 0)
+        {
+            x = tree_right(x);
+        }
+        else
+        {
+            x = tree_left(x);
+        }
+    }
+
+    tree_parent(new_id) = y;
+
+    if (compare_keys(tree_key(y), tree_key(new_id)) > 0)
+    {
+        tree_right(y) = new_id;
+    }
+    else
+    {
+        tree_left(y) = new_id;
+    }
+
+    tree_insert_fixup(new_id);
+}
+
+std::u16string compound_document::tree_path(directory_id id)
+{
+    auto storage_id = parent_storage_[id];
+    auto result = std::u16string();
+
+    while (storage_id > 0)
+    {
+        storage_id = parent_storage_[storage_id];
+        result = tree_key(storage_id) + u"/" + result;
+    }
+
+    return result;
+}
+
+void compound_document::tree_rotate_left(directory_id x)
+{
+    auto y = tree_right(x);
+
+    // turn y's left subtree into x's right subtree
+    tree_right(x) = tree_left(y);
+
+    if (tree_left(y) != End)
+    {
+        tree_parent(tree_left(y)) = x;
+    }
+
+    // link x's parent to y
+    tree_parent(y) = tree_parent(x);
+
+    if (tree_parent(x) == End)
+    {
+        tree_root(x) = y;
+    }
+    else if (x == tree_left(tree_parent(x)))
+    {
+        tree_left(tree_parent(x)) = y;
+    }
+    else
+    {
+        tree_right(tree_parent(x)) = y;
+    }
+
+    // put x on y's left
+    tree_left(y) = x;
+    tree_parent(x) = y;
+}
+
+void compound_document::tree_rotate_right(directory_id y)
+{
+    auto x = tree_left(y);
+
+    // turn x's right subtree into y's left subtree
+    tree_left(y) = tree_right(x);
+
+    if (tree_right(x) != End)
+    {
+        tree_parent(tree_right(x)) = y;
+    }
+
+    // link y's parent to x
+    tree_parent(x) = tree_parent(y);
+
+    if (tree_parent(y) == End)
+    {
+        tree_root(y) = x;
+    }
+    else if (y == tree_left(tree_parent(y)))
+    {
+        tree_left(tree_parent(y)) = x;
+    }
+    else
+    {
+        tree_right(tree_parent(y)) = x;
+    }
+
+    // put y on x's right
+    tree_right(x) = y;
+    tree_parent(y) = x;
+}
+
+void compound_document::tree_insert_fixup(directory_id x)
+{
+    using entry_color = compound_document_entry::entry_color;
+
+    tree_color(x) = entry_color::Red;
+
+    while (x != tree_root(x) && tree_color(tree_parent(x)) == entry_color::Red)
+    {
+        if (tree_parent(x) == tree_left(tree_parent(tree_parent(x))))
+        {
+            auto y = tree_right(tree_parent(tree_parent(x)));
+
+            if (tree_color(y) == entry_color::Red)
+            {
+                // case 1
+                tree_color(tree_parent(x)) = entry_color::Black;
+                tree_color(y) = entry_color::Black;
+                tree_color(tree_parent(tree_parent(x))) = entry_color::Red;
+                x = tree_parent(tree_parent(x));
+            }
+            else
+            {
+                if (x == tree_right(tree_parent(x)))
+                {
+                    // case 2
+                    x = tree_parent(x);
+                    tree_rotate_left(x);
+                }
+
+                // case 3
+                tree_color(tree_parent(x)) = entry_color::Black;
+                tree_color(tree_parent(tree_parent(x))) = entry_color::Red;
+                tree_rotate_right(tree_parent(tree_parent(x)));
+            }
+        }
+        else // same as above with left and right switched
+        {
+            auto y = tree_left(tree_parent(tree_parent(x)));
+
+            if (tree_color(y) == entry_color::Red)
+            {
+                //case 1
+                tree_color(tree_parent(x)) = entry_color::Black;
+                tree_color(y) = entry_color::Black;
+                tree_color(tree_parent(tree_parent(x))) = entry_color::Red;
+                x = tree_parent(tree_parent(x));
+            }
+            else
+            {
+                if (x == tree_left(tree_parent(x)))
+                {
+                    // case 2
+                    x = tree_parent(x);
+                    tree_rotate_right(x);
+                }
+
+                // case 3
+                tree_color(tree_parent(x)) = entry_color::Black;
+                tree_color(tree_parent(tree_parent(x))) = entry_color::Red;
+                tree_rotate_left(tree_parent(tree_parent(x)));
+            }
+        }
+    }
+
+    tree_color(tree_root(x)) = entry_color::Black;
+}
+
+directory_id &compound_document::tree_left(directory_id id)
+{
+    return entry_cache_[id]->prev;
+}
+
+directory_id &compound_document::tree_right(directory_id id)
+{
+    return entry_cache_[id]->next;
+}
+
+directory_id &compound_document::tree_parent(directory_id id)
+{
+    return parent_[id];
+}
+
+directory_id &compound_document::tree_root(directory_id id)
+{
+    return tree_child(parent_storage_[id]);
+}
+
+directory_id &compound_document::tree_child(directory_id id)
+{
+    return entry_cache_[id]->child;
+}
+
+std::u16string compound_document::tree_key(directory_id id)
+{
+    return entry_cache_[id]->name();
+}
+
+compound_document_entry::entry_color &compound_document::tree_color(directory_id id)
+{
+    return entry_cache_[id]->color;
 }
 
 } // namespace detail

@@ -73,11 +73,14 @@ void print_summary()
 
 int main()
 {
+    const auto bytes2 = xlnt::detail::to_vector(std::ifstream("C:/Users/Thomas/Development/xlnt/tests/data/6_encrypted_libre.xlsx", std::ios::binary));
+    xlnt::detail::compound_document doc2(bytes2);
+
     std::vector<std::uint8_t> bytes;
     xlnt::detail::compound_document doc(bytes);
-    doc.write_stream(u"aaa", std::vector<std::uint8_t>(4095, 'a'));
-    doc.write_stream(u"bbb", std::vector<std::uint8_t>(4095, 'b'));
-    doc.write_stream(u"ccc", std::vector<std::uint8_t>(4095, 'c'));
+    doc.write_stream("aaa", std::vector<std::uint8_t>(4095, 'a'));
+    doc.write_stream("bbb", std::vector<std::uint8_t>(4095, 'b'));
+    doc.write_stream("ccc", std::vector<std::uint8_t>(4095, 'c'));
     xlnt::detail::to_stream(bytes, std::ofstream("cd.xlsx", std::ios::binary));
 
     // cell
