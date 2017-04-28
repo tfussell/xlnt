@@ -73,7 +73,7 @@ void print_summary()
 
 int main()
 {
-    std::ifstream file("/Users/thomas/Development/xlnt/tests/data/6_encrypted_libre.xlsx", std::ios::binary);
+    std::ifstream file("C:/Users/Thomas/Development/xlnt/tests/data/6_encrypted_libre.xlsx", std::ios::binary);
     const auto bytes2 = xlnt::detail::to_vector(file);
     xlnt::detail::compound_document doc2(bytes2);
     auto info = doc2.read_stream("/EncryptionInfo");

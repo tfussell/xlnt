@@ -134,6 +134,18 @@ private:
     template<typename T>
     void write_short_sector(binary_reader<T> &reader, sector_id id);
 
+    void read_header();
+    void read_msat();
+    void read_sat();
+    void read_ssat();
+    void read_entry(directory_id id);
+
+    void write_header();
+    void write_msat();
+    void write_sat();
+    void write_ssat();
+    void write_entry(directory_id id);
+
     std::size_t sector_size();
     std::size_t short_sector_size();
     std::size_t sector_data_start();
@@ -181,10 +193,10 @@ private:
     sector_chain msat_;
     sector_chain sat_;
     sector_chain ssat_;
+    std::vector<compound_document_entry> entries_;
 
     std::unordered_map<directory_id, directory_id> parent_storage_;
     std::unordered_map<directory_id, directory_id> parent_;
-    std::unordered_map<directory_id, compound_document_entry *> entry_cache_;
 };
 
 } // namespace detail
