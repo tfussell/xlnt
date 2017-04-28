@@ -8,6 +8,49 @@
 
 ## vcpkg
 
+## Compiling from Source - Ubuntu 16.04 LTS (Xenial Xerus) 
+Please run the following commands and read the comments as you go.
+You will notice that we update and upgrade quite frequently, this is to ensure that all dependancies are met at all times
+```
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get install cmake
+sudo apt-get install zlibc
+sudo apt-get install zlib1g
+sudo apt-get install zlib1g-dev
+sudo apt-get install libssl-dev
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+sudo apt update
+sudo apt-get upgrade
+sudo apt-get install gcc-6 g++-6
+sudo apt update
+sudo apt-get upgrade
+```
+The following steps will set up some environment variables for this session
+```
+export CC=/usr/bin/gcc-6 and 
+export CXX=/usr/bin/g++-6
+```
+The following steps will install the latest compiler from source
+Download gcc 6.3.0 from https://gcc.gnu.org/mirrors.html I used the Japanese mirror as this is the closest location to me http://ftp.tsukuba.wide.ad.jp/software/gcc/releases/gcc-6.3.0/gcc-6.3.0.tar.gz
+
+```
+cd ~
+tar -zxvf Downloads/gcc-6.3.0.tar.gz
+cd gcc-6.3.0
+./contrib/download_prerequisites
+mkdir build
+cd build
+../configure --disable-multilib --enable-languages=c,c++
+make -j 2
+```
+If the above fails please use the following command to clean up and prepare the environment for another attempt
+```
+make clean pristine
+```
+
+
+
 ## Compiling from Source
 
 Build configurations for Visual Studio, GNU Make, Ninja, and Xcode can be created using [cmake](https://cmake.org/) v3.2+. A full list of cmake generators can be found [here](https://cmake.org/cmake/help/v3.0/manual/cmake-generators.7.html). A basic build would look like (starting in the root xlnt directory):
