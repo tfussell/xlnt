@@ -31,6 +31,15 @@ The following steps will set up some environment variables for this session
 export CC=/usr/bin/gcc-6 and 
 export CXX=/usr/bin/g++-6
 ```
+The following steps will install the appropriate crypto libraries for c++
+Download the zip file from https://github.com/weidai11/cryptopp/archive/master.zip
+```
+cd ~
+unzip Downloads/cryptopp-master.zip
+cd cryptopp-master
+make
+sudo make install
+```
 The following steps will install the latest compiler from source
 Download gcc 6.3.0 from https://gcc.gnu.org/mirrors.html I used the Japanese mirror as this is the closest location to me http://ftp.tsukuba.wide.ad.jp/software/gcc/releases/gcc-6.3.0/gcc-6.3.0.tar.gz
 
@@ -43,13 +52,43 @@ mkdir build
 cd build
 ../configure --disable-multilib --enable-languages=c,c++
 make -j 2
+sudo make install
 ```
-If the above fails please use the following command to clean up and prepare the environment for another attempt
+If the above make command fails please use the following command to clean up and prepare the environment for another attempt. A common reason for failure on virtual machines is lack of RAM (if you don't have enough RAM you may get an error like this "recipe for target 's-attrtab' failed").
 ```
 make clean pristine
 ```
-
-
+#TODO
+The following step will install the docbook2x library
+```
+sudo apt-get install docbook2x
+```
+The following steps will install the libexpat library
+Download the zip file from the following repository https://github.com/libexpat/libexpat 
+```
+cd ~
+unzip Downloads/libexpat.zip
+cd libexpat
+cmake
+sudo make install
+```
+The following step will map the shared library names to the location of the corresponding shared library files
+```
+sudo ldconfig
+```
+The following steps will intall xlnt
+Download the zip file from the xlnt repository
+https://github.com/tfussell/xlnt/archive/master.zip
+```
+cd ~
+unzip Downloads/master.zip
+cd xlnt
+mkdir build
+cd build
+cmake
+make -j 2
+sudo make install
+```
 
 ## Compiling from Source
 
