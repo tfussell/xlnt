@@ -54,10 +54,8 @@ cd build
 make -j 2
 sudo make install
 ```
-If the above make command fails please use the following command to clean up and prepare the environment for another attempt. A common reason for failure on virtual machines is lack of RAM (if you don't have enough RAM you may get an error like this "recipe for target 's-attrtab' failed").
-```
-make clean pristine
-```
+If the above make command fails please use "make clean pristine" and then remove and remake the build directory. This will clean up and prepare the environment for another attempt. A common reason for failure on virtual machines is lack of RAM (if you don't have enough RAM you may get an error like this "recipe for target 's-attrtab' failed"). Otherwise, if all goes well in about 30 to 60 minutes the compiler will be ready and we will move on to the next steps.
+
 #TODO
 The following step will install the docbook2x library
 ```
