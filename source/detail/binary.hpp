@@ -293,5 +293,32 @@ std::vector<byte> string_to_bytes(const std::basic_string<T> &string)
     return bytes;
 }
 
+template<typename T>
+T read(std::istream &in)
+{
+    T result;
+    in.read(reinterpret_cast<char *>(&result), sizeof(T));
+
+    return result;
+}
+
+template<typename T>
+std::vector<T> read_vector(std::istream &in, std::size_t count)
+{
+    std::vector<T> result(count, T());
+    in.read(reinterpret_cast<char *>(&result[0]), sizeof(T) * count);
+
+    return result;
+}
+
+template<typename T>
+std::basic_string<T> read_string(std::istream &in, std::size_t count)
+{
+    std::basic_string<T> result(count, T());
+    in.read(reinterpret_cast<char *>(&result[0]), sizeof(T) * count);
+
+    return result;
+}
+
 } // namespace detail
 } // namespace xlnt

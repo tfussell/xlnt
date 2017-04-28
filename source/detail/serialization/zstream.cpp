@@ -197,7 +197,7 @@ public:
         strm.avail_in = 0;
         strm.next_in = Z_NULL;
 
-        setg(in.data(), in.data(), in.data());
+        setg(in.data(), in.data(), in.data() + buffer_size);
         setp(0, 0);
 
         // skip the header

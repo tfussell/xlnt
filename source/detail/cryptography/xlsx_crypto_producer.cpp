@@ -105,8 +105,9 @@ encryption_info generate_encryption_info(const std::u16string &/*password*/)
     return result;
 }
 
-std::vector<std::uint8_t> write_agile_encryption_info(
-    const encryption_info &info)
+void write_agile_encryption_info(
+    const encryption_info &info,
+    std::ostream &info_stream)
 {
     static const auto &xmlns = xlnt::constants::ns("encryption");
     static const auto &xmlns_p = xlnt::constants::ns("encryption-password");
@@ -166,10 +167,10 @@ std::vector<std::uint8_t> write_agile_encryption_info(
 
     serializer.end_element(xmlns, "encryption");
 
-    return encryption_info;
+    info_stream.write(reinterpret_cast<char *>(encryption_info.data()), encryption_info.size());
 }
 
-std::vector<std::uint8_t> write_standard_encryption_info(const encryption_info &info)
+void write_standard_encryption_info(const encryption_info &info, std::ostream &info_stream)
 {
     auto result = std::vector<std::uint8_t>();
     auto writer = xlnt::detail::binary_writer<std::uint8_t>(result);
@@ -205,15 +206,15 @@ std::vector<std::uint8_t> write_standard_encryption_info(const encryption_info &
     writer.write(std::uint32_t(20));
     writer.append(info.standard.encrypted_verifier_hash);
 
-    return result;
+    info_stream.write(reinterpret_cast<char *>(result.data()), result.size());
 }
 
-std::vector<std::uint8_t> encrypt_xlsx_agile(
+void encrypt_xlsx_agile(
     const encryption_info &info,
-    const std::vector<std::uint8_t> &plaintext)
+    std::ostream &plaintext)
 {
     auto key = info.calculate_key();
-
+    /*
     auto padded = plaintext;
     padded.resize((plaintext.size() / 16 + (plaintext.size() % 16 == 0 ? 0 : 1)) * 16);
     auto ciphertext = xlnt::detail::aes_ecb_encrypt(padded, key);
@@ -221,16 +222,15 @@ std::vector<std::uint8_t> encrypt_xlsx_agile(
     ciphertext.insert(ciphertext.begin(),
         reinterpret_cast<const std::uint8_t *>(&length),
         reinterpret_cast<const std::uint8_t *>(&length + sizeof(std::uint64_t)));
-
-    return ciphertext;
+        */
 }
 
-std::vector<std::uint8_t> encrypt_xlsx_standard(
+void encrypt_xlsx_standard(
     const encryption_info &info,
-    const std::vector<std::uint8_t> &plaintext)
+    std::ostream &plaintext)
 {
     auto key = info.calculate_key();
-
+    /*
     auto padded = plaintext;
     padded.resize((plaintext.size() / 16 + (plaintext.size() % 16 == 0 ? 0 : 1)) * 16);
     auto ciphertext = xlnt::detail::aes_ecb_encrypt(padded, key);
@@ -238,8 +238,7 @@ std::vector<std::uint8_t> encrypt_xlsx_standard(
     ciphertext.insert(ciphertext.begin(),
         reinterpret_cast<const std::uint8_t *>(&length),
         reinterpret_cast<const std::uint8_t *>(&length + sizeof(std::uint64_t)));
-
-    return ciphertext;
+        */
 }
 
 std::vector<std::uint8_t> encrypt_xlsx(
@@ -250,14 +249,20 @@ std::vector<std::uint8_t> encrypt_xlsx(
     encryption_info.password = u"secret";
 
     auto ciphertext = std::vector<std::uint8_t>();
-    xlnt::detail::compound_document document(ciphertext);
+    xlnt::detail::vector_ostreambuf buffer(ciphertext);
+    std::ostream stream(&buffer);
+    xlnt::detail::compound_document document(stream);
 
-    document.write_stream("EncryptionInfo", encryption_info.is_agile
-        ? write_agile_encryption_info(encryption_info)
-        : write_standard_encryption_info(encryption_info));
-    document.write_stream("EncryptedPackage", encryption_info.is_agile
-        ? encrypt_xlsx_agile(encryption_info, plaintext)
-        : encrypt_xlsx_standard(encryption_info, plaintext));
+    if (encryption_info.is_agile)
+    {
+        write_agile_encryption_info(encryption_info, document.open_write_stream("/EncryptionInfo"));
+        encrypt_xlsx_agile(encryption_info, document.open_write_stream("/EncryptedPackage"));
+    }
+    else
+    {
+        write_standard_encryption_info(encryption_info, document.open_write_stream("/EncryptionInfo"));
+        encrypt_xlsx_standard(encryption_info, document.open_write_stream("/EncryptedPackage"));
+    }
 
     return ciphertext;
 }

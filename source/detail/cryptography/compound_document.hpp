@@ -113,15 +113,20 @@ struct compound_document_entry
     std::uint32_t ignore2;
 };
 
+class compound_document_istreambuf;
+class compound_document_ostreambuf;
+
 class compound_document
 {
 public:
-    compound_document(std::vector<std::uint8_t> &data);
-    compound_document(const std::vector<std::uint8_t> &data);
+    compound_document(std::istream &in);
+    compound_document(std::ostream &out);
     ~compound_document();
 
-    std::vector<std::uint8_t> read_stream(const std::string &filename);
-    void write_stream(const std::string &filename, const std::vector<std::uint8_t> &data);
+    void close();
+
+    std::istream &open_read_stream(const std::string &filename);
+    std::ostream &open_write_stream(const std::string &filename);
 
 private:
     template<typename T>
@@ -139,6 +144,7 @@ private:
     void read_sat();
     void read_ssat();
     void read_entry(directory_id id);
+    void read_directory();
 
     void write_header();
     void write_msat();
@@ -172,7 +178,6 @@ private:
         compound_document_entry::entry_type type);
 
     // Red black tree helper functions
-    void tree_initialize_parent_maps();
     void tree_insert(directory_id new_id, directory_id storage_id);
     void tree_insert_fixup(directory_id x);
     std::string tree_path(directory_id id);
@@ -186,9 +191,6 @@ private:
     std::string tree_key(directory_id id);
     compound_document_entry::entry_color &tree_color(directory_id id);
 
-    std::unique_ptr<binary_writer<byte>> writer_;
-    std::unique_ptr<binary_reader<byte>> reader_;
-
     compound_document_header header_;
     sector_chain msat_;
     sector_chain sat_;
@@ -197,6 +199,14 @@ private:
 
     std::unordered_map<directory_id, directory_id> parent_storage_;
     std::unordered_map<directory_id, directory_id> parent_;
+
+    std::istream *in_;
+    std::ostream *out_;
+
+    std::unique_ptr<compound_document_istreambuf> stream_in_buffer_;
+    std::istream stream_in_;
+    std::unique_ptr<compound_document_ostreambuf> stream_out_buffer_;
+    std::ostream stream_out_;
 };
 
 } // namespace detail
