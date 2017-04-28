@@ -31,6 +31,7 @@
 #include <unordered_map>
 
 #include <detail/binary.hpp>
+#include <detail/unicode.hpp>
 
 namespace xlnt {
 namespace detail {
@@ -63,23 +64,24 @@ struct compound_document_header
     std::uint32_t num_short_sectors = 0;
     sector_id extra_msat_start = -2;
     std::uint32_t num_extra_msat_sectors = 0;
-    std::array<sector_id, 109> msat = { 0 };
+    std::array<sector_id, 109> msat = {{0}};
 };
 
 struct compound_document_entry
 {
-    void name(const std::u16string &new_name)
+    void name(const std::string &new_name)
     {
-        name_length = std::min(static_cast<std::uint16_t>(new_name.size()), std::uint16_t(31));
-        std::copy(new_name.begin(), new_name.begin() + name_length, name_array.begin());
+        auto u16_name = utf8_to_utf16(new_name);
+        name_length = std::min(static_cast<std::uint16_t>(u16_name.size()), std::uint16_t(31));
+        std::copy(u16_name.begin(), u16_name.begin() + name_length, name_array.begin());
         name_array[name_length] = 0;
         name_length = (name_length + 1) * 2;
     }
 
-    std::u16string name() const
+    std::string name() const
     {
-        return std::u16string(name_array.begin(),
-            name_array.begin() + (name_length - 1) / 2);
+        return utf16_to_utf8(std::u16string(name_array.begin(),
+            name_array.begin() + (name_length - 1) / 2));
     }
 
     enum class entry_type : std::uint8_t
@@ -136,11 +138,7 @@ private:
     std::size_t short_sector_size();
     std::size_t sector_data_start();
 
-    sector_chain follow_sat_chain(sector_id start);
-    sector_chain follow_ssat_chain(sector_id start);
-
-    sector_id msat(sector_id id);
-    sector_id sat(sector_id id);
+    sector_chain follow_chain(sector_id start, const sector_chain &table);
 
     void print_directory();
 
@@ -153,19 +151,19 @@ private:
     sector_id allocate_short_sector();
     sector_chain allocate_short_sectors(std::size_t sectors);
 
-    compound_document_header &header();
-
-    bool contains_entry(const std::u16string &path);
-    directory_id find_entry(const std::u16string &path);
+    bool contains_entry(const std::string &path,
+        compound_document_entry::entry_type type);
+    directory_id find_entry(const std::string &path,
+        compound_document_entry::entry_type type);
     directory_id next_empty_entry();
-    directory_id insert_entry(const std::u16string &path, 
+    directory_id insert_entry(const std::string &path,
         compound_document_entry::entry_type type);
 
     // Red black tree helper functions
     void tree_initialize_parent_maps();
     void tree_insert(directory_id new_id, directory_id storage_id);
     void tree_insert_fixup(directory_id x);
-    std::u16string tree_path(directory_id id);
+    std::string tree_path(directory_id id);
     void tree_rotate_left(directory_id x);
     void tree_rotate_right(directory_id y);
     directory_id &tree_left(directory_id id);
@@ -173,11 +171,16 @@ private:
     directory_id &tree_parent(directory_id id);
     directory_id &tree_root(directory_id id);
     directory_id &tree_child(directory_id id);
-    std::u16string tree_key(directory_id id);
+    std::string tree_key(directory_id id);
     compound_document_entry::entry_color &tree_color(directory_id id);
 
-    std::unique_ptr<binary_reader<byte>> reader_;
     std::unique_ptr<binary_writer<byte>> writer_;
+    std::unique_ptr<binary_reader<byte>> reader_;
+
+    compound_document_header header_;
+    sector_chain msat_;
+    sector_chain sat_;
+    sector_chain ssat_;
 
     std::unordered_map<directory_id, directory_id> parent_storage_;
     std::unordered_map<directory_id, directory_id> parent_;
