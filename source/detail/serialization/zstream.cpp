@@ -191,13 +191,16 @@ public:
     zip_streambuf_decompress(std::istream &stream, zheader central_header)
         : istream(stream), header(central_header), total_read(0), total_uncompressed(0), valid(true)
     {
+        in.fill(0);
+        out.fill(0);
+
         strm.zalloc = Z_NULL;
         strm.zfree = Z_NULL;
         strm.opaque = Z_NULL;
         strm.avail_in = 0;
         strm.next_in = Z_NULL;
 
-        setg(in.data(), in.data(), in.data() + buffer_size);
+        setg(in.data(), in.data(), in.data());
         setp(0, 0);
 
         // skip the header

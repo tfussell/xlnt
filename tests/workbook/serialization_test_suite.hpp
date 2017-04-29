@@ -64,13 +64,7 @@ public:
         wb.save(wb_data);
 
         std::ifstream file_stream(file.string(), std::ios::binary);
-        std::vector<std::uint8_t> file_data;
-
-        {
-            xlnt::detail::vector_ostreambuf file_data_buffer(file_data);
-            std::ostream file_data_stream(&file_data_buffer);
-            file_data_stream << file_stream.rdbuf();
-        }
+        auto file_data = xlnt::detail::to_vector(file_stream);
 
 		return xml_helper::xlsx_archives_match(wb_data, file_data);
 	}

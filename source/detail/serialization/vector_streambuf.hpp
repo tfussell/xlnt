@@ -32,9 +32,6 @@
 namespace xlnt {
 namespace detail {
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wweak-vtables"
-
 /// <summary>
 /// Allows a std::vector to be read through a std::istream.
 /// </summary>
@@ -43,102 +40,21 @@ class vector_istreambuf : public std::streambuf
     using int_type = std::streambuf::int_type;
 
 public:
-    vector_istreambuf(const std::vector<std::uint8_t> &data)
-        : data_(data),
-          position_(0)
-    {
-    }
+    vector_istreambuf(const std::vector<std::uint8_t> &data);
 
     vector_istreambuf(const vector_istreambuf &) = delete;
     vector_istreambuf &operator=(const vector_istreambuf &) = delete;
 
 private:
-    int_type underflow()
-    {
-        if (position_ == data_.size())
-        {
-            return traits_type::eof();
-        }
+    int_type underflow();
 
-        return traits_type::to_int_type(static_cast<char>(data_[position_]));
-    }
+    int_type uflow();
 
-    int_type uflow()
-    {
-        if (position_ == data_.size())
-        {
-            return traits_type::eof();
-        }
+    std::streamsize showmanyc();
 
-        return traits_type::to_int_type(static_cast<char>(data_[position_++]));
-    }
+    std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode);
 
-    std::streamsize showmanyc()
-    {
-        if (position_ == data_.size())
-        {
-            return static_cast<std::streamsize>(-1);
-        }
-
-        return static_cast<std::streamsize>(data_.size() - position_);
-    }
-
-    std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode)
-    {
-        if (way == std::ios_base::beg)
-        {
-            position_ = 0;
-        }
-        else if (way == std::ios_base::end)
-        {
-            position_ = data_.size();
-        }
-
-        if (off < 0)
-        {
-            if (static_cast<std::size_t>(-off) > position_)
-            {
-                position_ = 0;
-                return static_cast<std::ptrdiff_t>(-1);
-            }
-            else
-            {
-                position_ -= static_cast<std::size_t>(-off);
-            }
-        }
-        else if (off > 0)
-        {
-            if (static_cast<std::size_t>(off) + position_ > data_.size())
-            {
-                position_ = data_.size();
-                return static_cast<std::ptrdiff_t>(-1);
-            }
-            else
-            {
-                position_ += static_cast<std::size_t>(off);
-            }
-        }
-
-        return static_cast<std::ptrdiff_t>(position_);
-    }
-
-    std::streampos seekpos(std::streampos sp, std::ios_base::openmode)
-    {
-        if (sp < 0)
-        {
-            position_ = 0;
-        }
-        else if (static_cast<std::size_t>(sp) > data_.size())
-        {
-            position_ = data_.size();
-        }
-        else
-        {
-            position_ = static_cast<std::size_t>(sp);
-        }
-        
-        return static_cast<std::ptrdiff_t>(position_);
-    }
+    std::streampos seekpos(std::streampos sp, std::ios_base::openmode);
 
 private:
     const std::vector<std::uint8_t> &data_;
@@ -153,102 +69,19 @@ class vector_ostreambuf : public std::streambuf
     using int_type = std::streambuf::int_type;
 
 public:
-    vector_ostreambuf(std::vector<std::uint8_t> &data)
-        : data_(data),
-          position_(0)
-    {
-    }
+    vector_ostreambuf(std::vector<std::uint8_t> &data);
 
     vector_ostreambuf(const vector_ostreambuf &) = delete;
     vector_ostreambuf &operator=(const vector_ostreambuf &) = delete;
 
 private:
-    int_type overflow(int_type c = traits_type::eof())
-    {
-        if (c != traits_type::eof())
-        {
-            data_.push_back(static_cast<std::uint8_t>(c));
-            position_ = data_.size() - 1;
-        }
+    int_type overflow(int_type c = traits_type::eof());
 
-        return traits_type::to_int_type(static_cast<char>(data_[position_]));
-    }
+    std::streamsize xsputn(const char *s, std::streamsize n);
 
-    std::streamsize xsputn(const char *s, std::streamsize n)
-    {
-        if (data_.empty())
-        {
-            data_.resize(static_cast<std::size_t>(n));
-        }
-        else
-        {
-            auto position_size = data_.size();
-            auto required_size = static_cast<std::size_t>(position_ + static_cast<std::size_t>(n));
-            data_.resize(std::max(position_size, required_size));
-        }
+    std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode);
 
-        std::copy(s, s + n, data_.begin() + static_cast<std::ptrdiff_t>(position_));
-        position_ += static_cast<std::size_t>(n);
-
-        return n;
-    }
-
-    std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode)
-    {
-        if (way == std::ios_base::beg)
-        {
-            position_ = 0;
-        }
-        else if (way == std::ios_base::end)
-        {
-            position_ = data_.size();
-        }
-
-        if (off < 0)
-        {
-            if (static_cast<std::size_t>(-off) > position_)
-            {
-                position_ = 0;
-                return static_cast<std::ptrdiff_t>(-1);
-            }
-            else
-            {
-                position_ -= static_cast<std::size_t>(-off);
-            }
-        }
-        else if (off > 0)
-        {
-            if (static_cast<std::size_t>(off) + position_ > data_.size())
-            {
-                position_ = data_.size();
-                return static_cast<std::ptrdiff_t>(-1);
-            }
-            else
-            {
-                position_ += static_cast<std::size_t>(off);
-            }
-        }
-
-        return static_cast<std::ptrdiff_t>(position_);
-    }
-
-    std::streampos seekpos(std::streampos sp, std::ios_base::openmode)
-    {
-        if (sp < 0)
-        {
-            position_ = 0;
-        }
-        else if (static_cast<std::size_t>(sp) > data_.size())
-        {
-            position_ = data_.size();
-        }
-        else
-        {
-            position_ = static_cast<std::size_t>(sp);
-        }
-        
-        return static_cast<std::ptrdiff_t>(position_);
-    }
+    std::streampos seekpos(std::streampos sp, std::ios_base::openmode);
 
 private:
     std::vector<std::uint8_t> &data_;
@@ -260,34 +93,17 @@ private:
 /// <summary>
 /// Helper function to read all data from in_stream and store them in a vector.
 /// </summary>
-XLNT_API inline std::vector<std::uint8_t> to_vector(std::istream &in_stream)
-{
-    in_stream.seekg(0, std::ios::end);
-    std::vector<std::uint8_t> bytes(in_stream.tellg(), 0);
-    in_stream.seekg(0, std::ios::beg);
-    in_stream.read(reinterpret_cast<char *>(bytes.data()), bytes.size());
-
-    return bytes;
-}
+XLNT_API std::vector<std::uint8_t> to_vector(std::istream &in_stream);
 
 /// <summary>
 /// Helper function to write all data from bytes into out_stream.
 /// </summary>
-XLNT_API inline void to_stream(const std::vector<std::uint8_t> &bytes, std::ostream &out_stream)
-{
-    out_stream.write(reinterpret_cast<const char *>(bytes.data()), bytes.size());
-}
+XLNT_API void to_stream(const std::vector<std::uint8_t> &bytes, std::ostream &out_stream);
 
 /// <summary>
 /// Shortcut function to stream a vector of bytes into a std::ostream.
 /// </summary>
-XLNT_API inline std::ostream &operator<<(std::ostream &out_stream, const std::vector<std::uint8_t> &bytes)
-{
-    to_stream(bytes, out_stream);
-    return out_stream;
-}
-
-#pragma clang diagnostic pop
+XLNT_API std::ostream &operator<<(std::ostream &out_stream, const std::vector<std::uint8_t> &bytes);
 
 } // namespace detail
 } // namespace xlnt
