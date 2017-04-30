@@ -129,10 +129,23 @@ public:
     std::ostream &open_write_stream(const std::string &filename);
 
 private:
+    friend class compound_document_istreambuf;
+    friend class compound_document_ostreambuf;
+
     template<typename T>
     void read_sector(sector_id id, binary_writer<T> &writer);
     template<typename T>
+    void read_sector_chain(sector_id id, binary_writer<T> &writer);
+    template<typename T>
+    void read_sector_chain(sector_id start, binary_writer<T> &writer, sector_id offset, std::size_t count);
+    template<typename T>
     void read_short_sector(sector_id id, binary_writer<T> &writer);
+    template<typename T>
+    void read_short_sector_chain(sector_id start, binary_writer<T> &writer);
+    template<typename T>
+    void read_short_sector_chain(sector_id start, binary_writer<T> &writer, sector_id offset, std::size_t count);
+
+    sector_chain follow_chain(sector_id start, const sector_chain &table);
 
     template<typename T>
     void write_sector(binary_reader<T> &reader, sector_id id);
@@ -151,12 +164,11 @@ private:
     void write_sat();
     void write_ssat();
     void write_entry(directory_id id);
+    void write_directory();
 
     std::size_t sector_size();
     std::size_t short_sector_size();
     std::size_t sector_data_start();
-
-    sector_chain follow_chain(sector_id start, const sector_chain &table);
 
     void print_directory();
 

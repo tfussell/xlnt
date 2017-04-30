@@ -51,6 +51,24 @@ int compare_keys(const std::string &left, const std::string &right)
     return to_lower(left).compare(to_lower(right));
 }
 
+std::vector<std::string> split_path(const std::string &path)
+{
+    auto split = std::vector<std::string>();
+    auto current = path.find('/');
+    auto prev = std::size_t(0);
+
+    while (current != std::string::npos)
+    {
+        split.push_back(path.substr(prev, current - prev));
+        prev = current + 1;
+        current = path.find('/', prev);
+    }
+
+    split.push_back(path.substr(prev));
+
+    return split;
+}
+
 std::string join_path(const std::vector<std::string> &path)
 {
     auto joined = std::string();
@@ -84,9 +102,11 @@ class compound_document_istreambuf : public std::streambuf
     using int_type = std::streambuf::int_type;
 
 public:
-    compound_document_istreambuf(const std::string &filename)
-        : data_(filename.begin(), filename.end()),
-        position_(0)
+    compound_document_istreambuf(const compound_document_entry &entry, compound_document &document)
+        : entry_(entry),
+          document_(document),
+          position_(0),
+          sector_writer_(current_sector_)
     {
     }
 
@@ -96,32 +116,43 @@ public:
 private:
     int_type underflow()
     {
-        if (position_ == data_.size())
+        if (position_ == entry_.size)
         {
             return traits_type::eof();
         }
 
-        return traits_type::to_int_type(static_cast<char>(data_[position_]));
+        sector_writer_.reset();
+
+        if (entry_.size < document_.header_.threshold)
+        {
+            document_.read_short_sector_chain(entry_.start,
+                sector_writer_, sector_id(position_ / document_.short_sector_size()), 1);
+            return current_sector_[position_ % document_.short_sector_size()];
+        }
+        else
+        {
+            document_.read_sector_chain(entry_.start,
+                sector_writer_, sector_id(position_ / document_.sector_size()), 1);
+            return current_sector_[position_ % document_.sector_size()];
+        }
     }
 
     int_type uflow()
     {
-        if (position_ == data_.size())
-        {
-            return traits_type::eof();
-        }
+        auto result = underflow();
+        ++position_;
 
-        return traits_type::to_int_type(static_cast<char>(data_[position_++]));
+        return result;
     }
 
     std::streamsize showmanyc()
     {
-        if (position_ == data_.size())
+        if (position_ == entry_.size)
         {
             return static_cast<std::streamsize>(-1);
         }
 
-        return static_cast<std::streamsize>(data_.size() - position_);
+        return static_cast<std::streamsize>(entry_.size - position_);
     }
 
     std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode)
@@ -132,7 +163,7 @@ private:
         }
         else if (way == std::ios_base::end)
         {
-            position_ = data_.size();
+            position_ = entry_.size;
         }
 
         if (off < 0)
@@ -149,9 +180,9 @@ private:
         }
         else if (off > 0)
         {
-            if (static_cast<std::size_t>(off) + position_ > data_.size())
+            if (static_cast<std::size_t>(off) + position_ > entry_.size)
             {
-                position_ = data_.size();
+                position_ = entry_.size;
                 return static_cast<std::ptrdiff_t>(-1);
             }
             else
@@ -169,9 +200,9 @@ private:
         {
             position_ = 0;
         }
-        else if (static_cast<std::size_t>(sp) > data_.size())
+        else if (static_cast<std::size_t>(sp) > entry_.size)
         {
-            position_ = data_.size();
+            position_ = entry_.size;
         }
         else
         {
@@ -182,7 +213,10 @@ private:
     }
 
 private:
-    std::vector<std::uint8_t> data_;
+    const compound_document_entry &entry_;
+    compound_document &document_;
+    binary_writer<byte> sector_writer_;
+    std::vector<byte> current_sector_;
     std::size_t position_;
 };
 
@@ -194,44 +228,175 @@ class compound_document_ostreambuf : public std::streambuf
     using int_type = std::streambuf::int_type;
 
 public:
-    compound_document_ostreambuf(const std::string &filename)
-        : data_(filename.begin(), filename.end()),
-        position_(0)
+    compound_document_ostreambuf(compound_document_entry &entry, compound_document &document)
+        : entry_(entry),
+          document_(document),
+          position_(0),
+          sector_reader_(current_sector_),
+          current_sector_(sector_size(), 0),
+          chain_(document_.follow_chain(entry_.start, table()))
     {
     }
 
     compound_document_ostreambuf(const compound_document_ostreambuf &) = delete;
     compound_document_ostreambuf &operator=(const compound_document_ostreambuf &) = delete;
 
-private:
-    int_type overflow(int_type c = traits_type::eof())
+    virtual ~compound_document_ostreambuf()
     {
-        if (c != traits_type::eof())
+        if (position_ % 64 != 0)
         {
-            data_.push_back(static_cast<std::uint8_t>(c));
-            position_ = data_.size() - 1;
+            write_sector();
         }
-
-        return traits_type::to_int_type(static_cast<char>(data_[position_]));
     }
 
-    std::streamsize xsputn(const char *s, std::streamsize n)
+private:
+    bool short_stream()
     {
-        if (data_.empty())
+        return entry_.size < document_.header_.threshold;
+    }
+
+    sector_chain &table()
+    {
+        return short_stream()
+            ? document_.ssat_
+            : document_.sat_;
+    }
+
+    std::size_t sector_size()
+    {
+        return short_stream()
+            ? document_.short_sector_size()
+            : document_.short_sector_size();
+    }
+
+    void write_sector()
+    {
+        if (short_stream())
         {
-            data_.resize(static_cast<std::size_t>(n));
+            auto next_sector = document_.allocate_short_sector();
+            document_.ssat_[chain_.back()] = next_sector;
+            chain_.push_back(next_sector);
+            document_.write_short_sector(sector_reader_, next_sector);
         }
         else
         {
-            auto position_size = data_.size();
-            auto required_size = static_cast<std::size_t>(position_ + static_cast<std::size_t>(n));
-            data_.resize(std::max(position_size, required_size));
+            auto next_sector = document_.allocate_sector();
+            document_.sat_[chain_.back()] = next_sector;
+            chain_.push_back(next_sector);
+            document_.write_sector(sector_reader_, next_sector);
+        }
+    }
+
+    int_type overflow(int_type c = traits_type::eof())
+    {
+        auto value = static_cast<std::uint8_t>(c);
+
+        if (c != traits_type::eof())
+        {
+            current_sector_[position_ % sector_size()] = value;
         }
 
-        std::copy(s, s + n, data_.begin() + static_cast<std::ptrdiff_t>(position_));
-        position_ += static_cast<std::size_t>(n);
+        if (entry_.start < 0)
+        {
+            entry_.start = entry_.size == document_.header_.threshold
+                ? document_.allocate_sector()
+                : document_.allocate_short_sector();
+            chain_.push_back(entry_.start);
+        }
 
-        return n;
+        if (position_ % 64 == 0 && position_ > 0)
+        {
+            write_sector();
+            std::fill(current_sector_.begin(), current_sector_.end(), byte(0));
+        }
+
+        if (c != traits_type::eof())
+        {
+            ++position_;
+
+            auto previous_size = entry_.size;
+            entry_.size = std::max(entry_.size, static_cast<std::uint32_t>(position_));
+
+            if (entry_.size >= document_.header_.threshold && previous_size < document_.header_.threshold)
+            {
+                convert_to_long_stream();
+            }
+
+            return traits_type::to_int_type(static_cast<char>(value));
+        }
+        else
+        {
+            return traits_type::eof();
+        }
+    }
+
+    void convert_to_long_stream()
+    {
+        const auto sectors_per_sector = document_.sector_size() / document_.short_sector_size();
+
+        current_sector_.resize(sector_size(), 0);
+        std::fill(current_sector_.begin(), current_sector_.end(), byte(0));
+
+        auto sector_writer = binary_writer<byte>(current_sector_);
+        auto index = std::size_t(0);
+        auto long_chain = sector_chain();
+        entry_.start = document_.allocate_sector();
+        long_chain.push_back(entry_.start);
+        
+        for (auto link : chain_)
+        {
+            document_.read_short_sector(link, sector_writer);
+            document_.header_.num_short_sectors--;
+            document_.ssat_[link] = FreeSector;
+
+            if (index % sectors_per_sector == 0 && index > 0)
+            {
+                document_.write_sector(sector_reader_, long_chain.back());
+                auto next_sector = document_.allocate_sector();
+                document_.sat_[long_chain.back()] = next_sector;
+                long_chain.push_back(next_sector);
+            }
+        }
+
+        if (index % sectors_per_sector != 0)
+        {
+            document_.write_sector(sector_reader_, long_chain.back());
+        }
+
+        index = 0;
+        auto previous = sector_id(0);
+
+        for (auto link : document_.follow_chain(document_.entries_[0].start, document_.sat_))
+        {
+            auto ssat_index_start = document_.ssat_.begin() + index * sectors_per_sector;
+            auto ssat_index_end = document_.ssat_.begin() + (index + 1) * sectors_per_sector;
+            
+            if (std::size_t(std::count(ssat_index_start, ssat_index_end, FreeSector)) == sectors_per_sector)
+            {
+                if (index > 0)
+                {
+                    document_.sat_[previous] = document_.sat_[link];
+                }
+                else
+                {
+                    document_.entries_[0].start = document_.sat_[link];
+                }
+
+                document_.sat_[link] = FreeSector;
+            }
+
+            previous = link;
+            index++;
+        }
+
+        if (document_.header_.num_short_sectors == 0)
+        {
+            document_.entries_[0].start = EndOfChain;
+        }
+
+        // TODO: deallocate short sectors here
+
+        chain_ = long_chain;
     }
 
     std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode)
@@ -242,7 +407,7 @@ private:
         }
         else if (way == std::ios_base::end)
         {
-            position_ = data_.size();
+            position_ = entry_.size;
         }
 
         if (off < 0)
@@ -259,9 +424,9 @@ private:
         }
         else if (off > 0)
         {
-            if (static_cast<std::size_t>(off) + position_ > data_.size())
+            if (static_cast<std::size_t>(off) + position_ > entry_.size)
             {
-                position_ = data_.size();
+                position_ = entry_.size;
                 return static_cast<std::ptrdiff_t>(-1);
             }
             else
@@ -279,9 +444,9 @@ private:
         {
             position_ = 0;
         }
-        else if (static_cast<std::size_t>(sp) > data_.size())
+        else if (static_cast<std::size_t>(sp) > entry_.size)
         {
-            position_ = data_.size();
+            position_ = entry_.size;
         }
         else
         {
@@ -292,8 +457,12 @@ private:
     }
 
 private:
-    std::vector<std::uint8_t> data_;
+    compound_document_entry &entry_;
+    compound_document &document_;
+    binary_reader<byte> sector_reader_;
+    std::vector<byte> current_sector_;
     std::size_t position_;
+    sector_chain chain_;
 };
 
 
@@ -303,7 +472,7 @@ compound_document::compound_document(std::ostream &out)
       stream_out_(nullptr)
 {
     write_header();
-    insert_entry("Root Entry", compound_document_entry::entry_type::RootStorage);
+    insert_entry("/Root Entry", compound_document_entry::entry_type::RootStorage);
 }
 
 compound_document::compound_document(std::istream &in)
@@ -320,6 +489,12 @@ compound_document::compound_document(std::istream &in)
 
 compound_document::~compound_document()
 {
+    close();
+}
+
+void compound_document::close()
+{
+    stream_out_buffer_.reset(nullptr);
 }
 
 std::size_t compound_document::sector_size()
@@ -337,7 +512,7 @@ std::istream &compound_document::open_read_stream(const std::string &name)
     const auto entry_id = find_entry(name, compound_document_entry::entry_type::UserStream);
     const auto &entry = entries_.at(entry_id);
 
-    stream_in_buffer_.reset(new compound_document_istreambuf(name));
+    stream_in_buffer_.reset(new compound_document_istreambuf(entry, *this));
     stream_in_.rdbuf(stream_in_buffer_.get());
 
     return stream_in_;
@@ -350,7 +525,7 @@ std::ostream &compound_document::open_write_stream(const std::string &name)
         : insert_entry(name, compound_document_entry::entry_type::UserStream);
     auto &entry = entries_.at(entry_id);
 
-    stream_out_buffer_.reset(new compound_document_ostreambuf(name));
+    stream_out_buffer_.reset(new compound_document_ostreambuf(entry, *this));
     stream_out_.rdbuf(stream_out_buffer_.get());
 
     return stream_out_;
@@ -385,6 +560,26 @@ void compound_document::read_sector(sector_id id, binary_writer<T> &writer)
 }
 
 template<typename T>
+void compound_document::read_sector_chain(sector_id start, binary_writer<T> &writer)
+{
+    for (auto link : follow_chain(start, sat_))
+    {
+        read_sector(link, writer);
+    }
+}
+
+template<typename T>
+void compound_document::read_sector_chain(sector_id start, binary_writer<T> &writer, sector_id offset, std::size_t count)
+{
+    auto chain = follow_chain(start, sat_);
+
+    for (auto i = std::size_t(0); i < count; ++i)
+    {
+        read_sector(chain[offset + i], writer);
+    }
+}
+
+template<typename T>
 void compound_document::read_short_sector(sector_id id, binary_writer<T> &writer)
 {
     const auto container_chain = follow_chain(entries_[0].start, sat_);
@@ -400,6 +595,26 @@ void compound_document::read_short_sector(sector_id id, binary_writer<T> &writer
     container_reader.offset(id * short_sector_size());
 
     writer.append(container_reader, short_sector_size());
+}
+
+template<typename T>
+void compound_document::read_short_sector_chain(sector_id start, binary_writer<T> &writer)
+{
+    for (auto link : follow_chain(start, ssat_))
+    {
+        read_short_sector(link, writer);
+    }
+}
+
+template<typename T>
+void compound_document::read_short_sector_chain(sector_id start, binary_writer<T> &writer, sector_id offset, std::size_t count)
+{
+    auto chain = follow_chain(start, ssat_);
+
+    for (auto i = std::size_t(0); i < count; ++i)
+    {
+        read_short_sector(chain[offset + i], writer);
+    }
 }
 
 sector_id compound_document::allocate_sector()
@@ -562,10 +777,18 @@ directory_id compound_document::next_empty_entry()
 
     // entry_id is now equal to entries_.size()
 
+    if (header_.directory_start < 0)
+    {
+        header_.directory_start = allocate_sector();
+    }
+    else
+    {
+        auto directory_chain = follow_chain(header_.directory_start, sat_);
+        sat_[directory_chain.back()] = allocate_sector();
+    }
+
     const auto entries_per_sector = sector_size() 
         / sizeof(compound_document_entry);
-    auto new_sector = allocate_sector();
-    // TODO: connect chains here
 
     for (auto i = std::size_t(0); i < entries_per_sector; ++i)
     {
@@ -585,13 +808,22 @@ directory_id compound_document::insert_entry(
     auto entry_id = next_empty_entry();
     auto &entry = entries_[entry_id];
 
-    entry.name(name);
+    auto parent_id = directory_id(0);
+    auto split = split_path(name);
+    auto filename = split.back();
+    split.pop_back();
+
+    if (split.size() > 1)
+    {
+        parent_id = find_entry(join_path(split), compound_document_entry::entry_type::UserStorage);
+        parent_storage_[entry_id] = parent_id;
+    }
+
+    entry.name(filename);
     entry.type = type;
 
-    write_entry(entry_id);
-
-    // TODO: parse path from name and use correct parent storage instead of 0
-    tree_insert(entry_id, 0);
+    tree_insert(entry_id, parent_id);
+    write_directory();
 
     return entry_id;
 }
@@ -643,18 +875,23 @@ void compound_document::print_directory()
     }
 }
 
+void compound_document::write_directory()
+{
+    for (auto entry_id = std::size_t(0); entry_id < entries_.size(); ++entry_id)
+    {
+        write_entry(directory_id(entry_id++));
+    }
+}
+
 void compound_document::read_directory()
 {
     const auto entries_per_sector = sector_size() / sizeof(compound_document_entry);
-    auto entry_id = directory_id(0);
+    const auto num_entries = follow_chain(header_.directory_start, sat_).size() * entries_per_sector;
 
-    for (auto sector : follow_chain(header_.directory_start, sat_))
+    for (auto entry_id = std::size_t(0); entry_id < num_entries; ++entry_id)
     {
-        for (auto i = std::size_t(0); i < entries_per_sector; ++i)
-        {
-            entries_.push_back(compound_document_entry());
-            read_entry(entry_id++);
-        }
+        entries_.push_back(compound_document_entry());
+        read_entry(directory_id(entry_id));
     }
 
     auto stack = std::vector<directory_id>();

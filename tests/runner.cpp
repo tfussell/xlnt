@@ -73,6 +73,27 @@ void print_summary()
 
 int main()
 {
+    std::ifstream file("C:/Users/Thomas/Development/xlnt/tests/data/6_encrypted_libre.xlsx", std::ios::binary);
+    const auto bytes2 = xlnt::detail::to_vector(file);
+    xlnt::detail::vector_istreambuf buffer(bytes2);
+    std::istream buffer_stream(&buffer);
+    xlnt::detail::compound_document doc2(buffer_stream);
+    auto info = xlnt::detail::to_vector(doc2.open_read_stream("/EncryptionInfo"));
+    auto package = xlnt::detail::to_vector(doc2.open_read_stream("/EncryptedPackage"));
+
+    std::vector<std::uint8_t> bytes;
+    xlnt::detail::vector_ostreambuf byte_buffer(bytes);
+    std::ostream byte_buffer_stream(&byte_buffer);
+    xlnt::detail::compound_document doc(byte_buffer_stream);
+    auto &a_stream = doc.open_write_stream("/aaa");
+    xlnt::detail::to_stream(std::vector<std::uint8_t>(4095, 'a'), a_stream);
+    auto &b_stream = doc.open_write_stream("/bbb");
+    xlnt::detail::to_stream(std::vector<std::uint8_t>(4095, 'b'), b_stream);
+    auto &c_stream = doc.open_write_stream("/ccc");
+    xlnt::detail::to_stream(std::vector<std::uint8_t>(4095, 'c'), c_stream);
+    std::ofstream file2("cd.xlsx", std::ios::binary);
+    xlnt::detail::to_stream(bytes, file2);
+
     // cell
     run_tests<cell_test_suite>();
     run_tests<index_types_test_suite>();
