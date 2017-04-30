@@ -28,7 +28,7 @@ sudo apt-get upgrade
 ```
 The following steps will set up some environment variables for this session
 ```
-export CC=/usr/bin/gcc-6 and 
+export CC=/usr/bin/gcc-6  
 export CXX=/usr/bin/g++-6
 ```
 The following steps will install the appropriate crypto libraries for c++
@@ -56,18 +56,20 @@ sudo make install
 ```
 If the above make command fails please use "make clean pristine" and then remove and remake the build directory. This will clean up and prepare the environment for another attempt. A common reason for failure on virtual machines is lack of RAM (if you don't have enough RAM you may get an error like this "recipe for target 's-attrtab' failed"). Otherwise, if all goes well in about 30 to 60 minutes the compiler will be ready and we will move on to the next steps.
 
-#TODO
 The following step will install the docbook2x library
 ```
 sudo apt-get install docbook2x
 ```
+
+#TODO
 The following steps will install the libexpat library
 Download the zip file from the following repository https://github.com/libexpat/libexpat 
 ```
 cd ~
 unzip Downloads/libexpat.zip
-cd libexpat
-cmake
+cd libexpat-master/expat
+cmake .
+make
 sudo make install
 ```
 The following step will map the shared library names to the location of the corresponding shared library files
@@ -79,11 +81,9 @@ Download the zip file from the xlnt repository
 https://github.com/tfussell/xlnt/archive/master.zip
 ```
 cd ~
-unzip Downloads/master.zip
-cd xlnt
-mkdir build
-cd build
-cmake
+unzip Downloads/xlnt-master.zip
+cd xlnt-master
+cmake .
 make -j 2
 sudo make install
 ```
