@@ -70,10 +70,6 @@ cmake .
 make -j 2
 sudo make install
 ```
-The following step will map the shared library names to the location of the corresponding shared library files
-```
-sudo ldconfig
-```
 The following steps will intall xlnt
 Download the zip file from the xlnt repository
 https://github.com/tfussell/xlnt/archive/master.zip
@@ -84,6 +80,10 @@ cd xlnt-master
 cmake .
 make -j 2
 sudo make install
+```
+The following step will map the shared library names to the location of the corresponding shared library files
+```
+sudo ldconfig
 ```
 xlnt will now be ready to use on your Ubuntu instance. 
 
