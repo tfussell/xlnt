@@ -60,8 +60,6 @@ The following step will install the docbook2x library
 ```
 sudo apt-get install docbook2x
 ```
-
-#TODO
 The following steps will install the libexpat library
 Download the zip file from the following repository https://github.com/libexpat/libexpat 
 ```
@@ -87,6 +85,7 @@ cmake .
 make -j 2
 sudo make install
 ```
+xlnt will now be ready to use on your Ubuntu instance. 
 
 ## Compiling from Source
 
