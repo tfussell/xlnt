@@ -37,7 +37,7 @@ Download the zip file from https://github.com/weidai11/cryptopp/archive/master.z
 cd ~
 unzip Downloads/cryptopp-master.zip
 cd cryptopp-master
-make
+make -j 2
 sudo make install
 ```
 The following steps will install the latest compiler from source
@@ -66,10 +66,10 @@ The following steps will install the libexpat library
 Download the zip file from the following repository https://github.com/libexpat/libexpat 
 ```
 cd ~
-unzip Downloads/libexpat.zip
+unzip Downloads/libexpat-master.zip
 cd libexpat-master/expat
 cmake .
-make
+make -j 2
 sudo make install
 ```
 The following step will map the shared library names to the location of the corresponding shared library files
