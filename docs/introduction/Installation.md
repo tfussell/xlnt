@@ -10,7 +10,7 @@
 
 ## Compiling from Source - Ubuntu 16.04 LTS (Xenial Xerus) 
 Please run the following commands and read the comments as you go.
-You will notice that we update and upgrade quite frequently, this is to ensure that all dependancies are met at all times
+You will notice that we update and upgrade quite frequently, this is to ensure that all dependancies are met at all times. You will also notice that we are installing some libraries from source, there are two reasons for this; firstly in the event that the library is not available through apt-get or secondly, because we want the very latest version (not the version available in apt-get).
 ```
 sudo apt-get update
 sudo apt-get upgrade
@@ -40,7 +40,7 @@ cd cryptopp-master
 make -j 2
 sudo make install
 ```
-The following steps will install the latest compiler from source
+The following steps will install the latest GCC compiler from source (you will notice that we installed GCC 6 using apt-get, this was a building block to the next step of getting GCC 6.3.0 - the latest compiler available at present).
 Download gcc 6.3.0 from https://gcc.gnu.org/mirrors.html I used the Japanese mirror as this is the closest location to me http://ftp.tsukuba.wide.ad.jp/software/gcc/releases/gcc-6.3.0/gcc-6.3.0.tar.gz
 
 ```
