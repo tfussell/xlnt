@@ -116,7 +116,87 @@ public:
     virtual ~compound_document_istreambuf();
 
 private:
-    int_type underflow()
+    std::streamsize xsgetn(char *c, std::streamsize count) override
+    {
+        auto bytes_read = std::streamsize(0);
+
+        if (entry_.size < document_.header_.threshold)
+        {
+            const auto chain = document_.follow_chain(entry_.start, document_.ssat_);
+            auto current_sector = chain[position_ / document_.short_sector_size()];
+            auto remaining = std::min(entry_.size - std::uint32_t(position_), std::uint32_t(count));
+
+            while (remaining)
+            {
+                if (current_sector_.empty() || chain[position_ / document_.short_sector_size()] != current_sector)
+                {
+                    current_sector = chain[position_ / document_.short_sector_size()];
+                    sector_writer_.reset();
+                    document_.read_short_sector(current_sector, sector_writer_);
+                }
+
+                const auto available = std::min(entry_.size - position_, 
+                    document_.short_sector_size() - position_ % document_.short_sector_size());
+                const auto to_read = std::min(available, std::size_t(remaining));
+
+                auto start = current_sector_.begin() + position_ % document_.short_sector_size();
+                auto end = start + to_read;
+
+                c = std::copy(start, end, c);
+
+                remaining -= to_read;
+                position_ += to_read;
+                bytes_read += to_read;
+            }
+
+            if (position_ < entry_.size && chain[position_ / document_.short_sector_size()] != current_sector)
+            {
+                current_sector = chain[position_ / document_.short_sector_size()];
+                sector_writer_.reset();
+                document_.read_short_sector(current_sector, sector_writer_);
+            }
+        }
+        else
+        {
+            const auto chain = document_.follow_chain(entry_.start, document_.sat_);
+            auto current_sector = chain[position_ / document_.sector_size()];
+            auto remaining = std::min(entry_.size - std::uint32_t(position_), std::uint32_t(count));
+
+            while (remaining)
+            {
+                if (current_sector_.empty() || chain[position_ / document_.sector_size()] != current_sector)
+                {
+                    current_sector = chain[position_ / document_.sector_size()];
+                    sector_writer_.reset();
+                    document_.read_sector(current_sector, sector_writer_);
+                }
+
+                const auto available = std::min(entry_.size - position_,
+                    document_.sector_size() - position_ % document_.sector_size());
+                const auto to_read = std::min(available, std::size_t(remaining));
+
+                auto start = current_sector_.begin() + position_ % document_.sector_size();
+                auto end = start + to_read;
+
+                c = std::copy(start, end, c);
+
+                remaining -= to_read;
+                position_ += to_read;
+                bytes_read += to_read;
+            }
+
+            if (position_ < entry_.size && chain[position_ / document_.sector_size()] != current_sector)
+            {
+                current_sector = chain[position_ / document_.sector_size()];
+                sector_writer_.reset();
+                document_.read_sector(current_sector, sector_writer_);
+            }
+        }
+
+        return bytes_read;
+    }
+
+    int_type underflow() override
     {
         if (position_ == entry_.size)
         {
@@ -139,7 +219,7 @@ private:
         }
     }
 
-    int_type uflow()
+    int_type uflow() override
     {
         auto result = underflow();
         ++position_;
@@ -147,7 +227,7 @@ private:
         return result;
     }
 
-    std::streamsize showmanyc()
+    std::streamsize showmanyc() override
     {
         if (position_ == entry_.size)
         {
@@ -157,7 +237,7 @@ private:
         return static_cast<std::streamsize>(entry_.size - position_);
     }
 
-    std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode)
+    std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode) override
     {
         if (way == std::ios_base::beg)
         {
@@ -196,7 +276,7 @@ private:
         return static_cast<std::ptrdiff_t>(position_);
     }
 
-    std::streampos seekpos(std::streampos sp, std::ios_base::openmode)
+    std::streampos seekpos(std::streampos sp, std::ios_base::openmode) override
     {
         if (sp < 0)
         {
@@ -251,7 +331,7 @@ public:
     virtual ~compound_document_ostreambuf();
 
 private:
-    int sync()
+    int sync() override
     {
         auto written = pptr() - pbase();
 
@@ -305,7 +385,7 @@ private:
         return entry_.size < document_.header_.threshold;
     }
 
-    int_type overflow(int_type c = traits_type::eof())
+    int_type overflow(int_type c = traits_type::eof()) override
     {
         sync();
 
@@ -361,7 +441,7 @@ private:
         entry_.start = chain_.front();
     }
 
-    std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode)
+    std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode) override
     {
         if (way == std::ios_base::beg)
         {
@@ -400,7 +480,7 @@ private:
         return static_cast<std::ptrdiff_t>(position_);
     }
 
-    std::streampos seekpos(std::streampos sp, std::ios_base::openmode)
+    std::streampos seekpos(std::streampos sp, std::ios_base::openmode) override
     {
         if (sp < 0)
         {
