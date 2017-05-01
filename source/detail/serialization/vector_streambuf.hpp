@@ -35,7 +35,7 @@ namespace detail {
 /// <summary>
 /// Allows a std::vector to be read through a std::istream.
 /// </summary>
-class vector_istreambuf : public std::streambuf
+class XLNT_API vector_istreambuf : public std::streambuf
 {
     using int_type = std::streambuf::int_type;
 
@@ -64,7 +64,7 @@ private:
 /// <summary>
 /// Allows a std::vector to be written through a std::ostream.
 /// </summary>
-class vector_ostreambuf : public std::streambuf
+class XLNT_API vector_ostreambuf : public std::streambuf
 {
     using int_type = std::streambuf::int_type;
 

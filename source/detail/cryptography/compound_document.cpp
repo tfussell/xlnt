@@ -124,7 +124,7 @@ private:
         {
             const auto chain = document_.follow_chain(entry_.start, document_.ssat_);
             auto current_sector = chain[position_ / document_.short_sector_size()];
-            auto remaining = std::min(entry_.size - std::uint32_t(position_), std::uint32_t(count));
+            auto remaining = std::min(std::size_t(entry_.size) - position_, std::size_t(count));
 
             while (remaining)
             {
@@ -142,7 +142,10 @@ private:
                 auto start = current_sector_.begin() + position_ % document_.short_sector_size();
                 auto end = start + to_read;
 
-                c = std::copy(start, end, c);
+                for (auto i = start; i < end; ++i)
+                {
+                    *(c++) = *i;
+                }
 
                 remaining -= to_read;
                 position_ += to_read;
@@ -160,7 +163,7 @@ private:
         {
             const auto chain = document_.follow_chain(entry_.start, document_.sat_);
             auto current_sector = chain[position_ / document_.sector_size()];
-            auto remaining = std::min(entry_.size - std::uint32_t(position_), std::uint32_t(count));
+            auto remaining = std::min(std::size_t(entry_.size) - position_, std::size_t(count));
 
             while (remaining)
             {
@@ -178,7 +181,10 @@ private:
                 auto start = current_sector_.begin() + position_ % document_.sector_size();
                 auto end = start + to_read;
 
-                c = std::copy(start, end, c);
+                for (auto i = start; i < end; ++i)
+                {
+                    *(c++) = *i;
+                }
 
                 remaining -= to_read;
                 position_ += to_read;
