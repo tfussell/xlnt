@@ -51,15 +51,12 @@ std::vector<std::uint8_t> decrypt_xlsx_standard(
 {
     const auto key = info.calculate_key();
 
+    auto decrypted_size = read<std::uint64_t>(encrypted_package_stream);
     auto encrypted_package = std::vector<byte>(
         std::istreambuf_iterator<char>(encrypted_package_stream),
         std::istreambuf_iterator<char>());
-    auto decrypted_size = read<std::uint64_t>(encrypted_package_stream);
 
-    auto decrypted = xlnt::detail::aes_ecb_decrypt(
-        encrypted_package, 
-        key, 
-        encrypted_package_stream.tellg());
+    auto decrypted = xlnt::detail::aes_ecb_decrypt(encrypted_package, key);
 
     decrypted.resize(static_cast<std::size_t>(decrypted_size));
 
@@ -145,14 +142,14 @@ encryption_info::standard_encryption_info read_standard_encryption_info(std::ist
         throw xlnt::exception("invalid header");
     }
 
-    const auto csp_name_length = (header_length - (info_stream.tellg() - index_at_start) - 1) / 2;
-    auto csp_name = xlnt::detail::utf16_to_utf8(xlnt::detail::read_string<char16_t>(info_stream, csp_name_length));
-    if (csp_name != "Microsoft Enhanced RSA and AES Cryptographic Provider (Prototype)"
-        && csp_name != "Microsoft Enhanced RSA and AES Cryptographic Provider")
+    const auto csp_name_length = (header_length - (info_stream.tellg() - index_at_start)) / 2;
+    auto csp_name = xlnt::detail::read_string<char16_t>(info_stream, csp_name_length);
+    csp_name.pop_back(); // remove extraneous trailing null
+    if (csp_name != u"Microsoft Enhanced RSA and AES Cryptographic Provider (Prototype)"
+        && csp_name != u"Microsoft Enhanced RSA and AES Cryptographic Provider")
     {
         throw xlnt::exception("invalid cryptographic provider");
     }
-    //info_stream.seekg((csp_name_length + 1) * 2);
 
     const auto salt_size = read<std::uint32_t>(info_stream);
     result.salt = xlnt::detail::read_vector<byte>(info_stream, salt_size);
