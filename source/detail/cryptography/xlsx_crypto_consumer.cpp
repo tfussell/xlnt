@@ -145,14 +145,14 @@ encryption_info::standard_encryption_info read_standard_encryption_info(std::ist
         throw xlnt::exception("invalid header");
     }
 
-    const auto csp_name_length = header_length - (info_stream.tellg() - index_at_start);
-    auto csp_name = xlnt::detail::read_string<char16_t>(info_stream, csp_name_length);
-    if (csp_name != u"Microsoft Enhanced RSA and AES Cryptographic Provider (Prototype)"
-        && csp_name != u"Microsoft Enhanced RSA and AES Cryptographic Provider")
+    const auto csp_name_length = (header_length - (info_stream.tellg() - index_at_start) - 1) / 2;
+    auto csp_name = xlnt::detail::utf16_to_utf8(xlnt::detail::read_string<char16_t>(info_stream, csp_name_length));
+    if (csp_name != "Microsoft Enhanced RSA and AES Cryptographic Provider (Prototype)"
+        && csp_name != "Microsoft Enhanced RSA and AES Cryptographic Provider")
     {
         throw xlnt::exception("invalid cryptographic provider");
     }
-    info_stream.seekg(csp_name_length);
+    //info_stream.seekg((csp_name_length + 1) * 2);
 
     const auto salt_size = read<std::uint32_t>(info_stream);
     result.salt = xlnt::detail::read_vector<byte>(info_stream, salt_size);
@@ -312,12 +312,14 @@ std::vector<std::uint8_t> decrypt_xlsx(
     std::istream stream(&buffer);
     xlnt::detail::compound_document document(stream);
 
-    auto &encryption_info_stream = document.open_read_stream("EncryptionInfo");
+    auto &encryption_info_stream = document.open_read_stream("/EncryptionInfo");
     auto encryption_info = read_encryption_info(encryption_info_stream, password);
 
+    auto &encrypted_package_stream = document.open_read_stream("/EncryptedPackage");
+
     return encryption_info.is_agile
-        ? decrypt_xlsx_agile(encryption_info, document.open_read_stream("EncryptedPackage"))
-        : decrypt_xlsx_standard(encryption_info, document.open_read_stream("EncryptedPackage"));
+        ? decrypt_xlsx_agile(encryption_info, encrypted_package_stream)
+        : decrypt_xlsx_standard(encryption_info, encrypted_package_stream);
 }
 
 } // namespace

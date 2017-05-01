@@ -25,6 +25,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <iostream>
 #include <vector>
 
 #include <xlnt/utils/exceptions.hpp>

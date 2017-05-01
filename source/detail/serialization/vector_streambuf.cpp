@@ -22,6 +22,7 @@
 // @author: see AUTHORS file
 
 #include <detail/serialization/vector_streambuf.hpp>
+#include <xlnt/utils/exceptions.hpp>
 
 namespace xlnt {
 namespace detail {
@@ -214,6 +215,11 @@ std::streampos vector_ostreambuf::seekpos(std::streampos sp, std::ios_base::open
 
 XLNT_API std::vector<std::uint8_t> to_vector(std::istream &in_stream)
 {
+    if (!in_stream)
+    {
+        throw xlnt::exception("bad stream");
+    }
+
     return std::vector<std::uint8_t>(
         std::istreambuf_iterator<char>(in_stream),
         std::istreambuf_iterator<char>());
@@ -221,6 +227,11 @@ XLNT_API std::vector<std::uint8_t> to_vector(std::istream &in_stream)
 
 XLNT_API void to_stream(const std::vector<std::uint8_t> &bytes, std::ostream &out_stream)
 {
+    if (!out_stream)
+    {
+        throw xlnt::exception("bad stream");
+    }
+
     out_stream.write(reinterpret_cast<const char *>(bytes.data()), bytes.size());
 }
 
