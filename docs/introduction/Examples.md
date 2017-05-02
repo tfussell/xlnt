@@ -8,22 +8,21 @@ The following C plus plus code will read the values from an xlsx file and print 
 
 using namespace std;
 using namespace xlnt;
-
 int main()
 {
     workbook wb;
     wb.load("/home/timothymccallum/test.xlsx");
     auto ws = wb.active_sheet();
     clog << "Processing spread sheet" << endl;
-	for (auto row : ws.rows(false)) 
-		{ 
-			for (auto cell : row) 
-			{ 
-			    clog << cell.to_string() << endl;
-			}
+    for (auto row : ws.rows(false)) 
+	{ 
+	    for (auto cell : row) 
+	        { 
+		    clog << cell.to_string() << endl;
 		}
-	clog << "Processing complete" << endl;
-	return 0;
+	}
+    clog << "Processing complete" << endl;
+    return 0;
 }
 ```
 Save the contents of the above file 
