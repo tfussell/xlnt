@@ -70,28 +70,27 @@ int main()
     clog << "Creating a single vector which stores the whole spread sheet" << endl;
     vector< vector<string> > theWholeSpreadSheet;
 	for (auto row : ws.rows(false)) 
-		{ 
-			clog << "Creating a fresh vector for just this row in the spread sheet" << endl;
-			vector<string> aSingleRow;
-			for (auto cell : row) 
-			{ 
-			    clog << "Adding this cell to the row" << endl;
-			    aSingleRow.push_back(cell.to_string());
-			}
-			clog << "Adding this entire row to the vector which stores the whole spread sheet" << endl;
-			theWholeSpreadSheet.push_back(aSingleRow);
-		}
-	clog << "Processing complete" << endl;
-
-	clog << "Reading the vector and printing output to the screen" << endl;
-	for (int rowInt = 0; rowInt < theWholeSpreadSheet.size(); rowInt++)
+	    { 
+                clog << "Creating a fresh vector for just this row in the spread sheet" << endl;
+		vector<string> aSingleRow;
+		for (auto cell : row) 
+		    { 
+			clog << "Adding this cell to the row" << endl;
+			aSingleRow.push_back(cell.to_string());
+		    }
+		clog << "Adding this entire row to the vector which stores the whole spread sheet" << endl;
+		theWholeSpreadSheet.push_back(aSingleRow);
+	    }
+    clog << "Processing complete" << endl;
+    clog << "Reading the vector and printing output to the screen" << endl;
+    for (int rowInt = 0; rowInt < theWholeSpreadSheet.size(); rowInt++)
 	{
-		for (int colInt = 0; colInt < theWholeSpreadSheet.at(rowInt).size(); colInt++)
+	    for (int colInt = 0; colInt < theWholeSpreadSheet.at(rowInt).size(); colInt++)
 		{
-			cout << theWholeSpreadSheet.at(rowInt).at(colInt) << endl;
+		    cout << theWholeSpreadSheet.at(rowInt).at(colInt) << endl;
 		}
 	}
-	return 0;
+    return 0;
 }
 ```
 Save the contents of the above file 
