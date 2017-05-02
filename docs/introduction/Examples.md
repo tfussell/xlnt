@@ -11,8 +11,8 @@ using namespace xlnt;
 
 int main()
 {
-	workbook wb;
-	wb.load("/home/timothymccallum/test.xlsx");
+    workbook wb;
+    wb.load("/home/timothymccallum/test.xlsx");
     auto ws = wb.active_sheet();
     clog << "Processing spread sheet" << endl;
 	for (auto row : ws.rows(false)) 
