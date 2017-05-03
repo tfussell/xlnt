@@ -31,7 +31,7 @@ Save the contents of the above file
 ```
 Compile by typing the following command
 ```
-g++ -std=c++14 -Ixlnt/include -Lxlnt/lib -lxlnt process.cpp -o process
+g++ -std=c++14 -lxlnt process.cpp -o process
 ```
 Excecute by typing the following command
 ```
@@ -99,7 +99,7 @@ Save the contents of the above file
 ```
 Compile by typing the following command
 ```
-g++ -std=c++14 -Ixlnt/include -Lxlnt/lib -lxlnt process.cpp -o process
+g++ -std=c++14 -lxlnt process.cpp -o process
 ```
 Excecute by typing the following command
 ```
