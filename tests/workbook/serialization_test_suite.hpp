@@ -411,11 +411,11 @@ public:
         source_workbook.load(source_data, password);
 
         std::vector<std::uint8_t> destination_data;
-        source_workbook.save(destination_data, password);
+        //source_workbook.save(destination_data, password);
         source_workbook.save("encrypted.xlsx", password);
        
-        xlnt::workbook temp;
-        temp.load("encrypted.xlsx", password);
+        //xlnt::workbook temp;
+        //temp.load("encrypted.xlsx", password);
 
         //TODO: finish implementing encryption and uncomment this
         //return source_data == destination_data;
