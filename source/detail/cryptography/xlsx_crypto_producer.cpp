@@ -109,13 +109,18 @@ void write_agile_encryption_info(
     const encryption_info &info,
     std::ostream &info_stream)
 {
+    const auto version_major = std::uint16_t(4);
+    const auto version_minor = std::uint16_t(4);
+    const auto encryption_flags = std::uint32_t(0x40);
+
+    info_stream.write(reinterpret_cast<const char *>(&version_major), sizeof(std::uint16_t));
+    info_stream.write(reinterpret_cast<const char *>(&version_minor), sizeof(std::uint16_t));
+    info_stream.write(reinterpret_cast<const char *>(&encryption_flags), sizeof(std::uint32_t));
+
     static const auto &xmlns = xlnt::constants::ns("encryption");
     static const auto &xmlns_p = xlnt::constants::ns("encryption-password");
 
-    std::vector<std::uint8_t> encryption_info;
-    xlnt::detail::vector_ostreambuf encryption_info_buffer(encryption_info);
-    std::ostream encryption_info_stream(&encryption_info_buffer);
-    xml::serializer serializer(encryption_info_stream, "EncryptionInfo");
+    xml::serializer serializer(info_stream, "EncryptionInfo");
 
     serializer.start_element(xmlns, "encryption");
 
@@ -166,8 +171,6 @@ void write_agile_encryption_info(
     serializer.end_element(xmlns, "keyEncryptors");
 
     serializer.end_element(xmlns, "encryption");
-
-    info_stream.write(reinterpret_cast<char *>(encryption_info.data()), encryption_info.size());
 }
 
 void write_standard_encryption_info(const encryption_info &info, std::ostream &info_stream)
@@ -211,34 +214,55 @@ void write_standard_encryption_info(const encryption_info &info, std::ostream &i
 
 void encrypt_xlsx_agile(
     const encryption_info &info,
-    std::ostream &plaintext)
+    const std::vector<std::uint8_t> &plaintext,
+    std::ostream &ciphertext_stream)
 {
-    auto key = info.calculate_key();
-    /*
-    auto padded = plaintext;
-    padded.resize((plaintext.size() / 16 + (plaintext.size() % 16 == 0 ? 0 : 1)) * 16);
-    auto ciphertext = xlnt::detail::aes_ecb_encrypt(padded, key);
     const auto length = static_cast<std::uint64_t>(plaintext.size());
-    ciphertext.insert(ciphertext.begin(),
-        reinterpret_cast<const std::uint8_t *>(&length),
-        reinterpret_cast<const std::uint8_t *>(&length + sizeof(std::uint64_t)));
-        */
+    ciphertext_stream.write(reinterpret_cast<const char *>(&length), sizeof(std::uint64_t));
+
+    auto key = info.calculate_key();
+
+    auto salt_size = info.agile.key_data.salt_size;
+    auto salt_with_block_key = info.agile.key_data.salt_value;
+    salt_with_block_key.resize(salt_size + sizeof(std::uint32_t), 0);
+    auto &segment_index = *reinterpret_cast<std::uint32_t *>(salt_with_block_key.data() + salt_size);
+
+    auto segment = std::vector<std::uint8_t>(4096, 0);
+
+    for (auto i = std::size_t(0); i < length; i += 4096)
+    {
+        auto iv = hash(info.agile.key_encryptor.hash, salt_with_block_key);
+        iv.resize(16);
+
+        auto start = plaintext.begin() + i;
+        auto bytes = std::min(std::size_t(length - i), std::size_t(4096));
+        std::copy(start, start + bytes, segment.begin());
+        auto encrypted_segment = xlnt::detail::aes_cbc_encrypt(segment, key, iv);
+        ciphertext_stream.write(reinterpret_cast<char *>(encrypted_segment.data()), bytes);
+
+        ++segment_index;
+    }
 }
 
 void encrypt_xlsx_standard(
     const encryption_info &info,
-    std::ostream &plaintext)
+    const std::vector<std::uint8_t> &plaintext,
+    std::ostream &ciphertext_stream)
 {
-    auto key = info.calculate_key();
-    /*
-    auto padded = plaintext;
-    padded.resize((plaintext.size() / 16 + (plaintext.size() % 16 == 0 ? 0 : 1)) * 16);
-    auto ciphertext = xlnt::detail::aes_ecb_encrypt(padded, key);
     const auto length = static_cast<std::uint64_t>(plaintext.size());
-    ciphertext.insert(ciphertext.begin(),
-        reinterpret_cast<const std::uint8_t *>(&length),
-        reinterpret_cast<const std::uint8_t *>(&length + sizeof(std::uint64_t)));
-        */
+    ciphertext_stream.write(reinterpret_cast<const char *>(&length), sizeof(std::uint64_t));
+
+    auto key = info.calculate_key();
+    auto segment = std::vector<std::uint8_t>(4096, 0);
+
+    for (auto i = std::size_t(0); i < length; ++i)
+    {
+        auto start = plaintext.begin() + i;
+        auto bytes = std::min(std::size_t(length - i), std::size_t(4096));
+        std::copy(start, start + bytes, segment.begin());
+        auto encrypted_segment = xlnt::detail::aes_ecb_encrypt(segment, key);
+        ciphertext_stream.write(reinterpret_cast<char *>(encrypted_segment.data()), bytes);
+    }
 }
 
 std::vector<std::uint8_t> encrypt_xlsx(
@@ -249,19 +273,24 @@ std::vector<std::uint8_t> encrypt_xlsx(
     encryption_info.password = u"secret";
 
     auto ciphertext = std::vector<std::uint8_t>();
+
     xlnt::detail::vector_ostreambuf buffer(ciphertext);
     std::ostream stream(&buffer);
     xlnt::detail::compound_document document(stream);
 
     if (encryption_info.is_agile)
     {
-        write_agile_encryption_info(encryption_info, document.open_write_stream("/EncryptionInfo"));
-        encrypt_xlsx_agile(encryption_info, document.open_write_stream("/EncryptedPackage"));
+        write_agile_encryption_info(encryption_info, 
+            document.open_write_stream("/EncryptionInfo"));
+        encrypt_xlsx_agile(encryption_info, plaintext, 
+            document.open_write_stream("/EncryptedPackage"));
     }
     else
     {
-        write_standard_encryption_info(encryption_info, document.open_write_stream("/EncryptionInfo"));
-        encrypt_xlsx_standard(encryption_info, document.open_write_stream("/EncryptedPackage"));
+        write_standard_encryption_info(encryption_info,
+            document.open_write_stream("/EncryptionInfo"));
+        encrypt_xlsx_standard(encryption_info, plaintext,
+            document.open_write_stream("/EncryptedPackage"));
     }
 
     return ciphertext;

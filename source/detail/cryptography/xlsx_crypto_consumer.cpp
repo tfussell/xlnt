@@ -52,15 +52,26 @@ std::vector<std::uint8_t> decrypt_xlsx_standard(
     const auto key = info.calculate_key();
 
     auto decrypted_size = read<std::uint64_t>(encrypted_package_stream);
-    auto encrypted_package = std::vector<byte>(
-        std::istreambuf_iterator<char>(encrypted_package_stream),
-        std::istreambuf_iterator<char>());
 
-    auto decrypted = xlnt::detail::aes_ecb_decrypt(encrypted_package, key);
+    std::vector<std::uint8_t> encrypted_segment(4096, 0);
+    std::vector<std::uint8_t> decrypted_package;
 
-    decrypted.resize(static_cast<std::size_t>(decrypted_size));
+    while (encrypted_package_stream)
+    {
+        encrypted_package_stream.read(
+            reinterpret_cast<char *>(encrypted_segment.data()),
+            encrypted_segment.size());
+        auto decrypted_segment = xlnt::detail::aes_ecb_decrypt(encrypted_segment, key);
 
-    return decrypted;
+        decrypted_package.insert(
+            decrypted_package.end(),
+            decrypted_segment.begin(),
+            decrypted_segment.end());
+    }
+
+    decrypted_package.resize(static_cast<std::size_t>(decrypted_size));
+
+    return decrypted_package;
 }
 
 std::vector<std::uint8_t> decrypt_xlsx_agile(
@@ -174,10 +185,7 @@ encryption_info::agile_encryption_info read_agile_encryption_info(std::istream &
 
     encryption_info::agile_encryption_info result;
 
-    auto xml_string = std::string(
-        std::istreambuf_iterator<char>(info_stream),
-        std::istreambuf_iterator<char>());
-    xml::parser parser(xml_string.data(), xml_string.size(), "EncryptionInfo");
+    xml::parser parser(info_stream, "EncryptionInfo");
 
     parser.next_expect(xml::parser::event_type::start_element, xmlns, "encryption");
 
