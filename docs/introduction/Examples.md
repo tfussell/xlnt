@@ -6,22 +6,20 @@ The following C plus plus code will read the values from an xlsx file and print 
 #include <iostream>
 #include <xlnt/xlnt.hpp>
 
-using namespace std;
-using namespace xlnt;
 int main()
 {
-    workbook wb;
+    xlnt::workbook wb;
     wb.load("/home/timothymccallum/test.xlsx");
     auto ws = wb.active_sheet();
-    clog << "Processing spread sheet" << endl;
+    std::clog << "Processing spread sheet" << std::endl;
     for (auto row : ws.rows(false)) 
     { 
         for (auto cell : row) 
 	{ 
-	    clog << cell.to_string() << endl;
+	    std::clog << cell.to_string() << std::endl;
 	}
     }
-    clog << "Processing complete" << endl;
+    std::clog << "Processing complete" << std::endl;
     return 0;
 }
 ```
@@ -57,37 +55,33 @@ Loading a spread sheet into a Vector provides oppourtunities for you to perform 
 #include <xlnt/xlnt.hpp>
 #include <vector>
 
-using namespace std;
-using namespace xlnt;
-
-
 int main()
 {
-    workbook wb;
+    xlnt::workbook wb;
     wb.load("/home/timothymccallum/test.xlsx");
     auto ws = wb.active_sheet();
-    clog << "Processing spread sheet" << endl;
-    clog << "Creating a single vector which stores the whole spread sheet" << endl;
-    vector< vector<string> > theWholeSpreadSheet;
+    std::clog << "Processing spread sheet" << std::endl;
+    std::clog << "Creating a single vector which stores the whole spread sheet" << std::endl;
+    std::vector< std::vector<std::string> > theWholeSpreadSheet;
     for (auto row : ws.rows(false)) 
     { 
-        clog << "Creating a fresh vector for just this row in the spread sheet" << endl;
-	vector<string> aSingleRow;
+        std::clog << "Creating a fresh vector for just this row in the spread sheet" << std::endl;
+	std::vector<std::string> aSingleRow;
 	for (auto cell : row) 
 	{ 
-	    clog << "Adding this cell to the row" << endl;
+	    std::clog << "Adding this cell to the row" << std::endl;
 	    aSingleRow.push_back(cell.to_string());
 	}
-	clog << "Adding this entire row to the vector which stores the whole spread sheet" << endl;
+	std::clog << "Adding this entire row to the vector which stores the whole spread sheet" << std::endl;
 	theWholeSpreadSheet.push_back(aSingleRow);
     }
-    clog << "Processing complete" << endl;
-    clog << "Reading the vector and printing output to the screen" << endl;
+    std::clog << "Processing complete" << std::endl;
+    std::clog << "Reading the vector and printing output to the screen" << std::endl;
     for (int rowInt = 0; rowInt < theWholeSpreadSheet.size(); rowInt++)
     {
         for (int colInt = 0; colInt < theWholeSpreadSheet.at(rowInt).size(); colInt++)
 	{
-	    cout << theWholeSpreadSheet.at(rowInt).at(colInt) << endl;
+	    std::cout << theWholeSpreadSheet.at(rowInt).at(colInt) << std::endl;
         }
     }
     return 0;
