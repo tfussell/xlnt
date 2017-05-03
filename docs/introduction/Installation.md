@@ -16,9 +16,6 @@ sudo apt-get update
 sudo apt-get upgrade
 sudo apt-get install cmake
 sudo apt-get install zlibc
-sudo apt-get install zlib1g
-sudo apt-get install zlib1g-dev
-sudo apt-get install libssl-dev
 sudo add-apt-repository ppa:ubuntu-toolchain-r/test
 sudo apt update
 sudo apt-get upgrade
@@ -30,15 +27,6 @@ The following steps will set up some environment variables for this session
 ```
 export CC=/usr/bin/gcc-6  
 export CXX=/usr/bin/g++-6
-```
-The following steps will install the appropriate crypto libraries for c++
-Download the zip file from https://github.com/weidai11/cryptopp/archive/master.zip
-```
-cd ~
-unzip Downloads/cryptopp-master.zip
-cd cryptopp-master
-make -j 2
-sudo make install
 ```
 The following steps will install the latest GCC compiler from source (you will notice that we installed GCC 6 using apt-get, this was a building block to the next step of getting GCC 6.3.0 - the latest compiler available at present).
 Download gcc 6.3.0 from https://gcc.gnu.org/mirrors.html I used the Japanese mirror as this is the closest location to me http://ftp.tsukuba.wide.ad.jp/software/gcc/releases/gcc-6.3.0/gcc-6.3.0.tar.gz
@@ -56,20 +44,6 @@ sudo make install
 ```
 If the above make command fails please use "make clean pristine" and then remove and remake the build directory. This will clean up and prepare the environment for another attempt. A common reason for failure on virtual machines is lack of RAM (if you don't have enough RAM you may get an error like this "recipe for target 's-attrtab' failed"). Otherwise, if all goes well in about 30 to 60 minutes the compiler will be ready and we will move on to the next steps.
 
-The following step will install the docbook2x library
-```
-sudo apt-get install docbook2x
-```
-The following steps will install the libexpat library
-Download the zip file from the following repository https://github.com/libexpat/libexpat 
-```
-cd ~
-unzip Downloads/libexpat-master.zip
-cd libexpat-master/expat
-cmake .
-make -j 2
-sudo make install
-```
 The following steps will intall xlnt
 Download the zip file from the xlnt repository
 https://github.com/tfussell/xlnt/archive/master.zip
