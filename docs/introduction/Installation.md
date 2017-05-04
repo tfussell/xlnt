@@ -9,6 +9,7 @@
 ## vcpkg
 
 ## Compiling xlnt 1.x.x from Source on Ubuntu 16.04 LTS (Xenial Xerus) 
+Time required: Approximately 5 minutes (depending on your internet speed)
 ```
 sudo apt-get update
 sudo apt-get upgrade
