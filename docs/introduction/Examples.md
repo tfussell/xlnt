@@ -174,9 +174,12 @@ int main()
         for (int fIn = 0; fIn < wholeWorksheet.at(fOut).size(); fIn++)
         {
             //Take notice of the difference between accessing the vector and accessing the work sheet
-	    //As you may already know Excel spread sheets start at row 1 and column 1 (not row 0 and column 0 like you would expect from a C++ vectors 
-	    //In short the cell reference starts at column 1 row 1 (column first in the cell_reference argument) and the reference to the vector starts at row 0 and column 0 (row first in the vector argument)
+	    //As you may already know Excel spread sheets start at row 1 and column 1 (not row 0 and column 0 like you would expect from a C++ vector) 
+	    //In short the xlnt cell reference starts at column 1 row 1 (hence the + 1s below) and the vector reference starts at row 0 and column 0
 	    wsOut.cell(xlnt::cell_reference(fIn + 1, fOut + 1)).value(wholeWorksheet.at(fOut).at(fIn));
+	    //Further clarification to avoid confusion
+	    //Cell reference arguments are (column number, row number); e.g. cell_reference(fIn + 1, fOut + 1)
+	    //Vector arguments are (row number, column number); e.g. wholeWorksheet.at(fOut).at(fIn)
 	}
     }
     std::clog << "Finished writing spread sheet" << std::endl;
