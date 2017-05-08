@@ -88,7 +88,6 @@ private:
 
 	// Workbook Relationship Target Parts
 
-	void write_calculation_chain(const relationship &rel);
 	void write_connections(const relationship &rel);
 	void write_custom_xml_mappings(const relationship &rel);
 	void write_external_workbook_references(const relationship &rel);

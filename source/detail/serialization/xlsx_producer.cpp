@@ -614,15 +614,13 @@ void xlsx_producer::write_workbook(const relationship &rel)
 
     for (const auto &child_rel : workbook_rels)
     {
+        if (child_rel.type() == relationship_type::calculation_chain) continue;
+
         path archive_path(child_rel.source().path().parent().append(child_rel.target().path()));
         begin_part(archive_path);
 
         switch (child_rel.type())
         {
-        case relationship_type::calculation_chain:
-            write_calculation_chain(child_rel);
-            break;
-
         case relationship_type::chartsheet:
             write_chartsheet(child_rel);
             break;
@@ -671,6 +669,8 @@ void xlsx_producer::write_workbook(const relationship &rel)
             write_worksheet(child_rel);
             break;
 
+        case relationship_type::calculation_chain:
+            break;
         case relationship_type::office_document:
             break;
         case relationship_type::thumbnail:
@@ -718,34 +718,6 @@ void xlsx_producer::write_workbook(const relationship &rel)
 }
 
 // Write Workbook Relationship Target Parts
-
-void xlsx_producer::write_calculation_chain(const relationship & /*rel*/)
-{
-    write_start_element(constants::ns("spreadsheetml"), "calcChain");
-    write_namespace(constants::ns("spreadsheetml"), "");
-
-    std::size_t ws_index = 1;
-
-    for (auto ws : source_)
-    {
-        for (auto row : ws)
-        {
-            for (auto cell : row)
-            {
-		if (!cell.has_formula()) continue;
-
-                write_start_element(constants::ns("spreadsheetml"), "c");
-                write_attribute("r", cell.reference().to_string());
-                write_attribute("i", ws_index);
-                write_end_element(constants::ns("spreadsheetml"), "c");
-            }
-        }
-
-        ws_index++;
-    }
-
-    write_end_element(constants::ns("spreadsheetml"), "calcChain");
-}
 
 void xlsx_producer::write_chartsheet(const relationship & /*rel*/)
 {
