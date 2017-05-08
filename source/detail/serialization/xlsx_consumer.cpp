@@ -494,14 +494,26 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
         }
         else if (current_workbook_element == qn("workbook", "workbookPr")) // CT_WorkbookPr 0-1
         {
-            if (parser().attribute_present("date1904"))
-            {
-                target_.base_date(
-                    is_true(parser().attribute("date1904")) ? calendar::mac_1904 : calendar::windows_1900);
-            }
-
-            skip_attributes({"codeName", "defaultThemeVersion",
-                "backupFile", "showObjects", "filterPrivacy", "dateCompatibility"});
+            target_.base_date(parser().attribute_present("date1904") // optional, bool=false
+                && is_true(parser().attribute("date1904"))
+                    ? calendar::mac_1904 : calendar::windows_1900);
+            skip_attribute("showObjects"); // optional, ST_Objects="all"
+            skip_attribute("showBorderUnselectedTables"); // optional, bool=true
+            skip_attribute("filterPrivacy"); // optional, bool=false
+            skip_attribute("promptedSolutions"); // optional, bool=false
+            skip_attribute("showInkAnnotation"); // optional, bool=true
+            skip_attribute("backupFile"); // optional, bool=false
+            skip_attribute("saveExternalLinkValues"); // optional, bool=true
+            skip_attribute("updateLinks"); // optional, ST_UpdateLinks="userSet"
+            skip_attribute("codeName"); // optional, string
+            skip_attribute("hidePivotFieldList"); // optional, bool=false
+            skip_attribute("showPivotChartFilter"); // optional, bool=false
+            skip_attribute("allowRefreshQuery"); // optional, bool=false
+            skip_attribute("publishItems"); // optional, bool=false
+            skip_attribute("checkCompatibility"); // optional, bool=false
+            skip_attribute("autoCompressPictures"); // optional, bool=true
+            skip_attribute("refreshAllConnections"); // optional, bool=false
+            skip_attribute("defaultThemeVersion"); // optional, uint
         }
         else if (current_workbook_element == qn("workbook", "workbookProtection")) // CT_WorkbookProtection 0-1
         {
