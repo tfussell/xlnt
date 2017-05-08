@@ -164,7 +164,27 @@ public:
 
 		const auto right_info = right_archive.files();
 
-		if (left_info.size() != right_info.size())
+        auto difference_is_missing_calc_chain = false;
+
+        if (std::abs(int(left_info.size()) - int(right_info.size())) == 1)
+        {
+            auto is_calc_chain = [](const xlnt::path &p)
+            {
+                return p.filename() == "calcChain.xml";
+            };
+
+            auto left_has_calc_chain = std::find_if(left_info.begin(), left_info.end(), is_calc_chain)
+                != left_info.end();
+            auto right_has_calc_chain = std::find_if(right_info.begin(), right_info.end(), is_calc_chain)
+                != right_info.end();
+
+            if (left_has_calc_chain != right_has_calc_chain)
+            {
+                difference_is_missing_calc_chain = true;
+            }
+        }
+
+		if (left_info.size() != right_info.size() && ! difference_is_missing_calc_chain)
         {
             std::cout << "left has a different number of files than right" << std::endl;
 
@@ -198,8 +218,14 @@ public:
 		{
 			if (!right_archive.has_file(left_member))
             {
+                if (difference_is_missing_calc_chain)
+                {
+                    continue;
+                }
+
                 match = false;
                 std::cout << "right is missing file: " << left_member.string() << std::endl;
+
                 break;
             }
             
