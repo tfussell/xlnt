@@ -514,6 +514,7 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
             skip_attribute("autoCompressPictures"); // optional, bool=true
             skip_attribute("refreshAllConnections"); // optional, bool=false
             skip_attribute("defaultThemeVersion"); // optional, uint
+            skip_attribute("dateCompatibility"); // optional, bool (undocumented)
         }
         else if (current_workbook_element == qn("workbook", "workbookProtection")) // CT_WorkbookProtection 0-1
         {
