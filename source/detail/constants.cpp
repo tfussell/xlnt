@@ -137,7 +137,8 @@ const std::unordered_map<std::string, std::string> &constants::namespaces()
             {"x14ac", "http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac"},
             {"x15", "http://schemas.microsoft.com/office/spreadsheetml/2010/11/main"},
             {"x15ac", "http://schemas.microsoft.com/office/spreadsheetml/2010/11/ac"},
-            {"xml", "http://www.w3.org/XML/1998/namespace"}, {"xsi", "http://www.w3.org/2001/XMLSchema-instance"},
+            {"xml", "http://www.w3.org/XML/1998/namespace"},
+            {"xsi", "http://www.w3.org/2001/XMLSchema-instance"},
 
             {"loext", "http://schemas.libreoffice.org/"}};
 

@@ -770,18 +770,23 @@ void xlsx_producer::write_shared_string_table(const relationship & /*rel*/)
     for (const auto ws : source_)
     {
         auto dimension = ws.calculate_dimension();
+        auto current_cell = dimension.top_left();
 
-        for (xlnt::row_t row = dimension.top_left().row(); row <= dimension.bottom_right().row(); ++row)
+        while (current_cell.row() <= dimension.bottom_right().row())
         {
-            for (xlnt::column_t column = dimension.top_left().column(); column <= dimension.bottom_right().column();
-                 ++column)
+            while (current_cell.column() <= dimension.bottom_right().column())
             {
-                if (ws.has_cell(xlnt::cell_reference(column, row)))
+                if (ws.has_cell(current_cell)
+                    && ws.cell(current_cell).data_type() == cell::type::string)
                 {
-                    string_count +=
-                        (ws.cell(xlnt::cell_reference(column, row)).data_type() == cell::type::string) ? 1 : 0;
+                    ++string_count;
                 }
+
+                current_cell.column_index(current_cell.column_index() + 1);
             }
+
+            current_cell.row(current_cell.row() + 1);
+            current_cell.column_index(dimension.top_left().column_index());
         }
     }
 #pragma clang diagnostic pop
@@ -789,12 +794,19 @@ void xlsx_producer::write_shared_string_table(const relationship & /*rel*/)
     write_attribute("count", string_count);
     write_attribute("uniqueCount", source_.shared_strings().size());
 
+    auto has_trailing_whitespace = [](const std::string &s)
+    {
+        return !s.empty() && (s.front() == ' ' || s.back() == ' ');
+    };
+
     for (const auto &string : source_.shared_strings())
     {
         if (string.runs().size() == 1 && !string.runs().at(0).second.is_set())
         {
             write_start_element(xmlns, "si");
-            write_element(xmlns, "t", string.plain_text());
+            write_start_element(xmlns, "t");
+            write_characters(string.plain_text(), has_trailing_whitespace(string.plain_text()));
+            write_end_element(xmlns, "t");
             write_end_element(xmlns, "si");
 
             continue;
@@ -854,7 +866,9 @@ void xlsx_producer::write_shared_string_table(const relationship & /*rel*/)
                 write_end_element(xmlns, "rPr");
             }
 
-            write_element(xmlns, "t", run.first);
+            write_start_element(xmlns, "t");
+            write_characters(run.first, has_trailing_whitespace(run.first));
+            write_end_element(xmlns, "t");
             write_end_element(xmlns, "r");
         }
 
@@ -2700,7 +2714,7 @@ void xlsx_producer::write_comments(const relationship & /*rel*/, worksheet ws, c
                 if (run.second.is_set())
                 {
                     write_start_element(xmlns, "rPr");
-
+                    
                     if (run.second.get().bold())
                     {
                         write_start_element(xmlns, "b");

@@ -28,6 +28,7 @@
 #include <memory>
 #include <vector>
 
+#include <detail/constants.hpp>
 #include <detail/external/include_libstudxml.hpp>
 
 namespace xml {
@@ -163,8 +164,13 @@ private:
     }
 
     template<typename T>
-    void write_characters(T characters)
+    void write_characters(T characters, bool preserve_whitespace = false)
     {
+        if (preserve_whitespace)
+        {
+            write_attribute(xml::qname(constants::ns("xml"), "space"), "preserve");
+        }
+
         current_part_serializer_->characters(characters);
     }
 
