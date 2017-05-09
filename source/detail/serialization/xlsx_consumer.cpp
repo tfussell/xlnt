@@ -2342,11 +2342,11 @@ rich_text xlsx_consumer::read_rich_text(const xml::qname &parent)
 
                 if (run_element == xml::qname(xmlns, "rPr"))
                 {
+                    run.second = xlnt::font();
+
                     while (in_element(xml::qname(xmlns, "rPr")))
                     {
                         auto current_run_property_element = expect_start_element(xml::content::simple);
-
-                        run.second = xlnt::font();
 
                         if (current_run_property_element == xml::qname(xmlns, "sz"))
                         {
