@@ -7,6 +7,7 @@ Thanks to everyone who has contributed to this project (in alphabetical order):
 * adam-nielsen
 * Malvineous
 * sukoi26
+* tpmccallum
 * xpol
 
 Project logo designed by Thomas Fussell.
