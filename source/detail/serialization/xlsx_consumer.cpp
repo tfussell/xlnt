@@ -1407,8 +1407,6 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
     read_namespaces();
 
     xlnt::range_reference full_range;
-
-    const auto &shared_strings = target_.shared_strings();
     auto &manifest = target_.manifest();
 
     const auto workbook_rel = manifest.relationship(path("/"), relationship_type::office_document);
@@ -1699,15 +1697,20 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
 
                     if (has_value)
                     {
-                        if (type == "inlineStr" || type == "str")
+                        if (type == "str")
                         {
-                            cell.value(value_string);
+                            cell.d_->value_text_ = value_string;
+                            cell.data_type(cell::type::formula_string);
                         }
-                        else if (type == "s" && !has_formula)
+                        else if (type == "inlineStr")
                         {
-                            auto shared_string_index = static_cast<std::size_t>(std::stoull(value_string));
-                            auto shared_string = shared_strings.at(shared_string_index);
-                            cell.value(shared_string);
+                            cell.d_->value_text_ = value_string;
+                            cell.data_type(cell::type::inline_string);
+                        }
+                        else if (type == "s")
+                        {
+                            cell.d_->value_numeric_ = std::stold(value_string);
+                            cell.data_type(cell::type::shared_string);
                         }
                         else if (type == "b") // boolean
                         {

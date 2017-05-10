@@ -1285,20 +1285,29 @@ const std::vector<rich_text> &workbook::shared_strings() const
     return d_->shared_strings_;
 }
 
-void workbook::add_shared_string(const rich_text &shared, bool allow_duplicates)
+std::size_t workbook::add_shared_string(const rich_text &shared, bool allow_duplicates)
 {
     register_workbook_part(relationship_type::shared_string_table);
+
+    auto index = std::size_t(0);
 
     if (!allow_duplicates)
     {
         // TODO: inefficient, use a set or something?
         for (auto &s : d_->shared_strings_)
         {
-            if (s == shared) return;
+            if (s == shared)
+            {
+                return index;
+            }
+
+            ++index;
         }
     }
 
     d_->shared_strings_.push_back(shared);
+
+    return index;
 }
 
 bool workbook::contains(const std::string &sheet_title) const

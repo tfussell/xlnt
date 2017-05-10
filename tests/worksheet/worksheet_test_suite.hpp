@@ -313,7 +313,7 @@ public:
         auto ws = wb.active_sheet();
         xlnt::cell cell = ws[xlnt::cell_reference("A1")];
         xlnt_assert_equals(cell.reference().to_string(), "A1");
-        xlnt_assert_equals(cell.data_type(), xlnt::cell::type::null);
+        xlnt_assert_equals(cell.data_type(), xlnt::cell::type::empty);
     }
 
     void test_setitem()

@@ -194,12 +194,12 @@ cell::cell(detail::cell_impl *d)
 
 bool cell::garbage_collectible() const
 {
-    return !(data_type() != type::null || is_merged() || has_formula() || has_format());
+    return !(has_value() || is_merged() || has_formula() || has_format());
 }
 
 void cell::value(std::nullptr_t)
 {
-    d_->type_ = type::null;
+    clear_value();
 }
 
 void cell::value(bool boolean_value)
@@ -211,82 +211,56 @@ void cell::value(bool boolean_value)
 void cell::value(int int_value)
 {
     d_->value_numeric_ = static_cast<long double>(int_value);
-    d_->type_ = type::numeric;
+    d_->type_ = type::number;
 }
 
 void cell::value(unsigned int int_value)
 {
     d_->value_numeric_ = static_cast<long double>(int_value);
-    d_->type_ = type::numeric;
+    d_->type_ = type::number;
 }
 
 void cell::value(long long int int_value)
 {
     d_->value_numeric_ = static_cast<long double>(int_value);
-    d_->type_ = type::numeric;
+    d_->type_ = type::number;
 }
 
 void cell::value(unsigned long long int int_value)
 {
     d_->value_numeric_ = static_cast<long double>(int_value);
-    d_->type_ = type::numeric;
+    d_->type_ = type::number;
 }
 
 void cell::value(float float_value)
 {
     d_->value_numeric_ = static_cast<long double>(float_value);
-    d_->type_ = type::numeric;
+    d_->type_ = type::number;
 }
 
 void cell::value(double float_value)
 {
     d_->value_numeric_ = static_cast<long double>(float_value);
-    d_->type_ = type::numeric;
+    d_->type_ = type::number;
 }
 
 void cell::value(long double d)
 {
     d_->value_numeric_ = d;
-    d_->type_ = type::numeric;
+    d_->type_ = type::number;
 }
 
 void cell::value(const std::string &s)
 {
-    auto checked = check_string(s);
-
-    if (checked.size() > 1 && checked.front() == '=')
-    {
-        d_->type_ = type::formula;
-        formula(checked);
-    }
-    else if (cell::error_codes().find(checked) != cell::error_codes().end())
-    {
-        error(checked);
-    }
-    else
-    {
-        d_->type_ = type::string;
-        d_->value_text_.plain_text(checked);
-
-        if (checked.size() > 0)
-        {
-            workbook().add_shared_string(d_->value_text_);
-        }
-    }
+    value(rich_text(check_string(s)));
 }
 
 void cell::value(const rich_text &text)
 {
-    if (text.runs().size() == 1 && !text.runs().front().second.is_set())
-    {
-        value(text.plain_text());
-    }
-    else
-    {
-        d_->type_ = type::string;
-        d_->value_text_ = text;
-        workbook().add_shared_string(text);
-    }
+    check_string(text.plain_text());
+
+    d_->type_ = type::shared_string;
+    d_->value_numeric_ = static_cast<long double>(workbook().add_shared_string(text));
 }
 
 void cell::value(const char *c)
@@ -306,28 +280,28 @@ void cell::value(const cell c)
 
 void cell::value(const date &d)
 {
-    d_->type_ = type::numeric;
+    d_->type_ = type::number;
     d_->value_numeric_ = d.to_number(base_date());
     number_format(number_format::date_yyyymmdd2());
 }
 
 void cell::value(const datetime &d)
 {
-    d_->type_ = type::numeric;
+    d_->type_ = type::number;
     d_->value_numeric_ = d.to_number(base_date());
     number_format(number_format::date_datetime());
 }
 
 void cell::value(const time &t)
 {
-    d_->type_ = type::numeric;
+    d_->type_ = type::number;
     d_->value_numeric_ = t.to_number();
     number_format(number_format::date_time6());
 }
 
 void cell::value(const timedelta &t)
 {
-    d_->type_ = type::numeric;
+    d_->type_ = type::number;
     d_->value_numeric_ = t.to_number();
     number_format(xlnt::number_format("[hh]:mm:ss"));
 }
@@ -354,7 +328,7 @@ bool cell::is_merged() const
 
 bool cell::is_date() const
 {
-    return data_type() == type::numeric && has_format() && number_format().is_date_format();
+    return data_type() == type::number && has_format() && number_format().is_date_format();
 }
 
 cell_reference cell::reference() const
@@ -429,6 +403,8 @@ void cell::formula(const std::string &formula)
     {
         d_->formula_ = formula;
     }
+
+    data_type(type::number);
     
     worksheet().register_calc_chain_in_manifest();
 }
@@ -551,7 +527,7 @@ void cell::clear_value()
 {
     d_->value_numeric_ = 0;
     d_->value_text_.clear();
-    d_->type_ = cell::type::null;
+    d_->type_ = cell::type::empty;
     clear_formula();
 }
 
@@ -666,18 +642,23 @@ void cell::protection(const class protection &protection_)
 template <>
 XLNT_API std::string cell::value() const
 {
-    return d_->value_text_.plain_text();
+    return value<rich_text>().plain_text();
 }
 
 template <>
 XLNT_API rich_text cell::value() const
 {
+    if (data_type() == cell::type::shared_string)
+    {
+        return workbook().shared_strings().at(static_cast<std::size_t>(d_->value_numeric_));
+    }
+
     return d_->value_text_;
 }
 
 bool cell::has_value() const
 {
-    return d_->type_ != cell::type::null;
+    return d_->type_ != cell::type::empty;
 }
 
 std::string cell::to_string() const
@@ -686,12 +667,13 @@ std::string cell::to_string() const
 
     switch (data_type())
     {
-    case cell::type::null:
+    case cell::type::empty:
         return "";
-    case cell::type::numeric:
+    case cell::type::number:
         return nf.format(value<long double>(), base_date());
-    case cell::type::string:
-    case cell::type::formula:
+    case cell::type::inline_string:
+    case cell::type::shared_string:
+    case cell::type::formula_string:
     case cell::type::error:
         return nf.format(value<std::string>());
     case cell::type::boolean:
@@ -731,8 +713,20 @@ void cell::value(const std::string &value_string, bool infer_type)
 {
     value(value_string);
 
-    if (!infer_type)
+    if (!infer_type || value_string.empty())
     {
+        return;
+    }
+
+    if (value_string.front() == '=' && value_string.size() > 1)
+    {
+        formula(value_string);
+        return;
+    }
+
+    if (value_string.front() == '#' && value_string.size() > 1)
+    {
+        error(value_string);
         return;
     }
 
@@ -741,7 +735,7 @@ void cell::value(const std::string &value_string, bool infer_type)
     if (percentage.first)
     {
         d_->value_numeric_ = percentage.second;
-        d_->type_ = cell::type::numeric;
+        d_->type_ = cell::type::number;
         number_format(xlnt::number_format::percentage());
     }
     else
@@ -750,7 +744,7 @@ void cell::value(const std::string &value_string, bool infer_type)
 
         if (time.first)
         {
-            d_->type_ = cell::type::numeric;
+            d_->type_ = cell::type::number;
             number_format(number_format::date_time6());
             d_->value_numeric_ = time.second.to_number();
         }
@@ -761,7 +755,7 @@ void cell::value(const std::string &value_string, bool infer_type)
             if (numeric.first)
             {
                 d_->value_numeric_ = numeric.second;
-                d_->type_ = cell::type::numeric;
+                d_->type_ = cell::type::number;
             }
         }
     }

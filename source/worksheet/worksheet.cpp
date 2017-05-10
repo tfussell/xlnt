@@ -553,7 +553,7 @@ void worksheet::merge_cells(const range_reference &reference)
 
             if (!first)
             {
-                if (cell.data_type() == cell::type::string)
+                if (cell.data_type() == cell::type::shared_string)
                 {
                     cell.value("");
                 }
@@ -672,7 +672,7 @@ bool worksheet::compare(const worksheet &other, bool reference) const
                 return false;
             }
 
-            if (this_cell.data_type() == xlnt::cell::type::numeric
+            if (this_cell.data_type() == xlnt::cell::type::number
                 && std::fabs(this_cell.value<long double>() - other_cell.value<long double>()) > 0.L)
             {
                 return false;

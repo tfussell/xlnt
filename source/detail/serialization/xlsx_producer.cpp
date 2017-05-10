@@ -777,7 +777,7 @@ void xlsx_producer::write_shared_string_table(const relationship & /*rel*/)
             while (current_cell.column() <= dimension.bottom_right().column())
             {
                 if (ws.has_cell(current_cell)
-                    && ws.cell(current_cell).data_type() == cell::type::string)
+                    && ws.cell(current_cell).data_type() == cell::type::shared_string)
                 {
                     ++string_count;
                 }
@@ -2145,10 +2145,9 @@ void xlsx_producer::write_worksheet(const relationship &rel)
     }
 
     std::unordered_map<std::string, std::string> hyperlink_references;
+    std::vector<cell_reference> cells_with_comments;
 
     write_start_element(xmlns, "sheetData");
-    const auto &shared_strings = ws.workbook().shared_strings();
-    std::vector<cell_reference> cells_with_comments;
 
     for (auto row : ws.rows())
     {
@@ -2206,122 +2205,124 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             }
         }
 
-        for (auto cell : row)
+        for (auto cell : row) // CT_Cell
         {
+            if (cell.garbage_collectible()) continue;
+
+            // record data about the cell needed later
+
             if (cell.has_comment())
             {
                 cells_with_comments.push_back(cell.reference());
             }
 
-            if (!cell.garbage_collectible())
+            if (cell.has_hyperlink())
             {
-                write_start_element(xmlns, "c");
-                write_attribute("r", cell.reference().to_string());
+                hyperlink_references[cell.reference().to_string()] = reverse_hyperlink_references[cell.hyperlink()];
+            }
 
-                if (cell.has_format())
+            write_start_element(xmlns, "c");
+
+            // begin cell attributes
+
+            write_attribute("r", cell.reference().to_string());
+
+            if (cell.has_format())
+            {
+                write_attribute("s", cell.format().d_->id);
+            }
+
+            switch (cell.data_type())
+            {
+            case cell::type::boolean:
+                write_attribute("t", "b");
+                break;
+
+            case cell::type::date:
+                write_attribute("t", "d");
+                break;
+
+            case cell::type::error:
+                write_attribute("t", "e");
+                break;
+
+            case cell::type::inline_string:
+                write_attribute("t", "inlineStr");
+                break;
+
+            case cell::type::number:
+                write_attribute("t", "n");
+                break;
+
+            case cell::type::shared_string:
+                write_attribute("t", "s");
+                break;
+
+            case cell::type::formula_string:
+                write_attribute("t", "str");
+                break;
+            }
+
+            //write_attribute("cm", "");
+            //write_attribute("vm", "");
+            //write_attribute("ph", "");
+
+            // begin child elements
+
+            if (cell.has_formula())
+            {
+                write_element(xmlns, "f", cell.formula());
+            }
+
+            switch (cell.data_type())
+            {
+            case cell::type::boolean:
+                write_element(xmlns, "v", write_bool(cell.value<bool>()));
+                break;
+
+            case cell::type::date:
+                write_element(xmlns, "v", cell.value<std::string>());
+                break;
+
+            case cell::type::error:
+                write_element(xmlns, "v", cell.value<std::string>());
+                break;
+
+            case cell::type::inline_string:
+                write_start_element(xmlns, "is");
+                // TODO: make a write_rich_text method and use that here
+                write_element(xmlns, "t", cell.value<std::string>());
+                write_end_element(xmlns, "is");
+                break;
+
+            case cell::type::number:
+                write_start_element(xmlns, "v");
+
+                if (is_integral(cell.value<long double>()))
                 {
-                    write_attribute("s", cell.format().d_->id);
-                }
-
-                if (cell.has_hyperlink())
-                {
-                    hyperlink_references[cell.reference().to_string()] = reverse_hyperlink_references[cell.hyperlink()];
-                }
-
-                if (cell.data_type() == cell::type::string)
-                {
-                    if (cell.has_formula())
-                    {
-                        write_attribute("t", "str");
-                        write_element(xmlns, "f", cell.formula());
-                        write_element(xmlns, "v", cell.to_string());
-                        write_end_element(xmlns, "c");
-
-                        continue;
-                    }
-
-                    int match_index = -1;
-
-                    for (std::size_t i = 0; i < shared_strings.size(); i++)
-                    {
-                        if (shared_strings[i] == cell.value<rich_text>())
-                        {
-                            match_index = static_cast<int>(i);
-                            break;
-                        }
-                    }
-
-                    if (match_index == -1)
-                    {
-                        if (cell.value<std::string>().empty())
-                        {
-                            write_attribute("t", "s");
-                        }
-                        else
-                        {
-                            write_attribute("t", "inlineStr");
-                            write_start_element(xmlns, "is");
-                            write_element(xmlns, "t", cell.value<std::string>());
-                            write_end_element(xmlns, "is");
-                        }
-                    }
-                    else
-                    {
-                        write_attribute("t", "s");
-                        write_element(xmlns, "v", match_index);
-                    }
+                    write_characters(static_cast<std::ptrdiff_t>(cell.value<long double>()));
                 }
                 else
                 {
-                    if (cell.data_type() != cell::type::null)
-                    {
-                        if (cell.data_type() == cell::type::boolean)
-                        {
-                            write_attribute("t", "b");
-                            write_element(xmlns, "v", write_bool(cell.value<bool>()));
-                        }
-                        else if (cell.data_type() == cell::type::numeric)
-                        {
-                            if (cell.has_formula())
-                            {
-                                write_element(xmlns, "f", cell.formula());
-                                write_element(xmlns, "v", cell.to_string());
-                                write_end_element(xmlns, "c");
-
-                                continue;
-                            }
-
-                            write_attribute("t", "n");
-                            write_start_element(xmlns, "v");
-
-                            if (is_integral(cell.value<long double>()))
-                            {
-                                write_characters(cell.value<long long int>());
-                            }
-                            else
-                            {
-                                std::stringstream ss;
-                                ss.precision(20);
-                                ss << cell.value<long double>();
-                                ss.str();
-                                write_characters(ss.str());
-                            }
-
-                            write_end_element(xmlns, "v");
-                        }
-                    }
-                    else if (cell.has_formula())
-                    {
-                        write_element(xmlns, "f", cell.formula());
-                        // todo (but probably not) could calculate the formula and set the value here
-                        write_end_element(xmlns, "c");
-
-                        continue;
-                    }
+                    std::stringstream ss;
+                    ss.precision(20);
+                    ss << cell.value<long double>();
+                    write_characters(ss.str());
                 }
 
-                write_end_element(xmlns, "c");
+                write_end_element(xmlns, "v");
+                break;
+
+            case cell::type::shared_string:
+                write_element(xmlns, "v", static_cast<std::size_t>(cell.d_->value_numeric_));
+                break;
+
+            case cell::type::formula_string:
+                write_element(xmlns, "v", cell.value<std::string>());
+                break;
             }
+
+            write_end_element(xmlns, "c");
         }
 
         write_end_element(xmlns, "row");

@@ -699,9 +699,9 @@ public:
     /// Append a shared string to the shared string collection in this workbook.
     /// This should not generally be called unless you know what you're doing.
     /// If allow_duplicates is false and the string is already in the collection,
-    /// it will not be added.
+    /// it will not be added. Returns the index of the added string.
     /// </summary>
-    void add_shared_string(const rich_text &shared, bool allow_duplicates = false);
+    std::size_t add_shared_string(const rich_text &shared, bool allow_duplicates = false);
 
     /// <summary>
     /// Returns a reference to the shared strings being used by cells
