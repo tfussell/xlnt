@@ -39,6 +39,11 @@ void manifest::clear()
 
 path manifest::canonicalize(const std::vector<xlnt::relationship> &rels) const
 {
+    if (rels.back().target().path().is_absolute())
+    {
+        return rels.back().target().path().relative_to(path("/"));
+    }
+
     xlnt::path relative;
 
     for (auto component : rels)
