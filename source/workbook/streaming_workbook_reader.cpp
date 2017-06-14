@@ -22,6 +22,7 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <detail/serialization/xlsx_consumer.hpp>
 #include <xlnt/workbook/streaming_workbook_reader.hpp>
 
 namespace xlnt {
@@ -31,7 +32,7 @@ streaming_workbook_reader::~streaming_workbook_reader()
   close();
 }
 
-streaming_workbook_reader::close()
+void streaming_workbook_reader::close()
 {
   if (consumer_)
   {
@@ -41,22 +42,22 @@ streaming_workbook_reader::close()
 
 void streaming_workbook_reader::on_cell(std::function<void(cell)> callback)
 {
-    consumer_->on_cell(callback);
+    //consumer_->on_cell(callback);
 }
 
 void streaming_workbook_reader::on_worksheet_start(std::function<void(std::string)> callback)
 {
-    consumer_->on_worksheet_start(callback);
+    //consumer_->on_worksheet_start(callback);
 }
 
 void streaming_workbook_reader::on_worksheet_end(std::function<void(worksheet)> callback)
 {
-    consumer_->on_worksheet_end(callback);
+    //consumer_->on_worksheet_end(callback);
 }
 
 void streaming_workbook_reader::open(const std::vector<std::uint8_t> &data)
 {
-
+ 
 }
 
 void streaming_workbook_reader::open(const std::string &filename)

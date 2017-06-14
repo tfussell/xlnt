@@ -23,12 +23,22 @@
 // @author: see AUTHORS file
 #pragma once
 
-#include <cstddef>
-#include <iterator>
+#include <functional>
+#include <iostream>
+#include <memory>
+#include <vector>
 
 #include <xlnt/xlnt_config.hpp>
 
 namespace xlnt {
+
+class cell;
+class path;
+class worksheet;
+
+namespace detail {
+class xlsx_consumer;
+}
 
 /// <summary>
 /// workbook is the container for all other parts of the document.
@@ -42,7 +52,7 @@ public:
     /// Closes currently open read stream. This will be called automatically
     /// by the destructor if it hasn't already been called manually.
     /// </summary>
-    close();
+    void close();
 
     /// <summary>
     /// Registers callback as the function to be called when a cell is read.
@@ -88,7 +98,7 @@ public:
     /// Interprets file with the given filename as an XLSX file and sets the
     /// content of this workbook to match that file.
     /// </summary>
-    void open(const xlnt::path &filename);
+    void open(const path &filename);
 
     /// <summary>
     /// Interprets data in stream as an XLSX file and sets the content of this
