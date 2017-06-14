@@ -529,10 +529,26 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
                     "showHorizontalScroll", "showSheetTabs", "showVerticalScroll"});
 
                 workbook_view view;
-                view.x_window = parser().attribute<std::size_t>("xWindow");
-                view.y_window = parser().attribute<std::size_t>("yWindow");
-                view.window_width = parser().attribute<std::size_t>("windowWidth");
-                view.window_height = parser().attribute<std::size_t>("windowHeight");
+
+                if (parser().attribute_present("xWindow"))
+                {
+                    view.x_window = parser().attribute<std::size_t>("xWindow");
+                }
+
+                if (parser().attribute_present("yWindow"))
+                {
+                    view.y_window = parser().attribute<std::size_t>("yWindow");
+                }
+
+                if (parser().attribute_present("windowWidth"))
+                {
+                    view.window_width = parser().attribute<std::size_t>("windowWidth");
+                }
+
+                if (parser().attribute_present("windowHeight"))
+                {
+                    view.window_height = parser().attribute<std::size_t>("windowHeight");
+                }
 
                 if (parser().attribute_present("tabRatio"))
                 {
