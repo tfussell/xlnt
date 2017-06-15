@@ -28,6 +28,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -36,9 +37,12 @@
 
 namespace xlnt {
 
+class cell;
 class color;
 class rich_text;
 class manifest;
+template<typename T>
+class optional;
 class path;
 class relationship;
 class variant;
@@ -57,6 +61,30 @@ class xlsx_consumer
 public:
 	xlsx_consumer(workbook &destination);
 
+    void open(std::istream &source);
+
+    /// <summary>
+    /// Reads the next cell in the current worksheet and optionally returns it if
+    /// the last cell in the sheet has not yet been read. An exception will be thrown
+    /// if this is not open as a streaming consumer.
+    /// </summary>
+    cell read_cell();
+
+    /// <summary>
+    /// Beings reading of the next worksheet in the workbook and optionally
+    /// returns its title if the last worksheet has not yet been read.  An
+    /// exception will be thrown if this is not open as a streaming consumer.
+    /// </summary>
+    std::string begin_worksheet();
+
+    /// <summary>
+    /// Ends reading of the current worksheet in the workbook and optionally
+    /// returns a worksheet object corresponding to the worksheet with the title
+    /// returned by begin_worksheet(). An exception will be thrown if this is 
+    /// not open as a streaming consumer.
+    /// </summary>
+    worksheet end_worksheet();
+
 	void read(std::istream &source);
 
 	void read(std::istream &source, const std::string &password);
@@ -66,7 +94,7 @@ private:
 	/// Read all the files needed from the XLSX archive and initialize all of
 	/// the data in the workbook to match.
 	/// </summary>
-	void populate_workbook();
+	void populate_workbook(bool streaming);
 
     /// <summary>
     ///
@@ -96,7 +124,7 @@ private:
 	/// Parse the main XML document about the workbook and then all child relationships
 	/// of the workbook (e.g. worksheets).
 	/// </summary>
-	void read_office_document(const std::string &content_type);
+	void read_office_document(const std::string &content_type, bool streaming);
 
 	// Workbook Relationship Target Parts
 
@@ -257,7 +285,7 @@ private:
     /// xlsx_consumer::parser() will return a reference to the parser that reads
     /// this part.
     /// </summary>
-    void read_part(const std::vector<relationship> &rel_chain);
+    void read_part(const std::vector<relationship> &rel_chain, bool streaming);
 
     /// <summary>
     /// libstudxml will throw an exception if all attributes on an element are not

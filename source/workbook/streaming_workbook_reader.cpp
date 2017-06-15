@@ -22,8 +22,15 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <fstream>
+
+#include <detail/serialization/vector_streambuf.hpp>
 #include <detail/serialization/xlsx_consumer.hpp>
+#include <xlnt/cell/cell.hpp>
+#include <xlnt/utils/optional.hpp>
 #include <xlnt/workbook/streaming_workbook_reader.hpp>
+#include <xlnt/workbook/workbook.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
 
 namespace xlnt {
 
@@ -40,46 +47,52 @@ void streaming_workbook_reader::close()
   }
 }
 
-void streaming_workbook_reader::on_cell(std::function<void(cell)> callback)
+cell streaming_workbook_reader::read_cell()
 {
-    //consumer_->on_cell(callback);
+    return consumer_->read_cell();
 }
 
-void streaming_workbook_reader::on_worksheet_start(std::function<void(std::string)> callback)
+std::string streaming_workbook_reader::begin_worksheet()
 {
-    //consumer_->on_worksheet_start(callback);
+    return consumer_->begin_worksheet();
 }
 
-void streaming_workbook_reader::on_worksheet_end(std::function<void(worksheet)> callback)
+worksheet streaming_workbook_reader::end_worksheet()
 {
-    //consumer_->on_worksheet_end(callback);
+    return consumer_->end_worksheet();
 }
 
 void streaming_workbook_reader::open(const std::vector<std::uint8_t> &data)
 {
- 
+    detail::vector_istreambuf buffer(data);
+    std::istream buffer_stream(&buffer);
+    open(buffer_stream);
 }
 
 void streaming_workbook_reader::open(const std::string &filename)
 {
-
+    std::ifstream file_stream(filename, std::ios::binary);
+    open(file_stream);
 }
 
 #ifdef _MSC_VER
 void streaming_workbook_reader::open(const std::wstring &filename)
 {
-
+    std::ifstream file_stream(filename, std::ios::binary);
+    open(file_stream);
 }
 #endif
 
 void streaming_workbook_reader::open(const xlnt::path &filename)
 {
-
+    open(filename.string());
 }
 
 void streaming_workbook_reader::open(std::istream &stream)
 {
-
+    workbook_.reset(new workbook());
+    consumer_.reset(new detail::xlsx_consumer(*workbook_));
+    consumer_->open(stream);
 }
 
 } // namespace xlnt

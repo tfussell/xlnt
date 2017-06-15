@@ -26,6 +26,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include <xlnt/xlnt_config.hpp>
@@ -33,7 +34,10 @@
 namespace xlnt {
 
 class cell;
+template<typename T>
+class optional;
 class path;
+class workbook;
 class worksheet;
 
 namespace detail {
@@ -55,24 +59,23 @@ public:
     void close();
 
     /// <summary>
-    /// Registers callback as the function to be called when a cell is read.
+    /// Reads the next cell in the current worksheet and optionally returns it if
+    /// the last cell in the sheet has not yet been read.
     /// </summary>
-    void on_cell(std::function<void(cell)> callback);
+    cell read_cell();
 
     /// <summary>
-    /// Registers callback as the function to be called when a worksheet is
-    /// opened for reading. The callback will be called with the title of the
-    /// worksheet.
+    /// Beings reading of the next worksheet in the workbook and optionally
+    /// returns its title if the last worksheet has not yet been read.
     /// </summary>
-    void on_worksheet_start(std::function<void(std::string)> callback);
+    std::string begin_worksheet();
 
     /// <summary>
-    /// Registers callback as the function to be called when a worksheet is
-    /// finished being read. The callback will be called with the worksheet
-    /// object (which will not contain any cells). Cells should be handled
-    /// via registering a callback with on_cell.
+    /// Ends reading of the current worksheet in the workbook and optionally
+    /// returns a worksheet object corresponding to the worksheet with the title
+    /// returned by begin_worksheet().
     /// </summary>
-    void on_worksheet_end(std::function<void(worksheet)> callback);
+    worksheet end_worksheet();
 
     /// <summary>
     /// Interprets byte vector data as an XLSX file and sets the content of this
@@ -107,7 +110,8 @@ public:
     void open(std::istream &stream);
 
 private:
-    std::unique_ptr<xlnt::detail::xlsx_consumer> consumer_;
+    std::unique_ptr<detail::xlsx_consumer> consumer_;
+    std::unique_ptr<workbook> workbook_;
 };
 
 } // namespace xlnt

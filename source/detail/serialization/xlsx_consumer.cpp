@@ -34,6 +34,7 @@
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/comment.hpp>
 #include <xlnt/packaging/manifest.hpp>
+#include <xlnt/utils/optional.hpp>
 #include <xlnt/utils/path.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
@@ -135,7 +136,28 @@ xlsx_consumer::xlsx_consumer(workbook &target)
 void xlsx_consumer::read(std::istream &source)
 {
     archive_.reset(new izstream(source));
-    populate_workbook();
+    populate_workbook(false);
+}
+
+void xlsx_consumer::open(std::istream &source)
+{
+    archive_.reset(new izstream(source));
+    populate_workbook(true);
+}
+
+cell xlsx_consumer::read_cell()
+{
+    return cell(nullptr);
+}
+
+std::string xlsx_consumer::begin_worksheet()
+{
+    return "";
+}
+
+worksheet xlsx_consumer::end_worksheet()
+{
+    return worksheet(nullptr);
 }
 
 xml::parser &xlsx_consumer::parser()
@@ -179,7 +201,7 @@ std::vector<relationship> xlsx_consumer::read_relationships(const path &part)
     return relationships;
 }
 
-void xlsx_consumer::read_part(const std::vector<relationship> &rel_chain)
+void xlsx_consumer::read_part(const std::vector<relationship> &rel_chain, bool streaming)
 {
     const auto &manifest = target_.manifest();
     const auto part_path = manifest.canonicalize(rel_chain);
@@ -203,7 +225,7 @@ void xlsx_consumer::read_part(const std::vector<relationship> &rel_chain)
         break;
 
     case relationship_type::office_document:
-        read_office_document(manifest.content_type(part_path));
+        read_office_document(manifest.content_type(part_path), streaming);
         break;
 
     case relationship_type::connections:
@@ -315,7 +337,7 @@ void xlsx_consumer::read_part(const std::vector<relationship> &rel_chain)
     parser_ = nullptr;
 }
 
-void xlsx_consumer::populate_workbook()
+void xlsx_consumer::populate_workbook(bool streaming)
 {
     target_.clear();
 
@@ -335,7 +357,7 @@ void xlsx_consumer::populate_workbook()
             continue;
         }
 
-        read_part({package_rel});
+        read_part({package_rel}, streaming);
     }
 
     for (const auto &relationship_source_string : archive_->files())
@@ -347,7 +369,7 @@ void xlsx_consumer::populate_workbook()
     }
 
     read_part({ manifest().relationship(root_path,
-        relationship_type::office_document) });
+        relationship_type::office_document) }, true);
 }
 
 // Package Parts
@@ -442,7 +464,7 @@ void xlsx_consumer::read_custom_properties()
     expect_end_element(qn("custom-properties", "Properties"));
 }
 
-void xlsx_consumer::read_office_document(const std::string &content_type) // CT_Workbook
+void xlsx_consumer::read_office_document(const std::string &content_type, bool streaming) // CT_Workbook
 {
     if (content_type != "application/vnd."
         "openxmlformats-officedocument.spreadsheetml.sheet.main+xml"
@@ -634,22 +656,33 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
 
     if (manifest().has_relationship(workbook_path, relationship_type::shared_string_table))
     {
-        read_part({workbook_rel, manifest().relationship(workbook_path, relationship_type::shared_string_table)});
+        read_part({workbook_rel, 
+            manifest().relationship(workbook_path,
+                relationship_type::shared_string_table)}, false);
     }
 
     if (manifest().has_relationship(workbook_path, relationship_type::stylesheet))
     {
-        read_part({workbook_rel, manifest().relationship(workbook_path, relationship_type::stylesheet)});
+        read_part({workbook_rel,
+            manifest().relationship(workbook_path,
+                relationship_type::stylesheet)}, false);
     }
 
     if (manifest().has_relationship(workbook_path, relationship_type::theme))
     {
-        read_part({workbook_rel, manifest().relationship(workbook_path, relationship_type::theme)});
+        read_part({workbook_rel,
+            manifest().relationship(workbook_path, 
+                relationship_type::theme)}, false);
+    }
+
+    if (streaming)
+    {
+        return;
     }
 
     for (auto worksheet_rel : manifest().relationships(workbook_path, relationship_type::worksheet))
     {
-        read_part({workbook_rel, worksheet_rel});
+        read_part({workbook_rel, worksheet_rel}, false);
     }
 }
 
@@ -1358,15 +1391,19 @@ void xlsx_consumer::read_stylesheet()
 
 void xlsx_consumer::read_theme()
 {
-    auto workbook_rel = manifest().relationship(path("/"), relationship_type::office_document);
-    auto theme_rel = manifest().relationship(workbook_rel.target().path(), relationship_type::theme);
+    auto workbook_rel = manifest().relationship(path("/"),
+        relationship_type::office_document);
+    auto theme_rel = manifest().relationship(workbook_rel.target().path(), 
+        relationship_type::theme);
     auto theme_path = manifest().canonicalize({workbook_rel, theme_rel});
 
     target_.theme(theme());
 
     if (manifest().has_relationship(theme_path, relationship_type::image))
     {
-        read_part({workbook_rel, theme_rel, manifest().relationship(theme_path, relationship_type::image)});
+        read_part({workbook_rel, theme_rel,
+            manifest().relationship(theme_path, 
+                relationship_type::image)}, false);
     }
 }
 
