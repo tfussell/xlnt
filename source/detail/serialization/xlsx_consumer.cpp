@@ -375,7 +375,7 @@ void xlsx_consumer::populate_workbook(bool streaming)
     }
 
     read_part({ manifest().relationship(root_path,
-        relationship_type::office_document) }, true);
+        relationship_type::office_document) }, streaming);
 }
 
 // Package Parts
