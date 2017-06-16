@@ -187,10 +187,16 @@ std::vector<relationship> xlsx_consumer::read_relationships(const path &part)
         const auto target_mode = parser.attribute_present("TargetMode")
             ? parser.attribute<xlnt::target_mode>("TargetMode")
             : xlnt::target_mode::internal;
+        auto target = xlnt::uri(parser.attribute("Target"));
+
+        if (target.path().is_absolute() && target_mode == target_mode::internal)
+        {
+            target = uri(target.path().relative_to(path(part.string()).resolve(path("/"))).string());
+        }
+
         relationships.emplace_back(parser.attribute("Id"),
             parser.attribute<xlnt::relationship_type>("Type"),
-            xlnt::uri(part.string()), xlnt::uri(parser.attribute("Target")),
-            target_mode);
+            xlnt::uri(part.string()), target, target_mode);
 
         expect_end_element(qn("relationships", "Relationship"));
     }
