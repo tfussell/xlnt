@@ -32,6 +32,45 @@
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
+
+namespace {
+
+//TODO: (important) this is duplicated from workbook.cpp, find a common place to keep it
+#ifdef _MSC_VER
+void open_stream(std::ifstream &stream, const std::wstring &path)
+{
+    stream.open(path, std::ios::binary);
+}
+
+void open_stream(std::ofstream &stream, const std::wstring &path)
+{
+    stream.open(path, std::ios::binary);
+}
+
+void open_stream(std::ifstream &stream, const std::string &path)
+{
+    open_stream(stream, xlnt::path(path).wstring());
+}
+
+void open_stream(std::ofstream &stream, const std::string &path)
+{
+    open_stream(stream, xlnt::path(path).wstring());
+}
+#else
+void open_stream(std::ifstream &stream, const std::string &path)
+{
+    stream.open(path, std::ios::binary);
+}
+
+void open_stream(std::ofstream &stream, const std::string &path)
+{
+    stream.open(path, std::ios::binary);
+}
+#endif
+
+} // namespace
+
+
 namespace xlnt {
 
 streaming_workbook_reader::~streaming_workbook_reader()
@@ -41,10 +80,15 @@ streaming_workbook_reader::~streaming_workbook_reader()
 
 void streaming_workbook_reader::close()
 {
-  if (consumer_)
-  {
-    consumer_.reset(nullptr);
-  }
+    if (consumer_)
+    {
+        consumer_.reset(nullptr);
+    }
+}
+
+bool streaming_workbook_reader::has_cell()
+{
+    return consumer_->has_cell();
 }
 
 cell streaming_workbook_reader::read_cell()
@@ -52,9 +96,14 @@ cell streaming_workbook_reader::read_cell()
     return consumer_->read_cell();
 }
 
+bool streaming_workbook_reader::has_worksheet()
+{
+    return consumer_->has_worksheet();
+}
+
 std::string streaming_workbook_reader::begin_worksheet()
 {
-    return consumer_->begin_worksheet();
+    return consumer_->read_worksheet_begin();
 }
 
 worksheet streaming_workbook_reader::end_worksheet()
@@ -71,21 +120,22 @@ void streaming_workbook_reader::open(const std::vector<std::uint8_t> &data)
 
 void streaming_workbook_reader::open(const std::string &filename)
 {
-    std::ifstream file_stream(filename, std::ios::binary);
-    open(file_stream);
+    std::ifstream file_stream;
+    open_stream(file_stream, filename);
 }
 
 #ifdef _MSC_VER
 void streaming_workbook_reader::open(const std::wstring &filename)
 {
-    std::ifstream file_stream(filename, std::ios::binary);
-    open(file_stream);
+    std::ifstream file_stream;
+    open_stream(file_stream, filename);
 }
 #endif
 
 void streaming_workbook_reader::open(const xlnt::path &filename)
 {
-    open(filename.string());
+    std::ifstream file_stream;
+    open_stream(file_stream, filename.string());
 }
 
 void streaming_workbook_reader::open(std::istream &stream)

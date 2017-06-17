@@ -45,6 +45,7 @@ template<typename T>
 class optional;
 class path;
 class relationship;
+class streaming_workbook_reader;
 class variant;
 class workbook;
 class worksheet;
@@ -52,6 +53,8 @@ class worksheet;
 namespace detail {
 
 class izstream;
+struct cell_impl;
+struct worksheet_impl;
 
 /// <summary>
 /// Handles writing a workbook into an XLSX file.
@@ -61,7 +64,17 @@ class xlsx_consumer
 public:
 	xlsx_consumer(workbook &destination);
 
+	void read(std::istream &source);
+
+	void read(std::istream &source, const std::string &password);
+
+private:
+    friend class streaming_workbook_reader;
+
+
     void open(std::istream &source);
+
+    bool has_cell();
 
     /// <summary>
     /// Reads the next cell in the current worksheet and optionally returns it if
@@ -71,13 +84,6 @@ public:
     cell read_cell();
 
     /// <summary>
-    /// Beings reading of the next worksheet in the workbook and optionally
-    /// returns its title if the last worksheet has not yet been read.  An
-    /// exception will be thrown if this is not open as a streaming consumer.
-    /// </summary>
-    std::string begin_worksheet();
-
-    /// <summary>
     /// Ends reading of the current worksheet in the workbook and optionally
     /// returns a worksheet object corresponding to the worksheet with the title
     /// returned by begin_worksheet(). An exception will be thrown if this is 
@@ -85,11 +91,8 @@ public:
     /// </summary>
     worksheet end_worksheet();
 
-	void read(std::istream &source);
+    bool has_worksheet();
 
-	void read(std::istream &source, const std::string &password);
-
-private:
 	/// <summary>
 	/// Read all the files needed from the XLSX archive and initialize all of
 	/// the data in the workbook to match.
@@ -207,6 +210,16 @@ private:
 	/// xl/sheets/*.xml
 	/// </summary>
 	void read_worksheet(const std::string &title);
+
+    /// <summary>
+    /// xl/sheets/*.xml
+    /// </summary>
+    std::string read_worksheet_begin();
+
+    /// <summary>
+    /// xl/sheets/*.xml
+    /// </summary>
+    void read_worksheet_end();
 
 	// Sheet Relationship Target Parts
 
@@ -398,6 +411,14 @@ private:
     std::vector<xml::qname> stack_;
 
     bool preserve_space_ = false;
+
+    std::vector<relationship> worksheet_queue_;
+
+    detail::cell_impl *stream_cell_;
+
+    detail::worksheet_impl *stream_worksheet_;
+
+    bool in_sheet_data_;
 };
 
 } // namespace detail

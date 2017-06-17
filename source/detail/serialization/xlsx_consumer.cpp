@@ -129,7 +129,8 @@ namespace detail {
 
 xlsx_consumer::xlsx_consumer(workbook &target)
     : target_(target),
-      parser_(nullptr)
+      parser_(nullptr),
+      stream_cell_(nullptr)
 {
 }
 
@@ -150,9 +151,252 @@ cell xlsx_consumer::read_cell()
     return cell(nullptr);
 }
 
-std::string xlsx_consumer::begin_worksheet()
+std::string xlsx_consumer::read_worksheet_begin()
 {
-    return "";
+    if (worksheet_queue_.empty())
+    {
+        return "";
+    }
+
+    const auto back = worksheet_queue_.back();
+    const auto rel_id = back.id();
+    worksheet_queue_.pop_back();
+
+    auto title = std::find_if(target_.d_->sheet_title_rel_id_map_.begin(),
+        target_.d_->sheet_title_rel_id_map_.end(),
+        [&](const std::pair<std::string, std::string> &p) {
+        return p.second == rel_id;
+    })->first;
+
+    auto id = sheet_title_id_map_[title];
+    auto index = sheet_title_index_map_[title];
+
+    auto insertion_iter = target_.d_->worksheets_.begin();
+    while (insertion_iter != target_.d_->worksheets_.end() && sheet_title_index_map_[insertion_iter->title_] < index)
+    {
+        ++insertion_iter;
+    }
+
+    target_.d_->worksheets_.emplace(insertion_iter, &target_, id, title);
+
+    auto ws = target_.sheet_by_id(id);
+
+    expect_start_element(qn("spreadsheetml", "worksheet"), xml::content::complex); // CT_Worksheet
+    skip_attributes({ qn("mc", "Ignorable") });
+    read_namespaces();
+
+    xlnt::range_reference full_range;
+    auto &manifest = target_.manifest();
+
+    const auto workbook_rel = manifest.relationship(path("/"), relationship_type::office_document);
+    const auto sheet_rel = manifest.relationship(workbook_rel.target().path(), rel_id);
+    path sheet_path(sheet_rel.source().path().parent().append(sheet_rel.target().path()));
+    auto hyperlinks = manifest.relationships(sheet_path, xlnt::relationship_type::hyperlink);
+
+    while (in_element(qn("spreadsheetml", "worksheet")))
+    {
+        auto current_worksheet_element = expect_start_element(xml::content::complex);
+
+        if (current_worksheet_element == qn("spreadsheetml", "sheetPr")) // CT_SheetPr 0-1
+        {
+            while (in_element(current_worksheet_element))
+            {
+                auto sheet_pr_child_element = expect_start_element(xml::content::simple);
+
+                if (sheet_pr_child_element == qn("spreadsheetml", "tabColor")) // CT_Color 0-1
+                {
+                    read_color();
+                }
+                else if (sheet_pr_child_element == qn("spreadsheetml", "outlinePr")) // CT_OutlinePr 0-1
+                {
+                    skip_attribute("applyStyles"); // optional, boolean, false
+                    skip_attribute("summaryBelow"); // optional, boolean, true
+                    skip_attribute("summaryRight"); // optional, boolean, true
+                    skip_attribute("showOutlineSymbols"); // optional, boolean, true
+                }
+                else if (sheet_pr_child_element == qn("spreadsheetml", "pageSetUpPr")) // CT_PageSetUpPr 0-1
+                {
+                    skip_attribute("autoPageBreaks"); // optional, boolean, true
+                    skip_attribute("fitToPage"); // optional, boolean, false
+                }
+                else
+                {
+                    unexpected_element(sheet_pr_child_element);
+                }
+
+                expect_end_element(sheet_pr_child_element);
+            }
+
+            skip_attribute("syncHorizontal"); // optional, boolean, false
+            skip_attribute("syncVertical"); // optional, boolean, false
+            skip_attribute("syncRef"); // optional, ST_Ref, false
+            skip_attribute("transitionEvaluation"); // optional, boolean, false
+            skip_attribute("transitionEntry"); // optional, boolean, false
+            skip_attribute("published"); // optional, boolean, true
+            skip_attribute("codeName"); // optional, string
+            skip_attribute("filterMode"); // optional, boolean, false
+            skip_attribute("enableFormatConditionsCalculation"); // optional, boolean, true
+        }
+        else if (current_worksheet_element == qn("spreadsheetml", "dimension")) // CT_SheetDimension 0-1
+        {
+            full_range = xlnt::range_reference(parser().attribute("ref"));
+        }
+        else if (current_worksheet_element == qn("spreadsheetml", "sheetViews")) // CT_SheetViews 0-1
+        {
+            while (in_element(current_worksheet_element))
+            {
+                expect_start_element(qn("spreadsheetml", "sheetView"), xml::content::complex); // CT_SheetView 1+
+
+                sheet_view new_view;
+                new_view.id(parser().attribute<std::size_t>("workbookViewId"));
+
+                if (parser().attribute_present("showGridLines")) // default="true"
+                {
+                    new_view.show_grid_lines(is_true(parser().attribute("showGridLines")));
+                }
+
+                if (parser().attribute_present("defaultGridColor")) // default="true"
+                {
+                    new_view.default_grid_color(is_true(parser().attribute("defaultGridColor")));
+                }
+
+                if (parser().attribute_present("view") && parser().attribute("view") != "normal")
+                {
+                    new_view.type(parser().attribute("view") == "pageBreakPreview" ? sheet_view_type::page_break_preview
+                        : sheet_view_type::page_layout);
+                }
+
+                skip_attributes({ "windowProtection", "showFormulas", "showRowColHeaders", "showZeros", "rightToLeft",
+                    "tabSelected", "showRuler", "showOutlineSymbols", "showWhiteSpace", "view", "topLeftCell",
+                    "colorId", "zoomScale", "zoomScaleNormal", "zoomScaleSheetLayoutView", "zoomScalePageLayoutView" });
+
+                while (in_element(qn("spreadsheetml", "sheetView")))
+                {
+                    auto sheet_view_child_element = expect_start_element(xml::content::simple);
+
+                    if (sheet_view_child_element == qn("spreadsheetml", "pane")) // CT_Pane 0-1
+                    {
+                        pane new_pane;
+
+                        if (parser().attribute_present("topLeftCell"))
+                        {
+                            new_pane.top_left_cell = cell_reference(parser().attribute("topLeftCell"));
+                        }
+
+                        if (parser().attribute_present("xSplit"))
+                        {
+                            new_pane.x_split = parser().attribute<column_t::index_t>("xSplit");
+                        }
+
+                        if (parser().attribute_present("ySplit"))
+                        {
+                            new_pane.y_split = parser().attribute<row_t>("ySplit");
+                        }
+
+                        if (parser().attribute_present("activePane"))
+                        {
+                            new_pane.active_pane = parser().attribute<pane_corner>("activePane");
+                        }
+
+                        if (parser().attribute_present("state"))
+                        {
+                            new_pane.state = parser().attribute<pane_state>("state");
+                        }
+
+                        new_view.pane(new_pane);
+                    }
+                    else if (sheet_view_child_element == qn("spreadsheetml", "selection")) // CT_Selection 0-4
+                    {
+                        skip_remaining_content(sheet_view_child_element);
+                    }
+                    else if (sheet_view_child_element == qn("spreadsheetml", "pivotSelection")) // CT_PivotSelection 0-4
+                    {
+                        skip_remaining_content(sheet_view_child_element);
+                    }
+                    else if (sheet_view_child_element == qn("spreadsheetml", "extLst")) // CT_ExtensionList 0-1
+                    {
+                        skip_remaining_content(sheet_view_child_element);
+                    }
+                    else
+                    {
+                        unexpected_element(sheet_view_child_element);
+                    }
+
+                    expect_end_element(sheet_view_child_element);
+                }
+
+                expect_end_element(qn("spreadsheetml", "sheetView"));
+
+                ws.d_->views_.push_back(new_view);
+            }
+        }
+        else if (current_worksheet_element == qn("spreadsheetml", "sheetFormatPr")) // CT_SheetFormatPr 0-1
+        {
+            skip_remaining_content(current_worksheet_element);
+        }
+        else if (current_worksheet_element == qn("spreadsheetml", "cols")) // CT_Cols 0+
+        {
+            while (in_element(qn("spreadsheetml", "cols")))
+            {
+                expect_start_element(qn("spreadsheetml", "col"), xml::content::simple);
+
+                skip_attributes({ "bestFit", "collapsed", "outlineLevel" });
+
+                auto min = static_cast<column_t::index_t>(std::stoull(parser().attribute("min")));
+                auto max = static_cast<column_t::index_t>(std::stoull(parser().attribute("max")));
+
+                optional<double> width;
+
+                if (parser().attribute_present("width"))
+                {
+                    width = parser().attribute<double>("width");
+                }
+
+                optional<std::size_t> column_style;
+
+                if (parser().attribute_present("style"))
+                {
+                    column_style = parser().attribute<std::size_t>("style");
+                }
+
+                auto custom =
+                    parser().attribute_present("customWidth") ? is_true(parser().attribute("customWidth")) : false;
+                auto hidden = parser().attribute_present("hidden") ? is_true(parser().attribute("hidden")) : false;
+
+                expect_end_element(qn("spreadsheetml", "col"));
+
+                for (auto column = min; column <= max; column++)
+                {
+                    column_properties props;
+
+                    if (width.is_set())
+                    {
+                        props.width = width.get();
+                    }
+
+                    if (column_style.is_set())
+                    {
+                        props.style = column_style.get();
+                    }
+
+                    props.hidden = hidden;
+                    props.custom_width = custom;
+                    ws.add_column_properties(column, props);
+                }
+            }
+        }
+        else if (current_worksheet_element == qn("spreadsheetml", "sheetData")) // CT_SheetData 1
+        {
+            in_sheet_data_ = true;
+        }
+    }
+
+    if (!in_sheet_data_)
+    {
+        read_worksheet_end();
+    }
+
+    return title;
 }
 
 worksheet xlsx_consumer::end_worksheet()
@@ -163,6 +407,16 @@ worksheet xlsx_consumer::end_worksheet()
 xml::parser &xlsx_consumer::parser()
 {
     return *parser_;
+}
+
+bool xlsx_consumer::has_cell()
+{
+    return stream_cell_ != nullptr;
+}
+
+bool xlsx_consumer::has_worksheet()
+{
+    return !worksheet_queue_.empty();
 }
 
 std::vector<relationship> xlsx_consumer::read_relationships(const path &part)
@@ -1434,238 +1688,17 @@ void xlsx_consumer::read_volatile_dependencies()
 }
 
 // CT_Worksheet
-void xlsx_consumer::read_worksheet(const std::string &rel_id)
+void xlsx_consumer::read_worksheet_end()
 {
-/*
-    static const auto &xmlns = constants::namespace_("spreadsheetml");
-    static const auto &xmlns_mc = constants::namespace_("mc");
-    static const auto &xmlns_x14ac = constants::namespace_("x14ac");
-    static const auto &xmlns_r = constants::namespace_("r");
-*/
-    auto title = std::find_if(target_.d_->sheet_title_rel_id_map_.begin(),
-        target_.d_->sheet_title_rel_id_map_.end(),
-        [&](const std::pair<std::string, std::string> &p) {
-            return p.second == rel_id;
-        })->first;
-
-    auto id = sheet_title_id_map_[title];
-    auto index = sheet_title_index_map_[title];
-
-    auto insertion_iter = target_.d_->worksheets_.begin();
-    while (insertion_iter != target_.d_->worksheets_.end() && sheet_title_index_map_[insertion_iter->title_] < index)
-    {
-        ++insertion_iter;
-    }
-
-    target_.d_->worksheets_.emplace(insertion_iter, &target_, id, title);
-
-    auto ws = target_.sheet_by_id(id);
-
-    expect_start_element(qn("spreadsheetml", "worksheet"), xml::content::complex); // CT_Worksheet
-    skip_attributes({qn("mc", "Ignorable")});
-    read_namespaces();
-
-    xlnt::range_reference full_range;
-    auto &manifest = target_.manifest();
-
-    const auto workbook_rel = manifest.relationship(path("/"), relationship_type::office_document);
-    const auto sheet_rel = manifest.relationship(workbook_rel.target().path(), rel_id);
-    path sheet_path(sheet_rel.source().path().parent().append(sheet_rel.target().path()));
-    auto hyperlinks = manifest.relationships(sheet_path, xlnt::relationship_type::hyperlink);
+    in_sheet_data_ = false;
+    auto ws = worksheet(stream_worksheet_);
+    std::vector<relationship> hyperlinks;
 
     while (in_element(qn("spreadsheetml", "worksheet")))
     {
         auto current_worksheet_element = expect_start_element(xml::content::complex);
 
-        if (current_worksheet_element == qn("spreadsheetml", "sheetPr")) // CT_SheetPr 0-1
-        {
-            while (in_element(current_worksheet_element))
-            {
-                auto sheet_pr_child_element = expect_start_element(xml::content::simple);
-
-                if (sheet_pr_child_element == qn("spreadsheetml", "tabColor")) // CT_Color 0-1
-                {
-                    read_color();
-                }
-                else if (sheet_pr_child_element == qn("spreadsheetml", "outlinePr")) // CT_OutlinePr 0-1
-                {
-                    skip_attribute("applyStyles"); // optional, boolean, false
-                    skip_attribute("summaryBelow"); // optional, boolean, true
-                    skip_attribute("summaryRight"); // optional, boolean, true
-                    skip_attribute("showOutlineSymbols"); // optional, boolean, true
-                }
-                else if (sheet_pr_child_element == qn("spreadsheetml", "pageSetUpPr")) // CT_PageSetUpPr 0-1
-                {
-                    skip_attribute("autoPageBreaks"); // optional, boolean, true
-                    skip_attribute("fitToPage"); // optional, boolean, false
-                }
-                else
-                {
-                    unexpected_element(sheet_pr_child_element);
-                }
-
-                expect_end_element(sheet_pr_child_element);
-            }
-
-            skip_attribute("syncHorizontal"); // optional, boolean, false
-            skip_attribute("syncVertical"); // optional, boolean, false
-            skip_attribute("syncRef"); // optional, ST_Ref, false
-            skip_attribute("transitionEvaluation"); // optional, boolean, false
-            skip_attribute("transitionEntry"); // optional, boolean, false
-            skip_attribute("published"); // optional, boolean, true
-            skip_attribute("codeName"); // optional, string
-            skip_attribute("filterMode"); // optional, boolean, false
-            skip_attribute("enableFormatConditionsCalculation"); // optional, boolean, true
-        }
-        else if (current_worksheet_element == qn("spreadsheetml", "dimension")) // CT_SheetDimension 0-1
-        {
-            full_range = xlnt::range_reference(parser().attribute("ref"));
-        }
-        else if (current_worksheet_element == qn("spreadsheetml", "sheetViews")) // CT_SheetViews 0-1
-        {
-            while (in_element(current_worksheet_element))
-            {
-                expect_start_element(qn("spreadsheetml", "sheetView"), xml::content::complex); // CT_SheetView 1+
-
-                sheet_view new_view;
-                new_view.id(parser().attribute<std::size_t>("workbookViewId"));
-
-                if (parser().attribute_present("showGridLines")) // default="true"
-                {
-                    new_view.show_grid_lines(is_true(parser().attribute("showGridLines")));
-                }
-
-                if (parser().attribute_present("defaultGridColor")) // default="true"
-                {
-                    new_view.default_grid_color(is_true(parser().attribute("defaultGridColor")));
-                }
-
-                if (parser().attribute_present("view") && parser().attribute("view") != "normal")
-                {
-                    new_view.type(parser().attribute("view") == "pageBreakPreview" ? sheet_view_type::page_break_preview
-                                                                                   : sheet_view_type::page_layout);
-                }
-
-                skip_attributes({"windowProtection", "showFormulas", "showRowColHeaders", "showZeros", "rightToLeft",
-                    "tabSelected", "showRuler", "showOutlineSymbols", "showWhiteSpace", "view", "topLeftCell",
-                    "colorId", "zoomScale", "zoomScaleNormal", "zoomScaleSheetLayoutView", "zoomScalePageLayoutView"});
-
-                while (in_element(qn("spreadsheetml", "sheetView")))
-                {
-                    auto sheet_view_child_element = expect_start_element(xml::content::simple);
-
-                    if (sheet_view_child_element == qn("spreadsheetml", "pane")) // CT_Pane 0-1
-                    {
-                        pane new_pane;
-
-                        if (parser().attribute_present("topLeftCell"))
-                        {
-                            new_pane.top_left_cell = cell_reference(parser().attribute("topLeftCell"));
-                        }
-
-                        if (parser().attribute_present("xSplit"))
-                        {
-                            new_pane.x_split = parser().attribute<column_t::index_t>("xSplit");
-                        }
-
-                        if (parser().attribute_present("ySplit"))
-                        {
-                            new_pane.y_split = parser().attribute<row_t>("ySplit");
-                        }
-
-                        if (parser().attribute_present("activePane"))
-                        {
-                            new_pane.active_pane = parser().attribute<pane_corner>("activePane");
-                        }
-
-                        if (parser().attribute_present("state"))
-                        {
-                            new_pane.state = parser().attribute<pane_state>("state");
-                        }
-
-                        new_view.pane(new_pane);
-                    }
-                    else if (sheet_view_child_element == qn("spreadsheetml", "selection")) // CT_Selection 0-4
-                    {
-                        skip_remaining_content(sheet_view_child_element);
-                    }
-                    else if (sheet_view_child_element == qn("spreadsheetml", "pivotSelection")) // CT_PivotSelection 0-4
-                    {
-                        skip_remaining_content(sheet_view_child_element);
-                    }
-                    else if (sheet_view_child_element == qn("spreadsheetml", "extLst")) // CT_ExtensionList 0-1
-                    {
-                        skip_remaining_content(sheet_view_child_element);
-                    }
-                    else
-                    {
-                        unexpected_element(sheet_view_child_element);
-                    }
-
-                    expect_end_element(sheet_view_child_element);
-                }
-
-                expect_end_element(qn("spreadsheetml", "sheetView"));
-
-                ws.d_->views_.push_back(new_view);
-            }
-        }
-        else if (current_worksheet_element == qn("spreadsheetml", "sheetFormatPr")) // CT_SheetFormatPr 0-1
-        {
-            skip_remaining_content(current_worksheet_element);
-        }
-        else if (current_worksheet_element == qn("spreadsheetml", "cols")) // CT_Cols 0+
-        {
-            while (in_element(qn("spreadsheetml", "cols")))
-            {
-                expect_start_element(qn("spreadsheetml", "col"), xml::content::simple);
-
-                skip_attributes({"bestFit", "collapsed", "outlineLevel"});
-
-                auto min = static_cast<column_t::index_t>(std::stoull(parser().attribute("min")));
-                auto max = static_cast<column_t::index_t>(std::stoull(parser().attribute("max")));
-
-                optional<double> width;
-
-                if (parser().attribute_present("width"))
-                {
-                    width = parser().attribute<double>("width");
-                }
-
-                optional<std::size_t> column_style;
-
-                if (parser().attribute_present("style"))
-                {
-                    column_style = parser().attribute<std::size_t>("style");
-                }
-
-                auto custom =
-                    parser().attribute_present("customWidth") ? is_true(parser().attribute("customWidth")) : false;
-                auto hidden = parser().attribute_present("hidden") ? is_true(parser().attribute("hidden")) : false;
-
-                expect_end_element(qn("spreadsheetml", "col"));
-
-                for (auto column = min; column <= max; column++)
-                {
-                    column_properties props;
-
-                    if (width.is_set())
-                    {
-                        props.width = width.get();
-                    }
-
-                    if (column_style.is_set())
-                    {
-                        props.style = column_style.get();
-                    }
-
-                    props.hidden = hidden;
-                    props.custom_width = custom;
-                    ws.add_column_properties(column, props);
-                }
-            }
-        }
-        else if (current_worksheet_element == qn("spreadsheetml", "sheetData")) // CT_SheetData 1
+        if (current_worksheet_element == qn("spreadsheetml", "sheetData")) // CT_SheetData 1
         {
             while (in_element(qn("spreadsheetml", "sheetData")))
             {
@@ -2089,10 +2122,15 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
 
     expect_end_element(qn("spreadsheetml", "worksheet"));
 
+    auto &manifest = target_.manifest();
+
+    xlnt::path sheet_path;
+    relationship workbook_rel, sheet_rel;
+
     if (manifest.has_relationship(sheet_path, xlnt::relationship_type::comments))
     {
-        auto comments_part = manifest.canonicalize(
-            {workbook_rel, sheet_rel, manifest.relationship(sheet_path, xlnt::relationship_type::comments)});
+        auto comments_part = manifest.canonicalize({workbook_rel, sheet_rel,
+            manifest.relationship(sheet_path, xlnt::relationship_type::comments)});
 
         auto receive = xml::parser::receive_default;
         auto comments_part_streambuf = archive_->open(comments_part);
@@ -2104,8 +2142,8 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
 
         if (manifest.has_relationship(sheet_path, xlnt::relationship_type::vml_drawing))
         {
-            auto vml_drawings_part = manifest.canonicalize(
-                {workbook_rel, sheet_rel, manifest.relationship(sheet_path, xlnt::relationship_type::vml_drawing)});
+            auto vml_drawings_part = manifest.canonicalize({workbook_rel, sheet_rel,
+                manifest.relationship(sheet_path, xlnt::relationship_type::vml_drawing)});
 
             auto vml_drawings_part_streambuf = archive_->open(comments_part);
             std::istream vml_drawings_part_stream(comments_part_streambuf.get());

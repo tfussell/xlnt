@@ -58,11 +58,15 @@ public:
     /// </summary>
     void close();
 
+    bool has_cell();
+
     /// <summary>
     /// Reads the next cell in the current worksheet and optionally returns it if
     /// the last cell in the sheet has not yet been read.
     /// </summary>
     cell read_cell();
+
+    bool has_worksheet();
 
     /// <summary>
     /// Beings reading of the next worksheet in the workbook and optionally
