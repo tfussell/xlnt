@@ -151,6 +151,12 @@ cell xlsx_consumer::read_cell()
     return cell(nullptr);
 }
 
+void xlsx_consumer::read_worksheet(const std::string &rel)
+{
+    read_worksheet_begin();
+    read_worksheet_end();
+}
+
 std::string xlsx_consumer::read_worksheet_begin()
 {
     if (worksheet_queue_.empty())

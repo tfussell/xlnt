@@ -50,6 +50,7 @@ class xlsx_consumer;
 class XLNT_API streaming_workbook_reader
 {
 public:
+    streaming_workbook_reader();
     ~streaming_workbook_reader();
 
     /// <summary>

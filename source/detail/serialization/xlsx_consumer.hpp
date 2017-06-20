@@ -71,7 +71,6 @@ public:
 private:
     friend class streaming_workbook_reader;
 
-
     void open(std::istream &source);
 
     bool has_cell();

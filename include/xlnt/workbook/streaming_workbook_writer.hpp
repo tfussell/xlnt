@@ -88,6 +88,6 @@ public:
     /// Serializes the workbook into an XLSX file and saves the data into stream.
     /// </summary>
     void open(std::ostream &stream) const;
-}
+};
 
 } // namespace xlnt

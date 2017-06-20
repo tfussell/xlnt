@@ -73,9 +73,14 @@ void open_stream(std::ofstream &stream, const std::string &path)
 
 namespace xlnt {
 
+streaming_workbook_reader::streaming_workbook_reader()
+{
+
+}
+
 streaming_workbook_reader::~streaming_workbook_reader()
 {
-  close();
+    close();
 }
 
 void streaming_workbook_reader::close()
