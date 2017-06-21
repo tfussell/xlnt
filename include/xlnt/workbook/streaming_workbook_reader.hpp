@@ -115,6 +115,7 @@ public:
     void open(std::istream &stream);
 
 private:
+    std::vector<std::string> worksheet_queue_;
     std::unique_ptr<detail::xlsx_consumer> consumer_;
     std::unique_ptr<workbook> workbook_;
 };

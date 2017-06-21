@@ -82,16 +82,6 @@ private:
     /// </summary>
     cell read_cell();
 
-    /// <summary>
-    /// Ends reading of the current worksheet in the workbook and optionally
-    /// returns a worksheet object corresponding to the worksheet with the title
-    /// returned by begin_worksheet(). An exception will be thrown if this is 
-    /// not open as a streaming consumer.
-    /// </summary>
-    worksheet end_worksheet();
-
-    bool has_worksheet();
-
 	/// <summary>
 	/// Read all the files needed from the XLSX archive and initialize all of
 	/// the data in the workbook to match.
@@ -198,27 +188,27 @@ private:
 	/// <summary>
 	/// xl/sheets/*.xml
 	/// </summary>
-	void read_chartsheet(const std::string &title);
+	void read_chartsheet(const std::string &rel_id);
 
 	/// <summary>
 	/// xl/sheets/*.xml
 	/// </summary>
-	void read_dialogsheet(const std::string &title);
+	void read_dialogsheet(const std::string &rel_id);
 
 	/// <summary>
 	/// xl/sheets/*.xml
 	/// </summary>
-	void read_worksheet(const std::string &title);
+	void read_worksheet(const std::string &rel_id);
 
     /// <summary>
     /// xl/sheets/*.xml
     /// </summary>
-    std::string read_worksheet_begin();
+    std::string read_worksheet_begin(const std::string &rel_id);
 
     /// <summary>
     /// xl/sheets/*.xml
     /// </summary>
-    void read_worksheet_end();
+    worksheet read_worksheet_end(const std::string &rel_id);
 
 	// Sheet Relationship Target Parts
 
@@ -411,13 +401,9 @@ private:
 
     bool preserve_space_ = false;
 
-    std::vector<relationship> worksheet_queue_;
-
     detail::cell_impl *stream_cell_;
 
     detail::worksheet_impl *stream_worksheet_;
-
-    bool in_sheet_data_;
 };
 
 } // namespace detail

@@ -103,17 +103,20 @@ cell streaming_workbook_reader::read_cell()
 
 bool streaming_workbook_reader::has_worksheet()
 {
-    return consumer_->has_worksheet();
+    return !worksheet_queue_.empty();
 }
 
 std::string streaming_workbook_reader::begin_worksheet()
 {
-    return consumer_->read_worksheet_begin();
+    auto next_worksheet_rel = worksheet_queue_.back();
+    return consumer_->read_worksheet_begin(next_worksheet_rel);
 }
 
 worksheet streaming_workbook_reader::end_worksheet()
 {
-    return consumer_->end_worksheet();
+    auto next_worksheet_rel = worksheet_queue_.back();
+    worksheet_queue_.pop_back();
+    return consumer_->read_worksheet_end(next_worksheet_rel);
 }
 
 void streaming_workbook_reader::open(const std::vector<std::uint8_t> &data)
