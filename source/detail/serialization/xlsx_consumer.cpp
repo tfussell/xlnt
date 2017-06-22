@@ -154,6 +154,7 @@ cell xlsx_consumer::read_cell()
 void xlsx_consumer::read_worksheet(const std::string &rel_id)
 {
     read_worksheet_begin(rel_id);
+    read_worksheet_sheetdata();
     read_worksheet_end(rel_id);
 }
 
@@ -229,7 +230,7 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
         }
         else if (current_worksheet_element == qn("spreadsheetml", "dimension")) // CT_SheetDimension 0-1
         {
-            // ignore
+            skip_remaining_content(current_worksheet_element);
         }
         else if (current_worksheet_element == qn("spreadsheetml", "sheetViews")) // CT_SheetViews 0-1
         {
@@ -380,9 +381,150 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
         {
             return title;
         }
+
+        expect_end_element(current_worksheet_element);
     }
 
     return title;
+}
+
+void xlsx_consumer::read_worksheet_sheetdata()
+{
+    auto ws = worksheet(stream_worksheet_);
+
+    if (stack_.back() != qn("spreadsheetml", "sheetData"))
+    {
+        return;
+    }
+
+    while (in_element(qn("spreadsheetml", "sheetData")))
+    {
+        expect_start_element(qn("spreadsheetml", "row"), xml::content::complex); // CT_Row
+        auto row_index = parser().attribute<row_t>("r");
+
+        if (parser().attribute_present("ht"))
+        {
+            ws.row_properties(row_index).height = parser().attribute<double>("ht");
+        }
+
+        if (parser().attribute_present("customHeight"))
+        {
+            ws.row_properties(row_index).custom_height = is_true(parser().attribute("customHeight"));
+        }
+
+        if (parser().attribute_present("hidden") && is_true(parser().attribute("hidden")))
+        {
+            ws.row_properties(row_index).hidden = true;
+        }
+
+        skip_attributes({ qn("x14ac", "dyDescent") });
+        skip_attributes({ "customFormat", "s", "customFont",
+            "outlineLevel", "collapsed", "thickTop", "thickBot",
+            "ph", "spans" });
+
+        while (in_element(qn("spreadsheetml", "row")))
+        {
+            expect_start_element(qn("spreadsheetml", "c"), xml::content::complex);
+            auto cell = ws.cell(cell_reference(parser().attribute("r")));
+
+            auto has_type = parser().attribute_present("t");
+            auto type = has_type ? parser().attribute("t") : "n";
+
+            auto has_format = parser().attribute_present("s");
+            auto format_id = static_cast<std::size_t>(has_format ? std::stoull(parser().attribute("s")) : 0LL);
+
+            auto has_value = false;
+            auto value_string = std::string();
+
+            auto has_formula = false;
+            auto has_shared_formula = false;
+            auto formula_value_string = std::string();
+
+            while (in_element(qn("spreadsheetml", "c")))
+            {
+                auto current_element = expect_start_element(xml::content::mixed);
+
+                if (current_element == qn("spreadsheetml", "v")) // s:ST_Xstring
+                {
+                    has_value = true;
+                    value_string = read_text();
+                }
+                else if (current_element == qn("spreadsheetml", "f")) // CT_CellFormula
+                {
+                    has_formula = true;
+
+                    if (parser().attribute_present("t"))
+                    {
+                        has_shared_formula = parser().attribute("t") == "shared";
+                    }
+
+                    skip_attributes(
+                    { "aca", "ref", "dt2D", "dtr", "del1", "del2", "r1", "r2", "ca", "si", "bx" });
+
+                    formula_value_string = read_text();
+                }
+                else if (current_element == qn("spreadsheetml", "is")) // CT_Rst
+                {
+                    expect_start_element(qn("spreadsheetml", "t"), xml::content::simple);
+                    value_string = read_text();
+                    expect_end_element(qn("spreadsheetml", "t"));
+                }
+                else
+                {
+                    unexpected_element(current_element);
+                }
+
+                expect_end_element(current_element);
+            }
+
+            expect_end_element(qn("spreadsheetml", "c"));
+
+            if (has_formula && !has_shared_formula)
+            {
+                cell.formula(formula_value_string);
+            }
+
+            if (has_value)
+            {
+                if (type == "str")
+                {
+                    cell.d_->value_text_ = value_string;
+                    cell.data_type(cell::type::formula_string);
+                }
+                else if (type == "inlineStr")
+                {
+                    cell.d_->value_text_ = value_string;
+                    cell.data_type(cell::type::inline_string);
+                }
+                else if (type == "s")
+                {
+                    cell.d_->value_numeric_ = std::stold(value_string);
+                    cell.data_type(cell::type::shared_string);
+                }
+                else if (type == "b") // boolean
+                {
+                    cell.value(is_true(value_string));
+                }
+                else if (type == "n") // numeric
+                {
+                    cell.value(std::stold(value_string));
+                }
+                else if (!value_string.empty() && value_string[0] == '#')
+                {
+                    cell.error(value_string);
+                }
+            }
+
+            if (has_format)
+            {
+                cell.format(target_.format(format_id));
+            }
+        }
+
+        expect_end_element(qn("spreadsheetml", "row"));
+    }
+
+    expect_end_element(qn("spreadsheetml", "sheetData"));
 }
 
 worksheet xlsx_consumer::read_worksheet_end(const std::string &rel_id)
@@ -400,136 +542,7 @@ worksheet xlsx_consumer::read_worksheet_end(const std::string &rel_id)
     {
         auto current_worksheet_element = expect_start_element(xml::content::complex);
 
-        if (current_worksheet_element == qn("spreadsheetml", "sheetData")) // CT_SheetData 1
-        {
-            while (in_element(qn("spreadsheetml", "sheetData")))
-            {
-                expect_start_element(qn("spreadsheetml", "row"), xml::content::complex); // CT_Row
-                auto row_index = parser().attribute<row_t>("r");
-
-                if (parser().attribute_present("ht"))
-                {
-                    ws.row_properties(row_index).height = parser().attribute<double>("ht");
-                }
-
-                if (parser().attribute_present("customHeight"))
-                {
-                    ws.row_properties(row_index).custom_height = is_true(parser().attribute("customHeight"));
-                }
-
-                if (parser().attribute_present("hidden") && is_true(parser().attribute("hidden")))
-                {
-                    ws.row_properties(row_index).hidden = true;
-                }
-
-                skip_attributes({ qn("x14ac", "dyDescent") });
-                skip_attributes({ "customFormat", "s", "customFont",
-                    "outlineLevel", "collapsed", "thickTop", "thickBot",
-                    "ph", "spans" });
-
-                while (in_element(qn("spreadsheetml", "row")))
-                {
-                    expect_start_element(qn("spreadsheetml", "c"), xml::content::complex);
-                    auto cell = ws.cell(cell_reference(parser().attribute("r")));
-
-                    auto has_type = parser().attribute_present("t");
-                    auto type = has_type ? parser().attribute("t") : "n";
-
-                    auto has_format = parser().attribute_present("s");
-                    auto format_id = static_cast<std::size_t>(has_format ? std::stoull(parser().attribute("s")) : 0LL);
-
-                    auto has_value = false;
-                    auto value_string = std::string();
-
-                    auto has_formula = false;
-                    auto has_shared_formula = false;
-                    auto formula_value_string = std::string();
-
-                    while (in_element(qn("spreadsheetml", "c")))
-                    {
-                        auto current_element = expect_start_element(xml::content::mixed);
-
-                        if (current_element == qn("spreadsheetml", "v")) // s:ST_Xstring
-                        {
-                            has_value = true;
-                            value_string = read_text();
-                        }
-                        else if (current_element == qn("spreadsheetml", "f")) // CT_CellFormula
-                        {
-                            has_formula = true;
-
-                            if (parser().attribute_present("t"))
-                            {
-                                has_shared_formula = parser().attribute("t") == "shared";
-                            }
-
-                            skip_attributes(
-                            { "aca", "ref", "dt2D", "dtr", "del1", "del2", "r1", "r2", "ca", "si", "bx" });
-
-                            formula_value_string = read_text();
-                        }
-                        else if (current_element == qn("spreadsheetml", "is")) // CT_Rst
-                        {
-                            expect_start_element(qn("spreadsheetml", "t"), xml::content::simple);
-                            value_string = read_text();
-                            expect_end_element(qn("spreadsheetml", "t"));
-                        }
-                        else
-                        {
-                            unexpected_element(current_element);
-                        }
-
-                        expect_end_element(current_element);
-                    }
-
-                    expect_end_element(qn("spreadsheetml", "c"));
-
-                    if (has_formula && !has_shared_formula)
-                    {
-                        cell.formula(formula_value_string);
-                    }
-
-                    if (has_value)
-                    {
-                        if (type == "str")
-                        {
-                            cell.d_->value_text_ = value_string;
-                            cell.data_type(cell::type::formula_string);
-                        }
-                        else if (type == "inlineStr")
-                        {
-                            cell.d_->value_text_ = value_string;
-                            cell.data_type(cell::type::inline_string);
-                        }
-                        else if (type == "s")
-                        {
-                            cell.d_->value_numeric_ = std::stold(value_string);
-                            cell.data_type(cell::type::shared_string);
-                        }
-                        else if (type == "b") // boolean
-                        {
-                            cell.value(is_true(value_string));
-                        }
-                        else if (type == "n") // numeric
-                        {
-                            cell.value(std::stold(value_string));
-                        }
-                        else if (!value_string.empty() && value_string[0] == '#')
-                        {
-                            cell.error(value_string);
-                        }
-                    }
-
-                    if (has_format)
-                    {
-                        cell.format(target_.format(format_id));
-                    }
-                }
-
-                expect_end_element(qn("spreadsheetml", "row"));
-            }
-        }
-        else if (current_worksheet_element == qn("spreadsheetml", "sheetCalcPr")) // CT_SheetCalcPr 0-1
+        if (current_worksheet_element == qn("spreadsheetml", "sheetCalcPr")) // CT_SheetCalcPr 0-1
         {
             skip_remaining_content(current_worksheet_element);
         }

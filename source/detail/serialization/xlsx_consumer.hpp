@@ -208,6 +208,11 @@ private:
     /// <summary>
     /// xl/sheets/*.xml
     /// </summary>
+    void read_worksheet_sheetdata();
+
+    /// <summary>
+    /// xl/sheets/*.xml
+    /// </summary>
     worksheet read_worksheet_end(const std::string &rel_id);
 
 	// Sheet Relationship Target Parts
