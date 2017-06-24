@@ -1,5 +1,4 @@
-// Copyright (c) 2014-2017 Thomas Fussell
-// Copyright (c) 2010-2015 openpyxl
+// Copyright (c) 2017 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +26,7 @@
 #include <detail/serialization/vector_streambuf.hpp>
 #include <detail/serialization/xlsx_consumer.hpp>
 #include <xlnt/cell/cell.hpp>
+#include <xlnt/packaging/manifest.hpp>
 #include <xlnt/utils/optional.hpp>
 #include <xlnt/workbook/streaming_workbook_reader.hpp>
 #include <xlnt/workbook/workbook.hpp>
@@ -88,6 +88,7 @@ void streaming_workbook_reader::close()
     if (consumer_)
     {
         consumer_.reset(nullptr);
+        stream_buffer_.reset(nullptr);
     }
 }
 
@@ -106,10 +107,25 @@ bool streaming_workbook_reader::has_worksheet()
     return !worksheet_queue_.empty();
 }
 
-std::string streaming_workbook_reader::begin_worksheet()
+void streaming_workbook_reader::begin_worksheet()
 {
-    auto next_worksheet_rel = worksheet_queue_.back();
-    return consumer_->read_worksheet_begin(next_worksheet_rel);
+    const auto next_worksheet_rel = worksheet_queue_.back();
+    const auto workbook_rel = workbook_->manifest()
+        .relationship(path("/"), relationship_type::office_document);
+    const auto worksheet_rel = workbook_->manifest()
+        .relationship(workbook_rel.target().path(), next_worksheet_rel);
+
+    auto rel_chain = std::vector<relationship>{ workbook_rel, worksheet_rel };
+
+    const auto &manifest = consumer_->target_.manifest();
+    const auto part_path = manifest.canonicalize(rel_chain);
+    auto part_stream_buffer = consumer_->archive_->open(part_path);
+    part_stream_buffer_.swap(part_stream_buffer);
+    part_stream_.reset(new std::istream(part_stream_buffer_.get()));
+    parser_.reset(new xml::parser(*part_stream_, part_path.string()));
+    consumer_->parser_ = parser_.get();
+
+    consumer_->read_worksheet_begin(next_worksheet_rel);
 }
 
 worksheet streaming_workbook_reader::end_worksheet()
@@ -121,29 +137,32 @@ worksheet streaming_workbook_reader::end_worksheet()
 
 void streaming_workbook_reader::open(const std::vector<std::uint8_t> &data)
 {
-    detail::vector_istreambuf buffer(data);
-    std::istream buffer_stream(&buffer);
-    open(buffer_stream);
+    stream_buffer_.reset(new detail::vector_istreambuf(data));
+    stream_.reset(new std::istream(stream_buffer_.get()));
+    open(*stream_);
 }
 
 void streaming_workbook_reader::open(const std::string &filename)
 {
-    std::ifstream file_stream;
-    open_stream(file_stream, filename);
+    stream_.reset(new std::ifstream());
+    open_stream((std::ifstream &)stream_, filename);
+    open(*stream_);
 }
 
 #ifdef _MSC_VER
 void streaming_workbook_reader::open(const std::wstring &filename)
 {
-    std::ifstream file_stream;
-    open_stream(file_stream, filename);
+    stream_.reset(new std::ifstream());
+    open_stream((std::ifstream &)*stream_, filename);
+    open(*stream_);
 }
 #endif
 
 void streaming_workbook_reader::open(const xlnt::path &filename)
 {
-    std::ifstream file_stream;
-    open_stream(file_stream, filename.string());
+    stream_.reset(new std::ifstream());
+    open_stream((std::ifstream &)*stream_, filename.string());
+    open(*stream_);
 }
 
 void streaming_workbook_reader::open(std::istream &stream)
@@ -151,6 +170,16 @@ void streaming_workbook_reader::open(std::istream &stream)
     workbook_.reset(new workbook());
     consumer_.reset(new detail::xlsx_consumer(*workbook_));
     consumer_->open(stream);
+
+    const auto workbook_rel = workbook_->manifest()
+        .relationship(path("/"), relationship_type::office_document);
+    const auto workbook_path = workbook_rel.target().path();
+
+    for (auto worksheet_rel : workbook_->manifest()
+        .relationships(workbook_path, relationship_type::worksheet))
+    {
+        worksheet_queue_.push_back(worksheet_rel.id());
+    }
 }
 
 } // namespace xlnt

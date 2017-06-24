@@ -58,6 +58,8 @@ public:
         register_test(test_read_custom_properties);
         register_test(test_round_trip_rw);
         register_test(test_round_trip_rw_encrypted);
+        register_test(test_streaming_read);
+        //register_test(test_streaming_write);
     }
 
 	bool workbook_matches_file(xlnt::workbook &wb, const xlnt::path &file)

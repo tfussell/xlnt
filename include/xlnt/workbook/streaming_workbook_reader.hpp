@@ -31,6 +31,10 @@
 
 #include <xlnt/xlnt_config.hpp>
 
+namespace xml {
+class parser;
+}
+
 namespace xlnt {
 
 class cell;
@@ -73,7 +77,7 @@ public:
     /// Beings reading of the next worksheet in the workbook and optionally
     /// returns its title if the last worksheet has not yet been read.
     /// </summary>
-    std::string begin_worksheet();
+    void begin_worksheet();
 
     /// <summary>
     /// Ends reading of the current worksheet in the workbook and optionally
@@ -118,6 +122,11 @@ private:
     std::vector<std::string> worksheet_queue_;
     std::unique_ptr<detail::xlsx_consumer> consumer_;
     std::unique_ptr<workbook> workbook_;
+    std::unique_ptr<std::istream> stream_;
+    std::unique_ptr<std::streambuf> stream_buffer_;
+    std::unique_ptr<std::istream> part_stream_;
+    std::unique_ptr<std::streambuf> part_stream_buffer_;
+    std::unique_ptr<xml::parser> parser_;
 };
 
 } // namespace xlnt
