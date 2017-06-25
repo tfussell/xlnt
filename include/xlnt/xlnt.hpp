@@ -65,6 +65,7 @@
 #include <xlnt/workbook/external_book.hpp>
 #include <xlnt/workbook/metadata_property.hpp>
 #include <xlnt/workbook/named_range.hpp>
+#include <xlnt/workbook/streaming_workbook_reader.hpp>
 #include <xlnt/workbook/theme.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/workbook/worksheet_iterator.hpp>
