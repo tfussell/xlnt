@@ -468,10 +468,10 @@ public:
 
     void test_streaming_read()
     {
-        const auto path = path_helper::test_file("4_every_style.xlsx");
+        const auto path = "C:\\Users\\Thomas\\Desktop\\tmp.xlsx";
         xlnt::streaming_workbook_reader reader;
 
-        reader.open(path);
+        reader.open(xlnt::path(path));
 
         while (reader.has_worksheet())
         {
@@ -480,7 +480,7 @@ public:
             while (reader.has_cell())
             {
                 const auto cell = reader.read_cell();
-                std::cout << cell.reference().to_string() << std::endl;
+                //std::cout << cell.reference().to_string() << std::endl;
             }
 
             const auto ws = reader.end_worksheet();

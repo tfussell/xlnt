@@ -64,6 +64,8 @@ class xlsx_consumer
 public:
 	xlsx_consumer(workbook &destination);
 
+    ~xlsx_consumer();
+
 	void read(std::istream &source);
 
 	void read(std::istream &source, const std::string &password);
@@ -116,7 +118,7 @@ private:
 	/// Parse the main XML document about the workbook and then all child relationships
 	/// of the workbook (e.g. worksheets).
 	/// </summary>
-	void read_office_document(const std::string &content_type, bool streaming);
+	void read_office_document(const std::string &content_type);
 
 	// Workbook Relationship Target Parts
 
@@ -198,7 +200,7 @@ private:
 	/// <summary>
 	/// xl/sheets/*.xml
 	/// </summary>
-	void read_worksheet(const std::string &rel_id, bool streaming);
+	void read_worksheet(const std::string &rel_id);
 
     /// <summary>
     /// xl/sheets/*.xml
@@ -292,7 +294,7 @@ private:
     /// xlsx_consumer::parser() will return a reference to the parser that reads
     /// this part.
     /// </summary>
-    void read_part(const std::vector<relationship> &rel_chain, bool streaming);
+    void read_part(const std::vector<relationship> &rel_chain);
 
     /// <summary>
     /// libstudxml will throw an exception if all attributes on an element are not
@@ -406,9 +408,13 @@ private:
 
     bool preserve_space_ = false;
 
-    detail::cell_impl *stream_cell_;
+    bool streaming_ = false;
 
-    detail::worksheet_impl *stream_worksheet_;
+    std::unique_ptr<detail::cell_impl> streaming_cell_;
+
+    detail::cell_impl *current_cell_;
+
+    detail::worksheet_impl *current_worksheet_;
 };
 
 } // namespace detail

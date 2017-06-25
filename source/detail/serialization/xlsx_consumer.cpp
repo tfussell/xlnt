@@ -129,8 +129,11 @@ namespace detail {
 
 xlsx_consumer::xlsx_consumer(workbook &target)
     : target_(target),
-      parser_(nullptr),
-      stream_cell_(nullptr)
+      parser_(nullptr)
+{
+}
+
+xlsx_consumer::~xlsx_consumer()
 {
 }
 
@@ -153,7 +156,7 @@ cell xlsx_consumer::read_cell()
         return cell(nullptr);
     }
 
-    auto ws = worksheet(stream_worksheet_);
+    auto ws = worksheet(current_worksheet_);
 
     if (in_element(qn("spreadsheetml", "sheetData")))
     {
@@ -187,7 +190,13 @@ cell xlsx_consumer::read_cell()
     }
 
     expect_start_element(qn("spreadsheetml", "c"), xml::content::complex);
-    auto cell = ws.cell(cell_reference(parser().attribute("r")));
+
+    auto cell = streaming_ ? xlnt::cell(streaming_cell_.get())
+        : ws.cell(cell_reference(parser().attribute("r")));
+    auto reference = cell_reference(parser().attribute("r"));
+    cell.d_->parent_ = current_worksheet_;
+    cell.d_->column_ = reference.column_index();
+    cell.d_->row_ = reference.row();
 
     auto has_type = parser().attribute_present("t");
     auto type = has_type ? parser().attribute("t") : "n";
@@ -295,11 +304,11 @@ cell xlsx_consumer::read_cell()
     return cell;
 }
 
-void xlsx_consumer::read_worksheet(const std::string &rel_id, bool streaming)
+void xlsx_consumer::read_worksheet(const std::string &rel_id)
 {
     read_worksheet_begin(rel_id);
 
-    if (!streaming)
+    if (!streaming_)
     {
         read_worksheet_sheetdata();
         read_worksheet_end(rel_id);
@@ -308,6 +317,11 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id, bool streaming)
 
 std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
 {
+    if (streaming_ && streaming_cell_ == nullptr)
+    {
+        streaming_cell_.reset(new detail::cell_impl());
+    }
+
     auto title = std::find_if(target_.d_->sheet_title_rel_id_map_.begin(),
         target_.d_->sheet_title_rel_id_map_.end(),
         [&](const std::pair<std::string, std::string> &p) {
@@ -323,10 +337,8 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
         ++insertion_iter;
     }
 
-    target_.d_->worksheets_.emplace(insertion_iter, &target_, id, title);
-
-    auto ws = target_.sheet_by_id(id);
-    stream_worksheet_ = ws.d_;
+    current_worksheet_ = &*target_.d_->worksheets_.emplace(insertion_iter, &target_, id, title);
+    auto ws = worksheet(current_worksheet_);
 
     expect_start_element(qn("spreadsheetml", "worksheet"), xml::content::complex); // CT_Worksheet
     skip_attributes({ qn("mc", "Ignorable") });
@@ -538,7 +550,7 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
 
 void xlsx_consumer::read_worksheet_sheetdata()
 {
-    auto ws = worksheet(stream_worksheet_);
+    auto ws = worksheet(current_worksheet_);
 
     if (stack_.back() != qn("spreadsheetml", "sheetData"))
     {
@@ -684,7 +696,7 @@ worksheet xlsx_consumer::read_worksheet_end(const std::string &rel_id)
     path sheet_path(sheet_rel.source().path().parent().append(sheet_rel.target().path()));
     auto hyperlinks = manifest.relationships(sheet_path, xlnt::relationship_type::hyperlink);
 
-    auto ws = worksheet(stream_worksheet_);
+    auto ws = worksheet(current_worksheet_);
 
     while (in_element(qn("spreadsheetml", "worksheet")))
     {
@@ -1012,7 +1024,7 @@ worksheet xlsx_consumer::read_worksheet_end(const std::string &rel_id)
         }
     }
 
-    return worksheet(stream_worksheet_);
+    return ws;
 }
 
 xml::parser &xlsx_consumer::parser()
@@ -1068,7 +1080,7 @@ std::vector<relationship> xlsx_consumer::read_relationships(const path &part)
     return relationships;
 }
 
-void xlsx_consumer::read_part(const std::vector<relationship> &rel_chain, bool streaming)
+void xlsx_consumer::read_part(const std::vector<relationship> &rel_chain)
 {
     const auto &manifest = target_.manifest();
     const auto part_path = manifest.canonicalize(rel_chain);
@@ -1092,7 +1104,7 @@ void xlsx_consumer::read_part(const std::vector<relationship> &rel_chain, bool s
         break;
 
     case relationship_type::office_document:
-        read_office_document(manifest.content_type(part_path), streaming);
+        read_office_document(manifest.content_type(part_path));
         break;
 
     case relationship_type::connections:
@@ -1140,7 +1152,7 @@ void xlsx_consumer::read_part(const std::vector<relationship> &rel_chain, bool s
         break;
 
     case relationship_type::worksheet:
-        read_worksheet(rel_chain.back().id(), streaming);
+        read_worksheet(rel_chain.back().id());
         break;
 
     case relationship_type::thumbnail:
@@ -1206,6 +1218,8 @@ void xlsx_consumer::read_part(const std::vector<relationship> &rel_chain, bool s
 
 void xlsx_consumer::populate_workbook(bool streaming)
 {
+    streaming_ = streaming;
+
     target_.clear();
 
     read_content_types();
@@ -1224,7 +1238,7 @@ void xlsx_consumer::populate_workbook(bool streaming)
             continue;
         }
 
-        read_part({package_rel}, streaming);
+        read_part({package_rel});
     }
 
     for (const auto &relationship_source_string : archive_->files())
@@ -1236,7 +1250,7 @@ void xlsx_consumer::populate_workbook(bool streaming)
     }
 
     read_part({ manifest().relationship(root_path,
-        relationship_type::office_document) }, streaming);
+        relationship_type::office_document) });
 }
 
 // Package Parts
@@ -1331,7 +1345,7 @@ void xlsx_consumer::read_custom_properties()
     expect_end_element(qn("custom-properties", "Properties"));
 }
 
-void xlsx_consumer::read_office_document(const std::string &content_type, bool streaming) // CT_Workbook
+void xlsx_consumer::read_office_document(const std::string &content_type) // CT_Workbook
 {
     if (content_type != "application/vnd."
         "openxmlformats-officedocument.spreadsheetml.sheet.main+xml"
@@ -1541,31 +1555,31 @@ void xlsx_consumer::read_office_document(const std::string &content_type, bool s
     {
         read_part({workbook_rel, 
             manifest().relationship(workbook_path,
-                relationship_type::shared_string_table)}, false);
+                relationship_type::shared_string_table)});
     }
 
     if (manifest().has_relationship(workbook_path, relationship_type::stylesheet))
     {
         read_part({workbook_rel,
             manifest().relationship(workbook_path,
-                relationship_type::stylesheet)}, false);
+                relationship_type::stylesheet)});
     }
 
     if (manifest().has_relationship(workbook_path, relationship_type::theme))
     {
         read_part({workbook_rel,
             manifest().relationship(workbook_path, 
-                relationship_type::theme)}, false);
+                relationship_type::theme)});
     }
 
-    if (streaming)
+    if (streaming_)
     {
         return;
     }
 
     for (auto worksheet_rel : manifest().relationships(workbook_path, relationship_type::worksheet))
     {
-        read_part({workbook_rel, worksheet_rel}, false);
+        read_part({workbook_rel, worksheet_rel});
     }
 }
 
@@ -2286,7 +2300,7 @@ void xlsx_consumer::read_theme()
     {
         read_part({workbook_rel, theme_rel,
             manifest().relationship(theme_path, 
-                relationship_type::image)}, false);
+                relationship_type::image)});
     }
 }
 
