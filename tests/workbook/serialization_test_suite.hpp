@@ -468,7 +468,7 @@ public:
 
     void test_streaming_read()
     {
-        const auto path = "C:\\Users\\Thomas\\Desktop\\tmp.xlsx";
+        const auto path = path_helper::test_file("4_every_style.xlsx");
         xlnt::streaming_workbook_reader reader;
 
         reader.open(xlnt::path(path));
