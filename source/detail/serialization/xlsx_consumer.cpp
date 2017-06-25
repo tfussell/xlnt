@@ -282,6 +282,16 @@ cell xlsx_consumer::read_cell()
         cell.format(target_.format(format_id));
     }
 
+    if (!in_element(qn("spreadsheetml", "row")))
+    {
+        expect_end_element(qn("spreadsheetml", "row"));
+
+        if (!in_element(qn("spreadsheetml", "sheetData")))
+        {
+            expect_end_element(qn("spreadsheetml", "sheetData"));
+        }
+    }
+
     return cell;
 }
 
