@@ -12,13 +12,44 @@ public:
 extern "C" {
 
 /*
- * Implements an example function.
+ * Implements XLSX->pyarrow table function.
  */
-PyDoc_STRVAR(xlntpyarrow_example_doc, "example(obj, number)\
+PyDoc_STRVAR(xlntpyarrow_xlsx2arrow_doc, "xlsx2arrow(in_file)\
 \
-Example function");
+Returns an arrow table representing the given XLSX file object.");
 
-PyObject *xlntpyarrow_example(PyObject *self, PyObject *args, PyObject *kwargs) {
+PyObject *xlntpyarrow_xlsx2arrow(PyObject *self, PyObject *args, PyObject *kwargs) {
+    /* Shared references that do not need Py_DECREF before returning. */
+    PyObject *obj = NULL;
+    int number = 0;
+
+    abc::def();
+
+    /* Parse positional and keyword arguments */
+    static char* keywords[] = { "obj", "number", NULL };
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Oi", keywords, &obj, &number)) {
+        return NULL;
+    }
+
+    /* Function implementation starts here */
+
+    if (number < 0) {
+        PyErr_SetObject(PyExc_ValueError, obj);
+        return NULL;    /* return NULL indicates error */
+    }
+
+    Py_RETURN_NONE;
+}
+
+
+/*
+* Implements pyarrow table->XLSX function.
+*/
+PyDoc_STRVAR(xlntpyarrow_arrow2xlsx_doc, "arrow2xlsx(table, out_file)\
+\
+Writes the given arrow table to out_file as an XLSX file.");
+
+PyObject *xlntpyarrow_arrow2xlsx(PyObject *self, PyObject *args, PyObject *kwargs) {
     /* Shared references that do not need Py_DECREF before returning. */
     PyObject *obj = NULL;
     int number = 0;
@@ -45,7 +76,8 @@ PyObject *xlntpyarrow_example(PyObject *self, PyObject *args, PyObject *kwargs) 
  * List of functions to add to xlntpyarrow in exec_xlntpyarrow().
  */
 static PyMethodDef xlntpyarrow_functions[] = {
-    { "example", (PyCFunction)xlntpyarrow_example, METH_VARARGS | METH_KEYWORDS, xlntpyarrow_example_doc },
+    { "xlsx2arrow", (PyCFunction)xlntpyarrow_xlsx2arrow, METH_VARARGS | METH_KEYWORDS, xlntpyarrow_xlsx2arrow_doc },
+    { "arrow2xlsx", (PyCFunction)xlntpyarrow_arrow2xlsx, METH_VARARGS | METH_KEYWORDS, xlntpyarrow_arrow2xlsx_doc },
     { NULL, NULL, 0, NULL } /* marks end of array */
 };
 
@@ -56,8 +88,8 @@ static PyMethodDef xlntpyarrow_functions[] = {
 int exec_xlntpyarrow(PyObject *module) {
     PyModule_AddFunctions(module, xlntpyarrow_functions);
 
-    PyModule_AddStringConstant(module, "__author__", "Thomas");
-    PyModule_AddStringConstant(module, "__version__", "1.0.0");
+    PyModule_AddStringConstant(module, "__author__", "Thomas Fussell");
+    PyModule_AddStringConstant(module, "__version__", "0.9.0");
     PyModule_AddIntConstant(module, "year", 2017);
 
     return 0; /* success */
