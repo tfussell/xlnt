@@ -13,3 +13,4 @@ node_modules/
 .DS_Store
 __pycache__/
 Win32/
+*.pyd

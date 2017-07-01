@@ -11,6 +11,7 @@ option(STATIC "Set to ON to build xlnt as a static library instead of a shared l
 option(TESTS "Set to OFF to skip building test executable (in ./tests)" ON)
 option(SAMPLES "Set to ON to build executable code samples (in ./samples)" OFF)
 option(BENCHMARKS "Set to ON to build performance benchmarks (in ./benchmarks)" OFF)
+option(ARROW "Set to ON to build Arrow conversion functions (in ./contrib/xlnt_arrow)" OFF)
 
 # Platform specific options
 if(NOT MSVC)
@@ -28,6 +29,10 @@ endif()
 
 if(TESTS)
     add_subdirectory(tests)
+endif()
+
+if(ARROW)
+    add_subdirectory(contrib/xlnt_arrow)
 endif()
 
 add_subdirectory(source)
