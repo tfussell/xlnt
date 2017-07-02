@@ -32,7 +32,7 @@ if(TESTS)
 endif()
 
 if(ARROW)
-    add_subdirectory(contrib/xlnt_arrow)
+    add_subdirectory(arrow/xlntarrow)
 endif()
 
 add_subdirectory(source)

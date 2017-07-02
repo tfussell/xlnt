@@ -1,7 +1,7 @@
 #include <iostream>
 #include <memory>
 #include <vector>
-#include <xlnt_arrow.hpp>
+#include <xlntarrow.hpp>
 #include <python_streambuf.hpp>
 #include <Python.h>
 

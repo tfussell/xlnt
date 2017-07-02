@@ -1,5 +1,4 @@
-#ifndef BOOST_ADAPTBX_PYTHON_STREAMBUF_H
-#define BOOST_ADAPTBX_PYTHON_STREAMBUF_H
+#pragma once
 
 #include <boost/python/object.hpp>
 #include <boost/python/str.hpp>
@@ -473,5 +472,3 @@ struct ostream : private streambuf_capsule, streambuf::ostream
 };
 
 }} // boost_adaptbx::python
-
-#endif // GUARD

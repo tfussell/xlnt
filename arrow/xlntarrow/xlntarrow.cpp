@@ -1,5 +1,5 @@
 #include <xlnt/xlnt.hpp>
-#include <xlnt_arrow.hpp>
+#include <xlntarrow.hpp>
 
 namespace xlnt {
 namespace arrow {
