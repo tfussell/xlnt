@@ -27,9 +27,14 @@
 
 #include <detail/unicode.hpp>
 
+#ifdef UTFCPP
+#include <utf8.h>
+#endif
+
 namespace xlnt {
 namespace detail {
 
+#ifndef UTFCPP
 #ifdef _MSC_VER
 std::u16string utf8_to_utf16(const std::string &utf8_string)
 {
@@ -61,6 +66,23 @@ std::string utf16_to_utf8(const std::u16string &utf16_string)
 {
     return std::wstring_convert<std::codecvt_utf8_utf16<char16_t>,
         char16_t>{}.to_bytes(utf16_string);
+}
+#endif
+#else
+std::u16string utf8_to_utf16(const std::string &utf8_string)
+{
+    std::u16string result;
+    utf8::utf8to16(utf8_string.begin(), utf8_string.end(), std::back_inserter(result));
+
+    return result;
+}
+
+std::string utf16_to_utf8(const std::u16string &utf16_string)
+{
+    std::string result;
+    utf8::utf16to8(utf16_string.begin(), utf16_string.end(), std::back_inserter(result));
+
+    return result;
 }
 #endif
 
