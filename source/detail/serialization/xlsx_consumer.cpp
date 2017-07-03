@@ -510,9 +510,9 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
                     column_style = parser().attribute<std::size_t>("style");
                 }
 
-                auto custom = parser().attribute_present("customWidth") 
+                auto custom = parser().attribute_present("customWidth")
                     ? is_true(parser().attribute("customWidth")) : false;
-                auto hidden = parser().attribute_present("hidden") 
+                auto hidden = parser().attribute_present("hidden")
                     ? is_true(parser().attribute("hidden")) : false;
 
                 expect_end_element(qn("spreadsheetml", "col"));
@@ -1062,7 +1062,7 @@ std::vector<relationship> xlsx_consumer::read_relationships(const path &part)
             : xlnt::target_mode::internal;
         auto target = xlnt::uri(parser.attribute("Target"));
 
-        if (target.path().is_absolute() && target_mode == target_mode::internal)
+        if (target.path().is_absolute() && target_mode == xlnt::target_mode::internal)
         {
             target = uri(target.path().relative_to(path(part.string()).resolve(path("/"))).string());
         }
@@ -1553,7 +1553,7 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
 
     if (manifest().has_relationship(workbook_path, relationship_type::shared_string_table))
     {
-        read_part({workbook_rel, 
+        read_part({workbook_rel,
             manifest().relationship(workbook_path,
                 relationship_type::shared_string_table)});
     }
@@ -1568,7 +1568,7 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
     if (manifest().has_relationship(workbook_path, relationship_type::theme))
     {
         read_part({workbook_rel,
-            manifest().relationship(workbook_path, 
+            manifest().relationship(workbook_path,
                 relationship_type::theme)});
     }
 
@@ -2290,7 +2290,7 @@ void xlsx_consumer::read_theme()
 {
     auto workbook_rel = manifest().relationship(path("/"),
         relationship_type::office_document);
-    auto theme_rel = manifest().relationship(workbook_rel.target().path(), 
+    auto theme_rel = manifest().relationship(workbook_rel.target().path(),
         relationship_type::theme);
     auto theme_path = manifest().canonicalize({workbook_rel, theme_rel});
 
@@ -2299,7 +2299,7 @@ void xlsx_consumer::read_theme()
     if (manifest().has_relationship(theme_path, relationship_type::image))
     {
         read_part({workbook_rel, theme_rel,
-            manifest().relationship(theme_path, 
+            manifest().relationship(theme_path,
                 relationship_type::image)});
     }
 }
