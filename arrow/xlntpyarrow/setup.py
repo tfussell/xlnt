@@ -10,25 +10,32 @@ cfg_vars = sysconfig.get_config_vars()
 if 'CFLAGS' in cfg_vars:
     cfg_vars['CFLAGS'] = cfg_vars['CFLAGS'].replace('-Wstrict-prototypes', '')
 
+project_root = '/root/xlnt'
+conda_root = '/root/miniconda3'
+
+include_dirs = [
+    os.path.join(project_root, 'arrow/xlntarrow'),
+    os.path.join(project_root, 'arrow/xlntpyarrow'),
+    os.path.join(conda_root, 'include')
+]
+
+library_dirs = [
+    os.path.join(project_root, 'build/arrow/xlntarrow'),
+    os.path.join(project_root, 'build/source'),
+    os.path.join(conda_root, 'lib')
+]
+
 xlntpyarrow_extension = Extension(
     'xlntpyarrow',
     ['xlntpyarrow.cpp'],
     language = 'c++',
-    include_dirs = [
-        '/root/xlnt/arrow/xlntarrow',
-        '/root/xlnt/arrow/xlntpyarrow',
-        '/root/miniconda3/include'
-    ],
+    include_dirs = include_dirs,
     libraries = [
         'arrow',
         'xlntarrow',
         'xlnt'
     ],
-    library_dirs = [
-        '/root/miniconda3/lib',
-        '/root/xlnt/build/arrow/xlntarrow',
-        '/root/xlnt/build/source'
-    ],
+    library_dirs = libarary_dirs,
     extra_compile_args=['-std=c++11']
 )
 
