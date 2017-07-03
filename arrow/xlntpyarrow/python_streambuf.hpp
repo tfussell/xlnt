@@ -1,9 +1,5 @@
 #pragma once
 
-#include <boost/python/object.hpp>
-#include <boost/python/str.hpp>
-#include <boost/python/extract.hpp>
-
 #include <boost/optional.hpp>
 #include <boost/utility/typed_in_place_factory.hpp>
 
@@ -11,9 +7,8 @@
 #include <stdexcept>
 #include <iostream>
 
-namespace boost_adaptbx { namespace python {
-
-namespace bp = boost::python;
+namespace xlnt {
+namespace arrow {
 
 /// A stream buffer getting data from and putting data into a Python file object
 /** The aims are as follow:
@@ -118,13 +113,13 @@ class streambuf : public std::basic_streambuf<char>
     /** if buffer_size is 0 the current default_buffer_size is used.
     */
     streambuf(
-      bp::object& python_file_obj,
-      std::size_t buffer_size_=0)
+      PyObject *python_file_obj,
+      std::size_t buffer_size_ = 0)
     :
-      py_read (getattr(python_file_obj, "read",  bp::object())),
-      py_write(getattr(python_file_obj, "write", bp::object())),
-      py_seek (getattr(python_file_obj, "seek",  bp::object())),
-      py_tell (getattr(python_file_obj, "tell",  bp::object())),
+      py_read (PyObject_GetAttr(python_file_obj, "read")),
+      py_write(PyObject_GetAttr(python_file_obj, "write")),
+      py_seek (PyObject_GetAttr(python_file_obj, "seek")),
+      py_tell (PyObject_GetAttr(python_file_obj, "tell")),
       buffer_size(buffer_size_ != 0 ? buffer_size_ : default_buffer_size),
       write_buffer(0),
       pos_of_read_buffer_end_in_py_file(0),
@@ -136,13 +131,13 @@ class streambuf : public std::basic_streambuf<char>
          have non-functional seek and tell. If so, assign None to
          py_tell and py_seek.
        */
-      if (py_tell != bp::object()) {
+      if (py_tell != nullptr) {
         try {
-          py_tell();
+          PyObject_CallFunction(py_tell, nullptr);
         }
         catch (bp::error_already_set&) {
-          py_tell = bp::object();
-          py_seek = bp::object();
+          py_tell = nullptr;
+          py_seek = nullptr;
           /* Boost.Python does not do any Python exception handling whatsoever
              So we need to catch it by hand like so.
            */
@@ -150,7 +145,7 @@ class streambuf : public std::basic_streambuf<char>
         }
       }
 
-      if (py_write != bp::object()) {
+      if (py_write != nullptr) {
         // C-like string to make debugging easier
         write_buffer = new char[buffer_size + 1];
         write_buffer[buffer_size] = '\0';
@@ -162,8 +157,8 @@ class streambuf : public std::basic_streambuf<char>
         setp(0, 0);
       }
 
-      if (py_tell != bp::object()) {
-        off_type py_pos = bp::extract<off_type>(py_tell());
+      if (py_tell != nulllptr) {
+        auto py_pos = static_cast<off_type>(PyLong_AsLong(PyObject_CallFunction(py_tell, nullptr)));
         pos_of_read_buffer_end_in_py_file = py_pos;
         pos_of_write_buffer_end_in_py_file = py_pos;
       }
@@ -188,11 +183,11 @@ class streambuf : public std::basic_streambuf<char>
     /// C.f. C++ standard section 27.5.2.4.3
     virtual int_type underflow() {
       int_type const failure = traits_type::eof();
-      if (py_read == bp::object()) {
+      if (py_read == nullptr) {
         throw std::invalid_argument(
           "That Python file object has no 'read' attribute");
       }
-      read_buffer = py_read(buffer_size);
+      read_buffer = PyObject_CallFunction(py_read, "i", buffer_size);
       char *read_buffer_data;
       bp::ssize_t py_n_read;
       if (PyBytes_AsStringAndSize(read_buffer.ptr(),
@@ -212,7 +207,7 @@ class streambuf : public std::basic_streambuf<char>
 
     /// C.f. C++ standard section 27.5.2.4.5
     virtual int_type overflow(int_type c=traits_type_eof()) {
-      if (py_write == bp::object()) {
+      if (py_write == nullptr) {
         throw std::invalid_argument(
           "That Python file object has no 'write' attribute");
       }
@@ -248,10 +243,16 @@ class streambuf : public std::basic_streambuf<char>
         off_type delta = pptr() - farthest_pptr;
         int_type status = overflow();
         if (traits_type::eq_int_type(status, traits_type::eof())) result = -1;
-        if (py_seek != bp::object()) py_seek(delta, 1);
+        if (py_seek != nullptr)
+        {
+          PyObject_CallFunction(py_seek, "i", delta);
+        }
       }
       else if (gptr() && gptr() < egptr()) {
-        if (py_seek != bp::object()) py_seek(gptr() - egptr(), 1);
+        if (py_seek != nullptr)
+        {
+          PyObject_CallFunction(py_seek, "ii", gptr() - egptr(), 1);
+        }
       }
       return result;
     }
@@ -275,7 +276,7 @@ class streambuf : public std::basic_streambuf<char>
       */
       int const failure = off_type(-1);
 
-      if (py_seek == bp::object()) {
+      if (py_seek == nullptr) {
         throw std::invalid_argument(
           "That Python file object has no 'seek' attribute");
       }
@@ -330,7 +331,10 @@ class streambuf : public std::basic_streambuf<char>
     }
 
   private:
-    bp::object py_read, py_write, py_seek, py_tell;
+    PyObject *py_read = nullptr;
+    PyObject *py_write = nullptr;
+    PyObject *py_seek = nullptr;
+    PyObject *py_tell = nullptr;
 
     std::size_t buffer_size;
 
@@ -339,18 +343,18 @@ class streambuf : public std::basic_streambuf<char>
        object so as to hold on it: as a result, the actual buffer can't
        go away.
     */
-    bp::object read_buffer;
+    PyObject *read_buffer = nullptr;
 
     /* A mere array of char's allocated on the heap at construction time and
        de-allocated only at destruction time.
     */
-    char *write_buffer;
+    char *write_buffer = nullptr;
 
     off_type pos_of_read_buffer_end_in_py_file,
              pos_of_write_buffer_end_in_py_file;
 
     // the farthest place the buffer has been written into
-    char *farthest_pptr;
+    char *farthest_pptr = nullptr;
 
 
     boost::optional<off_type> seekoff_without_calling_python(
@@ -471,4 +475,4 @@ struct ostream : private streambuf_capsule, streambuf::ostream
   }
 };
 
-}} // boost_adaptbx::python
+}} // namespace xlnt::arrow
