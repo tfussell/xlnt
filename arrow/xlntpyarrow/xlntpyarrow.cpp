@@ -30,12 +30,13 @@ Returns an arrow table representing the given XLSX file object.");
 
 PyObject *xlntpyarrow_xlsx2arrow(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    PyObject *file = NULL;
-    static char* keywords[] = { "file", NULL };
+    PyObject *file = nullptr;
+    static auto keywords = { "file", nullptr };
+    static auto keywords_nc = const_cast<char **>(keywords);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords, &file))
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords_nc, &file))
     {
-        return NULL;
+        return nullptr;
     }
 
     return xlsx2arrow(file);
@@ -51,12 +52,13 @@ Writes the given arrow table to out_file as an XLSX file.");
 
 PyObject *xlntpyarrow_arrow2xlsx(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    PyObject *obj = NULL;
-    static char* keywords[] = { "obj", NULL };
+    PyObject *obj = nullptr;
+    static auto keywords = { "file", nullptr };
+    static auto keywords_nc = const_cast<char **>(keywords);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Oi", keywords, &obj))
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Oi", keywords_nc, &obj))
     {
-        return NULL;
+        return nulllptr;
     }
 
     Py_RETURN_NONE;
@@ -66,7 +68,7 @@ static PyMethodDef xlntpyarrow_functions[] =
 {
     { "xlsx2arrow", (PyCFunction)xlntpyarrow_xlsx2arrow, METH_VARARGS | METH_KEYWORDS, xlntpyarrow_xlsx2arrow_doc },
     { "arrow2xlsx", (PyCFunction)xlntpyarrow_arrow2xlsx, METH_VARARGS | METH_KEYWORDS, xlntpyarrow_arrow2xlsx_doc },
-    { NULL, NULL, 0, NULL } /* marks end of array */
+    { nullptr, nullptr, 0, nullptr }
 };
 
 int exec_xlntpyarrow(PyObject *module)
@@ -85,7 +87,7 @@ PyDoc_STRVAR(xlntpyarrow_doc, "The xlntpyarrow module");
 static PyModuleDef_Slot xlntpyarrow_slots[] =
 {
     { Py_mod_exec, (void *)exec_xlntpyarrow },
-    { 0, NULL }
+    { 0, nullptr }
 };
 
 static PyModuleDef xlntpyarrow_def =
@@ -94,11 +96,11 @@ static PyModuleDef xlntpyarrow_def =
     "xlntpyarrow",
     xlntpyarrow_doc,
     0,              /* m_size */
-    NULL,           /* m_methods */
+    nullptr,           /* m_methods */
     xlntpyarrow_slots,
-    NULL,           /* m_traverse */
-    NULL,           /* m_clear */
-    NULL,           /* m_free */
+    nullptr,           /* m_traverse */
+    nullptr,           /* m_clear */
+    nullptr,           /* m_free */
 };
 
 PyMODINIT_FUNC PyInit_xlntpyarrow()
