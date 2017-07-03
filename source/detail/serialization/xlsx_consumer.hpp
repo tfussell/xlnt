@@ -64,14 +64,14 @@ class xlsx_consumer
 public:
 	xlsx_consumer(workbook &destination);
 
-    ~xlsx_consumer();
+	~xlsx_consumer();
 
 	void read(std::istream &source);
 
 	void read(std::istream &source, const std::string &password);
 
 private:
-    friend class streaming_workbook_reader;
+    friend class xlnt::streaming_workbook_reader;
 
     void open(std::istream &source);
 
@@ -128,27 +128,27 @@ private:
 	void read_calculation_chain();
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	void read_connections();
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	void read_custom_property();
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	void read_custom_xml_mappings();
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	void read_external_workbook_references();
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	void read_pivot_table();
 
@@ -158,17 +158,17 @@ private:
 	void read_shared_string_table();
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	void read_shared_workbook_revision_headers();
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	void read_shared_workbook();
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	void read_shared_workbook_user_data();
 
@@ -183,7 +183,7 @@ private:
 	void read_theme();
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	void read_volatile_dependencies();
 
@@ -220,34 +220,34 @@ private:
 	// Sheet Relationship Target Parts
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	void read_comments(worksheet ws);
-    
+
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	void read_vml_drawings(worksheet ws);
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	void read_drawings();
 
 	// Unknown Parts
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	void read_unknown_parts();
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	void read_unknown_relationships();
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	void read_image(const path &part);
 
@@ -399,11 +399,11 @@ private:
 
 	/// <summary>
 	/// This pointer is generally set by instantiating an xml::parser in a function
-	/// scope and then calling a read_*() method which uses xlsx_consumer::parser() 
+	/// scope and then calling a read_*() method which uses xlsx_consumer::parser()
 	/// to access the object.
 	/// </summary>
 	xml::parser *parser_;
-    
+
     std::vector<xml::qname> stack_;
 
     bool preserve_space_ = false;
