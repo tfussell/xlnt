@@ -31,7 +31,7 @@ Returns an arrow table representing the given XLSX file object.");
 PyObject *xlntpyarrow_xlsx2arrow(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     PyObject *file = nullptr;
-    static auto keywords = { "file", nullptr };
+    static const char *keywords[] = { "file", nullptr };
     static auto keywords_nc = const_cast<char **>(keywords);
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords_nc, &file))
@@ -53,12 +53,12 @@ Writes the given arrow table to out_file as an XLSX file.");
 PyObject *xlntpyarrow_arrow2xlsx(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     PyObject *obj = nullptr;
-    static auto keywords = { "file", nullptr };
+    static const char *keywords[] = { "file", nullptr };
     static auto keywords_nc = const_cast<char **>(keywords);
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Oi", keywords_nc, &obj))
     {
-        return nulllptr;
+        return nullptr;
     }
 
     Py_RETURN_NONE;

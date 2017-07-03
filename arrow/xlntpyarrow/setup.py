@@ -1,4 +1,5 @@
-from distutils.core import setup, Extension, sysconfig
+from distutils.core import setup, Extension
+from distutils import sysconfig
 
 description = """
 xlntpyarrow allows Apache Arrow tables to be written to and read from an XLSX
