@@ -6,6 +6,7 @@
 #include <cassert>
 #include <stdexcept>
 #include <iostream>
+#include <Python.h>
 
 namespace xlnt {
 namespace arrow {
@@ -116,10 +117,10 @@ class streambuf : public std::basic_streambuf<char>
       PyObject *python_file_obj,
       std::size_t buffer_size_ = 0)
     :
-      py_read (PyObject_GetAttr(python_file_obj, "read")),
-      py_write(PyObject_GetAttr(python_file_obj, "write")),
-      py_seek (PyObject_GetAttr(python_file_obj, "seek")),
-      py_tell (PyObject_GetAttr(python_file_obj, "tell")),
+      py_read (PyObject_GetAttrString(python_file_obj, "read")),
+      py_write(PyObject_GetAttrString(python_file_obj, "write")),
+      py_seek (PyObject_GetAttrString(python_file_obj, "seek")),
+      py_tell (PyObject_GetAttrString(python_file_obj, "tell")),
       buffer_size(buffer_size_ != 0 ? buffer_size_ : default_buffer_size),
       write_buffer(0),
       pos_of_read_buffer_end_in_py_file(0),
@@ -132,17 +133,13 @@ class streambuf : public std::basic_streambuf<char>
          py_tell and py_seek.
        */
       if (py_tell != nullptr) {
-        try {
           PyObject_CallFunction(py_tell, nullptr);
-        }
-        catch (bp::error_already_set&) {
-          py_tell = nullptr;
-          py_seek = nullptr;
-          /* Boost.Python does not do any Python exception handling whatsoever
-             So we need to catch it by hand like so.
-           */
-          PyErr_Clear();
-        }
+	  if (PyErr_Occurred() != nullptr)
+	  {
+	    py_tell = nullptr;
+	    py_seek = nullptr;
+	    PyErr_Clear();
+	  }
       }
 
       if (py_write != nullptr) {
@@ -157,8 +154,8 @@ class streambuf : public std::basic_streambuf<char>
         setp(0, 0);
       }
 
-      if (py_tell != nulllptr) {
-        auto py_pos = static_cast<off_type>(PyLong_AsLong(PyObject_CallFunction(py_tell, nullptr)));
+      if (py_tell != nullptr) {
+        auto py_pos = extract_int<off_type>(PyObject_CallFunction(py_tell, nullptr));
         pos_of_read_buffer_end_in_py_file = py_pos;
         pos_of_write_buffer_end_in_py_file = py_pos;
       }
@@ -188,16 +185,15 @@ class streambuf : public std::basic_streambuf<char>
           "That Python file object has no 'read' attribute");
       }
       read_buffer = PyObject_CallFunction(py_read, "i", buffer_size);
-      char *read_buffer_data;
-      bp::ssize_t py_n_read;
-      if (PyBytes_AsStringAndSize(read_buffer.ptr(),
-                                   &read_buffer_data, &py_n_read) == -1) {
+      char *read_buffer_data = nullptr;
+      Py_ssize_t py_n_read = 0;
+      if (PyBytes_AsStringAndSize(read_buffer, &read_buffer_data, &py_n_read) == -1) {
         setg(0, 0, 0);
         throw std::invalid_argument(
           "The method 'read' of the Python file object "
           "did not return a string.");
       }
-      off_type n_read = (off_type)py_n_read;
+      auto n_read = (off_type)py_n_read;
       pos_of_read_buffer_end_in_py_file += n_read;
       setg(read_buffer_data, read_buffer_data, read_buffer_data + n_read);
       // ^^^27.5.2.3.1 (4)
@@ -212,11 +208,12 @@ class streambuf : public std::basic_streambuf<char>
           "That Python file object has no 'write' attribute");
       }
       farthest_pptr = std::max(farthest_pptr, pptr());
-      off_type n_written = (off_type)(farthest_pptr - pbase());
-      bp::str chunk(pbase(), farthest_pptr);
-      py_write(chunk);
+      auto n_written = (off_type)(farthest_pptr - pbase());
+      auto chunk = PyBytes_FromStringAndSize(pbase(), farthest_pptr - pbase());
+      PyObject_CallFunction(py_write, "O", chunk);
       if (!traits_type::eq_int_type(c, traits_type::eof())) {
-        py_write(traits_type::to_char_type(c));
+	auto ch = traits_type::to_char_type(c);
+        PyObject_CallFunction(py_write, "y#", reinterpret_cast<char *>(&ch), 1);
         n_written++;
       }
       if (n_written) {
@@ -314,8 +311,8 @@ class streambuf : public std::basic_streambuf<char>
           if      (which == std::ios_base::in)  off -= egptr() - gptr();
           else if (which == std::ios_base::out) off += pptr() - pbase();
         }
-        py_seek(off, whence);
-        result = off_type(bp::extract<off_type>(py_tell()));
+        PyObject_CallFunction(py_seek, "ii", off, whence);
+        result = extract_int<off_type>(PyObject_CallFunction(py_tell, nullptr));
         if (which == std::ios_base::in) underflow();
       }
       return *result;
@@ -410,6 +407,15 @@ class streambuf : public std::basic_streambuf<char>
       return pos_of_buffer_end_in_py_file + (buf_sought - buf_end);
     }
 
+  template<typename T>
+  T extract_int(PyObject *o)
+  {
+    auto value = PyLong_AsLong(o);
+    Py_DECREF(o);
+
+    return static_cast<T>(value);
+  }
+
   public:
 
     class istream : public std::istream
@@ -442,7 +448,7 @@ struct streambuf_capsule
   streambuf python_streambuf;
 
   streambuf_capsule(
-    bp::object& python_file_obj,
+    PyObject *python_file_obj,
     std::size_t buffer_size=0)
   :
     python_streambuf(python_file_obj, buffer_size)
@@ -452,7 +458,7 @@ struct streambuf_capsule
 struct ostream : private streambuf_capsule, streambuf::ostream
 {
   ostream(
-    bp::object& python_file_obj,
+    PyObject *python_file_obj,
     std::size_t buffer_size=0)
   :
     streambuf_capsule(python_file_obj, buffer_size),
@@ -461,10 +467,13 @@ struct ostream : private streambuf_capsule, streambuf::ostream
 
   ~ostream()
   {
-    try {
-      if (this->good()) this->flush();
+    if (this->good())
+    {
+      this->flush();
     }
-    catch (bp::error_already_set&) {
+
+    if (PyErr_Occurred() != nullptr)
+    {
       PyErr_Clear();
       throw std::runtime_error(
         "Problem closing python ostream.\n"

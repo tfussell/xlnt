@@ -7,9 +7,7 @@
 
 PyObject *xlsx2arrow(PyObject *file)
 {
-    boost::python::handle<> boost_file_handle(file);
-    boost::python::object boost_file(boost_file_handle);
-    boost_adaptbx::python::streambuf buffer(boost_file);
+    xlnt::arrow::streambuf buffer(file);
     std::istream stream(&buffer);
     std::shared_ptr<arrow::Schema> schema;
     std::vector<std::shared_ptr<arrow::Column>> columns;
