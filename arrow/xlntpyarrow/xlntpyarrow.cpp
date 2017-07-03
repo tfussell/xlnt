@@ -84,7 +84,7 @@ PyDoc_STRVAR(xlntpyarrow_doc, "The xlntpyarrow module");
 
 static PyModuleDef_Slot xlntpyarrow_slots[] =
 {
-    { Py_mod_exec, exec_xlntpyarrow },
+    { Py_mod_exec, (void *)exec_xlntpyarrow },
     { 0, NULL }
 };
 
