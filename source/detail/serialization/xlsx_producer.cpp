@@ -36,6 +36,7 @@
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/utils/path.hpp>
+#include <xlnt/utils/scoped_enum_hash.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/workbook/workbook_view.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
@@ -167,7 +168,7 @@ void xlsx_producer::write_content_types()
     const auto content_types_path = path("[Content_Types].xml");
     begin_part(content_types_path);
 
-    const auto xmlns = "http://schemas.openxmlformats.org/package/2006/content-types"s;
+    const auto xmlns = "http://schemas.openxmlformats.org/package/2006/content-types";
 
     write_start_element(xmlns, "Types");
     write_namespace(xmlns, "");
@@ -286,7 +287,7 @@ void xlsx_producer::write_property(const std::string &name, const variant &value
             write_start_element(constants::ns("vt"), "vector");
 
             auto vector = value.get<std::vector<variant>>();
-            std::unordered_set<variant::type> types;
+            std::unordered_set<variant::type, scoped_enum_hash<variant::type>> types;
 
             for (const auto &element : vector)
             {
