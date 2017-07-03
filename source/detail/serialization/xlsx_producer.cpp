@@ -41,8 +41,6 @@
 #include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
-using namespace std::string_literals;
-
 namespace {
 
 /// <summary>
@@ -2477,9 +2475,9 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         auto first_header = std::string();
         auto first_footer = std::string();
 
-        const auto locations = 
+        const auto locations =
         {
-            header_footer::location::left, 
+            header_footer::location::left,
             header_footer::location::center,
             header_footer::location::right
         };
@@ -2715,7 +2713,7 @@ void xlsx_producer::write_comments(const relationship & /*rel*/, worksheet ws, c
                 if (run.second.is_set())
                 {
                     write_start_element(xmlns, "rPr");
-                    
+
                     if (run.second.get().bold())
                     {
                         write_start_element(xmlns, "b");
