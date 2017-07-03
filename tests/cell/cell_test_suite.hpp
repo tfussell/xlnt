@@ -619,9 +619,9 @@ private:
         xlnt_assert_equals(cell.value<long double>(), 3.141592);
 
         auto cell2 = ws.cell("A2");
-        cell2.value(std::string(100'000, 'a'));
+        cell2.value(std::string(100000, 'a'));
         cell.value(cell2);
-        xlnt_assert_equals(cell.value<std::string>(), std::string(32'767, 'a'));
+        xlnt_assert_equals(cell.value<std::string>(), std::string(32767, 'a'));
     }
 
     void test_reference()
