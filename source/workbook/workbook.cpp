@@ -1508,14 +1508,14 @@ void workbook::garbage_collect_formulae()
 
 void workbook::update_sheet_properties()
 {
-    if (has_extended_property(extended_property::titles_of_parts))
+    if (has_extended_property(xlnt::extended_property::titles_of_parts))
     {
-        extended_property(extended_property::titles_of_parts, sheet_titles());
+        extended_property(xlnt::extended_property::titles_of_parts, sheet_titles());
     }
 
-    if (has_extended_property(extended_property::heading_pairs))
+    if (has_extended_property(xlnt::extended_property::heading_pairs))
     {
-        extended_property(extended_property::heading_pairs,
+        extended_property(xlnt::extended_property::heading_pairs,
             std::vector<variant>{variant("Worksheets"), variant(static_cast<int>(sheet_count()))});
     }
 }

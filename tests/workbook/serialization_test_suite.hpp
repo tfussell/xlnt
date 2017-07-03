@@ -31,6 +31,8 @@
 #include <helpers/test_suite.hpp>
 #include <helpers/path_helper.hpp>
 #include <helpers/xml_helper.hpp>
+#include <xlnt/workbook/streaming_workbook_reader.hpp>
+#include <xlnt/workbook/streaming_workbook_writer.hpp>
 #include <xlnt/workbook/workbook.hpp>
 
 class serialization_test_suite : public test_suite
@@ -56,6 +58,8 @@ public:
         register_test(test_read_custom_properties);
         register_test(test_round_trip_rw);
         register_test(test_round_trip_rw_encrypted);
+        register_test(test_streaming_read);
+        //register_test(test_streaming_write);
     }
 
 	bool workbook_matches_file(xlnt::workbook &wb, const xlnt::path &file)
@@ -460,5 +464,43 @@ public:
                 : "secret");
             xlnt_assert(round_trip_matches_rw(path, password));
         }
+    }
+
+    void test_streaming_read()
+    {
+        const auto path = path_helper::test_file("4_every_style.xlsx");
+        xlnt::streaming_workbook_reader reader;
+
+        reader.open(xlnt::path(path));
+
+        while (reader.has_worksheet())
+        {
+            reader.begin_worksheet();
+
+            while (reader.has_cell())
+            {
+                const auto cell = reader.read_cell();
+                //std::cout << cell.reference().to_string() << std::endl;
+            }
+
+            const auto ws = reader.end_worksheet();
+        }
+    }
+
+    void test_streaming_write()
+    {
+        const auto path = std::string("stream-out.xlsx");
+        xlnt::streaming_workbook_writer writer;
+
+        writer.open(path);
+
+        writer.add_sheet("stream");
+
+        auto b2 = writer.add_cell("B2");
+        b2.value("B2!");
+
+        auto c3 = writer.add_cell("C3");
+        b2.value("should not change");
+        c3.value("C3!");
     }
 };

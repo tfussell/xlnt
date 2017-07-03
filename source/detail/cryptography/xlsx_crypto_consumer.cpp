@@ -108,7 +108,7 @@ std::vector<std::uint8_t> decrypt_xlsx_agile(
         ++segment;
     }
 
-    decrypted_package.resize(total_size);
+    decrypted_package.resize(static_cast<std::size_t>(total_size));
 
     return decrypted_package;
 }
@@ -153,7 +153,8 @@ encryption_info::standard_encryption_info read_standard_encryption_info(std::ist
         throw xlnt::exception("invalid header");
     }
 
-    const auto csp_name_length = (header_length - (info_stream.tellg() - index_at_start)) / 2;
+    const auto csp_name_length = static_cast<std::size_t>((header_length 
+        - (info_stream.tellg() - index_at_start)) / 2);
     auto csp_name = xlnt::detail::read_string<char16_t>(info_stream, csp_name_length);
     csp_name.pop_back(); // remove extraneous trailing null
     if (csp_name != u"Microsoft Enhanced RSA and AES Cryptographic Provider (Prototype)"
