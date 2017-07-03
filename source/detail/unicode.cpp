@@ -21,7 +21,6 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#include <codecvt>
 #include <locale>
 #include <string>
 
@@ -29,6 +28,8 @@
 
 #ifdef UTFCPP
 #include <utf8.h>
+#else
+#include <codecvt>
 #endif
 
 namespace xlnt {
