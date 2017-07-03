@@ -31,7 +31,7 @@
 #include <linux/limits.h>
 #include <sys/types.h>
 #include <unistd.h>
-#elif define(_MSC_VER)
+#elif defined(_MSC_VER)
 #include <codecvt>
 #endif
 
