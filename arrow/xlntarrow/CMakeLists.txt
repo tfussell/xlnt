@@ -8,8 +8,8 @@ set(XLNT_ARROW
     ${CMAKE_CURRENT_SOURCE_DIR}/xlntarrow.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/xlntarrow.cpp)
 
-add_library(xlntarrow STATIC ${XLNT_ARROW})
+add_library(xlntarrow SHARED ${XLNT_ARROW})
 target_link_libraries(xlntarrow PRIVATE xlnt)
 target_include_directories(xlntarrow PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_include_directories(xlntarrow PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../../Miniconda3/Library/include)
+target_include_directories(xlntarrow PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../miniconda3/include)
 target_include_directories(xlntarrow PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
