@@ -1,5 +1,6 @@
 from distutils.core import setup, Extension
 from distutils import sysconfig
+import os
 
 description = """
 xlntpyarrow allows Apache Arrow tables to be written to and read from an XLSX
@@ -10,24 +11,25 @@ cfg_vars = sysconfig.get_config_vars()
 if 'CFLAGS' in cfg_vars:
     cfg_vars['CFLAGS'] = cfg_vars['CFLAGS'].replace('-Wstrict-prototypes', '')
 
-project_root = '/root/xlnt'
-conda_root = '/root/miniconda3'
+project_root = '${CMAKE_SOURCE_DIR}'
+conda_root = '${ARROW_INCLUDE_PATH}'
 
 include_dirs = [
+    os.path.join(project_root, 'include'),
     os.path.join(project_root, 'arrow/xlntarrow'),
     os.path.join(project_root, 'arrow/xlntpyarrow'),
-    os.path.join(conda_root, 'include')
+    conda_root
 ]
 
 library_dirs = [
-    os.path.join(project_root, 'build/arrow/xlntarrow'),
-    os.path.join(project_root, 'build/source'),
-    os.path.join(conda_root, 'lib')
+    os.path.join(project_root, 'build/arrow/xlntarrow/Debug'),
+    os.path.join(project_root, 'build/source/Debug'),
+    os.path.join(conda_root, '../lib')
 ]
 
 xlntpyarrow_extension = Extension(
     'xlntpyarrow',
-    ['xlntpyarrow.cpp'],
+    ['${CMAKE_CURRENT_SOURCE_DIR}/xlntpyarrow.cpp'],
     language = 'c++',
     include_dirs = include_dirs,
     libraries = [
@@ -35,8 +37,8 @@ xlntpyarrow_extension = Extension(
         'xlntarrow',
         'xlnt'
     ],
-    library_dirs = libarary_dirs,
-    extra_compile_args=['-std=c++11']
+    library_dirs = library_dirs,
+    extra_compile_args=['${CMAKE_CXX_FLAGS}']
 )
 
 classifiers = [

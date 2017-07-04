@@ -9,7 +9,9 @@ set(XLNT_ARROW
     ${CMAKE_CURRENT_SOURCE_DIR}/xlntarrow.cpp)
 
 add_library(xlntarrow SHARED ${XLNT_ARROW})
+target_compile_definitions(xlntarrow PRIVATE XLNT_EXPORT=1)
 target_link_libraries(xlntarrow PRIVATE xlnt)
+target_link_libraries(xlntarrow PRIVATE ${ARROW_LIBRARY_PATH}/arrow.lib)
 target_include_directories(xlntarrow PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_include_directories(xlntarrow PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../miniconda3/include)
+target_include_directories(xlntarrow PRIVATE ${ARROW_INCLUDE_PATH})
 target_include_directories(xlntarrow PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
