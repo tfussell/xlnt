@@ -23,6 +23,7 @@
 
 #include <fstream>
 
+#include <detail/serialization/open_stream.hpp>
 #include <detail/serialization/vector_streambuf.hpp>
 #include <detail/serialization/xlsx_consumer.hpp>
 #include <xlnt/cell/cell.hpp>
@@ -31,45 +32,6 @@
 #include <xlnt/workbook/streaming_workbook_reader.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
-
-
-namespace {
-
-//TODO: (important) this is duplicated from workbook.cpp, find a common place to keep it
-#ifdef _MSC_VER
-void open_stream(std::ifstream &stream, const std::wstring &path)
-{
-    stream.open(path, std::ios::binary);
-}
-
-void open_stream(std::ofstream &stream, const std::wstring &path)
-{
-    stream.open(path, std::ios::binary);
-}
-
-void open_stream(std::ifstream &stream, const std::string &path)
-{
-    open_stream(stream, xlnt::path(path).wstring());
-}
-
-void open_stream(std::ofstream &stream, const std::string &path)
-{
-    open_stream(stream, xlnt::path(path).wstring());
-}
-#else
-void open_stream(std::ifstream &stream, const std::string &path)
-{
-    stream.open(path, std::ios::binary);
-}
-
-void open_stream(std::ofstream &stream, const std::string &path)
-{
-    stream.open(path, std::ios::binary);
-}
-#endif
-
-} // namespace
-
 
 namespace xlnt {
 
@@ -145,7 +107,7 @@ void streaming_workbook_reader::open(const std::vector<std::uint8_t> &data)
 void streaming_workbook_reader::open(const std::string &filename)
 {
     stream_.reset(new std::ifstream());
-    open_stream((std::ifstream &)stream_, filename);
+    xlnt::detail::open_stream((std::ifstream &)stream_, filename);
     open(*stream_);
 }
 
@@ -153,7 +115,7 @@ void streaming_workbook_reader::open(const std::string &filename)
 void streaming_workbook_reader::open(const std::wstring &filename)
 {
     stream_.reset(new std::ifstream());
-    open_stream((std::ifstream &)*stream_, filename);
+    xlnt::detail::open_stream((std::ifstream &)*stream_, filename);
     open(*stream_);
 }
 #endif
@@ -161,7 +123,7 @@ void streaming_workbook_reader::open(const std::wstring &filename)
 void streaming_workbook_reader::open(const xlnt::path &filename)
 {
     stream_.reset(new std::ifstream());
-    open_stream((std::ifstream &)*stream_, filename.string());
+    xlnt::detail::open_stream((std::ifstream &)*stream_, filename.string());
     open(*stream_);
 }
 

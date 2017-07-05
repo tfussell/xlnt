@@ -59,7 +59,7 @@ public:
         register_test(test_round_trip_rw);
         register_test(test_round_trip_rw_encrypted);
         register_test(test_streaming_read);
-        //register_test(test_streaming_write);
+        register_test(test_streaming_write);
     }
 
 	bool workbook_matches_file(xlnt::workbook &wb, const xlnt::path &file)
@@ -494,7 +494,7 @@ public:
 
         writer.open(path);
 
-        writer.add_sheet("stream");
+        writer.add_worksheet("stream");
 
         auto b2 = writer.add_cell("B2");
         b2.value("B2!");

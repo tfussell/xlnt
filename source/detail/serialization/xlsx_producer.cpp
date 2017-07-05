@@ -90,17 +90,40 @@ xlsx_producer::xlsx_producer(const workbook &target)
 {
 }
 
+xlsx_producer::~xlsx_producer()
+{
+    end_part();
+    archive_.reset();
+}
+
 void xlsx_producer::write(std::ostream &destination)
 {
-    ozstream archive(destination);
-    archive_ = &archive;
-    populate_archive();
+    archive_.reset(new ozstream(destination));
+    populate_archive(false);
+}
+
+void xlsx_producer::open(std::ostream &destination)
+{
+    archive_.reset(new ozstream(destination));
+    populate_archive(true);
+}
+
+cell xlsx_producer::add_cell(const cell_reference &ref)
+{
+    return cell(current_cell_);
+}
+
+worksheet xlsx_producer::add_worksheet(const std::string &title)
+{
+    return worksheet(current_worksheet_);
 }
 
 // Part Writing Methods
 
-void xlsx_producer::populate_archive()
+void xlsx_producer::populate_archive(bool streaming)
 {
+    streaming_ = streaming;
+
     write_content_types();
 
     const auto root_rels = source_.manifest().relationships(path("/"));

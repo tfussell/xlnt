@@ -32,6 +32,7 @@
 #include <detail/external/include_libstudxml.hpp>
 #include <detail/serialization/vector_streambuf.hpp>
 #include <detail/serialization/xlsx_producer.hpp>
+#include <detail/serialization/zstream.hpp>
 #include <xlnt/utils/exceptions.hpp>
 
 namespace {
@@ -314,6 +315,7 @@ void xlsx_producer::write(std::ostream &destination, const std::string &password
     vector_ostreambuf plaintext_buffer(plaintext);
     std::ostream decrypted_stream(&plaintext_buffer);
     write(decrypted_stream);
+    archive_.reset();
 
     const auto ciphertext = ::encrypt_xlsx(plaintext, utf8_to_utf16(password));
     vector_istreambuf encrypted_buffer(ciphertext);

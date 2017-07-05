@@ -28,7 +28,15 @@
 
 #include <xlnt/xlnt_config.hpp>
 
+namespace xml {
+class serializer;
+}
+
 namespace xlnt {
+
+namespace detail {
+class xlsx_producer;
+} // namespace detail
 
 /// <summary>
 /// workbook is the container for all other parts of the document.
@@ -36,6 +44,7 @@ namespace xlnt {
 class XLNT_API streaming_workbook_writer
 {
 public:
+    streaming_workbook_writer();
     ~streaming_workbook_writer();
 
     /// <summary>
@@ -56,38 +65,46 @@ public:
     /// Ends writing of data to the current sheet and begins writing a new sheet
     /// with the given title.
     /// </summary>
-    worksheet add_sheet(const std::string &title);
+    worksheet add_worksheet(const std::string &title);
 
     /// <summary>
     /// Serializes the workbook into an XLSX file and saves the bytes into
     /// byte vector data.
     /// </summary>
-    void open(std::vector<std::uint8_t> &data) const;
+    void open(std::vector<std::uint8_t> &data);
 
     /// <summary>
     /// Serializes the workbook into an XLSX file and saves the data into a file
     /// named filename.
     /// </summary>
-    void open(const std::string &filename) const;
+    void open(const std::string &filename);
 
 #ifdef _MSC_VER
     /// <summary>
     /// Serializes the workbook into an XLSX file and saves the data into a file
     /// named filename.
     /// </summary>
-    void open(const std::wstring &filename) const;
+    void open(const std::wstring &filename);
 #endif
 
     /// <summary>
     /// Serializes the workbook into an XLSX file and saves the data into a file
     /// named filename.
     /// </summary>
-    void open(const xlnt::path &filename) const;
+    void open(const xlnt::path &filename);
 
     /// <summary>
     /// Serializes the workbook into an XLSX file and saves the data into stream.
     /// </summary>
-    void open(std::ostream &stream) const;
+    void open(std::ostream &stream);
+
+    std::unique_ptr<xlnt::detail::xlsx_producer> producer_;
+    std::unique_ptr<workbook> workbook_;
+    std::unique_ptr<std::ostream> stream_;
+    std::unique_ptr<std::streambuf> stream_buffer_;
+    std::unique_ptr<std::ostream> part_stream_;
+    std::unique_ptr<std::streambuf> part_stream_buffer_;
+    std::unique_ptr<xml::serializer> serializer_;
 };
 
 } // namespace xlnt

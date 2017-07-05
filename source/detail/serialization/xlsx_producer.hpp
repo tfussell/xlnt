@@ -38,12 +38,14 @@ class serializer;
 namespace xlnt {
 
 class border;
+class cell;
 class cell_reference;
 class color;
 class fill;
 class font;
 class path;
 class relationship;
+class streaming_workbook_writer;
 class variant;
 class workbook;
 class worksheet;
@@ -51,6 +53,8 @@ class worksheet;
 namespace detail {
 
 class ozstream;
+struct cell_impl;
+struct worksheet_impl;
 
 /// <summary>
 /// Handles writing a workbook into an XLSX file.
@@ -60,16 +64,26 @@ class xlsx_producer
 public:
 	xlsx_producer(const workbook &target);
 
+    ~xlsx_producer();
+
 	void write(std::ostream &destination);
 
     void write(std::ostream &destination, const std::string &password);
 
 private:
+    friend class xlnt::streaming_workbook_writer;
+
+    void open(std::ostream &destination);
+
+    cell add_cell(const cell_reference &ref);
+
+    worksheet add_worksheet(const std::string &title);
+
 	/// <summary>
 	/// Write all files needed to create a valid XLSX file which represents all
 	/// data contained in workbook.
 	/// </summary>
-	void populate_archive();
+	void populate_archive(bool streaming);
 
     void begin_part(const path &part);
     void end_part();
@@ -179,10 +193,18 @@ private:
 	/// </summary>
 	const workbook &source_;
     
-	ozstream *archive_;
+	std::unique_ptr<ozstream> archive_;
     std::unique_ptr<xml::serializer> current_part_serializer_;
     std::unique_ptr<std::streambuf> current_part_streambuf_;
     std::ostream current_part_stream_;
+
+    bool streaming_ = false;
+
+    std::unique_ptr<detail::cell_impl> streaming_cell_;
+
+    detail::cell_impl *current_cell_;
+
+    detail::worksheet_impl *current_worksheet_;
 };
 
 } // namespace detail

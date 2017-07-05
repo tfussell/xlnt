@@ -35,6 +35,7 @@
 #include <detail/implementations/worksheet_impl.hpp>
 #include <detail/serialization/excel_thumbnail.hpp>
 #include <detail/serialization/vector_streambuf.hpp>
+#include <detail/serialization/open_stream.hpp>
 #include <detail/serialization/xlsx_consumer.hpp>
 #include <detail/serialization/xlsx_producer.hpp>
 #include <xlnt/cell/cell.hpp>
@@ -63,37 +64,7 @@
 
 namespace {
 
-#ifdef _MSC_VER
-void open_stream(std::ifstream &stream, const std::wstring &path)
-{
-    stream.open(path, std::ios::binary);
-}
-
-void open_stream(std::ofstream &stream, const std::wstring &path)
-{
-    stream.open(path, std::ios::binary);
-}
-
-void open_stream(std::ifstream &stream, const std::string &path)
-{
-    open_stream(stream, xlnt::path(path).wstring());
-}
-
-void open_stream(std::ofstream &stream, const std::string &path)
-{
-    open_stream(stream, xlnt::path(path).wstring());
-}
-#else
-void open_stream(std::ifstream &stream, const std::string &path)
-{
-    stream.open(path, std::ios::binary);
-}
-
-void open_stream(std::ofstream &stream, const std::string &path)
-{
-    stream.open(path, std::ios::binary);
-}
-#endif
+using xlnt::detail::open_stream;
 
 template<typename T>
 std::vector<T> keys(const std::vector<std::pair<T, xlnt::variant>> &container)
@@ -305,7 +276,7 @@ variant workbook::core_property(xlnt::core_property type) const
             return iter.second;
         }
     }
-    
+
     throw xlnt::exception("workbook doesn't have core property");
 }
 
@@ -321,7 +292,7 @@ void workbook::core_property(xlnt::core_property type, const variant &value)
             return;
         }
     }
-    
+
     d_->core_properties_.push_back({type, value});
 }
 
@@ -347,7 +318,7 @@ void workbook::extended_property(xlnt::extended_property type, const variant &va
             return;
         }
     }
-    
+
     d_->extended_properties_.push_back({type, value});
 }
 
@@ -360,7 +331,7 @@ variant workbook::extended_property(xlnt::extended_property type) const
             return iter.second;
         }
     }
-    
+
     throw xlnt::exception("workbook doesn't have extended property");
 }
 
@@ -386,7 +357,7 @@ void workbook::custom_property(const std::string &property_name, const variant &
             return;
         }
     }
-    
+
     d_->custom_properties_.push_back({property_name, value});
 }
 
@@ -399,7 +370,7 @@ variant workbook::custom_property(const std::string &property_name) const
             return iter.second;
         }
     }
-    
+
     throw xlnt::exception("workbook doesn't have custom property");
 }
 
