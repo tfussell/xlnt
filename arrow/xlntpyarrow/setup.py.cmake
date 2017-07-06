@@ -21,11 +21,18 @@ include_dirs = [
     conda_root
 ]
 
+subdirectory = ''
+
+if os.name == 'nt':
+    subdirectory = '/Release'
+
 library_dirs = [
-    os.path.join(project_root, 'build/arrow/xlntarrow/Debug'),
-    os.path.join(project_root, 'build/source/Debug'),
+    os.path.join(project_root, 'build/arrow/xlntarrow' + subdirectory),
+    os.path.join(project_root, 'build/source' + subdirectory),
     os.path.join(conda_root, '../lib')
 ]
+
+compile_args = '${CMAKE_CXX_FLAGS}'.split() or []
 
 xlntpyarrow_extension = Extension(
     'xlntpyarrow',
@@ -38,7 +45,7 @@ xlntpyarrow_extension = Extension(
         'xlnt'
     ],
     library_dirs = library_dirs,
-    extra_compile_args=['${CMAKE_CXX_FLAGS}']
+    extra_compile_args = compile_args
 )
 
 classifiers = [
