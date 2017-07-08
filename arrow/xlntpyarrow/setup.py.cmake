@@ -32,7 +32,7 @@ library_dirs = [
     os.path.join(conda_root, '../lib')
 ]
 
-compile_args = '${CMAKE_CXX_FLAGS}'.split() or []
+compile_args = '${CMAKE_CXX_FLAGS}'.split()
 
 xlntpyarrow_extension = Extension(
     'xlntpyarrow',
