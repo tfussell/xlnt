@@ -669,6 +669,7 @@ std::string cell::to_string() const
     {
     case cell::type::empty:
         return "";
+    case cell::type::date:
     case cell::type::number:
         return nf.format(value<long double>(), base_date());
     case cell::type::inline_string:
