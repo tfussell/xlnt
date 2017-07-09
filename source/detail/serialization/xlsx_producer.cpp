@@ -110,11 +110,15 @@ void xlsx_producer::open(std::ostream &destination)
 
 cell xlsx_producer::add_cell(const cell_reference &ref)
 {
+    current_cell_->column_ = ref.column();
+    current_cell_->row_ = ref.row();
+
     return cell(current_cell_);
 }
 
 worksheet xlsx_producer::add_worksheet(const std::string &title)
 {
+    current_worksheet_->title_ = title;
     return worksheet(current_worksheet_);
 }
 
@@ -2256,7 +2260,10 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
             switch (cell.data_type())
             {
-            case cell::type::boolean:
+	    case cell::type::empty:
+                break;
+
+	    case cell::type::boolean:
                 write_attribute("t", "b");
                 break;
 
@@ -2298,6 +2305,9 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
             switch (cell.data_type())
             {
+            case cell::type::empty:
+                break;
+
             case cell::type::boolean:
                 write_element(xmlns, "v", write_bool(cell.value<bool>()));
                 break;

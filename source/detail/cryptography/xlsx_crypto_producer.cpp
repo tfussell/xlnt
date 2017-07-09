@@ -45,7 +45,7 @@ encryption_info generate_encryption_info(const std::u16string &/*password*/)
 
     result.is_agile = true;
 
-    result.agile = encryption_info::agile_encryption_info{};
+    result.agile = encryption_info::agile_encryption_info();
 
     result.agile.key_data.block_size = 16;
     result.agile.key_data.cipher_algorithm = "AES";
