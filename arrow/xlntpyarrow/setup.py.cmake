@@ -12,13 +12,13 @@ if 'CFLAGS' in cfg_vars:
     cfg_vars['CFLAGS'] = cfg_vars['CFLAGS'].replace('-Wstrict-prototypes', '')
 
 project_root = '${CMAKE_SOURCE_DIR}'
-conda_root = '${ARROW_INCLUDE_PATH}'
+conda_root = '${CONDA_ROOT}'
 
 include_dirs = [
     os.path.join(project_root, 'include'),
     os.path.join(project_root, 'arrow/xlntarrow'),
     os.path.join(project_root, 'arrow/xlntpyarrow'),
-    conda_root
+    os.path.join(conda_root, 'include')
 ]
 
 subdirectory = ''
@@ -29,7 +29,7 @@ if os.name == 'nt':
 library_dirs = [
     os.path.join(project_root, 'build/arrow/xlntarrow' + subdirectory),
     os.path.join(project_root, 'build/source' + subdirectory),
-    os.path.join(conda_root, '../lib')
+    os.path.join(conda_root, 'lib')
 ]
 
 compile_args = '${CMAKE_CXX_FLAGS}'.split()
