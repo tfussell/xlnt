@@ -1,9 +1,4 @@
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wsign-conversion"
-#pragma clang diagnostic ignored "-Wswitch-enum"
-#pragma clang diagnostic ignored "-Wshadow"
 #include <arrow/api.h>
-#pragma clang diagnostic pop
 
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>

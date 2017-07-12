@@ -64,7 +64,9 @@ file(GLOB WORKSHEET_HEADERS ${XLNT_INCLUDE_DIR}/xlnt/worksheet/*.hpp)
 file(GLOB WORKSHEET_SOURCES ${XLNT_SOURCE_DIR}/worksheet/*.cpp)
 
 if(NOT ARROW)
-	list(REMOVE_ITEM UTILS_SOURCES ${XLNT_SOURCE_DIR}/utils/xlntarrow.cpp)
+    list(REMOVE_ITEM UTILS_SOURCES ${XLNT_SOURCE_DIR}/utils/xlntarrow.cpp)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set_source_files_properties(${XLNT_SOURCE_DIR}/utils/xlntarrow.cpp PROPERTIES COMPILE_FLAGS "-w")
 endif()
 
 file(GLOB DETAIL_ROOT_HEADERS ${XLNT_SOURCE_DIR}/detail/*.hpp)
