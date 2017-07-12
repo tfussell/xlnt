@@ -5,6 +5,8 @@ if(NOT MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
 
+string(REGEX REPLACE "\\\\" "/" CONDA_ROOT ${CONDA_ROOT})
+
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/setup.py.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/setup.py")
 
