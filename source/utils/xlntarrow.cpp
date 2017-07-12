@@ -1,10 +1,14 @@
-#include <xlnt/xlnt.hpp>
-#include <xlntarrow.hpp>
+#include <xlnt/cell/cell.hpp>
+#include <xlnt/cell/cell_reference.hpp>
+#include <xlnt/workbook/streaming_workbook_reader.hpp>
+#include <xlnt/workbook/streaming_workbook_writer.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
+#include <xlnt/utils/xlntarrow.hpp>
 
 namespace xlnt {
 namespace arrow {
 
-void xlsx2arrow(std::istream &s, ::arrow::Table &table)
+void XLNT_API xlsx2arrow(std::istream &s, ::arrow::Table &table)
 {
     xlnt::streaming_workbook_reader reader;
     reader.open(s);
@@ -30,7 +34,7 @@ void xlsx2arrow(std::istream &s, ::arrow::Table &table)
     reader.end_worksheet();
 }
 
-void arrow2xlsx(const ::arrow::Table &table, std::ostream &s)
+void XLNT_API arrow2xlsx(const ::arrow::Table &table, std::ostream &s)
 {
   xlnt::streaming_workbook_writer writer;
   writer.open(s);

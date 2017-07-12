@@ -25,6 +25,8 @@
 
 #include <cstddef>
 #include <iterator>
+#include <string>
+#include <vector>
 
 #include <xlnt/xlnt_config.hpp>
 
@@ -33,6 +35,10 @@ class serializer;
 }
 
 namespace xlnt {
+
+class cell;
+class cell_reference;
+class worksheet;
 
 namespace detail {
 class xlsx_producer;

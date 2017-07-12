@@ -32,8 +32,7 @@ if(TESTS)
 endif()
 
 if(ARROW)
-    add_subdirectory(arrow/xlntarrow)
-    add_subdirectory(arrow/xlntpyarrow)
+    add_subdirectory(xlntpyarrow)
 endif()
 
 add_subdirectory(source)

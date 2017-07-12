@@ -16,8 +16,7 @@ conda_root = '${CONDA_ROOT}'
 
 include_dirs = [
     os.path.join(project_root, 'include'),
-    os.path.join(project_root, 'arrow/xlntarrow'),
-    os.path.join(project_root, 'arrow/xlntpyarrow'),
+    os.path.join(project_root, 'xlntpyarrow'),
     os.path.join(conda_root, 'include')
 ]
 
@@ -27,7 +26,6 @@ if os.name == 'nt':
     subdirectory = '/Release'
 
 library_dirs = [
-    os.path.join(project_root, 'build/arrow/xlntarrow' + subdirectory),
     os.path.join(project_root, 'build/source' + subdirectory),
     os.path.join(conda_root, 'lib')
 ]
@@ -41,7 +39,6 @@ xlntpyarrow_extension = Extension(
     include_dirs = include_dirs,
     libraries = [
         'arrow',
-        'xlntarrow',
         'xlnt'
     ],
     library_dirs = library_dirs,
