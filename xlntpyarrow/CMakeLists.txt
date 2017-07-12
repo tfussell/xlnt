@@ -10,5 +10,4 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/setup.py.cmake"
 
 add_custom_target(xlntpyarrow ALL
     COMMAND python setup.py build
-    DEPENDS xlntarrow
-	SOURCES xlntpyarrow.cpp setup.py.cmake)
+	  SOURCES xlntpyarrow.cpp setup.py.cmake)
