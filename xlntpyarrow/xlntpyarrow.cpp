@@ -1,9 +1,12 @@
 #include <iostream>
 #include <memory>
 #include <vector>
-#include <xlnt/utils/xlntarrow.hpp>
+
+#include <arrow/api.h>
+#include <Python.h> // must be included after Arrow
+
 #include <python_streambuf.hpp>
-#include <Python.h>
+#include <xlnt/utils/xlntarrow.hpp>
 
 PyObject *xlsx2arrow(PyObject *file)
 {
