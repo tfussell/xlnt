@@ -107,7 +107,7 @@ void streaming_workbook_reader::open(const std::vector<std::uint8_t> &data)
 void streaming_workbook_reader::open(const std::string &filename)
 {
     stream_.reset(new std::ifstream());
-    xlnt::detail::open_stream((std::ifstream &)stream_, filename);
+    xlnt::detail::open_stream(static_cast<std::ifstream &>(*stream_), filename);
     open(*stream_);
 }
 
@@ -115,7 +115,7 @@ void streaming_workbook_reader::open(const std::string &filename)
 void streaming_workbook_reader::open(const std::wstring &filename)
 {
     stream_.reset(new std::ifstream());
-    xlnt::detail::open_stream((std::ifstream &)*stream_, filename);
+    xlnt::detail::open_stream(static_cast<std::ifstream &>(*stream_), filename);
     open(*stream_);
 }
 #endif
@@ -123,7 +123,7 @@ void streaming_workbook_reader::open(const std::wstring &filename)
 void streaming_workbook_reader::open(const xlnt::path &filename)
 {
     stream_.reset(new std::ifstream());
-    xlnt::detail::open_stream((std::ifstream &)*stream_, filename.string());
+    xlnt::detail::open_stream(static_cast<std::ifstream &>(*stream_), filename.string());
     open(*stream_);
 }
 
