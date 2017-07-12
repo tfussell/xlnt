@@ -65,8 +65,6 @@ file(GLOB WORKSHEET_SOURCES ${XLNT_SOURCE_DIR}/worksheet/*.cpp)
 
 if(NOT ARROW)
     list(REMOVE_ITEM UTILS_SOURCES ${XLNT_SOURCE_DIR}/utils/xlntarrow.cpp)
-elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set_source_files_properties(${XLNT_SOURCE_DIR}/utils/xlntarrow.cpp PROPERTIES COMPILE_FLAGS "-w")
 endif()
 
 file(GLOB DETAIL_ROOT_HEADERS ${XLNT_SOURCE_DIR}/detail/*.hpp)
@@ -190,6 +188,9 @@ endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/detail/serialization/miniz.cpp PROPERTIES COMPILE_FLAGS "-Wno-undef")
     set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/detail/serialization/zstream.cpp PROPERTIES COMPILE_FLAGS "-Wno-undef -Wno-shorten-64-to-32")
+    if(ARROW)
+        set_source_files_properties(${XLNT_SOURCE_DIR}/utils/xlntarrow.cpp PROPERTIES COMPILE_FLAGS "-w")
+    endif()
 endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
