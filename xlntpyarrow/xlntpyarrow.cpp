@@ -31,13 +31,13 @@ Returns an arrow table representing the given XLSX file object.");
 
 PyObject *xlntpyarrow_xlsx2arrow(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    PyObject *file = nullptr;
-    static const char *keywords[] = { "file", nullptr };
+    PyObject *file = NULL;
+    static const char *keywords[] = { "file", NULL };
     static auto keywords_nc = const_cast<char **>(keywords);
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords_nc, &file))
     {
-        return nullptr;
+        return NULL;
     }
 
     return xlsx2arrow(file);
@@ -53,60 +53,112 @@ Writes the given arrow table to out_file as an XLSX file.");
 
 PyObject *xlntpyarrow_arrow2xlsx(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    PyObject *obj = nullptr;
-    static const char *keywords[] = { "file", nullptr };
+    PyObject *obj = NULL;
+    static const char *keywords[] = { "file", NULL };
     static auto keywords_nc = const_cast<char **>(keywords);
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Oi", keywords_nc, &obj))
     {
-        return nullptr;
+        return NULL;
     }
 
     Py_RETURN_NONE;
 }
 
-static PyMethodDef xlntpyarrow_functions[] =
+// 2.7/3 compatible based on https://docs.python.org/3/howto/cporting.html
+
+struct module_state
+{
+    PyObject *error;
+};
+
+#if PY_MAJOR_VERSION >= 3
+#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
+#else
+#define GETSTATE(m) (&_state)
+static struct module_state _state;
+#endif
+
+static PyObject * error_out(PyObject *m)
+{
+    struct module_state *st = GETSTATE(m);
+    PyErr_SetString(st->error, "something bad happened");
+
+    return NULL;
+}
+
+static PyMethodDef xlntpyarrow_methods[] =
 {
     { "xlsx2arrow", (PyCFunction)xlntpyarrow_xlsx2arrow, METH_VARARGS | METH_KEYWORDS, xlntpyarrow_xlsx2arrow_doc },
     { "arrow2xlsx", (PyCFunction)xlntpyarrow_arrow2xlsx, METH_VARARGS | METH_KEYWORDS, xlntpyarrow_arrow2xlsx_doc },
-    { nullptr, nullptr, 0, nullptr }
+    { nullptr, NULL, 0, NULL }
 };
 
-int exec_xlntpyarrow(PyObject *module)
+#if PY_MAJOR_VERSION >= 3
+
+static int xlntpyarrow_traverse(PyObject *m, visitproc visit, void *arg)
 {
-    PyModule_AddFunctions(module, xlntpyarrow_functions);
+    Py_VISIT(GETSTATE(m)->error);
+    return 0;
+}
 
-    PyModule_AddStringConstant(module, "__author__", "Thomas Fussell");
-    PyModule_AddStringConstant(module, "__version__", "0.9.0");
-    PyModule_AddIntConstant(module, "year", 2017);
-
+static int xlntpyarrow_clear(PyObject *m)
+{
+    Py_CLEAR(GETSTATE(m)->error);
     return 0;
 }
 
 PyDoc_STRVAR(xlntpyarrow_doc, "The xlntpyarrow module");
 
-static PyModuleDef_Slot xlntpyarrow_slots[] =
-{
-    { Py_mod_exec, (void *)exec_xlntpyarrow },
-    { 0, nullptr }
-};
-
 static PyModuleDef xlntpyarrow_def =
 {
-    PyModuleDef_HEAD_INIT,
-    "xlntpyarrow",
-    xlntpyarrow_doc,
-    0,              /* m_size */
-    nullptr,           /* m_methods */
-    xlntpyarrow_slots,
-    nullptr,           /* m_traverse */
-    nullptr,           /* m_clear */
-    nullptr,           /* m_free */
+    PyModuleDef_HEAD_INIT, // m_base
+    "xlntpyarrow", // m_name
+    xlntpyarrow_doc, // m_doc
+    0, // m_size
+    xlntpyarrow_methods, // m_methods
+    NULL, // m_slots
+    xlntpyarrow_traverse, // m_traverse
+    xlntpyarrow_clear, // m_clear
+    NULL, // m_free
 };
 
-PyMODINIT_FUNC PyInit_xlntpyarrow()
+#define INITERROR return NULL
+
+PyMODINIT_FUNC
+PyInit_xlntpyarrow(void)
+
+#else
+#define INITERROR return
+
+void
+initmyextension(void)
+#endif
 {
-    return PyModuleDef_Init(&xlntpyarrow_def);
+#if PY_MAJOR_VERSION >= 3
+    PyObject *module = PyModule_Create(&xlntpyarrow_def);
+#else
+    PyObject *module = Py_InitModule("xlntpyarrow", xlntpyarrow_methods);
+#endif
+
+    if (module == NULL)
+    {
+        INITERROR;
+    }
+
+    struct module_state *st = GETSTATE(module);
+
+    st->error = PyErr_NewException("xlntpyarrow.Error", NULL, NULL);
+
+    if (st->error == NULL)
+    {
+        Py_DECREF(module);
+        INITERROR;
+    }
+
+#if PY_MAJOR_VERSION >= 3
+    return module;
+#endif
 }
 
 } // extern "C"
