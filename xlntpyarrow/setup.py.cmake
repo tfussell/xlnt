@@ -1,6 +1,7 @@
+import os
+import sys
 from distutils.core import setup, Extension
 from distutils import sysconfig
-import os
 
 description = """
 xlntpyarrow allows Apache Arrow tables to be written to and read from an XLSX
@@ -65,6 +66,16 @@ classifiers = [
     'Topic :: Software Development :: Libraries :: Python Modules'
 ]
 
+data_files = []
+
+for arg in sys.argv:
+    if arg[:2] == '--' and arg.split('=')[0][2:] == 'xlntlib':
+        data_files.append(os.path.relpath(arg.split('=')[1]).replace('\\', '/'))
+        sys.argv.remove(arg)
+        break
+
+print(data_files)
+
 setup(
     name = 'xlntpyarrow',
     version = '1.1.0',
@@ -73,5 +84,6 @@ setup(
     ext_modules = [xlntpyarrow_extension],
     author = 'Thomas Fussell',
     author_email = 'thomas.fussell@gmail.com',
-    url = 'https://github.com/tfussell/xlnt'
+    url = 'https://github.com/tfussell/xlnt',
+    data_files = [('Lib/site-packages', data_files)]
 )

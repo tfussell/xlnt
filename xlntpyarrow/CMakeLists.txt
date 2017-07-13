@@ -8,9 +8,9 @@ endif()
 string(REGEX REPLACE "\\\\" "/" CONDA_ROOT ${CONDA_ROOT})
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/setup.py.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/setup.py")
+	 "${CMAKE_CURRENT_BINARY_DIR}/setup.py")
 
 add_custom_target(xlntpyarrow ALL
-    COMMAND python setup.py install --record=record.txt
+    COMMAND python setup.py install --record=record.txt --xlntlib=$<TARGET_FILE:xlnt>
     DEPENDS xlnt
-	SOURCES xlntpyarrow.cpp setup.py.cmake)
+    SOURCES xlntpyarrow.cpp setup.py.cmake)
