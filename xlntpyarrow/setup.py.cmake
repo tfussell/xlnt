@@ -74,8 +74,6 @@ for arg in sys.argv:
         sys.argv.remove(arg)
         break
 
-print(data_files)
-
 setup(
     name = 'xlntpyarrow',
     version = '1.1.0',

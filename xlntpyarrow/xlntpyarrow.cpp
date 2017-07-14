@@ -91,22 +91,10 @@ static PyMethodDef xlntpyarrow_methods[] =
 {
     { "xlsx2arrow", (PyCFunction)xlntpyarrow_xlsx2arrow, METH_VARARGS | METH_KEYWORDS, xlntpyarrow_xlsx2arrow_doc },
     { "arrow2xlsx", (PyCFunction)xlntpyarrow_arrow2xlsx, METH_VARARGS | METH_KEYWORDS, xlntpyarrow_arrow2xlsx_doc },
-    { nullptr, NULL, 0, NULL }
+    { NULL, NULL, 0, NULL }
 };
 
 #if PY_MAJOR_VERSION >= 3
-
-static int xlntpyarrow_traverse(PyObject *m, visitproc visit, void *arg)
-{
-    Py_VISIT(GETSTATE(m)->error);
-    return 0;
-}
-
-static int xlntpyarrow_clear(PyObject *m)
-{
-    Py_CLEAR(GETSTATE(m)->error);
-    return 0;
-}
 
 PyDoc_STRVAR(xlntpyarrow_doc, "The xlntpyarrow module");
 
@@ -118,47 +106,27 @@ static PyModuleDef xlntpyarrow_def =
     0, // m_size
     xlntpyarrow_methods, // m_methods
     NULL, // m_slots
-    xlntpyarrow_traverse, // m_traverse
-    xlntpyarrow_clear, // m_clear
+    NULL, // m_traverse
+    NULL, // m_clear
     NULL, // m_free
 };
 
-#define INITERROR return NULL
-
 PyMODINIT_FUNC
 PyInit_xlntpyarrow(void)
-
 #else
-#define INITERROR return
-
 void
 initmyextension(void)
 #endif
 {
+    PyObject *module = NULL;
+
 #if PY_MAJOR_VERSION >= 3
-    PyObject *module = PyModule_Create(&xlntpyarrow_def);
+    module = PyModule_Create(&xlntpyarrow_def);
 #else
-    PyObject *module = Py_InitModule("xlntpyarrow", xlntpyarrow_methods);
+    module = Py_InitModule("xlntpyarrow", xlntpyarrow_methods);
 #endif
 
-    if (module == NULL)
-    {
-        INITERROR;
-    }
-
-    struct module_state *st = GETSTATE(module);
-
-    st->error = PyErr_NewException("xlntpyarrow.Error", NULL, NULL);
-
-    if (st->error == NULL)
-    {
-        Py_DECREF(module);
-        INITERROR;
-    }
-
-#if PY_MAJOR_VERSION >= 3
     return module;
-#endif
 }
 
 } // extern "C"
