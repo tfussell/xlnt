@@ -122,11 +122,11 @@ initmyextension(void)
 
 #if PY_MAJOR_VERSION >= 3
     module = PyModule_Create(&xlntpyarrow_def);
+    return module;
 #else
     module = Py_InitModule("xlntpyarrow", xlntpyarrow_methods);
+    return;
 #endif
-
-    return module;
 }
 
 } // extern "C"
