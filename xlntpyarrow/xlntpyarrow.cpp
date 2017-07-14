@@ -95,7 +95,7 @@ PyMODINIT_FUNC
 PyInit_xlntpyarrow(void)
 #else
 void
-initmyextension(void)
+initxlntpyarrow(void)
 #endif
 {
     PyObject *module = NULL;
