@@ -67,26 +67,6 @@ PyObject *xlntpyarrow_arrow2xlsx(PyObject *self, PyObject *args, PyObject *kwarg
 
 // 2.7/3 compatible based on https://docs.python.org/3/howto/cporting.html
 
-struct module_state
-{
-    PyObject *error;
-};
-
-#if PY_MAJOR_VERSION >= 3
-#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
-#else
-#define GETSTATE(m) (&_state)
-static struct module_state _state;
-#endif
-
-static PyObject * error_out(PyObject *m)
-{
-    struct module_state *st = GETSTATE(m);
-    PyErr_SetString(st->error, "something bad happened");
-
-    return NULL;
-}
-
 static PyMethodDef xlntpyarrow_methods[] =
 {
     { "xlsx2arrow", (PyCFunction)xlntpyarrow_xlsx2arrow, METH_VARARGS | METH_KEYWORDS, xlntpyarrow_xlsx2arrow_doc },
