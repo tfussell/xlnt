@@ -22,9 +22,11 @@ include_dirs = [
 ]
 
 subdirectory = ''
+library_dir = 'lib'
 
 if os.name == 'nt':
     subdirectory = '/Release'
+    library_dir = 'Lib/site-packages'
 
 library_dirs = [
     os.path.join(project_root, 'build/source' + subdirectory),
@@ -83,5 +85,5 @@ setup(
     author = 'Thomas Fussell',
     author_email = 'thomas.fussell@gmail.com',
     url = 'https://github.com/tfussell/xlnt',
-    data_files = [('Lib/site-packages', data_files)]
+    data_files = [(library_dir, data_files)]
 )
