@@ -42,6 +42,7 @@ xlntpyarrow_extension = Extension(
     include_dirs = include_dirs,
     libraries = [
         'arrow',
+		'arrow_python',
         'xlnt'
     ],
     library_dirs = library_dirs,

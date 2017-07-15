@@ -26,6 +26,7 @@
 #include <arrow/api.h>
 #pragma warning(pop)
 
+#include <detail/default_case.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/utils/xlntarrow.hpp>
@@ -52,6 +53,8 @@ std::unique_ptr<arrow::ArrayBuilder> make_array_builder(xlnt::cell::type type)
     case xlnt::cell::type::date:
         return std::unique_ptr<arrow::Date32Builder>(new arrow::Date32Builder(arrow::default_memory_pool()));
     }
+
+    default_case(std::unique_ptr<arrow::ArrayBuilder>(nullptr));
 }
 
 arrow::Field make_type_field(const std::string &name, xlnt::cell::type type)
@@ -71,6 +74,8 @@ arrow::Field make_type_field(const std::string &name, xlnt::cell::type type)
     case xlnt::cell::type::date:
         return arrow::Field(name, arrow::date32());
     }
+
+    default_case(arrow::Field("", arrow::null()));
 }
 
 } // namespace
@@ -103,6 +108,7 @@ std::shared_ptr<arrow::Table> XLNT_API xlsx2arrow(std::istream &s)
         if (cell.row() == 1)
         {
             column_names.push_back(cell.value<std::string>());
+            continue;
         }
         else if (cell.row() == 2)
         {
@@ -111,6 +117,41 @@ std::shared_ptr<arrow::Table> XLNT_API xlsx2arrow(std::istream &s)
             fields.push_back(std::make_shared<arrow::Field>(field));
             columns.push_back(make_array_builder(cell.data_type()));
         }
+
+        auto builder = columns.at(cell.column().index - 1).get();
+
+        switch (cell.data_type())
+        {
+        case xlnt::cell::type::number:
+        {
+            auto typed_builder = static_cast<arrow::DoubleBuilder*>(builder);
+            typed_builder->Append(0);
+            break;
+        }
+        case xlnt::cell::type::inline_string:
+        case xlnt::cell::type::shared_string:
+        case xlnt::cell::type::error:
+        case xlnt::cell::type::formula_string:
+        case xlnt::cell::type::empty:
+        {
+            auto typed_builder = static_cast<arrow::StringBuilder*>(builder);
+            typed_builder->Append(cell.value<std::string>());
+            break;
+        }
+        case xlnt::cell::type::boolean:
+        {
+            auto typed_builder = static_cast<arrow::BooleanBuilder*>(builder);
+            typed_builder->Append(cell.value<bool>());
+            break;
+        }
+        case xlnt::cell::type::date:
+        {
+            auto typed_builder = static_cast<arrow::Date32Builder*>(builder);
+            typed_builder->Append(cell.value<int>());
+            break;
+        }
+        }
+
     }
 
     reader.end_worksheet();
@@ -131,7 +172,7 @@ std::shared_ptr<arrow::Table> XLNT_API xlsx2arrow(std::istream &s)
     return table;
 }
 
-void XLNT_API arrow2xlsx(std::shared_ptr<const arrow::Table> &table, std::ostream &s)
+void XLNT_API arrow2xlsx(std::shared_ptr<arrow::Table> &table, std::ostream &s)
 {
   xlnt::streaming_workbook_writer writer;
   writer.open(s);

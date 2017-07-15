@@ -3,16 +3,64 @@
 #include <vector>
 
 #include <arrow/api.h>
+#include <arrow/python/pyarrow.h>
 #include <Python.h> // must be included after Arrow
 
 #include <python_streambuf.hpp>
 #include <xlnt/utils/xlntarrow.hpp>
 
-PyObject *xlsx2arrow(PyObject *file)
+bool import_pyarrow()
 {
-    xlnt::python_streambuf buffer(file);
+    static bool imported = false;
+
+    if (!imported)
+    {
+        if (!arrow::py::import_pyarrow())
+        {
+            if (PyErr_Occurred() != nullptr)
+            {
+                PyErr_Print();
+                PyErr_Clear();
+            }
+        }
+        else
+        {
+            imported = true;
+        }
+    }
+
+    return imported;
+}
+
+PyObject *xlsx2arrow(PyObject *pyfile)
+{
+    if (!import_pyarrow())
+    {
+        Py_RETURN_NONE;
+    }
+
+    xlnt::python_streambuf buffer(pyfile);
     std::istream stream(&buffer);
     auto table = xlnt::xlsx2arrow(stream);
+
+    return arrow::py::wrap_table(table);
+}
+
+PyObject *arrow2xlsx(PyObject *pytable, PyObject *pyfile)
+{
+    if (!import_pyarrow())
+    {
+        Py_RETURN_NONE;
+    }
+
+    (void)pytable;
+    (void)pyfile;
+    /*
+    auto table = arrow::py::unwrap_table(pytable);
+    xlnt::python_streambuf buffer(pyfile);
+    std::ostream stream(&buffer);
+    xlnt::arrow2xlsx(table, stream);
+    */
 
     Py_RETURN_NONE;
 }
@@ -28,9 +76,10 @@ Returns an arrow table representing the given XLSX file object.");
 
 PyObject *xlntpyarrow_xlsx2arrow(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    PyObject *file = NULL;
     static const char *keywords[] = { "file", NULL };
     static auto keywords_nc = const_cast<char **>(keywords);
+
+    PyObject *file = NULL;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords_nc, &file))
     {
@@ -50,16 +99,18 @@ Writes the given arrow table to out_file as an XLSX file.");
 
 PyObject *xlntpyarrow_arrow2xlsx(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    PyObject *obj = NULL;
-    static const char *keywords[] = { "file", NULL };
+    static const char *keywords[] = { "table", "file", NULL };
     static auto keywords_nc = const_cast<char **>(keywords);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Oi", keywords_nc, &obj))
+    PyObject *table = NULL;
+    PyObject *file = NULL;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", keywords_nc, &table, &file))
     {
         return NULL;
     }
 
-    Py_RETURN_NONE;
+    return arrow2xlsx(table, file);
 }
 
 // 2.7/3 compatible based on https://docs.python.org/3/howto/cporting.html
