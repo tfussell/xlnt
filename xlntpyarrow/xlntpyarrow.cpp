@@ -10,12 +10,9 @@
 
 PyObject *xlsx2arrow(PyObject *file)
 {
-    xlnt::arrow::streambuf buffer(file);
+    xlnt::python_streambuf buffer(file);
     std::istream stream(&buffer);
-    std::shared_ptr<arrow::Schema> schema;
-    std::vector<std::shared_ptr<arrow::Column>> columns;
-    arrow::Table table(schema, columns);
-    xlnt::arrow::xlsx2arrow(stream, table);
+    auto table = xlnt::xlsx2arrow(stream);
 
     Py_RETURN_NONE;
 }

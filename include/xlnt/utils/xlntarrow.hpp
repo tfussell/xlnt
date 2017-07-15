@@ -1,4 +1,6 @@
 #include <iostream>
+#include <memory>
+
 #include <xlnt/xlnt_config.hpp>
 
 namespace arrow {
@@ -6,10 +8,8 @@ class Table;
 }
 
 namespace xlnt {
-namespace arrow {
 
-void XLNT_API xlsx2arrow(std::istream &s, ::arrow::Table &table);
-void XLNT_API arrow2xlsx(const ::arrow::Table &table, std::ostream &s);
+std::shared_ptr<arrow::Table> XLNT_API xlsx2arrow(std::istream &s);
+void XLNT_API arrow2xlsx(std::shared_ptr<const arrow::Table> &table, std::ostream &s);
 
-} // namespace arrow
 } // namespace xlnt

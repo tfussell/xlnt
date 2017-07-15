@@ -9,7 +9,6 @@
 #include <Python.h>
 
 namespace xlnt {
-namespace arrow {
 
 /// A stream buffer getting data from and putting data into a Python file object
 /** The aims are as follow:
@@ -84,7 +83,7 @@ namespace arrow {
   Note: references are to the C++ standard (the numbers between parentheses
   at the end of references are margin markers).
 */
-class streambuf : public std::basic_streambuf<char>
+class python_streambuf : public std::basic_streambuf<char>
 {
   private:
     typedef std::basic_streambuf<char> base_t;
@@ -113,7 +112,7 @@ class streambuf : public std::basic_streambuf<char>
     /// Construct from a Python file object
     /** if buffer_size is 0 the current default_buffer_size is used.
     */
-    streambuf(
+    python_streambuf(
       PyObject *python_file_obj,
       std::size_t buffer_size_ = 0)
     :
@@ -162,7 +161,7 @@ class streambuf : public std::basic_streambuf<char>
     }
 
     /// Mundane destructor freeing the allocated resources
-    virtual ~streambuf() {
+    virtual ~python_streambuf() {
       if (write_buffer) delete[] write_buffer;
     }
 
@@ -324,7 +323,7 @@ class streambuf : public std::basic_streambuf<char>
                      std::ios_base::openmode which=  std::ios_base::in
                                                    | std::ios_base::out)
     {
-      return streambuf::seekoff(sp, std::ios_base::beg, which);
+      return python_streambuf::seekoff(sp, std::ios_base::beg, which);
     }
 
   private:
@@ -402,8 +401,8 @@ class streambuf : public std::basic_streambuf<char>
       if (buf_sought < buf_begin || buf_sought >= upper_bound) return failure;
 
       // we are in wonderland
-      if      (which == std::ios_base::in)  gbump(buf_sought - buf_cur);
-      else if (which == std::ios_base::out) pbump(buf_sought - buf_cur);
+      if      (which == std::ios_base::in)  gbump(static_cast<int>(buf_sought - buf_cur));
+      else if (which == std::ios_base::out) pbump(static_cast<int>(buf_sought - buf_cur));
       return pos_of_buffer_end_in_py_file + (buf_sought - buf_end);
     }
 
@@ -415,73 +414,8 @@ class streambuf : public std::basic_streambuf<char>
 
     return static_cast<T>(value);
   }
-
-  public:
-
-    class istream : public std::istream
-    {
-      public:
-        istream(streambuf& buf) : std::istream(&buf)
-        {
-          exceptions(std::ios_base::badbit);
-        }
-
-        ~istream() { if (this->good()) this->sync(); }
-    };
-
-    class ostream : public std::ostream
-    {
-      public:
-        ostream(streambuf& buf) : std::ostream(&buf)
-        {
-          exceptions(std::ios_base::badbit);
-        }
-
-        ~ostream() { if (this->good()) this->flush(); }
-    };
 };
 
-std::size_t streambuf::default_buffer_size = 1024;
+std::size_t python_streambuf::default_buffer_size = 1024;
 
-struct streambuf_capsule
-{
-  streambuf python_streambuf;
-
-  streambuf_capsule(
-    PyObject *python_file_obj,
-    std::size_t buffer_size=0)
-  :
-    python_streambuf(python_file_obj, buffer_size)
-  {}
-};
-
-struct ostream : private streambuf_capsule, streambuf::ostream
-{
-  ostream(
-    PyObject *python_file_obj,
-    std::size_t buffer_size=0)
-  :
-    streambuf_capsule(python_file_obj, buffer_size),
-    streambuf::ostream(python_streambuf)
-  {}
-
-  ~ostream()
-  {
-    if (this->good())
-    {
-      this->flush();
-    }
-
-    if (PyErr_Occurred() != nullptr)
-    {
-      PyErr_Clear();
-      throw std::runtime_error(
-        "Problem closing python ostream.\n"
-        "  Known limitation: the error is unrecoverable. Sorry.\n"
-        "  Suggestion for programmer: add ostream.flush() before"
-        " returning.");
-    }
-  }
-};
-
-}} // namespace xlnt::arrow
+} // namespace xlnt
