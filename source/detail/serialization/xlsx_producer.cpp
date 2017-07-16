@@ -2332,7 +2332,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
                 if (is_integral(cell.value<long double>()))
                 {
-                    write_characters(static_cast<std::ptrdiff_t>(cell.value<long double>()));
+                    write_characters(static_cast<std::int64_t>(cell.value<long double>()));
                 }
                 else
                 {
