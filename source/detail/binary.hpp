@@ -307,7 +307,8 @@ template<typename T>
 std::vector<T> read_vector(std::istream &in, std::size_t count)
 {
     std::vector<T> result(count, T());
-    in.read(reinterpret_cast<char *>(&result[0]), sizeof(T) * count);
+    in.read(reinterpret_cast<char *>(&result[0]),
+        static_cast<std::streamsize>(sizeof(T) * count));
 
     return result;
 }
@@ -316,7 +317,8 @@ template<typename T>
 std::basic_string<T> read_string(std::istream &in, std::size_t count)
 {
     std::basic_string<T> result(count, T());
-    in.read(reinterpret_cast<char *>(&result[0]), sizeof(T) * count);
+    in.read(reinterpret_cast<char *>(&result[0]),
+        static_cast<std::streamsize>(sizeof(T) * count));
 
     return result;
 }

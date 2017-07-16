@@ -210,7 +210,8 @@ void write_standard_encryption_info(const encryption_info &info, std::ostream &i
     writer.write(std::uint32_t(20));
     writer.append(info.standard.encrypted_verifier_hash);
 
-    info_stream.write(reinterpret_cast<char *>(result.data()), result.size());
+    info_stream.write(reinterpret_cast<char *>(result.data()),
+        static_cast<std::streamsize>(result.size()));
 }
 
 void encrypt_xlsx_agile(
@@ -235,11 +236,12 @@ void encrypt_xlsx_agile(
         auto iv = hash(info.agile.key_encryptor.hash, salt_with_block_key);
         iv.resize(16);
 
-        auto start = plaintext.begin() + i;
+        auto start = plaintext.begin() + static_cast<std::ptrdiff_t>(i);
         auto bytes = std::min(std::size_t(length - i), std::size_t(4096));
-        std::copy(start, start + bytes, segment.begin());
+        std::copy(start, start + static_cast<std::ptrdiff_t>(bytes), segment.begin());
         auto encrypted_segment = xlnt::detail::aes_cbc_encrypt(segment, key, iv);
-        ciphertext_stream.write(reinterpret_cast<char *>(encrypted_segment.data()), bytes);
+        ciphertext_stream.write(reinterpret_cast<char *>(encrypted_segment.data()),
+	    static_cast<std::streamsize>(bytes));
 
         ++segment_index;
     }
@@ -258,11 +260,12 @@ void encrypt_xlsx_standard(
 
     for (auto i = std::size_t(0); i < length; ++i)
     {
-        auto start = plaintext.begin() + i;
+        auto start = plaintext.begin() + static_cast<std::ptrdiff_t>(i);
         auto bytes = std::min(std::size_t(length - i), std::size_t(4096));
-        std::copy(start, start + bytes, segment.begin());
+        std::copy(start, start + static_cast<std::ptrdiff_t>(bytes), segment.begin());
         auto encrypted_segment = xlnt::detail::aes_ecb_encrypt(segment, key);
-        ciphertext_stream.write(reinterpret_cast<char *>(encrypted_segment.data()), bytes);
+        ciphertext_stream.write(reinterpret_cast<char *>(encrypted_segment.data()),
+	    static_cast<std::streamsize>(bytes));
     }
 }
 

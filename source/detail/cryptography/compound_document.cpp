@@ -43,8 +43,8 @@ int compare_keys(const std::string &left, const std::string &right)
 {
     auto to_lower = [](std::string s)
     {
-        static const auto locale = std::locale();
-        std::use_facet<std::ctype<char>>(locale).tolower(&s[0], &s[0] + s.size());
+        static const auto *locale = new std::locale();
+        std::use_facet<std::ctype<char>>(*locale).tolower(&s[0], &s[0] + s.size());
         return s;
     };
 

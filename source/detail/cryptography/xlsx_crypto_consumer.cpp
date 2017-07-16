@@ -60,7 +60,7 @@ std::vector<std::uint8_t> decrypt_xlsx_standard(
     {
         encrypted_package_stream.read(
             reinterpret_cast<char *>(encrypted_segment.data()),
-            encrypted_segment.size());
+            static_cast<std::streamsize>(encrypted_segment.size()));
         auto decrypted_segment = xlnt::detail::aes_ecb_decrypt(encrypted_segment, key);
 
         decrypted_package.insert(
@@ -97,7 +97,7 @@ std::vector<std::uint8_t> decrypt_xlsx_agile(
 
         encrypted_package_stream.read(
             reinterpret_cast<char *>(encrypted_segment.data()),
-            encrypted_segment.size());
+            static_cast<std::streamsize>(encrypted_segment.size()));
         auto decrypted_segment = xlnt::detail::aes_cbc_decrypt(encrypted_segment, key, iv);
 
         decrypted_package.insert(
