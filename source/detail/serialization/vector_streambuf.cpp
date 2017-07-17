@@ -232,7 +232,7 @@ XLNT_API void to_stream(const std::vector<std::uint8_t> &bytes, std::ostream &ou
         throw xlnt::exception("bad stream");
     }
 
-    out_stream.write(reinterpret_cast<const char *>(bytes.data()), bytes.size());
+    out_stream.write(reinterpret_cast<const char *>(bytes.data()), static_cast<std::ptrdiff_t>(bytes.size()));
 }
 
 XLNT_API std::ostream &operator<<(std::ostream &out_stream, const std::vector<std::uint8_t> &bytes)
