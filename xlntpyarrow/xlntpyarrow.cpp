@@ -15,7 +15,7 @@ bool import_pyarrow()
 
     if (!imported)
     {
-        if (!arrow::py::import_pyarrow())
+        if (arrow::py::import_pyarrow() != 0)
         {
             if (PyErr_Occurred() != nullptr)
             {
