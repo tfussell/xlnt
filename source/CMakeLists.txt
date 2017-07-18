@@ -63,10 +63,6 @@ file(GLOB WORKBOOK_SOURCES ${XLNT_SOURCE_DIR}/workbook/*.cpp)
 file(GLOB WORKSHEET_HEADERS ${XLNT_INCLUDE_DIR}/xlnt/worksheet/*.hpp)
 file(GLOB WORKSHEET_SOURCES ${XLNT_SOURCE_DIR}/worksheet/*.cpp)
 
-if(NOT ARROW)
-    list(REMOVE_ITEM UTILS_SOURCES ${XLNT_SOURCE_DIR}/utils/xlntarrow.cpp)
-endif()
-
 file(GLOB DETAIL_ROOT_HEADERS ${XLNT_SOURCE_DIR}/detail/*.hpp)
 file(GLOB DETAIL_ROOT_SOURCES ${XLNT_SOURCE_DIR}/detail/*.cpp)
 file(GLOB DETAIL_CRYPTOGRAPHY_HEADERS ${XLNT_SOURCE_DIR}/detail/cryptography/*.hpp)
@@ -122,16 +118,6 @@ if(NOT BIN_DEST_DIR)
     set(BIN_DEST_DIR ${CMAKE_INSTALL_PREFIX}/bin)
 endif()
 
-if(ARROW)
-	option(CONDA_ROOT "Path to Conda directory." "")
-
-	if(NOT CONDA_ROOT)
-	    message(FATAL_ERROR "Missing Conda root directory option (-D CONDA_ROOT).")
-	endif()
-
-	link_directories(${CONDA_ROOT}/lib)
-endif()
-
 if(NOT STATIC)
     add_library(xlnt SHARED ${XLNT_HEADERS} ${XLNT_SOURCES} $<TARGET_OBJECTS:libstudxml>)
     target_compile_definitions(xlnt PRIVATE XLNT_SHARED=1)
@@ -168,11 +154,6 @@ endif()
 target_include_directories(xlnt PUBLIC ${XLNT_INCLUDE_DIR})
 target_include_directories(xlnt PRIVATE ${XLNT_SOURCE_DIR})
 target_include_directories(xlnt PRIVATE ${XLNT_SOURCE_DIR}/../third-party/libstudxml)
-
-if(ARROW)
-	target_link_libraries(xlnt PRIVATE arrow)
-	target_include_directories(xlnt PRIVATE ${CONDA_ROOT}/include)
-endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.0.0")
     target_compile_definitions(xlnt PRIVATE UTFCPP=1)

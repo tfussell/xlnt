@@ -21,15 +21,22 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <iostream>
+#include <memory>
+#include <vector>
+
 #pragma warning(push)
 #pragma warning(disable: 4458)
 #include <arrow/api.h>
+#include <arrow/python/pyarrow.h>
 #pragma warning(pop)
 
+#include <Python.h> // must be included after Arrow
+
 #include <detail/default_case.hpp>
+#include <python_streambuf.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>
-#include <xlnt/utils/xlntarrow.hpp>
 #include <xlnt/workbook/streaming_workbook_reader.hpp>
 #include <xlnt/workbook/streaming_workbook_writer.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
@@ -38,7 +45,7 @@ namespace {
 
 std::unique_ptr<arrow::ArrayBuilder> make_array_builder(xlnt::cell::type type)
 {
-    switch (type) 
+    switch (type)
     {
     case xlnt::cell::type::number:
         return std::unique_ptr<arrow::ArrayBuilder>(new arrow::DoubleBuilder(arrow::default_memory_pool(), arrow::float64()));
@@ -78,14 +85,56 @@ arrow::Field make_type_field(const std::string &name, xlnt::cell::type type)
     default_case(arrow::Field("", arrow::null()));
 }
 
-} // namespace
+} // namespace xlnt
 
-namespace xlnt {
-
-std::shared_ptr<arrow::Table> XLNT_API xlsx2arrow(std::istream &s)
+bool import_pyarrow()
 {
+    static bool imported = false;
+
+    if (!imported)
+    {
+        if (!arrow::py::import_pyarrow())
+        {
+            if (PyErr_Occurred() != nullptr)
+            {
+                PyErr_Print();
+                PyErr_Clear();
+            }
+        }
+        else
+        {
+            imported = true;
+        }
+    }
+
+    return imported;
+}
+
+extern "C" {
+
+PyObject *xlntpyarrow_xlsx2arrow(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    static const char *keywords[] = { "file", NULL };
+    static auto keywords_nc = const_cast<char **>(keywords);
+
+    PyObject *file = NULL;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords_nc, &file))
+    {
+        return NULL;
+    }
+
+    if (!import_pyarrow())
+    {
+        Py_RETURN_NONE;
+    }
+
+
+    xlnt::python_streambuf file_buffer(file);
+    std::istream file_stream(&file_buffer);
+
     xlnt::streaming_workbook_reader reader;
-    reader.open(s);
+    reader.open(file_stream);
 
     reader.begin_worksheet();
 
@@ -169,21 +218,45 @@ std::shared_ptr<arrow::Table> XLNT_API xlsx2arrow(std::istream &s)
     std::shared_ptr<arrow::Table> table;
     arrow_check(MakeTable(schema, arrays, &table));
 
-    return table;
+    return arrow::py::wrap_table(table);
 }
 
-void XLNT_API arrow2xlsx(std::shared_ptr<arrow::Table> &table, std::ostream &s)
+PyObject *xlntpyarrow_arrow2xlsx(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  xlnt::streaming_workbook_writer writer;
-  writer.open(s);
+    static const char *keywords[] = { "table", "file", NULL };
+    static auto keywords_nc = const_cast<char **>(keywords);
 
-  writer.add_worksheet("Sheet1");
+    PyObject *table = NULL;
+    PyObject *file = NULL;
 
-  for (auto i = 0; i < table->num_columns(); ++i)
-  {
-      auto column_name = table->schema()->field(i)->name();
-      writer.add_cell(xlnt::cell_reference(i + 1, 1)).value(column_name);
-  }
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", keywords_nc, &table, &file))
+    {
+        return NULL;
+    }
+
+    if (!import_pyarrow())
+    {
+        Py_RETURN_NONE;
+    }
+
+    /*
+    auto table = arrow::py::unwrap_table(pytable);
+    xlnt::python_streambuf buffer(pyfile);
+    std::ostream stream(&buffer);
+
+    xlnt::streaming_workbook_writer writer;
+    writer.open(s);
+
+    writer.add_worksheet("Sheet1");
+
+    for (auto i = 0; i < table->num_columns(); ++i)
+    {
+    auto column_name = table->schema()->field(i)->name();
+    writer.add_cell(xlnt::cell_reference(i + 1, 1)).value(column_name);
+    }
+    */
+
+    Py_RETURN_NONE;
 }
 
-} // namespace xlnt
+} // extern "C"

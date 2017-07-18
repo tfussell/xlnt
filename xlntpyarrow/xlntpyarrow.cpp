@@ -1,125 +1,48 @@
-#include <iostream>
-#include <memory>
-#include <vector>
+// Copyright (c) 2017 Thomas Fussell
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, WRISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE
+//
+// @license: http://www.opensource.org/licenses/mit-license.php
+// @author: see AUTHORS file
 
-#include <arrow/api.h>
-#include <arrow/python/pyarrow.h>
-#include <Python.h> // must be included after Arrow
-
-#include <python_streambuf.hpp>
-#include <xlnt/utils/xlntarrow.hpp>
-
-bool import_pyarrow()
-{
-    static bool imported = false;
-
-    if (!imported)
-    {
-        if (!arrow::py::import_pyarrow())
-        {
-            if (PyErr_Occurred() != nullptr)
-            {
-                PyErr_Print();
-                PyErr_Clear();
-            }
-        }
-        else
-        {
-            imported = true;
-        }
-    }
-
-    return imported;
-}
-
-PyObject *xlsx2arrow(PyObject *pyfile)
-{
-    if (!import_pyarrow())
-    {
-        Py_RETURN_NONE;
-    }
-
-    xlnt::python_streambuf buffer(pyfile);
-    std::istream stream(&buffer);
-    auto table = xlnt::xlsx2arrow(stream);
-
-    return arrow::py::wrap_table(table);
-}
-
-PyObject *arrow2xlsx(PyObject *pytable, PyObject *pyfile)
-{
-    if (!import_pyarrow())
-    {
-        Py_RETURN_NONE;
-    }
-
-    (void)pytable;
-    (void)pyfile;
-    /*
-    auto table = arrow::py::unwrap_table(pytable);
-    xlnt::python_streambuf buffer(pyfile);
-    std::ostream stream(&buffer);
-    xlnt::arrow2xlsx(table, stream);
-    */
-
-    Py_RETURN_NONE;
-}
+#include <Python.h>
+#include <methods.hpp>
 
 extern "C" {
 
-/*
- * Implements XLSX->pyarrow table function.
- */
 PyDoc_STRVAR(xlntpyarrow_xlsx2arrow_doc, "xlsx2arrow(in_file)\
 \
 Returns an arrow table representing the given XLSX file object.");
 
-PyObject *xlntpyarrow_xlsx2arrow(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-    static const char *keywords[] = { "file", NULL };
-    static auto keywords_nc = const_cast<char **>(keywords);
-
-    PyObject *file = NULL;
-
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords_nc, &file))
-    {
-        return NULL;
-    }
-
-    return xlsx2arrow(file);
-}
-
-
-/*
-* Implements pyarrow table->XLSX function.
-*/
 PyDoc_STRVAR(xlntpyarrow_arrow2xlsx_doc, "arrow2xlsx(table, out_file)\
 \
 Writes the given arrow table to out_file as an XLSX file.");
-
-PyObject *xlntpyarrow_arrow2xlsx(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-    static const char *keywords[] = { "table", "file", NULL };
-    static auto keywords_nc = const_cast<char **>(keywords);
-
-    PyObject *table = NULL;
-    PyObject *file = NULL;
-
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", keywords_nc, &table, &file))
-    {
-        return NULL;
-    }
-
-    return arrow2xlsx(table, file);
-}
 
 // 2.7/3 compatible based on https://docs.python.org/3/howto/cporting.html
 
 static PyMethodDef xlntpyarrow_methods[] =
 {
-    { "xlsx2arrow", (PyCFunction)xlntpyarrow_xlsx2arrow, METH_VARARGS | METH_KEYWORDS, xlntpyarrow_xlsx2arrow_doc },
-    { "arrow2xlsx", (PyCFunction)xlntpyarrow_arrow2xlsx, METH_VARARGS | METH_KEYWORDS, xlntpyarrow_arrow2xlsx_doc },
-    { NULL, NULL, 0, NULL }
+    { "xlsx2arrow", (PyCFunction)xlntpyarrow_xlsx2arrow,
+        METH_VARARGS | METH_KEYWORDS, xlntpyarrow_xlsx2arrow_doc },
+    { "arrow2xlsx", (PyCFunction)xlntpyarrow_arrow2xlsx,
+        METH_VARARGS | METH_KEYWORDS, xlntpyarrow_arrow2xlsx_doc },
+    { nullptr, nullptr, 0, nullptr }
 };
 
 #if PY_MAJOR_VERSION >= 3
@@ -133,10 +56,10 @@ static PyModuleDef xlntpyarrow_def =
     xlntpyarrow_doc, // m_doc
     0, // m_size
     xlntpyarrow_methods, // m_methods
-    NULL, // m_slots
-    NULL, // m_traverse
-    NULL, // m_clear
-    NULL, // m_free
+    nullptr, // m_slots
+    nullptr, // m_traverse
+    nullptr, // m_clear
+    nullptr, // m_free
 };
 
 PyMODINIT_FUNC
@@ -146,7 +69,7 @@ void
 initxlntpyarrow(void)
 #endif
 {
-    PyObject *module = NULL;
+    PyObject *module = nullptr;
 
 #if PY_MAJOR_VERSION >= 3
     module = PyModule_Create(&xlntpyarrow_def);

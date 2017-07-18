@@ -15,21 +15,28 @@ if 'CFLAGS' in cfg_vars:
 project_root = '${CMAKE_SOURCE_DIR}'
 conda_root = '${CONDA_ROOT}'
 
+xlntlib = None
+
+for arg in sys.argv:
+    if arg[:2] == '--' and arg.split('=')[0][2:] == 'xlntlib':
+        xlntlib = arg.split('=')[1]
+        sys.argv.remove(arg)
+        break
+
 include_dirs = [
     os.path.join(project_root, 'include'),
+	os.path.join(project_root, 'source'),
     os.path.join(project_root, 'xlntpyarrow'),
     os.path.join(conda_root, 'include')
 ]
 
-subdirectory = ''
 library_dir = 'lib'
 
 if os.name == 'nt':
-    subdirectory = '/Release'
     library_dir = 'Lib/site-packages'
 
 library_dirs = [
-    os.path.join(project_root, 'build/source' + subdirectory),
+    os.path.dirname(xlntlib),
     os.path.join(conda_root, 'lib')
 ]
 
@@ -37,7 +44,7 @@ compile_args = '${CMAKE_CXX_FLAGS}'.split()
 
 xlntpyarrow_extension = Extension(
     'xlntpyarrow',
-    ['${CMAKE_CURRENT_SOURCE_DIR}/xlntpyarrow.cpp'],
+    ['${CMAKE_CURRENT_SOURCE_DIR}/xlntpyarrow.cpp', '${CMAKE_CURRENT_SOURCE_DIR}/methods.cpp'],
     language = 'c++',
     include_dirs = include_dirs,
     libraries = [
@@ -71,11 +78,8 @@ classifiers = [
 
 data_files = []
 
-for arg in sys.argv:
-    if arg[:2] == '--' and arg.split('=')[0][2:] == 'xlntlib':
-        data_files.append(os.path.relpath(arg.split('=')[1]).replace('\\', '/'))
-        sys.argv.remove(arg)
-        break
+if xlntlib:
+	data_files.append((library_dir, [os.path.relpath(xlntlib).replace('\\', '/')]))
 
 setup(
     name = 'xlntpyarrow',
@@ -86,5 +90,5 @@ setup(
     author = 'Thomas Fussell',
     author_email = 'thomas.fussell@gmail.com',
     url = 'https://github.com/tfussell/xlnt',
-    data_files = [(library_dir, data_files)]
+    data_files = data_files
 )
