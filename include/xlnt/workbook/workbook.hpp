@@ -63,6 +63,7 @@ class protection;
 class range;
 class range_reference;
 class relationship;
+class streaming_workbook_reader;
 class style;
 class style_serializer;
 class theme;
@@ -777,6 +778,7 @@ public:
     bool operator!=(const workbook &rhs) const;
 
 private:
+    friend class streaming_workbook_reader;
     friend class worksheet;
     friend class detail::xlsx_consumer;
     friend class detail::xlsx_producer;

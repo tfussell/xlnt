@@ -71,13 +71,13 @@ public:
     /// </summary>
     cell read_cell();
 
-    bool has_worksheet();
+    bool has_worksheet(const std::string &name);
 
     /// <summary>
     /// Beings reading of the next worksheet in the workbook and optionally
     /// returns its title if the last worksheet has not yet been read.
     /// </summary>
-    void begin_worksheet();
+    void begin_worksheet(const std::string &name);
 
     /// <summary>
     /// Ends reading of the current worksheet in the workbook and optionally
@@ -118,8 +118,13 @@ public:
     /// </summary>
     void open(std::istream &stream);
 
+    /// <summary>
+    /// Returns a vector of the titles of sheets in the workbook in order.
+    /// </summary>
+    std::vector<std::string> sheet_titles();
+
 private:
-    std::vector<std::string> worksheet_queue_;
+    std::string worksheet_rel_id_;
     std::unique_ptr<detail::xlsx_consumer> consumer_;
     std::unique_ptr<workbook> workbook_;
     std::unique_ptr<std::istream> stream_;

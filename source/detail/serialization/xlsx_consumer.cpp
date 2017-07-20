@@ -328,16 +328,6 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
         return p.second == rel_id;
     })->first;
 
-    auto id = sheet_title_id_map_[title];
-    auto index = sheet_title_index_map_[title];
-
-    auto insertion_iter = target_.d_->worksheets_.begin();
-    while (insertion_iter != target_.d_->worksheets_.end() && sheet_title_index_map_[insertion_iter->title_] < index)
-    {
-        ++insertion_iter;
-    }
-
-    current_worksheet_ = &*target_.d_->worksheets_.emplace(insertion_iter, &target_, id, title);
     auto ws = worksheet(current_worksheet_);
 
     expect_start_element(qn("spreadsheetml", "worksheet"), xml::content::complex); // CT_Worksheet
@@ -1572,14 +1562,29 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
                 relationship_type::theme)});
     }
 
-    if (streaming_)
-    {
-        return;
-    }
-
     for (auto worksheet_rel : manifest().relationships(workbook_path, relationship_type::worksheet))
     {
-        read_part({workbook_rel, worksheet_rel});
+        auto title = std::find_if(target_.d_->sheet_title_rel_id_map_.begin(),
+            target_.d_->sheet_title_rel_id_map_.end(),
+            [&](const std::pair<std::string, std::string> &p) {
+                return p.second == worksheet_rel.id();
+            })->first;
+
+        auto id = sheet_title_id_map_[title];
+        auto index = sheet_title_index_map_[title];
+
+        auto insertion_iter = target_.d_->worksheets_.begin();
+        while (insertion_iter != target_.d_->worksheets_.end() && sheet_title_index_map_[insertion_iter->title_] < index)
+        {
+            ++insertion_iter;
+        }
+
+        current_worksheet_ = &*target_.d_->worksheets_.emplace(insertion_iter, &target_, id, title);
+
+        if (!streaming_)
+        {
+            read_part({ workbook_rel, worksheet_rel });
+        }
     }
 }
 

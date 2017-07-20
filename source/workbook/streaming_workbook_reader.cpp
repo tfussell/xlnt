@@ -23,6 +23,7 @@
 
 #include <fstream>
 
+#include <detail/implementations/workbook_impl.hpp>
 #include <detail/serialization/open_stream.hpp>
 #include <detail/serialization/vector_streambuf.hpp>
 #include <detail/serialization/xlsx_consumer.hpp>
@@ -64,18 +65,24 @@ cell streaming_workbook_reader::read_cell()
     return consumer_->read_cell();
 }
 
-bool streaming_workbook_reader::has_worksheet()
+bool streaming_workbook_reader::has_worksheet(const std::string &name)
 {
-    return !worksheet_queue_.empty();
+    auto titles = sheet_titles();
+    return std::find(titles.begin(), titles.end(), name) != titles.end();
 }
 
-void streaming_workbook_reader::begin_worksheet()
+void streaming_workbook_reader::begin_worksheet(const std::string &title)
 {
-    const auto next_worksheet_rel = worksheet_queue_.back();
+    if (!has_worksheet(title))
+    {
+        throw xlnt::exception("sheet not found");
+    }
+
+    worksheet_rel_id_ = workbook_->impl().sheet_title_rel_id_map_.at(title);
     const auto workbook_rel = workbook_->manifest()
         .relationship(path("/"), relationship_type::office_document);
     const auto worksheet_rel = workbook_->manifest()
-        .relationship(workbook_rel.target().path(), next_worksheet_rel);
+        .relationship(workbook_rel.target().path(), worksheet_rel_id_);
 
     auto rel_chain = std::vector<relationship>{ workbook_rel, worksheet_rel };
 
@@ -87,14 +94,27 @@ void streaming_workbook_reader::begin_worksheet()
     parser_.reset(new xml::parser(*part_stream_, part_path.string()));
     consumer_->parser_ = parser_.get();
 
-    consumer_->read_worksheet_begin(next_worksheet_rel);
+    consumer_->current_worksheet_ = nullptr;
+
+    for (auto &impl : workbook_->impl().worksheets_)
+    {
+        if (impl.title_ == title)
+        {
+            consumer_->current_worksheet_ = &impl;
+        }
+    }
+
+    if (consumer_->current_worksheet_ == nullptr)
+    {
+        throw xlnt::exception("sheet not found");
+    }
+
+    consumer_->read_worksheet_begin(worksheet_rel_id_);
 }
 
 worksheet streaming_workbook_reader::end_worksheet()
 {
-    auto next_worksheet_rel = worksheet_queue_.back();
-    worksheet_queue_.pop_back();
-    return consumer_->read_worksheet_end(next_worksheet_rel);
+    return consumer_->read_worksheet_end(worksheet_rel_id_);
 }
 
 void streaming_workbook_reader::open(const std::vector<std::uint8_t> &data)
@@ -136,12 +156,11 @@ void streaming_workbook_reader::open(std::istream &stream)
     const auto workbook_rel = workbook_->manifest()
         .relationship(path("/"), relationship_type::office_document);
     const auto workbook_path = workbook_rel.target().path();
+}
 
-    for (auto worksheet_rel : workbook_->manifest()
-        .relationships(workbook_path, relationship_type::worksheet))
-    {
-        worksheet_queue_.push_back(worksheet_rel.id());
-    }
+std::vector<std::string> streaming_workbook_reader::sheet_titles()
+{
+    return workbook_->sheet_titles();
 }
 
 } // namespace xlnt

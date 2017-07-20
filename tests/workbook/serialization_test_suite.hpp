@@ -473,14 +473,14 @@ public:
 
         reader.open(xlnt::path(path));
 
-        while (reader.has_worksheet())
+        for (auto sheet_name : reader.sheet_titles())
         {
-            reader.begin_worksheet();
+            reader.begin_worksheet(sheet_name);
 
             while (reader.has_cell())
             {
                 const auto cell = reader.read_cell();
-                //std::cout << cell.reference().to_string() << std::endl;
+                std::cout << cell.reference().to_string() << " " << cell.to_string() << std::endl;
             }
 
             const auto ws = reader.end_worksheet();

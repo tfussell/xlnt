@@ -34,6 +34,7 @@
 #include <Python.h> // must be included after Arrow
 
 #include <detail/default_case.hpp>
+#include <detail/unicode.hpp>
 #include <python_streambuf.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>
@@ -61,7 +62,7 @@ std::unique_ptr<arrow::ArrayBuilder> make_array_builder(xlnt::cell::type type)
         return std::unique_ptr<arrow::Date32Builder>(new arrow::Date32Builder(arrow::default_memory_pool()));
     }
 
-    default_case(std::unique_ptr<arrow::ArrayBuilder>(nullptr));
+    default_case(std::unique_ptr<arrow::ArrayBuilder>(nullptrptr));
 }
 
 arrow::Field make_type_field(const std::string &name, xlnt::cell::type type)
@@ -82,7 +83,7 @@ arrow::Field make_type_field(const std::string &name, xlnt::cell::type type)
         return arrow::Field(name, arrow::date32());
     }
 
-    default_case(arrow::Field("", arrow::null()));
+    default_case(arrow::Field("", arrow::nullptr()));
 }
 
 } // namespace xlnt
@@ -114,29 +115,88 @@ extern "C" {
 
 PyObject *xlntpyarrow_xlsx2arrow(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    static const char *keywords[] = { "file", NULL };
+    static const char *keywords[] = { "io", "sheetname", "header", "skiprows",
+        "skip_footer", "index_col", "names", "converters", "dtype", "true_values",
+        "false_values", "parse_cols", "squeeze", "na_values", "thousands",
+        "keep_default_na", "verbose", "convert_float", nullptr };
     static auto keywords_nc = const_cast<char **>(keywords);
 
-    PyObject *file = NULL;
+    PyObject *io = nullptr;
+    PyObject *sheetname = nullptr;
+    PyObject *header = nullptr;
+    PyObject *skiprows = nullptr;
+    auto skip_footer = 0;
+    PyObject *index_col = nullptr;
+    PyObject *names = nullptr;
+    PyObject *converters = nullptr;
+    PyObject *dtype = nullptr;
+    PyObject *true_values = nullptr;
+    PyObject *false_values = nullptr;
+    PyObject *parse_cols = nullptr;
+    auto squeeze = false;
+    PyObject *na_values = nullptr;
+    const char *thousands = nullptr;
+    auto keep_default_va = false;
+    auto verbose = false;
+    auto convert_float = false;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords_nc, &file))
+    std::cout << "here" << std::endl;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|OOOiOOOOOOOpOzppp", keywords_nc, 
+        &io, &sheetname, &header, &skiprows, &skip_footer, &index_col, &names, 
+        &converters, &dtype, &true_values, &false_values, &parse_cols, &squeeze,
+        &na_values, &thousands, &keep_default_va, &verbose, &convert_float))
     {
-        return NULL;
+        PyErr_Print();
+        PyErr_Clear();
+        Py_RETURN_NONE;
     }
+
+    std::cout << "here2" << std::endl;
 
     if (!import_pyarrow())
     {
         Py_RETURN_NONE;
     }
 
+    std::cout << "here3" << std::endl;
 
-    xlnt::python_streambuf file_buffer(file);
+    // arg #1, io
+    xlnt::python_streambuf file_buffer(io);
     std::istream file_stream(&file_buffer);
 
     xlnt::streaming_workbook_reader reader;
     reader.open(file_stream);
 
-    reader.begin_worksheet();
+    std::cout << "here4" << std::endl;
+
+    // arg #2, sheetname
+    auto sheet_titles = reader.sheet_titles();
+    auto sheet_title = sheet_titles.front();
+
+    std::cout << "here5 " << sheet_title << std::endl;
+
+    if (sheetname != nullptr)
+    {
+        std::cout << "sheetname" << std::endl;
+
+        if (PyLong_Check(sheetname))
+        {
+            std::cout << "is long" << std::endl;
+            // handle int sheetname
+            auto sheet_index = PyLong_AsLong(sheetname);
+            sheet_title = sheet_titles.at(sheet_index);
+        }
+        else if (PyUnicode_Check(sheetname))
+        {
+            std::cout << "is string" << std::endl;
+            // handle string sheetname
+            sheet_title = std::string(reinterpret_cast<char *>(PyUnicode_1BYTE_DATA(sheetname)));
+        }
+    }
+
+    std::cout << sheet_title << std::endl;
+    reader.begin_worksheet(sheet_title);
 
     auto column_names = std::vector<std::string>();
     auto columns = std::vector<std::unique_ptr<arrow::ArrayBuilder>>();
@@ -223,15 +283,15 @@ PyObject *xlntpyarrow_xlsx2arrow(PyObject *self, PyObject *args, PyObject *kwarg
 
 PyObject *xlntpyarrow_arrow2xlsx(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    static const char *keywords[] = { "table", "file", NULL };
+    static const char *keywords[] = { "table", "file", nullptr };
     static auto keywords_nc = const_cast<char **>(keywords);
 
-    PyObject *table = NULL;
-    PyObject *file = NULL;
+    PyObject *table = nullptr;
+    PyObject *file = nullptr;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", keywords_nc, &table, &file))
     {
-        return NULL;
+        return nullptr;
     }
 
     if (!import_pyarrow())
