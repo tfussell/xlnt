@@ -31,7 +31,7 @@ if(TESTS)
     add_subdirectory(tests)
 endif()
 
-if(ARROW)
+if(PYTHON)
     add_subdirectory(xlntpyarrow)
 endif()
 

@@ -21,63 +21,328 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#include <Python.h>
-#include <methods.hpp>
+#include <arrow/api.h>
+#include <arrow/python/pyarrow.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <xlnt/xlnt.hpp>
+#include <xlnt/workbook/streaming_workbook_reader.hpp>
+#include <python_streambuf.hpp>
 
-extern "C" {
-
-PyDoc_STRVAR(xlntpyarrow_xlsx2arrow_doc, "xlsx2arrow(in_file)\
-\
-Returns an arrow table representing the given XLSX file object.");
-
-PyDoc_STRVAR(xlntpyarrow_arrow2xlsx_doc, "arrow2xlsx(table, out_file)\
-\
-Writes the given arrow table to out_file as an XLSX file.");
-
-// 2.7/3 compatible based on https://docs.python.org/3/howto/cporting.html
-
-static PyMethodDef xlntpyarrow_methods[] =
+void import_pyarrow()
 {
-    { "xlsx2arrow", (PyCFunction)xlntpyarrow_xlsx2arrow,
-        METH_VARARGS | METH_KEYWORDS, xlntpyarrow_xlsx2arrow_doc },
-    { "arrow2xlsx", (PyCFunction)xlntpyarrow_arrow2xlsx,
-        METH_VARARGS | METH_KEYWORDS, xlntpyarrow_arrow2xlsx_doc },
-    { nullptr, nullptr, 0, nullptr }
-};
+    static auto imported = false;
 
-#if PY_MAJOR_VERSION >= 3
+    if (!imported)
+    {
+        if (arrow::py::import_pyarrow() != 0)
+        {
+            throw std::exception("Import of pyarrow failed.");
+        }
 
-PyDoc_STRVAR(xlntpyarrow_doc, "The xlntpyarrow module");
-
-static PyModuleDef xlntpyarrow_def =
-{
-    PyModuleDef_HEAD_INIT, // m_base
-    "xlntpyarrow", // m_name
-    xlntpyarrow_doc, // m_doc
-    0, // m_size
-    xlntpyarrow_methods, // m_methods
-    nullptr, // m_slots
-    nullptr, // m_traverse
-    nullptr, // m_clear
-    nullptr, // m_free
-};
-
-PyMODINIT_FUNC
-PyInit_xlntpyarrow(void)
-#else
-void
-initxlntpyarrow(void)
-#endif
-{
-    PyObject *module = nullptr;
-
-#if PY_MAJOR_VERSION >= 3
-    module = PyModule_Create(&xlntpyarrow_def);
-    return module;
-#else
-    module = Py_InitModule("xlntpyarrow", xlntpyarrow_methods);
-    return;
-#endif
+        imported = true;
+    }
 }
 
-} // extern "C"
+std::vector<arrow::Type::type> extract_schema_types(std::shared_ptr<arrow::Schema> &schema)
+{
+    auto types = std::vector<arrow::Type::type>();
+
+    for (auto i = 0; i < schema->num_fields(); ++i)
+    {
+        types.push_back(schema->field(i)->type()->id());
+    }
+
+    return types;
+}
+
+std::unique_ptr<arrow::ArrayBuilder> make_array_builder(arrow::Type::type type)
+{
+    std::unique_ptr<arrow::ArrayBuilder> builder;
+    auto pool = arrow::default_memory_pool();
+
+    switch (type)
+    {
+    case arrow::Type::NA:
+        break;
+
+    case arrow::Type::BOOL:
+        builder.reset(new arrow::BooleanBuilder(pool));
+        break;
+
+    case arrow::Type::UINT8:
+        break;
+
+    case arrow::Type::INT8:
+        break;
+
+    case arrow::Type::UINT16:
+        break;
+
+    case arrow::Type::INT16:
+        break;
+
+    case arrow::Type::UINT32:
+        break;
+
+    case arrow::Type::INT32:
+        break;
+
+    case arrow::Type::UINT64:
+        break;
+
+    case arrow::Type::INT64:
+        break;
+
+    case arrow::Type::HALF_FLOAT:
+        break;
+
+    case arrow::Type::FLOAT:
+        break;
+
+    case arrow::Type::DOUBLE:
+        builder.reset(new arrow::DoubleBuilder(pool));
+        break;
+
+    case arrow::Type::STRING:
+        builder.reset(new arrow::StringBuilder(pool));
+        break;
+
+    case arrow::Type::BINARY:
+        break;
+
+    case arrow::Type::FIXED_SIZE_BINARY:
+        break;
+
+    case arrow::Type::DATE32:
+        builder.reset(new arrow::Date32Builder(pool));
+        break;
+
+    case arrow::Type::DATE64:
+        break;
+
+    case arrow::Type::TIMESTAMP:
+        break;
+
+    case arrow::Type::TIME32:
+        break;
+
+    case arrow::Type::TIME64:
+        break;
+
+    case arrow::Type::INTERVAL:
+        break;
+
+    case arrow::Type::DECIMAL:
+        break;
+
+    case arrow::Type::LIST:
+        break;
+
+    case arrow::Type::STRUCT:
+        break;
+
+    case arrow::Type::UNION:
+        break;
+
+    case arrow::Type::DICTIONARY:
+        break;
+    }
+
+    return builder;
+}
+
+void open_file(xlnt::streaming_workbook_reader &reader, pybind11::object file)
+{
+    xlnt::python_streambuf buffer(file);
+    std::istream stream(&buffer);
+    reader.open(stream);
+}
+
+pybind11::handle read_batch(xlnt::streaming_workbook_reader &reader,
+    pybind11::object pyschema, int max_rows)
+{
+    import_pyarrow();
+
+    std::shared_ptr<arrow::Schema> schema;
+    arrow::py::unwrap_schema(pyschema.ptr(), &schema);
+
+    std::cout << "1" << std::endl;
+
+    auto column_types = extract_schema_types(schema);
+    auto builders = std::vector<std::shared_ptr<arrow::ArrayBuilder>>();
+    auto num_rows = std::int64_t(0);
+
+    std::cout << "2" << std::endl;
+
+    for (auto type : column_types)
+    {
+        builders.push_back(make_array_builder(type));
+    }
+
+    std::cout << "3" << std::endl;
+
+    for (auto row = 0; row < max_rows; ++row)
+    {
+        if (!reader.has_cell()) break;
+
+        std::cout << "4" << std::endl;
+
+        for (auto column = 0; column < schema->num_fields(); ++column)
+        {
+            if (!reader.has_cell()) break;
+
+            std::cout << "5" << std::endl;
+
+            auto cell = reader.read_cell();
+
+            /*
+            auto column_type = column_types.at(column);
+            auto builder = builders.at(cell.column().index - 1).get();
+
+            switch (column_type)
+            {
+            case arrow::Type::NA:
+                break;
+
+            case arrow::Type::BOOL:
+                static_cast<arrow::BooleanBuilder *>(builder)->Append(cell.value<bool>());
+                break;
+
+            case arrow::Type::UINT8:
+                break;
+
+            case arrow::Type::INT8:
+                break;
+
+            case arrow::Type::UINT16:
+                break;
+
+            case arrow::Type::INT16:
+                break;
+
+            case arrow::Type::UINT32:
+                break;
+
+            case arrow::Type::INT32:
+                break;
+
+            case arrow::Type::UINT64:
+                break;
+
+            case arrow::Type::INT64:
+                break;
+
+            case arrow::Type::HALF_FLOAT:
+                break;
+
+            case arrow::Type::FLOAT:
+                break;
+
+            case arrow::Type::DOUBLE:
+                static_cast<arrow::DoubleBuilder *>(builder)->Append(cell.value<long double>());
+                break;
+
+            case arrow::Type::STRING:
+                static_cast<arrow::StringBuilder *>(builder)->Append(cell.value<std::string>());
+                break;
+
+            case arrow::Type::BINARY:
+                break;
+
+            case arrow::Type::FIXED_SIZE_BINARY:
+                break;
+
+            case arrow::Type::DATE32:
+                static_cast<arrow::Date32Builder *>(builder)->Append(cell.value<int>());
+                break;
+
+            case arrow::Type::DATE64:
+                break;
+
+            case arrow::Type::TIMESTAMP:
+                break;
+
+            case arrow::Type::TIME32:
+                break;
+
+            case arrow::Type::TIME64:
+                break;
+
+            case arrow::Type::INTERVAL:
+                break;
+
+            case arrow::Type::DECIMAL:
+                break;
+
+            case arrow::Type::LIST:
+                break;
+
+            case arrow::Type::STRUCT:
+                break;
+
+            case arrow::Type::UNION:
+                break;
+
+            case arrow::Type::DICTIONARY:
+                break;
+            }
+            */
+        }
+
+        ++num_rows;
+    }
+
+    std::cout << "6" << std::endl;
+
+    auto columns = std::vector<std::shared_ptr<arrow::Array>>();
+
+    for (auto &builder : builders)
+    {
+        std::shared_ptr<arrow::Array> column;
+        builder->Finish(&column);
+        columns.emplace_back(column);
+    }
+
+    std::cout << "7" << std::endl;
+
+    auto batch_pointer = std::make_shared<arrow::RecordBatch>(schema, num_rows, columns);
+    auto batch_object = arrow::py::wrap_record_batch(batch_pointer);
+    auto batch_handle = pybind11::handle(batch_object); // don't need to incr. reference count, right?
+
+    std::cout << "8" << std::endl;
+
+    return batch_handle;
+}
+
+PYBIND11_MODULE(xlntpyarrow, m)
+{
+    m.doc() = "streaming read/write interface for C++ XLSX library xlnt";
+
+    pybind11::class_<xlnt::streaming_workbook_reader>(m, "StreamingWorkbookReader")
+        .def(pybind11::init<>())
+        .def("has_cell", &xlnt::streaming_workbook_reader::has_cell)
+        .def("read_cell", &xlnt::streaming_workbook_reader::read_cell)
+        .def("has_worksheet", &xlnt::streaming_workbook_reader::has_worksheet)
+        .def("begin_worksheet", &xlnt::streaming_workbook_reader::begin_worksheet)
+        .def("end_worksheet", &xlnt::streaming_workbook_reader::end_worksheet)
+        .def("sheet_titles", &xlnt::streaming_workbook_reader::sheet_titles)
+        .def("open", &open_file)
+        .def("read_batch", &read_batch);
+
+    pybind11::class_<xlnt::cell> cell(m, "Cell");
+    cell.def("value_string", [](xlnt::cell cell)
+        {
+            return cell.value<std::string>();
+        });
+
+    pybind11::enum_<xlnt::cell::type>(cell, "Type")
+        .value("Empty", xlnt::cell::type::empty)
+        .value("Boolean", xlnt::cell::type::boolean)
+        .value("Date", xlnt::cell::type::date)
+        .value("Error", xlnt::cell::type::error)
+        .value("InlineString", xlnt::cell::type::inline_string)
+        .value("Number", xlnt::cell::type::number)
+        .value("SharedString", xlnt::cell::type::shared_string)
+        .value("FormulaString", xlnt::cell::type::formula_string);
+}

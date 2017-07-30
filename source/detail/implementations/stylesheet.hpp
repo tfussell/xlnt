@@ -530,7 +530,7 @@ struct stylesheet
 
     workbook *parent;
     
-    bool garbage_collection_enabled = false;
+    bool garbage_collection_enabled = true;
 
 	std::list<conditional_format_impl> conditional_format_impls;
     std::list<format_impl> format_impls;
