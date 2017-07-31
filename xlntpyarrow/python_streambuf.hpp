@@ -102,7 +102,6 @@ class python_streambuf : public std::basic_streambuf<char>
         member function readsome to work correctly (c.f. 27.6.1.3, alinea 30)
      */
     virtual std::streamsize showmanyc() {
-      std::cout << "showmanyc" << std::endl;
       int_type const failure = traits_type::eof();
       int_type status = underflow();
       if (status == failure) return -1;
@@ -111,7 +110,6 @@ class python_streambuf : public std::basic_streambuf<char>
 
     /// C.f. C++ standard section 27.5.2.4.3
     virtual int_type underflow() {
-      std::cout << "underflow" << std::endl;
       int_type const failure = traits_type::eof();
       if (py_read.is_none()) {
         throw std::invalid_argument(
@@ -136,7 +134,6 @@ class python_streambuf : public std::basic_streambuf<char>
 
     /// C.f. C++ standard section 27.5.2.4.5
     virtual int_type overflow(int_type c=traits_type_eof()) {
-      std::cout << "overflow" << std::endl;
       if (py_write.is_none()) {
         throw std::invalid_argument(
           "That Python file object has no 'write' attribute");
@@ -168,7 +165,6 @@ class python_streambuf : public std::basic_streambuf<char>
         seek position in that read buffer.
     */
     virtual int sync() {
-      std::cout << "sync" << std::endl;
       int result = 0;
       farthest_pptr = std::max(farthest_pptr, pptr());
       if (farthest_pptr && farthest_pptr > pbase()) {
@@ -201,7 +197,6 @@ class python_streambuf : public std::basic_streambuf<char>
                      std::ios_base::openmode which=  std::ios_base::in
                                                    | std::ios_base::out)
     {
-      std::cout << "seekoff" << std::endl;
       /* In practice, "which" is either std::ios_base::in or out
          since we end up here because either seekp or seekg was called
          on the stream using this buffer. That simplifies the code
@@ -259,7 +254,6 @@ class python_streambuf : public std::basic_streambuf<char>
                      std::ios_base::openmode which=  std::ios_base::in
                                                    | std::ios_base::out)
     {
-      std::cout << "seekpos" << std::endl;
       return python_streambuf::seekoff(sp, std::ios_base::beg, which);
     }
 

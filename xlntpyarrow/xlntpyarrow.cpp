@@ -154,9 +154,7 @@ std::unique_ptr<arrow::ArrayBuilder> make_array_builder(arrow::Type::type type)
 
 void open_file(xlnt::streaming_workbook_reader &reader, pybind11::object file)
 {
-    xlnt::python_streambuf buffer(file);
-    std::istream stream(&buffer);
-    reader.open(stream);
+    reader.open(std::unique_ptr<std::streambuf>(new xlnt::python_streambuf(file)));
 }
 
 pybind11::handle read_batch(xlnt::streaming_workbook_reader &reader,
@@ -167,36 +165,29 @@ pybind11::handle read_batch(xlnt::streaming_workbook_reader &reader,
     std::shared_ptr<arrow::Schema> schema;
     arrow::py::unwrap_schema(pyschema.ptr(), &schema);
 
-    std::cout << "1" << std::endl;
-
     auto column_types = extract_schema_types(schema);
     auto builders = std::vector<std::shared_ptr<arrow::ArrayBuilder>>();
     auto num_rows = std::int64_t(0);
-
-    std::cout << "2" << std::endl;
 
     for (auto type : column_types)
     {
         builders.push_back(make_array_builder(type));
     }
 
-    std::cout << "3" << std::endl;
-
     for (auto row = 0; row < max_rows; ++row)
     {
         if (!reader.has_cell()) break;
 
-        std::cout << "4" << std::endl;
+        if (row % 1000 == 0)
+        {
+            std::cout << row << std::endl;
+        }
 
         for (auto column = 0; column < schema->num_fields(); ++column)
         {
             if (!reader.has_cell()) break;
 
-            std::cout << "5" << std::endl;
-
             auto cell = reader.read_cell();
-
-            /*
             auto column_type = column_types.at(column);
             auto builder = builders.at(cell.column().index - 1).get();
 
@@ -287,13 +278,10 @@ pybind11::handle read_batch(xlnt::streaming_workbook_reader &reader,
             case arrow::Type::DICTIONARY:
                 break;
             }
-            */
         }
 
         ++num_rows;
     }
-
-    std::cout << "6" << std::endl;
 
     auto columns = std::vector<std::shared_ptr<arrow::Array>>();
 
@@ -304,13 +292,9 @@ pybind11::handle read_batch(xlnt::streaming_workbook_reader &reader,
         columns.emplace_back(column);
     }
 
-    std::cout << "7" << std::endl;
-
     auto batch_pointer = std::make_shared<arrow::RecordBatch>(schema, num_rows, columns);
     auto batch_object = arrow::py::wrap_record_batch(batch_pointer);
     auto batch_handle = pybind11::handle(batch_object); // don't need to incr. reference count, right?
-
-    std::cout << "8" << std::endl;
 
     return batch_handle;
 }
@@ -330,11 +314,22 @@ PYBIND11_MODULE(xlntpyarrow, m)
         .def("open", &open_file)
         .def("read_batch", &read_batch);
 
+    pybind11::class_<xlnt::worksheet>(m, "Worksheet");
+
     pybind11::class_<xlnt::cell> cell(m, "Cell");
-    cell.def("value_string", [](xlnt::cell cell)
+    cell.def("value_string", [](xlnt::cell &cell)
         {
             return cell.value<std::string>();
-        });
+        })
+        .def("data_type", [](xlnt::cell &cell)
+            {
+                return cell.data_type();
+            })
+        .def("row", &xlnt::cell::row)
+        .def("column", [](xlnt::cell &cell)
+            {
+                return cell.column().index;
+            });
 
     pybind11::enum_<xlnt::cell::type>(cell, "Type")
         .value("Empty", xlnt::cell::type::empty)

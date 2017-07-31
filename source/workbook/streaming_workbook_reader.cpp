@@ -158,6 +158,13 @@ void streaming_workbook_reader::open(std::istream &stream)
     const auto workbook_path = workbook_rel.target().path();
 }
 
+void streaming_workbook_reader::open(std::unique_ptr<std::streambuf> &&buffer)
+{
+    stream_buffer_.swap(buffer);
+    stream_.reset(new std::istream(stream_buffer_.get()));
+    open(*stream_);
+}
+
 std::vector<std::string> streaming_workbook_reader::sheet_titles()
 {
     return workbook_->sheet_titles();

@@ -119,6 +119,12 @@ public:
     void open(std::istream &stream);
 
     /// <summary>
+    /// Holds the given streambuf internally, creates a std::istream backed
+    /// by the given buffer, and calls open(std::istream &) with that stream.
+    /// </summary>
+    void open(std::unique_ptr<std::streambuf> &&buffer);
+
+    /// <summary>
     /// Returns a vector of the titles of sheets in the workbook in order.
     /// </summary>
     std::vector<std::string> sheet_titles();

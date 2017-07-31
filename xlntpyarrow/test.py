@@ -37,24 +37,27 @@ def xlsx2arrow(io, sheetname):
     column_names = []
     fields = []
     batches = []
+    schema = None
 
     while reader.has_cell():
-        print('read_cell')
         cell = reader.read_cell()
         type = cell.data_type()
 
+        print('read_cell', cell.row(), cell.column())
+
         if cell.row() == 1:
-            column_names.push_back(cell.value_string())
+            column_names.append(cell.value_string())
             continue
         elif cell.row() == 2:
             column_name = column_names[cell.column() - 1]
-            fields.append(pa.Field(column_name, COLUMN_TYPE_FIELD[type]()))
+            fields.append(pa.field(column_name, COLUMN_TYPE_FIELD[type]()))
             continue
         elif schema is None:
             schema = pa.schema(fields)
 
-        batch = xpa.read_batch(schema, 0)
-        print(batch)
+        print(schema)
+
+        batch = reader.read_batch(schema, 100000)
         batches.append(batch)
 
         break
@@ -65,4 +68,5 @@ def xlsx2arrow(io, sheetname):
 
 if __name__ == '__main__':
     file = open('tmp.xlsx', 'rb')
-    print(xlsx2arrow(file, 'Sheet1'))
+    table = xlsx2arrow(file, 'Sheet1')
+    print(table.to_pandas())
