@@ -52,27 +52,28 @@ def xlsx2arrow(io, sheetname):
     batches = []
     schema = None
     first_batch = []
+    max_column = 0
 
     while reader.has_cell():
-        cell = reader.read_cell()
-        type = cell.data_type()
+        if schema is None:
+            cell = reader.read_cell()
+            type = cell.data_type()
 
-        if cell.row() == 1:
-            column_names.append(cell.value_string())
-            continue
-        elif cell.row() == 2:
-            column_name = column_names[cell.column() - 1]
-            fields.append(pa.field(column_name, COLUMN_TYPE_FIELD[type]()))
-            first_batch.append(cell_to_pyarrow_array(cell, fields[-1].type))
-            continue
-        elif schema is None:
-            schema = pa.schema(fields)
-            batches.append(pa.RecordBatch.from_arrays(first_batch, column_names))
+            if cell.row() == 1:
+                column_names.append(cell.value_string())
+                max_column = max(max_column, cell.column())
+                continue
+            elif cell.row() == 2:
+                column_name = column_names[cell.column() - 1]
+                fields.append(pa.field(column_name, COLUMN_TYPE_FIELD[type]()))
+                first_batch.append(cell_to_pyarrow_array(cell, fields[-1].type))
+                if cell.column() == max_column:
+                    schema = pa.schema(fields)
+                    print(schema)
+                    batches.append(pa.RecordBatch.from_arrays(first_batch, column_names))
+                continue
 
-        print(schema)
-        print(batches[0])
-
-        batches.append(reader.read_batch(schema, 100000))
+        batches.append(reader.read_batch(schema, 10000))
 
     reader.end_worksheet()
 
