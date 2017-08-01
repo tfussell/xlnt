@@ -12,6 +12,10 @@ endif()
 
 pybind11_add_module(xlntpyarrow xlntpyarrow.cpp)
 
+if(MSVC)
+		target_compile_definitions(xlntpyarrow PRIVATE _CRT_SECURE_NO_WARNINGS=1)
+endif()
+
 target_include_directories(xlntpyarrow
 	PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 	PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../source

@@ -44,112 +44,121 @@ void import_pyarrow()
     }
 }
 
-std::vector<arrow::Type::type> extract_schema_types(std::shared_ptr<arrow::Schema> &schema)
+std::unique_ptr<arrow::ArrayBuilder> make_array_builder(std::shared_ptr<arrow::DataType> &type)
 {
-    auto types = std::vector<arrow::Type::type>();
-
-    for (auto i = 0; i < schema->num_fields(); ++i)
-    {
-        types.push_back(schema->field(i)->type()->id());
-    }
-
-    return types;
-}
-
-std::unique_ptr<arrow::ArrayBuilder> make_array_builder(arrow::Type::type type)
-{
-    std::unique_ptr<arrow::ArrayBuilder> builder;
     auto pool = arrow::default_memory_pool();
+    auto builder = static_cast<arrow::ArrayBuilder *>(nullptr);
 
-    switch (type)
+    switch(type->id())
     {
     case arrow::Type::NA:
         break;
 
-    case arrow::Type::BOOL:
-        builder.reset(new arrow::BooleanBuilder(pool));
-        break;
-
     case arrow::Type::UINT8:
+        builder = new arrow::TypeTraits<arrow::UInt8Type>::BuilderType(pool);
         break;
 
     case arrow::Type::INT8:
+        builder = new arrow::TypeTraits<arrow::Int8Type>::BuilderType(pool);
         break;
 
     case arrow::Type::UINT16:
+        builder = new arrow::TypeTraits<arrow::UInt16Type>::BuilderType(pool);
         break;
 
     case arrow::Type::INT16:
+        builder = new arrow::TypeTraits<arrow::Int16Type>::BuilderType(pool);
         break;
 
     case arrow::Type::UINT32:
+        builder = new arrow::TypeTraits<arrow::UInt32Type>::BuilderType(pool);
         break;
 
     case arrow::Type::INT32:
+        builder = new arrow::TypeTraits<arrow::Int32Type>::BuilderType(pool);
         break;
 
     case arrow::Type::UINT64:
+        builder = new arrow::TypeTraits<arrow::UInt64Type>::BuilderType(pool);
         break;
 
     case arrow::Type::INT64:
-        break;
-
-    case arrow::Type::HALF_FLOAT:
-        break;
-
-    case arrow::Type::FLOAT:
-        break;
-
-    case arrow::Type::DOUBLE:
-        builder.reset(new arrow::DoubleBuilder(pool));
-        break;
-
-    case arrow::Type::STRING:
-        builder.reset(new arrow::StringBuilder(pool));
-        break;
-
-    case arrow::Type::BINARY:
-        break;
-
-    case arrow::Type::FIXED_SIZE_BINARY:
-        break;
-
-    case arrow::Type::DATE32:
-        builder.reset(new arrow::Date32Builder(pool));
+        builder = new arrow::TypeTraits<arrow::Int64Type>::BuilderType(pool);
         break;
 
     case arrow::Type::DATE64:
+        builder = new arrow::TypeTraits<arrow::Date64Type>::BuilderType(pool);
         break;
 
+    case arrow::Type::DATE32:
+        builder = new arrow::TypeTraits<arrow::Date32Type>::BuilderType(pool);
+        break;
+/*
     case arrow::Type::TIMESTAMP:
+        builder = new arrow::TypeTraits<arrow::TimestampType>::BuilderType(pool);
         break;
 
     case arrow::Type::TIME32:
+        builder = new arrow::TypeTraits<arrow::Time32Type>::BuilderType(pool);
         break;
 
     case arrow::Type::TIME64:
+        builder = new arrow::TypeTraits<arrow::Time64Type>::BuilderType(pool);
+        break;
+*/
+    case arrow::Type::HALF_FLOAT:
+        builder = new arrow::TypeTraits<arrow::HalfFloatType>::BuilderType(pool);
         break;
 
-    case arrow::Type::INTERVAL:
+    case arrow::Type::FLOAT:
+        builder = new arrow::TypeTraits<arrow::FloatType>::BuilderType(pool);
+        break;
+
+    case arrow::Type::DOUBLE:
+        builder = new arrow::TypeTraits<arrow::DoubleType>::BuilderType(pool);
         break;
 
     case arrow::Type::DECIMAL:
+        builder = new arrow::TypeTraits<arrow::DecimalType>::BuilderType(pool, type);
+        break;
+
+    case arrow::Type::BOOL:
+        builder = new arrow::TypeTraits<arrow::BooleanType>::BuilderType(pool);
+        break;
+
+    case arrow::Type::STRING:
+        builder = new arrow::TypeTraits<arrow::StringType>::BuilderType(pool);
+        break;
+
+    case arrow::Type::BINARY:
+        builder = new arrow::TypeTraits<arrow::BinaryType>::BuilderType(pool);
+        break;
+/*
+    case arrow::Type::FIXED_SIZE_BINARY:
+        builder = new arrow::TypeTraits<arrow::FixedSizeBinaryType>::BuilderType(pool);
         break;
 
     case arrow::Type::LIST:
+        builder = new arrow::TypeTraits<arrow::ListType>::BuilderType(pool);
         break;
 
     case arrow::Type::STRUCT:
+        builder = new arrow::TypeTraits<arrow::StructType>::BuilderType(pool);
         break;
 
     case arrow::Type::UNION:
+        builder = new arrow::TypeTraits<arrow::UnionType>::BuilderType(pool);
         break;
 
     case arrow::Type::DICTIONARY:
+        builder = new arrow::TypeTraits<arrow::DictionaryType>::BuilderType(pool);
         break;
+*/
+    default:
+        throw std::exception("not implemented");
     }
 
-    return builder;
+    return std::unique_ptr<arrow::ArrayBuilder>(builder);
 }
 
 void open_file(xlnt::streaming_workbook_reader &reader, pybind11::object file)
@@ -165,13 +174,12 @@ pybind11::handle read_batch(xlnt::streaming_workbook_reader &reader,
     std::shared_ptr<arrow::Schema> schema;
     arrow::py::unwrap_schema(pyschema.ptr(), &schema);
 
-    auto column_types = extract_schema_types(schema);
     auto builders = std::vector<std::shared_ptr<arrow::ArrayBuilder>>();
     auto num_rows = std::int64_t(0);
 
-    for (auto type : column_types)
+    for (auto i = 0; i < schema->num_fields(); ++i)
     {
-        builders.push_back(make_array_builder(type));
+        builders.push_back(make_array_builder(schema->field(i)->type()));
     }
 
     for (auto row = 0; row < max_rows; ++row)
@@ -188,10 +196,10 @@ pybind11::handle read_batch(xlnt::streaming_workbook_reader &reader,
             if (!reader.has_cell()) break;
 
             auto cell = reader.read_cell();
-            auto column_type = column_types.at(column);
+            auto &column_type = schema->field(cell.column().index - 1)->type();
             auto builder = builders.at(cell.column().index - 1).get();
 
-            switch (column_type)
+            switch (column_type->id())
             {
             case arrow::Type::NA:
                 break;
@@ -201,33 +209,43 @@ pybind11::handle read_batch(xlnt::streaming_workbook_reader &reader,
                 break;
 
             case arrow::Type::UINT8:
+                static_cast<arrow::UInt8Builder *>(builder)->Append(static_cast<std::uint8_t>(cell.value<unsigned int>()));
                 break;
 
             case arrow::Type::INT8:
+              static_cast<arrow::Int8Builder *>(builder)->Append(static_cast<std::int8_t>(cell.value<int>()));
                 break;
 
             case arrow::Type::UINT16:
+                static_cast<arrow::UInt16Builder *>(builder)->Append(static_cast<std::uint16_t>(cell.value<unsigned int>()));
                 break;
 
             case arrow::Type::INT16:
+                static_cast<arrow::Int16Builder *>(builder)->Append(static_cast<std::int16_t>(cell.value<int>()));
                 break;
 
             case arrow::Type::UINT32:
+                static_cast<arrow::UInt32Builder *>(builder)->Append(cell.value<std::uint32_t>());
                 break;
 
             case arrow::Type::INT32:
+                static_cast<arrow::Int32Builder *>(builder)->Append(cell.value<std::int32_t>());
                 break;
 
             case arrow::Type::UINT64:
+                static_cast<arrow::UInt64Builder *>(builder)->Append(cell.value<std::uint64_t>());
                 break;
 
             case arrow::Type::INT64:
+                static_cast<arrow::Int64Builder *>(builder)->Append(cell.value<std::int64_t>());
                 break;
 
             case arrow::Type::HALF_FLOAT:
+                static_cast<arrow::HalfFloatBuilder *>(builder)->Append(static_cast<unsigned short>(cell.value<float>()));
                 break;
 
             case arrow::Type::FLOAT:
+                static_cast<arrow::FloatBuilder *>(builder)->Append(cell.value<float>());
                 break;
 
             case arrow::Type::DOUBLE:
@@ -239,9 +257,11 @@ pybind11::handle read_batch(xlnt::streaming_workbook_reader &reader,
                 break;
 
             case arrow::Type::BINARY:
+                static_cast<arrow::BinaryBuilder *>(builder)->Append(cell.value<std::string>());
                 break;
 
             case arrow::Type::FIXED_SIZE_BINARY:
+                static_cast<arrow::FixedSizeBinaryBuilder *>(builder)->Append(cell.value<std::string>());
                 break;
 
             case arrow::Type::DATE32:
@@ -249,34 +269,47 @@ pybind11::handle read_batch(xlnt::streaming_workbook_reader &reader,
                 break;
 
             case arrow::Type::DATE64:
+                static_cast<arrow::Date64Builder *>(builder)->Append(cell.value<std::int64_t>());
                 break;
 
             case arrow::Type::TIMESTAMP:
+                static_cast<arrow::TimestampBuilder *>(builder)->Append(cell.value<std::int64_t>());
                 break;
 
             case arrow::Type::TIME32:
+                static_cast<arrow::Time32Builder *>(builder)->Append(cell.value<int>());
                 break;
 
             case arrow::Type::TIME64:
+                static_cast<arrow::Time64Builder *>(builder)->Append(cell.value<std::int64_t>());
                 break;
-
+/*
             case arrow::Type::INTERVAL:
+                static_cast<arrow::IntervalBuilder *>(builder)->Append(cell.value<std::int64_t>());
                 break;
 
             case arrow::Type::DECIMAL:
+                static_cast<arrow::DecimalBuilder *>(builder)->Append(cell.value<std::string>());
                 break;
 
             case arrow::Type::LIST:
+                static_cast<arrow::ListBuilder *>(builder)->Append(cell.value<std::string>());
                 break;
 
             case arrow::Type::STRUCT:
+                static_cast<arrow::StructBuilder *>(builder)->Append(cell.value<std::string>());
                 break;
 
             case arrow::Type::UNION:
+                static_cast<arrow::UnionBuilder *>(builder)->Append(cell.value<std::string>());
                 break;
 
             case arrow::Type::DICTIONARY:
+                static_cast<arrow::DictionaryBuilder *>(builder)->Append(cell.value<std::string>());
                 break;
+*/
+            default:
+                throw std::exception("not implemented");
             }
         }
 
@@ -320,6 +353,18 @@ PYBIND11_MODULE(xlntpyarrow, m)
     cell.def("value_string", [](xlnt::cell &cell)
         {
             return cell.value<std::string>();
+        })
+        .def("value_bool", [](xlnt::cell &cell)
+        {
+            return cell.value<bool>();
+        })
+        .def("value_unsigned_int", [](xlnt::cell &cell)
+        {
+            return cell.value<unsigned int>();
+        })
+        .def("value_long_double", [](xlnt::cell &cell)
+        {
+            return cell.value<long double>();
         })
         .def("data_type", [](xlnt::cell &cell)
             {
