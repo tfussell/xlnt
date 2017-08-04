@@ -332,7 +332,7 @@ pybind11::handle read_batch(xlnt::streaming_workbook_reader &reader,
     return batch_handle;
 }
 
-PYBIND11_MODULE(xlntpyarrow, m)
+PYBIND11_MODULE(lib, m)
 {
     m.doc() = "streaming read/write interface for C++ XLSX library xlnt";
 

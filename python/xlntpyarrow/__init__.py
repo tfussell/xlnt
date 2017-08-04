@@ -1,7 +1,5 @@
 import pyarrow as pa
-print('pyarrow loaded')
-import xlntpyarrow as xpa
-print('xlntpyarrow loaded')
+import xlntpyarrow.lib as xpa
 
 COLUMN_TYPE_FIELD = {
     xpa.Cell.Type.Number: pa.float64,

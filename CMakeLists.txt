@@ -32,7 +32,7 @@ if(TESTS)
 endif()
 
 if(PYTHON)
-    add_subdirectory(xlntpyarrow)
+    add_subdirectory(python)
 endif()
 
 add_subdirectory(source)
