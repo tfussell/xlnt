@@ -34,13 +34,13 @@ class build_ext(_build_ext):
 
     description = "Build the C-extensions for arrow"
     user_options = ([('extra-cmake-args=', None, 'extra arguments for CMake'),
-                     ('build-type=', None, 'build type (debug or release)')] +
+                     ('build-type=', None, 'build type (Debug or Release)')] +
                     _build_ext.user_options)
 
     def initialize_options(self):
         _build_ext.initialize_options(self)
         self.extra_cmake_args = os.environ.get('XLNTPYARROW_CMAKE_OPTIONS', '')
-        self.build_type = os.environ.get('XLNTPYARROW_BUILD_TYPE', 'debug').lower()
+        self.build_type = os.environ.get('XLNTPYARROW_BUILD_TYPE', 'Debug')
 
         self.cmake_cxxflags = os.environ.get('XLNTPYARROW_CXXFLAGS', '')
 
@@ -48,7 +48,7 @@ class build_ext(_build_ext):
             # Cannot do debug builds in Windows unless Python itself is a debug
             # build
             if not hasattr(sys, 'gettotalrefcount'):
-                self.build_type = 'release'
+                self.build_type = 'Release'
 
     def _run_cmake(self):
         # The directory containing this setup.py
@@ -98,18 +98,18 @@ class build_ext(_build_ext):
             cmake_command = (['cmake', self.extra_cmake_args] +
                              cmake_options + [source])
 
-            print("-- Runnning cmake for pyarrow")
+            print("-- Runnning cmake for xlntpyarrow")
             self.spawn(cmake_command)
-            print("-- Finished cmake for pyarrow")
+            print("-- Finished cmake for xlntpyarrow")
             args = ['make']
-            if os.environ.get('PYARROW_BUILD_VERBOSE', '0') == '1':
+            if os.environ.get('XLNTPYARROW_BUILD_VERBOSE', '0') == '1':
                 args.append('VERBOSE=1')
 
-            if 'PYARROW_PARALLEL' in os.environ:
-                args.append('-j{0}'.format(os.environ['PYARROW_PARALLEL']))
-            print("-- Running cmake --build for pyarrow")
+            if 'XLNTPYARROW_PARALLEL' in os.environ:
+                args.append('-j{0}'.format(os.environ['XLNTPYARROW_PARALLEL']))
+            print("-- Running cmake --build for xlntpyarrow")
             self.spawn(args)
-            print("-- Finished cmake --build for pyarrow")
+            print("-- Finished cmake --build for xlntpyarrow")
         else:
             import shlex
             cmake_generator = 'Visual Studio 15 2017 Win64'
@@ -124,13 +124,13 @@ class build_ext(_build_ext):
             if "-G" in self.extra_cmake_args:
                 cmake_command = cmake_command[:-2]
 
-            print("-- Runnning cmake for pyarrow")
+            print("-- Runnning cmake for xlntpyarrow")
             self.spawn(cmake_command)
-            print("-- Finished cmake for pyarrow")
+            print("-- Finished cmake for xlntpyarrow")
             # Do the build
-            print("-- Running cmake --build for pyarrow")
+            print("-- Running cmake --build for xlntpyarrow")
             self.spawn(['cmake', '--build', '.', '--config', self.build_type])
-            print("-- Finished cmake --build for pyarrow")
+            print("-- Finished cmake --build for xlntpyarrow")
 
         if self.inplace:
             # a bit hacky
@@ -155,10 +155,8 @@ class build_ext(_build_ext):
         build_prefix = self.build_type
 
         def move_lib(lib_name):
-            print('move_lib', lib_name)
             lib_filename = (shared_library_prefix + lib_name +
                             shared_library_suffix)
-            print(build_prefix, sys.platform, shared_library_prefix, lib_name, shared_library_suffix, lib_filename)
             # Also copy libraries with ABI/SO version suffix
             if sys.platform == 'darwin':
                 lib_pattern = (shared_library_prefix + lib_name +
@@ -168,7 +166,6 @@ class build_ext(_build_ext):
                 libs = glob.glob(pjoin(build_prefix, lib_filename) + '*')
             # Longest suffix library should be copied, all others symlinked
             libs.sort(key=lambda s: -len(s))
-            print(libs, libs[0])
             lib_filename = os.path.basename(libs[0])
             shutil.move(pjoin(build_prefix, lib_filename),
                         pjoin(build_lib, 'xlntpyarrow', lib_filename))
@@ -183,7 +180,7 @@ class build_ext(_build_ext):
         self._found_names = []
         built_path = self.get_ext_built('lib')
         if not os.path.exists(built_path):
-            raise RuntimeError('pyarrow C-extension failed to build:',
+            raise RuntimeError('xlntpyarrow C-extension failed to build:',
                                os.path.abspath(built_path))
 
         ext_path = pjoin(build_lib, self._get_cmake_ext_path('lib'))
@@ -212,7 +209,6 @@ class build_ext(_build_ext):
         if suffix is None:
             suffix = sysconfig.get_config_var('SO')
         filename = name + suffix
-        print(pjoin(package_dir, filename))
         return pjoin(package_dir, filename)
 
     def get_ext_built(self, name):
