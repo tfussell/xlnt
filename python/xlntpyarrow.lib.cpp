@@ -21,6 +21,7 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <exception>
 #include <arrow/api.h>
 #include <arrow/python/pyarrow.h>
 #include <pybind11/pybind11.h>
@@ -37,7 +38,7 @@ void import_pyarrow()
     {
         if (arrow::py::import_pyarrow() != 0)
         {
-            throw std::exception("Import of pyarrow failed.");
+            throw std::runtime_error("Import of pyarrow failed.");
         }
 
         imported = true;
@@ -155,7 +156,7 @@ std::unique_ptr<arrow::ArrayBuilder> make_array_builder(std::shared_ptr<arrow::D
         break;
 */
     default:
-        throw std::exception("not implemented");
+        throw std::runtime_error("not implemented");
     }
 
     return std::unique_ptr<arrow::ArrayBuilder>(builder);
@@ -309,7 +310,7 @@ pybind11::handle read_batch(xlnt::streaming_workbook_reader &reader,
                 break;
 */
             default:
-                throw std::exception("not implemented");
+                throw std::runtime_error("not implemented");
             }
         }
 

@@ -84,15 +84,8 @@ class build_ext(_build_ext):
             cmake_options.append('-DPYARROW_CXXFLAGS="{0}"'
                                  .format(self.cmake_cxxflags))
 
-        # ARROW-1090: work around CMake rough edges
-        if 'ARROW_HOME' in os.environ and sys.platform != 'win32':
-            pkg_config = pjoin(os.environ['ARROW_HOME'], 'lib',
-                               'pkgconfig')
-            os.environ['PKG_CONFIG_PATH'] = pkg_config
-            del os.environ['ARROW_HOME']
-
         cmake_options.append('-DCMAKE_BUILD_TYPE={0}'
-                             .format(self.build_type.lower()))
+                             .format(self.build_type))
 
         if sys.platform != 'win32':
             cmake_command = (['cmake', self.extra_cmake_args] +
@@ -112,7 +105,9 @@ class build_ext(_build_ext):
             print("-- Finished cmake --build for xlntpyarrow")
         else:
             import shlex
-            cmake_generator = 'Visual Studio 15 2017 Win64'
+            generator_args = []
+            if 'CMAKE_GENERATOR' in os.environ:
+                generator_args = ['-G', os.environ['CMAKE_GENERATOR']]
             if not is_64_bit:
                 raise RuntimeError('Not supported on 32-bit Windows')
 
@@ -120,9 +115,7 @@ class build_ext(_build_ext):
             extra_cmake_args = shlex.split(self.extra_cmake_args)
             cmake_command = (['cmake'] + extra_cmake_args +
                              cmake_options +
-                             [source, '-G', cmake_generator])
-            if "-G" in self.extra_cmake_args:
-                cmake_command = cmake_command[:-2]
+                             [source] + generator_args)
 
             print("-- Runnning cmake for xlntpyarrow")
             self.spawn(cmake_command)
