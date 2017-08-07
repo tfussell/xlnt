@@ -19,19 +19,25 @@ pybind11_add_module(xlntpyarrowlib xlntpyarrow.lib.cpp)
 set_target_properties(xlntpyarrowlib PROPERTIES
 		OUTPUT_NAME "lib")
 
-if(MSVC)
-		target_compile_definitions(xlntpyarrowlib PRIVATE _CRT_SECURE_NO_WARNINGS=1)
-endif()
-
 target_include_directories(xlntpyarrowlib
   	PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
   	PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../source
   	PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/pybind11/include
   	PRIVATE ${ARROW_INCLUDE_DIR})
 target_link_libraries(xlntpyarrowlib
-  	PRIVATE xlnt
-  	PRIVATE ${ARROW_SHARED_IMP_LIB}
-  	PRIVATE ${ARROW_PYTHON_SHARED_IMP_LIB})
+    PRIVATE xlnt)
+
+if(MSVC)
+    target_compile_definitions(xlntpyarrowlib
+        PRIVATE _CRT_SECURE_NO_WARNINGS=1)
+    target_link_libraries(xlntpyarrowlib
+      	PRIVATE ${ARROW_SHARED_IMP_LIB}
+      	PRIVATE ${ARROW_PYTHON_SHARED_IMP_LIB})
+else()
+    target_link_libraries(xlntpyarrowlib
+        PRIVATE ${ARROW_SHARED_LIB}
+        PRIVATE ${ARROW_PYTHON_SHARED_LIB})
+endif()
 
 if(NOT STATIC)
     add_custom_command(TARGET xlntpyarrowlib POST_BUILD

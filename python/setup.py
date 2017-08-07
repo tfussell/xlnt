@@ -145,7 +145,7 @@ class build_ext(_build_ext):
         except OSError:
             pass
 
-        build_prefix = self.build_type
+        build_prefix = pjoin(['source'] + [self.build_type] if sys.platform == 'win32' else [])
 
         def move_lib(lib_name):
             lib_filename = (shared_library_prefix + lib_name +
@@ -211,7 +211,7 @@ class build_ext(_build_ext):
             return pjoin(head, self.build_type, tail + suffix)
         else:
             suffix = sysconfig.get_config_var('SO')
-            return pjoin(self.build_type, name + suffix)
+            return name + suffix
 
     def get_names(self):
         return self._found_names
