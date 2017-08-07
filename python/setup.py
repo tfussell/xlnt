@@ -145,7 +145,8 @@ class build_ext(_build_ext):
         except OSError:
             pass
 
-        build_prefix = pjoin(['source'] + [self.build_type] if sys.platform == 'win32' else [])
+        build_prefix = ['source'] + ([self.build_type] if sys.platform == 'win32' else [])
+        build_prefix = pjoin(*build_prefix)
 
         def move_lib(lib_name):
             lib_filename = (shared_library_prefix + lib_name +
