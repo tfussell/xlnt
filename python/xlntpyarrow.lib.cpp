@@ -45,12 +45,12 @@ void import_pyarrow()
     }
 }
 
-std::unique_ptr<arrow::ArrayBuilder> make_array_builder(std::shared_ptr<arrow::DataType> &type)
+arrow::ArrayBuilder *make_array_builder(arrow::Type::type type)
 {
     auto pool = arrow::default_memory_pool();
     auto builder = static_cast<arrow::ArrayBuilder *>(nullptr);
 
-    switch(type->id())
+    switch(type)
     {
     case arrow::Type::NA:
         break;
@@ -118,11 +118,11 @@ std::unique_ptr<arrow::ArrayBuilder> make_array_builder(std::shared_ptr<arrow::D
     case arrow::Type::DOUBLE:
         builder = new arrow::TypeTraits<arrow::DoubleType>::BuilderType(pool);
         break;
-
+/*
     case arrow::Type::DECIMAL:
         builder = new arrow::TypeTraits<arrow::DecimalType>::BuilderType(pool, type);
         break;
-
+*/
     case arrow::Type::BOOL:
         builder = new arrow::TypeTraits<arrow::BooleanType>::BuilderType(pool);
         break;
@@ -159,12 +159,171 @@ std::unique_ptr<arrow::ArrayBuilder> make_array_builder(std::shared_ptr<arrow::D
         throw std::runtime_error("not implemented");
     }
 
-    return std::unique_ptr<arrow::ArrayBuilder>(builder);
+    return builder;
 }
 
 void open_file(xlnt::streaming_workbook_reader &reader, pybind11::object file)
 {
     reader.open(std::unique_ptr<std::streambuf>(new xlnt::python_streambuf(file)));
+}
+
+template<typename T>
+T cell_value(xlnt::cell cell)
+{
+    return static_cast<T>(cell.value<long double>());
+}
+
+// from https://stackoverflow.com/questions/1659440/32-bit-to-16-bit-floating-point-conversion
+std::uint16_t float_to_half(float f)
+{
+    auto x = static_cast<std::uint32_t>(f);
+    auto half = ((x >> 16) & 0x8000)
+        | ((((x & 0x7f800000) - 0x38000000) >> 13) & 0x7c00)
+        | ((x >> 13) & 0x03ff);
+
+    return half;
+}
+
+void append_cell_value(arrow::ArrayBuilder *builder, arrow::Type::type type, xlnt::cell cell)
+{
+    switch (type)
+    {
+    case arrow::Type::NA:
+        break;
+
+    case arrow::Type::BOOL:
+        static_cast<arrow::BooleanBuilder *>(builder)
+            ->Append(cell.value<bool>());
+        break;
+
+    case arrow::Type::UINT8:
+        static_cast<arrow::UInt8Builder *>(builder)
+            ->Append(cell_value<std::uint8_t>(cell));
+        break;
+
+    case arrow::Type::INT8:
+      static_cast<arrow::Int8Builder *>(builder)
+          ->Append(cell_value<std::uint8_t>(cell));
+        break;
+
+    case arrow::Type::UINT16:
+        static_cast<arrow::UInt16Builder *>(builder)
+            ->Append(cell_value<std::uint16_t>(cell));
+        break;
+
+    case arrow::Type::INT16:
+        static_cast<arrow::Int16Builder *>(builder)
+            ->Append(cell_value<std::int16_t>(cell));
+        break;
+
+    case arrow::Type::UINT32:
+        static_cast<arrow::UInt32Builder *>(builder)
+            ->Append(cell_value<std::uint32_t>(cell));
+        break;
+
+    case arrow::Type::INT32:
+        static_cast<arrow::Int32Builder *>(builder)
+            ->Append(cell_value<std::int32_t>(cell));
+        break;
+
+    case arrow::Type::UINT64:
+        static_cast<arrow::UInt64Builder *>(builder)
+            ->Append(cell_value<std::uint64_t>(cell));
+        break;
+
+    case arrow::Type::INT64:
+        static_cast<arrow::Int64Builder *>(builder)
+            ->Append(cell_value<std::int64_t>(cell));
+        break;
+
+    case arrow::Type::HALF_FLOAT:
+        static_cast<arrow::HalfFloatBuilder *>(builder)
+            ->Append(float_to_half(cell_value<float>(cell)));
+        break;
+
+    case arrow::Type::FLOAT:
+        static_cast<arrow::FloatBuilder *>(builder)
+            ->Append(cell_value<float>(cell));
+        break;
+
+    case arrow::Type::DOUBLE:
+        static_cast<arrow::DoubleBuilder *>(builder)
+            ->Append(cell_value<long double>(cell));
+        break;
+
+    case arrow::Type::STRING:
+        static_cast<arrow::StringBuilder *>(builder)
+            ->Append(cell.value<std::string>());
+        break;
+
+    case arrow::Type::BINARY:
+        static_cast<arrow::BinaryBuilder *>(builder)
+            ->Append(cell.value<std::string>());
+        break;
+
+    case arrow::Type::FIXED_SIZE_BINARY:
+        static_cast<arrow::FixedSizeBinaryBuilder *>(builder)
+            ->Append(cell.value<std::string>());
+        break;
+
+    case arrow::Type::DATE32:
+        static_cast<arrow::Date32Builder *>(builder)
+            ->Append(cell_value<arrow::Date32Type::c_type>(cell));
+        break;
+
+    case arrow::Type::DATE64:
+        static_cast<arrow::Date64Builder *>(builder)
+            ->Append(cell_value<arrow::Date64Type::c_type>(cell));
+        break;
+
+    case arrow::Type::TIMESTAMP:
+        static_cast<arrow::TimestampBuilder *>(builder)
+            ->Append(cell_value<arrow::TimestampType::c_type>(cell));
+        break;
+
+    case arrow::Type::TIME32:
+        static_cast<arrow::Time32Builder *>(builder)
+            ->Append(cell_value<arrow::Time32Type::c_type>(cell));
+        break;
+
+    case arrow::Type::TIME64:
+        static_cast<arrow::Time64Builder *>(builder)
+            ->Append(cell_value<arrow::Time64Type::c_type>(cell));
+        break;
+/*
+    case arrow::Type::INTERVAL:
+        static_cast<arrow::IntervalBuilder *>(builder)
+            ->Append(cell_value<std::int64_t>(cell));
+        break;
+
+    case arrow::Type::DECIMAL:
+        static_cast<arrow::DecimalBuilder *>(builder)
+            ->Append(cell.value<std::string>());
+        break;
+
+    case arrow::Type::LIST:
+        static_cast<arrow::ListBuilder *>(builder)
+            ->Append(cell.value<std::string>());
+        break;
+
+    case arrow::Type::STRUCT:
+        static_cast<arrow::StructBuilder *>(builder)
+            ->Append(cell.value<std::string>());
+        break;
+
+    case arrow::Type::UNION:
+        static_cast<arrow::UnionBuilder *>(builder)
+            ->Append(cell.value<std::string>());
+        break;
+
+    case arrow::Type::DICTIONARY:
+        static_cast<arrow::DictionaryBuilder *>(builder)
+            ->Append(cell.value<std::string>());
+        break;
+*/
+    default:
+        throw std::runtime_error("not implemented");
+    }
 }
 
 pybind11::handle read_batch(xlnt::streaming_workbook_reader &reader,
@@ -175,146 +334,39 @@ pybind11::handle read_batch(xlnt::streaming_workbook_reader &reader,
     std::shared_ptr<arrow::Schema> schema;
     arrow::py::unwrap_schema(pyschema.ptr(), &schema);
 
-    auto builders = std::vector<std::shared_ptr<arrow::ArrayBuilder>>();
-    auto num_rows = std::int64_t(0);
+    std::vector<arrow::Type::type> column_types;
 
     for (auto i = 0; i < schema->num_fields(); ++i)
     {
-        builders.push_back(make_array_builder(schema->field(i)->type()));
+        column_types.push_back(schema->field(i)->type()->id());
     }
 
-    for (auto row = 0; row < max_rows; ++row)
+    auto builders = std::vector<std::unique_ptr<arrow::ArrayBuilder>>();
+
+    for (auto type : column_types)
+    {
+        builders.emplace_back(make_array_builder(type));
+    }
+
+    auto row = std::int64_t(0);
+
+    while (row < max_rows)
     {
         if (!reader.has_cell()) break;
-
-        if (row % 1000 == 0)
-        {
-            std::cout << row << std::endl;
-        }
 
         for (auto column = 0; column < schema->num_fields(); ++column)
         {
             if (!reader.has_cell()) break;
 
             auto cell = reader.read_cell();
-            auto &column_type = schema->field(cell.column().index - 1)->type();
-            auto builder = builders.at(cell.column().index - 1).get();
+            auto zero_indexed_column = cell.column().index - 1;
+            auto column_type = column_types.at(zero_indexed_column);
+            auto builder = builders.at(zero_indexed_column).get();
 
-            switch (column_type->id())
-            {
-            case arrow::Type::NA:
-                break;
-
-            case arrow::Type::BOOL:
-                static_cast<arrow::BooleanBuilder *>(builder)->Append(cell.value<bool>());
-                break;
-
-            case arrow::Type::UINT8:
-                static_cast<arrow::UInt8Builder *>(builder)->Append(static_cast<std::uint8_t>(cell.value<unsigned int>()));
-                break;
-
-            case arrow::Type::INT8:
-              static_cast<arrow::Int8Builder *>(builder)->Append(static_cast<std::int8_t>(cell.value<int>()));
-                break;
-
-            case arrow::Type::UINT16:
-                static_cast<arrow::UInt16Builder *>(builder)->Append(static_cast<std::uint16_t>(cell.value<unsigned int>()));
-                break;
-
-            case arrow::Type::INT16:
-                static_cast<arrow::Int16Builder *>(builder)->Append(static_cast<std::int16_t>(cell.value<int>()));
-                break;
-
-            case arrow::Type::UINT32:
-                static_cast<arrow::UInt32Builder *>(builder)->Append(cell.value<std::uint32_t>());
-                break;
-
-            case arrow::Type::INT32:
-                static_cast<arrow::Int32Builder *>(builder)->Append(cell.value<std::int32_t>());
-                break;
-
-            case arrow::Type::UINT64:
-                static_cast<arrow::UInt64Builder *>(builder)->Append(cell.value<std::uint64_t>());
-                break;
-
-            case arrow::Type::INT64:
-                static_cast<arrow::Int64Builder *>(builder)->Append(cell.value<std::int64_t>());
-                break;
-
-            case arrow::Type::HALF_FLOAT:
-                static_cast<arrow::HalfFloatBuilder *>(builder)->Append(static_cast<unsigned short>(cell.value<float>()));
-                break;
-
-            case arrow::Type::FLOAT:
-                static_cast<arrow::FloatBuilder *>(builder)->Append(cell.value<float>());
-                break;
-
-            case arrow::Type::DOUBLE:
-                static_cast<arrow::DoubleBuilder *>(builder)->Append(cell.value<long double>());
-                break;
-
-            case arrow::Type::STRING:
-                static_cast<arrow::StringBuilder *>(builder)->Append(cell.value<std::string>());
-                break;
-
-            case arrow::Type::BINARY:
-                static_cast<arrow::BinaryBuilder *>(builder)->Append(cell.value<std::string>());
-                break;
-
-            case arrow::Type::FIXED_SIZE_BINARY:
-                static_cast<arrow::FixedSizeBinaryBuilder *>(builder)->Append(cell.value<std::string>());
-                break;
-
-            case arrow::Type::DATE32:
-                static_cast<arrow::Date32Builder *>(builder)->Append(cell.value<int>());
-                break;
-
-            case arrow::Type::DATE64:
-                static_cast<arrow::Date64Builder *>(builder)->Append(cell.value<std::int64_t>());
-                break;
-
-            case arrow::Type::TIMESTAMP:
-                static_cast<arrow::TimestampBuilder *>(builder)->Append(cell.value<std::int64_t>());
-                break;
-
-            case arrow::Type::TIME32:
-                static_cast<arrow::Time32Builder *>(builder)->Append(cell.value<int>());
-                break;
-
-            case arrow::Type::TIME64:
-                static_cast<arrow::Time64Builder *>(builder)->Append(cell.value<std::int64_t>());
-                break;
-/*
-            case arrow::Type::INTERVAL:
-                static_cast<arrow::IntervalBuilder *>(builder)->Append(cell.value<std::int64_t>());
-                break;
-
-            case arrow::Type::DECIMAL:
-                static_cast<arrow::DecimalBuilder *>(builder)->Append(cell.value<std::string>());
-                break;
-
-            case arrow::Type::LIST:
-                static_cast<arrow::ListBuilder *>(builder)->Append(cell.value<std::string>());
-                break;
-
-            case arrow::Type::STRUCT:
-                static_cast<arrow::StructBuilder *>(builder)->Append(cell.value<std::string>());
-                break;
-
-            case arrow::Type::UNION:
-                static_cast<arrow::UnionBuilder *>(builder)->Append(cell.value<std::string>());
-                break;
-
-            case arrow::Type::DICTIONARY:
-                static_cast<arrow::DictionaryBuilder *>(builder)->Append(cell.value<std::string>());
-                break;
-*/
-            default:
-                throw std::runtime_error("not implemented");
-            }
+            append_cell_value(builder, column_type, cell);
         }
 
-        ++num_rows;
+        ++row;
     }
 
     auto columns = std::vector<std::shared_ptr<arrow::Array>>();
@@ -326,7 +378,7 @@ pybind11::handle read_batch(xlnt::streaming_workbook_reader &reader,
         columns.emplace_back(column);
     }
 
-    auto batch_pointer = std::make_shared<arrow::RecordBatch>(schema, num_rows, columns);
+    auto batch_pointer = std::make_shared<arrow::RecordBatch>(schema, row, columns);
     auto batch_object = arrow::py::wrap_record_batch(batch_pointer);
     auto batch_handle = pybind11::handle(batch_object); // don't need to incr. reference count, right?
 
