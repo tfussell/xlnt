@@ -86,10 +86,14 @@ class build_ext(_build_ext):
 
         cmake_options.append('-DCMAKE_BUILD_TYPE={0}'
                              .format(self.build_type))
-        cmake_options.append('-DCMAKE_INSTALL_PREFIX={0}'
-                             .format(os.environ['PREFIX']))
+
+        if 'CMAKE_GENERATOR' in os.environ:
+            cmake_options.append('-G{}'
+                .format(os.environ['CMAKE_GENERATOR']))
 
         if sys.platform != 'win32':
+            cmake_options.append('-DCMAKE_INSTALL_PREFIX={0}'
+                                 .format(os.environ['PREFIX']))
             cmake_command = (['cmake', self.extra_cmake_args] +
                              cmake_options + [source])
 
@@ -110,17 +114,14 @@ class build_ext(_build_ext):
             print("-- Finished cmake --build for xlntpyarrow")
         else:
             import shlex
-            generator_args = []
-            if 'CMAKE_GENERATOR' in os.environ:
-                generator_args = ['-G', os.environ['CMAKE_GENERATOR']]
             if not is_64_bit:
                 raise RuntimeError('Not supported on 32-bit Windows')
 
-            # Generate the build files
+            cmake_options.append('-DCMAKE_INSTALL_PREFIX={0}'
+                                 .format(os.environ['LIBRARY_PREFIX']))
             extra_cmake_args = shlex.split(self.extra_cmake_args)
             cmake_command = (['cmake'] + extra_cmake_args +
-                             cmake_options +
-                             [source] + generator_args)
+                             cmake_options + [source])
 
             print("-- Runnning cmake for xlntpyarrow")
             self.spawn(cmake_command)
@@ -149,9 +150,6 @@ class build_ext(_build_ext):
             os.makedirs(pjoin(build_lib, 'xlntpyarrow'))
         except OSError:
             pass
-
-        build_prefix = ['source'] + ([self.build_type] if sys.platform == 'win32' else [])
-        build_prefix = pjoin(*build_prefix)
 
         self._found_names = []
         built_path = self.get_ext_built('lib')
