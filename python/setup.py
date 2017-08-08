@@ -86,7 +86,7 @@ class build_ext(_build_ext):
 
         cmake_options.append('-DCMAKE_BUILD_TYPE={0}'
                              .format(self.build_type))
-        cmake_options.append('-DCMAKE_PREFIX={0}'
+        cmake_options.append('-DCMAKE_INSTALL_PREFIX={0}'
                              .format(os.environ['PREFIX']))
 
         if sys.platform != 'win32':
@@ -103,7 +103,7 @@ class build_ext(_build_ext):
             if 'XLNTPYARROW_PARALLEL' in os.environ:
                 args.append('-j{0}'.format(os.environ['XLNTPYARROW_PARALLEL']))
 
-            args.append('INSTALL')
+            args.append('install')
 
             print("-- Running cmake --build for xlntpyarrow")
             self.spawn(args)
