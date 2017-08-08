@@ -86,6 +86,8 @@ class build_ext(_build_ext):
 
         cmake_options.append('-DCMAKE_BUILD_TYPE={0}'
                              .format(self.build_type))
+        cmake_options.append('-DCMAKE_PREFIX={0}'
+                             .format(os.environ['PREFIX']))
 
         if sys.platform != 'win32':
             cmake_command = (['cmake', self.extra_cmake_args] +
@@ -100,6 +102,9 @@ class build_ext(_build_ext):
 
             if 'XLNTPYARROW_PARALLEL' in os.environ:
                 args.append('-j{0}'.format(os.environ['XLNTPYARROW_PARALLEL']))
+
+            args.append('INSTALL')
+
             print("-- Running cmake --build for xlntpyarrow")
             self.spawn(args)
             print("-- Finished cmake --build for xlntpyarrow")
@@ -122,7 +127,7 @@ class build_ext(_build_ext):
             print("-- Finished cmake for xlntpyarrow")
             # Do the build
             print("-- Running cmake --build for xlntpyarrow")
-            self.spawn(['cmake', '--build', '.', '--config', self.build_type])
+            self.spawn(['cmake', '--build', '.', '--config', self.build_type, '--target', 'INSTALL'])
             print("-- Finished cmake --build for xlntpyarrow")
 
         if self.inplace:
@@ -147,29 +152,6 @@ class build_ext(_build_ext):
 
         build_prefix = ['source'] + ([self.build_type] if sys.platform == 'win32' else [])
         build_prefix = pjoin(*build_prefix)
-
-        def move_lib(lib_name):
-            lib_filename = (shared_library_prefix + lib_name +
-                            shared_library_suffix)
-            # Also copy libraries with ABI/SO version suffix
-            if sys.platform == 'darwin':
-                lib_pattern = (shared_library_prefix + lib_name +
-                               ".*" + shared_library_suffix[1:])
-                libs = glob.glob(pjoin(build_prefix, lib_pattern))
-            else:
-                libs = glob.glob(pjoin(build_prefix, lib_filename) + '*')
-            # Longest suffix library should be copied, all others symlinked
-            libs.sort(key=lambda s: -len(s))
-            lib_filename = os.path.basename(libs[0])
-            shutil.move(pjoin(build_prefix, lib_filename),
-                        pjoin(build_lib, 'xlntpyarrow', lib_filename))
-            for lib in libs[1:]:
-                filename = os.path.basename(lib)
-                link_name = pjoin(build_lib, 'xlntpyarrow', filename)
-                if not os.path.exists(link_name):
-                    os.symlink(lib_filename, link_name)
-
-        move_lib('xlnt')
 
         self._found_names = []
         built_path = self.get_ext_built('lib')
@@ -212,6 +194,7 @@ class build_ext(_build_ext):
             return pjoin(head, self.build_type, tail + suffix)
         else:
             suffix = sysconfig.get_config_var('SO')
+            print('suffix is', suffix)
             return name + suffix
 
     def get_names(self):
