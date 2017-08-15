@@ -21,55 +21,18 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#include <locale>
-#include <string>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated"
+#pragma clang diagnostic ignored "-Wweak-vtables"
+#pragma clang diagnostic ignored "-Wsign-conversion"
+#include <utf8.h>
+#pragma clang diagnostic pop
 
 #include <detail/unicode.hpp>
-
-#ifdef UTFCPP
-#include <utf8.h>
-#else
-#include <codecvt>
-#endif
 
 namespace xlnt {
 namespace detail {
 
-#ifndef UTFCPP
-#ifdef _MSC_VER
-std::u16string utf8_to_utf16(const std::string &utf8_string)
-{
-    // use wchar_t instead of char16_t on Windows because of a bug in MSVC
-    // error LNK2001: unresolved external symbol std::codecvt::id
-    // https://connect.microsoft.com/VisualStudio/Feedback/Details/1403302
-    auto converted = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>,
-        wchar_t>{}.from_bytes(utf8_string);
-    return std::u16string(converted.begin(), converted.end());
-}
-
-std::string utf16_to_utf8(const std::u16string &utf16_string)
-{
-    std::wstring utf16_wstring(utf16_string.begin(), utf16_string.end());
-    // use wchar_t instead of char16_t on Windows because of a bug in MSVC
-    // error LNK2001: unresolved external symbol std::codecvt::id
-    // https://connect.microsoft.com/VisualStudio/Feedback/Details/1403302
-    return std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>,
-        wchar_t>{}.to_bytes(utf16_wstring);
-}
-#else
-std::u16string utf8_to_utf16(const std::string &utf8_string)
-{
-    return std::wstring_convert<std::codecvt_utf8_utf16<char16_t>,
-        char16_t>{}.from_bytes(utf8_string);
-}
-
-std::string utf16_to_utf8(const std::u16string &utf16_string)
-{
-    return std::wstring_convert<std::codecvt_utf8_utf16<char16_t>,
-        char16_t>{}.to_bytes(utf16_string);
-}
-#endif
-#else
 std::u16string utf8_to_utf16(const std::string &utf8_string)
 {
     std::u16string result;
@@ -85,7 +48,6 @@ std::string utf16_to_utf8(const std::u16string &utf16_string)
 
     return result;
 }
-#endif
 
 std::string latin1_to_utf8(const std::string &latin1)
 {

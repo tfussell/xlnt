@@ -154,11 +154,7 @@ endif()
 target_include_directories(xlnt PUBLIC ${XLNT_INCLUDE_DIR})
 target_include_directories(xlnt PRIVATE ${XLNT_SOURCE_DIR})
 target_include_directories(xlnt PRIVATE ${XLNT_SOURCE_DIR}/../third-party/libstudxml)
-
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.0.0")
-    target_compile_definitions(xlnt PRIVATE UTFCPP=1)
-    target_include_directories(xlnt PRIVATE ${XLNT_SOURCE_DIR}/../third-party/utfcpp)
-endif()
+target_include_directories(xlnt PRIVATE ${XLNT_SOURCE_DIR}/../third-party/utfcpp)
 
 if(MSVC)
     set_target_properties(xlnt PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\" /wd\"4068\" /MP")
