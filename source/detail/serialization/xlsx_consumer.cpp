@@ -490,7 +490,7 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
 
                 if (parser().attribute_present("width"))
                 {
-                    width = parser().attribute<double>("width");
+                    width = (parser().attribute<double>("width") * 7 - 5) / 7;
                 }
 
                 optional<std::size_t> column_style;

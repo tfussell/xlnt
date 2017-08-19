@@ -2138,7 +2138,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
             if (props.width.is_set())
             {
-                write_attribute("width", props.width.get());
+                write_attribute("width", (props.width.get() * 7 + 5) / 7);
             }
 
             if (props.custom_width)
