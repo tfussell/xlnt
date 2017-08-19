@@ -918,6 +918,12 @@ void worksheet::header_footer(const class header_footer &hf)
     d_->header_footer_ = hf;
 }
 
+void worksheet::clear_page_breaks()
+{
+    d_->row_breaks_.clear();
+    d_->column_breaks_.clear();
+}
+
 void worksheet::page_break_at_row(row_t row)
 {
     d_->row_breaks_.push_back(row);
