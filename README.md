@@ -1,4 +1,4 @@
-<img height="100" src="https://cloud.githubusercontent.com/assets/1735211/24962965/5c1cfc94-1f6b-11e7-8d86-54fe12907a23.png" alt="xlnt"><br/>
+<img height="100" src="https://user-images.githubusercontent.com/1735211/29433390-f37fa28e-836c-11e7-8a60-f8df4c30b424.png" alt="xlnt logo"><br/>
 ====
 
 [![Travis Build Status](https://travis-ci.org/tfussell/xlnt.svg?branch=master)](https://travis-ci.org/tfussell/xlnt)
@@ -38,4 +38,3 @@ Documentation for the current release of xlnt is available [here](https://tfusse
 
 ## License
 xlnt is released to the public for free under the terms of the MIT License. See [LICENSE.md](https://github.com/tfussell/xlnt/blob/master/LICENSE.md) for the full text of the license and the licenses of xlnt's third-party dependencies. [LICENSE.md](https://github.com/tfussell/xlnt/blob/master/LICENSE.md) should be distributed alongside any assemblies that use xlnt in source or compiled form.
-
