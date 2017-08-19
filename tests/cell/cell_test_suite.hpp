@@ -34,7 +34,6 @@ class cell_test_suite : public test_suite
 public:
     cell_test_suite()
     {
-        register_test(test_temp);
         register_test(test_infer_numeric);
         register_test(test_constructor);
         register_test(test_null);
@@ -70,25 +69,6 @@ public:
     }
 
 private:
-    void test_temp()
-    {
-        xlnt::workbook workbook;
-        xlnt::worksheet worksheet = workbook.active_sheet();
-        xlnt::alignment center;
-        center.horizontal(xlnt::horizontal_alignment::center);
-        center.vertical(xlnt::vertical_alignment::center);
-        auto style = workbook.create_style("centered");
-        style.alignment(center);
-
-        for (std::uint32_t row = 1; row < 7000; ++row)
-        for (std::uint32_t column = 1; column < 13; ++column) {
-          xlnt::cell cell = worksheet.cell(column, row);
-          cell.value("test");
-          cell.style(style);
-        }
-
-        workbook.save("test.xlsx");
-    }
     void test_infer_numeric()
     {
         xlnt::workbook wb;
