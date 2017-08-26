@@ -167,8 +167,7 @@ cell xlsx_consumer::read_cell()
     if (in_element(sheetData_el))
     {
         expect_start_element(row_el, xml::content::complex); // CT_Row
-        // auto row_index = parser().attribute<row_t>("r");
-		auto row_index = static_cast<row_t>(std::stoul(parser().attribute("r")));
+        auto row_index = static_cast<row_t>(std::stoul(parser().attribute("r")));
 
         if (parser().attribute_present("ht"))
         {
@@ -299,7 +298,7 @@ cell xlsx_consumer::read_cell()
 
     if (!in_element(row_el))
     {
-		expect_end_element(row_el);
+        expect_end_element(row_el);
 
         if (!in_element(sheetData_el))
         {
