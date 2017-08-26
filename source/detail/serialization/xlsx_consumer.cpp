@@ -149,6 +149,12 @@ void xlsx_consumer::open(std::istream &source)
     populate_workbook(true);
 }
 
+// caching frequently used names
+static const auto sheetData_el = qn("spreadsheetml", "sheetData");
+static const auto row_el = qn("spreadsheetml", "row");
+static const auto cell_el = qn("spreadsheetml", "c");
+static const auto val_el = qn("spreadsheetml", "v");
+
 cell xlsx_consumer::read_cell()
 {
     if (!has_cell())
@@ -158,10 +164,11 @@ cell xlsx_consumer::read_cell()
 
     auto ws = worksheet(current_worksheet_);
 
-    if (in_element(qn("spreadsheetml", "sheetData")))
+    if (in_element(sheetData_el))
     {
-        expect_start_element(qn("spreadsheetml", "row"), xml::content::complex); // CT_Row
-        auto row_index = parser().attribute<row_t>("r");
+        expect_start_element(row_el, xml::content::complex); // CT_Row
+        // auto row_index = parser().attribute<row_t>("r");
+		auto row_index = static_cast<row_t>(std::stoul(parser().attribute("r")));
 
         if (parser().attribute_present("ht"))
         {
@@ -177,19 +184,18 @@ cell xlsx_consumer::read_cell()
         {
             ws.row_properties(row_index).hidden = true;
         }
-
         skip_attributes({ qn("x14ac", "dyDescent") });
         skip_attributes({ "customFormat", "s", "customFont",
             "outlineLevel", "collapsed", "thickTop", "thickBot",
             "ph", "spans" });
     }
 
-    if (!in_element(qn("spreadsheetml", "row")))
+    if (!in_element(row_el))
     {
         return cell(nullptr);
-    }
+    } 
 
-    expect_start_element(qn("spreadsheetml", "c"), xml::content::complex);
+    expect_start_element(cell_el, xml::content::complex);
 
     auto cell = streaming_ ? xlnt::cell(streaming_cell_.get())
         : ws.cell(cell_reference(parser().attribute("r")));
@@ -211,11 +217,11 @@ cell xlsx_consumer::read_cell()
     auto has_shared_formula = false;
     auto formula_value_string = std::string();
 
-    while (in_element(qn("spreadsheetml", "c")))
+    while (in_element(cell_el))
     {
         auto current_element = expect_start_element(xml::content::mixed);
 
-        if (current_element == qn("spreadsheetml", "v")) // s:ST_Xstring
+        if (current_element == val_el) // s:ST_Xstring
         {
             has_value = true;
             value_string = read_text();
@@ -248,7 +254,7 @@ cell xlsx_consumer::read_cell()
         expect_end_element(current_element);
     }
 
-    expect_end_element(qn("spreadsheetml", "c"));
+    expect_end_element(cell_el);
 
     if (has_formula && !has_shared_formula)
     {
@@ -291,13 +297,13 @@ cell xlsx_consumer::read_cell()
         cell.format(target_.format(format_id));
     }
 
-    if (!in_element(qn("spreadsheetml", "row")))
+    if (!in_element(row_el))
     {
-        expect_end_element(qn("spreadsheetml", "row"));
+		expect_end_element(row_el);
 
-        if (!in_element(qn("spreadsheetml", "sheetData")))
+        if (!in_element(sheetData_el))
         {
-            expect_end_element(qn("spreadsheetml", "sheetData"));
+            expect_end_element(sheetData_el);
         }
     }
 
@@ -1024,8 +1030,8 @@ xml::parser &xlsx_consumer::parser()
 
 bool xlsx_consumer::has_cell()
 {
-    return in_element(qn("spreadsheetml", "row"))
-        || in_element(qn("spreadsheetml", "sheetData"));
+    return in_element(row_el)
+        || in_element(sheetData_el);
 }
 
 std::vector<relationship> xlsx_consumer::read_relationships(const path &part)

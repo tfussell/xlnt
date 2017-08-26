@@ -21,7 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#include <locale>
+#include <cctype>
 
 #include <xlnt/cell/index_types.hpp>
 #include <xlnt/utils/exceptions.hpp>
@@ -41,12 +41,12 @@ column_t::index_t column_t::column_index_from_string(const std::string &column_s
 
     for (int i = static_cast<int>(column_string.length()) - 1; i >= 0; i--)
     {
-        if (!std::isalpha(column_string[static_cast<std::size_t>(i)], std::locale::classic()))
+        if (!std::isalpha(column_string[static_cast<std::size_t>(i)]))
         {
             throw invalid_column_index();
         }
 
-        auto char_index = std::toupper(column_string[static_cast<std::size_t>(i)], std::locale::classic()) - 'A';
+        auto char_index = std::toupper(column_string[static_cast<std::size_t>(i)]) - 'A';
 
         column_index += static_cast<column_t::index_t>((char_index + 1) * place);
         place *= 26;
