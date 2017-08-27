@@ -1425,12 +1425,12 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
 
                 if (parser().attribute_present("xWindow"))
                 {
-                    view.x_window = parser().attribute<std::size_t>("xWindow");
+                    view.x_window = parser().attribute<int>("xWindow");
                 }
 
                 if (parser().attribute_present("yWindow"))
                 {
-                    view.y_window = parser().attribute<std::size_t>("yWindow");
+                    view.y_window = parser().attribute<int>("yWindow");
                 }
 
                 if (parser().attribute_present("windowWidth"))
