@@ -5,7 +5,7 @@ project(xlnt_all)
 set(COMBINED_PROJECT TRUE)
 
 # Library type
-option(STATIC "Set to ON to build xlnt as a static library instead of a shared library" ON)
+option(STATIC "Set to ON to build xlnt as a static library instead of a shared library" OFF)
 
 # Optional components
 option(TESTS "Set to OFF to skip building test executable (in ./tests)" ON)
