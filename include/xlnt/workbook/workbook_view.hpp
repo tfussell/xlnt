@@ -94,12 +94,12 @@ public:
     /// <summary>
     /// The distance of the workbook window from the left side of the screen in twips.
     /// </summary>
-    optional<std::size_t> x_window;
+    optional<int> x_window;
 
     /// <summary>
     /// The distance of the workbook window from the top of the screen in twips.
     /// </summary>
-    optional<std::size_t> y_window;
+    optional<int> y_window;
 };
 
 } // namespace xlnt
