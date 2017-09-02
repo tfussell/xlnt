@@ -22,7 +22,7 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#include <locale>
+#include <cctype>
 
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/utils/exceptions.hpp>
@@ -122,9 +122,9 @@ std::pair<std::string, row_t> cell_reference::split_reference(
 
     for (auto character : reference_string)
     {
-        char upper = std::toupper(character, std::locale::classic());
+        char upper = std::toupper(character);
 
-        if (std::isalpha(character, std::locale::classic()))
+        if (std::isalpha(character))
         {
             if (column_part)
             {
@@ -155,7 +155,7 @@ std::pair<std::string, row_t> cell_reference::split_reference(
             {
                 column_part = false;
             }
-            else if (!std::isdigit(character, std::locale::classic()))
+            else if (!std::isdigit(character))
             {
                 throw invalid_cell_reference(reference_string);
             }
