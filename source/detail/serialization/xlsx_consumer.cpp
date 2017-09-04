@@ -96,15 +96,6 @@ bool is_true(const std::string &bool_string)
 #endif
 }
 
-/// <summary>
-/// Helper template function that returns true if element is in container.
-/// </summary>
-template <typename T>
-bool contains(const std::vector<T> &container, const T &element)
-{
-    return std::find(container.begin(), container.end(), element) != container.end();
-}
-
 } // namespace
 
 /*

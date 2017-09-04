@@ -325,7 +325,7 @@ namespace xml
     {
       typedef event_type value_type;
 
-      iterator (parser* p = 0, event_type e = eof): p_ (p), e_ (e) {}
+      iterator (parser* p = nullptr, event_type e = eof): p_ (p), e_ (e) {}
       value_type operator* () const {return e_;}
       iterator& operator++ () {e_ = p_->next (); return *this;}
 
