@@ -113,7 +113,7 @@ public:
     compound_document_istreambuf(const compound_document_istreambuf &) = delete;
     compound_document_istreambuf &operator=(const compound_document_istreambuf &) = delete;
     
-    virtual ~compound_document_istreambuf();
+    ~compound_document_istreambuf() override;
 
 private:
     std::streamsize xsgetn(char *c, std::streamsize count) override
@@ -326,7 +326,7 @@ public:
     compound_document_ostreambuf(const compound_document_ostreambuf &) = delete;
     compound_document_ostreambuf &operator=(const compound_document_ostreambuf &) = delete;
 
-    virtual ~compound_document_ostreambuf();
+    ~compound_document_ostreambuf() override;
 
 private:
     int sync() override

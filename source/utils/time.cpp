@@ -126,7 +126,7 @@ long double time::to_number() const
 
 time time::now()
 {
-    std::tm now = safe_localtime(std::time(0));
+    std::tm now = safe_localtime(std::time(nullptr));
     return time(now.tm_hour, now.tm_min, now.tm_sec);
 }
 

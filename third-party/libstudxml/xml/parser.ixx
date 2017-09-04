@@ -47,7 +47,7 @@ namespace xml
           feature_type f)
       : size_ (size), iname_ (iname), feature_ (f)
   {
-    assert (data != 0 && size != 0);
+    assert (data != nullptr && size != 0);
 
     data_.buf = data;
     init ();
@@ -76,7 +76,7 @@ namespace xml
   inline const parser::element_entry* parser::
   get_element () const
   {
-    return element_state_.empty () ? 0 : get_element_ ();
+    return element_state_.empty () ? nullptr : get_element_ ();
   }
 
   inline const std::string& parser::
