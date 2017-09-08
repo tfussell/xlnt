@@ -56,7 +56,7 @@ struct cell_impl
     optional<std::string> formula_;
     optional<std::string> hyperlink_;
     optional<format_impl *> format_;
-    optional<comment> comment_;
+    optional<comment *> comment_;
 };
 
 } // namespace detail

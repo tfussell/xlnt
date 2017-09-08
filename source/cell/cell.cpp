@@ -29,6 +29,7 @@
 #include <detail/implementations/cell_impl.hpp>
 #include <detail/implementations/format_impl.hpp>
 #include <detail/implementations/stylesheet.hpp>
+#include <detail/implementations/worksheet_impl.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/cell/comment.hpp>
@@ -878,7 +879,11 @@ bool cell::has_comment()
 
 void cell::clear_comment()
 {
-    d_->comment_.clear();
+    if (has_comment())
+    {
+        d_->parent_->comments_.erase(reference().to_string());
+        d_->comment_.clear();
+    }
 }
 
 class comment cell::comment()
@@ -888,7 +893,7 @@ class comment cell::comment()
         throw xlnt::exception("cell has no comment");
     }
 
-    return d_->comment_.get();
+    return *d_->comment_.get();
 }
 
 void cell::comment(const std::string &text, const std::string &author)
@@ -904,15 +909,23 @@ void cell::comment(const std::string &text, const class font &comment_font, cons
 
 void cell::comment(const class comment &new_comment)
 {
-    d_->comment_.set(new_comment);
+    if (has_comment())
+    {
+        *d_->comment_.get() = new_comment;
+    }
+    else
+    {
+        d_->parent_->comments_[reference().to_string()] = new_comment;
+        d_->comment_.set(&d_->parent_->comments_[reference().to_string()]);
+    }
 
     // offset comment 5 pixels down and 5 pixels right of the top right corner of the cell
     auto cell_position = anchor();
     cell_position.first += static_cast<int>(width()) + 5;
     cell_position.second += 5;
 
-    d_->comment_.get().position(cell_position.first, cell_position.second);
-    d_->comment_.get().size(200, 100);
+    d_->comment_.get()->position(cell_position.first, cell_position.second);
+    d_->comment_.get()->size(200, 100);
 
     worksheet().register_comments_in_manifest();
 }
