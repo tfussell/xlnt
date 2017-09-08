@@ -224,6 +224,11 @@ if(NOT BIN_DEST_DIR)
    set(BIN_DEST_DIR ${CMAKE_INSTALL_PREFIX}/bin)
 endif()
 
+if(NOT MAN_DEST_DIR)
+  # Default location to install runtime files
+   set(MAN_DEST_DIR ${CMAKE_INSTALL_PREFIX}/share/man)
+endif()
+
 # Install library
 install(TARGETS xlnt
   LIBRARY DESTINATION ${LIB_DEST_DIR}
@@ -234,6 +239,10 @@ install(TARGETS xlnt
 install(DIRECTORY ${XLNT_INCLUDE_DIR}/xlnt
   DESTINATION include
   PATTERN ".DS_Store" EXCLUDE)
+
+# Install LICENSE.md
+install(FILES ${XLNT_ROOT_DIR}/docs/xlnt.3
+DESTINATION ${MAN_DEST_DIR}/man3)
 
 # Configure uninstall
 configure_file("${XLNT_ROOT_DIR}/cmake/cmake_uninstall.cmake.in"
