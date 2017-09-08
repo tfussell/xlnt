@@ -480,7 +480,7 @@ public:
             while (reader.has_cell())
             {
                 const auto cell = reader.read_cell();
-                std::cout << cell.reference().to_string() << " " << cell.to_string() << std::endl;
+                //std::cout << cell.reference().to_string() << " " << cell.to_string() << std::endl;
             }
 
             const auto ws = reader.end_worksheet();
