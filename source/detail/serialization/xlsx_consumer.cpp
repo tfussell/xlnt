@@ -58,9 +58,23 @@ struct hash<xml::qname>
 
 namespace {
 
-xml::qname qn(const std::string &namespace_, const std::string &name)
+xml::qname &qn(const std::string &namespace_, const std::string &name)
 {
-    return xml::qname(xlnt::constants::ns(namespace_), name);
+    static auto &memo = *new std::unordered_map<std::string, std::unordered_map<std::string, xml::qname>>();
+
+    if (!memo.count(namespace_))
+    {
+        memo[namespace_] = std::unordered_map<std::string, xml::qname>();
+    }
+
+    auto &ns_memo = memo[namespace_];
+
+    if (!ns_memo.count(name))
+    {
+        ns_memo[name] = xml::qname(xlnt::constants::ns(namespace_), name);
+    }
+
+    return ns_memo[name];
 }
 
 #ifdef THROW_ON_INVALID_XML
