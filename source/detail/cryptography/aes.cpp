@@ -21,6 +21,10 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+// Adapted from LibTomCrypt AES implementation
+// https://github.com/libtom/libtomcrypt/blob/develop/src/ciphers/aes/aes_tab.c
+// https://github.com/libtom/libtomcrypt/blob/develop/src/ciphers/aes/aes.c
+
 #include <algorithm>
 #include <array>
 #include <assert.h>
