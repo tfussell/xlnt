@@ -63,10 +63,6 @@ xml::qname qn(const std::string &namespace_, const std::string &name)
     return xml::qname(xlnt::constants::ns(namespace_), name);
 }
 
-#ifndef NDEBUG
-#define THROW_ON_INVALID_XML
-#endif
-
 #ifdef THROW_ON_INVALID_XML
 #define unexpected_element(element) throw xlnt::exception(element.string());
 #else
