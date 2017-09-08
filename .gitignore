@@ -16,3 +16,4 @@ Win32/
 *.pyd
 python/record.txt
 python/xlntpyarrow.egg-info/
+/x64/
