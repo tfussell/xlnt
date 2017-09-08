@@ -1,0 +1,10 @@
+{
+    "plugins": ["build"],
+    "pluginsConfig": {
+      "build": {
+        "template": "docs/template.ejs",
+        "format": "man",
+        "output": "docs/xlnt.3"
+      }
+    }
+}
