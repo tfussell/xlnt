@@ -60,18 +60,14 @@ namespace {
 
 xml::qname &qn(const std::string &namespace_, const std::string &name)
 {
-    static auto &memo = *new std::unordered_map<std::string, std::unordered_map<std::string, xml::qname>>();
-
-    if (!memo.count(namespace_))
-    {
-        memo[namespace_] = std::unordered_map<std::string, xml::qname>();
-    }
+    using qname_map = std::unordered_map<std::string, xml::qname>;
+    static auto &memo = *new std::unordered_map<std::string, qname_map>();
 
     auto &ns_memo = memo[namespace_];
 
-    if (!ns_memo.count(name))
+    if (ns_memo.find(name) == ns_memo.end())
     {
-        ns_memo[name] = xml::qname(xlnt::constants::ns(namespace_), name);
+        return ns_memo.emplace(name, xml::qname(xlnt::constants::ns(namespace_), name)).first->second;
     }
 
     return ns_memo[name];
@@ -248,12 +244,23 @@ cell xlsx_consumer::read_cell()
         expect_end_element(current_element);
     }
 
-    expect_end_element(cell_el);
+    expect_end_element(qn("spreadsheetml", "c"));
 
     if (has_formula && !has_shared_formula)
     {
         cell.formula(formula_value_string);
     }
+
+    std::istringstream number_converter;
+    number_converter.imbue(std::locale("C"));
+
+    auto stold = [&number_converter](const std::string &s)
+    {
+        number_converter.str(s);
+        long double result;
+        number_converter >> result;
+        return result;
+    };
 
     if (has_value)
     {
@@ -269,7 +276,7 @@ cell xlsx_consumer::read_cell()
         }
         else if (type == "s")
         {
-            cell.d_->value_numeric_ = std::stold(value_string);
+            cell.d_->value_numeric_ = stold(value_string);
             cell.data_type(cell::type::shared_string);
         }
         else if (type == "b") // boolean
@@ -278,7 +285,7 @@ cell xlsx_consumer::read_cell()
         }
         else if (type == "n") // numeric
         {
-            cell.value(std::stold(value_string));
+            cell.value(stold(value_string));
         }
         else if (!value_string.empty() && value_string[0] == '#')
         {
@@ -332,7 +339,6 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
 
     expect_start_element(qn("spreadsheetml", "worksheet"), xml::content::complex); // CT_Worksheet
     skip_attributes({ qn("mc", "Ignorable") });
-    read_namespaces();
 
     while (in_element(qn("spreadsheetml", "worksheet")))
     {
@@ -546,6 +552,17 @@ void xlsx_consumer::read_worksheet_sheetdata()
     {
         return;
     }
+    
+    std::istringstream number_converter;
+    number_converter.imbue(std::locale("C"));
+
+    auto stold = [&number_converter](const std::string &s)
+    {
+        number_converter.str(s);
+        long double result;
+        number_converter >> result;
+        return result;
+    };
 
     while (in_element(qn("spreadsheetml", "sheetData")))
     {
@@ -648,7 +665,7 @@ void xlsx_consumer::read_worksheet_sheetdata()
                 }
                 else if (type == "s")
                 {
-                    cell.d_->value_numeric_ = std::stold(value_string);
+                    cell.d_->value_numeric_ = stold(value_string);
                     cell.data_type(cell::type::shared_string);
                 }
                 else if (type == "b") // boolean
@@ -657,7 +674,7 @@ void xlsx_consumer::read_worksheet_sheetdata()
                 }
                 else if (type == "n") // numeric
                 {
-                    cell.value(std::stold(value_string));
+                    cell.value(stold(value_string));
                 }
                 else if (!value_string.empty() && value_string[0] == '#')
                 {
@@ -1347,7 +1364,6 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
 
     expect_start_element(qn("workbook", "workbook"), xml::content::complex);
     skip_attribute(qn("mc", "Ignorable"));
-    read_namespaces();
 
     while (in_element(qn("workbook", "workbook")))
     {
@@ -1672,7 +1688,6 @@ void xlsx_consumer::read_stylesheet()
 
     expect_start_element(qn("spreadsheetml", "styleSheet"), xml::content::complex);
     skip_attributes({qn("mc", "Ignorable")});
-    read_namespaces();
 
     std::vector<std::pair<style_impl, std::size_t>> styles;
     std::vector<std::pair<format_impl, std::size_t>> format_records;
@@ -2503,7 +2518,6 @@ void xlsx_consumer::skip_remaining_content(const xml::qname &name)
     // start by assuming we've already parsed the opening tag
 
     skip_attributes();
-    read_namespaces();
     read_text();
 
     // continue until the closing tag is reached
@@ -2514,24 +2528,6 @@ void xlsx_consumer::skip_remaining_content(const xml::qname &name)
         expect_end_element(child_element);
         read_text(); // trailing character content (usually whitespace)
     }
-}
-
-std::vector<std::string> xlsx_consumer::read_namespaces()
-{
-    std::vector<std::string> namespaces;
-
-    while (parser().peek() == xml::parser::event_type::start_namespace_decl)
-    {
-        parser().next_expect(xml::parser::event_type::start_namespace_decl);
-        namespaces.push_back(parser().namespace_());
-
-        if (parser().peek() == xml::parser::event_type::end_namespace_decl)
-        {
-            parser().next_expect(xml::parser::event_type::end_namespace_decl);
-        }
-    }
-
-    return namespaces;
 }
 
 bool xlsx_consumer::in_element(const xml::qname &name)
@@ -2565,12 +2561,6 @@ void xlsx_consumer::expect_start_element(const xml::qname &name, xml::content co
 void xlsx_consumer::expect_end_element(const xml::qname &name)
 {
     parser().next_expect(xml::parser::event_type::end_element, name);
-
-    while (parser().peek() == xml::parser::event_type::end_namespace_decl)
-    {
-        parser().next_expect(xml::parser::event_type::end_namespace_decl);
-    }
-
     stack_.pop_back();
 }
 

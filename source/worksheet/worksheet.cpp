@@ -352,22 +352,20 @@ void worksheet::unfreeze_panes()
 
 cell worksheet::cell(const cell_reference &reference)
 {
-    if (d_->cell_map_.find(reference.row()) == d_->cell_map_.end())
-    {
-        d_->cell_map_[reference.row()] = std::unordered_map<column_t, detail::cell_impl>();
-    }
-
     auto &row = d_->cell_map_[reference.row()];
+    auto match = row.find(reference.column_index());
 
-    if (row.find(reference.column_index()) == row.end())
+    if (match == row.end())
     {
-        auto &impl = row[reference.column_index()] = detail::cell_impl();
+        match = row.emplace(reference.column_index(), detail::cell_impl()).first;
+        auto &impl = match->second;
+
         impl.parent_ = d_;
         impl.column_ = reference.column_index();
         impl.row_ = reference.row();
     }
 
-    return xlnt::cell(&row[reference.column_index()]);
+    return xlnt::cell(&match->second);
 }
 
 const cell worksheet::cell(const cell_reference &reference) const
