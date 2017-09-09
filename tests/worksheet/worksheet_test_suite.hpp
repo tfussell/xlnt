@@ -93,6 +93,7 @@ public:
         register_test(test_get_point_pos);
         register_test(test_named_range_named_cell_reference);
         register_test(test_iteration_skip_empty);
+        register_test(test_dimensions);
     }
 
     void test_new_worksheet()
@@ -1087,5 +1088,18 @@ public:
             xlnt_assert_equals(cells[0].value<std::string>(), "A1");
             xlnt_assert_equals(cells[1].value<std::string>(), "F6");
         }
+    }
+
+    void test_dimensions()
+    {
+        xlnt::workbook workbook;
+        workbook.load(path_helper::test_file("4_every_style.xlsx"));
+
+        auto active_sheet = workbook.active_sheet();
+        auto sheet_range = active_sheet.calculate_dimension();
+
+        xlnt_assert(!sheet_range.is_single_cell());
+        xlnt_assert_equals(sheet_range.width(), 4);
+        xlnt_assert_equals(sheet_range.height(), 35);
     }
 };
