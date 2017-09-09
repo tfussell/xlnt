@@ -115,6 +115,8 @@ struct worksheet_impl
 
     std::vector<column_t> column_breaks_;
     std::vector<row_t> row_breaks_;
+
+    std::unordered_map<std::string, comment> comments_;
 };
 
 } // namespace detail

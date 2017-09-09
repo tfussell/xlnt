@@ -357,12 +357,6 @@ private:
     /// </summary>
     bool in_element(const xml::qname &name);
 
-    /// <summary>
-    /// Handles all start and end namespace events from the current parser
-    /// and returns a vector of strings containing the URL for each namespace.
-    /// </summary>
-    std::vector<std::string> read_namespaces();
-
     // Properties
 
 	/// <summary>

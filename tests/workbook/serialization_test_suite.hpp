@@ -120,9 +120,6 @@ public:
 		ws.cell("A14").value("number (double)");
 		ws.cell("B14").value(std::numeric_limits<double>::max());
 
-		ws.cell("A15").value("number (long double)");
-		ws.cell("B15").value(std::numeric_limits<long double>::max());
-
 		ws.cell("A16").value("text (char *)");
 		ws.cell("B16").value("string");
 
@@ -479,11 +476,10 @@ public:
 
             while (reader.has_cell())
             {
-                const auto cell = reader.read_cell();
-                std::cout << cell.reference().to_string() << " " << cell.to_string() << std::endl;
+                reader.read_cell();
             }
 
-            const auto ws = reader.end_worksheet();
+            reader.end_worksheet();
         }
     }
 

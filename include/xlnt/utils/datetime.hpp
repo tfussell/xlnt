@@ -54,7 +54,7 @@ struct XLNT_API datetime
     /// a date and the fractional part into a time according to date::from_number
     /// and time::from_number.
     /// </summary>
-    static datetime from_number(long double number, calendar base_date);
+    static datetime from_number(double number, calendar base_date);
 
     /// <summary>
     /// Returns a datetime equivalent to the ISO-formatted string iso_string.
@@ -84,7 +84,7 @@ struct XLNT_API datetime
     /// <summary>
     /// Returns this datetime as a number of seconds since 1900 or 1904 (depending on base_date provided).
     /// </summary>
-    long double to_number(calendar base_date) const;
+    double to_number(calendar base_date) const;
 
     /// <summary>
     /// Returns true if this datetime is equivalent to comparand.

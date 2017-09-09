@@ -194,14 +194,14 @@ public:
         in.fill(0);
         out.fill(0);
 
-        strm.zalloc = Z_NULL;
-        strm.zfree = Z_NULL;
-        strm.opaque = Z_NULL;
+        strm.zalloc = nullptr;
+        strm.zfree = nullptr;
+        strm.opaque = nullptr;
         strm.avail_in = 0;
-        strm.next_in = Z_NULL;
+        strm.next_in = nullptr;
 
         setg(in.data(), in.data(), in.data());
-        setp(0, 0);
+        setp(nullptr, nullptr);
 
         // skip the header
         read_header(istream, false);
@@ -329,9 +329,9 @@ public:
     zip_streambuf_compress(zheader *central_header, std::ostream &stream)
         : ostream(stream), header(central_header), valid(true)
     {
-        strm.zalloc = Z_NULL;
-        strm.zfree = Z_NULL;
-        strm.opaque = Z_NULL;
+        strm.zalloc = nullptr;
+        strm.zfree = nullptr;
+        strm.opaque = nullptr;
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wold-style-cast"
@@ -345,7 +345,7 @@ public:
             return;
         }
 
-        setg(0, 0, 0);
+        setg(nullptr, nullptr, nullptr);
         setp(in.data(), in.data() + buffer_size - 4); // we want to be 4 aligned
 
         // Write appropriate header

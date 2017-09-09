@@ -23,6 +23,8 @@
 
 #include <cctype>
 #include <numeric> // for std::accumulate
+#include <sstream>
+#include <unordered_map>
 
 #include <detail/constants.hpp>
 #include <detail/header_footer/header_footer_code.hpp>
@@ -58,14 +60,20 @@ struct hash<xml::qname>
 
 namespace {
 
-xml::qname qn(const std::string &namespace_, const std::string &name)
+xml::qname &qn(const std::string &namespace_, const std::string &name)
 {
-    return xml::qname(xlnt::constants::ns(namespace_), name);
-}
+    using qname_map = std::unordered_map<std::string, xml::qname>;
+    static auto &memo = *new std::unordered_map<std::string, qname_map>();
 
-#ifndef NDEBUG
-#define THROW_ON_INVALID_XML
-#endif
+    auto &ns_memo = memo[namespace_];
+
+    if (ns_memo.find(name) == ns_memo.end())
+    {
+        return ns_memo.emplace(name, xml::qname(xlnt::constants::ns(namespace_), name)).first->second;
+    }
+
+    return ns_memo[name];
+}
 
 #ifdef THROW_ON_INVALID_XML
 #define unexpected_element(element) throw xlnt::exception(element.string());
@@ -96,14 +104,24 @@ bool is_true(const std::string &bool_string)
 #endif
 }
 
-/// <summary>
-/// Helper template function that returns true if element is in container.
-/// </summary>
-template <typename T>
-bool contains(const std::vector<T> &container, const T &element)
+struct number_converter
 {
-    return std::find(container.begin(), container.end(), element) != container.end();
-}
+    number_converter()
+    {
+        stream.imbue(std::locale("C"));
+    }
+
+    double stold(const std::string &s)
+    {
+        stream.str(s);
+        stream.clear();
+        stream >> result;
+        return result;
+    }
+
+    std::istringstream stream;
+    double result;
+};
 
 } // namespace
 
@@ -149,12 +167,6 @@ void xlsx_consumer::open(std::istream &source)
     populate_workbook(true);
 }
 
-// caching frequently used names
-static const auto sheetData_el = qn("spreadsheetml", "sheetData");
-static const auto row_el = qn("spreadsheetml", "row");
-static const auto cell_el = qn("spreadsheetml", "c");
-static const auto val_el = qn("spreadsheetml", "v");
-
 cell xlsx_consumer::read_cell()
 {
     if (!has_cell())
@@ -164,9 +176,9 @@ cell xlsx_consumer::read_cell()
 
     auto ws = worksheet(current_worksheet_);
 
-    if (in_element(sheetData_el))
+    if (in_element(qn("spreadsheetml", "sheetData")))
     {
-        expect_start_element(row_el, xml::content::complex); // CT_Row
+        expect_start_element(qn("spreadsheetml", "row"), xml::content::complex); // CT_Row
         auto row_index = static_cast<row_t>(std::stoul(parser().attribute("r")));
 
         if (parser().attribute_present("ht"))
@@ -189,12 +201,12 @@ cell xlsx_consumer::read_cell()
             "ph", "spans" });
     }
 
-    if (!in_element(row_el))
+    if (!in_element(qn("spreadsheetml", "row")))
     {
         return cell(nullptr);
-    } 
+    }
 
-    expect_start_element(cell_el, xml::content::complex);
+    expect_start_element(qn("spreadsheetml", "c"), xml::content::complex);
 
     auto cell = streaming_ ? xlnt::cell(streaming_cell_.get())
         : ws.cell(cell_reference(parser().attribute("r")));
@@ -206,8 +218,10 @@ cell xlsx_consumer::read_cell()
     auto has_type = parser().attribute_present("t");
     auto type = has_type ? parser().attribute("t") : "n";
 
-	if (parser().attribute_present("s"))
-		cell.format(target_.format(std::stoull(parser().attribute("s"))));
+    if (parser().attribute_present("s"))
+    {
+		    cell.format(target_.format(std::stoull(parser().attribute("s"))));
+    }
 	
     auto has_value = false;
     auto value_string = std::string();
@@ -216,11 +230,11 @@ cell xlsx_consumer::read_cell()
     auto has_shared_formula = false;
     auto formula_value_string = std::string();
 
-    while (in_element(cell_el))
+    while (in_element(qn("spreadsheetml", "c")))
     {
         auto current_element = expect_start_element(xml::content::mixed);
 
-        if (current_element == val_el) // s:ST_Xstring
+        if (current_element == qn("spreadsheetml", "v")) // s:ST_Xstring
         {
             has_value = true;
             value_string = read_text();
@@ -253,12 +267,14 @@ cell xlsx_consumer::read_cell()
         expect_end_element(current_element);
     }
 
-    expect_end_element(cell_el);
+    expect_end_element(qn("spreadsheetml", "c"));
 
     if (has_formula && !has_shared_formula)
     {
         cell.formula(formula_value_string);
     }
+
+    number_converter converter;
 
     if (has_value)
     {
@@ -274,7 +290,7 @@ cell xlsx_consumer::read_cell()
         }
         else if (type == "s")
         {
-            cell.d_->value_numeric_ = std::stold(value_string);
+            cell.d_->value_numeric_ = converter.stold(value_string);
             cell.data_type(cell::type::shared_string);
         }
         else if (type == "b") // boolean
@@ -283,7 +299,7 @@ cell xlsx_consumer::read_cell()
         }
         else if (type == "n") // numeric
         {
-            cell.value(std::stold(value_string));
+            cell.value(converter.stold(value_string));
         }
         else if (!value_string.empty() && value_string[0] == '#')
         {
@@ -291,13 +307,13 @@ cell xlsx_consumer::read_cell()
         }
     }
 
-      if (!in_element(row_el))
+    if (!in_element(qn("spreadsheetml", "row")))
     {
-        expect_end_element(row_el);
+        expect_end_element(qn("spreadsheetml", "row"));
 
-        if (!in_element(sheetData_el))
+        if (!in_element(qn("spreadsheetml", "sheetData")))
         {
-            expect_end_element(sheetData_el);
+            expect_end_element(qn("spreadsheetml", "sheetData"));
         }
     }
 
@@ -332,7 +348,6 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
 
     expect_start_element(qn("spreadsheetml", "worksheet"), xml::content::complex); // CT_Worksheet
     skip_attributes({ qn("mc", "Ignorable") });
-    read_namespaces();
 
     while (in_element(qn("spreadsheetml", "worksheet")))
     {
@@ -547,6 +562,8 @@ void xlsx_consumer::read_worksheet_sheetdata()
         return;
     }
 
+    number_converter converter;
+
     while (in_element(qn("spreadsheetml", "sheetData")))
     {
         expect_start_element(qn("spreadsheetml", "row"), xml::content::complex); // CT_Row
@@ -580,8 +597,10 @@ void xlsx_consumer::read_worksheet_sheetdata()
             auto has_type = parser().attribute_present("t");
             auto type = has_type ? parser().attribute("t") : "n";
 			
-			if (parser().attribute_present("s"))
-				cell.format(target_.format(std::stoull(parser().attribute("s"))));
+            if (parser().attribute_present("s"))
+            {
+		            cell.format(target_.format(std::stoull(parser().attribute("s"))));
+            }
 
             auto has_value = false;
             auto value_string = std::string();
@@ -648,7 +667,7 @@ void xlsx_consumer::read_worksheet_sheetdata()
                 }
                 else if (type == "s")
                 {
-                    cell.d_->value_numeric_ = std::stold(value_string);
+                    cell.d_->value_numeric_ = converter.stold(value_string);
                     cell.data_type(cell::type::shared_string);
                 }
                 else if (type == "b") // boolean
@@ -657,7 +676,7 @@ void xlsx_consumer::read_worksheet_sheetdata()
                 }
                 else if (type == "n") // numeric
                 {
-                    cell.value(std::stold(value_string));
+                    cell.value(converter.stold(value_string));
                 }
                 else if (!value_string.empty() && value_string[0] == '#')
                 {
@@ -1020,8 +1039,8 @@ xml::parser &xlsx_consumer::parser()
 
 bool xlsx_consumer::has_cell()
 {
-    return in_element(row_el)
-        || in_element(sheetData_el);
+    return in_element(qn("spreadsheetml", "row"))
+        || in_element(qn("spreadsheetml", "sheetData"));
 }
 
 std::vector<relationship> xlsx_consumer::read_relationships(const path &part)
@@ -1343,7 +1362,6 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
 
     expect_start_element(qn("workbook", "workbook"), xml::content::complex);
     skip_attribute(qn("mc", "Ignorable"));
-    read_namespaces();
 
     while (in_element(qn("workbook", "workbook")))
     {
@@ -1668,7 +1686,6 @@ void xlsx_consumer::read_stylesheet()
 
     expect_start_element(qn("spreadsheetml", "styleSheet"), xml::content::complex);
     skip_attributes({qn("mc", "Ignorable")});
-    read_namespaces();
 
     std::vector<std::pair<style_impl, std::size_t>> styles;
     std::vector<std::pair<format_impl, std::size_t>> format_records;
@@ -2499,7 +2516,6 @@ void xlsx_consumer::skip_remaining_content(const xml::qname &name)
     // start by assuming we've already parsed the opening tag
 
     skip_attributes();
-    read_namespaces();
     read_text();
 
     // continue until the closing tag is reached
@@ -2510,24 +2526,6 @@ void xlsx_consumer::skip_remaining_content(const xml::qname &name)
         expect_end_element(child_element);
         read_text(); // trailing character content (usually whitespace)
     }
-}
-
-std::vector<std::string> xlsx_consumer::read_namespaces()
-{
-    std::vector<std::string> namespaces;
-
-    while (parser().peek() == xml::parser::event_type::start_namespace_decl)
-    {
-        parser().next_expect(xml::parser::event_type::start_namespace_decl);
-        namespaces.push_back(parser().namespace_());
-
-        if (parser().peek() == xml::parser::event_type::end_namespace_decl)
-        {
-            parser().next_expect(xml::parser::event_type::end_namespace_decl);
-        }
-    }
-
-    return namespaces;
 }
 
 bool xlsx_consumer::in_element(const xml::qname &name)
@@ -2561,12 +2559,6 @@ void xlsx_consumer::expect_start_element(const xml::qname &name, xml::content co
 void xlsx_consumer::expect_end_element(const xml::qname &name)
 {
     parser().next_expect(xml::parser::event_type::end_element, name);
-
-    while (parser().peek() == xml::parser::event_type::end_namespace_decl)
-    {
-        parser().next_expect(xml::parser::event_type::end_namespace_decl);
-    }
-
     stack_.pop_back();
 }
 

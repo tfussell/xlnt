@@ -37,27 +37,27 @@ timedelta::timedelta(int days_, int hours_, int minutes_, int seconds_, int micr
 {
 }
 
-long double timedelta::to_number() const
+double timedelta::to_number() const
 {
     std::uint64_t total_microseconds = static_cast<std::uint64_t>(microseconds);
     total_microseconds += static_cast<std::uint64_t>(seconds * 1e6);
     total_microseconds += static_cast<std::uint64_t>(minutes * 1e6 * 60);
     auto microseconds_per_hour = static_cast<std::uint64_t>(1e6) * 60 * 60;
     total_microseconds += static_cast<std::uint64_t>(hours) * microseconds_per_hour;
-    auto number = total_microseconds / (24.0L * microseconds_per_hour);
+    auto number = total_microseconds / (24.0 * microseconds_per_hour);
     auto hundred_billion = static_cast<std::uint64_t>(1e9) * 100;
-    number = std::floor(number * hundred_billion + 0.5L) / hundred_billion;
+    number = std::floor(number * hundred_billion + 0.5) / hundred_billion;
     number += days;
 
     return number;
 }
 
-timedelta timedelta::from_number(long double raw_time)
+timedelta timedelta::from_number(double raw_time)
 {
     timedelta result;
 
     result.days = static_cast<int>(raw_time);
-    long double fractional_part = raw_time - result.days;
+    double fractional_part = raw_time - result.days;
 
     fractional_part *= 24;
     result.hours = static_cast<int>(fractional_part);
@@ -68,7 +68,7 @@ timedelta timedelta::from_number(long double raw_time)
     fractional_part = 1000000 * (fractional_part - result.seconds);
     result.microseconds = static_cast<int>(fractional_part);
 
-    if (result.microseconds == 999999 && fractional_part - result.microseconds > 0.5L)
+    if (result.microseconds == 999999 && fractional_part - result.microseconds > 0.5)
     {
         result.microseconds = 0;
         result.seconds += 1;

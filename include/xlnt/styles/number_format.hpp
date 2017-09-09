@@ -242,7 +242,7 @@ public:
     /// Returns number formatted according to this number format's format code
     /// with the given base date.
     /// </summary>
-    std::string format(long double number, calendar base_date) const;
+    std::string format(double number, calendar base_date) const;
 
     /// <summary>
     /// Returns true if this format code returns a number formatted as a date.

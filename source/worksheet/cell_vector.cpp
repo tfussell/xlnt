@@ -109,7 +109,7 @@ const cell cell_vector::back() const
 
 std::size_t cell_vector::length() const
 {
-    return order_ == major_order::row ? bounds_.width() + 1 : bounds_.height() + 1;
+    return order_ == major_order::row ? bounds_.width() : bounds_.height();
 }
 
 cell_vector::const_iterator cell_vector::begin() const

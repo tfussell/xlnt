@@ -43,7 +43,7 @@ std::tm safe_localtime(std::time_t raw_time)
 
 namespace xlnt {
 
-time time::from_number(long double raw_time)
+time time::from_number(double raw_time)
 {
     time result;
 
@@ -110,23 +110,23 @@ time::time(const std::string &time_string)
     }
 }
 
-long double time::to_number() const
+double time::to_number() const
 {
     std::uint64_t microseconds = static_cast<std::uint64_t>(microsecond);
     microseconds += static_cast<std::uint64_t>(second * 1e6);
     microseconds += static_cast<std::uint64_t>(minute * 1e6 * 60);
     auto microseconds_per_hour = static_cast<std::uint64_t>(1e6) * 60 * 60;
     microseconds += static_cast<std::uint64_t>(hour) * microseconds_per_hour;
-    auto number = microseconds / (24.0L * microseconds_per_hour);
+    auto number = microseconds / (24.0 * microseconds_per_hour);
     auto hundred_billion = static_cast<std::uint64_t>(1e9) * 100;
-    number = std::floor(number * hundred_billion + 0.5L) / hundred_billion;
+    number = std::floor(number * hundred_billion + 0.5) / hundred_billion;
 
     return number;
 }
 
 time time::now()
 {
-    std::tm now = safe_localtime(std::time(0));
+    std::tm now = safe_localtime(std::time(nullptr));
     return time(now.tm_hour, now.tm_min, now.tm_sec);
 }
 

@@ -29,6 +29,7 @@
 #include <detail/implementations/cell_impl.hpp>
 #include <detail/implementations/format_impl.hpp>
 #include <detail/implementations/stylesheet.hpp>
+#include <detail/implementations/worksheet_impl.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/cell/comment.hpp>
@@ -55,17 +56,17 @@
 
 namespace {
 
-std::pair<bool, long double> cast_numeric(const std::string &s)
+std::pair<bool, double> cast_numeric(const std::string &s)
 {
     auto str_end = static_cast<char *>(nullptr);
-    auto result = std::strtold(s.c_str(), &str_end);
+    auto result = std::strtod(s.c_str(), &str_end);
 
     return (str_end != s.c_str() + s.size())
-        ? std::make_pair(false, 0.0L)
+        ? std::make_pair(false, 0.0)
         : std::make_pair(true, result);
 }
 
-std::pair<bool, long double> cast_percentage(const std::string &s)
+std::pair<bool, double> cast_percentage(const std::string &s)
 {
     if (s.back() == '%')
     {
@@ -77,7 +78,7 @@ std::pair<bool, long double> cast_percentage(const std::string &s)
         }
     }
 
-    return {false, 0};
+    return {false, 0.0};
 }
 
 std::pair<bool, xlnt::time> cast_time(const std::string &s)
@@ -205,48 +206,42 @@ void cell::value(std::nullptr_t)
 void cell::value(bool boolean_value)
 {
     d_->type_ = type::boolean;
-    d_->value_numeric_ = boolean_value ? 1.0L : 0.0L;
+    d_->value_numeric_ = boolean_value ? 1.0 : 0.0;
 }
 
 void cell::value(int int_value)
 {
-    d_->value_numeric_ = static_cast<long double>(int_value);
+    d_->value_numeric_ = static_cast<double>(int_value);
     d_->type_ = type::number;
 }
 
 void cell::value(unsigned int int_value)
 {
-    d_->value_numeric_ = static_cast<long double>(int_value);
+    d_->value_numeric_ = static_cast<double>(int_value);
     d_->type_ = type::number;
 }
 
 void cell::value(long long int int_value)
 {
-    d_->value_numeric_ = static_cast<long double>(int_value);
+    d_->value_numeric_ = static_cast<double>(int_value);
     d_->type_ = type::number;
 }
 
 void cell::value(unsigned long long int int_value)
 {
-    d_->value_numeric_ = static_cast<long double>(int_value);
+    d_->value_numeric_ = static_cast<double>(int_value);
     d_->type_ = type::number;
 }
 
 void cell::value(float float_value)
 {
-    d_->value_numeric_ = static_cast<long double>(float_value);
+    d_->value_numeric_ = static_cast<double>(float_value);
     d_->type_ = type::number;
 }
 
 void cell::value(double float_value)
 {
-    d_->value_numeric_ = static_cast<long double>(float_value);
-    d_->type_ = type::number;
-}
-
-void cell::value(long double d)
-{
-    d_->value_numeric_ = d;
+    d_->value_numeric_ = static_cast<double>(float_value);
     d_->type_ = type::number;
 }
 
@@ -260,7 +255,7 @@ void cell::value(const rich_text &text)
     check_string(text.plain_text());
 
     d_->type_ = type::shared_string;
-    d_->value_numeric_ = static_cast<long double>(workbook().add_shared_string(text));
+    d_->value_numeric_ = static_cast<double>(workbook().add_shared_string(text));
 }
 
 void cell::value(const char *c)
@@ -534,7 +529,7 @@ void cell::clear_value()
 template <>
 XLNT_API bool cell::value() const
 {
-    return d_->value_numeric_ != 0.L;
+    return d_->value_numeric_ != 0.0;
 }
 
 template <>
@@ -571,12 +566,6 @@ template <>
 XLNT_API double cell::value() const
 {
     return static_cast<double>(d_->value_numeric_);
-}
-
-template <>
-XLNT_API long double cell::value() const
-{
-    return d_->value_numeric_;
 }
 
 template <>
@@ -671,14 +660,14 @@ std::string cell::to_string() const
         return "";
     case cell::type::date:
     case cell::type::number:
-        return nf.format(value<long double>(), base_date());
+        return nf.format(value<double>(), base_date());
     case cell::type::inline_string:
     case cell::type::shared_string:
     case cell::type::formula_string:
     case cell::type::error:
         return nf.format(value<std::string>());
     case cell::type::boolean:
-        return value<long double>() == 0.L ? "FALSE" : "TRUE";
+        return value<double>() == 0.0 ? "FALSE" : "TRUE";
     }
 
     return "";
@@ -878,7 +867,11 @@ bool cell::has_comment()
 
 void cell::clear_comment()
 {
-    d_->comment_.clear();
+    if (has_comment())
+    {
+        d_->parent_->comments_.erase(reference().to_string());
+        d_->comment_.clear();
+    }
 }
 
 class comment cell::comment()
@@ -888,7 +881,7 @@ class comment cell::comment()
         throw xlnt::exception("cell has no comment");
     }
 
-    return d_->comment_.get();
+    return *d_->comment_.get();
 }
 
 void cell::comment(const std::string &text, const std::string &author)
@@ -904,15 +897,23 @@ void cell::comment(const std::string &text, const class font &comment_font, cons
 
 void cell::comment(const class comment &new_comment)
 {
-    d_->comment_.set(new_comment);
+    if (has_comment())
+    {
+        *d_->comment_.get() = new_comment;
+    }
+    else
+    {
+        d_->parent_->comments_[reference().to_string()] = new_comment;
+        d_->comment_.set(&d_->parent_->comments_[reference().to_string()]);
+    }
 
     // offset comment 5 pixels down and 5 pixels right of the top right corner of the cell
     auto cell_position = anchor();
     cell_position.first += static_cast<int>(width()) + 5;
     cell_position.second += 5;
 
-    d_->comment_.get().position(cell_position.first, cell_position.second);
-    d_->comment_.get().size(200, 100);
+    d_->comment_.get()->position(cell_position.first, cell_position.second);
+    d_->comment_.get()->size(200, 100);
 
     worksheet().register_comments_in_manifest();
 }

@@ -1,44 +1,61 @@
-cmake_minimum_required(VERSION 3.2)
-project(xlnt VERSION 1.1)
+cmake_minimum_required(VERSION 3.1)
+project(xlnt VERSION 1.2)
 
-set(CMAKE_CXX_STANDARD 14)
+# Require C99 and C++11 compilers
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Project metadata
 set(PROJECT_VENDOR "Thomas Fussell")
 set(PROJECT_CONTACT "thomas.fussell@gmail.com")
 set(PROJECT_URL "https://github.com/tfussell/xlnt")
-set(PROJECT_DESCRIPTION "cross-platform user-friendly xlsx library for C++14")
+set(PROJECT_DESCRIPTION "cross-platform user-friendly xlsx library for C++11")
 
-if(APPLE)
-    option(FRAMEWORK "Set to ON to package dylib and headers into a .framework, OSX only" OFF)
-endif()
-
+# Commonly used project directories
 set(XLNT_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
-
 set(XLNT_INCLUDE_DIR ${XLNT_ROOT_DIR}/include)
 set(XLNT_SOURCE_DIR ${XLNT_ROOT_DIR}/source)
 set(THIRD_PARTY_DIR ${XLNT_ROOT_DIR}/third-party)
 
-add_subdirectory(${THIRD_PARTY_DIR}/libstudxml ${CMAKE_CURRENT_BINARY_DIR}/third-party/libstudxml)
+# Include libstudxml library
+add_subdirectory(${THIRD_PARTY_DIR}/libstudxml
+  ${CMAKE_CURRENT_BINARY_DIR}/third-party/libstudxml)
 
 if(COVERAGE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
 endif()
 
+# Non-target-specific compiler settings
 if(MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /MP")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4") # level 4 warnings
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP") # multi-processor compilation
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unknown-pragmas")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall") # all warnings
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wextra") # extra warnings
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-pragmas") # ignore MSVC and Clang pragmas
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything -Werror -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-padded -Wno-documentation-unknown-command -Wno-unknown-pragmas")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything") # all warnings
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror") # warnings are errors
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-c++98-compat") # ignore warnings about C++98 compatibility
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-c++98-compat-pedantic") # ignore pedantic warnings about C++98 compatibility
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-padded") # ignore padding warnings
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-documentation-unknown-command") # ignore unknown commands in Javadoc-style comments
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-pragmas") # ignore Windows and GCC pragmas
+endif()
+
+if(MSVC AND STATIC)
+  # Link with static C runtime
+  include(${XLNT_ROOT_DIR}/cmake/ucm.cmake)
+  ucm_set_runtime(STATIC)
 endif()
 
 if(APPLE)
-    # Prevent a warning about deployment target not being set
-    execute_process(COMMAND "sw_vers -productVersion | awk -F'.' '{print $1\".\"$2}'"
-                    OUTPUT_VARIABLE OSX_VERSION)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET ${OSX_VERSION})
+  # Prevent a warning about deployment target not being set by setting it to current OSX version
+  execute_process(COMMAND "sw_vers -productVersion | awk -F'.' '{print $1\".\"$2}'"
+    OUTPUT_VARIABLE OSX_VERSION)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET ${OSX_VERSION})
 endif()
 
 file(GLOB ROOT_HEADERS ${XLNT_INCLUDE_DIR}/xlnt/*.hpp)
@@ -78,99 +95,105 @@ file(GLOB DETAIL_SERIALIZATION_HEADERS ${XLNT_SOURCE_DIR}/detail/serialization/*
 file(GLOB DETAIL_SERIALIZATION_SOURCES ${XLNT_SOURCE_DIR}/detail/serialization/*.cpp)
 
 set(DETAIL_HEADERS ${DETAIL_ROOT_HEADERS} ${DETAIL_CRYPTOGRAPHY_HEADERS}
-    ${DETAIL_EXTERNAL_HEADERS} ${DETAIL_HEADER_FOOTER_HEADERS}
-    ${DETAIL_IMPLEMENTATIONS_HEADERS} ${DETAIL_NUMBER_FORMAT_HEADERS}
-    ${DETAIL_SERIALIZATION_HEADERS})
+  ${DETAIL_EXTERNAL_HEADERS} ${DETAIL_HEADER_FOOTER_HEADERS}
+  ${DETAIL_IMPLEMENTATIONS_HEADERS} ${DETAIL_NUMBER_FORMAT_HEADERS}
+  ${DETAIL_SERIALIZATION_HEADERS})
 set(DETAIL_SOURCES ${DETAIL_ROOT_SOURCES} ${DETAIL_CRYPTOGRAPHY_SOURCES}
-    ${DETAIL_EXTERNAL_SOURCES} ${DETAIL_HEADER_FOOTER_SOURCES}
-    ${DETAIL_IMPLEMENTATIONS_SOURCES} ${DETAIL_NUMBER_FORMAT_SOURCES}
-    ${DETAIL_SERIALIZATION_SOURCES})
+  ${DETAIL_EXTERNAL_SOURCES} ${DETAIL_HEADER_FOOTER_SOURCES}
+  ${DETAIL_IMPLEMENTATIONS_SOURCES} ${DETAIL_NUMBER_FORMAT_SOURCES}
+  ${DETAIL_SERIALIZATION_SOURCES})
 
 set(XLNT_HEADERS ${ROOT_HEADERS} ${CELL_HEADERS} ${CHARTS_HEADERS}
-    ${CHARTSHEET_HEADERS} ${DRAWING_HEADERS} ${FORMULA_HEADERS}
-	${PACKAGING_HEADERS} ${STYLES_HEADERS} ${UTILS_HEADERS}
-	${WORKBOOK_HEADERS} ${WORKSHEET_HEADERS} ${DETAIL_HEADERS} ${DETAIL_CRYPTO_HEADERS})
+  ${CHARTSHEET_HEADERS} ${DRAWING_HEADERS} ${FORMULA_HEADERS}
+  ${PACKAGING_HEADERS} ${STYLES_HEADERS} ${UTILS_HEADERS}
+  ${WORKBOOK_HEADERS} ${WORKSHEET_HEADERS} ${DETAIL_HEADERS} ${DETAIL_CRYPTO_HEADERS})
 set(XLNT_SOURCES ${CELL_SOURCES} ${CHARTS_SOURCES} ${CHARTSHEET_SOURCES}
-    ${DRAWING_SOURCES} ${FORMULA_SOURCES} ${PACKAGING_SOURCES}
-	${STYLES_SOURCES} ${UTILS_SOURCES} ${WORKBOOK_SOURCES}
-	${WORKSHEET_SOURCES} ${DETAIL_SOURCES} ${DETAIL_CRYPTO_SOURCES})
+  ${DRAWING_SOURCES} ${FORMULA_SOURCES} ${PACKAGING_SOURCES}
+  ${STYLES_SOURCES} ${UTILS_SOURCES} ${WORKBOOK_SOURCES}
+  ${WORKSHEET_SOURCES} ${DETAIL_SOURCES} ${DETAIL_CRYPTO_SOURCES})
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-	if(MSVC)
-		set(DEFAULT_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/installed")
-	else()
-		set(DEFAULT_INSTALL_PREFIX "/usr/local")
-	endif()
+  # Set a default CMAKE_INSTALL_PREFIX if one wasn't specified
 
-	set(CMAKE_INSTALL_PREFIX ${DEFAULT_INSTALL_PREFIX}
-			CACHE PATH "default install path" FORCE)
+  if(MSVC)
+    # No good place to install on Windows so just install to cmake build directory in /installed
+    set(DEFAULT_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/installed")
+  else()
+    # Install to /usr/local on other platforms
+    set(DEFAULT_INSTALL_PREFIX "/usr/local")
+  endif()
+
+  # Apply the variable and save to cache
+  set(CMAKE_INSTALL_PREFIX ${DEFAULT_INSTALL_PREFIX}
+    CACHE PATH "default install path" FORCE)
 endif()
 
-if(NOT INC_DEST_DIR)
-    set(INC_DEST_DIR ${CMAKE_INSTALL_PREFIX}/include)
-endif()
-
-if(NOT LIB_DEST_DIR)
-    set(LIB_DEST_DIR ${CMAKE_INSTALL_PREFIX}/lib)
-endif()
-
-if(NOT BIN_DEST_DIR)
-    set(BIN_DEST_DIR ${CMAKE_INSTALL_PREFIX}/bin)
-endif()
+# Append "d" to the name of the compiled library
+set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "Set debug library postfix")
 
 if(NOT STATIC)
-    add_library(xlnt SHARED ${XLNT_HEADERS} ${XLNT_SOURCES} $<TARGET_OBJECTS:libstudxml>)
-    target_compile_definitions(xlnt PRIVATE XLNT_SHARED=1)
+  # Compile shared library
+  add_library(xlnt SHARED
+    ${XLNT_HEADERS}
+    ${XLNT_SOURCES}
+    $<TARGET_OBJECTS:libstudxml>)
 
-    if(MSVC)
-        target_compile_definitions(xlnt PRIVATE XLNT_EXPORT=1 _CRT_SECURE_NO_WARNINGS=1)
-    endif()
+  target_compile_definitions(xlnt PRIVATE XLNT_SHARED=1)
 
-    set_target_properties(xlnt
-        PROPERTIES
-        VERSION ${PROJECT_VERSION}
-        SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-        INSTALL_NAME_DIR "${LIB_DEST_DIR}")
-
-    if(FRAMEWORK)
-        add_custom_command(TARGET xlnt
-            POST_BUILD
-            COMMAND mkdir -p "${CMAKE_CURRENT_BINARY_DIR}/xlnt.framework/Versions/${PROJECT_VERSION_FULL}/Headers"
-            COMMAND cp -R ${XLNT_INCLUDE_DIR}/xlnt/* "${CMAKE_CURRENT_BINARY_DIR}/xlnt.framework/Versions/${PROJECT_VERSION_FULL}/Headers"
-            COMMAND cp "lib/lib${PROJECT_NAME}.${PROJECT_VERSION_FULL}.dylib" "${CMAKE_CURRENT_BINARY_DIR}/xlnt.framework/Versions/${PROJECT_VERSION_FULL}/xlnt"
-            COMMAND cd "${CMAKE_CURRENT_BINARY_DIR}/xlnt.framework/Versions" && ln -s "${PROJECT_VERSION_FULL}" Current
-            COMMAND cd "${CMAKE_CURRENT_BINARY_DIR}/xlnt.framework" && ln -s Versions/Current/* ./
-        )
-    endif()
+  # Set SO version (for symbolic links like libxlnt.so.1.2 and libxlnt.so.1)
+  set_target_properties(xlnt
+    PROPERTIES
+    VERSION ${PROJECT_VERSION}
+    SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+    INSTALL_NAME_DIR "${LIB_DEST_DIR}")
 else()
-    add_library(xlnt STATIC ${XLNT_HEADERS} ${XLNT_SOURCES} $<TARGET_OBJECTS:libstudxml>)
-    target_compile_definitions(xlnt PUBLIC XLNT_STATIC=1)
-
-    if(MSVC)
-        target_compile_definitions(xlnt PRIVATE _CRT_SECURE_NO_WARNINGS=1)
-    endif()
+  # Compile static library
+  add_library(xlnt STATIC ${XLNT_HEADERS} ${XLNT_SOURCES} $<TARGET_OBJECTS:libstudxml>)
+  target_compile_definitions(xlnt PUBLIC XLNT_STATIC=1)
 endif()
 
+# Includes
 target_include_directories(xlnt PUBLIC ${XLNT_INCLUDE_DIR})
 target_include_directories(xlnt PRIVATE ${XLNT_SOURCE_DIR})
 target_include_directories(xlnt PRIVATE ${XLNT_SOURCE_DIR}/../third-party/libstudxml)
 target_include_directories(xlnt PRIVATE ${XLNT_SOURCE_DIR}/../third-party/utfcpp)
 
+# Platform- and file-specific settings, MSVC
 if(MSVC)
-    set_target_properties(xlnt PROPERTIES COMPILE_FLAGS "/wd\"4251\" /wd\"4275\" /wd\"4068\" /MP")
-    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/detail/serialization/miniz.cpp PROPERTIES COMPILE_FLAGS "/wd\"4244\" /wd\"4334\" /wd\"4127\"")
-    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/detail/cryptography/aes.cpp PROPERTIES COMPILE_FLAGS "/wd\"4996\"")
+  target_compile_definitions(xlnt PRIVATE _CRT_SECURE_NO_WARNINGS=1)
+
+  if(NOT STATIC)
+    target_compile_definitions(xlnt PRIVATE XLNT_EXPORT=1)
+  endif()
+
+  set_target_properties(xlnt PROPERTIES
+    COMPILE_FLAGS "/wd\"4251\" /wd\"4275\" /wd\"4068\"")
+  set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/detail/serialization/miniz.cpp
+    PROPERTIES
+    COMPILE_FLAGS "/wd\"4244\" /wd\"4334\" /wd\"4127\"")
+  set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/detail/cryptography/aes.cpp
+    PROPERTIES
+    COMPILE_FLAGS "/wd\"4996\"")
 endif()
 
+# Platform- and file-specific settings, Clang
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/detail/serialization/miniz.cpp PROPERTIES COMPILE_FLAGS "-Wno-undef")
-    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/detail/serialization/zstream.cpp PROPERTIES COMPILE_FLAGS "-Wno-undef -Wno-shorten-64-to-32")
+  set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/detail/serialization/miniz.cpp
+    PROPERTIES
+    COMPILE_FLAGS "-Wno-undef")
+  set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/detail/serialization/zstream.cpp
+    PROPERTIES
+    COMPILE_FLAGS "-Wno-undef -Wno-shorten-64-to-32")
 endif()
 
+# Platform- and file-specific settings, GCC
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/detail/serialization/miniz.cpp PROPERTIES COMPILE_FLAGS "-Wno-strict-aliasing")
+  set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/detail/serialization/miniz.cpp
+    PROPERTIES
+    COMPILE_FLAGS "-Wno-strict-aliasing")
 endif()
 
+# Group files into pseudo-folders in IDEs
 source_group(xlnt FILES ${ROOT_HEADERS})
 source_group(cell FILES ${CELL_HEADERS} ${CELL_SOURCES})
 source_group(detail FILES ${DETAIL_ROOT_HEADERS} ${DETAIL_ROOT_SOURCES})
@@ -186,31 +209,63 @@ source_group(utils FILES ${UTILS_HEADERS} ${UTILS_SOURCES})
 source_group(workbook FILES ${WORKBOOK_HEADERS} ${WORKBOOK_SOURCES})
 source_group(worksheet FILES ${WORKSHEET_HEADERS} ${WORKSHEET_SOURCES})
 
-set(PKG_CONFIG_LIBDIR ${LIB_DEST_DIR})
-set(PKG_CONFIG_INCLUDEDIR ${INC_DEST_DIR})
-set(PKG_CONFIG_LIBS "-L\${libdir} -lxlnt")
-set(PKG_CONFIG_CFLAGS "-I\${includedir}")
-
-install(TARGETS xlnt
-    LIBRARY DESTINATION ${LIB_DEST_DIR}
-    ARCHIVE DESTINATION ${LIB_DEST_DIR}
-    RUNTIME DESTINATION ${BIN_DEST_DIR})
-
-if(NOT MSVC)
-    configure_file("${XLNT_ROOT_DIR}/cmake/pkg-config.pc.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/xlnt.pc")
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/xlnt.pc"
-        DESTINATION ${LIB_DEST_DIR}/pkgconfig)
+if(NOT INC_DEST_DIR)
+  # Default location to install include files
+  set(INC_DEST_DIR ${CMAKE_INSTALL_PREFIX}/include)
 endif()
 
+if(NOT LIB_DEST_DIR)
+  # Default location to install library files
+  set(LIB_DEST_DIR ${CMAKE_INSTALL_PREFIX}/lib)
+endif()
+
+if(NOT BIN_DEST_DIR)
+  # Default location to install runtime files
+   set(BIN_DEST_DIR ${CMAKE_INSTALL_PREFIX}/bin)
+endif()
+
+if(NOT MAN_DEST_DIR)
+  # Default location to install runtime files
+   set(MAN_DEST_DIR ${CMAKE_INSTALL_PREFIX}/share/man)
+endif()
+
+# Install library
+install(TARGETS xlnt
+  LIBRARY DESTINATION ${LIB_DEST_DIR}
+  ARCHIVE DESTINATION ${LIB_DEST_DIR}
+  RUNTIME DESTINATION ${BIN_DEST_DIR})
+
+# Install include directory
 install(DIRECTORY ${XLNT_INCLUDE_DIR}/xlnt
-    DESTINATION include
-    PATTERN ".DS_Store" EXCLUDE)
+  DESTINATION include
+  PATTERN ".DS_Store" EXCLUDE)
 
+# Install LICENSE.md
+install(FILES ${XLNT_ROOT_DIR}/docs/xlnt.3
+DESTINATION ${MAN_DEST_DIR}/man3)
+
+# Configure uninstall
 configure_file("${XLNT_ROOT_DIR}/cmake/cmake_uninstall.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-    IMMEDIATE @ONLY)
+  "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+  IMMEDIATE @ONLY)
 
+# Add uninstall target
 add_custom_target(uninstall
-    COMMAND ${CMAKE_COMMAND} -P
-        ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+  COMMAND ${CMAKE_COMMAND} -P
+    ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+
+if(NOT MSVC)
+  # Set pkg-config variables
+  set(PKG_CONFIG_LIBDIR ${LIB_DEST_DIR})
+  set(PKG_CONFIG_INCLUDEDIR ${INC_DEST_DIR})
+  set(PKG_CONFIG_LIBS "-L\${libdir} -lxlnt")
+  set(PKG_CONFIG_CFLAGS "-I\${includedir}")
+
+  # Replace variables in pkg-config template
+  configure_file("${XLNT_ROOT_DIR}/cmake/pkg-config.pc.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/xlnt.pc")
+
+  # pkg-config install
+  install(FILES "${CMAKE_CURRENT_BINARY_DIR}/xlnt.pc"
+    DESTINATION ${LIB_DEST_DIR}/pkgconfig)
+endif()

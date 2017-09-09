@@ -122,7 +122,7 @@ std::pair<std::string, row_t> cell_reference::split_reference(
 
     for (auto character : reference_string)
     {
-        char upper = std::toupper(character);
+        auto upper = static_cast<char>(std::toupper(static_cast<std::uint8_t>(character)));
 
         if (std::isalpha(character))
         {

@@ -83,7 +83,7 @@ void unhandled_case(bool error)
 namespace xlnt {
 namespace detail {
 
-bool format_condition::satisfied_by(long double number) const
+bool format_condition::satisfied_by(double number) const
 {
     switch (type)
     {
@@ -96,9 +96,9 @@ bool format_condition::satisfied_by(long double number) const
     case condition_type::less_than:
         return number < value;
     case condition_type::not_equal:
-        return std::fabs(number - value) != 0.0L;
+        return std::fabs(number - value) != 0.0;
     case condition_type::equal:
-        return std::fabs(number - value) == 0.0L;
+        return std::fabs(number - value) == 0.0;
     }
 
     default_case(false);
@@ -221,7 +221,7 @@ void number_format_parser::parse()
                     value = token.string.substr(1);
                 }
 
-                section.condition.value = std::stold(value);
+                section.condition.value = std::stod(value);
                 break;
             }
 
@@ -1075,7 +1075,7 @@ number_formatter::number_formatter(const std::string &format_string, xlnt::calen
     format_ = parser_.result();
 }
 
-std::string number_formatter::format_number(long double number)
+std::string number_formatter::format_number(double number)
 {
     if (format_[0].has_condition)
     {
@@ -1154,7 +1154,7 @@ std::string number_formatter::format_text(const std::string &text)
     return format_text(format_[3], text);
 }
 
-std::string number_formatter::fill_placeholders(const format_placeholders &p, long double number)
+std::string number_formatter::fill_placeholders(const format_placeholders &p, double number)
 {
     std::string result;
 
@@ -1230,7 +1230,7 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, lo
     else if (p.type == format_placeholders::placeholders_type::fractional_part)
     {
         auto fractional_part = number - integer_part;
-        result = std::fabs(fractional_part) < std::numeric_limits<long double>::min()
+        result = std::fabs(fractional_part) < std::numeric_limits<double>::min()
             ? std::string(".")
             : std::to_string(fractional_part).substr(1);
 
@@ -1259,11 +1259,11 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, lo
 }
 
 std::string number_formatter::fill_scientific_placeholders(const format_placeholders &integer_part,
-    const format_placeholders &fractional_part, const format_placeholders &exponent_part, long double number)
+    const format_placeholders &fractional_part, const format_placeholders &exponent_part, double number)
 {
     std::size_t logarithm = 0;
 
-    if (number != 0.L)
+    if (number != 0.0)
     {
         logarithm = static_cast<std::size_t>(std::log10(number));
 
@@ -1280,7 +1280,7 @@ std::string number_formatter::fill_scientific_placeholders(const format_placehol
 
     std::string integer_string = std::to_string(integer);
 
-    if (number == 0.L)
+    if (number == 0.0)
     {
         integer_string = std::string(integer_part.num_zeros + integer_part.num_optionals, '0');
     }
@@ -1312,14 +1312,14 @@ std::string number_formatter::fill_scientific_placeholders(const format_placehol
 }
 
 std::string number_formatter::fill_fraction_placeholders(const format_placeholders & /*numerator*/,
-    const format_placeholders &denominator, long double number, bool /*improper*/)
+    const format_placeholders &denominator, double number, bool /*improper*/)
 {
     auto fractional_part = number - static_cast<int>(number);
     auto original_fractional_part = fractional_part;
     fractional_part *= 10;
 
-    while (std::abs(fractional_part - static_cast<int>(fractional_part)) > 0.000001L
-        && std::abs(fractional_part - static_cast<int>(fractional_part)) < 0.999999L)
+    while (std::abs(fractional_part - static_cast<int>(fractional_part)) > 0.000001
+        && std::abs(fractional_part - static_cast<int>(fractional_part)) < 0.999999)
     {
         fractional_part *= 10;
     }
@@ -1331,13 +1331,13 @@ std::string number_formatter::fill_fraction_placeholders(const format_placeholde
     auto lower = static_cast<int>(std::pow(10, denominator_digits - 1));
     auto upper = static_cast<int>(std::pow(10, denominator_digits));
     auto best_denominator = lower;
-    auto best_difference = 1000.0L;
+    auto best_difference = 1000.0;
 
     for (int i = lower; i < upper; ++i)
     {
         auto numerator_full = original_fractional_part * i;
         auto numerator_rounded = static_cast<int>(std::round(numerator_full));
-        auto difference = std::fabs(original_fractional_part - (numerator_rounded / static_cast<long double>(i)));
+        auto difference = std::fabs(original_fractional_part - (numerator_rounded / static_cast<double>(i)));
 
         if (difference < best_difference)
         {
@@ -1350,7 +1350,7 @@ std::string number_formatter::fill_fraction_placeholders(const format_placeholde
     return std::to_string(numerator_rounded) + "/" + std::to_string(best_denominator);
 }
 
-std::string number_formatter::format_number(const format_code &format, long double number)
+std::string number_formatter::format_number(const format_code &format, double number)
 {
     static const std::vector<std::string> *month_names = new std::vector<std::string>{"January", "February", "March",
         "April", "May", "June", "July", "August", "September", "October", "November", "December"};
@@ -1377,7 +1377,7 @@ std::string number_formatter::format_number(const format_code &format, long doub
 
     if (format.is_datetime)
     {
-        if (number != 0.L)
+        if (number != 0.0)
         {
             dt = xlnt::datetime::from_number(number, calendar_);
         }
@@ -1434,7 +1434,7 @@ std::string number_formatter::format_number(const format_code &format, long doub
                     auto digits = std::min(
                         static_cast<std::size_t>(6), part.placeholders.num_zeros + part.placeholders.num_optionals);
                     auto denominator = static_cast<int>(std::pow(10.0, digits));
-                    auto fractional_seconds = dt.microsecond / 1.0E6L * denominator;
+                    auto fractional_seconds = dt.microsecond / 1.0E6 * denominator;
                     fractional_seconds = std::round(fractional_seconds) / denominator;
                     result.append(fill_placeholders(part.placeholders, fractional_seconds));
                     break;
@@ -1449,7 +1449,7 @@ std::string number_formatter::format_number(const format_code &format, long doub
                 {
                     i += 2;
 
-                    if (number == 0.L)
+                    if (number == 0.0)
                     {
                         result.pop_back();
                         break;

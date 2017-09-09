@@ -90,17 +90,17 @@ range_reference range_reference::make_offset(int column_offset, int row_offset) 
 
 std::size_t range_reference::height() const
 {
-    return bottom_right_.row() - top_left_.row();
+    return 1 + bottom_right_.row() - top_left_.row();
 }
 
 std::size_t range_reference::width() const
 {
-    return (bottom_right_.column() - top_left_.column()).index;
+    return 1 + (bottom_right_.column() - top_left_.column()).index;
 }
 
 bool range_reference::is_single_cell() const
 {
-    return width() == 0 && height() == 0;
+    return width() == 1 && height() == 1;
 }
 
 std::string range_reference::to_string() const
