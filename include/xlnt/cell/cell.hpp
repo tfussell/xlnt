@@ -159,11 +159,6 @@ public:
     /// <summary>
     /// Sets the value of this cell to the given value.
     /// </summary>
-    void value(long double float_value);
-
-    /// <summary>
-    /// Sets the value of this cell to the given value.
-    /// </summary>
     void value(const date &date_value);
 
     /// <summary>
@@ -670,9 +665,6 @@ float cell::value<float>() const;
 
 template<>
 double cell::value<double>() const;
-
-template<>
-long double cell::value<long double>() const;
 
 template<>
 date cell::value<date>() const;

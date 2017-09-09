@@ -56,17 +56,17 @@
 
 namespace {
 
-std::pair<bool, long double> cast_numeric(const std::string &s)
+std::pair<bool, double> cast_numeric(const std::string &s)
 {
     auto str_end = static_cast<char *>(nullptr);
     auto result = std::strtold(s.c_str(), &str_end);
 
     return (str_end != s.c_str() + s.size())
-        ? std::make_pair(false, 0.0L)
+        ? std::make_pair(false, 0.0)
         : std::make_pair(true, result);
 }
 
-std::pair<bool, long double> cast_percentage(const std::string &s)
+std::pair<bool, double> cast_percentage(const std::string &s)
 {
     if (s.back() == '%')
     {
@@ -78,7 +78,7 @@ std::pair<bool, long double> cast_percentage(const std::string &s)
         }
     }
 
-    return {false, 0};
+    return {false, 0.0};
 }
 
 std::pair<bool, xlnt::time> cast_time(const std::string &s)
@@ -206,48 +206,42 @@ void cell::value(std::nullptr_t)
 void cell::value(bool boolean_value)
 {
     d_->type_ = type::boolean;
-    d_->value_numeric_ = boolean_value ? 1.0L : 0.0L;
+    d_->value_numeric_ = boolean_value ? 1.0 : 0.0;
 }
 
 void cell::value(int int_value)
 {
-    d_->value_numeric_ = static_cast<long double>(int_value);
+    d_->value_numeric_ = static_cast<double>(int_value);
     d_->type_ = type::number;
 }
 
 void cell::value(unsigned int int_value)
 {
-    d_->value_numeric_ = static_cast<long double>(int_value);
+    d_->value_numeric_ = static_cast<double>(int_value);
     d_->type_ = type::number;
 }
 
 void cell::value(long long int int_value)
 {
-    d_->value_numeric_ = static_cast<long double>(int_value);
+    d_->value_numeric_ = static_cast<double>(int_value);
     d_->type_ = type::number;
 }
 
 void cell::value(unsigned long long int int_value)
 {
-    d_->value_numeric_ = static_cast<long double>(int_value);
+    d_->value_numeric_ = static_cast<double>(int_value);
     d_->type_ = type::number;
 }
 
 void cell::value(float float_value)
 {
-    d_->value_numeric_ = static_cast<long double>(float_value);
+    d_->value_numeric_ = static_cast<double>(float_value);
     d_->type_ = type::number;
 }
 
 void cell::value(double float_value)
 {
-    d_->value_numeric_ = static_cast<long double>(float_value);
-    d_->type_ = type::number;
-}
-
-void cell::value(long double d)
-{
-    d_->value_numeric_ = d;
+    d_->value_numeric_ = static_cast<double>(float_value);
     d_->type_ = type::number;
 }
 
@@ -261,7 +255,7 @@ void cell::value(const rich_text &text)
     check_string(text.plain_text());
 
     d_->type_ = type::shared_string;
-    d_->value_numeric_ = static_cast<long double>(workbook().add_shared_string(text));
+    d_->value_numeric_ = static_cast<double>(workbook().add_shared_string(text));
 }
 
 void cell::value(const char *c)
@@ -575,12 +569,6 @@ XLNT_API double cell::value() const
 }
 
 template <>
-XLNT_API long double cell::value() const
-{
-    return d_->value_numeric_;
-}
-
-template <>
 XLNT_API time cell::value() const
 {
     return time::from_number(d_->value_numeric_);
@@ -672,14 +660,14 @@ std::string cell::to_string() const
         return "";
     case cell::type::date:
     case cell::type::number:
-        return nf.format(value<long double>(), base_date());
+        return nf.format(value<double>(), base_date());
     case cell::type::inline_string:
     case cell::type::shared_string:
     case cell::type::formula_string:
     case cell::type::error:
         return nf.format(value<std::string>());
     case cell::type::boolean:
-        return value<long double>() == 0.L ? "FALSE" : "TRUE";
+        return value<double>() == 0.0 ? "FALSE" : "TRUE";
     }
 
     return "";

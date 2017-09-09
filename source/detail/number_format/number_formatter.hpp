@@ -222,9 +222,9 @@ struct XLNT_API format_condition
         greater_or_equal
     } type = condition_type::not_equal;
 
-    long double value = 0;
+    double value = 0.0;
 
-    bool satisfied_by(long double number) const;
+    bool satisfied_by(double number) const;
 };
 
 struct format_placeholders
@@ -352,17 +352,17 @@ class XLNT_API number_formatter
 {
 public:
     number_formatter(const std::string &format_string, xlnt::calendar calendar);
-    std::string format_number(long double number);
+    std::string format_number(double number);
     std::string format_text(const std::string &text);
 
 private:
-    std::string fill_placeholders(const format_placeholders &p, long double number);
+    std::string fill_placeholders(const format_placeholders &p, double number);
     std::string fill_fraction_placeholders(const format_placeholders &numerator,
-        const format_placeholders &denominator, long double number, bool improper);
+        const format_placeholders &denominator, double number, bool improper);
     std::string fill_scientific_placeholders(const format_placeholders &integer_part,
         const format_placeholders &fractional_part, const format_placeholders &exponent_part,
-        long double number);
-    std::string format_number(const format_code &format, long double number);
+        double number);
+    std::string format_number(const format_code &format, double number);
     std::string format_text(const format_code &format, const std::string &text);
 
     number_format_parser parser_;

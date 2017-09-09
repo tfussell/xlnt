@@ -43,7 +43,7 @@ std::tm safe_localtime(std::time_t raw_time)
 
 namespace xlnt {
 
-time time::from_number(long double raw_time)
+time time::from_number(double raw_time)
 {
     time result;
 
@@ -110,7 +110,7 @@ time::time(const std::string &time_string)
     }
 }
 
-long double time::to_number() const
+double time::to_number() const
 {
     std::uint64_t microseconds = static_cast<std::uint64_t>(microsecond);
     microseconds += static_cast<std::uint64_t>(second * 1e6);

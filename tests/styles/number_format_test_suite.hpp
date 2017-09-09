@@ -769,9 +769,9 @@ public:
 
     void format_and_test(const xlnt::number_format &nf, const std::array<std::string, 4> &expect)
     {
-        long double positive = 42503.1234;
-        long double negative = -1 * positive;
-        long double zero = 0;
+        double positive = 42503.1234;
+        double negative = -1 * positive;
+        double zero = 0;
         const std::string text = "text";
         xlnt::calendar calendar = xlnt::calendar::windows_1900;
 

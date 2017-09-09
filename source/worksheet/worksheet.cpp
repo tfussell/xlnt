@@ -671,7 +671,7 @@ bool worksheet::compare(const worksheet &other, bool reference) const
             }
 
             if (this_cell.data_type() == xlnt::cell::type::number
-                && std::fabs(this_cell.value<long double>() - other_cell.value<long double>()) > 0.L)
+                && std::fabs(this_cell.value<double>() - other_cell.value<double>()) > 0.0)
             {
                 return false;
             }

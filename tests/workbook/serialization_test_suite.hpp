@@ -120,9 +120,6 @@ public:
 		ws.cell("A14").value("number (double)");
 		ws.cell("B14").value(std::numeric_limits<double>::max());
 
-		ws.cell("A15").value("number (long double)");
-		ws.cell("B15").value(std::numeric_limits<long double>::max());
-
 		ws.cell("A16").value("text (char *)");
 		ws.cell("B16").value("string");
 

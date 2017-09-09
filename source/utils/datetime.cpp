@@ -43,7 +43,7 @@ std::string fill(const std::string &string, std::size_t length = 2)
 
 namespace xlnt {
 
-datetime datetime::from_number(long double raw_time, calendar base_date)
+datetime datetime::from_number(double raw_time, calendar base_date)
 {
     auto date_part = date::from_number(static_cast<int>(raw_time), base_date);
     auto time_part = time::from_number(raw_time);
@@ -54,13 +54,19 @@ datetime datetime::from_number(long double raw_time, calendar base_date)
 
 bool datetime::operator==(const datetime &comparand) const
 {
-    return year == comparand.year && month == comparand.month && day == comparand.day && hour == comparand.hour
-        && minute == comparand.minute && second == comparand.second && microsecond == comparand.microsecond;
+    return year == comparand.year 
+        && month == comparand.month
+        && day == comparand.day
+        && hour == comparand.hour
+        && minute == comparand.minute
+        && second == comparand.second
+        && microsecond == comparand.microsecond;
 }
 
-long double datetime::to_number(calendar base_date) const
+double datetime::to_number(calendar base_date) const
 {
-    return date(year, month, day).to_number(base_date) + time(hour, minute, second, microsecond).to_number();
+    return date(year, month, day).to_number(base_date)
+        + time(hour, minute, second, microsecond).to_number();
 }
 
 std::string datetime::to_string() const

@@ -110,7 +110,7 @@ struct number_converter
         stream.imbue(std::locale("C"));
     }
 
-    long double stold(const std::string &s)
+    double stold(const std::string &s)
     {
         stream.str(s);
         stream.clear();
@@ -119,7 +119,7 @@ struct number_converter
     };
 
     std::istringstream stream;
-    long double result;
+    double result;
 };
 
 } // namespace

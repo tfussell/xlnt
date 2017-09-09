@@ -51,7 +51,7 @@ public:
 
     void test_round_trip()
     {
-    	long double time = 3.14159265359L;
+        double time = 3.14159265359;
         auto td = xlnt::timedelta::from_number(time);
         auto time_rt = td.to_number();
         xlnt_assert_delta(time, time_rt, 1E-9);
@@ -59,8 +59,8 @@ public:
 
     void test_to_number()
     {
-    	xlnt::timedelta td(1, 1, 1, 1, 1);
-    	xlnt_assert_delta(td.to_number(), 1.0423726852L, 1E-9);
+        xlnt::timedelta td(1, 1, 1, 1, 1);
+        xlnt_assert_delta(td.to_number(), 1.0423726852L, 1E-9);
     }
 
     void test_carry()

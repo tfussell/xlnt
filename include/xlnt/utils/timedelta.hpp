@@ -38,7 +38,7 @@ struct XLNT_API timedelta
     /// <summary>
     /// Returns a timedelta from a number representing the factional number of days elapsed.
     /// </summary>
-    static timedelta from_number(long double number);
+    static timedelta from_number(double number);
 
     /// <summary>
     /// Constructs a timedelta equal to zero.
@@ -53,7 +53,7 @@ struct XLNT_API timedelta
     /// <summary>
     /// Returns a numeric representation of this timedelta as a fractional number of days.
     /// </summary>
-    long double to_number() const;
+    double to_number() const;
 
     /// <summary>
     /// The days

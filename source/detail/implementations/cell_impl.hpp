@@ -51,7 +51,7 @@ struct cell_impl
     bool is_merged_;
 
     rich_text value_text_;
-    long double value_numeric_;
+    double value_numeric_;
 
     optional<std::string> formula_;
     optional<std::string> hyperlink_;

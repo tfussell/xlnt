@@ -47,9 +47,9 @@ namespace {
 /// <summary>
 /// Returns true if d is exactly equal to an integer.
 /// </summary>
-bool is_integral(long double d)
+bool is_integral(double d)
 {
-    return std::fabs(d - static_cast<long double>(static_cast<long long int>(d))) == 0.L;
+    return std::fabs(d - static_cast<double>(static_cast<long long int>(d))) == 0.L;
 }
 
 std::vector<std::pair<std::string, std::string>> core_property_namespace(xlnt::core_property type)
@@ -2330,15 +2330,15 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             case cell::type::number:
                 write_start_element(xmlns, "v");
 
-                if (is_integral(cell.value<long double>()))
+                if (is_integral(cell.value<double>()))
                 {
-                    write_characters(static_cast<std::int64_t>(cell.value<long double>()));
+                    write_characters(static_cast<std::int64_t>(cell.value<double>()));
                 }
                 else
                 {
                     std::stringstream ss;
                     ss.precision(20);
-                    ss << cell.value<long double>();
+                    ss << cell.value<double>();
                     write_characters(ss.str());
                 }
 

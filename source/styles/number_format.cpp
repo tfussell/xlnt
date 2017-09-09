@@ -344,7 +344,7 @@ std::string number_format::format(const std::string &text) const
     return detail::number_formatter(format_string_, calendar::windows_1900).format_text(text);
 }
 
-std::string number_format::format(long double number, calendar base_date) const
+std::string number_format::format(double number, calendar base_date) const
 {
     return detail::number_formatter(format_string_, base_date).format_number(number);
 }
