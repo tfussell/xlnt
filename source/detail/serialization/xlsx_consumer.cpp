@@ -23,6 +23,7 @@
 
 #include <cctype>
 #include <numeric> // for std::accumulate
+#include <sstream>
 
 #include <detail/constants.hpp>
 #include <detail/header_footer/header_footer_code.hpp>
@@ -101,6 +102,25 @@ bool is_true(const std::string &bool_string)
     return false;
 #endif
 }
+
+struct number_converter
+{
+    number_converter()
+    {
+        stream.imbue(std::locale("C"));
+    }
+
+    long double stold(const std::string &s)
+    {
+        stream.str(s);
+        stream.clear();
+        stream >> result;
+        return result;
+    };
+
+    std::istringstream stream;
+    long double result;
+};
 
 } // namespace
 
@@ -251,16 +271,7 @@ cell xlsx_consumer::read_cell()
         cell.formula(formula_value_string);
     }
 
-    std::istringstream number_converter;
-    number_converter.imbue(std::locale("C"));
-
-    auto stold = [&number_converter](const std::string &s)
-    {
-        number_converter.str(s);
-        long double result;
-        number_converter >> result;
-        return result;
-    };
+    number_converter converter;
 
     if (has_value)
     {
@@ -276,7 +287,7 @@ cell xlsx_consumer::read_cell()
         }
         else if (type == "s")
         {
-            cell.d_->value_numeric_ = stold(value_string);
+            cell.d_->value_numeric_ = converter.stold(value_string);
             cell.data_type(cell::type::shared_string);
         }
         else if (type == "b") // boolean
@@ -285,7 +296,7 @@ cell xlsx_consumer::read_cell()
         }
         else if (type == "n") // numeric
         {
-            cell.value(stold(value_string));
+            cell.value(converter.stold(value_string));
         }
         else if (!value_string.empty() && value_string[0] == '#')
         {
@@ -553,16 +564,7 @@ void xlsx_consumer::read_worksheet_sheetdata()
         return;
     }
     
-    std::istringstream number_converter;
-    number_converter.imbue(std::locale("C"));
-
-    auto stold = [&number_converter](const std::string &s)
-    {
-        number_converter.str(s);
-        long double result;
-        number_converter >> result;
-        return result;
-    };
+    number_converter converter;
 
     while (in_element(qn("spreadsheetml", "sheetData")))
     {
@@ -665,7 +667,7 @@ void xlsx_consumer::read_worksheet_sheetdata()
                 }
                 else if (type == "s")
                 {
-                    cell.d_->value_numeric_ = stold(value_string);
+                    cell.d_->value_numeric_ = converter.stold(value_string);
                     cell.data_type(cell::type::shared_string);
                 }
                 else if (type == "b") // boolean
@@ -674,7 +676,7 @@ void xlsx_consumer::read_worksheet_sheetdata()
                 }
                 else if (type == "n") // numeric
                 {
-                    cell.value(stold(value_string));
+                    cell.value(converter.stold(value_string));
                 }
                 else if (!value_string.empty() && value_string[0] == '#')
                 {
