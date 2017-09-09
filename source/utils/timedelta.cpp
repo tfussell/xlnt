@@ -68,7 +68,7 @@ timedelta timedelta::from_number(double raw_time)
     fractional_part = 1000000 * (fractional_part - result.seconds);
     result.microseconds = static_cast<int>(fractional_part);
 
-    if (result.microseconds == 999999 && fractional_part - result.microseconds > 0.5L)
+    if (result.microseconds == 999999 && fractional_part - result.microseconds > 0.5)
     {
         result.microseconds = 0;
         result.seconds += 1;

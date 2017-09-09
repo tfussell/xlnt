@@ -283,18 +283,18 @@ encryption_info read_encryption_info(std::istream &info_stream, const std::u16st
             throw xlnt::exception("unsupported encryption version");
         }
 
-        if ((encryption_flags & 0b00000011) != 0) // Reserved1 and Reserved2, MUST be 0
+        if ((encryption_flags & 0x03) != 0) // Reserved1 and Reserved2, MUST be 0
         {
             throw xlnt::exception("bad header");
         }
 
-        if ((encryption_flags & 0b00000100) == 0 // fCryptoAPI
-            || (encryption_flags & 0b00010000) != 0) // fExternal
+        if ((encryption_flags & 0x04) == 0 // fCryptoAPI
+            || (encryption_flags & 0x10) != 0) // fExternal
         {
             throw xlnt::exception("extensible encryption is not supported");
         }
 
-        if ((encryption_flags & 0b00100000) == 0) // fAES
+        if ((encryption_flags & 0x20) == 0) // fAES
         {
             throw xlnt::exception("not an OOXML document");
         }

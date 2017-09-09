@@ -476,11 +476,10 @@ public:
 
             while (reader.has_cell())
             {
-                const auto cell = reader.read_cell();
-                //std::cout << cell.reference().to_string() << " " << cell.to_string() << std::endl;
+                reader.read_cell();
             }
 
-            const auto ws = reader.end_worksheet();
+            reader.end_worksheet();
         }
     }
 

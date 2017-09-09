@@ -24,6 +24,7 @@
 #include <cctype>
 #include <numeric> // for std::accumulate
 #include <sstream>
+#include <unordered_map>
 
 #include <detail/constants.hpp>
 #include <detail/header_footer/header_footer_code.hpp>
@@ -116,7 +117,7 @@ struct number_converter
         stream.clear();
         stream >> result;
         return result;
-    };
+    }
 
     std::istringstream stream;
     double result;
@@ -203,7 +204,7 @@ cell xlsx_consumer::read_cell()
     if (!in_element(qn("spreadsheetml", "row")))
     {
         return cell(nullptr);
-    } 
+    }
 
     expect_start_element(qn("spreadsheetml", "c"), xml::content::complex);
 
@@ -563,7 +564,7 @@ void xlsx_consumer::read_worksheet_sheetdata()
     {
         return;
     }
-    
+
     number_converter converter;
 
     while (in_element(qn("spreadsheetml", "sheetData")))

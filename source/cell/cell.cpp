@@ -59,7 +59,7 @@ namespace {
 std::pair<bool, double> cast_numeric(const std::string &s)
 {
     auto str_end = static_cast<char *>(nullptr);
-    auto result = std::strtold(s.c_str(), &str_end);
+    auto result = std::strtod(s.c_str(), &str_end);
 
     return (str_end != s.c_str() + s.size())
         ? std::make_pair(false, 0.0)
@@ -529,7 +529,7 @@ void cell::clear_value()
 template <>
 XLNT_API bool cell::value() const
 {
-    return d_->value_numeric_ != 0.L;
+    return d_->value_numeric_ != 0.0;
 }
 
 template <>

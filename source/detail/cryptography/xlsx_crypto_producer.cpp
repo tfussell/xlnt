@@ -181,7 +181,7 @@ void write_standard_encryption_info(const encryption_info &info, std::ostream &i
 
     const auto version_major = std::uint16_t(4);
     const auto version_minor = std::uint16_t(2);
-    const auto encryption_flags = std::uint32_t(0b00010000 & 0b00100000);
+    const auto encryption_flags = std::uint32_t(0x10 & 0x20);
 
     writer.write(version_major);
     writer.write(version_minor);
