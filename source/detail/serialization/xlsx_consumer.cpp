@@ -218,9 +218,11 @@ cell xlsx_consumer::read_cell()
     auto has_type = parser().attribute_present("t");
     auto type = has_type ? parser().attribute("t") : "n";
 
-    auto has_format = parser().attribute_present("s");
-    auto format_id = static_cast<std::size_t>(has_format ? std::stoull(parser().attribute("s")) : 0LL);
-
+    if (parser().attribute_present("s"))
+    {
+		    cell.format(target_.format(std::stoull(parser().attribute("s"))));
+    }
+	
     auto has_value = false;
     auto value_string = std::string();
 
@@ -303,11 +305,6 @@ cell xlsx_consumer::read_cell()
         {
             cell.error(value_string);
         }
-    }
-
-    if (has_format)
-    {
-        cell.format(target_.format(format_id));
     }
 
     if (!in_element(qn("spreadsheetml", "row")))
@@ -599,9 +596,11 @@ void xlsx_consumer::read_worksheet_sheetdata()
 
             auto has_type = parser().attribute_present("t");
             auto type = has_type ? parser().attribute("t") : "n";
-
-            auto has_format = parser().attribute_present("s");
-            auto format_id = static_cast<std::size_t>(has_format ? std::stoull(parser().attribute("s")) : 0LL);
+			
+            if (parser().attribute_present("s"))
+            {
+		            cell.format(target_.format(std::stoull(parser().attribute("s"))));
+            }
 
             auto has_value = false;
             auto value_string = std::string();
@@ -685,10 +684,6 @@ void xlsx_consumer::read_worksheet_sheetdata()
                 }
             }
 
-            if (has_format)
-            {
-                cell.format(target_.format(format_id));
-            }
         }
 
         expect_end_element(qn("spreadsheetml", "row"));
