@@ -1183,7 +1183,7 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, do
 
     if (p.thousands_scale > 0)
     {
-        number /= std::pow(1000.L, p.thousands_scale);
+        number /= std::pow(1000.0, p.thousands_scale);
     }
 
     auto integer_part = static_cast<int>(number);
@@ -1273,7 +1273,7 @@ std::string number_formatter::fill_scientific_placeholders(const format_placehol
         }
     }
 
-    number /= std::pow(10.L, logarithm);
+    number /= std::pow(10.0, logarithm);
 
     auto integer = static_cast<int>(number);
     auto fraction = number - integer;
