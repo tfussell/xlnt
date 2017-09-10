@@ -2558,6 +2558,7 @@ void xlsx_consumer::expect_start_element(const xml::qname &name, xml::content co
 
 void xlsx_consumer::expect_end_element(const xml::qname &name)
 {
+    parser().attribute_map();
     parser().next_expect(xml::parser::event_type::end_element, name);
     stack_.pop_back();
 }
