@@ -2128,6 +2128,11 @@ void xlsx_consumer::read_stylesheet()
                         {
                             alignment.horizontal(parser().attribute<xlnt::horizontal_alignment>("horizontal"));
                         }
+
+                        if (parser().attribute_present("readingOrder"))
+                        {
+                            parser().attribute<int>("readingOrder");
+                        }
                     }
                     else if (xf_child_element == qn("spreadsheetml", "protection"))
                     {
