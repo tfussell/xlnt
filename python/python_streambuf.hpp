@@ -310,7 +310,7 @@ class python_streambuf : public std::basic_streambuf<char>
         upper_bound = reinterpret_cast<std::streamsize>(farthest_pptr) + 1;
       }
       else {
-        throw std::runtime_error("unreachable");
+        throw xlnt::exception("unreachable");
       }
 
       // Sought position in "buffer coordinate"
@@ -325,7 +325,7 @@ class python_streambuf : public std::basic_streambuf<char>
         return failure;
       }
       else {
-        throw std::runtime_error("unreachable");
+        throw xlnt::exception("unreachable");
       }
 
       // if the sought position is not in the buffer, give up

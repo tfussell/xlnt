@@ -57,17 +57,17 @@ public:
     {
         return sample_data_directory().append(xlnt::path(filename));
     }
-    
+
     static void copy_file(const xlnt::path &source, const xlnt::path &destination, bool overwrite)
     {
         if(!overwrite && destination.exists())
         {
-            throw std::runtime_error("destination file already exists and overwrite==false");
+            throw xlnt::exception("destination file already exists and overwrite==false");
         }
-        
+
         std::ifstream src(source.string(), std::ios::binary);
         std::ofstream dst(destination.string(), std::ios::binary);
-        
+
         dst << src.rdbuf();
     }
 

@@ -46,7 +46,7 @@ public:
     {
         auto function_that_throws = []()
         {
-            throw std::runtime_error("test");
+            throw xlnt::exception("test");
         };
 
         auto function_that_doesnt_throw = []()

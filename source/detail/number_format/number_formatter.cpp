@@ -143,7 +143,7 @@ void number_format_parser::parse()
             {
                 if (section.has_color || section.has_condition || section.has_locale || !section.parts.empty())
                 {
-                    throw std::runtime_error("color should be the first part of a format");
+                    throw xlnt::exception("color should be the first part of a format");
                 }
 
                 section.has_color = true;
@@ -156,7 +156,7 @@ void number_format_parser::parse()
             {
                 if (section.has_locale)
                 {
-                    throw std::runtime_error("multiple locales");
+                    throw xlnt::exception("multiple locales");
                 }
 
                 section.has_locale = true;
@@ -178,7 +178,7 @@ void number_format_parser::parse()
             {
                 if (section.has_condition)
                 {
-                    throw std::runtime_error("multiple conditions");
+                    throw xlnt::exception("multiple conditions");
                 }
 
                 section.has_condition = true;
@@ -623,12 +623,12 @@ number_format_token number_format_parser::parse_next_token()
     case '[':
         if (position_ == format_string_.size())
         {
-            throw std::runtime_error("missing ]");
+            throw xlnt::exception("missing ]");
         }
 
         if (format_string_[position_] == ']')
         {
-            throw std::runtime_error("empty []");
+            throw xlnt::exception("empty []");
         }
 
         do
@@ -670,7 +670,7 @@ number_format_token number_format_parser::parse_next_token()
     case 'G':
         if (format_string_.substr(position_ - 1, 7) != "General")
         {
-            throw std::runtime_error("expected General");
+            throw xlnt::exception("expected General");
         }
 
         token.type = number_format_token::token_type::number;
@@ -744,7 +744,7 @@ number_format_token number_format_parser::parse_next_token()
         }
         else
         {
-            throw std::runtime_error("expected AM/PM or A/P");
+            throw xlnt::exception("expected AM/PM or A/P");
         }
 
         break;
@@ -839,7 +839,7 @@ number_format_token number_format_parser::parse_next_token()
         break;
 
     default:
-        throw std::runtime_error("unexpected character");
+        throw xlnt::exception("unexpected character");
     }
 
     return token;
@@ -849,14 +849,14 @@ void number_format_parser::validate()
 {
     if (codes_.size() > 4)
     {
-        throw std::runtime_error("too many format codes");
+        throw xlnt::exception("too many format codes");
     }
 
     if (codes_.size() > 2)
     {
         if (codes_[0].has_condition && codes_[1].has_condition && codes_[2].has_condition)
         {
-            throw std::runtime_error("format should have a maximum of two codes with conditions");
+            throw xlnt::exception("format should have a maximum of two codes with conditions");
         }
     }
 }
@@ -1029,7 +1029,7 @@ std::pair<format_locale, std::string> number_format_parser::locale_from_string(c
 
     if (locale_string.empty() || locale_string.front() != '$' || hyphen_index == std::string::npos)
     {
-        throw std::runtime_error("bad locale: " + locale_string);
+        throw xlnt::exception("bad locale: " + locale_string);
     }
 
     std::pair<format_locale, std::string> result;
@@ -1043,14 +1043,14 @@ std::pair<format_locale, std::string> number_format_parser::locale_from_string(c
 
     if (country_code_string.empty())
     {
-        throw std::runtime_error("bad locale: " + locale_string);
+        throw xlnt::exception("bad locale: " + locale_string);
     }
 
     for (auto c : country_code_string)
     {
         if (!((c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f') || (c >= '0' && c <= '9')))
         {
-            throw std::runtime_error("bad locale: " + locale_string);
+            throw xlnt::exception("bad locale: " + locale_string);
         }
     }
 
@@ -1065,7 +1065,7 @@ std::pair<format_locale, std::string> number_format_parser::locale_from_string(c
         }
     }
 
-    throw std::runtime_error("unknown country code: " + country_code_string);
+    throw xlnt::exception("unknown country code: " + country_code_string);
 }
 
 number_formatter::number_formatter(const std::string &format_string, xlnt::calendar calendar)

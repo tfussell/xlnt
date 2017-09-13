@@ -59,7 +59,7 @@ pixmap load_image(const std::string &filename)
 
 	if (image_data == nullptr)
 	{
-		throw std::runtime_error("bad image or file not found: " + filename);
+			throw xlnt::exception("bad image or file not found: " + filename);
 	}
 
 	pixmap result;
@@ -99,8 +99,8 @@ xlnt::workbook build_workbook_cf(const pixmap &image)
 	// The reference to the cell which is being operated upon
 	auto current_cell = xlnt::cell_reference("A1");
 	// The range of cells which will be modified. This is required for conditional formats
-	auto range = ws.range(xlnt::range_reference(1, 1, 
-        static_cast<xlnt::column_t::index_t>(image[0].size()), 
+	auto range = ws.range(xlnt::range_reference(1, 1,
+        static_cast<xlnt::column_t::index_t>(image[0].size()),
         static_cast<xlnt::row_t>(image.size())));
 
 	// Track the previously created conditonal formats so they are only created once
@@ -119,7 +119,7 @@ xlnt::workbook build_workbook_cf(const pixmap &image)
 			if (defined_colors.count(color.hex_string()) == 0)
 			{
 				// The condition under which the conditional format applies to a cell
-				// In this case, the condition is satisfied when the text of the cell 
+				// In this case, the condition is satisfied when the text of the cell
 				// contains the hex string representing the pixel color.
 				const auto condition = xlnt::condition::text_contains(color.hex_string());
 				// Create a new conditional format with the above condition on the image pixel range
@@ -144,7 +144,7 @@ xlnt::workbook build_workbook_cf(const pixmap &image)
 		// Show some progress, it can take a while...
 		std::cout << current_cell.row() << " " << defined_colors.size() << std::endl;
 	}
-	
+
 	// Return the resulting workbook
 	return wb;
 }

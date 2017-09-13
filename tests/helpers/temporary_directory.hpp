@@ -18,11 +18,11 @@ public:
 	DWORD result = GetTempPath(static_cast<DWORD>(buffer.size()), buffer.data());
 	if(result > MAX_PATH)
 	{
-	    throw std::runtime_error("buffer is too small");
+	    throw xlnt::exception("buffer is too small");
 	}
 	if(result == 0)
 	{
-	    throw std::runtime_error("GetTempPath failed");
+	    throw xlnt::exception("GetTempPath failed");
 	}
 	std::string directory(buffer.begin(), buffer.begin() + result);
     return path_helper::windows_to_universal_path(directory + "xlnt");

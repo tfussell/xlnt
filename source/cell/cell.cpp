@@ -323,7 +323,9 @@ bool cell::is_merged() const
 
 bool cell::is_date() const
 {
-    return data_type() == type::number && has_format() && number_format().is_date_format();
+    return data_type() == type::number
+        && has_format()
+        && number_format().is_date_format();
 }
 
 cell_reference cell::reference() const
@@ -364,7 +366,8 @@ std::string cell::hyperlink() const
 
 void cell::hyperlink(const std::string &hyperlink)
 {
-    if (hyperlink.length() == 0 || std::find(hyperlink.begin(), hyperlink.end(), ':') == hyperlink.end())
+    if (hyperlink.length() == 0
+        || std::find(hyperlink.begin(), hyperlink.end(), ':') == hyperlink.end())
     {
         throw invalid_parameter();
     }
@@ -400,7 +403,7 @@ void cell::formula(const std::string &formula)
     }
 
     data_type(type::number);
-    
+
     worksheet().register_calc_chain_in_manifest();
 }
 

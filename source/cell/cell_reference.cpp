@@ -66,7 +66,10 @@ cell_reference::cell_reference(const char *reference_string)
 cell_reference::cell_reference(column_t column_index, row_t row)
     : column_(column_index), row_(row), absolute_row_(false), absolute_column_(false)
 {
-    if (row_ == 0 || column_ == 0 || !(row_ <= constants::max_row()) || !(column_ <= constants::max_column()))
+    if (row_ == 0
+      || column_ == 0
+      || !(row_ <= constants::max_row())
+      || !(column_ <= constants::max_column()))
     {
         throw invalid_cell_reference(column_, row_);
     }
@@ -264,12 +267,15 @@ cell_reference cell_reference::make_offset(int column_offset, int row_offset) co
     // TODO: check for overflow/underflow
     auto relative_column = static_cast<column_t::index_t>(static_cast<int>(column_.index) + column_offset);
     auto relative_row = static_cast<row_t>(static_cast<int>(row_) + row_offset);
+
     return cell_reference(relative_column, relative_row);
 }
 
 bool cell_reference::operator==(const cell_reference &comparand) const
 {
-    return comparand.column_ == column_ && comparand.row_ == row_ && absolute_column_ == comparand.absolute_column_
+    return comparand.column_ == column_
+        && comparand.row_ == row_
+        && absolute_column_ == comparand.absolute_column_
         && absolute_row_ == comparand.absolute_row_;
 }
 

@@ -54,22 +54,27 @@ const path constants::package_properties()
 {
     return path("docProps");
 }
+
 const path constants::package_xl()
 {
     return path("/xl");
 }
+
 const path constants::package_root_rels()
 {
     return path(std::string("_rels"));
 }
+
 const path constants::package_theme()
 {
     return package_xl().append("theme");
 }
+
 const path constants::package_worksheets()
 {
     return package_xl().append("worksheets");
 }
+
 const path constants::package_drawings()
 {
     return package_xl().append("drawings");
@@ -79,30 +84,37 @@ const path constants::part_content_types()
 {
     return path("[Content_Types].xml");
 }
+
 const path constants::part_root_relationships()
 {
     return package_root_rels().append(".rels");
 }
+
 const path constants::part_core()
 {
     return package_properties().append("core.xml");
 }
+
 const path constants::part_app()
 {
     return package_properties().append("app.xml");
 }
+
 const path constants::part_workbook()
 {
     return package_xl().append("workbook.xml");
 }
+
 const path constants::part_styles()
 {
     return package_xl().append("styles.xml");
 }
+
 const path constants::part_theme()
 {
     return package_theme().append("theme1.xml");
 }
+
 const path constants::part_shared_strings()
 {
     return package_xl().append("sharedStrings.xml");
@@ -140,7 +152,8 @@ const std::unordered_map<std::string, std::string> &constants::namespaces()
             {"xml", "http://www.w3.org/XML/1998/namespace"},
             {"xsi", "http://www.w3.org/2001/XMLSchema-instance"},
 
-            {"loext", "http://schemas.libreoffice.org/"}};
+            {"loext", "http://schemas.libreoffice.org/"}
+        };
 
     return *namespaces;
 }
@@ -156,4 +169,5 @@ const std::string &constants::ns(const std::string &id)
 
     return match->second;
 }
-}
+
+} // namespace xlnt

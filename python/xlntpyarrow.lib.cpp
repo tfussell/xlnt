@@ -38,7 +38,7 @@ void import_pyarrow()
     {
         if (arrow::py::import_pyarrow() != 0)
         {
-            throw std::runtime_error("Import of pyarrow failed.");
+            throw xlnt::exception("Import of pyarrow failed.");
         }
 
         imported = true;
@@ -156,7 +156,7 @@ arrow::ArrayBuilder *make_array_builder(arrow::Type::type type)
         break;
 */
     default:
-        throw std::runtime_error("not implemented");
+        throw xlnt::exception("not implemented");
     }
 
     return builder;
@@ -322,7 +322,7 @@ void append_cell_value(arrow::ArrayBuilder *builder, arrow::Type::type type, xln
         break;
 */
     default:
-        throw std::runtime_error("not implemented");
+        throw xlnt::exception("not implemented");
     }
 }
 

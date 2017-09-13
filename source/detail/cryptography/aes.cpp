@@ -31,7 +31,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "aes.hpp"
+#include <detail/cryptography/aes.hpp>
+#include <xlnt/utils/exceptions.hpp>
 
 namespace {
 
@@ -959,7 +960,9 @@ rijndael_key rijndael_setup(const std::vector<std::uint8_t> &key_data)
 
     if (key_data.size() != 16 && key_data.size() != 24 && key_data.size() != 32)
     {
-        throw std::runtime_error("");
+        throw xlnt::exception("Invalid AES key length ("
+            + std::to_string(key_data.size())
+            + " bytes). Must be 16, 24 or 32 bytes.");
     }
 
     skey.Nr = 10 + ((static_cast<int>(key_data.size())/8)-2)*2;
@@ -1029,8 +1032,6 @@ rijndael_key rijndael_setup(const std::vector<std::uint8_t> &key_data)
             rk[15] = rk[ 7] ^ rk[14];
             rk += 8;
         }
-    } else {
-        throw std::runtime_error("");
     }
 
     /* setup the inverse key now */
@@ -1347,7 +1348,9 @@ std::vector<std::uint8_t> aes_ecb_encrypt(
 
     if (len % 16 != 0)
     {
-        throw std::runtime_error("");
+        throw xlnt::exception("Invalid ECB plaintext length ("
+            + std::to_string(len)
+            + " bytes). Must be a multiple of 16 bytes.");
     }
 
     auto ciphertext = std::vector<std::uint8_t>(len);
@@ -1378,7 +1381,9 @@ std::vector<std::uint8_t> aes_ecb_decrypt(
 
     if (len % 16 != 0)
     {
-        throw std::runtime_error("");
+      throw xlnt::exception("Invalid ECB ciphertext length ("
+          + std::to_string(len)
+          + " bytes). Must be a multiple of 16 bytes.");
     }
 
     auto plaintext = std::vector<std::uint8_t>(len);
@@ -1410,7 +1415,9 @@ std::vector<std::uint8_t> aes_cbc_encrypt(
 
     if (len % 16 != 0)
     {
-        throw std::runtime_error("");
+      throw xlnt::exception("Invalid CBC plaintext length ("
+          + std::to_string(len)
+          + " bytes). Must be a multiple of 16 bytes.");
     }
 
     auto ciphertext = std::vector<std::uint8_t>(len);
@@ -1454,7 +1461,9 @@ std::vector<std::uint8_t> aes_cbc_decrypt(
 
     if (ciphertext.size() % 16 != 0)
     {
-        throw std::runtime_error("");
+      throw xlnt::exception("Invalid ECB ciphertext length ("
+          + std::to_string(len)
+          + " bytes). Must be a multiple of 16 bytes.");
     }
 
     std::array<std::uint8_t, 16> temporary{{0}};
