@@ -427,6 +427,10 @@ PYBIND11_MODULE(lib, m)
         .def("column", [](xlnt::cell &cell)
             {
                 return cell.column().index;
+            })
+        .def("format_is_date", [](xlnt::cell &cell)
+            {
+                return cell.has_format() && cell.number_format().is_date_format();
             });
 
     pybind11::enum_<xlnt::cell::type>(cell, "Type")

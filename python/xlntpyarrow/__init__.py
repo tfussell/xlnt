@@ -63,7 +63,10 @@ def xlsx2arrow(io, sheetname):
                 continue
             elif cell.row() == 2:
                 column_name = column_names[cell.column() - 1]
-                fields.append(pa.field(column_name, COLUMN_TYPE_FIELD[type]()))
+                if type == xpa.Cell.Type.Number and cell.format_is_date():
+                    fields.append(pa.field(column_name, pa.date32))
+                else:
+                    fields.append(pa.field(column_name, COLUMN_TYPE_FIELD[type]()))
                 first_batch.append(cell_to_pyarrow_array(cell, fields[-1].type))
                 if cell.column() == max_column:
                     schema = pa.schema(fields)
