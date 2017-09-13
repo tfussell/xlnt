@@ -41,6 +41,7 @@ public:
         register_test(test_month_name);
         register_test(test_basic);
         register_test(test_simple_format);
+        register_test(test_upper_case_date);
         register_test(test_simple_date);
         register_test(test_short_day);
         register_test(test_long_day);
@@ -122,7 +123,7 @@ public:
         xlnt::number_format id("General", 200);
         xlnt_assert_equals(id.id(), 200);
         xlnt_assert_equals(id.format_string(), "General");
-        
+
         xlnt::number_format general(0);
         xlnt_assert_equals(general, xlnt::number_format::general());
         xlnt_assert_equals(general.id(), 0);
@@ -150,6 +151,18 @@ public:
         xlnt_assert_equals(formatted, "negative3.14");
         formatted = nf.format(0, xlnt::calendar::windows_1900);
         xlnt_assert_equals(formatted, "zero0");
+    }
+
+    void test_upper_case_date()
+    {
+        auto date = xlnt::date(2016, 6, 18);
+        auto date_number = date.to_number(xlnt::calendar::windows_1900);
+
+        xlnt::number_format nf;
+        nf.format_string("MM / DD / YYYY");
+        auto formatted = nf.format(date_number, xlnt::calendar::windows_1900);
+
+        xlnt_assert_equals(formatted, "06 / 18 / 2016");
     }
 
     void test_simple_date()
@@ -303,7 +316,7 @@ public:
 
         xlnt_assert_equals(formatted, "03.4");
     }
-    
+
     void test_second_fractional()
     {
         auto time = xlnt::time(1, 2, 3, 400000);
@@ -565,7 +578,7 @@ public:
         auto formatted = nf.format(6, xlnt::calendar::windows_1900);
         xlnt_assert_equals(formatted, " 6 ");
     }
-    
+
     void test_fill()
     {
         xlnt::number_format nf;
@@ -640,7 +653,7 @@ public:
         formatted = nf.format(-45000.1, xlnt::calendar::windows_1900);
         xlnt_assert_equals(formatted, "-$45,000.10");
     }
-    
+
     void test_bad_country()
     {
         xlnt::number_format nf;
@@ -729,12 +742,12 @@ public:
         nf.format_string("[White]#");
         formatted = nf.format(6, xlnt::calendar::windows_1900);
         xlnt_assert_equals(formatted, "6");
-        
+
         nf.format_string("[Color15]#");
         formatted = nf.format(6, xlnt::calendar::windows_1900);
         xlnt_assert_equals(formatted, "6");
     }
-    
+
     void test_bad_format()
     {
         xlnt::number_format nf;
@@ -869,25 +882,25 @@ public:
     {
         format_and_test(xlnt::number_format::date_time1(), {{"2:57 AM", "###########", "12:00 AM", "text"}});
     }
-    
+
     // h:mm:ss AM/PM
     void test_builtin_format_19()
     {
         format_and_test(xlnt::number_format::date_time2(), {{"2:57:42 AM", "###########", "12:00:00 AM", "text"}});
     }
-    
+
     // h:mm
     void test_builtin_format_20()
     {
         format_and_test(xlnt::number_format::date_time3(), {{"2:57", "###########", "0:00", "text"}});
     }
-    
+
     // h:mm:ss
     void test_builtin_format_21()
     {
         format_and_test(xlnt::number_format::date_time4(), {{"2:57:42", "###########", "0:00:00", "text"}});
     }
-    
+
     // m/d/yy h:mm
     void test_builtin_format_22()
     {

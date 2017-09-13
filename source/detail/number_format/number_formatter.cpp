@@ -609,6 +609,11 @@ void number_format_parser::finalize()
 number_format_token number_format_parser::parse_next_token()
 {
     number_format_token token;
+    
+    auto to_lower = [](char c)
+    {
+        return static_cast<char>(std::tolower(static_cast<std::uint8_t>(c)));
+    };
 
     if (format_string_.size() <= position_)
     {
@@ -714,16 +719,21 @@ number_format_token number_format_parser::parse_next_token()
         break;
 
     case 'y':
+    case 'Y':
     case 'm':
+    case 'M':
     case 'd':
+    case 'D':
     case 'h':
+    case 'H':
     case 's':
+    case 'S':
         token.type = number_format_token::token_type::datetime;
-        token.string.push_back(current_char);
+        token.string.push_back(to_lower(current_char));
 
         while (format_string_[position_] == current_char)
         {
-            token.string.push_back(current_char);
+            token.string.push_back(to_lower(current_char));
             ++position_;
         }
 
