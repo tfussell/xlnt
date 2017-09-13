@@ -94,6 +94,7 @@ public:
         register_test(test_named_range_named_cell_reference);
         register_test(test_iteration_skip_empty);
         register_test(test_dimensions);
+        register_test(test_view_properties_serialization);
     }
 
     void test_new_worksheet()
@@ -1101,5 +1102,32 @@ public:
         xlnt_assert(!sheet_range.is_single_cell());
         xlnt_assert_equals(sheet_range.width(), 4);
         xlnt_assert_equals(sheet_range.height(), 35);
+    }
+
+    void test_view_properties_serialization()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.active_sheet();
+
+        ws.cell("A1").value("A1");
+        ws.cell("A2").value("A2");
+        ws.cell("B1").value("B1");
+        ws.cell("B2").value("B2");
+
+        xlnt_assert(!ws.has_active_cell());
+
+        ws.active_cell("B1");
+
+        xlnt_assert(ws.has_active_cell());
+        xlnt_assert_equals(ws.active_cell(), "B1");
+
+        wb.save("temp.xlsx");
+
+        xlnt::workbook wb2;
+        wb2.load("temp.xlsx");
+        auto ws2 = wb2.active_sheet();
+
+        xlnt_assert(ws2.has_active_cell());
+        xlnt_assert_equals(ws2.active_cell(), "B1");
     }
 };

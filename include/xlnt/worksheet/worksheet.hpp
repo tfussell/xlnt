@@ -630,6 +630,21 @@ public:
     /// </summary>
     void add_view(const sheet_view &new_view);
 
+    /// <summary>
+    /// Set the active cell on the default worksheet view to the given reference.
+    /// </summary>
+    void active_cell(const cell_reference &ref);
+
+    /// <summary>
+    /// Returns true if the worksheet has a view and the view has an active cell.
+    /// </summary>
+    bool has_active_cell() const;
+
+    /// <summary>
+    /// Returns the active cell on the default worksheet view.
+    /// </summary>
+    cell_reference active_cell() const;
+
     // page breaks
 
     /// <summary>
@@ -658,10 +673,10 @@ public:
     /// </summary>
     void page_break_at_column(column_t column);
 
-	/// <summary>
-	/// Creates a conditional format for the given range with the given condition.
-	/// </summary>
-	xlnt::conditional_format conditional_format(const range_reference &ref, const condition &when);
+    /// <summary>
+    /// Creates a conditional format for the given range with the given condition.
+    /// </summary>
+    xlnt::conditional_format conditional_format(const range_reference &ref, const condition &when);
 
 private:
     friend class cell;
@@ -690,7 +705,7 @@ private:
     /// Removes calcChain part from manifest if no formulae remain in workbook.
     /// </summary>
     void garbage_collect_formulae();
-    
+
     /// <summary>
     /// Sets the parent of this worksheet to wb.
     /// </summary>

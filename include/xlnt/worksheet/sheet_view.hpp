@@ -193,14 +193,16 @@ public:
     }
 
     /// <summary>
-    /// Returns true if this view is requal to rhs based on its id, grid lines setting,
+    /// Returns true if this view is equal to rhs based on its id, grid lines setting,
     /// default grid color, pane, and selections.
     /// </summary>
     bool operator==(const sheet_view &rhs) const
     {
-        return id_ == rhs.id_ && show_grid_lines_ == rhs.show_grid_lines_
+        return id_ == rhs.id_
+            && show_grid_lines_ == rhs.show_grid_lines_
             && default_grid_color_ == rhs.default_grid_color_
-            && pane_ == rhs.pane_ && selections_ == rhs.selections_;
+            && pane_ == rhs.pane_
+            && selections_ == rhs.selections_;
     }
 
 private:

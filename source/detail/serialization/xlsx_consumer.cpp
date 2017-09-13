@@ -39,6 +39,7 @@
 #include <xlnt/utils/optional.hpp>
 #include <xlnt/utils/path.hpp>
 #include <xlnt/workbook/workbook.hpp>
+#include <xlnt/worksheet/selection.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
 namespace std {
@@ -222,7 +223,7 @@ cell xlsx_consumer::read_cell()
     {
 		    cell.format(target_.format(std::stoull(parser().attribute("s"))));
     }
-	
+
     auto has_value = false;
     auto value_string = std::string();
 
@@ -418,7 +419,8 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
 
                 if (parser().attribute_present("view") && parser().attribute("view") != "normal")
                 {
-                    new_view.type(parser().attribute("view") == "pageBreakPreview" ? sheet_view_type::page_break_preview
+                    new_view.type(parser().attribute("view") == "pageBreakPreview"
+                        ? sheet_view_type::page_break_preview
                         : sheet_view_type::page_layout);
                 }
 
@@ -463,6 +465,17 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
                     }
                     else if (sheet_view_child_element == qn("spreadsheetml", "selection")) // CT_Selection 0-4
                     {
+                        selection current_selection;
+
+                        if (parser().attribute_present("activeCell"))
+                        {
+                            current_selection.active_cell(parser().attribute("activeCell"));
+                        }
+                        
+                        current_selection.pane(pane_corner::top_left);
+
+                        new_view.add_selection(current_selection);
+
                         skip_remaining_content(sheet_view_child_element);
                     }
                     else if (sheet_view_child_element == qn("spreadsheetml", "pivotSelection")) // CT_PivotSelection 0-4
@@ -596,7 +609,7 @@ void xlsx_consumer::read_worksheet_sheetdata()
 
             auto has_type = parser().attribute_present("t");
             auto type = has_type ? parser().attribute("t") : "n";
-			
+
             if (parser().attribute_present("s"))
             {
 		            cell.format(target_.format(std::stoull(parser().attribute("s"))));

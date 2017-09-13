@@ -350,6 +350,51 @@ void worksheet::unfreeze_panes()
     primary_view.clear_pane();
 }
 
+void worksheet::active_cell(const cell_reference &ref)
+{
+    if (!has_view())
+    {
+        d_->views_.push_back(sheet_view());
+    }
+
+    auto &primary_view = d_->views_.front();
+
+    if (!primary_view.has_selections())
+    {
+        primary_view.add_selection(selection());
+    }
+
+    auto &primary_selection = primary_view.selection(0);
+    primary_selection.active_cell(ref);
+}
+
+bool worksheet::has_active_cell() const
+{
+    if (!has_view()) return false;
+    auto &primary_view = d_->views_.front();
+    if (!primary_view.has_selections()) return false;
+    auto primary_selection = primary_view.selection(0);
+
+    return primary_selection.has_active_cell();
+}
+
+cell_reference worksheet::active_cell() const
+{
+    if (!has_view())
+    {
+        throw xlnt::exception("Worksheet has no view.");
+    }
+
+    auto &primary_view = d_->views_.front();
+
+    if (!primary_view.has_selections())
+    {
+        throw xlnt::exception("Default worksheet view has no selections.");
+    }
+
+    return primary_view.selection(0).active_cell();
+}
+
 cell worksheet::cell(const cell_reference &reference)
 {
     auto &row = d_->cell_map_[reference.row()];
