@@ -22,6 +22,7 @@
 // @author: see AUTHORS file
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 
 #include <detail/default_case.hpp>
