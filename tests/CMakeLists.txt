@@ -9,8 +9,7 @@ if(NOT COMBINED_PROJECT)
   add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../source ${CMAKE_CURRENT_BINARY_DIR}/source)
 endif()
 
-if(MSVC AND STATIC)
-  # Link with static C runtime
+if(STATIC_CRT)
   include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ucm.cmake)
   ucm_set_runtime(STATIC)
 endif()

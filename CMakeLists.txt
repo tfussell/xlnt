@@ -14,7 +14,9 @@ option(BENCHMARKS "Set to ON to build performance benchmarks (in ./benchmarks)" 
 option(PYTHON "Set to ON to build Arrow conversion functions (in ./python)" OFF)
 
 # Platform specific options
-if(NOT MSVC)
+if(MSVC)
+  option(STATIC_CRT "Link with the static version of MSVCRT (/MD[d])" OFF)
+else()
   option(COVERAGE "Generate coverage data using gcov" OFF)
 endif()
 

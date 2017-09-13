@@ -45,8 +45,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-pragmas") # ignore Windows and GCC pragmas
 endif()
 
-if(MSVC AND STATIC)
-  # Link with static C runtime
+if(STATIC_CRT)
   include(${XLNT_ROOT_DIR}/cmake/ucm.cmake)
   ucm_set_runtime(STATIC)
 endif()
