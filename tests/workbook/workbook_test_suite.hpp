@@ -56,6 +56,7 @@ public:
         register_test(test_memory);
         register_test(test_clear);
         register_test(test_comparison);
+        register_test(test_id_gen);
     }
 
     void test_active_sheet()
@@ -78,6 +79,7 @@ public:
         auto new_sheet = wb.create_sheet();
         new_sheet.cell("A6").value(1.498);
         wb.copy_sheet(new_sheet);
+        xlnt_assert_differs(wb[1].id(), wb[2].id());
         xlnt_assert(wb[1].compare(wb[2], false));
         wb.create_sheet().cell("A6").value(1.497);
         xlnt_assert(!wb[1].compare(wb[3], false));
@@ -326,5 +328,15 @@ public:
         wb.create_style("style1");
         wb.style("style1");
         wb_const.style("style1");
+    }
+
+    void test_id_gen()
+    {
+        xlnt::workbook wb;
+        wb.create_sheet();
+        wb.create_sheet();
+        wb.remove_sheet(wb[1]);
+        wb.create_sheet();
+        xlnt_assert_differs(wb[1].id(), wb[2].id());
     }
 };

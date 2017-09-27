@@ -700,7 +700,11 @@ worksheet workbook::create_sheet()
         title = "Sheet" + std::to_string(++index);
     }
 
-    auto sheet_id = d_->worksheets_.size() + 1;
+    size_t sheet_id = 1;
+    for (const auto ws : *this)
+    {
+        sheet_id = std::max(sheet_id, ws.id() + 1);
+    }
     std::string sheet_filename = "sheet" + std::to_string(sheet_id) + ".xml";
 
     d_->worksheets_.push_back(detail::worksheet_impl(this, sheet_id, title));
@@ -726,6 +730,7 @@ worksheet workbook::copy_sheet(worksheet to_copy)
     detail::worksheet_impl impl(*to_copy.d_);
     auto new_sheet = create_sheet();
     impl.title_ = new_sheet.title();
+    impl.id_ = new_sheet.id();
     *new_sheet.d_ = impl;
 
     return new_sheet;
