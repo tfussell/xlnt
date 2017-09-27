@@ -5,6 +5,7 @@
 #include <string>
 #include <sstream>
 
+#include <xlnt/utils/exceptions.hpp>
 #include <xlnt/utils/path.hpp>
 
 #define STRING_LITERAL2(a) #a
