@@ -504,7 +504,7 @@ void xlsx_producer::write_workbook(const relationship &rel)
             write_attribute("activeTab", view.active_tab.get());
         }
 
-        if (view.auto_filter_date_grouping)
+        if (!view.auto_filter_date_grouping)
         {
             write_attribute("autoFilterDateGrouping", write_bool(view.auto_filter_date_grouping));
         }
@@ -519,17 +519,17 @@ void xlsx_producer::write_workbook(const relationship &rel)
             write_attribute("minimized", write_bool(view.minimized));
         }
 
-        if (view.show_horizontal_scroll)
+        if (!view.show_horizontal_scroll)
         {
             write_attribute("showHorizontalScroll", write_bool(view.show_horizontal_scroll));
         }
 
-        if (view.show_sheet_tabs)
+        if (!view.show_sheet_tabs)
         {
             write_attribute("showSheetTabs", write_bool(view.show_sheet_tabs));
         }
 
-        if (view.show_vertical_scroll)
+        if (!view.show_vertical_scroll)
         {
             write_attribute("showVerticalScroll", write_bool(view.show_vertical_scroll));
         }
@@ -1000,10 +1000,7 @@ void xlsx_producer::write_fill(const fill &f)
 
 		write_start_element(xmlns, "patternFill");
 
-		if (pattern.type() != pattern_fill_type::none)
-		{
-			write_attribute("patternType", pattern.type());
-		}
+		write_attribute("patternType", pattern.type());
 
 		if (pattern.foreground().is_set())
 		{

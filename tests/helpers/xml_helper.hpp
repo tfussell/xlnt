@@ -108,7 +108,7 @@ public:
                 {
                     break;
                 }
-                
+
                 if (left_parser.qname() != right_parser.qname())
                 {
                     difference = true;
@@ -202,7 +202,7 @@ public:
             }
             std::cout << std::endl;
         }
-        
+
         bool match = true;
 
         xlnt::workbook left_workbook;
@@ -210,7 +210,7 @@ public:
 
         xlnt::workbook right_workbook;
         right_workbook.load(right);
-        
+
         auto &left_manifest = left_workbook.manifest();
         auto &right_manifest = right_workbook.manifest();
 
@@ -228,7 +228,7 @@ public:
 
                 break;
             }
-            
+
             auto left_content_type = left_member.string() == "[Content_Types].xml"
                 ? "[Content_Types].xml" : left_manifest.content_type(left_member);
             auto right_content_type = left_member.string() == "[Content_Types].xml"

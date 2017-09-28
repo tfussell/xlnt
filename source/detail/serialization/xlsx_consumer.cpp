@@ -1372,6 +1372,8 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
     {
         throw xlnt::invalid_file(content_type);
     }
+    
+    target_.d_->calculation_properties_.clear();
 
     expect_start_element(qn("workbook", "workbook"), xml::content::complex);
     skip_attribute(qn("mc", "Ignorable"));
@@ -1513,7 +1515,17 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
         }
         else if (current_workbook_element == qn("workbook", "calcPr")) // CT_CalcPr 0-1
         {
-            skip_remaining_content(current_workbook_element);
+            xlnt::calculation_properties calc_props;
+            if (parser().attribute_present("calcId"))
+            {
+                calc_props.calc_id = parser().attribute<std::size_t>("calcId");
+            }
+            if (parser().attribute_present("concurrentCalc"))
+            {
+                calc_props.concurrent_calc = is_true(parser().attribute("concurrentCalc"));
+            }
+            target_.calculation_properties(calc_props);
+            parser().attribute_map(); // skip remaining
         }
         else if (current_workbook_element == qn("workbook", "oleSize")) // CT_OleSize 0-1
         {
