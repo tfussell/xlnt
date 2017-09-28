@@ -14,7 +14,7 @@ COLUMN_TYPE_FIELD = {
 
 def cell_to_pyarrow_array(cell, type):
     if cell.data_type() == xpa.Cell.Type.Number:
-        return pa.array([cell.value_long_double()], type)
+        return pa.array([cell.value_double()], type)
     elif cell.data_type() == xpa.Cell.Type.SharedString:
         return pa.array([cell.value_string()], type)
     elif cell.data_type() == xpa.Cell.Type.InlineString:
