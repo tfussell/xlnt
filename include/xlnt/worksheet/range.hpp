@@ -91,6 +91,11 @@ public:
     range(const range &) = default;
 
     /// <summary>
+    /// Erases all cell data from the worksheet for cells within this range.
+    /// </summary>
+    void clear_cells();
+
+    /// <summary>
     /// Returns a vector pointing to the n-th row or column in this range (depending
     /// on major order).
     /// </summary>

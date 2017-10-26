@@ -36,6 +36,7 @@ public:
     range_test_suite()
     {
         register_test(test_batch_formatting);
+        register_test(test_clear_cells);
     }
 
     void test_batch_formatting()
@@ -65,5 +66,20 @@ public:
         xlnt_assert(ws.cell("B1").font().bold());
 
         xlnt_assert(!ws.cell("B2").has_format());
+    }
+    
+    void test_clear_cells()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.active_sheet();
+        ws.cell("A1").value("A1");
+        ws.cell("A3").value("A3");
+        ws.cell("C1").value("C1");
+        ws.cell("B2").value("B2");
+        ws.cell("C3").value("C3");
+        xlnt_assert_equals(ws.calculate_dimension(), xlnt::range_reference(1, 1, 3, 3));
+        auto range = ws.range("B1:C3");
+        range.clear_cells();
+        xlnt_assert_equals(ws.calculate_dimension(), xlnt::range_reference(1, 1, 1, 3));
     }
 };

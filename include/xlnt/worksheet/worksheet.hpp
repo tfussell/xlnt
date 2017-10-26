@@ -258,6 +258,16 @@ public:
     //TODO: finish implementing cell_iterator wrapping before uncommenting
     //const class cell_vector cells(bool skip_null = true) const;
 
+    /// <summary>
+    /// Clears memory used by the given cell.
+    /// </summary>
+    void clear_cell(const cell_reference &ref);
+
+    /// <summary>
+    /// Clears memory used by all cells in the given row.
+    /// </summary>
+    void clear_row(row_t row);
+
     // properties
 
     /// <summary>

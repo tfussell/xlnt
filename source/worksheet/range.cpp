@@ -43,6 +43,29 @@ range::~range()
 {
 }
 
+void range::clear_cells()
+{
+    if (ref_.top_left().column() == ws_.lowest_column()
+        && ref_.bottom_right().column() == ws_.highest_column())
+    {
+        for (auto row = ref_.top_left().row(); row <= ref_.bottom_right().row(); ++row)
+        {
+            ws_.clear_row(row);
+        }
+    }
+    else
+    {
+        for (auto row = ref_.top_left().row(); row <= ref_.bottom_right().row(); ++row)
+        {
+            for (auto column = ref_.top_left().column(); column <= ref_.bottom_right().column(); ++column)
+            {
+                ws_.clear_cell(xlnt::cell_reference(column, row));
+            }
+        }
+    }
+    
+}
+
 cell_vector range::operator[](std::size_t index)
 {
     return vector(index);

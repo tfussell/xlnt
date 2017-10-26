@@ -679,6 +679,18 @@ const cell_vector worksheet::cells(bool skip_null) const
 }
 */
 
+void worksheet::clear_cell(const cell_reference &ref)
+{
+    d_->cell_map_.at(ref.row()).erase(ref.column());
+    // TODO: garbage collect newly unreferenced resources such as styles?
+}
+
+void worksheet::clear_row(row_t row)
+{
+    d_->cell_map_.erase(row);
+    // TODO: garbage collect newly unreferenced resources such as styles?
+}
+
 bool worksheet::operator==(const worksheet &other) const
 {
     return compare(other, true);

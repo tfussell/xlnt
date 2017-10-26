@@ -95,6 +95,8 @@ public:
         register_test(test_iteration_skip_empty);
         register_test(test_dimensions);
         register_test(test_view_properties_serialization);
+        register_test(test_clear_cell);
+        register_test(test_clear_row);
     }
 
     void test_new_worksheet()
@@ -1129,5 +1131,57 @@ public:
 
         xlnt_assert(ws2.has_active_cell());
         xlnt_assert_equals(ws2.active_cell(), "B1");
+    }
+
+    void test_clear_cell()
+    {
+        xlnt::workbook wb;
+        wb.load(path_helper::test_file("4_every_style.xlsx"));
+
+        auto ws = wb.active_sheet();
+        auto height = ws.calculate_dimension().height();
+        auto last_row = ws.highest_row();
+
+        xlnt_assert(ws.has_cell(xlnt::cell_reference(1, last_row)));
+
+        ws.clear_cell(xlnt::cell_reference(1, last_row));
+
+        xlnt_assert(!ws.has_cell(xlnt::cell_reference(1, last_row)));
+        xlnt_assert_equals(ws.highest_row(), last_row);
+
+        wb.save("temp.xlsx");
+        
+        xlnt::workbook wb2;
+        wb2.load("temp.xlsx");
+        auto ws2 = wb2.active_sheet();
+        
+        xlnt_assert_equals(ws2.calculate_dimension().height(), height);
+        xlnt_assert(!ws2.has_cell(xlnt::cell_reference(1, last_row)));
+    }
+
+    void test_clear_row()
+    {
+        xlnt::workbook wb;
+        wb.load(path_helper::test_file("4_every_style.xlsx"));
+
+        auto ws = wb.active_sheet();
+        auto height = ws.calculate_dimension().height();
+        auto last_row = ws.highest_row();
+
+        xlnt_assert(ws.has_cell(xlnt::cell_reference(1, last_row)));
+
+        ws.clear_row(last_row);
+
+        xlnt_assert(!ws.has_cell(xlnt::cell_reference(1, last_row)));
+        xlnt_assert_equals(ws.highest_row(), last_row - 1);
+
+        wb.save("temp.xlsx");
+        
+        xlnt::workbook wb2;
+        wb2.load("temp.xlsx");
+        auto ws2 = wb2.active_sheet();
+        
+        xlnt_assert_equals(ws2.calculate_dimension().height(), height - 1);
+        xlnt_assert(!ws2.has_cell(xlnt::cell_reference(1, last_row)));
     }
 };
