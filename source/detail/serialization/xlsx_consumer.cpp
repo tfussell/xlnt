@@ -2110,7 +2110,7 @@ void xlsx_consumer::read_stylesheet()
                 record.first.quote_prefix_ = parser().attribute_present("quotePrefix")
                     && is_true(parser().attribute("quotePrefix"));
 
-                if (parser().attribute_present("xfId") && parser().name() == "cellXfs")
+                if (parser().attribute_present("xfId"))
                 {
                     record.second = parser().attribute<std::size_t>("xfId");
                 }
@@ -2265,30 +2265,7 @@ void xlsx_consumer::read_stylesheet()
     }
 
     expect_end_element(qn("spreadsheetml", "styleSheet"));
-/*
-    auto lookup_number_format = [&](std::size_t number_format_id) {
-        auto result = number_format::general();
-        bool is_custom_number_format = false;
 
-        for (const auto &nf : stylesheet.number_formats)
-        {
-            if (nf.id() == number_format_id)
-            {
-                result = nf;
-                is_custom_number_format = true;
-                break;
-            }
-        }
-
-        if (number_format_id < 164 && !is_custom_number_format)
-        {
-            result = number_format::from_builtin_id(number_format_id);
-        }
-
-        return result;
-    };
-*/
-    /*
     std::size_t xf_id = 0;
 
     for (const auto &record : style_records)
@@ -2300,11 +2277,28 @@ void xlsx_consumer::read_stylesheet()
         if (style_iter == styles.end()) continue;
 
         auto new_style = stylesheet.create_style(style_iter->first.name);
-        *new_style.d_ = style_iter->first;
 
-        (void)record;
+        new_style.d_->pivot_button_ = style_iter->first.pivot_button_;
+        new_style.d_->quote_prefix_ = style_iter->first.quote_prefix_;
+        new_style.d_->formatting_record_id = style_iter->first.formatting_record_id;
+        new_style.d_->hidden_style = style_iter->first.hidden_style;
+        new_style.d_->custom_builtin = style_iter->first.custom_builtin;
+        new_style.d_->hidden_style = style_iter->first.hidden_style;
+        new_style.d_->builtin_id = style_iter->first.builtin_id;
+        new_style.d_->outline_style = style_iter->first.outline_style;
+
+        new_style.d_->alignment_applied = record.first.alignment_applied;
+        new_style.d_->alignment_id = record.first.alignment_id;
+        new_style.d_->border_applied = record.first.border_applied;
+        new_style.d_->border_id = record.first.border_id;
+        new_style.d_->fill_applied = record.first.fill_applied;
+        new_style.d_->fill_id = record.first.fill_id;
+        new_style.d_->font_applied = record.first.font_applied;
+        new_style.d_->font_id = record.first.font_id;
+        new_style.d_->number_format_applied = record.first.number_format_applied;
+        new_style.d_->number_format_id = record.first.number_format_id;
     }
-    */
+
     std::size_t record_index = 0;
 
     for (const auto &record : format_records)
@@ -2331,6 +2325,8 @@ void xlsx_consumer::read_stylesheet()
         new_format.protection_applied = record.first.protection_applied;
         new_format.pivot_button_ = record.first.pivot_button_;
         new_format.quote_prefix_ = record.first.quote_prefix_;
+
+        new_format.style = styles.at(record.second).first.name;
     }
 }
 
