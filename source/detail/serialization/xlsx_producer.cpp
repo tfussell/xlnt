@@ -2177,6 +2177,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
     {
         auto first_column = constants::max_column();
         auto last_column = constants::min_column();
+
         bool any_non_null = false;
 
         for (auto column = dimension.top_left().column(); column <= dimension.bottom_right().column(); ++column)
