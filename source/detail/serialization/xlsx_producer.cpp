@@ -2175,8 +2175,14 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
     write_start_element(xmlns, "sheetData");
 
-    for (auto row : ws.rows())
+    for (auto row : ws.rows(false))
     {
+        auto row_index = row.front().row();
+
+        write_start_element(xmlns, "row");
+
+        write_attribute("r", row_index);
+
         auto min = static_cast<xlnt::row_t>(row.length());
         xlnt::row_t max = 0;
         bool any_non_null = false;
@@ -2192,21 +2198,16 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             }
         }
 
-        if (!any_non_null)
+        if (any_non_null)
         {
-            continue;
+            write_attribute("spans", std::to_string(min) + ":" + std::to_string(max));
         }
 
-        write_start_element(xmlns, "row");
-
-        write_attribute("r", row.front().row());
-        write_attribute("spans", std::to_string(min) + ":" + std::to_string(max));
-
-        if (ws.has_row_properties(row.front().row()))
+        if (ws.has_row_properties(row_index))
         {
-            const auto &props = ws.row_properties(row.front().row());
+            const auto &props = ws.row_properties(row_index);
 
-            if (props.custom_height)
+            if (props.custom_height || props.height.is_set())
             {
                 write_attribute("customHeight", write_bool(true));
             }
