@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2014-2017 Thomas Fussell
+// Copyright (c) 2014-2017 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -56,8 +56,20 @@ public:
         register_test(test_read_formulae);
         register_test(test_read_headers_and_footers);
         register_test(test_read_custom_properties);
-        register_test(test_round_trip_rw);
-        register_test(test_round_trip_rw_encrypted);
+        register_test(test_read_custom_heights_widths);
+        register_test(test_write_custom_heights_widths);
+        register_test(test_round_trip_rw_minimal);
+        register_test(test_round_trip_rw_default);
+        register_test(test_round_trip_rw_every_style);
+        register_test(test_round_trip_rw_unicode);
+        register_test(test_round_trip_rw_comments_hyperlinks_formulae);
+        register_test(test_round_trip_rw_print_settings);
+        register_test(test_round_trip_rw_advanced_properties);
+        register_test(test_round_trip_rw_custom_heights_widths);
+        register_test(test_round_trip_rw_encrypted_agile);
+        register_test(test_round_trip_rw_encrypted_libre);
+        register_test(test_round_trip_rw_encrypted_standard);
+        register_test(test_round_trip_rw_encrypted_numbers);
         register_test(test_streaming_read);
         register_test(test_streaming_write);
     }
@@ -376,6 +388,55 @@ public:
         xlnt_assert(wb.has_custom_property("Client"));
         xlnt_assert_equals(wb.custom_property("Client").get<std::string>(), "me!");
     }
+    
+    void test_read_custom_heights_widths()
+    {
+        xlnt::workbook wb;
+        wb.load(path_helper::test_file("13_custom_heights_widths.xlsx"));
+        auto ws = wb.active_sheet();
+
+        xlnt_assert_equals(ws.cell("A1").value<std::string>(), "170xd");
+        xlnt_assert_equals(ws.cell("B1").value<std::string>(), "40xd");
+        xlnt_assert_equals(ws.cell("C1").value<std::string>(), "dxd");
+        xlnt_assert_equals(ws.cell("A2").value<std::string>(), "170x30");
+        xlnt_assert_equals(ws.cell("B2").value<std::string>(), "40x30");
+        xlnt_assert_equals(ws.cell("C2").value<std::string>(), "dx30");
+        xlnt_assert_equals(ws.cell("A3").value<std::string>(), "170x10");
+        xlnt_assert_equals(ws.cell("B3").value<std::string>(), "40x10");
+        xlnt_assert_equals(ws.cell("C3").value<std::string>(), "dx10");
+
+        xlnt_assert(!ws.row_properties(1).height.is_set());
+        xlnt_assert_equals(ws.row_properties(2).height.get(), 30);
+        xlnt_assert_equals(ws.row_properties(3).height.get(), 10);
+        xlnt_assert_delta(ws.column_properties("A").width.get(), 27.617745535714285, 1.0E-9);
+        xlnt_assert_delta(ws.column_properties("B").width.get(), 5.9497767857142856, 1.0E-9);
+        xlnt_assert(!ws.column_properties("C").width.is_set());
+    }
+
+    void test_write_custom_heights_widths()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.active_sheet();
+
+        ws.cell("A1").value("170xd");
+        ws.cell("B1").value("40xd");
+        ws.cell("C1").value("dxd");
+        ws.cell("A2").value("170x30");
+        ws.cell("B2").value("40x30");
+        ws.cell("C2").value("dx30");
+        ws.cell("A3").value("170x10");
+        ws.cell("B3").value("40x10");
+        ws.cell("C3").value("dx10");
+
+        ws.row_properties(2).height = 30;
+        ws.row_properties(3).height = 10;
+
+        ws.column_properties("A").width = 27.617745535714285;
+        ws.column_properties("B").width = 5.9497767857142856;
+        
+        wb.save("temp.xlsx");
+        xlnt_assert(workbook_matches_file(wb, path_helper::test_file("13_custom_heights_widths.xlsx")));
+    }
 
     /// <summary>
     /// Read file as an XLSX-formatted ZIP file in the filesystem to a workbook,
@@ -422,45 +483,65 @@ public:
         //return source_data == destination_data;
         return true;
     }
-
-    void test_round_trip_rw()
+    
+    void test_round_trip_rw_minimal()
     {
-        const auto files = std::vector<std::string>
-        {
-            "2_minimal",
-            "3_default",
-            "4_every_style",
-            u8"9_unicode_Λ",
-            "10_comments_hyperlinks_formulae",
-            "11_print_settings",
-            "12_advanced_properties"
-        };
-
-        for (const auto file : files)
-        {
-            auto path = path_helper::test_file(file + ".xlsx");
-            xlnt_assert(round_trip_matches_rw(path));
-        }
+        xlnt_assert(round_trip_matches_rw(path_helper::test_file("2_minimal.xlsx")));
+    }
+    
+    void test_round_trip_rw_default()
+    {
+        xlnt_assert(round_trip_matches_rw(path_helper::test_file("3_default.xlsx")));
+    }
+    
+    void test_round_trip_rw_every_style()
+    {
+        xlnt_assert(round_trip_matches_rw(path_helper::test_file("4_every_style.xlsx")));
+    }
+    
+    void test_round_trip_rw_unicode()
+    {
+        xlnt_assert(round_trip_matches_rw(path_helper::test_file(u8"9_unicode_Λ.xlsx")));
     }
 
-    void test_round_trip_rw_encrypted()
+    void test_round_trip_rw_comments_hyperlinks_formulae()
     {
-        const auto files = std::vector<std::string>
-        {
-            "5_encrypted_agile",
-            "6_encrypted_libre",
-            "7_encrypted_standard",
-            "8_encrypted_numbers"
-        };
+        xlnt_assert(round_trip_matches_rw(path_helper::test_file("10_comments_hyperlinks_formulae.xlsx")));
+    }
 
-        for (const auto file : files)
-        {
-            auto path = path_helper::test_file(file + ".xlsx");
-            auto password = std::string(file == "7_encrypted_standard" ? "password"
-                : file == "6_encrypted_libre" ? u8"пароль"
-                : "secret");
-            xlnt_assert(round_trip_matches_rw(path, password));
-        }
+    void test_round_trip_rw_print_settings()
+    {
+        xlnt_assert(round_trip_matches_rw(path_helper::test_file("11_print_settings.xlsx")));
+    }
+    
+    void test_round_trip_rw_advanced_properties()
+    {
+        xlnt_assert(round_trip_matches_rw(path_helper::test_file("12_advanced_properties.xlsx")));
+    }
+
+    void test_round_trip_rw_custom_heights_widths()
+    {
+        xlnt_assert(round_trip_matches_rw(path_helper::test_file("13_custom_heights_widths.xlsx")));
+    }
+    
+    void test_round_trip_rw_encrypted_agile()
+    {
+        xlnt_assert(round_trip_matches_rw(path_helper::test_file("5_encrypted_agile.xlsx"), "secret"));
+    }
+    
+    void test_round_trip_rw_encrypted_libre()
+    {
+        xlnt_assert(round_trip_matches_rw(path_helper::test_file("6_encrypted_libre.xlsx"), u8"пароль"));
+    }
+
+    void test_round_trip_rw_encrypted_standard()
+    {
+        xlnt_assert(round_trip_matches_rw(path_helper::test_file("7_encrypted_standard.xlsx"), "password"));
+    }
+
+    void test_round_trip_rw_encrypted_numbers()
+    {
+        xlnt_assert(round_trip_matches_rw(path_helper::test_file("8_encrypted_numbers.xlsx"), "secret"));
     }
 
     void test_streaming_read()
