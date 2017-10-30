@@ -371,9 +371,19 @@ public:
     row_t lowest_row() const;
 
     /// <summary>
+    /// Returns the row of the first non-empty cell or lowest row with properties in the worksheet.
+    /// </summary>
+    row_t lowest_row_or_props() const;
+
+    /// <summary>
     /// Returns the row of the last non-empty cell in the worksheet.
     /// </summary>
     row_t highest_row() const;
+
+    /// <summary>
+    /// Returns the row of the last non-empty cell or highest row with properties in the worksheet.
+    /// </summary>
+    row_t highest_row_or_props() const;
 
     /// <summary>
     /// Returns the row directly below the last non-empty cell in the worksheet.
@@ -386,9 +396,19 @@ public:
     column_t lowest_column() const;
 
     /// <summary>
+    /// Returns the column of the first non-empty cell or lowest column with properties in the worksheet.
+    /// </summary>
+    column_t lowest_column_or_props() const;
+
+    /// <summary>
     /// Returns the column of the last non-empty cell in the worksheet.
     /// </summary>
     column_t highest_column() const;
+
+    /// <summary>
+    /// Returns the column of the last non-empty cell or highest column with properties in the worksheet.
+    /// </summary>
+    column_t highest_column_or_props() const;
 
     /// <summary>
     /// Returns a range_reference pointing to the full range of non-empty cells in the worksheet.

@@ -2030,8 +2030,9 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
     write_start_element(xmlns, "dimension");
     const auto dimension = ws.calculate_dimension();
-    write_attribute(
-        "ref", dimension.is_single_cell() ? dimension.top_left().to_string() : dimension.to_string());
+    write_attribute("ref", dimension.is_single_cell()
+        ? dimension.top_left().to_string()
+        : dimension.to_string());
     write_end_element(xmlns, "dimension");
 
     if (ws.has_view())
@@ -2123,7 +2124,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
     {
         write_start_element(xmlns, "cols");
 
-        for (auto column = ws.lowest_column(); column <= ws.highest_column(); column++)
+        for (auto column = ws.lowest_column_or_props(); column <= ws.highest_column_or_props(); column++)
         {
             if (!ws.has_column_properties(column)) continue;
 
@@ -2172,16 +2173,20 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
     write_start_element(xmlns, "sheetData");
 
-    for (auto row : ws.rows())
+    for (auto row = ws.lowest_row_or_props(); row <= ws.highest_row_or_props(); ++row)
     {
-        auto min = static_cast<xlnt::row_t>(row.length());
-        xlnt::row_t max = 0;
+        auto first_column = constants::max_column();
+        auto last_column = constants::min_column();
         bool any_non_null = false;
 
-        for (auto cell : row)
+        for (auto column = dimension.top_left().column(); column <= dimension.bottom_right().column(); ++column)
         {
-            min = std::min(min, cell.column().index);
-            max = std::max(max, cell.column().index);
+            if (!ws.has_cell(cell_reference(column, row))) continue;
+
+            auto cell = ws.cell(cell_reference(column, row));
+
+            first_column = std::min(first_column, cell.column());
+            last_column = std::max(last_column, cell.column());
 
             if (!cell.garbage_collectible())
             {
@@ -2189,19 +2194,20 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             }
         }
 
-        if (!any_non_null)
-        {
-            continue;
-        }
+        if (!any_non_null && !ws.has_row_properties(row)) continue;
 
         write_start_element(xmlns, "row");
+        write_attribute("r", row);
 
-        write_attribute("r", row.front().row());
-        write_attribute("spans", std::to_string(min) + ":" + std::to_string(max));
-
-        if (ws.has_row_properties(row.front().row()))
+        if (any_non_null)
         {
-            const auto &props = ws.row_properties(row.front().row());
+            auto span_string = std::to_string(first_column.index) + ":" + std::to_string(last_column.index);
+            write_attribute("spans", span_string);
+        }
+
+        if (ws.has_row_properties(row))
+        {
+            const auto &props = ws.row_properties(row);
 
             if (props.custom_height)
             {
@@ -2228,130 +2234,137 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             }
         }
 
-        for (auto cell : row) // CT_Cell
+        if (any_non_null)
         {
-            if (cell.garbage_collectible()) continue;
-
-            // record data about the cell needed later
-
-            if (cell.has_comment())
+            for (auto column = dimension.top_left().column(); column <= dimension.bottom_right().column(); ++column)
             {
-                cells_with_comments.push_back(cell.reference());
-            }
+                if (!ws.has_cell(cell_reference(column, row))) continue;
 
-            if (cell.has_hyperlink())
-            {
-                hyperlink_references[cell.reference().to_string()] = reverse_hyperlink_references[cell.hyperlink()];
-            }
+                auto cell = ws.cell(cell_reference(column, row));
 
-            write_start_element(xmlns, "c");
+                if (cell.garbage_collectible()) continue;
 
-            // begin cell attributes
+                // record data about the cell needed later
 
-            write_attribute("r", cell.reference().to_string());
-
-            if (cell.has_format())
-            {
-                write_attribute("s", cell.format().d_->id);
-            }
-
-            switch (cell.data_type())
-            {
-	    case cell::type::empty:
-                break;
-
-	    case cell::type::boolean:
-                write_attribute("t", "b");
-                break;
-
-            case cell::type::date:
-                write_attribute("t", "d");
-                break;
-
-            case cell::type::error:
-                write_attribute("t", "e");
-                break;
-
-            case cell::type::inline_string:
-                write_attribute("t", "inlineStr");
-                break;
-
-            case cell::type::number:
-                write_attribute("t", "n");
-                break;
-
-            case cell::type::shared_string:
-                write_attribute("t", "s");
-                break;
-
-            case cell::type::formula_string:
-                write_attribute("t", "str");
-                break;
-            }
-
-            //write_attribute("cm", "");
-            //write_attribute("vm", "");
-            //write_attribute("ph", "");
-
-            // begin child elements
-
-            if (cell.has_formula())
-            {
-                write_element(xmlns, "f", cell.formula());
-            }
-
-            switch (cell.data_type())
-            {
-            case cell::type::empty:
-                break;
-
-            case cell::type::boolean:
-                write_element(xmlns, "v", write_bool(cell.value<bool>()));
-                break;
-
-            case cell::type::date:
-                write_element(xmlns, "v", cell.value<std::string>());
-                break;
-
-            case cell::type::error:
-                write_element(xmlns, "v", cell.value<std::string>());
-                break;
-
-            case cell::type::inline_string:
-                write_start_element(xmlns, "is");
-                // TODO: make a write_rich_text method and use that here
-                write_element(xmlns, "t", cell.value<std::string>());
-                write_end_element(xmlns, "is");
-                break;
-
-            case cell::type::number:
-                write_start_element(xmlns, "v");
-
-                if (is_integral(cell.value<double>()))
+                if (cell.has_comment())
                 {
-                    write_characters(static_cast<std::int64_t>(cell.value<double>()));
-                }
-                else
-                {
-                    std::stringstream ss;
-                    ss.precision(20);
-                    ss << cell.value<double>();
-                    write_characters(ss.str());
+                    cells_with_comments.push_back(cell.reference());
                 }
 
-                write_end_element(xmlns, "v");
-                break;
+                if (cell.has_hyperlink())
+                {
+                    hyperlink_references[cell.reference().to_string()] = reverse_hyperlink_references[cell.hyperlink()];
+                }
 
-            case cell::type::shared_string:
-                write_element(xmlns, "v", static_cast<std::size_t>(cell.d_->value_numeric_));
-                break;
+                write_start_element(xmlns, "c");
 
-            case cell::type::formula_string:
-                write_element(xmlns, "v", cell.value<std::string>());
-                break;
+                // begin cell attributes
+
+                write_attribute("r", cell.reference().to_string());
+
+                if (cell.has_format())
+                {
+                    write_attribute("s", cell.format().d_->id);
+                }
+
+                switch (cell.data_type())
+                {
+                case cell::type::empty:
+                    break;
+
+                case cell::type::boolean:
+                    write_attribute("t", "b");
+                    break;
+
+                case cell::type::date:
+                    write_attribute("t", "d");
+                    break;
+
+                case cell::type::error:
+                    write_attribute("t", "e");
+                    break;
+
+                case cell::type::inline_string:
+                    write_attribute("t", "inlineStr");
+                    break;
+
+                case cell::type::number:
+                    write_attribute("t", "n");
+                    break;
+
+                case cell::type::shared_string:
+                    write_attribute("t", "s");
+                    break;
+
+                case cell::type::formula_string:
+                    write_attribute("t", "str");
+                    break;
+                }
+
+                //write_attribute("cm", "");
+                //write_attribute("vm", "");
+                //write_attribute("ph", "");
+
+                // begin child elements
+
+                if (cell.has_formula())
+                {
+                    write_element(xmlns, "f", cell.formula());
+                }
+
+                switch (cell.data_type())
+                {
+                case cell::type::empty:
+                    break;
+
+                case cell::type::boolean:
+                    write_element(xmlns, "v", write_bool(cell.value<bool>()));
+                    break;
+
+                case cell::type::date:
+                    write_element(xmlns, "v", cell.value<std::string>());
+                    break;
+
+                case cell::type::error:
+                    write_element(xmlns, "v", cell.value<std::string>());
+                    break;
+
+                case cell::type::inline_string:
+                    write_start_element(xmlns, "is");
+                    // TODO: make a write_rich_text method and use that here
+                    write_element(xmlns, "t", cell.value<std::string>());
+                    write_end_element(xmlns, "is");
+                    break;
+
+                case cell::type::number:
+                    write_start_element(xmlns, "v");
+
+                    if (is_integral(cell.value<double>()))
+                    {
+                        write_characters(static_cast<std::int64_t>(cell.value<double>()));
+                    }
+                    else
+                    {
+                        std::stringstream ss;
+                        ss.precision(20);
+                        ss << cell.value<double>();
+                        write_characters(ss.str());
+                    }
+
+                    write_end_element(xmlns, "v");
+                    break;
+
+                case cell::type::shared_string:
+                    write_element(xmlns, "v", static_cast<std::size_t>(cell.d_->value_numeric_));
+                    break;
+
+                case cell::type::formula_string:
+                    write_element(xmlns, "v", cell.value<std::string>());
+                    break;
+                }
+
+                write_end_element(xmlns, "c");
             }
-
-            write_end_element(xmlns, "c");
         }
 
         write_end_element(xmlns, "row");

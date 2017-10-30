@@ -481,7 +481,7 @@ column_t worksheet::lowest_column() const
         return constants::min_column();
     }
 
-    column_t lowest = constants::max_column();
+    auto lowest = constants::max_column();
 
     for (auto &row : d_->cell_map_)
     {
@@ -494,6 +494,23 @@ column_t worksheet::lowest_column() const
     return lowest;
 }
 
+column_t worksheet::lowest_column_or_props() const
+{
+    auto lowest = lowest_column();
+
+    if (d_->cell_map_.empty() && !d_->column_properties_.empty())
+    {
+        lowest = d_->column_properties_.begin()->first;
+    }
+
+    for (auto &props : d_->column_properties_)
+    {
+        lowest = std::min(lowest, props.first);
+    }
+
+    return lowest;
+}
+
 row_t worksheet::lowest_row() const
 {
     if (d_->cell_map_.empty())
@@ -501,7 +518,7 @@ row_t worksheet::lowest_row() const
         return constants::min_row();
     }
 
-    row_t lowest = constants::max_row();
+    auto lowest = constants::max_row();
 
     for (auto &row : d_->cell_map_)
     {
@@ -511,9 +528,26 @@ row_t worksheet::lowest_row() const
     return lowest;
 }
 
+row_t worksheet::lowest_row_or_props() const
+{
+    auto lowest = lowest_row();
+
+    if (d_->cell_map_.empty() && !d_->row_properties_.empty())
+    {
+        lowest = d_->row_properties_.begin()->first;
+    }
+
+    for (auto &props : d_->row_properties_)
+    {
+        lowest = std::min(lowest, props.first);
+    }
+
+    return lowest;
+}
+
 row_t worksheet::highest_row() const
 {
-    row_t highest = constants::min_row();
+    auto highest = constants::min_row();
 
     for (auto &row : d_->cell_map_)
     {
@@ -523,9 +557,26 @@ row_t worksheet::highest_row() const
     return highest;
 }
 
+row_t worksheet::highest_row_or_props() const
+{
+    auto highest = highest_row();
+
+    if (d_->cell_map_.empty() && !d_->row_properties_.empty())
+    {
+        highest = d_->row_properties_.begin()->first;
+    }
+
+    for (auto &props : d_->row_properties_)
+    {
+        highest = std::max(highest, props.first);
+    }
+
+    return highest;
+}
+
 column_t worksheet::highest_column() const
 {
-    column_t highest = constants::min_column();
+    auto highest = constants::min_column();
 
     for (auto &row : d_->cell_map_)
     {
@@ -533,6 +584,23 @@ column_t worksheet::highest_column() const
         {
             highest = std::max(highest, c.first);
         }
+    }
+
+    return highest;
+}
+
+column_t worksheet::highest_column_or_props() const
+{
+    auto highest = highest_column();
+
+    if (d_->cell_map_.empty() && !d_->column_properties_.empty())
+    {
+        highest = d_->column_properties_.begin()->first;
+    }
+
+    for (auto &props : d_->column_properties_)
+    {
+        highest = std::max(highest, props.first);
     }
 
     return highest;

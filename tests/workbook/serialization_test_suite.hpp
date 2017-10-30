@@ -395,22 +395,27 @@ public:
         wb.load(path_helper::test_file("13_custom_heights_widths.xlsx"));
         auto ws = wb.active_sheet();
 
-        xlnt_assert_equals(ws.cell("A1").value<std::string>(), "170xd");
-        xlnt_assert_equals(ws.cell("B1").value<std::string>(), "40xd");
-        xlnt_assert_equals(ws.cell("C1").value<std::string>(), "dxd");
-        xlnt_assert_equals(ws.cell("A2").value<std::string>(), "170x30");
-        xlnt_assert_equals(ws.cell("B2").value<std::string>(), "40x30");
-        xlnt_assert_equals(ws.cell("C2").value<std::string>(), "dx30");
-        xlnt_assert_equals(ws.cell("A3").value<std::string>(), "170x10");
-        xlnt_assert_equals(ws.cell("B3").value<std::string>(), "40x10");
-        xlnt_assert_equals(ws.cell("C3").value<std::string>(), "dx10");
+        xlnt_assert_equals(ws.cell("A1").value<std::string>(), "A1");
+        xlnt_assert_equals(ws.cell("B1").value<std::string>(), "B1");
+        xlnt_assert_equals(ws.cell("D1").value<std::string>(), "D1");
+        xlnt_assert_equals(ws.cell("A2").value<std::string>(), "A2");
+        xlnt_assert_equals(ws.cell("B2").value<std::string>(), "B2");
+        xlnt_assert_equals(ws.cell("D2").value<std::string>(), "D2");
+        xlnt_assert_equals(ws.cell("A4").value<std::string>(), "A4");
+        xlnt_assert_equals(ws.cell("B4").value<std::string>(), "B4");
+        xlnt_assert_equals(ws.cell("D4").value<std::string>(), "D4");
 
-        xlnt_assert(!ws.row_properties(1).height.is_set());
-        xlnt_assert_equals(ws.row_properties(2).height.get(), 30);
-        xlnt_assert_equals(ws.row_properties(3).height.get(), 10);
-        xlnt_assert_delta(ws.column_properties("A").width.get(), 27.617745535714285, 1.0E-9);
-        xlnt_assert_delta(ws.column_properties("B").width.get(), 5.9497767857142856, 1.0E-9);
-        xlnt_assert(!ws.column_properties("C").width.is_set());
+        xlnt_assert_equals(ws.row_properties(1).height.get(), 100);
+        xlnt_assert(!ws.row_properties(2).height.is_set());
+        xlnt_assert_equals(ws.row_properties(3).height.get(), 100);
+        xlnt_assert(!ws.row_properties(4).height.is_set());
+        xlnt_assert_equals(ws.row_properties(5).height.get(), 100);
+
+        xlnt_assert_delta(ws.column_properties("A").width.get(), 15.949776785714286, 1.0E-9);
+        xlnt_assert(!ws.column_properties("B").width.is_set());
+        xlnt_assert_delta(ws.column_properties("C").width.get(), 15.949776785714286, 1.0E-9);
+        xlnt_assert(!ws.column_properties("D").width.is_set());
+        xlnt_assert_delta(ws.column_properties("E").width.get(), 15.949776785714286, 1.0E-9);
     }
 
     void test_write_custom_heights_widths()
@@ -418,21 +423,33 @@ public:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
 
-        ws.cell("A1").value("170xd");
-        ws.cell("B1").value("40xd");
-        ws.cell("C1").value("dxd");
-        ws.cell("A2").value("170x30");
-        ws.cell("B2").value("40x30");
-        ws.cell("C2").value("dx30");
-        ws.cell("A3").value("170x10");
-        ws.cell("B3").value("40x10");
-        ws.cell("C3").value("dx10");
+        ws.cell("A1").value("A1");
+        ws.cell("B1").value("B1");
+        ws.cell("D1").value("D1");
+        ws.cell("A2").value("A2");
+        ws.cell("B2").value("B2");
+        ws.cell("D2").value("D2");
+        ws.cell("A4").value("A4");
+        ws.cell("B4").value("B4");
+        ws.cell("D4").value("D4");
 
-        ws.row_properties(2).height = 30;
-        ws.row_properties(3).height = 10;
+        ws.row_properties(1).height = 100;
+        ws.row_properties(1).custom_height = true;
 
-        ws.column_properties("A").width = 27.617745535714285;
-        ws.column_properties("B").width = 5.9497767857142856;
+        ws.row_properties(3).height = 100;
+        ws.row_properties(3).custom_height = true;
+
+        ws.row_properties(5).height = 100;
+        ws.row_properties(5).custom_height = true;
+
+        ws.column_properties("A").width = 15.949776785714286;
+        ws.column_properties("A").custom_width = true;
+
+        ws.column_properties("C").width = 15.949776785714286;
+        ws.column_properties("C").custom_width = true;
+
+        ws.column_properties("E").width = 15.949776785714286;
+        ws.column_properties("E").custom_width = true;
         
         wb.save("temp.xlsx");
         xlnt_assert(workbook_matches_file(wb, path_helper::test_file("13_custom_heights_widths.xlsx")));
