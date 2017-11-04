@@ -1321,14 +1321,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
         write_attribute("numFmtId", current_format_impl.number_format_id.get());
         write_attribute("fontId", current_format_impl.font_id.get());
 
-        if (current_format_impl.style.is_set())
-        {
-            write_attribute("fillId", stylesheet.style_impls.at(current_format_impl.style.get()).fill_id.get());
-        }
-        else
-        {
-            write_attribute("fillId", current_format_impl.fill_id.get());
-        }
+        write_attribute("fillId", current_format_impl.fill_id.get());
 
         write_attribute("borderId", current_format_impl.border_id.get());
 
