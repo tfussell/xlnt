@@ -1704,6 +1704,21 @@ void xlsx_consumer::read_shared_workbook_user_data()
 {
 }
 
+namespace {
+void set_style_by_xfid(
+    const std::vector<std::pair<style_impl, std::size_t>>& styles,
+    std::size_t xfid, optional<std::string>& style
+) {
+    for(auto item : styles)
+    {
+        if( item.second == xfid )
+	{
+            style = item.first.name;
+        }
+    }
+}
+}
+
 void xlsx_consumer::read_stylesheet()
 {
     target_.impl().stylesheet_ = detail::stylesheet();
@@ -2326,7 +2341,7 @@ void xlsx_consumer::read_stylesheet()
         new_format.pivot_button_ = record.first.pivot_button_;
         new_format.quote_prefix_ = record.first.quote_prefix_;
 
-        new_format.style = styles.at(record.second).first.name;
+        set_style_by_xfid(styles, record.second, new_format.style);
     }
 }
 
