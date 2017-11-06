@@ -2145,7 +2145,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             write_end_element(xmlns, "col");
         }
 
-        write_end_element(xmlns, "cols");
+        if(has_column_properties) write_end_element(xmlns, "cols");
 
     const auto hyperlink_rels = source_.manifest().relationships(worksheet_part, relationship_type::hyperlink);
     std::unordered_map<std::string, std::string> reverse_hyperlink_references;
