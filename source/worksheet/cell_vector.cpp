@@ -161,4 +161,14 @@ cell cell_vector::operator[](std::size_t cell_index)
     return ws_.cell(cursor_.make_offset(0, static_cast<int>(cell_index)));
 }
 
+const cell cell_vector::operator[](std::size_t cell_index) const
+{
+    if (order_ == major_order::row)
+    {
+        return ws_.cell(cursor_.make_offset(static_cast<int>(cell_index), 0));
+    }
+
+    return ws_.cell(cursor_.make_offset(0, static_cast<int>(cell_index)));
+}
+
 } // namespace xlnt
