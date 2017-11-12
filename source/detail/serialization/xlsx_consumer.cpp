@@ -1705,10 +1705,14 @@ void xlsx_consumer::read_shared_workbook_user_data()
 }
 
 namespace {
+
+/// <summary>
+/// Try to find given xfid value in the styles vector and, if succeeded, set's the optional style.
+/// </summary>
 void set_style_by_xfid(
-    const std::vector<std::pair<style_impl, std::size_t>>& styles,
-    std::size_t xfid, optional<std::string>& style
-) {
+    const std::vector<std::pair<style_impl, std::size_t>>& styles, std::size_t xfid, optional<std::string>& style
+)
+{
     for(auto item : styles)
     {
         if( item.second == xfid )
@@ -1717,7 +1721,8 @@ void set_style_by_xfid(
         }
     }
 }
-}
+
+} // namespace
 
 void xlsx_consumer::read_stylesheet()
 {
