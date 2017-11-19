@@ -23,7 +23,9 @@
 
 #pragma once
 
+#include <algorithm>
 #include <string>
+#include <unordered_map>
 
 #include <detail/default_case.hpp>
 #include <detail/external/include_libstudxml.hpp>
@@ -168,27 +170,53 @@ relationship_type from_string(const std::string &string)
 template<>
 pattern_fill_type from_string(const std::string &string)
 {
-    if (string == "darkdown") return pattern_fill_type::darkdown;
-    else if (string == "darkgray") return pattern_fill_type::darkgray;
-    else if (string == "darkgrid") return pattern_fill_type::darkgrid;
-    else if (string == "darkhorizontal") return pattern_fill_type::darkhorizontal;
-    else if (string == "darktrellis") return pattern_fill_type::darktrellis;
-    else if (string == "darkup") return pattern_fill_type::darkup;
-    else if (string == "darkvertical") return pattern_fill_type::darkvertical;
-    else if (string == "gray0625") return pattern_fill_type::gray0625;
-    else if (string == "gray125") return pattern_fill_type::gray125;
-    else if (string == "lightdown") return pattern_fill_type::lightdown;
-    else if (string == "lightgray") return pattern_fill_type::lightgray;
-    else if (string == "lightgrid") return pattern_fill_type::lightgrid;
-    else if (string == "lighthorizontal") return pattern_fill_type::lighthorizontal;
-    else if (string == "lighttrellis") return pattern_fill_type::lighttrellis;
-    else if (string == "lightup") return pattern_fill_type::lightup;
-    else if (string == "lightvertical") return pattern_fill_type::lightvertical;
-    else if (string == "mediumgray") return pattern_fill_type::mediumgray;
-    else if (string == "none") return pattern_fill_type::none;
-    else if (string == "solid") return pattern_fill_type::solid;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wexit-time-destructors"
+    static std::unordered_map<std::string, pattern_fill_type> patternFill {
+        {"darkdown", pattern_fill_type::darkdown },
+        { "darkgray", pattern_fill_type::darkgray },
+        { "darkgrid", pattern_fill_type::darkgrid },
+        { "darkhorizontal", pattern_fill_type::darkhorizontal },
+        { "darktrellis", pattern_fill_type::darktrellis },
+        { "darkup", pattern_fill_type::darkup },
+        { "darkvertical", pattern_fill_type::darkvertical },
+        { "gray0625", pattern_fill_type::gray0625 },
+        { "gray125", pattern_fill_type::gray125 },
+        { "lightdown", pattern_fill_type::lightdown },
+        { "lightgray", pattern_fill_type::lightgray },
+        { "lightgrid", pattern_fill_type::lightgrid },
+        { "lighthorizontal", pattern_fill_type::lighthorizontal },
+        { "lighttrellis", pattern_fill_type::lighttrellis },
+        { "lightup", pattern_fill_type::lightup },
+        { "lightvertical", pattern_fill_type::lightvertical },
+        { "mediumgray", pattern_fill_type::mediumgray },
+        { "none", pattern_fill_type::none },
+        { "solid", pattern_fill_type::solid }
+    };
+#pragma clang diagnostic pop
+    
+    auto toLower = [](std::string str) {
+        auto bg{ std::begin (str) };
+        auto en{ std::end (str) };
+        std::transform (bg, en, bg, tolower);
 
-    default_case(pattern_fill_type::none);
+        return str;
+    };
+
+    auto patternLookup = [](const std::string& key) {
+        auto entry { patternFill.find (key) };
+        if (entry != std::end (patternFill)) {
+            return entry->second;
+        }
+        else {
+            // Note: there won't be an error if there is an unsupported pattern
+            return pattern_fill_type::none;
+        }
+    };
+
+    std::string lowerString {toLower (string) };
+
+    return patternLookup (lowerString);
 }
 
 template<>
