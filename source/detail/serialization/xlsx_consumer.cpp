@@ -124,6 +124,23 @@ struct number_converter
     double result;
 };
 
+using style_id_pair = std::pair<xlnt::detail::style_impl, std::size_t>;
+
+/// <summary>
+/// Try to find given xfid value in the styles vector and, if succeeded, set's the optional style.
+/// </summary>
+void set_style_by_xfid(const std::vector<style_id_pair> &styles,
+    std::size_t xfid, xlnt::optional<std::string> &style)
+{
+    for (auto &item : styles)
+    {
+        if (item.second == xfid)
+        {
+            style = item.first.name;
+        }
+    }
+}
+
 } // namespace
 
 /*
@@ -1703,26 +1720,6 @@ void xlsx_consumer::read_shared_workbook()
 void xlsx_consumer::read_shared_workbook_user_data()
 {
 }
-
-namespace {
-
-/// <summary>
-/// Try to find given xfid value in the styles vector and, if succeeded, set's the optional style.
-/// </summary>
-void set_style_by_xfid(
-    const std::vector<std::pair<style_impl, std::size_t>>& styles, std::size_t xfid, optional<std::string>& style
-)
-{
-    for(auto item : styles)
-    {
-        if( item.second == xfid )
-	{
-            style = item.first.name;
-        }
-    }
-}
-
-} // namespace
 
 void xlsx_consumer::read_stylesheet()
 {

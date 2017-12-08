@@ -170,4 +170,5 @@ const cell cell_vector::operator[](std::size_t cell_index) const
 
     return ws_.cell(cursor_.make_offset(0, static_cast<int>(cell_index)));
 }
+
 } // namespace xlnt
