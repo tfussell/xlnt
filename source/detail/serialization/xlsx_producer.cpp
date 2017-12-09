@@ -1321,14 +1321,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
         write_attribute("numFmtId", current_format_impl.number_format_id.get());
         write_attribute("fontId", current_format_impl.font_id.get());
 
-        if (current_format_impl.style.is_set())
-        {
-            write_attribute("fillId", stylesheet.style_impls.at(current_format_impl.style.get()).fill_id.get());
-        }
-        else
-        {
-            write_attribute("fillId", current_format_impl.fill_id.get());
-        }
+        write_attribute("fillId", current_format_impl.fill_id.get());
 
         write_attribute("borderId", current_format_impl.border_id.get());
 
@@ -2007,7 +2000,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         })->first;
 
     auto ws = source_.sheet_by_title(title);
-
+	
     write_start_element(xmlns, "worksheet");
     write_namespace(xmlns, "");
     write_namespace(xmlns_r, "r");
@@ -2110,24 +2103,19 @@ void xlsx_producer::write_worksheet(const relationship &rel)
     write_end_element(xmlns, "sheetFormatPr");
 
     bool has_column_properties = false;
+    //
+    auto wslowestcp = ws.lowest_column_or_props();	
+    auto wshighestcp = ws.highest_column_or_props();
 
-    for (auto column = ws.lowest_column(); column <= ws.highest_column(); column++)
-    {
-        if (ws.has_column_properties(column))
-        {
-            has_column_properties = true;
-            break;
-        }
-    }
-
-    if (has_column_properties)
-    {
-        write_start_element(xmlns, "cols");
-
-        for (auto column = ws.lowest_column_or_props(); column <= ws.highest_column_or_props(); column++)
+        for (auto column = wslowestcp; column <= wshighestcp; column++)
         {
             if (!ws.has_column_properties(column)) continue;
-
+            
+	    if(!has_column_properties)
+            {
+                        write_start_element(xmlns, "cols");
+                        has_column_properties = true;
+            }
             const auto &props = ws.column_properties(column);
 
             write_start_element(xmlns, "col");
@@ -2157,8 +2145,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             write_end_element(xmlns, "col");
         }
 
-        write_end_element(xmlns, "cols");
-    }
+        if(has_column_properties) write_end_element(xmlns, "cols");
 
     const auto hyperlink_rels = source_.manifest().relationships(worksheet_part, relationship_type::hyperlink);
     std::unordered_map<std::string, std::string> reverse_hyperlink_references;
@@ -2172,8 +2159,11 @@ void xlsx_producer::write_worksheet(const relationship &rel)
     std::vector<cell_reference> cells_with_comments;
 
     write_start_element(xmlns, "sheetData");
+    // optimize
+    auto wslowestrp = ws.lowest_row_or_props();	
+    auto wshighestrp = ws.highest_row_or_props();
 
-    for (auto row = ws.lowest_row_or_props(); row <= ws.highest_row_or_props(); ++row)
+    for (auto row = wslowestrp; row <= wshighestrp; ++row)
     {
         auto first_column = constants::max_column();
         auto last_column = constants::min_column();
