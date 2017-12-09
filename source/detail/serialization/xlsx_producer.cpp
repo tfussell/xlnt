@@ -2103,51 +2103,55 @@ void xlsx_producer::write_worksheet(const relationship &rel)
     write_end_element(xmlns, "sheetFormatPr");
 
     bool has_column_properties = false;
-    //
-    auto wslowestcp = ws.lowest_column_or_props();	
-    auto wshighestcp = ws.highest_column_or_props();
+    const auto first_column = ws.lowest_column_or_props();
+    const auto last_column = ws.highest_column_or_props();
 
-        for (auto column = wslowestcp; column <= wshighestcp; column++)
-        {
-            if (!ws.has_column_properties(column)) continue;
-            
+    for (auto column = first_column; column <= last_column; column++)
+    {
+        if (!ws.has_column_properties(column)) continue;
+        
 	    if(!has_column_properties)
-            {
-                        write_start_element(xmlns, "cols");
-                        has_column_properties = true;
-            }
-            const auto &props = ws.column_properties(column);
-
-            write_start_element(xmlns, "col");
-            write_attribute("min", column.index);
-            write_attribute("max", column.index);
-
-            if (props.width.is_set())
-            {
-                write_attribute("width", (props.width.get() * 7 + 5) / 7);
-            }
-
-            if (props.custom_width)
-            {
-                write_attribute("customWidth", write_bool(true));
-            }
-
-            if (props.style.is_set())
-            {
-                write_attribute("style", props.style.get());
-            }
-
-            if (props.hidden)
-            {
-                write_attribute("hidden", write_bool(true));
-            }
-
-            write_end_element(xmlns, "col");
+        {
+            write_start_element(xmlns, "cols");
+            has_column_properties = true;
         }
 
-        if(has_column_properties) write_end_element(xmlns, "cols");
+        const auto &props = ws.column_properties(column);
 
-    const auto hyperlink_rels = source_.manifest().relationships(worksheet_part, relationship_type::hyperlink);
+        write_start_element(xmlns, "col");
+        write_attribute("min", column.index);
+        write_attribute("max", column.index);
+
+        if (props.width.is_set())
+        {
+            write_attribute("width", (props.width.get() * 7 + 5) / 7);
+        }
+
+        if (props.custom_width)
+        {
+            write_attribute("customWidth", write_bool(true));
+        }
+
+        if (props.style.is_set())
+        {
+            write_attribute("style", props.style.get());
+        }
+
+        if (props.hidden)
+        {
+            write_attribute("hidden", write_bool(true));
+        }
+
+        write_end_element(xmlns, "col");
+    }
+
+    if (has_column_properties)
+    {
+        write_end_element(xmlns, "cols");
+    }
+
+    const auto hyperlink_rels = source_.manifest()
+        .relationships(worksheet_part, relationship_type::hyperlink);
     std::unordered_map<std::string, std::string> reverse_hyperlink_references;
 
     for (auto hyperlink_rel : hyperlink_rels)
@@ -2159,11 +2163,10 @@ void xlsx_producer::write_worksheet(const relationship &rel)
     std::vector<cell_reference> cells_with_comments;
 
     write_start_element(xmlns, "sheetData");
-    // optimize
-    auto wslowestrp = ws.lowest_row_or_props();	
-    auto wshighestrp = ws.highest_row_or_props();
+    auto first_row = ws.lowest_row_or_props();
+    auto last_row = ws.highest_row_or_props();
 
-    for (auto row = wslowestrp; row <= wshighestrp; ++row)
+    for (auto row = first_row; row <= last_row; ++row)
     {
         auto first_column = constants::max_column();
         auto last_column = constants::min_column();
