@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2017 Thomas Fussell
+// Copyright (C) 2016-2018 Thomas Fussell
 // Copyright (C) 2002-2007 Ariya Hidayat (ariya@kde.org).
 //
 // Redistribution and use in source and binary forms, with or without

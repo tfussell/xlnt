@@ -1,4 +1,4 @@
-// Copyright (C) 2017 Thomas Fussell
+// Copyright (C) 2017-2018 Thomas Fussell
 // Copyright (C) 2013 Tomas Kislan
 // Copyright (C) 2013 Adam Rudd
 //
