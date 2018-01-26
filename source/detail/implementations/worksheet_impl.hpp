@@ -29,12 +29,13 @@
 
 #include <detail/implementations/cell_impl.hpp>
 #include <xlnt/workbook/named_range.hpp>
-#include <xlnt/worksheet/range.hpp>
-#include <xlnt/worksheet/range_reference.hpp>
-#include <xlnt/worksheet/sheet_view.hpp>
 #include <xlnt/worksheet/column_properties.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
+#include <xlnt/worksheet/range.hpp>
+#include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/row_properties.hpp>
+#include <xlnt/worksheet/sheet_format_properties.hpp>
+#include <xlnt/worksheet/sheet_view.hpp>
 
 namespace xlnt {
 
@@ -62,18 +63,10 @@ struct worksheet_impl
 
         id_ = other.id_;
         title_ = other.title_;
+        format_properties_ = other.format_properties_;
         column_properties_ = other.column_properties_;
         row_properties_ = other.row_properties_;
         cell_map_ = other.cell_map_;
-
-        for (auto &row : cell_map_)
-        {
-            for (auto &cell : row.second)
-            {
-                cell.second.parent_ = this;
-            }
-        }
-
         page_setup_ = other.page_setup_;
         auto_filter_ = other.auto_filter_;
         page_margins_ = other.page_margins_;
@@ -86,12 +79,22 @@ struct worksheet_impl
         views_ = other.views_;
         column_breaks_ = other.column_breaks_;
         row_breaks_ = other.row_breaks_;
+
+        for (auto &row : cell_map_)
+        {
+            for (auto &cell : row.second)
+            {
+                cell.second.parent_ = this;
+            }
+        }
     }
 
     workbook *parent_;
 
     std::size_t id_;
     std::string title_;
+
+    sheet_format_properties format_properties_;
 
     std::unordered_map<column_t, column_properties> column_properties_;
     std::unordered_map<row_t, row_properties> row_properties_;

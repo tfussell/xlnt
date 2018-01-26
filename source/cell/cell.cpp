@@ -34,6 +34,7 @@
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/cell/comment.hpp>
 #include <xlnt/cell/rich_text.hpp>
+#include <xlnt/packaging/manifest.hpp>
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/styles/alignment.hpp>
 #include <xlnt/styles/border.hpp>
@@ -370,6 +371,23 @@ void cell::hyperlink(const std::string &hyperlink)
         || std::find(hyperlink.begin(), hyperlink.end(), ':') == hyperlink.end())
     {
         throw invalid_parameter();
+    }
+
+    auto ws = worksheet();
+    auto &manifest = ws.workbook().manifest();
+    bool existing = false;
+
+    for (const auto &rel : manifest.relationships(ws.path(), relationship_type::hyperlink))
+    {
+        if (rel.target().path().string() == hyperlink)
+        {
+            existing = true;
+        }
+    }
+
+    if (!existing) {
+        manifest.register_relationship(uri(ws.path().string()), relationship_type::hyperlink,
+            uri(hyperlink), target_mode::external);
     }
 
     d_->hyperlink_ = hyperlink;

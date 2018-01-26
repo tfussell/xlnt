@@ -840,6 +840,11 @@ private:
     void swap(workbook &other);
 
     /// <summary>
+    /// Sheet 1 should be rId1, sheet 2 should be rId2, etc.
+    /// </summary>
+    void reorder_relationships();
+
+    /// <summary>
     /// An opaque pointer to a structure that holds all of the data relating to this workbook.
     /// </summary>
     std::unique_ptr<detail::workbook_impl> d_;

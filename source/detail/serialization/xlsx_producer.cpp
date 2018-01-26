@@ -1990,6 +1990,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 {
     static const auto &xmlns = constants::ns("spreadsheetml");
     static const auto &xmlns_r = constants::ns("r");
+    static const auto &xmlns_x14ac = constants::ns("x14ac");
 
     auto worksheet_part = rel.source().path().parent().append(rel.target().path());
     auto worksheet_rels = source_.manifest().relationships(worksheet_part);
@@ -2004,6 +2005,21 @@ void xlsx_producer::write_worksheet(const relationship &rel)
     write_start_element(xmlns, "worksheet");
     write_namespace(xmlns, "");
     write_namespace(xmlns_r, "r");
+
+    auto using_namespace = [&ws](const std::string &ns)
+    {
+        if (ns == "x14ac")
+        {
+            return ws.format_properties().dy_descent.is_set();
+        }
+
+        return false;
+    };
+
+    if (using_namespace("x14ac"))
+    {
+        write_namespace(xmlns_x14ac, "x14ac");
+    }
 
     if (ws.has_page_setup())
     {
@@ -2098,8 +2114,26 @@ void xlsx_producer::write_worksheet(const relationship &rel)
     }
 
     write_start_element(xmlns, "sheetFormatPr");
-    write_attribute("baseColWidth", "10");
-    write_attribute("defaultRowHeight", "16");
+    const auto &format_properties = ws.d_->format_properties_;
+
+    if (format_properties.base_col_width.is_set())
+    {
+        write_attribute("baseColWidth",
+            format_properties.base_col_width.get());
+    }
+
+    if (format_properties.default_row_height.is_set())
+    {
+        write_attribute("defaultRowHeight",
+            format_properties.default_row_height.get());
+    }
+
+    if (format_properties.dy_descent.is_set())
+    {
+        write_attribute(xml::qname(xmlns_x14ac, "dyDescent"),
+            format_properties.dy_descent.get());
+    }
+
     write_end_element(xmlns, "sheetFormatPr");
 
     bool has_column_properties = false;

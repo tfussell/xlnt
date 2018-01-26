@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sstream>
+#include <unordered_set>
 
 #include <detail/external/include_libstudxml.hpp>
 #include <detail/serialization/vector_streambuf.hpp>
@@ -15,9 +16,22 @@ public:
 		const std::string &right, const std::string &content_type)
     {
         // content types are stored in unordered maps, too complicated to compare
-        if (content_type == "[Content_Types].xml") return true;
+        if (content_type == "[Content_Types].xml")
+        {
+            return true;
+        }
+
         // calcChain is optional
-        if (content_type == "application/vnd.openxmlformats-officedocument.spreadsheetml.calcChain+xml") return true;
+        if (content_type == "application/vnd.openxmlformats-officedocument.spreadsheetml.calcChain+xml")
+        {
+            return true;
+        }
+
+        // compared already
+        if (content_type == "application/vnd.openxmlformats-package.relationships+xml")
+        {
+            return true;
+        }
 
         auto is_xml = (content_type.substr(0, 12) == "application/"
             && content_type.substr(content_type.size() - 4) == "+xml")
@@ -206,6 +220,57 @@ public:
 		return !difference;
     }
 
+    static bool compare_relationships(const xlnt::manifest &left,
+        const xlnt::manifest &right)
+    {
+        std::unordered_set<std::string> parts;
+
+        for (const auto &part : left.parts())
+        {
+            parts.insert(part.string());
+
+            auto left_rels = left.relationships(part);
+            auto right_rels = right.relationships(part);
+
+            if (left_rels.size() != right_rels.size())
+            {
+                return false;
+            }
+
+            std::unordered_map<std::string, xlnt::relationship> left_rels_map;
+
+            for (const auto &rel : left_rels)
+            {
+                left_rels_map[rel.id()] = rel;
+            }
+
+            for (const auto &right_rel : right_rels)
+            {
+                if (left_rels_map.count(right_rel.id()) != 1)
+                {
+                    return false;
+                }
+
+                const auto &left_rel = left_rels_map.at(right_rel.id());
+
+                if (left_rel != right_rel)
+                {
+                    return false;
+                }
+            }
+        }
+
+        for (const auto &part : right.parts())
+        {
+            if (parts.count(part.string()) != 1)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
 	static bool xlsx_archives_match(const std::vector<std::uint8_t> &left,
         const std::vector<std::uint8_t> &right)
 	{
@@ -270,6 +335,11 @@ public:
 
         auto &left_manifest = left_workbook.manifest();
         auto &right_manifest = right_workbook.manifest();
+
+        if (!compare_relationships(left_manifest, right_manifest))
+        {
+            return false;
+        }
 
 		for (auto left_member : left_info)
 		{

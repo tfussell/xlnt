@@ -1110,4 +1110,30 @@ conditional_format worksheet::conditional_format(const range_reference &ref, con
 	return workbook().d_->stylesheet_.get().add_conditional_format_rule(d_, ref, when);
 }
 
+path worksheet::path() const
+{
+    auto rel = referring_relationship();
+    return xlnt::path(rel.source().path().parent().append(rel.target().path()));
+}
+
+relationship worksheet::referring_relationship() const
+{
+    auto &manifest = workbook().manifest();
+    auto wb_rel = manifest.relationship(xlnt::path("/"),
+        relationship_type::office_document);
+    auto ws_rel = manifest.relationship(wb_rel.target().path(),
+        workbook().d_->sheet_title_rel_id_map_.at(title()));
+    return ws_rel;
+}
+
+sheet_format_properties worksheet::format_properties() const
+{
+    return d_->format_properties_;
+}
+
+void worksheet::format_properties(const sheet_format_properties &properties)
+{
+    d_->format_properties_ = properties;
+}
+
 } // namespace xlnt

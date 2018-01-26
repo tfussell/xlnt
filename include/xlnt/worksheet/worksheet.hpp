@@ -54,6 +54,7 @@ class range_iterator;
 class range_reference;
 class relationship;
 class row_properties;
+class sheet_format_properties;
 class workbook;
 
 struct date;
@@ -707,6 +708,26 @@ public:
     /// Creates a conditional format for the given range with the given condition.
     /// </summary>
     xlnt::conditional_format conditional_format(const range_reference &ref, const condition &when);
+
+    /// <summary>
+    /// Returns the path of this worksheet in the containing package.
+    /// </summary>
+    path path() const;
+
+    /// <summary>
+    /// Returns the relationship from the parent workbook to this worksheet.
+    /// </summary>
+    relationship referring_relationship() const;
+
+    /// <summary>
+    /// Returns the current formatting properties.
+    /// </summary>
+    sheet_format_properties format_properties() const;
+
+    /// <summary>
+    /// Sets the format properties to the given properties.
+    /// </summary>
+    void format_properties(const sheet_format_properties &properties);
 
 private:
     friend class cell;

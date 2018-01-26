@@ -1,5 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
-// Copyright (c) 2010-2015 openpyxl
+// Copyright (c) 2018 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,57 +21,33 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#include <xlnt/packaging/relationship.hpp>
+#pragma once
+
+#include <xlnt/xlnt_config.hpp>
+#include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 
-relationship::relationship()
+/// <summary>
+/// General worksheet formatting properties.
+/// </summary>
+class XLNT_API sheet_format_properties
 {
-}
+public:
+    /// <summary>
+    /// The base column width
+    /// </summary>
+    optional<double> base_col_width;
 
-relationship::relationship(
-    const std::string &id, relationship_type t, const uri &source, const uri &target, xlnt::target_mode mode)
-    : id_(id), type_(t), source_(source), target_(target), mode_(mode)
-{
-}
+    /// <summary>
+    /// The default row height
+    /// </summary>
+    optional<double> default_row_height;
 
-std::string relationship::id() const
-{
-    return id_;
-}
-
-target_mode relationship::target_mode() const
-{
-    return mode_;
-}
-
-uri relationship::source() const
-{
-    return source_;
-}
-
-uri relationship::target() const
-{
-    return target_;
-}
-
-relationship_type relationship::type() const
-{
-    return type_;
-}
-
-bool relationship::operator==(const relationship &rhs) const
-{
-    return type_ == rhs.type_
-        && id_ == rhs.id_
-        && source_ == rhs.source_
-        && target_ == rhs.target_
-        && mode_ == rhs.mode_;
-}
-
-bool relationship::operator!=(const relationship &rhs) const
-{
-    return !(*this == rhs);
-}
+    /// <summary>
+    /// x14ac extension, dyDescent property
+    /// </summary>
+    optional<double> dy_descent;
+};
 
 } // namespace xlnt

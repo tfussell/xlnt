@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2018 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@
 #include <helpers/test_suite.hpp>
 #include <helpers/path_helper.hpp>
 #include <helpers/xml_helper.hpp>
+#include <xlnt/worksheet/sheet_format_properties.hpp>
 #include <xlnt/workbook/streaming_workbook_reader.hpp>
 #include <xlnt/workbook/streaming_workbook_writer.hpp>
 #include <xlnt/workbook/workbook.hpp>
@@ -78,6 +79,7 @@ public:
 	{
         std::vector<std::uint8_t> wb_data;
         wb.save(wb_data);
+        wb.save("temp.xlsx");
 
         std::ifstream file_stream(file.string(), std::ios::binary);
         auto file_data = xlnt::detail::to_vector(file_stream);
@@ -178,8 +180,25 @@ public:
 	void test_write_comments_hyperlinks_formulae()
 	{
 		xlnt::workbook wb;
+
+        xlnt::sheet_format_properties format_properties;
+        format_properties.base_col_width = 10.0;
+        format_properties.default_row_height = 16.0;
+        format_properties.dy_descent = 0.2;
+
 		auto sheet1 = wb.active_sheet();
-        auto comment_font = xlnt::font().bold(true).size(10).color(xlnt::indexed_color(81)).name("Calibri");
+        sheet1.format_properties(format_properties);
+
+        auto comment_font = xlnt::font()
+            .bold(true)
+            .size(10)
+            .color(xlnt::indexed_color(81))
+            .name("Calibri");
+
+        sheet1.cell("A4").hyperlink("https://microsoft.com/", "hyperlink1");
+        sheet1.cell("A5").hyperlink("https://google.com/");
+        sheet1.cell("A6").hyperlink(sheet1.cell("A1"));
+        sheet1.cell("A7").hyperlink("mailto:invalid@example.com?subject=important");
 
 		sheet1.cell("A1").value("Sheet1!A1");
 		sheet1.cell("A1").comment("Sheet1 comment", comment_font, "Microsoft Office User");
@@ -187,23 +206,20 @@ public:
 		sheet1.cell("A2").value("Sheet1!A2");
 		sheet1.cell("A2").comment("Sheet1 comment2", comment_font, "Microsoft Office User");
 
-        sheet1.cell("A4").hyperlink("https://microsoft.com", "hyperlink1");
-        sheet1.cell("A5").hyperlink("https://google.com");
-        sheet1.cell("A6").hyperlink(sheet1.cell("A1"));
-        sheet1.cell("A7").hyperlink("mailto:invalid@example.com?subject=important");
-
         sheet1.cell("C1").formula("=CONCATENATE(C2,C3)");
         sheet1.cell("C2").value("a");
         sheet1.cell("C3").value("b");
 
 		auto sheet2 = wb.create_sheet();
+        sheet2.format_properties(format_properties);
+
+        sheet2.cell("A4").hyperlink("https://apple.com/", "hyperlink2");
+
 		sheet2.cell("A1").value("Sheet2!A1");
 		sheet2.cell("A2").comment("Sheet2 comment", comment_font, "Microsoft Office User");
 
 		sheet2.cell("A2").value("Sheet2!A2");
 		sheet2.cell("A2").comment("Sheet2 comment2", comment_font, "Microsoft Office User");
-
-        sheet2.cell("A4").hyperlink("https://apple.com", "hyperlink2");
 
         sheet2.cell("C1").formula("=C2*C3");
         sheet2.cell("C2").value(2);

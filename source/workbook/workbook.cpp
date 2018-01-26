@@ -429,6 +429,10 @@ workbook workbook::empty()
     sheet_view view;
     ws.add_view(view);
 
+    auto &format_properties = ws.d_->format_properties_;
+    format_properties.base_col_width = 10.0;
+    format_properties.default_row_height = 16.0;
+
     wb.theme(xlnt::theme());
 
     wb.d_->stylesheet_ = detail::stylesheet();
@@ -719,6 +723,7 @@ worksheet workbook::create_sheet()
     d_->sheet_title_rel_id_map_[title] = ws_rel;
 
     update_sheet_properties();
+    reorder_relationships();
 
     return worksheet(&d_->worksheets_.back());
 }
@@ -1493,6 +1498,72 @@ void workbook::update_sheet_properties()
     {
         extended_property(xlnt::extended_property::heading_pairs,
             std::vector<variant>{variant("Worksheets"), variant(static_cast<int>(sheet_count()))});
+    }
+}
+
+void workbook::reorder_relationships()
+{
+    const auto wb_rel = manifest().relationship(path("/"), relationship_type::office_document);
+    const auto wb_path = wb_rel.target().path();
+    const auto relationships = manifest().relationships(wb_path);
+    std::unordered_map<std::string, relationship> rel_map;
+    const auto titles = sheet_titles();
+    const auto title_rel_id_map = d_->sheet_title_rel_id_map_;
+    bool needs_reorder = false;
+
+    for (const auto &rel : relationships)
+    {
+        rel_map[rel.id()] = rel;
+
+        if (rel.type() == relationship_type::worksheet)
+        {
+            for (auto title_index = std::size_t(0); title_index < titles.size(); ++title_index)
+            {
+                const auto title = titles[title_index];
+
+                if (title_rel_id_map.at(title) == rel.id())
+                {
+                    const auto expected_rel_id = "rId" + std::to_string(title_index + 1);
+
+                    if (expected_rel_id != rel.id())
+                    {
+                        needs_reorder = true;
+                    }
+
+                    break;
+                }
+            }
+        }
+    }
+
+    if (!needs_reorder)
+    {
+        return;
+    }
+
+    for (const auto &rel : relationships)
+    {
+        manifest().unregister_relationship(uri(wb_path.string()), rel.id());
+    }
+
+    for (auto index = std::size_t(0); index < rel_map.size(); ++index)
+    {
+        auto rel_id = "rId" + std::to_string(index + 1);
+        auto old_rel_id = std::string();
+
+        if (index < titles.size())
+        {
+            auto title = titles[index];
+            old_rel_id = title_rel_id_map.at(title);
+            d_->sheet_title_rel_id_map_[title] = rel_id;
+        } else {
+            old_rel_id = "rId" + std::to_string(index - titles.size() + 2);
+        }
+
+        auto old_rel = rel_map[old_rel_id];
+        auto new_rel = relationship(rel_id, old_rel.type(),
+            old_rel.source(), old_rel.target(), old_rel.target_mode());
+        manifest().register_relationship(new_rel);
     }
 }
 

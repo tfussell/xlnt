@@ -518,7 +518,25 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
         }
         else if (current_worksheet_element == qn("spreadsheetml", "sheetFormatPr")) // CT_SheetFormatPr 0-1
         {
-            skip_remaining_content(current_worksheet_element);
+            if (parser().attribute_present("baseColWidth"))
+            {
+                ws.d_->format_properties_.base_col_width =
+                    parser().attribute<double>("baseColWidth");
+            }
+
+            if (parser().attribute_present("defaultRowHeight"))
+            {
+                ws.d_->format_properties_.default_row_height =
+                    parser().attribute<double>("defaultRowHeight");
+            }
+
+            if (parser().attribute_present(qn("x14ac", "dyDescent")))
+            {
+                ws.d_->format_properties_.dy_descent =
+                    parser().attribute<double>(qn("x14ac", "dyDescent"));
+            }
+
+            skip_attributes();
         }
         else if (current_worksheet_element == qn("spreadsheetml", "cols")) // CT_Cols 0+
         {
