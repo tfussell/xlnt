@@ -145,20 +145,20 @@ xlnt::workbook non_optimized_workbook(int n)
 	
 	auto elapsed = current_time() - start;
 	
-	std::cout << "took " << elapsed / 1000.0 << "s for " << n << " generate_all_styles" << std::endl;	
+	std::cout << "took " << elapsed / 1000.0 << "s for " << n << " rows. generate_all_styles" << std::endl;	
 
 	start = current_time();
     for(int idx = 1; idx < n; idx++)
     {
         auto worksheet = wb[random_index(wb.sheet_count())];
         auto cell = worksheet.cell(xlnt::cell_reference(1, (xlnt::row_t)idx));
-        cell.value(0);
+        cell.value(idx);
         cell.style(styles.at(random_index(styles.size())));
     }
 
 	elapsed = current_time() - start;
 
-	std::cout << "took " << elapsed / 1000.0 << "s for " << n << " set values and styles for cells" << std::endl;
+	std::cout << "took " << elapsed / 1000.0 << "s for " << n << " rows. set values and styles for cells" << std::endl;
 
     return wb;
 }
@@ -171,7 +171,7 @@ void to_profile(xlnt::workbook &wb, const std::string &f, int n)
     wb.save(f);
     auto elapsed = current_time() - start;
 
-    std::cout << "took " << elapsed / 1000.0 << "s for " << n << " save workbook with styles" << std::endl;
+    std::cout << "took " << elapsed / 1000.0 << "s for " << n << " rows. save workbook with styles" << std::endl;
 }
 
 } // namespace
