@@ -41,10 +41,8 @@ std::size_t random_index(std::size_t max)
     return dis(gen);
 }
 
-std::vector<xlnt::style> generate_all_styles(xlnt::workbook &wb)
+void generate_all_styles(xlnt::workbook &wb, std::vector<xlnt::style>& styles)
 {
-    std::vector<xlnt::style> styles;
-
     const auto vertical_alignments = std::vector<xlnt::vertical_alignment>
     {
         xlnt::vertical_alignment::center,
@@ -133,15 +131,23 @@ std::vector<xlnt::style> generate_all_styles(xlnt::workbook &wb)
             }
         }
     }
-
-    return styles;
 }
 
 xlnt::workbook non_optimized_workbook(int n)
 {
-    xlnt::workbook wb;
-    auto styles = generate_all_styles(wb);
+	using xlnt::benchmarks::current_time;
 
+    xlnt::workbook wb;
+	std::vector<xlnt::style> styles;
+	auto start = current_time();
+
+	generate_all_styles(wb, styles);
+	
+	auto elapsed = current_time() - start;
+	
+	std::cout << "took " << elapsed / 1000.0 << "s for " << n << " generate_all_styles" << std::endl;	
+
+	start = current_time();
     for(int idx = 1; idx < n; idx++)
     {
         auto worksheet = wb[random_index(wb.sheet_count())];
@@ -149,6 +155,10 @@ xlnt::workbook non_optimized_workbook(int n)
         cell.value(0);
         cell.style(styles.at(random_index(styles.size())));
     }
+
+	elapsed = current_time() - start;
+
+	std::cout << "took " << elapsed / 1000.0 << "s for " << n << " set values and styles for cells" << std::endl;
 
     return wb;
 }
@@ -161,7 +171,7 @@ void to_profile(xlnt::workbook &wb, const std::string &f, int n)
     wb.save(f);
     auto elapsed = current_time() - start;
 
-    std::cout << "took " << elapsed / 1000.0 << "s for " << n << " styles" << std::endl;
+    std::cout << "took " << elapsed / 1000.0 << "s for " << n << " save workbook with styles" << std::endl;
 }
 
 } // namespace
@@ -169,6 +179,9 @@ void to_profile(xlnt::workbook &wb, const std::string &f, int n)
 int main()
 {
     int n = 10000;
+
+	std::cout << "started. number of rows for styles " << n <<  std::endl;
+
     auto wb = non_optimized_workbook(n);
     std::string f = "temp.xlsx";
     to_profile(wb, f, n);
