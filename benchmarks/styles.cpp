@@ -146,31 +146,32 @@ xlnt::workbook non_optimized_workbook_formats(int rows_number, int columns_numbe
 
 	auto elapsed = current_time() - start;
 
-	std::cout << "took " << elapsed / 1000.0 << "s for " << rows_number << " rows. generate_all_formats, number of unique formats " << formats.size() << std::endl;
+	std::cout << "elapsed " << elapsed / 1000.0 << ". generate_all_formats. number of unique formats " << formats.size() << std::endl;
 
 	start = current_time();
 	auto worksheet = wb[random_index(wb.sheet_count())];
-
-	for (int row_idx = 1; row_idx < rows_number; row_idx++)
+	auto cells_proceeded = 0;
+	for (int row_idx = 1; row_idx <= rows_number; row_idx++)
 	{
-		for (int col_idx = 1; col_idx < columns_number; col_idx++)
+		for (int col_idx = 1; col_idx <= columns_number; col_idx++)
 		{
 			auto cell = worksheet.cell(xlnt::cell_reference((xlnt::column_t)col_idx, (xlnt::row_t)row_idx));
 			std::ostringstream string_stm;
 			string_stm << "Col: " << col_idx << "Row: " << row_idx;
 			cell.value(string_stm.str());
 			cell.format(formats.at(random_index(formats.size())));
+			cells_proceeded++;
 		}
 	}
 
 	elapsed = current_time() - start;
 
-	std::cout << "took " << elapsed / 1000.0 << "s for " << rows_number << " rows. set values and formats for cells" << std::endl;
+	std::cout << "elapsed " << elapsed / 1000.0 << ". set values and formats for cells. cells proceeded " << cells_proceeded << std::endl;
 
 	return wb;
 }
 
-void to_save_profile(xlnt::workbook &wb, const std::string &f, int n, const std::string &msg)
+void to_save_profile(xlnt::workbook &wb, const std::string &f)
 {
     using xlnt::benchmarks::current_time;
 
@@ -178,10 +179,10 @@ void to_save_profile(xlnt::workbook &wb, const std::string &f, int n, const std:
     wb.save(f);
     auto elapsed = current_time() - start;
 
-    std::cout << "took " << elapsed / 1000.0 << "s for " << n << " rows. save workbook with " << msg  << std::endl;
+    std::cout << "elapsed " << elapsed / 1000.0 << ". save workbook." << std::endl;
 }
 
-void to_load_profile(xlnt::workbook &wb, const std::string &f, int n, const std::string &msg)
+void to_load_profile(xlnt::workbook &wb, const std::string &f)
 {
 	using xlnt::benchmarks::current_time;
 	
@@ -189,35 +190,39 @@ void to_load_profile(xlnt::workbook &wb, const std::string &f, int n, const std:
 	wb.load(f);
 	auto elapsed = current_time() - start;
 
-	std::cout << "took " << elapsed / 1000.0 << "s for " << n << " rows. load workbook with " << msg << std::endl;
+	std::cout << "elapsed " << elapsed / 1000.0 << ". load workbook." << std::endl;
 }
 
-void read_formats_profile(xlnt::workbook &wb, int n)
+void read_formats_profile(xlnt::workbook &wb, int rows_number, int columns_number)
 {
 	using xlnt::benchmarks::current_time;
 
-	std::vector<int> values;
+	std::vector<std::string> values;
 	std::vector<xlnt::format> formats;
 	auto start = current_time();
-	for (int idx = 1; idx < n; idx++)
+	auto worksheet = wb[random_index(wb.sheet_count())];
+	for (int row_idx = 1; row_idx <= rows_number; row_idx++)
 	{
-		auto worksheet = wb[random_index(wb.sheet_count())];
-		auto cell = worksheet.cell(xlnt::cell_reference(1, (xlnt::row_t)idx));
-		values.push_back(cell.value<int>());
-		formats.push_back(cell.format());
+		for (int col_idx = 1; col_idx <= columns_number; col_idx++)
+		{
+			auto cell = worksheet.cell(xlnt::cell_reference((xlnt::column_t)col_idx, (xlnt::row_t)row_idx));
+			values.push_back(cell.value<std::string>());
+			formats.push_back(cell.format());
+		}
 	}
 
 	auto elapsed = current_time() - start;
 
-	std::cout << "took " << elapsed / 1000.0 << "s for " << n << " rows. read values and formats for cells" << std::endl;
+	std::cout << "elapsed " << elapsed / 1000.0 << ". read values and formats for cells. values count " << values.size() 
+		<< ". formats count " << formats.size() << std::endl;
 }
 
 } // namespace
 
 int main(int argc, char * argv[])
 {
-    int rows_number = 10000;
-	int columns_number = 100;
+    int rows_number = 1000;
+	int columns_number = 10;
 
 	try 
 	{
@@ -230,11 +235,11 @@ int main(int argc, char * argv[])
 		std::cout << "started. number of rows " << rows_number << ", number of columns " << columns_number << std::endl;
 		auto wb = non_optimized_workbook_formats(rows_number, columns_number);
 		auto f = "temp-formats.xlsx";
-		to_save_profile(wb, f, rows_number, "formats");
+		to_save_profile(wb, f);
 
 		xlnt::workbook load_formats_wb;
-		to_load_profile(load_formats_wb, f, rows_number, "formats");
-		read_formats_profile(load_formats_wb, rows_number);
+		to_load_profile(load_formats_wb, f);
+		read_formats_profile(load_formats_wb, rows_number, columns_number);
 	}
 	catch(std::exception& ex)
 	{
