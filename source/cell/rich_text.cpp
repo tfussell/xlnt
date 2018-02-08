@@ -38,6 +38,18 @@ rich_text::rich_text(const std::string &plain_text, const class font &text_font)
 {
 }
 
+rich_text::rich_text(const rich_text &other)
+{
+	(*this) = other;
+}
+
+rich_text& rich_text::operator=(const rich_text &rhs)
+{
+	runs_.clear();
+	runs_ = rhs.runs_;
+	return (*this);
+}
+
 rich_text::rich_text(const rich_text_run &single_run)
 {
     add_run(single_run);
@@ -56,6 +68,9 @@ void rich_text::plain_text(const std::string &s)
 
 std::string rich_text::plain_text() const
 {
+	if (runs_.size() == 1)
+		return runs_.begin()->first;
+
     return std::accumulate(runs_.begin(), runs_.end(), std::string(),
         [](const std::string &a, const rich_text_run &run) { return a + run.first; });
 }
