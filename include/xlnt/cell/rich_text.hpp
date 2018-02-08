@@ -119,6 +119,10 @@ public:
     /// </summary>
     bool operator!=(const std::string &rhs) const;
 
+	/// <summary>
+	/// Returns true if this text is less to rhs.
+	/// </summary>
+	bool operator<(const rich_text &rhs) const;
 private:
     /// <summary>
     /// The runs that make up this rich text.

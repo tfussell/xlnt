@@ -224,10 +224,15 @@ public:
     /// </summary>
     std::string scheme() const;
 
-    /// <summary>
-    /// Returns true if left is exactly equal to right.
-    /// </summary>
-    bool operator==(const font &other) const;
+	/// <summary>
+	/// Returns true if left is exactly equal to right.
+	/// </summary>
+	bool operator==(const font &other) const;
+	
+	/// <summary>
+	/// Returns true if left is less to right.
+	/// </summary>
+	bool operator<(const font &other) const;
 
     /// <summary>
     /// Returns true if left is not exactly equal to right.

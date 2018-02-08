@@ -286,4 +286,83 @@ bool font::operator==(const font &other) const
     return true;
 }
 
+bool font::operator<(const font &other) const
+{
+	if (bold() != other.bold())
+	{
+		return bold() < other.bold();
+	}
+
+	if (has_color() != other.has_color())
+	{
+		return has_color() < other.has_color();
+	}
+
+	if (has_color())
+	{
+		if (color() != other.color())
+		{
+			return color() < other.color();
+		}
+	}
+
+	if (has_family() != other.has_family())
+	{
+		return has_family() < other.has_family();
+	}
+
+	if (has_family())
+	{
+		if (family() != other.family())
+		{
+			return family() < other.family();
+		}
+	}
+
+	if (italic() != other.italic())
+	{
+		return italic() < other.italic();
+	}
+
+	if (name() != other.name())
+	{
+		return name() < other.name();
+	}
+
+	if (has_scheme() != other.has_scheme())
+	{
+		return has_scheme() < other.has_scheme();
+	}
+
+	if (has_scheme())
+	{
+		if (scheme() != other.scheme())
+		{
+			return scheme() < other.scheme();
+		}
+	}
+
+	if (std::fabs(size() - other.size()) != 0.0)
+	{
+		return size() < other.size();
+	}
+
+	if (strikethrough() != other.strikethrough())
+	{
+		return strikethrough() < other.strikethrough();
+	}
+
+	if (superscript() != other.superscript())
+	{
+		return superscript() < other.superscript();
+	}
+
+	if (underline() != other.underline())
+	{
+		return underline() < other.underline();
+	}
+
+	return false;
+}
+
 } // namespace xlnt

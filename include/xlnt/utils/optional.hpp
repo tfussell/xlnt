@@ -123,11 +123,20 @@ public:
     /// or both have a value and those values are equal according to
     /// their equality operator.
     /// </summary>
-    bool operator==(const optional<T> &other) const
-    {
-        return has_value_ == other.has_value_
-            && (!has_value_ || (has_value_ && value_ == other.value_));
-    }
+	bool operator==(const optional<T> &other) const
+	{
+		return has_value_ == other.has_value_
+			&& (!has_value_ || (has_value_ && value_ == other.value_));
+	}
+	
+    /// <summary>
+    /// Returns true if this is less to other
+    /// </summary>
+	bool operator<(const optional<T> &other) const
+	{
+		return has_value_ < other.has_value_
+			&& (!has_value_ || (has_value_ && value_ < other.value_));
+	}
 
 private:
     bool has_value_;

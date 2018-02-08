@@ -276,10 +276,15 @@ public:
     /// </summary>
     void tint(double tint);
 
-    /// <summary>
-    /// Returns true if this color is equivalent to other
-    /// </summary>
-    bool operator==(const color &other) const;
+	/// <summary>
+	/// Returns true if this color is less to other
+	/// </summary>
+	bool operator<(const color &other) const;
+	
+	/// <summary>
+	/// Returns true if this color is equivalent to other
+	/// </summary>
+	bool operator==(const color &other) const;
 
     /// <summary>
     /// Returns true if this color is not equivalent to other

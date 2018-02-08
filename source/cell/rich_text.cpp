@@ -85,6 +85,23 @@ void rich_text::add_run(const rich_text_run &t)
     runs_.push_back(t);
 }
 
+bool rich_text::operator<(const rich_text &rhs) const
+{
+	if (runs_.size() < rhs.runs_.size())
+		return true;
+	
+	if (runs_.size() > rhs.runs_.size())
+		return false;
+
+	for (std::size_t i = 0; i < runs_.size(); i++)
+	{
+		if (runs_[i] != rhs.runs_[i]) 
+			return runs_[i] < rhs.runs_[i];
+	}
+
+	return false;
+}
+
 bool rich_text::operator==(const rich_text &rhs) const
 {
     if (runs_.size() != rhs.runs_.size()) return false;
