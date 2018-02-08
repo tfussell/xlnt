@@ -53,7 +53,8 @@ struct workbook_impl
     workbook_impl(const workbook_impl &other)
         : active_sheet_index_(other.active_sheet_index_),
           worksheets_(other.worksheets_),
-          shared_strings_(other.shared_strings_),
+          shared_strings_ids_(other.shared_strings_ids_),
+		  shared_strings_values_(other.shared_strings_values_),
           stylesheet_(other.stylesheet_),
           manifest_(other.manifest_),
           theme_(other.theme_),
@@ -71,8 +72,8 @@ struct workbook_impl
         active_sheet_index_ = other.active_sheet_index_;
         worksheets_.clear();
         std::copy(other.worksheets_.begin(), other.worksheets_.end(), back_inserter(worksheets_));
-        shared_strings_.clear();
-        std::copy(other.shared_strings_.begin(), other.shared_strings_.end(), std::back_inserter(shared_strings_));
+		shared_strings_ids_ = other.shared_strings_ids_;
+		shared_strings_values_ = other.shared_strings_values_;
 		theme_ = other.theme_;
         manifest_ = other.manifest_;
 
@@ -91,7 +92,8 @@ struct workbook_impl
     optional<std::size_t> active_sheet_index_;
 
     std::list<worksheet_impl> worksheets_;
-    std::vector<rich_text> shared_strings_;
+    std::unordered_map<rich_text, std::size_t, rich_text_hash> shared_strings_ids_;
+	std::map<std::size_t, rich_text> shared_strings_values_;
 
     optional<stylesheet> stylesheet_;
 

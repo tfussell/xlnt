@@ -1675,18 +1675,17 @@ void xlsx_consumer::read_shared_string_table()
         unique_count = parser().attribute<std::size_t>("uniqueCount");
     }
 
-    auto &strings = target_.shared_strings();
-
     while (in_element(qn("spreadsheetml", "sst")))
     {
         expect_start_element(qn("spreadsheetml", "si"), xml::content::complex);
-        strings.push_back(read_rich_text(qn("spreadsheetml", "si")));
+		auto rt = read_rich_text(qn("spreadsheetml", "si"));
+		target_.add_shared_string(rt);
         expect_end_element(qn("spreadsheetml", "si"));
     }
 
     expect_end_element(qn("spreadsheetml", "sst"));
 
-    if (has_unique_count && unique_count != strings.size())
+    if (has_unique_count && unique_count != target_.shared_strings().size())
     {
         throw invalid_file("sizes don't match");
     }

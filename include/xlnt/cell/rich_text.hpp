@@ -130,4 +130,18 @@ private:
     std::vector<rich_text_run> runs_;
 };
 
+class XLNT_API rich_text_hash 
+{
+public:
+	std::size_t operator()(const rich_text& k) const
+	{
+		std::size_t res = 0;
+
+		for (auto r : k.runs())
+			res ^= std::hash<std::string>()(r.first);
+
+		return res;
+	}
+};
+
 } // namespace xlnt
