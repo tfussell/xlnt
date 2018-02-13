@@ -1,0 +1,519 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\cell\cell.cpp">
+      <Filter>cell</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\cell\cell_reference.cpp">
+      <Filter>cell</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\cell\comment.cpp">
+      <Filter>cell</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\cell\index_types.cpp">
+      <Filter>cell</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\cell\rich_text.cpp">
+      <Filter>cell</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\cell\rich_text_run.cpp">
+      <Filter>cell</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\packaging\manifest.cpp">
+      <Filter>packaging</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\packaging\relationship.cpp">
+      <Filter>packaging</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\packaging\uri.cpp">
+      <Filter>packaging</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\styles\alignment.cpp">
+      <Filter>styles</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\styles\border.cpp">
+      <Filter>styles</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\styles\color.cpp">
+      <Filter>styles</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\styles\conditional_format.cpp">
+      <Filter>styles</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\styles\fill.cpp">
+      <Filter>styles</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\styles\font.cpp">
+      <Filter>styles</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\styles\format.cpp">
+      <Filter>styles</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\styles\number_format.cpp">
+      <Filter>styles</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\styles\protection.cpp">
+      <Filter>styles</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\styles\style.cpp">
+      <Filter>styles</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\utils\date.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\utils\datetime.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\utils\exceptions.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\utils\path.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\utils\time.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\utils\timedelta.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\utils\variant.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\workbook\named_range.cpp">
+      <Filter>workbook</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\workbook\streaming_workbook_reader.cpp">
+      <Filter>workbook</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\workbook\streaming_workbook_writer.cpp">
+      <Filter>workbook</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\workbook\workbook.cpp">
+      <Filter>workbook</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\workbook\worksheet_iterator.cpp">
+      <Filter>workbook</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\worksheet\cell_iterator.cpp">
+      <Filter>worksheet</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\worksheet\cell_vector.cpp">
+      <Filter>worksheet</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\worksheet\header_footer.cpp">
+      <Filter>worksheet</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\worksheet\page_margins.cpp">
+      <Filter>worksheet</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\worksheet\page_setup.cpp">
+      <Filter>worksheet</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\worksheet\range.cpp">
+      <Filter>worksheet</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\worksheet\range_iterator.cpp">
+      <Filter>worksheet</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\worksheet\range_reference.cpp">
+      <Filter>worksheet</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\worksheet\sheet_protection.cpp">
+      <Filter>worksheet</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\worksheet\worksheet.cpp">
+      <Filter>worksheet</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\detail\constants.cpp">
+      <Filter>detail</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\detail\unicode.cpp">
+      <Filter>detail</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\detail\cryptography\aes.cpp">
+      <Filter>detail\cryptography</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\detail\cryptography\base64.cpp">
+      <Filter>detail\cryptography</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\detail\cryptography\compound_document.cpp">
+      <Filter>detail\cryptography</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\detail\cryptography\encryption_info.cpp">
+      <Filter>detail\cryptography</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\detail\cryptography\hash.cpp">
+      <Filter>detail\cryptography</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\detail\cryptography\sha.cpp">
+      <Filter>detail\cryptography</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\detail\cryptography\sha1.c">
+      <Filter>detail\cryptography</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\detail\cryptography\sha512.c">
+      <Filter>detail\cryptography</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\detail\cryptography\xlsx_crypto_consumer.cpp">
+      <Filter>detail\cryptography</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\detail\cryptography\xlsx_crypto_producer.cpp">
+      <Filter>detail\cryptography</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\detail\header_footer\header_footer_code.cpp">
+      <Filter>detail\header_footer</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\detail\implementations\cell_impl.cpp">
+      <Filter>detail\implementations</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\detail\number_format\number_formatter.cpp">
+      <Filter>detail\number_format</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\detail\serialization\custom_value_traits.cpp">
+      <Filter>detail\serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\detail\serialization\miniz.cpp">
+      <Filter>detail\serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\detail\serialization\open_stream.cpp">
+      <Filter>detail\serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\detail\serialization\vector_streambuf.cpp">
+      <Filter>detail\serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\detail\serialization\xlsx_consumer.cpp">
+      <Filter>detail\serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\detail\serialization\xlsx_producer.cpp">
+      <Filter>detail\serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\source\detail\serialization\zstream.cpp">
+      <Filter>detail\serialization</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\xlnt.hpp">
+      <Filter>xlnt</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\xlnt_config.hpp">
+      <Filter>xlnt</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\cell\cell.hpp">
+      <Filter>cell</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\cell\cell_reference.hpp">
+      <Filter>cell</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\cell\cell_type.hpp">
+      <Filter>cell</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\cell\comment.hpp">
+      <Filter>cell</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\cell\index_types.hpp">
+      <Filter>cell</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\cell\rich_text.hpp">
+      <Filter>cell</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\cell\rich_text_run.hpp">
+      <Filter>cell</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\packaging\manifest.hpp">
+      <Filter>packaging</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\packaging\relationship.hpp">
+      <Filter>packaging</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\packaging\uri.hpp">
+      <Filter>packaging</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\styles\alignment.hpp">
+      <Filter>styles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\styles\border.hpp">
+      <Filter>styles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\styles\color.hpp">
+      <Filter>styles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\styles\conditional_format.hpp">
+      <Filter>styles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\styles\fill.hpp">
+      <Filter>styles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\styles\font.hpp">
+      <Filter>styles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\styles\format.hpp">
+      <Filter>styles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\styles\number_format.hpp">
+      <Filter>styles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\styles\protection.hpp">
+      <Filter>styles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\styles\style.hpp">
+      <Filter>styles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\utils\calendar.hpp">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\utils\date.hpp">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\utils\datetime.hpp">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\utils\exceptions.hpp">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\utils\optional.hpp">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\utils\path.hpp">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\utils\scoped_enum_hash.hpp">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\utils\time.hpp">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\utils\timedelta.hpp">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\utils\variant.hpp">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\workbook\calculation_properties.hpp">
+      <Filter>workbook</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\workbook\document_security.hpp">
+      <Filter>workbook</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\workbook\external_book.hpp">
+      <Filter>workbook</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\workbook\metadata_property.hpp">
+      <Filter>workbook</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\workbook\named_range.hpp">
+      <Filter>workbook</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\workbook\streaming_workbook_reader.hpp">
+      <Filter>workbook</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\workbook\streaming_workbook_writer.hpp">
+      <Filter>workbook</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\workbook\theme.hpp">
+      <Filter>workbook</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\workbook\workbook.hpp">
+      <Filter>workbook</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\workbook\workbook_view.hpp">
+      <Filter>workbook</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\workbook\worksheet_iterator.hpp">
+      <Filter>workbook</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\worksheet\cell_iterator.hpp">
+      <Filter>worksheet</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\worksheet\cell_vector.hpp">
+      <Filter>worksheet</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\worksheet\column_properties.hpp">
+      <Filter>worksheet</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\worksheet\header_footer.hpp">
+      <Filter>worksheet</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\worksheet\major_order.hpp">
+      <Filter>worksheet</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\worksheet\page_margins.hpp">
+      <Filter>worksheet</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\worksheet\page_setup.hpp">
+      <Filter>worksheet</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\worksheet\pane.hpp">
+      <Filter>worksheet</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\worksheet\range.hpp">
+      <Filter>worksheet</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\worksheet\range_iterator.hpp">
+      <Filter>worksheet</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\worksheet\range_reference.hpp">
+      <Filter>worksheet</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\worksheet\row_properties.hpp">
+      <Filter>worksheet</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\worksheet\selection.hpp">
+      <Filter>worksheet</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\worksheet\sheet_protection.hpp">
+      <Filter>worksheet</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\worksheet\sheet_view.hpp">
+      <Filter>worksheet</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\include\xlnt\worksheet\worksheet.hpp">
+      <Filter>worksheet</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\binary.hpp">
+      <Filter>detail</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\constants.hpp">
+      <Filter>detail</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\default_case.hpp">
+      <Filter>detail</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\unicode.hpp">
+      <Filter>detail</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\cryptography\aes.hpp">
+      <Filter>detail\cryptography</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\cryptography\base64.hpp">
+      <Filter>detail\cryptography</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\cryptography\cipher.hpp">
+      <Filter>detail\cryptography</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\cryptography\compound_document.hpp">
+      <Filter>detail\cryptography</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\cryptography\encryption_info.hpp">
+      <Filter>detail\cryptography</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\cryptography\hash.hpp">
+      <Filter>detail\cryptography</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\cryptography\sha.hpp">
+      <Filter>detail\cryptography</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\cryptography\value_traits.hpp">
+      <Filter>detail\cryptography</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\cryptography\xlsx_crypto_consumer.hpp">
+      <Filter>detail\cryptography</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\cryptography\xlsx_crypto_producer.hpp">
+      <Filter>detail\cryptography</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\external\include_libstudxml.hpp">
+      <Filter>detail\external</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\external\include_windows.hpp">
+      <Filter>detail\external</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\header_footer\header_footer_code.hpp">
+      <Filter>detail\header_footer</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\implementations\cell_impl.hpp">
+      <Filter>detail\implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\implementations\conditional_format_impl.hpp">
+      <Filter>detail\implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\implementations\format_impl.hpp">
+      <Filter>detail\implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\implementations\formatting_record.hpp">
+      <Filter>detail\implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\implementations\style_impl.hpp">
+      <Filter>detail\implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\implementations\stylesheet.hpp">
+      <Filter>detail\implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\implementations\workbook_impl.hpp">
+      <Filter>detail\implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\implementations\worksheet_impl.hpp">
+      <Filter>detail\implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\number_format\number_formatter.hpp">
+      <Filter>detail\number_format</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\serialization\custom_value_traits.hpp">
+      <Filter>detail\serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\serialization\excel_thumbnail.hpp">
+      <Filter>detail\serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\serialization\miniz.hpp">
+      <Filter>detail\serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\serialization\open_stream.hpp">
+      <Filter>detail\serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\serialization\vector_streambuf.hpp">
+      <Filter>detail\serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\serialization\xlsx_consumer.hpp">
+      <Filter>detail\serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\serialization\xlsx_producer.hpp">
+      <Filter>detail\serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\source\detail\serialization\zstream.hpp">
+      <Filter>detail\serialization</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="detail\cryptography">
+      <UniqueIdentifier>{E7991589-D8D2-39EC-8124-9B0F9A7E74AC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="detail\external">
+      <UniqueIdentifier>{9C2E0147-B8A0-3AB2-BD2B-3C2F6948735D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="detail\header_footer">
+      <UniqueIdentifier>{CB68FA7C-C702-3961-A804-BFFE844AFCC0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="detail\implementations">
+      <UniqueIdentifier>{FD900E26-EF56-3DC6-AE3E-0DBFBE1F86BD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="detail\number_format">
+      <UniqueIdentifier>{096CE543-41E8-3DBE-9DCE-633DF8663A14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="detail\serialization">
+      <UniqueIdentifier>{8CB0E4ED-908E-3A15-882A-F87E2B5DED7D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="xlnt">
+      <UniqueIdentifier>{E23E9A10-C91B-3BEA-B975-9F0868DD552E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cell">
+      <UniqueIdentifier>{7F3423BC-8316-3517-A1EA-74ED912D0316}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="detail">
+      <UniqueIdentifier>{6D86B74E-6C83-3F31-A9F3-0BAB1649E2F6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="packaging">
+      <UniqueIdentifier>{04AA6705-6716-3FD2-B1D0-13F6147A88A5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="styles">
+      <UniqueIdentifier>{5A4AD50C-2DC3-37BE-97C5-132906D4DEFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils">
+      <UniqueIdentifier>{D0D88F1B-981A-35B4-AF78-AE2019C4AF3E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="workbook">
+      <UniqueIdentifier>{ABB2678B-497F-334E-997C-C3AB732BC10B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="worksheet">
+      <UniqueIdentifier>{7AAD177E-5395-3F2C-99BF-042865E1CE01}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="D:\WORK\thirdparty\xlnt\tests\runner.cpp">
+      <Filter>runner</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\cell\cell_test_suite.hpp">
+      <Filter>tests\cell</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\cell\index_types_test_suite.hpp">
+      <Filter>tests\cell</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\cell\rich_text_test_suite.hpp">
+      <Filter>tests\cell</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\styles\alignment_test_suite.hpp">
+      <Filter>tests\styles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\styles\color_test_suite.hpp">
+      <Filter>tests\styles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\styles\fill_test_suite.hpp">
+      <Filter>tests\styles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\styles\number_format_test_suite.hpp">
+      <Filter>tests\styles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\utils\datetime_test_suite.hpp">
+      <Filter>tests\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\utils\helper_test_suite.hpp">
+      <Filter>tests\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\utils\path_test_suite.hpp">
+      <Filter>tests\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\utils\timedelta_test_suite.hpp">
+      <Filter>tests\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\workbook\named_range_test_suite.hpp">
+      <Filter>tests\workbook</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\workbook\serialization_test_suite.hpp">
+      <Filter>tests\workbook</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\workbook\workbook_test_suite.hpp">
+      <Filter>tests\workbook</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\worksheet\page_setup_test_suite.hpp">
+      <Filter>tests\worksheet</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\worksheet\range_test_suite.hpp">
+      <Filter>tests\worksheet</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\worksheet\worksheet_test_suite.hpp">
+      <Filter>tests\worksheet</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\helpers\assertions.hpp">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\helpers\path_helper.hpp">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\helpers\temporary_directory.hpp">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\helpers\temporary_file.hpp">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\helpers\test_suite.hpp">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\helpers\timing.hpp">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\helpers\xml_helper.hpp">
+      <Filter>helpers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="tests\cell">
+      <UniqueIdentifier>{D8B803D1-E1C0-32F7-87C2-EB06CCB66B1B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tests\styles">
+      <UniqueIdentifier>{73A73209-78D2-3DE9-8345-89D4638A4FE1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tests\utils">
+      <UniqueIdentifier>{7FABCF40-C7B0-3FB5-AA24-78B9C9AB9175}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tests\workbook">
+      <UniqueIdentifier>{15FE42A2-D62D-3564-9E53-A76FFCCDA6F3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tests\worksheet">
+      <UniqueIdentifier>{897ECB03-E585-33BE-A3AD-B9C5249A3567}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="helpers">
+      <UniqueIdentifier>{33FB2775-89F1-33C8-827F-9893B45FEF6B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="runner">
+      <UniqueIdentifier>{8B0BFE44-3BF8-3FF1-979E-1BB7CB0B3AF2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tests">
+      <UniqueIdentifier>{D776C23A-76D6-3210-A83A-FD1389543998}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
