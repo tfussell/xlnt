@@ -1,86 +1,40 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\parser.cxx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\qname.cxx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\serializer.cxx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\value-traits.cxx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\details\genx\char-props.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\details\genx\genx.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\details\expat\xmlparse.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\details\expat\xmlrole.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\details\expat\xmltok.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClCompile Include="$(SolutionDir)..\third-party\libstudxml\xml\parser.cxx" />
+    <ClCompile Include="$(SolutionDir)..\third-party\libstudxml\xml\qname.cxx" />
+    <ClCompile Include="$(SolutionDir)..\third-party\libstudxml\xml\serializer.cxx" />
+    <ClCompile Include="$(SolutionDir)..\third-party\libstudxml\xml\value-traits.cxx" />
+    <ClCompile Include="$(SolutionDir)..\third-party\libstudxml\xml\details\genx\char-props.c" />
+    <ClCompile Include="$(SolutionDir)..\third-party\libstudxml\xml\details\genx\genx.c" />
+    <ClCompile Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\xmlparse.c" />
+    <ClCompile Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\xmlrole.c" />
+    <ClCompile Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\xmltok.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\details\genx\genx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\details\expat\ascii.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\details\expat\asciitab.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\details\expat\config.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\details\expat\expat_external.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\details\expat\expat.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\details\expat\iasciitab.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\details\expat\internal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\details\expat\latin1tab.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\details\expat\nametab.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\details\expat\utf8tab.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\details\expat\xmlrole.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\details\expat\xmltok_impl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\details\expat\xmltok.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\genx\genx.h" />
+    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\ascii.h" />
+    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\asciitab.h" />
+    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\config.h" />
+    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\expat_external.h" />
+    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\expat.h" />
+    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\iasciitab.h" />
+    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\internal.h" />
+    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\latin1tab.h" />
+    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\nametab.h" />
+    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\utf8tab.h" />
+    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\xmlrole.h" />
+    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\xmltok_impl.h" />
+    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\xmltok.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\content" />
-    <None Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\exception" />
-    <None Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\forward" />
-    <None Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\parser" />
-    <None Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\qname" />
-    <None Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\serializer" />
-    <None Include="D:\WORK\thirdparty\xlnt\third-party\libstudxml\xml\value-traits" />
+    <None Include="$(SolutionDir)..\third-party\libstudxml\xml\content" />
+    <None Include="$(SolutionDir)..\third-party\libstudxml\xml\exception" />
+    <None Include="$(SolutionDir)..\third-party\libstudxml\xml\forward" />
+    <None Include="$(SolutionDir)..\third-party\libstudxml\xml\parser" />
+    <None Include="$(SolutionDir)..\third-party\libstudxml\xml\qname" />
+    <None Include="$(SolutionDir)..\third-party\libstudxml\xml\serializer" />
+    <None Include="$(SolutionDir)..\third-party\libstudxml\xml\value-traits" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
