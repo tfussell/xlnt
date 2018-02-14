@@ -96,10 +96,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;LIBSTUDXML_STATIC_LIB=1;XML_STATIC=1;_CRT_SECURE_NO_WARNINGS=1;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\third-party\libstudxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\third-party\libstudxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\third-party\libstudxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\third-party\libstudxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -129,10 +129,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;LIBSTUDXML_STATIC_LIB=1;XML_STATIC=1;_CRT_SECURE_NO_WARNINGS=1;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\third-party\libstudxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\third-party\libstudxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\third-party\libstudxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\third-party\libstudxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -162,10 +162,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;LIBSTUDXML_STATIC_LIB=1;XML_STATIC=1;_CRT_SECURE_NO_WARNINGS=1;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\third-party\libstudxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\third-party\libstudxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\third-party\libstudxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\third-party\libstudxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -195,10 +195,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;LIBSTUDXML_STATIC_LIB=1;XML_STATIC=1;_CRT_SECURE_NO_WARNINGS=1;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\third-party\libstudxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\third-party\libstudxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\third-party\libstudxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\third-party\libstudxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -210,61 +210,61 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="$(SolutionDir)..\third-party\libstudxml\xml\parser.cxx" />
-    <ClCompile Include="$(SolutionDir)..\third-party\libstudxml\xml\qname.cxx" />
-    <ClCompile Include="$(SolutionDir)..\third-party\libstudxml\xml\serializer.cxx" />
-    <ClCompile Include="$(SolutionDir)..\third-party\libstudxml\xml\value-traits.cxx" />
-    <None Include="$(SolutionDir)..\third-party\libstudxml\xml\content" />
-    <None Include="$(SolutionDir)..\third-party\libstudxml\xml\exception" />
-    <None Include="$(SolutionDir)..\third-party\libstudxml\xml\forward" />
-    <None Include="$(SolutionDir)..\third-party\libstudxml\xml\parser" />
-    <None Include="$(SolutionDir)..\third-party\libstudxml\xml\qname" />
-    <None Include="$(SolutionDir)..\third-party\libstudxml\xml\serializer" />
-    <None Include="$(SolutionDir)..\third-party\libstudxml\xml\value-traits" />
-    <ClCompile Include="$(SolutionDir)..\third-party\libstudxml\xml\details\genx\char-props.c">
+    <ClCompile Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\parser.cxx" />
+    <ClCompile Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\qname.cxx" />
+    <ClCompile Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\serializer.cxx" />
+    <ClCompile Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\value-traits.cxx" />
+    <None Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\content" />
+    <None Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\exception" />
+    <None Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\forward" />
+    <None Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\parser" />
+    <None Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\qname" />
+    <None Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\serializer" />
+    <None Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\value-traits" />
+    <ClCompile Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\details\genx\char-props.c">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsC</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsC</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)..\third-party\libstudxml\xml\details\genx\genx.c">
+    <ClCompile Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\details\genx\genx.c">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsC</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsC</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
     </ClCompile>
-    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\genx\genx.h" />
-    <ClCompile Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\xmlparse.c">
+    <ClInclude Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\details\genx\genx.h" />
+    <ClCompile Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\details\expat\xmlparse.c">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsC</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsC</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\xmlrole.c">
+    <ClCompile Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\details\expat\xmlrole.c">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsC</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsC</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\xmltok.c">
+    <ClCompile Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\details\expat\xmltok.c">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsC</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsC</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
     </ClCompile>
-    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\ascii.h" />
-    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\asciitab.h" />
-    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\config.h" />
-    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\expat_external.h" />
-    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\expat.h" />
-    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\iasciitab.h" />
-    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\internal.h" />
-    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\latin1tab.h" />
-    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\nametab.h" />
-    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\utf8tab.h" />
-    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\xmlrole.h" />
-    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\xmltok_impl.h" />
-    <ClInclude Include="$(SolutionDir)..\third-party\libstudxml\xml\details\expat\xmltok.h" />
+    <ClInclude Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\details\expat\ascii.h" />
+    <ClInclude Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\details\expat\asciitab.h" />
+    <ClInclude Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\details\expat\config.h" />
+    <ClInclude Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\details\expat\expat_external.h" />
+    <ClInclude Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\details\expat\expat.h" />
+    <ClInclude Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\details\expat\iasciitab.h" />
+    <ClInclude Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\details\expat\internal.h" />
+    <ClInclude Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\details\expat\latin1tab.h" />
+    <ClInclude Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\details\expat\nametab.h" />
+    <ClInclude Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\details\expat\utf8tab.h" />
+    <ClInclude Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\details\expat\xmlrole.h" />
+    <ClInclude Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\details\expat\xmltok_impl.h" />
+    <ClInclude Include="$(ProjectDir)..\..\..\..\third-party\libstudxml\xml\details\expat\xmltok.h" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>
