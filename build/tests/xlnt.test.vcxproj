@@ -165,11 +165,11 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;XLNT_TEST_DATA_DIR=D:/WORK/thirdparty/xlnt/tests/data;XLNT_STATIC=1;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;XLNT_TEST_DATA_DIR="$(SolutionDir)..\tests\data";XLNT_BENCHMARK_DATA_DIR="$(SolutionDir)..\benchmarks\data";XLNT_STATIC=1;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;XLNT_TEST_DATA_DIR=D:/WORK/thirdparty/xlnt/tests/data;XLNT_STATIC=1;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;XLNT_TEST_DATA_DIR="$(SolutionDir)..\tests\data";XLNT_BENCHMARK_DATA_DIR="$(SolutionDir)..\benchmarks\data";XLNT_STATIC=1;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\tests;$(SolutionDir)..\tests\..\source;$(SolutionDir)..\tests\..\third-party\libstudxml;$(SolutionDir)..\source\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
@@ -181,13 +181,10 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)bin\$(Configuration)\$(Platform)\libstudxml.lib;$(SolutionDir)bin\$(Configuration)\$(Platform)\xLnt.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>Debug</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>D:/WORK/thirdparty/xlnt/build/tests/Debug/xlnt.test.lib</ImportLibrary>
-      <ProgramDataBaseFile>D:/WORK/thirdparty/xlnt/build/tests/Debug/xlnt.test.pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
     </Link>
     <ProjectReference>
@@ -210,11 +207,11 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;XLNT_TEST_DATA_DIR=D:/WORK/thirdparty/xlnt/tests/data;XLNT_STATIC=1;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>XLNT_TEST_DATA_DIR="$(SolutionDir)..\tests\data";XLNT_BENCHMARK_DATA_DIR="$(SolutionDir)..\benchmarks\data";WIN32;_WINDOWS;XLNT_STATIC=1;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;XLNT_TEST_DATA_DIR=D:/WORK/thirdparty/xlnt/tests/data;XLNT_STATIC=1;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;XLNT_TEST_DATA_DIR="$(SolutionDir)..\tests\data";XLNT_BENCHMARK_DATA_DIR="$(SolutionDir)..\benchmarks\data";XLNT_STATIC=1;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\tests;$(SolutionDir)..\tests\..\source;$(SolutionDir)..\tests\..\third-party\libstudxml;$(SolutionDir)..\source\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
@@ -226,13 +223,10 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)bin\$(Configuration)\$(Platform)\libstudxml.lib;$(SolutionDir)bin\$(Configuration)\$(Platform)\xLnt.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>Debug</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>D:/WORK/thirdparty/xlnt/build/tests/Debug/xlnt.test.lib</ImportLibrary>
-      <ProgramDataBaseFile>D:/WORK/thirdparty/xlnt/build/tests/Debug/xlnt.test.pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
     </Link>
     <ProjectReference>
@@ -253,13 +247,13 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;XLNT_TEST_DATA_DIR=D:/WORK/thirdparty/xlnt/tests/data;XLNT_STATIC=1;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;XLNT_TEST_DATA_DIR="$(SolutionDir)..\tests\data";XLNT_BENCHMARK_DATA_DIR="$(SolutionDir)..\benchmarks\data";XLNT_STATIC=1;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <DebugInformationFormat>
       </DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;XLNT_TEST_DATA_DIR=D:/WORK/thirdparty/xlnt/tests/data;XLNT_STATIC=1;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;XLNT_TEST_DATA_DIR="$(SolutionDir)..\tests\data";XLNT_BENCHMARK_DATA_DIR="$(SolutionDir)..\benchmarks\data";XLNT_STATIC=1;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\tests;$(SolutionDir)..\tests\..\source;$(SolutionDir)..\tests\..\third-party\libstudxml;$(SolutionDir)..\source\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
@@ -271,13 +265,10 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)bin\$(Configuration)\$(Platform)\libstudxml.lib;$(SolutionDir)bin\$(Configuration)\$(Platform)\xLnt.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>No</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>D:/WORK/thirdparty/xlnt/build/tests/Release/xlnt.test.lib</ImportLibrary>
-      <ProgramDataBaseFile>D:/WORK/thirdparty/xlnt/build/tests/Release/xlnt.test.pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
     </Link>
     <ProjectReference>
@@ -298,13 +289,13 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;XLNT_TEST_DATA_DIR=D:/WORK/thirdparty/xlnt/tests/data;XLNT_STATIC=1;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;XLNT_TEST_DATA_DIR="$(SolutionDir)..\tests\data";XLNT_BENCHMARK_DATA_DIR="$(SolutionDir)..\benchmarks\data";XLNT_STATIC=1;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <DebugInformationFormat>
       </DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;XLNT_TEST_DATA_DIR=D:/WORK/thirdparty/xlnt/tests/data;XLNT_STATIC=1;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;XLNT_TEST_DATA_DIR="$(SolutionDir)..\tests\data";XLNT_BENCHMARK_DATA_DIR="$(SolutionDir)..\benchmarks\data";XLNT_STATIC=1;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\tests;$(SolutionDir)..\tests\..\source;$(SolutionDir)..\tests\..\third-party\libstudxml;$(SolutionDir)..\source\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
@@ -316,13 +307,10 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)bin\$(Configuration)\$(Platform)\libstudxml.lib;$(SolutionDir)bin\$(Configuration)\$(Platform)\xLnt.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>No</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>D:/WORK/thirdparty/xlnt/build/tests/Release/xlnt.test.lib</ImportLibrary>
-      <ProgramDataBaseFile>D:/WORK/thirdparty/xlnt/build/tests/Release/xlnt.test.pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
     </Link>
     <ProjectReference>
@@ -343,13 +331,13 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;XLNT_TEST_DATA_DIR=D:/WORK/thirdparty/xlnt/tests/data;XLNT_STATIC=1;CMAKE_INTDIR="MinSizeRel";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;XLNT_TEST_DATA_DIR="$(SolutionDir)..\tests\data";XLNT_BENCHMARK_DATA_DIR="$(SolutionDir)..\benchmarks\data";XLNT_STATIC=1;CMAKE_INTDIR="MinSizeRel";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <DebugInformationFormat>
       </DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;XLNT_TEST_DATA_DIR=D:/WORK/thirdparty/xlnt/tests/data;XLNT_STATIC=1;CMAKE_INTDIR=\"MinSizeRel\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;XLNT_TEST_DATA_DIR="$(SolutionDir)..\tests\data";XLNT_BENCHMARK_DATA_DIR="$(SolutionDir)..\benchmarks\data";XLNT_STATIC=1;CMAKE_INTDIR=\"MinSizeRel\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\tests;$(SolutionDir)..\tests\..\source;$(SolutionDir)..\tests\..\third-party\libstudxml;$(SolutionDir)..\source\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
@@ -361,13 +349,10 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>..\source\MinSizeRel\xlnt.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)bin\$(Configuration)\$(Platform)\libstudxml.lib;$(SolutionDir)bin\$(Configuration)\$(Platform)\xLnt.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>No</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>D:/WORK/thirdparty/xlnt/build/tests/MinSizeRel/xlnt.test.lib</ImportLibrary>
-      <ProgramDataBaseFile>D:/WORK/thirdparty/xlnt/build/tests/MinSizeRel/xlnt.test.pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
     </Link>
     <ProjectReference>
@@ -388,13 +373,13 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;XLNT_TEST_DATA_DIR=D:/WORK/thirdparty/xlnt/tests/data;XLNT_STATIC=1;CMAKE_INTDIR="MinSizeRel";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;XLNT_TEST_DATA_DIR="$(SolutionDir)..\tests\data";XLNT_BENCHMARK_DATA_DIR="$(SolutionDir)..\benchmarks\data";XLNT_STATIC=1;CMAKE_INTDIR="MinSizeRel";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <DebugInformationFormat>
       </DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;XLNT_TEST_DATA_DIR=D:/WORK/thirdparty/xlnt/tests/data;XLNT_STATIC=1;CMAKE_INTDIR=\"MinSizeRel\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;XLNT_TEST_DATA_DIR="$(SolutionDir)..\tests\data";XLNT_BENCHMARK_DATA_DIR="$(SolutionDir)..\benchmarks\data";XLNT_STATIC=1;CMAKE_INTDIR=\"MinSizeRel\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\tests;$(SolutionDir)..\tests\..\source;$(SolutionDir)..\tests\..\third-party\libstudxml;$(SolutionDir)..\source\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
@@ -406,13 +391,10 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>..\source\MinSizeRel\xlnt.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)bin\$(Configuration)\$(Platform)\libstudxml.lib;$(SolutionDir)bin\$(Configuration)\$(Platform)\xLnt.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>No</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>D:/WORK/thirdparty/xlnt/build/tests/MinSizeRel/xlnt.test.lib</ImportLibrary>
-      <ProgramDataBaseFile>D:/WORK/thirdparty/xlnt/build/tests/MinSizeRel/xlnt.test.pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
     </Link>
     <ProjectReference>
@@ -434,11 +416,11 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;XLNT_TEST_DATA_DIR=D:/WORK/thirdparty/xlnt/tests/data;XLNT_STATIC=1;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;XLNT_TEST_DATA_DIR="$(SolutionDir)..\tests\data";XLNT_BENCHMARK_DATA_DIR="$(SolutionDir)..\benchmarks\data";XLNT_STATIC=1;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;XLNT_TEST_DATA_DIR=D:/WORK/thirdparty/xlnt/tests/data;XLNT_STATIC=1;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;XLNT_TEST_DATA_DIR="$(SolutionDir)..\tests\data";XLNT_BENCHMARK_DATA_DIR="$(SolutionDir)..\benchmarks\data";XLNT_STATIC=1;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\tests;$(SolutionDir)..\tests\..\source;$(SolutionDir)..\tests\..\third-party\libstudxml;$(SolutionDir)..\source\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
@@ -450,13 +432,10 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>..\source\RelWithDebInfo\xlnt.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)bin\$(Configuration)\$(Platform)\libstudxml.lib;$(SolutionDir)bin\$(Configuration)\$(Platform)\xLnt.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>Debug</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>D:/WORK/thirdparty/xlnt/build/tests/RelWithDebInfo/xlnt.test.lib</ImportLibrary>
-      <ProgramDataBaseFile>D:/WORK/thirdparty/xlnt/build/tests/RelWithDebInfo/xlnt.test.pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
     </Link>
     <ProjectReference>
@@ -478,11 +457,11 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;XLNT_TEST_DATA_DIR=D:/WORK/thirdparty/xlnt/tests/data;XLNT_STATIC=1;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;XLNT_TEST_DATA_DIR="$(SolutionDir)..\tests\data";XLNT_BENCHMARK_DATA_DIR="$(SolutionDir)..\benchmarks\data";XLNT_STATIC=1;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;XLNT_TEST_DATA_DIR=D:/WORK/thirdparty/xlnt/tests/data;XLNT_STATIC=1;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;XLNT_TEST_DATA_DIR="$(SolutionDir)..\tests\data";XLNT_BENCHMARK_DATA_DIR="$(SolutionDir)..\benchmarks\data";XLNT_STATIC=1;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\tests;$(SolutionDir)..\tests\..\source;$(SolutionDir)..\tests\..\third-party\libstudxml;$(SolutionDir)..\source\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
@@ -494,13 +473,10 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>..\source\RelWithDebInfo\xlnt.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)bin\$(Configuration)\$(Platform)\libstudxml.lib;$(SolutionDir)bin\$(Configuration)\$(Platform)\xLnt.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>Debug</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>D:/WORK/thirdparty/xlnt/build/tests/RelWithDebInfo/xlnt.test.lib</ImportLibrary>
-      <ProgramDataBaseFile>D:/WORK/thirdparty/xlnt/build/tests/RelWithDebInfo/xlnt.test.pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
     </Link>
     <ProjectReference>

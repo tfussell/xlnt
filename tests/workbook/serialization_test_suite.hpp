@@ -275,8 +275,10 @@ public:
     {
 #ifdef _MSC_VER
         xlnt::workbook wb;
-        const auto path = LSTRING_LITERAL(XLNT_TEST_DATA_DIR) L"/9_unicode_Λ.xlsx";
-        wb.load(path);
+        std::wstring path = LSTRING_LITERAL(XLNT_TEST_DATA_DIR) L"/9_unicode_Λ.xlsx";
+		std::wstring path_normalized;
+		std::remove_copy(path.begin(), path.end(), std::back_inserter(path_normalized), '\"');
+        wb.load(path_normalized);
         xlnt_assert_equals(wb.active_sheet().cell("A1").value<std::string>(), u8"unicodê!");
 #endif
 

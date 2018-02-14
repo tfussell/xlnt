@@ -1,83 +1,33 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="D:\WORK\thirdparty\xlnt\tests\runner.cpp">
-      <Filter>runner</Filter>
-    </ClCompile>
+    <ClCompile Include="$(SolutionDir)..\tests\runner.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\cell\cell_test_suite.hpp">
-      <Filter>tests\cell</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\cell\index_types_test_suite.hpp">
-      <Filter>tests\cell</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\cell\rich_text_test_suite.hpp">
-      <Filter>tests\cell</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\styles\alignment_test_suite.hpp">
-      <Filter>tests\styles</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\styles\color_test_suite.hpp">
-      <Filter>tests\styles</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\styles\fill_test_suite.hpp">
-      <Filter>tests\styles</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\styles\number_format_test_suite.hpp">
-      <Filter>tests\styles</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\utils\datetime_test_suite.hpp">
-      <Filter>tests\utils</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\utils\helper_test_suite.hpp">
-      <Filter>tests\utils</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\utils\path_test_suite.hpp">
-      <Filter>tests\utils</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\utils\timedelta_test_suite.hpp">
-      <Filter>tests\utils</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\workbook\named_range_test_suite.hpp">
-      <Filter>tests\workbook</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\workbook\serialization_test_suite.hpp">
-      <Filter>tests\workbook</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\workbook\workbook_test_suite.hpp">
-      <Filter>tests\workbook</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\worksheet\page_setup_test_suite.hpp">
-      <Filter>tests\worksheet</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\worksheet\range_test_suite.hpp">
-      <Filter>tests\worksheet</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\worksheet\worksheet_test_suite.hpp">
-      <Filter>tests\worksheet</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\helpers\assertions.hpp">
-      <Filter>helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\helpers\path_helper.hpp">
-      <Filter>helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\helpers\temporary_directory.hpp">
-      <Filter>helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\helpers\temporary_file.hpp">
-      <Filter>helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\helpers\test_suite.hpp">
-      <Filter>helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\helpers\timing.hpp">
-      <Filter>helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\WORK\thirdparty\xlnt\tests\helpers\xml_helper.hpp">
-      <Filter>helpers</Filter>
-    </ClInclude>
+    <ClInclude Include="$(SolutionDir)..\tests\cell\cell_test_suite.hpp" />
+    <ClInclude Include="$(SolutionDir)..\tests\cell\index_types_test_suite.hpp" />
+    <ClInclude Include="$(SolutionDir)..\tests\cell\rich_text_test_suite.hpp" />
+    <ClInclude Include="$(SolutionDir)..\tests\styles\alignment_test_suite.hpp" />
+    <ClInclude Include="$(SolutionDir)..\tests\styles\color_test_suite.hpp" />
+    <ClInclude Include="$(SolutionDir)..\tests\styles\fill_test_suite.hpp" />
+    <ClInclude Include="$(SolutionDir)..\tests\styles\number_format_test_suite.hpp" />
+    <ClInclude Include="$(SolutionDir)..\tests\utils\datetime_test_suite.hpp" />
+    <ClInclude Include="$(SolutionDir)..\tests\utils\helper_test_suite.hpp" />
+    <ClInclude Include="$(SolutionDir)..\tests\utils\path_test_suite.hpp" />
+    <ClInclude Include="$(SolutionDir)..\tests\utils\timedelta_test_suite.hpp" />
+    <ClInclude Include="$(SolutionDir)..\tests\workbook\named_range_test_suite.hpp" />
+    <ClInclude Include="$(SolutionDir)..\tests\workbook\serialization_test_suite.hpp" />
+    <ClInclude Include="$(SolutionDir)..\tests\workbook\workbook_test_suite.hpp" />
+    <ClInclude Include="$(SolutionDir)..\tests\worksheet\page_setup_test_suite.hpp" />
+    <ClInclude Include="$(SolutionDir)..\tests\worksheet\range_test_suite.hpp" />
+    <ClInclude Include="$(SolutionDir)..\tests\worksheet\worksheet_test_suite.hpp" />
+    <ClInclude Include="$(SolutionDir)..\tests\helpers\assertions.hpp" />
+    <ClInclude Include="$(SolutionDir)..\tests\helpers\path_helper.hpp" />
+    <ClInclude Include="$(SolutionDir)..\tests\helpers\temporary_directory.hpp" />
+    <ClInclude Include="$(SolutionDir)..\tests\helpers\temporary_file.hpp" />
+    <ClInclude Include="$(SolutionDir)..\tests\helpers\test_suite.hpp" />
+    <ClInclude Include="$(SolutionDir)..\tests\helpers\timing.hpp" />
+    <ClInclude Include="$(SolutionDir)..\tests\helpers\xml_helper.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="tests\cell">
