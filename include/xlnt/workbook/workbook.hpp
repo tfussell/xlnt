@@ -709,12 +709,12 @@ public:
 	/// <summary>
 	/// Returns a reference to the shared string ordered by id
 	/// </summary>
-	const std::map<std::size_t, rich_text> &workbook::shared_strings_by_id() const;
+	const std::map<std::size_t, rich_text> &shared_strings_by_id() const;
 
 	/// <summary>
 	/// Returns a reference to the shared string related to the specified index
 	/// </summary>
-	const rich_text& workbook::shared_strings(std::size_t index) const;
+	const rich_text& shared_strings(std::size_t index) const;
 
     /// <summary>
     /// Returns a reference to the shared strings being used by cells
