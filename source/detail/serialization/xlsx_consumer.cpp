@@ -441,9 +441,9 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
                         : sheet_view_type::page_layout);
                 }
 
-                skip_attributes({ "windowProtection", "showFormulas", "showRowColHeaders", "showZeros", "rightToLeft",
-                    "tabSelected", "showRuler", "showOutlineSymbols", "showWhiteSpace", "view", "topLeftCell",
-                    "colorId", "zoomScale", "zoomScaleNormal", "zoomScaleSheetLayoutView", "zoomScalePageLayoutView" });
+                skip_attributes({ "windowProtection", "showFormulas", "showRowColHeaders", "showZeros", "rightToLeft", "tabSelected", "showRuler", "showOutlineSymbols", "showWhiteSpace",
+                    "view", "topLeftCell", "colorId", "zoomScale", "zoomScaleNormal", "zoomScaleSheetLayoutView",
+                    "zoomScalePageLayoutView" });
 
                 while (in_element(qn("spreadsheetml", "sheetView")))
                 {
@@ -487,6 +487,12 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
                         if (parser().attribute_present("activeCell"))
                         {
                             current_selection.active_cell(parser().attribute("activeCell"));
+                        }
+
+                        if (parser().attribute_present("sqref"))
+                        {
+                            const auto sqref = range_reference(parser().attribute("sqref"));
+                            current_selection.sqref(sqref);
                         }
                         
                         current_selection.pane(pane_corner::top_left);

@@ -1011,7 +1011,7 @@ bool worksheet::has_view() const
     return !d_->views_.empty();
 }
 
-sheet_view worksheet::view(std::size_t index) const
+sheet_view &worksheet::view(std::size_t index) const
 {
     return d_->views_.at(index);
 }

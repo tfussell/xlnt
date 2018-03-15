@@ -189,6 +189,12 @@ public:
 		auto sheet1 = wb.active_sheet();
         sheet1.format_properties(format_properties);
 
+        auto &view = sheet1.view();
+        auto selection = xlnt::selection();
+        selection.active_cell("C1");
+        selection.sqref("C1");
+        view.add_selection(selection);
+
         auto comment_font = xlnt::font()
             .bold(true)
             .size(10)

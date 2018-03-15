@@ -61,11 +61,35 @@ public:
     }
 
     /// <summary>
+    /// Returns true if this selection has a defined sqref.
+    /// </summary>
+    bool has_sqref() const
+    {
+        return sqref_.is_set();
+    }
+
+    /// <summary>
     /// Returns the range encompassed by this selection.
     /// </summary>
     range_reference sqref() const
     {
-        return sqref_;
+        return sqref_.get();
+    }
+
+    /// <summary>
+    /// Sets the range encompassed by this selection.
+    /// </summary>
+    void sqref(const range_reference &ref)
+    {
+        sqref_ = ref;
+    }
+
+    /// <summary>
+    /// Sets the range encompassed by this selection.
+    /// </summary>
+    void sqref(const std::string &ref)
+    {
+        sqref(range_reference(ref));
     }
 
     /// <summary>
@@ -104,7 +128,7 @@ private:
     /// <summary>
     /// The range
     /// </summary>
-    range_reference sqref_;
+    optional<range_reference> sqref_;
 
     /// <summary>
     /// The quadrant

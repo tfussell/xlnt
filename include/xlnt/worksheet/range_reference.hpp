@@ -74,6 +74,8 @@ public:
     range_reference(column_t column_index_start, row_t row_index_start,
         column_t column_index_end, row_t row_index_end);
 
+    range_reference(const range_reference &ref);
+
     /// <summary>
     /// Returns true if the range has a width and height of 1 cell.
     /// </summary>
@@ -153,6 +155,11 @@ public:
     /// of the other range.
     /// </summary>
     bool operator!=(const char *reference_string) const;
+
+    /// <summary>
+    /// Assigns the extents of the provided range to this range.
+    /// </summary>
+    range_reference &operator=(const range_reference &ref);
 
 private:
     /// <summary>

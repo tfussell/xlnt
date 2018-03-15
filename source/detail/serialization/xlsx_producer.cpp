@@ -2093,14 +2093,13 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             if (current_selection.has_active_cell())
             {
                 write_attribute("activeCell", current_selection.active_cell().to_string());
-                write_attribute("sqref", current_selection.active_cell().to_string());
             }
-            /*
-                        if (current_selection.sqref() != "A1:A1")
-                        {
-                            write_attribute("sqref", current_selection.sqref().to_string());
-                        }
-            */
+
+            if (current_selection.has_sqref())
+            {
+                write_attribute("sqref", current_selection.sqref().to_string());
+            }
+
             if (current_selection.pane() != pane_corner::top_left)
             {
                 write_attribute("pane", current_selection.pane());

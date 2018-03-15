@@ -654,7 +654,7 @@ public:
     /// <summary>
     /// Returns the view at the given index.
     /// </summary>
-    sheet_view view(std::size_t index = 0) const;
+    sheet_view &view(std::size_t index = 0) const;
 
     /// <summary>
     /// Adds new_view to the set of available views for this sheet.
