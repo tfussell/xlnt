@@ -28,11 +28,13 @@
 
 #include <detail/implementations/cell_impl.hpp>
 #include <detail/implementations/format_impl.hpp>
+#include <detail/implementations/hyperlink_impl.hpp>
 #include <detail/implementations/stylesheet.hpp>
 #include <detail/implementations/worksheet_impl.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/cell/comment.hpp>
+#include <xlnt/cell/hyperlink.hpp>
 #include <xlnt/cell/rich_text.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/packaging/relationship.hpp>
@@ -196,7 +198,7 @@ cell::cell(detail::cell_impl *d)
 
 bool cell::garbage_collectible() const
 {
-    return !(has_value() || is_merged() || has_formula() || has_format());
+    return !(has_value() || is_merged() || has_formula() || has_format() || has_hyperlink());
 }
 
 void cell::value(std::nullptr_t)
@@ -360,9 +362,9 @@ cell &cell::operator=(const cell &rhs)
     return *this;
 }
 
-std::string cell::hyperlink() const
+hyperlink cell::hyperlink() const
 {
-    return d_->hyperlink_.get();
+    return xlnt::hyperlink(&d_->hyperlink_.get());
 }
 
 void cell::hyperlink(const std::string &hyperlink)
@@ -377,31 +379,50 @@ void cell::hyperlink(const std::string &hyperlink)
     auto &manifest = ws.workbook().manifest();
     bool existing = false;
 
+    d_->hyperlink_ = detail::hyperlink_impl();
+
+    // check for existing relationships
     for (const auto &rel : manifest.relationships(ws.path(), relationship_type::hyperlink))
     {
         if (rel.target().path().string() == hyperlink)
         {
+            d_->hyperlink_.get().relationship = rel;
             existing = true;
+            break;
         }
     }
 
+    // register a new relationship
     if (!existing) {
-        manifest.register_relationship(uri(ws.path().string()), relationship_type::hyperlink,
-            uri(hyperlink), target_mode::external);
+        auto rel_id = manifest.register_relationship(
+            uri(ws.path().string()),
+            relationship_type::hyperlink,
+            uri(hyperlink),
+            target_mode::external);
+        // TODO: make manifest::register_relationship return the created relationship instead of rel id
+        d_->hyperlink_.get().relationship = manifest.relationship(ws.path(), rel_id);
     }
 
-    d_->hyperlink_ = hyperlink;
+    value(hyperlink);
 }
 
 void cell::hyperlink(const std::string &url, const std::string &display)
 {
     hyperlink(url);
+    d_->hyperlink_.get().display = display;
     value(display);
 }
 
-void cell::hyperlink(xlnt::cell /*target*/)
+void cell::hyperlink(xlnt::cell target)
 {
-    //todo: implement
+    // TODO: should this computed value be a method on a cell?
+    const auto cell_address = target.worksheet().title() + "!" + target.reference().to_string();
+
+    d_->hyperlink_ = detail::hyperlink_impl();
+    d_->hyperlink_.get().relationship = xlnt::relationship("", relationship_type::hyperlink,
+        uri(""), uri(cell_address), target_mode::internal);
+    d_->hyperlink_.get().display = cell_address;
+    value(cell_address);
 }
 
 void cell::formula(const std::string &formula)
@@ -419,8 +440,6 @@ void cell::formula(const std::string &formula)
     {
         d_->formula_ = formula;
     }
-
-    data_type(type::number);
 
     worksheet().register_calc_chain_in_manifest();
 }

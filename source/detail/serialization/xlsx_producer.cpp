@@ -34,6 +34,7 @@
 #include <detail/serialization/xlsx_producer.hpp>
 #include <detail/serialization/zstream.hpp>
 #include <xlnt/cell/cell.hpp>
+#include <xlnt/cell/hyperlink.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/utils/path.hpp>
 #include <xlnt/utils/scoped_enum_hash.hpp>
@@ -1113,12 +1114,32 @@ void xlsx_producer::write_border(const border &current_border)
 
 void xlsx_producer::write_styles(const relationship & /*rel*/)
 {
-	static const auto &xmlns = constants::ns("spreadsheetml");
+    static const auto &xmlns = constants::ns("spreadsheetml");
+    static const auto &xmlns_mc = constants::ns("mc");
+    static const auto &xmlns_x14 = constants::ns("x14");
+    static const auto &xmlns_x14ac = constants::ns("x14ac");
 
     write_start_element(xmlns, "styleSheet");
     write_namespace(xmlns, "");
 
     const auto &stylesheet = source_.impl().stylesheet_.get();
+
+    auto using_namespace = [&stylesheet](const std::string &ns)
+    {
+        if (ns == "x14ac")
+        {
+            return stylesheet.known_fonts_enabled;
+        }
+
+        return false;
+    };
+
+    if (using_namespace("x14ac"))
+    {
+        write_namespace(xmlns_mc, "mc");
+        write_namespace(xmlns_x14ac, "x14ac");
+        write_attribute(xml::qname(xmlns_mc, "Ignorable"), "x14ac");
+    }
 
     // Number Formats
 
@@ -1155,6 +1176,31 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
 
         write_start_element(xmlns, "fonts");
         write_attribute("count", fonts.size());
+
+        if (stylesheet.known_fonts_enabled)
+        {
+            auto is_known_font = [](const font &f)
+            {
+                const auto &known_fonts = *new std::vector<font>
+                {
+                    font().name("Calibri").family(2).size(12).color(theme_color(1)).scheme("minor")
+                };
+
+                return std::find(known_fonts.begin(), known_fonts.end(), f) != known_fonts.end();
+            };
+
+            std::size_t num_known_fonts = 0;
+
+            for (const auto &current_font : fonts)
+            {
+                if (is_known_font(current_font))
+                {
+                    num_known_fonts += 1;
+                }
+            }
+
+            write_attribute(xml::qname(xmlns_x14ac, "knownFonts"), num_known_fonts);
+        }
 
 		for (const auto &current_font : fonts)
 		{
@@ -1512,6 +1558,26 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
 
         write_end_element(xmlns, "indexedColors");
         write_end_element(xmlns, "colors");
+    }
+
+    auto using_extensions = stylesheet.default_slicer_style.is_set();
+
+    if (using_extensions)
+    {
+        write_start_element(xmlns, "extLst");
+
+        if (stylesheet.default_slicer_style.is_set())
+        {
+            write_start_element(xmlns, "ext");
+            write_namespace(xmlns_x14, "x14");
+            write_attribute("uri", "{EB79DEF2-80B8-43e5-95BD-54CBDDF9020C}"); // slicerStyles URI
+            write_start_element(xmlns_x14, "slicerStyles");
+            write_attribute("defaultSlicerStyle", stylesheet.default_slicer_style.get());
+            write_end_element(xmlns_x14, "slicerStyles");
+            write_end_element(xmlns, "ext");
+        }
+
+        write_end_element(xmlns, "extLst");
     }
 
     write_end_element(xmlns, "styleSheet");
@@ -1990,6 +2056,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 {
     static const auto &xmlns = constants::ns("spreadsheetml");
     static const auto &xmlns_r = constants::ns("r");
+    static const auto &xmlns_mc = constants::ns("mc");
     static const auto &xmlns_x14ac = constants::ns("x14ac");
 
     auto worksheet_part = rel.source().path().parent().append(rel.target().path());
@@ -2010,7 +2077,18 @@ void xlsx_producer::write_worksheet(const relationship &rel)
     {
         if (ns == "x14ac")
         {
-            return ws.format_properties().dy_descent.is_set();
+            if (ws.format_properties().dy_descent.is_set())
+            {
+                return true;
+            }
+
+            for (auto row = ws.lowest_row(); row <= ws.highest_row(); ++row)
+            {
+                if (ws.has_row_properties(row) && ws.row_properties(row).dy_descent.is_set())
+                {
+                    return true;
+                }
+            }
         }
 
         return false;
@@ -2018,7 +2096,9 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
     if (using_namespace("x14ac"))
     {
+        write_namespace(xmlns_mc, "mc");
         write_namespace(xmlns_x14ac, "x14ac");
+        write_attribute(xml::qname(xmlns_mc, "Ignorable"), "x14ac");
     }
 
     if (ws.has_page_setup())
@@ -2056,8 +2136,8 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
         if (view.type() != sheet_view_type::normal)
         {
-            write_attribute(
-                "view", view.type() == sheet_view_type::page_break_preview ? "pageBreakPreview" : "pageLayout");
+            write_attribute("view", view.type() == sheet_view_type::page_break_preview
+                ? "pageBreakPreview" : "pageLayout");
         }
 
         if (view.has_pane())
@@ -2097,7 +2177,10 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
             if (current_selection.has_sqref())
             {
-                write_attribute("sqref", current_selection.sqref().to_string());
+                const auto sqref = current_selection.sqref();
+                write_attribute("sqref", sqref.is_single_cell()
+                    ? sqref.top_left().to_string()
+                    : sqref.to_string());
             }
 
             if (current_selection.pane() != pane_corner::top_left)
@@ -2183,16 +2266,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         write_end_element(xmlns, "cols");
     }
 
-    const auto hyperlink_rels = source_.manifest()
-        .relationships(worksheet_part, relationship_type::hyperlink);
-    std::unordered_map<std::string, std::string> reverse_hyperlink_references;
-
-    for (auto hyperlink_rel : hyperlink_rels)
-    {
-        reverse_hyperlink_references[hyperlink_rel.target().path().string()] = rel.id();
-    }
-
-    std::unordered_map<std::string, std::string> hyperlink_references;
+    std::vector<std::pair<std::string, hyperlink>> hyperlinks;
     std::vector<cell_reference> cells_with_comments;
 
     write_start_element(xmlns, "sheetData");
@@ -2241,6 +2315,11 @@ void xlsx_producer::write_worksheet(const relationship &rel)
                 write_attribute("customHeight", write_bool(true));
             }
 
+            if (props.dy_descent.is_set())
+            {
+                write_attribute(xml::qname(xmlns_x14ac, "dyDescent"), props.dy_descent.get());
+            }
+
             if (props.height.is_set())
             {
                 auto height = props.height.get();
@@ -2280,7 +2359,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
                 if (cell.has_hyperlink())
                 {
-                    hyperlink_references[cell.reference().to_string()] = reverse_hyperlink_references[cell.hyperlink()];
+                    hyperlinks.push_back(std::make_pair(cell.reference().to_string(), cell.hyperlink()));
                 }
 
                 write_start_element(xmlns, "c");
@@ -2464,15 +2543,24 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 		}
 	}
 
-    if (!hyperlink_rels.empty())
+    if (!hyperlinks.empty())
     {
         write_start_element(xmlns, "hyperlinks");
 
-        for (const auto &hyperlink : hyperlink_references)
+        for (const auto &hyperlink : hyperlinks)
         {
             write_start_element(xmlns, "hyperlink");
             write_attribute("ref", hyperlink.first);
-            write_attribute(xml::qname(xmlns_r, "id"), hyperlink.second);
+            if (hyperlink.second.external())
+            {
+                write_attribute(xml::qname(xmlns_r, "id"),
+                    hyperlink.second.relationship().id());
+            }
+            else
+            {
+                write_attribute("location", hyperlink.second.target_range());
+                write_attribute("display", hyperlink.second.display());
+            }
             write_end_element(xmlns, "hyperlink");
         }
 

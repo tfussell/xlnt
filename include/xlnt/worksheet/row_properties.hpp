@@ -35,9 +35,14 @@ class XLNT_API row_properties
 {
 public:
     /// <summary>
-    /// Optional height
+    /// Row height
     /// </summary>
     optional<double> height;
+
+    /// <summary>
+    /// Distance in pixels from the bottom of the cell to the baseline of the cell content
+    /// </summary>
+    optional<double> dy_descent;
 
     /// <summary>
     /// Whether or not the height is different from the default

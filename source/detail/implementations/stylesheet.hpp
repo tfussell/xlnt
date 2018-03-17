@@ -531,11 +531,13 @@ struct stylesheet
     workbook *parent;
     
     bool garbage_collection_enabled = true;
+    bool known_fonts_enabled = false;
 
 	std::list<conditional_format_impl> conditional_format_impls;
     std::list<format_impl> format_impls;
     std::unordered_map<std::string, style_impl> style_impls;
     std::vector<std::string> style_names;
+    optional<std::string> default_slicer_style;
 
 	std::vector<alignment> alignments;
     std::vector<border> borders;

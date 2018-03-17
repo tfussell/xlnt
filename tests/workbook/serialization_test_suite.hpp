@@ -200,11 +200,20 @@ public:
             .size(10)
             .color(xlnt::indexed_color(81))
             .name("Calibri");
+        auto hyperlink_font = xlnt::font()
+            .size(12)
+            .color(xlnt::theme_color(10))
+            .name("Calibri")
+            .underline(xlnt::font::underline_style::single);
 
         sheet1.cell("A4").hyperlink("https://microsoft.com/", "hyperlink1");
+        sheet1.cell("A4").font(hyperlink_font);
         sheet1.cell("A5").hyperlink("https://google.com/");
+        sheet1.cell("A5").font(hyperlink_font);
         sheet1.cell("A6").hyperlink(sheet1.cell("A1"));
+        sheet1.cell("A6").font(hyperlink_font);
         sheet1.cell("A7").hyperlink("mailto:invalid@example.com?subject=important");
+        sheet1.cell("A7").font(hyperlink_font);
 
 		sheet1.cell("A1").value("Sheet1!A1");
 		sheet1.cell("A1").comment("Sheet1 comment", comment_font, "Microsoft Office User");
@@ -216,13 +225,19 @@ public:
         sheet1.cell("C2").value("a");
         sheet1.cell("C3").value("b");
 
+        for (auto i = 1; i <= 7; ++i)
+        {
+            sheet1.row_properties(i).dy_descent = 0.2;
+        }
+
 		auto sheet2 = wb.create_sheet();
         sheet2.format_properties(format_properties);
 
         sheet2.cell("A4").hyperlink("https://apple.com/", "hyperlink2");
+        sheet2.cell("A4").font(hyperlink_font);
 
 		sheet2.cell("A1").value("Sheet2!A1");
-		sheet2.cell("A2").comment("Sheet2 comment", comment_font, "Microsoft Office User");
+		sheet2.cell("A1").comment("Sheet2 comment", comment_font, "Microsoft Office User");
 
 		sheet2.cell("A2").value("Sheet2!A2");
 		sheet2.cell("A2").comment("Sheet2 comment2", comment_font, "Microsoft Office User");
@@ -337,16 +352,16 @@ public:
         xlnt_assert_equals(ws1.title(), "Sheet1");
         xlnt_assert(ws1.cell("A4").has_hyperlink());
         xlnt_assert_equals(ws1.cell("A4").value<std::string>(), "hyperlink1");
-        xlnt_assert_equals(ws1.cell("A4").hyperlink(), "https://microsoft.com/");
+        xlnt_assert_equals(ws1.cell("A4").hyperlink().url(), "https://microsoft.com/");
         xlnt_assert(ws1.cell("A5").has_hyperlink());
         xlnt_assert_equals(ws1.cell("A5").value<std::string>(), "https://google.com/");
-        xlnt_assert_equals(ws1.cell("A5").hyperlink(), "https://google.com/");
-        //xlnt_assert(ws1.cell("A6").has_hyperlink());
+        xlnt_assert_equals(ws1.cell("A5").hyperlink().url(), "https://google.com/");
+        xlnt_assert(ws1.cell("A6").has_hyperlink());
         xlnt_assert_equals(ws1.cell("A6").value<std::string>(), "Sheet1!A1");
-        //xlnt_assert_equals(ws1.cell("A6").hyperlink(), "Sheet1!A1");
+        xlnt_assert_equals(ws1.cell("A6").hyperlink().target_range(), "Sheet1!A1");
         xlnt_assert(ws1.cell("A7").has_hyperlink());
         xlnt_assert_equals(ws1.cell("A7").value<std::string>(), "mailto:invalid@example.com?subject=important");
-        xlnt_assert_equals(ws1.cell("A7").hyperlink(), "mailto:invalid@example.com?subject=important");
+        xlnt_assert_equals(ws1.cell("A7").hyperlink().url(), "mailto:invalid@example.com?subject=important");
 
     }
 
@@ -472,8 +487,10 @@ public:
 
         ws.column_properties("E").width = 15.949776785714286;
         ws.column_properties("E").custom_width = true;
-        
-        wb.save("temp.xlsx");
+
+        wb.default_slicer_style("SlicerStyleLight1");
+        wb.enable_known_fonts();
+
         xlnt_assert(workbook_matches_file(wb, path_helper::test_file("13_custom_heights_widths.xlsx")));
     }
 

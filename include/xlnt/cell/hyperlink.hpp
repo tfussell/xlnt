@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2018 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,46 +20,42 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
-#include <cstddef>
 #include <string>
-
-#include <xlnt/cell/cell_type.hpp>
-#include <xlnt/cell/comment.hpp>
-#include <xlnt/cell/rich_text.hpp>
-#include <xlnt/cell/index_types.hpp>
-#include <xlnt/packaging/relationship.hpp>
-#include <xlnt/utils/optional.hpp>
-#include <detail/implementations/hyperlink_impl.hpp>
+#include <xlnt/xlnt_config.hpp>
 
 namespace xlnt {
+
 namespace detail {
+struct hyperlink_impl;
+}
 
-struct format_impl;
-struct worksheet_impl;
+class cell;
+class range;
+class relationship;
 
-struct cell_impl
+/// <summary>
+/// Describes a hyperlink pointing from a cell to another cell or a URL.
+/// </summary>
+class XLNT_API hyperlink
 {
-    cell_impl();
+public:
+    bool external() const;
+    class relationship relationship() const;
+    std::string url() const;
+    std::string target_range() const;
+    void display(const std::string &value);
+    std::string display() const;
+    void tooltip(const std::string &value);
+    std::string tooltip() const;
 
-    cell_type type_;
-
-    worksheet_impl *parent_;
-
-    column_t column_;
-    row_t row_;
-
-    bool is_merged_;
-
-    rich_text value_text_;
-    double value_numeric_;
-
-    optional<std::string> formula_;
-    optional<hyperlink_impl> hyperlink_;
-    optional<format_impl *> format_;
-    optional<comment *> comment_;
+private:
+    friend class cell;
+    hyperlink(detail::hyperlink_impl *d);
+    detail::hyperlink_impl *d_;
 };
 
-} // namespace detail
 } // namespace xlnt
+

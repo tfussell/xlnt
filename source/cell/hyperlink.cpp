@@ -1,4 +1,5 @@
 // Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,46 +21,71 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#pragma once
 
-#include <cstddef>
-#include <string>
-
-#include <xlnt/cell/cell_type.hpp>
-#include <xlnt/cell/comment.hpp>
-#include <xlnt/cell/rich_text.hpp>
-#include <xlnt/cell/index_types.hpp>
-#include <xlnt/packaging/relationship.hpp>
-#include <xlnt/utils/optional.hpp>
 #include <detail/implementations/hyperlink_impl.hpp>
+#include <xlnt/cell/hyperlink.hpp>
+#include <xlnt/utils/exceptions.hpp>
 
 namespace xlnt {
-namespace detail {
 
-struct format_impl;
-struct worksheet_impl;
-
-struct cell_impl
+hyperlink::hyperlink(detail::hyperlink_impl *d) : d_(d)
 {
-    cell_impl();
+}
 
-    cell_type type_;
+relationship hyperlink::relationship() const
+{
+    if (!external())
+    {
+        throw xlnt::exception("only external hyperlinks have associated relationships");
+    }
 
-    worksheet_impl *parent_;
+    return d_->relationship;
+}
 
-    column_t column_;
-    row_t row_;
+std::string hyperlink::url() const
+{
+    if (!external())
+    {
+        throw xlnt::exception("only external hyperlinks have associated urls");
+    }
 
-    bool is_merged_;
+    return d_->relationship.target().to_string();
+}
 
-    rich_text value_text_;
-    double value_numeric_;
+std::string hyperlink::target_range() const
+{
+    if (external())
+    {
+        throw xlnt::exception("only internal hyperlinks have a target range");
+    }
 
-    optional<std::string> formula_;
-    optional<hyperlink_impl> hyperlink_;
-    optional<format_impl *> format_;
-    optional<comment *> comment_;
-};
+    return d_->relationship.target().to_string();
+}
 
-} // namespace detail
+bool hyperlink::external() const
+{
+    return d_->relationship.target_mode() == target_mode::external;
+}
+
+void hyperlink::display(const std::string &value)
+{
+    d_->display = value;
+}
+
+std::string hyperlink::display() const
+{
+    return d_->display;
+}
+
+void hyperlink::tooltip(const std::string &value)
+{
+    d_->tooltip = value;
+}
+
+std::string hyperlink::tooltip() const
+{
+    return d_->tooltip;
+}
+
 } // namespace xlnt
+

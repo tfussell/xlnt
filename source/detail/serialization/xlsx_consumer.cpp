@@ -198,22 +198,28 @@ cell xlsx_consumer::read_cell()
     {
         expect_start_element(qn("spreadsheetml", "row"), xml::content::complex); // CT_Row
         auto row_index = static_cast<row_t>(std::stoul(parser().attribute("r")));
+        auto &row_properties = ws.row_properties(row_index);
 
         if (parser().attribute_present("ht"))
         {
-            ws.row_properties(row_index).height = parser().attribute<double>("ht");
+            row_properties.height = parser().attribute<double>("ht");
         }
 
         if (parser().attribute_present("customHeight"))
         {
-            ws.row_properties(row_index).custom_height = is_true(parser().attribute("customHeight"));
+            row_properties.custom_height = is_true(parser().attribute("customHeight"));
         }
 
         if (parser().attribute_present("hidden") && is_true(parser().attribute("hidden")))
         {
-            ws.row_properties(row_index).hidden = true;
+            row_properties.hidden = true;
         }
-        skip_attributes({ qn("x14ac", "dyDescent") });
+
+        if (parser().attribute_present(qn("x14ac", "dyDescent")))
+        {
+            row_properties.dy_descent = parser().attribute<double>(qn("x14ac", "dyDescent"));
+        }
+
         skip_attributes({ "customFormat", "s", "customFont",
             "outlineLevel", "collapsed", "thickTop", "thickBot",
             "ph", "spans" });
@@ -226,7 +232,8 @@ cell xlsx_consumer::read_cell()
 
     expect_start_element(qn("spreadsheetml", "c"), xml::content::complex);
 
-    auto cell = streaming_ ? xlnt::cell(streaming_cell_.get())
+    auto cell = streaming_
+        ? xlnt::cell(streaming_cell_.get())
         : ws.cell(cell_reference(parser().attribute("r")));
     auto reference = cell_reference(parser().attribute("r"));
     cell.d_->parent_ = current_worksheet_;
@@ -238,7 +245,7 @@ cell xlsx_consumer::read_cell()
 
     if (parser().attribute_present("s"))
     {
-		    cell.format(target_.format(std::stoull(parser().attribute("s"))));
+        cell.format(target_.format(std::stoull(parser().attribute("s"))));
     }
 
     auto has_value = false;
@@ -622,23 +629,28 @@ void xlsx_consumer::read_worksheet_sheetdata()
     {
         expect_start_element(qn("spreadsheetml", "row"), xml::content::complex); // CT_Row
         auto row_index = parser().attribute<row_t>("r");
+        auto &row_properties = ws.row_properties(row_index);
 
         if (parser().attribute_present("ht"))
         {
-            ws.row_properties(row_index).height = parser().attribute<double>("ht");
+            row_properties.height = parser().attribute<double>("ht");
         }
 
         if (parser().attribute_present("customHeight"))
         {
-            ws.row_properties(row_index).custom_height = is_true(parser().attribute("customHeight"));
+            row_properties.custom_height = is_true(parser().attribute("customHeight"));
         }
 
         if (parser().attribute_present("hidden") && is_true(parser().attribute("hidden")))
         {
-            ws.row_properties(row_index).hidden = true;
+            row_properties.hidden = true;
         }
 
-        skip_attributes({ qn("x14ac", "dyDescent") });
+        if (parser().attribute_present(qn("x14ac", "dyDescent")))
+        {
+            row_properties.dy_descent = parser().attribute<double>(qn("x14ac", "dyDescent"));
+        }
+
         skip_attributes({ "customFormat", "s", "customFont",
             "outlineLevel", "collapsed", "thickTop", "thickBot",
             "ph", "spans" });
@@ -2268,7 +2280,25 @@ void xlsx_consumer::read_stylesheet()
         }
         else if (current_style_element == qn("spreadsheetml", "extLst"))
         {
-            skip_remaining_content(current_style_element);
+            while (in_element(qn("spreadsheetml", "extLst")))
+            {
+                expect_start_element(qn("spreadsheetml", "ext"), xml::content::complex);
+
+                const auto uri = parser().attribute("uri");
+
+                if (uri == "{EB79DEF2-80B8-43e5-95BD-54CBDDF9020C}") // slicerStyles
+                {
+                    expect_start_element(qn("x14", "slicerStyles"), xml::content::simple);
+                    stylesheet.default_slicer_style = parser().attribute("defaultSlicerStyle");
+                    expect_end_element(qn("x14", "slicerStyles"));
+                }
+                else
+                {
+                    skip_remaining_content(qn("spreadsheetml", "ext"));
+                }
+
+                expect_end_element(qn("spreadsheetml", "ext"));
+            }
         }
         else if (current_style_element == qn("spreadsheetml", "colors")) // CT_Colors 0-1
         {

@@ -225,11 +225,11 @@ public:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         ws.cell("A1").hyperlink("http://test.com");
-        xlnt_assert_equals(ws.cell("A1").hyperlink(), "http://test.com");
+        xlnt_assert_equals(ws.cell("A1").hyperlink().url(), "http://test.com");
         xlnt_assert_equals(ws.cell("A1").value<std::string>(), "");
         ws.cell("A1").value("test");
         xlnt_assert_equals("test", ws.cell("A1").value<std::string>());
-        xlnt_assert_equals(ws.cell("A1").hyperlink(), "http://test.com");
+        xlnt_assert_equals(ws.cell("A1").hyperlink().url(), "http://test.com");
     }
 
     void test_rows()

@@ -1214,6 +1214,31 @@ void workbook::clear_styles()
     apply_to_cells([](cell c) { c.clear_style(); });
 }
 
+void workbook::default_slicer_style(const std::string &value)
+{
+    d_->stylesheet_.get().default_slicer_style = value;
+}
+
+std::string workbook::default_slicer_style() const
+{
+    return d_->stylesheet_.get().default_slicer_style.get();
+}
+
+void workbook::enable_known_fonts()
+{
+    d_->stylesheet_.get().known_fonts_enabled = true;
+}
+
+void workbook::disable_known_fonts()
+{
+    d_->stylesheet_.get().known_fonts_enabled = false;
+}
+
+bool workbook::known_fonts_enabled() const
+{
+    return d_->stylesheet_.get().known_fonts_enabled;
+}
+
 void workbook::clear_formats()
 {
     apply_to_cells([](cell c) { c.clear_format(); });

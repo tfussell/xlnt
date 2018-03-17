@@ -47,6 +47,8 @@ class font;
 class format;
 class number_format;
 class protection;
+class range;
+class relationship;
 class style;
 class workbook;
 class worksheet;
@@ -251,9 +253,9 @@ public:
     // hyperlink
 
     /// <summary>
-    /// Returns the URL of this cell's hyperlink.
+    /// Returns the relationship of this cell's hyperlink.
     /// </summary>
-    std::string hyperlink() const;
+    class hyperlink hyperlink() const;
 
     /// <summary>
     /// Adds a hyperlink to this cell pointing to the URL of the given value.
@@ -270,6 +272,11 @@ public:
     /// Adds an internal hyperlink to this cell pointing to the given cell.
     /// </summary>
     void hyperlink(xlnt::cell target);
+
+    /// <summary>
+    /// Adds an internal hyperlink to this cell pointing to the given range.
+    /// </summary>
+    void hyperlink(xlnt::range target);
 
     /// <summary>
     /// Returns true if this cell has a hyperlink set.

@@ -1085,7 +1085,7 @@ double worksheet::row_height(row_t row) const
 {
     static const auto DefaultRowHeight = 15.0;
 
-    if (has_row_properties(row))
+    if (has_row_properties(row) && row_properties(row).height.is_set())
     {
         return row_properties(row).height.get();
     }

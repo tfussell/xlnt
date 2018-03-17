@@ -682,6 +682,31 @@ public:
     /// </summary>
     void clear_styles();
 
+    /// <summary>
+    /// Sets the default slicer style to the given value.
+    /// </summary>
+    void default_slicer_style(const std::string &value);
+
+    /// <summary>
+    /// Returns the default slicer style.
+    /// </summary>
+    std::string default_slicer_style() const;
+
+    /// <summary>
+    /// Enables knownFonts in stylesheet.
+    /// </summary>
+    void enable_known_fonts();
+
+    /// <summary>
+    /// Disables knownFonts in stylesheet.
+    /// </summary>
+    void disable_known_fonts();
+
+    /// <summary>
+    /// Returns true if knownFonts are enabled in the stylesheet.
+    /// </summary>
+    bool known_fonts_enabled() const;
+
     // Manifest
 
     /// <summary>

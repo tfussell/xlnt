@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2018 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,45 +20,21 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+
 #pragma once
 
-#include <cstddef>
 #include <string>
 
-#include <xlnt/cell/cell_type.hpp>
-#include <xlnt/cell/comment.hpp>
-#include <xlnt/cell/rich_text.hpp>
-#include <xlnt/cell/index_types.hpp>
 #include <xlnt/packaging/relationship.hpp>
-#include <xlnt/utils/optional.hpp>
-#include <detail/implementations/hyperlink_impl.hpp>
 
 namespace xlnt {
 namespace detail {
 
-struct format_impl;
-struct worksheet_impl;
-
-struct cell_impl
+struct hyperlink_impl
 {
-    cell_impl();
-
-    cell_type type_;
-
-    worksheet_impl *parent_;
-
-    column_t column_;
-    row_t row_;
-
-    bool is_merged_;
-
-    rich_text value_text_;
-    double value_numeric_;
-
-    optional<std::string> formula_;
-    optional<hyperlink_impl> hyperlink_;
-    optional<format_impl *> format_;
-    optional<comment *> comment_;
+    relationship relationship;
+    std::string tooltip;
+    std::string display;
 };
 
 } // namespace detail
