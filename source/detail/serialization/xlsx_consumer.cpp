@@ -35,6 +35,7 @@
 #include <detail/serialization/zstream.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/comment.hpp>
+#include <xlnt/cell/hyperlink.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/utils/optional.hpp>
 #include <xlnt/utils/path.hpp>
@@ -273,8 +274,8 @@ cell xlsx_consumer::read_cell()
                 has_shared_formula = parser().attribute("t") == "shared";
             }
 
-            skip_attributes(
-            { "aca", "ref", "dt2D", "dtr", "del1", "del2", "r1", "r2", "ca", "si", "bx" });
+            skip_attributes({ "aca", "ref", "dt2D", "dtr", "del1",
+                "del2", "r1", "r2", "ca", "si", "bx" });
 
             formula_value_string = read_text();
         }
@@ -441,14 +442,21 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
                     new_view.default_grid_color(is_true(parser().attribute("defaultGridColor")));
                 }
 
-                if (parser().attribute_present("view") && parser().attribute("view") != "normal")
+                if (parser().attribute_present("view")
+                    && parser().attribute("view") != "normal")
                 {
                     new_view.type(parser().attribute("view") == "pageBreakPreview"
                         ? sheet_view_type::page_break_preview
                         : sheet_view_type::page_layout);
                 }
 
-                skip_attributes({ "windowProtection", "showFormulas", "showRowColHeaders", "showZeros", "rightToLeft", "tabSelected", "showRuler", "showOutlineSymbols", "showWhiteSpace",
+                if (parser().attribute_present("tabSelected")
+                    && is_true(parser().attribute("tabSelected")))
+                {
+                    target_.d_->view_.get().active_tab = ws.id() - 1;
+                }
+
+                skip_attributes({ "windowProtection", "showFormulas", "showRowColHeaders", "showZeros", "rightToLeft", "showRuler", "showOutlineSymbols", "showWhiteSpace",
                     "view", "topLeftCell", "colorId", "zoomScale", "zoomScaleNormal", "zoomScaleSheetLayoutView",
                     "zoomScalePageLayoutView" });
 
@@ -841,6 +849,7 @@ worksheet xlsx_consumer::read_worksheet_end(const std::string &rel_id)
         {
             while (in_element(qn("spreadsheetml", "hyperlinks")))
             {
+                // CT_Hyperlink
                 expect_start_element(qn("spreadsheetml", "hyperlink"), xml::content::simple);
 
                 auto cell = ws.cell(parser().attribute("ref"));
@@ -853,11 +862,39 @@ worksheet xlsx_consumer::read_worksheet_end(const std::string &rel_id)
 
                     if (hyperlink_rel != hyperlinks.end())
                     {
-                        cell.hyperlink(hyperlink_rel->target().path().string());
+                        auto url = hyperlink_rel->target().path().string();
+
+                        if (cell.has_value())
+                        {
+                            cell.hyperlink(url, cell.value<std::string>());
+                        }
+                        else
+                        {
+                            cell.hyperlink(url);
+                        }
                     }
                 }
+                else if (parser().attribute_present("location"))
+                {
+                    auto hyperlink = hyperlink_impl();
 
-                skip_attributes({ "location", "tooltip", "display" });
+                    auto location = parser().attribute("location");
+                    hyperlink.relationship = relationship("", relationship_type::hyperlink,
+                        uri(""), uri(location), target_mode::internal);
+
+                    if (parser().attribute_present("display"))
+                    {
+                        hyperlink.display = parser().attribute("display");
+                    }
+
+                    if (parser().attribute_present("tooltip"))
+                    {
+                        hyperlink.tooltip = parser().attribute("tooltip");
+                    }
+
+                    cell.d_->hyperlink_ = hyperlink;
+                }
+
                 expect_end_element(qn("spreadsheetml", "hyperlink"));
             }
         }
@@ -1500,8 +1537,8 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
             while (in_element(qn("workbook", "bookViews")))
             {
                 expect_start_element(qn("workbook", "workbookView"), xml::content::simple);
-                skip_attributes({"activeTab", "firstSheet",
-                    "showHorizontalScroll", "showSheetTabs", "showVerticalScroll"});
+                skip_attributes({"firstSheet", "showHorizontalScroll",
+                    "showSheetTabs", "showVerticalScroll"});
 
                 workbook_view view;
 
@@ -1528,6 +1565,11 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
                 if (parser().attribute_present("tabRatio"))
                 {
                     view.tab_ratio = parser().attribute<std::size_t>("tabRatio");
+                }
+
+                if (parser().attribute_present("activeTab"))
+                {
+                    view.active_tab = parser().attribute<std::size_t>("activeTab");
                 }
 
                 target_.view(view);
@@ -1923,7 +1965,11 @@ void xlsx_consumer::read_stylesheet()
         {
             auto &fonts = stylesheet.fonts;
             auto count = parser().attribute<std::size_t>("count");
-            skip_attributes({qn("x14ac", "knownFonts")});
+
+            if (parser().attribute_present(qn("x14ac", "knownFonts")))
+            {
+                target_.enable_known_fonts();
+            }
 
             while (in_element(qn("spreadsheetml", "fonts")))
             {
@@ -1969,7 +2015,16 @@ void xlsx_consumer::read_stylesheet()
                     }
                     else if (font_property_element == qn("spreadsheetml", "vertAlign"))
                     {
-                        new_font.superscript(parser().attribute("val") == "superscript");
+                        auto vert_align = parser().attribute("val");
+
+                        if (vert_align == "superscript")
+                        {
+                            new_font.superscript(true);
+                        }
+                        else if (vert_align == "subscript")
+                        {
+                            new_font.subscript(true);
+                        }
                     }
                     else if (font_property_element == qn("spreadsheetml", "strike"))
                     {
@@ -2130,33 +2185,33 @@ void xlsx_consumer::read_stylesheet()
                     ? format_records.emplace(format_records.end())
                     : style_records.emplace(style_records.end()));
 
-                record.first.border_applied = parser().attribute_present("applyBorder")
-                    && is_true(parser().attribute("applyBorder"));
+                record.first.border_applied = !parser().attribute_present("applyBorder")
+                    || is_true(parser().attribute("applyBorder"));
                 record.first.border_id = parser().attribute_present("borderId")
                     ? parser().attribute<std::size_t>("borderId") : 0;
 
-                record.first.fill_applied = parser().attribute_present("applyFill")
-                    && is_true(parser().attribute("applyFill"));
+                record.first.fill_applied = !parser().attribute_present("applyFill")
+                    || is_true(parser().attribute("applyFill"));
                 record.first.fill_id = parser().attribute_present("fillId")
                     ? parser().attribute<std::size_t>("fillId") : 0;
 
-                record.first.font_applied = parser().attribute_present("applyFont")
-                    && is_true(parser().attribute("applyFont"));
+                record.first.font_applied = !parser().attribute_present("applyFont")
+                    || is_true(parser().attribute("applyFont"));
                 record.first.font_id = parser().attribute_present("fontId")
                     ? parser().attribute<std::size_t>("fontId") : 0;
 
-                record.first.number_format_applied = parser().attribute_present("applyNumberFormat")
-                    && is_true(parser().attribute("applyNumberFormat"));
+                record.first.number_format_applied = !parser().attribute_present("applyNumberFormat")
+                    || is_true(parser().attribute("applyNumberFormat"));
                 record.first.number_format_id = parser().attribute_present("numFmtId")
                     ? parser().attribute<std::size_t>("numFmtId") : 0;
 
                 auto apply_alignment_present = parser().attribute_present("applyAlignment");
-                record.first.alignment_applied = apply_alignment_present
-                    && is_true(parser().attribute("applyAlignment"));
+                record.first.alignment_applied = !apply_alignment_present
+                    || is_true(parser().attribute("applyAlignment"));
 
                 auto apply_protection_present = parser().attribute_present("applyProtection");
-                record.first.protection_applied = apply_protection_present
-                    && is_true(parser().attribute("applyProtection"));
+                record.first.protection_applied = !apply_protection_present
+                    || is_true(parser().attribute("applyProtection"));
 
                 record.first.pivot_button_ = parser().attribute_present("pivotButton")
                     && is_true(parser().attribute("pivotButton"));

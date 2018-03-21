@@ -367,10 +367,14 @@ hyperlink cell::hyperlink() const
     return xlnt::hyperlink(&d_->hyperlink_.get());
 }
 
-void cell::hyperlink(const std::string &hyperlink)
+void cell::hyperlink(const std::string &url)
 {
-    if (hyperlink.length() == 0
-        || std::find(hyperlink.begin(), hyperlink.end(), ':') == hyperlink.end())
+    hyperlink(url, url);
+}
+
+void cell::hyperlink(const std::string &url, const std::string &display)
+{
+    if (url.empty() || std::find(url.begin(), url.end(), ':') == url.end() || display.empty())
     {
         throw invalid_parameter();
     }
@@ -384,7 +388,7 @@ void cell::hyperlink(const std::string &hyperlink)
     // check for existing relationships
     for (const auto &rel : manifest.relationships(ws.path(), relationship_type::hyperlink))
     {
-        if (rel.target().path().string() == hyperlink)
+        if (rel.target().path().string() == url)
         {
             d_->hyperlink_.get().relationship = rel;
             existing = true;
@@ -397,20 +401,14 @@ void cell::hyperlink(const std::string &hyperlink)
         auto rel_id = manifest.register_relationship(
             uri(ws.path().string()),
             relationship_type::hyperlink,
-            uri(hyperlink),
+            uri(url),
             target_mode::external);
         // TODO: make manifest::register_relationship return the created relationship instead of rel id
         d_->hyperlink_.get().relationship = manifest.relationship(ws.path(), rel_id);
     }
 
-    value(hyperlink);
-}
-
-void cell::hyperlink(const std::string &url, const std::string &display)
-{
-    hyperlink(url);
-    d_->hyperlink_.get().display = display;
     value(display);
+    d_->hyperlink_.get().display = display;
 }
 
 void cell::hyperlink(xlnt::cell target)

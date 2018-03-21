@@ -408,6 +408,7 @@ workbook workbook::empty()
     wb.d_->file_version_ = file_version;
 
     xlnt::workbook_view wb_view;
+    wb_view.active_tab = 0;
     wb_view.x_window = 0;
     wb_view.y_window = 460;
     wb_view.window_width = 28800;
@@ -462,13 +463,17 @@ workbook workbook::empty()
         .color(theme_color(1));
     stylesheet.fonts.push_back(default_font);
 
-	wb.create_builtin_style(0);
+	wb.create_builtin_style(0)
+        .border(default_border, true)
+        .fill(default_fill, true)
+        .font(default_font, true)
+        .number_format(xlnt::number_format::general(), true);
 
     wb.create_format(true)
-        .border(default_border, false)
-        .fill(default_fill, false)
-        .font(default_font, false)
-        .number_format(xlnt::number_format::general(), false)
+        .border(default_border, true)
+        .fill(default_fill, true)
+        .font(default_font, true)
+        .number_format(xlnt::number_format::general(), true)
         .style("Normal");
 
     xlnt::calculation_properties calc_props;

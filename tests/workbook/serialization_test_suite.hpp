@@ -189,38 +189,56 @@ public:
 		auto sheet1 = wb.active_sheet();
         sheet1.format_properties(format_properties);
 
-        auto &view = sheet1.view();
         auto selection = xlnt::selection();
         selection.active_cell("C1");
         selection.sqref("C1");
-        view.add_selection(selection);
+        sheet1.view().add_selection(selection);
 
+        // comments
         auto comment_font = xlnt::font()
             .bold(true)
             .size(10)
             .color(xlnt::indexed_color(81))
             .name("Calibri");
+        sheet1.cell("A1").value("Sheet1!A1");
+        sheet1.cell("A1").comment("Sheet1 comment", comment_font, "Microsoft Office User");
+
+        sheet1.cell("A2").value("Sheet1!A2");
+        sheet1.cell("A2").comment("Sheet1 comment2", comment_font, "Microsoft Office User");
+
+        // hyperlinks
         auto hyperlink_font = xlnt::font()
             .size(12)
             .color(xlnt::theme_color(10))
             .name("Calibri")
+            .family(2)
+            .scheme("minor")
             .underline(xlnt::font::underline_style::single);
+        auto hyperlink_style = wb.create_builtin_style(8);
+        hyperlink_style.font(hyperlink_font, true);
+        hyperlink_style.number_format(hyperlink_style.number_format(), false);
+        hyperlink_style.fill(hyperlink_style.fill(), false);
+        hyperlink_style.border(hyperlink_style.border(), false);
+        auto hyperlink_format = wb.create_format();
+        hyperlink_format.font(hyperlink_font, true);
+        hyperlink_format.number_format(hyperlink_format.number_format(), true);
+        hyperlink_format.fill(hyperlink_format.fill(), true);
+        hyperlink_format.border(hyperlink_format.border(), true);
+        hyperlink_format.style(hyperlink_style);
 
         sheet1.cell("A4").hyperlink("https://microsoft.com/", "hyperlink1");
-        sheet1.cell("A4").font(hyperlink_font);
+        sheet1.cell("A4").format(hyperlink_format);
+
         sheet1.cell("A5").hyperlink("https://google.com/");
-        sheet1.cell("A5").font(hyperlink_font);
+        sheet1.cell("A5").format(hyperlink_format);
+
         sheet1.cell("A6").hyperlink(sheet1.cell("A1"));
-        sheet1.cell("A6").font(hyperlink_font);
+        sheet1.cell("A6").format(hyperlink_format);
+
         sheet1.cell("A7").hyperlink("mailto:invalid@example.com?subject=important");
-        sheet1.cell("A7").font(hyperlink_font);
+        sheet1.cell("A7").format(hyperlink_format);
 
-		sheet1.cell("A1").value("Sheet1!A1");
-		sheet1.cell("A1").comment("Sheet1 comment", comment_font, "Microsoft Office User");
-
-		sheet1.cell("A2").value("Sheet1!A2");
-		sheet1.cell("A2").comment("Sheet1 comment2", comment_font, "Microsoft Office User");
-
+        // formulae
         sheet1.cell("C1").formula("=CONCATENATE(C2,C3)");
         sheet1.cell("C2").value("a");
         sheet1.cell("C3").value("b");
@@ -232,19 +250,35 @@ public:
 
 		auto sheet2 = wb.create_sheet();
         sheet2.format_properties(format_properties);
+        sheet2.add_view(xlnt::sheet_view());
+        sheet2.view().add_selection(selection);
 
+        // comments
+        sheet2.cell("A1").value("Sheet2!A1");
+        sheet2.cell("A1").comment("Sheet2 comment", comment_font, "Microsoft Office User");
+
+        sheet2.cell("A2").value("Sheet2!A2");
+        sheet2.cell("A2").comment("Sheet2 comment2", comment_font, "Microsoft Office User");
+
+        // hyperlinks
         sheet2.cell("A4").hyperlink("https://apple.com/", "hyperlink2");
-        sheet2.cell("A4").font(hyperlink_font);
+        sheet2.cell("A4").format(hyperlink_format);
 
-		sheet2.cell("A1").value("Sheet2!A1");
-		sheet2.cell("A1").comment("Sheet2 comment", comment_font, "Microsoft Office User");
-
-		sheet2.cell("A2").value("Sheet2!A2");
-		sheet2.cell("A2").comment("Sheet2 comment2", comment_font, "Microsoft Office User");
-
+        // formulae
         sheet2.cell("C1").formula("=C2*C3");
         sheet2.cell("C2").value(2);
         sheet2.cell("C3").value(3);
+
+        for (auto i = 1; i <= 4; ++i)
+        {
+            sheet2.row_properties(i).dy_descent = 0.2;
+        }
+
+        wb.default_slicer_style("SlicerStyleLight1");
+        wb.enable_known_fonts();
+
+        wb.core_property(xlnt::core_property::created, "2018-03-18T20:53:30Z");
+        wb.core_property(xlnt::core_property::modified, "2018-03-18T20:59:53Z");
 
         const auto path = path_helper::test_file("10_comments_hyperlinks_formulae.xlsx");
 		xlnt_assert(workbook_matches_file(wb, path));
@@ -372,14 +406,12 @@ public:
         wb.load(path);
 
         auto ws1 = wb.sheet_by_index(0);
-        xlnt_assert_equals(ws1.cell("C1").value<std::string>(), "ab");
         xlnt_assert(ws1.cell("C1").has_formula());
         xlnt_assert_equals(ws1.cell("C1").formula(), "CONCATENATE(C2,C3)");
         xlnt_assert_equals(ws1.cell("C2").value<std::string>(), "a");
         xlnt_assert_equals(ws1.cell("C3").value<std::string>(), "b");
 
         auto ws2 = wb.sheet_by_index(1);
-        xlnt_assert_equals(ws2.cell("C1").value<int>(), 6);
         xlnt_assert(ws2.cell("C1").has_formula());
         xlnt_assert_equals(ws2.cell("C1").formula(), "C2*C3");
         xlnt_assert_equals(ws2.cell("C2").value<int>(), 2);
@@ -448,27 +480,48 @@ public:
         xlnt_assert(!ws.row_properties(4).height.is_set());
         xlnt_assert_equals(ws.row_properties(5).height.get(), 100);
 
-        xlnt_assert_delta(ws.column_properties("A").width.get(), 15.949776785714286, 1.0E-9);
+        auto width = ((16.0 * 7) - 5) / 7;
+
+        xlnt_assert_delta(ws.column_properties("A").width.get(), width, 1.0E-9);
         xlnt_assert(!ws.column_properties("B").width.is_set());
-        xlnt_assert_delta(ws.column_properties("C").width.get(), 15.949776785714286, 1.0E-9);
+        xlnt_assert_delta(ws.column_properties("C").width.get(), width, 1.0E-9);
         xlnt_assert(!ws.column_properties("D").width.is_set());
-        xlnt_assert_delta(ws.column_properties("E").width.get(), 15.949776785714286, 1.0E-9);
+        xlnt_assert_delta(ws.column_properties("E").width.get(), width, 1.0E-9);
     }
 
     void test_write_custom_heights_widths()
     {
         xlnt::workbook wb;
+
+        wb.core_property(xlnt::core_property::creator, "Microsoft Office User");
+        wb.core_property(xlnt::core_property::last_modified_by, "Microsoft Office User");
+        wb.core_property(xlnt::core_property::created, "2017-10-30T23:03:54Z");
+        wb.core_property(xlnt::core_property::modified, "2017-10-30T23:08:31Z");
+        wb.default_slicer_style("SlicerStyleLight1");
+        wb.enable_known_fonts();
+
         auto ws = wb.active_sheet();
+
+        auto sheet_format_properties = xlnt::sheet_format_properties();
+        sheet_format_properties.base_col_width = 10.0;
+        sheet_format_properties.default_row_height = 16.0;
+        sheet_format_properties.dy_descent = 0.2;
+        ws.format_properties(sheet_format_properties);
 
         ws.cell("A1").value("A1");
         ws.cell("B1").value("B1");
         ws.cell("D1").value("D1");
         ws.cell("A2").value("A2");
-        ws.cell("B2").value("B2");
-        ws.cell("D2").value("D2");
         ws.cell("A4").value("A4");
+        ws.cell("B2").value("B2");
         ws.cell("B4").value("B4");
+        ws.cell("D2").value("D2");
         ws.cell("D4").value("D4");
+
+        for (auto i = 1; i <= 5; ++i)
+        {
+            ws.row_properties(i).dy_descent = 0.2;
+        }
 
         ws.row_properties(1).height = 100;
         ws.row_properties(1).custom_height = true;
@@ -479,19 +532,22 @@ public:
         ws.row_properties(5).height = 100;
         ws.row_properties(5).custom_height = true;
 
-        ws.column_properties("A").width = 15.949776785714286;
+        auto width = ((16.0 * 7) - 5) / 7;
+
+        ws.column_properties("A").width = width;
         ws.column_properties("A").custom_width = true;
 
-        ws.column_properties("C").width = 15.949776785714286;
+        ws.column_properties("C").width = width;
         ws.column_properties("C").custom_width = true;
 
-        ws.column_properties("E").width = 15.949776785714286;
+        ws.column_properties("E").width = width;
         ws.column_properties("E").custom_width = true;
 
         wb.default_slicer_style("SlicerStyleLight1");
         wb.enable_known_fonts();
 
-        xlnt_assert(workbook_matches_file(wb, path_helper::test_file("13_custom_heights_widths.xlsx")));
+        xlnt_assert(workbook_matches_file(wb,
+            path_helper::test_file("13_custom_heights_widths.xlsx")));
     }
 
     /// <summary>

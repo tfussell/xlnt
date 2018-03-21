@@ -68,12 +68,22 @@ public:
     bool bold() const;
 
     /// <summary>
-    /// Sets the bold state of the font to bold and returns a reference to the font.
+    /// Sets the vertical alignment of the font to subscript and returns a reference to the font.
     /// </summary>
-    font &superscript(bool superscript);
+    font &subscript(bool value);
 
     /// <summary>
-    /// Returns true if this font has a superscript applied.
+    /// Returns true if this font has a vertical alignment of subscript.
+    /// </summary>
+    bool subscript() const;
+
+    /// <summary>
+    /// Sets the vertical alignment of the font to superscript and returns a reference to the font.
+    /// </summary>
+    font &superscript(bool value);
+
+    /// <summary>
+    /// Returns true if this font has a vertical alignment of superscript.
     /// </summary>
     bool superscript() const;
 

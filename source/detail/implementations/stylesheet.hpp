@@ -401,15 +401,11 @@ struct stylesheet
     {
         auto iter = format_impls.begin();
         bool added = false;
+        pattern.references = 0;
         auto id = find_or_add(format_impls, pattern, &added);
         std::advance(iter, static_cast<std::list<format_impl>::difference_type>(id));
         
         auto &result = *iter;
-
-        if (added)
-        {
-            result.references = 0;
-        }
 
         result.parent = this;
         result.id = id;
@@ -417,7 +413,9 @@ struct stylesheet
         
         if (id != pattern.id)
         {
-            pattern.references -= pattern.references > 0 ? 1 : 0;
+            iter = format_impls.begin();
+            std::advance(iter, static_cast<std::list<format_impl>::difference_type>(pattern.id));
+            iter->references -= iter->references > 0 ? 1 : 0;
             garbage_collect();
         }
 

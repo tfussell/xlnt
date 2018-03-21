@@ -500,7 +500,7 @@ void xlsx_producer::write_workbook(const relationship &rel)
 
         const auto &view = source_.view();
 
-        if (view.active_tab.is_set())
+        if (view.active_tab.is_set() && view.active_tab.get() != std::size_t(0))
         {
             write_attribute("activeTab", view.active_tab.get());
         }
@@ -932,34 +932,50 @@ void xlsx_producer::write_font(const font &f)
 	if (f.bold())
 	{
 		write_start_element(xmlns, "b");
-		write_attribute("val", write_bool(true));
 		write_end_element(xmlns, "b");
 	}
 
 	if (f.italic())
 	{
 		write_start_element(xmlns, "i");
-		write_attribute("val", write_bool(true));
 		write_end_element(xmlns, "i");
 	}
 
 	if (f.underlined())
 	{
 		write_start_element(xmlns, "u");
-		write_attribute("val", f.underline());
+        if (f.underline() != font::underline_style::single)
+        {
+            write_attribute("val", f.underline());
+        }
 		write_end_element(xmlns, "u");
 	}
 
 	if (f.strikethrough())
 	{
 		write_start_element(xmlns, "strike");
-		write_attribute("val", write_bool(true));
 		write_end_element(xmlns, "strike");
 	}
 
-	write_start_element(xmlns, "sz");
-	write_attribute("val", f.size());
-	write_end_element(xmlns, "sz");
+    if (f.superscript())
+    {
+        write_start_element(xmlns, "vertAlign");
+        write_attribute("val", "superscript");
+        write_end_element(xmlns, "vertAlign");
+    }
+    else if (f.subscript())
+    {
+        write_start_element(xmlns, "vertAlign");
+        write_attribute("val", "subscript");
+        write_end_element(xmlns, "vertAlign");
+    }
+
+    if (f.has_size())
+    {
+        write_start_element(xmlns, "sz");
+        write_attribute("val", f.size());
+        write_end_element(xmlns, "sz");
+     }
 
 	if (f.has_color())
 	{
@@ -968,9 +984,12 @@ void xlsx_producer::write_font(const font &f)
 		write_end_element(xmlns, "color");
 	}
 
-	write_start_element(xmlns, "name");
-	write_attribute("val", f.name());
-	write_end_element(xmlns, "name");
+    if (f.has_name())
+    {
+        write_start_element(xmlns, "name");
+        write_attribute("val", f.name());
+        write_end_element(xmlns, "name");
+    }
 
 	if (f.has_family())
 	{
@@ -1255,39 +1274,61 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
             const auto &current_style_impl = stylesheet.style_impls.at(current_style_name);
 
             write_start_element(xmlns, "xf");
-            write_attribute("numFmtId", current_style_impl.number_format_id.get());
-            write_attribute("fontId", current_style_impl.font_id.get());
-            write_attribute("fillId", current_style_impl.fill_id.get());
-            write_attribute("borderId", current_style_impl.border_id.get());
 
-            if (current_style_impl.number_format_applied)
+            if (current_style_impl.number_format_id.is_set())
             {
-                write_attribute("applyNumberFormat", write_bool(true));
+                write_attribute("numFmtId", current_style_impl.number_format_id.get());
             }
 
-            if (current_style_impl.fill_applied)
+            if (current_style_impl.font_id.is_set())
             {
-                write_attribute("applyFill", write_bool(true));
+                write_attribute("fontId", current_style_impl.font_id.get());
             }
 
-            if (current_style_impl.font_applied)
+            if (current_style_impl.fill_id.is_set())
             {
-                write_attribute("applyFont", write_bool(true));
+                write_attribute("fillId", current_style_impl.fill_id.get());
             }
 
-            if (current_style_impl.border_applied)
+            if (current_style_impl.border_id.is_set())
             {
-                write_attribute("applyBorder", write_bool(true));
+                write_attribute("borderId", current_style_impl.border_id.get());
             }
 
-            if (current_style_impl.alignment_applied)
+            if (current_style_impl.number_format_id.is_set()
+                && !current_style_impl.number_format_applied)
             {
-                write_attribute("applyAlignment", write_bool(true));
+                write_attribute("applyNumberFormat", write_bool(false));
             }
 
-            if (current_style_impl.protection_applied)
+            if (current_style_impl.fill_id.is_set()
+                && !current_style_impl.fill_applied)
             {
-                write_attribute("applyProtection", write_bool(true));
+                write_attribute("applyFill", write_bool(false));
+            }
+
+            if (current_style_impl.font_id.is_set()
+                && !current_style_impl.font_applied)
+            {
+                write_attribute("applyFont", write_bool(false));
+            }
+
+            if (current_style_impl.border_id.is_set()
+                && !current_style_impl.border_applied)
+            {
+                write_attribute("applyBorder", write_bool(false));
+            }
+
+            if (current_style_impl.alignment_id.is_set()
+                && !current_style_impl.alignment_applied)
+            {
+                write_attribute("applyAlignment", write_bool(false));
+            }
+
+            if (current_style_impl.protection_id.is_set()
+                && !current_style_impl.protection_applied)
+            {
+                write_attribute("applyProtection", write_bool(false));
             }
 
             if (current_style_impl.pivot_button_)
@@ -1371,34 +1412,40 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
 
         write_attribute("borderId", current_format_impl.border_id.get());
 
-        if (current_format_impl.number_format_applied)
+        if (current_format_impl.number_format_id.is_set()
+            && !current_format_impl.number_format_applied)
         {
-            write_attribute("applyNumberFormat", write_bool(true));
+            write_attribute("applyNumberFormat", write_bool(false));
         }
 
-        if (current_format_impl.fill_applied)
+        if (current_format_impl.fill_id.is_set()
+            && !current_format_impl.fill_applied)
         {
-            write_attribute("applyFill", write_bool(true));
+            write_attribute("applyFill", write_bool(false));
         }
 
-        if (current_format_impl.font_applied)
+        if (current_format_impl.font_id.is_set()
+            && !current_format_impl.font_applied)
         {
-            write_attribute("applyFont", write_bool(true));
+            write_attribute("applyFont", write_bool(false));
         }
 
-        if (current_format_impl.border_applied)
+        if (current_format_impl.border_id.is_set()
+            && !current_format_impl.border_applied)
         {
-            write_attribute("applyBorder", write_bool(true));
+            write_attribute("applyBorder", write_bool(false));
         }
 
-        if (current_format_impl.alignment_applied)
+        if (current_format_impl.alignment_id.is_set()
+            && !current_format_impl.alignment_applied)
         {
-            write_attribute("applyAlignment", write_bool(true));
+            write_attribute("applyAlignment", write_bool(false));
         }
 
-        if (current_format_impl.protection_applied)
+        if (current_format_impl.protection_id.is_set()
+            && !current_format_impl.protection_applied)
         {
-            write_attribute("applyProtection", write_bool(true));
+            write_attribute("applyProtection", write_bool(false));
         }
 
         if (current_format_impl.pivot_button_)
@@ -2129,9 +2176,15 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         write_start_element(xmlns, "sheetViews");
         write_start_element(xmlns, "sheetView");
 
+        const auto wb_view = source_.view();
         const auto view = ws.view();
 
-        write_attribute("tabSelected", write_bool(view.id() == 0));
+        if ((wb_view.active_tab.is_set() && (ws.id() - 1) == wb_view.active_tab.get())
+            || (!wb_view.active_tab.is_set() && ws.id() == 1))
+        {
+            write_attribute("tabSelected", write_bool(true));
+        }
+
         write_attribute("workbookViewId", view.id());
 
         if (view.type() != sheet_view_type::normal)
@@ -2272,26 +2325,39 @@ void xlsx_producer::write_worksheet(const relationship &rel)
     write_start_element(xmlns, "sheetData");
     auto first_row = ws.lowest_row_or_props();
     auto last_row = ws.highest_row_or_props();
+    auto first_block_column = constants::max_column();
+    auto last_block_column = constants::min_column();
 
     for (auto row = first_row; row <= last_row; ++row)
     {
-        auto first_column = constants::max_column();
-        auto last_column = constants::min_column();
-
         bool any_non_null = false;
+        auto first_check_row = row;
+        auto last_check_row = row;
+        auto first_row_in_block = row == first_row || row % 16 == 1;
 
-        for (auto column = dimension.top_left().column(); column <= dimension.bottom_right().column(); ++column)
+        // See note for CT_Row, span attribute about block optimization
+        if (first_row_in_block)
         {
-            if (!ws.has_cell(cell_reference(column, row))) continue;
+            first_check_row = first_row;
+            // round up to the next multiple of 16
+            last_check_row = (((first_row - 1) / 16) + 1) * 16;
+        }
 
-            auto cell = ws.cell(cell_reference(column, row));
-
-            first_column = std::min(first_column, cell.column());
-            last_column = std::max(last_column, cell.column());
-
-            if (!cell.garbage_collectible())
+        for (auto check_row = first_check_row; check_row <= last_check_row; ++check_row)
+        {
+            for (auto column = dimension.top_left().column(); column <= dimension.bottom_right().column(); ++column)
             {
-                any_non_null = true;
+                if (!ws.has_cell(cell_reference(column, row))) continue;
+                auto cell = ws.cell(cell_reference(column, row));
+                if (cell.garbage_collectible()) continue;
+
+                first_block_column = std::min(first_block_column, cell.column());
+                last_block_column = std::max(last_block_column, cell.column());
+
+                if (row == check_row)
+                {
+                    any_non_null = true;
+                }
             }
         }
 
@@ -2300,25 +2366,13 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         write_start_element(xmlns, "row");
         write_attribute("r", row);
 
-        if (any_non_null)
-        {
-            auto span_string = std::to_string(first_column.index) + ":" + std::to_string(last_column.index);
-            write_attribute("spans", span_string);
-        }
+        auto span_string = std::to_string(first_block_column.index) + ":"
+            + std::to_string(last_block_column.index);
+        write_attribute("spans", span_string);
 
         if (ws.has_row_properties(row))
         {
             const auto &props = ws.row_properties(row);
-
-            if (props.custom_height)
-            {
-                write_attribute("customHeight", write_bool(true));
-            }
-
-            if (props.dy_descent.is_set())
-            {
-                write_attribute(xml::qname(xmlns_x14ac, "dyDescent"), props.dy_descent.get());
-            }
 
             if (props.height.is_set())
             {
@@ -2337,6 +2391,16 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             if (props.hidden)
             {
                 write_attribute("hidden", write_bool(true));
+            }
+
+            if (props.custom_height)
+            {
+                write_attribute("customHeight", write_bool(true));
+            }
+
+            if (props.dy_descent.is_set())
+            {
+                write_attribute(xml::qname(xmlns_x14ac, "dyDescent"), props.dy_descent.get());
             }
         }
 
@@ -2394,8 +2458,8 @@ void xlsx_producer::write_worksheet(const relationship &rel)
                     write_attribute("t", "inlineStr");
                     break;
 
-                case cell::type::number:
-                    write_attribute("t", "n");
+                case cell::type::number: // default, don't write it
+                    //write_attribute("t", "n");
                     break;
 
                 case cell::type::shared_string:

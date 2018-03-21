@@ -45,15 +45,26 @@ bool font::bold() const
     return bold_;
 }
 
-font &font::superscript(bool superscript)
+font &font::superscript(bool value)
 {
-    superscript_ = superscript;
+    superscript_ = value;
     return *this;
 }
 
 bool font::superscript() const
 {
     return superscript_;
+}
+
+font &font::subscript(bool value)
+{
+    subscript_ = value;
+    return *this;
+}
+
+bool font::subscript() const
+{
+    return subscript_;
 }
 
 font &font::italic(bool italic)
@@ -181,6 +192,11 @@ font &font::charset(std::size_t charset)
     return *this;
 }
 
+std::size_t font::charset() const
+{
+    return charset_.get();
+}
+
 bool font::has_scheme() const
 {
     return scheme_.is_set();
@@ -209,79 +225,32 @@ std::string font::scheme() const
 
 bool font::operator==(const font &other) const
 {
-    if (bold() != other.bold())
-    {
-        return false;
-    }
-
-    if (has_color() != other.has_color())
-    {
-        return false;
-    }
-
-    if (has_color())
-    {
-        if (color() != other.color())
-        {
-            return false;
-        }
-    }
-
-    if (has_family() != other.has_family())
-    {
-        return false;
-    }
-
-    if (has_family())
-    {
-        if (family() != other.family())
-        {
-            return false;
-        }
-    }
-
-    if (italic() != other.italic())
-    {
-        return false;
-    }
-
-    if (name() != other.name())
-    {
-        return false;
-    }
-
-    if (has_scheme() != other.has_scheme())
-    {
-        return false;
-    }
-
-    if (has_scheme())
-    {
-        if (scheme() != other.scheme())
-        {
-            return false;
-        }
-    }
-
-    if (std::fabs(size() - other.size()) != 0.0)
-    {
-        return false;
-    }
-
-    if (strikethrough() != other.strikethrough())
-    {
-        return false;
-    }
-
-    if (superscript() != other.superscript())
-    {
-        return false;
-    }
-
-    if (underline() != other.underline())
-    {
-        return false;
-    }
+    // name
+    if (has_name() != other.has_name()) return false;
+    if (has_name() && name() != other.name()) return false;
+    // size
+    if (has_size() != other.has_size()) return false;
+    if (has_size() && std::fabs(size() - other.size()) != 0.0) return false;
+    // family
+    if (has_family() != other.has_family()) return false;
+    if (has_family() && family() != other.family()) return false;
+    // scheme
+    if (has_scheme() != other.has_scheme()) return false;
+    if (has_scheme() && scheme() != other.scheme()) return false;
+    // color
+    if (has_color() != other.has_color()) return false;
+    if (has_color() && color() != other.color()) return false;
+    // charset
+    if (has_charset()!= other.has_charset()) return false;
+    if (has_charset() && charset()!= other.charset()) return false;
+    // modifiers
+    if (bold() != other.bold()) return false;
+    if (italic() != other.italic()) return false;
+    if (strikethrough() != other.strikethrough()) return false;
+    if (superscript() != other.superscript()) return false;
+    if (subscript() != other.subscript()) return false;
+    if (underline() != other.underline()) return false;
+    if (shadow() != other.shadow()) return false;
 
     return true;
 }
