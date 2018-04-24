@@ -2185,33 +2185,45 @@ void xlsx_consumer::read_stylesheet()
                     ? format_records.emplace(format_records.end())
                     : style_records.emplace(style_records.end()));
 
-                record.first.border_applied = !parser().attribute_present("applyBorder")
-                    || is_true(parser().attribute("applyBorder"));
+                if (parser().attribute_present("applyBorder"))
+                {
+                    record.first.border_applied = is_true(parser().attribute("applyBorder"));
+                }
                 record.first.border_id = parser().attribute_present("borderId")
                     ? parser().attribute<std::size_t>("borderId") : 0;
 
-                record.first.fill_applied = !parser().attribute_present("applyFill")
-                    || is_true(parser().attribute("applyFill"));
+                if (parser().attribute_present("applyFill"))
+                {
+                    record.first.fill_applied = is_true(parser().attribute("applyFill"));
+                }
                 record.first.fill_id = parser().attribute_present("fillId")
                     ? parser().attribute<std::size_t>("fillId") : 0;
 
-                record.first.font_applied = !parser().attribute_present("applyFont")
-                    || is_true(parser().attribute("applyFont"));
+                if (parser().attribute_present("applyFont"))
+                {
+                    record.first.font_applied = is_true(parser().attribute("applyFont"));
+                }
                 record.first.font_id = parser().attribute_present("fontId")
                     ? parser().attribute<std::size_t>("fontId") : 0;
 
-                record.first.number_format_applied = !parser().attribute_present("applyNumberFormat")
-                    || is_true(parser().attribute("applyNumberFormat"));
+                if (parser().attribute_present("applyNumberFormat"))
+                {
+                    record.first.number_format_applied = is_true(parser().attribute("applyNumberFormat"));
+                }
                 record.first.number_format_id = parser().attribute_present("numFmtId")
                     ? parser().attribute<std::size_t>("numFmtId") : 0;
 
                 auto apply_alignment_present = parser().attribute_present("applyAlignment");
-                record.first.alignment_applied = !apply_alignment_present
-                    || is_true(parser().attribute("applyAlignment"));
+                if (apply_alignment_present)
+                {
+                    record.first.alignment_applied = is_true(parser().attribute("applyAlignment"));
+                }
 
                 auto apply_protection_present = parser().attribute_present("applyProtection");
-                record.first.protection_applied = !apply_protection_present
-                    || is_true(parser().attribute("applyProtection"));
+                if (apply_protection_present)
+                {
+                    record.first.protection_applied = is_true(parser().attribute("applyProtection"));
+                }
 
                 record.first.pivot_button_ = parser().attribute_present("pivotButton")
                     && is_true(parser().attribute("pivotButton"));
