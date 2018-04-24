@@ -32,7 +32,7 @@ namespace detail {
 
 struct hyperlink_impl
 {
-    relationship relationship;
+    xlnt::relationship relationship;
     std::string tooltip;
     std::string display;
 };
