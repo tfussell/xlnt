@@ -464,16 +464,16 @@ workbook workbook::empty()
     stylesheet.fonts.push_back(default_font);
 
 	wb.create_builtin_style(0)
-        .border(default_border, true)
-        .fill(default_fill, true)
-        .font(default_font, true)
-        .number_format(xlnt::number_format::general(), true);
+        .border(default_border)
+        .fill(default_fill)
+        .font(default_font)
+        .number_format(xlnt::number_format::general());
 
     wb.create_format(true)
-        .border(default_border, true)
-        .fill(default_fill, true)
-        .font(default_font, true)
-        .number_format(xlnt::number_format::general(), true)
+        .border(default_border)
+        .fill(default_fill)
+        .font(default_font)
+        .number_format(xlnt::number_format::general())
         .style("Normal");
 
     xlnt::calculation_properties calc_props;

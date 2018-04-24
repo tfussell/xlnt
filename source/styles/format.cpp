@@ -81,7 +81,7 @@ xlnt::alignment format::alignment() const
     return d_->parent->alignments.at(d_->alignment_id.get());
 }
 
-format format::alignment(const xlnt::alignment &new_alignment, bool applied)
+format format::alignment(const xlnt::alignment &new_alignment, optional<bool> applied)
 {
     d_ = d_->parent->find_or_create_with(d_, new_alignment, applied);
     return format(d_);
@@ -92,7 +92,7 @@ xlnt::border format::border() const
     return d_->parent->borders.at(d_->border_id.get());
 }
 
-format format::border(const xlnt::border &new_border, bool applied)
+format format::border(const xlnt::border &new_border, optional<bool> applied)
 {
     d_ = d_->parent->find_or_create_with(d_, new_border, applied);
     return format(d_);
@@ -103,7 +103,7 @@ xlnt::fill format::fill() const
     return d_->parent->fills.at(d_->fill_id.get());
 }
 
-format format::fill(const xlnt::fill &new_fill, bool applied)
+format format::fill(const xlnt::fill &new_fill, optional<bool> applied)
 {
     d_ = d_->parent->find_or_create_with(d_, new_fill, applied);
     return format(d_);
@@ -114,7 +114,7 @@ xlnt::font format::font() const
     return d_->parent->fonts.at(d_->font_id.get());
 }
 
-format format::font(const xlnt::font &new_font, bool applied)
+format format::font(const xlnt::font &new_font, optional<bool> applied)
 {
     d_ = d_->parent->find_or_create_with(d_, new_font, applied);
     return format(d_);
@@ -131,7 +131,7 @@ xlnt::number_format format::number_format() const
         [&](const xlnt::number_format nf) { return nf.id() == d_->number_format_id.get(); });
 }
 
-format format::number_format(const xlnt::number_format &new_number_format, bool applied)
+format format::number_format(const xlnt::number_format &new_number_format, optional<bool> applied)
 {
     auto copy = new_number_format;
 
@@ -150,7 +150,7 @@ xlnt::protection format::protection() const
     return d_->parent->protections.at(d_->protection_id.get());
 }
 
-format format::protection(const xlnt::protection &new_protection, bool applied)
+format format::protection(const xlnt::protection &new_protection, optional<bool> applied)
 {
     d_ = d_->parent->find_or_create_with(d_, new_protection, applied);
     return format(d_);
@@ -158,32 +158,44 @@ format format::protection(const xlnt::protection &new_protection, bool applied)
 
 bool format::alignment_applied() const
 {
-    return d_->alignment_applied;
+    return d_->alignment_applied.is_set()
+        ? d_->alignment_applied.get()
+        : d_->alignment_id.is_set();
 }
 
 bool format::border_applied() const
 {
-    return d_->border_applied;
+    return d_->border_applied.is_set()
+        ? d_->border_applied.get()
+        : d_->border_id.is_set();
 }
 
 bool format::fill_applied() const
 {
-    return d_->fill_applied;
+    return d_->fill_applied.is_set()
+        ? d_->fill_applied.get()
+        : d_->fill_id.is_set();
 }
 
 bool format::font_applied() const
 {
-    return d_->font_applied;
+    return d_->font_applied.is_set()
+        ? d_->font_applied.get()
+        : d_->font_id.is_set();
 }
 
 bool format::number_format_applied() const
 {
-    return d_->number_format_applied;
+    return d_->number_format_applied.is_set()
+        ? d_->number_format_applied.get()
+        : d_->number_format_id.is_set();
 }
 
 bool format::protection_applied() const
 {
-    return d_->protection_applied;
+    return d_->protection_applied.is_set()
+        ? d_->protection_applied.get()
+        : d_->protection_id.is_set();
 }
 
 bool format::pivot_button() const

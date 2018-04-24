@@ -633,37 +633,37 @@ XLNT_API timedelta cell::value() const
 void cell::alignment(const class alignment &alignment_)
 {
     auto new_format = has_format() ? modifiable_format() : workbook().create_format();
-    format(new_format.alignment(alignment_, true));
+    format(new_format.alignment(alignment_, optional<bool>(true)));
 }
 
 void cell::border(const class border &border_)
 {
     auto new_format = has_format() ? modifiable_format() : workbook().create_format();
-    format(new_format.border(border_, true));
+    format(new_format.border(border_, optional<bool>(true)));
 }
 
 void cell::fill(const class fill &fill_)
 {
     auto new_format = has_format() ? modifiable_format() : workbook().create_format();
-    format(new_format.fill(fill_, true));
+    format(new_format.fill(fill_, optional<bool>(true)));
 }
 
 void cell::font(const class font &font_)
 {
     auto new_format = has_format() ? modifiable_format() : workbook().create_format();
-    format(new_format.font(font_, true));
+    format(new_format.font(font_, optional<bool>(true)));
 }
 
 void cell::number_format(const class number_format &number_format_)
 {
     auto new_format = has_format() ? modifiable_format() : workbook().create_format();
-    format(new_format.number_format(number_format_, true));
+    format(new_format.number_format(number_format_, optional<bool>(true)));
 }
 
 void cell::protection(const class protection &protection_)
 {
     auto new_format = has_format() ? modifiable_format() : workbook().create_format();
-    format(new_format.protection(protection_, true));
+    format(new_format.protection(protection_, optional<bool>(true)));
 }
 
 template <>

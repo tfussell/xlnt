@@ -430,7 +430,7 @@ struct stylesheet
         return find_or_create(new_format);
     }
 
-    format_impl *find_or_create_with(format_impl *pattern, const alignment &new_alignment, bool applied)
+    format_impl *find_or_create_with(format_impl *pattern, const alignment &new_alignment, optional<bool> applied)
     {
         format_impl new_format = *pattern;
         new_format.alignment_id = find_or_add(alignments, new_alignment);
@@ -439,7 +439,7 @@ struct stylesheet
         return find_or_create(new_format);
     }
 
-    format_impl *find_or_create_with(format_impl *pattern, const border &new_border, bool applied)
+    format_impl *find_or_create_with(format_impl *pattern, const border &new_border, optional<bool> applied)
     {
         format_impl new_format = *pattern;
         new_format.border_id = find_or_add(borders, new_border);
@@ -448,7 +448,7 @@ struct stylesheet
         return find_or_create(new_format);
     }
     
-    format_impl *find_or_create_with(format_impl *pattern, const fill &new_fill, bool applied)
+    format_impl *find_or_create_with(format_impl *pattern, const fill &new_fill, optional<bool> applied)
     {
         format_impl new_format = *pattern;
         new_format.fill_id = find_or_add(fills, new_fill);
@@ -457,7 +457,7 @@ struct stylesheet
         return find_or_create(new_format);
     }
     
-    format_impl *find_or_create_with(format_impl *pattern, const font &new_font, bool applied)
+    format_impl *find_or_create_with(format_impl *pattern, const font &new_font, optional<bool> applied)
     {
         format_impl new_format = *pattern;
         new_format.font_id = find_or_add(fonts, new_font);
@@ -466,7 +466,7 @@ struct stylesheet
         return find_or_create(new_format);
     }
     
-    format_impl *find_or_create_with(format_impl *pattern, const number_format &new_number_format, bool applied)
+    format_impl *find_or_create_with(format_impl *pattern, const number_format &new_number_format, optional<bool> applied)
     {
         format_impl new_format = *pattern;
         if (new_number_format.id() >= 164)
@@ -479,7 +479,7 @@ struct stylesheet
         return find_or_create(new_format);
     }
     
-    format_impl *find_or_create_with(format_impl *pattern, const protection &new_protection, bool applied)
+    format_impl *find_or_create_with(format_impl *pattern, const protection &new_protection, optional<bool> applied)
     {
         format_impl new_format = *pattern;
         new_format.protection_id = find_or_add(protections, new_protection);

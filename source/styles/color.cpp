@@ -72,7 +72,7 @@ std::size_t theme_color::index() const
 
 std::string rgb_color::hex_string() const
 {
-    static const char *digits = "0123456789abcdef";
+    static const char *digits = "0123456789ABCDEF";
     std::string hex_string(8, '0');
     auto out_iter = hex_string.begin();
 

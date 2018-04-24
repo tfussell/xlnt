@@ -1296,39 +1296,45 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
             }
 
             if (current_style_impl.number_format_id.is_set()
-                && !current_style_impl.number_format_applied)
+                && current_style_impl.number_format_applied.is_set())
             {
-                write_attribute("applyNumberFormat", write_bool(false));
+                write_attribute("applyNumberFormat",
+                    write_bool(current_style_impl.number_format_applied.get()));
             }
 
             if (current_style_impl.fill_id.is_set()
-                && !current_style_impl.fill_applied)
+                && current_style_impl.fill_applied.is_set())
             {
-                write_attribute("applyFill", write_bool(false));
+                write_attribute("applyFill",
+                    write_bool(current_style_impl.fill_applied.get()));
             }
 
             if (current_style_impl.font_id.is_set()
-                && !current_style_impl.font_applied)
+                && current_style_impl.font_applied.is_set())
             {
-                write_attribute("applyFont", write_bool(false));
+                write_attribute("applyFont",
+                    write_bool(current_style_impl.font_applied.get()));
             }
 
             if (current_style_impl.border_id.is_set()
-                && !current_style_impl.border_applied)
+                && current_style_impl.border_applied.is_set())
             {
-                write_attribute("applyBorder", write_bool(false));
+                write_attribute("applyBorder",
+                    write_bool(current_style_impl.border_applied.get()));
             }
 
             if (current_style_impl.alignment_id.is_set()
-                && !current_style_impl.alignment_applied)
+                && current_style_impl.alignment_applied.is_set())
             {
-                write_attribute("applyAlignment", write_bool(false));
+                write_attribute("applyAlignment",
+                    write_bool(current_style_impl.alignment_applied.get()));
             }
 
             if (current_style_impl.protection_id.is_set()
-                && !current_style_impl.protection_applied)
+                && current_style_impl.protection_applied.is_set())
             {
-                write_attribute("applyProtection", write_bool(false));
+                write_attribute("applyProtection",
+                    write_bool(current_style_impl.protection_applied.get()));
             }
 
             if (current_style_impl.pivot_button_)
@@ -1405,47 +1411,66 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
     {
         write_start_element(xmlns, "xf");
 
-        write_attribute("numFmtId", current_format_impl.number_format_id.get());
-        write_attribute("fontId", current_format_impl.font_id.get());
+        if (current_format_impl.number_format_id.is_set())
+        {
+            write_attribute("numFmtId", current_format_impl.number_format_id.get());
+        }
 
-        write_attribute("fillId", current_format_impl.fill_id.get());
+        if (current_format_impl.font_id.is_set())
+        {
+            write_attribute("fontId", current_format_impl.font_id.get());
+        }
 
-        write_attribute("borderId", current_format_impl.border_id.get());
+        if (current_format_impl.fill_id.is_set())
+        {
+            write_attribute("fillId", current_format_impl.fill_id.get());
+        }
+
+        if (current_format_impl.border_id.is_set())
+        {
+            write_attribute("borderId", current_format_impl.border_id.get());
+        }
 
         if (current_format_impl.number_format_id.is_set()
-            && !current_format_impl.number_format_applied)
+            && current_format_impl.number_format_applied.is_set())
         {
-            write_attribute("applyNumberFormat", write_bool(false));
+            write_attribute("applyNumberFormat",
+                write_bool(current_format_impl.number_format_applied.get()));
         }
 
         if (current_format_impl.fill_id.is_set()
-            && !current_format_impl.fill_applied)
+            && current_format_impl.fill_applied.is_set())
         {
-            write_attribute("applyFill", write_bool(false));
+            write_attribute("applyFill",
+                write_bool(current_format_impl.fill_applied.get()));
         }
 
         if (current_format_impl.font_id.is_set()
-            && !current_format_impl.font_applied)
+            && current_format_impl.font_applied.is_set())
         {
-            write_attribute("applyFont", write_bool(false));
+            write_attribute("applyFont",
+                write_bool(current_format_impl.font_applied.get()));
         }
 
         if (current_format_impl.border_id.is_set()
-            && !current_format_impl.border_applied)
+            && current_format_impl.border_applied.is_set())
         {
-            write_attribute("applyBorder", write_bool(false));
+            write_attribute("applyBorder",
+                write_bool(current_format_impl.border_applied.get()));
         }
 
         if (current_format_impl.alignment_id.is_set()
-            && !current_format_impl.alignment_applied)
+            && current_format_impl.alignment_applied.is_set())
         {
-            write_attribute("applyAlignment", write_bool(false));
+            write_attribute("applyAlignment",
+                write_bool(current_format_impl.alignment_applied.get()));
         }
 
         if (current_format_impl.protection_id.is_set()
-            && !current_format_impl.protection_applied)
+            && current_format_impl.protection_applied.is_set())
         {
-            write_attribute("applyProtection", write_bool(false));
+            write_attribute("applyProtection",
+                write_bool(current_format_impl.protection_applied.get()));
         }
 
         if (current_format_impl.pivot_button_)
@@ -1469,14 +1494,14 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
 
             write_start_element(xmlns, "alignment");
 
-            if (current_alignment.vertical().is_set())
-            {
-                write_attribute("vertical", current_alignment.vertical().get());
-            }
-
             if (current_alignment.horizontal().is_set())
             {
                 write_attribute("horizontal", current_alignment.horizontal().get());
+            }
+
+            if (current_alignment.vertical().is_set())
+            {
+                write_attribute("vertical", current_alignment.vertical().get());
             }
 
             if (current_alignment.rotation().is_set())

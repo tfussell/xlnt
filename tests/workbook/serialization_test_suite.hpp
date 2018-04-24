@@ -215,15 +215,12 @@ public:
             .scheme("minor")
             .underline(xlnt::font::underline_style::single);
         auto hyperlink_style = wb.create_builtin_style(8);
-        hyperlink_style.font(hyperlink_font, true);
+        hyperlink_style.font(hyperlink_font);
         hyperlink_style.number_format(hyperlink_style.number_format(), false);
         hyperlink_style.fill(hyperlink_style.fill(), false);
         hyperlink_style.border(hyperlink_style.border(), false);
         auto hyperlink_format = wb.create_format();
-        hyperlink_format.font(hyperlink_font, true);
-        hyperlink_format.number_format(hyperlink_format.number_format(), true);
-        hyperlink_format.fill(hyperlink_format.fill(), true);
-        hyperlink_format.border(hyperlink_format.border(), true);
+        hyperlink_format.font(hyperlink_font);
         hyperlink_format.style(hyperlink_style);
 
         sheet1.cell("A4").hyperlink("https://microsoft.com/", "hyperlink1");

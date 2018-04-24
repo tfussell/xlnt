@@ -41,16 +41,16 @@ public:
     {
         const std::vector<std::pair<xlnt::color, std::string>> known_colors
         {
-            { xlnt::color::black(), "ff000000" },
-            { xlnt::color::white(), "ffffffff" },
-            { xlnt::color::red(), "ffff0000" },
-            { xlnt::color::darkred(), "ff8b0000" },
-            { xlnt::color::blue(), "ff0000ff" },
-            { xlnt::color::darkblue(), "ff00008b" },
-            { xlnt::color::green(), "ff00ff00" },
-            { xlnt::color::darkgreen(), "ff008b00" },
-            { xlnt::color::yellow(), "ffffff00" },
-            { xlnt::color::darkyellow(), "ffcccc00" }
+            { xlnt::color::black(), "FF000000" },
+            { xlnt::color::white(), "FFFFFFFF" },
+            { xlnt::color::red(), "FFFF0000" },
+            { xlnt::color::darkred(), "FF8B0000" },
+            { xlnt::color::blue(), "FF0000FF" },
+            { xlnt::color::darkblue(), "FF00008B" },
+            { xlnt::color::green(), "FF00FF00" },
+            { xlnt::color::darkgreen(), "FF008B00" },
+            { xlnt::color::yellow(), "FFFFFF00" },
+            { xlnt::color::darkyellow(), "FFCCCC00" }
         };
         
         for (auto pair : known_colors)
