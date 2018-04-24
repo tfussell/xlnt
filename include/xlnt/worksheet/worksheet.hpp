@@ -712,7 +712,7 @@ public:
     /// <summary>
     /// Returns the path of this worksheet in the containing package.
     /// </summary>
-    path path() const;
+    xlnt::path path() const;
 
     /// <summary>
     /// Returns the relationship from the parent workbook to this worksheet.
