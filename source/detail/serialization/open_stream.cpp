@@ -40,12 +40,12 @@ void open_stream(std::ofstream &stream, const std::wstring &path)
 
 void open_stream(std::ifstream &stream, const std::string &path)
 {
-    open_stream(stream, xlnt::path(path).wstring());
+    stream.open(path, std::ios::binary);
 }
 
 void open_stream(std::ofstream &stream, const std::string &path)
 {
-    open_stream(stream, xlnt::path(path).wstring());
+    stream.open(path, std::ios::binary);
 }
 #else
 void open_stream(std::ifstream &stream, const std::string &path)
