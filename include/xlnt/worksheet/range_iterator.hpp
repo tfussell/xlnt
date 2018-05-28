@@ -36,18 +36,18 @@ namespace xlnt {
 class cell_vector;
 
 /// <summary>
-/// Alias the parent class of this iterator to increase clarity.
-/// </summary>
-using r_iter_type = std::iterator<std::bidirectional_iterator_tag,
-    cell_vector, std::ptrdiff_t, cell_vector *, cell_vector>;
-
-/// <summary>
 /// An iterator used by worksheet and range for traversing
 /// a 2D grid of cells by row/column then across that row/column.
 /// </summary>
-class XLNT_API range_iterator : public r_iter_type
+class XLNT_API range_iterator
 {
 public:
+    using iterator_category = std::bidirectional_iterator_tag;
+    using value_type = cell_vector;
+    using difference_type = std::ptrdiff_t;
+    using pointer = cell_vector *;
+    using reference = cell_vector; // intentionally value
+
     /// <summary>
     /// Constructs a range iterator on a worksheet, cell pointing to the current
     /// row or column, range bounds, an order, and whether or not to skip null column/rows.
@@ -128,18 +128,18 @@ private:
 };
 
 /// <summary>
-/// Alias the parent class of this iterator to increase clarity.
-/// </summary>
-using cr_iter_type = std::iterator<std::bidirectional_iterator_tag,
-    const cell_vector, std::ptrdiff_t, const cell_vector *, const cell_vector>;
-
-/// <summary>
 /// A const version of range_iterator which does not allow modification
 /// to the dereferenced cell_vector.
 /// </summary>
-class XLNT_API const_range_iterator : public cr_iter_type
+class XLNT_API const_range_iterator
 {
 public:
+    using iterator_category = std::bidirectional_iterator_tag;
+    using value_type = const cell_vector;
+    using difference_type = std::ptrdiff_t;
+    using pointer = const cell_vector *;
+    using reference = const cell_vector; // intentionally value
+
     /// <summary>
     /// Constructs a range iterator on a worksheet, cell pointing to the current
     /// row or column, range bounds, an order, and whether or not to skip null column/rows.
