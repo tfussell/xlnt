@@ -2366,6 +2366,8 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             first_check_row = row;
             // round up to the next multiple of 16
             last_check_row = (((row - 1) / 16) + 1) * 16;
+            first_block_column = constants::max_column();
+            last_block_column = constants::min_column();
             for (auto check_row = first_check_row; check_row <= last_check_row; ++check_row)
             {
                 for (auto column = dimension.top_left().column(); column <= dimension.bottom_right().column(); ++column)
