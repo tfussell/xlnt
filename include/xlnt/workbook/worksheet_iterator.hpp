@@ -37,18 +37,22 @@ class worksheet;
 // because one needs to point at a const workbook and the other needs
 // to point at a non-const workbook stored as a member variable, respectively.
 
-/// <summary>
-/// Alias the parent class of this iterator to increase clarity.
-/// </summary>
-using ws_iter_type = std::iterator<std::bidirectional_iterator_tag,
-    worksheet, std::ptrdiff_t, worksheet *, worksheet>;
 
 /// <summary>
 /// An iterator which is used to iterate over the worksheets in a workbook.
 /// </summary>
-class XLNT_API worksheet_iterator : public ws_iter_type
+class XLNT_API worksheet_iterator
 {
 public:
+    /// <summary>
+    /// iterator tags required for use with standard algorithms and adapters
+    /// </summary>
+    using iterator_category = std::bidirectional_iterator_tag;
+    using value_type = worksheet;
+    using difference_type = std::ptrdiff_t;
+    using pointer = worksheet *;
+    using reference = worksheet; // intentionally value
+
     /// <summary>
     /// Constructs a worksheet iterator from a workbook and sheet index.
     /// </summary>
@@ -107,17 +111,20 @@ private:
 
 
 /// <summary>
-/// Alias the parent class of this iterator to increase clarity.
-/// </summary>
-using c_ws_iter_type = std::iterator<std::bidirectional_iterator_tag,
-    const worksheet, std::ptrdiff_t, const worksheet *, const worksheet>;
-
-/// <summary>
 /// An iterator which is used to iterate over the worksheets in a const workbook.
 /// </summary>
-class XLNT_API const_worksheet_iterator : public c_ws_iter_type
+class XLNT_API const_worksheet_iterator
 {
 public:
+    /// <summary>
+    /// iterator tags required for use with standard algorithms and adapters
+    /// </summary>
+    using iterator_category = std::bidirectional_iterator_tag;
+    using value_type = const worksheet;
+    using difference_type = std::ptrdiff_t;
+    using pointer = const worksheet *;
+    using reference = const worksheet; // intentionally value
+
     /// <summary>
     /// Constructs a worksheet iterator from a workbook and sheet index.
     /// </summary>
