@@ -2404,27 +2404,31 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         // See note for CT_Row, span attribute about block optimization
         if (first_row_in_block)
         {
-            first_check_row = first_row;
+            first_check_row = row;
             // round up to the next multiple of 16
-            last_check_row = (((first_row - 1) / 16) + 1) * 16;
-        }
-
-        for (auto check_row = first_check_row; check_row <= last_check_row; ++check_row)
-        {
-            for (auto column = dimension.top_left().column(); column <= dimension.bottom_right().column(); ++column)
+            last_check_row = (((row - 1) / 16) + 1) * 16;
+            first_block_column = constants::max_column();
+            last_block_column = constants::min_column();
+            for (auto check_row = first_check_row; check_row <= last_check_row; ++check_row)
             {
-                if (!ws.has_cell(cell_reference(column, row))) continue;
-                auto cell = ws.cell(cell_reference(column, row));
-                if (cell.garbage_collectible()) continue;
-
-                first_block_column = std::min(first_block_column, cell.column());
-                last_block_column = std::max(last_block_column, cell.column());
-
-                if (row == check_row)
+                for (auto column = dimension.top_left().column(); column <= dimension.bottom_right().column(); ++column)
                 {
-                    any_non_null = true;
+                    if (!ws.has_cell(cell_reference(column, check_row))) continue;
+                    auto cell = ws.cell(cell_reference(column, check_row));
+                    if (cell.garbage_collectible()) continue;
+
+                    first_block_column = std::min(first_block_column, cell.column());
+                    last_block_column = std::max(last_block_column, cell.column());
                 }
             }
+        }
+        for (auto column = dimension.top_left().column(); column <= dimension.bottom_right().column(); ++column)
+        {
+            if (!ws.has_cell(cell_reference(column, row))) continue;
+            auto cell = ws.cell(cell_reference(column, row));
+            if (cell.garbage_collectible()) continue;
+
+            any_non_null = true;
         }
 
         if (!any_non_null && !ws.has_row_properties(row)) continue;
