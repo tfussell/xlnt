@@ -1504,6 +1504,31 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
         {
             skip_remaining_content(current_workbook_element);
         }
+        else if (current_workbook_element == qn("mc", "AlternateContent"))
+        {
+            while (in_element(qn("mc", "AlternateContent")))
+            {
+                auto alternate_content_element = expect_start_element(xml::content::complex);
+
+                if (alternate_content_element == qn("mc", "Choice")
+                    && parser().attribute_present("Requires")
+                    && parser().attribute("Requires") == "x15")
+                {
+                    auto x15_element = expect_start_element(xml::content::simple);
+
+                    if (x15_element == qn("x15ac", "absPath"))
+                    {
+                        target_.d_->abs_path_ = parser().attribute("url");
+                    }
+
+                    skip_remaining_content(x15_element);
+                    expect_end_element(x15_element);
+                }
+
+                skip_remaining_content(alternate_content_element);
+                expect_end_element(alternate_content_element);
+            }
+        }
         else if (current_workbook_element == qn("workbook", "workbookPr")) // CT_WorkbookPr 0-1
         {
             target_.base_date(parser().attribute_present("date1904") // optional, bool=false
@@ -1656,11 +1681,28 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
         }
         else if (current_workbook_element == qn("workbook", "extLst")) // CT_ExtensionList 0-1
         {
-            skip_remaining_content(current_workbook_element);
-        }
-        else if (current_workbook_element == qn("mc", "AlternateContent"))
-        {
-            skip_remaining_content(current_workbook_element);
+            while (in_element(qn("workbook", "extLst")))
+            {
+                auto extension_element = expect_start_element(xml::content::complex);
+
+                if (extension_element == qn("workbook", "ext")
+                    && parser().attribute_present("uri")
+                    && parser().attribute("uri") == "{7523E5D3-25F3-A5E0-1632-64F254C22452}")
+                {
+                    auto arch_id_extension_element = expect_start_element(xml::content::simple);
+
+                    if (arch_id_extension_element == qn("mx", "ArchID"))
+                    {
+                        target_.d_->arch_id_flags_ = parser().attribute<std::size_t>("Flags");
+                    }
+
+                    skip_remaining_content(arch_id_extension_element);
+                    expect_end_element(arch_id_extension_element);
+                }
+
+                skip_remaining_content(extension_element);
+                expect_end_element(extension_element);
+            }
         }
         else
         {
@@ -2735,12 +2777,15 @@ rich_text xlsx_consumer::read_rich_text(const xml::qname &parent)
     while (in_element(parent))
     {
         auto text_element = expect_start_element(xml::content::mixed);
+        const auto xml_space = qn("xml", "space");
+        const auto preserve_space = parser().attribute_present(xml_space)
+            ? parser().attribute(xml_space) == "preserve" : false;
         skip_attributes();
         auto text = read_text();
 
         if (text_element == xml::qname(xmlns, "t"))
         {
-            t.plain_text(text);
+            t.plain_text(text, preserve_space);
         }
         else if (text_element == xml::qname(xmlns, "r"))
         {

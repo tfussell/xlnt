@@ -390,6 +390,16 @@ public:
     /// </summary>
     void title(const std::string &title);
 
+    /// <summary>
+    /// Sets the absolute path of this workbook to path.
+    /// </summary>
+    void abs_path(const std::string &path);
+
+    /// <summary>
+    /// Sets the ArchID flags of this workbook to flags.
+    /// </summary>
+    void arch_id_flags(const std::size_t flags);
+
     // Named Ranges
 
     /// <summary>

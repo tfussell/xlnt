@@ -38,7 +38,7 @@ comment::comment(const rich_text &text, const std::string &author)
 comment::comment(const std::string &text, const std::string &author)
     : text_(), author_(author)
 {
-    text_.plain_text(text);
+    text_.plain_text(text, false);
 }
 
 rich_text comment::text() const

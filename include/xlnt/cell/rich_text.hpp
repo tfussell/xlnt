@@ -67,7 +67,7 @@ public:
     /// Clears any runs in this text and adds a single run with default formatting and
     /// the given string as its textual content.
     /// </summary>
-    void plain_text(const std::string &s);
+    void plain_text(const std::string &s, bool preserve_space);
 
     /// <summary>
     /// Combines the textual content of each text run in order and returns the result.

@@ -121,6 +121,8 @@ struct workbook_impl
     
     optional<file_version_t> file_version_;
     optional<calculation_properties> calculation_properties_;
+    optional<std::string> abs_path_;
+    optional<std::size_t> arch_id_flags_;
 };
 
 } // namespace detail

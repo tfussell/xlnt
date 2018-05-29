@@ -48,10 +48,10 @@ void rich_text::clear()
     runs_.clear();
 }
 
-void rich_text::plain_text(const std::string &s)
+void rich_text::plain_text(const std::string &s, bool preserve_space = false)
 {
     clear();
-    add_run(rich_text_run{s, {}});
+    add_run(rich_text_run{s, {}, preserve_space});
 }
 
 std::string rich_text::plain_text() const

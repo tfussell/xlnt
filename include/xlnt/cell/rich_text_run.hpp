@@ -38,6 +38,7 @@ struct rich_text_run
 {
     std::string first;
     optional<font> second;
+    bool preserve_space;
 
     bool operator==(const rich_text_run &other) const;
 

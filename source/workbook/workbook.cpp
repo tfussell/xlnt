@@ -374,6 +374,16 @@ variant workbook::custom_property(const std::string &property_name) const
     throw xlnt::exception("workbook doesn't have custom property");
 }
 
+void workbook::abs_path(const std::string &path)
+{
+    d_->abs_path_ = path;
+}
+
+void workbook::arch_id_flags(const std::size_t flags)
+{
+    d_->arch_id_flags_ = flags;
+}
+
 workbook workbook::empty()
 {
     auto impl = new detail::workbook_impl();

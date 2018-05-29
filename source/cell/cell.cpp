@@ -468,7 +468,7 @@ void cell::error(const std::string &error)
         throw invalid_data_type();
     }
 
-    d_->value_text_.plain_text(error);
+    d_->value_text_.plain_text(error, false);
     d_->type_ = type::error;
 }
 
