@@ -42,6 +42,9 @@ class cell_vector;
 class XLNT_API range_iterator
 {
 public:
+    /// <summary>
+    /// iterator tags required for use with standard algorithms and adapters
+    /// </summary>
     using iterator_category = std::bidirectional_iterator_tag;
     using value_type = cell_vector;
     using difference_type = std::ptrdiff_t;
@@ -134,6 +137,9 @@ private:
 class XLNT_API const_range_iterator
 {
 public:
+    /// <summary>
+    /// this iterator meets the interface requirements of bidirection_iterator
+    /// </summary>
     using iterator_category = std::bidirectional_iterator_tag;
     using value_type = const cell_vector;
     using difference_type = std::ptrdiff_t;

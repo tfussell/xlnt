@@ -43,6 +43,9 @@ class worksheet;
 class XLNT_API worksheet_iterator
 {
 public:
+    /// <summary>
+    /// iterator tags required for use with standard algorithms and adapters
+    /// </summary>
     using iterator_category = std::bidirectional_iterator_tag;
     using value_type = worksheet;
     using difference_type = std::ptrdiff_t;
@@ -112,6 +115,9 @@ private:
 class XLNT_API const_worksheet_iterator
 {
 public:
+    /// <summary>
+    /// iterator tags required for use with standard algorithms and adapters
+    /// </summary>
     using iterator_category = std::bidirectional_iterator_tag;
     using value_type = const worksheet;
     using difference_type = std::ptrdiff_t;
@@ -131,7 +137,7 @@ public:
     /// <summary>
     /// Assigns the iterator so that it points to the same worksheet in the same workbook.
     /// </summary>
-    const_worksheet_iterator &operator=(const const_worksheet_iterator &);
+    const_worksheet_iterator &operator=(const const_worksheet_iterator &) = default;
 
     /// <summary>
     /// Dereferences the iterator to return the worksheet it is pointing to.

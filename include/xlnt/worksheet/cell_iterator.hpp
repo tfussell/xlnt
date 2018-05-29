@@ -46,6 +46,9 @@ class range_reference;
 class XLNT_API cell_iterator
 {
 public:
+    /// <summary>
+    /// iterator tags required for use with standard algorithms and adapters
+    /// </summary>
     using iterator_category = std::bidirectional_iterator_tag;
     using value_type = cell;
     using difference_type = std::ptrdiff_t;
@@ -150,6 +153,9 @@ private:
 class XLNT_API const_cell_iterator
 {
 public:
+    /// <summary>
+    /// iterator tags required for use with standard algorithms and adapters
+    /// </summary>
     using iterator_category = std::bidirectional_iterator_tag;
     using value_type = const cell;
     using difference_type = std::ptrdiff_t;
