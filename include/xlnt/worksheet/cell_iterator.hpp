@@ -41,17 +41,20 @@ class cell_reference;
 class range_reference;
 
 /// <summary>
-/// Alias the parent class of this iterator to increase clarity.
-/// </summary>
-using c_iter_type = std::iterator<std::bidirectional_iterator_tag,
-    cell, std::ptrdiff_t, cell *, cell>;
-
-/// <summary>
 /// A cell iterator iterates over a 1D range by row or by column.
 /// </summary>
-class XLNT_API cell_iterator : public c_iter_type
+class XLNT_API cell_iterator
 {
 public:
+    /// <summary>
+    /// iterator tags required for use with standard algorithms and adapters
+    /// </summary>
+    using iterator_category = std::bidirectional_iterator_tag;
+    using value_type = cell;
+    using difference_type = std::ptrdiff_t;
+    using pointer = cell *;
+    using reference = cell; // intentionally value
+
     /// <summary>
     /// Constructs a cell_iterator from a worksheet, range, and iteration settings.
     /// </summary>
@@ -145,17 +148,20 @@ private:
 };
 
 /// <summary>
-/// Alias the parent class of this iterator to increase clarity.
-/// </summary>
-using cc_iter_type = std::iterator<std::bidirectional_iterator_tag,
-    const cell, std::ptrdiff_t, const cell *, const cell>;
-
-/// <summary>
 /// A cell iterator iterates over a 1D range by row or by column.
 /// </summary>
-class XLNT_API const_cell_iterator : public cc_iter_type
+class XLNT_API const_cell_iterator
 {
 public:
+    /// <summary>
+    /// iterator tags required for use with standard algorithms and adapters
+    /// </summary>
+    using iterator_category = std::bidirectional_iterator_tag;
+    using value_type = const cell;
+    using difference_type = std::ptrdiff_t;
+    using pointer = const cell *;
+    using reference = const cell; // intentionally value
+
     /// <summary>
     /// Constructs a cell_iterator from a worksheet, range, and iteration settings.
     /// </summary>
