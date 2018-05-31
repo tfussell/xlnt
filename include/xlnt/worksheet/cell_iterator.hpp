@@ -96,15 +96,6 @@ public:
     /// </summary>
     const reference operator*() const;
 
-    /// <summary>
-    /// Dereferences this iterator to return the cell it points to.
-    /// </summary>
-    reference operator->();
-
-    /// <summary>
-    /// Dereferences this iterator to return the cell it points to.
-    /// </summary>
-    const reference operator->() const;
 
     /// <summary>
     /// Returns true if this iterator is equivalent to other.
@@ -231,7 +222,7 @@ public:
     /// <summary>
     /// Dereferences this iterator to return the cell it points to.
     /// </summary>
-    const reference operator->() const;
+    const cell operator*() const;
 
     /// <summary>
     /// Returns true if this iterator is equivalent to other.

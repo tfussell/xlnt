@@ -279,20 +279,4 @@ const const_cell_iterator::reference const_cell_iterator::operator*() const
 {
     return ws_.cell(cursor_);
 }
-
-cell_iterator::reference cell_iterator::operator->()
-{
-    return operator*();
-}
-
-const cell_iterator::reference cell_iterator::operator->() const
-{
-    return operator*();
-}
-
-const const_cell_iterator::reference const_cell_iterator::operator->() const
-{
-    return operator*();
-}
-
 } // namespace xlnt
