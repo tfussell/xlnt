@@ -32,7 +32,12 @@ worksheet_iterator::worksheet_iterator(workbook &wb, std::size_t index)
 {
 }
 
-worksheet worksheet_iterator::operator*()
+worksheet_iterator::reference worksheet_iterator::operator*()
+{
+    return (*wb_)[index_];
+}
+
+const worksheet_iterator::reference worksheet_iterator::operator*() const
 {
     return (*wb_)[index_];
 }
@@ -65,7 +70,7 @@ const_worksheet_iterator::const_worksheet_iterator(const workbook &wb, std::size
 {
 }
 
-const worksheet const_worksheet_iterator::operator*()
+const const_worksheet_iterator::reference const_worksheet_iterator::operator*() const
 {
     return wb_->sheet_by_index(index_);
 }
