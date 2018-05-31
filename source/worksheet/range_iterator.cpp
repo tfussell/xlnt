@@ -28,7 +28,12 @@
 
 namespace xlnt {
 
-cell_vector range_iterator::operator*() const
+range_iterator::reference range_iterator::operator*()
+{
+    return cell_vector(ws_, cursor_, bounds_, order_, skip_null_, false);
+}
+
+const range_iterator::reference range_iterator::operator*() const
 {
     return cell_vector(ws_, cursor_, bounds_, order_, skip_null_, false);
 }
@@ -264,7 +269,7 @@ const_range_iterator const_range_iterator::operator++(int)
     return old;
 }
 
-const cell_vector const_range_iterator::operator*() const
+const const_range_iterator::reference const_range_iterator::operator*() const
 {
     return cell_vector(ws_, cursor_, bounds_, order_, skip_null_, false);
 }
