@@ -74,12 +74,12 @@ public:
     /// <summary>
     /// Constructs a cell_iterator by moving from a cell_iterator temporary
     /// </summary>
-    cell_iterator(const cell_iterator &&) = default;
+    cell_iterator(cell_iterator &&) = default;
 
     /// <summary>
     /// Assigns this iterator to from a cell_iterator temporary
     /// </summary>
-    cell_iterator &operator=(const cell_iterator &&) = default;
+    cell_iterator &operator=(cell_iterator &&) = default;
 
     /// <summary>
     /// destructor for const_cell_iterator
@@ -211,12 +211,12 @@ public:
     /// <summary>
     /// Constructs a const_cell_iterator by moving from a const_cell_iterator temporary
     /// </summary>
-    const_cell_iterator(const const_cell_iterator &&) = default;
+    const_cell_iterator(const_cell_iterator &&) = default;
 
     /// <summary>
     /// Assigns this iterator to from a const_cell_iterator temporary
     /// </summary>
-    const_cell_iterator &operator=(const const_cell_iterator &&) = default;
+    const_cell_iterator &operator=(const_cell_iterator &&) = default;
 
     /// <summary>
     /// destructor for const_cell_iterator
