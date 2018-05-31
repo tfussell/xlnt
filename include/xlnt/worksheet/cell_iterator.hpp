@@ -89,7 +89,13 @@ public:
     /// <summary>
     /// Dereferences this iterator to return the cell it points to.
     /// </summary>
-    cell operator*();
+    reference operator*();
+
+    /// <summary>
+    /// Dereferences this iterator to return the cell it points to.
+    /// </summary>
+    const reference operator*() const;
+
 
     /// <summary>
     /// Returns true if this iterator is equivalent to other.
@@ -207,6 +213,12 @@ public:
     /// destructor for const_cell_iterator
     /// </summary>
     ~const_cell_iterator() = default;
+
+    /// <summary>
+    /// Dereferences this iterator to return the cell it points to.
+    /// </summary>
+    const reference operator*() const;
+
     /// <summary>
     /// Dereferences this iterator to return the cell it points to.
     /// </summary>
