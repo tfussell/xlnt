@@ -58,16 +58,6 @@ const_cell_iterator::const_cell_iterator(worksheet ws, const cell_reference &cur
     }
 }
 
-cell_iterator::cell_iterator(const cell_iterator &other)
-{
-    *this = other;
-}
-
-const_cell_iterator::const_cell_iterator(const const_cell_iterator &other)
-{
-    *this = other;
-}
-
 bool cell_iterator::operator==(const cell_iterator &other) const
 {
     return ws_ == other.ws_

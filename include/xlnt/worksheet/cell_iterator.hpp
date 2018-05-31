@@ -64,12 +64,27 @@ public:
     /// <summary>
     /// Constructs a cell_iterator as a copy of an existing cell_iterator.
     /// </summary>
-    cell_iterator(const cell_iterator &other);
+    cell_iterator(const cell_iterator &) = default;
 
     /// <summary>
     /// Assigns this iterator to match the data in rhs.
     /// </summary>
-    cell_iterator &operator=(const cell_iterator &rhs) = default;
+    cell_iterator &operator=(const cell_iterator &) = default;
+
+    /// <summary>
+    /// Constructs a cell_iterator by moving from a cell_iterator temporary
+    /// </summary>
+    cell_iterator(const cell_iterator &&) = default;
+
+    /// <summary>
+    /// Assigns this iterator to from a cell_iterator temporary
+    /// </summary>
+    cell_iterator &operator=(const cell_iterator &&) = default;
+
+    /// <summary>
+    /// destructor for const_cell_iterator
+    /// </summary>
+    ~cell_iterator() = default;
 
     /// <summary>
     /// Dereferences this iterator to return the cell it points to.
@@ -169,15 +184,29 @@ public:
         const range_reference &limits, major_order order, bool skip_null, bool wrap);
 
     /// <summary>
-    /// Constructs a cell_iterator as a copy of an existing cell_iterator.
+    /// Constructs a const_cell_iterator as a copy of an existing cell_iterator.
     /// </summary>
-    const_cell_iterator(const const_cell_iterator &other);
+    const_cell_iterator(const const_cell_iterator &) = default;
 
     /// <summary>
     /// Assigns this iterator to match the data in rhs.
     /// </summary>
     const_cell_iterator &operator=(const const_cell_iterator &) = default;
 
+    /// <summary>
+    /// Constructs a const_cell_iterator by moving from a const_cell_iterator temporary
+    /// </summary>
+    const_cell_iterator(const const_cell_iterator &&) = default;
+
+    /// <summary>
+    /// Assigns this iterator to from a const_cell_iterator temporary
+    /// </summary>
+    const_cell_iterator &operator=(const const_cell_iterator &&) = default;
+
+    /// <summary>
+    /// destructor for const_cell_iterator
+    /// </summary>
+    ~const_cell_iterator() = default;
     /// <summary>
     /// Dereferences this iterator to return the cell it points to.
     /// </summary>
