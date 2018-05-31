@@ -86,7 +86,12 @@ public:
     /// <summary>
     /// Dereference the iterator to return a column or row.
     /// </summary>
-    cell_vector operator*() const;
+    reference operator*();
+
+    /// <summary>
+    /// Dereference the iterator to return a column or row.
+    /// </summary>
+    const reference operator*() const;
 
     /// <summary>
     /// Returns true if this iterator is equivalent to other.
@@ -196,7 +201,7 @@ public:
     /// <summary>
     /// Dereferennce the iterator to return the current column/row.
     /// </summary>
-    const cell_vector operator*() const;
+    const reference operator*() const;
 
     /// <summary>
     /// Returns true if this iterator is equivalent to other.
