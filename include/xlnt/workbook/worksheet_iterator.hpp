@@ -88,7 +88,14 @@ public:
     /// If the iterator points to one-past-the-end of the workbook, an invalid_parameter
     /// exception will be thrown.
     /// </summary>
-    worksheet operator*();
+    reference operator*();
+
+    /// <summary>
+    /// Dereferences the iterator to return the worksheet it is pointing to.
+    /// If the iterator points to one-past-the-end of the workbook, an invalid_parameter
+    /// exception will be thrown.
+    /// </summary>
+    const reference operator*() const;
 
     /// <summary>
     /// Returns true if this iterator points to the same worksheet as comparand.
@@ -175,7 +182,7 @@ public:
     /// If the iterator points to one-past-the-end of the workbook, an invalid_parameter
     /// exception will be thrown.
     /// </summary>
-    const worksheet operator*();
+    const reference operator*() const;
 
     /// <summary>
     /// Returns true if this iterator points to the same worksheet as comparand.
