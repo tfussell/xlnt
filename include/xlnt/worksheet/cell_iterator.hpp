@@ -220,11 +220,6 @@ public:
     const reference operator*() const;
 
     /// <summary>
-    /// Dereferences this iterator to return the cell it points to.
-    /// </summary>
-    const cell operator*() const;
-
-    /// <summary>
     /// Returns true if this iterator is equivalent to other.
     /// </summary>
     bool operator==(const const_cell_iterator &other) const;
