@@ -47,11 +47,6 @@ range_iterator::range_iterator(worksheet &ws, const cell_reference &cursor,
     }
 }
 
-range_iterator::range_iterator(const range_iterator &other)
-{
-    *this = other;
-}
-
 bool range_iterator::operator==(const range_iterator &other) const
 {
     return ws_ == other.ws_
@@ -166,11 +161,6 @@ const_range_iterator::const_range_iterator(const worksheet &ws, const cell_refer
     {
         ++(*this);
     }
-}
-
-const_range_iterator::const_range_iterator(const const_range_iterator &other)
-{
-    *this = other;
 }
 
 bool const_range_iterator::operator==(const const_range_iterator &other) const

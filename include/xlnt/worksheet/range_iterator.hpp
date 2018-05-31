@@ -59,19 +59,34 @@ public:
         const range_reference &bounds, major_order order, bool skip_null);
 
     /// <summary>
-    /// Copy constructor.
+    /// Default copy constructor.
     /// </summary>
-    range_iterator(const range_iterator &other);
-
-    /// <summary>
-    /// Dereference the iterator to return a column or row.
-    /// </summary>
-    cell_vector operator*() const;
+    range_iterator(const range_iterator &) = default;
 
     /// <summary>
     /// Default assignment operator.
     /// </summary>
     range_iterator &operator=(const range_iterator &) = default;
+
+    /// <summary>
+    /// Default move constructor.
+    /// </summary>
+    range_iterator(range_iterator &&) = default;
+
+    /// <summary>
+    /// Default move assignment operator.
+    /// </summary>
+    range_iterator &operator=(range_iterator &&) = default;
+
+    /// <summary>
+    /// Default destructor
+    /// </summary>
+    ~range_iterator() = default;
+
+    /// <summary>
+    /// Dereference the iterator to return a column or row.
+    /// </summary>
+    cell_vector operator*() const;
 
     /// <summary>
     /// Returns true if this iterator is equivalent to other.
@@ -154,19 +169,34 @@ public:
         const range_reference &bounds, major_order order, bool skip_null);
 
     /// <summary>
-    /// Copy constructor.
+    /// Default copy constructor.
     /// </summary>
-    const_range_iterator(const const_range_iterator &other);
-
-    /// <summary>
-    /// Dereferennce the iterator to return the current column/row.
-    /// </summary>
-    const cell_vector operator*() const;
+    const_range_iterator(const const_range_iterator &) = default;
 
     /// <summary>
     /// Default assignment operator.
     /// </summary>
     const_range_iterator &operator=(const const_range_iterator &) = default;
+
+    /// <summary>
+    /// Default move constructor.
+    /// </summary>
+    const_range_iterator(const_range_iterator &&) = default;
+
+    /// <summary>
+    /// Default move assignment operator.
+    /// </summary>
+    const_range_iterator &operator=(const_range_iterator &&) = default;
+
+    /// <summary>
+    /// Default destructor
+    /// </summary>
+    ~const_range_iterator() = default;
+
+    /// <summary>
+    /// Dereferennce the iterator to return the current column/row.
+    /// </summary>
+    const cell_vector operator*() const;
 
     /// <summary>
     /// Returns true if this iterator is equivalent to other.
