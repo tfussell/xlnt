@@ -61,12 +61,27 @@ public:
     /// <summary>
     /// Copy constructs a worksheet iterator from another iterator.
     /// </summary>
-    worksheet_iterator(const worksheet_iterator &);
+    worksheet_iterator(const worksheet_iterator &) = default;
 
     /// <summary>
     /// Assigns the iterator so that it points to the same worksheet in the same workbook.
     /// </summary>
-    worksheet_iterator &operator=(const worksheet_iterator &);
+    worksheet_iterator &operator=(const worksheet_iterator &) = default;
+
+    /// <summary>
+    /// Copy constructs a worksheet iterator from another iterator.
+    /// </summary>
+    worksheet_iterator(worksheet_iterator &&) = default;
+
+    /// <summary>
+    /// Assigns the iterator so that it points to the same worksheet in the same workbook.
+    /// </summary>
+    worksheet_iterator &operator=(worksheet_iterator &&) = default;
+
+    /// <summary>
+    /// Default destructor
+    /// </summary>
+    ~worksheet_iterator() = default;
 
     /// <summary>
     /// Dereferences the iterator to return the worksheet it is pointing to.
@@ -101,7 +116,7 @@ private:
     /// <summary>
     /// The target workbook of this iterator.
     /// </summary>
-    workbook &wb_;
+    workbook *wb_;
 
     /// <summary>
     /// The index of the worksheet in wb_ this iterator is currently pointing to.
@@ -133,12 +148,27 @@ public:
     /// <summary>
     /// Copy constructs a worksheet iterator from another iterator.
     /// </summary>
-    const_worksheet_iterator(const const_worksheet_iterator &);
+    const_worksheet_iterator(const const_worksheet_iterator &) = default;
 
     /// <summary>
     /// Assigns the iterator so that it points to the same worksheet in the same workbook.
     /// </summary>
-    const_worksheet_iterator &operator=(const const_worksheet_iterator &);
+    const_worksheet_iterator &operator=(const const_worksheet_iterator &) = default;
+
+    /// <summary>
+    /// Move constructs a worksheet iterator from another iterator.
+    /// </summary>
+    const_worksheet_iterator(const_worksheet_iterator &&) = default;
+
+    /// <summary>
+    /// Assigns the iterator from a temporary
+    /// </summary>
+    const_worksheet_iterator &operator=(const_worksheet_iterator &&) = default;
+
+    /// <summary>
+    /// Default destructor
+    /// </summary>
+    ~const_worksheet_iterator() = default;
 
     /// <summary>
     /// Dereferences the iterator to return the worksheet it is pointing to.
@@ -173,7 +203,7 @@ private:
     /// <summary>
     /// The target workbook of this iterator.
     /// </summary>
-    const workbook &wb_;
+    const workbook *wb_;
 
     /// <summary>
     /// The index of the worksheet in wb_ this iterator is currently pointing to.
