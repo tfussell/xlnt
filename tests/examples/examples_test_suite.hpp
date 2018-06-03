@@ -24,7 +24,7 @@
 #pragma once
 
 #include <algorithm>
-#include <iostream>
+#include <fstream>
 
 #include <helpers/temporary_file.hpp>
 #include <helpers/test_suite.hpp>
@@ -35,8 +35,11 @@
 // functionality not under test
 class examples_test_suite : public test_suite
 {
+    std::ofstream example_log;
+
 public:
     examples_test_suite()
+        : example_log("examples.log", std::ios::binary | std::ios::out | std::ios::trunc) // overwite any existing data
     {
         register_test(test_readme_example1);
         register_test(test_read_and_print_example);
@@ -64,54 +67,54 @@ public:
     // from https://tfussell.gitbooks.io/xlnt/content/docs/introduction/Examples.html
     void test_read_and_print_example()
     {
-        std::clog << std::endl; // addition for formatting
+        example_log << std::endl; // addition for formatting
 
         xlnt::workbook wb;
         wb.load(path_helper::test_file("14_example_test.xlsx")); // modified to use the test data directory
         auto ws = wb.active_sheet();
 
-        std::clog << "Processing spread sheet" << std::endl;
+        example_log << "Processing spread sheet" << std::endl;
         for (auto row : ws.rows(false))
         {
             for (auto cell : row)
             {
-                std::clog << cell.to_string() << std::endl;
+                example_log << cell.to_string() << std::endl;
             }
         }
-        std::clog << "Processing complete" << std::endl;
+        example_log << "Processing complete" << std::endl;
     }
 
     // Simple - storing a spread sheet in a 2 dimensional C++ Vector for further processing
     // from https://tfussell.gitbooks.io/xlnt/content/docs/introduction/Examples.html
     void test_read_into_vector_example()
     {
-        std::clog << std::endl; // addition for formatting
+        example_log << std::endl; // addition for formatting
 
         xlnt::workbook wb;
         wb.load(path_helper::test_file("14_example_test.xlsx")); // modified to use the test data directory
         auto ws = wb.active_sheet();
-        std::clog << "Processing spread sheet" << std::endl;
-        std::clog << "Creating a single vector which stores the whole spread sheet" << std::endl;
+        example_log << "Processing spread sheet" << std::endl;
+        example_log << "Creating a single vector which stores the whole spread sheet" << std::endl;
         std::vector<std::vector<std::string>> theWholeSpreadSheet;
         for (auto row : ws.rows(false))
         {
-            std::clog << "Creating a fresh vector for just this row in the spread sheet" << std::endl;
+            example_log << "Creating a fresh vector for just this row in the spread sheet" << std::endl;
             std::vector<std::string> aSingleRow;
             for (auto cell : row)
             {
-                std::clog << "Adding this cell to the row" << std::endl;
+                example_log << "Adding this cell to the row" << std::endl;
                 aSingleRow.push_back(cell.to_string());
             }
-            std::clog << "Adding this entire row to the vector which stores the whole spread sheet" << std::endl;
+            example_log << "Adding this entire row to the vector which stores the whole spread sheet" << std::endl;
             theWholeSpreadSheet.push_back(aSingleRow);
         }
-        std::clog << "Processing complete" << std::endl;
-        std::clog << "Reading the vector and printing output to the screen" << std::endl;
-        for (int rowInt = 0; rowInt < theWholeSpreadSheet.size(); rowInt++)
+        example_log << "Processing complete" << std::endl;
+        example_log << "Reading the vector and printing output to the screen" << std::endl;
+        for (std::size_t rowInt = 0; rowInt < theWholeSpreadSheet.size(); rowInt++)
         {
-            for (int colInt = 0; colInt < theWholeSpreadSheet.at(rowInt).size(); colInt++)
+            for (std::size_t colInt = 0; colInt < theWholeSpreadSheet.at(rowInt).size(); colInt++)
             {
-                std::cout << theWholeSpreadSheet.at(rowInt).at(colInt) << std::endl;
+                example_log << theWholeSpreadSheet.at(rowInt).at(colInt) << std::endl;
             }
         }
     }
@@ -120,7 +123,7 @@ public:
     // from https://tfussell.gitbooks.io/xlnt/content/docs/introduction/Examples.html
     void test_write_sheet_to_file_example()
     {
-        std::clog << std::endl; // addition for formatting
+        example_log << std::endl; // addition for formatting
 
         //Creating a 2 dimensional vector which we will write values to
         std::vector<std::vector<std::string>> wholeWorksheet;
@@ -138,11 +141,11 @@ public:
             }
             //Adding the single row to the 2 dimensional vector
             wholeWorksheet.push_back(singleRow);
-            std::clog << "Writing to row " << outer << " in the vector " << std::endl;
+            example_log << "Writing to row " << outer << " in the vector " << std::endl;
         }
         //Writing to the spread sheet
         //Creating the output workbook
-        std::clog << "Creating workbook" << std::endl;
+        example_log << "Creating workbook" << std::endl;
         xlnt::workbook wbOut;
         //Setting the destination output file name
         std::string dest_filename = "output.xlsx";
@@ -152,11 +155,11 @@ public:
         wsOut.title("data");
         //We will now be looping through the 2 dimensional vector which we created above
         //In this case we have two iterators one for the outer loop (row) and one for the inner loop (column)
-        std::clog << "Looping through vector and writing to spread sheet" << std::endl;
-        for (int fOut = 0; fOut < wholeWorksheet.size(); fOut++)
+        example_log << "Looping through vector and writing to spread sheet" << std::endl;
+        for (std::size_t fOut = 0; fOut < wholeWorksheet.size(); fOut++)
         {
-            std::clog << "Row" << fOut << std::endl;
-            for (int fIn = 0; fIn < wholeWorksheet.at(fOut).size(); fIn++)
+            example_log << "Row" << fOut << std::endl;
+            for (std::size_t fIn = 0; fIn < wholeWorksheet.at(fOut).size(); fIn++)
             {
                 //Take notice of the difference between accessing the vector and accessing the work sheet
                 //As you may already know Excel spread sheets start at row 1 and column 1 (not row 0 and column 0 like you would expect from a C++ vector)
@@ -167,7 +170,7 @@ public:
                 //Vector arguments are (row number, column number); e.g. wholeWorksheet.at(fOut).at(fIn)
             }
         }
-        std::clog << "Finished writing spread sheet" << std::endl;
+        example_log << "Finished writing spread sheet" << std::endl;
         wbOut.save(dest_filename); 
     }
 
@@ -179,7 +182,8 @@ public:
         auto cell = wb.active_sheet().cell("A1");
         cell.number_format(xlnt::number_format::percentage());
         cell.value(0.513);
-        std::cout << std::endl << cell.to_string() << std::endl;
+        example_log << std::endl
+                    << cell.to_string() << std::endl;
     }
 
     // Properties
