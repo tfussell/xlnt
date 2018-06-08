@@ -55,6 +55,19 @@ worksheet_iterator worksheet_iterator::operator++(int)
     return old;
 }
 
+worksheet_iterator &worksheet_iterator::operator--()
+{
+    --index_;
+    return *this;
+}
+
+worksheet_iterator worksheet_iterator::operator--(int)
+{
+    worksheet_iterator old(*wb_, index_);
+    --(*this);
+    return old;
+}
+
 bool worksheet_iterator::operator==(const worksheet_iterator &comparand) const
 {
     return index_ == comparand.index_ && wb_ == comparand.wb_;
@@ -85,6 +98,19 @@ const_worksheet_iterator const_worksheet_iterator::operator++(int)
 {
     const_worksheet_iterator old(*wb_, index_);
     ++*this;
+    return old;
+}
+
+const_worksheet_iterator &const_worksheet_iterator::operator--()
+{
+    --index_;
+    return *this;
+}
+
+const_worksheet_iterator const_worksheet_iterator::operator--(int)
+{
+    const_worksheet_iterator old(*wb_, index_);
+    --(*this);
     return old;
 }
 

@@ -119,6 +119,18 @@ public:
     /// </summary>
     worksheet_iterator &operator++();
 
+    /// <summary>
+    /// Post-decrement the iterator's internal workseet index. Returns a copy of the
+    /// iterator as it was before being incremented.
+    /// </summary>
+    worksheet_iterator operator--(int);
+
+    /// <summary>
+    /// Pre-decrement the iterator's internal workseet index. Returns a refernce
+    /// to the same iterator.
+    /// </summary>
+    worksheet_iterator &operator--();
+
 private:
     /// <summary>
     /// The target workbook of this iterator.
@@ -205,6 +217,18 @@ public:
     /// to the same iterator.
     /// </summary>
     const_worksheet_iterator &operator++();
+
+    /// <summary>
+    /// Post-decrement the iterator's internal workseet index. Returns a copy of the
+    /// iterator as it was before being incremented.
+    /// </summary>
+    const_worksheet_iterator operator--(int);
+
+    /// <summary>
+    /// Pre-decrement the iterator's internal workseet index. Returns a refernce
+    /// to the same iterator.
+    /// </summary>
+    const_worksheet_iterator &operator--();
 
 private:
     /// <summary>
