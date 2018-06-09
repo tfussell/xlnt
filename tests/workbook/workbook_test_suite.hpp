@@ -193,10 +193,18 @@ public:
         ++iter;
         xlnt_assert_differs(iter, wb2.begin());
         xlnt_assert_equals((*iter).title(), "Sheet2");
-        --iter;
+        auto temp = --iter;
+        xlnt_assert_equals((*temp).title(), "Sheet1");
         xlnt_assert_equals((*iter).title(), "Sheet1");
-        std::advance(iter, 2);
+        iter++;
+        xlnt_assert_equals((*iter).title(), "Sheet2");
+        temp = iter++;
+        xlnt_assert_equals((*temp).title(), "Sheet2");
         xlnt_assert_equals(iter, wb2.end());
+
+        iter = temp--;
+        xlnt_assert_equals((*iter).title(), "Sheet2");
+        xlnt_assert_equals((*temp).title(), "Sheet1");
     }
 
     void test_const_iter()
@@ -226,10 +234,18 @@ public:
         ++iter;
         xlnt_assert_differs(iter, wb2.cbegin());
         xlnt_assert_equals((*iter).title(), "Sheet2");
-        --iter;
+        auto temp = --iter;
+        xlnt_assert_equals((*temp).title(), "Sheet1");
         xlnt_assert_equals((*iter).title(), "Sheet1");
-        std::advance(iter, 2);
+        iter++;
+        xlnt_assert_equals((*iter).title(), "Sheet2");
+        temp = iter++;
+        xlnt_assert_equals((*temp).title(), "Sheet2");
         xlnt_assert_equals(iter, wb2.cend());
+
+        iter = temp--;
+        xlnt_assert_equals((*iter).title(), "Sheet2");
+        xlnt_assert_equals((*temp).title(), "Sheet1");
     }
 
     void test_get_index()
