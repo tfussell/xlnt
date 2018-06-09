@@ -64,17 +64,17 @@ public:
     worksheet_iterator(const worksheet_iterator &) = default;
 
     /// <summary>
-    /// Assigns the iterator so that it points to the same worksheet in the same workbook.
+    /// Copy assigns the iterator so that it points to the same worksheet in the same workbook.
     /// </summary>
     worksheet_iterator &operator=(const worksheet_iterator &) = default;
 
     /// <summary>
-    /// Copy constructs a worksheet iterator from another iterator.
+    /// Move constructs a worksheet iterator from a temporary iterator.
     /// </summary>
     worksheet_iterator(worksheet_iterator &&) = default;
 
     /// <summary>
-    /// Assigns the iterator so that it points to the same worksheet in the same workbook.
+    /// Move assign the iterator from a temporary iterator
     /// </summary>
     worksheet_iterator &operator=(worksheet_iterator &&) = default;
 
@@ -170,17 +170,17 @@ public:
     const_worksheet_iterator(const const_worksheet_iterator &) = default;
 
     /// <summary>
-    /// Assigns the iterator so that it points to the same worksheet in the same workbook.
+    /// Copy assigns the iterator so that it points to the same worksheet in the same workbook.
     /// </summary>
     const_worksheet_iterator &operator=(const const_worksheet_iterator &) = default;
 
     /// <summary>
-    /// Move constructs a worksheet iterator from another iterator.
+    /// Move constructs a worksheet iterator from a temporary iterator.
     /// </summary>
     const_worksheet_iterator(const_worksheet_iterator &&) = default;
 
     /// <summary>
-    /// Assigns the iterator from a temporary
+    /// Move assigns the iterator from a temporary iterator
     /// </summary>
     const_worksheet_iterator &operator=(const_worksheet_iterator &&) = default;
 
