@@ -492,10 +492,13 @@ public:
         ws.freeze_panes("A4");
 
         auto view = ws.view();
-        xlnt_assert_equals(view.selections().size(), 2);
-        xlnt_assert_equals(view.selections()[0].active_cell(), "A3");
+        xlnt_assert_equals(view.selections().size(), 1);
+        // pane is the corner of the worksheet that this selection extends to
+        // active cell is the last selected cell in the selection
+        // sqref is the last selected block in the selection
         xlnt_assert_equals(view.selections()[0].pane(), xlnt::pane_corner::bottom_left);
-        xlnt_assert_equals(view.selections()[0].sqref(), "A1"); // TODO: document sqref and clarify whether 'A1' is the intended value here
+        xlnt_assert_equals(view.selections()[0].active_cell(), "A4");
+        xlnt_assert_equals(view.selections()[0].sqref(), "A4");
         xlnt_assert_equals(view.pane().active_pane, xlnt::pane_corner::bottom_left);
         xlnt_assert_equals(view.pane().state, xlnt::pane_state::frozen);
         xlnt_assert_equals(view.pane().top_left_cell.get(), "A4");
@@ -509,10 +512,13 @@ public:
         ws.freeze_panes("D1");
 
         auto view = ws.view();
-        xlnt_assert_equals(view.selections().size(), 2);
-        xlnt_assert_equals(view.selections()[0].active_cell(), "C1");
+        xlnt_assert_equals(view.selections().size(), 1);
+        // pane is the corner of the worksheet that this selection extends to
+        // active cell is the last selected cell in the selection
+        // sqref is the last selected block in the selection
         xlnt_assert_equals(view.selections()[0].pane(), xlnt::pane_corner::top_right);
-        xlnt_assert_equals(view.selections()[0].sqref(), "A1"); // TODO: document sqref and clarify whether 'A1' is the intended value here
+        xlnt_assert_equals(view.selections()[0].active_cell(), "D1");
+        xlnt_assert_equals(view.selections()[0].sqref(), "D1");
         xlnt_assert_equals(view.pane().active_pane, xlnt::pane_corner::top_right);
         xlnt_assert_equals(view.pane().state, xlnt::pane_state::frozen);
         xlnt_assert_equals(view.pane().top_left_cell.get(), "D1");
@@ -527,11 +533,18 @@ public:
 
         auto view = ws.view();
         xlnt_assert_equals(view.selections().size(), 3);
+        // pane is the corner of the worksheet that this selection extends to
+        // active cell is the last selected cell in the selection
+        // sqref is the last selected block in the selection
         xlnt_assert_equals(view.selections()[0].pane(), xlnt::pane_corner::top_right);
+        xlnt_assert_equals(view.selections()[0].active_cell(), "D1");
+        xlnt_assert_equals(view.selections()[0].sqref(), "D1");
         xlnt_assert_equals(view.selections()[1].pane(), xlnt::pane_corner::bottom_left);
-        xlnt_assert_equals(view.selections()[2].active_cell(), "D4");
+        xlnt_assert_equals(view.selections()[1].active_cell(), "A4");
+        xlnt_assert_equals(view.selections()[1].sqref(), "A4");
         xlnt_assert_equals(view.selections()[2].pane(), xlnt::pane_corner::bottom_right);
-        xlnt_assert_equals(view.selections()[2].sqref(), "A1"); // TODO: document sqref and clarify whether 'A1' is the intended value here
+        xlnt_assert_equals(view.selections()[2].active_cell(), "D4");
+        xlnt_assert_equals(view.selections()[2].sqref(), "D4");
         xlnt_assert_equals(view.pane().active_pane, xlnt::pane_corner::bottom_right);
         xlnt_assert_equals(view.pane().state, xlnt::pane_state::frozen);
         xlnt_assert_equals(view.pane().top_left_cell.get(), "D4");
