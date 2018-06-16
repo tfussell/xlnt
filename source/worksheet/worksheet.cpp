@@ -763,6 +763,7 @@ void worksheet::clear_cell(const cell_reference &ref)
 void worksheet::clear_row(row_t row)
 {
     d_->cell_map_.erase(row);
+    d_->row_properties_.erase(row);
     // TODO: garbage collect newly unreferenced resources such as styles?
 }
 
