@@ -290,13 +290,17 @@ void worksheet::freeze_panes(xlnt::cell top_left_cell)
 
 void worksheet::freeze_panes(const cell_reference &ref)
 {
+    if (ref == "A1")
+    {
+        unfreeze_panes();
+        return;
+    }
     if (!has_view())
     {
         d_->views_.push_back(sheet_view());
     }
 
     auto &primary_view = d_->views_.front();
-
     if (!primary_view.has_pane())
     {
         primary_view.pane(pane());
@@ -307,38 +311,40 @@ void worksheet::freeze_panes(const cell_reference &ref)
 
     primary_view.clear_selections();
     primary_view.add_selection(selection());
-
-    if (ref == "A1")
+    primary_view.add_selection(selection());
+    if (ref.column() == "A") // no column is frozen
     {
-        unfreeze_panes();
-    }
-    else if (ref.column() == "A")
-    {
-        primary_view.add_selection(selection());
         primary_view.selection(0).pane(pane_corner::bottom_left);
+        primary_view.selection(0).sqref("A1");
         primary_view.selection(0).active_cell(ref.make_offset(0, -1)); // cell above
+        primary_view.selection(1).pane(pane_corner::bottom_right);
+        primary_view.selection(1).sqref("A1");
         primary_view.selection(1).active_cell(ref);
         primary_view.pane().active_pane = pane_corner::bottom_left;
         primary_view.pane().y_split = ref.row() - 1;
     }
-    else if (ref.row() == 1)
+    else if (ref.row() == 1) // no row is frozen
     {
-        primary_view.add_selection(selection());
         primary_view.selection(0).pane(pane_corner::top_right);
+        primary_view.selection(0).sqref("A1");
         primary_view.selection(0).active_cell(ref.make_offset(-1, 0)); // cell to the left
+        primary_view.selection(1).pane(pane_corner::bottom_right);
+        primary_view.selection(1).sqref("A1");
         primary_view.selection(1).active_cell(ref);
         primary_view.pane().active_pane = pane_corner::top_right;
         primary_view.pane().x_split = ref.column_index() - 1;
     }
-    else
+    else // column and row is frozen
     {
         primary_view.add_selection(selection());
-        primary_view.add_selection(selection());
         primary_view.selection(0).pane(pane_corner::top_right);
+        primary_view.selection(0).sqref("A1");
         primary_view.selection(0).active_cell(ref.make_offset(0, -1)); // cell above
         primary_view.selection(1).pane(pane_corner::bottom_left);
+        primary_view.selection(1).sqref("A1");
         primary_view.selection(1).active_cell(ref.make_offset(-1, 0)); // cell to the left
         primary_view.selection(2).pane(pane_corner::bottom_right);
+        primary_view.selection(2).sqref("A1");
         primary_view.selection(2).active_cell(ref);
         primary_view.pane().active_pane = pane_corner::bottom_right;
         primary_view.pane().x_split = ref.column_index() - 1;
