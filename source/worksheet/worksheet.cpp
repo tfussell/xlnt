@@ -242,25 +242,31 @@ std::string worksheet::title() const
 
 void worksheet::title(const std::string &title)
 {
-    if (title.length() > 31)
+    // do no work if we don't need to
+    if (d_->title_ == title)
+    {
+        return;
+    }
+    // excel limits worksheet titles to 31 characters
+    if (title.empty() || title.length() > 31)
     {
         throw invalid_sheet_title(title);
     }
-
+    // invalid characters in a worksheet name
     if (title.find_first_of("*:/\\?[]") != std::string::npos)
     {
         throw invalid_sheet_title(title);
     }
-
-    auto same_title = std::find_if(workbook().begin(), workbook().end(),
-        [&](worksheet ws) { return ws.title() == title; });
-
-    if (same_title != workbook().end() && *same_title != *this)
+    // try and insert the new name into the worksheets map
+    // if the insert fails, we have a duplicate sheet name
+    auto insert_result = workbook().d_->sheet_title_rel_id_map_.insert(
+        std::make_pair(title, workbook().d_->sheet_title_rel_id_map_[d_->title_]));
+    if (!insert_result.second) // insert failed, duplication detected
     {
         throw invalid_sheet_title(title);
     }
-
-    workbook().d_->sheet_title_rel_id_map_[title] = workbook().d_->sheet_title_rel_id_map_[d_->title_];
+    // if the insert succeeded (i.e. wasn't a duplicate sheet name)
+    // update the worksheet title and remove the old relation
     workbook().d_->sheet_title_rel_id_map_.erase(d_->title_);
     d_->title_ = title;
 
