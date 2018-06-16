@@ -369,12 +369,7 @@ hyperlink cell::hyperlink() const
 
 void cell::hyperlink(const std::string &url)
 {
-    hyperlink(url, url);
-}
-
-void cell::hyperlink(const std::string &url, const std::string &display)
-{
-    if (url.empty() || std::find(url.begin(), url.end(), ':') == url.end() || display.empty())
+    if (url.empty() || std::find(url.begin(), url.end(), ':') == url.end())
     {
         throw invalid_parameter();
     }
@@ -386,18 +381,14 @@ void cell::hyperlink(const std::string &url, const std::string &display)
     d_->hyperlink_ = detail::hyperlink_impl();
 
     // check for existing relationships
-    for (const auto &rel : manifest.relationships(ws.path(), relationship_type::hyperlink))
-    {
-        if (rel.target().path().string() == url)
-        {
-            d_->hyperlink_.get().relationship = rel;
-            existing = true;
-            break;
-        }
+    auto relationships = manifest.relationships(ws.path(), relationship_type::hyperlink);
+    auto relation = std::find_if(relationships.cbegin(), relationships.cend(),
+        [&url](xlnt::relationship rel) { return rel.target().path().string() == url; });
+    if (relation != relationships.end()) {
+        d_->hyperlink_.get().relationship = *relation;
     }
-
-    // register a new relationship
-    if (!existing) {
+    else
+    { // register a new relationship
         auto rel_id = manifest.register_relationship(
             uri(ws.path().string()),
             relationship_type::hyperlink,
@@ -405,9 +396,25 @@ void cell::hyperlink(const std::string &url, const std::string &display)
             target_mode::external);
         // TODO: make manifest::register_relationship return the created relationship instead of rel id
         d_->hyperlink_.get().relationship = manifest.relationship(ws.path(), rel_id);
+    }   
+    
+    if (!has_value()) // hyperlink on an empty cell sets the value to the hyperlink string
+    {
+        value(url);
     }
+}
 
-    value(display);
+void cell::hyperlink(const std::string &url, const std::string &display)
+{
+    if (!display.empty()) // if the display string isn't empty use that
+    {
+        value(display);
+    }
+    else // empty display string sets the value to the link text
+    {
+        value(url);
+    }
+    hyperlink(url);
     d_->hyperlink_.get().display = display;
 }
 

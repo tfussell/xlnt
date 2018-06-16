@@ -225,12 +225,44 @@ public:
     {
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
-        ws.cell("A1").hyperlink("http://test.com");
-        xlnt_assert_equals(ws.cell("A1").hyperlink().url(), "http://test.com");
-        xlnt_assert_equals(ws.cell("A1").value<std::string>(), "");
-        ws.cell("A1").value("test");
-        xlnt_assert_equals("test", ws.cell("A1").value<std::string>());
-        xlnt_assert_equals(ws.cell("A1").hyperlink().url(), "http://test.com");
+        std::string test_link = "http://test.com";
+        xlnt::cell_reference test_cell("A1");
+        ws.cell(test_cell).hyperlink(test_link);
+        // when a hyperlink is added to an empty cell, the display text becomes == to the link
+        xlnt_assert_equals(ws.cell(test_cell).hyperlink().url(), test_link);
+        xlnt_assert_equals(ws.cell(test_cell).value<std::string>(), test_link);
+        // if the display value changes, the hyperlink remains the same
+        std::string test_string = "test";
+        ws.cell(test_cell).value(test_string);
+        xlnt_assert_equals(test_string, ws.cell(test_cell).value<std::string>());
+        xlnt_assert_equals(ws.cell(test_cell).hyperlink().url(), test_link);
+        // changing the link doesn't change the cell value
+        std::string test_link2 = "http://test-123.com";
+        ws.cell(test_cell).hyperlink(test_link2);
+        xlnt_assert_equals(test_string, ws.cell(test_cell).value<std::string>());
+        xlnt_assert_equals(ws.cell(test_cell).hyperlink().url(), test_link2);
+        // and we can edit both value and hyperlink together
+        std::string test_string3 = "123test";
+        std::string test_link3 = "http://123-test.com";
+        ws.cell(test_cell).hyperlink(test_link3, test_string3);
+        xlnt_assert_equals(test_string3, ws.cell(test_cell).value<std::string>());
+        xlnt_assert_equals(ws.cell(test_cell).hyperlink().url(), test_link3);
+        // hyperlinks can also be applied to cells with non-string values
+        int numeric_test_val = 123;
+        std::string test_link4 = "http://test-numeric.com";
+        xlnt::cell_reference numeric_test_cell("B1");
+        ws.cell(numeric_test_cell).value(numeric_test_val);
+        ws.cell(numeric_test_cell).hyperlink(test_link4);
+        xlnt_assert_equals(ws.cell(numeric_test_cell).hyperlink().url(), test_link4);
+        xlnt_assert_equals(ws.cell(numeric_test_cell).value<int>(), numeric_test_val);
+        // and there should be no issues if two cells use the same hyperlink
+        ws.cell(numeric_test_cell).hyperlink(test_link3); // still in use on 'A1'
+        // 'A1'
+        xlnt_assert_equals(test_string3, ws.cell(test_cell).value<std::string>());
+        xlnt_assert_equals(ws.cell(test_cell).hyperlink().url(), test_link3);
+        // 'B1'
+        xlnt_assert_equals(ws.cell(numeric_test_cell).hyperlink().url(), test_link3);
+        xlnt_assert_equals(ws.cell(numeric_test_cell).value<int>(), numeric_test_val);
     }
 
     void test_rows()
