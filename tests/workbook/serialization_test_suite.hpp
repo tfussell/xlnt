@@ -613,7 +613,9 @@ public:
     
     void test_round_trip_rw_unicode()
     {
-        xlnt_assert(round_trip_matches_rw(path_helper::test_file(u8"9_unicode_Λ.xlsx")));
+        // u8"/9_unicode_Λ.xlsx" doesn't use 0xc3aa for the capital lambda...
+        // u8"/9_unicode_\u039B.xlsx" gives the corrct output
+        xlnt_assert(round_trip_matches_rw(path_helper::test_file(u8"9_unicode_\u039B.xlsx")));
     }
 
     void test_round_trip_rw_comments_hyperlinks_formulae()
