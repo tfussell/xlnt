@@ -343,16 +343,20 @@ public:
     {
 #ifdef _MSC_VER
         xlnt::workbook wb;
-        const auto path = LSTRING_LITERAL(XLNT_TEST_DATA_DIR) L"/9_unicode_Λ.xlsx";
+        // L"/9_unicode_Λ.xlsx" doesn't use wchar_t(0x039B) for the capital lambda...
+        // L"/9_unicode_\u039B.xlsx" gives the corrct output
+        const auto path = LSTRING_LITERAL(XLNT_TEST_DATA_DIR) L"/9_unicode_\u039B.xlsx"; // L"/9_unicode_Λ.xlsx"
         wb.load(path);
-        xlnt_assert_equals(wb.active_sheet().cell("A1").value<std::string>(), u8"unicodê!");
+        xlnt_assert_equals(wb.active_sheet().cell("A1").value<std::string>(), u8"unicod\u00EA!"); // "unicodê"
 #endif
 
 #ifndef __MINGW32__
         xlnt::workbook wb2;
-        const auto path2 = U8STRING_LITERAL(XLNT_TEST_DATA_DIR) u8"/9_unicode_Λ.xlsx";
+        // u8"/9_unicode_Λ.xlsx" doesn't use 0xc3aa for the capital lambda...
+        // u8"/9_unicode_\u039B.xlsx" gives the corrct output
+        const auto path2 = U8STRING_LITERAL(XLNT_TEST_DATA_DIR) u8"/9_unicode_\u039B.xlsx"; // u8"/9_unicode_Λ.xlsx"
         wb2.load(path2);
-        xlnt_assert_equals(wb2.active_sheet().cell("A1").value<std::string>(), u8"unicodê!");
+        xlnt_assert_equals(wb2.active_sheet().cell("A1").value<std::string>(), u8"unicod\u00EA!"); // "unicodê"
 #endif
     }
 
@@ -393,7 +397,6 @@ public:
         xlnt_assert(ws1.cell("A7").has_hyperlink());
         xlnt_assert_equals(ws1.cell("A7").value<std::string>(), "mailto:invalid@example.com?subject=important");
         xlnt_assert_equals(ws1.cell("A7").hyperlink().url(), "mailto:invalid@example.com?subject=important");
-
     }
 
     void test_read_formulae()
