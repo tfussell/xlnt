@@ -39,9 +39,18 @@ public:
                 std::cout << ".";
                 status.tests_passed++;
             }
+            catch (std::exception &ex)
+            {
+                std::cout << "*\n"
+                          << test.second << " failed with:\n"
+                          << ex.what() << '\n';
+                status.tests_failed++;
+                status.failures.push_back(test.second);
+            }
             catch (...)
             {
-                std::cout << "*";
+                std::cout << "*\n"
+                          << test.second << " failed" << '\n';
                 status.tests_failed++;
                 status.failures.push_back(test.second);
             }
