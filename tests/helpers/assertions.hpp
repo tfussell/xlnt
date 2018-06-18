@@ -54,6 +54,6 @@
         throw xlnt::exception("assert throws failed -> " XLNT_STRINGIFY(expression)); \
     } while (false)
 
-#define xlnt_assert_equals(left, right) xlnt_assert(left == right)
-#define xlnt_assert_differs(left, right) xlnt_assert(left != right)
-#define xlnt_assert_delta(left, right, delta) xlnt_assert(std::abs(left - right) <= delta)
+#define xlnt_assert_equals(left, right) xlnt_assert((left) == (right))
+#define xlnt_assert_differs(left, right) xlnt_assert((left) != (right))
+#define xlnt_assert_delta(left, right, delta) xlnt_assert(std::abs((left) - (right)) <= (delta))
