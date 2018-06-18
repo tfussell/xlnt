@@ -198,7 +198,11 @@ pattern_fill_type from_string(const std::string &string)
     auto toLower = [](std::string str) {
         auto bg{ std::begin (str) };
         auto en{ std::end (str) };
-        std::transform (bg, en, bg, tolower);
+        std::transform(bg, en, bg, 
+                       [](char c) {
+                        // static cast to avoid int -> char narrowing warning
+                           return static_cast<char>(tolower(c)); 
+                       });
 
         return str;
     };

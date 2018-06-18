@@ -376,7 +376,6 @@ void cell::hyperlink(const std::string &url)
 
     auto ws = worksheet();
     auto &manifest = ws.workbook().manifest();
-    bool existing = false;
 
     d_->hyperlink_ = detail::hyperlink_impl();
 
