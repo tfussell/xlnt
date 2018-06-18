@@ -320,7 +320,7 @@ public:
         xlnt::workbook wb;
         const auto path = path_helper::test_file("6_encrypted_libre.xlsx");
         xlnt_assert_throws(wb.load(path, "incorrect"), xlnt::exception);
-        xlnt_assert_throws_nothing(wb.load(path, u8"пароль"));
+        xlnt_assert_throws_nothing(wb.load(path, u8"\u043F\u0430\u0440\u043E\u043B\u044C")); // u8"пароль"
     }
 
     void test_decrypt_standard()
@@ -645,7 +645,7 @@ public:
     
     void test_round_trip_rw_encrypted_libre()
     {
-        xlnt_assert(round_trip_matches_rw(path_helper::test_file("6_encrypted_libre.xlsx"), u8"пароль"));
+        xlnt_assert(round_trip_matches_rw(path_helper::test_file("6_encrypted_libre.xlsx"), u8"\u043F\u0430\u0440\u043E\u043B\u044C")); // u8"пароль"
     }
 
     void test_round_trip_rw_encrypted_standard()
