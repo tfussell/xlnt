@@ -28,18 +28,18 @@
 namespace xlnt {
 
 worksheet_iterator::worksheet_iterator(workbook &wb, std::size_t index)
-    : wb_(wb), index_(index)
+    : wb_(&wb), index_(index)
 {
 }
 
-worksheet_iterator::worksheet_iterator(const worksheet_iterator &rhs)
-    : wb_(rhs.wb_), index_(rhs.index_)
+worksheet_iterator::reference worksheet_iterator::operator*()
 {
+    return (*wb_)[index_];
 }
 
-worksheet worksheet_iterator::operator*()
+const worksheet_iterator::reference worksheet_iterator::operator*() const
 {
-    return wb_[index_];
+    return (*wb_)[index_];
 }
 
 worksheet_iterator &worksheet_iterator::operator++()
@@ -50,8 +50,21 @@ worksheet_iterator &worksheet_iterator::operator++()
 
 worksheet_iterator worksheet_iterator::operator++(int)
 {
-    worksheet_iterator old(wb_, index_);
+    worksheet_iterator old(*wb_, index_);
     ++*this;
+    return old;
+}
+
+worksheet_iterator &worksheet_iterator::operator--()
+{
+    --index_;
+    return *this;
+}
+
+worksheet_iterator worksheet_iterator::operator--(int)
+{
+    worksheet_iterator old(*wb_, index_);
+    --(*this);
     return old;
 }
 
@@ -65,25 +78,14 @@ bool worksheet_iterator::operator!=(const worksheet_iterator &comparand) const
     return !(*this == comparand);
 }
 
-worksheet_iterator &worksheet_iterator::operator=(const worksheet_iterator &other)
-{
-    index_ = other.index_;
-    return *this;
-}
-
 const_worksheet_iterator::const_worksheet_iterator(const workbook &wb, std::size_t index)
-    : wb_(wb), index_(index)
+    : wb_(&wb), index_(index)
 {
 }
 
-const_worksheet_iterator::const_worksheet_iterator(const const_worksheet_iterator &rhs)
-    : wb_(rhs.wb_), index_(rhs.index_)
+const const_worksheet_iterator::reference const_worksheet_iterator::operator*() const
 {
-}
-
-const worksheet const_worksheet_iterator::operator*()
-{
-    return wb_.sheet_by_index(index_);
+    return wb_->sheet_by_index(index_);
 }
 
 const_worksheet_iterator &const_worksheet_iterator::operator++()
@@ -94,8 +96,21 @@ const_worksheet_iterator &const_worksheet_iterator::operator++()
 
 const_worksheet_iterator const_worksheet_iterator::operator++(int)
 {
-    const_worksheet_iterator old(wb_, index_);
+    const_worksheet_iterator old(*wb_, index_);
     ++*this;
+    return old;
+}
+
+const_worksheet_iterator &const_worksheet_iterator::operator--()
+{
+    --index_;
+    return *this;
+}
+
+const_worksheet_iterator const_worksheet_iterator::operator--(int)
+{
+    const_worksheet_iterator old(*wb_, index_);
+    --(*this);
     return old;
 }
 
