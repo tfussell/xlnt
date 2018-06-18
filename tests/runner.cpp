@@ -45,6 +45,8 @@
 #include <worksheet/range_test_suite.hpp>
 #include <worksheet/worksheet_test_suite.hpp>
 
+#include <examples/examples_test_suite.hpp>
+
 #include <detail/cryptography/compound_document.hpp>
 
 test_status overall_status;
@@ -99,6 +101,9 @@ int main()
     run_tests<page_setup_test_suite>();
     run_tests<range_test_suite>();
     run_tests<worksheet_test_suite>();
+
+    // examples
+    run_tests<examples_test_suite>();
 
     print_summary();
 
