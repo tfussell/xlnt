@@ -27,6 +27,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include <xlnt/packaging/ext_list.hpp>
 #include <xlnt/workbook/named_range.hpp>
 #include <xlnt/worksheet/column_properties.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
@@ -81,6 +82,7 @@ struct worksheet_impl
         views_ = other.views_;
         column_breaks_ = other.column_breaks_;
         row_breaks_ = other.row_breaks_;
+        extension_list_ = other.extension_list_;
 
         for (auto &row : cell_map_)
         {
@@ -123,6 +125,8 @@ struct worksheet_impl
     std::vector<row_t> row_breaks_;
 
     std::unordered_map<std::string, comment> comments_;
+
+    optional<ext_list> extension_list_;
 };
 
 } // namespace detail
