@@ -2362,11 +2362,6 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             write_attribute("width", (props.width.get() * 7 + 5) / 7);
         }
 
-        if (props.custom_width)
-        {
-            write_attribute("customWidth", write_bool(true));
-        }
-
         if (props.style.is_set())
         {
             write_attribute("style", props.style.get());
@@ -2375,6 +2370,11 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         if (props.hidden)
         {
             write_attribute("hidden", write_bool(true));
+        }
+
+        if (props.custom_width)
+        {
+            write_attribute("customWidth", write_bool(true));
         }
 
         write_end_element(xmlns, "col");
@@ -2439,6 +2439,15 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         if (ws.has_row_properties(row))
         {
             const auto &props = ws.row_properties(row);
+
+            if (props.style.is_set())
+            {
+                write_attribute("s", props.style.get());
+            }
+            if (props.custom_format.is_set())
+            {
+                write_attribute("customFormat", write_bool(props.custom_format.get()));
+            }
 
             if (props.height.is_set())
             {

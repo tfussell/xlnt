@@ -55,6 +55,11 @@ public:
     bool hidden = false;
 
     /// <summary>
+    /// True if row style should be applied
+    /// </summary>
+    optional<bool> custom_format;
+
+    /// <summary>
     /// The index to the style used by all cells in this row
     /// </summary>
     optional<std::size_t> style;

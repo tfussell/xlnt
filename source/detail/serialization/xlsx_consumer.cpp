@@ -659,7 +659,16 @@ void xlsx_consumer::read_worksheet_sheetdata()
             row_properties.dy_descent = parser().attribute<double>(qn("x14ac", "dyDescent"));
         }
 
-        skip_attributes({ "customFormat", "s", "customFont",
+        if (parser().attribute_present("s"))
+        {
+            row_properties.style.set(static_cast<std::size_t>(std::stoull(parser().attribute("s"))));
+        }
+        if (parser().attribute_present("customFormat"))
+        {
+            row_properties.custom_format.set(parser().attribute<bool>("customFormat"));
+        }
+
+        skip_attributes({ "customFont",
             "outlineLevel", "collapsed", "thickTop", "thickBot",
             "ph", "spans" });
 
