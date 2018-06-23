@@ -72,7 +72,6 @@ void ext_list::ext::serialise(xml::serializer &serialiser)
 {
     std::istringstream ser(serialised_value_);
     xml::parser p(ser, "", xml::parser::receive_default);
-    int nest_level = 0;
     roundtrip(p, serialiser);
 }
 
