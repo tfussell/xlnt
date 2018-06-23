@@ -2409,9 +2409,9 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         // See note for CT_Row, span attribute about block optimization
         if (first_row_in_block)
         {
-            first_check_row = first_row;
+            first_check_row = row;
             // round up to the next multiple of 16
-            last_check_row = (((first_row - 1) / 16) + 1) * 16;
+            last_check_row = ((row / 16) + 1) * 16;
         }
 
         for (auto check_row = first_check_row; check_row <= last_check_row; ++check_row)
