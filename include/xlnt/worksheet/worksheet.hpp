@@ -56,6 +56,7 @@ class relationship;
 class row_properties;
 class sheet_format_properties;
 class workbook;
+class phonetic_pr;
 
 struct date;
 
@@ -555,6 +556,21 @@ public:
     /// to improve performance.
     /// </summary>
     void reserve(std::size_t n);
+
+    /// <summary>
+    /// Returns true if this sheet has phonetic properties
+    /// </summary>
+    bool has_phonetic_properties() const;
+
+    /// <summary>
+    /// Returns the phonetic properties of this sheet.
+    /// </summary>
+    const phonetic_pr &phonetic_properties() const;
+
+    /// <summary>
+    /// Sets the phonetic properties of this sheet to phonetic_props
+    /// </summary>
+    void phonetic_properties(const phonetic_pr& phonetic_props);
 
     /// <summary>
     /// Returns true if this sheet has a header/footer.

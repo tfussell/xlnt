@@ -835,7 +835,16 @@ worksheet xlsx_consumer::read_worksheet_end(const std::string &rel_id)
         }
         else if (current_worksheet_element == qn("spreadsheetml", "phoneticPr")) // CT_PhoneticPr 0-1
         {
-            skip_remaining_content(current_worksheet_element);
+            phonetic_pr phonetic_properties(parser().attribute<std::uint32_t>("fontId"));
+            if (parser().attribute_present("type"))
+            {
+                phonetic_properties.type(phonetic_pr::type_from_string(parser().attribute("type")));
+            }
+            if (parser().attribute_present("alignment"))
+            {
+                phonetic_properties.alignment(phonetic_pr::alignment_from_string(parser().attribute("alignment")));
+            }
+            current_worksheet_->phonetic_properties_.set(phonetic_properties);
         }
         else if (current_worksheet_element == qn("spreadsheetml", "conditionalFormatting")) // CT_ConditionalFormatting 0+
         {
@@ -847,7 +856,7 @@ worksheet xlsx_consumer::read_worksheet_end(const std::string &rel_id)
         }
         else if (current_worksheet_element == qn("spreadsheetml", "hyperlinks")) // CT_Hyperlinks 0-1
         {
-            while (in_element(qn("spreadsheetml", "hyperlinks")))
+            while (in_element(current_worksheet_element))
             {
                 // CT_Hyperlink
                 expect_start_element(qn("spreadsheetml", "hyperlink"), xml::content::simple);

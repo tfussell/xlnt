@@ -27,15 +27,16 @@
 #include <unordered_map>
 #include <vector>
 
-#include <detail/implementations/cell_impl.hpp>
 #include <xlnt/workbook/named_range.hpp>
 #include <xlnt/worksheet/column_properties.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
+#include <xlnt/worksheet/phonetic_pr.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/row_properties.hpp>
 #include <xlnt/worksheet/sheet_format_properties.hpp>
 #include <xlnt/worksheet/sheet_view.hpp>
+#include <detail/implementations/cell_impl.hpp>
 
 namespace xlnt {
 
@@ -72,6 +73,7 @@ struct worksheet_impl
         page_margins_ = other.page_margins_;
         merged_cells_ = other.merged_cells_;
         named_ranges_ = other.named_ranges_;
+        phonetic_properties_ = other.phonetic_properties_;
         header_footer_ = other.header_footer_;
         print_title_cols_ = other.print_title_cols_;
         print_title_rows_ = other.print_title_rows_;
@@ -107,6 +109,7 @@ struct worksheet_impl
     std::vector<range_reference> merged_cells_;
     std::unordered_map<std::string, named_range> named_ranges_;
 
+    optional<phonetic_pr> phonetic_properties_;
     optional<header_footer> header_footer_;
 
     std::string print_title_cols_;

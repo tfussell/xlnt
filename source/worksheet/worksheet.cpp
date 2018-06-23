@@ -26,10 +26,6 @@
 #include <cmath>
 #include <limits>
 
-#include <detail/constants.hpp>
-#include <detail/implementations/cell_impl.hpp>
-#include <detail/implementations/workbook_impl.hpp>
-#include <detail/implementations/worksheet_impl.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/cell/index_types.hpp>
@@ -46,6 +42,10 @@
 #include <xlnt/worksheet/range_iterator.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
+#include <detail/constants.hpp>
+#include <detail/implementations/cell_impl.hpp>
+#include <detail/implementations/workbook_impl.hpp>
+#include <detail/implementations/worksheet_impl.hpp>
 
 namespace {
 
@@ -1027,6 +1027,21 @@ void worksheet::register_calc_chain_in_manifest()
     workbook().register_workbook_part(relationship_type::calculation_chain);
 }
 
+bool worksheet::has_phonetic_properties() const
+{
+    return d_->phonetic_properties_.is_set();
+}
+
+const phonetic_pr& worksheet::phonetic_properties() const
+{
+    return d_->phonetic_properties_.get();
+}
+
+void worksheet::phonetic_properties(const phonetic_pr& phonetic_props)
+{
+    d_->phonetic_properties_.set(phonetic_props);
+}
+
 bool worksheet::has_header_footer() const
 {
     return d_->header_footer_.is_set();
@@ -1103,7 +1118,7 @@ void worksheet::parent(xlnt::workbook &wb)
 
 conditional_format worksheet::conditional_format(const range_reference &ref, const condition &when)
 {
-	return workbook().d_->stylesheet_.get().add_conditional_format_rule(d_, ref, when);
+    return workbook().d_->stylesheet_.get().add_conditional_format_rule(d_, ref, when);
 }
 
 path worksheet::path() const
