@@ -78,16 +78,25 @@ path manifest::canonicalize(const std::vector<xlnt::relationship> &rels) const
     return result;
 }
 
-bool manifest::has_relationship(const path &part, relationship_type type) const
+bool manifest::has_relationship(const path &path, relationship_type type) const
 {
-    if (relationships_.find(part) == relationships_.end()) return false;
-
-    for (const auto &rel : relationships_.at(part))
+    auto rels = relationships_.find(path);
+    if (rels == relationships_.end())
     {
-        if (rel.second.type() == type) return true;
+        return false;
     }
+    return rels->second.end() != std::find_if(rels->second.begin(), rels->second.end(), 
+                                              [type](const std::pair<std::string, xlnt::relationship> &rel) { return rel.second.type() == type; });
+}
 
-    return false;
+bool manifest::has_relationship(const path &path, const std::string &rel_id) const
+{
+    auto rels = relationships_.find(path);
+    if (rels == relationships_.end()) 
+    {
+        return false;
+    }
+    return rels->second.find(rel_id) != rels->second.end();
 }
 
 relationship manifest::relationship(const path &part, relationship_type type) const
