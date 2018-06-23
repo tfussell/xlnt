@@ -474,11 +474,11 @@ public:
         xlnt_assert_equals(ws.cell("B4").value<std::string>(), "B4");
         xlnt_assert_equals(ws.cell("D4").value<std::string>(), "D4");
 
-        xlnt_assert_equals(ws.row_properties(1).height.get(), 100);
+        xlnt_assert_equals(ws.row_properties(1).height.get(), 99.95);
         xlnt_assert(!ws.row_properties(2).height.is_set());
-        xlnt_assert_equals(ws.row_properties(3).height.get(), 100);
+        xlnt_assert_equals(ws.row_properties(3).height.get(), 99.95);
         xlnt_assert(!ws.row_properties(4).height.is_set());
-        xlnt_assert_equals(ws.row_properties(5).height.get(), 100);
+        xlnt_assert_equals(ws.row_properties(5).height.get(), 99.95);
 
         auto width = ((16.0 * 7) - 5) / 7;
 
@@ -523,13 +523,13 @@ public:
             ws.row_properties(i).dy_descent = 0.2;
         }
 
-        ws.row_properties(1).height = 100;
+        ws.row_properties(1).height = 99.95;
         ws.row_properties(1).custom_height = true;
 
-        ws.row_properties(3).height = 100;
+        ws.row_properties(3).height = 99.95;
         ws.row_properties(3).custom_height = true;
 
-        ws.row_properties(5).height = 100;
+        ws.row_properties(5).height = 99.95;
         ws.row_properties(5).custom_height = true;
 
         auto width = ((16.0 * 7) - 5) / 7;
@@ -542,9 +542,6 @@ public:
 
         ws.column_properties("E").width = width;
         ws.column_properties("E").custom_width = true;
-
-        wb.default_slicer_style("SlicerStyleLight1");
-        wb.enable_known_fonts();
 
         xlnt_assert(workbook_matches_file(wb,
             path_helper::test_file("13_custom_heights_widths.xlsx")));

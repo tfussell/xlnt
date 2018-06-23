@@ -2332,7 +2332,11 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         write_attribute("baseColWidth",
             format_properties.base_col_width.get());
     }
-
+    if (format_properties.default_column_width.is_set())
+    {
+        write_attribute("defaultColWidth",
+            format_properties.default_column_width.get());
+    }
     if (format_properties.default_row_height.is_set())
     {
         write_attribute("defaultRowHeight",

@@ -544,7 +544,11 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
                 ws.d_->format_properties_.base_col_width =
                     parser().attribute<double>("baseColWidth");
             }
-
+            if (parser().attribute_present("defaultColWidth"))
+            {
+                ws.d_->format_properties_.default_column_width =
+                    parser().attribute<double>("defaultColWidth");
+            }
             if (parser().attribute_present("defaultRowHeight"))
             {
                 ws.d_->format_properties_.default_row_height =
