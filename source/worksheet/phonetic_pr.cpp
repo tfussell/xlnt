@@ -113,7 +113,7 @@ const std::string &phonetic_pr::type_as_string(phonetic_pr::Type type)
 
 phonetic_pr::Type phonetic_pr::type_from_string(const std::string &str)
 {
-    for (int i = 0; i < Types.size(); ++i)
+    for (std::size_t i = 0; i < Types.size(); ++i)
     {
         if (str == Types[i])
         {
@@ -130,7 +130,7 @@ const std::string &phonetic_pr::alignment_as_string(Alignment type)
 
 phonetic_pr::Alignment phonetic_pr::alignment_from_string(const std::string &str)
 {
-    for (int i = 0; i < Alignments.size(); ++i)
+    for (std::size_t i = 0; i < Alignments.size(); ++i)
     {
         if (str == Alignments[i])
         {

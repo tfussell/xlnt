@@ -44,6 +44,12 @@ namespace {
                 s.characters(p.value());
                 break;
             }
+            case xml::parser::eof:
+                return;
+            case xml::parser::start_attribute:
+            case xml::parser::end_attribute:
+            default:
+                break;
             }
         }
     }
