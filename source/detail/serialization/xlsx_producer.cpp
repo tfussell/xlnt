@@ -80,6 +80,16 @@ std::vector<std::pair<std::string, std::string>> core_property_namespace(xlnt::c
     return {{constants::ns("core-properties"), "cp"}};
 }
 
+std::string number_to_string(double num)
+{
+    // any more digits and excel won't match
+    constexpr int Excel_Digit_Precision = 15;
+    std::stringstream ss;
+    ss.precision(Excel_Digit_Precision);
+    ss << num;
+    return ss.str();
+}
+
 } // namespace
 
 namespace xlnt {
@@ -2359,7 +2369,8 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
         if (props.width.is_set())
         {
-            write_attribute("width", (props.width.get() * 7 + 5) / 7);
+            double width = (props.width.get() * 7 + 5) / 7;
+            write_attribute("width", number_to_string(width));
         }
 
         if (props.best_fit)
@@ -2457,15 +2468,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             if (props.height.is_set())
             {
                 auto height = props.height.get();
-
-                if (std::fabs(height - std::floor(height)) == 0.0)
-                {
-                    write_attribute("ht", std::to_string(static_cast<int>(height)) + ".0");
-                }
-                else
-                {
-                    write_attribute("ht", height);
-                }
+                write_attribute("ht", number_to_string(height));
             }
 
             if (props.hidden)
@@ -2588,19 +2591,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
                 case cell::type::number:
                     write_start_element(xmlns, "v");
-
-                    if (is_integral(cell.value<double>()))
-                    {
-                        write_characters(static_cast<std::int64_t>(cell.value<double>()));
-                    }
-                    else
-                    {
-                        std::stringstream ss;
-                        ss.precision(20);
-                        ss << cell.value<double>();
-                        write_characters(ss.str());
-                    }
-
+                    write_characters(number_to_string(cell.value<double>()));
                     write_end_element(xmlns, "v");
                     break;
 
