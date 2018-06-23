@@ -2362,6 +2362,11 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             write_attribute("width", (props.width.get() * 7 + 5) / 7);
         }
 
+        if (props.best_fit)
+        {
+            write_attribute("bestFit", write_bool(true));
+        }
+
         if (props.style.is_set())
         {
             write_attribute("style", props.style.get());

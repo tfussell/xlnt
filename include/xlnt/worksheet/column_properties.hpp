@@ -52,6 +52,12 @@ public:
     optional<std::size_t> style;
 
     /// <summary>
+    /// Is this column sized to fit its content as best it can
+    /// serialise if true
+    /// </summary>
+    bool best_fit = false;
+
+    /// <summary>
     /// If true, this column will be hidden
     /// </summary>
     bool hidden = false;

@@ -588,6 +588,9 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
                     ? is_true(parser().attribute("customWidth")) : false;
                 auto hidden = parser().attribute_present("hidden")
                     ? is_true(parser().attribute("hidden")) : false;
+                auto best_fit = parser().attribute_present("bestFit")
+                    ? is_true(parser().attribute("bestFit"))
+                    : false;
 
                 expect_end_element(qn("spreadsheetml", "col"));
 
@@ -607,6 +610,7 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
 
                     props.hidden = hidden;
                     props.custom_width = custom;
+                    props.best_fit = best_fit;
                     ws.add_column_properties(column, props);
                 }
             }
