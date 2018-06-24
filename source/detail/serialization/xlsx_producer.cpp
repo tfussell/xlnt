@@ -2998,6 +2998,11 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         }
     }
 
+    if (ws.d_->extension_list_.is_set())
+    {
+        ws.d_->extension_list_.get().serialize(*current_part_serializer_, xmlns);
+    }
+
     write_end_element(xmlns, "worksheet");
 
     if (!worksheet_rels.empty())

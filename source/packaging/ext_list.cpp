@@ -9,7 +9,7 @@ namespace {
     xlnt::uri roundtrip(xml::parser& p, xml::serializer &s)
     {
         xlnt::uri ext_uri;
-        int nest_level = 0; // ext element already opened on entry
+        int nest_level = 0;
         while (nest_level > 0 || (p.peek() != xml::parser::event_type::end_element && p.peek() != xml::parser::event_type::eof))
         {
             switch (p.next())
@@ -64,8 +64,6 @@ namespace xlnt {
 
 ext_list::ext::ext(xml::parser &parser)
 {
-    //parser.next_expect(xml::parser::start_element, "ext");
-    //extension_ID_ = uri(parser.attribute("uri"));
     std::ostringstream serialisation_stream;
     xml::serializer s(serialisation_stream, "", 0);
     extension_ID_ = roundtrip(parser, s);
@@ -76,7 +74,7 @@ ext_list::ext::ext(const uri &ID, const std::string &serialised)
     : extension_ID_(ID), serialised_value_(serialised)
 {}
 
-void ext_list::ext::serialise(xml::serializer &serialiser)
+void ext_list::ext::serialise(xml::serializer &serialiser, const std::string& ns)
 {
     std::istringstream ser(serialised_value_);
     xml::parser p(ser, "", xml::parser::receive_default);
@@ -85,7 +83,6 @@ void ext_list::ext::serialise(xml::serializer &serialiser)
 
 ext_list::ext_list(xml::parser &parser)
 {
-    parser.content(xml::parser::content_type::mixed);
     // begin with the start element already parsed
     while (parser.peek() == xml::parser::start_element)
     {
@@ -94,12 +91,12 @@ ext_list::ext_list(xml::parser &parser)
     // end without parsing the end element
 }
 
-void ext_list::serialize(xml::serializer &serialiser, std::string namesp)
+void ext_list::serialize(xml::serializer &serialiser, const std::string& namesp)
 {
-    serialiser.start_element("extLst", namesp);
+    serialiser.start_element(namesp, "extLst");
     for (auto &ext : extensions_)
     {
-        ext.serialise(serialiser);
+        ext.serialise(serialiser, namesp);
     }
     serialiser.end_element();
 }
