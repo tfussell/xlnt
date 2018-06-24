@@ -25,6 +25,7 @@
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 
@@ -33,6 +34,7 @@ namespace xlnt {
 /// </summary>
 enum class XLNT_API orientation
 {
+    default,
     portrait,
     landscape
 };
@@ -118,16 +120,6 @@ public:
     void paper_size(xlnt::paper_size paper_size);
 
     /// <summary>
-    /// Returns the orientation of the worksheet using this page setup.
-    /// </summary>
-    xlnt::orientation orientation() const;
-
-    /// <summary>
-    /// Sets the orientation of the page.
-    /// </summary>
-    void orientation(xlnt::orientation orientation);
-
-    /// <summary>
     /// Returns true if this worksheet should be scaled to fit on a single page during printing.
     /// </summary>
     bool fit_to_page() const;
@@ -189,6 +181,19 @@ public:
     /// </summary>
     double scale() const;
 
+    /// <summary>
+    /// The orientation
+    /// </summary>
+    xlnt::optional<xlnt::orientation> orientation_;
+    /// <summary>
+    /// The horizontal dpi
+    /// </summary>
+    xlnt::optional<std::size_t> horizontal_dpi_;
+    /// <summary>
+    /// The vertical dpi
+    /// </summary>
+    xlnt::optional<std::size_t> vertical_dpi_;
+
 private:
     /// <summary>
     /// The break
@@ -204,11 +209,6 @@ private:
     /// The paper size
     /// </summary>
     xlnt::paper_size paper_size_;
-
-    /// <summary>
-    /// The orientation
-    /// </summary>
-    xlnt::orientation orientation_;
 
     /// <summary>
     /// Whether or not to fit to page

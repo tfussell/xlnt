@@ -926,6 +926,7 @@ worksheet xlsx_consumer::read_worksheet_end(const std::string &rel_id)
         }
         else if (current_worksheet_element == qn("spreadsheetml", "printOptions")) // CT_PrintOptions 0-1
         {
+
             skip_remaining_content(current_worksheet_element);
         }
         else if (current_worksheet_element == qn("spreadsheetml", "pageMargins")) // CT_PageMargins 0-1
@@ -943,6 +944,20 @@ worksheet xlsx_consumer::read_worksheet_end(const std::string &rel_id)
         }
         else if (current_worksheet_element == qn("spreadsheetml", "pageSetup")) // CT_PageSetup 0-1
         {
+            page_setup setup;
+            if (parser().attribute_present("orientation"))
+            {
+                setup.orientation_.set(parser().attribute<orientation>("orientation"));
+            }
+            if (parser().attribute_present("horizontalDpi"))
+            {
+                setup.horizontal_dpi_.set(parser().attribute<std::size_t>("horizontalDpi"));
+            }
+            if (parser().attribute_present("verticalDpi"))
+            {
+                setup.vertical_dpi_.set(parser().attribute<std::size_t>("verticalDpi"));
+            }
+            ws.page_setup(setup);
             skip_remaining_content(current_worksheet_element);
         }
         else if (current_worksheet_element == qn("spreadsheetml", "headerFooter")) // CT_HeaderFooter 0-1

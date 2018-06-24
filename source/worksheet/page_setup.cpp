@@ -29,7 +29,6 @@ page_setup::page_setup()
     : break_(xlnt::page_break::none),
       sheet_state_(xlnt::sheet_state::visible),
       paper_size_(xlnt::paper_size::letter),
-      orientation_(xlnt::orientation::portrait),
       fit_to_page_(false),
       fit_to_height_(false),
       fit_to_width_(false),
@@ -67,16 +66,6 @@ paper_size page_setup::paper_size() const
 void page_setup::paper_size(xlnt::paper_size paper_size)
 {
     paper_size_ = paper_size;
-}
-
-orientation page_setup::orientation() const
-{
-    return orientation_;
-}
-
-void page_setup::orientation(xlnt::orientation orientation)
-{
-    orientation_ = orientation;
 }
 
 bool page_setup::fit_to_page() const

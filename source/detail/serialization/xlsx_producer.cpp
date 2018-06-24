@@ -2768,11 +2768,21 @@ void xlsx_producer::write_worksheet(const relationship &rel)
     if (ws.has_page_setup())
     {
         write_start_element(xmlns, "pageSetup");
-        write_attribute(
-            "orientation", ws.page_setup().orientation() == xlnt::orientation::landscape ? "landscape" : "portrait");
-        write_attribute("paperSize", static_cast<std::size_t>(ws.page_setup().paper_size()));
+        if (ws.page_setup().orientation_.is_set())
+        {
+            write_attribute("orientation", ws.page_setup().orientation_.get());
+        }
+        if (ws.page_setup().horizontal_dpi_.is_set())
+        {
+            write_attribute("horizontalDpi", ws.page_setup().horizontal_dpi_.get());
+        }
+        if (ws.page_setup().vertical_dpi_.is_set())
+        {
+            write_attribute("verticalDpi", ws.page_setup().vertical_dpi_.get());
+        }
+        /*write_attribute("paperSize", static_cast<std::size_t>(ws.page_setup().paper_size()));
         write_attribute("fitToHeight", write_bool(ws.page_setup().fit_to_height()));
-        write_attribute("fitToWidth", write_bool(ws.page_setup().fit_to_width()));
+        write_attribute("fitToWidth", write_bool(ws.page_setup().fit_to_width()));*/
         write_end_element(xmlns, "pageSetup");
     }
 

@@ -44,9 +44,9 @@ public:
         ps.paper_size(xlnt::paper_size::executive);
         xlnt_assert_equals(ps.paper_size(), xlnt::paper_size::executive);
 
-        xlnt_assert_equals(ps.orientation(), xlnt::orientation::portrait);
-        ps.orientation(xlnt::orientation::landscape);
-        xlnt_assert_equals(ps.orientation(), xlnt::orientation::landscape);
+        xlnt_assert(!ps.orientation_.is_set());
+        ps.orientation_.set(xlnt::orientation::landscape);
+        xlnt_assert_equals(ps.orientation_.get(), xlnt::orientation::landscape);
 
         xlnt_assert(!ps.fit_to_page());
         ps.fit_to_page(true);
