@@ -2298,13 +2298,17 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             write_attribute("tabSelected", write_bool(true));
         }
 
-        write_attribute("workbookViewId", view.id());
-
         if (view.type() != sheet_view_type::normal)
         {
             write_attribute("view", view.type() == sheet_view_type::page_break_preview
                 ? "pageBreakPreview" : "pageLayout");
         }
+        if (view.has_top_left_cell())
+        {
+            write_attribute("topLeftCell", view.top_left_cell().to_string());
+        }
+
+        write_attribute("workbookViewId", view.id());
 
         if (view.has_pane())
         {

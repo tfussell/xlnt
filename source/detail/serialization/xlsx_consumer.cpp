@@ -465,6 +465,10 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
                 {
                     new_view.show_grid_lines(is_true(parser().attribute("showGridLines")));
                 }
+                if (parser().attribute_present("topLeftCell"))
+                {
+                    new_view.top_left_cell(cell_reference(parser().attribute("topLeftCell")));
+                }
 
                 if (parser().attribute_present("defaultGridColor")) // default="true"
                 {
