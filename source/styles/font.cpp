@@ -29,8 +29,6 @@
 namespace xlnt {
 
 font::font()
-    : name_("Calibri"),
-      size_(12.0)
 {
 }
 
@@ -156,7 +154,11 @@ font &font::name(const std::string &name)
 
 std::string font::name() const
 {
-    return name_.get();
+    if (name_.is_set())
+    {
+        return name_.get();
+    }
+    return "Calibri";
 }
 
 bool font::has_color() const

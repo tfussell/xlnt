@@ -242,7 +242,10 @@ public:
     /// <summary>
     /// Returns true if left is not exactly equal to right.
     /// </summary>
-    bool operator!=(const font &other) const;
+    bool operator!=(const font &other) const
+    {
+        return !operator==(other);
+    }
 
 private:
     friend class style;
