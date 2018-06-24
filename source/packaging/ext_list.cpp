@@ -6,9 +6,10 @@
 namespace {
     // send elements straight from parser to serialiser without modification
     // runs until the end of the current open element
-    void roundtrip(xml::parser& p, xml::serializer &s)
+    xlnt::uri roundtrip(xml::parser& p, xml::serializer &s)
     {
-        int nest_level = 0;
+        xlnt::uri ext_uri;
+        int nest_level = 0; // ext element already opened on entry
         while (nest_level > 0 || (p.peek() != xml::parser::event_type::end_element && p.peek() != xml::parser::event_type::eof))
         {
             switch (p.next())
@@ -16,11 +17,14 @@ namespace {
             case xml::parser::start_element:
             {
                 ++nest_level;
-                s.start_element(p.qname());
+                s.start_element(p.name());
+                if (nest_level == 1)
+                {
+                    ext_uri = p.attribute("uri");
+                }
                 for (auto &ele : p.attribute_map())
                 {
-                    s.attribute(ele.first, ele.second.value);
-                    ele.second.handled = true;
+                    s.attribute(ele.first.string(), ele.second.value);
                 }
                 break;
             }
@@ -45,13 +49,14 @@ namespace {
                 break;
             }
             case xml::parser::eof:
-                return;
+                return ext_uri;
             case xml::parser::start_attribute:
             case xml::parser::end_attribute:
             default:
                 break;
             }
         }
+        return ext_uri;
     }
 }
 
@@ -59,15 +64,12 @@ namespace xlnt {
 
 ext_list::ext::ext(xml::parser &parser)
 {
-    // because libstudxml is a streaming parser, this is parsed once to acquire the complete string form, and then a second time for the URI
+    //parser.next_expect(xml::parser::start_element, "ext");
+    //extension_ID_ = uri(parser.attribute("uri"));
     std::ostringstream serialisation_stream;
     xml::serializer s(serialisation_stream, "", 0);
-    roundtrip(parser, s);
+    extension_ID_ = roundtrip(parser, s);
     serialised_value_ = serialisation_stream.str();
-    const std::string uri_specifier = R"(uri=")";
-    int offset = serialised_value_.find(uri_specifier) + uri_specifier.size();
-    int len = serialised_value_.find('"', offset) - offset;
-    extension_ID_ = uri(serialised_value_.substr(offset, len));
 }
 
 ext_list::ext::ext(const uri &ID, const std::string &serialised)
@@ -83,6 +85,7 @@ void ext_list::ext::serialise(xml::serializer &serialiser)
 
 ext_list::ext_list(xml::parser &parser)
 {
+    parser.content(xml::parser::content_type::mixed);
     // begin with the start element already parsed
     while (parser.peek() == xml::parser::start_element)
     {

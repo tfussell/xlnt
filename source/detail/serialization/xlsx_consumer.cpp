@@ -1190,7 +1190,8 @@ worksheet xlsx_consumer::read_worksheet_end(const std::string &rel_id)
         }
         else if (current_worksheet_element == qn("spreadsheetml", "extLst"))
         {
-            skip_remaining_content(current_worksheet_element);
+            ext_list extensions(parser());
+            ws.d_->extension_list_.set(extensions);
         }
         else
         {
