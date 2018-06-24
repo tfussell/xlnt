@@ -23,41 +23,36 @@
 
 #pragma once
 
-#include <iostream>
+#include <xlnt/xlnt_config.hpp>
+#include <xlnt/utils/optional.hpp>
 
-#include <helpers/test_suite.hpp>
-#include <xlnt/xlnt.hpp>
+namespace xlnt {
 
-class page_setup_test_suite : public test_suite
+struct print_options
 {
-public:
-    page_setup_test_suite()
-    {
-        register_test(test_properties);
-    }
+    /// <summary>
+    /// if both grid_lines_set and this are true, grid lines are printed
+    /// </summary>
+    optional<bool> print_grid_lines;
 
-    void test_properties()
-    {
-        xlnt::page_setup ps;
+    /// <summary>
+    /// if both print grid lines and this are true, grid lines are printed
+    /// </summary>
+    optional<bool> grid_lines_set;
 
-        xlnt_assert_equals(ps.paper_size(), xlnt::paper_size::letter);
-        ps.paper_size(xlnt::paper_size::executive);
-        xlnt_assert_equals(ps.paper_size(), xlnt::paper_size::executive);
+    /// <summary>
+    /// print row and column headings
+    /// </summary>
+    optional<bool> print_headings;
 
-        xlnt_assert(!ps.orientation_.is_set());
-        ps.orientation_.set(xlnt::orientation::landscape);
-        xlnt_assert_equals(ps.orientation_.get(), xlnt::orientation::landscape);
+    /// <summary>
+    /// center on page horizontally
+    /// </summary>
+    optional<bool> horizontal_centered;
 
-        xlnt_assert(!ps.fit_to_page());
-        ps.fit_to_page(true);
-        xlnt_assert(ps.fit_to_page());
-
-        xlnt_assert(!ps.fit_to_height());
-        ps.fit_to_height(true);
-        xlnt_assert(ps.fit_to_height());
-
-        xlnt_assert(!ps.fit_to_width());
-        ps.fit_to_width(true);
-        xlnt_assert(ps.fit_to_width());
-    }
+    /// <summary>
+    /// center on page vertically
+    /// </summary>
+    optional<bool> vertical_centered;
 };
+} // namespace xlnt

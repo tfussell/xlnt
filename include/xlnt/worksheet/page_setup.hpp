@@ -150,28 +150,6 @@ public:
     void fit_to_width(bool fit_to_width);
 
     /// <summary>
-    /// Sets whether the worksheet should be centered horizontall on the page if it takes
-    /// up less than a full page.
-    /// </summary>
-    void horizontal_centered(bool horizontal_centered);
-
-    /// <summary>
-    /// Returns whether horizontal centering has been enabled.
-    /// </summary>
-    bool horizontal_centered() const;
-
-    /// <summary>
-    /// Sets whether the worksheet should be vertically centered on the page if it takes
-    /// up less than a full page.
-    /// </summary>
-    void vertical_centered(bool vertical_centered);
-
-    /// <summary>
-    /// Returns whether vertical centering has been enabled.
-    /// </summary>
-    bool vertical_centered() const;
-
-    /// <summary>
     /// Sets the factor by which the page should be scaled during printing.
     /// </summary>
     void scale(double scale);
@@ -224,16 +202,6 @@ private:
     /// Whether or not to fit to width
     /// </summary>
     bool fit_to_width_;
-
-    /// <summary>
-    /// Whether or not to center the content horizontally
-    /// </summary>
-    bool horizontal_centered_;
-
-    /// <summary>
-    /// Whether or not to center the conent vertically
-    /// </summary>
-    bool vertical_centered_;
 
     /// <summary>
     /// The amount to scale the worksheet

@@ -37,6 +37,8 @@
 #include <xlnt/worksheet/row_properties.hpp>
 #include <xlnt/worksheet/sheet_format_properties.hpp>
 #include <xlnt/worksheet/sheet_view.hpp>
+#include <xlnt/worksheet/print_options.hpp>
+#include <xlnt/worksheet/sheet_pr.hpp>
 #include <detail/implementations/cell_impl.hpp>
 
 namespace xlnt {
@@ -83,6 +85,8 @@ struct worksheet_impl
         column_breaks_ = other.column_breaks_;
         row_breaks_ = other.row_breaks_;
         extension_list_ = other.extension_list_;
+        sheet_properties_ = other.sheet_properties_;
+        print_options_ = other.print_options_;
 
         for (auto &row : cell_map_)
         {
@@ -125,6 +129,8 @@ struct worksheet_impl
     std::vector<row_t> row_breaks_;
 
     std::unordered_map<std::string, comment> comments_;
+    optional<print_options> print_options_;
+    optional<sheet_pr> sheet_properties_;
 
     optional<ext_list> extension_list_;
 };

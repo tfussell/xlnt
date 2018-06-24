@@ -2224,9 +2224,46 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         write_attribute(xml::qname(xmlns_mc, "Ignorable"), "x14ac");
     }
 
-    if (ws.has_page_setup())
+    if (ws.d_->sheet_properties_.is_set())
     {
         write_start_element(xmlns, "sheetPr");
+        auto &props = ws.d_->sheet_properties_.get();
+        if (props.sync_horizontal_.is_set())
+        {
+            write_attribute("syncHorizontal", props.sync_horizontal_.get());
+        }
+        if (props.sync_vertical_.is_set())
+        {
+            write_attribute("syncVertical", props.sync_vertical_.get());
+        }
+        if (props.sync_ref_.is_set())
+        {
+            write_attribute("syncRef", props.sync_ref_.get().to_string());
+        }
+        if (props.transition_evaluation_.is_set())
+        {
+            write_attribute("transitionEvaluation", props.transition_evaluation_.get());
+        }
+        if (props.transition_entry_.is_set())
+        {
+            write_attribute("transitionEntry", props.transition_entry_.get());
+        }
+        if (props.published_.is_set())
+        {
+            write_attribute("published", props.published_.get());
+        }
+        if (props.code_name_.is_set())
+        {
+            write_attribute("codeName", props.code_name_.get());
+        }
+        if (props.filter_mode.is_set())
+        {
+            write_attribute("filterMode", props.filter_mode.get());
+        }
+        if (props.enable_format_condition_calculation_.is_set())
+        {
+            write_attribute("enableFormatConditionsCalculation", props.enable_format_condition_calculation_.get());
+        }
 
         write_start_element(xmlns, "outlinePr");
         write_attribute("summaryBelow", "1");
@@ -2706,11 +2743,30 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         write_end_element(xmlns, "hyperlinks");
     }
 
-    if (ws.has_page_setup())
+    if (ws.d_->print_options_.is_set())
     {
+        auto &opts = ws.d_->print_options_.get();
         write_start_element(xmlns, "printOptions");
-        write_attribute("horizontalCentered", write_bool(ws.page_setup().horizontal_centered()));
-        write_attribute("verticalCentered", write_bool(ws.page_setup().vertical_centered()));
+        if (opts.print_grid_lines.is_set())
+        {
+            write_attribute("gridLines", write_bool(opts.print_grid_lines.get()));
+        }
+        if (opts.grid_lines_set.is_set())
+        {
+            write_attribute("gridLineSet", write_bool(opts.grid_lines_set.get()));
+        }
+        if (opts.print_headings.is_set())
+        {
+            write_attribute("headings", write_bool(opts.print_headings.get()));
+        }
+        if (opts.horizontal_centered.is_set())
+        {
+            write_attribute("horizontalCentered", write_bool(opts.horizontal_centered.get()));
+        }
+        if (opts.vertical_centered.is_set())
+        {
+            write_attribute("verticalCentered", write_bool(opts.vertical_centered.get()));
+        }
         write_end_element(xmlns, "printOptions");
     }
 

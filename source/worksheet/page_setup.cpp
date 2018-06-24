@@ -32,8 +32,6 @@ page_setup::page_setup()
       fit_to_page_(false),
       fit_to_height_(false),
       fit_to_width_(false),
-      horizontal_centered_(false),
-      vertical_centered_(false),
       scale_(1)
 {
 }
@@ -96,26 +94,6 @@ bool page_setup::fit_to_width() const
 void page_setup::fit_to_width(bool fit_to_width)
 {
     fit_to_width_ = fit_to_width;
-}
-
-void page_setup::horizontal_centered(bool horizontal_centered)
-{
-    horizontal_centered_ = horizontal_centered;
-}
-
-bool page_setup::horizontal_centered() const
-{
-    return horizontal_centered_;
-}
-
-void page_setup::vertical_centered(bool vertical_centered)
-{
-    vertical_centered_ = vertical_centered;
-}
-
-bool page_setup::vertical_centered() const
-{
-    return vertical_centered_;
 }
 
 void page_setup::scale(double scale)
