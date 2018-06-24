@@ -22,6 +22,7 @@
 // @author: see AUTHORS file
 
 #include <detail/header_footer/header_footer_code.hpp>
+#include <sstream>
 
 namespace xlnt {
 namespace detail {
@@ -527,7 +528,10 @@ std::string encode_header_footer(const rich_text &t, header_footer::location whe
             if (run.second.get().has_size())
             {
                 encoded.push_back('&');
-                encoded.append(std::to_string(run.second.get().size()));
+                std::stringstream ss;
+                ss.precision(15);
+                ss << run.second.get().size();
+                encoded.append(ss.str());
             }
 
             if (run.second.get().has_color())
