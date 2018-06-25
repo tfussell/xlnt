@@ -17,12 +17,25 @@ namespace {
             case xml::parser::start_element:
             {
                 ++nest_level;
-                s.start_element(p.name());
+                auto attribs = p.attribute_map();
                 if (nest_level == 1)
                 {
-                    ext_uri = p.attribute("uri");
+                    s.start_element(p.qname());
+                    ext_uri = xlnt::uri(attribs.at(xml::qname("uri")).value);
                 }
-                for (auto &ele : p.attribute_map())
+                else
+                {
+                    s.start_element(p.qname());
+                }
+                auto current_ns = p.namespace_();
+                p.peek(); // to look into the new namespace
+                auto new_ns = p.namespace_(); // only before attributes?
+                if (new_ns != current_ns)
+                {
+                    auto pref = p.prefix();
+                    s.namespace_decl(new_ns, pref);
+                }
+                for (auto &ele : attribs)
                 {
                     s.attribute(ele.first.string(), ele.second.value);
                 }
@@ -62,11 +75,14 @@ namespace {
 
 namespace xlnt {
 
-ext_list::ext::ext(xml::parser &parser)
+ext_list::ext::ext(xml::parser &parser, const std::string& ns)
 {
     std::ostringstream serialisation_stream;
     xml::serializer s(serialisation_stream, "", 0);
+    s.start_element(xml::qname(ns, "wrap")); // wrapper for the xmlns declaration
+    s.namespace_decl(ns, "");
     extension_ID_ = roundtrip(parser, s);
+    s.end_element(xml::qname(ns, "wrap"));
     serialised_value_ = serialisation_stream.str();
 }
 
@@ -74,29 +90,31 @@ ext_list::ext::ext(const uri &ID, const std::string &serialised)
     : extension_ID_(ID), serialised_value_(serialised)
 {}
 
-void ext_list::ext::serialise(xml::serializer &serialiser, const std::string&)
+void ext_list::ext::serialise(xml::serializer &serialiser, const std::string& ns)
 {
     std::istringstream ser(serialised_value_);
     xml::parser p(ser, "", xml::parser::receive_default);
+    p.next_expect(xml::parser::event_type::start_element, xml::qname(ns, "wrap"));
     roundtrip(p, serialiser);
+    p.next_expect(xml::parser::event_type::end_element, xml::qname(ns, "wrap"));
 }
 
-ext_list::ext_list(xml::parser &parser)
+ext_list::ext_list(xml::parser &parser, const std::string& ns)
 {
     // begin with the start element already parsed
     while (parser.peek() == xml::parser::start_element)
     {
-        extensions_.push_back(ext(parser));
+        extensions_.push_back(ext(parser, ns));
     }
     // end without parsing the end element
 }
 
-void ext_list::serialize(xml::serializer &serialiser, const std::string& namesp)
+void ext_list::serialize(xml::serializer &serialiser, const std::string& ns)
 {
-    serialiser.start_element(namesp, "extLst");
+    serialiser.start_element(ns, "extLst");
     for (auto &ext : extensions_)
     {
-        ext.serialise(serialiser, namesp);
+        ext.serialise(serialiser, ns);
     }
     serialiser.end_element();
 }

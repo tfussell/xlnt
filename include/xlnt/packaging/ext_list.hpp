@@ -47,7 +47,7 @@ public:
     struct ext
     {
     public:
-        ext(xml::parser &parser);
+        ext(xml::parser &parser, const std::string& ns);
         ext(const uri& ID, const std::string& serialised);
         void serialise(xml::serializer &serialiser, const std::string& ns);
 
@@ -55,7 +55,7 @@ public:
         std::string serialised_value_;
     };
     ext_list() = default; // default ctor required by xlnt::optional
-    explicit ext_list(xml::parser &parser);
+    explicit ext_list(xml::parser &parser, const std::string& ns);
     void serialize(xml::serializer &serialiser, const std::string& ns);
 
     void add_extension(const uri &ID, const std::string &element);
