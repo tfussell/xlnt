@@ -34,7 +34,7 @@ namespace xlnt {
 /// </summary>
 enum class XLNT_API orientation
 {
-    default,
+    default_orientation,
     portrait,
     landscape
 };

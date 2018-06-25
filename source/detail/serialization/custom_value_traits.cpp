@@ -347,7 +347,7 @@ std::string to_string(orientation orientation)
 {
     switch (orientation)
     {
-    case orientation::default:
+    case orientation::default_orientation:
         return "default";
     case orientation::landscape:
         return "landscape";
