@@ -18,14 +18,10 @@ namespace {
             {
                 ++nest_level;
                 auto attribs = p.attribute_map();
+                s.start_element(p.qname());
                 if (nest_level == 1)
                 {
-                    s.start_element(p.qname());
                     ext_uri = xlnt::uri(attribs.at(xml::qname("uri")).value);
-                }
-                else
-                {
-                    s.start_element(p.qname());
                 }
                 auto current_ns = p.namespace_();
                 p.peek(); // to look into the new namespace
