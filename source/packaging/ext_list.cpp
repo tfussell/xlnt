@@ -74,7 +74,7 @@ ext_list::ext::ext(const uri &ID, const std::string &serialised)
     : extension_ID_(ID), serialised_value_(serialised)
 {}
 
-void ext_list::ext::serialise(xml::serializer &serialiser, const std::string& ns)
+void ext_list::ext::serialise(xml::serializer &serialiser, const std::string&)
 {
     std::istringstream ser(serialised_value_);
     xml::parser p(ser, "", xml::parser::receive_default);
