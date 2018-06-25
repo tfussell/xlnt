@@ -29,12 +29,12 @@
 namespace xlnt {
 
 rich_text::rich_text(const std::string &plain_text)
-    : rich_text({plain_text, optional<font>()})
+    : rich_text(rich_text_run{plain_text, optional<font>(), false})
 {
 }
 
 rich_text::rich_text(const std::string &plain_text, const class font &text_font)
-    : rich_text({plain_text, optional<font>(text_font)})
+    : rich_text({plain_text, optional<font>(text_font), false})
 {
 }
 

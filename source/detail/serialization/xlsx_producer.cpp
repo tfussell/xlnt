@@ -45,14 +45,6 @@
 
 namespace {
 
-/// <summary>
-/// Returns true if d is exactly equal to an integer.
-/// </summary>
-bool is_integral(double d)
-{
-    return std::fabs(d - static_cast<double>(static_cast<long long int>(d))) == 0.0;
-}
-
 std::vector<std::pair<std::string, std::string>> core_property_namespace(xlnt::core_property type)
 {
     using xlnt::core_property;
