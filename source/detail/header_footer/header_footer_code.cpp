@@ -22,7 +22,7 @@
 // @author: see AUTHORS file
 
 #include <detail/header_footer/header_footer_code.hpp>
-#include <sstream>
+#include <xlnt/utils/serialisation_utils.hpp>
 
 namespace xlnt {
 namespace detail {
@@ -533,10 +533,7 @@ std::string encode_header_footer(const rich_text &t, header_footer::location whe
             if (run.second.get().has_size())
             {
                 encoded.push_back('&');
-                std::stringstream ss;
-                ss.precision(15);
-                ss << run.second.get().size();
-                encoded.append(ss.str());
+                encoded.append(serialize_number_to_string(run.second.get().size()));
             }
             if (run.second.get().underlined())
             {

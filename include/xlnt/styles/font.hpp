@@ -170,7 +170,7 @@ public:
     /// <summary>
     /// Returns the name of the font face.
     /// </summary>
-    std::string name() const;
+    const std::string& name() const;
 
     /// <summary>
     /// Returns true if this font has a color applied.
@@ -232,7 +232,7 @@ public:
     /// <summary>
     /// Returns the scheme of this font.
     /// </summary>
-    std::string scheme() const;
+    const std::string& scheme() const;
 
     /// <summary>
     /// Returns true if left is exactly equal to right.

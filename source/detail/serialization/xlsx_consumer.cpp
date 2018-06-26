@@ -368,8 +368,7 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
         target_.d_->sheet_title_rel_id_map_.end(),
         [&](const std::pair<std::string, std::string> &p) {
             return p.second == rel_id;
-        })
-                     ->first;
+        })->first;
 
     auto ws = worksheet(current_worksheet_);
 
@@ -385,31 +384,31 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
             sheet_pr props;
             if (parser().attribute_present("syncHorizontal"))
             { // optional, boolean, false
-                props.sync_horizontal_.set(parser().attribute<bool>("syncHorizontal"));
+                props.sync_horizontal.set(parser().attribute<bool>("syncHorizontal"));
             }
             if (parser().attribute_present("syncVertical"))
             {// optional, boolean, false
-                props.sync_vertical_.set(parser().attribute<bool>("syncVertical"));
+                props.sync_vertical.set(parser().attribute<bool>("syncVertical"));
             }
             if (parser().attribute_present("syncRef"))
             { // optional, ST_Ref, false
-                props.sync_ref_.set(cell_reference(parser().attribute("syncRef")));
+                props.sync_ref.set(cell_reference(parser().attribute("syncRef")));
             }
             if (parser().attribute_present("transitionEvaluation"))
             { // optional, boolean, false
-                props.transition_evaluation_.set(parser().attribute<bool>("transitionEvaluation"));
+                props.transition_evaluation.set(parser().attribute<bool>("transitionEvaluation"));
             }
             if (parser().attribute_present("transitionEntry"))
             {// optional, boolean, false
-                props.transition_entry_.set(parser().attribute<bool>("transitionEntry"));
+                props.transition_entry.set(parser().attribute<bool>("transitionEntry"));
             }
             if (parser().attribute_present("published"))
             {// optional, boolean, true
-                props.published_.set(parser().attribute<bool>("published"));
+                props.published.set(parser().attribute<bool>("published"));
             }
             if (parser().attribute_present("codeName"))
             { // optional, string
-                props.code_name_.set(parser().attribute<std::string>("codeName"));
+                props.code_name.set(parser().attribute<std::string>("codeName"));
             }
             if (parser().attribute_present("filterMode"))
             {// optional, boolean, false
@@ -417,7 +416,7 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
             }
             if (parser().attribute_present("enableFormatConditionsCalculation"))
             {// optional, boolean, true
-                props.enable_format_condition_calculation_.set(parser().attribute<bool>("enableFormatConditionsCalculation"));
+                props.enable_format_condition_calculation.set(parser().attribute<bool>("enableFormatConditionsCalculation"));
             }
             ws.d_->sheet_properties_.set(props);
             while (in_element(current_worksheet_element))
@@ -1844,8 +1843,7 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
             target_.d_->sheet_title_rel_id_map_.end(),
             [&](const std::pair<std::string, std::string> &p) {
                 return p.second == worksheet_rel.id();
-            })
-                         ->first;
+            })->first;
 
         auto id = sheet_title_id_map_[title];
         auto index = sheet_title_index_map_[title];

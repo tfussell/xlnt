@@ -28,7 +28,7 @@
 
 namespace xlnt {
 
-struct print_options
+struct XLNT_API print_options
 {
     /// <summary>
     /// if both grid_lines_set and this are true, grid lines are printed

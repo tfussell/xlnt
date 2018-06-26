@@ -38,6 +38,7 @@
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/utils/path.hpp>
 #include <xlnt/utils/scoped_enum_hash.hpp>
+#include <xlnt/utils/serialisation_utils.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/workbook/workbook_view.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
@@ -70,16 +71,6 @@ std::vector<std::pair<std::string, std::string>> core_property_namespace(xlnt::c
     }
 
     return {{constants::ns("core-properties"), "cp"}};
-}
-
-std::string number_to_string(double num)
-{
-    // any more digits and excel won't match
-    constexpr int Excel_Digit_Precision = 15;
-    std::stringstream ss;
-    ss.precision(Excel_Digit_Precision);
-    ss << num;
-    return ss.str();
 }
 
 } // namespace
@@ -2220,41 +2211,41 @@ void xlsx_producer::write_worksheet(const relationship &rel)
     {
         write_start_element(xmlns, "sheetPr");
         auto &props = ws.d_->sheet_properties_.get();
-        if (props.sync_horizontal_.is_set())
+        if (props.sync_horizontal.is_set())
         {
-            write_attribute("syncHorizontal", props.sync_horizontal_.get());
+            write_attribute("syncHorizontal", props.sync_horizontal.get());
         }
-        if (props.sync_vertical_.is_set())
+        if (props.sync_vertical.is_set())
         {
-            write_attribute("syncVertical", props.sync_vertical_.get());
+            write_attribute("syncVertical", props.sync_vertical.get());
         }
-        if (props.sync_ref_.is_set())
+        if (props.sync_ref.is_set())
         {
-            write_attribute("syncRef", props.sync_ref_.get().to_string());
+            write_attribute("syncRef", props.sync_ref.get().to_string());
         }
-        if (props.transition_evaluation_.is_set())
+        if (props.transition_evaluation.is_set())
         {
-            write_attribute("transitionEvaluation", props.transition_evaluation_.get());
+            write_attribute("transitionEvaluation", props.transition_evaluation.get());
         }
-        if (props.transition_entry_.is_set())
+        if (props.transition_entry.is_set())
         {
-            write_attribute("transitionEntry", props.transition_entry_.get());
+            write_attribute("transitionEntry", props.transition_entry.get());
         }
-        if (props.published_.is_set())
+        if (props.published.is_set())
         {
-            write_attribute("published", props.published_.get());
+            write_attribute("published", props.published.get());
         }
-        if (props.code_name_.is_set())
+        if (props.code_name.is_set())
         {
-            write_attribute("codeName", props.code_name_.get());
+            write_attribute("codeName", props.code_name.get());
         }
         if (props.filter_mode.is_set())
         {
             write_attribute("filterMode", props.filter_mode.get());
         }
-        if (props.enable_format_condition_calculation_.is_set())
+        if (props.enable_format_condition_calculation.is_set())
         {
-            write_attribute("enableFormatConditionsCalculation", props.enable_format_condition_calculation_.get());
+            write_attribute("enableFormatConditionsCalculation", props.enable_format_condition_calculation.get());
         }
 
         write_start_element(xmlns, "outlinePr");
@@ -2407,7 +2398,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         if (props.width.is_set())
         {
             double width = (props.width.get() * 7 + 5) / 7;
-            write_attribute("width", number_to_string(width));
+            write_attribute("width", serialize_number_to_string(width));
         }
 
         if (props.best_fit)
@@ -2505,7 +2496,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             if (props.height.is_set())
             {
                 auto height = props.height.get();
-                write_attribute("ht", number_to_string(height));
+                write_attribute("ht", serialize_number_to_string(height));
             }
 
             if (props.hidden)
@@ -2628,7 +2619,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
                 case cell::type::number:
                     write_start_element(xmlns, "v");
-                    write_characters(number_to_string(cell.value<double>()));
+                    write_characters(serialize_number_to_string(cell.value<double>()));
                     write_end_element(xmlns, "v");
                     break;
 

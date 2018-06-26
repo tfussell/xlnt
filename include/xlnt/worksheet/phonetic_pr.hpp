@@ -43,29 +43,29 @@ public:
     /// <summary>
     /// possible values for alignment property
     /// </summary>
-    enum class Alignment
+    enum class align
     {
-        Center,
-        Distributed,
-        Left,
-        No_Control
+        center,
+        distributed,
+        left,
+        no_control
     };
 
     /// <summary>
     /// possible values for type property
     /// </summary>
-    enum class Type
+    enum class phonetic_type
     {
-        Full_Width_Katakana,
-        Half_Width_Katakana,
-        Hiragana,
-        No_Conversion
+        full_width_katakana,
+        half_width_katakana,
+        hiragana,
+        no_conversion
     };
 
     /// <summary>
     /// FontID represented by an unsigned 32-bit integer
     /// </summary>
-    using Font_ID = std::uint32_t;
+    using font_id_t = std::uint32_t;
 
     /// <summary>
     /// Default ctor for phonetic properties
@@ -75,7 +75,7 @@ public:
     /// <summary>
     /// FontID ctor for phonetic properties
     /// </summary>
-    explicit phonetic_pr(Font_ID font);
+    explicit phonetic_pr(font_id_t font);
 
     /// <summary>
     /// adds the xml serialised representation of this element to the stream
@@ -85,12 +85,12 @@ public:
     /// <summary>
     /// get the font index
     /// </summary>
-    Font_ID font_id() const;
+    font_id_t font_id() const;
 
     /// <summary>
     /// set the font index
     /// </summary>
-    void font_id(Font_ID font);
+    void font_id(font_id_t font);
 
     /// <summary>
     /// is the phonetic type set
@@ -100,12 +100,12 @@ public:
     /// <summary>
     /// returns the phonetic type
     /// </summary>
-    Type type() const;
+    phonetic_type type() const;
 
     /// <summary>
     /// sets the phonetic type
     /// </summary>
-    void type(Type type);
+    void type(phonetic_type type);
 
     /// <summary>
     /// is the alignment set
@@ -115,51 +115,51 @@ public:
     /// <summary>
     /// get the alignment
     /// </summary>
-    Alignment alignment() const;
+    align alignment() const;
 
     /// <summary>
     /// set the alignment
     /// </summary>
-    void alignment(Alignment align);
+    void alignment(align align);
 
     // serialisation
     /// <summary>
     /// string form of the type enum
     /// </summary>
-    static const std::string &type_as_string(Type type);
+    static const std::string &type_as_string(phonetic_type type);
 
     /// <summary>
     /// type enum from string
     /// </summary>
-    static Type type_from_string(const std::string &str);
+    static phonetic_type type_from_string(const std::string &str);
 
     /// <summary>
     /// string form of alignment enum
     /// </summary>
-    static const std::string &alignment_as_string(xlnt::phonetic_pr::Alignment type);
+    static const std::string &alignment_as_string(xlnt::phonetic_pr::align type);
 
     /// <summary>
     /// alignment enum from string
     /// </summary>
-    static Alignment alignment_from_string(const std::string &str);
+    static align alignment_from_string(const std::string &str);
 
 private:
     /// <summary>
     /// zero based index into style sheet font record.
     /// Default: 0
     /// </summary>
-    Font_ID font_id_ = 0;
+    font_id_t font_id_ = 0;
 
     /// <summary>
     /// Type of characters to use.
     /// Default: full width katakana
     /// </summary>
-    xlnt::optional<Type> type_;
+    xlnt::optional<phonetic_type> type_;
 
     /// <summary>
-    /// Alignment across the cell(s).
+    /// align across the cell(s).
     /// Default: Left
     /// </summary>
-    xlnt::optional<Alignment> alignment_;
+    xlnt::optional<align> alignment_;
 };
 }

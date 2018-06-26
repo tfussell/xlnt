@@ -31,8 +31,8 @@ const std::array<std::string, 4> Types{
     "Hiragana",
     "noConversion"};
 
-// Order of elements defined by phonetic_pr::Alignment enum
-const std::array<std::string, 4> Alignments{
+// Order of elements defined by phonetic_pr::alignment enum
+const std::array<std::string, 4> alignments{
     "Center",
     "Distributed",
     "Left",
@@ -46,7 +46,7 @@ namespace xlnt {
 /// </summary>
 const std::string phonetic_pr::Serialised_ID = "phoneticPr";
 
-phonetic_pr::phonetic_pr(Font_ID font)
+phonetic_pr::phonetic_pr(font_id_t font)
     : font_id_(font)
 {
 }
@@ -65,12 +65,12 @@ void phonetic_pr::serialise(std::ostream &output_stream) const
     output_stream << "/>";
 }
 
-phonetic_pr::Font_ID phonetic_pr::font_id() const
+phonetic_pr::font_id_t phonetic_pr::font_id() const
 {
     return font_id_;
 }
 
-void phonetic_pr::font_id(Font_ID font)
+void phonetic_pr::font_id(font_id_t font)
 {
     font_id_ = font;
 }
@@ -80,12 +80,12 @@ bool phonetic_pr::has_type() const
     return type_.is_set();
 }
 
-phonetic_pr::Type phonetic_pr::type() const
+phonetic_pr::phonetic_type phonetic_pr::type() const
 {
     return type_.get();
 }
 
-void phonetic_pr::type(Type type)
+void phonetic_pr::type(phonetic_type type)
 {
     type_.set(type);
 }
@@ -95,49 +95,49 @@ bool phonetic_pr::has_alignment() const
     return alignment_.is_set();
 }
 
-phonetic_pr::Alignment phonetic_pr::alignment() const
+phonetic_pr::align phonetic_pr::alignment() const
 {
     return alignment_.get();
 }
 
-void phonetic_pr::alignment(Alignment align)
+void phonetic_pr::alignment(align align)
 {
     alignment_.set(align);
 }
 
 // serialisation
-const std::string &phonetic_pr::type_as_string(phonetic_pr::Type type)
+const std::string &phonetic_pr::type_as_string(phonetic_pr::phonetic_type type)
 {
     return Types[static_cast<int>(type)];
 }
 
-phonetic_pr::Type phonetic_pr::type_from_string(const std::string &str)
+phonetic_pr::phonetic_type phonetic_pr::type_from_string(const std::string &str)
 {
     for (std::size_t i = 0; i < Types.size(); ++i)
     {
         if (str == Types[i])
         {
-            return static_cast<Type>(i);
+            return static_cast<phonetic_type>(i);
         }
     }
-    return Type::No_Conversion;
+    return phonetic_type::no_conversion;
 }
 
-const std::string &phonetic_pr::alignment_as_string(Alignment type)
+const std::string &phonetic_pr::alignment_as_string(align type)
 {
-    return Alignments[static_cast<int>(type)];
+    return alignments[static_cast<int>(type)];
 }
 
-phonetic_pr::Alignment phonetic_pr::alignment_from_string(const std::string &str)
+phonetic_pr::align phonetic_pr::alignment_from_string(const std::string &str)
 {
-    for (std::size_t i = 0; i < Alignments.size(); ++i)
+    for (std::size_t i = 0; i < alignments.size(); ++i)
     {
-        if (str == Alignments[i])
+        if (str == alignments[i])
         {
-            return static_cast<Alignment>(i);
+            return static_cast<align>(i);
         }
     }
-    return Alignment::No_Control;
+    return align::no_control;
 }
 
 } // namespace xlnt

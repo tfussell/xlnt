@@ -34,7 +34,7 @@ rich_text::rich_text(const std::string &plain_text)
 }
 
 rich_text::rich_text(const std::string &plain_text, const class font &text_font)
-    : rich_text({plain_text, optional<font>(text_font), false})
+    : rich_text(rich_text_run{plain_text, optional<font>(text_font), false})
 {
 }
 
@@ -51,7 +51,7 @@ void rich_text::clear()
 void rich_text::plain_text(const std::string &s, bool preserve_space = false)
 {
     clear();
-    add_run({s, {}, preserve_space});
+    add_run(rich_text_run{s, {}, preserve_space});
 }
 
 std::string rich_text::plain_text() const
