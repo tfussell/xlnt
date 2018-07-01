@@ -26,6 +26,26 @@
 
 namespace xlnt {
 
+protection protection::unlocked_and_visible()
+{
+    return protection();
+}
+
+protection protection::locked_and_visible()
+{
+    return protection().locked(true);
+}
+
+protection protection::unlocked_and_hidden()
+{
+    return protection().hidden(true);
+}
+
+protection protection::locked_and_hidden()
+{
+    return protection().locked(true).hidden(true);
+}
+
 protection::protection()
     : locked_(false), hidden_(false)
 {
