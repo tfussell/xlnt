@@ -141,6 +141,22 @@ path::path(const std::string &path_string)
 {
 }
 
+path::path(const std::string &path_string, char sep)
+    : internal_(path_string)
+{
+    char curr_sep = guess_separator();
+    if (curr_sep != sep)
+    {
+        for (char& c : internal_) // simple find and replace
+        {
+            if (c == curr_sep)
+            {
+                c = sep;
+            }
+        }
+    }
+}
+
 // general attributes
 
 bool path::is_relative() const
