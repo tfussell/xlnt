@@ -120,7 +120,7 @@ public:
     /// <summary>
     /// Default constructor.
     /// </summary>
-    missing_number_format();
+    missing_number_format() = default;
 
     /// <summary>
     /// Default copy constructor.
