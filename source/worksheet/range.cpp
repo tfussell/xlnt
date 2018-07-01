@@ -31,7 +31,7 @@
 
 namespace xlnt {
 
-range::range(worksheet ws, const range_reference &reference, major_order order, bool skip_null)
+range::range(class worksheet ws, const range_reference &reference, major_order order, bool skip_null)
     : ws_(ws),
       ref_(reference),
       order_(order),
