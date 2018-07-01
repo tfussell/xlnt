@@ -429,6 +429,18 @@ void cell::hyperlink(xlnt::cell target)
     value(cell_address);
 }
 
+void cell::hyperlink(xlnt::range target)
+{
+    // TODO: should this computed value be a method on a cell?
+    const auto range_address = target.worksheet().title() + "!" + target.reference().to_string();
+
+    d_->hyperlink_ = detail::hyperlink_impl();
+    d_->hyperlink_.get().relationship = xlnt::relationship("", relationship_type::hyperlink,
+        uri(""), uri(range_address), target_mode::internal);
+    d_->hyperlink_.get().display = range_address;
+    value(range_address);
+}
+
 void cell::formula(const std::string &formula)
 {
     if (formula.empty())
@@ -465,6 +477,15 @@ void cell::clear_formula()
         d_->formula_.clear();
         worksheet().garbage_collect_formulae();
     }
+}
+
+std::string cell::error() const
+{
+    if (d_->type_ != type::error)
+    {
+        throw xlnt::exception("called error() when cell type is not error");
+    }
+    return value<std::string>();
 }
 
 void cell::error(const std::string &error)
@@ -736,6 +757,11 @@ void cell::format(const class format new_format)
 calendar cell::base_date() const
 {
     return workbook().base_date();
+}
+
+bool operator==(std::nullptr_t, const cell &cell)
+{
+    return cell.data_type() == cell::type::empty;
 }
 
 XLNT_API std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)

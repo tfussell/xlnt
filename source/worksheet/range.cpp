@@ -31,7 +31,7 @@
 
 namespace xlnt {
 
-range::range(worksheet ws, const range_reference &reference, major_order order, bool skip_null)
+range::range(class worksheet ws, const range_reference &reference, major_order order, bool skip_null)
     : ws_(ws),
       ref_(reference),
       order_(order),
@@ -69,6 +69,11 @@ void range::clear_cells()
 cell_vector range::operator[](std::size_t index)
 {
     return vector(index);
+}
+
+const worksheet &range::worksheet() const
+{
+    return ws_;
 }
 
 range_reference range::reference() const
