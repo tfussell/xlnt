@@ -41,7 +41,7 @@ variant::variant(const char *value) : variant(std::string(value))
 {
 }
 
-variant::variant(int value)
+variant::variant(int32_t value)
     : type_(type::i4),
     i4_value_(value)
 {
