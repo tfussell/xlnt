@@ -81,6 +81,11 @@ bool conditional_format::operator!=(const conditional_format &other) const
 	return !(*this == other);
 }
 
+bool conditional_format::has_border() const
+{
+    return d_->border_id.is_set();
+}
+
 xlnt::border conditional_format::border() const
 {
     return d_->parent->borders.at(d_->border_id.get());
@@ -92,6 +97,11 @@ conditional_format conditional_format::border(const xlnt::border &new_border)
 	return *this;
 }
 
+bool conditional_format::has_fill() const
+{
+    return d_->fill_id.is_set();
+}
+
 xlnt::fill conditional_format::fill() const
 {
     return d_->parent->fills.at(d_->fill_id.get());
@@ -101,6 +111,11 @@ conditional_format conditional_format::fill(const xlnt::fill &new_fill)
 {
     d_->fill_id = d_->parent->find_or_add(d_->parent->fills, new_fill);
 	return *this;
+}
+
+bool conditional_format::has_font() const
+{
+    return d_->font_id.is_set();
 }
 
 xlnt::font conditional_format::font() const
