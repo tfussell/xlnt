@@ -37,10 +37,12 @@
 #include <xlnt/styles/protection.hpp>
 #include <xlnt/styles/style.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
+#include <xlnt/worksheet/range.hpp>
 #include <xlnt/utils/date.hpp>
 #include <xlnt/utils/datetime.hpp>
 #include <xlnt/utils/time.hpp>
 #include <xlnt/utils/timedelta.hpp>
+
 
 class cell_test_suite : public test_suite
 {
@@ -665,13 +667,60 @@ private:
     {
         xlnt::workbook wb;
         auto cell = wb.active_sheet().cell("A1");
+        cell.value(123);
         xlnt_assert(!cell.has_hyperlink());
         xlnt_assert_throws(cell.hyperlink(), xlnt::invalid_attribute);
         xlnt_assert_throws(cell.hyperlink("notaurl"), xlnt::invalid_parameter);
         xlnt_assert_throws(cell.hyperlink(""), xlnt::invalid_parameter);
-        cell.hyperlink("http://example.com");
+        // link without optional display
+        const std::string link1("http://example.com");
+        cell.hyperlink(link1);
         xlnt_assert(cell.has_hyperlink());
-        xlnt_assert_equals(cell.hyperlink().relationship().target().to_string(), "http://example.com");
+        xlnt_assert(cell.hyperlink().external());
+        xlnt_assert_equals(cell.hyperlink().url(), link1);
+        xlnt_assert_equals(cell.hyperlink().relationship().target().to_string(), link1);
+        xlnt_assert_equals(cell.hyperlink().display(), link1);
+        // link with display 
+        const std::string link2("http://example2.com");
+        const std::string display_txt("notaurl");
+        cell.hyperlink(link2, display_txt);
+        xlnt_assert(cell.has_hyperlink());
+        xlnt_assert(cell.hyperlink().external());
+        xlnt_assert_equals(cell.hyperlink().url(), link2);
+        xlnt_assert_equals(cell.hyperlink().relationship().target().to_string(), link2);
+        xlnt_assert_equals(cell.hyperlink().display(), display_txt);
+        // cell overload without display
+        const std::string cell_target_str("A2");
+        auto cell_target = wb.active_sheet().cell(cell_target_str);
+        std::string link3 = wb.active_sheet().title() + '!' + cell_target_str; // Sheet1!A2
+        cell.hyperlink(cell_target);
+        xlnt_assert(cell.has_hyperlink());
+        xlnt_assert(!cell.hyperlink().external());
+        xlnt_assert_equals(cell.hyperlink().target_range(), link3);
+        xlnt_assert_equals(cell.hyperlink().display(), link3);
+        // cell overload with display
+        cell.hyperlink(cell_target, display_txt);
+        xlnt_assert(cell.has_hyperlink());
+        xlnt_assert(!cell.hyperlink().external());
+        xlnt_assert_equals(cell.hyperlink().target_range(), link3);
+        xlnt_assert_equals(cell.hyperlink().display(), display_txt);
+        // range overload without display
+        const std::string range_target_str("A2:A5");
+        xlnt::range range_target(wb.active_sheet(), xlnt::range_reference(range_target_str));
+        std::string link4 = wb.active_sheet().title() + '!' + range_target_str; // Sheet1!A2:A5
+        cell.hyperlink(range_target);
+        xlnt_assert(cell.has_hyperlink());
+        xlnt_assert(!cell.hyperlink().external());
+        xlnt_assert_equals(cell.hyperlink().target_range(), link4);
+        xlnt_assert_equals(cell.hyperlink().display(), link4);
+        // range overload with display
+        cell.hyperlink(range_target, display_txt);
+        xlnt_assert(cell.has_hyperlink());
+        xlnt_assert(!cell.hyperlink().external());
+        xlnt_assert_equals(cell.hyperlink().target_range(), link4);
+        xlnt_assert_equals(cell.hyperlink().display(), display_txt);
+        // value not touched
+        xlnt_assert_equals(cell.value<int>(), 123);
     }
 
     void test_comment()

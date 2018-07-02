@@ -372,7 +372,7 @@ hyperlink cell::hyperlink() const
     return xlnt::hyperlink(&d_->hyperlink_.get());
 }
 
-void cell::hyperlink(const std::string &url)
+void cell::hyperlink(const std::string &url, const std::string &display)
 {
     if (url.empty() || std::find(url.begin(), url.end(), ':') == url.end())
     {
@@ -388,7 +388,8 @@ void cell::hyperlink(const std::string &url)
     auto relationships = manifest.relationships(ws.path(), relationship_type::hyperlink);
     auto relation = std::find_if(relationships.cbegin(), relationships.cend(),
         [&url](xlnt::relationship rel) { return rel.target().path().string() == url; });
-    if (relation != relationships.end()) {
+    if (relation != relationships.end())
+    {
         d_->hyperlink_.get().relationship = *relation;
     }
     else
@@ -400,29 +401,20 @@ void cell::hyperlink(const std::string &url)
             target_mode::external);
         // TODO: make manifest::register_relationship return the created relationship instead of rel id
         d_->hyperlink_.get().relationship = manifest.relationship(ws.path(), rel_id);
-    }   
-    
-    if (!has_value()) // hyperlink on an empty cell sets the value to the hyperlink string
+    }
+    // if a value is already present, the display string is ignored
+    if (has_value())
     {
-        value(url);
+        d_->hyperlink_.get().display.set(to_string());
+    }
+    else
+    {
+        d_->hyperlink_.get().display.set(display.empty() ? url : display);
+        value(hyperlink().display());
     }
 }
 
-void cell::hyperlink(const std::string &url, const std::string &display)
-{
-    if (!display.empty()) // if the display string isn't empty use that
-    {
-        value(display);
-    }
-    else // empty display string sets the value to the link text
-    {
-        value(url);
-    }
-    hyperlink(url);
-    d_->hyperlink_.get().display = display;
-}
-
-void cell::hyperlink(xlnt::cell target)
+void cell::hyperlink(xlnt::cell target, const std::string& display)
 {
     // TODO: should this computed value be a method on a cell?
     const auto cell_address = target.worksheet().title() + "!" + target.reference().to_string();
@@ -430,11 +422,19 @@ void cell::hyperlink(xlnt::cell target)
     d_->hyperlink_ = detail::hyperlink_impl();
     d_->hyperlink_.get().relationship = xlnt::relationship("", relationship_type::hyperlink,
         uri(""), uri(cell_address), target_mode::internal);
-    d_->hyperlink_.get().display = cell_address;
-    value(cell_address);
+    // if a value is already present, the display string is ignored
+    if (has_value())
+    {
+        d_->hyperlink_.get().display.set(to_string());
+    }
+    else
+    {
+        d_->hyperlink_.get().display.set(display.empty() ? cell_address : display);
+        value(hyperlink().display());
+    }
 }
 
-void cell::hyperlink(xlnt::range target)
+void cell::hyperlink(xlnt::range target, const std::string &display)
 {
     // TODO: should this computed value be a method on a cell?
     const auto range_address = target.worksheet().title() + "!" + target.reference().to_string();
@@ -442,8 +442,17 @@ void cell::hyperlink(xlnt::range target)
     d_->hyperlink_ = detail::hyperlink_impl();
     d_->hyperlink_.get().relationship = xlnt::relationship("", relationship_type::hyperlink,
         uri(""), uri(range_address), target_mode::internal);
-    d_->hyperlink_.get().display = range_address;
-    value(range_address);
+    
+    // if a value is already present, the display string is ignored
+    if (has_value())
+    {
+        d_->hyperlink_.get().display.set(to_string());
+    }
+    else
+    {
+        d_->hyperlink_.get().display.set(display.empty() ? range_address : display);
+        value(hyperlink().display());
+    }
 }
 
 void cell::formula(const std::string &formula)
@@ -828,8 +837,11 @@ void cell::value(const std::string &value_string, bool infer_type)
 
 void cell::clear_format()
 {
-    format().d_->references -= format().d_->references > 0 ? 1 : 0;
-    d_->format_.clear();
+    if (d_->format_.is_set())
+    {
+        format().d_->references -= format().d_->references > 0 ? 1 : 0;
+        d_->format_.clear();
+    }
 }
 
 void cell::clear_style()
