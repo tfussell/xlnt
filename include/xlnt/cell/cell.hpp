@@ -241,6 +241,11 @@ public:
     column_t column() const;
 
     /// <summary>
+    /// Returns the numeric index (A == 1) of the column of this cell.
+    /// </summary>
+    column_t::index_t column_index() const;
+
+    /// <summary>
     /// Returns the row of this cell.
     /// </summary>
     row_t row() const;
