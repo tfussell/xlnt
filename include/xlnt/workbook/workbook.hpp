@@ -156,11 +156,6 @@ public:
     workbook(workbook &&other);
 
     /// <summary>
-    /// Move constructor. Constructs a workbook from existing workbook, other.
-    /// </summary>
-    workbook(workbook &&other);
-
-    /// <summary>
     /// Copy constructor. Constructs this workbook from existing workbook, other.
     /// </summary>
     workbook(const workbook &other);
