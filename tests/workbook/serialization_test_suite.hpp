@@ -558,7 +558,7 @@ public:
 
         std::vector<std::uint8_t> destination;
         source_workbook.save(destination);
-        source_workbook.save("temp.xlsx");
+        source_workbook.save("temp" + source.filename());
 
 #ifdef _MSC_VER
         std::ifstream source_stream(source.wstring(), std::ios::binary);

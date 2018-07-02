@@ -26,15 +26,18 @@
 #include <string>
 
 #include <xlnt/packaging/relationship.hpp>
+#include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 namespace detail {
 
+// [serialised]
 struct hyperlink_impl
 {
     xlnt::relationship relationship;
-    std::string tooltip;
-    std::string display;
+    xlnt::optional<std::string> location;
+    xlnt::optional<std::string> tooltip;
+    xlnt::optional<std::string> display;
 };
 
 } // namespace detail
