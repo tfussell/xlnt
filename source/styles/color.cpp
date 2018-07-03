@@ -57,6 +57,11 @@ std::size_t indexed_color::index() const
 	return index_;
 }
 
+void indexed_color::index(std::size_t index)
+{
+    index_ = index;
+}
+
 // theme_color implementation
 
 theme_color::theme_color(std::size_t index) : index_(index)
@@ -66,6 +71,11 @@ theme_color::theme_color(std::size_t index) : index_(index)
 std::size_t theme_color::index() const
 {
 	return index_;
+}
+
+void theme_color::index(std::size_t index)
+{
+    index_ = index;
 }
 
 // rgb_color implementation

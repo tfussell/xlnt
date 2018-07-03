@@ -65,6 +65,11 @@ std::vector<rich_text_run> rich_text::runs() const
     return runs_;
 }
 
+void rich_text::runs(const std::vector<rich_text_run> &new_runs)
+{
+    runs_ = new_runs;
+}
+
 void rich_text::add_run(const rich_text_run &t)
 {
     runs_.push_back(t);

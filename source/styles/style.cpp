@@ -66,6 +66,11 @@ std::size_t style::builtin_id() const
     return d_->builtin_id.get();
 }
 
+bool style::builtin() const
+{
+    return d_->builtin_id.is_set();
+}
+
 std::string style::name() const
 {
     return d_->name;

@@ -118,6 +118,11 @@ public:
     const class cell cell(const cell_reference &ref) const;
 
     /// <summary>
+    /// The worksheet this range targets
+    /// </summary>
+    const worksheet &worksheet() const;
+
+    /// <summary>
     /// Returns the reference defining the bounds of this range.
     /// </summary>
     range_reference reference() const;
@@ -285,11 +290,11 @@ public:
     /// </summary>
     bool operator!=(const range &comparand) const;
 
-private:
+ private:
     /// <summary>
     /// The worksheet this range is within
     /// </summary>
-    worksheet ws_;
+    class worksheet ws_;
 
     /// <summary>
     /// The reference of this range
