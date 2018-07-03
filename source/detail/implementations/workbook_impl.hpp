@@ -89,6 +89,30 @@ struct workbook_impl
         return *this;
     }
 
+    bool operator==(const workbook_impl &other)
+    {
+        return active_sheet_index_ == other.active_sheet_index_
+            && worksheets_ == other.worksheets_
+            && shared_strings_ == other.shared_strings_
+            && stylesheet_ == other.stylesheet_
+            && base_date_ == other.base_date_
+            && title_ == other.title_
+            && manifest_ == other.manifest_
+            && theme_ == other.theme_
+            && images_ == other.images_
+            && core_properties_ == other.core_properties_
+            && extended_properties_ == other.extended_properties_
+            && custom_properties_ == other.custom_properties_
+            && sheet_title_rel_id_map_ == other.sheet_title_rel_id_map_
+            && view_ == other.view_
+            && code_name_ == other.code_name_
+            && file_version_ == other.file_version_
+            && calculation_properties_ == other.calculation_properties_
+            && abs_path_ == other.abs_path_
+            && arch_id_flags_ == other.arch_id_flags_
+            && extensions_ == other.extensions_;
+    }
+
     optional<std::size_t> active_sheet_index_;
 
     std::list<worksheet_impl> worksheets_;
@@ -118,6 +142,14 @@ struct workbook_impl
 		std::size_t last_edited;
 		std::size_t lowest_edited;
 		std::size_t rup_build;
+
+        bool operator==(const file_version_t& rhs) const
+        {
+            return app_name == rhs.app_name
+                && last_edited == rhs.last_edited
+                && lowest_edited == rhs.lowest_edited
+                && rup_build == rhs.rup_build;
+        }
 	};
     
     optional<file_version_t> file_version_;

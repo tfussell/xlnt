@@ -527,6 +527,25 @@ struct stylesheet
 	}
 
     workbook *parent;
+
+    bool operator==(const stylesheet& rhs) const
+    {
+        // no equality on parent as there is only 1 stylesheet per borkbook hence would always be false
+        return garbage_collection_enabled == rhs.garbage_collection_enabled
+            && known_fonts_enabled == rhs.known_fonts_enabled
+            && conditional_format_impls == rhs.conditional_format_impls
+            && format_impls == rhs.format_impls
+            && style_impls == rhs.style_impls
+            && style_names == rhs.style_names
+            && default_slicer_style == rhs.default_slicer_style
+            && alignments == rhs.alignments
+            && borders == rhs.borders
+            && fills == rhs.fills
+            && fonts == rhs.fonts
+            && number_formats == rhs.number_formats
+            && protections == rhs.protections
+            && colors == rhs.colors;
+    }
     
     bool garbage_collection_enabled = true;
     bool known_fonts_enabled = false;

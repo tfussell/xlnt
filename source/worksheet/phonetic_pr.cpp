@@ -140,4 +140,11 @@ phonetic_pr::align phonetic_pr::alignment_from_string(const std::string &str)
     return align::no_control;
 }
 
+bool phonetic_pr::operator==(const phonetic_pr &rhs) const
+{
+    return font_id_ == rhs.font_id_
+        && type_ == rhs.type_
+        && alignment_ == rhs.alignment_;
+}
+
 } // namespace xlnt

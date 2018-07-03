@@ -78,4 +78,17 @@ struct XLNT_API sheet_pr
     /// </summary>
     optional<bool> enable_format_condition_calculation;
 };
+
+inline bool operator==(const sheet_pr &lhs, const sheet_pr &rhs)
+{
+    return lhs.sync_horizontal == rhs.sync_horizontal
+        && lhs.sync_vertical == rhs.sync_vertical
+        && lhs.sync_ref == rhs.sync_ref
+        && lhs.transition_evaluation == rhs.transition_evaluation
+        && lhs.transition_entry == rhs.transition_entry
+        && lhs.published == rhs.published
+        && lhs.code_name == rhs.code_name
+        && lhs.filter_mode == rhs.filter_mode
+        && lhs.enable_format_condition_calculation == rhs.enable_format_condition_calculation;
+}
 } // namespace xlnt

@@ -1133,12 +1133,12 @@ void workbook::clear()
 
 bool workbook::operator==(const workbook &rhs) const
 {
-    return d_.get() == rhs.d_.get();
+    return *d_ == *rhs.d_;
 }
 
 bool workbook::operator!=(const workbook &rhs) const
 {
-    return d_.get() != rhs.d_.get();
+    return !operator==(rhs);
 }
 
 void workbook::swap(workbook &right)

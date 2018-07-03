@@ -99,6 +99,33 @@ struct worksheet_impl
 
     workbook *parent_;
 
+    bool operator==(const worksheet_impl& rhs) const
+    {
+        return id_ == rhs.id_
+            && title_ == rhs.title_
+            && format_properties_ == rhs.format_properties_
+            && column_properties_ == rhs.column_properties_
+            && row_properties_ == rhs.row_properties_
+            && cell_map_ == rhs.cell_map_
+            && page_setup_ == rhs.page_setup_
+            && auto_filter_ == rhs.auto_filter_
+            && page_margins_ == rhs.page_margins_
+            && merged_cells_ == rhs.merged_cells_
+            && named_ranges_ == rhs.named_ranges_
+            && phonetic_properties_ == rhs.phonetic_properties_
+            && header_footer_ == rhs.header_footer_
+            && print_title_cols_ == rhs.print_title_cols_
+            && print_title_rows_ == rhs.print_title_rows_
+            && print_area_ == rhs.print_area_
+            && views_ == rhs.views_
+            && column_breaks_ == rhs.column_breaks_
+            && row_breaks_ == rhs.row_breaks_
+            && comments_ == rhs.comments_
+            && print_options_ == rhs.print_options_
+            && sheet_properties_ == rhs.sheet_properties_
+            && extension_list_ == rhs.extension_list_;
+    }
+
     std::size_t id_;
     std::string title_;
 

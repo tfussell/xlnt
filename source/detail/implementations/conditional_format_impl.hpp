@@ -20,8 +20,21 @@ struct worksheet_impl;
 struct conditional_format_impl
 {
 	stylesheet *parent;
+    worksheet_impl *target_sheet;
+
+    bool operator==(const conditional_format_impl& rhs) const
+    {
+        // not comparing parent or target sheet
+        return target_range == rhs.target_range
+            && priority == rhs.priority
+            && differential_format_id == rhs.differential_format_id
+            && when == rhs.when
+            && border_id == rhs.border_id
+            && fill_id == rhs.fill_id
+            && font_id == rhs.font_id;
+    }
+
 	range_reference target_range;
-	worksheet_impl *target_sheet;
 
 	std::size_t priority;
 	std::size_t differential_format_id;
