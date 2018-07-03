@@ -437,7 +437,7 @@ void cell::hyperlink(xlnt::cell target, const std::string& display)
 void cell::hyperlink(xlnt::range target, const std::string &display)
 {
     // TODO: should this computed value be a method on a cell?
-    const auto range_address = target.worksheet().title() + "!" + target.reference().to_string();
+    const auto range_address = target.target_worksheet().title() + "!" + target.reference().to_string();
 
     d_->hyperlink_ = detail::hyperlink_impl();
     d_->hyperlink_.get().relationship = xlnt::relationship("", relationship_type::hyperlink,

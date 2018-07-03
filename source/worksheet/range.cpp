@@ -76,7 +76,7 @@ const cell_vector range::operator[](std::size_t index) const
     return vector(index);
 }
 
-const worksheet &range::worksheet() const
+const worksheet &range::target_worksheet() const
 {
     return ws_;
 }

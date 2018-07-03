@@ -120,7 +120,7 @@ public:
     /// <summary>
     /// The worksheet this range targets
     /// </summary>
-    const class worksheet &worksheet() const;
+    const worksheet & target_worksheet() const;
 
     /// <summary>
     /// Returns the reference defining the bounds of this range.
