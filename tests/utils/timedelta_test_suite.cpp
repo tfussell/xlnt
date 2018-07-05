@@ -27,6 +27,8 @@
 
 #include <helpers/test_suite.hpp>
 
+#include <xlnt/utils/timedelta.hpp>
+
 class timedelta_test_suite : public test_suite
 {
 public:
@@ -82,3 +84,4 @@ public:
         xlnt_assert_equals(rollover.microseconds, 0);
     }
 };
+static timedelta_test_suite x;

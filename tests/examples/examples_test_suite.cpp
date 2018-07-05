@@ -242,3 +242,4 @@ public:
         wb.save("lots_of_properties.xlsx");
     }
 };
+static examples_test_suite x;

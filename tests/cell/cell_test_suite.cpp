@@ -25,9 +25,26 @@
 
 #include <sstream>
 
-#include <xlnt/xlnt.hpp>
 #include <helpers/assertions.hpp>
 #include <helpers/test_suite.hpp>
+
+#include <xlnt/cell/cell.hpp>
+#include <xlnt/cell/comment.hpp>
+#include <xlnt/cell/hyperlink.hpp>
+#include <xlnt/styles/number_format.hpp>
+#include <xlnt/styles/alignment.hpp>
+#include <xlnt/styles/border.hpp>
+#include <xlnt/styles/fill.hpp>
+#include <xlnt/styles/format.hpp>
+#include <xlnt/styles/protection.hpp>
+#include <xlnt/styles/style.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
+#include <xlnt/worksheet/range.hpp>
+#include <xlnt/utils/date.hpp>
+#include <xlnt/utils/datetime.hpp>
+#include <xlnt/utils/time.hpp>
+#include <xlnt/utils/timedelta.hpp>
+#include <xlnt/workbook/workbook.hpp>
 
 class cell_test_suite : public test_suite
 {
@@ -744,3 +761,5 @@ private:
         xlnt_assert_throws(cell.comment(), xlnt::exception);
     }
 };
+
+static cell_test_suite x{};

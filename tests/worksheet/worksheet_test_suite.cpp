@@ -25,7 +25,13 @@
 
 #include <iostream>
 
+#include <xlnt/cell/cell.hpp>
+#include <xlnt/cell/hyperlink.hpp>
 #include <xlnt/workbook/workbook.hpp>
+#include <xlnt/worksheet/column_properties.hpp>
+#include <xlnt/worksheet/row_properties.hpp>
+#include <xlnt/worksheet/range.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 #include <helpers/test_suite.hpp>
@@ -1251,3 +1257,4 @@ public:
         xlnt_assert(ws2_title == ws2.title());
     }
 };
+static worksheet_test_suite x;

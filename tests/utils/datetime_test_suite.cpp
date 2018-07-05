@@ -26,7 +26,9 @@
 #include <iostream>
 
 #include <helpers/test_suite.hpp>
-#include <xlnt/xlnt.hpp>
+#include <xlnt/utils/date.hpp>
+#include <xlnt/utils/datetime.hpp>
+#include <xlnt/utils/time.hpp>
 
 class datetime_test_suite : public test_suite
 {
@@ -114,3 +116,4 @@ public:
         xlnt_assert_differs(d1, d3);
     }
 };
+static datetime_test_suite x;

@@ -26,38 +26,24 @@
 #include <iostream>
 
 #include <helpers/test_suite.hpp>
-#include <xlnt/xlnt.hpp>
+#include <xlnt/styles/alignment.hpp>
 
-class page_setup_test_suite : public test_suite
+class alignment_test_suite : public test_suite
 {
 public:
-    page_setup_test_suite()
+    alignment_test_suite()
     {
-        register_test(test_properties);
+        register_test(test_all);
     }
 
-    void test_properties()
+    void test_all()
     {
-        xlnt::page_setup ps;
+        xlnt::alignment alignment;
 
-        xlnt_assert_equals(ps.paper_size(), xlnt::paper_size::letter);
-        ps.paper_size(xlnt::paper_size::executive);
-        xlnt_assert_equals(ps.paper_size(), xlnt::paper_size::executive);
-
-        xlnt_assert(!ps.orientation_.is_set());
-        ps.orientation_.set(xlnt::orientation::landscape);
-        xlnt_assert_equals(ps.orientation_.get(), xlnt::orientation::landscape);
-
-        xlnt_assert(!ps.fit_to_page());
-        ps.fit_to_page(true);
-        xlnt_assert(ps.fit_to_page());
-
-        xlnt_assert(!ps.fit_to_height());
-        ps.fit_to_height(true);
-        xlnt_assert(ps.fit_to_height());
-
-        xlnt_assert(!ps.fit_to_width());
-        ps.fit_to_width(true);
-        xlnt_assert(ps.fit_to_width());
+        xlnt_assert(!alignment.horizontal().is_set());
+        xlnt_assert(!alignment.vertical().is_set());
+        xlnt_assert(!alignment.shrink());
+        xlnt_assert(!alignment.wrap());
     }
 };
+static alignment_test_suite x;

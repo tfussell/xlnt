@@ -28,7 +28,6 @@
 #include <helpers/path_helper.hpp>
 #include <helpers/temporary_file.hpp>
 #include <helpers/test_suite.hpp>
-#include <xlnt/xlnt.hpp>
 
 class path_test_suite : public test_suite
 {
@@ -52,3 +51,4 @@ public:
 		xlnt_assert(temp.get_path().exists());
 	}
 };
+static path_test_suite x;
