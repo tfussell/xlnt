@@ -26,7 +26,7 @@
 #include <iostream>
 
 #include <helpers/test_suite.hpp>
-#include <xlnt/xlnt.hpp>
+#include <xlnt/worksheet/page_setup.hpp>
 
 class page_setup_test_suite : public test_suite
 {

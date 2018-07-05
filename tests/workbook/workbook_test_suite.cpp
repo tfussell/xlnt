@@ -28,7 +28,14 @@
 
 #include <helpers/temporary_file.hpp>
 #include <helpers/test_suite.hpp>
-#include <xlnt/xlnt.hpp>
+
+#include <xlnt/cell/cell.hpp>
+#include <xlnt/styles/format.hpp>
+#include <xlnt/styles/style.hpp>
+#include <xlnt/workbook/workbook.hpp>
+#include <xlnt/workbook/worksheet_iterator.hpp>
+#include <xlnt/worksheet/range.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
 
 class workbook_test_suite : public test_suite
 {

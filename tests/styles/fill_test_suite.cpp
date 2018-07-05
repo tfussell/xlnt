@@ -26,7 +26,11 @@
 #include <iostream>
 
 #include <helpers/test_suite.hpp>
-#include <xlnt/xlnt.hpp>
+
+#include <xlnt/cell/cell.hpp>
+#include <xlnt/styles/fill.hpp>
+#include <xlnt/utils/date.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
 
 class fill_test_suite : public test_suite
 {

@@ -25,10 +25,13 @@
 
 #include <iostream>
 
-#include <xlnt/xlnt.hpp>
+
 #include <helpers/test_suite.hpp>
+#include <xlnt/cell/cell.hpp>
+#include <xlnt/styles/font.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
+#include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
 class range_test_suite : public test_suite

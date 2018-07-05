@@ -25,12 +25,29 @@
 
 #include <iostream>
 
+#include <xlnt/cell/comment.hpp>
+#include <xlnt/cell/hyperlink.hpp>
+#include <xlnt/cell/cell.hpp>
 #include <xlnt/styles/font.hpp>
-#include <xlnt/xlnt.hpp>
+#include <xlnt/styles/style.hpp>
+#include <xlnt/styles/fill.hpp>
+#include <xlnt/styles/format.hpp>
+#include <xlnt/styles/number_format.hpp>
+#include <xlnt/styles/border.hpp>
+#include <xlnt/utils/date.hpp>
+#include <xlnt/utils/datetime.hpp>
+#include <xlnt/utils/time.hpp>
+#include <xlnt/utils/timedelta.hpp>
+#include <xlnt/utils/variant.hpp>
 #include <xlnt/workbook/streaming_workbook_reader.hpp>
 #include <xlnt/workbook/streaming_workbook_writer.hpp>
 #include <xlnt/workbook/workbook.hpp>
+#include <xlnt/workbook/metadata_property.hpp>
+#include <xlnt/worksheet/column_properties.hpp>
+#include <xlnt/worksheet/row_properties.hpp>
 #include <xlnt/worksheet/sheet_format_properties.hpp>
+#include <xlnt/worksheet/header_footer.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
 #include <detail/cryptography/xlsx_crypto_consumer.hpp>
 #include <detail/serialization/vector_streambuf.hpp>
 #include <helpers/path_helper.hpp>

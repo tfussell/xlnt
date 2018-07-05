@@ -26,7 +26,7 @@
 #include <iostream>
 
 #include <helpers/test_suite.hpp>
-#include <xlnt/xlnt.hpp>
+#include <xlnt/styles/alignment.hpp>
 
 class alignment_test_suite : public test_suite
 {

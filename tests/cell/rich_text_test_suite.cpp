@@ -27,8 +27,9 @@
 #include <iostream>
 #include <sstream>
 
-#include <xlnt/xlnt.hpp>
 #include <helpers/test_suite.hpp>
+
+#include <xlnt/cell/rich_text.hpp>
 
 class rich_text_test_suite : public test_suite
 {

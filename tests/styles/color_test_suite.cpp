@@ -26,7 +26,8 @@
 #include <iostream>
 
 #include <helpers/test_suite.hpp>
-#include <xlnt/xlnt.hpp>
+
+#include <xlnt/styles/color.hpp>
 
 class color_test_suite : public test_suite
 {
