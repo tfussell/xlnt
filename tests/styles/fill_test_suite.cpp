@@ -104,3 +104,4 @@ public:
         xlnt_assert_equals(cell2.fill(), xlnt::fill::solid(xlnt::color::green()));
     }
 };
+static fill_test_suite x;

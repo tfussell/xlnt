@@ -46,3 +46,4 @@ public:
         xlnt_assert(!alignment.wrap());
     }
 };
+static alignment_test_suite x;

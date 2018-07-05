@@ -25,6 +25,7 @@
 
 #include <iostream>
 
+#include <xlnt/xlnt.hpp>
 #include <helpers/test_suite.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
@@ -83,3 +84,4 @@ public:
         xlnt_assert_equals(ws.calculate_dimension(), xlnt::range_reference(1, 1, 1, 3));
     }
 };
+static range_test_suite x;

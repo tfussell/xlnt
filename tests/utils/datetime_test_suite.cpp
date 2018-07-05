@@ -114,3 +114,4 @@ public:
         xlnt_assert_differs(d1, d3);
     }
 };
+static datetime_test_suite x;

@@ -991,3 +991,4 @@ public:
         format_and_test(xlnt::number_format::date_myminus(), {{"5-16", "###########", "1-00", "text"}});
     }
 };
+static number_format_test_suite x;

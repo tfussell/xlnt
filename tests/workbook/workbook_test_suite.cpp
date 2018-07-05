@@ -340,3 +340,4 @@ public:
         xlnt_assert_differs(wb[1].id(), wb[2].id());
     }
 };
+static workbook_test_suite x;

@@ -74,3 +74,4 @@ public:
         xlnt_assert_throws(theme.rgb(), xlnt::invalid_attribute);
     }
 };
+static color_test_suite x;

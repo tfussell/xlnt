@@ -25,6 +25,7 @@
 
 #include <iostream>
 
+#include <xlnt/xlnt.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
@@ -1296,3 +1297,4 @@ public:
         xlnt_assert(ws2_title == ws2.title());
     }
 };
+static worksheet_test_suite x;

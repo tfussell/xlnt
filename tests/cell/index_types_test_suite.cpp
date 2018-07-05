@@ -103,3 +103,5 @@ public:
         xlnt_assert(!(4 <= c1));
     }
 };
+
+static index_types_test_suite x{};
