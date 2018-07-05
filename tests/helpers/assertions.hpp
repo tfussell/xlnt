@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <exception>
+#include <xlnt/utils/exceptions.hpp>
 
 #define XLNT_STRINGIFYX(x) #x
 #define XLNT_STRINGIFY(x) XLNT_STRINGIFYX(x)

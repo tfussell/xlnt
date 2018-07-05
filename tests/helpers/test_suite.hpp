@@ -8,6 +8,11 @@
 #include <vector>
 
 #include <helpers/assertions.hpp>
+#include <helpers/path_helper.hpp>
+//#include <helpers/temporary_directory.hpp>
+//#include <helpers/temporary_file.hpp>
+#include <helpers/timing.hpp>
+#include <helpers/xml_helper.hpp>
 
 struct test_status
 {
@@ -17,7 +22,7 @@ struct test_status
     std::vector<std::string> failures;
 };
 
-std::string build_name(const std::string &pretty, const std::string &method)
+inline std::string build_name(const std::string &pretty, const std::string &method)
 {
     return pretty.substr(0, pretty.find("::") + 2) + method;
 }
@@ -27,7 +32,7 @@ std::string build_name(const std::string &pretty, const std::string &method)
 class test_suite
 {
 public:
-    test_status go()
+    static test_status go()
     {
         test_status status;
 
@@ -62,11 +67,11 @@ public:
     }
 
 protected:
-    void register_test_internal(std::function<void()> t, const std::string &function)
+    static void register_test_internal(std::function<void()> t, const std::string &function)
     {
         tests.push_back(std::make_pair(t, function));
     }
 
 private:
-    std::vector<std::pair<std::function<void(void)>, std::string>> tests;
+    static std::vector<std::pair<std::function<void(void)>, std::string>> tests;
 };

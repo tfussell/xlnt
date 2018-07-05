@@ -26,7 +26,7 @@
 namespace xlnt {
 namespace benchmarks {
 
-std::size_t current_time()
+inline std::size_t current_time()
 {
     auto now = std::chrono::system_clock::now();
     auto time_since_epoch = now.time_since_epoch();
