@@ -36,9 +36,23 @@ namespace xlnt {
 template <typename T>
 class optional
 {
+#if _MSC_VER <= 1900 // v14, visual studio 2015
+    using ctor_copy_T_noexcept = typename std::conditional<std::is_trivially_copyable<T>{}, std::true_type, std::false_type>::type;
+    using ctor_move_T_noexcept = typename std::conditional<std::is_trivially_move_constructible<T>{}, std::true_type, std::false_type>::type;
+    using copy_ctor_noexcept = ctor_copy_T_noexcept;
+    using move_ctor_noexcept = ctor_move_T_noexcept;
+    using set_copy_noexcept_t = typename std::conditional<std::is_trivially_copyable<T>{} && std::is_trivially_assignable<T, T>{}, std::true_type, std::false_type>::type;
+    using set_move_noexcept_t = typename std::conditional<std::is_trivially_move_constructible<T>{} && std::is_trivially_move_assignable<T>{}, std::true_type, std::false_type>::type;
+    using clear_noexcept_t = typename std::conditional<std::is_trivially_destructible<T>{}, std::true_type, std::false_type>::type;
+#else
+    using ctor_copy_T_noexcept = typename std::conditional<std::is_nothrow_copy_constructible<T>{}, std::true_type, std::false_type>::type;
+    using ctor_move_T_noexcept = typename std::conditional<std::is_nothrow_move_constructible<T>{}, std::true_type, std::false_type>::type;
+    using copy_ctor_noexcept = ctor_copy_T_noexcept;
+    using move_ctor_noexcept = ctor_move_T_noexcept;
     using set_copy_noexcept_t = typename std::conditional<std::is_nothrow_copy_constructible<T>{} && std::is_nothrow_assignable<T, T>{}, std::true_type, std::false_type>::type;
     using set_move_noexcept_t = typename std::conditional<std::is_nothrow_move_constructible<T>{} && std::is_nothrow_move_assignable<T>{}, std::true_type, std::false_type>::type;
     using clear_noexcept_t = typename std::conditional<std::is_nothrow_destructible<T>{}, std::true_type, std::false_type>::type;
+#endif
 
 public:
     /// <summary>
@@ -53,7 +67,7 @@ public:
     /// Constructs this optional with a value.
     /// noexcept if T copy ctor is noexcept
     /// </summary>
-    optional(const T &value) noexcept(std::is_nothrow_copy_constructible<T>{})
+    optional(const T &value) noexcept(ctor_copy_T_noexcept{})
         : has_value_(true)
     {
         new (&storage_) T(value);
@@ -63,7 +77,7 @@ public:
     /// Constructs this optional with a value.
     /// noexcept if T move ctor is noexcept
     /// </summary>
-    optional(T &&value) noexcept(std::is_nothrow_move_constructible<T>{})
+    optional(T &&value) noexcept(ctor_move_T_noexcept{})
         : has_value_(true)
     {
         new (&storage_) T(std::move(value));
@@ -73,7 +87,7 @@ public:
     /// Copy constructs this optional from other
     /// noexcept if T copy ctor is noexcept
     /// </summary>
-    optional(const optional &other) noexcept(std::is_nothrow_copy_constructible<T>{})
+    optional(const optional &other) noexcept(copy_ctor_noexcept{})
         : has_value_(other.has_value_)
     {
         if (has_value_)
@@ -86,7 +100,7 @@ public:
     /// Move constructs this optional from other. Clears the value from other if set
     /// noexcept if T move ctor is noexcept
     /// </summary>
-    optional(optional &&other) noexcept(std::is_nothrow_move_constructible<T>{})
+    optional(optional &&other) noexcept(move_ctor_noexcept{})
         : has_value_(other.has_value_)
     {
         if (has_value_)
