@@ -40,14 +40,17 @@ public:
     /// <summary>
     /// Default contructor. is_set() will be false initially.
     /// </summary>
-    optional() : has_value_(false), value_(T())
+    optional() noexcept(std::is_nothrow_default_constructible<T>{})
+        : has_value_(false), value_(T())
     {
     }
 
     /// <summary>
     /// Constructs this optional with a value.
+    /// noexcept if T copy ctor is noexcept
     /// </summary>
-    optional(const T &value) : has_value_(true), value_(value)
+    optional(const T &value) noexcept(std::is_nothrow_copy_constructible<T>{})
+        : has_value_(true), value_(value)
     {
     }
 
@@ -55,7 +58,7 @@ public:
     /// Returns true if this object currently has a value set. This should
     /// be called before accessing the value with optional::get().
     /// </summary>
-    bool is_set() const
+    bool is_set() const noexcept
     {
         return has_value_;
     }
@@ -63,10 +66,10 @@ public:
     /// <summary>
     /// Sets the value to value.
     /// </summary>
-    void set(const T &value)
+    void set(const T &value) noexcept(std::is_nothrow_assignable<T, T>{})
     {
-        has_value_ = true;
         value_ = value;
+        has_value_ = true;
     }
 
     /// <summary>
@@ -101,20 +104,18 @@ public:
     /// Resets the internal value using its default constructor. After this is
     /// called, is_set() will return false until a new value is provided.
     /// </summary>
-    void clear()
+    void clear() noexcept(std::is_nothrow_assignable<T, T>{} && std::is_nothrow_default_constructible<T>{})
     {
-        has_value_ = false;
         value_ = T();
+        has_value_ = false;
     }
 
     /// <summary>
     /// Assignment operator. Equivalent to setting the value using optional::set.
     /// </summary>
-    optional &operator=(const T &rhs)
+    optional &operator=(const T &rhs) noexcept(noexcept(set(std::declval<T &>())))
     {
-        has_value_ = true;
-        value_ = rhs;
-
+        set(rhs);
         return *this;
     }
 
@@ -123,9 +124,10 @@ public:
     /// or both have a value and those values are equal according to
     /// their equality operator.
     /// </summary>
-    bool operator==(const optional<T> &other) const
+    bool operator==(const optional<T> &other) const noexcept
     {
-        if (has_value_ != other.has_value_) {
+        if (has_value_ != other.has_value_)
+        {
             return false;
         }
         if (!has_value_)
@@ -140,7 +142,7 @@ public:
     /// or both have a value and those values are equal according to
     /// their equality operator.
     /// </summary>
-    bool operator!=(const optional<T> &other) const
+    bool operator!=(const optional<T> &other) const noexcept
     {
         return !operator==(other);
     }
