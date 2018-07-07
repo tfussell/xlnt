@@ -21,9 +21,7 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#pragma once
-
-#include <xlnt/xlnt.hpp>
+#include <xlnt/utils/optional.hpp>
 #include <helpers/test_suite.hpp>
 
 // test helpers

@@ -21,8 +21,6 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#pragma once
-
 #include <ctime>
 #include <iostream>
 #include <sstream>
