@@ -34,7 +34,7 @@ namespace xlnt {
 /// within the optional class.
 /// </summary>
 template <typename T>
-class XLNT_API optional
+class optional
 {
 public:
     /// <summary>
@@ -133,6 +133,16 @@ public:
             return true;
         }
         return value_ == other.value_;
+    }
+
+    /// <summary>
+    /// Returns false if neither this nor other have a value
+    /// or both have a value and those values are equal according to
+    /// their equality operator.
+    /// </summary>
+    bool operator!=(const optional<T> &other) const
+    {
+        return !operator==(other);
     }
 
 private:
