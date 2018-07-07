@@ -1,6 +1,11 @@
 #include "test_suite.hpp"
+#include <iostream>
 
-std::vector<std::pair<std::function<void(void)>, std::string>> test_suite::tests;
+std::vector<std::pair<std::function<void(void)>, std::string>> &test_suite::tests()
+{
+    static std::vector<std::pair<std::function<void(void)>, std::string>> all_tests;
+    return all_tests;
+}
 
 std::string build_name(const std::string &pretty, const std::string &method)
 {
@@ -11,12 +16,12 @@ test_status test_suite::go()
 {
     test_status status;
 
-    for (auto test : tests)
+    for (auto test : tests())
     {
         try
         {
             test.first();
-            std::cout << ".";
+            std::cout << '.';
             status.tests_passed++;
         }
         catch (std::exception &ex)
