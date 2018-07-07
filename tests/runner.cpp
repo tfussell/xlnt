@@ -63,11 +63,11 @@ void run_tests()
 
 void print_summary()
 {
-    std::cout << std::endl;
+    std::cout << "\n\n";
 
     for (auto failure : overall_status.failures)
     {
-        std::cout << failure << " failed" << std::endl;
+        std::cout << failure << "\n\n";
     }
 }
 

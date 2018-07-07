@@ -320,7 +320,7 @@ public:
         xlnt::workbook wb;
         const auto path = path_helper::test_file("6_encrypted_libre.xlsx");
         xlnt_assert_throws(wb.load(path, "incorrect"), xlnt::exception);
-        xlnt_assert_throws_nothing(wb.load(path, u8"пароль"));
+        xlnt_assert_throws_nothing(wb.load(path, u8"\u043F\u0430\u0440\u043E\u043B\u044C")); // u8"пароль"
     }
 
     void test_decrypt_standard()
@@ -343,16 +343,20 @@ public:
     {
 #ifdef _MSC_VER
         xlnt::workbook wb;
-        const auto path = LSTRING_LITERAL(XLNT_TEST_DATA_DIR) L"/9_unicode_Λ.xlsx";
+        // L"/9_unicode_Λ.xlsx" doesn't use wchar_t(0x039B) for the capital lambda...
+        // L"/9_unicode_\u039B.xlsx" gives the corrct output
+        const auto path = LSTRING_LITERAL(XLNT_TEST_DATA_DIR) L"/9_unicode_\u039B.xlsx"; // L"/9_unicode_Λ.xlsx"
         wb.load(path);
-        xlnt_assert_equals(wb.active_sheet().cell("A1").value<std::string>(), u8"unicodê!");
+        xlnt_assert_equals(wb.active_sheet().cell("A1").value<std::string>(), u8"un\u00EFc\u00F4d\u0117!"); // u8"unïcôdė!"
 #endif
 
 #ifndef __MINGW32__
         xlnt::workbook wb2;
-        const auto path2 = U8STRING_LITERAL(XLNT_TEST_DATA_DIR) u8"/9_unicode_Λ.xlsx";
+        // u8"/9_unicode_Λ.xlsx" doesn't use 0xc3aa for the capital lambda...
+        // u8"/9_unicode_\u039B.xlsx" gives the corrct output
+        const auto path2 = U8STRING_LITERAL(XLNT_TEST_DATA_DIR) u8"/9_unicode_\u039B.xlsx"; // u8"/9_unicode_Λ.xlsx"
         wb2.load(path2);
-        xlnt_assert_equals(wb2.active_sheet().cell("A1").value<std::string>(), u8"unicodê!");
+        xlnt_assert_equals(wb2.active_sheet().cell("A1").value<std::string>(), u8"un\u00EFc\u00F4d\u0117!"); // u8"unïcôdė!"
 #endif
     }
 
@@ -393,7 +397,6 @@ public:
         xlnt_assert(ws1.cell("A7").has_hyperlink());
         xlnt_assert_equals(ws1.cell("A7").value<std::string>(), "mailto:invalid@example.com?subject=important");
         xlnt_assert_equals(ws1.cell("A7").hyperlink().url(), "mailto:invalid@example.com?subject=important");
-
     }
 
     void test_read_formulae()
@@ -471,11 +474,11 @@ public:
         xlnt_assert_equals(ws.cell("B4").value<std::string>(), "B4");
         xlnt_assert_equals(ws.cell("D4").value<std::string>(), "D4");
 
-        xlnt_assert_equals(ws.row_properties(1).height.get(), 100);
+        xlnt_assert_equals(ws.row_properties(1).height.get(), 99.95);
         xlnt_assert(!ws.row_properties(2).height.is_set());
-        xlnt_assert_equals(ws.row_properties(3).height.get(), 100);
+        xlnt_assert_equals(ws.row_properties(3).height.get(), 99.95);
         xlnt_assert(!ws.row_properties(4).height.is_set());
-        xlnt_assert_equals(ws.row_properties(5).height.get(), 100);
+        xlnt_assert_equals(ws.row_properties(5).height.get(), 99.95);
 
         auto width = ((16.0 * 7) - 5) / 7;
 
@@ -520,13 +523,13 @@ public:
             ws.row_properties(i).dy_descent = 0.2;
         }
 
-        ws.row_properties(1).height = 100;
+        ws.row_properties(1).height = 99.95;
         ws.row_properties(1).custom_height = true;
 
-        ws.row_properties(3).height = 100;
+        ws.row_properties(3).height = 99.95;
         ws.row_properties(3).custom_height = true;
 
-        ws.row_properties(5).height = 100;
+        ws.row_properties(5).height = 99.95;
         ws.row_properties(5).custom_height = true;
 
         auto width = ((16.0 * 7) - 5) / 7;
@@ -539,9 +542,6 @@ public:
 
         ws.column_properties("E").width = width;
         ws.column_properties("E").custom_width = true;
-
-        wb.default_slicer_style("SlicerStyleLight1");
-        wb.enable_known_fonts();
 
         xlnt_assert(workbook_matches_file(wb,
             path_helper::test_file("13_custom_heights_widths.xlsx")));
@@ -610,7 +610,9 @@ public:
     
     void test_round_trip_rw_unicode()
     {
-        xlnt_assert(round_trip_matches_rw(path_helper::test_file(u8"9_unicode_Λ.xlsx")));
+        // u8"/9_unicode_Λ.xlsx" doesn't use 0xc3aa for the capital lambda...
+        // u8"/9_unicode_\u039B.xlsx" gives the corrct output
+        xlnt_assert(round_trip_matches_rw(path_helper::test_file(u8"9_unicode_\u039B.xlsx")));
     }
 
     void test_round_trip_rw_comments_hyperlinks_formulae()
@@ -640,7 +642,7 @@ public:
     
     void test_round_trip_rw_encrypted_libre()
     {
-        xlnt_assert(round_trip_matches_rw(path_helper::test_file("6_encrypted_libre.xlsx"), u8"пароль"));
+        xlnt_assert(round_trip_matches_rw(path_helper::test_file("6_encrypted_libre.xlsx"), u8"\u043F\u0430\u0440\u043E\u043B\u044C")); // u8"пароль"
     }
 
     void test_round_trip_rw_encrypted_standard()

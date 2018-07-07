@@ -1,5 +1,4 @@
 // Copyright (c) 2014-2018 Thomas Fussell
-// Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,44 +24,35 @@
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 
-/// <summary>
-/// The properties of a row in a worksheet.
-/// </summary>
-class XLNT_API row_properties
+struct XLNT_API print_options
 {
-public:
     /// <summary>
-    /// Row height
+    /// if both grid_lines_set and this are true, grid lines are printed
     /// </summary>
-    optional<double> height;
+    optional<bool> print_grid_lines;
 
     /// <summary>
-    /// Distance in pixels from the bottom of the cell to the baseline of the cell content
+    /// if both print grid lines and this are true, grid lines are printed
     /// </summary>
-    optional<double> dy_descent;
+    optional<bool> grid_lines_set;
 
     /// <summary>
-    /// Whether or not the height is different from the default
+    /// print row and column headings
     /// </summary>
-    bool custom_height = false;
+    optional<bool> print_headings;
 
     /// <summary>
-    /// Whether or not the row should be hidden
+    /// center on page horizontally
     /// </summary>
-    bool hidden = false;
+    optional<bool> horizontal_centered;
 
     /// <summary>
-    /// True if row style should be applied
+    /// center on page vertically
     /// </summary>
-    optional<bool> custom_format;
-
-    /// <summary>
-    /// The index to the style used by all cells in this row
-    /// </summary>
-    optional<std::size_t> style;
+    optional<bool> vertical_centered;
 };
-
 } // namespace xlnt

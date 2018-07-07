@@ -193,6 +193,30 @@ public:
     }
 
     /// <summary>
+    /// has a  top left cell?
+    /// </summary>
+    bool has_top_left_cell() const
+    {
+        return top_left_cell_.is_set();
+    }
+
+    /// <summary>
+    /// Sets the top left cell of this view.
+    /// </summary>
+    void top_left_cell(const cell_reference& ref)
+    {
+        top_left_cell_.set(ref);
+    }
+
+    /// <summary>
+    /// Returns the top left cell of this view.
+    /// </summary>
+    cell_reference top_left_cell() const
+    {
+        return top_left_cell_.get();
+    }
+
+    /// <summary>
     /// Returns true if this view is equal to rhs based on its id, grid lines setting,
     /// default grid color, pane, and selections.
     /// </summary>
@@ -202,7 +226,8 @@ public:
             && show_grid_lines_ == rhs.show_grid_lines_
             && default_grid_color_ == rhs.default_grid_color_
             && pane_ == rhs.pane_
-            && selections_ == rhs.selections_;
+            && selections_ == rhs.selections_
+            && top_left_cell_ == rhs.top_left_cell_;
     }
 
 private:
@@ -230,6 +255,11 @@ private:
     /// The optional pane
     /// </summary>
     optional<xlnt::pane> pane_;
+
+    /// <summary>
+    /// The top left cell
+    /// </summary>
+    optional<cell_reference> top_left_cell_;
 
     /// <summary>
     /// The collection of selections

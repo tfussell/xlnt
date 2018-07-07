@@ -45,6 +45,11 @@ public:
     optional<double> default_row_height;
 
     /// <summary>
+    /// The default column width
+    /// </summary>
+    optional<double> default_column_width;
+
+    /// <summary>
     /// x14ac extension, dyDescent property
     /// </summary>
     optional<double> dy_descent;

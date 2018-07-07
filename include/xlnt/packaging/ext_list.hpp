@@ -1,5 +1,4 @@
 // Copyright (c) 2014-2018 Thomas Fussell
-// Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,44 +24,49 @@
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/packaging/uri.hpp>
+
+#include <string>
+#include <vector>
+
+namespace xml {
+class parser;
+class serializer;
+}
 
 namespace xlnt {
 
 /// <summary>
-/// The properties of a row in a worksheet.
+/// A list of xml extensions that may or may not be understood by the parser
+/// preservation is required for round-tripping even if extension is not understood
+/// [serialised: extLst]
 /// </summary>
-class XLNT_API row_properties
+class XLNT_API ext_list
 {
 public:
-    /// <summary>
-    /// Row height
-    /// </summary>
-    optional<double> height;
+    struct ext
+    {
+    public:
+        ext(xml::parser &parser, const std::string& ns);
+        ext(const uri& ID, const std::string& serialised);
+        void serialise(xml::serializer &serialiser, const std::string& ns);
 
-    /// <summary>
-    /// Distance in pixels from the bottom of the cell to the baseline of the cell content
-    /// </summary>
-    optional<double> dy_descent;
+        uri extension_ID_;
+        std::string serialised_value_;
+    };
+    ext_list() = default; // default ctor required by xlnt::optional
+    explicit ext_list(xml::parser &parser, const std::string& ns);
+    void serialize(xml::serializer &serialiser, const std::string& ns);
 
-    /// <summary>
-    /// Whether or not the height is different from the default
-    /// </summary>
-    bool custom_height = false;
+    void add_extension(const uri &ID, const std::string &element);
 
-    /// <summary>
-    /// Whether or not the row should be hidden
-    /// </summary>
-    bool hidden = false;
+    bool has_extension(const uri &extension_uri) const;
 
-    /// <summary>
-    /// True if row style should be applied
-    /// </summary>
-    optional<bool> custom_format;
+    const ext &extension(const uri &extension_uri) const;
 
-    /// <summary>
-    /// The index to the style used by all cells in this row
-    /// </summary>
-    optional<std::size_t> style;
+    const std::vector<ext> &extensions() const;
+
+private:
+    std::vector<ext> extensions_;
 };
-
 } // namespace xlnt

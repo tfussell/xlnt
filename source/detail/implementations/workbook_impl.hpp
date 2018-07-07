@@ -29,6 +29,7 @@
 
 #include <detail/implementations/stylesheet.hpp>
 #include <detail/implementations/worksheet_impl.hpp>
+#include <xlnt/packaging/ext_list.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/utils/datetime.hpp>
 #include <xlnt/utils/variant.hpp>
@@ -123,6 +124,7 @@ struct workbook_impl
     optional<calculation_properties> calculation_properties_;
     optional<std::string> abs_path_;
     optional<std::size_t> arch_id_flags_;
+    optional<ext_list> extensions_;
 };
 
 } // namespace detail

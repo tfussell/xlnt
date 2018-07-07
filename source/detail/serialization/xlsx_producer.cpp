@@ -38,20 +38,13 @@
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/utils/path.hpp>
 #include <xlnt/utils/scoped_enum_hash.hpp>
+#include <xlnt/utils/serialisation_utils.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/workbook/workbook_view.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
 namespace {
-
-/// <summary>
-/// Returns true if d is exactly equal to an integer.
-/// </summary>
-bool is_integral(double d)
-{
-    return std::fabs(d - static_cast<double>(static_cast<long long int>(d))) == 0.0;
-}
 
 std::vector<std::pair<std::string, std::string>> core_property_namespace(xlnt::core_property type)
 {
@@ -2214,9 +2207,46 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         write_attribute(xml::qname(xmlns_mc, "Ignorable"), "x14ac");
     }
 
-    if (ws.has_page_setup())
+    if (ws.d_->sheet_properties_.is_set())
     {
         write_start_element(xmlns, "sheetPr");
+        auto &props = ws.d_->sheet_properties_.get();
+        if (props.sync_horizontal.is_set())
+        {
+            write_attribute("syncHorizontal", props.sync_horizontal.get());
+        }
+        if (props.sync_vertical.is_set())
+        {
+            write_attribute("syncVertical", props.sync_vertical.get());
+        }
+        if (props.sync_ref.is_set())
+        {
+            write_attribute("syncRef", props.sync_ref.get().to_string());
+        }
+        if (props.transition_evaluation.is_set())
+        {
+            write_attribute("transitionEvaluation", props.transition_evaluation.get());
+        }
+        if (props.transition_entry.is_set())
+        {
+            write_attribute("transitionEntry", props.transition_entry.get());
+        }
+        if (props.published.is_set())
+        {
+            write_attribute("published", props.published.get());
+        }
+        if (props.code_name.is_set())
+        {
+            write_attribute("codeName", props.code_name.get());
+        }
+        if (props.filter_mode.is_set())
+        {
+            write_attribute("filterMode", props.filter_mode.get());
+        }
+        if (props.enable_format_condition_calculation.is_set())
+        {
+            write_attribute("enableFormatConditionsCalculation", props.enable_format_condition_calculation.get());
+        }
 
         write_start_element(xmlns, "outlinePr");
         write_attribute("summaryBelow", "1");
@@ -2251,13 +2281,17 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             write_attribute("tabSelected", write_bool(true));
         }
 
-        write_attribute("workbookViewId", view.id());
-
         if (view.type() != sheet_view_type::normal)
         {
             write_attribute("view", view.type() == sheet_view_type::page_break_preview
                 ? "pageBreakPreview" : "pageLayout");
         }
+        if (view.has_top_left_cell())
+        {
+            write_attribute("topLeftCell", view.top_left_cell().to_string());
+        }
+
+        write_attribute("workbookViewId", view.id());
 
         if (view.has_pane())
         {
@@ -2322,7 +2356,11 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         write_attribute("baseColWidth",
             format_properties.base_col_width.get());
     }
-
+    if (format_properties.default_column_width.is_set())
+    {
+        write_attribute("defaultColWidth",
+            format_properties.default_column_width.get());
+    }
     if (format_properties.default_row_height.is_set())
     {
         write_attribute("defaultRowHeight",
@@ -2359,12 +2397,13 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
         if (props.width.is_set())
         {
-            write_attribute("width", (props.width.get() * 7 + 5) / 7);
+            double width = (props.width.get() * 7 + 5) / 7;
+            write_attribute("width", serialize_number_to_string(width));
         }
 
-        if (props.custom_width)
+        if (props.best_fit)
         {
-            write_attribute("customWidth", write_bool(true));
+            write_attribute("bestFit", write_bool(true));
         }
 
         if (props.style.is_set())
@@ -2375,6 +2414,11 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         if (props.hidden)
         {
             write_attribute("hidden", write_bool(true));
+        }
+
+        if (props.custom_width)
+        {
+            write_attribute("customWidth", write_bool(true));
         }
 
         write_end_element(xmlns, "col");
@@ -2404,9 +2448,9 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         // See note for CT_Row, span attribute about block optimization
         if (first_row_in_block)
         {
-            first_check_row = first_row;
+            first_check_row = row;
             // round up to the next multiple of 16
-            last_check_row = (((first_row - 1) / 16) + 1) * 16;
+            last_check_row = ((row / 16) + 1) * 16;
         }
 
         for (auto check_row = first_check_row; check_row <= last_check_row; ++check_row)
@@ -2440,18 +2484,19 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         {
             const auto &props = ws.row_properties(row);
 
+            if (props.style.is_set())
+            {
+                write_attribute("s", props.style.get());
+            }
+            if (props.custom_format.is_set())
+            {
+                write_attribute("customFormat", write_bool(props.custom_format.get()));
+            }
+
             if (props.height.is_set())
             {
                 auto height = props.height.get();
-
-                if (std::fabs(height - std::floor(height)) == 0.0)
-                {
-                    write_attribute("ht", std::to_string(static_cast<int>(height)) + ".0");
-                }
-                else
-                {
-                    write_attribute("ht", height);
-                }
+                write_attribute("ht", serialize_number_to_string(height));
             }
 
             if (props.hidden)
@@ -2574,19 +2619,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
                 case cell::type::number:
                     write_start_element(xmlns, "v");
-
-                    if (is_integral(cell.value<double>()))
-                    {
-                        write_characters(static_cast<std::int64_t>(cell.value<double>()));
-                    }
-                    else
-                    {
-                        std::stringstream ss;
-                        ss.precision(20);
-                        ss << cell.value<double>();
-                        write_characters(ss.str());
-                    }
-
+                    write_characters(serialize_number_to_string(cell.value<double>()));
                     write_end_element(xmlns, "v");
                     break;
 
@@ -2697,12 +2730,47 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         write_end_element(xmlns, "hyperlinks");
     }
 
-    if (ws.has_page_setup())
+    if (ws.d_->print_options_.is_set())
     {
+        auto &opts = ws.d_->print_options_.get();
         write_start_element(xmlns, "printOptions");
-        write_attribute("horizontalCentered", write_bool(ws.page_setup().horizontal_centered()));
-        write_attribute("verticalCentered", write_bool(ws.page_setup().vertical_centered()));
+        if (opts.print_grid_lines.is_set())
+        {
+            write_attribute("gridLines", write_bool(opts.print_grid_lines.get()));
+        }
+        if (opts.grid_lines_set.is_set())
+        {
+            write_attribute("gridLineSet", write_bool(opts.grid_lines_set.get()));
+        }
+        if (opts.print_headings.is_set())
+        {
+            write_attribute("headings", write_bool(opts.print_headings.get()));
+        }
+        if (opts.horizontal_centered.is_set())
+        {
+            write_attribute("horizontalCentered", write_bool(opts.horizontal_centered.get()));
+        }
+        if (opts.vertical_centered.is_set())
+        {
+            write_attribute("verticalCentered", write_bool(opts.vertical_centered.get()));
+        }
         write_end_element(xmlns, "printOptions");
+    }
+
+    if (ws.has_phonetic_properties())
+    {
+        write_start_element(xmlns, phonetic_pr::Serialised_ID);
+        const auto &ph_props = ws.phonetic_properties();
+        write_attribute("fontId", ph_props.font_id());
+        if (ph_props.has_type())
+        {
+            write_attribute("type", phonetic_pr::type_as_string(ph_props.type()));
+        }
+        if (ph_props.has_alignment())
+        {
+            write_attribute("alignment", phonetic_pr::alignment_as_string(ph_props.alignment()));
+        }
+        write_end_element(xmlns, phonetic_pr::Serialised_ID);
     }
 
     if (ws.has_page_margins())
@@ -2743,11 +2811,21 @@ void xlsx_producer::write_worksheet(const relationship &rel)
     if (ws.has_page_setup())
     {
         write_start_element(xmlns, "pageSetup");
-        write_attribute(
-            "orientation", ws.page_setup().orientation() == xlnt::orientation::landscape ? "landscape" : "portrait");
-        write_attribute("paperSize", static_cast<std::size_t>(ws.page_setup().paper_size()));
+        if (ws.page_setup().orientation_.is_set())
+        {
+            write_attribute("orientation", ws.page_setup().orientation_.get());
+        }
+        if (ws.page_setup().horizontal_dpi_.is_set())
+        {
+            write_attribute("horizontalDpi", ws.page_setup().horizontal_dpi_.get());
+        }
+        if (ws.page_setup().vertical_dpi_.is_set())
+        {
+            write_attribute("verticalDpi", ws.page_setup().vertical_dpi_.get());
+        }
+        /*write_attribute("paperSize", static_cast<std::size_t>(ws.page_setup().paper_size()));
         write_attribute("fitToHeight", write_bool(ws.page_setup().fit_to_height()));
-        write_attribute("fitToWidth", write_bool(ws.page_setup().fit_to_width()));
+        write_attribute("fitToWidth", write_bool(ws.page_setup().fit_to_width()));*/
         write_end_element(xmlns, "pageSetup");
     }
 
@@ -2901,6 +2979,11 @@ void xlsx_producer::write_worksheet(const relationship &rel)
                 break;
             }
         }
+    }
+
+    if (ws.d_->extension_list_.is_set())
+    {
+        ws.d_->extension_list_.get().serialize(*current_part_serializer_, xmlns);
     }
 
     write_end_element(xmlns, "worksheet");

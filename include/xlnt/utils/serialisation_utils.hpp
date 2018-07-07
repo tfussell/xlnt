@@ -1,5 +1,4 @@
 // Copyright (c) 2014-2018 Thomas Fussell
-// Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,44 +24,21 @@
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
+#include <sstream>
 
 namespace xlnt {
-
 /// <summary>
-/// The properties of a row in a worksheet.
+/// Takes in any nuber and outputs a string form of that number which will
+/// serialise and deserialise without loss of precision
 /// </summary>
-class XLNT_API row_properties
+template <typename Number>
+std::string serialize_number_to_string(Number num)
 {
-public:
-    /// <summary>
-    /// Row height
-    /// </summary>
-    optional<double> height;
-
-    /// <summary>
-    /// Distance in pixels from the bottom of the cell to the baseline of the cell content
-    /// </summary>
-    optional<double> dy_descent;
-
-    /// <summary>
-    /// Whether or not the height is different from the default
-    /// </summary>
-    bool custom_height = false;
-
-    /// <summary>
-    /// Whether or not the row should be hidden
-    /// </summary>
-    bool hidden = false;
-
-    /// <summary>
-    /// True if row style should be applied
-    /// </summary>
-    optional<bool> custom_format;
-
-    /// <summary>
-    /// The index to the style used by all cells in this row
-    /// </summary>
-    optional<std::size_t> style;
-};
-
-} // namespace xlnt
+    // more digits and excel won't match
+    constexpr int Excel_Digit_Precision = 15; //sf
+    std::stringstream ss;
+    ss.precision(Excel_Digit_Precision);
+    ss << num;
+    return ss.str();
+}
+}

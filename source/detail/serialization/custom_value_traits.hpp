@@ -37,6 +37,7 @@
 #include <xlnt/utils/exceptions.hpp>
 #include <xlnt/utils/variant.hpp>
 #include <xlnt/worksheet/pane.hpp>
+#include <xlnt/worksheet/page_setup.hpp>
 #include <xlnt/workbook/metadata_property.hpp>
 
 namespace xlnt {
@@ -75,6 +76,8 @@ std::string to_string(pane_corner corner);
 std::string to_string(target_mode mode);
 
 std::string to_string(pane_state state);
+
+std::string to_string(orientation state);
 
 template<typename T>
 static T from_string(const std::string &string_value);
@@ -198,7 +201,11 @@ pattern_fill_type from_string(const std::string &string)
     auto toLower = [](std::string str) {
         auto bg{ std::begin (str) };
         auto en{ std::end (str) };
-        std::transform (bg, en, bg, tolower);
+        std::transform(bg, en, bg, 
+                       [](char c) {
+                        // static cast to avoid int -> char narrowing warning
+                           return static_cast<char>(tolower(c)); 
+                       });
 
         return str;
     };
@@ -390,6 +397,15 @@ pane_corner from_string(const std::string &string)
     default_case(pane_corner::bottom_left);
 }
 
+template <>
+orientation from_string(const std::string &string)
+{
+    if (string == "default") return orientation::default_orientation;
+    else if (string == "landscape") return orientation::landscape;
+    else if (string == "portrait") return orientation::portrait;
+    default_case(orientation::default);
+}
+
 } // namespace detail
 } // namespace xlnt
 
@@ -575,6 +591,20 @@ struct value_traits<xlnt::extended_property>
     static std::string serialize(xlnt::extended_property corner, const serializer &)
     {
         return xlnt::detail::to_string(corner);
+    }
+};
+
+template <>
+struct value_traits<xlnt::orientation>
+{
+    static xlnt::orientation parse(std::string string, const parser &)
+    {
+        return xlnt::detail::from_string<xlnt::orientation>(string);
+    }
+
+    static std::string serialize(xlnt::orientation orientation, const serializer &)
+    {
+        return xlnt::detail::to_string(orientation);
     }
 };
 

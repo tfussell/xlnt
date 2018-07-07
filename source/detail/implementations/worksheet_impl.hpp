@@ -27,15 +27,19 @@
 #include <unordered_map>
 #include <vector>
 
-#include <detail/implementations/cell_impl.hpp>
+#include <xlnt/packaging/ext_list.hpp>
 #include <xlnt/workbook/named_range.hpp>
 #include <xlnt/worksheet/column_properties.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
+#include <xlnt/worksheet/phonetic_pr.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/row_properties.hpp>
 #include <xlnt/worksheet/sheet_format_properties.hpp>
 #include <xlnt/worksheet/sheet_view.hpp>
+#include <xlnt/worksheet/print_options.hpp>
+#include <xlnt/worksheet/sheet_pr.hpp>
+#include <detail/implementations/cell_impl.hpp>
 
 namespace xlnt {
 
@@ -72,6 +76,7 @@ struct worksheet_impl
         page_margins_ = other.page_margins_;
         merged_cells_ = other.merged_cells_;
         named_ranges_ = other.named_ranges_;
+        phonetic_properties_ = other.phonetic_properties_;
         header_footer_ = other.header_footer_;
         print_title_cols_ = other.print_title_cols_;
         print_title_rows_ = other.print_title_rows_;
@@ -79,6 +84,9 @@ struct worksheet_impl
         views_ = other.views_;
         column_breaks_ = other.column_breaks_;
         row_breaks_ = other.row_breaks_;
+        extension_list_ = other.extension_list_;
+        sheet_properties_ = other.sheet_properties_;
+        print_options_ = other.print_options_;
 
         for (auto &row : cell_map_)
         {
@@ -107,6 +115,7 @@ struct worksheet_impl
     std::vector<range_reference> merged_cells_;
     std::unordered_map<std::string, named_range> named_ranges_;
 
+    optional<phonetic_pr> phonetic_properties_;
     optional<header_footer> header_footer_;
 
     std::string print_title_cols_;
@@ -120,6 +129,10 @@ struct worksheet_impl
     std::vector<row_t> row_breaks_;
 
     std::unordered_map<std::string, comment> comments_;
+    optional<print_options> print_options_;
+    optional<sheet_pr> sheet_properties_;
+
+    optional<ext_list> extension_list_;
 };
 
 } // namespace detail

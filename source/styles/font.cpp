@@ -26,11 +26,14 @@
 
 #include <xlnt/styles/font.hpp>
 
+namespace {
+const std::string Default_Name = "Calibri";
+constexpr double Default_Size = 12.0;
+} // namespace
+
 namespace xlnt {
 
 font::font()
-    : name_("Calibri"),
-      size_(12.0)
 {
 }
 
@@ -140,7 +143,11 @@ font &font::size(double size)
 
 double font::size() const
 {
-    return size_.get();
+    if (size_.is_set())
+    {
+        return size_.get();
+    }
+    return Default_Size;
 }
 
 bool font::has_name() const
@@ -154,9 +161,13 @@ font &font::name(const std::string &name)
     return *this;
 }
 
-std::string font::name() const
+const std::string& font::name() const
 {
-    return name_.get();
+    if (name_.is_set())
+    {
+        return name_.get();
+    }
+    return Default_Name;
 }
 
 bool font::has_color() const
@@ -218,7 +229,7 @@ std::size_t font::family() const
     return family_.get();
 }
 
-std::string font::scheme() const
+const std::string& font::scheme() const
 {
     return scheme_.get();
 }
@@ -241,8 +252,8 @@ bool font::operator==(const font &other) const
     if (has_color() != other.has_color()) return false;
     if (has_color() && color() != other.color()) return false;
     // charset
-    if (has_charset()!= other.has_charset()) return false;
-    if (has_charset() && charset()!= other.charset()) return false;
+    if (has_charset() != other.has_charset()) return false;
+    if (has_charset() && charset() != other.charset()) return false;
     // modifiers
     if (bold() != other.bold()) return false;
     if (italic() != other.italic()) return false;

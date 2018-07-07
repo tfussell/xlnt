@@ -1,5 +1,4 @@
 // Copyright (c) 2014-2018 Thomas Fussell
-// Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,45 +23,59 @@
 
 #pragma once
 
+#include <string>
+
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/utils/optional.hpp>
+#include <xlnt/cell/cell_reference.hpp>
 
 namespace xlnt {
 
-/// <summary>
-/// The properties of a row in a worksheet.
-/// </summary>
-class XLNT_API row_properties
+struct XLNT_API sheet_pr
 {
-public:
     /// <summary>
-    /// Row height
+    /// is horizontally synced to the anchor point
     /// </summary>
-    optional<double> height;
+    optional<bool> sync_horizontal;
 
     /// <summary>
-    /// Distance in pixels from the bottom of the cell to the baseline of the cell content
+    /// is vertically synced to the anchor point
     /// </summary>
-    optional<double> dy_descent;
+    optional<bool> sync_vertical;
 
     /// <summary>
-    /// Whether or not the height is different from the default
+    /// Anchor point for worksheet's window
     /// </summary>
-    bool custom_height = false;
+    optional<cell_reference> sync_ref;
 
     /// <summary>
-    /// Whether or not the row should be hidden
+    /// Lotus compatibility option
     /// </summary>
-    bool hidden = false;
+    optional<bool> transition_evaluation;
 
     /// <summary>
-    /// True if row style should be applied
+    /// Lotus compatibility option
     /// </summary>
-    optional<bool> custom_format;
+    optional<bool> transition_entry;
 
     /// <summary>
-    /// The index to the style used by all cells in this row
+    /// worksheet is published
     /// </summary>
-    optional<std::size_t> style;
+    optional<bool> published;
+
+    /// <summary>
+    /// stable name of the sheet
+    /// </summary>
+    optional<std::string> code_name;
+
+    /// <summary>
+    /// worksheet has one or more autofilters or advanced filters on
+    /// </summary>
+    optional<bool> filter_mode;
+
+    /// <summary>
+    /// whether the conditional formatting calculations shall be evaluated
+    /// </summary>
+    optional<bool> enable_format_condition_calculation;
 };
-
 } // namespace xlnt

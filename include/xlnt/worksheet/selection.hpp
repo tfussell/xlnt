@@ -37,6 +37,27 @@ class XLNT_API selection
 {
 public:
     /// <summary>
+    /// default ctor
+    /// </summary>
+    explicit selection() = default;
+
+    /// <summary>
+    /// ctor when no range selected
+    /// sqref == active_cell
+    /// </summary>
+    explicit selection(pane_corner quadrant, cell_reference active_cell)
+        : active_cell_(active_cell), sqref_(range_reference(active_cell, active_cell)), pane_(quadrant)
+    {}
+
+    /// <summary>
+    /// ctor with selected range
+    /// sqref must contain active_cell
+    /// </summary>
+    explicit selection(pane_corner quadrant, cell_reference active_cell, range_reference selected)
+        : active_cell_(active_cell), sqref_(selected), pane_(quadrant)
+    {}
+
+    /// <summary>
     /// Returns true if this selection has a defined active cell.
     /// </summary>
     bool has_active_cell() const
@@ -121,17 +142,18 @@ public:
 
 private:
     /// <summary>
-    /// The active cell
+    /// The last selected cell in the selection
     /// </summary>
     optional<cell_reference> active_cell_;
 
     /// <summary>
-    /// The range
+    /// The last selected block in the selection
+    /// contains active_cell_, normally == to active_cell_
     /// </summary>
     optional<range_reference> sqref_;
 
     /// <summary>
-    /// The quadrant
+    /// The corner of the worksheet that this selection extends to
     /// </summary>
     pane_corner pane_;
 };

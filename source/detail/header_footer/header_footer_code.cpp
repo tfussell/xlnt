@@ -22,6 +22,7 @@
 // @author: see AUTHORS file
 
 #include <detail/header_footer/header_footer_code.hpp>
+#include <xlnt/utils/serialisation_utils.hpp>
 
 namespace xlnt {
 namespace detail {
@@ -359,6 +360,11 @@ std::array<xlnt::optional<xlnt::rich_text>, 3> decode_header_footer(const std::s
 
             case hf_code::text_single_underline:
                 {
+                    if (!current_run.second.is_set())
+                    {
+                        current_run.second = xlnt::font();
+                    }
+                    current_run.second.get().underline(font::underline_style::single);
                     break;
                 }
 
@@ -527,9 +533,25 @@ std::string encode_header_footer(const rich_text &t, header_footer::location whe
             if (run.second.get().has_size())
             {
                 encoded.push_back('&');
-                encoded.append(std::to_string(run.second.get().size()));
+                encoded.append(serialize_number_to_string(run.second.get().size()));
             }
-
+            if (run.second.get().underlined())
+            {
+                switch (run.second.get().underline()) 
+                {
+                case font::underline_style::single:
+                case font::underline_style::single_accounting:
+                    encoded.append("&U");
+                    break;
+                case font::underline_style::double_:
+                case font::underline_style::double_accounting:
+                    encoded.append("&E");
+                    break;
+                default:
+                case font::underline_style::none:
+                    break;
+                }
+            }
             if (run.second.get().has_color())
             {
                 encoded.push_back('&');

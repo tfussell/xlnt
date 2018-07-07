@@ -25,6 +25,7 @@
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 
@@ -33,6 +34,7 @@ namespace xlnt {
 /// </summary>
 enum class XLNT_API orientation
 {
+    default_orientation,
     portrait,
     landscape
 };
@@ -118,16 +120,6 @@ public:
     void paper_size(xlnt::paper_size paper_size);
 
     /// <summary>
-    /// Returns the orientation of the worksheet using this page setup.
-    /// </summary>
-    xlnt::orientation orientation() const;
-
-    /// <summary>
-    /// Sets the orientation of the page.
-    /// </summary>
-    void orientation(xlnt::orientation orientation);
-
-    /// <summary>
     /// Returns true if this worksheet should be scaled to fit on a single page during printing.
     /// </summary>
     bool fit_to_page() const;
@@ -158,28 +150,6 @@ public:
     void fit_to_width(bool fit_to_width);
 
     /// <summary>
-    /// Sets whether the worksheet should be centered horizontall on the page if it takes
-    /// up less than a full page.
-    /// </summary>
-    void horizontal_centered(bool horizontal_centered);
-
-    /// <summary>
-    /// Returns whether horizontal centering has been enabled.
-    /// </summary>
-    bool horizontal_centered() const;
-
-    /// <summary>
-    /// Sets whether the worksheet should be vertically centered on the page if it takes
-    /// up less than a full page.
-    /// </summary>
-    void vertical_centered(bool vertical_centered);
-
-    /// <summary>
-    /// Returns whether vertical centering has been enabled.
-    /// </summary>
-    bool vertical_centered() const;
-
-    /// <summary>
     /// Sets the factor by which the page should be scaled during printing.
     /// </summary>
     void scale(double scale);
@@ -188,6 +158,19 @@ public:
     /// Returns the factor by which the page should be scaled during printing.
     /// </summary>
     double scale() const;
+
+    /// <summary>
+    /// The orientation
+    /// </summary>
+    xlnt::optional<xlnt::orientation> orientation_;
+    /// <summary>
+    /// The horizontal dpi
+    /// </summary>
+    xlnt::optional<std::size_t> horizontal_dpi_;
+    /// <summary>
+    /// The vertical dpi
+    /// </summary>
+    xlnt::optional<std::size_t> vertical_dpi_;
 
 private:
     /// <summary>
@@ -206,11 +189,6 @@ private:
     xlnt::paper_size paper_size_;
 
     /// <summary>
-    /// The orientation
-    /// </summary>
-    xlnt::orientation orientation_;
-
-    /// <summary>
     /// Whether or not to fit to page
     /// </summary>
     bool fit_to_page_;
@@ -224,16 +202,6 @@ private:
     /// Whether or not to fit to width
     /// </summary>
     bool fit_to_width_;
-
-    /// <summary>
-    /// Whether or not to center the content horizontally
-    /// </summary>
-    bool horizontal_centered_;
-
-    /// <summary>
-    /// Whether or not to center the conent vertically
-    /// </summary>
-    bool vertical_centered_;
 
     /// <summary>
     /// The amount to scale the worksheet
