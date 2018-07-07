@@ -109,8 +109,8 @@ public:
         xlnt::optional<convertible> opt3(test_val);
         xlnt_assert(opt3.is_set());
         xlnt_assert_equals(opt3.get().val, test_val);
-        //// no default ctor
-        //xlnt::optional<no_default> no_def_opt;
+        // no default ctor
+        xlnt::optional<no_default> no_def_opt;
     }
 
     void test_copy_ctor()
