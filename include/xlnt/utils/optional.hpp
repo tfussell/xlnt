@@ -93,6 +93,54 @@ public:
     }
 
     /// <summary>
+    /// Copies the value into the stored value
+    /// </summary>
+    void set(const T &value) noexcept(std::is_nothrow_copy_constructible<T>{} && std::is_nothrow_assignable<T, T>{})
+    {
+        if (has_value_)
+        {
+            value_ref() = value;
+        }
+        else
+        {
+            new (&storage_) T(value);
+            has_value_ = true;
+        }
+    }
+
+    /// <summary>
+    /// Moves the value into the stored value
+    /// </summary>
+    void set(T &&value) noexcept(std::is_nothrow_move_constructible<T>{} && std::is_nothrow_move_assignable<T>{})
+    {
+        // note seperate overload for two reasons (as opposed to perfect forwarding)
+        // 1. have to deal with implicit conversions internally with perfect forwarding
+        // 2. have to deal with the noexcept specfiers for all the different variations
+        // overload is just far and away the simpler solution
+        if (has_value_)
+        {
+            value_ref() = std::move(value);
+        }
+        else
+        {
+            new (&storage_) T(std::move(value));
+            has_value_ = true;
+        }
+    }
+
+    /// <summary>
+    /// After this is called, is_set() will return false until a new value is provided.
+    /// </summary>
+    void clear() noexcept(std::is_nothrow_destructible<T>{})
+    {
+        if (has_value_)
+        {
+            reinterpret_cast<T *>(&storage_)->~T();
+        }
+        has_value_ = false;
+    }
+
+    /// <summary>
     /// Copy assignment of this optional from other
     /// noexcept if set and clear are noexcept for T&
     /// </summary>
@@ -145,42 +193,6 @@ public:
     }
 
     /// <summary>
-    /// Copies the value into the stored value
-    /// </summary>
-    void set(const T &value) noexcept(std::is_nothrow_copy_constructible<T>{} && std::is_nothrow_assignable<T, T>{})
-    {
-        if (has_value_)
-        {
-            value_ref() = value;
-        }
-        else
-        {
-            new (&storage_) T(value);
-            has_value_ = true;
-        }
-    }
-
-    /// <summary>
-    /// Moves the value into the stored value
-    /// </summary>
-    void set(T &&value) noexcept(std::is_nothrow_move_constructible<T>{} && std::is_nothrow_move_assignable<T>{})
-    {
-        // note seperate overload for two reasons (as opposed to perfect forwarding)
-        // 1. have to deal with implicit conversions internally with perfect forwarding
-        // 2. have to deal with the noexcept specfiers for all the different variations
-        // overload is just far and away the simpler solution
-        if (has_value_)
-        {
-            value_ref() = std::move(value);
-        }
-        else
-        {
-            new (&storage_) T(std::move(value));
-            has_value_ = true;
-        }
-    }
-
-    /// <summary>
     /// Assignment operator overload. Equivalent to setting the value using optional::set.
     /// </summary>
     optional &operator=(const T &rhs) noexcept(noexcept(set(std::declval<const T &>())))
@@ -198,17 +210,7 @@ public:
         return *this;
     }
 
-    /// <summary>
-    /// After this is called, is_set() will return false until a new value is provided.
-    /// </summary>
-    void clear() noexcept(std::is_nothrow_destructible<T>{})
-    {
-        if (has_value_)
-        {
-            reinterpret_cast<T *>(&storage_)->~T();
-        }
-        has_value_ = false;
-    }
+
 
     /// <summary>
     /// Gets the value. If no value has been initialized in this object,
