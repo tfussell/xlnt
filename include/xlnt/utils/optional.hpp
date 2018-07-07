@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include <type_traits>
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/utils/exceptions.hpp>
 
@@ -37,14 +38,16 @@ template <typename T>
 class optional
 {
 #if _MSC_VER <= 1900 // v14, visual studio 2015
-    using ctor_copy_T_noexcept = typename std::conditional<std::is_trivially_copyable<T>{}, std::true_type, std::false_type>::type;
-    using ctor_move_T_noexcept = typename std::conditional<std::is_trivially_move_constructible<T>{}, std::true_type, std::false_type>::type;
+#define NOEXCEPT_VALUE(...) (false)
+    using ctor_copy_T_noexcept = std::false_type;
+    using ctor_move_T_noexcept = std::false_type;
     using copy_ctor_noexcept = ctor_copy_T_noexcept;
     using move_ctor_noexcept = ctor_move_T_noexcept;
-    using set_copy_noexcept_t = typename std::conditional<std::is_trivially_copyable<T>{} && std::is_trivially_assignable<T, T>{}, std::true_type, std::false_type>::type;
-    using set_move_noexcept_t = typename std::conditional<std::is_trivially_move_constructible<T>{} && std::is_trivially_move_assignable<T>{}, std::true_type, std::false_type>::type;
-    using clear_noexcept_t = typename std::conditional<std::is_trivially_destructible<T>{}, std::true_type, std::false_type>::type;
+    using set_copy_noexcept_t = std::false_type;
+    using set_move_noexcept_t = std::false_type;
+    using clear_noexcept_t = std::false_type;
 #else
+#define NOEXCEPT_VALUE(...) (__VA_ARGS__)
     using ctor_copy_T_noexcept = typename std::conditional<std::is_nothrow_copy_constructible<T>{}, std::true_type, std::false_type>::type;
     using ctor_move_T_noexcept = typename std::conditional<std::is_nothrow_move_constructible<T>{}, std::true_type, std::false_type>::type;
     using copy_ctor_noexcept = ctor_copy_T_noexcept;
@@ -67,7 +70,7 @@ public:
     /// Constructs this optional with a value.
     /// noexcept if T copy ctor is noexcept
     /// </summary>
-    optional(const T &value) noexcept(ctor_copy_T_noexcept{})
+    optional(const T &value) noexcept(NOEXCEPT_VALUE(ctor_copy_T_noexcept{}))
         : has_value_(true)
     {
         new (&storage_) T(value);
@@ -77,7 +80,7 @@ public:
     /// Constructs this optional with a value.
     /// noexcept if T move ctor is noexcept
     /// </summary>
-    optional(T &&value) noexcept(ctor_move_T_noexcept{})
+    optional(T &&value) noexcept(NOEXCEPT_VALUE(ctor_move_T_noexcept{}))
         : has_value_(true)
     {
         new (&storage_) T(std::move(value));
@@ -87,7 +90,7 @@ public:
     /// Copy constructs this optional from other
     /// noexcept if T copy ctor is noexcept
     /// </summary>
-    optional(const optional &other) noexcept(copy_ctor_noexcept{})
+    optional(const optional &other) noexcept(NOEXCEPT_VALUE(copy_ctor_noexcept{}))
         : has_value_(other.has_value_)
     {
         if (has_value_)
@@ -100,7 +103,7 @@ public:
     /// Move constructs this optional from other. Clears the value from other if set
     /// noexcept if T move ctor is noexcept
     /// </summary>
-    optional(optional &&other) noexcept(move_ctor_noexcept{})
+    optional(optional &&other) noexcept(NOEXCEPT_VALUE(move_ctor_noexcept{}))
         : has_value_(other.has_value_)
     {
         if (has_value_)
@@ -114,7 +117,7 @@ public:
     /// Copy assignment of this optional from other
     /// noexcept if set and clear are noexcept for T&
     /// </summary>
-    optional &operator=(const optional &other) noexcept(set_copy_noexcept_t{} && clear_noexcept_t{})
+    optional &operator=(const optional &other) noexcept(NOEXCEPT_VALUE(set_copy_noexcept_t{} && clear_noexcept_t{}))
     {
         if (other.has_value_)
         {
@@ -131,7 +134,7 @@ public:
     /// Move assignment of this optional from other
     /// noexcept if set and clear are noexcept for T&&
     /// </summary>
-    optional &operator=(optional &&other) noexcept(set_move_noexcept_t{} && clear_noexcept_t{})
+    optional &operator=(optional &&other) noexcept(NOEXCEPT_VALUE(set_move_noexcept_t{} && clear_noexcept_t{}))
     {
         if (other.has_value_)
         {
@@ -165,7 +168,7 @@ public:
     /// <summary>
     /// Copies the value into the stored value
     /// </summary>
-    void set(const T &value) noexcept(set_copy_noexcept_t{})
+    void set(const T &value) noexcept(NOEXCEPT_VALUE(set_copy_noexcept_t{}))
     {
         if (has_value_)
         {
@@ -181,7 +184,7 @@ public:
     /// <summary>
     /// Moves the value into the stored value
     /// </summary>
-    void set(T &&value) noexcept(set_move_noexcept_t{})
+    void set(T &&value) noexcept(NOEXCEPT_VALUE(set_move_noexcept_t{}))
     {
         // note seperate overload for two reasons (as opposed to perfect forwarding)
         // 1. have to deal with implicit conversions internally with perfect forwarding
@@ -201,7 +204,7 @@ public:
     /// <summary>
     /// Assignment operator overload. Equivalent to setting the value using optional::set.
     /// </summary>
-    optional &operator=(const T &rhs) noexcept(set_copy_noexcept_t{})
+    optional &operator=(const T &rhs) noexcept(NOEXCEPT_VALUE(set_copy_noexcept_t{}))
     {
         set(rhs);
         return *this;
@@ -210,7 +213,7 @@ public:
     /// <summary>
     /// Assignment operator overload. Equivalent to setting the value using optional::set.
     /// </summary>
-    optional &operator=(T &&rhs) noexcept(set_move_noexcept_t{})
+    optional &operator=(T &&rhs) noexcept(NOEXCEPT_VALUE(set_move_noexcept_t{}))
     {
         set(std::move(rhs));
         return *this;
@@ -219,7 +222,7 @@ public:
     /// <summary>
     /// After this is called, is_set() will return false until a new value is provided.
     /// </summary>
-    void clear() noexcept(clear_noexcept_t{})
+    void clear() noexcept(NOEXCEPT_VALUE(clear_noexcept_t{}))
     {
         if (has_value_)
         {
