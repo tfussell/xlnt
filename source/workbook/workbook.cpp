@@ -1611,7 +1611,7 @@ void workbook::reorder_relationships()
     while (index < worksheet_rel_ids.size())
     {
         auto rel_it = std::find_if(rel_copy.begin(), rel_copy.end(),
-            [&](const auto &rel) { return rel.id() == worksheet_rel_ids[index]; });
+            [&](const relationship &rel) { return rel.id() == worksheet_rel_ids[index]; });
 
         std::string rel_id = new_id();
         d_->sheet_title_rel_id_map_.at(titles[index - 1]) = rel_id; // update title -> relation mapping
