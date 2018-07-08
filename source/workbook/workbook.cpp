@@ -1596,13 +1596,12 @@ void workbook::reorder_relationships()
         return;
     }
     // copy of existing relations
-    const auto wb_rel = manifest().relationship(path("/"), relationship_type::office_document);
-    const auto wb_path = wb_rel.target().path();
-    auto rel_copy = manifest().relationships(wb_path);
+    const auto wb_rel_target = manifest().relationship(path("/"), relationship_type::office_document).target();
+    auto rel_copy = manifest().relationships(wb_rel_target.path());
     // clear existing relations
     for (const auto &rel : rel_copy)
     {
-        manifest().unregister_relationship(uri(wb_path.string()), rel.id());
+        manifest().unregister_relationship(wb_rel_target, rel.id());
     }
     // create new relations
     std::size_t index = 0;
