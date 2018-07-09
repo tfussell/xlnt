@@ -66,6 +66,7 @@ public:
         register_test(test_comparison);
         register_test(test_id_gen);
         register_test(test_load_file);
+        register_test(test_Issue279);
     }
 
     void test_active_sheet()
@@ -460,11 +461,35 @@ public:
         // load with vector
         std::ifstream file_reader3(file.string(), std::ios::binary);
         file_reader3.unsetf(std::ios::skipws);
-        std::vector<uint8_t> data(std::istream_iterator<uint8_t>{file_reader3}, 
-                                  std::istream_iterator<uint8_t>());
+        std::vector<uint8_t> data(std::istream_iterator<uint8_t>{file_reader3},
+            std::istream_iterator<uint8_t>());
         xlnt::workbook wb_load5;
         wb_load5.load(data);
         xlnt_assert_equals(wb_path, wb_load5);
+    }
+
+    void test_Issue279()
+    {
+        xlnt::workbook wb(path_helper::test_file("Issue279_workbook_delete_rename.xlsx"));
+        while (wb.sheet_count() > 1)
+        {
+            if (wb[1].title() != "BOM")
+            {
+                wb.remove_sheet(wb[1]);
+            }
+            else
+            {
+                wb.remove_sheet(wb[0]);
+            }
+        }
+        // get sheet bom change title
+        auto ws1 = wb.sheet_by_index(0);
+        ws1.title("checkedBom");
+        // report sheet
+        auto ws2 = wb.create_sheet(1);
+        ws2.title("REPORT");
+        //save a copy file
+        wb.save("temp.xlsx");
     }
 };
 static workbook_test_suite x;
