@@ -341,31 +341,17 @@ cell_reference cell::reference() const
     return {d_->column_, d_->row_};
 }
 
-bool cell::operator==(std::nullptr_t) const
-{
-    return d_ == nullptr;
-}
-
 bool cell::operator==(const cell &comparand) const
 {
     return d_ == comparand.d_;
 }
 
-cell &cell::operator=(const cell &rhs)
+bool cell::operator!=(const cell &comparand) const
 {
-    d_->column_ = rhs.d_->column_;
-    d_->format_ = rhs.d_->format_;
-    d_->formula_ = rhs.d_->formula_;
-    d_->hyperlink_ = rhs.d_->hyperlink_;
-    d_->is_merged_ = rhs.d_->is_merged_;
-    d_->parent_ = rhs.d_->parent_;
-    d_->row_ = rhs.d_->row_;
-    d_->type_ = rhs.d_->type_;
-    d_->value_numeric_ = rhs.d_->value_numeric_;
-    d_->value_text_ = rhs.d_->value_text_;
-
-    return *this;
+    return d_ != comparand.d_;
 }
+
+cell &cell::operator=(const cell &rhs) = default;
 
 hyperlink cell::hyperlink() const
 {
@@ -776,6 +762,11 @@ calendar cell::base_date() const
 bool operator==(std::nullptr_t, const cell &cell)
 {
     return cell.data_type() == cell::type::empty;
+}
+
+bool operator==(const cell &cell, std::nullptr_t)
+{
+    return nullptr == cell;
 }
 
 XLNT_API std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)
