@@ -868,7 +868,7 @@ void xlsx_producer::write_shared_string_table(const relationship & /*rel*/)
             {
                 write_attribute(xml::qname(xmlns_xml, "space"), "preserve");
             }
-            write_characters(string.plain_text(), has_trailing_whitespace(string.plain_text()));
+            write_characters(string.plain_text());
             write_end_element(xmlns, "t");
             write_end_element(xmlns, "si");
 
