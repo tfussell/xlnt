@@ -754,8 +754,7 @@ worksheet workbook::create_sheet()
     auto workbook_rel = d_->manifest_.relationship(path("/"), relationship_type::office_document);
     auto workbook_files = d_->manifest_.relationships(workbook_rel.target().path());
     auto rel_vec_contains = [&workbook_files](const xlnt::path &new_file_id) {
-        return workbook_files.end() != std::find_if(workbook_files.begin(), workbook_files.end(), [&new_file_id](const xlnt::relationship &rel)
-        {
+        return workbook_files.end() != std::find_if(workbook_files.begin(), workbook_files.end(), [&new_file_id](const xlnt::relationship &rel) {
             return rel.target().path() == new_file_id;
         });
     };
@@ -1597,6 +1596,20 @@ bool needs_reorder(const std::unordered_map<std::string, std::string> &title_to_
     }
     return !all_match; // if all are as expected, reorder not required
 };
+
+struct rel_id_sorter
+{
+    // true if lhs < rhs
+    bool operator()(const xlnt::relationship &lhs, const xlnt::relationship &rhs)
+    {
+        // format is rTd<decimal number 1..n>
+        if (lhs.id().size() < rhs.id().size()) // a number with more digits will be larger
+        {
+            return true;
+        }
+        return lhs.id() < rhs.id();
+    }
+};
 } // namespace
 
 void workbook::reorder_relationships()
@@ -1612,6 +1625,7 @@ void workbook::reorder_relationships()
     // copy of existing relations
     const auto wb_rel_target = manifest().relationship(path("/"), relationship_type::office_document).target();
     auto rel_copy = manifest().relationships(wb_rel_target.path());
+    std::sort(rel_copy.begin(), rel_copy.end(), rel_id_sorter{});
     // clear existing relations
     for (const auto &rel : rel_copy)
     {
@@ -1632,7 +1646,7 @@ void workbook::reorder_relationships()
             rel_it->source(), rel_it->target(), rel_it->target_mode()));
     }
     // then all the other relations in the same order they started (just new indices)
-    for (const auto& old_rel : rel_copy) 
+    for (const auto &old_rel : rel_copy)
     {
         if (old_rel.type() == relationship_type::worksheet)
         {
