@@ -738,22 +738,36 @@ worksheet workbook::create_sheet()
     std::string title = "Sheet1";
     int index = 1;
 
+    // make a unique sheet name. Sheet<1...n>
     while (contains(title))
     {
         title = "Sheet" + std::to_string(++index);
     }
-
+    // unique sheet id
     size_t sheet_id = 1;
     for (const auto ws : *this)
     {
         sheet_id = std::max(sheet_id, ws.id() + 1);
     }
-    std::string sheet_filename = "sheet" + std::to_string(sheet_id) + ".xml";
-
     d_->worksheets_.push_back(detail::worksheet_impl(this, sheet_id, title));
-
+    // unique sheet file name
     auto workbook_rel = d_->manifest_.relationship(path("/"), relationship_type::office_document);
-    uri relative_sheet_uri(path("worksheets").append(sheet_filename).string());
+    auto workbook_files = d_->manifest_.relationships(workbook_rel.target().path());
+    auto rel_vec_contains = [&workbook_files](const xlnt::path &new_file_id) {
+        return workbook_files.end() != std::find_if(workbook_files.begin(), workbook_files.end(), [&new_file_id](const xlnt::relationship &rel)
+        {
+            return rel.target().path() == new_file_id;
+        });
+    };
+
+    size_t file_id = sheet_id;
+    xlnt::path sheet_relative_path;
+    do
+    {
+        sheet_relative_path = path("worksheets").append("sheet" + std::to_string(file_id++) + ".xml");
+    } while (rel_vec_contains(sheet_relative_path));
+
+    uri relative_sheet_uri(sheet_relative_path.string());
     auto absolute_sheet_path = path("/xl").append(relative_sheet_uri.path());
     d_->manifest_.register_override_type(
         absolute_sheet_path, "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
