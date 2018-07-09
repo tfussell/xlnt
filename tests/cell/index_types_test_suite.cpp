@@ -21,12 +21,10 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#pragma once
-
 #include <iostream>
 
 #include <helpers/test_suite.hpp>
-#include <xlnt/xlnt.hpp>
+
 
 class index_types_test_suite : public test_suite
 {
@@ -103,3 +101,5 @@ public:
         xlnt_assert(!(4 <= c1));
     }
 };
+
+static index_types_test_suite x{};

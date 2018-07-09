@@ -241,6 +241,11 @@ public:
     column_t column() const;
 
     /// <summary>
+    /// Returns the numeric index (A == 1) of the column of this cell.
+    /// </summary>
+    column_t::index_t column_index() const;
+
+    /// <summary>
     /// Returns the row of this cell.
     /// </summary>
     row_t row() const;
@@ -258,25 +263,20 @@ public:
     class hyperlink hyperlink() const;
 
     /// <summary>
-    /// Adds a hyperlink to this cell pointing to the URL of the given value.
-    /// </summary>
-    void hyperlink(const std::string &url);
-
-    /// <summary>
     /// Adds a hyperlink to this cell pointing to the URI of the given value and sets
     /// the text value of the cell to the given parameter.
     /// </summary>
-    void hyperlink(const std::string &url, const std::string &display);
+    void hyperlink(const std::string &url, const std::string &display = "");
 
     /// <summary>
     /// Adds an internal hyperlink to this cell pointing to the given cell.
     /// </summary>
-    void hyperlink(xlnt::cell target);
+    void hyperlink(xlnt::cell target, const std::string& display = "");
 
     /// <summary>
     /// Adds an internal hyperlink to this cell pointing to the given range.
     /// </summary>
-    void hyperlink(xlnt::range target);
+    void hyperlink(xlnt::range target, const std::string& display = "");
 
     /// <summary>
     /// Returns true if this cell has a hyperlink set.
@@ -608,9 +608,9 @@ public:
     bool operator==(const cell &comparand) const;
 
     /// <summary>
-    /// Returns true if this cell is uninitialized.
+    /// Returns false if this cell the same cell as comparand (compared by reference).
     /// </summary>
-    bool operator==(std::nullptr_t) const;
+    bool operator!=(const cell &comparand) const;
 
 private:
     friend class style;
@@ -645,6 +645,11 @@ private:
 /// Returns true if this cell is uninitialized.
 /// </summary>
 XLNT_API bool operator==(std::nullptr_t, const cell &cell);
+
+/// <summary>
+/// Returns true if this cell is uninitialized.
+/// </summary>
+XLNT_API bool operator==(const cell &cell, std::nullptr_t);
 
 /// <summary>
 /// Convenience function for writing cell to an ostream.

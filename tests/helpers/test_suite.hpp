@@ -1,13 +1,16 @@
 #pragma once
 
-#include <cstdint>
 #include <functional>
-#include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include <helpers/assertions.hpp>
+#include <helpers/path_helper.hpp>
+//#include <helpers/temporary_directory.hpp>
+//#include <helpers/temporary_file.hpp>
+#include <helpers/timing.hpp>
+#include <helpers/xml_helper.hpp>
 
 struct test_status
 {
@@ -17,56 +20,20 @@ struct test_status
     std::vector<std::string> failures;
 };
 
-std::string build_name(const std::string &pretty, const std::string &method)
-{
-    return pretty.substr(0, pretty.find("::") + 2) + method;
-}
+std::string build_name(const std::string &pretty, const std::string &method);
 
 #define register_test(test) register_test_internal([this]() { test(); }, build_name(__FUNCTION__, #test));
 
 class test_suite
 {
 public:
-    test_status go()
-    {
-        test_status status;
-
-        for (auto test : tests)
-        {
-            try
-            {
-                test.first();
-                std::cout << ".";
-                status.tests_passed++;
-            }
-            catch (std::exception &ex)
-            {
-                std::string fail_msg = test.second + " failed with:\n" + std::string(ex.what());
-                std::cout << "*\n"
-                          << fail_msg << '\n';
-                status.tests_failed++;
-                status.failures.push_back(fail_msg);
-            }
-            catch (...)
-            {
-                std::cout << "*\n" << test.second << " failed\n";
-                status.tests_failed++;
-                status.failures.push_back(test.second);
-            }
-
-            std::cout.flush();
-            status.tests_run++;
-        }
-
-        return status;
-    }
-
+    static test_status go();
 protected:
-    void register_test_internal(std::function<void()> t, const std::string &function)
+    static void register_test_internal(std::function<void()> t, const std::string &function)
     {
-        tests.push_back(std::make_pair(t, function));
+        tests().push_back(std::make_pair(t, function));
     }
 
 private:
-    std::vector<std::pair<std::function<void(void)>, std::string>> tests;
+    static std::vector<std::pair<std::function<void(void)>, std::string>> &tests();
 };

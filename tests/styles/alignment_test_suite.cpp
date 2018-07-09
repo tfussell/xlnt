@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2018 Thomas Fussell
+// Copyright (c) 2014-2018 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,35 +21,27 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#pragma once
+#include <iostream>
 
-#include <xlnt/xlnt_config.hpp>
+#include <helpers/test_suite.hpp>
+#include <xlnt/styles/alignment.hpp>
 
-namespace xlnt {
-
-/// <summary>
-/// Workbook file properties relating to calculations.
-/// </summary>
-class XLNT_API calculation_properties
+class alignment_test_suite : public test_suite
 {
 public:
-    /// <summary>
-    /// The version of calculation engine used to calculate cell formula values.
-    /// If this is older than the version of the Excel calculation engine opening
-    /// the workbook, cell values will be recalculated.
-    /// </summary>
-    std::size_t calc_id;
+    alignment_test_suite()
+    {
+        register_test(test_all);
+    }
 
-    /// <summary>
-    /// If this is true, concurrent calculation will be enabled for the workbook.
-    /// </summary>
-    bool concurrent_calc;
+    void test_all()
+    {
+        xlnt::alignment alignment;
+
+        xlnt_assert(!alignment.horizontal().is_set());
+        xlnt_assert(!alignment.vertical().is_set());
+        xlnt_assert(!alignment.shrink());
+        xlnt_assert(!alignment.wrap());
+    }
 };
-
-inline bool operator==(const calculation_properties &lhs, const calculation_properties &rhs)
-{
-    return lhs.calc_id == rhs.calc_id
-        && lhs.concurrent_calc == rhs.concurrent_calc;
-}
-
-} // namespace xlnt
+static alignment_test_suite x;

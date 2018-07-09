@@ -21,28 +21,35 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#pragma once
-
-#include <iostream>
-
+#include <xlnt/styles/protection.hpp>
 #include <helpers/test_suite.hpp>
 #include <xlnt/xlnt.hpp>
 
-class alignment_test_suite : public test_suite
+class protection_test_suite : public test_suite
 {
 public:
-    alignment_test_suite()
+    protection_test_suite()
     {
         register_test(test_all);
     }
 
     void test_all()
     {
-        xlnt::alignment alignment;
+        auto prot = xlnt::protection::unlocked_and_visible();
+        xlnt_assert(!prot.hidden());
+        xlnt_assert(!prot.locked());
 
-        xlnt_assert(!alignment.horizontal().is_set());
-        xlnt_assert(!alignment.vertical().is_set());
-        xlnt_assert(!alignment.shrink());
-        xlnt_assert(!alignment.wrap());
+        prot = xlnt::protection::locked_and_visible();
+        xlnt_assert(!prot.hidden());
+        xlnt_assert(prot.locked());
+
+        prot = xlnt::protection::unlocked_and_hidden();
+        xlnt_assert(prot.hidden());
+        xlnt_assert(!prot.locked());
+
+        prot = xlnt::protection::locked_and_hidden();
+        xlnt_assert(prot.hidden());
+        xlnt_assert(prot.locked());
     }
 };
+static protection_test_suite x;

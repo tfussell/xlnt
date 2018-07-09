@@ -36,7 +36,7 @@ relationship::relationship(
 {
 }
 
-std::string relationship::id() const
+const std::string& relationship::id() const
 {
     return id_;
 }
@@ -46,12 +46,12 @@ target_mode relationship::target_mode() const
     return mode_;
 }
 
-uri relationship::source() const
+const uri &relationship::source() const
 {
     return source_;
 }
 
-uri relationship::target() const
+const uri &relationship::target() const
 {
     return target_;
 }

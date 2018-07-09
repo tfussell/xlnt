@@ -115,7 +115,7 @@ public:
     /// <summary>
     /// Returns a string of the form rId# that identifies the relationship.
     /// </summary>
-    std::string id() const;
+    const std::string& id() const;
 
     /// <summary>
     /// Returns the type of this relationship.
@@ -130,12 +130,12 @@ public:
     /// <summary>
     /// Returns the URI of the package part this relationship points to.
     /// </summary>
-    uri source() const;
+    const uri &source() const;
 
     /// <summary>
     /// Returns the URI of the package part this relationship points to.
     /// </summary>
-    uri target() const;
+    const uri &target() const;
 
     /// <summary>
     /// Returns true if and only if rhs is equal to this relationship.

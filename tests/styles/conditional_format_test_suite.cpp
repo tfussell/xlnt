@@ -21,43 +21,44 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#pragma once
-
-#include <iostream>
-
+#include <xlnt/styles/conditional_format.hpp>
 #include <helpers/test_suite.hpp>
 #include <xlnt/xlnt.hpp>
 
-class page_setup_test_suite : public test_suite
+class conditional_format_test_suite : public test_suite
 {
 public:
-    page_setup_test_suite()
+    conditional_format_test_suite()
     {
-        register_test(test_properties);
+        register_test(test_all);
     }
 
-    void test_properties()
+    void test_all()
     {
-        xlnt::page_setup ps;
-
-        xlnt_assert_equals(ps.paper_size(), xlnt::paper_size::letter);
-        ps.paper_size(xlnt::paper_size::executive);
-        xlnt_assert_equals(ps.paper_size(), xlnt::paper_size::executive);
-
-        xlnt_assert(!ps.orientation_.is_set());
-        ps.orientation_.set(xlnt::orientation::landscape);
-        xlnt_assert_equals(ps.orientation_.get(), xlnt::orientation::landscape);
-
-        xlnt_assert(!ps.fit_to_page());
-        ps.fit_to_page(true);
-        xlnt_assert(ps.fit_to_page());
-
-        xlnt_assert(!ps.fit_to_height());
-        ps.fit_to_height(true);
-        xlnt_assert(ps.fit_to_height());
-
-        xlnt_assert(!ps.fit_to_width());
-        ps.fit_to_width(true);
-        xlnt_assert(ps.fit_to_width());
+        xlnt::workbook wb;
+        auto ws = wb.active_sheet();
+        auto format = ws.conditional_format(xlnt::range_reference("A1:A10"), xlnt::condition::text_contains("test"));
+        xlnt_assert(!format.has_border());
+        xlnt_assert(!format.has_fill());
+        xlnt_assert(!format.has_font());
+        // set border
+        auto border = xlnt::border().diagonal(xlnt::diagonal_direction::both);
+        format.border(border);
+        xlnt_assert(format.has_border());
+        xlnt_assert_equals(format.border(), border);
+        // set fill
+        auto fill = xlnt::fill(xlnt::gradient_fill().type(xlnt::gradient_fill_type::path));
+        format.fill(fill);
+        xlnt_assert(format.has_fill());
+        xlnt_assert_equals(format.fill(), fill);
+        // set font
+        auto font = xlnt::font().color(xlnt::color::darkblue());
+        format.font(font);
+        xlnt_assert(format.has_font());
+        xlnt_assert_equals(format.font(), font);
+        // copy ctor
+        auto format_copy(format);
+        xlnt_assert_equals(format, format_copy);
     }
 };
+static conditional_format_test_suite x;

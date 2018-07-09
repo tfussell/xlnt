@@ -123,4 +123,10 @@ named_range &named_range::operator=(const named_range &other)
     return *this;
 }
 
+bool named_range::operator==(const named_range &rhs) const
+{
+    return name_ == rhs.name_
+        && targets_ == rhs.targets_;
+}
+
 } // namespace xlnt

@@ -137,4 +137,9 @@ const std::vector<ext_list::ext> &ext_list::extensions() const
     return extensions_;
 }
 
+bool ext_list::operator==(const ext_list &rhs) const
+{
+    return extensions_ == rhs.extensions_;
+}
+
 }

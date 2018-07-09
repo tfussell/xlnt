@@ -65,4 +65,14 @@ public:
     optional<std::size_t> style;
 };
 
+inline bool operator==(const row_properties &lhs, const row_properties &rhs)
+{
+    return lhs.height == rhs.height
+        && lhs.dy_descent == rhs.dy_descent
+        && lhs.custom_height == rhs.custom_height
+        && lhs.hidden == rhs.hidden
+        && lhs.custom_format == rhs.custom_format
+        && lhs.style == rhs.style;
+}
+
 } // namespace xlnt

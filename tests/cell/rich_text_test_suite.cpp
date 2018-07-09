@@ -21,14 +21,13 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#pragma once
-
 #include <ctime>
 #include <iostream>
 #include <sstream>
 
 #include <helpers/test_suite.hpp>
-#include <xlnt/xlnt.hpp>
+
+#include <xlnt/cell/rich_text.hpp>
 
 class rich_text_test_suite : public test_suite
 {
@@ -36,6 +35,7 @@ public:
     rich_text_test_suite()
     {
         register_test(test_operators);
+        register_test(test_runs);
     }
 
     void test_operators()
@@ -101,4 +101,19 @@ public:
         text_family_differs.add_run(run_family_differs);
         xlnt_assert_differs(text_formatted, text_family_differs);
     }
+
+    void test_runs()
+    {
+        xlnt::rich_text rt;
+        xlnt_assert(rt.runs().empty());
+        std::vector<xlnt::rich_text_run> test_runs{xlnt::rich_text_run{"1_abc_test_123"}, xlnt::rich_text_run{"2_abc_test_123"}, xlnt::rich_text_run{"3_abc_test_123"}};
+        // just one
+        rt.add_run(test_runs[0]);
+        xlnt_assert_equals(1, rt.runs().size());
+        xlnt_assert_equals(test_runs[0], rt.runs()[0]);
+        // whole set
+        rt.runs(test_runs);
+        xlnt_assert_equals(test_runs, rt.runs());
+    }
 };
+static rich_text_test_suite x{};

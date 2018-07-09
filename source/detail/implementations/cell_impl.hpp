@@ -27,22 +27,26 @@
 
 #include <xlnt/cell/cell_type.hpp>
 #include <xlnt/cell/comment.hpp>
-#include <xlnt/cell/rich_text.hpp>
 #include <xlnt/cell/index_types.hpp>
+#include <xlnt/cell/rich_text.hpp>
 #include <xlnt/packaging/relationship.hpp>
 #include <xlnt/utils/optional.hpp>
+#include <detail/implementations/format_impl.hpp>
 #include <detail/implementations/hyperlink_impl.hpp>
 
 namespace xlnt {
 namespace detail {
 
-struct format_impl;
 struct worksheet_impl;
 
 struct cell_impl
 {
     cell_impl();
-
+    cell_impl(const cell_impl &other) = default;
+    cell_impl(cell_impl &&other) = default;
+    cell_impl &operator=(const cell_impl &other) = default;
+    cell_impl &operator=(cell_impl &&other) = default;
+    
     cell_type type_;
 
     worksheet_impl *parent_;
@@ -60,6 +64,21 @@ struct cell_impl
     optional<format_impl *> format_;
     optional<comment *> comment_;
 };
+
+inline bool operator==(const cell_impl &lhs, const cell_impl &rhs)
+{
+    // not comparing parent
+    return lhs.type_ == rhs.type_
+        && lhs.column_ == rhs.column_
+        && lhs.row_ == rhs.row_
+        && lhs.is_merged_ == rhs.is_merged_
+        && lhs.value_text_ == rhs.value_text_
+        && lhs.value_numeric_ == rhs.value_numeric_
+        && lhs.formula_ == rhs.formula_
+        && lhs.hyperlink_ == rhs.hyperlink_
+        && (lhs.format_.is_set() == rhs.format_.is_set() && (!lhs.format_.is_set() || *lhs.format_.get() == *rhs.format_.get()))
+        && (lhs.comment_.is_set() == rhs.comment_.is_set() && (!lhs.comment_.is_set() || *lhs.comment_.get() == *rhs.comment_.get()));
+}
 
 } // namespace detail
 } // namespace xlnt

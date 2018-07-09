@@ -21,13 +21,15 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#pragma once
-
 #include <iostream>
 
+
 #include <helpers/test_suite.hpp>
+#include <xlnt/cell/cell.hpp>
+#include <xlnt/styles/font.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
+#include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
 class range_test_suite : public test_suite
@@ -35,8 +37,38 @@ class range_test_suite : public test_suite
 public:
     range_test_suite()
     {
+        register_test(test_construction);
         register_test(test_batch_formatting);
         register_test(test_clear_cells);
+    }
+
+    void test_construction()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.active_sheet();
+
+        xlnt::range range_1(ws, xlnt::range_reference("A1:D10"));
+        xlnt_assert_equals(range_1.target_worksheet(), ws);
+        xlnt_assert_equals(1, range_1.front()[0].row()); // NOTE: querying row/column here desperately needs some shortcuts
+        xlnt_assert_equals(xlnt::column_t("D"), range_1.front().back().column());
+        xlnt_assert_equals(10, range_1.back()[0].row());
+        xlnt_assert_equals(xlnt::column_t("D"), range_1.back().back().column());
+        // assert default parameters in ctor
+        xlnt::range range_2(ws, xlnt::range_reference("A1:D10"), xlnt::major_order::row, false);
+        xlnt_assert_equals(range_1, range_2);
+        // assert copy
+        xlnt::range range_3(range_2);
+        xlnt_assert_equals(range_1, range_3);
+
+        // column order
+        xlnt::range range_4(ws, xlnt::range_reference("A1:D10"), xlnt::major_order::column);
+        xlnt_assert_equals(xlnt::column_t("A"), range_4.front()[0].column()); // NOTE: querying row/column here desperately needs some shortcuts
+        xlnt_assert_equals(10, range_4.front().back().row());
+        xlnt_assert_equals(xlnt::column_t("D"), range_4.back()[0].column());
+        xlnt_assert_equals(10, range_4.back().back().row());
+        // assignment
+        range_3 = range_4;
+        xlnt_assert_equals(range_3, range_4);
     }
 
     void test_batch_formatting()
@@ -83,3 +115,4 @@ public:
         xlnt_assert_equals(ws.calculate_dimension(), xlnt::range_reference(1, 1, 1, 3));
     }
 };
+static range_test_suite x;

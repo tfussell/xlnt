@@ -172,6 +172,8 @@ public:
     /// </summary>
     void unregister_override_type(const path &part);
 
+    bool operator==(const manifest &other) const;
+
 private:
     /// <summary>
     /// Returns the lowest rId for the given part that hasn't already been registered.

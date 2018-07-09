@@ -141,6 +141,22 @@ path::path(const std::string &path_string)
 {
 }
 
+path::path(const std::string &path_string, char sep)
+    : internal_(path_string)
+{
+    char curr_sep = guess_separator();
+    if (curr_sep != sep)
+    {
+        for (char& c : internal_) // simple find and replace
+        {
+            if (c == curr_sep)
+            {
+                c = sep;
+            }
+        }
+    }
+}
+
 // general attributes
 
 bool path::is_relative() const
@@ -205,7 +221,7 @@ std::pair<std::string, std::string> path::split_extension() const
 
 // conversion
 
-std::string path::string() const
+const std::string& path::string() const
 {
     return internal_;
 }
@@ -329,6 +345,11 @@ path path::relative_to(const path &base_path) const
 bool path::operator==(const path &other) const
 {
     return internal_ == other.internal_;
+}
+
+bool path::operator!=(const path &other) const
+{
+    return !operator==(other);
 }
 
 } // namespace xlnt

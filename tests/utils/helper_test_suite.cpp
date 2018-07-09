@@ -21,14 +21,14 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#pragma once
-
 #include <iostream>
 #include <stdexcept>
 
 #include <helpers/test_suite.hpp>
 #include <helpers/xml_helper.hpp>
 #include <helpers/assertions.hpp>
+
+#include <xlnt/utils/exceptions.hpp>
 
 class helper_test_suite : public test_suite
 {
@@ -154,3 +154,4 @@ public:
         xlnt_assert(xml_helper::compare_xml_exact("<a>text</a>", "<a>text</a>", true));
     }
 };
+static helper_test_suite x;

@@ -172,6 +172,8 @@ public:
     /// </summary>
     xlnt::optional<std::size_t> vertical_dpi_;
 
+    bool operator==(const page_setup &rhs) const;
+
 private:
     /// <summary>
     /// The break

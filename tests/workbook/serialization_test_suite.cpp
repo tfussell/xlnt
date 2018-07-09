@@ -21,20 +21,37 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#pragma once
-
 #include <iostream>
 
-#include <detail/serialization/vector_streambuf.hpp>
-#include <detail/cryptography/xlsx_crypto_consumer.hpp>
-#include <helpers/temporary_file.hpp>
-#include <helpers/test_suite.hpp>
-#include <helpers/path_helper.hpp>
-#include <helpers/xml_helper.hpp>
-#include <xlnt/worksheet/sheet_format_properties.hpp>
+#include <xlnt/cell/comment.hpp>
+#include <xlnt/cell/hyperlink.hpp>
+#include <xlnt/cell/cell.hpp>
+#include <xlnt/styles/font.hpp>
+#include <xlnt/styles/style.hpp>
+#include <xlnt/styles/fill.hpp>
+#include <xlnt/styles/format.hpp>
+#include <xlnt/styles/number_format.hpp>
+#include <xlnt/styles/border.hpp>
+#include <xlnt/utils/date.hpp>
+#include <xlnt/utils/datetime.hpp>
+#include <xlnt/utils/time.hpp>
+#include <xlnt/utils/timedelta.hpp>
+#include <xlnt/utils/variant.hpp>
 #include <xlnt/workbook/streaming_workbook_reader.hpp>
 #include <xlnt/workbook/streaming_workbook_writer.hpp>
 #include <xlnt/workbook/workbook.hpp>
+#include <xlnt/workbook/metadata_property.hpp>
+#include <xlnt/worksheet/column_properties.hpp>
+#include <xlnt/worksheet/row_properties.hpp>
+#include <xlnt/worksheet/sheet_format_properties.hpp>
+#include <xlnt/worksheet/header_footer.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
+#include <detail/cryptography/xlsx_crypto_consumer.hpp>
+#include <detail/serialization/vector_streambuf.hpp>
+#include <helpers/path_helper.hpp>
+#include <helpers/temporary_file.hpp>
+#include <helpers/test_suite.hpp>
+#include <helpers/xml_helper.hpp>
 
 class serialization_test_suite : public test_suite
 {
@@ -75,8 +92,8 @@ public:
         register_test(test_streaming_write);
     }
 
-	bool workbook_matches_file(xlnt::workbook &wb, const xlnt::path &file)
-	{
+    bool workbook_matches_file(xlnt::workbook &wb, const xlnt::path &file)
+    {
         std::vector<std::uint8_t> wb_data;
         wb.save(wb_data);
         wb.save("temp.xlsx");
@@ -84,109 +101,109 @@ public:
         std::ifstream file_stream(file.string(), std::ios::binary);
         auto file_data = xlnt::detail::to_vector(file_stream);
 
-		return xml_helper::xlsx_archives_match(wb_data, file_data);
-	}
+        return xml_helper::xlsx_archives_match(wb_data, file_data);
+    }
 
-	void test_produce_empty()
-	{
-		xlnt::workbook wb;
+    void test_produce_empty()
+    {
+        xlnt::workbook wb;
         const auto path = path_helper::test_file("3_default.xlsx");
-		xlnt_assert(workbook_matches_file(wb, path));
-	}
+        xlnt_assert(workbook_matches_file(wb, path));
+    }
 
-	void test_produce_simple_excel()
-	{
-		xlnt::workbook wb;
-		auto ws = wb.active_sheet();
+    void test_produce_simple_excel()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.active_sheet();
 
-		auto bold_font = xlnt::font().bold(true);
+        auto bold_font = xlnt::font().bold(true);
 
-		ws.cell("A1").value("Type");
-		ws.cell("A1").font(bold_font);
+        ws.cell("A1").value("Type");
+        ws.cell("A1").font(bold_font);
 
-		ws.cell("B1").value("Value");
-		ws.cell("B1").font(bold_font);
+        ws.cell("B1").value("Value");
+        ws.cell("B1").font(bold_font);
 
-		ws.cell("A2").value("null");
-		ws.cell("B2").value(nullptr);
+        ws.cell("A2").value("null");
+        ws.cell("B2").value(nullptr);
 
-		ws.cell("A3").value("bool (true)");
-		ws.cell("B3").value(true);
+        ws.cell("A3").value("bool (true)");
+        ws.cell("B3").value(true);
 
-		ws.cell("A4").value("bool (false)");
-		ws.cell("B4").value(false);
+        ws.cell("A4").value("bool (false)");
+        ws.cell("B4").value(false);
 
-		ws.cell("A5").value("number (int)");
-		ws.cell("B5").value(std::numeric_limits<int>::max());
+        ws.cell("A5").value("number (int)");
+        ws.cell("B5").value(std::numeric_limits<int>::max());
 
-		ws.cell("A5").value("number (unsigned int)");
-		ws.cell("B5").value(std::numeric_limits<unsigned int>::max());
+        ws.cell("A5").value("number (unsigned int)");
+        ws.cell("B5").value(std::numeric_limits<unsigned int>::max());
 
-		ws.cell("A6").value("number (long long int)");
-		ws.cell("B6").value(std::numeric_limits<long long int>::max());
+        ws.cell("A6").value("number (long long int)");
+        ws.cell("B6").value(std::numeric_limits<long long int>::max());
 
-		ws.cell("A6").value("number (unsigned long long int)");
-		ws.cell("B6").value(std::numeric_limits<unsigned long long int>::max());
+        ws.cell("A6").value("number (unsigned long long int)");
+        ws.cell("B6").value(std::numeric_limits<unsigned long long int>::max());
 
-		ws.cell("A13").value("number (float)");
-		ws.cell("B13").value(std::numeric_limits<float>::max());
+        ws.cell("A13").value("number (float)");
+        ws.cell("B13").value(std::numeric_limits<float>::max());
 
-		ws.cell("A14").value("number (double)");
-		ws.cell("B14").value(std::numeric_limits<double>::max());
+        ws.cell("A14").value("number (double)");
+        ws.cell("B14").value(std::numeric_limits<double>::max());
 
-		ws.cell("A16").value("text (char *)");
-		ws.cell("B16").value("string");
+        ws.cell("A16").value("text (char *)");
+        ws.cell("B16").value("string");
 
-		ws.cell("A17").value("text (std::string)");
-		ws.cell("B17").value(std::string("string"));
+        ws.cell("A17").value("text (std::string)");
+        ws.cell("B17").value(std::string("string"));
 
-		ws.cell("A18").value("date");
-		ws.cell("B18").value(xlnt::date(2016, 2, 3));
+        ws.cell("A18").value("date");
+        ws.cell("B18").value(xlnt::date(2016, 2, 3));
 
-		ws.cell("A19").value("time");
-		ws.cell("B19").value(xlnt::time(1, 2, 3, 4));
+        ws.cell("A19").value("time");
+        ws.cell("B19").value(xlnt::time(1, 2, 3, 4));
 
-		ws.cell("A20").value("datetime");
-		ws.cell("B20").value(xlnt::datetime(2016, 2, 3, 1, 2, 3, 4));
+        ws.cell("A20").value("datetime");
+        ws.cell("B20").value(xlnt::datetime(2016, 2, 3, 1, 2, 3, 4));
 
-		ws.cell("A21").value("timedelta");
-		ws.cell("B21").value(xlnt::timedelta(1, 2, 3, 4, 5));
+        ws.cell("A21").value("timedelta");
+        ws.cell("B21").value(xlnt::timedelta(1, 2, 3, 4, 5));
 
-		ws.freeze_panes("B2");
+        ws.freeze_panes("B2");
 
-		std::vector<std::uint8_t> temp_buffer;
-		wb.save(temp_buffer);
-		xlnt_assert(!temp_buffer.empty());
-	}
+        std::vector<std::uint8_t> temp_buffer;
+        wb.save(temp_buffer);
+        xlnt_assert(!temp_buffer.empty());
+    }
 
-	void test_save_after_sheet_deletion()
-	{
-		xlnt::workbook workbook;
+    void test_save_after_sheet_deletion()
+    {
+        xlnt::workbook workbook;
 
-		xlnt_assert_equals(workbook.sheet_titles().size(), 1);
+        xlnt_assert_equals(workbook.sheet_titles().size(), 1);
 
-		auto sheet = workbook.create_sheet();
-		sheet.title("XXX1");
-		xlnt_assert_equals(workbook.sheet_titles().size(), 2);
+        auto sheet = workbook.create_sheet();
+        sheet.title("XXX1");
+        xlnt_assert_equals(workbook.sheet_titles().size(), 2);
 
-		workbook.remove_sheet(workbook.sheet_by_title("XXX1"));
-		xlnt_assert_equals(workbook.sheet_titles().size(), 1);
+        workbook.remove_sheet(workbook.sheet_by_title("XXX1"));
+        xlnt_assert_equals(workbook.sheet_titles().size(), 1);
 
-		std::vector<std::uint8_t> temp_buffer;
-		xlnt_assert_throws_nothing(workbook.save(temp_buffer));
-		xlnt_assert(!temp_buffer.empty());
-	}
+        std::vector<std::uint8_t> temp_buffer;
+        xlnt_assert_throws_nothing(workbook.save(temp_buffer));
+        xlnt_assert(!temp_buffer.empty());
+    }
 
-	void test_write_comments_hyperlinks_formulae()
-	{
-		xlnt::workbook wb;
+    void test_write_comments_hyperlinks_formulae()
+    {
+        xlnt::workbook wb;
 
         xlnt::sheet_format_properties format_properties;
         format_properties.base_col_width = 10.0;
         format_properties.default_row_height = 16.0;
         format_properties.dy_descent = 0.2;
 
-		auto sheet1 = wb.active_sheet();
+        auto sheet1 = wb.active_sheet();
         sheet1.format_properties(format_properties);
 
         auto selection = xlnt::selection();
@@ -196,10 +213,10 @@ public:
 
         // comments
         auto comment_font = xlnt::font()
-            .bold(true)
-            .size(10)
-            .color(xlnt::indexed_color(81))
-            .name("Calibri");
+                                .bold(true)
+                                .size(10)
+                                .color(xlnt::indexed_color(81))
+                                .name("Calibri");
         sheet1.cell("A1").value("Sheet1!A1");
         sheet1.cell("A1").comment("Sheet1 comment", comment_font, "Microsoft Office User");
 
@@ -208,12 +225,12 @@ public:
 
         // hyperlinks
         auto hyperlink_font = xlnt::font()
-            .size(12)
-            .color(xlnt::theme_color(10))
-            .name("Calibri")
-            .family(2)
-            .scheme("minor")
-            .underline(xlnt::font::underline_style::single);
+                                  .size(12)
+                                  .color(xlnt::theme_color(10))
+                                  .name("Calibri")
+                                  .family(2)
+                                  .scheme("minor")
+                                  .underline(xlnt::font::underline_style::single);
         auto hyperlink_style = wb.create_builtin_style(8);
         hyperlink_style.font(hyperlink_font);
         hyperlink_style.number_format(hyperlink_style.number_format(), false);
@@ -245,7 +262,7 @@ public:
             sheet1.row_properties(i).dy_descent = 0.2;
         }
 
-		auto sheet2 = wb.create_sheet();
+        auto sheet2 = wb.create_sheet();
         sheet2.format_properties(format_properties);
         sheet2.add_view(xlnt::sheet_view());
         sheet2.view().add_selection(selection);
@@ -278,8 +295,8 @@ public:
         wb.core_property(xlnt::core_property::modified, "2018-03-18T20:59:53Z");
 
         const auto path = path_helper::test_file("10_comments_hyperlinks_formulae.xlsx");
-		xlnt_assert(workbook_matches_file(wb, path));
-	}
+        xlnt_assert(workbook_matches_file(wb, path));
+    }
 
     void test_save_after_clear_all_formulae()
     {
@@ -457,7 +474,7 @@ public:
         xlnt_assert(wb.has_custom_property("Client"));
         xlnt_assert_equals(wb.custom_property("Client").get<std::string>(), "me!");
     }
-    
+
     void test_read_custom_heights_widths()
     {
         xlnt::workbook wb;
@@ -558,7 +575,7 @@ public:
 
         std::vector<std::uint8_t> destination;
         source_workbook.save(destination);
-        source_workbook.save("temp.xlsx");
+        source_workbook.save("temp" + source.filename());
 
 #ifdef _MSC_VER
         std::ifstream source_stream(source.wstring(), std::ios::binary);
@@ -584,7 +601,7 @@ public:
         std::vector<std::uint8_t> destination_data;
         //source_workbook.save(destination_data, password);
         source_workbook.save("encrypted.xlsx", password);
-       
+
         //xlnt::workbook temp;
         //temp.load("encrypted.xlsx", password);
 
@@ -592,22 +609,22 @@ public:
         //return source_data == destination_data;
         return true;
     }
-    
+
     void test_round_trip_rw_minimal()
     {
         xlnt_assert(round_trip_matches_rw(path_helper::test_file("2_minimal.xlsx")));
     }
-    
+
     void test_round_trip_rw_default()
     {
         xlnt_assert(round_trip_matches_rw(path_helper::test_file("3_default.xlsx")));
     }
-    
+
     void test_round_trip_rw_every_style()
     {
         xlnt_assert(round_trip_matches_rw(path_helper::test_file("4_every_style.xlsx")));
     }
-    
+
     void test_round_trip_rw_unicode()
     {
         // u8"/9_unicode_Λ.xlsx" doesn't use 0xc3aa for the capital lambda...
@@ -624,7 +641,7 @@ public:
     {
         xlnt_assert(round_trip_matches_rw(path_helper::test_file("11_print_settings.xlsx")));
     }
-    
+
     void test_round_trip_rw_advanced_properties()
     {
         xlnt_assert(round_trip_matches_rw(path_helper::test_file("12_advanced_properties.xlsx")));
@@ -634,12 +651,12 @@ public:
     {
         xlnt_assert(round_trip_matches_rw(path_helper::test_file("13_custom_heights_widths.xlsx")));
     }
-    
+
     void test_round_trip_rw_encrypted_agile()
     {
         xlnt_assert(round_trip_matches_rw(path_helper::test_file("5_encrypted_agile.xlsx"), "secret"));
     }
-    
+
     void test_round_trip_rw_encrypted_libre()
     {
         xlnt_assert(round_trip_matches_rw(path_helper::test_file("6_encrypted_libre.xlsx"), u8"\u043F\u0430\u0440\u043E\u043B\u044C")); // u8"пароль"
@@ -692,3 +709,4 @@ public:
         c3.value("C3!");
     }
 };
+static serialization_test_suite x;

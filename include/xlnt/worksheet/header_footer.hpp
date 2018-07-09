@@ -312,6 +312,8 @@ public:
     /// </summary>
     rich_text even_footer(location where) const;
 
+    bool operator==(const header_footer &rhs) const;
+
 private:
     bool align_with_margins_ = false;
     bool different_odd_even_ = false;

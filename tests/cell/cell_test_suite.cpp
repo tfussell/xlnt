@@ -21,13 +21,28 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#pragma once
-
 #include <sstream>
 
-#include <helpers/test_suite.hpp>
 #include <helpers/assertions.hpp>
-#include <xlnt/xlnt.hpp>
+#include <helpers/test_suite.hpp>
+
+#include <xlnt/cell/cell.hpp>
+#include <xlnt/cell/comment.hpp>
+#include <xlnt/cell/hyperlink.hpp>
+#include <xlnt/styles/alignment.hpp>
+#include <xlnt/styles/border.hpp>
+#include <xlnt/styles/fill.hpp>
+#include <xlnt/styles/format.hpp>
+#include <xlnt/styles/number_format.hpp>
+#include <xlnt/styles/protection.hpp>
+#include <xlnt/styles/style.hpp>
+#include <xlnt/utils/date.hpp>
+#include <xlnt/utils/datetime.hpp>
+#include <xlnt/utils/time.hpp>
+#include <xlnt/utils/timedelta.hpp>
+#include <xlnt/workbook/workbook.hpp>
+#include <xlnt/worksheet/range.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
 
 class cell_test_suite : public test_suite
 {
@@ -66,6 +81,7 @@ public:
         register_test(test_anchor);
         register_test(test_hyperlink);
         register_test(test_comment);
+        register_test(test_copy_and_compare);
     }
 
 private:
@@ -123,6 +139,7 @@ private:
 
         xlnt_assert(cell.data_type() == xlnt::cell::type::empty);
         xlnt_assert(cell.column() == "A");
+        xlnt_assert(cell.column_index() == 1);
         xlnt_assert(cell.row() == 1);
         xlnt_assert(cell.reference() == "A1");
         xlnt_assert(!cell.has_value());
@@ -133,14 +150,13 @@ private:
         xlnt::workbook wb;
 
         const auto datatypes =
-        {
-            xlnt::cell::type::empty,
-            xlnt::cell::type::boolean,
-            xlnt::cell::type::error,
-            xlnt::cell::type::formula_string,
-            xlnt::cell::type::number,
-            xlnt::cell::type::shared_string
-        };
+            {
+                xlnt::cell::type::empty,
+                xlnt::cell::type::boolean,
+                xlnt::cell::type::error,
+                xlnt::cell::type::formula_string,
+                xlnt::cell::type::number,
+                xlnt::cell::type::shared_string};
 
         for (const auto &datatype : datatypes)
         {
@@ -208,7 +224,6 @@ private:
         xlnt_assert(!cell.has_formula());
     }
 
-
     void test_not_formula()
     {
         xlnt::workbook wb;
@@ -227,7 +242,7 @@ private:
         auto ws = wb.active_sheet();
         auto cell = ws.cell(xlnt::cell_reference(1, 1));
 
-        for (auto value : { true, false })
+        for (auto value : {true, false})
         {
             cell.value(value);
             xlnt_assert(cell.data_type() == xlnt::cell::type::boolean);
@@ -239,11 +254,27 @@ private:
         xlnt::workbook wb;
         auto ws = wb.active_sheet();
         auto cell = ws.cell(xlnt::cell_reference(1, 1));
+        // error string can't be empty
+        xlnt_assert_throws(cell.error(""), xlnt::exception);
+        // error string has to have a leading '#'
+        xlnt_assert_throws(cell.error("not an error"), xlnt::exception);
 
         for (auto error_code : xlnt::cell::error_codes())
         {
+            // error type from the string format
             cell.value(error_code.first, true);
             xlnt_assert(cell.data_type() == xlnt::cell::type::error);
+            std::string error;
+            xlnt_assert_throws_nothing(error = cell.error());
+            xlnt_assert_equals(error, error_code.first);
+            // clearing the value clears the error state
+            cell.clear_value();
+            xlnt_assert_throws(cell.error(), xlnt::exception);
+            // can explicitly set the error
+            xlnt_assert_throws_nothing(cell.error(error_code.first));
+            std::string error2;
+            xlnt_assert_throws_nothing(error2 = cell.error());
+            xlnt_assert_equals(error2, error_code.first);
         }
     }
 
@@ -330,8 +361,8 @@ private:
         auto cell = ws.cell(xlnt::cell_reference(1, 1));
 
         // The bytes 0x00 through 0x1F inclusive must be manually escaped in values.
-        auto illegal_chrs = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 14, 15, 16, 17, 18,
-                 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
+        auto illegal_chrs = {0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 14, 15, 16, 17, 18,
+            19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
 
         for (auto i : illegal_chrs)
         {
@@ -340,9 +371,9 @@ private:
         }
 
         cell.value(std::string(1, 33));
-        cell.value(std::string(1, 9));  // Tab
-        cell.value(std::string(1, 10));  // Newline
-        cell.value(std::string(1, 13));  // Carriage return
+        cell.value(std::string(1, 9)); // Tab
+        cell.value(std::string(1, 10)); // Newline
+        cell.value(std::string(1, 13)); // Carriage return
         cell.value(" Leading and trailing spaces are legal ");
     }
 
@@ -392,8 +423,8 @@ private:
         auto cell = ws.cell("A1");
 
         xlnt::fill fill(xlnt::pattern_fill()
-            .type(xlnt::pattern_fill_type::solid)
-            .foreground(xlnt::color::red()));
+                            .type(xlnt::pattern_fill_type::solid)
+                            .foreground(xlnt::color::red()));
         cell.fill(fill);
 
         xlnt_assert(cell.has_format());
@@ -653,13 +684,81 @@ private:
     {
         xlnt::workbook wb;
         auto cell = wb.active_sheet().cell("A1");
+
         xlnt_assert(!cell.has_hyperlink());
         xlnt_assert_throws(cell.hyperlink(), xlnt::invalid_attribute);
         xlnt_assert_throws(cell.hyperlink("notaurl"), xlnt::invalid_parameter);
         xlnt_assert_throws(cell.hyperlink(""), xlnt::invalid_parameter);
-        cell.hyperlink("http://example.com");
+        // link without optional display
+        const std::string link1("http://example.com");
+        cell.hyperlink(link1);
         xlnt_assert(cell.has_hyperlink());
-        xlnt_assert_equals(cell.hyperlink().relationship().target().to_string(), "http://example.com");
+        xlnt_assert(cell.hyperlink().external());
+        xlnt_assert_equals(cell.hyperlink().url(), link1);
+        xlnt_assert_equals(cell.hyperlink().relationship().target().to_string(), link1);
+        xlnt_assert_equals(cell.hyperlink().display(), link1);
+        cell.clear_value();
+        // link with display
+        const std::string link2("http://example2.com");
+        const std::string display_txt("notaurl");
+        cell.hyperlink(link2, display_txt);
+        xlnt_assert(cell.has_hyperlink());
+        xlnt_assert(cell.hyperlink().external());
+        xlnt_assert_equals(cell.hyperlink().url(), link2);
+        xlnt_assert_equals(cell.hyperlink().relationship().target().to_string(), link2);
+        xlnt_assert_equals(cell.hyperlink().display(), display_txt);
+        // value
+        int cell_test_val = 123;
+        cell.value(cell_test_val);
+        std::string cell_value_str = std::to_string(cell_test_val);
+        cell.hyperlink(link2, display_txt);
+        xlnt_assert_equals(cell.value<int>(), 123);
+        xlnt_assert_equals(cell.hyperlink().display(), cell_value_str); // display text ignored
+        cell.clear_value();
+        // cell overload without display
+        const std::string cell_target_str("A2");
+        auto cell_target = wb.active_sheet().cell(cell_target_str);
+        std::string link3 = wb.active_sheet().title() + '!' + cell_target_str; // Sheet1!A2
+        cell.hyperlink(cell_target);
+        xlnt_assert(cell.has_hyperlink());
+        xlnt_assert(!cell.hyperlink().external());
+        xlnt_assert_equals(cell.hyperlink().target_range(), link3);
+        xlnt_assert_equals(cell.hyperlink().display(), link3);
+        cell.clear_value();
+        // cell overload with display
+        cell.hyperlink(cell_target, display_txt);
+        xlnt_assert(cell.has_hyperlink());
+        xlnt_assert(!cell.hyperlink().external());
+        xlnt_assert_equals(cell.hyperlink().target_range(), link3);
+        xlnt_assert_equals(cell.hyperlink().display(), display_txt);
+        // value
+        cell.value(cell_test_val);
+        cell.hyperlink(cell_target, display_txt);
+        xlnt_assert_equals(cell.value<int>(), 123);
+        xlnt_assert_equals(cell.hyperlink().display(), cell_value_str); // display text ignored
+        cell.clear_value();
+        // range overload without display
+        const std::string range_target_str("A2:A5");
+        xlnt::range range_target(wb.active_sheet(), xlnt::range_reference(range_target_str));
+        std::string link4 = wb.active_sheet().title() + '!' + range_target_str; // Sheet1!A2:A5
+        cell.hyperlink(range_target);
+        xlnt_assert(cell.has_hyperlink());
+        xlnt_assert(!cell.hyperlink().external());
+        xlnt_assert_equals(cell.hyperlink().target_range(), link4);
+        xlnt_assert_equals(cell.hyperlink().display(), link4);
+        cell.clear_value();
+        // range overload with display
+        cell.hyperlink(range_target, display_txt);
+        xlnt_assert(cell.has_hyperlink());
+        xlnt_assert(!cell.hyperlink().external());
+        xlnt_assert_equals(cell.hyperlink().target_range(), link4);
+        xlnt_assert_equals(cell.hyperlink().display(), display_txt);
+        // value
+        cell.value(cell_test_val);
+        cell.hyperlink(range_target, display_txt);
+        xlnt_assert_equals(cell.value<int>(), 123);
+        xlnt_assert_equals(cell.hyperlink().display(), cell_value_str); // display text ignored
+        cell.clear_value();
     }
 
     void test_comment()
@@ -676,4 +775,31 @@ private:
         xlnt_assert(!cell.has_comment());
         xlnt_assert_throws(cell.comment(), xlnt::exception);
     }
+
+    void test_copy_and_compare()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.active_sheet();
+        auto cell1 = ws.cell("A1");
+        auto cell2 = ws.cell("A2");
+
+        xlnt_assert_equals(cell1, cell1);
+        xlnt_assert_equals(cell2, cell2);
+        xlnt_assert_differs(cell1, cell2);
+        xlnt_assert_differs(cell2, cell1);
+        // nullptr equality
+        xlnt_assert(nullptr == cell1);
+        xlnt_assert(cell1 == nullptr);
+        cell1.value("test");
+        xlnt_assert(!(nullptr == cell1));
+        xlnt_assert(!(cell1 == nullptr));
+        // copy
+        xlnt::cell cell3(cell1);
+        xlnt_assert_equals(cell1, cell3);
+        // assign
+        cell3 = cell2;
+        xlnt_assert_equals(cell2, cell3);
+    }
 };
+
+static cell_test_suite x{};

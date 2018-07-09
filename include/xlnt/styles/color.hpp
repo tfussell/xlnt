@@ -252,19 +252,37 @@ public:
 	/// Returns the internal indexed color representing this color. If this is not an RGB color,
 	/// an invalid_attribute exception will be thrown.
     /// </summary>
-    rgb_color rgb() const;
+    const rgb_color& rgb() const;
+
+    /// <summary>
+    /// Returns the internal indexed color representing this color. If this is not an RGB color,
+    /// an invalid_attribute exception will be thrown.
+    /// </summary>
+    rgb_color &rgb();
 
     /// <summary>
     /// Returns the internal indexed color representing this color. If this is not an indexed color,
 	/// an invalid_attribute exception will be thrown.
     /// </summary>
-    indexed_color indexed() const;
+    const indexed_color& indexed() const;
+
+    /// <summary>
+    /// Returns the internal indexed color representing this color. If this is not an indexed color,
+    /// an invalid_attribute exception will be thrown.
+    /// </summary>
+    indexed_color &indexed();
 
     /// <summary>
 	/// Returns the internal indexed color representing this color. If this is not a theme color,
 	/// an invalid_attribute exception will be thrown.
     /// </summary>
-    theme_color theme() const;
+    const theme_color& theme() const;
+
+    /// <summary>
+    /// Returns the internal indexed color representing this color. If this is not a theme color,
+    /// an invalid_attribute exception will be thrown.
+    /// </summary>
+    theme_color& theme();
 
     /// <summary>
     /// Returns the tint of this color.

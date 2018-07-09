@@ -76,6 +76,8 @@ public:
     /// </summary>
     named_range &operator=(const named_range &other);
 
+    bool operator==(const named_range &rhs) const;
+
 private:
     /// <summary>
     /// The name of this named range.

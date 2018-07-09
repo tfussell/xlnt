@@ -26,16 +26,26 @@
 #include <string>
 
 #include <xlnt/packaging/relationship.hpp>
+#include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 namespace detail {
 
+// [serialised]
 struct hyperlink_impl
 {
     xlnt::relationship relationship;
-    std::string tooltip;
-    std::string display;
+    xlnt::optional<std::string> location;
+    xlnt::optional<std::string> tooltip;
+    xlnt::optional<std::string> display;
 };
+
+inline bool operator==(const hyperlink_impl &lhs, const hyperlink_impl &rhs)
+{
+    return lhs.relationship == rhs.relationship
+        && lhs.tooltip == rhs.tooltip
+        && lhs.display == rhs.display;
+}
 
 } // namespace detail
 } // namespace xlnt
