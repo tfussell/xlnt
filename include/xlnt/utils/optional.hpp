@@ -25,6 +25,7 @@
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/utils/exceptions.hpp>
+#include <type_traits>
 
 namespace xlnt {
 
@@ -36,6 +37,26 @@ namespace xlnt {
 template <typename T>
 class optional
 {
+#if _MSC_VER <= 1900 // v14, visual studio 2015
+#define XLNT_NOEXCEPT_VALUE_COMPAT(...) (false)
+    using ctor_copy_T_noexcept = std::false_type;
+    using ctor_move_T_noexcept = std::false_type;
+    using copy_ctor_noexcept = ctor_copy_T_noexcept;
+    using move_ctor_noexcept = ctor_move_T_noexcept;
+    using set_copy_noexcept_t = std::false_type;
+    using set_move_noexcept_t = std::false_type;
+    using clear_noexcept_t = std::false_type;
+#else
+#define XLNT_NOEXCEPT_VALUE_COMPAT(...) (__VA_ARGS__)
+    using ctor_copy_T_noexcept = typename std::conditional<std::is_nothrow_copy_constructible<T>{}, std::true_type, std::false_type>::type;
+    using ctor_move_T_noexcept = typename std::conditional<std::is_nothrow_move_constructible<T>{}, std::true_type, std::false_type>::type;
+    using copy_ctor_noexcept = ctor_copy_T_noexcept;
+    using move_ctor_noexcept = ctor_move_T_noexcept;
+    using set_copy_noexcept_t = typename std::conditional<std::is_nothrow_copy_constructible<T>{} && std::is_nothrow_assignable<T, T>{}, std::true_type, std::false_type>::type;
+    using set_move_noexcept_t = typename std::conditional<std::is_nothrow_move_constructible<T>{} && std::is_nothrow_move_assignable<T>{}, std::true_type, std::false_type>::type;
+    using clear_noexcept_t = typename std::conditional<std::is_nothrow_destructible<T>{}, std::true_type, std::false_type>::type;
+#endif
+
 public:
     /// <summary>
     /// Default contructor. is_set() will be false initially.
@@ -49,7 +70,7 @@ public:
     /// Constructs this optional with a value.
     /// noexcept if T copy ctor is noexcept
     /// </summary>
-    optional(const T &value) noexcept(std::is_nothrow_copy_constructible<T>{})
+    optional(const T &value) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(ctor_copy_T_noexcept{}))
         : has_value_(true)
     {
         new (&storage_) T(value);
@@ -59,7 +80,7 @@ public:
     /// Constructs this optional with a value.
     /// noexcept if T move ctor is noexcept
     /// </summary>
-    optional(T &&value) noexcept(std::is_nothrow_move_constructible<T>{})
+    optional(T &&value) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(ctor_move_T_noexcept{}))
         : has_value_(true)
     {
         new (&storage_) T(std::move(value));
@@ -69,7 +90,7 @@ public:
     /// Copy constructs this optional from other
     /// noexcept if T copy ctor is noexcept
     /// </summary>
-    optional(const optional& other) noexcept(std::is_nothrow_copy_constructible<T>{})
+    optional(const optional &other) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(copy_ctor_noexcept{}))
         : has_value_(other.has_value_)
     {
         if (has_value_)
@@ -82,7 +103,7 @@ public:
     /// Move constructs this optional from other. Clears the value from other if set
     /// noexcept if T move ctor is noexcept
     /// </summary>
-    optional(optional &&other) noexcept(std::is_nothrow_move_constructible<T>{})
+    optional(optional &&other) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(move_ctor_noexcept{}))
         : has_value_(other.has_value_)
     {
         if (has_value_)
@@ -96,7 +117,7 @@ public:
     /// Copy assignment of this optional from other
     /// noexcept if set and clear are noexcept for T&
     /// </summary>
-    optional &operator=(const optional &other) noexcept(noexcept(set(std::declval<const T &>())) && noexcept(clear()))
+    optional &operator=(const optional &other) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(set_copy_noexcept_t{} && clear_noexcept_t{}))
     {
         if (other.has_value_)
         {
@@ -113,7 +134,7 @@ public:
     /// Move assignment of this optional from other
     /// noexcept if set and clear are noexcept for T&&
     /// </summary>
-    optional &operator=(optional &&other) noexcept(noexcept(set(std::declval<T&&>())) && noexcept(clear()))
+    optional &operator=(optional &&other) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(set_move_noexcept_t{} && clear_noexcept_t{}))
     {
         if (other.has_value_)
         {
@@ -147,7 +168,7 @@ public:
     /// <summary>
     /// Copies the value into the stored value
     /// </summary>
-    void set(const T &value) noexcept(std::is_nothrow_copy_constructible<T>{} && std::is_nothrow_assignable<T, T>{})
+    void set(const T &value) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(set_copy_noexcept_t{}))
     {
         if (has_value_)
         {
@@ -163,7 +184,7 @@ public:
     /// <summary>
     /// Moves the value into the stored value
     /// </summary>
-    void set(T &&value) noexcept(std::is_nothrow_move_constructible<T>{} && std::is_nothrow_move_assignable<T>{})
+    void set(T &&value) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(set_move_noexcept_t{}))
     {
         // note seperate overload for two reasons (as opposed to perfect forwarding)
         // 1. have to deal with implicit conversions internally with perfect forwarding
@@ -183,7 +204,7 @@ public:
     /// <summary>
     /// Assignment operator overload. Equivalent to setting the value using optional::set.
     /// </summary>
-    optional &operator=(const T &rhs) noexcept(noexcept(set(std::declval<const T &>())))
+    optional &operator=(const T &rhs) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(set_copy_noexcept_t{}))
     {
         set(rhs);
         return *this;
@@ -192,7 +213,7 @@ public:
     /// <summary>
     /// Assignment operator overload. Equivalent to setting the value using optional::set.
     /// </summary>
-    optional &operator=(T &&rhs) noexcept(noexcept(set(std::declval<T &&>())))
+    optional &operator=(T &&rhs) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(set_move_noexcept_t{}))
     {
         set(std::move(rhs));
         return *this;
@@ -201,7 +222,7 @@ public:
     /// <summary>
     /// After this is called, is_set() will return false until a new value is provided.
     /// </summary>
-    void clear() noexcept(std::is_nothrow_destructible<T>{})
+    void clear() noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(clear_noexcept_t{}))
     {
         if (has_value_)
         {
@@ -268,12 +289,12 @@ public:
 
 private:
     // helpers for getting a T out of storage
-    T & value_ref()
+    T &value_ref() noexcept
     {
         return *reinterpret_cast<T *>(&storage_);
     }
 
-    const T &value_ref() const
+    const T &value_ref() const noexcept
     {
         return *reinterpret_cast<const T *>(&storage_);
     }
@@ -281,5 +302,9 @@ private:
     bool has_value_;
     typename std::aligned_storage<sizeof(T), alignof(T)>::type storage_;
 };
+
+#ifdef XLNT_NOEXCEPT_VALUE_COMPAT
+#undef XLNT_NOEXCEPT_VALUE_COMPAT
+#endif
 
 } // namespace xlnt
