@@ -39,9 +39,7 @@ range::range(worksheet ws, const range_reference &reference, major_order order, 
 {
 }
 
-range::~range()
-{
-}
+range::~range() = default;
 
 void range::clear_cells()
 {
@@ -69,6 +67,11 @@ void range::clear_cells()
 cell_vector range::operator[](std::size_t index)
 {
     return vector(index);
+}
+
+const worksheet &range::target_worksheet() const
+{
+    return ws_;
 }
 
 range_reference range::reference() const
