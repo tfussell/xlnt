@@ -242,6 +242,10 @@ public:
             test_opt.set(test_val3);
             xlnt_assert(test_opt.is_set());
             xlnt_assert_equals(test_opt.get(), test_val3);
+            // operator= set
+            xlnt::optional<int> test_opt2;
+            test_opt2 = test_val1;
+            xlnt_assert_equals(test_opt2.get(), test_val1);
         }
         { // lifetime checks
             xlnt::optional<alive_count> test_opt;
