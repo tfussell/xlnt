@@ -36,7 +36,7 @@ public:
     {
         test_status status;
 
-        for (auto test : tests)
+        for (auto test : tests())
         {
             try
             {
@@ -69,9 +69,9 @@ public:
 protected:
     static void register_test_internal(std::function<void()> t, const std::string &function)
     {
-        tests.push_back(std::make_pair(t, function));
+        tests().push_back(std::make_pair(t, function));
     }
 
 private:
-    static std::vector<std::pair<std::function<void(void)>, std::string>> tests;
+    static std::vector<std::pair<std::function<void(void)>, std::string>> &tests();
 };
