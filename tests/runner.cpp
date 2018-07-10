@@ -24,14 +24,13 @@
 #include <iostream>
 #include <helpers/test_suite.hpp>
 
-std::vector<std::pair<std::function<void(void)>, std::string>> test_suite::tests;
-
 void print_summary(const test_status& results)
 {
     std::cout << "\n\n";
 
+    std::cout << "Run: " << results.tests_run << '\n';
     std::cout << "Passed: " << results.tests_passed << '\n';
-    std::cout << "Failed: " << results.tests_failed << '\n';
+    std::cout << "Failed: " << results.tests_failed << '\n' << '\n';
 
     for (auto failure : results.failures)
     {

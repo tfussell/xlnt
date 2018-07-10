@@ -32,39 +32,7 @@ inline std::string build_name(const std::string &pretty, const std::string &meth
 class test_suite
 {
 public:
-    static test_status go()
-    {
-        test_status status;
-
-        for (auto test : tests())
-        {
-            try
-            {
-                test.first();
-                std::cout << ".";
-                status.tests_passed++;
-            }
-            catch (std::exception &ex)
-            {
-                std::string fail_msg = test.second + " failed with:\n" + std::string(ex.what());
-                std::cout << "*\n"
-                          << fail_msg << '\n';
-                status.tests_failed++;
-                status.failures.push_back(fail_msg);
-            }
-            catch (...)
-            {
-                std::cout << "*\n" << test.second << " failed\n";
-                status.tests_failed++;
-                status.failures.push_back(test.second);
-            }
-
-            std::cout.flush();
-            status.tests_run++;
-        }
-
-        return status;
-    }
+    static test_status go();
 
 protected:
     static void register_test_internal(std::function<void()> t, const std::string &function)
