@@ -233,19 +233,37 @@ void color::auto_(bool value)
 	auto__ = value;
 }
 
-indexed_color color::indexed() const
+const indexed_color& color::indexed() const
 {
 	assert_type(color_type::indexed);
 	return indexed_;
 }
 
-theme_color color::theme() const
+indexed_color &color::indexed()
+{
+    assert_type(color_type::indexed);
+    return indexed_;
+}
+
+const theme_color& color::theme() const
 {
 	assert_type(color_type::theme);
 	return theme_;
 }
 
-rgb_color color::rgb() const
+theme_color &color::theme()
+{
+    assert_type(color_type::theme);
+    return theme_;
+}
+
+const rgb_color& color::rgb() const
+{
+    assert_type(color_type::rgb);
+    return rgb_;
+}
+
+rgb_color &color::rgb()
 {
     assert_type(color_type::rgb);
     return rgb_;

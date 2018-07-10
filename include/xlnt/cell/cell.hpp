@@ -608,9 +608,9 @@ public:
     bool operator==(const cell &comparand) const;
 
     /// <summary>
-    /// Returns true if this cell is uninitialized.
+    /// Returns false if this cell the same cell as comparand (compared by reference).
     /// </summary>
-    bool operator==(std::nullptr_t) const;
+    bool operator!=(const cell &comparand) const;
 
 private:
     friend class style;
@@ -645,6 +645,11 @@ private:
 /// Returns true if this cell is uninitialized.
 /// </summary>
 XLNT_API bool operator==(std::nullptr_t, const cell &cell);
+
+/// <summary>
+/// Returns true if this cell is uninitialized.
+/// </summary>
+XLNT_API bool operator==(const cell &cell, std::nullptr_t);
 
 /// <summary>
 /// Convenience function for writing cell to an ostream.

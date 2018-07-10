@@ -21,33 +21,35 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#include <iostream>
-
-#include <helpers/path_helper.hpp>
-#include <helpers/temporary_file.hpp>
+#include <xlnt/styles/protection.hpp>
 #include <helpers/test_suite.hpp>
-#include <xlnt/utils/path.hpp>
+#include <xlnt/xlnt.hpp>
 
-class path_test_suite : public test_suite
+class protection_test_suite : public test_suite
 {
 public:
-    path_test_suite()
+    protection_test_suite()
     {
-        register_test(test_exists);
+        register_test(test_all);
     }
 
-	void test_exists()
-	{
-		temporary_file temp;
+    void test_all()
+    {
+        auto prot = xlnt::protection::unlocked_and_visible();
+        xlnt_assert(!prot.hidden());
+        xlnt_assert(!prot.locked());
 
-		if (temp.get_path().exists())
-		{
-			path_helper::delete_file(temp.get_path());
-		}
+        prot = xlnt::protection::locked_and_visible();
+        xlnt_assert(!prot.hidden());
+        xlnt_assert(prot.locked());
 
-		xlnt_assert(!temp.get_path().exists());
-		std::ofstream stream(temp.get_path().string());
-		xlnt_assert(temp.get_path().exists());
-	}
+        prot = xlnt::protection::unlocked_and_hidden();
+        xlnt_assert(prot.hidden());
+        xlnt_assert(!prot.locked());
+
+        prot = xlnt::protection::locked_and_hidden();
+        xlnt_assert(prot.hidden());
+        xlnt_assert(prot.locked());
+    }
 };
-static path_test_suite x;
+static protection_test_suite x;

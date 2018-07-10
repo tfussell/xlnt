@@ -92,6 +92,11 @@ bool style::operator==(const style &other) const
     return name() == other.name();
 }
 
+bool style::operator!=(const style &other) const
+{
+    return !operator==(other);
+}
+
 xlnt::alignment style::alignment() const
 {
     return d_->parent->alignments.at(d_->alignment_id.get());

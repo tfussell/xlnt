@@ -27,9 +27,8 @@
 namespace xlnt {
 
 variant::variant()
-{
-
-}
+    : type_(type::null)
+{}
 
 variant::variant(const std::string &value)
     : type_(type::lpstr),
