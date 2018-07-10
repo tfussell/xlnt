@@ -28,16 +28,6 @@
 #include <functional>
 #include <set>
 
-#include <detail/constants.hpp>
-#include <detail/default_case.hpp>
-#include <detail/implementations/cell_impl.hpp>
-#include <detail/implementations/workbook_impl.hpp>
-#include <detail/implementations/worksheet_impl.hpp>
-#include <detail/serialization/excel_thumbnail.hpp>
-#include <detail/serialization/vector_streambuf.hpp>
-#include <detail/serialization/open_stream.hpp>
-#include <detail/serialization/xlsx_consumer.hpp>
-#include <detail/serialization/xlsx_producer.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/packaging/relationship.hpp>
@@ -61,12 +51,22 @@
 #include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
+#include <detail/constants.hpp>
+#include <detail/default_case.hpp>
+#include <detail/implementations/cell_impl.hpp>
+#include <detail/implementations/workbook_impl.hpp>
+#include <detail/implementations/worksheet_impl.hpp>
+#include <detail/serialization/excel_thumbnail.hpp>
+#include <detail/serialization/open_stream.hpp>
+#include <detail/serialization/vector_streambuf.hpp>
+#include <detail/serialization/xlsx_consumer.hpp>
+#include <detail/serialization/xlsx_producer.hpp>
 
 namespace {
 
 using xlnt::detail::open_stream;
 
-template<typename T>
+template <typename T>
 std::vector<T> keys(const std::vector<std::pair<T, xlnt::variant>> &container)
 {
     auto result = std::vector<T>();
@@ -80,7 +80,7 @@ std::vector<T> keys(const std::vector<std::pair<T, xlnt::variant>> &container)
     return result;
 }
 
-template<typename T>
+template <typename T>
 bool contains(const std::vector<std::pair<T, xlnt::variant>> &container, const T key)
 {
     for (const auto &iter : container)
@@ -451,29 +451,29 @@ workbook workbook::empty()
     stylesheet.parent = &wb;
 
     auto default_border = border()
-        .side(border_side::bottom, border::border_property())
-        .side(border_side::top, border::border_property())
-        .side(border_side::start, border::border_property())
-        .side(border_side::end, border::border_property())
-        .side(border_side::diagonal, border::border_property());
+                              .side(border_side::bottom, border::border_property())
+                              .side(border_side::top, border::border_property())
+                              .side(border_side::start, border::border_property())
+                              .side(border_side::end, border::border_property())
+                              .side(border_side::diagonal, border::border_property());
     wb.d_->stylesheet_.get().borders.push_back(default_border);
 
     auto default_fill = fill(pattern_fill()
-        .type(pattern_fill_type::none));
+                                 .type(pattern_fill_type::none));
     stylesheet.fills.push_back(default_fill);
     auto gray125_fill = pattern_fill()
-        .type(pattern_fill_type::gray125);
+                            .type(pattern_fill_type::gray125);
     stylesheet.fills.push_back(gray125_fill);
 
     auto default_font = font()
-        .name("Calibri")
-        .size(12)
-        .scheme("minor")
-        .family(2)
-        .color(theme_color(1));
+                            .name("Calibri")
+                            .size(12)
+                            .scheme("minor")
+                            .family(2)
+                            .color(theme_color(1));
     stylesheet.fonts.push_back(default_font);
 
-	wb.create_builtin_style(0)
+    wb.create_builtin_style(0)
         .border(default_border)
         .fill(default_fill)
         .font(default_font)
@@ -550,7 +550,7 @@ void workbook::register_package_part(relationship_type type)
 void workbook::register_workbook_part(relationship_type type)
 {
     auto wb_rel = manifest().relationship(path("/"), relationship_type::office_document);
-    auto wb_path = manifest().canonicalize({ wb_rel });
+    auto wb_path = manifest().canonicalize({wb_rel});
 
     if (!manifest().has_relationship(wb_path, type))
     {
@@ -1025,7 +1025,8 @@ void workbook::remove_sheet(worksheet ws)
     for (auto &title_rel_id_pair : d_->sheet_title_rel_id_map_)
     {
         title_rel_id_pair.second = rel_id_map.count(title_rel_id_pair.second) > 0
-            ? rel_id_map[title_rel_id_pair.second] : title_rel_id_pair.second;
+            ? rel_id_map[title_rel_id_pair.second]
+            : title_rel_id_pair.second;
     }
 
     update_sheet_properties();
@@ -1390,7 +1391,7 @@ style workbook::create_style(const std::string &name)
 
 style workbook::create_builtin_style(const std::size_t builtin_id)
 {
-	return d_->stylesheet_.get().create_builtin_style(builtin_id);
+    return d_->stylesheet_.get().create_builtin_style(builtin_id);
 }
 
 style workbook::style(const std::string &name)
@@ -1563,69 +1564,69 @@ void workbook::update_sheet_properties()
     }
 }
 
-void workbook::reorder_relationships()
+namespace {
+// true if a sheet index is != worksheet relationship index
+bool needs_reorder(const std::unordered_map<std::string, std::string> &title_to_rels,
+    const std::vector<std::string> &titles,
+    std::vector<std::string> &relation_ids)
 {
-    const auto wb_rel = manifest().relationship(path("/"), relationship_type::office_document);
-    const auto wb_path = wb_rel.target().path();
-    const auto relationships = manifest().relationships(wb_path);
-    std::unordered_map<std::string, relationship> rel_map;
-    const auto titles = sheet_titles();
-    const auto title_rel_id_map = d_->sheet_title_rel_id_map_;
-    bool needs_reorder = false;
-
-    for (const auto &rel : relationships)
+    bool all_match = true;
+    for (std::size_t title_index = 0; title_index < titles.size(); ++title_index)
     {
-        rel_map[rel.id()] = rel;
-
-        if (rel.type() == relationship_type::worksheet)
+        const auto &rel = title_to_rels.at(titles[title_index]);
+        relation_ids.push_back(rel);
+        const auto expected_rel_id = "rId" + std::to_string(title_index + 1);
+        if (rel != expected_rel_id)
         {
-            for (auto title_index = std::size_t(0); title_index < titles.size(); ++title_index)
-            {
-                const auto title = titles[title_index];
-
-                if (title_rel_id_map.at(title) == rel.id())
-                {
-                    const auto expected_rel_id = "rId" + std::to_string(title_index + 1);
-
-                    if (expected_rel_id != rel.id())
-                    {
-                        needs_reorder = true;
-                    }
-
-                    break;
-                }
-            }
+            all_match = false;
         }
     }
+    return !all_match; // if all are as expected, reorder not required
+};
+} // namespace
 
-    if (!needs_reorder)
+void workbook::reorder_relationships()
+{
+    const auto titles = sheet_titles();
+    // the relation ID corresponding to the title at the same index is copied into here
+    std::vector<std::string> worksheet_rel_ids;
+    worksheet_rel_ids.reserve(titles.size());
+    if (!needs_reorder(d_->sheet_title_rel_id_map_, titles, worksheet_rel_ids))
     {
         return;
     }
-
-    for (const auto &rel : relationships)
+    // copy of existing relations
+    const auto wb_rel = manifest().relationship(path("/"), relationship_type::office_document);
+    const auto wb_path = wb_rel.target().path();
+    auto rel_copy = manifest().relationships(wb_path);
+    // clear existing relations
+    for (const auto &rel : rel_copy)
     {
         manifest().unregister_relationship(uri(wb_path.string()), rel.id());
     }
-
-    for (auto index = std::size_t(0); index < rel_map.size(); ++index)
+    // create new relations
+    std::size_t index = 0;
+    auto new_id = [&index]() { return "rId" + std::to_string(++index); }; // ids start from 1
+    // worksheets first
+    while (index < worksheet_rel_ids.size())
     {
-        auto rel_id = "rId" + std::to_string(index + 1);
-        auto old_rel_id = std::string();
+        auto rel_it = std::find_if(rel_copy.begin(), rel_copy.end(),
+            [&](const relationship &rel) { return rel.id() == worksheet_rel_ids[index]; });
 
-        if (index < titles.size())
+        std::string rel_id = new_id();
+        d_->sheet_title_rel_id_map_.at(titles[index - 1]) = rel_id; // update title -> relation mapping
+        manifest().register_relationship(relationship(rel_id, rel_it->type(),
+            rel_it->source(), rel_it->target(), rel_it->target_mode()));
+    }
+    // then all the other relations in the same order they started (just new indices)
+    for (const auto& old_rel : rel_copy) 
+    {
+        if (old_rel.type() == relationship_type::worksheet)
         {
-            auto title = titles[index];
-            old_rel_id = title_rel_id_map.at(title);
-            d_->sheet_title_rel_id_map_[title] = rel_id;
-        } else {
-            old_rel_id = "rId" + std::to_string(index - titles.size() + 2);
+            continue;
         }
-
-        auto old_rel = rel_map[old_rel_id];
-        auto new_rel = relationship(rel_id, old_rel.type(),
-            old_rel.source(), old_rel.target(), old_rel.target_mode());
-        manifest().register_relationship(new_rel);
+        manifest().register_relationship(relationship(new_id(), old_rel.type(),
+            old_rel.source(), old_rel.target(), old_rel.target_mode()));
     }
 }
 
