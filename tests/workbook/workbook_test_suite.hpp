@@ -227,8 +227,8 @@ public:
         iter = wb.cbegin();
         iter = std::move(begin_2);
         xlnt_assert_equals(iter, wb2.cbegin());
-
-        wb2.create_sheet(); // wb2 iterators assumed invalidated
+        // wb2 iterators assumed invalidated
+        wb2.create_sheet();
         iter = wb2.cbegin();
         xlnt_assert_equals((*iter).title(), "Sheet1");
         ++iter;
