@@ -170,6 +170,8 @@ public:
     /// </summary>
     void set(const T &value) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(set_copy_noexcept_t{}))
     {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         if (has_value_)
         {
             value_ref() = value;
@@ -179,6 +181,7 @@ public:
             new (&storage_) T(value);
             has_value_ = true;
         }
+#pragma GCC diagnostic pop
     }
 
     /// <summary>
@@ -190,6 +193,8 @@ public:
         // 1. have to deal with implicit conversions internally with perfect forwarding
         // 2. have to deal with the noexcept specfiers for all the different variations
         // overload is just far and away the simpler solution
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         if (has_value_)
         {
             value_ref() = std::move(value);
@@ -199,6 +204,7 @@ public:
             new (&storage_) T(std::move(value));
             has_value_ = true;
         }
+#pragma GCC diagnostic pop
     }
 
     /// <summary>

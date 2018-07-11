@@ -387,7 +387,7 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
                 props.sync_horizontal.set(parser().attribute<bool>("syncHorizontal"));
             }
             if (parser().attribute_present("syncVertical"))
-            {// optional, boolean, false
+            { // optional, boolean, false
                 props.sync_vertical.set(parser().attribute<bool>("syncVertical"));
             }
             if (parser().attribute_present("syncRef"))
@@ -399,11 +399,11 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
                 props.transition_evaluation.set(parser().attribute<bool>("transitionEvaluation"));
             }
             if (parser().attribute_present("transitionEntry"))
-            {// optional, boolean, false
+            { // optional, boolean, false
                 props.transition_entry.set(parser().attribute<bool>("transitionEntry"));
             }
             if (parser().attribute_present("published"))
-            {// optional, boolean, true
+            { // optional, boolean, true
                 props.published.set(parser().attribute<bool>("published"));
             }
             if (parser().attribute_present("codeName"))
@@ -411,11 +411,11 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
                 props.code_name.set(parser().attribute<std::string>("codeName"));
             }
             if (parser().attribute_present("filterMode"))
-            {// optional, boolean, false
+            { // optional, boolean, false
                 props.filter_mode.set(parser().attribute<bool>("filterMode"));
             }
             if (parser().attribute_present("enableFormatConditionsCalculation"))
-            {// optional, boolean, true
+            { // optional, boolean, true
                 props.enable_format_condition_calculation.set(parser().attribute<bool>("enableFormatConditionsCalculation"));
             }
             ws.d_->sheet_properties_.set(props);
@@ -606,19 +606,22 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
                 auto min = static_cast<column_t::index_t>(std::stoull(parser().attribute("min")));
                 auto max = static_cast<column_t::index_t>(std::stoull(parser().attribute("max")));
 
-                optional<double> width;
-
-                if (parser().attribute_present("width"))
-                {
-                    width = (parser().attribute<double>("width") * 7 - 5) / 7;
-                }
-
-                optional<std::size_t> column_style;
-
-                if (parser().attribute_present("style"))
-                {
-                    column_style = parser().attribute<std::size_t>("style");
-                }
+                // avoid uninitialised warnings in GCC by using a lambda to make the conditional initialisation
+                optional<double> width = [](xml::parser &p) -> xlnt::optional<double> {
+                    if (p.attribute_present("width"))
+                    {
+                        return (p.attribute<double>("width") * 7 - 5) / 7;
+                    }
+                    return xlnt::optional<double>();
+                }(parser());
+                // avoid uninitialised warnings in GCC by using a lambda to make the conditional initialisation
+                optional<std::size_t> column_style = [](xml::parser &p) -> xlnt::optional<std::size_t> {
+                    if (p.attribute_present("style"))
+                    {
+                        return p.attribute<std::size_t>("style");
+                    }
+                    return xlnt::optional<std::size_t>();
+                }(parser());
 
                 auto custom = parser().attribute_present("customWidth")
                     ? is_true(parser().attribute("customWidth"))
@@ -1843,7 +1846,8 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
             target_.d_->sheet_title_rel_id_map_.end(),
             [&](const std::pair<std::string, std::string> &p) {
                 return p.second == worksheet_rel.id();
-            })->first;
+            })
+                         ->first;
 
         auto id = sheet_title_id_map_[title];
         auto index = sheet_title_index_map_[title];
