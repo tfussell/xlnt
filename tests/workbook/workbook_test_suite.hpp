@@ -45,6 +45,7 @@ public:
         register_test(test_index_operator);
         register_test(test_contains);
         register_test(test_iter);
+        register_test(test_const_iter);
         register_test(test_get_index);
         register_test(test_get_sheet_names);
         register_test(test_add_named_range);
@@ -153,17 +154,100 @@ public:
         xlnt_assert(wb.contains("Sheet1"));
         xlnt_assert(!wb.contains("NotThere"));
     }
-    
+
     void test_iter()
     {
         xlnt::workbook wb;
-        
-        for(auto ws : wb)
+
+        for (auto ws : wb)
         {
             xlnt_assert_equals(ws.title(), "Sheet1");
         }
+
+        xlnt::workbook wb2;
+        auto iter = wb.begin();
+        auto iter_copy(iter); // copy ctor
+        xlnt_assert_equals(iter, iter_copy);
+        auto begin_2(wb2.begin());
+        xlnt_assert_differs(begin_2, iter);
+        iter = begin_2; // copy assign
+        xlnt_assert_equals(iter, begin_2);
+        iter = wb.begin();
+        iter = std::move(begin_2);
+        xlnt_assert_equals(iter, wb2.begin());
+
+        auto citer = wb.cbegin();
+        auto citer_copy(citer); // copy ctor
+        xlnt_assert_equals(citer, citer_copy);
+        auto cbegin_2(wb2.cbegin());
+        xlnt_assert_differs(cbegin_2, citer);
+        citer = cbegin_2; // copy assign
+        xlnt_assert_equals(citer, cbegin_2);
+        citer = wb.cbegin();
+        citer = std::move(cbegin_2);
+        xlnt_assert_equals(citer, wb2.cbegin());
+
+        wb2.create_sheet(); // wb2 iterators assumed invalidated
+        iter = wb2.begin();
+        xlnt_assert_equals((*iter).title(), "Sheet1");
+        ++iter;
+        xlnt_assert_differs(iter, wb2.begin());
+        xlnt_assert_equals((*iter).title(), "Sheet2");
+        auto temp = --iter;
+        xlnt_assert_equals((*temp).title(), "Sheet1");
+        xlnt_assert_equals((*iter).title(), "Sheet1");
+        iter++;
+        xlnt_assert_equals((*iter).title(), "Sheet2");
+        temp = iter++;
+        xlnt_assert_equals((*temp).title(), "Sheet2");
+        xlnt_assert_equals(iter, wb2.end());
+
+        iter = temp--;
+        xlnt_assert_equals((*iter).title(), "Sheet2");
+        xlnt_assert_equals((*temp).title(), "Sheet1");
     }
-    
+
+    void test_const_iter()
+    {
+        const xlnt::workbook wb;
+
+        for (auto ws : wb)
+        {
+            xlnt_assert_equals(ws.title(), "Sheet1");
+        }
+
+        xlnt::workbook wb2;
+        auto iter = wb.cbegin();
+        auto iter_copy(iter); // copy ctor
+        xlnt_assert_equals(iter, iter_copy);
+        auto begin_2(wb2.cbegin());
+        xlnt_assert_differs(begin_2, iter);
+        iter = begin_2; // copy assign
+        xlnt_assert_equals(iter, begin_2);
+        iter = wb.cbegin();
+        iter = std::move(begin_2);
+        xlnt_assert_equals(iter, wb2.cbegin());
+        // wb2 iterators assumed invalidated
+        wb2.create_sheet();
+        iter = wb2.cbegin();
+        xlnt_assert_equals((*iter).title(), "Sheet1");
+        ++iter;
+        xlnt_assert_differs(iter, wb2.cbegin());
+        xlnt_assert_equals((*iter).title(), "Sheet2");
+        auto temp = --iter;
+        xlnt_assert_equals((*temp).title(), "Sheet1");
+        xlnt_assert_equals((*iter).title(), "Sheet1");
+        iter++;
+        xlnt_assert_equals((*iter).title(), "Sheet2");
+        temp = iter++;
+        xlnt_assert_equals((*temp).title(), "Sheet2");
+        xlnt_assert_equals(iter, wb2.cend());
+
+        iter = temp--;
+        xlnt_assert_equals((*iter).title(), "Sheet2");
+        xlnt_assert_equals((*temp).title(), "Sheet1");
+    }
+
     void test_get_index()
     {
         xlnt::workbook wb;
