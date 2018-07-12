@@ -22,10 +22,7 @@ struct test_status
     std::vector<std::string> failures;
 };
 
-inline std::string build_name(const std::string &pretty, const std::string &method)
-{
-    return pretty.substr(0, pretty.find("::") + 2) + method;
-}
+std::string build_name(const std::string &pretty, const std::string &method);
 
 #define register_test(test) register_test_internal([this]() { test(); }, build_name(__FUNCTION__, #test));
 

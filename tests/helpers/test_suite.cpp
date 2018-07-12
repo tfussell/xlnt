@@ -7,7 +7,10 @@ std::vector<std::pair<std::function<void(void)>, std::string>> &test_suite::test
     return all_tests;
 }
 
-std::string build_name(const std::string &pretty, const std::string &method);
+std::string build_name(const std::string &pretty, const std::string &method)
+{
+    return pretty.substr(0, pretty.find("::") + 2) + method;
+}
 
 test_status test_suite::go()
 {
