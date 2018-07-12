@@ -41,7 +41,7 @@ variant::variant(const char *value) : variant(std::string(value))
 {
 }
 
-variant::variant(int value)
+variant::variant(std::int32_t value)
     : type_(type::i4),
     i4_value_(value)
 {
@@ -123,6 +123,28 @@ variant::variant(const std::vector<variant> &value)
     {
         vector_value_.emplace_back(v);
     }
+}
+
+bool variant::operator==(const variant &rhs) const
+{
+    if (type_ != rhs.type_)
+    {
+        return false;
+    }
+    switch (type_)
+    {
+    case type::vector:
+        return vector_value_ == rhs.vector_value_;
+    case type::i4:
+    case type::boolean:
+        return i4_value_ == rhs.i4_value_;
+    case type::date:
+    case type::lpstr:
+        return lpstr_value_ == rhs.lpstr_value_;
+    case type::null:
+        return true;
+    }
+    return false;
 }
 
 bool variant::is(type t) const

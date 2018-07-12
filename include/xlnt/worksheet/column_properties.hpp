@@ -63,4 +63,13 @@ public:
     bool hidden = false;
 };
 
+inline bool operator==(const column_properties &lhs, const column_properties &rhs)
+{
+    return lhs.width == rhs.width
+        && lhs.custom_width == rhs.custom_width
+        && lhs.style == rhs.style
+        && lhs.best_fit == rhs.best_fit
+        && lhs.hidden == rhs.hidden;
+}
+
 } // namespace xlnt

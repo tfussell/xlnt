@@ -33,6 +33,11 @@ namespace xlnt {
 /// </summary>
 class XLNT_API theme
 {
+public:
+    bool operator==(const theme&) const
+    {
+        return true;
+    }
 };
 
 } // namespace xlnt

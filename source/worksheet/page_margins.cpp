@@ -89,4 +89,13 @@ void page_margins::footer(double footer)
     footer_ = footer;
 }
 
+bool page_margins::operator==(const page_margins &rhs) const
+{
+    return top_ == rhs.top_
+        && left_ == rhs.left_
+        && right_ == rhs.right_
+        && header_ == rhs.header_
+        && footer_ == rhs.footer_;
+}
+
 } // namespace xlnt

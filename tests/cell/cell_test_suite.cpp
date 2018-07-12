@@ -136,6 +136,7 @@ private:
 
         xlnt_assert(cell.data_type() == xlnt::cell::type::empty);
         xlnt_assert(cell.column() == "A");
+        xlnt_assert(cell.column_index() == 1);
         xlnt_assert(cell.row() == 1);
         xlnt_assert(cell.reference() == "A1");
         xlnt_assert(!cell.has_value());

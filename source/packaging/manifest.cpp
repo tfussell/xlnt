@@ -337,4 +337,11 @@ std::string manifest::override_type(const xlnt::path &part) const
     return override_content_types_.at(part);
 }
 
+bool manifest::operator==(const manifest &other) const
+{
+    return default_content_types_ == other.default_content_types_
+        && override_content_types_ == other.override_content_types_
+        && relationships_ == other.relationships_;
+}
+
 } // namespace xlnt

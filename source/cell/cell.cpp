@@ -314,6 +314,11 @@ column_t cell::column() const
     return d_->column_;
 }
 
+column_t::index_t cell::column_index() const
+{
+    return d_->column_.index;
+}
+
 void cell::merged(bool merged)
 {
     d_->is_merged_ = merged;

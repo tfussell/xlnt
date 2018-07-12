@@ -61,5 +61,21 @@ struct cell_impl
     optional<comment *> comment_;
 };
 
+inline bool operator==(const cell_impl &lhs, const cell_impl &rhs)
+{
+    // not comparing parent
+    return lhs.type_ == rhs.type_
+        && lhs.column_ == rhs.column_
+        && lhs.row_ == rhs.row_
+        && lhs.is_merged_ == rhs.is_merged_
+        && lhs.value_text_ == rhs.value_text_
+        && lhs.value_numeric_ == rhs.value_numeric_
+        && lhs.formula_ == rhs.formula_
+        && lhs.hyperlink_ == rhs.hyperlink_
+        // comparing pointers is unlikely to be what is wanted
+        /*&& lhs.format_ == rhs.format_
+        && lhs.comment_ == rhs.comment_*/;
+}
+
 } // namespace detail
 } // namespace xlnt

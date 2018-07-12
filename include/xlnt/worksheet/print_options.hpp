@@ -55,4 +55,13 @@ struct XLNT_API print_options
     /// </summary>
     optional<bool> vertical_centered;
 };
+
+inline bool operator==(const print_options& lhs, const print_options &rhs)
+{
+    return lhs.grid_lines_set == rhs.grid_lines_set
+        && lhs.horizontal_centered == rhs.horizontal_centered
+        && lhs.print_grid_lines == rhs.print_grid_lines
+        && lhs.print_headings == rhs.print_headings
+        && lhs.vertical_centered == rhs.vertical_centered;
+}
 } // namespace xlnt
