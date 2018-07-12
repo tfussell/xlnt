@@ -500,6 +500,30 @@ workbook::workbook()
     swap(wb_template);
 }
 
+workbook::workbook(const xlnt::path &file)
+{
+    *this = empty();
+    load(file);
+}
+
+workbook::workbook(const xlnt::path &file, const std::string &password)
+{
+    *this = empty();
+    load(file, password);
+}
+
+workbook::workbook(std::istream &data)
+{
+    *this = empty();
+    load(data);
+}
+
+workbook::workbook(std::istream &data, const std::string &password)
+{
+    *this = empty();
+    load(data, password);
+}
+
 workbook::workbook(detail::workbook_impl *impl)
     : d_(impl)
 {
@@ -1109,12 +1133,12 @@ void workbook::clear()
 
 bool workbook::operator==(const workbook &rhs) const
 {
-    return d_.get() == rhs.d_.get();
+    return *d_ == *rhs.d_;
 }
 
 bool workbook::operator!=(const workbook &rhs) const
 {
-    return d_.get() != rhs.d_.get();
+    return !operator==(rhs);
 }
 
 void workbook::swap(workbook &right)
@@ -1178,9 +1202,7 @@ workbook::workbook(const workbook &other)
     d_->stylesheet_.get().parent = this;
 }
 
-workbook::~workbook()
-{
-}
+workbook::~workbook() = default;
 
 bool workbook::has_theme() const
 {

@@ -46,7 +46,6 @@ class XLNT_API ext_list
 public:
     struct ext
     {
-    public:
         ext(xml::parser &parser, const std::string& ns);
         ext(const uri& ID, const std::string& serialised);
         void serialise(xml::serializer &serialiser, const std::string& ns);
@@ -66,7 +65,14 @@ public:
 
     const std::vector<ext> &extensions() const;
 
+    bool operator==(const ext_list& rhs) const;
 private:
     std::vector<ext> extensions_;
 };
+
+inline bool operator==(const ext_list::ext& lhs, const ext_list::ext& rhs)
+{
+    return lhs.extension_ID_ == rhs.extension_ID_
+        && lhs.serialised_value_ == rhs.serialised_value_;
+}
 } // namespace xlnt

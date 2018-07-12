@@ -106,4 +106,15 @@ double page_setup::scale() const
     return scale_;
 }
 
+bool page_setup::operator==(const page_setup &rhs) const
+{
+    return break_ == rhs.break_
+        && sheet_state_ == rhs.sheet_state_
+        && paper_size_ == rhs.paper_size_
+        && fit_to_page_ == rhs.fit_to_page_
+        && fit_to_height_ == rhs.fit_to_height_
+        && fit_to_width_ == rhs.fit_to_width_
+        && scale_ == rhs.scale_;
+}
+
 } // namespace xlnt

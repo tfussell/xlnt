@@ -46,4 +46,10 @@ public:
     bool concurrent_calc;
 };
 
+inline bool operator==(const calculation_properties &lhs, const calculation_properties &rhs)
+{
+    return lhs.calc_id == rhs.calc_id
+        && lhs.concurrent_calc == rhs.concurrent_calc;
+}
+
 } // namespace xlnt

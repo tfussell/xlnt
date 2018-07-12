@@ -143,6 +143,8 @@ public:
     /// </summary>
     static align alignment_from_string(const std::string &str);
 
+    bool operator==(const phonetic_pr &rhs) const;
+
 private:
     /// <summary>
     /// zero based index into style sheet font record.

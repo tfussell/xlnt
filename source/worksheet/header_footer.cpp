@@ -295,4 +295,17 @@ rich_text header_footer::even_footer(location where) const
     return even_footers_.at(where);
 }
 
+bool header_footer::operator==(const header_footer &rhs) const
+{
+    return align_with_margins_ == rhs.align_with_margins_
+        && different_odd_even_ == rhs.different_odd_even_
+        && scale_with_doc_ == rhs.scale_with_doc_
+        && odd_headers_ == rhs.odd_headers_
+        && even_headers_ == rhs.even_headers_
+        && first_headers_ == rhs.first_headers_
+        && odd_footers_ == rhs.odd_footers_
+        && even_footers_ == rhs.even_footers_
+        && first_footers_ == rhs.first_footers_;
+}
+
 } // namespace xlnt

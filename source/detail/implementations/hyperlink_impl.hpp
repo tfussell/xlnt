@@ -37,5 +37,12 @@ struct hyperlink_impl
     std::string display;
 };
 
+inline bool operator==(const hyperlink_impl &lhs, const hyperlink_impl &rhs)
+{
+    return lhs.relationship == rhs.relationship
+        && lhs.tooltip == rhs.tooltip
+        && lhs.display == rhs.display;
+}
+
 } // namespace detail
 } // namespace xlnt

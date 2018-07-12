@@ -53,6 +53,11 @@ public:
 	static condition text_contains(const std::string &start);
 	static condition text_does_not_contain(const std::string &start);
 
+    bool operator==(const condition& rhs) const
+    {
+        return text_comparand_ == rhs.text_comparand_;
+    }
+
 private:
 	friend class detail::xlsx_producer;
 

@@ -26,9 +26,10 @@
 #include <algorithm>
 #include <iostream>
 
+#include <xlnt/xlnt.hpp>
+#include <detail/serialization/open_stream.hpp>
 #include <helpers/temporary_file.hpp>
 #include <helpers/test_suite.hpp>
-#include <xlnt/xlnt.hpp>
 
 class workbook_test_suite : public test_suite
 {
@@ -58,6 +59,7 @@ public:
         register_test(test_clear);
         register_test(test_comparison);
         register_test(test_id_gen);
+        register_test(test_load_file);
     }
 
     void test_active_sheet()
@@ -106,12 +108,12 @@ public:
         xlnt_assert_equals(wb.sheet_titles().at(1), "Active");
         xlnt_assert_equals(wb.sheet_by_index(1).cell("B3").value<int>(), 2);
     }
-    
+
     void test_remove_sheet()
     {
         xlnt::workbook wb, wb2;
         auto new_sheet = wb.create_sheet(0);
-		new_sheet.title("removed");
+        new_sheet.title("removed");
         wb.remove_sheet(new_sheet);
         xlnt_assert(!wb.contains("removed"));
         xlnt_assert_throws(wb.remove_sheet(wb2.active_sheet()), std::runtime_error);
@@ -129,14 +131,14 @@ public:
         const auto &wb_const = wb;
         xlnt_assert_throws(wb_const.sheet_by_title("error"), xlnt::key_not_found);
     }
-    
+
     void test_get_sheet_by_title_const()
     {
         xlnt::workbook wb;
         auto new_sheet = wb.create_sheet();
         std::string title = "my sheet";
         new_sheet.title(title);
-        const xlnt::workbook& wbconst = wb;
+        const xlnt::workbook &wbconst = wb;
         auto found_sheet = wbconst.sheet_by_title(title);
         xlnt_assert_equals(new_sheet, found_sheet);
     }
@@ -266,11 +268,11 @@ public:
         xlnt::workbook wb;
         wb.create_sheet().title("test_get_sheet_titles");
 
-		const std::vector<std::string> expected_titles = { "Sheet1", "test_get_sheet_titles" };
+        const std::vector<std::string> expected_titles = {"Sheet1", "test_get_sheet_titles"};
 
-		xlnt_assert_equals(wb.sheet_titles(), expected_titles);
+        xlnt_assert_equals(wb.sheet_titles(), expected_titles);
     }
-    
+
     void test_add_named_range()
     {
         xlnt::workbook wb, wb2;
@@ -280,7 +282,7 @@ public:
         xlnt_assert(wb.has_named_range("test_nr"));
         xlnt_assert_throws(wb2.create_named_range("test_nr", new_sheet, "A1"), std::runtime_error);
     }
-    
+
     void test_get_named_range()
     {
         xlnt::workbook wb;
@@ -335,7 +337,7 @@ public:
         wb.create_sheet().title("Sheet3");
 
         auto iter = wb.begin();
-		xlnt_assert_equals((*iter).title(), "Sheet1");
+        xlnt_assert_equals((*iter).title(), "Sheet1");
 
         iter++;
         xlnt_assert_equals((*iter).title(), "Sheet2");
@@ -353,10 +355,10 @@ public:
         xlnt_assert_equals((*iter).title(), "Sheet3");
         xlnt_assert_equals(iter, copy);
     }
-    
+
     void test_manifest()
     {
-		xlnt::manifest m;
+        xlnt::manifest m;
         xlnt_assert(!m.has_default_type("xml"));
         xlnt_assert_throws(m.default_type("xml"), xlnt::key_not_found);
         xlnt_assert(!m.has_relationship(xlnt::path("/"), xlnt::relationship_type::office_document));
@@ -383,7 +385,7 @@ public:
         xlnt_assert(wb.active_sheet().cell("B2").has_style());
         wb.clear_styles();
         xlnt_assert(!wb.active_sheet().cell("B2").has_style());
-		xlnt::format format = wb.create_format();
+        xlnt::format format = wb.create_format();
         xlnt::font font;
         font.size(41);
         format.font(font, true);
@@ -402,13 +404,13 @@ public:
         xlnt_assert(!(wb != wb));
         xlnt_assert(!(wb == wb2));
         xlnt_assert(wb != wb2);
-        
+
         const auto &wb_const = wb;
         //TODO these aren't tests...
         wb_const.manifest();
-        
+
         xlnt_assert(wb.has_theme());
-        
+
         wb.create_style("style1");
         wb.style("style1");
         wb_const.style("style1");
@@ -422,5 +424,40 @@ public:
         wb.remove_sheet(wb[1]);
         wb.create_sheet();
         xlnt_assert_differs(wb[1].id(), wb[2].id());
+    }
+
+    void test_load_file()
+    {
+        xlnt::path file = path_helper::test_file("2_minimal.xlsx");
+        xlnt::workbook wb_path(file);
+        // ctor from ifstream
+        std::ifstream file_reader(file.string(), std::ios::binary);
+        xlnt_assert_equals(wb_path, xlnt::workbook(file_reader));
+        // load with string
+        xlnt::workbook wb_load1;
+        xlnt_assert_differs(wb_path, wb_load1);
+        wb_load1.load(file.string());
+        xlnt_assert_equals(wb_path, wb_load1);
+        // load with wstring
+        xlnt::workbook wb_load2;
+        wb_load2.load(file.string());
+        xlnt_assert_equals(wb_path, wb_load2);
+        // load with path
+        xlnt::workbook wb_load3;
+        wb_load3.load(file);
+        xlnt_assert_equals(wb_path, wb_load3);
+        // load with istream
+        xlnt::workbook wb_load4;
+        std::ifstream file_reader2(file.string(), std::ios::binary);
+        wb_load4.load(file_reader2);
+        xlnt_assert_equals(wb_path, wb_load4);
+        // load with vector
+        std::ifstream file_reader3(file.string(), std::ios::binary);
+        file_reader3.unsetf(std::ios::skipws);
+        std::vector<uint8_t> data(std::istream_iterator<uint8_t>{file_reader3}, 
+                                  std::istream_iterator<uint8_t>());
+        xlnt::workbook wb_load5;
+        wb_load5.load(data);
+        xlnt_assert_equals(wb_path, wb_load5);
     }
 };

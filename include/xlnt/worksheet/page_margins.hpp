@@ -99,6 +99,8 @@ public:
     /// </summary>
     void footer(double footer);
 
+    bool operator==(const page_margins &rhs) const;
+
 private:
     /// <summary>
     /// The top margin
