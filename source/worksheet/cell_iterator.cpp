@@ -58,16 +58,6 @@ const_cell_iterator::const_cell_iterator(worksheet ws, const cell_reference &cur
     }
 }
 
-cell_iterator::cell_iterator(const cell_iterator &other)
-{
-    *this = other;
-}
-
-const_cell_iterator::const_cell_iterator(const const_cell_iterator &other)
-{
-    *this = other;
-}
-
 bool cell_iterator::operator==(const cell_iterator &other) const
 {
     return ws_ == other.ws_
@@ -275,14 +265,18 @@ const_cell_iterator const_cell_iterator::operator++(int)
     return old;
 }
 
-cell cell_iterator::operator*()
+cell_iterator::reference cell_iterator::operator*()
 {
     return ws_.cell(cursor_);
 }
 
-const cell const_cell_iterator::operator*() const
+const cell_iterator::reference cell_iterator::operator*() const
 {
     return ws_.cell(cursor_);
 }
 
+const const_cell_iterator::reference const_cell_iterator::operator*() const
+{
+    return ws_.cell(cursor_);
+}
 } // namespace xlnt
