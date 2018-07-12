@@ -21,8 +21,6 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#pragma once
-
 #include <algorithm>
 #include <iostream>
 
@@ -30,6 +28,14 @@
 #include <detail/serialization/open_stream.hpp>
 #include <helpers/temporary_file.hpp>
 #include <helpers/test_suite.hpp>
+
+#include <xlnt/cell/cell.hpp>
+#include <xlnt/styles/format.hpp>
+#include <xlnt/styles/style.hpp>
+#include <xlnt/workbook/workbook.hpp>
+#include <xlnt/workbook/worksheet_iterator.hpp>
+#include <xlnt/worksheet/range.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
 
 class workbook_test_suite : public test_suite
 {
@@ -461,3 +467,4 @@ public:
         xlnt_assert_equals(wb_path, wb_load5);
     }
 };
+static workbook_test_suite x;

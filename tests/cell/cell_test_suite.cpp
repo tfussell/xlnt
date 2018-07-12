@@ -21,13 +21,26 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#pragma once
-
 #include <sstream>
 
-#include <helpers/test_suite.hpp>
 #include <helpers/assertions.hpp>
-#include <xlnt/xlnt.hpp>
+#include <helpers/test_suite.hpp>
+
+#include <xlnt/cell/cell.hpp>
+#include <xlnt/cell/comment.hpp>
+#include <xlnt/cell/hyperlink.hpp>
+#include <xlnt/styles/number_format.hpp>
+#include <xlnt/styles/alignment.hpp>
+#include <xlnt/styles/border.hpp>
+#include <xlnt/styles/fill.hpp>
+#include <xlnt/styles/format.hpp>
+#include <xlnt/styles/protection.hpp>
+#include <xlnt/styles/style.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
+#include <xlnt/utils/date.hpp>
+#include <xlnt/utils/datetime.hpp>
+#include <xlnt/utils/time.hpp>
+#include <xlnt/utils/timedelta.hpp>
 
 class cell_test_suite : public test_suite
 {
@@ -134,14 +147,13 @@ private:
         xlnt::workbook wb;
 
         const auto datatypes =
-        {
-            xlnt::cell::type::empty,
-            xlnt::cell::type::boolean,
-            xlnt::cell::type::error,
-            xlnt::cell::type::formula_string,
-            xlnt::cell::type::number,
-            xlnt::cell::type::shared_string
-        };
+            {
+                xlnt::cell::type::empty,
+                xlnt::cell::type::boolean,
+                xlnt::cell::type::error,
+                xlnt::cell::type::formula_string,
+                xlnt::cell::type::number,
+                xlnt::cell::type::shared_string};
 
         for (const auto &datatype : datatypes)
         {
@@ -209,7 +221,6 @@ private:
         xlnt_assert(!cell.has_formula());
     }
 
-
     void test_not_formula()
     {
         xlnt::workbook wb;
@@ -228,7 +239,7 @@ private:
         auto ws = wb.active_sheet();
         auto cell = ws.cell(xlnt::cell_reference(1, 1));
 
-        for (auto value : { true, false })
+        for (auto value : {true, false})
         {
             cell.value(value);
             xlnt_assert(cell.data_type() == xlnt::cell::type::boolean);
@@ -331,8 +342,8 @@ private:
         auto cell = ws.cell(xlnt::cell_reference(1, 1));
 
         // The bytes 0x00 through 0x1F inclusive must be manually escaped in values.
-        auto illegal_chrs = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 14, 15, 16, 17, 18,
-                 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
+        auto illegal_chrs = {0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 14, 15, 16, 17, 18,
+            19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
 
         for (auto i : illegal_chrs)
         {
@@ -341,9 +352,9 @@ private:
         }
 
         cell.value(std::string(1, 33));
-        cell.value(std::string(1, 9));  // Tab
-        cell.value(std::string(1, 10));  // Newline
-        cell.value(std::string(1, 13));  // Carriage return
+        cell.value(std::string(1, 9)); // Tab
+        cell.value(std::string(1, 10)); // Newline
+        cell.value(std::string(1, 13)); // Carriage return
         cell.value(" Leading and trailing spaces are legal ");
     }
 
@@ -393,8 +404,8 @@ private:
         auto cell = ws.cell("A1");
 
         xlnt::fill fill(xlnt::pattern_fill()
-            .type(xlnt::pattern_fill_type::solid)
-            .foreground(xlnt::color::red()));
+                            .type(xlnt::pattern_fill_type::solid)
+                            .foreground(xlnt::color::red()));
         cell.fill(fill);
 
         xlnt_assert(cell.has_format());
@@ -678,3 +689,5 @@ private:
         xlnt_assert_throws(cell.comment(), xlnt::exception);
     }
 };
+
+static cell_test_suite x{};

@@ -21,14 +21,13 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#pragma once
-
 #include <ctime>
 #include <iostream>
 #include <sstream>
 
 #include <helpers/test_suite.hpp>
-#include <xlnt/xlnt.hpp>
+
+#include <xlnt/cell/rich_text.hpp>
 
 class rich_text_test_suite : public test_suite
 {
@@ -102,3 +101,4 @@ public:
         xlnt_assert_differs(text_formatted, text_family_differs);
     }
 };
+static rich_text_test_suite x{};

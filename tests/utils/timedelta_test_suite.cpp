@@ -21,11 +21,11 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#pragma once
-
 #include <iostream>
 
 #include <helpers/test_suite.hpp>
+
+#include <xlnt/utils/timedelta.hpp>
 
 class timedelta_test_suite : public test_suite
 {
@@ -82,3 +82,4 @@ public:
         xlnt_assert_equals(rollover.microseconds, 0);
     }
 };
+static timedelta_test_suite x;

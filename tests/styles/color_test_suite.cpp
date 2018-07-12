@@ -21,12 +21,11 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#pragma once
-
 #include <iostream>
 
 #include <helpers/test_suite.hpp>
-#include <xlnt/xlnt.hpp>
+
+#include <xlnt/styles/color.hpp>
 
 class color_test_suite : public test_suite
 {
@@ -74,3 +73,4 @@ public:
         xlnt_assert_throws(theme.rgb(), xlnt::invalid_attribute);
     }
 };
+static color_test_suite x;

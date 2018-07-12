@@ -21,34 +21,27 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#pragma once
-
 #include <iostream>
 
-#include <helpers/path_helper.hpp>
-#include <helpers/temporary_file.hpp>
 #include <helpers/test_suite.hpp>
-#include <xlnt/xlnt.hpp>
+#include <xlnt/styles/alignment.hpp>
 
-class path_test_suite : public test_suite
+class alignment_test_suite : public test_suite
 {
 public:
-    path_test_suite()
+    alignment_test_suite()
     {
-        register_test(test_exists);
+        register_test(test_all);
     }
 
-	void test_exists()
-	{
-		temporary_file temp;
+    void test_all()
+    {
+        xlnt::alignment alignment;
 
-		if (temp.get_path().exists())
-		{
-			path_helper::delete_file(temp.get_path());
-		}
-
-		xlnt_assert(!temp.get_path().exists());
-		std::ofstream stream(temp.get_path().string());
-		xlnt_assert(temp.get_path().exists());
-	}
+        xlnt_assert(!alignment.horizontal().is_set());
+        xlnt_assert(!alignment.vertical().is_set());
+        xlnt_assert(!alignment.shrink());
+        xlnt_assert(!alignment.wrap());
+    }
 };
+static alignment_test_suite x;

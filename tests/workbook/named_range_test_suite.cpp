@@ -21,8 +21,6 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#pragma once
-
 #include <iostream>
 
 #include <helpers/test_suite.hpp>
@@ -257,3 +255,4 @@ public:
             [range_as_string(range, include_value = True) for range in wbcopy.get_named_ranges()])*/
     }
 };
+static named_range_test_suite x;

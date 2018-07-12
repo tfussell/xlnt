@@ -21,13 +21,15 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#pragma once
-
 #include <iostream>
 
+
 #include <helpers/test_suite.hpp>
+#include <xlnt/cell/cell.hpp>
+#include <xlnt/styles/font.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
+#include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
 class range_test_suite : public test_suite
@@ -83,3 +85,4 @@ public:
         xlnt_assert_equals(ws.calculate_dimension(), xlnt::range_reference(1, 1, 1, 3));
     }
 };
+static range_test_suite x;
