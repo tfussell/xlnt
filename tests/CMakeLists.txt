@@ -20,6 +20,7 @@ file(GLOB STYLES_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/styles/*.hpp)
 file(GLOB UTILS_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/utils/*.hpp)
 file(GLOB WORKBOOK_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/workbook/*.hpp)
 file(GLOB WORKSHEET_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/worksheet/*.hpp)
+file(GLOB EXAMPLE_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/examples/*.hpp)
 
 set(TESTS
   ${CELL_TESTS}
@@ -27,7 +28,8 @@ set(TESTS
   ${STYLES_TESTS}
   ${UTILS_TESTS}
   ${WORKBOOK_TESTS}
-  ${WORKSHEET_TESTS})
+  ${WORKSHEET_TESTS}
+  ${EXAMPLE_TESTS})
 
 file(GLOB HELPERS_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/helpers/*.hpp)
 file(GLOB HELPERS_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/helpers/*.cpp)
@@ -63,6 +65,7 @@ source_group(tests\\styles FILES ${STYLES_TESTS})
 source_group(tests\\utils FILES ${UTILS_TESTS})
 source_group(tests\\workbook FILES ${WORKBOOK_TESTS})
 source_group(tests\\worksheet FILES ${WORKSHEET_TESTS})
+source_group(tests\\examples FILES ${EXAMPLE_TESTS})
 
 if(MSVC AND NOT STATIC)
   # copy xlnt DLL into xlnt.test directory
