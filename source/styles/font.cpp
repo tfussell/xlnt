@@ -27,7 +27,11 @@
 #include <xlnt/styles/font.hpp>
 
 namespace {
-const std::string Default_Name = "Calibri";
+const std::string &Default_Name()
+{
+    static const std::string Default("Calibri");
+    return Default;
+}
 constexpr double Default_Size = 12.0;
 } // namespace
 
@@ -161,13 +165,13 @@ font &font::name(const std::string &name)
     return *this;
 }
 
-const std::string& font::name() const
+const std::string &font::name() const
 {
     if (name_.is_set())
     {
         return name_.get();
     }
-    return Default_Name;
+    return Default_Name();
 }
 
 bool font::has_color() const
@@ -229,7 +233,7 @@ std::size_t font::family() const
     return family_.get();
 }
 
-const std::string& font::scheme() const
+const std::string &font::scheme() const
 {
     return scheme_.get();
 }
