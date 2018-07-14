@@ -38,7 +38,7 @@ namespace xlnt {
 class XLNT_API phonetic_pr
 {
 public:
-    static const std::string Serialised_ID;
+    static std::string Serialised_ID();
 
     /// <summary>
     /// possible values for alignment property

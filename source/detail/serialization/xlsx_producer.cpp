@@ -2749,7 +2749,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
     if (ws.has_phonetic_properties())
     {
-        write_start_element(xmlns, phonetic_pr::Serialised_ID);
+        write_start_element(xmlns, phonetic_pr::Serialised_ID());
         const auto &ph_props = ws.phonetic_properties();
         write_attribute("fontId", ph_props.font_id());
         if (ph_props.has_type())
@@ -2760,7 +2760,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         {
             write_attribute("alignment", phonetic_pr::alignment_as_string(ph_props.alignment()));
         }
-        write_end_element(xmlns, phonetic_pr::Serialised_ID);
+        write_end_element(xmlns, phonetic_pr::Serialised_ID());
     }
 
     if (ws.has_page_margins())
