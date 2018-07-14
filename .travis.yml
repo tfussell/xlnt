@@ -30,7 +30,7 @@ matrix:
         - STATIC=ON
         - SAMPLES=OFF
         - BENCHMARKS=OFF
-    # gcc-6, c++11, debug build, dll
+    # gcc-6, c++11, debug build, dynamic linking
     - os: linux
       compiler: gcc
       addons:
@@ -62,6 +62,24 @@ matrix:
         - BUILD_TYPE=Release
         - COVERAGE=OFF
         - STATIC=ON
+        - SAMPLES=ON
+        - BENCHMARKS=ON
+    # clang 4, c++11, release build, dynamic linking, samples + benchmarks compiled
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-4.0
+          packages:
+            - clang-4.0
+      env:
+        - CXX_COMPILER=clang++-4.0
+        - C_COMPILER=clang-4.0
+        - BUILD_TYPE=Release
+        - COVERAGE=OFF
+        - STATIC=OFF
         - SAMPLES=ON
         - BENCHMARKS=ON
     # clang 6, c++11, release build, static linking, samples + benchmarks compiled
