@@ -12,6 +12,7 @@ notifications:
 # set up build matrix
 matrix:
   include:
+    # ============= CODE COVERAGE ===============
     # gcc-6, c++11, debug build, static linking, code coverage enabled
     - os: linux
       compiler: gcc
@@ -29,7 +30,8 @@ matrix:
         - COVERAGE=ON
         - STATIC=ON
         - SAMPLES=OFF
-
+    
+    # ============= GCC ==================
     # gcc-6, c++11, debug build, dynamic linking
     - os: linux
       compiler: gcc
@@ -46,7 +48,24 @@ matrix:
         - COVERAGE=OFF
         - STATIC=OFF
         - SAMPLES=OFF
-
+        
+    # gcc-8, c++11, release build, static linking, samples + benchmarks compiled
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env:
+        - CXX_COMPILER=g++-7
+        - C_COMPILER=gcc-7
+        - BUILD_TYPE=Release
+        - COVERAGE=OFF
+        - STATIC=ON
+        - SAMPLES=ON
+        
     # gcc-8, c++11, release build, static linking, samples + benchmarks compiled
     - os: linux
       compiler: gcc
@@ -64,7 +83,8 @@ matrix:
         - STATIC=ON
         - SAMPLES=ON
 
-    # clang 4, c++11, release build, dynamic linking, samples + benchmarks compiled
+    # =========== CLANG =============
+    # clang 4, c++11, release build, dynamic linking
     - os: linux
       compiler: clang
       addons:
@@ -81,8 +101,24 @@ matrix:
         - COVERAGE=OFF
         - STATIC=OFF
         - SAMPLES=OFF
-
-    # clang 6, c++11, release build, static linking, samples + benchmarks compiled
+    # clang 5, c++11, release build, dynamic linking, samples + benchmarks compiled
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-5.0
+          packages:
+            - clang-5.0
+      env:
+        - CXX_COMPILER=clang++-5.0
+        - C_COMPILER=clang-5.0
+        - BUILD_TYPE=Release
+        - COVERAGE=OFF
+        - STATIC=ON
+        - SAMPLES=ON
+    # clang 6, c++11, release build, static linking, samples compiled
     - os: linux
       compiler: clang
       addons:
