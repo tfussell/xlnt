@@ -1,11 +1,7 @@
 cmake_minimum_required(VERSION 3.1)
 project(xlnt VERSION 1.2)
 
-# Require C99 and C++11 compilers
-set(CMAKE_C_STANDARD 99)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CXX_EXTENSIONS OFF)
 
 # Project metadata
 set(PROJECT_VENDOR "Thomas Fussell")
@@ -156,6 +152,8 @@ else()
   target_compile_definitions(xlnt PUBLIC XLNT_STATIC=1)
 endif()
 
+target_compile_features(xlnt PUBLIC cxx_std_${XLNT_CXX_LANG})
+
 # Includes
 target_include_directories(xlnt PUBLIC ${XLNT_INCLUDE_DIR})
 target_include_directories(xlnt PRIVATE ${XLNT_SOURCE_DIR})
@@ -178,23 +176,23 @@ if(MSVC)
   set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/detail/cryptography/aes.cpp
     PROPERTIES
     COMPILE_FLAGS "/wd\"4996\"")
-endif()
-
-# Platform- and file-specific settings, Clang
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/detail/serialization/miniz.cpp
-    PROPERTIES
-    COMPILE_FLAGS "-Wno-undef")
-  set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/detail/serialization/zstream.cpp
-    PROPERTIES
-    COMPILE_FLAGS "-Wno-undef -Wno-shorten-64-to-32")
-endif()
-
-# Platform- and file-specific settings, GCC
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-  set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/detail/serialization/miniz.cpp
-    PROPERTIES
-    COMPILE_FLAGS "-Wno-strict-aliasing")
+else()
+  # Platform- and file-specific settings, Clang
+  if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/detail/serialization/miniz.cpp
+	  PROPERTIES
+	  COMPILE_FLAGS "-Wno-undef")
+    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/detail/serialization/zstream.cpp
+	  PROPERTIES
+      COMPILE_FLAGS "-Wno-undef -Wno-shorten-64-to-32")
+  endif()
+  
+  # Platform- and file-specific settings, GCC
+  if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/detail/serialization/miniz.cpp
+	  PROPERTIES
+	  COMPILE_FLAGS "-Wno-strict-aliasing")
+  endif()
 endif()
 
 # Group files into pseudo-folders in IDEs
