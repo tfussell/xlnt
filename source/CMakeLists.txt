@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.1)
 project(xlnt VERSION 1.2)
 
+set(CMAKE_CXX_STANDARD ${XLNT_CXX_LANG})
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CXX_EXTENSIONS OFF)
 
 # Project metadata
@@ -152,7 +154,7 @@ else()
   target_compile_definitions(xlnt PUBLIC XLNT_STATIC=1)
 endif()
 
-target_compile_features(xlnt PUBLIC cxx_std_${XLNT_CXX_LANG})
+#target_compile_features(xlnt PUBLIC cxx_std_${XLNT_CXX_LANG})
 
 # Includes
 target_include_directories(xlnt PUBLIC ${XLNT_INCLUDE_DIR})
