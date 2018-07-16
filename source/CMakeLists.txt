@@ -154,6 +154,7 @@ else()
   target_compile_definitions(xlnt PUBLIC XLNT_STATIC=1)
 endif()
 
+# requires cmake 3.8+
 #target_compile_features(xlnt PUBLIC cxx_std_${XLNT_CXX_LANG})
 
 # Includes

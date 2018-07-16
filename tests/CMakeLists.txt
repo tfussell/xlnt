@@ -48,6 +48,7 @@ target_include_directories(xlnt.test
 
 set(XLNT_TEST_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/data)
 target_compile_definitions(xlnt.test PRIVATE XLNT_TEST_DATA_DIR=${XLNT_TEST_DATA_DIR})
+# requires cmake 3.8+
 #target_compile_features(xlnt.test PRIVATE cxx_std_${XLNT_CXX_LANG})
 
 if(MSVC)
