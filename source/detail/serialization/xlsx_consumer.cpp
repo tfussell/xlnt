@@ -601,7 +601,7 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
             {
                 expect_start_element(qn("spreadsheetml", "col"), xml::content::simple);
 
-                skip_attributes({"bestFit", "collapsed", "outlineLevel"});
+                skip_attributes(std::vector<std::string>{"collapsed", "outlineLevel"});
 
                 auto min = static_cast<column_t::index_t>(std::stoull(parser().attribute("min")));
                 auto max = static_cast<column_t::index_t>(std::stoull(parser().attribute("max")));
