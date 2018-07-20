@@ -34,7 +34,7 @@ namespace xlnt {
 /// <summary>
 /// Typedef a rich_text_run as a pair of string and optional font.
 /// </summary>
-struct rich_text_run
+struct XLNT_API rich_text_run
 {
     std::string first;
     optional<font> second;

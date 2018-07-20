@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Thomas Fussell
+// Copyright (c) 2014-2018 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,31 +21,35 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#pragma once
+#include <xlnt/styles/protection.hpp>
+#include <helpers/test_suite.hpp>
+#include <xlnt/xlnt.hpp>
 
-#include <string>
-
-#include <xlnt/packaging/relationship.hpp>
-#include <xlnt/utils/optional.hpp>
-
-namespace xlnt {
-namespace detail {
-
-// [serialised]
-struct hyperlink_impl
+class protection_test_suite : public test_suite
 {
-    xlnt::relationship relationship;
-    xlnt::optional<std::string> location;
-    xlnt::optional<std::string> tooltip;
-    xlnt::optional<std::string> display;
+public:
+    protection_test_suite()
+    {
+        register_test(test_all);
+    }
+
+    void test_all()
+    {
+        auto prot = xlnt::protection::unlocked_and_visible();
+        xlnt_assert(!prot.hidden());
+        xlnt_assert(!prot.locked());
+
+        prot = xlnt::protection::locked_and_visible();
+        xlnt_assert(!prot.hidden());
+        xlnt_assert(prot.locked());
+
+        prot = xlnt::protection::unlocked_and_hidden();
+        xlnt_assert(prot.hidden());
+        xlnt_assert(!prot.locked());
+
+        prot = xlnt::protection::locked_and_hidden();
+        xlnt_assert(prot.hidden());
+        xlnt_assert(prot.locked());
+    }
 };
-
-inline bool operator==(const hyperlink_impl &lhs, const hyperlink_impl &rhs)
-{
-    return lhs.relationship == rhs.relationship
-        && lhs.tooltip == rhs.tooltip
-        && lhs.display == rhs.display;
-}
-
-} // namespace detail
-} // namespace xlnt
+static protection_test_suite x;

@@ -107,7 +107,7 @@ public:
     /// Create a string representing this path separated by the provided
     /// separator or the system-default separator if not provided.
     /// </summary>
-    std::string string() const;
+    const std::string& string() const;
 
 #ifdef _MSC_VER
     /// <summary>
@@ -175,6 +175,11 @@ public:
     /// Returns true if left path is equal to right path.
     /// </summary>
     bool operator==(const path &other) const;
+
+    /// <summary>
+    /// Returns true if left path is equal to right path.
+    /// </summary>
+    bool operator!=(const path &other) const;
 
 private:
     /// <summary>

@@ -38,37 +38,39 @@ public:
 
     void test_known_colors()
     {
-        const std::vector<std::pair<xlnt::color, std::string>> known_colors
-        {
-            { xlnt::color::black(), "FF000000" },
-            { xlnt::color::white(), "FFFFFFFF" },
-            { xlnt::color::red(), "FFFF0000" },
-            { xlnt::color::darkred(), "FF8B0000" },
-            { xlnt::color::blue(), "FF0000FF" },
-            { xlnt::color::darkblue(), "FF00008B" },
-            { xlnt::color::green(), "FF00FF00" },
-            { xlnt::color::darkgreen(), "FF008B00" },
-            { xlnt::color::yellow(), "FFFFFF00" },
-            { xlnt::color::darkyellow(), "FFCCCC00" }
-        };
-        
+        const std::vector<std::pair<xlnt::color, std::string>> known_colors{
+            {xlnt::color::black(), "FF000000"},
+            {xlnt::color::white(), "FFFFFFFF"},
+            {xlnt::color::red(), "FFFF0000"},
+            {xlnt::color::darkred(), "FF8B0000"},
+            {xlnt::color::blue(), "FF0000FF"},
+            {xlnt::color::darkblue(), "FF00008B"},
+            {xlnt::color::green(), "FF00FF00"},
+            {xlnt::color::darkgreen(), "FF008B00"},
+            {xlnt::color::yellow(), "FFFFFF00"},
+            {xlnt::color::darkyellow(), "FFCCCC00"}};
+
         for (auto pair : known_colors)
         {
             xlnt_assert_equals(pair.first.rgb().hex_string(), pair.second);
         }
     }
-    
+
     void test_non_rgb_colors()
     {
-		xlnt::color indexed = xlnt::indexed_color(1);
-		xlnt_assert(!indexed.auto_());
+        xlnt::color indexed = xlnt::indexed_color(1);
+        xlnt_assert(!indexed.auto_());
         xlnt_assert_equals(indexed.indexed().index(), 1);
+        indexed.indexed().index(2);
+        xlnt_assert_equals(indexed.indexed().index(), 2);
         xlnt_assert_throws(indexed.theme(), xlnt::invalid_attribute);
         xlnt_assert_throws(indexed.rgb(), xlnt::invalid_attribute);
 
-		xlnt::color theme = xlnt::theme_color(3);
-		xlnt_assert(!theme.auto_());
+        xlnt::color theme = xlnt::theme_color(3);
+        xlnt_assert(!theme.auto_());
         xlnt_assert_equals(theme.theme().index(), 3);
+        theme.theme().index(4);
+        xlnt_assert_equals(theme.theme().index(), 4);
         xlnt_assert_throws(theme.indexed(), xlnt::invalid_attribute);
         xlnt_assert_throws(theme.rgb(), xlnt::invalid_attribute);
     }

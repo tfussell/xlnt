@@ -67,24 +67,49 @@ bool hyperlink::external() const
     return d_->relationship.target_mode() == target_mode::external;
 }
 
-void hyperlink::display(const std::string &value)
+bool hyperlink::has_display() const
 {
-    d_->display = value;
+    return d_->display.is_set();
 }
 
-std::string hyperlink::display() const
+void hyperlink::display(const std::string &value)
 {
-    return d_->display;
+    d_->display.set(value);
+}
+
+const std::string& hyperlink::display() const
+{
+    return d_->display.get();
+}
+
+bool hyperlink::has_tooltip() const
+{
+    return d_->tooltip.is_set();
 }
 
 void hyperlink::tooltip(const std::string &value)
 {
-    d_->tooltip = value;
+    d_->tooltip.set(value);
 }
 
-std::string hyperlink::tooltip() const
+const std::string& hyperlink::tooltip() const
 {
-    return d_->tooltip;
+    return d_->tooltip.get();
+}
+
+bool hyperlink::has_location() const
+{
+    return d_->location.is_set();
+}
+
+void hyperlink::location(const std::string &value)
+{
+    d_->location.set(value);
+}
+
+const std::string &hyperlink::location() const
+{
+    return d_->location.get();
 }
 
 } // namespace xlnt

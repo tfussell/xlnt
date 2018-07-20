@@ -67,7 +67,7 @@ public:
     /// <summary>
     /// Constructs a new document security object with default values.
     /// </summary>
-    document_security();
+    document_security() = default;
 
     /// <summary>
     /// If true, the workbook is locked for revisions.
