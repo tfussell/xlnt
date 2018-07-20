@@ -123,7 +123,7 @@ public:
     /// Returns the path of this URI.
     /// E.g. the path of http://example.com/document is "/document"
     /// </summary>
-    class path path() const;
+    const class path& path() const;
 
     /// <summary>
     /// Returns true if this URI has a non-null query string section.
