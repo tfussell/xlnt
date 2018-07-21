@@ -341,38 +341,24 @@ cell_reference cell::reference() const
     return {d_->column_, d_->row_};
 }
 
-bool cell::operator==(std::nullptr_t) const
-{
-    return d_ == nullptr;
-}
-
 bool cell::operator==(const cell &comparand) const
 {
     return d_ == comparand.d_;
 }
 
-cell &cell::operator=(const cell &rhs)
+bool cell::operator!=(const cell &comparand) const
 {
-    d_->column_ = rhs.d_->column_;
-    d_->format_ = rhs.d_->format_;
-    d_->formula_ = rhs.d_->formula_;
-    d_->hyperlink_ = rhs.d_->hyperlink_;
-    d_->is_merged_ = rhs.d_->is_merged_;
-    d_->parent_ = rhs.d_->parent_;
-    d_->row_ = rhs.d_->row_;
-    d_->type_ = rhs.d_->type_;
-    d_->value_numeric_ = rhs.d_->value_numeric_;
-    d_->value_text_ = rhs.d_->value_text_;
-
-    return *this;
+    return d_ != comparand.d_;
 }
+
+cell &cell::operator=(const cell &rhs) = default;
 
 hyperlink cell::hyperlink() const
 {
     return xlnt::hyperlink(&d_->hyperlink_.get());
 }
 
-void cell::hyperlink(const std::string &url)
+void cell::hyperlink(const std::string &url, const std::string &display)
 {
     if (url.empty() || std::find(url.begin(), url.end(), ':') == url.end())
     {
@@ -388,7 +374,8 @@ void cell::hyperlink(const std::string &url)
     auto relationships = manifest.relationships(ws.path(), relationship_type::hyperlink);
     auto relation = std::find_if(relationships.cbegin(), relationships.cend(),
         [&url](xlnt::relationship rel) { return rel.target().path().string() == url; });
-    if (relation != relationships.end()) {
+    if (relation != relationships.end())
+    {
         d_->hyperlink_.get().relationship = *relation;
     }
     else
@@ -400,29 +387,20 @@ void cell::hyperlink(const std::string &url)
             target_mode::external);
         // TODO: make manifest::register_relationship return the created relationship instead of rel id
         d_->hyperlink_.get().relationship = manifest.relationship(ws.path(), rel_id);
-    }   
-    
-    if (!has_value()) // hyperlink on an empty cell sets the value to the hyperlink string
+    }
+    // if a value is already present, the display string is ignored
+    if (has_value())
     {
-        value(url);
+        d_->hyperlink_.get().display.set(to_string());
+    }
+    else
+    {
+        d_->hyperlink_.get().display.set(display.empty() ? url : display);
+        value(hyperlink().display());
     }
 }
 
-void cell::hyperlink(const std::string &url, const std::string &display)
-{
-    if (!display.empty()) // if the display string isn't empty use that
-    {
-        value(display);
-    }
-    else // empty display string sets the value to the link text
-    {
-        value(url);
-    }
-    hyperlink(url);
-    d_->hyperlink_.get().display = display;
-}
-
-void cell::hyperlink(xlnt::cell target)
+void cell::hyperlink(xlnt::cell target, const std::string& display)
 {
     // TODO: should this computed value be a method on a cell?
     const auto cell_address = target.worksheet().title() + "!" + target.reference().to_string();
@@ -430,8 +408,37 @@ void cell::hyperlink(xlnt::cell target)
     d_->hyperlink_ = detail::hyperlink_impl();
     d_->hyperlink_.get().relationship = xlnt::relationship("", relationship_type::hyperlink,
         uri(""), uri(cell_address), target_mode::internal);
-    d_->hyperlink_.get().display = cell_address;
-    value(cell_address);
+    // if a value is already present, the display string is ignored
+    if (has_value())
+    {
+        d_->hyperlink_.get().display.set(to_string());
+    }
+    else
+    {
+        d_->hyperlink_.get().display.set(display.empty() ? cell_address : display);
+        value(hyperlink().display());
+    }
+}
+
+void cell::hyperlink(xlnt::range target, const std::string &display)
+{
+    // TODO: should this computed value be a method on a cell?
+    const auto range_address = target.target_worksheet().title() + "!" + target.reference().to_string();
+
+    d_->hyperlink_ = detail::hyperlink_impl();
+    d_->hyperlink_.get().relationship = xlnt::relationship("", relationship_type::hyperlink,
+        uri(""), uri(range_address), target_mode::internal);
+    
+    // if a value is already present, the display string is ignored
+    if (has_value())
+    {
+        d_->hyperlink_.get().display.set(to_string());
+    }
+    else
+    {
+        d_->hyperlink_.get().display.set(display.empty() ? range_address : display);
+        value(hyperlink().display());
+    }
 }
 
 void cell::formula(const std::string &formula)
@@ -470,6 +477,15 @@ void cell::clear_formula()
         d_->formula_.clear();
         worksheet().garbage_collect_formulae();
     }
+}
+
+std::string cell::error() const
+{
+    if (d_->type_ != type::error)
+    {
+        throw xlnt::exception("called error() when cell type is not error");
+    }
+    return value<std::string>();
 }
 
 void cell::error(const std::string &error)
@@ -743,6 +759,16 @@ calendar cell::base_date() const
     return workbook().base_date();
 }
 
+bool operator==(std::nullptr_t, const cell &cell)
+{
+    return cell.data_type() == cell::type::empty;
+}
+
+bool operator==(const cell &cell, std::nullptr_t)
+{
+    return nullptr == cell;
+}
+
 XLNT_API std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell)
 {
     return stream << cell.to_string();
@@ -802,8 +828,11 @@ void cell::value(const std::string &value_string, bool infer_type)
 
 void cell::clear_format()
 {
-    format().d_->references -= format().d_->references > 0 ? 1 : 0;
-    d_->format_.clear();
+    if (d_->format_.is_set())
+    {
+        format().d_->references -= format().d_->references > 0 ? 1 : 0;
+        d_->format_.clear();
+    }
 }
 
 void cell::clear_style()

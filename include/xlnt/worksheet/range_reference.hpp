@@ -56,12 +56,7 @@ public:
     /// top_left:bottom_right.
     /// </summary>
     explicit range_reference(const char *range_string);
-
-    /// <summary>
-    /// Constructs a range reference from a pair of cell references.
-    /// </summary>
-    explicit range_reference(const std::pair<cell_reference, cell_reference> &reference_pair);
-
+    
     /// <summary>
     /// Constructs a range reference from cell references indicating top
     /// left and bottom right coordinates of the range.

@@ -25,6 +25,7 @@
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/utils/exceptions.hpp>
+#include <type_traits>
 
 namespace xlnt {
 
@@ -34,39 +35,207 @@ namespace xlnt {
 /// within the optional class.
 /// </summary>
 template <typename T>
-class XLNT_API optional
+class optional
 {
+#if defined(_MSC_VER) && _MSC_VER <= 1900 // v14, visual studio 2015
+#define XLNT_NOEXCEPT_VALUE_COMPAT(...) (false)
+#else
+#define XLNT_NOEXCEPT_VALUE_COMPAT(...) (__VA_ARGS__)
+    using ctor_copy_T_noexcept = typename std::conditional<std::is_nothrow_copy_constructible<T>{}, std::true_type, std::false_type>::type;
+    using ctor_move_T_noexcept = typename std::conditional<std::is_nothrow_move_constructible<T>{}, std::true_type, std::false_type>::type;
+    using copy_ctor_noexcept = ctor_copy_T_noexcept;
+    using move_ctor_noexcept = ctor_move_T_noexcept;
+    using set_copy_noexcept_t = typename std::conditional<std::is_nothrow_copy_constructible<T>{} && std::is_nothrow_assignable<T, T>{}, std::true_type, std::false_type>::type;
+    using set_move_noexcept_t = typename std::conditional<std::is_nothrow_move_constructible<T>{} && std::is_nothrow_move_assignable<T>{}, std::true_type, std::false_type>::type;
+    using clear_noexcept_t = typename std::conditional<std::is_nothrow_destructible<T>{}, std::true_type, std::false_type>::type;
+#endif
+
 public:
     /// <summary>
     /// Default contructor. is_set() will be false initially.
     /// </summary>
-    optional() : has_value_(false), value_(T())
+    optional() noexcept
+        : has_value_(false)
     {
     }
 
     /// <summary>
     /// Constructs this optional with a value.
+    /// noexcept if T copy ctor is noexcept
     /// </summary>
-    optional(const T &value) : has_value_(true), value_(value)
+    optional(const T &value) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(ctor_copy_T_noexcept{}))
+        : has_value_(true)
     {
+        new (&storage_) T(value);
+    }
+
+    /// <summary>
+    /// Constructs this optional with a value.
+    /// noexcept if T move ctor is noexcept
+    /// </summary>
+    optional(T &&value) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(ctor_move_T_noexcept{}))
+        : has_value_(true)
+    {
+        new (&storage_) T(std::move(value));
+    }
+
+    /// <summary>
+    /// Copy constructs this optional from other
+    /// noexcept if T copy ctor is noexcept
+    /// </summary>
+    optional(const optional &other) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(copy_ctor_noexcept{}))
+        : has_value_(other.has_value_)
+    {
+        if (has_value_)
+        {
+            new (&storage_) T(other.value_ref());
+        }
+    }
+
+    /// <summary>
+    /// Move constructs this optional from other. Clears the value from other if set
+    /// noexcept if T move ctor is noexcept
+    /// </summary>
+    optional(optional &&other) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(move_ctor_noexcept{}))
+        : has_value_(other.has_value_)
+    {
+        if (has_value_)
+        {
+            new (&storage_) T(std::move(other.value_ref()));
+            other.clear();
+        }
+    }
+
+    /// <summary>
+    /// Copy assignment of this optional from other
+    /// noexcept if set and clear are noexcept for T&
+    /// </summary>
+    optional &operator=(const optional &other) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(set_copy_noexcept_t{} && clear_noexcept_t{}))
+    {
+        if (other.has_value_)
+        {
+            set(other.value_ref());
+        }
+        else
+        {
+            clear();
+        }
+        return *this;
+    }
+
+    /// <summary>
+    /// Move assignment of this optional from other
+    /// noexcept if set and clear are noexcept for T&&
+    /// </summary>
+    optional &operator=(optional &&other) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(set_move_noexcept_t{} && clear_noexcept_t{}))
+    {
+        if (other.has_value_)
+        {
+            set(std::move(other.value_ref()));
+            other.clear();
+        }
+        else
+        {
+            clear();
+        }
+        return *this;
+    }
+
+    /// <summary>
+    /// Destructor cleans up the T instance if set
+    /// </summary>
+    ~optional() noexcept // note:: unconditional because msvc freaks out otherwise
+    {
+        clear();
     }
 
     /// <summary>
     /// Returns true if this object currently has a value set. This should
     /// be called before accessing the value with optional::get().
     /// </summary>
-    bool is_set() const
+    bool is_set() const noexcept
     {
         return has_value_;
     }
 
     /// <summary>
-    /// Sets the value to value.
+    /// Copies the value into the stored value
     /// </summary>
-    void set(const T &value)
+    void set(const T &value) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(set_copy_noexcept_t{}))
     {
-        has_value_ = true;
-        value_ = value;
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+        if (has_value_)
+        {
+            value_ref() = value;
+        }
+        else
+        {
+            new (&storage_) T(value);
+            has_value_ = true;
+        }
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+    }
+
+    /// <summary>
+    /// Moves the value into the stored value
+    /// </summary>
+    void set(T &&value) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(set_move_noexcept_t{}))
+    {
+        // note seperate overload for two reasons (as opposed to perfect forwarding)
+        // 1. have to deal with implicit conversions internally with perfect forwarding
+        // 2. have to deal with the noexcept specfiers for all the different variations
+        // overload is just far and away the simpler solution
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+        if (has_value_)
+        {
+            value_ref() = std::move(value);
+        }
+        else
+        {
+            new (&storage_) T(std::move(value));
+            has_value_ = true;
+        }
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+    }
+
+    /// <summary>
+    /// Assignment operator overload. Equivalent to setting the value using optional::set.
+    /// </summary>
+    optional &operator=(const T &rhs) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(set_copy_noexcept_t{}))
+    {
+        set(rhs);
+        return *this;
+    }
+
+    /// <summary>
+    /// Assignment operator overload. Equivalent to setting the value using optional::set.
+    /// </summary>
+    optional &operator=(T &&rhs) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(set_move_noexcept_t{}))
+    {
+        set(std::move(rhs));
+        return *this;
+    }
+
+    /// <summary>
+    /// After this is called, is_set() will return false until a new value is provided.
+    /// </summary>
+    void clear() noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(clear_noexcept_t{}))
+    {
+        if (has_value_)
+        {
+            reinterpret_cast<T *>(&storage_)->~T();
+        }
+        has_value_ = false;
     }
 
     /// <summary>
@@ -80,7 +249,7 @@ public:
             throw invalid_attribute();
         }
 
-        return value_;
+        return value_ref();
     }
 
     /// <summary>
@@ -94,28 +263,7 @@ public:
             throw invalid_attribute();
         }
 
-        return value_;
-    }
-
-    /// <summary>
-    /// Resets the internal value using its default constructor. After this is
-    /// called, is_set() will return false until a new value is provided.
-    /// </summary>
-    void clear()
-    {
-        has_value_ = false;
-        value_ = T();
-    }
-
-    /// <summary>
-    /// Assignment operator. Equivalent to setting the value using optional::set.
-    /// </summary>
-    optional &operator=(const T &rhs)
-    {
-        has_value_ = true;
-        value_ = rhs;
-
-        return *this;
+        return value_ref();
     }
 
     /// <summary>
@@ -123,21 +271,47 @@ public:
     /// or both have a value and those values are equal according to
     /// their equality operator.
     /// </summary>
-    bool operator==(const optional<T> &other) const
+    bool operator==(const optional<T> &other) const noexcept
     {
-        if (has_value_ != other.has_value_) {
+        if (has_value_ != other.has_value_)
+        {
             return false;
         }
         if (!has_value_)
         {
             return true;
         }
-        return value_ == other.value_;
+        return value_ref() == other.value_ref();
+    }
+
+    /// <summary>
+    /// Returns false if neither this nor other have a value
+    /// or both have a value and those values are equal according to
+    /// their equality operator.
+    /// </summary>
+    bool operator!=(const optional<T> &other) const noexcept
+    {
+        return !operator==(other);
     }
 
 private:
+    // helpers for getting a T out of storage
+    T &value_ref() noexcept
+    {
+        return *reinterpret_cast<T *>(&storage_);
+    }
+
+    const T &value_ref() const noexcept
+    {
+        return *reinterpret_cast<const T *>(&storage_);
+    }
+
     bool has_value_;
-    T value_;
+    typename std::aligned_storage<sizeof(T), alignof(T)>::type storage_;
 };
+
+#ifdef XLNT_NOEXCEPT_VALUE_COMPAT
+#undef XLNT_NOEXCEPT_VALUE_COMPAT
+#endif
 
 } // namespace xlnt

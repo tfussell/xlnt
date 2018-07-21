@@ -27,9 +27,8 @@
 namespace xlnt {
 
 variant::variant()
-{
-
-}
+    : type_(type::null)
+{}
 
 variant::variant(const std::string &value)
     : type_(type::lpstr),
@@ -41,7 +40,7 @@ variant::variant(const char *value) : variant(std::string(value))
 {
 }
 
-variant::variant(std::int32_t value)
+variant::variant(int32_t value)
     : type_(type::i4),
     i4_value_(value)
 {

@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.1)
 project(xlnt.test)
 
-# Require C++11 compiler
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD ${XLNT_CXX_LANG})
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CXX_EXTENSIONS OFF)
 
 if(NOT COMBINED_PROJECT)
   add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../source ${CMAKE_CURRENT_BINARY_DIR}/source)
@@ -48,6 +48,8 @@ target_include_directories(xlnt.test
 
 set(XLNT_TEST_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/data)
 target_compile_definitions(xlnt.test PRIVATE XLNT_TEST_DATA_DIR=${XLNT_TEST_DATA_DIR})
+# requires cmake 3.8+
+#target_compile_features(xlnt.test PRIVATE cxx_std_${XLNT_CXX_LANG})
 
 if(MSVC)
   # bigobj because there are so many headers in one source file

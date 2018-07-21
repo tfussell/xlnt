@@ -26,15 +26,22 @@
 #include <xlnt/cell/rich_text.hpp>
 #include <xlnt/cell/rich_text_run.hpp>
 
+namespace {
+bool has_trailing_whitespace(const std::string &s) 
+{
+    return !s.empty() && (s.front() == ' ' || s.back() == ' ');
+};
+}
+
 namespace xlnt {
 
 rich_text::rich_text(const std::string &plain_text)
-    : rich_text(rich_text_run{plain_text, optional<font>(), false})
+    : rich_text(rich_text_run{plain_text, optional<font>(), has_trailing_whitespace(plain_text)})
 {
 }
 
 rich_text::rich_text(const std::string &plain_text, const class font &text_font)
-    : rich_text(rich_text_run{plain_text, optional<font>(text_font), false})
+    : rich_text(rich_text_run{plain_text, optional<font>(text_font), has_trailing_whitespace(plain_text)})
 {
 }
 
@@ -63,6 +70,11 @@ std::string rich_text::plain_text() const
 std::vector<rich_text_run> rich_text::runs() const
 {
     return runs_;
+}
+
+void rich_text::runs(const std::vector<rich_text_run> &new_runs)
+{
+    runs_ = new_runs;
 }
 
 void rich_text::add_run(const rich_text_run &t)
