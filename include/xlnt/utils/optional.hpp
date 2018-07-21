@@ -37,15 +37,8 @@ namespace xlnt {
 template <typename T>
 class optional
 {
-#if _MSC_VER <= 1900 // v14, visual studio 2015
+#if defined(_MSC_VER) && _MSC_VER <= 1900 // v14, visual studio 2015
 #define XLNT_NOEXCEPT_VALUE_COMPAT(...) (false)
-    using ctor_copy_T_noexcept = std::false_type;
-    using ctor_move_T_noexcept = std::false_type;
-    using copy_ctor_noexcept = ctor_copy_T_noexcept;
-    using move_ctor_noexcept = ctor_move_T_noexcept;
-    using set_copy_noexcept_t = std::false_type;
-    using set_move_noexcept_t = std::false_type;
-    using clear_noexcept_t = std::false_type;
 #else
 #define XLNT_NOEXCEPT_VALUE_COMPAT(...) (__VA_ARGS__)
     using ctor_copy_T_noexcept = typename std::conditional<std::is_nothrow_copy_constructible<T>{}, std::true_type, std::false_type>::type;
