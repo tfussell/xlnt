@@ -1,35 +1,175 @@
-language: cpp
+# cpp takes longer
+language: minimal
 sudo: false
 dist: trusty
 
+git:
+  depth: false
+
 notifications:
   email: false
+  
+# set up build matrix
+matrix:
+  include:
+    # ============= GCC ==================
+    # gcc-6, c++11, debug build, dynamic linking
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-6
+      env:
+        - CXX_COMPILER=g++-6
+        - C_COMPILER=gcc-6
+        - CXX_VER=11
+        - BUILD_TYPE=Release
+        - COVERAGE=OFF
+        - STATIC=OFF
+        - SAMPLES=OFF
+        
+    # gcc-7, c++14, release build, static linking, samples + benchmarks compiled
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env:
+        - CXX_COMPILER=g++-7
+        - C_COMPILER=gcc-7
+        - CXX_VER=14
+        - BUILD_TYPE=Release
+        - COVERAGE=OFF
+        - STATIC=ON
+        - SAMPLES=ON
+        
+    # gcc-8, c++17, release build, static linking, samples + benchmarks compiled
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+      env:
+        - CXX_COMPILER=g++-8
+        - C_COMPILER=gcc-8
+        - CXX_VER=17
+        - BUILD_TYPE=Release
+        - COVERAGE=OFF
+        - STATIC=ON
+        - SAMPLES=ON
 
-env:
- - COVERAGE=ON STATIC=ON SAMPLES=OFF BENCHMARKS=OFF BUILD_TYPE=Debug
- - COVERAGE=OFF STATIC=ON SAMPLES=ON BENCHMARKS=OFF BUILD_TYPE=Debug
- - COVERAGE=OFF STATIC=OFF SAMPLES=ON BENCHMARKS=OFF BUILD_TYPE=Debug
- - COVERAGE=OFF STATIC=ON SAMPLES=ON BENCHMARKS=ON BUILD_TYPE=Release
- - COVERAGE=OFF STATIC=OFF SAMPLES=ON BENCHMARKS=ON BUILD_TYPE=Release
+    # =========== CLANG =============
+    # clang 4, c++11, release build, dynamic linking
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-4.0
+          packages:
+            - clang-4.0
+      env:
+        - CXX_COMPILER=clang++-4.0
+        - C_COMPILER=clang-4.0
+        - CXX_VER=11
+        - BUILD_TYPE=Release
+        - COVERAGE=OFF
+        - STATIC=OFF
+        - SAMPLES=OFF
+        
+    # clang 5, c++14, release build, dynamic linking, samples + benchmarks compiled
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-5.0
+          packages:
+            - clang-5.0
+      env:
+        - CXX_COMPILER=clang++-5.0
+        - C_COMPILER=clang-5.0
+        - CXX_VER=14
+        - BUILD_TYPE=Release
+        - COVERAGE=OFF
+        - STATIC=ON
+        - SAMPLES=ON
+        
+    # clang 6, c++17, release build, static linking, samples compiled
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-6.0
+          packages:
+            - clang-6.0
+      env:
+        - CXX_COMPILER=clang++-6.0
+        - C_COMPILER=clang-6.0
+        - CXX_VER=17
+        - BUILD_TYPE=Release
+        - COVERAGE=OFF
+        - STATIC=ON
+        - SAMPLES=ON
 
-addons:
-  apt:
-    sources:
-     - ubuntu-toolchain-r-test
-    packages:
-     - g++-6 lcov
+    # ============= CODE COVERAGE ===============
+    # gcc-6, c++11, debug build, static linking, code coverage enabled
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-6
+            - lcov
+      env:
+        - CXX_COMPILER=g++-6
+        - C_COMPILER=gcc-6
+        - CXX_VER=11
+        - BUILD_TYPE=Debug
+        - COVERAGE=ON
+        - STATIC=ON
+        - SAMPLES=OFF
+        
+before_install:
+  - export CC=${C_COMPILER}
+  - export CXX=${CXX_COMPILER}
 
 install:
- - export CC=gcc-6
- - export CXX=g++-6
- - gem install coveralls-lcov
+  - |
+    if [[ "${COVERAGE}" == "ON" ]]; then
+      gem install coveralls-lcov; 
+    fi
+    
+  - ${CXX} --version
+  - cmake --version
 
 script:
- - mkdir build
- - cd build
- - cmake -D STATIC=$STATIC -D BENCHMARKS=$BENCHMARKS -D SAMPLES=$SAMPLES -D COVERAGE=$COVERAGE -D CMAKE_BUILD_TYPE=$BUILD_TYPE ..
- - cmake --build .
- - ./tests/xlnt.test
+  - |
+    if [[ "${BUILD_TYPE}" == "Release" && "${STATIC}" == "ON" ]];
+      then BENCHMARKS="ON";
+    else BENCHMARKS="OFF";
+    fi
+    
+  - mkdir build
+  - cd build
+  - cmake .. -DXLNT_CXX_LANG=${CXX_VER} -DSTATIC=$STATIC -DBENCHMARKS=$BENCHMARKS -DSAMPLES=$SAMPLES -DCOVERAGE=$COVERAGE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+  - cmake --build . -- -j2
+  - ./tests/xlnt.test
 
 after_success:
  - |

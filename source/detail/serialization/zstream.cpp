@@ -366,7 +366,7 @@ public:
             deflateEnd(&strm);
             if (header)
             {
-                std::ios::streampos final_position = ostream.tellp();
+                auto final_position = ostream.tellp();
                 header->uncompressed_size = uncompressed_size;
                 header->crc = crc;
                 ostream.seekp(header->header_offset);
@@ -457,14 +457,14 @@ ozstream::ozstream(std::ostream &stream)
 ozstream::~ozstream()
 {
     // Write all file headers
-    std::ios::streampos final_position = destination_stream_.tellp();
+    auto final_position = destination_stream_.tellp();
 
     for (const auto &header : file_headers_)
     {
         write_header(header, destination_stream_, true);
     }
 
-    std::ios::streampos central_end = destination_stream_.tellp();
+    auto central_end = destination_stream_.tellp();
 
     // Write end of central
     write_int(destination_stream_, static_cast<std::uint32_t>(0x06054b50)); // end of central
@@ -507,12 +507,12 @@ bool izstream::read_central_header()
     // Find the header
     // NOTE: this assumes the zip file header is the last thing written to file...
     source_stream_.seekg(0, std::ios_base::end);
-    std::ios::streampos end_position = source_stream_.tellg();
+    auto end_position = static_cast<std::size_t>(source_stream_.tellg());
 
     auto max_comment_size = std::uint32_t(0xffff); // max size of header
     auto read_size_before_comment = std::uint32_t(22);
 
-    std::ios::streamoff read_start = max_comment_size + read_size_before_comment;
+    std::uint32_t read_start = max_comment_size + read_size_before_comment;
 
     if (read_start > end_position)
     {

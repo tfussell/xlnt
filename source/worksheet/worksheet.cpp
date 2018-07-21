@@ -98,7 +98,7 @@ void worksheet::create_named_range(const std::string &name, const range_referenc
             throw invalid_parameter(); //("named range name must be outside the range A1-XFD1048576");
         }
     }
-    catch (xlnt::invalid_cell_reference)
+    catch (xlnt::invalid_cell_reference&)
     {
         // name is not a valid reference, that's good
     }

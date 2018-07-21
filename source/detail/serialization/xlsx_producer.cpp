@@ -816,7 +816,6 @@ void xlsx_producer::write_pivot_table(const relationship & /*rel*/)
 void xlsx_producer::write_shared_string_table(const relationship & /*rel*/)
 {
     static const auto &xmlns = constants::ns("spreadsheetml");
-    static const auto &xmlns_xml = constants::ns("xml");
 
     write_start_element(xmlns, "sst");
     write_namespace(xmlns, "");
@@ -853,18 +852,13 @@ void xlsx_producer::write_shared_string_table(const relationship & /*rel*/)
     write_attribute("count", string_count);
     write_attribute("uniqueCount", source_.shared_strings().size());
 
-    auto has_trailing_whitespace = [](const std::string &s)
-    {
-        return !s.empty() && (s.front() == ' ' || s.back() == ' ');
-    };
-
     for (const auto &string : source_.shared_strings())
     {
         if (string.runs().size() == 1 && !string.runs().at(0).second.is_set())
         {
             write_start_element(xmlns, "si");
             write_start_element(xmlns, "t");
-            write_characters(string.plain_text(),string.runs().front().preserve_space);
+            write_characters(string.plain_text(), string.runs().front().preserve_space);
             write_end_element(xmlns, "t");
             write_end_element(xmlns, "si");
 
@@ -926,7 +920,7 @@ void xlsx_producer::write_shared_string_table(const relationship & /*rel*/)
             }
 
             write_start_element(xmlns, "t");
-            write_characters(run.first, has_trailing_whitespace(run.first));
+            write_characters(run.first, run.preserve_space);
             write_end_element(xmlns, "t");
             write_end_element(xmlns, "r");
         }
@@ -2755,7 +2749,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
     if (ws.has_phonetic_properties())
     {
-        write_start_element(xmlns, phonetic_pr::Serialised_ID);
+        write_start_element(xmlns, phonetic_pr::Serialised_ID());
         const auto &ph_props = ws.phonetic_properties();
         write_attribute("fontId", ph_props.font_id());
         if (ph_props.has_type())
@@ -2766,7 +2760,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         {
             write_attribute("alignment", phonetic_pr::alignment_as_string(ph_props.alignment()));
         }
-        write_end_element(xmlns, phonetic_pr::Serialised_ID);
+        write_end_element(xmlns, phonetic_pr::Serialised_ID());
     }
 
     if (ws.has_page_margins())

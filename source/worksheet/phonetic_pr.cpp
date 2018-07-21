@@ -25,18 +25,26 @@
 #include <array>
 namespace {
 // Order of elements defined by phonetic_pr::Type enum
-const std::array<std::string, 4> Types{
-    "fullwidthKatakana",
-    "halfwidthKatakana",
-    "Hiragana",
-    "noConversion"};
+const std::array<std::string, 4> &Types()
+{
+    static const std::array<std::string, 4> types{
+        std::string("fullwidthKatakana"),
+        std::string("halfwidthKatakana"),
+        std::string("Hiragana"),
+        std::string("noConversion")};
+    return types;
+}
 
 // Order of elements defined by phonetic_pr::alignment enum
-const std::array<std::string, 4> alignments{
-    "Center",
-    "Distributed",
-    "Left",
-    "NoControl"};
+const std::array<std::string, 4> &Alignments()
+{
+    static const std::array<std::string, 4> alignments{
+        std::string("Center"),
+        std::string("Distributed"),
+        std::string("Left"),
+        std::string("NoControl")};
+    return alignments;
+}
 
 } // namespace
 
@@ -44,7 +52,10 @@ namespace xlnt {
 /// <summary>
 /// out of line initialiser for static const member
 /// </summary>
-const std::string phonetic_pr::Serialised_ID = "phoneticPr";
+std::string phonetic_pr::Serialised_ID()
+{
+    return "phoneticPr";
+}
 
 phonetic_pr::phonetic_pr(font_id_t font)
     : font_id_(font)
@@ -53,7 +64,7 @@ phonetic_pr::phonetic_pr(font_id_t font)
 
 void phonetic_pr::serialise(std::ostream &output_stream) const
 {
-    output_stream << '<' << Serialised_ID << R"( fontID=")" << std::to_string(font_id_) << '"';
+    output_stream << '<' << Serialised_ID() << R"( fontID=")" << std::to_string(font_id_) << '"';
     if (has_type())
     {
         output_stream << R"( type=")" << type_as_string(type_.get()) << '"';
@@ -108,14 +119,14 @@ void phonetic_pr::alignment(align align)
 // serialisation
 const std::string &phonetic_pr::type_as_string(phonetic_pr::phonetic_type type)
 {
-    return Types[static_cast<int>(type)];
+    return Types()[static_cast<std::size_t>(type)];
 }
 
 phonetic_pr::phonetic_type phonetic_pr::type_from_string(const std::string &str)
 {
-    for (std::size_t i = 0; i < Types.size(); ++i)
+    for (std::size_t i = 0; i < Types().size(); ++i)
     {
-        if (str == Types[i])
+        if (str == Types()[i])
         {
             return static_cast<phonetic_type>(i);
         }
@@ -125,14 +136,14 @@ phonetic_pr::phonetic_type phonetic_pr::type_from_string(const std::string &str)
 
 const std::string &phonetic_pr::alignment_as_string(align type)
 {
-    return alignments[static_cast<int>(type)];
+    return Alignments()[static_cast<std::size_t>(type)];
 }
 
 phonetic_pr::align phonetic_pr::alignment_from_string(const std::string &str)
 {
-    for (std::size_t i = 0; i < alignments.size(); ++i)
+    for (std::size_t i = 0; i < Alignments().size(); ++i)
     {
-        if (str == alignments[i])
+        if (str == Alignments()[i])
         {
             return static_cast<align>(i);
         }
