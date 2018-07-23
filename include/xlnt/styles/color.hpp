@@ -101,7 +101,7 @@ public:
 
     /// <summary>
     /// Constructs an RGB color from red, green, and blue values in the range 0 to 255
-	/// plus an optional alpha which defaults to fully opaque.
+    /// plus an optional alpha which defaults to fully opaque.
     /// </summary>
     rgb_color(std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint8_t a = 255);
 
@@ -116,17 +116,17 @@ public:
     std::uint8_t red() const;
 
     /// <summary>
-	/// Returns a byte representing the red component of this color
+    /// Returns a byte representing the red component of this color
     /// </summary>
     std::uint8_t green() const;
 
     /// <summary>
-	/// Returns a byte representing the blue component of this color
+    /// Returns a byte representing the blue component of this color
     /// </summary>
     std::uint8_t blue() const;
 
     /// <summary>
-	/// Returns a byte representing the alpha component of this color
+    /// Returns a byte representing the alpha component of this color
     /// </summary>
     std::uint8_t alpha() const;
 
@@ -136,7 +136,7 @@ public:
     std::array<std::uint8_t, 3> rgb() const;
 
     /// <summary>
-	/// Returns the red, green, blue, and alpha components of this color separately in an array in that order.
+    /// Returns the red, green, blue, and alpha components of this color separately in an array in that order.
     /// </summary>
     std::array<std::uint8_t, 4> rgba() const;
 
@@ -174,42 +174,42 @@ public:
     static const color white();
 
     /// <summary>
-	/// Returns the color \#ff0000
+    /// Returns the color \#ff0000
     /// </summary>
     static const color red();
 
     /// <summary>
-	/// Returns the color \#8b0000
+    /// Returns the color \#8b0000
     /// </summary>
     static const color darkred();
 
     /// <summary>
-	/// Returns the color \#00ff00
+    /// Returns the color \#00ff00
     /// </summary>
     static const color blue();
 
     /// <summary>
-	/// Returns the color \#008b00
+    /// Returns the color \#008b00
     /// </summary>
     static const color darkblue();
 
     /// <summary>
-	/// Returns the color \#0000ff
+    /// Returns the color \#0000ff
     /// </summary>
     static const color green();
 
     /// <summary>
-	/// Returns the color \#00008b
+    /// Returns the color \#00008b
     /// </summary>
     static const color darkgreen();
 
     /// <summary>
-	/// Returns the color \#ffff00
+    /// Returns the color \#ffff00
     /// </summary>
     static const color yellow();
 
     /// <summary>
-	/// Returns the color \#cccc00
+    /// Returns the color \#cccc00
     /// </summary>
     static const color darkyellow();
 
@@ -249,8 +249,8 @@ public:
     void auto_(bool value);
 
     /// <summary>
-	/// Returns the internal indexed color representing this color. If this is not an RGB color,
-	/// an invalid_attribute exception will be thrown.
+    /// Returns the internal indexed color representing this color. If this is not an RGB color,
+    /// an invalid_attribute exception will be thrown.
     /// </summary>
     const rgb_color& rgb() const;
 
@@ -262,7 +262,7 @@ public:
 
     /// <summary>
     /// Returns the internal indexed color representing this color. If this is not an indexed color,
-	/// an invalid_attribute exception will be thrown.
+    /// an invalid_attribute exception will be thrown.
     /// </summary>
     const indexed_color& indexed() const;
 
@@ -273,8 +273,8 @@ public:
     indexed_color &indexed();
 
     /// <summary>
-	/// Returns the internal indexed color representing this color. If this is not a theme color,
-	/// an invalid_attribute exception will be thrown.
+    /// Returns the internal indexed color representing this color. If this is not a theme color,
+    /// an invalid_attribute exception will be thrown.
     /// </summary>
     const theme_color& theme() const;
 
@@ -294,15 +294,15 @@ public:
     /// </summary>
     void tint(double tint);
 
-    /// <summary>
-    /// Returns true if this color is equivalent to other
-    /// </summary>
-    bool operator==(const color &other) const;
+	/// <summary>
+	/// Returns true if this color is equivalent to other
+	/// </summary>
+	bool operator==(const color &other) const;
 
     /// <summary>
     /// Returns true if this color is not equivalent to other
     /// </summary>
-	bool operator!=(const color &other) const;
+    bool operator!=(const color &other) const;
 
 private:
     /// <summary>
@@ -321,12 +321,12 @@ private:
     rgb_color rgb_;
 
     /// <summary>
-	/// The internal RGB color. Only valid when this color has a type of indexed
+    /// The internal RGB color. Only valid when this color has a type of indexed
     /// </summary>
     indexed_color indexed_;
 
     /// <summary>
-	/// The internal RGB color. Only valid when this color has a type of theme
+    /// The internal RGB color. Only valid when this color has a type of theme
     /// </summary>
     theme_color theme_;
 

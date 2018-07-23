@@ -110,6 +110,7 @@ public:
         const auto path = path_helper::test_file("3_default.xlsx");
         xlnt_assert(workbook_matches_file(wb, path));
     }
+<<<<<<< Updated upstream:tests/workbook/serialization_test_suite.cpp
 
     void test_produce_simple_excel()
     {
@@ -245,6 +246,103 @@ public:
 
         sheet1.cell("A5").hyperlink("https://google.com/");
         sheet1.cell("A5").format(hyperlink_format);
+=======
+
+    void test_produce_simple_excel()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.active_sheet();
+
+        auto bold_font = xlnt::font().bold(true);
+
+        ws.cell("A1").value("Type");
+        ws.cell("A1").font(bold_font);
+
+        ws.cell("B1").value("Value");
+        ws.cell("B1").font(bold_font);
+
+        ws.cell("A2").value("null");
+        ws.cell("B2").value(nullptr);
+
+        ws.cell("A3").value("bool (true)");
+        ws.cell("B3").value(true);
+
+        ws.cell("A4").value("bool (false)");
+        ws.cell("B4").value(false);
+
+        ws.cell("A5").value("number (int)");
+        ws.cell("B5").value(std::numeric_limits<int>::max());
+
+        ws.cell("A5").value("number (unsigned int)");
+        ws.cell("B5").value(std::numeric_limits<unsigned int>::max());
+
+        ws.cell("A6").value("number (long long int)");
+        ws.cell("B6").value(std::numeric_limits<long long int>::max());
+
+        ws.cell("A6").value("number (unsigned long long int)");
+        ws.cell("B6").value(std::numeric_limits<unsigned long long int>::max());
+
+        ws.cell("A13").value("number (float)");
+        ws.cell("B13").value(std::numeric_limits<float>::max());
+
+        ws.cell("A14").value("number (double)");
+        ws.cell("B14").value(std::numeric_limits<double>::max());
+
+        ws.cell("A16").value("text (char *)");
+        ws.cell("B16").value("string");
+
+        ws.cell("A17").value("text (std::string)");
+        ws.cell("B17").value(std::string("string"));
+
+        ws.cell("A18").value("date");
+        ws.cell("B18").value(xlnt::date(2016, 2, 3));
+
+        ws.cell("A19").value("time");
+        ws.cell("B19").value(xlnt::time(1, 2, 3, 4));
+
+        ws.cell("A20").value("datetime");
+        ws.cell("B20").value(xlnt::datetime(2016, 2, 3, 1, 2, 3, 4));
+
+        ws.cell("A21").value("timedelta");
+        ws.cell("B21").value(xlnt::timedelta(1, 2, 3, 4, 5));
+
+        ws.freeze_panes("B2");
+
+        std::vector<std::uint8_t> temp_buffer;
+        wb.save(temp_buffer);
+        xlnt_assert(!temp_buffer.empty());
+    }
+
+      void test_save_after_sheet_deletion()
+      {
+          xlnt::workbook workbook;
+
+          xlnt_assert_equals(workbook.sheet_titles().size(), 1);
+
+          auto sheet = workbook.create_sheet();
+          sheet.title("XXX1");
+          xlnt_assert_equals(workbook.sheet_titles().size(), 2);
+
+          workbook.remove_sheet(workbook.sheet_by_title("XXX1"));
+          xlnt_assert_equals(workbook.sheet_titles().size(), 1);
+
+          std::vector<std::uint8_t> temp_buffer;
+          xlnt_assert_throws_nothing(workbook.save(temp_buffer));
+          xlnt_assert(!temp_buffer.empty());
+      }
+
+    void test_write_comments_hyperlinks_formulae()
+    {
+        xlnt::workbook wb;
+        auto sheet1 = wb.active_sheet();
+        auto comment_font = xlnt::font().bold(true).size(10).color(xlnt::indexed_color(81)).name("Calibri");
+
+        sheet1.cell("A1").value("Sheet1!A1");
+        sheet1.cell("A1").comment("Sheet1 comment", comment_font, "Microsoft Office User");
+
+        sheet1.cell("A2").value("Sheet1!A2");
+        sheet1.cell("A2").comment("Sheet1 comment2", comment_font, "Microsoft Office User");
+>>>>>>> Stashed changes:tests/workbook/serialization_test_suite.hpp
 
         sheet1.cell("A6").hyperlink(sheet1.cell("A1"));
         sheet1.cell("A6").format(hyperlink_format);
@@ -257,6 +355,7 @@ public:
         sheet1.cell("C2").value("a");
         sheet1.cell("C3").value("b");
 
+<<<<<<< Updated upstream:tests/workbook/serialization_test_suite.cpp
         for (auto i = 1; i <= 7; ++i)
         {
             sheet1.row_properties(i).dy_descent = 0.2;
@@ -270,6 +369,11 @@ public:
         // comments
         sheet2.cell("A1").value("Sheet2!A1");
         sheet2.cell("A1").comment("Sheet2 comment", comment_font, "Microsoft Office User");
+=======
+        auto sheet2 = wb.create_sheet();
+        sheet2.cell("A1").value("Sheet2!A1");
+        sheet2.cell("A2").comment("Sheet2 comment", comment_font, "Microsoft Office User");
+>>>>>>> Stashed changes:tests/workbook/serialization_test_suite.hpp
 
         sheet2.cell("A2").value("Sheet2!A2");
         sheet2.cell("A2").comment("Sheet2 comment2", comment_font, "Microsoft Office User");
@@ -360,11 +464,17 @@ public:
     {
 #ifdef _MSC_VER
         xlnt::workbook wb;
+<<<<<<< Updated upstream:tests/workbook/serialization_test_suite.cpp
         // L"/9_unicode_Λ.xlsx" doesn't use wchar_t(0x039B) for the capital lambda...
         // L"/9_unicode_\u039B.xlsx" gives the corrct output
         const auto path = LSTRING_LITERAL(XLNT_TEST_DATA_DIR) L"/9_unicode_\u039B.xlsx"; // L"/9_unicode_Λ.xlsx"
         wb.load(path);
         xlnt_assert_equals(wb.active_sheet().cell("A1").value<std::string>(), u8"un\u00EFc\u00F4d\u0117!"); // u8"unïcôdė!"
+=======
+        std::wstring path = LSTRING_LITERAL(XLNT_TEST_DATA_DIR) L"/9_unicode_Λ.xlsx";
+        wb.load(path_normalized);
+        xlnt_assert_equals(wb.active_sheet().cell("A1").value<std::string>(), u8"unicodê!");
+>>>>>>> Stashed changes:tests/workbook/serialization_test_suite.hpp
 #endif
 
 #ifndef __MINGW32__
@@ -560,8 +670,13 @@ public:
         ws.column_properties("E").width = width;
         ws.column_properties("E").custom_width = true;
 
+<<<<<<< Updated upstream:tests/workbook/serialization_test_suite.cpp
         xlnt_assert(workbook_matches_file(wb,
             path_helper::test_file("13_custom_heights_widths.xlsx")));
+=======
+        wb.save("temp.xlsx");
+        xlnt_assert(workbook_matches_file(wb, path_helper::test_file("13_custom_heights_widths.xlsx")));
+>>>>>>> Stashed changes:tests/workbook/serialization_test_suite.hpp
     }
 
     /// <summary>

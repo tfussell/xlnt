@@ -246,7 +246,11 @@ cell xlsx_consumer::read_cell()
 
     if (parser().attribute_present("s"))
     {
+<<<<<<< Updated upstream
         cell.format(target_.format(static_cast<std::size_t>(std::stoull(parser().attribute("s")))));
+=======
+        cell.format(target_.format(std::stoull(parser().attribute("s"))));
+>>>>>>> Stashed changes
     }
 
     auto has_value = false;
@@ -536,12 +540,15 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
                             current_selection.active_cell(parser().attribute("activeCell"));
                         }
 
+<<<<<<< Updated upstream
                         if (parser().attribute_present("sqref"))
                         {
                             const auto sqref = range_reference(parser().attribute("sqref"));
                             current_selection.sqref(sqref);
                         }
 
+=======
+>>>>>>> Stashed changes
                         current_selection.pane(pane_corner::top_left);
 
                         new_view.add_selection(current_selection);
@@ -727,7 +734,11 @@ void xlsx_consumer::read_worksheet_sheetdata()
 
             if (parser().attribute_present("s"))
             {
+<<<<<<< Updated upstream
                 cell.format(target_.format(static_cast<std::size_t>(std::stoull(parser().attribute("s")))));
+=======
+                cell.format(target_.format(std::stoull(parser().attribute("s"))));
+>>>>>>> Stashed changes
             }
 
             auto has_value = false;
@@ -1021,14 +1032,14 @@ worksheet xlsx_consumer::read_worksheet_end(const std::string &rel_id)
         {
             header_footer hf;
 
-            hf.align_with_margins(
-                !parser().attribute_present("alignWithMargins") || is_true(parser().attribute("alignWithMargins")));
-            hf.scale_with_doc(
-                !parser().attribute_present("alignWithMargins") || is_true(parser().attribute("alignWithMargins")));
-            auto different_odd_even =
-                parser().attribute_present("differentOddEven") && is_true(parser().attribute("differentOddEven"));
-            auto different_first =
-                parser().attribute_present("differentFirst") && is_true(parser().attribute("differentFirst"));
+            hf.align_with_margins(!parser().attribute_present("alignWithMargins")
+                || is_true(parser().attribute("alignWithMargins")));
+            hf.scale_with_doc(!parser().attribute_present("alignWithMargins")
+                || is_true(parser().attribute("alignWithMargins")));
+            auto different_odd_even = parser().attribute_present("differentOddEven")
+                && is_true(parser().attribute("differentOddEven"));
+            auto different_first = parser().attribute_present("differentFirst")
+                && is_true(parser().attribute("differentFirst"));
 
             optional<std::array<optional<rich_text>, 3>> odd_header;
             optional<std::array<optional<rich_text>, 3>> odd_footer;
@@ -1082,13 +1093,17 @@ worksheet xlsx_consumer::read_worksheet_end(const std::string &rel_id)
 
                 if (different_odd_even)
                 {
-                    if (odd_header.is_set() && odd_header.get().at(i).is_set() && even_header.is_set()
+                    if (odd_header.is_set()
+                        && odd_header.get().at(i).is_set()
+                        && even_header.is_set()
                         && even_header.get().at(i).is_set())
                     {
                         hf.odd_even_header(loc, odd_header.get().at(i).get(), even_header.get().at(i).get());
                     }
 
-                    if (odd_footer.is_set() && odd_footer.get().at(i).is_set() && even_footer.is_set()
+                    if (odd_footer.is_set()
+                        && odd_footer.get().at(i).is_set()
+                        && even_footer.is_set()
                         && even_footer.get().at(i).is_set())
                     {
                         hf.odd_even_footer(loc, odd_footer.get().at(i).get(), even_footer.get().at(i).get());
@@ -1915,18 +1930,17 @@ void xlsx_consumer::read_shared_string_table()
         unique_count = parser().attribute<std::size_t>("uniqueCount");
     }
 
-    auto &strings = target_.shared_strings();
-
     while (in_element(qn("spreadsheetml", "sst")))
     {
         expect_start_element(qn("spreadsheetml", "si"), xml::content::complex);
-        strings.push_back(read_rich_text(qn("spreadsheetml", "si")));
+        auto rt = read_rich_text(qn("spreadsheetml", "si"));
+        target_.add_shared_string(rt);
         expect_end_element(qn("spreadsheetml", "si"));
     }
 
     expect_end_element(qn("spreadsheetml", "sst"));
 
-    if (has_unique_count && unique_count != strings.size())
+    if (has_unique_count && unique_count != target_.shared_strings().size())
     {
         throw invalid_file("sizes don't match");
     }

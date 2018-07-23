@@ -473,11 +473,15 @@ workbook workbook::empty()
                             .color(theme_color(1));
     stylesheet.fonts.push_back(default_font);
 
+<<<<<<< Updated upstream
     wb.create_builtin_style(0)
         .border(default_border)
         .fill(default_fill)
         .font(default_font)
         .number_format(xlnt::number_format::general());
+=======
+  wb.create_builtin_style(0);
+>>>>>>> Stashed changes
 
     wb.create_format(true)
         .border(default_border)
@@ -1017,8 +1021,8 @@ void workbook::load(const std::wstring &filename, const std::string &password)
 
 void workbook::remove_sheet(worksheet ws)
 {
-    auto match_iter = std::find_if(
-        d_->worksheets_.begin(), d_->worksheets_.end(), [=](detail::worksheet_impl &comp) { return &comp == ws.d_; });
+    auto match_iter = std::find_if(d_->worksheets_.begin(), d_->worksheets_.end(),
+      [=](detail::worksheet_impl &comp) { return &comp == ws.d_; });
 
     if (match_iter == d_->worksheets_.end())
     {
@@ -1071,10 +1075,10 @@ worksheet workbook::create_sheet_with_rel(const std::string &title, const relati
 
     auto workbook_rel = d_->manifest_.relationship(path("/"), relationship_type::office_document);
     auto sheet_absoulute_path = workbook_rel.target().path().parent().append(rel.target().path());
-    d_->manifest_.register_override_type(
-        sheet_absoulute_path, "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
-    auto ws_rel = d_->manifest_.register_relationship(
-        workbook_rel.target(), relationship_type::worksheet, rel.target(), target_mode::internal);
+    d_->manifest_.register_override_type(sheet_absoulute_path,
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml");
+    auto ws_rel = d_->manifest_.register_relationship(workbook_rel.target(),
+        relationship_type::worksheet, rel.target(), target_mode::internal);
     d_->sheet_title_rel_id_map_[title] = ws_rel;
 
     update_sheet_properties();
@@ -1332,39 +1336,53 @@ const manifest &workbook::manifest() const
     return d_->manifest_;
 }
 
-std::vector<rich_text> &workbook::shared_strings()
+const std::unordered_map<std::size_t, rich_text> &workbook::shared_strings_by_id() const
 {
-    return d_->shared_strings_;
+    return d_->shared_strings_values_;
 }
 
-const std::vector<rich_text> &workbook::shared_strings() const
+const rich_text& workbook::shared_strings(std::size_t index) const
 {
-    return d_->shared_strings_;
+    auto it = d_->shared_strings_values_.find(index);
+
+    if (it != d_->shared_strings_values_.end())
+    {
+        return it->second;
+    }
+
+    static rich_text empty;
+    return empty;
+}
+
+std::unordered_map<rich_text, std::size_t, rich_text_hash> &workbook::shared_strings()
+{
+    return d_->shared_strings_ids_;
+}
+
+const std::unordered_map<rich_text, std::size_t, rich_text_hash> &workbook::shared_strings() const
+{
+    return d_->shared_strings_ids_;
 }
 
 std::size_t workbook::add_shared_string(const rich_text &shared, bool allow_duplicates)
 {
     register_workbook_part(relationship_type::shared_string_table);
 
-    auto index = std::size_t(0);
-
     if (!allow_duplicates)
     {
-        // TODO: inefficient, use a set or something?
-        for (auto &s : d_->shared_strings_)
-        {
-            if (s == shared)
-            {
-                return index;
-            }
+        auto it = d_->shared_strings_ids_.find(shared);
 
-            ++index;
+        if (it != d_->shared_strings_ids_.end())
+        {
+            return it->second;
         }
     }
 
-    d_->shared_strings_.push_back(shared);
+    auto sz = d_->shared_strings_ids_.size();
+    d_->shared_strings_ids_[shared] = sz;
+    d_->shared_strings_values_[sz] = shared;
 
-    return index;
+    return sz;
 }
 
 bool workbook::contains(const std::string &sheet_title) const

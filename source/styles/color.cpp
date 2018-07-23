@@ -32,14 +32,14 @@ namespace {
 
 std::array<std::uint8_t, 4> decode_hex_string(const std::string &hex_string)
 {
-	auto x = std::strtoul(hex_string.c_str(), nullptr, 16);
+    auto x = std::strtoul(hex_string.c_str(), nullptr, 16);
 
-	auto a = static_cast<std::uint8_t>(x >> 24);
-	auto r = static_cast<std::uint8_t>((x >> 16) & 0xff);
-	auto g = static_cast<std::uint8_t>((x >> 8) & 0xff);
-	auto b = static_cast<std::uint8_t>(x & 0xff);
+    auto a = static_cast<std::uint8_t>(x >> 24);
+    auto r = static_cast<std::uint8_t>((x >> 16) & 0xff);
+    auto g = static_cast<std::uint8_t>((x >> 8) & 0xff);
+    auto b = static_cast<std::uint8_t>(x & 0xff);
 
-	return { { r, g, b, a } };
+    return { { r, g, b, a } };
 }
 
 } // namespace
@@ -54,7 +54,7 @@ indexed_color::indexed_color(std::size_t index) : index_(index)
 
 std::size_t indexed_color::index() const
 {
-	return index_;
+    return index_;
 }
 
 void indexed_color::index(std::size_t index)
@@ -70,7 +70,7 @@ theme_color::theme_color(std::size_t index) : index_(index)
 
 std::size_t theme_color::index() const
 {
-	return index_;
+    return index_;
 }
 
 void theme_color::index(std::size_t index)
@@ -110,84 +110,84 @@ rgb_color::rgb_color(std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint8_
 
 std::uint8_t rgb_color::red() const
 {
-	return rgba_[0];
+    return rgba_[0];
 }
 
 std::uint8_t rgb_color::green() const
 {
-	return rgba_[1];
+    return rgba_[1];
 }
 
 std::uint8_t rgb_color::blue() const
 {
-	return rgba_[2];
+    return rgba_[2];
 }
 
 std::uint8_t rgb_color::alpha() const
 {
-	return rgba_[3];
+    return rgba_[3];
 }
 
 std::array<std::uint8_t, 3> rgb_color::rgb() const
 {
-	return {{red(), green(), blue()}};
+    return {{red(), green(), blue()}};
 }
 
 std::array<std::uint8_t, 4> rgb_color::rgba() const
 {
-	return rgba_;
+    return rgba_;
 }
 
 // color implementation
 
 const color color::black()
 {
-	return color(rgb_color("ff000000"));
+    return color(rgb_color("ff000000"));
 }
 
 const color color::white()
 {
-	return color(rgb_color("ffffffff"));
+    return color(rgb_color("ffffffff"));
 }
 
 const color color::red()
 {
-	return color(rgb_color("ffff0000"));
+    return color(rgb_color("ffff0000"));
 }
 
 const color color::darkred()
 {
-	return color(rgb_color("ff8b0000"));
+    return color(rgb_color("ff8b0000"));
 }
 
 const color color::blue()
 {
-	return color(rgb_color("ff0000ff"));
+    return color(rgb_color("ff0000ff"));
 }
 
 const color color::darkblue()
 {
-	return color(rgb_color("ff00008b"));
+    return color(rgb_color("ff00008b"));
 }
 
 const color color::green()
 {
-	return color(rgb_color("ff00ff00"));
+    return color(rgb_color("ff00ff00"));
 }
 
 const color color::darkgreen()
 {
-	return color(rgb_color("ff008b00"));
+    return color(rgb_color("ff008b00"));
 }
 
 const color color::yellow()
 {
-	return color(rgb_color("ffffff00"));
+    return color(rgb_color("ffffff00"));
 }
 
 const color color::darkyellow()
 {
-	return color(rgb_color("ffcccc00"));
+    return color(rgb_color("ffcccc00"));
 }
 
 color::color() : color(indexed_color(0))
@@ -195,48 +195,48 @@ color::color() : color(indexed_color(0))
 }
 
 color::color(const rgb_color &rgb)
-	: type_(color_type::rgb),
-	  rgb_(rgb),
-	  indexed_(0),
-	  theme_(0)
+  : type_(color_type::rgb),
+    rgb_(rgb),
+    indexed_(0),
+    theme_(0)
 {
 }
 
 color::color(const indexed_color &indexed)
-	: type_(color_type::indexed),
-	  rgb_(rgb_color(0, 0, 0, 0)),
-	  indexed_(indexed),
-	  theme_(0)
+  : type_(color_type::indexed),
+    rgb_(rgb_color(0, 0, 0, 0)),
+    indexed_(indexed),
+    theme_(0)
 {
 }
 
 color::color(const theme_color &theme)
-	: type_(color_type::theme),
-	  rgb_(rgb_color(0, 0, 0, 0)),
-	  indexed_(0),
-	  theme_(theme)
+  : type_(color_type::theme),
+    rgb_(rgb_color(0, 0, 0, 0)),
+    indexed_(0),
+    theme_(theme)
 {
 }
 
 color_type color::type() const
 {
-	return type_;
+    return type_;
 }
 
 bool color::auto_() const
 {
-	return auto__;
+    return auto__;
 }
 
 void color::auto_(bool value)
 {
-	auto__ = value;
+    auto__ = value;
 }
 
 const indexed_color& color::indexed() const
 {
-	assert_type(color_type::indexed);
-	return indexed_;
+    assert_type(color_type::indexed);
+    return indexed_;
 }
 
 indexed_color &color::indexed()
@@ -247,8 +247,8 @@ indexed_color &color::indexed()
 
 const theme_color& color::theme() const
 {
-	assert_type(color_type::theme);
-	return theme_;
+    assert_type(color_type::theme);
+    return theme_;
 }
 
 theme_color &color::theme()
@@ -276,7 +276,7 @@ void color::tint(double tint)
 
 double color::tint() const
 {
-	return tint_;
+    return tint_;
 }
 
 void color::assert_type(color_type t) const
@@ -309,7 +309,7 @@ bool color::operator==(const xlnt::color &other) const
 
 bool color::operator!=(const color &other) const
 {
-	return !(*this == other);
+    return !(*this == other);
 }
 
 } // namespace xlnt

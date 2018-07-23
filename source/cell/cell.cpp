@@ -704,7 +704,7 @@ XLNT_API rich_text cell::value() const
 {
     if (data_type() == cell::type::shared_string)
     {
-        return workbook().shared_strings().at(static_cast<std::size_t>(d_->value_numeric_));
+        return workbook().shared_strings(static_cast<std::size_t>(d_->value_numeric_));
     }
 
     return d_->value_text_;
@@ -861,19 +861,19 @@ style cell::style()
         throw invalid_attribute();
     }
 
-	auto f = format();
+    auto f = format();
 
     return f.style();
 }
 
 const style cell::style() const
 {
-	if (!has_format() || !format().has_style())
-	{
-		throw invalid_attribute();
-	}
+    if (!has_format() || !format().has_style())
+    {
+        throw invalid_attribute();
+    }
 
-	return format().style();
+    return format().style();
 }
 
 bool cell::has_style() const

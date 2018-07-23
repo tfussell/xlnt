@@ -33,6 +33,7 @@
 #include <vector>
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/cell/rich_text.hpp>
 
 namespace xlnt {
 
@@ -700,10 +701,10 @@ public:
     /// </summary>
     class style create_style(const std::string &name);
 
-	/// <summary>
-	/// Creates a new style and returns it.
-	/// </summary>
-	class style create_builtin_style(std::size_t builtin_id);
+    /// <summary>
+    /// Creates a new style and returns it.
+    /// </summary>
+    class style create_builtin_style(std::size_t builtin_id);
 
     /// <summary>
     /// Clear all named styles from cells and remove the styles from
@@ -759,17 +760,27 @@ public:
     /// </summary>
     std::size_t add_shared_string(const rich_text &shared, bool allow_duplicates = false);
 
-    /// <summary>
-    /// Returns a reference to the shared strings being used by cells
-    /// in this workbook.
-    /// </summary>
-    std::vector<rich_text> &shared_strings();
+  	/// <summary>
+  	/// Returns a reference to the shared string ordered by id
+  	/// </summary>
+  	const std::unordered_map<std::size_t, rich_text> &shared_strings_by_id() const;
+
+  	/// <summary>
+  	/// Returns a reference to the shared string related to the specified index
+  	/// </summary>
+  	const rich_text &shared_strings(std::size_t index) const;
 
     /// <summary>
     /// Returns a reference to the shared strings being used by cells
     /// in this workbook.
     /// </summary>
-    const std::vector<rich_text> &shared_strings() const;
+    std::unordered_map<rich_text, std::size_t, rich_text_hash> &shared_strings();
+
+    /// <summary>
+    /// Returns a reference to the shared strings being used by cells
+    /// in this workbook.
+    /// </summary>
+    const std::unordered_map<rich_text, std::size_t, rich_text_hash> &shared_strings() const;
 
     // Thumbnail
 

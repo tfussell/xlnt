@@ -850,15 +850,17 @@ void xlsx_producer::write_shared_string_table(const relationship & /*rel*/)
 #pragma clang diagnostic pop
 
     write_attribute("count", string_count);
-    write_attribute("uniqueCount", source_.shared_strings().size());
+    write_attribute("uniqueCount", source_.shared_strings_by_id().size());
 
-    for (const auto &string : source_.shared_strings())
+    for (const auto &string : source_.shared_strings_by_id())
     {
-        if (string.runs().size() == 1 && !string.runs().at(0).second.is_set())
+        if (string.second.runs().size() == 1 && !string.second.runs().at(0).second.is_set())
         {
             write_start_element(xmlns, "si");
             write_start_element(xmlns, "t");
-            write_characters(string.plain_text(), string.runs().front().preserve_space);
+
+            write_characters(string.second.plain_text(), string.second.runs().front().preserve_space);
+
             write_end_element(xmlns, "t");
             write_end_element(xmlns, "si");
 
@@ -867,7 +869,7 @@ void xlsx_producer::write_shared_string_table(const relationship & /*rel*/)
 
         write_start_element(xmlns, "si");
 
-        for (const auto &run : string.runs())
+        for (const auto &run : string.second.runs())
         {
             write_start_element(xmlns, "r");
 
@@ -2164,7 +2166,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         })->first;
 
     auto ws = source_.sheet_by_title(title);
-	
+
     write_start_element(xmlns, "worksheet");
     write_namespace(xmlns, "");
     write_namespace(xmlns_r, "r");
@@ -2372,7 +2374,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
     for (auto column = first_column; column <= last_column; column++)
     {
         if (!ws.has_column_properties(column)) continue;
-        
+
 	    if(!has_column_properties)
         {
             write_start_element(xmlns, "cols");

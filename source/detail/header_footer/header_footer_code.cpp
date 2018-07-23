@@ -547,7 +547,6 @@ std::string encode_header_footer(const rich_text &t, header_footer::location whe
                 case font::underline_style::double_accounting:
                     encoded.append("&E");
                     break;
-                default:
                 case font::underline_style::none:
                     break;
                 }

@@ -47,14 +47,15 @@ struct worksheet_impl;
 
 struct workbook_impl
 {
-	workbook_impl() : base_date_(calendar::windows_1900)
-	{
-	}
+    workbook_impl() : base_date_(calendar::windows_1900)
+    {
+    }
 
     workbook_impl(const workbook_impl &other)
         : active_sheet_index_(other.active_sheet_index_),
           worksheets_(other.worksheets_),
-          shared_strings_(other.shared_strings_),
+          shared_strings_ids_(other.shared_strings_ids_),
+          shared_strings_values_(other.shared_strings_values_),
           stylesheet_(other.stylesheet_),
           manifest_(other.manifest_),
           theme_(other.theme_),
@@ -72,15 +73,15 @@ struct workbook_impl
         active_sheet_index_ = other.active_sheet_index_;
         worksheets_.clear();
         std::copy(other.worksheets_.begin(), other.worksheets_.end(), back_inserter(worksheets_));
-        shared_strings_.clear();
-        std::copy(other.shared_strings_.begin(), other.shared_strings_.end(), std::back_inserter(shared_strings_));
-		theme_ = other.theme_;
+        shared_strings_ids_ = other.shared_strings_ids_;
+        shared_strings_values_ = other.shared_strings_values_;
+        theme_ = other.theme_;
         manifest_ = other.manifest_;
 
-		sheet_title_rel_id_map_ = other.sheet_title_rel_id_map_;
-		view_ = other.view_;
-		code_name_ = other.code_name_;
-		file_version_ = other.file_version_;
+        sheet_title_rel_id_map_ = other.sheet_title_rel_id_map_;
+        view_ = other.view_;
+        code_name_ = other.code_name_;
+        file_version_ = other.file_version_;
 
         core_properties_ = other.core_properties_;
         extended_properties_ = other.extended_properties_;
@@ -116,13 +117,14 @@ struct workbook_impl
     optional<std::size_t> active_sheet_index_;
 
     std::list<worksheet_impl> worksheets_;
-    std::vector<rich_text> shared_strings_;
+    std::unordered_map<rich_text, std::size_t, rich_text_hash> shared_strings_ids_;
+    std::unordered_map<std::size_t, rich_text> shared_strings_values_;
 
     optional<stylesheet> stylesheet_;
 
     calendar base_date_;
     optional<std::string> title_;
-    
+
     manifest manifest_;
     optional<theme> theme_;
     std::unordered_map<std::string, std::vector<std::uint8_t>> images_;
@@ -131,11 +133,12 @@ struct workbook_impl
     std::vector<std::pair<xlnt::extended_property, variant>> extended_properties_;
     std::vector<std::pair<std::string, variant>> custom_properties_;
 
-	std::unordered_map<std::string, std::string> sheet_title_rel_id_map_;
+    std::unordered_map<std::string, std::string> sheet_title_rel_id_map_;
 
     optional<workbook_view> view_;
     optional<std::string> code_name_;
 
+<<<<<<< Updated upstream
 	struct file_version_t
 	{
 		std::string app_name;
@@ -152,6 +155,16 @@ struct workbook_impl
         }
 	};
     
+=======
+    struct file_version_t
+    {
+        std::string app_name;
+        std::size_t last_edited;
+        std::size_t lowest_edited;
+        std::size_t rup_build;
+    };
+
+>>>>>>> Stashed changes
     optional<file_version_t> file_version_;
     optional<calculation_properties> calculation_properties_;
     optional<std::string> abs_path_;
