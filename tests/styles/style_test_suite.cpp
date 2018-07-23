@@ -36,7 +36,6 @@ public:
     void test_all()
     {
         xlnt::workbook wb;
-        auto ws = wb.active_sheet();
         auto test_style = wb.create_style("test_style");
         test_style.number_format(xlnt::number_format::date_ddmmyyyy());
 

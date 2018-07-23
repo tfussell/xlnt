@@ -94,7 +94,7 @@ struct workbook_impl
     {
         return active_sheet_index_ == other.active_sheet_index_
             && worksheets_ == other.worksheets_
-            && shared_strings_ == other.shared_strings_
+            && shared_strings_ids_ == other.shared_strings_ids_
             && stylesheet_ == other.stylesheet_
             && base_date_ == other.base_date_
             && title_ == other.title_
@@ -138,7 +138,6 @@ struct workbook_impl
     optional<workbook_view> view_;
     optional<std::string> code_name_;
 
-<<<<<<< Updated upstream
 	struct file_version_t
 	{
 		std::string app_name;
@@ -154,17 +153,7 @@ struct workbook_impl
                 && rup_build == rhs.rup_build;
         }
 	};
-    
-=======
-    struct file_version_t
-    {
-        std::string app_name;
-        std::size_t last_edited;
-        std::size_t lowest_edited;
-        std::size_t rup_build;
-    };
 
->>>>>>> Stashed changes
     optional<file_version_t> file_version_;
     optional<calculation_properties> calculation_properties_;
     optional<std::string> abs_path_;

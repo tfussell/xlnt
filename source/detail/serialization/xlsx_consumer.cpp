@@ -246,11 +246,7 @@ cell xlsx_consumer::read_cell()
 
     if (parser().attribute_present("s"))
     {
-<<<<<<< Updated upstream
         cell.format(target_.format(static_cast<std::size_t>(std::stoull(parser().attribute("s")))));
-=======
-        cell.format(target_.format(std::stoull(parser().attribute("s"))));
->>>>>>> Stashed changes
     }
 
     auto has_value = false;
@@ -540,15 +536,12 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
                             current_selection.active_cell(parser().attribute("activeCell"));
                         }
 
-<<<<<<< Updated upstream
                         if (parser().attribute_present("sqref"))
                         {
                             const auto sqref = range_reference(parser().attribute("sqref"));
                             current_selection.sqref(sqref);
                         }
 
-=======
->>>>>>> Stashed changes
                         current_selection.pane(pane_corner::top_left);
 
                         new_view.add_selection(current_selection);
@@ -734,11 +727,7 @@ void xlsx_consumer::read_worksheet_sheetdata()
 
             if (parser().attribute_present("s"))
             {
-<<<<<<< Updated upstream
                 cell.format(target_.format(static_cast<std::size_t>(std::stoull(parser().attribute("s")))));
-=======
-                cell.format(target_.format(std::stoull(parser().attribute("s"))));
->>>>>>> Stashed changes
             }
 
             auto has_value = false;

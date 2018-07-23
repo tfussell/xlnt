@@ -473,15 +473,11 @@ workbook workbook::empty()
                             .color(theme_color(1));
     stylesheet.fonts.push_back(default_font);
 
-<<<<<<< Updated upstream
     wb.create_builtin_style(0)
         .border(default_border)
         .fill(default_fill)
         .font(default_font)
         .number_format(xlnt::number_format::general());
-=======
-  wb.create_builtin_style(0);
->>>>>>> Stashed changes
 
     wb.create_format(true)
         .border(default_border)
