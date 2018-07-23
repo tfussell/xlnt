@@ -23,6 +23,8 @@
 
 #include <fstream>
 #include <sstream>
+#include <algorithm>
+#include <iterator>
 #include <sys/stat.h>
 
 #ifdef __APPLE__
@@ -137,8 +139,8 @@ path::path()
 }
 
 path::path(const std::string &path_string)
-    : internal_(path_string)
 {
+	std::remove_copy(path_string.begin(), path_string.end(), std::back_inserter(internal_), '\"');
 }
 
 // general attributes

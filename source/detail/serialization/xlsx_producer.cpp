@@ -818,20 +818,20 @@ void xlsx_producer::write_shared_string_table(const relationship & /*rel*/)
 #pragma clang diagnostic pop
 
     write_attribute("count", string_count);
-    write_attribute("uniqueCount", source_.shared_strings().size());
+    write_attribute("uniqueCount", source_.shared_strings_by_id().size());
 
     auto has_trailing_whitespace = [](const std::string &s)
     {
         return !s.empty() && (s.front() == ' ' || s.back() == ' ');
     };
 
-    for (const auto &string : source_.shared_strings())
+    for (const auto &string : source_.shared_strings_by_id())
     {
-        if (string.runs().size() == 1 && !string.runs().at(0).second.is_set())
+        if (string.second.runs().size() == 1 && !string.second.runs().at(0).second.is_set())
         {
             write_start_element(xmlns, "si");
             write_start_element(xmlns, "t");
-            write_characters(string.plain_text(), has_trailing_whitespace(string.plain_text()));
+            write_characters(string.second.plain_text(), has_trailing_whitespace(string.second.plain_text()));
             write_end_element(xmlns, "t");
             write_end_element(xmlns, "si");
 
@@ -840,7 +840,7 @@ void xlsx_producer::write_shared_string_table(const relationship & /*rel*/)
 
         write_start_element(xmlns, "si");
 
-        for (const auto &run : string.runs())
+        for (const auto &run : string.second.runs())
         {
             write_start_element(xmlns, "r");
 

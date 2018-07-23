@@ -43,10 +43,15 @@ public:
     /// </summary>
     rich_text() = default;
 
-    /// <summary>
-    /// Constructs a rich text object with the given text and no font.
-    /// </summary>
-    rich_text(const std::string &plain_text);
+	/// <summary>
+	/// Constructs a rich text object with the given text and no font.
+	/// </summary>
+	rich_text(const std::string &plain_text);
+	
+	/// <summary>
+	/// Constructs a rich text object from other
+	/// </summary>
+	rich_text(const rich_text &other);
 
     /// <summary>
     /// Constructs a rich text object with the given text and font.
@@ -89,7 +94,12 @@ public:
     /// </summary>
     void add_run(const rich_text_run &t);
 
-    /// <summary>
+	/// <summary>
+	/// Copies rich text object from other
+	/// </summary>
+	rich_text& operator=(const rich_text &rhs);
+	
+	/// <summary>
     /// Returns true if the runs that make up this text are identical to those in rhs.
     /// </summary>
     bool operator==(const rich_text &rhs) const;
@@ -109,11 +119,29 @@ public:
     /// </summary>
     bool operator!=(const std::string &rhs) const;
 
+	/// <summary>
+	/// Returns true if this text is less to rhs.
+	/// </summary>
+	bool operator<(const rich_text &rhs) const;
 private:
     /// <summary>
     /// The runs that make up this rich text.
     /// </summary>
     std::vector<rich_text_run> runs_;
+};
+
+class XLNT_API rich_text_hash 
+{
+public:
+	std::size_t operator()(const rich_text& k) const
+	{
+		std::size_t res = 0;
+
+		for (auto r : k.runs())
+			res ^= std::hash<std::string>()(r.first);
+
+		return res;
+	}
 };
 
 } // namespace xlnt

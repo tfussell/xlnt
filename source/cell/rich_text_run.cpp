@@ -25,6 +25,14 @@
 
 namespace xlnt {
 
+bool rich_text_run::operator<(const rich_text_run &other) const
+{
+	if (first != other.first)
+		return first < other.first;
+
+	return second < other.second;
+}
+
 bool rich_text_run::operator==(const rich_text_run &other) const
 {
     return first == other.first && second == other.second;

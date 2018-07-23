@@ -38,6 +38,18 @@ rich_text::rich_text(const std::string &plain_text, const class font &text_font)
 {
 }
 
+rich_text::rich_text(const rich_text &other)
+{
+	(*this) = other;
+}
+
+rich_text& rich_text::operator=(const rich_text &rhs)
+{
+	runs_.clear();
+	runs_ = rhs.runs_;
+	return (*this);
+}
+
 rich_text::rich_text(const rich_text_run &single_run)
 {
     add_run(single_run);
@@ -56,6 +68,9 @@ void rich_text::plain_text(const std::string &s)
 
 std::string rich_text::plain_text() const
 {
+	if (runs_.size() == 1)
+		return runs_.begin()->first;
+
     return std::accumulate(runs_.begin(), runs_.end(), std::string(),
         [](const std::string &a, const rich_text_run &run) { return a + run.first; });
 }
@@ -68,6 +83,20 @@ std::vector<rich_text_run> rich_text::runs() const
 void rich_text::add_run(const rich_text_run &t)
 {
     runs_.push_back(t);
+}
+
+bool rich_text::operator<(const rich_text &rhs) const
+{
+	if (runs_.size() != rhs.runs_.size())
+		return runs_.size() < rhs.runs_.size();
+	
+	for (std::size_t i = 0; i < runs_.size(); i++)
+	{
+		if (runs_[i] != rhs.runs_[i]) 
+			return runs_[i] < rhs.runs_[i];
+	}
+
+	return false;
 }
 
 bool rich_text::operator==(const rich_text &rhs) const

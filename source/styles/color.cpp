@@ -259,6 +259,34 @@ void color::assert_type(color_type t) const
     }
 }
 
+bool color::operator<(const xlnt::color &other) const
+{
+	if (type_ != other.type_)
+	{
+		return type_ < other.type_;
+	}
+
+	if (std::fabs(tint_ - other.tint_) != 0.0)
+	{
+		return tint_ < other.tint_;
+	}
+
+	if (auto__ != other.auto__)
+		return auto__ < other.auto__;	
+
+	switch (type_)
+	{
+	case color_type::indexed:
+		return indexed_.index() < other.indexed_.index();
+	case color_type::theme:
+		return theme_.index() < other.theme_.index();
+	case color_type::rgb:
+		return rgb_.hex_string() < other.rgb_.hex_string();
+	}
+
+	return false;
+}
+
 bool color::operator==(const xlnt::color &other) const
 {
     if (type_ != other.type_ || std::fabs(tint_ - other.tint_) != 0.0 || auto__ != other.auto__)
