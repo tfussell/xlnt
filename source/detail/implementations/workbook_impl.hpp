@@ -118,7 +118,7 @@ struct workbook_impl
 
     std::list<worksheet_impl> worksheets_;
     std::unordered_map<rich_text, std::size_t, rich_text_hash> shared_strings_ids_;
-    std::unordered_map<std::size_t, rich_text> shared_strings_values_;
+    std::map<std::size_t, rich_text> shared_strings_values_;
 
     optional<stylesheet> stylesheet_;
 

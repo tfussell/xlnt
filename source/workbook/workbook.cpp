@@ -1332,7 +1332,7 @@ const manifest &workbook::manifest() const
     return d_->manifest_;
 }
 
-const std::unordered_map<std::size_t, rich_text> &workbook::shared_strings_by_id() const
+const std::map<std::size_t, rich_text> &workbook::shared_strings_by_id() const
 {
     return d_->shared_strings_values_;
 }
