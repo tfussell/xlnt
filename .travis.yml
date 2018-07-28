@@ -170,6 +170,18 @@ script:
   - cmake .. -DXLNT_CXX_LANG=${CXX_VER} -DSTATIC=$STATIC -DBENCHMARKS=$BENCHMARKS -DSAMPLES=$SAMPLES -DCOVERAGE=$COVERAGE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
   - cmake --build . -- -j2
   - ./tests/xlnt.test
+  - |
+    if [[ "${SAMPLES}" == "ON" ]]; then
+      ./samples/sample-decrypt
+      ./samples/sample-img2xlsx
+      ./samples/sample-documentation
+    fi
+  - |
+    if [[ "${BENCHMARKS}" == "ON" ]]; then
+      ./benchmarks/benchmark-styles
+      ./benchmarks/benchmark-writer
+    fi
+    
 
 after_success:
  - |
