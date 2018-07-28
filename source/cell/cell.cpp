@@ -964,16 +964,12 @@ class comment cell::comment()
 
 void cell::comment(const std::string &text, const std::string &author)
 {
-    xlnt::comment tmp_comment(text, author);
-    tmp_comment.size(200, 100);
-    comment(tmp_comment);
+    comment(xlnt::comment(text, author));
 }
 
 void cell::comment(const std::string &text, const class font &comment_font, const std::string &author)
 {
-    xlnt::comment tmp_comment(xlnt::rich_text(text, comment_font), author);
-    tmp_comment.size(200, 100);
-    comment(tmp_comment);
+    comment(xlnt::comment(xlnt::rich_text(text, comment_font), author));
 }
 
 void cell::comment(const class comment &new_comment)
