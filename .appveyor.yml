@@ -18,6 +18,7 @@ environment:
 init: []
 
 before_build:
+  - del /S /F build
   - mkdir build
   - cd build
   - cmake -G "Visual Studio 14 2015" -D CMAKE_GENERATOR_PLATFORM=%platform% -D STATIC=%STATIC% -D SAMPLES=ON -D BENCHMARKS=ON ..
@@ -28,5 +29,5 @@ build:
   verbosity: minimal
 
 test_script:
-  - cd tests\%configuration%
-  - xlnt.test.exe
+  - tests\%configuration%\xlnt.test.exe
+  - samples\%configuration%\sample-documentation.exe
