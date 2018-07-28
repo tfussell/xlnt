@@ -3345,7 +3345,6 @@ void xlsx_producer::write_color(const xlnt::color &color)
         write_attribute("auto", write_bool(true));
         return;
     }
-
     switch (color.type())
     {
     case xlnt::color_type::theme:
@@ -3359,6 +3358,10 @@ void xlsx_producer::write_color(const xlnt::color &color)
     case xlnt::color_type::rgb:
         write_attribute("rgb", color.rgb().hex_string());
         break;
+    }
+    if (color.has_tint())
+    {
+        write_attribute("tint", serialize_number_to_string(color.tint()));
     }
 }
 
