@@ -39,11 +39,10 @@ void writer(int cols, int rows)
 
     for(int index = 0; index < rows; index++)
     {
-        if ((index + 1) % (rows / 10) == 0)
+        if (rows >= 10 && (index + 1) % (rows / 10) == 0)
         {
             std::string progress = std::string((index + 1) / (1 + rows / 10), '.');
             std::cout << "\r" << progress;
-            std::cout.flush();
         }
 
 		for (int i = 0; i < cols; i++)
@@ -51,8 +50,7 @@ void writer(int cols, int rows)
 			ws.cell(xlnt::cell_reference(i + 1, index + 1)).value(i);
 		}
     }
-
-    std::cout << std::endl;
+    std::cout << '\n';
 
     auto filename = "benchmark.xlsx";
     wb.save(filename);
@@ -63,33 +61,32 @@ void writer(int cols, int rows)
 // Time from the best of three is taken.
 void timer(std::function<void(int, int)> fn, int cols, int rows)
 {
-    using xlnt::benchmarks::current_time;
-
     const auto repeat = std::size_t(3);
-    auto time = std::numeric_limits<std::size_t>::max();
-
+    std::chrono::duration<double> time{};
     std::cout << cols << " cols " << rows << " rows" << std::endl;
+    fn(rows, cols); // 1 cold run
 
     for(int i = 0; i < repeat; i++)
     {
-        auto start = current_time();
+        auto start = std::chrono::high_resolution_clock::now();
         fn(cols, rows);
-        time = std::min(current_time() - start, time);
+        time += std::chrono::high_resolution_clock::now() - start;
     }
 
-    std::cout << time / 1000.0 << std::endl;
+    std::cout << time.count() / repeat << " seconds per iteration" << '\n' << '\n';
 }
 
 } // namespace
 
 int main()
 {
-    timer(&writer, 100, 100);
-    timer(&writer, 1000, 100);
-    timer(&writer, 4000, 100);
-    timer(&writer, 8192, 100);
-    timer(&writer, 10, 10000);
-    timer(&writer, 4000, 1000);
+    timer(&writer, 160000, 1);
+    timer(&writer, 6400, 25);
+    timer(&writer, 1600, 100);
+    timer(&writer, 400, 400);
+    timer(&writer, 100, 1600);
+    timer(&writer, 25, 6400);
+    timer(&writer, 1, 160000);
 
     return 0;
 }
