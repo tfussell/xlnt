@@ -14,17 +14,19 @@ environment:
   matrix:
   - STATIC: OFF
   - STATIC: ON
+  
+matrix:
+  fast_finish: true
 
 init: []
 
 before_build:
-  - del /S /F build
   - mkdir build
   - cd build
   - cmake -G "Visual Studio 14 2015" -D CMAKE_GENERATOR_PLATFORM=%platform% -D STATIC=%STATIC% -D SAMPLES=ON -D BENCHMARKS=ON ..
 
 build:
-  project: build/tests/xlnt.test.sln
+  project: build/xlnt_all.sln
   parallel: true
   verbosity: minimal
 
