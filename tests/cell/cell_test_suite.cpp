@@ -774,6 +774,11 @@ private:
         cell.clear_comment();
         xlnt_assert(!cell.has_comment());
         xlnt_assert_throws(cell.comment(), xlnt::exception);
+
+        xlnt::comment comment_with_size("test comment", "author");
+        comment_with_size.size(1000, 30);
+        cell.comment(comment_with_size);
+        xlnt_assert_equals(cell.comment(), comment_with_size);
     }
 
     void test_copy_and_compare()
