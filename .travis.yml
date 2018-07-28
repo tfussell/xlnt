@@ -172,14 +172,18 @@ script:
   - ./tests/xlnt.test
   - |
     if [[ "${SAMPLES}" == "ON" ]]; then
+      echo 'travis_fold:start:samples'
       ./samples/sample-decrypt
-      ./samples/sample-img2xlsx
+      ./samples/sample-img2xlsx "../samples/data/cafe.jpg" "img.xlsx"
       ./samples/sample-documentation
+      echo 'travis_fold:end:samples'
     fi
   - |
     if [[ "${BENCHMARKS}" == "ON" ]]; then
+      echo 'travis_fold:start:bencmarks'
       ./benchmarks/benchmark-styles
       ./benchmarks/benchmark-writer
+      echo 'travis_fold:end:bencmarks'
     fi
     
 
