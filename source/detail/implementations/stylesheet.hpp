@@ -180,14 +180,16 @@ struct stylesheet
     template<typename T, typename C>
     std::size_t find_or_add(C &container, const T &item)
     {
-        std::size_t i = 0;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
         auto iter = std::find(container.begin(), container.end(), item);
         if (iter != container.end())
         {
-            return iter - container.begin();
+            return std::size_t(iter - container.begin());
         }
-        container.emplace_back(item);
-        return container.size() - 1;
+        iter = container.emplace(container.end(), item);
+        return std::size_t(iter - container.begin());
+#pragma GCC diagnostic pop
     }
     
     template<typename T>
@@ -382,7 +384,7 @@ struct stylesheet
     format_impl *find_or_create(format_impl &pattern)
     {
         pattern.references = 0;
-        auto id = 0;
+        std::size_t id = 0;
         auto iter = format_impls.begin();
         while (iter != format_impls.end() && !(*iter == pattern))
         {
