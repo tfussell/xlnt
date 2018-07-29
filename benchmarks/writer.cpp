@@ -80,13 +80,11 @@ void timer(std::function<void(int, int)> fn, int cols, int rows)
 
 int main()
 {
-    timer(&writer, 160000, 1);
-    timer(&writer, 6400, 25);
-    timer(&writer, 1600, 100);
-    timer(&writer, 400, 400);
-    timer(&writer, 100, 1600);
-    timer(&writer, 25, 6400);
-    timer(&writer, 1, 160000);
+    timer(&writer, 10000, 1);
+    timer(&writer, 1000, 10);
+    timer(&writer, 100, 100);
+    timer(&writer, 10, 1000);
+    timer(&writer, 1, 10000);
 
     return 0;
 }
