@@ -178,32 +178,15 @@ struct stylesheet
 	}
     
     template<typename T, typename C>
-    std::size_t find_or_add(C &container, const T &item, bool *added = nullptr)
+    std::size_t find_or_add(C &container, const T &item)
     {
-        if (added != nullptr)
-        {
-            *added = false;
-        }
-
         std::size_t i = 0;
-        
-        for (auto iter = container.begin(); iter != container.end(); ++iter)
+        auto iter = std::find(container.begin(), container.end(), item);
+        if (iter != container.end())
         {
-            if (*iter == item)
-            {
-                return i;
-            }
-
-            ++i;
+            return iter - container.begin();
         }
-
-        if (added != nullptr)
-        {
-            *added = true;
-        }
-
-        container.emplace(container.end(), item);
-
+        container.emplace_back(item);
         return container.size() - 1;
     }
     
@@ -235,7 +218,6 @@ struct stylesheet
         if (!garbage_collection_enabled) return;
         
         auto format_iter = format_impls.begin();
-
         while (format_iter != format_impls.end())
         {
             auto &impl = *format_iter;
@@ -399,12 +381,18 @@ struct stylesheet
 
     format_impl *find_or_create(format_impl &pattern)
     {
-        auto iter = format_impls.begin();
-        bool added = false;
         pattern.references = 0;
-        auto id = find_or_add(format_impls, pattern, &added);
-        std::advance(iter, static_cast<std::list<format_impl>::difference_type>(id));
-        
+        auto id = 0;
+        auto iter = format_impls.begin();
+        while (iter != format_impls.end() && !(*iter == pattern))
+        {
+            ++id;
+            ++iter;
+        }
+        if (iter == format_impls.end())
+        {
+            iter = format_impls.emplace(format_impls.end(), pattern);
+        }
         auto &result = *iter;
 
         result.parent = this;
