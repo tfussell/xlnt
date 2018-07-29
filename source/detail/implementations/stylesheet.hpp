@@ -416,7 +416,10 @@ struct stylesheet
     {
         format_impl new_format = *pattern;
         new_format.style = style_name;
-
+        if (pattern->references == 0)
+        {
+            *pattern = new_format;
+        }
         return find_or_create(new_format);
     }
 
@@ -425,7 +428,10 @@ struct stylesheet
         format_impl new_format = *pattern;
         new_format.alignment_id = find_or_add(alignments, new_alignment);
         new_format.alignment_applied = applied;
-        
+        if (pattern->references == 0)
+        {
+            *pattern = new_format;
+        }
         return find_or_create(new_format);
     }
 
@@ -434,7 +440,10 @@ struct stylesheet
         format_impl new_format = *pattern;
         new_format.border_id = find_or_add(borders, new_border);
         new_format.border_applied = applied;
-        
+        if (pattern->references == 0)
+        {
+            *pattern = new_format;
+        }
         return find_or_create(new_format);
     }
     
@@ -443,7 +452,10 @@ struct stylesheet
         format_impl new_format = *pattern;
         new_format.fill_id = find_or_add(fills, new_fill);
         new_format.fill_applied = applied;
-        
+        if (pattern->references == 0)
+        {
+            *pattern = new_format;
+        }
         return find_or_create(new_format);
     }
     
@@ -452,7 +464,10 @@ struct stylesheet
         format_impl new_format = *pattern;
         new_format.font_id = find_or_add(fonts, new_font);
         new_format.font_applied = applied;
-        
+        if (pattern->references == 0)
+        {
+            *pattern = new_format;
+        }
         return find_or_create(new_format);
     }
     
@@ -465,7 +480,10 @@ struct stylesheet
         }
         new_format.number_format_id = new_number_format.id();
         new_format.number_format_applied = applied;
-        
+        if (pattern->references == 0)
+        {
+            *pattern = new_format;
+        }
         return find_or_create(new_format);
     }
     
@@ -474,7 +492,10 @@ struct stylesheet
         format_impl new_format = *pattern;
         new_format.protection_id = find_or_add(protections, new_protection);
         new_format.protection_applied = applied;
-        
+        if (pattern->references == 0)
+        {
+            *pattern = new_format;
+        }
         return find_or_create(new_format);
     }
 
