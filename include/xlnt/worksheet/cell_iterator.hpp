@@ -30,6 +30,7 @@
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
+#include <xlnt/worksheet/major_order.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
 namespace xlnt {
