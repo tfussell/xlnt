@@ -62,7 +62,7 @@ void writer(int cols, int rows)
 void timer(std::function<void(int, int)> fn, int cols, int rows)
 {
     const auto repeat = std::size_t(3);
-    std::chrono::duration<double> time{};
+    std::chrono::duration<double, std::milli> time{};
     std::cout << cols << " cols " << rows << " rows" << std::endl;
     fn(rows, cols); // 1 cold run
 
@@ -73,7 +73,7 @@ void timer(std::function<void(int, int)> fn, int cols, int rows)
         time += std::chrono::high_resolution_clock::now() - start;
     }
 
-    std::cout << time.count() / repeat << " seconds per iteration" << '\n' << '\n';
+    std::cout << time.count() / repeat << " ms per iteration" << '\n' << '\n';
 }
 
 } // namespace
