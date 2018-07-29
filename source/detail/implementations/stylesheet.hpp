@@ -419,7 +419,6 @@ struct stylesheet
         if (pattern->references == 0)
         {
             *pattern = new_format;
-            return pattern;
         }
         return find_or_create(new_format);
     }
@@ -432,7 +431,6 @@ struct stylesheet
         if (pattern->references == 0)
         {
             *pattern = new_format;
-            return pattern;
         }
         return find_or_create(new_format);
     }
@@ -445,7 +443,6 @@ struct stylesheet
         if (pattern->references == 0)
         {
             *pattern = new_format;
-            return pattern;
         }
         return find_or_create(new_format);
     }
@@ -458,7 +455,6 @@ struct stylesheet
         if (pattern->references == 0)
         {
             *pattern = new_format;
-            return pattern;
         }
         return find_or_create(new_format);
     }
@@ -471,7 +467,6 @@ struct stylesheet
         if (pattern->references == 0)
         {
             *pattern = new_format;
-            return pattern;
         }
         return find_or_create(new_format);
     }
@@ -488,7 +483,6 @@ struct stylesheet
         if (pattern->references == 0)
         {
             *pattern = new_format;
-            return pattern;
         }
         return find_or_create(new_format);
     }
@@ -501,7 +495,6 @@ struct stylesheet
         if (pattern->references == 0)
         {
             *pattern = new_format;
-            return pattern;
         }
         return find_or_create(new_format);
     }
@@ -583,16 +576,6 @@ struct stylesheet
     
     std::vector<color> colors;
 };
-
-inline format_impl* reference(format_impl *impl)
-{
-    ++impl->references;
-    if (impl->references == 1)
-    {
-        impl = impl->parent->find_or_create(*impl);
-    }
-    return impl;
-}
 
 } // namespace detail
 } // namespace xlnt

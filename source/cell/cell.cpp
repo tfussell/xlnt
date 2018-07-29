@@ -750,7 +750,8 @@ void cell::format(const class format new_format)
         format().d_->references -= format().d_->references > 0 ? 1 : 0;
     }
 
-    d_->format_ = detail::reference(new_format.d_);
+    ++new_format.d_->references;
+    d_->format_ = new_format.d_;
 }
 
 calendar cell::base_date() const
