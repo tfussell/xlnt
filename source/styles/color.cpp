@@ -301,7 +301,7 @@ bool color::operator==(const xlnt::color &other) const
     case color_type::theme:
         return theme_.index() == other.theme_.index();
     case color_type::rgb:
-        return rgb_.rgba() == rgb_.rgba();
+        return rgb_.rgba() == other.rgb_.rgba();
     }
 
     return false;
