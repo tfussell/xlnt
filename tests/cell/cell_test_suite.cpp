@@ -687,7 +687,6 @@ private:
 
         xlnt_assert(!cell.has_hyperlink());
         xlnt_assert_throws(cell.hyperlink(), xlnt::invalid_attribute);
-        xlnt_assert_throws(cell.hyperlink("notaurl"), xlnt::invalid_parameter);
         xlnt_assert_throws(cell.hyperlink(""), xlnt::invalid_parameter);
         // link without optional display
         const std::string link1("http://example.com");
@@ -707,6 +706,13 @@ private:
         xlnt_assert_equals(cell.hyperlink().url(), link2);
         xlnt_assert_equals(cell.hyperlink().relationship().target().to_string(), link2);
         xlnt_assert_equals(cell.hyperlink().display(), display_txt);
+        // relative (local) url
+        const std::string local("../test_local");
+        cell.hyperlink(local);
+        xlnt_assert(cell.has_hyperlink());
+        xlnt_assert(cell.hyperlink().external());
+        xlnt_assert_equals(cell.hyperlink().url(), local);
+        xlnt_assert_equals(cell.hyperlink().relationship().target().to_string(), local);
         // value
         int cell_test_val = 123;
         cell.value(cell_test_val);

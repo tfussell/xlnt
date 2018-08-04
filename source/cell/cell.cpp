@@ -360,7 +360,7 @@ hyperlink cell::hyperlink() const
 
 void cell::hyperlink(const std::string &url, const std::string &display)
 {
-    if (url.empty() || std::find(url.begin(), url.end(), ':') == url.end())
+    if (url.empty())
     {
         throw invalid_parameter();
     }
