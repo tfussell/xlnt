@@ -22,6 +22,8 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-6
+            - language-pack-en
+            - language-pack-de
       env:
         - CXX_COMPILER=g++-6
         - C_COMPILER=gcc-6
@@ -40,6 +42,8 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-7
+            - language-pack-en
+            - language-pack-de
       env:
         - CXX_COMPILER=g++-7
         - C_COMPILER=gcc-7
@@ -58,6 +62,8 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-8
+            - language-pack-en
+            - language-pack-de
       env:
         - CXX_COMPILER=g++-8
         - C_COMPILER=gcc-8
@@ -78,6 +84,8 @@ matrix:
             - llvm-toolchain-trusty-4.0
           packages:
             - clang-4.0
+            - language-pack-en
+            - language-pack-de
       env:
         - CXX_COMPILER=clang++-4.0
         - C_COMPILER=clang-4.0
@@ -97,6 +105,8 @@ matrix:
             - llvm-toolchain-trusty-5.0
           packages:
             - clang-5.0
+            - language-pack-en
+            - language-pack-de
       env:
         - CXX_COMPILER=clang++-5.0
         - C_COMPILER=clang-5.0
@@ -116,6 +126,8 @@ matrix:
             - llvm-toolchain-trusty-6.0
           packages:
             - clang-6.0
+            - language-pack-en
+            - language-pack-de
       env:
         - CXX_COMPILER=clang++-6.0
         - C_COMPILER=clang-6.0
@@ -136,6 +148,8 @@ matrix:
           packages:
             - g++-6
             - lcov
+            - language-pack-en
+            - language-pack-de
       env:
         - CXX_COMPILER=g++-6
         - C_COMPILER=gcc-6

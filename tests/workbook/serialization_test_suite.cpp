@@ -616,7 +616,8 @@ public:
         std::locale tmp_locale;
         std::locale reset_locale_to;
         Hold_Locale(const std::string &set_locale_to)
-            : tmp_locale(set_locale_to), reset_locale_to()
+            // .c_str() required for Clang CI which is missing the string overload
+            : tmp_locale(set_locale_to.c_str()), reset_locale_to()
         {
             std::locale::global(tmp_locale);
         }
@@ -632,7 +633,7 @@ public:
 #ifdef _WIN32
         Hold_Locale tmp("de-de");
 #else
-        Hold_Locale tmp("de-DE.utf8");
+        Hold_Locale tmp("de_DE.UTF-8");
 #endif
         xlnt_assert(round_trip_matches_rw(path_helper::test_file("13_custom_heights_widths.xlsx")));
     }
