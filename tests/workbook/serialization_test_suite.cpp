@@ -23,28 +23,28 @@
 
 #include <iostream>
 
+#include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/comment.hpp>
 #include <xlnt/cell/hyperlink.hpp>
-#include <xlnt/cell/cell.hpp>
-#include <xlnt/styles/font.hpp>
-#include <xlnt/styles/style.hpp>
+#include <xlnt/styles/border.hpp>
 #include <xlnt/styles/fill.hpp>
+#include <xlnt/styles/font.hpp>
 #include <xlnt/styles/format.hpp>
 #include <xlnt/styles/number_format.hpp>
-#include <xlnt/styles/border.hpp>
+#include <xlnt/styles/style.hpp>
 #include <xlnt/utils/date.hpp>
 #include <xlnt/utils/datetime.hpp>
 #include <xlnt/utils/time.hpp>
 #include <xlnt/utils/timedelta.hpp>
 #include <xlnt/utils/variant.hpp>
+#include <xlnt/workbook/metadata_property.hpp>
 #include <xlnt/workbook/streaming_workbook_reader.hpp>
 #include <xlnt/workbook/streaming_workbook_writer.hpp>
 #include <xlnt/workbook/workbook.hpp>
-#include <xlnt/workbook/metadata_property.hpp>
 #include <xlnt/worksheet/column_properties.hpp>
+#include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/row_properties.hpp>
 #include <xlnt/worksheet/sheet_format_properties.hpp>
-#include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 #include <detail/cryptography/xlsx_crypto_consumer.hpp>
 #include <detail/serialization/vector_streambuf.hpp>
@@ -90,6 +90,7 @@ public:
         register_test(test_round_trip_rw_encrypted_numbers);
         register_test(test_streaming_read);
         register_test(test_streaming_write);
+        register_test(test_round_trip_locale);
     }
 
     bool workbook_matches_file(xlnt::workbook &wb, const xlnt::path &file)
@@ -608,6 +609,32 @@ public:
         //TODO: finish implementing encryption and uncomment this
         //return source_data == destination_data;
         return true;
+    }
+
+    struct Hold_Locale
+    {
+        std::locale tmp_locale;
+        std::locale reset_locale_to;
+        Hold_Locale(const std::string &set_locale_to)
+            : tmp_locale(set_locale_to), reset_locale_to()
+        {
+            std::locale::global(tmp_locale);
+        }
+
+        ~Hold_Locale()
+        {
+            std::locale::global(reset_locale_to);
+        }
+    };
+
+    void test_round_trip_locale()
+    {
+#ifdef _WIN32
+        Hold_Locale tmp("de-de");
+#else
+        Hold_Locale tmp("de-DE.utf8");
+#endif
+        xlnt_assert(round_trip_matches_rw(path_helper::test_file("13_custom_heights_widths.xlsx")));
     }
 
     void test_round_trip_rw_minimal()

@@ -253,6 +253,20 @@ std::string content_type(xlnt::relationship_type type)
     default_case("application/xml");
 }
 
+struct Serialisation_Locale
+{
+    std::locale current_locale;
+
+    Serialisation_Locale()
+    {
+        std::locale::global(std::locale::classic());
+    }
+    ~Serialisation_Locale()
+    {
+        std::locale::global(current_locale);
+    }
+};
+
 } // namespace
 
 namespace xlnt {
@@ -863,6 +877,7 @@ range workbook::named_range(const std::string &name)
 
 void workbook::load(std::istream &stream)
 {
+    Serialisation_Locale loc;
     clear();
     detail::xlsx_consumer consumer(*this);
     consumer.read(stream);
@@ -930,6 +945,7 @@ void workbook::load(const std::vector<std::uint8_t> &data, const std::string &pa
 
 void workbook::load(std::istream &stream, const std::string &password)
 {
+    Serialisation_Locale loc;
     clear();
     detail::xlsx_consumer consumer(*this);
     consumer.read(stream, password);
@@ -975,12 +991,14 @@ void workbook::save(const path &filename, const std::string &password) const
 
 void workbook::save(std::ostream &stream) const
 {
+    Serialisation_Locale loc;
     detail::xlsx_producer producer(*this);
     producer.write(stream);
 }
 
 void workbook::save(std::ostream &stream, const std::string &password) const
 {
+    Serialisation_Locale loc;
     detail::xlsx_producer producer(*this);
     producer.write(stream, password);
 }
