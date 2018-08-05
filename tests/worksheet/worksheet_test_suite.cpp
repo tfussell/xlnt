@@ -607,6 +607,9 @@ public:
                 xlnt_assert_equals(cell.value<std::string>(), cell.reference().to_string());
             }
         }
+
+        xlnt_assert_equals(xlnt::const_cell_iterator{}, xlnt::const_cell_iterator{});
+        xlnt_assert_equals(xlnt::const_range_iterator{}, xlnt::const_range_iterator{});
     }
 
     void test_const_reverse_iterators()

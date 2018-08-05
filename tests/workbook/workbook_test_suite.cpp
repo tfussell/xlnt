@@ -257,6 +257,8 @@ public:
         iter = temp--;
         xlnt_assert_equals((*iter).title(), "Sheet2");
         xlnt_assert_equals((*temp).title(), "Sheet1");
+
+        xlnt_assert_equals(xlnt::const_worksheet_iterator{}, xlnt::const_worksheet_iterator{});
     }
 
     void test_get_index()
