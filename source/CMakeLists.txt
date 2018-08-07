@@ -159,7 +159,9 @@ endif()
 #target_compile_features(xlnt PUBLIC cxx_std_${XLNT_CXX_LANG})
 
 # Includes
-target_include_directories(xlnt PUBLIC ${XLNT_INCLUDE_DIR})
+target_include_directories(xlnt PUBLIC
+	$<BUILD_INTERFACE:${XLNT_INCLUDE_DIR}>
+	$<INSTALL_INTERFACE:include>)
 target_include_directories(xlnt PRIVATE ${XLNT_SOURCE_DIR})
 target_include_directories(xlnt PRIVATE ${XLNT_SOURCE_DIR}/../third-party/libstudxml)
 target_include_directories(xlnt PRIVATE ${XLNT_SOURCE_DIR}/../third-party/utfcpp)
@@ -236,10 +238,32 @@ if(NOT MAN_DEST_DIR)
 endif()
 
 # Install library
-install(TARGETS xlnt
+install(TARGETS xlnt EXPORT XlntTargets
   LIBRARY DESTINATION ${LIB_DEST_DIR}
   ARCHIVE DESTINATION ${LIB_DEST_DIR}
   RUNTIME DESTINATION ${BIN_DEST_DIR})
+
+install(EXPORT XlntTargets
+  FILE XlntTargets.cmake
+  NAMESPACE xlnt::
+  DESTINATION lib/cmake/xlnt)
+
+include(CMakePackageConfigHelpers)
+
+set(XLNT_INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/include/)
+
+configure_package_config_file(../cmake/XlntConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/XlntConfig.cmake
+  INSTALL_DESTINATION lib/cmake/xlnt
+  PATH_VARS XLNT_INCLUDE_DIR)
+
+write_basic_package_version_file(XlntConfigVersion.cmake
+  COMPATIBILITY ExactVersion)
+
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/XlntConfig.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/XlntConfigVersion.cmake
+  DESTINATION lib/cmake/xlnt)
 
 # Install include directory
 install(DIRECTORY ${XLNT_INCLUDE_DIR}/xlnt

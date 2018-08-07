@@ -1,0 +1,13 @@
+set(XLNT_VERSION "@xlnt_VERSION@")
+
+@PACKAGE_INIT@
+
+get_filename_component(XLNT_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+set_and_check(XLNT_INCLUDE_DIR "@XLNT_INCLUDE_INSTALL_DIR@")
+
+check_required_components(xlnt)
+
+if(NOT TARGET xlnt::xlnt)
+  include("${XLNT_CMAKE_DIR}/XlntTargets.cmake")
+endif()
