@@ -2180,7 +2180,10 @@ void xlsx_producer::write_worksheet(const relationship &rel)
                 return true;
             }
 
-            for (auto row = ws.lowest_row(); row <= ws.highest_row(); ++row)
+            auto lowest_row  = ws.lowest_row(); 
+            auto highest_row = ws.highest_row();
+
+            for (auto row = lowest_row ; row <= highest_row; ++row)
             {
                 if (ws.has_row_properties(row) && ws.row_properties(row).dy_descent.is_set())
                 {
