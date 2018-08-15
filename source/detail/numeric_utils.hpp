@@ -73,32 +73,37 @@ constexpr Number max(Number lval, Number rval)
 /// <summary>
 /// Floating point equality requires a bit of fuzzingdue to the imprecise nature of fp calculation
 /// </summary>
-template <typename LNumber, typename RNumber>
-constexpr bool float_equals(const LNumber &lhs, const RNumber &rhs)
+template <typename EpsilonType = float, // the type to extract epsilon from
+    typename LNumber, typename RNumber> // parameter types (deduced)
+constexpr bool
+float_equals(const LNumber &lhs, const RNumber &rhs,
+    int epsilon_scale = 100) // scale the "fuzzy" equality. Higher value gives a more tolerant comparison
 {
-    static_assert(!std::is_integral<LNumber>::value && !std::is_integral<RNumber>::value,
+    static_assert(std::is_floating_point<LNumber>::value || std::is_floating_point<RNumber>::value,
         "Using this function with two integers is just wasting time. Use ==");
+    static_assert(std::is_floating_point<EpsilonType>::value,
+        "Cannot extract epsilon from a number that isn't a floating point type");
 
     // NANs always compare false with themselves
-    if ((lhs != lhs) || (rhs != rhs))
+    if ((lhs != lhs) || (rhs != rhs)) // std::isnan isn't constexpr
     {
         return false;
     }
     // a type that lhs and rhs can agree on
     using common_t = std::common_type_t<LNumber, RNumber>;
-    // The lower precision epsilon.
-    // In comparison between different types, the lower precision type must be used for epsilon
-    constexpr common_t epsilon = detail::max<common_t>(std::numeric_limits<LNumber>::epsilon(), std::numeric_limits<RNumber>::epsilon());
-    // 100 * epsilon selected as an arbitrary range
-    constexpr common_t fuzz = 100 * epsilon;
+    // epsilon type defaults to float because even if both args are a higher precision type
+    // either or both could have been promoted by prior operations
+    // if a higher precision is required, the template type can be changed
+    constexpr common_t epsilon = std::numeric_limits<EpsilonType>::epsilon();
     // the "epsilon" then needs to be scaled into the comparison range
     // epsilon for numeric_limits is valid when abs(x) <1.0, scaling only needs to be upwards
     // in particular, this prevents a lhs of 0 from requiring an exact comparison
-    common_t scaled_fuzz = fuzz * max(xlnt::detail::abs<common_t>(lhs), common_t{1});
+    // additionally, a scale factor is applied.
+    common_t scaled_fuzz = epsilon_scale * epsilon * max(xlnt::detail::abs<common_t>(lhs), common_t{1});
     return ((lhs + scaled_fuzz) >= rhs) && ((rhs + scaled_fuzz) >= lhs);
 }
 
-//static_assert(0.1 != 0.1f, "Built in equality fails");
-//static_assert(float_equals(0.1, 0.1f), "fuzzy equality allows comparison between double and float");
+static_assert(0.1 != 0.1f, "Built in equality fails when comparing float and double due to imprecision");
+static_assert(float_equals(0.1, 0.1f), "fuzzy equality allows comparison between double and float");
 } // namespace detail
 } // namespace xlnt
