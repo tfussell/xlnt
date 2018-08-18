@@ -46,6 +46,7 @@
 #include <detail/implementations/cell_impl.hpp>
 #include <detail/implementations/workbook_impl.hpp>
 #include <detail/implementations/worksheet_impl.hpp>
+#include <detail/numeric_utils.hpp>
 
 namespace {
 
@@ -98,7 +99,7 @@ void worksheet::create_named_range(const std::string &name, const range_referenc
             throw invalid_parameter(); //("named range name must be outside the range A1-XFD1048576");
         }
     }
-    catch (xlnt::invalid_cell_reference&)
+    catch (xlnt::invalid_cell_reference &)
     {
         // name is not a valid reference, that's good
     }
@@ -728,7 +729,8 @@ void worksheet::clear_row(row_t row)
         {
             it = d_->cell_map_.erase(it);
         }
-        else {
+        else
+        {
             ++it;
         }
     }
@@ -750,28 +752,27 @@ bool worksheet::compare(const worksheet &other, bool reference) const
 
     if (d_->parent_ != other.d_->parent_) return false;
 
-
-        for (auto &cell : d_->cell_map_)
+    for (auto &cell : d_->cell_map_)
+    {
+        if (other.d_->cell_map_.find(cell.first) == other.d_->cell_map_.end())
         {
-            if (other.d_->cell_map_.find(cell.first) == other.d_->cell_map_.end())
-            {
-                return false;
-            }
-
-            xlnt::cell this_cell(&cell.second);
-            xlnt::cell other_cell(&other.d_->cell_map_[cell.first]);
-
-            if (this_cell.data_type() != other_cell.data_type())
-            {
-                return false;
-            }
-
-            if (this_cell.data_type() == xlnt::cell::type::number
-                && std::fabs(this_cell.value<double>() - other_cell.value<double>()) > 0.0)
-            {
-                return false;
-            }
+            return false;
         }
+
+        xlnt::cell this_cell(&cell.second);
+        xlnt::cell other_cell(&other.d_->cell_map_[cell.first]);
+
+        if (this_cell.data_type() != other_cell.data_type())
+        {
+            return false;
+        }
+
+        if (this_cell.data_type() == xlnt::cell::type::number
+            && !detail::float_equals(this_cell.value<double>(), other_cell.value<double>()))
+        {
+            return false;
+        }
+    }
 
     // todo: missing some comparisons
 
@@ -1006,12 +1007,12 @@ bool worksheet::has_phonetic_properties() const
     return d_->phonetic_properties_.is_set();
 }
 
-const phonetic_pr& worksheet::phonetic_properties() const
+const phonetic_pr &worksheet::phonetic_properties() const
 {
     return d_->phonetic_properties_.get();
 }
 
-void worksheet::phonetic_properties(const phonetic_pr& phonetic_props)
+void worksheet::phonetic_properties(const phonetic_pr &phonetic_props)
 {
     d_->phonetic_properties_.set(phonetic_props);
 }
