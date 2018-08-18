@@ -969,8 +969,7 @@ void cell::comment(const std::string &text, const std::string &author)
 
 void cell::comment(const std::string &text, const class font &comment_font, const std::string &author)
 {
-    xlnt::rich_text rich_comment_text(text, comment_font);
-    comment(xlnt::comment(rich_comment_text, author));
+    comment(xlnt::comment(xlnt::rich_text(text, comment_font), author));
 }
 
 void cell::comment(const class comment &new_comment)
@@ -991,7 +990,6 @@ void cell::comment(const class comment &new_comment)
     cell_position.second += 5;
 
     d_->comment_.get()->position(cell_position.first, cell_position.second);
-    d_->comment_.get()->size(200, 100);
 
     worksheet().register_comments_in_manifest();
 }

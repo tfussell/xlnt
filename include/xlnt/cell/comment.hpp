@@ -155,12 +155,12 @@ private:
     /// <summary>
     /// Width of the comment box.
     /// </summary>
-    int width_ = 0;
+    int width_ = 200;
 
     /// <summary>
     /// Height of the comment box.
     /// </summary>
-    int height_ = 0;
+    int height_ = 100;
 };
 
 } // namespace xlnt

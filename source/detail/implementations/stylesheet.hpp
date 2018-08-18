@@ -178,33 +178,18 @@ struct stylesheet
 	}
     
     template<typename T, typename C>
-    std::size_t find_or_add(C &container, const T &item, bool *added = nullptr)
+    std::size_t find_or_add(C &container, const T &item)
     {
-        if (added != nullptr)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+        auto iter = std::find(container.begin(), container.end(), item);
+        if (iter != container.end())
         {
-            *added = false;
+            return std::size_t(iter - container.begin());
         }
-
-        std::size_t i = 0;
-        
-        for (auto iter = container.begin(); iter != container.end(); ++iter)
-        {
-            if (*iter == item)
-            {
-                return i;
-            }
-
-            ++i;
-        }
-
-        if (added != nullptr)
-        {
-            *added = true;
-        }
-
-        container.emplace(container.end(), item);
-
-        return container.size() - 1;
+        iter = container.emplace(container.end(), item);
+        return std::size_t(iter - container.begin());
+#pragma GCC diagnostic pop
     }
     
     template<typename T>
@@ -235,7 +220,6 @@ struct stylesheet
         if (!garbage_collection_enabled) return;
         
         auto format_iter = format_impls.begin();
-
         while (format_iter != format_impls.end())
         {
             auto &impl = *format_iter;
@@ -399,12 +383,18 @@ struct stylesheet
 
     format_impl *find_or_create(format_impl &pattern)
     {
-        auto iter = format_impls.begin();
-        bool added = false;
         pattern.references = 0;
-        auto id = find_or_add(format_impls, pattern, &added);
-        std::advance(iter, static_cast<std::list<format_impl>::difference_type>(id));
-        
+        std::size_t id = 0;
+        auto iter = format_impls.begin();
+        while (iter != format_impls.end() && !(*iter == pattern))
+        {
+            ++id;
+            ++iter;
+        }
+        if (iter == format_impls.end())
+        {
+            iter = format_impls.emplace(format_impls.end(), pattern);
+        }
         auto &result = *iter;
 
         result.parent = this;
@@ -426,7 +416,10 @@ struct stylesheet
     {
         format_impl new_format = *pattern;
         new_format.style = style_name;
-
+        if (pattern->references == 0)
+        {
+            *pattern = new_format;
+        }
         return find_or_create(new_format);
     }
 
@@ -435,7 +428,10 @@ struct stylesheet
         format_impl new_format = *pattern;
         new_format.alignment_id = find_or_add(alignments, new_alignment);
         new_format.alignment_applied = applied;
-        
+        if (pattern->references == 0)
+        {
+            *pattern = new_format;
+        }
         return find_or_create(new_format);
     }
 
@@ -444,7 +440,10 @@ struct stylesheet
         format_impl new_format = *pattern;
         new_format.border_id = find_or_add(borders, new_border);
         new_format.border_applied = applied;
-        
+        if (pattern->references == 0)
+        {
+            *pattern = new_format;
+        }
         return find_or_create(new_format);
     }
     
@@ -453,7 +452,10 @@ struct stylesheet
         format_impl new_format = *pattern;
         new_format.fill_id = find_or_add(fills, new_fill);
         new_format.fill_applied = applied;
-        
+        if (pattern->references == 0)
+        {
+            *pattern = new_format;
+        }
         return find_or_create(new_format);
     }
     
@@ -462,7 +464,10 @@ struct stylesheet
         format_impl new_format = *pattern;
         new_format.font_id = find_or_add(fonts, new_font);
         new_format.font_applied = applied;
-        
+        if (pattern->references == 0)
+        {
+            *pattern = new_format;
+        }
         return find_or_create(new_format);
     }
     
@@ -475,7 +480,10 @@ struct stylesheet
         }
         new_format.number_format_id = new_number_format.id();
         new_format.number_format_applied = applied;
-        
+        if (pattern->references == 0)
+        {
+            *pattern = new_format;
+        }
         return find_or_create(new_format);
     }
     
@@ -484,7 +492,10 @@ struct stylesheet
         format_impl new_format = *pattern;
         new_format.protection_id = find_or_add(protections, new_protection);
         new_format.protection_applied = applied;
-        
+        if (pattern->references == 0)
+        {
+            *pattern = new_format;
+        }
         return find_or_create(new_format);
     }
 

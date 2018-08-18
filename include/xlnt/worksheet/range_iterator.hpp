@@ -52,6 +52,11 @@ public:
     using reference = cell_vector; // intentionally value
 
     /// <summary>
+    /// Default constructs a range iterator 
+    /// </summary>
+    range_iterator() = default;
+
+    /// <summary>
     /// Constructs a range iterator on a worksheet, cell pointing to the current
     /// row or column, range bounds, an order, and whether or not to skip null column/rows.
     /// </summary>
@@ -125,6 +130,16 @@ public:
 
 private:
     /// <summary>
+    /// If true, empty rows and cells will be skipped when iterating with this iterator
+    /// </summary>
+    bool skip_null_ = false;
+
+    /// <summary>
+    /// Whether rows or columns should be iterated over first
+    /// </summary>
+    major_order order_ = major_order::column;
+
+    /// <summary>
     /// The worksheet
     /// </summary>
     worksheet ws_;
@@ -138,16 +153,6 @@ private:
     /// The bounds of the range
     /// </summary>
     range_reference bounds_;
-
-    /// <summary>
-    /// Whether rows or columns should be iterated over first
-    /// </summary>
-    major_order order_;
-
-    /// <summary>
-    /// If true, empty rows and cells will be skipped when iterating with this iterator
-    /// </summary>
-    bool skip_null_;
 };
 
 /// <summary>
@@ -165,6 +170,11 @@ public:
     using difference_type = std::ptrdiff_t;
     using pointer = const cell_vector *;
     using reference = const cell_vector; // intentionally value
+
+    /// <summary>
+    /// Default constructs a range iterator
+    /// </summary>
+    const_range_iterator() = default;
 
     /// <summary>
     /// Constructs a range iterator on a worksheet, cell pointing to the current
@@ -235,6 +245,16 @@ public:
 
 private:
     /// <summary>
+    /// If true, empty rows and cells will be skipped when iterating with this iterator
+    /// </summary>
+    bool skip_null_ = false;
+
+    /// <summary>
+    /// Determines whether iteration should move through rows or columns first
+    /// </summary>
+    major_order order_ = major_order::column;
+
+    /// <summary>
     /// The implementation of the worksheet this iterator points to
     /// </summary>
     detail::worksheet_impl *ws_;
@@ -248,16 +268,6 @@ private:
     /// The range this iterator starts and ends in
     /// </summary>
     range_reference bounds_;
-
-    /// <summary>
-    /// Determines whether iteration should move through rows or columns first
-    /// </summary>
-    major_order order_;
-
-    /// <summary>
-    /// If true, empty rows and cells will be skipped when iterating with this iterator
-    /// </summary>
-    bool skip_null_;
 };
 
 } // namespace xlnt

@@ -28,6 +28,7 @@
 #include <string>
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 
@@ -285,6 +286,11 @@ public:
     theme_color& theme();
 
     /// <summary>
+    /// Returns true if tint is set
+    /// </summary>
+    bool has_tint() const;
+
+    /// <summary>
     /// Returns the tint of this color.
     /// </summary>
     double tint() const;
@@ -333,12 +339,12 @@ private:
     /// <summary>
     /// The tint of this color
     /// </summary>
-    double tint_ = 0.0;
+    optional<double> tint_;
 
     /// <summary>
     /// Whether or not this is an auto color
     /// </summary>
-    bool auto__ = false;
+    bool auto_color = false;
 };
 
 } // namespace xlnt

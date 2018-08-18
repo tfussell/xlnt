@@ -196,32 +196,18 @@ const workbook &worksheet::workbook() const
 
 void worksheet::garbage_collect()
 {
-    auto cell_map_iter = d_->cell_map_.begin();
+    auto cell_iter = d_->cell_map_.begin();
 
-    while (cell_map_iter != d_->cell_map_.end())
+    while (cell_iter != d_->cell_map_.end())
     {
-        auto cell_iter = cell_map_iter->second.begin();
-
-        while (cell_iter != cell_map_iter->second.end())
+        if (xlnt::cell(&cell_iter->second).garbage_collectible())
         {
-            class cell current_cell(&cell_iter->second);
-
-            if (current_cell.garbage_collectible())
-            {
-                cell_iter = cell_map_iter->second.erase(cell_iter);
-                continue;
-            }
-
-            cell_iter++;
+            cell_iter = d_->cell_map_.erase(cell_iter);
         }
-
-        if (cell_map_iter->second.empty())
+        else
         {
-            cell_map_iter = d_->cell_map_.erase(cell_map_iter);
-            continue;
+            ++cell_iter;
         }
-
-        cell_map_iter++;
     }
 }
 
@@ -391,25 +377,22 @@ cell_reference worksheet::active_cell() const
 
 cell worksheet::cell(const cell_reference &reference)
 {
-    auto &row = d_->cell_map_[reference.row()];
-    auto match = row.find(reference.column_index());
-
-    if (match == row.end())
+    auto match = d_->cell_map_.find(reference);
+    if (match == d_->cell_map_.end())
     {
-        match = row.emplace(reference.column_index(), detail::cell_impl()).first;
-        auto &impl = match->second;
-
+        auto impl = detail::cell_impl();
         impl.parent_ = d_;
         impl.column_ = reference.column_index();
         impl.row_ = reference.row();
-    }
 
+        match = d_->cell_map_.emplace(reference, impl).first;
+    }
     return xlnt::cell(&match->second);
 }
 
 const cell worksheet::cell(const cell_reference &reference) const
 {
-    return xlnt::cell(&d_->cell_map_.at(reference.row()).at(reference.column_index()));
+    return xlnt::cell(&d_->cell_map_.at(reference));
 }
 
 cell worksheet::cell(xlnt::column_t column, row_t row)
@@ -424,13 +407,8 @@ const cell worksheet::cell(xlnt::column_t column, row_t row) const
 
 bool worksheet::has_cell(const cell_reference &reference) const
 {
-    const auto row = d_->cell_map_.find(reference.row());
-    if (row == d_->cell_map_.cend()) return false;
-
-    const auto col = row->second.find(reference.column_index());
-    if (col == row->second.cend()) return false;
-
-    return true;
+    const auto cell = d_->cell_map_.find(reference);
+    return cell != d_->cell_map_.cend();
 }
 
 bool worksheet::has_row_properties(row_t row) const
@@ -477,12 +455,9 @@ column_t worksheet::lowest_column() const
 
     auto lowest = constants::max_column();
 
-    for (auto &row : d_->cell_map_)
+    for (auto &cell : d_->cell_map_)
     {
-        for (auto &c : row.second)
-        {
-            lowest = std::min(lowest, c.first);
-        }
+        lowest = std::min(lowest, cell.first.column());
     }
 
     return lowest;
@@ -514,9 +489,9 @@ row_t worksheet::lowest_row() const
 
     auto lowest = constants::max_row();
 
-    for (auto &row : d_->cell_map_)
+    for (auto &cell : d_->cell_map_)
     {
-        lowest = std::min(lowest, row.first);
+        lowest = std::min(lowest, cell.first.row());
     }
 
     return lowest;
@@ -543,9 +518,9 @@ row_t worksheet::highest_row() const
 {
     auto highest = constants::min_row();
 
-    for (auto &row : d_->cell_map_)
+    for (auto &cell : d_->cell_map_)
     {
-        highest = std::max(highest, row.first);
+        highest = std::max(highest, cell.first.row());
     }
 
     return highest;
@@ -572,12 +547,9 @@ column_t worksheet::highest_column() const
 {
     auto highest = constants::min_column();
 
-    for (auto &row : d_->cell_map_)
+    for (auto &cell : d_->cell_map_)
     {
-        for (auto &c : row.second)
-        {
-            highest = std::max(highest, c.first);
-        }
+        highest = std::max(highest, cell.first.column());
     }
 
     return highest;
@@ -744,13 +716,22 @@ const cell_vector worksheet::cells(bool skip_null) const
 
 void worksheet::clear_cell(const cell_reference &ref)
 {
-    d_->cell_map_.at(ref.row()).erase(ref.column());
+    d_->cell_map_.erase(ref);
     // TODO: garbage collect newly unreferenced resources such as styles?
 }
 
 void worksheet::clear_row(row_t row)
 {
-    d_->cell_map_.erase(row);
+    for (auto it = d_->cell_map_.begin(); it != d_->cell_map_.end();)
+    {
+        if (it->first.row() == row)
+        {
+            it = d_->cell_map_.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
     d_->row_properties_.erase(row);
     // TODO: garbage collect newly unreferenced resources such as styles?
 }
@@ -769,22 +750,16 @@ bool worksheet::compare(const worksheet &other, bool reference) const
 
     if (d_->parent_ != other.d_->parent_) return false;
 
-    for (auto &row : d_->cell_map_)
-    {
-        if (other.d_->cell_map_.find(row.first) == other.d_->cell_map_.end())
-        {
-            return false;
-        }
 
-        for (auto &cell : row.second)
+        for (auto &cell : d_->cell_map_)
         {
-            if (other.d_->cell_map_[row.first].find(cell.first) == other.d_->cell_map_[row.first].end())
+            if (other.d_->cell_map_.find(cell.first) == other.d_->cell_map_.end())
             {
                 return false;
             }
 
             xlnt::cell this_cell(&cell.second);
-            xlnt::cell other_cell(&other.d_->cell_map_[row.first][cell.first]);
+            xlnt::cell other_cell(&other.d_->cell_map_[cell.first]);
 
             if (this_cell.data_type() != other_cell.data_type())
             {
@@ -797,7 +772,6 @@ bool worksheet::compare(const worksheet &other, bool reference) const
                 return false;
             }
         }
-    }
 
     // todo: missing some comparisons
 

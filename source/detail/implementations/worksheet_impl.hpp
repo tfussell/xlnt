@@ -88,12 +88,9 @@ struct worksheet_impl
         sheet_properties_ = other.sheet_properties_;
         print_options_ = other.print_options_;
 
-        for (auto &row : cell_map_)
+        for (auto &cell : cell_map_)
         {
-            for (auto &cell : row.second)
-            {
-                cell.second.parent_ = this;
-            }
+            cell.second.parent_ = this;
         }
     }
 
@@ -134,7 +131,7 @@ struct worksheet_impl
     std::unordered_map<column_t, column_properties> column_properties_;
     std::unordered_map<row_t, row_properties> row_properties_;
 
-    std::unordered_map<row_t, std::unordered_map<column_t, cell_impl>> cell_map_;
+    std::unordered_map<cell_reference, cell_impl> cell_map_;
 
     optional<page_setup> page_setup_;
     optional<range_reference> auto_filter_;

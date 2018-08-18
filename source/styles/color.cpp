@@ -225,12 +225,12 @@ color_type color::type() const
 
 bool color::auto_() const
 {
-    return auto__;
+    return auto_color;
 }
 
 void color::auto_(bool value)
 {
-    auto__ = value;
+    auto_color = value;
 }
 
 const indexed_color& color::indexed() const
@@ -269,6 +269,11 @@ rgb_color &color::rgb()
     return rgb_;
 }
 
+bool color::has_tint() const
+{
+    return tint_.is_set();
+}
+
 void color::tint(double tint)
 {
     tint_ = tint;
@@ -276,7 +281,7 @@ void color::tint(double tint)
 
 double color::tint() const
 {
-    return tint_;
+    return tint_.is_set() ? tint_.get() : 0.0;
 }
 
 void color::assert_type(color_type t) const
@@ -289,7 +294,11 @@ void color::assert_type(color_type t) const
 
 bool color::operator==(const xlnt::color &other) const
 {
-    if (type_ != other.type_ || std::fabs(tint_ - other.tint_) != 0.0 || auto__ != other.auto__)
+    if (type_ != other.type_ || auto_color != other.auto_color)
+    {
+        return false;
+    }
+    if (tint_.is_set() != other.tint_.is_set() || (tint_.is_set() && std::fabs(tint_.get() - other.tint_.get()) != 0.0))
     {
         return false;
     }
@@ -301,7 +310,7 @@ bool color::operator==(const xlnt::color &other) const
     case color_type::theme:
         return theme_.index() == other.theme_.index();
     case color_type::rgb:
-        return rgb_.hex_string() == other.rgb_.hex_string();
+        return rgb_.rgba() == other.rgb_.rgba();
     }
 
     return false;

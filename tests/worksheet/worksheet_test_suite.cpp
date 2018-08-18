@@ -27,10 +27,9 @@
 #include <xlnt/cell/hyperlink.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/column_properties.hpp>
-#include <xlnt/worksheet/row_properties.hpp>
-#include <xlnt/worksheet/range.hpp>
-#include <xlnt/worksheet/worksheet.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
+#include <xlnt/worksheet/range.hpp>
+#include <xlnt/worksheet/row_properties.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 #include <helpers/test_suite.hpp>
 
@@ -608,6 +607,9 @@ public:
                 xlnt_assert_equals(cell.value<std::string>(), cell.reference().to_string());
             }
         }
+
+        xlnt_assert_equals(xlnt::const_cell_iterator{}, xlnt::const_cell_iterator{});
+        xlnt_assert_equals(xlnt::const_range_iterator{}, xlnt::const_range_iterator{});
     }
 
     void test_const_reverse_iterators()
@@ -1052,6 +1054,9 @@ public:
         const_range_iter++;
         const_range_iter--;
         xlnt_assert_equals(const_range_iter, const_range.begin());
+
+        xlnt_assert_equals(xlnt::cell_iterator{}, xlnt::cell_iterator{});
+        xlnt_assert_equals(xlnt::range_iterator{}, xlnt::range_iterator{});
     }
 
     void test_range_reference()

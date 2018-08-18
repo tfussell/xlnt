@@ -40,9 +40,9 @@ public:
     optional<double> base_col_width;
 
     /// <summary>
-    /// The default row height
+    /// The default row height is required
     /// </summary>
-    optional<double> default_row_height;
+    double default_row_height = 15.0;
 
     /// <summary>
     /// The default column width

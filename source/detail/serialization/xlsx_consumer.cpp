@@ -3032,7 +3032,7 @@ xlnt::color xlsx_consumer::read_color()
 
     if (parser().attribute_present("tint"))
     {
-        result.tint(parser().attribute("tint", 0.0));
+        result.tint(parser().attribute<double>("tint"));
     }
 
     return result;

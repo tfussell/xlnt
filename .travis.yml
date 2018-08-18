@@ -30,6 +30,7 @@ matrix:
         - COVERAGE=OFF
         - STATIC=OFF
         - SAMPLES=OFF
+        - BENCHMARKS=OFF
         
     # gcc-7, c++14, release build, static linking, samples + benchmarks compiled
     - os: linux
@@ -47,7 +48,8 @@ matrix:
         - BUILD_TYPE=Release
         - COVERAGE=OFF
         - STATIC=ON
-        - SAMPLES=ON
+        - SAMPLES=OFF
+        - BENCHMARKS=OFF
         
     # gcc-8, c++17, release build, static linking, samples + benchmarks compiled
     - os: linux
@@ -66,6 +68,7 @@ matrix:
         - COVERAGE=OFF
         - STATIC=ON
         - SAMPLES=ON
+        - BENCHMARKS=ON
 
     # =========== CLANG =============
     # clang 4, c++11, release build, dynamic linking
@@ -86,6 +89,7 @@ matrix:
         - COVERAGE=OFF
         - STATIC=OFF
         - SAMPLES=OFF
+        - BENCHMARKS=OFF
         
     # clang 5, c++14, release build, dynamic linking, samples + benchmarks compiled
     - os: linux
@@ -104,7 +108,8 @@ matrix:
         - BUILD_TYPE=Release
         - COVERAGE=OFF
         - STATIC=ON
-        - SAMPLES=ON
+        - SAMPLES=OFF
+        - BENCHMARKS=OFF
         
     # clang 6, c++17, release build, static linking, samples compiled
     - os: linux
@@ -124,6 +129,7 @@ matrix:
         - COVERAGE=OFF
         - STATIC=ON
         - SAMPLES=ON
+        - BENCHMARKS=ON
 
     # ============= CODE COVERAGE ===============
     # gcc-6, c++11, debug build, static linking, code coverage enabled
@@ -159,17 +165,21 @@ install:
   - cmake --version
 
 script:
-  - |
-    if [[ "${BUILD_TYPE}" == "Release" && "${STATIC}" == "ON" ]];
-      then BENCHMARKS="ON";
-    else BENCHMARKS="OFF";
-    fi
-    
   - mkdir build
   - cd build
   - cmake .. -DXLNT_CXX_LANG=${CXX_VER} -DSTATIC=$STATIC -DBENCHMARKS=$BENCHMARKS -DSAMPLES=$SAMPLES -DCOVERAGE=$COVERAGE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
   - cmake --build . -- -j2
   - ./tests/xlnt.test
+  - echo "samples" && echo 'travis_fold:start:samples'
+  - if [[ "${SAMPLES}" == "ON" ]]; then ./samples/sample-decrypt; fi
+  - if [[ "${SAMPLES}" == "ON" ]]; then ./samples/sample-img2xlsx "../samples/data/cafe.jpg" "img.xlsx"; fi
+  - if [[ "${SAMPLES}" == "ON" ]]; then ./samples/sample-documentation; fi
+  - echo 'travis_fold:end:samples'
+  - echo "benchmarks" && echo 'travis_fold:start:benchmarks'
+  - if [[ "${BENCHMARKS}" == "ON" ]]; then ./benchmarks/benchmark-styles; fi
+  - if [[ "${BENCHMARKS}" == "ON" ]]; then ./benchmarks/benchmark-writer; fi
+  - echo 'travis_fold:end:benchmarks'
+    
 
 after_success:
  - |
