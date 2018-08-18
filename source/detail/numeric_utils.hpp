@@ -50,11 +50,7 @@ std::string serialize_number_to_string(Number num)
 template <typename Number>
 constexpr Number abs(Number val)
 {
-    if (val < Number{0})
-    {
-        return -val;
-    }
-    return val;
+    return (val < Number{0}) ? -val : val;
 };
 
 /// <summary>
