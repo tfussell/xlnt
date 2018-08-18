@@ -63,21 +63,32 @@ constexpr Number abs(Number val)
 template <typename Number>
 constexpr Number max(Number lval, Number rval)
 {
-    if (lval < rval)
-    {
-        return rval;
-    }
-    return lval;
-};
+    return (lval < rval) ? rval : lval;
+}
 
 /// <summary>
-/// Floating point equality requires a bit of fuzzingdue to the imprecise nature of fp calculation
+/// constexpr min
+/// </summary>
+template <typename Number>
+constexpr Number min(Number lval, Number rval)
+{
+    return (lval < rval) ? lval : rval;
+}
+
+/// <summary>
+/// Floating point equality requires a bit of fuzzing due to the imprecise nature of fp calculation
+/// References:
+/// - Several blogs/articles were referenced with the following being the most useful
+/// -- https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
+/// -- http://realtimecollisiondetection.net/blog/?p=89
+/// - Testing Frameworks {Catch2, Boost, Google}, primarily for selecting the default scale factor
+/// -- None of these even remotely agree
 /// </summary>
 template <typename EpsilonType = float, // the type to extract epsilon from
     typename LNumber, typename RNumber> // parameter types (deduced)
-constexpr bool
+bool
 float_equals(const LNumber &lhs, const RNumber &rhs,
-    int epsilon_scale = 100) // scale the "fuzzy" equality. Higher value gives a more tolerant comparison
+    int epsilon_scale = 20) // scale the "fuzzy" equality. Higher value gives a more tolerant comparison
 {
     static_assert(std::is_floating_point<LNumber>::value || std::is_floating_point<RNumber>::value,
         "Using this function with two integers is just wasting time. Use ==");
@@ -90,7 +101,7 @@ float_equals(const LNumber &lhs, const RNumber &rhs,
         return false;
     }
     // a type that lhs and rhs can agree on
-    using common_t = std::common_type<LNumber, RNumber>::type;
+    using common_t = typename std::common_type<LNumber, RNumber>::type;
     // epsilon type defaults to float because even if both args are a higher precision type
     // either or both could have been promoted by prior operations
     // if a higher precision is required, the template type can be changed
@@ -103,7 +114,5 @@ float_equals(const LNumber &lhs, const RNumber &rhs,
     return ((lhs + scaled_fuzz) >= rhs) && ((rhs + scaled_fuzz) >= lhs);
 }
 
-static_assert(0.1 != 0.1f, "Built in equality fails when comparing float and double due to imprecision");
-static_assert(float_equals(0.1, 0.1f), "fuzzy equality allows comparison between double and float");
 } // namespace detail
 } // namespace xlnt
