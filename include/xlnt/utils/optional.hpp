@@ -53,8 +53,8 @@ class optional
     /// <summary>
     /// Default equality operation, just uses operator==
     /// </summary>
-    template <typename T, typename std::enable_if<!std::is_floating_point_v<T>>::type * = nullptr>
-    constexpr bool compare_equal(const T &lhs, const T &rhs) const
+    template <typename U = T, typename std::enable_if<!std::is_floating_point<U>::value>::type * = nullptr>
+    constexpr bool compare_equal(const U &lhs, const U &rhs) const
     {
         return lhs == rhs;
     }
@@ -62,8 +62,8 @@ class optional
     /// <summary>
     /// equality operation for floating point numbers. Provides "fuzzy" equality
     /// </summary>
-    template <typename T, typename std::enable_if<std::is_floating_point_v<T>>::type * = nullptr>
-    constexpr bool compare_equal(const T &lhs, const T &rhs) const
+    template <typename U = T, typename std::enable_if<std::is_floating_point<U>::value>::type * = nullptr>
+    constexpr bool compare_equal(const U &lhs, const U &rhs) const
     {
         return detail::float_equals(lhs, rhs);
     }

@@ -90,7 +90,7 @@ float_equals(const LNumber &lhs, const RNumber &rhs,
         return false;
     }
     // a type that lhs and rhs can agree on
-    using common_t = std::common_type_t<LNumber, RNumber>;
+    using common_t = std::common_type<LNumber, RNumber>::type;
     // epsilon type defaults to float because even if both args are a higher precision type
     // either or both could have been promoted by prior operations
     // if a higher precision is required, the template type can be changed
