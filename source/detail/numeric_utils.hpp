@@ -96,7 +96,7 @@ float_equals(const LNumber &lhs, const RNumber &rhs,
         "Cannot extract epsilon from a number that isn't a floating point type");
 
     // NANs always compare false with themselves
-    if ((lhs != lhs) || (rhs != rhs)) // std::isnan isn't constexpr
+    if (std::isnan(lhs) || std::isnan(rhs))
     {
         return false;
     }
