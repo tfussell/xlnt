@@ -23,9 +23,9 @@
 
 #pragma once
 
-#include <xlnt/xlnt_config.hpp>
-#include <xlnt/utils/exceptions.hpp>
-#include <detail/numeric_utils.hpp>
+#include "xlnt/xlnt_config.hpp"
+#include "xlnt/utils/exceptions.hpp"
+#include "../source/detail/numeric_utils.hpp"
 #include <type_traits>
 
 namespace xlnt {
