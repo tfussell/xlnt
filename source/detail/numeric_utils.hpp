@@ -102,7 +102,7 @@ float_equals(const LNumber &lhs, const RNumber &rhs,
     // epsilon type defaults to float because even if both args are a higher precision type
     // either or both could have been promoted by prior operations
     // if a higher precision is required, the template type can be changed
-    constexpr common_t epsilon = std::numeric_limits<EpsilonType>::epsilon();
+    constexpr common_t epsilon = static_cast<common_t>(std::numeric_limits<EpsilonType>::epsilon());
     // the "epsilon" then needs to be scaled into the comparison range
     // epsilon for numeric_limits is valid when abs(x) <1.0, scaling only needs to be upwards
     // in particular, this prevents a lhs of 0 from requiring an exact comparison

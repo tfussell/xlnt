@@ -33,6 +33,7 @@
 #include <xlnt/utils/optional.hpp>
 #include <detail/implementations/format_impl.hpp>
 #include <detail/implementations/hyperlink_impl.hpp>
+#include "../numeric_utils.hpp"
 
 namespace xlnt {
 namespace detail {
@@ -73,7 +74,7 @@ inline bool operator==(const cell_impl &lhs, const cell_impl &rhs)
         && lhs.row_ == rhs.row_
         && lhs.is_merged_ == rhs.is_merged_
         && lhs.value_text_ == rhs.value_text_
-        && lhs.value_numeric_ == rhs.value_numeric_
+        && float_equals(lhs.value_numeric_, rhs.value_numeric_)
         && lhs.formula_ == rhs.formula_
         && lhs.hyperlink_ == rhs.hyperlink_
         && (lhs.format_.is_set() == rhs.format_.is_set() && (!lhs.format_.is_set() || *lhs.format_.get() == *rhs.format_.get()))
