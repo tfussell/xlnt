@@ -25,6 +25,7 @@
 
 #include <xlnt/xlnt_config.hpp>
 #include <cmath>
+#include <limits>
 #include <sstream>
 #include <type_traits>
 
