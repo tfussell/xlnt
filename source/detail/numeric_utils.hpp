@@ -58,8 +58,8 @@ constexpr Number abs(Number val)
 /// <summary>
 /// constexpr max
 /// </summary>
-template <typename Number>
-constexpr Number max(Number lval, Number rval)
+template <typename NumberL, typename NumberR>
+constexpr typename std::common_type<NumberL, NumberR>::type max(NumberL lval, NumberR rval)
 {
     return (lval < rval) ? rval : lval;
 }
@@ -67,8 +67,8 @@ constexpr Number max(Number lval, Number rval)
 /// <summary>
 /// constexpr min
 /// </summary>
-template <typename Number>
-constexpr Number min(Number lval, Number rval)
+template <typename NumberL, typename NumberR>
+constexpr typename std::common_type<NumberL, NumberR>::type min(NumberL lval, NumberR rval)
 {
     return (lval < rval) ? lval : rval;
 }

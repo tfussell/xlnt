@@ -31,6 +31,9 @@ public:
     {
         register_test(test_float_equals_zero);
         register_test(test_float_equals_large);
+        register_test(test_min);
+        register_test(test_max);
+        register_test(test_abs);
     }
 
     void test_float_equals_zero()
@@ -107,6 +110,70 @@ public:
         // float_equals also scales epsilon up to match the magnitude of its arguments
         // all the same options are available for increasing/decreasing the precision of the comparison
         // however the the epsilon source should always be of equal or lesser precision than the arguments when away from zero
+    }
+
+    void test_float_equals_nan()
+    {
+        const float nan = std::nan("");
+        // nans always compare false
+        xlnt_assert(!xlnt::detail::float_equals(nan, 0.f));
+        xlnt_assert(!xlnt::detail::float_equals(nan, nan));
+        xlnt_assert(!xlnt::detail::float_equals(nan, 1000.f));
+    }
+
+    void test_min()
+    {
+        // simple
+        xlnt_assert(xlnt::detail::min(0, 1) == 0);
+        xlnt_assert(xlnt::detail::min(1, 0) == 0);
+        xlnt_assert(xlnt::detail::min(0.0, 1) == 0.0); // comparisons between different types just work
+        xlnt_assert(xlnt::detail::min(1, 0.0) == 0.0);
+        // negative numbers
+        xlnt_assert(xlnt::detail::min(0, -1) == -1.0);
+        xlnt_assert(xlnt::detail::min(-1, 0) == -1.0);
+        xlnt_assert(xlnt::detail::min(0.0, -1) == -1.0);
+        xlnt_assert(xlnt::detail::min(-1, 0.0) == -1.0);
+        // no zeroes
+        xlnt_assert(xlnt::detail::min(10, -10) == -10.0);
+        xlnt_assert(xlnt::detail::min(-10, 10) == -10.0);
+        xlnt_assert(xlnt::detail::min(10.0, -10) == -10.0);
+        xlnt_assert(xlnt::detail::min(-10, 10.0) == -10.0);
+
+        static_assert(xlnt::detail::min(-10, 10.0) == -10.0, "constexpr");
+    }
+
+    void test_max()
+    {
+        // simple
+        xlnt_assert(xlnt::detail::max(0, 1) == 1);
+        xlnt_assert(xlnt::detail::max(1, 0) == 1);
+        xlnt_assert(xlnt::detail::max(0.0, 1) == 1.0); // comparisons between different types just work
+        xlnt_assert(xlnt::detail::max(1, 0.0) == 1.0);
+        // negative numbers
+        xlnt_assert(xlnt::detail::max(0, -1) == 0.0);
+        xlnt_assert(xlnt::detail::max(-1, 0) == 0.0);
+        xlnt_assert(xlnt::detail::max(0.0, -1) == 0.0);
+        xlnt_assert(xlnt::detail::max(-1, 0.0) == 0.0);
+        // no zeroes
+        xlnt_assert(xlnt::detail::max(10, -10) == 10.0);
+        xlnt_assert(xlnt::detail::max(-10, 10) == 10.0);
+        xlnt_assert(xlnt::detail::max(10.0, -10) == 10.0);
+        xlnt_assert(xlnt::detail::max(-10, 10.0) == 10.0);
+
+        static_assert(xlnt::detail::max(-10, 10.0) == 10.0, "constexpr");
+    }
+
+    void test_abs()
+    {
+        xlnt_assert(xlnt::detail::abs(0) == 0);
+        xlnt_assert(xlnt::detail::abs(1) == 1);
+        xlnt_assert(xlnt::detail::abs(-1) == 1);
+
+        xlnt_assert(xlnt::detail::abs(0.0) == 0.0);
+        xlnt_assert(xlnt::detail::abs(1.5) == 1.5);
+        xlnt_assert(xlnt::detail::abs(-1.5) == 1.5);
+
+        static_assert(xlnt::detail::abs(-1.23) == 1.23, "constexpr");
     }
 };
 static numeric_test_suite x;
