@@ -29,12 +29,29 @@ class numeric_test_suite : public test_suite
 public:
     numeric_test_suite()
     {
+        register_test(test_serialise_number);
         register_test(test_float_equals_zero);
         register_test(test_float_equals_large);
         register_test(test_float_equals_fairness);
         register_test(test_min);
         register_test(test_max);
         register_test(test_abs);
+    }
+
+    void test_serialise_number()
+    {
+        // excel serialises numbers as floating point values with <= 15 digits of precision
+        xlnt_assert(xlnt::detail::serialize_number_to_string(1) == "1");
+        // trailing zeroes are ignored
+        xlnt_assert(xlnt::detail::serialize_number_to_string(1.0) == "1");
+        xlnt_assert(xlnt::detail::serialize_number_to_string(1.0f) == "1");
+        // one to 1 relation
+        xlnt_assert(xlnt::detail::serialize_number_to_string(1.23456) == "1.23456");
+        xlnt_assert(xlnt::detail::serialize_number_to_string(1.23456789012345) == "1.23456789012345");
+        xlnt_assert(xlnt::detail::serialize_number_to_string(123456.789012345) == "123456.789012345");
+        xlnt_assert(xlnt::detail::serialize_number_to_string(1234567890123.45) == "1234567890123.45");
+        // extra precision gets trimmed
+        xlnt_assert(xlnt::detail::serialize_number_to_string(1.234567890123456) == "1.23456789012345");
     }
 
     void test_float_equals_zero()
