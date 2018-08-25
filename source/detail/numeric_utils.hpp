@@ -88,18 +88,19 @@ bool
 float_equals(const LNumber &lhs, const RNumber &rhs,
     int epsilon_scale = 20) // scale the "fuzzy" equality. Higher value gives a more tolerant comparison
 {
+    // a type that lhs and rhs can agree on
+    using common_t = typename std::common_type<LNumber, RNumber>::type;
+    // asserts for sane usage
     static_assert(std::is_floating_point<LNumber>::value || std::is_floating_point<RNumber>::value,
         "Using this function with two integers is just wasting time. Use ==");
-    static_assert(std::is_floating_point<EpsilonType>::value,
-        "Cannot extract epsilon from a number that isn't a floating point type");
+    static_assert(std::numeric_limits<EpsilonType>::epsilon() < common_t{1},
+        "epsilon >= 1.0 will cause all comparisons to return true");
 
     // NANs always compare false with themselves
     if (std::isnan(lhs) || std::isnan(rhs))
     {
         return false;
     }
-    // a type that lhs and rhs can agree on
-    using common_t = typename std::common_type<LNumber, RNumber>::type;
     // epsilon type defaults to float because even if both args are a higher precision type
     // either or both could have been promoted by prior operations
     // if a higher precision is required, the template type can be changed
@@ -108,7 +109,9 @@ float_equals(const LNumber &lhs, const RNumber &rhs,
     // epsilon for numeric_limits is valid when abs(x) <1.0, scaling only needs to be upwards
     // in particular, this prevents a lhs of 0 from requiring an exact comparison
     // additionally, a scale factor is applied.
-    common_t scaled_fuzz = epsilon_scale * epsilon * max(xlnt::detail::abs<common_t>(lhs), common_t{1});
+    common_t scaled_fuzz = epsilon_scale * epsilon * max(max(xlnt::detail::abs<common_t>(lhs),
+                                                             xlnt::detail::abs<common_t>(rhs)), // |max| of parameters.
+                                                         common_t{1}); // clamp
     return ((lhs + scaled_fuzz) >= rhs) && ((rhs + scaled_fuzz) >= lhs);
 }
 

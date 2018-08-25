@@ -31,6 +31,7 @@ public:
     {
         register_test(test_float_equals_zero);
         register_test(test_float_equals_large);
+        register_test(test_float_equals_fairness);
         register_test(test_min);
         register_test(test_max);
         register_test(test_abs);
@@ -119,6 +120,32 @@ public:
         xlnt_assert(!xlnt::detail::float_equals(nan, 0.f));
         xlnt_assert(!xlnt::detail::float_equals(nan, nan));
         xlnt_assert(!xlnt::detail::float_equals(nan, 1000.f));
+    }
+
+    void test_float_equals_fairness()
+    {
+        // tests for parameter ordering dependency
+        // (lhs ~= rhs) == (rhs ~= lhs)
+        const double test_val = 1.0;
+        const double test_diff_pass  = 1.192092e-07; // should all pass with this
+        const double test_diff       = 1.192093e-07; // difference enough to provide different results if the comparison is not "fair"
+        const double test_diff_fails = 1.192094e-07; // should all fail with this
+
+        // test_diff_pass
+        xlnt_assert(xlnt::detail::float_equals<float>((test_val + test_diff_pass), test_val, 1));
+        xlnt_assert(xlnt::detail::float_equals<float>(test_val, (test_val + test_diff_pass), 1));
+        xlnt_assert(xlnt::detail::float_equals<float>(-(test_val + test_diff_pass), -test_val, 1));
+        xlnt_assert(xlnt::detail::float_equals<float>(-test_val, -(test_val + test_diff_pass), 1));
+        // test_diff
+        xlnt_assert(xlnt::detail::float_equals<float>((test_val + test_diff), test_val, 1));
+        xlnt_assert(xlnt::detail::float_equals<float>(test_val, (test_val + test_diff), 1));
+        xlnt_assert(xlnt::detail::float_equals<float>(-(test_val + test_diff), -test_val, 1));
+        xlnt_assert(xlnt::detail::float_equals<float>(-test_val, -(test_val + test_diff), 1));
+        // test_diff_fails
+        xlnt_assert(!xlnt::detail::float_equals<float>((test_val + test_diff_fails), test_val, 1));
+        xlnt_assert(!xlnt::detail::float_equals<float>(test_val, (test_val + test_diff_fails), 1));
+        xlnt_assert(!xlnt::detail::float_equals<float>(-(test_val + test_diff_fails), -test_val, 1));
+        xlnt_assert(!xlnt::detail::float_equals<float>(-test_val, -(test_val + test_diff_fails), 1));
     }
 
     void test_min()
