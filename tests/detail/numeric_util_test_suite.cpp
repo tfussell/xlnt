@@ -49,9 +49,8 @@ public:
         xlnt_assert(xlnt::detail::serialize_number_to_string(1.23456) == "1.23456");
         xlnt_assert(xlnt::detail::serialize_number_to_string(1.23456789012345) == "1.23456789012345");
         xlnt_assert(xlnt::detail::serialize_number_to_string(123456.789012345) == "123456.789012345");
-        xlnt_assert(xlnt::detail::serialize_number_to_string(1234567890123.45) == "1234567890123.45");
-        // extra precision gets trimmed
-        xlnt_assert(xlnt::detail::serialize_number_to_string(1.234567890123456) == "1.23456789012345");
+        xlnt_assert(xlnt::detail::serialize_number_to_string(1.23456789012345e+67) == "1.23456789012345e+67");
+        xlnt_assert(xlnt::detail::serialize_number_to_string(1.23456789012345e-67) == "1.23456789012345e-67");
     }
 
     void test_float_equals_zero()
