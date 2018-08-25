@@ -97,6 +97,7 @@ file(GLOB DETAIL_NUMBER_FORMAT_SOURCES ${XLNT_SOURCE_DIR}/detail/number_format/*
 file(GLOB DETAIL_SERIALIZATION_HEADERS ${XLNT_SOURCE_DIR}/detail/serialization/*.hpp)
 file(GLOB DETAIL_SERIALIZATION_SOURCES ${XLNT_SOURCE_DIR}/detail/serialization/*.cpp)
 
+
 set(DETAIL_HEADERS ${DETAIL_ROOT_HEADERS} ${DETAIL_CRYPTOGRAPHY_HEADERS}
   ${DETAIL_EXTERNAL_HEADERS} ${DETAIL_HEADER_FOOTER_HEADERS}
   ${DETAIL_IMPLEMENTATIONS_HEADERS} ${DETAIL_NUMBER_FORMAT_HEADERS}
@@ -148,7 +149,7 @@ if(NOT STATIC)
     PROPERTIES
     VERSION ${PROJECT_VERSION}
     SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-    INSTALL_NAME_DIR "${LIB_DEST_DIR}")
+    INSTALL_NAME_DIR "${XLNT_LIB_DEST_DIR}")
 else()
   # Compile static library
   add_library(xlnt STATIC ${XLNT_HEADERS} ${XLNT_SOURCES} $<TARGET_OBJECTS:libstudxml>)
@@ -158,13 +159,28 @@ endif()
 # requires cmake 3.8+
 #target_compile_features(xlnt PUBLIC cxx_std_${XLNT_CXX_LANG})
 
+include(GNUInstallDirs)
+
+set(XLNT_INC_DEST_DIR ${CMAKE_INSTALL_INCLUDEDIR}
+	CACHE PATH "Default location to install include files")
+set(XLNT_LIB_DEST_DIR ${CMAKE_INSTALL_LIBDIR}
+	CACHE PATH "Default location to install library files")
+set(XLNT_BIN_DEST_DIR ${CMAKE_INSTALL_BINDIR}
+	CACHE PATH "Default location to install runtime files")
+set(XLNT_MAN_DEST_DIR ${CMAKE_INSTALL_MANDIR}
+	CACHE PATH "Default location to install runtime files")
+set(XLNT_CMAKE_CFG_DEST_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+	CACHE PATH "Default location to install CMake config files")
+
 # Includes
-target_include_directories(xlnt PUBLIC
+target_include_directories(xlnt
+	PUBLIC
 	$<BUILD_INTERFACE:${XLNT_INCLUDE_DIR}>
-	$<INSTALL_INTERFACE:include>)
-target_include_directories(xlnt PRIVATE ${XLNT_SOURCE_DIR})
-target_include_directories(xlnt PRIVATE ${XLNT_SOURCE_DIR}/../third-party/libstudxml)
-target_include_directories(xlnt PRIVATE ${XLNT_SOURCE_DIR}/../third-party/utfcpp)
+	$<INSTALL_INTERFACE:${XLNT_INC_DEST_DIR}>
+	PRIVATE
+	${XLNT_SOURCE_DIR}
+	${XLNT_SOURCE_DIR}/../third-party/libstudxml
+	${XLNT_SOURCE_DIR}/../third-party/utfcpp)
 
 # Platform- and file-specific settings, MSVC
 if(MSVC)
@@ -217,44 +233,25 @@ source_group(utils FILES ${UTILS_HEADERS} ${UTILS_SOURCES})
 source_group(workbook FILES ${WORKBOOK_HEADERS} ${WORKBOOK_SOURCES})
 source_group(worksheet FILES ${WORKSHEET_HEADERS} ${WORKSHEET_SOURCES})
 
-if(NOT INC_DEST_DIR)
-  # Default location to install include files
-  set(INC_DEST_DIR ${CMAKE_INSTALL_PREFIX}/include)
-endif()
-
-if(NOT LIB_DEST_DIR)
-  # Default location to install library files
-  set(LIB_DEST_DIR ${CMAKE_INSTALL_PREFIX}/lib)
-endif()
-
-if(NOT BIN_DEST_DIR)
-  # Default location to install runtime files
-   set(BIN_DEST_DIR ${CMAKE_INSTALL_PREFIX}/bin)
-endif()
-
-if(NOT MAN_DEST_DIR)
-  # Default location to install runtime files
-   set(MAN_DEST_DIR ${CMAKE_INSTALL_PREFIX}/share/man)
-endif()
-
 # Install library
 install(TARGETS xlnt EXPORT XlntTargets
-  LIBRARY DESTINATION ${LIB_DEST_DIR}
-  ARCHIVE DESTINATION ${LIB_DEST_DIR}
-  RUNTIME DESTINATION ${BIN_DEST_DIR})
+  LIBRARY DESTINATION ${XLNT_LIB_DEST_DIR}
+  ARCHIVE DESTINATION ${XLNT_LIB_DEST_DIR}
+  RUNTIME DESTINATION ${XLNT_BIN_DEST_DIR})
 
 install(EXPORT XlntTargets
   FILE XlntTargets.cmake
   NAMESPACE xlnt::
-  DESTINATION lib/cmake/xlnt)
+  DESTINATION ${XLNT_CMAKE_CFG_DEST_DIR})
 
 include(CMakePackageConfigHelpers)
 
-set(XLNT_INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/include/)
+set(XLNT_INCLUDE_INSTALL_DIR ${XLNT_INC_DEST_DIR})
 
+#See https://cmake.org/cmake/help/latest/module/CMakePackageConfigHelpers.html
 configure_package_config_file(../cmake/XlntConfig.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/XlntConfig.cmake
-  INSTALL_DESTINATION lib/cmake/xlnt
+  INSTALL_DESTINATION ${XLNT_CMAKE_CFG_DEST_DIR}
   PATH_VARS XLNT_INCLUDE_DIR)
 
 write_basic_package_version_file(XlntConfigVersion.cmake
@@ -263,16 +260,16 @@ write_basic_package_version_file(XlntConfigVersion.cmake
 install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/XlntConfig.cmake
   ${CMAKE_CURRENT_BINARY_DIR}/XlntConfigVersion.cmake
-  DESTINATION lib/cmake/xlnt)
+  DESTINATION ${XLNT_CMAKE_CFG_DEST_DIR})
 
 # Install include directory
 install(DIRECTORY ${XLNT_INCLUDE_DIR}/xlnt
-  DESTINATION include
+  DESTINATION ${XLNT_INC_DEST_DIR}
   PATTERN ".DS_Store" EXCLUDE)
 
 # Install LICENSE.md
 install(FILES ${XLNT_ROOT_DIR}/docs/xlnt.3
-DESTINATION ${MAN_DEST_DIR}/man3)
+DESTINATION ${XLNT_MAN_DEST_DIR}/man3)
 
 # Configure uninstall
 configure_file("${XLNT_ROOT_DIR}/cmake/cmake_uninstall.cmake.in"
@@ -286,8 +283,8 @@ add_custom_target(uninstall
 
 if(NOT MSVC)
   # Set pkg-config variables
-  set(PKG_CONFIG_LIBDIR ${LIB_DEST_DIR})
-  set(PKG_CONFIG_INCLUDEDIR ${INC_DEST_DIR})
+  set(PKG_CONFIG_LIBDIR ${XLNT_LIB_DEST_DIR})
+  set(PKG_CONFIG_INCLUDEDIR ${XLNT_INC_DEST_DIR})
   set(PKG_CONFIG_LIBS "-L\${libdir} -lxlnt")
   set(PKG_CONFIG_CFLAGS "-I\${includedir}")
 
@@ -297,5 +294,5 @@ if(NOT MSVC)
 
   # pkg-config install
   install(FILES "${CMAKE_CURRENT_BINARY_DIR}/xlnt.pc"
-    DESTINATION ${LIB_DEST_DIR}/pkgconfig)
+    DESTINATION ${XLNT_LIB_DEST_DIR}/pkgconfig)
 endif()
