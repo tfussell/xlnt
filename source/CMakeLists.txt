@@ -135,6 +135,19 @@ endif()
 # Append "d" to the name of the compiled library
 set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "Set debug library postfix")
 
+include(GNUInstallDirs)
+
+set(XLNT_INC_DEST_DIR ${CMAKE_INSTALL_INCLUDEDIR}
+	CACHE PATH "Default location to install include files")
+set(XLNT_LIB_DEST_DIR ${CMAKE_INSTALL_LIBDIR}
+	CACHE PATH "Default location to install library files")
+set(XLNT_BIN_DEST_DIR ${CMAKE_INSTALL_BINDIR}
+	CACHE PATH "Default location to install runtime files")
+set(XLNT_MAN_DEST_DIR ${CMAKE_INSTALL_MANDIR}
+	CACHE PATH "Default location to install runtime files")
+set(XLNT_CMAKE_CFG_DEST_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+	CACHE PATH "Default location to install CMake config files")
+
 if(NOT STATIC)
   # Compile shared library
   add_library(xlnt SHARED
@@ -158,19 +171,6 @@ endif()
 
 # requires cmake 3.8+
 #target_compile_features(xlnt PUBLIC cxx_std_${XLNT_CXX_LANG})
-
-include(GNUInstallDirs)
-
-set(XLNT_INC_DEST_DIR ${CMAKE_INSTALL_INCLUDEDIR}
-	CACHE PATH "Default location to install include files")
-set(XLNT_LIB_DEST_DIR ${CMAKE_INSTALL_LIBDIR}
-	CACHE PATH "Default location to install library files")
-set(XLNT_BIN_DEST_DIR ${CMAKE_INSTALL_BINDIR}
-	CACHE PATH "Default location to install runtime files")
-set(XLNT_MAN_DEST_DIR ${CMAKE_INSTALL_MANDIR}
-	CACHE PATH "Default location to install runtime files")
-set(XLNT_CMAKE_CFG_DEST_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
-	CACHE PATH "Default location to install CMake config files")
 
 # Includes
 target_include_directories(xlnt
