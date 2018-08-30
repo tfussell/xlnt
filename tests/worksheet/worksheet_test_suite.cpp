@@ -104,6 +104,11 @@ public:
         register_test(test_clear_cell);
         register_test(test_clear_row);
         register_test(test_set_title);
+        register_test(test_insert_rows);
+        register_test(test_insert_columns);
+        register_test(test_delete_rows);
+        register_test(test_delete_columns);
+        register_test(test_insert_too_many);
     }
 
     void test_new_worksheet()
@@ -1258,6 +1263,242 @@ public:
         xlnt_assert_throws_nothing(ws2.title(ws2.title()));
         xlnt_assert(ws1_title == ws1.title());
         xlnt_assert(ws2_title == ws2.title());
+    }
+
+    void test_insert_rows()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.active_sheet();
+
+        // set up a 2x2 grid
+        ws.cell("A1").value("A1");
+        ws.cell("A2").value("A2");
+        ws.cell("B1").value("B1");
+        ws.cell("B2").value("B2");
+
+        xlnt::row_properties row_prop;
+        row_prop.height = 1;
+        ws.add_row_properties(1, row_prop);
+        row_prop.height = 2;
+        ws.add_row_properties(2, row_prop);
+
+        xlnt::column_properties col_prop;
+        col_prop.width = 1;
+        ws.add_column_properties(1, col_prop);
+        col_prop.width = 2;
+        ws.add_column_properties(2, col_prop);
+
+        // insert
+        ws.insert_rows(2, 2);
+
+        // first row should be unchanged
+        xlnt_assert(ws.cell("A1").has_value());
+        xlnt_assert(ws.cell("B1").has_value());
+        xlnt_assert_equals(ws.cell("A1").value<std::string>(), "A1");
+        xlnt_assert_equals(ws.cell("B1").value<std::string>(), "B1");
+        xlnt_assert_equals(ws.row_properties(1).height, 1);
+
+        // second and third rows should be empty
+        xlnt_assert(!ws.cell("A2").has_value());
+        xlnt_assert(!ws.cell("B2").has_value());
+        xlnt_assert(!ws.has_row_properties(2));
+        xlnt_assert(!ws.cell("A3").has_value());
+        xlnt_assert(!ws.cell("B3").has_value());
+        xlnt_assert(!ws.has_row_properties(3));
+
+        // fourth row should have the contents and properties of the second
+        xlnt_assert(ws.cell("A4").has_value());
+        xlnt_assert(ws.cell("B4").has_value());
+        xlnt_assert_equals(ws.cell("A4").value<std::string>(), "A2");
+        xlnt_assert_equals(ws.cell("B4").value<std::string>(), "B2");
+        xlnt_assert_equals(ws.row_properties(4).height, 2);
+
+        // column properties should remain unchanged
+        xlnt_assert(ws.has_column_properties(1));
+        xlnt_assert(ws.has_column_properties(2));
+    }
+
+    void test_insert_columns()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.active_sheet();
+
+        // set up a 2x2 grid
+        ws.cell("A1").value("A1");
+        ws.cell("A2").value("A2");
+        ws.cell("B1").value("B1");
+        ws.cell("B2").value("B2");
+
+        xlnt::row_properties row_prop;
+        row_prop.height = 1;
+        ws.add_row_properties(1, row_prop);
+        row_prop.height = 2;
+        ws.add_row_properties(2, row_prop);
+
+        xlnt::column_properties col_prop;
+        col_prop.width = 1;
+        ws.add_column_properties(1, col_prop);
+        col_prop.width = 2;
+        ws.add_column_properties(2, col_prop);
+
+        // insert
+        ws.insert_columns(2, 2);
+
+        // first column should be unchanged
+        xlnt_assert(ws.cell("A1").has_value());
+        xlnt_assert(ws.cell("A2").has_value());
+        xlnt_assert_equals(ws.cell("A1").value<std::string>(), "A1");
+        xlnt_assert_equals(ws.cell("A2").value<std::string>(), "A2");
+        xlnt_assert_equals(ws.column_properties(1).width, 1);
+
+        // second and third columns should be empty
+        xlnt_assert(!ws.cell("B1").has_value());
+        xlnt_assert(!ws.cell("B2").has_value());
+        xlnt_assert(!ws.has_column_properties(2));
+        xlnt_assert(!ws.cell("C1").has_value());
+        xlnt_assert(!ws.cell("C2").has_value());
+        xlnt_assert(!ws.has_column_properties(3));
+
+        // fourth column should have the contents and properties of the second
+        xlnt_assert(ws.cell("D1").has_value());
+        xlnt_assert(ws.cell("D2").has_value());
+        xlnt_assert_equals(ws.cell("D1").value<std::string>(), "B1");
+        xlnt_assert_equals(ws.cell("D2").value<std::string>(), "B2");
+        xlnt_assert_equals(ws.column_properties(4).width, 2);
+
+        // row properties should remain unchanged
+        xlnt_assert_equals(ws.row_properties(1).height, 1);
+        xlnt_assert_equals(ws.row_properties(2).height, 2);
+    }
+
+    void test_delete_rows()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.active_sheet();
+
+        // set up a 4x4 grid
+        for (int i = 1; i <= 4; ++i)
+        {
+            for (int j = 1; j <= 4; ++j)
+            {
+                ws.cell(xlnt::cell_reference(i, j)).value(xlnt::cell_reference(i, j).to_string());
+            }
+
+            xlnt::row_properties row_prop;
+            row_prop.height = i;
+            ws.add_row_properties(i, row_prop);
+
+            xlnt::column_properties col_prop;
+            col_prop.width = i;
+            ws.add_column_properties(i, col_prop);
+        }
+
+        // delete
+        ws.delete_rows(2, 2);
+
+        // first row should remain unchanged
+        xlnt_assert_equals(ws.cell("A1").value<std::string>(), "A1");
+        xlnt_assert_equals(ws.cell("B1").value<std::string>(), "B1");
+        xlnt_assert_equals(ws.cell("C1").value<std::string>(), "C1");
+        xlnt_assert_equals(ws.cell("D1").value<std::string>(), "D1");
+        xlnt_assert(ws.has_row_properties(1));
+        xlnt_assert_equals(ws.row_properties(1).height, 1);
+
+        // second row should have the contents and properties of the fourth
+        xlnt_assert_equals(ws.cell("A2").value<std::string>(), "A4");
+        xlnt_assert_equals(ws.cell("B2").value<std::string>(), "B4");
+        xlnt_assert_equals(ws.cell("C2").value<std::string>(), "C4");
+        xlnt_assert_equals(ws.cell("D2").value<std::string>(), "D4");
+        xlnt_assert(ws.has_row_properties(2));
+        xlnt_assert_equals(ws.row_properties(2).height, 4);
+
+        // third and fourth rows should be empty
+        auto empty_range = ws.range("A3:D4");
+        for (auto empty_row : empty_range)
+        {
+            for (auto empty_cell : empty_row)
+            {
+                xlnt_assert(!empty_cell.has_value());
+            }
+        }
+        xlnt_assert(!ws.has_row_properties(3));
+        xlnt_assert(!ws.has_row_properties(4));
+
+        // column properties should remain unchanged
+        for (int i = 1; i <= 4; ++i)
+        {
+            xlnt_assert(ws.has_column_properties(i));
+            xlnt_assert_equals(ws.column_properties(i).width, i);
+        }
+    }
+
+    void test_delete_columns()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.active_sheet();
+
+        // set up a 4x4 grid
+        for (int i = 1; i <= 4; ++i)
+        {
+            for (int j = 1; j <= 4; ++j)
+            {
+                ws.cell(xlnt::cell_reference(i, j)).value(xlnt::cell_reference(i, j).to_string());
+            }
+
+            xlnt::row_properties row_prop;
+            row_prop.height = i;
+            ws.add_row_properties(i, row_prop);
+
+            xlnt::column_properties col_prop;
+            col_prop.width = i;
+            ws.add_column_properties(i, col_prop);
+        }
+
+        // delete
+        ws.delete_columns(2, 2);
+
+        // first column should remain unchanged
+        xlnt_assert_equals(ws.cell("A1").value<std::string>(), "A1");
+        xlnt_assert_equals(ws.cell("A2").value<std::string>(), "A2");
+        xlnt_assert_equals(ws.cell("A3").value<std::string>(), "A3");
+        xlnt_assert_equals(ws.cell("A4").value<std::string>(), "A4");
+        xlnt_assert(ws.has_column_properties("A"));
+        xlnt_assert_equals(ws.column_properties("A").width.get(), 1);
+
+        // second column should have the contents and properties of the fourth
+        xlnt_assert_equals(ws.cell("B1").value<std::string>(), "D1");
+        xlnt_assert_equals(ws.cell("B2").value<std::string>(), "D2");
+        xlnt_assert_equals(ws.cell("B3").value<std::string>(), "D3");
+        xlnt_assert_equals(ws.cell("B4").value<std::string>(), "D4");
+        xlnt_assert(ws.has_column_properties("B"));
+        xlnt_assert_equals(ws.column_properties("B").width.get(), 4);
+
+        // third and fourth columns should be empty
+        auto empty_range = ws.range("C1:D4");
+        for (auto empty_row : empty_range)
+        {
+            for (auto empty_cell : empty_row)
+            {
+                xlnt_assert(!empty_cell.has_value());
+            }
+        }
+        xlnt_assert(!ws.has_column_properties("C"));
+        xlnt_assert(!ws.has_column_properties("D"));
+
+        // row properties should remain unchanged
+        for (int i = 1; i <= 4; ++i)
+        {
+            xlnt_assert(ws.has_row_properties(i));
+            xlnt_assert_equals(ws.row_properties(i).height, i);
+        }
+    }
+
+    void test_insert_too_many()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.active_sheet();
+        xlnt_assert_throws(ws.insert_rows(10, 4294967290),
+                           xlnt::exception);
     }
 };
 static worksheet_test_suite x;

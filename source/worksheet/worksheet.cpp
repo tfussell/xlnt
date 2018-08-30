@@ -42,7 +42,10 @@
 #include <xlnt/worksheet/range_iterator.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
+#include <xlnt/worksheet/row_properties.hpp>
+#include <xlnt/worksheet/column_properties.hpp>
 #include <detail/constants.hpp>
+#include <detail/default_case.hpp>
 #include <detail/implementations/cell_impl.hpp>
 #include <detail/implementations/workbook_impl.hpp>
 #include <detail/implementations/worksheet_impl.hpp>
@@ -734,6 +737,147 @@ void worksheet::clear_row(row_t row)
     }
     d_->row_properties_.erase(row);
     // TODO: garbage collect newly unreferenced resources such as styles?
+}
+
+void worksheet::insert_rows(row_t row, std::uint32_t amount)
+{
+    move_cells(row, amount, row_or_col_t::row);
+}
+
+void worksheet::insert_columns(column_t column, std::uint32_t amount)
+{
+    move_cells(column.index, amount, row_or_col_t::column);
+}
+
+void worksheet::delete_rows(row_t row, std::uint32_t amount)
+{
+    move_cells(row + amount, amount, row_or_col_t::row, true);
+}
+
+void worksheet::delete_columns(column_t column, std::uint32_t amount)
+{
+    move_cells(column.index + amount, amount, row_or_col_t::column, true);
+}
+
+void worksheet::move_cells(std::uint32_t min_index, std::uint32_t amount, row_or_col_t row_or_col, bool reverse)
+{
+    if (reverse && amount > min_index)
+    {
+        throw xlnt::invalid_parameter();
+    }
+
+    if ((!reverse && row_or_col == row_or_col_t::row && min_index > constants::max_row() - amount) ||
+        (!reverse && row_or_col == row_or_col_t::column && min_index > constants::max_column() - amount))
+    {
+        throw xlnt::exception("Cannot move cells as they would be outside the maximum bounds of the spreadsheet");
+    }
+
+    std::vector<detail::cell_impl> cells_to_move;
+
+    auto cell_iter = d_->cell_map_.cbegin();
+    while (cell_iter != d_->cell_map_.cend())
+    {
+        std::uint32_t current_index;
+        switch (row_or_col)
+        {
+        case row_or_col_t::row:
+            current_index = cell_iter->first.row();
+            break;
+        case row_or_col_t::column:
+            current_index = cell_iter->first.column().index;
+            break;
+        default:
+            throw xlnt::unhandled_switch_case();
+        }
+
+        if (current_index >= min_index) // extract cells to be moved
+        {
+            auto cell = cell_iter->second;
+            if (row_or_col == row_or_col_t::row)
+            {
+                cell.row_ = reverse ? cell.row_ - amount : cell.row_ + amount;
+            }
+            else if (row_or_col == row_or_col_t::column)
+            {
+                cell.column_ = reverse ? cell.column_.index - amount: cell.column_.index + amount;
+            }
+
+            cells_to_move.push_back(cell);
+            cell_iter = d_->cell_map_.erase(cell_iter);
+        }
+        else if (reverse && current_index >= min_index - amount) // delete destination cells
+        {
+            cell_iter = d_->cell_map_.erase(cell_iter);
+        }
+        else // skip other cells
+        {
+            ++cell_iter;
+        }
+    }
+
+    for (auto &cell : cells_to_move)
+    {
+        d_->cell_map_[cell_reference(cell.column_, cell.row_)] = cell;
+    }
+
+    if (row_or_col == row_or_col_t::row)
+    {
+        std::vector<std::pair<row_t, xlnt::row_properties>> properties_to_move;
+
+        auto row_prop_iter = d_->row_properties_.cbegin();
+        while (row_prop_iter != d_->row_properties_.cend())
+        {
+            auto current_row = row_prop_iter->first;
+            if (current_row >= min_index) // extract properties that need to be moved
+            {
+                auto tmp_row = reverse ? current_row - amount : current_row + amount;
+                properties_to_move.push_back({tmp_row, row_prop_iter->second});
+                row_prop_iter = d_->row_properties_.erase(row_prop_iter);
+            }
+            else if (reverse && current_row >= min_index - amount) // clear properties of destination when in reverse
+            {
+                row_prop_iter = d_->row_properties_.erase(row_prop_iter);
+            }
+            else // skip the rest
+            {
+                ++row_prop_iter;
+            }
+        }
+
+        for (const auto &prop : properties_to_move)
+        {
+            add_row_properties(prop.first, prop.second);
+        }
+    }
+    else if (row_or_col == row_or_col_t::column)
+    {
+        std::vector<std::pair<column_t, xlnt::column_properties>> properties_to_move;
+
+        auto col_prop_iter = d_->column_properties_.cbegin();
+        while (col_prop_iter != d_->column_properties_.cend())
+        {
+            auto current_col = col_prop_iter->first.index;
+            if (current_col >= min_index) // extract properties that need to be moved
+            {
+                auto tmp_column = column_t(reverse ? current_col - amount : current_col + amount);
+                properties_to_move.push_back({tmp_column, col_prop_iter->second});
+                col_prop_iter = d_->column_properties_.erase(col_prop_iter);
+            }
+            else if (reverse && current_col >= min_index - amount) // clear properties of destination when in reverse
+            {
+                col_prop_iter = d_->column_properties_.erase(col_prop_iter);
+            }
+            else // skip the rest
+            {
+                ++col_prop_iter;
+            }
+        }
+
+        for (auto &prop : properties_to_move)
+        {
+            add_column_properties(prop.first, prop.second);
+        }
+    }
 }
 
 bool worksheet::operator==(const worksheet &other) const
