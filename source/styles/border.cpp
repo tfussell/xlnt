@@ -22,6 +22,7 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <memory>
 #include <xlnt/styles/border.hpp>
 #include <xlnt/utils/exceptions.hpp>
 #include <detail/default_case.hpp>
@@ -94,9 +95,9 @@ border::border()
 
 const std::vector<xlnt::border_side> &border::all_sides()
 {
-    static auto *sides = new std::vector<xlnt::border_side>{xlnt::border_side::start, xlnt::border_side::end,
-        xlnt::border_side::top, xlnt::border_side::bottom, xlnt::border_side::diagonal, xlnt::border_side::vertical,
-        xlnt::border_side::horizontal};
+    static auto sides = std::make_unique<std::vector<xlnt::border_side>>(std::vector<xlnt::border_side>{
+        xlnt::border_side::start, xlnt::border_side::end, xlnt::border_side::top, xlnt::border_side::bottom,
+        xlnt::border_side::diagonal, xlnt::border_side::vertical, xlnt::border_side::horizontal});
 
     return *sides;
 }
