@@ -94,11 +94,11 @@ border::border()
 
 const std::vector<xlnt::border_side> &border::all_sides()
 {
-    static auto *sides = new std::vector<xlnt::border_side>{xlnt::border_side::start, xlnt::border_side::end,
-        xlnt::border_side::top, xlnt::border_side::bottom, xlnt::border_side::diagonal, xlnt::border_side::vertical,
-        xlnt::border_side::horizontal};
+    static const auto sides = std::vector<xlnt::border_side>{
+        xlnt::border_side::start, xlnt::border_side::end, xlnt::border_side::top, xlnt::border_side::bottom,
+        xlnt::border_side::diagonal, xlnt::border_side::vertical, xlnt::border_side::horizontal};
 
-    return *sides;
+    return sides;
 }
 
 optional<border::border_property> border::side(border_side s) const

@@ -89,7 +89,7 @@ struct stylesheet
 	class style create_builtin_style(const std::size_t builtin_id)
 	{
 		// From Annex G.2
-		static const auto *names = new std::unordered_map<std::size_t , std::string>
+		static const auto names = std::unordered_map<std::size_t , std::string>
 		{
 			{ 0, "Normal" },
 			{ 1, "RowLevel_1" },
@@ -145,7 +145,7 @@ struct stylesheet
 			{ 53, "Explanatory Text" }
 		};
 
-		auto new_style = create_style(names->at(builtin_id));
+		auto new_style = create_style(names.at(builtin_id));
 		new_style.d_->builtin_id = builtin_id;
 
 		return new_style;

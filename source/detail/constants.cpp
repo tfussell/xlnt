@@ -22,7 +22,7 @@
 // @author: see AUTHORS file
 
 #include <limits>
-
+#include <memory>
 #include <detail/constants.hpp>
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/utils/exceptions.hpp>
@@ -122,8 +122,7 @@ const path constants::part_shared_strings()
 
 const std::unordered_map<std::string, std::string> &constants::namespaces()
 {
-    static const std::unordered_map<std::string, std::string> *namespaces =
-        new std::unordered_map<std::string, std::string>{
+    static const auto namespaces = std::unordered_map<std::string, std::string>{
             {"spreadsheetml", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"},
             {"content-types", "http://schemas.openxmlformats.org/package/2006/content-types"},
             {"relationships", "http://schemas.openxmlformats.org/package/2006/relationships"},
@@ -155,7 +154,7 @@ const std::unordered_map<std::string, std::string> &constants::namespaces()
             {"loext", "http://schemas.libreoffice.org/"}
         };
 
-    return *namespaces;
+    return namespaces;
 }
 
 const std::string &constants::ns(const std::string &id)
