@@ -24,7 +24,6 @@
 
 #include <algorithm>
 #include <cctype>
-#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -37,9 +36,9 @@ namespace {
 
 const std::unordered_map<std::size_t, xlnt::number_format> &builtin_formats()
 {
-    static std::unique_ptr<std::unordered_map<std::size_t, xlnt::number_format>> formats = nullptr;
+    static std::unordered_map<std::size_t, xlnt::number_format> formats;
     
-    if (formats == nullptr)
+    if (formats.empty())
     {
         const std::unordered_map<std::size_t, std::string> format_strings
         {
@@ -80,17 +79,15 @@ const std::unordered_map<std::size_t, xlnt::number_format> &builtin_formats()
             {49, "@"}
         };
 
-        formats = std::make_unique<std::unordered_map<std::size_t, xlnt::number_format>>();
-        auto &formats_ref = *formats;
 
-        for (auto format_string_pair : format_strings)
+        for (const auto& format_string_pair : format_strings)
         {
-            formats_ref[format_string_pair.first] =
+            formats[format_string_pair.first] =
                 xlnt::number_format(format_string_pair.second, format_string_pair.first);
         }
     }
 
-    return *formats;
+    return formats;
 }
 
 } // namespace
