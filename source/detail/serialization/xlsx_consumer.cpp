@@ -65,8 +65,7 @@ namespace {
 xml::qname &qn(const std::string &namespace_, const std::string &name)
 {
     using qname_map = std::unordered_map<std::string, xml::qname>;
-    static auto memo_ptr = std::make_unique<std::unordered_map<std::string, qname_map>>();
-    static auto &memo = *(memo_ptr);
+    static auto memo = std::unordered_map<std::string, qname_map>();
 
     auto &ns_memo = memo[namespace_];
 
