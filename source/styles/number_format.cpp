@@ -36,9 +36,10 @@ namespace {
 
 const std::unordered_map<std::size_t, xlnt::number_format> &builtin_formats()
 {
-    static std::unordered_map<std::size_t, xlnt::number_format> *formats = nullptr;
-    
-    if (formats == nullptr)
+    static auto bInitialized = false;
+	static std::unordered_map<std::size_t, xlnt::number_format> formats_obj{};
+        
+    if (!bInitialized)
     {
         const std::unordered_map<std::size_t, std::string> format_strings
         {
@@ -79,17 +80,16 @@ const std::unordered_map<std::size_t, xlnt::number_format> &builtin_formats()
             {49, "@"}
         };
 
-        formats = new std::unordered_map<std::size_t, xlnt::number_format>();
-        auto &formats_ref = *formats;
+        bInitialized = true;
 
         for (auto format_string_pair : format_strings)
         {
-            formats_ref[format_string_pair.first] =
+            formats_obj[format_string_pair.first] =
                 xlnt::number_format(format_string_pair.second, format_string_pair.first);
         }
     }
 
-    return *formats;
+    return formats_obj;
 }
 
 } // namespace
