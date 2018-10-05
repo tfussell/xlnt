@@ -2965,10 +2965,13 @@ void xlsx_producer::write_worksheet(const relationship &rel)
                 write_start_element(xmlns, "legacyDrawing");
                 write_attribute(xml::qname(xmlns_r, "id"), child_rel.id());
                 write_end_element(xmlns, "legacyDrawing");
-
-                // todo: there's only one of these per sheet, right?
-                break;
             }
+			else if (child_rel.type() == xlnt::relationship_type::drawings)
+			{
+				write_start_element(xmlns, "drawing");
+				write_attribute(xml::qname(xmlns_r, "id"), child_rel.id());
+				write_end_element(xmlns, "drawing");
+			}
         }
     }
 
@@ -3016,6 +3019,10 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             {
                 write_vml_drawings(child_rel, ws, cells_with_comments);
             }
+           else if (child_rel.type() == relationship_type::drawings)
+           {
+               write_drawings(child_rel, ws);
+           }
         }
     }
 }
@@ -3269,6 +3276,38 @@ void xlsx_producer::write_vml_drawings(const relationship &rel, worksheet ws, co
     }
 
     write_end_element("xml");
+}
+
+void xlsx_producer::write_drawings(const relationship &drawing_rel, worksheet ws)
+{
+    const auto workbook_rel = source_.manifest().relationship(path("/"), relationship_type::office_document);
+    const auto worksheet_rel = ws.referring_relationship();
+    const auto drawing_part = source_.manifest().canonicalize({workbook_rel, worksheet_rel, drawing_rel});
+    const auto drawing_rels = source_.manifest().relationships(drawing_part);
+
+    if (ws.d_->drawing_.is_set())
+    {
+        ws.d_->drawing_.get().serialize(*current_part_serializer_);
+    }
+
+    if (!drawing_rels.empty())
+    {
+        write_relationships(drawing_rels, drawing_part);
+
+        for (auto rel : drawing_rels)
+        {
+            if (rel.type() == relationship_type::image)
+            {
+                const auto image_path = source_.manifest().canonicalize({workbook_rel, worksheet_rel, rel});
+                if (image_path.string().find("cid:") != std::string::npos)
+                {
+                    // skip cid attachments
+                    continue;
+                }
+                write_image(image_path);
+            }
+        }
+    }
 }
 
 // Other Parts

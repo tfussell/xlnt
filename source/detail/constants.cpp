@@ -152,6 +152,9 @@ const std::unordered_map<std::string, std::string> &constants::namespaces()
             {"xml", "http://www.w3.org/XML/1998/namespace"},
             {"xsi", "http://www.w3.org/2001/XMLSchema-instance"},
 
+            {"a", "http://schemas.openxmlformats.org/drawingml/2006/main"},
+            {"xdr", "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"},
+
             {"loext", "http://schemas.libreoffice.org/"}
         };
 

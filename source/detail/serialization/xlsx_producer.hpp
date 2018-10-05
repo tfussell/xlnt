@@ -122,7 +122,8 @@ private:
 	// Sheet Relationship Target Parts
 
 	void write_comments(const relationship &rel, worksheet ws, const std::vector<cell_reference> &cells);
-	void write_vml_drawings(const relationship &rel, worksheet ws, const std::vector<cell_reference> &cells);
+    void write_vml_drawings(const relationship &rel, worksheet ws, const std::vector<cell_reference> &cells);
+    void write_drawings(const relationship &rel, worksheet ws);
 
 	// Other Parts
 
@@ -137,8 +138,8 @@ private:
 	/// Both are valid, but we can use this method to write either depending on the producer
 	/// we're trying to match.
 	/// </summary>
-	std::string write_bool(bool boolean) const;
-    
+    std::string write_bool(bool boolean) const;
+
     void write_relationships(const std::vector<xlnt::relationship> &relationships, const path &part);
     void write_color(const xlnt::color &color);
     void write_border(const xlnt::border &b);
@@ -188,12 +189,12 @@ private:
         current_part_serializer_->characters(characters);
     }
 
-	/// <summary>
-	/// A reference to the workbook which is the object of read/write operations.
-	/// </summary>
-	const workbook &source_;
-    
-	std::unique_ptr<ozstream> archive_;
+    /// <summary>
+    /// A reference to the workbook which is the object of read/write operations.
+    /// </summary>
+    const workbook &source_;
+
+    std::unique_ptr<ozstream> archive_;
     std::unique_ptr<xml::serializer> current_part_serializer_;
     std::unique_ptr<std::streambuf> current_part_streambuf_;
     std::ostream current_part_stream_;

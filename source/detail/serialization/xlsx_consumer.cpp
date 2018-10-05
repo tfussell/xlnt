@@ -29,6 +29,7 @@
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/comment.hpp>
 #include <xlnt/cell/hyperlink.hpp>
+#include <xlnt/drawing/spreadsheet_drawing.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/utils/optional.hpp>
 #include <xlnt/utils/path.hpp>
@@ -1188,7 +1189,11 @@ worksheet xlsx_consumer::read_worksheet_end(const std::string &rel_id)
         }
         else if (current_worksheet_element == qn("spreadsheetml", "drawing")) // CT_Drawing 0-1
         {
-            skip_remaining_content(current_worksheet_element);
+            if (parser().attribute_present(qn("r", "id")))
+            {
+                auto drawing_rel_id = parser().attribute(qn("r", "id"));
+                ws.d_->drawing_rel_id_ = drawing_rel_id;
+            }
         }
         else if (current_worksheet_element == qn("spreadsheetml", "legacyDrawing"))
         {
@@ -1234,6 +1239,20 @@ worksheet xlsx_consumer::read_worksheet_end(const std::string &rel_id)
 
             read_vml_drawings(ws);
         }
+    }
+
+    if (manifest.has_relationship(sheet_path, xlnt::relationship_type::drawings))
+    {
+        auto drawings_part = manifest.canonicalize({workbook_rel, sheet_rel,
+            manifest.relationship(sheet_path, xlnt::relationship_type::drawings)});
+
+        auto receive = xml::parser::receive_default;
+        auto drawings_part_streambuf = archive_->open(drawings_part);
+        std::istream drawings_part_stream(drawings_part_streambuf.get());
+        xml::parser parser(drawings_part_stream, drawings_part.string(), receive);
+        parser_ = &parser;
+
+        read_drawings(ws, drawings_part);
     }
 
     return ws;
@@ -2695,8 +2714,26 @@ void xlsx_consumer::read_comments(worksheet ws)
     expect_end_element(qn("spreadsheetml", "comments"));
 }
 
-void xlsx_consumer::read_drawings()
+void xlsx_consumer::read_drawings(worksheet ws, const path &part)
 {
+    auto images = manifest().relationships(part, relationship_type::image);
+
+    auto sd = drawing::spreadsheet_drawing(parser());
+
+    for (const auto image_rel_id : sd.get_embed_ids())
+    {
+        auto image_rel = std::find_if(images.begin(), images.end(),
+                                      [&](const relationship &r) { return r.id() == image_rel_id; });
+
+        if (image_rel != images.end())
+        {
+            const auto url = image_rel->target().path().resolve(part.parent());
+
+            read_image(url);
+        }
+    }
+
+    ws.d_->drawing_ = sd;
 }
 
 // Unknown Parts
