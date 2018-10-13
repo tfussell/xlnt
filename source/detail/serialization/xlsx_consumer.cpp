@@ -2901,6 +2901,7 @@ rich_text xlsx_consumer::read_rich_text(const xml::qname &parent)
         else if (text_element == xml::qname(xmlns, "r"))
         {
             rich_text_run run;
+            run.preserve_space = preserve_space;
 
             while (in_element(xml::qname(xmlns, "r")))
             {
