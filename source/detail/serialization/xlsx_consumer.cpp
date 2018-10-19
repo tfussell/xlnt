@@ -221,9 +221,13 @@ cell xlsx_consumer::read_cell()
             row_properties.dy_descent = parser().attribute<double>(qn("x14ac", "dyDescent"));
         }
 
+        if (parser().attribute_present("spans")) {
+            row_properties.spans = parser().attribute("spans");
+        }
+
         skip_attributes({"customFormat", "s", "customFont",
             "outlineLevel", "collapsed", "thickTop", "thickBot",
-            "ph", "spans"});
+            "ph"});
     }
 
     if (!in_element(qn("spreadsheetml", "row")))
@@ -713,9 +717,13 @@ void xlsx_consumer::read_worksheet_sheetdata()
             row_properties.custom_format.set(parser().attribute<bool>("customFormat"));
         }
 
+        if (parser().attribute_present("spans")) {
+            row_properties.spans = parser().attribute("spans");
+        }
+
         skip_attributes({"customFont",
             "outlineLevel", "collapsed", "thickTop", "thickBot",
-            "ph", "spans"});
+            "ph"});
 
         while (in_element(qn("spreadsheetml", "row")))
         {
