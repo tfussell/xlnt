@@ -126,18 +126,10 @@ date date::today()
 
 int date::weekday() const
 {
-    auto year_temp = (month == 1 || month == 2) ? year - 1 : year;
-    auto month_temp = month == 1 ? 13 : month == 2 ? 14 : month;
-    auto day_temp = day + 1;
+    std::tm tm {0, 0, 0, day, month - 1, year - 1900};
+    std::time_t time = std::mktime(&tm);
 
-    auto days = day_temp + static_cast<int>(13 * (month_temp + 1) / 5.0) + (year_temp % 100)
-        + static_cast<int>((year_temp % 100) / 4.0);
-    auto gregorian = days + static_cast<int>(year_temp / 400.0) - 2 * year_temp / 100;
-    auto julian = days + 5 - year_temp / 100;
-
-    int weekday = (year_temp > 1582 ? gregorian : julian) % 7;
-
-    return weekday == 0 ? 7 : weekday;
+    return safe_localtime(time).tm_wday;
 }
 
 } // namespace xlnt
