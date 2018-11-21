@@ -2534,6 +2534,11 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
                 write_attribute("r", cell.reference().to_string());
 
+                if (cell.phonetics_visible())
+                {
+                    write_attribute("ph", write_bool(true));
+                }
+
                 if (cell.has_format())
                 {
                     write_attribute("s", cell.format().d_->id);

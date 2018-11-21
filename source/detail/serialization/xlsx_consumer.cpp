@@ -241,6 +241,11 @@ cell xlsx_consumer::read_cell()
     cell.d_->column_ = reference.column_index();
     cell.d_->row_ = reference.row();
 
+    if (parser().attribute_present("ph"))
+    {
+        cell.d_->phonetics_visible_ = parser().attribute<bool>("ph");
+    }
+
     auto has_type = parser().attribute_present("t");
     auto type = has_type ? parser().attribute("t") : "n";
 
@@ -728,6 +733,11 @@ void xlsx_consumer::read_worksheet_sheetdata()
             if (parser().attribute_present("s"))
             {
                 cell.format(target_.format(static_cast<std::size_t>(std::stoull(parser().attribute("s")))));
+            }
+
+            if (parser().attribute_present("ph"))
+            {
+                cell.d_->phonetics_visible_ = parser().attribute<bool>("ph");
             }
 
             auto has_value = false;
