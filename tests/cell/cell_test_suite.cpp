@@ -82,6 +82,7 @@ public:
         register_test(test_hyperlink);
         register_test(test_comment);
         register_test(test_copy_and_compare);
+        register_test(test_cell_phonetic_properties);
     }
 
 private:
@@ -804,6 +805,19 @@ private:
         // assign
         cell3 = cell2;
         xlnt_assert_equals(cell2, cell3);
+    }
+
+    void test_cell_phonetic_properties()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.active_sheet();
+        auto cell1 = ws.cell("A1");
+
+        xlnt_assert_equals(cell1.phonetics_visible(), false);
+        cell1.show_phonetics(true);
+        xlnt_assert_equals(cell1.phonetics_visible(), true);
+        cell1.show_phonetics(false);
+        xlnt_assert_equals(cell1.phonetics_visible(), false);
     }
 };
 

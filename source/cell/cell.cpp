@@ -56,6 +56,7 @@
 #include <xlnt/worksheet/column_properties.hpp>
 #include <xlnt/worksheet/row_properties.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
+#include <xlnt/worksheet/phonetic_pr.hpp>
 
 namespace {
 
@@ -198,7 +199,7 @@ cell::cell(detail::cell_impl *d)
 
 bool cell::garbage_collectible() const
 {
-    return !(has_value() || is_merged() || has_formula() || has_format() || has_hyperlink());
+    return !(has_value() || is_merged() || phonetics_visible() || has_formula() || has_format() || has_hyperlink());
 }
 
 void cell::value(std::nullptr_t)
@@ -327,6 +328,16 @@ void cell::merged(bool merged)
 bool cell::is_merged() const
 {
     return d_->is_merged_;
+}
+
+bool cell::phonetics_visible() const
+{
+    return d_->phonetics_visible_;
+}
+
+void cell::show_phonetics(bool phonetics)
+{
+    d_->phonetics_visible_ = phonetics;
 }
 
 bool cell::is_date() const
