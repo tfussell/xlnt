@@ -878,6 +878,41 @@ void worksheet::move_cells(std::uint32_t min_index, std::uint32_t amount, row_or
             add_column_properties(prop.first, prop.second);
         }
     }
+
+    // adjust merged cells
+    auto shift_reference = [min_index, amount, row_or_col, reverse](cell_reference &ref)
+    {
+        auto index = row_or_col == row_or_col_t::row ?
+                     ref.row() :
+                     ref.column_index();
+        if (index >= min_index)
+        {
+            auto new_index = reverse ? index - amount : index + amount;
+            if (row_or_col == row_or_col_t::row)
+            {
+                ref.row(new_index);
+            }
+            else if (row_or_col == row_or_col_t::column)
+            {
+                ref.column_index(new_index);
+            }
+        }
+    };
+
+    for (auto merged_cell = d_->merged_cells_.begin(); merged_cell != d_->merged_cells_.end(); ++merged_cell)
+    {
+        cell_reference new_top_left = merged_cell->top_left();
+        shift_reference(new_top_left);
+
+        cell_reference new_bottom_right = merged_cell->bottom_right();
+        shift_reference(new_bottom_right);
+
+        range_reference new_range {new_top_left, new_bottom_right};
+        if (*merged_cell != new_range)
+        {
+            *merged_cell = new_range;
+        }
+    }
 }
 
 bool worksheet::operator==(const worksheet &other) const

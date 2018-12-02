@@ -109,6 +109,7 @@ public:
         register_test(test_delete_rows);
         register_test(test_delete_columns);
         register_test(test_insert_too_many);
+        register_test(test_insert_delete_moves_merges);
     }
 
     void test_new_worksheet()
@@ -1499,6 +1500,50 @@ public:
         auto ws = wb.active_sheet();
         xlnt_assert_throws(ws.insert_rows(10, 4294967290),
                            xlnt::exception);
+    }
+
+    void test_insert_delete_moves_merges()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.active_sheet();
+        ws.merge_cells("A1:A2");
+        ws.merge_cells("B2:B3");
+        ws.merge_cells("C3:C4");
+        ws.merge_cells("A5:B5");
+        ws.merge_cells("B6:C6");
+        ws.merge_cells("C7:D7");
+
+        {
+            ws.insert_rows(3, 3);
+            ws.insert_columns(3, 3);
+            auto merged = ws.merged_ranges();
+            std::vector<xlnt::range_reference> expected =
+            {
+                xlnt::range_reference { "A1:A2"   }, // stays
+                xlnt::range_reference { "B2:B6"   }, // expands
+                xlnt::range_reference { "F6:F7"   }, // shifts
+                xlnt::range_reference { "A8:B8"   }, // stays (shifted down)
+                xlnt::range_reference { "B9:F9"   }, // expands (shifted down)
+                xlnt::range_reference { "F10:G10" }, // shifts (shifted down)
+            };
+            xlnt_assert_equals(merged, expected);
+        }
+
+        {
+            ws.delete_rows(4, 2);
+            ws.delete_columns(4, 2);
+            auto merged = ws.merged_ranges();
+            std::vector<xlnt::range_reference> expected =
+            {
+                xlnt::range_reference { "A1:A2" }, // stays
+                xlnt::range_reference { "B2:B4" }, // expands
+                xlnt::range_reference { "D4:D5" }, // shifts
+                xlnt::range_reference { "A6:B6" }, // stays (shifted down)
+                xlnt::range_reference { "B7:D7" }, // expands (shifted down)
+                xlnt::range_reference { "D8:E8" }, // shifts (shifted down)
+            };
+            xlnt_assert_equals(merged, expected);
+        }
     }
 };
 static worksheet_test_suite x;
