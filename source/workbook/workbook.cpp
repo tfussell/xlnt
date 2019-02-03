@@ -1671,4 +1671,19 @@ void workbook::reorder_relationships()
     }
 }
 
+xlnt::format& default_format_cache::get_or_create(xlnt::format* format, const char* pattern) const {
+    if (!format->d_) {
+        auto number_format = xlnt::number_format(pattern);
+        *format = workbook_.create_format(true);
+        format->number_format(number_format);
+    }
+    return *format;
+}
+xlnt::format& default_format_cache::date_format() const {
+    return get_or_create(&date_format_, "yyyy-mm-dd");
+}
+xlnt::format& default_format_cache::datetime_format() const {
+    return get_or_create(&datetime_format_, "yyyy-mm-dd h:mm:ss");
+}
+
 } // namespace xlnt

@@ -280,14 +280,14 @@ void cell::value(const date &d)
 {
     d_->type_ = type::number;
     d_->value_numeric_ = d.to_number(base_date());
-    number_format(number_format::date_yyyymmdd2());
+    format(workbook().default_format_cache_.date_format());
 }
 
 void cell::value(const datetime &d)
 {
     d_->type_ = type::number;
     d_->value_numeric_ = d.to_number(base_date());
-    number_format(number_format::date_datetime());
+    format(workbook().default_format_cache_.datetime_format());
 }
 
 void cell::value(const time &t)

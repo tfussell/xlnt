@@ -215,6 +215,7 @@ private:
     friend struct detail::stylesheet;
     friend class detail::xlsx_producer;
     friend class cell;
+    friend class default_format_cache;
 
     /// <summary>
     /// Constructs a format from an impl pointer.

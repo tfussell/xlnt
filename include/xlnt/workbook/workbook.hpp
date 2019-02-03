@@ -35,6 +35,8 @@
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/cell/rich_text.hpp>
+#include <xlnt/styles/format.hpp>
+#include <xlnt/styles/number_format.hpp>
 
 namespace xlnt {
 
@@ -70,6 +72,7 @@ class style;
 class style_serializer;
 class theme;
 class variant;
+class workbook;
 class workbook_view;
 class worksheet;
 class worksheet_iterator;
@@ -85,6 +88,17 @@ class xlsx_consumer;
 class xlsx_producer;
 
 } // namespace detail
+
+class default_format_cache {
+    workbook& workbook_;
+    mutable xlnt::format date_format_{nullptr};
+    mutable xlnt::format datetime_format_{nullptr};
+    xlnt::format& get_or_create(xlnt::format* format, const char* pattern) const;
+    public:
+    default_format_cache(workbook& workbook) :workbook_{workbook} {}
+    xlnt::format& date_format() const;
+    xlnt::format& datetime_format() const;
+};
 
 /// <summary>
 /// workbook is the container for all other parts of the document.
@@ -844,6 +858,8 @@ public:
     /// </summary>
     bool operator!=(const workbook &rhs) const;
 
+    const default_format_cache default_format_cache_{*this};
+
 private:
     friend class streaming_workbook_reader;
     friend class worksheet;
@@ -915,6 +931,7 @@ private:
     /// An opaque pointer to a structure that holds all of the data relating to this workbook.
     /// </summary>
     std::unique_ptr<detail::workbook_impl> d_;
+    
 };
 
 } // namespace xlnt
