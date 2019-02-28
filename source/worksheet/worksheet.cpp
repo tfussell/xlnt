@@ -46,6 +46,7 @@
 #include <detail/implementations/cell_impl.hpp>
 #include <detail/implementations/workbook_impl.hpp>
 #include <detail/implementations/worksheet_impl.hpp>
+#include <detail/unicode.hpp>
 
 namespace {
 
@@ -234,7 +235,7 @@ void worksheet::title(const std::string &title)
         return;
     }
     // excel limits worksheet titles to 31 characters
-    if (title.empty() || title.length() > 31)
+    if (title.empty() || detail::string_length(title) > 31)
     {
         throw invalid_sheet_title(title);
     }
