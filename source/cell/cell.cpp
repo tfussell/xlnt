@@ -846,6 +846,12 @@ void cell::clear_style()
 void cell::style(const class style &new_style)
 {
     auto new_format = has_format() ? format() : workbook().create_format();
+
+    new_format.border(new_style.border());
+    new_format.fill(new_style.fill());
+    new_format.font(new_style.font());
+    new_format.number_format(new_style.number_format());
+
     format(new_format.style(new_style));
 }
 
