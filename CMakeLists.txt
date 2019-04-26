@@ -5,7 +5,7 @@ project(xlnt_all)
 set(COMBINED_PROJECT TRUE)
 
 # Library type
-option(STATIC "Set to ON to build xlnt as a static library instead of a shared library" OFF)
+option(STATIC "Set to OFF to build xlnt as a shared library of a static library instead" ON)
 
 # c++ language standard to use
 set(XLNT_VALID_LANGS 11 14 17)
