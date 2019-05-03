@@ -1,4 +1,5 @@
 // Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2019 Dzmitry Shulitski
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,10 +28,9 @@
 #include <xlnt/cell/hyperlink.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/column_properties.hpp>
-#include <xlnt/worksheet/row_properties.hpp>
-#include <xlnt/worksheet/range.hpp>
-#include <xlnt/worksheet/worksheet.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
+#include <xlnt/worksheet/range.hpp>
+#include <xlnt/worksheet/row_properties.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 #include <helpers/test_suite.hpp>
 
@@ -105,6 +105,7 @@ public:
         register_test(test_clear_cell);
         register_test(test_clear_row);
         register_test(test_set_title);
+        register_test(test_page_margins_with_locale);
     }
 
     void test_new_worksheet()
@@ -1253,6 +1254,39 @@ public:
         xlnt_assert_throws_nothing(ws2.title(ws2.title()));
         xlnt_assert(ws1_title == ws1.title());
         xlnt_assert(ws2_title == ws2.title());
+    }
+
+    void test_page_margins_with_locale()
+    {
+        xlnt::workbook wb;
+
+        auto ws = wb.active_sheet();
+        auto margins = ws.page_margins();
+
+        margins.top(0);
+        margins.bottom(0.1);
+        margins.header(0.2);
+        margins.footer(0.3);
+        margins.left(0.4);
+        margins.right(0.5);
+
+        ws.page_margins(margins);
+
+		auto old_locale = setlocale(LC_ALL, "Russian");
+		wb.save("temp.xlsx");
+		setlocale(LC_ALL, old_locale);
+
+		xlnt::workbook wb2;
+        xlnt_assert_throws_nothing(wb2.load("temp.xlsx"));
+        auto ws2 = wb2.active_sheet();
+
+        xlnt_assert(ws2.has_page_margins());
+        xlnt_assert_equals(ws2.page_margins().top(), 0);
+        xlnt_assert_delta(ws2.page_margins().bottom(), 0.1, 1E-9);
+        xlnt_assert_delta(ws2.page_margins().header(), 0.2, 1E-9);
+        xlnt_assert_delta(ws2.page_margins().footer(), 0.3, 1E-9);
+        xlnt_assert_delta(ws2.page_margins().left(), 0.4, 1E-9);
+        xlnt_assert_delta(ws2.page_margins().right(), 0.5, 1E-9);
     }
 };
 static worksheet_test_suite x;

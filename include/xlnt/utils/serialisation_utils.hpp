@@ -26,6 +26,10 @@
 #include <xlnt/xlnt_config.hpp>
 #include <sstream>
 
+#if __cplusplus == 201703L || (defined(_MSC_VER) && _HAS_CXX17)
+
+#include <charconv>
+
 namespace xlnt {
 /// <summary>
 /// Takes in any nuber and outputs a string form of that number which will
@@ -34,11 +38,32 @@ namespace xlnt {
 template <typename Number>
 std::string serialize_number_to_string(Number num)
 {
+    std::array<char, DBL_MAX_10_EXP + 1> str;
+    auto result = std::to_chars(str.data(), str.data() + str.size(), num);
+    *result.ptr = '\0';
+    return str.data();
+}
+}
+
+#else
+
+namespace xlnt {
+/// <summary>
+/// Takes in any nuber and outputs a string form of that number which will
+/// serialise and deserialise without loss of precision
+/// </summary>
+template <typename Number>
+std::string serialize_number_to_string(Number num)
+{
+    static auto &facet = std::use_facet<std::num_put<char>>(std::locale::classic());
     // more digits and excel won't match
     constexpr int Excel_Digit_Precision = 15; //sf
     std::stringstream ss;
     ss.precision(Excel_Digit_Precision);
-    ss << num;
+    facet.put(std::ostreambuf_iterator<char>(ss), ss, ss.fill(), num);
     return ss.str();
 }
 }
+
+#endif
+
