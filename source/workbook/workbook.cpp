@@ -169,6 +169,8 @@ xlnt::path default_path(xlnt::relationship_type type, std::size_t index = 0)
         return path("/xl/volatileDependencies.xml");
     case relationship_type::worksheet:
         return path("/xl/worksheets/sheet" + std::to_string(index) + ".xml");
+    case relationship_type::external_link:
+        return path("/xl/externalLinks/externalLink" + std::to_string(index) + ".xml");
     }
 
     default_case(path("/xl/unknownPart.xml"));
@@ -248,6 +250,8 @@ std::string content_type(xlnt::relationship_type type)
         return "application/vnd.openxmlformats-officedocument.spreadsheetml.volatileDependencies+xml";
     case relationship_type::worksheet:
         return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml";
+    case relationship_type::external_link:
+        throw xlnt::unhandled_switch_case();
     }
 
     default_case("application/xml");

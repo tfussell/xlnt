@@ -1422,6 +1422,9 @@ void xlsx_consumer::read_part(const std::vector<relationship> &rel_chain)
     case relationship_type::image:
         read_image(part_path);
         break;
+
+    case relationship_type::external_link:
+        break;
     }
 
     parser_ = nullptr;

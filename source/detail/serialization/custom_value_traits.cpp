@@ -116,6 +116,8 @@ std::string to_string(relationship_type t)
         return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/volatileDependencies";
     case relationship_type::image:
         return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image";
+    case relationship_type::external_link:
+        return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/externalLink";
     case relationship_type::unknown:
         return "unknown";
     }

@@ -164,6 +164,8 @@ relationship_type from_string(const std::string &string)
         return relationship_type::volatile_dependencies;
     else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image")
         return relationship_type::image;
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/externalLink")
+        return relationship_type::external_link;
 
     // ECMA 376-4 Part 1 Section 9.1.7 says consumers shall not fail to load
     // a document with unknown relationships.
