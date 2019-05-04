@@ -2388,7 +2388,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         write_start_element(xmlns, "col");
         write_attribute("min", column.index);
 
-        while(ws.column_properties(column + 1) == props)
+        while (ws.has_column_properties(column + 1) && ws.column_properties(column + 1) == props)
         {
             column++;
         }
