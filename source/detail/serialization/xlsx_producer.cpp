@@ -2387,6 +2387,12 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
         write_start_element(xmlns, "col");
         write_attribute("min", column.index);
+
+        while(ws.column_properties(column + 1) == props)
+        {
+            column++;
+        }
+
         write_attribute("max", column.index);
 
         if (props.width.is_set())
