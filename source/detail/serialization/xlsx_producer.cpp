@@ -3341,6 +3341,11 @@ void xlsx_producer::write_color(const xlnt::color &color)
         write_attribute("rgb", color.rgb().hex_string());
         break;
     }
+
+    if (color.tint() != 0.0)
+    {
+        write_attribute("tint", serialize_number_to_string(color.tint()));
+    }
 }
 
 void xlsx_producer::write_start_element(const std::string &name)
