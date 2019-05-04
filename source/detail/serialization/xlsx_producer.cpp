@@ -771,6 +771,8 @@ void xlsx_producer::write_workbook(const relationship &rel)
             break;
         case relationship_type::image:
             break;
+        case relationship_type::external_link:
+            break;
         }
     }
 }

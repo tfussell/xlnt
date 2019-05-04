@@ -88,6 +88,7 @@ enum class XLNT_API relationship_type
     vml_drawing,
     volatile_dependencies,
     worksheet,
+    external_link,
 
     // Worksheet parts
     hyperlink,
