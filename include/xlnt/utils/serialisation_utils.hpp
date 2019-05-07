@@ -26,7 +26,7 @@
 #include <xlnt/xlnt_config.hpp>
 #include <sstream>
 
-#if __cplusplus == 201703L || (defined(_MSC_VER) && _HAS_CXX17)
+#if defined(_MSC_VER) && _HAS_CXX17
 
 #include <charconv>
 
