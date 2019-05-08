@@ -133,7 +133,7 @@ std::string to_string(pattern_fill_type fill_type)
     case pattern_fill_type::darkgray: return "darkgray";
     case pattern_fill_type::darkgrid: return "darkgrid";
     case pattern_fill_type::darkhorizontal: return "darkhorizontal";
-    case pattern_fill_type::darktrellis: return "darkhorizontal";
+    case pattern_fill_type::darktrellis: return "darktrellis";
     case pattern_fill_type::darkup: return "darkup";
     case pattern_fill_type::darkvertical: return "darkvertical";
     case pattern_fill_type::gray0625: return "gray0625";

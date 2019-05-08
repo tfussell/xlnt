@@ -61,7 +61,7 @@ public:
         /// The number of times the hash should be applied to the password combined with the salt.
         /// This allows the difficulty of the hash to be increased as computing power increases.
         /// </summary>
-        std::size_t spin_count;
+        std::size_t spin_count = 0;
     };
 
     /// <summary>

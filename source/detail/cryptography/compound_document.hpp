@@ -110,7 +110,7 @@ struct compound_document_entry
     std::array<std::uint8_t, 36> ignore;
     sector_id start = -2;
     std::uint32_t size = 0;
-    std::uint32_t ignore2;
+    std::uint32_t ignore2 = 0;
 };
 
 class compound_document_istreambuf;

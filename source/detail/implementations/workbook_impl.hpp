@@ -64,12 +64,16 @@ struct workbook_impl
           custom_properties_(other.custom_properties_),
           view_(other.view_),
           code_name_(other.code_name_),
-          file_version_(other.file_version_)
+          file_version_(other.file_version_),
+          base_date_(other.base_date_)
     {
     }
 
     workbook_impl &operator=(const workbook_impl &other)
     {
+        if (this == &other)
+            return *this;
+
         active_sheet_index_ = other.active_sheet_index_;
         worksheets_.clear();
         std::copy(other.worksheets_.begin(), other.worksheets_.end(), back_inserter(worksheets_));

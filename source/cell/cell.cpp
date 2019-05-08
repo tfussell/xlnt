@@ -861,9 +861,7 @@ style cell::style()
         throw invalid_attribute();
     }
 
-    auto f = format();
-
-    return f.style();
+    return format().style();
 }
 
 const style cell::style() const

@@ -27,12 +27,14 @@
 namespace xlnt {
 
 variant::variant()
-    : type_(type::null)
+    : type_(type::null),
+    i4_value_(0)
 {}
 
 variant::variant(const std::string &value)
     : type_(type::lpstr),
-    lpstr_value_(value)
+    lpstr_value_(value),
+    i4_value_(0)
 {
 }
 
@@ -56,13 +58,15 @@ variant::variant(bool value)
 
 variant::variant(const datetime &value)
     : type_(type::date),
-    lpstr_value_(value.to_iso_string())
+    lpstr_value_(value.to_iso_string()),
+      i4_value_(0)
 {
 
 }
 
 variant::variant(const std::initializer_list<int> &value)
-    : type_(type::vector)
+    : type_(type::vector),
+    i4_value_(0)
 {
     for (const auto &v : value)
     {
@@ -71,7 +75,8 @@ variant::variant(const std::initializer_list<int> &value)
 }
 
 variant::variant(const std::vector<int> &value)
-    : type_(type::vector)
+    : type_(type::vector),
+    i4_value_(0)
 {
     for (const auto &v : value)
     {
@@ -80,7 +85,8 @@ variant::variant(const std::vector<int> &value)
 }
 
 variant::variant(const std::initializer_list<const char *> &value)
-    : type_(type::vector)
+    : type_(type::vector),
+    i4_value_(0)
 {
     for (const auto &v : value)
     {
@@ -89,7 +95,8 @@ variant::variant(const std::initializer_list<const char *> &value)
 }
 
 variant::variant(const std::vector<const char *> &value)
-    : type_(type::vector)
+    : type_(type::vector),
+    i4_value_(0)
 {
     for (const auto &v : value)
     {
@@ -98,7 +105,8 @@ variant::variant(const std::vector<const char *> &value)
 }
 
 variant::variant(const std::initializer_list<std::string> &value)
-    : type_(type::vector)
+    : type_(type::vector),
+    i4_value_(0)
 {
     for (const auto &v : value)
     {
@@ -107,7 +115,8 @@ variant::variant(const std::initializer_list<std::string> &value)
 }
 
 variant::variant(const std::vector<std::string> &value)
-    : type_(type::vector)
+    : type_(type::vector),
+    i4_value_(0)
 {
     for (const auto &v : value)
     {
@@ -116,7 +125,8 @@ variant::variant(const std::vector<std::string> &value)
 }
 
 variant::variant(const std::vector<variant> &value)
-    : type_(type::vector)
+    : type_(type::vector),
+    i4_value_(0)
 {
     for (const auto &v : value)
     {

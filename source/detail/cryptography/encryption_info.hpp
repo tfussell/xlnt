@@ -40,12 +40,12 @@ struct encryption_info
     struct standard_encryption_info
     {
         std::size_t spin_count = 50000;
-        std::size_t block_size;
-        std::size_t key_bits;
-        std::size_t key_bytes;
-        std::size_t hash_size;
-        cipher_algorithm cipher;
-        cipher_chaining chaining;
+        std::size_t block_size = 0;
+        std::size_t key_bits = 0;
+        std::size_t key_bytes = 0;
+        std::size_t hash_size = 0;
+        cipher_algorithm cipher = cipher_algorithm::aes;
+        cipher_chaining chaining = cipher_chaining::ecb;
         hash_algorithm hash = hash_algorithm::sha1;
         std::vector<std::uint8_t> salt;
         std::vector<std::uint8_t> encrypted_verifier;
@@ -57,10 +57,10 @@ struct encryption_info
         // key data
         struct
         {
-            std::size_t salt_size;
-            std::size_t block_size;
-            std::size_t key_bits;
-            std::size_t hash_size;
+            std::size_t salt_size = 0;
+            std::size_t block_size = 0;
+            std::size_t key_bits = 0;
+            std::size_t hash_size = 0;
             std::string cipher_algorithm;
             std::string cipher_chaining;
             std::string hash_algorithm;
@@ -75,14 +75,14 @@ struct encryption_info
 
         struct
         {
-            std::size_t spin_count;
-            std::size_t salt_size;
-            std::size_t block_size;
-            std::size_t key_bits;
-            std::size_t hash_size;
+            std::size_t spin_count = 0;
+            std::size_t salt_size = 0;
+            std::size_t block_size = 0;
+            std::size_t key_bits = 0;
+            std::size_t hash_size = 0;
             std::string cipher_algorithm;
             std::string cipher_chaining;
-            hash_algorithm hash;
+            hash_algorithm hash = hash_algorithm::sha1;
             std::vector<std::uint8_t> salt_value;
             std::vector<std::uint8_t> verifier_hash_input;
             std::vector<std::uint8_t> verifier_hash_value;

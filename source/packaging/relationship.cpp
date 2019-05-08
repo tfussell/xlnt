@@ -27,6 +27,8 @@
 namespace xlnt {
 
 relationship::relationship()
+    : type_(relationship_type::unknown),
+    mode_(target_mode::internal)
 {
 }
 

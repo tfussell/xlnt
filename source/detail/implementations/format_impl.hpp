@@ -25,9 +25,9 @@ struct stylesheet;
 
 struct format_impl
 {
-	stylesheet *parent;
+	stylesheet *parent = nullptr;
 
-	std::size_t id;
+	std::size_t id = 0;
 
 	optional<std::size_t> alignment_id;
     optional<bool> alignment_applied;

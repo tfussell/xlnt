@@ -80,7 +80,9 @@ namespace detail {
 
 xlsx_producer::xlsx_producer(const workbook &target)
     : source_(target),
-      current_part_stream_(nullptr)
+      current_part_stream_(nullptr),
+      current_cell_(nullptr),
+      current_worksheet_(nullptr)
 {
 }
 

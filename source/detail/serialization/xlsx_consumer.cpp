@@ -109,6 +109,7 @@ bool is_true(const std::string &bool_string)
 struct number_converter
 {
     number_converter()
+        : result(0)
     {
         stream.imbue(std::locale("C"));
     }
@@ -166,7 +167,9 @@ namespace detail {
 
 xlsx_consumer::xlsx_consumer(workbook &target)
     : target_(target),
-      parser_(nullptr)
+      parser_(nullptr),
+      current_cell_(nullptr),
+      current_worksheet_(nullptr)
 {
 }
 
@@ -1234,6 +1237,8 @@ worksheet xlsx_consumer::read_worksheet_end(const std::string &rel_id)
 
             read_vml_drawings(ws);
         }
+
+        parser_ = nullptr;
     }
 
     return ws;
@@ -1504,6 +1509,8 @@ void xlsx_consumer::read_content_types()
     }
 
     expect_end_element(qn("content-types", "Types"));
+
+    parser_ = nullptr;
 }
 
 void xlsx_consumer::read_core_properties()

@@ -296,8 +296,8 @@ private:
 private:
     const compound_document_entry &entry_;
     compound_document &document_;
-    binary_writer<byte> sector_writer_;
     std::vector<byte> current_sector_;
+    binary_writer<byte> sector_writer_;
     std::size_t position_;
 };
 
@@ -506,8 +506,8 @@ private:
 private:
     compound_document_entry &entry_;
     compound_document &document_;
-    binary_reader<byte> sector_reader_;
     std::vector<byte> current_sector_;
+    binary_reader<byte> sector_reader_;
     std::size_t position_;
     sector_chain chain_;
 };
@@ -519,6 +519,7 @@ compound_document_ostreambuf::~compound_document_ostreambuf()
 
 compound_document::compound_document(std::ostream &out)
     : out_(&out),
+      in_(nullptr),
       stream_in_(nullptr),
       stream_out_(nullptr)
 {
@@ -529,6 +530,7 @@ compound_document::compound_document(std::ostream &out)
 
 compound_document::compound_document(std::istream &in)
     : in_(&in),
+      out_(nullptr),
       stream_in_(nullptr),
       stream_out_(nullptr)
 {

@@ -52,6 +52,9 @@ rich_text::rich_text(const rich_text &other)
 
 rich_text &rich_text::operator=(const rich_text &rhs)
 {
+    if (this == &rhs)
+        return *this;
+
     runs_.clear();
     runs_ = rhs.runs_;
     return *this;

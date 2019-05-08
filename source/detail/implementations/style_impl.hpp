@@ -20,7 +20,7 @@ struct stylesheet;
 
 struct style_impl
 {
-	stylesheet *parent;
+	stylesheet *parent = nullptr;
 
     bool operator==(const style_impl& rhs) const
     {
@@ -39,7 +39,6 @@ struct style_impl
             && font_id == rhs.font_id
             && font_applied == rhs.font_applied
             && number_format_id == rhs.number_format_id
-            && number_format_applied == number_format_applied
             && protection_id == rhs.protection_id
             && protection_applied == rhs.protection_applied
             && pivot_button_ == rhs.pivot_button_
@@ -47,10 +46,10 @@ struct style_impl
     }
 
 	std::string name;
-	std::size_t formatting_record_id;
+	std::size_t formatting_record_id = 0;
 
-	bool custom_builtin;
-	bool hidden_style;
+	bool custom_builtin = false;
+	bool hidden_style = false;
 
 	optional<std::size_t> builtin_id;
 	optional<std::size_t> outline_style;

@@ -102,7 +102,7 @@ header_footer &header_footer::header(location where, const rich_text &text)
 
 rich_text header_footer::header(location where) const
 {
-    return odd_headers_.at(where);
+    return odd_header(where);
 }
 
 // First Page Header
@@ -216,7 +216,7 @@ header_footer &header_footer::footer(location where, const rich_text &text)
 
 rich_text header_footer::footer(location where) const
 {
-    return odd_footers_.at(where);
+    return odd_footer(where);
 }
 
 // First Page footer
