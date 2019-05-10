@@ -127,7 +127,7 @@ matrix:
 
     # =========== CLANG WINDOWS =============
     # clang 6, c++11, release build, static linking, samples compiled
-    - os: linux
+    - os: windows
       compiler: clang
       addons:
         apt:
