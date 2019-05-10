@@ -90,6 +90,7 @@ public:
         register_test(test_round_trip_rw_encrypted_numbers);
         register_test(test_streaming_read);
         register_test(test_streaming_write);
+        register_test(test_clear_headers_and_footers);
     }
 
     bool workbook_matches_file(xlnt::workbook &wb, const xlnt::path &file)
@@ -465,6 +466,45 @@ public:
         xlnt_assert_equals(ws.header_footer().footer(xlnt::header_footer::location::center).plain_text(), "center footer");
         xlnt_assert(ws.header_footer().has_footer(xlnt::header_footer::location::right));
         xlnt_assert_equals(ws.header_footer().footer(xlnt::header_footer::location::right).plain_text(), "right footer");
+    }
+
+    void test_clear_headers_and_footers()
+    {
+        xlnt::workbook wb;
+        wb.load(path_helper::test_file("11_print_settings.xlsx"));
+        auto header_footer = wb.active_sheet().header_footer();
+        xlnt_assert(header_footer.has_header());
+        header_footer.clear_header();
+        xlnt_assert(!header_footer.has_header());
+        
+        xlnt_assert(header_footer.has_footer());
+        header_footer.clear_footer();
+        xlnt_assert(!header_footer.has_footer());
+
+        auto header_footer_modified = header_footer;
+        header_footer_modified.odd_even_header(xlnt::header_footer::location::left, xlnt::rich_text(""), xlnt::rich_text(""));
+        header_footer_modified.odd_even_footer(xlnt::header_footer::location::left, xlnt::rich_text(""), xlnt::rich_text(""));
+        header_footer_modified.first_page_header(xlnt::header_footer::location::center, xlnt::rich_text(""));
+        header_footer_modified.first_page_footer(xlnt::header_footer::location::right, xlnt::rich_text(""));
+        xlnt_assert_equals(header_footer, header_footer);
+        xlnt_assert_equals(header_footer_modified, header_footer_modified);
+        xlnt_assert(!(header_footer == header_footer_modified));
+
+        xlnt_assert(header_footer_modified.has_odd_even_footer());
+        header_footer_modified.clear_odd_even_footer();
+        xlnt_assert(!header_footer_modified.has_odd_even_footer());
+
+        xlnt_assert(header_footer_modified.has_odd_even_header());
+        header_footer_modified.clear_odd_even_header();
+        xlnt_assert(!header_footer_modified.has_odd_even_header());
+
+        xlnt_assert(header_footer_modified.has_first_page_header());
+        header_footer_modified.clear_first_page_header();
+        xlnt_assert(!header_footer_modified.has_first_page_header());
+
+        xlnt_assert(header_footer_modified.has_first_page_footer());
+        header_footer_modified.clear_first_page_footer();
+        xlnt_assert(!header_footer_modified.has_first_page_footer());
     }
 
     void test_read_custom_properties()

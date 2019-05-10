@@ -33,7 +33,7 @@ bool header_footer::has_header() const
 
 bool header_footer::has_footer() const
 {
-    return !odd_headers_.empty() || !even_headers_.empty() || has_first_page_footer();
+    return !odd_footers_.empty() || !odd_footers_.empty() || has_first_page_footer();
 }
 
 bool header_footer::align_with_margins() const
