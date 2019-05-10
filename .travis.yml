@@ -125,6 +125,64 @@ matrix:
         - STATIC=ON
         - SAMPLES=ON
 
+	# =========== CLANG WINDOWS =============
+	# clang 6, c++11, release build, static linking, samples compiled
+    - os: windows
+      compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-4.0
+          packages:
+            - clang-4.0
+      env:
+        - CXX_COMPILER=clang++-4.0
+        - C_COMPILER=clang-4.0
+        - CXX_VER=11
+        - BUILD_TYPE=Release
+        - COVERAGE=OFF
+        - STATIC=OFF
+        - SAMPLES=OFF
+
+	# clang 5, c++14, release build, dynamic linking, samples + benchmarks compiled
+    - os: windows
+      compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-5.0
+          packages:
+            - clang-5.0
+      env:
+        - CXX_COMPILER=clang++-5.0
+        - C_COMPILER=clang-5.0
+        - CXX_VER=14
+        - BUILD_TYPE=Release
+        - COVERAGE=OFF
+        - STATIC=ON
+        - SAMPLES=ON
+        
+    # clang 6, c++17, release build, static linking, samples compiled
+    - os: windows
+      compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-6.0
+          packages:
+            - clang-6.0
+      env:
+        - CXX_COMPILER=clang++-6.0
+        - C_COMPILER=clang-6.0
+        - CXX_VER=17
+        - BUILD_TYPE=Release
+        - COVERAGE=OFF
+        - STATIC=ON
+        - SAMPLES=ON
+
     # ============= CODE COVERAGE ===============
     # gcc-6, c++11, debug build, static linking, code coverage enabled
     - os: linux
