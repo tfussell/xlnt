@@ -37,12 +37,12 @@ public:
     {
         register_test(test_basic);
         register_test(test_simple_format);
+        register_test(test_bad_date_format);
         register_test(test_simple_date);
         register_test(test_short_month);
         register_test(test_month_abbreviation);
         register_test(test_month_name);
         register_test(test_basic);
-        register_test(test_simple_format);
         register_test(test_upper_case_date);
         register_test(test_simple_date);
         register_test(test_short_day);
@@ -155,6 +155,46 @@ public:
         xlnt_assert_equals(formatted, "zero0");
     }
 
+    void test_bad_date_format()
+    {
+        auto date = xlnt::date(2016, 6, 18);
+        auto date_number = date.to_number(xlnt::calendar::windows_1900);
+
+        xlnt::number_format nf;
+
+        nf.format_string("[x]");
+        xlnt_assert_throws(nf.format(date_number, xlnt::calendar::windows_1900),
+                           std::runtime_error);
+
+        nf.format_string("mmmmmm");
+        xlnt_assert_throws(nf.format(date_number, xlnt::calendar::windows_1900),
+                           std::runtime_error);
+
+        nf.format_string("ddddd");
+        xlnt_assert_throws(nf.format(date_number, xlnt::calendar::windows_1900),
+                           std::runtime_error);
+
+        nf.format_string("yyy");
+        xlnt_assert_throws(nf.format(date_number, xlnt::calendar::windows_1900),
+                           std::runtime_error);
+
+        nf.format_string("hhh");
+        xlnt_assert_throws(nf.format(date_number, xlnt::calendar::windows_1900),
+                           std::runtime_error);
+
+        nf.format_string("sss");
+        xlnt_assert_throws(nf.format(date_number, xlnt::calendar::windows_1900),
+                           std::runtime_error);
+
+        nf.format_string("AA");
+        xlnt_assert_throws(nf.format(date_number, xlnt::calendar::windows_1900),
+                           std::runtime_error);
+
+        nf.format_string("q");
+        xlnt_assert_throws(nf.format(date_number, xlnt::calendar::windows_1900),
+                           std::runtime_error);
+    }
+
     void test_upper_case_date()
     {
         auto date = xlnt::date(2016, 6, 18);
@@ -259,7 +299,7 @@ public:
         nf.format_string("dddd");
         auto formatted = nf.format(date_number, xlnt::calendar::windows_1900);
 
-        xlnt_assert_equals(formatted, "Sunday");
+        xlnt_assert_equals(formatted, "Saturday");
     }
 
     void test_day_abbreviation()
@@ -271,7 +311,7 @@ public:
         nf.format_string("ddd");
         auto formatted = nf.format(date_number, xlnt::calendar::windows_1900);
 
-        xlnt_assert_equals(formatted, "Sun");
+        xlnt_assert_equals(formatted, "Sat");
     }
 
     void test_month_letter()
