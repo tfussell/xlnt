@@ -1617,9 +1617,9 @@ struct rel_id_sorter
     bool operator()(const xlnt::relationship &lhs, const xlnt::relationship &rhs)
     {
         // format is rTd<decimal number 1..n>
-        if (lhs.id().size() < rhs.id().size()) // a number with more digits will be larger
+        if (lhs.id().size() != rhs.id().size()) // a number with more digits will be larger
         {
-            return true;
+            return lhs.id().size() < rhs.id().size();
         }
         return lhs.id() < rhs.id();
     }
