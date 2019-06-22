@@ -2439,6 +2439,10 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         // See note for CT_Row, span attribute about block optimization
         if (first_row_in_block)
         {
+            // reset block column range
+            first_block_column = constants::max_column();
+            last_block_column = constants::min_column();
+
             first_check_row = row;
             // round up to the next multiple of 16
             last_check_row = ((row / 16) + 1) * 16;
@@ -2448,8 +2452,8 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         {
             for (auto column = dimension.top_left().column(); column <= dimension.bottom_right().column(); ++column)
             {
-                if (!ws.has_cell(cell_reference(column, row))) continue;
-                auto cell = ws.cell(cell_reference(column, row));
+                if (!ws.has_cell(cell_reference(column, check_row))) continue;
+                auto cell = ws.cell(cell_reference(column, check_row));
                 if (cell.garbage_collectible()) continue;
 
                 first_block_column = std::min(first_block_column, cell.column());
