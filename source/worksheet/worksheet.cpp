@@ -578,7 +578,7 @@ column_t worksheet::highest_column_or_props() const
 
 range_reference worksheet::calculate_dimension() const
 {
-    return range_reference(lowest_column(), lowest_row(),
+    return range_reference(lowest_column(), lowest_row_or_props(),
         highest_column(), highest_row_or_props());
 }
 

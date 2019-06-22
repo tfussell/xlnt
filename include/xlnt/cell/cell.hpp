@@ -54,6 +54,7 @@ class workbook;
 class worksheet;
 class xlsx_consumer;
 class xlsx_producer;
+class phonetic_pr;
 
 struct date;
 struct datetime;
@@ -500,6 +501,18 @@ public:
     /// use worksheet::merge_cells on its parent worksheet.
     /// </summary>
     void merged(bool merged);
+
+    // phonetics
+
+    /// <summary>
+    /// Returns true if this cell is set to show phonetic information.
+    /// </summary>
+    bool phonetics_visible() const;
+
+    /// <summary>
+    /// Enables the display of phonetic information on this cell.
+    /// </summary>
+    void show_phonetics(bool phonetics);
 
     /// <summary>
     /// Returns the error string that is stored in this cell.

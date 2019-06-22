@@ -36,6 +36,8 @@ public:
     {
         register_test(test_operators);
         register_test(test_runs);
+        register_test(test_phonetic_runs);
+        register_test(test_phonetic_properties);
     }
 
     void test_operators()
@@ -114,6 +116,31 @@ public:
         // whole set
         rt.runs(test_runs);
         xlnt_assert_equals(test_runs, rt.runs());
+    }
+
+    void test_phonetic_runs()
+    {
+        xlnt::rich_text rt;
+        rt.plain_text("取引", true);
+        rt.add_phonetic_run({"トリヒキ", 0, 2});
+
+        xlnt_assert_equals(rt.phonetic_runs().size(), 1);
+        xlnt_assert_equals(rt.phonetic_runs()[0].text, "トリヒキ");
+        xlnt_assert_equals(rt.phonetic_runs()[0].start, 0);
+        xlnt_assert_equals(rt.phonetic_runs()[0].end, 2);
+    }
+
+    void test_phonetic_properties()
+    {
+        xlnt::rich_text rt;
+        xlnt::phonetic_pr ph(1);
+        ph.type(xlnt::phonetic_pr::type_from_string("fullwidthKatakana"));
+        ph.alignment(xlnt::phonetic_pr::alignment_from_string("Center"));
+        rt.phonetic_properties(ph);
+
+        xlnt_assert_equals(rt.has_phonetic_properties(), true);
+        xlnt_assert_equals(rt.phonetic_properties().has_type(), true);
+        xlnt_assert_equals(rt.phonetic_properties().has_alignment(), true);
     }
 };
 static rich_text_test_suite x{};
