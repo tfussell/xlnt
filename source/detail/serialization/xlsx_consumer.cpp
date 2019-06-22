@@ -2339,7 +2339,7 @@ void xlsx_consumer::read_stylesheet()
                 }
                 record.first.border_id = parser().attribute_present("borderId")
                     ? parser().attribute<std::size_t>("borderId")
-                    : 0;
+                    : optional<std::size_t>();
 
                 if (parser().attribute_present("applyFill"))
                 {
@@ -2347,7 +2347,7 @@ void xlsx_consumer::read_stylesheet()
                 }
                 record.first.fill_id = parser().attribute_present("fillId")
                     ? parser().attribute<std::size_t>("fillId")
-                    : 0;
+                    : optional<std::size_t>();
 
                 if (parser().attribute_present("applyFont"))
                 {
@@ -2355,7 +2355,7 @@ void xlsx_consumer::read_stylesheet()
                 }
                 record.first.font_id = parser().attribute_present("fontId")
                     ? parser().attribute<std::size_t>("fontId")
-                    : 0;
+                    : optional<std::size_t>();
 
                 if (parser().attribute_present("applyNumberFormat"))
                 {
@@ -2363,7 +2363,7 @@ void xlsx_consumer::read_stylesheet()
                 }
                 record.first.number_format_id = parser().attribute_present("numFmtId")
                     ? parser().attribute<std::size_t>("numFmtId")
-                    : 0;
+                    : optional<std::size_t>();
 
                 auto apply_alignment_present = parser().attribute_present("applyAlignment");
                 if (apply_alignment_present)
