@@ -104,6 +104,7 @@ public:
         register_test(test_clear_cell);
         register_test(test_clear_row);
         register_test(test_set_title);
+        register_test(test_set_title_unicode);
         register_test(test_phonetics);
         register_test(test_insert_rows);
         register_test(test_insert_columns);
@@ -1265,6 +1266,18 @@ public:
         xlnt_assert_throws_nothing(ws2.title(ws2.title()));
         xlnt_assert(ws1_title == ws1.title());
         xlnt_assert(ws2_title == ws2.title());
+    }
+
+    void test_set_title_unicode()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.active_sheet();
+        // the 31 char limit also applies to 4-byte characters
+        const std::string test_long_utf8_title("巧みな外交は戦争を避ける助けとなる。");
+        xlnt_assert_throws_nothing(ws.title(test_long_utf8_title));
+        const std::string invalid_unicode("\xe6\x97\xa5\xd1\x88\xfa");
+        xlnt_assert_throws(ws.title(invalid_unicode),
+                           xlnt::exception);
     }
 
     void test_phonetics()
