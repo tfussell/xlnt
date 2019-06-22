@@ -55,6 +55,7 @@ struct cell_impl
     row_t row_;
 
     bool is_merged_;
+    bool phonetics_visible_;
 
     rich_text value_text_;
     double value_numeric_;
@@ -72,6 +73,7 @@ inline bool operator==(const cell_impl &lhs, const cell_impl &rhs)
         && lhs.column_ == rhs.column_
         && lhs.row_ == rhs.row_
         && lhs.is_merged_ == rhs.is_merged_
+        && lhs.phonetics_visible_ == rhs.phonetics_visible_
         && lhs.value_text_ == rhs.value_text_
         && lhs.value_numeric_ == rhs.value_numeric_
         && lhs.formula_ == rhs.formula_

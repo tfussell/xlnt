@@ -862,6 +862,36 @@ void xlsx_producer::write_shared_string_table(const relationship & /*rel*/)
             write_characters(string.second.plain_text(), string.second.runs().front().preserve_space);
 
             write_end_element(xmlns, "t");
+
+            for (const auto &run : string.second.phonetic_runs())
+            {
+                write_start_element(xmlns, "rPh");
+                write_attribute("eb", run.end);
+                write_attribute("sb", run.start);
+
+                write_start_element(xmlns, "t");
+                write_characters(run.text, run.preserve_space);
+                write_end_element(xmlns, "t");
+
+                write_end_element(xmlns, "rPh");
+            }
+
+            if (string.second.has_phonetic_properties())
+            {
+                write_start_element(xmlns, phonetic_pr::Serialised_ID());
+                const auto &ph_props = string.second.phonetic_properties();
+                write_attribute("fontId", ph_props.font_id());
+                if (ph_props.has_type())
+                {
+                    write_attribute("type", phonetic_pr::type_as_string(ph_props.type()));
+                }
+                if (ph_props.has_alignment())
+                {
+                    write_attribute("alignment", phonetic_pr::alignment_as_string(ph_props.alignment()));
+                }
+                write_end_element(xmlns, phonetic_pr::Serialised_ID());
+            }
+
             write_end_element(xmlns, "si");
 
             continue;
@@ -925,6 +955,35 @@ void xlsx_producer::write_shared_string_table(const relationship & /*rel*/)
             write_characters(run.first, run.preserve_space);
             write_end_element(xmlns, "t");
             write_end_element(xmlns, "r");
+        }
+
+        for (const auto &run : string.second.phonetic_runs())
+        {
+            write_start_element(xmlns, "rPh");
+            write_attribute("sb", run.start);
+            write_attribute("eb", run.end);
+
+            write_start_element(xmlns, "t");
+            write_characters(run.text, run.preserve_space);
+            write_end_element(xmlns, "t");
+
+            write_end_element(xmlns, "rPh");
+        }
+
+        if (string.second.has_phonetic_properties())
+        {
+            write_start_element(xmlns, phonetic_pr::Serialised_ID());
+            const auto &ph_props = string.second.phonetic_properties();
+            write_attribute("fontId", ph_props.font_id());
+            if (ph_props.has_type())
+            {
+                write_attribute("type", phonetic_pr::type_as_string(ph_props.type()));
+            }
+            if (ph_props.has_alignment())
+            {
+                write_attribute("alignment", phonetic_pr::alignment_as_string(ph_props.alignment()));
+            }
+            write_end_element(xmlns, phonetic_pr::Serialised_ID());
         }
 
         write_end_element(xmlns, "si");
@@ -2537,6 +2596,11 @@ void xlsx_producer::write_worksheet(const relationship &rel)
                 // begin cell attributes
 
                 write_attribute("r", cell.reference().to_string());
+
+                if (cell.phonetics_visible())
+                {
+                    write_attribute("ph", write_bool(true));
+                }
 
                 if (cell.has_format())
                 {

@@ -104,6 +104,7 @@ public:
         register_test(test_clear_cell);
         register_test(test_clear_row);
         register_test(test_set_title);
+        register_test(test_phonetics);
         register_test(test_insert_rows);
         register_test(test_insert_columns);
         register_test(test_delete_rows);
@@ -1264,6 +1265,29 @@ public:
         xlnt_assert_throws_nothing(ws2.title(ws2.title()));
         xlnt_assert(ws1_title == ws1.title());
         xlnt_assert(ws2_title == ws2.title());
+    }
+
+    void test_phonetics()
+    {
+        xlnt::workbook wb;
+        wb.load(path_helper::test_file("15_phonetics.xlsx"));
+        auto ws = wb.active_sheet();
+
+        xlnt_assert_equals(ws.cell("A1").phonetics_visible(), true);
+        xlnt_assert_equals(ws.cell("A1").value<xlnt::rich_text>().phonetic_runs()[0].text, "シュウ ");
+        xlnt_assert_equals(ws.cell("B1").phonetics_visible(), true);
+        xlnt_assert_equals(ws.cell("C1").phonetics_visible(), false);
+
+        wb.save("temp.xlsx");
+
+        xlnt::workbook wb2;
+        wb2.load("temp.xlsx");
+        auto ws2 = wb2.active_sheet();
+
+        xlnt_assert_equals(ws2.cell("A1").phonetics_visible(), true);
+        xlnt_assert_equals(ws2.cell("A1").value<xlnt::rich_text>().phonetic_runs()[0].text, "シュウ ");
+        xlnt_assert_equals(ws2.cell("B1").phonetics_visible(), true);
+        xlnt_assert_equals(ws2.cell("C1").phonetics_visible(), false);
     }
 
     void test_insert_rows()
