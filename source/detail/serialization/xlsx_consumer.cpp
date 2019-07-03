@@ -3026,7 +3026,7 @@ rich_text xlsx_consumer::read_rich_text(const xml::qname &parent)
         }
         else if (text_element == xml::qname(xmlns, "phoneticPr"))
         {
-            phonetic_pr ph(parser().attribute<std::uint32_t>("fontId"));
+            phonetic_pr ph(parser().attribute<phonetic_pr::font_id_t>("fontId"));
             if (parser().attribute_present("type"))
             {
                 ph.type(phonetic_pr::type_from_string(parser().attribute("type")));

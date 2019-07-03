@@ -820,63 +820,97 @@ void xlsx_producer::write_rich_text(const std::string &ns, const xlnt::rich_text
         write_start_element(ns, "t");
         write_characters(text.plain_text(), text.runs().front().preserve_space);
         write_end_element(ns, "t");
-        return;
+    }
+    else
+    {
+        for (const auto &run : text.runs())
+        {
+            write_start_element(ns, "r");
+
+            if (run.second.is_set())
+            {
+                write_start_element(ns, "rPr");
+
+                if (run.second.get().bold())
+                {
+                    write_start_element(ns, "b");
+                    write_end_element(ns, "b");
+                }
+
+                if (run.second.get().has_size())
+                {
+                    write_start_element(ns, "sz");
+                    write_attribute("val", run.second.get().size());
+                    write_end_element(ns, "sz");
+                }
+
+                if (run.second.get().has_color())
+                {
+                    write_start_element(ns, "color");
+                    write_color(run.second.get().color());
+                    write_end_element(ns, "color");
+                }
+
+                if (run.second.get().has_name())
+                {
+                    write_start_element(ns, "rFont");
+                    write_attribute("val", run.second.get().name());
+                    write_end_element(ns, "rFont");
+                }
+
+                if (run.second.get().has_family())
+                {
+                    write_start_element(ns, "family");
+                    write_attribute("val", run.second.get().family());
+                    write_end_element(ns, "family");
+                }
+
+                if (run.second.get().has_scheme())
+                {
+                    write_start_element(ns, "scheme");
+                    write_attribute("val", run.second.get().scheme());
+                    write_end_element(ns, "scheme");
+                }
+
+                write_end_element(ns, "rPr");
+            }
+
+            write_element(ns, "t", run.first, run.preserve_space);
+            write_end_element(ns, "r");
+        }
+    }
+    
+    for (const auto &run : text.phonetic_runs())
+    {
+        write_start_element(ns, "rPh");
+        write_attribute("sb", run.start);
+        write_attribute("eb", run.end);
+        write_start_element(ns, "t");
+        write_characters(run.text, run.preserve_space);
+        write_end_element(ns, "t");
+        write_end_element(ns, "rPh");
     }
 
-    for (const auto &run : text.runs())
+    if (text.has_phonetic_properties())
     {
-        write_start_element(ns, "r");
+        const auto &phonetic_properties = text.phonetic_properties();
 
-        if (run.second.is_set())
+        write_start_element(ns, "phoneticPr");
+        write_attribute("fontId", phonetic_properties.font_id());
+
+        if (text.phonetic_properties().has_type())
         {
-            write_start_element(ns, "rPr");
-
-            if (run.second.get().bold())
-            {
-                write_start_element(ns, "b");
-                write_end_element(ns, "b");
-            }
-
-            if (run.second.get().has_size())
-            {
-                write_start_element(ns, "sz");
-                write_attribute("val", run.second.get().size());
-                write_end_element(ns, "sz");
-            }
-
-            if (run.second.get().has_color())
-            {
-                write_start_element(ns, "color");
-                write_color(run.second.get().color());
-                write_end_element(ns, "color");
-            }
-
-            if (run.second.get().has_name())
-            {
-                write_start_element(ns, "rFont");
-                write_attribute("val", run.second.get().name());
-                write_end_element(ns, "rFont");
-            }
-
-            if (run.second.get().has_family())
-            {
-                write_start_element(ns, "family");
-                write_attribute("val", run.second.get().family());
-                write_end_element(ns, "family");
-            }
-
-            if (run.second.get().has_scheme())
-            {
-                write_start_element(ns, "scheme");
-                write_attribute("val", run.second.get().scheme());
-                write_end_element(ns, "scheme");
-            }
-
-            write_end_element(ns, "rPr");
+            const auto type = phonetic_properties.type();
+            write_attribute("type", phonetic_properties.type_as_string(type));
         }
 
-        write_element(ns, "t", run.first, run.preserve_space);
-        write_end_element(ns, "r");
+        if (text.phonetic_properties().has_alignment())
+        {
+            const auto alignment = phonetic_properties.alignment();
+            write_attribute("alignment", phonetic_properties.alignment_as_string(alignment));
+        }
+        
+        write_end_element(ns, "phoneticPr");
     }
 }
 
