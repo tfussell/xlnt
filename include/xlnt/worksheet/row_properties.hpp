@@ -63,6 +63,13 @@ public:
     /// The index to the style used by all cells in this row
     /// </summary>
     optional<std::size_t> style;
+
+    /// <summary>
+    /// The row column span, used as part of the row block optimisation.
+    /// This used for loading this attribute from existing excel files mainly for inspecting
+    /// and not used when saving, it is calculated in the xlsx_producer.
+    /// </summary>
+    optional<std::string> spans;
 };
 
 inline bool operator==(const row_properties &lhs, const row_properties &rhs)
@@ -72,7 +79,8 @@ inline bool operator==(const row_properties &lhs, const row_properties &rhs)
         && lhs.custom_height == rhs.custom_height
         && lhs.hidden == rhs.hidden
         && lhs.custom_format == rhs.custom_format
-        && lhs.style == rhs.style;
+        && lhs.style == rhs.style
+        && lhs.spans == rhs.spans;
 }
 
 } // namespace xlnt

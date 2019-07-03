@@ -51,12 +51,7 @@ struct stylesheet
 
 		impl.parent = this;
 		impl.id = format_impls.size() - 1;
-        
-        impl.border_id = 0;
-        impl.fill_id = 0;
-        impl.font_id = 0;
-        impl.number_format_id = 0;
-        
+
         impl.references = default_format ? 1 : 0;
         
         return xlnt::format(&impl);

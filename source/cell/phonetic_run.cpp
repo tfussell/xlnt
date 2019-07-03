@@ -1,5 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
-// Copyright (c) 2010-2015 openpyxl
+// Copyright (c) 2014-2018
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,23 +21,20 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#include <xlnt/worksheet/worksheet.hpp>
-
-#include <detail/implementations/cell_impl.hpp>
+#include <xlnt/cell/phonetic_run.hpp>
+#include <tuple>
 
 namespace xlnt {
-namespace detail {
 
-cell_impl::cell_impl()
-    : type_(cell_type::empty),
-      parent_(nullptr),
-      column_(1),
-      row_(1),
-      is_merged_(false),
-      phonetics_visible_(false),
-      value_numeric_(0)
+bool phonetic_run::operator==(const phonetic_run &other) const
 {
+    return std::tie(text, start, end, preserve_space) ==
+           std::tie(other.text, other.start, other.end, other.preserve_space);
 }
 
-} // namespace detail
+bool phonetic_run::operator!=(const phonetic_run &other) const
+{
+    return !(*this == other);
+}
+
 } // namespace xlnt

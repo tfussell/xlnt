@@ -28,6 +28,8 @@
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/cell/rich_text_run.hpp>
+#include <xlnt/cell/phonetic_run.hpp>
+#include <xlnt/worksheet/phonetic_pr.hpp>
 
 namespace xlnt {
 
@@ -95,6 +97,36 @@ public:
     void add_run(const rich_text_run &t);
 
     /// <summary>
+    /// Returns a copy of the individual runs that comprise this text.
+    /// </summary>
+    std::vector<phonetic_run> phonetic_runs() const;
+
+    /// <summary>
+    /// Sets the runs of this text all at once.
+    /// </summary>
+    void phonetic_runs(const std::vector<phonetic_run> &new_phonetic_runs);
+
+    /// <summary>
+    /// Adds a new run to the end of the set of runs.
+    /// </summary>
+    void add_phonetic_run(const phonetic_run &t);
+
+    /// <summary>
+    /// Returns true if this text has phonetic properties
+    /// </summary>
+    bool has_phonetic_properties() const;
+
+    /// <summary>
+    /// Returns the phonetic properties of this text.
+    /// </summary>
+    const phonetic_pr &phonetic_properties() const;
+
+    /// <summary>
+    /// Sets the phonetic properties of this text to phonetic_props
+    /// </summary>
+    void phonetic_properties(const phonetic_pr& phonetic_props);
+
+    /// <summary>
     /// Copies rich text object from other
     /// </summary>
     rich_text& operator=(const rich_text &rhs);
@@ -124,6 +156,8 @@ private:
     /// The runs that make up this rich text.
     /// </summary>
     std::vector<rich_text_run> runs_;
+    std::vector<phonetic_run> phonetic_runs_;
+    optional<phonetic_pr> phonetic_properties_;
 };
 
 class XLNT_API rich_text_hash
