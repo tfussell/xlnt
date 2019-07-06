@@ -232,7 +232,7 @@ private:
 	/// <summary>
 	///
 	/// </summary>
-	void read_drawings();
+	void read_drawings(worksheet ws, const path &part);
 
 	// Unknown Parts
 

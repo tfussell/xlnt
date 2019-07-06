@@ -1301,4 +1301,9 @@ void worksheet::format_properties(const sheet_format_properties &properties)
     d_->format_properties_ = properties;
 }
 
+bool worksheet::has_drawing() const
+{
+    return d_->drawing_.is_set();
+}
+
 } // namespace xlnt

@@ -765,6 +765,12 @@ public:
     /// </summary>
     void format_properties(const sheet_format_properties &properties);
 
+    /// <summary>
+    /// Returns true if this worksheet has a page setup.
+    /// </summary>
+    bool has_drawing() const;
+
+
 private:
     friend class cell;
     friend class const_range_iterator;
