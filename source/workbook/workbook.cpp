@@ -865,7 +865,23 @@ void workbook::load(std::istream &stream)
 {
     clear();
     detail::xlsx_consumer consumer(*this);
-    consumer.read(stream);
+
+    try
+    {
+        consumer.read(stream);
+    }
+    catch (xlnt::exception &e)
+    {
+        if (e.what() == std::string("xlnt::exception : encrypted xlsx, password required"))
+        {
+            stream.seekg(0, std::ios::beg);
+            consumer.read(stream, "VelvetSweatshop");
+        }
+        else
+        {
+            throw;
+        }
+    }
 }
 
 void workbook::load(const std::vector<std::uint8_t> &data)
