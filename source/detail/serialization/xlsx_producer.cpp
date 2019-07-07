@@ -2326,8 +2326,15 @@ void xlsx_producer::write_worksheet(const relationship &rel)
                 write_attribute("topLeftCell", current_pane.top_left_cell.get().to_string());
             }
 
-            write_attribute("xSplit", current_pane.x_split.index);
-            write_attribute("ySplit", current_pane.y_split);
+            if (current_pane.x_split + 1 == current_pane.top_left_cell.get().column())
+            {
+                write_attribute("xSplit", current_pane.x_split.index);
+            }
+
+            if (current_pane.y_split + 1 == current_pane.top_left_cell.get().row())
+            {
+                write_attribute("ySplit", current_pane.y_split);
+            }
 
             if (current_pane.active_pane != pane_corner::top_left)
             {

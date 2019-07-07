@@ -552,7 +552,10 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
                             current_selection.sqref(sqref);
                         }
 
-                        current_selection.pane(pane_corner::top_left);
+                        if (parser().attribute_present("pane"))
+                        {
+                            current_selection.pane(parser().attribute<pane_corner>("pane"));
+                        }
 
                         new_view.add_selection(current_selection);
 
