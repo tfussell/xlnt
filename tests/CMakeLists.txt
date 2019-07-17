@@ -73,3 +73,6 @@ if(MSVC AND NOT STATIC)
     $<TARGET_FILE:xlnt>
     $<TARGET_FILE_DIR:xlnt.test>)
 endif()
+
+# Use add_test() for CTest support
+add_test(NAME xlnt_test COMMAND xlnt.test)
