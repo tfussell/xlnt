@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.1)
 project(xlnt_all)
 
+# CTest setup
+# include (CTest) # Add this for valgrind support; CTest works without it
+enable_testing()
+
 # This indicates to CMakeLists in subdirectories that they are part of a larger project
 set(COMBINED_PROJECT TRUE)
 
