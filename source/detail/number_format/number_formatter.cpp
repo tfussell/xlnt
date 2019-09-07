@@ -50,7 +50,7 @@ const std::unordered_map<int, std::string> known_locales()
             {0x457, "Konkani"}, {0x458, "Manipuri"}, {0x459, "Sindhi"}, {0x460, "Kashmiri"}, {0x461, "Nepali"},
             {0x462, "Frisian - Netherlands"}, {0x464, "Filipino"}, {0x465, "Divehi; Dhivehi; Maldivian"},
             {0x466, "Edo"}, {0x470, "Igbo - Nigeria"}, {0x474, "Guarani - Paraguay"}, {0x476, "Latin"},
-            {0x477, "Somali"}, {0x481, "Maori"}, {0x801, "Arabic - Iraq"}, {0x804, "Chinese - China"},
+            {0x477, "Somali"}, {0x481, "Maori"}, {0x485, "sah-RU"}, {0x801, "Arabic - Iraq"}, {0x804, "Chinese - China"},
             {0x807, "German - Switzerland"}, {0x809, "English - Great Britain"}, {0x810, "Italian - Switzerland"},
             {0x813, "Dutch - Belgium"}, {0x814, "Norwegian - Nynorsk"}, {0x816, "Portuguese - Portugal"},
             {0x818, "Romanian - Moldova"}, {0x819, "Russian - Moldova"}, {0x843, "Uzbek - Cyrillic"},
@@ -1066,6 +1066,7 @@ std::pair<format_locale, std::string> number_format_parser::locale_from_string(c
     }
 
     auto country_code = std::stoi(country_code_string, nullptr, 16);
+    country_code &= 0xFFFF;
 
     for (const auto &known_locale : known_locales())
     {
