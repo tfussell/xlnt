@@ -172,6 +172,7 @@ enum class format_locale
     latin = 0x476,
     somali = 0x477,
     maori = 0x481,
+    yakut = 0x485,
     arabic_iraq = 0x801,
     chinese_china = 0x804,
     german_switzerland = 0x807,
