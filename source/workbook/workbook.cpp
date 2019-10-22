@@ -1621,6 +1621,12 @@ struct rel_id_sorter
         {
             return true;
         }
+
+        if (lhs.id().size() > rhs.id().size())
+        {
+            return false;
+        }
+
         return lhs.id() < rhs.id();
     }
 };
