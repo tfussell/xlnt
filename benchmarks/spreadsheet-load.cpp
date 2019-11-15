@@ -5,7 +5,7 @@
 namespace {
 using milliseconds_d = std::chrono::duration<double, std::milli>;
 
-void run_test(xlnt::path &const file, int runs = 10)
+void run_test(const xlnt::path &file, int runs = 10)
 {
     std::cout << file.string() << "\n\n";
 
