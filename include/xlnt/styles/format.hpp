@@ -214,6 +214,7 @@ public:
 private:
     friend struct detail::stylesheet;
     friend class detail::xlsx_producer;
+    friend class detail::xlsx_consumer;
     friend class cell;
 
     /// <summary>

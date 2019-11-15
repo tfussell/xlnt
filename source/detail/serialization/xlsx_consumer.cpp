@@ -777,14 +777,16 @@ struct Worksheet_Parser
                     while (parser->peek() != xml::parser::end_element)
                     {
                         xml::parser::event_type chars = parser->next();
-                        assert(chars == xml::parser::characters);
-                        if (parser->name() == "v" || parser->name() == "is")
+                        if (chars == xml::parser::characters)
                         {
-                            value += std::move(parser->value());
-                        }
-                        else if (parser->name() == "f")
-                        {
-                            value += std::move(parser->value());
+                            if (parser->name() == "v" || parser->name() == "is")
+                            {
+                                value += std::move(parser->value());
+                            }
+                            else if (parser->name() == "f")
+                            {
+                                formula_string += std::move(parser->value());
+                            }
                         }
                         else
                         {
@@ -985,18 +987,25 @@ void xlsx_consumer::read_worksheet_sheetdata()
     }
     for (auto &cell : ws_parser.parsed_cells)
     {
-        auto &ws_cell = ws.cell(cell_reference(cell.ref.column, cell.ref.row));
+        detail::cell_impl* ws_cell_impl = ws.cell(cell_reference(cell.ref.column, cell.ref.row)).d_;
         if (cell.style_index != -1)
         {
-            ws_cell.format(target_.format(cell.style_index));
+            ws_cell_impl->format_ = target_.format(cell.style_index).d_;
         }
         if (cell.cell_metatdata_idx != -1)
         {
         }
-        ws_cell.d_->phonetics_visible_ = cell.is_phonetic;
+        ws_cell_impl->phonetics_visible_ = cell.is_phonetic;
         if (!cell.formula_string.empty())
         {
-            ws_cell.formula(cell.formula_string);
+            if (cell.formula_string[0] == '=')
+            {
+                ws_cell_impl->formula_ = std::move(cell.formula_string.substr(1));
+            }
+            else
+            {
+                ws_cell_impl->formula_ = std::move(cell.formula_string);
+            }
         }
         if (!cell.value.empty())
         {
@@ -1004,35 +1013,38 @@ void xlsx_consumer::read_worksheet_sheetdata()
             {
             case Worksheet_Parser::Cell::Value_Type::Boolean:
             {
-                ws_cell.value(is_true(cell.value));
+                ws_cell_impl->value_numeric_ = is_true(cell.value) ? 1.0 : 0.0;
+                ws_cell_impl->type_ = cell::type::boolean;
                 break;
             }
             case Worksheet_Parser::Cell::Value_Type::Number:
             {
-                ws_cell.value(strtod(cell.value.c_str(), nullptr));
+                ws_cell_impl->value_numeric_ = strtod(cell.value.c_str(), nullptr);
+                ws_cell_impl->type_ = cell::type::number;
                 break;
             }
             case Worksheet_Parser::Cell::Value_Type::Shared_String:
             {
-                ws_cell.d_->value_numeric_ = static_cast<double>(strtol(cell.value.c_str(), nullptr, 10));
-                ws_cell.data_type(cell::type::shared_string);
+                ws_cell_impl->value_numeric_ = static_cast<double>(strtol(cell.value.c_str(), nullptr, 10));
+                ws_cell_impl->type_ = cell::type::shared_string;
                 break;
             }
             case Worksheet_Parser::Cell::Value_Type::Inline_String:
             {
-                ws_cell.d_->value_text_ = std::move(cell.value);
-                ws_cell.data_type(cell::type::inline_string);
+                ws_cell_impl->value_text_ = std::move(cell.value);
+                ws_cell_impl->type_ = cell::type::inline_string;
                 break;
             }
             case Worksheet_Parser::Cell::Value_Type::Formula_String:
             {
-                ws_cell.d_->value_text_ = std::move(cell.value);
-                ws_cell.data_type(cell::type::formula_string);
+                ws_cell_impl->value_text_ = std::move(cell.value);
+                ws_cell_impl->type_ = cell::type::formula_string;
                 break;
             }
             case Worksheet_Parser::Cell::Value_Type::Error:
             {
-                ws_cell.error(cell.value);
+                ws_cell_impl->value_text_.plain_text(cell.value, false);
+                ws_cell_impl->type_ = cell::type::error;
                 break;
             }
             }
