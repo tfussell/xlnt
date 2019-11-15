@@ -744,7 +744,11 @@ struct Worksheet_Parser
         {
             for (auto &attr : parser->attribute_map())
             {
-                if (attr.first.name() == "ph")
+                if (attr.first.name() == "r")
+                {
+                    ref = Cell_Reference(row_arg, attr.second.value);
+                }
+                else if (attr.first.name() == "ph")
                 {
                     is_phonetic = is_true(attr.second.value);
                 }
@@ -759,10 +763,6 @@ struct Worksheet_Parser
                 else if (attr.first.name() == "t")
                 {
                     type = from_string(attr.second.value);
-                }
-                else if (attr.first.name() == "r")
-                {
-                    ref = Cell_Reference(row_arg, attr.second.value);
                 }
             }
             int level = 1; // nesting level
