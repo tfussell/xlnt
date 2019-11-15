@@ -774,24 +774,23 @@ struct Worksheet_Parser
                 case xml::parser::start_element:
                 {
                     ++level;
-                    if (parser->name() == "v" || parser->name() == "is")
+                    while (parser->peek() != xml::parser::end_element)
                     {
-                        while (parser->peek() != xml::parser::end_element)
+                        xml::parser::event_type chars = parser->next();
+                        assert(chars == xml::parser::characters);
+                        if (parser->name() == "v" || parser->name() == "is")
                         {
-                            xml::parser::event_type chars = parser->next();
-                            assert(chars == xml::parser::characters);
                             value += std::move(parser->value());
                         }
-                    }
-                    else if (parser->name() == "f")
-                    {
-                        assert(parser->next() == xml::parser::characters);
-                        value = std::move(parser->value());
-                    }
-                    else
-                    {
-                        std::cout << parser->name() << '\n';
-                        parser->attribute_map();
+                        else if (parser->name() == "f")
+                        {
+                            value += std::move(parser->value());
+                        }
+                        else
+                        {
+                            std::cerr << parser->name() << '\n';
+                            parser->attribute_map();
+                        }
                     }
                     break;
                 }
@@ -802,7 +801,7 @@ struct Worksheet_Parser
                 }
                 case xml::parser::characters:
                 {
-					// ignore whitespace formatting
+                    // ignore whitespace formatting
                     break;
                 }
                 default:
@@ -849,6 +848,7 @@ struct Worksheet_Parser
             {
                 return Value_Type::Formula_String;
             }
+            return Value_Type::Shared_String;
         }
 
         /// 'r' == cell reference e.g. 'A1'
@@ -943,11 +943,11 @@ struct Worksheet_Parser
             }
             else if (attr.first.name() == "ht")
             {
-                props.first.height = strtol(attr.second.value.c_str(), nullptr, 10);
+                props.first.height = strtod(attr.second.value.c_str(), nullptr);
             }
             else if (attr.first.name() == "customHeight")
             {
-                props.first.custom_height = strtol(attr.second.value.c_str(), nullptr, 10);
+                props.first.custom_height = is_true(attr.second.value.c_str());
             }
             else if (attr.first.name() == "s")
             {
