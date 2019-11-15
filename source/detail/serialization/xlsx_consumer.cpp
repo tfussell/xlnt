@@ -723,6 +723,11 @@ struct Worksheet_Parser
                 --level;
                 break;
             }
+            case xml::parser::characters:
+            {
+                // ignore, whitespace formatting normally
+                break;
+            }
             default:
             {
                 assert(false);
@@ -793,6 +798,11 @@ struct Worksheet_Parser
                 case xml::parser::end_element:
                 {
                     --level;
+                    break;
+                }
+                case xml::parser::characters:
+                {
+					// ignore whitespace formatting
                     break;
                 }
                 default:
