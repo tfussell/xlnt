@@ -809,29 +809,56 @@ struct Sheet_Data
     std::vector<Cell> parsed_cells;
 };
 
+/// for comparison between std::string and string literals
+/// improves on std::string== by knowing the length ahead of time
+
+template <size_t N>
+inline bool string_arr_loop_equal(const std::string &lhs, const char (&rhs)[N])
+{
+    for (int i = 0; i < N - 1; ++i)
+    {
+        if (lhs[i] != rhs[i])
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+template <size_t N>
+inline bool string_equal(const std::string &lhs, const char (&rhs)[N])
+{
+    if (lhs.size() != N - 1)
+    {
+        return false;
+    }
+	// split function to assist with inlining of the size check
+    return string_arr_loop_equal(lhs, rhs);
+}
+
 cell::type type_from_string(const std::string &str)
 {
-    if (str == "s")
+    if (string_equal(str, "s"))
     {
         return cell::type::shared_string;
     }
-    else if (str == "n")
+    else if (string_equal(str, "n"))
     {
         return cell::type::number;
     }
-    else if (str == "b")
+    else if (string_equal(str, "b"))
     {
         return cell::type::boolean;
     }
-    else if (str == "e")
+    else if (string_equal(str, "e"))
     {
         return cell::type::error;
     }
-    else if (str == "inlineStr")
+    else if (string_equal(str, "inlineStr"))
     {
         return cell::type::inline_string;
     }
-    else if (str == "str")
+    else if (string_equal(str, "str"))
     {
         return cell::type::formula_string;
     }
@@ -843,25 +870,25 @@ Cell parse_cell(row_t row_arg, xml::parser *parser)
     Cell c;
     for (auto &attr : parser->attribute_map())
     {
-        if (attr.first.name() == "r")
+        if (string_equal(attr.first.name(), "r"))
         {
             c.ref = Cell_Reference(row_arg, attr.second.value);
         }
-        else if (attr.first.name() == "ph")
+        else if (string_equal(attr.first.name(), "t"))
         {
-            c.is_phonetic = is_true(attr.second.value);
+            c.type = type_from_string(attr.second.value);
         }
-        else if (attr.first.name() == "cm")
-        {
-            c.cell_metatdata_idx = static_cast<int>(strtol(attr.second.value.c_str(), nullptr, 10));
-        }
-        else if (attr.first.name() == "s")
+        else if (string_equal(attr.first.name(), "s"))
         {
             c.style_index = static_cast<int>(strtol(attr.second.value.c_str(), nullptr, 10));
         }
-        else if (attr.first.name() == "t")
+        else if (string_equal(attr.first.name(), "ph"))
         {
-            c.type = type_from_string(attr.second.value);
+            c.is_phonetic = is_true(attr.second.value);
+        }
+        else if (string_equal(attr.first.name(), "cm"))
+        {
+            c.cell_metatdata_idx = static_cast<int>(strtol(attr.second.value.c_str(), nullptr, 10));
         }
     }
     int level = 1; // nesting level
@@ -891,12 +918,12 @@ Cell parse_cell(row_t row_arg, xml::parser *parser)
             {
                 // <v> -> numeric values
                 // <is> -> inline string
-                if (parser->name() == "v" || parser->name() == "is")
+                if (string_equal(parser->name(), "v") || string_equal(parser->name(), "is"))
                 {
                     c.value += std::move(parser->value());
                 }
                 // <f> formula
-                else if (parser->name() == "f")
+                else if (string_equal(parser->name(), "f"))
                 {
                     c.formula_string += std::move(parser->value());
                 }
@@ -923,41 +950,41 @@ std::pair<row_properties, int> parse_row(xml::parser *parser, number_converter &
     std::pair<row_properties, int> props;
     for (auto &attr : parser->attribute_map())
     {
-        if (attr.first.name() == "hidden")
-        {
-            props.first.hidden = is_true(attr.second.value);
-        }
-        else if (attr.first.name() == "customFormat")
-        {
-            props.first.custom_format = is_true(attr.second.value);
-        }
-        else if (attr.first.name() == "ph")
-        {
-            is_true(attr.second.value);
-        }
-        else if (attr.first.name() == "r")
-        {
-            props.second = static_cast<int>(strtol(attr.second.value.c_str(), nullptr, 10));
-        }
-        else if (attr.first.name() == "ht")
-        {
-            props.first.height = converter.stold(attr.second.value.c_str());
-        }
-        else if (attr.first.name() == "customHeight")
-        {
-            props.first.custom_height = is_true(attr.second.value.c_str());
-        }
-        else if (attr.first.name() == "s")
-        {
-            props.first.style = strtoul(attr.second.value.c_str(), nullptr, 10);
-        }
-        else if (attr.first.name() == "dyDescent")
+        if (string_equal(attr.first.name(), "dyDescent"))
         {
             props.first.dy_descent = converter.stold(attr.second.value.c_str());
         }
-        else if (attr.first.name() == "spans")
+        else if (string_equal(attr.first.name(), "spans"))
         {
             props.first.spans = attr.second.value;
+        }
+        else if (string_equal(attr.first.name(), "ht"))
+        {
+            props.first.height = converter.stold(attr.second.value.c_str());
+        }
+        else if (string_equal(attr.first.name(), "s"))
+        {
+            props.first.style = strtoul(attr.second.value.c_str(), nullptr, 10);
+        }
+        else if (string_equal(attr.first.name(), "hidden"))
+        {
+            props.first.hidden = is_true(attr.second.value);
+        }
+        else if (string_equal(attr.first.name(), "customFormat"))
+        {
+            props.first.custom_format = is_true(attr.second.value);
+        }
+        else if (string_equal(attr.first.name(), "ph"))
+        {
+            is_true(attr.second.value);
+        }
+        else if (string_equal(attr.first.name(), "r"))
+        {
+            props.second = static_cast<int>(strtol(attr.second.value.c_str(), nullptr, 10));
+        }
+        else if (string_equal(attr.first.name(), "customHeight"))
+        {
+            props.first.custom_height = is_true(attr.second.value.c_str());
         }
     }
 
