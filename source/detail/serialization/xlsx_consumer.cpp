@@ -747,7 +747,7 @@ struct Worksheet_Parser
     explicit Worksheet_Parser(xml::parser *parser, number_converter &converter)
     {
         int level = 1; // nesting level
-        int current_row = -1;
+        row_t current_row = 0;
         while (level > 0)
         {
             xml::parser::event_type e = parser->next();
@@ -941,41 +941,20 @@ struct Worksheet_Parser
                 // assumption:
                 // - regex pattern match: [A-Z]{1,3}\d{1,7}
                 const char *iter = reference.c_str();
-                column = *iter - 'A' + 1; // 'A' == 1
+				int temp = *iter - 'A' + 1; // 'A' == 1
                 ++iter;
                 if (*iter >= 'A') // second char
                 {
-                    column *= 26; // LHS values are more significant
-                    column += *iter - 'A' + 1; // 'A' == 1
+                    temp *= 26; // LHS values are more significant
+                    temp += *iter - 'A' + 1; // 'A' == 1
                     ++iter;
                     if (*iter >= 'A') // third char
                     {
-                        column *= 26; // LHS values are more significant
-                        column += *iter - 'A' + 1; // 'A' == 1
+                        temp *= 26; // LHS values are more significant
+                        temp += *iter - 'A' + 1; // 'A' == 1
                     }
                 }
-            }
-
-            explicit Cell_Reference(const std::string &reference)
-            {
-                // only three characters allowed for the column
-                // assumption:
-                // - regex pattern match: [A-Z]{1,3}\d{1,7}
-                const char *iter = reference.c_str();
-                column = *iter - 'A' + 1; // 'A' == 1
-                ++iter;
-                if (*iter >= 'A') // second char
-                {
-                    column *= 26; // LHS values are more significant
-                    column += *iter - 'A' + 1; // 'A' == 1
-                    ++iter;
-                    if (*iter >= 'A') // third char
-                    {
-                        column *= 26; // LHS values are more significant
-                        column += *iter - 'A' + 1; // 'A' == 1
-                    }
-                }
-                row = static_cast<row_t>(strtoul(iter, nullptr, 10));
+                column = static_cast<column_t::index_t>(temp);
             }
 
             row_t row; // [1, 1048576]
@@ -1061,7 +1040,7 @@ void xlsx_consumer::read_worksheet_sheetdata()
         detail::cell_impl *ws_cell_impl = ws.cell(cell_reference(cell.ref.column, cell.ref.row)).d_;
         if (cell.style_index != -1)
         {
-            ws_cell_impl->format_ = target_.format(cell.style_index).d_;
+            ws_cell_impl->format_ = target_.format(static_cast<size_t>(cell.style_index)).d_;
         }
         if (cell.cell_metatdata_idx != -1)
         {
@@ -1071,7 +1050,7 @@ void xlsx_consumer::read_worksheet_sheetdata()
         {
             if (cell.formula_string[0] == '=')
             {
-                ws_cell_impl->formula_ = std::move(cell.formula_string.substr(1));
+                ws_cell_impl->formula_ = cell.formula_string.substr(1);
             }
             else
             {
@@ -3024,7 +3003,7 @@ void xlsx_consumer::read_drawings(worksheet ws, const path &part)
 
     auto sd = drawing::spreadsheet_drawing(parser());
 
-    for (const auto image_rel_id : sd.get_embed_ids())
+    for (const auto &image_rel_id : sd.get_embed_ids())
     {
         auto image_rel = std::find_if(images.begin(), images.end(),
             [&](const relationship &r) { return r.id() == image_rel_id; });
