@@ -744,7 +744,7 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
 namespace {
 struct Worksheet_Parser
 {
-    explicit Worksheet_Parser(xml::parser *parser, number_converter& converter)
+    explicit Worksheet_Parser(xml::parser *parser, number_converter &converter)
     {
         int level = 1; // nesting level
         int current_row = -1;
@@ -805,7 +805,7 @@ struct Worksheet_Parser
     // https://docs.microsoft.com/en-us/dotnet/api/documentformat.openxml.spreadsheet.cell?view=openxml-2.8.1
     struct Cell
     {
-        explicit Cell(int row_arg, xml::parser *parser)
+        explicit Cell(row_t row_arg, xml::parser *parser)
         {
             for (auto &attr : parser->attribute_map())
             {
@@ -929,12 +929,12 @@ struct Worksheet_Parser
         class Cell_Reference
         {
         public:
-            explicit Cell_Reference(int row_arg, int column_arg) noexcept
+            explicit Cell_Reference(row_t row_arg, column_t::index_t column_arg) noexcept
                 : row(row_arg), column(column_arg)
             {
             }
 
-            explicit Cell_Reference(int row_arg, const std::string &reference) noexcept
+            explicit Cell_Reference(row_t row_arg, const std::string &reference) noexcept
                 : row(row_arg)
             {
                 // only three characters allowed for the column
@@ -975,11 +975,11 @@ struct Worksheet_Parser
                         column += *iter - 'A' + 1; // 'A' == 1
                     }
                 }
-                row = strtol(iter, nullptr, 10);
+                row = static_cast<row_t>(strtoul(iter, nullptr, 10));
             }
 
-            int row; // [1, 1048576]
-            int column; // ["A", "ZZZ"] -> [1, 26^3] -> [1, 17576]
+            row_t row; // [1, 1048576]
+            column_t::index_t column; // ["A", "ZZZ"] -> [1, 26^3] -> [1, 17576]
         private:
         };
 
@@ -992,7 +992,7 @@ struct Worksheet_Parser
         Value_Type type = Value_Type::Number; // 't'
     };
     // <row> inside <sheetData> element
-    std::pair<row_properties, int> parse_row(const xml::parser::attribute_map_type &attributes, number_converter& converter)
+    std::pair<row_properties, int> parse_row(const xml::parser::attribute_map_type &attributes, number_converter &converter)
     {
         std::pair<row_properties, int> props;
         for (auto &attr : attributes)
@@ -1037,7 +1037,7 @@ struct Worksheet_Parser
         return props;
     }
 
-    std::vector<std::pair<row_properties, int>> parsed_rows;
+    std::vector<std::pair<row_properties, row_t>> parsed_rows;
     std::vector<Cell> parsed_cells;
 };
 } // namespace
