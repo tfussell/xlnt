@@ -126,6 +126,8 @@ struct number_converter
     double result;
 };
 
+#endif
+
 using style_id_pair = std::pair<xlnt::detail::style_impl, std::size_t>;
 
 /// <summary>
@@ -728,6 +730,11 @@ struct Worksheet_Parser
                 // ignore, whitespace formatting normally
                 break;
             }
+            case xml::parser::start_namespace_decl:
+            case xml::parser::start_attribute:
+            case xml::parser::end_namespace_decl:
+            case xml::parser::end_attribute:
+            case xml::parser::eof:
             default:
             {
                 assert(false);
@@ -754,11 +761,11 @@ struct Worksheet_Parser
                 }
                 else if (attr.first.name() == "cm")
                 {
-                    cell_metatdata_idx = strtol(attr.second.value.c_str(), nullptr, 10);
+                    cell_metatdata_idx = static_cast<int>(strtol(attr.second.value.c_str(), nullptr, 10));
                 }
                 else if (attr.first.name() == "s")
                 {
-                    style_index = strtol(attr.second.value.c_str(), nullptr, 10);
+                    style_index = static_cast<int>(strtol(attr.second.value.c_str(), nullptr, 10));
                 }
                 else if (attr.first.name() == "t")
                 {
@@ -806,6 +813,11 @@ struct Worksheet_Parser
                     // ignore whitespace formatting
                     break;
                 }
+                case xml::parser::start_namespace_decl:
+                case xml::parser::start_attribute:
+                case xml::parser::end_namespace_decl:
+                case xml::parser::end_attribute:
+                case xml::parser::eof:
                 default:
                 {
                     assert(false);
@@ -941,11 +953,11 @@ struct Worksheet_Parser
             }
             else if (attr.first.name() == "r")
             {
-                props.second = strtol(attr.second.value.c_str(), nullptr, 10);
+                props.second = static_cast<int>(strtol(attr.second.value.c_str(), nullptr, 10));
             }
             else if (attr.first.name() == "ht")
             {
-                props.first.height = strtod(attr.second.value.c_str(), nullptr);
+                props.first.height = strtod_c(attr.second.value.c_str(), nullptr);
             }
             else if (attr.first.name() == "customHeight")
             {
@@ -953,11 +965,11 @@ struct Worksheet_Parser
             }
             else if (attr.first.name() == "s")
             {
-                props.first.style = strtol(attr.second.value.c_str(), nullptr, 10);
+                props.first.style = strtoul(attr.second.value.c_str(), nullptr, 10);
             }
             else if (attr.first.name() == "dyDescent")
             {
-                props.first.dy_descent = strtod(attr.second.value.c_str(), nullptr);
+                props.first.dy_descent = strtod_c(attr.second.value.c_str(), nullptr);
             }
             else if (attr.first.name() == "spans")
             {
@@ -987,7 +999,7 @@ void xlsx_consumer::read_worksheet_sheetdata()
     }
     for (auto &cell : ws_parser.parsed_cells)
     {
-        detail::cell_impl* ws_cell_impl = ws.cell(cell_reference(cell.ref.column, cell.ref.row)).d_;
+        detail::cell_impl *ws_cell_impl = ws.cell(cell_reference(cell.ref.column, cell.ref.row)).d_;
         if (cell.style_index != -1)
         {
             ws_cell_impl->format_ = target_.format(cell.style_index).d_;
@@ -1019,7 +1031,7 @@ void xlsx_consumer::read_worksheet_sheetdata()
             }
             case Worksheet_Parser::Cell::Value_Type::Number:
             {
-                ws_cell_impl->value_numeric_ = strtod(cell.value.c_str(), nullptr);
+                ws_cell_impl->value_numeric_ = strtod_c(cell.value.c_str(), nullptr);
                 ws_cell_impl->type_ = cell::type::number;
                 break;
             }
