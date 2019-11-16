@@ -742,283 +742,303 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
 }
 
 namespace {
-struct Worksheet_Parser
+/// parsing assumptions used by the following functions
+/// - on entry, the start element for the element has been consumed by parser->next
+/// - on exit, the closing element has been consumed by parser->next
+/// using these assumptions, the following functions DO NOT use parser->peek (SLOW!!!)
+/// probable further gains from not building an attribute map and using the attribute events instead as the impl just iterates the map
+
+/// 'r' == cell reference e.g. 'A1'
+/// https://docs.microsoft.com/en-us/openspecs/office_standards/ms-oe376/db11a912-b1cb-4dff-b46d-9bedfd10cef0
+///
+/// a lightweight version of xlnt::cell_reference with no extre functionality (absolute/relative, ...)
+/// many thousands are created during parsing, so even minor overhead is noticable
+struct Cell_Reference
 {
-    explicit Worksheet_Parser(xml::parser *parser, number_converter &converter)
+    // not commonly used, added as the obvious ctor
+    explicit Cell_Reference(row_t row_arg, column_t::index_t column_arg) noexcept
+        : row(row_arg), column(column_arg)
     {
-        int level = 1; // nesting level
-        row_t current_row = 0;
-        while (level > 0)
+    }
+    // the common case. row # is already known during parsing (from parent <row> element)
+    // just need to evaluate the column
+    explicit Cell_Reference(row_t row_arg, const std::string &reference) noexcept
+        : row(row_arg)
+    {
+        // only three characters allowed for the column
+        // assumption:
+        // - regex pattern match: [A-Z]{1,3}\d{1,7}
+        const char *iter = reference.c_str();
+        int temp = *iter - 'A' + 1; // 'A' == 1
+        ++iter;
+        if (*iter >= 'A') // second char
         {
-            xml::parser::event_type e = parser->next();
-            switch (e)
+            temp *= 26; // LHS values are more significant
+            temp += *iter - 'A' + 1; // 'A' == 1
+            ++iter;
+            if (*iter >= 'A') // third char
             {
-            case xml::parser::start_element:
-            {
-                ++level;
-                switch (level)
-                {
-                case 2: // row
-                {
-                    parsed_rows.push_back(parse_row(parser->attribute_map(), converter));
-                    current_row = parsed_rows.back().second;
-                    break;
-                }
-                case 3: // cell
-                {
-                    parsed_cells.push_back(Cell(current_row, parser));
-                    --level;
-                    break;
-                }
-                default:
-                {
-                    parser->attribute_map();
-                    break;
-                }
-                }
-                break;
-            }
-            case xml::parser::end_element:
-            {
-                --level;
-                break;
-            }
-            case xml::parser::characters:
-            {
-                // ignore, whitespace formatting normally
-                break;
-            }
-            case xml::parser::start_namespace_decl:
-            case xml::parser::start_attribute:
-            case xml::parser::end_namespace_decl:
-            case xml::parser::end_attribute:
-            case xml::parser::eof:
-            default:
-            {
-                throw xlnt::exception("unexcpected XML parsing event");
-            }
+                temp *= 26; // LHS values are more significant
+                temp += *iter - 'A' + 1; // 'A' == 1
             }
         }
+        column = static_cast<column_t::index_t>(temp);
     }
 
-    // <c> inside <row> element
-    // https://docs.microsoft.com/en-us/dotnet/api/documentformat.openxml.spreadsheet.cell?view=openxml-2.8.1
-    struct Cell
-    {
-        explicit Cell(row_t row_arg, xml::parser *parser)
-        {
-            for (auto &attr : parser->attribute_map())
-            {
-                if (attr.first.name() == "r")
-                {
-                    ref = Cell_Reference(row_arg, attr.second.value);
-                }
-                else if (attr.first.name() == "ph")
-                {
-                    is_phonetic = is_true(attr.second.value);
-                }
-                else if (attr.first.name() == "cm")
-                {
-                    cell_metatdata_idx = static_cast<int>(strtol(attr.second.value.c_str(), nullptr, 10));
-                }
-                else if (attr.first.name() == "s")
-                {
-                    style_index = static_cast<int>(strtol(attr.second.value.c_str(), nullptr, 10));
-                }
-                else if (attr.first.name() == "t")
-                {
-                    type = from_string(attr.second.value);
-                }
-            }
-            int level = 1; // nesting level
-            while (level > 0)
-            {
-                xml::parser::event_type e = parser->next();
-                switch (e)
-                {
-                case xml::parser::start_element:
-                {
-                    ++level;
-                    while (parser->peek() != xml::parser::end_element)
-                    {
-                        xml::parser::event_type chars = parser->next();
-                        if (chars == xml::parser::characters)
-                        {
-                            if (parser->name() == "v" || parser->name() == "is")
-                            {
-                                value += std::move(parser->value());
-                            }
-                            else if (parser->name() == "f")
-                            {
-                                formula_string += std::move(parser->value());
-                            }
-                        }
-                        else
-                        {
-                            std::cerr << parser->name() << '\n';
-                            parser->attribute_map();
-                        }
-                    }
-                    break;
-                }
-                case xml::parser::end_element:
-                {
-                    --level;
-                    break;
-                }
-                case xml::parser::characters:
-                {
-                    // ignore whitespace formatting
-                    break;
-                }
-                case xml::parser::start_namespace_decl:
-                case xml::parser::start_attribute:
-                case xml::parser::end_namespace_decl:
-                case xml::parser::end_attribute:
-                case xml::parser::eof:
-                default:
-                {
-                    throw xlnt::exception("unexcpected XML parsing event");
-                }
-                }
-            }
-        }
+    row_t row; // range:[1, 1048576]
+    column_t::index_t column; // range:["A", "ZZZ"] -> [1, 26^3] -> [1, 17576]
+};
 
-        enum class Value_Type
-        {
-            Boolean,
-            Error,
-            Inline_String,
-            Number,
-            Shared_String,
-            Formula_String,
-        };
+// <c> inside <row> element
+// https://docs.microsoft.com/en-us/dotnet/api/documentformat.openxml.spreadsheet.cell?view=openxml-2.8.1
+struct Cell
+{
+    bool is_phonetic = false; // 'ph'
+    cell::type type = cell::type::number; // 't'
+    int cell_metatdata_idx = -1; // 'cm'
+    int style_index = -1; // 's'
+    Cell_Reference ref{0, 0}; // 'r'
+    std::string value; // <v> OR <is>
+    std::string formula_string; // <f>
+};
 
-        Value_Type from_string(const std::string &str)
-        {
-            if (str == "s")
-            {
-                return Value_Type::Shared_String;
-            }
-            else if (str == "n")
-            {
-                return Value_Type::Number;
-            }
-            else if (str == "b")
-            {
-                return Value_Type::Boolean;
-            }
-            else if (str == "e")
-            {
-                return Value_Type::Error;
-            }
-            else if (str == "inlineStr")
-            {
-                return Value_Type::Inline_String;
-            }
-            else if (str == "str")
-            {
-                return Value_Type::Formula_String;
-            }
-            return Value_Type::Shared_String;
-        }
-
-        /// 'r' == cell reference e.g. 'A1'
-        /// https://docs.microsoft.com/en-us/openspecs/office_standards/ms-oe376/db11a912-b1cb-4dff-b46d-9bedfd10cef0
-        ///
-        class Cell_Reference
-        {
-        public:
-            explicit Cell_Reference(row_t row_arg, column_t::index_t column_arg) noexcept
-                : row(row_arg), column(column_arg)
-            {
-            }
-
-            explicit Cell_Reference(row_t row_arg, const std::string &reference) noexcept
-                : row(row_arg)
-            {
-                // only three characters allowed for the column
-                // assumption:
-                // - regex pattern match: [A-Z]{1,3}\d{1,7}
-                const char *iter = reference.c_str();
-				int temp = *iter - 'A' + 1; // 'A' == 1
-                ++iter;
-                if (*iter >= 'A') // second char
-                {
-                    temp *= 26; // LHS values are more significant
-                    temp += *iter - 'A' + 1; // 'A' == 1
-                    ++iter;
-                    if (*iter >= 'A') // third char
-                    {
-                        temp *= 26; // LHS values are more significant
-                        temp += *iter - 'A' + 1; // 'A' == 1
-                    }
-                }
-                column = static_cast<column_t::index_t>(temp);
-            }
-
-            row_t row; // [1, 1048576]
-            column_t::index_t column; // ["A", "ZZZ"] -> [1, 26^3] -> [1, 17576]
-        private:
-        };
-
-        bool is_phonetic = false; // 'ph'
-        int cell_metatdata_idx = -1; // 'cm'
-        Cell_Reference ref{0, 0}; // 'r'
-        int style_index = -1; // 's'
-        std::string formula_string; // <f>
-        std::string value; // <v> OR <is>
-        Value_Type type = Value_Type::Number; // 't'
-    };
-    // <row> inside <sheetData> element
-    std::pair<row_properties, int> parse_row(const xml::parser::attribute_map_type &attributes, number_converter &converter)
-    {
-        std::pair<row_properties, int> props;
-        for (auto &attr : attributes)
-        {
-            if (attr.first.name() == "hidden")
-            {
-                props.first.hidden = is_true(attr.second.value);
-            }
-            else if (attr.first.name() == "customFormat")
-            {
-                props.first.custom_format = is_true(attr.second.value);
-            }
-            else if (attr.first.name() == "ph")
-            {
-                is_true(attr.second.value);
-            }
-            else if (attr.first.name() == "r")
-            {
-                props.second = static_cast<int>(strtol(attr.second.value.c_str(), nullptr, 10));
-            }
-            else if (attr.first.name() == "ht")
-            {
-                props.first.height = converter.stold(attr.second.value.c_str());
-            }
-            else if (attr.first.name() == "customHeight")
-            {
-                props.first.custom_height = is_true(attr.second.value.c_str());
-            }
-            else if (attr.first.name() == "s")
-            {
-                props.first.style = strtoul(attr.second.value.c_str(), nullptr, 10);
-            }
-            else if (attr.first.name() == "dyDescent")
-            {
-                props.first.dy_descent = converter.stold(attr.second.value.c_str());
-            }
-            else if (attr.first.name() == "spans")
-            {
-                props.first.spans = attr.second.value;
-            }
-        }
-        return props;
-    }
-
+// <sheetData> element
+struct Sheet_Data
+{
     std::vector<std::pair<row_properties, row_t>> parsed_rows;
     std::vector<Cell> parsed_cells;
 };
+
+cell::type type_from_string(const std::string &str)
+{
+    if (str == "s")
+    {
+        return cell::type::shared_string;
+    }
+    else if (str == "n")
+    {
+        return cell::type::number;
+    }
+    else if (str == "b")
+    {
+        return cell::type::boolean;
+    }
+    else if (str == "e")
+    {
+        return cell::type::error;
+    }
+    else if (str == "inlineStr")
+    {
+        return cell::type::inline_string;
+    }
+    else if (str == "str")
+    {
+        return cell::type::formula_string;
+    }
+    return cell::type::shared_string;
+}
+
+Cell parse_cell(row_t row_arg, xml::parser *parser)
+{
+    Cell c;
+    for (auto &attr : parser->attribute_map())
+    {
+        if (attr.first.name() == "r")
+        {
+            c.ref = Cell_Reference(row_arg, attr.second.value);
+        }
+        else if (attr.first.name() == "ph")
+        {
+            c.is_phonetic = is_true(attr.second.value);
+        }
+        else if (attr.first.name() == "cm")
+        {
+            c.cell_metatdata_idx = static_cast<int>(strtol(attr.second.value.c_str(), nullptr, 10));
+        }
+        else if (attr.first.name() == "s")
+        {
+            c.style_index = static_cast<int>(strtol(attr.second.value.c_str(), nullptr, 10));
+        }
+        else if (attr.first.name() == "t")
+        {
+            c.type = type_from_string(attr.second.value);
+        }
+    }
+    int level = 1; // nesting level
+        // 1 == <c>
+        // 2 == <v>/<is>/<f>
+        // exit loop at </c>
+    while (level > 0)
+    {
+        xml::parser::event_type e = parser->next();
+        switch (e)
+        {
+        case xml::parser::start_element:
+        {
+            ++level;
+            break;
+        }
+        case xml::parser::end_element:
+        {
+            --level;
+            break;
+        }
+        case xml::parser::characters:
+        {
+            // only want the characters inside one of the nested tags
+            // without this a lot of formatting whitespace can get added
+            if (level == 2)
+            {
+                // <v> -> numeric values
+                // <is> -> inline string
+                if (parser->name() == "v" || parser->name() == "is")
+                {
+                    c.value += std::move(parser->value());
+                }
+                // <f> formula
+                else if (parser->name() == "f")
+                {
+                    c.formula_string += std::move(parser->value());
+                }
+            }
+            break;
+        }
+        case xml::parser::start_namespace_decl:
+        case xml::parser::end_namespace_decl:
+        case xml::parser::start_attribute:
+        case xml::parser::end_attribute:
+        case xml::parser::eof:
+        default:
+        {
+            throw xlnt::exception("unexcpected XML parsing event");
+        }
+        }
+    }
+    return c;
+}
+
+// <row> inside <sheetData> element
+std::pair<row_properties, int> parse_row(xml::parser *parser, number_converter &converter, std::vector<Cell> &parsed_cells)
+{
+    std::pair<row_properties, int> props;
+    for (auto &attr : parser->attribute_map())
+    {
+        if (attr.first.name() == "hidden")
+        {
+            props.first.hidden = is_true(attr.second.value);
+        }
+        else if (attr.first.name() == "customFormat")
+        {
+            props.first.custom_format = is_true(attr.second.value);
+        }
+        else if (attr.first.name() == "ph")
+        {
+            is_true(attr.second.value);
+        }
+        else if (attr.first.name() == "r")
+        {
+            props.second = static_cast<int>(strtol(attr.second.value.c_str(), nullptr, 10));
+        }
+        else if (attr.first.name() == "ht")
+        {
+            props.first.height = converter.stold(attr.second.value.c_str());
+        }
+        else if (attr.first.name() == "customHeight")
+        {
+            props.first.custom_height = is_true(attr.second.value.c_str());
+        }
+        else if (attr.first.name() == "s")
+        {
+            props.first.style = strtoul(attr.second.value.c_str(), nullptr, 10);
+        }
+        else if (attr.first.name() == "dyDescent")
+        {
+            props.first.dy_descent = converter.stold(attr.second.value.c_str());
+        }
+        else if (attr.first.name() == "spans")
+        {
+            props.first.spans = attr.second.value;
+        }
+    }
+
+    int level = 1;
+    while (level > 0)
+    {
+        xml::parser::event_type e = parser->next();
+        switch (e)
+        {
+        case xml::parser::start_element:
+        {
+            parsed_cells.push_back(parse_cell(props.second, parser));
+            break;
+        }
+        case xml::parser::end_element:
+        {
+            --level;
+            break;
+        }
+        case xml::parser::characters:
+        {
+            // ignore whitespace
+            break;
+        }
+        case xml::parser::start_namespace_decl:
+        case xml::parser::start_attribute:
+        case xml::parser::end_namespace_decl:
+        case xml::parser::end_attribute:
+        case xml::parser::eof:
+        default:
+        {
+            throw xlnt::exception("unexcpected XML parsing event");
+        }
+        }
+    }
+    return props;
+}
+
+// <sheetData> inside <worksheet> element
+Sheet_Data parse_sheet_data(xml::parser *parser, number_converter &converter)
+{
+    Sheet_Data sheet_data;
+    int level = 1; // nesting level
+        // 1 == <sheetData>
+        // 2 == <row>
+
+    row_t current_row = 0;
+    while (level > 0)
+    {
+        xml::parser::event_type e = parser->next();
+        switch (e)
+        {
+        case xml::parser::start_element:
+        {
+            sheet_data.parsed_rows.push_back(parse_row(parser, converter, sheet_data.parsed_cells));
+            break;
+        }
+        case xml::parser::end_element:
+        {
+            --level;
+            break;
+        }
+        case xml::parser::characters:
+        {
+            // ignore, whitespace formatting normally
+            break;
+        }
+        case xml::parser::start_namespace_decl:
+        case xml::parser::start_attribute:
+        case xml::parser::end_namespace_decl:
+        case xml::parser::end_attribute:
+        case xml::parser::eof:
+        default:
+        {
+            throw xlnt::exception("unexcpected XML parsing event");
+        }
+        }
+    }
+    return sheet_data;
+}
+
 } // namespace
 
 void xlsx_consumer::read_worksheet_sheetdata()
@@ -1030,12 +1050,14 @@ void xlsx_consumer::read_worksheet_sheetdata()
         return;
     }
     number_converter converter;
-    Worksheet_Parser ws_parser(parser_, converter);
-    for (auto &row : ws_parser.parsed_rows)
+    Sheet_Data ws_data = parse_sheet_data(parser_, converter);
+    // NOTE: parse->construct are seperated here and could easily be threaded
+    // with a SPSC queue for what is likely to be an easy performance win
+    for (auto &row : ws_data.parsed_rows)
     {
         ws.row_properties(row.second) = std::move(row.first);
     }
-    for (auto &cell : ws_parser.parsed_cells)
+    for (Cell &cell : ws_data.parsed_cells)
     {
         detail::cell_impl *ws_cell_impl = ws.cell(cell_reference(cell.ref.column, cell.ref.row)).d_;
         if (cell.style_index != -1)
@@ -1048,53 +1070,41 @@ void xlsx_consumer::read_worksheet_sheetdata()
         ws_cell_impl->phonetics_visible_ = cell.is_phonetic;
         if (!cell.formula_string.empty())
         {
-            if (cell.formula_string[0] == '=')
-            {
-                ws_cell_impl->formula_ = cell.formula_string.substr(1);
-            }
-            else
-            {
-                ws_cell_impl->formula_ = std::move(cell.formula_string);
-            }
+            ws_cell_impl->formula_ = cell.formula_string[0] == '=' ? cell.formula_string.substr(1) : std::move(cell.formula_string);
         }
         if (!cell.value.empty())
         {
+            ws_cell_impl->type_ = cell.type;
             switch (cell.type)
             {
-            case Worksheet_Parser::Cell::Value_Type::Boolean:
+            case cell::type::boolean:
             {
                 ws_cell_impl->value_numeric_ = is_true(cell.value) ? 1.0 : 0.0;
-                ws_cell_impl->type_ = cell::type::boolean;
                 break;
             }
-            case Worksheet_Parser::Cell::Value_Type::Number:
+            case cell::type::number:
             {
                 ws_cell_impl->value_numeric_ = converter.stold(cell.value.c_str());
-                ws_cell_impl->type_ = cell::type::number;
                 break;
             }
-            case Worksheet_Parser::Cell::Value_Type::Shared_String:
+            case cell::type::shared_string:
             {
                 ws_cell_impl->value_numeric_ = static_cast<double>(strtol(cell.value.c_str(), nullptr, 10));
-                ws_cell_impl->type_ = cell::type::shared_string;
                 break;
             }
-            case Worksheet_Parser::Cell::Value_Type::Inline_String:
+            case cell::type::inline_string:
             {
                 ws_cell_impl->value_text_ = std::move(cell.value);
-                ws_cell_impl->type_ = cell::type::inline_string;
                 break;
             }
-            case Worksheet_Parser::Cell::Value_Type::Formula_String:
+            case cell::type::formula_string:
             {
                 ws_cell_impl->value_text_ = std::move(cell.value);
-                ws_cell_impl->type_ = cell::type::formula_string;
                 break;
             }
-            case Worksheet_Parser::Cell::Value_Type::Error:
+            case cell::type::error:
             {
                 ws_cell_impl->value_text_.plain_text(cell.value, false);
-                ws_cell_impl->type_ = cell::type::error;
                 break;
             }
             }
