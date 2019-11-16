@@ -795,7 +795,7 @@ struct Worksheet_Parser
             case xml::parser::eof:
             default:
             {
-                assert(false);
+                throw xlnt::exception("unexcpected XML parsing event");
             }
             }
         }
@@ -878,7 +878,7 @@ struct Worksheet_Parser
                 case xml::parser::eof:
                 default:
                 {
-                    assert(false);
+                    throw xlnt::exception("unexcpected XML parsing event");
                 }
                 }
             }
