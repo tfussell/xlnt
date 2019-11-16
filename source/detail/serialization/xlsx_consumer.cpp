@@ -129,16 +129,11 @@ _locale_t get_c_locale()
     return c_locale;
 }
 
-double strtod_c(const char *nptr, char **endptr)
-{
-    return _strtod_l(nptr, endptr, get_c_locale());
-}
-
 struct number_converter
 {
     double stold(const std::string &s)
     {
-        return strtod_c(s.c_str(), nullptr);
+        return _strtod_l(s.c_str(), nullptr, get_c_locale());
     }
 };
 
@@ -749,7 +744,7 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
 namespace {
 struct Worksheet_Parser
 {
-    explicit Worksheet_Parser(xml::parser *parser)
+    explicit Worksheet_Parser(xml::parser *parser, number_converter& converter)
     {
         int level = 1; // nesting level
         int current_row = -1;
@@ -765,7 +760,7 @@ struct Worksheet_Parser
                 {
                 case 2: // row
                 {
-                    parsed_rows.push_back(parse_row(parser->attribute_map()));
+                    parsed_rows.push_back(parse_row(parser->attribute_map(), converter));
                     current_row = parsed_rows.back().second;
                     break;
                 }
@@ -997,7 +992,7 @@ struct Worksheet_Parser
         Value_Type type = Value_Type::Number; // 't'
     };
     // <row> inside <sheetData> element
-    std::pair<row_properties, int> parse_row(const xml::parser::attribute_map_type &attributes)
+    std::pair<row_properties, int> parse_row(const xml::parser::attribute_map_type &attributes, number_converter& converter)
     {
         std::pair<row_properties, int> props;
         for (auto &attr : attributes)
@@ -1020,7 +1015,7 @@ struct Worksheet_Parser
             }
             else if (attr.first.name() == "ht")
             {
-                props.first.height = strtod_c(attr.second.value.c_str(), nullptr);
+                props.first.height = converter.stold(attr.second.value.c_str());
             }
             else if (attr.first.name() == "customHeight")
             {
@@ -1032,7 +1027,7 @@ struct Worksheet_Parser
             }
             else if (attr.first.name() == "dyDescent")
             {
-                props.first.dy_descent = strtod_c(attr.second.value.c_str(), nullptr);
+                props.first.dy_descent = converter.stold(attr.second.value.c_str());
             }
             else if (attr.first.name() == "spans")
             {
@@ -1055,7 +1050,8 @@ void xlsx_consumer::read_worksheet_sheetdata()
     {
         return;
     }
-    Worksheet_Parser ws_parser(parser_);
+    number_converter converter;
+    Worksheet_Parser ws_parser(parser_, converter);
     for (auto &row : ws_parser.parsed_rows)
     {
         ws.row_properties(row.second) = std::move(row.first);
@@ -1094,7 +1090,7 @@ void xlsx_consumer::read_worksheet_sheetdata()
             }
             case Worksheet_Parser::Cell::Value_Type::Number:
             {
-                ws_cell_impl->value_numeric_ = strtod_c(cell.value.c_str(), nullptr);
+                ws_cell_impl->value_numeric_ = converter.stold(cell.value.c_str());
                 ws_cell_impl->type_ = cell::type::number;
                 break;
             }
