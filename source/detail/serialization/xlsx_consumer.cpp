@@ -1048,8 +1048,6 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
 
 void xlsx_consumer::read_worksheet_sheetdata()
 {
-    auto ws = worksheet(current_worksheet_);
-
     if (stack_.back() != qn("spreadsheetml", "sheetData"))
     {
         return;
@@ -1060,11 +1058,15 @@ void xlsx_consumer::read_worksheet_sheetdata()
     // with a SPSC queue for what is likely to be an easy performance win
     for (auto &row : ws_data.parsed_rows)
     {
-        ws.row_properties(row.second) = std::move(row.first);
+        current_worksheet_->row_properties_.emplace(row.second, std::move(row.first));
     }
+    auto impl = detail::cell_impl();
     for (Cell &cell : ws_data.parsed_cells)
     {
-        detail::cell_impl *ws_cell_impl = ws.cell(cell_reference(cell.ref.column, cell.ref.row)).d_;
+        impl.parent_ = current_worksheet_;
+        impl.column_ = cell.ref.column;
+        impl.row_ = cell.ref.row;
+        detail::cell_impl *ws_cell_impl = &current_worksheet_->cell_map_.emplace(cell_reference(impl.column_, impl.row_), std::move(impl)).first->second;
         if (cell.style_index != -1)
         {
             ws_cell_impl->format_ = target_.format(static_cast<size_t>(cell.style_index)).d_;
