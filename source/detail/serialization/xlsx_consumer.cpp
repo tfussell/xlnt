@@ -116,84 +116,6 @@ bool is_true(const std::string &bool_string)
 #endif
 }
 
-// can find documentation for _strtod_l back to VS 2015
-// https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/strtod-strtod-l-wcstod-wcstod-l?view=vs-2015
-//
-#if defined(_MSC_VER) && _MSC_VER >= 1900
-
-#include <locale.h>
-#include <stdlib.h>
-
-// Cache locale object
-static int c_locale_initialized = 0;
-static _locale_t c_locale;
-
-_locale_t get_c_locale()
-{
-    if (!c_locale_initialized)
-    {
-        c_locale_initialized = 1;
-        c_locale = _create_locale(LC_ALL, "C");
-    }
-    return c_locale;
-}
-
-struct number_converter
-{
-    double stold(const std::string &s)
-    {
-        return _strtod_l(s.c_str(), nullptr, get_c_locale());
-    }
-};
-
-#else
-
-// according to various sources, something like the below *would* work for POSIX systems
-// however due to uncertainty on whether it will actually work it is not used
-//#include <stdlib.h>
-//#include <xlocale.h>
-//
-//// Cache locale object
-//static int c_locale_initialized = 0;
-//static locale_t c_locale;
-//
-//locale_t get_c_locale()
-//{
-//    if (!c_locale_initialized)
-//    {
-//        c_locale_initialized = 1;
-//        c_locale = newlocale(LC_ALL_MASK, "C", NULL);
-//    }
-//    return c_locale;
-//}
-//
-//double strtod_c(const char *nptr, char **endptr)
-//{
-//    return strtod_l(nptr, endptr, get_c_locale());
-//}
-
-// add specialisations whenever possible
-// in the spreadsheet-load benchmark, strtod is roughly 10% faster
-struct number_converter
-{
-    number_converter()
-    {
-        stream.imbue(std::locale("C"));
-    }
-
-    double stold(const std::string &s)
-    {
-        stream.str(s);
-        stream.clear();
-        stream >> result;
-        return result;
-    }
-
-    std::istringstream stream;
-    double result;
-};
-
-#endif
 
 using style_id_pair = std::pair<xlnt::detail::style_impl, std::size_t>;
 
@@ -388,14 +310,14 @@ Cell parse_cell(xlnt::row_t row_arg, xml::parser *parser)
 }
 
 // <row> inside <sheetData> element
-std::pair<xlnt::row_properties, int> parse_row(xml::parser *parser, number_converter &converter, std::vector<Cell> &parsed_cells)
+std::pair<xlnt::row_properties, int> parse_row(xml::parser *parser, xlnt::detail::number_converter &converter, std::vector<Cell> &parsed_cells)
 {
     std::pair<xlnt::row_properties, int> props;
     for (auto &attr : parser->attribute_map())
     {
         if (string_equal(attr.first.name(), "dyDescent"))
         {
-            props.first.dy_descent = converter.stold(attr.second.value.c_str());
+            props.first.dy_descent = converter.stold(attr.second.value);
         }
         else if (string_equal(attr.first.name(), "spans"))
         {
@@ -403,7 +325,7 @@ std::pair<xlnt::row_properties, int> parse_row(xml::parser *parser, number_conve
         }
         else if (string_equal(attr.first.name(), "ht"))
         {
-            props.first.height = converter.stold(attr.second.value.c_str());
+            props.first.height = converter.stold(attr.second.value);
         }
         else if (string_equal(attr.first.name(), "s"))
         {
@@ -467,7 +389,7 @@ std::pair<xlnt::row_properties, int> parse_row(xml::parser *parser, number_conve
 }
 
 // <sheetData> inside <worksheet> element
-Sheet_Data parse_sheet_data(xml::parser *parser, number_converter &converter)
+Sheet_Data parse_sheet_data(xml::parser *parser, xlnt::detail::number_converter &converter)
 {
     Sheet_Data sheet_data;
     int level = 1; // nesting level
@@ -1091,7 +1013,7 @@ void xlsx_consumer::read_worksheet_sheetdata()
             }
             case cell::type::number:
             {
-                ws_cell_impl->value_numeric_ = converter.stold(cell.value.c_str());
+                ws_cell_impl->value_numeric_ = converter.stold(cell.value);
                 break;
             }
             case cell::type::shared_string:

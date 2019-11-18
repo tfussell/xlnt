@@ -28,6 +28,7 @@
 #include <limits>
 #include <sstream>
 #include <type_traits>
+#include <cassert>
 
 namespace xlnt {
 namespace detail {
@@ -114,6 +115,47 @@ bool float_equals(const LNumber &lhs, const RNumber &rhs,
                                common_t{1}); // clamp
     return ((lhs + scaled_fuzz) >= rhs) && ((rhs + scaled_fuzz) >= lhs);
 }
+
+struct number_converter
+{
+    explicit number_converter()
+        : should_convert_to_comma(std::use_facet<std::numpunct<char>>(std::locale{}).decimal_point() == ',')
+    {
+    }
+
+    double stold(std::string &s) const noexcept
+    {
+        assert(!s.empty());
+        if (should_convert_to_comma)
+        {
+            auto decimal_pt = std::find(s.begin(), s.end(), '.');
+            if (decimal_pt != s.end())
+            {
+                *decimal_pt = ',';
+            }
+        }
+        return strtod(s.c_str(), nullptr);
+    }
+
+    double stold(const std::string &s) const
+    {
+        assert(!s.empty());
+        if (!should_convert_to_comma)
+        {
+            return strtod(s.c_str(), nullptr);
+        }
+        std::string copy(s);
+        auto decimal_pt = std::find(copy.begin(), copy.end(), '.');
+        if (decimal_pt != s.end())
+        {
+            *decimal_pt = ',';
+        }
+        return strtod(copy.c_str(), nullptr);
+    }
+
+private:
+    bool should_convert_to_comma = false;
+};
 
 } // namespace detail
 } // namespace xlnt
