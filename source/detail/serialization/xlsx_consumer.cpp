@@ -51,7 +51,7 @@ namespace {
 template <size_t N>
 inline bool string_arr_loop_equal(const std::string &lhs, const char (&rhs)[N])
 {
-    for (int i = 0; i < N - 1; ++i)
+    for (size_t i = 0; i < N - 1; ++i)
     {
         if (lhs[i] != rhs[i])
         {
@@ -115,7 +115,6 @@ bool is_true(const std::string &bool_string)
     return false;
 #endif
 }
-
 
 using style_id_pair = std::pair<xlnt::detail::style_impl, std::size_t>;
 
@@ -1008,6 +1007,7 @@ void xlsx_consumer::read_worksheet_sheetdata()
                 ws_cell_impl->value_numeric_ = is_true(cell.value) ? 1.0 : 0.0;
                 break;
             }
+            case cell::type::empty:
             case cell::type::number:
             {
                 ws_cell_impl->value_numeric_ = converter_.stold(cell.value);
