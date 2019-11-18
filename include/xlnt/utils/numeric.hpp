@@ -146,7 +146,7 @@ struct number_converter
         }
         std::string copy(s);
         auto decimal_pt = std::find(copy.begin(), copy.end(), '.');
-        if (decimal_pt != s.end())
+        if (decimal_pt != copy.end())
         {
             *decimal_pt = ',';
         }
