@@ -491,7 +491,7 @@ cell xlsx_consumer::read_cell()
 
         if (parser().attribute_present("ht"))
         {
-            row_properties.height = parser().attribute<double>("ht");
+            row_properties.height = converter_.stold(parser().attribute("ht"));
         }
 
         if (parser().attribute_present("customHeight"))
@@ -506,7 +506,7 @@ cell xlsx_consumer::read_cell()
 
         if (parser().attribute_present(qn("x14ac", "dyDescent")))
         {
-            row_properties.dy_descent = parser().attribute<double>(qn("x14ac", "dyDescent"));
+            row_properties.dy_descent = converter_.stold(parser().attribute(qn("x14ac", "dyDescent")));
         }
 
         if (parser().attribute_present("spans"))
@@ -873,23 +873,23 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
             if (parser().attribute_present("baseColWidth"))
             {
                 ws.d_->format_properties_.base_col_width =
-                    parser().attribute<double>("baseColWidth");
+                    converter_.stold(parser().attribute("baseColWidth"));
             }
             if (parser().attribute_present("defaultColWidth"))
             {
                 ws.d_->format_properties_.default_column_width =
-                    parser().attribute<double>("defaultColWidth");
+                    converter_.stold(parser().attribute("defaultColWidth"));
             }
             if (parser().attribute_present("defaultRowHeight"))
             {
                 ws.d_->format_properties_.default_row_height =
-                    parser().attribute<double>("defaultRowHeight");
+                    converter_.stold(parser().attribute("defaultRowHeight"));
             }
 
             if (parser().attribute_present(qn("x14ac", "dyDescent")))
             {
                 ws.d_->format_properties_.dy_descent =
-                    parser().attribute<double>(qn("x14ac", "dyDescent"));
+                    converter_.stold(parser().attribute(qn("x14ac", "dyDescent")));
             }
 
             skip_attributes();
@@ -906,10 +906,10 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
                 auto max = static_cast<column_t::index_t>(std::stoull(parser().attribute("max")));
 
                 // avoid uninitialised warnings in GCC by using a lambda to make the conditional initialisation
-                optional<double> width = [](xml::parser &p) -> xlnt::optional<double> {
+                optional<double> width = [this](xml::parser &p) -> xlnt::optional<double> {
                     if (p.attribute_present("width"))
                     {
-                        return (p.attribute<double>("width") * 7 - 5) / 7;
+                        return (converter_.stold(p.attribute("width")) * 7 - 5) / 7;
                     }
                     return xlnt::optional<double>();
                 }(parser());
@@ -2322,7 +2322,7 @@ void xlsx_consumer::read_stylesheet()
                     while (in_element(qn("spreadsheetml", "gradientFill")))
                     {
                         expect_start_element(qn("spreadsheetml", "stop"), xml::content::complex);
-                        auto position = parser().attribute<double>("position");
+                        auto position = converter_.stold(parser().attribute("position"));
                         expect_start_element(qn("spreadsheetml", "color"), xml::content::complex);
                         auto color = read_color();
                         expect_end_element(qn("spreadsheetml", "color"));
@@ -2370,7 +2370,7 @@ void xlsx_consumer::read_stylesheet()
 
                     if (font_property_element == qn("spreadsheetml", "sz"))
                     {
-                        new_font.size(parser().attribute<double>("val"));
+                        new_font.size(converter_.stold(parser().attribute("val")));
                     }
                     else if (font_property_element == qn("spreadsheetml", "name"))
                     {
@@ -3174,7 +3174,7 @@ rich_text xlsx_consumer::read_rich_text(const xml::qname &parent)
 
                         if (current_run_property_element == xml::qname(xmlns, "sz"))
                         {
-                            run.second.get().size(parser().attribute<double>("val"));
+                            run.second.get().size(converter_.stold(parser().attribute("val")));
                         }
                         else if (current_run_property_element == xml::qname(xmlns, "rFont"))
                         {
@@ -3312,7 +3312,7 @@ xlnt::color xlsx_consumer::read_color()
 
     if (parser().attribute_present("tint"))
     {
-        result.tint(parser().attribute<double>("tint"));
+        result.tint(converter_.stold(parser().attribute("tint")));
     }
 
     return result;
