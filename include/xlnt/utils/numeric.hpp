@@ -31,6 +31,7 @@
 
 namespace xlnt {
 namespace detail {
+
 /// <summary>
 /// Takes in any number and outputs a string form of that number which will
 /// serialise and deserialise without loss of precision
@@ -84,8 +85,7 @@ constexpr typename std::common_type<NumberL, NumberR>::type min(NumberL lval, Nu
 /// </summary>
 template <typename EpsilonType = float, // the type to extract epsilon from
     typename LNumber, typename RNumber> // parameter types (deduced)
-bool
-float_equals(const LNumber &lhs, const RNumber &rhs,
+bool float_equals(const LNumber &lhs, const RNumber &rhs,
     int epsilon_scale = 20) // scale the "fuzzy" equality. Higher value gives a more tolerant comparison
 {
     // a type that lhs and rhs can agree on
@@ -111,7 +111,7 @@ float_equals(const LNumber &lhs, const RNumber &rhs,
     // additionally, a scale factor is applied.
     common_t scaled_fuzz = epsilon_scale * epsilon * max(max(xlnt::detail::abs<common_t>(lhs),
                                                              xlnt::detail::abs<common_t>(rhs)), // |max| of parameters.
-                                                         common_t{1}); // clamp
+                               common_t{1}); // clamp
     return ((lhs + scaled_fuzz) >= rhs) && ((rhs + scaled_fuzz) >= lhs);
 }
 

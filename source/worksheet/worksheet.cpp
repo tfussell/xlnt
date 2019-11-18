@@ -46,7 +46,7 @@
 #include <xlnt/worksheet/column_properties.hpp>
 #include <detail/constants.hpp>
 #include <detail/default_case.hpp>
-#include <detail/numeric_utils.hpp>
+#include <xlnt/utils/numeric.hpp>
 #include <detail/unicode.hpp>
 #include <detail/implementations/cell_impl.hpp>
 #include <detail/implementations/workbook_impl.hpp>
