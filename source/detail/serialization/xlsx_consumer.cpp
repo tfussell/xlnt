@@ -598,8 +598,6 @@ cell xlsx_consumer::read_cell()
         cell.formula(formula_value_string);
     }
 
-    number_converter converter;
-
     if (has_value)
     {
         if (type == "str")
@@ -614,7 +612,7 @@ cell xlsx_consumer::read_cell()
         }
         else if (type == "s")
         {
-            cell.d_->value_numeric_ = converter.stold(value_string);
+            cell.d_->value_numeric_ = converter_.stold(value_string);
             cell.data_type(cell::type::shared_string);
         }
         else if (type == "b") // boolean
@@ -623,7 +621,7 @@ cell xlsx_consumer::read_cell()
         }
         else if (type == "n") // numeric
         {
-            cell.value(converter.stold(value_string));
+            cell.value(converter_.stold(value_string));
         }
         else if (!value_string.empty() && value_string[0] == '#')
         {
@@ -974,8 +972,7 @@ void xlsx_consumer::read_worksheet_sheetdata()
     {
         return;
     }
-    number_converter converter;
-    Sheet_Data ws_data = parse_sheet_data(parser_, converter);
+    Sheet_Data ws_data = parse_sheet_data(parser_, converter_);
     // NOTE: parse->construct are seperated here and could easily be threaded
     // with a SPSC queue for what is likely to be an easy performance win
     for (auto &row : ws_data.parsed_rows)
@@ -1013,7 +1010,7 @@ void xlsx_consumer::read_worksheet_sheetdata()
             }
             case cell::type::number:
             {
-                ws_cell_impl->value_numeric_ = converter.stold(cell.value);
+                ws_cell_impl->value_numeric_ = converter_.stold(cell.value);
                 break;
             }
             case cell::type::shared_string:
@@ -1213,12 +1210,12 @@ worksheet xlsx_consumer::read_worksheet_end(const std::string &rel_id)
         {
             page_margins margins;
 
-            margins.top(parser().attribute<double>("top"));
-            margins.bottom(parser().attribute<double>("bottom"));
-            margins.left(parser().attribute<double>("left"));
-            margins.right(parser().attribute<double>("right"));
-            margins.header(parser().attribute<double>("header"));
-            margins.footer(parser().attribute<double>("footer"));
+            margins.top(converter_.stold(parser().attribute("top")));
+            margins.bottom(converter_.stold(parser().attribute("bottom")));
+            margins.left(converter_.stold(parser().attribute("left")));
+            margins.right(converter_.stold(parser().attribute("right")));
+            margins.header(converter_.stold(parser().attribute("header")));
+            margins.footer(converter_.stold(parser().attribute("footer")));
 
             ws.page_margins(margins);
         }
