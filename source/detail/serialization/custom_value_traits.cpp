@@ -347,11 +347,11 @@ std::string to_string(orientation orientation)
 {
     switch (orientation)
     {
-      case xlnt::orientation::default_orientation:
+    case xlnt::orientation::default_orientation:
         return "default";
-      case xlnt::orientation::landscape:
+    case xlnt::orientation::landscape:
         return "landscape";
-      case xlnt::orientation::portrait:
+    case xlnt::orientation::portrait:
         return "portrait";
     }
     default_case("default");
