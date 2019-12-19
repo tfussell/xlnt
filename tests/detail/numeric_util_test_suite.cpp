@@ -21,7 +21,7 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#include "../../source/detail/numeric_utils.hpp"
+#include <xlnt/utils/numeric.hpp>
 #include <helpers/test_suite.hpp>
 
 class numeric_test_suite : public test_suite

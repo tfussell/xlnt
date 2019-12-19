@@ -25,7 +25,7 @@
 
 #include "xlnt/xlnt_config.hpp"
 #include "xlnt/utils/exceptions.hpp"
-#include "../source/detail/numeric_utils.hpp"
+#include "xlnt/utils/numeric.hpp"
 #include <type_traits>
 
 namespace xlnt {

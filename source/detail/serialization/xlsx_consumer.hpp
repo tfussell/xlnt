@@ -34,6 +34,7 @@
 
 #include <detail/external/include_libstudxml.hpp>
 #include <detail/serialization/zstream.hpp>
+#include <xlnt/utils/numeric.hpp>
 
 namespace xlnt {
 
@@ -409,6 +410,7 @@ private:
     detail::cell_impl *current_cell_;
 
     detail::worksheet_impl *current_worksheet_;
+    number_converter converter_;
 };
 
 } // namespace detail

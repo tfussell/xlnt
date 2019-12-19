@@ -33,10 +33,10 @@
 #include <detail/serialization/vector_streambuf.hpp>
 #include <detail/serialization/xlsx_producer.hpp>
 #include <detail/serialization/zstream.hpp>
-#include <detail/numeric_utils.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/hyperlink.hpp>
 #include <xlnt/packaging/manifest.hpp>
+#include <xlnt/utils/numeric.hpp>
 #include <xlnt/utils/path.hpp>
 #include <xlnt/utils/scoped_enum_hash.hpp>
 #include <xlnt/workbook/workbook.hpp>

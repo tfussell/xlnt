@@ -90,6 +90,7 @@ public:
         register_test(test_round_trip_rw_encrypted_numbers);
         register_test(test_streaming_read);
         register_test(test_streaming_write);
+        register_test(test_load_save_german_locale);
     }
 
     bool workbook_matches_file(xlnt::workbook &wb, const xlnt::path &file)
@@ -707,6 +708,13 @@ public:
         auto c3 = writer.add_cell("C3");
         b2.value("should not change");
         c3.value("C3!");
+    }
+
+    void test_load_save_german_locale()
+    {
+       /* std::locale current(std::locale::global(std::locale("de-DE")));
+        test_round_trip_rw_custom_heights_widths();
+        std::locale::global(current);*/
     }
 };
 static serialization_test_suite x;

@@ -28,9 +28,12 @@
 #include <limits>
 #include <sstream>
 #include <type_traits>
+#include <cassert>
+#include <algorithm>
 
 namespace xlnt {
 namespace detail {
+
 /// <summary>
 /// Takes in any number and outputs a string form of that number which will
 /// serialise and deserialise without loss of precision
@@ -84,8 +87,7 @@ constexpr typename std::common_type<NumberL, NumberR>::type min(NumberL lval, Nu
 /// </summary>
 template <typename EpsilonType = float, // the type to extract epsilon from
     typename LNumber, typename RNumber> // parameter types (deduced)
-bool
-float_equals(const LNumber &lhs, const RNumber &rhs,
+bool float_equals(const LNumber &lhs, const RNumber &rhs,
     int epsilon_scale = 20) // scale the "fuzzy" equality. Higher value gives a more tolerant comparison
 {
     // a type that lhs and rhs can agree on
@@ -111,9 +113,50 @@ float_equals(const LNumber &lhs, const RNumber &rhs,
     // additionally, a scale factor is applied.
     common_t scaled_fuzz = epsilon_scale * epsilon * max(max(xlnt::detail::abs<common_t>(lhs),
                                                              xlnt::detail::abs<common_t>(rhs)), // |max| of parameters.
-                                                         common_t{1}); // clamp
+                               common_t{1}); // clamp
     return ((lhs + scaled_fuzz) >= rhs) && ((rhs + scaled_fuzz) >= lhs);
 }
+
+struct number_converter
+{
+    explicit number_converter()
+        : should_convert_to_comma(std::use_facet<std::numpunct<char>>(std::locale{}).decimal_point() == ',')
+    {
+    }
+
+    double stold(std::string &s) const noexcept
+    {
+        assert(!s.empty());
+        if (should_convert_to_comma)
+        {
+            auto decimal_pt = std::find(s.begin(), s.end(), '.');
+            if (decimal_pt != s.end())
+            {
+                *decimal_pt = ',';
+            }
+        }
+        return strtod(s.c_str(), nullptr);
+    }
+
+    double stold(const std::string &s) const
+    {
+        assert(!s.empty());
+        if (!should_convert_to_comma)
+        {
+            return strtod(s.c_str(), nullptr);
+        }
+        std::string copy(s);
+        auto decimal_pt = std::find(copy.begin(), copy.end(), '.');
+        if (decimal_pt != copy.end())
+        {
+            *decimal_pt = ',';
+        }
+        return strtod(copy.c_str(), nullptr);
+    }
+
+private:
+    bool should_convert_to_comma = false;
+};
 
 } // namespace detail
 } // namespace xlnt

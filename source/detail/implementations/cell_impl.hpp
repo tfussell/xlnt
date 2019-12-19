@@ -33,7 +33,7 @@
 #include <xlnt/utils/optional.hpp>
 #include <detail/implementations/format_impl.hpp>
 #include <detail/implementations/hyperlink_impl.hpp>
-#include "../numeric_utils.hpp"
+//#include "../numeric_utils.hpp"
 
 namespace xlnt {
 namespace detail {

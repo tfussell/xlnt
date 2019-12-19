@@ -25,7 +25,7 @@
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/utils/optional.hpp>
-#include "../source/detail/numeric_utils.hpp"
+#include <xlnt/utils/numeric.hpp>
 
 namespace xlnt {
 
