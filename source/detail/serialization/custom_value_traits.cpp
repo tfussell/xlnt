@@ -343,15 +343,15 @@ std::string to_string(pane_state state)
     default_case("frozen");
 }
 
-std::string to_string(orientation orientation)
+std::string to_string(orientation orient)
 {
-    switch (orientation)
+    switch (orient)
     {
-    case orientation::default_orientation:
+    case xlnt::orientation::default_orientation:
         return "default";
-    case orientation::landscape:
+    case xlnt::orientation::landscape:
         return "landscape";
-    case orientation::portrait:
+    case xlnt::orientation::portrait:
         return "portrait";
     }
     default_case("default");

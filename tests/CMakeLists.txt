@@ -15,6 +15,8 @@ if(STATIC_CRT)
 endif()
 
 file(GLOB CELL_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/cell/*.cpp)
+file(GLOB DRAWING_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/drawing/*.cpp)
+file(GLOB DETAIL_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/detail/*.cpp)
 file(GLOB PACKAGING_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/packaging/*.cpp)
 file(GLOB STYLES_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/styles/*.cpp)
 file(GLOB UTILS_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/utils/*.cpp)
@@ -23,6 +25,8 @@ file(GLOB WORKSHEET_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/worksheet/*.cpp)
 
 set(TESTS
   ${CELL_TESTS}
+  ${DRAWING_TESTS}
+  ${DETAIL_TESTS}
   ${PACKAGING_TESTS}
   ${STYLES_TESTS}
   ${UTILS_TESTS}
@@ -59,6 +63,7 @@ endif()
 source_group(helpers FILES ${HELPERS})
 source_group(runner FILES ${RUNNER})
 source_group(tests\\cell FILES ${CELL_TESTS})
+source_group(tests\\detail FILES ${DETAIL_TESTS})
 source_group(tests\\packaging FILES ${PACKAGING_TESTS})
 source_group(tests\\serialization FILES ${SERIALIZATION_TESTS})
 source_group(tests\\styles FILES ${STYLES_TESTS})
@@ -73,3 +78,6 @@ if(MSVC AND NOT STATIC)
     $<TARGET_FILE:xlnt>
     $<TARGET_FILE_DIR:xlnt.test>)
 endif()
+
+# Use add_test() for CTest support
+add_test(NAME xlnt_test COMMAND xlnt.test)

@@ -1,5 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
-// Copyright (c) 2010-2015 openpyxl
+// Copyright (c) 2018
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,23 +21,39 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#include <xlnt/worksheet/worksheet.hpp>
+#pragma once
 
-#include <detail/implementations/cell_impl.hpp>
+#include <string>
+#include <vector>
+#include <xlnt/xlnt_config.hpp>
 
-namespace xlnt {
-namespace detail {
-
-cell_impl::cell_impl()
-    : type_(cell_type::empty),
-      parent_(nullptr),
-      column_(1),
-      row_(1),
-      is_merged_(false),
-      phonetics_visible_(false),
-      value_numeric_(0)
-{
+namespace xml {
+    class parser;
+    class serializer;
 }
 
-} // namespace detail
+namespace xlnt {
+
+class worksheet;
+
+namespace drawing {
+
+/// <summary>
+/// The spreadsheet_drawing class encapsulates the information
+/// captured from objects within the spreadsheetDrawing schema.
+/// </summary>
+class XLNT_API spreadsheet_drawing
+{
+public:
+    spreadsheet_drawing(xml::parser &parser);
+    void serialize(xml::serializer &serializer);
+
+    std::vector<std::string> get_embed_ids();
+private:
+	std::string serialized_value_;
+    std::vector<std::string> embed_ids_;
+};
+
+} // namespace drawing
 } // namespace xlnt
+

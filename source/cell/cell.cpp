@@ -56,6 +56,7 @@
 #include <xlnt/worksheet/column_properties.hpp>
 #include <xlnt/worksheet/row_properties.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
+#include <xlnt/worksheet/phonetic_pr.hpp>
 
 namespace {
 
@@ -198,7 +199,7 @@ cell::cell(detail::cell_impl *d)
 
 bool cell::garbage_collectible() const
 {
-    return !(has_value() || is_merged() || has_formula() || has_format() || has_hyperlink());
+    return !(has_value() || is_merged() || phonetics_visible() || has_formula() || has_format() || has_hyperlink());
 }
 
 void cell::value(std::nullptr_t)
@@ -329,6 +330,16 @@ bool cell::is_merged() const
     return d_->is_merged_;
 }
 
+bool cell::phonetics_visible() const
+{
+    return d_->phonetics_visible_;
+}
+
+void cell::show_phonetics(bool phonetics)
+{
+    d_->phonetics_visible_ = phonetics;
+}
+
 bool cell::is_date() const
 {
     return data_type() == type::number
@@ -360,7 +371,7 @@ hyperlink cell::hyperlink() const
 
 void cell::hyperlink(const std::string &url, const std::string &display)
 {
-    if (url.empty() || std::find(url.begin(), url.end(), ':') == url.end())
+    if (url.empty())
     {
         throw invalid_parameter();
     }
@@ -846,6 +857,12 @@ void cell::clear_style()
 void cell::style(const class style &new_style)
 {
     auto new_format = has_format() ? format() : workbook().create_format();
+
+    new_format.border(new_style.border());
+    new_format.fill(new_style.fill());
+    new_format.font(new_style.font());
+    new_format.number_format(new_style.number_format());
+
     format(new_format.style(new_style));
 }
 

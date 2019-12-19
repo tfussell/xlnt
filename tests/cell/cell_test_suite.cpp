@@ -82,6 +82,7 @@ public:
         register_test(test_hyperlink);
         register_test(test_comment);
         register_test(test_copy_and_compare);
+        register_test(test_cell_phonetic_properties);
     }
 
 private:
@@ -687,7 +688,6 @@ private:
 
         xlnt_assert(!cell.has_hyperlink());
         xlnt_assert_throws(cell.hyperlink(), xlnt::invalid_attribute);
-        xlnt_assert_throws(cell.hyperlink("notaurl"), xlnt::invalid_parameter);
         xlnt_assert_throws(cell.hyperlink(""), xlnt::invalid_parameter);
         // link without optional display
         const std::string link1("http://example.com");
@@ -707,6 +707,13 @@ private:
         xlnt_assert_equals(cell.hyperlink().url(), link2);
         xlnt_assert_equals(cell.hyperlink().relationship().target().to_string(), link2);
         xlnt_assert_equals(cell.hyperlink().display(), display_txt);
+        // relative (local) url
+        const std::string local("../test_local");
+        cell.hyperlink(local);
+        xlnt_assert(cell.has_hyperlink());
+        xlnt_assert(cell.hyperlink().external());
+        xlnt_assert_equals(cell.hyperlink().url(), local);
+        xlnt_assert_equals(cell.hyperlink().relationship().target().to_string(), local);
         // value
         int cell_test_val = 123;
         cell.value(cell_test_val);
@@ -804,6 +811,19 @@ private:
         // assign
         cell3 = cell2;
         xlnt_assert_equals(cell2, cell3);
+    }
+
+    void test_cell_phonetic_properties()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.active_sheet();
+        auto cell1 = ws.cell("A1");
+
+        xlnt_assert_equals(cell1.phonetics_visible(), false);
+        cell1.show_phonetics(true);
+        xlnt_assert_equals(cell1.phonetics_visible(), true);
+        cell1.show_phonetics(false);
+        xlnt_assert_equals(cell1.phonetics_visible(), false);
     }
 };
 

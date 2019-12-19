@@ -50,7 +50,6 @@ class cell;
 class cell_style;
 class color;
 class const_worksheet_iterator;
-class drawing;
 class fill;
 class font;
 class format;

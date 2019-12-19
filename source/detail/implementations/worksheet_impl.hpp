@@ -27,6 +27,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include <xlnt/drawing/spreadsheet_drawing.hpp>
 #include <xlnt/packaging/ext_list.hpp>
 #include <xlnt/workbook/named_range.hpp>
 #include <xlnt/worksheet/column_properties.hpp>
@@ -157,6 +158,9 @@ struct worksheet_impl
     optional<sheet_pr> sheet_properties_;
 
     optional<ext_list> extension_list_;
+
+    std::string drawing_rel_id_;
+    optional<drawing::spreadsheet_drawing> drawing_;
 };
 
 } // namespace detail

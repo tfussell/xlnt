@@ -121,86 +121,65 @@ private:
     {
         auto bytes_read = std::streamsize(0);
 
-        if (entry_.size < document_.header_.threshold)
-        {
-            const auto chain = document_.follow_chain(entry_.start, document_.ssat_);
-            auto current_sector = chain[position_ / document_.short_sector_size()];
-            auto remaining = std::min(std::size_t(entry_.size) - position_, std::size_t(count));
+        const auto sector_chain = short_stream() ? document_.ssat_ : document_.sat_;
+        const auto chain = document_.follow_chain(entry_.start, sector_chain);
+        const auto sector_size = short_stream() ? document_.short_sector_size() : document_.sector_size();
+        auto current_sector = chain[position_ / sector_size];
+        auto remaining = std::min(std::size_t(entry_.size) - position_, std::size_t(count));
 
-            while (remaining)
+        while (remaining)
+        {
+            if (current_sector_.empty() || chain[position_ / sector_size] != current_sector)
             {
-                if (current_sector_.empty() || chain[position_ / document_.short_sector_size()] != current_sector)
+                current_sector = chain[position_ / sector_size];
+                sector_writer_.reset();
+                if (short_stream())
                 {
-                    current_sector = chain[position_ / document_.short_sector_size()];
-                    sector_writer_.reset();
                     document_.read_short_sector(current_sector, sector_writer_);
                 }
-
-                const auto available = std::min(entry_.size - position_,
-                    document_.short_sector_size() - position_ % document_.short_sector_size());
-                const auto to_read = std::min(available, std::size_t(remaining));
-
-                auto start = current_sector_.begin() + static_cast<std::ptrdiff_t>(position_ % document_.short_sector_size());
-                auto end = start + static_cast<std::ptrdiff_t>(to_read);
-
-                for (auto i = start; i < end; ++i)
+                else
                 {
-                    *(c++) = static_cast<char>(*i);
-                }
-
-                remaining -= to_read;
-                position_ += to_read;
-                bytes_read += to_read;
-            }
-
-            if (position_ < entry_.size && chain[position_ / document_.short_sector_size()] != current_sector)
-            {
-                current_sector = chain[position_ / document_.short_sector_size()];
-                sector_writer_.reset();
-                document_.read_short_sector(current_sector, sector_writer_);
-            }
-        }
-        else
-        {
-            const auto chain = document_.follow_chain(entry_.start, document_.sat_);
-            auto current_sector = chain[position_ / document_.sector_size()];
-            auto remaining = std::min(std::size_t(entry_.size) - position_, std::size_t(count));
-
-            while (remaining)
-            {
-                if (current_sector_.empty() || chain[position_ / document_.sector_size()] != current_sector)
-                {
-                    current_sector = chain[position_ / document_.sector_size()];
-                    sector_writer_.reset();
                     document_.read_sector(current_sector, sector_writer_);
                 }
-
-                const auto available = std::min(entry_.size - position_,
-                    document_.sector_size() - position_ % document_.sector_size());
-                const auto to_read = std::min(available, std::size_t(remaining));
-
-                auto start = current_sector_.begin() + static_cast<std::ptrdiff_t>(position_ % document_.sector_size());
-                auto end = start + static_cast<std::ptrdiff_t>(to_read);
-
-                for (auto i = start; i < end; ++i)
-                {
-                    *(c++) = static_cast<char>(*i);
-                }
-
-                remaining -= to_read;
-                position_ += to_read;
-                bytes_read += to_read;
             }
 
-            if (position_ < entry_.size && chain[position_ / document_.sector_size()] != current_sector)
+            const auto available = std::min(entry_.size - position_,
+                                            sector_size - position_ % sector_size);
+            const auto to_read = std::min(available, std::size_t(remaining));
+
+            auto start = current_sector_.begin() + static_cast<std::ptrdiff_t>(position_ % sector_size);
+            auto end = start + static_cast<std::ptrdiff_t>(to_read);
+
+            for (auto i = start; i < end; ++i)
             {
-                current_sector = chain[position_ / document_.sector_size()];
-                sector_writer_.reset();
+                *(c++) = static_cast<char>(*i);
+            }
+
+            remaining -= to_read;
+            position_ += to_read;
+            bytes_read += to_read;
+        }
+
+        if (position_ < entry_.size && chain[position_ / sector_size] != current_sector)
+        {
+            current_sector = chain[position_ / sector_size];
+            sector_writer_.reset();
+            if (short_stream())
+            {
+                document_.read_short_sector(current_sector, sector_writer_);
+            }
+            else
+            {
                 document_.read_sector(current_sector, sector_writer_);
             }
         }
 
         return bytes_read;
+    }
+
+    bool short_stream()
+    {
+        return entry_.size < document_.header_.threshold;
     }
 
     int_type underflow() override

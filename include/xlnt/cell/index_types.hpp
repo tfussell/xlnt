@@ -283,6 +283,12 @@ public:
     index_t index;
 };
 
+enum class row_or_col_t : int
+{
+    row,
+    column
+};
+
 /// <summary>
 /// Functor for hashing a column.
 /// Allows for use of std::unordered_set<column_t, column_hash> and similar.

@@ -40,6 +40,7 @@ public:
         register_test(test_early_date);
         register_test(test_mac_calendar);
         register_test(test_operators);
+        register_test(test_weekday);
     }
 
     void test_from_string()
@@ -112,6 +113,13 @@ public:
         xlnt::date d3(2016, 7, 15);
         xlnt_assert_equals(d1, d2);
         xlnt_assert_differs(d1, d3);
+    }
+
+    void test_weekday()
+    {
+        xlnt_assert_equals(xlnt::date(2000, 1, 1).weekday(), 6);
+        xlnt_assert_equals(xlnt::date(2016, 7, 15).weekday(), 5);
+        xlnt_assert_equals(xlnt::date(2018, 10, 29).weekday(), 1);
     }
 };
 static datetime_test_suite x;

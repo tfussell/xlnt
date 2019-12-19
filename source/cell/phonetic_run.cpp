@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2018
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,24 +21,20 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#pragma once
-
-#include <xlnt/xlnt_config.hpp>
-#include <sstream>
+#include <xlnt/cell/phonetic_run.hpp>
+#include <tuple>
 
 namespace xlnt {
-/// <summary>
-/// Takes in any nuber and outputs a string form of that number which will
-/// serialise and deserialise without loss of precision
-/// </summary>
-template <typename Number>
-std::string serialize_number_to_string(Number num)
+
+bool phonetic_run::operator==(const phonetic_run &other) const
 {
-    // more digits and excel won't match
-    constexpr int Excel_Digit_Precision = 15; //sf
-    std::stringstream ss;
-    ss.precision(Excel_Digit_Precision);
-    ss << num;
-    return ss.str();
+    return std::tie(text, start, end, preserve_space) ==
+           std::tie(other.text, other.start, other.end, other.preserve_space);
 }
+
+bool phonetic_run::operator!=(const phonetic_run &other) const
+{
+    return !(*this == other);
 }
+
+} // namespace xlnt

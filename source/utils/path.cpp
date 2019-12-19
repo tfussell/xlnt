@@ -252,6 +252,12 @@ path path::resolve(const path &base_path) const
 
     for (const auto &part : split())
     {
+        if (part == "..")
+        {
+            copy = copy.parent();
+            continue;
+        }
+
         copy = copy.append(part);
     }
 

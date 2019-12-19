@@ -22,6 +22,7 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 #include <xlnt/worksheet/page_setup.hpp>
+#include <xlnt/utils/numeric.hpp>
 
 namespace xlnt {
 
@@ -114,7 +115,7 @@ bool page_setup::operator==(const page_setup &rhs) const
         && fit_to_page_ == rhs.fit_to_page_
         && fit_to_height_ == rhs.fit_to_height_
         && fit_to_width_ == rhs.fit_to_width_
-        && scale_ == rhs.scale_;
+        && detail::float_equals(scale_, rhs.scale_);
 }
 
 } // namespace xlnt

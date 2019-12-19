@@ -155,7 +155,7 @@ private:
     /// <summary>
     /// The corner of the worksheet that this selection extends to
     /// </summary>
-    pane_corner pane_;
+    pane_corner pane_ = pane_corner::top_left;
 };
 
 } // namespace xlnt

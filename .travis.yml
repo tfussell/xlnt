@@ -13,7 +13,27 @@ notifications:
 matrix:
   include:
     # ============= GCC ==================
-    # gcc-6, c++11, debug build, dynamic linking
+    # gcc-5, c++11, release build, dynamic linking
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+      env:
+        - CXX_COMPILER=g++-5
+        - C_COMPILER=gcc-5
+        - CXX_VER=11
+        - BUILD_TYPE=Release
+        - COVERAGE=OFF
+        - STATIC=OFF
+        - SAMPLES=OFF
+        - BENCHMARKS=OFF
+        
+    # ============= GCC ==================
+    # gcc-6, c++11, release build, dynamic linking
     - os: linux
       compiler: gcc
       addons:
@@ -32,7 +52,7 @@ matrix:
         - SAMPLES=OFF
         - BENCHMARKS=OFF
         
-    # gcc-7, c++14, release build, static linking, samples + benchmarks compiled
+    # gcc-7, c++14, release build, static linking
     - os: linux
       compiler: gcc
       addons:
@@ -51,7 +71,7 @@ matrix:
         - SAMPLES=OFF
         - BENCHMARKS=OFF
         
-    # gcc-8, c++17, release build, static linking, samples + benchmarks compiled
+    # gcc-8, c++17, release build, static linking, samples + benchmarks compiled and run
     - os: linux
       compiler: gcc
       addons:
@@ -91,7 +111,7 @@ matrix:
         - SAMPLES=OFF
         - BENCHMARKS=OFF
         
-    # clang 5, c++14, release build, dynamic linking, samples + benchmarks compiled
+    # clang 5, c++14, release build, dynamic linking
     - os: linux
       compiler: clang
       addons:
@@ -111,7 +131,7 @@ matrix:
         - SAMPLES=OFF
         - BENCHMARKS=OFF
         
-    # clang 6, c++17, release build, static linking, samples compiled
+    # clang 6, c++17, release build, static linking, samples + benchmarks compiled and run
     - os: linux
       compiler: clang
       addons:

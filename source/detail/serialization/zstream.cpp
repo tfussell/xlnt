@@ -507,12 +507,12 @@ bool izstream::read_central_header()
     // Find the header
     // NOTE: this assumes the zip file header is the last thing written to file...
     source_stream_.seekg(0, std::ios_base::end);
-    auto end_position = static_cast<std::size_t>(source_stream_.tellg());
+    auto end_position = source_stream_.tellg();
 
     auto max_comment_size = std::uint32_t(0xffff); // max size of header
     auto read_size_before_comment = std::uint32_t(22);
 
-    std::uint32_t read_start = max_comment_size + read_size_before_comment;
+    std::streamoff read_start = max_comment_size + read_size_before_comment;
 
     if (read_start > end_position)
     {
@@ -536,11 +536,14 @@ bool izstream::read_central_header()
     }
 
     auto found_header = false;
-    std::size_t header_index = 0;
+    std::streamoff header_index = 0;
 
-    for (std::size_t i = 0; i < static_cast<std::size_t>(read_start - 3); ++i)
+    for (std::streamoff i = 0; i < read_start - 3; ++i)
     {
-        if (buf[i] == 0x50 && buf[i + 1] == 0x4b && buf[i + 2] == 0x05 && buf[i + 3] == 0x06)
+        if (buf[static_cast<std::size_t>(i)] == 0x50 
+            && buf[static_cast<std::size_t>(i) + 1] == 0x4b 
+            && buf[static_cast<std::size_t>(i) + 2] == 0x05 
+            && buf[static_cast<std::size_t>(i) + 3] == 0x06)
         {
             found_header = true;
             header_index = i;
@@ -554,7 +557,7 @@ bool izstream::read_central_header()
     }
 
     // seek to end of central header and read
-    source_stream_.seekg(end_position - (read_start - static_cast<std::ptrdiff_t>(header_index)));
+    source_stream_.seekg(end_position - (read_start - header_index));
 
     /*auto word = */ read_int<std::uint32_t>(source_stream_);
     auto disk_number1 = read_int<std::uint16_t>(source_stream_);

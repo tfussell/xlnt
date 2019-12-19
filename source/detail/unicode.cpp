@@ -29,6 +29,7 @@
 #pragma clang diagnostic pop
 
 #include <detail/unicode.hpp>
+#include <xlnt/utils/exceptions.hpp>
 
 namespace xlnt {
 namespace detail {
@@ -67,6 +68,17 @@ std::string latin1_to_utf8(const std::string &latin1)
     }
 
     return utf8;
+}
+
+size_t string_length(const std::string &utf8_string)
+{
+    auto end_it = utf8::find_invalid(utf8_string.begin(), utf8_string.end());
+    if (end_it != utf8_string.end())
+    {
+        throw xlnt::exception("Invalid UTF-8 encoding detected");
+    }
+
+    return utf8::distance(utf8_string.begin(), end_it);
 }
 
 } // namespace detail

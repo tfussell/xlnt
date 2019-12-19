@@ -1,5 +1,4 @@
 // Copyright (c) 2014-2018 Thomas Fussell
-// Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,23 +21,39 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <iostream>
+
+
+#include <helpers/test_suite.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
+#include <xlnt/workbook/workbook.hpp>
+#include <xlnt/utils/path.hpp>
 
-#include <detail/implementations/cell_impl.hpp>
-
-namespace xlnt {
-namespace detail {
-
-cell_impl::cell_impl()
-    : type_(cell_type::empty),
-      parent_(nullptr),
-      column_(1),
-      row_(1),
-      is_merged_(false),
-      phonetics_visible_(false),
-      value_numeric_(0)
+class drawing_test_suite : public test_suite
 {
-}
+public:
+    drawing_test_suite()
+    {
+        register_test(test_load_save);
+    }
 
-} // namespace detail
-} // namespace xlnt
+    void test_load_save()
+    {
+        xlnt::workbook wb1;
+        wb1.load(path_helper::test_file("2_minimal.xlsx"));
+        auto ws1 = wb1.active_sheet();
+        xlnt_assert_equals(ws1.has_drawing(), false);
+
+        xlnt::workbook wb2;
+        wb2.load(path_helper::test_file("14_images.xlsx"));
+        auto ws2 = wb2.active_sheet();
+        xlnt_assert_equals(ws2.has_drawing(), true);
+        wb2.save("temp_with_images.xlsx");
+
+        xlnt::workbook wb3;
+        wb3.load("temp_with_images.xlsx");
+        auto ws3 = wb3.active_sheet();
+        xlnt_assert_equals(ws3.has_drawing(), true);
+    }
+};
+static drawing_test_suite x;
