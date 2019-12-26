@@ -124,7 +124,6 @@ cell_iterator &cell_iterator::operator--()
     return *this;
 }
 
-
 const_cell_iterator &const_cell_iterator::operator--()
 {
     if (order_ == major_order::row)
@@ -245,7 +244,7 @@ const_cell_iterator &const_cell_iterator::operator++()
             }
         }
     }
-    
+
     return *this;
 }
 

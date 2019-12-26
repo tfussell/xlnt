@@ -27,71 +27,66 @@
 #include <detail/external/include_libstudxml.hpp>
 
 namespace {
-    // copy elements to the serializer provided and extract the embed ids
-    // from blip elements
-	std::vector<std::string> copy_and_extract(xml::parser& p, xml::serializer &s)
+// copy elements to the serializer provided and extract the embed ids
+// from blip elements
+std::vector<std::string> copy_and_extract(xml::parser &p, xml::serializer &s)
+{
+    std::vector<std::string> embed_ids;
+    int nest_level = 0;
+    while (nest_level > 0 || (p.peek() != xml::parser::event_type::end_element && p.peek() != xml::parser::event_type::eof))
     {
-        std::vector<std::string> embed_ids;
-        int nest_level = 0;
-        while (nest_level > 0 || (p.peek() != xml::parser::event_type::end_element && p.peek() != xml::parser::event_type::eof))
+        switch (p.next())
         {
-            switch (p.next())
+        case xml::parser::start_element: {
+            ++nest_level;
+            auto attribs = p.attribute_map();
+            auto current_ns = p.namespace_();
+            s.start_element(p.qname());
+            s.namespace_decl(current_ns, p.prefix());
+            if (p.qname().name() == "blip")
             {
-            case xml::parser::start_element:
+                embed_ids.push_back(attribs.at(xml::qname(xlnt::constants::ns("r"), "embed")).value);
+            }
+            p.peek();
+            auto new_ns = p.namespace_();
+            if (new_ns != current_ns)
             {
-                ++nest_level;
-                auto attribs = p.attribute_map();
-                auto current_ns = p.namespace_();
-                s.start_element(p.qname());
-                s.namespace_decl(current_ns, p.prefix());
-                if (p.qname().name() == "blip")
-                {
-                    embed_ids.push_back(attribs.at(xml::qname(xlnt::constants::ns("r"), "embed")).value);
-                }
-                p.peek();
-                auto new_ns = p.namespace_();
-                if (new_ns != current_ns)
-                {
-                    auto pref = p.prefix();
-                    s.namespace_decl(new_ns, pref);
-                }
-                for (auto &ele : attribs)
-                {
-                    s.attribute(ele.first, ele.second.value);
-                }
-                break;
+                auto pref = p.prefix();
+                s.namespace_decl(new_ns, pref);
             }
-            case xml::parser::end_element:
+            for (auto &ele : attribs)
             {
-                --nest_level;
-                s.end_element();
-                break;
+                s.attribute(ele.first, ele.second.value);
             }
-            case xml::parser::start_namespace_decl:
-            {
-                s.namespace_decl(p.namespace_(), p.prefix());
-                break;
-            }
-            case xml::parser::end_namespace_decl:
-            { // nothing required here
-                break;
-            }
-            case xml::parser::characters:
-            {
-                s.characters(p.value());
-                break;
-            }
-            case xml::parser::eof:
-                return embed_ids;
-            case xml::parser::start_attribute:
-            case xml::parser::end_attribute:
-            default:
-                break;
-            }
+            break;
         }
-        return embed_ids;
+        case xml::parser::end_element: {
+            --nest_level;
+            s.end_element();
+            break;
+        }
+        case xml::parser::start_namespace_decl: {
+            s.namespace_decl(p.namespace_(), p.prefix());
+            break;
+        }
+        case xml::parser::end_namespace_decl: { // nothing required here
+            break;
+        }
+        case xml::parser::characters: {
+            s.characters(p.value());
+            break;
+        }
+        case xml::parser::eof:
+            return embed_ids;
+        case xml::parser::start_attribute:
+        case xml::parser::end_attribute:
+        default:
+            break;
+        }
     }
+    return embed_ids;
 }
+} // namespace
 
 namespace xlnt {
 namespace drawing {

@@ -28,8 +28,8 @@
 #include <utf8.h>
 #pragma clang diagnostic pop
 
-#include <detail/unicode.hpp>
 #include <xlnt/utils/exceptions.hpp>
+#include <detail/unicode.hpp>
 
 namespace xlnt {
 namespace detail {

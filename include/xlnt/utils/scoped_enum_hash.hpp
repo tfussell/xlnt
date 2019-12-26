@@ -31,7 +31,7 @@ namespace xlnt {
 /// Allows a scoped enum (aka "enum class") to be used as a key
 /// in a std::unordered_map.
 /// </summary>
-template<typename Enum>
+template <typename Enum>
 struct scoped_enum_hash
 {
     /// <summary>

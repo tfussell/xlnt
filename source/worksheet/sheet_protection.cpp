@@ -75,4 +75,4 @@ std::string sheet_protection::hash_password(const std::string &plaintext_passwor
 
     return hashed;
 }
-}
+} // namespace xlnt

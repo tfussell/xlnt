@@ -540,9 +540,9 @@ bool izstream::read_central_header()
 
     for (std::streamoff i = 0; i < read_start - 3; ++i)
     {
-        if (buf[static_cast<std::size_t>(i)] == 0x50 
-            && buf[static_cast<std::size_t>(i) + 1] == 0x4b 
-            && buf[static_cast<std::size_t>(i) + 2] == 0x05 
+        if (buf[static_cast<std::size_t>(i)] == 0x50
+            && buf[static_cast<std::size_t>(i) + 1] == 0x4b
+            && buf[static_cast<std::size_t>(i) + 2] == 0x05
             && buf[static_cast<std::size_t>(i) + 3] == 0x06)
         {
             found_header = true;

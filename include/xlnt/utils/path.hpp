@@ -107,7 +107,7 @@ public:
     /// Create a string representing this path separated by the provided
     /// separator or the system-default separator if not provided.
     /// </summary>
-    const std::string& string() const;
+    const std::string &string() const;
 
 #ifdef _MSC_VER
     /// <summary>

@@ -24,12 +24,12 @@
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
+#include <algorithm>
+#include <cassert>
 #include <cmath>
 #include <limits>
 #include <sstream>
 #include <type_traits>
-#include <cassert>
-#include <algorithm>
 
 namespace xlnt {
 namespace detail {

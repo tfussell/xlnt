@@ -139,17 +139,17 @@ public:
     /// <summary>
     /// load the encrpyted xlsx file at path
     /// </summary>
-    workbook(const xlnt::path &file, const std::string& password);
+    workbook(const xlnt::path &file, const std::string &password);
 
     /// <summary>
     /// construct the workbook from any data stream where the data is the binary form of a workbook
     /// </summary>
-    workbook(std::istream & data);
+    workbook(std::istream &data);
 
     /// <summary>
     /// construct the workbook from any data stream where the data is the binary form of an encrypted workbook
     /// </summary>
-    workbook(std::istream &data, const std::string& password);
+    workbook(std::istream &data, const std::string &password);
 
     /// <summary>
     /// Move constructor. Constructs a workbook from existing workbook, other.

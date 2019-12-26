@@ -37,7 +37,6 @@ class worksheet;
 // because one needs to point at a const workbook and the other needs
 // to point at a non-const workbook stored as a member variable, respectively.
 
-
 /// <summary>
 /// An iterator which is used to iterate over the worksheets in a workbook.
 /// </summary>
@@ -147,7 +146,6 @@ private:
     /// </summary>
     std::size_t index_ = 0;
 };
-
 
 /// <summary>
 /// An iterator which is used to iterate over the worksheets in a const workbook.

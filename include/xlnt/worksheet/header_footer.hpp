@@ -93,7 +93,6 @@ public:
     /// </summary>
     header_footer &scale_with_doc(bool scale);
 
-
     // Normal Header
 
     /// <summary>
@@ -202,7 +201,6 @@ public:
     /// </summary>
     rich_text even_header(location where) const;
 
-
     // Normal Footer
 
     /// <summary>
@@ -269,7 +267,6 @@ public:
     /// be returned.
     /// </summary>
     rich_text first_page_footer(location where) const;
-
 
     // Odd/Even Footer
 

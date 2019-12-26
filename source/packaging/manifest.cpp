@@ -85,14 +85,13 @@ bool manifest::has_relationship(const path &path, relationship_type type) const
     {
         return false;
     }
-    return rels->second.end() != std::find_if(rels->second.begin(), rels->second.end(), 
-                                              [type](const std::pair<std::string, xlnt::relationship> &rel) { return rel.second.type() == type; });
+    return rels->second.end() != std::find_if(rels->second.begin(), rels->second.end(), [type](const std::pair<std::string, xlnt::relationship> &rel) { return rel.second.type() == type; });
 }
 
 bool manifest::has_relationship(const path &path, const std::string &rel_id) const
 {
     auto rels = relationships_.find(path);
-    if (rels == relationships_.end()) 
+    if (rels == relationships_.end())
     {
         return false;
     }

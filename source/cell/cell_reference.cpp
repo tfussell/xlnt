@@ -67,9 +67,9 @@ cell_reference::cell_reference(column_t column_index, row_t row)
     : column_(column_index), row_(row), absolute_row_(false), absolute_column_(false)
 {
     if (row_ == 0
-      || column_ == 0
-      || !(row_ <= constants::max_row())
-      || !(column_ <= constants::max_column()))
+        || column_ == 0
+        || !(row_ <= constants::max_row())
+        || !(column_ <= constants::max_column()))
     {
         throw invalid_cell_reference(column_, row_);
     }

@@ -47,7 +47,8 @@ public:
     /// </summary>
     explicit selection(pane_corner quadrant, cell_reference active_cell)
         : active_cell_(active_cell), sqref_(range_reference(active_cell, active_cell)), pane_(quadrant)
-    {}
+    {
+    }
 
     /// <summary>
     /// ctor with selected range
@@ -55,7 +56,8 @@ public:
     /// </summary>
     explicit selection(pane_corner quadrant, cell_reference active_cell, range_reference selected)
         : active_cell_(active_cell), sqref_(selected), pane_(quadrant)
-    {}
+    {
+    }
 
     /// <summary>
     /// Returns true if this selection has a defined active cell.

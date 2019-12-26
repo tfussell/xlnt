@@ -118,11 +118,6 @@ class XLNT_API missing_number_format : public exception
 {
 public:
     /// <summary>
-    /// Default constructor.
-    /// </summary>
-    missing_number_format() = default;
-
-    /// <summary>
     /// Default copy constructor.
     /// </summary>
     missing_number_format(const missing_number_format &) = default;

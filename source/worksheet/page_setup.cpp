@@ -21,8 +21,8 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#include <xlnt/worksheet/page_setup.hpp>
 #include <xlnt/utils/numeric.hpp>
+#include <xlnt/worksheet/page_setup.hpp>
 
 namespace xlnt {
 

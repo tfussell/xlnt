@@ -358,6 +358,12 @@ private:
     /// </summary>
     bool in_element(const xml::qname &name);
 
+    /// <summary>
+    /// Throws an exception or skips remaining elements depending on
+    /// the value of THROW_ON_INVALID_XML.
+    /// </summary>
+    void unexpected_element(const xml::qname &name);
+
     // Properties
 
 	/// <summary>

@@ -120,7 +120,7 @@ public:
     /// <summary>
     /// The worksheet this range targets
     /// </summary>
-    const worksheet & target_worksheet() const;
+    const worksheet &target_worksheet() const;
 
     /// <summary>
     /// Returns the reference defining the bounds of this range.
@@ -136,7 +136,7 @@ public:
     /// Returns true if the given cell exists in the parent worksheet of this range.
     /// </summary>
     bool contains(const cell_reference &ref);
-    
+
     /// <summary>
     /// Sets the alignment of all cells in the range to new_alignment and returns the range.
     /// </summary>
@@ -180,10 +180,10 @@ public:
     /// </summary>
     range style(const std::string &style_name);
 
-	/// <summary>
-	/// 
-	/// </summary>
-	xlnt::conditional_format conditional_format(const condition &when);
+    /// <summary>
+    ///
+    /// </summary>
+    xlnt::conditional_format conditional_format(const condition &when);
 
     /// <summary>
     /// Returns the first row or column in this range.
@@ -290,7 +290,7 @@ public:
     /// </summary>
     bool operator!=(const range &comparand) const;
 
- private:
+private:
     /// <summary>
     /// The worksheet this range is within
     /// </summary>

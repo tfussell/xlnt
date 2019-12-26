@@ -54,7 +54,7 @@ datetime datetime::from_number(double raw_time, calendar base_date)
 
 bool datetime::operator==(const datetime &comparand) const
 {
-    return year == comparand.year 
+    return year == comparand.year
         && month == comparand.month
         && day == comparand.day
         && hour == comparand.hour

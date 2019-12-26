@@ -52,7 +52,7 @@ public:
     using reference = cell_vector; // intentionally value
 
     /// <summary>
-    /// Default constructs a range iterator 
+    /// Default constructs a range iterator
     /// </summary>
     range_iterator() = default;
 

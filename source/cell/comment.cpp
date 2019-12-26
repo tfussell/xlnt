@@ -106,7 +106,7 @@ int comment::height() const
 bool comment::operator==(const comment &other) const
 {
     // not comparing top/left as this is set on a per cell basis
-    return text_ == other.text_ 
+    return text_ == other.text_
         && author_ == other.author_
         && width_ == other.width_
         && height_ == other.height_;

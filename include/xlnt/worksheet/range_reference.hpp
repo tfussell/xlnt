@@ -56,7 +56,7 @@ public:
     /// top_left:bottom_right.
     /// </summary>
     explicit range_reference(const char *range_string);
-    
+
     /// <summary>
     /// Constructs a range reference from cell references indicating top
     /// left and bottom right coordinates of the range.
@@ -187,6 +187,5 @@ XLNT_API bool operator!=(const std::string &reference_string, const range_refere
 /// Returns true if the string representation of the range is not equivalent to ref.
 /// </summary>
 XLNT_API bool operator!=(const char *reference_string, const range_reference &ref);
-
 
 } // namespace xlnt

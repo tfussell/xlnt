@@ -23,12 +23,12 @@
 
 #pragma once
 
-#include <cstdint>
-#include <string>
-#include <utility>
-#include <tuple>
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/cell/index_types.hpp>
+#include <cstdint>
+#include <string>
+#include <tuple>
+#include <utility>
 
 namespace xlnt {
 
@@ -256,8 +256,7 @@ private:
 
 } // namespace xlnt
 
-namespace std
-{
+namespace std {
 template <>
 struct hash<xlnt::cell_reference>
 {
@@ -268,4 +267,4 @@ struct hash<xlnt::cell_reference>
         return hash<std::uint64_t>{}(x.row() | static_cast<std::uint64_t>(x.column_index()) << 32);
     }
 };
-}
+} // namespace std

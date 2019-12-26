@@ -23,9 +23,9 @@
 
 #include <limits>
 
-#include <detail/constants.hpp>
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/utils/exceptions.hpp>
+#include <detail/constants.hpp>
 
 namespace xlnt {
 
@@ -155,8 +155,7 @@ const std::unordered_map<std::string, std::string> &constants::namespaces()
             {"a", "http://schemas.openxmlformats.org/drawingml/2006/main"},
             {"xdr", "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"},
 
-            {"loext", "http://schemas.libreoffice.org/"}
-        };
+            {"loext", "http://schemas.libreoffice.org/"}};
 
     return *namespaces;
 }

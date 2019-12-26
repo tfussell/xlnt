@@ -115,7 +115,7 @@ public:
     /// <summary>
     /// Returns a string of the form rId# that identifies the relationship.
     /// </summary>
-    const std::string& id() const;
+    const std::string &id() const;
 
     /// <summary>
     /// Returns the type of this relationship.

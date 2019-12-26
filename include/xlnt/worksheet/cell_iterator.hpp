@@ -29,8 +29,8 @@
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/cell/cell_reference.hpp>
-#include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/major_order.hpp>
+#include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
 namespace xlnt {
@@ -102,7 +102,6 @@ public:
     /// </summary>
     const reference operator*() const;
 
-
     /// <summary>
     /// Returns true if this iterator is equivalent to other.
     /// </summary>
@@ -138,7 +137,6 @@ public:
     cell_iterator operator++(int);
 
 private:
-
     /// <summary>
     /// If true, cells that don't exist in the worksheet will be skipped during iteration.
     /// </summary>

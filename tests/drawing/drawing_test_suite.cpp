@@ -56,4 +56,4 @@ public:
         xlnt_assert_equals(ws3.has_drawing(), true);
     }
 };
-static drawing_test_suite x;
+static drawing_test_suite x{};

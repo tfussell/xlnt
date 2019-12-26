@@ -36,7 +36,7 @@ relationship::relationship(
 {
 }
 
-const std::string& relationship::id() const
+const std::string &relationship::id() const
 {
     return id_;
 }

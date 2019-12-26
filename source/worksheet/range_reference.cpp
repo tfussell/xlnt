@@ -91,7 +91,6 @@ range_reference range_reference::make_offset(int column_offset, int row_offset) 
     auto bottom_right = bottom_right_.make_offset(column_offset, row_offset);
 
     return top_left, bottom_right; // lol
-        
 }
 
 std::size_t range_reference::height() const

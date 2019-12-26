@@ -56,7 +56,7 @@ struct XLNT_API print_options
     optional<bool> vertical_centered;
 };
 
-inline bool operator==(const print_options& lhs, const print_options &rhs)
+inline bool operator==(const print_options &lhs, const print_options &rhs)
 {
     return lhs.grid_lines_set == rhs.grid_lines_set
         && lhs.horizontal_centered == rhs.horizontal_centered

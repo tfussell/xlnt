@@ -203,7 +203,7 @@ public:
     /// <summary>
     /// Sets the top left cell of this view.
     /// </summary>
-    void top_left_cell(const cell_reference& ref)
+    void top_left_cell(const cell_reference &ref)
     {
         top_left_cell_.set(ref);
     }

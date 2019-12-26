@@ -21,8 +21,8 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#include <detail/serialization/open_stream.hpp>
 #include <xlnt/utils/path.hpp>
+#include <detail/serialization/open_stream.hpp>
 
 namespace xlnt {
 namespace detail {

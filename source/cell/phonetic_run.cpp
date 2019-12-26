@@ -28,8 +28,7 @@ namespace xlnt {
 
 bool phonetic_run::operator==(const phonetic_run &other) const
 {
-    return std::tie(text, start, end, preserve_space) ==
-           std::tie(other.text, other.start, other.end, other.preserve_space);
+    return std::tie(text, start, end, preserve_space) == std::tie(other.text, other.start, other.end, other.preserve_space);
 }
 
 bool phonetic_run::operator!=(const phonetic_run &other) const

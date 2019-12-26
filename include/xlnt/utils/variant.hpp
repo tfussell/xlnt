@@ -154,7 +154,7 @@ public:
     /// Returns the value of this variant as type T. An exception will
     /// be thrown if the types are not convertible.
     /// </summary>
-    template<typename T>
+    template <typename T>
     T get() const;
 
     /// <summary>
@@ -171,25 +171,25 @@ private:
     std::string lpstr_value_;
 };
 
-template<>
+template <>
 bool variant::get() const;
 
-template<>
+template <>
 std::int32_t variant::get() const;
 
-template<>
+template <>
 std::string variant::get() const;
 
-template<>
+template <>
 datetime variant::get() const;
 
-template<>
+template <>
 std::vector<std::int32_t> variant::get() const;
 
-template<>
+template <>
 std::vector<std::string> variant::get() const;
 
-template<>
+template <>
 std::vector<variant> variant::get() const;
 
 } // namespace xlnt

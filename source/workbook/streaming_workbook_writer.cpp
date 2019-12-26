@@ -23,23 +23,22 @@
 
 #include <fstream>
 
-#include <detail/implementations/cell_impl.hpp>
-#include <detail/implementations/worksheet_impl.hpp>
-#include <detail/serialization/open_stream.hpp>
-#include <detail/serialization/vector_streambuf.hpp>
-#include <detail/serialization/xlsx_producer.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/utils/optional.hpp>
 #include <xlnt/workbook/streaming_workbook_writer.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
+#include <detail/implementations/cell_impl.hpp>
+#include <detail/implementations/worksheet_impl.hpp>
+#include <detail/serialization/open_stream.hpp>
+#include <detail/serialization/vector_streambuf.hpp>
+#include <detail/serialization/xlsx_producer.hpp>
 
 namespace xlnt {
 
 streaming_workbook_writer::streaming_workbook_writer()
 {
-
 }
 
 streaming_workbook_writer::~streaming_workbook_writer()

@@ -23,8 +23,8 @@
 
 #pragma once
 
-#include <string>
 #include <xlnt/xlnt_config.hpp>
+#include <string>
 
 namespace xlnt {
 
@@ -51,15 +51,15 @@ public:
 
     bool has_display() const;
     void display(const std::string &value);
-    const std::string& display() const;
+    const std::string &display() const;
 
     bool has_tooltip() const;
     void tooltip(const std::string &value);
-    const std::string& tooltip() const;
+    const std::string &tooltip() const;
 
     bool has_location() const;
     void location(const std::string &value);
-    const std::string& location() const;
+    const std::string &location() const;
 
 private:
     friend class cell;
@@ -68,4 +68,3 @@ private:
 };
 
 } // namespace xlnt
-
