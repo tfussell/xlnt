@@ -349,7 +349,7 @@ std::pair<xlnt::row_properties, int> parse_row(xml::parser *parser, xlnt::detail
         switch (e)
         {
         case xml::parser::start_element: {
-            parsed_cells.push_back(parse_cell(props.second, parser));
+            parsed_cells.push_back(parse_cell(static_cast<xlnt::row_t>(props.second), parser));
             break;
         }
         case xml::parser::end_element: {

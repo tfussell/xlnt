@@ -126,7 +126,7 @@ date date::today()
 
 int date::weekday() const
 {
-    std::tm tm{0, 0, 0, day, month - 1, year - 1900};
+    std::tm tm{0, 0, 0, day, month - 1, year - 1900, 0, 0, 0, 0, nullptr};
     std::time_t time = std::mktime(&tm);
 
     return safe_localtime(time).tm_wday;

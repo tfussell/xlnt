@@ -78,7 +78,7 @@ size_t string_length(const std::string &utf8_string)
         throw xlnt::exception("Invalid UTF-8 encoding detected");
     }
 
-    return utf8::distance(utf8_string.begin(), end_it);
+    return static_cast<std::size_t>(utf8::distance(utf8_string.begin(), end_it));
 }
 
 } // namespace detail

@@ -48,7 +48,8 @@ target_link_libraries(xlnt.test PRIVATE xlnt)
 target_include_directories(xlnt.test
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../source
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/libstudxml)
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/libstudxml
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/miniz)
 
 set(XLNT_TEST_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/data)
 target_compile_definitions(xlnt.test PRIVATE XLNT_TEST_DATA_DIR=${XLNT_TEST_DATA_DIR})
