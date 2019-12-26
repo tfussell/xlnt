@@ -1,0 +1,82 @@
+# file      : libstudxml/buildfile
+# copyright : Copyright (c) 2013-2019 Code Synthesis Tools CC
+# license   : MIT; see accompanying LICENSE file
+
+lib{studxml}: {hxx ixx txx cxx}{** -version} {hxx}{version} \
+      details/{h}{config*}
+
+# Expat. Note that we treat a whole bunch of its sources as files since they
+# are private and #include's (including .c file).
+#
+lib{studxml}: details/expat/{                                                 \
+   h{expat expat_external}                                                    \
+   c{xmlparse xmlrole xmltok}                                                 \
+file{ascii.h asciitab.h config.h iasciitab.h internal.h latin1tab.h nametab.h \
+     utf8tab.h xmlrole.h xmltok.h xmltok_impl.h xmltok_impl.c xmltok_ns.c}    \
+ doc{LICENSE README}                                                          \
+}
+
+details/expat/doc{README}@./:  install = false
+details/expat/doc{LICENSE}@./: install = doc/EXPAT-LICENSE
+
+# Genx.
+#
+lib{studxml}: details/genx/{h{*} c{*} doc{LICENSE README}}
+
+# Include the generated version header into the distribution (so that we don't
+# pick up an installed one) and don't remove it when cleaning in src (so that
+# clean results in a state identical to distributed).
+#
+hxx{version}: in{version} $src_root/manifest
+hxx{version}:
+{
+  dist  = true
+  clean = ($src_root != $out_root)
+}
+
+# Build options.
+#
+if ($c.class == 'gcc')
+{
+  # Disable warnings that pop up with -Wextra (e.g, -fimplicit-fallthrough)
+  # in C implementation details.
+  #
+  details/expat/ c.coptions += -Wno-extra
+  details/genx/  c.coptions += -Wno-extra
+}
+
+# We are a mixed C/C++ library, though C is implementation-only, kind of: we
+# need headers but not symbols.
+#
+cc.poptions =+ "-I$out_root" "-I$src_root"
+
+obja{*}: cc.poptions += -DLIBSTUDXML_STATIC_BUILD
+objs{*}: cc.poptions += -DLIBSTUDXML_SHARED_BUILD
+
+# Export options.
+#
+lib{studxml}: cc.export.poptions = "-I$out_root" "-I$src_root"
+
+liba{studxml}: cc.export.poptions += -DLIBSTUDXML_STATIC
+libs{studxml}: cc.export.poptions += -DLIBSTUDXML_SHARED
+
+# For pre-releases use the complete version to make sure they cannot be used
+# in place of another pre-release or the final version. See the version module
+# for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{studxml}: bin.lib.version = @"-$version.project_id"
+else
+  lib{studxml}: bin.lib.version = @"-$version.major.$version.minor"
+
+# Install into the libstudxml/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{h hxx ixx txx}{*}:
+{
+  install         = include/libstudxml/
+  install.subdirs = true
+}
+
+details/genx/doc{README}@./:  install = false
+details/genx/doc{LICENSE}@./: install = doc/GENX-LICENSE
