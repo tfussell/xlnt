@@ -126,7 +126,11 @@ date date::today()
 
 int date::weekday() const
 {
+#ifdef __APPLE__
     std::tm tm{0, 0, 0, day, month - 1, year - 1900, 0, 0, 0, 0, nullptr};
+#else
+    std::tm tm{0, 0, 0, day, month - 1, year - 1900, 0, 0, 0};
+#endif
     std::time_t time = std::mktime(&tm);
 
     return safe_localtime(time).tm_wday;
