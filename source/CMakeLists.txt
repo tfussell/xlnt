@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-project(xlnt VERSION 1.2)
+project(xlnt VERSION 1.4)
 
 set(CMAKE_CXX_STANDARD ${XLNT_CXX_LANG})
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -157,7 +157,7 @@ if(NOT STATIC)
 
   target_compile_definitions(xlnt PRIVATE XLNT_SHARED=1)
 
-  # Set SO version (for symbolic links like libxlnt.so.1.2 and libxlnt.so.1)
+  # Set SO version (for symbolic links like libxlnt.so.1.4 and libxlnt.so.1)
   set_target_properties(xlnt
     PROPERTIES
     VERSION ${PROJECT_VERSION}
