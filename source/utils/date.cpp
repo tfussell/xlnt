@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -126,7 +126,11 @@ date date::today()
 
 int date::weekday() const
 {
-    std::tm tm {0, 0, 0, day, month - 1, year - 1900};
+#ifdef __APPLE__
+    std::tm tm{0, 0, 0, day, month - 1, year - 1900, 0, 0, 0, 0, nullptr};
+#else
+    std::tm tm{0, 0, 0, day, month - 1, year - 1900, 0, 0, 0};
+#endif
     std::time_t time = std::mktime(&tm);
 
     return safe_localtime(time).tm_wday;

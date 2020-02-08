@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -92,7 +92,7 @@ invalid_file::~invalid_file()
 
 invalid_cell_reference::invalid_cell_reference(column_t column, row_t row)
     : exception(
-          std::string("bad cell coordinates: (") + std::to_string(column.index) + ", " + std::to_string(row) + ")")
+        std::string("bad cell coordinates: (") + std::to_string(column.index) + ", " + std::to_string(row) + ")")
 {
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,8 +21,8 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-#include <xlnt/worksheet/page_setup.hpp>
 #include <xlnt/utils/numeric.hpp>
+#include <xlnt/worksheet/page_setup.hpp>
 
 namespace xlnt {
 

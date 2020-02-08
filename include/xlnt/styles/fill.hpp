@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -91,12 +91,12 @@ public:
     pattern_fill &foreground(const color &foreground);
 
     /// <summary>
-	/// Returns the optional background color of this fill
+    /// Returns the optional background color of this fill
     /// </summary>
     optional<color> background() const;
 
     /// <summary>
-	/// Sets the foreground color and returns a reference to this pattern.
+    /// Sets the foreground color and returns a reference to this pattern.
     /// </summary>
     pattern_fill &background(const color &background);
 
@@ -108,7 +108,7 @@ public:
     /// <summary>
     /// Returns true if this pattern fill is not equivalent to other.
     /// </summary>
-	bool operator!=(const pattern_fill &other) const;
+    bool operator!=(const pattern_fill &other) const;
 
 private:
     /// <summary>
@@ -244,7 +244,7 @@ public:
     /// <summary>
     /// Returns true if the gradient is not equivalent to other.
     /// </summary>
-	bool operator!=(const gradient_fill &right) const;
+    bool operator!=(const gradient_fill &right) const;
 
 private:
     /// <summary>
@@ -347,7 +347,7 @@ public:
     /// <summary>
     /// Returns true if left is not exactly equal to right.
     /// </summary>
-	bool operator!=(const fill &other) const;
+    bool operator!=(const fill &other) const;
 
 private:
     /// <summary>

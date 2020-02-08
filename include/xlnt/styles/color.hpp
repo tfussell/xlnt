@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -253,7 +253,7 @@ public:
     /// Returns the internal indexed color representing this color. If this is not an RGB color,
     /// an invalid_attribute exception will be thrown.
     /// </summary>
-    const rgb_color& rgb() const;
+    const rgb_color &rgb() const;
 
     /// <summary>
     /// Returns the internal indexed color representing this color. If this is not an RGB color,
@@ -265,7 +265,7 @@ public:
     /// Returns the internal indexed color representing this color. If this is not an indexed color,
     /// an invalid_attribute exception will be thrown.
     /// </summary>
-    const indexed_color& indexed() const;
+    const indexed_color &indexed() const;
 
     /// <summary>
     /// Returns the internal indexed color representing this color. If this is not an indexed color,
@@ -277,13 +277,13 @@ public:
     /// Returns the internal indexed color representing this color. If this is not a theme color,
     /// an invalid_attribute exception will be thrown.
     /// </summary>
-    const theme_color& theme() const;
+    const theme_color &theme() const;
 
     /// <summary>
     /// Returns the internal indexed color representing this color. If this is not a theme color,
     /// an invalid_attribute exception will be thrown.
     /// </summary>
-    theme_color& theme();
+    theme_color &theme();
 
     /// <summary>
     /// Returns true if tint is set
@@ -300,10 +300,10 @@ public:
     /// </summary>
     void tint(double tint);
 
-	/// <summary>
-	/// Returns true if this color is equivalent to other
-	/// </summary>
-	bool operator==(const color &other) const;
+    /// <summary>
+    /// Returns true if this color is equivalent to other
+    /// </summary>
+    bool operator==(const color &other) const;
 
     /// <summary>
     /// Returns true if this color is not equivalent to other

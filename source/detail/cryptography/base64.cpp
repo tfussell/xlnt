@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2018 Thomas Fussell
+// Copyright (C) 2017-2020 Thomas Fussell
 // Copyright (C) 2013 Tomas Kislan
 // Copyright (C) 2013 Adam Rudd
 //
@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <array>
 #include <detail/cryptography/base64.hpp>
+#include <array>
 
 namespace xlnt {
 namespace detail {
@@ -37,7 +37,8 @@ std::string encode_base64(const std::vector<std::uint8_t> &input)
     std::array<std::uint8_t, 3> a3{{0}};
     std::array<std::uint8_t, 4> a4{{0}};
 
-    const std::string alphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    const std::string alphabet(
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         "abcdefghijklmnopqrstuvwxyz"
         "0123456789+/");
 
@@ -110,13 +111,12 @@ std::vector<std::uint8_t> decode_base64(const std::string &input)
     std::array<std::uint8_t, 3> a3{{0}};
     std::array<std::uint8_t, 4> a4{{0}};
 
-    auto b64_lookup = [](std::uint8_t c) -> std::uint8_t
-    {
-        if(c >='A' && c <='Z') return c - 'A';
-        if(c >='a' && c <='z') return c - 71;
-        if(c >='0' && c <='9') return c + 4;
-        if(c == '+') return 62;
-        if(c == '/') return 63;
+    auto b64_lookup = [](std::uint8_t c) -> std::uint8_t {
+        if (c >= 'A' && c <= 'Z') return c - 'A';
+        if (c >= 'a' && c <= 'z') return c - 71;
+        if (c >= '0' && c <= '9') return c + 4;
+        if (c == '+') return 62;
+        if (c == '/') return 63;
         return 255;
     };
 

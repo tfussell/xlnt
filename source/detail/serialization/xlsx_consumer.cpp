@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -86,12 +86,6 @@ xml::qname &qn(const std::string &namespace_, const std::string &name)
 
     return ns_memo[name];
 }
-
-#ifdef THROW_ON_INVALID_XML
-#define unexpected_element(element) throw xlnt::exception(element.string());
-#else
-#define unexpected_element(element) skip_remaining_content(element);
-#endif
 
 /// <summary>
 /// Returns true if bool_string represents a true xsd:boolean.
@@ -264,18 +258,15 @@ Cell parse_cell(xlnt::row_t row_arg, xml::parser *parser)
         xml::parser::event_type e = parser->next();
         switch (e)
         {
-        case xml::parser::start_element:
-        {
+        case xml::parser::start_element: {
             ++level;
             break;
         }
-        case xml::parser::end_element:
-        {
+        case xml::parser::end_element: {
             --level;
             break;
         }
-        case xml::parser::characters:
-        {
+        case xml::parser::characters: {
             // only want the characters inside one of the nested tags
             // without this a lot of formatting whitespace can get added
             if (level == 2)
@@ -299,8 +290,7 @@ Cell parse_cell(xlnt::row_t row_arg, xml::parser *parser)
         case xml::parser::start_attribute:
         case xml::parser::end_attribute:
         case xml::parser::eof:
-        default:
-        {
+        default: {
             throw xlnt::exception("unexcpected XML parsing event");
         }
         }
@@ -358,18 +348,15 @@ std::pair<xlnt::row_properties, int> parse_row(xml::parser *parser, xlnt::detail
         xml::parser::event_type e = parser->next();
         switch (e)
         {
-        case xml::parser::start_element:
-        {
-            parsed_cells.push_back(parse_cell(props.second, parser));
+        case xml::parser::start_element: {
+            parsed_cells.push_back(parse_cell(static_cast<xlnt::row_t>(props.second), parser));
             break;
         }
-        case xml::parser::end_element:
-        {
+        case xml::parser::end_element: {
             --level;
             break;
         }
-        case xml::parser::characters:
-        {
+        case xml::parser::characters: {
             // ignore whitespace
             break;
         }
@@ -378,8 +365,7 @@ std::pair<xlnt::row_properties, int> parse_row(xml::parser *parser, xlnt::detail
         case xml::parser::end_namespace_decl:
         case xml::parser::end_attribute:
         case xml::parser::eof:
-        default:
-        {
+        default: {
             throw xlnt::exception("unexcpected XML parsing event");
         }
         }
@@ -400,18 +386,15 @@ Sheet_Data parse_sheet_data(xml::parser *parser, xlnt::detail::number_converter 
         xml::parser::event_type e = parser->next();
         switch (e)
         {
-        case xml::parser::start_element:
-        {
+        case xml::parser::start_element: {
             sheet_data.parsed_rows.push_back(parse_row(parser, converter, sheet_data.parsed_cells));
             break;
         }
-        case xml::parser::end_element:
-        {
+        case xml::parser::end_element: {
             --level;
             break;
         }
-        case xml::parser::characters:
-        {
+        case xml::parser::characters: {
             // ignore, whitespace formatting normally
             break;
         }
@@ -420,8 +403,7 @@ Sheet_Data parse_sheet_data(xml::parser *parser, xlnt::detail::number_converter 
         case xml::parser::end_namespace_decl:
         case xml::parser::end_attribute:
         case xml::parser::eof:
-        default:
-        {
+        default: {
             throw xlnt::exception("unexcpected XML parsing event");
         }
         }
@@ -1002,34 +984,29 @@ void xlsx_consumer::read_worksheet_sheetdata()
             ws_cell_impl->type_ = cell.type;
             switch (cell.type)
             {
-            case cell::type::boolean:
-            {
+            case cell::type::boolean: {
                 ws_cell_impl->value_numeric_ = is_true(cell.value) ? 1.0 : 0.0;
                 break;
             }
             case cell::type::empty:
             case cell::type::number:
-            {
+            case cell::type::date: {
                 ws_cell_impl->value_numeric_ = converter_.stold(cell.value);
                 break;
             }
-            case cell::type::shared_string:
-            {
+            case cell::type::shared_string: {
                 ws_cell_impl->value_numeric_ = static_cast<double>(strtol(cell.value.c_str(), nullptr, 10));
                 break;
             }
-            case cell::type::inline_string:
-            {
+            case cell::type::inline_string: {
                 ws_cell_impl->value_text_ = std::move(cell.value);
                 break;
             }
-            case cell::type::formula_string:
-            {
+            case cell::type::formula_string: {
                 ws_cell_impl->value_text_ = std::move(cell.value);
                 break;
             }
-            case cell::type::error:
-            {
+            case cell::type::error: {
                 ws_cell_impl->value_text_.plain_text(cell.value, false);
                 break;
             }
@@ -3133,6 +3110,15 @@ void xlsx_consumer::expect_end_element(const xml::qname &name)
     parser().attribute_map();
     parser().next_expect(xml::parser::event_type::end_element, name);
     stack_.pop_back();
+}
+
+void xlsx_consumer::unexpected_element(const xml::qname &name)
+{
+#ifdef THROW_ON_INVALID_XML
+    throw xlnt::exception(name.string());
+#else
+    skip_remaining_content(name);
+#endif
 }
 
 rich_text xlsx_consumer::read_rich_text(const xml::qname &parent)

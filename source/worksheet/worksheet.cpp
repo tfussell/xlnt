@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,24 +33,24 @@
 #include <xlnt/utils/date.hpp>
 #include <xlnt/utils/datetime.hpp>
 #include <xlnt/utils/exceptions.hpp>
+#include <xlnt/utils/numeric.hpp>
 #include <xlnt/workbook/named_range.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/workbook/worksheet_iterator.hpp>
 #include <xlnt/worksheet/cell_iterator.hpp>
+#include <xlnt/worksheet/column_properties.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/range_iterator.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
-#include <xlnt/worksheet/worksheet.hpp>
 #include <xlnt/worksheet/row_properties.hpp>
-#include <xlnt/worksheet/column_properties.hpp>
+#include <xlnt/worksheet/worksheet.hpp>
 #include <detail/constants.hpp>
 #include <detail/default_case.hpp>
-#include <xlnt/utils/numeric.hpp>
-#include <detail/unicode.hpp>
 #include <detail/implementations/cell_impl.hpp>
 #include <detail/implementations/workbook_impl.hpp>
 #include <detail/implementations/worksheet_impl.hpp>
+#include <detail/unicode.hpp>
 
 namespace {
 
@@ -82,7 +82,7 @@ bool worksheet::has_frozen_panes() const
 {
     return !d_->views_.empty() && d_->views_.front().has_pane()
         && (d_->views_.front().pane().state == pane_state::frozen
-               || d_->views_.front().pane().state == pane_state::frozen_split);
+            || d_->views_.front().pane().state == pane_state::frozen_split);
 }
 
 void worksheet::create_named_range(const std::string &name, const std::string &reference_string)
@@ -769,8 +769,7 @@ void worksheet::move_cells(std::uint32_t min_index, std::uint32_t amount, row_or
         throw xlnt::invalid_parameter();
     }
 
-    if ((!reverse && row_or_col == row_or_col_t::row && min_index > constants::max_row() - amount) ||
-        (!reverse && row_or_col == row_or_col_t::column && min_index > constants::max_column() - amount))
+    if ((!reverse && row_or_col == row_or_col_t::row && min_index > constants::max_row() - amount) || (!reverse && row_or_col == row_or_col_t::column && min_index > constants::max_column() - amount))
     {
         throw xlnt::exception("Cannot move cells as they would be outside the maximum bounds of the spreadsheet");
     }
@@ -802,7 +801,7 @@ void worksheet::move_cells(std::uint32_t min_index, std::uint32_t amount, row_or
             }
             else if (row_or_col == row_or_col_t::column)
             {
-                cell.column_ = reverse ? cell.column_.index - amount: cell.column_.index + amount;
+                cell.column_ = reverse ? cell.column_.index - amount : cell.column_.index + amount;
             }
 
             cells_to_move.push_back(cell);
@@ -883,11 +882,8 @@ void worksheet::move_cells(std::uint32_t min_index, std::uint32_t amount, row_or
     }
 
     // adjust merged cells
-    auto shift_reference = [min_index, amount, row_or_col, reverse](cell_reference &ref)
-    {
-        auto index = row_or_col == row_or_col_t::row ?
-                     ref.row() :
-                     ref.column_index();
+    auto shift_reference = [min_index, amount, row_or_col, reverse](cell_reference &ref) {
+        auto index = row_or_col == row_or_col_t::row ? ref.row() : ref.column_index();
         if (index >= min_index)
         {
             auto new_index = reverse ? index - amount : index + amount;
@@ -910,7 +906,7 @@ void worksheet::move_cells(std::uint32_t min_index, std::uint32_t amount, row_or
         cell_reference new_bottom_right = merged_cell->bottom_right();
         shift_reference(new_bottom_right);
 
-        range_reference new_range {new_top_left, new_bottom_right};
+        range_reference new_range{new_top_left, new_bottom_right};
         if (*merged_cell != new_range)
         {
             *merged_cell = new_range;

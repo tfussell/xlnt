@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -590,7 +590,7 @@ public:
     /// <summary>
     /// Sets the phonetic properties of this sheet to phonetic_props
     /// </summary>
-    void phonetic_properties(const phonetic_pr& phonetic_props);
+    void phonetic_properties(const phonetic_pr &phonetic_props);
 
     /// <summary>
     /// Returns true if this sheet has a header/footer.
@@ -769,7 +769,6 @@ public:
     /// Returns true if this worksheet has a page setup.
     /// </summary>
     bool has_drawing() const;
-
 
 private:
     friend class cell;

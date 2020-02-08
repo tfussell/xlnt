@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -92,7 +92,6 @@ public:
     /// Set to true if headers and footers should scale to match the worksheet.
     /// </summary>
     header_footer &scale_with_doc(bool scale);
-
 
     // Normal Header
 
@@ -202,7 +201,6 @@ public:
     /// </summary>
     rich_text even_header(location where) const;
 
-
     // Normal Footer
 
     /// <summary>
@@ -269,7 +267,6 @@ public:
     /// be returned.
     /// </summary>
     rich_text first_page_footer(location where) const;
-
 
     // Odd/Even Footer
 

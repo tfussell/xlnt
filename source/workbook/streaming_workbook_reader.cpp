@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018 Thomas Fussell
+// Copyright (c) 2017-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,21 @@
 
 #include <fstream>
 
-#include <detail/implementations/workbook_impl.hpp>
-#include <detail/serialization/open_stream.hpp>
-#include <detail/serialization/vector_streambuf.hpp>
-#include <detail/serialization/xlsx_consumer.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/utils/optional.hpp>
 #include <xlnt/workbook/streaming_workbook_reader.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
+#include <detail/implementations/workbook_impl.hpp>
+#include <detail/serialization/open_stream.hpp>
+#include <detail/serialization/vector_streambuf.hpp>
+#include <detail/serialization/xlsx_consumer.hpp>
 
 namespace xlnt {
 
 streaming_workbook_reader::streaming_workbook_reader()
 {
-
 }
 
 streaming_workbook_reader::~streaming_workbook_reader()
@@ -80,11 +79,11 @@ void streaming_workbook_reader::begin_worksheet(const std::string &title)
 
     worksheet_rel_id_ = workbook_->impl().sheet_title_rel_id_map_.at(title);
     const auto workbook_rel = workbook_->manifest()
-        .relationship(path("/"), relationship_type::office_document);
+                                  .relationship(path("/"), relationship_type::office_document);
     const auto worksheet_rel = workbook_->manifest()
-        .relationship(workbook_rel.target().path(), worksheet_rel_id_);
+                                   .relationship(workbook_rel.target().path(), worksheet_rel_id_);
 
-    auto rel_chain = std::vector<relationship>{ workbook_rel, worksheet_rel };
+    auto rel_chain = std::vector<relationship>{workbook_rel, worksheet_rel};
 
     const auto &manifest = consumer_->target_.manifest();
     const auto part_path = manifest.canonicalize(rel_chain);
@@ -154,7 +153,7 @@ void streaming_workbook_reader::open(std::istream &stream)
     consumer_->open(stream);
 
     const auto workbook_rel = workbook_->manifest()
-        .relationship(path("/"), relationship_type::office_document);
+                                  .relationship(path("/"), relationship_type::office_document);
     const auto workbook_path = workbook_rel.target().path();
 }
 

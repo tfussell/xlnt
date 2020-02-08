@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,8 +22,10 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+// detail imports must come first in this file.
 #include <detail/implementations/format_impl.hpp>
 #include <detail/implementations/stylesheet.hpp>
+
 #include <xlnt/styles/format.hpp>
 #include <xlnt/styles/style.hpp>
 
@@ -68,12 +70,12 @@ style format::style()
 
 const style format::style() const
 {
-	if (!has_style())
-	{
-		throw invalid_attribute();
-	}
+    if (!has_style())
+    {
+        throw invalid_attribute();
+    }
 
-	return d_->parent->style(d_->style.get());
+    return d_->parent->style(d_->style.get());
 }
 
 xlnt::alignment format::alignment() const
@@ -217,6 +219,5 @@ void format::quote_prefix(bool quote)
 {
     d_->quote_prefix_ = quote;
 }
-
 
 } // namespace xlnt

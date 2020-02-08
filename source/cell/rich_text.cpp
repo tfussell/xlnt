@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,11 +27,11 @@
 #include <xlnt/cell/rich_text_run.hpp>
 
 namespace {
-bool has_trailing_whitespace(const std::string &s) 
+bool has_trailing_whitespace(const std::string &s)
 {
     return !s.empty() && (s.front() == ' ' || s.back() == ' ');
 };
-}
+} // namespace
 
 namespace xlnt {
 
@@ -123,12 +123,12 @@ bool rich_text::has_phonetic_properties() const
     return phonetic_properties_.is_set();
 }
 
-const phonetic_pr& rich_text::phonetic_properties() const
+const phonetic_pr &rich_text::phonetic_properties() const
 {
     return phonetic_properties_.get();
 }
 
-void rich_text::phonetic_properties(const phonetic_pr& phonetic_props)
+void rich_text::phonetic_properties(const phonetic_pr &phonetic_props)
 {
     phonetic_properties_.set(phonetic_props);
 }

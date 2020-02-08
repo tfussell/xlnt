@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -56,7 +56,7 @@ struct XLNT_API print_options
     optional<bool> vertical_centered;
 };
 
-inline bool operator==(const print_options& lhs, const print_options &rhs)
+inline bool operator==(const print_options &lhs, const print_options &rhs)
 {
     return lhs.grid_lines_set == rhs.grid_lines_set
         && lhs.horizontal_centered == rhs.horizontal_centered

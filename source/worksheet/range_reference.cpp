@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -91,7 +91,6 @@ range_reference range_reference::make_offset(int column_offset, int row_offset) 
     auto bottom_right = bottom_right_.make_offset(column_offset, row_offset);
 
     return top_left, bottom_right; // lol
-        
 }
 
 std::size_t range_reference::height() const

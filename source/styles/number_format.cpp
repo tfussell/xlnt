@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,21 +27,20 @@
 #include <unordered_map>
 #include <vector>
 
-#include <detail/number_format/number_formatter.hpp>
 #include <xlnt/styles/number_format.hpp>
 #include <xlnt/utils/datetime.hpp>
 #include <xlnt/utils/exceptions.hpp>
+#include <detail/number_format/number_formatter.hpp>
 
 namespace {
 
 const std::unordered_map<std::size_t, xlnt::number_format> &builtin_formats()
 {
     static std::unordered_map<std::size_t, xlnt::number_format> *formats = nullptr;
-    
+
     if (formats == nullptr)
     {
-        const std::unordered_map<std::size_t, std::string> format_strings
-        {
+        const std::unordered_map<std::size_t, std::string> format_strings{
             {0, "General"},
             {1, "0"},
             {2, "0.00"},
@@ -76,8 +75,7 @@ const std::unordered_map<std::size_t, xlnt::number_format> &builtin_formats()
             {46, "[h]:mm:ss"},
             {47, "mmss.0"},
             {48, "##0.0E+0"},
-            {49, "@"}
-        };
+            {49, "@"}};
 
         formats = new std::unordered_map<std::size_t, xlnt::number_format>();
         auto &formats_ref = *formats;
@@ -234,7 +232,8 @@ const number_format number_format::date_time6()
     return builtin_formats().at(21);
 }
 
-number_format::number_format() : number_format("General", 0)
+number_format::number_format()
+    : number_format("General", 0)
 {
 }
 

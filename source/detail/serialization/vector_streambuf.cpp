@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2018 Thomas Fussell
+// Copyright (c) 2016-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +21,15 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#include <detail/serialization/vector_streambuf.hpp>
 #include <xlnt/utils/exceptions.hpp>
+#include <detail/serialization/vector_streambuf.hpp>
 
 namespace xlnt {
 namespace detail {
 
 vector_istreambuf::vector_istreambuf(const std::vector<std::uint8_t> &data)
     : data_(data),
-        position_(0)
+      position_(0)
 {
 }
 
@@ -116,13 +116,13 @@ std::streampos vector_istreambuf::seekpos(std::streampos sp, std::ios_base::open
     {
         position_ = static_cast<std::size_t>(sp);
     }
-        
+
     return static_cast<std::ptrdiff_t>(position_);
 }
 
 vector_ostreambuf::vector_ostreambuf(std::vector<std::uint8_t> &data)
     : data_(data),
-        position_(0)
+      position_(0)
 {
 }
 
@@ -209,7 +209,7 @@ std::streampos vector_ostreambuf::seekpos(std::streampos sp, std::ios_base::open
     {
         position_ = static_cast<std::size_t>(sp);
     }
-        
+
     return static_cast<std::ptrdiff_t>(position_);
 }
 

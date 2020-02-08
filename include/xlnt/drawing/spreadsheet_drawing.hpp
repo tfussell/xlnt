@@ -23,14 +23,14 @@
 
 #pragma once
 
+#include <xlnt/xlnt_config.hpp>
 #include <string>
 #include <vector>
-#include <xlnt/xlnt_config.hpp>
 
 namespace xml {
-    class parser;
-    class serializer;
-}
+class parser;
+class serializer;
+} // namespace xml
 
 namespace xlnt {
 
@@ -49,11 +49,11 @@ public:
     void serialize(xml::serializer &serializer);
 
     std::vector<std::string> get_embed_ids();
+
 private:
-	std::string serialized_value_;
+    std::string serialized_value_;
     std::vector<std::string> embed_ids_;
 };
 
 } // namespace drawing
 } // namespace xlnt
-

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -48,37 +48,37 @@ class xlsx_producer;
 class XLNT_API condition
 {
 public:
-	static condition text_starts_with(const std::string &start);
-	static condition text_ends_with(const std::string &end);
-	static condition text_contains(const std::string &start);
-	static condition text_does_not_contain(const std::string &start);
+    static condition text_starts_with(const std::string &start);
+    static condition text_ends_with(const std::string &end);
+    static condition text_contains(const std::string &start);
+    static condition text_does_not_contain(const std::string &start);
 
-    bool operator==(const condition& rhs) const
+    bool operator==(const condition &rhs) const
     {
         return text_comparand_ == rhs.text_comparand_;
     }
 
 private:
-	friend class detail::xlsx_producer;
+    friend class detail::xlsx_producer;
 
-	enum class type
-	{
-		contains_text
-	} type_;
+    enum class type
+    {
+        contains_text
+    } type_;
 
-	enum class condition_operator
-	{
-		starts_with,
-		ends_with,
-		contains,
-		does_not_contain
-	} operator_;
+    enum class condition_operator
+    {
+        starts_with,
+        ends_with,
+        contains,
+        does_not_contain
+    } operator_;
 
-	std::string text_comparand_;
+    std::string text_comparand_;
 };
 
 /// <summary>
-/// Describes a conditional format that will be applied to all cells in the 
+/// Describes a conditional format that will be applied to all cells in the
 /// associated range that satisfy the condition. This can only be constructed
 /// using methods on worksheet or range.
 /// </summary>
@@ -88,19 +88,19 @@ public:
     /// <summary>
     /// Delete zero-argument constructor
     /// </summary>
-	conditional_format() = delete;
+    conditional_format() = delete;
 
     /// <summary>
     /// Default copy constructor. Constructs a format using the same PIMPL as other.
     /// </summary>
-	conditional_format(const conditional_format &other) = default;
+    conditional_format(const conditional_format &other) = default;
 
     // Formatting (xf) components
 
-	/// <summary>
-	///
-	/// </summary>
-	bool has_border() const;
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_border() const;
 
     /// <summary>
     ///
@@ -110,12 +110,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-	conditional_format border(const xlnt::border &new_border);
+    conditional_format border(const xlnt::border &new_border);
 
-	/// <summary>
-	///
-	/// </summary>
-	bool has_fill() const;
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_fill() const;
 
     /// <summary>
     ///
@@ -125,12 +125,12 @@ public:
     /// <summary>
     ///
     /// </summary>
-	conditional_format fill(const xlnt::fill &new_fill);
+    conditional_format fill(const xlnt::fill &new_fill);
 
-	/// <summary>
-	///
-	/// </summary>
-	bool has_font() const;
+    /// <summary>
+    ///
+    /// </summary>
+    bool has_font() const;
 
     /// <summary>
     ///
@@ -140,17 +140,17 @@ public:
     /// <summary>
     ///
     /// </summary>
-	conditional_format font(const xlnt::font &new_font);
+    conditional_format font(const xlnt::font &new_font);
 
     /// <summary>
     /// Returns true if this format is equivalent to other.
     /// </summary>
     bool operator==(const conditional_format &other) const;
 
-	/// <summary>
-	/// Returns true if this format is not equivalent to other.
-	/// </summary>
-	bool operator!=(const conditional_format &other) const;
+    /// <summary>
+    /// Returns true if this format is not equivalent to other.
+    /// </summary>
+    bool operator!=(const conditional_format &other) const;
 
 private:
     friend struct detail::stylesheet;
@@ -159,7 +159,7 @@ private:
     /// <summary>
     ///
     /// </summary>
-	conditional_format(detail::conditional_format_impl *d);
+    conditional_format(detail::conditional_format_impl *d);
 
     /// <summary>
     ///

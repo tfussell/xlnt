@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018
+// Copyright (c) 2014-2020
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,7 @@ namespace xlnt {
 
 bool phonetic_run::operator==(const phonetic_run &other) const
 {
-    return std::tie(text, start, end, preserve_space) ==
-           std::tie(other.text, other.start, other.end, other.preserve_space);
+    return std::tie(text, start, end, preserve_space) == std::tie(other.text, other.start, other.end, other.preserve_space);
 }
 
 bool phonetic_run::operator!=(const phonetic_run &other) const

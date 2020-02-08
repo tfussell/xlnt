@@ -14,40 +14,40 @@ if(STATIC_CRT)
 endif()
 
 set(LIBSTUDXML
-  ${LIBSTUDXML_ROOT_DIR}/xml/parser.cxx
-  ${LIBSTUDXML_ROOT_DIR}/xml/qname.cxx
-  ${LIBSTUDXML_ROOT_DIR}/xml/serializer.cxx
-  ${LIBSTUDXML_ROOT_DIR}/xml/value-traits.cxx
-  ${LIBSTUDXML_ROOT_DIR}/xml/content
-  ${LIBSTUDXML_ROOT_DIR}/xml/exception
-  ${LIBSTUDXML_ROOT_DIR}/xml/forward
-  ${LIBSTUDXML_ROOT_DIR}/xml/parser
-  ${LIBSTUDXML_ROOT_DIR}/xml/qname
-  ${LIBSTUDXML_ROOT_DIR}/xml/serializer
-  ${LIBSTUDXML_ROOT_DIR}/xml/value-traits)
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/parser.cxx
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/qname.cxx
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/serializer.cxx
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/value-traits.cxx
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/content
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/exception
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/forward
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/parser
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/qname
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/serializer
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/value-traits)
 
 set(GENX
-  ${LIBSTUDXML_ROOT_DIR}/xml/details/genx/char-props.c
-  ${LIBSTUDXML_ROOT_DIR}/xml/details/genx/genx.c
-  ${LIBSTUDXML_ROOT_DIR}/xml/details/genx/genx.h)
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/details/genx/char-props.c
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/details/genx/genx.c
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/details/genx/genx.h)
 
 set(EXPAT
-  ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/xmlparse.c
-  ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/xmlrole.c
-  ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/xmltok.c
-  ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/ascii.h
-  ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/asciitab.h
-  ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/config.h
-  ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/expat_external.h
-  ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/expat.h
-  ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/iasciitab.h
-  ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/internal.h
-  ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/latin1tab.h
-  ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/nametab.h
-  ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/utf8tab.h
-  ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/xmlrole.h
-  ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/xmltok_impl.h
-  ${LIBSTUDXML_ROOT_DIR}/xml/details/expat/xmltok.h)
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/details/expat/xmlparse.c
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/details/expat/xmlrole.c
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/details/expat/xmltok.c
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/details/expat/ascii.h
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/details/expat/asciitab.h
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/details/expat/config.h
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/details/expat/expat_external.h
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/details/expat/expat.h
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/details/expat/iasciitab.h
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/details/expat/internal.h
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/details/expat/latin1tab.h
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/details/expat/nametab.h
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/details/expat/utf8tab.h
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/details/expat/xmlrole.h
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/details/expat/xmltok_impl.h
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/details/expat/xmltok.h)
 
 add_library(libstudxml OBJECT ${LIBSTUDXML} ${GENX} ${EXPAT})
 

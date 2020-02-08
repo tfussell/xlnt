@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,11 +26,6 @@
 #include <cmath>
 #include <sstream>
 
-#include <detail/implementations/cell_impl.hpp>
-#include <detail/implementations/format_impl.hpp>
-#include <detail/implementations/hyperlink_impl.hpp>
-#include <detail/implementations/stylesheet.hpp>
-#include <detail/implementations/worksheet_impl.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/cell/comment.hpp>
@@ -54,9 +49,14 @@
 #include <xlnt/utils/timedelta.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/column_properties.hpp>
+#include <xlnt/worksheet/phonetic_pr.hpp>
 #include <xlnt/worksheet/row_properties.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
-#include <xlnt/worksheet/phonetic_pr.hpp>
+#include <detail/implementations/cell_impl.hpp>
+#include <detail/implementations/format_impl.hpp>
+#include <detail/implementations/hyperlink_impl.hpp>
+#include <detail/implementations/stylesheet.hpp>
+#include <detail/implementations/worksheet_impl.hpp>
 
 namespace {
 
@@ -411,7 +411,7 @@ void cell::hyperlink(const std::string &url, const std::string &display)
     }
 }
 
-void cell::hyperlink(xlnt::cell target, const std::string& display)
+void cell::hyperlink(xlnt::cell target, const std::string &display)
 {
     // TODO: should this computed value be a method on a cell?
     const auto cell_address = target.worksheet().title() + "!" + target.reference().to_string();
@@ -439,7 +439,7 @@ void cell::hyperlink(xlnt::range target, const std::string &display)
     d_->hyperlink_ = detail::hyperlink_impl();
     d_->hyperlink_.get().relationship = xlnt::relationship("", relationship_type::hyperlink,
         uri(""), uri(range_address), target_mode::internal);
-    
+
     // if a value is already present, the display string is ignored
     if (has_value())
     {

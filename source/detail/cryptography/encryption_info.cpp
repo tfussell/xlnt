@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018 Thomas Fussell
+// Copyright (c) 2017-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -38,8 +38,8 @@ std::vector<std::uint8_t> calculate_standard_key(
     // H_0 = H(salt + password)
     auto salt_plus_password = info.salt;
     auto password_bytes = xlnt::detail::string_to_bytes(password);
-    std::copy(password_bytes.begin(), 
-        password_bytes.end(), 
+    std::copy(password_bytes.begin(),
+        password_bytes.end(),
         std::back_inserter(salt_plus_password));
     auto h_0 = hash(info.hash, salt_plus_password);
 
@@ -128,10 +128,9 @@ std::vector<std::uint8_t> calculate_agile_key(
     static const std::size_t block_size = 8;
 
     auto calculate_block = [&info](
-        const std::vector<std::uint8_t> &raw_key,
-        const std::array<std::uint8_t, block_size> &block,
-        const std::vector<std::uint8_t> &encrypted)
-    {
+                               const std::vector<std::uint8_t> &raw_key,
+                               const std::array<std::uint8_t, block_size> &block,
+                               const std::vector<std::uint8_t> &encrypted) {
         auto combined = raw_key;
         combined.insert(combined.end(), block.begin(), block.end());
 
@@ -143,12 +142,12 @@ std::vector<std::uint8_t> calculate_agile_key(
         return aes_cbc_decrypt(encrypted, key, info.key_encryptor.salt_value);
     };
 
-    const std::array<std::uint8_t, block_size> input_block_key = { { 0xfe, 0xa7, 0xd2, 0x76, 0x3b, 0x4b, 0x9e, 0x79 } };
+    const std::array<std::uint8_t, block_size> input_block_key = {{0xfe, 0xa7, 0xd2, 0x76, 0x3b, 0x4b, 0x9e, 0x79}};
     auto hash_input = calculate_block(h_n, input_block_key, info.key_encryptor.verifier_hash_input);
     auto calculated_verifier = hash(info.key_encryptor.hash, hash_input);
 
     const std::array<std::uint8_t, block_size> verifier_block_key = {
-        { 0xd7, 0xaa, 0x0f, 0x6d, 0x30, 0x61, 0x34, 0x4e } };
+        {0xd7, 0xaa, 0x0f, 0x6d, 0x30, 0x61, 0x34, 0x4e}};
     auto expected_verifier = calculate_block(h_n, verifier_block_key, info.key_encryptor.verifier_hash_value);
     expected_verifier.resize(calculated_verifier.size());
 
@@ -158,9 +157,8 @@ std::vector<std::uint8_t> calculate_agile_key(
     }
 
     const std::array<std::uint8_t, block_size> key_value_block_key =
-    {
-        { 0x14, 0x6e, 0x0b, 0xe7, 0xab, 0xac, 0xd0, 0xd6 }
-    };
+        {
+            {0x14, 0x6e, 0x0b, 0xe7, 0xab, 0xac, 0xd0, 0xd6}};
 
     return calculate_block(h_n, key_value_block_key, info.key_encryptor.encrypted_key_value);
 }

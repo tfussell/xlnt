@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -111,12 +111,13 @@ bool pattern_fill::operator==(const pattern_fill &other) const
 
 bool pattern_fill::operator!=(const pattern_fill &other) const
 {
-	return !(*this == other);
+    return !(*this == other);
 }
 
 // gradient_fill
 
-gradient_fill::gradient_fill() : type_(gradient_fill_type::linear)
+gradient_fill::gradient_fill()
+    : type_(gradient_fill_type::linear)
 {
 }
 
@@ -245,7 +246,7 @@ bool gradient_fill::operator==(const gradient_fill &other) const
 
 bool gradient_fill::operator!=(const gradient_fill &other) const
 {
-	return !(*this == other);
+    return !(*this == other);
 }
 
 // fill
@@ -253,9 +254,9 @@ bool gradient_fill::operator!=(const gradient_fill &other) const
 fill fill::solid(const color &fill_color)
 {
     return fill(xlnt::pattern_fill()
-		.type(xlnt::pattern_fill_type::solid)
-		.foreground(fill_color)
-		.background(indexed_color(64)));
+                    .type(xlnt::pattern_fill_type::solid)
+                    .foreground(fill_color)
+                    .background(indexed_color(64)));
 }
 
 fill::fill()
@@ -315,7 +316,7 @@ bool fill::operator==(const fill &other) const
 
 bool fill::operator!=(const fill &other) const
 {
-	return !(*this == other);
+    return !(*this == other);
 }
 
 } // namespace xlnt

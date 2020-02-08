@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,8 +21,8 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <xlnt/utils/exceptions.hpp>
 #include <detail/constants.hpp>
-#include <detail/unicode.hpp>
 #include <detail/cryptography/aes.hpp>
 #include <detail/cryptography/base64.hpp>
 #include <detail/cryptography/compound_document.hpp>
@@ -33,13 +33,13 @@
 #include <detail/serialization/vector_streambuf.hpp>
 #include <detail/serialization/xlsx_producer.hpp>
 #include <detail/serialization/zstream.hpp>
-#include <xlnt/utils/exceptions.hpp>
+#include <detail/unicode.hpp>
 
 namespace {
 
 using xlnt::detail::encryption_info;
 
-encryption_info generate_encryption_info(const std::u16string &/*password*/)
+encryption_info generate_encryption_info(const std::u16string & /*password*/)
 {
     encryption_info result;
 
@@ -54,25 +54,22 @@ encryption_info generate_encryption_info(const std::u16string &/*password*/)
     result.agile.key_data.hash_size = 64;
     result.agile.key_data.key_bits = 256;
     result.agile.key_data.salt_size = 16;
-    result.agile.key_data.salt_value = 
-    { 
-        { 40, 183, 193, 64, 115, 97, 10, 177, 122, 50, 243, 123, 229, 145, 162, 247 }
-    };
+    result.agile.key_data.salt_value =
+        {
+            {40, 183, 193, 64, 115, 97, 10, 177, 122, 50, 243, 123, 229, 145, 162, 247}};
 
-    result.agile.data_integrity.hmac_key = 
-    {
-        { 90, 206, 203, 147, 102, 81, 82, 14, 118, 94, 168, 38, 200, 79, 13, 147, 60,
-        123, 167, 220, 17, 165, 124, 188, 206, 74, 98, 33, 156, 63, 220, 152, 180, 201,
-        167, 183, 141, 252, 182, 55, 90, 189, 187, 167, 230, 186, 61, 239, 80, 49, 54,
-        208, 52, 133, 232, 187, 117, 136, 213, 48, 133, 15, 7, 126 }
-    };
-    result.agile.data_integrity.hmac_value = 
-    {
-        { 49, 128, 174, 178, 161, 48, 1, 82, 241, 103, 72, 223, 103, 111, 204, 73,
-        210, 70, 254, 43, 12, 134, 180, 201, 124, 153, 214, 115, 82, 184, 78, 2,
-        166, 106, 69, 18, 173, 177, 40, 238, 243, 240, 3, 86, 145, 218, 223, 177,
-        36, 34, 44, 159, 104, 163, 217, 42, 203, 135, 173, 14, 218, 172, 72, 224 }
-    };
+    result.agile.data_integrity.hmac_key =
+        {
+            {90, 206, 203, 147, 102, 81, 82, 14, 118, 94, 168, 38, 200, 79, 13, 147, 60,
+                123, 167, 220, 17, 165, 124, 188, 206, 74, 98, 33, 156, 63, 220, 152, 180, 201,
+                167, 183, 141, 252, 182, 55, 90, 189, 187, 167, 230, 186, 61, 239, 80, 49, 54,
+                208, 52, 133, 232, 187, 117, 136, 213, 48, 133, 15, 7, 126}};
+    result.agile.data_integrity.hmac_value =
+        {
+            {49, 128, 174, 178, 161, 48, 1, 82, 241, 103, 72, 223, 103, 111, 204, 73,
+                210, 70, 254, 43, 12, 134, 180, 201, 124, 153, 214, 115, 82, 184, 78, 2,
+                166, 106, 69, 18, 173, 177, 40, 238, 243, 240, 3, 86, 145, 218, 223, 177,
+                36, 34, 44, 159, 104, 163, 217, 42, 203, 135, 173, 14, 218, 172, 72, 224}};
 
     result.agile.key_encryptor.spin_count = 100000;
     result.agile.key_encryptor.block_size = 16;
@@ -82,26 +79,22 @@ encryption_info generate_encryption_info(const std::u16string &/*password*/)
     result.agile.key_encryptor.hash_size = 64;
     result.agile.key_encryptor.key_bits = 256;
     result.agile.key_encryptor.salt_size = 16;
-    result.agile.key_encryptor.salt_value = 
-    {
-        { 98, 169, 85, 224, 173, 253, 2, 52, 199, 108, 195, 73, 116, 112, 72, 165 }
-    };
+    result.agile.key_encryptor.salt_value =
+        {
+            {98, 169, 85, 224, 173, 253, 2, 52, 199, 108, 195, 73, 116, 112, 72, 165}};
     result.agile.key_encryptor.verifier_hash_input =
-    {
-        { 179, 105, 118, 193, 217, 180, 248, 7, 174, 45, 186, 17, 202, 101, 178, 12 }
-    };
+        {
+            {179, 105, 118, 193, 217, 180, 248, 7, 174, 45, 186, 17, 202, 101, 178, 12}};
     result.agile.key_encryptor.verifier_hash_value =
-    {
-        { 82, 190, 235, 102, 30, 33, 103, 191, 3, 160, 153, 30, 127, 117, 8, 195, 65,
-        245, 77, 219, 85, 28, 206, 236, 55, 86, 243, 49, 104, 128, 243, 138, 227, 113,
-        82, 88, 88, 73, 243, 108, 193, 11, 84, 162, 235, 189, 9, 137, 151, 97, 43,
-        137, 197, 72, 164, 192, 65, 252, 253, 227, 236, 242, 252, 179 }
-    };
+        {
+            {82, 190, 235, 102, 30, 33, 103, 191, 3, 160, 153, 30, 127, 117, 8, 195, 65,
+                245, 77, 219, 85, 28, 206, 236, 55, 86, 243, 49, 104, 128, 243, 138, 227, 113,
+                82, 88, 88, 73, 243, 108, 193, 11, 84, 162, 235, 189, 9, 137, 151, 97, 43,
+                137, 197, 72, 164, 192, 65, 252, 253, 227, 236, 242, 252, 179}};
     result.agile.key_encryptor.encrypted_key_value =
-    {
-        { 220, 6, 106, 218, 31, 210, 9, 75, 28, 154, 173, 232, 190, 109, 112, 203, 25,
-        5, 45, 152,75, 131, 122, 17, 166, 95, 117, 124, 121, 123, 32, 133 }
-    };
+        {
+            {220, 6, 106, 218, 31, 210, 9, 75, 28, 154, 173, 232, 190, 109, 112, 203, 25,
+                5, 45, 152, 75, 131, 122, 17, 166, 95, 117, 124, 121, 123, 32, 133}};
 
     return result;
 }
@@ -241,7 +234,7 @@ void encrypt_xlsx_agile(
         std::copy(start, start + static_cast<std::ptrdiff_t>(bytes), segment.begin());
         auto encrypted_segment = xlnt::detail::aes_cbc_encrypt(segment, key, iv);
         ciphertext_stream.write(reinterpret_cast<char *>(encrypted_segment.data()),
-	    static_cast<std::streamsize>(bytes));
+            static_cast<std::streamsize>(bytes));
 
         ++segment_index;
     }
@@ -265,7 +258,7 @@ void encrypt_xlsx_standard(
         std::copy(start, start + static_cast<std::ptrdiff_t>(bytes), segment.begin());
         auto encrypted_segment = xlnt::detail::aes_ecb_encrypt(segment, key);
         ciphertext_stream.write(reinterpret_cast<char *>(encrypted_segment.data()),
-	    static_cast<std::streamsize>(bytes));
+            static_cast<std::streamsize>(bytes));
     }
 }
 
@@ -284,9 +277,9 @@ std::vector<std::uint8_t> encrypt_xlsx(
 
     if (encryption_info.is_agile)
     {
-        write_agile_encryption_info(encryption_info, 
+        write_agile_encryption_info(encryption_info,
             document.open_write_stream("/EncryptionInfo"));
-        encrypt_xlsx_agile(encryption_info, plaintext, 
+        encrypt_xlsx_agile(encryption_info, plaintext,
             document.open_write_stream("/EncryptedPackage"));
     }
     else

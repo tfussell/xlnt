@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -36,7 +36,6 @@ class worksheet;
 // Note: There are const and non-const implementations of this iterator
 // because one needs to point at a const workbook and the other needs
 // to point at a non-const workbook stored as a member variable, respectively.
-
 
 /// <summary>
 /// An iterator which is used to iterate over the worksheets in a workbook.
@@ -147,7 +146,6 @@ private:
     /// </summary>
     std::size_t index_ = 0;
 };
-
 
 /// <summary>
 /// An iterator which is used to iterate over the worksheets in a const workbook.

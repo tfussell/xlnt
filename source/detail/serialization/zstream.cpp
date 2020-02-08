@@ -43,9 +43,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 #include <iterator> // for std::back_inserter
 #include <stdexcept>
 #include <string>
+#include <miniz.h>
 
 #include <xlnt/utils/exceptions.hpp>
-#include <detail/serialization/miniz.hpp>
 #include <detail/serialization/vector_streambuf.hpp>
 #include <detail/serialization/zstream.hpp>
 
@@ -401,7 +401,6 @@ protected:
             {
                 valid = false;
                 std::cerr << "gzip: gzip error " << strm.msg << std::endl;
-                ;
                 return -1;
             }
 
@@ -540,9 +539,9 @@ bool izstream::read_central_header()
 
     for (std::streamoff i = 0; i < read_start - 3; ++i)
     {
-        if (buf[static_cast<std::size_t>(i)] == 0x50 
-            && buf[static_cast<std::size_t>(i) + 1] == 0x4b 
-            && buf[static_cast<std::size_t>(i) + 2] == 0x05 
+        if (buf[static_cast<std::size_t>(i)] == 0x50
+            && buf[static_cast<std::size_t>(i) + 1] == 0x4b
+            && buf[static_cast<std::size_t>(i) + 2] == 0x05
             && buf[static_cast<std::size_t>(i) + 3] == 0x06)
         {
             found_header = true;

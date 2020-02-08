@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@
 namespace xml {
 class parser;
 class serializer;
-}
+} // namespace xml
 
 namespace xlnt {
 
@@ -46,16 +46,16 @@ class XLNT_API ext_list
 public:
     struct ext
     {
-        ext(xml::parser &parser, const std::string& ns);
-        ext(const uri& ID, const std::string& serialised);
-        void serialise(xml::serializer &serialiser, const std::string& ns);
+        ext(xml::parser &parser, const std::string &ns);
+        ext(const uri &ID, const std::string &serialised);
+        void serialise(xml::serializer &serialiser, const std::string &ns);
 
         uri extension_ID_;
         std::string serialised_value_;
     };
     ext_list() = default; // default ctor required by xlnt::optional
-    explicit ext_list(xml::parser &parser, const std::string& ns);
-    void serialize(xml::serializer &serialiser, const std::string& ns);
+    explicit ext_list(xml::parser &parser, const std::string &ns);
+    void serialize(xml::serializer &serialiser, const std::string &ns);
 
     void add_extension(const uri &ID, const std::string &element);
 
@@ -65,12 +65,13 @@ public:
 
     const std::vector<ext> &extensions() const;
 
-    bool operator==(const ext_list& rhs) const;
+    bool operator==(const ext_list &rhs) const;
+
 private:
     std::vector<ext> extensions_;
 };
 
-inline bool operator==(const ext_list::ext& lhs, const ext_list::ext& rhs)
+inline bool operator==(const ext_list::ext &lhs, const ext_list::ext &rhs)
 {
     return lhs.extension_ID_ == rhs.extension_ID_
         && lhs.serialised_value_ == rhs.serialised_value_;

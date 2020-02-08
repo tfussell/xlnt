@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2018 Thomas Fussell
+// Copyright (c) 2016-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,9 @@
 
 #pragma once
 
-#include "xlnt/xlnt_config.hpp"
 #include "xlnt/utils/exceptions.hpp"
 #include "xlnt/utils/numeric.hpp"
+#include "xlnt/xlnt_config.hpp"
 #include <type_traits>
 
 namespace xlnt {

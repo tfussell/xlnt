@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -357,6 +357,12 @@ private:
     /// the end of that element hasn't been reached in the XML document.
     /// </summary>
     bool in_element(const xml::qname &name);
+
+    /// <summary>
+    /// Throws an exception or skips remaining elements depending on
+    /// the value of THROW_ON_INVALID_XML.
+    /// </summary>
+    void unexpected_element(const xml::qname &name);
 
     // Properties
 

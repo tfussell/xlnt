@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -81,29 +81,29 @@ public:
     bool hidden() const;
 
     /// <summary>
-    /// Sets the hidden state of this style to value. A hidden style will not 
-	/// be shown in the list of selectable styles in the UI, but will still 
-	/// apply its formatting to cells using it.
+    /// Sets the hidden state of this style to value. A hidden style will not
+    /// be shown in the list of selectable styles in the UI, but will still
+    /// apply its formatting to cells using it.
     /// </summary>
     style hidden(bool value);
 
     /// <summary>
     /// Returns true if this is a builtin style that has been customized and
-	/// should therefore be persisted in the workbook.
+    /// should therefore be persisted in the workbook.
     /// </summary>
     bool custom_builtin() const;
 
     /// <summary>
-    /// Returns the index of the builtin style that this style is an instance 
-	/// of or is a customized version thereof. If style::builtin() is false,
-	/// this will throw an invalid_attribute exception.
+    /// Returns the index of the builtin style that this style is an instance
+    /// of or is a customized version thereof. If style::builtin() is false,
+    /// this will throw an invalid_attribute exception.
     /// </summary>
     std::size_t builtin_id() const;
 
-	/// <summary>
-	/// Returns true if this is a builtin style.
-	/// </summary>
-	bool builtin() const;
+    /// <summary>
+    /// Returns true if this is a builtin style.
+    /// </summary>
+    bool builtin() const;
 
     // Formatting (xf) components
 
@@ -131,7 +131,7 @@ public:
     class border border() const;
 
     /// <summary>
-    /// Returns true if the border set for this style should be applied to cells using the style.        
+    /// Returns true if the border set for this style should be applied to cells using the style.
     /// </summary>
     bool border_applied() const;
 
@@ -148,7 +148,7 @@ public:
     class fill fill() const;
 
     /// <summary>
-    /// Returns true if the fill set for this style should be applied to cells using the style.        
+    /// Returns true if the fill set for this style should be applied to cells using the style.
     /// </summary>
     bool fill_applied() const;
 
@@ -165,7 +165,7 @@ public:
     class font font() const;
 
     /// <summary>
-    /// Returns true if the font set for this style should be applied to cells using the style.        
+    /// Returns true if the font set for this style should be applied to cells using the style.
     /// </summary>
     bool font_applied() const;
 
@@ -182,7 +182,7 @@ public:
     class number_format number_format() const;
 
     /// <summary>
-    /// Returns true if the number_format set for this style should be applied to cells using the style.    
+    /// Returns true if the number_format set for this style should be applied to cells using the style.
     /// </summary>
     bool number_format_applied() const;
 
@@ -217,7 +217,7 @@ public:
 
     /// <summary>
     /// If show is true, a pivot table interface will be displayed for cells using
-	/// this style.
+    /// this style.
     /// </summary>
     void pivot_button(bool show);
 
@@ -228,8 +228,8 @@ public:
 
     /// <summary>
     /// If quote is true, enables a single-quote prefix for all text values in cells
-	/// using this style (e.g. "abc" will appear as "'abc"). The text will also not
-	/// be stored in sharedStrings when this is enabled.
+    /// using this style (e.g. "abc" will appear as "'abc"). The text will also not
+    /// be stored in sharedStrings when this is enabled.
     /// </summary>
     void quote_prefix(bool quote);
 
@@ -238,10 +238,10 @@ public:
     /// </summary>
     bool operator==(const style &other) const;
 
-	/// <summary>
-	/// Returns true if this style is not equivalent to other.
-	/// </summary>
-	bool operator!=(const style &other) const;
+    /// <summary>
+    /// Returns true if this style is not equivalent to other.
+    /// </summary>
+    bool operator!=(const style &other) const;
 
 private:
     friend struct detail::stylesheet;

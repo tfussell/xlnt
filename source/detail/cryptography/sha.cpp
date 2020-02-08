@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018 Thomas Fussell
+// Copyright (c) 2017-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +25,8 @@
 #include <array>
 #include <cstring>
 #include <iomanip>
-#include <string>
 #include <sstream>
+#include <string>
 
 #include <detail/cryptography/sha.hpp>
 
@@ -34,7 +34,6 @@ extern "C" {
 
 extern void sha1_hash(const uint8_t *message, size_t len, uint32_t hash[5]);
 extern void sha512_hash(const uint8_t *message, size_t len, uint64_t hash[8]);
-
 }
 
 namespace {

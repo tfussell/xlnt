@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -203,7 +203,7 @@ public:
     /// <summary>
     /// Sets the top left cell of this view.
     /// </summary>
-    void top_left_cell(const cell_reference& ref)
+    void top_left_cell(const cell_reference &ref)
     {
         top_left_cell_.set(ref);
     }

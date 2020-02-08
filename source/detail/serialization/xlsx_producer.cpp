@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,13 +26,6 @@
 #include <string>
 #include <unordered_set>
 
-#include <detail/constants.hpp>
-#include <detail/implementations/workbook_impl.hpp>
-#include <detail/header_footer/header_footer_code.hpp>
-#include <detail/serialization/custom_value_traits.hpp>
-#include <detail/serialization/vector_streambuf.hpp>
-#include <detail/serialization/xlsx_producer.hpp>
-#include <detail/serialization/zstream.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/hyperlink.hpp>
 #include <xlnt/packaging/manifest.hpp>
@@ -43,13 +36,20 @@
 #include <xlnt/workbook/workbook_view.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
+#include <detail/constants.hpp>
+#include <detail/header_footer/header_footer_code.hpp>
+#include <detail/implementations/workbook_impl.hpp>
+#include <detail/serialization/custom_value_traits.hpp>
+#include <detail/serialization/vector_streambuf.hpp>
+#include <detail/serialization/xlsx_producer.hpp>
+#include <detail/serialization/zstream.hpp>
 
 namespace {
 
 std::vector<std::pair<std::string, std::string>> core_property_namespace(xlnt::core_property type)
 {
-    using xlnt::core_property;
     using xlnt::constants;
+    using xlnt::core_property;
 
     if (type == core_property::created
         || type == core_property::modified)
@@ -228,127 +228,121 @@ void xlsx_producer::write_property(const std::string &name, const variant &value
 
     switch (value.value_type())
     {
-    case variant::type::null:
+    case variant::type::null: {
+        break;
+    }
+
+    case variant::type::boolean: {
+        if (custom)
         {
-            break;
+            write_attribute("fmtid", "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
+            write_attribute("pid", pid);
+            write_start_element(constants::ns("vt"), "bool");
         }
 
-    case variant::type::boolean:
+        write_characters(value.get<bool>() ? "true" : "false");
+
+        if (custom)
         {
-            if (custom)
-            {
-                write_attribute("fmtid", "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
-                write_attribute("pid", pid);
-                write_start_element(constants::ns("vt"), "bool");
-            }
-
-            write_characters(value.get<bool>() ? "true" : "false");
-
-            if (custom)
-            {
-                write_end_element(constants::ns("vt"), "bool");
-            }
-
-            break;
+            write_end_element(constants::ns("vt"), "bool");
         }
 
-    case variant::type::i4:
+        break;
+    }
+
+    case variant::type::i4: {
+        if (custom)
         {
-            if (custom)
-            {
-                write_attribute("fmtid", "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
-                write_attribute("pid", pid);
-                write_start_element(constants::ns("vt"), "i4");
-            }
-
-            write_characters(value.get<std::int32_t>());
-
-            if (custom)
-            {
-                write_end_element(constants::ns("vt"), "i4");
-            }
-
-            break;
+            write_attribute("fmtid", "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
+            write_attribute("pid", pid);
+            write_start_element(constants::ns("vt"), "i4");
         }
 
-    case variant::type::lpstr:
+        write_characters(value.get<std::int32_t>());
+
+        if (custom)
         {
-            if (custom)
-            {
-                write_attribute("fmtid", "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
-                write_attribute("pid", pid);
-                write_start_element(constants::ns("vt"), "lpwstr");
-            }
-
-            if (!custom && ns == constants::ns("dcterms") && (name == "created" || name == "modified"))
-            {
-                write_attribute(xml::qname(constants::ns("xsi"), "type"), "dcterms:W3CDTF");
-            }
-
-            write_characters(value.get<std::string>());
-
-            if (custom)
-            {
-                write_end_element(constants::ns("vt"), "lpwstr");
-            }
-
-            break;
+            write_end_element(constants::ns("vt"), "i4");
         }
 
-    case variant::type::date:
+        break;
+    }
+
+    case variant::type::lpstr: {
+        if (custom)
+        {
+            write_attribute("fmtid", "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
+            write_attribute("pid", pid);
+            write_start_element(constants::ns("vt"), "lpwstr");
+        }
+
+        if (!custom && ns == constants::ns("dcterms") && (name == "created" || name == "modified"))
         {
             write_attribute(xml::qname(constants::ns("xsi"), "type"), "dcterms:W3CDTF");
-            write_characters(value.get<datetime>().to_iso_string());
-
-            break;
         }
 
-    case variant::type::vector:
+        write_characters(value.get<std::string>());
+
+        if (custom)
         {
-            write_start_element(constants::ns("vt"), "vector");
-
-            auto vector = value.get<std::vector<variant>>();
-            std::unordered_set<variant::type, scoped_enum_hash<variant::type>> types;
-
-            for (const auto &element : vector)
-            {
-                types.insert(element.value_type());
-            }
-
-            const auto is_mixed = types.size() > 1;
-            const auto vector_type = !is_mixed ? to_string(*types.begin()) : "variant";
-
-            write_attribute("size", vector.size());
-            write_attribute("baseType", vector_type);
-
-            for (std::size_t i = 0; i < vector.size(); ++i)
-            {
-                const auto &vector_element = vector.at(i);
-
-                if (is_mixed)
-                {
-                    write_start_element(constants::ns("vt"), "variant");
-                }
-
-                if (vector_element.value_type() == variant::type::lpstr)
-                {
-                    write_element(constants::ns("vt"), "lpstr", vector_element.get<std::string>());
-                }
-                else if (vector_element.value_type() == variant::type::i4)
-                {
-                    write_element(constants::ns("vt"), "i4", vector_element.get<std::int32_t>());
-                }
-
-                if (is_mixed)
-                {
-                    write_end_element(constants::ns("vt"), "variant");
-                }
-            }
-
-            write_end_element(constants::ns("vt"), "vector");
-
-            break;
+            write_end_element(constants::ns("vt"), "lpwstr");
         }
+
+        break;
+    }
+
+    case variant::type::date: {
+        write_attribute(xml::qname(constants::ns("xsi"), "type"), "dcterms:W3CDTF");
+        write_characters(value.get<datetime>().to_iso_string());
+
+        break;
+    }
+
+    case variant::type::vector: {
+        write_start_element(constants::ns("vt"), "vector");
+
+        auto vector = value.get<std::vector<variant>>();
+        std::unordered_set<variant::type, scoped_enum_hash<variant::type>> types;
+
+        for (const auto &element : vector)
+        {
+            types.insert(element.value_type());
+        }
+
+        const auto is_mixed = types.size() > 1;
+        const auto vector_type = !is_mixed ? to_string(*types.begin()) : "variant";
+
+        write_attribute("size", vector.size());
+        write_attribute("baseType", vector_type);
+
+        for (std::size_t i = 0; i < vector.size(); ++i)
+        {
+            const auto &vector_element = vector.at(i);
+
+            if (is_mixed)
+            {
+                write_start_element(constants::ns("vt"), "variant");
+            }
+
+            if (vector_element.value_type() == variant::type::lpstr)
+            {
+                write_element(constants::ns("vt"), "lpstr", vector_element.get<std::string>());
+            }
+            else if (vector_element.value_type() == variant::type::i4)
+            {
+                write_element(constants::ns("vt"), "i4", vector_element.get<std::int32_t>());
+            }
+
+            if (is_mixed)
+            {
+                write_end_element(constants::ns("vt"), "variant");
+            }
+        }
+
+        write_end_element(constants::ns("vt"), "vector");
+
+        break;
+    }
     }
 
     if (custom)
@@ -361,7 +355,7 @@ void xlsx_producer::write_property(const std::string &name, const variant &value
     }
 }
 
-void xlsx_producer::write_core_properties(const relationship &/*rel*/)
+void xlsx_producer::write_core_properties(const relationship & /*rel*/)
 {
     write_start_element(constants::ns("core-properties"), "coreProperties");
 
@@ -390,7 +384,7 @@ void xlsx_producer::write_core_properties(const relationship &/*rel*/)
     write_end_element(constants::ns("core-properties"), "coreProperties");
 }
 
-void xlsx_producer::write_extended_properties(const relationship &/*rel*/)
+void xlsx_producer::write_extended_properties(const relationship & /*rel*/)
 {
     write_start_element(constants::ns("extended-properties"), "Properties");
     write_namespace(constants::ns("extended-properties"), "");
@@ -410,7 +404,7 @@ void xlsx_producer::write_extended_properties(const relationship &/*rel*/)
     write_end_element(constants::ns("extended-properties"), "Properties");
 }
 
-void xlsx_producer::write_custom_properties(const relationship &/*rel*/)
+void xlsx_producer::write_custom_properties(const relationship & /*rel*/)
 {
     write_start_element(constants::ns("custom-properties"), "Properties");
     write_namespace(constants::ns("custom-properties"), "");
@@ -879,7 +873,7 @@ void xlsx_producer::write_rich_text(const std::string &ns, const xlnt::rich_text
             write_end_element(ns, "r");
         }
     }
-    
+
     for (const auto &run : text.phonetic_runs())
     {
         write_start_element(ns, "rPh");
@@ -909,7 +903,7 @@ void xlsx_producer::write_rich_text(const std::string &ns, const xlnt::rich_text
             const auto alignment = phonetic_properties.alignment();
             write_attribute("alignment", phonetic_properties.alignment_as_string(alignment));
         }
-        
+
         write_end_element(ns, "phoneticPr");
     }
 }
@@ -983,29 +977,29 @@ void xlsx_producer::write_shared_workbook_user_data(const relationship & /*rel*/
 
 void xlsx_producer::write_font(const font &f)
 {
-	static const auto &xmlns = constants::ns("spreadsheetml");
+    static const auto &xmlns = constants::ns("spreadsheetml");
 
-	write_start_element(xmlns, "font");
+    write_start_element(xmlns, "font");
 
-	if (f.bold())
-	{
-		write_start_element(xmlns, "b");
-		write_end_element(xmlns, "b");
-	}
+    if (f.bold())
+    {
+        write_start_element(xmlns, "b");
+        write_end_element(xmlns, "b");
+    }
 
-	if (f.italic())
-	{
-		write_start_element(xmlns, "i");
-		write_end_element(xmlns, "i");
-	}
+    if (f.italic())
+    {
+        write_start_element(xmlns, "i");
+        write_end_element(xmlns, "i");
+    }
 
-	if (f.strikethrough())
-	{
-		write_start_element(xmlns, "strike");
-		write_end_element(xmlns, "strike");
-	}
+    if (f.strikethrough())
+    {
+        write_start_element(xmlns, "strike");
+        write_end_element(xmlns, "strike");
+    }
 
-     if (f.underlined())
+    if (f.underlined())
     {
         write_start_element(xmlns, "u");
         if (f.underline() != font::underline_style::single)
@@ -1033,14 +1027,14 @@ void xlsx_producer::write_font(const font &f)
         write_start_element(xmlns, "sz");
         write_attribute("val", f.size());
         write_end_element(xmlns, "sz");
-     }
+    }
 
-	if (f.has_color())
-	{
-		write_start_element(xmlns, "color");
-		write_color(f.color());
-		write_end_element(xmlns, "color");
-	}
+    if (f.has_color())
+    {
+        write_start_element(xmlns, "color");
+        write_color(f.color());
+        write_end_element(xmlns, "color");
+    }
 
     if (f.has_name())
     {
@@ -1049,144 +1043,144 @@ void xlsx_producer::write_font(const font &f)
         write_end_element(xmlns, "name");
     }
 
-	if (f.has_family())
-	{
-		write_start_element(xmlns, "family");
-		write_attribute("val", f.family());
-		write_end_element(xmlns, "family");
-	}
+    if (f.has_family())
+    {
+        write_start_element(xmlns, "family");
+        write_attribute("val", f.family());
+        write_end_element(xmlns, "family");
+    }
 
-	if (f.has_scheme())
-	{
-		write_start_element(xmlns, "scheme");
-		write_attribute("val", f.scheme());
-		write_end_element(xmlns, "scheme");
-	}
+    if (f.has_scheme())
+    {
+        write_start_element(xmlns, "scheme");
+        write_attribute("val", f.scheme());
+        write_end_element(xmlns, "scheme");
+    }
 
-	write_end_element(xmlns, "font");
+    write_end_element(xmlns, "font");
 }
 
 void xlsx_producer::write_fill(const fill &f)
 {
-	static const auto &xmlns = constants::ns("spreadsheetml");
+    static const auto &xmlns = constants::ns("spreadsheetml");
 
-	write_start_element(xmlns, "fill");
+    write_start_element(xmlns, "fill");
 
-	if (f.type() == xlnt::fill_type::pattern)
-	{
-		const auto &pattern = f.pattern_fill();
+    if (f.type() == xlnt::fill_type::pattern)
+    {
+        const auto &pattern = f.pattern_fill();
 
-		write_start_element(xmlns, "patternFill");
+        write_start_element(xmlns, "patternFill");
 
-		write_attribute("patternType", pattern.type());
+        write_attribute("patternType", pattern.type());
 
-		if (pattern.foreground().is_set())
-		{
-			write_start_element(xmlns, "fgColor");
-			write_color(pattern.foreground().get());
-			write_end_element(xmlns, "fgColor");
-		}
+        if (pattern.foreground().is_set())
+        {
+            write_start_element(xmlns, "fgColor");
+            write_color(pattern.foreground().get());
+            write_end_element(xmlns, "fgColor");
+        }
 
-		if (pattern.background().is_set())
-		{
-			write_start_element(xmlns, "bgColor");
-			write_color(pattern.background().get());
-			write_end_element(xmlns, "bgColor");
-		}
+        if (pattern.background().is_set())
+        {
+            write_start_element(xmlns, "bgColor");
+            write_color(pattern.background().get());
+            write_end_element(xmlns, "bgColor");
+        }
 
-		write_end_element(xmlns, "patternFill");
-	}
-	else if (f.type() == xlnt::fill_type::gradient)
-	{
-		const auto &gradient = f.gradient_fill();
+        write_end_element(xmlns, "patternFill");
+    }
+    else if (f.type() == xlnt::fill_type::gradient)
+    {
+        const auto &gradient = f.gradient_fill();
 
-		write_start_element(xmlns, "gradientFill");
-		write_attribute("gradientType", gradient.type());
+        write_start_element(xmlns, "gradientFill");
+        write_attribute("gradientType", gradient.type());
 
-		if (gradient.degree() != 0.)
-		{
-			write_attribute("degree", gradient.degree());
-		}
+        if (gradient.degree() != 0.)
+        {
+            write_attribute("degree", gradient.degree());
+        }
 
-		if (gradient.left() != 0.)
-		{
-			write_attribute("left", gradient.left());
-		}
+        if (gradient.left() != 0.)
+        {
+            write_attribute("left", gradient.left());
+        }
 
-		if (gradient.right() != 0.)
-		{
-			write_attribute("right", gradient.right());
-		}
+        if (gradient.right() != 0.)
+        {
+            write_attribute("right", gradient.right());
+        }
 
-		if (gradient.top() != 0.)
-		{
-			write_attribute("top", gradient.top());
-		}
+        if (gradient.top() != 0.)
+        {
+            write_attribute("top", gradient.top());
+        }
 
-		if (gradient.bottom() != 0.)
-		{
-			write_attribute("bottom", gradient.bottom());
-		}
+        if (gradient.bottom() != 0.)
+        {
+            write_attribute("bottom", gradient.bottom());
+        }
 
-		for (const auto &stop : gradient.stops())
-		{
-			write_start_element(xmlns, "stop");
-			write_attribute("position", stop.first);
-			write_start_element(xmlns, "color");
-			write_color(stop.second);
-			write_end_element(xmlns, "color");
-			write_end_element(xmlns, "stop");
-		}
+        for (const auto &stop : gradient.stops())
+        {
+            write_start_element(xmlns, "stop");
+            write_attribute("position", stop.first);
+            write_start_element(xmlns, "color");
+            write_color(stop.second);
+            write_end_element(xmlns, "color");
+            write_end_element(xmlns, "stop");
+        }
 
-		write_end_element(xmlns, "gradientFill");
-	}
+        write_end_element(xmlns, "gradientFill");
+    }
 
-	write_end_element(xmlns, "fill");
+    write_end_element(xmlns, "fill");
 }
 
 void xlsx_producer::write_border(const border &current_border)
 {
-	static const auto &xmlns = constants::ns("spreadsheetml");
+    static const auto &xmlns = constants::ns("spreadsheetml");
 
-	write_start_element(xmlns, "border");
+    write_start_element(xmlns, "border");
 
-	if (current_border.diagonal().is_set())
-	{
-		auto up = current_border.diagonal().get() == diagonal_direction::both
-			|| current_border.diagonal().get() == diagonal_direction::up;
-		write_attribute("diagonalUp", write_bool(up));
+    if (current_border.diagonal().is_set())
+    {
+        auto up = current_border.diagonal().get() == diagonal_direction::both
+            || current_border.diagonal().get() == diagonal_direction::up;
+        write_attribute("diagonalUp", write_bool(up));
 
-		auto down = current_border.diagonal().get() == diagonal_direction::both
-			|| current_border.diagonal().get() == diagonal_direction::down;
-		write_attribute("diagonalDown", write_bool(down));
-	}
+        auto down = current_border.diagonal().get() == diagonal_direction::both
+            || current_border.diagonal().get() == diagonal_direction::down;
+        write_attribute("diagonalDown", write_bool(down));
+    }
 
-	for (const auto &side : xlnt::border::all_sides())
-	{
-		if (current_border.side(side).is_set())
-		{
-			const auto current_side = current_border.side(side).get();
+    for (const auto &side : xlnt::border::all_sides())
+    {
+        if (current_border.side(side).is_set())
+        {
+            const auto current_side = current_border.side(side).get();
 
-			auto side_name = to_string(side);
-			write_start_element(xmlns, side_name);
+            auto side_name = to_string(side);
+            write_start_element(xmlns, side_name);
 
-			if (current_side.style().is_set())
-			{
-				write_attribute("style", current_side.style().get());
-			}
+            if (current_side.style().is_set())
+            {
+                write_attribute("style", current_side.style().get());
+            }
 
-			if (current_side.color().is_set())
-			{
-				write_start_element(xmlns, "color");
-				write_color(current_side.color().get());
-				write_end_element(xmlns, "color");
-			}
+            if (current_side.color().is_set())
+            {
+                write_start_element(xmlns, "color");
+                write_color(current_side.color().get());
+                write_end_element(xmlns, "color");
+            }
 
-			write_end_element(xmlns, side_name);
-		}
-	}
+            write_end_element(xmlns, side_name);
+        }
+    }
 
-	write_end_element(xmlns, "border");
+    write_end_element(xmlns, "border");
 }
 
 void xlsx_producer::write_styles(const relationship & /*rel*/)
@@ -1201,8 +1195,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
 
     const auto &stylesheet = source_.impl().stylesheet_.get();
 
-    auto using_namespace = [&stylesheet](const std::string &ns)
-    {
+    auto using_namespace = [&stylesheet](const std::string &ns) {
         if (ns == "x14ac")
         {
             return stylesheet.known_fonts_enabled;
@@ -1256,12 +1249,9 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
 
         if (stylesheet.known_fonts_enabled)
         {
-            auto is_known_font = [](const font &f)
-            {
-                const auto &known_fonts = *new std::vector<font>
-                {
-                    font().name("Calibri").family(2).size(12).color(theme_color(1)).scheme("minor")
-                };
+            auto is_known_font = [](const font &f) {
+                const auto &known_fonts = *new std::vector<font>{
+                    font().name("Calibri").family(2).size(12).color(theme_color(1)).scheme("minor")};
 
                 return std::find(known_fonts.begin(), known_fonts.end(), f) != known_fonts.end();
             };
@@ -1279,10 +1269,10 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
             write_attribute(xml::qname(xmlns_x14ac, "knownFonts"), num_known_fonts);
         }
 
-		for (const auto &current_font : fonts)
-		{
-			write_font(current_font);
-		}
+        for (const auto &current_font : fonts)
+        {
+            write_font(current_font);
+        }
 
         write_end_element(xmlns, "fonts");
     }
@@ -1298,7 +1288,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
 
         for (auto &current_fill : fills)
         {
-			write_fill(current_fill);
+            write_fill(current_fill);
         }
 
         write_end_element(xmlns, "fills");
@@ -1315,7 +1305,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
 
         for (const auto &current_border : borders)
         {
-			write_border(current_border);
+            write_border(current_border);
         }
 
         write_end_element(xmlns, "borders");
@@ -1624,10 +1614,10 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
                 write_attribute("hidden", write_bool(true));
             }
 
-			if (current_style.builtin_id.is_set() && current_style.custom_builtin)
-			{
-				write_attribute("customBuiltin", write_bool(current_style.custom_builtin));
-			}
+            if (current_style.builtin_id.is_set() && current_style.custom_builtin)
+            {
+                write_attribute("customBuiltin", write_bool(current_style.custom_builtin));
+            }
 
             write_end_element(xmlns, "cellStyle");
         }
@@ -1635,34 +1625,34 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
         write_end_element(xmlns, "cellStyles");
     }
 
-	// Conditional Formats
+    // Conditional Formats
     write_start_element(xmlns, "dxfs");
     write_attribute("count", stylesheet.conditional_format_impls.size());
 
-	for (auto &rule : stylesheet.conditional_format_impls)
-	{
-		write_start_element(xmlns, "dxf");
+    for (auto &rule : stylesheet.conditional_format_impls)
+    {
+        write_start_element(xmlns, "dxf");
 
-		if (rule.border_id.is_set())
-		{
-			const auto &current_border = stylesheet.borders.at(rule.border_id.get());
-			write_border(current_border);
-		}
+        if (rule.border_id.is_set())
+        {
+            const auto &current_border = stylesheet.borders.at(rule.border_id.get());
+            write_border(current_border);
+        }
 
-		if (rule.fill_id.is_set())
-		{
-			const auto &current_fill = stylesheet.fills.at(rule.fill_id.get());
-			write_fill(current_fill);
-		}
+        if (rule.fill_id.is_set())
+        {
+            const auto &current_fill = stylesheet.fills.at(rule.fill_id.get());
+            write_fill(current_fill);
+        }
 
-		if (rule.font_id.is_set())
-		{
-			const auto &current_font = stylesheet.fonts.at(rule.font_id.get());
-			write_font(current_font);
-		}
+        if (rule.font_id.is_set())
+        {
+            const auto &current_font = stylesheet.fonts.at(rule.font_id.get());
+            write_font(current_font);
+        }
 
-		write_end_element(xmlns, "dxf");
-	}
+        write_end_element(xmlns, "dxf");
+    }
 
     write_end_element(xmlns, "dxfs");
 
@@ -1732,10 +1722,18 @@ void xlsx_producer::write_theme(const relationship &theme_rel)
     };
 
     std::vector<scheme_element> scheme_elements = {
-        {"dk1", "sysClr", "windowText"}, {"lt1", "sysClr", "window"}, {"dk2", "srgbClr", "44546A"},
-        {"lt2", "srgbClr", "E7E6E6"}, {"accent1", "srgbClr", "5B9BD5"}, {"accent2", "srgbClr", "ED7D31"},
-        {"accent3", "srgbClr", "A5A5A5"}, {"accent4", "srgbClr", "FFC000"}, {"accent5", "srgbClr", "4472C4"},
-        {"accent6", "srgbClr", "70AD47"}, {"hlink", "srgbClr", "0563C1"}, {"folHlink", "srgbClr", "954F72"},
+        {"dk1", "sysClr", "windowText"},
+        {"lt1", "sysClr", "window"},
+        {"dk2", "srgbClr", "44546A"},
+        {"lt2", "srgbClr", "E7E6E6"},
+        {"accent1", "srgbClr", "5B9BD5"},
+        {"accent2", "srgbClr", "ED7D31"},
+        {"accent3", "srgbClr", "A5A5A5"},
+        {"accent4", "srgbClr", "FFC000"},
+        {"accent5", "srgbClr", "4472C4"},
+        {"accent6", "srgbClr", "70AD47"},
+        {"hlink", "srgbClr", "0563C1"},
+        {"folHlink", "srgbClr", "954F72"},
     };
 
     for (auto element : scheme_elements)
@@ -2201,8 +2199,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
     write_namespace(xmlns, "");
     write_namespace(xmlns_r, "r");
 
-    auto using_namespace = [&ws](const std::string &ns)
-    {
+    auto using_namespace = [&ws](const std::string &ns) {
         if (ns == "x14ac")
         {
             if (ws.format_properties().dy_descent.is_set())
@@ -2285,9 +2282,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
     write_start_element(xmlns, "dimension");
     const auto dimension = ws.calculate_dimension();
-    write_attribute("ref", dimension.is_single_cell()
-        ? dimension.top_left().to_string()
-        : dimension.to_string());
+    write_attribute("ref", dimension.is_single_cell() ? dimension.top_left().to_string() : dimension.to_string());
     write_end_element(xmlns, "dimension");
 
     if (ws.has_view())
@@ -2306,8 +2301,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
         if (view.type() != sheet_view_type::normal)
         {
-            write_attribute("view", view.type() == sheet_view_type::page_break_preview
-                ? "pageBreakPreview" : "pageLayout");
+            write_attribute("view", view.type() == sheet_view_type::page_break_preview ? "pageBreakPreview" : "pageLayout");
         }
         if (view.has_top_left_cell())
         {
@@ -2361,9 +2355,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             if (current_selection.has_sqref())
             {
                 const auto sqref = current_selection.sqref();
-                write_attribute("sqref", sqref.is_single_cell()
-                    ? sqref.top_left().to_string()
-                    : sqref.to_string());
+                write_attribute("sqref", sqref.is_single_cell() ? sqref.top_left().to_string() : sqref.to_string());
             }
 
             if (current_selection.pane() != pane_corner::top_left)
@@ -2393,7 +2385,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
     }
 
     write_attribute("defaultRowHeight",
-            format_properties.default_row_height);
+        format_properties.default_row_height);
 
     if (format_properties.dy_descent.is_set())
     {
@@ -2411,7 +2403,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
     {
         if (!ws.has_column_properties(column)) continue;
 
-	    if(!has_column_properties)
+        if (!has_column_properties)
         {
             write_start_element(xmlns, "cols");
             has_column_properties = true;
@@ -2699,48 +2691,48 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         write_end_element(xmlns, "mergeCells");
     }
 
-	if (source_.impl().stylesheet_.is_set())
-	{
-		const auto &stylesheet = source_.impl().stylesheet_.get();
-		const auto &cf_impls = stylesheet.conditional_format_impls;
+    if (source_.impl().stylesheet_.is_set())
+    {
+        const auto &stylesheet = source_.impl().stylesheet_.get();
+        const auto &cf_impls = stylesheet.conditional_format_impls;
 
-		std::unordered_map<std::string, std::vector<const conditional_format_impl *>> range_map;
+        std::unordered_map<std::string, std::vector<const conditional_format_impl *>> range_map;
 
-		for (auto &cf : cf_impls)
-		{
-			if (cf.target_sheet != ws.d_) continue;
+        for (auto &cf : cf_impls)
+        {
+            if (cf.target_sheet != ws.d_) continue;
 
-			if (range_map.find(cf.target_range.to_string()) == range_map.end())
-			{
-				range_map[cf.target_range.to_string()] = {};
-			}
+            if (range_map.find(cf.target_range.to_string()) == range_map.end())
+            {
+                range_map[cf.target_range.to_string()] = {};
+            }
 
-			range_map[cf.target_range.to_string()].push_back(&cf);
-		}
+            range_map[cf.target_range.to_string()].push_back(&cf);
+        }
 
-		for (const auto &range_rules_pair : range_map)
-		{
-			write_start_element(xmlns, "conditionalFormatting");
-			write_attribute("sqref", range_rules_pair.first);
+        for (const auto &range_rules_pair : range_map)
+        {
+            write_start_element(xmlns, "conditionalFormatting");
+            write_attribute("sqref", range_rules_pair.first);
 
-			std::size_t i = 1;
+            std::size_t i = 1;
 
-			for (auto rule : range_rules_pair.second)
-			{
-				write_start_element(xmlns, "cfRule");
-				write_attribute("type", "containsText");
-				write_attribute("operator", "containsText");
-				write_attribute("dxfId", rule->differential_format_id);
-				write_attribute("priority", i++);
-				write_attribute("text", rule->when.text_comparand_);
-				//TODO: what does this formula mean and why is it necessary?
-				write_element(xmlns, "formula", "NOT(ISERROR(SEARCH(\"" + rule->when.text_comparand_ + "\",A1)))");
-				write_end_element(xmlns, "cfRule");
-			}
+            for (auto rule : range_rules_pair.second)
+            {
+                write_start_element(xmlns, "cfRule");
+                write_attribute("type", "containsText");
+                write_attribute("operator", "containsText");
+                write_attribute("dxfId", rule->differential_format_id);
+                write_attribute("priority", i++);
+                write_attribute("text", rule->when.text_comparand_);
+                //TODO: what does this formula mean and why is it necessary?
+                write_element(xmlns, "formula", "NOT(ISERROR(SEARCH(\"" + rule->when.text_comparand_ + "\",A1)))");
+                write_end_element(xmlns, "cfRule");
+            }
 
-			write_end_element(xmlns, "conditionalFormatting");
-		}
-	}
+            write_end_element(xmlns, "conditionalFormatting");
+        }
+    }
 
     if (!hyperlinks.empty())
     {
@@ -2879,11 +2871,10 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         auto first_footer = std::string();
 
         const auto locations =
-        {
-            header_footer::location::left,
-            header_footer::location::center,
-            header_footer::location::right
-        };
+            {
+                header_footer::location::left,
+                header_footer::location::center,
+                header_footer::location::right};
 
         using xlnt::detail::encode_header_footer;
 
@@ -3011,12 +3002,12 @@ void xlsx_producer::write_worksheet(const relationship &rel)
                 write_attribute(xml::qname(xmlns_r, "id"), child_rel.id());
                 write_end_element(xmlns, "legacyDrawing");
             }
-			else if (child_rel.type() == xlnt::relationship_type::drawings)
-			{
-				write_start_element(xmlns, "drawing");
-				write_attribute(xml::qname(xmlns_r, "id"), child_rel.id());
-				write_end_element(xmlns, "drawing");
-			}
+            else if (child_rel.type() == xlnt::relationship_type::drawings)
+            {
+                write_start_element(xmlns, "drawing");
+                write_attribute(xml::qname(xmlns_r, "id"), child_rel.id());
+                write_end_element(xmlns, "drawing");
+            }
         }
     }
 
@@ -3064,10 +3055,10 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             {
                 write_vml_drawings(child_rel, ws, cells_with_comments);
             }
-           else if (child_rel.type() == relationship_type::drawings)
-           {
-               write_drawings(child_rel, ws);
-           }
+            else if (child_rel.type() == relationship_type::drawings)
+            {
+                write_drawings(child_rel, ws);
+            }
         }
     }
 }
@@ -3422,4 +3413,4 @@ void xlsx_producer::write_namespace(const std::string &ns, const std::string &pr
 }
 
 } // namespace detail
-} // namepsace xlnt
+} // namespace xlnt

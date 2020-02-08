@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -117,7 +117,7 @@ range_iterator &range_iterator::operator++()
         {
             cursor_.row(cursor_.row() + 1);
         }
-    
+
         if (skip_null_)
         {
             while ((**this).empty() && cursor_.row() <= bounds_.bottom_right().row())
@@ -152,7 +152,6 @@ range_iterator range_iterator::operator++(int)
 
     return old;
 }
-
 
 const_range_iterator::const_range_iterator(const worksheet &ws, const cell_reference &cursor,
     const range_reference &bounds, major_order order, bool skip_null)
@@ -233,7 +232,7 @@ const_range_iterator &const_range_iterator::operator++()
         {
             cursor_.row(cursor_.row() + 1);
         }
-    
+
         if (skip_null_)
         {
             while ((**this).empty() && cursor_.row() <= bounds_.bottom_right().row())

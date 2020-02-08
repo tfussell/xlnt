@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,25 +25,25 @@
 #include <cstdint>
 #include <vector>
 
+#include <xlnt/utils/exceptions.hpp>
 #include <detail/binary.hpp>
 #include <detail/constants.hpp>
-#include <detail/unicode.hpp>
-#include <detail/cryptography/encryption_info.hpp>
 #include <detail/cryptography/aes.hpp>
 #include <detail/cryptography/base64.hpp>
 #include <detail/cryptography/compound_document.hpp>
+#include <detail/cryptography/encryption_info.hpp>
 #include <detail/cryptography/value_traits.hpp>
 #include <detail/cryptography/xlsx_crypto_consumer.hpp>
 #include <detail/external/include_libstudxml.hpp>
 #include <detail/serialization/vector_streambuf.hpp>
 #include <detail/serialization/xlsx_consumer.hpp>
-#include <xlnt/utils/exceptions.hpp>
+#include <detail/unicode.hpp>
 
 namespace {
 
 using xlnt::detail::byte;
-using xlnt::detail::read;
 using xlnt::detail::encryption_info;
+using xlnt::detail::read;
 
 std::vector<std::uint8_t> decrypt_xlsx_standard(
     encryption_info info,
@@ -153,8 +153,9 @@ encryption_info::standard_encryption_info read_standard_encryption_info(std::ist
         throw xlnt::exception("invalid header");
     }
 
-    const auto csp_name_length = static_cast<std::size_t>((header_length 
-        - (info_stream.tellg() - index_at_start)) / 2);
+    const auto csp_name_length = static_cast<std::size_t>((header_length
+                                                              - (info_stream.tellg() - index_at_start))
+        / 2);
     auto csp_name = xlnt::detail::read_string<char16_t>(info_stream, csp_name_length);
     csp_name.pop_back(); // remove extraneous trailing null
     if (csp_name != u"Microsoft Enhanced RSA and AES Cryptographic Provider (Prototype)"
@@ -169,7 +170,7 @@ encryption_info::standard_encryption_info read_standard_encryption_info(std::ist
     static const auto verifier_size = std::size_t(16);
     result.encrypted_verifier = xlnt::detail::read_vector<byte>(info_stream, verifier_size);
 
-    /*const auto verifier_hash_size = */read<std::uint32_t>(info_stream);
+    /*const auto verifier_hash_size = */ read<std::uint32_t>(info_stream);
     const auto encrypted_verifier_hash_size = std::size_t(32);
     result.encrypted_verifier_hash = xlnt::detail::read_vector<byte>(info_stream, encrypted_verifier_hash_size);
 
@@ -258,13 +259,13 @@ encryption_info::agile_encryption_info read_agile_encryption_info(std::istream &
 encryption_info read_encryption_info(std::istream &info_stream, const std::u16string &password)
 {
     encryption_info info;
-    
+
     info.password = password;
 
     auto version_major = read<std::uint16_t>(info_stream);
     auto version_minor = read<std::uint16_t>(info_stream);
     auto encryption_flags = read<std::uint32_t>(info_stream);
-    
+
     info.is_agile = version_major == 4 && version_minor == 4;
 
     if (info.is_agile)
@@ -301,7 +302,7 @@ encryption_info read_encryption_info(std::istream &info_stream, const std::u16st
 
         info.standard = read_standard_encryption_info(info_stream);
     }
-    
+
     return info;
 }
 
