@@ -91,6 +91,8 @@ public:
         register_test(test_streaming_read);
         register_test(test_streaming_write);
         register_test(test_load_save_german_locale);
+        register_test(test_Issue445_inline_str_load);
+        register_test(test_Issue445_inline_str_streaming_read);
     }
 
     bool workbook_matches_file(xlnt::workbook &wb, const xlnt::path &file)
@@ -715,6 +717,24 @@ public:
        /* std::locale current(std::locale::global(std::locale("de-DE")));
         test_round_trip_rw_custom_heights_widths();
         std::locale::global(current);*/
+    }
+
+    void test_Issue445_inline_str_load()
+    {
+        xlnt::workbook wb;
+        wb.load(path_helper::test_file("Issue445_inline_str.xlsx"));
+        auto ws = wb.active_sheet();
+        auto cell = ws.cell("A1");
+        xlnt_assert_equals(cell.value<std::string>(), std::string("a"));
+    }
+
+    void test_Issue445_inline_str_streaming_read()
+    {
+        xlnt::streaming_workbook_reader wbr;
+        wbr.open(path_helper::test_file("Issue445_inline_str.xlsx"));
+        wbr.begin_worksheet("Sheet");
+        auto cell = wbr.read_cell();
+        xlnt_assert_equals(cell.value<std::string>(), std::string("a"));
     }
 };
 static serialization_test_suite x;
