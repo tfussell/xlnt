@@ -272,8 +272,8 @@ Cell parse_cell(xlnt::row_t row_arg, xml::parser *parser)
             if (level == 2)
             {
                 // <v> -> numeric values
-                // <is> -> inline string
-                if (string_equal(parser->name(), "v") || string_equal(parser->name(), "is"))
+                // <is><t> -> inline string
+                if (string_equal(parser->name(), "v"))
                 {
                     c.value += std::move(parser->value());
                 }
@@ -281,6 +281,14 @@ Cell parse_cell(xlnt::row_t row_arg, xml::parser *parser)
                 else if (string_equal(parser->name(), "f"))
                 {
                     c.formula_string += std::move(parser->value());
+                }
+            }
+            else if (level == 3)
+            {
+                // <is><t> -> inline string
+                if (string_equal(parser->name(), "t"))
+                {
+                    c.value += std::move(parser->value());
                 }
             }
             break;
@@ -561,6 +569,7 @@ cell xlsx_consumer::read_cell()
         else if (current_element == qn("spreadsheetml", "is")) // CT_Rst
         {
             expect_start_element(qn("spreadsheetml", "t"), xml::content::simple);
+            has_value = true;
             value_string = read_text();
             expect_end_element(qn("spreadsheetml", "t"));
         }
