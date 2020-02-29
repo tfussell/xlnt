@@ -41,3 +41,8 @@ foreach(BENCHMARK_SOURCE IN ITEMS ${BENCHMARK_SOURCES})
       $<TARGET_FILE_DIR:${BENCHMARK_EXECUTABLE}>)
   endif()
 endforeach()
+
+option(XLNT_MICROBENCH_ENABLED "Enable small benchmarks typically used for development" OFF)
+if (XLNT_MICROBENCH_ENABLED)
+	add_subdirectory(microbenchmarks)
+endif()
