@@ -1,15 +1,18 @@
 // A core part of the xlsx parsing routine is taking strings from the xml parser and parsing these to a double
 // this has a few requirements
-// - expect numbers in the form 1234.56 (i.e. no thousands seperator, '.' used for the decimal seperator)
+// - expect strings in the form 1234.56 (i.e. no thousands seperator, '.' used for the decimal seperator)
 // - handles atleast 15 significant figures (excel only serialises numbers up to 15sf)
 
 #include <benchmark/benchmark.h>
 #include <locale>
 #include <random>
+#include <sstream>
+
+namespace {
 
 // setup a large quantity of random doubles as strings
 template <bool Decimal_Locale = true>
-class RandomFloats : public benchmark::Fixture
+class RandomFloatStrs : public benchmark::Fixture
 {
     static constexpr size_t Number_of_Elements = 1 << 20;
     static_assert(Number_of_Elements > 1'000'000, "ensure a decent set of random values is generated");
@@ -17,7 +20,7 @@ class RandomFloats : public benchmark::Fixture
     std::vector<std::string> inputs;
 
     size_t index = 0;
-    const char *locale_str;
+    const char *locale_str = nullptr;
 
 public:
     void SetUp(const ::benchmark::State &state)
@@ -50,19 +53,18 @@ public:
     {
         // restore locale
         setlocale(LC_ALL, locale_str);
-        // gbench is keeping the fixtures alive somewhere, need to clear the data...
+        // gbench is keeping the fixtures alive somewhere, need to clear the data after use
         inputs = std::vector<std::string>{};
     }
 
     std::string &get_rand()
     {
-        return inputs[++index & Number_of_Elements];
+        return inputs[++index & (Number_of_Elements - 1)];
     }
 };
 
 // method used by xlsx_consumer.cpp in commit - ba01de47a7d430764c20ec9ac9600eec0eb38bcf
 // std::istringstream with the locale set to "C"
-#include <sstream>
 struct number_converter
 {
     number_converter()
@@ -82,32 +84,6 @@ struct number_converter
     double result;
 };
 
-using RandFloats = RandomFloats<true>;
-
-BENCHMARK_F(RandFloats, double_from_string_sstream)
-(benchmark::State &state)
-{
-    number_converter converter;
-    while (state.KeepRunning())
-    {
-        benchmark::DoNotOptimize(
-            converter.stold(get_rand()));
-    }
-}
-
-// using strotod
-// https://en.cppreference.com/w/cpp/string/byte/strtof
-// this naive usage is broken in the face of locales (fails condition 1)
-#include <cstdlib>
-BENCHMARK_F(RandFloats, double_from_string_strtod)
-(benchmark::State &state)
-{
-    while (state.KeepRunning())
-    {
-        benchmark::DoNotOptimize(
-            strtod(get_rand().c_str(), nullptr));
-    }
-}
 
 // to resolve the locale issue with strtod, a little preprocessing of the input is required
 struct number_converter_mk2
@@ -151,7 +127,37 @@ private:
     bool should_convert_to_comma = false;
 };
 
-BENCHMARK_F(RandFloats, double_from_string_strtod_fixed)
+using RandFloatStrs = RandomFloatStrs<true>;
+// german locale uses ',' as the seperator
+using RandFloatCommaStrs = RandomFloatStrs<false>;
+} // namespace
+
+BENCHMARK_F(RandFloatStrs, double_from_string_sstream)
+(benchmark::State &state)
+{
+    number_converter converter;
+    while (state.KeepRunning())
+    {
+        benchmark::DoNotOptimize(
+            converter.stold(get_rand()));
+    }
+}
+
+// using strotod
+// https://en.cppreference.com/w/cpp/string/byte/strtof
+// this naive usage is broken in the face of locales (fails condition 1)
+#include <cstdlib>
+BENCHMARK_F(RandFloatStrs, double_from_string_strtod)
+(benchmark::State &state)
+{
+    while (state.KeepRunning())
+    {
+        benchmark::DoNotOptimize(
+            strtod(get_rand().c_str(), nullptr));
+    }
+}
+
+BENCHMARK_F(RandFloatStrs, double_from_string_strtod_fixed)
 (benchmark::State &state)
 {
     number_converter_mk2 converter;
@@ -162,7 +168,7 @@ BENCHMARK_F(RandFloats, double_from_string_strtod_fixed)
     }
 }
 
-BENCHMARK_F(RandFloats, double_from_string_strtod_fixed_const_ref)
+BENCHMARK_F(RandFloatStrs, double_from_string_strtod_fixed_const_ref)
 (benchmark::State &state)
 {
     number_converter_mk2 converter;
@@ -178,7 +184,7 @@ BENCHMARK_F(RandFloats, double_from_string_strtod_fixed_const_ref)
 #ifdef _MSC_VER
 
 #include <charconv>
-BENCHMARK_F(RandFloats, double_from_string_std_from_chars)
+BENCHMARK_F(RandFloatStrs, double_from_string_std_from_chars)
 (benchmark::State &state)
 {
     while (state.KeepRunning())
@@ -191,9 +197,7 @@ BENCHMARK_F(RandFloats, double_from_string_std_from_chars)
 }
 
 // not using the standard "C" locale with '.' seperator
-// german locale uses ',' as the seperator
-using RandFloatsComma = RandomFloats<false>;
-BENCHMARK_F(RandFloatsComma, double_from_string_strtod_fixed_comma_ref)
+BENCHMARK_F(RandFloatCommaStrs, double_from_string_strtod_fixed_comma_ref)
 (benchmark::State &state)
 {
     number_converter_mk2 converter;
@@ -204,7 +208,7 @@ BENCHMARK_F(RandFloatsComma, double_from_string_strtod_fixed_comma_ref)
     }
 }
 
-BENCHMARK_F(RandFloatsComma, double_from_string_strtod_fixed_comma_const_ref)
+BENCHMARK_F(RandFloatCommaStrs, double_from_string_strtod_fixed_comma_const_ref)
 (benchmark::State &state)
 {
     number_converter_mk2 converter;
