@@ -94,7 +94,34 @@ public:
     }
 };
 
+class number_serialiser_mk2
+{
+    bool should_convert_to_comma;
+
+public:
+    explicit number_serialiser_mk2()
+        : should_convert_to_comma(std::use_facet<std::numpunct<char>>(std::locale{}).decimal_point() == ',')
+    {
+    }
+
+    std::string serialise(double d)
+    {
+        char buf[16];
+        int len = snprintf(buf, sizeof(buf), "%16f", d);
+        if (should_convert_to_comma)
+        {
+            auto decimal = std::find(buf, buf + len, ',');
+            if (decimal != buf + len)
+            {
+                *decimal = '.';
+            }
+        }
+        return std::string(buf, len);
+    }
+};
+
 using RandFloats = RandomFloats<true>;
+using RandFloatsComma = RandomFloats<false>;
 } // namespace
 
 BENCHMARK_F(RandFloats, string_from_double_sstream)
@@ -131,6 +158,17 @@ BENCHMARK_F(RandFloats, string_from_double_snprintf)
     }
 }
 
+BENCHMARK_F(RandFloats, string_from_double_snprintf_fixed)
+(benchmark::State &state)
+{
+    number_serialiser_mk2 ser;
+    while (state.KeepRunning())
+    {
+        benchmark::DoNotOptimize(
+            ser.serialise(get_rand()));
+    }
+}
+
 // locale names are different between OS's, and std::from_chars is only complete in MSVC
 #ifdef _MSC_VER
 
@@ -145,6 +183,17 @@ BENCHMARK_F(RandFloats, string_from_double_std_to_chars)
 
         benchmark::DoNotOptimize(
             std::string(buf, result.ptr));
+    }
+}
+
+BENCHMARK_F(RandFloatsComma, string_from_double_snprintf_fixed_comma)
+(benchmark::State &state)
+{
+    number_serialiser_mk2 ser;
+    while (state.KeepRunning())
+    {
+        benchmark::DoNotOptimize(
+            ser.serialise(get_rand()));
     }
 }
 
