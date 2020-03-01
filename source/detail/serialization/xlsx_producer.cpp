@@ -2267,16 +2267,18 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         {
             write_attribute("enableFormatConditionsCalculation", props.enable_format_condition_calculation.get());
         }
-
+        // outlinePr is optional in the spec but is being written every time?
         write_start_element(xmlns, "outlinePr");
         write_attribute("summaryBelow", "1");
         write_attribute("summaryRight", "1");
         write_end_element(xmlns, "outlinePr");
 
-        write_start_element(xmlns, "pageSetUpPr");
-        write_attribute("fitToPage", write_bool(ws.page_setup().fit_to_page()));
-        write_end_element(xmlns, "pageSetUpPr");
-
+        if (ws.has_page_setup())
+        {
+            write_start_element(xmlns, "pageSetUpPr");
+            write_attribute("fitToPage", write_bool(ws.page_setup().fit_to_page()));
+            write_end_element(xmlns, "pageSetUpPr");
+        }
         write_end_element(xmlns, "sheetPr");
     }
 
