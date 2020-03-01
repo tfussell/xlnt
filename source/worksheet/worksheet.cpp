@@ -579,8 +579,40 @@ column_t worksheet::highest_column_or_props() const
 
 range_reference worksheet::calculate_dimension() const
 {
-    return range_reference(lowest_column(), lowest_row_or_props(),
-        highest_column(), highest_row_or_props());
+    // partially optimised version of:
+    // return range_reference(lowest_column(), lowest_row_or_props(),
+    //                        highest_column(), highest_row_or_props());
+    //
+    if (d_->cell_map_.empty() && d_->row_properties_.empty())
+    {
+        return range_reference(constants::min_column(), constants::min_row(),
+            constants::min_column(), constants::min_row());
+    }
+    row_t min_row_prop = constants::max_row();
+    row_t max_row_prop = constants::min_row();
+    for (const auto &row_prop : d_->row_properties_)
+    {
+        min_row_prop = std::min(min_row_prop, row_prop.first);
+        max_row_prop = std::max(max_row_prop, row_prop.first);
+    }
+    if (d_->cell_map_.empty())
+    {
+        return range_reference(constants::min_column(), min_row_prop,
+            constants::min_column(), max_row_prop);
+    }
+    // find min and max row/column in cell map
+    column_t min_col = constants::max_column();
+    column_t max_col = constants::min_column();
+    row_t min_row = min_row_prop;
+    row_t max_row = max_row_prop;
+    for (auto &c : d_->cell_map_)
+    {
+        min_col = std::min(min_col, c.second.column_);
+        max_col = std::max(max_col, c.second.column_);
+        min_row = std::min(min_row, c.second.row_);
+        max_row = std::max(max_row, c.second.row_);
+    }
+    return range_reference(min_col, min_row, max_col, max_row);
 }
 
 range worksheet::range(const std::string &reference_string)
