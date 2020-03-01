@@ -47,7 +47,7 @@ struct cell_impl
     cell_impl(cell_impl &&other) = default;
     cell_impl &operator=(const cell_impl &other) = default;
     cell_impl &operator=(cell_impl &&other) = default;
-    
+
     cell_type type_;
 
     worksheet_impl *parent_;
@@ -65,6 +65,11 @@ struct cell_impl
     optional<hyperlink_impl> hyperlink_;
     optional<format_impl *> format_;
     optional<comment *> comment_;
+
+    bool is_garbage_collectible() const
+    {
+        return !(type_ != cell_type::empty || is_merged_ || phonetics_visible_ || formula_.is_set() || format_.is_set() || hyperlink_.is_set());
+    }
 };
 
 inline bool operator==(const cell_impl &lhs, const cell_impl &rhs)

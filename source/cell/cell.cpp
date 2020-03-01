@@ -199,7 +199,7 @@ cell::cell(detail::cell_impl *d)
 
 bool cell::garbage_collectible() const
 {
-    return !(has_value() || is_merged() || phonetics_visible() || has_formula() || has_format() || has_hyperlink());
+    return d_->is_garbage_collectible();
 }
 
 void cell::value(std::nullptr_t)

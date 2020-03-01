@@ -2483,12 +2483,19 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         {
             for (auto column = dimension.top_left().column(); column <= dimension.bottom_right().column(); ++column)
             {
-                if (!ws.has_cell(cell_reference(column, check_row))) continue;
-                auto cell = ws.cell(cell_reference(column, check_row));
-                if (cell.garbage_collectible()) continue;
+                auto ref = cell_reference(column, check_row);
+                auto cell = ws.d_->cell_map_.find(ref);
+                if (cell == ws.d_->cell_map_.end())
+                {
+                    continue;
+                }
+                if (cell->second.is_garbage_collectible())
+                {
+                    continue;
+                }
 
-                first_block_column = std::min(first_block_column, cell.column());
-                last_block_column = std::max(last_block_column, cell.column());
+                first_block_column = std::min(first_block_column, cell->second.column_);
+                last_block_column = std::max(last_block_column, cell->second.column_);
 
                 if (row == check_row)
                 {
