@@ -163,7 +163,7 @@ public:
             return strtod(s.c_str(), nullptr);
         }
         char buf[30];
-        assert(s.size() < std::size(buf));
+        assert(s.size() < sizeof(buf));
         auto copy_end = std::copy(s.begin(), s.end(), buf);
         convert_pt_to_comma(buf, static_cast<size_t>(copy_end - buf));
         return strtod(buf, nullptr);
