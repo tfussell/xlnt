@@ -118,7 +118,7 @@ public:
     std::string serialise(double d)
     {
         char buf[Excel_Digit_Precision + 1]; // need space for trailing '\0'
-        int len = snprintf(buf, sizeof(buf), "%16f", d);
+        int len = snprintf(buf, sizeof(buf), "%.15g", d);
         if (should_convert_comma)
         {
             convert_comma(buf, len);
@@ -158,7 +158,7 @@ BENCHMARK_F(RandFloats, string_from_double_snprintf)
     while (state.KeepRunning())
     {
         char buf[16];
-        int len = snprintf(buf, sizeof(buf), "%16f", get_rand());
+        int len = snprintf(buf, sizeof(buf), "%.15g", get_rand());
 
         benchmark::DoNotOptimize(
             std::string(buf, len));
