@@ -416,7 +416,7 @@ private:
     detail::cell_impl *current_cell_;
 
     detail::worksheet_impl *current_worksheet_;
-    number_converter converter_;
+    number_serialiser converter_;
 };
 
 } // namespace detail
