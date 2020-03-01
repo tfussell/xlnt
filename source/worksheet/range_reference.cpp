@@ -46,12 +46,6 @@ range_reference::range_reference(const char *range_string)
 {
 }
 
-range_reference::range_reference(const range_reference &ref)
-{
-    top_left_ = ref.top_left_;
-    bottom_right_ = ref.bottom_right_;
-}
-
 range_reference::range_reference(const std::string &range_string)
     : top_left_("A1"), bottom_right_("A1")
 {
