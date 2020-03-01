@@ -50,8 +50,8 @@ void run_save_test(const xlnt::path &file, int runs = 10)
 
 int main()
 {
-    run_test(path_helper::benchmark_file("large.xlsx"));
-    run_test(path_helper::benchmark_file("very_large.xlsx"));
+    run_load_test(path_helper::benchmark_file("large.xlsx"));
+    run_load_test(path_helper::benchmark_file("very_large.xlsx"));
 
     run_save_test(path_helper::benchmark_file("large.xlsx"));
     run_save_test(path_helper::benchmark_file("very_large.xlsx"));
