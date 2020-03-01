@@ -96,25 +96,32 @@ public:
 
 class number_serialiser_mk2
 {
-    bool should_convert_to_comma;
+    static constexpr int Excel_Digit_Precision = 15; //sf
+    bool should_convert_comma;
+
+    void convert_comma(char *buf, int len)
+    {
+        char *buf_end = buf + len;
+        char *decimal = std::find(buf, buf_end, ',');
+        if (decimal != buf_end)
+        {
+            *decimal = '.';
+        }
+    }
 
 public:
     explicit number_serialiser_mk2()
-        : should_convert_to_comma(std::use_facet<std::numpunct<char>>(std::locale{}).decimal_point() == ',')
+        : should_convert_comma(std::use_facet<std::numpunct<char>>(std::locale{}).decimal_point() == ',')
     {
     }
 
     std::string serialise(double d)
     {
-        char buf[16];
+        char buf[Excel_Digit_Precision + 1]; // need space for trailing '\0'
         int len = snprintf(buf, sizeof(buf), "%16f", d);
-        if (should_convert_to_comma)
+        if (should_convert_comma)
         {
-            auto decimal = std::find(buf, buf + len, ',');
-            if (decimal != buf + len)
-            {
-                *decimal = '.';
-            }
+            convert_comma(buf, len);
         }
         return std::string(buf, len);
     }
