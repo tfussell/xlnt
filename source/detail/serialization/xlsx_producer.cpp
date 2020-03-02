@@ -40,6 +40,7 @@
 #include <detail/header_footer/header_footer_code.hpp>
 #include <detail/implementations/workbook_impl.hpp>
 #include <detail/serialization/custom_value_traits.hpp>
+#include <detail/serialization/serialisation_helpers.hpp>
 #include <detail/serialization/vector_streambuf.hpp>
 #include <detail/serialization/xlsx_producer.hpp>
 #include <detail/serialization/zstream.hpp>
@@ -2281,8 +2282,59 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         write_end_element(xmlns, "sheetPr");
     }
 
+    std::vector<const xlnt::detail::cell_impl*> cells;
+    std::vector<std::pair<row_t, row_properties>> row_props;
+    std::vector<std::pair<column_t::index_t, column_properties>> column_props;
+    // assume most of the cells are "live"
+    cells.reserve(ws.d_->cell_map_.size());
+    for (const auto &cell_impl : ws.d_->cell_map_)
+    {
+        // skip cells that aren't "live"
+        if (cell_impl.second.is_garbage_collectible())
+        {
+            continue;
+        }
+        cells.push_back(&cell_impl.second);
+    }
+    row_props.reserve(ws.d_->column_properties_.size());
+    for (const auto &row_prop : ws.d_->row_properties_)
+    {
+        row_props.push_back(row_prop);
+    }
+    column_props.reserve(ws.d_->column_properties_.size());
+    for (const auto &col_prop : ws.d_->column_properties_)
+    {
+        column_props.push_back(std::make_pair(col_prop.first.index, col_prop.second));
+    }
+    // sorting by location makes many following operations *much* faster
+    std::sort(cells.begin(), cells.end(), [](const cell_impl *l, const cell_impl *r) {
+        // row major sort
+        if (l->row_ < r->row_)
+        {
+            return true;
+        }
+        if (r->row_ < l->row_)
+        {
+            return false;
+        }
+        return l->column_ < r->column_;
+    });
+    std::sort(row_props.begin(), row_props.end(), [](const std::pair<row_t, row_properties> &l, const std::pair<row_t, row_properties> &r) { return l.first < r.first; });
+    std::sort(column_props.begin(), column_props.end(), [](const std::pair<column_t::index_t, column_properties> &l, const std::pair<column_t::index_t, column_properties> &r) { return l.first < r.first; });
+
     write_start_element(xmlns, "dimension");
-    const auto dimension = ws.calculate_dimension();
+    // THIS IS WRONG. Needs to account for presence of row/column properties
+    // https://c-rex.net/projects/samples/ooxml/e1/Part4/OOXML_P4_DOCX_dimension_topic_ID0EZ2X4.html
+    const auto dimension = [&]() {
+        if (cells.empty())
+        {
+            return ws.calculate_dimension();
+        }
+        else
+        {
+            return xlnt::range_reference((*cells.begin())->column_, (*cells.begin())->row_, (*cells.rbegin())->column_, (*cells.rbegin())->row_);
+        }
+    }();
     write_attribute("ref", dimension.is_single_cell() ? dimension.top_left().to_string() : dimension.to_string());
     write_end_element(xmlns, "dimension");
 
@@ -2396,57 +2448,38 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
     write_end_element(xmlns, "sheetFormatPr");
 
-    bool has_column_properties = false;
-    const auto first_column = ws.lowest_column_or_props();
-    const auto last_column = ws.highest_column_or_props();
-
-    for (auto column = first_column; column <= last_column; column++)
+    if (!column_props.empty())
     {
-        if (!ws.has_column_properties(column)) continue;
-
-        if (!has_column_properties)
+        write_start_element(xmlns, "cols");
+        for (const auto &props : column_props)
         {
-            write_start_element(xmlns, "cols");
-            has_column_properties = true;
+            write_start_element(xmlns, "col");
+            write_attribute("min", props.first);
+            write_attribute("max", props.first);
+
+            if (props.second.width.is_set())
+            {
+                double width = (props.second.width.get() * 7 + 5) / 7;
+                write_attribute("width", converter_.serialise(width));
+            }
+            if (props.second.best_fit)
+            {
+                write_attribute("bestFit", write_bool(true));
+            }
+            if (props.second.style.is_set())
+            {
+                write_attribute("style", props.second.style.get());
+            }
+            if (props.second.hidden)
+            {
+                write_attribute("hidden", write_bool(true));
+            }
+            if (props.second.custom_width)
+            {
+                write_attribute("customWidth", write_bool(true));
+            }
+            write_end_element(xmlns, "col");
         }
-
-        const auto &props = ws.column_properties(column);
-
-        write_start_element(xmlns, "col");
-        write_attribute("min", column.index);
-        write_attribute("max", column.index);
-
-        if (props.width.is_set())
-        {
-            double width = (props.width.get() * 7 + 5) / 7;
-            write_attribute("width", converter_.serialise(width));
-        }
-
-        if (props.best_fit)
-        {
-            write_attribute("bestFit", write_bool(true));
-        }
-
-        if (props.style.is_set())
-        {
-            write_attribute("style", props.style.get());
-        }
-
-        if (props.hidden)
-        {
-            write_attribute("hidden", write_bool(true));
-        }
-
-        if (props.custom_width)
-        {
-            write_attribute("customWidth", write_bool(true));
-        }
-
-        write_end_element(xmlns, "col");
-    }
-
-    if (has_column_properties)
-    {
         write_end_element(xmlns, "cols");
     }
 
@@ -2454,56 +2487,44 @@ void xlsx_producer::write_worksheet(const relationship &rel)
     std::vector<cell_reference> cells_with_comments;
 
     write_start_element(xmlns, "sheetData");
-    auto first_row = ws.lowest_row_or_props();
-    auto last_row = ws.highest_row_or_props();
+
     auto first_block_column = constants::max_column();
     auto last_block_column = constants::min_column();
 
-    for (auto row = first_row; row <= last_row; ++row)
+    auto current_cell = cells.begin();
+    auto current_row = row_props.begin();
+    row_t prev_row = 0; // constants::min_row() - 1
+    while (current_cell != cells.end() && current_row != row_props.end())
     {
-        bool any_non_null = false;
-        auto first_check_row = row;
-        auto last_check_row = row;
-        auto first_row_in_block = row == first_row || row % 16 == 1;
-
+        auto row = [&]() {
+            row_t row_tmp = constants::max_row();
+            // we know atleast one of the following is valid
+            if (current_cell != cells.end())
+            {
+                row_tmp = (*current_cell)->row_;
+            }
+            if (current_row != row_props.end())
+            {
+                row_tmp = std::min(current_row->first, row_tmp);
+            }
+            return row_tmp;
+        }();
+        // true for the first row on/after 1, 17, 33, ... (16 * x + 1)
+        auto first_row_in_block = prev_row == 0 || ((row - 1) / 16) > ((prev_row - 1) / 16);
         // See note for CT_Row, span attribute about block optimization
         if (first_row_in_block)
         {
             // reset block column range
-            first_block_column = constants::max_column();
-            last_block_column = constants::min_column();
-
-            first_check_row = row;
+            first_block_column = constants::max_column().index;
+            last_block_column = constants::min_column().index;
             // round up to the next multiple of 16
-            last_check_row = ((row / 16) + 1) * 16;
-        }
-
-        for (auto check_row = first_check_row; check_row <= last_check_row; ++check_row)
-        {
-            for (auto column = dimension.top_left().column(); column <= dimension.bottom_right().column(); ++column)
+            auto last_check_row = ((row / 16) + 1) * 16;
+            for (auto check_cell = current_cell; check_cell != cells.end() && (*check_cell)->row_ <= last_check_row; ++check_cell)
             {
-                auto ref = cell_reference(column, check_row);
-                auto cell = ws.d_->cell_map_.find(ref);
-                if (cell == ws.d_->cell_map_.end())
-                {
-                    continue;
-                }
-                if (cell->second.is_garbage_collectible())
-                {
-                    continue;
-                }
-
-                first_block_column = std::min(first_block_column, cell->second.column_);
-                last_block_column = std::max(last_block_column, cell->second.column_);
-
-                if (row == check_row)
-                {
-                    any_non_null = true;
-                }
+                first_block_column = std::min(first_block_column, (*check_cell)->column_);
+                last_block_column = std::max(last_block_column, (*check_cell)->column_);
             }
         }
-
-        if (!any_non_null && !ws.has_row_properties(row)) continue;
 
         write_start_element(xmlns, "row");
         write_attribute("r", row);
@@ -2511,11 +2532,10 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         auto span_string = std::to_string(first_block_column.index) + ":"
             + std::to_string(last_block_column.index);
         write_attribute("spans", span_string);
-
-        if (ws.has_row_properties(row))
+        // write properties of this row if they exist
+        if (current_row != row_props.end() && current_row->first == row)
         {
-            const auto &props = ws.row_properties(row);
-
+            const auto &props = current_row->second;
             if (props.style.is_set())
             {
                 write_attribute("s", props.style.get());
@@ -2524,152 +2544,140 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             {
                 write_attribute("customFormat", write_bool(props.custom_format.get()));
             }
-
             if (props.height.is_set())
             {
                 auto height = props.height.get();
                 write_attribute("ht", converter_.serialise(height));
             }
-
             if (props.hidden)
             {
                 write_attribute("hidden", write_bool(true));
             }
-
             if (props.custom_height)
             {
                 write_attribute("customHeight", write_bool(true));
             }
-
             if (props.dy_descent.is_set())
             {
                 write_attribute(xml::qname(xmlns_x14ac, "dyDescent"), props.dy_descent.get());
             }
+            ++current_row;
         }
 
-        if (any_non_null)
+        while (current_cell != cells.end() && (*current_cell)->row_ == row)
         {
-            for (auto column = dimension.top_left().column(); column <= dimension.bottom_right().column(); ++column)
+            auto cell_ref = cell_reference((*current_cell)->column_, (*current_cell)->row_);
+            if ((*current_cell)->comment_.is_set())
             {
-                if (!ws.has_cell(cell_reference(column, row))) continue;
-
-                auto cell = ws.cell(cell_reference(column, row));
-
-                if (cell.garbage_collectible()) continue;
-
-                // record data about the cell needed later
-
-                if (cell.has_comment())
-                {
-                    cells_with_comments.push_back(cell.reference());
-                }
-
-                if (cell.has_hyperlink())
-                {
-                    hyperlinks.push_back(std::make_pair(cell.reference().to_string(), cell.hyperlink()));
-                }
-
-                write_start_element(xmlns, "c");
-
-                // begin cell attributes
-
-                write_attribute("r", cell.reference().to_string());
-
-                if (cell.phonetics_visible())
-                {
-                    write_attribute("ph", write_bool(true));
-                }
-
-                if (cell.has_format())
-                {
-                    write_attribute("s", cell.format().d_->id);
-                }
-
-                switch (cell.data_type())
-                {
-                case cell::type::empty:
-                    break;
-
-                case cell::type::boolean:
-                    write_attribute("t", "b");
-                    break;
-
-                case cell::type::date:
-                    write_attribute("t", "d");
-                    break;
-
-                case cell::type::error:
-                    write_attribute("t", "e");
-                    break;
-
-                case cell::type::inline_string:
-                    write_attribute("t", "inlineStr");
-                    break;
-
-                case cell::type::number: // default, don't write it
-                    //write_attribute("t", "n");
-                    break;
-
-                case cell::type::shared_string:
-                    write_attribute("t", "s");
-                    break;
-
-                case cell::type::formula_string:
-                    write_attribute("t", "str");
-                    break;
-                }
-
-                //write_attribute("cm", "");
-                //write_attribute("vm", "");
-                //write_attribute("ph", "");
-
-                // begin child elements
-
-                if (cell.has_formula())
-                {
-                    write_element(xmlns, "f", cell.formula());
-                }
-
-                switch (cell.data_type())
-                {
-                case cell::type::empty:
-                    break;
-
-                case cell::type::boolean:
-                    write_element(xmlns, "v", write_bool(cell.value<bool>()));
-                    break;
-
-                case cell::type::date:
-                    write_element(xmlns, "v", cell.value<std::string>());
-                    break;
-
-                case cell::type::error:
-                    write_element(xmlns, "v", cell.value<std::string>());
-                    break;
-
-                case cell::type::inline_string:
-                    write_start_element(xmlns, "is");
-                    write_rich_text(xmlns, cell.value<xlnt::rich_text>());
-                    write_end_element(xmlns, "is");
-                    break;
-
-                case cell::type::number:
-                    write_start_element(xmlns, "v");
-                    write_characters(converter_.serialise(cell.value<double>()));
-                    write_end_element(xmlns, "v");
-                    break;
-
-                case cell::type::shared_string:
-                    write_element(xmlns, "v", static_cast<std::size_t>(cell.d_->value_numeric_));
-                    break;
-
-                case cell::type::formula_string:
-                    write_element(xmlns, "v", cell.value<std::string>());
-                    break;
-                }
-
-                write_end_element(xmlns, "c");
+                cells_with_comments.push_back(cell_ref);
             }
+
+            if ((*current_cell)->hyperlink_.is_set())
+            {
+                // hyperlinks.push_back(std::make_pair(cell_ref.to_string(), xlnt::hyperlink(&current_cell->hyperlink_.get())));
+            }
+
+            write_start_element(xmlns, "c");
+
+            // begin cell attributes
+
+            write_attribute("r", cell_ref.to_string());
+
+            if ((*current_cell)->phonetics_visible_)
+            {
+                write_attribute("ph", write_bool(true));
+            }
+
+            if ((*current_cell)->format_.is_set())
+            {
+                write_attribute("s", (*current_cell)->format_.get()->id);
+            }
+
+            switch ((*current_cell)->type_)
+            {
+            case cell_type::empty:
+                break;
+
+            case cell_type::boolean:
+                write_attribute("t", "b");
+                break;
+
+            case cell_type::date:
+                write_attribute("t", "d");
+                break;
+
+            case cell_type::error:
+                write_attribute("t", "e");
+                break;
+
+            case cell_type::inline_string:
+                write_attribute("t", "inlineStr");
+                break;
+
+            case cell_type::number: // default, don't write it
+                //write_attribute("t", "n");
+                break;
+
+            case cell_type::shared_string:
+                write_attribute("t", "s");
+                break;
+
+            case cell_type::formula_string:
+                write_attribute("t", "str");
+                break;
+            }
+
+            //write_attribute("cm", "");
+            //write_attribute("vm", "");
+            //write_attribute("ph", "");
+
+            // begin child elements
+
+            if ((*current_cell)->formula_.is_set())
+            {
+                write_element(xmlns, "f", (*current_cell)->formula_.get());
+            }
+
+            switch ((*current_cell)->type_)
+            {
+            case cell::type::empty:
+                break;
+
+            case cell::type::boolean:
+                write_element(xmlns, "v", write_bool((*current_cell)->value_numeric_ != 0.0));
+                break;
+
+            case cell::type::date:
+                write_element(xmlns, "v", (*current_cell)->value_text_.plain_text());
+                break;
+
+            case cell::type::error:
+                write_element(xmlns, "v", (*current_cell)->value_text_.plain_text());
+                break;
+
+            case cell::type::inline_string:
+                write_start_element(xmlns, "is");
+                write_rich_text(xmlns, (*current_cell)->value_text_);
+                write_end_element(xmlns, "is");
+                break;
+
+            case cell::type::number:
+                write_start_element(xmlns, "v");
+                write_characters(converter_.serialise((*current_cell)->value_numeric_));
+                write_end_element(xmlns, "v");
+                break;
+
+            case cell::type::shared_string:
+                write_element(xmlns, "v", static_cast<std::size_t>((*current_cell)->value_numeric_));
+                break;
+
+            case cell::type::formula_string:
+                write_element(xmlns, "v", (*current_cell)->value_text_.plain_text());
+                break;
+            }
+
+            write_end_element(xmlns, "c");
+            ++current_cell;
         }
 
         write_end_element(xmlns, "row");
@@ -3069,7 +3077,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             }
         }
     }
-}
+} // namespace detail
 
 // Sheet Relationship Target Parts
 
