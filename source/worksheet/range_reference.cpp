@@ -177,11 +177,4 @@ XLNT_API bool operator!=(const char *reference_string, const range_reference &re
     return ref != reference_string;
 }
 
-range_reference &range_reference::operator=(const range_reference &ref)
-{
-    top_left_ = ref.top_left_;
-    bottom_right_ = ref.bottom_right_;
-    return *this;
-}
-
 } // namespace xlnt

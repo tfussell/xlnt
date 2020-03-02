@@ -141,7 +141,7 @@ public:
         {
             convert_comma_to_pt(buf, len);
         }
-        return std::string(buf, len);
+        return std::string(buf, static_cast<size_t>(len));
     }
 
     double deserialise(std::string &s) const noexcept

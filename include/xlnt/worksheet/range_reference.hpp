@@ -149,11 +149,6 @@ public:
     /// </summary>
     bool operator!=(const char *reference_string) const;
 
-    /// <summary>
-    /// Assigns the extents of the provided range to this range.
-    /// </summary>
-    range_reference &operator=(const range_reference &ref);
-
 private:
     /// <summary>
     /// The top left cell in the range
