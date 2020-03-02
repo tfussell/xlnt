@@ -251,7 +251,8 @@ Cell parse_cell(xlnt::row_t row_arg, xml::parser *parser)
     }
     int level = 1; // nesting level
         // 1 == <c>
-        // 2 == <v>/<is>/<f>
+        // 2 == <v>/<f>
+        // 3 == <is><t>
         // exit loop at </c>
     while (level > 0)
     {
@@ -272,7 +273,6 @@ Cell parse_cell(xlnt::row_t row_arg, xml::parser *parser)
             if (level == 2)
             {
                 // <v> -> numeric values
-                // <is><t> -> inline string
                 if (string_equal(parser->name(), "v"))
                 {
                     c.value += std::move(parser->value());
