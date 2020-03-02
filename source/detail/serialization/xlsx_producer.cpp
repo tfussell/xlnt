@@ -80,7 +80,9 @@ namespace detail {
 
 xlsx_producer::xlsx_producer(const workbook &target)
     : source_(target),
-      current_part_stream_(nullptr)
+      current_part_stream_(nullptr),
+      current_cell_(nullptr),
+      current_worksheet_(nullptr)
 {
 }
 
@@ -918,8 +920,6 @@ void xlsx_producer::write_shared_string_table(const relationship & /*rel*/)
     // todo: is there a more elegant way to get this number?
     std::size_t string_count = 0;
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wrange-loop-analysis"
     for (const auto ws : source_)
     {
         auto dimension = ws.calculate_dimension();
@@ -929,8 +929,8 @@ void xlsx_producer::write_shared_string_table(const relationship & /*rel*/)
         {
             while (current_cell.column() <= dimension.bottom_right().column())
             {
-                if (ws.has_cell(current_cell)
-                    && ws.cell(current_cell).data_type() == cell::type::shared_string)
+                auto c_iter = ws.d_->cell_map_.find(current_cell);
+                if (c_iter != ws.d_->cell_map_.end() && c_iter->second.type_ == cell_type::shared_string)
                 {
                     ++string_count;
                 }
@@ -942,7 +942,6 @@ void xlsx_producer::write_shared_string_table(const relationship & /*rel*/)
             current_cell.column_index(dimension.top_left().column_index());
         }
     }
-#pragma clang diagnostic pop
 
     write_attribute("count", string_count);
     write_attribute("uniqueCount", source_.shared_strings_by_id().size());
