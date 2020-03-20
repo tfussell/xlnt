@@ -174,13 +174,13 @@ std::pair<std::string, row_t> cell_reference::split_reference(
 
     if (column_string[0] == '$')
     {
-        absolute_row = true;
+        absolute_column = true;
         column_string = column_string.substr(1);
     }
 
     if (row_string[0] == '$')
     {
-        absolute_column = true;
+        absolute_row = true;
         row_string = row_string.substr(1);
     }
 
