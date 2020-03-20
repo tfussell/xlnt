@@ -2267,16 +2267,18 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         {
             write_attribute("enableFormatConditionsCalculation", props.enable_format_condition_calculation.get());
         }
-
+        // outlinePr is optional in the spec but is being written every time?
         write_start_element(xmlns, "outlinePr");
         write_attribute("summaryBelow", "1");
         write_attribute("summaryRight", "1");
         write_end_element(xmlns, "outlinePr");
 
-        write_start_element(xmlns, "pageSetUpPr");
-        write_attribute("fitToPage", write_bool(ws.page_setup().fit_to_page()));
-        write_end_element(xmlns, "pageSetUpPr");
-
+        if (ws.has_page_setup())
+        {
+            write_start_element(xmlns, "pageSetUpPr");
+            write_attribute("fitToPage", write_bool(ws.page_setup().fit_to_page()));
+            write_end_element(xmlns, "pageSetUpPr");
+        }
         write_end_element(xmlns, "sheetPr");
     }
 
@@ -2418,7 +2420,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         if (props.width.is_set())
         {
             double width = (props.width.get() * 7 + 5) / 7;
-            write_attribute("width", serialize_number_to_string(width));
+            write_attribute("width", converter_.serialise(width));
         }
 
         if (props.best_fit)
@@ -2481,12 +2483,19 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         {
             for (auto column = dimension.top_left().column(); column <= dimension.bottom_right().column(); ++column)
             {
-                if (!ws.has_cell(cell_reference(column, check_row))) continue;
-                auto cell = ws.cell(cell_reference(column, check_row));
-                if (cell.garbage_collectible()) continue;
+                auto ref = cell_reference(column, check_row);
+                auto cell = ws.d_->cell_map_.find(ref);
+                if (cell == ws.d_->cell_map_.end())
+                {
+                    continue;
+                }
+                if (cell->second.is_garbage_collectible())
+                {
+                    continue;
+                }
 
-                first_block_column = std::min(first_block_column, cell.column());
-                last_block_column = std::max(last_block_column, cell.column());
+                first_block_column = std::min(first_block_column, cell->second.column_);
+                last_block_column = std::max(last_block_column, cell->second.column_);
 
                 if (row == check_row)
                 {
@@ -2520,7 +2529,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             if (props.height.is_set())
             {
                 auto height = props.height.get();
-                write_attribute("ht", serialize_number_to_string(height));
+                write_attribute("ht", converter_.serialise(height));
             }
 
             if (props.hidden)
@@ -2647,7 +2656,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
                 case cell::type::number:
                     write_start_element(xmlns, "v");
-                    write_characters(serialize_number_to_string(cell.value<double>()));
+                    write_characters(converter_.serialise(cell.value<double>()));
                     write_end_element(xmlns, "v");
                     break;
 
@@ -2884,26 +2893,26 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             {
                 if (hf.has_odd_even_header(location))
                 {
-                    odd_header.append(encode_header_footer(hf.odd_header(location), location));
-                    even_header.append(encode_header_footer(hf.even_header(location), location));
+                    odd_header.append(encode_header_footer(hf.odd_header(location), location, converter_));
+                    even_header.append(encode_header_footer(hf.even_header(location), location, converter_));
                 }
 
                 if (hf.has_odd_even_footer(location))
                 {
-                    odd_footer.append(encode_header_footer(hf.odd_footer(location), location));
-                    even_footer.append(encode_header_footer(hf.even_footer(location), location));
+                    odd_footer.append(encode_header_footer(hf.odd_footer(location), location, converter_));
+                    even_footer.append(encode_header_footer(hf.even_footer(location), location, converter_));
                 }
             }
             else
             {
                 if (hf.has_header(location))
                 {
-                    odd_header.append(encode_header_footer(hf.header(location), location));
+                    odd_header.append(encode_header_footer(hf.header(location), location, converter_));
                 }
 
                 if (hf.has_footer(location))
                 {
-                    odd_footer.append(encode_header_footer(hf.footer(location), location));
+                    odd_footer.append(encode_header_footer(hf.footer(location), location, converter_));
                 }
             }
 
@@ -2911,12 +2920,12 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             {
                 if (hf.has_first_page_header(location))
                 {
-                    first_header.append(encode_header_footer(hf.first_page_header(location), location));
+                    first_header.append(encode_header_footer(hf.first_page_header(location), location, converter_));
                 }
 
                 if (hf.has_first_page_footer(location))
                 {
-                    first_footer.append(encode_header_footer(hf.first_page_footer(location), location));
+                    first_footer.append(encode_header_footer(hf.first_page_footer(location), location, converter_));
                 }
             }
         }
@@ -3383,7 +3392,7 @@ void xlsx_producer::write_color(const xlnt::color &color)
     }
     if (color.has_tint())
     {
-        write_attribute("tint", serialize_number_to_string(color.tint()));
+        write_attribute("tint", converter_.serialise(color.tint()));
     }
 }
 

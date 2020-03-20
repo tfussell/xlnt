@@ -40,17 +40,18 @@ public:
 
     void test_serialise_number()
     {
+        xlnt::detail::number_serialiser serialiser;
         // excel serialises numbers as floating point values with <= 15 digits of precision
-        xlnt_assert(xlnt::detail::serialize_number_to_string(1) == "1");
+        xlnt_assert(serialiser.serialise(1) == "1");
         // trailing zeroes are ignored
-        xlnt_assert(xlnt::detail::serialize_number_to_string(1.0) == "1");
-        xlnt_assert(xlnt::detail::serialize_number_to_string(1.0f) == "1");
+        xlnt_assert(serialiser.serialise(1.0) == "1");
+        xlnt_assert(serialiser.serialise(1.0f) == "1");
         // one to 1 relation
-        xlnt_assert(xlnt::detail::serialize_number_to_string(1.23456) == "1.23456");
-        xlnt_assert(xlnt::detail::serialize_number_to_string(1.23456789012345) == "1.23456789012345");
-        xlnt_assert(xlnt::detail::serialize_number_to_string(123456.789012345) == "123456.789012345");
-        xlnt_assert(xlnt::detail::serialize_number_to_string(1.23456789012345e+67) == "1.23456789012345e+67");
-        xlnt_assert(xlnt::detail::serialize_number_to_string(1.23456789012345e-67) == "1.23456789012345e-67");
+        xlnt_assert(serialiser.serialise(1.23456) == "1.23456");
+        xlnt_assert(serialiser.serialise(1.23456789012345) == "1.23456789012345");
+        xlnt_assert(serialiser.serialise(123456.789012345) == "123456.789012345");
+        xlnt_assert(serialiser.serialise(1.23456789012345e+67) == "1.23456789012345e+67");
+        xlnt_assert(serialiser.serialise(1.23456789012345e-67) == "1.23456789012345e-67");
     }
 
     void test_float_equals_zero()

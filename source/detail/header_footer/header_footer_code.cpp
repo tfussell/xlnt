@@ -27,7 +27,7 @@
 namespace xlnt {
 namespace detail {
 
-std::array<xlnt::optional<xlnt::rich_text>, 3> decode_header_footer(const std::string &hf_string)
+std::array<xlnt::optional<xlnt::rich_text>, 3> decode_header_footer(const std::string &hf_string, const number_serialiser &serialiser)
 {
     std::array<xlnt::optional<xlnt::rich_text>, 3> result;
 
@@ -216,7 +216,7 @@ std::array<xlnt::optional<xlnt::rich_text>, 3> decode_header_footer(const std::s
         tokens.push_back(token);
     }
 
-    const auto parse_section = [&tokens, &result](hf_code code) {
+    const auto parse_section = [&tokens, &result, &serialiser](hf_code code) {
         std::vector<hf_code> end_codes{hf_code::left_section, hf_code::center_section, hf_code::right_section};
         end_codes.erase(std::find(end_codes.begin(), end_codes.end(), code));
 
@@ -297,7 +297,7 @@ std::array<xlnt::optional<xlnt::rich_text>, 3> decode_header_footer(const std::s
                     current_run.second = xlnt::font();
                 }
 
-                current_run.second.get().size(std::stod(current_token.value));
+                current_run.second.get().size(serialiser.deserialise(current_token.value));
 
                 break;
             }
@@ -460,7 +460,7 @@ std::array<xlnt::optional<xlnt::rich_text>, 3> decode_header_footer(const std::s
     return result;
 }
 
-std::string encode_header_footer(const rich_text &t, header_footer::location where)
+std::string encode_header_footer(const rich_text &t, header_footer::location where, const number_serialiser &serialiser)
 {
     const auto location_code_map =
         std::unordered_map<header_footer::location,
@@ -505,7 +505,7 @@ std::string encode_header_footer(const rich_text &t, header_footer::location whe
             if (run.second.get().has_size())
             {
                 encoded.push_back('&');
-                encoded.append(serialize_number_to_string(run.second.get().size()));
+                encoded.append(serialiser.serialise(run.second.get().size()));
             }
             if (run.second.get().underlined())
             {

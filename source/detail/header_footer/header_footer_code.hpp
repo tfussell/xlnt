@@ -27,12 +27,13 @@
 #include <xlnt/cell/rich_text.hpp>
 #include <xlnt/utils/optional.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
+#include <xlnt/utils/numeric.hpp>
 
 namespace xlnt {
 namespace detail {
 
-std::array<xlnt::optional<xlnt::rich_text>, 3> decode_header_footer(const std::string &hf_string);
-std::string encode_header_footer(const rich_text &t, header_footer::location where);
+std::array<xlnt::optional<xlnt::rich_text>, 3> decode_header_footer(const std::string &hf_string, const number_serialiser &serialiser);
+std::string encode_header_footer(const rich_text &t, header_footer::location where, const number_serialiser& serialiser);
 
 } // namespace detail
 } // namespace xlnt
