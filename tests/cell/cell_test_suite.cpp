@@ -665,8 +665,16 @@ private:
         xlnt_assert_throws(xlnt::cell_reference("A"), xlnt::invalid_cell_reference);
 
         auto ref = xlnt::cell_reference("$B$7");
-        xlnt_assert(ref.row_absolute());
-        xlnt_assert(ref.column_absolute());
+        xlnt_assert_equals(ref.row_absolute(), true);
+        xlnt_assert_equals(ref.column_absolute(), true);
+
+        ref = xlnt::cell_reference("$B7");
+        xlnt_assert_equals(ref.row_absolute(), false);
+        xlnt_assert_equals(ref.column_absolute(), true);
+
+        ref = xlnt::cell_reference("B$7");
+        xlnt_assert_equals(ref.row_absolute(), true);
+        xlnt_assert_equals(ref.column_absolute(), false);
 
         xlnt_assert(xlnt::cell_reference("A1") == "A1");
         xlnt_assert(xlnt::cell_reference("A1") != "A2");
