@@ -1,6 +1,6 @@
 {
   "name": "xlnt",
-  "version": "1.5.0",
+  "version": "1.4.0",
   "description": "Cross-platform user-friendly xlsx library for C++11+",
   "main": "index.js",
   "directories": {
