@@ -8,7 +8,7 @@ git:
 
 notifications:
   email: false
-  
+
 # set up build matrix
 matrix:
   include:
@@ -31,7 +31,8 @@ matrix:
         - STATIC=OFF
         - SAMPLES=OFF
         - BENCHMARKS=OFF
-        
+        - RELEASE=OFF
+
     # ============= GCC ==================
     # gcc-6, c++11, release build, dynamic linking
     - os: linux
@@ -51,7 +52,8 @@ matrix:
         - STATIC=OFF
         - SAMPLES=OFF
         - BENCHMARKS=OFF
-        
+        - RELEASE=OFF
+
     # gcc-7, c++14, release build, static linking
     - os: linux
       compiler: gcc
@@ -70,7 +72,8 @@ matrix:
         - STATIC=ON
         - SAMPLES=OFF
         - BENCHMARKS=OFF
-        
+        - RELEASE=OFF
+
     # gcc-8, c++17, release build, static linking, samples + benchmarks compiled and run
     - os: linux
       compiler: gcc
@@ -89,6 +92,7 @@ matrix:
         - STATIC=ON
         - SAMPLES=ON
         - BENCHMARKS=ON
+        - RELEASE=ON
 
     # =========== CLANG =============
     # clang 4, c++11, release build, dynamic linking
@@ -110,7 +114,8 @@ matrix:
         - STATIC=OFF
         - SAMPLES=OFF
         - BENCHMARKS=OFF
-        
+        - RELEASE=OFF
+
     # clang 5, c++14, release build, dynamic linking
     - os: linux
       compiler: clang
@@ -130,7 +135,8 @@ matrix:
         - STATIC=ON
         - SAMPLES=OFF
         - BENCHMARKS=OFF
-        
+        - RELEASE=OFF
+
     # clang 6, c++17, release build, static linking, samples + benchmarks compiled and run
     - os: linux
       compiler: clang
@@ -150,6 +156,7 @@ matrix:
         - STATIC=ON
         - SAMPLES=ON
         - BENCHMARKS=ON
+        - RELEASE=ON
 
     # ============= CODE COVERAGE ===============
     # gcc-6, c++11, debug build, static linking, code coverage enabled
@@ -170,7 +177,7 @@ matrix:
         - COVERAGE=ON
         - STATIC=ON
         - SAMPLES=OFF
-        
+
 before_install:
   - export CC=${C_COMPILER}
   - export CXX=${CXX_COMPILER}
@@ -180,14 +187,13 @@ install:
     if [[ "${COVERAGE}" == "ON" ]]; then
       gem install coveralls-lcov; 
     fi
-    
   - ${CXX} --version
   - cmake --version
 
 script:
   - mkdir build
   - cd build
-  - cmake .. -DXLNT_CXX_LANG=${CXX_VER} -DSTATIC=$STATIC -DBENCHMARKS=$BENCHMARKS -DSAMPLES=$SAMPLES -DCOVERAGE=$COVERAGE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+  - cmake .. -DXLNT_CXX_LANG=${CXX_VER} -DSTATIC=$STATIC -DBENCHMARKS=$BENCHMARKS -DSAMPLES=$SAMPLES -DCOVERAGE=$COVERAGE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DRELEASE=$RELEASE
   - cmake --build . -- -j2
   - ./tests/xlnt.test
   - echo "samples" && echo 'travis_fold:start:samples'
@@ -199,7 +205,7 @@ script:
   - if [[ "${BENCHMARKS}" == "ON" ]]; then ./benchmarks/benchmark-styles; fi
   - if [[ "${BENCHMARKS}" == "ON" ]]; then ./benchmarks/benchmark-writer; fi
   - echo 'travis_fold:end:benchmarks'
-    
+
 
 after_success:
  - |
@@ -211,3 +217,15 @@ after_success:
      cd ..
      coveralls-lcov build/coverage.info
    fi
+
+deploy:
+  provider: releases
+  api_key:
+    secure: dDHREnPCSxrxbnYcJlHZ95nyCu2NYmkEW3uW3J9eNar4R5kfYm6JpR0AoQZOCfskL+BJLa+8MMDxzTIdpohc8NTAVPR51cDoeTW9GoAsxpvL8LaTRKb8IY3RaSybqAaZxWUxepNOAHRUibFOrGpkUkunp00uHoWPVrLI15eLEHejNhCSi3se2sEiN4i9zEwVwFtjta8gF59Af7Mm8jYMGMaIAqL7XAZSnyqzZwLl8giMWw05KMQhtapZRI8DiG7XYWebPT4W0qfVf4MmTHpAsNetAq0eQW19nu4qUM7FT4igCzQNEu21nZ5XFTfvsH96Dn2urT/tt6KAHE2I0Px8IXjhsJhTeZzhRDhbVmRHQxS8za5DTXNgoT8cln/jYKhQvDVf/DMHIPqm09QO2B7kOOSeYwW5lHYwPAvSZ4vIZOzL3OOI90k1VMsbBdDrQt3GM6BWrYrbzyQlkKG9hpjSTVDbVZ5cx5f7ZOBd5srFVM9+TYIEWF0Rx35GX+kfk/48o4fDk80Vpd7o/e+eZpfmeZTg9Boz8DpRHDQn5hVsXCsoNify8AN+fEUqNqio9eAhxK1zdU2oGaE6tZTcWNjjIeWN/1jkSzffN5sjGtqarNhkERlMd0oewouBeHQ2IPwKi7MvlAgPLZaon7MVMmT1sIcyPpU9uN5pYyo02qi2v5k=
+  file_glob: true
+  file: build/*.tar.gz
+  skip_cleanup: true
+  overwite: true
+  on:
+    repo: tfussell/xlnt
+    tags: true
