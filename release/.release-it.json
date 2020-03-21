@@ -10,11 +10,13 @@
     "release": true,
     "releaseName": "xlnt v${version}"
   },
-  "npm": false,
+  "npm": {
+    "publish": false
+  },
   "plugins": {
     "@release-it/bumper": {
       "out": {
-        "file": "../CMakeLists.txt",
+        "file": "../source/CMakeLists.txt",
         "type": "text/plain"
       }
     }
