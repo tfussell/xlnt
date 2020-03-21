@@ -1,0 +1,18 @@
+{
+  "git": {
+    "requireBranch": "master",
+    "requireCommits": true
+  },
+  "github": {
+    "release": true
+  },
+  "npm": false,
+  "plugins": {
+    "@release-it/bumper": {
+      "out": {
+        "file": "../CMakeLists.txt",
+        "type": "text/plain"
+      }
+    }
+  }
+}
