@@ -8,7 +8,7 @@
   },
   "github": {
     "release": true,
-    "releaseName": "xlnt ${version}"
+    "releaseName": "xlnt v${version}"
   },
   "npm": false,
   "plugins": {
