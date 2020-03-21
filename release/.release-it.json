@@ -1,10 +1,14 @@
 {
   "git": {
+    "commitMessage": "release v${version}",
     "requireBranch": "master",
-    "requireCommits": true
+    "requireCommits": true,
+    "tagAnnotation": "release v${version}",
+    "tagName": "v${version}"
   },
   "github": {
-    "release": true
+    "release": true,
+    "releaseName": "xlnt ${version}"
   },
   "npm": false,
   "plugins": {
