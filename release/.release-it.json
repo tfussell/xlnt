@@ -2,13 +2,11 @@
   "github": {
     "release": true
   },
-  "npm": {
-    "publish": false
-  },
+  "npm": false,
   "plugins": {
     "@release-it/bumper": {
       "out": {
-        "file": "CMakeLists.txt",
+        "file": "../CMakeLists.txt",
         "type": "text/plain"
       }
     }
