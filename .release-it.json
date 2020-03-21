@@ -16,7 +16,7 @@
   "plugins": {
     "@release-it/bumper": {
       "out": {
-        "file": "../source/CMakeLists.txt",
+        "file": "source/CMakeLists.txt",
         "type": "text/plain"
       }
     }
