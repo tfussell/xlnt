@@ -17,3 +17,4 @@ Win32/
 python/record.txt
 python/xlntpyarrow.egg-info/
 /x64/
+.envrc

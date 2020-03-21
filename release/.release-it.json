@@ -1,0 +1,16 @@
+{
+  "github": {
+    "release": true
+  },
+  "npm": {
+    "publish": false
+  },
+  "plugins": {
+    "@release-it/bumper": {
+      "out": {
+        "file": "CMakeLists.txt",
+        "type": "text/plain"
+      }
+    }
+  }
+}
