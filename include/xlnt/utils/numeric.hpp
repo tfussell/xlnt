@@ -41,7 +41,7 @@ template <typename Number>
 constexpr Number abs(Number val)
 {
     return (val < Number{0}) ? -val : val;
-};
+}
 
 /// <summary>
 /// constexpr max
