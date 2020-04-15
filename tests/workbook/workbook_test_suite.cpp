@@ -49,6 +49,8 @@ public:
         register_test(test_add_sheet_at_index);
         register_test(test_get_sheet_by_title);
         register_test(test_get_sheet_by_title_const);
+        register_test(test_get_sheet_by_index);
+        register_test(test_get_sheet_by_index_const);
         register_test(test_index_operator);
         register_test(test_contains);
         register_test(test_iter);
@@ -149,6 +151,23 @@ public:
         const xlnt::workbook &wbconst = wb;
         auto found_sheet = wbconst.sheet_by_title(title);
         xlnt_assert_equals(new_sheet, found_sheet);
+    }
+
+    void test_get_sheet_by_index()
+    {
+        xlnt::workbook wb;
+        auto new_sheet = wb.create_sheet();
+        xlnt_assert_equals(new_sheet, wb.sheet_by_index(1)); // in range
+        xlnt_assert_throws(wb.sheet_by_index(2), xlnt::invalid_parameter); // out of range
+    }
+
+    void test_get_sheet_by_index_const()
+    {
+        xlnt::workbook wb;
+        auto new_sheet = wb.create_sheet();
+        const auto &wb_const = wb;
+        xlnt_assert_equals(new_sheet, wb_const.sheet_by_index(1)); // in range
+        xlnt_assert_throws(wb_const.sheet_by_index(2), xlnt::invalid_parameter); // out of range
     }
 
     void test_index_operator() // test_getitem
