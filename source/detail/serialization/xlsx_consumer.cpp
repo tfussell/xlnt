@@ -384,9 +384,7 @@ namespace detail {
 
 xlsx_consumer::xlsx_consumer(workbook &target)
     : target_(target),
-      parser_(nullptr),
-      current_cell_(nullptr),
-      current_worksheet_(nullptr)
+      parser_(nullptr)
 {
 }
 
