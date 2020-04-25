@@ -2813,33 +2813,12 @@ void xlsx_producer::write_worksheet(const relationship &rel)
     {
         write_start_element(xmlns, "pageMargins");
 
-        // TODO: there must be a better way to do this
-        auto remove_trailing_zeros = [](const std::string &n) -> std::string {
-            auto decimal = n.find('.');
-
-            if (decimal == std::string::npos) return n;
-
-            auto index = n.size() - 1;
-
-            while (index >= decimal && n[index] == '0')
-            {
-                index--;
-            }
-
-            if (index == decimal)
-            {
-                return n.substr(0, decimal);
-            }
-
-            return n.substr(0, index + 1);
-        };
-
-        write_attribute("left", remove_trailing_zeros(std::to_string(ws.page_margins().left())));
-        write_attribute("right", remove_trailing_zeros(std::to_string(ws.page_margins().right())));
-        write_attribute("top", remove_trailing_zeros(std::to_string(ws.page_margins().top())));
-        write_attribute("bottom", remove_trailing_zeros(std::to_string(ws.page_margins().bottom())));
-        write_attribute("header", remove_trailing_zeros(std::to_string(ws.page_margins().header())));
-        write_attribute("footer", remove_trailing_zeros(std::to_string(ws.page_margins().footer())));
+        write_attribute("left", ws.page_margins().left());
+        write_attribute("right", ws.page_margins().right());
+        write_attribute("top", ws.page_margins().top());
+        write_attribute("bottom", ws.page_margins().bottom());
+        write_attribute("header", ws.page_margins().header());
+        write_attribute("footer", ws.page_margins().footer());
 
         write_end_element(xmlns, "pageMargins");
     }

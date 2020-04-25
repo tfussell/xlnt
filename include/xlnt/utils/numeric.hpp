@@ -129,10 +129,12 @@ class number_serialiser
 
 public:
     explicit number_serialiser()
-        : should_convert_comma(std::use_facet<std::numpunct<char>>(std::locale{}).decimal_point() == ',')
+        : should_convert_comma(localeconv()->decimal_point[0] == ',')
     {
     }
 
+    // for printing to file.
+    // This matches the output format of excel irrespective of current locale
     std::string serialise(double d) const
     {
         char buf[30];
@@ -144,29 +146,43 @@ public:
         return std::string(buf, static_cast<size_t>(len));
     }
 
-    double deserialise(std::string &s) const noexcept
+    // replacement for std::to_string / s*printf("%f", ...)
+    // behaves same irrespective of locale
+    std::string serialise_short(double d) const
     {
-        assert(!s.empty());
+        char buf[30];
+        int len = snprintf(buf, sizeof(buf), "%f", d);
         if (should_convert_comma)
         {
-            // s.data() doesn't have a non-const overload until c++17, hence this little dance
-            convert_pt_to_comma(&s[0], s.size());
+            convert_comma_to_pt(buf, len);
         }
-        return strtod(s.c_str(), nullptr);
+        return std::string(buf, static_cast<size_t>(len));
     }
 
-    double deserialise(const std::string &s) const
+    double deserialise(const std::string &s, ptrdiff_t *len_converted) const
     {
         assert(!s.empty());
+        assert(len_converted != nullptr);
+        char *end_of_convert;
         if (!should_convert_comma)
         {
-            return strtod(s.c_str(), nullptr);
+            double d = strtod(s.c_str(), &end_of_convert);
+            *len_converted = end_of_convert - s.c_str();
+            return d;
         }
         char buf[30];
         assert(s.size() < sizeof(buf));
         auto copy_end = std::copy(s.begin(), s.end(), buf);
         convert_pt_to_comma(buf, static_cast<size_t>(copy_end - buf));
-        return strtod(buf, nullptr);
+        double d = strtod(buf, &end_of_convert);
+        *len_converted = end_of_convert - buf;
+        return d;
+    }
+
+    double deserialise(const std::string &s) const
+    {
+        ptrdiff_t ignore;
+        return deserialise(s, &ignore);
     }
 };
 
