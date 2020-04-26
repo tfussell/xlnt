@@ -27,6 +27,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <cstddef>
 #include <limits>
 #include <sstream>
 #include <type_traits>
