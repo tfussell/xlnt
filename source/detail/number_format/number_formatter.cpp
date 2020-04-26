@@ -1567,7 +1567,16 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, do
     if (p.type == format_placeholders::placeholders_type::general
         || p.type == format_placeholders::placeholders_type::text)
     {
-        return serialiser_.serialise_short(number);
+        auto s = serialiser_.serialise_short(number);
+        while (s.size() > 1 && s.back() == '0')
+        {
+            s.pop_back();
+        }
+        if (s.back() == '.')
+        {
+            s.pop_back();
+        }
+        return s;
     }
 
     if (p.percentage)
