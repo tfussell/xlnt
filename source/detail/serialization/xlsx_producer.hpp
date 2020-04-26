@@ -172,7 +172,7 @@ private:
 
     // std::string attribute name
     // not integer or float type
-    template <typename T, typename = std::enable_if_t<!std::is_convertible_v<T, double>>>
+    template <typename T, typename = std::enable_if<!std::is_convertible_v<T, double>>::type>
     void write_attribute(const std::string &name, T value)
     {
         current_part_serializer_->attribute(name, value);
@@ -185,7 +185,7 @@ private:
 
     // qname attribute name
     // not integer or float type
-    template <typename T, typename = std::enable_if_t<!std::is_convertible_v<T, double>>>
+    template <typename T, typename = std::enable_if<!std::is_convertible_v<T, double>>::type>
     void write_attribute(const xml::qname &name, T value)
     {
         current_part_serializer_->attribute(name, value);
