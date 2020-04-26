@@ -26,6 +26,7 @@
 #include <cstdint>
 #include <iostream>
 #include <memory>
+#include <type_traits>
 #include <vector>
 
 #include <xlnt/utils/numeric.hpp>
