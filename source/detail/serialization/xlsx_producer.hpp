@@ -26,11 +26,12 @@
 #include <cstdint>
 #include <iostream>
 #include <memory>
+#include <type_traits>
 #include <vector>
 
+#include <xlnt/utils/numeric.hpp>
 #include <detail/constants.hpp>
 #include <detail/external/include_libstudxml.hpp>
-#include <xlnt/utils/numeric.hpp>
 
 namespace xml {
 class serializer;
@@ -169,19 +170,34 @@ private:
 
     void write_namespace(const std::string &ns, const std::string &prefix);
 
-    template<typename T>
+    // std::string attribute name
+    // not integer or float type
+    template <typename T, typename = typename std::enable_if<!std::is_convertible<T, double>::value>::type>
     void write_attribute(const std::string &name, T value)
     {
         current_part_serializer_->attribute(name, value);
     }
 
-    template<typename T>
+    void write_attribute(const std::string &name, double value)
+    {
+        current_part_serializer_->attribute(name, converter_.serialise(value));
+    }
+
+    // qname attribute name
+    // not integer or float type
+    template <typename T, typename = typename std::enable_if<!std::is_convertible<T, double>::value>::type>
     void write_attribute(const xml::qname &name, T value)
     {
         current_part_serializer_->attribute(name, value);
     }
 
-    template<typename T>
+    void write_attribute(const xml::qname &name, double value)
+    {
+        current_part_serializer_->attribute(name, converter_.serialise(value));
+    }
+
+
+    template <typename T>
     void write_characters(T characters, bool preserve_whitespace = false)
     {
         if (preserve_whitespace)

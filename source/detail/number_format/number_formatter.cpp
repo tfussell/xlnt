@@ -26,6 +26,7 @@
 #include <cmath>
 
 #include <xlnt/utils/exceptions.hpp>
+#include <xlnt/utils/numeric.hpp>
 #include <detail/default_case.hpp>
 #include <detail/number_format/number_formatter.hpp>
 
@@ -622,7 +623,8 @@ void number_format_parser::parse()
                 value = token.string.substr(1);
             }
 
-            section.condition.value = std::stod(value);
+            detail::number_serialiser ser;
+            section.condition.value = ser.deserialise(value);
             break;
         }
 
@@ -1565,19 +1567,16 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, do
     if (p.type == format_placeholders::placeholders_type::general
         || p.type == format_placeholders::placeholders_type::text)
     {
-        result = std::to_string(number);
-
-        while (result.back() == '0')
+        auto s = serialiser_.serialise_short(number);
+        while (s.size() > 1 && s.back() == '0')
         {
-            result.pop_back();
+            s.pop_back();
         }
-
-        if (result.back() == '.')
+        if (s.back() == '.')
         {
-            result.pop_back();
+            s.pop_back();
         }
-
-        return result;
+        return s;
     }
 
     if (p.percentage)
@@ -1636,21 +1635,22 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, do
         auto fractional_part = number - integer_part;
         result = std::fabs(fractional_part) < std::numeric_limits<double>::min()
             ? std::string(".")
-            : std::to_string(fractional_part).substr(1);
+            : serialiser_.serialise_short(fractional_part).substr(1);
 
         while (result.back() == '0' || result.size() > (p.num_zeros + p.num_optionals + p.num_spaces + 1))
         {
             result.pop_back();
         }
 
-        while (result.size() < p.num_zeros + 1)
+        
+        if (result.size() < p.num_zeros + 1)
         {
-            result.push_back('0');
+            result.resize(p.num_zeros + 1, '0');
         }
 
-        while (result.size() < p.num_zeros + p.num_optionals + p.num_spaces + 1)
+        if (result.size() < p.num_zeros + p.num_optionals + p.num_spaces + 1)
         {
-            result.push_back(' ');
+            result.resize(p.num_zeros + p.num_optionals + p.num_spaces + 1, ' ');
         }
 
         if (p.percentage)
@@ -1689,13 +1689,7 @@ std::string number_formatter::fill_scientific_placeholders(const format_placehol
         integer_string = std::string(integer_part.num_zeros + integer_part.num_optionals, '0');
     }
 
-    std::string fractional_string = std::to_string(fraction).substr(1);
-
-    while (fractional_string.size() > fractional_part.num_zeros + fractional_part.num_optionals + 1)
-    {
-        fractional_string.pop_back();
-    }
-
+    std::string fractional_string = serialiser_.serialise_short(fraction).substr(1, fractional_part.num_zeros + fractional_part.num_optionals + 1);
     std::string exponent_string = std::to_string(logarithm);
 
     while (exponent_string.size() < fractional_part.num_zeros)

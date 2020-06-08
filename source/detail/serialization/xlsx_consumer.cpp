@@ -40,6 +40,7 @@
 #include <detail/header_footer/header_footer_code.hpp>
 #include <detail/implementations/workbook_impl.hpp>
 #include <detail/serialization/custom_value_traits.hpp>
+#include <detail/serialization/serialisation_helpers.hpp>
 #include <detail/serialization/vector_streambuf.hpp>
 #include <detail/serialization/xlsx_consumer.hpp>
 #include <detail/serialization/zstream.hpp>
@@ -127,74 +128,14 @@ void set_style_by_xfid(const std::vector<style_id_pair> &styles,
     }
 }
 
-/// parsing assumptions used by the following functions
-/// - on entry, the start element for the element has been consumed by parser->next
-/// - on exit, the closing element has been consumed by parser->next
-/// using these assumptions, the following functions DO NOT use parser->peek (SLOW!!!)
-/// probable further gains from not building an attribute map and using the attribute events instead as the impl just iterates the map
-
-/// 'r' == cell reference e.g. 'A1'
-/// https://docs.microsoft.com/en-us/openspecs/office_standards/ms-oe376/db11a912-b1cb-4dff-b46d-9bedfd10cef0
-///
-/// a lightweight version of xlnt::cell_reference with no extre functionality (absolute/relative, ...)
-/// many thousands are created during parsing, so even minor overhead is noticable
-struct Cell_Reference
-{
-    // not commonly used, added as the obvious ctor
-    explicit Cell_Reference(xlnt::row_t row_arg, xlnt::column_t::index_t column_arg) noexcept
-        : row(row_arg), column(column_arg)
-    {
-    }
-    // the common case. row # is already known during parsing (from parent <row> element)
-    // just need to evaluate the column
-    explicit Cell_Reference(xlnt::row_t row_arg, const std::string &reference) noexcept
-        : row(row_arg)
-    {
-        // only three characters allowed for the column
-        // assumption:
-        // - regex pattern match: [A-Z]{1,3}\d{1,7}
-        const char *iter = reference.c_str();
-        int temp = *iter - 'A' + 1; // 'A' == 1
-        ++iter;
-        if (*iter >= 'A') // second char
-        {
-            temp *= 26; // LHS values are more significant
-            temp += *iter - 'A' + 1; // 'A' == 1
-            ++iter;
-            if (*iter >= 'A') // third char
-            {
-                temp *= 26; // LHS values are more significant
-                temp += *iter - 'A' + 1; // 'A' == 1
-            }
-        }
-        column = static_cast<xlnt::column_t::index_t>(temp);
-    }
-
-    xlnt::row_t row; // range:[1, 1048576]
-    xlnt::column_t::index_t column; // range:["A", "ZZZ"] -> [1, 26^3] -> [1, 17576]
-};
-
-// <c> inside <row> element
-// https://docs.microsoft.com/en-us/dotnet/api/documentformat.openxml.spreadsheet.cell?view=openxml-2.8.1
-struct Cell
-{
-    bool is_phonetic = false; // 'ph'
-    xlnt::cell::type type = xlnt::cell::type::number; // 't'
-    int cell_metatdata_idx = -1; // 'cm'
-    int style_index = -1; // 's'
-    Cell_Reference ref{0, 0}; // 'r'
-    std::string value; // <v> OR <is>
-    std::string formula_string; // <f>
-};
-
 // <sheetData> element
 struct Sheet_Data
 {
     std::vector<std::pair<xlnt::row_properties, xlnt::row_t>> parsed_rows;
-    std::vector<Cell> parsed_cells;
+    std::vector<xlnt::detail::Cell> parsed_cells;
 };
 
-xlnt::cell::type type_from_string(const std::string &str)
+xlnt::cell_type type_from_string(const std::string &str)
 {
     if (string_equal(str, "s"))
     {
@@ -223,14 +164,14 @@ xlnt::cell::type type_from_string(const std::string &str)
     return xlnt::cell::type::shared_string;
 }
 
-Cell parse_cell(xlnt::row_t row_arg, xml::parser *parser)
+xlnt::detail::Cell parse_cell(xlnt::row_t row_arg, xml::parser *parser)
 {
-    Cell c;
+    xlnt::detail::Cell c;
     for (auto &attr : parser->attribute_map())
     {
         if (string_equal(attr.first.name(), "r"))
         {
-            c.ref = Cell_Reference(row_arg, attr.second.value);
+            c.ref = xlnt::detail::Cell_Reference(row_arg, attr.second.value);
         }
         else if (string_equal(attr.first.name(), "t"))
         {
@@ -251,7 +192,8 @@ Cell parse_cell(xlnt::row_t row_arg, xml::parser *parser)
     }
     int level = 1; // nesting level
         // 1 == <c>
-        // 2 == <v>/<is>/<f>
+        // 2 == <v>/<f>
+        // 3 == <is><t>
         // exit loop at </c>
     while (level > 0)
     {
@@ -272,7 +214,6 @@ Cell parse_cell(xlnt::row_t row_arg, xml::parser *parser)
             if (level == 2)
             {
                 // <v> -> numeric values
-                // <is><t> -> inline string
                 if (string_equal(parser->name(), "v"))
                 {
                     c.value += std::move(parser->value());
@@ -307,7 +248,7 @@ Cell parse_cell(xlnt::row_t row_arg, xml::parser *parser)
 }
 
 // <row> inside <sheetData> element
-std::pair<xlnt::row_properties, int> parse_row(xml::parser *parser, xlnt::detail::number_serialiser &converter, std::vector<Cell> &parsed_cells)
+std::pair<xlnt::row_properties, int> parse_row(xml::parser *parser, xlnt::detail::number_serialiser &converter, std::vector<xlnt::detail::Cell> &parsed_cells)
 {
     std::pair<xlnt::row_properties, int> props;
     for (auto &attr : parser->attribute_map())

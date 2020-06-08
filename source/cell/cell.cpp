@@ -57,15 +57,16 @@
 #include <detail/implementations/hyperlink_impl.hpp>
 #include <detail/implementations/stylesheet.hpp>
 #include <detail/implementations/worksheet_impl.hpp>
+#include <xlnt/utils/numeric.hpp>
 
 namespace {
 
 std::pair<bool, double> cast_numeric(const std::string &s)
 {
-    auto str_end = static_cast<char *>(nullptr);
-    auto result = std::strtod(s.c_str(), &str_end);
-
-    return (str_end != s.c_str() + s.size())
+    xlnt::detail::number_serialiser ser;
+    ptrdiff_t len_convert;
+    double result = ser.deserialise(s, &len_convert);
+    return (len_convert != static_cast<ptrdiff_t>(s.size()))
         ? std::make_pair(false, 0.0)
         : std::make_pair(true, result);
 }
@@ -108,7 +109,7 @@ std::pair<bool, xlnt::time> cast_time(const std::string &s)
     }
 
     std::vector<double> numeric_components;
-
+    xlnt::detail::number_serialiser ser;
     for (auto component : time_components)
     {
         if (component.empty() || (component.substr(0, component.find('.')).size() > 2))
@@ -123,9 +124,7 @@ std::pair<bool, xlnt::time> cast_time(const std::string &s)
                 return {false, result};
             }
         }
-
-        auto without_leading_zero = component.front() == '0' ? component.substr(1) : component;
-        auto numeric = std::stod(without_leading_zero);
+        auto numeric = ser.deserialise(component);
 
         numeric_components.push_back(numeric);
     }
