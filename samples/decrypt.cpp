@@ -21,24 +21,16 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#include <helpers/path_helper.hpp>
 #include <xlnt/xlnt.hpp>
+#include <helpers/path_helper.hpp>
 
 int main()
 {
-    system("chcp 65001");
     xlnt::workbook wb;
-    wb.load("D:/workspace/b.xlsx"); // modified to use the test data directory
-    auto ws = wb.active_sheet();
-    std::clog << "Processing spread sheet" << std::endl;
-    for (auto row : ws.rows(false))
-    {
-        for (auto cell : row)
-        {
-            std::clog << cell.to_string() << std::endl;
-        }
-    }
-    std::clog << "Processing complete" << std::endl;
 
-	return 0;
+    const auto password = std::string("secret");
+    wb.load(path_helper::sample_file("encrypted.xlsx"), password);
+    wb.save("decrypted.xlsx");
+
+    return 0;
 }
