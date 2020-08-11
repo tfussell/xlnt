@@ -1348,53 +1348,34 @@ const manifest &workbook::manifest() const
     return d_->manifest_;
 }
 
-const std::map<std::size_t, rich_text> &workbook::shared_strings_by_id() const
-{
-    return d_->shared_strings_values_;
-}
-
 const rich_text &workbook::shared_strings(std::size_t index) const
 {
-    auto it = d_->shared_strings_values_.find(index);
-
-    if (it != d_->shared_strings_values_.end())
+    if (index < d_->shared_strings_.size())
     {
-        return it->second;
+        return d_->shared_strings_[index];
     }
 
     static rich_text empty;
     return empty;
 }
 
-std::unordered_map<rich_text, std::size_t, rich_text_hash> &workbook::shared_strings()
+std::vector<rich_text> &workbook::shared_strings()
 {
-    return d_->shared_strings_ids_;
+    return d_->shared_strings_;
 }
 
-const std::unordered_map<rich_text, std::size_t, rich_text_hash> &workbook::shared_strings() const
+const std::vector<rich_text> &workbook::shared_strings() const
 {
-    return d_->shared_strings_ids_;
+    return d_->shared_strings_;
 }
 
 std::size_t workbook::add_shared_string(const rich_text &shared, bool allow_duplicates)
 {
     register_workbook_part(relationship_type::shared_string_table);
 
-    if (!allow_duplicates)
-    {
-        auto it = d_->shared_strings_ids_.find(shared);
+    d_->shared_strings_.push_back(shared);
 
-        if (it != d_->shared_strings_ids_.end())
-        {
-            return it->second;
-        }
-    }
-
-    auto sz = d_->shared_strings_ids_.size();
-    d_->shared_strings_ids_[shared] = sz;
-    d_->shared_strings_values_[sz] = shared;
-
-    return sz;
+    return d_->shared_strings_.size();
 }
 
 bool workbook::contains(const std::string &sheet_title) const
