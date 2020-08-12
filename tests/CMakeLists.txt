@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.1)
 project(xlnt.test)
 
+if (MSVC)
+    add_compile_options(/utf-8)
+endif()
+
 set(CMAKE_CXX_STANDARD ${XLNT_CXX_LANG})
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CXX_EXTENSIONS OFF)

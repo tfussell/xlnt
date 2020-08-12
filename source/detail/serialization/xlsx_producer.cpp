@@ -944,12 +944,12 @@ void xlsx_producer::write_shared_string_table(const relationship & /*rel*/)
     }
 
     write_attribute("count", string_count);
-    write_attribute("uniqueCount", source_.shared_strings_by_id().size());
+    write_attribute("uniqueCount", source_.shared_strings().size());
 
-    for (const auto &string : source_.shared_strings_by_id())
+    for (const auto &text : source_.shared_strings())
     {
         write_start_element(xmlns, "si");
-        write_rich_text(xmlns, string.second);
+        write_rich_text(xmlns, text);
         write_end_element(xmlns, "si");
     }
 
