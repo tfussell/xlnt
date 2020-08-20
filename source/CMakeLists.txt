@@ -256,6 +256,9 @@ install(EXPORT XlntTargets
 include(CMakePackageConfigHelpers)
 
 set(XLNT_INCLUDE_INSTALL_DIR ${XLNT_INC_DEST_DIR})
+if(CMAKE_INSTALL_PREFIX)
+  set(XLNT_INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/${XLNT_INCLUDE_INSTALL_DIR})
+endif()
 
 #See https://cmake.org/cmake/help/latest/module/CMakePackageConfigHelpers.html
 configure_package_config_file(../cmake/XlntConfig.cmake.in
