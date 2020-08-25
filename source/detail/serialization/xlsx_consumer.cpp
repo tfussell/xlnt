@@ -2088,7 +2088,7 @@ void xlsx_consumer::read_shared_string_table()
     {
         expect_start_element(qn("spreadsheetml", "si"), xml::content::complex);
         auto rt = read_rich_text(qn("spreadsheetml", "si"));
-        target_.add_shared_string(rt);
+        target_.add_shared_string(rt, true);
         expect_end_element(qn("spreadsheetml", "si"));
     }
 
