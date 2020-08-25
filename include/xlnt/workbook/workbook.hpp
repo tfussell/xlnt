@@ -242,6 +242,13 @@ public:
     const worksheet sheet_by_id(std::size_t id) const;
 
     /// <summary>
+    /// Returns the hidden identifier of the worksheet at the given index.
+    /// This will throw an exception if index is greater than or equal to the
+    /// number of sheets in this workbook.
+    /// </summary>
+    bool sheet_hidden_by_index(std::size_t index) const;
+
+    /// <summary>
     /// Returns true if this workbook contains a sheet with the given title.
     /// </summary>
     bool contains(const std::string &title) const;

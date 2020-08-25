@@ -79,6 +79,7 @@ struct workbook_impl
         manifest_ = other.manifest_;
 
         sheet_title_rel_id_map_ = other.sheet_title_rel_id_map_;
+        sheet_hidden_ = other.sheet_hidden_;
         view_ = other.view_;
         code_name_ = other.code_name_;
         file_version_ = other.file_version_;
@@ -105,6 +106,7 @@ struct workbook_impl
             && extended_properties_ == other.extended_properties_
             && custom_properties_ == other.custom_properties_
             && sheet_title_rel_id_map_ == other.sheet_title_rel_id_map_
+            && sheet_hidden_ == other.sheet_hidden_
             && view_ == other.view_
             && code_name_ == other.code_name_
             && file_version_ == other.file_version_
@@ -134,16 +136,17 @@ struct workbook_impl
     std::vector<std::pair<std::string, variant>> custom_properties_;
 
     std::unordered_map<std::string, std::string> sheet_title_rel_id_map_;
+    std::vector<bool> sheet_hidden_;
 
     optional<workbook_view> view_;
     optional<std::string> code_name_;
 
-	struct file_version_t
-	{
-		std::string app_name;
-		std::size_t last_edited;
-		std::size_t lowest_edited;
-		std::size_t rup_build;
+    struct file_version_t
+    {
+        std::string app_name;
+        std::size_t last_edited;
+        std::size_t lowest_edited;
+        std::size_t rup_build;
 
         bool operator==(const file_version_t& rhs) const
         {
@@ -152,7 +155,7 @@ struct workbook_impl
                 && lowest_edited == rhs.lowest_edited
                 && rup_build == rhs.rup_build;
         }
-	};
+    };
 
     optional<file_version_t> file_version_;
     optional<calculation_properties> calculation_properties_;

@@ -1883,11 +1883,13 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
                 expect_start_element(qn("spreadsheetml", "sheet"), xml::content::simple);
 
                 auto title = parser().attribute("name");
-                skip_attribute("state");
 
                 sheet_title_index_map_[title] = index++;
                 sheet_title_id_map_[title] = parser().attribute<std::size_t>("sheetId");
                 target_.d_->sheet_title_rel_id_map_[title] = parser().attribute(qn("r", "id"));
+
+                bool hidden = parser().attribute<std::string>("state", "") == "hidden";
+                target_.d_->sheet_hidden_.push_back(hidden);
 
                 expect_end_element(qn("spreadsheetml", "sheet"));
             }
