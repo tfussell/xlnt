@@ -23,28 +23,28 @@
 
 #include <iostream>
 
+#include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/comment.hpp>
 #include <xlnt/cell/hyperlink.hpp>
-#include <xlnt/cell/cell.hpp>
-#include <xlnt/styles/font.hpp>
-#include <xlnt/styles/style.hpp>
+#include <xlnt/styles/border.hpp>
 #include <xlnt/styles/fill.hpp>
+#include <xlnt/styles/font.hpp>
 #include <xlnt/styles/format.hpp>
 #include <xlnt/styles/number_format.hpp>
-#include <xlnt/styles/border.hpp>
+#include <xlnt/styles/style.hpp>
 #include <xlnt/utils/date.hpp>
 #include <xlnt/utils/datetime.hpp>
 #include <xlnt/utils/time.hpp>
 #include <xlnt/utils/timedelta.hpp>
 #include <xlnt/utils/variant.hpp>
+#include <xlnt/workbook/metadata_property.hpp>
 #include <xlnt/workbook/streaming_workbook_reader.hpp>
 #include <xlnt/workbook/streaming_workbook_writer.hpp>
 #include <xlnt/workbook/workbook.hpp>
-#include <xlnt/workbook/metadata_property.hpp>
 #include <xlnt/worksheet/column_properties.hpp>
+#include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/row_properties.hpp>
 #include <xlnt/worksheet/sheet_format_properties.hpp>
-#include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 #include <detail/cryptography/xlsx_crypto_consumer.hpp>
 #include <detail/serialization/vector_streambuf.hpp>
@@ -93,6 +93,7 @@ public:
         register_test(test_load_save_german_locale);
         register_test(test_Issue445_inline_str_load);
         register_test(test_Issue445_inline_str_streaming_read);
+        register_test(test_Issue503_external_link_load);
     }
 
     bool workbook_matches_file(xlnt::workbook &wb, const xlnt::path &file)
@@ -714,7 +715,7 @@ public:
 
     void test_load_save_german_locale()
     {
-       /* std::locale current(std::locale::global(std::locale("de-DE")));
+        /* std::locale current(std::locale::global(std::locale("de-DE")));
         test_round_trip_rw_custom_heights_widths();
         std::locale::global(current);*/
     }
@@ -735,6 +736,15 @@ public:
         wbr.begin_worksheet("Sheet");
         auto cell = wbr.read_cell();
         xlnt_assert_equals(cell.value<std::string>(), std::string("a"));
+    }
+
+    void test_Issue503_external_link_load()
+    {
+        xlnt::workbook wb;
+        wb.load(path_helper::test_file("Issue503_external_link.xlsx"));
+        auto ws = wb.active_sheet();
+        auto cell = ws.cell("A1");
+        xlnt_assert_equals(cell.value<std::string>(), std::string("WDG_IC_00000003.aut"));
     }
 };
 static serialization_test_suite x;
