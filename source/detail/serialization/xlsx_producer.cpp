@@ -1249,7 +1249,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
         if (stylesheet.known_fonts_enabled)
         {
             auto is_known_font = [](const font &f) {
-                const auto &known_fonts = *new std::vector<font>{
+                const auto known_fonts = std::vector<font>{
                     font().name("Calibri").family(2).size(12).color(theme_color(1)).scheme("minor")};
 
                 return std::find(known_fonts.begin(), known_fonts.end(), f) != known_fonts.end();
@@ -1764,7 +1764,7 @@ void xlsx_producer::write_theme(const relationship &theme_rel)
         std::string minor;
     };
 
-    static const auto font_schemes = new std::vector<font_scheme>{{true, "latin", "Calibri Light", "Calibri"},
+    static const auto font_schemes = std::vector<font_scheme>{{true, "latin", "Calibri Light", "Calibri"},
         {true, "ea", "", ""}, {true, "cs", "", ""}, {false, "Jpan", "Yu Gothic Light", "Yu Gothic"},
         {false, "Hang", "\xeb\xa7\x91\xec\x9d\x80 \xea\xb3\xa0\xeb\x94\x95",
             "\xeb\xa7\x91\xec\x9d\x80 \xea\xb3\xa0\xeb\x94\x95"},
@@ -1792,7 +1792,7 @@ void xlsx_producer::write_theme(const relationship &theme_rel)
     {
         write_start_element(xmlns_a, major ? "majorFont" : "minorFont");
 
-        for (const auto &scheme : *font_schemes)
+        for (const auto &scheme : font_schemes)
         {
             const auto scheme_value = major ? scheme.major : scheme.minor;
 
