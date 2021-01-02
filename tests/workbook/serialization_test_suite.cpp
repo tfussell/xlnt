@@ -93,6 +93,7 @@ public:
         register_test(test_load_save_german_locale);
         register_test(test_Issue445_inline_str_load);
         register_test(test_Issue445_inline_str_streaming_read);
+        register_test(test_Issue492_stream_empty_row);
         register_test(test_Issue503_external_link_load);
     }
 
@@ -734,8 +735,25 @@ public:
         xlnt::streaming_workbook_reader wbr;
         wbr.open(path_helper::test_file("Issue445_inline_str.xlsx"));
         wbr.begin_worksheet("Sheet");
+        xlnt_assert(wbr.has_cell());
         auto cell = wbr.read_cell();
         xlnt_assert_equals(cell.value<std::string>(), std::string("a"));
+    }
+
+    void test_Issue492_stream_empty_row()
+    {
+        xlnt::streaming_workbook_reader wbr;
+        wbr.open(path_helper::test_file("Issue492_empty_row.xlsx"));
+        wbr.begin_worksheet("BLS Data Series");
+        xlnt_assert(wbr.has_cell());
+        xlnt_assert_equals(wbr.read_cell().reference(), "A1");
+        xlnt_assert(wbr.has_cell());
+        xlnt_assert_equals(wbr.read_cell().reference(), "A2");
+        xlnt_assert(wbr.has_cell());
+        xlnt_assert_equals(wbr.read_cell().reference(), "A4");
+        xlnt_assert(wbr.has_cell());
+        xlnt_assert_equals(wbr.read_cell().reference(), "B4");
+        xlnt_assert(!wbr.has_cell());
     }
 
     void test_Issue503_external_link_load()
@@ -747,4 +765,5 @@ public:
         xlnt_assert_equals(cell.value<std::string>(), std::string("WDG_IC_00000003.aut"));
     }
 };
+
 static serialization_test_suite x;
