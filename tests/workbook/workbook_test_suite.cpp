@@ -49,6 +49,8 @@ public:
         register_test(test_add_sheet_at_index);
         register_test(test_get_sheet_by_title);
         register_test(test_get_sheet_by_title_const);
+        register_test(test_get_sheet_by_index);
+        register_test(test_get_sheet_by_index_const);
         register_test(test_index_operator);
         register_test(test_contains);
         register_test(test_iter);
@@ -68,6 +70,7 @@ public:
         register_test(test_load_file);
         register_test(test_Issue279);
         register_test(test_Issue353);
+        register_test(test_Issue494);
     }
 
     void test_active_sheet()
@@ -149,6 +152,23 @@ public:
         const xlnt::workbook &wbconst = wb;
         auto found_sheet = wbconst.sheet_by_title(title);
         xlnt_assert_equals(new_sheet, found_sheet);
+    }
+
+    void test_get_sheet_by_index()
+    {
+        xlnt::workbook wb;
+        auto new_sheet = wb.create_sheet();
+        xlnt_assert_equals(new_sheet, wb.sheet_by_index(1)); // in range
+        xlnt_assert_throws(wb.sheet_by_index(2), xlnt::invalid_parameter); // out of range
+    }
+
+    void test_get_sheet_by_index_const()
+    {
+        xlnt::workbook wb;
+        auto new_sheet = wb.create_sheet();
+        const auto &wb_const = wb;
+        xlnt_assert_equals(new_sheet, wb_const.sheet_by_index(1)); // in range
+        xlnt_assert_throws(wb_const.sheet_by_index(2), xlnt::invalid_parameter); // out of range
     }
 
     void test_index_operator() // test_getitem
@@ -508,6 +528,15 @@ public:
         auto ws = wb2.active_sheet();
         xlnt_assert_equals(ws.row_properties(1).spans.get(), "1:8");
         xlnt_assert_equals(ws.row_properties(17).spans.get(), "2:7");
+    }
+
+    void test_Issue494()
+    {
+        xlnt::workbook wb;
+        wb.load(path_helper::test_file("Issue494_shared_string.xlsx"));
+        auto ws = wb.active_sheet();
+        xlnt_assert_equals(ws.cell(2, 1).to_string(), "V1.00");
+        xlnt_assert_equals(ws.cell(2, 2).to_string(), "V1.00");
     }
 };
 static workbook_test_suite x;

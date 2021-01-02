@@ -1335,4 +1335,9 @@ bool worksheet::has_drawing() const
     return d_->drawing_.is_set();
 }
 
+bool worksheet::is_empty() const
+{
+    return d_->cell_map_.empty();
+}
+
 } // namespace xlnt

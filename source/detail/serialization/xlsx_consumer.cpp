@@ -244,6 +244,11 @@ xlnt::detail::Cell parse_cell(xlnt::row_t row_arg, xml::parser *parser)
             throw xlnt::exception("unexcpected XML parsing event");
         }
         }
+        // Prevents unhandled exceptions from being triggered.
+        for (auto &attr : parser->attribute_map())
+        {
+            (void)attr;
+        }
     }
     return c;
 }
@@ -1886,11 +1891,13 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
                 expect_start_element(qn("spreadsheetml", "sheet"), xml::content::simple);
 
                 auto title = parser().attribute("name");
-                skip_attribute("state");
 
                 sheet_title_index_map_[title] = index++;
                 sheet_title_id_map_[title] = parser().attribute<std::size_t>("sheetId");
                 target_.d_->sheet_title_rel_id_map_[title] = parser().attribute(qn("r", "id"));
+
+                bool hidden = parser().attribute<std::string>("state", "") == "hidden";
+                target_.d_->sheet_hidden_.push_back(hidden);
 
                 expect_end_element(qn("spreadsheetml", "sheet"));
             }
@@ -2091,13 +2098,15 @@ void xlsx_consumer::read_shared_string_table()
     {
         expect_start_element(qn("spreadsheetml", "si"), xml::content::complex);
         auto rt = read_rich_text(qn("spreadsheetml", "si"));
-        target_.add_shared_string(rt);
+        // by reading in it can happen we have similar strings from modified excel worksheets
+        // so allow to add duplicates
+        target_.add_shared_string(rt, true);
         expect_end_element(qn("spreadsheetml", "si"));
     }
 
     expect_end_element(qn("spreadsheetml", "sst"));
 
-    if (has_unique_count && unique_count != target_.shared_strings().size())
+    if (has_unique_count && unique_count != target_.shared_strings_by_id().size())
     {
         throw invalid_file("sizes don't match");
     }
@@ -2280,7 +2289,7 @@ void xlsx_consumer::read_stylesheet()
         else if (current_style_element == qn("spreadsheetml", "fonts"))
         {
             auto &fonts = stylesheet.fonts;
-            auto count = parser().attribute<std::size_t>("count");
+            auto count = parser().attribute<std::size_t>("count", 0);
 
             if (parser().attribute_present(qn("x14ac", "knownFonts")))
             {
@@ -2417,7 +2426,7 @@ void xlsx_consumer::read_stylesheet()
 
             if (count != stylesheet.fonts.size())
             {
-                throw xlnt::exception("counts don't match");
+                // throw xlnt::exception("counts don't match");
             }
         }
         else if (current_style_element == qn("spreadsheetml", "numFmts"))
