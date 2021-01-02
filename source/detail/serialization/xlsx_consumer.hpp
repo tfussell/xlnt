@@ -413,8 +413,6 @@ private:
 
     std::unique_ptr<detail::cell_impl> streaming_cell_;
 
-    detail::cell_impl *current_cell_;
-
     detail::worksheet_impl *current_worksheet_;
     number_serialiser converter_;
 };
