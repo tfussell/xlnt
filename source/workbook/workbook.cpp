@@ -681,6 +681,11 @@ worksheet workbook::sheet_by_index(std::size_t index)
 
 const worksheet workbook::sheet_by_index(std::size_t index) const
 {
+    if (index >= d_->worksheets_.size())
+    {
+        throw invalid_parameter();
+    }
+
     auto iter = d_->worksheets_.begin();
 
     for (std::size_t i = 0; i < index; ++i, ++iter)
