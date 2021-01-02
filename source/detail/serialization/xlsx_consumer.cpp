@@ -244,6 +244,11 @@ xlnt::detail::Cell parse_cell(xlnt::row_t row_arg, xml::parser *parser)
             throw xlnt::exception("unexcpected XML parsing event");
         }
         }
+        // Prevents unhandled exceptions from being triggered.
+        for (auto &attr : parser->attribute_map())
+        {
+            (void)attr;
+        }
     }
     return c;
 }
