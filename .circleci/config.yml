@@ -76,5 +76,3 @@ workflows:
           samples: "ON"
           benchmarks: "ON"
           coverage: "OFF"
-          requires:
-            - tests
