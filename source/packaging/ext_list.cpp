@@ -32,7 +32,7 @@ xlnt::uri roundtrip(xml::parser &p, xml::serializer &s)
             }
             for (auto &ele : attribs)
             {
-                s.attribute(ele.first.string(), ele.second.value);
+                s.attribute(ele.first, ele.second.value);
             }
             break;
         }
