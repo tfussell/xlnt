@@ -716,6 +716,16 @@ const worksheet workbook::sheet_by_id(std::size_t id) const
     throw key_not_found();
 }
 
+bool workbook::sheet_hidden_by_index(std::size_t index) const
+{
+    if (index >= d_->sheet_hidden_.size())
+    {
+        throw invalid_parameter();
+    }
+
+    return d_->sheet_hidden_.at(index);
+}
+
 worksheet workbook::active_sheet()
 {
     return sheet_by_index(d_->active_sheet_index_.is_set() ? d_->active_sheet_index_.get() : 0);

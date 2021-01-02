@@ -112,6 +112,7 @@ public:
         register_test(test_delete_columns);
         register_test(test_insert_too_many);
         register_test(test_insert_delete_moves_merges);
+        register_test(test_hidden_sheet);
     }
 
     void test_new_worksheet()
@@ -1581,6 +1582,13 @@ public:
             };
             xlnt_assert_equals(merged, expected);
         }
+    }
+
+    void test_hidden_sheet()
+    {
+        xlnt::workbook wb;
+        wb.load(path_helper::test_file("16_hidden_sheet.xlsx"));
+        xlnt_assert_equals(wb.sheet_hidden_by_index(1), true);
     }
 };
 static worksheet_test_suite x;
