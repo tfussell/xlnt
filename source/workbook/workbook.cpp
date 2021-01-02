@@ -1358,32 +1358,25 @@ const manifest &workbook::manifest() const
     return d_->manifest_;
 }
 
-const std::map<std::size_t, rich_text> &workbook::shared_strings_by_id() const
-{
-    return d_->shared_strings_values_;
-}
-
 const rich_text &workbook::shared_strings(std::size_t index) const
 {
-    auto it = d_->shared_strings_values_.find(index);
-
-    if (it != d_->shared_strings_values_.end())
+    if (index < d_->shared_strings_values_.size())
     {
-        return it->second;
+        return d_->shared_strings_values_.at(index);
     }
 
     static rich_text empty;
     return empty;
 }
 
-std::unordered_map<rich_text, std::size_t, rich_text_hash> &workbook::shared_strings()
+std::vector<rich_text> &workbook::shared_strings()
 {
-    return d_->shared_strings_ids_;
+    return d_->shared_strings_values_;
 }
 
-const std::unordered_map<rich_text, std::size_t, rich_text_hash> &workbook::shared_strings() const
+const std::vector<rich_text> &workbook::shared_strings() const
 {
-    return d_->shared_strings_ids_;
+    return d_->shared_strings_values_;
 }
 
 std::size_t workbook::add_shared_string(const rich_text &shared, bool allow_duplicates)
@@ -1400,18 +1393,17 @@ std::size_t workbook::add_shared_string(const rich_text &shared, bool allow_dupl
         }
     }
 
- 	//it can happen that similar strings are more then onetime in the shared stringtable (Excel bugfix?)
-	//shared_strings_values map should start on position 0
-	auto sz = d_->shared_strings_values_.size();
+    // it can happen that similar strings are more then onetime in the shared stringtable (Excel bugfix?)
+    // shared_strings_values map should start on position 0
+    auto sz = d_->shared_strings_values_.size();
     if (d_->shared_strings_values_.count(sz) > 0)
     {
         // something went wrong!
         throw invalid_file("Error in shared string table!");
-	}
+	  }
 
     d_->shared_strings_values_[sz] = shared;
     d_->shared_strings_ids_[shared] = sz;
-
 
     return sz;
 }
