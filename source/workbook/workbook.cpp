@@ -716,6 +716,16 @@ const worksheet workbook::sheet_by_id(std::size_t id) const
     throw key_not_found();
 }
 
+bool workbook::sheet_hidden_by_index(std::size_t index) const
+{
+    if (index >= d_->sheet_hidden_.size())
+    {
+        throw invalid_parameter();
+    }
+
+    return d_->sheet_hidden_.at(index);
+}
+
 worksheet workbook::active_sheet()
 {
     return sheet_by_index(d_->active_sheet_index_.is_set() ? d_->active_sheet_index_.get() : 0);
@@ -1383,9 +1393,17 @@ std::size_t workbook::add_shared_string(const rich_text &shared, bool allow_dupl
         }
     }
 
-    auto sz = d_->shared_strings_ids_.size();
+    // it can happen that similar strings are more then onetime in the shared stringtable (Excel bugfix?)
+    // shared_strings_values map should start on position 0
+    auto sz = d_->shared_strings_values_.size();
+    if (d_->shared_strings_values_.count(sz) > 0)
+    {
+        // something went wrong!
+        throw invalid_file("Error in shared string table!");
+	  }
+
+    d_->shared_strings_values_[sz] = shared;
     d_->shared_strings_ids_[shared] = sz;
-    d_->shared_strings_values_.push_back(shared);
 
     return sz;
 }
