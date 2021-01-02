@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -865,7 +865,23 @@ void workbook::load(std::istream &stream)
 {
     clear();
     detail::xlsx_consumer consumer(*this);
-    consumer.read(stream);
+
+    try
+    {
+        consumer.read(stream);
+    }
+    catch (xlnt::exception &e)
+    {
+        if (e.what() == std::string("xlnt::exception : encrypted xlsx, password required"))
+        {
+            stream.seekg(0, std::ios::beg);
+            consumer.read(stream, "VelvetSweatshop");
+        }
+        else
+        {
+            throw;
+        }
+    }
 }
 
 void workbook::load(const std::vector<std::uint8_t> &data)
@@ -1018,7 +1034,7 @@ void workbook::load(const std::wstring &filename, const std::string &password)
 void workbook::remove_sheet(worksheet ws)
 {
     auto match_iter = std::find_if(d_->worksheets_.begin(), d_->worksheets_.end(),
-      [=](detail::worksheet_impl &comp) { return &comp == ws.d_; });
+        [=](detail::worksheet_impl &comp) { return &comp == ws.d_; });
 
     if (match_iter == d_->worksheets_.end())
     {
@@ -1337,7 +1353,7 @@ const std::map<std::size_t, rich_text> &workbook::shared_strings_by_id() const
     return d_->shared_strings_values_;
 }
 
-const rich_text& workbook::shared_strings(std::size_t index) const
+const rich_text &workbook::shared_strings(std::size_t index) const
 {
     auto it = d_->shared_strings_values_.find(index);
 
@@ -1626,9 +1642,9 @@ struct rel_id_sorter
     bool operator()(const xlnt::relationship &lhs, const xlnt::relationship &rhs)
     {
         // format is rTd<decimal number 1..n>
-        if (lhs.id().size() < rhs.id().size()) // a number with more digits will be larger
+        if (lhs.id().size() != rhs.id().size()) // a number with more digits will be larger
         {
-            return true;
+            return lhs.id().size() < rhs.id().size();
         }
         return lhs.id() < rhs.id();
     }

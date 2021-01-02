@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -82,6 +82,7 @@ public:
         register_test(test_hyperlink);
         register_test(test_comment);
         register_test(test_copy_and_compare);
+        register_test(test_cell_phonetic_properties);
     }
 
 private:
@@ -664,8 +665,16 @@ private:
         xlnt_assert_throws(xlnt::cell_reference("A"), xlnt::invalid_cell_reference);
 
         auto ref = xlnt::cell_reference("$B$7");
-        xlnt_assert(ref.row_absolute());
-        xlnt_assert(ref.column_absolute());
+        xlnt_assert_equals(ref.row_absolute(), true);
+        xlnt_assert_equals(ref.column_absolute(), true);
+
+        ref = xlnt::cell_reference("$B7");
+        xlnt_assert_equals(ref.row_absolute(), false);
+        xlnt_assert_equals(ref.column_absolute(), true);
+
+        ref = xlnt::cell_reference("B$7");
+        xlnt_assert_equals(ref.row_absolute(), true);
+        xlnt_assert_equals(ref.column_absolute(), false);
 
         xlnt_assert(xlnt::cell_reference("A1") == "A1");
         xlnt_assert(xlnt::cell_reference("A1") != "A2");
@@ -687,7 +696,6 @@ private:
 
         xlnt_assert(!cell.has_hyperlink());
         xlnt_assert_throws(cell.hyperlink(), xlnt::invalid_attribute);
-        xlnt_assert_throws(cell.hyperlink("notaurl"), xlnt::invalid_parameter);
         xlnt_assert_throws(cell.hyperlink(""), xlnt::invalid_parameter);
         // link without optional display
         const std::string link1("http://example.com");
@@ -707,6 +715,13 @@ private:
         xlnt_assert_equals(cell.hyperlink().url(), link2);
         xlnt_assert_equals(cell.hyperlink().relationship().target().to_string(), link2);
         xlnt_assert_equals(cell.hyperlink().display(), display_txt);
+        // relative (local) url
+        const std::string local("../test_local");
+        cell.hyperlink(local);
+        xlnt_assert(cell.has_hyperlink());
+        xlnt_assert(cell.hyperlink().external());
+        xlnt_assert_equals(cell.hyperlink().url(), local);
+        xlnt_assert_equals(cell.hyperlink().relationship().target().to_string(), local);
         // value
         int cell_test_val = 123;
         cell.value(cell_test_val);
@@ -774,6 +789,11 @@ private:
         cell.clear_comment();
         xlnt_assert(!cell.has_comment());
         xlnt_assert_throws(cell.comment(), xlnt::exception);
+
+        xlnt::comment comment_with_size("test comment", "author");
+        comment_with_size.size(1000, 30);
+        cell.comment(comment_with_size);
+        xlnt_assert_equals(cell.comment(), comment_with_size);
     }
 
     void test_copy_and_compare()
@@ -799,6 +819,19 @@ private:
         // assign
         cell3 = cell2;
         xlnt_assert_equals(cell2, cell3);
+    }
+
+    void test_cell_phonetic_properties()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.active_sheet();
+        auto cell1 = ws.cell("A1");
+
+        xlnt_assert_equals(cell1.phonetics_visible(), false);
+        cell1.show_phonetics(true);
+        xlnt_assert_equals(cell1.phonetics_visible(), true);
+        cell1.show_phonetics(false);
+        xlnt_assert_equals(cell1.phonetics_visible(), false);
     }
 };
 

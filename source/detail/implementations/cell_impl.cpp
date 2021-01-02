@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -35,6 +35,7 @@ cell_impl::cell_impl()
       column_(1),
       row_(1),
       is_merged_(false),
+      phonetics_visible_(false),
       value_numeric_(0)
 {
 }

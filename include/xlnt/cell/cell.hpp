@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -54,6 +54,7 @@ class workbook;
 class worksheet;
 class xlsx_consumer;
 class xlsx_producer;
+class phonetic_pr;
 
 struct date;
 struct datetime;
@@ -271,12 +272,12 @@ public:
     /// <summary>
     /// Adds an internal hyperlink to this cell pointing to the given cell.
     /// </summary>
-    void hyperlink(xlnt::cell target, const std::string& display = "");
+    void hyperlink(xlnt::cell target, const std::string &display = "");
 
     /// <summary>
     /// Adds an internal hyperlink to this cell pointing to the given range.
     /// </summary>
-    void hyperlink(xlnt::range target, const std::string& display = "");
+    void hyperlink(xlnt::range target, const std::string &display = "");
 
     /// <summary>
     /// Returns true if this cell has a hyperlink set.
@@ -430,10 +431,10 @@ public:
     /// </summary>
     class style style();
 
-	/// <summary>
-	/// Returns a wrapper pointing to the named style applied to this cell.
-	/// </summary>
-	const class style style() const;
+    /// <summary>
+    /// Returns a wrapper pointing to the named style applied to this cell.
+    /// </summary>
+    const class style style() const;
 
     /// <summary>
     /// Sets the named style applied to this cell to a style named style_name.
@@ -500,6 +501,18 @@ public:
     /// use worksheet::merge_cells on its parent worksheet.
     /// </summary>
     void merged(bool merged);
+
+    // phonetics
+
+    /// <summary>
+    /// Returns true if this cell is set to show phonetic information.
+    /// </summary>
+    bool phonetics_visible() const;
+
+    /// <summary>
+    /// Enables the display of phonetic information on this cell.
+    /// </summary>
+    void show_phonetics(bool phonetics);
 
     /// <summary>
     /// Returns the error string that is stored in this cell.
@@ -657,43 +670,43 @@ XLNT_API bool operator==(const cell &cell, std::nullptr_t);
 /// </summary>
 XLNT_API std::ostream &operator<<(std::ostream &stream, const xlnt::cell &cell);
 
-template<>
+template <>
 bool cell::value<bool>() const;
 
-template<>
+template <>
 int cell::value<int>() const;
 
-template<>
+template <>
 unsigned int cell::value<unsigned int>() const;
 
-template<>
+template <>
 long long int cell::value<long long int>() const;
 
-template<>
+template <>
 unsigned long long cell::value<unsigned long long int>() const;
 
-template<>
+template <>
 float cell::value<float>() const;
 
-template<>
+template <>
 double cell::value<double>() const;
 
-template<>
+template <>
 date cell::value<date>() const;
 
-template<>
+template <>
 time cell::value<time>() const;
 
-template<>
+template <>
 datetime cell::value<datetime>() const;
 
-template<>
+template <>
 timedelta cell::value<timedelta>() const;
 
-template<>
+template <>
 std::string cell::value<std::string>() const;
 
-template<>
+template <>
 rich_text cell::value<rich_text>() const;
 
 } // namespace xlnt

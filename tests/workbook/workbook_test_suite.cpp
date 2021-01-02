@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -67,6 +67,7 @@ public:
         register_test(test_id_gen);
         register_test(test_load_file);
         register_test(test_Issue279);
+        register_test(test_Issue353);
     }
 
     void test_active_sheet()
@@ -214,6 +215,8 @@ public:
         iter = temp--;
         xlnt_assert_equals((*iter).title(), "Sheet2");
         xlnt_assert_equals((*temp).title(), "Sheet1");
+
+        xlnt_assert_equals(xlnt::worksheet_iterator{}, xlnt::worksheet_iterator{});
     }
 
     void test_const_iter()
@@ -255,6 +258,8 @@ public:
         iter = temp--;
         xlnt_assert_equals((*iter).title(), "Sheet2");
         xlnt_assert_equals((*temp).title(), "Sheet1");
+
+        xlnt_assert_equals(xlnt::const_worksheet_iterator{}, xlnt::const_worksheet_iterator{});
     }
 
     void test_get_index()
@@ -490,6 +495,19 @@ public:
         ws2.title("REPORT");
         //save a copy file
         wb.save("temp.xlsx");
+    }
+
+    void test_Issue353()
+    {
+        xlnt::workbook wb1;
+        wb1.load(path_helper::test_file("Issue353_first_row_empty_w_properties.xlsx"));
+        wb1.save("temp_issue353.xlsx");
+
+        xlnt::workbook wb2;
+        wb2.load("temp_issue353.xlsx");
+        auto ws = wb2.active_sheet();
+        xlnt_assert_equals(ws.row_properties(1).spans.get(), "1:8");
+        xlnt_assert_equals(ws.row_properties(17).spans.get(), "2:7");
     }
 };
 static workbook_test_suite x;

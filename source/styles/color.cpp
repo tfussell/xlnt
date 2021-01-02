@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -39,7 +39,7 @@ std::array<std::uint8_t, 4> decode_hex_string(const std::string &hex_string)
     auto g = static_cast<std::uint8_t>((x >> 8) & 0xff);
     auto b = static_cast<std::uint8_t>(x & 0xff);
 
-    return { { r, g, b, a } };
+    return {{r, g, b, a}};
 }
 
 } // namespace
@@ -48,7 +48,8 @@ namespace xlnt {
 
 // indexed_color implementation
 
-indexed_color::indexed_color(std::size_t index) : index_(index)
+indexed_color::indexed_color(std::size_t index)
+    : index_(index)
 {
 }
 
@@ -64,7 +65,8 @@ void indexed_color::index(std::size_t index)
 
 // theme_color implementation
 
-theme_color::theme_color(std::size_t index) : index_(index)
+theme_color::theme_color(std::size_t index)
+    : index_(index)
 {
 }
 
@@ -190,31 +192,32 @@ const color color::darkyellow()
     return color(rgb_color("ffcccc00"));
 }
 
-color::color() : color(indexed_color(0))
+color::color()
+    : color(indexed_color(0))
 {
 }
 
 color::color(const rgb_color &rgb)
-  : type_(color_type::rgb),
-    rgb_(rgb),
-    indexed_(0),
-    theme_(0)
+    : type_(color_type::rgb),
+      rgb_(rgb),
+      indexed_(0),
+      theme_(0)
 {
 }
 
 color::color(const indexed_color &indexed)
-  : type_(color_type::indexed),
-    rgb_(rgb_color(0, 0, 0, 0)),
-    indexed_(indexed),
-    theme_(0)
+    : type_(color_type::indexed),
+      rgb_(rgb_color(0, 0, 0, 0)),
+      indexed_(indexed),
+      theme_(0)
 {
 }
 
 color::color(const theme_color &theme)
-  : type_(color_type::theme),
-    rgb_(rgb_color(0, 0, 0, 0)),
-    indexed_(0),
-    theme_(theme)
+    : type_(color_type::theme),
+      rgb_(rgb_color(0, 0, 0, 0)),
+      indexed_(0),
+      theme_(theme)
 {
 }
 
@@ -225,15 +228,15 @@ color_type color::type() const
 
 bool color::auto_() const
 {
-    return auto__;
+    return auto_color;
 }
 
 void color::auto_(bool value)
 {
-    auto__ = value;
+    auto_color = value;
 }
 
-const indexed_color& color::indexed() const
+const indexed_color &color::indexed() const
 {
     assert_type(color_type::indexed);
     return indexed_;
@@ -245,7 +248,7 @@ indexed_color &color::indexed()
     return indexed_;
 }
 
-const theme_color& color::theme() const
+const theme_color &color::theme() const
 {
     assert_type(color_type::theme);
     return theme_;
@@ -257,7 +260,7 @@ theme_color &color::theme()
     return theme_;
 }
 
-const rgb_color& color::rgb() const
+const rgb_color &color::rgb() const
 {
     assert_type(color_type::rgb);
     return rgb_;
@@ -269,6 +272,11 @@ rgb_color &color::rgb()
     return rgb_;
 }
 
+bool color::has_tint() const
+{
+    return tint_.is_set();
+}
+
 void color::tint(double tint)
 {
     tint_ = tint;
@@ -276,7 +284,7 @@ void color::tint(double tint)
 
 double color::tint() const
 {
-    return tint_;
+    return tint_.is_set() ? tint_.get() : 0.0;
 }
 
 void color::assert_type(color_type t) const
@@ -289,7 +297,11 @@ void color::assert_type(color_type t) const
 
 bool color::operator==(const xlnt::color &other) const
 {
-    if (type_ != other.type_ || std::fabs(tint_ - other.tint_) != 0.0 || auto__ != other.auto__)
+    if (type_ != other.type_ || auto_color != other.auto_color)
+    {
+        return false;
+    }
+    if (tint_.is_set() != other.tint_.is_set() || (tint_.is_set() && std::fabs(tint_.get() - other.tint_.get()) != 0.0))
     {
         return false;
     }
@@ -301,7 +313,7 @@ bool color::operator==(const xlnt::color &other) const
     case color_type::theme:
         return theme_.index() == other.theme_.index();
     case color_type::rgb:
-        return rgb_.hex_string() == other.rgb_.hex_string();
+        return rgb_.rgba() == other.rgb_.rgba();
     }
 
     return false;

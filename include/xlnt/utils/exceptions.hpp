@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -117,11 +117,6 @@ public:
 class XLNT_API missing_number_format : public exception
 {
 public:
-    /// <summary>
-    /// Default constructor.
-    /// </summary>
-    missing_number_format() = default;
-
     /// <summary>
     /// Default copy constructor.
     /// </summary>

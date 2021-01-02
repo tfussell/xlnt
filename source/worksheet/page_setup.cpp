@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,6 +21,7 @@
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
+#include <xlnt/utils/numeric.hpp>
 #include <xlnt/worksheet/page_setup.hpp>
 
 namespace xlnt {
@@ -114,7 +115,7 @@ bool page_setup::operator==(const page_setup &rhs) const
         && fit_to_page_ == rhs.fit_to_page_
         && fit_to_height_ == rhs.fit_to_height_
         && fit_to_width_ == rhs.fit_to_width_
-        && scale_ == rhs.scale_;
+        && detail::float_equals(scale_, rhs.scale_);
 }
 
 } // namespace xlnt

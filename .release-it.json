@@ -1,0 +1,24 @@
+{
+  "git": {
+    "commitMessage": "release v${version}",
+    "requireBranch": "master",
+    "requireCommits": true,
+    "tagAnnotation": "release v${version}",
+    "tagName": "v${version}"
+  },
+  "github": {
+    "release": true,
+    "releaseName": "xlnt v${version}"
+  },
+  "npm": {
+    "publish": false
+  },
+  "plugins": {
+    "@release-it/bumper": {
+      "out": {
+        "file": "source/CMakeLists.txt",
+        "type": "text/plain"
+      }
+    }
+  }
+}

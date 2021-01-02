@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,6 +29,7 @@
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/cell/cell_reference.hpp>
+#include <xlnt/worksheet/major_order.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
@@ -54,6 +55,11 @@ public:
     using difference_type = std::ptrdiff_t;
     using pointer = cell *;
     using reference = cell; // intentionally value
+
+    /// <summary>
+    /// Default constructs a cell_iterator
+    /// </summary>
+    cell_iterator() = default;
 
     /// <summary>
     /// Constructs a cell_iterator from a worksheet, range, and iteration settings.
@@ -96,7 +102,6 @@ public:
     /// </summary>
     const reference operator*() const;
 
-
     /// <summary>
     /// Returns true if this iterator is equivalent to other.
     /// </summary>
@@ -133,6 +138,26 @@ public:
 
 private:
     /// <summary>
+    /// If true, cells that don't exist in the worksheet will be skipped during iteration.
+    /// </summary>
+    bool skip_null_ = false;
+
+    /// <summary>
+    /// If true, when on the last column, the cursor will continue to the next row
+    /// (and vice versa when iterating in column-major order) until reaching the
+    /// bottom right corner of the range.
+    /// </summary>
+    bool wrap_ = false;
+
+    /// <summary>
+    /// The order this iterator will move, by column or by row. Note that
+    /// this has the opposite meaning as in a range_iterator because after
+    /// getting a row-major range_iterator, the row-major cell_iterator will
+    /// iterate over a column and vice versa.
+    /// </summary>
+    major_order order_ = major_order::column;
+
+    /// <summary>
     /// The worksheet this iterator will return cells from.
     /// </summary>
     worksheet ws_;
@@ -146,26 +171,6 @@ private:
     /// The range of cells this iterator is restricted to
     /// </summary>
     range_reference bounds_;
-
-    /// <summary>
-    /// The order this iterator will move, by column or by row. Note that
-    /// this has the opposite meaning as in a range_iterator because after
-    /// getting a row-major range_iterator, the row-major cell_iterator will
-    /// iterate over a column and vice versa.
-    /// </summary>
-    major_order order_;
-
-    /// <summary>
-    /// If true, cells that don't exist in the worksheet will be skipped during iteration.
-    /// </summary>
-    bool skip_null_;
-
-    /// <summary>
-    /// If true, when on the last column, the cursor will continue to the next row
-    /// (and vice versa when iterating in column-major order) until reaching the
-    /// bottom right corner of the range.
-    /// </summary>
-    bool wrap_;
 };
 
 /// <summary>
@@ -182,6 +187,11 @@ public:
     using difference_type = std::ptrdiff_t;
     using pointer = const cell *;
     using reference = const cell; // intentionally value
+
+    /// <summary>
+    /// Default constructs a cell_iterator
+    /// </summary>
+    const_cell_iterator() = default;
 
     /// <summary>
     /// Constructs a cell_iterator from a worksheet, range, and iteration settings.
@@ -255,6 +265,26 @@ public:
 
 private:
     /// <summary>
+    /// If true, cells that don't exist in the worksheet will be skipped during iteration.
+    /// </summary>
+    bool skip_null_ = false;
+
+    /// <summary>
+    /// If true, when on the last column, the cursor will continue to the next row
+    /// (and vice versa when iterating in column-major order) until reaching the
+    /// bottom right corner of the range.
+    /// </summary>
+    bool wrap_ = false;
+
+    /// <summary>
+    /// The order this iterator will move, by column or by row. Note that
+    /// this has the opposite meaning as in a range_iterator because after
+    /// getting a row-major range_iterator, the row-major cell_iterator will
+    /// iterate over a column and vice versa.
+    /// </summary>
+    major_order order_ = major_order::column;
+
+    /// <summary>
     /// The worksheet this iterator will return cells from.
     /// </summary>
     worksheet ws_;
@@ -268,26 +298,6 @@ private:
     /// The range of cells this iterator is restricted to
     /// </summary>
     range_reference bounds_;
-
-    /// <summary>
-    /// The order this iterator will move, by column or by row. Note that
-    /// this has the opposite meaning as in a range_iterator because after
-    /// getting a row-major range_iterator, the row-major cell_iterator will
-    /// iterate over a column and vice versa.
-    /// </summary>
-    major_order order_;
-
-    /// <summary>
-    /// If true, cells that don't exist in the worksheet will be skipped during iteration.
-    /// </summary>
-    bool skip_null_;
-
-    /// <summary>
-    /// If true, when on the last column, the cursor will continue to the next row
-    /// (and vice versa when iterating in column-major order) until reaching the
-    /// bottom right corner of the range.
-    /// </summary>
-    bool wrap_;
 };
 
 } // namespace xlnt

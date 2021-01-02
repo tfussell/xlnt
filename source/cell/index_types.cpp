@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -109,25 +109,9 @@ column_t::column_t(const char *column_string)
 {
 }
 
-column_t::column_t(const column_t &other)
-    : column_t(other.index)
-{
-}
-
-column_t::column_t(column_t &&other)
-{
-    swap(*this, other);
-}
-
 std::string column_t::column_string() const
 {
     return column_string_from_index(index);
-}
-
-column_t &column_t::operator=(column_t rhs)
-{
-    swap(*this, rhs);
-    return *this;
 }
 
 column_t &column_t::operator=(const std::string &rhs)

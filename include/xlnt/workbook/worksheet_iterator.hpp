@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,7 +37,6 @@ class worksheet;
 // because one needs to point at a const workbook and the other needs
 // to point at a non-const workbook stored as a member variable, respectively.
 
-
 /// <summary>
 /// An iterator which is used to iterate over the worksheets in a workbook.
 /// </summary>
@@ -52,6 +51,11 @@ public:
     using difference_type = std::ptrdiff_t;
     using pointer = worksheet *;
     using reference = worksheet; // intentionally value
+
+    /// <summary>
+    /// Default Constructs a worksheet iterator
+    /// </summary>
+    worksheet_iterator() = default;
 
     /// <summary>
     /// Constructs a worksheet iterator from a workbook and sheet index.
@@ -135,14 +139,13 @@ private:
     /// <summary>
     /// The target workbook of this iterator.
     /// </summary>
-    workbook *wb_;
+    workbook *wb_ = nullptr;
 
     /// <summary>
     /// The index of the worksheet in wb_ this iterator is currently pointing to.
     /// </summary>
-    std::size_t index_;
+    std::size_t index_ = 0;
 };
-
 
 /// <summary>
 /// An iterator which is used to iterate over the worksheets in a const workbook.
@@ -158,6 +161,11 @@ public:
     using difference_type = std::ptrdiff_t;
     using pointer = const worksheet *;
     using reference = const worksheet; // intentionally value
+
+    /// <summary>
+    /// Default Constructs a worksheet iterator
+    /// </summary>
+    const_worksheet_iterator() = default;
 
     /// <summary>
     /// Constructs a worksheet iterator from a workbook and sheet index.
@@ -234,12 +242,12 @@ private:
     /// <summary>
     /// The target workbook of this iterator.
     /// </summary>
-    const workbook *wb_;
+    const workbook *wb_ = nullptr;
 
     /// <summary>
     /// The index of the worksheet in wb_ this iterator is currently pointing to.
     /// </summary>
-    std::size_t index_;
+    std::size_t index_ = 0;
 };
 
 } // namespace xlnt

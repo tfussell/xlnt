@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2018 Thomas Fussell
+// Copyright (c) 2016-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -403,7 +403,7 @@ orientation from_string(const std::string &string)
     if (string == "default") return orientation::default_orientation;
     else if (string == "landscape") return orientation::landscape;
     else if (string == "portrait") return orientation::portrait;
-    default_case(orientation::default);
+    default_case(orientation::default_orientation);
 }
 
 } // namespace detail

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,8 @@ public:
     /// </summary>
     explicit selection(pane_corner quadrant, cell_reference active_cell)
         : active_cell_(active_cell), sqref_(range_reference(active_cell, active_cell)), pane_(quadrant)
-    {}
+    {
+    }
 
     /// <summary>
     /// ctor with selected range
@@ -55,7 +56,8 @@ public:
     /// </summary>
     explicit selection(pane_corner quadrant, cell_reference active_cell, range_reference selected)
         : active_cell_(active_cell), sqref_(selected), pane_(quadrant)
-    {}
+    {
+    }
 
     /// <summary>
     /// Returns true if this selection has a defined active cell.
@@ -155,7 +157,7 @@ private:
     /// <summary>
     /// The corner of the worksheet that this selection extends to
     /// </summary>
-    pane_corner pane_;
+    pane_corner pane_ = pane_corner::top_left;
 };
 
 } // namespace xlnt

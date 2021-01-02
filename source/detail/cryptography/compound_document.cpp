@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2018 Thomas Fussell
+// Copyright (C) 2016-2020 Thomas Fussell
 // Copyright (C) 2002-2007 Ariya Hidayat (ariya@kde.org).
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,18 +22,18 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <array>
 #include <algorithm>
+#include <array>
 #include <cstring>
 #include <iostream>
 #include <locale>
 #include <string>
 #include <vector>
 
-#include <detail/binary.hpp>
-#include <detail/unicode.hpp>
-#include <detail/cryptography/compound_document.hpp>
 #include <xlnt/utils/exceptions.hpp>
+#include <detail/binary.hpp>
+#include <detail/cryptography/compound_document.hpp>
+#include <detail/unicode.hpp>
 
 namespace {
 
@@ -41,8 +41,7 @@ using namespace xlnt::detail;
 
 int compare_keys(const std::string &left, const std::string &right)
 {
-    auto to_lower = [](std::string s)
-    {
+    auto to_lower = [](std::string s) {
         static const auto *locale = new std::locale();
         std::use_facet<std::ctype<char>>(*locale).tolower(&s[0], &s[0] + s.size());
 
@@ -121,86 +120,65 @@ private:
     {
         auto bytes_read = std::streamsize(0);
 
-        if (entry_.size < document_.header_.threshold)
-        {
-            const auto chain = document_.follow_chain(entry_.start, document_.ssat_);
-            auto current_sector = chain[position_ / document_.short_sector_size()];
-            auto remaining = std::min(std::size_t(entry_.size) - position_, std::size_t(count));
+        const auto sector_chain = short_stream() ? document_.ssat_ : document_.sat_;
+        const auto chain = document_.follow_chain(entry_.start, sector_chain);
+        const auto sector_size = short_stream() ? document_.short_sector_size() : document_.sector_size();
+        auto current_sector = chain[position_ / sector_size];
+        auto remaining = std::min(std::size_t(entry_.size) - position_, std::size_t(count));
 
-            while (remaining)
+        while (remaining)
+        {
+            if (current_sector_.empty() || chain[position_ / sector_size] != current_sector)
             {
-                if (current_sector_.empty() || chain[position_ / document_.short_sector_size()] != current_sector)
+                current_sector = chain[position_ / sector_size];
+                sector_writer_.reset();
+                if (short_stream())
                 {
-                    current_sector = chain[position_ / document_.short_sector_size()];
-                    sector_writer_.reset();
                     document_.read_short_sector(current_sector, sector_writer_);
                 }
-
-                const auto available = std::min(entry_.size - position_,
-                    document_.short_sector_size() - position_ % document_.short_sector_size());
-                const auto to_read = std::min(available, std::size_t(remaining));
-
-                auto start = current_sector_.begin() + static_cast<std::ptrdiff_t>(position_ % document_.short_sector_size());
-                auto end = start + static_cast<std::ptrdiff_t>(to_read);
-
-                for (auto i = start; i < end; ++i)
+                else
                 {
-                    *(c++) = static_cast<char>(*i);
-                }
-
-                remaining -= to_read;
-                position_ += to_read;
-                bytes_read += to_read;
-            }
-
-            if (position_ < entry_.size && chain[position_ / document_.short_sector_size()] != current_sector)
-            {
-                current_sector = chain[position_ / document_.short_sector_size()];
-                sector_writer_.reset();
-                document_.read_short_sector(current_sector, sector_writer_);
-            }
-        }
-        else
-        {
-            const auto chain = document_.follow_chain(entry_.start, document_.sat_);
-            auto current_sector = chain[position_ / document_.sector_size()];
-            auto remaining = std::min(std::size_t(entry_.size) - position_, std::size_t(count));
-
-            while (remaining)
-            {
-                if (current_sector_.empty() || chain[position_ / document_.sector_size()] != current_sector)
-                {
-                    current_sector = chain[position_ / document_.sector_size()];
-                    sector_writer_.reset();
                     document_.read_sector(current_sector, sector_writer_);
                 }
-
-                const auto available = std::min(entry_.size - position_,
-                    document_.sector_size() - position_ % document_.sector_size());
-                const auto to_read = std::min(available, std::size_t(remaining));
-
-                auto start = current_sector_.begin() + static_cast<std::ptrdiff_t>(position_ % document_.sector_size());
-                auto end = start + static_cast<std::ptrdiff_t>(to_read);
-
-                for (auto i = start; i < end; ++i)
-                {
-                    *(c++) = static_cast<char>(*i);
-                }
-
-                remaining -= to_read;
-                position_ += to_read;
-                bytes_read += to_read;
             }
 
-            if (position_ < entry_.size && chain[position_ / document_.sector_size()] != current_sector)
+            const auto available = std::min(entry_.size - position_,
+                sector_size - position_ % sector_size);
+            const auto to_read = std::min(available, std::size_t(remaining));
+
+            auto start = current_sector_.begin() + static_cast<std::ptrdiff_t>(position_ % sector_size);
+            auto end = start + static_cast<std::ptrdiff_t>(to_read);
+
+            for (auto i = start; i < end; ++i)
             {
-                current_sector = chain[position_ / document_.sector_size()];
-                sector_writer_.reset();
+                *(c++) = static_cast<char>(*i);
+            }
+
+            remaining -= to_read;
+            position_ += to_read;
+            bytes_read += to_read;
+        }
+
+        if (position_ < entry_.size && chain[position_ / sector_size] != current_sector)
+        {
+            current_sector = chain[position_ / sector_size];
+            sector_writer_.reset();
+            if (short_stream())
+            {
+                document_.read_short_sector(current_sector, sector_writer_);
+            }
+            else
+            {
                 document_.read_sector(current_sector, sector_writer_);
             }
         }
 
         return bytes_read;
+    }
+
+    bool short_stream()
+    {
+        return entry_.size < document_.header_.threshold;
     }
 
     int_type underflow() override
@@ -588,7 +566,7 @@ std::ostream &compound_document::open_write_stream(const std::string &name)
     return stream_out_;
 }
 
-template<typename T>
+template <typename T>
 void compound_document::write_sector(binary_reader<T> &reader, sector_id id)
 {
     out_->seekp(static_cast<std::ptrdiff_t>(sector_data_start() + sector_size() * static_cast<std::size_t>(id)));
@@ -596,7 +574,7 @@ void compound_document::write_sector(binary_reader<T> &reader, sector_id id)
         static_cast<std::ptrdiff_t>(std::min(sector_size(), reader.bytes() - reader.offset())));
 }
 
-template<typename T>
+template <typename T>
 void compound_document::write_short_sector(binary_reader<T> &reader, sector_id id)
 {
     auto chain = follow_chain(entries_[0].start, sat_);
@@ -607,7 +585,7 @@ void compound_document::write_short_sector(binary_reader<T> &reader, sector_id i
         static_cast<std::ptrdiff_t>(std::min(short_sector_size(), reader.bytes() - reader.offset())));
 }
 
-template<typename T>
+template <typename T>
 void compound_document::read_sector(sector_id id, binary_writer<T> &writer)
 {
     in_->seekg(static_cast<std::ptrdiff_t>(sector_data_start() + sector_size() * static_cast<std::size_t>(id)));
@@ -616,7 +594,7 @@ void compound_document::read_sector(sector_id id, binary_writer<T> &writer)
     writer.append(sector);
 }
 
-template<typename T>
+template <typename T>
 void compound_document::read_sector_chain(sector_id start, binary_writer<T> &writer)
 {
     for (auto link : follow_chain(start, sat_))
@@ -625,7 +603,7 @@ void compound_document::read_sector_chain(sector_id start, binary_writer<T> &wri
     }
 }
 
-template<typename T>
+template <typename T>
 void compound_document::read_sector_chain(sector_id start, binary_writer<T> &writer, sector_id offset, std::size_t count)
 {
     auto chain = follow_chain(start, sat_);
@@ -636,7 +614,7 @@ void compound_document::read_sector_chain(sector_id start, binary_writer<T> &wri
     }
 }
 
-template<typename T>
+template <typename T>
 void compound_document::read_short_sector(sector_id id, binary_writer<T> &writer)
 {
     const auto container_chain = follow_chain(entries_[0].start, sat_);
@@ -654,7 +632,7 @@ void compound_document::read_short_sector(sector_id id, binary_writer<T> &writer
     writer.append(container_reader, short_sector_size());
 }
 
-template<typename T>
+template <typename T>
 void compound_document::read_short_sector_chain(sector_id start, binary_writer<T> &writer)
 {
     for (auto link : follow_chain(start, ssat_))
@@ -663,7 +641,7 @@ void compound_document::read_short_sector_chain(sector_id start, binary_writer<T
     }
 }
 
-template<typename T>
+template <typename T>
 void compound_document::read_short_sector_chain(sector_id start, binary_writer<T> &writer, sector_id offset, std::size_t count)
 {
     auto chain = follow_chain(start, ssat_);
@@ -912,7 +890,7 @@ std::size_t compound_document::sector_data_start()
 }
 
 bool compound_document::contains_entry(const std::string &path,
-        compound_document_entry::entry_type type)
+    compound_document_entry::entry_type type)
 {
     return find_entry(path, type) >= 0;
 }
@@ -1243,7 +1221,7 @@ directory_id &compound_document::tree_root(directory_id id)
 
 directory_id &compound_document::tree_child(directory_id id)
 {
-  return entries_[static_cast<std::size_t>(id)].child;
+    return entries_[static_cast<std::size_t>(id)].child;
 }
 
 std::string compound_document::tree_key(directory_id id)
@@ -1376,7 +1354,7 @@ void compound_document::write_entry(directory_id id)
     const auto entries_per_sector = sector_size() / sizeof(compound_document_entry);
     const auto directory_sector = directory_chain[static_cast<std::size_t>(id) / entries_per_sector];
     const auto offset = sector_data_start() + sector_size() * static_cast<std::size_t>(directory_sector)
-      + ((static_cast<std::size_t>(id) % entries_per_sector) * sizeof(compound_document_entry));
+        + ((static_cast<std::size_t>(id) % entries_per_sector) * sizeof(compound_document_entry));
 
     out_->seekp(static_cast<std::ptrdiff_t>(offset), std::ios::beg);
     out_->write(reinterpret_cast<char *>(&entries_[static_cast<std::size_t>(id)]), sizeof(compound_document_entry));

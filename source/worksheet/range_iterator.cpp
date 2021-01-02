@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,11 +40,11 @@ const range_iterator::reference range_iterator::operator*() const
 
 range_iterator::range_iterator(worksheet &ws, const cell_reference &cursor,
     const range_reference &bounds, major_order order, bool skip_null)
-    : ws_(ws),
-      cursor_(cursor),
-      bounds_(bounds),
+    : skip_null_(skip_null),
       order_(order),
-      skip_null_(skip_null)
+      ws_(ws),
+      cursor_(cursor),
+      bounds_(bounds)
 {
     if (skip_null_ && (**this).empty())
     {
@@ -117,7 +117,7 @@ range_iterator &range_iterator::operator++()
         {
             cursor_.row(cursor_.row() + 1);
         }
-    
+
         if (skip_null_)
         {
             while ((**this).empty() && cursor_.row() <= bounds_.bottom_right().row())
@@ -153,14 +153,13 @@ range_iterator range_iterator::operator++(int)
     return old;
 }
 
-
 const_range_iterator::const_range_iterator(const worksheet &ws, const cell_reference &cursor,
     const range_reference &bounds, major_order order, bool skip_null)
-    : ws_(ws.d_),
-      cursor_(cursor),
-      bounds_(bounds),
+    : skip_null_(skip_null),
       order_(order),
-      skip_null_(skip_null)
+      ws_(ws.d_),
+      cursor_(cursor),
+      bounds_(bounds)
 {
     if (skip_null_ && (**this).empty())
     {
@@ -233,7 +232,7 @@ const_range_iterator &const_range_iterator::operator++()
         {
             cursor_.row(cursor_.row() + 1);
         }
-    
+
         if (skip_null_)
         {
             while ((**this).empty() && cursor_.row() <= bounds_.bottom_right().row())

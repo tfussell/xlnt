@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,10 +21,10 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#include <fstream>
-#include <sstream>
 #include <algorithm>
+#include <fstream>
 #include <iterator>
+#include <sstream>
 #include <sys/stat.h>
 
 #ifdef __APPLE__
@@ -37,8 +37,8 @@
 #include <codecvt>
 #endif
 
-#include <detail/external/include_windows.hpp>
 #include <xlnt/utils/path.hpp>
+#include <detail/external/include_windows.hpp>
 
 namespace {
 
@@ -140,7 +140,7 @@ path::path()
 
 path::path(const std::string &path_string)
 {
-	std::remove_copy(path_string.begin(), path_string.end(), std::back_inserter(internal_), '\"');
+    std::remove_copy(path_string.begin(), path_string.end(), std::back_inserter(internal_), '\"');
 }
 
 path::path(const std::string &path_string, char sep)
@@ -149,7 +149,7 @@ path::path(const std::string &path_string, char sep)
     char curr_sep = guess_separator();
     if (curr_sep != sep)
     {
-        for (char& c : internal_) // simple find and replace
+        for (char &c : internal_) // simple find and replace
         {
             if (c == curr_sep)
             {
@@ -223,7 +223,7 @@ std::pair<std::string, std::string> path::split_extension() const
 
 // conversion
 
-const std::string& path::string() const
+const std::string &path::string() const
 {
     return internal_;
 }
@@ -252,6 +252,12 @@ path path::resolve(const path &base_path) const
 
     for (const auto &part : split())
     {
+        if (part == "..")
+        {
+            copy = copy.parent();
+            continue;
+        }
+
         copy = copy.append(part);
     }
 

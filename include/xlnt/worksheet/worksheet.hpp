@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -269,6 +269,26 @@ public:
     /// Clears memory used by all cells in the given row.
     /// </summary>
     void clear_row(row_t row);
+
+    /// <summary>
+    /// Insert empty rows before the given row index
+    /// </summary>
+    void insert_rows(row_t row, std::uint32_t amount);
+
+    /// <summary>
+    /// Insert empty columns before the given column index
+    /// </summary>
+    void insert_columns(column_t column, std::uint32_t amount);
+
+    /// <summary>
+    /// Delete rows before the given row index
+    /// </summary>
+    void delete_rows(row_t row, std::uint32_t amount);
+
+    /// <summary>
+    /// Delete columns before the given column index
+    /// </summary>
+    void delete_columns(column_t column, std::uint32_t amount);
 
     // properties
 
@@ -570,7 +590,7 @@ public:
     /// <summary>
     /// Sets the phonetic properties of this sheet to phonetic_props
     /// </summary>
-    void phonetic_properties(const phonetic_pr& phonetic_props);
+    void phonetic_properties(const phonetic_pr &phonetic_props);
 
     /// <summary>
     /// Returns true if this sheet has a header/footer.
@@ -745,6 +765,11 @@ public:
     /// </summary>
     void format_properties(const sheet_format_properties &properties);
 
+    /// <summary>
+    /// Returns true if this worksheet has a page setup.
+    /// </summary>
+    bool has_drawing() const;
+
 private:
     friend class cell;
     friend class const_range_iterator;
@@ -777,6 +802,12 @@ private:
     /// Sets the parent of this worksheet to wb.
     /// </summary>
     void parent(class workbook &wb);
+
+    /// <summary>
+    /// Move cells after index down or right by a given amount. The direction is decided by row_or_col.
+    /// If reverse is true, the cells will be moved up or left, depending on row_or_col.
+    /// </summary>
+    void move_cells(std::uint32_t index, std::uint32_t amount, row_or_col_t row_or_col, bool reverse = false);
 
     /// <summary>
     /// The pointer to this sheet's implementation.

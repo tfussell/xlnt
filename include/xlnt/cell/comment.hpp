@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -155,12 +155,12 @@ private:
     /// <summary>
     /// Width of the comment box.
     /// </summary>
-    int width_ = 0;
+    int width_ = 200;
 
     /// <summary>
     /// Height of the comment box.
     /// </summary>
-    int height_ = 0;
+    int height_ = 100;
 };
 
 } // namespace xlnt

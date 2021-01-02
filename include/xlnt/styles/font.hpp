@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -170,7 +170,7 @@ public:
     /// <summary>
     /// Returns the name of the font face.
     /// </summary>
-    const std::string& name() const;
+    const std::string &name() const;
 
     /// <summary>
     /// Returns true if this font has a color applied.
@@ -232,7 +232,7 @@ public:
     /// <summary>
     /// Returns the scheme of this font.
     /// </summary>
-    const std::string& scheme() const;
+    const std::string &scheme() const;
 
     /// <summary>
     /// Returns true if left is exactly equal to right.

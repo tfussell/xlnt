@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,43 +25,448 @@
 #include <cctype>
 #include <cmath>
 
+#include <xlnt/utils/exceptions.hpp>
+#include <xlnt/utils/numeric.hpp>
 #include <detail/default_case.hpp>
 #include <detail/number_format/number_formatter.hpp>
-#include <xlnt/utils/exceptions.hpp>
 
 namespace {
 
 const std::unordered_map<int, std::string> known_locales()
 {
     static const std::unordered_map<int, std::string> *all = new std::unordered_map<int, std::string>(
-        {{0x401, "Arabic - Saudi Arabia"}, {0x402, "Bulgarian"}, {0x403, "Catalan"}, {0x404, "Chinese - Taiwan"},
-            {0x405, "Czech"}, {0x406, "Danish"}, {0x407, "German - Germany"}, {0x408, "Greek"},
-            {0x409, "English - United States"}, {0x410, "Italian - Italy"}, {0x411, "Japanese"}, {0x412, "Korean"},
-            {0x413, "Dutch - Netherlands"}, {0x414, "Norwegian - Bokml"}, {0x415, "Polish"},
-            {0x416, "Portuguese - Brazil"}, {0x417, "Raeto-Romance"}, {0x418, "Romanian - Romania"}, {0x419, "Russian"},
-            {0x420, "Urdu"}, {0x421, "Indonesian"}, {0x422, "Ukrainian"}, {0x423, "Belarusian"}, {0x424, "Slovenian"},
-            {0x425, "Estonian"}, {0x426, "Latvian"}, {0x427, "Lithuanian"}, {0x428, "Tajik"},
-            {0x429, "Farsi - Persian"}, {0x430, "Sesotho (Sutu)"}, {0x431, "Tsonga"}, {0x432, "Setsuana"},
-            {0x433, "Venda"}, {0x434, "Xhosa"}, {0x435, "Zulu"}, {0x436, "Afrikaans"}, {0x437, "Georgian"},
-            {0x438, "Faroese"}, {0x439, "Hindi"}, {0x440, "Kyrgyz - Cyrillic"}, {0x441, "Swahili"}, {0x442, "Turkmen"},
-            {0x443, "Uzbek - Latin"}, {0x444, "Tatar"}, {0x445, "Bengali - India"}, {0x446, "Punjabi"},
-            {0x447, "Gujarati"}, {0x448, "Oriya"}, {0x449, "Tamil"}, {0x450, "Mongolian"}, {0x451, "Tibetan"},
-            {0x452, "Welsh"}, {0x453, "Khmer"}, {0x454, "Lao"}, {0x455, "Burmese"}, {0x456, "Galician"},
-            {0x457, "Konkani"}, {0x458, "Manipuri"}, {0x459, "Sindhi"}, {0x460, "Kashmiri"}, {0x461, "Nepali"},
-            {0x462, "Frisian - Netherlands"}, {0x464, "Filipino"}, {0x465, "Divehi; Dhivehi; Maldivian"},
-            {0x466, "Edo"}, {0x470, "Igbo - Nigeria"}, {0x474, "Guarani - Paraguay"}, {0x476, "Latin"},
-            {0x477, "Somali"}, {0x481, "Maori"}, {0x485, "sah-RU"}, {0x801, "Arabic - Iraq"}, {0x804, "Chinese - China"},
-            {0x807, "German - Switzerland"}, {0x809, "English - Great Britain"}, {0x810, "Italian - Switzerland"},
-            {0x813, "Dutch - Belgium"}, {0x814, "Norwegian - Nynorsk"}, {0x816, "Portuguese - Portugal"},
-            {0x818, "Romanian - Moldova"}, {0x819, "Russian - Moldova"}, {0x843, "Uzbek - Cyrillic"},
-            {0x845, "Bengali - Bangladesh"}, {0x850, "Mongolian"}, {0x1001, "Arabic - Libya"},
-            {0x1004, "Chinese - Singapore"}, {0x1007, "German - Luxembourg"}, {0x1009, "English - Canada"},
-            {0x1401, "Arabic - Algeria"}, {0x1404, "Chinese - Macau SAR"}, {0x1407, "German - Liechtenstein"},
-            {0x1409, "English - New Zealand"}, {0x1801, "Arabic - Morocco"}, {0x1809, "English - Ireland"},
-            {0x2001, "Arabic - Oman"}, {0x2009, "English - Jamaica"}, {0x2401, "Arabic - Yemen"},
-            {0x2409, "English - Caribbean"}, {0x2801, "Arabic - Syria"}, {0x2809, "English - Belize"},
-            {0x3001, "Arabic - Lebanon"}, {0x3009, "English - Zimbabwe"}, {0x3401, "Arabic - Kuwait"},
-            {0x3409, "English - Phillippines"}, {0x3801, "Arabic - United Arab Emirates"}, {0x4001, "Arabic - Qatar"}});
+        {
+            {0x1, "Arabic"},
+            {0x2, "Bulgarian"},
+            {0x3, "Catalan"},
+            {0x4, "Chinese (Simplified)"},
+            {0x4, "Chinese (Simplified) Legacy"},
+            {0x5, "Czech"},
+            {0x6, "Danish"},
+            {0x7, "German"},
+            {0x8, "Greek"},
+            {0x9, "English"},
+            {0xA, "Spanish"},
+            {0xB, "Finnish"},
+            {0xC, "French"},
+            {0xD, "Hebrew"},
+            {0xE, "Hungarian"},
+            {0xF, "Icelandic"},
+            {0x10, "Italian"},
+            {0x11, "Japanese"},
+            {0x12, "Korean"},
+            {0x13, "Dutch"},
+            {0x14, "Norwegian"},
+            {0x15, "Polish"},
+            {0x16, "Portuguese"},
+            {0x17, "Romansh"},
+            {0x18, "Romanian"},
+            {0x19, "Russian"},
+            {0x1A, "Croatian"},
+            {0x1B, "Slovak"},
+            {0x1C, "Albanian"},
+            {0x1D, "Swedish"},
+            {0x1E, "Thai"},
+            {0x1F, "Turkish"},
+            {0x20, "Urdu"},
+            {0x21, "Indonesian"},
+            {0x22, "Ukrainian"},
+            {0x23, "Belarusian"},
+            {0x24, "Slovenian"},
+            {0x25, "Estonian"},
+            {0x26, "Latvian"},
+            {0x27, "Lithuanian"},
+            {0x28, "Tajik"},
+            {0x29, "Persian"},
+            {0x2A, "Vietnamese"},
+            {0x2B, "Armenian"},
+            {0x2C, "Azerbaijani"},
+            {0x2D, "Basque"},
+            {0x2E, "Upper Sorbian"},
+            {0x2F, "Macedonian (FYROM)"},
+            {0x30, "Southern Sotho"},
+            {0x31, "Tsonga"},
+            {0x32, "Setswana"},
+            {0x33, "Venda"},
+            {0x34, "isiXhosa"},
+            {0x35, "isiZulu"},
+            {0x36, "Afrikaans"},
+            {0x37, "Georgian"},
+            {0x38, "Faroese"},
+            {0x39, "Hindi"},
+            {0x3A, "Maltese"},
+            {0x3B, "Sami (Northern)"},
+            {0x3C, "Irish"},
+            {0x3D, "Yiddish"},
+            {0x3E, "Malay"},
+            {0x3F, "Kazakh"},
+            {0x40, "Kyrgyz"},
+            {0x41, "Kiswahili"},
+            {0x42, "Turkmen"},
+            {0x43, "Uzbek"},
+            {0x44, "Tatar"},
+            {0x45, "Bangla"},
+            {0x46, "Punjabi"},
+            {0x47, "Gujarati"},
+            {0x48, "Odia"},
+            {0x49, "Tamil"},
+            {0x4A, "Telugu"},
+            {0x4B, "Kannada"},
+            {0x4C, "Malayalam"},
+            {0x4D, "Assamese"},
+            {0x4E, "Marathi"},
+            {0x4F, "Sanskrit"},
+            {0x50, "Mongolian"},
+            {0x51, "Tibetan"},
+            {0x52, "Welsh"},
+            {0x53, "Khmer"},
+            {0x54, "Lao"},
+            {0x55, "Burmese"},
+            {0x56, "Galician"},
+            {0x57, "Konkani"},
+            {0x58, "Manipuri"},
+            {0x59, "Sindhi"},
+            {0x5A, "Syriac"},
+            {0x5B, "Sinhala"},
+            {0x5C, "Cherokee"},
+            {0x5D, "Inuktitut"},
+            {0x5E, "Amharic"},
+            {0x5F, "Tamazight"},
+            {0x60, "Kashmiri"},
+            {0x61, "Nepali"},
+            {0x62, "Frisian"},
+            {0x63, "Pashto"},
+            {0x64, "Filipino"},
+            {0x65, "Divehi"},
+            {0x66, "Edo"},
+            {0x67, "Fulah"},
+            {0x68, "Hausa"},
+            {0x69, "Ibibio"},
+            {0x6A, "Yoruba"},
+            {0x6B, "Quechua"},
+            {0x6C, "Sesotho sa Leboa"},
+            {0x6D, "Bashkir"},
+            {0x6E, "Luxembourgish"},
+            {0x6F, "Greenlandic"},
+            {0x70, "Igbo"},
+            {0x71, "Kanuri"},
+            {0x72, "Oromo"},
+            {0x73, "Tigrinya"},
+            {0x74, "Guarani"},
+            {0x75, "Hawaiian"},
+            {0x76, "Latin"},
+            {0x77, "Somali"},
+            {0x78, "Yi"},
+            {0x79, "Papiamento"},
+            {0x7A, "Mapudungun"},
+            {0x7C, "Mohawk"},
+            {0x7E, "Breton"},
+            {0x7F, "Invariant Language (Invariant Country)"},
+            {0x80, "Uyghur"},
+            {0x81, "Maori"},
+            {0x82, "Occitan"},
+            {0x83, "Corsican"},
+            {0x84, "Alsatian"},
+            {0x85, "Sakha"},
+            {0x86, "K’iche’"},
+            {0x87, "Kinyarwanda"},
+            {0x88, "Wolof"},
+            {0x8C, "Dari"},
+            {0x91, "Scottish Gaelic"},
+            {0x92, "Central Kurdish"},
+            {0x401, "Arabic (Saudi Arabia)"},
+            {0x402, "Bulgarian (Bulgaria)"},
+            {0x403, "Catalan (Catalan)"},
+            {0x404, "Chinese (Traditional, Taiwan)"},
+            {0x405, "Czech (Czech Republic)"},
+            {0x406, "Danish (Denmark)"},
+            {0x407, "German (Germany)"},
+            {0x408, "Greek (Greece)"},
+            {0x409, "English (United States)"},
+            {0x40B, "Finnish (Finland)"},
+            {0x40C, "French (France)"},
+            {0x40D, "Hebrew (Israel)"},
+            {0x40E, "Hungarian (Hungary)"},
+            {0x40F, "Icelandic (Iceland)"},
+            {0x410, "Italian (Italy)"},
+            {0x411, "Japanese (Japan)"},
+            {0x412, "Korean (Korea)"},
+            {0x413, "Dutch (Netherlands)"},
+            {0x414, "Norwegian, Bokmål (Norway)"},
+            {0x415, "Polish (Poland)"},
+            {0x416, "Portuguese (Brazil)"},
+            {0x417, "Romansh (Switzerland)"},
+            {0x418, "Romanian (Romania)"},
+            {0x419, "Russian (Russia)"},
+            {0x41A, "Croatian (Croatia)"},
+            {0x41B, "Slovak (Slovakia)"},
+            {0x41C, "Albanian (Albania)"},
+            {0x41D, "Swedish (Sweden)"},
+            {0x41E, "Thai (Thailand)"},
+            {0x41F, "Turkish (Turkey)"},
+            {0x420, "Urdu (Islamic Republic of Pakistan)"},
+            {0x421, "Indonesian (Indonesia)"},
+            {0x422, "Ukrainian (Ukraine)"},
+            {0x423, "Belarusian (Belarus)"},
+            {0x424, "Slovenian (Slovenia)"},
+            {0x425, "Estonian (Estonia)"},
+            {0x426, "Latvian (Latvia)"},
+            {0x427, "Lithuanian (Lithuania)"},
+            {0x428, "Tajik (Cyrillic, Tajikistan)"},
+            {0x429, "Persian (Iran)"},
+            {0x42A, "Vietnamese (Vietnam)"},
+            {0x42B, "Armenian (Armenia)"},
+            {0x42C, "Azerbaijani (Latin, Azerbaijan)"},
+            {0x42D, "Basque (Basque)"},
+            {0x42E, "Upper Sorbian (Germany)"},
+            {0x42F, "Macedonian (Former Yugoslav Republic of Macedonia)"},
+            {0x430, "Southern Sotho (South Africa)"},
+            {0x431, "Tsonga (South Africa)"},
+            {0x432, "Setswana (South Africa)"},
+            {0x433, "Venda (South Africa)"},
+            {0x434, "isiXhosa (South Africa)"},
+            {0x435, "isiZulu (South Africa)"},
+            {0x436, "Afrikaans (South Africa)"},
+            {0x437, "Georgian (Georgia)"},
+            {0x438, "Faroese (Faroe Islands)"},
+            {0x439, "Hindi (India)"},
+            {0x43A, "Maltese (Malta)"},
+            {0x43B, "Sami, Northern (Norway)"},
+            {0x43D, "Yiddish (World)"},
+            {0x43E, "Malay (Malaysia)"},
+            {0x43F, "Kazakh (Kazakhstan)"},
+            {0x440, "Kyrgyz (Kyrgyzstan)"},
+            {0x441, "Kiswahili (Kenya)"},
+            {0x442, "Turkmen (Turkmenistan)"},
+            {0x443, "Uzbek (Latin, Uzbekistan)"},
+            {0x444, "Tatar (Russia)"},
+            {0x445, "Bangla (India)"},
+            {0x446, "Punjabi (India)"},
+            {0x447, "Gujarati (India)"},
+            {0x448, "Odia (India)"},
+            {0x449, "Tamil (India)"},
+            {0x44A, "Telugu (India)"},
+            {0x44B, "Kannada (India)"},
+            {0x44C, "Malayalam (India)"},
+            {0x44D, "Assamese (India)"},
+            {0x44E, "Marathi (India)"},
+            {0x44F, "Sanskrit (India)"},
+            {0x450, "Mongolian (Cyrillic, Mongolia)"},
+            {0x451, "Tibetan (PRC)"},
+            {0x452, "Welsh (United Kingdom)"},
+            {0x453, "Khmer (Cambodia)"},
+            {0x454, "Lao (Lao P.D.R.)"},
+            {0x455, "Burmese (Myanmar)"},
+            {0x456, "Galician (Galician)"},
+            {0x457, "Konkani (India)"},
+            {0x458, "Manipuri (India)"},
+            {0x459, "Sindhi (Devanagari, India)"},
+            {0x45A, "Syriac (Syria)"},
+            {0x45B, "Sinhala (Sri Lanka)"},
+            {0x45C, "Cherokee (Cherokee)"},
+            {0x45D, "Inuktitut (Syllabics, Canada)"},
+            {0x45E, "Amharic (Ethiopia)"},
+            {0x45F, "Central Atlas Tamazight (Arabic, Morocco)"},
+            {0x460, "Kashmiri (Perso-Arabic)"},
+            {0x461, "Nepali (Nepal)"},
+            {0x462, "Frisian (Netherlands)"},
+            {0x463, "Pashto (Afghanistan)"},
+            {0x464, "Filipino (Philippines)"},
+            {0x465, "Divehi (Maldives)"},
+            {0x466, "Edo (Nigeria)"},
+            {0x467, "Fulah (Nigeria)"},
+            {0x468, "Hausa (Latin, Nigeria)"},
+            {0x469, "Ibibio (Nigeria)"},
+            {0x46A, "Yoruba (Nigeria)"},
+            {0x46B, "Quechua (Bolivia)"},
+            {0x46C, "Sesotho sa Leboa (South Africa)"},
+            {0x46D, "Bashkir (Russia)"},
+            {0x46E, "Luxembourgish (Luxembourg)"},
+            {0x46F, "Greenlandic (Greenland)"},
+            {0x470, "Igbo (Nigeria)"},
+            {0x471, "Kanuri (Nigeria)"},
+            {0x472, "Oromo (Ethiopia)"},
+            {0x473, "Tigrinya (Ethiopia)"},
+            {0x474, "Guarani (Paraguay)"},
+            {0x475, "Hawaiian (United States)"},
+            {0x476, "Latin (World)"},
+            {0x477, "Somali (Somalia)"},
+            {0x478, "Yi (PRC)"},
+            {0x479, "Papiamento (Caribbean)"},
+            {0x47A, "Mapudungun (Chile)"},
+            {0x47C, "Mohawk (Mohawk)"},
+            {0x47E, "Breton (France)"},
+            {0x480, "Uyghur (PRC)"},
+            {0x481, "Maori (New Zealand)"},
+            {0x482, "Occitan (France)"},
+            {0x483, "Corsican (France)"},
+            {0x484, "Alsatian (France)"},
+            {0x485, "Sakha (Russia)"},
+            {0x486, "K’iche’ (Guatemala)"},
+            {0x487, "Kinyarwanda (Rwanda)"},
+            {0x488, "Wolof (Senegal)"},
+            {0x48C, "Dari (Afghanistan)"},
+            {0x491, "Scottish Gaelic (United Kingdom)"},
+            {0x492, "Central Kurdish (Iraq)"},
+            {0x801, "Arabic (Iraq)"},
+            {0x803, "Valencian (Spain)"},
+            {0x804, "Chinese (Simplified, PRC)"},
+            {0x807, "German (Switzerland)"},
+            {0x809, "English (United Kingdom)"},
+            {0x80A, "Spanish (Mexico)"},
+            {0x80C, "French (Belgium)"},
+            {0x810, "Italian (Switzerland)"},
+            {0x813, "Dutch (Belgium)"},
+            {0x814, "Norwegian, Nynorsk (Norway)"},
+            {0x816, "Portuguese (Portugal)"},
+            {0x818, "Romanian (Moldova)"},
+            {0x819, "Russian (Moldova)"},
+            {0x81D, "Swedish (Finland)"},
+            {0x820, "Urdu (India)"},
+            {0x82C, "Azerbaijani (Cyrillic, Azerbaijan)"},
+            {0x82E, "Lower Sorbian (Germany)"},
+            {0x832, "Setswana (Botswana)"},
+            {0x83B, "Sami, Northern (Sweden)"},
+            {0x83C, "Irish (Ireland)"},
+            {0x83E, "Malay (Brunei Darussalam)"},
+            {0x843, "Uzbek (Cyrillic, Uzbekistan)"},
+            {0x845, "Bangla (Bangladesh)"},
+            {0x846, "Punjabi (Islamic Republic of Pakistan)"},
+            {0x849, "Tamil (Sri Lanka)"},
+            {0x850, "Mongolian (Traditional Mongolian, PRC)"},
+            {0x859, "Sindhi (Islamic Republic of Pakistan)"},
+            {0x85D, "Inuktitut (Latin, Canada)"},
+            {0x85F, "Tamazight (Latin, Algeria)"},
+            {0x860, "Kashmiri (Devanagari, India)"},
+            {0x861, "Nepali (India)"},
+            {0x867, "Fulah (Latin, Senegal)"},
+            {0x86B, "Quechua (Ecuador)"},
+            {0x873, "Tigrinya (Eritrea)"},
+            {0xC01, "Arabic (Egypt)"},
+            {0xC04, "Chinese (Traditional, Hong Kong S.A.R.)"},
+            {0xC07, "German (Austria)"},
+            {0xC09, "English (Australia)"},
+            {0xC0A, "Spanish (Spain)"},
+            {0xC0C, "French (Canada)"},
+            {0xC3B, "Sami, Northern (Finland)"},
+            {0xC50, "Mongolian (Traditional Mongolian, Mongolia)"},
+            {0xC51, "Dzongkha (Bhutan)"},
+            {0xC6B, "Quechua (Peru)"},
+            {0x1001, "Arabic (Libya)"},
+            {0x1004, "Chinese (Simplified, Singapore)"},
+            {0x1007, "German (Luxembourg)"},
+            {0x1009, "English (Canada)"},
+            {0x100A, "Spanish (Guatemala)"},
+            {0x100C, "French (Switzerland)"},
+            {0x101A, "Croatian (Latin, Bosnia and Herzegovina)"},
+            {0x103B, "Sami, Lule (Norway)"},
+            {0x105F, "Central Atlas Tamazight (Tifinagh, Morocco)"},
+            {0x1401, "Arabic (Algeria)"},
+            {0x1404, "Chinese (Traditional, Macao S.A.R.)"},
+            {0x1407, "German (Liechtenstein)"},
+            {0x1409, "English (New Zealand)"},
+            {0x140A, "Spanish (Costa Rica)"},
+            {0x140C, "French (Luxembourg)"},
+            {0x141A, "Bosnian (Latin, Bosnia and Herzegovina)"},
+            {0x143B, "Sami, Lule (Sweden)"},
+            {0x1801, "Arabic (Morocco)"},
+            {0x1809, "English (Ireland)"},
+            {0x180A, "Spanish (Panama)"},
+            {0x180C, "French (Monaco)"},
+            {0x181A, "Serbian (Latin, Bosnia and Herzegovina)"},
+            {0x183B, "Sami, Southern (Norway)"},
+            {0x1C01, "Arabic (Tunisia)"},
+            {0x1C09, "English (South Africa)"},
+            {0x1C0A, "Spanish (Dominican Republic)"},
+            {0x1C0C, "French (Caribbean)"},
+            {0x1C1A, "Serbian (Cyrillic, Bosnia and Herzegovina)"},
+            {0x1C3B, "Sami, Southern (Sweden)"},
+            {0x2001, "Arabic (Oman)"},
+            {0x2009, "English (Jamaica)"},
+            {0x200A, "Spanish (Venezuela)"},
+            {0x200C, "French (Reunion)"},
+            {0x201A, "Bosnian (Cyrillic, Bosnia and Herzegovina)"},
+            {0x203B, "Sami, Skolt (Finland)"},
+            {0x2401, "Arabic (Yemen)"},
+            {0x2409, "English (Caribbean)"},
+            {0x240A, "Spanish (Colombia)"},
+            {0x240C, "French (Congo DRC)"},
+            {0x241A, "Serbian (Latin, Serbia)"},
+            {0x243B, "Sami, Inari (Finland)"},
+            {0x2801, "Arabic (Syria)"},
+            {0x2809, "English (Belize)"},
+            {0x280A, "Spanish (Peru)"},
+            {0x280C, "French (Senegal)"},
+            {0x281A, "Serbian (Cyrillic, Serbia)"},
+            {0x2C01, "Arabic (Jordan)"},
+            {0x2C09, "English (Trinidad and Tobago)"},
+            {0x2C0A, "Spanish (Argentina)"},
+            {0x2C0C, "French (Cameroon)"},
+            {0x2C1A, "Serbian (Latin, Montenegro)"},
+            {0x3001, "Arabic (Lebanon)"},
+            {0x3009, "English (Zimbabwe)"},
+            {0x300A, "Spanish (Ecuador)"},
+            {0x300C, "French (Côte d’Ivoire)"},
+            {0x301A, "Serbian (Cyrillic, Montenegro)"},
+            {0x3401, "Arabic (Kuwait)"},
+            {0x3409, "English (Philippines)"},
+            {0x340A, "Spanish (Chile)"},
+            {0x340C, "French (Mali)"},
+            {0x3801, "Arabic (U.A.E.)"},
+            {0x3809, "English (Indonesia)"},
+            {0x380A, "Spanish (Uruguay)"},
+            {0x380C, "French (Morocco)"},
+            {0x3C01, "Arabic (Bahrain)"},
+            {0x3C09, "English (Hong Kong SAR)"},
+            {0x3C0A, "Spanish (Paraguay)"},
+            {0x3C0C, "French (Haiti)"},
+            {0x4001, "Arabic (Qatar)"},
+            {0x4009, "English (India)"},
+            {0x400A, "Spanish (Bolivia)"},
+            {0x4409, "English (Malaysia)"},
+            {0x440A, "Spanish (El Salvador)"},
+            {0x4809, "English (Singapore)"},
+            {0x480A, "Spanish (Honduras)"},
+            {0x4C0A, "Spanish (Nicaragua)"},
+            {0x500A, "Spanish (Puerto Rico)"},
+            {0x540A, "Spanish (United States)"},
+            {0x580A, "Spanish (Latin America)"},
+            {0x5C0A, "Spanish (Cuba)"},
+            {0x641A, "Bosnian (Cyrillic)"},
+            {0x681A, "Bosnian (Latin)"},
+            {0x6C1A, "Serbian (Cyrillic)"},
+            {0x701A, "Serbian (Latin)"},
+            {0x703B, "Sami (Inari)"},
+            {0x742C, "Azerbaijani (Cyrillic)"},
+            {0x743B, "Sami (Skolt)"},
+            {0x7804, "Chinese"},
+            {0x7814, "Norwegian (Nynorsk)"},
+            {0x781A, "Bosnian"},
+            {0x782C, "Azerbaijani (Latin)"},
+            {0x783B, "Sami (Southern)"},
+            {0x7843, "Uzbek (Cyrillic)"},
+            {0x7850, "Mongolian (Cyrillic)"},
+            {0x785D, "Inuktitut (Syllabics)"},
+            {0x785F, "Tamazight (Tifinagh)"},
+            {0x7C04, "Chinese (Traditional)"},
+            {0x7C04, "Chinese (Traditional) Legacy"},
+            {0x7C14, "Norwegian (Bokmål)"},
+            {0x7C1A, "Serbian"},
+            {0x7C28, "Tajik (Cyrillic)"},
+            {0x7C2E, "Lower Sorbian"},
+            {0x7C3B, "Sami (Lule)"},
+            {0x7C43, "Uzbek (Latin)"},
+            {0x7C46, "Punjabi (Arabic)"},
+            {0x7C50, "Mongolian (Traditional Mongolian)"},
+            {0x7C59, "Sindhi (Arabic)"},
+            {0x7C5C, "Cherokee (Cherokee)"},
+            {0x7C5D, "Inuktitut (Latin)"},
+            {0x7C5F, "Tamazight (Latin)"},
+            {0x7C67, "Fulah (Latin)"},
+            {0x7C68, "Hausa (Latin)"},
+            {0x7C86, "K’iche’"},
+            {0x7C92, "Central Kurdish (Arabic)"},
+        });
 
     return *all;
 }
@@ -132,303 +537,294 @@ void number_format_parser::parse()
     {
         switch (token.type)
         {
-        case number_format_token::token_type::end_section:
-            {
-                codes_.push_back(section);
-                section = format_code();
+        case number_format_token::token_type::end_section: {
+            codes_.push_back(section);
+            section = format_code();
 
-                break;
+            break;
+        }
+
+        case number_format_token::token_type::color: {
+            if (section.has_color || section.has_condition || section.has_locale || !section.parts.empty())
+            {
+                throw xlnt::exception("color should be the first part of a format");
             }
 
-        case number_format_token::token_type::color:
+            section.has_color = true;
+            section.color = color_from_string(token.string);
+
+            break;
+        }
+
+        case number_format_token::token_type::locale: {
+            if (section.has_locale)
             {
-                if (section.has_color || section.has_condition || section.has_locale || !section.parts.empty())
-                {
-                    throw xlnt::exception("color should be the first part of a format");
-                }
-
-                section.has_color = true;
-                section.color = color_from_string(token.string);
-
-                break;
+                throw xlnt::exception("multiple locales");
             }
 
-        case number_format_token::token_type::locale:
-            {
-                if (section.has_locale)
-                {
-                    throw xlnt::exception("multiple locales");
-                }
+            section.has_locale = true;
+            auto parsed_locale = locale_from_string(token.string);
+            section.locale = parsed_locale.first;
 
-                section.has_locale = true;
-                auto parsed_locale = locale_from_string(token.string);
-                section.locale = parsed_locale.first;
-
-                if (!parsed_locale.second.empty())
-                {
-                    part.type = template_part::template_type::text;
-                    part.string = parsed_locale.second;
-                    section.parts.push_back(part);
-                    part = template_part();
-                }
-
-                break;
-            }
-
-        case number_format_token::token_type::condition:
-            {
-                if (section.has_condition)
-                {
-                    throw xlnt::exception("multiple conditions");
-                }
-
-                section.has_condition = true;
-                std::string value;
-
-                if (token.string.front() == '<')
-                {
-                    if (token.string[1] == '=')
-                    {
-                        section.condition.type = format_condition::condition_type::less_or_equal;
-                        value = token.string.substr(2);
-                    }
-                    else if (token.string[1] == '>')
-                    {
-                        section.condition.type = format_condition::condition_type::not_equal;
-                        value = token.string.substr(2);
-                    }
-                    else
-                    {
-                        section.condition.type = format_condition::condition_type::less_than;
-                        value = token.string.substr(1);
-                    }
-                }
-                else if (token.string.front() == '>')
-                {
-                    if (token.string[1] == '=')
-                    {
-                        section.condition.type = format_condition::condition_type::greater_or_equal;
-                        value = token.string.substr(2);
-                    }
-                    else
-                    {
-                        section.condition.type = format_condition::condition_type::greater_than;
-                        value = token.string.substr(1);
-                    }
-                }
-                else if (token.string.front() == '=')
-                {
-                    section.condition.type = format_condition::condition_type::equal;
-                    value = token.string.substr(1);
-                }
-
-                section.condition.value = std::stod(value);
-                break;
-            }
-
-        case number_format_token::token_type::text:
+            if (!parsed_locale.second.empty())
             {
                 part.type = template_part::template_type::text;
-                part.string = token.string;
+                part.string = parsed_locale.second;
                 section.parts.push_back(part);
                 part = template_part();
-
-                break;
             }
 
-        case number_format_token::token_type::fill:
-            {
-                part.type = template_part::template_type::fill;
-                part.string = token.string;
-                section.parts.push_back(part);
-                part = template_part();
+            break;
+        }
 
-                break;
+        case number_format_token::token_type::condition: {
+            if (section.has_condition)
+            {
+                throw xlnt::exception("multiple conditions");
             }
 
-        case number_format_token::token_type::space:
+            section.has_condition = true;
+            std::string value;
+
+            if (token.string.front() == '<')
             {
-                part.type = template_part::template_type::space;
-                part.string = token.string;
-                section.parts.push_back(part);
-                part = template_part();
-
-                break;
-            }
-
-        case number_format_token::token_type::number:
-            {
-                part.type = template_part::template_type::general;
-                part.placeholders = parse_placeholders(token.string);
-                section.parts.push_back(part);
-                part = template_part();
-
-                break;
-            }
-
-        case number_format_token::token_type::datetime:
-            {
-                section.is_datetime = true;
-
-                switch (token.string.front())
+                if (token.string[1] == '=')
                 {
-                case '[':
-                    section.is_timedelta = true;
+                    section.condition.type = format_condition::condition_type::less_or_equal;
+                    value = token.string.substr(2);
+                }
+                else if (token.string[1] == '>')
+                {
+                    section.condition.type = format_condition::condition_type::not_equal;
+                    value = token.string.substr(2);
+                }
+                else
+                {
+                    section.condition.type = format_condition::condition_type::less_than;
+                    value = token.string.substr(1);
+                }
+            }
+            else if (token.string.front() == '>')
+            {
+                if (token.string[1] == '=')
+                {
+                    section.condition.type = format_condition::condition_type::greater_or_equal;
+                    value = token.string.substr(2);
+                }
+                else
+                {
+                    section.condition.type = format_condition::condition_type::greater_than;
+                    value = token.string.substr(1);
+                }
+            }
+            else if (token.string.front() == '=')
+            {
+                section.condition.type = format_condition::condition_type::equal;
+                value = token.string.substr(1);
+            }
 
-                    if (token.string == "[h]" || token.string == "[hh]")
-                    {
-                        part.type = template_part::template_type::elapsed_hours;
-                        break;
-                    }
-                    else if (token.string == "[m]" || token.string == "[mm]")
-                    {
-                        part.type = template_part::template_type::elapsed_minutes;
-                        break;
-                    }
-                    else if (token.string == "[s]" || token.string == "[ss]")
-                    {
-                        part.type = template_part::template_type::elapsed_seconds;
-                        break;
-                    }
+            detail::number_serialiser ser;
+            section.condition.value = ser.deserialise(value);
+            break;
+        }
 
-                    unhandled_case(true);
+        case number_format_token::token_type::text: {
+            part.type = template_part::template_type::text;
+            part.string = token.string;
+            section.parts.push_back(part);
+            part = template_part();
+
+            break;
+        }
+
+        case number_format_token::token_type::fill: {
+            part.type = template_part::template_type::fill;
+            part.string = token.string;
+            section.parts.push_back(part);
+            part = template_part();
+
+            break;
+        }
+
+        case number_format_token::token_type::space: {
+            part.type = template_part::template_type::space;
+            part.string = token.string;
+            section.parts.push_back(part);
+            part = template_part();
+
+            break;
+        }
+
+        case number_format_token::token_type::number: {
+            part.type = template_part::template_type::general;
+            part.placeholders = parse_placeholders(token.string);
+            section.parts.push_back(part);
+            part = template_part();
+
+            break;
+        }
+
+        case number_format_token::token_type::datetime: {
+            section.is_datetime = true;
+
+            switch (token.string.front())
+            {
+            case '[':
+                section.is_timedelta = true;
+
+                if (token.string == "[h]" || token.string == "[hh]")
+                {
+                    part.type = template_part::template_type::elapsed_hours;
                     break;
-
-                case 'm':
-                    if (token.string == "m")
-                    {
-                        part.type = template_part::template_type::month_number;
-                        break;
-                    }
-                    else if (token.string == "mm")
-                    {
-                        part.type = template_part::template_type::month_number_leading_zero;
-                        break;
-                    }
-                    else if (token.string == "mmm")
-                    {
-                        part.type = template_part::template_type::month_abbreviation;
-                        break;
-                    }
-                    else if (token.string == "mmmm")
-                    {
-                        part.type = template_part::template_type::month_name;
-                        break;
-                    }
-                    else if (token.string == "mmmmm")
-                    {
-                        part.type = template_part::template_type::month_letter;
-                        break;
-                    }
-
-                    unhandled_case(true);
+                }
+                else if (token.string == "[m]" || token.string == "[mm]")
+                {
+                    part.type = template_part::template_type::elapsed_minutes;
                     break;
-
-                case 'd':
-                    if (token.string == "d")
-                    {
-                        part.type = template_part::template_type::day_number;
-                        break;
-                    }
-                    else if (token.string == "dd")
-                    {
-                        part.type = template_part::template_type::day_number_leading_zero;
-                        break;
-                    }
-                    else if (token.string == "ddd")
-                    {
-                        part.type = template_part::template_type::day_abbreviation;
-                        break;
-                    }
-                    else if (token.string == "dddd")
-                    {
-                        part.type = template_part::template_type::day_name;
-                        break;
-                    }
-
-                    unhandled_case(true);
-                    break;
-
-                case 'y':
-                    if (token.string == "yy")
-                    {
-                        part.type = template_part::template_type::year_short;
-                        break;
-                    }
-                    else if (token.string == "yyyy")
-                    {
-                        part.type = template_part::template_type::year_long;
-                        break;
-                    }
-
-                    unhandled_case(true);
-                    break;
-
-                case 'h':
-                    if (token.string == "h")
-                    {
-                        part.type = template_part::template_type::hour;
-                        break;
-                    }
-                    else if (token.string == "hh")
-                    {
-                        part.type = template_part::template_type::hour_leading_zero;
-                        break;
-                    }
-
-                    unhandled_case(true);
-                    break;
-
-                case 's':
-                    if (token.string == "s")
-                    {
-                        part.type = template_part::template_type::second;
-                        break;
-                    }
-                    else if (token.string == "ss")
-                    {
-                        part.type = template_part::template_type::second_leading_zero;
-                        break;
-                    }
-
-                    unhandled_case(true);
-                    break;
-
-                case 'A':
-                    section.twelve_hour = true;
-
-                    if (token.string == "AM/PM")
-                    {
-                        part.type = template_part::template_type::am_pm;
-                        break;
-                    }
-                    else if (token.string == "A/P")
-                    {
-                        part.type = template_part::template_type::a_p;
-                        break;
-                    }
-
-                    unhandled_case(true);
-                    break;
-
-                default:
-                    unhandled_case(true);
+                }
+                else if (token.string == "[s]" || token.string == "[ss]")
+                {
+                    part.type = template_part::template_type::elapsed_seconds;
                     break;
                 }
 
-                section.parts.push_back(part);
-                part = template_part();
+                unhandled_case(true);
+                break;
 
+            case 'm':
+                if (token.string == "m")
+                {
+                    part.type = template_part::template_type::month_number;
+                    break;
+                }
+                else if (token.string == "mm")
+                {
+                    part.type = template_part::template_type::month_number_leading_zero;
+                    break;
+                }
+                else if (token.string == "mmm")
+                {
+                    part.type = template_part::template_type::month_abbreviation;
+                    break;
+                }
+                else if (token.string == "mmmm")
+                {
+                    part.type = template_part::template_type::month_name;
+                    break;
+                }
+                else if (token.string == "mmmmm")
+                {
+                    part.type = template_part::template_type::month_letter;
+                    break;
+                }
+
+                unhandled_case(true);
+                break;
+
+            case 'd':
+                if (token.string == "d")
+                {
+                    part.type = template_part::template_type::day_number;
+                    break;
+                }
+                else if (token.string == "dd")
+                {
+                    part.type = template_part::template_type::day_number_leading_zero;
+                    break;
+                }
+                else if (token.string == "ddd")
+                {
+                    part.type = template_part::template_type::day_abbreviation;
+                    break;
+                }
+                else if (token.string == "dddd")
+                {
+                    part.type = template_part::template_type::day_name;
+                    break;
+                }
+
+                unhandled_case(true);
+                break;
+
+            case 'y':
+                if (token.string == "yy")
+                {
+                    part.type = template_part::template_type::year_short;
+                    break;
+                }
+                else if (token.string == "yyyy")
+                {
+                    part.type = template_part::template_type::year_long;
+                    break;
+                }
+
+                unhandled_case(true);
+                break;
+
+            case 'h':
+                if (token.string == "h")
+                {
+                    part.type = template_part::template_type::hour;
+                    break;
+                }
+                else if (token.string == "hh")
+                {
+                    part.type = template_part::template_type::hour_leading_zero;
+                    break;
+                }
+
+                unhandled_case(true);
+                break;
+
+            case 's':
+                if (token.string == "s")
+                {
+                    part.type = template_part::template_type::second;
+                    break;
+                }
+                else if (token.string == "ss")
+                {
+                    part.type = template_part::template_type::second_leading_zero;
+                    break;
+                }
+
+                unhandled_case(true);
+                break;
+
+            case 'A':
+                section.twelve_hour = true;
+
+                if (token.string == "AM/PM")
+                {
+                    part.type = template_part::template_type::am_pm;
+                    break;
+                }
+                else if (token.string == "A/P")
+                {
+                    part.type = template_part::template_type::a_p;
+                    break;
+                }
+
+                unhandled_case(true);
+                break;
+
+            default:
+                unhandled_case(true);
                 break;
             }
 
-        case number_format_token::token_type::end:
-            {
-                codes_.push_back(section);
-                finalize();
+            section.parts.push_back(part);
+            part = template_part();
 
-                return;
-            }
+            break;
+        }
+
+        case number_format_token::token_type::end: {
+            codes_.push_back(section);
+            finalize();
+
+            return;
+        }
         }
 
         token = parse_next_token();
@@ -519,8 +915,8 @@ void number_format_parser::finalize()
                     if ((next.type == template_part::template_type::second
                             || next.type == template_part::template_type::second_leading_zero)
                         || (next.type == template_part::template_type::text && next.string == ":"
-                               && (after_next.type == template_part::template_type::second
-                                      || after_next.type == template_part::template_type::second_leading_zero)))
+                            && (after_next.type == template_part::template_type::second
+                                || after_next.type == template_part::template_type::second_leading_zero)))
                     {
                         fix = true;
                         leading_zero = part.type == template_part::template_type::month_number_leading_zero;
@@ -535,7 +931,7 @@ void number_format_parser::finalize()
 
                     if (previous.type == template_part::template_type::text && previous.string == ":"
                         && (before_previous.type == template_part::template_type::hour_leading_zero
-                               || before_previous.type == template_part::template_type::hour))
+                            || before_previous.type == template_part::template_type::hour))
                     {
                         fix = true;
                         leading_zero = part.type == template_part::template_type::month_number_leading_zero;
@@ -610,9 +1006,8 @@ void number_format_parser::finalize()
 number_format_token number_format_parser::parse_next_token()
 {
     number_format_token token;
-    
-    auto to_lower = [](char c)
-    {
+
+    auto to_lower = [](char c) {
         return static_cast<char>(std::tolower(static_cast<std::uint8_t>(c)));
     };
 
@@ -652,7 +1047,7 @@ number_format_token number_format_parser::parse_next_token()
         }
         else if (token.string.size() <= 2
             && ((token.string == "h" || token.string == "hh") || (token.string == "m" || token.string == "mm")
-                   || (token.string == "s" || token.string == "ss")))
+                || (token.string == "s" || token.string == "ss")))
         {
             token.type = number_format_token::token_type::datetime;
             token.string = "[" + token.string + "]";
@@ -760,8 +1155,7 @@ number_format_token number_format_parser::parse_next_token()
 
         break;
 
-    case '"':
-    {
+    case '"': {
         token.type = number_format_token::token_type::text;
         auto start = position_;
         auto end = format_string_.find('"', position_);
@@ -1173,19 +1567,16 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, do
     if (p.type == format_placeholders::placeholders_type::general
         || p.type == format_placeholders::placeholders_type::text)
     {
-        result = std::to_string(number);
-
-        while (result.back() == '0')
+        auto s = serialiser_.serialise_short(number);
+        while (s.size() > 1 && s.back() == '0')
         {
-            result.pop_back();
+            s.pop_back();
         }
-
-        if (result.back() == '.')
+        if (s.back() == '.')
         {
-            result.pop_back();
+            s.pop_back();
         }
-
-        return result;
+        return s;
     }
 
     if (p.percentage)
@@ -1244,21 +1635,22 @@ std::string number_formatter::fill_placeholders(const format_placeholders &p, do
         auto fractional_part = number - integer_part;
         result = std::fabs(fractional_part) < std::numeric_limits<double>::min()
             ? std::string(".")
-            : std::to_string(fractional_part).substr(1);
+            : serialiser_.serialise_short(fractional_part).substr(1);
 
         while (result.back() == '0' || result.size() > (p.num_zeros + p.num_optionals + p.num_spaces + 1))
         {
             result.pop_back();
         }
 
-        while (result.size() < p.num_zeros + 1)
+        
+        if (result.size() < p.num_zeros + 1)
         {
-            result.push_back('0');
+            result.resize(p.num_zeros + 1, '0');
         }
 
-        while (result.size() < p.num_zeros + p.num_optionals + p.num_spaces + 1)
+        if (result.size() < p.num_zeros + p.num_optionals + p.num_spaces + 1)
         {
-            result.push_back(' ');
+            result.resize(p.num_zeros + p.num_optionals + p.num_spaces + 1, ' ');
         }
 
         if (p.percentage)
@@ -1297,13 +1689,7 @@ std::string number_formatter::fill_scientific_placeholders(const format_placehol
         integer_string = std::string(integer_part.num_zeros + integer_part.num_optionals, '0');
     }
 
-    std::string fractional_string = std::to_string(fraction).substr(1);
-
-    while (fractional_string.size() > fractional_part.num_zeros + fractional_part.num_optionals + 1)
-    {
-        fractional_string.pop_back();
-    }
-
+    std::string fractional_string = serialiser_.serialise_short(fraction).substr(1, fractional_part.num_zeros + fractional_part.num_optionals + 1);
     std::string exponent_string = std::to_string(logarithm);
 
     while (exponent_string.size() < fractional_part.num_zeros)
@@ -1418,271 +1804,243 @@ std::string number_formatter::format_number(const format_code &format, double nu
 
         switch (part.type)
         {
-        case template_part::template_type::space:
+        case template_part::template_type::space: {
+            result.push_back(' ');
+            break;
+        }
+
+        case template_part::template_type::text: {
+            result.append(part.string);
+            break;
+        }
+
+        case template_part::template_type::fill: {
+            fill = true;
+            fill_index = result.size();
+            fill_character = part.string;
+            break;
+        }
+
+        case template_part::template_type::general: {
+            if (part.placeholders.type == format_placeholders::placeholders_type::fractional_part
+                && (format.is_datetime || format.is_timedelta))
             {
-                result.push_back(' ');
+                auto digits = std::min(
+                    static_cast<std::size_t>(6), part.placeholders.num_zeros + part.placeholders.num_optionals);
+                auto denominator = static_cast<int>(std::pow(10.0, digits));
+                auto fractional_seconds = dt.microsecond / 1.0E6 * denominator;
+                fractional_seconds = std::round(fractional_seconds) / denominator;
+                result.append(fill_placeholders(part.placeholders, fractional_seconds));
                 break;
             }
 
-        case template_part::template_type::text:
+            if (part.placeholders.type == format_placeholders::placeholders_type::fraction_integer)
             {
-                result.append(part.string);
-                break;
+                improper_fraction = false;
             }
 
-        case template_part::template_type::fill:
+            if (part.placeholders.type == format_placeholders::placeholders_type::fraction_numerator)
             {
-                fill = true;
-                fill_index = result.size();
-                fill_character = part.string;
-                break;
-            }
+                i += 2;
 
-        case template_part::template_type::general:
-            {
-                if (part.placeholders.type == format_placeholders::placeholders_type::fractional_part
-                    && (format.is_datetime || format.is_timedelta))
+                if (number == 0.0)
                 {
-                    auto digits = std::min(
-                        static_cast<std::size_t>(6), part.placeholders.num_zeros + part.placeholders.num_optionals);
-                    auto denominator = static_cast<int>(std::pow(10.0, digits));
-                    auto fractional_seconds = dt.microsecond / 1.0E6 * denominator;
-                    fractional_seconds = std::round(fractional_seconds) / denominator;
-                    result.append(fill_placeholders(part.placeholders, fractional_seconds));
+                    result.pop_back();
                     break;
                 }
 
-                if (part.placeholders.type == format_placeholders::placeholders_type::fraction_integer)
-                {
-                    improper_fraction = false;
-                }
-
-                if (part.placeholders.type == format_placeholders::placeholders_type::fraction_numerator)
-                {
-                    i += 2;
-
-                    if (number == 0.0)
-                    {
-                        result.pop_back();
-                        break;
-                    }
-
-                    result.append(fill_fraction_placeholders(
-                        part.placeholders, format.parts[i].placeholders, number, improper_fraction));
-                }
-                else if (part.placeholders.scientific
-                    && part.placeholders.type == format_placeholders::placeholders_type::integer_part)
-                {
-                    auto integer_part = part.placeholders;
-                    ++i;
-                    auto fractional_part = format.parts[i++].placeholders;
-                    auto exponent_part = format.parts[i++].placeholders;
-                    result.append(fill_scientific_placeholders(integer_part, fractional_part, exponent_part, number));
-                }
-                else
-                {
-                    result.append(fill_placeholders(part.placeholders, number));
-                }
-
-                break;
+                result.append(fill_fraction_placeholders(
+                    part.placeholders, format.parts[i].placeholders, number, improper_fraction));
             }
-
-        case template_part::template_type::day_number:
+            else if (part.placeholders.scientific
+                && part.placeholders.type == format_placeholders::placeholders_type::integer_part)
             {
-                result.append(std::to_string(dt.day));
-                break;
+                auto integer_part = part.placeholders;
+                ++i;
+                auto fractional_part = format.parts[i++].placeholders;
+                auto exponent_part = format.parts[i++].placeholders;
+                result.append(fill_scientific_placeholders(integer_part, fractional_part, exponent_part, number));
             }
-
-        case template_part::template_type::day_number_leading_zero:
+            else
             {
-                if (dt.day < 10)
-                {
-                    result.push_back('0');
-                }
-
-                result.append(std::to_string(dt.day));
-                break;
+                result.append(fill_placeholders(part.placeholders, number));
             }
 
-        case template_part::template_type::month_abbreviation:
+            break;
+        }
+
+        case template_part::template_type::day_number: {
+            result.append(std::to_string(dt.day));
+            break;
+        }
+
+        case template_part::template_type::day_number_leading_zero: {
+            if (dt.day < 10)
             {
-                result.append(month_names->at(static_cast<std::size_t>(dt.month) - 1).substr(0, 3));
-                break;
+                result.push_back('0');
             }
 
-        case template_part::template_type::month_name:
+            result.append(std::to_string(dt.day));
+            break;
+        }
+
+        case template_part::template_type::month_abbreviation: {
+            result.append(month_names->at(static_cast<std::size_t>(dt.month) - 1).substr(0, 3));
+            break;
+        }
+
+        case template_part::template_type::month_name: {
+            result.append(month_names->at(static_cast<std::size_t>(dt.month) - 1));
+            break;
+        }
+
+        case template_part::template_type::month_number: {
+            result.append(std::to_string(dt.month));
+            break;
+        }
+
+        case template_part::template_type::month_number_leading_zero: {
+            if (dt.month < 10)
             {
-                result.append(month_names->at(static_cast<std::size_t>(dt.month) - 1));
-                break;
+                result.push_back('0');
             }
 
-        case template_part::template_type::month_number:
+            result.append(std::to_string(dt.month));
+            break;
+        }
+
+        case template_part::template_type::year_short: {
+            if (dt.year % 1000 < 10)
             {
-                result.append(std::to_string(dt.month));
-                break;
+                result.push_back('0');
             }
 
-        case template_part::template_type::month_number_leading_zero:
+            result.append(std::to_string(dt.year % 1000));
+            break;
+        }
+
+        case template_part::template_type::year_long: {
+            result.append(std::to_string(dt.year));
+            break;
+        }
+
+        case template_part::template_type::hour: {
+            result.append(std::to_string(hour));
+            break;
+        }
+
+        case template_part::template_type::hour_leading_zero: {
+            if (hour < 10)
             {
-                if (dt.month < 10)
-                {
-                    result.push_back('0');
-                }
-
-                result.append(std::to_string(dt.month));
-                break;
+                result.push_back('0');
             }
 
-        case template_part::template_type::year_short:
+            result.append(std::to_string(hour));
+            break;
+        }
+
+        case template_part::template_type::minute: {
+            result.append(std::to_string(dt.minute));
+            break;
+        }
+
+        case template_part::template_type::minute_leading_zero: {
+            if (dt.minute < 10)
             {
-                if (dt.year % 1000 < 10)
-                {
-                    result.push_back('0');
-                }
-
-                result.append(std::to_string(dt.year % 1000));
-                break;
+                result.push_back('0');
             }
 
-        case template_part::template_type::year_long:
+            result.append(std::to_string(dt.minute));
+            break;
+        }
+
+        case template_part::template_type::second: {
+            result.append(std::to_string(dt.second + (dt.microsecond > 500000 ? 1 : 0)));
+            break;
+        }
+
+        case template_part::template_type::second_fractional: {
+            result.append(std::to_string(dt.second));
+            break;
+        }
+
+        case template_part::template_type::second_leading_zero: {
+            if ((dt.second + (dt.microsecond > 500000 ? 1 : 0)) < 10)
             {
-                result.append(std::to_string(dt.year));
-                break;
+                result.push_back('0');
             }
 
-        case template_part::template_type::hour:
+            result.append(std::to_string(dt.second + (dt.microsecond > 500000 ? 1 : 0)));
+            break;
+        }
+
+        case template_part::template_type::second_leading_zero_fractional: {
+            if (dt.second < 10)
             {
-                result.append(std::to_string(hour));
-                break;
+                result.push_back('0');
             }
 
-        case template_part::template_type::hour_leading_zero:
+            result.append(std::to_string(dt.second));
+            break;
+        }
+
+        case template_part::template_type::am_pm: {
+            if (dt.hour < 12)
             {
-                if (hour < 10)
-                {
-                    result.push_back('0');
-                }
-
-                result.append(std::to_string(hour));
-                break;
+                result.append("AM");
             }
-
-        case template_part::template_type::minute:
+            else
             {
-                result.append(std::to_string(dt.minute));
-                break;
+                result.append("PM");
             }
 
-        case template_part::template_type::minute_leading_zero:
+            break;
+        }
+
+        case template_part::template_type::a_p: {
+            if (dt.hour < 12)
             {
-                if (dt.minute < 10)
-                {
-                    result.push_back('0');
-                }
-
-                result.append(std::to_string(dt.minute));
-                break;
+                result.append("A");
             }
-
-        case template_part::template_type::second:
+            else
             {
-                result.append(std::to_string(dt.second + (dt.microsecond > 500000 ? 1 : 0)));
-                break;
+                result.append("P");
             }
 
-        case template_part::template_type::second_fractional:
-            {
-                result.append(std::to_string(dt.second));
-                break;
-            }
+            break;
+        }
 
-        case template_part::template_type::second_leading_zero:
-            {
-                if ((dt.second + (dt.microsecond > 500000 ? 1 : 0)) < 10)
-                {
-                    result.push_back('0');
-                }
+        case template_part::template_type::elapsed_hours: {
+            result.append(std::to_string(24 * static_cast<int>(number) + dt.hour));
+            break;
+        }
 
-                result.append(std::to_string(dt.second + (dt.microsecond > 500000 ? 1 : 0)));
-                break;
-            }
+        case template_part::template_type::elapsed_minutes: {
+            result.append(std::to_string(24 * 60 * static_cast<int>(number)
+                + (60 * dt.hour) + dt.minute));
+            break;
+        }
 
-        case template_part::template_type::second_leading_zero_fractional:
-            {
-                if (dt.second < 10)
-                {
-                    result.push_back('0');
-                }
+        case template_part::template_type::elapsed_seconds: {
+            result.append(std::to_string(24 * 60 * 60 * static_cast<int>(number)
+                + (60 * 60 * dt.hour) + (60 * dt.minute) + dt.second));
+            break;
+        }
 
-                result.append(std::to_string(dt.second));
-                break;
-            }
+        case template_part::template_type::month_letter: {
+            result.append(month_names->at(static_cast<std::size_t>(dt.month) - 1).substr(0, 1));
+            break;
+        }
 
-        case template_part::template_type::am_pm:
-            {
-                if (dt.hour < 12)
-                {
-                    result.append("AM");
-                }
-                else
-                {
-                    result.append("PM");
-                }
+        case template_part::template_type::day_abbreviation: {
+            result.append(day_names->at(static_cast<std::size_t>(dt.weekday())).substr(0, 3));
+            break;
+        }
 
-                break;
-            }
-
-        case template_part::template_type::a_p:
-            {
-                if (dt.hour < 12)
-                {
-                    result.append("A");
-                }
-                else
-                {
-                    result.append("P");
-                }
-
-                break;
-            }
-
-        case template_part::template_type::elapsed_hours:
-            {
-                result.append(std::to_string(24 * static_cast<int>(number) + dt.hour));
-                break;
-            }
-
-        case template_part::template_type::elapsed_minutes:
-            {
-                result.append(std::to_string(24 * 60 * static_cast<int>(number)
-                    + (60 * dt.hour) + dt.minute));
-                break;
-            }
-
-        case template_part::template_type::elapsed_seconds:
-            {
-                result.append(std::to_string(24 * 60 * 60 * static_cast<int>(number)
-                    + (60 * 60 * dt.hour) + (60 * dt.minute) + dt.second));
-                break;
-            }
-
-        case template_part::template_type::month_letter:
-            {
-                result.append(month_names->at(static_cast<std::size_t>(dt.month) - 1).substr(0, 1));
-                break;
-            }
-
-        case template_part::template_type::day_abbreviation:
-            {
-                result.append(day_names->at(static_cast<std::size_t>(dt.weekday()) - 1).substr(0, 3));
-                break;
-            }
-
-        case template_part::template_type::day_name:
-            {
-                result.append(day_names->at(static_cast<std::size_t>(dt.weekday()) - 1));
-                break;
-            }
+        case template_part::template_type::day_name: {
+            result.append(day_names->at(static_cast<std::size_t>(dt.weekday())));
+            break;
+        }
         }
     }
 

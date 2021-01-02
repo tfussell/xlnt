@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,11 +26,6 @@
 #include <cmath>
 #include <sstream>
 
-#include <detail/implementations/cell_impl.hpp>
-#include <detail/implementations/format_impl.hpp>
-#include <detail/implementations/hyperlink_impl.hpp>
-#include <detail/implementations/stylesheet.hpp>
-#include <detail/implementations/worksheet_impl.hpp>
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/cell_reference.hpp>
 #include <xlnt/cell/comment.hpp>
@@ -54,17 +49,24 @@
 #include <xlnt/utils/timedelta.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/worksheet/column_properties.hpp>
+#include <xlnt/worksheet/phonetic_pr.hpp>
 #include <xlnt/worksheet/row_properties.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
+#include <detail/implementations/cell_impl.hpp>
+#include <detail/implementations/format_impl.hpp>
+#include <detail/implementations/hyperlink_impl.hpp>
+#include <detail/implementations/stylesheet.hpp>
+#include <detail/implementations/worksheet_impl.hpp>
+#include <xlnt/utils/numeric.hpp>
 
 namespace {
 
 std::pair<bool, double> cast_numeric(const std::string &s)
 {
-    auto str_end = static_cast<char *>(nullptr);
-    auto result = std::strtod(s.c_str(), &str_end);
-
-    return (str_end != s.c_str() + s.size())
+    xlnt::detail::number_serialiser ser;
+    ptrdiff_t len_convert;
+    double result = ser.deserialise(s, &len_convert);
+    return (len_convert != static_cast<ptrdiff_t>(s.size()))
         ? std::make_pair(false, 0.0)
         : std::make_pair(true, result);
 }
@@ -107,7 +109,7 @@ std::pair<bool, xlnt::time> cast_time(const std::string &s)
     }
 
     std::vector<double> numeric_components;
-
+    xlnt::detail::number_serialiser ser;
     for (auto component : time_components)
     {
         if (component.empty() || (component.substr(0, component.find('.')).size() > 2))
@@ -122,9 +124,7 @@ std::pair<bool, xlnt::time> cast_time(const std::string &s)
                 return {false, result};
             }
         }
-
-        auto without_leading_zero = component.front() == '0' ? component.substr(1) : component;
-        auto numeric = std::stod(without_leading_zero);
+        auto numeric = ser.deserialise(component);
 
         numeric_components.push_back(numeric);
     }
@@ -198,7 +198,7 @@ cell::cell(detail::cell_impl *d)
 
 bool cell::garbage_collectible() const
 {
-    return !(has_value() || is_merged() || has_formula() || has_format() || has_hyperlink());
+    return d_->is_garbage_collectible();
 }
 
 void cell::value(std::nullptr_t)
@@ -329,6 +329,16 @@ bool cell::is_merged() const
     return d_->is_merged_;
 }
 
+bool cell::phonetics_visible() const
+{
+    return d_->phonetics_visible_;
+}
+
+void cell::show_phonetics(bool phonetics)
+{
+    d_->phonetics_visible_ = phonetics;
+}
+
 bool cell::is_date() const
 {
     return data_type() == type::number
@@ -360,7 +370,7 @@ hyperlink cell::hyperlink() const
 
 void cell::hyperlink(const std::string &url, const std::string &display)
 {
-    if (url.empty() || std::find(url.begin(), url.end(), ':') == url.end())
+    if (url.empty())
     {
         throw invalid_parameter();
     }
@@ -400,7 +410,7 @@ void cell::hyperlink(const std::string &url, const std::string &display)
     }
 }
 
-void cell::hyperlink(xlnt::cell target, const std::string& display)
+void cell::hyperlink(xlnt::cell target, const std::string &display)
 {
     // TODO: should this computed value be a method on a cell?
     const auto cell_address = target.worksheet().title() + "!" + target.reference().to_string();
@@ -428,7 +438,7 @@ void cell::hyperlink(xlnt::range target, const std::string &display)
     d_->hyperlink_ = detail::hyperlink_impl();
     d_->hyperlink_.get().relationship = xlnt::relationship("", relationship_type::hyperlink,
         uri(""), uri(range_address), target_mode::internal);
-    
+
     // if a value is already present, the display string is ignored
     if (has_value())
     {
@@ -846,6 +856,12 @@ void cell::clear_style()
 void cell::style(const class style &new_style)
 {
     auto new_format = has_format() ? format() : workbook().create_format();
+
+    new_format.border(new_style.border());
+    new_format.fill(new_style.fill());
+    new_format.font(new_style.font());
+    new_format.number_format(new_style.number_format());
+
     format(new_format.style(new_style));
 }
 
@@ -969,8 +985,7 @@ void cell::comment(const std::string &text, const std::string &author)
 
 void cell::comment(const std::string &text, const class font &comment_font, const std::string &author)
 {
-    xlnt::rich_text rich_comment_text(text, comment_font);
-    comment(xlnt::comment(rich_comment_text, author));
+    comment(xlnt::comment(xlnt::rich_text(text, comment_font), author));
 }
 
 void cell::comment(const class comment &new_comment)
@@ -991,7 +1006,6 @@ void cell::comment(const class comment &new_comment)
     cell_position.second += 5;
 
     d_->comment_.get()->position(cell_position.first, cell_position.second);
-    d_->comment_.get()->size(200, 100);
 
     worksheet().register_comments_in_manifest();
 }

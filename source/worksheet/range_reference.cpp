@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -46,12 +46,6 @@ range_reference::range_reference(const char *range_string)
 {
 }
 
-range_reference::range_reference(const range_reference &ref)
-{
-    top_left_ = ref.top_left_;
-    bottom_right_ = ref.bottom_right_;
-}
-
 range_reference::range_reference(const std::string &range_string)
     : top_left_("A1"), bottom_right_("A1")
 {
@@ -91,7 +85,6 @@ range_reference range_reference::make_offset(int column_offset, int row_offset) 
     auto bottom_right = bottom_right_.make_offset(column_offset, row_offset);
 
     return top_left, bottom_right; // lol
-        
 }
 
 std::size_t range_reference::height() const
@@ -182,13 +175,6 @@ XLNT_API bool operator!=(const std::string &reference_string, const range_refere
 XLNT_API bool operator!=(const char *reference_string, const range_reference &ref)
 {
     return ref != reference_string;
-}
-
-range_reference &range_reference::operator=(const range_reference &ref)
-{
-    top_left_ = ref.top_left_;
-    bottom_right_ = ref.bottom_right_;
-    return *this;
 }
 
 } // namespace xlnt

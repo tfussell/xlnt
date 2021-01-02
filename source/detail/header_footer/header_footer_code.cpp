@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,12 +22,12 @@
 // @author: see AUTHORS file
 
 #include <detail/header_footer/header_footer_code.hpp>
-#include <xlnt/utils/serialisation_utils.hpp>
+//#include <detail/numeric_utils.hpp>
 
 namespace xlnt {
 namespace detail {
 
-std::array<xlnt::optional<xlnt::rich_text>, 3> decode_header_footer(const std::string &hf_string)
+std::array<xlnt::optional<xlnt::rich_text>, 3> decode_header_footer(const std::string &hf_string, const number_serialiser &serialiser)
 {
     std::array<xlnt::optional<xlnt::rich_text>, 3> result;
 
@@ -216,8 +216,7 @@ std::array<xlnt::optional<xlnt::rich_text>, 3> decode_header_footer(const std::s
         tokens.push_back(token);
     }
 
-    const auto parse_section = [&tokens, &result](hf_code code)
-    {
+    const auto parse_section = [&tokens, &result, &serialiser](hf_code code) {
         std::vector<hf_code> end_codes{hf_code::left_section, hf_code::center_section, hf_code::right_section};
         end_codes.erase(std::find(end_codes.begin(), end_codes.end(), code));
 
@@ -266,203 +265,177 @@ std::array<xlnt::optional<xlnt::rich_text>, 3> decode_header_footer(const std::s
 
             switch (current_token.code)
             {
-            case hf_code::text:
+            case hf_code::text: {
+                break; // already handled above
+            }
+
+            case hf_code::left_section: {
+                break; // used below
+            }
+
+            case hf_code::center_section: {
+                break; // used below
+            }
+
+            case hf_code::right_section: {
+                break; // used below
+            }
+
+            case hf_code::current_page_number: {
+                current_run.first = current_run.first + "&P";
+                break;
+            }
+
+            case hf_code::total_page_number: {
+                current_run.first = current_run.first + "&N";
+                break;
+            }
+
+            case hf_code::font_size: {
+                if (!current_run.second.is_set())
                 {
-                    break; // already handled above
+                    current_run.second = xlnt::font();
                 }
 
-            case hf_code::left_section:
-                {
-                    break; // used below
-                }
+                current_run.second.get().size(serialiser.deserialise(current_token.value));
 
-            case hf_code::center_section:
-                {
-                    break; // used below
-                }
+                break;
+            }
 
-            case hf_code::right_section:
-                {
-                    break; // used below
-                }
-
-            case hf_code::current_page_number:
-                {
-                    current_run.first = current_run.first + "&P";
-                    break;
-                }
-
-            case hf_code::total_page_number:
-                {
-                    current_run.first = current_run.first + "&N";
-                    break;
-                }
-
-            case hf_code::font_size:
-                {
-                    if (!current_run.second.is_set())
-                    {
-                        current_run.second = xlnt::font();
-                    }
-
-                    current_run.second.get().size(std::stod(current_token.value));
-
-                    break;
-                }
-
-            case hf_code::text_font_color:
-                {
-                    if (current_token.value.size() == 6)
-                    {
-                        if (!current_run.second.is_set())
-                        {
-                            current_run.second = xlnt::font();
-                        }
-
-                        current_run.second.get().color(xlnt::rgb_color(current_token.value));
-                    }
-
-                    break;
-                }
-
-            case hf_code::text_strikethrough:
-                {
-                    break;
-                }
-
-            case hf_code::text_superscript:
-                {
-                    break;
-                }
-
-            case hf_code::text_subscript:
-                {
-                    break;
-                }
-
-            case hf_code::date:
-                {
-                    current_run.first = current_run.first + "&D";
-                    break;
-                }
-
-            case hf_code::time:
-                {
-                    current_run.first = current_run.first + "&T";
-                    break;
-                }
-
-            case hf_code::picture_as_background:
-                {
-                    current_run.first = current_run.first + "&G";
-                    break;
-                }
-
-            case hf_code::text_single_underline:
-                {
-                    if (!current_run.second.is_set())
-                    {
-                        current_run.second = xlnt::font();
-                    }
-                    current_run.second.get().underline(font::underline_style::single);
-                    break;
-                }
-
-            case hf_code::text_double_underline:
-                {
-                    break;
-                }
-
-            case hf_code::workbook_file_path:
-                {
-                    current_run.first = current_run.first + "&Z";
-                    break;
-                }
-
-            case hf_code::workbook_file_name:
-                {
-                    current_run.first = current_run.first + "&F";
-                    break;
-                }
-
-            case hf_code::sheet_tab_name:
-                {
-                    current_run.first = current_run.first + "&A";
-                    break;
-                }
-
-            case hf_code::add_to_page_number:
-                {
-                    break;
-                }
-
-            case hf_code::subtract_from_page_number:
-                {
-                    break;
-                }
-
-            case hf_code::text_font_name:
-                {
-                    auto comma_index = current_token.value.find(',');
-                    auto font_name = current_token.value.substr(0, comma_index);
-
-                    if (!current_run.second.is_set())
-                    {
-                        current_run.second = xlnt::font();
-                    }
-
-                    if (font_name != "-")
-                    {
-                        current_run.second.get().name(font_name);
-                    }
-
-                    if (comma_index != std::string::npos)
-                    {
-                        auto font_type = current_token.value.substr(comma_index + 1);
-
-                        if (font_type == "Bold")
-                        {
-                            current_run.second.get().bold(true);
-                        }
-                        else if (font_type == "Italic")
-                        {
-                            // TODO
-                        }
-                        else if (font_type == "BoldItalic")
-                        {
-                            current_run.second.get().bold(true);
-                        }
-                    }
-
-                    break;
-                }
-
-            case hf_code::bold_font_style:
+            case hf_code::text_font_color: {
+                if (current_token.value.size() == 6)
                 {
                     if (!current_run.second.is_set())
                     {
                         current_run.second = xlnt::font();
                     }
 
-                    current_run.second.get().bold(true);
-
-                    break;
+                    current_run.second.get().color(xlnt::rgb_color(current_token.value));
                 }
 
-            case hf_code::italic_font_style:
+                break;
+            }
+
+            case hf_code::text_strikethrough: {
+                break;
+            }
+
+            case hf_code::text_superscript: {
+                break;
+            }
+
+            case hf_code::text_subscript: {
+                break;
+            }
+
+            case hf_code::date: {
+                current_run.first = current_run.first + "&D";
+                break;
+            }
+
+            case hf_code::time: {
+                current_run.first = current_run.first + "&T";
+                break;
+            }
+
+            case hf_code::picture_as_background: {
+                current_run.first = current_run.first + "&G";
+                break;
+            }
+
+            case hf_code::text_single_underline: {
+                if (!current_run.second.is_set())
                 {
-                    break;
+                    current_run.second = xlnt::font();
+                }
+                current_run.second.get().underline(font::underline_style::single);
+                break;
+            }
+
+            case hf_code::text_double_underline: {
+                break;
+            }
+
+            case hf_code::workbook_file_path: {
+                current_run.first = current_run.first + "&Z";
+                break;
+            }
+
+            case hf_code::workbook_file_name: {
+                current_run.first = current_run.first + "&F";
+                break;
+            }
+
+            case hf_code::sheet_tab_name: {
+                current_run.first = current_run.first + "&A";
+                break;
+            }
+
+            case hf_code::add_to_page_number: {
+                break;
+            }
+
+            case hf_code::subtract_from_page_number: {
+                break;
+            }
+
+            case hf_code::text_font_name: {
+                auto comma_index = current_token.value.find(',');
+                auto font_name = current_token.value.substr(0, comma_index);
+
+                if (!current_run.second.is_set())
+                {
+                    current_run.second = xlnt::font();
                 }
 
-            case hf_code::outline_style:
+                if (font_name != "-")
                 {
-                    break;
+                    current_run.second.get().name(font_name);
                 }
 
-            case hf_code::shadow_style:
+                if (comma_index != std::string::npos)
                 {
-                    break;
+                    auto font_type = current_token.value.substr(comma_index + 1);
+
+                    if (font_type == "Bold")
+                    {
+                        current_run.second.get().bold(true);
+                    }
+                    else if (font_type == "Italic")
+                    {
+                        // TODO
+                    }
+                    else if (font_type == "BoldItalic")
+                    {
+                        current_run.second.get().bold(true);
+                    }
                 }
+
+                break;
+            }
+
+            case hf_code::bold_font_style: {
+                if (!current_run.second.is_set())
+                {
+                    current_run.second = xlnt::font();
+                }
+
+                current_run.second.get().bold(true);
+
+                break;
+            }
+
+            case hf_code::italic_font_style: {
+                break;
+            }
+
+            case hf_code::outline_style: {
+                break;
+            }
+
+            case hf_code::shadow_style: {
+                break;
+            }
             }
         }
 
@@ -487,15 +460,14 @@ std::array<xlnt::optional<xlnt::rich_text>, 3> decode_header_footer(const std::s
     return result;
 }
 
-std::string encode_header_footer(const rich_text &t, header_footer::location where)
+std::string encode_header_footer(const rich_text &t, header_footer::location where, const number_serialiser &serialiser)
 {
     const auto location_code_map =
-        std::unordered_map<header_footer::location, 
-            std::string, scoped_enum_hash<header_footer::location>>
-        {
-                { header_footer::location::left, "&L" },
-                { header_footer::location::center, "&C" },
-                { header_footer::location::right, "&R" },
+        std::unordered_map<header_footer::location,
+            std::string, scoped_enum_hash<header_footer::location>>{
+            {header_footer::location::left, "&L"},
+            {header_footer::location::center, "&C"},
+            {header_footer::location::right, "&R"},
         };
 
     auto encoded = location_code_map.at(where);
@@ -533,11 +505,11 @@ std::string encode_header_footer(const rich_text &t, header_footer::location whe
             if (run.second.get().has_size())
             {
                 encoded.push_back('&');
-                encoded.append(serialize_number_to_string(run.second.get().size()));
+                encoded.append(serialiser.serialise(run.second.get().size()));
             }
             if (run.second.get().underlined())
             {
-                switch (run.second.get().underline()) 
+                switch (run.second.get().underline())
                 {
                 case font::underline_style::single:
                 case font::underline_style::single_accounting:

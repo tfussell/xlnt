@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,12 +30,12 @@ namespace xlnt {
 
 cell_iterator::cell_iterator(worksheet ws, const cell_reference &cursor,
     const range_reference &bounds, major_order order, bool skip_null, bool wrap)
-    : ws_(ws),
-      cursor_(cursor),
-      bounds_(bounds),
+    : skip_null_(skip_null),
+      wrap_(wrap),
       order_(order),
-      skip_null_(skip_null),
-      wrap_(wrap)
+      ws_(ws),
+      cursor_(cursor),
+      bounds_(bounds)
 {
     if (skip_null && !ws.has_cell(cursor_))
     {
@@ -45,12 +45,12 @@ cell_iterator::cell_iterator(worksheet ws, const cell_reference &cursor,
 
 const_cell_iterator::const_cell_iterator(worksheet ws, const cell_reference &cursor,
     const range_reference &bounds, major_order order, bool skip_null, bool wrap)
-    : ws_(ws),
-      cursor_(cursor),
-      bounds_(bounds),
+    : skip_null_(skip_null),
+      wrap_(wrap),
       order_(order),
-      skip_null_(skip_null),
-      wrap_(wrap)
+      ws_(ws),
+      cursor_(cursor),
+      bounds_(bounds)
 {
     if (skip_null && !ws.has_cell(cursor_))
     {
@@ -123,7 +123,6 @@ cell_iterator &cell_iterator::operator--()
 
     return *this;
 }
-
 
 const_cell_iterator &const_cell_iterator::operator--()
 {
@@ -245,7 +244,7 @@ const_cell_iterator &const_cell_iterator::operator++()
             }
         }
     }
-    
+
     return *this;
 }
 

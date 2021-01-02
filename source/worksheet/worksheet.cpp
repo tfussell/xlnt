@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,19 +33,24 @@
 #include <xlnt/utils/date.hpp>
 #include <xlnt/utils/datetime.hpp>
 #include <xlnt/utils/exceptions.hpp>
+#include <xlnt/utils/numeric.hpp>
 #include <xlnt/workbook/named_range.hpp>
 #include <xlnt/workbook/workbook.hpp>
 #include <xlnt/workbook/worksheet_iterator.hpp>
 #include <xlnt/worksheet/cell_iterator.hpp>
+#include <xlnt/worksheet/column_properties.hpp>
 #include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/range_iterator.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
+#include <xlnt/worksheet/row_properties.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 #include <detail/constants.hpp>
+#include <detail/default_case.hpp>
 #include <detail/implementations/cell_impl.hpp>
 #include <detail/implementations/workbook_impl.hpp>
 #include <detail/implementations/worksheet_impl.hpp>
+#include <detail/unicode.hpp>
 
 namespace {
 
@@ -77,7 +82,7 @@ bool worksheet::has_frozen_panes() const
 {
     return !d_->views_.empty() && d_->views_.front().has_pane()
         && (d_->views_.front().pane().state == pane_state::frozen
-               || d_->views_.front().pane().state == pane_state::frozen_split);
+            || d_->views_.front().pane().state == pane_state::frozen_split);
 }
 
 void worksheet::create_named_range(const std::string &name, const std::string &reference_string)
@@ -98,7 +103,7 @@ void worksheet::create_named_range(const std::string &name, const range_referenc
             throw invalid_parameter(); //("named range name must be outside the range A1-XFD1048576");
         }
     }
-    catch (xlnt::invalid_cell_reference&)
+    catch (xlnt::invalid_cell_reference &)
     {
         // name is not a valid reference, that's good
     }
@@ -196,32 +201,18 @@ const workbook &worksheet::workbook() const
 
 void worksheet::garbage_collect()
 {
-    auto cell_map_iter = d_->cell_map_.begin();
+    auto cell_iter = d_->cell_map_.begin();
 
-    while (cell_map_iter != d_->cell_map_.end())
+    while (cell_iter != d_->cell_map_.end())
     {
-        auto cell_iter = cell_map_iter->second.begin();
-
-        while (cell_iter != cell_map_iter->second.end())
+        if (xlnt::cell(&cell_iter->second).garbage_collectible())
         {
-            class cell current_cell(&cell_iter->second);
-
-            if (current_cell.garbage_collectible())
-            {
-                cell_iter = cell_map_iter->second.erase(cell_iter);
-                continue;
-            }
-
-            cell_iter++;
+            cell_iter = d_->cell_map_.erase(cell_iter);
         }
-
-        if (cell_map_iter->second.empty())
+        else
         {
-            cell_map_iter = d_->cell_map_.erase(cell_map_iter);
-            continue;
+            ++cell_iter;
         }
-
-        cell_map_iter++;
     }
 }
 
@@ -248,7 +239,7 @@ void worksheet::title(const std::string &title)
         return;
     }
     // excel limits worksheet titles to 31 characters
-    if (title.empty() || title.length() > 31)
+    if (title.empty() || detail::string_length(title) > 31)
     {
         throw invalid_sheet_title(title);
     }
@@ -391,25 +382,22 @@ cell_reference worksheet::active_cell() const
 
 cell worksheet::cell(const cell_reference &reference)
 {
-    auto &row = d_->cell_map_[reference.row()];
-    auto match = row.find(reference.column_index());
-
-    if (match == row.end())
+    auto match = d_->cell_map_.find(reference);
+    if (match == d_->cell_map_.end())
     {
-        match = row.emplace(reference.column_index(), detail::cell_impl()).first;
-        auto &impl = match->second;
-
+        auto impl = detail::cell_impl();
         impl.parent_ = d_;
         impl.column_ = reference.column_index();
         impl.row_ = reference.row();
-    }
 
+        match = d_->cell_map_.emplace(reference, impl).first;
+    }
     return xlnt::cell(&match->second);
 }
 
 const cell worksheet::cell(const cell_reference &reference) const
 {
-    return xlnt::cell(&d_->cell_map_.at(reference.row()).at(reference.column_index()));
+    return xlnt::cell(&d_->cell_map_.at(reference));
 }
 
 cell worksheet::cell(xlnt::column_t column, row_t row)
@@ -424,13 +412,8 @@ const cell worksheet::cell(xlnt::column_t column, row_t row) const
 
 bool worksheet::has_cell(const cell_reference &reference) const
 {
-    const auto row = d_->cell_map_.find(reference.row());
-    if (row == d_->cell_map_.cend()) return false;
-
-    const auto col = row->second.find(reference.column_index());
-    if (col == row->second.cend()) return false;
-
-    return true;
+    const auto cell = d_->cell_map_.find(reference);
+    return cell != d_->cell_map_.cend();
 }
 
 bool worksheet::has_row_properties(row_t row) const
@@ -477,12 +460,9 @@ column_t worksheet::lowest_column() const
 
     auto lowest = constants::max_column();
 
-    for (auto &row : d_->cell_map_)
+    for (auto &cell : d_->cell_map_)
     {
-        for (auto &c : row.second)
-        {
-            lowest = std::min(lowest, c.first);
-        }
+        lowest = std::min(lowest, cell.first.column());
     }
 
     return lowest;
@@ -514,9 +494,9 @@ row_t worksheet::lowest_row() const
 
     auto lowest = constants::max_row();
 
-    for (auto &row : d_->cell_map_)
+    for (auto &cell : d_->cell_map_)
     {
-        lowest = std::min(lowest, row.first);
+        lowest = std::min(lowest, cell.first.row());
     }
 
     return lowest;
@@ -543,9 +523,9 @@ row_t worksheet::highest_row() const
 {
     auto highest = constants::min_row();
 
-    for (auto &row : d_->cell_map_)
+    for (auto &cell : d_->cell_map_)
     {
-        highest = std::max(highest, row.first);
+        highest = std::max(highest, cell.first.row());
     }
 
     return highest;
@@ -572,12 +552,9 @@ column_t worksheet::highest_column() const
 {
     auto highest = constants::min_column();
 
-    for (auto &row : d_->cell_map_)
+    for (auto &cell : d_->cell_map_)
     {
-        for (auto &c : row.second)
-        {
-            highest = std::max(highest, c.first);
-        }
+        highest = std::max(highest, cell.first.column());
     }
 
     return highest;
@@ -602,8 +579,40 @@ column_t worksheet::highest_column_or_props() const
 
 range_reference worksheet::calculate_dimension() const
 {
-    return range_reference(lowest_column(), lowest_row(),
-        highest_column(), highest_row_or_props());
+    // partially optimised version of:
+    // return range_reference(lowest_column(), lowest_row_or_props(),
+    //                        highest_column(), highest_row_or_props());
+    //
+    if (d_->cell_map_.empty() && d_->row_properties_.empty())
+    {
+        return range_reference(constants::min_column(), constants::min_row(),
+            constants::min_column(), constants::min_row());
+    }
+    row_t min_row_prop = constants::max_row();
+    row_t max_row_prop = constants::min_row();
+    for (const auto &row_prop : d_->row_properties_)
+    {
+        min_row_prop = std::min(min_row_prop, row_prop.first);
+        max_row_prop = std::max(max_row_prop, row_prop.first);
+    }
+    if (d_->cell_map_.empty())
+    {
+        return range_reference(constants::min_column(), min_row_prop,
+            constants::min_column(), max_row_prop);
+    }
+    // find min and max row/column in cell map
+    column_t min_col = constants::max_column();
+    column_t max_col = constants::min_column();
+    row_t min_row = min_row_prop;
+    row_t max_row = max_row_prop;
+    for (auto &c : d_->cell_map_)
+    {
+        min_col = std::min(min_col, c.second.column_);
+        max_col = std::max(max_col, c.second.column_);
+        min_row = std::min(min_row, c.second.row_);
+        max_row = std::max(max_row, c.second.row_);
+    }
+    return range_reference(min_col, min_row, max_col, max_row);
 }
 
 range worksheet::range(const std::string &reference_string)
@@ -744,15 +753,197 @@ const cell_vector worksheet::cells(bool skip_null) const
 
 void worksheet::clear_cell(const cell_reference &ref)
 {
-    d_->cell_map_.at(ref.row()).erase(ref.column());
+    d_->cell_map_.erase(ref);
     // TODO: garbage collect newly unreferenced resources such as styles?
 }
 
 void worksheet::clear_row(row_t row)
 {
-    d_->cell_map_.erase(row);
+    for (auto it = d_->cell_map_.begin(); it != d_->cell_map_.end();)
+    {
+        if (it->first.row() == row)
+        {
+            it = d_->cell_map_.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
     d_->row_properties_.erase(row);
     // TODO: garbage collect newly unreferenced resources such as styles?
+}
+
+void worksheet::insert_rows(row_t row, std::uint32_t amount)
+{
+    move_cells(row, amount, row_or_col_t::row);
+}
+
+void worksheet::insert_columns(column_t column, std::uint32_t amount)
+{
+    move_cells(column.index, amount, row_or_col_t::column);
+}
+
+void worksheet::delete_rows(row_t row, std::uint32_t amount)
+{
+    move_cells(row + amount, amount, row_or_col_t::row, true);
+}
+
+void worksheet::delete_columns(column_t column, std::uint32_t amount)
+{
+    move_cells(column.index + amount, amount, row_or_col_t::column, true);
+}
+
+void worksheet::move_cells(std::uint32_t min_index, std::uint32_t amount, row_or_col_t row_or_col, bool reverse)
+{
+    if (reverse && amount > min_index)
+    {
+        throw xlnt::invalid_parameter();
+    }
+
+    if ((!reverse && row_or_col == row_or_col_t::row && min_index > constants::max_row() - amount) || (!reverse && row_or_col == row_or_col_t::column && min_index > constants::max_column() - amount))
+    {
+        throw xlnt::exception("Cannot move cells as they would be outside the maximum bounds of the spreadsheet");
+    }
+
+    std::vector<detail::cell_impl> cells_to_move;
+
+    auto cell_iter = d_->cell_map_.cbegin();
+    while (cell_iter != d_->cell_map_.cend())
+    {
+        std::uint32_t current_index;
+        switch (row_or_col)
+        {
+        case row_or_col_t::row:
+            current_index = cell_iter->first.row();
+            break;
+        case row_or_col_t::column:
+            current_index = cell_iter->first.column().index;
+            break;
+        default:
+            throw xlnt::unhandled_switch_case();
+        }
+
+        if (current_index >= min_index) // extract cells to be moved
+        {
+            auto cell = cell_iter->second;
+            if (row_or_col == row_or_col_t::row)
+            {
+                cell.row_ = reverse ? cell.row_ - amount : cell.row_ + amount;
+            }
+            else if (row_or_col == row_or_col_t::column)
+            {
+                cell.column_ = reverse ? cell.column_.index - amount : cell.column_.index + amount;
+            }
+
+            cells_to_move.push_back(cell);
+            cell_iter = d_->cell_map_.erase(cell_iter);
+        }
+        else if (reverse && current_index >= min_index - amount) // delete destination cells
+        {
+            cell_iter = d_->cell_map_.erase(cell_iter);
+        }
+        else // skip other cells
+        {
+            ++cell_iter;
+        }
+    }
+
+    for (auto &cell : cells_to_move)
+    {
+        d_->cell_map_[cell_reference(cell.column_, cell.row_)] = cell;
+    }
+
+    if (row_or_col == row_or_col_t::row)
+    {
+        std::vector<std::pair<row_t, xlnt::row_properties>> properties_to_move;
+
+        auto row_prop_iter = d_->row_properties_.cbegin();
+        while (row_prop_iter != d_->row_properties_.cend())
+        {
+            auto current_row = row_prop_iter->first;
+            if (current_row >= min_index) // extract properties that need to be moved
+            {
+                auto tmp_row = reverse ? current_row - amount : current_row + amount;
+                properties_to_move.push_back({tmp_row, row_prop_iter->second});
+                row_prop_iter = d_->row_properties_.erase(row_prop_iter);
+            }
+            else if (reverse && current_row >= min_index - amount) // clear properties of destination when in reverse
+            {
+                row_prop_iter = d_->row_properties_.erase(row_prop_iter);
+            }
+            else // skip the rest
+            {
+                ++row_prop_iter;
+            }
+        }
+
+        for (const auto &prop : properties_to_move)
+        {
+            add_row_properties(prop.first, prop.second);
+        }
+    }
+    else if (row_or_col == row_or_col_t::column)
+    {
+        std::vector<std::pair<column_t, xlnt::column_properties>> properties_to_move;
+
+        auto col_prop_iter = d_->column_properties_.cbegin();
+        while (col_prop_iter != d_->column_properties_.cend())
+        {
+            auto current_col = col_prop_iter->first.index;
+            if (current_col >= min_index) // extract properties that need to be moved
+            {
+                auto tmp_column = column_t(reverse ? current_col - amount : current_col + amount);
+                properties_to_move.push_back({tmp_column, col_prop_iter->second});
+                col_prop_iter = d_->column_properties_.erase(col_prop_iter);
+            }
+            else if (reverse && current_col >= min_index - amount) // clear properties of destination when in reverse
+            {
+                col_prop_iter = d_->column_properties_.erase(col_prop_iter);
+            }
+            else // skip the rest
+            {
+                ++col_prop_iter;
+            }
+        }
+
+        for (auto &prop : properties_to_move)
+        {
+            add_column_properties(prop.first, prop.second);
+        }
+    }
+
+    // adjust merged cells
+    auto shift_reference = [min_index, amount, row_or_col, reverse](cell_reference &ref) {
+        auto index = row_or_col == row_or_col_t::row ? ref.row() : ref.column_index();
+        if (index >= min_index)
+        {
+            auto new_index = reverse ? index - amount : index + amount;
+            if (row_or_col == row_or_col_t::row)
+            {
+                ref.row(new_index);
+            }
+            else if (row_or_col == row_or_col_t::column)
+            {
+                ref.column_index(new_index);
+            }
+        }
+    };
+
+    for (auto merged_cell = d_->merged_cells_.begin(); merged_cell != d_->merged_cells_.end(); ++merged_cell)
+    {
+        cell_reference new_top_left = merged_cell->top_left();
+        shift_reference(new_top_left);
+
+        cell_reference new_bottom_right = merged_cell->bottom_right();
+        shift_reference(new_bottom_right);
+
+        range_reference new_range{new_top_left, new_bottom_right};
+        if (*merged_cell != new_range)
+        {
+            *merged_cell = new_range;
+        }
+    }
 }
 
 bool worksheet::operator==(const worksheet &other) const
@@ -769,33 +960,25 @@ bool worksheet::compare(const worksheet &other, bool reference) const
 
     if (d_->parent_ != other.d_->parent_) return false;
 
-    for (auto &row : d_->cell_map_)
+    for (auto &cell : d_->cell_map_)
     {
-        if (other.d_->cell_map_.find(row.first) == other.d_->cell_map_.end())
+        if (other.d_->cell_map_.find(cell.first) == other.d_->cell_map_.end())
         {
             return false;
         }
 
-        for (auto &cell : row.second)
+        xlnt::cell this_cell(&cell.second);
+        xlnt::cell other_cell(&other.d_->cell_map_[cell.first]);
+
+        if (this_cell.data_type() != other_cell.data_type())
         {
-            if (other.d_->cell_map_[row.first].find(cell.first) == other.d_->cell_map_[row.first].end())
-            {
-                return false;
-            }
+            return false;
+        }
 
-            xlnt::cell this_cell(&cell.second);
-            xlnt::cell other_cell(&other.d_->cell_map_[row.first][cell.first]);
-
-            if (this_cell.data_type() != other_cell.data_type())
-            {
-                return false;
-            }
-
-            if (this_cell.data_type() == xlnt::cell::type::number
-                && std::fabs(this_cell.value<double>() - other_cell.value<double>()) > 0.0)
-            {
-                return false;
-            }
+        if (this_cell.data_type() == xlnt::cell::type::number
+            && !detail::float_equals(this_cell.value<double>(), other_cell.value<double>()))
+        {
+            return false;
         }
     }
 
@@ -1032,12 +1215,12 @@ bool worksheet::has_phonetic_properties() const
     return d_->phonetic_properties_.is_set();
 }
 
-const phonetic_pr& worksheet::phonetic_properties() const
+const phonetic_pr &worksheet::phonetic_properties() const
 {
     return d_->phonetic_properties_.get();
 }
 
-void worksheet::phonetic_properties(const phonetic_pr& phonetic_props)
+void worksheet::phonetic_properties(const phonetic_pr &phonetic_props)
 {
     d_->phonetic_properties_.set(phonetic_props);
 }
@@ -1145,6 +1328,11 @@ sheet_format_properties worksheet::format_properties() const
 void worksheet::format_properties(const sheet_format_properties &properties)
 {
     d_->format_properties_ = properties;
+}
+
+bool worksheet::has_drawing() const
+{
+    return d_->drawing_.is_set();
 }
 
 } // namespace xlnt

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -115,7 +115,7 @@ public:
     /// <summary>
     /// Returns a string of the form rId# that identifies the relationship.
     /// </summary>
-    const std::string& id() const;
+    const std::string &id() const;
 
     /// <summary>
     /// Returns the type of this relationship.

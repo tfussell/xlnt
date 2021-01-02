@@ -24,6 +24,7 @@
 #pragma once
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/utils/numeric.hpp>
 #include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
@@ -40,9 +41,9 @@ public:
     optional<double> base_col_width;
 
     /// <summary>
-    /// The default row height
+    /// The default row height is required
     /// </summary>
-    optional<double> default_row_height;
+    double default_row_height = 15.0;
 
     /// <summary>
     /// The default column width
@@ -59,7 +60,7 @@ inline bool operator==(const sheet_format_properties &lhs, const sheet_format_pr
 {
     return lhs.base_col_width == rhs.base_col_width
         && lhs.default_column_width == rhs.default_column_width
-        && lhs.default_row_height == rhs.default_row_height
+        && detail::float_equals(lhs.default_row_height, rhs.default_row_height)
         && lhs.dy_descent == rhs.dy_descent;
 }
 

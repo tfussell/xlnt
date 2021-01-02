@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@
 #include <utf8.h>
 #pragma clang diagnostic pop
 
+#include <xlnt/utils/exceptions.hpp>
 #include <detail/unicode.hpp>
 
 namespace xlnt {
@@ -67,6 +68,17 @@ std::string latin1_to_utf8(const std::string &latin1)
     }
 
     return utf8;
+}
+
+size_t string_length(const std::string &utf8_string)
+{
+    auto end_it = utf8::find_invalid(utf8_string.begin(), utf8_string.end());
+    if (end_it != utf8_string.end())
+    {
+        throw xlnt::exception("Invalid UTF-8 encoding detected");
+    }
+
+    return static_cast<std::size_t>(utf8::distance(utf8_string.begin(), end_it));
 }
 
 } // namespace detail

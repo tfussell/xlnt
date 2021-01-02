@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -107,7 +107,7 @@ public:
     /// Create a string representing this path separated by the provided
     /// separator or the system-default separator if not provided.
     /// </summary>
-    const std::string& string() const;
+    const std::string &string() const;
 
 #ifdef _MSC_VER
     /// <summary>

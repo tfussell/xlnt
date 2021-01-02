@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -50,7 +50,6 @@ class cell;
 class cell_style;
 class color;
 class const_worksheet_iterator;
-class drawing;
 class fill;
 class font;
 class format;
@@ -140,17 +139,17 @@ public:
     /// <summary>
     /// load the encrpyted xlsx file at path
     /// </summary>
-    workbook(const xlnt::path &file, const std::string& password);
+    workbook(const xlnt::path &file, const std::string &password);
 
     /// <summary>
     /// construct the workbook from any data stream where the data is the binary form of a workbook
     /// </summary>
-    workbook(std::istream & data);
+    workbook(std::istream &data);
 
     /// <summary>
     /// construct the workbook from any data stream where the data is the binary form of an encrypted workbook
     /// </summary>
-    workbook(std::istream &data, const std::string& password);
+    workbook(std::istream &data, const std::string &password);
 
     /// <summary>
     /// Move constructor. Constructs a workbook from existing workbook, other.

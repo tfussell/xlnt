@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -123,7 +123,7 @@ public:
     /// Returns the path of this URI.
     /// E.g. the path of http://example.com/document is "/document"
     /// </summary>
-    const class path& path() const;
+    const class path &path() const;
 
     /// <summary>
     /// Returns true if this URI has a non-null query string section.

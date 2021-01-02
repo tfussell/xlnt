@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@ namespace detail {
 std::u16string utf8_to_utf16(const std::string &utf8_string);
 std::string utf16_to_utf8(const std::u16string &utf16_string);
 std::string latin1_to_utf8(const std::string &latin1);
+size_t string_length(const std::string &utf8_string);
 
 } // namespace detail
 } // namespace xlnt

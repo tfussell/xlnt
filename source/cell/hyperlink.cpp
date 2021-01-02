@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,13 +22,14 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
-#include <detail/implementations/hyperlink_impl.hpp>
 #include <xlnt/cell/hyperlink.hpp>
 #include <xlnt/utils/exceptions.hpp>
+#include <detail/implementations/hyperlink_impl.hpp>
 
 namespace xlnt {
 
-hyperlink::hyperlink(detail::hyperlink_impl *d) : d_(d)
+hyperlink::hyperlink(detail::hyperlink_impl *d)
+    : d_(d)
 {
 }
 
@@ -77,7 +78,7 @@ void hyperlink::display(const std::string &value)
     d_->display.set(value);
 }
 
-const std::string& hyperlink::display() const
+const std::string &hyperlink::display() const
 {
     return d_->display.get();
 }
@@ -92,7 +93,7 @@ void hyperlink::tooltip(const std::string &value)
     d_->tooltip.set(value);
 }
 
-const std::string& hyperlink::tooltip() const
+const std::string &hyperlink::tooltip() const
 {
     return d_->tooltip.get();
 }
@@ -113,4 +114,3 @@ const std::string &hyperlink::location() const
 }
 
 } // namespace xlnt
-

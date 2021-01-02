@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -89,7 +89,7 @@ public:
 
     /// <summary>
     /// Sets the indent size in number of spaces from the side of the cell. This will only
-	/// take effect when left or right horizontal alignment has also been set.
+    /// take effect when left or right horizontal alignment has also been set.
     /// </summary>
     alignment &indent(int indent_size);
 
@@ -134,34 +134,34 @@ public:
     bool operator!=(const alignment &other) const;
 
 private:
-	/// <summary>
-	/// Whether or not to shrink font size until it fits on one line
-	/// </summary>
-	bool shrink_to_fit_ = false;
+    /// <summary>
+    /// Whether or not to shrink font size until it fits on one line
+    /// </summary>
+    bool shrink_to_fit_ = false;
 
-	/// <summary>
-	/// Whether or not to wrap text to the next line
-	/// </summary>
-	bool wrap_text_ = false;
+    /// <summary>
+    /// Whether or not to wrap text to the next line
+    /// </summary>
+    bool wrap_text_ = false;
 
-	/// <summary>
-	/// The indent in number of spaces from the side
-	/// </summary>
-	optional<int> indent_;
+    /// <summary>
+    /// The indent in number of spaces from the side
+    /// </summary>
+    optional<int> indent_;
 
-	/// <summary>
-	/// The text roation in degrees
-	/// </summary>
+    /// <summary>
+    /// The text roation in degrees
+    /// </summary>
     optional<int> text_rotation_;
 
-	/// <summary>
-	/// The horizontal alignment
-	/// </summary>
+    /// <summary>
+    /// The horizontal alignment
+    /// </summary>
     optional<horizontal_alignment> horizontal_;
 
-	/// <summary>
-	/// The vertical alignment
-	/// </summary>
+    /// <summary>
+    /// The vertical alignment
+    /// </summary>
     optional<vertical_alignment> vertical_;
 };
 

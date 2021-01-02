@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,9 @@
 
 #include <limits>
 
-#include <detail/constants.hpp>
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/utils/exceptions.hpp>
+#include <detail/constants.hpp>
 
 namespace xlnt {
 
@@ -152,8 +152,10 @@ const std::unordered_map<std::string, std::string> &constants::namespaces()
             {"xml", "http://www.w3.org/XML/1998/namespace"},
             {"xsi", "http://www.w3.org/2001/XMLSchema-instance"},
 
-            {"loext", "http://schemas.libreoffice.org/"}
-        };
+            {"a", "http://schemas.openxmlformats.org/drawingml/2006/main"},
+            {"xdr", "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"},
+
+            {"loext", "http://schemas.libreoffice.org/"}};
 
     return *namespaces;
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@
 #include <xlnt/utils/optional.hpp>
 #include <detail/implementations/format_impl.hpp>
 #include <detail/implementations/hyperlink_impl.hpp>
+//#include "../numeric_utils.hpp"
 
 namespace xlnt {
 namespace detail {
@@ -46,7 +47,7 @@ struct cell_impl
     cell_impl(cell_impl &&other) = default;
     cell_impl &operator=(const cell_impl &other) = default;
     cell_impl &operator=(cell_impl &&other) = default;
-    
+
     cell_type type_;
 
     worksheet_impl *parent_;
@@ -55,6 +56,7 @@ struct cell_impl
     row_t row_;
 
     bool is_merged_;
+    bool phonetics_visible_;
 
     rich_text value_text_;
     double value_numeric_;
@@ -63,6 +65,11 @@ struct cell_impl
     optional<hyperlink_impl> hyperlink_;
     optional<format_impl *> format_;
     optional<comment *> comment_;
+
+    bool is_garbage_collectible() const
+    {
+        return !(type_ != cell_type::empty || is_merged_ || phonetics_visible_ || formula_.is_set() || format_.is_set() || hyperlink_.is_set());
+    }
 };
 
 inline bool operator==(const cell_impl &lhs, const cell_impl &rhs)
@@ -72,8 +79,9 @@ inline bool operator==(const cell_impl &lhs, const cell_impl &rhs)
         && lhs.column_ == rhs.column_
         && lhs.row_ == rhs.row_
         && lhs.is_merged_ == rhs.is_merged_
+        && lhs.phonetics_visible_ == rhs.phonetics_visible_
         && lhs.value_text_ == rhs.value_text_
-        && lhs.value_numeric_ == rhs.value_numeric_
+        && float_equals(lhs.value_numeric_, rhs.value_numeric_)
         && lhs.formula_ == rhs.formula_
         && lhs.hyperlink_ == rhs.hyperlink_
         && (lhs.format_.is_set() == rhs.format_.is_set() && (!lhs.format_.is_set() || *lhs.format_.get() == *rhs.format_.get()))

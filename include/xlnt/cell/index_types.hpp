@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -93,24 +93,9 @@ public:
     column_t(const char *column_string);
 
     /// <summary>
-    /// Copy constructor. Constructs a column by copying it from other.
-    /// </summary>
-    column_t(const column_t &other);
-
-    /// <summary>
-    /// Move constructor. Constructs a column by moving it from other.
-    /// </summary>
-    column_t(column_t &&other);
-
-    /// <summary>
     /// Returns a string representation of this column index.
     /// </summary>
     std::string column_string() const;
-
-    /// <summary>
-    /// Sets this column to be the same as rhs's and return reference to self.
-    /// </summary>
-    column_t &operator=(column_t rhs);
 
     /// <summary>
     /// Sets this column to be equal to rhs and return reference to self.
@@ -281,6 +266,12 @@ public:
     /// Internal numeric value of this column index.
     /// </summary>
     index_t index;
+};
+
+enum class row_or_col_t : int
+{
+    row,
+    column
 };
 
 /// <summary>

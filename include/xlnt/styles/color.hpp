@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Thomas Fussell
+// Copyright (c) 2014-2020 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,6 +28,7 @@
 #include <string>
 
 #include <xlnt/xlnt_config.hpp>
+#include <xlnt/utils/optional.hpp>
 
 namespace xlnt {
 
@@ -252,7 +253,7 @@ public:
     /// Returns the internal indexed color representing this color. If this is not an RGB color,
     /// an invalid_attribute exception will be thrown.
     /// </summary>
-    const rgb_color& rgb() const;
+    const rgb_color &rgb() const;
 
     /// <summary>
     /// Returns the internal indexed color representing this color. If this is not an RGB color,
@@ -264,7 +265,7 @@ public:
     /// Returns the internal indexed color representing this color. If this is not an indexed color,
     /// an invalid_attribute exception will be thrown.
     /// </summary>
-    const indexed_color& indexed() const;
+    const indexed_color &indexed() const;
 
     /// <summary>
     /// Returns the internal indexed color representing this color. If this is not an indexed color,
@@ -276,13 +277,18 @@ public:
     /// Returns the internal indexed color representing this color. If this is not a theme color,
     /// an invalid_attribute exception will be thrown.
     /// </summary>
-    const theme_color& theme() const;
+    const theme_color &theme() const;
 
     /// <summary>
     /// Returns the internal indexed color representing this color. If this is not a theme color,
     /// an invalid_attribute exception will be thrown.
     /// </summary>
-    theme_color& theme();
+    theme_color &theme();
+
+    /// <summary>
+    /// Returns true if tint is set
+    /// </summary>
+    bool has_tint() const;
 
     /// <summary>
     /// Returns the tint of this color.
@@ -294,10 +300,10 @@ public:
     /// </summary>
     void tint(double tint);
 
-	/// <summary>
-	/// Returns true if this color is equivalent to other
-	/// </summary>
-	bool operator==(const color &other) const;
+    /// <summary>
+    /// Returns true if this color is equivalent to other
+    /// </summary>
+    bool operator==(const color &other) const;
 
     /// <summary>
     /// Returns true if this color is not equivalent to other
@@ -333,12 +339,12 @@ private:
     /// <summary>
     /// The tint of this color
     /// </summary>
-    double tint_ = 0.0;
+    optional<double> tint_;
 
     /// <summary>
     /// Whether or not this is an auto color
     /// </summary>
-    bool auto__ = false;
+    bool auto_color = false;
 };
 
 } // namespace xlnt
