@@ -1,0 +1,78 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: lycantropos/cmake:3.9.5
+    parameters:
+      benchmarks:
+        default: "OFF"
+        type: string
+      build-type:
+        default: Release
+        type: string
+      coverage:
+        default: "OFF"
+        type: string
+      cxx-ver:
+        default: "11"
+        type: string
+      samples:
+        default: "OFF"
+        type: string
+      static:
+        default: "ON"
+        type: string
+    steps:
+      - checkout
+      - run: cmake -D XLNT_CXX_LANG=<< parameters.cxx-ver >> -D STATIC=<< parameters.static >> -D BENCHMARKS=<< parameters.benchmarks >> -D SAMPLES=<< parameters.samples >> -D COVERAGE=<< parameters.coverage >> -D CMAKE_BUILD_TYPE=<< parameters.build-type >> .
+      - run: cmake --build . -- -j2
+      - run: ./tests/xlnt.test
+      - when:
+          condition:
+            equal: [ "ON", << parameters.samples >> ]
+          steps:
+            - run: ./samples/sample-decrypt
+            - run: ./samples/sample-img2xlsx ./samples/data/penguin.jpg img.xlsx
+            - run: ./samples/sample-documentation
+      - when:
+          condition:
+            equal: [ "ON", << parameters.benchmarks >> ]
+          steps:
+            - run: ./benchmarks/benchmark-styles
+            - run: ./benchmarks/benchmark-writer
+      - when:
+          condition:
+            equal: [ "ON", << parameters.coverage >> ]
+          steps:
+            - run: lcov --directory source/CMakeFiles/xlnt.dir --capture --output-file coverage.info --base-directory ../source --no-external --gcov-tool /usr/bin/gcov-6
+            - run: lcov --output-file coverage.info --remove coverage.info source/detail/serialization/miniz.cpp
+            - run: i=$(dirname $(pwd))
+            - run: sed -i "s|$i/||" coverage.info
+            - run: cd ..
+            - run: coveralls-lcov build/coverage.info
+
+workflows:
+  build:
+    jobs:
+      - build:
+          name: tests
+          matrix:
+            parameters:
+              cxx-ver:
+                - "11"
+                - "17"
+              build-type:
+                - Release
+                - Debug
+              static:
+                - "ON"
+                - "OFF"
+      - build:
+          name: samples-benchmarks-coverage
+          cxx-ver: "11"
+          build-type: Debug
+          static: "ON"
+          samples: "ON"
+          benchmarks: "ON"
+          coverage: "OFF"
