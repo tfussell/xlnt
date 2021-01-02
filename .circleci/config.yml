@@ -33,7 +33,7 @@ jobs:
             equal: [ "ON", << parameters.samples >> ]
           steps:
             - run: ./samples/sample-decrypt
-            - run: ./samples/sample-img2xlsx ./samples/data/cafe.jpg img.xlsx
+            - run: ./samples/sample-img2xlsx ./samples/data/penguin.jpg img.xlsx
             - run: ./samples/sample-documentation
       - when:
           condition:
@@ -53,9 +53,10 @@ jobs:
             - run: coveralls-lcov build/coverage.info
 
 workflows:
-  test:
+  build:
     jobs:
       - build:
+          name: tests
           matrix:
             parameters:
               cxx-ver:
@@ -67,12 +68,13 @@ workflows:
               static:
                 - "ON"
                 - "OFF"
-  build:
-    jobs:
       - build:
+          name: samples-benchmarks-coverage
           cxx-ver: "11"
           build-type: Debug
           static: "ON"
           samples: "ON"
           benchmarks: "ON"
           coverage: "OFF"
+          requires:
+            - tests
