@@ -770,6 +770,12 @@ public:
     /// </summary>
     bool has_drawing() const;
 
+    /// <summary>
+    /// Returns true if this worksheet is empty.
+    /// A worksheet is considered empty if it doesn't have any cells.
+    /// </summary>
+    bool is_empty() const;
+
 private:
     friend class cell;
     friend class const_range_iterator;
