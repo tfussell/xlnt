@@ -2098,15 +2098,13 @@ void xlsx_consumer::read_shared_string_table()
     {
         expect_start_element(qn("spreadsheetml", "si"), xml::content::complex);
         auto rt = read_rich_text(qn("spreadsheetml", "si"));
-        // by reading in it can happen we have similar strings from modified excel worksheets
-        // so allow to add duplicates
-        target_.add_shared_string(rt, true);
+        target_.add_shared_string(rt);
         expect_end_element(qn("spreadsheetml", "si"));
     }
 
     expect_end_element(qn("spreadsheetml", "sst"));
 
-    if (has_unique_count && unique_count != target_.shared_strings_by_id().size())
+    if (has_unique_count && unique_count != target_.shared_strings().size())
     {
         throw invalid_file("sizes don't match");
     }
