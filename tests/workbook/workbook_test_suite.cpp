@@ -68,6 +68,7 @@ public:
         register_test(test_load_file);
         register_test(test_Issue279);
         register_test(test_Issue353);
+        register_test(test_Issue494);
     }
 
     void test_active_sheet()
@@ -508,6 +509,15 @@ public:
         auto ws = wb2.active_sheet();
         xlnt_assert_equals(ws.row_properties(1).spans.get(), "1:8");
         xlnt_assert_equals(ws.row_properties(17).spans.get(), "2:7");
+    }
+
+    void test_Issue494()
+    {
+        xlnt::workbook wb;
+        wb.load(path_helper::test_file("Issue494_shared_string.xlsx"));
+        auto ws = wb.active_sheet();
+        xlnt_assert_equals(ws.cell(2, 1).to_string(), "V1.00");
+        xlnt_assert_equals(ws.cell(2, 2).to_string(), "V1.00");
     }
 };
 static workbook_test_suite x;
