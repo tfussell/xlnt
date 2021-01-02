@@ -2289,7 +2289,7 @@ void xlsx_consumer::read_stylesheet()
         else if (current_style_element == qn("spreadsheetml", "fonts"))
         {
             auto &fonts = stylesheet.fonts;
-            auto count = parser().attribute<std::size_t>("count");
+            auto count = parser().attribute<std::size_t>("count", 0);
 
             if (parser().attribute_present(qn("x14ac", "knownFonts")))
             {
@@ -2426,7 +2426,7 @@ void xlsx_consumer::read_stylesheet()
 
             if (count != stylesheet.fonts.size())
             {
-                throw xlnt::exception("counts don't match");
+                // throw xlnt::exception("counts don't match");
             }
         }
         else if (current_style_element == qn("spreadsheetml", "numFmts"))
