@@ -242,6 +242,13 @@ public:
     const worksheet sheet_by_id(std::size_t id) const;
 
     /// <summary>
+    /// Returns the hidden identifier of the worksheet at the given index.
+    /// This will throw an exception if index is greater than or equal to the
+    /// number of sheets in this workbook.
+    /// </summary>
+    bool sheet_hidden_by_index(std::size_t index) const;
+
+    /// <summary>
     /// Returns true if this workbook contains a sheet with the given title.
     /// </summary>
     bool contains(const std::string &title) const;
@@ -761,11 +768,6 @@ public:
     std::size_t add_shared_string(const rich_text &shared, bool allow_duplicates = false);
 
     /// <summary>
-    /// Returns a reference to the shared string ordered by id
-    /// </summary>
-    const std::map<std::size_t, rich_text> &shared_strings_by_id() const;
-
-    /// <summary>
     /// Returns a reference to the shared string related to the specified index
     /// </summary>
     const rich_text &shared_strings(std::size_t index) const;
@@ -774,13 +776,13 @@ public:
     /// Returns a reference to the shared strings being used by cells
     /// in this workbook.
     /// </summary>
-    std::unordered_map<rich_text, std::size_t, rich_text_hash> &shared_strings();
+    std::vector<rich_text> &shared_strings();
 
     /// <summary>
     /// Returns a reference to the shared strings being used by cells
     /// in this workbook.
     /// </summary>
-    const std::unordered_map<rich_text, std::size_t, rich_text_hash> &shared_strings() const;
+    const std::vector<rich_text> &shared_strings() const;
 
     // Thumbnail
 
