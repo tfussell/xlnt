@@ -38,7 +38,8 @@ namespace xlnt {
 template <typename T>
 class optional
 {
-#if defined(_MSC_VER) && _MSC_VER <= 1900 // v14, visual studio 2015
+#if ((defined(_MSC_VER) && _MSC_VER <= 1900) || (defined(__GNUC__) && __GNUC__ < 5))
+// Disable enhanced type checking on Visual Studio <= 2015 and GCC <5
 #define XLNT_NOEXCEPT_VALUE_COMPAT(...) (false)
 #else
 #define XLNT_NOEXCEPT_VALUE_COMPAT(...) (__VA_ARGS__)
