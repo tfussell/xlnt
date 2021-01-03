@@ -126,7 +126,7 @@ date date::today()
 
 int date::weekday() const
 {
-#ifdef __APPLE__
+#ifndef _MSC_VER
     std::tm tm{0, 0, 0, day, month - 1, year - 1900, 0, 0, 0, 0, nullptr};
 #else
     std::tm tm{0, 0, 0, day, month - 1, year - 1900, 0, 0, 0};

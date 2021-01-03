@@ -174,7 +174,8 @@ void sha1_hash(const uint8_t *message, size_t len, uint32_t hash[5]) {
 
     block[BLOCK_SIZE - 1] = (uint8_t)((len & 0x1FU) << 3);
     len >>= 5;
-    for (int i = 1; i < LENGTH_SIZE; i++, len >>= 8)
+	int i;
+    for (i = 1; i < LENGTH_SIZE; i++, len >>= 8)
         block[BLOCK_SIZE - 1 - i] = (uint8_t)(len & 0xFFU);
     sha1_compress(hash, block);
 }

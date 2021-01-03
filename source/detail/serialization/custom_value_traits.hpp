@@ -199,8 +199,8 @@ pattern_fill_type from_string(const std::string &string)
 #pragma clang diagnostic pop
     
     auto toLower = [](std::string str) {
-        auto bg{ std::begin (str) };
-        auto en{ std::end (str) };
+        auto bg = std::begin (str);
+        auto en = std::end (str);
         std::transform(bg, en, bg, 
                        [](char c) {
                         // static cast to avoid int -> char narrowing warning
@@ -211,7 +211,7 @@ pattern_fill_type from_string(const std::string &string)
     };
 
     auto patternLookup = [](const std::string& key) {
-        auto entry { patternFill.find (key) };
+        auto entry = patternFill.find (key);
         if (entry != std::end (patternFill)) {
             return entry->second;
         }
