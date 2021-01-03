@@ -836,7 +836,7 @@ void xlsx_producer::write_rich_text(const std::string &ns, const xlnt::rich_text
                 if (run.second.get().has_size())
                 {
                     write_start_element(ns, "sz");
-                    write_attribute("val", run.second.get().size());
+                    write_attribute<double>("val", run.second.get().size());
                     write_end_element(ns, "sz");
                 }
 
@@ -1024,7 +1024,7 @@ void xlsx_producer::write_font(const font &f)
     if (f.has_size())
     {
         write_start_element(xmlns, "sz");
-        write_attribute("val", f.size());
+        write_attribute<double>("val", f.size());
         write_end_element(xmlns, "sz");
     }
 
@@ -1098,33 +1098,33 @@ void xlsx_producer::write_fill(const fill &f)
 
         if (gradient.degree() != 0.)
         {
-            write_attribute("degree", gradient.degree());
+            write_attribute<double>("degree", gradient.degree());
         }
 
         if (gradient.left() != 0.)
         {
-            write_attribute("left", gradient.left());
+            write_attribute<double>("left", gradient.left());
         }
 
         if (gradient.right() != 0.)
         {
-            write_attribute("right", gradient.right());
+            write_attribute<double>("right", gradient.right());
         }
 
         if (gradient.top() != 0.)
         {
-            write_attribute("top", gradient.top());
+            write_attribute<double>("top", gradient.top());
         }
 
         if (gradient.bottom() != 0.)
         {
-            write_attribute("bottom", gradient.bottom());
+            write_attribute<double>("bottom", gradient.bottom());
         }
 
         for (const auto &stop : gradient.stops())
         {
             write_start_element(xmlns, "stop");
-            write_attribute("position", stop.first);
+            write_attribute<double>("position", stop.first);
             write_start_element(xmlns, "color");
             write_color(stop.second);
             write_end_element(xmlns, "color");
@@ -2376,21 +2376,21 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
     if (format_properties.base_col_width.is_set())
     {
-        write_attribute("baseColWidth",
+        write_attribute<double>("baseColWidth",
             format_properties.base_col_width.get());
     }
     if (format_properties.default_column_width.is_set())
     {
-        write_attribute("defaultColWidth",
+        write_attribute<double>("defaultColWidth",
             format_properties.default_column_width.get());
     }
 
-    write_attribute("defaultRowHeight",
+    write_attribute<double>("defaultRowHeight",
         format_properties.default_row_height);
 
     if (format_properties.dy_descent.is_set())
     {
-        write_attribute(xml::qname(xmlns_x14ac, "dyDescent"),
+        write_attribute<double>(xml::qname(xmlns_x14ac, "dyDescent"),
             format_properties.dy_descent.get());
     }
 
@@ -2543,7 +2543,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
             if (props.dy_descent.is_set())
             {
-                write_attribute(xml::qname(xmlns_x14ac, "dyDescent"), props.dy_descent.get());
+                write_attribute<double>(xml::qname(xmlns_x14ac, "dyDescent"), props.dy_descent.get());
             }
         }
 
@@ -2813,12 +2813,12 @@ void xlsx_producer::write_worksheet(const relationship &rel)
     {
         write_start_element(xmlns, "pageMargins");
 
-        write_attribute("left", ws.page_margins().left());
-        write_attribute("right", ws.page_margins().right());
-        write_attribute("top", ws.page_margins().top());
-        write_attribute("bottom", ws.page_margins().bottom());
-        write_attribute("header", ws.page_margins().header());
-        write_attribute("footer", ws.page_margins().footer());
+        write_attribute<double>("left", ws.page_margins().left());
+        write_attribute<double>("right", ws.page_margins().right());
+        write_attribute<double>("top", ws.page_margins().top());
+        write_attribute<double>("bottom", ws.page_margins().bottom());
+        write_attribute<double>("header", ws.page_margins().header());
+        write_attribute<double>("footer", ws.page_margins().footer());
 
         write_end_element(xmlns, "pageMargins");
     }

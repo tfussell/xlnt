@@ -28,7 +28,7 @@
 #define EXCEPT_ON_UNHANDLED_SWITCH_CASE
 
 #ifdef EXCEPT_ON_UNHANDLED_SWITCH_CASE
-#define default_case(default_value) throw xlnt::unhandled_switch_case();
+#define default_case(default_value) throw xlnt::unhandled_switch_case()
 #else
-#define default_case(default_value) return default_value;
+#define default_case(default_value) return default_value
 #endif

@@ -44,9 +44,8 @@ double timedelta::to_number() const
     total_microseconds += static_cast<std::uint64_t>(minutes * 1e6 * 60);
     auto microseconds_per_hour = static_cast<std::uint64_t>(1e6) * 60 * 60;
     total_microseconds += static_cast<std::uint64_t>(hours) * microseconds_per_hour;
-    auto number = total_microseconds / (24.0 * microseconds_per_hour);
-    auto hundred_billion = static_cast<std::uint64_t>(1e9) * 100;
-    number = std::floor(number * hundred_billion + 0.5) / hundred_billion;
+    auto number = static_cast<double>(total_microseconds) / (24.0 * static_cast<double>(microseconds_per_hour));
+    number = std::floor(number * 100e9 + 0.5) / 100e9;
     number += days;
 
     return number;

@@ -38,12 +38,12 @@ public:
     /// If this is older than the version of the Excel calculation engine opening
     /// the workbook, cell values will be recalculated.
     /// </summary>
-    std::size_t calc_id;
+    std::size_t calc_id = 0;
 
     /// <summary>
     /// If this is true, concurrent calculation will be enabled for the workbook.
     /// </summary>
-    bool concurrent_calc;
+    bool concurrent_calc = false;
 };
 
 inline bool operator==(const calculation_properties &lhs, const calculation_properties &rhs)
