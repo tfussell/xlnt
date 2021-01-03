@@ -178,14 +178,14 @@ private:
         current_part_serializer_->attribute(name, value);
     }
 
-    template <typename Floating, std::enable_if_t<std::is_floating_point<Floating>::value, bool> = true>
-    void write_attribute(const std::string &name, double value)
+    template <typename T, typename std::enable_if<std::is_floating_point<T>::value, T>::type* = nullptr>
+    void write_attribute(const std::string &name, T value)
     {
         current_part_serializer_->attribute(name, converter_.serialise(value));
     }
 
-    template <typename Integer, std::enable_if_t<std::is_integral<Integer>::value, bool> = true>
-    void write_attribute(const std::string &name, Integer value)
+    template <typename T, typename std::enable_if<std::is_integral<T>::value, T>::type* = nullptr>
+    void write_attribute(const std::string &name, T value)
     {
         current_part_serializer_->attribute(name, std::to_string(value));
     }
@@ -198,14 +198,14 @@ private:
         current_part_serializer_->attribute(name, value);
     }
 
-    template <typename Floating, std::enable_if_t<std::is_floating_point<Floating>::value, bool> = true>
-    void write_attribute(const xml::qname &name, double value)
+    template <typename T, typename std::enable_if<std::is_floating_point<T>::value, T>::type* = nullptr>
+    void write_attribute(const xml::qname &name, T value)
     {
         current_part_serializer_->attribute(name, converter_.serialise(value));
     }
 
-    template <typename Integer, std::enable_if_t<std::is_integral<Integer>::value, bool> = true>
-    void write_attribute(const xml::qname &name, Integer value)
+    template <typename T, typename std::enable_if<std::is_integral<T>::value, T>::type* = nullptr>
+    void write_attribute(const xml::qname &name, T value)
     {
         current_part_serializer_->attribute(name, std::to_string(value));
     }
