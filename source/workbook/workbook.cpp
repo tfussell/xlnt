@@ -414,7 +414,11 @@ workbook workbook::empty()
     wb.extended_property(xlnt::extended_property::hyperlinks_changed, false);
     wb.extended_property(xlnt::extended_property::app_version, "15.0300");
 
-    auto file_version = detail::workbook_impl::file_version_t{"xl", 6, 6, 26709};
+    detail::workbook_impl::file_version_t file_version;
+    file_version.app_name = "xl";
+    file_version.last_edited = 6;
+    file_version.lowest_edited = 6;
+    file_version.rup_build = 26709;
     wb.d_->file_version_ = file_version;
 
     xlnt::workbook_view wb_view;
