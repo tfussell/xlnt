@@ -178,9 +178,16 @@ private:
         current_part_serializer_->attribute(name, value);
     }
 
-    void write_attribute(const std::string &name, double value)
+    template <typename T, typename std::enable_if<std::is_floating_point<T>::value, T>::type* = nullptr>
+    void write_attribute(const std::string &name, T value)
     {
         current_part_serializer_->attribute(name, converter_.serialise(value));
+    }
+
+    template <typename T, typename std::enable_if<std::is_integral<T>::value, T>::type* = nullptr>
+    void write_attribute(const std::string &name, T value)
+    {
+        current_part_serializer_->attribute(name, std::to_string(value));
     }
 
     // qname attribute name
@@ -191,9 +198,16 @@ private:
         current_part_serializer_->attribute(name, value);
     }
 
-    void write_attribute(const xml::qname &name, double value)
+    template <typename T, typename std::enable_if<std::is_floating_point<T>::value, T>::type* = nullptr>
+    void write_attribute(const xml::qname &name, T value)
     {
         current_part_serializer_->attribute(name, converter_.serialise(value));
+    }
+
+    template <typename T, typename std::enable_if<std::is_integral<T>::value, T>::type* = nullptr>
+    void write_attribute(const xml::qname &name, T value)
+    {
+        current_part_serializer_->attribute(name, std::to_string(value));
     }
 
 
