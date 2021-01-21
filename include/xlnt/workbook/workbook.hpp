@@ -798,6 +798,11 @@ public:
     /// </summary>
     const std::vector<std::uint8_t> &thumbnail() const;
 
+    /// <summary>
+    /// Returns stored binary data.
+    /// </summary>
+    const std::unordered_map<std::string, std::vector<std::uint8_t>>& binaries() const;
+
     // Calculation properties
 
     /// <summary>

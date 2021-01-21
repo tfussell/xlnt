@@ -162,6 +162,8 @@ relationship_type from_string(const std::string &string)
         return relationship_type::table_definition;
     else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/volatileDependencies")
         return relationship_type::volatile_dependencies;
+    else if (string == "http://schemas.microsoft.com/office/2006/relationships/vbaProject")
+        return relationship_type::vbaproject;
     else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image")
         return relationship_type::image;
 
