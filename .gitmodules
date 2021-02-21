@@ -1,0 +1,3 @@
+[submodule "third-party/libstudxml"]
+	path = third-party/libstudxml
+	url = https://git.codesynthesis.com/libstudxml/libstudxml.git

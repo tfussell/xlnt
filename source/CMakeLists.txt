@@ -18,7 +18,7 @@ set(XLNT_SOURCE_DIR ${XLNT_ROOT_DIR}/source)
 set(THIRD_PARTY_DIR ${XLNT_ROOT_DIR}/third-party)
 
 # Include libstudxml library
-add_subdirectory(${THIRD_PARTY_DIR}/libstudxml
+add_subdirectory(${THIRD_PARTY_DIR}/libstudxml.build
   ${CMAKE_CURRENT_BINARY_DIR}/third-party/libstudxml)
 
 if(COVERAGE)

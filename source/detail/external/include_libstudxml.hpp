@@ -26,6 +26,7 @@
 #pragma clang diagnostic ignored "-Wweak-vtables"
 #pragma clang diagnostic ignored "-Wextra-semi"
 #pragma clang diagnostic ignored "-Wdeprecated"
+#pragma clang diagnostic ignored "-Wzero-as-null-pointer-constant"
 #include <libstudxml/content.hxx>
 #include <libstudxml/parser.hxx>
 #include <libstudxml/qname.hxx>
