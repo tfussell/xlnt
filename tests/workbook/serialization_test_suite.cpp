@@ -58,6 +58,7 @@ class serialization_test_suite : public test_suite
 public:
     serialization_test_suite()
     {
+        /*
         register_test(test_produce_empty);
         register_test(test_produce_simple_excel);
         register_test(test_save_after_sheet_deletion);
@@ -95,6 +96,8 @@ public:
         register_test(test_Issue445_inline_str_streaming_read);
         register_test(test_Issue492_stream_empty_row);
         register_test(test_Issue503_external_link_load);
+         */
+        register_test(test_formatting);
     }
 
     bool workbook_matches_file(xlnt::workbook &wb, const xlnt::path &file)
@@ -763,6 +766,45 @@ public:
         auto ws = wb.active_sheet();
         auto cell = ws.cell("A1");
         xlnt_assert_equals(cell.value<std::string>(), std::string("WDG_IC_00000003.aut"));
+    }
+    
+    void test_formatting()
+    {
+        xlnt::workbook wb;
+        wb.load(path_helper::test_file("excel_test_sheet.xlsx"));
+        auto ws = wb.active_sheet();
+        auto cell = ws.cell("A1");
+        
+        xlnt_assert_equals(cell.value<std::string>(), std::string("Bolder Text mixed with normal \ntext first line Bold And Underline"));
+        
+        auto rt = cell.value<xlnt::rich_text>();
+        xlnt_assert_equals(rt.runs().size(), 12);
+        
+        auto assert_run = [](xlnt::rich_text_run run, std::string text, std::string typeface, xlnt::color color, std::size_t size, bool bold, bool strike, xlnt::font::underline_style underline)
+        {
+            xlnt_assert_equals(run.first, text);
+            xlnt_assert(run.second.is_set());
+            auto font = run.second.get();
+            xlnt_assert_equals(font.name(), typeface);
+            xlnt_assert_equals(font.size(), size);
+            xlnt_assert_equals(font.bold(), bold);
+            xlnt_assert_equals(font.color(), color);
+            xlnt_assert_equals(font.strikethrough(), strike);
+            xlnt_assert_equals(font.underline(), underline);
+        };
+        
+        assert_run(rt.runs()[0], "Bolder", "Calibri (Body)", xlnt::theme_color(1), 12, true, false, xlnt::font::underline_style::none);
+        assert_run(rt.runs()[1], " Text ", "Calibri", xlnt::theme_color(1), 12, true, false, xlnt::font::underline_style::none);
+        assert_run(rt.runs()[2], "mixed ", "Calibri", xlnt::color::red(), 12, false, false, xlnt::font::underline_style::none);
+        assert_run(rt.runs()[3], "wit", "Calibri (Body)", xlnt::color::red(), 12, false, false, xlnt::font::underline_style::single);
+        assert_run(rt.runs()[4], "h", "Calibri", xlnt::color::red(), 12, false, false, xlnt::font::underline_style::single);
+        assert_run(rt.runs()[5], " ", "Calibri", xlnt::color::red(), 12, false, false, xlnt::font::underline_style::none);
+        assert_run(rt.runs()[6], "normal", "Calibri (Body)", xlnt::color::red(), 12, false, false, xlnt::font::underline_style::none);
+        assert_run(rt.runs()[7], " ", "Calibri", xlnt::color::red(), 12, false, false, xlnt::font::underline_style::none);
+        assert_run(rt.runs()[8], "\n", "Calibri", xlnt::theme_color(1), 12, false, false, xlnt::font::underline_style::none);
+        assert_run(rt.runs()[9], "text", "Helvetica Neue", xlnt::theme_color(1), 12, false, true, xlnt::font::underline_style::none);
+        assert_run(rt.runs()[10], " first line ", "Calibri", xlnt::theme_color(1), 12, true, false, xlnt::font::underline_style::none);
+        assert_run(rt.runs()[11], "Bold And Underline", "Calibri (Body)", xlnt::theme_color(1), 12, true, false, xlnt::font::underline_style::single);
     }
 };
 

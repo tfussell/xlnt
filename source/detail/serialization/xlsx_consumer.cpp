@@ -3162,6 +3162,12 @@ rich_text xlsx_consumer::read_rich_text(const xml::qname &parent)
                                 run.second.get().underline(font::underline_style::single);
                             }
                         }
+                        else if (current_run_property_element == xml::qname(xmlns, "strike"))
+                        {
+                            run.second.get().strikethrough(parser().attribute_present("val")
+                                    ? is_true(parser().attribute("val"))
+                                    : true);
+                        }
                         else
                         {
                             unexpected_element(current_run_property_element);
