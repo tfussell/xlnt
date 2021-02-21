@@ -25,25 +25,26 @@ jobs:
         type: string
     steps:
       - checkout
+      - git submodule update --init --recursive
       - run: cmake -D XLNT_CXX_LANG=<< parameters.cxx-ver >> -D STATIC=<< parameters.static >> -D BENCHMARKS=<< parameters.benchmarks >> -D SAMPLES=<< parameters.samples >> -D COVERAGE=<< parameters.coverage >> -D CMAKE_BUILD_TYPE=<< parameters.build-type >> .
       - run: cmake --build . -- -j2
       - run: ./tests/xlnt.test
       - when:
           condition:
-            equal: [ "ON", << parameters.samples >> ]
+            equal: ["ON", << parameters.samples >>]
           steps:
             - run: ./samples/sample-decrypt
             - run: ./samples/sample-img2xlsx ./samples/data/penguin.jpg img.xlsx
             - run: ./samples/sample-documentation
       - when:
           condition:
-            equal: [ "ON", << parameters.benchmarks >> ]
+            equal: ["ON", << parameters.benchmarks >>]
           steps:
             - run: ./benchmarks/benchmark-styles
             - run: ./benchmarks/benchmark-writer
       - when:
           condition:
-            equal: [ "ON", << parameters.coverage >> ]
+            equal: ["ON", << parameters.coverage >>]
           steps:
             - run: lcov --directory source/CMakeFiles/xlnt.dir --capture --output-file coverage.info --base-directory ../source --no-external --gcov-tool /usr/bin/gcov-6
             - run: lcov --output-file coverage.info --remove coverage.info source/detail/serialization/miniz.cpp
