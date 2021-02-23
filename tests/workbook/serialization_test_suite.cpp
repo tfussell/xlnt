@@ -58,7 +58,6 @@ class serialization_test_suite : public test_suite
 public:
     serialization_test_suite()
     {
-        /*
         register_test(test_produce_empty);
         register_test(test_produce_simple_excel);
         register_test(test_save_after_sheet_deletion);
@@ -96,7 +95,6 @@ public:
         register_test(test_Issue445_inline_str_streaming_read);
         register_test(test_Issue492_stream_empty_row);
         register_test(test_Issue503_external_link_load);
-         */
         register_test(test_formatting);
     }
 
