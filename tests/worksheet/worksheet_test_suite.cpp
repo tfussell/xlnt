@@ -113,6 +113,7 @@ public:
         register_test(test_insert_too_many);
         register_test(test_insert_delete_moves_merges);
         register_test(test_hidden_sheet);
+        register_test(test_issue_484);
     }
 
     void test_new_worksheet()
@@ -142,8 +143,10 @@ public:
         auto ws = wb.active_sheet();
 
         xlnt_assert_equals("A1:A1", ws.calculate_dimension());
+        xlnt_assert_equals("A1:A1", ws.calculate_dimension(false));
         ws.cell("B12").value("AAA");
         xlnt_assert_equals("B12:B12", ws.calculate_dimension());
+        xlnt_assert_equals("A1:B12", ws.calculate_dimension(false));
     }
 
     void test_fill_rows()
@@ -1589,6 +1592,22 @@ public:
         xlnt::workbook wb;
         wb.load(path_helper::test_file("16_hidden_sheet.xlsx"));
         xlnt_assert_equals(wb.sheet_hidden_by_index(1), true);
+    }
+    
+    void test_issue_484()
+    {
+        // Include first empty rows/columns in column dimensions
+        // if skip_null is false.
+        xlnt::workbook wb;
+        auto ws = wb.active_sheet();
+        
+        ws.cell("B12").value("AAA");
+        
+        xlnt_assert_equals("B12:B12", ws.rows(true).reference());
+        xlnt_assert_equals("A1:B12", ws.rows(false).reference());
+        
+        xlnt_assert_equals("B12:B12", ws.columns(true).reference());
+        xlnt_assert_equals("A1:B12", ws.columns(false).reference());
     }
 };
 static worksheet_test_suite x;

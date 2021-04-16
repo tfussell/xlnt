@@ -433,9 +433,11 @@ public:
     column_t highest_column_or_props() const;
 
     /// <summary>
-    /// Returns a range_reference pointing to the full range of non-empty cells in the worksheet.
+    /// Returns a range_reference pointing to the full range of cells in the worksheet.
+    /// If skip_null is true (default), empty cells (For example if the first row or column is empty)
+    /// will not be included in upper left bound of range.
     /// </summary>
-    range_reference calculate_dimension() const;
+    range_reference calculate_dimension(bool skip_null=true) const;
 
     // cell merge
 
