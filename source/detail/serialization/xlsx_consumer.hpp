@@ -252,6 +252,11 @@ private:
 	/// </summary>
 	void read_image(const path &part);
 
+	/// <summary>
+	///
+	/// </summary>
+	void read_binary(const path &part);
+
     // Common Section Readers
 
     /// <summary>

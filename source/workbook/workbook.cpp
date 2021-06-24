@@ -167,6 +167,8 @@ xlnt::path default_path(xlnt::relationship_type type, std::size_t index = 0)
         return path("/xl/vmlDrawing.xml");
     case relationship_type::volatile_dependencies:
         return path("/xl/volatileDependencies.xml");
+    case relationship_type::vbaproject:
+        return path("/xl/vbaProject.bin");
     case relationship_type::worksheet:
         return path("/xl/worksheets/sheet" + std::to_string(index) + ".xml");
     }
@@ -246,6 +248,8 @@ std::string content_type(xlnt::relationship_type type)
         return "application/vnd.openxmlformats-officedocument.vmlDrawing";
     case relationship_type::volatile_dependencies:
         return "application/vnd.openxmlformats-officedocument.spreadsheetml.volatileDependencies+xml";
+    case relationship_type::vbaproject:
+        return "application/vnd.ms-office.vbaProject";        
     case relationship_type::worksheet:
         return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml";
     }
@@ -1437,6 +1441,11 @@ const std::vector<std::uint8_t> &workbook::thumbnail() const
 {
     auto thumbnail_rel = d_->manifest_.relationship(path("/"), relationship_type::thumbnail);
     return d_->images_.at(thumbnail_rel.target().to_string());
+}
+
+const std::unordered_map<std::string, std::vector<std::uint8_t>> &workbook::binaries() const
+{
+    return d_->binaries_;
 }
 
 style workbook::create_style(const std::string &name)

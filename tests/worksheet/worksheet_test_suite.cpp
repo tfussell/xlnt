@@ -113,6 +113,7 @@ public:
         register_test(test_insert_too_many);
         register_test(test_insert_delete_moves_merges);
         register_test(test_hidden_sheet);
+        register_test(test_xlsm_read_write);
     }
 
     void test_new_worksheet()
@@ -1589,6 +1590,54 @@ public:
         xlnt::workbook wb;
         wb.load(path_helper::test_file("16_hidden_sheet.xlsx"));
         xlnt_assert_equals(wb.sheet_hidden_by_index(1), true);
+    }
+
+    void test_xlsm_read_write()
+    {
+        {
+            xlnt::workbook wb;
+            wb.load(path_helper::test_file("17_xlsm.xlsm"));
+
+            auto ws = wb.sheet_by_title("Sheet1");
+            auto rows = ws.rows();
+
+            xlnt_assert_equals(rows[0][0].value<std::string>(), "Values");
+            xlnt_assert_equals(rows[1][0].value<int>(), 100);
+            xlnt_assert_equals(rows[2][0].value<int>(), 200);
+            xlnt_assert_equals(rows[3][0].value<int>(), 300);
+            xlnt_assert_equals(rows[4][0].value<int>(), 400);
+            xlnt_assert_equals(rows[5][0].value<int>(), 500);
+
+            xlnt_assert_equals(rows[0][1].value<std::string>(), "Sum");
+            xlnt_assert_equals(rows[1][1].formula(), "SumVBA(A2:A6)");
+            xlnt_assert_equals(rows[1][1].value<int>(), 1500);
+
+            // change sheet value
+            ws.cell("A6").value(1000);
+
+            wb.save("17_xlsm_modified.xlsm");
+        }
+
+        {
+            xlnt::workbook wb;
+            wb.load("17_xlsm_modified.xlsm");
+
+            auto ws = wb.sheet_by_title("Sheet1");
+            auto rows = ws.rows();
+
+            xlnt_assert_equals(rows[0][0].value<std::string>(), "Values");
+            xlnt_assert_equals(rows[1][0].value<int>(), 100);
+            xlnt_assert_equals(rows[2][0].value<int>(), 200);
+            xlnt_assert_equals(rows[3][0].value<int>(), 300);
+            xlnt_assert_equals(rows[4][0].value<int>(), 400);
+            // sheet value changed (500 -> 1000)
+            xlnt_assert_equals(rows[5][0].value<int>(), 1000);
+
+            xlnt_assert_equals(rows[0][1].value<std::string>(), "Sum");            
+            xlnt_assert_equals(rows[1][1].formula(), "SumVBA(A2:A6)");
+            // formula value not changed (we can't execute vba)
+            xlnt_assert_equals(rows[1][1].value<int>(), 1500);
+        }
     }
 };
 static worksheet_test_suite x;

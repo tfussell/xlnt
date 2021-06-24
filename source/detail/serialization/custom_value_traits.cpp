@@ -119,6 +119,8 @@ std::string to_string(relationship_type t)
         return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/table";
     case relationship_type::volatile_dependencies:
         return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/volatileDependencies";
+    case relationship_type::vbaproject:
+        return "http://schemas.microsoft.com/office/2006/relationships/vbaProject";
     case relationship_type::image:
         return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image";
     case relationship_type::unknown:
