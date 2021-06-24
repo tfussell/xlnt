@@ -32,6 +32,9 @@
 #include <sstream>
 #include <type_traits>
 
+#undef min
+#undef max
+
 namespace xlnt {
 namespace detail {
 

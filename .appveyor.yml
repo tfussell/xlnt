@@ -1,8 +1,8 @@
-version: '{build}'
+version: "{build}"
 os: Visual Studio 2015
 
 cache:
-- vcpkg -> .appveyor.yml
+  - vcpkg -> .appveyor.yml
 
 platform:
   - x64
@@ -12,15 +12,16 @@ configuration:
 
 environment:
   matrix:
-  - STATIC: OFF
-  - STATIC: ON
-  
+    - STATIC: OFF
+    - STATIC: ON
+
 matrix:
   fast_finish: true
 
 init: []
 
 before_build:
+  - git submodule update --init --recursive
   - mkdir build
   - cd build
   - cmake -G "Visual Studio 14 2015" -D CMAKE_GENERATOR_PLATFORM=%platform% -D STATIC=%STATIC% -D SAMPLES=ON -D BENCHMARKS=ON ..
