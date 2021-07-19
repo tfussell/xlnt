@@ -6,6 +6,8 @@
 
 ## Arch
 
+xlnt can be [found](https://aur.archlinux.org/packages/xlnt/) on the AUR.
+
 ## vcpkg
 
 ## Compiling xlnt 1.x.x from Source on Ubuntu 16.04 LTS (Xenial Xerus) 
