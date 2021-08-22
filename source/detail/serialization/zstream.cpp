@@ -237,7 +237,7 @@ public:
         header = central_header;
     }
 
-    virtual ~zip_streambuf_decompress()
+    ~zip_streambuf_decompress() override
     {
         if (compressed_data && valid)
         {
@@ -289,7 +289,7 @@ public:
         return static_cast<int>(count);
     }
 
-    virtual int underflow()
+    virtual int underflow() override
     {
         if (gptr() && (gptr() < egptr()))
             return traits_type::to_int_type(*gptr()); // if we already have data just use it
@@ -303,7 +303,7 @@ public:
         return traits_type::to_int_type(*gptr());
     }
 
-    virtual int overflow(int c = EOF);
+    virtual int overflow(int c = EOF) override;
 };
 
 int zip_streambuf_decompress::overflow(int)
@@ -358,7 +358,7 @@ public:
         uncompressed_size = crc = 0;
     }
 
-    virtual ~zip_streambuf_compress()
+    virtual ~zip_streambuf_compress() override
     {
         if (valid)
         {
@@ -419,18 +419,18 @@ protected:
         return 1;
     }
 
-    virtual int sync()
+    virtual int sync() override
     {
         if (pptr() && pptr() > pbase()) return process(false);
         return 0;
     }
 
-    virtual int underflow()
+    virtual int underflow() override
     {
         throw xlnt::exception("Attempt to read write only ostream");
     }
 
-    virtual int overflow(int c = EOF);
+    virtual int overflow(int c = EOF) override;
 };
 
 int zip_streambuf_compress::overflow(int c)

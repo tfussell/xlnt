@@ -7,10 +7,9 @@
     "doc": "docs",
     "test": "tests"
   },
-  "dependencies": {},
   "devDependencies": {
-    "@release-it/bumper": "^2.0.0",
-    "release-it": "^14.2.2"
+    "@release-it/bumper": "^3.0.1",
+    "release-it": "^14.11.5"
   },
   "scripts": {
     "release": "release-it"
