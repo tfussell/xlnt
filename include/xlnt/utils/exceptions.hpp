@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2020 Thomas Fussell
+// Copyright (c) 2014-2021 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -15,7 +15,7 @@
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, WRISING FROM,
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
 //
@@ -42,7 +42,7 @@ public:
     /// Constructs an exception with a message. This message will be
     /// returned by std::exception::what(), an inherited member of this class.
     /// </summary>
-    exception(const std::string &message);
+    explicit exception(const std::string &message);
 
     /// <summary>
     /// Default copy constructor.
@@ -52,13 +52,18 @@ public:
     /// <summary>
     /// Destructor
     /// </summary>
-    virtual ~exception();
+    ~exception() override;
 
     /// <summary>
     /// Sets the message after the xlnt::exception is constructed. This can show
     /// more specific information than std::exception::what().
     /// </summary>
     void message(const std::string &message);
+
+    /// <summary>
+    /// Gets the message containing extra information.
+    /// </summary>
+    std::string message();
 
 private:
     /// <summary>
@@ -86,7 +91,7 @@ public:
     /// <summary>
     /// Destructor
     /// </summary>
-    virtual ~invalid_parameter();
+    ~invalid_parameter() override;
 };
 
 /// <summary>
@@ -98,7 +103,7 @@ public:
     /// <summary>
     /// Default constructor.
     /// </summary>
-    invalid_sheet_title(const std::string &title);
+    explicit invalid_sheet_title(const std::string &title);
 
     /// <summary>
     /// Default copy constructor.
@@ -108,24 +113,7 @@ public:
     /// <summary>
     /// Destructor
     /// </summary>
-    virtual ~invalid_sheet_title();
-};
-
-/// <summary>
-/// Exception when a referenced number format is not in the stylesheet.
-/// </summary>
-class XLNT_API missing_number_format : public exception
-{
-public:
-    /// <summary>
-    /// Default copy constructor.
-    /// </summary>
-    missing_number_format(const missing_number_format &) = default;
-
-    /// <summary>
-    /// Destructor
-    /// </summary>
-    virtual ~missing_number_format();
+    ~invalid_sheet_title() override;
 };
 
 /// <summary>
@@ -138,7 +126,7 @@ public:
     /// Constructs an invalid_file exception thrown when attempt to access
     /// the given filename.
     /// </summary>
-    invalid_file(const std::string &filename);
+    explicit invalid_file(const std::string &filename);
 
     /// <summary>
     /// Default copy constructor.
@@ -148,7 +136,7 @@ public:
     /// <summary>
     /// Destructor
     /// </summary>
-    virtual ~invalid_file();
+    ~invalid_file() override;
 };
 
 /// <summary>
@@ -161,7 +149,7 @@ public:
     /// <summary>
     /// Constructs an illegal_character exception thrown as a result of the given character.
     /// </summary>
-    illegal_character(char c);
+    explicit illegal_character(char c);
 
     /// <summary>
     /// Default copy constructor.
@@ -171,7 +159,7 @@ public:
     /// <summary>
     /// Destructor
     /// </summary>
-    virtual ~illegal_character();
+    ~illegal_character() override;
 };
 
 /// <summary>
@@ -193,7 +181,7 @@ public:
     /// <summary>
     /// Destructor
     /// </summary>
-    virtual ~invalid_data_type();
+    ~invalid_data_type() override;
 };
 
 /// <summary>
@@ -215,7 +203,7 @@ public:
     /// <summary>
     /// Destructor
     /// </summary>
-    virtual ~invalid_column_index();
+    ~invalid_column_index() override;
 };
 
 /// <summary>
@@ -232,7 +220,7 @@ public:
     /// <summary>
     /// Constructs an invalid_cell_reference exception for the given string.
     /// </summary>
-    invalid_cell_reference(const std::string &reference_string);
+    explicit invalid_cell_reference(const std::string &reference_string);
 
     /// <summary>
     /// Default copy constructor.
@@ -242,7 +230,7 @@ public:
     /// <summary>
     /// Destructor
     /// </summary>
-    virtual ~invalid_cell_reference();
+    ~invalid_cell_reference() override;
 };
 
 /// <summary>
@@ -264,7 +252,7 @@ public:
     /// <summary>
     /// Destructor
     /// </summary>
-    virtual ~invalid_attribute();
+    ~invalid_attribute() override;
 };
 
 /// <summary>
@@ -286,7 +274,7 @@ public:
     /// <summary>
     /// Destructor
     /// </summary>
-    virtual ~key_not_found();
+    ~key_not_found() override;
 };
 
 /// <summary>
@@ -308,7 +296,7 @@ public:
     /// <summary>
     /// Destructor
     /// </summary>
-    virtual ~no_visible_worksheets();
+    ~no_visible_worksheets() override;
 };
 
 /// <summary>
@@ -330,7 +318,7 @@ public:
     /// <summary>
     /// Destructor
     /// </summary>
-    virtual ~unhandled_switch_case();
+    ~unhandled_switch_case() override;
 };
 
 /// <summary>
@@ -343,7 +331,7 @@ public:
     /// Constructs an unsupported exception with a message describing the unsupported
     /// feature.
     /// </summary>
-    unsupported(const std::string &message);
+    explicit unsupported(const std::string &message);
 
     /// <summary>
     /// Default copy constructor.
@@ -353,7 +341,7 @@ public:
     /// <summary>
     /// Destructor
     /// </summary>
-    virtual ~unsupported();
+    ~unsupported() override;
 };
 
 } // namespace xlnt

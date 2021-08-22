@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2020 Thomas Fussell
+// Copyright (c) 2016-2021 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -14,7 +14,7 @@
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, WRISING FROM,
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
 //
@@ -119,6 +119,8 @@ std::string to_string(relationship_type t)
         return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/table";
     case relationship_type::volatile_dependencies:
         return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/volatileDependencies";
+    case relationship_type::vbaproject:
+        return "http://schemas.microsoft.com/office/2006/relationships/vbaProject";
     case relationship_type::image:
         return "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image";
     case relationship_type::unknown:

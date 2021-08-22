@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2020 Thomas Fussell
+// Copyright (c) 2014-2021 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -14,14 +14,12 @@
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, WRISING FROM,
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
 //
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
-
-#include <iostream>
 
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/hyperlink.hpp>
@@ -113,6 +111,8 @@ public:
         register_test(test_insert_too_many);
         register_test(test_insert_delete_moves_merges);
         register_test(test_hidden_sheet);
+        register_test(test_xlsm_read_write);
+        register_test(test_issue_484);
     }
 
     void test_new_worksheet()
@@ -142,8 +142,10 @@ public:
         auto ws = wb.active_sheet();
 
         xlnt_assert_equals("A1:A1", ws.calculate_dimension());
+        xlnt_assert_equals("A1:A1", ws.calculate_dimension(false));
         ws.cell("B12").value("AAA");
         xlnt_assert_equals("B12:B12", ws.calculate_dimension());
+        xlnt_assert_equals("A1:B12", ws.calculate_dimension(false));
     }
 
     void test_fill_rows()
@@ -1590,5 +1592,70 @@ public:
         wb.load(path_helper::test_file("16_hidden_sheet.xlsx"));
         xlnt_assert_equals(wb.sheet_hidden_by_index(1), true);
     }
+
+    void test_xlsm_read_write()
+    {
+        {
+            xlnt::workbook wb;
+            wb.load(path_helper::test_file("17_xlsm.xlsm"));
+
+            auto ws = wb.sheet_by_title("Sheet1");
+            auto rows = ws.rows();
+
+            xlnt_assert_equals(rows[0][0].value<std::string>(), "Values");
+            xlnt_assert_equals(rows[1][0].value<int>(), 100);
+            xlnt_assert_equals(rows[2][0].value<int>(), 200);
+            xlnt_assert_equals(rows[3][0].value<int>(), 300);
+            xlnt_assert_equals(rows[4][0].value<int>(), 400);
+            xlnt_assert_equals(rows[5][0].value<int>(), 500);
+
+            xlnt_assert_equals(rows[0][1].value<std::string>(), "Sum");
+            xlnt_assert_equals(rows[1][1].formula(), "SumVBA(A2:A6)");
+            xlnt_assert_equals(rows[1][1].value<int>(), 1500);
+
+            // change sheet value
+            ws.cell("A6").value(1000);
+
+            wb.save("17_xlsm_modified.xlsm");
+        }
+
+        {
+            xlnt::workbook wb;
+            wb.load("17_xlsm_modified.xlsm");
+
+            auto ws = wb.sheet_by_title("Sheet1");
+            auto rows = ws.rows();
+
+            xlnt_assert_equals(rows[0][0].value<std::string>(), "Values");
+            xlnt_assert_equals(rows[1][0].value<int>(), 100);
+            xlnt_assert_equals(rows[2][0].value<int>(), 200);
+            xlnt_assert_equals(rows[3][0].value<int>(), 300);
+            xlnt_assert_equals(rows[4][0].value<int>(), 400);
+            // sheet value changed (500 -> 1000)
+            xlnt_assert_equals(rows[5][0].value<int>(), 1000);
+
+            xlnt_assert_equals(rows[0][1].value<std::string>(), "Sum");
+            xlnt_assert_equals(rows[1][1].formula(), "SumVBA(A2:A6)");
+            // formula value not changed (we can't execute vba)
+            xlnt_assert_equals(rows[1][1].value<int>(), 1500);
+        }
+    }
+
+    void test_issue_484()
+    {
+        // Include first empty rows/columns in column dimensions
+        // if skip_null is false.
+        xlnt::workbook wb;
+        auto ws = wb.active_sheet();
+        
+        ws.cell("B12").value("AAA");
+        
+        xlnt_assert_equals("B12:B12", ws.rows(true).reference());
+        xlnt_assert_equals("A1:B12", ws.rows(false).reference());
+        
+        xlnt_assert_equals("B12:B12", ws.columns(true).reference());
+        xlnt_assert_equals("A1:B12", ws.columns(false).reference());
+    }
 };
+
 static worksheet_test_suite x;

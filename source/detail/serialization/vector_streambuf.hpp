@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2020 Thomas Fussell
+// Copyright (c) 2016-2021 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -14,7 +14,7 @@
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, WRISING FROM,
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
 //
@@ -40,21 +40,21 @@ class XLNT_API vector_istreambuf : public std::streambuf
     using int_type = std::streambuf::int_type;
 
 public:
-    vector_istreambuf(const std::vector<std::uint8_t> &data);
+    explicit vector_istreambuf(const std::vector<std::uint8_t> &data);
 
     vector_istreambuf(const vector_istreambuf &) = delete;
     vector_istreambuf &operator=(const vector_istreambuf &) = delete;
 
 private:
-    int_type underflow();
+    int_type underflow() override;
 
-    int_type uflow();
+    int_type uflow() override;
 
-    std::streamsize showmanyc();
+    std::streamsize showmanyc() override;
 
-    std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode);
+    std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode) override;
 
-    std::streampos seekpos(std::streampos sp, std::ios_base::openmode);
+    std::streampos seekpos(std::streampos sp, std::ios_base::openmode) override;
 
 private:
     const std::vector<std::uint8_t> &data_;
@@ -69,19 +69,19 @@ class XLNT_API vector_ostreambuf : public std::streambuf
     using int_type = std::streambuf::int_type;
 
 public:
-    vector_ostreambuf(std::vector<std::uint8_t> &data);
+    explicit vector_ostreambuf(std::vector<std::uint8_t> &data);
 
     vector_ostreambuf(const vector_ostreambuf &) = delete;
     vector_ostreambuf &operator=(const vector_ostreambuf &) = delete;
 
 private:
-    int_type overflow(int_type c = traits_type::eof());
+    int_type overflow(int_type c) override;
 
-    std::streamsize xsputn(const char *s, std::streamsize n);
+    std::streamsize xsputn(const char *s, std::streamsize n) override;
 
-    std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode);
+    std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode) override;
 
-    std::streampos seekpos(std::streampos sp, std::ios_base::openmode);
+    std::streampos seekpos(std::streampos sp, std::ios_base::openmode) override;
 
 private:
     std::vector<std::uint8_t> &data_;

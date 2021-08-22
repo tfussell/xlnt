@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2020 Thomas Fussell
+// Copyright (c) 2014-2021 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -14,7 +14,7 @@
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, WRISING FROM,
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
 //
@@ -1240,6 +1240,13 @@ worksheet xlsx_consumer::read_worksheet_end(const std::string &rel_id)
         read_drawings(ws, drawings_part);
     }
 
+    if (manifest.has_relationship(sheet_path, xlnt::relationship_type::printer_settings))
+    {
+        read_part({workbook_rel, sheet_rel,
+            manifest.relationship(sheet_path,
+                relationship_type::printer_settings)});
+    }
+
     return ws;
 }
 
@@ -1557,6 +1564,7 @@ void xlsx_consumer::read_part(const std::vector<relationship> &rel_chain)
         break;
 
     case relationship_type::printer_settings:
+        read_binary(part_path);
         break;
 
     case relationship_type::custom_property:
@@ -1587,6 +1595,10 @@ void xlsx_consumer::read_part(const std::vector<relationship> &rel_chain)
         break;
 
     case relationship_type::table_definition:
+        break;
+
+    case relationship_type::vbaproject:
+        read_binary(part_path);
         break;
 
     case relationship_type::image:
@@ -1733,7 +1745,10 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
             "openxmlformats-officedocument.spreadsheetml.sheet.main+xml"
         && content_type !=
             "application/vnd."
-            "openxmlformats-officedocument.spreadsheetml.template.main+xml")
+            "openxmlformats-officedocument.spreadsheetml.template.main+xml"
+        && content_type !=
+            "application/vnd."
+            "ms-excel.sheet.macroEnabled.main+xml")
     {
         throw xlnt::invalid_file(content_type);
     }
@@ -1995,25 +2010,20 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
     auto workbook_rel = manifest().relationship(path("/"), relationship_type::office_document);
     auto workbook_path = workbook_rel.target().path();
 
-    if (manifest().has_relationship(workbook_path, relationship_type::shared_string_table))
-    {
-        read_part({workbook_rel,
-            manifest().relationship(workbook_path,
-                relationship_type::shared_string_table)});
-    }
+    const auto rel_types = {
+        relationship_type::shared_string_table,
+        relationship_type::stylesheet,
+        relationship_type::theme,
+        relationship_type::vbaproject,
+    };
 
-    if (manifest().has_relationship(workbook_path, relationship_type::stylesheet))
+    for (auto rel_type : rel_types)
     {
-        read_part({workbook_rel,
-            manifest().relationship(workbook_path,
-                relationship_type::stylesheet)});
-    }
-
-    if (manifest().has_relationship(workbook_path, relationship_type::theme))
-    {
-        read_part({workbook_rel,
-            manifest().relationship(workbook_path,
-                relationship_type::theme)});
+        if (manifest().has_relationship(workbook_path, rel_type))
+        {
+            read_part({workbook_rel,
+                manifest().relationship(workbook_path, rel_type)});
+        }
     }
 
     for (auto worksheet_rel : manifest().relationships(workbook_path, relationship_type::worksheet))
@@ -2905,6 +2915,14 @@ void xlsx_consumer::read_image(const xlnt::path &image_path)
     vector_ostreambuf buffer(target_.d_->images_[image_path.string()]);
     std::ostream out_stream(&buffer);
     out_stream << image_streambuf.get();
+}
+
+void xlsx_consumer::read_binary(const xlnt::path &binary_path)
+{
+    auto binary_streambuf = archive_->open(binary_path);
+    vector_ostreambuf buffer(target_.d_->binaries_[binary_path.string()]);
+    std::ostream out_stream(&buffer);
+    out_stream << binary_streambuf.get();
 }
 
 std::string xlsx_consumer::read_text()
