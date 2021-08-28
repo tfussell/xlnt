@@ -59,12 +59,17 @@ void page_setup::sheet_state(xlnt::sheet_state sheet_state)
 
 paper_size page_setup::paper_size() const
 {
-    return paper_size_;
+    return paper_size_.get();
 }
 
 void page_setup::paper_size(xlnt::paper_size paper_size)
 {
     paper_size_ = paper_size;
+}
+
+bool page_setup::has_paper_size() const
+{
+    return this->paper_size_.is_set();
 }
 
 bool page_setup::fit_to_page() const
@@ -104,7 +109,27 @@ void page_setup::scale(double scale)
 
 double page_setup::scale() const
 {
-    return scale_;
+    return scale_.get();
+}
+
+bool page_setup::has_scale() const
+{
+    return this->scale_.is_set();
+}
+
+const std::string& page_setup::rel_id() const
+{
+    return this->rel_id_;
+}
+
+void page_setup::rel_id(const std::string& val)
+{
+    this->rel_id_ = val;
+}
+
+bool page_setup::has_rel_id() const
+{
+    return !rel_id_.empty();
 }
 
 bool page_setup::operator==(const page_setup &rhs) const
@@ -115,7 +140,9 @@ bool page_setup::operator==(const page_setup &rhs) const
         && fit_to_page_ == rhs.fit_to_page_
         && fit_to_height_ == rhs.fit_to_height_
         && fit_to_width_ == rhs.fit_to_width_
-        && detail::float_equals(scale_, rhs.scale_);
+        && scale_ == rhs.scale_
+        && paper_size_ == rhs.paper_size_
+        && rel_id_ == rhs.rel_id_;
 }
 
 } // namespace xlnt
