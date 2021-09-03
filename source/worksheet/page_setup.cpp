@@ -29,11 +29,9 @@ namespace xlnt {
 page_setup::page_setup()
     : break_(xlnt::page_break::none),
       sheet_state_(xlnt::sheet_state::visible),
-      paper_size_(xlnt::paper_size::letter),
       fit_to_page_(false),
       fit_to_height_(false),
-      fit_to_width_(false),
-      scale_(1)
+      fit_to_width_(false)
 {
 }
 
