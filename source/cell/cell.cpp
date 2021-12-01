@@ -341,7 +341,10 @@ void cell::show_phonetics(bool phonetics)
 
 bool cell::is_date() const
 {
-    return data_type() == type::number
+    return (data_type() == type::number
+        || data_type() == type::shared_string
+        || data_type() == type::inline_string
+        || data_type() == cell_type::formula_string)
         && has_format()
         && number_format().is_date_format();
 }
