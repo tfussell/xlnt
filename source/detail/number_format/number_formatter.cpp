@@ -466,6 +466,8 @@ const std::unordered_map<int, std::string> known_locales()
             {0x7C68, "Hausa (Latin)"},
             {0x7C86, "K’iche’"},
             {0x7C92, "Central Kurdish (Arabic)"},
+            {0xF400, "System Default for Time"},
+            {0xF800, "System Default for Long Date"},
         });
 
     return all;
