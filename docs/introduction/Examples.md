@@ -1,8 +1,10 @@
 ## Examples
+
 ### Simple - reading from an existing xlsx spread sheet.
+
 The following C plus plus code will read the values from an xlsx file and print the string values to the screen. This is a very simple example to get you started.
 
-```
+```c++
 #include <iostream>
 #include <xlnt/xlnt.hpp>
 
@@ -49,8 +51,10 @@ Processing complete
 As you can see the process.cpp file simply walks through the spread sheet values row by row and column by column (A1, B1, C1, A2, B2, C2 and so on).
 
 ### Simple - storing a spread sheet in a 2 dimensional C++ Vector for further processing
+
 Loading a spread sheet into a Vector provides oppourtunities for you to perform high performance processing. There will be more examples on performing fast look-ups, merging data, performing deduplication and more. For now, let's just learn how to get the spread sheet loaded into memory.
-```
+
+```c++
 #include <iostream>
 #include <xlnt/xlnt.hpp>
 #include <vector>
@@ -129,7 +133,8 @@ time ./process
 real	0m0.044s
 ```
 ### Simple - writing values to a new xlsx spread sheet.
-```
+
+```c++
 #include <iostream>
 #include <xlnt/xlnt.hpp>
 #include <vector>
