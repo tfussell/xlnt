@@ -136,6 +136,13 @@ public:
     /// </summary>
     cell_iterator operator++(int);
 
+    /// <summary>
+    /// When iterating over a range that doesn't ignore null cells, operator*()
+    /// will throw when trying to access the cells that are null. This method
+    /// checks the existence of a cell.
+    /// </summary>
+    bool has_value() const;
+
 private:
     /// <summary>
     /// If true, cells that don't exist in the worksheet will be skipped during iteration.
@@ -262,6 +269,13 @@ public:
     /// return a copy of the iterator before the decrement.
     /// </summary>
     const_cell_iterator operator++(int);
+
+    /// <summary>
+    /// When iterating over a range that doesn't ignore null cells, operator*()
+    /// will throw when trying to access the cells that are null. This method
+    /// checks the existence of a cell.
+    /// </summary>
+    bool has_value() const;
 
 private:
     /// <summary>
