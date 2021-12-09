@@ -18,9 +18,9 @@ set(LIBSTUDXML
   ${LIBSTUDXML_ROOT_DIR}/libstudxml/qname.cxx
   ${LIBSTUDXML_ROOT_DIR}/libstudxml/serializer.cxx
   ${LIBSTUDXML_ROOT_DIR}/libstudxml/value-traits.cxx
-  ${LIBSTUDXML_ROOT_DIR}/libstudxml/content
-  ${LIBSTUDXML_ROOT_DIR}/libstudxml/exception
-  ${LIBSTUDXML_ROOT_DIR}/libstudxml/forward
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/content.hxx
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/exception.hxx
+  ${LIBSTUDXML_ROOT_DIR}/libstudxml/forward.hxx
   ${LIBSTUDXML_ROOT_DIR}/libstudxml/parser
   ${LIBSTUDXML_ROOT_DIR}/libstudxml/qname
   ${LIBSTUDXML_ROOT_DIR}/libstudxml/serializer

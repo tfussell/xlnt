@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2020 Thomas Fussell
+// Copyright (c) 2014-2021 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -15,7 +15,7 @@
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, WRISING FROM,
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
 //
@@ -577,7 +577,7 @@ column_t worksheet::highest_column_or_props() const
     return highest;
 }
 
-range_reference worksheet::calculate_dimension() const
+range_reference worksheet::calculate_dimension(bool skip_null) const
 {
     // partially optimised version of:
     // return range_reference(lowest_column(), lowest_row_or_props(),
@@ -588,11 +588,16 @@ range_reference worksheet::calculate_dimension() const
         return range_reference(constants::min_column(), constants::min_row(),
             constants::min_column(), constants::min_row());
     }
-    row_t min_row_prop = constants::max_row();
+
+    // if skip_null = false, min row = min_row() and min column = min_column()
+    // in order to include first empty rows and columns
+    row_t min_row_prop = skip_null? constants::max_row() : constants::min_row();
     row_t max_row_prop = constants::min_row();
     for (const auto &row_prop : d_->row_properties_)
     {
-        min_row_prop = std::min(min_row_prop, row_prop.first);
+        if(skip_null){
+            min_row_prop = std::min(min_row_prop, row_prop.first);
+        }
         max_row_prop = std::max(max_row_prop, row_prop.first);
     }
     if (d_->cell_map_.empty())
@@ -601,15 +606,17 @@ range_reference worksheet::calculate_dimension() const
             constants::min_column(), max_row_prop);
     }
     // find min and max row/column in cell map
-    column_t min_col = constants::max_column();
+    column_t min_col = skip_null? constants::max_column() : constants::min_column();
     column_t max_col = constants::min_column();
     row_t min_row = min_row_prop;
     row_t max_row = max_row_prop;
     for (auto &c : d_->cell_map_)
     {
-        min_col = std::min(min_col, c.second.column_);
+        if(skip_null){
+            min_col = std::min(min_col, c.second.column_);
+            min_row = std::min(min_row, c.second.row_);
+        }
         max_col = std::max(max_col, c.second.column_);
-        min_row = std::min(min_row, c.second.row_);
         max_row = std::max(max_row, c.second.row_);
     }
     return range_reference(min_col, min_row, max_col, max_row);
@@ -717,22 +724,22 @@ row_t worksheet::next_row() const
 
 xlnt::range worksheet::rows(bool skip_null)
 {
-    return xlnt::range(*this, calculate_dimension(), major_order::row, skip_null);
+    return xlnt::range(*this, calculate_dimension(skip_null), major_order::row, skip_null);
 }
 
 const xlnt::range worksheet::rows(bool skip_null) const
 {
-    return xlnt::range(*this, calculate_dimension(), major_order::row, skip_null);
+    return xlnt::range(*this, calculate_dimension(skip_null), major_order::row, skip_null);
 }
 
 xlnt::range worksheet::columns(bool skip_null)
 {
-    return xlnt::range(*this, calculate_dimension(), major_order::column, skip_null);
+    return xlnt::range(*this, calculate_dimension(skip_null), major_order::column, skip_null);
 }
 
 const xlnt::range worksheet::columns(bool skip_null) const
 {
-    return xlnt::range(*this, calculate_dimension(), major_order::column, skip_null);
+    return xlnt::range(*this, calculate_dimension(skip_null), major_order::column, skip_null);
 }
 
 /*

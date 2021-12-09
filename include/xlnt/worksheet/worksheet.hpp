@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2020 Thomas Fussell
+// Copyright (c) 2014-2021 Thomas Fussell
 // Copyright (c) 2010-2015 openpyxl
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -15,7 +15,7 @@
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, WRISING FROM,
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
 //
@@ -433,9 +433,11 @@ public:
     column_t highest_column_or_props() const;
 
     /// <summary>
-    /// Returns a range_reference pointing to the full range of non-empty cells in the worksheet.
+    /// Returns a range_reference pointing to the full range of cells in the worksheet.
+    /// If skip_null is true (default), empty cells (For example if the first row or column is empty)
+    /// will not be included in upper left bound of range.
     /// </summary>
-    range_reference calculate_dimension() const;
+    range_reference calculate_dimension(bool skip_null=true) const;
 
     // cell merge
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2020 Thomas Fussell
+// Copyright (c) 2014-2021 Thomas Fussell
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -14,7 +14,7 @@
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, WRISING FROM,
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
 //
@@ -1346,11 +1346,11 @@ format_color number_format_parser::color_from_string(const std::string &color)
     switch (color[0])
     {
     case 'C':
-        if (color == "Cyan")
+        if ((color == "Cyan") || (color == "CYAN"))
         {
             return format_color::cyan;
         }
-        else if (color.substr(0, 5) == "Color")
+        else if ((color.substr(0, 5) == "Color") || (color.substr(0, 5) == "COLOR"))
         {
             auto color_number = std::stoull(color.substr(5));
 
@@ -1364,11 +1364,11 @@ format_color number_format_parser::color_from_string(const std::string &color)
         break;
 
     case 'B':
-        if (color == "Black")
+        if ((color == "Black") || (color == "BLACK"))
         {
             return format_color::black;
         }
-        else if (color == "Blue")
+        else if ((color == "Blue") || (color == "BLUE"))
         {
             return format_color::blue;
         }
@@ -1377,7 +1377,7 @@ format_color number_format_parser::color_from_string(const std::string &color)
         break;
 
     case 'G':
-        if (color == "Green")
+        if ((color == "Green") || (color == "GREEN"))
         {
             return format_color::green;
         }
@@ -1386,7 +1386,7 @@ format_color number_format_parser::color_from_string(const std::string &color)
         break;
 
     case 'W':
-        if (color == "White")
+        if ((color == "White") || (color == "WHITE"))
         {
             return format_color::white;
         }
@@ -1395,7 +1395,7 @@ format_color number_format_parser::color_from_string(const std::string &color)
         break;
 
     case 'M':
-        if (color == "Magenta")
+        if ((color == "Magenta") || (color == "MAGENTA"))
         {
             return format_color::magenta;
         }
@@ -1404,7 +1404,7 @@ format_color number_format_parser::color_from_string(const std::string &color)
         break;
 
     case 'Y':
-        if (color == "Yellow")
+        if ((color == "Yellow") || (color == "YELLOW"))
         {
             return format_color::yellow;
         }
@@ -1413,7 +1413,7 @@ format_color number_format_parser::color_from_string(const std::string &color)
         break;
 
     case 'R':
-        if (color == "Red")
+        if ((color == "Red") || (color == "RED"))
         {
             return format_color::red;
         }
