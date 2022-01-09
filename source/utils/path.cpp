@@ -231,7 +231,7 @@ const std::string &path::string() const
 #ifdef _MSC_VER
 std::wstring path::wstring() const
 {
-    std::wstring_convert<std::codecvt_utf8<wchar_t>> convert;
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> convert;
     return convert.from_bytes(string());
 }
 #endif

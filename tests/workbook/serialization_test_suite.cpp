@@ -366,18 +366,18 @@ public:
     {
 #ifdef _MSC_VER
         xlnt::workbook wb;
-        // L"/9_unicode_Λ.xlsx" doesn't use wchar_t(0x039B) for the capital lambda...
-        // L"/9_unicode_\u039B.xlsx" gives the corrct output
-        const auto path = LSTRING_LITERAL(XLNT_TEST_DATA_DIR) L"/9_unicode_\u039B.xlsx"; // L"/9_unicode_Λ.xlsx"
+        // L"/9_unicode_Λ_😇.xlsx" doesn't use wchar_t(0x039B) for the capital lambda...
+        // L"/9_unicode_\u039B_\U0001F607.xlsx" gives the correct output
+        const auto path = LSTRING_LITERAL(XLNT_TEST_DATA_DIR) L"/9_unicode_\u039B_\U0001F607.xlsx"; // L"/9_unicode_Λ_😇.xlsx"
         wb.load(path);
         xlnt_assert_equals(wb.active_sheet().cell("A1").value<std::string>(), u8"un\u00EFc\u00F4d\u0117!"); // u8"unïcôdė!"
 #endif
 
 #ifndef __MINGW32__
         xlnt::workbook wb2;
-        // u8"/9_unicode_Λ.xlsx" doesn't use 0xc3aa for the capital lambda...
-        // u8"/9_unicode_\u039B.xlsx" gives the corrct output
-        const auto path2 = U8STRING_LITERAL(XLNT_TEST_DATA_DIR) u8"/9_unicode_\u039B.xlsx"; // u8"/9_unicode_Λ.xlsx"
+        // u8"/9_unicode_Λ_😇.xlsx" doesn't use 0xC3AA for the capital lambda...
+        // u8"/9_unicode_\u039B_\U0001F607.xlsx" gives the correct output
+        const auto path2 = U8STRING_LITERAL(XLNT_TEST_DATA_DIR) u8"/9_unicode_\u039B_\U0001F607.xlsx"; // u8"/9_unicode_Λ_😇.xlsx"
         wb2.load(path2);
         xlnt_assert_equals(wb2.active_sheet().cell("A1").value<std::string>(), u8"un\u00EFc\u00F4d\u0117!"); // u8"unïcôdė!"
 #endif
@@ -633,9 +633,9 @@ public:
 
     void test_round_trip_rw_unicode()
     {
-        // u8"/9_unicode_Λ.xlsx" doesn't use 0xc3aa for the capital lambda...
-        // u8"/9_unicode_\u039B.xlsx" gives the corrct output
-        xlnt_assert(round_trip_matches_rw(path_helper::test_file(u8"9_unicode_\u039B.xlsx")));
+        // u8"/9_unicode_Λ_😇.xlsx" doesn't use 0xC3AA for the capital lambda...
+        // u8"/9_unicode_\u039B_\U0001F607.xlsx" gives the correct output
+        xlnt_assert(round_trip_matches_rw(path_helper::test_file(u8"9_unicode_\u039B_\U0001F607.xlsx")));
     }
 
     void test_round_trip_rw_comments_hyperlinks_formulae()
