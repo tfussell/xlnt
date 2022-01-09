@@ -76,6 +76,7 @@ public:
         register_test(test_lowest_row_or_props);
         register_test(test_highest_row);
         register_test(test_highest_row_or_props);
+        register_test(test_iterator_has_value);
         register_test(test_const_iterators);
         register_test(test_const_reverse_iterators);
         register_test(test_column_major_iterators);
@@ -584,6 +585,31 @@ public:
         auto ws = wb.active_sheet();
         ws.row_properties(11).height = 14.3;
         xlnt_assert_equals(ws.highest_row_or_props(), 11);
+    }
+
+    void test_iterator_has_value()
+    {
+        xlnt::workbook wb;
+        auto ws = wb.active_sheet();
+
+        // make a worksheet with a blank row and column
+        ws.cell("A1").value("A1");
+        ws.cell("A3").value("A3");
+        ws.cell("C1").value("C1");
+
+        xlnt_assert_equals(ws.columns(false)[0].begin().has_value(), true);
+        xlnt_assert_equals(ws.rows(false)[0].begin().has_value(), true);
+
+        xlnt_assert_equals(ws.columns(false)[1].begin().has_value(), false);
+        xlnt_assert_equals(ws.rows(false)[1].begin().has_value(), false);
+
+        // also test const interators.
+        xlnt_assert_equals(ws.columns(false)[0].cbegin().has_value(), true);
+        xlnt_assert_equals(ws.rows(false)[0].cbegin().has_value(), true);
+
+        xlnt_assert_equals(ws.columns(false)[1].cbegin().has_value(), false);
+        xlnt_assert_equals(ws.rows(false)[1].cbegin().has_value(), false);
+
     }
 
     void test_const_iterators()

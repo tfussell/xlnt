@@ -278,4 +278,12 @@ const const_cell_iterator::reference const_cell_iterator::operator*() const
 {
     return ws_.cell(cursor_);
 }
+
+bool cell_iterator::has_value() const{
+    return ws_.has_cell(cursor_);
+}
+
+bool const_cell_iterator::has_value() const{
+    return ws_.has_cell(cursor_);
+}
 } // namespace xlnt
