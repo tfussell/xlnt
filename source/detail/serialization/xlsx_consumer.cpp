@@ -1334,6 +1334,7 @@ bool xlsx_consumer::has_cell()
     expect_start_element(qn("spreadsheetml", "c"), xml::content::complex);
 
     assert(streaming_);
+    streaming_cell_.reset(new detail::cell_impl()); // Clean cell state - otherwise it might contain information from the previously streamed cell.
     auto cell = xlnt::cell(streaming_cell_.get());
     auto reference = cell_reference(parser().attribute("r"));
     cell.d_->parent_ = current_worksheet_;
