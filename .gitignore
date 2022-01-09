@@ -19,3 +19,7 @@ python/xlntpyarrow.egg-info/
 /x64/
 .envrc
 .vscode
+/dist/
+/.vs/
+/out/
+/CMakeSettings.json

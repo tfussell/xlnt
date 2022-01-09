@@ -955,19 +955,19 @@ worksheet xlsx_consumer::read_worksheet_end(const std::string &rel_id)
             }
             if (parser().attribute_present("gridLinesSet"))
             {
-                opts.print_grid_lines.set(parser().attribute<bool>("gridLinesSet"));
+                opts.grid_lines_set.set(parser().attribute<bool>("gridLinesSet"));
             }
             if (parser().attribute_present("headings"))
             {
-                opts.print_grid_lines.set(parser().attribute<bool>("headings"));
+                opts.print_headings.set(parser().attribute<bool>("headings"));
             }
             if (parser().attribute_present("horizontalCentered"))
             {
-                opts.print_grid_lines.set(parser().attribute<bool>("horizontalCentered"));
+                opts.horizontal_centered.set(parser().attribute<bool>("horizontalCentered"));
             }
             if (parser().attribute_present("verticalCentered"))
             {
-                opts.print_grid_lines.set(parser().attribute<bool>("verticalCentered"));
+                opts.vertical_centered.set(parser().attribute<bool>("verticalCentered"));
             }
             ws.d_->print_options_.set(opts);
             skip_remaining_content(current_worksheet_element);
@@ -999,6 +999,18 @@ worksheet xlsx_consumer::read_worksheet_end(const std::string &rel_id)
             if (parser().attribute_present("verticalDpi"))
             {
                 setup.vertical_dpi_.set(parser().attribute<std::size_t>("verticalDpi"));
+            }
+            if (parser().attribute_present("paperSize"))
+            {
+                setup.paper_size(static_cast<xlnt::paper_size>(parser().attribute<std::size_t>("paperSize")));
+            }
+            if (parser().attribute_present("scale"))
+            {
+                setup.scale(parser().attribute<double>("scale"));
+            }
+            if (parser().attribute_present(qn("r", "id")))
+            {
+                setup.rel_id(parser().attribute(qn("r", "id")));
             }
             ws.page_setup(setup);
             skip_remaining_content(current_worksheet_element);

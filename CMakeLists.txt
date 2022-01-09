@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.1)
 project(xlnt_all)
 
+add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+
 # CTest setup
 # include (CTest) # Add this for valgrind support; CTest works without it
 enable_testing()

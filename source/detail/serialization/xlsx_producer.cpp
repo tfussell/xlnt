@@ -2782,6 +2782,22 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         write_end_element(xmlns, "hyperlinks");
     }
 
+    if (ws.has_phonetic_properties())
+    {
+        write_start_element(xmlns, phonetic_pr::Serialised_ID());
+        const auto &ph_props = ws.phonetic_properties();
+        write_attribute("fontId", ph_props.font_id());
+        if (ph_props.has_type())
+        {
+            write_attribute("type", phonetic_pr::type_as_string(ph_props.type()));
+        }
+        if (ph_props.has_alignment())
+        {
+            write_attribute("alignment", phonetic_pr::alignment_as_string(ph_props.alignment()));
+        }
+        write_end_element(xmlns, phonetic_pr::Serialised_ID());
+    }
+
     if (ws.d_->print_options_.is_set())
     {
         auto &opts = ws.d_->print_options_.get();
@@ -2809,22 +2825,6 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         write_end_element(xmlns, "printOptions");
     }
 
-    if (ws.has_phonetic_properties())
-    {
-        write_start_element(xmlns, phonetic_pr::Serialised_ID());
-        const auto &ph_props = ws.phonetic_properties();
-        write_attribute("fontId", ph_props.font_id());
-        if (ph_props.has_type())
-        {
-            write_attribute("type", phonetic_pr::type_as_string(ph_props.type()));
-        }
-        if (ph_props.has_alignment())
-        {
-            write_attribute("alignment", phonetic_pr::alignment_as_string(ph_props.alignment()));
-        }
-        write_end_element(xmlns, phonetic_pr::Serialised_ID());
-    }
-
     if (ws.has_page_margins())
     {
         write_start_element(xmlns, "pageMargins");
@@ -2841,6 +2841,7 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
     if (ws.has_page_setup())
     {
+        const xlnt::page_setup &ps = ws.page_setup();
         write_start_element(xmlns, "pageSetup");
         if (ws.page_setup().orientation_.is_set())
         {
@@ -2854,8 +2855,22 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         {
             write_attribute("verticalDpi", ws.page_setup().vertical_dpi_.get());
         }
-        /*write_attribute("paperSize", static_cast<std::size_t>(ws.page_setup().paper_size()));
-        write_attribute("fitToHeight", write_bool(ws.page_setup().fit_to_height()));
+        
+        if (ps.has_paper_size())
+        {
+            write_attribute("paperSize", static_cast<std::size_t>(ps.paper_size()));
+        }
+
+        if (ps.has_scale())
+        {
+            write_attribute("scale", ps.scale());
+        }
+
+        if (ps.has_rel_id())
+        {
+            write_attribute(xml::qname(xmlns_r, "id"), ps.rel_id());
+        }
+        /*write_attribute("fitToHeight", write_bool(ws.page_setup().fit_to_height()));
         write_attribute("fitToWidth", write_bool(ws.page_setup().fit_to_width()));*/
         write_end_element(xmlns, "pageSetup");
     }
