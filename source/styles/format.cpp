@@ -124,13 +124,28 @@ format format::font(const xlnt::font &new_font, optional<bool> applied)
 
 xlnt::number_format format::number_format() const
 {
-    if (number_format::is_builtin_format(d_->number_format_id.get()))
+    if (d_->number_format_id.is_set())
     {
-        return number_format::from_builtin_id(d_->number_format_id.get());
+        const auto number_format_id = d_->number_format_id.get();
+
+        if (number_format::is_builtin_format(number_format_id))
+        {
+            return number_format::from_builtin_id(number_format_id);
+        }
+
+        const auto it = std::find_if(d_->parent->number_formats.begin(),
+                                     d_->parent->number_formats.end(),
+                                     [number_format_id](const xlnt::number_format &nf)
+                                     {
+                                         return nf.id() == number_format_id;
+                                     });
+        if (it != d_->parent->number_formats.end())
+        {
+            return *it;
+        }
     }
 
-    return *std::find_if(d_->parent->number_formats.begin(), d_->parent->number_formats.end(),
-        [&](const xlnt::number_format nf) { return nf.id() == d_->number_format_id.get(); });
+    return xlnt::number_format();
 }
 
 format format::number_format(const xlnt::number_format &new_number_format, optional<bool> applied)
