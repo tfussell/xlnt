@@ -672,14 +672,22 @@ void xlsx_producer::write_workbook(const relationship &rel)
 
     for (const auto &child_rel : workbook_rels)
     {
-        if (child_rel.type() == relationship_type::calculation_chain) continue;
+        if (child_rel.type() == relationship_type::calculation_chain)
+        {
+            // We don't yet have a VBA interpreter which can evaluate formulas.
+            // If we write an outdated calculate chain, Excel will treat the XLSX
+            // as corrupt. As a workaround, we keep the relationship but don't
+            // write the calculation chain file so Excel will recalculate all formulae
+            // on load.
+            continue;
+        }
 
-        path archive_path(child_rel.source().path().parent().append(child_rel.target().path()));
+        auto child_target_path = child_rel.target().path();
+        path archive_path(child_rel.source().path().parent().append(child_target_path));
         
         // write binary
-        switch (child_rel.type())
+        if (child_rel.type() == relationship_type::vbaproject)
         {
-        case relationship_type::vbaproject:
             write_binary(archive_path);
             continue;
         }
@@ -3071,23 +3079,22 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             if (child_rel.type() == relationship_type::printer_settings)
             {
                 write_binary(archive_path);
+                continue;
             }
-            else
-            {
-                begin_part(archive_path);
 
-                if (child_rel.type() == relationship_type::comments)
-                {
-                    write_comments(child_rel, ws, cells_with_comments);
-                }
-                else if (child_rel.type() == relationship_type::vml_drawing)
-                {
-                    write_vml_drawings(child_rel, ws, cells_with_comments);
-                }
-                else if (child_rel.type() == relationship_type::drawings)
-                {
-                    write_drawings(child_rel, ws);
-                }
+            begin_part(archive_path);
+
+            if (child_rel.type() == relationship_type::comments)
+            {
+                write_comments(child_rel, ws, cells_with_comments);
+            }
+            else if (child_rel.type() == relationship_type::vml_drawing)
+            {
+                write_vml_drawings(child_rel, ws, cells_with_comments);
+            }
+            else if (child_rel.type() == relationship_type::drawings)
+            {
+                write_drawings(child_rel, ws);
             }
         }
     }
