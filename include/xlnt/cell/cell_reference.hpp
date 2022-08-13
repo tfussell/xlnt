@@ -25,7 +25,9 @@
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/cell/index_types.hpp>
+
 #include <cstdint>
+#include <functional>
 #include <string>
 #include <tuple>
 #include <utility>
