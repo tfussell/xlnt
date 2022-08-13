@@ -45,6 +45,7 @@ class manifest;
 template<typename T>
 class optional;
 class path;
+class range_reference;
 class relationship;
 class streaming_workbook_reader;
 class variant;
@@ -417,6 +418,9 @@ private:
     bool streaming_ = false;
 
     std::unique_ptr<detail::cell_impl> streaming_cell_;
+    
+    std::unordered_map<int, std::string> shared_formulae_;
+    std::unordered_map<std::string, std::string> array_formulae_;
 
     detail::worksheet_impl *current_worksheet_;
     number_serialiser converter_;

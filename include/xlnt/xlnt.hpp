@@ -86,6 +86,7 @@
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/row_properties.hpp>
 #include <xlnt/worksheet/selection.hpp>
+#include <xlnt/worksheet/sheet_format_properties.hpp>
 #include <xlnt/worksheet/sheet_protection.hpp>
 #include <xlnt/worksheet/sheet_view.hpp>
 #include <xlnt/worksheet/worksheet.hpp>

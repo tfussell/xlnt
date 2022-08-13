@@ -116,6 +116,11 @@ public:
     std::string to_string() const;
 
     /// <summary>
+    /// Returns true if the given cell reference is within the bounds of this range reference.
+    /// </summary>
+    bool contains(const cell_reference &ref) const;
+
+    /// <summary>
     /// Returns true if this range is equivalent to the other range.
     /// </summary>
     bool operator==(const range_reference &comparand) const;

@@ -145,6 +145,14 @@ cell_reference range_reference::bottom_right() const
     return bottom_right_;
 }
 
+bool range_reference::contains(const cell_reference &ref) const
+{
+    return top_left_.column_index() <= ref.column_index()
+        && bottom_right_.column_index() >= ref.column_index()
+        && top_left_.row() <= ref.row()
+        && bottom_right_.row() >= ref.row();
+}
+
 bool range_reference::operator==(const std::string &reference_string) const
 {
     return *this == range_reference(reference_string);

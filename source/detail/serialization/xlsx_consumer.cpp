@@ -165,7 +165,7 @@ xlnt::cell_type type_from_string(const std::string &str)
     return xlnt::cell::type::shared_string;
 }
 
-xlnt::detail::Cell parse_cell(xlnt::row_t row_arg, xml::parser *parser)
+xlnt::detail::Cell parse_cell(xlnt::row_t row_arg, xml::parser *parser, std::unordered_map<std::string, std::string> &array_formulae, std::unordered_map<int, std::string> &shared_formulae)
 {
     xlnt::detail::Cell c;
     for (auto &attr : parser->attribute_map())
@@ -202,6 +202,16 @@ xlnt::detail::Cell parse_cell(xlnt::row_t row_arg, xml::parser *parser)
         switch (e)
         {
         case xml::parser::start_element: {
+            if (string_equal(parser->name(), "f") && parser->attribute_present("t"))
+            {
+                // Skip shared formulas with a ref attribute because it indicates that this
+                // is the master cell which will be handled in the xml::parser::characters case.
+                if (parser->attribute("t") == "shared" && !parser->attribute_present("ref"))
+                {
+                    auto shared_index = parser->attribute<int>("si");
+                    c.formula_string = shared_formulae[shared_index];
+                }
+            }
             ++level;
             break;
         }
@@ -223,6 +233,21 @@ xlnt::detail::Cell parse_cell(xlnt::row_t row_arg, xml::parser *parser)
                 else if (string_equal(parser->name(), "f"))
                 {
                     c.formula_string += std::move(parser->value());
+                    
+                    if (parser->attribute_present("t"))
+                    {
+                        auto formula_ref = parser->attribute("ref");
+                        auto formula_type = parser->attribute("t");
+                        if (formula_type == "shared")
+                        {
+                            auto shared_index = parser->attribute<int>("si");
+                            shared_formulae[shared_index] = c.formula_string;
+                        }
+                        else if (formula_type == "array")
+                        {
+                            array_formulae[formula_ref] = c.formula_string;
+                        }
+                    }
                 }
             }
             else if (level == 3)
@@ -251,7 +276,7 @@ xlnt::detail::Cell parse_cell(xlnt::row_t row_arg, xml::parser *parser)
 }
 
 // <row> inside <sheetData> element
-std::pair<xlnt::row_properties, int> parse_row(xml::parser *parser, xlnt::detail::number_serialiser &converter, std::vector<xlnt::detail::Cell> &parsed_cells)
+std::pair<xlnt::row_properties, int> parse_row(xml::parser *parser, xlnt::detail::number_serialiser &converter, std::vector<xlnt::detail::Cell> &parsed_cells, std::unordered_map<std::string, std::string> &array_formulae, std::unordered_map<int, std::string> &shared_formulae)
 {
     std::pair<xlnt::row_properties, int> props;
     for (auto &attr : parser->attribute_map())
@@ -301,7 +326,7 @@ std::pair<xlnt::row_properties, int> parse_row(xml::parser *parser, xlnt::detail
         switch (e)
         {
         case xml::parser::start_element: {
-            parsed_cells.push_back(parse_cell(static_cast<xlnt::row_t>(props.second), parser));
+            parsed_cells.push_back(parse_cell(static_cast<xlnt::row_t>(props.second), parser, array_formulae, shared_formulae));
             break;
         }
         case xml::parser::end_element: {
@@ -326,7 +351,7 @@ std::pair<xlnt::row_properties, int> parse_row(xml::parser *parser, xlnt::detail
 }
 
 // <sheetData> inside <worksheet> element
-Sheet_Data parse_sheet_data(xml::parser *parser, xlnt::detail::number_serialiser &converter)
+Sheet_Data parse_sheet_data(xml::parser *parser, xlnt::detail::number_serialiser &converter, std::unordered_map<std::string, std::string> &array_formulae, std::unordered_map<int, std::string> &shared_formulae)
 {
     Sheet_Data sheet_data;
     int level = 1; // nesting level
@@ -339,7 +364,7 @@ Sheet_Data parse_sheet_data(xml::parser *parser, xlnt::detail::number_serialiser
         switch (e)
         {
         case xml::parser::start_element: {
-            sheet_data.parsed_rows.push_back(parse_row(parser, converter, sheet_data.parsed_cells));
+            sheet_data.parsed_rows.push_back(parse_row(parser, converter, sheet_data.parsed_cells, array_formulae, shared_formulae));
             break;
         }
         case xml::parser::end_element: {
@@ -429,6 +454,9 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
     {
         streaming_cell_.reset(new detail::cell_impl());
     }
+    
+    array_formulae_.clear();
+    shared_formulae_.clear();
 
     auto title = std::find_if(target_.d_->sheet_title_rel_id_map_.begin(),
         target_.d_->sheet_title_rel_id_map_.end(),
@@ -742,7 +770,8 @@ void xlsx_consumer::read_worksheet_sheetdata()
     {
         return;
     }
-    Sheet_Data ws_data = parse_sheet_data(parser_, converter_);
+
+    auto ws_data = parse_sheet_data(parser_, converter_, array_formulae_, shared_formulae_);
     // NOTE: parse->construct are seperated here and could easily be threaded
     // with a SPSC queue for what is likely to be an easy performance win
     for (auto &row : ws_data.parsed_rows)
@@ -803,6 +832,8 @@ void xlsx_consumer::read_worksheet_sheetdata()
         }
     }
     stack_.pop_back();
+    
+    
 }
 
 worksheet xlsx_consumer::read_worksheet_end(const std::string &rel_id)
@@ -1258,6 +1289,17 @@ worksheet xlsx_consumer::read_worksheet_end(const std::string &rel_id)
             manifest.relationship(sheet_path,
                 relationship_type::printer_settings)});
     }
+    
+    for (auto array_formula : array_formulae_)
+    {
+        for (auto row : ws.range(array_formula.first))
+        {
+            for (auto cell : row)
+            {
+                cell.formula(array_formula.second);
+            }
+        }
+    }
 
     return ws;
 }
@@ -1356,10 +1398,7 @@ bool xlsx_consumer::has_cell()
 
     auto has_value = false;
     auto value_string = std::string();
-
-    auto has_formula = false;
-    auto has_shared_formula = false;
-    auto formula_value_string = std::string();
+    auto formula_string = std::string();
 
     while (in_element(qn("spreadsheetml", "c")))
     {
@@ -1372,17 +1411,56 @@ bool xlsx_consumer::has_cell()
         }
         else if (current_element == qn("spreadsheetml", "f")) // CT_CellFormula
         {
-            has_formula = true;
+            auto has_shared_formula = false;
+            auto has_array_formula = false;
+            auto is_master_cell = false;
+            auto shared_formula_index = 0;
+            auto formula_range = range_reference();
 
             if (parser().attribute_present("t"))
             {
-                has_shared_formula = parser().attribute("t") == "shared";
+                auto formula_type = parser().attribute("t");
+                if (formula_type == "shared")
+                {
+                    has_shared_formula = true;
+                    shared_formula_index = parser().attribute<int>("si");
+                    if (parser().attribute_present("ref"))
+                    {
+                        is_master_cell = true;
+                    }
+                }
+                else if (formula_type == "array")
+                {
+                    has_array_formula = true;
+                    formula_range = range_reference(parser().attribute("ref"));
+                    is_master_cell = true;
+                }
             }
 
-            skip_attributes({"aca", "ref", "dt2D", "dtr", "del1",
-                "del2", "r1", "r2", "ca", "si", "bx"});
+            skip_attributes({"aca", "dt2D", "dtr", "del1", "del2", "r1",
+                "r2", "ca", "bx"});
 
-            formula_value_string = read_text();
+            formula_string = read_text();
+            
+            if (is_master_cell)
+            {
+                if (has_shared_formula)
+                {
+                    shared_formulae_[shared_formula_index] = formula_string;
+                }
+                else if (has_array_formula)
+                {
+                    array_formulae_[formula_range.to_string()] = formula_string;
+                }
+            }
+            else if (has_shared_formula)
+            {
+                auto shared_formula = shared_formulae_.find(shared_formula_index);
+                if (shared_formula != shared_formulae_.end())
+                {
+                    formula_string = shared_formula->second;
+                }
+            }
         }
         else if (current_element == qn("spreadsheetml", "is")) // CT_Rst
         {
@@ -1401,9 +1479,9 @@ bool xlsx_consumer::has_cell()
 
     expect_end_element(qn("spreadsheetml", "c"));
 
-    if (has_formula && !has_shared_formula)
+    if (!formula_string.empty())
     {
-        cell.formula(formula_value_string);
+        cell.formula(formula_string);
     }
 
     if (has_value)
