@@ -23,31 +23,7 @@
 
 #include <iostream>
 
-#include <xlnt/cell/cell.hpp>
-#include <xlnt/cell/comment.hpp>
-#include <xlnt/cell/hyperlink.hpp>
-#include <xlnt/styles/border.hpp>
-#include <xlnt/styles/fill.hpp>
-#include <xlnt/styles/font.hpp>
-#include <xlnt/styles/format.hpp>
-#include <xlnt/styles/number_format.hpp>
-#include <xlnt/styles/style.hpp>
-#include <xlnt/utils/date.hpp>
-#include <xlnt/utils/datetime.hpp>
-#include <xlnt/utils/time.hpp>
-#include <xlnt/utils/timedelta.hpp>
-#include <xlnt/utils/variant.hpp>
-#include <xlnt/workbook/metadata_property.hpp>
-#include <xlnt/workbook/streaming_workbook_reader.hpp>
-#include <xlnt/workbook/streaming_workbook_writer.hpp>
-#include <xlnt/workbook/workbook.hpp>
-#include <xlnt/worksheet/column_properties.hpp>
-#include <xlnt/worksheet/header_footer.hpp>
-#include <xlnt/worksheet/row_properties.hpp>
-#include <xlnt/worksheet/sheet_format_properties.hpp>
-#include <xlnt/worksheet/worksheet.hpp>
-#include <detail/cryptography/xlsx_crypto_consumer.hpp>
-#include <detail/serialization/vector_streambuf.hpp>
+#include <xlnt/xlnt.hpp>
 #include <helpers/path_helper.hpp>
 #include <helpers/temporary_file.hpp>
 #include <helpers/test_suite.hpp>
@@ -62,7 +38,7 @@ public:
         register_test(test_produce_simple_excel);
         register_test(test_save_after_sheet_deletion);
         register_test(test_write_comments_hyperlinks_formulae);
-        register_test(test_save_after_clear_all_formulae);
+        register_test(test_save_after_clear_formula);
         register_test(test_load_non_xlsx);
         register_test(test_decrypt_agile);
         register_test(test_decrypt_libre_office);
@@ -304,21 +280,20 @@ public:
         xlnt_assert(workbook_matches_file(wb, path));
     }
 
-    void test_save_after_clear_all_formulae()
+    void test_save_after_clear_formula()
     {
         xlnt::workbook wb;
-        const auto path = path_helper::test_file("10_comments_hyperlinks_formulae.xlsx");
+        const auto path = path_helper::test_file("18_formulae.xlsx");
         wb.load(path);
 
         auto ws1 = wb.sheet_by_index(0);
-        xlnt_assert(ws1.cell("C1").has_formula());
-        xlnt_assert_equals(ws1.cell("C1").formula(), "CONCATENATE(C2,C3)");
-        ws1.cell("C1").clear_formula();
-
-        auto ws2 = wb.sheet_by_index(1);
-        xlnt_assert(ws2.cell("C1").has_formula());
-        xlnt_assert_equals(ws2.cell("C1").formula(), "C2*C3");
-        ws2.cell("C1").clear_formula();
+        for (auto row : ws1)
+        {
+            for (auto cell : row)
+            {
+                cell.clear_formula();
+            }
+        }
 
         wb.save("clear_formulae.xlsx");
     }
@@ -425,20 +400,41 @@ public:
     void test_read_formulae()
     {
         xlnt::workbook wb;
-        const auto path = path_helper::test_file("10_comments_hyperlinks_formulae.xlsx");
+        const auto path = path_helper::test_file("18_formulae.xlsx");
         wb.load(path);
 
         auto ws1 = wb.sheet_by_index(0);
-        xlnt_assert(ws1.cell("C1").has_formula());
-        xlnt_assert_equals(ws1.cell("C1").formula(), "CONCATENATE(C2,C3)");
-        xlnt_assert_equals(ws1.cell("C2").value<std::string>(), "a");
-        xlnt_assert_equals(ws1.cell("C3").value<std::string>(), "b");
+        
+        // test has_formula
+        // A1:B3 are plain text cells
+        // C1:G3,I2,F4 have formulae
+        for (auto row = 1; row < 4; row++)
+        {
+            for (auto column = 1; column < 8; column++)
+            {
+                if (column < 3)
+                {
+                    xlnt_assert(!ws1.cell(column, row).has_formula());
+                }
+                else
+                {
+                    xlnt_assert(ws1.cell(column, row).has_formula());
+                }
+            }
+        }
 
-        auto ws2 = wb.sheet_by_index(1);
-        xlnt_assert(ws2.cell("C1").has_formula());
-        xlnt_assert_equals(ws2.cell("C1").formula(), "C2*C3");
-        xlnt_assert_equals(ws2.cell("C2").value<int>(), 2);
-        xlnt_assert_equals(ws2.cell("C3").value<int>(), 3);
+        xlnt_assert(ws1.cell("I2").has_formula());
+        xlnt_assert(ws1.cell("F4").has_formula());
+
+        xlnt_assert(!ws1.cell("C9").has_formula()); // empty cell
+        xlnt_assert(!ws1.cell("F5").has_formula()); // text cell
+        
+        xlnt_assert_equals(ws1.cell("C1").formula(), "B1^2"); // basic math with reference
+        xlnt_assert_equals(ws1.cell("D1").formula(), "CONCATENATE(A1,B1)"); // concat with ref
+        xlnt_assert_equals(ws1.cell("E1").formula(), "CONCATENATE($C$1,$D$1)"); // concat with absolute ref
+        xlnt_assert_equals(ws1.cell("F1").formula(), "1+1"); // basic math
+        xlnt_assert_equals(ws1.cell("G1").formula(), "PI()"); // constant
+        xlnt_assert_equals(ws1.cell("I2").formula(), "COS(C2)+IMAGINARY(SIN(B2))"); // fancy math
     }
 
     void test_read_headers_and_footers()
@@ -657,7 +653,7 @@ public:
     {
         xlnt_assert(round_trip_matches_rw(path_helper::test_file("13_custom_heights_widths.xlsx")));
     }
-
+    
     void test_round_trip_rw_encrypted_agile()
     {
         xlnt_assert(round_trip_matches_rw(path_helper::test_file("5_encrypted_agile.xlsx"), "secret"));
